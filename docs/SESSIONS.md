@@ -18,7 +18,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 
 **Focus:** Roll the idle-clock header past the satisfied 08-10→08-14 week; correct STATE pointers that treated Tradeify as a gone firm.
 
-**Shipped:** branch `cursor/state-weekly-header-roll-ca60` — weekly deadline **2026-08-21** / bucket 08-17→08-21 (prior week satisfied 2026-08-12). Queue row 1 no longer says "de-scoped firm"; row 2 names B7 + M1 as waiting on an acceptable strategy; gated first-fill block no longer claims the execution surface is gone. $0 · K=0.
+**Shipped:** branch `cursor/state-weekly-header-roll-ca60` — weekly deadline **2026-08-21** / bucket 08-17→08-21 (prior week satisfied 2026-08-12). Queue row 1 no longer says "de-scoped firm"; row 2 names B7 + M1 as waiting on an acceptable strategy; gated first-fill block no longer claims the execution surface is gone. Blast-radius: refreshed one-line pointers in `PIPELINES.md` P4/P5, `README.md`, `c1-rail` / `trade-csv-reconcile` skills, `ops/prop_envelope_default.md` E6 parenthetical. $0 · K=0.
 
 **Decisions/defects:** none new. Owner of the narrow reading remains [`08-04 addendum`](adr/2026-08-04-tradeify-venue-descope-eval-included.md) + [`S1`](adr/2026-08-07-loop-s1-environment-ratification.md). ADR title left as filed.
 

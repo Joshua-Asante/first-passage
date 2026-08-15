@@ -2,10 +2,10 @@
 
 Research + operational layer for a futures prop-trading program: discover,
 validate, and deploy automated futures strategies at four automation-friendly
-prop firms. There is currently **no live execution surface** — the c1 rail
-(ruled host→listener→CrossTrade→Tradovate; Python-native signal host per S2;
-daemon Fly app warm with `emit_enabled=false` per S2b build GO) is built and
-**disarmed** at the incumbent eval (S1).
+prop firms. The incumbent eval is live (S1); there is **no deployed book** —
+the c1 rail (ruled host→listener→CrossTrade→Tradovate; Python-native signal
+host per S2; daemon Fly app warm with `emit_enabled=false` per S2b build GO)
+is built and **disarmed** there.
 Live-execution posture is owned by [`CLAUDE.md`](CLAUDE.md) §Live-execution
 posture and is deliberately NOT restated here (Rule 7). What is actually turning
 today: [`PIPELINES.md`](PIPELINES.md).
