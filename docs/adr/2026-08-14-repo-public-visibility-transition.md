@@ -61,7 +61,7 @@ standing posture in `CLAUDE.md` §Public-clone-posture and decided in
 ## §1 — Context
 
 CI cost pressure (private-repo Actions billing, projected $200–300/mo at current ship rates)
-prompted a review of whether to flip this repo public. [PR #831](https://github.com/Joshua-Asante/first-passage/pull/831)
+prompted a review of whether to flip this repo public. [PR #831](https://github.com/Joshua-Asante/first-passage-archive/pull/831)
 independently cuts that cost ~3x by removing a `push`+`pull_request` dual-trigger and narrowing
 the pylint matrix, but does not touch the underlying billing-gate block (no payment method on
 file) and does not eliminate the cost — it only reduces it while staying private.
