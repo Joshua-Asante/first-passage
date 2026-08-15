@@ -640,6 +640,12 @@ def missing_closure_campaigns(
         closures_dir=closures_dir, ltm_briefs_dir=ltm_dir
     )
 
+    if not ltm_dir.is_dir():
+        # Public seed excludes docs/ltm/** (2026-08-14 transition ADR). A
+        # campaign whose closure lives only there is unverifiable here, not
+        # missing — same posture as check_adr_graph.py's A3 check.
+        return []
+
     by_id: dict[str, list[str]] = {}
     for c in claimed:
         by_id.setdefault(c.campaign_id, []).append(c.source)

@@ -453,6 +453,18 @@ def test_coverage_grandfathered_set_empty_at_promotion_baseline():
     assert ccd.COVERAGE_GRANDFATHERED == frozenset()
 
 
+def test_coverage_public_seed_missing_ltm_dir_is_silent(tmp_path):
+    """docs/ltm/briefs/ is excluded from the public seed; a campaign whose
+    closure lives only there is unverifiable, not missing (same posture as
+    check_adr_graph.py's A3 check for docs/ltm/adr/)."""
+    repo = _coverage_repo(tmp_path, with_ofchan_closure=False)
+    ltm_dir = repo / "docs" / "ltm" / "briefs"
+    for f in ltm_dir.iterdir():
+        f.unlink()
+    ltm_dir.rmdir()
+    assert ccd.missing_closure_campaigns(repo) == []
+
+
 def test_coverage_owning_adr_is_accepted_and_armed(capsys):
     # After Accept, coverage limb is HARD-armed; live exit 0 requires backlog clear.
     assert ccd.COVERAGE_OWNING_ADR.is_file(), (
