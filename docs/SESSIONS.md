@@ -14,6 +14,21 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-15h — Wall-scope audit · Q-BUSTGATE-2 · blind sourcing channel · Q-CAPBAND-1
+
+**Focus:** Assess where Tradeify strategy research stands and how to make it more productive. Audit the admission walls, re-derive the bust ceiling, open the operator-elected weaker-grade sourcing channel, and price the Cap counterfactual.
+
+**Shipped:** [wall-scope audit](notes/audits/programme-audit/2026-08-15-msl-wall-scope-audit.md) · [`Q-BUSTGATE-2`](briefs/Q-BUSTGATE-2-bust-gate-re-derivation-2026-08.md) + [pre-reg](briefs/pre-registration/Q-BUSTGATE-2-verdict-preregistration.md) + [closure](briefs/closures/Q-BUSTGATE-2-closure-resolved.md) `RESOLVED` · 3 light ADRs discharging F1/F2/Board-lite · [no-counterparty sourcing channel](adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md) (full tier) + K-cap and pre-G0 addenda · [analogue-modality route ruling](adr/2026-08-15-analogue-modality-route-ruling.md) · [`Q-CAPBAND-1`](briefs/Q-CAPBAND-1-cap-band-counterfactual.md) + [pre-reg](briefs/pre-registration/Q-CAPBAND-1-verdict-preregistration.md) + [closure](briefs/closures/Q-CAPBAND-1-closure-resolved.md) `RESOLVED`. **$0 · K=0 throughout**; no `core/` or `lab/` code touched.
+
+**Decisions/defects:** Two suspected causes of the dry funnel were **eliminated on evidence**: gates (13/14 walls survived adversarial re-verification; the one finding was an unratified *label*) and the bust ceiling (reconfirmed unchanged under two new input classes). Cost geometry measured across 5 instruments with primary-sourced commissions — the cost wall is a **frequency** wall, and `floor_at_k` is K-driven not n-driven. The channel's first candidate `MNQ-ANALOGUE-1` died at its pre-G0 cheap falsifier (analogue hit rate 0.5160 *below* the 0.5453 base rate); feasible set now empty at $0. Operator withdrew Aegis 1.83 as a reachability ceiling — M-19 requires **both** anchors and 1.83 is cohort-bound, K-undeclared, un-deflated — which relocated the bound to `CAP = 1.0`; `Q-CAPBAND-1` then priced that counterfactual and ratified Cap on the named axes (D6 venue-dead, D2-low bar-bound). Structural finding: the binding constraint is **K** — searches large enough to discover set a floor above the corrected published top decile.
+
+**Open / next:** consecutive-pre-G0-kill threshold uncovered; `Q-CAPBAND-1` re-opens only on a *new* band axis; R3–R6/R10 from the 08-03 audit still owed. The 2026-11-08 §4 falsifier is the live clock.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; no arming.
+
+**Provenance:** authored in the private archive (10 commits, `28fdcea..3df9d91`); replayed here as content since the two repos share no history. One private-class artifact (`docs/notes/notice/…`) is excluded from the public seed and referenced by `git show` pointer.
+
+---
 ## 2026-08-15g — Root-doc liveness: 16 public-seed dead links repointed
 
 **Focus:** `make check` / `check_root_doc_liveness.py` HARD-failed on 16 markdown links in `STATE.md` + `REPO_MAP.md` whose targets were omitted from the public seed (PR #5 restored `docs/notes/audits/` only).
