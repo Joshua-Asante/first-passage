@@ -191,3 +191,4 @@ grep -l "2026-07-12-dsr-k-rule" docs/briefs/pre-registration/*.md docs/briefs/rn
 |---|---|---|
 | 2026-07-12 | Initial drafting (operator "Go" on the gate-reachability audit's fix path); status `Proposed`, pending explicit ratification | Claude (advisor) |
 | 2026-07-12 | **Operator ratified** — status `Proposed` → `Accepted`. K/V fix becomes standing policy for matrix-profile-family campaigns | Joshua |
+| 2026-08-15 | Module default flipped: `run_universe_gate(var_trials=None)` now uses `1/n` on the selected candidate's finite OOS trade count (gate-stack audit R5). The empirical `Var(col_sr)` default is retired. §6 risk line "omitting `--var-trials` inherits the known-biased default" is **discharged** by this addendum — not a silent §2 rewrite. Explicit pin still overrides. | Cursor (R5 execution; winning V already ratified 2026-07-12) |

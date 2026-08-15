@@ -101,7 +101,7 @@ The label bundling "no index-futures continuation entry" and "no third MR-at-lev
 | W1 | **Discharge F1** — ratify or revert the 2026-08-02 regime-gate scope narrowing (`docs/methodology/regime_robustness_gate.md:32,35`). Now 7 days overdue against the 08-03 audit's own date. | Operator (ruling) + CC (ADR) | now-owed — **DONE 2026-08-15**, same session: [`ADR`](../../../adr/2026-08-15-regime-gate-scope-ratification.md) ratifies as-is (grounded in the gate's own stated `dd_protection`-class scope) |
 | W2 | **Discharge F2** — register a successor forward-monitor for the 2026-05-23 override, or explicitly record its absence as accepted. | Operator | now-owed — **DONE 2026-08-15**, same session: [addendum](../../../adr/2026-05-23-allocation-refresh-2.md) accepts the absence explicitly (successor is blocked — no live-fill route exists per the 2026-08-04 Tradeify de-scope) |
 | W3 | **Retire or paper the "Board-lite" label.** Either delete the name and cite the two underlying rules directly in future notices, or author a one-paragraph light-tier ADR/closure pointer giving it the ratification stamp + `profiles.json`-style wire (or an equivalent lane-status registration) it currently lacks. Cheapest, non-urgent — no candidate was wrongly killed. | Next MSL-adjacent session | before next citation of the label — **DONE 2026-08-15**, same session: [`ADR`](../../../adr/2026-08-15-board-lite-label-ratification.md) papers it as shorthand for the two named rules |
-| W4 | **R3/R4/R5/R6/R10 remain individually owed** at their existing dates (2026-08-08 retro / 2026-09-01 / 2026-11-08) — not re-dated by this note, carried forward as-is. | Cursor (per 08-03 audit's own assignment) | as previously scheduled |
+| W4 | **R3/R4/R5/R6/R10 remain individually owed** at their existing dates (2026-08-08 retro / 2026-09-01 / 2026-11-08) — not re-dated by this note, carried forward as-is. | Cursor (per 08-03 audit's own assignment) | as previously scheduled — **R3/R4/R5/R6 DONE 2026-08-15** (later session, same date); **R10 drafted `Proposed`** on the harvest-intake ADR, operator GO still owed |
 
 ---
 
@@ -138,11 +138,13 @@ grep -rn "Board-lite" docs/ ops/ scripts/ core/ 2>/dev/null
 # Wall-audit re-run trigger: has a new MSL/WHO-track-era wall killed a candidate since this pass?
 git log --since=2026-08-15 --oneline -- docs/rejected_candidates.md docs/notes/notice/
 
-# R3/R4/R5/R6/R10 unchanged-since check (re-run the 08-03 audit's own §3.7 falsifier greps)
-grep -n "def _corresponds" ops/sentinel/scan.py
-grep -n "clause_n=\"PASS: power=0.638" lab/archive/q_kbudget_1_2026-07/floor_scan.py
-grep -n "var_trials=None" lab/research_utils/universe_gate.py
-grep -n "DEFAULT_FIRM_KEY = \"Bulenox_100K\"" lab/discovery/cost_mnq.py
+# R3/R4/R5/R6 landed 2026-08-15 — next cycle confirms they held
+grep -n "_prereg_cited_in" ops/sentinel/scan.py
+grep -n "FAIL (N, Default-#1 OOS)" lab/archive/q_kbudget_1_2026-07/floor_scan.py
+grep -n "var_trials = 1.0 / max" lab/research_utils/universe_gate.py
+grep -n "DEFAULT_FIRM_KEY" lab/discovery/cost_mnq.py   # expect comment-only / no assignment
+# R10 still Proposed until operator GO
+grep -n "Proposed second §4 limb" docs/adr/2026-07-15-external-mechanism-harvest-intake.md
 ```
 
 ---

@@ -165,8 +165,8 @@ The missing middle between a pulled dataset and (when re-armed) `universe_gate`
 option-(i) Stage-4 return matrix. Synthetic-only until the
 operator authorizes a real `register_search open` / `db_fetch pull`.
 **W4:** SPA/PBO path dormant — prefer temporal-consistency + campaign-named
-limbs; when calling DSR/`universe_gate`, **pass `var_trials=1/n`** (module
-default stays empirical until R5 lands — do not assume V=1/n is default).
+limbs; when calling DSR/`universe_gate`, the module default is `var_trials=1/n`
+(audit R5, flipped 2026-08-15). An explicit pin still overrides.
 
 ```
 # Preferred (canonical lab module):
@@ -177,8 +177,7 @@ PYTHONPATH=lab python -m discovery.stage24_runner --mine-synthetic
 python scripts/stage24_runner.py --synthetic-e2e
 ```
 
-Always pass `var_trials=1/n` into `universe_gate` (never the module's empirical
-default). Catch22 is covariate-only (0 scored columns). Low-n (≤250 OOS trades)
+`universe_gate` defaults to `var_trials=1/n`. Catch22 is covariate-only (0 scored columns). Low-n (≤250 OOS trades)
 candidates are flagged `dsr_unreachable_low_n: true`, never silently dropped.
 
 The manifest computes the *cheap* multiplicity triage. The *rigorous* universe-

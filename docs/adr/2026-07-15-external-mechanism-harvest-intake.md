@@ -96,6 +96,35 @@ The intake's four **admission requirements** (all mandatory before screening; re
 
 ---
 
+## Addendum 2026-08-15 — Proposed second §4 limb (gate-stack audit R10)
+
+**Status:** `Proposed` — operator must ratify before this limb binds. Limb 4 of the ceremony-tiering ADR (creates/amends a falsifier) — full amend-in-place, not light. This addendum does **not** rewrite the §4 revert trigger (ADR §5: silent amendment of §4 is Trap #12; supersede or add, never silently edit). Limb 1 stands byte-unedited. Count on limb 1 stays **0-of-2**.
+
+**§0 Rule 0 (verified 2026-08-15, this worktree):**
+
+| Source | Anchor | Supplies |
+|---|---|---|
+| This ADR §4 revert trigger | HEAD `9a701505` | Single limb; gate-geometry failures route to the HARV ADR §4, not this one |
+| [08-03 gate-stack audit](../notes/audits/programme-audit/2026-08-03-gate-stack-audit.md) R10 / §3.7 | HEAD | Observed miss: D5 + H-OD-1 reclassified as gate-geometry, count 1-of-2 → 0-of-2; five-plus dead campaigns never reach strike one |
+| [H-TSMOM-1 scoping](../briefs/rnd-pipeline/H-TSMOM-1-ES-tsmom-scoping.md) | HEAD | Screen-stage Clause-N FAIL is excluded from limb 1 (requires Stage-6 confirm) |
+
+**Cheap falsifier (PARENT-side, this session, before drafting):**
+
+```
+rg -n "second limb|engageable limb|fundability-transfer" docs/adr/2026-07-15-external-mechanism-harvest-intake.md
+# absent — no second limb on disk
+```
+
+**Decision (Proposed, not binding):** add **limb 2 — fundability-transfer**. Among intake-class seeds that reach a dated kill at Stage-2 cost-law or Clause-N/power — including when the mechanism was confirmed in-sample, or was never reached because that upstream gate killed first — if **two** such kills accumulate, the *fundability-transfer* premise is FALSIFIED. Harvest intake then demotes to research-only / idle-named on the same 2026-11-08 vehicle. Limb 2 does **not** require a Stage-6 confirm closure. Scoping-stage Clause-N FAILs (H-TSMOM-1 class) **do** count. Remedy is the same as limb 1: superseding ADR + source-class post-mortem. Not a third sourcing channel. Not a Cap change.
+
+**Open pin (operator, before ratify):** do already-closed D5 / H-OD-1 / H-TSMOM-1 count? If yes, limb 2 fires on ratification. If no, only post-ratification kills count.
+
+**Forbidden under this addendum:** self-ratify; rewrite limb 1; cite this Proposed text as binding; treat a limb-2 fire as licence to raise Cap or open a third channel.
+
+**Falsifier of this addendum:** if still `Proposed` and un-ruled at the 2026-11-08 harvest §4 reading, fold the open pin into that review (do not silently drop).
+
+---
+
 ## §5 — Forbidden moves (under this ADR)
 
 - **Claiming Path 1b with fewer than 3 independent cohorts, fewer than 3 decades, or no post-hoc-replication check ((iii))** — the obvious gaming vector is asserting "well-replicated" without meeting the counted bar. All four Path-1b sub-criteria are mandatory; a seed meeting 3 of 4 is not admitted, it is UNSCREENABLE on requirement 1 pending the missing criterion.
@@ -206,3 +235,4 @@ git diff b304f2c -- docs/briefs/pre-registration/Q-KBUDGET-1-screen-preregistrat
 | 2026-07-15 | Operator pushback incorporated pre-acceptance: per-requirement rationale added to §1/§2 (why the gates don't substitute for admission); requirement 1 split into Path 1a (mechanism) / Path 1b (evidence-robustness, 4 sub-criteria) to admit momentum-class anomalies with no consensus mechanism; §5 anti-gaming forbidden moves added for Path 1b; methodology doc relief-valve note + manifest field added; `Proposed` → `Accepted`; §7 Phase 2 downstream sweep executed (skill, STATE.md, CLAUDE.md, Cursor handoff released) | Joshua (ratify) + Claude Code (draft + sweep) |
 | 2026-07-16 | Reconciled against PR #391 (merged by operator): Q-KBUDGET-1's `RESULTS.md`/`d5_clause_n_rescreen.md` doc-sync accepted as-is (anchor updated `4a2471e`→`5a8713f`, content unaffected); the independently-authored `Q-KBUDGET-HARVEST-1` bounded Pre-Q named as this ADR's first execution instance and amended pre-Phase-1 (its own freeze pre-reg, not this ADR) to inherit requirement 1's Path 1a/1b — see §1 reconciliation note, §10 audit hook | Claude Code (reconciliation, operator-directed) |
 | 2026-07-16 | Sourcing-layer elaboration landed (upstream of this ADR's admission requirements, no scope change here): `docs/methodology/strategy_harvest.md` §2 rewritten from a screenability-only tier list into a class-priority + ranked channel portfolio (design: [`docs/superpowers/specs/2026-07-16-mechanism-sourcing-strategy-design.md`](../superpowers/specs/2026-07-16-mechanism-sourcing-strategy-design.md)), driven by the D5/H-OD-1 confirmed-but-cost-killed finding. Explicitly does not duplicate the pending [`2026-07-16-harv-attestation-same-units-supersession.md`](2026-07-16-harv-attestation-same-units-supersession.md) ADR's cost-law admission requirement — cites it as `Proposed` and treats the §2.2 inequality as non-binding sourcing guidance until that ADR is Accepted. No new ADR authored for this elaboration. | Claude Code (operator-directed brainstorm → design → landing) |
+| 2026-08-15 | **Proposed** second §4 limb (gate-stack audit R10) — fundability-transfer trigger covering cost-law / Clause-N kills the existing limb routes away. Limb 1 unedited. Not ratified here. | Cursor (spec) — operator GO still owed |

@@ -331,18 +331,12 @@ def run_universe_gate(*, returns, benchmark, candidate_ids, cumulative_k: int,
     selection occurred). Verdict hands to lifecycle admission, never deploys.
 
     `var_trials` (V, the across-trial Sharpe variance DSR's SR0 consumes): pass an
-    explicit value to PIN it (e.g. the theoretical null-sampling variance `1/n`,
-    per `docs/adr/2026-07-12-dsr-k-rule-and-variance-floor-supersession.md`).
-    Default (None) falls back to the empirical `Var(col_sr, ddof=1)` across the
-    returns-matrix columns — verified (see that ADR's §0) to be BADLY BIASED
-    upward at the K_SPA (scored-candidate count) any matrix-profile campaign's
-    triage plausibly produces (K_SPA<=~100): a genuine edge inflates its own
-    column's contribution to the cross-column variance, raising the very
-    benchmark it must then beat, and collapses to var_trials=0 (SR0~=0, DSR
-    trivially ~1) at K_SPA=1. The empirical default is kept for backward
-    compatibility with existing self-tests (K=30/50, where the bias, while
-    still present, does not flip test outcomes); campaigns pre-registering a
-    frozen V-rule MUST pass it explicitly rather than rely on the default."""
+    explicit value to PIN it. Default (None) is the theoretical null-sampling
+    variance `1/n` on the selected candidate's finite OOS trade count, per
+    `docs/adr/2026-07-12-dsr-k-rule-and-variance-floor-supersession.md` (the
+    winning V-estimator; module default flipped 2026-08-15, gate-stack audit R5).
+    The empirical `Var(col_sr, ddof=1)` estimator is no longer the default —
+    it is biased upward at realistic K_SPA and collapses to 0.0 at K_SPA=1."""
     returns = np.asarray(returns, dtype=float)
     benchmark = np.asarray(benchmark, dtype=float)
     T, K = returns.shape
@@ -367,7 +361,8 @@ def run_universe_gate(*, returns, benchmark, candidate_ids, cumulative_k: int,
 
     # 8b — deflated Sharpe on the selected candidate.
     if var_trials is None:
-        var_trials = float(np.var(col_sr, ddof=1)) if K > 1 else 0.0
+        n_sel = int(np.isfinite(returns[:, best_index]).sum())
+        var_trials = 1.0 / max(n_sel, 1)
     dsr_info = run_dsr_gate(returns[:, best_index], cumulative_k, var_trials, thresholds.dsr_min)
     dsr_pass = dsr_info["passed"]
 
@@ -412,9 +407,9 @@ def self_test(*, thresholds: Thresholds, seed_ok: bool = True,
     injected-edge family. Returns {'negative': GateVerdict, 'positive': GateVerdict}.
     A gate that cannot discriminate is miscalibrated and must not land.
 
-    `var_trials`: forwarded to `run_universe_gate` (None = default empirical
-    estimator, for calibrating the module's out-of-the-box behavior; pass a pinned
-    value, e.g. 1/n_trades, to calibrate a campaign's frozen V-rule instead)."""
+    `var_trials`: forwarded to `run_universe_gate` (None = module default `1/n`
+    on the selected candidate's finite trade count; pass a pinned value to
+    calibrate a campaign's frozen V-rule instead)."""
     # The extracted Gen-1 planted controls (lab/validation_selftest.py). Clean
     # lab->lab import now that universe_gate lives in lab/ (same import the sibling
     # DSR-gate test tests/test_validation_selftest_dsr_gate.py uses).
@@ -475,10 +470,8 @@ def main():
                     help="Stage-5 bound block size (else ACF-derived; never sqrt(T)).")
     ap.add_argument("--var-trials", type=float, default=None,
                     help="V: PIN the across-trial Sharpe variance DSR's SR0 consumes "
-                         "(e.g. 1/n_trades, the theoretical null-sampling variance). "
-                         "Default: the module's empirical Var(col_sr) estimator — "
-                         "verified biased upward at realistic K_SPA, see the module "
-                         "docstring; campaigns with a frozen V-rule must pass this.")
+                         "(e.g. 1/n_trades). Default: 1/n on the selected candidate's "
+                         "finite OOS trade count (gate-stack audit R5).")
     ap.add_argument("--seed", type=int, default=None)
     ap.add_argument("--self-test", action="store_true",
                     help="Run the planted-noise/planted-edge calibration gate and exit.")

@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-15l — 08-03 gate-stack R3–R6 / R10
+
+**Focus:** Execute the still-owed 08-03 mechanical repairs (R3–R6) and draft R10 without self-ratifying a new falsifier.
+
+**Shipped:** branch `cursor/gate-stack-r3-r10-8529` — sentinel cross-tree pairing; H-TSMOM-1 living-harness pin; `var_trials` default `1/n`; `cost_mnq` `firm_key` required; harvest §4 limb 2 drafted `Proposed`. $0 · K=0.
+
+**Decisions/defects:** R10 is spec-only — operator GO still owed; limb 1 unedited. Winning V-estimator / required `firm_key` were already ratified; this pass makes them executable.
+
+**Open / next:** (1) queue #0 weekly token, deadline 2026-08-21 — operator-placed. (2) consecutive-pre-G0-kill threshold uncovered. (3) 2026-11-08 slate: harvest idle + limb-2 pin · F1 · ceremony-tiering. (4) R10 operator GO. (5) B7/M1 still wait on a book. `Q-CAPBAND-1` re-opens only on a *new* band axis.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-15i — STATE weekly roll + de-scope over-read correction
 
 **Focus:** Roll the idle-clock header past the satisfied 08-10→08-14 week; correct STATE pointers that treated Tradeify as a gone firm.

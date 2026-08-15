@@ -19,8 +19,12 @@ MNQ_MULTIPLIER = 2.0  # $2 per index point
 MNQ_TICK_SIZE = 0.25
 MNQ_TICK_VALUE = MNQ_MULTIPLIER * MNQ_TICK_SIZE  # $0.50
 
-# Default: Bulenox index-micro all-in ($0.61/side) — same order as HARV/MGC $0.62.
-DEFAULT_FIRM_KEY = "Bulenox_100K"
+# firm_key is required (gate-stack audit R6). The cheapest-firm default
+# `DEFAULT_FIRM_KEY = "Bulenox_100K"` was retired so a caller cannot inherit
+# Bulenox $0.61/side silently. New work should prefer
+# `cost_model.resolve_commission(firm_key, "MNQ")`; this module remains the
+# citable basis for closed D5 / D5-RECOST figures (cost_model does not
+# supersede it).
 SLIPPAGE_TICKS_PER_SIDE = 1.0
 COST_LAW_MULTIPLE = 4.0
 
@@ -36,7 +40,7 @@ class MnqCostHurdle:
     hurdle_4x_frac: float
 
 
-def commission_per_side(firm_key: str = DEFAULT_FIRM_KEY) -> float:
+def commission_per_side(firm_key: str) -> float:
     cps = FIRM_RULES[firm_key].get("cost_per_side_usd")
     if cps is None:
         raise ValueError(f"{firm_key!r} has no cost_per_side_usd")
@@ -44,7 +48,7 @@ def commission_per_side(firm_key: str = DEFAULT_FIRM_KEY) -> float:
 
 
 def mnq_rt_cost_usd(
-    firm_key: str = DEFAULT_FIRM_KEY,
+    firm_key: str,
     slip_ticks_per_side: float = SLIPPAGE_TICKS_PER_SIDE,
 ) -> float:
     slip = slip_ticks_per_side * MNQ_TICK_VALUE
@@ -54,7 +58,7 @@ def mnq_rt_cost_usd(
 def hurdle_from_price(
     mnq_price: float,
     *,
-    firm_key: str = DEFAULT_FIRM_KEY,
+    firm_key: str,
     slip_ticks_per_side: float = SLIPPAGE_TICKS_PER_SIDE,
 ) -> MnqCostHurdle:
     """Express one round-trip cost as a fraction of MNQ notional at ``mnq_price``."""
