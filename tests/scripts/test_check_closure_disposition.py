@@ -453,13 +453,32 @@ def test_coverage_grandfathered_set_empty_at_promotion_baseline():
     assert ccd.COVERAGE_GRANDFATHERED == frozenset()
 
 
+def test_coverage_public_seed_missing_ltm_dir_is_silent(tmp_path):
+    """docs/ltm/briefs/ is excluded from the public seed; a campaign whose
+    closure lives only there is unverifiable, not missing (same posture as
+    check_adr_graph.py's A3 check for docs/ltm/adr/)."""
+    repo = _coverage_repo(tmp_path, with_ofchan_closure=False)
+    ltm_dir = repo / "docs" / "ltm" / "briefs"
+    for f in ltm_dir.iterdir():
+        f.unlink()
+    ltm_dir.rmdir()
+    assert ccd.missing_closure_campaigns(repo) == []
+
+
 def test_coverage_owning_adr_is_accepted_and_armed(capsys):
     # After Accept, coverage limb is HARD-armed; live exit 0 requires backlog clear.
     assert ccd.COVERAGE_OWNING_ADR.is_file(), (
         "coverage owning ADR missing — COVERAGE_OWNING_ADR path drift"
     )
     assert ccd.adr_status(ccd.COVERAGE_OWNING_ADR) == "Accepted"
-    assert ccd.missing_closure_campaigns() == []
+    missing = ccd.missing_closure_campaigns()
+    ltm_briefs = Path(__file__).resolve().parents[2] / "docs" / "ltm" / "briefs"
+    if missing and not ltm_briefs.is_dir():
+        pytest.skip(
+            "closure bodies live under docs/ltm/briefs/ "
+            "(excluded from the public seed)"
+        )
+    assert missing == []
     assert ccd.main([]) == 0
     out = capsys.readouterr().out
     assert "HARD closure-disposition coverage:" not in out

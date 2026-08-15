@@ -96,7 +96,7 @@ Worth naming explicitly: **most OODA observations should NOT promote to INQHIORI
 
 ## 5. Worked example — attended c1 arming day (canonical OODA cycle)
 
-Live execution is the **c1 rail only** (TV → listener → CrossTrade → Tradovate; Option C). Manual FIRE→lots CFD execution is **HISTORICAL/DORMANT** (retired 2026-06-30 / FXIFY closed 2026-07-10). For any arming / disarm / fill question, load the `c1-rail` skill + [`RUNBOOK.md`](../../../docs/notes/rail_build/RUNBOOK.md) §B7 — do not invent a desk playbook here.
+Live execution is the **c1 rail only** (TV → listener → CrossTrade → Tradovate; Option C). Manual FIRE→lots CFD execution is **HISTORICAL/DORMANT** (retired 2026-06-30 / FXIFY closed 2026-07-10). For any arming / disarm / fill question, load the `c1-rail` skill + the M1 ADR — do not invent a desk playbook here. The rail runbook lives in the private archive.
 
 **[Rule 0 read]** — open `ops/c1_rail/c1_rail_arm.py` / rail status, `dd_protection.py` sizing path, M1 acceptance pointer, today's `armed_until` if any. Confirm disarmed vs armed in head.
 

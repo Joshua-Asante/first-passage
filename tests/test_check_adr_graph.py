@@ -443,6 +443,16 @@ def test_render_index_sections_and_a6_drift(tmp_path: Path):
     assert cag.check_a6(headers, idx + "\n") == []
 
 
+def test_a3_public_seed_missing_ltm_dir_is_silent(tmp_path: Path):
+    """docs/ltm/** is excluded from the public seed; missing dir is not A3."""
+    adr = tmp_path / "adr"
+    ltm = tmp_path / "ltm"  # deliberately not created
+    adr.mkdir()
+    name = "2026-01-01-old.md"
+    _write_adr(adr, name, _stub(name, status="Superseded"))
+    assert cag.check_a3(cag.load_adr_headers(adr), adr, ltm) == []
+
+
 def test_main_bare_cli_exits_zero():
     assert cag.main([]) == 0
 

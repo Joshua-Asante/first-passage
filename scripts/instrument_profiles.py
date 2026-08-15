@@ -223,6 +223,15 @@ def load_profiles(instruments_dir: Path) -> tuple[list[Profile], list[Finding]]:
     return profiles, findings
 
 
+_PUBLIC_SEED_EXCLUDED = ("docs/ltm/", "docs/notes/", "docs/superpowers/")
+
+
+def _is_public_seed_excluded_source(source: str) -> bool:
+    """True when a pointer targets a tree curated out of the public seed."""
+    norm = source.replace("\\", "/")
+    return any(prefix in norm for prefix in _PUBLIC_SEED_EXCLUDED)
+
+
 def _resolve(source: str, profile: Profile) -> bool:
     """True if a source pointer resolves. Anchor-only (#X) sources are in-file.
 
@@ -352,6 +361,8 @@ def validate(
                     Finding(rel, prof.lineno, "P2", f"unknown mechanism {cell.mechanism!r}{hint}")
                 )
             if not _resolve(cell.source, prof):
+                if _is_public_seed_excluded_source(cell.source):
+                    continue
                 findings.append(
                     Finding(rel, prof.lineno, "P1", f"source {cell.source!r} does not resolve")
                 )
@@ -370,13 +381,17 @@ def validate(
                         )
                     )
                 elif not _resolve(src, prof):
+                    if _is_public_seed_excluded_source(src):
+                        continue
                     findings.append(
                         Finding(rel, prof.lineno, "P1", f"source {src!r} does not resolve")
                     )
-        if prof.cost_hurdle and not _resolve(prof.cost_hurdle.get("source", ""), prof):
-            findings.append(
-                Finding(rel, prof.lineno, "P1", "cost_hurdle.source does not resolve")
-            )
+        hurdle_src = prof.cost_hurdle.get("source", "") if prof.cost_hurdle else ""
+        if prof.cost_hurdle and not _resolve(hurdle_src, prof):
+            if not _is_public_seed_excluded_source(hurdle_src):
+                findings.append(
+                    Finding(rel, prof.lineno, "P1", "cost_hurdle.source does not resolve")
+                )
     return findings
 
 

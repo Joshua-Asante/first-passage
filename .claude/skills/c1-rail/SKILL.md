@@ -14,7 +14,7 @@ This skill is pointer-first by design. **Never restate rail constants (quantitie
 ## Safety invariants (violating any of these is a stop-and-surface, never a judgment call)
 
 1. **Disarmed by default.** `dry_run=true` is the standing state; `dry_run` defaults True if the config key is absent (never fail open to live). DRY_RUN computes the would-be payload for audit but never calls the sender.
-2. **Arming is an operator GO.** The next `dry_run=false` entry/add send (B7-REFIRE Stage 2) is gated on **M1 monitoring `RESOLVED`** (all six drills evidenced; items still owed = `dry_run_strategy_signal_event_id` at non-zero size from the **ruled Python host** + `operator_signoff`) **plus** a separate operator GO — architecture alone does not arm. Owner: `docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md` + `docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json` (item-5 origin: [`S2 ADR`](../../../docs/adr/2026-08-07-loop-s2-signal-host-fork.md)). **Trigger amended 2026-07-31b (operator-ratified): the gate's object is the ARM, not the send** — `dry_run=false` may not be set while M1 is not `RESOLVED`. **Third bar (2026-08-04): both Striker legs WITHDRAWN; redeploy barred.** Environment = incumbent eval ([`S1`](../../../docs/adr/2026-08-07-loop-s1-environment-ratification.md)); no deployed strategy — **there is nothing to arm.**
+2. **Arming is an operator GO.** The next `dry_run=false` entry/add send (B7-REFIRE Stage 2) is gated on **M1 monitoring `RESOLVED`** (all six drills evidenced; items still owed = `dry_run_strategy_signal_event_id` at non-zero size from the **ruled Python host** + `operator_signoff`) **plus** a separate operator GO — architecture alone does not arm. Owner: [`M1 ADR`](../../../docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) (item-5 origin: [`S2 ADR`](../../../docs/adr/2026-08-07-loop-s2-signal-host-fork.md)). The M1 acceptance JSON lives in the private archive, not this public tree. **Trigger amended 2026-07-31b (operator-ratified): the gate's object is the ARM, not the send** — `dry_run=false` may not be set while M1 is not `RESOLVED`. **Third bar (2026-08-04): both Striker legs WITHDRAWN; redeploy barred.** Environment = incumbent eval ([`S1`](../../../docs/adr/2026-08-07-loop-s1-environment-ratification.md)); no deployed strategy — **there is nothing to arm.**
 
    ### Agent-session authority (operator grant 2026-08-02)
 
@@ -51,7 +51,7 @@ This skill is pointer-first by design. **Never restate rail constants (quantitie
 
 | Surface | File | Note |
 |---|---|---|
-| Runbook + B-gate history | `docs/notes/rail_build/RUNBOOK.md` | B1–B7 record incl. B6 PASS and the two 2026-07-20/21 B7 arming attempts (no orders — post-window / alert shadowing) |
+| Runbook + B-gate history | private archive (`docs/notes/rail_build/` excluded from the public seed) | B1–B7 record; public owners are the GO ADR + [`deploy/c1_rail/README.md`](../../../deploy/c1_rail/README.md) |
 | Decision routing | `ops/c1_rail/c1_rail_listener.py` | `handle_signal` + leg_id→symbol map; pure function, tested |
 | HTTP adapter | `ops/c1_rail/c1_rail_http_server.py` | listener app; origin-agnostic `POST /c1/<path_token>`; deliberately untested |
 | Sizing host | `ops/c1_rail/c1_sizing_host_reference.py` | THE live sizing host (Option C); 29-test suite vs the F2 oracle |

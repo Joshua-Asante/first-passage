@@ -8,7 +8,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from discovery.lifecycle_call1.baselines import load_baseline_pfs
+from discovery.lifecycle_call1.baselines import (
+    BaselineDataUnavailable,
+    load_baseline_pfs,
+)
 from discovery.lifecycle_call1.breach_tracker import (
     load_breach_state,
     save_breach_state,
@@ -30,8 +33,16 @@ PKG = REPO / "lab/discovery/lifecycle_call1"
 # ── Step 2.1 — baselines.md PF loader ─────────────────────────────────────────
 
 
+def _require_live_baselines():
+    """Skip when the public tree holds the redacted placeholder, not PF rows."""
+    try:
+        return load_baseline_pfs(BASELINES)
+    except BaselineDataUnavailable as exc:
+        pytest.skip(str(exc))
+
+
 def test_loader_parses_live_baselines():
-    got = load_baseline_pfs(BASELINES)
+    got = _require_live_baselines()
     assert set(got) == set(STRATEGY_KEYS)
     assert sorted(got) == sorted(STRATEGY_KEYS)
     assert got["Guardian"].pf == pytest.approx(3.750)
@@ -53,6 +64,20 @@ def test_loader_refuses_missing_pepperstone_pf(tmp_path: Path):
     )
     with pytest.raises(ValueError, match="refusing to guess"):
         load_baseline_pfs(bad)
+
+
+def test_loader_signals_skip_on_redacted_placeholder(tmp_path: Path):
+    redacted = tmp_path / "redacted.md"
+    redacted.write_text(
+        "## Guardian Gold v5.5\n\n"
+        "Baseline PF/WR/Net/DD/N table: redacted from the public tree.\n\n"
+        "## Striker DJ30 v4.5\n\nredacted from the public tree\n\n"
+        "## Striker NAS100 v1\n\nredacted from the public tree\n\n"
+        "## Aegis-Reversion v4.3\n\nredacted from the public tree\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(BaselineDataUnavailable, match="redacted"):
+        load_baseline_pfs(redacted)
 
 
 def test_loader_refuses_incomplete_keyset(tmp_path: Path):
@@ -264,7 +289,7 @@ def test_e2e_two_consecutive_breaches_demotes_one_tier(tmp_path: Path):
     life = tmp_path / "lifecycle_state.json"
     panel = _panel_map()
     # Drive Guardian well below any plausible floor; others AMBIGUOUS.
-    baselines = load_baseline_pfs(BASELINES)
+    baselines = _require_live_baselines()
     # First window breach (count → 1, no demotion).
     inputs1 = {
         "Guardian": StrategyInput(rolling_pf=0.01, trade_count=100),
@@ -307,6 +332,7 @@ def test_e2e_two_consecutive_breaches_demotes_one_tier(tmp_path: Path):
 
 
 def test_e2e_all_ambiguous_writes_no_lifecycle_state(tmp_path: Path):
+    _require_live_baselines()
     breach = tmp_path / "breach_state.json"
     life = tmp_path / "lifecycle_state.json"
     panel = _panel_map()
@@ -331,6 +357,7 @@ def test_e2e_all_ambiguous_writes_no_lifecycle_state(tmp_path: Path):
 
 
 def test_e2e_watch2_floor_via_harness(tmp_path: Path):
+    _require_live_baselines()
     breach = tmp_path / "breach_state.json"
     life = tmp_path / "lifecycle_state.json"
     life.write_text(json.dumps({"Guardian": "WATCH-2"}) + "\n", encoding="utf-8")

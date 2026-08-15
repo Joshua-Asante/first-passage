@@ -5,7 +5,7 @@ description: Step-by-step execution loop for CC repo tasks — classify the ask,
 
 # The Fable Method (repo edition)
 
-Adapted 2026-07-15 from `Sahir619/fable-method@88b5cf3` (`skills/fable-method/`). Port record: `docs/notes/2026-07-15-fable-skills-port.md`. The source's evidence/authority channels are owned here by existing repo skills — this skill delegates to them by name rather than restating them; where the source and a repo skill disagree, the repo skill wins.
+Adapted 2026-07-15 from `Sahir619/fable-method@88b5cf3` (`skills/fable-method/`). Port record lives in the private archive (excluded from the public seed). The source's evidence/authority channels are owned here by existing repo skills — this skill delegates to them by name rather than restating them; where the source and a repo skill disagree, the repo skill wins.
 
 The premise: a mid-tier session that follows this loop beats a stronger one that free-styles — the quality lives in the structure, the evidence, and the honesty. The steps structure your work, never your output: no step numbers or step headers in anything the operator reads.
 

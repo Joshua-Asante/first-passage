@@ -38,6 +38,12 @@ _PEPPERSTONE_PF_RE = re.compile(
     r"^\|\s*Pepperstone\s*\|\s*\d+\s*\|\s*([0-9]+(?:\.[0-9]+)?)\s*\|",
     re.MULTILINE,
 )
+# Public-tree remediation marker (ADR 2026-08-14). Do not guess PF from this.
+_REDACTED_MARKER = "redacted from the public tree"
+
+
+class BaselineDataUnavailable(ValueError):
+    """PF tables absent or redacted — callers should skip, not guess."""
 
 
 @dataclass(frozen=True)
@@ -76,6 +82,11 @@ def load_baseline_pfs(path: Path | None = None) -> dict[str, BaselinePF]:
         block = text[start:end]
         pf_match = _PEPPERSTONE_PF_RE.search(block)
         if pf_match is None:
+            if _REDACTED_MARKER in block or _REDACTED_MARKER in text:
+                raise BaselineDataUnavailable(
+                    f"baseline PF redacted under ## {section} in {src} "
+                    "(public-tree placeholder; private archive holds the values)"
+                )
             raise ValueError(
                 f"refusing to guess: no Pepperstone PF row under ## {section} in {src}"
             )

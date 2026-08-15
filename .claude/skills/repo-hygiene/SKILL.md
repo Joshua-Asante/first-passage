@@ -62,6 +62,6 @@ python scripts/repo_hygiene.py
 
 ## Related
 
-- `docs/notes/cleanup/2026-07-11-worktree-temp-cleanup.md` — worked example
+- Worked example (2026-07-11 worktree-temp cleanup) lives in the private archive
 - `docs/SESSIONS.md` 2026-07-12 hygiene entry — squash-merge + primary-tree path mistake
 - Slash command `/post-merge` — post-merge doc/board checklist (orthogonal to prune)

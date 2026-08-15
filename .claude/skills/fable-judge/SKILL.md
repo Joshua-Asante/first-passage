@@ -5,7 +5,7 @@ description: Adversarial verification of finished work — a "done" report is a 
 
 # fable-judge — adversarial verification of finished work
 
-Adapted 2026-07-15 from `Sahir619/fable-method@88b5cf3` (`skills/fable-judge/`); the repo-specific fraud table and verification surfaces below replace the source's coding defaults. Port record: `docs/notes/2026-07-15-fable-skills-port.md`.
+Adapted 2026-07-15 from `Sahir619/fable-method@88b5cf3` (`skills/fable-judge/`); the repo-specific fraud table and verification surfaces below replace the source's coding defaults. Port record lives in the private archive (excluded from the public seed).
 
 The stance is fixed: **a report is a set of claims, not evidence. Nothing is believed that was not observed.** The most documented failure of agentic work is claiming success regardless of reality — and this repo has its own incident on file: `feedback_web_advisor_handoff_confabulates_repo_state` ("I stamped <path>" — nothing was stamped) plus the §7 review-skip lesson (load-bearing validator reasoning lived only in a review section that was skipped).
 
