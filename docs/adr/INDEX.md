@@ -107,6 +107,10 @@
 | 2026-08-14-msl-explore-stage-5a.md | Accepted | 2026-08-14 | none | operator election 2026-08-14 |
 | 2026-08-14-msl-yield-falsifier-survival-limb.md | Accepted | 2026-08-14 | none | operator election 2026-08-14 |
 | 2026-08-14-repo-public-visibility-transition.md | Proposed | 2026-08-14 | `2026-07-01-guardian-pyport-public-tracking.md` in part — the | mechanical remediation (§7 Phase 1) not yet landed; flips to |
+| 2026-08-15-analogue-modality-route-ruling.md | Accepted | 2026-08-15 | none | operator election 2026-08-15 (in-session, presented as a blocking route ruling with three options; "New modality — proceed" elected) |
+| 2026-08-15-board-lite-label-ratification.md | Accepted | 2026-08-15 | none | ratified by operator (JA) 2026-08-15, in-session instruction |
+| 2026-08-15-no-counterparty-statistical-sourcing-channel.md | Accepted | 2026-08-15 | none | ratified by operator (JA) 2026-08-15, in-session election ("admit a weaker evidentiary grade for candidate sourcing"); CC drafted and adversarially stress-tested (3 independent rounds) before ratification |
+| 2026-08-15-regime-gate-scope-ratification.md | Accepted | 2026-08-15 | none | ratified by operator (JA) 2026-08-15, in-session instruction ("address F1 ... as a Cursor task" → routed to CC per the cursor-fleet skill's own locked-surface disqualifier; operator's dispatch instruction stands as the ratification) |
 
 ## Partially superseded
 

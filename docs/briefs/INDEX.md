@@ -25,6 +25,22 @@ closure brief in `docs/ltm/briefs/` and delete its row here.
 
 ## Recently closed (cross-reference; not open)
 
+- **Q-CAPBAND-1** — has `CAP = 1.0` ever excluded an axis that would otherwise have survived —
+  **`RESOLVED` 2026-08-15** — both band axes fail a non-Cap gate: **D6** venue-dead (EURUSD
+  `NOT TRADABLE`, CFD venue closed 2026-07-10) and **D2-low** bar-bound (ES/NQ/YM all return the
+  machine-wired `index-intraday-ohlcv-directional-timing-2026-07-21`). Cap cost nothing **on the
+  named axes**; 2026-08-03 audit §5.4 item 3 discharged. `CAP` byte-unedited. Gates 1–2 stayed
+  `unevaluable` — the verdict rests on gates 3–4 only. $0/K=0.
+  [`closure`](closures/Q-CAPBAND-1-closure-resolved.md) · [`brief`](Q-CAPBAND-1-cap-band-counterfactual.md) ·
+  [`pre-reg`](pre-registration/Q-CAPBAND-1-verdict-preregistration.md).
+- **Q-BUSTGATE-2** — does the 2026-08-13 external population data / updated Tradeify fee schedule
+  move the Part-A eval bust ceiling — **`RESOLVED` 2026-08-15** — sole regime-admissible rung (0.50×)
+  intraday-honest bust 0.72% ≤ 3.0%; ceiling reconfirmed byte-unedited; unconstrained-EV thread still
+  points looser (narrowed 31.2:1→23.4:1, not reversed) but is non-decision-governing; no third
+  re-derivation absent a structural-change ruling. $0/K=0.
+  [`closure`](closures/Q-BUSTGATE-2-closure-resolved.md) ·
+  [`brief`](Q-BUSTGATE-2-bust-gate-re-derivation-2026-08.md) ·
+  [`pre-reg`](pre-registration/Q-BUSTGATE-2-verdict-preregistration.md).
 - **Q-CAPFLOW-1** — OR-window net signed aggressor → ORB trade R (Cap-spend) —
   **`FALSIFIED` 2026-08-14** — coverage 255/255; ρ +0.020012; CI95 includes 0;
   Cap **held**; C11 stands. Reservation [`Q-CAPRES-2`](Q-CAPRES-2-mnq-cap-seat-reservation.md)
