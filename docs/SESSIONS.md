@@ -18,7 +18,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 
 **Focus:** After the 2026-08-14 public-repo transplant, historical GitHub PR/commit links still pointed at `first-passage` and 404'd; the objects live on the private archive.
 
-**Shipped:** branch `cursor/repoint-archive-pr-links-52bf` — 48 hrefs in 8 files rewritten `first-passage` → `first-passage-archive` (`/pull/` + `/commit/` only). Append-only comparator treats that repo-name rewrite as non-mutation. Bare `PR #NNN` prose left alone.
+**Shipped:** branch `cursor/repoint-archive-pr-links-52bf` — [PR #1](https://github.com/Joshua-Asante/first-passage/pull/1) — 48 hrefs in 8 files rewritten `first-passage` → `first-passage-archive` (`/pull/` + `/commit/` only). Append-only comparator treats that repo-name rewrite as non-mutation. Bare `PR #NNN` prose left alone.
 
 **Decisions/defects:** none new. Owner: [transition ADR](adr/2026-08-14-repo-public-visibility-transition.md).
 
