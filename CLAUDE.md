@@ -177,8 +177,13 @@ firm's rules). A different execution feed additionally requires the feed-equival
 
 ## Public-clone posture
 
-The repo is currently **private**; this posture is what ships if it is ever public again
-([ADR](docs/adr/2026-07-01-guardian-pyport-public-tracking.md)). Three classes are gitignored:
+**This repo is public** as of 2026-08-14
+([transition ADR](docs/adr/2026-08-14-repo-public-visibility-transition.md)). Full pre-transition
+development history (3000+ commits) lives privately in the archived `first-passage-archive` repo —
+this repo started fresh from a single "Initial public release" commit, seeded from a remediation
+pass that scrubbed the live account identifier/P&L and redacted locked-strategy parameter/backtest
+detail across every tracked file that carried it (not just `LOCK.md`). Three classes stay
+gitignored going forward, same as before the transition:
 
 * **Vendor-licensed CSVs** under `core/data/tv_exports/`, `core/data/bar_data/`,
   `core/data/external/` — per-directory `SHA256SUMS` manifests are tracked.
