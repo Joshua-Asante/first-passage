@@ -13,6 +13,9 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from gate_fire_log import log_fire  # noqa: E402
+
 FIELD_HEAD_LINES = 40
 ANALYSIS_REL = "lab/analysis"
 ARCHIVE_REL = "lab/archive"
@@ -1312,6 +1315,7 @@ def warn_new_slug_same_theme_collisions(
         )
         for peer_slug, one_liner in peers:
             print(f"  - {peer_slug}: {one_liner}", file=sys.stderr)
+        log_fire("archive_lab_analysis_theme_warn", slug=slug, theme=dir_theme, n_peers=len(peers))
 
 
 def check_lab(

@@ -18,6 +18,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from gate_fire_log import log_fire  # noqa: E402
+
 REPO = Path(__file__).resolve().parent.parent
 INDEX = REPO / "docs" / "briefs" / "INDEX.md"
 CATALOG = REPO / "lab" / "CATALOG.md"
@@ -132,8 +135,10 @@ def regen_catalog() -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # 2026-08-15: --check was parsed but never read (this script always
+    # reports; report-only is its only mode). Removed rather than wired up,
+    # since a no-op flag on a report-only tool has no behavior to gate.
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--check", action="store_true", default=True)
     ap.add_argument("--regen-catalog", action="store_true")
     args = ap.parse_args(argv)
 
@@ -151,6 +156,7 @@ def main(argv: list[str] | None = None) -> int:
     if not problems:
         print("sync_liveness_indexes: CLEAN")
         return 0
+    log_fire("sync_liveness_indexes", n_problems=len(problems))
     print(f"sync_liveness_indexes: {len(problems)} stale liveness row(s)")
     for p in problems:
         print(f"  - {p}")

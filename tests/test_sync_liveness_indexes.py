@@ -92,4 +92,4 @@ def test_check_exits_zero_even_when_stale(tmp_path, monkeypatch):
     cat.write_text(CATALOG, encoding="utf-8")
     monkeypatch.setattr(sli, "INDEX", idx)
     monkeypatch.setattr(sli, "CATALOG", cat)
-    assert sli.main(["--check"]) == 0
+    assert sli.main([]) == 0
