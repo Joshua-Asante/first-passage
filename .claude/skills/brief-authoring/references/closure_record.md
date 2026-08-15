@@ -69,6 +69,10 @@ Trap #9). "No new lesson" is a legal body.]
 - **Board write:** [the STATE forward-board row or SESSIONS Open/next line this closure
   adds, quoted verbatim — or `none — STOP, nothing owed`. One-line pointer + owner link
   only (Rule 7); detail stays in this file.]
+- **Registry:** `rejected_candidates.md — ### <heading>` **or** `n/a — <reason>`
+  (RESOLVED / governance / not a strategy-grounds kill). Token-gated; see
+  [`docs/operational_rules.md`](../../../../docs/operational_rules.md) Rule 8
+  sub-rule 9. Do not skip on FALSIFIED/DEAD/STOP.
 
 ## §10 audit-hook discharge
 

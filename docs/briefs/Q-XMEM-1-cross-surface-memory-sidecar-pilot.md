@@ -2,7 +2,7 @@
 
 **Status:** `OPEN`
 **Authored:** 2026-07-16
-**Amended:** 2026-07-16 (v1.1, pre-T0) — critical review (`claude/q-xmem-1-briefs-review`): ledger-skip gate hole closed (=1 was verdict-less); locked strategy parameters added to denylist; contamination audit upgraded from token-grep to full-export read (Trap M-AHF); hosting limb restated around the extraction-LLM boundary + explicit-add-only frozen; benefit limb tightened to operator-confirmed; Phase-3/§6 verdict-date conflict fixed. **No T0, no install, no memories existed at amendment time — this is a pre-registration revision, not Known Trap #12.**
+**Amended:** 2026-07-16 (v1.1, pre-T0) — critical review (`claude/q-xmem-1-briefs-review`): ledger-skip gate hole closed (=1 was verdict-less); locked strategy parameters added to denylist; contamination audit upgraded from token-grep to full-export read (Trap M-AHF); hosting limb restated around the extraction-LLM boundary + explicit-add-only frozen; benefit limb tightened to operator-confirmed; Phase-3/§6 verdict-date conflict fixed. **No T0, no install, no memories existed at amendment time — this is a pre-registration revision, not Known Trap #12.** **Amended again:** 2026-08-15 (v1.2, still pre-T0) — Limb B repo-local FTS addendum below. §4 / §6 / Mem0 Phase 0–4 unchanged. Still no memories.
 **Closed:** `N/A`
 **Authors:** Joshua (authority) + Cursor (structure; prior fit canvas)
 **Parent question:** `N/A`
@@ -199,6 +199,24 @@ rg -n "mem0|OpenMemory" --glob "!**/node_modules/**" docs/ briefs/ 2>/dev/null
 Test-Path MEMORY.md
 # Expected: False at repo root
 ```
+
+---
+
+## Addendum 2026-08-15 — v1.2 Limb B (repo-local FTS; pre-T0)
+
+**Legal because T0 has not started and no memories exist** (same class as v1.1). This addendum does **not** amend §4, §5, or §6. Mem0 Phase 0–4 in §7 stay the Limb A plan.
+
+Two retrieval limbs, one brief:
+
+| Limb | What | Status after this addendum |
+|---|---|---|
+| **A — Mem0 soft-scratch** | Original Phase 0–4 / §6. Cross-surface prefs and path pointers. Local extractor/embedder or explicit-add-only. | **Unpaid.** T0 starts only on explicit operator GO. Do not install Mem0 in this land. |
+| **B — repo-local FTS** | Sqlite FTS5 over **hot git surfaces only**: `lab/CATALOG.md`, `docs/briefs/INDEX.md`, `docs/rejected_candidates.md`, closures (H1 + header), ADR titles/status, `docs/SESSIONS.md` (newest window), `STATE.md` queue. Index gitignored (`.cache/`). | **Landed.** `scripts/repo_retrieve.py` (`--rebuild` / `--query`). Returns **paths + snippets**; the agent must Read the owner. Wired into `check_advisor_dedup.py` (fail-open companion) and session-discipline (paste retrieve output before new `lab/` or `docs/adr` / `docs/briefs`). |
+| **C — local-embedder vector** | Same corpus and denylist as Limb B. Local embedder only (§5 edge boundary). New dep only after a Rule 2 cost dry-run. | **Deferred.** Build only if Limb B is in use and still misses. Not this land. |
+
+Limb B is **not** a Rule-7 owner, not a SESSIONS/ledger substitute, and not citeable in any §0. It does **not** ingest `docs/ltm/` or `lab/archive/` bodies. It does **not** start T0 and does **not** store memories.
+
+§5 forbidden moves still bind both limbs (sidecar-as-owner, ledger-skip, LTM ingest, §0 citation, auto-ingest, restated lock numbers).
 
 ---
 

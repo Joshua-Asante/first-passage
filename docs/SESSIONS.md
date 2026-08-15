@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-15b — search / memory / doc-weight phases (public replay)
+
+**Focus:** Close the search-blindness → new artifact → stale index loop (registry feed, amendment-first, Limb B FTS, liveness sweep, Rule 2 pointers, gate/CI diet). Live rail out of scope. Replayed onto the public seed; merged after [PR #1](https://github.com/Joshua-Asante/first-passage/pull/1).
+
+**Shipped:** branch `cursor/search-memory-liveness-2af2` — [PR #2](https://github.com/Joshua-Asante/first-passage/pull/2) — Rule 8.9/8.10 + addenda on [dedup-first](adr/2026-08-13-dedup-first-before-new-work.md) / [ceremony-tiering](adr/2026-08-08-adr-ceremony-tiering.md) / [W5](adr/2026-08-07-w5-governance-diet.md); [Q-XMEM-1](briefs/Q-XMEM-1-cross-surface-memory-sidecar-pilot.md) v1.2 Limb B; `scripts/repo_retrieve.py` + `scripts/sync_liveness_indexes.py`; INDEX CON-3/CON-4 repair. Mem0 T0 and local vector unpaid. Trip-log not replayed (`docs/notes/` omitted from the public seed).
+
+**Decisions/defects:** no new ADR. Rule 2 stays PROPOSED.
+
+**Open / next:** operator ruling still owed on `closure-disposition-coverage-hard.md` (new hard gate landed 4 days into F-2's own trigger window — worth it or not); GitHub webhook trigger's branch filter not yet narrowed to `cursor/*` (cosmetic, routine's own logic already re-scopes). Carry: F1 2026-11-08; M1; weekly token; Magdon-Ismail B. Limb A Mem0 T0 = operator GO only. Limb C vector only if Limb B misses.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; no arming.
+
+---
 ## 2026-08-15a — Repoint historical PR/commit hrefs at first-passage-archive
 
 **Focus:** After the 2026-08-14 public-repo transplant, historical GitHub PR/commit links still pointed at `first-passage` and 404'd; the objects live on the private archive.

@@ -32,6 +32,12 @@ This is the discipline that exists at both layers of the dual-loop. In OODA it i
 
 If a session is about to begin INQHIORI work and Rule 0 has not been honored: stop. Read source. Then start I.
 
+**Rule 2 (budget before acting)** is the spend boundary that sits next to this
+read. Declare the loop class at task start and take the iteration budget from
+[`docs/adr/2026-06-16-rule-2-budget-before-acting.md`](../../../docs/adr/2026-06-16-rule-2-budget-before-acting.md)
+(canon §15). Pointer only — do not restate the numerals in this skill. The ADR
+is still PROPOSED; do not graduate it from a session.
+
 ---
 
 ## 1. The unified loop

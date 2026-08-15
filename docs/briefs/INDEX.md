@@ -12,13 +12,10 @@ closure brief in `docs/ltm/briefs/` and delete its row here.
 
 | Q | Status | Home (canonical) | Next action |
 |---|---|---|---|
-| **Q-XMEM-1** — cost of per-surface agent-memory invisibility; time-boxed Mem0 sidecar pilot (prefs/pointers only) | **`OPEN`** (architecture + §6 frozen 2026-07-16; T0 not started) | [`Q-XMEM-1-cross-surface-memory-sidecar-pilot.md`](Q-XMEM-1-cross-surface-memory-sidecar-pilot.md) · [pre-reg](pre-registration/Q-XMEM-1-verdict-preregistration.md) | Operator: commit brief+pre-reg → Phase 0 self-host/MCP → T0 on first allowlisted cross-surface write. Do **not** store Rule-7 values. |
+| **Q-XMEM-1** — cost of per-surface agent-memory invisibility; time-boxed Mem0 sidecar pilot (prefs/pointers only) | **`OPEN`** (architecture + §6 frozen 2026-07-16; v1.2 Limb B FTS landed 2026-08-15; T0 not started) | [`Q-XMEM-1-cross-surface-memory-sidecar-pilot.md`](Q-XMEM-1-cross-surface-memory-sidecar-pilot.md) · [pre-reg](pre-registration/Q-XMEM-1-verdict-preregistration.md) | Limb B: `scripts/repo_retrieve.py` on hot surfaces. Limb A Mem0 T0 unpaid — **operator GO only** (original §6). Do **not** store Rule-7 values. |
 | **Q-TOM-SPX-1** — SPX500 turn-of-month existence and capturability | Layer A **RESOLVED-ABSENT** on canonical Pepperstone (2026-06-16); formal DEAD close reserved | [`docs/briefs/Q-TOM-SPX-1.md`](Q-TOM-SPX-1.md) | Run only the brief-reserved native Pine confirmation. Do not widen the window, change thresholds, or rerun Dukascopy to rescue the null. |
 | **Q-SIGID-1** — measured live↔backtest signal-identity gap from mid-bar `alert()`/`strategy.entry` on c1 venue editions; architectures that close it (locked-axis, not EQ) | **`OPEN`** 2026-07-28 — cheap falsifier: 07-28 MNQ bar is a phantom (`longSignal` mid-true / close-false on `body_ok`); offline phantoms ~0.7× confirmed signals; Fri §2b clean re-measure owed | [`Q-SIGID-1-intra-bar-signal-identity.md`](Q-SIGID-1-intra-bar-signal-identity.md) · [pre-reg](pre-registration/Q-SIGID-1-verdict-preregistration.md) · [RESULTS](../../lab/analysis/c1/c1_signal_identity_2026-07-28/RESULTS.md) | **STRANDED on alert / signal-host disposition** (F2 closed via S1; Rule-11 intercept 2026-08-06) — §2b needs no fill/order/arming; offline limb MNQ 0.68 / MYM 0.70 stands. Pine edit only under separate operator GO. |
 | **Q-FILLTAX-1** — TV fill-optimism gap + Pine↔Python / engine↔TV parity | **`OPEN`** — V2 Phase-0 scaffold `CODE_LANDED` 2026-08-07 ($0 under S1 incumbent); V1 disposition follows S1 (Tradeify geometry); Gate RESOLVED needs first family TV anchor | [`Q-FILLTAX-1-fill-realism-and-parity-scoping.md`](Q-FILLTAX-1-fill-realism-and-parity-scoping.md) · [`parity_gen2`](../../lab/analysis/c1/parity_gen2_2026-08/) · [`RESULTS`](../../lab/analysis/c1/parity_gen2_2026-08/RESULTS.md) | Operator: first family same-feed CME TV anchor → Gen-2 ADMIT. No post-hoc band tuning. Mutation battery (Phase 1) still owed. |
-| **Q-TNEC-CON-4** — PDH/PDL RTH with-break (structural stop; first/session) | **`AMBIGUOUS-HOLD` → ITERATE** — Branch **B** elected → CON-5 opened | [`Q-TNEC-CON-4-pdh-pdl-breakout-scoping.md`](Q-TNEC-CON-4-pdh-pdl-breakout-scoping.md) · [`closure`](closures/Q-TNEC-CON-4-closure-ambiguous-hold.md) · [`RESULTS`](../../lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/RESULTS.md) · [lane](../spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md) | CON-5 G0 frozen; CON-4 CONFIRM unread; Cap unclaimed. |
-| **Q-TNEC-CON-3** — HTF-native 5m compression→expansion break (structural stop; first/session) | **`AMBIGUOUS-HOLD` → ITERATE** — Branch **B** elected → CON-4 opened | [`Q-TNEC-CON-3-htf-native-compression-break-scoping.md`](Q-TNEC-CON-3-htf-native-compression-break-scoping.md) · [`closure`](closures/Q-TNEC-CON-3-closure-ambiguous-hold.md) · [`RESULTS`](../../lab/analysis/c1/mnq_tnec_con3_htf_native_break_2026-08/RESULTS.md) | CON-4 G0 frozen; CON-3 CONFIRM unread; Cap unclaimed. |
-
 
 ## Dormant (no current session home; resurface before assuming dead)
 
@@ -39,6 +36,15 @@ closure brief in `docs/ltm/briefs/` and delete its row here.
   non-route-① thesis; lane FALSIFIED counter unchanged **1/3**. Cap unclaimed.
   [`closure`](closures/Q-TNEC-CON-5-closure-ambiguous-hold.md) ·
   [`RESULTS`](../../lab/analysis/c1/mnq_tnec_con5_impulse_pullback_vwap_2026-08/RESULTS.md).
+- **Q-TNEC-CON-4** — PDH/PDL RTH with-break — **`AMBIGUOUS-HOLD` 2026-08-11**; successor
+  CON-5 Branch A STOP paused the lane, so this row left Open. INDEX repair 2026-08-15
+  (liveness sweep). CONFIRM unread; Cap unclaimed.
+  [`closure`](closures/Q-TNEC-CON-4-closure-ambiguous-hold.md) ·
+  [`RESULTS`](../../lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/RESULTS.md).
+- **Q-TNEC-CON-3** — HTF-native 5m compression→expansion break — **`AMBIGUOUS-HOLD`
+  2026-08-10**; successor CON-4/CON-5 lane paused (same repair). CONFIRM unread; Cap
+  unclaimed. [`closure`](closures/Q-TNEC-CON-3-closure-ambiguous-hold.md) ·
+  [`RESULTS`](../../lab/analysis/c1/mnq_tnec_con3_htf_native_break_2026-08/RESULTS.md).
 - **Q-TNEC-CON-2** — dense-1m compression→expansion with-break @ G=10 — **`AMBIGUOUS-HOLD`
   non-promotable 2026-08-10** — gross +0.90/+0.97 pt eaten by RT 1.41; halves flip; CONFIRM
   unread; Cap unclaimed. Successor = fresh G0 aimed at cost geometry (not θ-retune / not

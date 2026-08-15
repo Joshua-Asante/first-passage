@@ -4,6 +4,8 @@
 #
 # tiers:
 #   always            — every pre-commit invocation (when selected)
+#   path-conditional  — pre-commit only when staged paths match
+#                       when.staged_regex; still runs on `make check`
 #   data-conditional  — only when staged paths match when.staged_regex
 #   soft              — optional / warn-tier (not in default pre-commit)
 #                       ⚠ 2026-08-08: `soft` is declared here but is NOT an accepted
@@ -57,31 +59,41 @@ gates:
       - scripts/check_boundaries.py
 
   - id: path-liveness
-    tier: always
+    tier: path-conditional
+    when:
+      staged_regex: '^(scripts/|docs/|CLAUDE[.]md|STATE[.]md|REPO_MAP[.]md|PIPELINES[.]md|README[.]md)'
     cmd:
       - python
       - scripts/check_path_liveness.py
 
   - id: root-doc-liveness
-    tier: always
+    tier: path-conditional
+    when:
+      staged_regex: '^(CLAUDE[.]md|STATE[.]md|README[.]md|REPO_MAP[.]md|PIPELINES[.]md|docs/)'
     cmd:
       - python
       - scripts/check_root_doc_liveness.py
 
   - id: status-consistency
-    tier: always
+    tier: path-conditional
+    when:
+      staged_regex: '^(lab/CATALOG[.]md|docs/rejected_candidates[.]md|ops/instruments/)'
     cmd:
       - python
       - scripts/check_status_consistency.py
 
   - id: adr-graph
-    tier: always
+    tier: path-conditional
+    when:
+      staged_regex: '^docs/adr/'
     cmd:
       - python
       - scripts/check_adr_graph.py
 
   - id: lab-catalog
-    tier: always
+    tier: path-conditional
+    when:
+      staged_regex: '^(lab/)'
     cmd:
       - python
       - scripts/archive_lab_analysis.py
@@ -89,34 +101,44 @@ gates:
       - --catalog-only
 
   - id: instrument-profiles
-    tier: always
+    tier: path-conditional
+    when:
+      staged_regex: '^ops/instruments/'
     cmd:
       - python
       - scripts/instrument_profiles.py
       - check
 
   - id: sessions-order
-    tier: always
+    tier: path-conditional
+    when:
+      staged_regex: '^docs/SESSIONS[.]md$'
     cmd:
       - python
       - scripts/roll_sessions.py
       - --check-order
 
   - id: sessions-append-only
-    tier: always
+    tier: path-conditional
+    when:
+      staged_regex: '^docs/SESSIONS[.]md$'
     cmd:
       - python
       - scripts/roll_sessions.py
       - --check-append-only
 
   - id: supersession-placement
-    tier: always
+    tier: path-conditional
+    when:
+      staged_regex: '^docs/adr/'
     cmd:
       - python
       - scripts/check_supersession_placement.py
 
   - id: closure-disposition
-    tier: always
+    tier: path-conditional
+    when:
+      staged_regex: '^(docs/briefs/closures/|docs/briefs/INDEX[.]md|lab/CATALOG[.]md)'
     cmd:
       - python
       - scripts/check_closure_disposition.py
@@ -124,7 +146,9 @@ gates:
   # Rejects stray C0 controls (esp. form-feed) in union-merge / high-traffic
   # governance prose — 2026-08-11 SESSIONS repair-hook double-damage incident.
   - id: governance-prose-control-chars
-    tier: always
+    tier: path-conditional
+    when:
+      staged_regex: '^(docs/SESSIONS[.]md|docs/rejected_candidates[.]md|docs/mc_anchor_history[.]md)'
     cmd:
       - python
       - scripts/check_governance_prose_control_chars.py

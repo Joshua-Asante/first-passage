@@ -147,14 +147,19 @@ def select_gates(gates: list[dict], tier: str) -> list[dict]:
                 out.append({**g, "_force": g["id"] == "data-manifests"})
         return out
     if tier == "check":
-        # Historical `make check`: always-on suite + data manifests unconditional.
-        out = [g for g in gates if g.get("tier") == "always"]
+        # Full battery: always + path-conditional (unconditional here) +
+        # data manifests forced. Path-conditional is a pre-commit diet, not
+        # a drop — make check still sees every gate (W5).
+        out = [
+            g for g in gates
+            if g.get("tier") in ("always", "path-conditional")
+        ]
         for g in gates:
             if g.get("id") == "data-manifests":
                 out.append({**g, "_force": True})
                 break
         return out
-    # pre-commit: always + data-conditional when staged
+    # pre-commit: always + path/data-conditional when staged
     out = []
     for g in gates:
         t = g.get("tier", "always")
@@ -162,7 +167,9 @@ def select_gates(gates: list[dict], tier: str) -> list[dict]:
             continue
         if t == "always":
             out.append(g)
-        elif t == "data-conditional" and data_conditional_active(g, force=False):
+        elif t in ("data-conditional", "path-conditional") and data_conditional_active(
+            g, force=False
+        ):
             out.append(g)
     return out
 
