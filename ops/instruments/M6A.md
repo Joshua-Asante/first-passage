@@ -64,5 +64,5 @@ No mechanism×instrument PROFILE `cells` row is registered yet — consult retur
 
 ## SESSION LOG
 
-- **2026-08-14n** — **MSL WHO-track `STILL DRY`.** FX leftover doors (option-cut, Asia-range fade, iron-ore beta, RBA) died on sign / C2–C3 transfer / event-window / preference. Envelope still NON-EMPTY; still no mechanism cell. [notice](../../docs/notes/notice/N-2026-08-14-msl-who-track.md). $0 / K=0.
+- **2026-08-14n** — **MSL WHO-track `STILL DRY`.** FX leftover doors (option-cut, Asia-range fade, iron-ore beta, RBA) died on sign / C2–C3 transfer / event-window / preference. Envelope still NON-EMPTY; still no mechanism cell. notice (`git show 14d71c93:docs/notes/notice/N-2026-08-14-msl-who-track.md`). $0 / K=0.
 - **2026-08-11** — **Ledger created** as the named ENV-1 operator follow-up ([closure](../../docs/briefs/closures/Q-TNEC-ENV-1-closure.md) §4). Seeded A1–A4 from committed Stage-1 / Stage-2 / ENV-1 artifacts only; no invented history. Regenerated `profiles.json` / `PROFILES.md` via `instrument_profiles.py build`. No pull, no K, no election, no `core/` / Pine / allocation / `dd_protection` / rail change.

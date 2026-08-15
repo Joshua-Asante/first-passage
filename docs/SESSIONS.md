@@ -14,6 +14,24 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-15g — Root-doc liveness: 16 public-seed dead links repointed
+
+**Focus:** `make check` / `check_root_doc_liveness.py` HARD-failed on 16 markdown links in `STATE.md` + `REPO_MAP.md` whose targets were omitted from the public seed (PR #5 restored `docs/notes/audits/` only).
+
+**Shipped:** branch `cursor/root-doc-liveness-004b` — repointed, did not restore excluded trees. Surviving owners where they exist (`S1`, FU-1 audit, implied-SR ADRs, CFD-estate ADR, `strategy_harvest.md`); `git show <sha>:<path>` retrieval idiom elsewhere (same skip the gate already honors). Blast-radius: refreshed the three instrument-ledger SESSION LOG pointers that still markdown-linked the omitted WHO-track / slate-3 notices (`ops/instruments/MCL.md`, `M6A.md`). `make check` green.
+
+**Decisions/defects:** no new ADR. Did not reverse PR #5's `notice/` / `rail_build/` / dated-notes exclusion.
+
+**Open / next:** `path-liveness`/`root-doc-liveness` re-tier to `always` landed in
+[PR #8](https://github.com/Joshua-Asante/first-passage/pull/8) (2026-08-15f). Limb C
+(local-embedder vector) live per Q-XMEM-1, not authorized — needs a Rule 2 cost dry-run,
+operator-paced. Excluded-tree inbound links outside the five root docs remain
+(briefs/ADRs/skills); not this gate. Registry backfill (33 rows) stays operator-paced
+(`--list-debt`). Carry: F1 2026-11-08; M1; weekly token; Magdon-Ismail B.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; no arming.
+
+---
 ## 2026-08-15f — Gate reachability, registry debt split, Rule 2 narrowed
 
 **Focus:** Phases 3/4/5 of the governance-belt audit's remediation, done in sequence.
