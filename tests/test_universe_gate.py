@@ -23,6 +23,18 @@ from research_utils.prereg_paths import DISC_CAMP_0_PREREG  # noqa: E402
 _PREREG = DISC_CAMP_0_PREREG
 
 
+def _thr() -> ug.Thresholds:
+    """DISC-CAMP-0 thresholds. Public clones may lack the LTM prereg body;
+    fall back to the frozen numbers the parser would have read (α=0.05,
+    DSR=0.95, PBO=0.5, 5/7) so R5 default tests still run."""
+    if _PREREG.exists():
+        return ug.load_thresholds_from_prereg(_PREREG)
+    return ug.Thresholds(
+        alpha=0.05, dsr_min=0.95, pbo_max=0.5,
+        consistency_min=5, consistency_years=7,
+    )
+
+
 # ---------------------------------------------------------------- thresholds
 
 def test_thresholds_read_from_prereg_not_hardcoded():
@@ -159,7 +171,7 @@ def _edge_matrix(n_candidates, n_trades, true_edge_sr, seed):
 
 def test_var_trials_default_is_one_over_n():
     """Omitting var_trials pins V = 1/n on the selected column's finite trade count."""
-    thr = ug.load_thresholds_from_prereg(_PREREG)
+    thr = _thr()
     returns, bench = _edge_matrix(5, 500, 0.20, seed=101)
     ids = [f"c{i}" for i in range(5)]
     v_default = ug.run_universe_gate(returns=returns, benchmark=bench, candidate_ids=ids,
@@ -170,7 +182,7 @@ def test_var_trials_default_is_one_over_n():
 
 def test_var_trials_override_is_used():
     """An explicit pin must actually be USED, not silently replaced by 1/n."""
-    thr = ug.load_thresholds_from_prereg(_PREREG)
+    thr = _thr()
     returns, bench = _edge_matrix(5, 500, 0.20, seed=101)
     ids = [f"c{i}" for i in range(5)]
     v_default = ug.run_universe_gate(returns=returns, benchmark=bench, candidate_ids=ids,
@@ -186,7 +198,7 @@ def test_var_trials_override_is_used():
 def test_var_trials_default_guards_the_ksp1_degenerate_case():
     """At K_SPA=1 the retired empirical estimator collapsed to var_trials=0 -> SR0~=0
     -> DSR trivially ~1. The 1/n default must not reproduce that degeneracy."""
-    thr = ug.load_thresholds_from_prereg(_PREREG)
+    thr = _thr()
     noise, bench = _edge_matrix(1, 500, 0.0, seed=104)
     ids = ["only_candidate"]
 
@@ -206,7 +218,7 @@ def test_var_trials_default_guards_the_ksp1_degenerate_case():
 def test_self_test_var_trials_forwarded():
     """self_test() forwards var_trials through to run_universe_gate so a campaign can
     calibrate its FROZEN V-rule, not just the module's out-of-the-box default."""
-    thr = ug.load_thresholds_from_prereg(_PREREG)
+    thr = _thr()
     default_res = ug.self_test(thresholds=thr)
     pinned_res = ug.self_test(thresholds=thr, var_trials=1.0 / 100)
     assert pinned_res["negative"].detail["var_trials"] == 1.0 / 100
