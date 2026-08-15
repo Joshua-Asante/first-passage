@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-08-14
+**Last curated:** 2026-08-15
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
@@ -50,8 +50,8 @@ BEHIND this list.** Items leave when done; it stays ≤5 so it cannot decay into
 | # | Item | Owner artifact | Blocks |
 |---|---|---|---|
 | 0 | ⏳ **Activity-week coverage — RECURRENCE UNRULED.** No standing weekly licence (compliance limb 5 = one named week; S1 only constrains *who* may place). Each further week = fresh operator decision. **Operator-placed at venue — not the rail** (no agent). Idle-clock observer booked under §Scheduled forward triggers → *Weekly — recurring* (radar reads it). Detail / "R8" misnomer correction stay with owners | `compliance §2a` · [`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md) · `idle-clock spec` · [audit FU-1](docs/notes/audits/programme-audit/2026-08-05-post-descope-claim-alignment-audit.md) | keeps the account alive; unrecoverable if missed |
-| 1 | **F1 — how §4 reads a de-scoped firm** (2026-11-08). §4 scores by simulation over the frozen $100K×4 set and Tradeify stays in it; what needs a ruling is whether a discharge resting *on Tradeify* discharges a program that no longer targets it. **Deciding it early would pre-empt §4** | [`ADR 2026-08-04`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) §7 F1 · [four-firms §4](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) | 2026-11-08 §4 verdict reading |
-| 2 | **B7-REFIRE Stage 1** — stays owed; undischargeable while no strategy is deployed on the ruled (Python-native) host to emit the signal | [`GO ADR Addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`S2`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) | M1 / live-signal discharge path |
+| 1 | **F1 — how §4 reads a Tradeify-resting discharge** (2026-11-08). Eval is live ([`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md)); locked Striker book barred. §4 still scores the frozen $100K×4 set with Tradeify in it. Ruling owed: whether a discharge resting *on Tradeify* (or the withdrawn Striker book) discharges the four-firms program. **Deciding it early would pre-empt §4** | [`ADR 2026-08-04`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) §7 F1 · [four-firms §4](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) | 2026-11-08 §4 verdict reading |
+| 2 | **B7-REFIRE Stage 1 + M1** — both wait on an acceptable strategy on the ruled (Python-native) host. Eval live; no book deployed | [`GO ADR Addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`S2`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) · [`M1`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) | live-signal / arming path |
 
 ---
 
@@ -152,10 +152,10 @@ Canonical dates/criteria live with their owners; this board is a pointer so
 obligations are not lost between sessions. Closed/retired/discharged rows are
 deleted (not struck).
 
-### Weekly — recurring (rolling; next deadline **2026-08-14**, bucket 08-10→08-14)
+### Weekly — recurring (rolling; next deadline **2026-08-21**, bucket 08-17→08-21)
 
-> ✅ **This week's trade placed 2026-08-12** (bucket 08-10→08-14 satisfied). Row stays live —
-> deadline still rolls forward next Monday per the instruction below.
+> Prior week 08-10→08-14 satisfied (operator-placed 2026-08-12). New week unpaid. Row stays
+> live — roll this date forward each Monday.
 
 - **Venue idle-clock — ≥1 operator-placed trade per Mon–Fri week on the live account (identifier
   redacted from the public tree).**
@@ -170,22 +170,24 @@ deleted (not struck).
 
 ### No fixed date / gated
 
-> ⚠ **2026-08-04 — five threads are gated on "first live fill", which no longer has a route.**
-> **Q-SIGID-1** is **not** among them — pursuit standing **KEEP**, actively resolving via the S2b
-> Python-native daemon (warm as of 2026-08-08); see [`c2`](docs/pursuits/c2-q-sigid-1.md).
-> The Tradeify venue de-scope removes the only live execution surface in the estate. **Three have
-> rows in the list below** — **PREREG-C1-DEDUPE-1**, **per-fill add-slippage capture (B7 Stage 2b)**,
-> and the **forward regime-monitor successor**. **Two do not, and are re-homed here** because their
-> only prior home was the deleted operator-queue row 3:
+> ⚠ **Five threads are gated on first strategy-signal fill.** That gate is **an acceptable
+> strategy**, not a missing venue. [`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md)
+> kept the incumbent `Tradeify_Select_100K` eval as the environment; the weekly idle-clock is
+> live; there is no c1 book (locked Striker legs stay barred). **Q-SIGID-1** is **not** among
+> them — pursuit standing **KEEP**, resolving via the S2b daemon; see [`c2`](docs/pursuits/c2-q-sigid-1.md).
+> **Three have rows in the list below** — **PREREG-C1-DEDUPE-1**, **per-fill add-slippage
+> capture (B7 Stage 2b)**, and the **forward regime-monitor successor**. **Two do not, and
+> are re-homed here** because their only prior home was the deleted operator-queue row 3:
 >
-> - **lifecycle Call-1** — its rolling-PF σ-source has no live data and now has no route to any. Its
->   2026-08-08 review row below still stands but can only return AMBIGUOUS on thin data.
-> - **ORB decay re-scope** — no other row in this file; recorded here so the deletion of queue row 3
->   does not silently lose it.
+> - **lifecycle Call-1** — rolling-PF σ-source has no live data until a strategy is on the
+>   book. Its 2026-08-08 review row below still stands but can only return AMBIGUOUS on thin data.
+> - **ORB decay re-scope** — no other row in this file; recorded here so the deletion of queue
+>   row 3 does not silently lose it.
 >
-> All five are stranded — not closed, not discharged, and **not** re-datable until fork **F3**
-> registers a successor venue. Recorded so the gate is visibly unreachable rather than quietly pending.
-> [`ADR 2026-08-04 §6`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md)
+> All five wait on the same thing as queue row 2 (B7 / M1). They are not closed, not
+> discharged, and not re-homed to a successor venue — F3 was no-migration (S1).
+> [`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md) ·
+> [`ADR 2026-08-04`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) (Striker-book bar)
 
 - **Sentinel Tier-2/3 promotion (limb B1)** — before next quarterly slate; promotion not a build. [`sentinel design`](docs/spec/2026-06-23-inqhiori-sentinel-design.md) · [`Hermes closure`](docs/briefs/closures/2026-07-27-hermes-agent-adoption-closure-resolved.md)
 - **PREREG-C1-DEDUPE-1** — gated on M1 `RESOLVED` + separate operator GO. [`pre-reg`](docs/spec/PREREG-C1-DEDUPE-1-intent-key-functional-property.md) · [`impl plan`](docs/spec/PREREG-C1-DEDUPE-1-implementation-plan.md)
