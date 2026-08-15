@@ -1,12 +1,13 @@
 # Dense-1m lane — unpause review (Board packet)
 
-**Status:** `OPEN — OWED-election`
+**Status:** `CLOSED-RESOLVED (U0 KEEP)`
 **Authored:** 2026-08-15
-**Closed:** N/A
-**Mark:** none — this draft elects neither
-**Authors:** Cursor (recorder) — operator reviews
+**Closed:** 2026-08-15
+**Mark:** U0 KEEP — operator 2026-08-15. §6 table frozen (Trap #12). Pause stands.
+**Authors:** Cursor (recorder) — operator marked U0
 **Parent:** [CON-5 closure](closures/Q-TNEC-CON-5-closure-ambiguous-hold.md) Branch A · [lane spec](../spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md)
-**Loop:** Inquire-light Board packet — U0 / U1 / U2 unpaid. $0 · K=0 · no camp · no CON-6 · pause stands until a mark.
+**Loop:** Inquire-light Board packet — U0 recorded. $0 · K=0 · no camp · no CON-6 · pause stands.
+**Closure:** [DENSE1M-UNPAUSE-closure-resolved-u0-keep](closures/DENSE1M-UNPAUSE-closure-resolved-u0-keep.md)
 **Artifact path:** `docs/briefs/2026-08-15-dense1m-lane-unpause-review.md`
 
 ---
