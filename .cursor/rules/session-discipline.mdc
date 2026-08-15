@@ -29,6 +29,14 @@ Reconcile before executing; re-fetch before pushing. Grounding:
 `feedback_check_origin_main_before_multistep_build` +
 `feedback_recent_gitlog_before_scaffolding_call`.
 
+## Retrieve before new lab / ADR / brief
+
+Before creating a new `lab/analysis/` slug or a new file under `docs/adr/` or
+`docs/briefs/`, run `python scripts/repo_retrieve.py --query "<terms>"` and
+**paste the output** (Rule 8 sub-rules 8 and 10). Attestation without output is
+void. The index is paths + snippets, not authority — Read the named owner.
+Grounding: Q-XMEM-1 Limb B + `docs/operational_rules.md` §8.
+
 ## Falsifier before a brief
 
 Before authoring anything in `docs/briefs/` or `docs/adr/`, run the <5-min cheap
@@ -37,3 +45,11 @@ magnitude (one-shot script, 1-CSV sanity sweep, sha256 byte-identity, oracle-tie
 pre-check). Use the brief-authoring skill for structure; verify every Rule-0 read
 is real (handoff-verify). Grounding: `lesson_run_cheap_falsifier_before_authoring`
 + `feedback_run_falsifier_before_brief`.
+
+## Rule 2 — budget before acting
+
+At task start, declare the loop class and read the iteration budget from
+[`docs/adr/2026-06-16-rule-2-budget-before-acting.md`](../../docs/adr/2026-06-16-rule-2-budget-before-acting.md)
+(still PROPOSED; do not graduate it from a session). Pointer only — do not
+restate the numerals here. The public seed omitted `docs/notes/`; the trip-log
+lives in `first-passage-archive` until that tree is restored.

@@ -51,9 +51,14 @@ Also run mechanical backstops when paths moved or status words flipped:
 python scripts/check_root_doc_liveness.py
 python scripts/check_path_liveness.py
 python scripts/check_status_consistency.py
+python scripts/sync_liveness_indexes.py --check
 ```
 
-(Link/status gates only — they do not prove semantic currency.)
+(Link/status gates only — they do not prove semantic currency. The liveness
+script is **report-only**: stale INDEX Open rows whose named successor is
+already Recently-closed, and CATALOG `ACTIVE` + “archive owed”. Repair clear
+cases in-session. Do **not** auto-rewrite INDEX. CATALOG status flips go
+through `archive_lab_analysis.py --regenerate-catalog`, not hand-edits.)
 
 ### 3. Triage each hit
 

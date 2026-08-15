@@ -95,3 +95,13 @@ python scripts/gate_manifest.py --list
 python scripts/gate_manifest.py --tier pre-commit --dry-run
 grep -n "gates.yml\|gate_manifest" CLAUDE.md scripts/githooks/pre-commit Makefile
 ```
+
+## Addendum 2026-08-15 — path-conditional pre-commit is not a drop
+
+**Does not amend §2 / §4 / §5.** Diet = *when* a gate runs, not whether it exists.
+
+New tier `path-conditional`: pre-commit runs the gate only if staged paths match `when.staged_regex`. `make check` / `--tier check` still runs every `always` + `path-conditional` gate (plus forced `data-manifests`). Always-on pre-commit stays: `skills-no-constants`, `skill-refs`, `pine-manifest`, `pine-pin-provenance`, `boundaries`.
+
+CI companion (same diet class, not a `gates.yml` drop): pytest matrix is 3.11-only; `validation-controls` is path-filtered to `lab/`. Deriving CI jobs from `gates.yml` remains owed by this ADR and is **not** this addendum.
+
+Forbidden here: moving a hard gate to `soft` (still a silent disable — see `gates.yml` header).

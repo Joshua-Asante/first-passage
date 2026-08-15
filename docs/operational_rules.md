@@ -303,6 +303,25 @@ sub-rules of Rule 0 / Rule 2 — each anchored to a specific brief failure.
    `lab-catalog`); source language
    [`N-2026-07-26-forced-flow-census`](notes/notice/N-2026-07-26-forced-flow-census.md)
    L195-208.)_
+9. **Registry line on every new closure.** A non-grandfathered file under
+   `docs/briefs/closures/` must carry `- **Registry:**` in the Iterate block:
+   either `rejected_candidates.md — ### <heading>` (strategy-grounds
+   FALSIFIED / DEAD / STOP / STAGE-1 FAIL / OPERATOR-KILL) or
+   `n/a — <reason>` (RESOLVED, governance, not a strategy-grounds kill).
+   Token-only; heading-join quality is judgment. The 2026-08-03→08-11 kill
+   run produced ~15 closures with zero registry rows because Iterate / Board
+   write were gated and the registry append was checklist-only.
+   _(Anchored: 2026-08-08 quarterly object audit §1.2 diagnostic 4; feed
+   resumed 2026-08-11 only when sessions remembered the checklist.)_
+10. **Amend the existing owner before minting a sibling.** Before creating a
+    new ADR, brief, notice, or `lab/analysis/<theme>/<slug>/`, paste search
+    output that names the existing owner that should take an addendum, or
+    states none exists. Attestation without executed output is void (same
+    standard as sub-rule 8). Default is amend-in-place; a new file is the
+    exception. Ceremony-tiering already prefers light records when no limb
+    fires — this sub-rule is the adoption tooth, not a new ceremony.
+    _(Anchored: F-2 already fired on ADR-count / file-Δ; MSL 17 ADD / 0
+    REMOVE in 2 days; implied-SR light pair then full reversal.)_
 
 **Origin:** migrated 2026-06-03 from `docs/notion/repo_context.md` §7 (the
 brief-authoring priming surface for web/claude.ai), which was deleted that day —
@@ -311,7 +330,8 @@ longer needed a Notion-mirror priming doc. These six sub-rules were the only
 non-mirror content in that file; they are relocated here as their canonical
 in-repo home. The `brief-authoring` skill bundle carries a generalized
 propagation and is downstream of this section (repo wins on drift). _(Sub-rule 7
-added 2026-07-01; sub-rule 8 added 2026-08-13.)_ **[2026-07-01 note:** the repo is now **private** (gh-verified
+added 2026-07-01; sub-rule 8 added 2026-08-13; sub-rules 9–10 added
+2026-08-15.)_ **[2026-07-01 note:** the repo is now **private** (gh-verified
 `isPrivate: true`); the "repo is public" rationale above is historical. claude.ai
 reaches the repo via its GitHub connector, which supports private repos, so the
 migration rationale is unaffected. See CLAUDE.md §Public-clone posture.**]**
@@ -643,6 +663,16 @@ Edits to existing rules must be logged with a dated entry explaining what change
 
 ### Edit log
 
+- **2026-08-15 — Rule 8 sub-rules 9–10 added (registry feed + amendment-first).**
+  Sub-rule 9: new closures carry a `Registry:` line (`rejected_candidates.md`
+  heading or explicit `n/a`). Closes the 2026-08-03→08-11 feed-stop (gated
+  Iterate/Board write; registry was checklist-only). Sub-rule 10: amend the
+  existing owner before minting a sibling ADR/brief/notice/lab slug; paste
+  search output or state none exists. Addenda on
+  [`dedup-first`](adr/2026-08-13-dedup-first-before-new-work.md) and
+  [`ceremony-tiering`](adr/2026-08-08-adr-ceremony-tiering.md). Mechanical
+  limb in `check_closure_disposition.py` (forward-only grandfather). No
+  locked config, allocation, `dd_protection`, Pine, or rail touched.
 - **2026-08-13 — Rule 8 sub-rule 8 added (dedup-first before new work).** Before
   opening any new `lab/analysis/<theme>/<slug>/` or scoping `core/`-adjacent
   implementation, §0 must paste literal search output against `lab/CATALOG.md`

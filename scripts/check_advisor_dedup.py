@@ -38,6 +38,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -273,7 +274,33 @@ def main(argv: list[str] | None = None) -> int:
                   + (f" (+{len(kw_hits) - len(shown)} more)" if len(kw_hits) > len(shown) else ""))
         print()
 
+    _fts_companion(args.repo_root, staged_text if args.keywords else None)
     return 0
+
+
+def _fts_companion(repo_root: Path, keywords: str | None) -> None:
+    """Fail-open FTS pass (Q-XMEM-1 Limb B). Never changes this tool's exit 0."""
+    if not keywords:
+        return
+    retrieve = repo_root / "scripts" / "repo_retrieve.py"
+    if not retrieve.is_file():
+        return
+    try:
+        out = subprocess.run(
+            [sys.executable, str(retrieve), "--query", keywords, "--limit", "5",
+             "--repo", str(repo_root)],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            timeout=20,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return
+    if out.returncode == 0 and out.stdout.strip():
+        print("FTS companion (repo_retrieve — paths only, not authority):")
+        print(out.stdout.rstrip())
+        print()
 
 
 if __name__ == "__main__":

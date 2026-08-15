@@ -23,7 +23,14 @@ The 04-17 dd_protection retune → reversal → delete-and-retune cycle is the l
 
 Any brief that touches risk controls, locked parameters, or production code must list the production files read **before** the brief was authored. Reading "during Phase 1 of the investigation" is too late — the brief is already framed by then, and re-framing after Rule 0 fires costs more than authoring after Rule 0 succeeded.
 
-**Canonical sub-rules (1–8)** live in [`docs/operational_rules.md` §8](../../../docs/operational_rules.md) — including sub-rule 8 (paste literal `lab/CATALOG.md` / `docs/briefs/INDEX.md` search output before opening new `lab/analysis/` work or scoping `core/`-adjacent implementation). A session that follows only this skill and never opens that file still misses those teeth; open §8 when authoring.
+**Canonical sub-rules (1–10)** live in [`docs/operational_rules.md` §8](../../../docs/operational_rules.md) — including sub-rule 8 (paste search output before new `lab/analysis/` / `core/`-adjacent work), sub-rule 9 (closure `Registry:` line → `rejected_candidates.md` or explicit `n/a`), and sub-rule 10 (amend the existing owner before minting a sibling artifact). A session that follows only this skill and never opens that file still misses those teeth; open §8 when authoring.
+
+**Rule 2** (budget before acting) is declared at task start by linking
+[`docs/adr/2026-06-16-rule-2-budget-before-acting.md`](../../../docs/adr/2026-06-16-rule-2-budget-before-acting.md)
+— pointer only; do not restate the loop-class numerals in this skill. The ADR
+stays PROPOSED until a programme audit graduates it.
+
+**Amendment-first check (sub-rule 10).** Before authoring a new file under `docs/adr/`, `docs/briefs/`, or `docs/notes/`, name the existing owner that should take an addendum, or paste search output showing none exists. Default is amend-in-place. New file only when no owner can hold the decision.
 
 **Anchor:** 2026-04-17 dd_protection cycle. Three iterations of brief authoring (retune → reversal → delete-and-retune) traced to assumed semantics being reconstructed mid-investigation. The §0 production-read section, when honestly populated, blocks this failure mode at the structural level.
 
@@ -48,6 +55,8 @@ Every brief, regardless of type, must pass these checks. The check_brief.py scri
 **5. Question names a symptom, not a fix.** Pre-Q gate test: rephrase the question to mention only what's wrong, not what to do about it. "Should we use K=2 or K=3 in the regime filter?" bakes in K-of-something. "What's the cost of the current pattern, and what alternative architectures exist?" doesn't. If the symptom-only rephrase is impossible, the question itself is the problem — return to inqhiori.
 
 **6. Audit hooks runnable.** §10 must contain commands or checks executable later (grep strings, file paths, specific assertions), not vague "review at quarterly check-in." Audit hooks that nobody can mechanically run will not be checked.
+
+**Amendment-first (Rule 8 sub-rule 10).** Is this an addendum to an existing owner, or a genuinely new owner? If an existing ADR/brief/notice can hold the decision, amend it. A sibling file that restates the same decision is the accretion this check exists to block.
 
 ---
 

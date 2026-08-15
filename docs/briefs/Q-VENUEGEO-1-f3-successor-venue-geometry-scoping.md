@@ -3,7 +3,7 @@
 **Status:** `OPEN — evidence recorded, unconsumed` — F3 ruled **no successor migration now** ([`S1 ADR`](../adr/2026-08-07-loop-s1-environment-ratification.md) 2026-08-07); DP1 + DP2 DISCHARGED; DP3 bust-ceiling half MEASURED; **EV/$ half + precision re-run remain available** if a future GO reopens migration — intaken 2026-08-05 (drafted 2026-08-04 by Joshua + claude.ai advisor from the four-tool-stack research report); `check_brief.py --type inquire` PASS (6/6)
 **Authored:** 2026-08-04
 **Intaken:** 2026-08-05 (handoff-verify PASS; anchors re-verified at `origin/main` `21e09c8`; DP2 scope amended — see Amendment log)
-**Amended at merge (2026-08-05):** DP1 + DP2 item 8 discharged by concurrently-landed work ([PR #647](https://github.com/Joshua-Asante/first-passage/pull/647), ADR 2026-08-05, ADR 2026-08-05b); remaining scope narrowed — see second Amendment log entry below
+**Amended at merge (2026-08-05):** DP1 + DP2 item 8 discharged by concurrently-landed work ([PR #647](https://github.com/Joshua-Asante/first-passage-archive/pull/647), ADR 2026-08-05, ADR 2026-08-05b); remaining scope narrowed — see second Amendment log entry below
 **Closed:** N/A
 **Authors:** Joshua + claude.ai (advisor); intake + amendment by CC
 **Parent question:** fork **F3** of ADR 2026-08-04 (successor venue) — this Q is decision support for it, and feeds the four-firms ADR §4 falsifier (2026-11-08)
@@ -48,7 +48,7 @@ execution plan are otherwise as originally scoped.
 ## Amendment log (merge, 2026-08-05) — DP1 + DP2 item 8 discharged; scope narrowed, not closed
 
 **This branch (`claude/preq-intake-venuegeo-monsurf-filltax-mschan`) sat open while three separate
-sessions landed [PR #647](https://github.com/Joshua-Asante/first-passage/pull/647) (F3 cadence
+sessions landed [PR #647](https://github.com/Joshua-Asante/first-passage-archive/pull/647) (F3 cadence
 study), [ADR 2026-08-05](../adr/2026-08-05-blusky-inactivity-unsourced-encoding.md) (contain
 BluSky's unsourced field), and [ADR 2026-08-05b](../adr/2026-08-05b-blusky-inactivity-rule-sourced.md)
 (source it) directly on `origin/main`.** Read in full before resolving the merge conflict (per
