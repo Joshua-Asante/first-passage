@@ -14,6 +14,32 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-15o — Blind-channel next-move sequence
+
+**Focus:** After N=3 + empty naming, sequence what is actually next (no new construct, no Cap reopen).
+
+**Shipped:** branch `cursor/blind-channel-n3-8529` — booked the 2026-11-08 channel §4 reading on the [STATE forward board](../STATE.md); merged `origin/main` (dense-1m U0 KEEP) and retitled off colliding 15j/15k. $0 · K=0.
+
+**Decisions/defects:** none new. Owners remain the [channel ADR](adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md) and [analogue-modality ruling](adr/2026-08-15-analogue-modality-route-ruling.md).
+
+**Open / next:** (1) queue #0 weekly token, deadline 2026-08-21 — operator-placed. (2) Blind channel **paused** — re-enter only with a construct that is distinct without shopping; else hold to 11-08 `AMBIGUOUS-HOLD`. (3) dense-1m pause stands (U0 KEEP). (4) 2026-11-08 slate: channel §4 + count/N-fire + analogue re-test · F1 · harvest idle · ceremony-tiering. (5) 08-03 [R3–R6 / R10](notes/audits/programme-audit/2026-08-03-gate-stack-audit.md) still owed on main (drafted on `cursor/gate-stack-r3-r10-8529`; do not treat as landed). (6) B7/M1 still wait on a book. `Q-CAPBAND-1` re-opens only on a *new* band axis. MSL E1 HOLD / no slate-4 until NEW WHO.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+## 2026-08-15n — Blind-channel N=3 election + empty generation attempt
+
+**Focus:** Move the open-but-empty blind channel forward without raising Cap/K or retuning `MNQ-ANALOGUE-1`.
+
+**Shipped:** branch `cursor/blind-channel-n3-8529` — consecutive-pre-G0-kill threshold elected **N = 3** on the [channel ADR](adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md) (limb 4, amend-in-place, counting machinery (a)–(d)); one generation attempt walked every standing door and named nothing. Count stays **1/3**. $0 · K=0.
+
+**Decisions/defects:** N=3 discharges the pre-G0 addendum's uncovered item. Empty naming is not a second kill and not generation-dry. §4 `AMBIGUOUS-HOLD` trajectory accepted if still unsourced at 2026-11-08.
+
+**Open / next:** `Q-CAPBAND-1` re-opens only on a *new* band axis; R3–R6/R10 from the 08-03 audit still owed. The 2026-11-08 §4 falsifier is the live clock (analogue-modality ruling re-test rides it). Weekly token unpaid for 08-17→08-21. Blind-channel generation paused pending a construct that is distinct without shopping.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-15k — Dense-1m unpause U0 KEEP
 
 **Focus:** Operator marked U0 KEEP on the unpaid dense-1m unpause packet. Leave the pause.
