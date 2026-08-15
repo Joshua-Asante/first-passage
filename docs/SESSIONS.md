@@ -18,7 +18,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 
 **Focus:** Unblock Tests / Skills Check / Pylint on the public seed — dead `docs/notes/**` / `docs/ltm/**` / `docs/superpowers/**` cites and redacted baseline PF, not new product bugs.
 
-**Shipped:** branch `cursor/public-seed-ci-adaptation-52bf` — drop or archive-repoint the excluded skill refs; skip pytest when those trees (or thin git ancestry) are absent; `BaselineDataUnavailable` when `baselines.md` holds the public-tree placeholder. Does not restore excluded trees or Pepperstone PF numbers.
+**Shipped:** branch `cursor/public-seed-ci-adaptation-52bf` — [PR #3](https://github.com/Joshua-Asante/first-passage/pull/3) — drop or archive-repoint the excluded skill refs; skip pytest when those trees (or thin git ancestry) are absent; `BaselineDataUnavailable` when `baselines.md` holds the public-tree placeholder. Does not restore excluded trees or Pepperstone PF numbers.
 
 **Decisions/defects:** none new. Follows [public-visibility transition](adr/2026-08-14-repo-public-visibility-transition.md) §6 seed exclusions.
 
