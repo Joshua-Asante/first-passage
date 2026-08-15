@@ -25,11 +25,6 @@ Any brief that touches risk controls, locked parameters, or production code must
 
 **Canonical sub-rules (1–10)** live in [`docs/operational_rules.md` §8](../../../docs/operational_rules.md) — including sub-rule 8 (paste search output before new `lab/analysis/` / `core/`-adjacent work), sub-rule 9 (closure `Registry:` line → `rejected_candidates.md` or explicit `n/a`), and sub-rule 10 (amend the existing owner before minting a sibling artifact). A session that follows only this skill and never opens that file still misses those teeth; open §8 when authoring.
 
-**Rule 2** (budget before acting) is declared at task start by linking
-[`docs/adr/2026-06-16-rule-2-budget-before-acting.md`](../../../docs/adr/2026-06-16-rule-2-budget-before-acting.md)
-— pointer only; do not restate the loop-class numerals in this skill. The ADR
-stays PROPOSED until a programme audit graduates it.
-
 **Amendment-first check (sub-rule 10).** Before authoring a new file under `docs/adr/`, `docs/briefs/`, or `docs/notes/`, name the existing owner that should take an addendum, or paste search output showing none exists. Default is amend-in-place. New file only when no owner can hold the decision.
 
 **Anchor:** 2026-04-17 dd_protection cycle. Three iterations of brief authoring (retune → reversal → delete-and-retune) traced to assumed semantics being reconstructed mid-investigation. The §0 production-read section, when honestly populated, blocks this failure mode at the structural level.

@@ -142,6 +142,41 @@ grep -n "Rule 0\|Rule 1\|Rule 2" docs/methodology/inqhiori-canon.md | head   # a
 # 3. The 3/8/3 magnitudes match across the three artifacts (no drift)
 grep -rn "3 iterations\|8 iterations\|3 constituent OUTER" \
   docs/methodology/inqhiori-canon.md docs/adr/2026-06-16-rule-2-budget-before-acting.md
+```
+
+## Addendum 2026-08-15 — pointer propagation narrowed to inqhiori only
+
+**Does not amend §2 / §4 / §6.** This is a propagation-scope correction, not a
+verdict on the ADR — §4's own gate is unmet either way: the trip-log carries one
+non-trip baseline row at ~60 days post-authoring, short of the ≥2-audit-cycle
+window the falsifier needs before the empty-log branch can even fire (§10.3
+still passes; the numerals haven't drifted).
+
+The 2026-08-15 governance-belt programme audit (§3.5) flagged the gap between
+this ADR's evidence state and its footprint: between authoring and this date,
+pointers requiring every task to "declare the loop class" were added to five
+always-on surfaces — `CLAUDE.md`, `brief-authoring`, `inqhiori`, `cursor-fleet`
+skills, and `.cursor/rules/session-discipline.mdc` — none of which is this
+ADR's own text, all reachable on effectively every session. §4's forward-only
+validation discipline exists precisely so evidence, not adoption breadth,
+decides graduation; five always-on mirrors of a still-unvalidated rule moves
+in the opposite direction from what §4 protects.
+
+**Narrowed:** the four non-`inqhiori` pointers above are removed outright (not
+redirected — a "see inqhiori" stub in four places would still be four places
+carrying Rule-2 content, which doesn't address the adoption-ahead-of-evidence
+concern). `docs/methodology/inqhiori-canon.md` §15 remains the full statement;
+canon §12/§14 mirrors are untouched (§5.5 forbids editing them outside this
+ADR); the `.claude/skills/inqhiori/SKILL.md` pointer stays, since INQHIORI-loop
+work is this rule's most specific applicable context and canon §15 is already
+its natural home. Declaring a Rule-2 budget is no longer instructed from
+brief-authoring, cursor-fleet dispatch, or general session-start discipline —
+only from INQHIORI-loop entry.
+
+**Not a repeal.** The ADR stays `PROPOSED`; §4's graduation path is unchanged.
+Re-widening propagation is available once the trip-log actually accrues
+evidence at the next programme audit — narrower footprint until then, per the
+same "run tight, loosen only on evidence" bias §4 already states.
 
 # 4. Forward trip-log exists (the falsifier is live, not theater)
 ls docs/notes/audits/ | grep -i "rule-2-trip-log"
