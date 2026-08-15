@@ -67,3 +67,11 @@ grep -rn 'escalated-from-light' docs/adr/                              # escalat
 - Reversal: [`docs/adr/2026-08-13-implied-sr-report-only-fade-reopen.md`](2026-08-13-implied-sr-report-only-fade-reopen.md) (full; demotes to report-only, reopens fade geometry).
 
 Bodies of the two light records are **not** rewritten (this ADR is forward-only). Surfaced as a **candidate incident** against this ADR's two-incident FALSIFIED threshold (§Falsifier). Whether the pair counts as one incident or two is an operator/audit call at the first quarterly programme audit after 2026-08-08. Forward pointer: [`STATE.md` §2026-11-08](../../STATE.md).
+
+## Addendum 2026-08-15 — Amend-in-place beats a sibling ADR
+
+**Does not amend §Decision / §Falsifier / light-tier word cap.** Adoption tooth only.
+
+When a decision can live as an addendum on an existing ADR (or a light record on that file), **do not mint a sibling ADR**. Light-tier share at land of this addendum is still well below the ≥⅕ falsifier (7/131). The missing move was not another ceremony — it was using the owners already on disk. Rule 8 sub-rule 10 is the operational statement; this addendum is the ceremony-tiering-side pointer.
+
+Forbidden here: retro-converting existing full ADRs to light (already §Forbidden); using this addendum to drop a limb-4 decision into a light sibling.

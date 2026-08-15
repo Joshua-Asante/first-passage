@@ -103,6 +103,12 @@ PLACEHOLDER = re.compile(
 )
 # The board pointer: "- **Board write:** ..." (hyphen or space; any decoration).
 BOARD_TOKEN = re.compile(r"\bBoard[\s-]+write\b", re.IGNORECASE)
+# Registry feed (2026-08-15): strategy-grounds kills must name the
+# rejected_candidates row, or an explicit n/a reason. Forward-only —
+# REGISTRY_GRANDFATHERED holds every closure on disk at land time.
+REGISTRY_TOKEN = re.compile(
+    r"^\s*(?:[-*]\s*)?\*{0,2}Registry(?::\*{0,2}|\*{0,2}:)\s*(?P<rest>.+)$"
+)
 
 # Markdown fence delimiter. Fenced content is stripped before scanning so a
 # quoted template (the realistic paste-from-closure_record.md path) can never
@@ -223,6 +229,80 @@ GRANDFATHERED = frozenset({
 # a genuine newly discovered pre-promotion gap needs a superseding ADR.
 COVERAGE_GRANDFATHERED: frozenset[str] = frozenset()
 
+# Closures on disk at the registry-feed land (2026-08-15). Forward-only —
+# new closures must carry a Registry line. Never append here to dodge;
+# a new file complies instead. Why this set exists: the 2026-08-03→08-11
+# kill run produced ~15 closures with zero rejected_candidates rows because
+# Iterate/Board-write were gated and the registry append was checklist-only.
+REGISTRY_GRANDFATHERED = frozenset({
+    "2026-07-16-aegis-6j-prop-reconstruction-stage1-falsified.md",
+    "2026-07-16-aegis-6j-prop-reconstruction-stage2-hsolo-falsified.md",
+    "2026-07-16-striker-mym-reconstruction-candidate-1-ambiguous.md",
+    "2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md",
+    "2026-07-27-hermes-agent-adoption-closure-resolved.md",
+    "2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md",
+    "2026-08-12-q-txg-1-striker-mnq-cell-dead-nsurv.md",
+    "2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md",
+    "GSUB-1-closure-resolved-loadbearing.md",
+    "H-FBEIA-1-closure-screen-fail.md",
+    "H-FCCARRY-1-closure-screen-fail.md",
+    "H-ZNAUC-1-closure-screen-fail.md",
+    "MNQBASE-1-closure-intake-dry.md",
+    "MSL-C1-closure-falsified.md",
+    "MSL-C2-closure-falsified.md",
+    "MSL-C3-closure-operator-kill.md",
+    "MSL-C3-K2-closure-falsified.md",
+    "MSL-S2A-closure-falsified.md",
+    "MSL-S2B-closure-stage1-fail-route.md",
+    "MSL-S7-closure-resolved-e1-hold.md",
+    "MYM-3FPS-1-closure-falsified.md",
+    "OPENPRESS-1-closure-falsified.md",
+    "Q-6JCOMPOSE-1-closure-void-unexecutable.md",
+    "Q-6JCOMPOSE-2-closure-void-c2-red-gate-unreachable.md",
+    "Q-BOOKFIT-1-closure-resolved.md",
+    "Q-BUSTGATE-1-closure-falsified.md",
+    "Q-C1PANEL-1-closure-ambiguous.md",
+    "Q-CAPA-1-closure-resolved.md",
+    "Q-CAPALLOC-2-closure-resolved-fragile.md",
+    "Q-CAPFLOW-1-closure-falsified.md",
+    "Q-COMPOSE-1-closure-falsified.md",
+    "Q-COSTGEO-1-closure-ambiguous.md",
+    "Q-COSTGEO-2-closure-aborted.md",
+    "Q-COSTGEO-3-closure-ambiguous-needs-depth.md",
+    "Q-FUNNEL-1-closure-resolved.md",
+    "Q-GATECART-1-survivor-gate-cartography.md",
+    "Q-GEOFIT-1-closure-ambiguous-parameterization.md",
+    "Q-HARV-0-month-end-rebalance-ES.md",
+    "Q-ICT-1-closure-moot.md",
+    "Q-ICT-CASCADE-1-closure-insufficient-n.md",
+    "Q-INVENTORY-1-closure-falsified.md",
+    "Q-JOINT-TAIL-WEEKLY-closure-retired.md",
+    "Q-KBUDGET-1-axis-reachability-screen.md",
+    "Q-KBUDGET-HARVEST-1-bounded-axis-literature-sweep.md",
+    "Q-MCLTAS-1-closure-falsified.md",
+    "Q-MNQDTL-CON-1-closure-falsified.md",
+    "Q-MNQSEL-1-closure-falsified.md",
+    "Q-MNQSEL-2-closure-resolved.md",
+    "Q-OBJCOHERE-1-closure-falsified-coherent.md",
+    "Q-OFCHAN-1-closure-void-coverage.md",
+    "Q-PYRPARITY-1-closure-falsified-nonproportional.md",
+    "Q-R2AGRUN-1-closure-ambiguous-hold.md",
+    "Q-R2FLOW-1-closure-falsified.md",
+    "Q-R2VBUCK-1-closure-falsified.md",
+    "Q-RAIL-1-closure-resolved.md",
+    "Q-SCORE-1-closure-falsified.md",
+    "Q-TNEC-CON-2-closure-ambiguous-hold.md",
+    "Q-TNEC-CON-3-closure-ambiguous-hold.md",
+    "Q-TNEC-CON-4-closure-ambiguous-hold.md",
+    "Q-TNEC-CON-5-closure-ambiguous-hold.md",
+    "Q-TNEC-ENV-1-closure.md",
+    "Q-TVCOV-1-closure-falsified.md",
+    "Q-TXG-1-closure-falsified-at-walls.md",
+    "Q-USOIL-1-closure-subtract.md",
+    "SLR-MYM-1-closure-falsified-stage0.md",
+    "ST-EH-1-closure-operator-stopped.md",
+})
+
 
 def _strip_fences(lines: list[str]) -> list[str]:
     """Return `lines` with fenced code-block content AND delimiters removed."""
@@ -321,6 +401,38 @@ def scan_file(path: Path) -> str | None:
         f"{shown}: closure lacks its typed Iterate block — {'; '.join(problems)} "
         f"(template: .claude/skills/brief-authoring/references/closure_record.md; "
         f"ADR 2026-08-04-iterate-closure-exit-mandatory)"
+    )
+
+
+def scan_registry(path: Path) -> str | None:
+    """Return a violation if a non-grandfathered closure lacks Registry.
+
+    Token-only (same posture as Board write). `n/a — <reason>` is legal.
+    Heading-join quality is judgment — not this gate.
+    """
+    if path.name in REGISTRY_GRANDFATHERED:
+        return None
+    try:
+        raw = path.read_text(encoding="utf-8").splitlines()
+    except OSError as exc:
+        print(f"WARN closure-disposition: cannot read {path}: {exc}")
+        return None
+    try:
+        shown = path.relative_to(REPO)
+    except ValueError:
+        shown = path
+    lines = _strip_fences(raw)
+    heading_idx = next(
+        (i for i, l in enumerate(lines) if ITERATE_HEADING.match(l)), None
+    )
+    region = lines[heading_idx + 1:] if heading_idx is not None else lines
+    if any(REGISTRY_TOKEN.match(l) for l in region):
+        return None
+    return (
+        f"{shown}: closure lacks a Registry line "
+        "(`Registry: rejected_candidates.md — ### heading` or "
+        "`Registry: n/a — <reason>`). The 2026-08-03 feed-stop happened "
+        "because this append was checklist-only."
     )
 
 
@@ -598,6 +710,8 @@ def main(argv: list[str] | None = None) -> int:
                 continue
             if (msg := scan_file(p)):
                 violations.append(msg)
+            if (msg := scan_registry(p)):
+                violations.append(msg)
         for v in violations:
             print(f"HARD closure-disposition: {v}")
         if violations:
@@ -608,6 +722,9 @@ def main(argv: list[str] | None = None) -> int:
     iterate_status = adr_status(OWNING_ADR)
     iterate_hard = iterate_status == "Accepted"
     violations = [msg for f in in_scope() if (msg := scan_file(f))]
+    registry_violations = [
+        msg for f in in_scope() if (msg := scan_registry(f))
+    ]
 
     coverage_status = adr_status(COVERAGE_OWNING_ADR)
     coverage_hard = coverage_status == "Accepted"
@@ -640,6 +757,18 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print("check_closure_disposition: OK — every non-grandfathered closure "
               "carries its typed Iterate block.")
+
+    # Registry limb rides the Iterate ADR's severity (same closure file,
+    # same authoring moment). Grandfathered names are already skipped.
+    if registry_violations:
+        tier = "HARD" if iterate_hard else "WARN"
+        for v in registry_violations:
+            print(f"{tier} closure-disposition registry: {v}")
+        if iterate_hard:
+            iterate_exit = 1
+    else:
+        print("check_closure_disposition: OK — every post-2026-08-15 closure "
+              "carries a Registry line.")
 
     coverage_exit = report_missing_closure_coverage(
         missing, hard=coverage_hard

@@ -193,3 +193,12 @@ Phase 1–5 complete; Status remains `Accepted` (ratified before the mechanical 
 | 2026-08-13 | Initial authoring — `Proposed`. Drafted from a dedicated 4-lens investigation commissioned the same session, against two dated incidents (Tradeify eval-battery near-miss, caught; Magdon-Ismail closed-form duplicate, uncaught until pre-commit). No mechanical edits applied yet — policy + implementation plan only. | Joshua (direction) + Claude Code (investigation + drafter) |
 | 2026-08-13 | **Ratified same day.** Operator ruling *"ratify it and I will spawn as suggested task"* — Status `Proposed` → `Accepted`. §2's decision is now in force; §7 Phases 1-6 (the mechanical wiring) are explicitly NOT yet done and are tracked via a separately-created `spawn_task` chip rather than gating this status flip, per direct operator instruction. Per §0/Verification: re-run §10's audit hooks once the spawned implementation lands, and confirm the §6 downstream-artifact list is fully current before treating this ADR's mechanisms as live. | Joshua (ruling) + Claude Code (recorder) |
 | 2026-08-13 | **§7 Phases 1–5 landed** (`8a60c92`). Hookify rule tracked + build-intent regex; `--keywords` mode on `check_advisor_dedup.py`; Rule 8 sub-rule 8 + edit log; report-only same-theme WARN in `archive_lab_analysis.py`; brief-authoring → Rule 8 link. §10 audit hooks all PASS. No `gates.yml` blocking change; no `core/` / `dd_protection` / Pine touch. | Cursor agent (spawned mechanical wiring) |
+
+## Addendum 2026-08-15 — Registry feed + amendment-first (Rule 8.9 / 8.10)
+
+**Does not amend §2's three mechanical legs.** Extends the same "search before create" decision to two moments this ADR's original scope left as checklist:
+
+1. **Registry feed.** A new closure must carry `Registry:` (`rejected_candidates.md — ### heading` or `n/a — <reason>`). Token-gated in `scripts/check_closure_disposition.py`; every closure on disk at land is grandfathered. The 2026-08-03→08-11 hole is **not** backfilled here (operator pass; each row is a re-proposal-bar judgment).
+2. **Amendment-first.** Before minting a sibling ADR/brief/notice/lab slug, paste search output naming the existing owner or stating none exists. Default is addendum-on-owner. Companion addendum on the ceremony-tiering ADR.
+
+Owner of the rule text: [`docs/operational_rules.md`](../operational_rules.md) Rule 8 sub-rules 9–10.

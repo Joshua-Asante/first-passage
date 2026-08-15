@@ -40,6 +40,7 @@ Numbers here.
 - **Entry packet:** n/a
 - **Stop rule / re-proposal bar:** new mechanism evidence, not new parameters.
 - **Board write:** none — STOP, nothing owed
+- **Registry:** n/a — fixture / not a strategy-grounds kill
 """
 
 MISSING_BLOCK = """# Q-TEST-2 — CLOSURE: `RESOLVED` (fixture)
@@ -258,6 +259,28 @@ def test_explicit_path_mode_is_always_hard(tmp_path):
     good = _write(tmp_path, "Q-TEST-6-closure-resolved.md", COMPLIANT)
     assert ccd.main([str(bad)]) == 1
     assert ccd.main([str(good)]) == 0
+
+
+def test_scan_registry_requires_token_on_new_closure(tmp_path):
+    body = COMPLIANT.replace(
+        "- **Registry:** n/a — fixture / not a strategy-grounds kill\n", ""
+    )
+    path = _write(tmp_path, "Q-NEW-1-closure-falsified.md", body)
+    msg = ccd.scan_registry(path)
+    assert msg is not None
+    assert "Registry" in msg
+
+
+def test_scan_registry_accepts_na_reason(tmp_path):
+    path = _write(tmp_path, "Q-NEW-2-closure-resolved.md", COMPLIANT)
+    assert ccd.scan_registry(path) is None
+
+
+def test_scan_registry_skips_grandfathered_name(tmp_path):
+    # Filename match is enough — do not retro-edit the live grandfathered body.
+    name = next(iter(ccd.REGISTRY_GRANDFATHERED))
+    path = _write(tmp_path, name, "# no iterate\n")
+    assert ccd.scan_registry(path) is None
 
 
 # ── coverage limb: closed campaign with no closure file (lesson_green_gate) ──

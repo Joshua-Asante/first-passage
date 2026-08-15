@@ -1,6 +1,7 @@
 """W5 gate-manifest runner — composition loads and selects without dropping gates."""
 from __future__ import annotations
 
+import importlib.util
 import subprocess
 import sys
 from pathlib import Path
@@ -8,6 +9,10 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 SCRIPT = REPO / "scripts" / "gate_manifest.py"
 MANIFEST = REPO / "scripts" / "gates.yml"
+_SPEC = importlib.util.spec_from_file_location("gate_manifest", SCRIPT)
+gm = importlib.util.module_from_spec(_SPEC)
+sys.modules[_SPEC.name] = gm
+_SPEC.loader.exec_module(gm)
 
 EXPECTED_ALWAYS = {
     "skills-no-constants",
@@ -15,6 +20,9 @@ EXPECTED_ALWAYS = {
     "pine-manifest",
     "pine-pin-provenance",
     "boundaries",
+}
+
+EXPECTED_PATH_CONDITIONAL = {
     "path-liveness",
     "root-doc-liveness",
     "status-consistency",
@@ -25,6 +33,7 @@ EXPECTED_ALWAYS = {
     "sessions-append-only",
     "supersession-placement",
     "closure-disposition",
+    "governance-prose-control-chars",
 }
 
 
@@ -34,9 +43,10 @@ def test_manifest_lists_all_always_gates():
         cwd=REPO,
         text=True,
     )
-    for gid in EXPECTED_ALWAYS:
+    for gid in EXPECTED_ALWAYS | EXPECTED_PATH_CONDITIONAL:
         assert gid in out, f"missing gate {gid}"
     assert "data-manifests" in out
+    assert "path-conditional" in out
 
 
 def test_pre_commit_dry_run_includes_always_gates():
@@ -50,8 +60,38 @@ def test_pre_commit_dry_run_includes_always_gates():
         "check_skill_refs.py",
         "check_pine_manifest.py",
         "check_boundaries.py",
-        "check_adr_graph.py",
+    ):
+        assert gid_cmd_fragment in out
+
+
+def test_pre_commit_skips_path_conditional_when_index_empty(monkeypatch):
+    monkeypatch.setattr(gm, "staged_names", lambda: [])
+    data = gm.load_manifest(MANIFEST)
+    selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
+    assert EXPECTED_ALWAYS <= selected
+    assert selected.isdisjoint(EXPECTED_PATH_CONDITIONAL)
+
+
+def test_pre_commit_includes_path_conditional_on_matching_paths(monkeypatch):
+    monkeypatch.setattr(gm, "staged_names", lambda: ["docs/briefs/INDEX.md"])
+    data = gm.load_manifest(MANIFEST)
+    selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
+    assert "closure-disposition" in selected
+    assert "sessions-order" not in selected
+
+
+def test_check_tier_dry_run_includes_path_conditional():
+    """make check still runs path-conditional gates — diet is when, not whether."""
+    out = subprocess.check_output(
+        [sys.executable, str(SCRIPT), "--tier", "check", "--dry-run"],
+        cwd=REPO,
+        text=True,
+    )
+    for gid_cmd_fragment in (
+        "check_skills_no_constants.py",
         "check_closure_disposition.py",
+        "check_adr_graph.py",
+        "check_data_manifests.py",
     ):
         assert gid_cmd_fragment in out
 

@@ -165,6 +165,10 @@ firm's rules). A different execution feed additionally requires the feed-equival
   authoring anything touching risk controls. Extends to locked Pine.
 * **INQHIORI canon** (entry point; §14 binds the three loops):
   [`docs/methodology/inqhiori-canon.md`](docs/methodology/inqhiori-canon.md).
+* **Rule 2 — budget before acting** (loop-class iteration budget; still
+  PROPOSED): [`docs/adr/2026-06-16-rule-2-budget-before-acting.md`](docs/adr/2026-06-16-rule-2-budget-before-acting.md)
+  · canon §15. Declare the loop class at task start by linking the ADR; do not
+  restate the numerals on always-on surfaces.
 * **Regime-robustness gate** (mandatory before any LOCK CANDIDATE on a `dd_protection`-class
   constant): [`docs/methodology/regime_robustness_gate.md`](docs/methodology/regime_robustness_gate.md).
 * **Strategy lifecycle** · **strategy harvest** · **observation routing** · **1R estimation** ·
