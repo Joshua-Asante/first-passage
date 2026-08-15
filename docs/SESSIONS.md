@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-15j — Blind-channel N=3 election + empty generation attempt
+
+**Focus:** Move the open-but-empty blind channel forward without raising Cap/K or retuning `MNQ-ANALOGUE-1`.
+
+**Shipped:** branch `cursor/blind-channel-n3-8529` — consecutive-pre-G0-kill threshold elected **N = 3** on the [channel ADR](adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md) (limb 4, amend-in-place, counting machinery (a)–(d)); one generation attempt walked every standing door and named nothing. Count stays **1/3**. $0 · K=0.
+
+**Decisions/defects:** N=3 discharges the pre-G0 addendum's uncovered item. Empty naming is not a second kill and not generation-dry. §4 `AMBIGUOUS-HOLD` trajectory accepted if still unsourced at 2026-11-08.
+
+**Open / next:** `Q-CAPBAND-1` re-opens only on a *new* band axis; R3–R6/R10 from the 08-03 audit still owed. The 2026-11-08 §4 falsifier is the live clock (analogue-modality ruling re-test rides it). Weekly token unpaid for 08-17→08-21. Blind-channel generation paused pending a construct that is distinct without shopping.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-15i — STATE weekly roll + de-scope over-read correction
 
 **Focus:** Roll the idle-clock header past the satisfied 08-10→08-14 week; correct STATE pointers that treated Tradeify as a gone firm.

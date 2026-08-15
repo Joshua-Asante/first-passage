@@ -342,3 +342,53 @@ This threshold makes the pre-G0-≠-strike ruling **reachable**. It does not mak
 | Date | Change | By |
 |---|---|---|
 | 2026-08-15 | Addendum: consecutive-pre-G0-kill threshold N = 3; counting machinery (a) canonical ADR line (b) increment = distinct construct + executed pre-G0 screen (c) reset = manifest open (d) generation-dry at next quarterly audit, not FALSIFIED, no third channel. Running count 1/3. Limb 4; amend-in-place; not light. | Joshua (plan election) + Cursor |
+
+---
+
+## Addendum 2026-08-15 — First post-election generation attempt: naming set empty
+
+**Status:** recorded 2026-08-15. This is a **dated finding**, not a new threshold. It executes the one generation attempt the N=3 addendum's reachability argument assumed, then stops. **$0 / K=0.** No screen executed. No manifest. No Q-ID. Count **unchanged at 1/3** — a naming-pass is not a kill (N=3 addendum (b)). No Databento pull (would need a cost dry-run + separate GO; this packet stayed on the frozen `$0` posture).
+
+### Rule 0 reads (this addendum)
+
+- This file's N=3 addendum (same commit-parent) — (b) does not increment for a naming-pass with no executed screen; (d) generation-dry is **not** this outcome.
+- [`2026-08-15-analogue-modality-route-ruling.md`](2026-08-15-analogue-modality-route-ruling.md) @ `ab303d07` — analogue **class** still live; first candidate dead; CON-5 pause lifted for this class only; θ-parameterised entry-geometry stays paused; relabel forbidden.
+- [`Q-TNEC-CON-5-closure-ambiguous-hold.md`](../briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md) — Branch A STOP; dense-1m OHLCV temporal-selectivity default **paused**.
+- [`rejected_candidates.md`](../rejected_candidates.md) L718–743 — index raised bar `index-intraday-ohlcv-directional-timing-2026-07-21`; route ① is outside mapped levers or a new modality.
+- Channel ADR §5 forbidden move 3 — do not route a nameable-counterparty candidate here by omission.
+- Feasible cell (kill notice, `git show dea3af9:docs/notes/notice/N-2026-08-15-blind-channel-cost-geometry-and-first-candidate-kill.md`): **MNQ RTH, once-per-session-class**. Not re-derived.
+
+### The attempt
+
+The channel's viable set is K ≤ 3 fully pre-specified constructs. One distinct write-up was authorized. Every door that could have produced one was walked against standing bars **before** any look at returns. None cleared. No construct was named, so no information screen was run (running one would have required picking a rule — that pick is the K).
+
+| Door | Why it does not yield a nameable construct this packet |
+|---|---|
+| Retune `MNQ-ANALOGUE-1` (k, window, distance, embedding) | D-K1 — the wider exploration is the K. Sequential search after seeing the kill. |
+| Same analogue on MGC / MYM / M2K / MCL | Forbidden move 4 (no instrument hop); also outside the $0 feasible cell. |
+| A second analogue algorithm without an independent a-priori justification | Same sequential-search defect. "Try DTW / centroid / a different embedding because 1-NN died" is shopping. |
+| CON-1…CON-5 sibling or θ-parameterised entry-geometry | CON-5 pause; analogue-modality test is *absence* of named entry geometry, not the word. |
+| Dense-1m OHLCV temporal-selectivity | Branch A pause stands (U0). |
+| Once-per-session lagged-return / 1-day TSMOM | Harvest Path 1b (momentum-class). Routing it here by omitting the story is forbidden move 3. Also classic single-instrument index OHLCV directional timing. |
+| catch22 / ruptures / HMM / PySR as the direction rule | Tool-discipline: covariates or conditioning variables, or K explodes past 3. A one-feature catch22 pick after looking is K = 22. |
+| Other instruments / new series | $0 feasible cell is MNQ RTH. New Databento data needs a cost dry-run + separate GO — not authorized here. |
+
+### Disposition
+
+**Stop generating this session.** Count stays **1/3**. N has **not** fired. This is **not** generation-dry.
+
+Zero *sourced* candidates by 2026-11-08 remains §4 `AMBIGUOUS-HOLD` (re-test 2027-02-08). That trajectory is accepted as first-class: the K-cap addendum already said an empty-through-11-08 outcome would mean the channel is viable only in a band too narrow to populate.
+
+The [analogue-modality ruling](2026-08-15-analogue-modality-route-ruling.md)'s own re-test still rides 2026-11-08 ("if no algorithmic-analogue construct ever opens a manifest, this ruling was inert"). This attempt makes that reading more likely; it does not retire the ruling early.
+
+### Forbidden moves this finding does not license
+
+- Treating this empty naming-pass as a second countable kill.
+- Treating it as generation-dry (N = 3 not reached).
+- Immediately authoring a sibling analogue "to have something to screen."
+- Opening `register_search` so the emptiness "counts" as a §4 strike.
+- Re-opening Cap / waiving K ≤ 3 on the back of this dryness (Q-CAPBAND-1 forbidden move 5).
+
+| Date | Change | By |
+|---|---|---|
+| 2026-08-15 | Addendum: one post-election generation attempt; naming set empty against standing bars; no screen; count remains 1/3; stop generating; AMBIGUOUS-HOLD trajectory accepted; not generation-dry. | Cursor (plan execution) |
