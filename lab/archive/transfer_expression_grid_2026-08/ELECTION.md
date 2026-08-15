@@ -1,7 +1,7 @@
 # Q-TXG-1 Block 2 — election packet (Striker sibling-swap pair)
 
 **Status:** ELECTED · 2026-08-12 · **operator election via task start** (design §5: operator elects ≤2 OPEN cells)
-**Parent:** [design](lab/archive/../../docs/superpowers/specs/2026-08-11-transfer-expression-grid-design.md) §5 · [GRID_RESULTS](GRID_RESULTS.md) H_A OPEN n=25 · Block 1 PR [#754](https://github.com/Joshua-Asante/first-passage/pull/754)
+**Parent:** [design](lab/archive/../../docs/superpowers/specs/2026-08-11-transfer-expression-grid-design.md) §5 · [GRID_RESULTS](GRID_RESULTS.md) H_A OPEN n=25 · Block 1 PR [#754](https://github.com/Joshua-Asante/first-passage-archive/pull/754)
 **Spend:** $0 · K=0 · no PnL/return reads · no manifest · no scoring (Blocks 4–5 gated on operator native-TV exports)
 **Authorizes:** cell PREREG freezes + port builds + RUNSPECs for the two cells below — **not** scoring, N-SURV, or CANDIDATE admission
 

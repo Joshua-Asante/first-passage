@@ -919,6 +919,28 @@ def test_append_only_allows_editing_a_heading_absent_from_the_base():
     assert rs.append_only_problems(base, pinned) == []
 
 
+def test_append_only_tolerates_archive_repo_repoint_on_a_frozen_entry():
+    """first-passage → first-passage-archive on PR/commit hrefs is not a body edit."""
+    gh = "https://github.com/Joshua-Asante/"
+    old_pr = gh + "first-passage/" + "pull/831"
+    new_pr = gh + "first-passage-archive/pull/831"
+    old_sha = gh + "first-passage/" + "commit/12126c58"
+    new_sha = gh + "first-passage-archive/commit/12126c58"
+    base = HEADER + (
+        "## 2026-08-13w — older\n"
+        f"**Focus:** focus for older.\n"
+        f"**Shipped:** [PR #831]({old_pr}) [`12126c58`]({old_sha}).\n"
+    )
+    ours = base.replace(old_pr, new_pr).replace(old_sha, new_sha)
+    assert rs.append_only_problems(base, ours) == []
+    mutated = ours.replace("focus for older", "focus for older — stealth")
+    problems = rs.append_only_problems(base, mutated)
+    assert problems, "gate went VACUOUS: body edit beside the repoint passed"
+    retargeted = ours.replace(new_pr, new_pr.replace("831", "999"))
+    problems = rs.append_only_problems(base, retargeted)
+    assert problems, "gate went VACUOUS: PR-number change passed as a repoint"
+
+
 @needs_git
 def test_check_append_only_cli_vs_explicit_base(tmp_path):
     _repo_with_history(tmp_path, [
