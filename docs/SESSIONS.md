@@ -18,7 +18,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 
 **Focus:** `make check` / `check_root_doc_liveness.py` HARD-failed on 16 markdown links in `STATE.md` + `REPO_MAP.md` whose targets were omitted from the public seed (PR #5 restored `docs/notes/audits/` only).
 
-**Shipped:** branch `cursor/root-doc-liveness-004b` — repointed, did not restore excluded trees. Surviving owners where they exist (`S1`, FU-1 audit, implied-SR ADRs, CFD-estate ADR, `strategy_harvest.md`); `git show <sha>:<path>` retrieval idiom elsewhere (same skip the gate already honors). `make check` green.
+**Shipped:** branch `cursor/root-doc-liveness-004b` — repointed, did not restore excluded trees. Surviving owners where they exist (`S1`, FU-1 audit, implied-SR ADRs, CFD-estate ADR, `strategy_harvest.md`); `git show <sha>:<path>` retrieval idiom elsewhere (same skip the gate already honors). Blast-radius: refreshed the three instrument-ledger SESSION LOG pointers that still markdown-linked the omitted WHO-track / slate-3 notices (`ops/instruments/MCL.md`, `M6A.md`). `make check` green.
 
 **Decisions/defects:** no new ADR. Did not reverse PR #5's `notice/` / `rail_build/` / dated-notes exclusion.
 
