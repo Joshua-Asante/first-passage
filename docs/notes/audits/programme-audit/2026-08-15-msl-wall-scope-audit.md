@@ -151,11 +151,11 @@ grep -n "Proposed second §4 limb" docs/adr/2026-07-15-external-mechanism-harves
 
 ## §11 — Closure
 
-- **Status:** `Closed (immediate + W1–W3 structural complete same session; R3–R6/R10 carried forward, not this note's to discharge)`.
+- **Status:** `Closed (immediate + W1–W3 structural complete same session; R3–R6 discharged later 2026-08-15; R10 drafted Proposed)`.
 - **Immediate repair completed:** 2026-08-15 (this note; registry wiring).
-- **Structural repair completed:** 2026-08-15, same session — W1 ([regime-gate ratification](../../../adr/2026-08-15-regime-gate-scope-ratification.md)), W2 ([allocation-refresh-2 addendum](../../../adr/2026-05-23-allocation-refresh-2.md)), W3 ([Board-lite ratification](../../../adr/2026-08-15-board-lite-label-ratification.md)). R3–R6/R10 remain the 08-03 audit's own assigned owners, unchanged.
+- **Structural repair completed:** 2026-08-15, same session — W1 ([regime-gate ratification](../../../adr/2026-08-15-regime-gate-scope-ratification.md)), W2 ([allocation-refresh-2 addendum](../../../adr/2026-05-23-allocation-refresh-2.md)), W3 ([Board-lite ratification](../../../adr/2026-08-15-board-lite-label-ratification.md)). R3–R6 later same date: [W4 addendum](../../../adr/2026-08-07-w4-minimal-gate-set-dormancy.md). R10 spec: [harvest-intake addendum](../../../adr/2026-07-15-external-mechanism-harvest-intake.md) (`Proposed`; operator GO owed).
 - **Lessons graduated to standing rule:** none this cycle — the Board-lite finding is a first observation, below the two-incident bar (watch).
-- **Follow-up audits triggered:** none automatically. R3–R6/R10 remain the residual "unexecuted self-review" risk for the next quarterly cycle (2026-11-08).
+- **Follow-up audits triggered:** none automatically. Residual at 2026-11-08 is R10's open pin (do already-closed kills count?), not R3–R6.
 
 ---
 
