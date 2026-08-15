@@ -548,6 +548,31 @@ def heading_line(entry: Entry) -> str:
     return entry.text.splitlines()[0]
 
 
+# Public-repo transplant (docs/adr/2026-08-14-repo-public-visibility-transition.md):
+# historical PR/commit objects live on first-passage-archive. A repo-name-only
+# href rewrite is not an Open/next edit. The pattern does not match URLs that
+# already say first-passage-archive (next char after first-passage is '-').
+_HISTORICAL_GH_REPOINT_RE = re.compile(
+    r"https://github.com/Joshua-Asante/first-passage/(pull|commit)/"
+)
+
+
+def _normalize_historical_github_urls(text: str) -> str:
+    """Map first-passage PR/commit hrefs onto first-passage-archive.
+
+    Used only by the append-only comparator so the 2026-08-14 transplant
+    rewrite does not look like a frozen-entry mutation.
+    """
+    return _HISTORICAL_GH_REPOINT_RE.sub(
+        r"https://github.com/Joshua-Asante/first-passage-archive/\1/",
+        text,
+    )
+
+
+def _frozen_entry_body(text: str) -> str:
+    return _strip_trailing_debris(_normalize_historical_github_urls(text))
+
+
 def append_only_problems(base_doc: str, ours_doc: str) -> list[str]:
     """Prior headings must keep their bodies; new headings are allowed.
 
@@ -556,7 +581,9 @@ def append_only_problems(base_doc: str, ours_doc: str) -> list[str]:
     ``base_doc`` but missing or rewritten in ``ours_doc`` is the 2026-08-13z/13y
     class (editing Open/next on an old entry, or a union splice into it).
     Headings absent from the base (this branch's new top entry) may change —
-    that is the PR-URL pin.
+    that is the PR-URL pin. A first-passage → first-passage-archive rewrite
+    of ``/pull/`` or ``/commit/`` hrefs is also not a mutation (public-repo
+    transplant; objects live only on the archive).
     """
     _, base_entries = parse(base_doc or "")
     _, ours_entries = parse(ours_doc or "")
@@ -568,7 +595,7 @@ def append_only_problems(base_doc: str, ours_doc: str) -> list[str]:
         if got is None:
             problems.append(f"append-only: removed heading {heading!r}")
             continue
-        if _strip_trailing_debris(e.text) != _strip_trailing_debris(got.text):
+        if _frozen_entry_body(e.text) != _frozen_entry_body(got.text):
             problems.append(
                 f"append-only: mutated prior entry {e.title!r} "
                 "(edit Open/next on the NEW top entry, not this one)"

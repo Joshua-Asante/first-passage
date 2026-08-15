@@ -217,8 +217,8 @@ armored SUBTRACTs), and the closure note lands per the spec §9 with the §4 ver
 
 ## Addendum — mid-run landings (2026-08-09, merge of origin/main)
 
-PRs [#706](https://github.com/Joshua-Asante/first-passage/pull/706) and
-[#707](https://github.com/Joshua-Asante/first-passage/pull/707) merged to main while Phases 1–2
+PRs [#706](https://github.com/Joshua-Asante/first-passage-archive/pull/706) and
+[#707](https://github.com/Joshua-Asante/first-passage-archive/pull/707) merged to main while Phases 1–2
 ran: the instrument-lane SPEC resolved (MCL scored — geometry PASS, TNEC mechanism-owed; MES/MGC
 `RE-ENTERED`; election left to operator) and Q-TNEC-CON-2's compression-break G0 froze (explore GO
 unpaid; Family A displacement-fade killed at the cheap falsifier). **Both are a3-lane internals

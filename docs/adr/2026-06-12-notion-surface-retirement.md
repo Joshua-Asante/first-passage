@@ -125,7 +125,7 @@ undecided through both the 2026-07-01 and 2026-08-08 quarterly programme audits.
 2. GSUB-1 (first GRAND-Subtract pass) ruled the pending Phase-3 sub-option as **cold
    archival**, not workspace deletion — pursuit record
    [`docs/pursuits/c6-notion-estate.md`](../pursuits/c6-notion-estate.md) (landed via
-   [PR #708](https://github.com/Joshua-Asante/first-passage/pull/708), merged 2026-08-10;
+   [PR #708](https://github.com/Joshua-Asante/first-passage-archive/pull/708), merged 2026-08-10;
    closure `RESOLVED-LOADBEARING`; mechanical Notion action deliberately left as a named
    follow-up outside that run's jurisdiction).
 3. Operator GO this session authorizes and records the follow-up.
