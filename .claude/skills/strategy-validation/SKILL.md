@@ -134,8 +134,8 @@ Standing defaults: mechanism-first admission + DSR-cap refuse (S6), temporal
 consistency where prereg requires it, realism limbs named by the campaign.
 **SPA/StepM (8a) and PBO (8c) are DORMANT** — re-arm only when a campaign prereg
 explicitly names thresholds **and** an operator GO lifts dormancy. DSR (8b)
-remains available; pass `var_trials=1/n` (or pin V) until the module default
-flips (audit R5 / 2026-09-01).
+remains available; module default is `var_trials=1/n` (audit R5, flipped
+2026-08-15). An explicit pin still overrides.
 
 **Orchestrator (dormant as default promote/reject — W4).**
 `lab/research_utils/universe_gate.py` still composes 8a+8b+8c and retains

@@ -587,11 +587,15 @@ def memory_scan(mem_dir: Path | None, repo_root: Path | None = None,
 # Q-ORB-FRIDAY-1 / `3935d2c` class — prereg `711d499` is a true ancestor there,
 # so this artifact-pairing check correctly does not fire). Detecting that needs
 # semantic diffing of the run script, not artifact pairing; it is a Forward
-# extension. Cross-tree prereg<->results pairs whose names share neither a
-# Q-ID nor a directory (e.g. the clean-vintage RESULTS<->its dated prereg) are
-# also not paired directly — but such a commit is still caught whenever any one
-# corresponding pair is present (as with `efeda82` via its Q-INCUMBENT-REGIME-1
-# closure), which is why the scan flags the commit, not each pair.
+# extension.
+#
+# Cross-tree pairing (gate-stack audit R3, 2026-08-15): a pre-registration
+# under docs/briefs/pre-registration/ now pairs with a lab/analysis (or
+# lab/archive) RESULTS/FINDINGS file when they share a Q-ID in the *basename
+# or file body*, or when the RESULTS body cites the prereg path/basename.
+# Path-only pairing still cannot see those pairs; preregistration_scan reads
+# commit blobs (fail-open) and threads them into _corresponds. The scan still
+# flags the commit, not each pair.
 
 _PREREG_DIR = "docs/briefs/pre-registration/"
 # A question-ID stem: "Q-" then hyphenated ALL-CAPS/digit segments, ending at the
@@ -642,20 +646,58 @@ def _is_result_artifact(path: str) -> bool:
     return False
 
 
-def _qids(path: str) -> set[str]:
-    return set(_QID_RE.findall(_basename(path)))
+def _qids(path: str, text: str | None = None) -> set[str]:
+    """Question-ID stems from the basename, plus any in `text` when supplied.
+
+    Basename-only pairing misses the G1 family: most docs/briefs/pre-registration/
+    files and lab/analysis RESULTS carry no Q-ID in the filename (gate-stack
+    audit R3). Body extraction is opt-in so the pure path core stays cheap.
+    """
+    found = set(_QID_RE.findall(_basename(path)))
+    if text:
+        found |= set(_QID_RE.findall(text))
+    return found
 
 
-def _corresponds(result_path: str, prereg_path: str) -> bool:
+def _prereg_cited_in(result_text: str, prereg_path: str) -> bool:
+    """True when a RESULTS/closure body names its pre-registration path or basename."""
+    if not result_text:
+        return False
+    if prereg_path in result_text:
+        return True
+    base = _basename(prereg_path)
+    return bool(base) and base in result_text
+
+
+def _corresponds(
+    result_path: str,
+    prereg_path: str,
+    *,
+    result_text: str | None = None,
+    prereg_text: str | None = None,
+) -> bool:
     """A results artifact corresponds to a prereg if they share a question-ID
-    stem, or (for the lab/analysis/<run>/ style) the same containing directory."""
-    if _qids(result_path) & _qids(prereg_path):
+    stem (basename or, when supplied, file body), share a containing directory
+    (lab/analysis/<run>/ style), or the RESULTS body cites a
+    docs/briefs/pre-registration/ path/basename (cross-tree G1 family)."""
+    if _qids(result_path, result_text) & _qids(prereg_path, prereg_text):
         return True
     rd = _parent_dir(result_path)
-    return rd != "" and rd == _parent_dir(prereg_path)
+    if rd != "" and rd == _parent_dir(prereg_path):
+        return True
+    if (
+        prereg_path.startswith(_PREREG_DIR)
+        and result_path.startswith(("lab/analysis/", "lab/archive/"))
+        and _prereg_cited_in(result_text or "", prereg_path)
+    ):
+        return True
+    return False
 
 
-def _pair_violations(changed: list[tuple[str, str]]) -> list[tuple[str, str, str]]:
+def _pair_violations(
+    changed: list[tuple[str, str]],
+    texts: dict[str, str] | None = None,
+) -> list[tuple[str, str, str]]:
     """Pure core: given a commit's changed files [(status, path)], return the
     (result_path, prereg_path, prereg_status) triples worth reporting on.
 
@@ -665,13 +707,20 @@ def _pair_violations(changed: list[tuple[str, str]]) -> list[tuple[str, str, str
       M — the prereg predates the results (its freeze may be a proper ancestor);
           the concern is only that the run commit moved frozen text.
     Collapsing them mislabels the second as the first — see the 2026-07-27
-    addendum in the design spec."""
+    addendum in the design spec.
+
+    `texts` is an optional path -> file-body map (commit blob, not the working
+    tree). When omitted, pairing is path-only — existing unit tests stay
+    basename/directory. preregistration_scan supplies blobs so cross-tree
+    G1-family pairs can fire."""
     preregs = [(p, s) for s, p in changed if s in ("A", "M") and _is_prereg_artifact(p)]
     results = [p for s, p in changed if s == "A" and _is_result_artifact(p)]
     pairs: list[tuple[str, str, str]] = []
     for rp in results:
+        rtxt = None if texts is None else texts.get(rp)
         for pp, ps in preregs:
-            if _corresponds(rp, pp):
+            ptxt = None if texts is None else texts.get(pp)
+            if _corresponds(rp, pp, result_text=rtxt, prereg_text=ptxt):
                 pairs.append((rp, pp, ps))
     return pairs
 
@@ -766,7 +815,17 @@ def preregistration_scan(root: Path, asof: date, lookback_days: int = 14) -> lis
     Report-only, fail-open (no git -> [])."""
     findings: list[Finding] = []
     for sha in _window_commits(root, asof, lookback_days):
-        pairs = _pair_violations(_changed_files(root, sha))
+        changed = _changed_files(root, sha)
+        need = {
+            p for s, p in changed
+            if s in ("A", "M") and (_is_prereg_artifact(p) or _is_result_artifact(p))
+        }
+        texts: dict[str, str] = {}
+        for rel in need:
+            blob = _git_lines(root, "show", f"{sha}:{rel}")
+            if blob is not None:
+                texts[rel] = "\n".join(blob)
+        pairs = _pair_violations(changed, texts or None)
         if not pairs:
             continue
         short = sha[:7]

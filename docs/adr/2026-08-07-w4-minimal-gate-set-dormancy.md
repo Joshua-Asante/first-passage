@@ -120,3 +120,17 @@ grep -n "Dormant\|tombstoned\|archived" REPO_MAP.md .claude/skills/strategy-vali
 grep -n "Superseded-in-part-by" docs/adr/2026-07-20-stage8-variance-dominance-risk-neff-gate.md
 grep -n "W4\|dormant\|tombston" ops/prop_envelope_default.md docs/methodology/strategy_harvest.md
 ```
+
+---
+
+## Addendum 2026-08-15 — audit R3 / R5 / R6 discharged
+
+W4 deferred the code flips and left the 09-01 / sentinel-repair dates standing. The 2026-08-15 gate-stack repair pass executed them:
+
+| Audit row | Disposition |
+|---|---|
+| **R3** (`_corresponds` prereg↔RESULTS) | **DONE** — body Q-ID + RESULTS-cites-prereg pairing; path-only tests unchanged |
+| **R5** (`var_trials=1/n` default) | **DONE** — module default flipped; self-tests rewritten against `1/n` |
+| **R6** (`DEFAULT_FIRM_KEY` in `cost_mnq.py`) | **DONE** — `firm_key` required; cheapest-firm default retired |
+
+R10 stays with the [harvest-intake ADR](2026-07-15-external-mechanism-harvest-intake.md) as a **Proposed** second §4 limb — not discharged here, not self-ratified. Dormancy table above is unchanged.

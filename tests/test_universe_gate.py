@@ -23,6 +23,18 @@ from research_utils.prereg_paths import DISC_CAMP_0_PREREG  # noqa: E402
 _PREREG = DISC_CAMP_0_PREREG
 
 
+def _thr() -> ug.Thresholds:
+    """DISC-CAMP-0 thresholds. Public clones may lack the LTM prereg body;
+    fall back to the frozen numbers the parser would have read (α=0.05,
+    DSR=0.95, PBO=0.5, 5/7) so R5 default tests still run."""
+    if _PREREG.exists():
+        return ug.load_thresholds_from_prereg(_PREREG)
+    return ug.Thresholds(
+        alpha=0.05, dsr_min=0.95, pbo_max=0.5,
+        consistency_min=5, consistency_years=7,
+    )
+
+
 # ---------------------------------------------------------------- thresholds
 
 def test_thresholds_read_from_prereg_not_hardcoded():
@@ -143,14 +155,11 @@ def test_gate_verdict_carries_nulls_alive_ledger():
     assert all(isinstance(x, bool) for x in v.gate_results.values())
 
 
-# ---------------------------------------------------------------- var_trials override
-# Added per docs/adr/2026-07-12-dsr-k-rule-and-variance-floor-supersession.md: the
-# module's DEFAULT var_trials estimator (empirical Var(col_sr) across returns-matrix
-# columns) is verified biased upward at realistic K_SPA — a genuine edge inflates its
-# own column's contribution to the cross-column variance, raising the very benchmark
-# it must then beat, and collapses to var_trials=0 (SR0~=0, DSR trivially ~1) at
-# K_SPA=1. Campaigns pre-registering a frozen V-rule (e.g. V=1/n) must be able to pin
-# it explicitly rather than rely on the default.
+# ---------------------------------------------------------------- var_trials default (R5)
+# Gate-stack audit R5 / 2026-08-15: module default is 1/n on the selected
+# candidate's finite OOS trade count. The empirical Var(col_sr) estimator is
+# no longer the default (it collapsed to 0.0 at K_SPA=1). An explicit pin
+# still overrides.
 
 def _edge_matrix(n_candidates, n_trades, true_edge_sr, seed):
     rng = np.random.default_rng(seed)
@@ -160,11 +169,20 @@ def _edge_matrix(n_candidates, n_trades, true_edge_sr, seed):
     return np.column_stack(cols), np.zeros(n_trades)
 
 
-def test_var_trials_override_changes_dsr_from_default():
-    """Supplying var_trials must actually be USED (bypass the empirical estimator),
-    not silently ignored — the pinned and default paths diverge on a matrix where the
-    empirical estimator is known-biased (few candidates, one real edge)."""
-    thr = ug.load_thresholds_from_prereg(_PREREG)
+def test_var_trials_default_is_one_over_n():
+    """Omitting var_trials pins V = 1/n on the selected column's finite trade count."""
+    thr = _thr()
+    returns, bench = _edge_matrix(5, 500, 0.20, seed=101)
+    ids = [f"c{i}" for i in range(5)]
+    v_default = ug.run_universe_gate(returns=returns, benchmark=bench, candidate_ids=ids,
+                                     cumulative_k=3200, thresholds=thr, seed=101,
+                                     run_pbo=False)
+    assert v_default.detail["var_trials"] == pytest.approx(1.0 / 500)
+
+
+def test_var_trials_override_is_used():
+    """An explicit pin must actually be USED, not silently replaced by 1/n."""
+    thr = _thr()
     returns, bench = _edge_matrix(5, 500, 0.20, seed=101)
     ids = [f"c{i}" for i in range(5)]
     v_default = ug.run_universe_gate(returns=returns, benchmark=bench, candidate_ids=ids,
@@ -172,47 +190,40 @@ def test_var_trials_override_changes_dsr_from_default():
                                      run_pbo=False)
     v_pinned = ug.run_universe_gate(returns=returns, benchmark=bench, candidate_ids=ids,
                                     cumulative_k=3200, thresholds=thr, seed=101,
-                                    var_trials=1.0 / 500, run_pbo=False)
+                                    var_trials=0.05, run_pbo=False)
+    assert v_pinned.detail["var_trials"] == 0.05
     assert v_default.detail["var_trials"] != v_pinned.detail["var_trials"]
-    assert v_pinned.detail["var_trials"] == 1.0 / 500
-    # The pinned (unbiased) DSR must be materially higher than the empirical
-    # (biased-upward) DSR for a genuine edge at this realistic K_SPA.
-    assert v_pinned.dsr > v_default.dsr
 
 
-def test_var_trials_pin_guards_the_ksp1_degenerate_case():
-    """At K_SPA=1 the DEFAULT empirical estimator collapses to var_trials=0 -> SR0~=0
-    -> DSR trivially ~1 REGARDLESS of cumulative_k, providing zero protection. Pinning
-    var_trials=1/n restores K-sensitivity: the same noise-only single candidate must
-    NOT promote via DSR once V is pinned to a real, non-degenerate value."""
-    thr = ug.load_thresholds_from_prereg(_PREREG)
+def test_var_trials_default_guards_the_ksp1_degenerate_case():
+    """At K_SPA=1 the retired empirical estimator collapsed to var_trials=0 -> SR0~=0
+    -> DSR trivially ~1. The 1/n default must not reproduce that degeneracy."""
+    thr = _thr()
     noise, bench = _edge_matrix(1, 500, 0.0, seed=104)
     ids = ["only_candidate"]
 
     default_verdict = ug.run_universe_gate(returns=noise, benchmark=bench,
                                            candidate_ids=ids, cumulative_k=3200,
                                            thresholds=thr, seed=104, run_pbo=False)
-    assert default_verdict.detail["var_trials"] == 0.0  # confirms the degeneracy exists
+    assert default_verdict.detail["var_trials"] == pytest.approx(1.0 / 500)
 
-    pinned_verdict = ug.run_universe_gate(returns=noise, benchmark=bench,
-                                          candidate_ids=ids, cumulative_k=3200,
-                                          thresholds=thr, seed=104, run_pbo=False,
-                                          var_trials=1.0 / 500)
-    assert pinned_verdict.detail["var_trials"] == 1.0 / 500
-    # Pinned DSR must not be the degenerate near-1.0 the default produces for noise.
-    assert pinned_verdict.dsr < default_verdict.dsr
+    vacuous = ug.run_universe_gate(returns=noise, benchmark=bench,
+                                   candidate_ids=ids, cumulative_k=3200,
+                                   thresholds=thr, seed=104, run_pbo=False,
+                                   var_trials=0.0)
+    # Vacuous V=0 produces a near-1 DSR on noise; 1/n must sit strictly below it.
+    assert default_verdict.dsr < vacuous.dsr
 
 
 def test_self_test_var_trials_forwarded():
     """self_test() forwards var_trials through to run_universe_gate so a campaign can
     calibrate its FROZEN V-rule, not just the module's out-of-the-box default."""
-    thr = ug.load_thresholds_from_prereg(_PREREG)
+    thr = _thr()
     default_res = ug.self_test(thresholds=thr)
-    pinned_res = ug.self_test(thresholds=thr, var_trials=1.0 / 300)
-    assert pinned_res["negative"].detail["var_trials"] == 1.0 / 300
-    assert pinned_res["positive"].detail["var_trials"] == 1.0 / 300
-    # Still discriminates under the pinned rule (the self-test's job either way).
+    pinned_res = ug.self_test(thresholds=thr, var_trials=1.0 / 100)
+    assert pinned_res["negative"].detail["var_trials"] == 1.0 / 100
+    assert pinned_res["positive"].detail["var_trials"] == 1.0 / 100
     assert pinned_res["negative"].promote is False
     assert pinned_res["positive"].promote is True
-    # Sanity: default path is unaffected by this test (still its own empirical value).
-    assert default_res["positive"].detail["var_trials"] != 1.0 / 300
+    # self_test controls use n_trades=300, so the default is 1/300.
+    assert default_res["positive"].detail["var_trials"] == pytest.approx(1.0 / 300)

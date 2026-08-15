@@ -415,6 +415,35 @@ def test_corresponds_by_qid_and_directory():
     )
 
 
+def test_corresponds_by_body_qid_across_trees():
+    """G1-family shape: no Q-ID in either basename, shared Q-ID only in bodies."""
+    result = "lab/analysis/c1/c1_band_rescore_2026-07-24/RESULTS.md"
+    prereg = "docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md"
+    assert not _corresponds(result, prereg)
+    assert _corresponds(
+        result, prereg,
+        result_text="Scored under Q-SURVIVOR-1 frozen thresholds.",
+        prereg_text="This freeze is Q-SURVIVOR-1.",
+    )
+
+
+def test_corresponds_when_results_cite_prereg_path():
+    """Cross-tree: lab RESULTS body names the prereg path (audit R3)."""
+    result = "lab/analysis/c1/c1_band_rescore_2026-07-24/RESULTS.md"
+    prereg = "docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md"
+    assert _corresponds(
+        result, prereg,
+        result_text=(
+            "Gate: docs/briefs/pre-registration/"
+            "2026-07-13-prop-survivor-scoring-prereg.md"
+        ),
+    )
+    assert not _corresponds(
+        result, prereg,
+        result_text="Unrelated campaign; no prereg citation.",
+    )
+
+
 # --- preregistration_scan: pure pairing core -------------------------------- #
 
 def test_pair_violations_flags_closure_plus_prereg():
@@ -481,6 +510,18 @@ def test_pair_violations_ignores_unrelated_prereg_and_results():
         ("A", "docs/briefs/pre-registration/Q-ORB-FRIDAY-1-verdict-preregistration.md"),
     ]
     assert _pair_violations(changed) == []
+
+
+def test_pair_violations_flags_crosstree_when_results_cite_prereg():
+    """Path-only misses the G1 family; a RESULTS body that cites the prereg fires."""
+    result = "lab/analysis/c1/c1_band_rescore_2026-07-24/RESULTS.md"
+    prereg = "docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md"
+    changed = [("A", result), ("A", prereg)]
+    assert _pair_violations(changed) == []
+    texts = {result: f"Frozen gate: {prereg}", prereg: "no Q-ID in this filename"}
+    pairs = _pair_violations(changed, texts)
+    assert len(pairs) == 1
+    assert pairs[0][1] == prereg
 
 
 def test_pair_violations_tags_added_prereg_status():

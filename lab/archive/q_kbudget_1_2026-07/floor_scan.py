@@ -82,12 +82,19 @@ AXES = [
          k_intrinsic=(1, 2),
          clause_n="PASS: power=0.837 at N=1000, delta/sigma=0.093 "
                   "(FRBNY SR917 Table I; harvest addendum H1; Path 1a; RATIFIED 2026-07-16)"),
+    # H2 pin 2026-07-16 (gate-stack audit R4): operator chose reading (c) —
+    # Default-#1 OOS 2019-05-06→present, N≈86, power=0.34, Clause-N FAIL.
+    # The harvest-addendum N=192 / power=0.638 PASS is superseded; citing it
+    # as a fundable PASS is a forbidden move (H-TSMOM-1-ES-tsmom-scoping.md §3).
+    # RESULTS.md / results.json in this directory stay the historical Phase-3
+    # snapshot (Trap-12); this living harness must not reprint the stale PASS.
     dict(axis="H-TSMOM-1 Moskowitz 12m/1m TSMOM (S&P500/ES) [harvest H2]",
          family="ES", k_banked=1,
          k_intrinsic=(1, 1),
-         clause_n="PASS: power=0.638 at N=192, delta/sigma=0.167 "
-                  "(Moskowitz Fig.2; H_TSMOM_1_fig2_scrape.md; harvest addendum H2; "
-                  "Path 1b PASS; RATIFIED 2026-07-16)"),
+         clause_n="FAIL (N, Default-#1 OOS): power=0.34 at N=86, delta/sigma=0.167 "
+                  "(Moskowitz Fig.2; operator-pinned reading (c) 2026-07-16; "
+                  "supersedes harvest-addendum N=192 / power=0.638 PASS — "
+                  "H-TSMOM-1-ES-tsmom-scoping.md)"),
 ]
 
 
