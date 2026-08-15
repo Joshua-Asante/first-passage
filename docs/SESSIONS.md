@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-15d — Limb B (repo_retrieve) quarantined — governance-belt audit
+
+**Focus:** Meta-layer programme audit of the PR #2 governance belt found `scripts/repo_retrieve.py` recall-regressed below its own 2026-07-27 `DELETE-HOLDS` authorization (unranked `FTS5 MATCH`; recall@5 measured at incumbent-parity, 0.086, tying the `rg` baseline it was built to beat). Verdict: **Degenerating** (meta layer).
+
+**Shipped:** branch `claude/limb-b-quarantine-0815` — `check_advisor_dedup.py` FTS companion call disabled; session-discipline attestation instruction suspended; `docs/briefs/INDEX.md` + Q-XMEM-1 brief status cells flagged. No code fix yet — quarantine only.
+
+**Decisions/defects:** no new ADR. Full seven-diagnostic audit + measurement lineage lives in `first-passage-archive` (`docs/notes/` omitted from this seed) — that repo is now GitHub-archived (read-only); restoring `docs/notes/` here, or another lineage channel, is an open operator call.
+
+**Open / next:** re-rank + re-measure `repo_retrieve.py` against the frozen 0.70 / `R_fts5 > R_rg` table before re-enabling (owner: operator, due 2026-08-22). `path-liveness` / `root-doc-liveness` gates were re-tiered `path-conditional` in PR #2 with regexes that never match `lab/|core/|ops/` — miss a moved/deleted link target at pre-commit; revert owed. Carry: F1 2026-11-08; M1; weekly token; Magdon-Ismail B.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; no arming.
+
+---
 ## 2026-08-15c — public-seed CI adaptation (skills + pytest)
 
 **Focus:** Unblock Tests / Skills Check / Pylint on the public seed — dead `docs/notes/**` / `docs/ltm/**` / `docs/superpowers/**` cites and redacted baseline PF, not new product bugs.
