@@ -61,6 +61,11 @@ def test_golden_path_e2e_sim(fixture):
 
 def test_matrix_verdict_tokens_present():
     matrix = _REPO / "docs" / "notes" / "2026-07-06-crosstrade-nt8-payload-sufficiency-matrix.md"
+    if not matrix.is_file():
+        pytest.skip(
+            "payload-sufficiency matrix lives under docs/notes/ "
+            "(excluded from the public seed)"
+        )
     text = matrix.read_text(encoding="utf-8")
     for token in ("EXPRESSIBLE", "DEFAULTABLE-SAFE", "INEXPRESSIBLE"):
         assert token in text

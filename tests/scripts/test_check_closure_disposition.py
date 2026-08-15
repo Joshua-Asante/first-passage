@@ -436,7 +436,14 @@ def test_coverage_owning_adr_is_accepted_and_armed(capsys):
         "coverage owning ADR missing — COVERAGE_OWNING_ADR path drift"
     )
     assert ccd.adr_status(ccd.COVERAGE_OWNING_ADR) == "Accepted"
-    assert ccd.missing_closure_campaigns() == []
+    missing = ccd.missing_closure_campaigns()
+    ltm_briefs = Path(__file__).resolve().parents[2] / "docs" / "ltm" / "briefs"
+    if missing and not ltm_briefs.is_dir():
+        pytest.skip(
+            "closure bodies live under docs/ltm/briefs/ "
+            "(excluded from the public seed)"
+        )
+    assert missing == []
     assert ccd.main([]) == 0
     out = capsys.readouterr().out
     assert "HARD closure-disposition coverage:" not in out

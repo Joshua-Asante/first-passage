@@ -68,7 +68,7 @@ closed vocabulary is:
 | `Retired` | Cold — same shape | Operator kill with no successor ADR |
 
 There is no `Deprecated` token and no `ADR-NNN` numbering — both were dropped
-2026-07-17 (design: `docs/superpowers/specs/2026-07-17-adr-lifecycle-graph-design.md`).
+2026-07-17 (design record excluded from the public seed; live graph is `docs/adr/INDEX.md`).
 **Partial supersession is not a Status token.** An ADR that is only partially
 superseded stays `Accepted`; the partial kill is recorded solely via a non-`none`
 `Superseded-in-part-by` field. `docs/adr/INDEX.md` derives its "Partially

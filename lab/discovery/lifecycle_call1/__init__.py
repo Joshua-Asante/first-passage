@@ -13,7 +13,12 @@ Handoff: ``docs/briefs/rnd-pipeline/2026-07-14-cursor-handoff-lifecycle-call1-si
 """
 from __future__ import annotations
 
-from .baselines import DEFAULT_BASELINES_PATH, BaselinePF, load_baseline_pfs
+from .baselines import (
+    DEFAULT_BASELINES_PATH,
+    BaselineDataUnavailable,
+    BaselinePF,
+    load_baseline_pfs,
+)
 from .breach_tracker import (
     DEFAULT_BREACH_STATE_PATH,
     load_breach_state,
@@ -29,6 +34,7 @@ __all__ = [
     "DEFAULT_BASELINES_PATH",
     "DEFAULT_BREACH_STATE_PATH",
     "MIN_TRADE_COUNT",
+    "BaselineDataUnavailable",
     "BaselinePF",
     "Call1StrategyReport",
     "WindowOutcome",

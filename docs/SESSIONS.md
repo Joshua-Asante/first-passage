@@ -14,6 +14,20 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-15b — public-seed CI adaptation (skills + pytest)
+
+**Focus:** Unblock Tests / Skills Check / Pylint on the public seed — dead `docs/notes/**` / `docs/ltm/**` / `docs/superpowers/**` cites and redacted baseline PF, not new product bugs.
+
+**Shipped:** branch `cursor/public-seed-ci-adaptation-52bf` — drop or archive-repoint the excluded skill refs; skip pytest when those trees (or thin git ancestry) are absent; `BaselineDataUnavailable` when `baselines.md` holds the public-tree placeholder. Does not restore excluded trees or Pepperstone PF numbers.
+
+**Decisions/defects:** none new. Follows [public-visibility transition](adr/2026-08-14-repo-public-visibility-transition.md) §6 seed exclusions.
+
+**Open / next:** operator ruling still owed on `closure-disposition-coverage-hard.md` (new hard gate landed 4 days into F-2's own trigger window — worth it or not); GitHub webhook trigger's branch filter not yet narrowed to `cursor/*` (cosmetic, routine's own logic already re-scopes). Carry: F1 2026-11-08; M1; weekly token; Magdon-Ismail B.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; no arming.
+
+---
+
 ## 2026-08-14y — F-2 closure + CC/Cursor autonomous-loop ADR + webhook live
 
 **Focus:** Close the Great Prune's fired F-2 falsifier; ratify a CC/Cursor autonomous dispatch-detect-merge loop at operator direction.

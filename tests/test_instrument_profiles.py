@@ -204,6 +204,18 @@ def test_p1_flags_dangling_source_link(tmp_path):
     assert any(f.code == "P1" and "does not resolve" in f.message for f in findings)
 
 
+def test_p1_waives_public_seed_excluded_source(tmp_path):
+    """docs/ltm/** (and notes/superpowers) were curated out of the public seed."""
+    body = VALID_LEDGER.replace(
+        '"../../docs/x.md"',
+        '"../../docs/ltm/briefs/foo.md"',
+    )
+    d = _write_ledger(tmp_path, "TST.md", body)
+    profiles, _ = ip.load_profiles(d)
+    findings = ip.validate(profiles, _mechs(tmp_path), tmp_path)
+    assert [f for f in findings if "does not resolve" in f.message] == []
+
+
 def test_anchor_only_source_is_not_treated_as_a_path(tmp_path):
     d = _write_ledger(tmp_path, "TST.md", VALID_LEDGER.replace('"../../docs/x.md"', '"#M6"'))
     profiles, _ = ip.load_profiles(d)

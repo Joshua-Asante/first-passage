@@ -394,6 +394,9 @@ def check_a3(
                 "cold Status but hot file is not stub-shaped"))
         ltm_path = ltm_dir / name
         if not ltm_path.is_file():
+            if not ltm_dir.is_dir():
+                # Public seed excludes docs/ltm/** (2026-08-14 transition ADR).
+                continue
             findings.append(Finding(
                 "HARD", "A3", surface, h.raw_status_lineno,
                 f"missing LTM body docs/ltm/adr/{name}"))

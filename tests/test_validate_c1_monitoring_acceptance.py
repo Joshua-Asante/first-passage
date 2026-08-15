@@ -18,6 +18,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 _REPO = Path(__file__).resolve().parents[1]
 _PATH = _REPO / "scripts" / "validate_c1_monitoring_acceptance.py"
 _spec = importlib.util.spec_from_file_location("validate_c1_m1", _PATH)
@@ -128,6 +130,11 @@ def test_live_artifact_records_the_open_skew_rather_than_hiding_it(tmp_path):
     """Guards the honesty fix itself: while deployed != main, the artifact must
     say so. Structural — it asserts the note tracks the check, not a hash."""
     live = _REPO / "docs" / "notes" / "rail_build" / "M1_MONITORING_ACCEPTANCE.json"
+    if not live.is_file():
+        pytest.skip(
+            "M1 acceptance artifact lives under docs/notes/ "
+            "(excluded from the public seed)"
+        )
     data = json.loads(live.read_text(encoding="utf-8"))
     skew = vm.tree_skew(live)
     if skew:

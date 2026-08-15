@@ -274,24 +274,56 @@ def _materialize_pruned_scoring_helpers(tmp_path: Path) -> Path:
     dest.mkdir()
     scoring_dir = "lab/analysis/c1/class_s_candidate1_scoring_2026-07-15"
     # Parent of the great-prune commit that dropped the harnesses.
-    tip = subprocess.check_output(
-        ["git", "log", "-1", "--format=%H", "--diff-filter=D", "--", f"{scoring_dir}/run_class_s_c1_scoring.py"],
-        cwd=REPO,
-        text=True,
-    ).strip()
-    parent = subprocess.check_output(
-        ["git", "rev-parse", f"{tip}^"],
-        cwd=REPO,
-        text=True,
-    ).strip()
+    # The public seed starts at the initial-release commit — that ancestry
+    # (and the deleted harness blob) lives only in first-passage-archive.
+    try:
+        tip = subprocess.check_output(
+            [
+                "git",
+                "log",
+                "-1",
+                "--format=%H",
+                "--diff-filter=D",
+                "--",
+                f"{scoring_dir}/run_class_s_c1_scoring.py",
+            ],
+            cwd=REPO,
+            text=True,
+        ).strip()
+    except subprocess.CalledProcessError as exc:
+        pytest.skip(
+            "pruned W1 harness not in git ancestry "
+            f"(public seed has no pre-transition history): {exc}"
+        )
+    if not tip:
+        pytest.skip(
+            "pruned W1 harness not in git ancestry "
+            "(public seed has no pre-transition history)"
+        )
+    try:
+        parent = subprocess.check_output(
+            ["git", "rev-parse", f"{tip}^"],
+            cwd=REPO,
+            text=True,
+        ).strip()
+    except subprocess.CalledProcessError:
+        pytest.skip(
+            "not enough git ancestry to materialize pruned W1 helpers "
+            "(public seed starts at the initial release commit)"
+        )
     for name in (
         "run_class_s_c1_scoring.py",
         "run_class_s_c1_regime_gate.py",
     ):
-        blob = subprocess.check_output(
-            ["git", "show", f"{parent}:{scoring_dir}/{name}"],
-            cwd=REPO,
-        )
+        try:
+            blob = subprocess.check_output(
+                ["git", "show", f"{parent}:{scoring_dir}/{name}"],
+                cwd=REPO,
+            )
+        except subprocess.CalledProcessError as exc:
+            pytest.skip(
+                f"pruned W1 helper {name} not in git ancestry: {exc}"
+            )
         dest_file = dest / name
         dest_file.write_bytes(blob)
         _pin_materialized_repo_root(dest_file)

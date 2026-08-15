@@ -115,6 +115,10 @@ def test_idx_residual_basis_removal():
 
 
 def test_load_thresholds_from_prereg():
+    if not lib.PREREG_PATH.is_file():
+        pytest.skip(
+            "Q-FEED-1 prereg lives under docs/ltm/ (excluded from the public seed)"
+        )
     thr = lib.load_thresholds()
     assert thr.fx_p95_accept == pytest.approx(0.10)
     assert thr.fx_p95_reject == pytest.approx(0.25)
