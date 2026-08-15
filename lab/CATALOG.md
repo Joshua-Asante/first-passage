@@ -40,6 +40,8 @@ documents the camp boundary for humans/tools.
 | eval_shape_diagnostics_2026-07-28 | c1 | ACTIVE | eval-shape diagnostics under corrected Tradeify geometry | lab/analysis/c1/eval_shape_diagnostics_2026-07-28/ | — |
 | eval_slow_archetype_2026-08-04 | c1 | ACTIVE | — | lab/analysis/c1/eval_slow_archetype_2026-08-04/ | — |
 | f3_cadence_successor_venues_2026-08-05 | c1 | ACTIVE | the cadence axis F3 required is measured, and **F3 is not decidable on it.** Bulenox and MFFU sit in the same inactiv... | lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/ | — |
+| geofit_iid_sufficiency_power_2026-08-15 | c1 | HOLD | archive owed (CLOSED): scoping probe, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_skew_prob... | lab/analysis/c1/geofit_iid_sufficiency_power_2026-08-15/ | — |
+| geofit_skewed_family_construction_2026-08-15 | c1 | HOLD | archive owed (CLOSED): scoping construction, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_sk... | lab/analysis/c1/geofit_skewed_family_construction_2026-08-15/ | — |
 | mnq_capflow_orb_r_2026-08 | c1 | HOLD | archive owed (FALSIFIED): `FALSIFIED` · **cap_spent:** `False` | lab/analysis/c1/mnq_capflow_orb_r_2026-08/ | — |
 | mnq_event_ceiling_2026-08-04 | c1 | ACTIVE | — | lab/analysis/c1/mnq_event_ceiling_2026-08-04/ | — |
 | mnq_ofchan_routeb_2026-08 | c1 | ACTIVE | — | lab/analysis/c1/mnq_ofchan_routeb_2026-08/ | — |

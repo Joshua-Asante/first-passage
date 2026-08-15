@@ -1,0 +1,489 @@
+{
+  "status": "scoping construction, follow-up to geofit_skew_probe_2026-07-25 + geofit_iid_sufficiency_power_2026-08-15; NOT part of the closed study",
+  "design_decision": "win-branch tail PRESERVED, not capped (operator directed 2026-08-15) -- see family_skewed_gamma.py docstring",
+  "real_bust_reference": 0.047433,
+  "real_book_skew_reference": 3.6332326168850386,
+  "real_book_max_win_reference": 4971.88121682013,
+  "tier": "Tradeify_Select_100K",
+  "geometry": "CORRECTED (dd_lock_offset_usd -> 1e6)",
+  "n_sims_per_seed": 10000,
+  "n_realizations": 50,
+  "seed_base": 20260815100,
+  "fitted_params": {
+    "n_active": 350,
+    "p_win": 0.42857142857142855,
+    "win_mean": 463.0821182648405,
+    "win_sd": 772.5263775404508,
+    "win_max": 4971.88121682013,
+    "loss_mean": -123.81213275943954,
+    "loss_sd": 129.0606791209241,
+    "loss_min": -744.4142958738101,
+    "k_win": 0.3593266166231815,
+    "k_loss": 0.9203192738071151
+  },
+  "bust_mean": 0.07463666666666667,
+  "bust_sd": 0.07068881030611798,
+  "bust_min": 0.0068,
+  "bust_max": 0.36526666666666663,
+  "bust_percentiles": {
+    "10": 0.016456666666666668,
+    "25": 0.02270833333333333,
+    "50": 0.05573333333333333,
+    "75": 0.102725,
+    "90": 0.14125333333333334
+  },
+  "realized_skew_mean": 4.244934089525708,
+  "realized_max_win_mean": 4989.9525978964575,
+  "runs": [
+    {
+      "seed": 20260815100,
+      "headline_bust": 0.022199999999999998,
+      "pass_rate": 0.9777999999999999,
+      "realized_skew": 4.472472586891667,
+      "realized_max_win": 5018.013804692511,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 281.2
+    },
+    {
+      "seed": 20260815101,
+      "headline_bust": 0.014266666666666665,
+      "pass_rate": 0.9857333333333332,
+      "realized_skew": 4.530438955616213,
+      "realized_max_win": 5954.287474423972,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 250.5
+    },
+    {
+      "seed": 20260815102,
+      "headline_bust": 0.14609999999999998,
+      "pass_rate": 0.8536333333333332,
+      "realized_skew": 3.7388404706458656,
+      "realized_max_win": 3975.344413227236,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 319.8
+    },
+    {
+      "seed": 20260815103,
+      "headline_bust": 0.09633333333333334,
+      "pass_rate": 0.9034666666666666,
+      "realized_skew": 4.463551211786071,
+      "realized_max_win": 5316.898598553083,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 303.0
+    },
+    {
+      "seed": 20260815104,
+      "headline_bust": 0.032766666666666666,
+      "pass_rate": 0.9672333333333333,
+      "realized_skew": 4.283204651091747,
+      "realized_max_win": 6009.511341000045,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 248.0
+    },
+    {
+      "seed": 20260815105,
+      "headline_bust": 0.011066666666666667,
+      "pass_rate": 0.9889333333333333,
+      "realized_skew": 3.0625379163894557,
+      "realized_max_win": 3685.485083141294,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 220.3
+    },
+    {
+      "seed": 20260815106,
+      "headline_bust": 0.016866666666666665,
+      "pass_rate": 0.9831333333333333,
+      "realized_skew": 4.990312095019872,
+      "realized_max_win": 8143.925848868948,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 197.6
+    },
+    {
+      "seed": 20260815107,
+      "headline_bust": 0.14123333333333335,
+      "pass_rate": 0.8576333333333332,
+      "realized_skew": 5.47312741673129,
+      "realized_max_win": 6470.889012029928,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 322.6
+    },
+    {
+      "seed": 20260815108,
+      "headline_bust": 0.04543333333333333,
+      "pass_rate": 0.9545333333333333,
+      "realized_skew": 4.897056983811464,
+      "realized_max_win": 6058.420384550491,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 254.6
+    },
+    {
+      "seed": 20260815109,
+      "headline_bust": 0.018466666666666666,
+      "pass_rate": 0.9815333333333333,
+      "realized_skew": 3.319175241488004,
+      "realized_max_win": 4093.1144064375503,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 225.3
+    },
+    {
+      "seed": 20260815110,
+      "headline_bust": 0.10060000000000001,
+      "pass_rate": 0.8993666666666668,
+      "realized_skew": 3.4412192191923974,
+      "realized_max_win": 3734.056011641006,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 241.1
+    },
+    {
+      "seed": 20260815111,
+      "headline_bust": 0.0068,
+      "pass_rate": 0.9932,
+      "realized_skew": 3.5742688295112237,
+      "realized_max_win": 4364.493888120758,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 195.5
+    },
+    {
+      "seed": 20260815112,
+      "headline_bust": 0.06373333333333332,
+      "pass_rate": 0.9362666666666667,
+      "realized_skew": 4.000712169910865,
+      "realized_max_win": 5580.789901583831,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 220.5
+    },
+    {
+      "seed": 20260815113,
+      "headline_bust": 0.06236666666666666,
+      "pass_rate": 0.9376333333333333,
+      "realized_skew": 3.339196038754719,
+      "realized_max_win": 4874.435746531132,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 202.3
+    },
+    {
+      "seed": 20260815114,
+      "headline_bust": 0.055833333333333325,
+      "pass_rate": 0.9436333333333334,
+      "realized_skew": 3.934699818692649,
+      "realized_max_win": 4140.094310953117,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 324.5
+    },
+    {
+      "seed": 20260815115,
+      "headline_bust": 0.16563333333333333,
+      "pass_rate": 0.8330666666666667,
+      "realized_skew": 5.772225611774531,
+      "realized_max_win": 7150.866884465331,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 340.2
+    },
+    {
+      "seed": 20260815116,
+      "headline_bust": 0.05553333333333333,
+      "pass_rate": 0.9433333333333334,
+      "realized_skew": 6.838818731304796,
+      "realized_max_win": 8834.962859553121,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 327.7
+    },
+    {
+      "seed": 20260815117,
+      "headline_bust": 0.14143333333333333,
+      "pass_rate": 0.8584999999999999,
+      "realized_skew": 2.905220667628868,
+      "realized_max_win": 2769.329663755352,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 251.4
+    },
+    {
+      "seed": 20260815118,
+      "headline_bust": 0.09033333333333333,
+      "pass_rate": 0.9074333333333332,
+      "realized_skew": 5.156644689087166,
+      "realized_max_win": 5088.007600968127,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 347.4
+    },
+    {
+      "seed": 20260815119,
+      "headline_bust": 0.1028,
+      "pass_rate": 0.8967999999999999,
+      "realized_skew": 4.02357102541359,
+      "realized_max_win": 4034.395967195041,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 310.5
+    },
+    {
+      "seed": 20260815120,
+      "headline_bust": 0.0823,
+      "pass_rate": 0.9174333333333333,
+      "realized_skew": 3.7495661473057087,
+      "realized_max_win": 4308.801679919868,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 275.7
+    },
+    {
+      "seed": 20260815121,
+      "headline_bust": 0.06356666666666666,
+      "pass_rate": 0.9364,
+      "realized_skew": 4.450361257379178,
+      "realized_max_win": 5250.817436981707,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 262.3
+    },
+    {
+      "seed": 20260815122,
+      "headline_bust": 0.32226666666666665,
+      "pass_rate": 0.6764666666666667,
+      "realized_skew": 4.045968003361458,
+      "realized_max_win": 4240.405117634098,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 410.2
+    },
+    {
+      "seed": 20260815123,
+      "headline_bust": 0.041600000000000005,
+      "pass_rate": 0.9584,
+      "realized_skew": 3.7165328731858382,
+      "realized_max_win": 4005.2057708182756,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 239.6
+    },
+    {
+      "seed": 20260815124,
+      "headline_bust": 0.0119,
+      "pass_rate": 0.9881000000000001,
+      "realized_skew": 3.585909049666854,
+      "realized_max_win": 4331.807822541523,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 202.3
+    },
+    {
+      "seed": 20260815125,
+      "headline_bust": 0.0167,
+      "pass_rate": 0.9832666666666667,
+      "realized_skew": 3.7010069272533905,
+      "realized_max_win": 3788.283450654472,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 244.7
+    },
+    {
+      "seed": 20260815126,
+      "headline_bust": 0.03216666666666667,
+      "pass_rate": 0.9671,
+      "realized_skew": 4.579776364479168,
+      "realized_max_win": 4485.176116284489,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 412.0
+    },
+    {
+      "seed": 20260815127,
+      "headline_bust": 0.05563333333333333,
+      "pass_rate": 0.9443333333333334,
+      "realized_skew": 3.011827184323642,
+      "realized_max_win": 3506.861898311853,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 318.6
+    },
+    {
+      "seed": 20260815128,
+      "headline_bust": 0.0113,
+      "pass_rate": 0.9887,
+      "realized_skew": 5.517037393468359,
+      "realized_max_win": 7277.350175899413,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 372.9
+    },
+    {
+      "seed": 20260815129,
+      "headline_bust": 0.1025,
+      "pass_rate": 0.8964,
+      "realized_skew": 3.813630209111092,
+      "realized_max_win": 3893.39592288056,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 542.0
+    },
+    {
+      "seed": 20260815130,
+      "headline_bust": 0.018,
+      "pass_rate": 0.9820000000000001,
+      "realized_skew": 3.748675584872826,
+      "realized_max_win": 3996.2264741209724,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 353.6
+    },
+    {
+      "seed": 20260815131,
+      "headline_bust": 0.11313333333333335,
+      "pass_rate": 0.8867666666666666,
+      "realized_skew": 4.475797042885242,
+      "realized_max_win": 5292.505157379866,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 469.9
+    },
+    {
+      "seed": 20260815132,
+      "headline_bust": 0.028233333333333333,
+      "pass_rate": 0.9717333333333333,
+      "realized_skew": 4.329735082678243,
+      "realized_max_win": 4901.4921172793765,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 436.0
+    },
+    {
+      "seed": 20260815133,
+      "headline_bust": 0.020166666666666666,
+      "pass_rate": 0.9798,
+      "realized_skew": 3.7710900654778,
+      "realized_max_win": 4102.446888880781,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 387.2
+    },
+    {
+      "seed": 20260815134,
+      "headline_bust": 0.0721,
+      "pass_rate": 0.9274666666666667,
+      "realized_skew": 5.7141837393602835,
+      "realized_max_win": 6861.677549156893,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 442.3
+    },
+    {
+      "seed": 20260815135,
+      "headline_bust": 0.020566666666666667,
+      "pass_rate": 0.9794333333333333,
+      "realized_skew": 4.401939747848187,
+      "realized_max_win": 5501.920172939801,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 371.7
+    },
+    {
+      "seed": 20260815136,
+      "headline_bust": 0.0607,
+      "pass_rate": 0.9391333333333334,
+      "realized_skew": 3.6863664444603983,
+      "realized_max_win": 4200.76017269246,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 392.4
+    },
+    {
+      "seed": 20260815137,
+      "headline_bust": 0.11646666666666668,
+      "pass_rate": 0.8833666666666667,
+      "realized_skew": 3.6156304751708945,
+      "realized_max_win": 4071.1483027355084,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 353.8
+    },
+    {
+      "seed": 20260815138,
+      "headline_bust": 0.0207,
+      "pass_rate": 0.9790666666666666,
+      "realized_skew": 5.044334824123823,
+      "realized_max_win": 5378.011831279139,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 338.6
+    },
+    {
+      "seed": 20260815139,
+      "headline_bust": 0.0331,
+      "pass_rate": 0.9668999999999999,
+      "realized_skew": 3.488166585255264,
+      "realized_max_win": 4504.962925408555,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 244.6
+    },
+    {
+      "seed": 20260815140,
+      "headline_bust": 0.0409,
+      "pass_rate": 0.9590666666666667,
+      "realized_skew": 3.4423246426231056,
+      "realized_max_win": 3246.1085953343136,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 294.3
+    },
+    {
+      "seed": 20260815141,
+      "headline_bust": 0.024233333333333332,
+      "pass_rate": 0.9757666666666666,
+      "realized_skew": 2.6569422894082213,
+      "realized_max_win": 2924.8708790002343,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 215.6
+    },
+    {
+      "seed": 20260815142,
+      "headline_bust": 0.36526666666666663,
+      "pass_rate": 0.6288333333333332,
+      "realized_skew": 7.405950479203186,
+      "realized_max_win": 9014.719217345904,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 386.1
+    },
+    {
+      "seed": 20260815143,
+      "headline_bust": 0.11573333333333334,
+      "pass_rate": 0.8841666666666668,
+      "realized_skew": 3.6460203265494417,
+      "realized_max_win": 4464.062320152369,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 246.6
+    },
+    {
+      "seed": 20260815144,
+      "headline_bust": 0.11313333333333335,
+      "pass_rate": 0.8868333333333333,
+      "realized_skew": 5.269388183879596,
+      "realized_max_win": 7620.051112230519,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 251.5
+    },
+    {
+      "seed": 20260815145,
+      "headline_bust": 0.1216,
+      "pass_rate": 0.8766666666666666,
+      "realized_skew": 4.995402642069302,
+      "realized_max_win": 5225.513973752895,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 328.1
+    },
+    {
+      "seed": 20260815146,
+      "headline_bust": 0.13193333333333335,
+      "pass_rate": 0.8674,
+      "realized_skew": 3.7821553002680512,
+      "realized_max_win": 4051.508303753203,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 299.6
+    },
+    {
+      "seed": 20260815147,
+      "headline_bust": 0.0366,
+      "pass_rate": 0.9632333333333333,
+      "realized_skew": 4.212508143819465,
+      "realized_max_win": 4711.614925150382,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 265.7
+    },
+    {
+      "seed": 20260815148,
+      "headline_bust": 0.05416666666666667,
+      "pass_rate": 0.9458333333333333,
+      "realized_skew": 3.482770023345919,
+      "realized_max_win": 3818.982255452084,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 227.8
+    },
+    {
+      "seed": 20260815149,
+      "headline_bust": 0.09536666666666667,
+      "pass_rate": 0.9043,
+      "realized_skew": 4.688413112709019,
+      "realized_max_win": 5223.618127159522,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 228.9
+    }
+  ]
+}

@@ -22,7 +22,7 @@ Live edges decay, and "consistent over time" can only be *disproven*, never conf
 
 A live strategy's descriptor is the triple **`<version> · LOCKED · <authorization> · <durability-source>`** — e.g. *"Guardian v5.5 · LOCKED · AUTHORIZED · MECHANISM."*
 
-This axis is **orthogonal** to `dd_protection` (intra-challenge drawdown, this account/window) and to `observation_routing.md` Closed/Action/Forward (finding disposition). It composes with them; it replaces neither. Because the lifecycle multiplier only ever *reduces* size, any WATCH-active book is strictly lower-risk than the AUTHORIZED-state MC config (historical pin: [`docs/mc_anchor_history.md`](../mc_anchor_history.md) · gated headline [`CLAUDE.md`](../../CLAUDE.md) §Strategy Reference) — the bust/DD gates move only safe-side, so a de-risk **never requires a re-MC**.
+This axis is **orthogonal** to `dd_protection` (intra-challenge drawdown, this account/window) and to observation-disposition routing (finding disposition — Notice-log's `GRADUATE/DROP/HOLD` for narrative findings; `observation_routing.md`'s Closed/Action/Forward survives only as one mechanical gate's exit codes, per [`ADR 2026-08-15`](../adr/2026-08-15-notice-log-is-the-live-observation-routing-convention.md)). It composes with them; it replaces neither. Because the lifecycle multiplier only ever *reduces* size, any WATCH-active book is strictly lower-risk than the AUTHORIZED-state MC config (historical pin: [`docs/mc_anchor_history.md`](../mc_anchor_history.md) · gated headline [`CLAUDE.md`](../../CLAUDE.md) §Strategy Reference) — the bust/DD gates move only safe-side, so a de-risk **never requires a re-MC**.
 
 ---
 

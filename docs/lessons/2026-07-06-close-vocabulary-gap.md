@@ -1,11 +1,16 @@
-# Lesson M-19 — Close-vocabulary gap: pre-registration freezes the map before the data, but does not guarantee the map *covers* the eventual finding
+# Lesson M-25 — Close-vocabulary gap: pre-registration freezes the map before the data, but does not guarantee the map *covers* the eventual finding
 
-**Lesson ID:** M-19 (methodology) · file-slug `2026-07-06-close-vocabulary-gap`
+**Lesson ID:** M-25 (methodology) · file-slug `2026-07-06-close-vocabulary-gap`
 **Status:** `Candidate` (registered now via structural-argument bypass — see Promotion gate; **not** promoted to Standing rule)
 **Captured:** 2026-07-06
+**Renumbered:** 2026-08-15 — this file self-assigned `M-19` provisionally pending promotion; that number
+was independently taken by `methodology_lessons.md`'s DSR-selection-floor lesson (2026-07-14, heavily
+cross-referenced), producing a live collision undetected for 40 days. Renumbered to the next free slot
+(`M-25`, current registry max at time of fix); the DSR-floor lesson keeps `M-19` since it is the one
+actually in the canonical registry.
 **Promoted to standing rule:** N/A (Candidate)
 **Author:** claude.ai (advisor) · CC (execution)
-**Registry file:** `docs/methodology/lessons/methodology_lessons.md` (canonical M-N home — **not edited by this diff**; the M-19 pointer there is a parent-owned follow-up if/when this promotes, so this Candidate lives as a standalone `docs/lessons/` doc in the 2026-05-27-traps precedent's style until then)
+**Registry file:** `docs/methodology/lessons/methodology_lessons.md` (canonical M-N home — **not edited by this diff**; the M-25 pointer there is a parent-owned follow-up if/when this promotes, so this Candidate lives as a standalone `docs/lessons/` doc in the 2026-05-27-traps precedent's style until then)
 
 ---
 
@@ -104,7 +109,7 @@ grep -n "REGIME-CARRIED-CONFIRMED\|ENGINEERED-BETA-CONFIRMED" docs/ltm/briefs/Q-
 
 # 6. Promotion check (quarterly): a third firing in a SEPARATE window, or a $3K
 #    dollar-anchored firing, meets the empirical gate → escalate to Joshua for
-#    Standing-rule promotion + registry (M-19) + SKILL.md wiring.
+#    Standing-rule promotion + registry (M-25) + SKILL.md wiring.
 ```
 
 ---
