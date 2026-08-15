@@ -14,11 +14,19 @@ recall@5 = 0.086 against the frozen 2026-07-27 falsifier, tied with the plain
 `rg` incumbent it exists to beat. Fixed here, along with UTF-8-safe output
 (the prior hardcoded arrow/ellipsis characters crashed on Windows cp1252
 stdout) and HEAD-stamped staleness (the index previously never refreshed
-once built). None of this re-authorizes the tool for Rule 8 sub-rule 8/10
-attestations — that is Phase 2: a frozen v3 pre-registration re-measures
-this exact file against the same 0.70 / R_fts5 > R_rg table before its
-output is trusted again. The `check_advisor_dedup.py` companion call stays
-disabled until that measurement lands.
+once built).
+
+2026-08-15 (Phase 2, v3 remeasurement, one-revision cap): re-measuring the
+ranked tool against the frozen v3 pre-registration
+(docs/briefs/pre-registration/2026-08-15-fts5-delete-falsifier-prereg-v3.md)
+found a reachability ceiling of 0.676 -- below the 0.70 floor regardless of
+ranking quality, because brief bodies, methodology, spec, and audit-note
+prose were entirely outside the corpus. Widened `collect_chunks()` to add
+`docs/briefs/*.md`, `docs/notes/audits/**`, `docs/methodology/*.md`,
+`docs/spec/*.md` (still excluding `docs/ltm/` and `lab/archive/`) -- the one
+widening revision the v3 pre-registration permits. See
+lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md for the measured
+verdict on this corpus.
 
 Usage:
   python scripts/repo_retrieve.py --rebuild
@@ -40,12 +48,20 @@ REPO = Path(__file__).resolve().parent.parent
 DEFAULT_DB = REPO / ".cache" / "repo_retrieve.sqlite"
 
 # Hot surfaces only. LTM / archive bodies are excluded by construction.
+# Documentation only -- collect_chunks() below hardcodes each path/glob
+# directly and does not consult this tuple; kept in sync by hand.
 HOT_FILES = (
     "lab/CATALOG.md",
     "docs/briefs/INDEX.md",
+    "docs/briefs/*.md",
+    "docs/briefs/closures/*.md",
     "docs/rejected_candidates.md",
     "docs/SESSIONS.md",
     "STATE.md",
+    "docs/adr/*.md",
+    "docs/notes/audits/**/*.md",
+    "docs/methodology/*.md",
+    "docs/spec/*.md",
 )
 
 H3 = re.compile(r"^###\s+")
@@ -129,6 +145,42 @@ def collect_chunks(repo: Path) -> list[dict[str, str]]:
             chunks.append(
                 _chunk(f"docs/briefs/closures/{path.name}", heading, "\n".join(lines))
             )
+
+    # 2026-08-15 v3 remeasurement widening (one-revision cap per
+    # docs/briefs/pre-registration/2026-08-15-fts5-delete-falsifier-prereg-v3.md):
+    # the Run A reachability ceiling (23/34 = 0.676) sat below the 0.70 floor
+    # regardless of ranking quality, because brief bodies, methodology, spec,
+    # and the (2026-08-15-restored) audit-note lineage were entirely absent
+    # from the corpus. Added here, still truncated, still excluding
+    # docs/ltm/ and lab/archive/ per the Q-XMEM-1 Limb B denylist.
+    briefs_dir = repo / "docs" / "briefs"
+    if briefs_dir.is_dir():
+        for path in sorted(briefs_dir.glob("*.md")):
+            lines = _read(path).splitlines()[:24]
+            heading = next((l for l in lines if H1.match(l)), path.name)
+            chunks.append(_chunk(f"docs/briefs/{path.name}", heading, "\n".join(lines)))
+
+    audits_dir = repo / "docs" / "notes" / "audits"
+    if audits_dir.is_dir():
+        for path in sorted(audits_dir.rglob("*.md")):
+            rel = path.relative_to(repo).as_posix()
+            lines = _read(path).splitlines()[:24]
+            heading = next((l for l in lines if H1.match(l)), path.name)
+            chunks.append(_chunk(rel, heading, "\n".join(lines)))
+
+    methodology_dir = repo / "docs" / "methodology"
+    if methodology_dir.is_dir():
+        for path in sorted(methodology_dir.glob("*.md")):
+            lines = _read(path).splitlines()[:24]
+            heading = next((l for l in lines if H1.match(l)), path.name)
+            chunks.append(_chunk(f"docs/methodology/{path.name}", heading, "\n".join(lines)))
+
+    spec_dir = repo / "docs" / "spec"
+    if spec_dir.is_dir():
+        for path in sorted(spec_dir.glob("*.md")):
+            lines = _read(path).splitlines()[:24]
+            heading = next((l for l in lines if H1.match(l)), path.name)
+            chunks.append(_chunk(f"docs/spec/{path.name}", heading, "\n".join(lines)))
 
     return [c for c in chunks if c["text"].strip()]
 

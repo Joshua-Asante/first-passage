@@ -274,7 +274,9 @@ def main(argv: list[str] | None = None) -> int:
                   + (f" (+{len(kw_hits) - len(shown)} more)" if len(kw_hits) > len(shown) else ""))
         print()
 
-    # QUARANTINED 2026-08-15 — do not re-enable without reading the note below.
+    # DISABLED — repo_retrieve.py re-measured ASSISTIVE-ONLY 2026-08-15 (see
+    # _fts_companion docstring below). This is a final disposition under a
+    # frozen pre-registration, not a pending quarantine.
     # _fts_companion(args.repo_root, staged_text if args.keywords else None)
     return 0
 
@@ -282,20 +284,21 @@ def main(argv: list[str] | None = None) -> int:
 def _fts_companion(repo_root: Path, keywords: str | None) -> None:
     """Fail-open FTS pass (Q-XMEM-1 Limb B). Never changes this tool's exit 0.
 
-    QUARANTINED 2026-08-15 (call site above disabled) — a 4-arm ablation
-    against the frozen 2026-07-27 recall falsifier (docs/briefs/pre-registration/
-    2026-07-27-fts5-delete-falsifier-prereg-v2.md) found the shipped
-    scripts/repo_retrieve.py returns recall@5 = 0.086, tied with the rg
-    incumbent it was built to beat (frozen limb 2 fails), because the query
-    it runs omits `ORDER BY rank`. On the operator's primary platform the
-    subprocess call also dies silently on a Windows cp1252 encode error
-    before this function ever prints, so the companion has been a permanent
-    fail-open no-op there regardless. Full measurement: 2026-08-15 governance-
-    belt programme audit (archive-repo lineage — docs/notes/ is omitted from
-    this seed per docs/SESSIONS.md 2026-08-15b; see that entry's pointer).
-    Re-enable only after `ORDER BY rank` is restored, output is UTF-8-safe,
-    and a new RESULTS artifact records a re-measured verdict against the
-    frozen 0.70 / R_fts5 > R_rg table.
+    DISABLED — the call site above stays commented out. Originally
+    QUARANTINED 2026-08-15 when a 4-arm ablation against the frozen
+    2026-07-27 recall falsifier found the shipped scripts/repo_retrieve.py
+    scored recall@5 = 0.086, tied with the rg incumbent it exists to beat,
+    because the query omitted `ORDER BY rank`. Fixed the same day (rank
+    restored, UTF-8-safe output, HEAD-stamped staleness) and re-measured
+    under a fresh frozen pre-registration
+    (docs/briefs/pre-registration/2026-08-15-fts5-delete-falsifier-prereg-v3.md)
+    with one permitted corpus-widening revision taken. Result:
+    `ASSISTIVE-ONLY` — R_shipped@5 = 0.500, beats rg (0.088) decisively but
+    stays below the 0.70 floor. This is the tool's settled disposition, not
+    a bug awaiting a fix. Full record:
+    lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md. Re-enabling
+    this call site requires a fresh frozen registration clearing the floor,
+    not a partial patch.
     """
     if not keywords:
         return

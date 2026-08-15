@@ -31,23 +31,25 @@ Reconcile before executing; re-fetch before pushing. Grounding:
 
 ## Retrieve before new lab / ADR / brief
 
-⚠ **`scripts/repo_retrieve.py` output is QUARANTINED as of 2026-08-15 — do not
-paste it as a sub-rule 8/10 attestation.** A 4-arm ablation against the frozen
-2026-07-27 recall falsifier found the shipped tool scores recall@5 = 0.086,
-tied with the plain-`rg` incumbent it exists to beat, because its query omits
-`ORDER BY rank`; an unranked FTS5 `MATCH` returns rowid order, so it silently
-surfaces `lab/CATALOG.md` rows over the ADR/closure the query names. It also
-dies silently on Windows (cp1252 stdout) with no error surfaced. Until a fix
-lands and a new RESULTS artifact re-measures against the frozen 0.70 /
-`R_fts5 > R_rg` table, satisfy sub-rules 8/10 with literal grep/search output
-against `lab/CATALOG.md`, `docs/briefs/INDEX.md`, and `docs/rejected_candidates.md`
-directly — the standard those sub-rules named before Limb B existed. See
-`docs/SESSIONS.md` 2026-08-15b/d for the pointer trail.
+⚠ **`scripts/repo_retrieve.py` output is not a valid sub-rule 8/10 attestation —
+`ASSISTIVE-ONLY`, re-measured and final as of 2026-08-15.** The rank/UTF-8/staleness
+defects that caused the original quarantine are fixed, and one corpus-widening
+revision was taken, but the tool still does not clear the frozen 0.70 recall floor
+(`R_shipped@5 = 0.500`) — it beats the plain-`rg` incumbent decisively, just not
+well enough to serve as an attestation source. This is a **settled disposition
+under a frozen v3 pre-registration**, not a pending state — do not re-measure
+without a fresh registration. Satisfy sub-rules 8/10 with literal grep/search
+output against `lab/CATALOG.md`, `docs/briefs/INDEX.md`, and
+`docs/rejected_candidates.md` directly — the standard those sub-rules named
+before Limb B existed. `repo_retrieve.py` may still be run as an *assistive*
+search aid; its output is just never sufficient on its own as the pasted
+attestation. Full record:
+[`lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md`](../../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md).
 
 ~~Before creating a new `lab/analysis/` slug or a new file under `docs/adr/` or
 `docs/briefs/`, run `python scripts/repo_retrieve.py --query "<terms>"` and
-paste the output.~~ Suspended per the quarantine above. The index is paths +
-snippets, not authority — Read the named owner, once retrieval is restored.
+paste the output.~~ Suspended per the disposition above. The index is paths +
+snippets, not authority — Read the named owner.
 Grounding: Q-XMEM-1 Limb B + `docs/operational_rules.md` §8.
 
 ## Falsifier before a brief
