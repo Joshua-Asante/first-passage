@@ -1,0 +1,5 @@
+{
+  "name": "first-passage",
+  "install": "python3 -m pip install --user --upgrade pip\npython3 -m pip install --user --require-hashes -r requirements-ops.lock\ntest -x /usr/local/bin/python || sudo ln -sf /usr/bin/python3 /usr/local/bin/python\ngrep -q '.local/bin' \"$HOME/.bashrc\" || echo 'export PATH=\"$HOME/.local/bin:$PATH\"' >> \"$HOME/.bashrc\"\ngrep -q '.local/bin' \"$HOME/.profile\" || echo 'export PATH=\"$HOME/.local/bin:$PATH\"' >> \"$HOME/.profile\"\nbash scripts/install_hooks.sh"
+}
+

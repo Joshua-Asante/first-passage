@@ -283,6 +283,34 @@ def test_scan_registry_skips_grandfathered_name(tmp_path):
     assert ccd.scan_registry(path) is None
 
 
+def test_registry_grandfathered_split_is_exact_partition():
+    """2026-08-15 governance-belt audit action 4: NA/DEBT must partition the
+    union exactly — no overlap (a name can't be simultaneously "doesn't owe
+    a row" and "owes a row"), and nothing dropped when the set was split."""
+    assert ccd.REGISTRY_GRANDFATHERED_NA.isdisjoint(ccd.REGISTRY_DEBT_2026_08)
+    assert (ccd.REGISTRY_GRANDFATHERED_NA | ccd.REGISTRY_DEBT_2026_08) == ccd.REGISTRY_GRANDFATHERED
+    assert len(ccd.REGISTRY_GRANDFATHERED) == 66  # count at 2026-08-15 split; grows forward-only
+    assert len(ccd.REGISTRY_DEBT_2026_08) == 33
+
+
+def test_scan_registry_skips_debt_name_too(tmp_path):
+    # Debt-bucket names are still mechanically exempt -- the split is a
+    # triage aid, not a change to gate behavior.
+    name = next(iter(ccd.REGISTRY_DEBT_2026_08))
+    path = _write(tmp_path, name, "# no iterate\n")
+    assert ccd.scan_registry(path) is None
+
+
+def test_list_debt_cli_lists_every_debt_name(capsys):
+    rc = ccd.main(["--list-debt"])
+    assert rc == 0
+    out = capsys.readouterr().out
+    for name in ccd.REGISTRY_DEBT_2026_08:
+        assert name in out
+    for name in ccd.REGISTRY_GRANDFATHERED_NA:
+        assert name not in out
+
+
 # ── coverage limb: closed campaign with no closure file (lesson_green_gate) ──
 
 _INDEX_FIXTURE = """# Open-Question Roster

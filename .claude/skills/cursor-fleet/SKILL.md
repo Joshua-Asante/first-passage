@@ -33,7 +33,6 @@ Hard disqualifiers for any packet: touches ADR test-1 locked surfaces (core anch
    - `git fetch origin && git log --oneline origin/main --since="24 hours ago"` — re-verify the packet's Phase-0 premises against CURRENT main. Overtaken → mark OVERTAKEN in the manifest, do not dispatch. (Three artifacts were overtaken between authoring and dispatch on 2026-07-24 alone; the daily-repo-truth-sync task reports this each morning, but the dispatch-moment check is still mandatory.)
    - `gh pr list --state open` — no open PR already touches the packet's files.
    - Test 0 per packet: vendor bytes / secrets → route that packet LOCAL (worktree on this machine), never cloud.
-   - Declare the packet's Rule 2 loop class (INNER / OUTER / STRATEGIC) by linking [`docs/adr/2026-06-16-rule-2-budget-before-acting.md`](../../../docs/adr/2026-06-16-rule-2-budget-before-acting.md). Take the iteration budget from that ADR; do not copy the numerals into the packet. The ADR stays PROPOSED.
 
 **5. Dispatch mechanics (the honest constraints):**
    - CC cannot fire `cursor-agent` directly — the CLI dispatch is classifier-blocked without an explicit allow-rule or the committed wrapper (memory `reference_cursor_agent_cli_bridge`). Standing options: (a) the operator fires each worker (CC hands them the packet pointer), or (b) the committed wrapper + a `settings.json` allow-rule lets CC dispatch — **adding that allow-rule is an operator decision; ask once, record it, never work around the classifier.**

@@ -58,18 +58,21 @@ gates:
       - python
       - scripts/check_boundaries.py
 
+  # 2026-08-15 (governance-belt audit action 3): reverted from path-conditional.
+  # Both gates detect dead LINKS — the violation fires just as easily by
+  # deleting/moving the link TARGET as by editing the link itself, and no
+  # staged_regex here ever matched lab/|core/|ops/, so a commit that moved a
+  # lab/analysis/ body out from under a root-doc link skipped this check at
+  # pre-commit. See docs/adr/2026-08-07-w5-governance-diet.md Addendum
+  # 2026-08-15 for the runtime cost measured before reverting (~0.7s + ~1.4s).
   - id: path-liveness
-    tier: path-conditional
-    when:
-      staged_regex: '^(scripts/|docs/|CLAUDE[.]md|STATE[.]md|REPO_MAP[.]md|PIPELINES[.]md|README[.]md)'
+    tier: always
     cmd:
       - python
       - scripts/check_path_liveness.py
 
   - id: root-doc-liveness
-    tier: path-conditional
-    when:
-      staged_regex: '^(CLAUDE[.]md|STATE[.]md|README[.]md|REPO_MAP[.]md|PIPELINES[.]md|docs/)'
+    tier: always
     cmd:
       - python
       - scripts/check_root_doc_liveness.py

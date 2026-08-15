@@ -234,74 +234,106 @@ COVERAGE_GRANDFATHERED: frozenset[str] = frozenset()
 # a new file complies instead. Why this set exists: the 2026-08-03→08-11
 # kill run produced ~15 closures with zero rejected_candidates rows because
 # Iterate/Board-write were gated and the registry append was checklist-only.
-REGISTRY_GRANDFATHERED = frozenset({
+#
+# 2026-08-15 (governance-belt audit action 4): split from one 66-name set
+# into two, classified by reading each closure's actual **Verdict:** line —
+# not its filename — because filename suffixes disagree with substance often
+# enough to matter (e.g. "...costgeo-2-closure-aborted.md" reads FALSIFIED-
+# shaped but is a $0 data-cost-estimate abort with zero candidate ever
+# proposed; "...tnec-env-1-closure.md" reads NULL/STOP-shaped but is a
+# zero-seed-grade harvest sweep, not a tested-and-killed mechanism). Both
+# sets remain exempt from the mechanical gate (REGISTRY_GRANDFATHERED below
+# is their union) — the split is a triage aid, not a gate-behavior change.
+#
+# REGISTRY_GRANDFATHERED_NA — genuinely n/a. RESOLVED / governance / VOID /
+# AMBIGUOUS(-HOLD) / a premise that was never tested (empty intake, zero
+# candidates, a sanity-check that failed before authoring, an operator stop
+# reached "pre-adjudication" with no H1/H2 verdict ever computed). None of
+# these assert a mechanism was tried and found not to work.
+REGISTRY_GRANDFATHERED_NA = frozenset({
+    "2026-07-16-striker-mym-reconstruction-candidate-1-ambiguous.md",
+    "2026-07-27-hermes-agent-adoption-closure-resolved.md",
+    "GSUB-1-closure-resolved-loadbearing.md",
+    "MNQBASE-1-closure-intake-dry.md",
+    "MSL-S7-closure-resolved-e1-hold.md",
+    "Q-6JCOMPOSE-1-closure-void-unexecutable.md",
+    "Q-6JCOMPOSE-2-closure-void-c2-red-gate-unreachable.md",
+    "Q-BOOKFIT-1-closure-resolved.md",
+    "Q-C1PANEL-1-closure-ambiguous.md",
+    "Q-CAPA-1-closure-resolved.md",
+    "Q-CAPALLOC-2-closure-resolved-fragile.md",
+    "Q-COSTGEO-1-closure-ambiguous.md",
+    "Q-COSTGEO-2-closure-aborted.md",
+    "Q-COSTGEO-3-closure-ambiguous-needs-depth.md",
+    "Q-FUNNEL-1-closure-resolved.md",
+    "Q-GEOFIT-1-closure-ambiguous-parameterization.md",
+    "Q-HARV-0-month-end-rebalance-ES.md",
+    "Q-ICT-1-closure-moot.md",
+    "Q-ICT-CASCADE-1-closure-insufficient-n.md",
+    "Q-JOINT-TAIL-WEEKLY-closure-retired.md",
+    "Q-KBUDGET-1-axis-reachability-screen.md",
+    "Q-KBUDGET-HARVEST-1-bounded-axis-literature-sweep.md",
+    "Q-MNQSEL-2-closure-resolved.md",
+    "Q-OFCHAN-1-closure-void-coverage.md",
+    "Q-R2AGRUN-1-closure-ambiguous-hold.md",
+    "Q-RAIL-1-closure-resolved.md",
+    "Q-TNEC-CON-2-closure-ambiguous-hold.md",
+    "Q-TNEC-CON-3-closure-ambiguous-hold.md",
+    "Q-TNEC-CON-4-closure-ambiguous-hold.md",
+    "Q-TNEC-CON-5-closure-ambiguous-hold.md",
+    "Q-TNEC-ENV-1-closure.md",
+    "Q-USOIL-1-closure-subtract.md",
+    "ST-EH-1-closure-operator-stopped.md",
+})
+
+# REGISTRY_DEBT_2026_08 — strategy-grounds kills (FALSIFIED / DEAD / STOP /
+# STAGE-1 FAIL / OPERATOR-KILL, or a SCREEN-FAIL whose own text states the
+# mechanism has no edge / doesn't clear costs — same substance, caught at an
+# earlier stage) that owe a `rejected_candidates.md` row and never got one.
+# Each row's own re-proposal bar (new mechanism evidence, not new packaging)
+# depends on this registry actually naming what was tried — see STATE.md's
+# "registry backfill debt" row. Backfilling is operator-paced, one row is
+# one judgment call on how to phrase the heading; this set only says which
+# 33 closures still owe that call, not what the heading should say.
+REGISTRY_DEBT_2026_08 = frozenset({
     "2026-07-16-aegis-6j-prop-reconstruction-stage1-falsified.md",
     "2026-07-16-aegis-6j-prop-reconstruction-stage2-hsolo-falsified.md",
-    "2026-07-16-striker-mym-reconstruction-candidate-1-ambiguous.md",
     "2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md",
-    "2026-07-27-hermes-agent-adoption-closure-resolved.md",
     "2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md",
     "2026-08-12-q-txg-1-striker-mnq-cell-dead-nsurv.md",
     "2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md",
-    "GSUB-1-closure-resolved-loadbearing.md",
     "H-FBEIA-1-closure-screen-fail.md",
     "H-FCCARRY-1-closure-screen-fail.md",
     "H-ZNAUC-1-closure-screen-fail.md",
-    "MNQBASE-1-closure-intake-dry.md",
     "MSL-C1-closure-falsified.md",
     "MSL-C2-closure-falsified.md",
     "MSL-C3-closure-operator-kill.md",
     "MSL-C3-K2-closure-falsified.md",
     "MSL-S2A-closure-falsified.md",
     "MSL-S2B-closure-stage1-fail-route.md",
-    "MSL-S7-closure-resolved-e1-hold.md",
     "MYM-3FPS-1-closure-falsified.md",
     "OPENPRESS-1-closure-falsified.md",
-    "Q-6JCOMPOSE-1-closure-void-unexecutable.md",
-    "Q-6JCOMPOSE-2-closure-void-c2-red-gate-unreachable.md",
-    "Q-BOOKFIT-1-closure-resolved.md",
     "Q-BUSTGATE-1-closure-falsified.md",
-    "Q-C1PANEL-1-closure-ambiguous.md",
-    "Q-CAPA-1-closure-resolved.md",
-    "Q-CAPALLOC-2-closure-resolved-fragile.md",
     "Q-CAPFLOW-1-closure-falsified.md",
     "Q-COMPOSE-1-closure-falsified.md",
-    "Q-COSTGEO-1-closure-ambiguous.md",
-    "Q-COSTGEO-2-closure-aborted.md",
-    "Q-COSTGEO-3-closure-ambiguous-needs-depth.md",
-    "Q-FUNNEL-1-closure-resolved.md",
     "Q-GATECART-1-survivor-gate-cartography.md",
-    "Q-GEOFIT-1-closure-ambiguous-parameterization.md",
-    "Q-HARV-0-month-end-rebalance-ES.md",
-    "Q-ICT-1-closure-moot.md",
-    "Q-ICT-CASCADE-1-closure-insufficient-n.md",
     "Q-INVENTORY-1-closure-falsified.md",
-    "Q-JOINT-TAIL-WEEKLY-closure-retired.md",
-    "Q-KBUDGET-1-axis-reachability-screen.md",
-    "Q-KBUDGET-HARVEST-1-bounded-axis-literature-sweep.md",
     "Q-MCLTAS-1-closure-falsified.md",
     "Q-MNQDTL-CON-1-closure-falsified.md",
     "Q-MNQSEL-1-closure-falsified.md",
-    "Q-MNQSEL-2-closure-resolved.md",
     "Q-OBJCOHERE-1-closure-falsified-coherent.md",
-    "Q-OFCHAN-1-closure-void-coverage.md",
     "Q-PYRPARITY-1-closure-falsified-nonproportional.md",
-    "Q-R2AGRUN-1-closure-ambiguous-hold.md",
     "Q-R2FLOW-1-closure-falsified.md",
     "Q-R2VBUCK-1-closure-falsified.md",
-    "Q-RAIL-1-closure-resolved.md",
     "Q-SCORE-1-closure-falsified.md",
-    "Q-TNEC-CON-2-closure-ambiguous-hold.md",
-    "Q-TNEC-CON-3-closure-ambiguous-hold.md",
-    "Q-TNEC-CON-4-closure-ambiguous-hold.md",
-    "Q-TNEC-CON-5-closure-ambiguous-hold.md",
-    "Q-TNEC-ENV-1-closure.md",
     "Q-TVCOV-1-closure-falsified.md",
     "Q-TXG-1-closure-falsified-at-walls.md",
-    "Q-USOIL-1-closure-subtract.md",
     "SLR-MYM-1-closure-falsified-stage0.md",
-    "ST-EH-1-closure-operator-stopped.md",
 })
+
+# Union — the mechanical gate's exemption set. Every name above, either
+# bucket. Do not append here directly; append to the correct sub-set.
+REGISTRY_GRANDFATHERED = REGISTRY_GRANDFATHERED_NA | REGISTRY_DEBT_2026_08
 
 
 def _strip_fences(lines: list[str]) -> list[str]:
@@ -698,6 +730,18 @@ def report_missing_closure_coverage(
 
 def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
+
+    if argv and argv[0] == "--list-debt":
+        # 2026-08-15 (governance-belt audit action 4): operator triage list
+        # for REGISTRY_DEBT_2026_08 -- closures that owe a rejected_candidates
+        # row and never got one. Report-only; does not touch closure files or
+        # rejected_candidates.md itself.
+        names = sorted(REGISTRY_DEBT_2026_08)
+        print(f"check_closure_disposition: {len(names)} closure(s) owe a "
+              "rejected_candidates.md row (REGISTRY_DEBT_2026_08):")
+        for name in names:
+            print(f"  - {name}")
+        return 0
 
     if argv:  # explicit-path mode: authoring-time, always hard (Iterate only)
         violations: list[str] = []
