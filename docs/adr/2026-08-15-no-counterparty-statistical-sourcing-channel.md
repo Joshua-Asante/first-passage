@@ -134,6 +134,14 @@ grep -rln "Req 2" docs/briefs/ | xargs grep -l "no-counterparty\|blind lane" 2>/
 
 # N-SURV / dd_protection untouched
 grep -n "eval_bust_ceiling\|DD_TRIGGER\|DD_SCALE" lab/research_utils/nsurv_channel.py core/dd_protection.py
+
+# Consecutive-pre-G0-kill threshold (N=3) — canonical count line present; not still "uncovered"
+grep -n "Running consecutive pre-G0 kill count (canonical)" docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md
+# Expected: one canonical line. Generation-dry fires at count == 3.
+
+# Threshold must not still read as an open election
+grep -n "currently uncovered" docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md
+# Expected: only the historical pre-G0-addendum sentence, immediately followed by a Discharged pointer.
 ```
 
 ---
@@ -253,6 +261,8 @@ The ruling is still correct on its merits — the alternative (counting pre-G0 k
 
 **Open, NOT ratified here — flagged for operator election:** whether a threshold on *consecutive pre-G0 kills* should trigger a disposition of its own (e.g. N consecutive ⇒ the channel reports generation-dry at the quarterly audit irrespective of §4). This addendum deliberately does not invent that threshold; it records that the gap exists and is currently uncovered.
 
+> **Discharged 2026-08-15** by the [N=3 addendum](#addendum-2026-08-15--consecutive-pre-g0-kill-threshold-n--3) below. The paragraph above is the historical flag, not current state.
+
 ### Forbidden moves added
 
 - **Re-classifying a battery-stage death as "pre-G0" to dodge a strike.** The boundary is `register_search open`: once a manifest exists, death at any of the four named stages is a battery-closure strike per the K-cap addendum, unchanged.
@@ -266,3 +276,69 @@ The K-cap addendum's battery-closure definition (death at **any** named stage = 
 | Date | Change | By |
 |---|---|---|
 | 2026-08-15 | Addendum: pre-G0 cheap-falsifier kills are not §4 strikes; boundary is `register_search open`. Mandatory pre-G0 kill counting + disclosure ratified alongside. Names the falsifier-weakening exposure and the uncovered consecutive-kill threshold as an open operator item, not self-adjudicated. Battery-closure definition untouched. | Joshua (operator ruling) + Claude Code |
+
+---
+
+## Addendum 2026-08-15 — Consecutive-pre-G0-kill threshold (N = 3)
+
+**Status:** ratified by operator (JA) 2026-08-15 via accepted plan election ("N = 3" + counting machinery (a)–(d); not light). Discharges the open item the [pre-G0 addendum](#addendum-2026-08-15--a-pre-g0-kill-is-not-a-4-strike) flagged and deliberately left unratified. **Limb 4** of the [ceremony-tiering ADR](2026-08-08-adr-ceremony-tiering.md) fires (creates a disposition-bearing falsifier threshold). Amend-in-place on this file — same form as the K-cap and pre-G0 addenda; not a sibling ADR; not a light record. **$0 / K=0.** No live-risk surface. `CAP` / `DSR_MIN` / `axis_screen.py` untouched.
+
+### Rule 0 reads (this addendum)
+
+- This file @ `ab303d07` (2026-08-15) — pre-G0 addendum L230–268: kill ≠ §4 strike; mandatory count; running count **1**; threshold "Open, NOT ratified here."
+- [`2026-08-08-adr-ceremony-tiering.md`](2026-08-08-adr-ceremony-tiering.md) @ `91e6caad` — limb 4 ("creates or amends doctrine… falsifier threshold"); 08-14 addendum banks two light-that-should-have-been-full records as a candidate incident against the two-incident `FALSIFIED` threshold; 08-15 addendum: amend-in-place beats a sibling.
+- [`STATE.md`](../../STATE.md) @ `fd251e3b` — decision-index line still said "Consecutive-kill threshold left uncovered"; operator queue is rows 0–2 (the pre-G0 addendum's "STATE queue row 3" pointer is already gone).
+- [`docs/SESSIONS.md`](../SESSIONS.md) top Open/next (2026-08-15i) — same uncovered item.
+- Amendment-first search (no sibling minted): `lab/CATALOG.md` / `docs/briefs/INDEX.md` / `docs/rejected_candidates.md` have no N=3 election; `check_advisor_dedup.py --keywords "blind channel consecutive pre-G0 kill threshold N=3"` returned no slug and only keyword-overlap on unrelated audits. Owner is this ADR.
+
+### Ruling
+
+**N = 3 consecutive countable pre-G0 kills ⇒ the channel reports generation-dry at the next quarterly programme audit, irrespective of §4.**
+
+N is a channel property. It may not be waived per-candidate. Changing N requires a superseding addendum on this file, not a per-run exception.
+
+### Why 3, not 6
+
+Each countable kill is a **distinct construct**, not a noisy draw. Variants are barred from counting separately (D-K1: the wider exploration is the K). Three distinct constructs dead at the information screen is class evidence.
+
+The disposition is an audit report, not a channel close — a premature firing costs almost nothing; a late one lets the channel absorb calendar silently (the exposure the pre-G0 addendum already names).
+
+MSL's 6-count is a different cohort (post-G0 freezes without Pine, later-stage, across families). Borrowing it imports a number without its denominator.
+
+Count is already 1. N = 6 would almost certainly never fire before the 2026-11-08 §4 reading — a decorative threshold ([`lesson_gate_reachability_preregistration`](../methodology/lessons/methodology_lessons.md)). N = 3 fires after two more distinct kills.
+
+### Counting machinery (without this, N is unbinding)
+
+**(a) Authoritative surface.** The running-count line in this addendum is canonical. `STATE.md` is a mirror only. STATE rows are deleted when items close; do not treat a missing STATE row as a reset or as "the count was never kept."
+
+**(b) What increments.** A **distinct construct** killed at an **executed** pre-G0 cheap falsifier (information screen and/or cost-law arithmetic, before `register_search open`), recorded on a dated surface. On this public seed, `docs/notes/notice/` is excluded (PR #5); the public recording surface is a dated paragraph on this ADR, optionally plus a `git show <sha>:docs/notes/notice/…` pointer if the notice lives only in the private archive. **Do not increment for:** a `register_search open` refused because declared K ≥ 4 / `floor_at_k(K) > CAP`; a variant, retune, transplant, or relabel of a prior construct (D-K1 — the wider exploration is the K); a naming-pass that never executes a screen (no construct was specified, so nothing was killed).
+
+**(c) What resets "consecutive".** A candidate that **survives** its pre-G0 screen **and** opens a manifest (`register_search open --lane blind --prereg …`). A battery-closure strike after that open is a §4 strike (K-cap addendum), not a pre-G0 increment, and it **does** reset the consecutive pre-G0 count because a candidate was sourced.
+
+**(d) Disposition when N fires.** At the next quarterly programme audit, report **generation-dry** alongside the §4 reading and the pre-G0 kill count. This is **not** `FALSIFIED` (the battery never ran on those kills). It is **not** a license to open a third sourcing channel (§3: if this channel also falsifies, the fallback is the source-class post-mortem, not a third door). §4's three branches and the 2026-11-08 date are unmodified: zero *sourced* candidates by that date remains `AMBIGUOUS-HOLD` (re-test 2027-02-08). Generation-dry and `AMBIGUOUS-HOLD` can both be true at once; they answer different questions (can we even name constructs worth screening vs. did any sourced candidate survive the battery).
+
+**Running consecutive pre-G0 kill count (canonical):** 1 / 3 (`MNQ-ANALOGUE-1`, 2026-08-15).
+
+| # | Construct | Date | Recording surface | Increments? |
+|---|---|---|---|---|
+| 1 | `MNQ-ANALOGUE-1` | 2026-08-15 | `git show dea3af9:docs/notes/notice/N-2026-08-15-blind-channel-cost-geometry-and-first-candidate-kill.md` | yes — executed pre-G0 information screen |
+
+### Named exposure
+
+This threshold makes the pre-G0-≠-strike ruling **reachable**. It does not make cheap kills free: each still burns calendar toward 2026-11-08. It does not convert pre-G0 deaths into §4 strikes — that would fire §4 on evidence that does not bear on its hypothesis (the mirror-image defect the pre-G0 addendum already refused).
+
+### Forbidden moves added
+
+- Writing a light record (or a sibling ADR) for this threshold to dodge limb 4. The 08-14 ceremony-tiering addendum already banks two such incidents as a candidate against that ADR's two-incident `FALSIFIED` threshold.
+- Incrementing the count for a K ≥ 4 refusal, a retune/variant, or a naming-pass with no executed screen.
+- Resetting "consecutive" on anything other than a manifest-opening survivor (including on a STATE row deletion).
+- Reading generation-dry as `FALSIFIED` or as authority for a third channel.
+- Reporting a §4 reading after this addendum without both the pre-G0 kill count **and** whether N has fired.
+
+### What is unchanged
+
+§2's battery, §4's three branches, the 2026-11-08 date, the K-cap addendum (D-K1/D-K2/D-K3), and the pre-G0-≠-strike ruling (boundary still `register_search open`) are unmodified.
+
+| Date | Change | By |
+|---|---|---|
+| 2026-08-15 | Addendum: consecutive-pre-G0-kill threshold N = 3; counting machinery (a) canonical ADR line (b) increment = distinct construct + executed pre-G0 screen (c) reset = manifest open (d) generation-dry at next quarterly audit, not FALSIFIED, no third channel. Running count 1/3. Limb 4; amend-in-place; not light. | Joshua (plan election) + Cursor |
