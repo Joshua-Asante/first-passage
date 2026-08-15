@@ -64,5 +64,6 @@ is real (handoff-verify). Grounding: `lesson_run_cheap_falsifier_before_authorin
 At task start, declare the loop class and read the iteration budget from
 [`docs/adr/2026-06-16-rule-2-budget-before-acting.md`](../../docs/adr/2026-06-16-rule-2-budget-before-acting.md)
 (still PROPOSED; do not graduate it from a session). Pointer only — do not
-restate the numerals here. The public seed omitted `docs/notes/`; the trip-log
-lives in `first-passage-archive` until that tree is restored.
+restate the numerals here. `docs/notes/audits/rule-2-trip-log.md` was restored
+2026-08-15 (only `docs/notes/audits/` — the rest of `docs/notes/` stays
+excluded from this seed); append trip rows there.
