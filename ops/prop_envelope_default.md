@@ -102,8 +102,9 @@ this amendment records the de-scope reading without rewriting the ratified E6 ce
 **E6 Default column — amended reading:** the attended-automation **bar** (attended;
 disarmed default; separately GO-gated arming) is transport-independent and unchanged.
 The four-hop chain is a **dated parenthetical only:** rail built but **DISARMED**
-(`dry_run=true`), Tradeify destination **de-scoped** 2026-08-04 (evaluation included),
-disposition fork **F2**, successor fork **F3**. NT8 Add-On remains dormant fallback.
+(`dry_run=true`) at the live incumbent eval ([S1](../docs/adr/2026-08-07-loop-s1-environment-ratification.md));
+locked Striker book barred 2026-08-04; F2+F3 ruled (no successor migration).
+NT8 Add-On remains dormant fallback.
 **Consequence column of E6 is unchanged** (no design dependence on unattended 24h
 operation or an NT8 hop). Tradeify remains 1 of 4 in the frozen §4 falsifier set;
 Tradeify-shaped research is not barred (08-04 Addendum).

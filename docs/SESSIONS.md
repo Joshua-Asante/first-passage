@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-15i — STATE weekly roll + de-scope over-read correction
+
+**Focus:** Roll the idle-clock header past the satisfied 08-10→08-14 week; correct STATE pointers that treated Tradeify as a gone firm.
+
+**Shipped:** branch `cursor/state-weekly-header-roll-ca60` — weekly deadline **2026-08-21** / bucket 08-17→08-21 (prior week satisfied 2026-08-12). Queue row 1 no longer says "de-scoped firm"; row 2 names B7 + M1 as waiting on an acceptable strategy; gated first-fill block no longer claims the execution surface is gone. Blast-radius: refreshed one-line pointers in `PIPELINES.md` P4/P5, `README.md`, `c1-rail` / `trade-csv-reconcile` skills, `ops/prop_envelope_default.md` E6 parenthetical. $0 · K=0.
+
+**Decisions/defects:** none new. Owner of the narrow reading remains [`08-04 addendum`](adr/2026-08-04-tradeify-venue-descope-eval-included.md) + [`S1`](adr/2026-08-07-loop-s1-environment-ratification.md). ADR title left as filed.
+
+**Open / next:** consecutive-pre-G0-kill threshold uncovered; `Q-CAPBAND-1` re-opens only on a *new* band axis; R3–R6/R10 from the 08-03 audit still owed. The 2026-11-08 §4 falsifier is the live clock. Weekly token unpaid for 08-17→08-21.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-15h — Wall-scope audit · Q-BUSTGATE-2 · blind sourcing channel · Q-CAPBAND-1
 
 **Focus:** Assess where Tradeify strategy research stands and how to make it more productive. Audit the admission walls, re-derive the bust ceiling, open the operator-elected weaker-grade sourcing channel, and price the Cap counterfactual.
