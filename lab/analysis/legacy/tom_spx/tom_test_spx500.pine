@@ -1,0 +1,307 @@
+//@version=6
+// ============================================================================
+//  TOM TEST — SPX500 Turn-of-Month (CONCEPT-STAGE / UNVALIDATED)
+// ============================================================================
+//  PURPOSE
+//    A falsifiable test harness for the turn-of-the-month (TOM) effect on
+//    SPX500, built from the conceptual research landscape. This is NOT a
+//    locked strategy and NOT a live-execution script. It exists to measure
+//    whether the edge is (a) PRESENT and (b) CAPTURABLE in real time.
+//
+//  PROVENANCE (mechanism, not pattern)
+//    - Ariel 1987 / Lakonishok-Smidt 1988 / McConnell-Xu 2008: the base effect
+//      and the classic [last-day : +3] window.
+//    - Etula et al. 2020 "Dash for Cash": the leading causal mechanism —
+//      institutions sell to raise month-end cash (selling peaks ~T-4 under the
+//      old T+3 settlement), then reinvest at the turn. Implies a [-3:+3]
+//      signature: negative PRE-turn drift, positive POST-turn drift.
+//    - Swinkels-van Vliet 2012: TOM + Halloween SUBSUME January/weekend/holiday.
+//      => This script deliberately does NOT stack other calendar filters.
+//    - Decay (Maberly-Waggoner; Han-Han-Tian 2025; QuantSeeker 2025): the narrow
+//      US large-cap version decayed post ~2001. Hence the built-in decay table.
+//
+//  TWO-LAYER MEASUREMENT (read this before interpreting results)
+//    1. DIAGNOSTIC TABLE  = does the edge EXIST? It classifies every daily
+//       close-to-close return by trading-day-of-month and reports window-day
+//       vs off-day means, split pre/post the decay year. This captures the
+//       FULL effect, including the T+1 day move.
+//    2. STRATEGY EQUITY   = how much is CAPTURABLE in real time? Because the
+//       last trading day of the prior month is NOT identifiable in real time
+//       without lookahead, the long leg can only enter at the CLOSE of T+start.
+//       It therefore captures close(T+start) -> close(T+end) and STRUCTURALLY
+//       MISSES the T+1 day's own return. The gap between the diagnostic and the
+//       strategy P&L is the "untradeable" piece (concentrated in T+1). That gap
+//       is a result, not a bug — surface it, do not hide it.
+//
+//  EPISTEMIC-STATUS LEGEND (every input is tagged)
+//    STARTING POINT       = research-derived, unvalidated (a hypothesis to test)
+//    OUT-OF-EVIDENCE-BASE = enabling this = a NEW hypothesis, not confirmation
+//    LOCKED               = validated, do not touch  (NONE here — nothing locked)
+//
+//  COST KNOBS  (Pine does not allow inputs in the strategy() header)
+//    commission_value / slippage below are the cost levers. Per the cost-law
+//    pre-flight, TUNE THESE to real Pepperstone/DXTrade SPX500 fills before
+//    drawing any conclusion. Defaults are placeholders (~1bp/side + 2 ticks).
+//
+//  REQUIREMENTS
+//    - DAILY chart only. Trading-day-of-month counting is invalid on any other
+//      timeframe (a guard warns and disables trading off-daily).
+//    - Designed for SPX500 / US500 / ES (index, directional, single instrument).
+//    - No pyramid architecture (unlike DJ30/NAS100): clean single-position switch.
+// ============================================================================
+
+strategy("TOM Test — SPX500 Turn-of-Month (Concept-Stage)", "TOM-Test",
+     overlay=true,
+     calc_on_every_tick=false,
+     process_orders_on_close=true,
+     pyramiding=0,
+     default_qty_type=strategy.percent_of_equity,
+     default_qty_value=100,
+     initial_capital=100000,
+     commission_type=strategy.commission.percent,
+     commission_value=0.01,
+     slippage=2)
+
+// ============================================================================
+// INPUTS
+// ============================================================================
+
+// ---- Long leg (evidence-supported, real-time) ------------------------------
+gL = "Long Leg — post-turn (evidence-supported)"
+longLegOn = input.bool(true, "Enable long leg",
+     group=gL,
+     tooltip="STARTING POINT. The post-turn reinvestment leg is the best-" +
+     "supported, real-time-tradeable component (Etula 'dash for cash'). " +
+     "Enters at the CLOSE of the start trading-day, exits at the CLOSE of the " +
+     "end trading-day. See header note on the structurally-missed T+1 return.")
+longStartT = input.int(1, "Long entry — trading-day-of-month (T+)",
+     minval=1, maxval=10, group=gL,
+     tooltip="STARTING POINT. T+1 = first trading day of the new month, " +
+     "counted FORWARD from the month rollover (exchange-calendar-exact, " +
+     "non-repainting). The last trading day of the prior month cannot be " +
+     "entered in real time without lookahead.")
+longEndT = input.int(3, "Long exit — trading-day-of-month (T+)",
+     minval=1, maxval=15, group=gL,
+     tooltip="STARTING POINT. Lakonishok-Smidt classic window ends at T+3. " +
+     "Fixed-calendar exit = the honest literature baseline. WINDOW CHOICE IS A " +
+     "DEGREES-OF-FREEDOM HAZARD — do not optimize this in-sample; anchor it to " +
+     "the mechanism and confirm out-of-sample.")
+
+// ---- Regime gate (hypothesis — default OFF) --------------------------------
+gR = "Regime Gate (hypothesis — default off)"
+useTrendGate = input.bool(false, "Trend gate: long only if close > MA",
+     group=gR,
+     tooltip="STARTING POINT — enabling = a NEW hypothesis. Calendar effects " +
+     "concentrate in up/bull regimes and vanish in crises (Sakakibara 2019; " +
+     "AMH). Expected to cut drawdown more than it lifts return.")
+trendLen = input.int(200, "Trend MA length", minval=20, group=gR,
+     tooltip="STARTING POINT. 200-day per the Quantpedia MA200 overlay result.")
+useVolGate = input.bool(false, "Vol gate: skip entry if realized vol too high",
+     group=gR,
+     tooltip="OUT-OF-EVIDENCE-BASE — exploratory crisis-avoidance filter.")
+volLen = input.int(20, "Vol lookback (bars)", minval=5, group=gR)
+volMaxPct = input.float(2.5, "Max daily vol % to allow entry",
+     minval=0.1, step=0.1, group=gR,
+     tooltip="Exploratory. Stdev of daily returns, in percent. Above this, skip.")
+
+// ---- Pre-turn leg (EXPLORATORY — the novel, least-validated part) ----------
+gP = "Pre-Turn Leg — dash-for-cash (EXPLORATORY)"
+preTurnMode = input.string("Off", "Pre-turn leg",
+     options=["Off", "Short (heuristic)"], group=gP,
+     tooltip="OUT-OF-EVIDENCE-BASE / EXPLORATORY. The pre-turn NEGATIVE drift " +
+     "(institutional selling into month-end) is the novel directional edge. " +
+     "'Off' = strategy is simply FLAT pre-turn (the honest 'avoid' default). " +
+     "'Short' uses a CALENDAR-DAY heuristic (NOT exchange-calendar-exact) — a " +
+     "known limitation flagged for refinement before any lock.")
+preTurnStartDom = input.int(25, "Short from calendar day-of-month >=",
+     minval=20, maxval=29, group=gP,
+     tooltip="Exploratory heuristic approximating the T-4..T-1 selling window " +
+     "via calendar day. Crude: breaks around weekends/holidays. Covers at the " +
+     "month rollover. Treat any result here as hypothesis-generating only.")
+
+// ---- Exploratory exit (open gap in the literature — default OFF) -----------
+gE = "Exploratory Exit (open gap — default off)"
+useEarlyExit = input.bool(false, "Early exit on intra-window reversal",
+     group=gE,
+     tooltip="OUT-OF-EVIDENCE-BASE / EXPLORATORY. The literature uses only " +
+     "fixed-calendar exits; conditional exits are unexplored. Exits the long " +
+     "early if a 1-bar down move exceeds the threshold (proxy for 'mean-" +
+     "reversion completed'). Enabling = a new hypothesis.")
+earlyExitPct = input.float(1.0, "Reversal threshold (%)",
+     minval=0.1, step=0.1, group=gE)
+
+// ---- News / FXIFY operational constraints ----------------------------------
+gN = "News / FXIFY constraints"
+excludeTdom = input.int(0, "Skip long entry on this trading-day (0 = none)",
+     minval=0, maxval=15, group=gN,
+     tooltip="Operational. Early-month days often coincide with high-impact " +
+     "releases (NFP first Friday, CPI, FOMC) that may fall under FXIFY news-" +
+     "trading blocks. NFP/CPI/FOMC do NOT map cleanly to a fixed T+ index, so " +
+     "this is a coarse control, not a substitute for an event calendar.")
+
+// ---- Diagnostics -----------------------------------------------------------
+gD = "Diagnostics"
+splitYear = input.int(2001, "Decay split year", group=gD,
+     tooltip="Diagnostic only (no effect on trading). Table compares window-" +
+     "day vs off-day mean returns before/after this year. 2001 = documented " +
+     "US large-cap TOM decay onset (decimalization / collapsing costs).")
+showTable = input.bool(true, "Show diagnostics table", group=gD)
+showBg = input.bool(true, "Shade long-window days", group=gD)
+
+// ============================================================================
+// HELPERS
+// ============================================================================
+f_pct(float s, int n) => n > 0 ? s / n * 100.0 : na
+f_cell(float s, int n) =>
+    float v = f_pct(s, n)
+    string out = na(v) ? "—" : str.tostring(v, "#.###") + "%  (n=" + str.tostring(n) + ")"
+    out
+
+// ============================================================================
+// CALCULATIONS
+// ============================================================================
+
+// ---- Timeframe integrity guard (Step-0 discipline) -------------------------
+bool tfOK = timeframe.isdaily
+
+// ---- Month rollover & trading-day-of-month (forward, non-repainting) -------
+bool newMonth = bar_index > 0 and month != month[1]
+var int tdom = 0
+tdom := newMonth ? 1 : tdom + 1
+
+// ---- Regime calcs ----------------------------------------------------------
+float trendMA = ta.sma(close, trendLen)
+bool trendOK = not useTrendGate or close > trendMA
+float ret1 = close / close[1] - 1.0
+float volNow = ta.stdev(ret1, volLen) * 100.0
+bool volOK = not useVolGate or volNow <= volMaxPct
+
+// ---- Long window membership & triggers -------------------------------------
+bool inLongWindow = longLegOn and tdom >= longStartT and tdom <= longEndT
+bool isLongEntryBar = longLegOn and tdom == longStartT and tdom != excludeTdom
+bool isLongExitBar = tdom == longEndT
+bool canEnterLong = isLongEntryBar and trendOK and volOK and tfOK
+
+// ---- Early exit ------------------------------------------------------------
+bool earlyExitTrig = useEarlyExit and strategy.position_size > 0 and
+     ret1 <= -earlyExitPct / 100.0
+
+// ---- Pre-turn short (exploratory heuristic) --------------------------------
+bool preShortOn = preTurnMode == "Short (heuristic)"
+bool inPreTurn = preShortOn and dayofmonth >= preTurnStartDom
+bool isShortEntryBar = preShortOn and inPreTurn and not inPreTurn[1] and tfOK
+bool isShortCoverBar = newMonth
+
+// ============================================================================
+// ORDER MANAGEMENT  (exits/covers first, then entries — explicit ordering)
+// ============================================================================
+if tfOK
+    // --- exits / covers ---
+    if strategy.position_size < 0 and isShortCoverBar
+        strategy.close("PreShort", comment="cover@rollover")
+    if strategy.position_size > 0 and (isLongExitBar or earlyExitTrig)
+        strategy.close("TOMLong", comment=earlyExitTrig ? "early-exit" : "T+exit")
+    // --- entries ---
+    if canEnterLong and strategy.position_size <= 0
+        strategy.entry("TOMLong", strategy.long,
+             comment="long T+" + str.tostring(longStartT))
+    if isShortEntryBar and strategy.position_size >= 0
+        strategy.entry("PreShort", strategy.short, comment="dash-for-cash short")
+
+// ============================================================================
+// DECAY DIAGNOSTIC  (measures the EFFECT, independent of the gated strategy)
+// ============================================================================
+bool isPre = year < splitYear
+float r = nz(ret1, 0.0)
+
+var float sumWinPre = 0.0
+var int   nWinPre   = 0
+var float sumOffPre = 0.0
+var int   nOffPre   = 0
+var float sumWinPost = 0.0
+var int   nWinPost   = 0
+var float sumOffPost = 0.0
+var int   nOffPost   = 0
+
+if bar_index > 0 and tfOK
+    if inLongWindow
+        if isPre
+            sumWinPre := sumWinPre + r
+            nWinPre := nWinPre + 1
+        else
+            sumWinPost := sumWinPost + r
+            nWinPost := nWinPost + 1
+    else
+        if isPre
+            sumOffPre := sumOffPre + r
+            nOffPre := nOffPre + 1
+        else
+            sumOffPost := sumOffPost + r
+            nOffPost := nOffPost + 1
+
+// ---- Config fingerprint (ledger discipline) --------------------------------
+string fpL = longLegOn ? str.tostring(longStartT) + ":" + str.tostring(longEndT) : "off"
+string fpReg = useTrendGate ? str.tostring(trendLen) : "0"
+string fpVol = useVolGate ? str.tostring(volMaxPct) : "0"
+string fpPt = preShortOn ? "S" + str.tostring(preTurnStartDom) : "0"
+string fpEe = useEarlyExit ? str.tostring(earlyExitPct) : "0"
+string fp = "TOM|L" + fpL + "|reg" + fpReg + "|vol" + fpVol + "|pt" + fpPt +
+     "|ee" + fpEe + "|xT" + str.tostring(excludeTdom)
+
+// ============================================================================
+// PLOTS
+// ============================================================================
+plot(useTrendGate ? trendMA : na, "Trend MA", color.new(color.orange, 0), 1)
+bgcolor(showBg and inLongWindow ? color.new(color.teal, 88) : na,
+     title="Long-window days")
+
+// ============================================================================
+// DIAGNOSTIC TABLE
+// ============================================================================
+var table t = table.new(position.top_right, 2, 8, border_width=1,
+     frame_color=color.gray, frame_width=1)
+
+if showTable and barstate.islast and tfOK
+    float diffPost = na(f_pct(sumWinPost, nWinPost)) or na(f_pct(sumOffPost, nOffPost)) ? na : f_pct(sumWinPost, nWinPost) - f_pct(sumOffPost, nOffPost)
+    float diffPre = na(f_pct(sumWinPre, nWinPre)) or na(f_pct(sumOffPre, nOffPre)) ? na : f_pct(sumWinPre, nWinPre) - f_pct(sumOffPre, nOffPre)
+    bool decayFlag = not na(diffPre) and not na(diffPost) and diffPost < diffPre
+    color diffCol = na(diffPost) ? color.gray : (diffPost > 0 ? color.new(color.green, 0) : color.new(color.red, 0))
+
+    table.cell(t, 0, 0, "TOM DIAGNOSTIC", text_color=color.white, bgcolor=color.new(color.blue, 0), text_size=size.small)
+    table.cell(t, 1, 0, "mean daily ret", text_color=color.white, bgcolor=color.new(color.blue, 0), text_size=size.small)
+
+    table.cell(t, 0, 1, "Window < " + str.tostring(splitYear), text_size=size.small)
+    table.cell(t, 1, 1, f_cell(sumWinPre, nWinPre), text_size=size.small)
+    table.cell(t, 0, 2, "Off      < " + str.tostring(splitYear), text_size=size.small)
+    table.cell(t, 1, 2, f_cell(sumOffPre, nOffPre), text_size=size.small)
+
+    table.cell(t, 0, 3, "Window >= " + str.tostring(splitYear), text_size=size.small)
+    table.cell(t, 1, 3, f_cell(sumWinPost, nWinPost), text_size=size.small)
+    table.cell(t, 0, 4, "Off      >= " + str.tostring(splitYear), text_size=size.small)
+    table.cell(t, 1, 4, f_cell(sumOffPost, nOffPost), text_size=size.small)
+
+    table.cell(t, 0, 5, "Win-Off (>=yr)", text_size=size.small)
+    table.cell(t, 1, 5, na(diffPost) ? "—" : str.tostring(diffPost, "#.###") + "%", text_color=color.white, bgcolor=diffCol, text_size=size.small)
+
+    table.cell(t, 0, 6, "Decay vs pre", text_size=size.small)
+    table.cell(t, 1, 6, decayFlag ? "SHRANK ⚠" : "held", text_color=color.white, bgcolor=decayFlag ? color.new(color.red, 0) : color.new(color.green, 0), text_size=size.small)
+
+    table.cell(t, 0, 7, fp, text_size=size.tiny)
+    table.cell(t, 1, 7, "concept-stage", text_color=color.white, bgcolor=color.new(color.orange, 0), text_size=size.tiny)
+
+// ---- Timeframe warning -----------------------------------------------------
+if barstate.islast and not tfOK
+    label.new(bar_index, high,
+         "⚠ TOM TEST REQUIRES A DAILY CHART\n" +
+         "Trading-day-of-month counting is invalid on " + timeframe.period +
+         ".\nSwitch to 1D — trading is disabled until you do.",
+         style=label.style_label_down, color=color.red,
+         textcolor=color.white, size=size.large)
+
+// ============================================================================
+// ALERTS  (deferred — live Copygram/JSON plumbing comes AFTER validation)
+// ============================================================================
+// Intentionally omitted at concept stage. Per the pipeline, alert/JSON-schema
+// wiring for the Copygram -> DXTrade path is added only once the edge clears
+// validation and the config is locked. Building it now would imply a
+// readiness the evidence does not support.

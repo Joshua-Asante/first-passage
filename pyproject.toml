@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "first-passage"
+version = "0.1.0"
+description = "First Passage prop trading operational pipeline (multipliers, DD protection, Monte Carlo validation)."
+requires-python = ">=3.11"
+dependencies = [
+    # Cap below 3.12-only releases so requirements-ops.lock installs on the 3.11+3.12 CI matrix.
+    "numpy>=2.0,<2.5",
+    "pandas",
+    "scipy>=1.11,<1.18",
+    "statsmodels",
+    "matplotlib",
+    "pydantic>=2,<3",
+    "pyyaml",  # codification concept_schema YAML loading
+]
+
+[project.optional-dependencies]
+cli = ["rich"]
+mc = ["joblib"]
+analysis = ["nolds<0.6", "setuptools<81"]   # nolds 0.6.x has a Python 3.11/3.12 import bug (importlib.resources.files() on a module). 0.5.x works but imports pkg_resources at module load — and setuptools 81+ removed pkg_resources. Pin both: nolds<0.6 for the import bug, setuptools<81 for the pkg_resources removal. Local 0.5.x deprecation warning ("pin to Setuptools<81") was the breadcrumb.
+report = ["quantstats"]
+dev = [
+    "pytest",
+    "pytest-xdist",
+    "pylint>=3,<4",  # 4.x changes whole-repo scoring below the established 8.0 gate.
+]
+
+[tool.setuptools]
+# Flat modules + `lib` relocated under layer roots (core/, ops/) by the 2026-06-05
+# monorepo restructure (ADR docs/adr/2026-06-05-monorepo-layer-boundaries.md). They
+# resolve via [tool.pytest.ini_options].pythonpath below (tests) and per-script
+# sys.path shims (scripts run directly). The editable install carries deps only.
+py-modules = []
+packages = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Gen-1 lab/validation/ retired 2026-07-11 (ADR 2026-07-11-gen1-pipeline-retirement).
+# Self-test generators: lab/validation_selftest.py (tests/test_validation_selftest.py).
+# pytest 9 changed default --import-mode from prepend to importlib; importlib
+# does NOT add cwd to sys.path, so test imports of top-level modules
+# (`from portfolio_mc import ...`) need an
+# explicit pythonpath. Post-restructure the layer roots are on the path so the
+# relocated flat modules (core/portfolio_mc.py, …) + core/lib resolve.
+# ops/accounts.py was retired in substrate Phase 2 (tearsheet CLI remains).
+# No "governance" entry: that layer is root-resident by design and has no
+# directory (REPO_MAP.md §1) — the token was a no-op and was dropped 2026-07-31.
+pythonpath = ["core", "lab", "ops", "ops/c1_rail", "ops/c1_signal_daemon", "."]

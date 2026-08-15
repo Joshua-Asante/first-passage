@@ -1,0 +1,27 @@
+---
+description: Git workflow for this repo. User rules take precedence.
+globs: "**/*"
+alwaysApply: false
+---
+
+# Git Workflow
+
+**User rules override this file** — especially: only commit when explicitly asked; never skip hooks; never force-push `main`.
+
+## Branches
+
+- Default branch: `main`
+- Work on topic branches (`feat/`, `fix/`, `chore/`, `docs/`, `analysis/`, etc.); merge via PR
+- This repo does **not** use Gitflow (`develop`, `release/*`, `hotfix/*`)
+
+## Commits
+
+- Draft messages from recent `git log` on the branch (e.g. `docs: …`, `fix(ci): …`, plain descriptive)
+- Conventional prefixes (`feat`, `fix`, `docs`, `chore`) are fine when they fit; not mandatory
+- Focus on *why* in the message body when needed
+
+## Hooks and data integrity
+
+- Pre-commit runs a multi-gate suite — **read the current roster in `scripts/githooks/pre-commit` itself, which is authoritative; do not mirror it here** (this line previously named `validate_params`, retired with `core/config/params.toml` on 2026-08-03 per `docs/adr/2026-08-03-params-toml-gate-retirement.md`, and stayed wrong for two months). Install once per clone: `bash scripts/install_hooks.sh` or `scripts\install_hooks.bat`.
+- Fix hook failures and create a new commit; do not use `--no-verify` unless the user explicitly requests it
+- After vendor data changes under `core/data/`, regenerate `SHA256SUMS` in the same commit

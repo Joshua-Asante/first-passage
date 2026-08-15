@@ -1,0 +1,25 @@
+Trade #,Type,Date and time,Signal,Price USD,Size (qty),Net P&L USD,Net P&L %
+1,Entry long,2020-01-06 09:30,Long,100,1,0,0
+1,Exit long,2020-01-06 10:00,Exit,101,1,100,1
+2,Entry long,2020-01-06 10:15,Long,101,1,0,0
+2,Exit long,2020-01-06 11:00,Exit,100.5,1,-50,-0.5
+3,Entry long,2020-01-07 09:30,Long,100,1,0,0
+3,Exit long,2020-01-07 10:00,Exit,98,1,-200,-2
+4,Entry long,2020-01-08 09:30,Long,100,1,0,0
+4,Exit long,2020-01-08 10:00,Exit,100.3,1,30,0.3
+5,Entry long,2020-01-08 10:30,Long,100,1,0,0
+5,Exit long,2020-01-08 11:00,Exit,99.2,1,-80,-0.8
+6,Entry long,2020-01-09 09:30,Long,100,1,0,0
+6,Exit long,2020-01-09 10:00,Exit,102,1,200,2
+7,Entry long,2020-01-10 09:30,Long,100,1,0,0
+7,Exit long,2020-01-10 10:00,Exit,99,1,-100,-1
+8,Entry long,2020-01-13 09:30,Long,100,1,0,0
+8,Exit long,2020-01-13 10:00,Exit,101,1,80,0.8
+9,Entry long,2020-01-14 09:30,Long,100,1,0,0
+9,Exit long,2020-01-14 10:00,Exit,99.5,1,-40,-0.4
+10,Entry long,2020-01-15 09:30,Long,100,1,0,0
+10,Exit long,2020-01-15 10:00,Exit,100.5,1,50,0.5
+11,Entry long,2020-01-16 09:30,Long,100,1,0,0
+11,Exit long,2020-01-16 10:00,Exit,98.5,1,-150,-1.5
+12,Entry long,2020-01-17 09:30,Long,100,1,0,0
+12,Exit long,2020-01-17 10:00,Exit,101.2,1,120,1.2

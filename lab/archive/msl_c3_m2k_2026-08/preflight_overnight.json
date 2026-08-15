@@ -1,0 +1,82 @@
+{
+  "card_id": "msl-c3-m2k-overnight-range-failed-extension-fade",
+  "card_path": "lab/analysis/c1/msl_c3_m2k_2026-08/card_overnight.yaml",
+  "disclaimer": "evidence only; computes evidence only",
+  "dedup_query": "overnight-range-failed-extension-fade",
+  "dedup_paths": [
+    "docs/rejected_candidates.md",
+    "lab/CATALOG.md",
+    "docs/briefs/2026-08-12-msl-first-slate.md",
+    "docs/briefs/closures/MSL-C3-closure-operator-kill.md",
+    "docs/briefs/closures/MSL-C2-closure-falsified.md",
+    "ops/instruments/M2K.md",
+    "ops/instruments/MECHANISMS.md"
+  ],
+  "dedup_hits": [
+    "/workspace/ops/instruments/MECHANISMS.md:187:- `overnight-range-failed-extension-fade` — Globex overnight H/L failure fade; distinct reference class (co-scored with this class only under C3 K=2 revive).",
+    "/workspace/ops/instruments/MECHANISMS.md:190:## overnight-range-failed-extension-fade"
+  ],
+  "cell_command": [
+    "/usr/bin/python3",
+    "/workspace/scripts/instrument_profiles.py",
+    "cell",
+    "M2K",
+    "overnight-range-failed-extension-fade"
+  ],
+  "cell_stdout": "=== M2K x overnight-range-failed-extension-fade ===\nledger: ops/instruments/M2K.md\nverdict: untested — no prior on this cell.\nclass finding (mechanism-wide, not specific to M2K): none yet — held unread under original C3 ≤1-story license; now a **scored axis** under [`STAGE1_K2`](../../lab/analysis/c1/msl_c3_m2k_2026-08/STAGE1_K2.md) (`K_intrinsic=2`). B4 unpaid.\nBINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md\ncost hurdle: 11.89 bp/round-trip (panel-era median 1,897.20 => 11.89 bp/RT (recomputed 2026-07-28; supersedes illustrative index-2300 figure and withdrawn 10-30x margin claim). WARN Multiplier basis PENDING — 4x hurdle was Tradeify; venue de-scoped 2026-08-04; F3 open; friendly-firm per-side $0.50-$0.95; re-price against elected venue before this row gates anything.) — VERIFY at #M2\nK bank: read ../../discovery_manifests/ — never trust a snapshot.\nprior: Cross-index RV selection over ES/NQ/YM/RTY is strictly dominated by single-instrument ORB-MNQ - index aggregation compresses the idiosyncratic dispersion that makes Stocks-in-Play work. An RTY intraday pull is a DEFER-procurement trigger with an explicitly poor prior. [#M3]\nprior: Opening-range momentum is an equity-index property (it fades on Treasuries) - so equity-index instruments are where directional structure plausibly lives, but that same tie means cost-viability and decorrelation-from-the-book are in tension by construction. [#M4]\n",
+  "cell_returncode": 1,
+  "arithmetic": {
+    "p": 0.55,
+    "rr": 1.0,
+    "n_trades": 1,
+    "contracts": 4,
+    "expectancy_r": 0.1,
+    "per_trade_sharpe": 0.100504,
+    "implied_annualized_sr": 1.6,
+    "implied_annualized_sr_raw": 1.5954480704349328,
+    "trading_days_per_year": 252,
+    "cost_law": {
+      "rt_cost_usd": 2.82,
+      "rows": [
+        {
+          "multiple": 1.0,
+          "stop_floor_usd": 28.2,
+          "stop_floor_pts": 5.64
+        },
+        {
+          "multiple": 2.0,
+          "stop_floor_usd": 56.4,
+          "stop_floor_pts": 11.28
+        },
+        {
+          "multiple": 4.0,
+          "stop_floor_usd": 112.8,
+          "stop_floor_pts": 22.56
+        }
+      ],
+      "card_multiple": 4.0,
+      "stop_floor_usd_at_card_multiple": 112.8
+    },
+    "geometry": {
+      "stop_pts": 32.0,
+      "target_pts": 32.0,
+      "span_pts": 64.0,
+      "point_value_usd": 5.0,
+      "rt_cost_usd": 2.82
+    },
+    "payability": {
+      "all_win_day_usd": 628.72,
+      "payout_min_usd_reference": 200.0,
+      "all_win_day_minus_ref": 428.72
+    },
+    "worst_day": {
+      "all_lose_day_usd": 651.28,
+      "worst_day_bound_usd_reference": 750.0,
+      "bound_minus_all_lose_day": 98.72
+    },
+    "sigma_d": {
+      "sigma_d_usd": 636.792,
+      "sigma_d_usd_raw": 636.7919597482368
+    }
+  }
+}

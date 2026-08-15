@@ -1,0 +1,18 @@
+{
+  "n_bdays": 1683,
+  "n_blocks": 336,
+  "pass": 0.9817333333333332,
+  "bust": 0.018266666666666667,
+  "bust_daily": 0.0,
+  "bust_static": 0.018266666666666667,
+  "bust_inactivity": 0.0,
+  "p99_dd": 0.05501327678047612,
+  "p95_dd": 0.046181040735554284,
+  "median": 28,
+  "bust_attribution": {
+    "guardian": 166,
+    "striker": 143,
+    "aegis": 89,
+    "striker_nas100": 150
+  }
+}

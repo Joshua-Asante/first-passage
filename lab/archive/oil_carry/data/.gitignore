@@ -1,0 +1,5 @@
+# Databento vendor data — personal export OK, redistribution not (vendor TOS).
+# Cache CSVs are gitignored; the SHA256 manifest is tracked (house pattern).
+*.csv
+!.gitignore
+!SHA256SUMS

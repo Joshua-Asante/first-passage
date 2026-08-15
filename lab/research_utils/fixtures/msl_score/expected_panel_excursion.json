@@ -1,0 +1,18 @@
+{
+  "honesty": "excursion-bounded",
+  "lower_bound": false,
+  "n_trades": 12,
+  "excursion_columns_used": ["Adverse excursion USD", "Favorable excursion USD"],
+  "rows": [
+    {"date": "2020-01-06", "pnl_usd": 50.0, "intraday_low": -40.0},
+    {"date": "2020-01-07", "pnl_usd": -200.0, "intraday_low": -250.0},
+    {"date": "2020-01-08", "pnl_usd": -50.0, "intraday_low": -60.0},
+    {"date": "2020-01-09", "pnl_usd": 200.0, "intraday_low": -15.0},
+    {"date": "2020-01-10", "pnl_usd": -100.0, "intraday_low": -130.0},
+    {"date": "2020-01-13", "pnl_usd": 80.0, "intraday_low": -25.0},
+    {"date": "2020-01-14", "pnl_usd": -40.0, "intraday_low": -55.0},
+    {"date": "2020-01-15", "pnl_usd": 50.0, "intraday_low": -10.0},
+    {"date": "2020-01-16", "pnl_usd": -150.0, "intraday_low": -180.0},
+    {"date": "2020-01-17", "pnl_usd": 120.0, "intraday_low": -30.0}
+  ]
+}

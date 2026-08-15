@@ -1,0 +1,287 @@
+{
+  "date": "2026-07-24",
+  "authorization": "operator directive 2026-07-24 \u2014 proceed with the two unmeasured arms",
+  "geometry": "CORRECTED (dd_lock_offset_usd unreachable on both trailing_locking tiers)",
+  "scope": "full-panel all four frozen $100K tiers + half-panel on discharge tiers; NO bootstrap",
+  "floor": {
+    "bust_ceiling": 0.03,
+    "pass_floor": 0.5
+  },
+  "panel_meta": {
+    "legs": {
+      "striker": {
+        "file": "Striker_DJ30_v4.5_MYM_CBOT_MINI_MYM1!_2026-07-11_15d8b.csv",
+        "sha256": "9acfa29726a9530d2a3de5fc2290cc67672441fac2c805defd524677cce01b9e",
+        "export_initial": 200000.0,
+        "n_trades": 267,
+        "span": "2020-01-14->2026-06-30",
+        "1r_method": "full-stop mean (|loss| > 1% acct, n=8)",
+        "1r_dollars": 2535.611381430168,
+        "1r_n": 8,
+        "1r_warn": false,
+        "scale": 0.5521350827863669,
+        "risk_pct": 0.007,
+        "target_1r": 1400.0,
+        "net_scaled": 37180.70860444489,
+        "n_overnight_holds": 0
+      },
+      "striker_nas100": {
+        "file": "Striker_NAS100_v1_CME_MINI_MNQ1!_2026-07-11_beabf.csv",
+        "sha256": "8884e6dd56c786e1e59a8ab0b962a70be82f34e06af26a9582554c9f8ddc6419",
+        "export_initial": 200000.0,
+        "n_trades": 284,
+        "span": "2020-01-06->2026-06-30",
+        "1r_method": "full-stop mean (|loss| > 1% acct, n=19)",
+        "1r_dollars": 5899.31780718921,
+        "1r_n": 19,
+        "1r_warn": false,
+        "scale": 0.12543823272212903,
+        "risk_pct": 0.0037,
+        "target_1r": 740.0,
+        "net_scaled": 52219.07377123145,
+        "n_overnight_holds": 0
+      }
+    },
+    "panel_span": "2020-01-06->2026-06-30",
+    "n_bdays": 1692,
+    "book_net_200k": 89399.78237567632
+  },
+  "arms": {
+    "1.00x": {
+      "lifecycle_mult": 1.0,
+      "full_panel": {
+        "Bulenox_100K": {
+          "firm_key": "Bulenox_100K",
+          "consistency": null,
+          "n_sims": 10000,
+          "headline_bust": 0.03513333333333334,
+          "pass_rate": 0.9648666666666667,
+          "clears_part_a": false,
+          "gated_on": "run1_degenerate",
+          "floor_ok": false
+        },
+        "Tradeify_Select_100K": {
+          "firm_key": "Tradeify_Select_100K",
+          "consistency": 0.4,
+          "n_sims": 10000,
+          "headline_bust": 0.047433333333333334,
+          "pass_rate": 0.9525,
+          "clears_part_a": false,
+          "gated_on": "run2",
+          "floor_ok": false
+        },
+        "MFFU_Rapid_100K": {
+          "firm_key": "MFFU_Rapid_100K",
+          "consistency": 0.5,
+          "n_sims": 10000,
+          "headline_bust": 0.04253333333333333,
+          "pass_rate": 0.9574333333333334,
+          "clears_part_a": false,
+          "gated_on": "run2",
+          "floor_ok": false
+        },
+        "BluSky_Premium_100K": {
+          "firm_key": "BluSky_Premium_100K",
+          "consistency": 0.34,
+          "n_sims": 10000,
+          "headline_bust": 0.04443333333333333,
+          "pass_rate": 0.9554333333333332,
+          "clears_part_a": false,
+          "gated_on": "run2",
+          "floor_ok": false
+        }
+      },
+      "half_panel": {
+        "mid_index": 846,
+        "h1_n_bdays": 846,
+        "h2_n_bdays": 846,
+        "tiers": {
+          "Tradeify_Select_100K": {
+            "H1": {
+              "firm_key": "Tradeify_Select_100K",
+              "consistency": 0.4,
+              "n_sims": 10000,
+              "headline_bust": 0.06776666666666667,
+              "pass_rate": 0.9316000000000001,
+              "clears_part_a": false,
+              "gated_on": "run2",
+              "floor_ok": false
+            },
+            "H2": {
+              "firm_key": "Tradeify_Select_100K",
+              "consistency": 0.4,
+              "n_sims": 10000,
+              "headline_bust": 0.0327,
+              "pass_rate": 0.9672999999999999,
+              "clears_part_a": false,
+              "gated_on": "run2",
+              "floor_ok": false
+            },
+            "half_panel_ok": false
+          },
+          "MFFU_Rapid_100K": {
+            "H1": {
+              "firm_key": "MFFU_Rapid_100K",
+              "consistency": 0.5,
+              "n_sims": 10000,
+              "headline_bust": 0.06276666666666667,
+              "pass_rate": 0.9371,
+              "clears_part_a": false,
+              "gated_on": "run2",
+              "floor_ok": false
+            },
+            "H2": {
+              "firm_key": "MFFU_Rapid_100K",
+              "consistency": 0.5,
+              "n_sims": 10000,
+              "headline_bust": 0.028633333333333334,
+              "pass_rate": 0.9713666666666666,
+              "clears_part_a": true,
+              "gated_on": "run2",
+              "floor_ok": true
+            },
+            "half_panel_ok": false
+          }
+        }
+      },
+      "wall_s": 1415.7
+    },
+    "0.50x": {
+      "lifecycle_mult": 0.5,
+      "full_panel": {
+        "Bulenox_100K": {
+          "firm_key": "Bulenox_100K",
+          "consistency": null,
+          "n_sims": 10000,
+          "headline_bust": 0.0008333333333333334,
+          "pass_rate": 0.9982333333333333,
+          "clears_part_a": true,
+          "gated_on": "run1_degenerate",
+          "floor_ok": true
+        },
+        "Tradeify_Select_100K": {
+          "firm_key": "Tradeify_Select_100K",
+          "consistency": 0.4,
+          "n_sims": 10000,
+          "headline_bust": 0.0010666666666666667,
+          "pass_rate": 0.9980333333333333,
+          "clears_part_a": true,
+          "gated_on": "run2",
+          "floor_ok": true
+        },
+        "MFFU_Rapid_100K": {
+          "firm_key": "MFFU_Rapid_100K",
+          "consistency": 0.5,
+          "n_sims": 10000,
+          "headline_bust": 0.0010666666666666667,
+          "pass_rate": 0.9980666666666668,
+          "clears_part_a": true,
+          "gated_on": "run2",
+          "floor_ok": true
+        },
+        "BluSky_Premium_100K": {
+          "firm_key": "BluSky_Premium_100K",
+          "consistency": 0.34,
+          "n_sims": 10000,
+          "headline_bust": 0.0008333333333333334,
+          "pass_rate": 0.9979999999999999,
+          "clears_part_a": true,
+          "gated_on": "run2",
+          "floor_ok": true
+        }
+      },
+      "half_panel": {
+        "mid_index": 846,
+        "h1_n_bdays": 846,
+        "h2_n_bdays": 846,
+        "tiers": {
+          "Tradeify_Select_100K": {
+            "H1": {
+              "firm_key": "Tradeify_Select_100K",
+              "consistency": 0.4,
+              "n_sims": 10000,
+              "headline_bust": 0.0021666666666666666,
+              "pass_rate": 0.9608,
+              "clears_part_a": true,
+              "gated_on": "run2",
+              "floor_ok": true
+            },
+            "H2": {
+              "firm_key": "Tradeify_Select_100K",
+              "consistency": 0.4,
+              "n_sims": 10000,
+              "headline_bust": 0.00036666666666666667,
+              "pass_rate": 0.9996333333333333,
+              "clears_part_a": true,
+              "gated_on": "run2",
+              "floor_ok": true
+            },
+            "half_panel_ok": true
+          },
+          "MFFU_Rapid_100K": {
+            "H1": {
+              "firm_key": "MFFU_Rapid_100K",
+              "consistency": 0.5,
+              "n_sims": 10000,
+              "headline_bust": 0.0021666666666666666,
+              "pass_rate": 0.9608,
+              "clears_part_a": true,
+              "gated_on": "run2",
+              "floor_ok": true
+            },
+            "H2": {
+              "firm_key": "MFFU_Rapid_100K",
+              "consistency": 0.5,
+              "n_sims": 10000,
+              "headline_bust": 0.00036666666666666667,
+              "pass_rate": 0.9996333333333333,
+              "clears_part_a": true,
+              "gated_on": "run2",
+              "floor_ok": true
+            },
+            "half_panel_ok": true
+          }
+        }
+      },
+      "wall_s": 2893.1
+    }
+  },
+  "reproduction_control": {
+    "ok": true,
+    "full": {
+      "Bulenox_100K": {
+        "got": 0.03513333333333334,
+        "published": 0.0351,
+        "ok": true
+      },
+      "Tradeify_Select_100K": {
+        "got": 0.047433333333333334,
+        "published": 0.0474,
+        "ok": true
+      },
+      "MFFU_Rapid_100K": {
+        "got": 0.04253333333333333,
+        "published": 0.0425,
+        "ok": true
+      },
+      "BluSky_Premium_100K": {
+        "got": 0.04443333333333333,
+        "published": 0.0444,
+        "ok": true
+      }
+    },
+    "H1": {
+      "Tradeify_Select_100K": {
+        "got": 0.06776666666666667,
+        "published": 0.0678,
+        "ok": true
+      },
+      "MFFU_Rapid_100K": {
+        "got": 0.06276666666666667,
+        "published": 0.0628,
+        "ok": true
+      }
+    }
+  },
+  "trustworthy": true
+}

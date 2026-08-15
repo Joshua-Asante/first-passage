@@ -1,0 +1,8 @@
+# Vendor-derived MBP-10 minute panels (Databento GLBX) — rebuild locally via
+# hour-chunked pull; do not commit.
+data/
+__pycache__/
+*.pyc
+.pytest_cache/
+# RESULTS.json is the result record, not vendor data — tracked, as in the
+# MNQPOOL-1 / MNQFVG-1 sibling probes.

@@ -1,0 +1,1 @@
+FROZEN-CONVENTION: name=tv_open_utc shift_minutes=0 week1_matches=1384 week1_fx_p95=0.0700

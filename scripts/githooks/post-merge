@@ -1,0 +1,98 @@
+#!/bin/sh
+# Post-merge notice: docs/SESSIONS.md carries `merge=union` (.gitattributes)
+# so parallel branches never conflict on it, but union keeps both sides'
+# separators without ordering or de-duplicating them — the doubled `---` /
+# stray-blank-line debris that has cost several hand-authored "restore
+# separator after main merge" commits (see docs/SESSIONS.md history).
+#
+# This hook cannot block a merge that already happened, so it does not gate
+# like pre-commit does. It normalizes the working tree (via
+# scripts/roll_sessions.py --normalize --reorder) if debris or misordering is
+# present, and NEVER commits — the fix is left as an unstaged diff for explicit
+# review, same as a linter --fix would leave it.
+#
+# This is the limb that actually SEES the failure. The union merge that scrambles
+# entry order happens server-side when GitHub merges the PR, so no local hook runs
+# for it; arrival on a durable machine is the first moment anything can notice
+# (cf. the pin-provenance guard above, same shape). The pre-commit limb catches
+# only the leftover: a scrambled order that is still unrepaired at the next commit,
+# which is the rebase-flow case this hook misses.
+#
+# It now DOES reorder, which it previously declined to do because same-date
+# chronology was a judgment call. It is no longer a judgment: order comes from the
+# author time of the commit that first added each heading. Scope is the top
+# ORDER_WINDOW entries, the only region a union merge can disturb — deliberately
+# not the whole file, since a full sort moves entries that were placed by hand.
+ROOT="$(git rev-parse --show-toplevel)" || exit 0
+cd "$ROOT" || exit 0
+
+# (1) Incoming Pine-pin provenance (2026-07-31). `.pine` is gitignored, so a pin
+# authored on a disposable checkout (cloud agent / runner) is unverifiable the
+# moment that machine is torn down — the bad8068d... case, where the "active
+# working edition" had to be reconstructed from its predecessor.
+#
+# This is the ONLY live limb of that guard. The pre-commit limb never sees the
+# case (a fresh cloud-agent clone has no hooks installed), and the PR job added
+# alongside it is inert while GitHub Actions is disabled repo-wide (verified
+# 2026-07-31: actions/permissions {"enabled":false}; no run since 2026-07-16).
+# Arrival on a durable machine is therefore the first moment anyone can notice.
+#
+# It CANNOT block — the pin is already committed upstream and the bytes are
+# already gone. Detection is still worth having: acting now, while the authoring
+# PR is fresh, is the difference between re-pinning from a source that still
+# exists and reconstructing one that does not.
+if git rev-parse --verify -q ORIG_HEAD >/dev/null; then
+  if ! python scripts/check_pine_manifest.py --check-pin-provenance --base ORIG_HEAD 2>/dev/null; then
+    echo ""
+    echo "WARNING: this merge brought in a Pine pin made on a disposable checkout."
+    echo "         Those bytes are gitignored and are almost certainly already lost."
+    echo "         Do NOT delete or weaken the pin. While the authoring PR is still"
+    echo "         fresh, recover the .pine from it and re-pin from THIS machine:"
+    echo "           python scripts/check_pine_manifest.py --check-pin-provenance --base ORIG_HEAD"
+    echo "         If the bytes are gone, reconstruct from the predecessor edition and"
+    echo "         record it as a reconstruction, not a recovery (cf. bad8068d...)."
+    echo ""
+  fi
+fi
+
+# (2) Only act if the merge actually touched SESSIONS.md.
+if ! git diff --name-only ORIG_HEAD HEAD 2>/dev/null | grep -qx 'docs/SESSIONS.md'; then
+  exit 0
+fi
+
+# (2a) Duplicate session label. Distinct from debris: --normalize --reorder is a
+# pure move and CANNOT renumber a label, so the block below would report "no
+# change" and say nothing while a collision sits in the file. This is the only
+# local limb that sees a GitHub-side PR merge, and it cannot block — by the time
+# it runs the duplicate is already on main, so the warning has to be loud and
+# name the manual fix.
+if ! python scripts/roll_sessions.py --check-order --root "$ROOT" 2>/dev/null | grep -q "duplicate session label"; then
+  :
+else
+  echo ""
+  echo "WARNING: docs/SESSIONS.md now carries two entries claiming the SAME session"
+  echo "         label. Session letters are allocated at write time with no"
+  echo "         reservation, so two concurrent sessions can pick the same one"
+  echo "         (2026-08-08f, 2026-08-09g). merge=union keeps both sides."
+  python scripts/roll_sessions.py --check-order --root "$ROOT" 2>/dev/null \
+    | grep "duplicate session label" | sed 's/^/         /'
+  echo "         Renumber the later entry by hand — --reorder cannot fix this."
+  echo ""
+fi
+
+CHECK="$(python scripts/roll_sessions.py --normalize --reorder --dry-run --root "$ROOT" 2>/dev/null)"
+case "$CHECK" in
+  *"changed"*)
+    python scripts/roll_sessions.py --normalize --reorder --root "$ROOT" >/dev/null
+    echo ""
+    echo "NOTE: docs/SESSIONS.md had union-merge debris (separators and/or entry"
+    echo "      order) — repaired in the working tree, NOT committed. Review with:"
+    echo "        git diff docs/SESSIONS.md"
+    echo "      then commit if it looks right. Reordering is a pure move of whole"
+    echo "      entries within the top window; no entry body is edited. If a"
+    echo "      same-day entry still needs floating by hand, say so in its heading"
+    echo "      (the '2026-07-29 (later)' convention) rather than re-sorting."
+    echo ""
+    ;;
+esac
+exit 0

@@ -1,0 +1,25 @@
+# MSL-S2B Stage-1 card YAML — evidence input for msl_preflight only.
+# p/rr are NOT freeze-time claims. Mechanism draft only.
+id: msl-s2b-mym-sweep-failure-filtered-continuation
+instrument: MYM
+mechanism: sweep-failure-filtered-continuation
+dedup_query: sweep-failure-filtered-continuation
+dedup_paths:
+  - docs/rejected_candidates.md
+  - lab/CATALOG.md
+  - docs/briefs/2026-08-13-msl-second-slate.md
+  - docs/briefs/closures/MSL-C1-closure-falsified.md
+  - docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md
+  - docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md
+  - ops/instruments/MYM.md
+  - ops/instruments/MECHANISMS.md
+# Placeholder for tool arithmetic only — not an assumed-edge region freeze.
+# p=0.35 / rr=3 sit inside the elected slate-2 box; they are table inputs, not measured edge.
+p: 0.35
+rr: 3.0
+n_trades: 1
+rt_cost_usd: 2.82
+point_value_usd: 0.5
+contracts: 2
+stop_pts: 40.0
+target_pts: 120.0

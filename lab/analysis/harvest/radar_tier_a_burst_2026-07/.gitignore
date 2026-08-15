@@ -1,0 +1,12 @@
+# Local-only renders / vendor PDFs for digitization (re-fetchable)
+*.pdf
+*.png
+page_*.png
+fig2_page_render.png
+_ss_probe.py
+_recalc_sr.py
+_x_by_fill.py
+_recount_bars.py
+digitize_fig2_fx_probe.py
+fig2_digitize_probe.json
+demyst_p*.png

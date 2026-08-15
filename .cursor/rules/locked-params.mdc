@@ -1,0 +1,43 @@
+---
+description: Locked-axis guardrails for strategy params, sizing constants, and vendor data. User rules and CLAUDE.md override on conflict.
+globs: "**/*.pine,**/firm_rules.py,**/dd_protection.py,core/data/**"
+alwaysApply: false
+---
+
+# Locked Params
+
+**Rule 0 first:** read the production source before proposing any change to the
+files below (CLAUDE.md; `docs/rule_0.md`).
+
+## Pine (`**/*.pine`) — LOCKED parameter axis
+
+- SL/TP/ATR/risk%/pyramid/session/BE/trail are **immutable**. Pine is canonical
+  for strategy behavior and is gitignored + hash-pinned
+  (`core/strategies/MANIFEST.sha256`).
+- A real parameter change needs a **lock ADR + re-MC**, never an inline edit.
+  Decay authorizes reversible de-risk (lifecycle multiplier), not re-fitting.
+
+## Sizing constants (`firm_rules.py`, `dd_protection.py`)
+
+- `DD_TRIGGER` / `DD_SCALE` / `BASE_RISK` / `_BASE_RISK` are frozen. The historical
+  MC calibration 99.83/0.17/4.37 is recorded in `docs/mc_anchor_history.md`;
+  engine regression is pinned by `tests/core/test_mc_synthetic_engine.py`
+  (substrate Phase 3 retired the Pepperstone executable pin 2026-07-24).
+- Changing any of them requires **re-running `portfolio_mc` + a lock decision
+  brief** (`docs/adr/2026-05-08-dd-trigger-c2-relock.md` for the DD tier).
+  (`RISK_TIERS` / `BASELINE_RISK` were multiplier-spine aliases removed in
+  substrate Phase 2 — do not reintroduce without a new ADR.)
+
+## Vendor data (`core/data/{tv_exports,bar_data,external}/**`)
+
+- After changing any CSV, regenerate the manifest and commit the `SHA256SUMS`
+  delta **in the same commit**:
+  `python scripts/check_data_manifests.py --regenerate` (dry-run first).
+- The pre-commit hook blocks on a stale manifest; CI can't re-hash gitignored
+  bytes, so the local hook is the only gate (lesson M-9).
+
+The former derived mirror `core/config/params.toml` and its hub gate
+(`validate_params.py`) were **retired 2026-08-03**
+([`docs/adr/2026-08-03-params-toml-gate-retirement.md`](docs/adr/2026-08-03-params-toml-gate-retirement.md)).
+Surviving integrity: `check_pine_manifest`, path-liveness (MANIFEST parents),
+`check_skills_no_constants`, `verify_lock_anchors` (dd_protection-only).

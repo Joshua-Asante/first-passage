@@ -1,0 +1,38 @@
+# c1 rail sizing host — Fly.io app config.
+# Set `app` at create time (fly apps create <name>, then edit here) or via
+# `fly launch --copy-config`. primary_region: latency is immaterial at 15m-bar
+# cadence — any US region is fine; iad (us-east) is a reasonable default.
+app = "c1-rail"
+primary_region = "iad"
+
+[http_service]
+  # Fly's edge terminates TLS and routes public HTTPS to this internal port.
+  # The app binds 0.0.0.0:8080 INSIDE the container (see the config's bind_host);
+  # the only public path in is Fly's proxy, so the path-token stays the app-level
+  # auth gate. bind_port in c1_rail_config.json MUST equal internal_port.
+  internal_port = 8080
+  force_https = true
+  # Always-on: this receives live-order webhooks — no cold-start gamble. Keep it a
+  # SINGLE machine; peak-equity state is local to the volume and must not be split.
+  # 2026-08-07 (S2b): this is the LISTENER app only. The Python signal daemon is a
+  # separate Fly app with its own machine/volume — never collapse DD-locality here.
+  auto_stop_machines = false
+  auto_start_machines = false
+  min_machines_running = 1
+  processes = ["app"]
+
+  [[http_service.checks]]
+    # GET / is the unauthenticated health probe (never sizes). §2.5(A).
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "15s"
+    method = "GET"
+    path = "/"
+
+[[mounts]]
+  source = "c1_rail_data"
+  destination = "/data"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

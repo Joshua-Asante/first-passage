@@ -1,0 +1,7 @@
+# Databento pull artifacts — local cache only
+data/
+*.parquet
+results.json
+diagnostics.json
+__pycache__/
+.venv/

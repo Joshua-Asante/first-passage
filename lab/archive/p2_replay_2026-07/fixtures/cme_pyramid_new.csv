@@ -1,0 +1,3 @@
+Trade number,Type,Date and time,Signal,Price USD,Size (qty),Size (value),Net PnL USD,Net PnL %,Favorable excursion USD,Favorable excursion %,Adverse excursion USD,Adverse excursion %,Cumulative PnL USD,Cumulative PnL %
+1,Entry long,2026-06-09 10:00,Long,17010,10,170100,0,0,0,0,0,0,0,0
+1,Exit long,2026-06-09 12:00,Exit Long,17110,10,171100,1000,0.50,1050,0.52,-90,-0.04,1000,0.50

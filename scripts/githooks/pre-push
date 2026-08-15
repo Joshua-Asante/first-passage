@@ -1,0 +1,21 @@
+#!/bin/sh
+# Pre-push gate. Single check:
+#   1. Governance-surface push collision (CLAUDE.md / STATE.md / docs/SESSIONS.md /
+#      docs/adr/** / docs/briefs/pre-registration/** changed on BOTH sides since the
+#      merge-base with origin/main).
+#
+# Why pre-push and not pre-commit: the collision condition is defined against the
+# remote, so it is only knowable after a fetch — and a fetch on every commit would
+# be intolerable. Push is the last moment before the stale edit becomes visible to
+# the other sessions.
+#
+# Deliberately NOT gated on "main moved" (constant, would decay to ceremony) and
+# NOT on "git reports a conflict" (2026-07-24: the contradiction auto-merged with
+# zero conflict markers). See scripts/check_push_collision.py for the record.
+#
+# Fails open when offline. Override: FIRST_PASSAGE_ALLOW_PUSH_COLLISION=1 git push
+ROOT="$(git rev-parse --show-toplevel)" || exit 1
+cd "$ROOT" || exit 1
+
+python scripts/check_push_collision.py || exit 1
+exit 0

@@ -1,0 +1,23 @@
+# MSL-S2A Stage-1 card YAML — evidence input for msl_preflight only.
+# p/rr are NOT freeze-time claims. Elected story only.
+id: msl-s2a-mcl-pullback-failure-resumption
+instrument: MCL
+mechanism: pullback-failure-resumption
+dedup_query: pullback-failure-resumption
+dedup_paths:
+  - docs/rejected_candidates.md
+  - lab/CATALOG.md
+  - docs/briefs/2026-08-13-msl-second-slate.md
+  - docs/briefs/closures/Q-MCLTAS-1-closure-falsified.md
+  - docs/briefs/closures/MSL-C2-closure-falsified.md
+  - ops/instruments/MCL.md
+# Placeholder for tool arithmetic only — not an assumed-edge region freeze.
+# p=0.35 / rr=3 sit inside the elected slate-2 box; they are table inputs, not measured edge.
+p: 0.35
+rr: 3.0
+n_trades: 1
+rt_cost_usd: 4.12
+point_value_usd: 1.0
+contracts: 2
+stop_pts: 180.0
+target_pts: 540.0

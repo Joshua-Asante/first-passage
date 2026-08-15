@@ -1,0 +1,82 @@
+{
+  "concept_id": "CONCEPT-USDCAD-RDM-001",
+  "verdict": "PASS",
+  "thresholds": {
+    "p": 0.05,
+    "primary_h": 5,
+    "n_perm": 2000,
+    "min_windows": 100,
+    "min_cond_days": 100
+  },
+  "f1b_primary": {
+    "h": 5,
+    "primary": true,
+    "n_windows": 433,
+    "beta": 0.03380717792264471,
+    "pearson_r": 0.28280275702790597,
+    "perm_p": 0.0,
+    "evaluable": true,
+    "fires": false
+  },
+  "f1b_secondary": [
+    {
+      "h": 1,
+      "primary": false,
+      "n_windows": 2166,
+      "beta": 0.0048698074766944195,
+      "pearson_r": 0.04228125716347207,
+      "perm_p": 0.0515,
+      "evaluable": true,
+      "fires": true
+    },
+    {
+      "h": 10,
+      "primary": false,
+      "n_windows": 216,
+      "beta": 0.04576219720668573,
+      "pearson_r": 0.35760660902174773,
+      "perm_p": 0.0,
+      "evaluable": true,
+      "fires": false
+    }
+  ],
+  "f1a": {
+    "window": "2020-01-06..2026-06-02",
+    "n_days": 1661,
+    "n_widening": 830,
+    "n_active_days": 547,
+    "corr_full": -0.02406130040239402,
+    "corr_conditional": -0.01665925619983841,
+    "corr_active_only_robustness": -0.04094273616256616,
+    "evaluable": true,
+    "fires": false
+  },
+  "f1c": {
+    "n_windows": 433,
+    "beta_incremental": 0.03332106195604889,
+    "perm_p": 0.0,
+    "n_widening_windows": 210,
+    "mean_y_widening": 0.002265595060505757,
+    "mean_y_narrowing": -0.0014821383622094892,
+    "separation_perm_p_descriptive": 0.0,
+    "evaluable": true,
+    "fires": false
+  },
+  "episodes_descriptive": {
+    "2018_cycle": {
+      "n_windows": 51,
+      "beta": 0.025818459250967315,
+      "pearson_r": 0.13443159016519524
+    },
+    "2022_cycle": {
+      "n_windows": 90,
+      "beta": 0.03294982599638356,
+      "pearson_r": 0.32295548302089455
+    },
+    "2026_episode": {
+      "n_windows": 18,
+      "beta": 0.017946105918230922,
+      "pearson_r": 0.15988840821763264
+    }
+  }
+}

@@ -1,0 +1,11 @@
+# Fade-region implied-SR pin (ADR 2026-08-10 Decision ¶2 / umbrella §0.5 q8).
+# p=0.654, rr=0.66, n_trades=3 → round(implied_annualized_sr, 2) == 2.98
+id: fade-region-implied-sr
+instrument: MGC
+mechanism: opening-range-breakout
+dedup_query: __msl_preflight_no_such_needle_zzzz__
+dedup_paths:
+  - docs/rejected_candidates.md
+p: 0.654
+rr: 0.66
+n_trades: 3

@@ -1,0 +1,362 @@
+{
+  "panel": "lab/analysis/c1/tradeify_book_composition_2026-07-23/out/daily_panel.csv",
+  "sims": "10000x3",
+  "horizon": 1500,
+  "tiers": {
+    "Bulenox_100K": {
+      "dd_type": "trailing",
+      "inactivity_max_idle_days": 5,
+      "max_dd_pct": 3.0,
+      "profit_target_pct": 6.0,
+      "min_trading_days": 0,
+      "arms": {
+        "c2off_1.00x_inactOFF": {
+          "pass": 0.6913333333333332,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.3086666666666667,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0,
+          "bust_dd": 0.3086666666666667,
+          "median_days_to_pass": 52.0,
+          "inactivity_limit_used": 1501,
+          "dd_type_used": "trailing"
+        },
+        "c2off_1.00x_inactON": {
+          "pass": 0.08133333333333333,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.010133333333333333,
+          "bust_inactivity": 0.9085333333333333,
+          "horizon_cap": 0.0,
+          "bust_dd": 0.010133333333333333,
+          "median_days_to_pass": 7.0,
+          "inactivity_limit_used": 5,
+          "dd_type_used": "trailing"
+        },
+        "c2off_0.50x_inactOFF": {
+          "pass": 0.8834333333333334,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.11656666666666667,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0,
+          "bust_dd": 0.11656666666666667,
+          "median_days_to_pass": 131.0,
+          "inactivity_limit_used": 1501,
+          "dd_type_used": "trailing"
+        },
+        "c2off_0.50x_inactON": {
+          "pass": 0.0248,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.0002,
+          "bust_inactivity": 0.975,
+          "horizon_cap": 0.0,
+          "bust_dd": 0.0002,
+          "median_days_to_pass": 11.0,
+          "inactivity_limit_used": 5,
+          "dd_type_used": "trailing"
+        },
+        "c2on_1.00x_inactOFF": {
+          "pass": 0.7805333333333334,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.21946666666666667,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0,
+          "bust_dd": 0.21946666666666667,
+          "median_days_to_pass": 67.0,
+          "inactivity_limit_used": 1501,
+          "dd_type_used": "trailing"
+        },
+        "c2on_1.00x_inactON": {
+          "pass": 0.07893333333333334,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.0029999999999999996,
+          "bust_inactivity": 0.9180666666666667,
+          "horizon_cap": 0.0,
+          "bust_dd": 0.0029999999999999996,
+          "median_days_to_pass": 7.0,
+          "inactivity_limit_used": 5,
+          "dd_type_used": "trailing"
+        },
+        "c2on_0.50x_inactOFF": {
+          "pass": 0.9704,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.029566666666666668,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 3.3333333333333335e-05,
+          "bust_dd": 0.029566666666666668,
+          "median_days_to_pass": 152.0,
+          "inactivity_limit_used": 1501,
+          "dd_type_used": "trailing"
+        },
+        "c2on_0.50x_inactON": {
+          "pass": 0.0246,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.0,
+          "bust_inactivity": 0.9753999999999999,
+          "horizon_cap": 0.0,
+          "bust_dd": 0.0,
+          "median_days_to_pass": 11.0,
+          "inactivity_limit_used": 5,
+          "dd_type_used": "trailing"
+        }
+      }
+    },
+    "MFFU_Rapid_100K": {
+      "dd_type": "trailing_locking",
+      "inactivity_max_idle_days": 5,
+      "max_dd_pct": 3.0,
+      "profit_target_pct": 6.0,
+      "min_trading_days": 2,
+      "arms": {
+        "c2off_1.00x_inactOFF": {
+          "pass": 0.6815333333333333,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.3184666666666667,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0,
+          "bust_dd": 0.3184666666666667,
+          "median_days_to_pass": 52.0,
+          "inactivity_limit_used": 1501,
+          "dd_type_used": "trailing_locking",
+          "dd_lock_offset_used": 1000000.0
+        },
+        "c2off_1.00x_inactON": {
+          "pass": 0.0718,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.010533333333333332,
+          "bust_inactivity": 0.9176666666666667,
+          "horizon_cap": 0.0,
+          "bust_dd": 0.010533333333333332,
+          "median_days_to_pass": 7.0,
+          "inactivity_limit_used": 5,
+          "dd_type_used": "trailing_locking",
+          "dd_lock_offset_used": 1000000.0
+        },
+        "c2off_0.50x_inactOFF": {
+          "pass": 0.8760666666666667,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.12393333333333334,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0,
+          "bust_dd": 0.12393333333333334,
+          "median_days_to_pass": 131.0,
+          "inactivity_limit_used": 1501,
+          "dd_type_used": "trailing_locking",
+          "dd_lock_offset_used": 1000000.0
+        },
+        "c2off_0.50x_inactON": {
+          "pass": 0.0248,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.0002,
+          "bust_inactivity": 0.975,
+          "horizon_cap": 0.0,
+          "bust_dd": 0.0002,
+          "median_days_to_pass": 11.0,
+          "inactivity_limit_used": 5,
+          "dd_type_used": "trailing_locking",
+          "dd_lock_offset_used": 1000000.0
+        },
+        "c2on_1.00x_inactOFF": {
+          "pass": 0.7671333333333333,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.23286666666666667,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0,
+          "bust_dd": 0.23286666666666667,
+          "median_days_to_pass": 66.0,
+          "inactivity_limit_used": 1501,
+          "dd_type_used": "trailing_locking",
+          "dd_lock_offset_used": 1000000.0
+        },
+        "c2on_1.00x_inactON": {
+          "pass": 0.06923333333333333,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.0032999999999999995,
+          "bust_inactivity": 0.9274666666666667,
+          "horizon_cap": 0.0,
+          "bust_dd": 0.0032999999999999995,
+          "median_days_to_pass": 7.0,
+          "inactivity_limit_used": 5,
+          "dd_type_used": "trailing_locking",
+          "dd_lock_offset_used": 1000000.0
+        },
+        "c2on_0.50x_inactOFF": {
+          "pass": 0.9645666666666667,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.0354,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 3.3333333333333335e-05,
+          "bust_dd": 0.0354,
+          "median_days_to_pass": 151.0,
+          "inactivity_limit_used": 1501,
+          "dd_type_used": "trailing_locking",
+          "dd_lock_offset_used": 1000000.0
+        },
+        "c2on_0.50x_inactON": {
+          "pass": 0.0246,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.0,
+          "bust_inactivity": 0.9753999999999999,
+          "horizon_cap": 0.0,
+          "bust_dd": 0.0,
+          "median_days_to_pass": 11.0,
+          "inactivity_limit_used": 5,
+          "dd_type_used": "trailing_locking",
+          "dd_lock_offset_used": 1000000.0
+        }
+      }
+    },
+    "BluSky_Premium_100K": {
+      "dd_type": "trailing",
+      "inactivity_max_idle_days": 30,
+      "max_dd_pct": 3.0,
+      "profit_target_pct": 6.0,
+      "min_trading_days": 0,
+      "arms": {
+        "c2off_1.00x_inactOFF": {
+          "pass": 0.6913333333333332,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.3086666666666667,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0,
+          "bust_dd": 0.3086666666666667,
+          "median_days_to_pass": 52.0,
+          "inactivity_limit_used": 1501,
+          "dd_type_used": "trailing"
+        },
+        "c2off_1.00x_inactON": {
+          "pass": 0.6876666666666665,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.3071333333333333,
+          "bust_inactivity": 0.0052,
+          "horizon_cap": 0.0,
+          "bust_dd": 0.3071333333333333,
+          "median_days_to_pass": 52.0,
+          "inactivity_limit_used": 30,
+          "dd_type_used": "trailing"
+        },
+        "c2off_0.50x_inactOFF": {
+          "pass": 0.8834333333333334,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.11656666666666667,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0,
+          "bust_dd": 0.11656666666666667,
+          "median_days_to_pass": 131.0,
+          "inactivity_limit_used": 1501,
+          "dd_type_used": "trailing"
+        },
+        "c2off_0.50x_inactON": {
+          "pass": 0.8740666666666667,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.115,
+          "bust_inactivity": 0.010933333333333335,
+          "horizon_cap": 0.0,
+          "bust_dd": 0.115,
+          "median_days_to_pass": 131.0,
+          "inactivity_limit_used": 30,
+          "dd_type_used": "trailing"
+        },
+        "c2on_1.00x_inactOFF": {
+          "pass": 0.7805333333333334,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.21946666666666667,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0,
+          "bust_dd": 0.21946666666666667,
+          "median_days_to_pass": 67.0,
+          "inactivity_limit_used": 1501,
+          "dd_type_used": "trailing"
+        },
+        "c2on_1.00x_inactON": {
+          "pass": 0.7749333333333333,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.21743333333333334,
+          "bust_inactivity": 0.007633333333333335,
+          "horizon_cap": 0.0,
+          "bust_dd": 0.21743333333333334,
+          "median_days_to_pass": 67.0,
+          "inactivity_limit_used": 30,
+          "dd_type_used": "trailing"
+        },
+        "c2on_0.50x_inactOFF": {
+          "pass": 0.9704,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.029566666666666668,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 3.3333333333333335e-05,
+          "bust_dd": 0.029566666666666668,
+          "median_days_to_pass": 152.0,
+          "inactivity_limit_used": 1501,
+          "dd_type_used": "trailing"
+        },
+        "c2on_0.50x_inactON": {
+          "pass": 0.9569666666666667,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.02896666666666667,
+          "bust_inactivity": 0.014033333333333333,
+          "horizon_cap": 3.3333333333333335e-05,
+          "bust_dd": 0.02896666666666667,
+          "median_days_to_pass": 151.0,
+          "inactivity_limit_used": 30,
+          "dd_type_used": "trailing"
+        }
+      }
+    }
+  },
+  "control": {
+    "tier": "Tradeify_Select_100K",
+    "pin_match": true,
+    "arms": {
+      "c2off_1.00x_inactOFF": {
+        "pass": 0.6806666666666666,
+        "bust_daily": 0.0,
+        "bust_static": 0.0,
+        "bust_trailing": 0.31933333333333336,
+        "bust_inactivity": 0.0,
+        "horizon_cap": 0.0,
+        "bust_dd": 0.31933333333333336,
+        "median_days_to_pass": 52.0,
+        "inactivity_limit_used": 1501,
+        "dd_type_used": "trailing_locking",
+        "dd_lock_offset_used": 1000000.0
+      },
+      "c2off_1.00x_inactON": {
+        "pass": 0.06343333333333333,
+        "bust_daily": 0.0,
+        "bust_static": 0.0,
+        "bust_trailing": 0.0106,
+        "bust_inactivity": 0.9259666666666667,
+        "horizon_cap": 0.0,
+        "bust_dd": 0.0106,
+        "median_days_to_pass": 11.0,
+        "inactivity_limit_used": 5,
+        "dd_type_used": "trailing_locking",
+        "dd_lock_offset_used": 1000000.0
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "run_id": "orb_mnq_intraday_breakout",
+  "status": "closed",
+  "opened_at": "2026-07-16T23:54:50Z",
+  "tool": "orb-fixed",
+  "K": 0,
+  "alpha": 0.05,
+  "data_window": "2019-05-06:2026-07-16",
+  "hypothesis": "NAS100 ORB-30 (OR=2x15m, both-sides touch-fill, exit-at-close) ported to native MNQ: mean gross edge >= 4x MNQ cost hurdle (Stage-2); net-of-cost ann Sharpe >= 0.85 at K_eff=2 (Stage-6); within-day placebo significant; temporal battery 2021+ per prereg override",
+  "params": "{\"k_rule\":\"K_intrinsic=1 (H1 sole candidate, no conditioning gate, no give-back exit variant); K_banked(MNQ family)=1 from d5_nq_intraday_mom closed manifest => K_eff=2, DSR floor 0.85\",\"prereg\":\"docs/briefs/pre-registration/2026-07-16-orb-nas100-mnq-reconstruction-preregistration.md\",\"go_signed\":\"2026-07-16/JA\",\"construct\":\"ORB-30 OR=2x15m both-sides touch-fill exit-at-close, inherited from ops/instruments/NAS100.md N1\",\"oos_axis\":\"confirm native MNQ 2019-05-06:present; parent NQ 2010-2018 is free negative-control only\",\"override\":\"Default#4 temporal-consistency sub-era window scoped 2021+ per 2026-06-22 operator ORB ruling\"}",
+  "closed_at": "2026-08-05T01:53:16Z",
+  "results": {
+    "n_submitted": 0,
+    "executed_k": 0,
+    "declared_k": 1,
+    "candidates": []
+  },
+  "lane": "mechanism-first",
+  "reachability_attestation": "docs/briefs/pre-registration/2026-07-16-orb-nas100-mnq-reconstruction-preregistration.md",
+  "declared_K": 1,
+  "closure_mode": "operator-stopped",
+  "stop_reason": "ORB-MNQ-1 re-PARKED 2026-08-03; payable Tradeify_Select_100K leg target FALSIFIED (ADR docs/adr/2026-08-03-orb-mnq-repark-payability-falsified.md). Open ledger entry left stale after re-park; close as operator-stopped with executed_k=0 so K arithmetic is unchanged (ADR 2026-07-31 Ruling 1: open manifests do not bank K; 08-03 ADR spends no K / K_banked(MNQ)=2 stands).",
+  "executed_looks": "none \u2014 this register_search ledger entry never closed with survivor p-values; per ADR 2026-07-31 Addendum b Ruling 1 the open ORB manifest does not count toward K_banked(MNQ). Payability/T2 measurement and stage artefacts live under separate ORB analysis paths, not as multiplicity-corrected close through this manifest. Banks 0 to keep K_banked(MNQ)=2 (D5 1 + ST-EH-1 1).",
+  "verdict": "OPERATOR-STOPPED before declared reads executed. NO campaign verdict exists and none may be quoted. Banks executed selection events (0) per ADR 2026-07-26 clause 2-C; declared K (1) retained in provenance."
+}

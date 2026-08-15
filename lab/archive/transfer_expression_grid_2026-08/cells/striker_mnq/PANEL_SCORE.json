@@ -1,0 +1,75 @@
+{
+  "panel": "C:/Users/joshu/multi_firm_operations/.worktrees/q-txg-1-striker-mnq-score/lab/archive/transfer_expression_grid_2026-08/cells/striker_mnq/inputs/Striker_DJ30_MNQ_Q-TXG-1_PROTOTYPE_CME_MINI_MNQ1!_2026-08-12_68340.csv",
+  "panel_sha256": "7bf08a2341284a5ec378d5cbf67e92399a597176c7dfc638da1421be06864025",
+  "static_equity_recompute": {
+    "n_legs": 222,
+    "tv_net_sum": 22789.579999999973,
+    "recompute_net_sum": 22789.579999999973,
+    "max_abs_delta": 7.105427357601002e-15,
+    "mean_abs_delta": 2.3204661415588857e-16,
+    "ok_within_1usd": true
+  },
+  "cost_gate": {
+    "net_usd": 22789.579999999994,
+    "n": 222,
+    "pf": 1.307989772226622,
+    "wr_pct": 62.612612612612615,
+    "max_dd_pct": 18.044991400735956,
+    "r_basis": "full-stop mean (|loss| > 1% acct, n=15)",
+    "r_n_cohort": 15,
+    "r_dollars": 2448.9040000000005,
+    "mean_net_r": 0.041919064922824954,
+    "required_net_r": 0.03,
+    "dead_cost_net_le_0": false,
+    "beats_required_net_r": true,
+    "verdict": "PASS_COST"
+  },
+  "nsurv": {
+    "firm_key": "Tradeify_Select_100K",
+    "sizing_basis_usd": 100000.0,
+    "half_boundary_date": "2024-03-19",
+    "thresholds_source": "C:\\Users\\joshu\\multi_firm_operations\\.worktrees\\q-txg-1-striker-mnq-score\\docs\\briefs\\pre-registration\\2026-07-13-prop-survivor-scoring-prereg.md",
+    "eval_bust_ceiling": 0.03,
+    "pass_floor": 0.5,
+    "full": {
+      "label": "full",
+      "headline_bust": 0.9813333333333333,
+      "pass_rate": 0.018666666666666668,
+      "floor_ok": false,
+      "n_bdays": 164,
+      "n_sims": 10000,
+      "consistency": 0.4,
+      "gated_on": "run2",
+      "intraday_low": true
+    },
+    "H1": {
+      "label": "H1",
+      "headline_bust": 0.9676,
+      "pass_rate": 0.032400000000000005,
+      "floor_ok": false,
+      "n_bdays": 82,
+      "n_sims": 10000,
+      "consistency": 0.4,
+      "gated_on": "run2",
+      "intraday_low": true
+    },
+    "H2": {
+      "label": "H2",
+      "headline_bust": 0.9937333333333332,
+      "pass_rate": 0.006266666666666666,
+      "floor_ok": false,
+      "n_bdays": 82,
+      "n_sims": 10000,
+      "consistency": 0.4,
+      "gated_on": "run2",
+      "intraday_low": true
+    },
+    "nsurv": "FAIL",
+    "nsurv_line": "N-SURV FAIL",
+    "half_boundary_rule": "midpoint-by-day-count (disclosed; not date-frozen in cell PREREG)",
+    "bars_path": "C:/Users/joshu/multi_firm_operations/core/data/bar_data/MNQ_M15.csv",
+    "bars_sha256": "6c86f41a17b7dfce05baa205a4147b7504f3ce1eb14a3b03b994aa090fa7e00a",
+    "missing_bar_days_dropped": 4,
+    "format_block": "firm=Tradeify_Select_100K sizing_basis=$100,000 half_boundary=2024-03-19\nfloor: bust\u22643.0% \u2227 P(pass)\u226550%\nfull: bust=98.13% pass=1.87% FAIL (n=164)\nH1: bust=96.76% pass=3.24% FAIL (n=82)\nH2: bust=99.37% pass=0.63% FAIL (n=82)\nN-SURV FAIL"
+  }
+}

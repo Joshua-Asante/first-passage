@@ -1,0 +1,357 @@
+{
+  "strategy_label": "class-s-c2-s1-mym-mnq-6j-aegis075",
+  "g1": {
+    "r_deploy": 703,
+    "expectancy_ratio": 0.2076196101594802,
+    "deployable_default_envelope": "YES",
+    "halted": false
+  },
+  "g2_by_tier": {
+    "Bulenox_100K": {
+      "firm_key": "Bulenox_100K",
+      "cost_per_side_usd": 0.61,
+      "rt_cost_usd": 1.22,
+      "hurdle_usd": 3430.64,
+      "gross_edge_usd": 227043.16512682577,
+      "passed": true
+    },
+    "Tradeify_Select_100K": {
+      "firm_key": "Tradeify_Select_100K",
+      "cost_per_side_usd": 0.91,
+      "rt_cost_usd": 1.82,
+      "hurdle_usd": 5117.84,
+      "gross_edge_usd": 227043.16512682577,
+      "passed": true
+    },
+    "MFFU_Rapid_100K": {
+      "firm_key": "MFFU_Rapid_100K",
+      "cost_per_side_usd": 0.95,
+      "rt_cost_usd": 1.9,
+      "hurdle_usd": 5342.8,
+      "gross_edge_usd": 227043.16512682577,
+      "passed": true
+    },
+    "BluSky_Premium_100K": {
+      "firm_key": "BluSky_Premium_100K",
+      "cost_per_side_usd": 0.95,
+      "rt_cost_usd": 1.9,
+      "hurdle_usd": 5342.8,
+      "gross_edge_usd": 227043.16512682577,
+      "passed": true
+    }
+  },
+  "tiers": {
+    "Bulenox_100K": {
+      "firm_key": "Bulenox_100K",
+      "dd_type": "trailing",
+      "f2_label": "optimistic-lower-bound",
+      "g3_ok": true,
+      "run1": {
+        "headline_bust": 0.07383333333333333,
+        "pass_rate": 0.9261666666666667,
+        "rates": {
+          "pass": 0.9261666666666667,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.07383333333333333,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0
+        }
+      },
+      "run2": {
+        "headline_bust": 0.07383333333333333,
+        "pass_rate": 0.9261666666666667,
+        "rates": {
+          "pass": 0.9261666666666667,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.07383333333333333,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0
+        }
+      },
+      "clears_part_a": false,
+      "clears_funded": false,
+      "gated_on": "run1_degenerate"
+    },
+    "Tradeify_Select_100K": {
+      "firm_key": "Tradeify_Select_100K",
+      "dd_type": "trailing_locking",
+      "f2_label": null,
+      "g3_ok": true,
+      "run1": {
+        "headline_bust": 0.0569,
+        "pass_rate": 0.9430999999999999,
+        "rates": {
+          "pass": 0.9430999999999999,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.0569,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0
+        }
+      },
+      "run2": {
+        "headline_bust": 0.0569,
+        "pass_rate": 0.9430999999999999,
+        "rates": {
+          "pass": 0.9430999999999999,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.0569,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0
+        }
+      },
+      "clears_part_a": false,
+      "clears_funded": false,
+      "gated_on": "run2"
+    },
+    "MFFU_Rapid_100K": {
+      "firm_key": "MFFU_Rapid_100K",
+      "dd_type": "trailing_locking",
+      "f2_label": null,
+      "g3_ok": true,
+      "run1": {
+        "headline_bust": 0.0569,
+        "pass_rate": 0.9430999999999999,
+        "rates": {
+          "pass": 0.9430999999999999,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.0569,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0
+        }
+      },
+      "run2": {
+        "headline_bust": 0.0569,
+        "pass_rate": 0.9430999999999999,
+        "rates": {
+          "pass": 0.9430999999999999,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.0569,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0
+        }
+      },
+      "clears_part_a": false,
+      "clears_funded": false,
+      "gated_on": "run2"
+    },
+    "BluSky_Premium_100K": {
+      "firm_key": "BluSky_Premium_100K",
+      "dd_type": "trailing",
+      "f2_label": "optimistic-lower-bound",
+      "g3_ok": true,
+      "run1": {
+        "headline_bust": 0.07383333333333333,
+        "pass_rate": 0.9261666666666667,
+        "rates": {
+          "pass": 0.9261666666666667,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.07383333333333333,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0
+        }
+      },
+      "run2": {
+        "headline_bust": 0.08760000000000001,
+        "pass_rate": 0.9124,
+        "rates": {
+          "pass": 0.9124,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.08760000000000001,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0
+        }
+      },
+      "clears_part_a": false,
+      "clears_funded": false,
+      "gated_on": "run2"
+    }
+  },
+  "routing": "STANDALONE",
+  "funded_ruin_tier_count": 0,
+  "discharges_falsifier": false,
+  "halted_at": null,
+  "thresholds_source": "C:\\Users\\joshu\\multi_firm_operations\\.worktrees\\class-s-c2-g0g8\\docs\\briefs\\pre-registration\\2026-07-13-prop-survivor-scoring-prereg.md",
+  "regime_robustness_gate": "TODO \u2014 deferred per handoff \u00a70.5(D); run before trusting a real-candidate ceiling",
+  "panel_meta": {
+    "legs": {
+      "striker": {
+        "file": "Striker_DJ30_v4.5_MYM_CBOT_MINI_MYM1!_2026-07-11_15d8b.csv",
+        "sha256": "9acfa29726a9530d2a3de5fc2290cc67672441fac2c805defd524677cce01b9e",
+        "export_initial": 200000.0,
+        "n_trades": 267,
+        "span": "2020-01-14->2026-06-30",
+        "1r_method": "full-stop mean (|loss| > 1% acct, n=8)",
+        "1r_dollars": 2535.611381430168,
+        "1r_n": 8,
+        "1r_warn": false,
+        "scale": 0.5521350827863669,
+        "risk_pct": 0.007,
+        "target_1r": 1400.0,
+        "net_scaled": 37180.70860444489,
+        "n_overnight_holds": 0
+      },
+      "striker_nas100": {
+        "file": "Striker_NAS100_v1_CME_MINI_MNQ1!_2026-07-11_beabf.csv",
+        "sha256": "8884e6dd56c786e1e59a8ab0b962a70be82f34e06af26a9582554c9f8ddc6419",
+        "export_initial": 200000.0,
+        "n_trades": 284,
+        "span": "2020-01-06->2026-06-30",
+        "1r_method": "full-stop mean (|loss| > 1% acct, n=19)",
+        "1r_dollars": 5899.31780718921,
+        "1r_n": 19,
+        "1r_warn": false,
+        "scale": 0.12543823272212903,
+        "risk_pct": 0.0037,
+        "target_1r": 740.0,
+        "net_scaled": 52219.07377123145,
+        "n_overnight_holds": 0
+      },
+      "aegis": {
+        "file": "Aegis_JPY-Futures_v0.3_BEPAD-TEST_(MJY_6J)_CME_6J1!_2026-07-11_ae744.csv",
+        "sha256": "e82a2c25a94c42b12888f2f8b70daa56f579c6fe02a633418edcf4b3d148ca38",
+        "export_initial": 100000.0,
+        "n_trades": 152,
+        "span": "2020-02-24->2026-07-01",
+        "1r_method": "full-stop mean (|loss| > 1% acct, n=11)",
+        "1r_dollars": 2912.956119008187,
+        "1r_n": 11,
+        "1r_warn": false,
+        "scale": 0.5149408156930029,
+        "risk_pct": 0.0075,
+        "target_1r": 1500.0,
+        "net_scaled": 36466.78166487969,
+        "n_overnight_holds": 0
+      }
+    },
+    "panel_span": "2020-01-06->2026-07-01",
+    "n_bdays": 1693,
+    "book_net_200k": 125866.56404055603
+  },
+  "g2_per_leg": {
+    "Bulenox_100K": {
+      "firm_key": "Bulenox_100K",
+      "cost_per_side_usd": 0.61,
+      "all_legs_passed": true,
+      "legs": {
+        "striker": {
+          "r_deploy": 267,
+          "gross_edge_usd": 74015.220606778,
+          "rt_cost_usd": 1.22,
+          "hurdle_usd": 1302.96,
+          "passed": true
+        },
+        "striker_nas100": {
+          "r_deploy": 284,
+          "gross_edge_usd": 81576.24380887114,
+          "rt_cost_usd": 1.22,
+          "hurdle_usd": 1385.92,
+          "passed": true
+        },
+        "aegis": {
+          "r_deploy": 152,
+          "gross_edge_usd": 71451.70071117664,
+          "rt_cost_usd": 1.22,
+          "hurdle_usd": 741.76,
+          "passed": true
+        }
+      }
+    },
+    "Tradeify_Select_100K": {
+      "firm_key": "Tradeify_Select_100K",
+      "cost_per_side_usd": 0.91,
+      "all_legs_passed": true,
+      "legs": {
+        "striker": {
+          "r_deploy": 267,
+          "gross_edge_usd": 74015.220606778,
+          "rt_cost_usd": 1.82,
+          "hurdle_usd": 1943.76,
+          "passed": true
+        },
+        "striker_nas100": {
+          "r_deploy": 284,
+          "gross_edge_usd": 81576.24380887114,
+          "rt_cost_usd": 1.82,
+          "hurdle_usd": 2067.52,
+          "passed": true
+        },
+        "aegis": {
+          "r_deploy": 152,
+          "gross_edge_usd": 71451.70071117664,
+          "rt_cost_usd": 1.82,
+          "hurdle_usd": 1106.56,
+          "passed": true
+        }
+      }
+    },
+    "MFFU_Rapid_100K": {
+      "firm_key": "MFFU_Rapid_100K",
+      "cost_per_side_usd": 0.95,
+      "all_legs_passed": true,
+      "legs": {
+        "striker": {
+          "r_deploy": 267,
+          "gross_edge_usd": 74015.220606778,
+          "rt_cost_usd": 1.9,
+          "hurdle_usd": 2029.1999999999998,
+          "passed": true
+        },
+        "striker_nas100": {
+          "r_deploy": 284,
+          "gross_edge_usd": 81576.24380887114,
+          "rt_cost_usd": 1.9,
+          "hurdle_usd": 2158.4,
+          "passed": true
+        },
+        "aegis": {
+          "r_deploy": 152,
+          "gross_edge_usd": 71451.70071117664,
+          "rt_cost_usd": 1.9,
+          "hurdle_usd": 1155.2,
+          "passed": true
+        }
+      }
+    },
+    "BluSky_Premium_100K": {
+      "firm_key": "BluSky_Premium_100K",
+      "cost_per_side_usd": 0.95,
+      "all_legs_passed": true,
+      "legs": {
+        "striker": {
+          "r_deploy": 267,
+          "gross_edge_usd": 74015.220606778,
+          "rt_cost_usd": 1.9,
+          "hurdle_usd": 2029.1999999999998,
+          "passed": true
+        },
+        "striker_nas100": {
+          "r_deploy": 284,
+          "gross_edge_usd": 81576.24380887114,
+          "rt_cost_usd": 1.9,
+          "hurdle_usd": 2158.4,
+          "passed": true
+        },
+        "aegis": {
+          "r_deploy": 152,
+          "gross_edge_usd": 71451.70071117664,
+          "rt_cost_usd": 1.9,
+          "hurdle_usd": 1155.2,
+          "passed": true
+        }
+      }
+    }
+  },
+  "overnight_hold_pct": 0.0,
+  "candidate_prereg": "docs\\briefs\\pre-registration\\2026-07-15-existing-strategy-book-candidate-2-prereg.md",
+  "gate_prereg": "docs\\briefs\\pre-registration\\2026-07-13-prop-survivor-scoring-prereg.md",
+  "envelope_final": "YES",
+  "verdict": "FALSIFIED \u2014 all-four-fail"
+}

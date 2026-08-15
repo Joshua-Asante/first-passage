@@ -1,0 +1,82 @@
+{
+  "card_id": "msl-s2b-mym-sweep-failure-filtered-continuation",
+  "card_path": "lab/analysis/c1/msl_s2b_mym_2026-08/card.yaml",
+  "disclaimer": "evidence only; computes evidence only",
+  "dedup_query": "sweep-failure-filtered-continuation",
+  "dedup_paths": [
+    "docs/rejected_candidates.md",
+    "lab/CATALOG.md",
+    "docs/briefs/2026-08-13-msl-second-slate.md",
+    "docs/briefs/closures/MSL-C1-closure-falsified.md",
+    "docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md",
+    "docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md",
+    "ops/instruments/MYM.md",
+    "ops/instruments/MECHANISMS.md"
+  ],
+  "dedup_hits": [
+    "/workspace/ops/instruments/MECHANISMS.md:221:## sweep-failure-filtered-continuation"
+  ],
+  "cell_command": [
+    "/usr/bin/python3",
+    "/workspace/scripts/instrument_profiles.py",
+    "cell",
+    "MYM",
+    "sweep-failure-filtered-continuation"
+  ],
+  "cell_stdout": "=== MYM x sweep-failure-filtered-continuation ===\nledger: ops/instruments/MYM.md\nvenue: NOT TRADABLE at the live firm — AUTHORIZED-but-venue-less incumbent (Striker DJ30 MYM edition); no live book to correlate new work against — check venue_note before book-correlation gate.\nverdict: untested — no prior on this cell.\nclass finding (mechanism-wide, not specific to MYM): Stage-1 **FAIL** (route) — index raised bar unbound for continuation *entry*; SLR route ① clears MR-at-level *filter* only; temporal-selectivity route blocked by Q-TNEC-CON-5 pause; composite clearance forbidden. [STAGE1](../../lab/analysis/c1/msl_s2b_mym_2026-08/STAGE1.md) · [closure](../../docs/briefs/closures/MSL-S2B-closure-stage1-fail-route.md). $0 / K=0; G0 never frozen.\nBINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md\nBINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md\ncost hurdle: 6.57 bp/event (4x Tradeify hurdle) — VERIFY at #M6\nK bank: read ../../discovery_manifests/ — never trust a snapshot.\nprior: Not a barren instrument — the incumbent locked leg is profitable here; one narrow continuation expression failed. [#M1]\n",
+  "cell_returncode": 1,
+  "arithmetic": {
+    "p": 0.35,
+    "rr": 3.0,
+    "n_trades": 1,
+    "contracts": 2,
+    "expectancy_r": 0.4,
+    "per_trade_sharpe": 0.209657,
+    "implied_annualized_sr": 3.33,
+    "implied_annualized_sr_raw": 3.328201177351373,
+    "trading_days_per_year": 252,
+    "cost_law": {
+      "rt_cost_usd": 2.82,
+      "rows": [
+        {
+          "multiple": 1.0,
+          "stop_floor_usd": 7.05,
+          "stop_floor_pts": 14.1
+        },
+        {
+          "multiple": 2.0,
+          "stop_floor_usd": 14.1,
+          "stop_floor_pts": 28.2
+        },
+        {
+          "multiple": 4.0,
+          "stop_floor_usd": 28.2,
+          "stop_floor_pts": 56.4
+        }
+      ],
+      "card_multiple": 4.0,
+      "stop_floor_usd_at_card_multiple": 28.2
+    },
+    "geometry": {
+      "stop_pts": 40.0,
+      "target_pts": 120.0,
+      "span_pts": 160.0,
+      "point_value_usd": 0.5,
+      "rt_cost_usd": 2.82
+    },
+    "payability": {
+      "all_win_day_usd": 114.36,
+      "payout_min_usd_reference": 200.0,
+      "all_win_day_minus_ref": -85.64
+    },
+    "worst_day": {
+      "all_lose_day_usd": 45.64,
+      "worst_day_bound_usd_reference": 750.0,
+      "bound_minus_all_lose_day": 704.36
+    },
+    "sigma_d": {
+      "sigma_d_usd": 76.3151,
+      "sigma_d_usd_raw": 76.31513611335565
+    }
+  }
+}

@@ -1,0 +1,35 @@
+PANEL: C:/Users/joshu/Downloads/BAR_EXPORT_v0.1_PEPPERSTONE_SPOTCRUDE_2026-06-13_c35c1.csv
+raw bars: 94507  range 2020-01-01 .. 2023-12-29  median spacing 900s
+resampled 15m->4H: 6395 bars (epoch-aligned UTC buckets)
+bars after excl (apr=False/sub-$1): 6395 -> 6395 (0 removed)
+clean range: 2020-01-01 .. 2023-12-29
+4H boundary hours present: [0, 4, 8, 12, 16, 20]
+sub-$5 bars: 0  | price range $9.85-$131.82
+
+Episodes: m=1.5:211  m=2.0:200  m=2.5:182
+
+=== TARGET CURVE  (m=2.0, H=30 bars ~5d, cost x=0.08, net of cost) ===
+T(ATR)    n   cw   cl  amb  opn  meanCost  E[R]best   E[R]mid E[R]worst
+   1.0  198  115   79    2    2     0.090    -0.104    -0.113    -0.122
+   1.5  198   92  101    1    4     0.090    -0.161    -0.167    -0.173
+   2.0  198   77  112    1    8     0.090    -0.174    -0.181    -0.188
+   2.5  198   61  121    1   15     0.090    -0.205    -0.213    -0.221
+
+=== PLACEBO (m=2.0,H=30,T=1.5): real vs random-day short, matched n & stop sizes ===
+  real E[R]_mid=-0.167 (n=198) | null mean=-0.110 sd=0.098 p95=+0.045
+  p(null>=real) = 0.718   <-- no edge over random
+
+=== STATIONARITY (m=2.0,H=30,T=1.5, net mid E[R]) ===
+  H1 (2020-01-01..2021-12-31): n=103 mid=-0.196
+  H2 (2021-12-31..2023-12-29): n=95 mid=-0.136
+  T1 (2020-01-01..2021-05-03): n=59 mid=-0.069
+  T2 (2021-05-03..2022-08-30): n=82 mid=-0.274
+  T3 (2022-08-30..2023-12-29): n=57 mid=-0.115
+
+=== KILL-SWITCH (suppress after k=2 consecutive new-high fails) m=2.0,H=30,T=1.5 ===
+  naive: n=198 mid=-0.167  |  killswitch: n=149 mid=-0.164
+
+=== HORIZON robustness (m=2.0, T=1.5, net mid E[R]) ===
+  H=12 (~2d): n=200 cw=84 cl=90 amb=1 opn=25 mid=-0.147
+  H=30 (~5d): n=198 cw=92 cl=101 amb=1 opn=4 mid=-0.167
+  H=60 (~10d): n=195 cw=95 cl=99 amb=1 opn=0 mid=-0.141

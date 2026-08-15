@@ -1,0 +1,23 @@
+{
+  "run_id": "q_txg1_striker_nas100_mym_20260812",
+  "status": "closed",
+  "opened_at": "2026-08-12T05:27:49Z",
+  "tool": "locked_port_native_tv_panel",
+  "K": 1,
+  "alpha": 0.05,
+  "data_window": "2022-01-01:2026-08-12",
+  "hypothesis": "H-NASMYM: Striker NAS100 v1 execution-mechanics-only port onto CBOT MYM clears net>0 after measured venue cost and N-SURV (bust<=3.0% AND P(pass)>=50%) on full panel and both halves at Tradeify_Select_100K",
+  "params": "{\n  \"cell\": \"striker_nas100_x_MYM\",\n  \"election\": 1,\n  \"K_declared\": 1,\n  \"prereg\": \"docs/briefs/pre-registration/2026-08-12-q-txg-1-striker-nas100-mym-cell-prereg.md\",\n  \"port\": \"striker_nas100_v1_mym_qtxg1_prototype\",\n  \"port_sha256\": \"19264da29a3d9a30200600689e1950931f1abfb648e9071a232ee83fdec2756c\",\n  \"panel\": \"lab/archive/transfer_expression_grid_2026-08/cells/striker_nas100_mym/inputs/Striker_NAS100_MYM_QTXG1_CBOT_MINI_MYM1!_2026-08-12_69f15.csv\",\n  \"panel_sha256\": \"203480867dbcf4751c5cbfcdfdb6b28418c967fe3fe812884db19f91294a4ebf\",\n  \"required_net_r\": 0.06,\n  \"cost_tax_r\": 0.06,\n  \"nsurv_ceiling_pct\": 3.0,\n  \"firm\": \"Tradeify_Select_100K\",\n  \"env1\": \"OPEN\",\n  \"descope_disclosure\": \"2026-08-04 amendment research leg; not WITHDRAWN(F1) nas100xMNQ redeploy\"\n}\n",
+  "closed_at": "2026-08-12T05:29:41Z",
+  "results": {
+    "n_submitted": 0,
+    "executed_k": 1,
+    "declared_k": 1,
+    "candidates": []
+  },
+  "declared_K": 1,
+  "closure_mode": "operator-stopped",
+  "stop_reason": "DEAD(cost): K=1 panel scored; net>0 but mean_net_r 0.0129 < required_net_r 0.06; N-SURV not reached",
+  "executed_looks": "striker_nas100_x_MYM:native_tv_panel_cost_gate",
+  "verdict": "OPERATOR-STOPPED before declared reads executed. NO campaign verdict exists and none may be quoted. Banks executed selection events (1) per ADR 2026-07-26 clause 2-C; declared K (1) retained in provenance."
+}

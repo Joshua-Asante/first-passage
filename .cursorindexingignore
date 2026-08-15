@@ -1,0 +1,8 @@
+# Cursor indexing/search exclude — LTM cold corpus (git-tracked; still Readable by path).
+# Keep in sync with .rgignore. Do NOT mirror into .cursorignore (access-block).
+# LTM access: Read exact path from lab/CATALOG.md or docs/briefs/INDEX.md;
+# force-search via Bash: rg --no-ignore
+
+lab/archive/
+docs/ltm/
+core/strategies/_archive/

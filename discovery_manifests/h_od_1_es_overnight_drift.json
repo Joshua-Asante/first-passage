@@ -1,0 +1,39 @@
+{
+  "run_id": "h_od_1_es_overnight_drift",
+  "status": "closed",
+  "opened_at": "2026-07-16T05:44:58Z",
+  "tool": "sr917-fixed-hour",
+  "K": 1,
+  "alpha": 0.05,
+  "data_window": "2010-06-06:2018-12-31",
+  "hypothesis": "ES 02:00-03:00 ET overnight-drift hour has positive mean return (Boyarchenko-Larsen-Whelan FRBNY SR917 dealer inventory-risk); net-of-cost annualized Sharpe>=0.85 at K_eff=2 under the frozen passive execution model; disjoint-hour 20:00-21:00 ET placebo null",
+  "params": "{\n  \"k_rule\": \"K_eff=2 (K_intrinsic=1 H1 sole candidate + K_banked=1 ES family from Q-HARV-0; H3 disjoint-hour placebo consumes no selection-K)\",\n  \"prereg\": \"docs/briefs/pre-registration/H-OD-1-ES-overnight-drift-preregistration.md\",\n  \"instrument\": \"ES parent sole confirm anchor; MES = Stage-7 realism leg; MNQ/NQ/MYM FORBIDDEN\",\n  \"construct\": \"SR917 overnight-drift: long ES 02:00->03:00 ET hour, unconditional, one RT/session\",\n  \"lane\": \"mechanism-first\",\n  \"clause_k_floor\": 0.85,\n  \"v_rule\": \"V=1/n unconditional pin\",\n  \"cost_model\": \"FROZEN passive: 0.5 ES tick TOTAL round-trip + negligible commission, on ES-parent notional (NOT D5 per-side crossing)\",\n  \"oos_axis\": \"IS ES parent 2010-06-06:2018-12-31; OOS ES parent 2019-01-02:pull-date; MES realism 2019-05-05:pull-date\",\n  \"go_signed\": \"2026-07-16/JA\"\n}\n",
+  "closed_at": "2026-07-16T12:41:03Z",
+  "results": {
+    "n_submitted": 1,
+    "naive_alpha": 0.05,
+    "n_pass_naive_alpha": 0,
+    "bonferroni_threshold": 0.05,
+    "n_pass_bonferroni": 0,
+    "n_multiplicity_killed": 0,
+    "bh_rows": [
+      {
+        "rank": 1,
+        "pvalue": 1.0,
+        "bh_threshold": 0.05,
+        "bh_reject": false
+      }
+    ],
+    "n_pass_bh": 0,
+    "expected_false_positives_global_null": 0.05,
+    "candidates": [
+      {
+        "id": null,
+        "pvalue": 1.0
+      }
+    ]
+  },
+  "lane": "mechanism-first",
+  "reachability_attestation": "docs/briefs/pre-registration/H-OD-1-ES-overnight-drift-preregistration.md",
+  "verdict": "FIRST-PASS ONLY. Candidates clearing the crude multiplicity floor are listed above. This is NOT a promotion. Hand the full candidate set (all K returns) to strategy-validation for universe-level correction (White RC / Hansen SPA / Romano-Wolf) and the native-micro OOS gate before any candidate is trusted."
+}

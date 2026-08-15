@@ -1,0 +1,180 @@
+{
+  "baseline": {
+    "n": 196,
+    "net": 369698.41,
+    "pf": 3.717,
+    "wr": 55.61,
+    "base_net": 43257.2,
+    "add_net": 326441.21,
+    "pyr_share": 0.883
+  },
+  "linear_grid": {
+    "0": {
+      "net": 369698.41,
+      "pf": 3.717,
+      "wr": 55.6,
+      "base_net": 43257.2,
+      "add_net": 326441.21,
+      "pyr_share": 0.883,
+      "total_cost": 0.0
+    },
+    "1": {
+      "net": 354390.21,
+      "pf": 3.501,
+      "wr": 55.6,
+      "base_net": 38254.2,
+      "add_net": 316136.01,
+      "pyr_share": 0.8921,
+      "total_cost": 15308.2
+    },
+    "2": {
+      "net": 339082.01,
+      "pf": 3.299,
+      "wr": 55.1,
+      "base_net": 33251.2,
+      "add_net": 305830.81,
+      "pyr_share": 0.9019,
+      "total_cost": 30616.4
+    },
+    "3.5": {
+      "net": 316119.71,
+      "pf": 3.023,
+      "wr": 53.1,
+      "base_net": 25746.7,
+      "add_net": 290373.01,
+      "pyr_share": 0.9186,
+      "total_cost": 53578.7
+    },
+    "5": {
+      "net": 293157.41,
+      "pf": 2.773,
+      "wr": 48.0,
+      "base_net": 18242.2,
+      "add_net": 274915.21,
+      "pyr_share": 0.9378,
+      "total_cost": 76541.0
+    },
+    "6.5": {
+      "net": 270195.11,
+      "pf": 2.544,
+      "wr": 44.9,
+      "base_net": 10737.7,
+      "add_net": 259457.41,
+      "pyr_share": 0.9603,
+      "total_cost": 99503.3
+    },
+    "8": {
+      "net": 247232.81,
+      "pf": 2.337,
+      "wr": 42.3,
+      "base_net": 3233.2,
+      "add_net": 243999.61,
+      "pyr_share": 0.9869,
+      "total_cost": 122465.6
+    },
+    "10": {
+      "net": 216616.41,
+      "pf": 2.093,
+      "wr": 41.3,
+      "base_net": -6772.8,
+      "add_net": 223389.21,
+      "pyr_share": 1.0313,
+      "total_cost": 153082.0
+    },
+    "12": {
+      "net": 186000.01,
+      "pf": 1.879,
+      "wr": 40.3,
+      "base_net": -16778.8,
+      "add_net": 202778.81,
+      "pyr_share": 1.0902,
+      "total_cost": 183698.4
+    },
+    "15": {
+      "net": 140075.41,
+      "pf": 1.604,
+      "wr": 38.8,
+      "base_net": -31787.8,
+      "add_net": 171863.21,
+      "pyr_share": 1.2269,
+      "total_cost": 229623.0
+    },
+    "20": {
+      "net": 63534.41,
+      "pf": 1.237,
+      "wr": 36.2,
+      "base_net": -56802.8,
+      "add_net": 120337.21,
+      "pyr_share": 1.894,
+      "total_cost": 306164.0
+    }
+  },
+  "linear_breakeven_pts": {
+    "total": 24.15,
+    "base": 8.65,
+    "add": 31.68
+  },
+  "rep_base_stop_pts": 52.4,
+  "size_aware": {
+    "linear-tight (a=0)": {
+      "net": 339082.01,
+      "pf": 3.299,
+      "wr": 55.1,
+      "base_net": 33251.2,
+      "add_net": 305830.81,
+      "pyr_share": 0.9019,
+      "total_cost": 30616.4,
+      "add_cost_pts_median": 2.0,
+      "base_cost_pts_median": 2.0
+    },
+    "linear-real (a=0)": {
+      "net": 308465.61,
+      "pf": 2.937,
+      "wr": 52.6,
+      "base_net": 23245.2,
+      "add_net": 285220.41,
+      "pyr_share": 0.9246,
+      "total_cost": 61232.8,
+      "add_cost_pts_median": 4.0,
+      "base_cost_pts_median": 4.0
+    },
+    "impact sqrt (a=.5)": {
+      "net": 257235.25,
+      "pf": 2.454,
+      "wr": 52.0,
+      "base_net": 22257.17,
+      "add_net": 234978.08,
+      "pyr_share": 0.9135,
+      "total_cost": 112463.16,
+      "add_cost_pts_median": 8.6,
+      "base_cost_pts_median": 4.0
+    },
+    "impact linear-size (a=1)": {
+      "net": 75633.99,
+      "pf": 1.299,
+      "wr": 49.0,
+      "base_net": 20693.51,
+      "add_net": 54940.48,
+      "pyr_share": 0.7264,
+      "total_cost": 294064.42,
+      "add_cost_pts_median": 23.8,
+      "base_cost_pts_median": 4.0
+    },
+    "impact-stress (a=.5)": {
+      "net": 160080.28,
+      "pf": 1.746,
+      "wr": 44.4,
+      "base_net": 6260.13,
+      "add_net": 153820.15,
+      "pyr_share": 0.9609,
+      "total_cost": 209618.13,
+      "add_cost_pts_median": 16.2,
+      "base_cost_pts_median": 7.0
+    }
+  },
+  "qty_lots": {
+    "base_median": 2.9,
+    "add_median": 31.9,
+    "add_max": 61.4
+  }
+}

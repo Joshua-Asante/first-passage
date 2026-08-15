@@ -1,0 +1,349 @@
+{
+  "brief": "Q-PYRPARITY-1",
+  "branch": "B",
+  "init_capital": 200000.0,
+  "bands": {
+    "fill": 0.02,
+    "median": 0.005,
+    "fill_frac": 0.95
+  },
+  "overall_verdict": "FALSIFIED-NONPROPORTIONAL",
+  "legs": {
+    "MYM": {
+      "leg": "MYM",
+      "r0_file": "MYM_r070_f5ecb.csv",
+      "r_half_file": "MYM_r035_8d6b5.csv",
+      "r0_sha256": "9acfa29726a9530d2a3de5fc2290cc67672441fac2c805defd524677cce01b9e",
+      "r_half_sha256": "fa72ad725764223cc9e13e7023e693d0466d3a23444b5b6962b7f7d244138b68",
+      "r0_label": "0.70",
+      "r_half_label": "0.35",
+      "base": {
+        "cohort": "base",
+        "n_r0": 232,
+        "n_rh": 232,
+        "n_paired": 232,
+        "n_only_r0": 0,
+        "n_only_rh": 0,
+        "only_r0_ts": [],
+        "only_rh_ts": [],
+        "frac_in_band": 0.08189655172413793,
+        "n_in_band": 19,
+        "median": 0.870682972247467,
+        "mean": 0.8297729246165867,
+        "min": 0.45703316708241065,
+        "max": 1.0840719768336644,
+        "p05": 0.49351342130305415,
+        "p95": 1.0473002568461027,
+        "accept_fill_band": false,
+        "accept_median_band": false,
+        "paired_sample": [
+          {
+            "ts": "2020-01-14 11:15:00",
+            "qty_r0": 17.0,
+            "qty_rh": 17.0,
+            "eq_r0": 200000.0,
+            "eq_rh": 200000.0,
+            "raw_qty_ratio": 1.0,
+            "stat_branch_b": 1.0,
+            "in_band": false
+          },
+          {
+            "ts": "2020-01-21 09:30:00",
+            "qty_r0": 17.0,
+            "qty_rh": 17.0,
+            "eq_r0": 199996.26,
+            "eq_rh": 199996.26,
+            "raw_qty_ratio": 1.0,
+            "stat_branch_b": 1.0,
+            "in_band": false
+          },
+          {
+            "ts": "2020-03-06 10:15:00",
+            "qty_r0": 12.0,
+            "qty_rh": 6.0,
+            "eq_r0": 199712.02,
+            "eq_rh": 199712.02,
+            "raw_qty_ratio": 0.5,
+            "stat_branch_b": 0.5,
+            "in_band": true
+          },
+          {
+            "ts": "2020-05-26 11:00:00",
+            "qty_r0": 17.0,
+            "qty_rh": 17.0,
+            "eq_r0": 199727.38,
+            "eq_rh": 199719.7,
+            "raw_qty_ratio": 1.0,
+            "stat_branch_b": 1.0000384538931313,
+            "in_band": false
+          },
+          {
+            "ts": "2020-06-05 10:45:00",
+            "qty_r0": 17.0,
+            "qty_rh": 9.0,
+            "eq_r0": 199188.14,
+            "eq_rh": 199180.46,
+            "raw_qty_ratio": 0.5294117647058824,
+            "stat_branch_b": 0.5294321777642363,
+            "in_band": false
+          }
+        ],
+        "raw_qty_ratio_median": 0.8235294117647058
+      },
+      "add": {
+        "cohort": "add",
+        "n_r0": 35,
+        "n_rh": 35,
+        "n_paired": 35,
+        "n_only_r0": 0,
+        "n_only_rh": 0,
+        "only_r0_ts": [],
+        "only_rh_ts": [],
+        "frac_in_band": 0.08571428571428572,
+        "n_in_band": 3,
+        "median": 0.9164249452309929,
+        "mean": 0.8471917836998978,
+        "min": 0.4655190670837779,
+        "max": 1.0840719768336644,
+        "p05": 0.49517529733973453,
+        "p95": 1.047052435423354,
+        "accept_fill_band": false,
+        "accept_median_band": false,
+        "paired_sample": [
+          {
+            "ts": "2020-08-21 13:30:00",
+            "qty_r0": 127.0,
+            "qty_rh": 120.0,
+            "eq_r0": 199028.73,
+            "eq_rh": 199012.92,
+            "raw_qty_ratio": 0.9448818897637795,
+            "stat_branch_b": 0.9449569531449769,
+            "in_band": false
+          },
+          {
+            "ts": "2020-12-08 12:15:00",
+            "qty_r0": 127.0,
+            "qty_rh": 127.0,
+            "eq_r0": 199852.59,
+            "eq_rh": 199791.97,
+            "raw_qty_ratio": 1.0,
+            "stat_branch_b": 1.000303415597734,
+            "in_band": false
+          },
+          {
+            "ts": "2020-12-15 13:00:00",
+            "qty_r0": 127.0,
+            "qty_rh": 127.0,
+            "eq_r0": 201436.41,
+            "eq_rh": 201375.79,
+            "raw_qty_ratio": 1.0,
+            "stat_branch_b": 1.0003010292349443,
+            "in_band": false
+          },
+          {
+            "ts": "2021-02-09 13:45:00",
+            "qty_r0": 127.0,
+            "qty_rh": 127.0,
+            "eq_r0": 201908.99,
+            "eq_rh": 201848.37,
+            "raw_qty_ratio": 1.0,
+            "stat_branch_b": 1.000300324446514,
+            "in_band": false
+          },
+          {
+            "ts": "2021-04-23 15:00:00",
+            "qty_r0": 127.0,
+            "qty_rh": 127.0,
+            "eq_r0": 201277.31,
+            "eq_rh": 201216.69,
+            "raw_qty_ratio": 1.0,
+            "stat_branch_b": 1.0003012672557132,
+            "in_band": false
+          }
+        ],
+        "raw_qty_ratio_median": 0.8818897637795275
+      },
+      "add_count_drop": false,
+      "lists_misaligned": false,
+      "bands_ok": false,
+      "leg_verdict": "FALSIFIED-NONPROPORTIONAL",
+      "reason": "cohort median outside 0.500 \u00b1 0.02"
+    },
+    "MNQ": {
+      "leg": "MNQ",
+      "r0_file": "MNQ_r037_9b6c8.csv",
+      "r_half_file": "MNQ_r0185_b2723.csv",
+      "r0_sha256": "8c99a28fde76a8860d6927aa014a25080a37821f536ea35755ac4d1b592aa408",
+      "r_half_sha256": "832d766e53dd7dd572f7a948efefb100032316cc695a749cbdb658a23094c4ba",
+      "r0_label": "0.37",
+      "r_half_label": "0.185",
+      "base": {
+        "cohort": "base",
+        "n_r0": 228,
+        "n_rh": 242,
+        "n_paired": 228,
+        "n_only_r0": 0,
+        "n_only_rh": 12,
+        "only_r0_ts": [],
+        "only_rh_ts": [
+          "2022-08-15 11:30:00",
+          "2023-11-28 11:30:00",
+          "2024-11-05 11:45:00",
+          "2025-09-15 11:45:00",
+          "2025-09-22 12:00:00",
+          "2025-12-01 11:30:00",
+          "2025-12-23 11:45:00",
+          "2026-01-20 10:30:00",
+          "2026-03-02 10:00:00",
+          "2026-03-02 11:45:00",
+          "2026-04-13 12:15:00",
+          "2026-06-01 12:45:00"
+        ],
+        "frac_in_band": 0.7149122807017544,
+        "n_in_band": 163,
+        "median": 0.48879490569684353,
+        "mean": 0.4859272445318961,
+        "min": 0.3911984339141413,
+        "max": 0.5323066363519369,
+        "p05": 0.4595004465054485,
+        "p95": 0.5047425073518543,
+        "accept_fill_band": false,
+        "accept_median_band": false,
+        "paired_sample": [
+          {
+            "ts": "2020-01-06 09:45:00",
+            "qty_r0": 38.0,
+            "qty_rh": 19.0,
+            "eq_r0": 200000.0,
+            "eq_rh": 200000.0,
+            "raw_qty_ratio": 0.5,
+            "stat_branch_b": 0.5,
+            "in_band": true
+          },
+          {
+            "ts": "2020-01-13 11:45:00",
+            "qty_r0": 50.0,
+            "qty_rh": 25.0,
+            "eq_r0": 192927.0,
+            "eq_rh": 196463.5,
+            "raw_qty_ratio": 0.5,
+            "stat_branch_b": 0.4909996004346864,
+            "in_band": true
+          },
+          {
+            "ts": "2020-01-21 09:30:00",
+            "qty_r0": 75.0,
+            "qty_rh": 38.0,
+            "eq_r0": 191644.0,
+            "eq_rh": 195800.0,
+            "raw_qty_ratio": 0.5066666666666667,
+            "stat_branch_b": 0.4959122914538645,
+            "in_band": true
+          },
+          {
+            "ts": "2020-01-21 11:15:00",
+            "qty_r0": 56.0,
+            "qty_rh": 28.0,
+            "eq_r0": 192619.0,
+            "eq_rh": 196294.0,
+            "raw_qty_ratio": 0.5,
+            "stat_branch_b": 0.49063904143784326,
+            "in_band": true
+          },
+          {
+            "ts": "2020-02-11 10:15:00",
+            "qty_r0": 43.0,
+            "qty_rh": 22.0,
+            "eq_r0": 192675.0,
+            "eq_rh": 196322.0,
+            "raw_qty_ratio": 0.5116279069767442,
+            "stat_branch_b": 0.5021235876608031,
+            "in_band": true
+          }
+        ],
+        "raw_qty_ratio_median": 0.38095238095238093
+      },
+      "add": {
+        "cohort": "add",
+        "n_r0": 47,
+        "n_rh": 49,
+        "n_paired": 47,
+        "n_only_r0": 0,
+        "n_only_rh": 2,
+        "only_r0_ts": [],
+        "only_rh_ts": [
+          "2025-09-22 13:30:00",
+          "2026-04-13 14:45:00"
+        ],
+        "frac_in_band": 1.0,
+        "n_in_band": 47,
+        "median": 0.4989935301815487,
+        "mean": 0.4988923771971109,
+        "min": 0.49634414556962025,
+        "max": 0.5015897666201429,
+        "p05": 0.4968175746022015,
+        "p95": 0.5008811304788355,
+        "accept_fill_band": true,
+        "accept_median_band": true,
+        "paired_sample": [
+          {
+            "ts": "2020-01-06 11:15:00",
+            "qty_r0": 388.0,
+            "qty_rh": 194.0,
+            "eq_r0": 200000.0,
+            "eq_rh": 200000.0,
+            "raw_qty_ratio": 0.5,
+            "stat_branch_b": 0.5,
+            "in_band": true
+          },
+          {
+            "ts": "2020-01-13 14:15:00",
+            "qty_r0": 506.0,
+            "qty_rh": 257.0,
+            "eq_r0": 192927.0,
+            "eq_rh": 196463.5,
+            "raw_qty_ratio": 0.5079051383399209,
+            "stat_branch_b": 0.49876243996725056,
+            "in_band": true
+          },
+          {
+            "ts": "2020-05-11 13:00:00",
+            "qty_r0": 234.0,
+            "qty_rh": 119.0,
+            "eq_r0": 191100.0,
+            "eq_rh": 195472.5,
+            "raw_qty_ratio": 0.5085470085470085,
+            "stat_branch_b": 0.49717138386900117,
+            "in_band": true
+          },
+          {
+            "ts": "2020-07-20 11:30:00",
+            "qty_r0": 225.0,
+            "qty_rh": 109.0,
+            "eq_r0": 212986.0,
+            "eq_rh": 206355.0,
+            "raw_qty_ratio": 0.48444444444444446,
+            "stat_branch_b": 0.5000115550601848,
+            "in_band": true
+          },
+          {
+            "ts": "2020-11-24 12:15:00",
+            "qty_r0": 281.0,
+            "qty_rh": 131.0,
+            "eq_r0": 228679.5,
+            "eq_rh": 214142.5,
+            "raw_qty_ratio": 0.46619217081850534,
+            "stat_branch_b": 0.4978394878489342,
+            "in_band": true
+          }
+        ],
+        "raw_qty_ratio_median": 0.3754646840148699
+      },
+      "add_count_drop": false,
+      "lists_misaligned": true,
+      "bands_ok": false,
+      "leg_verdict": "AMBIGUOUS-HOLD",
+      "reason": "trade lists misaligned (non-add-clipping) and bands not cleanly met"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+firm=Tradeify_Select_100K sizing_basis=$100,000 half_boundary=2024-03-19
+floor: bust≤3.0% ∧ P(pass)≥50%
+full: bust=98.13% pass=1.87% FAIL (n=164)
+H1: bust=96.76% pass=3.24% FAIL (n=82)
+H2: bust=99.37% pass=0.63% FAIL (n=82)
+N-SURV FAIL

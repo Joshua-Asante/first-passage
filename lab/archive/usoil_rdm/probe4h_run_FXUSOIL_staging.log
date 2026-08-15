@@ -1,0 +1,31 @@
+bars: 9949 -> 9763 after Apr-2020/sub-$1 exclusion (186 removed)
+clean range: 2020-01-02 .. 2026-06-11
+
+Episodes: m=1.5:347  m=2.0:309  m=2.5:253
+
+=== TARGET CURVE  (m=2.0, H=30 bars ~5d, cost x=0.08, net of cost) ===
+T(ATR)    n   cw   cl  amb  opn  meanCost  E[R]best   E[R]mid E[R]worst
+   1.0  309  178  129    0    2     0.081    -0.094    -0.094    -0.094
+   1.5  309  149  153    0    7     0.081    -0.072    -0.072    -0.072
+   2.0  309  129  167    0   13     0.081    -0.044    -0.044    -0.044
+   2.5  309  108  182    0   19     0.081    -0.071    -0.071    -0.071
+  (4x cost bar at x=0.08, meanCost~ shown: clear with margin = mid >> ~4x meanCost)
+
+=== PLACEBO (m=2.0,H=30,T=1.5): real vs random-day short, matched n & stop sizes ===
+  real E[R]_mid=-0.072 (n=309) | null mean=-0.114 sd=0.069 p95=+0.000
+  p(null>=real) = 0.273   <-- no edge over random
+
+=== STATIONARITY (m=2.0,H=30,T=1.5, net mid E[R]) ===
+  H1 (2020-01-02..2023-04-14): n=165 mid=-0.080
+  H2 (2023-04-14..2026-06-11): n=144 mid=-0.064
+  T1 (2020-01-02..2022-03-25): n=113 mid=-0.149
+  T2 (2022-03-25..2024-05-03): n=94 mid=-0.067
+  T3 (2024-05-03..2026-06-11): n=102 mid=+0.008
+
+=== KILL-SWITCH (suppress after k=2 consecutive new-high fails) m=2.0,H=30,T=1.5 ===
+  naive: n=309 mid=-0.072  |  killswitch: n=225 mid=-0.056
+
+=== HORIZON robustness (m=2.0, T=1.5, net mid E[R]) ===
+  H=12 (~2d): n=309 cw=142 cl=140 amb=0 opn=27 mid=-0.059
+  H=30 (~5d): n=309 cw=149 cl=153 amb=0 opn=7 mid=-0.072
+  H=60 (~10d): n=306 cw=148 cl=156 amb=0 opn=2 mid=-0.091

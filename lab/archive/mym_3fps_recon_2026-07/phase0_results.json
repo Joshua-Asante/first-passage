@@ -1,0 +1,36 @@
+{
+  "verdict": "FALSIFIED",
+  "expected_event_count": 87,
+  "observed_event_count": 84,
+  "coverage_rate": 0.9655172413793104,
+  "power_floor_delta_over_sigma": 0.21385353243127253,
+  "overnight": {
+    "n": 84,
+    "mean_bp": 1.5362535630473653,
+    "sigma_bp": 59.92933071839647,
+    "delta_over_sigma": 0.02563441881682457,
+    "t_stat": 0.23494332924859782,
+    "confirm_power": 0.042258630043502776
+  },
+  "reversal": {
+    "n": 84,
+    "mean_bp": 2.676228500558814,
+    "sigma_bp": 53.55021865669035,
+    "delta_over_sigma": 0.04997605178264677,
+    "t_stat": 0.4580380804580231,
+    "confirm_power": 0.06655347186041688
+  },
+  "median_friday_open": 34312.0,
+  "costs": {
+    "tradeify_round_trip_bp": 1.64373979948706,
+    "tradeify_4x_hurdle_bp": 6.57495919794824,
+    "mffu_round_trip_bp": 1.690370715784565,
+    "mffu_4x_hurdle_bp": 6.76148286313826
+  },
+  "gates": {
+    "P0_0_coverage": true,
+    "P0_1_overnight_spike": false,
+    "P0_2_intraday_reversal": false,
+    "P0_3_cost_law": false
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "BASELINE_lock_100_as_published": {
+    "dd_lock_offset_usd": 100.0,
+    "tier": {
+      "firm_key": "Tradeify_Select_100K",
+      "dd_type": "trailing_locking",
+      "f2_label": null,
+      "g3_ok": true,
+      "run1": {
+        "headline_bust": 0.026433333333333333,
+        "pass_rate": 0.9735666666666667,
+        "rates": {
+          "pass": 0.9735666666666667,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.026433333333333333,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0
+        }
+      },
+      "run2": {
+        "headline_bust": 0.026466666666666666,
+        "pass_rate": 0.9734333333333334,
+        "rates": {
+          "pass": 0.9734333333333334,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.026466666666666666,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0001
+        }
+      },
+      "clears_part_a": true,
+      "clears_funded": false,
+      "gated_on": "run2"
+    }
+  },
+  "CORRECTED_eval_no_locking": {
+    "dd_lock_offset_usd": 1000000.0,
+    "tier": {
+      "firm_key": "Tradeify_Select_100K",
+      "dd_type": "trailing_locking",
+      "f2_label": null,
+      "g3_ok": true,
+      "run1": {
+        "headline_bust": 0.03983333333333333,
+        "pass_rate": 0.9601666666666667,
+        "rates": {
+          "pass": 0.9601666666666667,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.03983333333333333,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0
+        }
+      },
+      "run2": {
+        "headline_bust": 0.047433333333333334,
+        "pass_rate": 0.9525,
+        "rates": {
+          "pass": 0.9525,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.047433333333333334,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 6.666666666666667e-05
+        }
+      },
+      "clears_part_a": false,
+      "clears_funded": false,
+      "gated_on": "run2"
+    }
+  }
+}

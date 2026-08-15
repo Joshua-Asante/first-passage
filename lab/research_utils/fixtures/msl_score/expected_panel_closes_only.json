@@ -1,0 +1,17 @@
+{
+  "honesty": "LOWER BOUND",
+  "lower_bound": true,
+  "n_trades": 12,
+  "rows": [
+    {"date": "2020-01-06", "pnl_usd": 50.0, "intraday_low": 0.0},
+    {"date": "2020-01-07", "pnl_usd": -200.0, "intraday_low": -200.0},
+    {"date": "2020-01-08", "pnl_usd": -50.0, "intraday_low": -50.0},
+    {"date": "2020-01-09", "pnl_usd": 200.0, "intraday_low": 0.0},
+    {"date": "2020-01-10", "pnl_usd": -100.0, "intraday_low": -100.0},
+    {"date": "2020-01-13", "pnl_usd": 80.0, "intraday_low": 0.0},
+    {"date": "2020-01-14", "pnl_usd": -40.0, "intraday_low": -40.0},
+    {"date": "2020-01-15", "pnl_usd": 50.0, "intraday_low": 0.0},
+    {"date": "2020-01-16", "pnl_usd": -150.0, "intraday_low": -150.0},
+    {"date": "2020-01-17", "pnl_usd": 120.0, "intraday_low": 0.0}
+  ]
+}

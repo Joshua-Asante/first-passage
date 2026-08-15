@@ -1,0 +1,27 @@
+tier   : BluSky_Premium_100K  (idle-unit sensitivity)
+panel  : 2020-08-04 -> 2026-07-21
+sims   : 10,000 x 3 seeds, horizon 1500d
+clause : ToU 3.3 Abandoned Accounts — 'inactive for 30 consecutive days'
+         (discretionary; unit unqualified; billing art. says '30 calendar days')
+
+--- c2off_1.00x (310 week-blocks) ---
+  limit 30 bdays (published)  INACT   0.52%  pass  68.77%
+  limit 21 bdays (calendar) INACT   5.59%  pass  65.50%  (INACT +5.07 pp vs published)
+  limit 22 bdays (calendar) INACT   4.87%  pass  65.95%  (INACT +4.35 pp vs published)
+
+--- c2off_0.50x (310 week-blocks) ---
+  limit 30 bdays (published)  INACT   1.09%  pass  87.41%
+  limit 21 bdays (calendar) INACT  11.88%  pass  78.11%  (INACT +10.79 pp vs published)
+  limit 22 bdays (calendar) INACT  10.48%  pass  79.33%  (INACT +9.39 pp vs published)
+
+--- c2on_1.00x (310 week-blocks) ---
+  limit 30 bdays (published)  INACT   0.76%  pass  77.49%
+  limit 21 bdays (calendar) INACT   7.98%  pass  72.38%  (INACT +7.21 pp vs published)
+  limit 22 bdays (calendar) INACT   7.04%  pass  73.09%  (INACT +6.28 pp vs published)
+
+--- c2on_0.50x (310 week-blocks) ---
+  limit 30 bdays (published)  INACT   1.40%  pass  95.70%
+  limit 21 bdays (calendar) INACT  14.80%  pass  82.95%  (INACT +13.39 pp vs published)
+  limit 22 bdays (calendar) INACT  13.14%  pass  84.52%  (INACT +11.74 pp vs published)
+
+saved -> out/blusky_unit_sensitivity.json

@@ -1,0 +1,127 @@
+# Hash validation against on-disk is local-only (CSVs are gitignored).
+# The pre-commit hook is the load-bearing gate; this workflow is format-only.
+
+name: Manifest check
+
+on:
+  push:
+    paths:
+      - "core/data/**/SHA256SUMS"
+      - ".gitignore"
+      - "scripts/check_data_manifests.py"
+      - ".github/workflows/manifest-check.yml"
+  pull_request:
+    paths:
+      - "core/data/**/SHA256SUMS"
+      - ".gitignore"
+      - "scripts/check_data_manifests.py"
+      - ".github/workflows/manifest-check.yml"
+      - "core/strategies/MANIFEST.sha256"
+      - "core/strategies/PORT_MANIFEST.sha256"
+      - "scripts/check_pine_manifest.py"
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Validate SHA256SUMS format
+        run: |
+          python3 << 'PY'
+          import json
+          import pathlib
+          import re
+          import subprocess
+          import sys
+
+          root = pathlib.Path(".")
+          manifest_dirs = json.loads(subprocess.check_output(
+              [sys.executable, "scripts/check_data_manifests.py", "--list-dirs"],
+              text=True,
+          ))
+          files = [
+              root / directory / "SHA256SUMS"
+              for directory in manifest_dirs
+          ]
+          line_re = re.compile(r"^[0-9a-f]{64} \*.+$")
+          for f in files:
+              if not f.is_file():
+                  sys.exit(f"missing {f}")
+              # Empty manifest is a legitimate state ("dir tracks zero CSVs").
+              # The local hook (scripts/check_data_manifests.py) was updated in
+              # eb6a045 to remove its EMPTY_MANIFEST hard-failure; the workflow
+              # needs the same treatment for parity. The remaining checks
+              # (BAD_LINE / DUPLICATE here, plus EXTRA / MISSING / MISMATCH in
+              # the local hook) cover every accidental-emptying variant.
+              if f.stat().st_size == 0:
+                  continue
+              seen: set[str] = set()
+              for lineno, raw in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
+                  line = raw.strip()
+                  if not line:
+                      continue
+                  if not line_re.match(line):
+                      sys.exit(f"BAD_LINE {f}:{lineno}:{line!r}")
+                  name = line.split("*", 1)[1]
+                  if name in seen:
+                      sys.exit(f"DUPLICATE {f} basename={name!r}")
+                  seen.add(name)
+          print("SHA256SUMS format OK")
+          PY
+
+  # Pine bytes are gitignored, so CI can never re-hash them. It CAN check who claimed
+  # them: a pin added from a disposable checkout is unverifiable the moment that runner
+  # is torn down, and the local hook is not installed on a fresh cloud-agent clone — so
+  # PRs are the only surface that can catch that class BEFORE the bytes are lost.
+  # Regression case: commit 66c2a14 (PR #574), bad8068d... pinned by a Cursor cloud
+  # agent, bytes lost.
+  #
+  # INERT AS SHIPPED: GitHub Actions is disabled repo-wide (verified 2026-07-31 —
+  # actions/permissions {"enabled":false}; no workflow run since 2026-07-16). This job
+  # will not execute until Actions is re-enabled, which also resumes the Tests / Pylint
+  # / Skills Check workflows that were failing when it was switched off. Until then the
+  # live limb is detection-on-arrival in scripts/githooks/post-merge, which runs on a
+  # durable machine but only AFTER the bytes are already gone. Kept here, wired and
+  # tested, so re-enabling Actions restores the intended pre-loss gate with no new work.
+  pine-pin-provenance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+      - name: Refuse gitignored Pine pins added from an ephemeral checkout
+        run: |
+          git fetch --no-tags origin "${{ github.base_ref }}"
+          python3 scripts/check_pine_manifest.py \
+            --check-pin-provenance --base "origin/${{ github.base_ref }}"
+
+  no-vendor-csv-tracked:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Assert no tracked vendor CSVs under tv_exports or bar_data
+        run: |
+          python3 << 'PY'
+          import subprocess
+          import sys
+
+          out = subprocess.check_output(["git", "ls-files"], text=True)
+          bad: list[str] = []
+          for line in out.splitlines():
+              p = line.strip().replace("\\", "/")
+              if not p.endswith(".csv"):
+                  continue
+              if p.startswith("core/data/tv_exports/"):
+                  bad.append(p)
+              if p.startswith("core/data/bar_data/"):
+                  bad.append(p)
+          if bad:
+              print("Tracked vendor CSVs (must stay gitignored):", file=sys.stderr)
+              for b in bad:
+                  print(b, file=sys.stderr)
+              sys.exit(1)
+          print("No tracked vendor CSVs under core/data/tv_exports or core/data/bar_data")
+          PY

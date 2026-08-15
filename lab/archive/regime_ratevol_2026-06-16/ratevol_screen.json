@@ -1,0 +1,51 @@
+{
+  "investigation": "Q-REGIME-RATEVOL-1 Phase-1 screen",
+  "prereg_commit": "c30b287",
+  "primary_feature": "dgs10_63",
+  "panel": {
+    "start": "2020-01-06",
+    "end": "2026-06-02",
+    "n_starts": 1672,
+    "n_noncensored": 1638,
+    "n_hostile_ahead": 690
+  },
+  "marginal_auc": {
+    "dgs10_21": 0.49760823702073015,
+    "dgs10_63": 0.49791704885953647,
+    "dgs10_126": 0.4798561426038036,
+    "dgs2_63": 0.4178675166636091
+  },
+  "conditional_auc_gold_deploy": {
+    "auc": 0.5821063633319465,
+    "n_hostile": 187,
+    "n_benign": 527
+  },
+  "robustness": {
+    "ex_2022_auc": 0.5628349811911182,
+    "loyo": {
+      "2020": 0.7104683195592286,
+      "2021": 0.6065745213041228,
+      "2022": 0.5628349811911182,
+      "2023": 0.5384702606679853,
+      "2024": 0.5906893004115227,
+      "2025": 0.5744199424736337,
+      "2026": 0.5514465636341025
+    },
+    "loyo_min": 0.5384702606679853
+  },
+  "blind_spot": {
+    "gold_deploy_hostile": 187,
+    "ratevol_covered": 112,
+    "covered_frac": 0.5989304812834224,
+    "ratevol_median": 0.875674833196534,
+    "ratevol_flags_on_deploy": 340
+  },
+  "gates": {
+    "AUC_BAR": 0.7,
+    "ROBUST_FLOOR": 0.65,
+    "cutoff_bd": 45,
+    "exclude_year": 2022
+  },
+  "verdict": "FALSIFIED",
+  "conflict": false
+}

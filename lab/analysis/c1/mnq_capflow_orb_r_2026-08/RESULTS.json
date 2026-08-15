@@ -1,0 +1,37 @@
+{
+  "verdict": "FALSIFIED",
+  "cap_spent": false,
+  "n_triggers": 255,
+  "n_sessions_used": 255,
+  "coverage": 1.0,
+  "coverage_covered": 255,
+  "dropped_uncovered": 0,
+  "rho": 0.020011751309756225,
+  "mean_split_delta_disclosure": 1036.0532726377953,
+  "ci95": [
+    -0.0898450508040569,
+    0.11439766203333722
+  ],
+  "placebo_abs_p95": 0.020011751309756253,
+  "placebo_p_emp": 1.0,
+  "mag_floor": 0.02,
+  "by_half": {
+    "h1_rho": 0.041923505236407504,
+    "h2_rho": -0.006703877017315438
+  },
+  "gap_days_missing": 0,
+  "ofchan_reuse": true,
+  "seed": 20260808,
+  "n_boot": 10000,
+  "n_placebo": 1000,
+  "k_intrinsic": 0,
+  "feature": "or_window_net_signed_aggressor_size",
+  "target": "orb_backtest_R",
+  "c11_non_claims": true,
+  "non_claims": [
+    "not_an_ORB_entry_filter",
+    "not_Tradeify_unpark",
+    "not_resting_L1_retune",
+    "not_Pine_or_rail"
+  ]
+}

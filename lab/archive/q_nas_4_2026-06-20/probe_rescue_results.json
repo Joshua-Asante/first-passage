@@ -1,0 +1,144 @@
+{
+  "indep_reconcile": {
+    "n_legs": 196,
+    "net": 369698.41,
+    "match": true
+  },
+  "tally_crosscheck_mismatches": 0,
+  "baseline_sign_gate": {
+    "label": "all18_sign",
+    "n_q": 18,
+    "n_pos": 12,
+    "n_neg": 6,
+    "pos_present": 9,
+    "pos_absent": 3,
+    "neg_present": 1,
+    "neg_absent": 5,
+    "concordance": "14/18",
+    "clean_gate": false,
+    "fisher_p": 0.0317,
+    "perm_p": 0.0315
+  },
+  "flat_bin_sweep": [
+    {
+      "label": "flat>=1.0",
+      "n_q": 18,
+      "n_pos": 12,
+      "n_neg": 6,
+      "pos_present": 9,
+      "pos_absent": 3,
+      "neg_present": 1,
+      "neg_absent": 5,
+      "concordance": "14/18",
+      "clean_gate": false,
+      "fisher_p": 0.0317,
+      "perm_p": 0.0323,
+      "excluded_quarters": []
+    },
+    {
+      "label": "flat>=1.5",
+      "n_q": 16,
+      "n_pos": 11,
+      "n_neg": 5,
+      "pos_present": 9,
+      "pos_absent": 2,
+      "neg_present": 0,
+      "neg_absent": 5,
+      "concordance": "14/16",
+      "clean_gate": false,
+      "fisher_p": 0.0048,
+      "perm_p": 0.0052,
+      "excluded_quarters": [
+        "2022Q3",
+        "2022Q4"
+      ]
+    },
+    {
+      "label": "flat>=2.0",
+      "n_q": 15,
+      "n_pos": 10,
+      "n_neg": 5,
+      "pos_present": 8,
+      "pos_absent": 2,
+      "neg_present": 0,
+      "neg_absent": 5,
+      "concordance": "13/15",
+      "clean_gate": false,
+      "fisher_p": 0.007,
+      "perm_p": 0.0063,
+      "excluded_quarters": [
+        "2022Q3",
+        "2022Q4",
+        "2024Q3"
+      ]
+    },
+    {
+      "label": "flat>=2.5",
+      "n_q": 15,
+      "n_pos": 10,
+      "n_neg": 5,
+      "pos_present": 8,
+      "pos_absent": 2,
+      "neg_present": 0,
+      "neg_absent": 5,
+      "concordance": "13/15",
+      "clean_gate": false,
+      "fisher_p": 0.007,
+      "perm_p": 0.0074,
+      "excluded_quarters": [
+        "2022Q3",
+        "2022Q4",
+        "2024Q3"
+      ]
+    },
+    {
+      "label": "flat>=3.0",
+      "n_q": 14,
+      "n_pos": 9,
+      "n_neg": 5,
+      "pos_present": 7,
+      "pos_absent": 2,
+      "neg_present": 0,
+      "neg_absent": 5,
+      "concordance": "12/14",
+      "clean_gate": false,
+      "fisher_p": 0.0105,
+      "perm_p": 0.0092,
+      "excluded_quarters": [
+        "2022Q3",
+        "2022Q4",
+        "2024Q3",
+        "2025Q4"
+      ]
+    }
+  ],
+  "magnitude": {
+    "spearman_absret": 0.086,
+    "spearman_absret_p": 0.7338,
+    "spearman_signed": 0.625,
+    "spearman_signed_p": 0.0056,
+    "mean_absret_present": 10.19,
+    "mean_absret_absent": 8.73,
+    "mw_absret_p": 0.3809,
+    "mw_signed_p": 0.0043
+  },
+  "n_clean_flat_reframes": 0,
+  "best_flat": {
+    "label": "flat>=1.5",
+    "n_q": 16,
+    "n_pos": 11,
+    "n_neg": 5,
+    "pos_present": 9,
+    "pos_absent": 2,
+    "neg_present": 0,
+    "neg_absent": 5,
+    "concordance": "14/16",
+    "clean_gate": false,
+    "fisher_p": 0.0048,
+    "perm_p": 0.0052,
+    "excluded_quarters": [
+      "2022Q3",
+      "2022Q4"
+    ]
+  }
+}

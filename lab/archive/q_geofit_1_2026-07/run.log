@@ -1,0 +1,7 @@
+[geofit] panel 2020-01-06->2026-06-30 n_bdays=1692
+[geofit] A1 1.00x: bust=4.74% vs pin 4.74% -> MATCH
+[geofit] A1 0.50x: bust=0.11% vs pin 0.11% -> MATCH
+[geofit] A2 fit: sigma_d=0.5907% mu/sig=0.2162 z=0.7931 shape=student_t4 (out_of_range={'sigma_d_pct': True, 'mu_sigma': True, 'z': True})
+[geofit] A2 nearest-cell bust=35.89% vs real 4.74% resid=31.15pp -> MISS
+[geofit] A2 off-grid exact bust=28.38% resid=23.63pp (diagnostic)
+[geofit] grid: 288 cells (288 to run), n_jobs=7, n_sims=10000

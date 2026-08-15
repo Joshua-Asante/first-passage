@@ -1,0 +1,220 @@
+{
+  "strategy_label": "aegis-6j-solo-c05",
+  "g1": {
+    "r_deploy": 128,
+    "expectancy_ratio": 0.11044003451251079,
+    "deployable_default_envelope": "YES",
+    "halted": false
+  },
+  "g2_by_tier": {
+    "Bulenox_100K": {
+      "firm_key": "Bulenox_100K",
+      "cost_per_side_usd": 0.61,
+      "rt_cost_usd": 1.22,
+      "hurdle_usd": 624.64,
+      "gross_edge_usd": 26863.675095435618,
+      "passed": true
+    },
+    "Tradeify_Select_100K": {
+      "firm_key": "Tradeify_Select_100K",
+      "cost_per_side_usd": 0.91,
+      "rt_cost_usd": 1.82,
+      "hurdle_usd": 931.84,
+      "gross_edge_usd": 26863.675095435618,
+      "passed": true
+    },
+    "MFFU_Rapid_100K": {
+      "firm_key": "MFFU_Rapid_100K",
+      "cost_per_side_usd": 0.95,
+      "rt_cost_usd": 1.9,
+      "hurdle_usd": 972.8,
+      "gross_edge_usd": 26863.675095435618,
+      "passed": true
+    },
+    "BluSky_Premium_100K": {
+      "firm_key": "BluSky_Premium_100K",
+      "cost_per_side_usd": 0.95,
+      "rt_cost_usd": 1.9,
+      "hurdle_usd": 972.8,
+      "gross_edge_usd": 26863.675095435618,
+      "passed": true
+    }
+  },
+  "tiers": {
+    "Bulenox_100K": {
+      "firm_key": "Bulenox_100K",
+      "dd_type": "trailing",
+      "f2_label": "optimistic-lower-bound",
+      "g3_ok": true,
+      "run1": {
+        "headline_bust": 0.0866,
+        "pass_rate": 0.9117333333333333,
+        "rates": {
+          "pass": 0.9117333333333333,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.0866,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0016666666666666668
+        }
+      },
+      "run2": {
+        "headline_bust": 0.0866,
+        "pass_rate": 0.9117333333333333,
+        "rates": {
+          "pass": 0.9117333333333333,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.0866,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0016666666666666668
+        }
+      },
+      "clears_part_a": false,
+      "clears_funded": false,
+      "gated_on": "run1_degenerate"
+    },
+    "Tradeify_Select_100K": {
+      "firm_key": "Tradeify_Select_100K",
+      "dd_type": "trailing_locking",
+      "f2_label": null,
+      "g3_ok": true,
+      "run1": {
+        "headline_bust": 0.0641,
+        "pass_rate": 0.9327,
+        "rates": {
+          "pass": 0.9327,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.0641,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0032
+        }
+      },
+      "run2": {
+        "headline_bust": 0.0641,
+        "pass_rate": 0.9327,
+        "rates": {
+          "pass": 0.9327,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.0641,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0032
+        }
+      },
+      "clears_part_a": false,
+      "clears_funded": false,
+      "gated_on": "run2"
+    },
+    "MFFU_Rapid_100K": {
+      "firm_key": "MFFU_Rapid_100K",
+      "dd_type": "trailing_locking",
+      "f2_label": null,
+      "g3_ok": true,
+      "run1": {
+        "headline_bust": 0.0641,
+        "pass_rate": 0.9327,
+        "rates": {
+          "pass": 0.9327,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.0641,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0032
+        }
+      },
+      "run2": {
+        "headline_bust": 0.0641,
+        "pass_rate": 0.9327,
+        "rates": {
+          "pass": 0.9327,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.0641,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0032
+        }
+      },
+      "clears_part_a": false,
+      "clears_funded": false,
+      "gated_on": "run2"
+    },
+    "BluSky_Premium_100K": {
+      "firm_key": "BluSky_Premium_100K",
+      "dd_type": "trailing",
+      "f2_label": "optimistic-lower-bound",
+      "g3_ok": true,
+      "run1": {
+        "headline_bust": 0.0866,
+        "pass_rate": 0.9117333333333333,
+        "rates": {
+          "pass": 0.9117333333333333,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.0866,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0016666666666666668
+        }
+      },
+      "run2": {
+        "headline_bust": 0.0866,
+        "pass_rate": 0.9117333333333333,
+        "rates": {
+          "pass": 0.9117333333333333,
+          "bust_daily": 0.0,
+          "bust_static": 0.0,
+          "bust_trailing": 0.0866,
+          "bust_inactivity": 0.0,
+          "horizon_cap": 0.0016666666666666668
+        }
+      },
+      "clears_part_a": false,
+      "clears_funded": false,
+      "gated_on": "run2"
+    }
+  },
+  "routing": "STANDALONE",
+  "funded_ruin_tier_count": 0,
+  "discharges_falsifier": false,
+  "halted_at": null,
+  "thresholds_source": "C:\\Users\\joshu\\multi_firm_operations\\docs\\briefs\\pre-registration\\2026-07-13-prop-survivor-scoring-prereg.md",
+  "regime_robustness_gate": "TODO \u2014 deferred per handoff \u00a70.5(D); run before trusting a real-candidate ceiling",
+  "panel_meta": {
+    "panel_file": "c05_fill1600_cap8_r40_ed91cd2d.csv",
+    "sha256_lf": "ED91CD2D5D4075086F3571561AC7F88CE5F36D416E3B088AB4D112050C25C851",
+    "detected_band": 100000,
+    "static_base": 100000.0,
+    "n_trades": 128,
+    "panel_window": "2022-01-12->2026-06-30",
+    "span": "2022-01-12->2026-06-22",
+    "n_bdays": 1159,
+    "overnight_holds": 0,
+    "net_static": 13736.158365229921,
+    "gross_pos": 26863.675095435618,
+    "n_losers": 82,
+    "max_static_loss": 631.5593041767667,
+    "full_stop_threshold_1pct": 1000.0,
+    "n_full_stops_1pct": 0
+  },
+  "r_pin": {
+    "basis": "median (native-path diagnostic; v2.2 \u00a72.7')",
+    "gating": false,
+    "median_r_dollars": 86.73593074363455,
+    "median_n": 82,
+    "full_stop_attempt": {
+      "method": "median loss (FALLBACK \u2014 zero full stops)",
+      "n_full_stops": 0,
+      "dollars": 86.73593074363455
+    }
+  },
+  "hsolo_firms": [
+    "Tradeify_Select_100K",
+    "MFFU_Rapid_100K"
+  ],
+  "hsolo_part_a": {
+    "Tradeify_Select_100K": false,
+    "MFFU_Rapid_100K": false
+  },
+  "verdict": "FALSIFIED"
+}

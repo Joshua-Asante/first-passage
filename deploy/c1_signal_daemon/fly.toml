@@ -1,0 +1,28 @@
+# c1 Python signal daemon — SEPARATE Fly app from the listener (S2b).
+# Never mount the listener's c1_rail_data volume. Never share peak_equity.
+app = "c1-signal-daemon"
+primary_region = "iad"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # Always-on; single machine per app (daemon state is local if/when used).
+  auto_stop_machines = false
+  auto_start_machines = false
+  min_machines_running = 1
+  processes = ["app"]
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "15s"
+    method = "GET"
+    path = "/"
+
+[[mounts]]
+  source = "c1_signal_daemon_data"
+  destination = "/data"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

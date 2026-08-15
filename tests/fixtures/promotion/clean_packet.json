@@ -1,0 +1,54 @@
+{
+  "schema_version": "s5.v1",
+  "candidate_id": "synth-clean-s5-001",
+  "freeze_commit": "aee4137",
+  "observed_freeze_commit": "aee4137",
+  "operator_budget_approval_id": "budget-approval-fixture-001",
+  "sandbox": {
+    "micro_size_contracts": 1,
+    "loss_budget_usd": 100.0,
+    "attempt_budget": 10,
+    "concurrency_slots": 1
+  },
+  "claims": [
+    {
+      "claim_id": "stage2_clear",
+      "metric": "cohort_delta",
+      "value": 12.0,
+      "unit": "bp_per_event",
+      "artifact_path": "tests/fixtures/promotion/artifacts/gate_stage2.json",
+      "reexecute_command": "python -c \"import json; print(json.load(open('tests/fixtures/promotion/artifacts/gate_stage2.json')))\""
+    },
+    {
+      "claim_id": "bust_clear",
+      "metric": "bust_pct",
+      "value": 2.1,
+      "unit": "pct",
+      "artifact_path": "tests/fixtures/promotion/artifacts/gate_bust.json",
+      "reexecute_command": "python -c \"import json; print(json.load(open('tests/fixtures/promotion/artifacts/gate_bust.json')))\""
+    }
+  ],
+  "gate_attestations": [
+    {
+      "gate_id": "stage2_cost_law",
+      "units": "bp_per_event",
+      "measured_value": 12.0,
+      "hurdle_value": 6.57,
+      "basis": "is_panel_median",
+      "artifact_path": "tests/fixtures/promotion/artifacts/gate_stage2.json"
+    },
+    {
+      "gate_id": "survivor_bust",
+      "units": "pct",
+      "measured_value": 2.1,
+      "hurdle_value": 3.0,
+      "basis": "is_panel",
+      "artifact_path": "tests/fixtures/promotion/artifacts/gate_bust.json"
+    }
+  ],
+  "self_tests": {
+    "positive_path": "tests/fixtures/promotion/artifacts/self_test_positive.json",
+    "negative_path": "tests/fixtures/promotion/artifacts/self_test_negative.json",
+    "same_invocation_id": "s5-selftest-clean-001"
+  }
+}

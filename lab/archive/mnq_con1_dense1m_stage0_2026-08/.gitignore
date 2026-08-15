@@ -1,0 +1,7 @@
+# Local panel rebuilds from ~/.databento_cache (vendor / regenerable; not tracked)
+_mnq_1m.parquet
+_es_1m.parquet
+*.parquet
+EXPLORE_GO.md
+RESULTS.json
+# RESULTS.md tracked after explore GO (closure cites it)

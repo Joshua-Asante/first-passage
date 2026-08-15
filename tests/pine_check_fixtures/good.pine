@@ -1,0 +1,5 @@
+//@version=6
+// pine_check fixture — known-good. `scripts/pine_check.py` must return exit 0.
+// Trivial public Pine carrying NO live edge (see scripts/pine_check.README.md).
+indicator("pine_check fixture: good", overlay=true)
+plot(ta.ema(close, 21))

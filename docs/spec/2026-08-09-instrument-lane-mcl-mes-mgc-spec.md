@@ -1,0 +1,17 @@
+# SPEC: Instrument lane — score MCL's frozen config; re-screen MES/MGC after the K-arithmetic void
+
+Status: **RESOLVED** · 2026-08-09 · authorizes nothing ($0 · K=0) · gate: dated dispositions on [`MCL.md`](../../ops/instruments/MCL.md) / [`MES.md`](../../ops/instruments/MES.md) / [`MGC.md`](../../ops/instruments/MGC.md) (2026-08-09) · depends: [edge-cohort ADR](../adr/2026-08-08-edge-cohort-correction-and-necessity-retarget.md) §L3 `Accepted` · TNEC-1 `RATIFIED`
+Objective: execute TNEC L3's pool reopening — MCL is measured-never-scored with a frozen config waiting, and MES/MGC's third-leg eliminations rest on K arithmetic voided by the [K-bank ADR](../adr/2026-08-04-family-k-bank-disclosure-not-gate.md) and were never revisited — running **in parallel with** the MNQ lane, not sequenced behind it.
+
+Steps:
+
+1. **MCL first (cheapest: $0, no pull).** Locate frozen `CONFIG-B-MCL` ([fade frozen rulings](../notes/2026-07-31-fade-stage1-frozen-rulings.md) · [fleet umbrella handoff](../briefs/handoffs/2026-07-31-cursor-fleet-fade-mcl-parity-umbrella.md)) and score it **as frozen** against TNEC N-limbs on existing panels. No re-derivation, no parameter motion — the config is the pre-registration; scoring it is the owed step. σ basis stays SIGMA-NATIVE per Ruling 4.
+2. **MES / MGC re-screen.** Per instrument: ledger consult (create `ops/instruments/{MES,MGC}.md` if absent, MNQ.md as exemplar) · restate what the voided elimination claimed vs what survives it (E-KCAP/E-K rows) · re-screen as class attestation against [prop envelope](../../ops/prop_envelope_default.md) E1–E7 + TNEC N-SHAPE/N-SIZE. Output = a dated disposition row in the instrument's ledger, not a candidate.
+3. Any data requirement → **databento cost dry-run BEFORE any pull**, estimate to operator, per-pull GO. Parent-contract proxy discipline where micros are thin: re-scale tick value/margin, reserve the micro era as OOS.
+4. **Operator elects** which instrument (if any) hosts the next K-spending discovery cell — election is operator-only; this spec produces dispositions, never elections.
+
+Gate: RESOLVED if all three instruments carry a dated disposition (MCL: scored PASS/FAIL vs N-limbs · MES/MGC: re-screened with standing-or-voided grounds named). FALSIFIED — n/a (survey class; individual scores carry their own pre-registered verdicts).
+Boundary: M2K one-shot bank rule + WSTRUCT sequencing **stand** · W4 cost-dry-run gate **stands** · no elimination may be inherited from voided K arithmetic (re-derive or drop) · no K spend without a fresh manifest · no new firm rows in `core/firm_rules.py` (engine pre-flight is a separate gate) · no deploy, no Pine, no allocation motion.
+Reads: [edge-cohort ADR §L3](../adr/2026-08-08-edge-cohort-correction-and-necessity-retarget.md) · [fade rulings](../notes/2026-07-31-fade-stage1-frozen-rulings.md) (SIGMA-NATIVE + CONFIG-B-MCL) · [K-bank ADR](../adr/2026-08-04-family-k-bank-disclosure-not-gate.md) · [prop envelope](../../ops/prop_envelope_default.md) · `.claude/skills/databento-data/` (cost gate)
+Verify (Phase-0, Cursor runs before authoring): `rg -n "CONFIG-B-MCL" docs/notes/2026-07-31-fade-stage1-frozen-rulings.md` · `rg -n "MES and MGC" docs/adr/2026-08-08-edge-cohort-correction-and-necessity-retarget.md` · `ls ops/instruments/` (expect no MES/MGC ledgers yet)
+Owner: TNEC-1 §2 intake L3 (instrument pool); per-instrument work docks on the instrument ledgers.

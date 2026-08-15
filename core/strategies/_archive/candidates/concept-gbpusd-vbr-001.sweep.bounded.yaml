@@ -1,0 +1,112 @@
+schema: rnd-sweep-spec/v0
+candidate: concept-gbpusd-vbr-001.pine
+generated_by: validation.sweep.bound
+bounding:
+  method: operator overrides (apply_bounds; ranges/steps may be narrowed)
+  max_configs: 200000
+  full_grid_size: 709991639413056
+  bounded_grid_size: 3888
+  per_param:
+    fastLen:
+      range:
+      - 10
+      - 40
+      step: 10
+    slowLen:
+      range:
+      - 60
+      - 180
+      step: 60
+    atrLength:
+      range:
+      - 7
+      - 21
+      step: 7
+    atrMaLength:
+      range:
+      - 60
+      - 120
+      step: 60
+    atrExpansion:
+      range:
+      - 0.1
+      - 0.5
+      step: 0.2
+    exitAtrLength:
+      range:
+      - 14
+      - 14
+      step: 1
+    stopAtr:
+      range:
+      - 1.0
+      - 2.0
+      step: 0.5
+    tpAtr:
+      range:
+      - 10
+      - 30
+      step: 10
+  note: Bounded grid size IS the honest total-N the harness corrects for (ADR §6)
+    — a deliberate search-space choice, not a post-hoc shortlist. Auto-coarsen preserves
+    each range's full span.
+params:
+- name: fastLen
+  type: int
+  default: 50
+  range:
+  - 10
+  - 40
+  step: 10
+- name: slowLen
+  type: int
+  default: 200
+  range:
+  - 60
+  - 180
+  step: 60
+- name: useSession
+  type: bool
+  default: true
+- name: atrLength
+  type: int
+  default: 14
+  range:
+  - 7
+  - 21
+  step: 7
+- name: atrMaLength
+  type: int
+  default: 85
+  range:
+  - 60
+  - 120
+  step: 60
+- name: atrExpansion
+  type: float
+  default: 0.28
+  range:
+  - 0.1
+  - 0.5
+  step: 0.2
+- name: exitAtrLength
+  type: int
+  default: 14
+  range:
+  - 14
+  - 14
+  step: 1
+- name: stopAtr
+  type: float
+  default: 1.55
+  range:
+  - 1.0
+  - 2.0
+  step: 0.5
+- name: tpAtr
+  type: float
+  default: 29.0
+  range:
+  - 10
+  - 30
+  step: 10

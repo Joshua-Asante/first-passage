@@ -1,0 +1,14 @@
+# Cursor access-block noise only — OK to block AI access entirely.
+# LTM cold corpus lives in .rgignore + .cursorindexingignore (NOT here),
+# so CATALOG → explicit archive/LTM Read paths stay reachable.
+
+.worktrees/
+.claude/worktrees/
+.venv/
+.venv-research/
+venv/
+env/
+__pycache__/
+.pytest_cache/
+htmlcov/
+.coverage

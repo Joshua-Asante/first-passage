@@ -1,0 +1,4 @@
+# Derived 15m panel cache, decoded from the gitignored Databento ZB DBN — do not commit
+# (vendor-data / public-clone posture). Regenerate via run_phase0.py.
+_zb_15m.pkl
+*.pkl

@@ -1,0 +1,162 @@
+{
+  "gate": "FALSIFIED",
+  "promoted_axis": null,
+  "tnec": "U U U U U | U | U | A:-0.1710/B:-0.1141",
+  "k_intrinsic": 2,
+  "dsr_floor": 0.85,
+  "axes": {
+    "pdh-pdl-failed-break-reclaim": {
+      "axis": "pdh-pdl-failed-break-reclaim",
+      "gate": "FALSIFIED",
+      "long": {
+        "n": 293,
+        "mean_R": -0.14561873164350228,
+        "wr": 0.4812286689419795,
+        "ci": [
+          -0.25642012131269987,
+          -0.037555111799502314
+        ],
+        "mean_stop_dist": 12.704095563139848
+      },
+      "short": {
+        "n": 295,
+        "mean_R": -0.19629657052726684,
+        "wr": 0.4406779661016949,
+        "ci": [
+          -0.3067448593834497,
+          -0.08935468121561385
+        ],
+        "mean_stop_dist": 11.307457627118557
+      },
+      "delete": {
+        "long": {
+          "constrained_mean": -0.14561873164350228,
+          "sham_mean": -0.11981708809665827,
+          "pass": false
+        },
+        "short": {
+          "constrained_mean": -0.19629657052726684,
+          "sham_mean": -0.10875394397728486,
+          "pass": false
+        }
+      },
+      "flip": {
+        "long_fade_vs_short_flip": {
+          "fade_mean": -0.14561873164350228,
+          "flip_mean": -0.1696220859980537,
+          "pass": true
+        },
+        "short_fade_vs_long_flip": {
+          "fade_mean": -0.19629657052726684,
+          "flip_mean": -0.11520559685056972,
+          "pass": false
+        }
+      },
+      "aux": {
+        "long": {
+          "placebo_p": 0.011,
+          "annsr": -1.3560516425444402,
+          "halves": {
+            "older": -0.17151906623466368,
+            "newer": -0.11918252806079954
+          },
+          "halves_agree": true
+        },
+        "short": {
+          "placebo_p": 0.001,
+          "annsr": -1.8136006216123308,
+          "halves": {
+            "older": -0.23288061926227657,
+            "newer": -0.1574100292145293
+          },
+          "halves_agree": true
+        }
+      },
+      "pooled_mean_R": -0.17104383788620728,
+      "coverage_sessions_with_trade": 588,
+      "scored_sessions": 949
+    },
+    "overnight-range-failed-extension-fade": {
+      "axis": "overnight-range-failed-extension-fade",
+      "gate": "FALSIFIED",
+      "long": {
+        "n": 359,
+        "mean_R": -0.11981708809665827,
+        "wr": 0.4958217270194986,
+        "ci": [
+          -0.21963279259773374,
+          -0.020884031923930943
+        ],
+        "mean_stop_dist": 10.02367688022275
+      },
+      "short": {
+        "n": 378,
+        "mean_R": -0.10875394397728486,
+        "wr": 0.48148148148148145,
+        "ci": [
+          -0.2044697716149348,
+          -0.013951947824564956
+        ],
+        "mean_stop_dist": 10.53439153439144
+      },
+      "delete": {
+        "long": {
+          "constrained_mean": -0.11981708809665827,
+          "sham_mean": -0.14561873164350228,
+          "pass": true
+        },
+        "short": {
+          "constrained_mean": -0.10875394397728486,
+          "sham_mean": -0.19629657052726684,
+          "pass": true
+        }
+      },
+      "flip": {
+        "long_fade_vs_short_flip": {
+          "fade_mean": -0.11981708809665827,
+          "flip_mean": -0.17487680249946075,
+          "pass": true
+        },
+        "short_fade_vs_long_flip": {
+          "fade_mean": -0.10875394397728486,
+          "flip_mean": -0.1488566738243076,
+          "pass": true
+        }
+      },
+      "aux": {
+        "long": {
+          "placebo_p": 0.026,
+          "annsr": -1.211874512663626,
+          "halves": {
+            "older": -0.1776510135510053,
+            "newer": -0.06721282611424688
+          },
+          "halves_agree": true
+        },
+        "short": {
+          "placebo_p": 0.017,
+          "annsr": -1.1323418826716867,
+          "halves": {
+            "older": -0.12989708810815037,
+            "newer": -0.0859844041440451
+          },
+          "halves_agree": true
+        }
+      },
+      "pooled_mean_R": -0.11414291105849932,
+      "coverage_sessions_with_trade": 737,
+      "scored_sessions": 949
+    }
+  },
+  "disclosures": {
+    "explore_end": "2025-08-31",
+    "confirm_reserved": "2025-09-01\u21922026-08-13",
+    "panel_sha256": "8192257081f7f4796910a554caa395088c32e5e79146cdd1ddc8d2b04b912349",
+    "em_six_char": "U U U U U U"
+  },
+  "explore_scored": true,
+  "scored_at": "2026-08-13T18:18:53.029886+00:00",
+  "panel": "C:\\Users\\joshu\\multi_firm_operations\\core\\data\\bar_data\\M2K_M15.csv",
+  "cost_usd": 0.0,
+  "k_spent": 0
+}

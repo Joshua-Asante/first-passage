@@ -1,0 +1,66 @@
+{
+  "prereg": "v3.1",
+  "N_frozen": 34,
+  "N_used": 33,
+  "seed": 20260625,
+  "B": 20000,
+  "premise": {
+    "sev_rv": [
+      0.159,
+      0.3775
+    ],
+    "sev_cal": [
+      -0.459,
+      0.0072
+    ]
+  },
+  "results": {
+    "RCORR": {
+      "cls": "within-equity",
+      "sign": 1,
+      "rho_partial": -0.2762,
+      "raw_rho": 0.0668,
+      "p_one": 0.9412,
+      "p_fwer": 0.4603,
+      "verdict": "fail"
+    },
+    "NFCI": {
+      "cls": "cross-asset",
+      "sign": 1,
+      "rho_partial": -0.1566,
+      "raw_rho": 0.0252,
+      "p_one": 0.80985,
+      "p_fwer": 0.9031,
+      "verdict": "fail"
+    },
+    "S5FI": {
+      "cls": "within-equity",
+      "sign": -1,
+      "rho_partial": 0.0975,
+      "raw_rho": 0.1526,
+      "p_one": 0.70505,
+      "p_fwer": 0.98685,
+      "verdict": "fail"
+    },
+    "RDISP": {
+      "cls": "within-equity",
+      "sign": -1,
+      "rho_partial": 0.0368,
+      "raw_rho": 0.2169,
+      "p_one": 0.5756,
+      "p_fwer": 0.99995,
+      "verdict": "fail"
+    },
+    "COR3M": {
+      "cls": "within-equity",
+      "sign": 1,
+      "rho_partial": -0.0331,
+      "raw_rho": 0.3279,
+      "p_one": 0.5732,
+      "p_fwer": 0.99995,
+      "verdict": "fail"
+    }
+  },
+  "promote": [],
+  "within": []
+}

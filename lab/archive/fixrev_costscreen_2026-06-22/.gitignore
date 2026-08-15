@@ -1,0 +1,7 @@
+# Vendor-licensed BAR_EXPORT pages are read in place from ~/Downloads and must
+# never be committed. Defensive: ignore any CSV/parquet that lands in this dir.
+*.csv
+*.parquet
+*.pkl
+__pycache__/
+.pytest_cache/

@@ -1,0 +1,13 @@
+# Runtime artifacts — not deliverables
+_ckpt_*.json
+_repro_*.json
+full_run.log
+_smoke_*.log
+_monitor*.log
+_monitor_status.txt
+_monitor.py
+run_full.bat
+__pycache__/
+_repro_*.json
+_monitor.err
+

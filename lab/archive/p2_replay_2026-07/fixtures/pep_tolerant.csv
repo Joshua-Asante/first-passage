@@ -1,0 +1,11 @@
+Trade number,Type,Date and time,Signal,Price USD,Size (qty),Size (value),Net PnL USD,Net PnL %,Favorable excursion USD,Favorable excursion %,Adverse excursion USD,Adverse excursion %,Cumulative PnL USD,Cumulative PnL %
+1,Entry long,2026-06-09 10:00,Long,40000,1,40000,0,0,0,0,0,0,0,0
+1,Exit long,2026-06-09 10:45,Exit Long,40050,1,40050,50,0.12,60,0.15,-10,-0.02,50,0.12
+2,Entry long,2026-06-09 12:00,Long,40060,1,40060,0,0,0,0,0,0,50,0.12
+2,Exit long,2026-06-09 13:00,Exit Long,40100,1,40100,40,0.10,50,0.12,-5,-0.01,90,0.22
+3,Entry long,2026-06-09 14:00,Long,40100,1,40100,0,0,0,0,0,0,90,0.22
+3,Exit long,2026-06-09 14:45,Exit Long,40050,1,40050,-50,-0.12,10,0.02,-60,-0.15,40,0.10
+4,Entry long,2026-06-09 16:00,Long,40080,1,40080,0,0,0,0,0,0,40,0.10
+4,Exit long,2026-06-09 16:45,Exit Long,40120,1,40120,40,0.10,45,0.11,-5,-0.01,80,0.20
+5,Entry long,2026-06-09 18:00,Long,40120,1,40120,0,0,0,0,0,0,80,0.20
+5,Exit long,2026-06-09 18:45,Exit Long,40080,1,40080,-40,-0.10,10,0.02,-45,-0.11,40,0.10

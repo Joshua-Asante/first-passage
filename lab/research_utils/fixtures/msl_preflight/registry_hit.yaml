@@ -1,0 +1,14 @@
+# Fixture: known string in docs/rejected_candidates.md must surface in dedup.
+id: registry-hit-guardian-xagusd
+instrument: MGC
+mechanism: opening-range-breakout
+dedup_query: Guardian-on-XAGUSD
+dedup_paths:
+  - docs/rejected_candidates.md
+  - lab/CATALOG.md
+p: 0.55
+rr: 1.0
+n_trades: 2
+rt_cost_usd: 2.12
+point_value_usd: 10.0
+contracts: 1

@@ -1,0 +1,25 @@
+# MSL-C3 Stage-1 card YAML — evidence input for msl_preflight only.
+# p/rr are NOT freeze-time claims. Axis A under STAGE1_K2 (dual-axis; K_intrinsic=2 intended).
+id: msl-c3-m2k-pdh-pdl-failed-break-reclaim
+instrument: M2K
+mechanism: pdh-pdl-failed-break-reclaim
+dedup_query: pdh-pdl-failed-break-reclaim
+dedup_paths:
+  - docs/rejected_candidates.md
+  - lab/CATALOG.md
+  - docs/briefs/2026-08-12-msl-first-slate.md
+  - docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md
+  - docs/briefs/closures/MSL-C3-closure-operator-kill.md
+  - docs/briefs/closures/MSL-C1-closure-falsified.md
+  - ops/instruments/M2K.md
+  - ops/instruments/MECHANISMS.md
+
+# Placeholder for tool arithmetic only — not an assumed-edge region freeze:
+p: 0.55
+rr: 1.0
+n_trades: 1
+rt_cost_usd: 2.82
+point_value_usd: 5.0
+contracts: 4
+stop_pts: 32.0
+target_pts: 32.0

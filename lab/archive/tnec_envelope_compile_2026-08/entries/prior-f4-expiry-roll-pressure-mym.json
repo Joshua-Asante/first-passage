@@ -1,0 +1,10 @@
+{
+ "delta_source": "uncited - the 2026-07-26 census log forbade quoting delta by construction ('No entry quotes PnL, delta, or any edge number'); no delta was ever derived for this entry. Underivable field marked null per re-score protocol. Derivation: pass 1 F4 - futures expiry-roll pressure T-3..T-0. stop_ticks NOT declared by the prior entry - assigned here as the instrument's SHALLOWEST OPEN cell (40t, RESULTS.md section 2), the most generous surviving rung, so a failure is conclusive. events_per_year / horizon_seconds likewise undeclared by the prior entry and assigned generously.",
+ "delta_ticks_per_event": null,
+ "events_per_year": 252,
+ "horizon_seconds": 120,
+ "instrument": "MYM",
+ "name": "prior-f4-expiry-roll-pressure-mym",
+ "stop_ticks": 40,
+ "taxonomy_class": "contract-roll mechanics"
+}

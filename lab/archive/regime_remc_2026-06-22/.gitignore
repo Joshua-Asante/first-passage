@@ -1,0 +1,6 @@
+# Exogenous signal cache + any derived data — regenerable, not committed.
+vix_close.csv
+*.csv
+*.pkl
+__pycache__/
+.pytest_cache/

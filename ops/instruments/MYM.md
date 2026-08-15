@@ -1,0 +1,118 @@
+# INSTRUMENT LEDGER — MYM
+
+**Symbol:** CBOT Micro E-mini Dow futures (MYM; Globex, Databento `GLBX.MDP3`) · **Parent:** YM ($5) · **$0.50/pt** · **Asset class:** equity index futures
+**Status (2026-08-04):** ⚠ **NO LONGER A LIVE c1 LEG — withdrawn from deployment.** The Tradeify venue is de-scoped as a deployment target for the locked Striker book, evaluation included ([`ADR 2026-08-04`](../../docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md); ⚠ **narrowed same day, Addendum 2026-08-04** — the bar is on redeploying this leg, not on Tradeify-shaped base-construct research); this leg never took a strategy-signal-originated fill and now has no venue. **Lifecycle unchanged: `Striker` stays `AUTHORIZED · MECHANISM @ 1.00×`** — no `core/lifecycle.py` write, no demotion; venue-fit is not decay. Pine, parameters and `LEG_MAP` untouched. Prior status line preserved below as record.
+
+**Status (prior, through 2026-08-03):** **LIVE c1 leg (disarmed).** Hosts the Striker DJ30 v4.5 **venue edition** (`striker_dj30_v4.5_mym.pine`) as one of the two c1 legs on the Tradeify Select 100K eval — `dry_run=true`, WATCH-1 0.50×, **no strategy-signal-originated fill yet** (rail has canned B4 fills: B6 dry-fire 2026-07-20 + 2026-07-27 SIM; account not pristine — see [`CLAUDE.md`](../../CLAUDE.md) live-execution posture). The **reconstruction** track on this instrument (opening-range *continuation*) is **TERMINAL**.
+**Last updated:** 2026-08-13
+
+**Purpose:** single source of instrument-level truth (operational rule 10, [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](../../docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md)). Any session deriving/testing/adjudicating on MYM MUST read this at session start and append a dated disposition. **Created 2026-07-25.** Sibling parent ledger: [`YM.md`](YM.md) (W1/W2 + the DJ30→MYM transfer falsification Y3). **The DEAD list is the point** — this instrument's highest-value content is what has been ruled out on it.
+
+## PROFILE (machine-readable)
+
+```yaml
+symbol: MYM
+asset_class: equity-index-futures
+family: [YM]
+venue_tradable: false
+venue_note: "AUTHORIZED-but-venue-less incumbent (Striker DJ30 MYM edition); no live book to correlate new work against — check venue_note before book-correlation gate."
+k_bank_source: "../../discovery_manifests/"
+cost_hurdle:
+  value: 6.57
+  units: "bp/event"
+  basis: "4x Tradeify hurdle"
+  source: "#M6"
+cells:
+  - mechanism: trend-following
+    verdict: LIVE
+    date: 2026-07-23
+    source: "../../docs/briefs/2026-07-23-tradeify-book-composition.md"
+  - mechanism: opening-range-continuation
+    verdict: DEAD
+    date: 2026-07-16
+    source: "../../docs/briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md"
+  - mechanism: event-window-reversal
+    verdict: DEAD
+    date: 2026-07-21
+    source: "../../docs/briefs/closures/MYM-3FPS-1-closure-falsified.md"
+  - mechanism: opening-pressure
+    verdict: DEAD
+    date: 2026-07-21
+    source: "../../docs/briefs/closures/OPENPRESS-1-closure-falsified.md"
+  - mechanism: venue-transfer
+    verdict: DEAD
+    date: 2026-07-09
+    source: "../../lab/archive/striker_dj30_mym_prototype_2026-07/RESULTS.md"
+  - mechanism: ict-liquidity
+    verdict: DEAD
+    date: 2026-07-29
+    source: "../../docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md"
+bars:
+  - id: index-intraday-ohlcv-directional-timing-2026-07-21
+    source: "../../docs/rejected_candidates.md"
+structure:
+  - claim: "Not a barren instrument — the incumbent locked leg is profitable here; one narrow continuation expression failed."
+    source: "#M1"
+```
+
+---
+
+## STANDING WARNINGS (read first)
+
+- **W1 / W2 — inherited from [`YM.md`](YM.md) unchanged.** `.c.0` continuous is calendar-roll, front-month, **unadjusted** (quarterly mid-month, 3rd-Fri Mar/Jun/Sep/Dec) → any window spanning a roll carries a phantom calendar-spread jump. Databento `ohlcv-1d` buckets by UTC calendar day → phantom weekend bars; drop settle-date weekday > 4.
+- **W3 — a live-ops panel refresh silently invalidated a research pin here.** `S-MYM-ORC-02`'s `runspec.json` pins `298ab8c8…`; `core/data/bar_data/SHA256SUMS` now reads `24e16952…` after commit `da075a1` (2026-07-21) landed fresher BAR EXPORTs. `run_development.py` raises `IntegrityError` before loading, so the frozen run is **not reproducible**. Re-pin deliberately; treat vendor refreshes as breaking changes to every frozen study that pinned the old bytes.
+- **W4 — micro-era OOS is a reserved gate.** MYM trades from 2019-05. Re-parameterize slippage/fills on native micro data; do not inherit the YM parent fill model.
+
+---
+
+## DURABLE FINDINGS
+
+| # | Finding | Evidence | Confidence |
+|---|---|---|---|
+| **M1** | **The incumbent locked leg is profitable on this instrument.** Striker DJ30 v4.5 MYM venue edition on its own export: **PF 1.80 / WR 40.3% / n=263 / net $35,121.70**. This is the correct reference when reading the reconstruction failures below — MYM is **not** a barren instrument; one narrow *continuation* expression failed on it. | [`2026-07-23-tradeify-book-composition.md`](../../docs/briefs/2026-07-23-tradeify-book-composition.md) | **HIGH** (measured export). |
+| **M2** | **Opening-range CONTINUATION does not survive on MYM.** `S-MYM-ORC-02` (session-aware, N=403): **D0/D1/D9 PASS, D2–D8 FAIL** — placebo **p=0.2144**, gross/cost ratio **0.693** against a 4.00 bar, net **−0.0210R**, PF **0.951**. Seven independent failures where one suffices under §6.2. | [`closure`](../../docs/briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md) | **HIGH** (pre-registered). |
+| **M3** | **D3 is arithmetically unrescuable by sizing.** The gross/cost ratio reduces to mean gross $ ÷ mean cost $ = **0.655** — contracts and stop-width cancel out. No position-size, risk-%, or R-renormalization can move it; only hold-time or venue can, and hold-time is an explicitly-mapped exhausted lever. | [`closure` §D3](../../docs/briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md) | **HIGH** (algebraic). |
+| **M4** | **ORC-01's AMBIGUOUS was the gate working, not a runner bug.** Its exit-2 was the **pre-registered AMBIGUOUS-HOLD branch operating correctly** against a blind spot in the frozen candidate-1 semantic — a universal 16:00 force-flat vs **53 exchange early closes**. Cited correctly: this is a spec blind-spot finding, not a code defect. | [`closure` §3](../../docs/briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-1-ambiguous.md) | **HIGH**. |
+| **M5** | **Third-Friday derivative-settlement reversal does not reproduce at useful magnitude.** Native `MYM.v.0` minute data, **$0.00**, exact coverage **84/87 (96.6%) PASS**: overnight **+1.54 bp** (power 0.042), short reversal **+2.68 bp** (power 0.067) — both below the **0.2139** standardized-effect floor; cost-law also FAIL (**+2.68 bp vs 6.57 bp** 4× Tradeify hurdle). Year signs unstable; the tradable limb is **negative in 2024–2026**. | [`mym_3fps_recon_2026-07/RESULTS.md`](../../lab/archive/mym_3fps_recon_2026-07/RESULTS.md) | **HIGH** (native data, pre-registered). |
+| **M6** | **Cost hurdle, pinned.** 4× Tradeify hurdle ≈ **6.57 bp/event** on MYM. Any new MYM construct must clear this in the same units at admission (harvest Req 5), not at sourcing time. ⚠ 2026-08-04: Tradeify is no longer the programme's binding venue (successor is fork **F3**), so re-price against the elected venue once F3 rules — friendly-firm per-side costs span **$0.50–$0.95**, so the hurdle moves by well under 2×. | [`MYM-3FPS-1 closure`](../../docs/briefs/closures/MYM-3FPS-1-closure-falsified.md) | **HIGH**. |
+| **M7** | **Panel provenance.** BAR EXPORT v0.2 `CBOT_MINI:MYM1!` → `core/data/bar_data/MYM_M15.csv`, n=**141,471**, span 2020-07-01 → 2026-07-03Z. Provisional 1R floor (locked-risk mirror, roll-seam-masked ATR(11)×1.20): full-median **$3,234** / recent-90d **$4,350**. | [`STATE.md`](../../STATE.md) reconstruction line | **HIGH**. |
+
+## DEAD / REJECTED (instrument-specific)
+
+| Rejection | Discriminator (the test that killed it) | K | Source |
+|---|---|---|---|
+| `S-MYM-ORC-02` — session-aware opening-range continuation | D2–D8 FAIL at N=403; placebo p=0.2144; gross/cost 0.693 vs 4.00; net −0.0210R | 2 | FALSIFIED 2026-07-16 — [`closure`](../../docs/briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md) |
+| `S-MYM-ORC-01` — universal-force-flat continuation | AMBIGUOUS-HOLD branch fired: frozen 16:00 force-flat blind to 53 exchange early closes | — | CLOSED-AMBIGUOUS 2026-07-16 — [`closure`](../../docs/briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-1-ambiguous.md) |
+| `MYM-3FPS-1` — third-Friday settlement reversal | Both power limbs below the 0.2139 floor **and** cost-law FAIL (2.68 vs 6.57 bp); tradable limb negative 2024–26 | 0 | FALSIFIED 2026-07-21 — [`RESULTS.md`](../../lab/archive/mym_3fps_recon_2026-07/RESULTS.md) |
+| `OPENPRESS-1` (MYM limb) — opening-volume × directional efficiency | **Wrong-signed** plus cost FAIL; no threshold/window/instrument rescue licensed | 0 | FALSIFIED 2026-07-21 — [`RESULTS.md`](../../lab/archive/opening_pressure_map_2026-07/RESULTS.md) |
+| Striker DJ30 → MYM *transfer* (R5 successor) | OOS PF ratio **0.559 < 0.8×** on structural venue costs — fired the R6 §4 falsifier | — | FALSIFIED 2026-07-09 — see [`YM.md`](YM.md) Y3 |
+| `SLR-MYM-1` — liquidity sweep-and-reclaim at the open (`ict-liquidity`) | **Closed at Stage 0 on two independent gates, mechanism never tested.** (a) Harvest Req-1a: both constraint framings fail the delete- and flip-tests (ADR 2026-07-26 §2-A). (b) **S3 order-symbol occupancy** — shares `MYM1!` with the incumbent leg, and the venue nets one position per symbol, so Tue+Fri close structurally; best compliant day set Mon+Wed+Thu = **81 IS entries vs a 120 floor** (upper-bound proxy) | **0** | FALSIFIED (as scoped) 2026-07-29 — [`closure`](../../docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md) |
+
+**Re-proposal bar (standing).** A candidate #3 on the continuation mechanism requires fresh operator authorization **and** a fresh frozen pre-registration. Named-forbidden by the ORC-02 closure: lower-cost rerun, parameter grid, opening-window selection, date deletion, gross-only rescue. Ahead of that, the 2026-07-21 **raised bar** on single-instrument index-futures intraday OHLCV directional timing gates any new candidate of this class ([`rejected_candidates.md`](../../docs/rejected_candidates.md)).
+
+## ACTIVE / OPEN
+
+- **[`MSL-S2B` STAGE-1 FAIL (route)](../../lab/analysis/c1/msl_s2b_mym_2026-08/STAGE1.md) (2026-08-14).** `sweep-failure-filtered-continuation` × MYM — pre-G0 kill; [closure](../../docs/briefs/closures/MSL-S2B-closure-stage1-fail-route.md). G0 never frozen; CONFIRM unread.
+- **[`MSL-C1` FALSIFIED](../../lab/archive/msl_c1_mym_2026-08/RESULTS_g2.md) (2026-08-13).** `pdh-pdl-failed-break-reclaim` × MYM explore IS — [closure](../../docs/briefs/closures/MSL-C1-closure-falsified.md). G0 was frozen; CONFIRM unread.
+- **MYM family K bank = 1 — now a DISCLOSURE, not a gate** (bank corrected 2026-07-29; gating status amended 2026-08-04). Source: `st_eh_supertrend_grid.json` banks executed `K=2` spanning **two** families — the split is 1 MNQ + 1 MYM per its `executed_looks`; do **not** add 2 to either. ⚠ **The floor arithmetic below is superseded:** under [ADR 2026-08-04](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md) (`Accepted`) **`K_eff = K_intrinsic`**, so a `K_intrinsic=1` seed screens at **`K_eff` 1 → floor 0.650** (headroom 0.350), not `K_eff=2` → 0.85. The bank is still read and still **must be disclosed**; it no longer gates. **Consequence for the "widest remaining runway" framing: it is void** — every family now screens at the same floor for the same `K_intrinsic`, so MYM has no comparative K advantage over MNQ, M2K, or any other instrument, and "spend it wisely because it is scarce" is no longer the right reason to be careful. Be careful instead because `K_intrinsic` is now the **only** brake on selection inflation. Governing rules: [ADR 2026-07-26 §2-C](../../docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md) (what banks) + [ADR 2026-08-04](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md) (what a bank does).
+  - ⚠ **Unreconciled, and as of 2026-08-04 no longer consequential:** this ledger's own DEAD table records `K` = **2** for `S-MYM-ORC-02`, which lives outside `discovery_manifests/`. The codified convention (harvest Req 3) banks from **closed manifests only**, so the bank is 1. The original worry — *"if those trials are ever ruled bankable the family goes to 3 ⇒ `K_eff` 4 ⇒ floor 1.06 > Cap, closing MYM to new seeds"* — is **void** under [ADR 2026-08-04](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md): banks do not enter `K_eff` and cannot close a family. Reconciling the count is now a **bookkeeping** question (the disclosure should be accurate) rather than a live threat to MYM's availability.
+- **S3 — order-symbol occupancy (new standing constraint, 2026-07-29).** Any *second* strategy on this instrument in the **same account** shares the `MYM1!` order symbol with the incumbent leg, and the venue holds **one net position per symbol per account**. A second MYM strategy therefore cannot hold an independent position on any day the incumbent can fire (**Tue, Fri**) — **regardless of contract-cap allocation**. This is orthogonal to, and stricter than, the third-leg spec's cap-based Slot framing. Source: [`SLR-MYM-1 closure`](../../docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md) F1.
+
+## RECORD — c1 leg (withdrawn)
+
+- **c1 MYM leg — venue edition, WITHDRAWN from deployment 2026-08-04 (see Status, L4). Record only; nothing here is open.** WATCH-1 0.50×, per-leg cap **69**, expected sizing 8 base / 60 add, hedging rule clears by construction (long-only), disposition fork **F2**. ⚠ **Corrected 2026-08-02 — this line read `9` / `67`, the PRE-2026-07-22 whole-cap values.** At `cap_alloc=69`, `reserve_cap = ⌊69/8.5⌋ = **8**`. Re-pin: [`RUNBOOK.md`](../../docs/notes/rail_build/RUNBOOK.md) · [`c1_nt8_sizing_host_impl.md`](../../docs/spec/c1_nt8_sizing_host_impl.md) §7 · synthetic entry `qty=8`. Sweep: [`2026-08-02-cap-split-9-67-staleness-sweep.md`](../../docs/notes/2026-08-02-cap-split-9-67-staleness-sweep.md).
+- **Reconstruction track: TERMINAL.** No open MYM research question.
+
+## SESSION LOG
+
+- **2026-08-14 (Stage-1)** — **MSL-S2B STAGE-1 FAIL (route)** ([`STAGE1.md`](../../lab/analysis/c1/msl_s2b_mym_2026-08/STAGE1.md) · [closure](../../docs/briefs/closures/MSL-S2B-closure-stage1-fail-route.md)). Raised bar unbound for continuation *entry*; SLR route ① filter-only; temporal-selectivity paused; composite refused. B8 occupancy CLEAR. No G0 / Pine / $0 · K=0.
+- **2026-08-13 (explore)** — **MSL-C1 FALSIFIED** ([`RESULTS_g2.md`](../../lab/archive/msl_c1_mym_2026-08/RESULTS_g2.md) · [closure](../../docs/briefs/closures/MSL-C1-closure-falsified.md)). Both arms CI upper &lt; 0; CONFIRM unread; $0 · K=0.
+- **2026-08-13 (G0)** — **MSL-C1 G0 FROZEN** ([`PREREG_G0.md`](../../lab/archive/msl_c1_mym_2026-08/PREREG_G0.md)). Operator B4 GO; `K_intrinsic=1`; CONFIRM `2025-09-01→2026-08-13` reserved unread. $0 · K=0.
+- **2026-08-13 (Stage-1)** — **MSL-C1 Stage-1 PASS** ([`STAGE1.md`](../../lab/archive/msl_c1_mym_2026-08/STAGE1.md)). After C3 [OPERATOR-KILL](../../docs/briefs/closures/MSL-C3-closure-operator-kill.md); elected existing `pdh-pdl-failed-break-reclaim` on MYM; route ① + B8 occupancy CLEAR; three kill limbs PASS at RT $2.82 / stop 320 pts / 4 contracts ($0.50/pt). No Pine, pull, $0 · K=0.
+- **2026-08-12** — **Occupancy RELEASED for new non-Striker research/G0 (MSL Board B8).** [`ADR`](../../docs/adr/2026-08-12-msl-mym-occupancy-release.md): `MYM1!` headroom is no longer reserved by the withdrawn Striker DJ30 leg for MSL / Tradeify-shaped candidates (incl. MSL-C1). **Unchanged:** S1 keep-warm/disarmed; de-scope Striker redeploy bar; no `LEG_MAP` code edit; no arming. The 2026-08-04 “not thereby released / get F2 ruled” posture is discharged by that ADR for this scope. $0/K=0.
+- **2026-08-04b** — **Cross-reference: MYM's own measured 0.49R edge included in the slow-archetype eval-time-limit study (MNQ.md N13).** Tradeify's Select 100K eval confirmed to have no time limit (verified in-browser, three primary sources). At k=1 (independent), safely sized to the rope, MYM's edge produces a **46-day median pass at 0.8% bust** and clears the $200 funded floor. Weaker than MNQ's 0.85R row (21 days) but not disqualifying — the constraint MYM actually failed in the funded-phase de-scope (pyramid-dependent, >40-micro days) is untouched by this study, which is flat-sized. $0/K=0. [`RESULTS`](../../lab/analysis/c1/eval_slow_archetype_2026-08-04/RESULTS.md)
+- **2026-08-04** — **MYM loses its live-leg standing.** The Tradeify venue was de-scoped as a program target **including the evaluation** ([`ADR`](../../docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md)); the Striker DJ30→MYM leg is withdrawn from deployment having never taken a strategy-signal-originated fill. **`Striker` lifecycle UNCHANGED at `AUTHORIZED @ 1.00×`** — no demotion, no `lifecycle.py` write; venue-fit is not decay, and the ladder is a decay instrument with zero live fills to trigger Call 1. ⚠ **Consequence for S3 order-symbol occupancy:** the incumbent's claim on `MYM1!` Tue+Fri was predicated on a *deployed* leg. It is **not** thereby released — the legs are withdrawn from a venue, not parked, and `LEG_MAP` is untouched; any candidate reasoning from a freed `MYM1!` must first get fork **F2** (rail disposition) ruled. Reconstruction track stays **TERMINAL**; the 5 DEAD rows and the bank-1 arithmetic are unaffected. No `core/`, lock, allocation, `dd_protection`, Pine, rail, or `LEG_MAP` change.
+- **2026-08-02** — **Hosted the out-of-sample confirmatory limb of `Q-DRIFTEX-1`** (drift exhaustion against a constant hazard). **No MYM construct was proposed, scored, or promoted** — MYM was used strictly as a **bar-level property** panel, so the `opening-range-continuation` DEAD row and the TERMINAL reconstruction ruling are untouched; the K bank is **unchanged at 1** and **$0 / K=0 / no manifest**. Result: **FALSIFIED**. L1 (drift decay) PASSED — NW(5) slope −7.015e-05/min, **t = −2.522**; L2 (flat hazard) PASSED — expected 4.07% vs observed **3.91%**, dev −3.9%; but **`t*` came out degenerate at 195.5 min = 03:15 ET**, before the session opens (fitted drift 0.0123 already below a 0.0407 hazard cost at 10:00), so P3 missed by **719.5 min against a 45-min tolerance**. **Two MYM facts worth keeping:** (a) MYM's exit-time ladder is **negative at every horizon** (best cell +0.001 @ 15:15, full session −0.101) — its argmax coincides with MNQ's, so the *phenomenon* replicates while the *mechanism* does not; (b) MYM's final-block signed drift is **−0.02999 with cross-day sd 0.529** ⇒ **t = −2.18**, sitting *at* the expected max of 11 blocks, i.e. unremarkable once multiplicity is counted. That measurement is what closed the end-of-day line as tail-exhausted (raised bar in [`docs/rejected_candidates.md`](../../docs/rejected_candidates.md)). Panel pin: `MYM_M15.csv` sha256 `24e169528f7ea669…`, 2020-07-02 → 2026-07-02, 1,548 days / 1,538 breakout days. No `core/`, lock, allocation, `dd_protection`, Pine, or rail change.
+- **2026-07-30** — **Forced-flow census pass 2** ([`N-2026-07-26-forced-flow-census.md`](../../docs/notes/notice/N-2026-07-26-forced-flow-census.md) §PASS 2) screened MYM as the **alternate** host for `PROPENG-RATCHET` (prop-engine peak-anchored liquidation-cascade fade) — verdict **`UNSCREENABLE-PROBE`, BLOCKED**, no probe licensed. Why MYM is the alternate rather than the primary: the $0 in-repo 1m panel makes it the cheap probe home, but a probe must run on the **target's own cohort** (Req-2 forbids cross-instrument transplant), so electing MYM pins the target to MYM and spends its bank (1 → 2, `K_eff` 2, floor **0.850**). **Blocking issue, unresolved:** a sim-vs-live **transmission contradiction** — a sibling screen established (screen-verified, not parent-verified) that the named prop cohort largely fills against **simulated** books, which would void clause (i); a dedicated adjudication was launched twice 2026-07-30 and did not complete. **Two standing MYM constraints re-confirmed against this candidate:** (a) the ⚠ unreconciled `S-MYM-ORC-02` K=2 claim remains a live contingency — if ever ruled bankable the family reaches `K_eff` 4 ⇒ floor **1.06 > Cap**, closing MYM to new seeds *including this one*; (b) **S3 order-symbol occupancy** binds at deployment (not at probe) — MYM1! Tue+Fri stay closed until the Striker leg parks and its TradingView alerts are deleted, and the census's config-A long-only framing exists precisely to defer that. Distinct from the DEAD rows above: not continuation (`S-MYM-ORC-02`), not settlement-calendar (`MYM-3FPS-1`), and not `SLR-MYM-1` — which it answers rather than repeats, being the first census entry to pass **both** delete and flip on the SLR §2-A standard. **K bank unchanged at 1; $0 spent, 0 K consumed, no manifest, no pre-registration.** No `core/`, lock, allocation, `dd_protection`, Pine, or rail change.
+- **2026-07-29** — `SLR-MYM-1` (liquidity sweep-and-reclaim at the open) opened and **closed at Stage 0** the same cycle: `FALSIFIED (as scoped)`, **$0 spent, 0 K consumed, no manifest opened, no pre-registration authored**. Two independent gates fired — harvest Req-1a (both constraint framings fail the delete/flip tests) and **S3 order-symbol occupancy** (new standing constraint, recorded above). Added the `ict-liquidity` cell + DEAD row. **Corrected the stale "K bank remains 0" line to 1** per ADR 2026-07-26 §2-C, and disclosed the unreconciled `S-MYM-ORC-02` K=2 claim. Independently re-verified the Tradeify rule pins against the firm's published policy article and reached the same result as the parallel session that landed [`2026-07-24-tradeify-rulepin-verification.md`](../../docs/notes/2026-07-24-tradeify-rulepin-verification.md) (PR #545): $200 winning-day minimum **confirmed**; "40-micro funded start tier" **refuted** (actual 30, four-step equity ladder); Flex minimum payout **mis-attributed**. That note is canonical — this branch's duplicate was deleted at merge. No `core/`, lock, allocation, `dd_protection`, Pine, or rail change.
+- **2026-07-25** — Ledger created (attention-efficiency audit). Seeded W1–W4, M1–M7, and the DEAD list from the ORC-01/02, MYM-3FPS-1, OPENPRESS-1 and book-composition records. Recorded W3 (vendor refresh invalidating a frozen research pin) as a standing warning. No `core/`, lock, allocation, `dd_protection`, or Pine change.

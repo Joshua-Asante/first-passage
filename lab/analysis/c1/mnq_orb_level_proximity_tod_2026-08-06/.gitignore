@@ -1,0 +1,5 @@
+# Rebuildable Phase-0 pair ledger (free panel); not vendor quotes.
+phase0_pairs.parquet
+__pycache__/
+*.pyc
+.pytest_cache/

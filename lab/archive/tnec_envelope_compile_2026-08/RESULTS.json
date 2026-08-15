@@ -1,0 +1,750 @@
+{
+ "basis": "Tradeify_Select_100K eval - commission $0.95/side (TNEC-1 N-EDGE screen; actual $0.91) - slip 1 tick total_rt PRIMARY (Stage-1 map execution model), slip 0 DISCLOSURE - edge labels HYPOTHETICAL per 2026-08-08 edge-cohort correction",
+ "dsr_floors": {
+  "1": 0.65,
+  "2": 0.85,
+  "3": 0.98
+ },
+ "h_a": "NON-EMPTY",
+ "instruments": {
+  "M2K": {
+   "cells": [
+    {
+     "cost_tax_r": 0.6,
+     "delta_over_stop": 2.4,
+     "inversion_line_r": 1.0,
+     "killed_by": "cost",
+     "power_floor": 0.0890909090909091,
+     "qty": {
+      "0.49R(hyp)": 62,
+      "0.65R(hyp)": 68,
+      "0.85R(hyp)": 80
+     },
+     "r_usd": 4.0,
+     "req_delta_ticks": 19.2,
+     "rt_usd": 2.4,
+     "stop_pts": 0.8,
+     "stop_ticks": 8,
+     "verdict": "DEAD"
+    },
+    {
+     "cost_tax_r": 0.24,
+     "delta_over_stop": 0.96,
+     "inversion_line_r": 0.64,
+     "killed_by": "cost",
+     "power_floor": 0.0890909090909091,
+     "qty": {
+      "0.49R(hyp)": 25,
+      "0.65R(hyp)": 27,
+      "0.85R(hyp)": 32
+     },
+     "r_usd": 10.0,
+     "req_delta_ticks": 19.2,
+     "rt_usd": 2.4,
+     "stop_pts": 2.0,
+     "stop_ticks": 20,
+     "verdict": "DEAD"
+    },
+    {
+     "cost_tax_r": 0.12,
+     "delta_over_stop": 0.48,
+     "inversion_line_r": 0.52,
+     "killed_by": null,
+     "power_floor": 0.0890909090909091,
+     "qty": {
+      "0.49R(hyp)": 12,
+      "0.65R(hyp)": 13,
+      "0.85R(hyp)": 16
+     },
+     "r_usd": 20.0,
+     "req_delta_ticks": 19.2,
+     "rt_usd": 2.4,
+     "stop_pts": 4.0,
+     "stop_ticks": 40,
+     "verdict": "OPEN"
+    },
+    {
+     "cost_tax_r": 0.06,
+     "delta_over_stop": 0.24,
+     "inversion_line_r": 0.46,
+     "killed_by": null,
+     "power_floor": 0.0890909090909091,
+     "qty": {
+      "0.49R(hyp)": 6,
+      "0.65R(hyp)": 6,
+      "0.85R(hyp)": 8
+     },
+     "r_usd": 40.0,
+     "req_delta_ticks": 19.2,
+     "rt_usd": 2.4,
+     "stop_pts": 8.0,
+     "stop_ticks": 80,
+     "verdict": "OPEN"
+    },
+    {
+     "cost_tax_r": 0.03,
+     "delta_over_stop": 0.12,
+     "inversion_line_r": 0.43000000000000005,
+     "killed_by": null,
+     "power_floor": 0.0890909090909091,
+     "qty": {
+      "0.49R(hyp)": 3,
+      "0.65R(hyp)": 3,
+      "0.85R(hyp)": 4
+     },
+     "r_usd": 80.0,
+     "req_delta_ticks": 19.2,
+     "rt_usd": 2.4,
+     "stop_pts": 16.0,
+     "stop_ticks": 160,
+     "verdict": "OPEN"
+    }
+   ],
+   "g0_numbers": {
+    "note": "the numbers a G0 freeze must defend (PREREG F4/F5)",
+    "open_stop_ticks": [
+     40,
+     80,
+     160
+    ],
+    "power_floor": 0.0890909090909091,
+    "req_delta_ticks": 19.2
+   },
+   "verdict": "NON-EMPTY"
+  },
+  "M6A": {
+   "cells": [
+    {
+     "cost_tax_r": 0.3625,
+     "delta_over_stop": 1.45,
+     "inversion_line_r": 0.7625,
+     "killed_by": "cost",
+     "power_floor": 0.0890909090909091,
+     "qty": {
+      "0.49R(hyp)": 31,
+      "0.65R(hyp)": 34,
+      "0.85R(hyp)": 40
+     },
+     "r_usd": 8.0,
+     "req_delta_ticks": 11.6,
+     "rt_usd": 2.9,
+     "stop_pts": null,
+     "stop_ticks": 8,
+     "verdict": "DEAD"
+    },
+    {
+     "cost_tax_r": 0.145,
+     "delta_over_stop": 0.58,
+     "inversion_line_r": 0.545,
+     "killed_by": null,
+     "power_floor": 0.0890909090909091,
+     "qty": {
+      "0.49R(hyp)": 12,
+      "0.65R(hyp)": 13,
+      "0.85R(hyp)": 16
+     },
+     "r_usd": 20.0,
+     "req_delta_ticks": 11.6,
+     "rt_usd": 2.9,
+     "stop_pts": null,
+     "stop_ticks": 20,
+     "verdict": "OPEN"
+    },
+    {
+     "cost_tax_r": 0.0725,
+     "delta_over_stop": 0.29,
+     "inversion_line_r": 0.47250000000000003,
+     "killed_by": null,
+     "power_floor": 0.0890909090909091,
+     "qty": {
+      "0.49R(hyp)": 6,
+      "0.65R(hyp)": 6,
+      "0.85R(hyp)": 8
+     },
+     "r_usd": 40.0,
+     "req_delta_ticks": 11.6,
+     "rt_usd": 2.9,
+     "stop_pts": null,
+     "stop_ticks": 40,
+     "verdict": "OPEN"
+    },
+    {
+     "cost_tax_r": 0.03625,
+     "delta_over_stop": 0.145,
+     "inversion_line_r": 0.43625,
+     "killed_by": null,
+     "power_floor": 0.0890909090909091,
+     "qty": {
+      "0.49R(hyp)": 3,
+      "0.65R(hyp)": 3,
+      "0.85R(hyp)": 4
+     },
+     "r_usd": 80.0,
+     "req_delta_ticks": 11.6,
+     "rt_usd": 2.9,
+     "stop_pts": null,
+     "stop_ticks": 80,
+     "verdict": "OPEN"
+    },
+    {
+     "cost_tax_r": 0.018125,
+     "delta_over_stop": 0.0725,
+     "inversion_line_r": 0.418125,
+     "killed_by": null,
+     "power_floor": 0.0890909090909091,
+     "qty": {
+      "0.49R(hyp)": 1,
+      "0.65R(hyp)": 1,
+      "0.85R(hyp)": 2
+     },
+     "r_usd": 160.0,
+     "req_delta_ticks": 11.6,
+     "rt_usd": 2.9,
+     "stop_pts": null,
+     "stop_ticks": 160,
+     "verdict": "OPEN"
+    }
+   ],
+   "g0_numbers": {
+    "note": "the numbers a G0 freeze must defend (PREREG F4/F5)",
+    "open_stop_ticks": [
+     20,
+     40,
+     80,
+     160
+    ],
+    "power_floor": 0.0890909090909091,
+    "req_delta_ticks": 11.6
+   },
+   "verdict": "NON-EMPTY"
+  },
+  "MCL": {
+   "cells": [
+    {
+     "cost_tax_r": 0.3625,
+     "delta_over_stop": 1.45,
+     "inversion_line_r": 0.7625,
+     "killed_by": "cost",
+     "power_floor": 0.12371410300716942,
+     "qty": {
+      "0.49R(hyp)": 31,
+      "0.65R(hyp)": 34,
+      "0.85R(hyp)": 40
+     },
+     "r_usd": 8.0,
+     "req_delta_ticks": 11.6,
+     "rt_usd": 2.9,
+     "stop_pts": null,
+     "stop_ticks": 8,
+     "verdict": "DEAD"
+    },
+    {
+     "cost_tax_r": 0.145,
+     "delta_over_stop": 0.58,
+     "inversion_line_r": 0.545,
+     "killed_by": null,
+     "power_floor": 0.12371410300716942,
+     "qty": {
+      "0.49R(hyp)": 12,
+      "0.65R(hyp)": 13,
+      "0.85R(hyp)": 16
+     },
+     "r_usd": 20.0,
+     "req_delta_ticks": 11.6,
+     "rt_usd": 2.9,
+     "stop_pts": null,
+     "stop_ticks": 20,
+     "verdict": "OPEN"
+    },
+    {
+     "cost_tax_r": 0.0725,
+     "delta_over_stop": 0.29,
+     "inversion_line_r": 0.47250000000000003,
+     "killed_by": null,
+     "power_floor": 0.12371410300716942,
+     "qty": {
+      "0.49R(hyp)": 6,
+      "0.65R(hyp)": 6,
+      "0.85R(hyp)": 8
+     },
+     "r_usd": 40.0,
+     "req_delta_ticks": 11.6,
+     "rt_usd": 2.9,
+     "stop_pts": null,
+     "stop_ticks": 40,
+     "verdict": "OPEN"
+    },
+    {
+     "cost_tax_r": 0.03625,
+     "delta_over_stop": 0.145,
+     "inversion_line_r": 0.43625,
+     "killed_by": null,
+     "power_floor": 0.12371410300716942,
+     "qty": {
+      "0.49R(hyp)": 3,
+      "0.65R(hyp)": 3,
+      "0.85R(hyp)": 4
+     },
+     "r_usd": 80.0,
+     "req_delta_ticks": 11.6,
+     "rt_usd": 2.9,
+     "stop_pts": null,
+     "stop_ticks": 80,
+     "verdict": "OPEN"
+    },
+    {
+     "cost_tax_r": 0.018125,
+     "delta_over_stop": 0.0725,
+     "inversion_line_r": 0.418125,
+     "killed_by": null,
+     "power_floor": 0.12371410300716942,
+     "qty": {
+      "0.49R(hyp)": 1,
+      "0.65R(hyp)": 1,
+      "0.85R(hyp)": 2
+     },
+     "r_usd": 160.0,
+     "req_delta_ticks": 11.6,
+     "rt_usd": 2.9,
+     "stop_pts": null,
+     "stop_ticks": 160,
+     "verdict": "OPEN"
+    }
+   ],
+   "g0_numbers": {
+    "note": "the numbers a G0 freeze must defend (PREREG F4/F5)",
+    "open_stop_ticks": [
+     20,
+     40,
+     80,
+     160
+    ],
+    "power_floor": 0.12371410300716942,
+    "req_delta_ticks": 11.6
+   },
+   "verdict": "NON-EMPTY"
+  },
+  "MES": {
+   "cells": [
+    {
+     "cost_tax_r": 0.315,
+     "delta_over_stop": 1.26,
+     "inversion_line_r": 0.7150000000000001,
+     "killed_by": "cost",
+     "power_floor": null,
+     "qty": {
+      "0.49R(hyp)": 25,
+      "0.65R(hyp)": 27,
+      "0.85R(hyp)": 32
+     },
+     "r_usd": 10.0,
+     "req_delta_ticks": 10.08,
+     "rt_usd": 3.15,
+     "stop_pts": 2.0,
+     "stop_ticks": 8,
+     "verdict": "DEAD"
+    },
+    {
+     "cost_tax_r": 0.126,
+     "delta_over_stop": 0.504,
+     "inversion_line_r": 0.526,
+     "killed_by": null,
+     "power_floor": null,
+     "qty": {
+      "0.49R(hyp)": 10,
+      "0.65R(hyp)": 11,
+      "0.85R(hyp)": 13
+     },
+     "r_usd": 25.0,
+     "req_delta_ticks": 10.08,
+     "rt_usd": 3.15,
+     "stop_pts": 5.0,
+     "stop_ticks": 20,
+     "verdict": "OPEN-CONDITIONAL(power)"
+    },
+    {
+     "cost_tax_r": 0.063,
+     "delta_over_stop": 0.252,
+     "inversion_line_r": 0.463,
+     "killed_by": null,
+     "power_floor": null,
+     "qty": {
+      "0.49R(hyp)": 5,
+      "0.65R(hyp)": 5,
+      "0.85R(hyp)": 6
+     },
+     "r_usd": 50.0,
+     "req_delta_ticks": 10.08,
+     "rt_usd": 3.15,
+     "stop_pts": 10.0,
+     "stop_ticks": 40,
+     "verdict": "OPEN-CONDITIONAL(power)"
+    },
+    {
+     "cost_tax_r": 0.0315,
+     "delta_over_stop": 0.126,
+     "inversion_line_r": 0.4315,
+     "killed_by": null,
+     "power_floor": null,
+     "qty": {
+      "0.49R(hyp)": 2,
+      "0.65R(hyp)": 2,
+      "0.85R(hyp)": 3
+     },
+     "r_usd": 100.0,
+     "req_delta_ticks": 10.08,
+     "rt_usd": 3.15,
+     "stop_pts": 20.0,
+     "stop_ticks": 80,
+     "verdict": "OPEN-CONDITIONAL(power)"
+    },
+    {
+     "cost_tax_r": 0.01575,
+     "delta_over_stop": 0.063,
+     "inversion_line_r": 0.41575,
+     "killed_by": null,
+     "power_floor": null,
+     "qty": {
+      "0.49R(hyp)": 1,
+      "0.65R(hyp)": 1,
+      "0.85R(hyp)": 1
+     },
+     "r_usd": 200.0,
+     "req_delta_ticks": 10.08,
+     "rt_usd": 3.15,
+     "stop_pts": 40.0,
+     "stop_ticks": 160,
+     "verdict": "OPEN-CONDITIONAL(power)"
+    }
+   ],
+   "g0_numbers": {
+    "note": "the numbers a G0 freeze must defend (PREREG F4/F5)",
+    "open_stop_ticks": [
+     20,
+     40,
+     80,
+     160
+    ],
+    "power_floor": null,
+    "req_delta_ticks": 10.08
+   },
+   "verdict": "NON-EMPTY-CONDITIONAL(power)"
+  },
+  "MGC": {
+   "cells": [
+    {
+     "cost_tax_r": 0.3625,
+     "delta_over_stop": 1.45,
+     "inversion_line_r": 0.7625,
+     "killed_by": "cost",
+     "power_floor": null,
+     "qty": {
+      "0.49R(hyp)": 31,
+      "0.65R(hyp)": 34,
+      "0.85R(hyp)": 40
+     },
+     "r_usd": 8.0,
+     "req_delta_ticks": 11.6,
+     "rt_usd": 2.9,
+     "stop_pts": 0.8,
+     "stop_ticks": 8,
+     "verdict": "DEAD"
+    },
+    {
+     "cost_tax_r": 0.145,
+     "delta_over_stop": 0.58,
+     "inversion_line_r": 0.545,
+     "killed_by": null,
+     "power_floor": null,
+     "qty": {
+      "0.49R(hyp)": 12,
+      "0.65R(hyp)": 13,
+      "0.85R(hyp)": 16
+     },
+     "r_usd": 20.0,
+     "req_delta_ticks": 11.6,
+     "rt_usd": 2.9,
+     "stop_pts": 2.0,
+     "stop_ticks": 20,
+     "verdict": "OPEN-CONDITIONAL(power)"
+    },
+    {
+     "cost_tax_r": 0.0725,
+     "delta_over_stop": 0.29,
+     "inversion_line_r": 0.47250000000000003,
+     "killed_by": null,
+     "power_floor": null,
+     "qty": {
+      "0.49R(hyp)": 6,
+      "0.65R(hyp)": 6,
+      "0.85R(hyp)": 8
+     },
+     "r_usd": 40.0,
+     "req_delta_ticks": 11.6,
+     "rt_usd": 2.9,
+     "stop_pts": 4.0,
+     "stop_ticks": 40,
+     "verdict": "OPEN-CONDITIONAL(power)"
+    },
+    {
+     "cost_tax_r": 0.03625,
+     "delta_over_stop": 0.145,
+     "inversion_line_r": 0.43625,
+     "killed_by": null,
+     "power_floor": null,
+     "qty": {
+      "0.49R(hyp)": 3,
+      "0.65R(hyp)": 3,
+      "0.85R(hyp)": 4
+     },
+     "r_usd": 80.0,
+     "req_delta_ticks": 11.6,
+     "rt_usd": 2.9,
+     "stop_pts": 8.0,
+     "stop_ticks": 80,
+     "verdict": "OPEN-CONDITIONAL(power)"
+    },
+    {
+     "cost_tax_r": 0.018125,
+     "delta_over_stop": 0.0725,
+     "inversion_line_r": 0.418125,
+     "killed_by": null,
+     "power_floor": null,
+     "qty": {
+      "0.49R(hyp)": 1,
+      "0.65R(hyp)": 1,
+      "0.85R(hyp)": 2
+     },
+     "r_usd": 160.0,
+     "req_delta_ticks": 11.6,
+     "rt_usd": 2.9,
+     "stop_pts": 16.0,
+     "stop_ticks": 160,
+     "verdict": "OPEN-CONDITIONAL(power)"
+    }
+   ],
+   "g0_numbers": {
+    "note": "the numbers a G0 freeze must defend (PREREG F4/F5)",
+    "open_stop_ticks": [
+     20,
+     40,
+     80,
+     160
+    ],
+    "power_floor": null,
+    "req_delta_ticks": 11.6
+   },
+   "verdict": "NON-EMPTY-CONDITIONAL(power)"
+  },
+  "MNQ": {
+   "cells": [
+    {
+     "cost_tax_r": 0.6,
+     "delta_over_stop": 2.4,
+     "inversion_line_r": 1.0,
+     "killed_by": "cost",
+     "power_floor": null,
+     "qty": {
+      "0.49R(hyp)": 62,
+      "0.65R(hyp)": 68,
+      "0.85R(hyp)": 80
+     },
+     "r_usd": 4.0,
+     "req_delta_ticks": 19.2,
+     "rt_usd": 2.4,
+     "stop_pts": 2.0,
+     "stop_ticks": 8,
+     "verdict": "DEAD"
+    },
+    {
+     "cost_tax_r": 0.24,
+     "delta_over_stop": 0.96,
+     "inversion_line_r": 0.64,
+     "killed_by": "cost",
+     "power_floor": null,
+     "qty": {
+      "0.49R(hyp)": 25,
+      "0.65R(hyp)": 27,
+      "0.85R(hyp)": 32
+     },
+     "r_usd": 10.0,
+     "req_delta_ticks": 19.2,
+     "rt_usd": 2.4,
+     "stop_pts": 5.0,
+     "stop_ticks": 20,
+     "verdict": "DEAD"
+    },
+    {
+     "cost_tax_r": 0.12,
+     "delta_over_stop": 0.48,
+     "inversion_line_r": 0.52,
+     "killed_by": null,
+     "power_floor": null,
+     "qty": {
+      "0.49R(hyp)": 12,
+      "0.65R(hyp)": 13,
+      "0.85R(hyp)": 16
+     },
+     "r_usd": 20.0,
+     "req_delta_ticks": 19.2,
+     "rt_usd": 2.4,
+     "stop_pts": 10.0,
+     "stop_ticks": 40,
+     "verdict": "OPEN-CONDITIONAL(power)"
+    },
+    {
+     "cost_tax_r": 0.06,
+     "delta_over_stop": 0.24,
+     "inversion_line_r": 0.46,
+     "killed_by": null,
+     "power_floor": null,
+     "qty": {
+      "0.49R(hyp)": 6,
+      "0.65R(hyp)": 6,
+      "0.85R(hyp)": 8
+     },
+     "r_usd": 40.0,
+     "req_delta_ticks": 19.2,
+     "rt_usd": 2.4,
+     "stop_pts": 20.0,
+     "stop_ticks": 80,
+     "verdict": "OPEN-CONDITIONAL(power)"
+    },
+    {
+     "cost_tax_r": 0.03,
+     "delta_over_stop": 0.12,
+     "inversion_line_r": 0.43000000000000005,
+     "killed_by": null,
+     "power_floor": null,
+     "qty": {
+      "0.49R(hyp)": 3,
+      "0.65R(hyp)": 3,
+      "0.85R(hyp)": 4
+     },
+     "r_usd": 80.0,
+     "req_delta_ticks": 19.2,
+     "rt_usd": 2.4,
+     "stop_pts": 40.0,
+     "stop_ticks": 160,
+     "verdict": "OPEN-CONDITIONAL(power)"
+    }
+   ],
+   "g0_numbers": {
+    "note": "the numbers a G0 freeze must defend (PREREG F4/F5)",
+    "open_stop_ticks": [
+     40,
+     80,
+     160
+    ],
+    "power_floor": null,
+    "req_delta_ticks": 19.2
+   },
+   "verdict": "NON-EMPTY-CONDITIONAL(power)"
+  },
+  "MYM": {
+   "cells": [
+    {
+     "cost_tax_r": 0.6,
+     "delta_over_stop": 2.4,
+     "inversion_line_r": 1.0,
+     "killed_by": "cost",
+     "power_floor": 0.0890909090909091,
+     "qty": {
+      "0.49R(hyp)": 62,
+      "0.65R(hyp)": 68,
+      "0.85R(hyp)": 80
+     },
+     "r_usd": 4.0,
+     "req_delta_ticks": 19.2,
+     "rt_usd": 2.4,
+     "stop_pts": 8.0,
+     "stop_ticks": 8,
+     "verdict": "DEAD"
+    },
+    {
+     "cost_tax_r": 0.24,
+     "delta_over_stop": 0.96,
+     "inversion_line_r": 0.64,
+     "killed_by": "cost",
+     "power_floor": 0.0890909090909091,
+     "qty": {
+      "0.49R(hyp)": 25,
+      "0.65R(hyp)": 27,
+      "0.85R(hyp)": 32
+     },
+     "r_usd": 10.0,
+     "req_delta_ticks": 19.2,
+     "rt_usd": 2.4,
+     "stop_pts": 20.0,
+     "stop_ticks": 20,
+     "verdict": "DEAD"
+    },
+    {
+     "cost_tax_r": 0.12,
+     "delta_over_stop": 0.48,
+     "inversion_line_r": 0.52,
+     "killed_by": null,
+     "power_floor": 0.0890909090909091,
+     "qty": {
+      "0.49R(hyp)": 12,
+      "0.65R(hyp)": 13,
+      "0.85R(hyp)": 16
+     },
+     "r_usd": 20.0,
+     "req_delta_ticks": 19.2,
+     "rt_usd": 2.4,
+     "stop_pts": 40.0,
+     "stop_ticks": 40,
+     "verdict": "OPEN"
+    },
+    {
+     "cost_tax_r": 0.06,
+     "delta_over_stop": 0.24,
+     "inversion_line_r": 0.46,
+     "killed_by": null,
+     "power_floor": 0.0890909090909091,
+     "qty": {
+      "0.49R(hyp)": 6,
+      "0.65R(hyp)": 6,
+      "0.85R(hyp)": 8
+     },
+     "r_usd": 40.0,
+     "req_delta_ticks": 19.2,
+     "rt_usd": 2.4,
+     "stop_pts": 80.0,
+     "stop_ticks": 80,
+     "verdict": "OPEN"
+    },
+    {
+     "cost_tax_r": 0.03,
+     "delta_over_stop": 0.12,
+     "inversion_line_r": 0.43000000000000005,
+     "killed_by": null,
+     "power_floor": 0.0890909090909091,
+     "qty": {
+      "0.49R(hyp)": 3,
+      "0.65R(hyp)": 3,
+      "0.85R(hyp)": 4
+     },
+     "r_usd": 80.0,
+     "req_delta_ticks": 19.2,
+     "rt_usd": 2.4,
+     "stop_pts": 160.0,
+     "stop_ticks": 160,
+     "verdict": "OPEN"
+    }
+   ],
+   "g0_numbers": {
+    "note": "the numbers a G0 freeze must defend (PREREG F4/F5)",
+    "open_stop_ticks": [
+     40,
+     80,
+     160
+    ],
+    "power_floor": 0.0890909090909091,
+    "req_delta_ticks": 19.2
+   },
+   "verdict": "NON-EMPTY"
+  }
+ }
+}

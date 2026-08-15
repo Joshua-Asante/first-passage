@@ -1,0 +1,95 @@
+{
+  "gate": "FALSIFIED",
+  "tnec": "U U U U U | U | U | L-0.1756/S-0.1069",
+  "long": {
+    "n": 406,
+    "mean_R": -0.17555857839967626,
+    "wr": 0.4605911330049261,
+    "ci": [
+      -0.2672777431550051,
+      -0.08252134099335404
+    ],
+    "mean_stop_dist": 134.6206896551724
+  },
+  "short": {
+    "n": 444,
+    "mean_R": -0.10688142294278957,
+    "wr": 0.4864864864864865,
+    "ci": [
+      -0.19729793323326303,
+      -0.017403613232675173
+    ],
+    "mean_stop_dist": 116.40765765765765
+  },
+  "delete": {
+    "long": {
+      "constrained_mean": -0.17555857839967626,
+      "sham_mean": -0.20861776009798716,
+      "pass": true
+    },
+    "short": {
+      "constrained_mean": -0.10688142294278957,
+      "sham_mean": -0.1957212055100197,
+      "pass": true
+    }
+  },
+  "flip": {
+    "long_fade_vs_short_flip": {
+      "fade_mean": -0.17555857839967626,
+      "flip_mean": -0.1733803568784763,
+      "pass": false
+    },
+    "short_fade_vs_long_flip": {
+      "fade_mean": -0.10688142294278957,
+      "flip_mean": -0.17737129429544354,
+      "pass": true
+    }
+  },
+  "aux": {
+    "long": {
+      "placebo_p": 0.0,
+      "annsr": -1.4619667269759287,
+      "halves": {
+        "older": -0.1857391210490146,
+        "newer": -0.16496876770413327
+      },
+      "halves_agree": true
+    },
+    "short": {
+      "placebo_p": 0.02,
+      "annsr": -0.9224435854772544,
+      "halves": {
+        "older": -0.057993490327231285,
+        "newer": -0.15195990626362907
+      },
+      "halves_agree": true
+    }
+  },
+  "cost_law": {
+    "long": {
+      "mean_stop_dist_pts": 134.6206896551724,
+      "one_r_usd": 67.3103448275862,
+      "four_x_rt_usd": 11.28,
+      "gross_vs_4x": 5.967229151381757
+    },
+    "short": {
+      "mean_stop_dist_pts": 116.40765765765765,
+      "one_r_usd": 58.203828828828826,
+      "four_x_rt_usd": 11.28,
+      "gross_vs_4x": 5.159913903264967
+    }
+  },
+  "disclosures": {
+    "explore_end": "2025-08-31",
+    "confirm_reserved": "2025-09-01\u21922026-08-13",
+    "scored_sessions": 1607,
+    "coverage_sessions_with_trade": 850,
+    "panel_sha256": "24e169528f7ea6693b75c71c3195edf6a04f3a26c6b6dff0f2e9c623fd597a58",
+    "em_six_char": "U U U U U U"
+  },
+  "explore_scored": true,
+  "scored_at": "2026-08-13T04:38:59.315463+00:00",
+  "panel": "C:\\Users\\joshu\\multi_firm_operations\\core\\data\\bar_data\\MYM_M15.csv",
+  "cost_usd": 0.0,
+  "k_spent": 0
+}

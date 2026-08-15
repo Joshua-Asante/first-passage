@@ -1,0 +1,16 @@
+{
+  "n_triggers": 255,
+  "ofchan_days_on_disk": 155,
+  "triggers_ofchan_overlap": 125,
+  "triggers_in_gap": 130,
+  "gap_unique_dates": 130,
+  "gap_first": "2025-08-06",
+  "gap_last": "2026-02-05",
+  "budget_usd": 50.0,
+  "estimate_usd": 5.482470691204,
+  "status": "ESTIMATE_OK_AWAITING_PULL_GO",
+  "estimate_window": [
+    "2025-08-06",
+    "2026-02-06"
+  ]
+}

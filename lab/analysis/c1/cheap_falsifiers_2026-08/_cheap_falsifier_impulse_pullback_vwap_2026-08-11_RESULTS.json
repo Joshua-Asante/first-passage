@@ -1,0 +1,29 @@
+{
+  "verdict": "CHEAP_FALSIFIER_OK",
+  "detail": "coverage clears; not both-arms CI<0 under impulse-pullback-VWAP-reclaim / pullback-extreme stop / first-per-session",
+  "mechanism_id": "impulse-pullback-vwap-reclaim",
+  "n_eligible_sessions": 1669,
+  "n_trade_sessions": 1507,
+  "trade_frac": 0.9029358897543439,
+  "n_trades": 1507,
+  "mean_signed_pts": 0.5987060384870604,
+  "mean_stop_dist": 19.119442601194425,
+  "gross_vs_4x_rt": 0.10615355292323767,
+  "long": {
+    "n": 784,
+    "mean_R": 0.006069006363301289,
+    "wr": 0.14923469387755103,
+    "ci_lo": -0.28362285885515465,
+    "ci_hi": 0.32710601882284723
+  },
+  "short": {
+    "n": 723,
+    "mean_R": -0.42678089252056683,
+    "wr": 0.10096818810511757,
+    "ci_lo": -0.708925518087726,
+    "ci_hi": -0.09511535833311664
+  },
+  "elapsed_s": 36.751999400003115,
+  "cost_usd": 0.0,
+  "panel": "C:\\Users\\joshu\\multi_firm_operations\\lab\\analysis\\c1\\mnq_selection_ceiling_allbars_2026-08\\_mnq_1m.parquet"
+}

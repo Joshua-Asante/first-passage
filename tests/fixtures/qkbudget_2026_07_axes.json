@@ -1,0 +1,76 @@
+[
+  {
+    "axis": "D1 GC/MGC successor (any design)",
+    "family": "GC/MGC",
+    "k_banked": 3177,
+    "k_intrinsic": [1, 1],
+    "n_events": null,
+    "delta_over_sigma": null,
+    "delta_citation": null,
+    "unscreenable_reason": "n/a — Clause K kills first (fixture transcription of floor_scan AXES)"
+  },
+  {
+    "axis": "D2 wide mining, other GLBX family",
+    "family": "ES/NQ/YM",
+    "k_banked": 1,
+    "k_intrinsic": [1000, 10000],
+    "n_events": null,
+    "delta_over_sigma": null,
+    "delta_citation": null,
+    "unscreenable_reason": "n/a — Clause K kills first (fixture transcription of floor_scan AXES)"
+  },
+  {
+    "axis": "D3 HARV-class ES month-end mechanism",
+    "family": "ES",
+    "k_banked": 1,
+    "k_intrinsic": [1, 2],
+    "n_events": null,
+    "delta_over_sigma": null,
+    "delta_citation": null,
+    "unscreenable_reason": "inherited Clause-N FAIL short-circuits computation",
+    "clause_n_inherited": {
+      "verdict": "FAIL",
+      "citation": "INHERITED FAIL: P(primary|true) ~= 0.24-0.30, joint 0.05-0.06 (Q-HARV-1 SS-R DECLINE, commit 9bddd33; N ~= 100 month-ends 2018+)"
+    }
+  },
+  {
+    "axis": "D4 XAU T3b swap-dealer COT (prop expression = GC/MGC)",
+    "family": "GC/MGC",
+    "k_banked": 3177,
+    "k_intrinsic": [1, 2],
+    "n_events": null,
+    "delta_over_sigma": null,
+    "delta_citation": null,
+    "unscreenable_reason": "UNSCREENABLE-moot (no citable delta; cannot flip — Clause K kills any GC/MGC expression independently)"
+  },
+  {
+    "axis": "D5 NQ/MNQ intraday-momentum footprint (was: gamma-positioning)",
+    "family": "MYM/MNQ",
+    "k_banked": 0,
+    "k_intrinsic": [1, 3],
+    "n_events": 1000,
+    "delta_over_sigma": 0.113,
+    "delta_citation": "Baltussen et al. 2021 JFE NQ cohort (d5_clause_n_rescreen.md)",
+    "unscreenable_reason": null
+  },
+  {
+    "axis": "D6 eurusd_pattern_enum Phase-4 (locked K=450)",
+    "family": "6E/EURUSD",
+    "k_banked": 0,
+    "k_intrinsic": [450, 450],
+    "n_events": null,
+    "delta_over_sigma": null,
+    "delta_citation": null,
+    "unscreenable_reason": "n/a — Clause K kills first (fixture transcription of floor_scan AXES)"
+  },
+  {
+    "axis": "D7 JPY month-end mechanism (6J expression)",
+    "family": "6J",
+    "k_banked": 0,
+    "k_intrinsic": [1, 3],
+    "n_events": 100,
+    "delta_over_sigma": 0.14444444444444443,
+    "delta_citation": "HARV class-analogue +13bp/90bp (Q-HARV-1 SS-R 9bddd33; d7_clause_n_screen.md)",
+    "unscreenable_reason": null
+  }
+]

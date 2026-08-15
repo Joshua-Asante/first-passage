@@ -1,0 +1,4 @@
+# Vendor-derived granular series (Pepperstone TOS: personal export OK, redistribution not)
+# and regenerable binary intermediates — aggregate stats live in RESULTS.md + *.json instead.
+panel_static.pkl
+equity_series.csv

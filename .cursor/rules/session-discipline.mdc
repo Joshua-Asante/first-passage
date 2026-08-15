@@ -1,0 +1,39 @@
+---
+description: Session-discipline conduct for this repo — session log, fetch-before-build, falsifier-before-brief. User rules and CLAUDE.md override on conflict.
+alwaysApply: true
+---
+
+# Session Discipline
+
+Always-on conduct. (The deployed-skill-cache guardrail is **Claude-surface only** —
+it catches edits to a cloud-synced bundle *outside* this workspace, which Cursor
+rules cannot see — so it is not mirrored here.)
+
+## Session log (wrap-up)
+
+At the end of any substantive turn, append a reverse-chron entry to
+`docs/SESSIONS.md` — append-only, **link out** (never restate canonical values).
+Five fields: Focus / Shipped (branch+commit) / Decisions-defects (link the
+ADR/brief) / Open-next / Live-ops state. Carry the prior entry's **Open / next**
+forward so the next session resumes without re-deriving state. Skip trivial /
+read-only turns. Grounding: `feedback_session_log_discipline` (owner
+`docs/operational_rules.md §7`).
+
+## Fetch before a multi-step build
+
+Before scaffolding, building out, or implementing a pipeline/stage/runner/harness,
+run `git fetch origin && git log --oneline origin/main ^HEAD | head -20` and grep
+for your target files. This repo runs from concurrent worktrees; a parallel
+branch may already have landed the work (PR #325's PR-2 was mooted this way).
+Reconcile before executing; re-fetch before pushing. Grounding:
+`feedback_check_origin_main_before_multistep_build` +
+`feedback_recent_gitlog_before_scaffolding_call`.
+
+## Falsifier before a brief
+
+Before authoring anything in `docs/briefs/` or `docs/adr/`, run the <5-min cheap
+falsifier PARENT-side and write against the empirical number, not the theoretical
+magnitude (one-shot script, 1-CSV sanity sweep, sha256 byte-identity, oracle-tier
+pre-check). Use the brief-authoring skill for structure; verify every Rule-0 read
+is real (handoff-verify). Grounding: `lesson_run_cheap_falsifier_before_authoring`
++ `feedback_run_falsifier_before_brief`.

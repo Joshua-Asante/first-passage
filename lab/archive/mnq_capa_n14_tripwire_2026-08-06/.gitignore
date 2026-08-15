@@ -1,0 +1,7 @@
+# Vendor-derived forward TBBO quote windows — rebuild via pull_windows_fwd.py; do not commit.
+quotes_fwd.parquet
+_quotes_fwd_partial.parquet
+quotes_fwd.parquet.tmp
+__pycache__/
+*.pyc
+.pytest_cache/

@@ -1,0 +1,220 @@
+# Live trading data — never commit
+accounts.json
+dd_protection_state.json
+lifecycle_state.json
+data/live/*.csv
+*.json.bak
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.venv-research/
+venv/
+env/
+
+# Test artifacts (pytest-html-report and similar auto-generate here)
+# NB: `reports/*` (not `reports/`) so git still descends into the directory.
+# (The child re-include this shape existed for was the ECR one, retired below —
+# the form is kept because it is harmless and re-includes may return.)
+reports/*
+# ECR rules RETIRED 2026-07-31. The ECR runner (ops/live_journal/scripts/
+# ecr_rolling.py) and both output dirs were deleted 2026-07-11 with the
+# manual-CFD estate (67e0ef7, docs/adr/2026-07-11-ops-cfd-estate-retirement.md
+# — which explicitly ordered removing ops/reports/ecr/). `reports/`,
+# `reports/ecr/`, and `ops/reports/` all no longer exist (ops/reports deleted
+# 2026-08-03; Q-REGIME-TIME-1 RESULTS.md now at
+# lab/analysis/regime/regime_time_cost_2026-06-09/RESULTS.md). Former `!reports/ecr/`
+# negation / `*.json` ignore rules governed no path and were removed.
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Cursor blast-radius edit ledger (per-conversation; ephemeral)
+.cursor/hooks/state/
+
+# Hookify local rules — per-clone agent guardrails (claude-plugins-official
+# hookify plugin). `.local.md` = machine-local by convention; not shared via git.
+.claude/*.local.md
+
+# Orphan Cursor user-rule audit log (SOE Labs / SOPHIE "Audit Everything"
+# rule wrote root telemetry.jsonl; rode into 4441c72 as a side effect).
+# Removed from tracking 2026-07-15; ignore in case a local agent regenerates it.
+telemetry.jsonl
+
+# Codex agent-harness mirror — backed out 2026-07-15 (operator decision: Codex
+# is NOT entering the workflow; the stack stays Claude + Cursor only). AGENTS.md
+# (Codex's CLAUDE.md analogue), .agents/ (skill mirror), and .codex/ rode into
+# e6ec1ff as a side effect of a concurrent session. Gitignored so a future
+# agent sync cannot silently re-commit them; regenerate locally only if Codex
+# is ever adopted. Canonical skill source stays .claude/skills/.
+AGENTS.md
+.agents/
+.codex/
+
+# Deep-research leftovers — copyrighted source papers / raw text dumps pulled in
+# during research sessions. Never commit (public repo; vendor/copyright). Guard
+# added by the 2026-06-22 housekeeping audit after a stray copyrighted paper.txt
+# was left in a worktree root.
+paper.txt
+*.paper.txt
+
+# AUDNZD discovery loop raw bar CSVs (large; SHA256 sidecars are committed)
+data/audnzd_oanda_m15_*.csv
+
+# Live runtime data — DXTrade / CFD estate retired 2026-07-11
+# (ops CFD-estate + FXIFY ops-surface ADRs). Paths below are historical
+# ignore patterns only; the modules are gone. Retrieve via git history.
+# live_journal/ and ops/live_journal/ ignore blocks removed 2026-07-12.
+
+# Vendor-licensed data (Pepperstone TV exports + broker bar feeds + reference data; legacy OANDA exports frozen-historical).
+# Held locally only; SHA256SUMS manifests are tracked for integrity verification.
+# Note: core/data/external/SHA256SUMS may be empty when no reference CSVs are committed; manifest-check workflow tolerates this.
+core/data/tv_exports/**/*.csv
+core/data/bar_data/*.csv
+# BAR EXPORT v0.2 instrument sidecars — derived from the gitignored bar CSVs.
+core/data/bar_data/*.meta.json
+core/data/external/*.csv
+# Vendor TV exports copied into research dirs under lab/ (Pepperstone TOS — local only).
+lab/analysis/**/inputs/*.csv
+lab/archive/**/inputs/*.csv
+# NAS100 Identify/Inquire loop (2026-06-20) — vendor-derived raw price series (Pepperstone TOS — local only).
+# Aggregate results (stats JSON, quarter table, results JSON) ARE committed; raw OHLC / per-leg prices are not.
+# Study archived 2026-07-12 — patterns kept under archive path.
+lab/archive/identify_nas100_2026-06-20/nas100_bars_utc.csv
+lab/archive/identify_nas100_2026-06-20/nas100_trades_paired.csv
+
+# Pine strategy source — held privately to protect live trading edge.
+# Per-file SHA256 manifest at core/strategies/MANIFEST.sha256 is tracked.
+**/*.pine
+
+# Executable Python ports of LOCKED strategy logic — same edge-protection class
+# as the Pine source above. The Guardian v5.5 parity port is a VALIDATED
+# reproduction (0.46% net over the full 52-trade window); untracked 2026-07-01
+# per docs/adr/2026-07-01-guardian-pyport-public-tracking.md. Hashes pinned in
+# lab/analysis/legacy/guardian_parity_2026-06-23/PORT_MANIFEST.sha256. Honest scope:
+# both files shipped publicly 2026-06-23→2026-07-01 and remain in git history
+# (`git show dc07898:<path>`) — this entry limits amplification, not disclosure.
+lab/analysis/legacy/guardian_parity_2026-06-23/guardian_signal.py
+lab/analysis/legacy/guardian_parity_2026-06-23/test_guardian_signal.py
+
+# Same edge-protection class: frozen-historical OANDA stage-1 missed-alpha
+# scripts embed real locked-strategy filter/pyramid parameters (EOM block
+# days, hour-blocks, ATR-expansion thresholds, pyramid trigger/size).
+# Untracked 2026-08-14 per docs/adr/2026-08-14-repo-public-visibility-transition.md
+# (widens the gap the 2026-07-01 ADR's §0 named but didn't close for these two).
+# Generic infra in the same directory (bar_loader.py, permutation.py,
+# pine_indicators.py, post_exit_excursion.py, __init__.py, RESULTS.md) stays
+# tracked — no live edge.
+lab/archive/oanda_stage1/guardian_stage1.py
+lab/archive/oanda_stage1/aegis_stage1.py
+lab/archive/oanda_stage1/striker_stage1.py
+
+# Narrow exception (2026-06-16): this ONE concept-stage harness carries NO live
+# edge — Q-TOM-SPX-1 is RESOLVED-ABSENT — and its prior gitignored copy was lost
+# (uncommitted, authoring worktree gone). Commit the source so the canonical
+# instrument is durable, not just hash-pinned. Hash: lab/analysis/legacy/tom_spx/PINE_MANIFEST.sha256.
+!lab/analysis/legacy/tom_spx/tom_test_spx500.pine
+
+# Narrow exception (2026-06-23): pine_check.py compile-gate fixtures — trivial
+# PUBLIC test .pine carrying NO live edge (a valid EMA-plot "good" + a
+# deliberately-broken "bad"). Tracked so scripts/pine_check_audit.* assertions
+# are re-checkable on a fresh clone. See scripts/pine_check.README.md.
+!tests/pine_check_fixtures/good.pine
+!tests/pine_check_fixtures/bad.pine
+
+# R&D pipeline — regenerable candidate artifacts.
+# Gen-1 lab/validation/concept_intake retired 2026-07-11; candidate .pine /
+# sweep sidecars / B5 dirs still regenerate from surviving concept sources
+# where applicable. (Keeping a candidate .pine on disk also trips
+# check_pine_manifest into "present" mode in a worktree where the locked
+# Pine is absent.)
+core/strategies/candidates/*.sweep.yaml
+core/strategies/candidates/*.sweep.bounded.yaml
+core/strategies/candidates/*.b5/
+# Same regenerable-scratch convention, data/ side: the candidate's matched native
+# exports + sweep runbook land under core/data/tv_exports/candidates/ (vendor CSVs
+# already covered above, .pine by **/*.pine; this catches the rest, e.g.
+# RANK_RHO_RUNBOOK.md).
+core/data/tv_exports/candidates/
+
+# ECR ingest pipeline runtime outputs — append-only per-month JSONL and
+# per-invocation logs. Estate retired 2026-07-11; patterns retained for
+# historical checkout noise only (modules gone).
+data/signals/signals_*.jsonl
+data/signals/_errors_*.jsonl
+data/counterfactuals/counterfactuals_*.jsonl
+data/ingest_runs/*.log
+
+# Phase run logs under inquiry briefs are analysis run-artifacts (stdout
+# capture), not decision evidence — the results .md/.csv are committed instead.
+docs/briefs/**/*.log
+
+# Trade-capture screenshots — scratch images pasted in for Notion upload,
+# never committed (uploaded to the Trade Journal Screenshots field instead).
+Screenshot *.png
+Screenshot *.jpg
+tmp_screenshots/
+
+# Reconciler draft artifacts (generated by retired live_journal.reconcile).
+outputs/
+
+# Local agent worktrees (git worktree add .worktrees/<name>)
+.worktrees/
+# Claude Code session worktrees (same class; was missing — only .worktrees/ was ignored)
+.claude/worktrees/
+
+# Superpowers SDD scratch reports (session-local; not repo deliverables)
+.superpowers/sdd/
+
+# US500 discovery bar cache — serialized Pepperstone 15m bars (vendor-derived,
+# redistribution not permitted); regenerated from the Downloads BAR_EXPORT CSV by
+# lab/analysis/us500_discovery_2026-06-22/harness.py. Never committed.
+lab/analysis/us500_discovery_2026-06-22/us500_15m.pkl
+
+# ORB-universe screening: per-instrument bar caches (vendor-derived Pepperstone/OANDA
+# 15m bars, redistribution not permitted) + reproducible run logs/intermediates.
+# RESULTS.md + the *.py harness are the committed deliverable; caches/logs regenerate.
+# Paths use **/ so the theme-nest location (orb/) and any flat remnant both match.
+lab/analysis/**/orb_universe_2026-06-22/_cache_*.pkl
+lab/analysis/**/orb_universe_2026-06-22/*.out
+lab/analysis/**/orb_universe_2026-06-22/_screen_*.json
+
+# (`.worktrees/` is already ignored at line 164 — the duplicate that sat here was
+# removed 2026-07-31; git resolved to this later copy, so line 164 never decided
+# anything and the pair was pure dead weight.)
+
+# c1 rail host: local state/config staged at the repo ROOT for sftp to the Fly
+# volume (deploy/c1_rail/). c1_rail_config.json carries live secrets (path_token +
+# CrossTrade keys). Anchored to root (leading /) so the tracked *.example.json
+# templates under deploy/c1_rail/ and docs/notes/rail_build/ stay tracked.
+/c1_rail_config.json
+/c1_current_equity.json
+/c1_dd_state.json
+/c1_sizing_constants.json
+# (`/lifecycle_state.json` removed 2026-07-31: the unanchored `lifecycle_state.json`
+# at line 4 is strictly broader — it matches the root file AND any subdirectory
+# copy — so the anchored form here was a subset and could never decide a path.)
+
+
+# Recall sidecar (Q-XMEM-1 Delete route): the FTS5 index is a REGENERATED
+# artifact -- `python -m ops.recall build` rebuilds it from the corpus in
+# seconds. It is also a derived copy of every markdown file including the cold
+# store, so committing it would both bloat the repo and duplicate content the
+# public-clone posture governs at the source. Staged notes live in the same
+# file; they are review scratch, not a record of authority (ledgers/SESSIONS
+# own that), so they are deliberately local-only too.
+ops/data/recall.db

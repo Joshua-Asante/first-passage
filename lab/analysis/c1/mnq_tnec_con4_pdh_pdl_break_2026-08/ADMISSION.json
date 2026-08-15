@@ -1,0 +1,13 @@
+{
+  "catalogue_k": 1,
+  "em1_edge_r": null,
+  "em2_risk_usd": null,
+  "em2_measured_edge_r": null,
+  "em3_independence_and_stops": true,
+  "em4_weekly_cadence": true,
+  "em5_session_slot_legal": true,
+  "d1": null,
+  "d2": null,
+  "n_events": null,
+  "delta_over_sigma": null
+}

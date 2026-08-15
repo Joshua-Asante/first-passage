@@ -1,0 +1,37 @@
+{
+  "family": "compression_expansion_break",
+  "geometry": {
+    "G": 10.0,
+    "exit": "session_flat",
+    "RT": 1.41,
+    "EM3": true
+  },
+  "thresholds": {
+    "K_NARROW": 2,
+    "NARROW_MULT": 1.0,
+    "MEDIAN_SESSIONS": 20
+  },
+  "eligible_sessions_with_theta": 1648,
+  "break_clocks": 90780,
+  "long": {
+    "n": 5187,
+    "mean_R": -0.05327106227106221,
+    "wr": 0.13032581453634084,
+    "ci_lo": -0.147643352035931,
+    "ci_hi": 0.04445184465600077,
+    "stop_rate": 0.8627337574705995,
+    "n_sessions": 1452
+  },
+  "short": {
+    "n": 4992,
+    "mean_R": -0.07778385416666662,
+    "wr": 0.10576923076923077,
+    "ci_lo": -0.18878129242506242,
+    "ci_hi": 0.0385222812258821,
+    "stop_rate": 0.8870192307692307,
+    "n_sessions": 1400
+  },
+  "elapsed_s": 171.42342609999469,
+  "verdict": "CHEAP_FALSIFIER_OK",
+  "detail": "not both-arms CI<0; licenses G0 freeze for Q-TNEC-CON-2 (not EXPLORATION / not SHAPE-CLEAR)"
+}

@@ -1,0 +1,37 @@
+{
+  "run_id": "harv2026_001_es_monthend",
+  "status": "closed",
+  "opened_at": "2026-07-11T21:58:25Z",
+  "tool": "harv-mechanism-conditional",
+  "K": 1,
+  "alpha": 0.05,
+  "data_window": "2010-06-06:2026-07-01",
+  "hypothesis": "Fade intra-month ES-vs-ZN outperformer over last three trading days when |R_spread|>=100bp; sign-aligned mean window return >=4x cost and label-permutation p<=0.05 on pooled 2010-2026 parent panel",
+  "params": "window=T-3..T-1,cutoff=T-4,threshold_bp=100,primary=ES.c.0,driver=ZN.c.0,breadth=YM.c.0,control=GC.c.0,schema=ohlcv-1d",
+  "closed_at": "2026-07-12T16:09:43Z",
+  "results": {
+    "n_submitted": 1,
+    "naive_alpha": 0.05,
+    "n_pass_naive_alpha": 1,
+    "bonferroni_threshold": 0.05,
+    "n_pass_bonferroni": 1,
+    "n_multiplicity_killed": 0,
+    "bh_rows": [
+      {
+        "rank": 1,
+        "pvalue": 0.0129,
+        "bh_threshold": 0.05,
+        "bh_reject": true
+      }
+    ],
+    "n_pass_bh": 1,
+    "expected_false_positives_global_null": 0.05,
+    "candidates": [
+      {
+        "id": null,
+        "pvalue": 0.0129
+      }
+    ]
+  },
+  "verdict": "FIRST-PASS ONLY. Candidates clearing the crude multiplicity floor are listed above. This is NOT a promotion. Hand the full candidate set (all K returns) to strategy-validation for universe-level correction (White RC / Hansen SPA / Romano-Wolf) and the native-micro OOS gate before any candidate is trusted."
+}

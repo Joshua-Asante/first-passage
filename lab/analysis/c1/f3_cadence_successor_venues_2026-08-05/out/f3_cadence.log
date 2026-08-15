@@ -1,0 +1,141 @@
+panel  : lab/analysis/c1/tradeify_book_composition_2026-07-23/out/daily_panel.csv
+  2020-08-04 -> 2026-07-21  (1556 bdays)  net $127,826.08  active days 329
+sims   : 10,000 x 3 seeds, horizon 1500d, seeds identical across all arms
+
+==============================================================================
+CONTROL PIN: Tradeify_Select_100K C2-off · 1.00× OFF/ON
+  c2off_1.00x_inactOFF: pass  68.07%  bust_dd  31.93%  INACT   0.00%  med-days 52
+  c2off_1.00x_inactON: pass   6.34%  bust_dd   1.06%  INACT  92.60%  med-days 11
+
+CONTROL PIN (Tradeify_Select_100K C2-off · 1.00×): MATCH
+  pass OFF   measured 68.07%  pin 68.07%  d=0.003pp
+  INACT ON   measured 92.60%  pin 92.60%  d=0.003pp
+
+==============================================================================
+tier   : Bulenox_100K
+  dd_type=trailing  max_dd=3.0%  target=6.0%  min_days=0
+  inactivity_max_idle_days = 5
+  GEOMETRY NOTE: %-of-peak trailing via firm_kwargs (optimistic vs venue fixed-$ rope) — inactivity delta is the deliverable
+
+--- C2-off (raw book) | risk scalar 1.00x (310 week-blocks) ---
+  inactivity OFF     pass  69.13%  bust_dd  30.87%  INACT   0.00%  horizon  0.00%  med-days 52
+  inactivity ON(5d)  pass   8.13%  bust_dd   1.01%  INACT  90.85%  horizon  0.00%  med-days 7
+
+--- C2-off (raw book) | risk scalar 0.50x (310 week-blocks) ---
+  inactivity OFF     pass  88.34%  bust_dd  11.66%  INACT   0.00%  horizon  0.00%  med-days 131
+  inactivity ON(5d)  pass   2.48%  bust_dd   0.02%  INACT  97.50%  horizon  0.00%  med-days 11
+
+--- C2-on (rail overlay 1.5%/0.40x) | risk scalar 1.00x (310 week-blocks) ---
+  inactivity OFF     pass  78.05%  bust_dd  21.95%  INACT   0.00%  horizon  0.00%  med-days 67
+  inactivity ON(5d)  pass   7.89%  bust_dd   0.30%  INACT  91.81%  horizon  0.00%  med-days 7
+
+--- C2-on (rail overlay 1.5%/0.40x) | risk scalar 0.50x (310 week-blocks) ---
+  inactivity OFF     pass  97.04%  bust_dd   2.96%  INACT   0.00%  horizon  0.00%  med-days 152
+  inactivity ON(5d)  pass   2.46%  bust_dd   0.00%  INACT  97.54%  horizon  0.00%  med-days 11
+
+DELTA (inactivity OFF -> ON) — Bulenox_100K
+  c2off / 1.00x:
+    pass             69.13% ->   8.13%  (-61.00 pp)
+    bust (DD-class)  30.87% ->   1.01%
+    bust_inactivity   0.00% ->  90.85%
+  c2off / 0.50x:
+    pass             88.34% ->   2.48%  (-85.86 pp)
+    bust (DD-class)  11.66% ->   0.02%
+    bust_inactivity   0.00% ->  97.50%
+  c2on / 1.00x:
+    pass             78.05% ->   7.89%  (-70.16 pp)
+    bust (DD-class)  21.95% ->   0.30%
+    bust_inactivity   0.00% ->  91.81%
+  c2on / 0.50x:
+    pass             97.04% ->   2.46%  (-94.58 pp)
+    bust (DD-class)   2.96% ->   0.00%
+    bust_inactivity   0.00% ->  97.54%
+
+==============================================================================
+tier   : MFFU_Rapid_100K
+  dd_type=trailing_locking  max_dd=3.0%  target=6.0%  min_days=2
+  inactivity_max_idle_days = 5
+  GEOMETRY ATTESTATION: dd_lock_offset_usd = 1000000.0 (native; unreachable-lock idiom)
+
+--- C2-off (raw book) | risk scalar 1.00x (310 week-blocks) ---
+  inactivity OFF     pass  68.15%  bust_dd  31.85%  INACT   0.00%  horizon  0.00%  med-days 52
+  inactivity ON(5d)  pass   7.18%  bust_dd   1.05%  INACT  91.77%  horizon  0.00%  med-days 7
+
+--- C2-off (raw book) | risk scalar 0.50x (310 week-blocks) ---
+  inactivity OFF     pass  87.61%  bust_dd  12.39%  INACT   0.00%  horizon  0.00%  med-days 131
+  inactivity ON(5d)  pass   2.48%  bust_dd   0.02%  INACT  97.50%  horizon  0.00%  med-days 11
+
+--- C2-on (rail overlay 1.5%/0.40x) | risk scalar 1.00x (310 week-blocks) ---
+  inactivity OFF     pass  76.71%  bust_dd  23.29%  INACT   0.00%  horizon  0.00%  med-days 66
+  inactivity ON(5d)  pass   6.92%  bust_dd   0.33%  INACT  92.75%  horizon  0.00%  med-days 7
+
+--- C2-on (rail overlay 1.5%/0.40x) | risk scalar 0.50x (310 week-blocks) ---
+  inactivity OFF     pass  96.46%  bust_dd   3.54%  INACT   0.00%  horizon  0.00%  med-days 151
+  inactivity ON(5d)  pass   2.46%  bust_dd   0.00%  INACT  97.54%  horizon  0.00%  med-days 11
+
+DELTA (inactivity OFF -> ON) — MFFU_Rapid_100K
+  c2off / 1.00x:
+    pass             68.15% ->   7.18%  (-60.97 pp)
+    bust (DD-class)  31.85% ->   1.05%
+    bust_inactivity   0.00% ->  91.77%
+  c2off / 0.50x:
+    pass             87.61% ->   2.48%  (-85.13 pp)
+    bust (DD-class)  12.39% ->   0.02%
+    bust_inactivity   0.00% ->  97.50%
+  c2on / 1.00x:
+    pass             76.71% ->   6.92%  (-69.79 pp)
+    bust (DD-class)  23.29% ->   0.33%
+    bust_inactivity   0.00% ->  92.75%
+  c2on / 0.50x:
+    pass             96.46% ->   2.46%  (-94.00 pp)
+    bust (DD-class)   3.54% ->   0.00%
+    bust_inactivity   0.00% ->  97.54%
+
+==============================================================================
+tier   : BluSky_Premium_100K
+  dd_type=trailing  max_dd=3.0%  target=6.0%  min_days=0
+  inactivity_max_idle_days = 30
+  GEOMETRY NOTE: %-of-peak trailing via firm_kwargs (optimistic vs venue fixed-$ rope) — inactivity delta is the deliverable
+
+--- C2-off (raw book) | risk scalar 1.00x (310 week-blocks) ---
+  inactivity OFF     pass  69.13%  bust_dd  30.87%  INACT   0.00%  horizon  0.00%  med-days 52
+  inactivity ON(30d)  pass  68.77%  bust_dd  30.71%  INACT   0.52%  horizon  0.00%  med-days 52
+
+--- C2-off (raw book) | risk scalar 0.50x (310 week-blocks) ---
+  inactivity OFF     pass  88.34%  bust_dd  11.66%  INACT   0.00%  horizon  0.00%  med-days 131
+  inactivity ON(30d)  pass  87.41%  bust_dd  11.50%  INACT   1.09%  horizon  0.00%  med-days 131
+
+--- C2-on (rail overlay 1.5%/0.40x) | risk scalar 1.00x (310 week-blocks) ---
+  inactivity OFF     pass  78.05%  bust_dd  21.95%  INACT   0.00%  horizon  0.00%  med-days 67
+  inactivity ON(30d)  pass  77.49%  bust_dd  21.74%  INACT   0.76%  inactivity OFF     pass  97.04%  bust_dd   2.96%  INACT   0.00%  horizon  0.00%  med-days 152
+  inactivity ON(30d)  pass  95.70%  bust_dd   2.90%  INACT   1.40%  horizon  0.00%  med-days 151
+
+DELTA (inactivity OFF -> ON) — BluSky_Premium_100K
+  c2off / 1.00x:
+    pass             69.13% ->  68.77%  (-0.37 pp)
+    bust (DD-class)  30.87% ->  30.71%
+    bust_inactivity   0.00% ->   0.52%
+  c2off / 0.50x:
+    pass             88.34% ->  87.41%  (-0.94 pp)
+    bust (DD-class)  11.66% ->  11.50%
+    bust_inactivity   0.00% ->   1.09%
+  c2on / 1.00x:
+    pass             78.05% ->  77.49%  (-0.56 pp)
+    bust (DD-class)  21.95% ->  21.74%
+    bust_inactivity   0.00% ->   0.76%
+  c2on / 0.50x:
+    pass             97.04% ->  95.70%  (-1.34 pp)
+    bust (DD-class)   2.96% ->   2.90%
+    bust_inactivity   0.00% ->   1.40%
+
+==============================================================================
+CAVEAT: engine barrier = rolling N-consecutive-idle-bday ABSORBING.
+Venue rules differ (Mon-Fri week / trading-day idle / subscription
+window). Numbers price the unmitigated barrier assumption — not a
+forecast of any venue's soft-enforcement path.
+==============================================================================
+
+results saved -> lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/out/f3_cadence.json
+============================================
+
+results saved -> lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/out/f3_cadence.json

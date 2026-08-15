@@ -1,0 +1,39 @@
+---
+description: Write a docs/SESSIONS.md entry at session wrap-up for any substantive work. User rules take precedence.
+globs: "**/*"
+alwaysApply: true
+---
+
+# Session log discipline (`docs/SESSIONS.md`)
+
+Cursor-side mirror of the Claude Code `warn-session-log` stop hook
+(`.claude/hookify.session-log.local.md`). This repo runs from several concurrent
+Cursor **and** Claude Code worktrees with no chronological timeline otherwise, so a
+missed entry makes a session unresumable and hides parallel-session collisions.
+
+> **Incident this closes:** the 2026-07-12 four-firms prop-portfolio ADR
+> (`docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md`, recorded by a Cursor
+> Cloud Agent) landed on `main` with **no** SESSIONS entry — there was no Cursor-side
+> session-log rule at the time.
+
+## When to write
+
+At **session wrap-up**, if the session shipped code, recorded a decision
+(ADR / notice / brief), or moved live-ops state → append a reverse-chronological entry
+(**newest on top**) to `docs/SESSIONS.md`.
+
+**SKIP** trivial / read-only turns (a question answered, a file read, a one-line fix).
+Do not add noise.
+
+## Entry shape (append-only; link out, never restate canonical values)
+
+- **Focus** — what the session set out to do
+- **Shipped** — branch + commit + concrete deltas (link artifacts, don't duplicate)
+- **Decisions/defects** — link the ADR / notice / brief produced
+- **Open / next** — carried-forward items (read first next session); carry the prior top
+  entry's Open/next forward
+- **Live-ops state** — lock / allocation / gate status where relevant
+
+Canonical owner: `docs/operational_rules.md §7`. Do **not** restate risk %, MC anchor,
+strategy versions, or hashes — link to their owners (`CLAUDE.md`, `docs/adr/`, `LOCK.md`).
+User rules override this file.

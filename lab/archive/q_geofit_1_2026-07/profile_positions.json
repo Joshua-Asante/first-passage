@@ -1,0 +1,86 @@
+{
+  "grid_ranges": {
+    "sigma_d_pct_range": [
+      0.05,
+      0.45
+    ],
+    "mu_sigma_range": [
+      0.0,
+      0.15
+    ],
+    "z_range": [
+      0.0,
+      0.4
+    ],
+    "shapes": [
+      "gaussian",
+      "student_t4",
+      "trend_mix_p035",
+      "meanrev_mix_p065"
+    ]
+  },
+  "books": [
+    {
+      "book": "c1",
+      "n_days": 1692,
+      "active_day_reading": {
+        "z": 0.793144208037825,
+        "sigma_d_pct": 0.5906658716880253,
+        "mu_sigma": 0.21622033867880228,
+        "shape": "student_t4",
+        "active_win_frac": 0.42857142857142855,
+        "active_excess_kurtosis": 17.916799015207463,
+        "n_active": 350,
+        "n_days": 1692,
+        "in_range": {
+          "sigma_d_pct": false,
+          "mu_sigma": false,
+          "z": false
+        }
+      },
+      "all_day_reading": {
+        "sigma_d_pct": 0.27328214732599804,
+        "mu_sigma": 0.09667069607371492,
+        "z": 0.793144208037825,
+        "excess_kurtosis": 103.01225766976907,
+        "n_days": 1692,
+        "in_range": {
+          "sigma_d_pct": true,
+          "mu_sigma": true,
+          "z": false
+        }
+      }
+    },
+    {
+      "book": "CFD",
+      "n_days": 1687,
+      "active_day_reading": {
+        "z": 0.6111440426793124,
+        "sigma_d_pct": 2.1960780469852095,
+        "mu_sigma": 0.2404030747656374,
+        "shape": "student_t4",
+        "active_win_frac": 0.4268292682926829,
+        "active_excess_kurtosis": 17.647016502329965,
+        "n_active": 656,
+        "n_days": 1687,
+        "in_range": {
+          "sigma_d_pct": false,
+          "mu_sigma": false,
+          "z": false
+        }
+      },
+      "all_day_reading": {
+        "sigma_d_pct": 1.3927985205628006,
+        "mu_sigma": 0.14739686567523855,
+        "z": 0.6111440426793124,
+        "excess_kurtosis": 51.66775703644482,
+        "n_days": 1687,
+        "in_range": {
+          "sigma_d_pct": false,
+          "mu_sigma": true,
+          "z": false
+        }
+      }
+    }
+  ]
+}

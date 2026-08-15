@@ -1,0 +1,5 @@
+Trade #,Type,Date and time,Signal,Price USD,Size (qty),Net P&L USD,Net P&L %,Cumulative P&L USD
+1,Entry long,2024-01-02 10:00:00,Long,18000,1,0,0,0
+1,Exit long,2024-01-02 11:00:00,Exit Long,18010,1,27.50,0.0275,27.50
+2,Entry long,2024-01-03 10:00:00,Long,18100,2,0,0,27.50
+2,Exit long,2024-01-03 11:00:00,Exit Long,18095,2,-31.00,-0.031,-3.50

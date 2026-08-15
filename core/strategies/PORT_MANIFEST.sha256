@@ -1,0 +1,184 @@
+# Futures venue-edition Pine port manifest (Phase B, 2026-07-03)
+# Source files held privately (gitignored, **/*.pine); hashes pinned for
+# verification. Same M-9 pattern as MANIFEST.sha256 / the Guardian py-port
+# PORT_MANIFEST. Re-pin after ANY edition edit.
+#
+# 2026-07-22 re-pin — research bypass toggles on BOTH Striker venue editions:
+#   useSession / useDowFilter (default ON = lock-identical). Hour-of-day and
+#   day-of-week filters become optional; no locked parameter defaults changed.
+#   striker_nas100_v1_mnq.pine : 72b18a6d… -> bb921399…
+#   striker_dj30_v4.5_mym.pine : 9439e3ff… -> 2b895317…
+#
+# 2026-07-21 re-pin — informational alert() removal on BOTH strategy venue
+# editions (rail JSON-only fix): a single "Any alert() function call" alert
+# delivers only one alert() message/bar (freq_once_per_bar), so the plain-text
+# informational alerts shadowed the B1 JSON entry/add/exit payloads and the rail
+# routed no order (2026-07-21 first-armed session, both legs). Alert-only diff,
+# no order/sizing/DD logic touched.
+#   striker_nas100_v1_mnq.pine : 139eb43d… -> 72b18a6d…
+#   striker_dj30_v4.5_mym.pine : 42166af8… -> 9439e3ff…
+#
+# striker_nas100_v1_mnq.pine provenance:
+#   6b8e9eab… — 2026-07-03 vintage DESTROYED (worktree loss); not recoverable.
+#   4bb37729… — 2026-07-06 R5 re-author; LOST locally by 2026-07-17 (Phase 1).
+#   a67fd3b4… — 2026-07-17 Q-RAIL-1 re-author from locked striker_nas100_v1.pine
+#               + Tradeify/MFFU discharge deltas (D1–D5). Supersedes 4bb37729….
+#   139eb43d… — 2026-07-17 Q-RAIL-1 B1 alert-payload contract (GO ADR
+#               2026-07-17-c1-rail-build-account-registration-go.md). Alert-only
+#               diff, no order/sizing/DD logic touched. Supersedes a67fd3b4….
+#
+# orb_mnq_v0_1.pine provenance:
+#   c4ac4c00… — 2026-07-21 first authoring (operator GO "create the pine for the
+#               nas orb strategy that survived"). ORB-MNQ-1 lifecycle CANDIDATE
+#               @1.00x (ADMISSION 2026-07-16). Venue edition of the reconciled
+#               CFD candidate nas100_orb_v0_1.pine; frozen construct per the
+#               2026-07-16 ORB-MNQ pre-registration; NOT live, rail/account/
+#               spend separately gated. pine_check.py clean 2026-07-21.
+#   df05512d… — 2026-07-21 OCA fix (operator GO "apply the oca fix"). Both entry
+#               stops now share oca_name="ORB"/oca_type=cancel: without it, a bar
+#               breaching both OR extremes intrabar filled both stops in sequence
+#               (same-bar reversal) — TV-export reconcile measured 30 such
+#               reversals, net -$1,896 on the second leg. No parameter/construct
+#               change (still order-placement-only); Supersedes c4ac4c00….
+#               Active working edition for NEW exports is orb_mnq_v0_2.pine
+#               (below); v0.1 pin retained as the OCA-fixed baseline.
+#
+# orb_mnq_v0_2.pine provenance:
+#   f60104eb… — 2026-07-31 transcript extract of the TV-authored D1–D4 calendar-
+#               conformance amendment (early-close calendar, resting-order leak,
+#               contracts k input, manual early-close override). Not pinned as
+#               the working edition (pre-D5).
+#   bad8068d… — 2026-07-31 D5 full-session clock pin: sessOpen/sessClose are
+#               constants 09:30/16:00 (no longer inputs). Closes the chart-
+#               override class that produced full-session EOD @ 15:30 on the
+#               2026-07-30 export (RESULTS_v02_clock_kgrid.md). pine_check.py
+#               clean 2026-07-31. — BYTES UNRECOVERABLE, superseded by e3b37857…
+#               below. Pinned by 66c2a14 (PR #574, branch cursor/orb-v02-land-
+#               clock-pin-d2b8), authored by a Cursor CLOUD AGENT on an ephemeral
+#               VM; `.pine` is gitignored, so the bytes were never pushed and died
+#               with the VM. Absent from every disk and every transcript. Second
+#               occurrence of this failure mode in this file (cf. fd91f37b… above);
+#               the guard added 2026-07-31 in scripts/check_pine_manifest.py now
+#               refuses a pin authored where the bytes cannot persist.
+#   e3b37857… — 2026-07-31 RECONSTRUCTION of D5, superseding bad8068d…. Rebuilt
+#               from the surviving pre-D5 f60104eb… by applying D5 exactly as the
+#               entry above describes it — the four full-session bounds become
+#               constants; early-close bounds stay inputs (calendar, not clock).
+#               Values are byte-identical to the pre-D5 defaults (9/30/16/0), so
+#               behaviour at defaults is unchanged and NO parameter/construct moved;
+#               what changes is that the chart can no longer override them. This is
+#               a reconstruction, NOT a recovery: it does not reproduce bad8068d…
+#               byte-for-byte and no claim is made that it does. Reproducible via
+#               lab/analysis/orb_mnq_2026-07/reconstruct_d5.py (asserts the base
+#               hash first). pine_check.py clean 2026-07-31. LF endings, matching
+#               the v0.1 pin's convention. Superseded as working edition by
+#               8e4fccd9… (D6) below; pin retained as the D5 baseline.
+#   8e4fccd9… — 2026-08-07 D6 rail B1 JSON-only alert contract (LONG entry /
+#               exit / flat). Construct / calendar / stops unchanged. leg_id
+#               borrows nas100_mnq; SHORT opens emit no webhook (rail long-only).
+#               Plain-text informational alert() removed (07-21 shadowing class).
+#               pine_check.py clean 2026-08-07. Active working edition for ORB-MNQ-1.
+
+#
+# striker_dj30_v4.5_mym.pine provenance:
+#   fd91f37b… — 2026-07-03 Bulenox-parameterized pin; on-disk had drifted to
+#               632baeea… by 2026-07-17 (unrecoverable pin bytes).
+#   f89178d2… — 2026-07-17 Q-RAIL-1 D1–D5 re-parameterization of the drifted
+#               on-disk edition (commission/account/cap/EOD). Supersedes fd91f37b….
+#   42166af8… — 2026-07-17 Q-RAIL-1 B1 alert-payload contract (GO ADR
+#               2026-07-17-c1-rail-build-account-registration-go.md). Alert-only
+#               diff, no order/sizing/DD logic touched. Supersedes f89178d2….
+bb9213991bdc071034db2b5a47f84d43e926d45b0d3968f65da44e738f89d7c4  core/strategies/_archive/nas/striker_nas100_v1_mnq.pine
+df05512deb959acf12b56bf27189b4cabea305c7e18b0d69c9927d45570c49e0  core/strategies/_archive/orb/orb_mnq_v0_1.pine
+8e4fccd97f3a4f70a3051613bc67365e16c2344261a24ca1463930e2062df0f0  core/strategies/_archive/orb/orb_mnq_v0_2.pine
+2b89531738018db9ec05ba71a4d44e0f8c651eb2cbbaed725afbae7e4e6b539a  core/strategies/_archive/striker/striker_dj30_v4.5_mym.pine
+30d350283723d0b297c97533793846495152c2c7a93943088f36b2a2f4f895ad  core/strategies/_archive/aegis/aegis_jpy_futures_v0_3_prototype.pine
+a318d432c38dce445a108ad329889c0ccaec001182ed9384ab621badff0f62ab  core/strategies/_archive/aegis/aegis_jpy_futures_v0_3_bepad_prototype.pine
+
+# guardian_gold_futures_mgc_v0_1_prototype.pine provenance:
+#   7a296676… — 2026-08-11 first authoring (R7 self-funded Guardian->MGC lane;
+#               Block A transfer-lane adjudication session). Locked v5.5's exact
+#               EMA/ATR/session/risk% parameters carried byte-identical; only the
+#               execution-mechanical layer changed: F1 calcSize() divided by
+#               syminfo.pointvalue (the locked v5.5 file, run unmodified on
+#               MGC1!, implicitly assumed pointvalue=1 — correct for XAUUSD/
+#               DXTrade only, ~10-13x oversized on native futures, measured from
+#               Guardian_Gold_v5.5_COMEX_MINI_MGC1!_2026-08-11_dcb45.csv); F2
+#               commission_value 0 -> 1.06 (Tradeify MGC per-side); F3 explicit
+#               maxContracts floor+cap; initial_capital 200,000 -> 100,000
+#               (aligns to Tradeify_Select_100K, per the Aegis->6J J4b
+#               true-target-geometry precedent). pine_check.py clean 2026-08-11.
+#               Force-flat/no-overnight-carry vs maxHoldBars=850 is UNRESOLVED —
+#               not addressed by this pass, see the file's own header.
+7a296676e0615c9852feac026fd985899f3db8739167d9162e3bc6f7f69fc120  core/strategies/_archive/guardian/guardian_gold_futures_mgc_v0_1_prototype.pine
+
+# guardian_gold_futures_mgc_v0_2_prototype.pine provenance:
+#   60484f4f… — 2026-08-11 F4 EOD force-flat added (operator-directed after
+#               v0.1's sizing-fix re-run confirmed correct: median loser
+#               -0.344% vs 0.34% target, N-ACT re-derived at 45.4% zero-trade
+#               weeks). All four FRIENDLY firms auto-liquidate open positions
+#               daily at the platform level — mandatory, not a rule choice —
+#               so v0.1's inherited maxHoldBars=850 multi-day hold could never
+#               execute as backtested at any of them. Closes any open
+#               position at an explicit America/New_York flat time (default
+#               16:45 ET, Tradeify's published deadline), independent of the
+#               chart's display timezone or CME's own Chicago exchange
+#               default. No entry-signal change — re-entry next session still
+#               depends entirely on the untouched locked recoveryLong signal.
+#               Supersedes v0_1 for decision-grade use; v0_1 retained as the
+#               sizing-fix-only record. pine_check.py clean 2026-08-11.
+#               Flagged, not fixed: the locked file's OWN session/hour/day
+#               gates use bare hour/dayofweek (chart-timezone-dependent, not
+#               code-guaranteed UTC) — unverified on MGC1!, see file header.
+60484f4f851758d79ea8677999f22f373dca3c52546e4ffbc5bb73406f84f160  core/strategies/_archive/guardian/guardian_gold_futures_mgc_v0_2_prototype.pine
+
+# guardian_gold_futures_mgc_v0_3_prototype.pine provenance:
+#   0f0aa817… — 2026-08-11 F5 fix (operator-directed after v0.2's re-run showed
+#               all 199 EOD-flat exits filling at exactly 18:00, not ~16:45).
+#               Root cause CONFIRMED by web search (not assumed): CME Globex
+#               halts electronic trading 17:00-18:00 ET Mon-Thu for daily
+#               maintenance. v0.2's F4 signal fired correctly on the 16:45 ET
+#               bar (still open, pre-halt), but strategy.close() with
+#               process_orders_on_close=false fills at the next bar's open —
+#               and since 17:00-18:00 has no bars, that next bar is the 18:00
+#               reopen. Same defect class + fix shape as the Aegis->6J port's
+#               own F1 (EOD cutoff firing on a post-maintenance bar). FIX:
+#               flatMinuteET default 45 -> 15 — signal now fires at 16:15 ET,
+#               fill lands at the 16:30 ET bar open, a 15-min/1-bar buffer
+#               before both the true 16:45 ET target and the 17:00 ET halt.
+#               Also adds a dashboard row showing syminfo.timezone directly,
+#               to settle (rather than infer from entry-hour clustering)
+#               whether this COMEX symbol's bare hour/dayofweek resolve in
+#               UTC as the locked file's comments claim. Supersedes v0_2 for
+#               decision-grade use. pine_check.py clean 2026-08-11.
+0f0aa81712baacd5080092c009b937c0416b029ce181ab53ddd194980871c56d  core/strategies/_archive/guardian/guardian_gold_futures_mgc_v0_3_prototype.pine
+
+# striker_nas100_v1_mym_qtxg1_prototype.pine provenance:
+#   19264da2… — 2026-08-12 Q-TXG-1 Block-2/3 sibling-swap research port.
+#               Locked NAS100 v1 signal identity (lookback/ATR/SL/TP/BE/trail/
+#               pyramid/risk%/session/DOW/day soft-stop −1.5%) carried from
+#               striker_nas100_v1.pine; execution-mechanical layer only changed
+#               to CBOT MYM venue class (integer qty @ accountSize $100k,
+#               mymPointValue $0.50, Tradeify commission $0.91/side, slippage 1,
+#               microCap 80, EOD force-flat 15:45 ET, initial_capital $100k
+#               true-target). NOT the WITHDRAWN(F1) nas100×MNQ redeploy.
+#               No B1 rail JSON alerts (research prototype). pine_check.py
+#               clean 2026-08-12. Built by
+#               lab/analysis/c1/transfer_expression_grid_2026-08/build_sibling_swap_ports.py
+#               from the durable primary-checkout locked Pine bytes.
+19264da29a3d9a30200600689e1950931f1abfb648e9071a232ee83fdec2756c  core/strategies/_archive/nas/striker_nas100_v1_mym_qtxg1_prototype.pine
+
+# striker_dj30_v4.5_mnq_qtxg1_prototype.pine provenance:
+#   178a2a8e… — 2026-08-12 Q-TXG-1 Block-2/3 sibling-swap research port.
+#               Locked DJ30 v4.5 signal identity (lookback/ATR/SL/TP/BE/trail/
+#               pyramid/risk%/session/DOW/day soft-stop −2% Pine default — not
+#               the live TV −1.15% override) carried from striker_dj30_v4.5.pine;
+#               execution-mechanical layer only changed to CME MNQ venue class
+#               (integer qty @ accountSize $100k, mnqPointValue $2.00, Tradeify
+#               commission $0.91/side, slippage 1, microCap 80, EOD force-flat
+#               15:45 ET, initial_capital $100k true-target). NOT the
+#               WITHDRAWN(F1) striker×MYM redeploy. No B1 rail JSON alerts
+#               (research prototype). pine_check.py clean 2026-08-12. Built by
+#               lab/analysis/c1/transfer_expression_grid_2026-08/build_sibling_swap_ports.py
+#               from the durable primary-checkout locked Pine bytes.
+178a2a8e1c78e45a5142749f92284c09d286907a7e096883e1133297cb8a806d  core/strategies/_archive/striker/striker_dj30_v4.5_mnq_qtxg1_prototype.pine

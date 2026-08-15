@@ -1,0 +1,78 @@
+{
+  "card_id": "msl-s2a-mcl-pullback-failure-resumption",
+  "card_path": "lab/analysis/c1/msl_s2a_mcl_2026-08/card.yaml",
+  "disclaimer": "evidence only; computes evidence only",
+  "dedup_query": "pullback-failure-resumption",
+  "dedup_paths": [
+    "docs/rejected_candidates.md",
+    "lab/CATALOG.md",
+    "docs/briefs/2026-08-13-msl-second-slate.md",
+    "docs/briefs/closures/Q-MCLTAS-1-closure-falsified.md",
+    "docs/briefs/closures/MSL-C2-closure-falsified.md",
+    "ops/instruments/MCL.md"
+  ],
+  "dedup_hits": [],
+  "cell_command": [
+    "/usr/bin/python3",
+    "/workspace/scripts/instrument_profiles.py",
+    "cell",
+    "MCL",
+    "pullback-failure-resumption"
+  ],
+  "cell_stdout": "=== MCL x pullback-failure-resumption ===\nledger: ops/instruments/MCL.md\nverdict: untested — no prior on this cell.\nclass finding (mechanism-wide, not specific to MCL): none yet — Stage-1 on MCL; B4/G0 unpaid. [STAGE1](../../lab/analysis/c1/msl_s2a_mcl_2026-08/STAGE1.md)\nBINDING BAR: free-data-5th-leg-snag-closed-2026-07-01 -> ../../docs/rejected_candidates.md\ncost hurdle: 5.3423 bp/round-trip (Stage-0 2023 median cost_bp for MCL (fade stage0 RESULTS.md)) — VERIFY at #C1\nK bank: read ../../discovery_manifests/ — never trust a snapshot.\nprior: Frozen CONFIG-B-MCL geometry clears expressibility under SIGMA-NATIVE; geometry is not edge — N-SURV/N-EDGE/N-SIZE remain U until a mechanism trade series exists. [#C2]\n",
+  "cell_returncode": 1,
+  "arithmetic": {
+    "p": 0.35,
+    "rr": 3.0,
+    "n_trades": 1,
+    "contracts": 2,
+    "expectancy_r": 0.4,
+    "per_trade_sharpe": 0.209657,
+    "implied_annualized_sr": 3.33,
+    "implied_annualized_sr_raw": 3.328201177351373,
+    "trading_days_per_year": 252,
+    "cost_law": {
+      "rt_cost_usd": 4.12,
+      "rows": [
+        {
+          "multiple": 1.0,
+          "stop_floor_usd": 10.3,
+          "stop_floor_pts": 10.3
+        },
+        {
+          "multiple": 2.0,
+          "stop_floor_usd": 20.6,
+          "stop_floor_pts": 20.6
+        },
+        {
+          "multiple": 4.0,
+          "stop_floor_usd": 41.2,
+          "stop_floor_pts": 41.2
+        }
+      ],
+      "card_multiple": 4.0,
+      "stop_floor_usd_at_card_multiple": 41.2
+    },
+    "geometry": {
+      "stop_pts": 180.0,
+      "target_pts": 540.0,
+      "span_pts": 720.0,
+      "point_value_usd": 1.0,
+      "rt_cost_usd": 4.12
+    },
+    "payability": {
+      "all_win_day_usd": 1071.76,
+      "payout_min_usd_reference": 200.0,
+      "all_win_day_minus_ref": 871.76
+    },
+    "worst_day": {
+      "all_lose_day_usd": 368.24,
+      "worst_day_bound_usd_reference": 750.0,
+      "bound_minus_all_lose_day": 381.76
+    },
+    "sigma_d": {
+      "sigma_d_usd": 686.8362,
+      "sigma_d_usd_raw": 686.8362250202009
+    }
+  }
+}

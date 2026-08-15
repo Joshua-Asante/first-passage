@@ -1,0 +1,8 @@
+# Vendor-derived TBBO / join caches — rebuild locally; do not commit.
+quotes_or.parquet
+_quotes_or_partial.parquet
+_or_r_join.parquet
+_day_checkpoint.npz
+__pycache__/
+*.pyc
+.pytest_cache/

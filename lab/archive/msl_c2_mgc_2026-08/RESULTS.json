@@ -1,0 +1,95 @@
+{
+  "gate": "FALSIFIED",
+  "tnec": "U U U U U | U | U | L-0.1794/S-0.1822",
+  "long": {
+    "n": 327,
+    "mean_R": -0.17944601860974302,
+    "wr": 0.4709480122324159,
+    "ci": [
+      -0.2868561656037285,
+      -0.07127807701473592
+    ],
+    "mean_stop_dist": 6.792354740061074
+  },
+  "short": {
+    "n": 310,
+    "mean_R": -0.18220325110084487,
+    "wr": 0.47096774193548385,
+    "ci": [
+      -0.2917496525387276,
+      -0.07471660030274514
+    ],
+    "mean_stop_dist": 5.974516129032176
+  },
+  "delete": {
+    "long": {
+      "constrained_mean": -0.17944601860974302,
+      "sham_mean": -0.15172697556553633,
+      "pass": false
+    },
+    "short": {
+      "constrained_mean": -0.18220325110084487,
+      "sham_mean": -0.1648945337731008,
+      "pass": false
+    }
+  },
+  "flip": {
+    "long_fade_vs_short_flip": {
+      "fade_mean": -0.17944601860974302,
+      "flip_mean": -0.18389992245822054,
+      "pass": true
+    },
+    "short_fade_vs_long_flip": {
+      "fade_mean": -0.18220325110084487,
+      "flip_mean": -0.19831555762975542,
+      "pass": true
+    }
+  },
+  "aux": {
+    "long": {
+      "placebo_p": 0.0,
+      "annsr": -1.6743635892094522,
+      "halves": {
+        "older": -0.16403757820964204,
+        "newer": -0.19718599933354342
+      },
+      "halves_agree": true
+    },
+    "short": {
+      "placebo_p": 0.0,
+      "annsr": -1.6631086218487625,
+      "halves": {
+        "older": -0.12979153545449532,
+        "newer": -0.22947025846289013
+      },
+      "halves_agree": true
+    }
+  },
+  "cost_law": {
+    "long": {
+      "mean_stop_dist_pts": 6.792354740061074,
+      "one_r_usd": 67.92354740061074,
+      "four_x_rt_usd": 16.48,
+      "gross_vs_4x": 4.121574478192399
+    },
+    "short": {
+      "mean_stop_dist_pts": 5.974516129032176,
+      "one_r_usd": 59.74516129032176,
+      "four_x_rt_usd": 16.48,
+      "gross_vs_4x": 3.62531318509234
+    }
+  },
+  "disclosures": {
+    "explore_end": "2025-08-31",
+    "confirm_reserved": "2025-09-01\u21922026-08-12",
+    "scored_sessions": 960,
+    "coverage_sessions_with_trade": 637,
+    "panel_sha256": "88da9f1597daca5c6a118fa4539a117aba5ea4255d81e7475fd7029987caf3f3",
+    "em_six_char": "U U U U U U"
+  },
+  "explore_scored": true,
+  "scored_at": "2026-08-13T02:22:32.550592+00:00",
+  "panel": "C:\\Users\\joshu\\multi_firm_operations\\core\\data\\bar_data\\MGC_M15.csv",
+  "cost_usd": 0.0,
+  "k_spent": 0
+}

@@ -1,0 +1,16 @@
+# Clean card round-trip: loads, emits structured evidence, exits 0.
+id: clean-card-roundtrip
+instrument: MGC
+mechanism: opening-range-breakout
+dedup_query: __msl_preflight_no_such_needle_zzzz__
+dedup_paths:
+  - docs/rejected_candidates.md
+  - lab/CATALOG.md
+p: 0.60
+rr: 1.0
+n_trades: 4
+rt_cost_usd: 2.12
+point_value_usd: 10.0
+contracts: 1
+stop_pts: 8.0
+target_pts: 8.0

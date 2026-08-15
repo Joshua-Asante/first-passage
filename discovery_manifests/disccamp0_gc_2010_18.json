@@ -1,0 +1,87 @@
+{
+  "run_id": "disccamp0_gc_2010_18",
+  "status": "closed",
+  "opened_at": "2026-07-13T21:32:24Z",
+  "tool": "catch22",
+  "K": 3177,
+  "alpha": 0.05,
+  "data_window": "2010-06-06:2018-12-31",
+  "hypothesis": "recurrent non-random structure in GC 1h distinct from long-continuation beta",
+  "params": "{\\\"k_rule\\\":\\\"ADR 2026-07-12 non-overlap floor: 22 catch22 + 1 ruptures + sum floor(T/m), m in {30,60,90}\\\",\\\"T\\\":51659,\\\"T_series\\\":\\\"volume-lead stitch from GC.FUT parent pull (per-UTC-day 1d volume leader, outrights only), era-tagged cache phase=discovery\\\",\\\"k_raw_diagnostic\\\":154912,\\\"tools_covered\\\":\\\"catch22 (22) + STUMPY m={30,60,90} + ruptures PELT fixed penalty (1)\\\",\\\"v_rule\\\":\\\"V=1/n unconditional pin via universe_gate --var-trials (never empirical default)\\\",\\\"cumulative_k_prior\\\":0,\\\"prereg\\\":\\\"docs/briefs/pre-registration/DISC-CAMP-0-preregistration.md\\\"}",
+  "closed_at": "2026-07-13T23:55:15Z",
+  "results": {
+    "n_submitted": 6,
+    "naive_alpha": 0.05,
+    "n_pass_naive_alpha": 0,
+    "bonferroni_threshold": 1.57381e-05,
+    "n_pass_bonferroni": 0,
+    "n_multiplicity_killed": 0,
+    "bh_rows": [
+      {
+        "rank": 1,
+        "pvalue": 1.0,
+        "bh_threshold": 1.574e-05,
+        "bh_reject": false
+      },
+      {
+        "rank": 2,
+        "pvalue": 1.0,
+        "bh_threshold": 3.148e-05,
+        "bh_reject": false
+      },
+      {
+        "rank": 3,
+        "pvalue": 1.0,
+        "bh_threshold": 4.721e-05,
+        "bh_reject": false
+      },
+      {
+        "rank": 4,
+        "pvalue": 1.0,
+        "bh_threshold": 6.295e-05,
+        "bh_reject": false
+      },
+      {
+        "rank": 5,
+        "pvalue": 1.0,
+        "bh_threshold": 7.869e-05,
+        "bh_reject": false
+      },
+      {
+        "rank": 6,
+        "pvalue": 1.0,
+        "bh_threshold": 9.443e-05,
+        "bh_reject": false
+      }
+    ],
+    "n_pass_bh": 0,
+    "expected_false_positives_global_null": 158.85,
+    "candidates": [
+      {
+        "id": "motif_m30",
+        "pvalue": 1.0
+      },
+      {
+        "id": "discord_m30",
+        "pvalue": 1.0
+      },
+      {
+        "id": "motif_m60",
+        "pvalue": 1.0
+      },
+      {
+        "id": "discord_m60",
+        "pvalue": 1.0
+      },
+      {
+        "id": "motif_m90",
+        "pvalue": 1.0
+      },
+      {
+        "id": "discord_m90",
+        "pvalue": 1.0
+      }
+    ]
+  },
+  "verdict": "FIRST-PASS ONLY. Candidates clearing the crude multiplicity floor are listed above. This is NOT a promotion. Hand the full candidate set (all K returns) to strategy-validation for universe-level correction (White RC / Hansen SPA / Romano-Wolf) and the native-micro OOS gate before any candidate is trusted."
+}

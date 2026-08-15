@@ -1,0 +1,43 @@
+[control 3] candidate set reproduces the frozen 12 cells exactly
+[control 4] all 12 cells respect the 80-micro account cap
+[control 2] live 69/11 produces series identical to canonical 68/12
+[control 5] panel n=1556 bdays; mid=778; H1=778 (2020-08-04..2023-07-27)  H2=778 (2023-07-28..2026-07-21)
+  [full] seed 11 done (312 week-blocks)
+  [full] seed 12 done (312 week-blocks)
+  [full] seed 13 done (312 week-blocks)
+  [H1] seed 11 done (156 week-blocks)
+  [H1] seed 12 done (156 week-blocks)
+  [H1] seed 13 done (156 week-blocks)
+  [H2] seed 11 done (157 week-blocks)
+  [H2] seed 12 done (157 week-blocks)
+  [H2] seed 13 done (157 week-blocks)
+
+[control 1] incumbent reproduction vs the 2026-07-27 session:
+    eval_med_mo    want       12.2  got       12.2  tol(1sd)      0.1  OK
+    first_pay_mo   want        5.5  got        5.5  tol(1sd)      0.1  OK
+    mean_cash      want   32,904.0  got   32,903.8  tol(1sd)    167.5  OK
+  [sensitivity] WIN_MIN=100 -> winners (none)
+  [sensitivity] WIN_MIN=300 -> winners (none)
+  [sensitivity] CAP_LO=80 -> winners (none)
+  [sensitivity] PAYOUT_MIN=500 -> winners ['48/32', '51/29']
+  [sensitivity] PAYOUT_MIN=2000 -> winners ['48/32']
+
+    cell   res        net |           H1 eval/pay/cash |           H2 eval/pay/cash
+   15/65   1/5     91,840 |   15.7    6.9      21,922 |   11.9    5.1      44,176 |
+    9/71   1/6     95,682 |   15.0    6.5      23,584 |   11.8    5.1      44,088 |
+   17/63   2/5     95,907 |   14.7    6.5      24,817 |   11.0    4.8      47,333 |
+   26/54   3/4     91,678 |   13.9    6.1      27,355 |   10.1    4.2      52,943 |
+   37/43   4/3     82,145 |   12.5    6.3      29,932 |    9.1    4.2      56,653 |
+   34/46   4/4     95,745 |   12.3    5.9      29,575 |    9.4    3.9      55,034 |
+   48/32   5/2     65,024 |   12.6    6.9      31,299 |    8.3    4.0      54,505 |
+   43/37   5/3     85,917 |   11.3    6.0      31,643 |    8.5    4.0      57,549 |
+   59/21   6/1     47,370 |   16.4    8.0      27,757 |    9.3    4.2      44,510 |
+   51/29   6/2     69,090 |   12.3    6.9      31,739 |    7.9    3.8      53,777 |
+   60/20   7/1     51,141 |   16.8    8.0      26,818 |    9.0    4.2      42,587 |
+   68/12   8/1     55,206 |   17.3    7.9      25,585 |    8.9    4.1      40,487 |  <- INCUMBENT
+
+winners (floor on D1/D2 only): ['48/32']
+winners (floor on all four)  : ['48/32']
+
+VERDICT: AMBIGUOUS (d) — verdict flips under unverified rule pin(s): WIN_MIN=100, WIN_MIN=300, CAP_LO=80
+saved -> C:\Users\joshu\multi_firm_operations\.claude\worktrees\rail-launch-checklist-0686c9\lab\analysis\c1_capalloc_2026-07-27\measured.json

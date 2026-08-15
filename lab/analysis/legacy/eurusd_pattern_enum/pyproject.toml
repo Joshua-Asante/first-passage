@@ -1,0 +1,13 @@
+# Local pytest config for the EURUSD pattern-enumeration harness.
+# Does NOT redeclare project metadata; only configures pytest discovery
+# and import path so `cd analysis/eurusd_pattern_enum && pytest tests/`
+# works independently of the parent project's pyproject.toml.
+#
+# Per CC handoff brief §1.15: tests are run from within this directory.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = [
+    "slow: K=1000 null-pattern sanity test (Test 2). Selectable with '-m slow' or '-m \"not slow\"'.",
+]

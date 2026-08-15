@@ -1,0 +1,59 @@
+
+##############################################################################
+# MNQ   reserve_cap=1   $2.0/pt   risk $185
+##############################################################################
+  qty = min(floor(185 / (2.0 x stop)), 1)
+  qty stays at cap 1 while stop <= 92.5 pts (37.0 under DD 0.4)
+  at threshold+  -> qty 0   (MNQ loses the ENTRY; MYM loses ONE CONTRACT)
+  ground truth 2026-07-28: stop 126.75 @ close 28051.5 = 0.4518% -> qty 0
+
+  PANEL v1 on MNQ1! (2020-2026)   (Striker_NAS100_v1_CME_MINI_MNQ1!_2026-07-11_)
+    base entries 237   stop-outs 111   span 2020-01-06->2026-06-30
+    stop (pts)  med 34.25 | p90 72.85 | max 595.25
+    stop (%)    med 0.2201% | p90 0.4375% | max 3.3150%
+    MAE-vs-(entry-exit) consistency: med 0.0%
+    @ price 29600: need <= 0.3125% -> qty at cap for 85/111 = 76.6%
+
+  PANEL MNQ edition (2025-09+)   (Striker_NAS100_MNQ_CME_MINI_MNQ1!_2026-07-17)
+    base entries 37   stop-outs 19   span 2025-09-15->2026-07-06
+    stop (pts)  med 41.00 | p90 78.75 | max 87.00
+    stop (%)    med 0.1615% | p90 0.2863% | max 0.3426%
+    MAE-vs-(entry-exit) consistency: med 2.8%
+    @ price 29600: need <= 0.3125% -> qty at cap for 18/19 = 94.7%
+
+  POOLED @ 29600: median stop 0.2168% vs threshold 0.3125%  ->  103/130 = 79.2% size at cap
+    worst measured stop 3.3150% = 981.2 pts -> qty 0 (cap 1)
+
+##############################################################################
+# MYM   reserve_cap=8   $0.5/pt   risk $350
+##############################################################################
+  qty = min(floor(350 / (0.5 x stop)), 8)
+  qty stays at cap 8 while stop <= 87.5 pts (35.0 under DD 0.4)
+  at threshold+  -> qty 7   (MNQ loses the ENTRY; MYM loses ONE CONTRACT)
+
+  PANEL v4.5 on MYM1! (2020-2026)   (Striker_DJ30_v4.5_CBOT_MINI_MYM1!_2026-07-08)
+    base entries 238   stop-outs 69   span 2020-01-14->2026-06-30
+    stop (pts)  med 74.00 | p90 116.00 | max 216.00
+    stop (%)    med 0.1974% | p90 0.3222% | max 0.5401%
+    MAE-vs-(entry-exit) consistency: med 0.0%
+    @ price 47000: need <= 0.1862% -> qty at cap for 30/69 = 43.5%
+
+  PANEL MYM edition (2025-08+)   (Striker_DJ30_v4.5_MYM_CBOT_MINI_MYM1!_2026-0)
+    base entries 43   stop-outs 8   span 2025-08-12->2026-07-21
+    stop (pts)  med 90.00 | p90 180.90 | max 175.00
+    stop (%)    med 0.1895% | p90 0.3882% | max 0.3751%
+    MAE-vs-(entry-exit) consistency: med 2.4%
+    @ price 47000: need <= 0.1862% -> qty at cap for 4/8 = 50.0%
+
+  POOLED @ 47000: median stop 0.1974% vs threshold 0.1862%  ->  34/77 = 44.2% size at cap
+    worst measured stop 0.5401% = 253.9 pts -> qty 2 (cap 8)
+
+==============================================================================
+WHY MYM IS THE HIGHER-PROBABILITY ITEM-5 PATH
+==============================================================================
+  MNQ: 79.2% size at cap; at the WORST measured stop qty = 0 (cap 1)
+  MYM: 44.2% size at cap; at the WORST measured stop qty = 2 (cap 8)
+  => MNQ's downside is qty 0 (no item-5 evidence at all).
+     MYM's downside is qty 7 instead of 8 -- still NON-ZERO, still valid.
+
+stats -> C:\Users\joshu\multi_firm_operations\.claude\worktrees\tradeify-research-support-plan-304e1d\lab\analysis\mnq_stop_distribution_2026-08-02\out\stops.json

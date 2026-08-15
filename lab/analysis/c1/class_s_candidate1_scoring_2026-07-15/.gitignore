@@ -1,0 +1,3 @@
+# Local restore from pre-prune-2026-08-08 for W1 re-run tooling — do not re-land.
+run_class_s_c1_scoring.py
+run_class_s_c1_regime_gate.py

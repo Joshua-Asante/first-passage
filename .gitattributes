@@ -1,0 +1,54 @@
+# EOL pins for files whose on-disk bytes are pinned by SHA or rebuilt with LF
+# in tests. Without this, Windows clones with core.autocrlf=true check these
+# out as CRLF and break byte-exact comparisons.
+#
+# HISTORICAL NOTE (2026-07-31): the pin below was originally justified by the
+# "F01 round-trip / hash-sentinel tests in tests/test_ingest.py". That suite was
+# DELETED 2026-06-25 with the Notion ingest subsystem (c6af48f), and the two
+# tracked fixtures it covers (counterfactuals_fixture.jsonl,
+# signals_fixture_fixed_ids.jsonl) now have no loader anywhere in the tree. The
+# pin is retained as inert-but-harmless rather than removed with its fixtures;
+# retire all three together if they are ever pruned. Scope kept narrow so
+# vendor-data CRLF hashing under
+# data/tv_exports/, data/bar_data/, data/external/ (see CLAUDE.md "Vendor-data
+# integrity gate") is unaffected.
+tests/fixtures/*.jsonl text eol=lf
+
+# Hash-gated analysis CSVs: WAVE1_SHA256SUMS is LF-blob-based, so autocrlf checkout
+# (CRLF) fails the harness hash-gate in a fresh worktree — and would halt a Cursor
+# dispatch. eol=lf pins the checkout to LF (matches the blob), is renormalize-safe,
+# and stays diffable. Scope kept narrow (this dir only); broaden per hash-gated dir
+# after confirming its manifest is LF-based. Vendor data (data/*) stays CRLF-hashed.
+lab/analysis/aegis_6j_prop_reconstruction_2026-07/*.csv text eol=lf
+
+# Append-only logs (reverse-chron / additions-only). Every branch inserts a new
+# entry at the SAME top anchor, so the default merge conflicts on parallel
+# worktrees (e.g. the 2026-06-07 3-way SESSIONS.md collision across PRs
+# #153/#154/#155 + #156). The built-in `union` driver keeps BOTH sides' added
+# lines (no conflict markers) on merge AND rebase. Caveats: union does not ORDER
+# the merged entries (an occasional manual reorder / doubled `---` tidy), and it
+# won't flag two edits to the SAME existing line — acceptable for add-at-top logs.
+#
+# The ordering caveat is no longer carried by hand for docs/SESSIONS.md (it still
+# is for the other two). `roll_sessions.py --check-order` gates it at pre-commit
+# and the post-merge hook repairs it, ordering same-date entries by the author
+# time of the commit that first added each heading. Repair is scoped to the top
+# window — the only region union can disturb — so hand-placed historical entries
+# are never re-sorted; mark a deliberate same-day order in the heading itself
+# (the `2026-07-29 (later)` convention).
+docs/SESSIONS.md merge=union
+docs/rejected_candidates.md merge=union
+# RETAINED 2026-08-08 (reviewed, not inherited): 6 lifetime commits, never rolled, no recorded
+# union-merge incident. The resurrection hazard needs a roll to fire, so this stays as-is rather
+# than being removed. Note the asymmetry: only docs/SESSIONS.md has an ordering gate
+# (gates.yml `sessions-order`); rejected_candidates.md and this file have none, so contradictory
+# entries can merge cleanly and silently. Same retain-as-inert precedent as the fixtures pin above.
+docs/mc_anchor_history.md merge=union
+
+# Container-build files whose line endings are load-bearing. A Windows clone with
+# core.autocrlf=true would check these out as CRLF: the .dockerignore's patterns
+# would carry a trailing \r and silently fail to match (breaking the default-exclude
+# allow-list → files missing from the Fly build context), and the Dockerfile is
+# cleaner as LF. Pinned to LF so any clone builds the c1 rail image correctly.
+.dockerignore text eol=lf
+deploy/c1_rail/Dockerfile text eol=lf

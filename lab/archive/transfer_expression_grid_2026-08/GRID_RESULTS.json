@@ -1,0 +1,1030 @@
+{
+ "basis": "Q-TXG-1 Block 1 \u2014 Tradeify_Select_100K eval \u2014 4 mechanisms \u00d7 ENV-1 7-micro pool \u2014 walls W-DEDUP/W-VENUE/W-CAP/W-COST (W-CADENCE/W-REGIME/S7 disclosure) \u2014 envelope.py owner for cell arithmetic \u2014 $0/K=0/no PnL reads",
+ "cells": [
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "Equity Index Product Group: long-or-flat \u2014 mechanism is long-only (LOCK)",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(14)-matched median for MNQ",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=4"
+   ],
+   "killed_by": null,
+   "mech_id": "guardian",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0034,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 4,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "MNQ",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "Equity Index Product Group: long-or-flat \u2014 mechanism is long-only (LOCK)",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(14)-matched median for MYM",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=4"
+   ],
+   "killed_by": null,
+   "mech_id": "guardian",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0034,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 4,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "MYM",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "Equity Index Product Group: long-or-flat \u2014 mechanism is long-only (LOCK)",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(14)-matched median for MES",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=1"
+   ],
+   "killed_by": null,
+   "mech_id": "guardian",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0034,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 1,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "MES",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)"
+   ],
+   "killed_by": "dedup",
+   "mech_id": "guardian",
+   "port_must_beat": {},
+   "qty": null,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "MGC",
+   "transfer_type": "same-underlying",
+   "verdict": "PARKED(b8)"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "Equity Index Product Group: long-or-flat \u2014 mechanism is long-only (LOCK)",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(14)-matched median for M2K",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=4"
+   ],
+   "killed_by": null,
+   "mech_id": "guardian",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0034,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 4,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "M2K",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(14)-matched median for MCL",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=2"
+   ],
+   "killed_by": null,
+   "mech_id": "guardian",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0034,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 2,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "MCL",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(14)-matched median for M6A",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=2"
+   ],
+   "killed_by": null,
+   "mech_id": "guardian",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0034,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 2,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "M6A",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": 0.03,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "Equity Index Product Group: long-or-flat \u2014 mechanism is long-only (LOCK)",
+    "de-scope amendment 2026-08-04: Striker-mechanism research on a different instrument is not barred; redeploy of withdrawn legs is"
+   ],
+   "killed_by": null,
+   "mech_id": "striker",
+   "port_must_beat": {
+    "cost_tax_r": 0.03,
+    "env1_cell_verdict": "OPEN-CONDITIONAL(power)",
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "qty_at_locked_risk": 8,
+    "required_net_r": 0.03,
+    "risk_pct": 0.007,
+    "stop_ticks": 160
+   },
+   "qty": 8,
+   "req_net_r": 0.03,
+   "stop_ticks_mapped": 160,
+   "stop_ticks_raw": 218.4456,
+   "symbol": "MNQ",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)"
+   ],
+   "killed_by": "dedup",
+   "mech_id": "striker",
+   "port_must_beat": {},
+   "qty": null,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "MYM",
+   "transfer_type": "same-underlying",
+   "verdict": "WITHDRAWN(F1)"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "Equity Index Product Group: long-or-flat \u2014 mechanism is long-only (LOCK)",
+    "de-scope amendment 2026-08-04: Striker-mechanism research on a different instrument is not barred; redeploy of withdrawn legs is",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(11)-matched median for MES",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=3"
+   ],
+   "killed_by": null,
+   "mech_id": "striker",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.007,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 3,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "MES",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "de-scope amendment 2026-08-04: Striker-mechanism research on a different instrument is not barred; redeploy of withdrawn legs is",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(11)-matched median for MGC",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=4"
+   ],
+   "killed_by": null,
+   "mech_id": "striker",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.007,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 4,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "MGC",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "Equity Index Product Group: long-or-flat \u2014 mechanism is long-only (LOCK)",
+    "de-scope amendment 2026-08-04: Striker-mechanism research on a different instrument is not barred; redeploy of withdrawn legs is",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(11)-matched median for M2K",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=8"
+   ],
+   "killed_by": null,
+   "mech_id": "striker",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.007,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 8,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "M2K",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "de-scope amendment 2026-08-04: Striker-mechanism research on a different instrument is not barred; redeploy of withdrawn legs is",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(11)-matched median for MCL",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=4"
+   ],
+   "killed_by": null,
+   "mech_id": "striker",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.007,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 4,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "MCL",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "de-scope amendment 2026-08-04: Striker-mechanism research on a different instrument is not barred; redeploy of withdrawn legs is",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(11)-matched median for M6A",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=4"
+   ],
+   "killed_by": null,
+   "mech_id": "striker",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.007,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 4,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "M6A",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)"
+   ],
+   "killed_by": "dedup",
+   "mech_id": "striker_nas100",
+   "port_must_beat": {},
+   "qty": null,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "MNQ",
+   "transfer_type": "same-underlying",
+   "verdict": "WITHDRAWN(F1)"
+  },
+  {
+   "cost_tax_r": 0.06,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "Equity Index Product Group: long-or-flat \u2014 mechanism is long-only (LOCK)",
+    "de-scope amendment 2026-08-04: Striker-mechanism research on a different instrument is not barred; redeploy of withdrawn legs is"
+   ],
+   "killed_by": null,
+   "mech_id": "striker_nas100",
+   "port_must_beat": {
+    "cost_tax_r": 0.06,
+    "env1_cell_verdict": "OPEN",
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "qty_at_locked_risk": 9,
+    "required_net_r": 0.06,
+    "risk_pct": 0.0037,
+    "stop_ticks": 80
+   },
+   "qty": 9,
+   "req_net_r": 0.06,
+   "stop_ticks_mapped": 80,
+   "stop_ticks_raw": 60.82008,
+   "symbol": "MYM",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "Equity Index Product Group: long-or-flat \u2014 mechanism is long-only (LOCK)",
+    "de-scope amendment 2026-08-04: Striker-mechanism research on a different instrument is not barred; redeploy of withdrawn legs is",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(11)-matched median for MES",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=1"
+   ],
+   "killed_by": null,
+   "mech_id": "striker_nas100",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0037,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 1,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "MES",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "de-scope amendment 2026-08-04: Striker-mechanism research on a different instrument is not barred; redeploy of withdrawn legs is",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(11)-matched median for MGC",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=2"
+   ],
+   "killed_by": null,
+   "mech_id": "striker_nas100",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0037,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 2,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "MGC",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "Equity Index Product Group: long-or-flat \u2014 mechanism is long-only (LOCK)",
+    "de-scope amendment 2026-08-04: Striker-mechanism research on a different instrument is not barred; redeploy of withdrawn legs is",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(11)-matched median for M2K",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=4"
+   ],
+   "killed_by": null,
+   "mech_id": "striker_nas100",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0037,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 4,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "M2K",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "de-scope amendment 2026-08-04: Striker-mechanism research on a different instrument is not barred; redeploy of withdrawn legs is",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(11)-matched median for MCL",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=2"
+   ],
+   "killed_by": null,
+   "mech_id": "striker_nas100",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0037,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 2,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "MCL",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "de-scope amendment 2026-08-04: Striker-mechanism research on a different instrument is not barred; redeploy of withdrawn legs is",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(11)-matched median for M6A",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=2"
+   ],
+   "killed_by": null,
+   "mech_id": "striker_nas100",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0037,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 2,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "M6A",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "Equity Index Product Group: long-or-flat \u2014 mechanism is long-only (LOCK)",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(19)-matched median for MNQ",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=18"
+   ],
+   "killed_by": null,
+   "mech_id": "aegis",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.015,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 18,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "MNQ",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "Equity Index Product Group: long-or-flat \u2014 mechanism is long-only (LOCK)",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(19)-matched median for MYM",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=18"
+   ],
+   "killed_by": null,
+   "mech_id": "aegis",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.015,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 18,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "MYM",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "Equity Index Product Group: long-or-flat \u2014 mechanism is long-only (LOCK)",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(19)-matched median for MES",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=7"
+   ],
+   "killed_by": null,
+   "mech_id": "aegis",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.015,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 7,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "MES",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(19)-matched median for MGC",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=9"
+   ],
+   "killed_by": null,
+   "mech_id": "aegis",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.015,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 9,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "MGC",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "Equity Index Product Group: long-or-flat \u2014 mechanism is long-only (LOCK)",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(19)-matched median for M2K",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=18"
+   ],
+   "killed_by": null,
+   "mech_id": "aegis",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.015,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 18,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "M2K",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(19)-matched median for MCL",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=9"
+   ],
+   "killed_by": null,
+   "mech_id": "aegis",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.015,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 9,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "MCL",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  },
+  {
+   "cost_tax_r": null,
+   "disclosures": [
+    "S7 map (third-leg \u00a77.1): MNQ Mon+Tue \u00b7 MYM Tue+Fri; both c1 legs withdrawn (de-scope 2026-08-04); LEG_MAP retained-not-released \u2014 bindingness deferred to Block 2",
+    "W-CADENCE: disclosure only (design \u00a74)",
+    "W-REGIME: disclosure only \u2014 H1-chop co-draw prior (design \u00a74)",
+    "transplant prior: cross-underlying record 0/2 (EURGBP, USDCAD dead)",
+    "UNSCREENABLE-INPUT(stop_cell): no ATR(19)-matched median for M6A",
+    "stop_unscreenable_qty_at_best_open_rung=160t qty=9"
+   ],
+   "killed_by": null,
+   "mech_id": "aegis",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.015,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "qty": 9,
+   "req_net_r": null,
+   "stop_ticks_mapped": null,
+   "stop_ticks_raw": null,
+   "symbol": "M6A",
+   "transfer_type": "cross-underlying",
+   "verdict": "OPEN"
+  }
+ ],
+ "dsr_floors": {
+  "1": 0.65,
+  "2": 0.85,
+  "3": 0.98
+ },
+ "h_a": "OPEN",
+ "open_cells": [
+  {
+   "mech": "guardian",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0034,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "MNQ",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "guardian",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0034,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "MYM",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "guardian",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0034,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "MES",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "guardian",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0034,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "M2K",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "guardian",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0034,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "MCL",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "guardian",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0034,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "M6A",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "striker",
+   "port_must_beat": {
+    "cost_tax_r": 0.03,
+    "env1_cell_verdict": "OPEN-CONDITIONAL(power)",
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "qty_at_locked_risk": 8,
+    "required_net_r": 0.03,
+    "risk_pct": 0.007,
+    "stop_ticks": 160
+   },
+   "symbol": "MNQ",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "striker",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.007,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "MES",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "striker",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.007,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "MGC",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "striker",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.007,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "M2K",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "striker",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.007,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "MCL",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "striker",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.007,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "M6A",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "striker_nas100",
+   "port_must_beat": {
+    "cost_tax_r": 0.06,
+    "env1_cell_verdict": "OPEN",
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "qty_at_locked_risk": 9,
+    "required_net_r": 0.06,
+    "risk_pct": 0.0037,
+    "stop_ticks": 80
+   },
+   "symbol": "MYM",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "striker_nas100",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0037,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "MES",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "striker_nas100",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0037,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "MGC",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "striker_nas100",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0037,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "M2K",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "striker_nas100",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0037,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "MCL",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "striker_nas100",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.0037,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "M6A",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "aegis",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.015,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "MNQ",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "aegis",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.015,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "MYM",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "aegis",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.015,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "MES",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "aegis",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.015,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "MGC",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "aegis",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.015,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "M2K",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "aegis",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.015,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "MCL",
+   "transfer_type": "cross-underlying"
+  },
+  {
+   "mech": "aegis",
+   "port_must_beat": {
+    "lifecycle": 1.0,
+    "nsurv_ceiling_pct": 3.0,
+    "risk_pct": 0.015,
+    "stop_cell": "UNSCREENABLE"
+   },
+   "symbol": "M6A",
+   "transfer_type": "cross-underlying"
+  }
+ ]
+}

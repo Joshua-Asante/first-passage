@@ -1,0 +1,53 @@
+{
+  "family": "htf_native_5m_compression_break",
+  "geometry": {
+    "HTF_min": 5,
+    "stop": "opposite_quiet_extreme",
+    "exit": "session_flat",
+    "RT": 1.41,
+    "selectivity": "first_per_session",
+    "EM3": true
+  },
+  "thresholds": {
+    "K_NARROW": 2,
+    "NARROW_MULT": 1.0,
+    "MEDIAN_SESSIONS": 20,
+    "BREAK_SESSION_FRAC_MIN": 0.2
+  },
+  "eligible_sessions_with_theta": 1648,
+  "break_sessions": 1510,
+  "break_session_frac": 0.9162621359223301,
+  "n_trades": 1510,
+  "mean_signed_pts": 2.9892384105960264,
+  "mean_abs_pts": 46.58890728476821,
+  "mean_stop_dist": 31.197185430463577,
+  "cost_bar_pt_4x": 5.64,
+  "gross_vs_4x_bar": 8.260444554036917,
+  "long": {
+    "n": 794,
+    "mean_R": 0.06251574614288981,
+    "wr": 0.3035264483627204,
+    "ci_lo": -0.07870475547470006,
+    "ci_hi": 0.202538262026529,
+    "stop_rate": 0.6964735516372796,
+    "n_sessions": 794
+  },
+  "short": {
+    "n": 716,
+    "mean_R": -0.03500655019831411,
+    "wr": 0.22905027932960895,
+    "ci_lo": -0.21605730890723468,
+    "ci_hi": 0.1509472908360782,
+    "stop_rate": 0.770949720670391,
+    "n_sessions": 716
+  },
+  "elapsed_s": 61.76673299999675,
+  "verdict": "CHEAP_FALSIFIER_OK",
+  "detail": "coverage OK + not both-arms CI<0; licenses G0 freeze for Q-TNEC-CON-3 (not EXPLORATION / not SHAPE-CLEAR)",
+  "cost_usd": 0.0,
+  "domain_bar": {
+    "id": "index-intraday-ohlcv-directional-timing-2026-07-21",
+    "route": "1_temporal_selectivity_ADR_2026-08-10",
+    "mechanism": "htf-compression-breakout-5m"
+  }
+}

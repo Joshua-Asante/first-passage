@@ -1,0 +1,43 @@
+{
+  "family": "htf5m_bias_ltf1m_with_break",
+  "geometry": {
+    "G": 10.0,
+    "exit": "session_flat",
+    "RT": 1.41,
+    "EM3": true,
+    "HTF_min": 5,
+    "LTF_min": 1
+  },
+  "thresholds": {
+    "K_NARROW": 2,
+    "NARROW_MULT": 1.0,
+    "MEDIAN_SESSIONS": 20,
+    "BIAS_SESSION_FRAC_MIN": 0.2
+  },
+  "eligible_sessions_with_theta": 1648,
+  "bias_sessions": 1510,
+  "bias_session_frac": 0.9162621359223301,
+  "entry_clocks": 7560,
+  "long": {
+    "n": 3837,
+    "mean_R": -0.14629059160802707,
+    "wr": 0.14255929111284857,
+    "ci_lo": -0.2417668205185935,
+    "ci_hi": -0.0448093066747725,
+    "stop_rate": 0.8457127964555643,
+    "n_sessions": 1278
+  },
+  "short": {
+    "n": 3723,
+    "mean_R": -0.14236314799892555,
+    "wr": 0.11603545527800162,
+    "ci_lo": -0.2527337447523202,
+    "ci_hi": -0.02423735049999438,
+    "stop_rate": 0.876443728176202,
+    "n_sessions": 1199
+  },
+  "elapsed_s": 57.12696369999321,
+  "verdict": "FALSIFIED",
+  "detail": "both arms session-block CI entirely < 0 at n>=100 - mechanism dead at $0",
+  "cost_usd": 0.0
+}

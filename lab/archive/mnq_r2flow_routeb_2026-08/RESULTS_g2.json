@@ -1,0 +1,219 @@
+{
+  "cell": "C1",
+  "campaign": "Q-R2FLOW-1",
+  "stage": "G2",
+  "feature": "clock_minute_net_signed_aggressor_size",
+  "window": {
+    "role": "EXPLORATION",
+    "start": "2026-02-06",
+    "end_exclusive": "2026-08-06"
+  },
+  "confirm_untouched": true,
+  "confirm_reserved": "2025-09-01\u21922026-02-06",
+  "explore_go": "operator_cache_reuse_2026-08-08",
+  "new_databento_pull": false,
+  "batch_id": "GLBX-20260807-EHX5KUSF7K",
+  "cache": "C:\\Users\\joshu\\.databento_cache\\q_ofchan_1_exploration_tbbo\\GLBX-20260807-EHX5KUSF7K",
+  "n_day_files": 155,
+  "n_sessions_scored": 124,
+  "n_retained": 48360,
+  "n_eligible": 48360,
+  "coverage": 1.0,
+  "rho": -0.0007005777187534665,
+  "ci95": [
+    -0.014612091518535974,
+    0.01351003483294157
+  ],
+  "placebo_abs_p95": 0.0,
+  "rho_h1": -0.020312887342826574,
+  "rho_h2": 0.014732118168978,
+  "verdict": "FALSIFIED",
+  "candidates": [],
+  "seed": 20260808,
+  "n_boot": 10000,
+  "n_placebo": 1000,
+  "mag_floor": 0.02,
+  "bootstrap_impl": "session_sufficient_statistics_equiv_concat",
+  "day_scan": "ProcessPoolExecutor_parallel",
+  "placebo_skipped_ci_precedence": true,
+  "placebo_impl": "skipped_ci_precedence",
+  "placebo_workers": 0,
+  "excluded_session_dates": [
+    "2026-02-16",
+    "2026-04-03",
+    "2026-05-25",
+    "2026-06-19",
+    "2026-07-03"
+  ],
+  "skipped": [
+    {
+      "file": "glbx-mdp3-20260208.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-02-08"
+    },
+    {
+      "file": "glbx-mdp3-20260215.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-02-15"
+    },
+    {
+      "file": "glbx-mdp3-20260216.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-02-16"
+    },
+    {
+      "file": "glbx-mdp3-20260222.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-02-22"
+    },
+    {
+      "file": "glbx-mdp3-20260301.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-03-01"
+    },
+    {
+      "file": "glbx-mdp3-20260308.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-03-08"
+    },
+    {
+      "file": "glbx-mdp3-20260315.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-03-15"
+    },
+    {
+      "file": "glbx-mdp3-20260322.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-03-22"
+    },
+    {
+      "file": "glbx-mdp3-20260329.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-03-29"
+    },
+    {
+      "file": "glbx-mdp3-20260403.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-04-03"
+    },
+    {
+      "file": "glbx-mdp3-20260405.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-04-05"
+    },
+    {
+      "file": "glbx-mdp3-20260412.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-04-12"
+    },
+    {
+      "file": "glbx-mdp3-20260419.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-04-19"
+    },
+    {
+      "file": "glbx-mdp3-20260426.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-04-26"
+    },
+    {
+      "file": "glbx-mdp3-20260503.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-05-03"
+    },
+    {
+      "file": "glbx-mdp3-20260510.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-05-10"
+    },
+    {
+      "file": "glbx-mdp3-20260517.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-05-17"
+    },
+    {
+      "file": "glbx-mdp3-20260524.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-05-24"
+    },
+    {
+      "file": "glbx-mdp3-20260525.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-05-25"
+    },
+    {
+      "file": "glbx-mdp3-20260531.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-05-31"
+    },
+    {
+      "file": "glbx-mdp3-20260607.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-06-07"
+    },
+    {
+      "file": "glbx-mdp3-20260614.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-06-14"
+    },
+    {
+      "file": "glbx-mdp3-20260619.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-06-19"
+    },
+    {
+      "file": "glbx-mdp3-20260621.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-06-21"
+    },
+    {
+      "file": "glbx-mdp3-20260628.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-06-28"
+    },
+    {
+      "file": "glbx-mdp3-20260703.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-07-03"
+    },
+    {
+      "file": "glbx-mdp3-20260705.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-07-05"
+    },
+    {
+      "file": "glbx-mdp3-20260712.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-07-12"
+    },
+    {
+      "file": "glbx-mdp3-20260719.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-07-19"
+    },
+    {
+      "file": "glbx-mdp3-20260726.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-07-26"
+    },
+    {
+      "file": "glbx-mdp3-20260802.tbbo.dbn.zst",
+      "reason": "excluded_calendar",
+      "date": "2026-08-02"
+    }
+  ],
+  "census": {
+    "n_retained": 48360,
+    "A_abs_p05": 20.0,
+    "A_abs_p50": 264.0,
+    "A_abs_p95": 1259.0,
+    "A_mean": -4.181224152191894,
+    "r_mean": 1.9025599508302738e-06,
+    "r_std": 0.0005285273207462817,
+    "r_abs_p50": 0.0002484003291608998,
+    "r_abs_p95": 0.001087665717111055
+  },
+  "run_utc": "2026-08-09T00:31:23.173207+00:00",
+  "fm5": "G2 promotion is candidate-only \u2014 not edge, admission, or harvest PASS",
+  "cap_seat_claimed": false
+}

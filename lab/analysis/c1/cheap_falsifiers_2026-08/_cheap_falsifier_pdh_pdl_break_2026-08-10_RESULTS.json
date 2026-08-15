@@ -1,0 +1,29 @@
+{
+  "verdict": "CHEAP_FALSIFIER_OK",
+  "detail": "coverage clears; not both-arms CI<0 under PDH/PDL with-break / structural opposite-extreme stop / first-per-session",
+  "mechanism_id": "pdh-pdl-breakout-rth",
+  "n_eligible_sessions": 1667,
+  "n_break_sessions": 1467,
+  "break_frac": 0.8800239952009599,
+  "n_trades": 1466,
+  "mean_signed_pts": 1.5593451568894952,
+  "mean_stop_dist": 279.4735675306958,
+  "gross_vs_4x_rt": 0.2764796377463644,
+  "long": {
+    "n": 850,
+    "mean_R": -0.004802020563423524,
+    "wr": 0.5364705882352941,
+    "ci_lo": -0.04238023711613641,
+    "ci_hi": 0.033080831455841585
+  },
+  "short": {
+    "n": 616,
+    "mean_R": -0.002767096286152967,
+    "wr": 0.4707792207792208,
+    "ci_lo": -0.0511818105039582,
+    "ci_hi": 0.042827305764631084
+  },
+  "elapsed_s": 17.32241470000008,
+  "cost_usd": 0.0,
+  "panel": "C:\\Users\\joshu\\multi_firm_operations\\lab\\analysis\\c1\\mnq_selection_ceiling_allbars_2026-08\\_mnq_1m.parquet"
+}

@@ -1,0 +1,37 @@
+{
+  "run_id": "mnqpool_shield_probe",
+  "status": "closed",
+  "opened_at": "2026-08-05T01:29:56Z",
+  "tool": "ruptures",
+  "K": 1,
+  "alpha": 0.05,
+  "data_window": "2019-05-06:2026-08-04",
+  "hypothesis": "MNQPOOL-1: sessions carrying an active unswept confirmed pivot-low pool (pvLen=3 wick, drawK=10, harness_d LOCKED defs) below the RTH open have positive net long expectancy from a 09:30 ET entry, pool-anchored stop (sweep rule low<=px), 16:00 ET time exit, at the 1.41pt Tradeify basis -- above costs, above a base-rate-matched session placebo, in both regime halves. Frozen at lab/archive/mnq_pool_shield_probe_2026-08-04/PREREG.md (commit 9c87f83).",
+  "params": "{\"construct\":\"single frozen cell, K_intrinsic=1\",\"prereg\":\"lab/archive/mnq_pool_shield_probe_2026-08-04/PREREG.md\",\"freeze_commit\":\"9c87f83\",\"panel_sha256\":\"38e29862655152d09cf4395fc36b1b464887ed93e6f795dd96f0f2fea43074a9\",\"k_banked_mnq_disclosure\":2,\"note\":\"tool field is nearest-available token; the actual instrument is a deterministic replay harness, not a miner\"}",
+  "closed_at": "2026-08-05T01:39:01Z",
+  "results": {
+    "n_submitted": 1,
+    "naive_alpha": 0.05,
+    "n_pass_naive_alpha": 0,
+    "bonferroni_threshold": 0.05,
+    "n_pass_bonferroni": 0,
+    "n_multiplicity_killed": 0,
+    "bh_rows": [
+      {
+        "rank": 1,
+        "pvalue": 0.203,
+        "bh_threshold": 0.05,
+        "bh_reject": false
+      }
+    ],
+    "n_pass_bh": 0,
+    "expected_false_positives_global_null": 0.05,
+    "candidates": [
+      {
+        "id": null,
+        "pvalue": 0.203
+      }
+    ]
+  },
+  "verdict": "FIRST-PASS ONLY. Candidates clearing the crude multiplicity floor are listed above. This is NOT a promotion. Hand the full candidate set (all K returns) to strategy-validation for universe-level correction (White RC / Hansen SPA / Romano-Wolf) and the native-micro OOS gate before any candidate is trusted."
+}

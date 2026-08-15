@@ -1,0 +1,75 @@
+{
+  "card_id": "msl-c2-mgc-london-range-failed-extension",
+  "card_path": "lab\\analysis\\c1\\msl_c2_mgc_2026-08\\card.yaml",
+  "disclaimer": "evidence only; computes evidence only",
+  "dedup_query": "london-range-failed-extension",
+  "dedup_paths": [
+    "docs/rejected_candidates.md",
+    "lab/CATALOG.md",
+    "docs/briefs/2026-08-12-msl-first-slate.md"
+  ],
+  "dedup_hits": [],
+  "cell_command": [
+    "C:\\Python314\\python.exe",
+    "C:\\Users\\joshu\\multi_firm_operations\\scripts\\instrument_profiles.py",
+    "cell",
+    "MGC",
+    "london-range-failed-extension-fade"
+  ],
+  "cell_stdout": "=== MGC x london-range-failed-extension-fade ===\nledger: ops/instruments/MGC.md\nverdict: untested ΓÇö no prior on this cell.\nBINDING BAR: free-data-5th-leg-snag-closed-2026-07-01 -> ../../docs/rejected_candidates.md\nK bank: read ../../discovery_manifests/ ΓÇö never trust a snapshot.\nprior: Third-leg E-K elimination is void as a gate after K-bank ADR; large disclosed bank remains a Req-3 fact, not an inherited kill. DISC-CAMP-0 history is disclosure, not re-litigation. [#G1]\n",
+  "cell_returncode": 1,
+  "arithmetic": {
+    "p": 0.55,
+    "rr": 1.0,
+    "n_trades": 1,
+    "contracts": 4,
+    "expectancy_r": 0.1,
+    "per_trade_sharpe": 0.100504,
+    "implied_annualized_sr": 1.6,
+    "implied_annualized_sr_raw": 1.5954480704349328,
+    "trading_days_per_year": 252,
+    "cost_law": {
+      "rt_cost_usd": 4.12,
+      "rows": [
+        {
+          "multiple": 1.0,
+          "stop_floor_usd": 41.2,
+          "stop_floor_pts": 4.12
+        },
+        {
+          "multiple": 2.0,
+          "stop_floor_usd": 82.4,
+          "stop_floor_pts": 8.24
+        },
+        {
+          "multiple": 4.0,
+          "stop_floor_usd": 164.8,
+          "stop_floor_pts": 16.48
+        }
+      ],
+      "card_multiple": 4.0,
+      "stop_floor_usd_at_card_multiple": 164.8
+    },
+    "geometry": {
+      "stop_pts": 16.0,
+      "target_pts": 16.0,
+      "span_pts": 32.0,
+      "point_value_usd": 10.0,
+      "rt_cost_usd": 4.12
+    },
+    "payability": {
+      "all_win_day_usd": 623.52,
+      "payout_min_usd_reference": 200.0,
+      "all_win_day_minus_ref": 423.52
+    },
+    "worst_day": {
+      "all_lose_day_usd": 656.48,
+      "worst_day_bound_usd_reference": 750.0,
+      "bound_minus_all_lose_day": 93.52
+    },
+    "sigma_d": {
+      "sigma_d_usd": 636.792,
+      "sigma_d_usd_raw": 636.7919597482368
+    }
+  }
+}

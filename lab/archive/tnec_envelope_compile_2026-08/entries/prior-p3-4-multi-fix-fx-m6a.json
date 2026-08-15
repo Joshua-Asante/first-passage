@@ -1,0 +1,10 @@
+{
+ "delta_source": "uncited - the 2026-07-26 census log forbade quoting delta by construction ('No entry quotes PnL, delta, or any edge number'); no delta was ever derived for this entry. Underivable field marked null per re-score protocol. Derivation: pass 3 P3-4 - Tokyo + London WMR + NY fix cluster (M6A limb; M6E/6J out of the F1 pool). stop_ticks NOT declared by the prior entry - assigned here as the instrument's SHALLOWEST OPEN cell (20t, RESULTS.md section 2), the most generous surviving rung, so a failure is conclusive. events_per_year / horizon_seconds likewise undeclared by the prior entry and assigned generously.",
+ "delta_ticks_per_event": null,
+ "events_per_year": 252,
+ "horizon_seconds": 120,
+ "instrument": "M6A",
+ "name": "prior-p3-4-multi-fix-fx-m6a",
+ "stop_ticks": 20,
+ "taxonomy_class": "daily auction/settlement windows"
+}

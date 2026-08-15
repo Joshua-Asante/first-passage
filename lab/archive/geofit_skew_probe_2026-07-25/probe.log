@@ -1,0 +1,17 @@
+[probe] c1 panel 2020-01-06->2026-06-30 n_bdays=1692
+[probe] fit {"z": 0.7931, "n_active": 350, "mu": 127.714, "sigma": 590.6659, "p_win": 0.4286, "win_mean": 463.0821, "win_sd": 772.5264, "loss_mean": -123.8121, "loss_sd": 129.0607}
+[probe] 20 runs = 4 arms x 5 realizations
+[Parallel(n_jobs=7)]: Using backend LokyBackend with 7 concurrent workers.
+[Parallel(n_jobs=7)]: Done   4 tasks      | elapsed:  3.0min
+[Parallel(n_jobs=7)]: Done  12 out of  20 | elapsed:  9.2min remaining:  6.2min
+[Parallel(n_jobs=7)]: Done  17 out of  20 | elapsed: 24.6min remaining:  4.3min
+[Parallel(n_jobs=7)]: Done  20 out of  20 | elapsed: 26.6min finished
+[probe] symmetric_baseline     bust= 29.44% +/-2.38%  resid= 24.69pp  skew=+0.04  worst=   -2403  -> MISS
+[probe] skewed_gamma           bust=  6.59% +/-10.85%  resid=  1.85pp  skew=+4.64  worst=    -700  -> MISS
+[probe] empirical_shuffle      bust=  5.62% +/-1.12%  resid=  0.87pp  skew=+3.63  worst=    -744  -> MISS
+[probe] empirical_clustered    bust=  5.33% +/-2.83%  resid=  0.58pp  skew=+3.63  worst=    -744  -> MISS
+
+[probe] VERDICT: SKEW-INSUFFICIENT / SERIAL-STRUCTURE-BINDING
+[probe] Even the exact empirical marginals fail. No i.i.d. family of any shape can reproduce this book; a successor must model within-week block structure. Materially bigger re-scope than the closure assumed.
+[probe] R4 placement effect (clustered - uniform): -0.29pp
+[written] C:\Users\joshu\multi_firm_operations\.claude\worktrees\q-geofit-1-signature-3bda65\lab\analysis\geofit_skew_probe_2026-07-25\probe.json

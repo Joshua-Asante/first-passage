@@ -1,0 +1,31 @@
+---
+description: Match existing codebase style before writing or refactoring code.
+globs: "**/*"
+alwaysApply: false
+---
+
+# Code Style Consistency
+
+Before generating or suggesting code, read representative files (especially recent ones and files with similar functionality).
+
+## Analyze for
+
+- Naming (this repo is Python-first: `snake_case`, 4-space indent, PEP 8)
+- Comment density and tone
+- Function size and error-handling patterns
+- Import/module layout and layer boundaries (`core/`, `lab/`, `ops/` — see `REPO_MAP.md`)
+- Test layout and naming in `tests/`
+
+## Method
+
+1. Examine 3–5 representative files.
+2. Note dominant patterns; prioritize recently modified files.
+3. If style is inconsistent, ask rather than assume.
+4. Implement to match the dominant local style.
+
+## Constraints
+
+- Do not refactor beyond the requested scope.
+- Do not introduce new libraries when an existing one covers the need.
+- Mirror module organization of similar existing modules.
+- Match test structure from neighboring tests.

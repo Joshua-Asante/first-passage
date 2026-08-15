@@ -1,0 +1,28 @@
+{
+  "threshold_pts": 92.5,
+  "threshold_pts_dd": 37.0,
+  "risk_usd": 185.0,
+  "point_value": 2.0,
+  "reserve_cap": 1,
+  "v1_on_MNQ1! (2020-2026, n=237 base)": {
+    "n_base": 237,
+    "n_stopouts": 111,
+    "stop_pct_med": 0.2200956937799043,
+    "stop_pct_min": 0.004541222951340796,
+    "naive_under_thresh_frac": 0.972972972972973,
+    "mae_pct_max": 3.4332971347422943,
+    "proven_over_at_29600": 7
+  },
+  "MNQ edition (2025-09+, n=37 base)": {
+    "n_base": 37,
+    "n_stopouts": 19,
+    "stop_pct_med": 0.1614872582614518,
+    "stop_pct_min": 0.047295014719366826,
+    "naive_under_thresh_frac": 1.0,
+    "mae_pct_max": 0.6069435770376665,
+    "proven_over_at_29600": 1
+  },
+  "pooled_median_stop_pct": 0.2168449668127826,
+  "pooled_n": 130,
+  "qualify_frac_at_29600": 0.7923076923076923
+}

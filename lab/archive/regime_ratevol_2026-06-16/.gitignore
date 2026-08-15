@@ -1,0 +1,4 @@
+# Raw fetched series — local-only, reproducible (FRED public-domain; XAUUSD is OANDA vendor data).
+# Commit the script + ratevol_screen.json + RESULTS.md, never the raw feeds (mirrors reports/* precedent).
+fred_*.csv
+xauusd_daily.csv

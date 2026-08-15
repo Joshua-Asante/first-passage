@@ -1,0 +1,41 @@
+{
+  "schema_version": "s5.v1",
+  "candidate_id": "synth-confab-s5-001",
+  "freeze_commit": "aee4137",
+  "observed_freeze_commit": "deadbeef",
+  "operator_budget_approval_id": "budget-approval-fixture-confab",
+  "sandbox": {
+    "micro_size_contracts": 1,
+    "loss_budget_usd": 100.0,
+    "attempt_budget": 10,
+    "concurrency_slots": 1
+  },
+  "claims": [
+    {
+      "claim_id": "narrative_edge",
+      "metric": "edge_quality",
+      "value": 1.79,
+      "unit": "annualized_sharpe",
+      "artifact_path": "",
+      "reexecute_command": "",
+      "prose": "Looks reachable against the confirm floor; trust the Sharpe story.",
+      "judgment": "operator would approve if they saw the chart"
+    }
+  ],
+  "gate_attestations": [
+    {
+      "gate_id": "stage2_cost_law",
+      "units": "annualized_sharpe",
+      "measured_value": 1.79,
+      "hurdle_value": 0.65,
+      "basis": "present_day_convenience",
+      "artifact_path": "",
+      "narrative": "M-20 wrong-units class — Sharpe attestation for a bp gate"
+    }
+  ],
+  "self_tests": {
+    "positive_path": "tests/fixtures/promotion/artifacts/self_test_positive.json",
+    "negative_path": "tests/fixtures/promotion/artifacts/self_test_positive.json",
+    "same_invocation_id": ""
+  }
+}

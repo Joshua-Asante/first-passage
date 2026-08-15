@@ -1,0 +1,12 @@
+# Vendor-derived TBBO quote windows (Databento GLBX, redistribution-restricted) —
+# rebuild locally via pull_windows.py; do not commit.
+quotes.parquet
+_quotes_partial.parquet
+# Derived event set (ORB trigger + matched control timestamps). Rebuildable from the
+# free on-disk 1m panel via build_events.py; hashes are pinned in RESULTS.md.
+events.parquet
+__pycache__/
+*.pyc
+.pytest_cache/
+# RESULTS.json / events_summary.json are result records, not vendor data — tracked,
+# as in the MNQPOOL-1 / MNQFVG-1 / blind-probe siblings.

@@ -1,0 +1,27 @@
+{
+  "panel": "C:/Users/joshu/multi_firm_operations/.worktrees/q-txg-1-nas100-mym-score/lab/archive/transfer_expression_grid_2026-08/cells/striker_nas100_mym/inputs/Striker_NAS100_MYM_QTXG1_CBOT_MINI_MYM1!_2026-08-12_69f15.csv",
+  "panel_sha256": "203480867dbcf4751c5cbfcdfdb6b28418c967fe3fe812884db19f91294a4ebf",
+  "static_equity_recompute": {
+    "n_legs": 190,
+    "tv_net_sum": 4356.4000000000215,
+    "recompute_net_sum": 4356.4000000000215,
+    "max_abs_delta": 3.552713678800501e-15,
+    "mean_abs_delta": 1.554312234475219e-16,
+    "ok_within_1usd": true
+  },
+  "cost_gate": {
+    "net_usd": 4356.400000000002,
+    "n": 190,
+    "pf": 1.1095886827120358,
+    "wr_pct": 53.68421052631579,
+    "max_dd_pct": 15.126560000000463,
+    "r_basis": "full-stop mean (|loss| > 1% acct, n=11)",
+    "r_n_cohort": 11,
+    "r_dollars": 1775.7454545454545,
+    "mean_net_r": 0.012911997603001428,
+    "required_net_r": 0.06,
+    "dead_cost_net_le_0": false,
+    "beats_required_net_r": false,
+    "verdict": "DEAD(cost)_below_required_net_r"
+  }
+}

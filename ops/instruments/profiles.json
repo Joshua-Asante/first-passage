@@ -1,0 +1,1090 @@
+{
+  "cells": {
+    "6J": {
+      "venue-transfer": {
+        "date": "2026-07-16",
+        "source": "../../docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md",
+        "verdict": "AMBIGUOUS-PARKED"
+      }
+    },
+    "BTCUSD": {
+      "trend-following": {
+        "date": "2026-06-30",
+        "source": "../../docs/ltm/briefs/Q-BTC-3-closure-falsified.md",
+        "verdict": "DEAD"
+      }
+    },
+    "ES": {
+      "turn-of-month": {
+        "date": "2026-07-12",
+        "source": "../../docs/briefs/closures/Q-HARV-0-month-end-rebalance-ES.md",
+        "verdict": "AMBIGUOUS-PARKED"
+      }
+    },
+    "EURGBP": {
+      "mean-reversion-fade": {
+        "date": "2026-06-21",
+        "source": "#D1",
+        "verdict": "DEAD"
+      }
+    },
+    "EURUSD": {
+      "event-window-reversal": {
+        "date": "2026-06-22",
+        "source": "../../docs/rejected_candidates.md",
+        "verdict": "DEAD"
+      },
+      "turn-of-month": {
+        "date": "2026-06-10",
+        "source": "../../docs/rejected_candidates.md",
+        "verdict": "AMBIGUOUS-PARKED"
+      }
+    },
+    "GER40": {
+      "opening-range-breakout": {
+        "date": "2026-06-22",
+        "source": "#G2",
+        "verdict": "AMBIGUOUS-PARKED"
+      }
+    },
+    "M2K": {},
+    "M6A": {},
+    "MCL": {},
+    "MES": {},
+    "MGC": {
+      "event-window-reversal": {
+        "date": "2026-08-10",
+        "source": "../../lab/analysis/harvest/tnec_l2_sourcing_2026-08-10/DELTA_EXTRACTION_R8.md",
+        "verdict": "DEAD"
+      }
+    },
+    "MJY": {
+      "venue-transfer": {
+        "date": "2026-07-05",
+        "source": "#M1",
+        "verdict": "DEAD"
+      }
+    },
+    "MNQ": {
+      "ict-liquidity": {
+        "date": "2026-08-04",
+        "source": "../../lab/archive/mnq_fvg_draw_probe_2026-08-04/RESULTS.md",
+        "verdict": "DEAD"
+      },
+      "intraday-momentum": {
+        "date": "2026-07-21",
+        "source": "../../docs/briefs/rnd-pipeline/D5-RECOST-1-mnq-native-cost-law-rescope-scoping.md",
+        "verdict": "DEAD"
+      },
+      "opening-pressure": {
+        "date": "2026-07-21",
+        "source": "../../docs/briefs/closures/OPENPRESS-1-closure-falsified.md",
+        "verdict": "DEAD"
+      },
+      "opening-range-breakout": {
+        "date": "2026-07-23",
+        "source": "../../docs/briefs/2026-07-17-0808-packet-delta-and-sequence.md",
+        "verdict": "AMBIGUOUS-PARKED"
+      },
+      "order-flow-depth-imbalance": {
+        "date": "2026-08-05",
+        "source": "../../lab/archive/mnq_orderflow_probe_2026-08-04/RESULTS.md",
+        "verdict": "DEAD"
+      }
+    },
+    "MYM": {
+      "event-window-reversal": {
+        "date": "2026-07-21",
+        "source": "../../docs/briefs/closures/MYM-3FPS-1-closure-falsified.md",
+        "verdict": "DEAD"
+      },
+      "ict-liquidity": {
+        "date": "2026-07-29",
+        "source": "../../docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md",
+        "verdict": "DEAD"
+      },
+      "opening-pressure": {
+        "date": "2026-07-21",
+        "source": "../../docs/briefs/closures/OPENPRESS-1-closure-falsified.md",
+        "verdict": "DEAD"
+      },
+      "opening-range-continuation": {
+        "date": "2026-07-16",
+        "source": "../../docs/briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md",
+        "verdict": "DEAD"
+      },
+      "trend-following": {
+        "date": "2026-07-23",
+        "source": "../../docs/briefs/2026-07-23-tradeify-book-composition.md",
+        "verdict": "LIVE"
+      },
+      "venue-transfer": {
+        "date": "2026-07-09",
+        "source": "../../lab/archive/striker_dj30_mym_prototype_2026-07/RESULTS.md",
+        "verdict": "DEAD"
+      }
+    },
+    "NAS100": {
+      "day-of-week-selection-gate": {
+        "date": "2026-06-27",
+        "source": "../../docs/ltm/briefs/Q-ORB-FRIDAY-1-closure-falsified.md",
+        "verdict": "DEAD"
+      },
+      "naive-direction-mirror": {
+        "date": "2026-05-05",
+        "source": "#N4",
+        "verdict": "DEAD"
+      },
+      "opening-range-breakout": {
+        "date": "2026-06-23",
+        "source": "#N7",
+        "verdict": "AMBIGUOUS-PARKED"
+      },
+      "regime-overlay": {
+        "date": "2026-06-27",
+        "source": "../../docs/ltm/briefs/Q-ORB-T10Y3M-1-closure-falsified.md",
+        "verdict": "DEAD"
+      },
+      "trend-following": {
+        "date": "2026-05-05",
+        "source": "../../core/strategies/_archive/nas/LOCK.md",
+        "verdict": "LIVE"
+      }
+    },
+    "NG": {
+      "event-window-reversal": {
+        "date": "2026-07-21",
+        "source": "../../lab/archive/ng_eia_recon_2026-07/RESULTS.md",
+        "verdict": "DEAD"
+      }
+    },
+    "NQ": {
+      "intraday-momentum": {
+        "date": "2026-07-21",
+        "source": "../../docs/briefs/rnd-pipeline/D5-RECOST-1-mnq-native-cost-law-rescope-scoping.md",
+        "verdict": "DEAD"
+      },
+      "opening-pressure": {
+        "date": "2026-07-21",
+        "source": "../../docs/briefs/closures/OPENPRESS-1-closure-falsified.md",
+        "verdict": "DEAD"
+      },
+      "opening-range-breakout": {
+        "date": "2026-07-23",
+        "source": "../../docs/briefs/2026-07-17-0808-packet-delta-and-sequence.md",
+        "verdict": "AMBIGUOUS-PARKED"
+      }
+    },
+    "SPX500": {
+      "ict-liquidity": {
+        "date": "2026-06-17",
+        "source": "#D2",
+        "verdict": "DEAD"
+      },
+      "index-dispersion": {
+        "date": "2026-06-30",
+        "source": "#D4",
+        "verdict": "DEAD"
+      },
+      "mean-reversion-fade": {
+        "date": "2026-06-07",
+        "source": "#D1",
+        "verdict": "DEAD"
+      },
+      "opening-range-breakout": {
+        "date": "2026-06-22",
+        "source": "../../lab/analysis/legacy/us500_discovery_2026-06-22/RESULTS.md",
+        "verdict": "DEAD"
+      },
+      "regime-overlay": {
+        "date": "2026-06-20",
+        "source": "#D3",
+        "verdict": "DEAD"
+      },
+      "turn-of-month": {
+        "date": "2026-06-16",
+        "source": "#F5",
+        "verdict": "DEAD"
+      }
+    },
+    "USDCAD": {
+      "band-pierce-continuation": {
+        "date": "2026-06-16",
+        "source": "../../docs/ltm/briefs/pre-registration/FWD-PREREG-BPC-USDCAD-TUE-2026-06-11.md",
+        "verdict": "CONTINGENT-FORWARD"
+      },
+      "mean-reversion-fade": {
+        "date": "2026-06-26",
+        "source": "../../lab/archive/usdcad_fade_2026-06-26/RESULTS.md",
+        "verdict": "DEAD"
+      },
+      "opening-range-breakout": {
+        "date": "2026-06-14",
+        "source": "../../lab/archive/usdcad_reverse_2026-06-14/RESULTS.md",
+        "verdict": "DEAD"
+      },
+      "trend-following": {
+        "date": "2026-06-14",
+        "source": "../../lab/archive/usdcad_reverse_2026-06-14/RESULTS.md",
+        "verdict": "DEAD"
+      }
+    },
+    "USOIL": {
+      "commodity-carry-term-structure": {
+        "date": "2026-06-06",
+        "source": "../../docs/rejected_candidates.md",
+        "verdict": "DEAD"
+      },
+      "mean-reversion-fade": {
+        "date": "2026-06-14",
+        "source": "../../docs/adr/2026-06-14-reject-usoil-rdm-spike-fader.md",
+        "verdict": "DEAD"
+      },
+      "trend-following": {
+        "date": "2026-06-15",
+        "source": "#RGC-001",
+        "verdict": "AMBIGUOUS-PARKED"
+      }
+    },
+    "XAGUSD": {
+      "trend-following": {
+        "date": "2026-07-01",
+        "source": "../../docs/rejected_candidates.md",
+        "verdict": "DEAD"
+      }
+    },
+    "XAUUSD": {
+      "compression-gated-breakout": {
+        "date": "2026-06-15",
+        "source": "../../lab/analysis/legacy/xauusd_cgb_2026-06-15/RESULTS.md",
+        "verdict": "AMBIGUOUS-PARKED"
+      },
+      "naive-direction-mirror": {
+        "date": "2026-06-15",
+        "source": "../../lab/analysis/legacy/xauusd_cgb_2026-06-15/RESULTS.md",
+        "verdict": "DEAD"
+      },
+      "regime-overlay": {
+        "date": "2026-07-01",
+        "source": "../../docs/rejected_candidates.md",
+        "verdict": "DEAD"
+      },
+      "trend-following": {
+        "date": "2026-04-23",
+        "source": "../../core/strategies/_archive/guardian/LOCK.md",
+        "verdict": "LIVE"
+      }
+    },
+    "YM": {
+      "venue-transfer": {
+        "date": "2026-07-09",
+        "source": "../../lab/archive/striker_dj30_mym_prototype_2026-07/RESULTS.md",
+        "verdict": "DEAD"
+      }
+    },
+    "ZB": {
+      "opening-range-breakout": {
+        "date": "2026-07-20",
+        "source": "../../lab/archive/orb_zb_recon_2026-07/RESULTS.md",
+        "verdict": "DEAD"
+      }
+    },
+    "ZF": {
+      "opening-range-breakout": {
+        "date": "2026-07-21",
+        "source": "../../lab/archive/rates_ev_zf_recon_2026-07/RESULTS.md",
+        "verdict": "DEAD"
+      }
+    },
+    "ZN": {
+      "event-window-reversal": {
+        "date": "2026-07-20",
+        "source": "../../docs/briefs/closures/H-ZNAUC-1-closure-screen-fail.md",
+        "verdict": "DEAD"
+      }
+    }
+  },
+  "generated_by": "scripts/instrument_profiles.py",
+  "instruments": {
+    "6J": {
+      "asset_class": "fx-futures",
+      "bars": [],
+      "cost_hurdle": null,
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/6J.md",
+      "structure": [
+        {
+          "claim": "Aegis-to-6J venue-transfer retains measured panel evidence (n=129, PF 2.318, ~50% venue haircut vs canonical) - parked as a scale-path decision, not falsified by the evidence.",
+          "source": "#J1"
+        },
+        {
+          "claim": "The venue structurally throttles Aegis sizing: the 12-contract cap binds on 76% of trades, realizing effective risk ~0.5-1.0% against the locked 1.5% target.",
+          "source": "#J5"
+        }
+      ],
+      "venue_note": null,
+      "venue_tradable": true
+    },
+    "BTCUSD": {
+      "asset_class": "crypto-spot",
+      "bars": [],
+      "cost_hurdle": null,
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/BTCUSD.md",
+      "structure": [
+        {
+          "claim": "BTC's structural trend-propensity is regime-robust and NOT recency-flattered \u2014 it is the only in-hand FXIFY-universe instrument with VR(20)>1 in every era (2020-22 / 2023-26 / recent), strongest in the 2020-22 chop/bear half.",
+          "source": "#durable-1"
+        },
+        {
+          "claim": "The binding constraint on BTC is the VENUE (no automatable multi-day-hold venue exists for this operator), not the instrument or the mechanism \u2014 any future BTC deployment needs a new venue class or an intraday flat-by-EOD redesign.",
+          "source": "#durable-7"
+        }
+      ],
+      "venue_note": "No automatable venue for a multi-day BTC trend design \u2014 FXIFY crypto is a separate program/account (not the CFD/challenge venue, no shared equity), and researched US futures-prop firms force-flatten intraday with no weekend carry (durable #7).",
+      "venue_tradable": false
+    },
+    "ES": {
+      "asset_class": "equity-index-futures",
+      "bars": [
+        {
+          "id": "index-intraday-ohlcv-directional-timing-2026-07-21",
+          "source": "../../docs/rejected_candidates.md"
+        }
+      ],
+      "cost_hurdle": {
+        "basis": "4x MES single-RT hurdle at HARV-2026-001 reference price (~4373)",
+        "source": "#E4",
+        "units": "bp",
+        "value": 6.84
+      },
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/ES.md",
+      "structure": [
+        {
+          "claim": "The month-end ES-vs-ZN rebalancing fade shows a real pooled effect (+19.21bp, perm p=0.0129) but is era-decaying and reverses the following month (-15.96bp) - a structural caveat for any future turn-of-month construct on this instrument, not a deployable edge.",
+          "source": "#E3"
+        }
+      ],
+      "venue_note": null,
+      "venue_tradable": true
+    },
+    "EURGBP": {
+      "asset_class": "fx-cross",
+      "bars": [],
+      "cost_hurdle": null,
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/EURGBP.md",
+      "structure": [
+        {
+          "claim": "EURGBP is the lowest-volatility G10 cross (ATR(14) ~6 pips) \u2014 any ATR-scaled-stop mean-reversion transfer from a wider-ATR pair fails the USDCAD cost law (cost-in-R >= 0.097R) by construction, before any panel is run.",
+          "source": "#F1"
+        },
+        {
+          "claim": "EURGBP did not cleanly range through the 2020-2023 H1 window \u2014 the 2022 sterling crisis (~0.82->0.90, spike to ~0.923) is the strong-trend sub-regime where mean-reversion bleeds.",
+          "source": "#F3"
+        }
+      ],
+      "venue_note": "FXIFY/DXTrade CFD venue closed 2026-07-10; no live venue for this instrument at present.",
+      "venue_tradable": false
+    },
+    "EURUSD": {
+      "asset_class": "fx-major",
+      "bars": [],
+      "cost_hurdle": null,
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/EURUSD.md",
+      "structure": [
+        {
+          "claim": "The London 16:00 WM/Reuters fix carries a genuine ~2bp gross post-fix reversal (reproducing the source paper's magnitude) but FXIFY retail all-in cost (~0.8 pip) exceeds the 0.277-pip best-of-grid break-even \u2014 the edge is real but not retail-tradeable.",
+          "source": "#F1"
+        }
+      ],
+      "venue_note": "FXIFY/DXTrade CFD venue closed 2026-07-10; no live venue for this instrument at present.",
+      "venue_tradable": false
+    },
+    "GER40": {
+      "asset_class": "equity-index",
+      "bars": [],
+      "cost_hurdle": null,
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/GER40.md",
+      "structure": [
+        {
+          "claim": "GER40's genuine discrete cash open (the literature's most-discriminating ORB trait) did NOT make it the best ORB instrument \u2014 ORB tradeability is dominated by opening-range/spread ratio, not by discreteness of the open (NAS100, a 23h feed, beats DAX).",
+          "source": "#G2"
+        }
+      ],
+      "venue_note": "FXIFY/DXTrade CFD venue closed 2026-07-10; no live venue for this instrument at present.",
+      "venue_tradable": false
+    },
+    "M2K": {
+      "asset_class": "equity-index-futures",
+      "bars": [
+        {
+          "id": "index-intraday-ohlcv-directional-timing-2026-07-21",
+          "source": "../../docs/rejected_candidates.md"
+        }
+      ],
+      "cost_hurdle": {
+        "basis": "panel-era median 1,897.20 => 11.89 bp/RT (recomputed 2026-07-28; supersedes illustrative index-2300 figure and withdrawn 10-30x margin claim). WARN Multiplier basis PENDING \u2014 4x hurdle was Tradeify; venue de-scoped 2026-08-04; F3 open; friendly-firm per-side $0.50-$0.95; re-price against elected venue before this row gates anything.",
+        "source": "#M2",
+        "units": "bp/round-trip",
+        "value": 11.89
+      },
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/M2K.md",
+      "structure": [
+        {
+          "claim": "Cross-index RV selection over ES/NQ/YM/RTY is strictly dominated by single-instrument ORB-MNQ - index aggregation compresses the idiosyncratic dispersion that makes Stocks-in-Play work. An RTY intraday pull is a DEFER-procurement trigger with an explicitly poor prior.",
+          "source": "#M3"
+        },
+        {
+          "claim": "Opening-range momentum is an equity-index property (it fades on Treasuries) - so equity-index instruments are where directional structure plausibly lives, but that same tie means cost-viability and decorrelation-from-the-book are in tension by construction.",
+          "source": "#M4"
+        }
+      ],
+      "venue_note": "Tradeify Equity Index Product Group ($1.82 all-in -> $0.91/side). Withdrawn MYM+MNQ legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred; LEG_MAP code untouched.",
+      "venue_tradable": true
+    },
+    "M6A": {
+      "asset_class": "fx-futures",
+      "bars": [],
+      "cost_hurdle": {
+        "basis": "Stage-1 third-leg map Inputs: commission $0.91/side; RT 1t $2.82 / 2t $3.82; cost-tax 1t r=1 = 0.0902 (FLAG-COSTBIND vs own-panel floor 0.0891)",
+        "source": "#A1",
+        "units": "USD/round-trip (1-tick slip)",
+        "value": 2.82
+      },
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/M6A.md",
+      "structure": [
+        {
+          "claim": "Stage-1 Currencies SURVIVOR under FLAG-COSTBIND \u2014 cost-tax binds before the own-panel Clause-N floor on the pooled panel; Stage-2 ex-FOMC flips the binding constraint COST->POWER.",
+          "source": "#A1"
+        },
+        {
+          "claim": "Q-TNEC-ENV-1 envelope NON-EMPTY at 20/40/80/160-tick cells (8-tick DEAD on cost); census authored no M6A entry; published FX-fix delta refused as cross-instrument transplant under strategy_harvest Requirement 2.",
+          "source": "#A4"
+        }
+      ],
+      "venue_note": "Tradeify Currencies Product Group lists 6E/M6E/6B/6J/6A/M6A/6C/6S (see MJY.md venue_note). Withdrawn Striker legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred; LEG_MAP code untouched.",
+      "venue_tradable": true
+    },
+    "MCL": {
+      "asset_class": "energy-futures",
+      "bars": [
+        {
+          "id": "free-data-5th-leg-snag-closed-2026-07-01",
+          "source": "../../docs/rejected_candidates.md"
+        }
+      ],
+      "cost_hurdle": {
+        "basis": "Stage-0 2023 median cost_bp for MCL (fade stage0 RESULTS.md)",
+        "source": "#C1",
+        "units": "bp/round-trip",
+        "value": 5.3423
+      },
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/MCL.md",
+      "structure": [
+        {
+          "claim": "Frozen CONFIG-B-MCL geometry clears expressibility under SIGMA-NATIVE; geometry is not edge \u2014 N-SURV/N-EDGE/N-SIZE remain U until a mechanism trade series exists.",
+          "source": "#C2"
+        }
+      ],
+      "venue_note": "Tradeify Energy Product Group (CL/QM/MCL/NG/QG). Withdrawn Striker legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred; LEG_MAP code untouched.",
+      "venue_tradable": true
+    },
+    "MES": {
+      "asset_class": "equity-index-futures",
+      "bars": [
+        {
+          "id": "index-intraday-ohlcv-directional-timing-2026-07-21",
+          "source": "../../docs/rejected_candidates.md"
+        }
+      ],
+      "cost_hurdle": {
+        "basis": "4x MES single-RT hurdle at HARV-2026-001 reference (~4373); parent ES E4",
+        "source": "../../ops/instruments/ES.md",
+        "units": "bp",
+        "value": 6.84
+      },
+      "family": [
+        "ES"
+      ],
+      "inherited_bars": [
+        {
+          "id": "index-intraday-ohlcv-directional-timing-2026-07-21",
+          "source": "../../docs/rejected_candidates.md"
+        }
+      ],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/MES.md",
+      "structure": [
+        {
+          "claim": "Third-leg E-KCAP elimination is void as a gate after K-bank ADR; Clause K no longer eliminates. Standing grounds are Equity Index class bars + S4/S7 occupancy posture, not bank arithmetic.",
+          "source": "#S1"
+        }
+      ],
+      "venue_note": "Tradeify Equity Index Product Group. Withdrawn MNQ/MYM legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred; LEG_MAP code untouched.",
+      "venue_tradable": true
+    },
+    "MGC": {
+      "asset_class": "metals-futures",
+      "bars": [
+        {
+          "id": "free-data-5th-leg-snag-closed-2026-07-01",
+          "source": "../../docs/rejected_candidates.md"
+        }
+      ],
+      "cost_hurdle": null,
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/MGC.md",
+      "structure": [
+        {
+          "claim": "Third-leg E-K elimination is void as a gate after K-bank ADR; large disclosed bank remains a Req-3 fact, not an inherited kill. DISC-CAMP-0 history is disclosure, not re-litigation.",
+          "source": "#G1"
+        }
+      ],
+      "venue_note": "Tradeify Metals Product Group (GC/QO/MGC/SI/HG/PL/PA). Micro proxy vs GC \u2014 re-scale economics; do not inherit parent fill model.",
+      "venue_tradable": true
+    },
+    "MJY": {
+      "asset_class": "fx-futures",
+      "bars": [],
+      "cost_hurdle": null,
+      "family": [
+        "6J"
+      ],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/MJY.md",
+      "structure": [
+        {
+          "claim": "MJY is volume-starved at Aegis-relevant size - 120-lot intended sizing vs ~730 contracts/day ADV means the v0.1 replay's fills could not exist; the panel is evidence of venue rejection only, not of anything else.",
+          "source": "#M2"
+        }
+      ],
+      "venue_note": "Tradeify offers no micro JPY futures under any name - Currencies Product Group lists 6E/M6E/6B/6J/6A/M6A/6C/6S only, no MJY/M6J - research-only.",
+      "venue_tradable": false
+    },
+    "MNQ": {
+      "asset_class": "equity-index-futures",
+      "bars": [],
+      "cost_hurdle": {
+        "basis": "4x modern-era MNQ hurdle (D5-RECOST-1)",
+        "source": "#N6",
+        "units": "bp/session",
+        "value": 3.01
+      },
+      "family": [
+        "NQ"
+      ],
+      "inherited_bars": [
+        {
+          "id": "index-intraday-ohlcv-directional-timing-2026-07-21",
+          "source": "../../docs/rejected_candidates.md"
+        }
+      ],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/MNQ.md",
+      "structure": [
+        {
+          "claim": "ORB-MNQ-1's fills are known-good - the cost fragility is a commission sensitivity, not a fill-mechanics defect (median intrabar penetration 81 ticks entries / 64 ticks stops, 0.7% shallow-touch, zero non-traded levels).",
+          "source": "#N2"
+        },
+        {
+          "claim": "Both exit-redesign directions are pre-killed by an order-free counterfactual: tighter stops lose 0.03-0.06R (winners need the full-range stop) and no fixed profit target beats baseline - the 0.50R median close give-back is real but unharvestable.",
+          "source": "#N3"
+        }
+      ],
+      "venue_note": null,
+      "venue_tradable": true
+    },
+    "MYM": {
+      "asset_class": "equity-index-futures",
+      "bars": [
+        {
+          "id": "index-intraday-ohlcv-directional-timing-2026-07-21",
+          "source": "../../docs/rejected_candidates.md"
+        }
+      ],
+      "cost_hurdle": {
+        "basis": "4x Tradeify hurdle",
+        "source": "#M6",
+        "units": "bp/event",
+        "value": 6.57
+      },
+      "family": [
+        "YM"
+      ],
+      "inherited_bars": [
+        {
+          "id": "index-intraday-ohlcv-directional-timing-2026-07-21",
+          "source": "../../docs/rejected_candidates.md"
+        }
+      ],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/MYM.md",
+      "structure": [
+        {
+          "claim": "Not a barren instrument \u2014 the incumbent locked leg is profitable here; one narrow continuation expression failed.",
+          "source": "#M1"
+        }
+      ],
+      "venue_note": "AUTHORIZED-but-venue-less incumbent (Striker DJ30 MYM edition); no live book to correlate new work against \u2014 check venue_note before book-correlation gate.",
+      "venue_tradable": false
+    },
+    "NAS100": {
+      "asset_class": "equity-index",
+      "bars": [],
+      "cost_hurdle": null,
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/NAS100.md",
+      "structure": [
+        {
+          "claim": "NAS100 is the uniquely ORB-suited CFD in the FXIFY universe \u2014 it solves the fill cliff that kills the same construct on other indices (opening-range/spread ratio ~77:1, absorbing >3 spreads of entry slip without crossing zero).",
+          "source": "#N1"
+        },
+        {
+          "claim": "The NAS100 ORB edge is regime-conditional, not structural \u2014 pre-2020 OOS is FALSIFIED (every year 2014-2019 negative); the edge's turn-on dates to ~2020-2021, plausibly a post-2020 0DTE/retail-intraday-flow microstructure change.",
+          "source": "#N2"
+        }
+      ],
+      "venue_note": "FXIFY/DXTrade CFD venue closed 2026-07-10; no live venue for this instrument at present (the locked Striker NAS100 v1 strategy occupies its book slot as a historical/incumbent record \u2014 see the trend-following cell).",
+      "venue_tradable": false
+    },
+    "NG": {
+      "asset_class": "energy-futures",
+      "bars": [],
+      "cost_hurdle": {
+        "basis": "NG-EIA-1 cost hurdle (announcement-bracket construct)",
+        "source": "#G3",
+        "units": "bp/event",
+        "value": 29.6
+      },
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/NG.md",
+      "structure": [
+        {
+          "claim": "NG's EIA release genuinely moves the instrument (faithfulness anchor ~50.7bp) but produces no exploitable post-announcement drift - mechanism-present, edge-absent, not a mis-dating artifact.",
+          "source": "#G2"
+        }
+      ],
+      "venue_note": null,
+      "venue_tradable": true
+    },
+    "NQ": {
+      "asset_class": "equity-index-futures",
+      "bars": [
+        {
+          "id": "index-intraday-ohlcv-directional-timing-2026-07-21",
+          "source": "../../docs/rejected_candidates.md"
+        }
+      ],
+      "cost_hurdle": null,
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/NQ.md",
+      "structure": [],
+      "venue_note": null,
+      "venue_tradable": true
+    },
+    "SPX500": {
+      "asset_class": "equity-index",
+      "bars": [
+        {
+          "id": "spx500-anti-snag-5th-concept-2026-06-20",
+          "source": "#anti-snag-ledger-shared-budget--all-sessions-count"
+        }
+      ],
+      "cost_hurdle": null,
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/SPX500.md",
+      "structure": [
+        {
+          "claim": "Sweep-to-same-direction-FVG-to-opposing-pool-draw direction is real (block-permutation p=0.0144) even though the construct fails robustness (drop-top-3 negative) \u2014 a belt hypothesis for any future SPX500/US500 sweep-FVG design, not an established edge.",
+          "source": "#F6"
+        },
+        {
+          "claim": "Overnight swap is asymmetric and long-punishing (long -140.27 / short +28.12 pips/day) \u2014 a standing tax on any long-biased multi-session US500 design, and it reinforces the turn-of-month ABSENT verdict.",
+          "source": "#F7"
+        },
+        {
+          "claim": "SPX500's opening-range breakout is structurally real (within-day placebo p=0.0123, all-5-years positive) but untradeable \u2014 the edge lives in a ~1pt band and crosses zero at ~0.9pt of entry slippage (fill cliff), unlike NAS100 where the OR-range/spread ratio (~77:1) avoids this cliff.",
+          "source": "../../lab/analysis/legacy/us500_discovery_2026-06-22/RESULTS.md"
+        }
+      ],
+      "venue_note": "FXIFY/DXTrade CFD venue closed 2026-07-10; no live venue for this instrument at present.",
+      "venue_tradable": false
+    },
+    "USDCAD": {
+      "asset_class": "fx-major",
+      "bars": [],
+      "cost_hurdle": {
+        "basis": "1.42x ATR(15m) stop (COST LAW: cost-in-R proportional to price/stop_dist)",
+        "source": "#durable-1",
+        "units": "R round-trip",
+        "value": 0.097
+      },
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/USDCAD.md",
+      "structure": [
+        {
+          "claim": "A day-of-week effect is statistically real in-sample (Tuesday-minus-rest permutation p=0.006) but the mechanism is unresolved \u2014 this is what BPC-001 conditions on, not an established edge on its own.",
+          "source": "#durable-3"
+        },
+        {
+          "claim": "USDCAD's 15m price-action mechanism space is exhausted on OHLC alone (2026-H1 reverse-engineering): VR<1 at every horizon, no momentum at any TF, breakouts fade with a directional asymmetry \u2014 corroborated on the full 2020-26 panel; revival needs an exogenous regime gate (CA-US rate-diff / WTI), not a re-tuned OHLC level.",
+          "source": "#durable-8"
+        }
+      ],
+      "venue_note": "FXIFY/DXTrade CFD venue closed 2026-07-10; no live venue for this instrument at present.",
+      "venue_tradable": false
+    },
+    "USOIL": {
+      "asset_class": "energy-commodity",
+      "bars": [
+        {
+          "id": "usoil-strategy-edge-space-exhausted-2026-06-15",
+          "source": "#anti-snag-ledger-shared-budget--all-sessions-count"
+        }
+      ],
+      "cost_hurdle": null,
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/USOIL.md",
+      "structure": [
+        {
+          "claim": "USOIL is ~ a random walk on the clean deployment feed (Hurst 0.54-0.60, daily VR ~1.0, ACF~0) \u2014 there is no persistence prior in either direction, which raises the overfitting bar for any trend OR mean-reversion candidate; DSR-at-honest-N does the real work.",
+          "source": "#F2"
+        },
+        {
+          "claim": "A gold-config trend transplant is structurally disqualified on USOIL: a 31xATR target (Guardian's TP) is reached by 0.0% of regimes, long-only misses the down-regimes, and there is no vol-regime sizing for oil's ~3x-gold volatility swing.",
+          "source": "#F6"
+        }
+      ],
+      "venue_note": "Alchemy Markets / FXIFY DXTrade CFD venue closed 2026-07-10; no live venue for this instrument at present.",
+      "venue_tradable": false
+    },
+    "XAGUSD": {
+      "asset_class": "precious-metal-spot",
+      "bars": [],
+      "cost_hurdle": null,
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/XAGUSD.md",
+      "structure": [
+        {
+          "claim": "Silver amplifies H1 (2020-2023) co-drawdown under decompounded MC when inserted as a 5th Guardian-family leg \u2014 the 2020-2021 Silver cohort is net-negative; compounded 2022-26 can look Pareto-clean at low risk but that flatters the hard half.",
+          "source": "#F3"
+        }
+      ],
+      "venue_note": "FXIFY/DXTrade CFD venue closed 2026-07-10; no live venue for this instrument at present.",
+      "venue_tradable": false
+    },
+    "XAUUSD": {
+      "asset_class": "precious-metal-spot",
+      "bars": [],
+      "cost_hurdle": null,
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/XAUUSD.md",
+      "structure": [
+        {
+          "claim": "Cost-law is benign on gold (~0.05R at $0.30 round-trip) \u2014 cost is not the binding constraint here.",
+          "source": "#F3"
+        },
+        {
+          "claim": "Excursion censoring is structural at ~1R, so trailing-short theses are unobservable by the excursion method and need a bar-level backtest.",
+          "source": "#F4"
+        }
+      ],
+      "venue_note": "FXIFY/DXTrade CFD venue closed 2026-07-10; no live venue for this instrument at present.",
+      "venue_tradable": false
+    },
+    "YM": {
+      "asset_class": "equity-index-futures",
+      "bars": [
+        {
+          "id": "index-intraday-ohlcv-directional-timing-2026-07-21",
+          "source": "../../docs/rejected_candidates.md"
+        }
+      ],
+      "cost_hurdle": null,
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/YM.md",
+      "structure": [],
+      "venue_note": null,
+      "venue_tradable": true
+    },
+    "ZB": {
+      "asset_class": "rates-futures",
+      "bars": [
+        {
+          "id": "treasury-complex-tail-exhaustion",
+          "source": "ZN.md#R1"
+        }
+      ],
+      "cost_hurdle": null,
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/ZB.md",
+      "structure": [
+        {
+          "claim": "ZB FADES its opening range \u2014 opening-range momentum is equity-index-specific and does not port to Treasuries (within-day placebo p=0.0010, sign-reversed).",
+          "source": "#B1"
+        },
+        {
+          "claim": "Breadth cannot be bought by transplanting ORB to a risk-off instrument; the one cost-viable construct class is mechanistically the book's own instrument family.",
+          "source": "#B2"
+        }
+      ],
+      "venue_note": "US Treasuries untradable at Tradeify (confirmed 2026-07-22) \u2014 research-only.",
+      "venue_tradable": false
+    },
+    "ZF": {
+      "asset_class": "rates-futures",
+      "bars": [
+        {
+          "id": "treasury-complex-tail-exhaustion",
+          "source": "ZN.md#R1"
+        }
+      ],
+      "cost_hurdle": null,
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/ZF.md",
+      "structure": [
+        {
+          "claim": "ZF's event-day range concentrates 17.6:1 vs ZB's unconditional 4.3:1 - CPI/NFP-conditioning genuinely concentrates range where cost is payable, but the edge itself is absent (cost-law 1.15x vs 4.0x required, power 0.30 vs 0.50 floor).",
+          "source": "#F1"
+        }
+      ],
+      "venue_note": "US Treasuries untradable at Tradeify - research-only.",
+      "venue_tradable": false
+    },
+    "ZN": {
+      "asset_class": "rates-futures",
+      "bars": [
+        {
+          "id": "treasury-complex-tail-exhaustion",
+          "source": "ZN.md#R1"
+        }
+      ],
+      "cost_hurdle": null,
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/ZN.md",
+      "structure": [
+        {
+          "claim": "Post-auction dealer-hedging direction on ZN is real (confirms the Smales dealer-hedge-unwind mechanism, delta +1.01bp N=134) but the magnitude is 6-10x under the futures cost hurdle - mechanism-real-sub-cost is a more durable fact than a no-effect null.",
+          "source": "#R2"
+        },
+        {
+          "claim": "Tail-exhaustion across the directional Treasury complex - three structurally distinct directional constructs (ZN auction-drift, ZB opening-range breakout, ZF conditional event breakout) have died on three different instruments with zero survivors; a fourth requires reformulating the parent question, not a new instrument or window.",
+          "source": "#R1"
+        }
+      ],
+      "venue_note": "US Treasuries untradable at Tradeify - research-only.",
+      "venue_tradable": false
+    }
+  },
+  "mechanisms": {
+    "band-pierce-continuation": {
+      "definition": "Entering in the direction of a statistical band pierce (e.g. an NY-morning \u03c3-threshold) that shows follow-through.",
+      "findings": [
+        "Raw band pierces carry no directional edge \u2014 post-pierce excursions are symmetric at 1.9\u03c3 lower-band NY-morning pierces on USDCAD; only the impulse-confirmed cohort (~27%) follows through, which is what BPC-001 conditions on. [USDCAD.md](USDCAD.md)"
+      ]
+    },
+    "commodity-carry-term-structure": {
+      "definition": "A directional bet keyed to commodity futures curve state (contango / backwardation) or roll-yield / carry rather than to spot price action.",
+      "findings": [
+        "Curve-state conditioning on USOIL does not separate forward returns from contango (5d gap \u22120.024R, Welch p=0.74) \u2014 a disguised long-oil trend trade, F1-FALSIFIED. [USOIL.md D2](USOIL.md)"
+      ]
+    },
+    "compression-gated-breakout": {
+      "definition": "Gating a breakout entry on a prior volatility-compression phase resolving into expansion.",
+      "findings": [
+        "A compression-gated short-primary construct on XAUUSD is not killed by the cheap tests, but the intended trailing-short payoff is 100% in the censored region (0/203 trades reach short FE\u22651.5R) \u2014 a design-test mismatch that blocked a build decision pending a bar-level backtest. [XAUUSD.md F4](XAUUSD.md)",
+        "Dense-1m MNQ compression\u2192expansion with-break at G=10 session-flat (`Q-TNEC-CON-2`) is gross-positive (~+0.9\u20131.0 pt) but net-negative under Tradeify RT 1.41 (`AMBIGUOUS-HOLD` non-promotable). An HTF-5m-bias \u2192 LTF-1m directed with-break filter on the same family is `FALSIFIED` at the parent cheap falsifier (both arms CI entirely &lt;0). [MNQ.md](MNQ.md)"
+      ]
+    },
+    "day-of-week-selection-gate": {
+      "definition": "A calendar / day-of-week (or adjacent session / hour-block) selection gate that admits or blocks trades by clock time rather than by price action.",
+      "findings": [
+        "A post-hoc Friday-only cut on the NAS100 ORB is DEAD \u2014 wide-family best-of-K fails (fw-p 0.0996 over a 24-cut eyeballed family; Friday rank 2/24), the OPEX-flow mechanism is falsified, and the thin 2025\u201326 tail fails. Orthogonality/era pass does not rescue a cut inside the selection envelope. [NAS100.md N10](NAS100.md)"
+      ]
+    },
+    "event-window-reversal": {
+      "definition": "A directional bet keyed to a scheduled settlement, auction, or macro-release window (settlement / auction / macro-release limbs).",
+      "findings": [
+        "The settlement limb does not reproduce at useful magnitude \u2014 MYM's third-Friday derivative-settlement reversal cleared exact-coverage sourcing (84/87, 96.6% PASS) but both power legs sit below the 0.2139 floor and the tradable limb is negative in 2024\u20132026. [MYM.md M5](MYM.md)",
+        "*Auction limb (2026-07-27) \u2014 dies at the PROCUREMENT GATE, not on edge, on ANY instrument.* Closing-auction/MOC-imbalance is reject-at-bar for an instrument-independent reason, hence recorded as a class finding rather than a cell. It is **not** killed by the free-data classification (the signal is exchange-licensed, unlike LETF EOD rebalance whose signal is public-AUM-derivable) nor by the a4 category prior (a published **signed** imbalance is not participant-category splitting) \u2014 those non-kills are stated so a future session does not borrow the wrong one. What binds: free-data route 1 requires **demonstrating** a vol-orthogonal, within-era-robust edge (F1 had no \u03b4 at all \u2014 unclaimed, not cleared); the order-flow modality is parenthesised to the standing *\"don't buy explanatory data before a survivor justifies it\"* rule (Avenue-A qualifying triple unmet; *scoped-not-procured*); and harvest Req 2 independently renders it UNSCREENABLE with the \u03b4-extraction probe route **circular** (it needs the gated data). Cheapest re-open is free: a published cohort \u03b4 for imbalance \u2192 index-futures response, citable without procurement. [F1 ruling](../../docs/briefs/2026-07-27-f1-moc-imbalance-mym-ruling.md)"
+      ]
+    },
+    "htf-compression-breakout-5m": {
+      "definition": "**NEW 2026-08-10.** Trade the **5m** compression\u2192expansion break itself (not an HTF bias filter on 1m scalps): structural stop at the opposite quiet extreme; first valid signal per RTH session only (temporal selectivity under [`ADR 2026-08-10`](../../docs/adr/2026-08-10-temporal-selectivity-outside-mapped-levers.md)); session-flat; Tradeify RT. Distinct from `compression-gated-breakout` dense-1m / fixed-G cells.",
+      "findings": [
+        "MNQ HTF-native 5m with-break (`Q-TNEC-CON-3`) explore \u2192 `AMBIGUOUS-HOLD` \u2014 long +0.073R with CI straddling 0; short \u22120.026R; not FALSIFIED; not live-pass; CONFIRM unread. [MNQ.md](MNQ.md) \u00b7 [`RESULTS`](../../lab/analysis/c1/mnq_tnec_con3_htf_native_break_2026-08/RESULTS.md)"
+      ]
+    },
+    "ict-liquidity": {
+      "definition": "ICT-style liquidity-sweep / fair-value-gap geometry (sweep \u2192 FVG \u2192 opposing-pool draw) used as an entry signal.",
+      "findings": [
+        "Sweep\u2192same-direction-FVG\u2192opposing-pool-draw direction is real on SPX500 (block-permutation p=0.0144) but fails robustness (drop-top-3 = \u22120.152R, 95% block-CI straddles 0). [SPX500.md D2](SPX500.md)",
+        "**Liquidity pools are anti-attractors**, replicated on three independent instruments \u2014 old highs/lows are swept far *less* often than a radius-matched MC null, on every side measured (US500 0.55/0.34 vs base 0.76/0.61; NQ 0.5401/0.3128 vs 0.7756/0.6014; MNQ 0.5303/0.3397 vs 0.8020/0.6502). Any construct keying on \"price is drawn to old highs/lows\" argues against three panels. The companion **bear-FVG draw** is the real positive of this class (NQ 0.8630 vs base 0.7494, RESOLVED). [MNQ.md N9](MNQ.md) \u00b7 [`RESULTS.md`](../../lab/analysis/_inbox/ict_mnq_2026-08/RESULTS.md) \u00a73"
+      ]
+    },
+    "impulse-pullback-vwap-reclaim": {
+      "definition": "**NEW 2026-08-11.** First-30m RTH bias (close@09:59 vs open@09:30) \u2192 after 10:00 require close on the bias side of session typical-price VWAP \u2192 pullback tag \u2192 reclaim close back through VWAP with bias \u2192 enter next 1m open; structural stop at the pullback extreme (tag\u2192reclaim); first valid signal per session; session-flat; Tradeify RT. Continuation-on-retest \u2014 distinct from through-break (CON-1\u20134), compression, fade-to-VWAP, and ORB.",
+      "findings": [
+        "MNQ impulse\u2192pullback\u2192VWAP-reclaim (`Q-TNEC-CON-5`) explore \u2192 `AMBIGUOUS-HOLD` \u2014 long \u22120.184R / short \u22120.360R; CIs straddle; stop \u224817.5 pt; gross/(4\u00d7RT) \u22480.11\u00d7; not FALSIFIED; not live-pass; CONFIRM unread. [MNQ.md](MNQ.md) \u00b7 [`RESULTS`](../../lab/analysis/c1/mnq_tnec_con5_impulse_pullback_vwap_2026-08/RESULTS.md)"
+      ]
+    },
+    "index-dispersion": {
+      "definition": "Trading the spread between index-level and single-name volatility or correlation rather than index direction.",
+      "findings": [
+        "Index dispersion / correlation-risk-premium as a 5th book leg was killed pre-build at the venue falsifier \u2014 futures-prop firms are options-free and Cboe DSPX has no listed tradable derivative. [SPX500.md D4](SPX500.md)"
+      ]
+    },
+    "intraday-momentum": {
+      "definition": "A next-bar or intraday continuation signal keyed to the prior bar's or prior session's directional momentum (Baltussen-class).",
+      "findings": [
+        "Baltussen-class intraday momentum is statistically ABSENT on modern MNQ \u2014 the cost-geometry thesis was real (hurdle fell 11.06\u21923.01 bp) but the OOS edge decayed negative (gross Sharpe +0.88\u2192\u22120.13), corroborating the published post-2021 decay and an external 14-signal-family falsification (arXiv 2605.04004). [NQ.md N3](NQ.md)"
+      ]
+    },
+    "london-range-failed-extension-fade": {
+      "definition": "**NEW 2026-08-12 (MSL-C2).** Fade a failed extension of the London-session high/low (formed before COMEX RTH) into the COMEX open: reclaim after a break that does not follow through; structural stop beyond the swept London extreme; truncated-loss exit; session-flat; first valid signal per session. Session-structure displacement \u2014 **not** a scheduled auction/fix window.",
+      "findings": []
+    },
+    "mean-reversion-fade": {
+      "definition": "Fading an overextended move back toward a reference level rather than following it.",
+      "findings": [
+        "A short-only mean-reversion spike-fader on USOIL is DEAD on the canonical feed \u2014 gross AND net E[R] negative at every target cell, placebo p=0.718, thirds all negative; a sub-ATR confirmation stop is infeasible on cost-geometry grounds. [USOIL.md D3](USOIL.md)"
+      ]
+    },
+    "naive-direction-mirror": {
+      "definition": "Flipping an existing signal's or strategy's direction (long\u2194short) without redesigning entry/exit for the new direction.",
+      "findings": [
+        "The naive Guardian-inverse on XAUUSD (flip the locked long-only trend-rider's own entries/exits to short) is DEAD \u2014 mean \u22122.09R/trade full panel (~\u22123.4R recent); inverting a profitable trend-rider loses by construction and needs its own compression-gated timing, not a mirror. [XAUUSD.md D1](XAUUSD.md)"
+      ]
+    },
+    "opening-pressure": {
+      "definition": "Opening-session volume or range interpreted as directional pressure predicting the remainder of the session.",
+      "findings": [
+        "Opening-volume \u00d7 directional-efficiency (OPENPRESS-1) is FALSIFIED on the MYM limb \u2014 wrong-signed plus cost-law FAIL, with no threshold/window/instrument rescue licensed. [MYM.md](MYM.md)"
+      ]
+    },
+    "opening-range-breakout": {
+      "definition": "Trading the break of a session opening range in the direction of the break.",
+      "findings": [
+        "Equity-index-specific \u2014 ZB *fades* its opening range; the within-day placebo returned p=0.0010, sign-reversed. Do not transplant to a risk-off instrument. [ZB.md B1](ZB.md)"
+      ]
+    },
+    "opening-range-continuation": {
+      "definition": "Entering in the direction of an opening-range break and holding the position for continuation past the initial move.",
+      "findings": [
+        "Session-aware continuation on MYM failed on seven independent grounds at once (D2\u2013D8, N=403) \u2014 placebo p=0.2144, gross/cost ratio 0.693 against a 4.00 bar, net \u22120.0210R. D3 is arithmetically unrescuable by sizing (gross/cost reduces to 0.655; contracts and stop-width cancel out). [MYM.md M2/M3](MYM.md)"
+      ]
+    },
+    "order-flow-depth-imbalance": {
+      "definition": "**NEW 2026-08-05.** Resting displayed size, aggregated across book levels, used as a directional",
+      "findings": [
+        "10-level size imbalance carries **no** directional information at the"
+      ]
+    },
+    "overnight-range-failed-extension-fade": {
+      "definition": "**NEW 2026-08-13 (MSL-C3 K2 revive).** Fade a **failed** extension of the Globex **overnight** high/low into the RTH probe window: reclaim after a break that does not follow through; structural stop beyond the swept overnight extreme; truncated-loss exit; session-flat by 16:00 ET; k=1 first valid signal per session. Mean-reversion-at-a-level (route \u2460) \u2014 **not** PDH/PDL RTH prior-day, **not** London/COMEX (C2), **not** WSTRUCT weekly.",
+      "findings": [
+        "none yet \u2014 held unread under original C3 \u22641-story license; now a **scored axis** under [`STAGE1_K2`](../../lab/archive/msl_c3_m2k_2026-08/STAGE1_K2.md) (`K_intrinsic=2`). B4 unpaid."
+      ]
+    },
+    "pdh-pdl-breakout-rth": {
+      "definition": "**NEW 2026-08-10.** First RTH close beyond prior-RTH high (long) or low (short) \u2192 enter next 1m open; structural stop at the opposite prior extreme; first valid signal per session; session-flat; Tradeify RT. Through-break continuation \u2014 distinct from compression-break (CON-2/3), ORB, MNQPROX OF-approach contrast, and N9/C10 level-touch attraction/fade.",
+      "findings": [
+        "MNQ PDH/PDL with-break (`Q-TNEC-CON-4`) explore \u2192 `AMBIGUOUS-HOLD` \u2014 long \u22120.007R / short +0.005R; CIs straddle; stop \u2248257 pt; gross/(4\u00d7RT) \u22480.27\u00d7; not FALSIFIED; not live-pass; CONFIRM unread. [MNQ.md](MNQ.md) \u00b7 [`RESULTS`](../../lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/RESULTS.md)"
+      ]
+    },
+    "pdh-pdl-failed-break-reclaim": {
+      "definition": "**NEW 2026-08-13 (MSL-C3).** Fade a **failed** break of prior-day RTH high/low (PDH/PDL): reclaim after a sweep that does not follow through; structural stop beyond the swept extreme; truncated-loss exit; session-flat by 16:00 ET; k=1 first valid signal per session. Mean-reversion-at-a-level (route \u2460) \u2014 **not** through-break continuation.",
+      "findings": [
+        "MYM explore **FALSIFIED** (both-arms CI &lt; 0) \u2014 [C1 RESULTS](../../lab/archive/msl_c1_mym_2026-08/RESULTS_g2.md) \u00b7 [closure](../../docs/briefs/closures/MSL-C1-closure-falsified.md). M2K unpaid path [OPERATOR-KILL](../../docs/briefs/closures/MSL-C3-closure-operator-kill.md) (B4 declined; class not killed at C3). **Revive in flight:** M2K dual-axis Stage-1 at `K_intrinsic=2` \u2014 [`STAGE1_K2`](../../lab/archive/msl_c3_m2k_2026-08/STAGE1_K2.md) \u00b7 [ADR](../../docs/adr/2026-08-13-msl-c3-k2-dual-axis-revive.md) \u2014 B4 unpaid; does not clear the MYM explore kill."
+      ]
+    },
+    "pullback-failure-resumption": {
+      "definition": "**NEW 2026-08-13 (MSL-S2A).** Join an established **intraday** directional move after a pullback fails to reverse it \u2014 continuation entry on the resumption bar; hard stop beyond the pullback extreme; target at `rr` \u2208 [2, 3] of that stop; session-flat; k=1 first valid signal per session. One trigger class: *pullback-failure resumption*. Not breakout-from-range, not compression-expansion, not MR-at-level.",
+      "findings": [
+        "MCL explore **FALSIFIED** (N-ACT 0.511 trades/week; long FLIP FAIL) \u2014 [S2A RESULTS](../../lab/archive/msl_s2a_mcl_2026-08/RESULTS_g2.md) \u00b7 [closure](../../docs/briefs/closures/MSL-S2A-closure-falsified.md). CONFIRM unread."
+      ]
+    },
+    "regime-overlay": {
+      "definition": "A deploy-vs-wait or sizing gate keyed to an inferred market regime state rather than to price action directly.",
+      "findings": [
+        "Gold's KER/TSMOM trend-persistence regime-gate (`KER_126 \u2265 0.12` AND `TSMOM_252 > 0`) is FALSIFIED \u2014 its in-sample separation was an n\u22482-regime-block artifact and the OOS falsifiers invert (DEPLOY +0.004R vs WAIT +0.284R). [XAUUSD.md D2](XAUUSD.md)"
+      ]
+    },
+    "sweep-failure-filtered-continuation": {
+      "definition": "**NEW 2026-08-14 (MSL-S2B).** Trend-continuation entry on **MYM** **gated** by a PDH/PDL sweep-failure state \u2014 the sweep-failure is a **filter, never the entry**; hard stop; target at `rr` \u2208 [2, 3]; session-flat by 16:00 ET; k=1 first valid signal per session. Consumes C1's DELETE-PASS selection evidence in **filter role** (entry-role construct remains dead). Not OR continuation; not PDH/PDL failed-break reclaim entry; not through-break.",
+      "findings": [
+        "Stage-1 **FAIL** (route) \u2014 index raised bar unbound for continuation *entry*; SLR route \u2460 clears MR-at-level *filter* only; temporal-selectivity route blocked by Q-TNEC-CON-5 pause; composite clearance forbidden. [STAGE1](../../lab/analysis/c1/msl_s2b_mym_2026-08/STAGE1.md) \u00b7 [closure](../../docs/briefs/closures/MSL-S2B-closure-stage1-fail-route.md). $0 / K=0; G0 never frozen."
+      ]
+    },
+    "trend-following": {
+      "definition": "Riding an established directional move rather than fading it or timing its start (regime-capture / breakout-and-hold constructs).",
+      "findings": [
+        "USOIL's regime-capture trend leg (breakout / long-short / vol-target / trailing) passes every non-multiplicity gate (broad, fat-tail-robust, plateau-stable) but fails honest-N multiplicity correction on two independent gates (B-1 PBO 0.655, B-3 DSR p=0.215) \u2014 best-of-36 is selection noise, not edge. [USOIL.md](USOIL.md)"
+      ]
+    },
+    "turn-of-month": {
+      "definition": "A calendar-timed return premium around the turn of the month, from institutional month-end cash flows reinvested at the turn.",
+      "findings": [
+        "No tradeable turn-of-month premium on SPX500's canonical Pepperstone feed (2017\u20132026, n=113 turns) \u2014 the existence battery is hard-absent (Welch t=0.64, label-perm p=0.25), the effect is entirely COVID-concentrated, and the halves sign-reverse. [SPX500.md F5](SPX500.md)"
+      ]
+    },
+    "venue-transfer": {
+      "definition": "Porting a locked strategy to a different venue or contract without re-deriving parameters.",
+      "findings": [
+        "Structural venue costs, not signal decay, are the usual killer \u2014 DJ30 to MYM returned an OOS PF ratio of 0.559 against a 0.8x gate. [YM.md Y3](YM.md)"
+      ]
+    }
+  }
+}

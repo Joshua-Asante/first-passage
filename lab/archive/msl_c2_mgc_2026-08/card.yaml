@@ -1,0 +1,21 @@
+# MSL-C2 Stage-1 card YAML — evidence input for msl_preflight only.
+# p/rr are NOT freeze-time claims (slate: high-WR demonstrated only at scoring).
+# They exist so the tool can emit geometry tables; campaign manager adjudicates
+# the three kill limbs (cost-law / payability / survival) without gating on implied-SR.
+id: msl-c2-mgc-london-range-failed-extension
+instrument: MGC
+mechanism: london-range-failed-extension-fade
+dedup_query: london-range-failed-extension
+dedup_paths:
+  - docs/rejected_candidates.md
+  - lab/CATALOG.md
+  - docs/briefs/2026-08-12-msl-first-slate.md
+# Placeholder for tool arithmetic only — not an assumed-edge region freeze:
+p: 0.55
+rr: 1.0
+n_trades: 1
+rt_cost_usd: 4.12
+point_value_usd: 10.0
+contracts: 4
+stop_pts: 16.0
+target_pts: 16.0

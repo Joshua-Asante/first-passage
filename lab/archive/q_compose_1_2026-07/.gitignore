@@ -1,0 +1,5 @@
+# Intermediate/partition outputs + run logs (report JSON + RESULTS.md are committed)
+*.log
+partitions_full_half.json
+boot_*.json
+smoke_*.json

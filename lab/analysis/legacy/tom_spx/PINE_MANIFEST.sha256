@@ -1,0 +1,31 @@
+# PINE_MANIFEST.sha256 — Q-TOM-SPX-1 canonical concept-stage Pine harness
+# ---------------------------------------------------------------------------
+# WHY THIS FILE EXISTS
+#   `**/*.pine` is gitignored (public-clone posture, edge protection), so the
+#   gate-bearing harness `tom_test_spx500.pine` is NOT in git and does not
+#   survive across worktrees. On 2026-06-16 the original authoring copy was
+#   found unrecoverable (uncommitted on a since-removed worktree, no hash on
+#   record). The verbatim source was reconstructed from the operator's paste
+#   and this hash committed so "load the canonical Pine harness" (Q-TOM-SPX-1
+#   brief §6 / SPX500 ledger OQ1) becomes a VERIFIABLE instruction even though
+#   the .pine bytes themselves stay gitignored. The hash is the durable record.
+#
+#   NOTE: this closes the durability gap only partially — the SOURCE is still
+#   not in git. Full closure (committing the source) is a public-clone-posture
+#   decision; this script is concept-stage / ABSENT-verdict / no live edge, so
+#   committing it would be safe, but that is an operator call, not done here.
+#
+# CONVENTION
+#   SHA256 is over the UTF-8 bytes with LF line endings (CRLF normalized to LF
+#   before hashing). The committed copy is LF, so raw == normalized.
+#
+# VERIFY (CRLF-robust — works regardless of how your editor saved line endings)
+#   python -c "import hashlib,pathlib;p=pathlib.Path('lab/analysis/tom_spx/tom_test_spx500.pine');print(hashlib.sha256(p.read_bytes().replace(b'\r\n',b'\n')).hexdigest())"
+#   # compare the printed digest to the line below
+#
+#   (If your working copy is LF, plain `sha256sum -c PINE_MANIFEST.sha256`
+#    from this directory also works.)
+#
+# PINNED 2026-06-16 — config fingerprint at defaults: TOM|L1:3|reg0|vol0|pt0|ee0|xT0
+# ---------------------------------------------------------------------------
+090662242a0316887de95ace0019291bedbe9e3f580017d10bf0444ce7f6ae07  tom_test_spx500.pine

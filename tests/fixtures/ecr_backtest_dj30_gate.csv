@@ -1,0 +1,3 @@
+Trade #,Type,Date and time,Signal,Price USD,Size (qty),Size (value),Net P&L USD,Net P&L %
+1,Entry long,2026-06-01 11:30,Long,30518.57,9.5,289926.415,1000.00,0.50
+1,Exit long,2026-06-01 12:15,Exit Long,30623.80,9.5,290926.415,1000.00,0.50

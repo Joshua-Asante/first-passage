@@ -1,0 +1,70 @@
+============================================================================
+0. THE FLOOR BEING TESTED  (re-derived, not quoted)
+============================================================================
+  qty = min(floor(185 / (2 x stop_pts)), 1)
+  qty >= 1  <=>  stop_pts <= 92.5      (WATCH-1 0.50x, no DD)
+  qty >= 1  <=>  stop_pts <= 37.0      (DD-scaled 0.40x)
+  ground truth 2026-07-28: stop 126.75 pts @ close 28051.5 => 0.4518% of price; qty_out = 0
+
+============================================================================
+PANEL: v1_on_MNQ1! (2020-2026, n=237 base)
+============================================================================
+  file : Striker_NAS100_v1_CME_MINI_MNQ1!_2026-07-11_beabf.csv
+  base entries: 237   span 2020-01-06 -> 2026-06-30
+  passive losing exits (stop-outs): 111 / 237
+  stop-out distance (pts)           : n=111  min 0.500 | med 34.250 | p90 72.850 | max 595.250
+  stop-out distance (% of price)    : n=111  min 0.005% | med 0.220% | p90 0.437% | max 3.315%
+  MAE all trades (pts)              : n=237  min 0.000 | med 21.000 | p90 64.550 | max 616.500
+  MAE all trades (% of price)       : n=237  min 0.000% | med 0.129% | p90 0.394% | max 3.433%
+
+  [NAIVE, absolute pts] stop-outs <= 92.5 pts: 108/111 = 97.3%
+    ^ MISLEADING: MNQ ran ~10,300 -> ~29,600 over the panel, so old
+      trades clear an ABSOLUTE threshold only because price was low.
+
+  [DECISION] project each stop%% onto CURRENT price levels:
+    @ MNQ 28000: need stop <= 0.3304% of price  ->  86/111 = 77.5% of historical stops qualify
+    @ MNQ 29000: need stop <= 0.3190% of price  ->  85/111 = 76.6% of historical stops qualify
+    @ MNQ 29600: need stop <= 0.3125% of price  ->  85/111 = 76.6% of historical stops qualify
+
+  [HARD BOUND] non-stop-out trades: 126 (their stop is provably > their MAE)
+    @ MNQ 28000: 6/237 base entries (2.5%) PROVABLY had stop > threshold (survived MAE > 0.3304%)
+    @ MNQ 29600: 7/237 base entries (3.0%) PROVABLY had stop > threshold (survived MAE > 0.3125%)
+    consistency check |MAE - (entry-exit)| / (entry-exit) on stop-outs: med 0.0%
+
+============================================================================
+PANEL: MNQ edition (2025-09+, n=37 base)
+============================================================================
+  file : Striker_NAS100_MNQ_CME_MINI_MNQ1!_2026-07-17_06861.csv
+  base entries: 37   span 2025-09-15 -> 2026-07-06
+  passive losing exits (stop-outs): 19 / 37
+  stop-out distance (pts)           : n=19   min 12.250 | med 41.000 | p90 78.750 | max 87.000
+  stop-out distance (% of price)    : n=19   min 0.047% | med 0.161% | p90 0.286% | max 0.343%
+  MAE all trades (pts)              : n=37   min 4.705 | med 40.455 | p90 88.605 | max 148.205
+  MAE all trades (% of price)       : n=37   min 0.019% | med 0.153% | p90 0.348% | max 0.607%
+
+  [NAIVE, absolute pts] stop-outs <= 92.5 pts: 19/19 = 100.0%
+    ^ MISLEADING: MNQ ran ~10,300 -> ~29,600 over the panel, so old
+      trades clear an ABSOLUTE threshold only because price was low.
+
+  [DECISION] project each stop%% onto CURRENT price levels:
+    @ MNQ 28000: need stop <= 0.3304% of price  ->  18/19 = 94.7% of historical stops qualify
+    @ MNQ 29000: need stop <= 0.3190% of price  ->  18/19 = 94.7% of historical stops qualify
+    @ MNQ 29600: need stop <= 0.3125% of price  ->  18/19 = 94.7% of historical stops qualify
+
+  [HARD BOUND] non-stop-out trades: 18 (their stop is provably > their MAE)
+    @ MNQ 28000: 1/37 base entries (2.7%) PROVABLY had stop > threshold (survived MAE > 0.3304%)
+    @ MNQ 29600: 1/37 base entries (2.7%) PROVABLY had stop > threshold (survived MAE > 0.3125%)
+    consistency check |MAE - (entry-exit)| / (entry-exit) on stop-outs: med 2.8%
+
+============================================================================
+VERDICT
+============================================================================
+  @ MNQ 28000: threshold = 0.3304% of price; median stop = 0.2168%; qualifying = 104/130 = 80.0%
+  @ MNQ 29600: threshold = 0.3125% of price; median stop = 0.2168%; qualifying = 103/130 = 79.2%
+
+  median stop is 0.69x the threshold at MNQ 29,600.
+
+  NOTE: the stop-out estimator is a LOWER BOUND (trailing biases it down),
+        so the true qualifying fraction is <= what is printed.
+
+stats -> C:\Users\joshu\multi_firm_operations\.claude\worktrees\tradeify-research-support-plan-304e1d\lab\analysis\mnq_stop_distribution_2026-08-02\out\mnq_stops.json

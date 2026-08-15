@@ -1,0 +1,307 @@
+{
+  "pre_reg": "docs/briefs/pre-registration/Q-COMPOSE-1-verdict-preregistration.md",
+  "parent_pre_q": "docs/briefs/Q-COMPOSE-1-orb-classs-book-regime-breadth.md",
+  "gate_prereg": "docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md",
+  "candidate_prereg": "docs/briefs/pre-registration/2026-07-15-existing-strategy-book-candidate-1-prereg.md",
+  "book": {
+    "legs": {
+      "striker": 0.007,
+      "striker_nas100": 0.0037,
+      "orb_mnq": 0.0037
+    },
+    "orb_lifecycle_mult": 1.0,
+    "sub_book_haircut": "NONE (haircut arms forbidden here \u2014 sibling pre-reg)"
+  },
+  "n_sims": 10000,
+  "n_panels": 100,
+  "smoke": false,
+  "floor": {
+    "bust_ceiling": 0.03,
+    "pass_floor": 0.5
+  },
+  "panel_meta": {
+    "legs": {
+      "striker": {
+        "file": "Striker_DJ30_v4.5_MYM_CBOT_MINI_MYM1!_2026-07-11_15d8b.csv",
+        "sha256": "9acfa29726a9530d2a3de5fc2290cc67672441fac2c805defd524677cce01b9e",
+        "export_initial": 200000.0,
+        "n_trades": 267,
+        "span": "2020-01-14->2026-06-30",
+        "1r_method": "full-stop mean (|loss| > 1% acct, n=8)",
+        "1r_dollars": 2535.611381430168,
+        "1r_n": 8,
+        "1r_warn": false,
+        "scale": 0.5521350827863669,
+        "risk_pct": 0.007,
+        "target_1r": 1400.0,
+        "net_scaled": 37180.70860444489,
+        "n_overnight_holds": 0
+      },
+      "striker_nas100": {
+        "file": "Striker_NAS100_v1_CME_MINI_MNQ1!_2026-07-11_beabf.csv",
+        "sha256": "8884e6dd56c786e1e59a8ab0b962a70be82f34e06af26a9582554c9f8ddc6419",
+        "export_initial": 200000.0,
+        "n_trades": 284,
+        "span": "2020-01-06->2026-06-30",
+        "1r_method": "full-stop mean (|loss| > 1% acct, n=19)",
+        "1r_dollars": 5899.31780718921,
+        "1r_n": 19,
+        "1r_warn": false,
+        "scale": 0.12543823272212903,
+        "risk_pct": 0.0037,
+        "target_1r": 740.0,
+        "net_scaled": 52219.07377123145,
+        "n_overnight_holds": 0
+      }
+    },
+    "panel_span": "2020-01-06->2026-06-30",
+    "n_bdays": 1692,
+    "book_net_200k": 89399.78237567632
+  },
+  "orb_series": {
+    "n_orb_trade_days": 1846,
+    "orb_span": "2019-05-06->2026-07-15",
+    "n_inside_panel_window": 1665,
+    "n_dropped_outside_window": 181,
+    "orb_alloc": 0.0037,
+    "account_basis": 200000.0,
+    "usd_per_R": 740.0,
+    "net_usd_in_window": 94741.39160473103,
+    "self_check": "R multiset identical to orb_lib.orb_backtest",
+    "dbn_cache": {
+      "path": "C:\\Users\\joshu\\.databento_cache\\ohlcv-1m_continuous_ce119c1e8f923316.dbn",
+      "sha256": "4fc074ab4bf5aca1ecf22e6443abe776e6e7a3f8302fb1938b089fe4ff71a103"
+    }
+  },
+  "baseline_2leg_cited": {
+    "Tradeify_Select_100K": {
+      "H1_bust": 0.0437,
+      "boot_bust_95th": 0.1037
+    },
+    "MFFU_Rapid_100K": {
+      "H1_bust": 0.0436,
+      "boot_bust_95th": 0.1033
+    }
+  },
+  "reproduction_control": "skipped \u2014 not mandated by the compose pre-reg; frozen 2-leg baseline (REGIME_GATE.md @163b0b5) reproduced by the haircut sibling's 1.00x control on this machine/venv 2026-07-17",
+  "median_days_note": "median_days_to_pass not surfaced by summarize_outcomes; pass_rate reported as the practicality proxy (non-gating deviation, same as haircut sibling).",
+  "breadth_declaration": {
+    "2leg": {
+      "dependence_neff_pr_corr": 1.9947549588179385,
+      "risk_neff_pr_cov": 1.959344026291287,
+      "enb": 1.9973711594080965
+    },
+    "3leg": {
+      "dependence_neff_pr_corr": 2.950186184790938,
+      "risk_neff_pr_cov": 1.962790987009394,
+      "enb": 2.9746583172978927
+    },
+    "n_weeks": 339,
+    "delta_dependence": 0.9554312259729996,
+    "delta_risk": 0.0034469607181071282
+  },
+  "verdict": {
+    "floor_bust": 0.03,
+    "floor_pass": 0.5,
+    "orb_weight": 0.0037,
+    "clearers": [],
+    "trailing_locking_clearers": [],
+    "verdict": "FALSIFIED",
+    "reason": "H1 bust > ceiling OR bootstrap-95th > ceiling on EVERY tier at the frozen weight \u2014 breadth does not rescue regime-fragility",
+    "tiers": {
+      "Bulenox_100K": {
+        "dd_type": "trailing",
+        "full_panel_ok": false,
+        "H1_ok": false,
+        "H2_ok": false,
+        "bootstrap_ok": false,
+        "all_four_clear": false,
+        "falsified_limb": true,
+        "full": {
+          "firm_key": "Bulenox_100K",
+          "consistency": null,
+          "n_sims": 10000,
+          "headline_bust": 0.4474666666666667,
+          "pass_rate": 0.5525333333333333,
+          "clears_part_a": false,
+          "gated_on": "run1_degenerate",
+          "floor_ok": false
+        },
+        "half": {
+          "H1": {
+            "firm_key": "Bulenox_100K",
+            "consistency": null,
+            "n_sims": 10000,
+            "headline_bust": 0.6093333333333333,
+            "pass_rate": 0.3906666666666667,
+            "clears_part_a": false,
+            "gated_on": "run1_degenerate",
+            "floor_ok": false
+          },
+          "H2": {
+            "firm_key": "Bulenox_100K",
+            "consistency": null,
+            "n_sims": 10000,
+            "headline_bust": 0.3138,
+            "pass_rate": 0.6861999999999999,
+            "clears_part_a": false,
+            "gated_on": "run1_degenerate",
+            "floor_ok": false
+          },
+          "half_panel_ok": false
+        },
+        "bootstrap_summary": {
+          "pass_5th": 0.4717766666666667,
+          "pass_mean": 0.577954,
+          "bust_95th": 0.5282233333333333,
+          "bust_mean": 0.422046
+        }
+      },
+      "Tradeify_Select_100K": {
+        "dd_type": "trailing_locking",
+        "full_panel_ok": false,
+        "H1_ok": false,
+        "H2_ok": false,
+        "bootstrap_ok": false,
+        "all_four_clear": false,
+        "falsified_limb": true,
+        "full": {
+          "firm_key": "Tradeify_Select_100K",
+          "consistency": 0.4,
+          "n_sims": 10000,
+          "headline_bust": 0.3874666666666667,
+          "pass_rate": 0.6125333333333333,
+          "clears_part_a": false,
+          "gated_on": "run2",
+          "floor_ok": false
+        },
+        "half": {
+          "H1": {
+            "firm_key": "Tradeify_Select_100K",
+            "consistency": 0.4,
+            "n_sims": 10000,
+            "headline_bust": 0.5473333333333333,
+            "pass_rate": 0.4526666666666667,
+            "clears_part_a": false,
+            "gated_on": "run2",
+            "floor_ok": false
+          },
+          "H2": {
+            "firm_key": "Tradeify_Select_100K",
+            "consistency": 0.4,
+            "n_sims": 10000,
+            "headline_bust": 0.25843333333333335,
+            "pass_rate": 0.7415666666666666,
+            "clears_part_a": false,
+            "gated_on": "run2",
+            "floor_ok": false
+          },
+          "half_panel_ok": false
+        },
+        "bootstrap_summary": {
+          "pass_5th": 0.5285616666666667,
+          "pass_mean": 0.6379683333333334,
+          "bust_95th": 0.47143833333333335,
+          "bust_mean": 0.3620316666666667
+        }
+      },
+      "MFFU_Rapid_100K": {
+        "dd_type": "trailing_locking",
+        "full_panel_ok": false,
+        "H1_ok": false,
+        "H2_ok": false,
+        "bootstrap_ok": false,
+        "all_four_clear": false,
+        "falsified_limb": true,
+        "full": {
+          "firm_key": "MFFU_Rapid_100K",
+          "consistency": 0.5,
+          "n_sims": 10000,
+          "headline_bust": 0.3854333333333333,
+          "pass_rate": 0.6145666666666666,
+          "clears_part_a": false,
+          "gated_on": "run2",
+          "floor_ok": false
+        },
+        "half": {
+          "H1": {
+            "firm_key": "MFFU_Rapid_100K",
+            "consistency": 0.5,
+            "n_sims": 10000,
+            "headline_bust": 0.5417333333333333,
+            "pass_rate": 0.45826666666666666,
+            "clears_part_a": false,
+            "gated_on": "run2",
+            "floor_ok": false
+          },
+          "H2": {
+            "firm_key": "MFFU_Rapid_100K",
+            "consistency": 0.5,
+            "n_sims": 10000,
+            "headline_bust": 0.2579333333333333,
+            "pass_rate": 0.7420666666666667,
+            "clears_part_a": false,
+            "gated_on": "run2",
+            "floor_ok": false
+          },
+          "half_panel_ok": false
+        },
+        "bootstrap_summary": {
+          "pass_5th": 0.5320433333333334,
+          "pass_mean": 0.639812,
+          "bust_95th": 0.46795666666666663,
+          "bust_mean": 0.36018800000000006
+        }
+      },
+      "BluSky_Premium_100K": {
+        "dd_type": "trailing",
+        "full_panel_ok": false,
+        "H1_ok": false,
+        "H2_ok": false,
+        "bootstrap_ok": false,
+        "all_four_clear": false,
+        "falsified_limb": true,
+        "full": {
+          "firm_key": "BluSky_Premium_100K",
+          "consistency": 0.34,
+          "n_sims": 10000,
+          "headline_bust": 0.5190666666666667,
+          "pass_rate": 0.4809333333333334,
+          "clears_part_a": false,
+          "gated_on": "run2",
+          "floor_ok": false
+        },
+        "half": {
+          "H1": {
+            "firm_key": "BluSky_Premium_100K",
+            "consistency": 0.34,
+            "n_sims": 10000,
+            "headline_bust": 0.6762666666666667,
+            "pass_rate": 0.3237333333333333,
+            "clears_part_a": false,
+            "gated_on": "run2",
+            "floor_ok": false
+          },
+          "H2": {
+            "firm_key": "BluSky_Premium_100K",
+            "consistency": 0.34,
+            "n_sims": 10000,
+            "headline_bust": 0.3728,
+            "pass_rate": 0.6272,
+            "clears_part_a": false,
+            "gated_on": "run2",
+            "floor_ok": false
+          },
+          "half_panel_ok": false
+        },
+        "bootstrap_summary": {
+          "pass_5th": 0.4041966666666667,
+          "pass_mean": 0.5159320000000001,
+          "bust_95th": 0.5958033333333334,
+          "bust_mean": 0.48406799999999994
+        }
+      }
+    }
+  },
+  "wall_s": 5428.2
+}

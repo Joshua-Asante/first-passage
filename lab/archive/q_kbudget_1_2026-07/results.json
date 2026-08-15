@@ -1,0 +1,186 @@
+{
+  "cap": 1.0,
+  "dsr_min": 0.95,
+  "rows": [
+    {
+      "axis": "D1 GC/MGC successor (any design)",
+      "family": "GC/MGC",
+      "k_banked": 3177,
+      "k_intrinsic": [
+        1,
+        1
+      ],
+      "clause_n": "n/a \u2014 Clause K kills first",
+      "k_eff": [
+        3178,
+        3178
+      ],
+      "floor": [
+        2.05,
+        2.05
+      ],
+      "clause_k": "FAIL",
+      "verdict": "FAIL (Clause K)"
+    },
+    {
+      "axis": "D2 wide mining, other GLBX family",
+      "family": "ES/NQ/YM",
+      "k_banked": 1,
+      "k_intrinsic": [
+        1000,
+        10000
+      ],
+      "clause_n": "n/a \u2014 Clause K kills first",
+      "k_eff": [
+        1001,
+        10001
+      ],
+      "floor": [
+        1.925,
+        2.165
+      ],
+      "clause_k": "FAIL",
+      "verdict": "FAIL (Clause K)"
+    },
+    {
+      "axis": "D3 HARV-class ES month-end mechanism",
+      "family": "ES",
+      "k_banked": 1,
+      "k_intrinsic": [
+        1,
+        2
+      ],
+      "clause_n": "INHERITED FAIL: P(primary|true) ~= 0.24-0.30, joint 0.05-0.06 (Q-HARV-1 SS-R DECLINE, commit 9bddd33; N ~= 100 month-ends 2018+)",
+      "k_eff": [
+        2,
+        3
+      ],
+      "floor": [
+        0.85,
+        0.98
+      ],
+      "clause_k": "PASS",
+      "verdict": "FAIL (Clause N, inherited)"
+    },
+    {
+      "axis": "D4 XAU T3b swap-dealer COT (prop expression = GC/MGC)",
+      "family": "GC/MGC",
+      "k_banked": 3177,
+      "k_intrinsic": [
+        1,
+        2
+      ],
+      "clause_n": "UNSCREENABLE-moot (no citable delta; cannot flip \u2014 Clause K kills any GC/MGC expression independently)",
+      "k_eff": [
+        3178,
+        3179
+      ],
+      "floor": [
+        2.05,
+        2.05
+      ],
+      "clause_k": "FAIL",
+      "verdict": "FAIL (Clause K)"
+    },
+    {
+      "axis": "D5 NQ/MNQ intraday-momentum footprint (was: gamma-positioning)",
+      "family": "MYM/MNQ",
+      "k_banked": 0,
+      "k_intrinsic": [
+        1,
+        3
+      ],
+      "clause_n": "PASS: confirm-construct = intraday-momentum footprint (Baltussen et al. 2021 JFE NQ cohort, delta/sigma=0.113, power=0.947 at N=1000); DJ30 drop/down-weight; operator-ratified 2026-07-15 \u2014 see d5_clause_n_rescreen.md",
+      "k_eff": [
+        1,
+        3
+      ],
+      "floor": [
+        0.65,
+        0.98
+      ],
+      "clause_k": "PASS",
+      "verdict": "PASS"
+    },
+    {
+      "axis": "D6 eurusd_pattern_enum Phase-4 (locked K=450)",
+      "family": "6E/EURUSD",
+      "k_banked": 0,
+      "k_intrinsic": [
+        450,
+        450
+      ],
+      "clause_n": "n/a \u2014 Clause K kills first",
+      "k_eff": [
+        450,
+        450
+      ],
+      "floor": [
+        1.835,
+        1.835
+      ],
+      "clause_k": "FAIL",
+      "verdict": "FAIL (Clause K)"
+    },
+    {
+      "axis": "D7 JPY month-end mechanism (6J expression)",
+      "family": "6J",
+      "k_banked": 0,
+      "k_intrinsic": [
+        1,
+        3
+      ],
+      "clause_n": "FAIL (N, class-analogue): P(primary|true) ~= 0.30 < 0.50 at N~=100, delta/sigma=0.144 (HARV class-analogue, Q-HARV-1 SS-R 9bddd33) -- see d7_clause_n_screen.md",
+      "k_eff": [
+        1,
+        3
+      ],
+      "floor": [
+        0.65,
+        0.98
+      ],
+      "clause_k": "PASS",
+      "verdict": "FAIL (Clause N)"
+    },
+    {
+      "axis": "H-OD-1 overnight-drift inventory-risk (2:00-3:00 ET) [harvest H1]",
+      "family": "ES",
+      "k_banked": 1,
+      "k_intrinsic": [
+        1,
+        2
+      ],
+      "clause_n": "PASS: power=0.837 at N=1000, delta/sigma=0.093 (FRBNY SR917 Table I; harvest addendum H1; Path 1a; RATIFIED 2026-07-16)",
+      "k_eff": [
+        2,
+        3
+      ],
+      "floor": [
+        0.85,
+        0.98
+      ],
+      "clause_k": "PASS",
+      "verdict": "PASS"
+    },
+    {
+      "axis": "H-TSMOM-1 Moskowitz 12m/1m TSMOM (S&P500/ES) [harvest H2]",
+      "family": "ES",
+      "k_banked": 1,
+      "k_intrinsic": [
+        1,
+        1
+      ],
+      "clause_n": "PASS: power=0.638 at N=192, delta/sigma=0.167 (Moskowitz Fig.2; H_TSMOM_1_fig2_scrape.md; harvest addendum H2; Path 1b PASS; RATIFIED 2026-07-16)",
+      "k_eff": [
+        2,
+        2
+      ],
+      "floor": [
+        0.85,
+        0.85
+      ],
+      "clause_k": "PASS",
+      "verdict": "PASS"
+    }
+  ]
+}

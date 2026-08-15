@@ -1,0 +1,60 @@
+{
+  "rows": [
+    {
+      "cohort": "PRIMARY 10Y-family [0\u219215m]",
+      "N": 134,
+      "delta_bp": 1.01,
+      "sigma_bp": 7.29,
+      "delta_over_sigma": 0.1387,
+      "t_stat": 1.61
+    },
+    {
+      "cohort": "PRIMARY 10Y-family [0\u219230m]",
+      "N": 132,
+      "delta_bp": 0.28,
+      "sigma_bp": 8.33,
+      "delta_over_sigma": 0.0336,
+      "t_stat": 0.39
+    },
+    {
+      "cohort": "PRIMARY 10Y-family [0\u219260m]",
+      "N": 133,
+      "delta_bp": 1.447,
+      "sigma_bp": 9.72,
+      "delta_over_sigma": 0.1489,
+      "t_stat": 1.72
+    },
+    {
+      "cohort": "SECONDARY all-coupon [0\u219215m]",
+      "N": 715,
+      "delta_bp": 0.388,
+      "sigma_bp": 7.35,
+      "delta_over_sigma": 0.0528,
+      "t_stat": 1.41
+    },
+    {
+      "cohort": "SECONDARY all-coupon [0\u219230m]",
+      "N": 705,
+      "delta_bp": 0.633,
+      "sigma_bp": 8.37,
+      "delta_over_sigma": 0.0756,
+      "t_stat": 2.01
+    },
+    {
+      "cohort": "SECONDARY all-coupon [0\u219260m]",
+      "N": 707,
+      "delta_bp": 0.828,
+      "sigma_bp": 10.25,
+      "delta_over_sigma": 0.0808,
+      "t_stat": 2.15
+    }
+  ],
+  "verdict": "SCREEN-FAIL",
+  "req4": true,
+  "req5_vs6bp": false,
+  "req5_vs10bp": false,
+  "cost_hurdle_bp": [
+    6.0,
+    10.0
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "card_id": "msl-c3-m2k-pdh-pdl-failed-break-reclaim",
+  "card_path": "lab/analysis/c1/msl_c3_m2k_2026-08/card.yaml",
+  "disclaimer": "evidence only; computes evidence only",
+  "dedup_query": "pdh-pdl-failed-break-reclaim",
+  "dedup_paths": [
+    "docs/rejected_candidates.md",
+    "lab/CATALOG.md",
+    "docs/briefs/2026-08-12-msl-first-slate.md",
+    "docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md",
+    "docs/briefs/closures/MSL-C3-closure-operator-kill.md",
+    "docs/briefs/closures/MSL-C1-closure-falsified.md",
+    "ops/instruments/M2K.md",
+    "ops/instruments/MECHANISMS.md"
+  ],
+  "dedup_hits": [
+    "/workspace/docs/rejected_candidates.md:36:**Rejection scope:** the MSL-C1 G0 construct `pdh-pdl-failed-break-reclaim` on CBOT **MYM**",
+    "/workspace/docs/rejected_candidates.md:49:<!-- concept-intake-entry mechanism_family=\"pdh-pdl-failed-break-reclaim\" instrument=\"MYM\" rejection_reason=\"explore IS FALSIFIED: both arms CI upper < 0 (mean ≈ −0.18/−0.11R)\" harness_disposition_ref=\"MSL-C1 RESULTS_g2 (lab/archive/msl_c1_mym_2026-08/RESULTS_g2.md)\" date=\"2026-08-13\" class=\"explore-falsified\" role_tested=\"entry\" falsifier_failed=\"primary CI entirely < 0 both arms\" addback_condition=\"new mechanism evidence — NOT θ-retune of this G0\" -->",
+    "/workspace/docs/rejected_candidates.md:53:**Rejection scope:** the MSL-C3 card’s unpaid G0 path for `pdh-pdl-failed-break-reclaim` on",
+    "/workspace/docs/rejected_candidates.md:60:`pdh-pdl-failed-break-reclaim` (available to MSL-C1 on MYM); Stage-0 L3/WSTRUCT/W4 discharge.",
+    "/workspace/docs/rejected_candidates.md:63:<!-- concept-intake-entry mechanism_family=\"pdh-pdl-failed-break-reclaim\" instrument=\"M2K\" rejection_reason=\"operator-kill pre-G0 (B4 declined): Stage-1 PASS but G0 never frozen; slot handed to MSL-C1.\" harness_disposition_ref=\"MSL-C3 STAGE1 (lab/analysis/c1/msl_c3_m2k_2026-08/STAGE1.md)\" date=\"2026-08-13\" class=\"operator-stop\" role_tested=\"entry\" falsifier_failed=\"n/a — B4 declined\" addback_condition=\"fresh Stage-1 + new B4 GO — NOT silent revive of this unpaid G0 path\" -->",
+    "/workspace/docs/briefs/closures/MSL-C3-closure-operator-kill.md:5:**Lane:** MSL · card MSL-C3 · mechanism `pdh-pdl-failed-break-reclaim` × **M2K**",
+    "/workspace/docs/briefs/closures/MSL-C3-closure-operator-kill.md:24:- Treating Stage-1 arithmetic PASS as edge · freezing G0 without a fresh B4 · Pine/TV · reading any M2K panel · θ-retune “rescue” · killing the `pdh-pdl-failed-break-reclaim` **class** (C1 may still elect it on MYM) · WSTRUCT reopen · arming",
+    "/workspace/ops/instruments/MECHANISMS.md:176:## pdh-pdl-failed-break-reclaim",
+    "/workspace/ops/instruments/MECHANISMS.md:197:- `pdh-pdl-failed-break-reclaim` — prior-day **RTH** H/L; distinct clock/reference (sibling scored axis on C3 K2, not a substitute id).",
+    "/workspace/ops/instruments/MECHANISMS.md:219:- `london-range-failed-extension-fade` / `pdh-pdl-failed-break-reclaim` — slate-1 MR-at-level fades; opposite family.",
+    "/workspace/ops/instruments/M2K.md:63:- **[`MSL-C3` Stage-1 PASS](../../lab/analysis/c1/msl_c3_m2k_2026-08/STAGE1.md) (2026-08-13).** Elected `pdh-pdl-failed-break-reclaim` (route ①); RAISED BAR answered; $0 screens PASS at RT $2.82. **B4 DECLINED** → [OPERATOR-KILL](../../docs/briefs/closures/MSL-C3-closure-operator-kill.md); no G0.",
+    "/workspace/ops/instruments/M2K.md:71:- **2026-08-13 (Stage-1)** — **MSL-C3 Stage-1 PASS** ([`STAGE1.md`](../../lab/analysis/c1/msl_c3_m2k_2026-08/STAGE1.md)). Stories frozen (priority: PDH/PDL failed-break reclaim → overnight-range held); route ①; M1 RAISED BAR CLEAR via SLR precedent; three kill limbs PASS at RT $2.82 / stop 32 pts / 4 contracts. Mechanism `pdh-pdl-failed-break-reclaim` NEW in MECHANISMS.md. **B4 unpaid.** No G0, Pine, pull, $0 · K=0.",
+    "/workspace/docs/briefs/closures/MSL-C1-closure-falsified.md:5:**Lane:** MSL · card MSL-C1 · mechanism `pdh-pdl-failed-break-reclaim` × **MYM**"
+  ],
+  "cell_command": [
+    "/usr/bin/python3",
+    "/workspace/scripts/instrument_profiles.py",
+    "cell",
+    "M2K",
+    "pdh-pdl-failed-break-reclaim"
+  ],
+  "cell_stdout": "=== M2K x pdh-pdl-failed-break-reclaim ===\nledger: ops/instruments/M2K.md\nverdict: untested — no prior on this cell.\nclass finding (mechanism-wide, not specific to M2K): MYM explore **FALSIFIED** (both-arms CI &lt; 0) — [C1 RESULTS](../../lab/archive/msl_c1_mym_2026-08/RESULTS_g2.md) · [closure](../../docs/briefs/closures/MSL-C1-closure-falsified.md). M2K unpaid path [OPERATOR-KILL](../../docs/briefs/closures/MSL-C3-closure-operator-kill.md) (B4 declined; class not killed at C3). **Revive in flight:** M2K dual-axis Stage-1 at `K_intrinsic=2` — [`STAGE1_K2`](../../lab/analysis/c1/msl_c3_m2k_2026-08/STAGE1_K2.md) · [ADR](../../docs/adr/2026-08-13-msl-c3-k2-dual-axis-revive.md) — B4 unpaid; does not clear the MYM explore kill.\nBINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md\ncost hurdle: 11.89 bp/round-trip (panel-era median 1,897.20 => 11.89 bp/RT (recomputed 2026-07-28; supersedes illustrative index-2300 figure and withdrawn 10-30x margin claim). WARN Multiplier basis PENDING — 4x hurdle was Tradeify; venue de-scoped 2026-08-04; F3 open; friendly-firm per-side $0.50-$0.95; re-price against elected venue before this row gates anything.) — VERIFY at #M2\nK bank: read ../../discovery_manifests/ — never trust a snapshot.\nprior: Cross-index RV selection over ES/NQ/YM/RTY is strictly dominated by single-instrument ORB-MNQ - index aggregation compresses the idiosyncratic dispersion that makes Stocks-in-Play work. An RTY intraday pull is a DEFER-procurement trigger with an explicitly poor prior. [#M3]\nprior: Opening-range momentum is an equity-index property (it fades on Treasuries) - so equity-index instruments are where directional structure plausibly lives, but that same tie means cost-viability and decorrelation-from-the-book are in tension by construction. [#M4]\n",
+  "cell_returncode": 1,
+  "arithmetic": {
+    "p": 0.55,
+    "rr": 1.0,
+    "n_trades": 1,
+    "contracts": 4,
+    "expectancy_r": 0.1,
+    "per_trade_sharpe": 0.100504,
+    "implied_annualized_sr": 1.6,
+    "implied_annualized_sr_raw": 1.5954480704349328,
+    "trading_days_per_year": 252,
+    "cost_law": {
+      "rt_cost_usd": 2.82,
+      "rows": [
+        {
+          "multiple": 1.0,
+          "stop_floor_usd": 28.2,
+          "stop_floor_pts": 5.64
+        },
+        {
+          "multiple": 2.0,
+          "stop_floor_usd": 56.4,
+          "stop_floor_pts": 11.28
+        },
+        {
+          "multiple": 4.0,
+          "stop_floor_usd": 112.8,
+          "stop_floor_pts": 22.56
+        }
+      ],
+      "card_multiple": 4.0,
+      "stop_floor_usd_at_card_multiple": 112.8
+    },
+    "geometry": {
+      "stop_pts": 32.0,
+      "target_pts": 32.0,
+      "span_pts": 64.0,
+      "point_value_usd": 5.0,
+      "rt_cost_usd": 2.82
+    },
+    "payability": {
+      "all_win_day_usd": 628.72,
+      "payout_min_usd_reference": 200.0,
+      "all_win_day_minus_ref": 428.72
+    },
+    "worst_day": {
+      "all_lose_day_usd": 651.28,
+      "worst_day_bound_usd_reference": 750.0,
+      "bound_minus_all_lose_day": 98.72
+    },
+    "sigma_d": {
+      "sigma_d_usd": 636.792,
+      "sigma_d_usd_raw": 636.7919597482368
+    }
+  }
+}

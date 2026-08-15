@@ -1,0 +1,37 @@
+{
+  "run_id": "fc_carry_6e6j6cl",
+  "status": "closed",
+  "opened_at": "2026-07-21T00:18:14Z",
+  "tool": "carry-timing-portfolio",
+  "K": 1,
+  "alpha": 0.05,
+  "data_window": "2010-06-06:2018-12-31",
+  "hypothesis": "F-C combined carry-timing portfolio (6E/6J/CL): equal-weight, monthly-rebalanced long-when-own-carry>0 / short-when-<0 on front-month, carry=(front-second)/second; one book leg (K=1); annualized Sharpe is the Tier-A screen quantity (cost amortized over monthly hold); Req-4 power delta/sigma>=0.122",
+  "params": "",
+  "closed_at": "2026-07-21T00:20:58Z",
+  "results": {
+    "n_submitted": 1,
+    "naive_alpha": 0.05,
+    "n_pass_naive_alpha": 0,
+    "bonferroni_threshold": 0.05,
+    "n_pass_bonferroni": 0,
+    "n_multiplicity_killed": 0,
+    "bh_rows": [
+      {
+        "rank": 1,
+        "pvalue": 0.394,
+        "bh_threshold": 0.05,
+        "bh_reject": false
+      }
+    ],
+    "n_pass_bh": 0,
+    "expected_false_positives_global_null": 0.05,
+    "candidates": [
+      {
+        "id": null,
+        "pvalue": 0.394
+      }
+    ]
+  },
+  "verdict": "FIRST-PASS ONLY. Candidates clearing the crude multiplicity floor are listed above. This is NOT a promotion. Hand the full candidate set (all K returns) to strategy-validation for universe-level correction (White RC / Hansen SPA / Romano-Wolf) and the native-micro OOS gate before any candidate is trusted."
+}

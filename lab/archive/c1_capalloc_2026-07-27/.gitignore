@@ -1,0 +1,4 @@
+# Drift sentinel is a LOCAL run artifact. Never commit it: a committed
+# "passing" sentinel would let a fresh clone run override pins without ever
+# performing the paired legacy drift check, defeating the fail-closed design.
+_drift_check_legacy.json

@@ -1,0 +1,135 @@
+{
+  "brief": "Q-RAIL-1",
+  "scored": "F2",
+  "method": "roll-seam-masked RMA ATR(11)\u00d71.20; floor=(sl*$/pt)/risk%; WATCH-1=0.50\u00d7 risk",
+  "account_usd": 100000.0,
+  "micro_cap": 80,
+  "legs": [
+    {
+      "symbol": "MYM",
+      "dollars_per_pt": 0.5,
+      "risk_full_pct": 0.7,
+      "risk_watch1_pct": 0.35,
+      "pyramid_pct": 750.0,
+      "panel_n_bars_masked": 141446,
+      "panel_end_utc": "2026-07-02 00:00:00+00:00",
+      "full_median": {
+        "atr_median_pts": 37.7299,
+        "sl_pts": 45.2759,
+        "floor_1x_usd": 3234,
+        "floor_watch1_usd": 6468,
+        "ideal_base_at_100k_w1": 15.461,
+        "base_qty": 15,
+        "reserve_base_max": 8,
+        "base_capped": 8,
+        "add_qty": 60,
+        "total_qty": 68,
+        "base_ge_1": true,
+        "add_survives": true,
+        "under_cap": true,
+        "headroom_100k_minus_floor_w1": 93532,
+        "pre_2026_07_22_whole_cap_per_leg": {
+          "reserve_base_max": 9,
+          "base_capped": 9,
+          "add_qty": 67,
+          "total_qty": 76,
+          "under_cap": true
+        }
+      },
+      "recent_90d": {
+        "atr_median_pts": 50.6834,
+        "sl_pts": 60.8201,
+        "floor_1x_usd": 4344,
+        "floor_watch1_usd": 8689,
+        "ideal_base_at_100k_w1": 11.509,
+        "base_qty": 11,
+        "reserve_base_max": 8,
+        "base_capped": 8,
+        "add_qty": 60,
+        "total_qty": 68,
+        "base_ge_1": true,
+        "add_survives": true,
+        "under_cap": true,
+        "headroom_100k_minus_floor_w1": 91311,
+        "pre_2026_07_22_whole_cap_per_leg": {
+          "reserve_base_max": 9,
+          "base_capped": 9,
+          "add_qty": 67,
+          "total_qty": 76,
+          "under_cap": true
+        }
+      },
+      "cap_alloc": 69
+    },
+    {
+      "symbol": "MNQ",
+      "dollars_per_pt": 2.0,
+      "risk_full_pct": 0.37,
+      "risk_watch1_pct": 0.185,
+      "pyramid_pct": 1000.0,
+      "panel_n_bars_masked": 141509,
+      "panel_end_utc": "2026-07-02 00:00:00+00:00",
+      "full_median": {
+        "atr_median_pts": 24.0367,
+        "sl_pts": 28.844,
+        "floor_1x_usd": 15591,
+        "floor_watch1_usd": 31183,
+        "ideal_base_at_100k_w1": 3.207,
+        "base_qty": 3,
+        "reserve_base_max": 1,
+        "base_capped": 1,
+        "add_qty": 10,
+        "total_qty": 11,
+        "base_ge_1": true,
+        "add_survives": true,
+        "under_cap": true,
+        "headroom_100k_minus_floor_w1": 68817,
+        "pre_2026_07_22_whole_cap_per_leg": {
+          "reserve_base_max": 7,
+          "base_capped": 3,
+          "add_qty": 30,
+          "total_qty": 33,
+          "under_cap": true
+        }
+      },
+      "recent_90d": {
+        "atr_median_pts": 45.5095,
+        "sl_pts": 54.6114,
+        "floor_1x_usd": 29520,
+        "floor_watch1_usd": 59039,
+        "ideal_base_at_100k_w1": 1.694,
+        "base_qty": 1,
+        "reserve_base_max": 1,
+        "base_capped": 1,
+        "add_qty": 10,
+        "total_qty": 11,
+        "base_ge_1": true,
+        "add_survives": true,
+        "under_cap": true,
+        "headroom_100k_minus_floor_w1": 40961,
+        "pre_2026_07_22_whole_cap_per_leg": {
+          "reserve_base_max": 7,
+          "base_capped": 1,
+          "add_qty": 10,
+          "total_qty": 11,
+          "under_cap": true
+        }
+      },
+      "cap_alloc": 11
+    }
+  ],
+  "cap_semantics": "ACCOUNT-AGGREGATE: Tradeify's contract limit is per account, not per instrument ('Your combined position must stay within your account's contract limit, counted at 10 micros = 1 mini' -- help.tradeify.co article 10495868; 100K = 8 mini / 80 micro per article 12268167, both verified 2026-07-22). micro_cap 80 is therefore shared across legs, allocated per `cap_alloc`. Values under `pre_2026_07_22_whole_cap_per_leg` are the ORIGINAL Q-RAIL-1 pins, computed when the host gave each leg the full 80 -- retained for audit, superseded for use.",
+  "repin_2026_07_22": {
+    "reason": "account-aggregate cap allocation (MYM 69 / MNQ 11)",
+    "changed_fields": [
+      "reserve_base_max",
+      "base_capped",
+      "add_qty",
+      "total_qty",
+      "under_cap"
+    ],
+    "unchanged": "ATR / sl_pts / floors / ideal_base (cap-independent)",
+    "combined_recent_90d_total_qty": 79,
+    "account_cap": 80
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "cases": [
+    {
+      "mu": 0.0,
+      "sigma": 400.0,
+      "h": 3000.0,
+      "horizon": 20,
+      "n_sims": 40000,
+      "p_eod": 0.113,
+      "p_eod_ci95": 0.0031026094243394543,
+      "p_continuous_mc": 0.146075,
+      "p_continuous_mc_ci95": 0.0034611776238406204,
+      "g_theory": 0.18547251081614113,
+      "eod_over_continuous_mc": 0.7735752182098237,
+      "continuous_mc_over_theory": 0.7875830189456169,
+      "label": "no edge, 20d"
+    },
+    {
+      "mu": 0.0,
+      "sigma": 400.0,
+      "h": 3000.0,
+      "horizon": 40,
+      "n_sims": 40000,
+      "p_eod": 0.349175,
+      "p_eod_ci95": 0.004671751784157095,
+      "p_continuous_mc": 0.40635,
+      "p_continuous_mc_ci95": 0.0048132835182544565,
+      "g_theory": 0.4690196689654773,
+      "eod_over_continuous_mc": 0.8592961732496617,
+      "continuous_mc_over_theory": 0.866381576056909,
+      "label": "no edge, 40d"
+    },
+    {
+      "mu": 40.0,
+      "sigma": 400.0,
+      "h": 3000.0,
+      "horizon": 20,
+      "n_sims": 40000,
+      "p_eod": 0.054375,
+      "p_eod_ci95": 0.002222210438814245,
+      "p_continuous_mc": 0.073475,
+      "p_continuous_mc_ci95": 0.002556963002660578,
+      "g_theory": 0.09981735126682176,
+      "eod_over_continuous_mc": 0.7400476352500851,
+      "continuous_mc_over_theory": 0.7360944672193713,
+      "label": "modest edge, 20d"
+    },
+    {
+      "mu": 40.0,
+      "sigma": 400.0,
+      "h": 3000.0,
+      "horizon": 40,
+      "n_sims": 40000,
+      "p_eod": 0.1845,
+      "p_eod_ci95": 0.0038013358691386372,
+      "p_continuous_mc": 0.22925,
+      "p_continuous_mc_ci95": 0.004119433671938414,
+      "g_theory": 0.27871440082003124,
+      "eod_over_continuous_mc": 0.8047982551799345,
+      "continuous_mc_over_theory": 0.822526569583425,
+      "label": "modest edge, 40d"
+    },
+    {
+      "mu": 40.0,
+      "sigma": 400.0,
+      "h": 3000.0,
+      "horizon": 60,
+      "n_sims": 40000,
+      "p_eod": 0.295325,
+      "p_eod_ci95": 0.004470649414321705,
+      "p_continuous_mc": 0.353575,
+      "p_continuous_mc_ci95": 0.004685176138500558,
+      "g_theory": 0.42487409455861663,
+      "eod_over_continuous_mc": 0.8352541893516228,
+      "continuous_mc_over_theory": 0.8321877104964797,
+      "label": "modest edge, 60d"
+    }
+  ],
+  "eod_over_continuous_mc_range": [
+    0.7400476352500851,
+    0.8592961732496617
+  ],
+  "elapsed_s": 248.41755569999805
+}

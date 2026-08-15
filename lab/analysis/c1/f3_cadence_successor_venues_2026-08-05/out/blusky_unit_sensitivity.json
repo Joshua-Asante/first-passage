@@ -1,0 +1,91 @@
+{
+  "tier": "BluSky_Premium_100K",
+  "clause": "ToU s3.3 Abandoned Accounts: Evaluation/BluLive/SimFunded/brokerage accounts inactive for 30 consecutive days may be closed at our discretion",
+  "published_limit_bdays": 30,
+  "calendar_equivalent_bdays": [
+    21,
+    22
+  ],
+  "arms": {
+    "c2off_1.00x_limit21": {
+      "pass": 0.6549666666666667,
+      "bust_daily": 0.0,
+      "bust_static": 0.0,
+      "bust_trailing": 0.2891,
+      "bust_inactivity": 0.055933333333333335,
+      "horizon_cap": 0.0,
+      "bust_dd": 0.2891,
+      "inactivity_limit_used": 21
+    },
+    "c2off_1.00x_limit22": {
+      "pass": 0.6595333333333334,
+      "bust_daily": 0.0,
+      "bust_static": 0.0,
+      "bust_trailing": 0.2917666666666667,
+      "bust_inactivity": 0.0487,
+      "horizon_cap": 0.0,
+      "bust_dd": 0.2917666666666667,
+      "inactivity_limit_used": 22
+    },
+    "c2off_0.50x_limit21": {
+      "pass": 0.7811333333333333,
+      "bust_daily": 0.0,
+      "bust_static": 0.0,
+      "bust_trailing": 0.10006666666666668,
+      "bust_inactivity": 0.1188,
+      "horizon_cap": 0.0,
+      "bust_dd": 0.10006666666666668,
+      "inactivity_limit_used": 21
+    },
+    "c2off_0.50x_limit22": {
+      "pass": 0.7933,
+      "bust_daily": 0.0,
+      "bust_static": 0.0,
+      "bust_trailing": 0.10186666666666666,
+      "bust_inactivity": 0.10483333333333333,
+      "horizon_cap": 0.0,
+      "bust_dd": 0.10186666666666666,
+      "inactivity_limit_used": 22
+    },
+    "c2on_1.00x_limit21": {
+      "pass": 0.7238333333333333,
+      "bust_daily": 0.0,
+      "bust_static": 0.0,
+      "bust_trailing": 0.19640000000000002,
+      "bust_inactivity": 0.07976666666666667,
+      "horizon_cap": 0.0,
+      "bust_dd": 0.19640000000000002,
+      "inactivity_limit_used": 21
+    },
+    "c2on_1.00x_limit22": {
+      "pass": 0.7309,
+      "bust_daily": 0.0,
+      "bust_static": 0.0,
+      "bust_trailing": 0.1987,
+      "bust_inactivity": 0.0704,
+      "horizon_cap": 0.0,
+      "bust_dd": 0.1987,
+      "inactivity_limit_used": 22
+    },
+    "c2on_0.50x_limit21": {
+      "pass": 0.8294666666666667,
+      "bust_daily": 0.0,
+      "bust_static": 0.0,
+      "bust_trailing": 0.022566666666666665,
+      "bust_inactivity": 0.14796666666666666,
+      "horizon_cap": 0.0,
+      "bust_dd": 0.022566666666666665,
+      "inactivity_limit_used": 21
+    },
+    "c2on_0.50x_limit22": {
+      "pass": 0.8452333333333334,
+      "bust_daily": 0.0,
+      "bust_static": 0.0,
+      "bust_trailing": 0.023333333333333334,
+      "bust_inactivity": 0.13143333333333332,
+      "horizon_cap": 0.0,
+      "bust_dd": 0.023333333333333334,
+      "inactivity_limit_used": 22
+    }
+  }
+}

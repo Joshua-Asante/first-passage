@@ -1,0 +1,324 @@
+{
+  "status": "scoping probe for a Q-GEOFIT-1 successor; NOT part of the closed study",
+  "real_bust": 0.047433,
+  "tolerance_pp": 0.5,
+  "n_realizations": 5,
+  "seed_base": 20260725,
+  "tier": "Tradeify_Select_100K",
+  "geometry": "CORRECTED (dd_lock_offset_usd -> 1e6)",
+  "n_sims_per_seed": 10000,
+  "fit": {
+    "z": 0.793144208037825,
+    "n_active": 350,
+    "mu": 127.71397482239479,
+    "sigma": 590.6658716880253,
+    "p_win": 0.42857142857142855,
+    "win_mean": 463.0821182648405,
+    "win_sd": 772.5263775404508,
+    "loss_mean": -123.81213275943954,
+    "loss_sd": 129.0606791209241
+  },
+  "summary": {
+    "symmetric_baseline": {
+      "mean_bust": 0.29435333333333336,
+      "sd_bust": 0.023820353108680442,
+      "min_bust": 0.25603333333333333,
+      "max_bust": 0.32026666666666664,
+      "mean_skew": 0.036147447589996204,
+      "mean_worst_day": -2403.37410156174,
+      "residual_pp": 24.692,
+      "within_tol": false
+    },
+    "skewed_gamma": {
+      "mean_bust": 0.06590666666666666,
+      "sd_bust": 0.10849211287257499,
+      "min_bust": 0.012433333333333333,
+      "max_bust": 0.25989999999999996,
+      "mean_skew": 4.63935696228387,
+      "mean_worst_day": -700.4422200590195,
+      "residual_pp": 1.8474,
+      "within_tol": false
+    },
+    "empirical_shuffle": {
+      "mean_bust": 0.056179999999999994,
+      "sd_bust": 0.011162277744458993,
+      "min_bust": 0.04413333333333333,
+      "max_bust": 0.07086666666666668,
+      "mean_skew": 3.6332326168850386,
+      "mean_worst_day": -744.4142958738101,
+      "residual_pp": 0.8747,
+      "within_tol": false
+    },
+    "empirical_clustered": {
+      "mean_bust": 0.053273333333333325,
+      "sd_bust": 0.028288429122562145,
+      "min_bust": 0.027533333333333337,
+      "max_bust": 0.0877,
+      "mean_skew": 3.6332326168850386,
+      "mean_worst_day": -744.4142958738101,
+      "residual_pp": 0.584,
+      "within_tol": false
+    }
+  },
+  "runs": [
+    {
+      "arm": "symmetric_baseline",
+      "seed": 20260725,
+      "headline_bust": 0.30383333333333334,
+      "pass_rate": 0.6961666666666666,
+      "skew": -0.02349984881491223,
+      "worst_day": -2167.249483333323,
+      "z_realized": 0.793144208037825,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 176.3
+    },
+    {
+      "arm": "symmetric_baseline",
+      "seed": 20260726,
+      "headline_bust": 0.2916,
+      "pass_rate": 0.7084,
+      "skew": -0.02682743701520918,
+      "worst_day": -2310.4011293991966,
+      "z_realized": 0.793144208037825,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 179.1
+    },
+    {
+      "arm": "symmetric_baseline",
+      "seed": 20260727,
+      "headline_bust": 0.3000333333333334,
+      "pass_rate": 0.6999666666666666,
+      "skew": -0.015036979821228645,
+      "worst_day": -2392.29951318922,
+      "z_realized": 0.793144208037825,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 170.8
+    },
+    {
+      "arm": "symmetric_baseline",
+      "seed": 20260728,
+      "headline_bust": 0.32026666666666664,
+      "pass_rate": 0.6797333333333334,
+      "skew": -0.3320422851871583,
+      "worst_day": -3089.013469606052,
+      "z_realized": 0.793144208037825,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 163.2
+    },
+    {
+      "arm": "symmetric_baseline",
+      "seed": 20260729,
+      "headline_bust": 0.25603333333333333,
+      "pass_rate": 0.7439666666666667,
+      "skew": 0.5781437887884894,
+      "worst_day": -2057.9069122809083,
+      "z_realized": 0.793144208037825,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 195.0
+    },
+    {
+      "arm": "skewed_gamma",
+      "seed": 20260725,
+      "headline_bust": 0.017,
+      "pass_rate": 0.9826,
+      "skew": 6.428831408541767,
+      "worst_day": -566.1106684320835,
+      "z_realized": 0.793144208037825,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 366.7
+    },
+    {
+      "arm": "skewed_gamma",
+      "seed": 20260726,
+      "headline_bust": 0.0208,
+      "pass_rate": 0.9792,
+      "skew": 3.7846314521918996,
+      "worst_day": -763.5574509891107,
+      "z_realized": 0.793144208037825,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 268.2
+    },
+    {
+      "arm": "skewed_gamma",
+      "seed": 20260727,
+      "headline_bust": 0.019399999999999997,
+      "pass_rate": 0.9806,
+      "skew": 4.331083323801202,
+      "worst_day": -723.5342529270501,
+      "z_realized": 0.793144208037825,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 260.1
+    },
+    {
+      "arm": "skewed_gamma",
+      "seed": 20260728,
+      "headline_bust": 0.25989999999999996,
+      "pass_rate": 0.7355333333333333,
+      "skew": 4.68776760512512,
+      "worst_day": -762.490075282124,
+      "z_realized": 0.793144208037825,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 456.0
+    },
+    {
+      "arm": "skewed_gamma",
+      "seed": 20260729,
+      "headline_bust": 0.012433333333333333,
+      "pass_rate": 0.9875666666666666,
+      "skew": 3.9644710217593597,
+      "worst_day": -686.5186526647295,
+      "z_realized": 0.793144208037825,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 252.9
+    },
+    {
+      "arm": "empirical_shuffle",
+      "seed": 20260725,
+      "headline_bust": 0.06413333333333333,
+      "pass_rate": 0.9358666666666666,
+      "skew": 3.633232616885038,
+      "worst_day": -744.4142958738101,
+      "z_realized": 0.793144208037825,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 272.4
+    },
+    {
+      "arm": "empirical_shuffle",
+      "seed": 20260726,
+      "headline_bust": 0.04786666666666667,
+      "pass_rate": 0.9521000000000001,
+      "skew": 3.6332326168850386,
+      "worst_day": -744.4142958738101,
+      "z_realized": 0.793144208037825,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 270.1
+    },
+    {
+      "arm": "empirical_shuffle",
+      "seed": 20260727,
+      "headline_bust": 0.0539,
+      "pass_rate": 0.9460999999999999,
+      "skew": 3.633232616885038,
+      "worst_day": -744.4142958738101,
+      "z_realized": 0.793144208037825,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 281.9
+    },
+    {
+      "arm": "empirical_shuffle",
+      "seed": 20260728,
+      "headline_bust": 0.04413333333333333,
+      "pass_rate": 0.9558333333333334,
+      "skew": 3.6332326168850386,
+      "worst_day": -744.4142958738101,
+      "z_realized": 0.793144208037825,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 269.4
+    },
+    {
+      "arm": "empirical_shuffle",
+      "seed": 20260729,
+      "headline_bust": 0.07086666666666668,
+      "pass_rate": 0.9291333333333333,
+      "skew": 3.633232616885038,
+      "worst_day": -744.4142958738101,
+      "z_realized": 0.793144208037825,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 1013.5
+    },
+    {
+      "arm": "empirical_clustered",
+      "seed": 20260725,
+      "headline_bust": 0.0877,
+      "pass_rate": 0.9123000000000001,
+      "skew": 3.633232616885038,
+      "worst_day": -744.4142958738101,
+      "z_realized": 0.793144208037825,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 1025.5
+    },
+    {
+      "arm": "empirical_clustered",
+      "seed": 20260726,
+      "headline_bust": 0.027533333333333337,
+      "pass_rate": 0.9724,
+      "skew": 3.6332326168850386,
+      "worst_day": -744.4142958738101,
+      "z_realized": 0.793144208037825,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 1019.2
+    },
+    {
+      "arm": "empirical_clustered",
+      "seed": 20260727,
+      "headline_bust": 0.044533333333333334,
+      "pass_rate": 0.9554333333333332,
+      "skew": 3.633232616885038,
+      "worst_day": -744.4142958738101,
+      "z_realized": 0.793144208037825,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 1022.8
+    },
+    {
+      "arm": "empirical_clustered",
+      "seed": 20260728,
+      "headline_bust": 0.02803333333333333,
+      "pass_rate": 0.9718333333333334,
+      "skew": 3.6332326168850386,
+      "worst_day": -744.4142958738101,
+      "z_realized": 0.793144208037825,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 1003.1
+    },
+    {
+      "arm": "empirical_clustered",
+      "seed": 20260729,
+      "headline_bust": 0.07856666666666666,
+      "pass_rate": 0.9213999999999999,
+      "skew": 3.633232616885038,
+      "worst_day": -744.4142958738101,
+      "z_realized": 0.793144208037825,
+      "geometry_offset_used": 1000000.0,
+      "wall_s": 967.0
+    }
+  ],
+  "verdict": "SKEW-INSUFFICIENT / SERIAL-STRUCTURE-BINDING",
+  "note": "Even the exact empirical marginals fail. No i.i.d. family of any shape can reproduce this book; a successor must model within-week block structure. Materially bigger re-scope than the closure assumed.",
+  "placement_effect_pp": -0.2907,
+  "verdict_as_run": "SKEW-INSUFFICIENT / SERIAL-STRUCTURE-BINDING",
+  "verdict_as_run_note": "Mechanical rule output. SUPERSEDED by the power analysis below - it fired on a 1.75-sigma residual and is NOT supported.",
+  "power_analysis": {
+    "symmetric_baseline": {
+      "se_pp": 1.0653,
+      "residual_pp": 24.692,
+      "residual_over_se": 23.179,
+      "min_resolvable_diff_pp_2se": 2.1306,
+      "distinguishable_from_real": true
+    },
+    "skewed_gamma": {
+      "se_pp": 4.8519,
+      "residual_pp": 1.8474,
+      "residual_over_se": 0.381,
+      "min_resolvable_diff_pp_2se": 9.7038,
+      "distinguishable_from_real": false
+    },
+    "empirical_shuffle": {
+      "se_pp": 0.4992,
+      "residual_pp": 0.8747,
+      "residual_over_se": 1.752,
+      "min_resolvable_diff_pp_2se": 0.9984,
+      "distinguishable_from_real": false
+    },
+    "empirical_clustered": {
+      "se_pp": 1.2651,
+      "residual_pp": 0.584,
+      "residual_over_se": 0.462,
+      "min_resolvable_diff_pp_2se": 2.5302,
+      "distinguishable_from_real": false
+    }
+  },
+  "power_verdict": "SKEW-CONFIRMED (dominant) / SUFFICIENCY-UNRESOLVED (underpowered)",
+  "power_note": "N=5 gives a minimum resolvable difference of 1.00-9.70pp against a 0.50pp tolerance, so only the symmetric baseline resolves (23.18 sigma). Arms B/C/D sit at 0.38/1.75/0.46 sigma - none can be declared a miss. What IS established: removing skew costs 24.69pp (symmetric 29.44% vs real 4.74%), and restoring it closes ~93% of that gap (skewed_gamma 6.59%). Whether a skewed i.i.d. family suffices to +/-0.5pp needs roughly N>=50 for empirical_shuffle and N>=1900 for skewed_gamma at its observed dispersion.",
+  "r4_placement_correction": "Placement effect measured -0.29pp (clustered minus uniform) with a combined SE of ~1.37pp = 0.21 sigma - indistinguishable from zero at frozen sims and real-book parameters. This SUPERSEDES the directional claim carried in the Q-GEOFIT-1 closure (that uniform placement is the higher-bust, anti-clearing choice), which rested on a 2000-sim proxy at different parameters. R4 remains an undeclared reading that a successor must fix; its DIRECTION is unmeasured.",
+  "skewed_gamma_dispersion_finding": "sd 10.85% across realizations - the Gamma(k=0.359) win branch produces occasional monster realizations. Too unstable to be the successor family as-is even though its mean is closest-in-spirit; a successor should bound the win tail."
+}

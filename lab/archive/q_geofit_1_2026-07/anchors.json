@@ -1,0 +1,95 @@
+{
+  "panel_meta": {
+    "legs": {
+      "striker": {
+        "file": "Striker_DJ30_v4.5_MYM_CBOT_MINI_MYM1!_2026-07-11_15d8b.csv",
+        "sha256": "9acfa29726a9530d2a3de5fc2290cc67672441fac2c805defd524677cce01b9e",
+        "export_initial": 200000.0,
+        "n_trades": 267,
+        "span": "2020-01-14->2026-06-30",
+        "1r_method": "full-stop mean (|loss| > 1% acct, n=8)",
+        "1r_dollars": 2535.611381430168,
+        "1r_n": 8,
+        "1r_warn": false,
+        "scale": 0.5521350827863669,
+        "risk_pct": 0.007,
+        "target_1r": 1400.0,
+        "net_scaled": 37180.70860444489,
+        "n_overnight_holds": 0
+      },
+      "striker_nas100": {
+        "file": "Striker_NAS100_v1_CME_MINI_MNQ1!_2026-07-11_beabf.csv",
+        "sha256": "8884e6dd56c786e1e59a8ab0b962a70be82f34e06af26a9582554c9f8ddc6419",
+        "export_initial": 200000.0,
+        "n_trades": 284,
+        "span": "2020-01-06->2026-06-30",
+        "1r_method": "full-stop mean (|loss| > 1% acct, n=19)",
+        "1r_dollars": 5899.31780718921,
+        "1r_n": 19,
+        "1r_warn": false,
+        "scale": 0.12543823272212903,
+        "risk_pct": 0.0037,
+        "target_1r": 740.0,
+        "net_scaled": 52219.07377123145,
+        "n_overnight_holds": 0
+      }
+    },
+    "panel_span": "2020-01-06->2026-06-30",
+    "n_bdays": 1692,
+    "book_net_200k": 89399.78237567632
+  },
+  "A1": {
+    "1.00x": {
+      "headline_bust": 0.047433333333333334,
+      "pass_rate": 0.9525,
+      "published_pin": 0.0474,
+      "abs_delta_pp": 0.0033,
+      "ok": true,
+      "wall_s": 142.0
+    },
+    "0.50x": {
+      "headline_bust": 0.0010666666666666667,
+      "pass_rate": 0.9980333333333333,
+      "published_pin": 0.0011,
+      "abs_delta_pp": 0.0033,
+      "ok": true,
+      "wall_s": 237.4
+    }
+  },
+  "A2": {
+    "fit": {
+      "z": 0.793144208037825,
+      "sigma_d_pct": 0.5906658716880253,
+      "mu_sigma": 0.21622033867880228,
+      "shape": "student_t4",
+      "active_win_frac": 0.42857142857142855,
+      "active_excess_kurtosis": 17.916799015207463,
+      "n_active": 350,
+      "n_days": 1692
+    },
+    "snapped_cell": {
+      "cell_index": 283,
+      "sigma_d_pct": 0.45,
+      "mu_sigma": 0.15,
+      "shape": "student_t4",
+      "z": 0.4,
+      "seed": 20261007,
+      "practical": false
+    },
+    "out_of_range": {
+      "sigma_d_pct": true,
+      "mu_sigma": true,
+      "z": true
+    },
+    "any_out_of_range": true,
+    "real_bust": 0.047433333333333334,
+    "nearest_cell_bust": 0.3589333333333333,
+    "nearest_residual_pp": 31.15,
+    "nearest_ok": false,
+    "offgrid_exact_bust": 0.28376666666666667,
+    "offgrid_exact_residual_pp": 23.6333,
+    "offgrid_exact_ok": false,
+    "wall_s": 154.5
+  },
+  "anchors_hold": false
+}

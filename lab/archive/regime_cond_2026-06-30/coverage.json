@@ -1,0 +1,37 @@
+{
+  "common_start": "2007-04-11",
+  "common_end": "2026-06-30",
+  "n_common_rows": 4866,
+  "warmup": 252,
+  "n_states_emitted_eqw": 4364,
+  "first_state_date": "2009-04-07",
+  "per_axis_raw_span": {
+    "VIX": [
+      "1990-01-02",
+      "2026-06-29",
+      9217
+    ],
+    "CRED": [
+      "2007-04-11",
+      "2026-06-30",
+      4836
+    ],
+    "MOVE": [
+      "2002-11-12",
+      "2026-06-26",
+      5840
+    ],
+    "DXY": [
+      "1996-07-01",
+      "2026-06-30",
+      7604
+    ]
+  },
+  "binding_axis": "VIX",
+  "state_counts_eqw": {
+    "neutral": 1758,
+    "off": 1697,
+    "on": 909
+  },
+  "loading_trace_rows": 899
+}

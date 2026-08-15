@@ -1,0 +1,22 @@
+# MSL-C3 Stage-1 (K2) — overnight axis evidence input for msl_preflight only.
+# p/rr are NOT freeze-time claims.
+id: msl-c3-m2k-overnight-range-failed-extension-fade
+instrument: M2K
+mechanism: overnight-range-failed-extension-fade
+dedup_query: overnight-range-failed-extension-fade
+dedup_paths:
+  - docs/rejected_candidates.md
+  - lab/CATALOG.md
+  - docs/briefs/2026-08-12-msl-first-slate.md
+  - docs/briefs/closures/MSL-C3-closure-operator-kill.md
+  - docs/briefs/closures/MSL-C2-closure-falsified.md
+  - ops/instruments/M2K.md
+  - ops/instruments/MECHANISMS.md
+p: 0.55
+rr: 1.0
+n_trades: 1
+rt_cost_usd: 2.82
+point_value_usd: 5.0
+contracts: 4
+stop_pts: 32.0
+target_pts: 32.0

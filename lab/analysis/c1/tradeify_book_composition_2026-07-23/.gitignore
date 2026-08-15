@@ -1,0 +1,5 @@
+# Vendor TV List-of-Trades exports (personal OK; not redistributed).
+inputs/
+out/stage*_meta.json
+*.pyc
+__pycache__/

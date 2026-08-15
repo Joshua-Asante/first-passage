@@ -1,0 +1,8 @@
+{
+  "schema_version": "s5.v1",
+  "max_micro_size_contracts": 1,
+  "max_loss_budget_usd": 250.0,
+  "max_attempt_budget": 20,
+  "max_concurrency": 2,
+  "note": "Hard ceilings read at promotion time (SPEC S5). Automation may not edit this file; ceiling-crossings are operator-only."
+}

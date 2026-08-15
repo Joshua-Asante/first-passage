@@ -1,0 +1,41 @@
+[pins] {'WIN_MIN': 200.0, 'FUNDED_LADDER': '30@start -> 40@101,500 -> 50@102,000 -> 80@103,000', 'PAYOUT_MIN': 250.0} — CUSTOM — neither the 07-27 record nor the verified set
+[control 3] candidate set reproduces the frozen 12 cells exactly
+[control 4] all 12 cells respect the 80-micro account cap
+[control 2] live 69/11 produces series identical to canonical 68/12
+[control 5] panel n=1556 bdays; mid=778; H1=778 (2020-08-04..2023-07-27)  H2=778 (2023-07-28..2026-07-21)
+  [full] seed 11 done (312 week-blocks)
+  [full] seed 12 done (312 week-blocks)
+  [full] seed 13 done (312 week-blocks)
+  [H1] seed 11 done (156 week-blocks)
+  [H1] seed 12 done (156 week-blocks)
+  [H1] seed 13 done (156 week-blocks)
+  [H2] seed 11 done (157 week-blocks)
+  [H2] seed 12 done (157 week-blocks)
+  [H2] seed 13 done (157 week-blocks)
+
+[control 1] incumbent reproduction vs the 2026-07-27 session:
+    N/A - pins overridden; the modeled baselines do not apply.
+    eval_med_mo    observed       10.3  (recorded, not asserted)
+    first_pay_mo   observed        5.3  (recorded, not asserted)
+    mean_cash      observed   30,794.1  (recorded, not asserted)
+    OK   - drift delegated to the paired legacy run, which PASSED.
+
+    cell   res        net |           H1 eval/pay/cash |           H2 eval/pay/cash
+   15/65   1/5     91,840 |   11.3    6.7      20,857 |    8.2    5.1      43,386 |
+    9/71   1/6     95,682 |   10.8    6.4      22,432 |    8.2    5.1      43,293 |
+   17/63   2/5     95,907 |   10.9    6.5      23,653 |    7.8    4.9      46,327 |
+   26/54   3/4     91,678 |   10.9    6.0      25,943 |    7.5    4.2      51,645 |
+   37/43   4/3     82,145 |   10.6    6.2      29,055 |    7.4    4.2      55,384 |
+   34/46   4/4     95,745 |    9.7    5.8      28,337 |    7.0    3.9      53,515 |
+   48/32   5/2     65,024 |   11.7    6.9      29,566 |    7.2    3.9      52,717 |
+   43/37   5/3     85,917 |    9.7    5.9      29,988 |    6.9    4.0      56,291 |
+   59/21   6/1     47,370 |   15.8    8.0      24,927 |    8.4    4.1      42,077 |
+   51/29   6/2     69,090 |   11.1    6.8      29,596 |    6.6    3.8      52,185 |
+   60/20   7/1     51,141 |   15.6    7.7      23,773 |    7.8    4.1      40,485 |
+   68/12   8/1     55,206 |   15.6    7.6      22,570 |    7.3    4.0      38,689 |  <- INCUMBENT
+
+winners (floor on D1/D2 only): ['51/29']
+winners (floor on all four)  : ['51/29']
+
+VERDICT: RESOLVED-INCUMBENT-DOMINATED
+saved -> C:\Users\joshu\multi_firm_operations\lab\analysis\c1_capalloc_2026-07-27\measured.json

@@ -1,0 +1,40 @@
+{
+  "investigation": "Q-REGIME-AEGIS-1 Phase-1 screen",
+  "prereg_commit": "81d529f",
+  "n_trades": 149,
+  "n_valid": 149,
+  "WR": 0.5838926174496644,
+  "auc": {
+    "ker126_vs_loss": 0.4985168705969596,
+    "tsmom252_vs_loss": 0.47552836484983313,
+    "ker126_vs_belowmed": 0.47783783783783784,
+    "ker126_vs_loss_ex2022": 0.4846640701071081,
+    "loyo": {
+      "2020": 0.5053571428571428,
+      "2021": 0.4866962305986696,
+      "2022": 0.4846640701071081,
+      "2023": 0.489572192513369,
+      "2024": 0.5056689342403629,
+      "2025": 0.5323153409090909,
+      "2026": 0.4924419842452629
+    },
+    "loyo_min": 0.4846640701071081
+  },
+  "frozen_flag": {
+    "on_n": 40,
+    "off_n": 109,
+    "on_loss_rate": 0.425,
+    "off_loss_rate": 0.41284403669724773,
+    "on_mean_pnl": 1731.84675,
+    "off_mean_pnl": 1153.7440366972478,
+    "loss_rate_gap_pp": 0.01215596330275226
+  },
+  "gates": {
+    "AUC_BAR": 0.7,
+    "ROBUST_FLOOR": 0.65,
+    "flag_gap_resolved": 0.15,
+    "flag_gap_falsified": 0.05,
+    "flag_min_n": 10
+  },
+  "verdict": "FALSIFIED"
+}

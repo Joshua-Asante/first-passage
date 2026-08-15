@@ -1,0 +1,31 @@
+{
+  "manifest": "fc_carry_6e6j6cl",
+  "K": 1,
+  "N_months": 103,
+  "delta_bp_month": 6.75,
+  "sigma_bp_month": 253.3,
+  "delta_over_sigma": 0.0267,
+  "sharpe_ann": 0.092,
+  "t_stat": 0.27,
+  "req4_power": false,
+  "legs": {
+    "6E": {
+      "n": 103,
+      "delta_bp_month": 4.5,
+      "dsig": 0.0167,
+      "sharpe_ann": 0.058
+    },
+    "6J": {
+      "n": 103,
+      "delta_bp_month": 8.4,
+      "dsig": 0.0322,
+      "sharpe_ann": 0.112
+    },
+    "CL": {
+      "n": 103,
+      "delta_bp_month": 7.4,
+      "dsig": 0.012,
+      "sharpe_ann": 0.041
+    }
+  }
+}

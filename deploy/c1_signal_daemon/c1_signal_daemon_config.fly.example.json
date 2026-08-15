@@ -1,0 +1,9 @@
+{
+  "listener_base_url": "https://c1-rail.fly.dev",
+  "path_token": "REPLACE_WITH_LISTENER_PATH_TOKEN_LEN_GTE_32",
+  "bind_host": "0.0.0.0",
+  "bind_port": 8080,
+  "bar_period_s": 900,
+  "emit_enabled": false,
+  "poll_interval_s": 5
+}

@@ -1,0 +1,34 @@
+# PORT_MANIFEST.sha256 — Guardian v5.5 Python port (LOCKED-strategy signal logic)
+# ---------------------------------------------------------------------------
+# WHY THIS FILE EXISTS
+#   guardian_signal.py is an executable, parity-VALIDATED (0.46% net / 1.76% PF
+#   over the full 52-trade window — README §Result) reproduction of Guardian
+#   Gold v5.5's signal logic. It was git-tracked and public from 2026-06-23 to
+#   2026-07-01; per docs/adr/2026-07-01-guardian-pyport-public-tracking.md it is
+#   now UNTRACKED (same edge-protection class as the gitignored `**/*.pine`
+#   source it ports), together with test_guardian_signal.py (which restates the
+#   locked filter semantics in its assertions). The hashes below are the durable
+#   integrity record, same convention as lab/analysis/tom_spx/PINE_MANIFEST.sha256
+#   and core/strategies/MANIFEST.sha256.
+#
+#   HONEST SCOPE (from the ADR): both files remain in public git history —
+#   retrieve via `git show dc07898:lab/analysis/guardian_parity_2026-06-23/<name>`.
+#   Untracking limits amplification (no copy in fresh clones / the browsable
+#   HEAD tree), it does NOT undo disclosure.
+#
+# RESTORE (operator, after any pull that deletes the local working copies)
+#   git show dc07898:lab/analysis/guardian_parity_2026-06-23/guardian_signal.py > lab/analysis/guardian_parity_2026-06-23/guardian_signal.py
+#   git show dc07898:lab/analysis/guardian_parity_2026-06-23/test_guardian_signal.py > lab/analysis/guardian_parity_2026-06-23/test_guardian_signal.py
+#
+# CONVENTION
+#   SHA256 is over the UTF-8 bytes with LF line endings (CRLF normalized to LF
+#   before hashing). `git show` emits blob bytes (LF), so restored == pinned.
+#
+# VERIFY (CRLF-robust)
+#   python -c "import hashlib,pathlib;d=pathlib.Path('lab/analysis/guardian_parity_2026-06-23');[print(hashlib.sha256((d/n).read_bytes().replace(b'\r\n',b'\n')).hexdigest(),'',n) for n in ('guardian_signal.py','test_guardian_signal.py')]"
+#   # compare the printed digests to the lines below
+#
+# PINNED 2026-07-01 — content as of commit dc07898 (post-parity-RESOLVED state)
+# ---------------------------------------------------------------------------
+962543da7a64ad49bd97130dc47cc78c171c5d13f1287d8b483e60e0defc0ef2  guardian_signal.py
+202e8ddbbdbfe4c98e261a49f5d3a4d00a2597bd6df9ba049f7ab2d3980bd526  test_guardian_signal.py

@@ -1,0 +1,108 @@
+{
+  "gate": "FALSIFIED",
+  "tnec": "F U U U U | U | U | L-0.1749/S-0.0769",
+  "long": {
+    "n": 31,
+    "mean_R": -0.17494971320641112,
+    "wr": 0.3548387096774194,
+    "ci": [
+      -0.4639013757153549,
+      0.14379700833490436
+    ],
+    "mean_stop_dist": 0.8125806451612946
+  },
+  "short": {
+    "n": 46,
+    "mean_R": -0.07690274937812522,
+    "wr": 0.43478260869565216,
+    "ci": [
+      -0.2866929157870124,
+      0.145519972904238
+    ],
+    "mean_stop_dist": 0.7930434782608747
+  },
+  "delete": {
+    "long": {
+      "constrained_mean": -0.17494971320641112,
+      "sham_mean": -0.6433550147966695,
+      "pass": true
+    },
+    "short": {
+      "constrained_mean": -0.07690274937812522,
+      "sham_mean": -0.3115615717725636,
+      "pass": true
+    }
+  },
+  "flip": {
+    "long_resume_vs_short_flip": {
+      "resume_mean": -0.17494971320641112,
+      "flip_mean": 0.046574421138797686,
+      "pass": false
+    },
+    "short_resume_vs_long_flip": {
+      "resume_mean": -0.07690274937812522,
+      "flip_mean": -0.08119148102490707,
+      "pass": true
+    }
+  },
+  "aux": {
+    "long": {
+      "placebo_p": 0.263,
+      "annsr": -0.6395123097844025,
+      "halves": {
+        "older": -0.17228502059090312,
+        "newer": -0.17744786253344993
+      },
+      "halves_agree": true
+    },
+    "short": {
+      "placebo_p": 0.489,
+      "annsr": -0.4018493864205559,
+      "halves": {
+        "older": -0.16363749190840757,
+        "newer": 0.026352896491258503
+      },
+      "halves_agree": false
+    }
+  },
+  "cost_law": {
+    "long": {
+      "mean_stop_dist_pts": 0.8125806451612946,
+      "one_r_usd": 81.25806451612945,
+      "four_x_rt_usd": 16.48,
+      "gross_vs_4x": 4.930707798308826
+    },
+    "short": {
+      "mean_stop_dist_pts": 0.7930434782608747,
+      "one_r_usd": 79.30434782608748,
+      "four_x_rt_usd": 16.48,
+      "gross_vs_4x": 4.812157028282007
+    }
+  },
+  "payability_worst": {
+    "long": {
+      "all_win_day_usd": 479.3083870967767,
+      "all_lose_day_usd": 170.7561290322589
+    },
+    "short": {
+      "all_win_day_usd": 467.58608695652487,
+      "all_lose_day_usd": 166.84869565217497
+    }
+  },
+  "disclosures": {
+    "explore_end": "2025-06-30",
+    "confirm_reserved": "2025-07-01\u21922026-07-02",
+    "scored_sessions": 753,
+    "coverage_sessions_with_trade": 77,
+    "trades_per_week": 0.5112881806108898,
+    "n_act_fail": true,
+    "panel_sha256": "5aa504567b943ff68506b8b5c21df293c5a553543fdf1ac606adeb0f5bfbbd23",
+    "qty_disclose": 2,
+    "em_six_char": "U U U U U U"
+  },
+  "explore_scored": true,
+  "scored_at": "2026-08-13T15:25:13.370532+00:00",
+  "panel": "C:\\Users\\joshu\\multi_firm_operations\\core\\data\\bar_data\\MCL_M15.csv",
+  "cost_usd": 0.0,
+  "k_spent": 0
+}

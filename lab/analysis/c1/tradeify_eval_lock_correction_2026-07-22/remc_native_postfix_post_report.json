@@ -1,0 +1,15 @@
+{
+  "phase": "post",
+  "Tradeify_Select_100K": {
+    "dd_lock_offset_usd": 1000000.0,
+    "run2_bust": 0.047433333333333334,
+    "expected": 0.0474,
+    "match": true
+  },
+  "MFFU_Rapid_100K": {
+    "dd_lock_offset_usd": 1000000.0,
+    "run2_bust": 0.04253333333333333,
+    "expected": 0.0425,
+    "match": true
+  }
+}

@@ -1,0 +1,5 @@
+//@version=6
+// pine_check fixture — known-bad. `scripts/pine_check.py` must return exit 1.
+// Deliberate defect: the plotted identifier is never declared -> compile error.
+indicator("pine_check fixture: bad", overlay=true)
+plot(undeclaredIdentifier_fixture)

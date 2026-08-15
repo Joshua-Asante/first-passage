@@ -1,0 +1,34 @@
+{
+  "campaign_id": "d5_recost_1",
+  "prereg": "docs/briefs/pre-registration/D5-RECOST-1-verdict-preregistration.md",
+  "stage": "2 (cost-law re-derivation)",
+  "construct": "Baltussen-2021-JFE-H1 (baltussen.py @ e1c51f0, UNCHANGED)",
+  "window": "2019-05-06:2026-07-16",
+  "n_sessions": 1789,
+  "date_first": "2019-05-06",
+  "date_last": "2026-07-15",
+  "degraded_days_present": 1,
+  "oos_edge": {
+    "mean_edge_bp": -0.32652006637192754,
+    "std_edge": 0.0038874610539328313,
+    "hit_rate": 0.49636668529904976,
+    "sharpe_gross_ann": -0.13333497854366172,
+    "corr_rod_last": 0.024046168327299177
+  },
+  "median_px_1530": 14769.25,
+  "cost_law": {
+    "multiple": 4.0,
+    "primary_firm": "Bulenox_100K",
+    "primary_hurdle_4x_bp": 3.0062460856170756,
+    "primary_edge_over_hurdle": -0.10861388491584664,
+    "sensitivity_firm": "MFFU_Rapid_100K",
+    "sensitivity_hurdle_4x_bp": 3.9270782199502343,
+    "sensitivity_edge_over_hurdle": -0.08314580155626881
+  },
+  "parent_is": {
+    "mean_edge_bp": 1.4612647044076368,
+    "hurdle_4x_bp": 11.062663510651548,
+    "median_px_1530": 4013.5
+  },
+  "verdict": "KILL"
+}

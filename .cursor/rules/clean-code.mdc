@@ -1,0 +1,42 @@
+---
+description: Clean code principles for writing and reviewing code.
+globs: "**/*"
+alwaysApply: false
+---
+
+# Clean Code
+
+## Constants over magic numbers
+
+- Replace hard-coded values with named constants when meaning is not obvious.
+- Use descriptive names; keep constants at module top or in a dedicated constants module.
+
+## Meaningful names
+
+- Names should reveal purpose and usage; avoid unclear abbreviations.
+
+## Comments
+
+- Prefer self-documenting code; comment the *why*, not the obvious *what*.
+- Document non-obvious behavior, APIs, and side effects.
+
+## Single responsibility
+
+- Functions do one thing; split when logic branches or mixes concerns.
+
+## DRY
+
+- Extract repeated logic; maintain single sources of truth.
+
+## Structure and encapsulation
+
+- Keep related code together; extract nested conditionals into well-named helpers.
+
+## Maintenance
+
+- Refactor within scope; leave touched code cleaner than you found it.
+
+## Testing
+
+- Add tests when requested or when they add meaningful coverage.
+- Cover edge cases and error paths when writing tests.

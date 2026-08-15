@@ -1,0 +1,26 @@
+#!/bin/sh
+# Pre-merge-commit gate: duplicate SESSIONS.md session labels.
+#
+# Why this hook exists at all, given pre-commit already runs the same check:
+# `pre-commit` does NOT run when git creates a merge commit automatically.
+# Measured 2026-08-09 on a scratch repo — a clean `git merge` fires ONLY
+# `pre-merge-commit`. And docs/SESSIONS.md carries `merge=union`
+# (.gitattributes), so a merge that brings two entries claiming the same
+# session letter is clean BY CONSTRUCTION: no conflict, no markers, nothing
+# for a human to resolve. Without this limb, the one merge shape that creates
+# the collision is the one shape the gate never sees.
+#
+# Scope is deliberately just the SESSIONS check, not the whole always-tier
+# battery: this is the union-merge failure class, it is sub-second, and a slow
+# merge hook is a hook people disable.
+#
+# ⚠ This does NOT cover the dominant path. When GitHub merges a PR the union
+# resolution happens server-side and no local hook runs (same limitation the
+# post-merge hook documents for entry ordering). `post-merge` carries the
+# warning limb for that case; it can only warn, never block.
+ROOT="$(git rev-parse --show-toplevel)" || exit 0
+cd "$ROOT" || exit 0
+
+python scripts/roll_sessions.py --check-order --root "$ROOT" || exit 1
+python scripts/roll_sessions.py --check-append-only --root "$ROOT" || exit 1
+exit 0

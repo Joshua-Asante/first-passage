@@ -1,0 +1,23 @@
+{
+  "run_id": "st_eh_supertrend_grid",
+  "status": "closed",
+  "opened_at": "2026-07-26T19:35:22Z",
+  "tool": "st-grid",
+  "K": 2,
+  "alpha": 0.05,
+  "data_window": "2010-06-06:2026-07-26",
+  "hypothesis": "H1: ST(10,3) flip-only 15m clears the costed 4x hurdle (>=$11.28/trade, Tradeify) with bootstrap 90% CI LB>0 on the 2010->present parent panel (NQ and/or YM). H2-T1: >=1 of 20 (ATR period x multiplier) cells clears all six Track-1 promotion criteria (IS 2010-2018 selection, 2019+ confirm). H2-T2: >=1 Track-1-failing cell fires the non-promoting REGIME-CANDIDATE flag on 2019-05-06..2023-12-31. Reserved holdout 2024+ unread per-cell.",
+  "params": "{\n  \"campaign\": \"ST-EH-1\",\n  \"construct\": \"Supertrend flip-only stop-and-reverse, 15m, hl2, RMA ATR, signal on close, fill next open, always-in-market\",\n  \"grid\": {\"atr_period\": [7, 10, 14, 21], \"multiplier\": [2.0, 2.5, 3.0, 3.5, 4.0]},\n  \"symbols_parent\": [\"NQ.v.0\", \"YM.v.0\"],\n  \"symbols_micro\": [\"MNQ.v.0\", \"MYM.v.0\"],\n  \"windows\": {\n    \"IS_track1_selection\": \"2010-06-06:2018-12-31\",\n    \"flag_track2_selection\": \"2019-05-06:2023-12-31\",\n    \"reserved_holdout\": \"2024-01-01:present (per-cell UNREAD; allowlist: (10,3) baseline, Track-1 survivor confirm)\"\n  },\n  \"K_total\": 84,\n  \"K_split\": {\"MNQ_family\": 42, \"MYM_family\": 42},\n  \"K_derivation\": \"20 cells x 2 selection windows x 2 symbols = 80 grid trials + 4 baselines (2 x 1yr TV + 2 x long-panel H1)\",\n  \"costs\": {\"firm\": \"Tradeify\", \"per_side_usd\": 0.91, \"slippage_ticks_per_side\": 1, \"RT_usd\": 2.82, \"hurdle_4x_usd\": 11.28},\n  \"prereg\": \"docs/briefs/pre-registration/2026-07-26-st-eh-1-preregistration.md\",\n  \"prereg_commit\": \"8f12205 (amended)\",\n  \"go\": \"2026-07-26/JA\"\n}\n",
+  "closed_at": "2026-07-27T03:47:44Z",
+  "results": {
+    "n_submitted": 0,
+    "executed_k": 2,
+    "declared_k": 84,
+    "candidates": []
+  },
+  "declared_K": 84,
+  "closure_mode": "operator-stopped",
+  "stop_reason": "Operator direction 2026-07-26: 'I have stopped the pulls. Supertrend is closed.' Halted pre-Phase-3; long-panel pull ~100/570 month-chunks; Phases 3-6 never ran. K ruling: bank executed per ADR 2026-07-26 clause 2-C (ratified 2026-07-26/JA).",
+  "executed_looks": "2 executed selection-shaped looks, 1 per instrument family: (1) MNQ 1-yr TV baseline panel ST(10,3) 2025-08-31..2026-07-24, examined by the parent claude.ai advisor session (handoff CC_HANDOFF_ST-EH-1.md \u00a71 table) and re-verified this session by tv_loader (PF 1.0259/WR 36.84%/net +$2,076); (2) MYM 1-yr TV baseline panel, same provenance (PF 1.0489/WR 37.82%). ZERO of the 80 declared grid reads executed - git-auditable: no results artifacts exist, IS-era parent data never finished downloading, run_campaign.py never invoked, holdout guard shows nothing scored.",
+  "verdict": "OPERATOR-STOPPED before declared reads executed. NO campaign verdict exists and none may be quoted. Banks executed selection events (2) per ADR 2026-07-26 clause 2-C; declared K (84) retained in provenance."
+}

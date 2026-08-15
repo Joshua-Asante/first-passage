@@ -1,0 +1,83 @@
+# Repo-root .dockerignore — scopes the c1 rail Fly build context to ONLY the
+# traced sizing-host modules (deploy/c1_rail/Dockerfile).
+#
+# DEFAULT-EXCLUDE everything, then re-include the exact files the Dockerfile
+# COPYs. Rationale: the build context is uploaded to Fly's remote builder, and
+# Docker does NOT honor .gitignore — without this, gitignored proprietary bytes
+# (**/*.pine, core/data vendor CSVs, research) present in the working tree would
+# be shipped. Default-exclude means a forgotten path stays out (privacy-safe).
+#
+# CAVEAT (learned 2026-07-31): "a missing re-include only fails the build loudly
+# (COPY of an absent file)" is TRUE only for paths the Dockerfile names. A NEW
+# TRANSITIVE IMPORT is the silent case — it is in no COPY line, so every COPY
+# still succeeds, the build goes GREEN, and the container dies at CMD with
+# ModuleNotFoundError. That happened with core/historical_challenge.py (added
+# 2026-07-30 by substrate Phase 4, imported unguarded at core/dd_protection.py:62,
+# absent from this list until 2026-07-31). When core/ or ops/ gains an import,
+# re-trace the closure — do not trust a green build.
+# Only `docker build` reads this file; no other repo tooling is affected.
+**
+
+!ops
+ops/**
+!ops/c1_rail
+!ops/c1_rail/__init__.py
+!ops/c1_rail/c1_rail_arm.py
+!ops/c1_rail/c1_rail_http_server.py
+!ops/c1_rail/c1_rail_listener.py
+!ops/c1_rail/c1_rail_slippage.py
+!ops/c1_rail/c1_rail_telemetry.py
+!ops/c1_rail/c1_sizing_host_reference.py
+!ops/c1_rail/crosstrade_payload.py
+
+!ops/c1_signal_daemon
+!ops/c1_signal_daemon/__init__.py
+!ops/c1_signal_daemon/__main__.py
+!ops/c1_signal_daemon/b1_payload.py
+!ops/c1_signal_daemon/daemon.py
+!ops/c1_signal_daemon/evaluate_loop.py
+!ops/c1_signal_daemon/feed.py
+!ops/c1_signal_daemon/heartbeat.py
+!ops/c1_signal_daemon/http_status.py
+!ops/c1_signal_daemon/listener_client.py
+!ops/c1_signal_daemon/strategy_protocol.py
+
+!core
+core/**
+!core/dd_protection.py
+!core/firm_rules.py
+!core/historical_challenge.py
+!core/lifecycle.py
+!core/lib
+core/lib/**
+!core/lib/atomic_io.py
+!core/lib/file_lock.py
+!core/lib/mvd.py
+!core/lib/validation.py
+
+!deploy
+deploy/**
+!deploy/c1_rail
+!deploy/c1_rail/Dockerfile
+!deploy/c1_rail/fly.toml
+
+!deploy/c1_signal_daemon
+!deploy/c1_signal_daemon/Dockerfile
+!deploy/c1_signal_daemon/fly.toml
+
+# The ONLY docs/ path in the build context: the M1 acceptance artifact, read by
+# the arming interlock in ops/c1_rail/c1_rail_arm.py. Re-included file-by-file so the
+# rest of docs/ (briefs, ADRs, notes) stays out of the context uploaded to Fly.
+# Unlike a missing module import, a missing COPY here fails the build LOUDLY
+# (the Dockerfile names the path), and even if it slipped through, absence is
+# fail-safe — the interlock reads unreadable as NOT RESOLVED and refuses to arm.
+!docs
+docs/**
+!docs/notes
+!docs/notes/rail_build
+!docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json
+
+# Schema validator imported by c1_rail_arm (require_resolved). ONE scripts/ file.
+!scripts
+scripts/**
+!scripts/validate_c1_monitoring_acceptance.py

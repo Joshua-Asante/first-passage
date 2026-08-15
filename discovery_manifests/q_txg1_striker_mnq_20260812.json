@@ -1,0 +1,23 @@
+{
+  "run_id": "q_txg1_striker_mnq_20260812",
+  "status": "closed",
+  "opened_at": "2026-08-12T04:56:54Z",
+  "tool": "locked_port_native_tv_panel",
+  "K": 1,
+  "alpha": 0.05,
+  "data_window": "2022-01-01:2026-08-12",
+  "hypothesis": "H-DJMNQ: Striker DJ30 v4.5 execution-mechanics-only port onto CME MNQ clears net>0 after measured venue cost and N-SURV (bust<=3.0% AND P(pass)>=50%) on full panel and both halves at Tradeify_Select_100K",
+  "params": "{\n  \"cell\": \"striker_x_MNQ\",\n  \"election\": 2,\n  \"K_declared\": 1,\n  \"prereg\": \"docs/briefs/pre-registration/2026-08-12-q-txg-1-striker-mnq-cell-prereg.md\",\n  \"port\": \"striker_dj30_v4.5_mnq_qtxg1_prototype\",\n  \"port_sha256\": \"178a2a8e1c78e45a5142749f92284c09d286907a7e096883e1133297cb8a806d\",\n  \"panel\": \"lab/archive/transfer_expression_grid_2026-08/cells/striker_mnq/inputs/Striker_DJ30_MNQ_Q-TXG-1_PROTOTYPE_CME_MINI_MNQ1!_2026-08-12_68340.csv\",\n  \"panel_sha256\": \"7bf08a2341284a5ec378d5cbf67e92399a597176c7dfc638da1421be06864025\",\n  \"required_net_r\": 0.03,\n  \"cost_tax_r\": 0.03,\n  \"nsurv_ceiling_pct\": 3.0,\n  \"firm\": \"Tradeify_Select_100K\",\n  \"env1\": \"OPEN-CONDITIONAL(power)\",\n  \"descope_disclosure\": \"2026-08-04 amendment research leg; not WITHDRAWN(F1) MYM redeploy\"\n}\n",
+  "closed_at": "2026-08-12T05:07:14Z",
+  "results": {
+    "n_submitted": 0,
+    "executed_k": 1,
+    "declared_k": 1,
+    "candidates": []
+  },
+  "declared_K": 1,
+  "closure_mode": "operator-stopped",
+  "stop_reason": "DEAD(N-SURV): K=1 panel scored; cost PASS; N-SURV FAIL full/H1/H2 bust>>3.0%",
+  "executed_looks": "striker_x_MNQ:native_tv_panel+bar_derived_nsurv",
+  "verdict": "OPERATOR-STOPPED before declared reads executed. NO campaign verdict exists and none may be quoted. Banks executed selection events (1) per ADR 2026-07-26 clause 2-C; declared K (1) retained in provenance."
+}

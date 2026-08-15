@@ -1,0 +1,5455 @@
+[
+{
+"auction_date": "2010-06-08",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.230000"
+},
+{
+"auction_date": "2010-06-09",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.240000"
+},
+{
+"auction_date": "2010-06-10",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.870000"
+},
+{
+"auction_date": "2010-06-22",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.450000"
+},
+{
+"auction_date": "2010-06-23",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.580000"
+},
+{
+"auction_date": "2010-06-24",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.010000"
+},
+{
+"auction_date": "2010-07-08",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.880000"
+},
+{
+"auction_date": "2010-07-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.200000"
+},
+{
+"auction_date": "2010-07-13",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.090000"
+},
+{
+"auction_date": "2010-07-14",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.890000"
+},
+{
+"auction_date": "2010-07-27",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.330000"
+},
+{
+"auction_date": "2010-07-28",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.060000"
+},
+{
+"auction_date": "2010-07-29",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.780000"
+},
+{
+"auction_date": "2010-08-10",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.310000"
+},
+{
+"auction_date": "2010-08-11",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.040000"
+},
+{
+"auction_date": "2010-08-12",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.770000"
+},
+{
+"auction_date": "2010-08-23",
+"security_type": "Bond",
+"security_term": "29-Year 6-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.780000"
+},
+{
+"auction_date": "2010-08-24",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.120000"
+},
+{
+"auction_date": "2010-08-25",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.830000"
+},
+{
+"auction_date": "2010-08-26",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.980000"
+},
+{
+"auction_date": "2010-09-02",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.800000"
+},
+{
+"auction_date": "2010-09-07",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.210000"
+},
+{
+"auction_date": "2010-09-08",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.210000"
+},
+{
+"auction_date": "2010-09-09",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.730000"
+},
+{
+"auction_date": "2010-09-27",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.780000"
+},
+{
+"auction_date": "2010-09-28",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.960000"
+},
+{
+"auction_date": "2010-09-29",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.040000"
+},
+{
+"auction_date": "2010-10-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.950000"
+},
+{
+"auction_date": "2010-10-13",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.990000"
+},
+{
+"auction_date": "2010-10-14",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.490000"
+},
+{
+"auction_date": "2010-10-25",
+"security_type": "Note",
+"security_term": "4-Year 6-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.840000"
+},
+{
+"auction_date": "2010-10-26",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.430000"
+},
+{
+"auction_date": "2010-10-27",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.820000"
+},
+{
+"auction_date": "2010-10-28",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.060000"
+},
+{
+"auction_date": "2010-11-04",
+"security_type": "Note",
+"security_term": "9-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.910000"
+},
+{
+"auction_date": "2010-11-08",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.260000"
+},
+{
+"auction_date": "2010-11-09",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.800000"
+},
+{
+"auction_date": "2010-11-10",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.310000"
+},
+{
+"auction_date": "2010-11-22",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.700000"
+},
+{
+"auction_date": "2010-11-23",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.650000"
+},
+{
+"auction_date": "2010-11-24",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.630000"
+},
+{
+"auction_date": "2010-12-07",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.910000"
+},
+{
+"auction_date": "2010-12-08",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.920000"
+},
+{
+"auction_date": "2010-12-09",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.740000"
+},
+{
+"auction_date": "2010-12-27",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.710000"
+},
+{
+"auction_date": "2010-12-28",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.610000"
+},
+{
+"auction_date": "2010-12-29",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.860000"
+},
+{
+"auction_date": "2011-01-11",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.060000"
+},
+{
+"auction_date": "2011-01-12",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.300000"
+},
+{
+"auction_date": "2011-01-13",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.670000"
+},
+{
+"auction_date": "2011-01-20",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.370000"
+},
+{
+"auction_date": "2011-01-25",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.470000"
+},
+{
+"auction_date": "2011-01-26",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.970000"
+},
+{
+"auction_date": "2011-01-27",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.850000"
+},
+{
+"auction_date": "2011-02-08",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.010000"
+},
+{
+"auction_date": "2011-02-09",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.230000"
+},
+{
+"auction_date": "2011-02-10",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.510000"
+},
+{
+"auction_date": "2011-02-17",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.540000"
+},
+{
+"auction_date": "2011-02-22",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.030000"
+},
+{
+"auction_date": "2011-02-23",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.690000"
+},
+{
+"auction_date": "2011-02-24",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.860000"
+},
+{
+"auction_date": "2011-03-08",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.220000"
+},
+{
+"auction_date": "2011-03-09",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.320000"
+},
+{
+"auction_date": "2011-03-10",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.020000"
+},
+{
+"auction_date": "2011-03-24",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.970000"
+},
+{
+"auction_date": "2011-03-28",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.160000"
+},
+{
+"auction_date": "2011-03-29",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.790000"
+},
+{
+"auction_date": "2011-03-30",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.790000"
+},
+{
+"auction_date": "2011-04-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.250000"
+},
+{
+"auction_date": "2011-04-13",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.130000"
+},
+{
+"auction_date": "2011-04-14",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.830000"
+},
+{
+"auction_date": "2011-04-21",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.570000"
+},
+{
+"auction_date": "2011-04-26",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.060000"
+},
+{
+"auction_date": "2011-04-27",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.770000"
+},
+{
+"auction_date": "2011-04-28",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.630000"
+},
+{
+"auction_date": "2011-05-10",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.290000"
+},
+{
+"auction_date": "2011-05-11",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.000000"
+},
+{
+"auction_date": "2011-05-12",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.430000"
+},
+{
+"auction_date": "2011-05-19",
+"security_type": "Note",
+"security_term": "9-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.660000"
+},
+{
+"auction_date": "2011-05-24",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.460000"
+},
+{
+"auction_date": "2011-05-25",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.200000"
+},
+{
+"auction_date": "2011-05-26",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.240000"
+},
+{
+"auction_date": "2011-06-07",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.280000"
+},
+{
+"auction_date": "2011-06-08",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.230000"
+},
+{
+"auction_date": "2011-06-09",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.630000"
+},
+{
+"auction_date": "2011-06-23",
+"security_type": "Bond",
+"security_term": "29-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.020000"
+},
+{
+"auction_date": "2011-06-27",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.080000"
+},
+{
+"auction_date": "2011-06-28",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.590000"
+},
+{
+"auction_date": "2011-06-29",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.620000"
+},
+{
+"auction_date": "2011-07-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.220000"
+},
+{
+"auction_date": "2011-07-13",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.170000"
+},
+{
+"auction_date": "2011-07-14",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.800000"
+},
+{
+"auction_date": "2011-07-21",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.620000"
+},
+{
+"auction_date": "2011-07-26",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.140000"
+},
+{
+"auction_date": "2011-07-27",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.620000"
+},
+{
+"auction_date": "2011-07-28",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.630000"
+},
+{
+"auction_date": "2011-08-09",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.290000"
+},
+{
+"auction_date": "2011-08-10",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.220000"
+},
+{
+"auction_date": "2011-08-11",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.080000"
+},
+{
+"auction_date": "2011-08-18",
+"security_type": "Note",
+"security_term": "4-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.490000"
+},
+{
+"auction_date": "2011-08-23",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.440000"
+},
+{
+"auction_date": "2011-08-24",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.710000"
+},
+{
+"auction_date": "2011-08-25",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.760000"
+},
+{
+"auction_date": "2011-09-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.150000"
+},
+{
+"auction_date": "2011-09-13",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.030000"
+},
+{
+"auction_date": "2011-09-14",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.850000"
+},
+{
+"auction_date": "2011-09-22",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.610000"
+},
+{
+"auction_date": "2011-09-27",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.760000"
+},
+{
+"auction_date": "2011-09-28",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.040000"
+},
+{
+"auction_date": "2011-09-29",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.020000"
+},
+{
+"auction_date": "2011-10-11",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.300000"
+},
+{
+"auction_date": "2011-10-12",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.860000"
+},
+{
+"auction_date": "2011-10-13",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.940000"
+},
+{
+"auction_date": "2011-10-20",
+"security_type": "Bond",
+"security_term": "29-Year 4-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.060000"
+},
+{
+"auction_date": "2011-10-25",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.640000"
+},
+{
+"auction_date": "2011-10-26",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.900000"
+},
+{
+"auction_date": "2011-10-27",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.590000"
+},
+{
+"auction_date": "2011-11-08",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.410000"
+},
+{
+"auction_date": "2011-11-09",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.640000"
+},
+{
+"auction_date": "2011-11-10",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.400000"
+},
+{
+"auction_date": "2011-11-17",
+"security_type": "Note",
+"security_term": "9-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.640000"
+},
+{
+"auction_date": "2011-11-21",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "4.070000"
+},
+{
+"auction_date": "2011-11-22",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.150000"
+},
+{
+"auction_date": "2011-11-23",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.200000"
+},
+{
+"auction_date": "2011-12-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.620000"
+},
+{
+"auction_date": "2011-12-13",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.530000"
+},
+{
+"auction_date": "2011-12-14",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.050000"
+},
+{
+"auction_date": "2011-12-15",
+"security_type": "Note",
+"security_term": "4-Year 4-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.010000"
+},
+{
+"auction_date": "2011-12-19",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.450000"
+},
+{
+"auction_date": "2011-12-20",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.860000"
+},
+{
+"auction_date": "2011-12-21",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.680000"
+},
+{
+"auction_date": "2012-01-10",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.730000"
+},
+{
+"auction_date": "2012-01-11",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.290000"
+},
+{
+"auction_date": "2012-01-12",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.600000"
+},
+{
+"auction_date": "2012-01-19",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.910000"
+},
+{
+"auction_date": "2012-01-24",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.750000"
+},
+{
+"auction_date": "2012-01-25",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.170000"
+},
+{
+"auction_date": "2012-01-26",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.730000"
+},
+{
+"auction_date": "2012-02-07",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.300000"
+},
+{
+"auction_date": "2012-02-08",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.050000"
+},
+{
+"auction_date": "2012-02-09",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.470000"
+},
+{
+"auction_date": "2012-02-16",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.460000"
+},
+{
+"auction_date": "2012-02-21",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.540000"
+},
+{
+"auction_date": "2012-02-22",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.890000"
+},
+{
+"auction_date": "2012-02-23",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.110000"
+},
+{
+"auction_date": "2012-03-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.440000"
+},
+{
+"auction_date": "2012-03-13",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.240000"
+},
+{
+"auction_date": "2012-03-14",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.700000"
+},
+{
+"auction_date": "2012-03-22",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.810000"
+},
+{
+"auction_date": "2012-03-27",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.690000"
+},
+{
+"auction_date": "2012-03-28",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.850000"
+},
+{
+"auction_date": "2012-03-29",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.720000"
+},
+{
+"auction_date": "2012-04-10",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.360000"
+},
+{
+"auction_date": "2012-04-11",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.080000"
+},
+{
+"auction_date": "2012-04-12",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.760000"
+},
+{
+"auction_date": "2012-04-19",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.580000"
+},
+{
+"auction_date": "2012-04-24",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.760000"
+},
+{
+"auction_date": "2012-04-25",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.090000"
+},
+{
+"auction_date": "2012-04-26",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.830000"
+},
+{
+"auction_date": "2012-05-08",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.650000"
+},
+{
+"auction_date": "2012-05-09",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.900000"
+},
+{
+"auction_date": "2012-05-10",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.730000"
+},
+{
+"auction_date": "2012-05-17",
+"security_type": "Note",
+"security_term": "9-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.010000"
+},
+{
+"auction_date": "2012-05-22",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.950000"
+},
+{
+"auction_date": "2012-05-23",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.990000"
+},
+{
+"auction_date": "2012-05-24",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.800000"
+},
+{
+"auction_date": "2012-06-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.530000"
+},
+{
+"auction_date": "2012-06-13",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.060000"
+},
+{
+"auction_date": "2012-06-14",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.400000"
+},
+{
+"auction_date": "2012-06-21",
+"security_type": "Bond",
+"security_term": "29-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.640000"
+},
+{
+"auction_date": "2012-06-26",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.620000"
+},
+{
+"auction_date": "2012-06-27",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.610000"
+},
+{
+"auction_date": "2012-06-28",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.640000"
+},
+{
+"auction_date": "2012-07-10",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.520000"
+},
+{
+"auction_date": "2012-07-11",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.610000"
+},
+{
+"auction_date": "2012-07-12",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.700000"
+},
+{
+"auction_date": "2012-07-19",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.620000"
+},
+{
+"auction_date": "2012-07-24",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "4.000000"
+},
+{
+"auction_date": "2012-07-25",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.710000"
+},
+{
+"auction_date": "2012-07-26",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.640000"
+},
+{
+"auction_date": "2012-08-07",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.510000"
+},
+{
+"auction_date": "2012-08-08",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.490000"
+},
+{
+"auction_date": "2012-08-09",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.410000"
+},
+{
+"auction_date": "2012-08-23",
+"security_type": "Note",
+"security_term": "4-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.110000"
+},
+{
+"auction_date": "2012-08-28",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.940000"
+},
+{
+"auction_date": "2012-08-29",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.920000"
+},
+{
+"auction_date": "2012-08-30",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.800000"
+},
+{
+"auction_date": "2012-09-11",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.940000"
+},
+{
+"auction_date": "2012-09-12",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.850000"
+},
+{
+"auction_date": "2012-09-13",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.680000"
+},
+{
+"auction_date": "2012-09-20",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.360000"
+},
+{
+"auction_date": "2012-09-25",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.600000"
+},
+{
+"auction_date": "2012-09-26",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.060000"
+},
+{
+"auction_date": "2012-09-27",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.610000"
+},
+{
+"auction_date": "2012-10-09",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.960000"
+},
+{
+"auction_date": "2012-10-10",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.260000"
+},
+{
+"auction_date": "2012-10-11",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.490000"
+},
+{
+"auction_date": "2012-10-18",
+"security_type": "Bond",
+"security_term": "29-Year 4-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.820000"
+},
+{
+"auction_date": "2012-10-23",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "4.020000"
+},
+{
+"auction_date": "2012-10-24",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.730000"
+},
+{
+"auction_date": "2012-10-25",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.560000"
+},
+{
+"auction_date": "2012-11-06",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.410000"
+},
+{
+"auction_date": "2012-11-07",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.590000"
+},
+{
+"auction_date": "2012-11-08",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.770000"
+},
+{
+"auction_date": "2012-11-21",
+"security_type": "Note",
+"security_term": "9-Year 8-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.520000"
+},
+{
+"auction_date": "2012-11-27",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "4.070000"
+},
+{
+"auction_date": "2012-11-28",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.890000"
+},
+{
+"auction_date": "2012-11-29",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.810000"
+},
+{
+"auction_date": "2012-12-11",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.360000"
+},
+{
+"auction_date": "2012-12-12",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.950000"
+},
+{
+"auction_date": "2012-12-13",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.500000"
+},
+{
+"auction_date": "2012-12-17",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.590000"
+},
+{
+"auction_date": "2012-12-18",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.720000"
+},
+{
+"auction_date": "2012-12-19",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.720000"
+},
+{
+"auction_date": "2012-12-20",
+"security_type": "Note",
+"security_term": "4-Year 4-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.700000"
+},
+{
+"auction_date": "2013-01-08",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.620000"
+},
+{
+"auction_date": "2013-01-09",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.830000"
+},
+{
+"auction_date": "2013-01-10",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.770000"
+},
+{
+"auction_date": "2013-01-24",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.710000"
+},
+{
+"auction_date": "2013-01-28",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.770000"
+},
+{
+"auction_date": "2013-01-29",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.880000"
+},
+{
+"auction_date": "2013-01-30",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.600000"
+},
+{
+"auction_date": "2013-02-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.590000"
+},
+{
+"auction_date": "2013-02-13",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.680000"
+},
+{
+"auction_date": "2013-02-14",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.740000"
+},
+{
+"auction_date": "2013-02-21",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.470000"
+},
+{
+"auction_date": "2013-02-25",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.330000"
+},
+{
+"auction_date": "2013-02-26",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.850000"
+},
+{
+"auction_date": "2013-02-27",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.650000"
+},
+{
+"auction_date": "2013-03-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.510000"
+},
+{
+"auction_date": "2013-03-13",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.190000"
+},
+{
+"auction_date": "2013-03-14",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.430000"
+},
+{
+"auction_date": "2013-03-21",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.740000"
+},
+{
+"auction_date": "2013-03-26",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.270000"
+},
+{
+"auction_date": "2013-03-27",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.730000"
+},
+{
+"auction_date": "2013-03-28",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.560000"
+},
+{
+"auction_date": "2013-04-09",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.240000"
+},
+{
+"auction_date": "2013-04-10",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.790000"
+},
+{
+"auction_date": "2013-04-11",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.490000"
+},
+{
+"auction_date": "2013-04-18",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.180000"
+},
+{
+"auction_date": "2013-04-23",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.630000"
+},
+{
+"auction_date": "2013-04-24",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.860000"
+},
+{
+"auction_date": "2013-04-25",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.710000"
+},
+{
+"auction_date": "2013-05-07",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.380000"
+},
+{
+"auction_date": "2013-05-08",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.700000"
+},
+{
+"auction_date": "2013-05-09",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.530000"
+},
+{
+"auction_date": "2013-05-23",
+"security_type": "Note",
+"security_term": "9-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.520000"
+},
+{
+"auction_date": "2013-05-28",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.040000"
+},
+{
+"auction_date": "2013-05-29",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.790000"
+},
+{
+"auction_date": "2013-05-30",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.700000"
+},
+{
+"auction_date": "2013-06-11",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.950000"
+},
+{
+"auction_date": "2013-06-12",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.530000"
+},
+{
+"auction_date": "2013-06-13",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.470000"
+},
+{
+"auction_date": "2013-06-20",
+"security_type": "Bond",
+"security_term": "29-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.480000"
+},
+{
+"auction_date": "2013-06-25",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.050000"
+},
+{
+"auction_date": "2013-06-26",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.450000"
+},
+{
+"auction_date": "2013-06-27",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.610000"
+},
+{
+"auction_date": "2013-07-09",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.350000"
+},
+{
+"auction_date": "2013-07-10",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.570000"
+},
+{
+"auction_date": "2013-07-11",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.260000"
+},
+{
+"auction_date": "2013-07-18",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.440000"
+},
+{
+"auction_date": "2013-07-23",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.080000"
+},
+{
+"auction_date": "2013-07-24",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.460000"
+},
+{
+"auction_date": "2013-07-25",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.540000"
+},
+{
+"auction_date": "2013-08-06",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.210000"
+},
+{
+"auction_date": "2013-08-07",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.450000"
+},
+{
+"auction_date": "2013-08-08",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.110000"
+},
+{
+"auction_date": "2013-08-22",
+"security_type": "Note",
+"security_term": "4-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.180000"
+},
+{
+"auction_date": "2013-08-27",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.210000"
+},
+{
+"auction_date": "2013-08-28",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.380000"
+},
+{
+"auction_date": "2013-08-29",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.430000"
+},
+{
+"auction_date": "2013-09-10",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.290000"
+},
+{
+"auction_date": "2013-09-11",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.860000"
+},
+{
+"auction_date": "2013-09-12",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.400000"
+},
+{
+"auction_date": "2013-09-19",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.380000"
+},
+{
+"auction_date": "2013-09-24",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.090000"
+},
+{
+"auction_date": "2013-09-25",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.670000"
+},
+{
+"auction_date": "2013-09-26",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.460000"
+},
+{
+"auction_date": "2013-10-08",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.050000"
+},
+{
+"auction_date": "2013-10-09",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.580000"
+},
+{
+"auction_date": "2013-10-10",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.640000"
+},
+{
+"auction_date": "2013-10-24",
+"security_type": "Bond",
+"security_term": "29-Year 4-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.760000"
+},
+{
+"auction_date": "2013-10-28",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.320000"
+},
+{
+"auction_date": "2013-10-29",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.650000"
+},
+{
+"auction_date": "2013-10-30",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.660000"
+},
+{
+"auction_date": "2013-11-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.460000"
+},
+{
+"auction_date": "2013-11-13",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.700000"
+},
+{
+"auction_date": "2013-11-14",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.160000"
+},
+{
+"auction_date": "2013-11-21",
+"security_type": "Note",
+"security_term": "9-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.590000"
+},
+{
+"auction_date": "2013-11-25",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.540000"
+},
+{
+"auction_date": "2013-11-26",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.610000"
+},
+{
+"auction_date": "2013-11-27",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.360000"
+},
+{
+"auction_date": "2013-12-10",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.550000"
+},
+{
+"auction_date": "2013-12-11",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.610000"
+},
+{
+"auction_date": "2013-12-12",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.350000"
+},
+{
+"auction_date": "2013-12-17",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.770000"
+},
+{
+"auction_date": "2013-12-18",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.420000"
+},
+{
+"auction_date": "2013-12-19",
+"security_type": "Note",
+"security_term": "4-Year 4-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.540000"
+},
+{
+"auction_date": "2013-12-19",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.450000"
+},
+{
+"auction_date": "2014-01-07",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.250000"
+},
+{
+"auction_date": "2014-01-08",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.680000"
+},
+{
+"auction_date": "2014-01-09",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.570000"
+},
+{
+"auction_date": "2014-01-23",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.310000"
+},
+{
+"auction_date": "2014-01-28",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.300000"
+},
+{
+"auction_date": "2014-01-29",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "5.670000"
+},
+{
+"auction_date": "2014-01-30",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.590000"
+},
+{
+"auction_date": "2014-01-30",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.650000"
+},
+{
+"auction_date": "2014-02-11",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.420000"
+},
+{
+"auction_date": "2014-02-12",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.540000"
+},
+{
+"auction_date": "2014-02-13",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.270000"
+},
+{
+"auction_date": "2014-02-20",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.340000"
+},
+{
+"auction_date": "2014-02-25",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.600000"
+},
+{
+"auction_date": "2014-02-26",
+"security_type": "Note",
+"security_term": "1-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "5.290000"
+},
+{
+"auction_date": "2014-02-26",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.980000"
+},
+{
+"auction_date": "2014-02-27",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.720000"
+},
+{
+"auction_date": "2014-03-11",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.250000"
+},
+{
+"auction_date": "2014-03-12",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.920000"
+},
+{
+"auction_date": "2014-03-13",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.350000"
+},
+{
+"auction_date": "2014-03-20",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.480000"
+},
+{
+"auction_date": "2014-03-25",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.200000"
+},
+{
+"auction_date": "2014-03-26",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.990000"
+},
+{
+"auction_date": "2014-03-26",
+"security_type": "Note",
+"security_term": "1-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "4.670000"
+},
+{
+"auction_date": "2014-03-27",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.590000"
+},
+{
+"auction_date": "2014-04-08",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.360000"
+},
+{
+"auction_date": "2014-04-09",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.760000"
+},
+{
+"auction_date": "2014-04-10",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.520000"
+},
+{
+"auction_date": "2014-04-17",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.700000"
+},
+{
+"auction_date": "2014-04-22",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.350000"
+},
+{
+"auction_date": "2014-04-23",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.790000"
+},
+{
+"auction_date": "2014-04-24",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.600000"
+},
+{
+"auction_date": "2014-04-29",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "4.640000"
+},
+{
+"auction_date": "2014-05-06",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.400000"
+},
+{
+"auction_date": "2014-05-07",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.630000"
+},
+{
+"auction_date": "2014-05-08",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.090000"
+},
+{
+"auction_date": "2014-05-22",
+"security_type": "Note",
+"security_term": "9-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.910000"
+},
+{
+"auction_date": "2014-05-27",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.520000"
+},
+{
+"auction_date": "2014-05-28",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.730000"
+},
+{
+"auction_date": "2014-05-28",
+"security_type": "Note",
+"security_term": "1-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "4.690000"
+},
+{
+"auction_date": "2014-05-29",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.600000"
+},
+{
+"auction_date": "2014-06-10",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.410000"
+},
+{
+"auction_date": "2014-06-11",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.880000"
+},
+{
+"auction_date": "2014-06-12",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.690000"
+},
+{
+"auction_date": "2014-06-19",
+"security_type": "Bond",
+"security_term": "29-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.760000"
+},
+{
+"auction_date": "2014-06-24",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.230000"
+},
+{
+"auction_date": "2014-06-25",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.740000"
+},
+{
+"auction_date": "2014-06-25",
+"security_type": "Note",
+"security_term": "1-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "4.430000"
+},
+{
+"auction_date": "2014-06-26",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.440000"
+},
+{
+"auction_date": "2014-07-08",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.380000"
+},
+{
+"auction_date": "2014-07-09",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.570000"
+},
+{
+"auction_date": "2014-07-10",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.400000"
+},
+{
+"auction_date": "2014-07-24",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.490000"
+},
+{
+"auction_date": "2014-07-28",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.220000"
+},
+{
+"auction_date": "2014-07-29",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.810000"
+},
+{
+"auction_date": "2014-07-30",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "4.090000"
+},
+{
+"auction_date": "2014-07-30",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.580000"
+},
+{
+"auction_date": "2014-08-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.030000"
+},
+{
+"auction_date": "2014-08-13",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.830000"
+},
+{
+"auction_date": "2014-08-14",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.600000"
+},
+{
+"auction_date": "2014-08-21",
+"security_type": "Note",
+"security_term": "4-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.480000"
+},
+{
+"auction_date": "2014-08-26",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.480000"
+},
+{
+"auction_date": "2014-08-27",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.810000"
+},
+{
+"auction_date": "2014-08-27",
+"security_type": "Note",
+"security_term": "1-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "4.380000"
+},
+{
+"auction_date": "2014-08-28",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.570000"
+},
+{
+"auction_date": "2014-09-09",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.170000"
+},
+{
+"auction_date": "2014-09-10",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.710000"
+},
+{
+"auction_date": "2014-09-11",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.670000"
+},
+{
+"auction_date": "2014-09-18",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.200000"
+},
+{
+"auction_date": "2014-09-23",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.560000"
+},
+{
+"auction_date": "2014-09-24",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.560000"
+},
+{
+"auction_date": "2014-09-24",
+"security_type": "Note",
+"security_term": "1-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "4.450000"
+},
+{
+"auction_date": "2014-09-25",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.480000"
+},
+{
+"auction_date": "2014-10-07",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.420000"
+},
+{
+"auction_date": "2014-10-08",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.520000"
+},
+{
+"auction_date": "2014-10-09",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.400000"
+},
+{
+"auction_date": "2014-10-23",
+"security_type": "Bond",
+"security_term": "29-Year 4-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.290000"
+},
+{
+"auction_date": "2014-10-28",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.110000"
+},
+{
+"auction_date": "2014-10-29",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.360000"
+},
+{
+"auction_date": "2014-10-29",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.580000"
+},
+{
+"auction_date": "2014-10-30",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.420000"
+},
+{
+"auction_date": "2014-11-10",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.180000"
+},
+{
+"auction_date": "2014-11-12",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.520000"
+},
+{
+"auction_date": "2014-11-13",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.290000"
+},
+{
+"auction_date": "2014-11-20",
+"security_type": "Note",
+"security_term": "9-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.570000"
+},
+{
+"auction_date": "2014-11-24",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.710000"
+},
+{
+"auction_date": "2014-11-25",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.910000"
+},
+{
+"auction_date": "2014-11-25",
+"security_type": "Note",
+"security_term": "1-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "4.000000"
+},
+{
+"auction_date": "2014-11-26",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.630000"
+},
+{
+"auction_date": "2014-12-09",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.240000"
+},
+{
+"auction_date": "2014-12-10",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.970000"
+},
+{
+"auction_date": "2014-12-11",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.760000"
+},
+{
+"auction_date": "2014-12-18",
+"security_type": "Note",
+"security_term": "4-Year 4-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.370000"
+},
+{
+"auction_date": "2014-12-22",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.210000"
+},
+{
+"auction_date": "2014-12-23",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.390000"
+},
+{
+"auction_date": "2014-12-23",
+"security_type": "Note",
+"security_term": "1-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.900000"
+},
+{
+"auction_date": "2014-12-24",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.390000"
+},
+{
+"auction_date": "2015-01-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.330000"
+},
+{
+"auction_date": "2015-01-13",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.610000"
+},
+{
+"auction_date": "2015-01-14",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.320000"
+},
+{
+"auction_date": "2015-01-22",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.390000"
+},
+{
+"auction_date": "2015-01-28",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.740000"
+},
+{
+"auction_date": "2015-01-28",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.720000"
+},
+{
+"auction_date": "2015-01-29",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.490000"
+},
+{
+"auction_date": "2015-01-29",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.500000"
+},
+{
+"auction_date": "2015-02-10",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.340000"
+},
+{
+"auction_date": "2015-02-11",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.620000"
+},
+{
+"auction_date": "2015-02-12",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.260000"
+},
+{
+"auction_date": "2015-02-19",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.430000"
+},
+{
+"auction_date": "2015-02-24",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.450000"
+},
+{
+"auction_date": "2015-02-25",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.540000"
+},
+{
+"auction_date": "2015-02-25",
+"security_type": "Note",
+"security_term": "1-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "4.280000"
+},
+{
+"auction_date": "2015-02-26",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.370000"
+},
+{
+"auction_date": "2015-03-10",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.330000"
+},
+{
+"auction_date": "2015-03-11",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.650000"
+},
+{
+"auction_date": "2015-03-12",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.180000"
+},
+{
+"auction_date": "2015-03-19",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.430000"
+},
+{
+"auction_date": "2015-03-24",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.460000"
+},
+{
+"auction_date": "2015-03-25",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.350000"
+},
+{
+"auction_date": "2015-03-25",
+"security_type": "Note",
+"security_term": "1-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "4.340000"
+},
+{
+"auction_date": "2015-03-26",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.320000"
+},
+{
+"auction_date": "2015-04-07",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.250000"
+},
+{
+"auction_date": "2015-04-08",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.620000"
+},
+{
+"auction_date": "2015-04-09",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.180000"
+},
+{
+"auction_date": "2015-04-23",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.270000"
+},
+{
+"auction_date": "2015-04-27",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.300000"
+},
+{
+"auction_date": "2015-04-28",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.560000"
+},
+{
+"auction_date": "2015-04-29",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.810000"
+},
+{
+"auction_date": "2015-04-29",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.440000"
+},
+{
+"auction_date": "2015-05-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.340000"
+},
+{
+"auction_date": "2015-05-13",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.720000"
+},
+{
+"auction_date": "2015-05-14",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.200000"
+},
+{
+"auction_date": "2015-05-21",
+"security_type": "Note",
+"security_term": "9-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.330000"
+},
+{
+"auction_date": "2015-05-26",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.400000"
+},
+{
+"auction_date": "2015-05-27",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.460000"
+},
+{
+"auction_date": "2015-05-28",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.490000"
+},
+{
+"auction_date": "2015-05-28",
+"security_type": "Note",
+"security_term": "1-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "4.010000"
+},
+{
+"auction_date": "2015-06-09",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.330000"
+},
+{
+"auction_date": "2015-06-10",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.740000"
+},
+{
+"auction_date": "2015-06-11",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.540000"
+},
+{
+"auction_date": "2015-06-18",
+"security_type": "Bond",
+"security_term": "29-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.450000"
+},
+{
+"auction_date": "2015-06-23",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.280000"
+},
+{
+"auction_date": "2015-06-24",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.390000"
+},
+{
+"auction_date": "2015-06-24",
+"security_type": "Note",
+"security_term": "1-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.740000"
+},
+{
+"auction_date": "2015-06-25",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.380000"
+},
+{
+"auction_date": "2015-07-07",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.160000"
+},
+{
+"auction_date": "2015-07-08",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.720000"
+},
+{
+"auction_date": "2015-07-09",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.230000"
+},
+{
+"auction_date": "2015-07-23",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.310000"
+},
+{
+"auction_date": "2015-07-28",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.420000"
+},
+{
+"auction_date": "2015-07-29",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.930000"
+},
+{
+"auction_date": "2015-07-29",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.580000"
+},
+{
+"auction_date": "2015-07-30",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.470000"
+},
+{
+"auction_date": "2015-08-11",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.340000"
+},
+{
+"auction_date": "2015-08-12",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.400000"
+},
+{
+"auction_date": "2015-08-13",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.260000"
+},
+{
+"auction_date": "2015-08-20",
+"security_type": "Note",
+"security_term": "4-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.580000"
+},
+{
+"auction_date": "2015-08-25",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.160000"
+},
+{
+"auction_date": "2015-08-26",
+"security_type": "Note",
+"security_term": "1-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.500000"
+},
+{
+"auction_date": "2015-08-26",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.340000"
+},
+{
+"auction_date": "2015-08-27",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.530000"
+},
+{
+"auction_date": "2015-09-08",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.230000"
+},
+{
+"auction_date": "2015-09-09",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.700000"
+},
+{
+"auction_date": "2015-09-10",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.540000"
+},
+{
+"auction_date": "2015-09-18",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.360000"
+},
+{
+"auction_date": "2015-09-22",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.270000"
+},
+{
+"auction_date": "2015-09-23",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.570000"
+},
+{
+"auction_date": "2015-09-23",
+"security_type": "Note",
+"security_term": "1-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.870000"
+},
+{
+"auction_date": "2015-09-24",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.510000"
+},
+{
+"auction_date": "2015-10-06",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.140000"
+},
+{
+"auction_date": "2015-10-07",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.590000"
+},
+{
+"auction_date": "2015-10-08",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.460000"
+},
+{
+"auction_date": "2015-10-22",
+"security_type": "Bond",
+"security_term": "29-Year 4-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.620000"
+},
+{
+"auction_date": "2015-10-28",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.100000"
+},
+{
+"auction_date": "2015-10-28",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.430000"
+},
+{
+"auction_date": "2015-10-29",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.550000"
+},
+{
+"auction_date": "2015-11-04",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.010000"
+},
+{
+"auction_date": "2015-11-09",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.820000"
+},
+{
+"auction_date": "2015-11-10",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.580000"
+},
+{
+"auction_date": "2015-11-12",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.410000"
+},
+{
+"auction_date": "2015-11-19",
+"security_type": "Note",
+"security_term": "9-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.380000"
+},
+{
+"auction_date": "2015-11-23",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.150000"
+},
+{
+"auction_date": "2015-11-24",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.520000"
+},
+{
+"auction_date": "2015-11-24",
+"security_type": "Note",
+"security_term": "1-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.110000"
+},
+{
+"auction_date": "2015-11-25",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.510000"
+},
+{
+"auction_date": "2015-12-08",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.140000"
+},
+{
+"auction_date": "2015-12-09",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.640000"
+},
+{
+"auction_date": "2015-12-10",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.420000"
+},
+{
+"auction_date": "2015-12-17",
+"security_type": "Note",
+"security_term": "4-Year 4-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.380000"
+},
+{
+"auction_date": "2015-12-23",
+"security_type": "Note",
+"security_term": "1-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.480000"
+},
+{
+"auction_date": "2015-12-28",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.800000"
+},
+{
+"auction_date": "2015-12-29",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.320000"
+},
+{
+"auction_date": "2015-12-30",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.340000"
+},
+{
+"auction_date": "2016-01-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.940000"
+},
+{
+"auction_date": "2016-01-13",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.770000"
+},
+{
+"auction_date": "2016-01-14",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.290000"
+},
+{
+"auction_date": "2016-01-21",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.190000"
+},
+{
+"auction_date": "2016-01-26",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.900000"
+},
+{
+"auction_date": "2016-01-27",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.670000"
+},
+{
+"auction_date": "2016-01-27",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.440000"
+},
+{
+"auction_date": "2016-01-28",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.630000"
+},
+{
+"auction_date": "2016-02-09",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.740000"
+},
+{
+"auction_date": "2016-02-10",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.560000"
+},
+{
+"auction_date": "2016-02-11",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.090000"
+},
+{
+"auction_date": "2016-02-18",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.110000"
+},
+{
+"auction_date": "2016-02-23",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.910000"
+},
+{
+"auction_date": "2016-02-24",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.440000"
+},
+{
+"auction_date": "2016-02-24",
+"security_type": "Note",
+"security_term": "1-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.630000"
+},
+{
+"auction_date": "2016-02-26",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.250000"
+},
+{
+"auction_date": "2016-03-08",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.710000"
+},
+{
+"auction_date": "2016-03-09",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.490000"
+},
+{
+"auction_date": "2016-03-10",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.330000"
+},
+{
+"auction_date": "2016-03-17",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.250000"
+},
+{
+"auction_date": "2016-03-23",
+"security_type": "Note",
+"security_term": "1-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.070000"
+},
+{
+"auction_date": "2016-03-28",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.580000"
+},
+{
+"auction_date": "2016-03-29",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.380000"
+},
+{
+"auction_date": "2016-03-30",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.510000"
+},
+{
+"auction_date": "2016-04-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.720000"
+},
+{
+"auction_date": "2016-04-13",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.750000"
+},
+{
+"auction_date": "2016-04-14",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.400000"
+},
+{
+"auction_date": "2016-04-21",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.420000"
+},
+{
+"auction_date": "2016-04-25",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.640000"
+},
+{
+"auction_date": "2016-04-26",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.410000"
+},
+{
+"auction_date": "2016-04-28",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.570000"
+},
+{
+"auction_date": "2016-04-28",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.650000"
+},
+{
+"auction_date": "2016-05-10",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.930000"
+},
+{
+"auction_date": "2016-05-11",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.680000"
+},
+{
+"auction_date": "2016-05-12",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.190000"
+},
+{
+"auction_date": "2016-05-19",
+"security_type": "Note",
+"security_term": "9-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.270000"
+},
+{
+"auction_date": "2016-05-24",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.000000"
+},
+{
+"auction_date": "2016-05-25",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.600000"
+},
+{
+"auction_date": "2016-05-25",
+"security_type": "Note",
+"security_term": "1-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.350000"
+},
+{
+"auction_date": "2016-05-26",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.570000"
+},
+{
+"auction_date": "2016-06-07",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.790000"
+},
+{
+"auction_date": "2016-06-08",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.700000"
+},
+{
+"auction_date": "2016-06-09",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.420000"
+},
+{
+"auction_date": "2016-06-20",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.720000"
+},
+{
+"auction_date": "2016-06-21",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.290000"
+},
+{
+"auction_date": "2016-06-22",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.560000"
+},
+{
+"auction_date": "2016-06-22",
+"security_type": "Bond",
+"security_term": "29-Year 8-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.690000"
+},
+{
+"auction_date": "2016-06-22",
+"security_type": "Note",
+"security_term": "1-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.150000"
+},
+{
+"auction_date": "2016-07-11",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.690000"
+},
+{
+"auction_date": "2016-07-12",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.330000"
+},
+{
+"auction_date": "2016-07-13",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.480000"
+},
+{
+"auction_date": "2016-07-21",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.390000"
+},
+{
+"auction_date": "2016-07-25",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.520000"
+},
+{
+"auction_date": "2016-07-26",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.270000"
+},
+{
+"auction_date": "2016-07-27",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.820000"
+},
+{
+"auction_date": "2016-07-28",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.510000"
+},
+{
+"auction_date": "2016-08-09",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.980000"
+},
+{
+"auction_date": "2016-08-10",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.430000"
+},
+{
+"auction_date": "2016-08-11",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.240000"
+},
+{
+"auction_date": "2016-08-18",
+"security_type": "Note",
+"security_term": "4-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.370000"
+},
+{
+"auction_date": "2016-08-23",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.830000"
+},
+{
+"auction_date": "2016-08-24",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.540000"
+},
+{
+"auction_date": "2016-08-24",
+"security_type": "Note",
+"security_term": "1-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.460000"
+},
+{
+"auction_date": "2016-08-25",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.380000"
+},
+{
+"auction_date": "2016-09-12",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.350000"
+},
+{
+"auction_date": "2016-09-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.770000"
+},
+{
+"auction_date": "2016-09-13",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.130000"
+},
+{
+"auction_date": "2016-09-22",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.590000"
+},
+{
+"auction_date": "2016-09-26",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.650000"
+},
+{
+"auction_date": "2016-09-27",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.390000"
+},
+{
+"auction_date": "2016-09-28",
+"security_type": "Note",
+"security_term": "1-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.090000"
+},
+{
+"auction_date": "2016-09-28",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.470000"
+},
+{
+"auction_date": "2016-10-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.920000"
+},
+{
+"auction_date": "2016-10-12",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.530000"
+},
+{
+"auction_date": "2016-10-13",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.440000"
+},
+{
+"auction_date": "2016-10-20",
+"security_type": "Bond",
+"security_term": "29-Year 4-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.280000"
+},
+{
+"auction_date": "2016-10-25",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.530000"
+},
+{
+"auction_date": "2016-10-26",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.350000"
+},
+{
+"auction_date": "2016-10-26",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.490000"
+},
+{
+"auction_date": "2016-10-27",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.490000"
+},
+{
+"auction_date": "2016-11-08",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.690000"
+},
+{
+"auction_date": "2016-11-09",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.220000"
+},
+{
+"auction_date": "2016-11-10",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.110000"
+},
+{
+"auction_date": "2016-11-17",
+"security_type": "Note",
+"security_term": "9-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.390000"
+},
+{
+"auction_date": "2016-11-21",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.730000"
+},
+{
+"auction_date": "2016-11-22",
+"security_type": "Note",
+"security_term": "1-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.320000"
+},
+{
+"auction_date": "2016-11-22",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.440000"
+},
+{
+"auction_date": "2016-11-23",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.680000"
+},
+{
+"auction_date": "2016-12-12",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.390000"
+},
+{
+"auction_date": "2016-12-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.650000"
+},
+{
+"auction_date": "2016-12-13",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.390000"
+},
+{
+"auction_date": "2016-12-22",
+"security_type": "Note",
+"security_term": "4-Year 4-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.680000"
+},
+{
+"auction_date": "2016-12-27",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.440000"
+},
+{
+"auction_date": "2016-12-28",
+"security_type": "Note",
+"security_term": "1-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.800000"
+},
+{
+"auction_date": "2016-12-28",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.720000"
+},
+{
+"auction_date": "2016-12-29",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.540000"
+},
+{
+"auction_date": "2017-01-10",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.970000"
+},
+{
+"auction_date": "2017-01-11",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.580000"
+},
+{
+"auction_date": "2017-01-12",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.320000"
+},
+{
+"auction_date": "2017-01-19",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.450000"
+},
+{
+"auction_date": "2017-01-24",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.680000"
+},
+{
+"auction_date": "2017-01-25",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.160000"
+},
+{
+"auction_date": "2017-01-25",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.380000"
+},
+{
+"auction_date": "2017-01-26",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.450000"
+},
+{
+"auction_date": "2017-02-07",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.780000"
+},
+{
+"auction_date": "2017-02-08",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.290000"
+},
+{
+"auction_date": "2017-02-09",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.250000"
+},
+{
+"auction_date": "2017-02-16",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.250000"
+},
+{
+"auction_date": "2017-02-21",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.820000"
+},
+{
+"auction_date": "2017-02-22",
+"security_type": "Note",
+"security_term": "1-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.080000"
+},
+{
+"auction_date": "2017-02-22",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.290000"
+},
+{
+"auction_date": "2017-02-23",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.490000"
+},
+{
+"auction_date": "2017-03-07",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.740000"
+},
+{
+"auction_date": "2017-03-08",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.660000"
+},
+{
+"auction_date": "2017-03-09",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.340000"
+},
+{
+"auction_date": "2017-03-23",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.230000"
+},
+{
+"auction_date": "2017-03-27",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.730000"
+},
+{
+"auction_date": "2017-03-28",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.370000"
+},
+{
+"auction_date": "2017-03-29",
+"security_type": "Note",
+"security_term": "1-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.430000"
+},
+{
+"auction_date": "2017-03-29",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.560000"
+},
+{
+"auction_date": "2017-04-10",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.620000"
+},
+{
+"auction_date": "2017-04-11",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.480000"
+},
+{
+"auction_date": "2017-04-12",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.230000"
+},
+{
+"auction_date": "2017-04-20",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.520000"
+},
+{
+"auction_date": "2017-04-25",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.850000"
+},
+{
+"auction_date": "2017-04-26",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.350000"
+},
+{
+"auction_date": "2017-04-26",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.340000"
+},
+{
+"auction_date": "2017-04-27",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.730000"
+},
+{
+"auction_date": "2017-05-09",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.760000"
+},
+{
+"auction_date": "2017-05-10",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.330000"
+},
+{
+"auction_date": "2017-05-11",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.190000"
+},
+{
+"auction_date": "2017-05-18",
+"security_type": "Note",
+"security_term": "9-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.560000"
+},
+{
+"auction_date": "2017-05-23",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.900000"
+},
+{
+"auction_date": "2017-05-24",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.670000"
+},
+{
+"auction_date": "2017-05-24",
+"security_type": "Note",
+"security_term": "1-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.990000"
+},
+{
+"auction_date": "2017-05-25",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.540000"
+},
+{
+"auction_date": "2017-06-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.000000"
+},
+{
+"auction_date": "2017-06-12",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.540000"
+},
+{
+"auction_date": "2017-06-13",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.320000"
+},
+{
+"auction_date": "2017-06-22",
+"security_type": "Bond",
+"security_term": "29-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.830000"
+},
+{
+"auction_date": "2017-06-26",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.030000"
+},
+{
+"auction_date": "2017-06-27",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.330000"
+},
+{
+"auction_date": "2017-06-28",
+"security_type": "Note",
+"security_term": "1-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.130000"
+},
+{
+"auction_date": "2017-06-28",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.460000"
+},
+{
+"auction_date": "2017-07-11",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.870000"
+},
+{
+"auction_date": "2017-07-12",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.450000"
+},
+{
+"auction_date": "2017-07-13",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.310000"
+},
+{
+"auction_date": "2017-07-20",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "1.980000"
+},
+{
+"auction_date": "2017-07-25",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.060000"
+},
+{
+"auction_date": "2017-07-26",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.320000"
+},
+{
+"auction_date": "2017-07-26",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.580000"
+},
+{
+"auction_date": "2017-07-27",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.540000"
+},
+{
+"auction_date": "2017-08-08",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.130000"
+},
+{
+"auction_date": "2017-08-09",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.230000"
+},
+{
+"auction_date": "2017-08-10",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.320000"
+},
+{
+"auction_date": "2017-08-23",
+"security_type": "Note",
+"security_term": "1-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.090000"
+},
+{
+"auction_date": "2017-08-24",
+"security_type": "Note",
+"security_term": "4-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.410000"
+},
+{
+"auction_date": "2017-08-28",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.860000"
+},
+{
+"auction_date": "2017-08-28",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.580000"
+},
+{
+"auction_date": "2017-08-29",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.460000"
+},
+{
+"auction_date": "2017-09-11",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.700000"
+},
+{
+"auction_date": "2017-09-12",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.280000"
+},
+{
+"auction_date": "2017-09-13",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.210000"
+},
+{
+"auction_date": "2017-09-21",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.320000"
+},
+{
+"auction_date": "2017-09-26",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.880000"
+},
+{
+"auction_date": "2017-09-27",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.520000"
+},
+{
+"auction_date": "2017-09-27",
+"security_type": "Note",
+"security_term": "1-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.460000"
+},
+{
+"auction_date": "2017-09-28",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.700000"
+},
+{
+"auction_date": "2017-10-11",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.540000"
+},
+{
+"auction_date": "2017-10-11",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.830000"
+},
+{
+"auction_date": "2017-10-12",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.530000"
+},
+{
+"auction_date": "2017-10-19",
+"security_type": "Bond",
+"security_term": "29-Year 4-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.640000"
+},
+{
+"auction_date": "2017-10-24",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.740000"
+},
+{
+"auction_date": "2017-10-25",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.560000"
+},
+{
+"auction_date": "2017-10-25",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.440000"
+},
+{
+"auction_date": "2017-10-26",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.390000"
+},
+{
+"auction_date": "2017-11-07",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.760000"
+},
+{
+"auction_date": "2017-11-08",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.480000"
+},
+{
+"auction_date": "2017-11-09",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.230000"
+},
+{
+"auction_date": "2017-11-16",
+"security_type": "Note",
+"security_term": "9-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.430000"
+},
+{
+"auction_date": "2017-11-21",
+"security_type": "Note",
+"security_term": "1-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.690000"
+},
+{
+"auction_date": "2017-11-27",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.730000"
+},
+{
+"auction_date": "2017-11-27",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.460000"
+},
+{
+"auction_date": "2017-11-28",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.360000"
+},
+{
+"auction_date": "2017-12-11",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.370000"
+},
+{
+"auction_date": "2017-12-11",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.150000"
+},
+{
+"auction_date": "2017-12-12",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.480000"
+},
+{
+"auction_date": "2017-12-21",
+"security_type": "Note",
+"security_term": "4-Year 4-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.780000"
+},
+{
+"auction_date": "2017-12-26",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.520000"
+},
+{
+"auction_date": "2017-12-27",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.360000"
+},
+{
+"auction_date": "2017-12-27",
+"security_type": "Note",
+"security_term": "1-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.260000"
+},
+{
+"auction_date": "2017-12-28",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.550000"
+},
+{
+"auction_date": "2018-01-09",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.130000"
+},
+{
+"auction_date": "2018-01-10",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.690000"
+},
+{
+"auction_date": "2018-01-11",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.740000"
+},
+{
+"auction_date": "2018-01-18",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.690000"
+},
+{
+"auction_date": "2018-01-23",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.220000"
+},
+{
+"auction_date": "2018-01-24",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.480000"
+},
+{
+"auction_date": "2018-01-24",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.380000"
+},
+{
+"auction_date": "2018-01-25",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.730000"
+},
+{
+"auction_date": "2018-02-06",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "3.000000"
+},
+{
+"auction_date": "2018-02-07",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.340000"
+},
+{
+"auction_date": "2018-02-08",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.260000"
+},
+{
+"auction_date": "2018-02-15",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.310000"
+},
+{
+"auction_date": "2018-02-20",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.720000"
+},
+{
+"auction_date": "2018-02-21",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.440000"
+},
+{
+"auction_date": "2018-02-21",
+"security_type": "Note",
+"security_term": "1-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.750000"
+},
+{
+"auction_date": "2018-02-22",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.490000"
+},
+{
+"auction_date": "2018-03-12",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.940000"
+},
+{
+"auction_date": "2018-03-12",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.500000"
+},
+{
+"auction_date": "2018-03-13",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.380000"
+},
+{
+"auction_date": "2018-03-22",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.560000"
+},
+{
+"auction_date": "2018-03-26",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.910000"
+},
+{
+"auction_date": "2018-03-27",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.500000"
+},
+{
+"auction_date": "2018-03-28",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.340000"
+},
+{
+"auction_date": "2018-03-28",
+"security_type": "Note",
+"security_term": "1-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.780000"
+},
+{
+"auction_date": "2018-04-10",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.850000"
+},
+{
+"auction_date": "2018-04-11",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.460000"
+},
+{
+"auction_date": "2018-04-12",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.410000"
+},
+{
+"auction_date": "2018-04-19",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.550000"
+},
+{
+"auction_date": "2018-04-24",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.610000"
+},
+{
+"auction_date": "2018-04-25",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.650000"
+},
+{
+"auction_date": "2018-04-25",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.490000"
+},
+{
+"auction_date": "2018-04-26",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.560000"
+},
+{
+"auction_date": "2018-05-08",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.760000"
+},
+{
+"auction_date": "2018-05-09",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.560000"
+},
+{
+"auction_date": "2018-05-10",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.380000"
+},
+{
+"auction_date": "2018-05-17",
+"security_type": "Note",
+"security_term": "9-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.420000"
+},
+{
+"auction_date": "2018-05-22",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.880000"
+},
+{
+"auction_date": "2018-05-23",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.520000"
+},
+{
+"auction_date": "2018-05-23",
+"security_type": "Note",
+"security_term": "1-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.260000"
+},
+{
+"auction_date": "2018-05-24",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.620000"
+},
+{
+"auction_date": "2018-06-11",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.590000"
+},
+{
+"auction_date": "2018-06-11",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.830000"
+},
+{
+"auction_date": "2018-06-12",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.380000"
+},
+{
+"auction_date": "2018-06-21",
+"security_type": "Bond",
+"security_term": "29-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.620000"
+},
+{
+"auction_date": "2018-06-26",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.730000"
+},
+{
+"auction_date": "2018-06-27",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.550000"
+},
+{
+"auction_date": "2018-06-27",
+"security_type": "Note",
+"security_term": "1-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.790000"
+},
+{
+"auction_date": "2018-06-28",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.530000"
+},
+{
+"auction_date": "2018-07-10",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.510000"
+},
+{
+"auction_date": "2018-07-11",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.570000"
+},
+{
+"auction_date": "2018-07-12",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.340000"
+},
+{
+"auction_date": "2018-07-19",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.220000"
+},
+{
+"auction_date": "2018-07-24",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.920000"
+},
+{
+"auction_date": "2018-07-25",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.790000"
+},
+{
+"auction_date": "2018-07-25",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.610000"
+},
+{
+"auction_date": "2018-07-26",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.490000"
+},
+{
+"auction_date": "2018-08-07",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.650000"
+},
+{
+"auction_date": "2018-08-08",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.550000"
+},
+{
+"auction_date": "2018-08-09",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.270000"
+},
+{
+"auction_date": "2018-08-23",
+"security_type": "Note",
+"security_term": "4-Year 8-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.780000"
+},
+{
+"auction_date": "2018-08-27",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.890000"
+},
+{
+"auction_date": "2018-08-28",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.490000"
+},
+{
+"auction_date": "2018-08-29",
+"security_type": "Note",
+"security_term": "1-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.940000"
+},
+{
+"auction_date": "2018-08-29",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.650000"
+},
+{
+"auction_date": "2018-09-11",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.680000"
+},
+{
+"auction_date": "2018-09-12",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.580000"
+},
+{
+"auction_date": "2018-09-13",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.340000"
+},
+{
+"auction_date": "2018-09-20",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.570000"
+},
+{
+"auction_date": "2018-09-24",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.440000"
+},
+{
+"auction_date": "2018-09-25",
+"security_type": "Note",
+"security_term": "1-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.060000"
+},
+{
+"auction_date": "2018-09-25",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.390000"
+},
+{
+"auction_date": "2018-09-27",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.450000"
+},
+{
+"auction_date": "2018-10-10",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.560000"
+},
+{
+"auction_date": "2018-10-10",
+"security_type": "Note",
+"security_term": "9-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.390000"
+},
+{
+"auction_date": "2018-10-11",
+"security_type": "Bond",
+"security_term": "29-Year 10-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.420000"
+},
+{
+"auction_date": "2018-10-18",
+"security_type": "Bond",
+"security_term": "29-Year 4-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.320000"
+},
+{
+"auction_date": "2018-10-23",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.670000"
+},
+{
+"auction_date": "2018-10-24",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.300000"
+},
+{
+"auction_date": "2018-10-24",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "3.320000"
+},
+{
+"auction_date": "2018-10-25",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.390000"
+},
+{
+"auction_date": "2018-11-05",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.540000"
+},
+{
+"auction_date": "2018-11-06",
+"security_type": "Note",
+"security_term": "10-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.540000"
+},
+{
+"auction_date": "2018-11-07",
+"security_type": "Bond",
+"security_term": "30-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.060000"
+},
+{
+"auction_date": "2018-11-21",
+"security_type": "Note",
+"security_term": "9-Year 8-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.590000"
+},
+{
+"auction_date": "2018-11-26",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.650000"
+},
+{
+"auction_date": "2018-11-27",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.490000"
+},
+{
+"auction_date": "2018-11-28",
+"security_type": "Note",
+"security_term": "1-Year 11-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.620000"
+},
+{
+"auction_date": "2018-11-28",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.550000"
+},
+{
+"auction_date": "2018-12-11",
+"security_type": "Note",
+"security_term": "3-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.590000"
+},
+{
+"auction_date": "2018-12-12",
+"security_type": "Note",
+"security_term": "9-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.350000"
+},
+{
+"auction_date": "2018-12-13",
+"security_type": "Bond",
+"security_term": "29-Year 11-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.310000"
+},
+{
+"auction_date": "2018-12-20",
+"security_type": "Note",
+"security_term": "4-Year 4-Month",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.800000"
+},
+{
+"auction_date": "2018-12-24",
+"security_type": "Note",
+"security_term": "2-Year",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.310000"
+},
+{
+"auction_date": "2018-12-26",
+"security_type": "Note",
+"security_term": "5-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.090000"
+},
+{
+"auction_date": "2018-12-26",
+"security_type": "Note",
+"security_term": "1-Year 10-Month",
+"closing_time_comp": "11:30 AM",
+"bid_to_cover_ratio": "2.710000"
+},
+{
+"auction_date": "2018-12-27",
+"security_type": "Note",
+"security_term": "7-Year",
+"closing_time_comp": "01:00 PM",
+"bid_to_cover_ratio": "2.460000"
+}
+]

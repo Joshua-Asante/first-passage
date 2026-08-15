@@ -1,0 +1,167 @@
+{
+  "run_id": "mnqsr1_structure_20260806",
+  "status": "closed",
+  "opened_at": "2026-08-06T16:13:07Z",
+  "tool": "level_event_study",
+  "K": 14,
+  "alpha": 0.05,
+  "data_window": "2025-08-06:2026-08-04",
+  "hypothesis": "MNQ Phase-1 bars-only S/R families show attraction and/or reaction beyond distance-mirror and ToD-matched nulls (7 families x 2 limbs)",
+  "params": "{\n  \"families\": [\"prior_rth\", \"overnight\", \"std_pivot\", \"fib_pivot\", \"camarilla\", \"atr\", \"vwap\"],\n  \"limbs\": [\"attraction\", \"reaction\"],\n  \"K_primary\": 14,\n  \"alpha\": 0.05,\n  \"seed\": 20260806,\n  \"window\": \"2025-08-06:2026-08-04\",\n  \"instrument\": \"MNQ.v.0\",\n  \"schema\": \"ohlcv-1m\",\n  \"primary_horizon_min\": 15,\n  \"touch_tick\": 0.25,\n  \"prereg\": \"lab/archive/mnq_sr_structure_2026-08-06/PREREG.md\"\n}\n",
+  "closed_at": "2026-08-06T16:42:44Z",
+  "results": {
+    "n_submitted": 14,
+    "naive_alpha": 0.05,
+    "n_pass_naive_alpha": 2,
+    "bonferroni_threshold": 0.0035714286,
+    "n_pass_bonferroni": 0,
+    "n_multiplicity_killed": 2,
+    "bh_rows": [
+      {
+        "rank": 1,
+        "pvalue": 0.0086,
+        "bh_threshold": 0.00357143,
+        "bh_reject": false
+      },
+      {
+        "rank": 2,
+        "pvalue": 0.0276,
+        "bh_threshold": 0.00714286,
+        "bh_reject": false
+      },
+      {
+        "rank": 3,
+        "pvalue": 0.3706,
+        "bh_threshold": 0.01071429,
+        "bh_reject": false
+      },
+      {
+        "rank": 4,
+        "pvalue": 0.538,
+        "bh_threshold": 0.01428571,
+        "bh_reject": false
+      },
+      {
+        "rank": 5,
+        "pvalue": 0.5772,
+        "bh_threshold": 0.01785714,
+        "bh_reject": false
+      },
+      {
+        "rank": 6,
+        "pvalue": 0.5966,
+        "bh_threshold": 0.02142857,
+        "bh_reject": false
+      },
+      {
+        "rank": 7,
+        "pvalue": 0.614,
+        "bh_threshold": 0.025,
+        "bh_reject": false
+      },
+      {
+        "rank": 8,
+        "pvalue": 0.6904,
+        "bh_threshold": 0.02857143,
+        "bh_reject": false
+      },
+      {
+        "rank": 9,
+        "pvalue": 0.773,
+        "bh_threshold": 0.03214286,
+        "bh_reject": false
+      },
+      {
+        "rank": 10,
+        "pvalue": 0.836,
+        "bh_threshold": 0.03571429,
+        "bh_reject": false
+      },
+      {
+        "rank": 11,
+        "pvalue": 0.8874,
+        "bh_threshold": 0.03928571,
+        "bh_reject": false
+      },
+      {
+        "rank": 12,
+        "pvalue": 0.918,
+        "bh_threshold": 0.04285714,
+        "bh_reject": false
+      },
+      {
+        "rank": 13,
+        "pvalue": 1.0,
+        "bh_threshold": 0.04642857,
+        "bh_reject": false
+      },
+      {
+        "rank": 14,
+        "pvalue": 1.0,
+        "bh_threshold": 0.05,
+        "bh_reject": false
+      }
+    ],
+    "n_pass_bh": 0,
+    "expected_false_positives_global_null": 0.7,
+    "candidates": [
+      {
+        "id": null,
+        "pvalue": 0.538
+      },
+      {
+        "id": null,
+        "pvalue": 0.5772
+      },
+      {
+        "id": null,
+        "pvalue": 0.8874
+      },
+      {
+        "id": null,
+        "pvalue": 0.918
+      },
+      {
+        "id": null,
+        "pvalue": 0.3706
+      },
+      {
+        "id": null,
+        "pvalue": 0.614
+      },
+      {
+        "id": null,
+        "pvalue": 0.0086
+      },
+      {
+        "id": null,
+        "pvalue": 0.6904
+      },
+      {
+        "id": null,
+        "pvalue": 0.836
+      },
+      {
+        "id": null,
+        "pvalue": 0.5966
+      },
+      {
+        "id": null,
+        "pvalue": 1.0
+      },
+      {
+        "id": null,
+        "pvalue": 0.773
+      },
+      {
+        "id": null,
+        "pvalue": 1.0
+      },
+      {
+        "id": null,
+        "pvalue": 0.0276
+      }
+    ]
+  },
+  "verdict": "FIRST-PASS ONLY. Candidates clearing the crude multiplicity floor are listed above. This is NOT a promotion. Hand the full candidate set (all K returns) to strategy-validation for universe-level correction (White RC / Hansen SPA / Romano-Wolf) and the native-micro OOS gate before any candidate is trusted."
+}

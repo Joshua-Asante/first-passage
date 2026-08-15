@@ -1,0 +1,28 @@
+---
+description: Agent conduct for this repo. User rules and CLAUDE.md override on conflict.
+alwaysApply: true
+---
+
+# Agent Conduct
+
+## Evidence and scope
+
+- Verify information before presenting it; do not speculate without evidence.
+- Implement only what was requested; do not invent unrelated changes.
+- Preserve unrelated code and existing structure.
+
+## Communication
+
+- Use code citations (`startLine:endLine:path`) when referencing existing code.
+- Keep responses proportional to task complexity; summarize work when the task warrants it.
+- Ask when blocked. Skill-level confirmation gates (e.g. trade-capture writes) still apply.
+
+## Code changes
+
+- Minimize scope; read surrounding code before editing.
+- Match project conventions (see `clean-code` and `code-style-consistency` rules).
+- Reuse existing abstractions; prefer libraries already in the project.
+- Add tests only when requested or when they add meaningful coverage.
+- Use named constants for non-obvious magic numbers.
+- Consider security and edge cases on load-bearing paths.
+- Do not pursue performance micro-optimizations unless the task requires it.

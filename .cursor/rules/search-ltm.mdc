@@ -1,0 +1,25 @@
+---
+description: LTM cold corpus is search/index-excluded — do not treat empty Grep as "no prior work"
+alwaysApply: true
+---
+
+# Agent search vs LTM
+
+Default Cursor indexing and ripgrep **exclude** `lab/archive/`, `docs/ltm/`, and
+`core/strategies/_archive/` (via `.rgignore` + `.cursorindexingignore`). Those
+trees stay **git-tracked** and **Readable by exact path**.
+
+## Lookup order
+
+1. [`lab/CATALOG.md`](lab/CATALOG.md) → CARD stub → archive body only if re-running
+2. [`core/strategies/CATALOG.md`](core/strategies/CATALOG.md) → `*_CARD.md` stub → `_archive/<family>/` body for Rule-0 deep reads
+3. [`docs/briefs/INDEX.md`](docs/briefs/INDEX.md) / [`STATE.md`](STATE.md) → closed briefs under `docs/ltm/briefs/`
+4. [`docs/ltm/README.md`](docs/ltm/README.md) for layout
+
+## Force-search LTM
+
+- Prefer **Read** the exact path from a catalog.
+- Bash: `rg --no-ignore …` (or `-u`). **Not** `--no-ignore-vcs` — that still respects `.rgignore` and returns empty silently.
+- Claude Code **Grep has no ignore bypass** — directory-scoped Grep of `lab/archive/`, `docs/ltm/`, or `core/strategies/_archive/` returns empty with no warning. Do **not** conclude prior work is absent; use Bash `rg --no-ignore` or Read-by-path.
+
+`.cursorignore` holds worktrees/venvs/caches only — not the LTM corpus (access-block would defeat catalog → Read).

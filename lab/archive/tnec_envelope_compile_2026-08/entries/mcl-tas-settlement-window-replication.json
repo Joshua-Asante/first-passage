@@ -1,0 +1,10 @@
+{
+ "delta_source": "UNCITED. No published cohort delta exists for CME CL settlement-window (14:28-14:30 ET) benchmark-replication flow -> CL/MCL futures response. Cross-instrument transplant from the FX-fix or gold-fix cohorts is refused under harvest Req 2. Route: delta-extraction probe, or a free-citable published cohort delta (CME publishes TAS volumes at no cost, so the probe route is NON-circular - unlike F1/MOC, whose probe needs the gated data).",
+ "delta_ticks_per_event": null,
+ "events_per_year": 252,
+ "horizon_seconds": 120,
+ "instrument": "MCL",
+ "name": "mcl-tas-settlement-window-replication",
+ "stop_ticks": 20,
+ "taxonomy_class": "daily auction/settlement windows"
+}

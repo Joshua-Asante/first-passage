@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": "python .cursor/hooks/before_shell.py"
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": "python .cursor/hooks/after_file_edit.py"
+      },
+      {
+        "command": "python .cursor/hooks/record_edit.py"
+      }
+    ],
+    "stop": [
+      {
+        "command": "python .cursor/hooks/blast_radius_stop.py",
+        "loop_limit": 1
+      }
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+ "delta_source": "Caminschi & Heaney, 'Fixing a Leaky Fixing', Journal of Futures Markets 2014 (DOI 10.1002/fut.21636), GC-futures cohort 2007-01-01..2012-12-31, n~1470 fix-days. CAUSAL PUBLIC RESIDUE ONLY (the headline ~9.6+4bp is informed-flow and Req-2 inadmissible): 1.32-3.21 bp/event, as extracted and tabulated in lab/analysis/harvest/tnec_l2_sourcing_2026-08-10/DELTA_EXTRACTION_R8.md. Tick conversion (generous top, shown): bp -> ticks = P($/oz) * bp / 1000, since MGC tick = $0.10/oz and tick_value = $1.00. At the modern basis P=$2600 used by the R8 table: 2600 * 3.21 / 1000 = 8.35 ticks. At the paper's own basis P=$1600: 2600->1600 gives 1600 * 3.21 / 1000 = 5.14 ticks. The larger (8.35) is entered so a FAIL is conclusive under the generous-falsifier rule.",
+ "delta_ticks_per_event": 8.35,
+ "events_per_year": 252,
+ "horizon_seconds": 120,
+ "instrument": "MGC",
+ "name": "mgc-benchmark-fix-window-r8-rescore",
+ "stop_ticks": 20,
+ "taxonomy_class": "daily auction/settlement windows"
+}

@@ -1,0 +1,87 @@
+{
+  "card_id": "msl-c1-mym-pdh-pdl-failed-break-reclaim",
+  "card_path": "lab\\analysis\\c1\\msl_c1_mym_2026-08\\card.yaml",
+  "disclaimer": "evidence only; computes evidence only",
+  "dedup_query": "pdh-pdl-failed-break-reclaim",
+  "dedup_paths": [
+    "docs/rejected_candidates.md",
+    "lab/CATALOG.md",
+    "docs/briefs/2026-08-12-msl-first-slate.md",
+    "docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md",
+    "docs/briefs/closures/MSL-C3-closure-operator-kill.md",
+    "ops/instruments/MYM.md",
+    "docs/adr/2026-08-12-msl-mym-occupancy-release.md"
+  ],
+  "dedup_hits": [
+    "C:\\Users\\joshu\\multi_firm_operations\\docs\\briefs\\closures\\MSL-C3-closure-operator-kill.md:5:**Lane:** MSL · card MSL-C3 · mechanism `pdh-pdl-failed-break-reclaim` × **M2K**",
+    "C:\\Users\\joshu\\multi_firm_operations\\docs\\briefs\\closures\\MSL-C3-closure-operator-kill.md:24:- Treating Stage-1 arithmetic PASS as edge · freezing G0 without a fresh B4 · Pine/TV · reading any M2K panel · θ-retune “rescue” · killing the `pdh-pdl-failed-break-reclaim` **class** (C1 may still elect it on MYM) · WSTRUCT reopen · arming",
+    "C:\\Users\\joshu\\multi_firm_operations\\ops\\instruments\\MYM.md:95:- **[`MSL-C1` Stage-1 PASS](../../lab/archive/msl_c1_mym_2026-08/STAGE1.md) (2026-08-13).** `pdh-pdl-failed-break-reclaim` × MYM; route ① + B8; $0 screens PASS. **B4 unpaid** — no G0.",
+    "C:\\Users\\joshu\\multi_firm_operations\\ops\\instruments\\MYM.md:107:- **2026-08-13** — **MSL-C1 Stage-1 PASS** ([`STAGE1.md`](../../lab/archive/msl_c1_mym_2026-08/STAGE1.md)). After C3 [OPERATOR-KILL](../../docs/briefs/closures/MSL-C3-closure-operator-kill.md); elected existing `pdh-pdl-failed-break-reclaim` on MYM; route ① + B8 occupancy CLEAR; three kill limbs PASS at RT $2.82 / stop 320 pts / 4 contracts ($0.50/pt). **B4 unpaid.** No G0, Pine, pull, $0 · K=0.",
+    "C:\\Users\\joshu\\multi_firm_operations\\docs\\rejected_candidates.md:17:**Rejection scope:** the MSL-C3 card’s unpaid G0 path for `pdh-pdl-failed-break-reclaim` on",
+    "C:\\Users\\joshu\\multi_firm_operations\\docs\\rejected_candidates.md:24:`pdh-pdl-failed-break-reclaim` (available to MSL-C1 on MYM); Stage-0 L3/WSTRUCT/W4 discharge.",
+    "C:\\Users\\joshu\\multi_firm_operations\\docs\\rejected_candidates.md:27:<!-- concept-intake-entry mechanism_family=\"pdh-pdl-failed-break-reclaim\" instrument=\"M2K\" rejection_reason=\"operator-kill pre-G0 (B4 declined): Stage-1 PASS but G0 never frozen; slot handed to MSL-C1.\" harness_disposition_ref=\"MSL-C3 STAGE1 (lab/analysis/c1/msl_c3_m2k_2026-08/STAGE1.md)\" date=\"2026-08-13\" class=\"operator-stop\" role_tested=\"entry\" falsifier_failed=\"n/a — B4 declined\" addback_condition=\"fresh Stage-1 + new B4 GO — NOT silent revive of this unpaid G0 path\" -->"
+  ],
+  "cell_command": [
+    "C:\\Python314\\python.exe",
+    "C:\\Users\\joshu\\multi_firm_operations\\scripts\\instrument_profiles.py",
+    "cell",
+    "MYM",
+    "pdh-pdl-failed-break-reclaim"
+  ],
+  "cell_stdout": "=== MYM x pdh-pdl-failed-break-reclaim ===\nledger: ops/instruments/MYM.md\nvenue: NOT TRADABLE at the live firm — AUTHORIZED-but-venue-less incumbent (Striker DJ30 MYM edition); no live book to correlate new work against — check venue_note before book-correlation gate.\nverdict: untested — no prior on this cell.\nclass finding (mechanism-wide, not specific to MYM): none yet — M2K Stage-1 PASS then [OPERATOR-KILL](../../docs/briefs/closures/MSL-C3-closure-operator-kill.md) (B4 declined; class not killed); MYM Stage-1 PASS (C1), B4 unpaid. [C3 STAGE1](../../lab/analysis/c1/msl_c3_m2k_2026-08/STAGE1.md) · [C1 STAGE1](../../lab/archive/msl_c1_mym_2026-08/STAGE1.md)\nBINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md\nBINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md\ncost hurdle: 6.57 bp/event (4x Tradeify hurdle) — VERIFY at #M6\nK bank: read ../../discovery_manifests/ — never trust a snapshot.\nprior: Not a barren instrument — the incumbent locked leg is profitable here; one narrow continuation expression failed. [#M1]\n",
+  "cell_returncode": 1,
+  "arithmetic": {
+    "p": 0.55,
+    "rr": 1.0,
+    "n_trades": 1,
+    "contracts": 4,
+    "expectancy_r": 0.1,
+    "per_trade_sharpe": 0.100504,
+    "implied_annualized_sr": 1.6,
+    "implied_annualized_sr_raw": 1.5954480704349328,
+    "trading_days_per_year": 252,
+    "cost_law": {
+      "rt_cost_usd": 2.82,
+      "rows": [
+        {
+          "multiple": 1.0,
+          "stop_floor_usd": 28.2,
+          "stop_floor_pts": 56.4
+        },
+        {
+          "multiple": 2.0,
+          "stop_floor_usd": 56.4,
+          "stop_floor_pts": 112.8
+        },
+        {
+          "multiple": 4.0,
+          "stop_floor_usd": 112.8,
+          "stop_floor_pts": 225.6
+        }
+      ],
+      "card_multiple": 4.0,
+      "stop_floor_usd_at_card_multiple": 112.8
+    },
+    "geometry": {
+      "stop_pts": 320.0,
+      "target_pts": 320.0,
+      "span_pts": 640.0,
+      "point_value_usd": 0.5,
+      "rt_cost_usd": 2.82
+    },
+    "payability": {
+      "all_win_day_usd": 628.72,
+      "payout_min_usd_reference": 200.0,
+      "all_win_day_minus_ref": 428.72
+    },
+    "worst_day": {
+      "all_lose_day_usd": 651.28,
+      "worst_day_bound_usd_reference": 750.0,
+      "bound_minus_all_lose_day": 98.72
+    },
+    "sigma_d": {
+      "sigma_d_usd": 636.792,
+      "sigma_d_usd_raw": 636.7919597482368
+    }
+  }
+}

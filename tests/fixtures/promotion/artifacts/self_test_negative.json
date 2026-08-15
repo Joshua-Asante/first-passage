@@ -1,0 +1,5 @@
+{
+  "fixture": "negative",
+  "expected": "Fail",
+  "same_invocation_id": "s5-selftest-clean-001"
+}

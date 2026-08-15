@@ -1,0 +1,10 @@
+# Fixture: MES carries BINDING BAR(s); cell stdout must include BINDING BAR:
+id: mes-barred-cell
+instrument: MES
+mechanism: opening-range-breakout
+dedup_query: __msl_preflight_no_such_needle_zzzz__
+dedup_paths:
+  - docs/rejected_candidates.md
+p: 0.55
+rr: 1.0
+n_trades: 2

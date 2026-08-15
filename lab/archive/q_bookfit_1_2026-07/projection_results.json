@@ -1,0 +1,143 @@
+{
+  "prereg_commit": "0fc1e05",
+  "book": {
+    "sigma_daily_100k": 273.28214732599804,
+    "anchor": 273.0,
+    "reconcile_dev": 0.0010335066886375068,
+    "weekly_cov_eigs": [
+      162741.5860467988,
+      214449.06679953967
+    ],
+    "pr_risk_2leg": 1.963108257898778,
+    "panel_span": "2020-01-06->2026-06-30",
+    "session": "08:00-12:00 EST (NY morning, both legs)"
+  },
+  "constants": {
+    "w_ref": 0.0037,
+    "basis": 100000.0,
+    "r_dollars": 370.0,
+    "sigma_r": 1.0
+  },
+  "forks": {
+    "F-A ZN auction unwind": {
+      "n_b": 36.0,
+      "session": "~13:00 ET post-auction",
+      "regime": "event-flow reversion",
+      "episodic": true,
+      "h_days": null,
+      "sigma_d": 139.84685501341406,
+      "rho": 0.5117306651085073,
+      "v_weekly": 97785.71428571428,
+      "n_eff_risk_delta": 0.7869594122351686,
+      "pass": true,
+      "w_star_rho1": 0.007230365995783061,
+      "annex_sigma_r": {
+        "0.5": {
+          "sigma_d": 69.92342750670703,
+          "rho": 0.25586533255425364,
+          "v_weekly": 24446.42857142857,
+          "n_eff_risk_delta": 0.24450717902905783
+        },
+        "1.0": {
+          "sigma_d": 139.84685501341406,
+          "rho": 0.5117306651085073,
+          "v_weekly": 97785.71428571428,
+          "n_eff_risk_delta": 0.7869594122351686
+        },
+        "1.5": {
+          "sigma_d": 209.7702825201211,
+          "rho": 0.767595997662761,
+          "v_weekly": 220017.85714285713,
+          "n_eff_risk_delta": 0.9873782363733001
+        }
+      }
+    },
+    "F-B CL EIA expression": {
+      "n_b": 52.0,
+      "session": "10:30 ET Wed",
+      "regime": "event drift/reversion",
+      "episodic": true,
+      "h_days": null,
+      "sigma_d": 168.07500215441422,
+      "rho": 0.615023717425338,
+      "v_weekly": 141246.03174603175,
+      "n_eff_risk_delta": 0.9449844743482423,
+      "pass": true,
+      "w_star_rho1": 0.006016028154961632,
+      "annex_sigma_r": {
+        "0.5": {
+          "sigma_d": 84.03750107720711,
+          "rho": 0.307511858712669,
+          "v_weekly": 35311.50793650794,
+          "n_eff_risk_delta": 0.3450541899091073
+        },
+        "1.0": {
+          "sigma_d": 168.07500215441422,
+          "rho": 0.615023717425338,
+          "v_weekly": 141246.03174603175,
+          "n_eff_risk_delta": 0.9449844743482423
+        },
+        "1.5": {
+          "sigma_d": 252.11250323162136,
+          "rho": 0.9225355761380072,
+          "v_weekly": 317803.5714285715,
+          "n_eff_risk_delta": 0.8212951960133239
+        }
+      }
+    },
+    "F-C carry timing 6J/6E/CL": {
+      "n_b": 12.0,
+      "session": "continuous hold",
+      "regime": "carry (calm/range-alive)",
+      "episodic": false,
+      "h_days": 21,
+      "sigma_d": 80.74061938731717,
+      "rho": 0.2954478372529829,
+      "v_weekly": 32595.23809523809,
+      "n_eff_risk_delta": 0.3204700866754542,
+      "pass": true,
+      "w_star_rho1": 0.0125233612620146,
+      "annex_sigma_r": {
+        "0.5": {
+          "sigma_d": 40.370309693658584,
+          "rho": 0.14772391862649145,
+          "v_weekly": 8148.809523809523,
+          "n_eff_risk_delta": 0.08386252131011362
+        },
+        "1.0": {
+          "sigma_d": 80.74061938731717,
+          "rho": 0.2954478372529829,
+          "v_weekly": 32595.23809523809,
+          "n_eff_risk_delta": 0.3204700866754542
+        },
+        "1.5": {
+          "sigma_d": 121.11092908097577,
+          "rho": 0.44317175587947444,
+          "v_weekly": 73339.28571428571,
+          "n_eff_risk_delta": 0.6441150178599804
+        }
+      },
+      "annex_h": {
+        "5": {
+          "sigma_d": 165.46903033498444,
+          "rho": 0.6054878884481121,
+          "v_weekly": 136900.0,
+          "n_eff_risk_delta": 0.9343282853356922
+        },
+        "21": {
+          "sigma_d": 80.74061938731717,
+          "rho": 0.2954478372529829,
+          "v_weekly": 32595.23809523809,
+          "n_eff_risk_delta": 0.3204700866754542
+        },
+        "63": {
+          "sigma_d": 46.6156183378047,
+          "rho": 0.17057688836950247,
+          "v_weekly": 10865.079365079368,
+          "n_eff_risk_delta": 0.11134558198492384
+        }
+      }
+    }
+  },
+  "verdict": "RESOLVED"
+}

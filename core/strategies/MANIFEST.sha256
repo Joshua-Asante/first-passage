@@ -1,0 +1,11 @@
+# Pine strategy source manifest
+# Source held privately (not redistributed). Hashes pinned for verification.
+
+d8c1188481eeb25ac03199a9c9e5227b567a7ca8c53eb9160d6fcd288176328f  core/strategies/_archive/aegis/aegis_usdjpy_v4.3.pine
+1b4513c5aa2fd3bd882b904d38571293725f2694fb2826a218b67cf03fd58838  core/strategies/_archive/aegis/aegis_usdjpy_v4.3_indicator.pine
+73bd4435af2871ed6a92d347f0c066a6f015f9f4b57a7941e9b5e00567d573bd  core/strategies/_archive/guardian/guardian_gold_v5.5.pine
+9c217f0dcdf961868453f20fe2e1b35ba6ba17121421677fbe19567aef53eec4  core/strategies/_archive/guardian/guardian_gold_v5.5_indicator.pine
+f5a567b59ac2e08ca79497a59d0b82613a09e48be7b4fb2b28a5e4776857258d  core/strategies/_archive/nas/striker_nas100_v1.pine
+768aca7dc0aefda5f1c3ccaa614cfc8739b3f3b8613091b6a24f6eddf492ccb4  core/strategies/_archive/nas/striker_nas100_v1_indicator.pine
+716f8b4375ecf6f92de19c83ae6af12180aaa5dceb7dd8a54ed4535f6d561783  core/strategies/_archive/striker/striker_dj30_v4.5.pine
+49057afc424b99bc53d384956c05db375035ee800b41eafbeaa44ce81a04463b  core/strategies/_archive/striker/striker_dj30_v4.5_indicator.pine

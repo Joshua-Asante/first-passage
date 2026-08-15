@@ -1,0 +1,73 @@
+{
+  "verdict": "FALSIFIED",
+  "results": {
+    "MNQ": {
+      "instrument": "MNQ",
+      "development": {
+        "n": 858,
+        "slope_bp": 93.75267467592589,
+        "hac_standard_error": 61.11124828889711,
+        "hac_t": 1.5341312328087264
+      },
+      "holdout": {
+        "n": 620,
+        "slope_bp": 18.83944675290205,
+        "hac_standard_error": 37.10828758614065,
+        "hac_t": 0.507688389262626
+      },
+      "pooled": {
+        "n": 1478,
+        "slope_bp": 57.50324806683214,
+        "hac_standard_error": 35.91196905162201,
+        "hac_t": 1.601227935571384
+      },
+      "score_p90_minus_p10": 0.14634338761391752,
+      "predicted_p90_minus_p10_bp": 8.415220120903669,
+      "median_opening_price": 15488.25,
+      "round_trip_cost_bp": 0.9103675366810325,
+      "four_x_cost_hurdle_bp": 3.64147014672413,
+      "gates": {
+        "coverage": true,
+        "development": false,
+        "holdout_sign": true,
+        "pooled": false,
+        "economic": true
+      },
+      "passes": false
+    },
+    "MYM": {
+      "instrument": "MYM",
+      "development": {
+        "n": 859,
+        "slope_bp": -3.6293906432411727,
+        "hac_standard_error": 28.346422034216165,
+        "hac_t": -0.12803699312951164
+      },
+      "holdout": {
+        "n": 618,
+        "slope_bp": 29.382109968247192,
+        "hac_standard_error": 35.959336224320595,
+        "hac_t": 0.8170926678111209
+      },
+      "pooled": {
+        "n": 1477,
+        "slope_bp": 9.223561968052351,
+        "hac_standard_error": 22.567477521087476,
+        "hac_t": 0.4087103647021995
+      },
+      "score_p90_minus_p10": 0.18502166056113528,
+      "predicted_p90_minus_p10_bp": 1.706558751617579,
+      "median_opening_price": 35182.0,
+      "round_trip_cost_bp": 1.6030924904780854,
+      "four_x_cost_hurdle_bp": 6.412369961912342,
+      "gates": {
+        "coverage": true,
+        "development": false,
+        "holdout_sign": true,
+        "pooled": false,
+        "economic": false
+      },
+      "passes": false
+    }
+  }
+}

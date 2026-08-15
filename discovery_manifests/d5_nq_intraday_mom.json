@@ -1,0 +1,39 @@
+{
+  "run_id": "d5_nq_intraday_mom",
+  "status": "closed",
+  "opened_at": "2026-07-16T04:28:30Z",
+  "tool": "baltussen-fixed",
+  "K": 1,
+  "alpha": 0.05,
+  "data_window": "2010-01-01:2018-12-31",
+  "hypothesis": "MNQ rest-of-day return predicts same-session last-30-min return (Baltussen 2021 JFE dealer short-gamma intraday-momentum footprint); net-of-cost Sharpe>=0.65 at K_eff=1; shuffled-day placebo null",
+  "params": "{\n  \"k_rule\": \"K_eff=1 (H1 sole candidate; H3 placebo falsification clause consumes no selection-K)\",\n  \"prereg\": \"docs/briefs/pre-registration/D5-NQ-intraday-momentum-preregistration.md\",\n  \"instrument\": \"MNQ sole anchor (DJ30/MYM dropped)\",\n  \"construct\": \"Baltussen et al. 2021 JFE intraday-momentum footprint: rest-of-day return predicts last-30-min return\",\n  \"lane\": \"mechanism-first\",\n  \"clause_k_floor\": 0.65,\n  \"v_rule\": \"V=1/n unconditional pin\",\n  \"oos_axis\": \"IS parent NQ 2010-06-06:2018-12-31; OOS native MNQ 2019-05-06:present\",\n  \"go_signed\": \"2026-07-15/JA\"\n}\n",
+  "closed_at": "2026-07-16T05:08:00Z",
+  "results": {
+    "n_submitted": 1,
+    "naive_alpha": 0.05,
+    "n_pass_naive_alpha": 0,
+    "bonferroni_threshold": 0.05,
+    "n_pass_bonferroni": 0,
+    "n_multiplicity_killed": 0,
+    "bh_rows": [
+      {
+        "rank": 1,
+        "pvalue": 1.0,
+        "bh_threshold": 0.05,
+        "bh_reject": false
+      }
+    ],
+    "n_pass_bh": 0,
+    "expected_false_positives_global_null": 0.05,
+    "candidates": [
+      {
+        "id": "H1_baltussen",
+        "pvalue": 1.0
+      }
+    ]
+  },
+  "lane": "mechanism-first",
+  "reachability_attestation": "docs/briefs/pre-registration/D5-NQ-intraday-momentum-preregistration.md",
+  "verdict": "FIRST-PASS ONLY. Candidates clearing the crude multiplicity floor are listed above. This is NOT a promotion. Hand the full candidate set (all K returns) to strategy-validation for universe-level correction (White RC / Hansen SPA / Romano-Wolf) and the native-micro OOS gate before any candidate is trusted."
+}

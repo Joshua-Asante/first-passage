@@ -1,0 +1,7 @@
+# Intermediate per-arm MC outputs + logs from the (deferred, operator-gated) re-MC run.
+# The authoritative haircut_remc_report.json + a RESULTS.md are committed intentionally when the real n=100 run lands.
+arm_*.json
+*.log
+run_050.pid
+
+_pruned_harness/

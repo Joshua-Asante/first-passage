@@ -1,0 +1,97 @@
+{
+  "extension_of": "regime_signal_research_2026-06-25 battery (CLOSURE.md)",
+  "recipe": "exact battery replication; signs pre-registered; FWER across M",
+  "N": 33,
+  "M": 7,
+  "seed": 20260625,
+  "B": 20000,
+  "faithfulness": {
+    "sev_rv": [
+      0.159,
+      0.3775
+    ],
+    "sev_cal": [
+      -0.459,
+      0.0072
+    ]
+  },
+  "power_floor": 0.358,
+  "results": {
+    "SKEW": {
+      "cls": "vol-surface",
+      "sign": 1,
+      "rho_partial": -0.3487,
+      "raw_rho": -0.5023,
+      "p_one": 0.9756,
+      "p_fwer": 0.2658,
+      "verdict": "fail(wrong-sign)",
+      "theory": "richer crash/OTM-put pricing = tail demand precedes stress"
+    },
+    "COR1M": {
+      "cls": "implied-corr",
+      "sign": 1,
+      "rho_partial": 0.1998,
+      "raw_rho": 0.3887,
+      "p_one": 0.13165,
+      "p_fwer": 0.85905,
+      "verdict": "fail",
+      "theory": "high 1m implied corr = everything-together (vs tested COR3M)"
+    },
+    "DSPX": {
+      "cls": "implied-corr",
+      "sign": -1,
+      "rho_partial": -0.1761,
+      "raw_rho": -0.3041,
+      "p_one": 0.16385,
+      "p_fwer": 0.9199,
+      "verdict": "fail",
+      "theory": "LOW dispersion <=> HIGH implied corr = systemic co-move"
+    },
+    "VVIX": {
+      "cls": "vol-surface",
+      "sign": 1,
+      "rho_partial": 0.1533,
+      "raw_rho": 0.2049,
+      "p_one": 0.19845,
+      "p_fwer": 0.9589,
+      "verdict": "fail",
+      "theory": "vol-of-vol high = unstable vol surface precedes turbulence"
+    },
+    "HYIG": {
+      "cls": "cross-asset",
+      "sign": -1,
+      "rho_partial": 0.1172,
+      "raw_rho": -0.3563,
+      "p_one": 0.7359,
+      "p_fwer": 0.9915,
+      "verdict": "fail(wrong-sign)",
+      "theory": "HY/IG (HYG/LQD) ratio falling = credit/funding risk-off leads co-drawdowns"
+    },
+    "TERMSTRUCT": {
+      "cls": "vol-surface",
+      "sign": 1,
+      "rho_partial": 0.1093,
+      "raw_rho": 0.1136,
+      "p_one": 0.26855,
+      "p_fwer": 0.9945,
+      "verdict": "fail",
+      "theory": "VIX/VIX3M backwardation = near-term fear>3m -> regime-stress lead"
+    },
+    "MOVE": {
+      "cls": "cross-asset",
+      "sign": 1,
+      "rho_partial": -0.0514,
+      "raw_rho": 0.009,
+      "p_one": 0.61195,
+      "p_fwer": 0.9999,
+      "verdict": "fail(wrong-sign)",
+      "theory": "bond-vol spike = cross-asset stress into equity/FX co-move"
+    }
+  },
+  "hyoas_footnote": {
+    "N": 21,
+    "partial_rho": -0.14,
+    "note": "fredgraph history-capped ~3y; cal-premise degenerate at this N; NOT comparable"
+  },
+  "disposition": "NULL-EXTENDED: no new free candidate clears FWER<0.05 with registered sign"
+}

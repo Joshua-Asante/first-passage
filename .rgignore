@@ -1,0 +1,8 @@
+# Agent/rg search exclude — LTM cold corpus (git-tracked; still Readable by path).
+# Keep in sync with .cursorindexingignore. Do NOT put these in .cursorignore
+# (that would best-effort block Cursor from opening CATALOG-resolved paths).
+# Force-search: rg --no-ignore  (NOT --no-ignore-vcs — that still respects this file)
+
+lab/archive/
+docs/ltm/
+core/strategies/_archive/

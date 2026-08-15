@@ -1,0 +1,56 @@
+{
+  "MNQ": {
+    "threshold_pts": 92.5,
+    "threshold_pts_dd": 37.0,
+    "panels": {
+      "v1 on MNQ1! (2020-2026)": {
+        "n_base": 237,
+        "n_stopouts": 111,
+        "stop_pct_med": 0.2200956937799043,
+        "stop_pct_max": 3.314955587113302,
+        "at_cap_frac": 0.7657657657657657
+      },
+      "MNQ edition (2025-09+)": {
+        "n_base": 37,
+        "n_stopouts": 19,
+        "stop_pct_med": 0.1614872582614518,
+        "stop_pct_max": 0.3425904960671005,
+        "at_cap_frac": 0.9473684210526315
+      }
+    },
+    "pooled": {
+      "n": 130,
+      "median_pct": 0.2168449668127826,
+      "at_cap_frac": 0.7923076923076923,
+      "worst_pct": 3.314955587113302,
+      "qty_at_worst": 0
+    }
+  },
+  "MYM": {
+    "threshold_pts": 87.5,
+    "threshold_pts_dd": 35.0,
+    "panels": {
+      "v4.5 on MYM1! (2020-2026)": {
+        "n_base": 238,
+        "n_stopouts": 69,
+        "stop_pct_med": 0.19736158720265917,
+        "stop_pct_max": 0.5401302151761992,
+        "at_cap_frac": 0.43478260869565216
+      },
+      "MYM edition (2025-08+)": {
+        "n_base": 43,
+        "n_stopouts": 8,
+        "stop_pct_med": 0.18952780505325123,
+        "stop_pct_max": 0.37505357908272613,
+        "at_cap_frac": 0.5
+      }
+    },
+    "pooled": {
+      "n": 77,
+      "median_pct": 0.19736158720265917,
+      "at_cap_frac": 0.44155844155844154,
+      "worst_pct": 0.5401302151761992,
+      "qty_at_worst": 2
+    }
+  }
+}

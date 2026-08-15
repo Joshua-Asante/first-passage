@@ -1,0 +1,8 @@
+# Vendor-derived TBBO quote windows (Databento GLBX) — rebuild via pull_level_windows.py.
+level_quotes.parquet
+_level_quotes_partial.parquet
+# Derived level-touch event set — rebuildable from free 1m panel via build_level_events.py.
+level_events.parquet
+__pycache__/
+*.pyc
+.pytest_cache/
