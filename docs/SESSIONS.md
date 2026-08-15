@@ -14,6 +14,32 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-15k — Dense-1m unpause U0 KEEP
+
+**Focus:** Operator marked U0 KEEP on the unpaid dense-1m unpause packet. Leave the pause.
+
+**Shipped:** branch `cursor/dense1m-unpause-plan-22c1` — packet `CLOSED-RESOLVED (U0 KEEP)` · [closure](briefs/closures/DENSE1M-UNPAUSE-closure-resolved-u0-keep.md). No ADR. No CON-6. $0 · K=0.
+
+**Decisions/defects:** U0 KEEP. Owner of the pause remains [CON-5 Branch A](briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md). This closure records the mark only.
+
+**Open / next:** dense-1m pause stands (U0). No CON-6. Carry: consecutive-pre-G0-kill threshold uncovered; `Q-CAPBAND-1` re-opens only on a *new* band axis; R3–R6/R10 from the 08-03 audit still owed. The 2026-11-08 §4 falsifier is the live clock. Weekly token unpaid for 08-17→08-21. MSL E1 HOLD / no slate-4 until NEW WHO.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+## 2026-08-15j — Dense-1m unpause Board packet (OWED-election)
+
+**Focus:** Draft a reviewable plan for unpausing the dense-1m OHLCV temporal-selectivity / entry-geometry default. Pause stays until a Board mark.
+
+**Shipped:** branch `cursor/dense1m-unpause-plan-22c1` — [packet](briefs/2026-08-15-dense1m-lane-unpause-review.md) presents U0 KEEP / U1 ADMIT-ONE / U2 OPEN-DEFAULT; elects none; no CON-6, no camp, no ADR. $0 · K=0.
+
+**Decisions/defects:** none marked. Owner of the pause remains [CON-5 Branch A](briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md). U1/U2 would need a full limb-4 ADR.
+
+**Open / next:** operator marks U0 / U1 / U2 on the packet. Carry: consecutive-pre-G0-kill threshold uncovered; `Q-CAPBAND-1` re-opens only on a *new* band axis; R3–R6/R10 from the 08-03 audit still owed. The 2026-11-08 §4 falsifier is the live clock. Weekly token unpaid for 08-17→08-21. MSL E1 HOLD / no slate-4 until NEW WHO.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-15i — STATE weekly roll + de-scope over-read correction
 
 **Focus:** Roll the idle-clock header past the satisfied 08-10→08-14 week; correct STATE pointers that treated Tradeify as a gone firm.
