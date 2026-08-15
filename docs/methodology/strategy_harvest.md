@@ -1,6 +1,6 @@
 # Strategy harvest — sourcing + admission of externally-published mechanisms
 
-**Owner ADR:** [`docs/adr/2026-07-15-external-mechanism-harvest-intake.md`](../adr/2026-07-15-external-mechanism-harvest-intake.md) (`Accepted` 2026-07-15 — this doc is canonical procedure). §4 limb 2 (R10) is `Accepted` 2026-08-15; the historical-kill pin is unmarked — owner is that addendum, not this file.
+**Owner ADR:** [`docs/adr/2026-07-15-external-mechanism-harvest-intake.md`](../adr/2026-07-15-external-mechanism-harvest-intake.md) (`Accepted` 2026-07-15 — this doc is canonical procedure). §4 limb 2 (R10) is `Accepted` 2026-08-15; pin marked `no`; post-mark count lives on that addendum, not this file.
 **Superseded-in-part-by:** [`S5 ADR`](../adr/2026-08-07-loop-s5-bounded-promotion-lane.md) (`Accepted` 2026-08-07) — per-candidate operator GO before capital/account action is replaced by **budget approval** for in-ceiling sandbox admits only; Stage-0 / K / cost-law and ceiling-crossing GOs stand.
 **Position in the chain:** this is the **front door**. Everything downstream already exists and is unchanged by this doc:
 

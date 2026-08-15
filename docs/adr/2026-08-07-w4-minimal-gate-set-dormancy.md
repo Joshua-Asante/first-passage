@@ -133,4 +133,4 @@ W4 deferred the code flips and left the 09-01 / sentinel-repair dates standing. 
 | **R5** (`var_trials=1/n` default) | **DONE** — module default flipped; self-tests rewritten against `1/n` |
 | **R6** (`DEFAULT_FIRM_KEY` in `cost_mnq.py`) | **DONE** — `firm_key` required; cheapest-firm default retired |
 
-R10 now lives as an **Accepted** second §4 limb on the [harvest-intake ADR](2026-07-15-external-mechanism-harvest-intake.md) (operator GO 2026-08-15). The historical-kill pin is still unmarked — not fired. Dormancy table above is unchanged.
+R10 now lives as an **Accepted** second §4 limb on the [harvest-intake ADR](2026-07-15-external-mechanism-harvest-intake.md) (operator GO 2026-08-15). Pin marked `no` 2026-08-15; post-mark count 0/2 — not fired. Dormancy table above is unchanged.
