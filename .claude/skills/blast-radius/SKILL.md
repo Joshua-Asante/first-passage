@@ -51,7 +51,7 @@ Also run mechanical backstops when paths moved or status words flipped:
 python scripts/check_root_doc_liveness.py
 python scripts/check_path_liveness.py
 python scripts/check_status_consistency.py
-python scripts/sync_liveness_indexes.py --check
+python scripts/sync_liveness_indexes.py
 ```
 
 (Link/status gates only — they do not prove semantic currency. The liveness

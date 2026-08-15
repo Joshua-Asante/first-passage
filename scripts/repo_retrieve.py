@@ -7,6 +7,19 @@ Does not ingest docs/ltm/ or lab/archive/ bodies (LTM stays catalog-gated).
 FTS5 over a curated hot corpus is the cheap slice. A local-embedder vector
 slot is documented in Q-XMEM-1 v1.2 and is not built here.
 
+2026-08-15 (Phase 1 of the governance-belt audit's remediation): the query
+that shipped on 2026-08-14 omitted FTS5's ``ORDER BY rank``, so results came
+back in rowid (insertion) order rather than relevance order — measured at
+recall@5 = 0.086 against the frozen 2026-07-27 falsifier, tied with the plain
+`rg` incumbent it exists to beat. Fixed here, along with UTF-8-safe output
+(the prior hardcoded arrow/ellipsis characters crashed on Windows cp1252
+stdout) and HEAD-stamped staleness (the index previously never refreshed
+once built). None of this re-authorizes the tool for Rule 8 sub-rule 8/10
+attestations — that is Phase 2: a frozen v3 pre-registration re-measures
+this exact file against the same 0.70 / R_fts5 > R_rg table before its
+output is trusted again. The `check_advisor_dedup.py` companion call stays
+disabled until that measurement lands.
+
 Usage:
   python scripts/repo_retrieve.py --rebuild
   python scripts/repo_retrieve.py --query "Magdon-Ismail closed-form MDD"
@@ -16,8 +29,12 @@ from __future__ import annotations
 import argparse
 import re
 import sqlite3
+import subprocess
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from gate_fire_log import log_fire  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
 DEFAULT_DB = REPO / ".cache" / "repo_retrieve.sqlite"
@@ -123,6 +140,33 @@ def connect(db_path: Path) -> sqlite3.Connection:
     return con
 
 
+def _git_head(repo: Path) -> str | None:
+    """Current commit SHA, or None if unavailable (not a git checkout, no git binary)."""
+    try:
+        out = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=repo, capture_output=True, text=True, timeout=5, check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if out.returncode != 0:
+        return None
+    return out.stdout.strip() or None
+
+
+def _stamped_head(db_path: Path) -> str | None:
+    if not db_path.is_file():
+        return None
+    con = sqlite3.connect(db_path)
+    try:
+        row = con.execute("SELECT value FROM meta WHERE key='head_sha'").fetchone()
+        return row[0] if row else None
+    except sqlite3.OperationalError:
+        return None
+    finally:
+        con.close()
+
+
 def rebuild(repo: Path, db_path: Path) -> int:
     chunks = collect_chunks(repo)
     con = connect(db_path)
@@ -135,10 +179,33 @@ def rebuild(repo: Path, db_path: Path) -> int:
             "INSERT INTO chunks(path, heading, text) VALUES (?, ?, ?)",
             [(c["path"], c["heading"], c["text"]) for c in chunks],
         )
+        # Stamp the HEAD this index was built against, so a caller can detect
+        # drift (2026-08-15: the index previously never refreshed once built).
+        con.execute("DROP TABLE IF EXISTS meta")
+        con.execute("CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT)")
+        head = _git_head(repo)
+        if head is not None:
+            con.execute("INSERT INTO meta (key, value) VALUES ('head_sha', ?)", (head,))
         con.commit()
     finally:
         con.close()
     return len(chunks)
+
+
+def ensure_fresh(repo: Path, db_path: Path) -> bool:
+    """Rebuild the index if it's missing or stale against HEAD. Returns True if rebuilt.
+
+    If HEAD can't be determined (no git, no .git dir), falls back to
+    build-if-missing only — there is nothing to compare staleness against.
+    """
+    if not db_path.is_file():
+        rebuild(repo, db_path)
+        return True
+    current_head = _git_head(repo)
+    if current_head is not None and _stamped_head(db_path) != current_head:
+        rebuild(repo, db_path)
+        return True
+    return False
 
 
 def query(db_path: Path, q: str, *, limit: int) -> list[tuple[str, str, str]]:
@@ -152,9 +219,12 @@ def query(db_path: Path, q: str, *, limit: int) -> list[tuple[str, str, str]]:
         if not terms:
             return []
         match = " OR ".join(f'"{t}"' for t in terms[:12])
+        # ORDER BY rank: FTS5's built-in bm25-based relevance order. Its
+        # absence (2026-08-14 -> 2026-08-15) meant results came back in
+        # rowid/insertion order — see module docstring.
         rows = con.execute(
             "SELECT path, heading, snippet(chunks, 2, '>>>', '<<<', '…', 16) "
-            "FROM chunks WHERE chunks MATCH ? LIMIT ?",
+            "FROM chunks WHERE chunks MATCH ? ORDER BY rank LIMIT ?",
             (match, limit),
         ).fetchall()
         return [(str(a), str(b), str(c)) for a, b, c in rows]
@@ -163,6 +233,17 @@ def query(db_path: Path, q: str, *, limit: int) -> list[tuple[str, str, str]]:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # 2026-08-15: the prior hardcoded arrow/ellipsis characters crashed on
+    # Windows cp1252 stdout before any output was ever printed. Reconfigure
+    # to UTF-8 with graceful replacement rather than crashing; wrapped
+    # because reconfigure() isn't available on every stream type a test
+    # harness might substitute.
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
+
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--repo", type=Path, default=REPO)
     ap.add_argument("--db", type=Path, default=DEFAULT_DB)
@@ -173,7 +254,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.rebuild:
         n = rebuild(args.repo, args.db)
-        print(f"repo_retrieve: rebuilt {n} chunks → {args.db}")
+        print(f"repo_retrieve: rebuilt {n} chunks -> {args.db}")
         if args.query is None:
             return 0
 
@@ -182,10 +263,10 @@ def main(argv: list[str] | None = None) -> int:
               file=sys.stderr)
         return 2
 
-    if not args.db.is_file():
-        rebuild(args.repo, args.db)
+    ensure_fresh(args.repo, args.db)
 
     hits = query(args.db, args.query, limit=args.limit)
+    log_fire("repo_retrieve", query=args.query, n_hits=len(hits))
     if not hits:
         print(f"repo_retrieve: no hits for {args.query!r}")
         return 0

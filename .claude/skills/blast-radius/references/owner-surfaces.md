@@ -45,7 +45,7 @@ Extract from the diff, then grep:
 | `scripts/check_path_liveness.py` | MANIFEST parent paths missing on disk |
 | `scripts/check_status_consistency.py` | CATALOG / rejected / instrument status join issues |
 | `scripts/check_adr_graph.py` | ADR graph / INDEX drift (when ADRs touched) |
-| `scripts/sync_liveness_indexes.py --check` | INDEX Open rows with terminal Status whose successor is already Recently-closed; CATALOG `ACTIVE` + “archive owed” |
+| `scripts/sync_liveness_indexes.py` | INDEX Open rows with terminal Status whose successor is already Recently-closed; CATALOG `ACTIVE` + “archive owed” |
 
 None of these replace the old-token grep for silent restatements. Session-end:
 run the liveness check; repair clear cases; do not auto-rewrite INDEX.
