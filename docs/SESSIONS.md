@@ -14,6 +14,23 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-15g — Root-doc liveness: 16 public-seed dead links repointed
+
+**Focus:** `make check` / `check_root_doc_liveness.py` HARD-failed on 16 markdown links in `STATE.md` + `REPO_MAP.md` whose targets were omitted from the public seed (PR #5 restored `docs/notes/audits/` only).
+
+**Shipped:** branch `cursor/root-doc-liveness-004b` — repointed, did not restore excluded trees. Surviving owners where they exist (`S1`, FU-1 audit, implied-SR ADRs, CFD-estate ADR, `strategy_harvest.md`); `git show <sha>:<path>` retrieval idiom elsewhere (same skip the gate already honors). `make check` green.
+
+**Decisions/defects:** no new ADR. Did not reverse PR #5's `notice/` / `rail_build/` / dated-notes exclusion.
+
+**Open / next:** `path-liveness`/`root-doc-liveness` `path-conditional` re-tier revert still
+owed (carried from 2026-08-15e). Limb C (local-embedder vector) live per Q-XMEM-1, not authorized —
+needs a Rule 2 cost dry-run, operator-paced. Excluded-tree inbound links outside the five root
+docs remain (briefs/ADRs/skills); not this gate. Carry: F1 2026-11-08; M1; weekly token;
+Magdon-Ismail B.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; no arming.
+
+---
 ## 2026-08-15e — Limb B v3 re-measurement: `ASSISTIVE-ONLY` (final)
 
 **Focus:** Phase 2 of the governance-belt audit's remediation — frozen v3 pre-registration,
