@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import importlib.util
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -139,12 +140,22 @@ def main() -> None:
         return
 
     rr, rr_path = load_repo_retrieve()
-    blob = rr_path.read_bytes()
-    import hashlib
-    # git hash-object equivalent: "blob <len>\0<content>", sha1
-    header = f"blob {len(blob)}\0".encode()
-    blob_hash = hashlib.sha1(header + blob).hexdigest()
-    print(f"scripts/repo_retrieve.py blob hash (this run): {blob_hash}")
+    # Shell out to git itself for the blob hash -- do not reimplement it.
+    # A hand-rolled sha1("blob <len>\0<bytes>") over raw working-tree bytes
+    # disagrees with git's own hash-object under core.autocrlf=true (git
+    # LF-normalizes before hashing; raw disk bytes here are CRLF). Caught
+    # this by cross-checking against `git rev-parse <commit>:<path>` when
+    # freezing this artifact -- the two didn't match. Calling git directly
+    # is the fix, not correcting the normalization by hand.
+    try:
+        out = subprocess.run(
+            ["git", "hash-object", str(rr_path)],
+            cwd=REPO, capture_output=True, text=True, timeout=5, check=False,
+        )
+        blob_hash = out.stdout.strip() if out.returncode == 0 else "<git hash-object failed>"
+    except (OSError, subprocess.TimeoutExpired):
+        blob_hash = "<git unavailable>"
+    print(f"scripts/repo_retrieve.py blob hash (this run, via git hash-object): {blob_hash}")
 
     n_reach, n_total = reachability_ceiling(fixture, rr, None)
     print(f"reachability ceiling (corpus contains target, any rank): "

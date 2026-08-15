@@ -111,6 +111,7 @@ documents the camp boundary for humans/tools.
 | h_od_1_es_overnight_drift_2026-07 | harvest | ACTIVE | SR917 overnight hour on ES IS — Stage-2/4 results | lab/analysis/harvest/h_od_1_es_overnight_drift_2026-07/ | — |
 | harv_a4_footprint_2026-07 | harvest | ACTIVE | A4 month-end footprint diagnostic (Cursor return) | lab/analysis/harvest/harv_a4_footprint_2026-07/ | — |
 | harvest_mechanism_deep_search_2026-07-23 | harvest | ACTIVE | harvest mechanism deep search fan-out (2026-07-23) | lab/analysis/harvest/harvest_mechanism_deep_search_2026-07-23/ | — |
+| limb_b_remeasure_2026-08 | harvest | ACTIVE | FTS5-as-Delete falsifier v3 (Limb B re-measurement) results | lab/analysis/harvest/limb_b_remeasure_2026-08/ | — |
 | q_kbudget_harvest_1_2026-07 | harvest | ACTIVE | Phase-1 literature fan-out + Phase-2 K-budget ratification | lab/analysis/harvest/q_kbudget_harvest_1_2026-07/ | — |
 | radar_tier_a_burst_2026-07 | harvest | ACTIVE | first burst EXECUTED; proceed items 1–3 complete (`H-TSMOM-6J` Clause-N FAIL; carry Table-1 moments recovered / timin... | lab/analysis/harvest/radar_tier_a_burst_2026-07/ | — |
 | st_eh_2026-07 | harvest | ACTIVE | ST-EH campaign engine + fidelity harness (harvest) | lab/analysis/harvest/st_eh_2026-07/ | — |

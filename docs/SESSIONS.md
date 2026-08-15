@@ -14,6 +14,41 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-15e — Limb B v3 re-measurement: `ASSISTIVE-ONLY` (final)
+
+**Focus:** Phase 2 of the governance-belt audit's remediation — frozen v3 pre-registration,
+re-measure `repo_retrieve.py` against the same 0.70 / `R_fts5 > R_rg` table the 2026-08-15d
+entry left owed. (Phase 0b docs restore and Phase 1 rank/UTF-8/staleness patch landed
+[PR #5](https://github.com/Joshua-Asante/first-passage/pull/5) / [#6](https://github.com/Joshua-Asante/first-passage/pull/6)
+between that entry and this one, without their own SESSIONS rows — noted here for the record.)
+
+**Shipped:** branch `claude/limb-b-remeasure-v3-0815` — frozen
+[v3 pre-registration](briefs/pre-registration/2026-08-15-fts5-delete-falsifier-prereg-v3.md)
+(measured = shipped, bound to `repo_retrieve.py`'s blob hash); Run A on the shipped tool
+(`R_shipped@5 = 0.500`, floor FAIL, beats `rg` 0.088); one permitted corpus-widening revision
+(`docs/briefs/*.md`, `docs/notes/audits/**`, `docs/methodology/`, `docs/spec/`, still excluding
+`docs/ltm/`/`lab/archive/`); Run B on the widened, committed corpus — unchanged recall (0.500)
+despite a higher reachability ceiling (0.676→0.735), a bm25-corpus-statistics effect reported
+not chased. Final verdict **`ASSISTIVE-ONLY`** — no Run C, per the frozen cap.
+[`RESULTS`](../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md).
+
+**Decisions/defects:** no new ADR. Companion call in `check_advisor_dedup.py` stays disabled —
+settled disposition, not a pending fix. Q-XMEM-1 not closed (A3 pre-condition is a separate
+operator gate). Found and fixed a blob-hash integrity bug in the harness itself mid-run
+(hand-rolled sha1 disagreed with `git hash-object` under `core.autocrlf=true`) — the
+measurement was unaffected, the diagnostic print was not.
+
+**Open / next:** `path-liveness`/`root-doc-liveness` `path-conditional` re-tier revert still
+owed (carried from 2026-08-15d, untouched this session). Limb C (local-embedder vector)
+question is now live per Q-XMEM-1's own trigger but not authorized — needs a Rule 2 cost
+dry-run, operator-paced. `docs/notes/audits/` restore (PR #5) covered only that subtree;
+`docs/notes/notice/`, `docs/notes/rail_build/`, and dated top-level notes stay excluded — the
+16 remaining `root-doc-liveness` dead links trace there. Carry: F1 2026-11-08; M1; weekly
+token; Magdon-Ismail B.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; no arming.
+
+---
 ## 2026-08-15d — Limb B (repo_retrieve) quarantined — governance-belt audit
 
 **Focus:** Meta-layer programme audit of the PR #2 governance belt found `scripts/repo_retrieve.py` recall-regressed below its own 2026-07-27 `DELETE-HOLDS` authorization (unranked `FTS5 MATCH`; recall@5 measured at incumbent-parity, 0.086, tying the `rg` baseline it was built to beat). Verdict: **Degenerating** (meta layer).

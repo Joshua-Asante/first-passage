@@ -2,7 +2,7 @@
 
 **Status:** `OPEN`
 **Authored:** 2026-07-16
-**Amended:** 2026-07-16 (v1.1, pre-T0) — critical review (`claude/q-xmem-1-briefs-review`): ledger-skip gate hole closed (=1 was verdict-less); locked strategy parameters added to denylist; contamination audit upgraded from token-grep to full-export read (Trap M-AHF); hosting limb restated around the extraction-LLM boundary + explicit-add-only frozen; benefit limb tightened to operator-confirmed; Phase-3/§6 verdict-date conflict fixed. **No T0, no install, no memories existed at amendment time — this is a pre-registration revision, not Known Trap #12.** **Amended again:** 2026-08-15 (v1.2, still pre-T0) — Limb B repo-local FTS addendum below. §4 / §6 / Mem0 Phase 0–4 unchanged. Still no memories.
+**Amended:** 2026-07-16 (v1.1, pre-T0) — critical review (`claude/q-xmem-1-briefs-review`): ledger-skip gate hole closed (=1 was verdict-less); locked strategy parameters added to denylist; contamination audit upgraded from token-grep to full-export read (Trap M-AHF); hosting limb restated around the extraction-LLM boundary + explicit-add-only frozen; benefit limb tightened to operator-confirmed; Phase-3/§6 verdict-date conflict fixed. **No T0, no install, no memories existed at amendment time — this is a pre-registration revision, not Known Trap #12.** **Amended again:** 2026-08-15 (v1.2, still pre-T0) — Limb B repo-local FTS addendum below. §4 / §6 / Mem0 Phase 0–4 unchanged. Still no memories. **Amended again (later same day):** Limb B re-measured `ASSISTIVE-ONLY` under a fresh frozen pre-registration after a governance-belt audit found the original "Landed" claim didn't match measured recall — see the second 2026-08-15 addendum below.
 **Closed:** `N/A`
 **Authors:** Joshua (authority) + Cursor (structure; prior fit canvas)
 **Parent question:** `N/A`
@@ -211,12 +211,27 @@ Two retrieval limbs, one brief:
 | Limb | What | Status after this addendum |
 |---|---|---|
 | **A — Mem0 soft-scratch** | Original Phase 0–4 / §6. Cross-surface prefs and path pointers. Local extractor/embedder or explicit-add-only. | **Unpaid.** T0 starts only on explicit operator GO. Do not install Mem0 in this land. |
-| **B — repo-local FTS** | Sqlite FTS5 over **hot git surfaces only**: `lab/CATALOG.md`, `docs/briefs/INDEX.md`, `docs/rejected_candidates.md`, closures (H1 + header), ADR titles/status, `docs/SESSIONS.md` (newest window), `STATE.md` queue. Index gitignored (`.cache/`). | **Landed, QUARANTINED 2026-08-15.** `scripts/repo_retrieve.py` (`--rebuild` / `--query`) — recall regression found (unranked FTS5 `MATCH`, recall@5 measured at incumbent parity); companion call in `check_advisor_dedup.py` disabled; session-discipline attestation suspended. See that script's `_fts_companion` docstring and `docs/SESSIONS.md` 2026-08-15d. Not re-authorized as an attestation source until re-measured. |
-| **C — local-embedder vector** | Same corpus and denylist as Limb B. Local embedder only (§5 edge boundary). New dep only after a Rule 2 cost dry-run. | **Deferred.** Build only if Limb B is in use and still misses. Not this land. |
+| **B — repo-local FTS** | Sqlite FTS5 over **hot git surfaces only**: `lab/CATALOG.md`, `docs/briefs/INDEX.md`, `docs/rejected_candidates.md`, closures (H1 + header), ADR titles/status, `docs/SESSIONS.md` (newest window), `STATE.md` queue, plus (v3, 2026-08-15) brief bodies, `docs/notes/audits/**`, `docs/methodology/`, `docs/spec/`. Index gitignored (`.cache/`). | **`ASSISTIVE-ONLY` — re-measured 2026-08-15.** `scripts/repo_retrieve.py` (`--rebuild` / `--query`). Beats the `rg` incumbent decisively; below the frozen 0.70 recall floor even after the one permitted corpus widening. **Final under the v3 registration — not re-authorized as a sub-rule 8/10 attestation source.** See [`RESULTS`](../../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md). |
+| **C — local-embedder vector** | Same corpus and denylist as Limb B. Local embedder only (§5 edge boundary). New dep only after a Rule 2 cost dry-run. | **Live question, not authorized.** Limb B's own pre-named trigger ("build only if Limb B is in use and still misses") is now met by the v3 result — but building still requires a Rule 2 cost dry-run first, an operator-paced decision this measurement does not supply. |
 
 Limb B is **not** a Rule-7 owner, not a SESSIONS/ledger substitute, and not citeable in any §0. It does **not** ingest `docs/ltm/` or `lab/archive/` bodies. It does **not** start T0 and does **not** store memories.
 
 §5 forbidden moves still bind both limbs (sidecar-as-owner, ledger-skip, LTM ingest, §0 citation, auto-ingest, restated lock numbers).
+
+---
+
+## Addendum 2026-08-15 (later same day) — v3 re-measurement: `ASSISTIVE-ONLY`
+
+**Does not amend §4, §5, or §6; does not amend the addendum above beyond its own table row,
+already updated in place per Rule 7 (settled same-day status, not a historical claim worth
+freezing separately).** The governance-belt programme audit
+([`docs/notes/audits/programme-audit/2026-08-15-governance-belt-meta-audit.md`](../notes/audits/programme-audit/2026-08-15-governance-belt-meta-audit.md))
+found the "Landed" claim above did not match the shipped artifact's measured recall. A 5-phase
+remediation quarantined the tool, patched it, and re-measured it under a fresh frozen
+pre-registration — [`v3`](pre-registration/2026-08-15-fts5-delete-falsifier-prereg-v3.md) —
+whose full record, including the one corpus-widening revision it permitted and took, is
+[`RESULTS.md`](../../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md). This addendum
+is the pointer; do not restate the recall numbers here.
 
 ---
 
