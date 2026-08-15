@@ -20,6 +20,10 @@ def _mini_repo(tmp_path: Path) -> Path:
     (tmp_path / "docs" / "adr").mkdir(parents=True)
     (tmp_path / "docs" / "ltm" / "briefs").mkdir(parents=True)
     (tmp_path / "lab" / "archive" / "spent").mkdir(parents=True)
+    (tmp_path / "docs" / "notes" / "audits" / "programme-audit").mkdir(parents=True)
+    (tmp_path / "docs" / "notes" / "notice").mkdir(parents=True)
+    (tmp_path / "docs" / "methodology").mkdir(parents=True)
+    (tmp_path / "docs" / "spec").mkdir(parents=True)
 
     (tmp_path / "lab" / "CATALOG.md").write_text(
         "# Catalog\n\n### Active\n\n"
@@ -61,6 +65,30 @@ def _mini_repo(tmp_path: Path) -> Path:
         "archive body Magdon-Ismail must never be indexed\n",
         encoding="utf-8",
     )
+    (tmp_path / "docs" / "briefs" / "Q-SAMPLE-brief.md").write_text(
+        "# Q-SAMPLE — a brief body\n\nMagdon-Ismail context.\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "docs" / "notes" / "audits" / "2026-01-01-sample-audit.md").write_text(
+        "# Sample audit\n\nMagdon-Ismail top-level audit.\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "docs" / "notes" / "audits" / "programme-audit" / "2026-01-01-nested-audit.md").write_text(
+        "# Nested programme audit\n\nMagdon-Ismail nested audit.\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "docs" / "notes" / "notice" / "N-2026-01-01-sample-notice.md").write_text(
+        "notice body must never be indexed — only docs/notes/audits/ is in scope\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "docs" / "methodology" / "sample_method.md").write_text(
+        "# Sample methodology\n\nMagdon-Ismail method context.\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "docs" / "spec" / "sample_spec.md").write_text(
+        "# Sample spec\n\nMagdon-Ismail spec context.\n",
+        encoding="utf-8",
+    )
     return tmp_path
 
 
@@ -77,6 +105,21 @@ def test_collect_chunks_hot_surfaces_only(tmp_path):
     assert any(p.startswith("docs/briefs/closures/") for p in paths)
     assert not any("docs/ltm/" in p for p in paths)
     assert not any("lab/archive/" in p for p in paths)
+
+
+def test_collect_chunks_v3_widened_surfaces(tmp_path):
+    """2026-08-15 v3 remeasurement widening — one-revision cap."""
+    repo = _mini_repo(tmp_path)
+    chunks = rr.collect_chunks(repo)
+    paths = {c["path"] for c in chunks}
+    assert "docs/briefs/Q-SAMPLE-brief.md" in paths
+    assert "docs/notes/audits/2026-01-01-sample-audit.md" in paths
+    assert "docs/notes/audits/programme-audit/2026-01-01-nested-audit.md" in paths
+    assert "docs/methodology/sample_method.md" in paths
+    assert "docs/spec/sample_spec.md" in paths
+    # docs/notes/notice/ is a sibling of docs/notes/audits/, not itself in
+    # scope -- only the audits/ subtree widened, per the frozen prereg.
+    assert not any("docs/notes/notice/" in p for p in paths)
 
 
 def test_rebuild_and_query_returns_paths(tmp_path):
