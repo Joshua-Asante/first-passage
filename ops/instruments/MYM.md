@@ -100,7 +100,7 @@ structure:
 
 ## RECORD — c1 leg (withdrawn)
 
-- **c1 MYM leg — venue edition, WITHDRAWN from deployment 2026-08-04 (see Status, L4). Record only; nothing here is open.** WATCH-1 0.50×, per-leg cap **69**, expected sizing 8 base / 60 add, hedging rule clears by construction (long-only), disposition fork **F2**. ⚠ **Corrected 2026-08-02 — this line read `9` / `67`, the PRE-2026-07-22 whole-cap values.** At `cap_alloc=69`, `reserve_cap = ⌊69/8.5⌋ = **8**`. Re-pin: [`RUNBOOK.md`](../../docs/notes/rail_build/RUNBOOK.md) · [`c1_nt8_sizing_host_impl.md`](../../docs/spec/c1_nt8_sizing_host_impl.md) §7 · synthetic entry `qty=8`. Sweep: [`2026-08-02-cap-split-9-67-staleness-sweep.md`](../../docs/notes/2026-08-02-cap-split-9-67-staleness-sweep.md).
+- **c1 MYM leg — venue edition, WITHDRAWN from deployment 2026-08-04 (see Status, L4). Record only; nothing here is open.** WATCH-1 0.50×, per-leg cap **69**, expected sizing 8 base / 60 add, hedging rule clears by construction (long-only), disposition fork **F2**. ⚠ **Corrected 2026-08-02 — this line read `9` / `67`, the PRE-2026-07-22 whole-cap values.** At `cap_alloc=69`, `reserve_cap = ⌊69/8.5⌋ = **8**`. Re-pin: [`c1_nt8_sizing_host_impl.md`](../../docs/spec/c1_nt8_sizing_host_impl.md) §7 · synthetic entry `qty=8`. Sweep note lives in the private archive.
 - **Reconstruction track: TERMINAL.** No open MYM research question.
 
 ## SESSION LOG

@@ -88,7 +88,7 @@ WARNING — leave TV alerts unarmed and `dry_run: true`. **There is no release c
 
 ## B6 → arming — SPENT, and arming is barred (2026-08-05)
 
-Steps 1–3 are **discharged**: equity field pinned `balance.netLiq`, `equity_source=crosstrade` deployed 2026-07-19/20, B6 dry-fire **PASSED 2026-07-20** (record: `RUNBOOK.md` §B6). Step 4 is **barred on the two independent grounds above** (M1 not `RESOLVED`; both Striker legs withdrawn 2026-08-04). `--arm` is operator-run, always — an agent declines it under any authorization (`.claude/skills/c1-rail/SKILL.md` invariant 2). Operating procedure lives in `docs/notes/rail_build/RUNBOOK.md`, not here.
+Steps 1–3 are **discharged**: equity field pinned `balance.netLiq`, `equity_source=crosstrade` deployed 2026-07-19/20, B6 dry-fire **PASSED 2026-07-20** (record: private-archive runbook §B6). Step 4 is **barred on the two independent grounds above** (M1 not `RESOLVED`; both Striker legs withdrawn 2026-08-04). `--arm` is operator-run, always — an agent declines it under any authorization (`.claude/skills/c1-rail/SKILL.md` invariant 2). Operating procedure lives in the private archive (`docs/notes/rail_build/` excluded from the public seed), not here.
 
 ## Security / operational notes
 - **Always-on hosting (Rule 15 / W6):** the listener is an always-on process — it runs on Fly, not on a personal desktop. Desktop = console-only (`fly ssh`, status, attended arm/disarm). See [`docs/operational_rules.md`](../../docs/operational_rules.md) Rule 15 · [`W6 ADR`](../../docs/adr/2026-08-07-w6-rail-infra-closures.md).
