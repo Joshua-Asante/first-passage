@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-15v — R10 historical-kill pin marked `no`
+
+**Focus:** Operator marked the R10 pin `no`. Already-closed D5 / H-OD-1 / H-TSMOM-1 do not increment. Write 0/2 counting machinery. Do not fire.
+
+**Shipped:** branch `cursor/r10-pin-no-8529` — [harvest addendum](adr/2026-07-15-external-mechanism-harvest-intake.md) pin marked `no`; counting machinery (a)–(d); running count **0 / 2**; not fired. Limb 1 unedited. $0 · K=0.
+
+**Decisions/defects:** pin discharged. Only post-mark Stage-2 cost-law or Clause-N/power kills increment. This `no` is not a fire.
+
+**Open / next:** (1) queue #0 weekly token, deadline 2026-08-21 — operator-placed. (2) Blind channel **paused** — count 1/3; re-enter only with a construct that is distinct without shopping; else hold to 11-08 `AMBIGUOUS-HOLD`. (3) dense-1m pause stands (U0 KEEP). (4) 2026-11-08 slate: channel §4 + count/N-fire + analogue re-test · harvest idle + **limb-2 post-mark count** (pin discharged) · F1 · ceremony-tiering. (5) B7/M1 still wait on a book. `Q-CAPBAND-1` re-opens only on a *new* band axis. MSL E1 HOLD / no slate-4 until NEW WHO.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-15t — R10 harvest §4 limb 2 Accepted
 
 **Focus:** Operator GO on the R10 addendum after PR #15 merged. Bind limb 2. Do not invent the historical-kill pin.

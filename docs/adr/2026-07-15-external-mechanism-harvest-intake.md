@@ -98,7 +98,7 @@ The intake's four **admission requirements** (all mandatory before screening; re
 
 ## Addendum 2026-08-15 — Second §4 limb (gate-stack audit R10)
 
-**Status:** `Accepted` — operator GO (JA) 2026-08-15 after PR #15 merged. Limb 2 binds. Limb 4 of the ceremony-tiering ADR (creates/amends a falsifier) — full amend-in-place, not light. This addendum does **not** rewrite the §4 revert trigger (ADR §5: silent amendment of §4 is Trap #12; supersede or add, never silently edit). Limb 1 stands byte-unedited. Count on limb 1 stays **0-of-2**.
+**Status:** `Accepted` — operator GO (JA) 2026-08-15 after PR #15 merged. Limb 2 binds. Pin marked `no` (JA) 2026-08-15. Running count **0 / 2**. Not fired. Limb 4 of the ceremony-tiering ADR (creates/amends a falsifier) — full amend-in-place, not light. This addendum does **not** rewrite the §4 revert trigger (ADR §5: silent amendment of §4 is Trap #12; supersede or add, never silently edit). Limb 1 stands byte-unedited. Count on limb 1 stays **0-of-2**.
 
 **§0 Rule 0 (verified 2026-08-15, ratification session):**
 
@@ -111,24 +111,60 @@ The intake's four **admission requirements** (all mandatory before screening; re
 | [H-OD-1 scoping](../briefs/rnd-pipeline/H-OD-1-ES-overnight-drift-scoping.md) | `027a7295` 2026-08-14 | `CLOSED — Stage-2 cost-law KILL 2026-07-16` (mechanism CONFIRMED-IS) |
 | [H-TSMOM-1 scoping](../briefs/rnd-pipeline/H-TSMOM-1-ES-tsmom-scoping.md) | `027a7295` 2026-08-14 | `CLOSED — Clause-N FAIL 2026-07-16` (P1=c, N≈86, power 0.34) |
 
-**Amendment-first (sub-rules 8/10, this ratification):** `rg` on `lab/CATALOG.md`, `docs/briefs/INDEX.md`, `docs/rejected_candidates.md` for `second §4 limb|fundability-transfer|R10` — empty. Owner is this file. `check_advisor_dedup.py --keywords "harvest intake limb 2 R10 fundability-transfer"` — no slug; keyword overlap only.
+**Amendment-first (sub-rules 8/10, ratification):** `rg` on `lab/CATALOG.md`, `docs/briefs/INDEX.md`, `docs/rejected_candidates.md` for `second §4 limb|fundability-transfer|R10` — empty. Owner is this file. `check_advisor_dedup.py --keywords "harvest intake limb 2 R10 fundability-transfer"` — no slug; keyword overlap only.
 
-**Cheap falsifier (PARENT-side, before this stamp):**
+**Cheap falsifier (PARENT-side, before the GO stamp):**
 
 ```
 rg -n "Status: \`Proposed\`" docs/adr/2026-07-15-external-mechanism-harvest-intake.md
-# present on origin/main @ 52f39979 (PR #15 merge) — this stamp flips it
+# present on origin/main @ 52f39979 (PR #15 merge) — the GO stamp flipped it
 rg -n "CLOSED — Stage-2 cost-law KILL 2026-07-16" docs/briefs/rnd-pipeline/D5-NQ-intraday-momentum-scoping.md docs/briefs/rnd-pipeline/H-OD-1-ES-overnight-drift-scoping.md
 rg -n "CLOSED — Clause-N FAIL 2026-07-16" docs/briefs/rnd-pipeline/H-TSMOM-1-ES-tsmom-scoping.md
 ```
 
-**Decision (binding):** **limb 2 — fundability-transfer**. Among intake-class seeds that reach a dated kill at Stage-2 cost-law or Clause-N/power — including when the mechanism was confirmed in-sample, or was never reached because that upstream gate killed first — if **two** such kills accumulate, the *fundability-transfer* premise is FALSIFIED. Harvest intake then demotes to research-only / idle-named on the same 2026-11-08 vehicle. Limb 2 does **not** require a Stage-6 confirm closure. Scoping-stage Clause-N FAILs (H-TSMOM-1 class) **do** count. Remedy is the same as limb 1: superseding ADR + source-class post-mortem. Not a third sourcing channel. Not a Cap change.
+**§0 Rule 0 (verified 2026-08-15, pin-mark session):**
 
-**Pin (still open — this GO does not mark it):** do already-closed D5 / H-OD-1 / H-TSMOM-1 count? If yes, limb 2 fires on the mark. If no, only post-mark kills count. The three dated surfaces are verified above; they are **not** a fire. Do not read this GO as a silent yes or a silent no. Canonical count is unset until the pin is marked.
+| Source | Anchor | Supplies |
+|---|---|---|
+| This addendum as Accepted | `ce91a995` (PR #17 merge of `27cb2101`) | Status `Accepted`; pin unmarked; "Canonical count is unset" |
+| [D5 scoping](../briefs/rnd-pipeline/D5-NQ-intraday-momentum-scoping.md) | `027a7295` 2026-08-14 | already-closed Stage-2 cost-law KILL — excluded by this mark |
+| [H-OD-1 scoping](../briefs/rnd-pipeline/H-OD-1-ES-overnight-drift-scoping.md) | `027a7295` 2026-08-14 | already-closed Stage-2 cost-law KILL — excluded by this mark |
+| [H-TSMOM-1 scoping](../briefs/rnd-pipeline/H-TSMOM-1-ES-tsmom-scoping.md) | `027a7295` 2026-08-14 | already-closed Clause-N FAIL — excluded by this mark |
 
-**Forbidden under this addendum:** rewrite limb 1; treat this GO as a limb-2 fire; treat an unanswered pin as a zero-count start; treat a limb-2 fire as licence to raise Cap or open a third channel.
+**Amendment-first (sub-rules 8/10, this pin-mark):** `rg` on `lab/CATALOG.md`, `docs/briefs/INDEX.md`, `docs/rejected_candidates.md` for `R10 pin|historical-kill pin|post-mark` — empty. Owner is this file. `check_advisor_dedup.py --keywords "R10 pin historical-kill post-mark"` — no slug; keyword overlap only.
 
-**Falsifier of this addendum:** if the pin is still unmarked at the 2026-11-08 harvest §4 reading, that audit must mark it (yes → fire / no → count starts at 0). An unmarked pin at that reading is a decorative-threshold finding against this addendum. Do not silently drop.
+**Cheap falsifier (PARENT-side, before this mark):**
+
+```
+rg -n "Canonical count is unset" docs/adr/2026-07-15-external-mechanism-harvest-intake.md
+# present on origin/main @ ce91a995 (PR #17) — this mark replaces it
+```
+
+**Decision (binding):** **limb 2 — fundability-transfer**. Among intake-class seeds that reach a dated kill at Stage-2 cost-law or Clause-N/power — including when the mechanism was confirmed in-sample, or was never reached because that upstream gate killed first — if **two** such kills accumulate, the *fundability-transfer* premise is FALSIFIED. Harvest intake then demotes to research-only / idle-named on the same 2026-11-08 vehicle. Limb 2 does **not** require a Stage-6 confirm closure. Scoping-stage Clause-N FAILs (H-TSMOM-1 class) **do** count going forward. Remedy is the same as limb 1: superseding ADR + source-class post-mortem. Not a third sourcing channel. Not a Cap change.
+
+**Pin marked `no` (JA, 2026-08-15):** already-closed D5 / H-OD-1 / H-TSMOM-1 do **not** increment. Only **post-mark** Stage-2 cost-law or Clause-N/power kills increment. This mark is not a fire. Starting the count at 0 is now authorized (it was forbidden only while the pin was unanswered).
+
+### Counting machinery (without this, 0/2 is unbinding)
+
+**(a) Authoritative surface.** The running-count line in this addendum is canonical. `STATE.md` is a mirror only. STATE rows are deleted when items close; do not treat a missing STATE row as a reset or as "the count was never kept."
+
+**(b) What increments.** A **distinct intake-class construct** that reaches a **dated kill** at Stage-2 cost-law or Clause-N/power **after this mark**, recorded on a dated surface. **Do not increment for:** the three already-closed kills named in the pin-mark §0 table (D5, H-OD-1, H-TSMOM-1); a variant, retune, transplant, or relabel of a prior construct; a naming-pass that never executes a screen.
+
+**(c) Disposition when the count reaches 2.** Fundability-transfer is FALSIFIED. Harvest intake demotes to research-only / idle-named on the 2026-11-08 vehicle. Remedy is a superseding ADR + source-class post-mortem. Do not write that post-mortem until the count actually reaches 2.
+
+**(d) What this is not.** Not a Cap change. Not a third sourcing channel. Not a rewrite of limb 1. Not a fire of this mark.
+
+**Running count (canonical): 0 / 2.** Not fired. No post-mark increment.
+
+| Construct | Date | Class | Increments? |
+|---|---|---|---|
+| D5 | 2026-07-16 | Stage-2 cost-law KILL | no — already-closed at this mark |
+| H-OD-1 | 2026-07-16 | Stage-2 cost-law KILL (mechanism CONFIRMED-IS) | no — already-closed at this mark |
+| H-TSMOM-1 | 2026-07-16 | Clause-N FAIL (P1=c) | no — already-closed at this mark |
+
+**Forbidden under this addendum:** rewrite limb 1; treat the GO as a limb-2 fire; treat this `no` as a fire; increment the three already-closed kills; treat 0/2 as decorative or skip the 2026-11-08 disclosure; treat a limb-2 fire as licence to raise Cap or open a third channel.
+
+**Falsifier of this addendum:** the pin is marked. The 2026-11-08 harvest §4 reading must disclose the post-mark count and whether limb 2 fired. Treating 0/2 as decorative, or skipping that disclosure, is a decorative-threshold finding against this addendum. An unmarked pin is no longer the residual. Do not silently drop.
 
 ---
 
@@ -231,10 +267,11 @@ git log -1 --format='%h %cs' -- lab/archive/q_kbudget_1_2026-07/d5_clause_n_resc
 # Frozen-screen §B untouched by this ADR (Trap-12 guard)
 git diff b304f2c -- docs/briefs/pre-registration/Q-KBUDGET-1-screen-preregistration.md | grep -A2 '## §B' && echo "CHANGED — investigate" || echo "stable"
 
-# R10 limb 2 Accepted; pin unmarked; not fired
+# R10 limb 2 Accepted; pin marked no; count 0/2; not fired
 grep -n "Status: \`Accepted\` — operator GO" docs/adr/2026-07-15-external-mechanism-harvest-intake.md
-grep -n "Canonical count is unset" docs/adr/2026-07-15-external-mechanism-harvest-intake.md
-# Expected: both present. Limb 1 revert trigger above this addendum stays byte-unedited.
+grep -n "Pin marked \`no\`" docs/adr/2026-07-15-external-mechanism-harvest-intake.md
+grep -n "Running count (canonical): 0 / 2" docs/adr/2026-07-15-external-mechanism-harvest-intake.md
+# Expected: all three present. Limb 1 revert trigger above this addendum stays byte-unedited.
 ```
 
 ---
@@ -249,3 +286,4 @@ grep -n "Canonical count is unset" docs/adr/2026-07-15-external-mechanism-harves
 | 2026-07-16 | Sourcing-layer elaboration landed (upstream of this ADR's admission requirements, no scope change here): `docs/methodology/strategy_harvest.md` §2 rewritten from a screenability-only tier list into a class-priority + ranked channel portfolio (design: [`docs/superpowers/specs/2026-07-16-mechanism-sourcing-strategy-design.md`](../superpowers/specs/2026-07-16-mechanism-sourcing-strategy-design.md)), driven by the D5/H-OD-1 confirmed-but-cost-killed finding. Explicitly does not duplicate the pending [`2026-07-16-harv-attestation-same-units-supersession.md`](2026-07-16-harv-attestation-same-units-supersession.md) ADR's cost-law admission requirement — cites it as `Proposed` and treats the §2.2 inequality as non-binding sourcing guidance until that ADR is Accepted. No new ADR authored for this elaboration. | Claude Code (operator-directed brainstorm → design → landing) |
 | 2026-08-15 | **Proposed** second §4 limb (gate-stack audit R10) — fundability-transfer trigger covering cost-law / Clause-N kills the existing limb routes away. Limb 1 unedited. Not ratified here. | Cursor (spec) — operator GO still owed |
 | 2026-08-15 | **Accepted** — operator GO (JA) after PR #15 merged. Limb 2 binds. Pin (already-closed D5 / H-OD-1 / H-TSMOM-1) left unmarked; not fired. Limb 1 unedited. | Joshua (GO) + Cursor (stamp) |
+| 2026-08-15 | **Pin marked `no` (JA).** Already-closed D5 / H-OD-1 / H-TSMOM-1 do not increment. Counting machinery (a)–(d) written. Running count **0 / 2**. Not fired. Limb 1 unedited. | Joshua (mark) + Cursor (stamp) |
