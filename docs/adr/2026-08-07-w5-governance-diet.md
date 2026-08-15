@@ -105,3 +105,13 @@ New tier `path-conditional`: pre-commit runs the gate only if staged paths match
 CI companion (same diet class, not a `gates.yml` drop): pytest matrix is 3.11-only; `validation-controls` is path-filtered to `lab/`. Deriving CI jobs from `gates.yml` remains owed by this ADR and is **not** this addendum.
 
 Forbidden here: moving a hard gate to `soft` (still a silent disable — see `gates.yml` header).
+
+## Addendum 2026-08-15 (later same day) — `path-liveness` / `root-doc-liveness` reverted to `always`
+
+**Does not amend §2 / §4 / §5, or the addendum above.** The re-tier itself was sound; two of the ten `path-conditional` gates were mis-scoped.
+
+Both gates detect **dead links** in root orientation docs. Their `staged_regex` (`^(scripts/|docs/|CLAUDE.md|STATE.md|REPO_MAP.md|PIPELINES.md|README.md)` and `^(CLAUDE.md|STATE.md|README.md|REPO_MAP.md|PIPELINES.md|docs/)`) matched edits to the *link*, never to the *target* — neither ever matched `lab/|core/|ops/`. A commit that moves or deletes a `lab/analysis/` body a root doc links to skipped both gates at pre-commit, even though that is exactly the drift class they exist to catch. Found by the 2026-08-15 governance-belt programme audit (§3.1) as a repeat of a pattern that audit's own object layer had already been graded RED on once: "drift arrived as removed inputs, not moved thresholds."
+
+**Fix:** both gates reverted to `tier: always`. Measured cost: `check_path_liveness.py` ≈0.7s, `check_root_doc_liveness.py` ≈1.4s — small, and the cheaper of the two failure modes (a slower pre-commit vs. a link no one catches going dead).
+
+**Reachability rule for the gates that stay `path-conditional`:** a `staged_regex` is correctly scoped only if staging **every** path class that can cause the gate's violation selects it — not merely the file the gate's own command reads. `tests/test_gate_manifest.py::test_path_conditional_gates_are_reachable` checks this mechanically for the nine gates that remain conditional (`status-consistency`, `adr-graph`, `lab-catalog`, `instrument-profiles`, `sessions-order`, `sessions-append-only`, `supersession-placement`, `closure-disposition`, `governance-prose-control-chars`) — each is self-referential (the violation is introduced by editing the same file class the regex matches), unlike the two reverted gates, which checked a claim about a *different* file than the one the regex scoped. A future re-tier of any gate to `path-conditional` should add a probe to that test before landing, not after.

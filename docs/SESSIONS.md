@@ -14,6 +14,35 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-15f — Gate reachability, registry debt split, Rule 2 narrowed
+
+**Focus:** Phases 3/4/5 of the governance-belt audit's remediation, done in sequence.
+
+**Shipped:** branch `claude/gate-belt-phase345-0815`, 3 commits — (1) reverted
+`path-liveness`/`root-doc-liveness` to `always` (their `staged_regex` never matched
+`lab/|core/|ops/`, so a moved/deleted link target skipped pre-commit); added
+`test_path_conditional_gates_are_reachable`, a reachability probe for the 9 gates
+that stay `path-conditional`. (2) Split `REGISTRY_GRANDFATHERED` (66, not 68 as
+earlier estimated) into `REGISTRY_GRANDFATHERED_NA` (33) / `REGISTRY_DEBT_2026_08`
+(33), classified by reading each closure's actual verdict, not its filename —
+caught 2 filename-vs-substance mismatches doing it properly. `--list-debt` CLI mode
++ STATE.md pointer. (3) Narrowed Rule 2's always-on pointers from 5 surfaces to 1
+(`inqhiori` only) — a judgment call, flagged as such, not a ratify/repeal; dated
+addendum on the ADR itself.
+
+**Decisions/defects:** no new ADR (one addendum, on the existing Rule 2 ADR). All
+three phases independent, no file overlap between them.
+
+**Open / next:** all seven governance-belt remediation phases now shipped
+(Phases 0/0b/1/2 = PR #4/#5/#6/#7; Phases 3/4/5 = this session's PR). Registry
+backfill itself (33 rows into `rejected_candidates.md`) stays operator-paced,
+tracked via `--list-debt`. Rule 2 re-widens once the trip-log accrues real
+evidence at the next programme audit (2026-11-08). Carry: F1 2026-11-08; M1;
+weekly token; Magdon-Ismail B.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; no arming.
+
+---
 ## 2026-08-15e — Limb B v3 re-measurement: `ASSISTIVE-ONLY` (final)
 
 **Focus:** Phase 2 of the governance-belt audit's remediation — frozen v3 pre-registration,

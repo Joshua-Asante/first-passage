@@ -20,11 +20,15 @@ EXPECTED_ALWAYS = {
     "pine-manifest",
     "pine-pin-provenance",
     "boundaries",
+    # 2026-08-15 (governance-belt audit action 3): reverted from
+    # path-conditional -- both gates detect dead links, and a link target
+    # can be moved/deleted without touching the file that points at it, so
+    # no staged_regex correctly scopes "when this violation can occur".
+    "path-liveness",
+    "root-doc-liveness",
 }
 
 EXPECTED_PATH_CONDITIONAL = {
-    "path-liveness",
-    "root-doc-liveness",
     "status-consistency",
     "adr-graph",
     "lab-catalog",
@@ -60,6 +64,8 @@ def test_pre_commit_dry_run_includes_always_gates():
         "check_skill_refs.py",
         "check_pine_manifest.py",
         "check_boundaries.py",
+        "check_path_liveness.py",
+        "check_root_doc_liveness.py",
     ):
         assert gid_cmd_fragment in out
 
@@ -109,6 +115,45 @@ def test_validate_tier_is_data_plus_pine():
 
 def test_manifest_file_present():
     assert MANIFEST.is_file()
+
+
+# 2026-08-15 (governance-belt audit action 3): reachability, not just
+# selector shape. path-liveness/root-doc-liveness were path-conditional with
+# regexes that never matched lab/|core/|ops/ -- the LINK could be edited
+# without tripping the gate, but the link TARGET could be moved or deleted
+# out from under it and the gate never ran. For each gate still
+# path-conditional, assert that staging a path whose edit can actually cause
+# the violation the gate detects is enough to select it -- not merely that
+# the selector runs without crashing.
+REACHABILITY_PROBES = {
+    "status-consistency": "lab/CATALOG.md",
+    "adr-graph": "docs/adr/2026-01-01-example.md",
+    "lab-catalog": "lab/analysis/harvest/new_slug_2026-08/RESULTS.md",
+    "instrument-profiles": "ops/instruments/MNQ.md",
+    "sessions-order": "docs/SESSIONS.md",
+    "sessions-append-only": "docs/SESSIONS.md",
+    "supersession-placement": "docs/adr/2026-01-01-example.md",
+    "closure-disposition": "docs/briefs/closures/Q-EXAMPLE-closure-falsified.md",
+    "governance-prose-control-chars": "docs/rejected_candidates.md",
+}
+
+
+def test_path_conditional_gates_are_reachable(monkeypatch):
+    data = gm.load_manifest(MANIFEST)
+    conditional_ids = {
+        g["id"] for g in data["gates"] if g.get("tier") == "path-conditional"
+    }
+    assert conditional_ids == EXPECTED_PATH_CONDITIONAL, (
+        "a path-conditional gate was added/removed without updating this "
+        "test's reachability probe table"
+    )
+    for gate_id, probe_path in REACHABILITY_PROBES.items():
+        monkeypatch.setattr(gm, "staged_names", lambda p=probe_path: [p])
+        selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
+        assert gate_id in selected, (
+            f"{gate_id}'s staged_regex does not match {probe_path!r} -- a "
+            "change there cannot trigger this gate at pre-commit"
+        )
 
 
 def test_reindented_gate_fails_closed(tmp_path):
