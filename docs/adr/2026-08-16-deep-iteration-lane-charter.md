@@ -1,6 +1,6 @@
 # ADR 2026-08-16 — Deep-iteration lane charter (mechanism-family refinement at declared K, survivor-measured admission)
 
-**Status:** `Proposed` — operator must ratify before anything below binds. Drafted at operator direction ("proceed" on the 2026-08-16 bottleneck diagnostic); authoring is not ratification.
+**Status:** `Accepted` — operator GO (JA) 2026-08-16 ("P2 + GO", electing the recommendation as given), **an explicit overriding election against this charter's own HOLD default**, on the independent-grounds argument in §1. The GO carries the two recommended sequencing conditions as binding: **(GO-1)** the first campaign prereg freezes only after the P2 policy-frontier measurement lands and the Databento parent-era cost dry-run is on record; **(GO-2)** the first campaign declares **K ≈ 10** (floor 1.265 at a 6.5-year confirm; ≈ 0.93 Gaussian-approx power against a true-1.83 target), reserving the K=33 corner for a family that has earned it.
 **Tier:** full — limb 4 of the [ceremony-tiering ADR](2026-08-08-adr-ceremony-tiering.md) fires (creates doctrine: a new candidate-producing channel with its own falsifier).
 **Superseded-by:** none
 **Superseded-in-part-by:** none
@@ -165,3 +165,4 @@ grep -n "Running counts (canonical, this ADR)" docs/adr/2026-08-16-deep-iteratio
 | Date | Change | By |
 |---|---|---|
 | 2026-08-16 | Drafted `Proposed` at operator direction on the 2026-08-16 bottleneck diagnostic; nothing binds | Claude Code (drafter) |
+| 2026-08-16 | `Proposed` → `Accepted` — operator GO ("P2 + GO"), overriding the HOLD default eyes-open per §1; GO-1 (first prereg after P2 frontier + Databento dry-run) and GO-2 (first campaign K ≈ 10) recorded as binding conditions. §7 steps 2–4 now licensed, in order; step 1 gated on GO-1 | Joshua (operator GO) + Claude Code |

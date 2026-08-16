@@ -1,8 +1,11 @@
 # State-policy scoring — Q-EVALSEQ-1 un-dorm review (Board packet)
 
-**Status:** `OWED-election`
+**Status:** `CLOSED-RESOLVED (P2 RUN + COMMISSION-FRONTIER)`
 **Authored:** 2026-08-16
-**Authors:** Claude Code (recorder) — operator marks §6
+**Closed:** 2026-08-16
+**Mark:** P2 — operator (JA) 2026-08-16 ("P2 + GO"). §6 table frozen (Trap #12). The conditional §7 b5 recommendation was elected with the mark: renew once with corrected wake conditions.
+**Closure:** [STATE-POLICY-closure-resolved-p2](closures/STATE-POLICY-closure-resolved-p2.md)
+**Authors:** Claude Code (recorder) — operator marked P2
 **Parent:** [Q-EVALSEQ-1 pre-registration](pre-registration/2026-07-24-2leg-eval-frontload-schedule-preregistration.md) (frozen 2026-07-24; DORMANT 2026-08-04) · [S1 environment ratification](../adr/2026-08-07-loop-s1-environment-ratification.md)
 **Loop:** Inquire-light Board packet — presents elections only. $0 · K=0 · nothing runs here · no arming · no deployment implication.
 **Artifact path:** `docs/briefs/2026-08-16-state-policy-scoring-review.md`

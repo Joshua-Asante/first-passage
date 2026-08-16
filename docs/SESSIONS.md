@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-16b — P2 + GO marked; stamps landed
+
+**Focus:** Operator marked "P2 + GO" on the two 2026-08-16a packets. Record both elections; license the frozen run.
+
+**Shipped:** branch `claude/dry-funnel-election-packets` — [P2 closure](briefs/closures/STATE-POLICY-closure-resolved-p2.md) · packet header mark · [Q-EVALSEQ-1 un-dorm stamp](briefs/pre-registration/2026-07-24-2leg-eval-frontload-schedule-preregistration.md) (scoring-only; §0–§10 byte-unedited) · [charter `Accepted`](adr/2026-08-16-deep-iteration-lane-charter.md) with GO-1/GO-2 conditions · [b5 renewal](../docs/pursuits/b5-q-fundpol-1.md) (corrected wake; expiry 2027-02-08) · STATE decision-index ×2 · INDEX rows (Q-EVALSEQ-1 OPEN; Q-POLFRONT-1 COMMISSIONED). $0 at mark.
+
+**Decisions/defects:** charter GO is an eyes-open override of its own HOLD default (§1 third-door engagement; recorded in Status + change history). Q-POLFRONT-1 named, not opened — brief owed.
+
+**Open / next:** (1) Q-EVALSEQ-1 frozen run — harness recovery from `pre-prune-2026-08-08` + anchor verification BEFORE any policy read, then K=4 MC + DSR/placebo + both-halves, close under its own §6. (2) Q-POLFRONT-1 brief. (3) Databento parent-era cost dry-run (deep-lane GO-1). (4) Charter §7 steps 2–4 (lane flag + doc scoping + skill wiring). Carry: queue #0 weekly token (deadline 08-21); blind channel paused 1/3; dense-1m U0 KEEP; MSL E1 HOLD.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-16a — Bottleneck diagnostic → two election packets drafted
 
 **Focus:** Operator: "address head on what may be holding us back from finding viable strategies for Tradeify" (ultracode). Diagnose, then draft the elected next steps.

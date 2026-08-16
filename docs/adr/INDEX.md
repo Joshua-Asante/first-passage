@@ -111,7 +111,7 @@
 | 2026-08-15-board-lite-label-ratification.md | Accepted | 2026-08-15 | none | ratified by operator (JA) 2026-08-15, in-session instruction |
 | 2026-08-15-no-counterparty-statistical-sourcing-channel.md | Accepted | 2026-08-15 | none | ratified by operator (JA) 2026-08-15, in-session election ("admit a weaker evidentiary grade for candidate sourcing"); CC drafted and adversarially stress-tested (3 independent rounds) before ratification |
 | 2026-08-15-regime-gate-scope-ratification.md | Accepted | 2026-08-15 | none | ratified by operator (JA) 2026-08-15, in-session instruction ("address F1 ... as a Cursor task" → routed to CC per the cursor-fleet skill's own locked-surface disqualifier; operator's dispatch instruction stands as the ratification) |
-| 2026-08-16-deep-iteration-lane-charter.md | Proposed | 2026-08-16 | none | operator must ratify before anything below binds. Drafted at operator direction ("proceed" on the 2026-08-16 bottleneck diagnostic); authoring is not ratification. |
+| 2026-08-16-deep-iteration-lane-charter.md | Accepted | 2026-08-16 | none | operator GO (JA) 2026-08-16 ("P2 + GO", electing the recommendation as given), **an explicit overriding election against this charter's own HOLD default**, on the independent-grounds argument in §1. The GO carries the two recommended sequencing conditions as binding: **(GO-1)** the first campaign prereg freezes only after the P2 policy-frontier measurement lands and the Databento parent-era cost dry-run is on record; **(GO-2)** the first campaign declares **K ≈ 10** (floor 1.265 at a 6.5-year confirm; ≈ 0.93 Gaussian-approx power against a true-1.83 target), reserving the K=33 corner for a family that has earned it. |
 
 ## Partially superseded
 
