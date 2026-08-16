@@ -54,6 +54,7 @@ documents the camp boundary for humans/tools.
 | mnq_tnec_con5_impulse_pullback_vwap_2026-08 | c1 | HOLD | `AMBIGUOUS-HOLD` — both arms mean-negative; CIs straddle 0; aux limbs fail live-pass. | lab/analysis/c1/mnq_tnec_con5_impulse_pullback_vwap_2026-08/ | — |
 | msl_s2b_mym_2026-08 | c1 | HOLD | archive owed (STAGE-1 FAIL route): pre-G0 kill — [closure](../../../../docs/briefs/closures/MSL-S2B-closure-stage1-fa... | lab/analysis/c1/msl_s2b_mym_2026-08/ | — |
 | parity_gen2_2026-08 | c1 | ACTIVE | — | lab/analysis/c1/parity_gen2_2026-08/ | — |
+| q_evalseq_1_2026-08 | c1 | HOLD | archive owed (FALSIFIED): `FALSIFIED` — schedule lever spent for eval-pass lift (best −1.06pt vs +5pt bar); flat WATC... | lab/analysis/c1/q_evalseq_1_2026-08/ | — |
 | q_rail_1_2026-07 | c1 | ACTIVE | c1 rail Phases 0–4 CLOSED RESOLVED; ceiling $700 operator-signed | lab/analysis/c1/q_rail_1_2026-07/ | — |
 | tradeify_book_composition_2026-07-23 | c1 | ACTIVE | eval-lock fix + §2 book-composition re-derivation | lab/analysis/c1/tradeify_book_composition_2026-07-23/ | inputs gitignored |
 | tradeify_eval_lock_correction_2026-07-22 | c1 | ACTIVE | Tradeify/MFFU eval drawdown-lock correction re-MC | lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/ | — |

@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-16c — Q-EVALSEQ-1 frozen run → `FALSIFIED`; bust-axis finding survives
+
+**Focus:** Execute the P2-licensed frozen run. Fidelity-gate the recovered harness before any policy read.
+
+**Shipped:** branch `claude/dry-funnel-election-packets` — [camp](../lab/analysis/c1/q_evalseq_1_2026-08/RESULTS.md) (OPERATIONALIZATION frozen pre-read; gate v1 FIRED → diagnosed as environment vintage, original itself prints 38.2 here; gate v2 port≡original PASS; control 75.01/20.18 matches the original's own sweep row) · [closure](briefs/closures/Q-EVALSEQ-1-closure-falsified.md) · CATALOG row · INDEX rows. $0 · K=3 consumed (the prereg's banked count).
+
+**Decisions/defects:** `FALSIFIED` per the frozen §6 — best lift −1.06pt (c_cushion) vs +5pt; flat WATCH-1 stands; schedule family spent for pass-prob. **Surviving finding:** cushion-proportional sizing bust 20.18% → 0.00% (both halves) at 1.06pt of pass — EOD-clock / integer-floor / in-panel bounds disclosed; routed to Q-POLFRONT-1 (bust-axis reframe).
+
+**Open / next:** (1) Q-POLFRONT-1 brief (bust-axis: base-R headroom at bust ≤ 3.0% under policy c) → operator GO → run. (2) Databento parent-era cost dry-run (deep-lane GO-1). (3) Charter §7 steps 2–4. Carry: queue #0 weekly token (deadline 08-21); blind channel paused 1/3; dense-1m U0 KEEP; MSL E1 HOLD.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-16b — P2 + GO marked; stamps landed
 
 **Focus:** Operator marked "P2 + GO" on the two 2026-08-16a packets. Record both elections; license the frozen run.
