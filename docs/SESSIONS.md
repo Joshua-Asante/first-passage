@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-16a — Bottleneck diagnostic → two election packets drafted
+
+**Focus:** Operator: "address head on what may be holding us back from finding viable strategies for Tradeify" (ultracode). Diagnose, then draft the elected next steps.
+
+**Shipped:** branch `claude/dry-funnel-election-packets` — [state-policy scoring packet](briefs/2026-08-16-state-policy-scoring-review.md) (`OWED-election`: P0 keep-dormant / P1 run Q-EVALSEQ-1 as frozen / P2 + policy frontier) · [deep-iteration lane charter](adr/2026-08-16-deep-iteration-lane-charter.md) (`Proposed`, full tier; default disposition HOLD to the 2026-11-08 §4 reading). $0 · K=0 · nothing runs.
+
+**Decisions/defects:** none ratified — both artifacts are operator elections. Session diagnostic (8 readers + 7 refuters, operator-held): dryness = mechanism supply (matches the 08-15 wall audit) + an unmodeled within-attempt state-policy lever (every N-SURV number is constant-policy; Q-EVALSEQ-1 dormant) + no priced iteration depth. Refuted en route: ORB retry-EV rescue; small-weight compose; CONFIRM reads. Both drafts adversarially reviewed pre-commit (11 blockers fixed, incl. an unbinding K-predicate).
+
+**Open / next:** operator marks owed: state-policy packet §6 (P0/P1/P2) · lane-charter GO-or-HOLD (default HOLD) · b5 PARK renew/lapse before 2026-11-08. Carry: queue #0 weekly token (deadline 08-21); blind channel paused 1/3; dense-1m U0 KEEP; MSL E1 HOLD; B7/M1 wait on a book.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-15v — R10 historical-kill pin marked `no`
 
 **Focus:** Operator marked the R10 pin `no`. Already-closed D5 / H-OD-1 / H-TSMOM-1 do not increment. Write 0/2 counting machinery. Do not fire.

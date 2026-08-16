@@ -111,6 +111,7 @@
 | 2026-08-15-board-lite-label-ratification.md | Accepted | 2026-08-15 | none | ratified by operator (JA) 2026-08-15, in-session instruction |
 | 2026-08-15-no-counterparty-statistical-sourcing-channel.md | Accepted | 2026-08-15 | none | ratified by operator (JA) 2026-08-15, in-session election ("admit a weaker evidentiary grade for candidate sourcing"); CC drafted and adversarially stress-tested (3 independent rounds) before ratification |
 | 2026-08-15-regime-gate-scope-ratification.md | Accepted | 2026-08-15 | none | ratified by operator (JA) 2026-08-15, in-session instruction ("address F1 ... as a Cursor task" → routed to CC per the cursor-fleet skill's own locked-surface disqualifier; operator's dispatch instruction stands as the ratification) |
+| 2026-08-16-deep-iteration-lane-charter.md | Proposed | 2026-08-16 | none | operator must ratify before anything below binds. Drafted at operator direction ("proceed" on the 2026-08-16 bottleneck diagnostic); authoring is not ratification. |
 
 ## Partially superseded
 
