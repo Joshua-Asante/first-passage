@@ -1,6 +1,6 @@
 # ADR 2026-08-16 — Deep-iteration lane charter (mechanism-family refinement at declared K, survivor-measured admission)
 
-**Status:** `Accepted` — operator GO (JA) 2026-08-16 ("P2 + GO", electing the recommendation as given), **an explicit overriding election against this charter's own HOLD default**, on the independent-grounds argument in §1. The GO carries the two recommended sequencing conditions as binding: **(GO-1)** the first campaign prereg freezes only after the P2 policy-frontier measurement lands **[LANDED 2026-08-16 — RESOLVED-QUANTIFIED, median R_max ratio 5.107×; the intraday-clock caveat in its closure §3 is a MANDATORY named risk in the first campaign's prereg, not optional]** and the Databento parent-era cost dry-run is on record **[still owed]**; **(GO-2)** the first campaign declares **K ≈ 10** (floor 1.265 at a 6.5-year confirm; ≈ 0.93 Gaussian-approx power against a true-1.83 target), reserving the K=33 corner for a family that has earned it.
+**Status:** `Accepted` — operator GO (JA) 2026-08-16 ("P2 + GO", electing the recommendation as given), **an explicit overriding election against this charter's own HOLD default**, on the independent-grounds argument in §1. The GO carries the two recommended sequencing conditions as binding: **(GO-1)** the first campaign prereg freezes only after the P2 policy-frontier measurement lands **[LANDED 2026-08-16 — RESOLVED-QUANTIFIED, median R_max ratio 5.107×; the intraday-clock caveat in its closure §3 is a MANDATORY named risk in the first campaign's prereg, not optional]** and the Databento parent-era cost dry-run is on record **[LANDED 2026-08-16 — bar schemas (1d/1h/1m) on the design-box triad price at $0.0000 both windows; GO-1 fully discharged, see Addendum below]**; **(GO-2)** the first campaign declares **K ≈ 10** (floor 1.265 at a 6.5-year confirm; ≈ 0.93 Gaussian-approx power against a true-1.83 target), reserving the K=33 corner for a family that has earned it.
 **Tier:** full — limb 4 of the [ceremony-tiering ADR](2026-08-08-adr-ceremony-tiering.md) fires (creates doctrine: a new candidate-producing channel with its own falsifier).
 **Superseded-by:** none
 **Superseded-in-part-by:** none
@@ -160,9 +160,78 @@ grep -n "Running counts (canonical, this ADR)" docs/adr/2026-08-16-deep-iteratio
 
 ---
 
+## Addendum 2026-08-16 — Databento parent-era cost dry-run (GO-1, second and final condition, discharged)
+
+**Status:** recorded 2026-08-16, operator direction ("Go on the Databento dry-run"). Light tier —
+measurement only, $0 billed (`estimate` is metadata-only and never bills), no candidate, no
+manifest, no pull. Discharges GO-1's second condition; GO-1 is now fully satisfied.
+
+**§0 Rule-0 reads (this addendum):** [databento-data skill](../../.claude/skills/databento-data/SKILL.md)
+(Rule 1 estimate-before-pull; Rule 2 schema ladder; Rule 4 parent-era-for-discovery /
+native-micro-for-confirm proxy discipline) · [`lab/databento_fetch/db_fetch.py`](../../lab/databento_fetch/db_fetch.py)
+`RATIFIED_IS_BOUNDARY = "2018-12-31"` (the estate's own IS/OOS boundary, already wired into
+`--phase discovery`/`--phase oos` — reused here verbatim, not re-derived) · [MSL slate-2 design
+box](2026-08-13-msl-slate-2-design-box.md) + [design-box re-derivation](../notes/notice/N-2026-08-13-msl-design-box-rederivation.md)
+§"Instrument" — non-index (MGC · MCL · M6A), confirmed as this charter's own §2.1 target set,
+not re-chosen here.
+
+**Instrument roots, confirmed (not assumed):** `GC.FUT`/`CL.FUT`/`6A.FUT` (parents, TRAIN) and
+`MGC.FUT`/`MCL.FUT`/`M6A.FUT` (micros, CONFIRM) all resolve on GLBX.MDP3 — first attempt at
+bare roots (`GC`, not `GC.FUT`) failed `400 symbology_invalid_symbol` (parent symbology requires
+the `.FUT` suffix), corrected and re-run. Dataset floor: `2010-06-06`. `mbo` (L3) is
+schema-limited to `2017-05-21+`, narrower than the dataset's own start — disclosed for any
+future order-flow-modality decision on this triad; no cost implication for the bar-only plan
+below.
+
+**Windows priced, per this charter's own §2.3 discipline (TRAIN = parent, CONFIRM = reserved
+native-micro):** TRAIN = `GC.FUT,CL.FUT,6A.FUT` parent, `2010-06-06 → 2019-01-01`,
+`--phase discovery` (refuses past the ratified boundary by construction — verified live).
+CONFIRM = `MGC.FUT,MCL.FUT,M6A.FUT` parent, `2019-01-01 → 2026-08-16`, `--phase oos` — **7.6
+years, comfortably above the 6.5-year floor the GO-2 K≈10 power figure (0.93) was computed at**
+(§0 row 1); the confirm partition is *longer* than the design point assumed, not shorter.
+
+| Schema | TRAIN cost (parents, 2010–2019) | TRAIN records | CONFIRM cost (micros, 2019–2026) | CONFIRM records |
+|---|---|---|---|---|
+| `definition` | $0.0000 | 18,766,962 | $0.0000 | 1,118,709 |
+| `ohlcv-1d` | $0.0000 | 414,752 | $0.0000 | 69,532 |
+| `ohlcv-1h` | $0.0000 | 3,467,143 | $0.0000 | 706,068 |
+| `ohlcv-1m` | $0.0000 | 41,339,830 | $0.0000 | 12,181,607 |
+| `tbbo` (one rung up the ladder, priced for contrast only) | **$2,209.6892** | 1,059,212,355 | **$274.8913** | 226,582,381 |
+
+**Finding:** every bar schema (`ohlcv-1d/1h/1m`) on this triad, both windows, at full
+`parent`-family granularity (every listed expiry, not just the front month — the conservative
+upper-bound choice), prices at **$0.0000** — free, well inside the $125/team credit. This is
+not a rounding artifact of a tiny pull: the same symbols/windows at `tbbo` (one schema rung up
+Rule 2's ladder) cost $2,209.69 (train) and $274.89 (confirm) — the train figure alone is
+**17.7× the free-credit ceiling**. The cost curve is real and steep; it simply has not been
+crossed by anything this charter's first campaign (K≈10, bar-level mechanism-first, per GO-2)
+needs.
+
+**Ruling:** bar-level discovery on `GC/CL/6A` (train) and `MGC/MCL/M6A` (confirm) is **free at
+any of the three tested granularities** — the first lane campaign's prereg may name whichever
+of `ohlcv-1d/1h/1m` its mechanism family needs without a cost gate, and may pull immediately on
+its own operator GO (no separate `--max-cost` negotiation required for bars). **Escalating past
+bars (`tbbo` or finer) is a real-money decision** ($200s–$2,000s at this symbol/window scope)
+and stays gated exactly as Rule 2 already requires — only after a candidate survives on bars,
+and only with an explicit `--max-cost` + operator sign-off at pull time, never inferred from
+this dry-run.
+
+**GO-1 status: fully discharged.** Both conditions met — Q-POLFRONT-1 landed
+`RESOLVED-QUANTIFIED` (2026-08-16) and this dry-run is on record. §7 step 1 (first campaign
+prereg) is now the only remaining gate before the lane's first candidate.
+
+**Forbidden moves added:** citing this addendum's $0.00 bar-schema figures as if they extended
+to `tbbo`/`mbp-1`/`mbp-10`/`mbo` — they do not, the table above shows the actual jump; treating
+this estimate-only dry-run as authorization for any `pull` — a pull is a separate, campaign-scoped
+act under its own `--max-cost`; re-deriving the TRAIN/CONFIRM boundary — `2018-12-31` is the
+estate's own ratified IS boundary, reused, not re-struck.
+
+---
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-08-16 | Drafted `Proposed` at operator direction on the 2026-08-16 bottleneck diagnostic; nothing binds | Claude Code (drafter) |
 | 2026-08-16 | `Proposed` → `Accepted` — operator GO ("P2 + GO"), overriding the HOLD default eyes-open per §1; GO-1 (first prereg after P2 frontier + Databento dry-run) and GO-2 (first campaign K ≈ 10) recorded as binding conditions. §7 steps 2–4 now licensed, in order; step 1 gated on GO-1 | Joshua (operator GO) + Claude Code |
+| 2026-08-16 | Addendum: Databento parent-era cost dry-run executed (GO-1's second condition). Bar schemas (1d/1h/1m) on GC/CL/6A (train) and MGC/MCL/M6A (confirm) all $0.0000; tbbo priced for contrast ($2,209.69 train / $274.89 confirm) to show where the real cost gate sits. GO-1 fully discharged | Claude Code (operator direction) |

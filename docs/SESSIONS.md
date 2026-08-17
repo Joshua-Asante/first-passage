@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-16e — Databento parent-era dry-run → deep-lane GO-1 fully discharged
+
+**Focus:** Operator: "Go on the Databento dry-run." Price bar-schema reachability for the design-box non-index triad before the first lane campaign prereg.
+
+**Shipped:** branch `claude/dry-funnel-election-packets` — [charter addendum](adr/2026-08-16-deep-iteration-lane-charter.md) (8 free `estimate` calls: `definition` + `ohlcv-1d/1h/1m` on `GC/CL/6A` train 2010–2019 and `MGC/MCL/M6A` confirm 2019–2026, all $0.0000; `tbbo` priced for contrast at $2,209.69 train / $274.89 confirm). $0 billed (estimate-only, per skill Rule 1 — never bills).
+
+**Decisions/defects:** roots confirmed live (`GC.FUT` not `GC` — parent symbology requires the `.FUT` suffix, corrected after one clean `400` from the API). Confirm window measured at 7.6 years — longer than the 6.5y GO-2 power design point, not shorter. Ruling: bar-level discovery is cost-gate-free for this triad; escalating past bars stays gated exactly as the skill's own Rule 2 already requires (candidate-survival-first, explicit `--max-cost`, never inferred from this dry-run). GO-1 fully discharged.
+
+**Open / next:** first lane campaign prereg (§7 step 1, K≈10) is now the only remaining gate — must name the Q-POLFRONT-1 EOD-clock caveat as a mandatory risk if it leans on the policy frontier. Charter §7 steps 2–4 (code flag, doc scoping, skill wiring) still owed. Carry: S3/S4 from the original diagnostic slate (WHO-drought relief; governance holes) untouched. Queue #0 weekly token (deadline 08-21); blind channel paused 1/3; dense-1m U0 KEEP; MSL E1 HOLD.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-16d — Q-POLFRONT-1 GO → `RESOLVED-QUANTIFIED`; EOD-clock caveat routed to GO-1
 
 **Focus:** Operator GO on the Q-POLFRONT-1 run. Fidelity-gate the recovered seed-spec harness first (Rule 0); resolve the frozen brief's grid ambiguity before any policy number.
