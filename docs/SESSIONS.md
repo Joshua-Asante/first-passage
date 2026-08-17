@@ -14,6 +14,97 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-16g — DL-1 GO marked; prereg FROZEN; pulls fired; session wrap
+
+**Focus:** Operator: "GO on DL-1, then we'll wrap the session." Record the mark; fire §6 step 1; stop deliberately before train scoring.
+
+**Shipped:** branch `claude/dry-funnel-election-packets` — [DL-1 prereg](briefs/pre-registration/2026-08-16-deep-lane-dl1-mgc-orc-prereg.md) `OPEN — DRAFT` → **`FROZEN`** with the five gathered adjudications recorded on the Status block (bar-scope · pause reach · channel-origin · gold-ORB clearance · step-4 mapping) · [charter](adr/2026-08-16-deep-iteration-lane-charter.md) count line gains **active campaign: DL-1** + change-history row · STATE decision-index line · **both §6 step-1 pulls fired** ($0, cache-tagged `DL1-MGC-ORC`: MGC confirm 5,591,789 rows landed; GC train streaming at wrap).
+
+**Decisions/defects:** train scoring deliberately NOT started — the backtest engine deserves a fresh session with its own fidelity gates (Q-EVALSEQ precedent: anchor-verify before any read), not an end-of-session build. Confirm partition remains virgin (cache era-tagged; nominee-only read per the frozen §6).
+
+**Open / next:** (1) **DL-1 train engine + scoring** (§6 step 2: 10 variants, frozen conventions, strict-argmax, pinned SPA) — next session's first item; confirm read only after nomination gates. (2) Charter §7 steps 2–4 (lane code flag, doc scoping, skill wiring). (3) S3/S4 diagnostic-slate items untouched (WHO-drought relief; D3 fork, AMBIGUOUS-HOLD counting, weekly-token recurrence ruling, PARK triage, two-barrier Session 1). Carry: queue #0 weekly token (deadline **2026-08-21**); blind channel paused 1/3; dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+## 2026-08-16f — DL-1 campaign prereg drafted (deep-lane §7 step 1); GO mark owed
+
+**Focus:** Operator: "Draft the first lane campaign prereg." Family election + freeze candidate, adversarially reviewed before it reaches the mark.
+
+**Shipped:** branch `claude/dry-funnel-election-packets` — [DL-1 prereg](briefs/pre-registration/2026-08-16-deep-lane-dl1-mgc-orc-prereg.md) (`OPEN — DRAFT`): NY-session opening-range continuation on gold, GC-parent train 2010–2019 / native-MGC confirm 2019–2026 (7.62y), K=10 frozen variants, strict-argmax nomination (no walk-down), pinned SPA (p≤0.10, stationary bootstrap B=10k seed 7), frozen scoring conventions (daily-P&L √252 Sharpe, 1 contract, $4.12 RT pin, adverse-first fills), conjuncts 1.170 floor / 0.959 power. 2-agent adversarial review applied pre-freeze: **10 blockers + 9 minors** — incl. a drifted route-1 quote whose elision was load-bearing, an unfrozen nomination fallback, and a **dedup miss the grep could not see** (CFD-era gold-ORB survey: "Closed for ORB: gold (long-beta + sub-cost)", placebo wrong-direction — now engaged as adverse prior §7.6). $0 · K=0 · nothing runs pre-mark.
+
+**Decisions/defects:** none ratified. Five operator items gathered for the GO mark (Verification block): bar-scope reading (5th-leg BINDING BAR — route 1 demoted to disclosure per the F1 precedent); pause residual broad reading; channel-origin/harvest-intake judgment; "Closed for ORB: gold" re-proposal question + survey-panel overlap disclosure; step-4 strike-mapping ratification.
+
+**Open / next:** operator GO mark on DL-1 (freezes the prereg; path lands on the charter count line; staged pulls fire). Charter §7 steps 2–4 (lane code flag, doc scoping, skill wiring) still owed. Carry: S3/S4 diagnostic-slate items untouched; queue #0 weekly token (deadline 08-21); blind channel paused 1/3; dense-1m U0 KEEP; MSL E1 HOLD.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+## 2026-08-16e — Databento parent-era dry-run → deep-lane GO-1 fully discharged
+
+**Focus:** Operator: "Go on the Databento dry-run." Price bar-schema reachability for the design-box non-index triad before the first lane campaign prereg.
+
+**Shipped:** branch `claude/dry-funnel-election-packets` — [charter addendum](adr/2026-08-16-deep-iteration-lane-charter.md) (8 free `estimate` calls: `definition` + `ohlcv-1d/1h/1m` on `GC/CL/6A` train 2010–2019 and `MGC/MCL/M6A` confirm 2019–2026, all $0.0000; `tbbo` priced for contrast at $2,209.69 train / $274.89 confirm). $0 billed (estimate-only, per skill Rule 1 — never bills).
+
+**Decisions/defects:** roots confirmed live (`GC.FUT` not `GC` — parent symbology requires the `.FUT` suffix, corrected after one clean `400` from the API). Confirm window measured at 7.6 years — longer than the 6.5y GO-2 power design point, not shorter. Ruling: bar-level discovery is cost-gate-free for this triad; escalating past bars stays gated exactly as the skill's own Rule 2 already requires (candidate-survival-first, explicit `--max-cost`, never inferred from this dry-run). GO-1 fully discharged.
+
+**Open / next:** first lane campaign prereg (§7 step 1, K≈10) is now the only remaining gate — must name the Q-POLFRONT-1 EOD-clock caveat as a mandatory risk if it leans on the policy frontier. Charter §7 steps 2–4 (code flag, doc scoping, skill wiring) still owed. Carry: S3/S4 from the original diagnostic slate (WHO-drought relief; governance holes) untouched. Queue #0 weekly token (deadline 08-21); blind channel paused 1/3; dense-1m U0 KEEP; MSL E1 HOLD.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+## 2026-08-16d — Q-POLFRONT-1 GO → `RESOLVED-QUANTIFIED`; EOD-clock caveat routed to GO-1
+
+**Focus:** Operator GO on the Q-POLFRONT-1 run. Fidelity-gate the recovered seed-spec harness first (Rule 0); resolve the frozen brief's grid ambiguity before any policy number.
+
+**Shipped:** branch `claude/dry-funnel-election-packets` — [camp](../lab/analysis/c1/q_polfront_1_2026-08/RESULTS.md) (30-cell frozen grid; sweep-range amendment recorded pre-read after a smoke test hit the search boundary — true policy ceiling proven `< ROPE` by construction) · [closure](briefs/closures/Q-POLFRONT-1-closure-resolved-quantified.md) · charter GO-1 line updated (frontier landed; Databento dry-run still owed) · INDEX/CATALOG rows. $0 · K=0.
+
+**Decisions/defects:** `RESOLVED-QUANTIFIED` — median R_max ratio (policy/flat) **5.107×** ≥ 1.25× bar (24/30 cells, min 1.526×, 2 newly-admitted, no reversal under quantization). ⚠ **Load-bearing caveat, not a footnote:** mandatory intraday-stress arm shows the policy is far more EOD-clock-fragile than flat sizing (median bust delta +55.2pt vs +1.6pt) — carried into GO-1 as a **mandatory named risk**, not silently. Fidelity: harness bit-identical to recorded anchors, no environment drift (pure-numpy, unlike the book-comp harness).
+
+**Open / next:** (1) Databento parent-era cost dry-run (deep-lane GO-1, last blocker). (2) First lane campaign prereg at K≈10 (GO-2), naming the EOD-clock caveat explicitly. (3) Intraday-honest policy remeasurement — named fork, not opened. (4) Charter §7 steps 2–4 (lane code flag, doc scoping, skill wiring). Carry: S3/S4 from the original diagnostic slate (WHO-drought relief; governance holes — D3 fork, AMBIGUOUS-HOLD counting, weekly-token recurrence, PARK triage, two-barrier Session 1) — untouched this session. Also: queue #0 weekly token (deadline 08-21); blind channel paused 1/3; dense-1m U0 KEEP; MSL E1 HOLD.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+## 2026-08-16c — Q-EVALSEQ-1 frozen run → `FALSIFIED`; bust-axis finding survives
+
+**Focus:** Execute the P2-licensed frozen run. Fidelity-gate the recovered harness before any policy read.
+
+**Shipped:** branch `claude/dry-funnel-election-packets` — [camp](../lab/analysis/c1/q_evalseq_1_2026-08/RESULTS.md) (OPERATIONALIZATION frozen pre-read; gate v1 FIRED → diagnosed as environment vintage, original itself prints 38.2 here; gate v2 port≡original PASS; control 75.01/20.18 matches the original's own sweep row) · [closure](briefs/closures/Q-EVALSEQ-1-closure-falsified.md) · CATALOG row · INDEX rows. $0 · K=3 consumed (the prereg's banked count).
+
+**Decisions/defects:** `FALSIFIED` per the frozen §6 — best lift −1.06pt (c_cushion) vs +5pt; flat WATCH-1 stands; schedule family spent for pass-prob. **Surviving finding:** cushion-proportional sizing bust 20.18% → 0.00% (both halves) at 1.06pt of pass — EOD-clock / integer-floor / in-panel bounds disclosed; routed to Q-POLFRONT-1 (bust-axis reframe).
+
+**Open / next:** (1) Q-POLFRONT-1 brief (bust-axis: base-R headroom at bust ≤ 3.0% under policy c) → operator GO → run. (2) Databento parent-era cost dry-run (deep-lane GO-1). (3) Charter §7 steps 2–4. Carry: queue #0 weekly token (deadline 08-21); blind channel paused 1/3; dense-1m U0 KEEP; MSL E1 HOLD.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+## 2026-08-16b — P2 + GO marked; stamps landed
+
+**Focus:** Operator marked "P2 + GO" on the two 2026-08-16a packets. Record both elections; license the frozen run.
+
+**Shipped:** branch `claude/dry-funnel-election-packets` — [P2 closure](briefs/closures/STATE-POLICY-closure-resolved-p2.md) · packet header mark · [Q-EVALSEQ-1 un-dorm stamp](briefs/pre-registration/2026-07-24-2leg-eval-frontload-schedule-preregistration.md) (scoring-only; §0–§10 byte-unedited) · [charter `Accepted`](adr/2026-08-16-deep-iteration-lane-charter.md) with GO-1/GO-2 conditions · [b5 renewal](../docs/pursuits/b5-q-fundpol-1.md) (corrected wake; expiry 2027-02-08) · STATE decision-index ×2 · INDEX rows (Q-EVALSEQ-1 OPEN; Q-POLFRONT-1 COMMISSIONED). $0 at mark.
+
+**Decisions/defects:** charter GO is an eyes-open override of its own HOLD default (§1 third-door engagement; recorded in Status + change history). Q-POLFRONT-1 named, not opened — brief owed.
+
+**Open / next:** (1) Q-EVALSEQ-1 frozen run — harness recovery from `pre-prune-2026-08-08` + anchor verification BEFORE any policy read, then K=4 MC + DSR/placebo + both-halves, close under its own §6. (2) Q-POLFRONT-1 brief. (3) Databento parent-era cost dry-run (deep-lane GO-1). (4) Charter §7 steps 2–4 (lane flag + doc scoping + skill wiring). Carry: queue #0 weekly token (deadline 08-21); blind channel paused 1/3; dense-1m U0 KEEP; MSL E1 HOLD.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+## 2026-08-16a — Bottleneck diagnostic → two election packets drafted
+
+**Focus:** Operator: "address head on what may be holding us back from finding viable strategies for Tradeify" (ultracode). Diagnose, then draft the elected next steps.
+
+**Shipped:** branch `claude/dry-funnel-election-packets` — [state-policy scoring packet](briefs/2026-08-16-state-policy-scoring-review.md) (`OWED-election`: P0 keep-dormant / P1 run Q-EVALSEQ-1 as frozen / P2 + policy frontier) · [deep-iteration lane charter](adr/2026-08-16-deep-iteration-lane-charter.md) (`Proposed`, full tier; default disposition HOLD to the 2026-11-08 §4 reading). $0 · K=0 · nothing runs.
+
+**Decisions/defects:** none ratified — both artifacts are operator elections. Session diagnostic (8 readers + 7 refuters, operator-held): dryness = mechanism supply (matches the 08-15 wall audit) + an unmodeled within-attempt state-policy lever (every N-SURV number is constant-policy; Q-EVALSEQ-1 dormant) + no priced iteration depth. Refuted en route: ORB retry-EV rescue; small-weight compose; CONFIRM reads. Both drafts adversarially reviewed pre-commit (11 blockers fixed, incl. an unbinding K-predicate).
+
+**Open / next:** operator marks owed: state-policy packet §6 (P0/P1/P2) · lane-charter GO-or-HOLD (default HOLD) · b5 PARK renew/lapse before 2026-11-08. Carry: queue #0 weekly token (deadline 08-21); blind channel paused 1/3; dense-1m U0 KEEP; MSL E1 HOLD; B7/M1 wait on a book.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-15v — R10 historical-kill pin marked `no`
 
 **Focus:** Operator marked the R10 pin `no`. Already-closed D5 / H-OD-1 / H-TSMOM-1 do not increment. Write 0/2 counting machinery. Do not fire.

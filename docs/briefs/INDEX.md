@@ -25,6 +25,23 @@ closure brief in `docs/ltm/briefs/` and delete its row here.
 
 ## Recently closed (cross-reference; not open)
 
+- **Q-POLFRONT-1** — policy-augmented seed-target frontier — **`RESOLVED-QUANTIFIED` 2026-08-16**
+  (median R_max ratio policy/flat = **5.107×** ≥ 1.25× bar, 24/30 cells defined, min 1.526×, 2
+  newly-admitted cells, no reversal under quantization). ⚠ **Load-bearing caveat carried
+  forward, not a footnote:** the policy's bust rate is far more EOD-clock-fragile than flat
+  sizing (median stress delta +55.2pp vs +1.63pp) — feeds deep-lane GO-1 **with the caveat
+  named in the first campaign's prereg**; intraday-honest remeasurement fork named, not opened.
+  [`closure`](closures/Q-POLFRONT-1-closure-resolved-quantified.md) ·
+  [`RESULTS`](../../lab/analysis/c1/q_polfront_1_2026-08/RESULTS.md) ·
+  [`brief`](Q-POLFRONT-1-policy-augmented-seed-frontier.md)
+- **Q-EVALSEQ-1** — within-eval front-load schedule (frozen K=4 family) — **`FALSIFIED` 2026-08-16**
+  (best lift −1.06pt vs +5pt bar; flat WATCH-1 stands; K=3 consumed). **Surviving finding:**
+  cushion-proportional sizing cut bust 20.18% → 0.00% (both halves) at 1.06pt of pass — routed to
+  Q-POLFRONT-1 (bust-axis reframe). No θ-retune of the family; no registry row (policy-lever, not
+  mechanism). [`closure`](closures/Q-EVALSEQ-1-closure-falsified.md) ·
+  [`RESULTS`](../../lab/analysis/c1/q_evalseq_1_2026-08/RESULTS.md) ·
+  [`pre-reg`](pre-registration/2026-07-24-2leg-eval-frontload-schedule-preregistration.md)
+
 - **Q-CAPBAND-1** — has `CAP = 1.0` ever excluded an axis that would otherwise have survived —
   **`RESOLVED` 2026-08-15** — both band axes fail a non-Cap gate: **D6** venue-dead (EURUSD
   `NOT TRADABLE`, CFD venue closed 2026-07-10) and **D2-low** bar-bound (ES/NQ/YM all return the

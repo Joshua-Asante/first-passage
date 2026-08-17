@@ -5,6 +5,17 @@
 **Source:** advisor Avenue I residue — "a consistency-capped, front-loaded policy" the book-comp
 flat-multiplier sweep never tested. **Status:** ⚠ **DORMANT 2026-08-04** — **not on the 08-08 slate** (venue de-scoped; "within-eval" has no eval). Frozen **K=4** policy family and §6 gate survive **unspent** and are re-usable at an F3 venue. Frozen body **byte-unedited**. Nothing is run here.
 
+> **UN-DORMED 2026-08-16 (scoring-only)** — operator P2 mark on the
+> [state-policy packet](../2026-08-16-state-policy-scoring-review.md)
+> ([closure](../closures/STATE-POLICY-closure-resolved-p2.md)). The dormancy ground
+> ("'within-eval' has no eval") lapsed with S1's ratification of the incumbent eval as the
+> environment; the subject book remains deployment-barred — this stamp licenses the frozen
+> §6 run as a **lever measurement only**, on the incumbent geometry, harness recovered from
+> tag `pre-prune-2026-08-08` and anchor-verified before any policy number is read. The
+> lapsed "08-08 slate" schedule line is superseded by the P2 mark as the gate token;
+> §0–§10 below stay **byte-unedited** (this stamp is header-level, amendment-first,
+> same vehicle as the 2026-08-04 dormancy stamp).
+
 ---
 
 ## §0 — Rule-0 reads
