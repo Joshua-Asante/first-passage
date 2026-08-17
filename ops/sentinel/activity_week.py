@@ -44,7 +44,10 @@ def mon_fri_week(asof: date) -> tuple[date, date]:
 
 
 def week_label(monday: date, friday: date) -> str:
-    return f"{monday.isoformat()}→{friday.strftime('%m-%d')}"
+    # ASCII on purpose: this label reaches __main__.main()'s console print,
+    # which has no encoding safety net -- a legacy Windows console (cp1252)
+    # cannot encode U+2192 and crashes print() (2026-08-17 weekly run).
+    return f"{monday.isoformat()}->{friday.strftime('%m-%d')}"
 
 
 def bucket_mmdd(monday: date, friday: date) -> tuple[str, str]:

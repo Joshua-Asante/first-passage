@@ -39,7 +39,7 @@ def test_not_recorded_when_compliance_silent(tmp_path):
     )
     asof = date(2026, 8, 12)
     line = format_activity_decision_line(tmp_path, asof)
-    assert "weekly activity decision [2026-08-10→08-14]: NOT RECORDED" in line
+    assert "weekly activity decision [2026-08-10->08-14]: NOT RECORDED" in line
     assert "(3 business days left)" in line
     assert "operator call, see STATE row 0" in line
     # Load-bearing wording: status, not a trade instruction / standing licence.
