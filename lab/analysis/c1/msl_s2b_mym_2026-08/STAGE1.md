@@ -143,3 +143,25 @@ Named for the record (unexecuted): Req 1a on the **filter** would require filter
 ## Addendum 2026-08-16 — CON-5 scope clarified; frozen verdict unchanged
 
 `:82`'s reading of the CON-5 pause as binding this card, and `:84`'s reading of a sibling dense-1m bar as *not* binding it, used two different scope theories with no stated argument for the difference. [`ADR 2026-08-16`](../../../../docs/adr/2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md) rules the pause is textually scoped to the dense-1m/G=10 lane (so `:82`'s "does bind" reading does not survive on the letter of the pause) — but reliance on that scoping by a future card requires a fresh $0 cheap-falsifier gate (spec frozen in the ADR), not a free pass. This is **prospective only**: no falsifier was run before this card's 2026-08-14 disposition, so `STAGE-1 FAIL` above stands unedited. A fresh successor card may invoke the ADR's D2 falsifier for `sweep-failure-filtered-continuation` × MYM 15m before relying on route B.
+
+## Addendum 2026-08-17 — D2 falsifier executed: `D2_FAIL`; route B closes; frozen verdict unchanged
+
+`MYM_M15.csv` became locally available; the ADR's D2 falsifier (§2, frozen 2026-08-16)
+was run against this card's own IS panel (CONFIRM untouched). No document ever
+operationalized a "continuation entry" trigger beyond the qualitative story, so an
+operator election (2026-08-17) fixed one before scoring: reuse sibling construct
+MSL-C1's own PDH/PDL sweep + failed-extension-reclaim signal on the **flip**
+(continuation) side, applied to this card's own frozen placeholder stop/target box
+(40 pt stop / 120 pt target, `card.yaml`) — not re-tuned. Result: mean signed gross
+**−1.00 pt** across 850 signals (coverage 52.96% of 1,605 eligible IS sessions), WR
+25.41% (≈ the box's own rr=3 breakeven), **−0.044×** vs the +0.5× (11.28 pt) pass
+bar — a clean, non-marginal `D2_FAIL`. Full record:
+[`_cheap_falsifier_s2b_con5_d2_2026-08-17_LOG.md`](../cheap_falsifiers_2026-08/_cheap_falsifier_s2b_con5_d2_2026-08-17_LOG.md).
+
+Per the ADR's D2: this closes route B (temporal-selectivity-as-continuation via
+CON-5's textual opening) for this construct-shape at $0, no Board debate needed —
+same disposition class as CON-1..5. **This card's own frozen `STAGE-1 FAIL`
+(route) verdict from 2026-08-14 is unchanged** (D3 is prospective only; nothing
+here retro-edits it). Re-proposal for this mechanism id needs a different entry
+definition or a different loss-side shape — not a re-run of this same
+signal/box pairing.

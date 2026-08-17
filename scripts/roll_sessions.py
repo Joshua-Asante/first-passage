@@ -104,14 +104,18 @@ def _git(root: Path, *args: str) -> str | None:
     return out.stdout if out.returncode == 0 else None
 
 
-def committed_headings(root: Path) -> set[str]:
-    """Heading lines present in HEAD's SESSIONS.md.
+def committed_headings(root: Path, ref: str = "HEAD") -> set[str]:
+    """Heading lines present in ``ref``'s SESSIONS.md (default ``HEAD``).
 
-    Anything absent here is new in the working tree, so it needs no history
-    lookup — it is by definition the newest entry. Checking this first is what
-    keeps the gate off the slow path on the common "I just wrote an entry" case.
+    Anything absent here is new relative to ``ref`` — for the default ``HEAD``
+    that means new in the working tree, so it needs no history lookup, which
+    is what keeps the gate off the slow path on the common "I just wrote an
+    entry" case. Other callers (the duplicate-label grandfather set) ask the
+    same question against a different reference point, like the append-only
+    base, so an unresolvable ``ref`` degrades the same way HEAD always did:
+    empty set, never a guess.
     """
-    doc = _git(root, "show", f"HEAD:{SESSIONS_REL}")
+    doc = _git(root, "show", f"{ref}:{SESSIONS_REL}")
     if doc is None:
         return set()
     return {ln for ln in doc.splitlines() if ln.startswith("## ")}
@@ -521,7 +525,18 @@ def claimed_letters_for_date(entries: list[Entry], day: dt.date) -> set[str]:
     return claimed
 
 
-def duplicate_labels(entries: list[Entry]) -> list[str]:
+def _labeled_groups(entries: list[Entry]) -> dict[str, list[Entry]]:
+    by_label: dict[str, list[Entry]] = {}
+    for e in entries:
+        label = lettered_label_of(e.text.splitlines()[0])
+        if label:
+            by_label.setdefault(label, []).append(e)
+    return by_label
+
+
+def duplicate_labels(
+    entries: list[Entry], *, grandfathered: set[str] | None = None,
+) -> list[str]:
     """Flag any lettered session label claimed by two entries.
 
     Concurrent sessions allocate letters at write time with no reservation, so
@@ -530,18 +545,54 @@ def duplicate_labels(entries: list[Entry]) -> list[str]:
     the dedup keys on the whole heading line, which differs by title. Git calls
     such a merge clean, so this content check is the only thing standing between
     a duplicate label and `main`.
+
+    ``grandfathered`` (heading lines already committed on the append-only base
+    ref — see ``resolve_append_only_base``) exempts a collision only when
+    EVERY colliding heading is grandfathered: that duplicate already landed
+    before this check existed to catch it, and append-only forbids renaming
+    an old heading to fix it after the fact (``append_only_problems``), so
+    the two invariants are reconcilable only by not re-flagging history the
+    file is not allowed to touch. A collision with even one non-grandfathered
+    heading is a *new* collision — exactly what this check exists to catch —
+    and always fails, same as before.
     """
-    by_label: dict[str, list[str]] = {}
-    for e in entries:
-        label = lettered_label_of(e.text.splitlines()[0])
-        if label:
-            by_label.setdefault(label, []).append(e.title)
-    return [
-        f"duplicate session label {label!r}: claimed by {' and '.join(repr(t) for t in titles)}"
-        f" — renumber the later one (letters are not reserved across sessions)"
-        for label, titles in by_label.items()
-        if len(titles) > 1
-    ]
+    grandfathered = grandfathered or set()
+    problems: list[str] = []
+    for label, group in _labeled_groups(entries).items():
+        if len(group) <= 1:
+            continue
+        if all(heading_line(e) in grandfathered for e in group):
+            continue
+        titles = [e.title for e in group]
+        problems.append(
+            f"duplicate session label {label!r}: claimed by {' and '.join(repr(t) for t in titles)}"
+            f" — renumber the later one (letters are not reserved across sessions)"
+        )
+    return problems
+
+
+def grandfathered_duplicate_notes(
+    entries: list[Entry], grandfathered: set[str],
+) -> list[str]:
+    """Informational notes for pre-existing duplicates ``duplicate_labels`` left alone.
+
+    Visible-restraint counterpart to the exemption above: a duplicate that
+    predates this check and cannot be renamed without violating append-only
+    should still be seen by whoever runs the gate, not silently vanish into a
+    clean-looking pass. Never blocking — callers print these as notes/WARNs.
+    """
+    if not grandfathered:
+        return []
+    notes: list[str] = []
+    for label, group in _labeled_groups(entries).items():
+        if len(group) > 1 and all(heading_line(e) in grandfathered for e in group):
+            titles = [e.title for e in group]
+            notes.append(
+                f"pre-existing duplicate label {label!r} "
+                f"({' / '.join(repr(t) for t in titles)}) predates this check and is "
+                "left as-is (append-only forbids renaming a committed heading)"
+            )
+    return notes
 
 
 def heading_line(entry: Entry) -> str:
@@ -774,12 +825,22 @@ def check_order(root: Path, *, window: int = ORDER_WINDOW) -> list[str]:
     1. **Separator structure** (no git): every entry needs a leading ``---``;
        doubled-separator debris also fails. Catches the 2026-08-11 union-splice
        that landed headings mid-document without dividers.
-    2. **Duplicate lettered labels** (no git): two entries sharing ``YYYY-MM-DDx``.
+    2. **Duplicate lettered labels** (no git unless history resolves a
+       grandfather set — see below): two entries sharing ``YYYY-MM-DDx``.
     3. **Full-file calendar monotonicity** (no git): a newer calendar date must
        never sit below an older one. Catches the 2026-08-08 stranding that sat
        below the top-``window`` author-time horizon.
     4. **Top-``window`` author-time** (git): same-date ties broken by the commit
        that first added each heading — the merge=union collision case.
+
+    Duplicate-label detection is grandfathered against the append-only base
+    ref (``resolve_append_only_base`` — merge-base with origin/main, else
+    HEAD): a collision entirely inside history this file's own append-only
+    invariant forbids editing is left as-is (visible via
+    ``grandfathered_duplicate_notes``, not silently dropped); a *new*
+    collision — the case this check exists for — still fails regardless.
+    History that cannot be resolved degrades to an empty grandfather set,
+    i.e. every duplicate still fails, same as before this existed.
 
     Empty list means "no violation found", which on a history-less clone also
     covers "could not check" author-time — the caller warns rather than blocking,
@@ -789,7 +850,8 @@ def check_order(root: Path, *, window: int = ORDER_WINDOW) -> list[str]:
     _, entries = parse(doc)
     problems: list[str] = []
     problems.extend(structure_problems(doc))
-    problems.extend(duplicate_labels(entries))
+    grandfathered = committed_headings(root, ref=resolve_append_only_base(root))
+    problems.extend(duplicate_labels(entries, grandfathered=grandfathered))
     for above, below in zip(entries, entries[1:]):
         if above.date < below.date:
             problems.append(
@@ -953,6 +1015,11 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.check_order:
         problems = check_order(root, window=args.order_window)
+        doc = (root / SESSIONS_REL).read_text(encoding="utf-8")
+        _, entries = parse(doc)
+        grandfathered = committed_headings(root, ref=resolve_append_only_base(root))
+        for note in grandfathered_duplicate_notes(entries, grandfathered):
+            _safe_print(f"NOTE: {note}")
         if not problems:
             _safe_print(
                 f"SESSIONS order: OK (structure; labels; top {args.order_window}; "

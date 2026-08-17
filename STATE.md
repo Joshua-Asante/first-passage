@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-08-15
+**Last curated:** 2026-08-17
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
@@ -61,6 +61,17 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-17** — **MSL-S2B successor's CON-5 D2 falsifier executed → `D2_FAIL`; route B closes for
+  this construct-shape at $0.** `sweep-failure-filtered-continuation` × MYM 15m, IS panel only
+  (CONFIRM untouched): mean signed gross **−1.00 pt** across 850 signals (WR 25.41% ≈ the box's own
+  rr=3 breakeven) vs the +11.28 pt (0.5×4×RT) pass bar — **−0.044×**, non-marginal. Entry trigger
+  (never specified in the frozen card) operator-elected 2026-08-17: reuse MSL-C1's own sweep +
+  failed-extension-reclaim signal, flip/continuation side, on S2B's own placeholder 40/120
+  stop-target box (`card.yaml`, not re-tuned). MSL-S2B's frozen 2026-08-14 `STAGE-1 FAIL` verdict is
+  unchanged (D3 prospective-only). $0/K=0, no Board debate needed per the ADR's own D2 clause.
+  [`LOG`](lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_s2b_con5_d2_2026-08-17_LOG.md) ·
+  [`ADR`](docs/adr/2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md) ·
+  [`STAGE1 addendum`](lab/analysis/c1/msl_s2b_mym_2026-08/STAGE1.md)
 - **2026-08-16** — **DL-1 ABANDONED (train scoring executed).** §6 steps 1–2 run: 10 frozen
   variants scored on GC.FUT TRAIN (2010–2019, 2,168 CME sessions). Nominee V7 (argmax train net
   annSR, no fallback) failed gates 2a/2b/2d — net annSR −0.42 (not >0); SPA consistent p=0.94 vs

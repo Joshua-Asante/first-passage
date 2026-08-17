@@ -448,6 +448,115 @@ def test_check_order_allows_distinct_letters_on_one_day(tmp_path):
     assert rs.check_order(tmp_path, window=5) == []
 
 
+# ── duplicate-label grandfathering (2026-08-16h vs append-only deadlock) ──────
+#
+# check_order's duplicate scan and check_append_only used to be jointly
+# unsatisfiable for any duplicate that had already landed on main: order
+# demands a rename, append-only forbids editing an already-committed
+# heading. duplicate_labels()'s own docstring always meant to catch a *new*
+# collision at merge time ("the only thing standing between a duplicate
+# label and main") — the fix scopes it to that: a collision entirely inside
+# history append-only already freezes is left as-is (and surfaced via
+# grandfathered_duplicate_notes, never silently), while a genuinely new
+# collision still fails exactly as before.
+
+
+def test_duplicate_labels_grandfathers_a_collision_entirely_in_history():
+    """No file needed; duplicate_labels is a pure function of entries + grandfathered."""
+    entries = [
+        rs.Entry(dt.date(2026, 8, 16), "S3", "## 2026-08-16h — S3\n**Focus:** f.\n"),
+        rs.Entry(dt.date(2026, 8, 16), "DL-1", "## 2026-08-16h — DL-1\n**Focus:** f.\n"),
+    ]
+    grandfathered = {e.text.splitlines()[0] for e in entries}
+    assert rs.duplicate_labels(entries, grandfathered=grandfathered) == []
+
+
+def test_duplicate_labels_still_flags_a_new_collision_against_history():
+    """A NEW heading colliding with an old, grandfathered label must still fail —
+    grandfathering is not a blanket exemption for the label, only for the
+    specific headings already frozen by append-only."""
+    old = rs.Entry(dt.date(2026, 8, 16), "S3", "## 2026-08-16h — S3\n**Focus:** f.\n")
+    new = rs.Entry(dt.date(2026, 8, 17), "New work", "## 2026-08-16h — New work\n**Focus:** f.\n")
+    problems = rs.duplicate_labels([new, old], grandfathered={old.text.splitlines()[0]})
+    assert problems, "gate went VACUOUS: a genuinely new collision was suppressed"
+    assert "2026-08-16h" in problems[0]
+
+
+def test_duplicate_labels_default_grandfathered_none_flags_everything():
+    """No grandfather set (the historical call shape) behaves exactly as before."""
+    entries = [
+        rs.Entry(dt.date(2026, 8, 9), "sync", "## 2026-08-09g — sync\n**Focus:** f.\n"),
+        rs.Entry(dt.date(2026, 8, 9), "gsub", "## 2026-08-09g — gsub\n**Focus:** f.\n"),
+    ]
+    assert rs.duplicate_labels(entries) != []
+
+
+def test_grandfathered_duplicate_notes_reports_only_fully_grandfathered_collisions():
+    old = rs.Entry(dt.date(2026, 8, 16), "S3", "## 2026-08-16h — S3\n**Focus:** f.\n")
+    old2 = rs.Entry(dt.date(2026, 8, 16), "DL-1", "## 2026-08-16h — DL-1\n**Focus:** f.\n")
+    new = rs.Entry(dt.date(2026, 8, 17), "New", "## 2026-08-17a — New\n**Focus:** f.\n")
+    grandfathered = {old.text.splitlines()[0], old2.text.splitlines()[0]}
+    notes = rs.grandfathered_duplicate_notes([new, old, old2], grandfathered)
+    assert len(notes) == 1
+    assert "2026-08-16h" in notes[0]
+    assert "append-only" in notes[0]
+    # A non-duplicate label (the new entry) never generates a note.
+    assert "2026-08-17a" not in notes[0]
+
+
+@needs_git
+def test_check_order_reconciles_with_append_only_on_a_committed_duplicate(tmp_path):
+    """The real deadlock, reproduced: a duplicate label already on HEAD must pass
+    check_order AND check_append_only simultaneously when left untouched, and
+    check_order must still catch a fresh collision layered on top."""
+    _repo_with_history(tmp_path, [
+        ("2026-08-16T21:45:00-04:00", [
+            ("2026-08-16h", "DL-1 train scoring executed"),
+            ("2026-08-16h", "S3 WHO-drought relief"),
+        ]),
+    ])
+    # Untouched working tree: both gates must pass together.
+    assert rs.check_order(tmp_path, window=5) == []
+    assert rs.check_append_only(tmp_path) == []
+
+    # Layering a brand-new entry that reuses the SAME stale label is still a
+    # real, newly introduced collision and must still fail.
+    _write(tmp_path, _doc([
+        ("2026-08-16h", "third entry, new collision"),
+        ("2026-08-16h", "DL-1 train scoring executed"),
+        ("2026-08-16h", "S3 WHO-drought relief"),
+    ]))
+    problems = rs.check_order(tmp_path, window=5)
+    assert any("2026-08-16h" in p for p in problems), problems
+
+
+def test_check_order_cli_flags_a_duplicate_with_no_history_to_consult(tmp_path, capsys):
+    """No git history here (plain tmp_path) -> nothing can be grandfathered ->
+    still fails, exactly the pre-existing content-only behaviour this augments,
+    never weakens, when history is unavailable."""
+    _write(tmp_path, _doc([("2026-08-16h", "DL-1"), ("2026-08-16h", "S3")]))
+    rc = rs.main(["--check-order", "--root", str(tmp_path)])
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert "duplicate session label" in out
+
+
+@needs_git
+def test_check_order_cli_notes_but_passes_a_grandfathered_duplicate(tmp_path, capsys):
+    """Visible-restraint: a suppressed pre-existing duplicate must still be seen
+    in the CLI output, not vanish into a silently clean-looking pass."""
+    _repo_with_history(tmp_path, [
+        ("2026-08-16T21:45:00-04:00", [
+            ("2026-08-16h", "DL-1 train scoring executed"),
+            ("2026-08-16h", "S3 WHO-drought relief"),
+        ]),
+    ])
+    rc = rs.main(["--check-order", "--root", str(tmp_path)])
+    out = capsys.readouterr().out
+    assert rc == 0, out
+    assert "NOTE:" in out and "2026-08-16h" in out and "pre-existing duplicate" in out
+
+
 def test_check_order_allows_several_bare_dated_entries_on_one_day(tmp_path):
     """Bare same-day entries are a supported shape, not a collision.
 
