@@ -133,3 +133,23 @@ The never-run second rank-1 axis (forward-citation funnel from Koijen, Moskowitz
 **Do not conflate this with axis 1's empty funnel** — axis 1 (TSMOM) ran to full depth and measured 0 admissible; axis 2 never ran. Calibration only (unmeasured): the neighborhood is ~299 works ≈ 1/4.5 of TSMOM's 1,364; the prior that it is even more portfolio/cross-sectional stands untested.
 
 **Disposition:** `BLOCKED-AT-SOURCE` — re-runnable for $0 if S2 ever links the DOI (an S2 API key would not help; the record is absent, not rate-limited). **Operator fork, deliberately not self-adjudicated:** admit an OpenAlex-based substitute traversal (no `isInfluential` equivalent exists there, so the stage-2 filter has no data source — a *different instrument*, ~299 works to keyword-screen manually) or leave the axis blocked as recorded.
+
+#### Addendum 2026-08-17 — fork resolved; OpenAlex substitute executed; **6 distinct leads survived screening, not "0 survivors" like axis-1**
+
+Operator elected the OpenAlex-substitute branch of the fork above. Full traversal, funnel, and the
+6-lead table (with a named open question per lead) recorded at
+[`koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md`](../koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md).
+$0 · K=0 — a screen, not a pull; **none of the 6 is an admitted Req-1a candidate**, every one
+carries an unresolved load-bearing question (most commonly: is the WHO's driving variable
+reconstructible in real time, and does the edge survive this venue's cost/spread reality — the
+dominant null mode for prior real-WHO candidates here). Two of the seven flagged records are
+duplicate OpenAlex entries for one paper; two others (`W2261108883` "Market Closure and Short-Term
+Reversal" and `W4387717685` "Overnight-Intraday Reversal Everywhere") share overlapping authors
+(Della Corte & Kosowski) and may be one research program, not two independent leads — unresolved,
+named explicitly in the SOURCES_LOG rather than silently double-counted.
+
+**Reading for the WHO-drought thread:** this is the first non-empty result from any S3 sourcing
+thread since the 2026-08-16 diagnostic — M6A Tier-A (both candidates dead pre-manifest), the CON-5
+D2 falsifier (D2_FAIL), and axis-1 TSMOM (0 admissible) all ran empty; this axis did not. Still
+screen-level, not a candidate row yet — the drought is not over, but it is not uniformly empty
+either.
