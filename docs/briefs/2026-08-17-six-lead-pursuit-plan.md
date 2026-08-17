@@ -105,6 +105,37 @@ Kills land on all four surfaces: dated LOG · CANDIDATE_ROWS addendum · STATE l
 where closure-shaped. Blind-channel 2/3 counter untouched; harvest limb-2 (0/2) is the counter at
 risk.
 
+### P1-CF / P2-CF design freeze (2026-08-17, this session — required before any harness is built)
+
+**Instruments:** `MGC` + `6J` (P1-CF), same pair (P2-CF). MCL excluded from both — pre-killed by
+arithmetic (§2 P1, §0). Panel: TV `1!` volume-lead continuous (`MGC.v.0` / `6J.v.0` equivalent) —
+the repo's own standing admissible convention (`.c.0` calendar-roll is inadmissible for P&L per
+[`M2K.md` W1](../../ops/instruments/M2K.md)); no fixed-calendar roll-exclusion band is invented
+here, since volume-lead panels already carry the correct front-month by construction.
+
+**Roll handling:** exclude any session where the panel's front-month designation changes intraday
+(the DL-1 stitch convention — "front month = per-day volume leader; a roll day = the day the
+leader changes," [`stitch.py`](../../lab/analysis/deep_lane/dl1_mgc_orc_2026-08-16/stitch.py)) —
+this is a **fresh application of a standing repo convention to a new instrument pair, not a
+re-derivation of the frozen `ROLL-EXCLUDE-2026-07-31` ruling**, which governs MCL/M2K/MYM only and
+is out of scope here by its own text's terms.
+
+**Session boundary:** flat by **16:00 ET** (E1 default print, confirmed —
+[`prop_envelope_default.md`](../../ops/prop_envelope_default.md) L87: "all four FRIENDLY deadlines
+primary-verified; binding minimum MFFU 16:10 ET"). Holiday-short handling: flat by **12:59 ET** on
+CME early-close days, per the original plan text — **not yet cross-checked against a current CME
+holiday calendar this session**; do that check before the CF runs for real, not after (matches the
+6J ledger's own standing warning that early-close lists go stale annually).
+
+**Segmentation:** one signal per session (fade the overnight move, hold to the flat boundary) —
+no intraday re-entry, no pyramiding, hard-stop overlay sized at the session's own measured σ
+(reuse the `SIGMA-NATIVE` convention already applied to MCL/MGC rather than an assumed k·ATR).
+
+**What this does NOT resolve:** the actual CF run needs `MGC_M15`/`6J_M15` (or `.v.0` 1m/native)
+panel bytes, which **this worktree does not have** (§0 confirmed). The primary checkout is where
+these panels live per the original plan text ("on hand"). This is a logistics fork, not a design
+question — raised to the operator alongside this mark, not resolved unilaterally.
+
 ## §5 Phase 2 — Priced extension + intake staging for survivors (recorded; not started)
 
 Databento dry-runs → operator spend GO ($700 ceiling) → sharpened Req-1a scoring (four-clause
@@ -188,15 +219,19 @@ the retitle). This isn't a close call needing a judgment mark — it's a documen
 against the papers themselves. **Recommend:** accept as resolved (no operator mark needed on the
 fact itself); the marks below are about what to *do* with the now-five-lead cohort.
 
-### Per-lead GO/HOLD recommendation
+### Per-lead GO/HOLD — OPERATOR MARKED 2026-08-17
 
-| Lead | Recommendation | Why |
+| Lead | Mark | Why |
 |---|---|---|
-| **P1 (L3=L6)** overnight-reversal | **GO to Phase 1** (P1-CF) | Overlap resolved; MGC+6J panels on hand at the primary checkout; MCL pre-kill confirmed by arithmetic so excluded from the CF's instrument set; 6J needs a fresh cost-bp measurement before its own CF leg, not before MGC's |
-| **P2 (L1)** index-flow reversal | **GO to Phase 1** (P2-CF) | Same $0 panels; venue-expressible-slice discipline already specified in the plan (§4) |
-| **P3 (L5)** curve-slope momentum | **HOLD** | Databento multi-tenor cost dry-run (plan's own precondition) not run this session — distinct sub-task, not a Phase-0 item |
-| **P4 (L2)** dealer-gamma EOD | **HOLD — route memo only** | H-OD-1 dedup (§3 item 0.6) strengthens the existing Q-ORB-GEX-1 + intraday-momentum-decay caution; this is exactly the graveyard-adjacent shape the plan already flagged. No CF licensed by this plan for P4 |
-| **P5 (L4)** mutual-fund overweight | **HOLD — access probe only** | 13F/N-Q ~45-day disclosure lag is a hard real-time-reconstructibility wall on its face; no panel work licensed until the access question is separately resolved |
+| **P1 (L3=L6)** overnight-reversal | **GO** — operator, 2026-08-17 | Overlap resolved; MGC+6J panels on hand at the primary checkout; MCL pre-kill confirmed by arithmetic so excluded from the CF's instrument set; 6J needs a fresh cost-bp measurement before its own CF leg, not before MGC's |
+| **P2 (L1)** index-flow reversal | **GO** — operator, 2026-08-17 | Same $0 panels; venue-expressible-slice discipline already specified in the plan (§4) |
+| **P3 (L5)** curve-slope momentum | **HOLD** — operator, 2026-08-17 | Databento multi-tenor cost dry-run (plan's own precondition) not run this session — distinct sub-task, not a Phase-0 item |
+| **P4 (L2)** dealer-gamma EOD | **HOLD** — operator, 2026-08-17 | H-OD-1 dedup (§3 item 0.6) strengthens the existing Q-ORB-GEX-1 + intraday-momentum-decay caution; this is exactly the graveyard-adjacent shape the plan already flagged. No CF licensed for P4 |
+| **P5 (L4)** mutual-fund overweight | **HOLD** — operator, 2026-08-17 | 13F/N-Q ~45-day disclosure lag is a hard real-time-reconstructibility wall on its face; no panel work licensed until the access question is separately resolved |
+
+**Still unmarked** (not addressed by the P1/P2 GO): the limb-2 counter ruling and the
+channel-scope amend-in-place note, both below. The GO licenses *attempting* P1-CF/P2-CF — it does
+not resolve what a FAIL on either costs the harvest channel's own bookkeeping.
 
 ### Limb-2 counter ruling (operator decision, not CC's to make)
 
