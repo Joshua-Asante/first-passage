@@ -153,3 +153,23 @@ thread since the 2026-08-16 diagnostic — M6A Tier-A (both candidates dead pre-
 D2 falsifier (D2_FAIL), and axis-1 TSMOM (0 admissible) all ran empty; this axis did not. Still
 screen-level, not a candidate row yet — the drought is not over, but it is not uniformly empty
 either.
+
+#### Addendum 2026-08-17b — L3=L6 resolved SAME PAPER (not two leads); P1/P2 cheap falsifiers FAIL (all four legs)
+
+The "may be one research program, not two independent leads — unresolved" hedge two paragraphs
+above is now resolved in the stronger direction: **`W2261108883` and `W4387717685` are the same
+paper**, a 2015→2022 redraft (same SSRN abstract `2730304`; the 2022 draft explicitly states it
+"was previously circulated under the title 'Market Closure and Short-Term Reversal'"; author list
+is additive — Della Corte/Kosowski/Wang → +Yang Liu — not two groups converging independently).
+**Corrected count: 6 distinct papers → 5.** Full evidence:
+[`SOURCES_LOG.md` addendum](../koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md#addendum-2026-08-17--3-and-6-are-the-same-paper-not-two-independent-leads-count-corrects-65).
+
+Operator marked GO on this lead (P1, overnight-reversal) and on the L1 index-flow-reversal lead
+(P2) the same day. Both cheap-falsifiers executed against on-hand panels
+(`core/data/bar_data/MGC_M15.csv`, `6J_M15.csv`) — **FAIL on all four legs** (P1×MGC, P1×6J,
+P2×MGC, P2×6J): three gross-negative outright, the fourth (P1×6J) gross-positive but t=0.64 and
+below the 4× cost hurdle. Full construction, diagnostics (stop-trigger rate, long/short split
+ruling out a stop-mechanism artifact), and results:
+[`six_lead_cf_2026-08-17/LOG.md`](../six_lead_cf_2026-08-17/LOG.md). $0/K=0 — panels on hand, no
+pull. **Harvest §4 limb-2 counter question still unmarked by the operator** — this FAIL is exactly
+the case it governs (does a Phase-1 CF kill count toward the 0/2); not decided unilaterally here.
