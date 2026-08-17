@@ -602,3 +602,61 @@ Recorded explicitly as a deliberate crossing with reasoning (programme-audit deg
 not a silent erosion of this item, and it does **not** re-open the CFD-retirement anchor this item
 cites. A second week's coverage is a fresh decision, routed through fork **F2** (2026-08-08), not an
 extension of this exception.
+
+---
+
+## Addendum 2026-08-16 — §6 D3 ruled MOOT/STRANDED (governance-holes closing pass)
+
+**§6 stays byte-unedited**, same discipline as the addendum above. D3 ("Churn-posture question,"
+§6, admitted as a named fork requiring "decided by ADR or explicitly deferred with a revisit date")
+was never formally closed by any artifact — a repo-wide sweep (STATE.md, `docs/briefs/INDEX.md`,
+`docs/rejected_candidates.md`) found zero references to it outside this brief and one incidental
+forward-pointer in a planning doc that was never executed on. This addendum closes that hole with a
+**light decision record** (ADR-ceremony-tiering test: no K/$ spend, no live-risk surface, no
+locked/frozen surface, and — the one to guard against — **no new doctrine**: this ruling observes
+that D3's subject no longer exists, it does not choose accept-churn or reject-churn as standing
+posture for any future book).
+
+**Ruling: D3 is MOOT, on the same grounds — and by the same mechanism — as this brief's own D1
+(ruled MOOT at the 2026-08-06 claim-alignment pass, top of file).** D3's Limb B(ii) role (the
+"fresh Accepted ADR" branch that would supersede Q-COMPOSE-1 by choosing chain-rate/accept-churn)
+only matters if D1's SHIP-3-leg path is live — and D1 is already MOOT ("no deployed book to HOLD,
+no account to SHIP to, neither branch takeable"). Independently: the composed book D3 would have
+adjudicated (2-leg Striker + ORB, +optional Aegis-6J) no longer exists as a deployable
+configuration — both Striker legs were withdrawn 2026-08-04
+([`ADR`](../adr/2026-08-04-tradeify-venue-descope-eval-included.md) §2: "no further work is
+authorized whose sole justification is reaching, holding, or passing a Tradeify account to deploy
+those two legs"), and ORB-MNQ, the leg whose sizing drives the entire chain-rate frontier D3 would
+weigh, is itself PARKED ([`b3`](../pursuits/b3-orb-mnq-payability-line.md), expiring to SUBTRACT
+2026-11-08 absent renewal).
+
+**Q-COMPOSE-1's `FALSIFIED` verdict never answered D3 and is not being read as if it had.** Its
+own closure text engages only the survivor-scoring floor (bust ≤3.0%), never posture/churn
+language, and this brief's own §0.5(5)/§5(4) explicitly forbid treating chain-rate evidence as a
+silent D3/D1 flip. What resolves D3 by default is the *absence* of any superseding ADR under
+Limb B(ii) — Limb B(i) (HOLD) stands unchallenged, exactly as D1 already stood before being
+declared MOOT.
+
+**Why STRANDED, not permanently CLOSED.** D3 is framed as a general posture question (accept-churn
+vs reject-churn), not scoped only to this specific book — a future composed book (a successor
+venue under fork F3, or a new MSL-sourced candidate composed against an existing leg) could
+re-raise the identical tension. This matches the five-thread stranded-pending-F3 pattern already
+tracked at `STATE.md`'s "No fixed date / gated" section — those threads are recorded as "not
+closed, not discharged, and not re-homed to a successor venue — F3 was no-migration (S1)." D3 is
+recorded here rather than duplicated onto that board — its home is this brief, its trigger is the
+same F3 event.
+
+**Re-entry bar:** fork F3 registers a successor venue (or an existing leg re-enters a live book)
+**and** a new composed-book candidate reaches this brief's D1-shaped gate. At that point D3
+re-opens as a fresh fork citing this addendum, not as an automatic revival of the 2026-07-23
+frontier table (which would need re-measurement against the new venue's rules regardless).
+
+**If a future operator instead wants to rule accept-churn or reject-churn as standing doctrine**
+for any future composed book — not scoped to this withdrawn one — that is a genuine new-doctrine
+act requiring the FULL ADR template (ceremony-tiering limb 4), independent of this mootness
+ruling, and this brief's own H2 (§4) already gates any such admission behind its own explicit ADR
+requirement regardless.
+
+| Date | Change | By |
+|---|---|---|
+| 2026-08-16 | Addendum: D3 ruled MOOT/STRANDED — subject (composed Striker+ORB book) withdrawn 2026-08-04, D1 (its parent gate item) already MOOT, ORB-MNQ PARKED. Light decision record (no doctrine created); re-entry bar tied to fork F3. §6 unedited. | Joshua (direction, task start) + Claude Code (draft) |
