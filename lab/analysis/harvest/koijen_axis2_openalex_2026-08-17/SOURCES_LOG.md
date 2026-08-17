@@ -101,3 +101,47 @@ ran as a 25-agent Workflow (7 screen batches of 33 items → adversarial verify 
 (session-local, not part of this repo). Re-runnable for $0 by repeating the same OpenAlex query —
 the citation graph is append-only forward in time, so a re-run would only ever add works, never
 lose the ones found here.
+
+## Addendum 2026-08-17 — #3 and #6 are the SAME paper, not two independent leads; count corrects 6→5
+
+**Resolved by reading both papers directly** (six-lead pursuit plan Phase 0 item 0.2, this session):
+row #3 (`W2261108883`, "Market Closure and Short-Term Reversal," Della Corte/Kosowski/Wang,
+November 2015 draft) and row #6 (`W4387717685`, "Overnight-Intraday Reversal Everywhere," Della
+Corte/Kosowski/Liu/Wang, August 2022 draft) are **the same paper at two points in its lineage, not
+a distinct pair**. Primary evidence, both pulled directly (CICF-hosted PDF for #3, a second
+public host for #6 — SSRN itself 403s in-session, matching this repo's standing SSRN-access
+finding):
+
+- **Same SSRN abstract ID on both:** the 2022 draft's own footer reads `Electronic copy available
+  at: https://ssrn.com/abstract=2730304` (twice, title page + after abstract). Public search
+  results independently resolve the same ID (2730304) for both titles.
+- **Explicit self-citation of the title change**, verbatim from the 2022 draft's own front matter:
+  *"This paper was previously circulated under the title 'Market Closure and Short-Term
+  Reversal'."*
+- **Author lineage is additive, not divergent:** 2015 draft = Della Corte, Kosowski, Wang (3
+  authors, Imperial College). 2022 draft = Della Corte, Kosowski, **+ Yang Liu**, Wang (4 authors,
+  Yang Liu of Hunan University added). This is a co-author addition across a 7-year redraft, not
+  two research groups converging on the same title independently.
+- **Same mechanism, same instrument universe, same WHO, both drafts:** risk-averse market-maker
+  liquidity provision (Grossman-Miller 1988 lineage) compensated for absorbing overnight order
+  imbalance; both drafts test equity index, interest rate, commodity, and currency futures.
+
+**OpenAlex indexed the two drafts as separate works** (`W2261108883` / `W4387717685`) — a known
+citation-graph artifact of a paper re-titled mid-lifecycle, not evidence of two papers. The
+2026-08-16 fork note's own hedge ("Treat #3 and #6 as one research program, not two independent
+leads, until resolved by reading both papers directly") is now resolved in the stronger direction:
+not merely one *program*, the same *paper* — the 2022 draft supersedes the 2015 draft as the
+authoritative version (later, more complete, adds robustness/explanation sections per its own
+table of contents).
+
+**Corrected count: 7 records / 6 distinct OpenAlex works / 5 distinct papers.** (Two OpenAlex
+dedup layers now stand: `W4377028459`/`W3103727571` were already merged as one Da/Tang/Tao/Yang
+paper at synthesis time; `W2261108883`/`W4387717685` merge here as one Della Corte/Kosowski
+paper.) The six-lead pursuit plan's P1 row (L3+L6) is **not** "merged pending overlap resolution"
+— the overlap is resolved; L3 and L6 are the same lead, and the 2022 draft (richer author list,
+7 additional years of robustness work) is the version to carry forward. Downstream references to
+"six leads" (STATE.md 2026-08-17 decision line, the pursuit plan's priority table) need a forward
+correction, not a retro-edit — see `docs/briefs/2026-08-17-six-lead-pursuit-plan.md` §Phase-0
+findings and the STATE.md correction line dated 2026-08-17 (this addendum).
+
+$0 / K=0 — two PDF reads, no data pull, no register_search, no Cap claim.

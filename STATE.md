@@ -51,6 +51,7 @@ BEHIND this list.** Items leave when done; it stays ≤5 so it cannot decay into
 |---|---|---|---|
 | 1 | **F1 — how §4 reads a Tradeify-resting discharge** (2026-11-08). Eval is live ([`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md)); locked Striker book barred. §4 still scores the frozen $100K×4 set with Tradeify in it. Ruling owed: whether a discharge resting *on Tradeify* (or the withdrawn Striker book) discharges the four-firms program. **Deciding it early would pre-empt §4** | [`ADR 2026-08-04`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) §7 F1 · [four-firms §4](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) | 2026-11-08 §4 verdict reading |
 | 2 | **B7-REFIRE Stage 1 + M1** — both wait on an acceptable strategy on the ruled (Python-native) host. Eval live; no book deployed | [`GO ADR Addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`S2`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) · [`M1`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) | live-signal / arming path |
+| 3 | **Six-lead pursuit Phase 0 operator marks** — per-lead GO/HOLD (P1/P2 recommended GO to Phase 1; P3/P4/P5 HOLD), the harvest §4 limb-2 counter question (does a Phase-1 CF kill count toward the 0/2?), and the OpenAlex channel-scope amend-in-place note (drafted, unlanded) | [`six-lead pursuit plan`](docs/briefs/2026-08-17-six-lead-pursuit-plan.md) §13 | Phase 1 CF start |
 
 ---
 
@@ -61,6 +62,20 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-17** — **Six-lead pursuit Phase 0 executed; correction to the same-day Koijen axis-2
+  entry below — 6 distinct papers corrects to 5.** SOURCES_LOG rows #3 ("Market Closure and
+  Short-Term Reversal", Della Corte/Kosowski/Wang, 2015 draft) and #6 ("Overnight-Intraday
+  Reversal Everywhere", +Liu, 2022 draft) are **the same paper** — same SSRN abstract `2730304`,
+  explicit self-citation of the retitle, additive author list — read directly, not the "one
+  research program, unresolved" hedge the fork note carried. Full plan + Phase 0 execution ledger
+  (dedup, venue/cost screens, per-lead recommendations) at
+  [`docs/briefs/2026-08-17-six-lead-pursuit-plan.md`](docs/briefs/2026-08-17-six-lead-pursuit-plan.md);
+  primary evidence in the
+  [SOURCES_LOG addendum](lab/analysis/harvest/koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md#addendum-2026-08-17--3-and-6-are-the-same-paper-not-two-independent-leads-count-corrects-65).
+  Notable dedup hit: `H-OD-1` (ES overnight-drift, dealer-inventory-risk mechanism, died Stage-2
+  cost-law) is the closest prior estate precedent to this cohort's WHO family. $0/K=0 — two PDF
+  reads + repo-internal screens, no data pull, no register_search, no Cap claim. Operator marks
+  owed — queue row 3.
 - **2026-08-17** — **Koijen axis-2 (Carry, JFE 2018) fork resolved: OpenAlex substitute executed →
   6 distinct screen-level leads, not "0 survivors" like axis-1.** Operator elected the
   OpenAlex-substitute branch of the 2026-08-16 fork (S2 has no record of the paper). 296 citing
