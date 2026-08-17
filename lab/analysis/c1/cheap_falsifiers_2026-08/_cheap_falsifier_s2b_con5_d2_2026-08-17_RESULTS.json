@@ -1,0 +1,37 @@
+{
+  "verdict": "D2_FAIL",
+  "adr": "docs/adr/2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md",
+  "card": "sweep-failure-filtered-continuation x MYM 15m (S2B successor)",
+  "entry_signal": "MSL-C1 flip_join (sweep+failed-reclaim, continuation side) -- operator-elected 2026-08-17",
+  "stop_target_box": {
+    "stop_pts": 40.0,
+    "target_pts": 120.0,
+    "rr": 3.0,
+    "source": "lab/analysis/c1/msl_s2b_mym_2026-08/card.yaml (placeholder, not adjudicated -- reused as-is)"
+  },
+  "cost_basis": {
+    "rt_usd": 2.82,
+    "point_value_usd": 0.5,
+    "rt_pts": 5.64,
+    "four_x_rt_pts": 22.56,
+    "pass_bar_pts": 11.28
+  },
+  "n_eligible_sessions": 1605,
+  "n_trades": 850,
+  "coverage_pct": 52.95950155763239,
+  "mean_signed_gross_pts": -1.0023529411764707,
+  "wr": 0.2541176470588235,
+  "kind_counts": {
+    "stop": 627,
+    "target": 192,
+    "flat": 31
+  },
+  "gross_vs_4x_rt": -0.0444305381727159,
+  "is_window": "panel start .. 2025-08-31",
+  "confirm_touched": false,
+  "cost_usd": 0.0,
+  "k_spent": 0,
+  "panel": "C:\\Users\\joshu\\multi_firm_operations\\.claude\\worktrees\\tradeify-bottleneck-solutions-84e1e6\\core\\data\\bar_data\\MYM_M15.csv",
+  "panel_sha256": "24e169528f7ea6693b75c71c3195edf6a04f3a26c6b6dff0f2e9c623fd597a58",
+  "elapsed_s": 2.3632898999985628
+}
