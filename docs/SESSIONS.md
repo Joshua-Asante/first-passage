@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-16d — Q-POLFRONT-1 GO → `RESOLVED-QUANTIFIED`; EOD-clock caveat routed to GO-1
+
+**Focus:** Operator GO on the Q-POLFRONT-1 run. Fidelity-gate the recovered seed-spec harness first (Rule 0); resolve the frozen brief's grid ambiguity before any policy number.
+
+**Shipped:** branch `claude/dry-funnel-election-packets` — [camp](../lab/analysis/c1/q_polfront_1_2026-08/RESULTS.md) (30-cell frozen grid; sweep-range amendment recorded pre-read after a smoke test hit the search boundary — true policy ceiling proven `< ROPE` by construction) · [closure](briefs/closures/Q-POLFRONT-1-closure-resolved-quantified.md) · charter GO-1 line updated (frontier landed; Databento dry-run still owed) · INDEX/CATALOG rows. $0 · K=0.
+
+**Decisions/defects:** `RESOLVED-QUANTIFIED` — median R_max ratio (policy/flat) **5.107×** ≥ 1.25× bar (24/30 cells, min 1.526×, 2 newly-admitted, no reversal under quantization). ⚠ **Load-bearing caveat, not a footnote:** mandatory intraday-stress arm shows the policy is far more EOD-clock-fragile than flat sizing (median bust delta +55.2pt vs +1.6pt) — carried into GO-1 as a **mandatory named risk**, not silently. Fidelity: harness bit-identical to recorded anchors, no environment drift (pure-numpy, unlike the book-comp harness).
+
+**Open / next:** (1) Databento parent-era cost dry-run (deep-lane GO-1, last blocker). (2) First lane campaign prereg at K≈10 (GO-2), naming the EOD-clock caveat explicitly. (3) Intraday-honest policy remeasurement — named fork, not opened. (4) Charter §7 steps 2–4 (lane code flag, doc scoping, skill wiring). Carry: S3/S4 from the original diagnostic slate (WHO-drought relief; governance holes — D3 fork, AMBIGUOUS-HOLD counting, weekly-token recurrence, PARK triage, two-barrier Session 1) — untouched this session. Also: queue #0 weekly token (deadline 08-21); blind channel paused 1/3; dense-1m U0 KEEP; MSL E1 HOLD.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-16c — Q-EVALSEQ-1 frozen run → `FALSIFIED`; bust-axis finding survives
 
 **Focus:** Execute the P2-licensed frozen run. Fidelity-gate the recovered harness before any policy read.

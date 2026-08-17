@@ -12,7 +12,6 @@ closure brief in `docs/ltm/briefs/` and delete its row here.
 
 | Q | Status | Home (canonical) | Next action |
 |---|---|---|---|
-| **Q-POLFRONT-1** — policy-augmented seed-target frontier: base-R headroom bought by cushion-proportional sizing at bust ≤ 3.0% on synthetic (w,b,r,k,d) cells | **`COMMISSIONED`** — named by the P2 mark, **not opened**; brief owed before any run; question REFRAMED to the bust axis by the Q-EVALSEQ-1 surviving finding | [`brief`](Q-POLFRONT-1-policy-augmented-seed-frontier.md) · [P2 closure §2.3](closures/STATE-POLICY-closure-resolved-p2.md) · [Q-EVALSEQ-1 closure §3](closures/Q-EVALSEQ-1-closure-falsified.md) | Brief authored 2026-08-16 (`OPEN — DRAFT`); operator GO owed before the run. Feeds deep-lane GO-1. |
 | **Q-XMEM-1** — cost of per-surface agent-memory invisibility; time-boxed Mem0 sidecar pilot (prefs/pointers only) | **`OPEN`** (architecture + §6 frozen 2026-07-16; v1.2 Limb B FTS landed 2026-08-15, **re-measured `ASSISTIVE-ONLY`** same day — beats `rg` (0.500 vs 0.088) but below the 0.70 floor even after the one permitted corpus widening; T0 not started) | [`Q-XMEM-1-cross-surface-memory-sidecar-pilot.md`](Q-XMEM-1-cross-surface-memory-sidecar-pilot.md) · [pre-reg](pre-registration/Q-XMEM-1-verdict-preregistration.md) · [v3 remeasure](pre-registration/2026-08-15-fts5-delete-falsifier-prereg-v3.md) · [`RESULTS`](../../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md) | Limb B: `scripts/repo_retrieve.py` on hot surfaces — **do not paste its output as a sub-rule 8/10 attestation**; `ASSISTIVE-ONLY` is final under the frozen v3 table (no further re-measurement without a fresh registration). Limb A Mem0 T0 unpaid — **operator GO only** (original §6). Limb C (local-embedder) is now a live question, not authorized to build. Do **not** store Rule-7 values. |
 | **Q-TOM-SPX-1** — SPX500 turn-of-month existence and capturability | Layer A **RESOLVED-ABSENT** on canonical Pepperstone (2026-06-16); formal DEAD close reserved | [`docs/briefs/Q-TOM-SPX-1.md`](Q-TOM-SPX-1.md) | Run only the brief-reserved native Pine confirmation. Do not widen the window, change thresholds, or rerun Dukascopy to rescue the null. |
 | **Q-SIGID-1** — measured live↔backtest signal-identity gap from mid-bar `alert()`/`strategy.entry` on c1 venue editions; architectures that close it (locked-axis, not EQ) | **`OPEN`** 2026-07-28 — cheap falsifier: 07-28 MNQ bar is a phantom (`longSignal` mid-true / close-false on `body_ok`); offline phantoms ~0.7× confirmed signals; Fri §2b clean re-measure owed | [`Q-SIGID-1-intra-bar-signal-identity.md`](Q-SIGID-1-intra-bar-signal-identity.md) · [pre-reg](pre-registration/Q-SIGID-1-verdict-preregistration.md) · [RESULTS](../../lab/analysis/c1/c1_signal_identity_2026-07-28/RESULTS.md) | **STRANDED on alert / signal-host disposition** (F2 closed via S1; Rule-11 intercept 2026-08-06) — §2b needs no fill/order/arming; offline limb MNQ 0.68 / MYM 0.70 stands. Pine edit only under separate operator GO. |
@@ -26,6 +25,15 @@ closure brief in `docs/ltm/briefs/` and delete its row here.
 
 ## Recently closed (cross-reference; not open)
 
+- **Q-POLFRONT-1** — policy-augmented seed-target frontier — **`RESOLVED-QUANTIFIED` 2026-08-16**
+  (median R_max ratio policy/flat = **5.107×** ≥ 1.25× bar, 24/30 cells defined, min 1.526×, 2
+  newly-admitted cells, no reversal under quantization). ⚠ **Load-bearing caveat carried
+  forward, not a footnote:** the policy's bust rate is far more EOD-clock-fragile than flat
+  sizing (median stress delta +55.2pp vs +1.63pp) — feeds deep-lane GO-1 **with the caveat
+  named in the first campaign's prereg**; intraday-honest remeasurement fork named, not opened.
+  [`closure`](closures/Q-POLFRONT-1-closure-resolved-quantified.md) ·
+  [`RESULTS`](../../lab/analysis/c1/q_polfront_1_2026-08/RESULTS.md) ·
+  [`brief`](Q-POLFRONT-1-policy-augmented-seed-frontier.md)
 - **Q-EVALSEQ-1** — within-eval front-load schedule (frozen K=4 family) — **`FALSIFIED` 2026-08-16**
   (best lift −1.06pt vs +5pt bar; flat WATCH-1 stands; K=3 consumed). **Surviving finding:**
   cushion-proportional sizing cut bust 20.18% → 0.00% (both halves) at 1.06pt of pass — routed to

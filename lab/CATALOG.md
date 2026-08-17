@@ -55,6 +55,7 @@ documents the camp boundary for humans/tools.
 | msl_s2b_mym_2026-08 | c1 | HOLD | archive owed (STAGE-1 FAIL route): pre-G0 kill — [closure](../../../../docs/briefs/closures/MSL-S2B-closure-stage1-fa... | lab/analysis/c1/msl_s2b_mym_2026-08/ | — |
 | parity_gen2_2026-08 | c1 | ACTIVE | — | lab/analysis/c1/parity_gen2_2026-08/ | — |
 | q_evalseq_1_2026-08 | c1 | HOLD | archive owed (FALSIFIED): `FALSIFIED` — schedule lever spent for eval-pass lift (best −1.06pt vs +5pt bar); flat WATC... | lab/analysis/c1/q_evalseq_1_2026-08/ | — |
+| q_polfront_1_2026-08 | c1 | ACTIVE | `RESOLVED-QUANTIFIED` — median R_max ratio policy/flat 5.107×; ⚠ EOD-clock-fragile (stress delta +55.2pt vs flat +1.6pt) → feeds deep-lane GO-1 | lab/analysis/c1/q_polfront_1_2026-08/ | — |
 | q_rail_1_2026-07 | c1 | ACTIVE | c1 rail Phases 0–4 CLOSED RESOLVED; ceiling $700 operator-signed | lab/analysis/c1/q_rail_1_2026-07/ | — |
 | tradeify_book_composition_2026-07-23 | c1 | ACTIVE | eval-lock fix + §2 book-composition re-derivation | lab/analysis/c1/tradeify_book_composition_2026-07-23/ | inputs gitignored |
 | tradeify_eval_lock_correction_2026-07-22 | c1 | ACTIVE | Tradeify/MFFU eval drawdown-lock correction re-MC | lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/ | — |
