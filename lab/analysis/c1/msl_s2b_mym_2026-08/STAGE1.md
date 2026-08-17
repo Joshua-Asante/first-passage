@@ -137,3 +137,9 @@ Named for the record (unexecuted): Req 1a on the **filter** would require filter
 - **Next:** STOP this card.
 - **Board write:** plan §6 P3.5 S2B → **STAGE-1 FAIL (route)** · Stage-1 deaths **1/3 → 2/3** · slate-2 exhausted on both cards.
 - **Re-proposal:** new modality / Board un-pause of temporal-selectivity with an explicit non-route-① thesis / different loss-side shape — **not** θ-retune, not composite clearance, not silent reopen of C1 entry.
+
+---
+
+## Addendum 2026-08-16 — CON-5 scope clarified; frozen verdict unchanged
+
+`:82`'s reading of the CON-5 pause as binding this card, and `:84`'s reading of a sibling dense-1m bar as *not* binding it, used two different scope theories with no stated argument for the difference. [`ADR 2026-08-16`](../../../../docs/adr/2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md) rules the pause is textually scoped to the dense-1m/G=10 lane (so `:82`'s "does bind" reading does not survive on the letter of the pause) — but reliance on that scoping by a future card requires a fresh $0 cheap-falsifier gate (spec frozen in the ADR), not a free pass. This is **prospective only**: no falsifier was run before this card's 2026-08-14 disposition, so `STAGE-1 FAIL` above stands unedited. A fresh successor card may invoke the ADR's D2 falsifier for `sweep-failure-filtered-continuation` × MYM 15m before relying on route B.

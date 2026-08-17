@@ -45,3 +45,4 @@ Instrument MYM and MSL channel stand. Occupancy B8 stands. Stage-1 deaths counte
 | Date | Change | By |
 |---|---|---|
 | 2026-08-14 | Stage-0/1 authored; route FAIL; pre-G0 kill | Cursor (plan-elected adjudicate-then-kill) |
+| 2026-08-16 | Addendum: [`ADR`](../../adr/2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md) clarifies the CON-5 citation in Candidate B's row was read more broadly than the pause's own text supports (dense-1m/G=10-scoped, not timeframe-general) — but reliance on that reading requires a fresh $0 cheap-falsifier gate, not a free pass. Verdict above unedited: no falsifier was run before this closure. Re-proposal bar (§3) unchanged; a successor card may now invoke the ADR's D2 falsifier. | Joshua (operator election) + Claude Code |
