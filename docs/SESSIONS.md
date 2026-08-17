@@ -14,6 +14,49 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-17a — MSL-S2B successor's CON-5 D2 falsifier executed: `D2_FAIL`
+
+**Focus:** Operator: "run the S3 falsifier gate once MYM_M15.csv is available." Panel had become
+locally available (primary checkout, not this worktree — copied + hash-verified); execute the D2
+gate frozen in the 2026-08-16 CON-5 ADR.
+
+**Shipped:** `sweep-failure-filtered-continuation` × MYM 15m, IS panel only (CONFIRM untouched) —
+[runner](../lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_s2b_con5_d2_2026-08-17.py) ·
+[LOG](../lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_s2b_con5_d2_2026-08-17_LOG.md) ·
+forward-pointer addendum on [STAGE1.md](../lab/analysis/c1/msl_s2b_mym_2026-08/STAGE1.md). Result:
+mean signed gross **−1.00 pt** / 850 signals (52.96% coverage of 1,605 IS sessions), WR 25.41% ≈ the
+box's own rr=3 breakeven, **−0.044×** vs the +11.28 pt (0.5×4×RT) pass bar → **`D2_FAIL`**, clean and
+non-marginal. Per the ADR's D2 clause this closes route B (temporal-selectivity-as-continuation) for
+this construct-shape at $0, no Board debate needed. MSL-S2B's frozen 2026-08-14 `STAGE-1 FAIL`
+verdict is unchanged (D3 prospective-only, no retro-edit). $0 · K=0.
+
+**Decisions/defects:** No document had ever operationalized S2B's "continuation entry" trigger
+beyond a qualitative story — surfaced and put to the operator rather than invented; elected: reuse
+sibling MSL-C1's own PDH/PDL sweep + failed-extension-reclaim signal, flip/continuation side, on
+S2B's own placeholder 40/120 stop-target box (not re-tuned). Real bug caught before scoring: naively
+reusing C1's `path_pts_stop_target_flat` verbatim silently paid every target hit as C1's symmetric
++40 instead of S2B's asymmetric +120 (first run: mean −19.07 pt); a kind-by-kind sanity check caught
+it, fixed with a locally-corrected path function, re-scored. **Also caught here, own mistake:** a
+`git checkout -- docs/SESSIONS.md` intended to revert an append-only-violating rename of the
+pre-existing duplicate `2026-08-16h` heading (see below) instead discarded this entire entry;
+re-applied from conversation record, duplicate/separator defect below is untouched as found.
+
+**Open / next:** STATE + SESSIONS lines landed per operator request; commit still pending — the
+pre-existing `2026-08-16h` duplicate-label / missing-separator defect (both headings below,
+predates this session — confirmed present on pristine HEAD, unrelated to this work) makes
+`roll_sessions.py --check-order` and `--check-append-only` mutually unsatisfiable for anyone who
+touches this file: renaming the duplicate to fix order fails append-only; leaving it fails order.
+Flagged to the operator rather than silently resolved with `--no-verify`. Not touched: the CON-5
+ADR's own §4 falsifiable-hypothesis tracking (this is its first data point — a FAIL, not the
+PASS-then-dies case §4 names) and any Board-level write beyond this record. Carry: S3's other open
+items unchanged (CON-5 falsifier itself is now discharged; Koijen axis-2 operator fork; MSL WHO
+track still dry); queue #0 weekly token (deadline **2026-08-21**); S2 deep-iteration lane 1/2
+abandonment budget spent; four-firms §4 2026-11-08.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+
 ## 2026-08-16h — S3 WHO-drought relief: CON-5 scope ADR + M6A Tier-A sourcing (both candidates dead pre-manifest)
 
 **Focus:** Operator: "relieve the WHO drought through doors already open" (2026-08-16 diagnostic S3). Recon workflow (4 threads + adversarial verify) → CON-5 scope election → M6A Path-1b sourcing → wrap.
@@ -23,6 +66,9 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Decisions/defects:** Recon caught real defects pre-ship: C3-K2 "does not bind" language demoted to obiter (cleared its bar via SLR route, never needed temporal selectivity); a fabricated §-citation; my own drafted 1b(iv) class-FAIL claim contradicting H-TSMOM-1's scored 1b PASS (repaired to flagged-open-question before commit). ADR amended at replay: authoring worktree predated U0 KEEP + DL-1 attestation — read-set gap named in §0, D2 sharpened (as first drafted it would have demanded a falsifier from DL-1-class cards, contradicting DL-1's own GO). Koijen/Carry rank-1 citation traversal dispatched (result pending at entry time). Blind-channel next-candidate work **deliberately deferred** — worst EV on the board (non-index cost wall ≈27bp+/event for a mechanism-free construct; channel's own recorded expectation is AMBIGUOUS-HOLD at 11-08); forcing a second candidate risks a strike without advancing anything.
 
 **Open / next:** (1) **MSL-S2B successor's D2 falsifier** — spec frozen in the ADR, needs `MYM_M15.csv` (absent in worktree; primary checkout or W4-gated pull). (2) DL-1 train engine + scoring (unchanged from 16g — untouched here). (3) Koijen axis-2 traversal DISCHARGED same session — `BLOCKED-AT-SOURCE` (S2 has no record for the *Carry* DOI; 404 + OpenAlex 299 both independently re-verified), recorded in CANDIDATE_ROWS with the operator fork (OpenAlex substitute = different instrument, or leave blocked) left open. Carry: queue #0 weekly token (deadline **2026-08-21**); blind channel paused 1/3; dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
+
+---
+
 ## 2026-08-16h — DL-1 train scoring executed; campaign ABANDONED
 
 **Focus:** Operator: "run the train scoring now." §6 step 2: score the 10 frozen variants on
@@ -58,6 +104,7 @@ dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-16g — DL-1 GO marked; prereg FROZEN; pulls fired; session wrap
 
 **Focus:** Operator: "GO on DL-1, then we'll wrap the session." Record the mark; fire §6 step 1; stop deliberately before train scoring.
@@ -71,6 +118,7 @@ dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-16f — DL-1 campaign prereg drafted (deep-lane §7 step 1); GO mark owed
 
 **Focus:** Operator: "Draft the first lane campaign prereg." Family election + freeze candidate, adversarially reviewed before it reaches the mark.
@@ -84,6 +132,7 @@ dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-16e — Databento parent-era dry-run → deep-lane GO-1 fully discharged
 
 **Focus:** Operator: "Go on the Databento dry-run." Price bar-schema reachability for the design-box non-index triad before the first lane campaign prereg.
@@ -97,6 +146,7 @@ dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-16d — Q-POLFRONT-1 GO → `RESOLVED-QUANTIFIED`; EOD-clock caveat routed to GO-1
 
 **Focus:** Operator GO on the Q-POLFRONT-1 run. Fidelity-gate the recovered seed-spec harness first (Rule 0); resolve the frozen brief's grid ambiguity before any policy number.
@@ -110,6 +160,7 @@ dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-16c — Q-EVALSEQ-1 frozen run → `FALSIFIED`; bust-axis finding survives
 
 **Focus:** Execute the P2-licensed frozen run. Fidelity-gate the recovered harness before any policy read.
@@ -123,6 +174,7 @@ dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-16b — P2 + GO marked; stamps landed
 
 **Focus:** Operator marked "P2 + GO" on the two 2026-08-16a packets. Record both elections; license the frozen run.
@@ -136,6 +188,7 @@ dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-16a — Bottleneck diagnostic → two election packets drafted
 
 **Focus:** Operator: "address head on what may be holding us back from finding viable strategies for Tradeify" (ultracode). Diagnose, then draft the elected next steps.
@@ -149,6 +202,7 @@ dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-15v — R10 historical-kill pin marked `no`
 
 **Focus:** Operator marked the R10 pin `no`. Already-closed D5 / H-OD-1 / H-TSMOM-1 do not increment. Write 0/2 counting machinery. Do not fire.
@@ -162,6 +216,7 @@ dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-15t — R10 harvest §4 limb 2 Accepted
 
 **Focus:** Operator GO on the R10 addendum after PR #15 merged. Bind limb 2. Do not invent the historical-kill pin.
@@ -175,6 +230,7 @@ dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-15r — 08-03 gate-stack R3–R6 / R10
 
 **Focus:** Execute the still-owed 08-03 mechanical repairs (R3–R6) and draft R10 without self-ratifying a new falsifier.
@@ -188,6 +244,7 @@ dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-15o — Blind-channel next-move sequence
 
 **Focus:** After N=3 + empty naming, sequence what is actually next (no new construct, no Cap reopen).
@@ -201,6 +258,7 @@ dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-15n — Blind-channel N=3 election + empty generation attempt
 
 **Focus:** Move the open-but-empty blind channel forward without raising Cap/K or retuning `MNQ-ANALOGUE-1`.
@@ -214,6 +272,7 @@ dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-15k — Dense-1m unpause U0 KEEP
 
 **Focus:** Operator marked U0 KEEP on the unpaid dense-1m unpause packet. Leave the pause.
@@ -227,6 +286,7 @@ dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-15j — Dense-1m unpause Board packet (OWED-election)
 
 **Focus:** Draft a reviewable plan for unpausing the dense-1m OHLCV temporal-selectivity / entry-geometry default. Pause stays until a Board mark.
@@ -240,6 +300,7 @@ dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-15i — STATE weekly roll + de-scope over-read correction
 
 **Focus:** Roll the idle-clock header past the satisfied 08-10→08-14 week; correct STATE pointers that treated Tradeify as a gone firm.
@@ -253,6 +314,7 @@ dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-15h — Wall-scope audit · Q-BUSTGATE-2 · blind sourcing channel · Q-CAPBAND-1
 
 **Focus:** Assess where Tradeify strategy research stands and how to make it more productive. Audit the admission walls, re-derive the bust ceiling, open the operator-elected weaker-grade sourcing channel, and price the Cap counterfactual.
@@ -268,6 +330,7 @@ dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
 **Provenance:** authored in the private archive (10 commits, `28fdcea..3df9d91`); replayed here as content since the two repos share no history. One private-class artifact (`docs/notes/notice/…`) is excluded from the public seed and referenced by `git show` pointer.
 
 ---
+
 ## 2026-08-15g — Root-doc liveness: 16 public-seed dead links repointed
 
 **Focus:** `make check` / `check_root_doc_liveness.py` HARD-failed on 16 markdown links in `STATE.md` + `REPO_MAP.md` whose targets were omitted from the public seed (PR #5 restored `docs/notes/audits/` only).
@@ -286,6 +349,7 @@ operator-paced. Excluded-tree inbound links outside the five root docs remain
 **Live-ops state:** c1 warm/disarmed at incumbent; no arming.
 
 ---
+
 ## 2026-08-15f — Gate reachability, registry debt split, Rule 2 narrowed
 
 **Focus:** Phases 3/4/5 of the governance-belt audit's remediation, done in sequence.
@@ -315,6 +379,7 @@ weekly token; Magdon-Ismail B.
 **Live-ops state:** c1 warm/disarmed at incumbent; no arming.
 
 ---
+
 ## 2026-08-15e — Limb B v3 re-measurement: `ASSISTIVE-ONLY` (final)
 
 **Focus:** Phase 2 of the governance-belt audit's remediation — frozen v3 pre-registration,
@@ -350,6 +415,7 @@ token; Magdon-Ismail B.
 **Live-ops state:** c1 warm/disarmed at incumbent; no arming.
 
 ---
+
 ## 2026-08-15d — Limb B (repo_retrieve) quarantined — governance-belt audit
 
 **Focus:** Meta-layer programme audit of the PR #2 governance belt found `scripts/repo_retrieve.py` recall-regressed below its own 2026-07-27 `DELETE-HOLDS` authorization (unranked `FTS5 MATCH`; recall@5 measured at incumbent-parity, 0.086, tying the `rg` baseline it was built to beat). Verdict: **Degenerating** (meta layer).
@@ -363,6 +429,7 @@ token; Magdon-Ismail B.
 **Live-ops state:** c1 warm/disarmed at incumbent; no arming.
 
 ---
+
 ## 2026-08-15c — public-seed CI adaptation (skills + pytest)
 
 **Focus:** Unblock Tests / Skills Check / Pylint on the public seed — dead `docs/notes/**` / `docs/ltm/**` / `docs/superpowers/**` cites and redacted baseline PF, not new product bugs.
@@ -376,6 +443,7 @@ token; Magdon-Ismail B.
 **Live-ops state:** c1 warm/disarmed at incumbent; no arming.
 
 ---
+
 ## 2026-08-15b — search / memory / doc-weight phases (public replay)
 
 **Focus:** Close the search-blindness → new artifact → stale index loop (registry feed, amendment-first, Limb B FTS, liveness sweep, Rule 2 pointers, gate/CI diet). Live rail out of scope. Replayed onto the public seed; merged after [PR #1](https://github.com/Joshua-Asante/first-passage/pull/1).
@@ -389,6 +457,7 @@ token; Magdon-Ismail B.
 **Live-ops state:** c1 warm/disarmed at incumbent; no arming.
 
 ---
+
 ## 2026-08-15a — Repoint historical PR/commit hrefs at first-passage-archive
 
 **Focus:** After the 2026-08-14 public-repo transplant, historical GitHub PR/commit links still pointed at `first-passage` and 404'd; the objects live on the private archive.
