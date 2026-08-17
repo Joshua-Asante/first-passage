@@ -98,7 +98,7 @@ Charter a **deep-iteration lane** (`--lane deep`) with the following properties,
 - **(c) What abandonment does.** An abandonment after open **discloses, does not strike** (the confirm never ran, so the depth premise was not tested) — but **2 consecutive abandonments** trigger the same audit-report duty as the inertness limb (report at the next quarterly audit; the lane is absorbing calendar without testing its premise). A prereg refused at freeze (bar unclear, conjunct failed, cost-law dead at family selection) counts on the refusals line only — mirror of the pre-G0-≠-strike boundary, same disclosure duty.
 - **(d) What resets "consecutive".** A nominated survivor clearing confirm **and** N-SURV. Nothing else resets either consecutive count.
 
-**Running counts (canonical, this ADR):** campaigns completed **0** · survivors falsified **0 / 2** · campaigns abandoned **0** (consecutive **0 / 2**) · preregs refused **0**.
+**Running counts (canonical, this ADR):** campaigns completed **0** · survivors falsified **0 / 2** · campaigns abandoned **0** (consecutive **0 / 2**) · preregs refused **0** · **active campaign: DL-1** (prereg frozen 2026-08-16 on operator GO — [`docs/briefs/pre-registration/2026-08-16-deep-lane-dl1-mgc-orc-prereg.md`](../briefs/pre-registration/2026-08-16-deep-lane-dl1-mgc-orc-prereg.md); K=10; pulls fired same day; train scoring not yet run).
 
 **Trigger check schedule:** rides the standing 2026-11-08 slate (channel §4 readings) + quarterly audits.
 
@@ -235,3 +235,4 @@ estate's own ratified IS boundary, reused, not re-struck.
 | 2026-08-16 | Drafted `Proposed` at operator direction on the 2026-08-16 bottleneck diagnostic; nothing binds | Claude Code (drafter) |
 | 2026-08-16 | `Proposed` → `Accepted` — operator GO ("P2 + GO"), overriding the HOLD default eyes-open per §1; GO-1 (first prereg after P2 frontier + Databento dry-run) and GO-2 (first campaign K ≈ 10) recorded as binding conditions. §7 steps 2–4 now licensed, in order; step 1 gated on GO-1 | Joshua (operator GO) + Claude Code |
 | 2026-08-16 | Addendum: Databento parent-era cost dry-run executed (GO-1's second condition). Bar schemas (1d/1h/1m) on GC/CL/6A (train) and MGC/MCL/M6A (confirm) all $0.0000; tbbo priced for contrast ($2,209.69 train / $274.89 confirm) to show where the real cost gate sits. GO-1 fully discharged | Claude Code (operator direction) |
+| 2026-08-16 | **DL-1 prereg FROZEN on operator GO** ("GO on DL-1") — first lane campaign live; the GO adjudicated the five gathered items (bar-scope · pause reach · channel-origin · gold-ORB clearance · step-4 mapping) as recorded on the prereg's Status block. §6 step-1 pulls fired same day; train scoring is the next session's first item | Joshua (GO) + Claude Code |

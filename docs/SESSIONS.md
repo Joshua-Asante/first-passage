@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-16g — DL-1 GO marked; prereg FROZEN; pulls fired; session wrap
+
+**Focus:** Operator: "GO on DL-1, then we'll wrap the session." Record the mark; fire §6 step 1; stop deliberately before train scoring.
+
+**Shipped:** branch `claude/dry-funnel-election-packets` — [DL-1 prereg](briefs/pre-registration/2026-08-16-deep-lane-dl1-mgc-orc-prereg.md) `OPEN — DRAFT` → **`FROZEN`** with the five gathered adjudications recorded on the Status block (bar-scope · pause reach · channel-origin · gold-ORB clearance · step-4 mapping) · [charter](adr/2026-08-16-deep-iteration-lane-charter.md) count line gains **active campaign: DL-1** + change-history row · STATE decision-index line · **both §6 step-1 pulls fired** ($0, cache-tagged `DL1-MGC-ORC`: MGC confirm 5,591,789 rows landed; GC train streaming at wrap).
+
+**Decisions/defects:** train scoring deliberately NOT started — the backtest engine deserves a fresh session with its own fidelity gates (Q-EVALSEQ precedent: anchor-verify before any read), not an end-of-session build. Confirm partition remains virgin (cache era-tagged; nominee-only read per the frozen §6).
+
+**Open / next:** (1) **DL-1 train engine + scoring** (§6 step 2: 10 variants, frozen conventions, strict-argmax, pinned SPA) — next session's first item; confirm read only after nomination gates. (2) Charter §7 steps 2–4 (lane code flag, doc scoping, skill wiring). (3) S3/S4 diagnostic-slate items untouched (WHO-drought relief; D3 fork, AMBIGUOUS-HOLD counting, weekly-token recurrence ruling, PARK triage, two-barrier Session 1). Carry: queue #0 weekly token (deadline **2026-08-21**); blind channel paused 1/3; dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-16f — DL-1 campaign prereg drafted (deep-lane §7 step 1); GO mark owed
 
 **Focus:** Operator: "Draft the first lane campaign prereg." Family election + freeze candidate, adversarially reviewed before it reaches the mark.

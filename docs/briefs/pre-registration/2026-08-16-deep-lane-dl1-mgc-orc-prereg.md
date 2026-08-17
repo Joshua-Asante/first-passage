@@ -1,8 +1,19 @@
 # DL-1 — deep-lane campaign 1 pre-registration: opening-range continuation on gold (GC-train / MGC-confirm)
 
-**Status:** `OPEN — DRAFT` — freezes on operator GO (the charter's §7.1 separate mark). On GO,
-this file's path lands on the [charter](../../adr/2026-08-16-deep-iteration-lane-charter.md)
-running-count line and the frozen split below becomes binding.
+**Status:** `FROZEN` — operator GO (JA) 2026-08-16 ("GO on DL-1"). §1–§7 below are binding;
+no amendment after this mark (Trap #12 — a change closes this campaign and opens a fresh one
+under the lane's counters). Path recorded on the [charter](../../adr/2026-08-16-deep-iteration-lane-charter.md)
+running-count line.
+**The GO mark adjudicates the five gathered operator items (Verification block):**
+(1) **bar-scope reading accepted** — the 5th-leg BINDING BAR's domain does not reach deep-lane
+paid-data seed generation; route (1) stands as disclosure only, claimable ex post per the F1
+precedent; this reconciles the charter §2.1 letter for this campaign. (2) **pause residual
+broad reading rejected for DL-1** — the CON-5/dense-1m pause does not reach this non-index,
+non-route-① family. (3) **channel-origin accepted** — internally-generated; harvest intake
+not owed. (4) **"Closed for ORB: gold" cleared for this distinct composition** — the survey
+prior is engaged (§7.6), its panel-overlap disclosed; the 08:30-anchor/drift-filter/structural-
+stop composition is adjudicated as a new construct, not a survey re-run. (5) **step-4
+strike-mapping ratified** — a cost-law-recheck failure counts on the lane's yield limb.
 **Authored:** 2026-08-16 · Claude Code (JA commission, charter §7 step 1)
 **Lane:** `deep` (first campaign under the [deep-iteration lane charter](../../adr/2026-08-16-deep-iteration-lane-charter.md), `Accepted` 2026-08-16, GO-1 fully discharged, GO-2 K ≈ 10)
 **Mechanism id:** `opening-range-continuation` (existing registry id — `instrument_profiles.py` names it; no new MECHANISMS.md entry)
