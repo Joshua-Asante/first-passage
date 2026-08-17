@@ -76,7 +76,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 # Optional theme segment so nested hot paths lab/analysis/<theme>/<slug>/…
 # capture the study slug, not the theme directory name.
 _THEME_ORDER = (
-    "c1", "striker", "orb", "aegis", "regime", "harvest", "mc", "legacy", "_inbox",
+    "c1", "striker", "orb", "aegis", "regime", "harvest", "mc", "legacy", "deep_lane", "_inbox",
 )
 _THEMES = frozenset(_THEME_ORDER)
 _THEME_ALT = "|".join(re.escape(t) for t in _THEME_ORDER)

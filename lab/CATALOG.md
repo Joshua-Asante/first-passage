@@ -140,6 +140,12 @@ documents the camp boundary for humans/tools.
 | us500_discovery_2026-06-22 | legacy | ACTIVE | US500 widest-net edge discovery results | lab/analysis/legacy/us500_discovery_2026-06-22/ | — |
 | xauusd_cgb_2026-06-15 | legacy | HOLD | AMBIGUOUS (brief §6) / operational HOLD — build NOT triggered | lab/analysis/legacy/xauusd_cgb_2026-06-15/ | — |
 
+### deep_lane
+
+| slug | theme | status | one-liner | body | heavy |
+|---|---|---|---|---|---|
+| dl1_mgc_orc_2026-08-16 | deep_lane | HOLD | archive owed (CLOSED): `AMBIGUOUS` — ABANDONMENT (prereg roster mapping: confirm never read, nothing | lab/analysis/deep_lane/dl1_mgc_orc_2026-08-16/ | — |
+
 ### _inbox
 
 | slug | theme | status | one-liner | body | heavy |

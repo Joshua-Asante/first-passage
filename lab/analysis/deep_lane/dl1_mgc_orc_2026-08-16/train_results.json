@@ -1,0 +1,144 @@
+{
+  "nominee": 7,
+  "gates": {
+    "2a_cost_law": {
+      "annsr_positive": false,
+      "ratio_ge_4x": true,
+      "passed": false,
+      "detail": {
+        "median_stop_ticks": 51.99999999999818,
+        "ratio": 5.048543689320212,
+        "passed": true
+      }
+    },
+    "2b_spa": {
+      "p_value": 0.9386,
+      "passed": false,
+      "better_variants": [],
+      "order": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    "2c_cadence": {
+      "cadence_per_week": 2.9900958466453673,
+      "passed": true
+    },
+    "2d_m16_slip": {
+      "net_annsr_plus1tick": -0.656744412489838,
+      "passed": false
+    }
+  },
+  "all_pass": false,
+  "verdict": "ABANDONMENT",
+  "per_variant": {
+    "1": {
+      "n_trades": 2105,
+      "net_annsr": -0.9159753420203735,
+      "cadence_per_week": 4.7076677316293924,
+      "cost_law": {
+        "median_stop_ticks": 38.999999999998636,
+        "ratio": 3.7864077669901586,
+        "passed": false
+      }
+    },
+    "2": {
+      "n_trades": 2105,
+      "net_annsr": -1.0901844695519347,
+      "cadence_per_week": 4.7076677316293924,
+      "cost_law": {
+        "median_stop_ticks": 38.999999999998636,
+        "ratio": 3.7864077669901586,
+        "passed": false
+      }
+    },
+    "3": {
+      "n_trades": 1530,
+      "net_annsr": -0.5637630605456468,
+      "cadence_per_week": 3.421725239616613,
+      "cost_law": {
+        "median_stop_ticks": 37.99999999999841,
+        "ratio": 3.68932038834936,
+        "passed": false
+      }
+    },
+    "4": {
+      "n_trades": 1530,
+      "net_annsr": -0.7731189761265125,
+      "cadence_per_week": 3.421725239616613,
+      "cost_law": {
+        "median_stop_ticks": 37.99999999999841,
+        "ratio": 3.68932038834936,
+        "passed": false
+      }
+    },
+    "5": {
+      "n_trades": 2038,
+      "net_annsr": -0.8798508053516718,
+      "cadence_per_week": 4.557827476038338,
+      "cost_law": {
+        "median_stop_ticks": 53.999999999998636,
+        "ratio": 5.242718446601809,
+        "passed": true
+      }
+    },
+    "6": {
+      "n_trades": 2038,
+      "net_annsr": -0.9685094975185443,
+      "cadence_per_week": 4.557827476038338,
+      "cost_law": {
+        "median_stop_ticks": 53.999999999998636,
+        "ratio": 5.242718446601809,
+        "passed": true
+      }
+    },
+    "7": {
+      "n_trades": 1337,
+      "net_annsr": -0.4203175582082053,
+      "cadence_per_week": 2.9900958466453673,
+      "cost_law": {
+        "median_stop_ticks": 51.99999999999818,
+        "ratio": 5.048543689320212,
+        "passed": true
+      }
+    },
+    "8": {
+      "n_trades": 1466,
+      "net_annsr": -1.2575462381751583,
+      "cadence_per_week": 3.278594249201278,
+      "cost_law": {
+        "median_stop_ticks": 36.000000000001364,
+        "ratio": 3.4951456310680937,
+        "passed": false
+      }
+    },
+    "9": {
+      "n_trades": 1279,
+      "net_annsr": -0.9364889223723074,
+      "cadence_per_week": 2.8603833865814696,
+      "cost_law": {
+        "median_stop_ticks": 50.0,
+        "ratio": 4.854368932038835,
+        "passed": true
+      }
+    },
+    "10": {
+      "n_trades": 2045,
+      "net_annsr": -1.5064674019899145,
+      "cadence_per_week": 4.573482428115016,
+      "cost_law": {
+        "median_stop_ticks": 37.999999999999545,
+        "ratio": 3.6893203883494703,
+        "passed": false
+      }
+    }
+  }
+}
