@@ -1,0 +1,5 @@
+stage1_sessions.csv
+*.parquet
+*.dbn*
+JOB_LOG.jsonl
+stage2_trades.csv
