@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-16h — S3 WHO-drought relief: CON-5 scope ADR + M6A Tier-A sourcing (both candidates dead pre-manifest)
+
+**Focus:** Operator: "relieve the WHO drought through doors already open" (2026-08-16 diagnostic S3). Recon workflow (4 threads + adversarial verify) → CON-5 scope election → M6A Path-1b sourcing → wrap.
+
+**Shipped:** branch `claude/who-drought-s3-onmain` (authored on archive-lineage worktree `claude/who-drought-open-doors-cf6e31` @ `d46b2af`, replayed onto origin/main) — [CON-5 scope ADR](adr/2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md) `Accepted` (operator elected falsifier-gate, third of three options; D2 route-reliance-scoped; D2a harmonizes with DL-1's GO-adjudicated pause attestation, supersedes nothing) · forward addenda on [S2B closure](briefs/closures/MSL-S2B-closure-stage1-fail-route.md) + `STAGE1.md` (frozen verdict untouched) · [CANDIDATE_ROWS addendum](../lab/analysis/harvest/radar_tier_a_burst_2026-07/CANDIDATE_ROWS.md): `H-TSMOM-6A` CLOSED Clause-N FAIL (power 0.13–0.27; break-even SR 0.73 above the published currency sleeve — FAIL robust to the secondary-summary sourcing grade; 3/3 monthly-TSMOM siblings now dead on power) · `H-COTREV-6A` UNSCREENABLE Req 2 (no citable AUD reversal δ; Wang sign-direction caution carried, single-pass unverified). $0 · K=0 throughout.
+
+**Decisions/defects:** Recon caught real defects pre-ship: C3-K2 "does not bind" language demoted to obiter (cleared its bar via SLR route, never needed temporal selectivity); a fabricated §-citation; my own drafted 1b(iv) class-FAIL claim contradicting H-TSMOM-1's scored 1b PASS (repaired to flagged-open-question before commit). ADR amended at replay: authoring worktree predated U0 KEEP + DL-1 attestation — read-set gap named in §0, D2 sharpened (as first drafted it would have demanded a falsifier from DL-1-class cards, contradicting DL-1's own GO). Koijen/Carry rank-1 citation traversal dispatched (result pending at entry time). Blind-channel next-candidate work **deliberately deferred** — worst EV on the board (non-index cost wall ≈27bp+/event for a mechanism-free construct; channel's own recorded expectation is AMBIGUOUS-HOLD at 11-08); forcing a second candidate risks a strike without advancing anything.
+
+**Open / next:** (1) **MSL-S2B successor's D2 falsifier** — spec frozen in the ADR, needs `MYM_M15.csv` (absent in worktree; primary checkout or W4-gated pull). (2) DL-1 train engine + scoring (unchanged from 16g — untouched here). (3) Koijen traversal result → CANDIDATE_ROWS when it lands. Carry: queue #0 weekly token (deadline **2026-08-21**); blind channel paused 1/3; dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-16g — DL-1 GO marked; prereg FROZEN; pulls fired; session wrap
 
 **Focus:** Operator: "GO on DL-1, then we'll wrap the session." Record the mark; fire §6 step 1; stop deliberately before train scoring.

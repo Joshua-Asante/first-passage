@@ -61,6 +61,7 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-16** — **CON-5 pause scope ruled: dense-1m route-scoped, with a $0 cheap-falsifier gate for out-of-lane route-① reliance (operator election, third of three options).** Resolves MSL-S2B's internal inconsistency (same "dense-1m" qualifier read two ways in adjacent BINDING-BAR rows); harmonizes with — supersedes nothing of — the DL-1 GO's per-campaign pause adjudication and U0 KEEP (pause itself stands; nothing unpaused; S2B verdict untouched). Falsifier spec frozen, unexecuted (`MYM_M15.csv` absent in authoring worktree). $0/K=0. [`ADR`](docs/adr/2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md)
 - **2026-08-16** — **Weekly venue-idle token trade: recurrence ruled — fresh-decision-per-week is the
   standing, closed design, not an open gap (operator election, closes S4's 5th governance hole).**
   The 2026-08-05 one-week exception was deliberately scoped to spend the book-composition brief's
