@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-08-15
+**Last curated:** 2026-08-17
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
