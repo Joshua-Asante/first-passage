@@ -155,8 +155,8 @@ Landed on 3 of the plan's 4 required surfaces: dated LOG ✓ ·
 `rejected_candidates.md` row per the 2026-08-15 pre-G0-kills-are-not-§4-strikes precedent (matches
 `MNQ-ANALOGUE-1`/`MNQ-SIZEDIV-1`'s own pattern).
 
-**The harvest §4 limb-2 counter question remains unmarked** — this FAIL is exactly the case §13
-flagged it would govern. $0/K=0 throughout — panels on hand, no pull.
+**The harvest §4 limb-2 counter question is now RULED** (§13 below) — does not increment; running
+count stays 0/2. $0/K=0 throughout — panels on hand, no pull.
 
 ## §5 Phase 2 — Priced extension + intake staging for survivors (recorded; not started)
 
@@ -202,11 +202,13 @@ NS-curve-fitting harness for L5) dispatch to Cursor, directly via the dispatch s
 
 | Item | Holder | Status | PR | Note |
 |---|---|---|---|---|
-| Plan drafted (this document) | this session | **DRAFTED** | pending | Full plan recorded on `claude/six-lead-pursuit-stage-0-a2c299`; §0 grounding reads executed |
-| Phase 0 items 0.1–0.7 | this session | **DONE** | pending | See §3 execution ledger; headline finding is the L3/L6 same-paper correction (§13) |
-| SOURCES_LOG addendum (L3=L6) | this session | **DONE** | pending | [`SOURCES_LOG.md` addendum](../../lab/analysis/harvest/koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md) |
-| Phase 0 item 0.8 (operator marks packet) | this session (drafted) / operator (marks) | **DRAFTED, awaiting marks** | pending | §13 — recommendations only; per-lead GO/HOLD, limb-2 counter question, and channel-scope amend-in-place note all require operator sign-off, not CC election |
-| STATE.md correction line | this session | **DONE** | pending | New dated decision-index line, not a retro-edit of the 2026-08-17 historical line |
+| Plan drafted (this document) | this session | **DRAFTED** | [#32](https://github.com/Joshua-Asante/first-passage/pull/32) merged | Full plan recorded, then executed, on `claude/six-lead-pursuit-phase1-execution` (superset of `-stage-0-a2c299`) |
+| Phase 0 items 0.1–0.7 | this session | **DONE** | #32 merged | See §3 execution ledger; headline finding is the L3/L6 same-paper correction (§13) |
+| SOURCES_LOG addendum (L3=L6) | this session | **DONE** | #32 merged | [`SOURCES_LOG.md` addendum](../../lab/analysis/harvest/koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md) |
+| Phase 0 item 0.8 (operator marks packet) | operator | **MARKED** | #32 merged (marks); this commit (limb-2 ruling) | §13 — per-lead GO/HOLD marked 2026-08-17; limb-2 counter **RULED** (does not increment); channel-scope amend-in-place note still drafted, unlanded |
+| STATE.md correction line | this session | **DONE** | #32 merged | New dated decision-index line, not a retro-edit of the 2026-08-17 historical line |
+| P1-CF/P2-CF execution | this session | **DONE — FAIL all four legs** | #32 merged | [`CF LOG`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/LOG.md) |
+| Limb-2 counter ruling | operator direction + this session (draft) | **DONE — does not increment** | pending | [`harvest intake ADR` ruling block](../adr/2026-07-15-external-mechanism-harvest-intake.md#ruling-2026-08-17--p1-cfp2-cf-does-not-increment-limb-2) |
 
 ## §11 Program-level stop rules (pre-committed)
 
@@ -255,21 +257,24 @@ fact itself); the marks below are about what to *do* with the now-five-lead coho
 channel-scope amend-in-place note, both below. The GO licenses *attempting* P1-CF/P2-CF — it does
 not resolve what a FAIL on either costs the harvest channel's own bookkeeping.
 
-### Limb-2 counter ruling (operator decision, not CC's to make)
+### Limb-2 counter ruling — RESOLVED 2026-08-17, does not increment
 
 **Question restated as a symptom, not a fix:** does a Phase-1 cheap-falsifier kill on one of these
 leads count toward harvest §4 limb-2's 0/2, or does it stay outside that counter the way pre-G0
 kills stay outside §4 strikes generally (per the 2026-08-15 pre-G0-kills-are-not-§4-strikes
 ruling)?
 
-**Relevant precedent, not a ruling:** the 2026-08-15 STATE.md line marked the limb-2 pin "no" for
-*already-closed* D5/H-OD-1/H-TSMOM-1 — established that **pre-existing** closures don't
-retroactively count. A Phase-1 CF on these five leads would be a **new** screen, not a pre-existing
-one, so the precedent doesn't resolve it either way by direct analogy — it only establishes that
-the counting question turns on new-vs-pre-existing, which this case doesn't cleanly fall into
-(it's new work, but explicitly pre-G0/cheap-falsifier-tier, the same tier the 2026-08-15 ruling
-carved out generally). **Recommend:** operator rules this explicitly before any Phase-1 CF runs,
-since the ruling changes what a FAIL on P1/P2 actually costs the harvest channel.
+**Ruled** (operator direction, Claude Code draft) on the P1-CF/P2-CF FAIL result: **does not
+increment.** Two independent grounds — landed on the counter's own canonical surface, not restated
+here:
+[`docs/adr/2026-07-15-external-mechanism-harvest-intake.md`](../adr/2026-07-15-external-mechanism-harvest-intake.md)
+counting-machinery table + "Ruling 2026-08-17" block. (1) Neither lead was ever **admitted**
+through this intake — no declaration manifest, no `register_search open`, no ratified inventory
+row — and §4's falsifier is scoped to mechanisms "admitted through this intake," so an
+unadmitted screen cannot be an intake-class closure. (2) Even setting admission aside, the kill
+class doesn't match the counted categories (Stage-2 cost-law / Clause-N power) — P1-CF/P2-CF used
+this plan's own frozen cheap-falsifier construction, not the harvest campaign's Stage-0/cohort-δ
+machinery. Running count stays **0/2**.
 
 ### Channel-scope amend-in-place note (drafted for operator ratification, not yet landed)
 

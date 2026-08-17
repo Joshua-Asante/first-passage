@@ -154,13 +154,78 @@ rg -n "Canonical count is unset" docs/adr/2026-07-15-external-mechanism-harvest-
 
 **(d) What this is not.** Not a Cap change. Not a third sourcing channel. Not a rewrite of limb 1. Not a fire of this mark.
 
-**Running count (canonical): 0 / 2.** Not fired. No post-mark increment.
+**Running count (canonical): 0 / 2.** Not fired. No post-mark increment (re-affirmed 2026-08-17 —
+see ruling below).
 
 | Construct | Date | Class | Increments? |
 |---|---|---|---|
 | D5 | 2026-07-16 | Stage-2 cost-law KILL | no — already-closed at this mark |
 | H-OD-1 | 2026-07-16 | Stage-2 cost-law KILL (mechanism CONFIRMED-IS) | no — already-closed at this mark |
 | H-TSMOM-1 | 2026-07-16 | Clause-N FAIL (P1=c) | no — already-closed at this mark |
+| P1-CF/P2-CF (six-lead pursuit — L3=L6 overnight-reversal + L1 index-flow reversal, MGC+6J) | 2026-08-17 | Pre-admission cheap falsifier — FAIL all four legs | **no — never reached intake-class status** (see ruling below) |
+
+### Ruling 2026-08-17 — P1-CF/P2-CF does not increment limb 2
+
+**Status:** operator direction ("Rule the limb-2 counter question"), Claude Code draft, same session.
+Application of the existing counting machinery (a)–(d) above to a new construct — not an amendment
+of the machinery itself.
+
+**§0 Rule 0 (verified 2026-08-17):**
+
+| Source | Anchor | Supplies |
+|---|---|---|
+| This ADR as it stood before this ruling | `73a77f7` 2026-08-16 | Counting machinery (a)–(d), admission definition (§2), running count 0/2 |
+| [Six-lead pursuit plan](../briefs/2026-08-17-six-lead-pursuit-plan.md) | `18d68f9` 2026-08-17 | §1 channel election (routes through harvest intake); §3/§4 Phase 0/Phase 1 framing — explicitly pre-admission |
+| [P1-CF/P2-CF LOG](../../lab/analysis/harvest/six_lead_cf_2026-08-17/LOG.md) | `18d68f9` 2026-08-17 | FAIL result on all four legs; "What this does NOT license" — no manifest, no `register_search open`, no Cap claim |
+
+**Amendment-first (sub-rules 8/10):** `rg` on `lab/CATALOG.md`, `docs/briefs/INDEX.md`,
+`docs/rejected_candidates.md` for `six-lead|P1-CF|P2-CF|limb.2.*increment` — one hit, the
+`lab/CATALOG.md` row for the CF's own working directory (no prior limb-2 ruling). Owner is this
+file.
+
+**Decision (binding): does not increment.** Two independent grounds, either sufficient alone:
+
+1. **Never "intake-class" by this ADR's own definition.** §2's decision text: a seed is "admitted
+   to the ratified axis inventory iff it (a) files the declaration manifest, (b) passes the
+   standing two-clause intake screen, and (c) receives operator ratification of its inventory
+   row." None of the three happened — no manifest was filed for either lead, no admission screen
+   was run against requirements 1–4 (mechanism/evidence path, cohort-cited δ/σ, K-bank, confirm-
+   power), no inventory row was ratified. The six-lead SOURCES_LOG says this explicitly ("None of
+   the 6 leads is an admitted Req-1a candidate"), and the plan's own P1-CF/P2-CF LOG repeats it
+   ("no manifest, no `register_search open`"). §4's falsifier is scoped to "externally-published
+   mechanisms **admitted through this intake**" — a construct that was never admitted cannot be an
+   intake-class closure, confirmed or killed.
+2. **Not the named kill class even if admission were waived.** Item (b) requires "a dated kill at
+   Stage-2 cost-law or Clause-N/power" — specific, named stages in this ADR's own campaign
+   machinery (D5/H-OD-1: a mechanism **confirmed in-sample** that died on net-of-cost economics
+   against a cohort-cited δ; H-TSMOM-1: a Clause-N power failure at declared N). P1-CF/P2-CF used
+   neither methodology — they are a self-contained Phase-0/Phase-1 cheap-falsifier construction
+   (this plan's own frozen design: session-boundary fade, 1.5×ATR stop, $0.91/side + 1-tick cost)
+   run directly against on-hand panels, never routed through Stage-0 declaration or the Clause-N/
+   cohort-δ formula at all. Three of the four legs are gross-negative outright (never reached
+   "confirmed, killed on cost"); the fourth is gross-positive-but-insignificant. Neither shape
+   matches the counted categories.
+
+**Policy reading (why this is not a loophole):** counting pre-admission screens against limb 2
+would invert the ADR's own stated purpose — §3's alternatives table names the intake's "kill dead
+seeds for ~zero cost... *before* scoping" as the reason a standing screen exists at all, and §6
+calls this "the cheap-death working as intended." A fundability-transfer falsifier that penalizes
+exactly the cheap pre-screening this ADR celebrates would be self-defeating. The falsifier exists
+to test whether **admitted, formally-scoped** mechanisms reproduce — not whether the sourcing
+funnel's own cheap-kill stage works (it visibly does: 3 of 4 legs died outright, at $0, before any
+manifest was filed).
+
+**What this does not do:** does not touch limb 1 (unedited); does not open a new channel or raise
+Cap; does not retroactively re-score D5/H-OD-1/H-TSMOM-1; does not bar a future formal admission
+attempt on any surviving fragment of these leads (none currently proposed — P1/P2 are dead as
+constructed per the plan's own asymmetric-by-declaration rule, P3–P5 are HOLD).
+
+**Cheap falsifier (before this ruling landed):**
+
+```
+grep -n "Running count (canonical): 0 / 2" docs/adr/2026-07-15-external-mechanism-harvest-intake.md
+# present pre-ruling at 73a77f7 — this ruling adds a table row and explanation, count unchanged
+```
 
 **Reachability while intake is idle — the compensating control (added 2026-08-16, no decision change):** post-mark, limb 2 can only increment on *new* intake-class constructs, and intake is parked — [`Q-INVENTORY-1`](../briefs/closures/Q-INVENTORY-1-closure-falsified.md) closed `FALSIFIED` 2026-07-17 (band empty; accept-idle recorded as the default). So 0/2 is expected to **stand** at 2026-11-08, not to move. That is not this limb going decorative, and the idle case is not unguarded: it is carried by **limb 1's own idle guard** in §4 above — "zero screen-PASS seeds beyond D5" by 2026-11-08 ⇒ name the intake idle — which this addendum leaves byte-unedited and which ranges over the same population as limb 2 (§Scope: "all externally-sourced strategy/anomaly seeds"; Gen-2 internally-mined candidates are out of scope for both). Division of labour: **the idle guard is the operative limb while nothing flows; limb 2 binds only once intake resumes and post-mark kills accumulate.** A standing 0/2 with the idle guard live is a covered state.
 
@@ -299,6 +364,7 @@ grep -n "Running count (canonical): 0 / 2" docs/adr/2026-07-15-external-mechanis
 | Date | Change | By |
 |---|---|---|
 | 2026-08-16 | Addendum: §4 verdict vocabulary gains a fourth branch covering an `AMBIGUOUS-HOLD` (or other non-decisive) closure among the first two intake-class seeds — previously uncovered by the RESOLVED/FALSIFIED/AMBIGUOUS trichotomy. Tightening/completeness only; §2 and the original three branches unmodified. | Joshua (direction, task start) + Claude Code (draft) |
+| 2026-08-17 | **Ruling: P1-CF/P2-CF (six-lead pursuit) does not increment limb 2.** Never admitted through the intake (no manifest, no `register_search open`, no ratified inventory row) and not the named Stage-2-cost-law/Clause-N kill classes even if admission were waived — a pre-admission cheap falsifier, not an intake-class campaign closure. Counting-machinery table gains a row; running count stays 0/2. No amendment to the machinery itself. | Joshua (direction: "rule the limb-2 counter question") + Claude Code (draft) |
 
 ---
 
