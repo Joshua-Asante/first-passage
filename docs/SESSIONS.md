@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-16f — DL-1 campaign prereg drafted (deep-lane §7 step 1); GO mark owed
+
+**Focus:** Operator: "Draft the first lane campaign prereg." Family election + freeze candidate, adversarially reviewed before it reaches the mark.
+
+**Shipped:** branch `claude/dry-funnel-election-packets` — [DL-1 prereg](briefs/pre-registration/2026-08-16-deep-lane-dl1-mgc-orc-prereg.md) (`OPEN — DRAFT`): NY-session opening-range continuation on gold, GC-parent train 2010–2019 / native-MGC confirm 2019–2026 (7.62y), K=10 frozen variants, strict-argmax nomination (no walk-down), pinned SPA (p≤0.10, stationary bootstrap B=10k seed 7), frozen scoring conventions (daily-P&L √252 Sharpe, 1 contract, $4.12 RT pin, adverse-first fills), conjuncts 1.170 floor / 0.959 power. 2-agent adversarial review applied pre-freeze: **10 blockers + 9 minors** — incl. a drifted route-1 quote whose elision was load-bearing, an unfrozen nomination fallback, and a **dedup miss the grep could not see** (CFD-era gold-ORB survey: "Closed for ORB: gold (long-beta + sub-cost)", placebo wrong-direction — now engaged as adverse prior §7.6). $0 · K=0 · nothing runs pre-mark.
+
+**Decisions/defects:** none ratified. Five operator items gathered for the GO mark (Verification block): bar-scope reading (5th-leg BINDING BAR — route 1 demoted to disclosure per the F1 precedent); pause residual broad reading; channel-origin/harvest-intake judgment; "Closed for ORB: gold" re-proposal question + survey-panel overlap disclosure; step-4 strike-mapping ratification.
+
+**Open / next:** operator GO mark on DL-1 (freezes the prereg; path lands on the charter count line; staged pulls fire). Charter §7 steps 2–4 (lane code flag, doc scoping, skill wiring) still owed. Carry: S3/S4 diagnostic-slate items untouched; queue #0 weekly token (deadline 08-21); blind channel paused 1/3; dense-1m U0 KEEP; MSL E1 HOLD.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-16e — Databento parent-era dry-run → deep-lane GO-1 fully discharged
 
 **Focus:** Operator: "Go on the Databento dry-run." Price bar-schema reachability for the design-box non-index triad before the first lane campaign prereg.
