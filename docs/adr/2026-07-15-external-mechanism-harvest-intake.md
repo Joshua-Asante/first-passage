@@ -280,6 +280,28 @@ grep -n "Running count (canonical): 0 / 2" docs/adr/2026-07-15-external-mechanis
 
 ---
 
+## Addendum 2026-08-16 — §4 verdict vocabulary gains a fourth branch (AMBIGUOUS-HOLD among the first two)
+
+**Status:** ratified via governance-holes closing pass (operator direction: "close the governance holes that hide the drought"), 2026-08-16. **Tightening/completeness only** — nothing in §4 is withdrawn or loosened; this addendum names a branch the original vocabulary left uncovered. No live-risk surface touched. $0 / K=0. Companion to [`2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md`](2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md) (the standing doctrine this addendum implements for this ADR specifically).
+
+### The gap this closes
+
+§4's verdict vocabulary as originally written is exhaustive only over three cases: **RESOLVED** (≥1 of the first two intake-class closures confirms OOS), **FALSIFIED** (both of the first two close FALSIFIED on their primary confirm clause), and **AMBIGUOUS** (zero intake-class campaigns close at all by 2026-11-08). A seed closing `AMBIGUOUS-HOLD` — or any disposition other than a confirmed RESOLVED or an outright FALSIFIED — among the first two is not RESOLVED (it didn't confirm), does not trip the revert trigger (it isn't literally "both FALSIFIED"), and is not the existing AMBIGUOUS branch (a closure *did* happen). No branch covers it. This is currently dormant only because D5 (RESOLVED) is the sole intake-class closure to date and no second seed has closed — but the gap is real and would silently swallow the next seed's result if it closed AMBIGUOUS-HOLD.
+
+### Ruling
+
+**Fourth branch, added to §4's verdict vocabulary:** if either or both of the first two intake-class closures resolve `AMBIGUOUS-HOLD` (or any disposition other than RESOLVED/FALSIFIED) — per the zero-yield definition in [`2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md`](2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md) §2 — the revert trigger does **not** fire, RESOLVED does **not** fire, and the seed slot is held open pending a decisive third closure within the same 2026-11-08 window. If neither slot resolves decisively (RESOLVED or FALSIFIED) by that date, the existing **AMBIGUOUS** branch applies ("no intake-class campaign closes" is read as "no intake-class campaign closes *decisively*").
+
+### What is unchanged
+
+§2's four admission requirements, the RESOLVED/FALSIFIED branches as originally written, the 2026-11-08 date, and the idle guard are all untouched. This addendum adds coverage only for the previously-uncovered case.
+
+| Date | Change | By |
+|---|---|---|
+| 2026-08-16 | Addendum: §4 verdict vocabulary gains a fourth branch covering an `AMBIGUOUS-HOLD` (or other non-decisive) closure among the first two intake-class seeds — previously uncovered by the RESOLVED/FALSIFIED/AMBIGUOUS trichotomy. Tightening/completeness only; §2 and the original three branches unmodified. | Joshua (direction, task start) + Claude Code (draft) |
+
+---
+
 ## Change history
 
 | Date | Change | By |

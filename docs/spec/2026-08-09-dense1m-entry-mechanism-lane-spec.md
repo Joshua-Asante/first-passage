@@ -17,6 +17,14 @@
 > answered by route — an unanswered bar blocks the G0 freeze.
 > Evidence + the $0 falsifier that surfaced both:
 > [`_cheap_falsifier_cost_geometry_2026-08-10_LOG.md`](../../lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_cost_geometry_2026-08-10_LOG.md).
+>
+> ⚠ **READER-INTERCEPT 2026-08-16 — step 6's lane stop-rule counted only literal `FALSIFIED`, and four
+> consecutive `AMBIGUOUS-HOLD` closures (CON-2 → CON-5, 2026-08-10 → 2026-08-12) ran through it uncounted.**
+> ✅ **RULED / REPAIRED 2026-08-16** — [`ADR`](../adr/2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md).
+> Step 6 below now reads **"3 consecutive FALSIFIED-or-zero-yield mechanisms"** (zero-yield =
+> `AMBIGUOUS-HOLD`/`VOID`/`NULL`/`SCREEN-FAIL`/`INTAKE-DRY`/`OPERATOR-STOPPED`/`ABORT`/capability-only
+> `RESOLVED`, per that ADR's §2). A close resets the streak only if it yields an admitted candidate.
+> Tightening only — the ≥3 threshold and the "never a 4th campaign by default" consequence are unchanged.
 
 Status: PROPOSED · 2026-08-09 · authorizes nothing ($0 · K=0) · depends: [TNEC-1](2026-08-08-tnec-1-tradeify-necessary-conditions.md) `RATIFIED` · Q-MNQSEL-2 `RESOLVED` · Q-MNQDTL-CON-1 `FALSIFIED` STOP
 Objective: iterate named entry mechanisms, one per campaign, on the dense-1m G=10 universe — the estate's only measured non-phantom headroom (oracle S3 ≈ 0.858 both arms vs the 0.40R inversion floor, inside the K-wall's 5–20 pt viable band) — until one clears TNEC N-EDGE+N-SHAPE or the lane stop-rule fires.
@@ -40,7 +48,7 @@ Steps:
 3. Freeze `PREREG_G0` (schema × window × catalogue ≤3 cells; `K_intrinsic` = catalogue size) + S6 `evaluate_admission` ADMIT (`lab/discovery/admission_schema.py`) in a commit **strictly earlier** than any score (Rule 8.7; sentinel PREREG scans watch this).
 4. **Operator explore GO** — cache reuse only (`_mnq_1m.parquet`, existing tbbo caches). Any new Databento pull needs its own cost dry-run + separate GO.
 5. Score EXPLORATION; close with the TNEC verdict string `N-ACT N-SURV N-EDGE N-SHAPE N-SIZE | bust | P(pass) | μ(disclosed)` + typed Iterate block. CONFIRM windows stay unread until a separate confirm GO.
-6. **Lane stop-rule:** 3 consecutive FALSIFIED mechanisms on this universe → a lane-review packet to the operator (SNAG discipline), never a 4th campaign by default.
+6. **Lane stop-rule (amended 2026-08-16, see reader-intercept above):** 3 consecutive FALSIFIED-or-zero-yield mechanisms on this universe → a lane-review packet to the operator (SNAG discipline), never a 4th campaign by default. A close resets the streak only if it yields an admitted candidate.
 
 Gate: RESOLVED if a campaign emits ≥1 candidate clearing N-EDGE + N-SHAPE at pre-registered explore→confirm discipline (routes to operator GO; admits and arms nothing). FALSIFIED per-campaign as each PREREG pre-registers; the lane itself carries **no calendar clock** — 2026-11-08 belongs to [four-firms §4](../adr/2026-07-12-prop-portfolio-four-friendly-firms.md) alone.
 Boundary: no retune of G / lookback / θ-window and **no sign-invert** (CON-1 STOP; own-instrument momentum → C5/D5-RECOST-1) · no C1–C11 reopen without new *mechanism* evidence · MNQDTL D1/D2/μ are recorded preferences, never gates · no deploy, no Pine, no arming, no `LEG_MAP` claim.
