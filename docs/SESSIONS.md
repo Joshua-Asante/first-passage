@@ -23,6 +23,37 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Decisions/defects:** Recon caught real defects pre-ship: C3-K2 "does not bind" language demoted to obiter (cleared its bar via SLR route, never needed temporal selectivity); a fabricated §-citation; my own drafted 1b(iv) class-FAIL claim contradicting H-TSMOM-1's scored 1b PASS (repaired to flagged-open-question before commit). ADR amended at replay: authoring worktree predated U0 KEEP + DL-1 attestation — read-set gap named in §0, D2 sharpened (as first drafted it would have demanded a falsifier from DL-1-class cards, contradicting DL-1's own GO). Koijen/Carry rank-1 citation traversal dispatched (result pending at entry time). Blind-channel next-candidate work **deliberately deferred** — worst EV on the board (non-index cost wall ≈27bp+/event for a mechanism-free construct; channel's own recorded expectation is AMBIGUOUS-HOLD at 11-08); forcing a second candidate risks a strike without advancing anything.
 
 **Open / next:** (1) **MSL-S2B successor's D2 falsifier** — spec frozen in the ADR, needs `MYM_M15.csv` (absent in worktree; primary checkout or W4-gated pull). (2) DL-1 train engine + scoring (unchanged from 16g — untouched here). (3) Koijen axis-2 traversal DISCHARGED same session — `BLOCKED-AT-SOURCE` (S2 has no record for the *Carry* DOI; 404 + OpenAlex 299 both independently re-verified), recorded in CANDIDATE_ROWS with the operator fork (OpenAlex substitute = different instrument, or leave blocked) left open. Carry: queue #0 weekly token (deadline **2026-08-21**); blind channel paused 1/3; dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
+## 2026-08-16h — DL-1 train scoring executed; campaign ABANDONED
+
+**Focus:** Operator: "run the train scoring now." §6 step 2: score the 10 frozen variants on
+TRAIN under the frozen conventions, apply the nomination gates.
+
+**Shipped:** branch `claude/dl1-train-scoring-abandonment` (off `origin/main` — see
+Decisions/defects) — [train-scoring engine](../lab/analysis/deep_lane/dl1_mgc_orc_2026-08-16/)
+(stitch + fill engine + 10-variant scorer, wired to the repo's vetted SPA primitive
+`research_utils.universe_gate.run_spa`), adversarially verified (5-agent workflow against the
+frozen prereg text) before touching real data. All 10 variants net-negative on GC.FUT TRAIN
+(2010–2019, 2,168 CME sessions); nominee V7 (argmax, no fallback) failed gates 2a/2b/2d.
+[charter](adr/2026-08-16-deep-iteration-lane-charter.md) count line + change history updated
+(abandoned 1, consecutive 1/2, active campaign none) · STATE decision-index line.
+
+**Decisions/defects:** ABANDONMENT, not STRIKE — confirm partition (MGC.FUT) never read (prereg
+§5, gate 3 never reached). Two real implementation bugs caught by testing + the adversarial pass
+before the real run corrupted anything: an entry-scan/OR-window boundary off-by-one (dropped one
+bar/day/variant), and a daily-P&L calendar that zero-filled over spurious Globex Sunday-reopen
+dates (~16% inflation vs the √252 annualization). Both fixed, re-validated on real data, then the
+full 9-year run executed. Separately, discovered this worktree's original branch
+(`claude/dl1-train-engine-scoring-b9060d`) — and ~90 other local branches, including local
+`main` — sit on a commit graph with **zero shared history** with the live `origin/main` (root
+`880f025` vs `027a729`, no common ancestor); only 5 local branches (incl.
+`claude/dry-funnel-election-packets`) were actually on the live lineage. Recorded here as
+found; broader remediation flagged as a separate task, not attempted in this session.
+
+**Open / next:** No active deep-lane campaign. Charter §7 steps 2–4 (lane code flag, doc
+scoping, skill wiring) still owed. A second consecutive abandonment would trigger the §4(c)
+audit-report duty. Local-main/origin-main disconnect (above) needs a repo-hygiene pass. Carry:
+S3/S4 diagnostic-slate items untouched; queue #0 weekly token; blind channel paused 1/3;
+dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
 
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 

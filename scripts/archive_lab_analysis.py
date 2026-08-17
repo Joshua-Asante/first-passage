@@ -162,6 +162,7 @@ THEME_ORDER: tuple[str, ...] = (
     "harvest",
     "mc",
     "legacy",
+    "deep_lane",
     "_inbox",
 )
 THEMES: frozenset[str] = frozenset(THEME_ORDER)

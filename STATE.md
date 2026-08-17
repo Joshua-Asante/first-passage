@@ -61,6 +61,14 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-16** — **DL-1 ABANDONED (train scoring executed).** §6 steps 1–2 run: 10 frozen
+  variants scored on GC.FUT TRAIN (2010–2019, 2,168 CME sessions). Nominee V7 (argmax train net
+  annSR, no fallback) failed gates 2a/2b/2d — net annSR −0.42 (not >0); SPA consistent p=0.94 vs
+  the ≤0.10 bar; M-16 +1-tick slip annSR −0.66. Gate 2c (cadence) passed. All 10 variants
+  net-negative on TRAIN. Confirm partition (MGC.FUT) never read, per prereg §5. Charter counters:
+  abandoned 1 (consecutive 1/2), active campaign none. $0/K=0 — no new pulls, K already declared
+  at freeze. [`charter`](docs/adr/2026-08-16-deep-iteration-lane-charter.md) ·
+  [`results`](lab/analysis/deep_lane/dl1_mgc_orc_2026-08-16/train_results.json)
 - **2026-08-16** — **CON-5 pause scope ruled: dense-1m route-scoped, with a $0 cheap-falsifier gate for out-of-lane route-① reliance (operator election, third of three options).** Resolves MSL-S2B's internal inconsistency (same "dense-1m" qualifier read two ways in adjacent BINDING-BAR rows); harmonizes with — supersedes nothing of — the DL-1 GO's per-campaign pause adjudication and U0 KEEP (pause itself stands; nothing unpaused; S2B verdict untouched). Falsifier spec frozen, unexecuted (`MYM_M15.csv` absent in authoring worktree). $0/K=0. [`ADR`](docs/adr/2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md)
 - **2026-08-16** — **Weekly venue-idle token trade: recurrence ruled — fresh-decision-per-week is the
   standing, closed design, not an open gap (operator election, closes S4's 5th governance hole).**
