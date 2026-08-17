@@ -39,6 +39,18 @@ gates:
       - scripts/check_data_manifests.py
       - --check
 
+  # WARN-tier / report-only (exits 0 regardless of findings — see the script's
+  # own docstring). data-conditional per PR #716's proposed tier: docs/pursuits/
+  # changes are rare enough that "runs only when staged" beats path-conditional's
+  # unconditional inclusion in `make check`; do not use tier: soft (dead, no caller — see header).
+  - id: pursuit-records
+    tier: data-conditional
+    when:
+      staged_regex: '^docs/pursuits/'
+    cmd:
+      - python
+      - scripts/check_pursuit_records.py
+
   - id: pine-manifest
     tier: always
     cmd:
