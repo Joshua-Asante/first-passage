@@ -136,12 +136,12 @@ At expiry, PARK → SUBTRACT absent explicit renewal (ADR §2.3).
 | Row | Disposition | Test applied (from the permitted set) / rule cited |
 |---|---|---|
 | a1–a6 | **KEEP** (×6) | Serves a stated Aim (A1–A4) with live falsifier/review dates; entry records backfilled at Phase 4 |
-| b1 Aegis→6J | **PARK**(re-entry: F3 registers a successor venue OR a 6J seat opens in book composition; expiry 2026-11-08) | No current venue route; idle 11 days; re-entry is a named external event |
+| b1 Aegis→6J | **PARK**(re-entry: F3 registers a successor venue OR a 6J seat opens in book composition; expiry 2026-11-08) — ⚠ *F3 clause corrected 2026-08-16 in the ratified pursuit record: S1's "no successor migration now" ruling (2026-08-07) made it unreachable as an equal-weight route; the 6J-seat OR-fallback is the one actually open. See [`b1 record`](../pursuits/b1-aegis-6j-transfer-lane.md).* | No current venue route; idle 11 days; re-entry is a named external event |
 | b2 Striker-MYM recon | **PARK**(re-entry: candidate clears its own lane gates AND a venue seat exists; expiry 2026-11-08) | Same class as b1 |
 | b3 ORB-MNQ line | **PARK**(re-entry: new payability/cost-geometry evidence at an admissible venue; expiry 2026-11-08) | Park exists but lacks both required fields — backfill per ADR §2.3 |
 | b4 Q-USOIL-1 | **SUBTRACT** (+ archive `usoil_regime_capture` per CATALOG stub convention) | **Expired PARK with no renewal case** (08-08 revisit lapsed unruled); note: not an oil-exposure bar — the live route is the MCL instrument-lane intake |
 | b5 Q-FUNDPOL-1 | **PARK**(re-entry: F3 successor venue registered → fresh derivation, per its own note; expiry 2026-11-08) | Dormant row lacks fields; re-entry already named by the thread itself |
-| b6 Q-NAS-ECR-1 | **PARK**(re-entry: F3 successor venue with live fills on a NAS100/MNQ-shaped leg; expiry 2026-11-08) | Same; discharge route currently nonexistent by dated record |
+| b6 Q-NAS-ECR-1 | **PARK**(re-entry: F3 successor venue with live fills on a NAS100/MNQ-shaped leg; expiry 2026-11-08) — ⚠ *corrected 2026-08-16 in the ratified pursuit record: the incumbent Tradeify eval's `MYM1!`/`MNQ1!` occupancy release (2026-08-12) is the currently-open route, not F3 alone. See [`b6 record`](../pursuits/b6-q-nas-ecr-1.md).* | Same; discharge route currently nonexistent by dated record |
 | b7 ICT line | **PARK**(re-entry: operator affirms Q-ICTEXP-1 §9 K-freeness → run the $0 one-way falsifier; expiry 2026-11-08 → converts SUBTRACT) | Bounded, dated, $0 re-entry — see attestation above |
 | c1 Q-XMEM-1 | **PARK**(re-entry: a dated cross-surface-memory failure incident; expiry 2026-11-08) | Outside current Survive bounds (hours): frozen 3+ weeks with T0 unstarted |
 | c2 Q-SIGID-1 | **KEEP** (review 2026-11-08) | Serves A3; its stranding is actively resolving via the S2b build |

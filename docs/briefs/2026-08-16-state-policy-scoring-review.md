@@ -69,7 +69,7 @@ The stamped ground no longer holds for the eval-as-environment: S1 (2026-08-07) 
 - [Q-FUNNEL-1 closure](closures/Q-FUNNEL-1-closure-resolved.md) — *attempt-level* policies scored (no_retry vs retry_to_cap), CLOSED-RESOLVED 2026-07-22; its §7 cushion-proportional day-policy layer explicitly "not opened."
 - FXIFY-era C2 sweep ([`core/dd_protection.py`](../../core/dd_protection.py) header) — the DD_TRIGGER→0.40× rule adopted by MC on *static-DD* geometry; not the trailing-DD eval.
 - [Q-FUNDPOL-1](Q-FUNDPOL-1-funded-phase-policy-inheritance.md) — the funded-phase §7 fork; frozen, never run, PARKed (b5).
-- [Two-barrier first-passage track](../methodology/two_barrier_first_passage_track.md) — chartered 2026-08-13, Session 1 unstarted; constant-policy theory.
+- Two-barrier first-passage track (chartered 2026-08-13, Session 1 unstarted; constant-policy theory) — **deleted 2026-08-16** (governance-holes pass): failed retention R1–R5, zero consumers, motivating candidate (MSL-C1) already FALSIFIED without it. Retrievable via `git log --follow -- docs/methodology/two_barrier_first_passage_track.md`.
 - [Eval-sprint lane derivation](../notes/notice/N-2026-08-13-eval-sprint-lane-derivation.md) — the *declined* eval-sprint lane (2026-08-13); distinct from this packet, see §5.
 
 ---
