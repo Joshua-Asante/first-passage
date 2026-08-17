@@ -641,9 +641,10 @@ declared MOOT.
 vs reject-churn), not scoped only to this specific book — a future composed book (a successor
 venue under fork F3, or a new MSL-sourced candidate composed against an existing leg) could
 re-raise the identical tension. This matches the five-thread stranded-pending-F3 pattern already
-tracked at `STATE.md`'s "No fixed date / gated" section: "not closed, not discharged, and not
-re-datable until fork F3 registers a successor venue." D3 is recorded here rather than duplicated
-onto that board — its home is this brief, its trigger is the same F3 event.
+tracked at `STATE.md`'s "No fixed date / gated" section — those threads are recorded as "not
+closed, not discharged, and not re-homed to a successor venue — F3 was no-migration (S1)." D3 is
+recorded here rather than duplicated onto that board — its home is this brief, its trigger is the
+same F3 event.
 
 **Re-entry bar:** fork F3 registers a successor venue (or an existing leg re-enters a live book)
 **and** a new composed-book candidate reaches this brief's D1-shaped gate. At that point D3

@@ -12,8 +12,10 @@
 [`rail GO`](../adr/2026-07-17-c1-rail-build-account-registration-go.md) ·
 [`M1`](../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)
 
-**Open residual:** weekly-recurrence obligation still UNRULED (STATE queue row 0) — stays with the
-rail owner, not this pursuit record.
+**Open residual — CLOSED 2026-08-16:** weekly-recurrence was UNRULED; ruled fresh-decision-per-week
+is the standing design (STATE.md decision index, 2026-08-16). The weekly obligation itself is
+unchanged — still owned here, still tracked at `STATE.md` §Scheduled forward triggers → *Weekly —
+recurring*.
 
 ⚠ **Corrected 2026-08-09 — "R8" was a misnomer and this record propagated it.** R8 was a
 *Bulenox-scoped* hygiene track, **closed 2026-07-10** (R6 NO-GO ADR §2), whose six items never

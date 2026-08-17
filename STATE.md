@@ -49,7 +49,6 @@ BEHIND this list.** Items leave when done; it stays ≤5 so it cannot decay into
 
 | # | Item | Owner artifact | Blocks |
 |---|---|---|---|
-| 0 | ⏳ **Activity-week coverage — RECURRENCE UNRULED.** No standing weekly licence (compliance limb 5 = one named week; S1 only constrains *who* may place). Each further week = fresh operator decision. **Operator-placed at venue — not the rail** (no agent). Idle-clock observer booked under §Scheduled forward triggers → *Weekly — recurring* (radar reads it). Detail / "R8" misnomer correction stay with owners | `compliance §2a` · [`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md) · `idle-clock spec` · [audit FU-1](docs/notes/audits/programme-audit/2026-08-05-post-descope-claim-alignment-audit.md) | keeps the account alive; unrecoverable if missed |
 | 1 | **F1 — how §4 reads a Tradeify-resting discharge** (2026-11-08). Eval is live ([`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md)); locked Striker book barred. §4 still scores the frozen $100K×4 set with Tradeify in it. Ruling owed: whether a discharge resting *on Tradeify* (or the withdrawn Striker book) discharges the four-firms program. **Deciding it early would pre-empt §4** | [`ADR 2026-08-04`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) §7 F1 · [four-firms §4](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) | 2026-11-08 §4 verdict reading |
 | 2 | **B7-REFIRE Stage 1 + M1** — both wait on an acceptable strategy on the ruled (Python-native) host. Eval live; no book deployed | [`GO ADR Addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`S2`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) · [`M1`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) | live-signal / arming path |
 
@@ -62,6 +61,20 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-16** — **Weekly venue-idle token trade: recurrence ruled — fresh-decision-per-week is the
+  standing, closed design, not an open gap (operator election, closes S4's 5th governance hole).**
+  The 2026-08-05 one-week exception was deliberately scoped to spend the book-composition brief's
+  §5(5) forbidden-move override *once*, not to establish a standing licence — ratifying it as
+  standing now would be a bigger, different decision than the one actually taken. What closes here
+  is narrower: the *policy question itself* ("must recurrence be re-elected every week, or is that
+  an unresolved gap") is answered **yes, re-election every week is correct and intended**, matching
+  lived practice (3+ consecutive weeks covered without incident). The weekly operator-placed trade
+  obligation itself is unchanged — still real, still unrecoverable if missed, still **no agent may
+  place it** ([`CLAUDE.md`](CLAUDE.md) §Live-execution posture) — only the open-queue framing around
+  it is discharged. Queue row 0 deleted (retention test: the policy question is now closed, not
+  "open or still owed"). $0/K=0, no live-risk surface (a compliance-only idle-clock trade, not
+  `dry_run`/M1 arming). [`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md) ·
+  [`ADR 2026-06-30`](docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md) (stands, untouched)
 - **2026-08-16** — **DL-1 prereg `FROZEN` (operator GO).** First deep-lane campaign live: gold ORC, GC-train 2010–2019 / MGC-confirm 2019–2026, K=10, strict-argmax nomination, confirm read once. GO adjudicated the five gathered items (bar-scope · pause reach · channel-origin · gold-ORB clearance · step-4 mapping). §6 step-1 pulls fired ($0, cache-tagged); train scoring = next session. [`prereg`](docs/briefs/pre-registration/2026-08-16-deep-lane-dl1-mgc-orc-prereg.md) · [`charter`](docs/adr/2026-08-16-deep-iteration-lane-charter.md)
 - **2026-08-16** — **Databento parent-era cost dry-run executed; deep-lane GO-1 fully discharged.** Bar schemas (1d/1h/1m) on the design-box triad (GC/CL/6A train, MGC/MCL/M6A confirm) all $0.0000 both windows; tbbo priced for contrast ($2,209.69 train / $274.89 confirm) to show where the real cost gate sits. §7 step 1 (first campaign prereg, K≈10) is now the only remaining gate. $0/K=0. [`charter addendum`](docs/adr/2026-08-16-deep-iteration-lane-charter.md)
 - **2026-08-16** — **Deep-iteration lane charter `Accepted` (operator "P2 + GO", overriding its own HOLD default eyes-open).** New candidate-producing channel: one family/campaign, three binding K conjuncts, untouched confirm, 2-campaign falsification budget. GO-1: first prereg after Q-POLFRONT-1 + Databento dry-run; GO-2: first campaign K≈10. No Cap change; N-SURV unedited. $0/K=0. [`charter`](docs/adr/2026-08-16-deep-iteration-lane-charter.md)
@@ -186,7 +199,9 @@ deleted (not struck).
 ### Weekly — recurring (rolling; next deadline **2026-08-21**, bucket 08-17→08-21)
 
 > Prior week 08-10→08-14 satisfied (operator-placed 2026-08-12). New week unpaid. Row stays
-> live — roll this date forward each Monday.
+> live — roll this date forward each Monday. **Recurrence ruled 2026-08-16** (decision index,
+> above): re-electing coverage every week is the standing design, not an open question — this
+> row's own weekly cadence is that design in practice, not a symptom of anything unresolved.
 
 - **Venue idle-clock — ≥1 operator-placed trade per Mon–Fri week on the live account (identifier
   redacted from the public tree).**
