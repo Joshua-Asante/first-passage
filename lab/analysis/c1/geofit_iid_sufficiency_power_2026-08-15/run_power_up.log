@@ -1,0 +1,14 @@
+[power-up] c1 panel 2020-01-06->2026-06-30 n_bdays=1692
+[power-up] real_active n=350, real_bust=4.7433%
+[power-up] running 45 new empirical_shuffle realizations (seeds 20260815000-20260815044), pooling with the original 5
+[Parallel(n_jobs=7)]: Using backend LokyBackend with 7 concurrent workers.
+[Parallel(n_jobs=7)]: Done   4 tasks      | elapsed:  4.6min
+[Parallel(n_jobs=7)]: Done  11 tasks      | elapsed:  8.4min
+[Parallel(n_jobs=7)]: Done  18 tasks      | elapsed: 12.1min
+[Parallel(n_jobs=7)]: Done  27 tasks      | elapsed: 16.3min
+[Parallel(n_jobs=7)]: Done  37 out of  45 | elapsed: 24.5min remaining:  5.3min
+[Parallel(n_jobs=7)]: Done  42 out of  45 | elapsed: 24.7min remaining:  1.8min
+[Parallel(n_jobs=7)]: Done  45 out of  45 | elapsed: 27.1min finished
+[power-up] new-45 mean=4.8810% sd=0.6643%
+[written] C:\Users\joshu\multi_firm_operations\.claude\worktrees\tradeify-strategy-research-968948\lab\analysis\c1\geofit_iid_sufficiency_power_2026-08-15\power_up_new45.json
+[power-up] NEXT: pool with the original 5 (see README.md) for the N=50 combined verdict.

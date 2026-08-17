@@ -1,9 +1,19 @@
 # Methodology: Observation routing — three-bucket gate
 
 **Date established:** 2026-04-25
-**Status:** Active. Replaces the prior Notice / Inquire two-phase framework.
-**Scope:** Every market observation, bar-data finding, anomaly, or "interesting
-thing" that surfaces between locked decision points.
+**Status:** ⚠ **Superseded-in-practice for its own stated scope, 2026-08-15** — [`ADR: notice-log-is-live-observation-routing-convention`](../adr/2026-08-15-notice-log-is-the-live-observation-routing-convention.md).
+The "Replaces the prior Notice / Inquire two-phase framework" claim below did not hold for **narrative observations**
+(the scope line just below): `docs/notes/notice/N-YYYY-MM-DD-slug.md` (per
+[`brief-authoring:notice_log.md`](../../.claude/skills/brief-authoring/references/notice_log.md)) has been the estate's
+continuous, sole practice for that class since before this doc's own creation date, with zero gap through today. The
+three-bucket Closed/Action/Forward classification below saw real but partial, now-dormant adoption as a supplementary tag
+inside 4 of 20 real notices (2026-06-20 to 2026-07-26 only) — it is not deleted, but it is not the governing convention for
+narrative findings either. **One real exception:** `scripts/verify_lock_anchors.py` (`/lock-check`) is a genuinely live,
+currently-correct Closed/Forward/Error gate — but it checks one mechanical fact (Guardian's risk% inside its safe band), not
+a narrative "interesting thing," so it does not evidence the blanket claim below. Read the ADR before citing this doc as
+current doctrine elsewhere.
+**Scope (as originally written; superseded for narrative findings, per above):** Every market observation, bar-data finding,
+anomaly, or "interesting thing" that surfaces between locked decision points.
 
 ## Why
 

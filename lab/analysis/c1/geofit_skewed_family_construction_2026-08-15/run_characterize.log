@@ -1,0 +1,16 @@
+[characterize] c1 panel 2020-01-06->2026-06-30 n_bdays=1692
+[characterize] fit: {"n_active": 350, "p_win": 0.4286, "win_mean": 463.0821, "win_sd": 772.5264, "win_max": 4971.8812, "loss_mean": -123.8121, "loss_sd": 129.0607, "loss_min": -744.4143, "k_win": 0.3593, "k_loss": 0.9203}
+[characterize] running 50 realizations (seeds 20260815100-20260815149)
+[Parallel(n_jobs=7)]: Using backend LokyBackend with 7 concurrent workers.
+[Parallel(n_jobs=7)]: Done   4 tasks      | elapsed:  4.2min
+[Parallel(n_jobs=7)]: Done  11 tasks      | elapsed:  8.3min
+[Parallel(n_jobs=7)]: Done  18 tasks      | elapsed: 13.5min
+[Parallel(n_jobs=7)]: Done  27 tasks      | elapsed: 20.2min
+[Parallel(n_jobs=7)]: Done  36 tasks      | elapsed: 29.2min
+[Parallel(n_jobs=7)]: Done  43 out of  50 | elapsed: 33.9min remaining:  5.5min
+[Parallel(n_jobs=7)]: Done  50 out of  50 | elapsed: 37.7min finished
+[characterize] bust mean=7.4637% sd=7.0689% min=0.6800% max=36.5267%
+[characterize] percentiles: p10=1.6457% p25=2.2708% p50=5.5733% p75=10.2725% p90=14.1253%
+[characterize] realized skew mean=4.245 (real book: +3.633)
+[characterize] realized max-win-per-realization mean=4990 (real observed max: 4972)
+[written] C:\Users\joshu\multi_firm_operations\.claude\worktrees\tradeify-strategy-research-968948\lab\analysis\c1\geofit_skewed_family_construction_2026-08-15\characterize.json

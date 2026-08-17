@@ -37,7 +37,7 @@ One or two sentences: what done looks like and how it will be verified. Name the
 4. **Read narrow, never re-read.** Search to locate, then read the section.
 5. **Time-box mechanically.** One round of lookups plus one follow-up covers most tasks; a third needs a stated reason; two consecutive lookups that told you nothing new → stop.
 6. **Establish intent before changing behavior.** A failing check has two possible culprits: the code or the check. Find the statement of intended behavior (ADR, LOCK.md, docstring, spec) and confirm code, check, and spec agree. Any two disagreeing is a surprise: surface it, say which side you trust and why, never silently make one side match another.
-7. **Surprises route the loop.** Anything contradicting your expectation is your most important finding — state it. If it changes what done means, update Step 1; if it changes what is being asked, return to Step 0; otherwise report and continue. (Question-shaped surprises route per `docs/methodology/observation_routing.md`: Closed / Action / Forward.)
+7. **Surprises route the loop.** Anything contradicting your expectation is your most important finding — state it. If it changes what done means, update Step 1; if it changes what is being asked, return to Step 0; otherwise report and continue. (Question-shaped surprises worth recording as a standalone finding route via the Notice-log convention — `docs/notes/notice/N-YYYY-MM-DD-slug.md`, per [`brief-authoring:notice_log.md`](../brief-authoring/references/notice_log.md); `observation_routing.md`'s Closed/Action/Forward did not displace it in practice, see [`ADR 2026-08-15`](../../../docs/adr/2026-08-15-notice-log-is-the-live-observation-routing-convention.md).)
 
 ## Step 3 — Decide and commit
 
