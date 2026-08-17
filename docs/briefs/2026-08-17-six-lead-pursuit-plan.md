@@ -136,6 +136,28 @@ panel bytes, which **this worktree does not have** (§0 confirmed). The primary 
 these panels live per the original plan text ("on hand"). This is a logistics fork, not a design
 question — raised to the operator alongside this mark, not resolved unilaterally.
 
+### P1-CF / P2-CF EXECUTED 2026-08-17 — FAIL, all four legs
+
+Operator chose to switch to the primary checkout for execution. `core/data/bar_data/MGC_M15.csv`
+(frozen, 2022-08-01→2026-08-12, 95,262 bars) and `6J_M15.csv` (frozen, through 2026-07-01, 161,752
+bars) were already on hand there — an operator-supplied fresh MGC export
+(`BAR_EXPORT_v0.2_COMEX_MINI_MGC1!_2026-08-17_05851.csv`) turned out not to be needed for this run
+(landed anyway, available for a future `MGC_M15.csv` refresh).
+
+**Result: FAIL on all four legs** (P1×MGC, P1×6J, P2×MGC, P2×6J) — three gross-negative outright;
+the fourth (P1×6J) gross-positive but t=0.64 (not significant) and 0.73× the 4× cost hurdle (below
+it). Stop-trigger rate 3.3–4.7% across all legs rules out the hard-stop as the driver; the
+long/short split shows each instrument's own trend swamping the fade, not a construction defect.
+Full writeup: [`six_lead_cf_2026-08-17/LOG.md`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/LOG.md).
+Landed on 3 of the plan's 4 required surfaces: dated LOG ✓ ·
+[CANDIDATE_ROWS addendum](../../lab/analysis/harvest/radar_tier_a_burst_2026-07/CANDIDATE_ROWS.md#addendum-2026-08-17b--l3l6-resolved-same-paper-not-two-leads-p1p2-cheap-falsifiers-fail-all-four-legs) ✓
+· STATE line (pending, this commit) · registry row — **not added**, pre-G0 CF kills don't get a
+`rejected_candidates.md` row per the 2026-08-15 pre-G0-kills-are-not-§4-strikes precedent (matches
+`MNQ-ANALOGUE-1`/`MNQ-SIZEDIV-1`'s own pattern).
+
+**The harvest §4 limb-2 counter question remains unmarked** — this FAIL is exactly the case §13
+flagged it would govern. $0/K=0 throughout — panels on hand, no pull.
+
 ## §5 Phase 2 — Priced extension + intake staging for survivors (recorded; not started)
 
 Databento dry-runs → operator spend GO ($700 ceiling) → sharpened Req-1a scoring (four-clause
