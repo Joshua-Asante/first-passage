@@ -61,6 +61,16 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-17** — **Koijen axis-2 (Carry, JFE 2018) fork resolved: OpenAlex substitute executed →
+  6 distinct screen-level leads, not "0 survivors" like axis-1.** Operator elected the
+  OpenAlex-substitute branch of the 2026-08-16 fork (S2 has no record of the paper). 296 citing
+  works → 234 keyword-shortlisted → 230 screened (7-agent workflow) → 17 flagged → **7 records / 6
+  distinct papers** survived adversarial verify — concentrated in overnight/closure-reversal and
+  hedging-flow mechanisms, not carry/trend-following. **None is an admitted Req-1a candidate** —
+  every lead carries a named unresolved question (real-time WHO-variable reconstructibility;
+  cost/spread survival, this program's dominant null mode). $0/K=0, no register_search, no Cap
+  claim. [`SOURCES_LOG`](lab/analysis/harvest/koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md) ·
+  [`CANDIDATE_ROWS addendum`](lab/analysis/harvest/radar_tier_a_burst_2026-07/CANDIDATE_ROWS.md)
 - **2026-08-17** — **MSL-S2B successor's CON-5 D2 falsifier executed → `D2_FAIL`; route B closes for
   this construct-shape at $0.** `sweep-failure-filtered-continuation` × MYM 15m, IS panel only
   (CONFIRM untouched): mean signed gross **−1.00 pt** across 850 signals (WR 25.41% ≈ the box's own

@@ -14,6 +14,42 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-17b — Koijen axis-2 (Carry) fork resolved: OpenAlex substitute → 6 screen-level leads
+
+**Focus:** Operator: "Take the Koijen axis-2 fork to me for a decision" (surfaced from the S3
+progress audit earlier this session), then "admit OpenAlex substitute" once presented the fork as
+recorded 2026-08-16 (`BLOCKED-AT-SOURCE`, S2 has no record of the seed paper).
+
+**Shipped:** Full OpenAlex citation pull (296 citing works of Koijen et al. 2018 *Carry*) →
+disclosed keyword/topic pre-filter (234 shortlisted) → 25-agent Workflow (7 parallel screen
+batches → adversarial verify on 17 flags → synthesis) → **7 records / 6 distinct papers survived**,
+concentrated in overnight-closure-reversal and dealer/fund hedging-flow mechanisms — a materially
+different result from sibling axis-1 (TSMOM), which ran to full depth on S2 and found 0. Recorded:
+[`SOURCES_LOG`](../lab/analysis/harvest/koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md) ·
+[`CANDIDATE_ROWS addendum`](../lab/analysis/harvest/radar_tier_a_burst_2026-07/CANDIDATE_ROWS.md).
+$0 · K=0 — screen only, no pull, no register_search, no Cap claim.
+
+**Decisions/defects:** None of the 6 leads is an admitted Req-1a candidate — every one carries a
+named, unresolved, load-bearing question (most commonly: is the WHO's driving variable
+reconstructible in real time, and does the edge survive this venue's cost/spread reality, the
+dominant null mode for prior real-mechanism candidates here). Two of the 7 flagged records are
+duplicate OpenAlex entries for one paper (Da/Tang/Tao/Yang, *Mgmt Sci* 2023); two others (Della
+Corte & Kosowski, overlapping authors across two overnight-reversal titles) may be one research
+program presented as two leads — flagged explicitly rather than silently double-counted, not yet
+resolved. 10 of the original 17 screen-stage flags reverted to REJECT under adversarial re-check
+(disguised carry/momentum variants once abstracts were read; a COT-lag data-access wall; one
+hedging-compliance-framing kill; a wrong-instrument-class correction).
+
+**Open / next:** Staging any of the 6 leads for a real Req-1a Path 1a/1b pass is a fresh operator
+decision, not licensed by this record — none attempted here. If pursued, resolving the Della
+Corte/Kosowski overlap (read both papers directly) should come before staging either as
+independent. Not touched: whether this changes the broader MSL WHO-track disposition (still framed
+as dry pending any of these actually clearing Req-1a). Carry: queue #0 weekly token (deadline
+**2026-08-21**); S2 deep-iteration lane 1/2 abandonment budget spent; four-firms §4 2026-11-08.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-17a — MSL-S2B successor's CON-5 D2 falsifier executed: `D2_FAIL`
 
 **Focus:** Operator: "run the S3 falsifier gate once MYM_M15.csv is available." Panel had become
