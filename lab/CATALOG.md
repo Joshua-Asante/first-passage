@@ -155,6 +155,7 @@ documents the camp boundary for humans/tools.
 
 | slug | theme | status | one-liner | body | heavy |
 |---|---|---|---|---|---|
+| dstruct_mnq_2026-08 | _inbox | ACTIVE | NULL: daily close-vs-EMA20 bias carries nothing at daily granularity (Tier-1 screen, 3 of 4 limbs failed; K=1 disclosed) | lab/analysis/_inbox/dstruct_mnq_2026-08/ | — |
 | ict_mnq_2026-08 | _inbox | ACTIVE | ICT cascade re-run on NQ/MNQ at $0/K=0/Cap seat unspent: W and D confirm on independent instruments, pools falsified ... | lab/analysis/_inbox/ict_mnq_2026-08/ | — |
 
 ## Archived
