@@ -167,3 +167,138 @@ verdict; signed per-lag median-dev table; band summary (mean, sd, pct[2.5,5,50,9
 iterations, seeds); both one-sided p's + real percentile; per-year conditional table +
 calm/crisis read; surrogate bands of bias=1 share and unconditional P(y=1) bracketing the real
 values; AR(1) size-check citation.
+
+---
+
+# ADDENDUM-1 — 2026-08-18, pre-official (append-only; no frozen line above is edited)
+
+**Provenance:** pilot run on sanctioned verification seeds surfaced a spec-internal conflict;
+4-lens pre-official verification (workflow `wf_e06ebc90-c3e`: implementation-fidelity,
+independent bit-exact reimplementation, freeze-integrity adjudication, statistical sanity) +
+synthesis ruled **FIX-THEN-RUN** with the fork adjudicated **rules-govern**. This addendum
+lands with the official seed block `[20260818, X_code, 0..999]` still undrawn (attested by
+every lens; all draws to date used verification spawn-keys). Amending before the official run
+is the one window where this is clean, per this spec's own header rule.
+
+**A1 — The conflict, verbatim.** §2 L4 rule: *"by-year floor: conditional rate > 0.50 in
+≥ N_valid−2 of N_valid years (years with n_cond<20 excluded; N_valid ≥7 else AMBIGUOUS)"*.
+§3 prediction: *"S1b re-scores NULL (L4 known-fail: 6 of 9 years > 0.50)"*. Applied to actual
+per-year n_cond (CL: 2010=14, 2011=55, 2012=42, 2013=42, 2014=66, 2015=37, 2016=51, 2017=47,
+2018=71 — independently re-derived from the raw parquet by two lenses), the rule excludes 2010
+(a failing year, rate 0.4286) → N_valid=8, required=6, n_pass=6 (2013 at 0.4762 and 2017 at
+0.4681 fail) → **L4 PASS**, and the pilot verdict lands SIGNAL-GENERIC — a case with no §3 row.
+
+**A2 — The ruling: rules govern; predictions are not gates.** The prediction-miss is disclosed
+as such: "6 of 9" was correct arithmetic on rates alone but never applied the rule's own
+exclusion clause; per-year n_cond was not in evidence at freeze (the committed
+`s1b_results.json` by_year table carries rates only).
+
+**A3 — Provenance defense.** The exclusion clause was design-panel consensus, appears verbatim
+in the frozen D2 table, and was frozen before per-year n_cond existed anywhere in evidence —
+the n<20 threshold cannot have been tuned to admit CL.
+
+**A4 — Interpretation-table extension (mechanical from frozen D2 text; nothing here exceeds
+it).** S1b case "presence passes + attribution GENERIC" → **SIGNAL-GENERIC**: SURVIVAL-ONLY-
+class durability language; cannot discharge mechanism-owed; routes to a conditioner-engineering
+prereg (never a mechanism-discovery campaign); counts toward slate §4 RESOLVED.
+
+**A5 — L4 boundary-placement disclosure (three parts; no verdict modifier, no BORDERLINE flag —
+a discrete count at threshold is not "a p within 0.02 of a line").** (a) n_pass=6 of required 6;
+2013/2017 fail; 2010 excluded at n_cond=14; one flipped year flips the verdict — equally true
+of the predicted FAIL. (b) Frozen operating characteristic (false-pass 0.090 / power 0.968 at
+the representative profile) quoted beside the **realized 6-of-8 profile: false-pass 0.1178 /
+power 0.9757**; the 2010-kept counterfactual (false-pass 0.0626 / power 0.9391; realized
+verdict would be FAIL); per-excluded-year laxity ladder 0.0898 → 0.1445 → 0.2266. (c) Any
+desire to tighten L4 routes to a forward-only new-spec decision for future class screens,
+explicitly barred from re-scoring this run (symmetric anti-rescue: post-pilot tightening that
+restores the predicted NULL is outcome-conditional test-hardening).
+
+**A6 — Semantic guard-rails for the S1b official RESULTS addendum.** MAY: presence limbs pass
+as frozen; attribution GENERIC; SIGNAL-GENERIC per D2 with SURVIVAL-ONLY durability; counts
+toward slate §4 RESOLVED; conditioner-engineering routing only. MAY NOT: "regime-robust" or
+"regime-stable" in any wording beyond *"L4 passed at its frozen threshold (6 of 8 valid years,
+boundary-exact)"*; any "mechanism" wording (bar: D22 GARCH sensitivity first); citing the OLD
+calm-subset placebo in either direction (it was the retired block-shuffle — VOID both ways; the
+frozen §3 phrase "calm-subset independent NULL" is provenance-split: its CI component survives,
+its placebo component is VOID); discharging mechanism-owed; quoting the pooled L2 pass as a
+conditioner license; any magnitude-adequacy claim (O2 stands). The drop-cluster diagnostic and
+the per-year table are co-quoted in every cell carrying the verdict.
+
+**A7 — Calm/crisis bucket divergence.** The frozen disclosure buckets by LEVEL (median annual
+mean log-TR); the 2026-08-18 adversarial review's split bucketed by crisis-event identity. They
+disagree on transition years (2014/2016), moving CL's calm-bucket rate 0.537 → 0.617. The
+disclosure bucket is non-gating by design; neither partition's read may be quoted without its
+year list and definition attached; the calm-regime question is OPEN and is a named
+confrontation item for any conditioner-engineering prereg.
+
+**A8 — Anti-rescue guard, applied.** The guard bars upgrading a standing KILL; S1b's standing
+NOT-CONFIRMED was a statement that the OLD test was invalid, not a valid NULL — the corrected
+battery supplies the FIRST valid verdict, so no rescue occurs. Claim-strength ordering: the
+voided raw SIGNAL claimed more than SIGNAL-GENERIC does — the battery downgraded the claim even
+where the verdict string upgraded from the predicted NULL (obs_CL sits INSIDE its own null band,
+72.5th pct at pilot, p_upper 0.2786).
+
+**A9 — Rejected options, recorded.** (b) VOID-and-re-freeze: the frozen VOID pathway is CASE V
+(diagnostic-gate failure), which PASSED; a discretionary VOID now would be outcome-visible.
+(c) Hold-AMBIGUOUS: N_valid=8 ≥ 7 leaves no frozen AMBIGUOUS trigger. Both rejected as
+injecting outcome-visible discretion.
+
+**A10 — Convention ratifications (from the bit-exact reimplementation lens).**
+(i) *Tie convention:* ordinal-stable (temporal tie order via stable argsort) RATIFIED — it is
+what was frozen at 12877c4 and pilot-verified; the spec's "effectively continuous" rationale is
+struck as factually false (tie share: GC 89.3%, CL 85.9% of observations share a value). Both
+readings' numbers disclosed so the choice is demonstrably not outcome-shopped (mid-rank: GC
+p_upper 0.9005 / p_lower 0.1045, obs 10.0th pct; ordinal: 0.9104 / 0.0945, 9.0th pct; CL
+p_upper 0.2736 vs 0.2786). Verdicts and flags invariant under either.
+(ii) *Diagnostic domain:* the gating tolerance was calibrated on **Spearman rank-ACF** (spec's
+quoted 0.0295 reproduces only under that reading; 0.04/0.0295 = the stated 1.4× headroom) —
+FIX-2 re-points the gate accordingly, tolerances untouched; z-domain kept as non-gating
+auxiliary. Post-fix pilot: GC med 0.0308 / p95 0.0486 PASS; CL 0.0282 / 0.0415 PASS.
+(iii) *p_att := p_upper* (FIX-1) — the attribution-typing p; the lower tail is separately owned
+by SUB-LINEAR. (iv) *BORDERLINE:* broad reading ("within 0.02 of a referenced line" includes
+0.03/0.07) assessed in the RESULTS addendum from the published p's; the runner's coded flag
+remains 0.05-only, documented as such. (v) FIX-3: log-ACF mismatch now reports med/p95/max.
+
+**A11 — Escalation-ladder execution recipe (pre-named, not improvised).** On official
+diagnostic-gate FAIL: re-invoke with IAAFT_ITER=500 on the SAME official seeds → if still FAIL,
+Schreiber end-matching trim ≤2% of record → if still FAIL, VOID per §3 CASE V.
+
+**A12 — Seed-form disclosure.** Burned design-phase blocks were a mix of scalar
+`default_rng(n)` and spawn-key forms as inventoried in §1; pilot spans `[20260818, X_code,
+990000..990199]`, of which 990000–990119 deliberately duplicate design-phase draws
+(deterministic re-verification); the official block `[20260818, X_code, 0..999]` is disjoint
+from every burned form.
+
+**A13 — Pre-named expected construction-sanity bracket failures at M=1000 (+ diagnosis).**
+GC unconditional P(y=1) expected to fall BELOW its surrogate band (pilot: 0th pct, −3.74 SD)
+and CL bias1-share marginal (0.5th pct, −2.23 SD): phase-locked panel-scale vol decline +
+time-irreversibility — structure IAAFT cannot represent by construction; net effect biases the
+GC conditional band UP ~+0.02 via the base rate. The lift-percentile line — real GC lift
+(+0.0521 conditional-minus-unconditional) sits at the **41st percentile** of the surrogate lift
+band, dead center — is attached wherever SUB-LINEAR wording could fire. CL clustering
+under-match caution (~1.6 SD residual; implied band shift +0.013; obs plausibly ~45th pct under
+a clustering-matched null): the 72.5th percentile is never quoted as near-excess evidence.
+
+**A14 — SUB-LINEAR pre-commitment (GC official).** GC's official p_lower placement is reported
+wherever it lands; the flag changes wording only, never verdict. P(flag fires by seed variation)
+pre-estimated at **1.3–1.5%** (Jeffreys posterior predictive from pilot 0.0945 at M=200;
+SE(p_lower) ≈ 0.009 at M=1000). If it fires, the wording MUST carry (a) the A13 lift-percentile
+line (the low raw placement is predominantly a base-rate artifact of the band's upward bias)
+and (b) the frozen guard: "regime-concentration signature," never "clustering absent." If
+p_lower lands within 0.02 of 0.05/0.03/0.07, broad-BORDERLINE is reported. Report-never-re-roll
+stands; no M escalation on any placement, ever. GC pilot summary: prediction-consistent, CASE A
+(obs ≤ p50, 9th pct — the near-miss dissolves), no adjudication needed.
+
+**A15 — Sequencing attestation.** FIX-1/2/3 + this addendum + refreshed pilot artifacts are
+committed with the official seeds undrawn; the post-fix pilot re-run asserted every scoring
+quantity bit-identical to the pre-fix pilot (generation and scoring untouched by the fixes).
+
+**A16 — Operator election (PROCEED / HOLD only).** The fork materially changes the commissioned
+consequence surface: S1b was represented as predicted-NULL (zero toward slate §4 RESOLVED); it
+will now count toward RESOLVED and put the H-SLATE RESOLVED trigger live. Election is PROCEED /
+HOLD; any request to edit L4 or re-freeze is declined and recorded as a forward-only new-spec
+decision that cannot apply to this run. HOLD cannot un-know the pilot; this addendum stands
+regardless of the election. Non-election items adjudicated as-is: verdict-precedence latent
+path (L4-AMBIGUOUS ordering — unreachable here: GC N_valid=9, CL N_valid=8; recorded for any
+future class spec); hard-coded verbatim-carry limbs (correct for this re-score; reuse hazard if
+the runner outlives it).

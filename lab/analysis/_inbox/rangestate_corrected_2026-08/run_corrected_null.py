@@ -23,7 +23,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from scipy.stats import norm
+from scipy.stats import norm, rankdata
 
 HERE = Path(__file__).resolve().parent
 GC_DIR = HERE.parent / "rangestate_gc_2026-08"
@@ -193,13 +193,19 @@ def run_instrument(name, cfg, mode):
     assert abs(obs_check - obs) < 1e-12, f"frozen obs mismatch: {obs_check} vs {obs}"
 
     z = normal_scores(tr)
-    real_rank_acf = acf(z, ACF_LAGS)
+    # FIX-2 (pre-official, adversarially verified on pilot seeds): the GATING diagnostic is
+    # Spearman rank-ACF (ACF of mid-rank rankdata, biased estimator) -- the quantity the
+    # frozen spec's 0.04/0.07 tolerance was calibrated on (spec's quoted 0.0295 GC reproduces
+    # only under this reading). The z-domain ACF is retained as a non-gating AUXILIARY output
+    # for pilot-comparability. Tolerances untouched.
+    real_spear_acf = acf(rankdata(tr), ACF_LAGS)
+    real_z_acf = acf(z, ACF_LAGS)
     real_log_acf = acf(np.log(tr), ACF_LAGS)
     tr_sorted = np.sort(tr)
 
     # ---- Phase 1: generate + diagnostics (written BEFORE any hit rate) ----
     surrogates = []
-    rank_mismatch, log_mismatch = [], []
+    spear_mismatch, z_mismatch, log_mismatch = [], [], []
     signed_dev = {k: [] for k in SIGNED_LAGS}
     for i in range(M):
         rng = np.random.default_rng([BASE_SEED, code, seed_offset + i])
@@ -208,32 +214,40 @@ def run_instrument(name, cfg, mode):
         ranks[np.argsort(z_s, kind="stable")] = np.arange(len(z_s))
         tr_s = tr_sorted[ranks]
         assert np.array_equal(np.sort(tr_s), tr_sorted), "multiset identity violated"
-        s_rank_acf = acf(z_s, ACF_LAGS)
+        s_spear_acf = acf(rankdata(tr_s), ACF_LAGS)
+        s_z_acf = acf(z_s, ACF_LAGS)
         s_log_acf = acf(np.log(tr_s), ACF_LAGS)
-        rank_mismatch.append(float(np.max(np.abs(s_rank_acf - real_rank_acf))))
+        spear_mismatch.append(float(np.max(np.abs(s_spear_acf - real_spear_acf))))
+        z_mismatch.append(float(np.max(np.abs(s_z_acf - real_z_acf))))
         log_mismatch.append(float(np.max(np.abs(s_log_acf - real_log_acf))))
         for k in SIGNED_LAGS:
-            signed_dev[k].append(float(s_rank_acf[k - 1] - real_rank_acf[k - 1]))
+            signed_dev[k].append(float(s_spear_acf[k - 1] - real_spear_acf[k - 1]))
         surrogates.append(tr_s)
 
-    rank_mm = np.array(rank_mismatch)
+    spear_mm = np.array(spear_mismatch)
     diag = dict(
         instrument=name, mode=mode, M=M, iterations=IAAFT_ITER, domain="normal-scores",
         seed_policy=f"default_rng([{BASE_SEED}, {code}, {seed_offset}+i])",
         multiset_asserts="PASS all",
-        rank_acf_mismatch=dict(med=float(np.median(rank_mm)), p95=float(np.percentile(rank_mm, 95)),
-                               max=float(rank_mm.max())),
+        spearman_acf_mismatch=dict(med=float(np.median(spear_mm)),
+                                   p95=float(np.percentile(spear_mm, 95)),
+                                   max=float(spear_mm.max())),
+        zdomain_acf_mismatch_auxiliary=dict(med=float(np.median(z_mismatch)),
+                                            p95=float(np.percentile(z_mismatch, 95)),
+                                            max=float(np.max(z_mismatch))),
         log_acf_mismatch=dict(med=float(np.median(log_mismatch)),
-                              p95=float(np.percentile(log_mismatch, 95))),
-        signed_median_dev={k: float(np.median(v)) for k, v in signed_dev.items()},
-        tolerance=dict(med_limit=TOL_MED, p95_limit=TOL_P95),
-        gate="PASS" if (np.median(rank_mm) <= TOL_MED and np.percentile(rank_mm, 95) <= TOL_P95)
+                              p95=float(np.percentile(log_mismatch, 95)),
+                              max=float(np.max(log_mismatch))),
+        signed_median_dev_spearman={k: float(np.median(v)) for k, v in signed_dev.items()},
+        tolerance=dict(med_limit=TOL_MED, p95_limit=TOL_P95, gating_domain="spearman-rank-acf"),
+        gate="PASS" if (np.median(spear_mm) <= TOL_MED and np.percentile(spear_mm, 95) <= TOL_P95)
              else "FAIL",
     )
     diag_path = HERE / f"diagnostics_{name}_{mode}.json"
     diag_path.write_text(json.dumps(diag, indent=1))
     print(f"diagnostics written: {diag_path.name}  gate={diag['gate']}  "
-          f"rank-ACF med={diag['rank_acf_mismatch']['med']:.4f} p95={diag['rank_acf_mismatch']['p95']:.4f}")
+          f"spearman-ACF med={diag['spearman_acf_mismatch']['med']:.4f} "
+          f"p95={diag['spearman_acf_mismatch']['p95']:.4f}")
     if diag["gate"] != "PASS":
         print("DIAGNOSTIC GATE FAIL -> escalation ladder owed (500 iter / end-matching) -> VOID if exhausted")
         return dict(instrument=name, VERDICT="VOID-PENDING-LADDER", diagnostics=diag)
@@ -269,7 +283,9 @@ def run_instrument(name, cfg, mode):
     flags = []
     if p_lower <= 0.05:
         flags.append("SUB-LINEAR")
-    if 0.03 <= min(p_upper, p_lower) <= 0.07:
+    # FIX-1 (pre-official): p_att := p_upper (the attribution-typing p; the lower tail is
+    # separately owned by SUB-LINEAR). Adjudicated in ADDENDUM-1 item 10.
+    if 0.03 <= p_upper <= 0.07:
         flags.append("ATTRIBUTION-FRAGILE")
     if min(abs(p_upper - 0.05), abs(p_lower - 0.05)) <= 0.02:
         flags.append("BORDERLINE")
