@@ -5,6 +5,7 @@
 **Decision record:** [`docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md`](../adr/2026-07-10-strategies-never-locked-lifecycle-governance.md) (`Accepted`, ratified 2026-07-10). The ADR carries the *reasoning*; this file carries the *values* and is what downstream (CLAUDE.md, code, STATE.md) points at.
 **Supersedes-in-part (Call 5 up-asymmetry):** [`S5 ADR`](../adr/2026-08-07-loop-s5-bounded-promotion-lane.md) (`Accepted` 2026-08-07) — bounded sandbox-up exception only; see Call 5.
 **Forward triggers:** registered on the [`STATE.md`](../../STATE.md) forward-trigger board (first eval **2026-08-08**).
+**Stage-map pointer:** this file is the capital-authorization mechanism that stage 5 of [`docs/governance/systematic-trading-lifecycle.md`](../governance/systematic-trading-lifecycle.md) feeds. Call-5 WATCH-tier demotions are reversible OUTER acts (rules-mandated; no STRATEGIC sign-off). Only `RETIRED` and full beta shutdown are instrument-tier Deletes and therefore STRATEGIC-LoR per [`three-loop binding` D2](../adr/2026-06-12-three-loop-methodology-binding.md).
 
 ---
 
