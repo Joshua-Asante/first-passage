@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-08-17
+**Last curated:** 2026-08-18
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
@@ -61,6 +61,10 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-18** — **MNQ family-K disclosure: Notice-phase closed manifests and Cap-seat K bank.**
+  Operator *"OK on both"*. `K_banked(MNQ)` 6→21 (14 once + Cap +1). Disclosure-only; `K_eff` untouched.
+  [`ADR 2026-08-04` Addendum](docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md) ·
+  [`MNQ.md` §K_BANKED](ops/instruments/MNQ.md).
 - **2026-08-17** — **Six-lead P3 (L5 curve-slope) un-HOLD → GO → sleeve CLOSED (venue).**
   Operator un-HOLD. Paper read (Bianchi/Fan/Miffre/Zhang *JBF* 2023 / arXiv `2308.00383`):
   profitable S-strategy is a same-commodity calendar spread (Δslope → long front / short
