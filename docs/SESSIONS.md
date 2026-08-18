@@ -18,9 +18,9 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 
 **Focus:** Provenance tool — TV `request.economic()` series-update dates vs hand-pinned RATES / NG-EIA / EVT-1 calendars. Hygiene only.
 
-**Shipped:** Spec + parser + diff + synthetic tests. Pine listing in spec (working `.pine` gitignored + hash-pinned). First-run without a TV CSV: `AWAIT_TV_EXPORT` / FOMC `NO_TV_FIELD` / EVT-1 2019–2021 `UNRECOVERABLE_PIN`. Owner: [`docs/spec/2026-08-18-econ-export-v01.md`](spec/2026-08-18-econ-export-v01.md).
+**Shipped:** Spec + parser + diff + synthetic tests. Pine listing in spec (working `.pine` gitignored + hash-pinned). First-run report at owner. Owner: [`docs/spec/2026-08-18-econ-export-v01.md`](spec/2026-08-18-econ-export-v01.md).
 
-**Decisions/defects:** `request.economic()` is a series API, not a calendar. No `INTR`-as-FOMC. `NGSC` is a stocks-change proxy only. Closed campaigns not reopened.
+**Decisions/defects:** Doctrine at the spec (series API, not a calendar; no campaign reopen).
 
 **Open / next:** Carry 18d: S1b conditioner-engineering prereg electable (new GO, new K); S2 cheap falsifier; S3 matched-day prereg. Operator may land `ECON_EXPORT_v0.1_*.csv` and re-run the diff.
 
