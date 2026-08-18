@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-18l — Q-SIGID-1 §7 Phase 3: name Bar Magnifier as candidate architecture #4
+
+**Focus:** Add Bar Magnifier as a fourth named Phase 3 architecture on the existing owner. Prep only.
+
+**Shipped:** branch `cursor/q-sigid-bar-magnifier-7784`. Surgical edit to [`Q-SIGID-1`](briefs/Q-SIGID-1-intra-bar-signal-identity.md) §7 Phase 3 only. One prior mention remains [`EXPORT_SPEC`](../lab/archive/p2_replay_2026-07/EXPORT_SPEC.md) L32 (paired-export parity, not a Q-SIGID rejection).
+
+**Decisions/defects:** none — candidate named, not chosen. §6 / Rule-11 gates unchanged. Naming #4 does not advance the brief toward closure.
+
+**Open / next:** Carry 18k: MNQSR-1 / Q-CAPA-1 bank rulings discharged (live figure at MNQ.md §K_BANKED). Next slate admission screens claim horizon vs the E1 flat-by-16:00 envelope. S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. TRAINKILL census STOP — re-proposal is a new panel or an operator election. B1 Koijen admissibility parallel. B2 unblocked: elects on existing evidence + H1 screen, TRAINKILL holds disclosed. F1 / B7-REFIRE. Q-SIGID-1 still STRANDED on F2 / live Friday MYM §2b ([INDEX](briefs/INDEX.md)).
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-18k — Operator "OK on both": MNQSR-1 and Q-CAPA-1 bank
 
 **Focus:** Discharge the two OPEN items from the MNQ ledger recon after operator *"OK on both"*. (Renumbered 18f→18k on merge with main — main already held 18f for Q-EXPR-1.)
