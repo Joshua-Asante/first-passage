@@ -20,6 +20,10 @@ cells:
     verdict: DEAD
     date: 2026-08-10
     source: "../../lab/analysis/harvest/tnec_l2_sourcing_2026-08-10/DELTA_EXTRACTION_R8.md"
+  - mechanism: daily-range-state-persistence
+    verdict: AMBIGUOUS-PARKED
+    date: 2026-08-18
+    source: "../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md"
 bars:
   - id: free-data-5th-leg-snag-closed-2026-07-01
     source: "../../docs/rejected_candidates.md"
@@ -46,6 +50,7 @@ structure:
 | **G1** | **Voided kill: `E-K`.** Third-leg map eliminated MGC (bank 3177 → floor 2.05 > Cap). Banner + K-bank ADR: Clause K no longer eliminates; bank is disclosure (still large — cite manifests, don’t hardcode as authority). | [`third-leg RESULTS`](../../lab/analysis/c1/c1_thirdleg_instrument_map_2026-07-27/RESULTS.md) L35 + banner | **HIGH** (ADR void). |
 | **G2** | **Standing non-K grounds.** Metals Product Group · E1–E7 class-fit · DISC-CAMP-0 family history as disclosure/Req-3 bank fact · micro proxy vs GC · cost-tax from third-leg row (re-cite: cost-tax 1t r=1 **0.0902**). | third-leg RESULTS · envelope · [`lab/CATALOG.md`](../../lab/CATALOG.md) disccamp0 row | **HIGH** as posture. |
 | **G3** | **Envelope + TNEC class attestation (no candidate).** See table. N-SIZE = U. | this session | **MODERATE**. |
+| **G4** | **`H-RANGESTATE-GC-1` (S1a, Step-0 slate row S1) — research verdict `NULL` (near-miss); ledger cell verdict `AMBIGUOUS-PARKED`** (the PROFILE `cells:` vocabulary has no `NULL` state — `AMBIGUOUS-PARKED` is the correct mapping: measured, inconclusive, blocking a same-cell re-attempt until the stated re-proposal bar is cleared). Daily top-quintile-TR → elevated-next-day-TR conditioner, GC parent train era (2010–2019, `MGC.v.0` 2019+ reserved). Conditional hit rate **0.5299** (n=451/2,116 scored); **3 of 4 frozen limbs pass** (n-floor, halves, placebo p=0.0095) — only the 60-day block-bootstrap CI lower bound fails (**0.4545**, 4.55pp under 0.50). Adversarially verified (4-lens + synthesis workflow) before trust: lookahead/leakage clean; one real defect caught and fixed pre-trust (CI block size 10d→60d + true circular wraparound, both corrections verdict-preserving and conservative — narrows toward NULL, not away from it). Live prior for the MCL sibling screen (S1b, same slate). | [`RESULTS_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md) · [`PREREG_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/PREREG_S1A.md) | **HIGH** (frozen prereg, adversarially verified, $0/K=1 disclosed). |
 
 ### Envelope E1–E7 + TNEC class attestation
 
@@ -78,6 +83,12 @@ structure:
 
 ## SESSION LOG
 
+- **2026-08-18** — **`H-RANGESTATE-GC-1` (Step-0 slate S1a) → NULL, near-miss.** Daily
+  range-state persistence conditioner screened on GC train era ($0, K=1 disclosed). 3/4 limbs
+  pass; CI lower bound fails by 4.55pp. Adversarially verified before trust (4-lens workflow
+  caught + fixed a CI-block-size defect, verdict-preserving). New `MECHANISMS.md` heading
+  `daily-range-state-persistence`. Routes to S1b (MCL) per the slate queue. $0 / K=1.
+  [`RESULTS_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md)
 - **2026-08-12c** — **MSL P3.1 B4 GO → G0 FROZEN:** [`PREREG_G0`](../../lab/archive/msl_c2_mgc_2026-08/PREREG_G0.md); explore/Pine unpaid. $0 / K=0.
 - **2026-08-12b** — **MSL P3.1 Stage-1 PASS (pre-G0):** freeze `london-range-failed-extension-fade`; SNAG CLEAR via R-FRAMING §2.1; RT $4.12 screens PASS; delete/flip unpaid pending B4. [`STAGE1`](../../lab/archive/msl_c2_mgc_2026-08/STAGE1.md). $0 / K=0.
 - **2026-08-12** — **PROFILE `bars:` Stage-0 (MSL P3.1 / C2):** registered `free-data-5th-leg-snag-closed-2026-07-01` → `docs/rejected_candidates.md` (SNAG-CLOSED 2026-07-01). Door-check non-vacuous; index OHLCV bar intentionally omitted (C2 outside that domain). `profiles.json` rebuilt same commit. $0 / K=0.

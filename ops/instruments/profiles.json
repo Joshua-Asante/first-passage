@@ -52,6 +52,11 @@
     "MCL": {},
     "MES": {},
     "MGC": {
+      "daily-range-state-persistence": {
+        "date": "2026-08-18",
+        "source": "../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md",
+        "verdict": "AMBIGUOUS-PARKED"
+      },
       "event-window-reversal": {
         "date": "2026-08-10",
         "source": "../../lab/analysis/harvest/tnec_l2_sourcing_2026-08-10/DELTA_EXTRACTION_R8.md",
@@ -946,6 +951,12 @@
       "findings": [
         "A compression-gated short-primary construct on XAUUSD is not killed by the cheap tests, but the intended trailing-short payoff is 100% in the censored region (0/203 trades reach short FE\u22651.5R) \u2014 a design-test mismatch that blocked a build decision pending a bar-level backtest. [XAUUSD.md F4](XAUUSD.md)",
         "Dense-1m MNQ compression\u2192expansion with-break at G=10 session-flat (`Q-TNEC-CON-2`) is gross-positive (~+0.9\u20131.0 pt) but net-negative under Tradeify RT 1.41 (`AMBIGUOUS-HOLD` non-promotable). An HTF-5m-bias \u2192 LTF-1m directed with-break filter on the same family is `FALSIFIED` at the parent cheap falsifier (both arms CI entirely &lt;0). [MNQ.md](MNQ.md)"
+      ]
+    },
+    "daily-range-state-persistence": {
+      "definition": "**NEW 2026-08-18.** Conditioner-role, not entry-role: does a day's True Range being in the",
+      "findings": [
+        "GC (parent, train era 2010\u20132019) top-quintile TR \u2192 elevated next-day TR:"
       ]
     },
     "day-of-week-selection-gate": {

@@ -42,6 +42,37 @@ Tier-1 screen tier working as designed.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+## 2026-08-18b — S1a (GC range-state persistence) run: NULL near-miss, adversarially verified
+
+**Focus:** Operator GO ("GO S1a") off the Step-0 slate queue — first live lane-adjacent screen
+of the mechanism-by-mechanism program: daily True-Range top-quintile persistence, GC train era.
+
+**Shipped:** Frozen prereg + first-draft runner authored, $0 pull ($0.0000 confirmed at
+estimate), Step-0 panel-integrity battery run pre-freeze (caught the standing
+`databento ohlcv-1d weekend bars` lesson live — 434 phantom Sunday bars, dropped per the
+established remedy). Before trusting any number: 4-lens + synthesis adversarial-verify workflow
+(mirroring this repo's own DL-1 precedent) — lookahead/leakage clean (independently corroborated
+by an exact arithmetic identity); one MUST-FIX caught (CI block size 10d contradicted the
+prereg's own 60-day clustering rationale; CI also implemented non-circular despite being
+declared circular) and fixed before the trusted run, both corrections verdict-preserving and
+conservative. **Result: NULL, near-miss** — 3 of 4 frozen limbs pass (n-floor, halves, placebo
+p=0.0095) but the corrected CI lower bound (0.4545) falls 4.55pp short of 0.50. Board writes:
+new `MECHANISMS.md` heading `daily-range-state-persistence`; `MGC.md` G4 + session log; CATALOG
+row. [`PREREG`](../lab/analysis/_inbox/rangestate_gc_2026-08/PREREG_S1A.md) ·
+[`RESULTS`](../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md).
+
+**Decisions/defects:** Two adversarial-review-caught defects, both disclosed and fixed pre-trust
+rather than silently patched (CI block size; CI circularity + a hand-typed roll-date example
+list, 2 of 5 dates wrong, corrected to script-persisted output). A separate panel-completeness
+gap (13 gap-days, 2 unexplained by holidays, <1% of observations) was found, disclosed as
+bounded-materiality, not fixed (doesn't warrant a mid-campaign design change to a frozen object).
+
+**Open / next:** S1b (MCL) is queued next per the slate's own order; the S1a near-miss (placebo
+clears, CI doesn't) is a live prior for it, not a blind re-test. Operator GO owed on S1b/S2/S3.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-17e — Q-POLFRONT-1 intraday-honest fork executed: 5.1× policy frontier does not survive
 
 **Focus:** Operator GO ("open the intraday-honest remeasurement") on the named-but-unopened

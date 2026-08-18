@@ -63,6 +63,22 @@ Gating a breakout entry on a prior volatility-compression phase resolving into e
 - **Class finding:** A compression-gated short-primary construct on XAUUSD is not killed by the cheap tests, but the intended trailing-short payoff is 100% in the censored region (0/203 trades reach short FE≥1.5R) — a design-test mismatch that blocked a build decision pending a bar-level backtest. [XAUUSD.md F4](XAUUSD.md)
 - **Class finding:** Dense-1m MNQ compression→expansion with-break at G=10 session-flat (`Q-TNEC-CON-2`) is gross-positive (~+0.9–1.0 pt) but net-negative under Tradeify RT 1.41 (`AMBIGUOUS-HOLD` non-promotable). An HTF-5m-bias → LTF-1m directed with-break filter on the same family is `FALSIFIED` at the parent cheap falsifier (both arms CI entirely &lt;0). [MNQ.md](MNQ.md)
 
+## daily-range-state-persistence
+
+**NEW 2026-08-18.** Conditioner-role, not entry-role: does a day's True Range being in the
+trailing top quintile predict elevated next-day True Range (vs its own trailing median)?
+Distinct from `compression-gated-breakout` / `htf-compression-breakout-5m` (both entry-role
+compression→expansion triggers on MNQ) — this class makes no entry claim, only a
+range-state-forecasting claim, and is scoped to the non-index triad
+([Step-0 daily-geometry slate](../../docs/briefs/2026-08-18-step0-daily-geometry-mechanism-slate.md)
+§2 row S1). Grounding: evidence-robustness (volatility clustering — ARCH/GARCH canon), not a
+per-instrument WHO claim.
+
+- **Class finding:** GC (parent, train era 2010–2019) top-quintile TR → elevated next-day TR:
+  **NULL, near-miss** — conditional hit rate 0.5299 (n=451), placebo p=0.0095 (passes), halves
+  pass, but the 60-day block-bootstrap CI lower bound (0.4545) fails the 0.50 threshold by
+  4.55pp. Three of four limbs clear; the estimation-precision limb does not. [MGC.md G4](MGC.md)
+
 ## htf-compression-breakout-5m
 
 **NEW 2026-08-10.** Trade the **5m** compression→expansion break itself (not an HTF bias filter on 1m scalps): structural stop at the opposite quiet extreme; first valid signal per RTH session only (temporal selectivity under [`ADR 2026-08-10`](../../docs/adr/2026-08-10-temporal-selectivity-outside-mapped-levers.md)); session-flat; Tradeify RT. Distinct from `compression-gated-breakout` dense-1m / fixed-G cells.

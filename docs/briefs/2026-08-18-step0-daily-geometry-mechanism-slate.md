@@ -48,6 +48,16 @@ clustering-preserving placebo as primary**), verdict SIGNAL / NULL / AMBIGUOUS, 
 
 ### S1 — Daily range-state persistence · MGC + MCL (two single-instrument screens, S1a/S1b)
 
+> **S1a (GC) — GO'd and RUN 2026-08-18: `NULL`, near-miss.** Conditional hit rate 0.5299
+> (n=451); 3 of 4 frozen limbs pass (n-floor, halves, placebo p=0.0095); the 60-day
+> block-bootstrap CI lower bound (0.4545) fails by 4.55pp. Adversarially verified before trust
+> (4-lens + synthesis workflow; one MUST-FIX caught and fixed — CI block size — both
+> corrections verdict-preserving). Full detail:
+> [`RESULTS_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md).
+> **S1b (MCL) is the live next queue item** — the near-miss shape (placebo clears, CI doesn't)
+> is a prior for it, not a reason to skip it; per §4 the class needs S1a+S1b+S2 to all NULL
+> before it's exhausted.
+
 - **Frozen claim (sign = persistence):** `P(TR_{d+1} > median(TR, trailing 60d) | TR_d in top
   quintile of trailing 60d)` exceeds its block-shuffled null. Grounding: evidence-robustness
   limb (volatility clustering — five decades, every asset class, the ARCH/GARCH canon), not a
