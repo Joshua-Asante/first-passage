@@ -14,6 +14,42 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-17e — Q-POLFRONT-1 intraday-honest fork executed: 5.1× policy frontier does not survive
+
+**Focus:** Operator GO ("open the intraday-honest remeasurement") on the named-but-unopened
+Q-POLFRONT-1 closure fork — learn how much of the 5.1× policy-vs-flat sizing ratio survives a
+real intraday clock instead of the EOD-close proxy.
+
+**Shipped:** Three design iterations, each triggered by the previous one's self-diagnosed
+failure. v1 (instrument-price-shape ratio) and v2 (resampled real-trade ratio, derived from the
+primary checkout's real Striker DJ30/NAS100 trade CSVs, reusing W1's own `_leg_daily_excursion`)
+both collapsed every cell to 75–99%+ bust uniformly for both arms — diagnosed as a units-
+conflation bug and a resampling-saturation bug respectively, invalidated pre-write-up. v3
+(deterministic median multiplier from the same real-trade ratio source) landed a structurally
+sensible result: median flat-arm delta +18.0pp (2/24 cells still clear 3.0%), median policy-arm
+delta +98.1pp (1/26 cells still clear). Adversarially verified (4 reviewers + synthesis,
+1 re-run after a connection failure): `SAFE_WITH_CAVEATS` — independent reimplementation
+reproduced both headline numbers and derived a closed-form proof of the policy-arm collapse
+mechanism (any winning day breaches once `r_base > ROPE/(|win_mult|×b)`); two confirmed
+calibration biases (pyramiding contamination, multi-trade-day summing) both push toward
+overstating risk, no offsetting bias found. [`RESULTS`](../lab/analysis/c1/q_polfront_1_2026-08/RESULTS_INTRADAY_HONEST.md) ·
+[`OPERATIONALIZATION`](../lab/analysis/c1/q_polfront_1_2026-08/OPERATIONALIZATION_INTRADAY_HONEST.md).
+
+**Decisions/defects:** Own defect caught and disclosed, not silently repaired: the v2→v3
+iteration ran faster than the "freeze method before computing a number" discipline was
+re-applied — the design doc's §5/§6 (documenting v2/v3) were written *after* the numbers existed,
+caught by the adversarial pass's doctrine-scope lens, repaired with an honest post-hoc dating
+rather than a backdated pretense.
+
+**Open / next:** 5.1× headline is superseded as a usable sizing multiplier — deep-lane GO-1
+should not lean on the policy frontier; flat frontier is usable only at low R relative to ROPE.
+A bias-corrected re-measurement (de-pyramiding, de-duplicating multi-trade days) is named but not
+attempted — the pyramiding contamination may not be cleanly separable from this trade record at
+all (NAS100 base-only PF is 0.31). Six-lead pursuit thread (17d) and its carries unchanged.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-17d — Six-lead pursuit thread closes: P1-CF/P2-CF FAIL, limb-2 ruled, channel addendum landed
 
 **Focus:** Continue the six-lead pursuit plan from 17b's OpenAlex fork resolution — operator GO on

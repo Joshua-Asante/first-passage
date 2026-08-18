@@ -71,13 +71,35 @@ any future policy-scoring brief.
 - **Board write:** `SESSIONS Open/next: deep-lane GO-1 unblocked (frontier landed); Databento parent-era dry-run next; intraday-honest policy remeasurement named as an open fork, not opened.` Owner: this closure · [RESULTS](../../lab/analysis/c1/q_polfront_1_2026-08/RESULTS.md)
 - **Registry:** n/a — policy-lever measurement, not a strategy-mechanism rejection
 
-## §7 — Fork named (not opened)
+## §7 — Fork named (not opened) — **EXECUTED 2026-08-17, see addendum below**
 
 **Intraday-honest policy remeasurement.** Re-run the policy arm (not the flat arm — its
 stress-sensitivity is already an order of magnitude smaller) on an intraday-honest clock
 (same discipline as the W1 ADR / `RESULTS_INTRADAY_W1.md` precedent for the book), to learn how
 much of the 5.1× ratio survives. Not opened here — a future deep-lane campaign whose family
 selection leans materially on the policy frontier should open this first.
+
+### Addendum 2026-08-17 — fork executed: neither arm survives; policy near-totally, flat mostly
+
+**Operator GO** ("open the intraday-honest remeasurement"). Full method + three-attempt
+postmortem (v1 units-conflation, v2 resampling-saturation, v3 landed) at
+[`OPERATIONALIZATION_INTRADAY_HONEST.md`](../../../lab/analysis/c1/q_polfront_1_2026-08/OPERATIONALIZATION_INTRADAY_HONEST.md);
+full results at
+[`RESULTS_INTRADAY_HONEST.md`](../../../lab/analysis/c1/q_polfront_1_2026-08/RESULTS_INTRADAY_HONEST.md).
+
+**Result:** median flat-arm bust delta +18.0pp (2/24 cells still clear 3.0%); median policy-arm
+delta +98.1pp (1/26 cells still clear 3.0%). The 5.1× headline ratio does **not** survive —
+adversarially verified `SAFE_WITH_CAVEATS`: no coding defect found (independent reimplementation
+reproduced both numbers and derived a closed-form proof of the policy-arm collapse mechanism),
+but two confirmed calibration biases (pyramiding contamination, multi-trade-day summing) both
+push toward *overstating* risk — read the magnitudes as a credible upper bound, not a tight
+estimate. The qualitative conclusion (policy frontier unreliable for real sizing; flat frontier
+usable only at low R relative to ROPE) is not in doubt; the exact severity is.
+
+**Supersedes §7's own framing:** "how much of the 5.1× ratio survives" is now answered —
+effectively none of it, on either arm, at the R levels the EOD-clock measurement judged
+admissible. This closure's `Next: INTEGRATE` disposition and routing to GO-1 stand unchanged;
+this addendum sharpens what GO-1 should actually consult (see RESULTS_INTRADAY_HONEST.md §5).
 
 ## Change history
 
