@@ -23,6 +23,11 @@ cost_hurdle:
 bars:
   - id: free-data-5th-leg-snag-closed-2026-07-01
     source: "../../docs/rejected_candidates.md"
+cells:
+  - mechanism: daily-range-state-persistence
+    verdict: AMBIGUOUS-PARKED
+    date: 2026-08-18
+    source: "../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md"
 structure:
   - claim: "Frozen CONFIG-B-MCL geometry clears expressibility under SIGMA-NATIVE; geometry is not edge — N-SURV/N-EDGE/N-SIZE remain U until a mechanism trade series exists."
     source: "#C2"
@@ -46,6 +51,8 @@ structure:
 | **C1** | **Stage-0 cost geometry measured (2023 panel).** Fade stage0 reports MCL Energy-group cost cells including `cost_bp` **5.3423** at the 2023 median — input to §4.2 ranking, not an edge claim. | [`RESULTS.md`](../../lab/analysis/c1/tradeify_fade_stage0_2026-07-30/RESULTS.md) | **HIGH** (panel arithmetic). |
 | **C2** | **Geometry PASS under `SIGMA-NATIVE-2026-07-31` + `CONFIG-B-MCL-2026-07-31`.** Native session σ **$112.17**; nearer-barrier **$54.93**; frozen primary **n=4** expressible (n=5,6 reported expressible). Implied annSR 9.98–12.23 at pinned p=0.65 is **disclosure only** (non-gated; geometry ≠ edge). K-bank floor figures in the 2026-07-31 ruling table (0.850 from banked K) are **void as gates** under [K-bank ADR](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md); current screen floor for `K_intrinsic=1` is 0.650 — disclosure only. | [`RESULTS.md`](../../lab/analysis/c1/tradeify_fade_stage0_2026-07-30/RESULTS.md) · [`RESULTS_sigma_native.md`](../../lab/analysis/c1/tradeify_fade_stage0_2026-07-30/RESULTS_sigma_native.md) · [frozen rulings](../../docs/notes/2026-07-31-fade-stage1-frozen-rulings.md) | **HIGH** on expressibility; **no edge claim**. |
 | **C3** | **TNEC class attestation (instrument-level, no mechanism series).** See ACTIVE disposition string. N-ACT/N-SHAPE pass as config/class; N-SURV/N-EDGE/N-SIZE = U. | [TNEC-1](../../docs/spec/2026-08-08-tradeify-necessary-conditions-target-spec.md) · this session | **MODERATE** (class attestation, not filled-construct proof). |
+| **C5** | **OFFICIAL corrected-battery verdict (2026-08-18, supersedes C4's interim NOT-CONFIRMED): `SIGNAL-GENERIC`.** Under the frozen class battery ([spec+ADDENDUM-1](../../docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md)): presence passes (L2 lb 0.5651; halves; **L4 boundary-exact 6/8** under the rule's own n_cond<20 exclusion — 2010 dropped at n=14, a disclosed prediction-miss adjudicated rules-govern); attribution **GENERIC** (obs 0.6282 at the **69th pct** of CL's own linear-ACF band, p_upper 0.3107) — canon-attributed volatility clustering, SURVIVAL-ONLY durability. **Binding A6 rails: NOT a mechanism; does NOT discharge this ledger's mechanism-owed status (UNCHANGED); NOT a conditioner license** (O2 cost-arithmetic owed). Mandatory co-quotes wherever cited: crisis>calm per-year ordering (2011/2016/2014 top); drop-{2011,2014,2016} diagnostic; calm/crisis bucket definitions differ by partition rule (level-based 0.617 vs event-identity 0.537 — year lists required, A7). Routes only to a conditioner-engineering prereg — new operator GO, new K. Counts toward Step-0 slate §4 RESOLVED. | [`RESULTS_S1B.md`](../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md) §5 · [`RESULTS_CORRECTED.md`](../../lab/analysis/_inbox/rangestate_corrected_2026-08/RESULTS_CORRECTED.md) | **HIGH** (frozen spec + pre-registered interpretation; bit-exact independent reimplementation; official seeds drawn once). |
+| **C4** | **`H-RANGESTATE-CL-1` (S1b, Step-0 slate row S1) — raw battery reading `SIGNAL`, downgraded to `NOT-CONFIRMED`.** Daily top-quintile-TR → elevated-next-day-TR conditioner, CL parent train era (2010–2019, `MCL.v.0` 2019+ reserved). Conditional hit rate **0.6282** (n=425/2,056 scored) clears all four frozen limbs, but adversarial review found the placebo null misspecified — **20/20 zero-mechanism AR(1) surrogates calibrated to CL's own measured True-Range autocorrelation (ρ₁=0.4520) cleared the identical battery at a *higher* rate (0.72–0.80) than the real data (0.6282)**, and the effect fails a regime-concentration test (removing the 2011/2014/2016 crisis years together flips the verdict to NULL; a clean crisis-vs-calm split shows the calm-year bucket alone is an independent NULL failing its own placebo). **Does not discharge this ledger's "mechanism-owed" status.** Full detail + root cause: [audit note](../../docs/notes/audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md). | [`RESULTS_S1B.md`](../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md) · [`PREREG_S1B.md`](../../lab/analysis/_inbox/rangestate_mcl_2026-08/PREREG_S1B.md) | **HIGH** (frozen prereg, adversarially verified — independent reimplementation matched to full float precision; battery defect quantified via 20/20 surrogate trials). |
 
 ## DEAD / REJECTED (instrument-specific)
 
@@ -73,6 +80,27 @@ Limb reading (link out; do not restate σ/K as authority):
 
 ## SESSION LOG
 
+- **2026-08-18b** — **OFFICIAL corrected-null re-score: `SIGNAL-GENERIC` (C5 added; cell stays
+  `AMBIGUOUS-PARKED` — a parked canon-attributed finding awaiting its own conditioner-
+  engineering prereg; mechanism-owed UNCHANGED).** Frozen battery ran on operator PROCEED after
+  a 4-lens pre-official verification (bit-exact reimplementation) and a rules-govern
+  adjudication of the L4 prediction-miss (ADDENDUM-1). Attribution decisively GENERIC (69th pct
+  of own linear-ACF band). Slate §4 → RESOLVED via this row. $0 / K unchanged (re-measurement).
+  [`RESULTS_CORRECTED.md`](../../lab/analysis/_inbox/rangestate_corrected_2026-08/RESULTS_CORRECTED.md)
+- **2026-08-18** — **`H-RANGESTATE-CL-1` (Step-0 slate S1b) → raw SIGNAL, downgraded to
+  NOT-CONFIRMED after adversarial review.** Daily True-Range top-quintile persistence, CL train
+  era; $0/K=1 disclosed. First raw battery reading cleared all four frozen limbs (gateHit
+  0.6282, placebo p=0.0005) — the program's first apparent SIGNAL. A heavier adversarial-verify
+  workflow (4 lenses + synthesis, scoped specifically because a SIGNAL is the highest-stakes
+  outcome type) found the placebo null misspecified: 20 independent zero-mechanism AR(1)
+  surrogates calibrated only to CL's own measured autocorrelation cleared the identical battery
+  at a *higher* rate than the real data, and the effect fails a crisis-year regime-concentration
+  test. **Verdict downgraded to `NOT-CONFIRMED`; mechanism-owed status stays OPEN.** MECHANISMS.md
+  `daily-range-state-persistence` heading and the sibling GC screen (S1a) both corrected in the
+  same pass. Step-0 slate rows S2/S3 (queued to reuse the same battery) **paused** pending a
+  structural fix. Audit note:
+  [`2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md`](../../docs/notes/audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md).
+  [`RESULTS_S1B.md`](../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md)
 - **2026-08-14n** — **MSL WHO-track `STILL DRY` (estate-wide).** Sweep went past this instrument’s fade well; no NEW WHO named anywhere on the Tradeify envelope. ACTIVE cell unchanged. notice (`git show 14d71c93:docs/notes/notice/N-2026-08-14-msl-who-track.md`). $0 / K=0.
 - **2026-08-14** — **MSL slate-3 BLOCKED (mechanism-dry).** WHO attempt on the reopened fade geometry found no family outside 2026-08-10 INTAKE-DRY; camp not opened. notice (`git show ef48b015:docs/notes/notice/N-2026-08-14-msl-slate-3-constraints.md`). ACTIVE cell unchanged (`OPEN — geometry-cleared, mechanism-owed`). $0 / K=0.
 - **2026-08-13p** — **MSL-S2A explore `FALSIFIED` (N-ACT).** [`RESULTS_g2`](../../lab/archive/msl_s2a_mcl_2026-08/RESULTS_g2.md) · [closure](../../docs/briefs/closures/MSL-S2A-closure-falsified.md) — trades/week 0.511; long FLIP FAIL; CONFIRM unread; Pine unpaid. $0 / K=0.

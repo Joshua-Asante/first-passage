@@ -190,6 +190,11 @@ lab/analysis/us500_discovery_2026-06-22/us500_15m.pkl
 # RESULTS.md + the *.py harness are the committed deliverable; caches/logs regenerate.
 # Paths use **/ so the theme-nest location (orb/) and any flat remnant both match.
 lab/analysis/**/orb_universe_2026-06-22/_cache_*.pkl
+
+# Databento vendor bars (GLBX.MDP3, redistribution not permitted) — regenerable at $0.00
+# per the pull command recorded in each campaign's own PREREG (Rule 1 estimate output pasted).
+lab/analysis/_inbox/rangestate_gc_2026-08/gc_1d.parquet
+lab/analysis/_inbox/rangestate_mcl_2026-08/cl_1d.parquet
 lab/analysis/**/orb_universe_2026-06-22/*.out
 lab/analysis/**/orb_universe_2026-06-22/_screen_*.json
 

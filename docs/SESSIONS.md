@@ -14,6 +14,150 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-18d — Corrected null designed, verified, and run OFFICIALLY: S1a NULL (near-miss dissolved), S1b SIGNAL-GENERIC; H-SLATE RESOLVED
+
+**Focus:** Operator commission ("take that on now, and identify how this affects S1a's result",
+ultracode) — build the structural repair the 18c audit owed, then re-score both screens.
+
+**Shipped:** (1) 4-lens **design panel** (`wf_ebc728eb-2ef`) → frozen class-battery spec
+([`corrected-null battery`](spec/2026-08-18-magnitude-persistence-corrected-null-battery.md)):
+IAAFT normal-scores surrogates (raw-TR domain FORBIDDEN — verdict-flipping, measured; AR(1)
+EXCLUDED as strawman), **presence-gates / attribution-TYPES** wiring (SIGNAL-GENERIC vs
+SIGNAL-EXCESS — canon-grounded claims are not retargeted at novelty), NEW L4 by-year regime
+limb, pre-registered interpretation table, spec committed before any official seed (`12877c4`).
+(2) Pilot surfaced a **spec-internal conflict**: the frozen "S1b L4 known-fail 6/9" prediction
+never applied the L4 rule's own n_cond<20 exclusion (CL 2010 n=14 → L4 PASS 6/8). 4-lens
+**pre-official verification** (`wf_e06ebc90-c3e`; independent reimplementation **bit-exact,
+44/44 quantities**) ruled FIX-THEN-RUN + rules-govern; FIX-1/2/3 (flag/diagnostic layer only,
+scoring asserted bit-identical), 16-item **ADDENDUM-1** appended, scoped operator election
+**PROCEED** taken. (3) **Official run** (M=1000, frozen seeds, drawn once): **S1a (GC) NULL**
+(driving L2+L4; obs at **8.4th pct** of its own linear-ACF band — the "near-miss" was below
+the zero-mechanism benchmark; CASE A, framing retracted). **S1b (CL) SIGNAL-GENERIC** (69th
+pct — generic volatility clustering; A6 rails: no mechanism wording, no mechanism-owed
+discharge, no conditioner license). **Slate §4 → RESOLVED.** Propagation: RESULTS addenda ×2,
+[`RESULTS_CORRECTED`](../lab/analysis/_inbox/rangestate_corrected_2026-08/RESULTS_CORRECTED.md),
+MECHANISMS/MGC(cell→DEAD)/MCL(C5) + session logs, audit note **Closed (immediate+structural)**,
+`strategy-validation` §5 autocorrelation clause + `futures-anomaly-discovery` battery-reuse red
+flag (authoring path), memories.
+
+**Decisions/defects:** The design panel caught its own seed-collision (R10) and the
+verification caught a mis-calibrated diagnostic domain (z-domain gate ran ~2.7× looser than
+the Spearman quantity the tolerance was calibrated on — FIX-2). The L4 prediction-miss was
+handled append-only with both counterfactual readings disclosed (realized false-pass 0.1178 vs
+frozen-representative 0.090); no parameter moved after any result was seen.
+
+**Open / next:** S1b's conditioner-engineering prereg is electable (new GO, new K; must
+confront calm-regime OPEN + O2 arithmetic + O3 lift gate + L4 boundary). S2 needs its stage-1
+$0 cheap falsifier (overnight-state vs matched day-session-history conditioning) before any
+null design; S3 needs its matched-day prereg. Slate 2026-09-15 date now moot (RESOLVED).
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+
+## 2026-08-18c — S1b runs SIGNAL, adversarial review finds it NOT-CONFIRMED: placebo test invalidated
+
+**Focus:** Operator GO ("GO S1b") off the Step-0 slate queue — daily True-Range top-quintile
+persistence on crude oil (CL), replicating S1a's frozen object on a second instrument.
+
+**Shipped:** First raw battery reading was the program's first **SIGNAL** (gateHit 0.6282,
+n=425, all four frozen limbs clear, placebo p=0.0005). Given SIGNAL is the highest-stakes
+outcome type, launched a heavier adversarial-verify workflow than S1a's (independent
+reimplementation from the frozen prereg text alone + regime-concentration drop-year test +
+placebo-design skepticism). **Result: the placebo null is structurally misspecified** — it does
+not control for CL's own ordinary True-Range autocorrelation (measured log-TR lag-1 ρ=0.4520).
+20 independent zero-mechanism AR(1) surrogates calibrated only to that one coefficient cleared
+the identical battery at a *higher* rate (0.72–0.80) than the real data. Independently
+corroborated: removing the 2011/2014/2016 crisis-year cluster flips the verdict to NULL; the
+calm-year subset alone is a clean NULL failing its own placebo. **Verdict downgraded to
+`NOT-CONFIRMED`.** Since S1a shares the identical placebo function byte-for-byte, its own
+placebo pass (p=0.0095) is retroactively suspect too — corrected in the same pass (S1a's
+bottom-line NULL is unchanged, since it already failed the CI limb independently, but the
+"live prior for S1b" framing is retracted). Full root-cause + repair plan:
+[audit note](../docs/notes/audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md).
+[`RESULTS_S1B.md`](../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md) ·
+[`RESULTS_S1A.md`](../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md) (corrected).
+
+**Decisions/defects:** The defect is program-level, not S1b-specific — the four-limb battery
+(designed for `H-DSTRUCT-MNQ-1`'s directional-match claim, reused verbatim for a
+magnitude-persistence claim) was never re-validated for the new claim family's confound
+(autocorrelation, not base-rate skew). Caught by the adversarial-verify discipline itself,
+specifically because the stakes of a SIGNAL result warranted heavier scrutiny than a routine
+NULL — the review that would have been skipped as "redundant on unchanged code" is exactly what
+found this. Board writes: `MECHANISMS.md` `daily-range-state-persistence` heading corrected
+(both class findings re-typed `test invalid`); `MGC.md` G4 + `MCL.md` C4 corrected/added; Step-0
+slate S1a/S1b sections corrected, **S2/S3 paused**, §4 falsifier clock paused (not stopped, not
+extended past 2026-09-15).
+
+**Open / next:** Structural repair owed before any further magnitude-persistence-class Tier-1
+screen: design a corrected, autocorrelation-matched null (AR/GARCH-calibrated surrogate or
+phase-randomized surrogate) — a fresh methodology decision, not attempted this session.
+`strategy-validation` §5 owes an explicit autocorrelation-confound clause alongside its existing
+directional-drift clause. S2/S3 stay paused until then.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+
+## 2026-08-18a — W×ORB gate stopped at dedup; H-DSTRUCT-MNQ-1 NULL; Step-0 daily-geometry slate drafted
+
+**Focus:** Mechanism-by-mechanism program kickoff (operator thread): can the validated W layer
+gate ORB-MNQ? Does a daily-native version of the structure stand alone? Then build the Step-0
+mechanism slate.
+
+**Shipped:** (1) W×ORB stratification **STOPPED at freeze-stage dedup, $0, nothing run** —
+Q-WLEGB-1 already falsified sub-weekly transfer, and its own prereg §1 had rejected the
+ORB-entry form under the F2 guard ("a fifth ORB conditioning gate wearing a different label").
+(2) `H-DSTRUCT-MNQ-1` (daily close-vs-EMA20 → next-day RTH O→C; frozen prereg; $0; K=1
+disclosed) → **NULL, 3 of 4 limbs failed**; bearish arm carries zero information (up-rate
+54.03% vs 54.39% unconditional). Monotonic profile complete: weekly real → transfer null →
+daily-native null. MNQ ledger DEAD row added.
+[`PREREG`](../lab/analysis/_inbox/dstruct_mnq_2026-08/PREREG_DSTRUCT.md) ·
+[`RESULTS`](../lab/analysis/_inbox/dstruct_mnq_2026-08/RESULTS_DSTRUCT.md).
+(3) Step-0 slate drafted: [`brief`](briefs/2026-08-18-step0-daily-geometry-mechanism-slate.md)
+— daily-geometry class (range/level, not direction) on the non-index triad, per-row WHO +
+dedup + cost arithmetic + frozen Tier-1 screen specs. Operator marks owed on the slate.
+
+**Decisions/defects:** None new. The two negative results cost $0 and one hour combined — the
+Tier-1 screen tier working as designed.
+
+**Open / next:** Operator GO on the slate's screen queue (§6); deep-lane charter §7 steps 2–4
+(`--lane deep` flag, doc scoping, skill wiring) still owed before the next lane campaign.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+
+## 2026-08-18b — S1a (GC range-state persistence) run: NULL near-miss, adversarially verified
+
+**Focus:** Operator GO ("GO S1a") off the Step-0 slate queue — first live lane-adjacent screen
+of the mechanism-by-mechanism program: daily True-Range top-quintile persistence, GC train era.
+
+**Shipped:** Frozen prereg + first-draft runner authored, $0 pull ($0.0000 confirmed at
+estimate), Step-0 panel-integrity battery run pre-freeze (caught the standing
+`databento ohlcv-1d weekend bars` lesson live — 434 phantom Sunday bars, dropped per the
+established remedy). Before trusting any number: 4-lens + synthesis adversarial-verify workflow
+(mirroring this repo's own DL-1 precedent) — lookahead/leakage clean (independently corroborated
+by an exact arithmetic identity); one MUST-FIX caught (CI block size 10d contradicted the
+prereg's own 60-day clustering rationale; CI also implemented non-circular despite being
+declared circular) and fixed before the trusted run, both corrections verdict-preserving and
+conservative. **Result: NULL, near-miss** — 3 of 4 frozen limbs pass (n-floor, halves, placebo
+p=0.0095) but the corrected CI lower bound (0.4545) falls 4.55pp short of 0.50. Board writes:
+new `MECHANISMS.md` heading `daily-range-state-persistence`; `MGC.md` G4 + session log; CATALOG
+row. [`PREREG`](../lab/analysis/_inbox/rangestate_gc_2026-08/PREREG_S1A.md) ·
+[`RESULTS`](../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md).
+
+**Decisions/defects:** Two adversarial-review-caught defects, both disclosed and fixed pre-trust
+rather than silently patched (CI block size; CI circularity + a hand-typed roll-date example
+list, 2 of 5 dates wrong, corrected to script-persisted output). A separate panel-completeness
+gap (13 gap-days, 2 unexplained by holidays, <1% of observations) was found, disclosed as
+bounded-materiality, not fixed (doesn't warrant a mid-campaign design change to a frozen object).
+
+**Open / next:** S1b (MCL) is queued next per the slate's own order; the S1a near-miss (placebo
+clears, CI doesn't) is a live prior for it, not a blind re-test. Operator GO owed on S1b/S2/S3.
+
+---
+
 ## 2026-08-17c — Six-lead P3 un-HOLD: dry-run $0, sleeve CLOSED (calendar-spread SCREEN-FAIL)
 
 **Focus:** Operator: "unHOLD P3." Record the GO; run only the plan's Phase-1 packet (paper
@@ -40,6 +184,7 @@ F1 queue row 1; B7-REFIRE/M1 row 2; weekly token (deadline **2026-08-21**); four
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-17e — Q-POLFRONT-1 intraday-honest fork executed: 5.1× policy frontier does not survive
 
 **Focus:** Operator GO ("open the intraday-honest remeasurement") on the named-but-unopened
@@ -76,6 +221,7 @@ all (NAS100 base-only PF is 0.31). Six-lead pursuit thread (17d) and its carries
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-17d — Six-lead pursuit thread closes: P1-CF/P2-CF FAIL, limb-2 ruled, channel addendum landed
 
 **Focus:** Continue the six-lead pursuit plan from 17b's OpenAlex fork resolution — operator GO on
@@ -103,6 +249,7 @@ weekly token trade (deadline **2026-08-21**) still unrecorded this week.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-17b — Koijen axis-2 (Carry) fork resolved: OpenAlex substitute → 6 screen-level leads
 
 **Focus:** Operator: "Take the Koijen axis-2 fork to me for a decision" (surfaced from the S3
@@ -139,6 +286,7 @@ as dry pending any of these actually clearing Req-1a). Carry: queue #0 weekly to
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-17a — MSL-S2B successor's CON-5 D2 falsifier executed: `D2_FAIL`
 
 **Focus:** Operator: "run the S3 falsifier gate once MYM_M15.csv is available." Panel had become

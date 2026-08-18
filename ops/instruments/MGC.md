@@ -20,6 +20,10 @@ cells:
     verdict: DEAD
     date: 2026-08-10
     source: "../../lab/analysis/harvest/tnec_l2_sourcing_2026-08-10/DELTA_EXTRACTION_R8.md"
+  - mechanism: daily-range-state-persistence
+    verdict: DEAD
+    date: 2026-08-18
+    source: "../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md"
 bars:
   - id: free-data-5th-leg-snag-closed-2026-07-01
     source: "../../docs/rejected_candidates.md"
@@ -46,6 +50,7 @@ structure:
 | **G1** | **Voided kill: `E-K`.** Third-leg map eliminated MGC (bank 3177 → floor 2.05 > Cap). Banner + K-bank ADR: Clause K no longer eliminates; bank is disclosure (still large — cite manifests, don’t hardcode as authority). | [`third-leg RESULTS`](../../lab/analysis/c1/c1_thirdleg_instrument_map_2026-07-27/RESULTS.md) L35 + banner | **HIGH** (ADR void). |
 | **G2** | **Standing non-K grounds.** Metals Product Group · E1–E7 class-fit · DISC-CAMP-0 family history as disclosure/Req-3 bank fact · micro proxy vs GC · cost-tax from third-leg row (re-cite: cost-tax 1t r=1 **0.0902**). | third-leg RESULTS · envelope · [`lab/CATALOG.md`](../../lab/CATALOG.md) disccamp0 row | **HIGH** as posture. |
 | **G3** | **Envelope + TNEC class attestation (no candidate).** See table. N-SIZE = U. | this session | **MODERATE**. |
+| **G4** | ⚠ **CORRECTED 2026-08-18 — test invalidated, see [audit note](../../docs/notes/audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md).** `H-RANGESTATE-GC-1` (S1a, Step-0 slate row S1) — ledger cell verdict `AMBIGUOUS-PARKED` (unchanged). Daily top-quintile-TR → elevated-next-day-TR conditioner, GC parent train era. **Raw battery reading `NULL`** (conditional hit rate 0.5299, n=451/2,116; CI lower bound 0.4545 fails by 4.55pp) — **bottom line unchanged**, but the placebo pass (p=0.0095) originally cited as partial corroboration is **not valid corroboration**: the sibling CL screen (S1b) showed this same placebo construction is cleared by zero-mechanism AR(1) surrogates at a *higher* rate than either real dataset. Do not cite "3 of 4 limbs pass" as meaningful; the CI-limb failure is the only trustworthy reason this cell is `NULL`. The "live prior for MCL" framing originally here is retracted — S1b's own raw SIGNAL was independently downgraded to NOT-CONFIRMED for the identical reason. | [`RESULTS_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md) (correction banner) · [`RESULTS_S1B.md`](../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md) | **HIGH** (frozen prereg, adversarially verified; battery defect itself is HIGH-confidence, quantified via 20/20 surrogate trials). |
 
 ### Envelope E1–E7 + TNEC class attestation
 
@@ -78,6 +83,28 @@ structure:
 
 ## SESSION LOG
 
+- **2026-08-18c** — **OFFICIAL corrected-null re-score: cell → `DEAD`; near-miss framing
+  retracted (CASE A).** Under the frozen class battery (IAAFT normal-scores null + L4 by-year
+  limb, [spec+ADDENDUM-1](../../docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md)):
+  **NULL (driving L2+L4)** — obs 0.5299 at the **8.4th pct** of GC's own linear-ACF band
+  (below the zero-mechanism benchmark's center); by-year 5/9 vs required 7. No SUB-LINEAR flag
+  (p_lower 0.0849); real lift at the 41st pct of the surrogate lift band (base-rate artifact
+  note per A13). Re-proposal bar: corrected battery + different construction or longer panel.
+  $0 / K unchanged (re-measurement). [`RESULTS_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md) §6 ·
+  [`RESULTS_CORRECTED.md`](../../lab/analysis/_inbox/rangestate_corrected_2026-08/RESULTS_CORRECTED.md)
+- **2026-08-18b** — **G4 corrected — placebo test invalidated, not the bottom-line verdict.**
+  Adversarial review of the sibling CL screen (S1b) found the four-limb battery's placebo does
+  not control for True-Range autocorrelation (20/20 zero-mechanism AR(1) surrogates cleared it
+  at a higher rate than the real data). S1a's `NULL` stands (CI limb independently fails), but
+  the placebo-pass corroboration and "live prior for S1b" framing are retracted. Audit note:
+  [`2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md`](../../docs/notes/audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md).
+  $0 / K=0 (correction only, no new spend).
+- **2026-08-18** — **`H-RANGESTATE-GC-1` (Step-0 slate S1a) → NULL, near-miss.** Daily
+  range-state persistence conditioner screened on GC train era ($0, K=1 disclosed). 3/4 limbs
+  pass; CI lower bound fails by 4.55pp. Adversarially verified before trust (4-lens workflow
+  caught + fixed a CI-block-size defect, verdict-preserving). New `MECHANISMS.md` heading
+  `daily-range-state-persistence`. Routes to S1b (MCL) per the slate queue. $0 / K=1.
+  [`RESULTS_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md)
 - **2026-08-12c** — **MSL P3.1 B4 GO → G0 FROZEN:** [`PREREG_G0`](../../lab/archive/msl_c2_mgc_2026-08/PREREG_G0.md); explore/Pine unpaid. $0 / K=0.
 - **2026-08-12b** — **MSL P3.1 Stage-1 PASS (pre-G0):** freeze `london-range-failed-extension-fade`; SNAG CLEAR via R-FRAMING §2.1; RT $4.12 screens PASS; delete/flip unpaid pending B4. [`STAGE1`](../../lab/archive/msl_c2_mgc_2026-08/STAGE1.md). $0 / K=0.
 - **2026-08-12** — **PROFILE `bars:` Stage-0 (MSL P3.1 / C2):** registered `free-data-5th-leg-snag-closed-2026-07-01` → `docs/rejected_candidates.md` (SNAG-CLOSED 2026-07-01). Door-check non-vacuous; index OHLCV bar intentionally omitted (C2 outside that domain). `profiles.json` rebuilt same commit. $0 / K=0.
