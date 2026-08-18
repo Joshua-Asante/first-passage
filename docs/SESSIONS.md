@@ -14,9 +14,9 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
-## 2026-08-18l — Q-SIGID-1 §7 Phase 3: name Bar Magnifier as candidate architecture #4
+## 2026-08-18n — Q-SIGID-1 §7 Phase 3: name Bar Magnifier as candidate architecture #4
 
-**Focus:** Add Bar Magnifier as a fourth named Phase 3 architecture on the existing owner. Prep only.
+**Focus:** Add Bar Magnifier as a fourth named Phase 3 architecture on the existing owner. Prep only. (Renumbered 18l→18n on merge with main — main already held 18l for ECON EXPORT; open xindex PR holds 18m.)
 
 **Shipped:** branch `cursor/q-sigid-bar-magnifier-7784`. Surgical edit to [`Q-SIGID-1`](briefs/Q-SIGID-1-intra-bar-signal-identity.md) §7 Phase 3 only. One prior mention remains [`EXPORT_SPEC`](../lab/archive/p2_replay_2026-07/EXPORT_SPEC.md) L32 (paired-export parity, not a Q-SIGID rejection).
 
@@ -27,6 +27,21 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
+## 2026-08-18l — ECON EXPORT v0.1: request.economic() calendar-provenance cross-check
+
+**Focus:** Provenance tool — TV `request.economic()` series-update dates vs hand-pinned RATES / NG-EIA / EVT-1 calendars. Hygiene only. (Renumbered 18g→18l on merge with main — main already held 18g for Q-TRAINKILL-1.)
+
+**Shipped:** Spec + parser + diff + synthetic tests. Pine listing in spec (working `.pine` gitignored + hash-pinned). First-run report at owner. Owner: [`docs/spec/2026-08-18-econ-export-v01.md`](spec/2026-08-18-econ-export-v01.md).
+
+**Decisions/defects:** Doctrine at the spec (series API, not a calendar; no campaign reopen).
+
+**Open / next:** Operator may land `ECON_EXPORT_v0.1_*.csv` and re-run the diff. Next slate admission screens claim horizon vs the E1 flat-by-16:00 envelope. S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. TRAINKILL census STOP — re-proposal is a new panel or an operator election. B1 Koijen admissibility parallel. B2 unblocked: elects on existing evidence + H1 screen, TRAINKILL holds disclosed. MNQSR-1 / Q-CAPA-1 bank rulings discharged (live figure at MNQ.md §K_BANKED). F1 / B7-REFIRE.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+
 ## 2026-08-18k — Operator "OK on both": MNQSR-1 and Q-CAPA-1 bank
 
 **Focus:** Discharge the two OPEN items from the MNQ ledger recon after operator *"OK on both"*. (Renumbered 18f→18k on merge with main — main already held 18f for Q-EXPR-1.)
@@ -40,6 +55,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-18j — MNQ K_banked ledger recon: Q-TXG-1 backfilled (5→6); MNQSR-1 / Q-CAPA-1 flagged OPEN
 
 **Focus:** Reconcile stale `K_banked(MNQ)` on [`ops/instruments/MNQ.md`](../ops/instruments/MNQ.md) after a pre-reg disclosure pass found the last `bank X→Y` was 2026-08-05a. (Renumbered 18e→18j on merge with main — main already held 18e for Q-CONDVAL-1.)
@@ -51,6 +67,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Open / next:** (historical) Operator rule whether `MNQSR-1` K=14 (once, not 28) banks, and whether `Q-CAPA-1` Cap-seat is inside the family 6 or a separate reserved seat. Discharged 18k.
 
 ---
+
 ## 2026-08-18i — Q-TRAINKILL-3 AMBIGUOUS-HOLD: FALSIFIED block names NEG, AMBIGUOUS block names DEP; census STOP
 
 **Focus:** Operator GO on the TK2 Iterate packet — do the two surviving DGPs concord across event-class blocks?
@@ -64,6 +81,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-18h — Q-TRAINKILL-2 AMBIGUOUS-HOLD: S2A promoted; both NEG and DEP-ZERO fit; do not pick
 
 **Focus:** Operator GO on the TK1 Iterate packet — recover BOUNDED mean-R CIs or score two pre-declared alternate DGPs.
@@ -77,6 +95,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-18g — Q-TRAINKILL-1 AMBIGUOUS-HOLD: lo/hi bracket disagreement is design-certain at freeze; no bar moves
 
 **Focus:** Operator GO on notice packet 3 — is the explore/train kill record consistent with zero edge, with true +0.10R@$75 edges the designs are underpowered to pass, or with neither?
@@ -90,6 +109,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-18f — Q-EXPR-1 RESOLVED (H1): weekly/daily regularities are not E1-expressible; slate admission screens horizon
 
 **Focus:** Operator GO on notice packet 2 — what measurable property of the regularity→expression conversion accounts for the orphaning?
@@ -103,6 +123,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-18e — Q-CONDVAL-1 FALSIFIED: CL range-state lift misses the R-term bar; conditioner branch parked
 
 **Focus:** Operator GO on notice packet 1 — does the validated CL range-state lift buy anything in R terms at the intraday-honest envelope?
@@ -116,6 +137,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-18d — Corrected null designed, verified, and run OFFICIALLY: S1a NULL (near-miss dissolved), S1b SIGNAL-GENERIC; H-SLATE RESOLVED
 
 **Focus:** Operator commission ("take that on now, and identify how this affects S1a's result",

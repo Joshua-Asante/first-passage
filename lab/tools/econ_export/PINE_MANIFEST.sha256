@@ -1,0 +1,15 @@
+# PINE_MANIFEST.sha256 — ECON EXPORT v0.1 (request.economic provenance tool)
+# ---------------------------------------------------------------------------
+# WHY THIS FILE EXISTS
+#   `**/*.pine` is gitignored (public-clone posture). The durable source is the
+#   listing in docs/spec/2026-08-18-econ-export-v01.md. This pin lets a local
+#   working copy of econ_export_v01.pine be verified against that listing.
+#   Not a locked-strategy pin — do not add this path to core/strategies/MANIFEST.sha256.
+#
+# CONVENTION
+#   SHA256 over UTF-8 bytes with LF line endings (CRLF normalized to LF first).
+#
+# VERIFY
+#   python -c "import hashlib,pathlib;p=pathlib.Path('lab/tools/econ_export/econ_export_v01.pine');print(hashlib.sha256(p.read_bytes().replace(b'\r\n',b'\n')).hexdigest())"
+# ---------------------------------------------------------------------------
+5b29e861b992cedd63b12984bbcd5d2037dbf424d6006fef864b9f86bffd27ac  econ_export_v01.pine
