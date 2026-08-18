@@ -14,28 +14,91 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
-## 2026-08-18f — Operator "OK on both": MNQSR-1 and Q-CAPA-1 bank
+## 2026-08-18k — Operator "OK on both": MNQSR-1 and Q-CAPA-1 bank
 
-**Focus:** Discharge the two OPEN items from 18e after operator *"OK on both"*.
+**Focus:** Discharge the two OPEN items from the MNQ ledger recon after operator *"OK on both"*. (Renumbered 18f→18k on merge with main — main already held 18f for Q-EXPR-1.)
 
 **Shipped:** Read as both count. Notice-phase closed manifests bank; Cap-seat K folds into the family tally. Live figure at [`MNQ.md` §K_BANKED](../ops/instruments/MNQ.md). Addendum on [`ADR 2026-08-04`](adr/2026-08-04-family-k-bank-disclosure-not-gate.md); ledger / N16 / DEAD rows updated. Disclosure-only.
 
 **Decisions/defects:** [ADR 2026-08-04 Addendum 2026-08-18](adr/2026-08-04-family-k-bank-disclosure-not-gate.md) — lane label does not exempt; Cap seat and family bank are not mutually exclusive. TNEC/R2/DSTRUCT `K=1 (disclosure; Cap not claimed)` rows stay out.
 
-**Open / next:** Carry 18d: S1b conditioner-engineering prereg electable (new GO, new K); S2 cheap falsifier; S3 matched-day prereg. 18e OPEN rulings discharged.
+**Open / next:** MNQSR-1 / Q-CAPA-1 bank rulings discharged (live figure at MNQ.md §K_BANKED). Next slate admission screens claim horizon vs the E1 flat-by-16:00 envelope. S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. TRAINKILL census STOP — re-proposal is a new panel or an operator election. B1 Koijen admissibility parallel. B2 unblocked: elects on existing evidence + H1 screen, TRAINKILL holds disclosed. F1 / B7-REFIRE.
 
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
-## 2026-08-18e — MNQ K_banked ledger recon: Q-TXG-1 backfilled (5→6); MNQSR-1 / Q-CAPA-1 flagged OPEN
+## 2026-08-18j — MNQ K_banked ledger recon: Q-TXG-1 backfilled (5→6); MNQSR-1 / Q-CAPA-1 flagged OPEN
 
-**Focus:** Reconcile stale `K_banked(MNQ)` on [`ops/instruments/MNQ.md`](../ops/instruments/MNQ.md) after a pre-reg disclosure pass found the last `bank X→Y` was 2026-08-05a.
+**Focus:** Reconcile stale `K_banked(MNQ)` on [`ops/instruments/MNQ.md`](../ops/instruments/MNQ.md) after a pre-reg disclosure pass found the last `bank X→Y` was 2026-08-05a. (Renumbered 18e→18j on merge with main — main already held 18e for Q-CONDVAL-1.)
 
 **Shipped:** [`MNQ.md`](../ops/instruments/MNQ.md) §K_BANKED + DEAD/session-log backfill. Unambiguous +1: `Q-TXG-1` striker×MNQ `DEAD(N-SURV)` (closure §10 banked K=1) → **5→6**. `MNQSR-1` Notice-phase K=14 and `Q-CAPA-1` Cap-seat K=1 flagged **OPEN** (no silent pick). Harvest Req 3 snapshot now points at the ledger. Disclosure-only.
 
-**Decisions/defects:** none — no ADR. Two operator rulings owed (Notice-phase banking; Cap-seat vs family tally). Owner: MNQ §K_BANKED.
+**Decisions/defects:** none — no ADR. Two operator rulings owed at write time (Notice-phase banking; Cap-seat vs family tally); discharged in 18k.
 
-**Open / next:** Operator rule whether `MNQSR-1` K=14 (once, not 28) banks, and whether `Q-CAPA-1` Cap-seat is inside the family 6 or a separate reserved seat. Carry 18d: S1b conditioner-engineering prereg electable (new GO, new K); S2 cheap falsifier; S3 matched-day prereg.
+**Open / next:** (historical) Operator rule whether `MNQSR-1` K=14 (once, not 28) banks, and whether `Q-CAPA-1` Cap-seat is inside the family 6 or a separate reserved seat. Discharged 18k.
+
+---
+## 2026-08-18i — Q-TRAINKILL-3 AMBIGUOUS-HOLD: FALSIFIED block names NEG, AMBIGUOUS block names DEP; census STOP
+
+**Focus:** Operator GO on the TK2 Iterate packet — do the two surviving DGPs concord across event-class blocks?
+
+**Shipped:** branch `cursor/q-trainkill-3`. Prereg hashed before block g (sha256 `93c21d21…ad57e7f6`). Block F `NEG` 9.83:1; Block A `DEP` 4.06:1. [`closure`](briefs/closures/Q-TRAINKILL-3-closure-ambiguous-hold.md) · [`RESULTS`](../lab/analysis/_inbox/q_trainkill_3_2026-08/RESULTS.md).
+
+**Decisions/defects:** predicted split held. Election limb did not fire. No Q-TRAINKILL-4.
+
+**Open / next:** Next slate admission screens claim horizon vs the E1 flat-by-16:00 envelope. S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. TRAINKILL census STOP — re-proposal is a new panel or an operator election, not another scoring rule on the same P vectors. B1 Koijen admissibility parallel. B2 unblocked: elects on existing evidence + H1 screen, TRAINKILL holds disclosed. F1 / B7-REFIRE.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+## 2026-08-18h — Q-TRAINKILL-2 AMBIGUOUS-HOLD: S2A promoted; both NEG and DEP-ZERO fit; do not pick
+
+**Focus:** Operator GO on the TK1 Iterate packet — recover BOUNDED mean-R CIs or score two pre-declared alternate DGPs.
+
+**Shipped:** branch `cursor/q-trainkill-2`. Prereg hashed before recovery (sha256 `86049b89…7605b5d`). MSL-S2A promoted; six stay BOUNDED. Limb 1 no-fire. Limb 2 both alternates fit. [`closure`](briefs/closures/Q-TRAINKILL-2-closure-ambiguous-hold.md) · [`RESULTS`](../lab/analysis/_inbox/q_trainkill_2_2026-08/RESULTS.md).
+
+**Decisions/defects:** §F predicted 0 promotions; S2A had mean-R CIs on the page. Floor / product / μ not moved. Did not pick a singleton after seeing both g's.
+
+**Open / next:** Next slate admission screens claim horizon vs the E1 flat-by-16:00 envelope. S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. Q-TRAINKILL-3 named, not opened (NEG-vs-DEP discriminator or an operator election of one working-model). B1 Koijen admissibility parallel. B2 unblocked: elects on existing evidence + H1 screen, TRAINKILL holds disclosed. F1 / B7-REFIRE.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+## 2026-08-18g — Q-TRAINKILL-1 AMBIGUOUS-HOLD: lo/hi bracket disagreement is design-certain at freeze; no bar moves
+
+**Focus:** Operator GO on notice packet 3 — is the explore/train kill record consistent with zero edge, with true +0.10R@$75 edges the designs are underpowered to pass, or with neither?
+
+**Shipped:** branch `cursor/q-trainkill-1`. Pre-Q + prereg froze set/bar/se/event-map/floor **before** the table (sha256 `91855ed1…81730`). n*=8 scored / 7 BOUNDED; g(0)=0.024; g(0.10)≈1.8e-05; extremes disagree. [`closure`](briefs/closures/Q-TRAINKILL-1-closure-ambiguous-hold.md) · [`RESULTS`](../lab/analysis/_inbox/q_trainkill_1_2026-08/RESULTS.md).
+
+**Decisions/defects:** predicted `GATES-UNDERPOWERED` missed (four both-arms FALSIFIED products + CON-4 tight straddle); closure §4 (adversarial-review pass) found the lo/hi disagreement is design-certain — the 4-AMBIGUOUS/4-FALSIFIED/7-BOUNDED event map alone fixes lo=`MISCALIBRATED`, hi≠`MISCALIBRATED` for any CI, so `RESOLVED` was unreachable before the table was transcribed; within that design the +0.10R DGP is rejected at both brackets. Floor / product not moved.
+
+**Open / next:** Next slate admission screens claim horizon vs the E1 flat-by-16:00 envelope. S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. Q-TRAINKILL-2 named, not opened (recover BOUNDED mean-R CIs or a pre-declared alternate DGP). B1 Koijen admissibility parallel. B2 unblocked: elects on existing evidence + H1 screen, TRAINKILL hold disclosed. F1 / B7-REFIRE.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+## 2026-08-18f — Q-EXPR-1 RESOLVED (H1): weekly/daily regularities are not E1-expressible; slate admission screens horizon
+
+**Focus:** Operator GO on notice packet 2 — what measurable property of the regularity→expression conversion accounts for the orphaning?
+
+**Shipped:** branch `cursor/q-expr-1`. Pre-Q + prereg froze share/class/H-positive rules **before** the table (sha256 `27c366f4…e6441a`). H1 4/4; H2 1/5; H3 cannot fire. [`closure`](briefs/closures/Q-EXPR-1-closure-resolved.md) · [`RESULTS`](../lab/analysis/_inbox/q_expr_1_2026-08/RESULTS.md).
+
+**Decisions/defects:** R2AGRUN death-stage token mapped to CI-power (no `magnitude` in the 5-set). Q-WLEGB-1 has no in-tree brief — cited via MNQ N8.
+
+**Open / next:** Next slate admission screens claim horizon vs the E1 flat-by-16:00 envelope. S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. Notice packet Q-TRAINKILL-1 named, not opened. B1 Koijen admissibility parallel. B2 waits on TRAINKILL (expiry 2026-09-01) with the H1 screen already in. F1 / B7-REFIRE.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+## 2026-08-18e — Q-CONDVAL-1 FALSIFIED: CL range-state lift misses the R-term bar; conditioner branch parked
+
+**Focus:** Operator GO on notice packet 1 — does the validated CL range-state lift buy anything in R terms at the intraday-honest envelope?
+
+**Shipped:** branch `cursor/q-condval-1`. Pre-Q + prereg froze the three levers **before** JSON substitute (sha256 `d1265eb2…48b386`). Arithmetic: L=0.1297 < `L_star`=0.4226 → `FALSIFIED`. O2 discharged. [`closure`](briefs/closures/Q-CONDVAL-1-closure-falsified.md) · [`RESULTS`](../lab/analysis/_inbox/q_condval_1_2026-08/RESULTS.md).
+
+**Decisions/defects:** Notice D attributed GC's +0.052 lift to S1b; runner read CL keys only. Easy-envelope end would clear — recorded, not a rescue.
+
+**Open / next:** S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. Notice packets Q-EXPR-1 and Q-TRAINKILL-1 named, not opened. B1 Koijen admissibility parallel. F1 / B7-REFIRE.
 
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
@@ -183,6 +246,7 @@ bounded-materiality, not fixed (doesn't warrant a mid-campaign design change to 
 clears, CI doesn't) is a live prior for it, not a blind re-test. Operator GO owed on S1b/S2/S3.
 
 ---
+
 ## 2026-08-17f — Harvest Req-3 relief-valve line + parent-ADR reader-intercept
 
 **Focus:** Internal doc-skew on `strategy_harvest.md`: the relief-valve heading still called Req-3 (family K-bank) "truly final" after the 2026-08-04 demotion to disclosure-not-gate.

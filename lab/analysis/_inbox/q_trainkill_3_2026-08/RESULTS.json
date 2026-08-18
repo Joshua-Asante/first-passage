@@ -1,0 +1,32 @@
+{
+  "prereg_sha256": "93c21d21eb0fd2d0e580a384a586dbf10d19d8a23a593dea6e147f63ad57e7f6",
+  "tk2_source": "lab/analysis/_inbox/q_trainkill_2_2026-08/RESULTS.json",
+  "election_fired": false,
+  "block_f": {
+    "ids": [
+      "MSL-C1",
+      "MSL-C2",
+      "MSL-C3-K2",
+      "Q-MNQDTL-CON-1"
+    ],
+    "g_neg": 0.24562440079162623,
+    "g_dep": 0.024997895148220373,
+    "ratio_neg_over_dep": 9.82580330604805,
+    "winner": "NEG"
+  },
+  "block_a": {
+    "ids": [
+      "Q-TNEC-CON-2",
+      "Q-TNEC-CON-3",
+      "Q-TNEC-CON-4",
+      "Q-TNEC-CON-5",
+      "MSL-S2A"
+    ],
+    "g_neg": 0.233915253227925,
+    "g_dep": 0.9500042097035593,
+    "ratio_neg_over_dep": 0.24622549125431378,
+    "winner": "DEP"
+  },
+  "verdict": "AMBIGUOUS-HOLD",
+  "named_reading": "NEG|DEP"
+}
