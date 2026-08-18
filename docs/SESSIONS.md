@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-18p — M6B ledger opened; initial Databento census estimate-only
+
+**Focus:** First-touch ledger for M6B + price an initial census pull. Dedup clean (only firm_rules L58).
+
+**Shipped:** branch `cursor/m6b-ledger-census-7784`. [`M6B.md`](../ops/instruments/M6B.md) (geometry-documented, no mechanism cell, no candidate; Bulenox-only fee cite). Estimate-only census: [`COST_DRYRUN_M6B_2026-08-18.md`](../ops/instruments/COST_DRYRUN_M6B_2026-08-18.md). Profiles rebuilt.
+
+**Decisions/defects:** none — no pull. Sibling M6E `E-COST` does not transfer. Operator decides whether to spend the priced pull.
+
+**Open / next:** Carry 18m/18k: MNQSR-1 / Q-CAPA-1 bank rulings discharged (live figure at MNQ.md §K_BANKED). Next slate admission screens claim horizon vs the E1 flat-by-16:00 envelope. S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. TRAINKILL census STOP — re-proposal is a new panel or an operator election. B1 Koijen admissibility parallel. B2 unblocked: elects on existing evidence + H1 screen, TRAINKILL holds disclosed. F1 / B7-REFIRE.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-18m — xindex RV addback: ES+RTY Databento cost dry-run (estimate only)
 
 **Focus:** Price the closure's own ES+RTY intraday addback. Poor-prior falsifier, not a reopen. (Session letter 18m kept on merge with main — main already held 18n for Q-SIGID / 18l for ECON EXPORT.)
