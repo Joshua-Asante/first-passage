@@ -128,6 +128,7 @@ drop-{2011,2014,2016} diagnostic; the §1 "calm-subset independent NULL" is prov
 its CI component survives, its placebo component is VOID (retired null); the level-based
 disclosure buckets read calm 0.617 / crisis 0.649 vs the review's event-identity split 0.537
 (neither travels without its year list — A7). **Routing:** counts toward slate §4 RESOLVED
-(H-SLATE RESOLVED); any follow-up = conditioner-engineering prereg, new operator GO, new K,
-confronting the calm-regime question + O2 + O3 + the L4 boundary fact. Full record:
+(H-SLATE RESOLVED); conditioner-engineering follow-up **PARKED** by
+[`Q-CONDVAL-1`](../../../docs/briefs/closures/Q-CONDVAL-1-closure-falsified.md)
+(`FALSIFIED` 2026-08-18; O2 discharged). Full record:
 [`RESULTS_CORRECTED.md`](../rangestate_corrected_2026-08/RESULTS_CORRECTED.md).

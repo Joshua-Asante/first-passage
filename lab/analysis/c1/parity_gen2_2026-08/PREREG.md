@@ -42,8 +42,12 @@
 - **Ranking metric:** per-trade `pnl` (float, account currency of the export).
 - **Agreed scalars:** sum(`pnl`) = net; profit factor = gross_wins / max(gross_losses, ε).
 
-No mutation battery is frozen in this scaffold (Q-FILLTAX-1 Phase 1 still owed).
-This freeze covers **admission bands only**.
+This freeze covers **admission bands only**. The mutation battery (Q-FILLTAX-1 Phase 1) is
+frozen separately, 2026-08-18, at
+[`docs/briefs/pre-registration/Q-FILLTAX-1-verdict-preregistration.md`](../../../../docs/briefs/pre-registration/Q-FILLTAX-1-verdict-preregistration.md)
+— executable at
+[`tests/lab/test_q_filltax_1_parity_mutations.py`](../../../../tests/lab/test_q_filltax_1_parity_mutations.py),
+8/8 detection on the synthetic self-test. Phase 2 (first family TV anchor) still owed.
 
 ---
 

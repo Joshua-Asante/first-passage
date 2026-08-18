@@ -144,6 +144,11 @@ engineering lane prereg that SIGNAL-GENERIC routes to, alongside O3's out-of-sam
 lift gate). Its numeric proximity to obs_CL (0.6282) is disclosed. It anchors a power
 calculation only; it gates nothing by itself.
 
+> **Reader-intercept (2026-08-18, Q-CONDVAL-1):** the owed connecting arithmetic ran and
+> **missed** — [`Q-CONDVAL-1-closure-falsified`](../briefs/closures/Q-CONDVAL-1-closure-falsified.md).
+> `L_star`=0.4226 at the N-EDGE cell; measured C−U=0.1297. O2 is discharged. The 0.60 figure
+> remains DECLARED-NOT-DERIVED (never an input). Conditioner-engineering branch PARKED.
+
 ## §4 — D5: S2/S3 un-pause conditions (replaces the blanket pause)
 
 **S2 (overnight→day-session transmission): the S1 null does NOT port** — bias and outcome are

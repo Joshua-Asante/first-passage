@@ -45,6 +45,7 @@ documents the camp boundary for humans/tools.
 | mnq_capflow_orb_r_2026-08 | c1 | HOLD | archive owed (FALSIFIED): `FALSIFIED` · **cap_spent:** `False` | lab/analysis/c1/mnq_capflow_orb_r_2026-08/ | — |
 | mnq_event_ceiling_2026-08-04 | c1 | ACTIVE | — | lab/analysis/c1/mnq_event_ceiling_2026-08-04/ | — |
 | mnq_ofchan_routeb_2026-08 | c1 | ACTIVE | — | lab/analysis/c1/mnq_ofchan_routeb_2026-08/ | — |
+| mnq_orb_flow_depth_2026-08-18 | c1 | ACTIVE | FROZEN, pull not authorized — MBP-10 depth escalation on ORB-MNQ-1/N14, fresh authorization per MNQFLOW-1's own FM-4 | lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/ | — |
 | mnq_orb_flow_substrate_2026-08-05 | c1 | ACTIVE | — | lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/ | — |
 | mnq_orb_level_proximity_tod_2026-08-06 | c1 | ACTIVE | — | lab/analysis/c1/mnq_orb_level_proximity_tod_2026-08-06/ | — |
 | mnq_r2agrun_routeb_2026-08 | c1 | HOLD | `AMBIGUOUS-HOLD` — empty candidate list (magnitude floor; G3 → **ITERATE**, not promote). | lab/analysis/c1/mnq_r2agrun_routeb_2026-08/ | — |
@@ -157,6 +158,11 @@ documents the camp boundary for humans/tools.
 |---|---|---|---|---|---|
 | dstruct_mnq_2026-08 | _inbox | ACTIVE | NULL: daily close-vs-EMA20 bias carries nothing at daily granularity (Tier-1 screen, 3 of 4 limbs failed; K=1 disclosed) | lab/analysis/_inbox/dstruct_mnq_2026-08/ | — |
 | ict_mnq_2026-08 | _inbox | ACTIVE | ICT cascade re-run on NQ/MNQ at $0/K=0/Cap seat unspent: W and D confirm on independent instruments, pools falsified ... | lab/analysis/_inbox/ict_mnq_2026-08/ | — |
+| q_condval_1_2026-08 | _inbox | HOLD | archive owed (FALSIFIED): `FALSIFIED` (S1b conditioner-engineering branch parked) | lab/analysis/_inbox/q_condval_1_2026-08/ | — |
+| q_expr_1_2026-08 | _inbox | HOLD | archive owed (CLOSED): H1 horizon-mismatch 4/4 models the orphaning; H2 1/5 misses; H3 cannot fire | lab/analysis/_inbox/q_expr_1_2026-08/ | — |
+| q_trainkill_1_2026-08 | _inbox | HOLD | BOUNDED extremes disagree; scored core MISCALIBRATED | lab/analysis/_inbox/q_trainkill_1_2026-08/ | — |
+| q_trainkill_2_2026-08 | _inbox | HOLD | both named alternates fit (NEG and DEP-ZERO) | lab/analysis/_inbox/q_trainkill_2_2026-08/ | — |
+| q_trainkill_3_2026-08 | _inbox | HOLD | Block F NEG and Block A DEP (split) | lab/analysis/_inbox/q_trainkill_3_2026-08/ | — |
 | rangestate_corrected_2026-08 | _inbox | ACTIVE | OFFICIAL corrected-null re-score complete: S1a (GC) NULL (driving L2,L4; obs at 8.4th pct of its own linear-ACF band ... | lab/analysis/_inbox/rangestate_corrected_2026-08/ | — |
 | rangestate_gc_2026-08 | _inbox | ACTIVE | NULL, now official under the corrected battery (driving L2+L4; obs at 8.4th pct of GC's own linear-ACF band — near-mi... | lab/analysis/_inbox/rangestate_gc_2026-08/ | — |
 | rangestate_mcl_2026-08 | _inbox | ACTIVE | SIGNAL-GENERIC under the corrected battery (official 2026-08-18): canon-attributed volatility clustering (69th pct of... | lab/analysis/_inbox/rangestate_mcl_2026-08/ | — |

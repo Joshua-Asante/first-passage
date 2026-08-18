@@ -96,8 +96,10 @@ Both class findings below are OFFICIAL under it (2026-08-18, operator PROCEED).
   of its own linear-ACF band, p_upper 0.3107) — **canon-attributed volatility clustering,
   SURVIVAL-ONLY durability. NOT a mechanism; does NOT discharge MCL's mechanism-owed status;
   NOT a conditioner license** (ADDENDUM-1 A6 rails travel with any quote; the crisis>calm
-  per-year ordering and drop-cluster diagnostic are mandatory co-quotes). Routes only to a
-  conditioner-engineering prereg (new operator GO, new K). [MCL.md C4/C5](MCL.md) ·
+  per-year ordering and drop-cluster diagnostic are mandatory co-quotes). **Conditioner-engineering
+  branch PARKED** — [`Q-CONDVAL-1`](../../docs/briefs/closures/Q-CONDVAL-1-closure-falsified.md)
+  `FALSIFIED` 2026-08-18 (committed C−U 0.130 < frozen `L_star` 0.423 at the N-EDGE cell; O2
+  discharged). Finding stands. [MCL.md C4/C5/C6](MCL.md) ·
   [`RESULTS_S1B.md`](../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md) §5
 
 ## htf-compression-breakout-5m

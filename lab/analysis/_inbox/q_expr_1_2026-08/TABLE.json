@@ -1,0 +1,196 @@
+{
+  "note": "Assembled AFTER prereg sha256 27c366f4f7e7a924a8e91ba549c8ade25eadd2024add1e827d70a31828e6441a was printed. Committed-record census only. Do not edit shares here — score_expr.py owns the arithmetic.",
+  "regularities": [
+    {
+      "id": "R-W-STRUCT",
+      "object": "ICT weekly structure (close vs EMA20)",
+      "native_horizon": "weekly",
+      "e1_expressible_horizon": "session",
+      "first_measured": "2026-06-19",
+      "h1_eligible": true,
+      "source": "Q-ICT-CASCADE-1 W RESOLVED on US500; NQ 0.5880 / MNQ 0.5751 (2026-08-03 N8)",
+      "orphaned": true
+    },
+    {
+      "id": "R-D-FVG",
+      "object": "D-layer SSL bear-FVG draw",
+      "native_horizon": "daily",
+      "e1_expressible_horizon": "session",
+      "first_measured": "2026-06-19",
+      "h1_eligible": true,
+      "source": "Q-ICT-CASCADE-1 D SSL bear-FVG RESOLVED; NQ 0.8630 vs base 0.7494 (N9)",
+      "orphaned": true
+    },
+    {
+      "id": "R-D-POOLS",
+      "object": "liquidity pools anti-attractor",
+      "native_horizon": "daily",
+      "e1_expressible_horizon": "session",
+      "first_measured": "2026-06-19",
+      "h1_eligible": true,
+      "source": "cascade D pools FALSIFIED-as-attractors; three-instrument replication 2026-08-03 (N9)",
+      "orphaned": true
+    },
+    {
+      "id": "R-CL-RANGE",
+      "object": "CL daily range-state persistence (top-quintile TR → next-day TR)",
+      "native_horizon": "daily",
+      "e1_expressible_horizon": "session",
+      "first_measured": "2026-08-18",
+      "h1_eligible": true,
+      "source": "S1b official SIGNAL-GENERIC; Q-CONDVAL-1 FALSIFIED economics 2026-08-18",
+      "orphaned": true
+    },
+    {
+      "id": "M-DEADWEEKS",
+      "object": "c1 book dead-weeks / liveness (82/312 Mon–Fri weeks)",
+      "native_horizon": "operational",
+      "e1_expressible_horizon": "session",
+      "first_measured": "2026-08-02",
+      "h1_eligible": false,
+      "source": "lab/analysis/c1/c1_cadence_inactivity_2026-08-02/RESULTS.md",
+      "orphaned": true
+    },
+    {
+      "id": "M-REGIME-TIME",
+      "object": "Q-REGIME-TIME-1 stagnation time-cost (RESOLVED-LARGE)",
+      "native_horizon": "operational",
+      "e1_expressible_horizon": "session",
+      "first_measured": "2026-06-09",
+      "h1_eligible": false,
+      "source": "lab/analysis/regime/regime_time_cost_2026-06-09/RESULTS.md",
+      "orphaned": true
+    },
+    {
+      "id": "M-VVG",
+      "object": "VVG regime-classifier descriptive findings (Mesfin via MNQ N12)",
+      "native_horizon": "operational",
+      "e1_expressible_horizon": "session",
+      "first_measured": "2026-08-04",
+      "h1_eligible": false,
+      "source": "MNQ.md N12 — descriptive findings real; directional strategies fail. External; packet-named regime meta.",
+      "orphaned": true
+    }
+  ],
+  "attempts": [
+    {
+      "id": "A-WSTRUCT-COST",
+      "regularity": "R-W-STRUCT",
+      "death_stage": "cost-hurdle",
+      "gross_over_4rt": "2RT median 0.87x FAIL (directionally honest weekly |MOVE|)",
+      "stop_geometry": "E1-forced 2–5 session RTs / week (weekly hold forbidden)",
+      "source": "lab/analysis/c1/wstruct_cost_geometry_2026-07-28/RESULTS.md"
+    },
+    {
+      "id": "A-WLEGB",
+      "regularity": "R-W-STRUCT",
+      "death_stage": "reachability",
+      "gross_over_4rt": null,
+      "stop_geometry": "daily close-to-close gate (no E1 session cell cleared placebo)",
+      "source": "MNQ.md N8 / Q-WLEGB-1 — daily gateHit 53.77% vs placebo p95 53.82%"
+    },
+    {
+      "id": "A-MNQPOOL",
+      "regularity": "R-D-POOLS",
+      "death_stage": "reachability",
+      "gross_over_4rt": null,
+      "stop_geometry": "session-flat long; stop at nearest unswept SSL pool (median 572 pt)",
+      "source": "MNQ.md MNQPOOL-1 FALSIFIED 2026-08-04"
+    },
+    {
+      "id": "A-MNQFVG",
+      "regularity": "R-D-FVG",
+      "death_stage": "reachability",
+      "gross_over_4rt": null,
+      "stop_geometry": "session-flat long; limit at nearest bear-FVG near-edge (median 291 pt; 18% touch)",
+      "source": "MNQ.md MNQFVG-1 AMBIGUOUS-UNDERPOWERED / adverse 2026-08-04"
+    },
+    {
+      "id": "A-CL-COND",
+      "regularity": "R-CL-RANGE",
+      "death_stage": "never-attempted",
+      "gross_over_4rt": "CONDVAL ΔE 0.0337R vs bar 0.1099R (economics empty; no host built)",
+      "stop_geometry": "n/a — conditioner never built",
+      "source": "docs/briefs/closures/Q-CONDVAL-1-closure-falsified.md"
+    },
+    {
+      "id": "A-TXG-NAS-MYM",
+      "regularity": "TXG-locked-book",
+      "death_stage": "cost-hurdle",
+      "gross_over_4rt": "mean_net_r 0.0129 < required_net_r 0.06",
+      "stop_geometry": "locked Striker-NAS100 → MYM sibling-swap",
+      "source": "docs/briefs/closures/2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md"
+    },
+    {
+      "id": "A-TXG-STR-MNQ",
+      "regularity": "TXG-locked-book",
+      "death_stage": "stop-geometry",
+      "gross_over_4rt": "cost PASS (mean_net_r 0.0419 > 0.03); N-SURV FAIL ~98% bust",
+      "stop_geometry": "Tradeify trailing-DD / N-SURV",
+      "source": "docs/briefs/closures/2026-08-12-q-txg-1-striker-mnq-cell-dead-nsurv.md"
+    },
+    {
+      "id": "A-TXG-GUAR-MGC",
+      "regularity": "TXG-locked-book",
+      "death_stage": "stop-geometry",
+      "gross_over_4rt": "N-SURV FAIL; full bust 42.2%",
+      "stop_geometry": "Tradeify trailing-DD / N-SURV",
+      "source": "docs/briefs/closures/2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md"
+    },
+    {
+      "id": "A-TXG-AEGIS-6J",
+      "regularity": "TXG-locked-book",
+      "death_stage": "stop-geometry",
+      "gross_over_4rt": "J14 composed GEOMETRY-FAIL 10.96% bust vs 3.0%",
+      "stop_geometry": "Tradeify trailing-DD / composed 3-leg N-SURV (J4b+J14)",
+      "source": "ops/instruments/6J.md J4b+J14; Q-TXG-1 lane closure"
+    }
+  ],
+  "h2_class": [
+    {
+      "id": "Q-TNEC-CON-2",
+      "death_stage": "cost-hurdle",
+      "mean_signed_gross_positive": true,
+      "placebo_p": 0.027,
+      "ci_excludes_zero": false,
+      "gross_over_4rt": 0.65,
+      "source": "docs/briefs/closures/Q-TNEC-CON-2-closure-ambiguous-hold.md"
+    },
+    {
+      "id": "Q-TNEC-CON-3",
+      "death_stage": "cost-hurdle",
+      "mean_signed_gross_positive": true,
+      "placebo_p": 0.165,
+      "ci_excludes_zero": false,
+      "gross_over_4rt": 0.73,
+      "source": "docs/briefs/closures/Q-TNEC-CON-3-closure-ambiguous-hold.md"
+    },
+    {
+      "id": "Q-TNEC-CON-4",
+      "death_stage": "cost-hurdle",
+      "mean_signed_gross_positive": true,
+      "placebo_p": 0.435,
+      "ci_excludes_zero": false,
+      "gross_over_4rt": 0.27,
+      "source": "docs/briefs/closures/Q-TNEC-CON-4-closure-ambiguous-hold.md (short placebo 0.435; long 0.623; means ≈0)"
+    },
+    {
+      "id": "Q-TNEC-CON-5",
+      "death_stage": "cost-hurdle",
+      "mean_signed_gross_positive": true,
+      "placebo_p": 0.894,
+      "ci_excludes_zero": false,
+      "gross_over_4rt": 0.11,
+      "source": "docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md (both arms mean-negative; CIs straddle)"
+    },
+    {
+      "id": "Q-R2AGRUN-1",
+      "death_stage": "CI-power",
+      "mean_signed_gross_positive": false,
+      "placebo_p": null,
+      "ci_excludes_zero": true,
+      "gross_over_4rt": null,
+      "source": "docs/briefs/closures/Q-R2AGRUN-1-closure-ambiguous-hold.md — magnitude floor |ρ|<0.02; not a cost-hurdle death. death_stage recorded as CI-power/magnitude so H2 cannot fire on it."
+    }
+  ]
+}

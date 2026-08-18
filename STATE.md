@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-08-17
+**Last curated:** 2026-08-18
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
@@ -61,6 +61,39 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-18** — **MNQ family-K disclosure: Notice-phase closed manifests and Cap-seat K bank.**
+  Operator *"OK on both"*. Disclosure-only; `K_eff` untouched. Live figure at owner.
+  [`ADR 2026-08-04` Addendum](docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md) ·
+  [`MNQ.md` §K_BANKED](ops/instruments/MNQ.md).
+- **2026-08-18** — **Q-TRAINKILL-3 `AMBIGUOUS-HOLD` — event-class blocks split; TRAINKILL census STOP.**
+  Operator GO off TK2 Iterate packet. Block F `NEG` 9.83:1; Block A `DEP` 4.06:1.
+  No singleton working-model. No Q-TRAINKILL-4. $0/K=0.
+  [`closure`](docs/briefs/closures/Q-TRAINKILL-3-closure-ambiguous-hold.md) ·
+  [`RESULTS`](lab/analysis/_inbox/q_trainkill_3_2026-08/RESULTS.md).
+- **2026-08-18** — **Q-TRAINKILL-2 `AMBIGUOUS-HOLD` — both named alternates fit; no singleton power finding.**
+  Operator GO off TK1 Iterate packet. Recovery promoted MSL-S2A only. Limb 2: NEG
+  and DEP-ZERO both clear 0.05. Do not pick after seeing g. $0/K=0.
+  [`closure`](docs/briefs/closures/Q-TRAINKILL-2-closure-ambiguous-hold.md) ·
+  [`RESULTS`](lab/analysis/_inbox/q_trainkill_2_2026-08/RESULTS.md).
+- **2026-08-18** — **Q-TRAINKILL-1 `AMBIGUOUS-HOLD` — no named power finding; no gate number moves.**
+  Operator GO off iteration-2 notice packet 3. Set n=15 / μ_bar=+0.10R / floor 0.05 frozen
+  before the table. Scored g(0)=0.024 < 0.05; BOUNDED extremes disagree. B2 elects on
+  existing evidence + H1 screen, hold disclosed. $0/K=0.
+  [`closure`](docs/briefs/closures/Q-TRAINKILL-1-closure-ambiguous-hold.md) ·
+  [`RESULTS`](lab/analysis/_inbox/q_trainkill_1_2026-08/RESULTS.md).
+- **2026-08-18** — **Q-EXPR-1 `RESOLVED` (H1) — next slate admission screens claim horizon vs E1.**
+  Operator GO off iteration-2 notice packet 2. Share bar 0.50 frozen before the table.
+  H1 4/4 weekly/daily vs session envelope; H2 1/5 misses; H3 cannot fire (W+D same first day).
+  $0/K=0.
+  [`closure`](docs/briefs/closures/Q-EXPR-1-closure-resolved.md) ·
+  [`RESULTS`](lab/analysis/_inbox/q_expr_1_2026-08/RESULTS.md).
+- **2026-08-18** — **Q-CONDVAL-1 `FALSIFIED` — S1b conditioner-engineering branch parked.**
+  Operator GO off iteration-2 notice packet 1. Three levers frozen before the lift was
+  substituted (slate-2 center · α=0 C−U mapping · 0.50× hurdle at R=$75/RT=$4.12).
+  Measured L=0.130 < `L_star`=0.423. O2 discharged. SIGNAL-GENERIC stands; mechanism-owed
+  stands. $0/K=0.
+  [`closure`](docs/briefs/closures/Q-CONDVAL-1-closure-falsified.md) ·
+  [`RESULTS`](lab/analysis/_inbox/q_condval_1_2026-08/RESULTS.md).
 - **2026-08-17** — **Six-lead P3 (L5 curve-slope) un-HOLD → GO → sleeve CLOSED (venue).**
   Operator un-HOLD. Paper read (Bianchi/Fan/Miffre/Zhang *JBF* 2023 / arXiv `2308.00383`):
   profitable S-strategy is a same-commodity calendar spread (Δslope → long front / short

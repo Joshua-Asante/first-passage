@@ -1,0 +1,107 @@
+{
+  "verdict": "FALSIFIED",
+  "prereg_sha256": "d1265eb2b0fa328c18b8a744a6f438d06611238fd2ada14ca12d06645748b386",
+  "frozen": {
+    "rr": 2.5,
+    "WR": 0.36,
+    "R_dollars": 75.0,
+    "RT_dollars": 4.12,
+    "material_frac": 0.5,
+    "E_box": 0.2599999999999999,
+    "hurdle_4x": 0.21973333333333334,
+    "bar_dE": 0.10986666666666667,
+    "L_star": 0.42256410256410276
+  },
+  "measured": {
+    "source": "lab/analysis/_inbox/rangestate_mcl_2026-08/s1b_results.json",
+    "gateHit": 0.6282352941176471,
+    "p_up_unconditional": 0.4985408560311284,
+    "L": 0.1296944380865187,
+    "delta_E": 0.03372055390249485,
+    "L_minus_L_star": -0.29286966447758406
+  },
+  "disclosure_corners": [
+    {
+      "WR": 0.3,
+      "rr": 2.0,
+      "E_box": -0.09999999999999998,
+      "status": "excluded_nonpositive"
+    },
+    {
+      "WR": 0.3,
+      "rr": 2.5,
+      "E_box": 0.050000000000000044,
+      "delta_E": 0.006484721904325941,
+      "clears_gating_bar": false
+    },
+    {
+      "WR": 0.3,
+      "rr": 3.0,
+      "E_box": 0.19999999999999996,
+      "delta_E": 0.025938887617303737,
+      "clears_gating_bar": false
+    },
+    {
+      "WR": 0.36,
+      "rr": 2.0,
+      "E_box": 0.07999999999999996,
+      "delta_E": 0.01037555504692149,
+      "clears_gating_bar": false
+    },
+    {
+      "WR": 0.36,
+      "rr": 2.5,
+      "E_box": 0.2599999999999999,
+      "delta_E": 0.03372055390249485,
+      "clears_gating_bar": false
+    },
+    {
+      "WR": 0.36,
+      "rr": 3.0,
+      "E_box": 0.44000000000000006,
+      "delta_E": 0.05706555275806824,
+      "clears_gating_bar": false
+    },
+    {
+      "WR": 0.42,
+      "rr": 2.0,
+      "E_box": 0.2599999999999999,
+      "delta_E": 0.03372055390249485,
+      "clears_gating_bar": false
+    },
+    {
+      "WR": 0.42,
+      "rr": 2.5,
+      "E_box": 0.47,
+      "delta_E": 0.06095638590066379,
+      "clears_gating_bar": false
+    },
+    {
+      "WR": 0.42,
+      "rr": 3.0,
+      "E_box": 0.6799999999999999,
+      "delta_E": 0.0881922178988327,
+      "clears_gating_bar": false
+    }
+  ],
+  "disclosure_envelope": [
+    {
+      "R": 75.0,
+      "RT": 4.12,
+      "hurdle_4x": 0.21973333333333334,
+      "bar_dE_at_0_50": 0.10986666666666667,
+      "gating_delta_E_clears": false
+    },
+    {
+      "R": 200.0,
+      "RT": 2.82,
+      "hurdle_4x": 0.0564,
+      "bar_dE_at_0_50": 0.0282,
+      "gating_delta_E_clears": true
+    }
+  ],
+  "used_0_60": false,
+  "used_iaaft_excess": false,
+  "spend": 0.0,
+  "K": 0
+}
