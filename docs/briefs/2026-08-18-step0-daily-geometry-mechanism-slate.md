@@ -64,6 +64,17 @@ clustering-preserving placebo as primary**), verdict SIGNAL / NULL / AMBIGUOUS, 
 > structural fix named in the audit note lands.** Full detail:
 > [`RESULTS_S1B.md`](../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md) ·
 > [audit note](../../notes/audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md).
+>
+> **✅ OFFICIAL corrected-null re-score landed 2026-08-18 (same day, operator PROCEED per the
+> frozen spec's ADDENDUM-1 A16):** the structural fix (IAAFT normal-scores null + L4 by-year
+> regime limb; [frozen battery spec](../spec/2026-08-18-magnitude-persistence-corrected-null-battery.md))
+> ran officially. **S1a (GC) = NULL** (driving L2+L4; obs at the 8.4th pct of GC's own
+> linear-ACF band — the near-miss dissolved, CASE A) → counts toward §4's FALSIFIED tally.
+> **S1b (CL) = SIGNAL-GENERIC** (69th pct of its own band — canon-attributed volatility
+> clustering; L4 boundary-exact 6/8 under the rule's own small-n exclusion, a disclosed
+> prediction-miss adjudicated rules-govern) → **counts toward §4 RESOLVED, with A6 guard-rails:
+> not a mechanism, no mechanism-owed discharge, no conditioner license.** Record:
+> [`RESULTS_CORRECTED.md`](../../lab/analysis/_inbox/rangestate_corrected_2026-08/RESULTS_CORRECTED.md).
 
 - **Frozen claim (sign = persistence):** `P(TR_{d+1} > median(TR, trailing 60d) | TR_d in top
   quintile of trailing 60d)` exceeds its block-shuffled null. Grounding: evidence-robustness
@@ -148,6 +159,20 @@ S1a's raw `NULL` and S1b's raw `SIGNAL→NOT-CONFIRMED` both count as **zero** t
 RESOLVED/FALSIFIED tallies until re-run under a corrected null. The 2026-09-15 inertness date
 is **not** extended by this pause — if the structural fix and a re-run haven't landed by then,
 the slate reports AMBIGUOUS at that date regardless, same as any other stall.
+
+**✅ §4 STATUS: `RESOLVED` (2026-08-18, official corrected-null re-score, operator PROCEED).**
+Tally under valid tests: S1a (GC) = valid NULL; **S1b (CL) = SIGNAL-GENERIC → the "≥1 SIGNAL
+among GO'd screens" trigger fires.** Per this section's own RESOLVED consequence: the row
+routes to a deep-lane-adjacent prereg — specifically, per the battery's D2 semantics, a
+**conditioner-engineering prereg** (sizing/participation, decay monitor = rolling ACF
+re-estimate), NEVER a mechanism-discovery campaign; it requires a NEW operator GO and new K,
+and must confront the calm-regime OPEN question, the O2 cost-arithmetic, O3's out-of-sample
+calibration-lift gate, and the L4 boundary fact (all per
+[ADDENDUM-1](../spec/2026-08-18-magnitude-persistence-corrected-null-battery.md)). **S2/S3
+pause states after the fix:** S2 un-pause condition (1) is now satisfied (diagnostic PASS on
+both instruments); conditions (2) stage-1 cheap falsifier and (3) stage-2 null design review,
+plus the operator GO, remain outstanding. S3's un-pause (matched-day prereg redesign + design
+review) is unchanged and not IAAFT-gated.
 
 ## §5 — Forbidden moves
 

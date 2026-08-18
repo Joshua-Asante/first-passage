@@ -137,16 +137,18 @@ state or a lane-campaign K spend.
 
 ### Structural
 
-- [ ] **Design a corrected null** before any further `daily-range-state-persistence` (or any
-  future magnitude-persistence-class) screen runs: an ACF-matched surrogate (AR(1)/GARCH
-  calibrated to the outcome series's own measured lag-1..N autocorrelation) or a phase-randomized
-  surrogate, tested against the frozen four-limb structure. Not designed in this note — this is
-  a fresh methodology decision needing its own scrutiny, not a same-session patch.
-- [ ] `strategy-validation` §5 — add an explicit autocorrelation/persistence-confound clause
-  alongside the existing directional-drift clause, naming this audit as the anchor.
-- [ ] `futures-anomaly-discovery` skill — the Tier-1 screen guidance ("one frozen expression per
-  mechanism... generous by construction") should note that a frozen *battery* reused across claim
-  families still needs its null re-validated per family, not just its parameters re-declared.
+- [x] **Design a corrected null** — DONE 2026-08-18, same day, with its own scrutiny (not a
+  same-session patch in the improvised sense): 4-lens design panel + synthesis
+  (`wf_ebc728eb-2ef`), frozen spec
+  [`2026-08-18-magnitude-persistence-corrected-null-battery.md`](../../spec/2026-08-18-magnitude-persistence-corrected-null-battery.md)
+  (IAAFT normal-scores surrogates — NOT the AR(1)/GARCH parametric option this note originally
+  floated: AR(1) was measured a strawman, +13pp band displacement; presence-gates/
+  attribution-types wiring; NEW L4 by-year regime limb), 4-lens pre-official verification with
+  bit-exact independent reimplementation (`wf_e06ebc90-c3e`), pilot→ADDENDUM-1→operator
+  PROCEED→official run. Official outcomes: S1a NULL (L2+L4; near-miss dissolved, 8.4th pct of
+  own band); S1b SIGNAL-GENERIC (canon-attributed; guard-railed).
+- [x] `strategy-validation` §5 clause — landed 2026-08-18 (repo copy, authoring path).
+- [x] `futures-anomaly-discovery` battery-reuse-per-claim-family note — landed 2026-08-18.
 
 ---
 
@@ -207,13 +209,18 @@ grep -n "PAUSED\|AUDIT-2026-08-18-tr-placebo" \
 
 ## §11 — Closure
 
-- **Status:** `Closed (immediate complete) — structural repair deferred, named, not scheduled`
+- **Status:** `Closed (immediate + structural complete)` — 2026-08-18, same day
 - **Immediate repair completed:** 2026-08-18
-- **Structural repair completed:** — (owed; a corrected-null design is a fresh methodology
-  decision, not attempted in this session)
-- **Lessons graduated to standing rule:** none yet — candidate lesson captured in memory this
-  session pending its own review
-- **Follow-up audits triggered:** none; S2/S3 remain paused until the structural repair lands
+- **Structural repair completed:** 2026-08-18 (corrected battery designed via its own 4-lens
+  panel, frozen, verified bit-exact, run officially on operator PROCEED; both skill clauses
+  landed — see §5). One structural item transferred forward rather than closed here: S2's
+  cross-series null remains UNRESOLVED-NEEDS-DESIGN (spec §4 / O1) and S2 stays paused behind
+  its stage-1 cheap falsifier.
+- **Lessons graduated to standing rule:** the autocorrelation-confound clause is now standing
+  text in `strategy-validation` §5 (the memory lesson `lesson_block_shuffle_needs_acf_match`
+  anchors it)
+- **Follow-up audits triggered:** none; S3's un-pause is a design-review condition (matched-day
+  prereg), not an audit
 
 ---
 

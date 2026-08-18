@@ -224,6 +224,13 @@ without a mechanism is fine; deploying without one is not.
 - Calling a discord / change point / feature / expression a "signal" → it's a candidate; route it to the gate.
 - Promoting a candidate straight to strategy without the native-micro OOS gate → hand to `strategy-validation`.
 - Reaching for full tsfresh or a deep PySR search as the first move → drop back to catch22 / a bounded search.
+- Reusing a frozen screen battery on a NEW claim family without re-validating its null against
+  that family's own confound → the battery's parameters being frozen does not make its null
+  construction fit. Anchor: AUDIT-2026-08-18-tr-placebo-misspecified — a block-shuffle placebo
+  correct for a directional/base-rate claim (`H-DSTRUCT-MNQ-1`) was reused verbatim on a
+  magnitude-persistence claim and was cleared by 20/20 zero-mechanism AR(1) surrogates.
+  Magnitude-persistence claims take the corrected class battery
+  (`docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md`).
 
 ## Hand-offs
 

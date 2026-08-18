@@ -21,7 +21,7 @@ cells:
     date: 2026-08-10
     source: "../../lab/analysis/harvest/tnec_l2_sourcing_2026-08-10/DELTA_EXTRACTION_R8.md"
   - mechanism: daily-range-state-persistence
-    verdict: AMBIGUOUS-PARKED
+    verdict: DEAD
     date: 2026-08-18
     source: "../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md"
 bars:
@@ -83,6 +83,15 @@ structure:
 
 ## SESSION LOG
 
+- **2026-08-18c** — **OFFICIAL corrected-null re-score: cell → `DEAD`; near-miss framing
+  retracted (CASE A).** Under the frozen class battery (IAAFT normal-scores null + L4 by-year
+  limb, [spec+ADDENDUM-1](../../docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md)):
+  **NULL (driving L2+L4)** — obs 0.5299 at the **8.4th pct** of GC's own linear-ACF band
+  (below the zero-mechanism benchmark's center); by-year 5/9 vs required 7. No SUB-LINEAR flag
+  (p_lower 0.0849); real lift at the 41st pct of the surrogate lift band (base-rate artifact
+  note per A13). Re-proposal bar: corrected battery + different construction or longer panel.
+  $0 / K unchanged (re-measurement). [`RESULTS_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md) §6 ·
+  [`RESULTS_CORRECTED.md`](../../lab/analysis/_inbox/rangestate_corrected_2026-08/RESULTS_CORRECTED.md)
 - **2026-08-18b** — **G4 corrected — placebo test invalidated, not the bottom-line verdict.**
   Adversarial review of the sibling CL screen (S1b) found the four-limb battery's placebo does
   not control for True-Range autocorrelation (20/20 zero-mechanism AR(1) surrogates cleared it

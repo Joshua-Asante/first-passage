@@ -74,27 +74,31 @@ range-state-forecasting claim, and is scoped to the non-index triad
 §2 row S1). Grounding: evidence-robustness (volatility clustering — ARCH/GARCH canon), not a
 per-instrument WHO claim.
 
-**⚠ TEST INVALIDATED 2026-08-18 — read the audit note before citing either class finding
-below.** The frozen four-limb battery's placebo does not control for ordinary True-Range
-autocorrelation: 20 independent zero-mechanism AR(1) surrogates (calibrated only to each
-instrument's own measured lag-1 autocorrelation) cleared the identical battery at a *higher*
-rate than either real dataset below. **Neither class finding below should be read as measuring
-this mechanism** — both are re-classified `UNMEASURED (test invalid)`, not `NULL` or `SIGNAL`,
-pending a corrected null (AR/GARCH-calibrated surrogate). Full detail:
-[audit note](../../docs/notes/audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md).
-Step-0 slate rows S2/S3 (queued to reuse the same battery) are **paused**.
+**Measurement history:** the class's first battery (block-shuffle placebo) was invalidated
+2026-08-18 — it did not control True-Range autocorrelation
+([audit note](../../docs/notes/audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md)).
+The **corrected class battery** (IAAFT normal-scores null; presence-gates/attribution-types
+wiring; NEW L4 by-year regime limb) is the standing test —
+[frozen spec + ADDENDUM-1](../../docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md).
+Both class findings below are OFFICIAL under it (2026-08-18, operator PROCEED).
 
-- **Class finding (test invalid, see banner):** GC (parent, train era 2010–2019) top-quintile
-  TR → elevated next-day TR — raw battery reading `NULL` (CI limb fails, 0.4545 vs 0.50; the
-  placebo pass, p=0.0095, is not independent corroboration under the invalidated null).
-  [MGC.md G4](MGC.md) · [`RESULTS_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md)
-- **Class finding (test invalid, see banner):** CL (parent, train era 2010–2019) top-quintile
-  TR → elevated next-day TR — raw battery reading `SIGNAL` (all four limbs clear, gateHit
-  0.6282), downgraded to **`NOT-CONFIRMED`**: the effect is smaller than its own AR(1)
-  autocorrelation baseline (surrogates predicted 0.75–0.80) and evaporates under
-  regime-concentration testing (crisis-year cluster removal flips CI below 0.50; calm-year-only
-  subset is an independent NULL failing its own placebo). [MCL.md](MCL.md) ·
-  [`RESULTS_S1B.md`](../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md)
+- **Class finding (corrected battery, OFFICIAL):** GC (parent, train era 2010–2019)
+  top-quintile TR → elevated next-day TR: **NULL (driving L2 + L4)** — obs 0.5299 at the
+  **8.4th percentile** of GC's own linear-ACF surrogate band (the earlier "near-miss" framing
+  is retracted: the rate sat below the zero-mechanism benchmark's center); by-year 5/9 > 0.50
+  vs required 7. Ledger cell `DEAD` (re-proposal bar: the corrected battery + a different
+  construction or longer panel). [MGC.md G4](MGC.md) ·
+  [`RESULTS_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md) §6
+- **Class finding (corrected battery, OFFICIAL):** CL (parent, train era 2010–2019)
+  top-quintile TR → elevated next-day TR: **SIGNAL-GENERIC** — presence passes (CI lb 0.5651;
+  halves; L4 boundary-exact 6/8 under the rule's own n_cond<20 exclusion, a disclosed
+  prediction-miss adjudicated rules-govern); attribution GENERIC (obs at the 69th percentile
+  of its own linear-ACF band, p_upper 0.3107) — **canon-attributed volatility clustering,
+  SURVIVAL-ONLY durability. NOT a mechanism; does NOT discharge MCL's mechanism-owed status;
+  NOT a conditioner license** (ADDENDUM-1 A6 rails travel with any quote; the crisis>calm
+  per-year ordering and drop-cluster diagnostic are mandatory co-quotes). Routes only to a
+  conditioner-engineering prereg (new operator GO, new K). [MCL.md C4/C5](MCL.md) ·
+  [`RESULTS_S1B.md`](../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md) §5
 
 ## htf-compression-breakout-5m
 

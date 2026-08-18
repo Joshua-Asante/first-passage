@@ -14,6 +14,46 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-18d — Corrected null designed, verified, and run OFFICIALLY: S1a NULL (near-miss dissolved), S1b SIGNAL-GENERIC; H-SLATE RESOLVED
+
+**Focus:** Operator commission ("take that on now, and identify how this affects S1a's result",
+ultracode) — build the structural repair the 18c audit owed, then re-score both screens.
+
+**Shipped:** (1) 4-lens **design panel** (`wf_ebc728eb-2ef`) → frozen class-battery spec
+([`corrected-null battery`](spec/2026-08-18-magnitude-persistence-corrected-null-battery.md)):
+IAAFT normal-scores surrogates (raw-TR domain FORBIDDEN — verdict-flipping, measured; AR(1)
+EXCLUDED as strawman), **presence-gates / attribution-TYPES** wiring (SIGNAL-GENERIC vs
+SIGNAL-EXCESS — canon-grounded claims are not retargeted at novelty), NEW L4 by-year regime
+limb, pre-registered interpretation table, spec committed before any official seed (`12877c4`).
+(2) Pilot surfaced a **spec-internal conflict**: the frozen "S1b L4 known-fail 6/9" prediction
+never applied the L4 rule's own n_cond<20 exclusion (CL 2010 n=14 → L4 PASS 6/8). 4-lens
+**pre-official verification** (`wf_e06ebc90-c3e`; independent reimplementation **bit-exact,
+44/44 quantities**) ruled FIX-THEN-RUN + rules-govern; FIX-1/2/3 (flag/diagnostic layer only,
+scoring asserted bit-identical), 16-item **ADDENDUM-1** appended, scoped operator election
+**PROCEED** taken. (3) **Official run** (M=1000, frozen seeds, drawn once): **S1a (GC) NULL**
+(driving L2+L4; obs at **8.4th pct** of its own linear-ACF band — the "near-miss" was below
+the zero-mechanism benchmark; CASE A, framing retracted). **S1b (CL) SIGNAL-GENERIC** (69th
+pct — generic volatility clustering; A6 rails: no mechanism wording, no mechanism-owed
+discharge, no conditioner license). **Slate §4 → RESOLVED.** Propagation: RESULTS addenda ×2,
+[`RESULTS_CORRECTED`](../lab/analysis/_inbox/rangestate_corrected_2026-08/RESULTS_CORRECTED.md),
+MECHANISMS/MGC(cell→DEAD)/MCL(C5) + session logs, audit note **Closed (immediate+structural)**,
+`strategy-validation` §5 autocorrelation clause + `futures-anomaly-discovery` battery-reuse red
+flag (authoring path), memories.
+
+**Decisions/defects:** The design panel caught its own seed-collision (R10) and the
+verification caught a mis-calibrated diagnostic domain (z-domain gate ran ~2.7× looser than
+the Spearman quantity the tolerance was calibrated on — FIX-2). The L4 prediction-miss was
+handled append-only with both counterfactual readings disclosed (realized false-pass 0.1178 vs
+frozen-representative 0.090); no parameter moved after any result was seen.
+
+**Open / next:** S1b's conditioner-engineering prereg is electable (new GO, new K; must
+confront calm-regime OPEN + O2 arithmetic + O3 lift gate + L4 boundary). S2 needs its stage-1
+$0 cheap falsifier (overnight-state vs matched day-session-history conditioning) before any
+null design; S3 needs its matched-day prereg. Slate 2026-09-15 date now moot (RESOLVED).
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-18c — S1b runs SIGNAL, adversarial review finds it NOT-CONFIRMED: placebo test invalidated
 
 **Focus:** Operator GO ("GO S1b") off the Step-0 slate queue — daily True-Range top-quintile

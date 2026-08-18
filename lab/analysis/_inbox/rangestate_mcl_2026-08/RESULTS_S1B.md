@@ -1,5 +1,5 @@
 **Theme:** _inbox
-**Status:** ACTIVE — NOT-CONFIRMED: pooled hit rate 0.6282 clears the frozen battery, but the placebo null itself is misspecified (fails to control TR autocorrelation) and the effect evaporates under regime-concentration testing — see the audit note before citing any number below
+**Status:** ACTIVE — SIGNAL-GENERIC under the corrected battery (official 2026-08-18): canon-attributed volatility clustering (69th pct of own linear-ACF band), L4 boundary-exact 6/8; NOT a mechanism, does NOT discharge mechanism-owed, no conditioner license. The interim NOT-CONFIRMED (old invalid placebo) is superseded by the RE-MEASUREMENT addendum at the end of this file — ADDENDUM-1 guard-rails bind all wording.
 # `H-RANGESTATE-CL-1` (S1b) — RESULTS: NOT-CONFIRMED (placebo misspecified; effect is regime-concentrated and sub-baseline)
 
 **Date:** 2026-08-18 · **Verdict: `NOT-CONFIRMED`** (downgraded from the raw battery's `SIGNAL`
@@ -100,3 +100,34 @@ CL (parent) train era only; `MCL.v.0` 2019+ untouched. This result says nothing 
 unopened question, not a foreclosed one. The regime-concentration finding is itself a genuine,
 disclosed result (crisis-transition TR persistence measured, whatever its cause) even though it
 cannot license the mechanism-general claim the frozen hypothesis made.
+
+---
+
+## 5. RE-MEASUREMENT addendum (2026-08-18, official corrected-null re-score — SIGNAL-GENERIC)
+
+The corrected-null question §4 named open has now been answered officially, under the
+[frozen class battery](../../../docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md)
++ its pre-official ADDENDUM-1 (which adjudicated, rules-govern, a spec-internal conflict: the
+frozen L4 rule's own n_cond<20 exclusion drops 2010 at n=14, making L4 **PASS 6-of-8,
+boundary-exact** — not the predicted "known-fail 6/9," which never applied its own exclusion):
+
+| | old battery (this file, §1) | corrected battery (official) |
+|---|---|---|
+| placebo / attribution | block-shuffle p=0.0005 "pass" — **retired, invalid null** | IAAFT band: obs at **69.0th pct**, p_upper 0.3107 → attribution **GENERIC** |
+| CI limb (L2) | PASS (0.5651) | PASS (carried verbatim) |
+| by-year (L4, new) | not a limb | PASS — 6 of 8 valid, required 6, boundary-exact (2013/2017 fail; 2010 excluded n=14; realized false-pass 0.1178 vs frozen-representative 0.090, disclosed per A5) |
+| verdict | raw SIGNAL → NOT-CONFIRMED (test invalid) | **SIGNAL-GENERIC** (first valid verdict; no rescue — the voided raw SIGNAL claimed MORE than this does) |
+
+**What SIGNAL-GENERIC is:** real predictability at the pooled construction, attributable to
+generic volatility clustering (the canon the prereg itself cited) — SURVIVAL-ONLY-class
+durability. **What it is not (A6 rails, binding):** not regime-robust beyond "L4 passed at its
+frozen threshold (6 of 8 valid years, boundary-exact)"; not a mechanism (D22 never reached);
+not a discharge of this ledger's mechanism-owed status; not a conditioner license (O2
+arithmetic owed). Standing co-quotes: crisis>calm per-year ordering (2011/2016/2014 top);
+drop-{2011,2014,2016} diagnostic; the §1 "calm-subset independent NULL" is provenance-split —
+its CI component survives, its placebo component is VOID (retired null); the level-based
+disclosure buckets read calm 0.617 / crisis 0.649 vs the review's event-identity split 0.537
+(neither travels without its year list — A7). **Routing:** counts toward slate §4 RESOLVED
+(H-SLATE RESOLVED); any follow-up = conditioner-engineering prereg, new operator GO, new K,
+confronting the calm-regime question + O2 + O3 + the L4 boundary fact. Full record:
+[`RESULTS_CORRECTED.md`](../rangestate_corrected_2026-08/RESULTS_CORRECTED.md).

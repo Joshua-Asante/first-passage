@@ -1,5 +1,5 @@
 **Theme:** _inbox
-**Status:** ACTIVE — NULL (verdict unchanged): daily range-state (top-quintile TR) persistence on GC train era; CI lower bound fails. ⚠ CORRECTED 2026-08-18 — the placebo pass is NOT independent corroboration; see banner below.
+**Status:** ACTIVE — NULL, now official under the corrected battery (driving L2+L4; obs at 8.4th pct of GC's own linear-ACF band — near-miss DISSOLVED, CASE A). See the RE-MEASUREMENT addendum at the end of this file.
 # `H-RANGESTATE-GC-1` (S1a) — RESULTS: NULL on daily range-state persistence, GC train era
 
 > **⚠ CORRECTION 2026-08-18 — read before citing this file's §3.** The sibling screen
@@ -113,3 +113,28 @@ GC (parent) train era only; `MGC.v.0` 2019+ untouched by design. One frozen `(P8
 ahead)` object — no sweep. 13 of 2,177 valid TR observations (~0.6%) are gap-adjacent (disclosed
 in `PREREG_S1A.md` §7, not excluded — bounded materiality, well under both n-floors). Measurement-
 only; no outcome here promotes or blocks the S1b/S2/S3 rows independently.
+
+---
+
+## 6. RE-MEASUREMENT addendum (2026-08-18, official corrected-null re-score — CASE A)
+
+Under the [frozen class battery](../../../docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md)
+(IAAFT normal-scores null, M=1000, official seeds; ADDENDUM-1 governs wording):
+
+| | old battery (this file, §1) | corrected battery (official) |
+|---|---|---|
+| placebo / attribution | block-shuffle p=0.0095 "pass" — **retired, invalid null** | IAAFT band: obs at **8.4th pct**, p_upper 0.9161, p_lower 0.0849 → attribution GENERIC |
+| CI limb (L2) | FAIL (0.4545) | FAIL (carried verbatim) |
+| by-year (L4, new) | not a limb | **FAIL** — 5 of 9 years > 0.50, required 7 |
+| verdict | NULL ("near-miss, 3 of 4 limbs") | **NULL (driving: L2, L4)** — near-miss framing **retracted** |
+
+**CASE A realized:** 0.5299 sits below the center of what GC's own marginal + linear
+autocorrelation produces with zero mechanism (band mean 0.5548). The near-miss was never near
+anything. No SUB-LINEAR flag (p_lower 0.0849); broad-BORDERLINE vs the 0.07 line disclosed
+per A14, wording-layer only; per A13, the real conditional-minus-unconditional lift sits at the
+**41st percentile** of the surrogate lift band (dead center) — the low raw placement is
+predominantly a base-rate artifact of the band's known upward bias (~+0.02) under this panel's
+phase-locked vol decline, not anti-clustering. Full record:
+[`RESULTS_CORRECTED.md`](../rangestate_corrected_2026-08/RESULTS_CORRECTED.md).
+**MGC ledger cell:** re-typed `DEAD` (measured NULL under a valid test; re-proposal bar = the
+corrected battery + a different construction or longer panel, per §4 above).

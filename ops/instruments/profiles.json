@@ -61,7 +61,7 @@
       "daily-range-state-persistence": {
         "date": "2026-08-18",
         "source": "../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md",
-        "verdict": "AMBIGUOUS-PARKED"
+        "verdict": "DEAD"
       },
       "event-window-reversal": {
         "date": "2026-08-10",

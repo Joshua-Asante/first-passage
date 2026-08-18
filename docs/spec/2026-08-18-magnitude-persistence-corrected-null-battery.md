@@ -100,6 +100,13 @@ from the committed results JSONs.
 6 of 9 years > 0.50). Both then count as one valid NULL each toward the slate §4 tally
 (2026-09-15 inertness date unchanged).
 
+> ⚠ **Reader-intercept (2026-08-18, pre-official — see ADDENDUM-1 A1/A2 below):** the S1b
+> prediction line above is a **prediction-miss** — the frozen L4 rule's own n_cond<20 exclusion
+> (never applied by the "6 of 9" arithmetic) yields L4 PASS 6-of-8 on the actual per-year
+> sample sizes, and the official verdict landed **SIGNAL-GENERIC**, per the addendum's
+> mechanically-extended interpretation row. The S1a prediction held (NULL, CASE A). Rules
+> govern; do not quote this §3 line without the addendum.
+
 **S1a characterization rows (the operator's question):** CASE A (obs ≤ surrogate p50) — the
 near-miss **dissolves**: 0.5299 is no more than GC's own marginal + linear ACF produces with
 zero mechanism; MGC.md cell AMBIGUOUS-PARKED → NULL (measured, corrected null, p quoted).
