@@ -67,10 +67,10 @@ co-quoted wherever this verdict travels: crisis>calm ordering stands (top years 
 the level-based calm/crisis disclosure buckets (calm 0.617 / crisis 0.649) differ from the
 review's event-identity split (calm 0.537) on the 2014/2016 transition years — neither read
 travels without its year list (A7).
-**Routing:** counts toward slate §4 RESOLVED → **H-SLATE = RESOLVED**. Any follow-up is a
-conditioner-engineering prereg — NEW operator GO, new K, and it must confront: the calm-regime
-question (OPEN, A7), the O2 arithmetic, O3's out-of-sample calibration-lift gate, and the L4
-boundary fact.
+**Routing:** counts toward slate §4 RESOLVED → **H-SLATE = RESOLVED**. Conditioner-engineering
+follow-up **PARKED** by [`Q-CONDVAL-1`](../../../docs/briefs/closures/Q-CONDVAL-1-closure-falsified.md)
+(`FALSIFIED` 2026-08-18; O2 discharged). Calm-regime (A7) / O3 / L4 boundary remain on the
+finding's record; they do not reopen the engineering branch.
 
 ## 4. Battery disposition (the structural repair itself)
 

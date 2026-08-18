@@ -157,6 +157,7 @@ documents the camp boundary for humans/tools.
 |---|---|---|---|---|---|
 | dstruct_mnq_2026-08 | _inbox | ACTIVE | NULL: daily close-vs-EMA20 bias carries nothing at daily granularity (Tier-1 screen, 3 of 4 limbs failed; K=1 disclosed) | lab/analysis/_inbox/dstruct_mnq_2026-08/ | — |
 | ict_mnq_2026-08 | _inbox | ACTIVE | ICT cascade re-run on NQ/MNQ at $0/K=0/Cap seat unspent: W and D confirm on independent instruments, pools falsified ... | lab/analysis/_inbox/ict_mnq_2026-08/ | — |
+| q_condval_1_2026-08 | _inbox | HOLD | archive owed (FALSIFIED): `FALSIFIED` (S1b conditioner-engineering branch parked) | lab/analysis/_inbox/q_condval_1_2026-08/ | — |
 | rangestate_corrected_2026-08 | _inbox | ACTIVE | OFFICIAL corrected-null re-score complete: S1a (GC) NULL (driving L2,L4; obs at 8.4th pct of its own linear-ACF band ... | lab/analysis/_inbox/rangestate_corrected_2026-08/ | — |
 | rangestate_gc_2026-08 | _inbox | ACTIVE | NULL, now official under the corrected battery (driving L2+L4; obs at 8.4th pct of GC's own linear-ACF band — near-mi... | lab/analysis/_inbox/rangestate_gc_2026-08/ | — |
 | rangestate_mcl_2026-08 | _inbox | ACTIVE | SIGNAL-GENERIC under the corrected battery (official 2026-08-18): canon-attributed volatility clustering (69th pct of... | lab/analysis/_inbox/rangestate_mcl_2026-08/ | — |

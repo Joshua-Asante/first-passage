@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-18e — Q-CONDVAL-1 FALSIFIED: CL range-state lift misses the R-term bar; conditioner branch parked
+
+**Focus:** Operator GO on notice packet 1 — does the validated CL range-state lift buy anything in R terms at the intraday-honest envelope?
+
+**Shipped:** branch `cursor/q-condval-1`. Pre-Q + prereg froze the three levers **before** JSON substitute (sha256 `d1265eb2…48b386`). Arithmetic: L=0.1297 < `L_star`=0.4226 → `FALSIFIED`. O2 discharged. [`closure`](briefs/closures/Q-CONDVAL-1-closure-falsified.md) · [`RESULTS`](../lab/analysis/_inbox/q_condval_1_2026-08/RESULTS.md).
+
+**Decisions/defects:** Notice D attributed GC's +0.052 lift to S1b; runner read CL keys only. Easy-envelope end would clear — recorded, not a rescue.
+
+**Open / next:** S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. Notice packets Q-EXPR-1 and Q-TRAINKILL-1 named, not opened. B1 Koijen admissibility parallel. F1 / B7-REFIRE.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-18d — Corrected null designed, verified, and run OFFICIALLY: S1a NULL (near-miss dissolved), S1b SIGNAL-GENERIC; H-SLATE RESOLVED
 
 **Focus:** Operator commission ("take that on now, and identify how this affects S1a's result",
@@ -157,6 +170,7 @@ bounded-materiality, not fixed (doesn't warrant a mid-campaign design change to 
 clears, CI doesn't) is a live prior for it, not a blind re-test. Operator GO owed on S1b/S2/S3.
 
 ---
+
 ## 2026-08-17f — Harvest Req-3 relief-valve line + parent-ADR reader-intercept
 
 **Focus:** Internal doc-skew on `strategy_harvest.md`: the relief-valve heading still called Req-3 (family K-bank) "truly final" after the 2026-08-04 demotion to disclosure-not-gate.

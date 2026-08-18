@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-08-17
+**Last curated:** 2026-08-18
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
@@ -61,6 +61,13 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-18** — **Q-CONDVAL-1 `FALSIFIED` — S1b conditioner-engineering branch parked.**
+  Operator GO off iteration-2 notice packet 1. Three levers frozen before the lift was
+  substituted (slate-2 center · α=0 C−U mapping · 0.50× hurdle at R=$75/RT=$4.12).
+  Measured L=0.130 < `L_star`=0.423. O2 discharged. SIGNAL-GENERIC stands; mechanism-owed
+  stands. $0/K=0.
+  [`closure`](docs/briefs/closures/Q-CONDVAL-1-closure-falsified.md) ·
+  [`RESULTS`](lab/analysis/_inbox/q_condval_1_2026-08/RESULTS.md).
 - **2026-08-17** — **Six-lead P3 (L5 curve-slope) un-HOLD → GO → sleeve CLOSED (venue).**
   Operator un-HOLD. Paper read (Bianchi/Fan/Miffre/Zhang *JBF* 2023 / arXiv `2308.00383`):
   profitable S-strategy is a same-commodity calendar spread (Δslope → long front / short

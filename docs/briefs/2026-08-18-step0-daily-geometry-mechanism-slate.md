@@ -163,12 +163,10 @@ the slate reports AMBIGUOUS at that date regardless, same as any other stall.
 **✅ §4 STATUS: `RESOLVED` (2026-08-18, official corrected-null re-score, operator PROCEED).**
 Tally under valid tests: S1a (GC) = valid NULL; **S1b (CL) = SIGNAL-GENERIC → the "≥1 SIGNAL
 among GO'd screens" trigger fires.** Per this section's own RESOLVED consequence: the row
-routes to a deep-lane-adjacent prereg — specifically, per the battery's D2 semantics, a
-**conditioner-engineering prereg** (sizing/participation, decay monitor = rolling ACF
-re-estimate), NEVER a mechanism-discovery campaign; it requires a NEW operator GO and new K,
-and must confront the calm-regime OPEN question, the O2 cost-arithmetic, O3's out-of-sample
-calibration-lift gate, and the L4 boundary fact (all per
-[ADDENDUM-1](../spec/2026-08-18-magnitude-persistence-corrected-null-battery.md)). **S2/S3
+routed to a conditioner-engineering prereg per D2, then **PARKED** by
+[`Q-CONDVAL-1`](closures/Q-CONDVAL-1-closure-falsified.md) (`FALSIFIED` 2026-08-18; O2
+discharged — the lift does not buy a material fraction of `hurdle_4x` at the N-EDGE cell).
+That prereg is not electable. **S2/S3
 pause states after the fix:** S2 un-pause condition (1) is now satisfied (diagnostic PASS on
 both instruments); conditions (2) stage-1 cheap falsifier and (3) stage-2 null design review,
 plus the operator GO, remain outstanding. S3's un-pause (matched-day prereg redesign + design

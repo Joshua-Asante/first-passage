@@ -6,8 +6,10 @@
 the quality of the questions") + Claude Code
 **Source:** committed record only — SESSIONS/STATE/CATALOG window 2026-08-08→08-18, the
 2026-08-16 bottleneck-solutions arc (S1–S4), and the PR #37 mechanism-program arc
-**Status:** `OPEN` — three GRADUATE candidates named (entry packets; operator GO opens each),
-plus Action/Forward/Closed routing below
+**Status:** `OPEN` — two GRADUATE candidates still named (Q-EXPR-1, Q-TRAINKILL-1; operator GO
+opens each). **Q-CONDVAL-1 GO'd and `FALSIFIED` 2026-08-18**
+([closure](../../briefs/closures/Q-CONDVAL-1-closure-falsified.md)) — S1b
+conditioner-engineering branch parked; O2 discharged. Action/Forward/Closed routing below.
 **D-S-A domain:** data (the I/N corpus). Two routed Action rows touch meta-process; they are
 routed, not gated here.
 
@@ -122,7 +124,7 @@ envelope (in which case the branch closes cleanly, cheap).
 | Observation | Route | Detail |
 |---|---|---|
 | A + C | **GRADUATE ×2** | Entry packets Q-EXPR-1 and Q-TRAINKILL-1 below — separate falsifiable questions on the same asymmetry (conversion loss vs gate power) |
-| D | **GRADUATE** | Entry packet Q-CONDVAL-1 below — the $0 kill-or-keep that runs BEFORE any conditioner-engineering prereg |
+| D | **CLOSED** | Q-CONDVAL-1 GO'd → `FALSIFIED` 2026-08-18 ([closure](../../briefs/closures/Q-CONDVAL-1-closure-falsified.md)) — S1b conditioner-engineering parked; O2 discharged |
 | B1 — admissibility-side supply ($0) | **FORWARD, no dependency** | OpenAlex sourcing continuation + Req-1a admissibility screening of the six Koijen screen-leads proceeds IN PARALLEL with the two questions — admissibility deaths are orthogonal to both outputs by observation B's own decomposition; making them wait would re-run the one-bottleneck conflation this notice dissolves |
 | B2 — priced spends (Databento extension on harvest survivors; lane campaign #2 prereg freeze) | **FORWARD, dependent** | These genuinely consume both outputs: Q-EXPR-1's horizon/geometry pre-filter changes WHICH leads are worth pricing; Q-TRAINKILL-1's power finding changes campaign #2's n/panel design. **Expiry on the edge:** if either question hasn't closed by 2026-09-01, B2 elects on existing evidence, with the un-closed question's absence disclosed in the election record |
 | S2 stage-1 cheap falsifier · S3 matched-day redesign | **FORWARD** | Standing chartered obligations carried for completeness (slate/spec-resident, not corpus observations); unchanged by this notice |
@@ -139,7 +141,7 @@ falsifier, and names the decision its answer changes. Dependency edge: only the 
 (priced spends) waits on Q-EXPR-1 and Q-TRAINKILL-1, with a 2026-09-01 expiry; B1
 (admissibility-side supply) runs in parallel now.
 
-### Q-CONDVAL-1 — does the validated range-state lift buy anything in R terms? ($0, one afternoon)
+### Q-CONDVAL-1 — does the validated range-state lift buy anything in R terms? ($0, one afternoon) — **CLOSED `FALSIFIED` 2026-08-18**
 
 **Symptom:** a typed finding with no demonstrated economic content (observation D).
 **Question:** at the intraday-honest envelope (R ≈ $75–200; Tradeify RT $2.82–4.12; per-

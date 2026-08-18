@@ -25,6 +25,14 @@ closure brief in `docs/ltm/briefs/` and delete its row here.
 
 ## Recently closed (cross-reference; not open)
 
+- **Q-CONDVAL-1** — does the validated CL range-state lift buy anything in R terms —
+  **`FALSIFIED` 2026-08-18** — committed C−U 0.130 < frozen `L_star` 0.423 at the N-EDGE
+  cell (R=$75, RT=$4.12, slate-2 center); S1b conditioner-engineering branch parked; O2
+  discharged; SIGNAL-GENERIC stands. $0/K=0.
+  [`closure`](closures/Q-CONDVAL-1-closure-falsified.md) ·
+  [`RESULTS`](../../lab/analysis/_inbox/q_condval_1_2026-08/RESULTS.md) ·
+  [`brief`](Q-CONDVAL-1-range-state-r-terms.md) ·
+  [`pre-reg`](pre-registration/Q-CONDVAL-1-verdict-preregistration.md).
 - **Q-POLFRONT-1** — policy-augmented seed-target frontier — **`RESOLVED-QUANTIFIED` 2026-08-16**
   (median R_max ratio policy/flat = **5.107×** ≥ 1.25× bar, 24/30 cells defined, min 1.526×, 2
   newly-admitted cells, no reversal under quantization). ⚠ **Load-bearing caveat carried
