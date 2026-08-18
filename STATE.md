@@ -61,6 +61,10 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-18** — **MNQ family-K disclosure: Notice-phase closed manifests and Cap-seat K bank.**
+  Operator *"OK on both"*. Disclosure-only; `K_eff` untouched. Live figure at owner.
+  [`ADR 2026-08-04` Addendum](docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md) ·
+  [`MNQ.md` §K_BANKED](ops/instruments/MNQ.md).
 - **2026-08-18** — **Q-TRAINKILL-3 `AMBIGUOUS-HOLD` — event-class blocks split; TRAINKILL census STOP.**
   Operator GO off TK2 Iterate packet. Block F `NEG` 9.83:1; Block A `DEP` 4.06:1.
   No singleton working-model. No Q-TRAINKILL-4. $0/K=0.

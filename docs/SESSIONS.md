@@ -14,6 +14,30 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-18k — Operator "OK on both": MNQSR-1 and Q-CAPA-1 bank
+
+**Focus:** Discharge the two OPEN items from the MNQ ledger recon after operator *"OK on both"*. (Renumbered 18f→18k on merge with main — main already held 18f for Q-EXPR-1.)
+
+**Shipped:** Read as both count. Notice-phase closed manifests bank; Cap-seat K folds into the family tally. Live figure at [`MNQ.md` §K_BANKED](../ops/instruments/MNQ.md). Addendum on [`ADR 2026-08-04`](adr/2026-08-04-family-k-bank-disclosure-not-gate.md); ledger / N16 / DEAD rows updated. Disclosure-only.
+
+**Decisions/defects:** [ADR 2026-08-04 Addendum 2026-08-18](adr/2026-08-04-family-k-bank-disclosure-not-gate.md) — lane label does not exempt; Cap seat and family bank are not mutually exclusive. TNEC/R2/DSTRUCT `K=1 (disclosure; Cap not claimed)` rows stay out.
+
+**Open / next:** MNQSR-1 / Q-CAPA-1 bank rulings discharged (live figure at MNQ.md §K_BANKED). Next slate admission screens claim horizon vs the E1 flat-by-16:00 envelope. S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. TRAINKILL census STOP — re-proposal is a new panel or an operator election. B1 Koijen admissibility parallel. B2 unblocked: elects on existing evidence + H1 screen, TRAINKILL holds disclosed. F1 / B7-REFIRE.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+## 2026-08-18j — MNQ K_banked ledger recon: Q-TXG-1 backfilled (5→6); MNQSR-1 / Q-CAPA-1 flagged OPEN
+
+**Focus:** Reconcile stale `K_banked(MNQ)` on [`ops/instruments/MNQ.md`](../ops/instruments/MNQ.md) after a pre-reg disclosure pass found the last `bank X→Y` was 2026-08-05a. (Renumbered 18e→18j on merge with main — main already held 18e for Q-CONDVAL-1.)
+
+**Shipped:** [`MNQ.md`](../ops/instruments/MNQ.md) §K_BANKED + DEAD/session-log backfill. Unambiguous +1: `Q-TXG-1` striker×MNQ `DEAD(N-SURV)` (closure §10 banked K=1) → **5→6**. `MNQSR-1` Notice-phase K=14 and `Q-CAPA-1` Cap-seat K=1 flagged **OPEN** (no silent pick). Harvest Req 3 snapshot now points at the ledger. Disclosure-only.
+
+**Decisions/defects:** none — no ADR. Two operator rulings owed at write time (Notice-phase banking; Cap-seat vs family tally); discharged in 18k.
+
+**Open / next:** (historical) Operator rule whether `MNQSR-1` K=14 (once, not 28) banks, and whether `Q-CAPA-1` Cap-seat is inside the family 6 or a separate reserved seat. Discharged 18k.
+
+---
 ## 2026-08-18i — Q-TRAINKILL-3 AMBIGUOUS-HOLD: FALSIFIED block names NEG, AMBIGUOUS block names DEP; census STOP
 
 **Focus:** Operator GO on the TK2 Iterate packet — do the two surviving DGPs concord across event-class blocks?
