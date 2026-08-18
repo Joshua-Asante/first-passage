@@ -31,7 +31,7 @@ A seed that fails any requirement is not screened — it is either routed to a r
 
 **Confirm-not-mine:** the seed declares **K_intrinsic ≤ 3 fixed hypothesis expressions** at admission (both 1a and 1b seeds are pre-committed-hypothesis shaped and open via `register_search open --lane mechanism-first`, which since 2026-07-25 also requires `--profile-cell` + `--profile-consult` — see the profile-consult block below). Post-admission widening (parameter sweeps, extra windows, extra variants) voids the screen result and is a new axis — fresh manifest, fresh screen. Enforcement point (screen pre-reg §C): a campaign `register_search open` that binds K above the declared band voids the PASS.
 
-**Relief valve — only requirement 3 is a permanent kill.** The five requirements read as a bouncer; in practice most of them have a documented recovery route and only the family-K-bank kill (requirement 3) is truly final:
+**Relief valve — requirement 3 is a mandatory disclosure, not a gate.** The five requirements read as a bouncer; in practice most of them have a documented recovery route, and the family K-bank (requirement 3) cannot fail a seed:
 
 - **Requirement 1** can be satisfied two ways (1a/1b above); a seed with no named mechanism is not automatically dead — check 1b before dropping it.
 - **Requirement 2**'s "nearest analytic analogue" provision (screen pre-reg §B) let D7 screen at all despite having no non-circular JPY-native δ (it borrowed the HARV class-analogue reading instead of inventing a number); a rank-6 (§2.3) seed with no independent cohort can fund a **δ-extraction probe** to generate one (costs data spend + K, but is a real path, not a dead end).
