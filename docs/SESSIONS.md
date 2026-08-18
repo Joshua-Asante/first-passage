@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-18g — ECON EXPORT v0.1: request.economic() calendar-provenance cross-check
+
+**Focus:** Provenance tool — TV `request.economic()` series-update dates vs hand-pinned RATES / NG-EIA / EVT-1 calendars. Hygiene only.
+
+**Shipped:** Spec + parser + diff + synthetic tests. Pine listing in spec (working `.pine` gitignored + hash-pinned). First-run without a TV CSV: `AWAIT_TV_EXPORT` / FOMC `NO_TV_FIELD` / EVT-1 2019–2021 `UNRECOVERABLE_PIN`. Owner: [`docs/spec/2026-08-18-econ-export-v01.md`](spec/2026-08-18-econ-export-v01.md).
+
+**Decisions/defects:** `request.economic()` is a series API, not a calendar. No `INTR`-as-FOMC. `NGSC` is a stocks-change proxy only. Closed campaigns not reopened.
+
+**Open / next:** Carry 18d: S1b conditioner-engineering prereg electable (new GO, new K); S2 cheap falsifier; S3 matched-day prereg. Operator may land `ECON_EXPORT_v0.1_*.csv` and re-run the diff.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-18d — Corrected null designed, verified, and run OFFICIALLY: S1a NULL (near-miss dissolved), S1b SIGNAL-GENERIC; H-SLATE RESOLVED
 
 **Focus:** Operator commission ("take that on now, and identify how this affects S1a's result",

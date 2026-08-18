@@ -82,6 +82,8 @@ SCRIPTS_LAYER = {
     "mc_user_guardian": "lab",
     "pine_lint": "lab",
     "cost_geometry_pregate": "lab",
+    "parse_econ_export": "lab",
+    "diff_econ_calendar": "lab",
     # ops — live-ops tooling (run_ecr / preprocess_pine_ecr_logs retired 2026-07-11)
     "lock_event_hook": "ops",
 }
