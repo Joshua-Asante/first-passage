@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-18e — MNQ K_banked ledger recon: Q-TXG-1 backfilled (5→6); MNQSR-1 / Q-CAPA-1 flagged OPEN
+
+**Focus:** Reconcile stale `K_banked(MNQ)` on [`ops/instruments/MNQ.md`](../ops/instruments/MNQ.md) after a pre-reg disclosure pass found the last `bank X→Y` was 2026-08-05a.
+
+**Shipped:** [`MNQ.md`](../ops/instruments/MNQ.md) §K_BANKED + DEAD/session-log backfill. Unambiguous +1: `Q-TXG-1` striker×MNQ `DEAD(N-SURV)` (closure §10 banked K=1) → **5→6**. `MNQSR-1` Notice-phase K=14 and `Q-CAPA-1` Cap-seat K=1 flagged **OPEN** (no silent pick). Harvest Req 3 snapshot now points at the ledger. Disclosure-only.
+
+**Decisions/defects:** none — no ADR. Two operator rulings owed (Notice-phase banking; Cap-seat vs family tally). Owner: MNQ §K_BANKED.
+
+**Open / next:** Operator rule whether `MNQSR-1` K=14 (once, not 28) banks, and whether `Q-CAPA-1` Cap-seat is inside the family 6 or a separate reserved seat. Carry 18d: S1b conditioner-engineering prereg electable (new GO, new K); S2 cheap falsifier; S3 matched-day prereg.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-18d — Corrected null designed, verified, and run OFFICIALLY: S1a NULL (near-miss dissolved), S1b SIGNAL-GENERIC; H-SLATE RESOLVED
 
 **Focus:** Operator commission ("take that on now, and identify how this affects S1a's result",
