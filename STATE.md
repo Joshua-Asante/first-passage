@@ -61,6 +61,11 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-18** — **Q-TRAINKILL-3 `AMBIGUOUS-HOLD` — event-class blocks split; TRAINKILL census STOP.**
+  Operator GO off TK2 Iterate packet. Block F `NEG` 9.83:1; Block A `DEP` 4.06:1.
+  No singleton working-model. No Q-TRAINKILL-4. $0/K=0.
+  [`closure`](docs/briefs/closures/Q-TRAINKILL-3-closure-ambiguous-hold.md) ·
+  [`RESULTS`](lab/analysis/_inbox/q_trainkill_3_2026-08/RESULTS.md).
 - **2026-08-18** — **Q-TRAINKILL-2 `AMBIGUOUS-HOLD` — both named alternates fit; no singleton power finding.**
   Operator GO off TK1 Iterate packet. Recovery promoted MSL-S2A only. Limb 2: NEG
   and DEP-ZERO both clear 0.05. Do not pick after seeing g. $0/K=0.

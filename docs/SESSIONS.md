@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-18i — Q-TRAINKILL-3 AMBIGUOUS-HOLD: FALSIFIED block names NEG, AMBIGUOUS block names DEP; census STOP
+
+**Focus:** Operator GO on the TK2 Iterate packet — do the two surviving DGPs concord across event-class blocks?
+
+**Shipped:** branch `cursor/q-trainkill-3`. Prereg hashed before block g (sha256 `93c21d21…ad57e7f6`). Block F `NEG` 9.83:1; Block A `DEP` 4.06:1. [`closure`](briefs/closures/Q-TRAINKILL-3-closure-ambiguous-hold.md) · [`RESULTS`](../lab/analysis/_inbox/q_trainkill_3_2026-08/RESULTS.md).
+
+**Decisions/defects:** predicted split held. Election limb did not fire. No Q-TRAINKILL-4.
+
+**Open / next:** Next slate admission screens claim horizon vs the E1 flat-by-16:00 envelope. S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. TRAINKILL census STOP — re-proposal is a new panel or an operator election, not another scoring rule on the same P vectors. B1 Koijen admissibility parallel. B2 unblocked: elects on existing evidence + H1 screen, TRAINKILL holds disclosed. F1 / B7-REFIRE.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-18h — Q-TRAINKILL-2 AMBIGUOUS-HOLD: S2A promoted; both NEG and DEP-ZERO fit; do not pick
 
 **Focus:** Operator GO on the TK1 Iterate packet — recover BOUNDED mean-R CIs or score two pre-declared alternate DGPs.

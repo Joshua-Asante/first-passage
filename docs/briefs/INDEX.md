@@ -25,6 +25,14 @@ closure brief in `docs/ltm/briefs/` and delete its row here.
 
 ## Recently closed (cross-reference; not open)
 
+- **Q-TRAINKILL-3** — do Block F (FALSIFIED) and Block A (AMBIGUOUS) name the same
+  2:1 winner between NEG and DEP — **`AMBIGUOUS-HOLD` 2026-08-18** (F=`NEG`
+  9.83:1; A=`DEP` 4.06:1; split). Census STOP. No Q-TRAINKILL-4. No singleton
+  power finding. $0/K=0.
+  [`closure`](closures/Q-TRAINKILL-3-closure-ambiguous-hold.md) ·
+  [`RESULTS`](../../lab/analysis/_inbox/q_trainkill_3_2026-08/RESULTS.md) ·
+  [`brief`](Q-TRAINKILL-3-neg-vs-dep-discriminator.md) ·
+  [`pre-reg`](pre-registration/Q-TRAINKILL-3-verdict-preregistration.md).
 - **Q-TRAINKILL-2** — after recovery of committed mean-R CIs on the seven TK1-BOUNDED
   rows, does {0, +0.10} resolve, or does a pre-declared −0.10R or Fréchet-hi-zero
   DGP fit the scored core — **`AMBIGUOUS-HOLD` 2026-08-18** (MSL-S2A promoted;

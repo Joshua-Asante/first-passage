@@ -161,6 +161,7 @@ documents the camp boundary for humans/tools.
 | q_expr_1_2026-08 | _inbox | HOLD | archive owed (CLOSED): H1 horizon-mismatch 4/4 models the orphaning; H2 1/5 misses; H3 cannot fire | lab/analysis/_inbox/q_expr_1_2026-08/ | — |
 | q_trainkill_1_2026-08 | _inbox | HOLD | BOUNDED extremes disagree; scored core MISCALIBRATED | lab/analysis/_inbox/q_trainkill_1_2026-08/ | — |
 | q_trainkill_2_2026-08 | _inbox | HOLD | both named alternates fit (NEG and DEP-ZERO) | lab/analysis/_inbox/q_trainkill_2_2026-08/ | — |
+| q_trainkill_3_2026-08 | _inbox | HOLD | Block F NEG and Block A DEP (split) | lab/analysis/_inbox/q_trainkill_3_2026-08/ | — |
 | rangestate_corrected_2026-08 | _inbox | ACTIVE | OFFICIAL corrected-null re-score complete: S1a (GC) NULL (driving L2,L4; obs at 8.4th pct of its own linear-ACF band ... | lab/analysis/_inbox/rangestate_corrected_2026-08/ | — |
 | rangestate_gc_2026-08 | _inbox | ACTIVE | NULL, now official under the corrected battery (driving L2+L4; obs at 8.4th pct of GC's own linear-ACF band — near-mi... | lab/analysis/_inbox/rangestate_gc_2026-08/ | — |
 | rangestate_mcl_2026-08 | _inbox | ACTIVE | SIGNAL-GENERIC under the corrected battery (official 2026-08-18): canon-attributed volatility clustering (69th pct of... | lab/analysis/_inbox/rangestate_mcl_2026-08/ | — |
