@@ -12,7 +12,7 @@
 | band-pierce-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | F | . | . | . | . | . | . | . |
 | commodity-carry-term-structure | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . |
 | compression-gated-breakout | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . |
-| daily-range-state-persistence | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| daily-range-state-persistence | . | . | . | . | . | . | . | . | A | . | A | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | day-of-week-selection-gate | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . |
 | event-window-reversal | . | . | . | . | D | . | . | . | . | . | D | . | . | D | . | D | . | . | . | . | . | . | . | . | . | D |
 | htf-compression-breakout-5m | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
@@ -79,10 +79,9 @@ Gating a breakout entry on a prior volatility-compression phase resolving into e
 
 **NEW 2026-08-18.** Conditioner-role, not entry-role: does a day's True Range being in the
 
-- **Class finding:** GC (parent, train era 2010–2019) top-quintile TR → elevated next-day TR:
-
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
+| MCL | AMBIGUOUS-PARKED | 2026-08-18 | ../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md |
 | MGC | AMBIGUOUS-PARKED | 2026-08-18 | ../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md |
 
 

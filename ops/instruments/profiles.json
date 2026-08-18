@@ -49,7 +49,13 @@
     },
     "M2K": {},
     "M6A": {},
-    "MCL": {},
+    "MCL": {
+      "daily-range-state-persistence": {
+        "date": "2026-08-18",
+        "source": "../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md",
+        "verdict": "AMBIGUOUS-PARKED"
+      }
+    },
     "MES": {},
     "MGC": {
       "daily-range-state-persistence": {
@@ -955,9 +961,7 @@
     },
     "daily-range-state-persistence": {
       "definition": "**NEW 2026-08-18.** Conditioner-role, not entry-role: does a day's True Range being in the",
-      "findings": [
-        "GC (parent, train era 2010\u20132019) top-quintile TR \u2192 elevated next-day TR:"
-      ]
+      "findings": []
     },
     "day-of-week-selection-gate": {
       "definition": "A calendar / day-of-week (or adjacent session / hour-block) selection gate that admits or blocks trades by clock time rather than by price action.",

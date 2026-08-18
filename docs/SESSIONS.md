@@ -14,6 +14,49 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-18c — S1b runs SIGNAL, adversarial review finds it NOT-CONFIRMED: placebo test invalidated
+
+**Focus:** Operator GO ("GO S1b") off the Step-0 slate queue — daily True-Range top-quintile
+persistence on crude oil (CL), replicating S1a's frozen object on a second instrument.
+
+**Shipped:** First raw battery reading was the program's first **SIGNAL** (gateHit 0.6282,
+n=425, all four frozen limbs clear, placebo p=0.0005). Given SIGNAL is the highest-stakes
+outcome type, launched a heavier adversarial-verify workflow than S1a's (independent
+reimplementation from the frozen prereg text alone + regime-concentration drop-year test +
+placebo-design skepticism). **Result: the placebo null is structurally misspecified** — it does
+not control for CL's own ordinary True-Range autocorrelation (measured log-TR lag-1 ρ=0.4520).
+20 independent zero-mechanism AR(1) surrogates calibrated only to that one coefficient cleared
+the identical battery at a *higher* rate (0.72–0.80) than the real data. Independently
+corroborated: removing the 2011/2014/2016 crisis-year cluster flips the verdict to NULL; the
+calm-year subset alone is a clean NULL failing its own placebo. **Verdict downgraded to
+`NOT-CONFIRMED`.** Since S1a shares the identical placebo function byte-for-byte, its own
+placebo pass (p=0.0095) is retroactively suspect too — corrected in the same pass (S1a's
+bottom-line NULL is unchanged, since it already failed the CI limb independently, but the
+"live prior for S1b" framing is retracted). Full root-cause + repair plan:
+[audit note](../docs/notes/audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md).
+[`RESULTS_S1B.md`](../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md) ·
+[`RESULTS_S1A.md`](../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md) (corrected).
+
+**Decisions/defects:** The defect is program-level, not S1b-specific — the four-limb battery
+(designed for `H-DSTRUCT-MNQ-1`'s directional-match claim, reused verbatim for a
+magnitude-persistence claim) was never re-validated for the new claim family's confound
+(autocorrelation, not base-rate skew). Caught by the adversarial-verify discipline itself,
+specifically because the stakes of a SIGNAL result warranted heavier scrutiny than a routine
+NULL — the review that would have been skipped as "redundant on unchanged code" is exactly what
+found this. Board writes: `MECHANISMS.md` `daily-range-state-persistence` heading corrected
+(both class findings re-typed `test invalid`); `MGC.md` G4 + `MCL.md` C4 corrected/added; Step-0
+slate S1a/S1b sections corrected, **S2/S3 paused**, §4 falsifier clock paused (not stopped, not
+extended past 2026-09-15).
+
+**Open / next:** Structural repair owed before any further magnitude-persistence-class Tier-1
+screen: design a corrected, autocorrelation-matched null (AR/GARCH-calibrated surrogate or
+phase-randomized surrogate) — a fresh methodology decision, not attempted this session.
+`strategy-validation` §5 owes an explicit autocorrelation-confound clause alongside its existing
+directional-drift clause. S2/S3 stay paused until then.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-18a — W×ORB gate stopped at dedup; H-DSTRUCT-MNQ-1 NULL; Step-0 daily-geometry slate drafted
 
 **Focus:** Mechanism-by-mechanism program kickoff (operator thread): can the validated W layer

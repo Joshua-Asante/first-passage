@@ -54,9 +54,16 @@ clustering-preserving placebo as primary**), verdict SIGNAL / NULL / AMBIGUOUS, 
 > (4-lens + synthesis workflow; one MUST-FIX caught and fixed — CI block size — both
 > corrections verdict-preserving). Full detail:
 > [`RESULTS_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md).
-> **S1b (MCL) is the live next queue item** — the near-miss shape (placebo clears, CI doesn't)
-> is a prior for it, not a reason to skip it; per §4 the class needs S1a+S1b+S2 to all NULL
-> before it's exhausted.
+>
+> **⚠ S1b RAN 2026-08-18 → raw `SIGNAL`, downgraded to `NOT-CONFIRMED` — the shared placebo
+> is invalidated, and this row's own "S1b is a live prior for it" framing is retracted.**
+> Adversarial review found the four-limb battery's placebo does not control for True-Range
+> autocorrelation (20/20 zero-mechanism AR(1) surrogates cleared it at a higher rate than
+> either real dataset); S1b's raw SIGNAL also failed a regime-concentration test (crisis-year
+> cluster removal flips it to NULL). **S2 and S3 below are PAUSED, not GO-able, until the
+> structural fix named in the audit note lands.** Full detail:
+> [`RESULTS_S1B.md`](../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md) ·
+> [audit note](../../notes/audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md).
 
 - **Frozen claim (sign = persistence):** `P(TR_{d+1} > median(TR, trailing 60d) | TR_d in top
   quintile of trailing 60d)` exceeds its block-shuffled null. Grounding: evidence-robustness
@@ -73,6 +80,10 @@ clustering-preserving placebo as primary**), verdict SIGNAL / NULL / AMBIGUOUS, 
 
 ### S2 — Overnight→day-session range transmission · MGC + MCL
 
+> **⚠ PAUSED 2026-08-18 — do not GO.** Queued to reuse the S1 battery, which is invalidated
+> (see the S1a row above and the audit note). Un-pause only after a corrected, autocorrelation-
+> matched null lands and is itself GO'd for use here.
+
 - **Frozen claim:** overnight-session range state (top quintile) predicts elevated day-session
   range beyond the unconditional base — same battery; the conditioning is known **before** the
   session opens (fresher than S1; the two rows are deliberately the same family at two
@@ -86,6 +97,8 @@ clustering-preserving placebo as primary**), verdict SIGNAL / NULL / AMBIGUOUS, 
   are not valid there).
 
 ### S3 — Event-day range concentration · MCL only (EIA Wednesday 10:30 ET)
+
+> **⚠ PAUSED 2026-08-18 — do not GO.** Same reason and same lift condition as S2 above.
 
 - **Frozen claim:** post-release session TR on EIA days exceeds matched non-event Wednesdays by
   a frozen factor (≥1.25× at the median) with year-stability (≥6 of 8 years) — geometry only,
@@ -127,6 +140,14 @@ regularity — i.e. **≥1 SIGNAL among the GO'd screens** under their frozen ba
   mechanism** (who is constrained, at what clock), not another geometry functional.
 - **AMBIGUOUS** — screens blocked on data/defect, or <3 screens run by **2026-09-15** with marks
   given (inertness: report at the next quarterly audit, mirror of the lane charter's own limb).
+
+**⚠ Clock paused 2026-08-18, not stopped.** S1a and S1b both ran, but their shared placebo was
+found invalidated (autocorrelation-uncontrolled null; [audit note](../notes/audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md))
+— neither a RESOLVED nor a FALSIFIED-contributing read can be drawn from either screen as run.
+S1a's raw `NULL` and S1b's raw `SIGNAL→NOT-CONFIRMED` both count as **zero** toward §4's
+RESOLVED/FALSIFIED tallies until re-run under a corrected null. The 2026-09-15 inertness date
+is **not** extended by this pause — if the structural fix and a re-run haven't landed by then,
+the slate reports AMBIGUOUS at that date regardless, same as any other stall.
 
 ## §5 — Forbidden moves
 

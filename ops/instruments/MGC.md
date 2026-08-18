@@ -50,7 +50,7 @@ structure:
 | **G1** | **Voided kill: `E-K`.** Third-leg map eliminated MGC (bank 3177 → floor 2.05 > Cap). Banner + K-bank ADR: Clause K no longer eliminates; bank is disclosure (still large — cite manifests, don’t hardcode as authority). | [`third-leg RESULTS`](../../lab/analysis/c1/c1_thirdleg_instrument_map_2026-07-27/RESULTS.md) L35 + banner | **HIGH** (ADR void). |
 | **G2** | **Standing non-K grounds.** Metals Product Group · E1–E7 class-fit · DISC-CAMP-0 family history as disclosure/Req-3 bank fact · micro proxy vs GC · cost-tax from third-leg row (re-cite: cost-tax 1t r=1 **0.0902**). | third-leg RESULTS · envelope · [`lab/CATALOG.md`](../../lab/CATALOG.md) disccamp0 row | **HIGH** as posture. |
 | **G3** | **Envelope + TNEC class attestation (no candidate).** See table. N-SIZE = U. | this session | **MODERATE**. |
-| **G4** | **`H-RANGESTATE-GC-1` (S1a, Step-0 slate row S1) — research verdict `NULL` (near-miss); ledger cell verdict `AMBIGUOUS-PARKED`** (the PROFILE `cells:` vocabulary has no `NULL` state — `AMBIGUOUS-PARKED` is the correct mapping: measured, inconclusive, blocking a same-cell re-attempt until the stated re-proposal bar is cleared). Daily top-quintile-TR → elevated-next-day-TR conditioner, GC parent train era (2010–2019, `MGC.v.0` 2019+ reserved). Conditional hit rate **0.5299** (n=451/2,116 scored); **3 of 4 frozen limbs pass** (n-floor, halves, placebo p=0.0095) — only the 60-day block-bootstrap CI lower bound fails (**0.4545**, 4.55pp under 0.50). Adversarially verified (4-lens + synthesis workflow) before trust: lookahead/leakage clean; one real defect caught and fixed pre-trust (CI block size 10d→60d + true circular wraparound, both corrections verdict-preserving and conservative — narrows toward NULL, not away from it). Live prior for the MCL sibling screen (S1b, same slate). | [`RESULTS_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md) · [`PREREG_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/PREREG_S1A.md) | **HIGH** (frozen prereg, adversarially verified, $0/K=1 disclosed). |
+| **G4** | ⚠ **CORRECTED 2026-08-18 — test invalidated, see [audit note](../../docs/notes/audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md).** `H-RANGESTATE-GC-1` (S1a, Step-0 slate row S1) — ledger cell verdict `AMBIGUOUS-PARKED` (unchanged). Daily top-quintile-TR → elevated-next-day-TR conditioner, GC parent train era. **Raw battery reading `NULL`** (conditional hit rate 0.5299, n=451/2,116; CI lower bound 0.4545 fails by 4.55pp) — **bottom line unchanged**, but the placebo pass (p=0.0095) originally cited as partial corroboration is **not valid corroboration**: the sibling CL screen (S1b) showed this same placebo construction is cleared by zero-mechanism AR(1) surrogates at a *higher* rate than either real dataset. Do not cite "3 of 4 limbs pass" as meaningful; the CI-limb failure is the only trustworthy reason this cell is `NULL`. The "live prior for MCL" framing originally here is retracted — S1b's own raw SIGNAL was independently downgraded to NOT-CONFIRMED for the identical reason. | [`RESULTS_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md) (correction banner) · [`RESULTS_S1B.md`](../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md) | **HIGH** (frozen prereg, adversarially verified; battery defect itself is HIGH-confidence, quantified via 20/20 surrogate trials). |
 
 ### Envelope E1–E7 + TNEC class attestation
 
@@ -83,6 +83,13 @@ structure:
 
 ## SESSION LOG
 
+- **2026-08-18b** — **G4 corrected — placebo test invalidated, not the bottom-line verdict.**
+  Adversarial review of the sibling CL screen (S1b) found the four-limb battery's placebo does
+  not control for True-Range autocorrelation (20/20 zero-mechanism AR(1) surrogates cleared it
+  at a higher rate than the real data). S1a's `NULL` stands (CI limb independently fails), but
+  the placebo-pass corroboration and "live prior for S1b" framing are retracted. Audit note:
+  [`2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md`](../../docs/notes/audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md).
+  $0 / K=0 (correction only, no new spend).
 - **2026-08-18** — **`H-RANGESTATE-GC-1` (Step-0 slate S1a) → NULL, near-miss.** Daily
   range-state persistence conditioner screened on GC train era ($0, K=1 disclosed). 3/4 limbs
   pass; CI lower bound fails by 4.55pp. Adversarially verified before trust (4-lens workflow

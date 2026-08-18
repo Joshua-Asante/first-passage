@@ -74,10 +74,27 @@ range-state-forecasting claim, and is scoped to the non-index triad
 §2 row S1). Grounding: evidence-robustness (volatility clustering — ARCH/GARCH canon), not a
 per-instrument WHO claim.
 
-- **Class finding:** GC (parent, train era 2010–2019) top-quintile TR → elevated next-day TR:
-  **NULL, near-miss** — conditional hit rate 0.5299 (n=451), placebo p=0.0095 (passes), halves
-  pass, but the 60-day block-bootstrap CI lower bound (0.4545) fails the 0.50 threshold by
-  4.55pp. Three of four limbs clear; the estimation-precision limb does not. [MGC.md G4](MGC.md)
+**⚠ TEST INVALIDATED 2026-08-18 — read the audit note before citing either class finding
+below.** The frozen four-limb battery's placebo does not control for ordinary True-Range
+autocorrelation: 20 independent zero-mechanism AR(1) surrogates (calibrated only to each
+instrument's own measured lag-1 autocorrelation) cleared the identical battery at a *higher*
+rate than either real dataset below. **Neither class finding below should be read as measuring
+this mechanism** — both are re-classified `UNMEASURED (test invalid)`, not `NULL` or `SIGNAL`,
+pending a corrected null (AR/GARCH-calibrated surrogate). Full detail:
+[audit note](../../docs/notes/audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md).
+Step-0 slate rows S2/S3 (queued to reuse the same battery) are **paused**.
+
+- **Class finding (test invalid, see banner):** GC (parent, train era 2010–2019) top-quintile
+  TR → elevated next-day TR — raw battery reading `NULL` (CI limb fails, 0.4545 vs 0.50; the
+  placebo pass, p=0.0095, is not independent corroboration under the invalidated null).
+  [MGC.md G4](MGC.md) · [`RESULTS_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md)
+- **Class finding (test invalid, see banner):** CL (parent, train era 2010–2019) top-quintile
+  TR → elevated next-day TR — raw battery reading `SIGNAL` (all four limbs clear, gateHit
+  0.6282), downgraded to **`NOT-CONFIRMED`**: the effect is smaller than its own AR(1)
+  autocorrelation baseline (surrogates predicted 0.75–0.80) and evaporates under
+  regime-concentration testing (crisis-year cluster removal flips CI below 0.50; calm-year-only
+  subset is an independent NULL failing its own placebo). [MCL.md](MCL.md) ·
+  [`RESULTS_S1B.md`](../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md)
 
 ## htf-compression-breakout-5m
 

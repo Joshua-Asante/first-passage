@@ -1,9 +1,22 @@
 **Theme:** _inbox
-**Status:** ACTIVE — NULL: daily range-state (top-quintile TR) persistence on GC train era; 3 of 4 limbs pass, CI lower bound is the sole failing limb (near-miss, 4.55pp under threshold)
-# `H-RANGESTATE-GC-1` (S1a) — RESULTS: near-miss NULL on daily range-state persistence, GC train era
+**Status:** ACTIVE — NULL (verdict unchanged): daily range-state (top-quintile TR) persistence on GC train era; CI lower bound fails. ⚠ CORRECTED 2026-08-18 — the placebo pass is NOT independent corroboration; see banner below.
+# `H-RANGESTATE-GC-1` (S1a) — RESULTS: NULL on daily range-state persistence, GC train era
+
+> **⚠ CORRECTION 2026-08-18 — read before citing this file's §3.** The sibling screen
+> [`H-RANGESTATE-CL-1` (S1b)](../rangestate_mcl_2026-08/RESULTS_S1B.md) triggered an adversarial
+> review that found the **placebo limb both screens share is misspecified** — it does not
+> control for ordinary True-Range autocorrelation, and 20 independent zero-mechanism AR(1)
+> surrogates cleared the identical battery at a *higher* rate than either real dataset. Full
+> finding: [audit note](../../../docs/notes/audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md).
+> **Consequence for this file: the bottom-line verdict is unchanged** (`NULL` — this screen
+> already failed the `ci_lb` limb independent of the placebo defect), **but §3's claim that the
+> placebo pass is "independent corroboration" against an arbitrary NULL is retracted.** §3 is
+> preserved below as originally authored, for audit-trail honesty, followed by a correction.
+> Read §3 with that retraction in mind rather than as originally intended.
 
 **Date:** 2026-08-18 · **Verdict: `NULL`** (per the frozen §3 gate — limb `ci_lb` failed;
-`n_floor`, `halves`, `placebo` all passed)
+`n_floor`, `halves`, `placebo` all passed **— `placebo` pass is NOT independent corroboration,
+see correction banner above**)
 **Pre-registration:** [`PREREG_S1A.md`](PREREG_S1A.md), frozen before compute, corrected via
 adversarial review before the trusted run (§8 there; workflow `wf_7ad6ac61-126`).
 **Spend:** $0.00 (confirmed at pull) · K=1 (disclosed, one frozen object) · no manifest.
@@ -64,20 +77,35 @@ prereg's own text argued for 60-day blocks; the fix widens the CI and moves the 
 limb 2). A p-hacked screen would have kept the narrower, more favorable interval; this one
 doesn't.
 
+**Retraction (added 2026-08-18, does not alter §3's text above):** the paragraph above treats
+the placebo's p=0.0095 pass as evidence the result "isn't arbitrary." That reasoning assumed the
+placebo null correctly isolates the claimed 1-day-ahead persistence effect from ordinary
+True-Range autocorrelation. **It does not** — see the correction banner at the top of this file
+and the linked audit note. GC's own True-Range series is autocorrelated the same way CL's is; a
+zero-mechanism AR(1) surrogate matched to GC's own lag-1 ACF would very likely also clear this
+placebo (not separately re-tested here, since S1a's bottom-line verdict doesn't depend on it —
+`ci_lb` already fails on its own). **Read this file's placebo row as "cleared an invalid null,"
+not as supporting evidence.** The CI-limb failure remains the operative, trustworthy reason this
+screen is `NULL`.
+
 ## 4. Disposition
 
 **`NULL` → does not close the daily-geometry class.** Per the Step-0 slate's own §4 falsifier,
-the class needs **all GO'd screens** (minimum S1a+S1b+S2) to NULL before it's exhausted — S1a
-alone is one instrument/window draw of one row. The near-miss shape (placebo p=0.0095, CI
-lower bound only 4.55pp short) is disclosed as a **live prior for S1b (MCL)**: the mechanism's
-evidence-robustness grounding (§2, volatility clustering) predicts it should generalize across
-instruments if real, so S1b is not a blind re-test — it's the first opportunity to see whether
-this near-miss replicates or was this instrument/window's own sampling noise.
+the class needs **all GO'd screens** to NULL before it's exhausted — S1a alone is one
+instrument/window draw of one row.
 **Re-proposal bar (for a GC-specific re-open):** per §6, no second quantile cut, window length,
 or horizon on this exact instrument/window — a re-open needs either a longer/different
 train-era panel (not this one, not a shortened one) or a named mechanism argument for why P80/60d
-specifically undersells the true effect.
-**Routing:** proceeds to S1b (MCL) per the slate's queue order (§3 there), GO owed separately.
+specifically undersells the true effect. **Any re-open additionally needs the corrected
+autocorrelation-matched null from the audit note above** — the frozen battery as currently
+built cannot be trusted to gate this claim family.
+
+**⚠ "Live prior for S1b" (originally below) — RETRACTED 2026-08-18.** S1b ran and returned a
+raw `SIGNAL` reading that the same adversarial review found not-confirmed for the identical
+reason as this correction: [`RESULTS_S1B.md`](../rangestate_mcl_2026-08/RESULTS_S1B.md). S1b's
+near-miss-shaped placebo pass here did not predict anything real about S1b, because neither
+screen's placebo tests what it was assumed to test. S2/S3 (Step-0 slate) are **paused** pending
+the structural fix named in the audit note.
 
 ## 5. Scope limits
 
