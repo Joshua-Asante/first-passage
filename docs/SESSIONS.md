@@ -14,6 +14,34 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-18a — W×ORB gate stopped at dedup; H-DSTRUCT-MNQ-1 NULL; Step-0 daily-geometry slate drafted
+
+**Focus:** Mechanism-by-mechanism program kickoff (operator thread): can the validated W layer
+gate ORB-MNQ? Does a daily-native version of the structure stand alone? Then build the Step-0
+mechanism slate.
+
+**Shipped:** (1) W×ORB stratification **STOPPED at freeze-stage dedup, $0, nothing run** —
+Q-WLEGB-1 already falsified sub-weekly transfer, and its own prereg §1 had rejected the
+ORB-entry form under the F2 guard ("a fifth ORB conditioning gate wearing a different label").
+(2) `H-DSTRUCT-MNQ-1` (daily close-vs-EMA20 → next-day RTH O→C; frozen prereg; $0; K=1
+disclosed) → **NULL, 3 of 4 limbs failed**; bearish arm carries zero information (up-rate
+54.03% vs 54.39% unconditional). Monotonic profile complete: weekly real → transfer null →
+daily-native null. MNQ ledger DEAD row added.
+[`PREREG`](../lab/analysis/_inbox/dstruct_mnq_2026-08/PREREG_DSTRUCT.md) ·
+[`RESULTS`](../lab/analysis/_inbox/dstruct_mnq_2026-08/RESULTS_DSTRUCT.md).
+(3) Step-0 slate drafted: [`brief`](briefs/2026-08-18-step0-daily-geometry-mechanism-slate.md)
+— daily-geometry class (range/level, not direction) on the non-index triad, per-row WHO +
+dedup + cost arithmetic + frozen Tier-1 screen specs. Operator marks owed on the slate.
+
+**Decisions/defects:** None new. The two negative results cost $0 and one hour combined — the
+Tier-1 screen tier working as designed.
+
+**Open / next:** Operator GO on the slate's screen queue (§6); deep-lane charter §7 steps 2–4
+(`--lane deep` flag, doc scoping, skill wiring) still owed before the next lane campaign.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-17e — Q-POLFRONT-1 intraday-honest fork executed: 5.1× policy frontier does not survive
 
 **Focus:** Operator GO ("open the intraday-honest remeasurement") on the named-but-unopened
