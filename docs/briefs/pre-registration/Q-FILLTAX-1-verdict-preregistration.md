@@ -83,7 +83,7 @@ python -m pytest tests/lab/test_q_filltax_1_parity_mutations.py -v
 
 | Trigger | Disposition |
 |---|---|
-| 100% detection (M1–M7 all FAIL), 0 false passes (M8 ADMITs) | `RESOLVED` — land the parity harness as a standing local pre-commit / `make validate` gate (skip-if-missing on clean clones; not GitHub Actions CI) |
+| Phase 2 pinned-anchor run has 100% detection (M1–M7 all FAIL) and 0 false passes (M8 ADMITs) | `RESOLVED` — land the parity harness as a standing local pre-commit / `make validate` gate (skip-if-missing on clean clones; not GitHub Actions CI) |
 | Any missed mutation or false pass | `FALSIFIED` — `ITERATE`: repair the harness, never the tolerance; re-run this battery |
 
 **This freeze's own battery run is 8/8 (100% detection, 0 false passes) — but this satisfies

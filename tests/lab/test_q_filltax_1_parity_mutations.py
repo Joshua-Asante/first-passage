@@ -211,3 +211,4 @@ def test_battery_bands_still_match_prereg_literals():
     assert G.NET_REL_BAND == 0.02
     assert G.PF_REL_BAND == 0.02
     assert G.MIN_TRADES == 30
+    assert G.EPS_DENOM == 1e-12
