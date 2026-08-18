@@ -1,0 +1,121 @@
+{
+  "note": "Assembled AFTER prereg sha256 86049b89b413b33430e7dfe31d9fc5de5cc46b81c0f23f3ea7877d78c7605b5d was printed. Inherited 8 scored rows from TK1 TABLE. MSL-S2A promoted: committed mean-R CIs in MSL-S2A-closure-falsified.md §6 (CI route did not fire; event AMBIGUOUS both arms). Six rows stay BOUNDED under §B.",
+  "n_promoted": 1,
+  "promoted": ["MSL-S2A"],
+  "rows": [
+    {
+      "id": "Q-TNEC-CON-2",
+      "class": "scored",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "ci": [-0.1470, 0.0551],
+      "source": "TK1 TABLE (inherited)"
+    },
+    {
+      "id": "Q-TNEC-CON-3",
+      "class": "scored",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "ci": [-0.0732, 0.2256],
+      "source": "TK1 TABLE (inherited)"
+    },
+    {
+      "id": "Q-TNEC-CON-4",
+      "class": "scored",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "ci": [-0.0475, 0.0352],
+      "source": "TK1 TABLE (inherited)"
+    },
+    {
+      "id": "Q-TNEC-CON-5",
+      "class": "scored",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "ci": [-0.4541, 0.1013],
+      "source": "TK1 TABLE (inherited)"
+    },
+    {
+      "id": "MSL-C1",
+      "class": "scored",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "ci_long": [-0.267, -0.083],
+      "ci_short": [-0.197, -0.017],
+      "source": "TK1 TABLE (inherited)"
+    },
+    {
+      "id": "MSL-C2",
+      "class": "scored",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "ci_long": [-0.287, -0.071],
+      "ci_short": [-0.292, -0.075],
+      "source": "TK1 TABLE (inherited)"
+    },
+    {
+      "id": "MSL-C3-K2",
+      "class": "scored",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "ci_long": [-0.256, -0.038],
+      "ci_short": [-0.307, -0.089],
+      "source": "TK1 TABLE (inherited)"
+    },
+    {
+      "id": "MSL-S2A",
+      "class": "scored",
+      "event": "AMBIGUOUS",
+      "mode": "both_arms",
+      "ci_long": [-0.464, 0.144],
+      "ci_short": [-0.287, 0.146],
+      "source": "docs/briefs/closures/MSL-S2A-closure-falsified.md §6 CI route (n<100; CI_hi>0 both arms); promoted under TK2 §B",
+      "promoted": true
+    },
+    {
+      "id": "Q-R2VBUCK-1",
+      "class": "bounded",
+      "reason": "ρ CI, not mean-R; §B forbids ρ→R",
+      "source": "docs/briefs/closures/Q-R2VBUCK-1-closure-falsified.md"
+    },
+    {
+      "id": "Q-R2FLOW-1",
+      "class": "bounded",
+      "reason": "ρ CI, not mean-R; §B forbids ρ→R",
+      "source": "docs/briefs/closures/Q-R2FLOW-1-closure-falsified.md"
+    },
+    {
+      "id": "Q-R2AGRUN-1",
+      "class": "bounded",
+      "reason": "ρ CI, not mean-R; §B forbids ρ→R",
+      "source": "docs/briefs/closures/Q-R2AGRUN-1-closure-ambiguous-hold.md"
+    },
+    {
+      "id": "Q-MNQDTL-CON-1",
+      "class": "scored",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "ci_long": [-0.19138531457934363, -0.016545773097094974],
+      "ci_short": [-0.2089277387011932, -0.005184988545513807],
+      "source": "TK1 TABLE (inherited)"
+    },
+    {
+      "id": "DL-1",
+      "class": "bounded",
+      "reason": "annSR/SPA nomination gates; not a mean-R CI",
+      "source": "lab/analysis/deep_lane/dl1_mgc_orc_2026-08-16/RESULTS.md"
+    },
+    {
+      "id": "Q-CAPFLOW-1",
+      "class": "bounded",
+      "reason": "ρ CI (session-block on association), not mean-R; §B forbids ρ→R",
+      "source": "docs/briefs/closures/Q-CAPFLOW-1-closure-falsified.md"
+    },
+    {
+      "id": "H-DSTRUCT-MNQ-1",
+      "class": "bounded",
+      "reason": "gateHit vs 0.50; not a mean-R CI",
+      "source": "lab/analysis/_inbox/dstruct_mnq_2026-08/RESULTS_DSTRUCT.md"
+    }
+  ]
+}

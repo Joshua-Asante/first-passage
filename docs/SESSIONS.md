@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-18h — Q-TRAINKILL-2 AMBIGUOUS-HOLD: S2A promoted; both NEG and DEP-ZERO fit; do not pick
+
+**Focus:** Operator GO on the TK1 Iterate packet — recover BOUNDED mean-R CIs or score two pre-declared alternate DGPs.
+
+**Shipped:** branch `cursor/q-trainkill-2`. Prereg hashed before recovery (sha256 `86049b89…7605b5d`). MSL-S2A promoted; six stay BOUNDED. Limb 1 no-fire. Limb 2 both alternates fit. [`closure`](briefs/closures/Q-TRAINKILL-2-closure-ambiguous-hold.md) · [`RESULTS`](../lab/analysis/_inbox/q_trainkill_2_2026-08/RESULTS.md).
+
+**Decisions/defects:** §F predicted 0 promotions; S2A had mean-R CIs on the page. Floor / product / μ not moved. Did not pick a singleton after seeing both g's.
+
+**Open / next:** Next slate admission screens claim horizon vs the E1 flat-by-16:00 envelope. S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. Q-TRAINKILL-3 named, not opened (NEG-vs-DEP discriminator or an operator election of one working-model). B1 Koijen admissibility parallel. B2 unblocked: elects on existing evidence + H1 screen, TRAINKILL holds disclosed. F1 / B7-REFIRE.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-18g — Q-TRAINKILL-1 AMBIGUOUS-HOLD: kill record does not discriminate empty vs under-power; no bar moves
 
 **Focus:** Operator GO on notice packet 3 — is the explore/train kill record consistent with zero edge, with true +0.10R@$75 edges the designs are underpowered to pass, or with neither?

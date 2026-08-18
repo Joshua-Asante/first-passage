@@ -25,6 +25,15 @@ closure brief in `docs/ltm/briefs/` and delete its row here.
 
 ## Recently closed (cross-reference; not open)
 
+- **Q-TRAINKILL-2** — after recovery of committed mean-R CIs on the seven TK1-BOUNDED
+  rows, does {0, +0.10} resolve, or does a pre-declared −0.10R or Fréchet-hi-zero
+  DGP fit the scored core — **`AMBIGUOUS-HOLD` 2026-08-18** (MSL-S2A promoted;
+  Limb 1 extremes still disagree; both `NEG` and `DEP-ZERO` fit). No singleton
+  power finding. No gate number moves. $0/K=0.
+  [`closure`](closures/Q-TRAINKILL-2-closure-ambiguous-hold.md) ·
+  [`RESULTS`](../../lab/analysis/_inbox/q_trainkill_2_2026-08/RESULTS.md) ·
+  [`brief`](Q-TRAINKILL-2-bounded-recovery-alt-dgp.md) ·
+  [`pre-reg`](pre-registration/Q-TRAINKILL-2-verdict-preregistration.md).
 - **Q-TRAINKILL-1** — is the explore/train kill record consistent with zero edge, with
   true +0.10R@$75 edges the designs are underpowered to pass, or with neither —
   **`AMBIGUOUS-HOLD` 2026-08-18** (BOUNDED extremes disagree: `MISCALIBRATED` at ε vs

@@ -61,6 +61,11 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-18** — **Q-TRAINKILL-2 `AMBIGUOUS-HOLD` — both named alternates fit; no singleton power finding.**
+  Operator GO off TK1 Iterate packet. Recovery promoted MSL-S2A only. Limb 2: NEG
+  and DEP-ZERO both clear 0.05. Do not pick after seeing g. $0/K=0.
+  [`closure`](docs/briefs/closures/Q-TRAINKILL-2-closure-ambiguous-hold.md) ·
+  [`RESULTS`](lab/analysis/_inbox/q_trainkill_2_2026-08/RESULTS.md).
 - **2026-08-18** — **Q-TRAINKILL-1 `AMBIGUOUS-HOLD` — no named power finding; no gate number moves.**
   Operator GO off iteration-2 notice packet 3. Set n=15 / μ_bar=+0.10R / floor 0.05 frozen
   before the table. Scored g(0)=0.024 < 0.05; BOUNDED extremes disagree. B2 elects on
