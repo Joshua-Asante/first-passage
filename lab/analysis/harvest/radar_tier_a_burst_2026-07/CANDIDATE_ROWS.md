@@ -171,5 +171,17 @@ P2×MGC, P2×6J): three gross-negative outright, the fourth (P1×6J) gross-posit
 below the 4× cost hurdle. Full construction, diagnostics (stop-trigger rate, long/short split
 ruling out a stop-mechanism artifact), and results:
 [`six_lead_cf_2026-08-17/LOG.md`](../six_lead_cf_2026-08-17/LOG.md). $0/K=0 — panels on hand, no
-pull. **Harvest §4 limb-2 counter question still unmarked by the operator** — this FAIL is exactly
-the case it governs (does a Phase-1 CF kill count toward the 0/2); not decided unilaterally here.
+pull. Harvest §4 limb-2 counter was unmarked at this addendum's writing; **ruled later the
+same day — does not increment** (see harvest intake ADR ruling block).
+
+#### Addendum 2026-08-17c — P3 (L5) un-HOLD → GO → sleeve CLOSED (venue)
+
+Operator un-HOLD on Bianchi/Fan/Miffre/Zhang curve-slope momentum. Paper read (arXiv
+`2308.00383` / *JBF* 2023): the SR-1.41 S-strategy is a same-commodity calendar spread
+(Δslope → long front / short fourth). Dedup vs `commodity-carry-term-structure` × USOIL:
+**DISTINGUISHABLE** (Δslope × spread × cross-section vs static state × outright ×
+single-name), not ADMIT. Databento `estimate` on the 12 Tradeify-legal parents: bar and
+`definition` schemas $0.0000; `tbbo` CL-parent $1,543.90 (contrast). Binding close is the
+standing calendar-spread SCREEN-FAIL ([fade Stage-0 CARD](../../c1/tradeify_fade_stage0_2026-07-30/CARD.md)),
+not cost. No pull. Limb-2 untouched. P4/P5 stay HOLD.
+[`P3_DRYRUN`](../six_lead_cf_2026-08-17/P3_DRYRUN.md).

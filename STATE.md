@@ -51,7 +51,6 @@ BEHIND this list.** Items leave when done; it stays ≤5 so it cannot decay into
 |---|---|---|---|
 | 1 | **F1 — how §4 reads a Tradeify-resting discharge** (2026-11-08). Eval is live ([`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md)); locked Striker book barred. §4 still scores the frozen $100K×4 set with Tradeify in it. Ruling owed: whether a discharge resting *on Tradeify* (or the withdrawn Striker book) discharges the four-firms program. **Deciding it early would pre-empt §4** | [`ADR 2026-08-04`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) §7 F1 · [four-firms §4](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) | 2026-11-08 §4 verdict reading |
 | 2 | **B7-REFIRE Stage 1 + M1** — both wait on an acceptable strategy on the ruled (Python-native) host. Eval live; no book deployed | [`GO ADR Addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`S2`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) · [`M1`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) | live-signal / arming path |
-| 3 | **Six-lead pursuit — OpenAlex channel-scope amend-in-place note** still drafted, unlanded (the only remaining open item; P1-CF/P2-CF executed FAIL, limb-2 counter ruled `no` 2026-08-17) | [`six-lead pursuit plan`](docs/briefs/2026-08-17-six-lead-pursuit-plan.md) §13 · [`harvest intake ADR`](docs/adr/2026-07-15-external-mechanism-harvest-intake.md) | note landing |
 
 ---
 
@@ -62,6 +61,39 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-17** — **Six-lead P3 (L5 curve-slope) un-HOLD → GO → sleeve CLOSED (venue).**
+  Operator un-HOLD. Paper read (Bianchi/Fan/Miffre/Zhang *JBF* 2023 / arXiv `2308.00383`):
+  profitable S-strategy is a same-commodity calendar spread (Δslope → long front / short
+  fourth). Distinguishes from the 2026-06-06 USOIL-carry kill (static state × outright) —
+  DISTINGUISHABLE, not ADMIT. Databento `estimate` on the 12 venue-legal parents: `ohlcv-1d`
+  / `ohlcv-1m` / `definition` all $0.0000 both windows; `tbbo` CL-parent $1,543.90 (contrast;
+  over ceiling). Binding close is the standing Tradeify calendar-spread SCREEN-FAIL, not
+  cost. No pull. Limb-2 untouched. P4/P5 stay HOLD. $0/K=0.
+  [`P3_DRYRUN`](lab/analysis/harvest/six_lead_cf_2026-08-17/P3_DRYRUN.md) ·
+  [`plan`](docs/briefs/2026-08-17-six-lead-pursuit-plan.md) §13.
+- **2026-08-17** — **Q-POLFRONT-1 intraday-honest remeasurement fork executed — 5.1× policy
+  frontier does NOT survive; flat frontier survives only at low R.** Operator GO. Three design
+  attempts (v1 units-conflation, v2 resampling-saturation, both invalidated pre-write-up; v3
+  landed, deterministic real-trade-calibrated median multiplier). Result: median flat-arm bust
+  delta +18.0pp (2/24 cells still clear 3.0%); median policy-arm delta +98.1pp (1/26 cells still
+  clear). Adversarially verified `SAFE_WITH_CAVEATS` (4 reviewers + synthesis): no coding defect,
+  independent reimplementation reproduced both headline numbers and a closed-form collapse
+  mechanism, but two confirmed calibration biases (pyramiding contamination, multi-trade-day
+  summing) both push toward overstating risk — read magnitudes as a credible upper bound, not a
+  tight estimate. Supersedes the 5.1× headline as a usable sizing multiplier; deep-lane GO-1
+  should not lean on the policy frontier. $0/K=0, no live-risk surface, no `core/`/
+  `dd_protection.py` touch. [`RESULTS`](lab/analysis/c1/q_polfront_1_2026-08/RESULTS_INTRADAY_HONEST.md) ·
+  [`OPERATIONALIZATION`](lab/analysis/c1/q_polfront_1_2026-08/OPERATIONALIZATION_INTRADAY_HONEST.md) ·
+  [`closure addendum`](docs/briefs/closures/Q-POLFRONT-1-closure-resolved-quantified.md#addendum-2026-08-17--fork-executed-neither-arm-survives-policy-near-totally-flat-mostly).
+- **2026-08-17** — **Six-lead pursuit channel-scope addendum landed; queue row 3 closes.** OpenAlex
+  admitted as a Semantic-Scholar-index-gap substitute citation-graph traversal channel (operator
+  GO, "land it as-is"), light tier — no admission requirement, §4 falsifier, or counting machinery
+  touched; retroactively documents the 2026-08-16 fork election. This was the only unlanded piece
+  of the six-lead pursuit thread — Phase 0 DONE, P1-CF/P2-CF FAIL all four legs, limb-2 ruled does
+  not increment (all landed earlier the same day, lines below). Thread has no open items;
+  P3–P5 stay HOLD per the operator's own 2026-08-17 marks. $0/K=0, no live-risk surface.
+  [`harvest intake ADR` addendum](docs/adr/2026-07-15-external-mechanism-harvest-intake.md#addendum-2026-08-17--openalex-admitted-as-a-sourcing-channel-substitute) ·
+  [`plan`](docs/briefs/2026-08-17-six-lead-pursuit-plan.md) §13.
 - **2026-08-17** — **Harvest §4 limb-2 counter ruled: P1-CF/P2-CF FAIL does NOT increment.**
   Operator direction ("rule the limb-2 counter question"). Two independent grounds: (1) neither
   lead was ever admitted through the intake — no manifest, no `register_search open`, no ratified

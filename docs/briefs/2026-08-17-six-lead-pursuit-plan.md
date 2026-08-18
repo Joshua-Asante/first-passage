@@ -1,11 +1,10 @@
 # Six-lead pursuit plan — Koijen axis-2 survivors
 
-**Status:** Phase 0 EXECUTED (2026-08-17, this session, operator GO after plan review) ·
-authorizes nothing beyond Phase 0 reads/screens ($0 · K=0) · **this document is the claim
-manifest for the program** — the orchestrator session is its only writer. **Phase 1 HELD pending
-operator marks** (§13) — Phase 0 surfaced that the title's own lead count is stale (L3=L6
-resolved same paper; five distinct programs, not six), which the operator packet below carries
-forward rather than silently retitling this document.
+**Status:** Phase 0 EXECUTED · P1-CF/P2-CF FAIL · P3 GO executed 2026-08-17 and **CLOSED
+(venue SCREEN-FAIL)** · P4/P5 still HOLD · OpenAlex channel addendum landed (17d) ·
+**this document is the claim manifest for the program** — the orchestrator session is its
+only writer. Title still says "six" pending a forward correction (L3=L6 same paper; five
+distinct programs).
 **Objective:** carry the — **five, corrected from six this session, see §13** —
 [Koijen axis-2 OpenAlex-substitute](../../lab/analysis/harvest/koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md)
 leads from screen-level survivors to either a priced Databento extension decision or a registry
@@ -52,7 +51,7 @@ construct with a hard-stop overlay satisfies by construction.
 |---|---|---|---|
 | P1 | **L3=L6** overnight-reversal — **RESOLVED SAME PAPER** (not "merged pending overlap"): SOURCES_LOG rows 3 & 6 are the 2015 and 2022 drafts of one Della Corte/Kosowski(+Liu)/Wang paper, same SSRN abstract `2730304` — see [SOURCES_LOG addendum](../../lab/analysis/harvest/koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md#addendum-2026-08-17--3-and-6-are-the-same-paper-not-two-independent-leads-count-corrects-65). Carry the 2022 draft (4 authors, richer robustness) forward as the authoritative version | Concrete WHO, testable today at $0 on panels the primary checkout holds | Effective universe shrank hard: rates sleeve venue-dead (§0); index sleeve blocked by the OHLCV raised bar + §4a sign-constraint; MCL pre-killed by arithmetic — **verified this session**: MCL's own measured cost_bp 5.3423 (Stage-0 2023 median, `ops/instruments/MCL.md` C1) × 2 (generous bar) = 10.68bp ≈ the "10.7bp" figure, vs the paper's commodities leg 0.04%/day (t=6.76) = 4bp/day → pre-killed; M6A marginal (`FLAG-COSTBIND`, §0). Informative cells ≈ MGC (+6J as FX signal panel) — both on hand at the primary checkout; 6J carries no cost_hurdle on its ledger yet (needs fresh measurement) |
 | P2 | **L1** index-flow daily reversal — row 1, Da/Tang/Tao/Yang | Same $0 panels, commodity-native | Must test the venue-expressible slice (18:00–reopen/open → close next day, paying the decomposed RT count), not raw close-to-close autocorrelation — raw existence can pass while the expressible component nets negative |
-| P3 | **L5** curve-slope momentum — row 5, Bianchi/Fan/Miffre/Zhang | Real reported edge, weakest WHO | Gated on a Databento multi-tenor cost dry-run ($0) before anything else; USOIL-carry adjacency (already-FALSIFIED `commodity-carry-term-structure` on USOIL) needs dedup adjudication before this is treated as distinguishable |
+| P3 | **L5** curve-slope momentum — row 5, Bianchi/Fan/Miffre/Zhang | Real reported edge, weakest WHO | **GO executed 2026-08-17 — sleeve CLOSED (venue SCREEN-FAIL).** Dry-run $0 on bars; paper S-strategy is a calendar spread, already illegal at this firm. Dedup vs USOIL-carry: DISTINGUISHABLE, not ADMIT. See [`P3_DRYRUN`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/P3_DRYRUN.md) |
 | P4 | **L2** dealer-gamma EOD transplant — row 2, delta-hedging demand | Real mechanism, uncertain data route | Governed by the Q-ORB-GEX-1 rejection (2026-06-25, edge collapsed to a realized-vol proxy) + exogenous-conditioning orthogonality priors, not the OHLCV bar. Phase 1 = route memo only |
 | P5 | **L4** mutual-fund overweight — row 4, Chen/Chen/Cohen | Expected cheap kill | Access probe on the holdings-data real-time lag (13F/N-Q, ~45-day disclosure lag per SOURCES_LOG); likely UNSCREENABLE |
 
@@ -93,7 +92,7 @@ data local-only).
   forking-paths freedom that undermines its own kill authority. Hard-stop overlay priced in.
 - **P2-CF:** venue-expressible next-day-reversal slice (18:00–reopen/open → close next day, paying
   the decomposed RT count), same panels — not raw close-to-close autocorrelation.
-- **P3:** Databento curve-data cost dry-run only.
+- **P3:** Databento curve-data cost dry-run only. **EXECUTED 2026-08-17** — bars $0; sleeve CLOSED on standing calendar-spread SCREEN-FAIL ([`P3_DRYRUN`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/P3_DRYRUN.md)).
 - **P4/P5:** route/access memos only.
 
 **Asymmetric by declaration:** FAIL kills a sleeve; PASS licenses only a priced data-extension
@@ -205,7 +204,8 @@ NS-curve-fitting harness for L5) dispatch to Cursor, directly via the dispatch s
 | Plan drafted (this document) | this session | **DRAFTED** | [#32](https://github.com/Joshua-Asante/first-passage/pull/32) merged | Full plan recorded, then executed, on `claude/six-lead-pursuit-phase1-execution` (superset of `-stage-0-a2c299`) |
 | Phase 0 items 0.1–0.7 | this session | **DONE** | #32 merged | See §3 execution ledger; headline finding is the L3/L6 same-paper correction (§13) |
 | SOURCES_LOG addendum (L3=L6) | this session | **DONE** | #32 merged | [`SOURCES_LOG.md` addendum](../../lab/analysis/harvest/koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md) |
-| Phase 0 item 0.8 (operator marks packet) | operator | **MARKED** | #32 merged (marks); this commit (limb-2 ruling) | §13 — per-lead GO/HOLD marked 2026-08-17; limb-2 counter **RULED** (does not increment); channel-scope amend-in-place note still drafted, unlanded |
+| Phase 0 item 0.8 (operator marks packet) | operator | **MARKED** | #32 merged (marks); OpenAlex addendum landed 17d | §13 — per-lead GO/HOLD marked 2026-08-17; limb-2 counter **RULED** (does not increment); OpenAlex channel addendum **landed** (17d) |
+| P3 GO + dry-run | operator un-HOLD (this session) | **DONE — sleeve CLOSED (venue)** | pending | [`P3_DRYRUN`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/P3_DRYRUN.md) — bars $0; S-strategy calendar-spread SCREEN-FAIL; USOIL-carry DISTINGUISHABLE |
 | STATE.md correction line | this session | **DONE** | #32 merged | New dated decision-index line, not a retro-edit of the 2026-08-17 historical line |
 | P1-CF/P2-CF execution | this session | **DONE — FAIL all four legs** | #32 merged | [`CF LOG`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/LOG.md) |
 | Limb-2 counter ruling | operator direction + this session (draft) | **DONE — does not increment** | pending | [`harvest intake ADR` ruling block](../adr/2026-07-15-external-mechanism-harvest-intake.md#ruling-2026-08-17--p1-cfp2-cf-does-not-increment-limb-2) |
@@ -249,7 +249,7 @@ fact itself); the marks below are about what to *do* with the now-five-lead coho
 |---|---|---|
 | **P1 (L3=L6)** overnight-reversal | **GO** — operator, 2026-08-17 | Overlap resolved; MGC+6J panels on hand at the primary checkout; MCL pre-kill confirmed by arithmetic so excluded from the CF's instrument set; 6J needs a fresh cost-bp measurement before its own CF leg, not before MGC's |
 | **P2 (L1)** index-flow reversal | **GO** — operator, 2026-08-17 | Same $0 panels; venue-expressible-slice discipline already specified in the plan (§4) |
-| **P3 (L5)** curve-slope momentum | **HOLD** — operator, 2026-08-17 | Databento multi-tenor cost dry-run (plan's own precondition) not run this session — distinct sub-task, not a Phase-0 item |
+| **P3 (L5)** curve-slope momentum | **GO** — operator un-HOLD, 2026-08-17 (this session); prior HOLD same day discharged | Dry-run + paper read + USOIL-carry dedup executed. Sleeve **CLOSED** on standing calendar-spread SCREEN-FAIL (paper S-strategy = long front / short fourth). Bars $0; `tbbo` CL-parent $1,543.90 (contrast only). Dedup: DISTINGUISHABLE from static USOIL carry, not ADMIT. [`P3_DRYRUN`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/P3_DRYRUN.md) |
 | **P4 (L2)** dealer-gamma EOD | **HOLD** — operator, 2026-08-17 | H-OD-1 dedup (§3 item 0.6) strengthens the existing Q-ORB-GEX-1 + intraday-momentum-decay caution; this is exactly the graveyard-adjacent shape the plan already flagged. No CF licensed for P4 |
 | **P5 (L4)** mutual-fund overweight | **HOLD** — operator, 2026-08-17 | 13F/N-Q ~45-day disclosure lag is a hard real-time-reconstructibility wall on its face; no panel work licensed until the access question is separately resolved |
 

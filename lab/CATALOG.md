@@ -120,7 +120,7 @@ documents the camp boundary for humans/tools.
 | limb_b_remeasure_2026-08 | harvest | ACTIVE | FTS5-as-Delete falsifier v3 (Limb B re-measurement) results | lab/analysis/harvest/limb_b_remeasure_2026-08/ | — |
 | q_kbudget_harvest_1_2026-07 | harvest | ACTIVE | Phase-1 literature fan-out + Phase-2 K-budget ratification | lab/analysis/harvest/q_kbudget_harvest_1_2026-07/ | — |
 | radar_tier_a_burst_2026-07 | harvest | ACTIVE | first burst EXECUTED; proceed items 1–3 complete (`H-TSMOM-6J` Clause-N FAIL; carry Table-1 moments recovered / timin... | lab/analysis/harvest/radar_tier_a_burst_2026-07/ | — |
-| six_lead_cf_2026-08-17 | harvest | ACTIVE | six-lead pursuit plan P1/P2 cheap falsifiers on MGC+6J — FAIL all four legs; L3=L6 same-paper correction (6→5 leads) | lab/analysis/harvest/six_lead_cf_2026-08-17/ | — |
+| six_lead_cf_2026-08-17 | harvest | ACTIVE | P1/P2 CF FAIL all four legs; P3 dry-run $0 then CLOSED (calendar-spread SCREEN-FAIL); L3=L6 same-paper (6→5) | lab/analysis/harvest/six_lead_cf_2026-08-17/ | — |
 | st_eh_2026-07 | harvest | ACTIVE | ST-EH campaign engine + fidelity harness (harvest) | lab/analysis/harvest/st_eh_2026-07/ | — |
 | tnec_l2_sourcing_2026-08-10 | harvest | ACTIVE | TNEC L2 sourcing pass — R8 gold-fix δ-extracted SCREEN-FAIL (informed-flow + cost-law); C2/C3/C4 closed at 0 admissible | lab/analysis/harvest/tnec_l2_sourcing_2026-08-10/ | — |
 
@@ -155,7 +155,11 @@ documents the camp boundary for humans/tools.
 
 | slug | theme | status | one-liner | body | heavy |
 |---|---|---|---|---|---|
+| dstruct_mnq_2026-08 | _inbox | ACTIVE | NULL: daily close-vs-EMA20 bias carries nothing at daily granularity (Tier-1 screen, 3 of 4 limbs failed; K=1 disclosed) | lab/analysis/_inbox/dstruct_mnq_2026-08/ | — |
 | ict_mnq_2026-08 | _inbox | ACTIVE | ICT cascade re-run on NQ/MNQ at $0/K=0/Cap seat unspent: W and D confirm on independent instruments, pools falsified ... | lab/analysis/_inbox/ict_mnq_2026-08/ | — |
+| rangestate_corrected_2026-08 | _inbox | ACTIVE | OFFICIAL corrected-null re-score complete: S1a (GC) NULL (driving L2,L4; obs at 8.4th pct of its own linear-ACF band ... | lab/analysis/_inbox/rangestate_corrected_2026-08/ | — |
+| rangestate_gc_2026-08 | _inbox | ACTIVE | NULL, now official under the corrected battery (driving L2+L4; obs at 8.4th pct of GC's own linear-ACF band — near-mi... | lab/analysis/_inbox/rangestate_gc_2026-08/ | — |
+| rangestate_mcl_2026-08 | _inbox | ACTIVE | SIGNAL-GENERIC under the corrected battery (official 2026-08-18): canon-attributed volatility clustering (69th pct of... | lab/analysis/_inbox/rangestate_mcl_2026-08/ | — |
 
 ## Archived
 

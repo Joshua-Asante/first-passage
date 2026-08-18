@@ -1,0 +1,39 @@
+{
+ "instrument": "GC",
+ "mode": "official",
+ "M": 1000,
+ "iterations": 100,
+ "domain": "normal-scores",
+ "seed_policy": "default_rng([20260818, 1, 0+i])",
+ "multiset_asserts": "PASS all",
+ "spearman_acf_mismatch": {
+  "med": 0.03155385863504881,
+  "p95": 0.05094078326895568,
+  "max": 0.08548551097571827
+ },
+ "zdomain_acf_mismatch_auxiliary": {
+  "med": 0.010912064575096081,
+  "p95": 0.030822985610893375,
+  "max": 0.06365946069999356
+ },
+ "log_acf_mismatch": {
+  "med": 0.030226728524788443,
+  "p95": 0.04371929076752609,
+  "max": 0.07777815213601524
+ },
+ "signed_median_dev_spearman": {
+  "1": 0.010361882986335613,
+  "2": 0.008695009975439372,
+  "3": -0.000928666650460569,
+  "5": 0.00510712915865752,
+  "10": -0.005817014642003626,
+  "20": -0.001634049824123296,
+  "60": -0.006763447155248223
+ },
+ "tolerance": {
+  "med_limit": 0.04,
+  "p95_limit": 0.07,
+  "gating_domain": "spearman-rank-acf"
+ },
+ "gate": "PASS"
+}

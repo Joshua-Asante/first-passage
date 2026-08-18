@@ -369,10 +369,37 @@ grep -n "Running count (canonical): 0 / 2" docs/adr/2026-07-15-external-mechanis
 
 ---
 
+## Addendum 2026-08-17 — OpenAlex admitted as a sourcing-channel substitute
+
+**Status:** `Accepted` — operator GO ("land it as-is"), 2026-08-17. **Tier: light** (no limb
+fires — no K/$ spent, no live-risk surface, no LOCKED/frozen surface touched, no admission
+requirement or §4 falsifier amended; this addendum only names a permitted search-traversal route
+within the existing sourcing/dedup workflow requirements 1–4 already govern). Drafted in
+[`six-lead pursuit plan`](../briefs/2026-08-17-six-lead-pursuit-plan.md) §13, landing the
+2026-08-16 fork election (admit an OpenAlex-based substitute traversal when S2/Semantic Scholar
+has no record of a seed paper) that this addendum retroactively documents.
+
+> **OpenAlex admitted as a Semantic-Scholar-index-gap substitute channel.** When S2 has no record
+> of a seed paper (DOI/title/author search all empty, independently re-verified), OpenAlex's
+> citation graph (`api.openalex.org/works?filter=cites:<id>`) is an admitted substitute traversal,
+> screened via the same keyword-shortlist → manual-screen → adversarial-verify funnel. OpenAlex
+> carries no `isInfluential`-equivalent flag, so a substitute run screens every
+> keyword-shortlisted survivor by hand rather than pre-narrowing on a citation-importance signal —
+> arguably more exhaustive on that one axis, at higher review cost.
+
+**What this does not do:** does not add, remove, or reweight any of the four admission
+requirements (§2); does not touch §4's falsifier, verdict vocabulary, or counting machinery; does
+not admit any specific seed — the six-lead cohort's leads remain unadmitted per the 2026-08-17
+limb-2 ruling above. Scope is the *search-traversal* step upstream of screening only — same
+funnel, new route when the primary route (S2) is empty.
+
+---
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
+| 2026-08-17 | **Addendum:** OpenAlex admitted as a substitute citation-graph traversal channel when Semantic Scholar (S2) has no record of a seed paper — retroactively documents the 2026-08-16 fork election. Light tier; no admission requirement, §4, or counting machinery touched. | Joshua (GO, "land it as-is") + Claude Code (draft, per six-lead pursuit plan §13) |
 | 2026-07-15 | Initial `Proposed` draft — generalizes the Q-KBUDGET two-clause screen + D5 worked instance into standing sourcing/admission doctrine; companion methodology doc + HELD Cursor handoff land same commit | Joshua (authority) + Claude Code (draft) |
 | 2026-07-15 | Operator pushback incorporated pre-acceptance: per-requirement rationale added to §1/§2 (why the gates don't substitute for admission); requirement 1 split into Path 1a (mechanism) / Path 1b (evidence-robustness, 4 sub-criteria) to admit momentum-class anomalies with no consensus mechanism; §5 anti-gaming forbidden moves added for Path 1b; methodology doc relief-valve note + manifest field added; `Proposed` → `Accepted`; §7 Phase 2 downstream sweep executed (skill, STATE.md, CLAUDE.md, Cursor handoff released) | Joshua (ratify) + Claude Code (draft + sweep) |
 | 2026-07-16 | Reconciled against PR #391 (merged by operator): Q-KBUDGET-1's `RESULTS.md`/`d5_clause_n_rescreen.md` doc-sync accepted as-is (anchor updated `4a2471e`→`5a8713f`, content unaffected); the independently-authored `Q-KBUDGET-HARVEST-1` bounded Pre-Q named as this ADR's first execution instance and amended pre-Phase-1 (its own freeze pre-reg, not this ADR) to inherit requirement 1's Path 1a/1b — see §1 reconciliation note, §10 audit hook | Claude Code (reconciliation, operator-directed) |

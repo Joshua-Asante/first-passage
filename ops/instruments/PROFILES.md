@@ -12,6 +12,7 @@
 | band-pierce-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | F | . | . | . | . | . | . | . |
 | commodity-carry-term-structure | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . |
 | compression-gated-breakout | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . |
+| daily-range-state-persistence | . | . | . | . | . | . | . | . | A | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | day-of-week-selection-gate | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . |
 | event-window-reversal | . | . | . | . | D | . | . | . | . | . | D | . | . | D | . | D | . | . | . | . | . | . | . | . | . | D |
 | htf-compression-breakout-5m | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
@@ -72,6 +73,16 @@ Gating a breakout entry on a prior volatility-compression phase resolving into e
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
 | XAUUSD | AMBIGUOUS-PARKED | 2026-06-15 | ../../lab/analysis/legacy/xauusd_cgb_2026-06-15/RESULTS.md |
+
+
+## daily-range-state-persistence
+
+**NEW 2026-08-18.** Conditioner-role, not entry-role: does a day's True Range being in the
+
+| Instrument | Verdict | Date | Source |
+|---|---|---|---|
+| MCL | AMBIGUOUS-PARKED | 2026-08-18 | ../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md |
+| MGC | DEAD | 2026-08-18 | ../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md |
 
 
 ## day-of-week-selection-gate
