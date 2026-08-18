@@ -49,6 +49,7 @@
     },
     "M2K": {},
     "M6A": {},
+    "M6B": {},
     "MCL": {
       "daily-range-state-persistence": {
         "date": "2026-08-18",
@@ -497,6 +498,28 @@
       ],
       "venue_note": "Tradeify Currencies Product Group lists 6E/M6E/6B/6J/6A/M6A/6C/6S (see MJY.md venue_note). Withdrawn Striker legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred; LEG_MAP code untouched.",
       "venue_tradable": true
+    },
+    "M6B": {
+      "asset_class": "fx-futures",
+      "bars": [],
+      "cost_hurdle": {
+        "basis": "Single committed pricing cite: Bulenox Rates.pdf row M6A/M6B/M6E = 0.5 $/contract/side (comment at firm_rules.py ~L58). NOT priced on Tradeify / MyFundedFutures / BluSky schedules in this repo \u2014 do not claim cross-firm schedule coverage.",
+        "source": "#B1",
+        "units": "USD/side (Bulenox all-in; Bulenox-only in-repo)",
+        "value": 0.5
+      },
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/M6B.md",
+      "structure": [
+        {
+          "claim": "Untouched by third-leg Currencies Stage-1 (M6A SURVIVOR / M6E E-COST only). No mechanism cell. No candidate.",
+          "source": "#B2"
+        }
+      ],
+      "venue_note": "Live Tradeify Currencies micro set is M6A+M6E only (firm_rules Tradeify commission note: 'micro FX = M6A + M6E only'; product-group lists include 6B standard + M6A, not M6B). Bulenox Rates.pdf fee table does print M6B alongside M6A/M6E. Research/discovery until a live-firm product-group re-verify names M6B.",
+      "venue_tradable": false
     },
     "MCL": {
       "asset_class": "energy-futures",
