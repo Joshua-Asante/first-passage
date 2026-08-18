@@ -308,7 +308,7 @@ statement: `docs/adr/2026-08-09-grand-tier-quintessentials-binding.md`.
 
 **Rule 2 budget (per §15).** Each loop tier carries an iteration budget set by Rule 2: **INNER 3 / OUTER 8 / STRATEGIC 3 constituent OUTER investigations.** This is the reversibility-scaled *spend* boundary that complements the LoR *authority* dimension — same loop tiers, different resource. Full statement + forward falsifier: §15.
 
-Lifecycle overlay: STRATEGIC funds stage 1 (alpha research) and owns kill/scale verdicts from stage 5 (post-trade analytics); OUTER runs stages 1–2; INNER runs stage 3 (execution); stage 4 (telemetry/TCA) is the membrane routing each signal to its consuming loop. Full five-stage map: `docs/governance/systematic-trading-lifecycle.md`.
+Lifecycle overlay: STRATEGIC funds stage 1 (alpha research) and owns kill/scale verdicts from stage 5 (post-trade analytics); OUTER runs stages 1–2; INNER runs stage 3 (execution); stage 4 (telemetry/TCA) is the membrane routing each signal to its consuming loop. Full five-stage map: `docs/governance/systematic-trading-lifecycle.md`. Authorization axis (stage-5 capital-authorization mechanism): `docs/methodology/strategy_lifecycle.md`.
 
 ## 15. Rule 2 — Budget before acting (added 2026-06-16)
 
