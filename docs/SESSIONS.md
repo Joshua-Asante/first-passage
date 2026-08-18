@@ -14,6 +14,33 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-17d — Six-lead pursuit thread closes: P1-CF/P2-CF FAIL, limb-2 ruled, channel addendum landed
+
+**Focus:** Continue the six-lead pursuit plan from 17b's OpenAlex fork resolution — operator GO on
+P1/P2 cheap falsifiers, rule the limb-2 counter question, land the drafted channel-scope addendum
+("GO, land it as-is").
+
+**Shipped:** P1-CF/P2-CF (fade-overnight-move + venue-expressible next-day-reversal, MGC+6J)
+executed on primary-checkout panels → **FAIL all four legs** (three gross-negative outright,
+fourth insignificant/below cost hurdle). Harvest §4 limb-2 counter **ruled — does not increment**
+(never admitted through intake; not the named kill class), count stays 0/2. OpenAlex-substitute
+sourcing-channel addendum landed on the harvest intake ADR (light tier, $0/K=0).
+[`CF LOG`](../lab/analysis/harvest/six_lead_cf_2026-08-17/LOG.md) ·
+[`harvest intake ADR`](adr/2026-07-15-external-mechanism-harvest-intake.md) ·
+[`plan`](briefs/2026-08-17-six-lead-pursuit-plan.md) §13.
+
+**Decisions/defects:** None new beyond the three landings above — all three were already
+recommended/drafted by the plan's own §13 marks packet; this session executed and ratified them,
+closing the thread's last open item (STATE queue row 3, now deleted).
+
+**Open / next:** Six-lead pursuit thread fully landed. P3–P5 (curve-slope momentum, dealer-gamma,
+mutual-fund overweight) stay **HOLD** per the operator's 2026-08-17 marks — no fresh work
+licensed. Carry: F1 (Tradeify discharge reading, 2026-11-08) now queue row 1; B7-REFIRE/M1 row 2;
+weekly token trade (deadline **2026-08-21**) still unrecorded this week.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-17b — Koijen axis-2 (Carry) fork resolved: OpenAlex substitute → 6 screen-level leads
 
 **Focus:** Operator: "Take the Koijen axis-2 fork to me for a decision" (surfaced from the S3
