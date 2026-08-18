@@ -14,11 +14,11 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
-## 2026-08-18f — Operator "OK on both": MNQSR-1 and Q-CAPA-1 bank; K_banked(MNQ) 6→21
+## 2026-08-18f — Operator "OK on both": MNQSR-1 and Q-CAPA-1 bank
 
 **Focus:** Discharge the two OPEN items from 18e after operator *"OK on both"*.
 
-**Shipped:** Read as both count. Notice-phase closed manifests bank (`MNQSR-1` K=14 once, not 28); Cap-seat K=1 folds into the family tally. Live figure **21**. Addendum on [`ADR 2026-08-04`](adr/2026-08-04-family-k-bank-disclosure-not-gate.md); ledger §K_BANKED / N16 / DEAD rows updated. Disclosure-only.
+**Shipped:** Read as both count. Notice-phase closed manifests bank; Cap-seat K folds into the family tally. Live figure at [`MNQ.md` §K_BANKED](../ops/instruments/MNQ.md). Addendum on [`ADR 2026-08-04`](adr/2026-08-04-family-k-bank-disclosure-not-gate.md); ledger / N16 / DEAD rows updated. Disclosure-only.
 
 **Decisions/defects:** [ADR 2026-08-04 Addendum 2026-08-18](adr/2026-08-04-family-k-bank-disclosure-not-gate.md) — lane label does not exempt; Cap seat and family bank are not mutually exclusive. TNEC/R2/DSTRUCT `K=1 (disclosure; Cap not claimed)` rows stay out.
 

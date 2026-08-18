@@ -62,7 +62,7 @@ One line per executed decision, newest first — consequence only. Posture summa
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
 - **2026-08-18** — **MNQ family-K disclosure: Notice-phase closed manifests and Cap-seat K bank.**
-  Operator *"OK on both"*. `K_banked(MNQ)` 6→21 (14 once + Cap +1). Disclosure-only; `K_eff` untouched.
+  Operator *"OK on both"*. Disclosure-only; `K_eff` untouched. Live figure at owner.
   [`ADR 2026-08-04` Addendum](docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md) ·
   [`MNQ.md` §K_BANKED](ops/instruments/MNQ.md).
 - **2026-08-17** — **Six-lead P3 (L5 curve-slope) un-HOLD → GO → sleeve CLOSED (venue).**
