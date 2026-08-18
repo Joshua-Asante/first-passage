@@ -103,6 +103,11 @@ lift band) to any R-terms benefit at the intraday-honest envelope **does not exi
 the 0.60 anchor is DECLARED-NOT-DERIVED). The branch's continuation is currently justified by
 verdict string, not by economics.
 
+> **Correction (post-close):** the +0.052 / 41st-percentile figures above are **GC's (S1a)**,
+> not CL's/S1b's — see `RESULTS_CORRECTED` §1. CL's own committed C−U is **0.1297**, below the
+> frozen `L_star` bar (`FALSIFIED`). Full record:
+> [`Q-CONDVAL-1-closure-falsified.md`](../../briefs/closures/Q-CONDVAL-1-closure-falsified.md) §4.
+
 **E. Process observations (routed to Action, not to questions).** (i) Null-validity lensing was
 valence-scoped: S1a's NULL got a full 4-lens review that structurally could not catch its
 invalid null; only S1b's SIGNAL triggered the lens that did. A fresh, wrongly-designed battery

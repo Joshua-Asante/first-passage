@@ -37,7 +37,26 @@ Walked the non-firing rows (required). Both 2:1 bars cleared in opposite directi
 
 ## 4. Defects found in the frozen brief (recorded, not repaired)
 
-None found.
+**Gate-reachability defect, Block A / §C — `NEG` was not a reachable Block A outcome.**
+All five Block A rows (Q-TNEC-CON-2, -3, -4, -5, MSL-S2A) are TK2 `event: "AMBIGUOUS"`
+cells, and every `AMBIGUOUS` cell carries the identical `P_dep_zero = 0.9500042097035593`
+in TK2 `RESULTS.json` — five copies of one constant, not five independent draws. Geomean
+of five equal values is that value, so Block A's `g_DEP` is pinned at `0.9500042`
+regardless of which AMBIGUOUS cells populate the block. §C's `NEG` trigger is
+`g_NEG / g_DEP ≥ 2`, i.e. `g_NEG ≥ 2 × 0.9500042 ≈ 1.9000084` — a bound on a
+probability-geomean (`g_NEG` is a geomean of `P` values ≤ 1, so its ceiling is 1) that
+can never be cleared. Under this frozen membership + rule, Block A could only ever land
+`DEP` (`g_NEG ≤ 0.4750021`) or `TIE` (`0.4750021 < g_NEG ≤ 1`) — never `NEG`, independent
+of what the actual TK2 cells scored. Observed `g_NEG=0.233915` → `DEP` at 4.06:1 is
+consistent with the foreclosure, not evidence against it.
+
+**Verdict impact: none.** §D fires `AMBIGUOUS-HOLD` on block disagreement. Block F's `NEG`
+win (9.83:1) is not subject to the same foreclosure — its `P_dep_zero` is a different
+constant (`0.0249979`, the FALSIFIED-both-arms value, not the AMBIGUOUS one) — so Block F
+landing `NEG` already guarantees disagreement against either of Block A's two reachable
+outcomes (`DEP` or `TIE`). The split that fires `AMBIGUOUS-HOLD`/`STOP` is real and stands;
+only the framing "Block A elected `DEP` over `NEG`" overstates the design — `DEP` was never
+contested by a live `NEG` alternative on that block.
 
 ## 5. Lesson candidates
 
@@ -63,8 +82,8 @@ rg -n "Q-TRAINKILL-2-closure-ambiguous-hold" docs/briefs/Q-TRAINKILL-3-neg-vs-de
 rg -n "2:1|Block F|election limb" docs/briefs/pre-registration/Q-TRAINKILL-3-verdict-preregistration.md
 → blocks / 2:1 / election limb present
 
-rg -n "prereg_sha256" lab/analysis/_inbox/q_trainkill_3_2026-08/RESULTS.md
-→ 93c21d21eb0fd2d0e580a384a586dbf10d19d8a23a593dea6e147f63ad57e7f6
+rg -n "93c21d21eb0fd2d0e580a384a586dbf10d19d8a23a593dea6e147f63ad57e7f6" lab/analysis/_inbox/q_trainkill_3_2026-08/RESULTS.md
+→ 10:`93c21d21eb0fd2d0e580a384a586dbf10d19d8a23a593dea6e147f63ad57e7f6`
 
 python lab/analysis/_inbox/q_trainkill_3_2026-08/score_trainkill3.py
 → prereg_sha256 93c21d21…ad57e7f6
@@ -78,3 +97,4 @@ python lab/analysis/_inbox/q_trainkill_3_2026-08/score_trainkill3.py
 | Date | Change | By |
 |---|---|---|
 | 2026-08-18 | Closure authored | Cursor (this session) |
+| 2026-08-18 | §4 recorded a gate-reachability defect (Block A `NEG` structurally unreachable under §C given constant AMBIGUOUS `P_dep_zero`); verdict unchanged. §10 cmd 3 fixed (was a non-matching `prereg_sha256` grep; now matches the hash literal) | Claude (adversarial-review pass) |

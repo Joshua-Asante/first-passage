@@ -34,6 +34,14 @@ Prereg §F predicted `RESOLVED` (H1) from the class (headline objects live at we
 - Treating Q-TXG-1 as this Q's discovery (prior + evidence rows).
 - Conflating this E1 with MSL "E1 HOLD."
 - Lowering any cost bar or moving 0.50 after the table.
+- Reading this `RESOLVED` as a live-scored H1-vs-rival contest. Prereg §F's pinned prediction
+  shows the parent notice (obs. A, pre-freeze) had already named the headline objects at
+  weekly/daily native horizon against the session E1 envelope — H1 could not plausibly have
+  landed below 0.50. H3 was structurally cannot-fire at freeze (weekly and daily share the
+  2026-06-19 first-measurement stamp, TABLE.json). H2 scores a disjoint denominator (the B3
+  class), so it was never a rival to H1 either. This closure certifies a compositional fact —
+  the native horizon of already-known orphaned regularities — not a result that discriminated
+  H1 against a live competing H.
 
 ## 4. Defects found in the frozen brief (recorded, not repaired)
 
@@ -65,8 +73,8 @@ rg -n "N-2026-08-18-iteration2-identify-notice" docs/briefs/Q-EXPR-1-regularity-
 rg -n "E1 HOLD|flat-by-16:00" docs/briefs/pre-registration/Q-EXPR-1-verdict-preregistration.md
 → E1 defined as flat-by-16:00; MSL E1 HOLD explicitly not this object
 
-rg -n "prereg_sha256" lab/analysis/_inbox/q_expr_1_2026-08/RESULTS.md
-→ 27c366f4f7e7a924a8e91ba549c8ade25eadd2024add1e827d70a31828e6441a
+rg -n "27c366f4f7e7a924a8e91ba549c8ade25eadd2024add1e827d70a31828e6441a" lab/analysis/_inbox/q_expr_1_2026-08/RESULTS.md
+→ 10:`27c366f4f7e7a924a8e91ba549c8ade25eadd2024add1e827d70a31828e6441a`
 
 python lab/analysis/_inbox/q_expr_1_2026-08/score_expr.py
 → H1 4/4  H2 1/5  H3 cannot_fire  verdict RESOLVED
@@ -77,3 +85,4 @@ python lab/analysis/_inbox/q_expr_1_2026-08/score_expr.py
 | Date | Change | By |
 |---|---|---|
 | 2026-08-18 | Closure authored | Cursor (this session) |
+| 2026-08-18 | Added §3 compositional-fact disclosure bullet; fixed §10 audit-hook cmd 3 (was a non-matching `"prereg_sha256"` string search, exit 1) | Claude (adversarial review) |
