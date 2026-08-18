@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-18p — wire strategy_lifecycle.md to the stage-5 map (D2 split)
+
+**Focus:** Reciprocal pointer between the D5 stage map and the authorization-axis owner. No ADR — the docs already compose under D2.
+
+**Shipped:** branch `cursor/wire-lifecycle-stage5-7c7e`. Pointers only: [`systematic-trading-lifecycle.md`](governance/systematic-trading-lifecycle.md) Pointers · [`strategy_lifecycle.md`](methodology/strategy_lifecycle.md) header. WATCH demotions = OUTER; `RETIRED` / beta shutdown = STRATEGIC-LoR Delete.
+
+**Decisions/defects:** none new. Not a doctrinal conflict — Call 1 is de-risk-never-kill; D2 binds programme/track/instrument Deletes only.
+
+**Open / next:** Carry 18m: MNQSR-1 / Q-CAPA-1 bank rulings discharged (live figure at MNQ.md §K_BANKED). Next slate admission screens claim horizon vs the E1 flat-by-16:00 envelope. S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. TRAINKILL census STOP — re-proposal is a new panel or an operator election. B1 Koijen admissibility parallel. B2 unblocked: elects on existing evidence + H1 screen, TRAINKILL holds disclosed. F1 / B7-REFIRE.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-18m — xindex RV addback: ES+RTY Databento cost dry-run (estimate only)
 
 **Focus:** Price the closure's own ES+RTY intraday addback. Poor-prior falsifier, not a reopen. (Session letter 18m kept on merge with main — main already held 18n for Q-SIGID / 18l for ECON EXPORT.)
