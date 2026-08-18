@@ -56,3 +56,9 @@ Reproduce:
 ```bash
 python lab/archive/xindex_rv_recon_2026-07/run_probe.py
 ```
+
+---
+
+## Addendum 2026-08-18 — addback cost dry-run (estimate only)
+
+The ES+RTY intraday pull named in the DEFER-procurement `addback_condition` was **priced, not pulled**. Primary: `ES.v.0,RTY.v.0` `continuous` `ohlcv-1m` `2020-07-01`→`2026-08-01` (exclusive) → **`$0.0000` USD streaming**. Full record + framing: [`COST_DRYRUN_ES_RTY_2026-08-18.md`](COST_DRYRUN_ES_RTY_2026-08-18.md). Verdict above is unchanged.
