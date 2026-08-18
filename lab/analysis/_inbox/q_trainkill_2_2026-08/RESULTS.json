@@ -1,0 +1,273 @@
+{
+  "prereg_sha256": "86049b89b413b33430e7dfe31d9fc5de5cc46b81c0f23f3ea7877d78c7605b5d",
+  "n_set": 15,
+  "n_scored": 9,
+  "n_bounded": 6,
+  "n_promoted": 1,
+  "promoted": [
+    "MSL-S2A"
+  ],
+  "g0": 0.036396910767790405,
+  "gbar": 0.0009611923403864328,
+  "gneg": 0.23904877758293214,
+  "gdep_zero": 0.18861767173575647,
+  "gdep_lo_disclosed": 0.0020813727032333723,
+  "fit_floor": 0.05,
+  "core_reading": "MISCALIBRATED",
+  "bounded_lo_reading": "MISCALIBRATED",
+  "bounded_hi_reading": "KILLS-INFORMATIVE",
+  "limb1_fire": false,
+  "limb": 2,
+  "verdict": "AMBIGUOUS-HOLD",
+  "named_reading": "NEG-FAMILIES|KILLS-INFORMATIVE-DEP",
+  "P_mu0": [
+    {
+      "id": "Q-TNEC-CON-2",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "P": 0.9500042097035593
+    },
+    {
+      "id": "Q-TNEC-CON-3",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "P": 0.9500042097035593
+    },
+    {
+      "id": "Q-TNEC-CON-4",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "P": 0.9500042097035593
+    },
+    {
+      "id": "Q-TNEC-CON-5",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "P": 0.9500042097035593
+    },
+    {
+      "id": "MSL-C1",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "P": 0.0006248947618414197
+    },
+    {
+      "id": "MSL-C2",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "P": 0.0006248947618414197
+    },
+    {
+      "id": "MSL-C3-K2",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "P": 0.0006248947618414197
+    },
+    {
+      "id": "MSL-S2A",
+      "event": "AMBIGUOUS",
+      "mode": "both_arms",
+      "P": 0.9025079984544842
+    },
+    {
+      "id": "Q-MNQDTL-CON-1",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "P": 0.0006248947618414197
+    }
+  ],
+  "P_mubar": [
+    {
+      "id": "Q-TNEC-CON-2",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "P": 0.508076189689834
+    },
+    {
+      "id": "Q-TNEC-CON-3",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "P": 0.7410011213139477
+    },
+    {
+      "id": "Q-TNEC-CON-4",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "P": 0.002717742508223764
+    },
+    {
+      "id": "Q-TNEC-CON-5",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "P": 0.8912754762203572
+    },
+    {
+      "id": "MSL-C1",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "P": 3.7748278322109197e-10
+    },
+    {
+      "id": "MSL-C2",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "P": 6.6286058894431036e-09
+    },
+    {
+      "id": "MSL-C3-K2",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "P": 7.324270862837098e-09
+    },
+    {
+      "id": "MSL-S2A",
+      "event": "AMBIGUOUS",
+      "mode": "both_arms",
+      "P": 0.7679354914654849
+    },
+    {
+      "id": "Q-MNQDTL-CON-1",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "P": 6.794664616853862e-10
+    }
+  ],
+  "P_neg": [
+    {
+      "id": "Q-TNEC-CON-2",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "P": 0.508076189689834
+    },
+    {
+      "id": "Q-TNEC-CON-3",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "P": 0.7410011213139477
+    },
+    {
+      "id": "Q-TNEC-CON-4",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "P": 0.0027177425082237083
+    },
+    {
+      "id": "Q-TNEC-CON-5",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "P": 0.8912754762203572
+    },
+    {
+      "id": "MSL-C1",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "P": 0.3327651034014636
+    },
+    {
+      "id": "MSL-C2",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "P": 0.19415438819888678
+    },
+    {
+      "id": "MSL-C3-K2",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "P": 0.18985013138207743
+    },
+    {
+      "id": "MSL-S2A",
+      "event": "AMBIGUOUS",
+      "mode": "both_arms",
+      "P": 0.7679354914654848
+    },
+    {
+      "id": "Q-MNQDTL-CON-1",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "P": 0.2967496012494185
+    }
+  ],
+  "P_dep_zero": [
+    {
+      "id": "Q-TNEC-CON-2",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "P": 0.9500042097035593
+    },
+    {
+      "id": "Q-TNEC-CON-3",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "P": 0.9500042097035593
+    },
+    {
+      "id": "Q-TNEC-CON-4",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "P": 0.9500042097035593
+    },
+    {
+      "id": "Q-TNEC-CON-5",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "P": 0.9500042097035593
+    },
+    {
+      "id": "MSL-C1",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "P": 0.024997895148220373
+    },
+    {
+      "id": "MSL-C2",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "P": 0.024997895148220373
+    },
+    {
+      "id": "MSL-C3-K2",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "P": 0.024997895148220373
+    },
+    {
+      "id": "MSL-S2A",
+      "event": "AMBIGUOUS",
+      "mode": "both_arms",
+      "P": 0.9500042097035593
+    },
+    {
+      "id": "Q-MNQDTL-CON-1",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "P": 0.024997895148220373
+    }
+  ],
+  "bounded": [
+    {
+      "id": "Q-R2VBUCK-1",
+      "reason": "\u03c1 CI, not mean-R; \u00a7B forbids \u03c1\u2192R"
+    },
+    {
+      "id": "Q-R2FLOW-1",
+      "reason": "\u03c1 CI, not mean-R; \u00a7B forbids \u03c1\u2192R"
+    },
+    {
+      "id": "Q-R2AGRUN-1",
+      "reason": "\u03c1 CI, not mean-R; \u00a7B forbids \u03c1\u2192R"
+    },
+    {
+      "id": "DL-1",
+      "reason": "annSR/SPA nomination gates; not a mean-R CI"
+    },
+    {
+      "id": "Q-CAPFLOW-1",
+      "reason": "\u03c1 CI (session-block on association), not mean-R; \u00a7B forbids \u03c1\u2192R"
+    },
+    {
+      "id": "H-DSTRUCT-MNQ-1",
+      "reason": "gateHit vs 0.50; not a mean-R CI"
+    }
+  ]
+}

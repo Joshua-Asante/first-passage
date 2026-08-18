@@ -1,0 +1,115 @@
+{
+  "note": "Assembled AFTER prereg sha256 91855ed188e6d5268ef2050e21d9f77649c6f21ac9b19716e181b3cc59981730 was printed. Binding CIs from committed closures/RESULTS. Do not edit shares here.",
+  "rows": [
+    {
+      "id": "Q-TNEC-CON-2",
+      "class": "scored",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "ci": [-0.1470, 0.0551],
+      "source": "lab/analysis/c1/mnq_tnec_con2_compression_break_2026-08/RESULTS_g2.md long arm"
+    },
+    {
+      "id": "Q-TNEC-CON-3",
+      "class": "scored",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "ci": [-0.0732, 0.2256],
+      "source": "docs/briefs/closures/Q-TNEC-CON-3-closure-ambiguous-hold.md long arm"
+    },
+    {
+      "id": "Q-TNEC-CON-4",
+      "class": "scored",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "ci": [-0.0475, 0.0352],
+      "source": "docs/briefs/closures/Q-TNEC-CON-4-closure-ambiguous-hold.md long arm"
+    },
+    {
+      "id": "Q-TNEC-CON-5",
+      "class": "scored",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "ci": [-0.4541, 0.1013],
+      "source": "docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md long arm"
+    },
+    {
+      "id": "MSL-C1",
+      "class": "scored",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "ci_long": [-0.267, -0.083],
+      "ci_short": [-0.197, -0.017],
+      "source": "docs/briefs/closures/MSL-C1-closure-falsified.md §6 both-arms"
+    },
+    {
+      "id": "MSL-C2",
+      "class": "scored",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "ci_long": [-0.287, -0.071],
+      "ci_short": [-0.292, -0.075],
+      "source": "docs/briefs/closures/MSL-C2-closure-falsified.md §6 both-arms"
+    },
+    {
+      "id": "MSL-C3-K2",
+      "class": "scored",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "ci_long": [-0.256, -0.038],
+      "ci_short": [-0.307, -0.089],
+      "source": "docs/briefs/closures/MSL-C3-K2-closure-falsified.md axis A both-arms (first listed)"
+    },
+    {
+      "id": "MSL-S2A",
+      "class": "bounded",
+      "reason": "N-ACT kill; mean-R CI did not fire FALSIFIED",
+      "source": "docs/briefs/closures/MSL-S2A-closure-falsified.md"
+    },
+    {
+      "id": "Q-R2VBUCK-1",
+      "class": "bounded",
+      "reason": "association/ρ cell; no mean-R CI",
+      "source": "docs/briefs/closures/Q-R2VBUCK-1-closure-falsified.md"
+    },
+    {
+      "id": "Q-R2FLOW-1",
+      "class": "bounded",
+      "reason": "association/ρ cell; no mean-R CI",
+      "source": "docs/briefs/closures/Q-R2FLOW-1-closure-falsified.md"
+    },
+    {
+      "id": "Q-R2AGRUN-1",
+      "class": "bounded",
+      "reason": "association/ρ cell; no mean-R CI",
+      "source": "docs/briefs/closures/Q-R2AGRUN-1-closure-ambiguous-hold.md"
+    },
+    {
+      "id": "Q-MNQDTL-CON-1",
+      "class": "scored",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "ci_long": [-0.19138531457934363, -0.016545773097094974],
+      "ci_short": [-0.2089277387011932, -0.005184988545513807],
+      "source": "lab/archive/mnq_con1_dense1m_stage0_2026-08/RESULTS.md"
+    },
+    {
+      "id": "DL-1",
+      "class": "bounded",
+      "reason": "ABANDONMENT on annSR/SPA nomination gates; confirm unread; not a mean-R CI event",
+      "source": "lab/analysis/deep_lane/dl1_mgc_orc_2026-08-16/RESULTS.md"
+    },
+    {
+      "id": "Q-CAPFLOW-1",
+      "class": "bounded",
+      "reason": "ρ CI, not mean-R; +0.10R bar does not translate",
+      "source": "docs/briefs/closures/Q-CAPFLOW-1-closure-falsified.md"
+    },
+    {
+      "id": "H-DSTRUCT-MNQ-1",
+      "class": "bounded",
+      "reason": "gateHit vs 0.50 screen; not a mean-R CI",
+      "source": "lab/analysis/_inbox/dstruct_mnq_2026-08/RESULTS_DSTRUCT.md"
+    }
+  ]
+}

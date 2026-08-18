@@ -6,8 +6,15 @@
 the quality of the questions") + Claude Code
 **Source:** committed record only — SESSIONS/STATE/CATALOG window 2026-08-08→08-18, the
 2026-08-16 bottleneck-solutions arc (S1–S4), and the PR #37 mechanism-program arc
-**Status:** `OPEN` — three GRADUATE candidates named (entry packets; operator GO opens each),
-plus Action/Forward/Closed routing below
+**Status:** `OPEN` — GRADUATE packets all closed; Action/Forward rows remain.
+**Q-CONDVAL-1 GO'd and `FALSIFIED` 2026-08-18**
+([closure](../../briefs/closures/Q-CONDVAL-1-closure-falsified.md)) — S1b
+conditioner-engineering branch parked; O2 discharged. **Q-EXPR-1 GO'd and `RESOLVED` (H1)
+2026-08-18** ([closure](../../briefs/closures/Q-EXPR-1-closure-resolved.md)) — next slate
+admission screens claim horizon vs the E1 flat-by-16:00 envelope. **Q-TRAINKILL-1 GO'd and
+`AMBIGUOUS-HOLD` 2026-08-18**
+([closure](../../briefs/closures/Q-TRAINKILL-1-closure-ambiguous-hold.md)) — no named
+power finding; no gate number moves. Action/Forward/Closed routing below.
 **D-S-A domain:** data (the I/N corpus). Two routed Action rows touch meta-process; they are
 routed, not gated here.
 
@@ -96,6 +103,11 @@ lift band) to any R-terms benefit at the intraday-honest envelope **does not exi
 the 0.60 anchor is DECLARED-NOT-DERIVED). The branch's continuation is currently justified by
 verdict string, not by economics.
 
+> **Correction (post-close):** the +0.052 / 41st-percentile figures above are **GC's (S1a)**,
+> not CL's/S1b's — see `RESULTS_CORRECTED` §1. CL's own committed C−U is **0.1297**, below the
+> frozen `L_star` bar (`FALSIFIED`). Full record:
+> [`Q-CONDVAL-1-closure-falsified.md`](../../briefs/closures/Q-CONDVAL-1-closure-falsified.md) §4.
+
 **E. Process observations (routed to Action, not to questions).** (i) Null-validity lensing was
 valence-scoped: S1a's NULL got a full 4-lens review that structurally could not catch its
 invalid null; only S1b's SIGNAL triggered the lens that did. A fresh, wrongly-designed battery
@@ -121,10 +133,10 @@ envelope (in which case the branch closes cleanly, cheap).
 
 | Observation | Route | Detail |
 |---|---|---|
-| A + C | **GRADUATE ×2** | Entry packets Q-EXPR-1 and Q-TRAINKILL-1 below — separate falsifiable questions on the same asymmetry (conversion loss vs gate power) |
-| D | **GRADUATE** | Entry packet Q-CONDVAL-1 below — the $0 kill-or-keep that runs BEFORE any conditioner-engineering prereg |
+| A + C | **CLOSED** | Q-EXPR-1 **CLOSED `RESOLVED` (H1) 2026-08-18** ([closure](../../briefs/closures/Q-EXPR-1-closure-resolved.md)). Q-TRAINKILL-1 **CLOSED `AMBIGUOUS-HOLD` 2026-08-18** ([closure](../../briefs/closures/Q-TRAINKILL-1-closure-ambiguous-hold.md)) — BOUNDED extremes disagree; scored core MISCALIBRATED; no named power finding |
+| D | **CLOSED** | Q-CONDVAL-1 GO'd → `FALSIFIED` 2026-08-18 ([closure](../../briefs/closures/Q-CONDVAL-1-closure-falsified.md)) — S1b conditioner-engineering parked; O2 discharged |
 | B1 — admissibility-side supply ($0) | **FORWARD, no dependency** | OpenAlex sourcing continuation + Req-1a admissibility screening of the six Koijen screen-leads proceeds IN PARALLEL with the two questions — admissibility deaths are orthogonal to both outputs by observation B's own decomposition; making them wait would re-run the one-bottleneck conflation this notice dissolves |
-| B2 — priced spends (Databento extension on harvest survivors; lane campaign #2 prereg freeze) | **FORWARD, dependent** | These genuinely consume both outputs: Q-EXPR-1's horizon/geometry pre-filter changes WHICH leads are worth pricing; Q-TRAINKILL-1's power finding changes campaign #2's n/panel design. **Expiry on the edge:** if either question hasn't closed by 2026-09-01, B2 elects on existing evidence, with the un-closed question's absence disclosed in the election record |
+| B2 — priced spends (Databento extension on harvest survivors; lane campaign #2 prereg freeze) | **FORWARD, unblocked** | Q-EXPR-1's horizon screen is in: weekly/daily-native claims are not priced until a session-horizon expression is named. Q-TRAINKILL-1/2/3 all closed `AMBIGUOUS-HOLD` — census STOP; no singleton power finding to consume for campaign #2 n/panel. Elects on existing evidence + the H1 screen, holds disclosed. Re-proposal is a new panel or an operator election, not Q-TRAINKILL-4 |
 | S2 stage-1 cheap falsifier · S3 matched-day redesign | **FORWARD** | Standing chartered obligations carried for completeness (slate/spec-resident, not corpus observations); unchanged by this notice |
 | E(i) valence-blind null-validity | **ACTION** | Extend the null-fitness rule: every screen prereg §0 must cite the null-validity clause for its claim family, verdict-valence-blind (closes the fresh-battery/false-NULL hole the reuse-only clause leaves) |
 | E(ii) design-time doctrine read | **ACTION** | Same edit as E(i) — the §0 citation IS the design-time read, made mechanical |
@@ -132,14 +144,15 @@ envelope (in which case the branch closes cleanly, cheap).
 | E(iv) W5 drift · lane charter §7 steps 2–4 owed · base-case line to STATE | **ACTION** | Hygiene; the base-case line lands on the STATE board where next-session reads begin |
 | Two-eights disambiguation · CATALOG closed-date caveat · POLFRONT 5.1× superseded | **CLOSED** | Two-eights: the charter's "8 consecutive zero-yield closes" (the Q-R2VBUCK-1…Q-TNEC-CON-5 chain, STATE.md decision index) and the MSL methodology audit's "8 consecutive null/dead" (C2·C3·C3-K2·C1·S2A·S2B·slate-3·WHO-track, [2026-08-14 audit](../audits/programme-audit/2026-08-14-msl-methodology-audit.md)) are two DIFFERENT lists — never conflate them when quoting either. Closed-date caveat and 5.1× supersession are the gate's D(ii)/D(i) records. No further act |
 
-## §5 — Entry packets (GRADUATE candidates — named, not opened; each needs an operator GO)
+## §5 — Entry packets (GRADUATE candidates — named, not opened unless marked CLOSED)
 
 Ordered cheapest-falsifier-first. Each is symptom-named (no fix baked in), carries its cheapest
-falsifier, and names the decision its answer changes. Dependency edge: only the §4 B2 row
-(priced spends) waits on Q-EXPR-1 and Q-TRAINKILL-1, with a 2026-09-01 expiry; B1
-(admissibility-side supply) runs in parallel now.
+falsifier, and names the decision its answer changes. Dependency edge: the §4 B2 row
+(priced spends) is unblocked: Q-EXPR-1 closed H1 (horizon screen is in) and Q-TRAINKILL-1
+closed `AMBIGUOUS-HOLD` (no named power finding). B1 (admissibility-side supply) runs in
+parallel now.
 
-### Q-CONDVAL-1 — does the validated range-state lift buy anything in R terms? ($0, one afternoon)
+### Q-CONDVAL-1 — does the validated range-state lift buy anything in R terms? ($0, one afternoon) — **CLOSED `FALSIFIED` 2026-08-18**
 
 **Symptom:** a typed finding with no demonstrated economic content (observation D).
 **Question:** at the intraday-honest envelope (R ≈ $75–200; Tradeify RT $2.82–4.12; per-
@@ -158,7 +171,7 @@ clears the pre-declared bar or the branch parks.
 **Decision changed:** whether the conditioner-engineering prereg is ever worth a GO. A park here
 closes the S1b branch cleanly at $0 and frees attention for entries. Also discharges spec O2.
 
-### Q-EXPR-1 — what kills the regularity→expression conversion? ($0, one session)
+### Q-EXPR-1 — what kills the regularity→expression conversion? ($0, one session) — **CLOSED `RESOLVED` (H1) 2026-08-18**
 
 **Symptom:** every validated regularity in the estate is expression-orphaned; conversion success
 count is zero, ever (observation A).
@@ -196,7 +209,7 @@ rediscovery:** Q-TXG-1 closed `FALSIFIED-at-walls`
 that is a partial, locked-book-scoped answer to this question's H2 branch; the Pre-Q treats it
 as evidence rows and a prior, never as an independent discovery.
 
-### Q-TRAINKILL-1 — are the train gates killing empty families, or killing true modest edges? ($0, one session)
+### Q-TRAINKILL-1 — are the train gates killing empty families, or killing true modest edges? ($0, one session) — **CLOSED `AMBIGUOUS-HOLD` 2026-08-18**
 
 **Symptom:** ~15 measured explore/train kills in 9 days; zero confirm reads ever; the
 admissibility bar is generous yet nothing survives to be measured against it (observation C).

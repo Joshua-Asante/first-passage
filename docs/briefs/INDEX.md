@@ -25,6 +25,48 @@ closure brief in `docs/ltm/briefs/` and delete its row here.
 
 ## Recently closed (cross-reference; not open)
 
+- **Q-TRAINKILL-3** — do Block F (FALSIFIED) and Block A (AMBIGUOUS) name the same
+  2:1 winner between NEG and DEP — **`AMBIGUOUS-HOLD` 2026-08-18** (F=`NEG`
+  9.83:1; A=`DEP` 4.06:1; split). Census STOP. No Q-TRAINKILL-4. No singleton
+  power finding. $0/K=0.
+  [`closure`](closures/Q-TRAINKILL-3-closure-ambiguous-hold.md) ·
+  [`RESULTS`](../../lab/analysis/_inbox/q_trainkill_3_2026-08/RESULTS.md) ·
+  [`brief`](Q-TRAINKILL-3-neg-vs-dep-discriminator.md) ·
+  [`pre-reg`](pre-registration/Q-TRAINKILL-3-verdict-preregistration.md).
+- **Q-TRAINKILL-2** — after recovery of committed mean-R CIs on the seven TK1-BOUNDED
+  rows, does {0, +0.10} resolve, or does a pre-declared −0.10R or Fréchet-hi-zero
+  DGP fit the scored core — **`AMBIGUOUS-HOLD` 2026-08-18** (MSL-S2A promoted;
+  Limb 1 extremes still disagree; both `NEG` and `DEP-ZERO` fit). No singleton
+  power finding. No gate number moves. $0/K=0.
+  [`closure`](closures/Q-TRAINKILL-2-closure-ambiguous-hold.md) ·
+  [`RESULTS`](../../lab/analysis/_inbox/q_trainkill_2_2026-08/RESULTS.md) ·
+  [`brief`](Q-TRAINKILL-2-bounded-recovery-alt-dgp.md) ·
+  [`pre-reg`](pre-registration/Q-TRAINKILL-2-verdict-preregistration.md).
+- **Q-TRAINKILL-1** — is the explore/train kill record consistent with zero edge, with
+  true +0.10R@$75 edges the designs are underpowered to pass, or with neither —
+  **`AMBIGUOUS-HOLD` 2026-08-18** (BOUNDED extremes disagree: `MISCALIBRATED` at ε vs
+  `KILLS-INFORMATIVE` at 1−ε; scored core n*=8 `MISCALIBRATED`, g(0)=0.024 < 0.05).
+  No named power finding. No gate number moves. $0/K=0.
+  [`closure`](closures/Q-TRAINKILL-1-closure-ambiguous-hold.md) ·
+  [`RESULTS`](../../lab/analysis/_inbox/q_trainkill_1_2026-08/RESULTS.md) ·
+  [`brief`](Q-TRAINKILL-1-train-gate-power.md) ·
+  [`pre-reg`](pre-registration/Q-TRAINKILL-1-verdict-preregistration.md).
+- **Q-EXPR-1** — what measurable property of the regularity→expression conversion accounts
+  for the orphaning — **`RESOLVED` 2026-08-18** (H1 horizon-mismatch 4/4; H2 1/5 misses;
+  H3 cannot fire — weekly+daily share 2026-06-19). Next slate admission screens claim
+  horizon vs the E1 flat-by-16:00 envelope. $0/K=0.
+  [`closure`](closures/Q-EXPR-1-closure-resolved.md) ·
+  [`RESULTS`](../../lab/analysis/_inbox/q_expr_1_2026-08/RESULTS.md) ·
+  [`brief`](Q-EXPR-1-regularity-expression-conversion.md) ·
+  [`pre-reg`](pre-registration/Q-EXPR-1-verdict-preregistration.md).
+- **Q-CONDVAL-1** — does the validated CL range-state lift buy anything in R terms —
+  **`FALSIFIED` 2026-08-18** — committed C−U 0.130 < frozen `L_star` 0.423 at the N-EDGE
+  cell (R=$75, RT=$4.12, slate-2 center); S1b conditioner-engineering branch parked; O2
+  discharged; SIGNAL-GENERIC stands. $0/K=0.
+  [`closure`](closures/Q-CONDVAL-1-closure-falsified.md) ·
+  [`RESULTS`](../../lab/analysis/_inbox/q_condval_1_2026-08/RESULTS.md) ·
+  [`brief`](Q-CONDVAL-1-range-state-r-terms.md) ·
+  [`pre-reg`](pre-registration/Q-CONDVAL-1-verdict-preregistration.md).
 - **Q-POLFRONT-1** — policy-augmented seed-target frontier — **`RESOLVED-QUANTIFIED` 2026-08-16**
   (median R_max ratio policy/flat = **5.107×** ≥ 1.25× bar, 24/30 cells defined, min 1.526×, 2
   newly-admitted cells, no reversal under quantization). ⚠ **Load-bearing caveat carried
