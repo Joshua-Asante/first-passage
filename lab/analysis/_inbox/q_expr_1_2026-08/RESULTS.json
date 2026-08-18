@@ -1,0 +1,69 @@
+{
+  "prereg_sha256": "27c366f4f7e7a924a8e91ba549c8ade25eadd2024add1e827d70a31828e6441a",
+  "share_bar": 0.5,
+  "H1": {
+    "k": 4,
+    "n": 4,
+    "share": 1.0,
+    "wins": true,
+    "positive_ids": [
+      "R-W-STRUCT",
+      "R-D-FVG",
+      "R-D-POOLS",
+      "R-CL-RANGE"
+    ]
+  },
+  "H2": {
+    "k": 1,
+    "n": 5,
+    "share": 0.2,
+    "wins": false,
+    "cells": [
+      {
+        "id": "Q-TNEC-CON-2",
+        "death_stage": "cost-hurdle",
+        "gross_edge_present": true,
+        "h2_positive": true
+      },
+      {
+        "id": "Q-TNEC-CON-3",
+        "death_stage": "cost-hurdle",
+        "gross_edge_present": false,
+        "h2_positive": false
+      },
+      {
+        "id": "Q-TNEC-CON-4",
+        "death_stage": "cost-hurdle",
+        "gross_edge_present": false,
+        "h2_positive": false
+      },
+      {
+        "id": "Q-TNEC-CON-5",
+        "death_stage": "cost-hurdle",
+        "gross_edge_present": false,
+        "h2_positive": false
+      },
+      {
+        "id": "Q-R2AGRUN-1",
+        "death_stage": "CI-power",
+        "gross_edge_present": false,
+        "h2_positive": false
+      }
+    ]
+  },
+  "H3": {
+    "first_measured": "2026-06-19",
+    "first_classes": [
+      "daily",
+      "weekly"
+    ],
+    "cannot_fire": true,
+    "mode": "daily",
+    "mode_share": 0.75,
+    "wins": false
+  },
+  "verdict": "RESOLVED",
+  "winning_branches": [
+    "H1"
+  ]
+}

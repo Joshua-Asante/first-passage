@@ -6,10 +6,12 @@
 the quality of the questions") + Claude Code
 **Source:** committed record only — SESSIONS/STATE/CATALOG window 2026-08-08→08-18, the
 2026-08-16 bottleneck-solutions arc (S1–S4), and the PR #37 mechanism-program arc
-**Status:** `OPEN` — two GRADUATE candidates still named (Q-EXPR-1, Q-TRAINKILL-1; operator GO
-opens each). **Q-CONDVAL-1 GO'd and `FALSIFIED` 2026-08-18**
+**Status:** `OPEN` — one GRADUATE candidate still named (Q-TRAINKILL-1; operator GO
+opens it). **Q-CONDVAL-1 GO'd and `FALSIFIED` 2026-08-18**
 ([closure](../../briefs/closures/Q-CONDVAL-1-closure-falsified.md)) — S1b
-conditioner-engineering branch parked; O2 discharged. Action/Forward/Closed routing below.
+conditioner-engineering branch parked; O2 discharged. **Q-EXPR-1 GO'd and `RESOLVED` (H1)
+2026-08-18** ([closure](../../briefs/closures/Q-EXPR-1-closure-resolved.md)) — next slate
+admission screens claim horizon vs the E1 flat-by-16:00 envelope. Action/Forward/Closed routing below.
 **D-S-A domain:** data (the I/N corpus). Two routed Action rows touch meta-process; they are
 routed, not gated here.
 
@@ -123,10 +125,10 @@ envelope (in which case the branch closes cleanly, cheap).
 
 | Observation | Route | Detail |
 |---|---|---|
-| A + C | **GRADUATE ×2** | Entry packets Q-EXPR-1 and Q-TRAINKILL-1 below — separate falsifiable questions on the same asymmetry (conversion loss vs gate power) |
+| A + C | **GRADUATE ×1 remaining** | Q-EXPR-1 **CLOSED `RESOLVED` (H1) 2026-08-18** ([closure](../../briefs/closures/Q-EXPR-1-closure-resolved.md)). Q-TRAINKILL-1 still named below — separate falsifiable question on gate power |
 | D | **CLOSED** | Q-CONDVAL-1 GO'd → `FALSIFIED` 2026-08-18 ([closure](../../briefs/closures/Q-CONDVAL-1-closure-falsified.md)) — S1b conditioner-engineering parked; O2 discharged |
 | B1 — admissibility-side supply ($0) | **FORWARD, no dependency** | OpenAlex sourcing continuation + Req-1a admissibility screening of the six Koijen screen-leads proceeds IN PARALLEL with the two questions — admissibility deaths are orthogonal to both outputs by observation B's own decomposition; making them wait would re-run the one-bottleneck conflation this notice dissolves |
-| B2 — priced spends (Databento extension on harvest survivors; lane campaign #2 prereg freeze) | **FORWARD, dependent** | These genuinely consume both outputs: Q-EXPR-1's horizon/geometry pre-filter changes WHICH leads are worth pricing; Q-TRAINKILL-1's power finding changes campaign #2's n/panel design. **Expiry on the edge:** if either question hasn't closed by 2026-09-01, B2 elects on existing evidence, with the un-closed question's absence disclosed in the election record |
+| B2 — priced spends (Databento extension on harvest survivors; lane campaign #2 prereg freeze) | **FORWARD, dependent** | Q-EXPR-1's horizon screen is now in: weekly/daily-native claims are not priced until a session-horizon expression is named. Still consumes Q-TRAINKILL-1's power finding for campaign #2 n/panel design. **Expiry on the edge:** if TRAINKILL hasn't closed by 2026-09-01, B2 elects on existing evidence + the H1 screen, with TRAINKILL's absence disclosed |
 | S2 stage-1 cheap falsifier · S3 matched-day redesign | **FORWARD** | Standing chartered obligations carried for completeness (slate/spec-resident, not corpus observations); unchanged by this notice |
 | E(i) valence-blind null-validity | **ACTION** | Extend the null-fitness rule: every screen prereg §0 must cite the null-validity clause for its claim family, verdict-valence-blind (closes the fresh-battery/false-NULL hole the reuse-only clause leaves) |
 | E(ii) design-time doctrine read | **ACTION** | Same edit as E(i) — the §0 citation IS the design-time read, made mechanical |
@@ -134,12 +136,12 @@ envelope (in which case the branch closes cleanly, cheap).
 | E(iv) W5 drift · lane charter §7 steps 2–4 owed · base-case line to STATE | **ACTION** | Hygiene; the base-case line lands on the STATE board where next-session reads begin |
 | Two-eights disambiguation · CATALOG closed-date caveat · POLFRONT 5.1× superseded | **CLOSED** | Two-eights: the charter's "8 consecutive zero-yield closes" (the Q-R2VBUCK-1…Q-TNEC-CON-5 chain, STATE.md decision index) and the MSL methodology audit's "8 consecutive null/dead" (C2·C3·C3-K2·C1·S2A·S2B·slate-3·WHO-track, [2026-08-14 audit](../audits/programme-audit/2026-08-14-msl-methodology-audit.md)) are two DIFFERENT lists — never conflate them when quoting either. Closed-date caveat and 5.1× supersession are the gate's D(ii)/D(i) records. No further act |
 
-## §5 — Entry packets (GRADUATE candidates — named, not opened; each needs an operator GO)
+## §5 — Entry packets (GRADUATE candidates — named, not opened unless marked CLOSED)
 
 Ordered cheapest-falsifier-first. Each is symptom-named (no fix baked in), carries its cheapest
-falsifier, and names the decision its answer changes. Dependency edge: only the §4 B2 row
-(priced spends) waits on Q-EXPR-1 and Q-TRAINKILL-1, with a 2026-09-01 expiry; B1
-(admissibility-side supply) runs in parallel now.
+falsifier, and names the decision its answer changes. Dependency edge: the §4 B2 row
+(priced spends) now waits on Q-TRAINKILL-1 only (Q-EXPR-1 closed H1; horizon screen is in),
+with a 2026-09-01 expiry; B1 (admissibility-side supply) runs in parallel now.
 
 ### Q-CONDVAL-1 — does the validated range-state lift buy anything in R terms? ($0, one afternoon) — **CLOSED `FALSIFIED` 2026-08-18**
 
@@ -160,7 +162,7 @@ clears the pre-declared bar or the branch parks.
 **Decision changed:** whether the conditioner-engineering prereg is ever worth a GO. A park here
 closes the S1b branch cleanly at $0 and frees attention for entries. Also discharges spec O2.
 
-### Q-EXPR-1 — what kills the regularity→expression conversion? ($0, one session)
+### Q-EXPR-1 — what kills the regularity→expression conversion? ($0, one session) — **CLOSED `RESOLVED` (H1) 2026-08-18**
 
 **Symptom:** every validated regularity in the estate is expression-orphaned; conversion success
 count is zero, ever (observation A).

@@ -25,6 +25,14 @@ closure brief in `docs/ltm/briefs/` and delete its row here.
 
 ## Recently closed (cross-reference; not open)
 
+- **Q-EXPR-1** — what measurable property of the regularity→expression conversion accounts
+  for the orphaning — **`RESOLVED` 2026-08-18** (H1 horizon-mismatch 4/4; H2 1/5 misses;
+  H3 cannot fire — weekly+daily share 2026-06-19). Next slate admission screens claim
+  horizon vs the E1 flat-by-16:00 envelope. $0/K=0.
+  [`closure`](closures/Q-EXPR-1-closure-resolved.md) ·
+  [`RESULTS`](../../lab/analysis/_inbox/q_expr_1_2026-08/RESULTS.md) ·
+  [`brief`](Q-EXPR-1-regularity-expression-conversion.md) ·
+  [`pre-reg`](pre-registration/Q-EXPR-1-verdict-preregistration.md).
 - **Q-CONDVAL-1** — does the validated CL range-state lift buy anything in R terms —
   **`FALSIFIED` 2026-08-18** — committed C−U 0.130 < frozen `L_star` 0.423 at the N-EDGE
   cell (R=$75, RT=$4.12, slate-2 center); S1b conditioner-engineering branch parked; O2

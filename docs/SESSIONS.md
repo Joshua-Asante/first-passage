@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-18f — Q-EXPR-1 RESOLVED (H1): weekly/daily regularities are not E1-expressible; slate admission screens horizon
+
+**Focus:** Operator GO on notice packet 2 — what measurable property of the regularity→expression conversion accounts for the orphaning?
+
+**Shipped:** branch `cursor/q-expr-1`. Pre-Q + prereg froze share/class/H-positive rules **before** the table (sha256 `27c366f4…e6441a`). H1 4/4; H2 1/5; H3 cannot fire. [`closure`](briefs/closures/Q-EXPR-1-closure-resolved.md) · [`RESULTS`](../lab/analysis/_inbox/q_expr_1_2026-08/RESULTS.md).
+
+**Decisions/defects:** R2AGRUN death-stage token mapped to CI-power (no `magnitude` in the 5-set). Q-WLEGB-1 has no in-tree brief — cited via MNQ N8.
+
+**Open / next:** Next slate admission screens claim horizon vs the E1 flat-by-16:00 envelope. S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. Notice packet Q-TRAINKILL-1 named, not opened. B1 Koijen admissibility parallel. B2 waits on TRAINKILL (expiry 2026-09-01) with the H1 screen already in. F1 / B7-REFIRE.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-18e — Q-CONDVAL-1 FALSIFIED: CL range-state lift misses the R-term bar; conditioner branch parked
 
 **Focus:** Operator GO on notice packet 1 — does the validated CL range-state lift buy anything in R terms at the intraday-honest envelope?
