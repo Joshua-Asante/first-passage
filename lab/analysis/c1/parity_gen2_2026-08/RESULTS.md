@@ -26,13 +26,23 @@ no parity numbers claimed.**
 ## What is not in this RESULTS
 
 - No engine↔TV ρ, net, or PF figures for any live family.
-- No mutation-battery outcome (Q-FILLTAX-1 Phase 1 still owed).
 - No deployment-truth fill capture (M1 not `RESOLVED`; rail stays disarmed).
+
+## Mutation battery (Q-FILLTAX-1 Phase 1) — frozen 2026-08-18, separately
+
+8-row named-defect-class battery frozen at
+[`docs/briefs/pre-registration/Q-FILLTAX-1-verdict-preregistration.md`](../../../../docs/briefs/pre-registration/Q-FILLTAX-1-verdict-preregistration.md),
+executable at
+[`tests/lab/test_q_filltax_1_parity_mutations.py`](../../../../tests/lab/test_q_filltax_1_parity_mutations.py).
+8/8 detection on the synthetic self-test (100% detection M1-M7, 0 false passes M8). This is
+the harness's own discriminating-power proof, **not** family-level parity evidence — Phase 2
+(first family manual TV anchor, operator) still grants nothing until it runs.
 
 ## Harness
 
 | Artifact | Role |
 |---|---|
 | [`parity_gate.py`](parity_gate.py) | ADMIT/FAIL vs FROZEN-PRE-RUN bands |
-| [`test_parity_gate.py`](test_parity_gate.py) | Synthetic pass/fail fixtures |
+| [`test_parity_gate.py`](test_parity_gate.py) | Synthetic pass/fail fixtures (harness arithmetic) |
+| [`../../../../tests/lab/test_q_filltax_1_parity_mutations.py`](../../../../tests/lab/test_q_filltax_1_parity_mutations.py) | Named Pine↔Python defect-class mutation battery (Phase 1) |
 | [`README.md`](README.md) | How to run + deployment-truth path (read-only) |

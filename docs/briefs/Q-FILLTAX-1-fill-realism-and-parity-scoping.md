@@ -18,6 +18,22 @@
 
 ## Amendment log
 
+### 2026-08-18 — Phase 1: mutation battery frozen
+
+- **§7 Track V2 Phase 1 discharged.** Eight-row named-defect-class battery frozen at
+  [`pre-registration/Q-FILLTAX-1-verdict-preregistration.md`](pre-registration/Q-FILLTAX-1-verdict-preregistration.md),
+  executable at [`tests/lab/test_q_filltax_1_parity_mutations.py`](../../tests/lab/test_q_filltax_1_parity_mutations.py)
+  (mirrors this repo's established planted-defect-matrix pattern, `tests/core/test_planted_defects.py`).
+  Rows M1-M7 (partial direction flip, uniform tax omission, proportional contractValue
+  mis-port — named precedent: Striker DJ30 default=1 vs required=10 — missing trades,
+  duplicate trade, asymmetric exit-timing inflation — named precedent: STEP2_PARITY's
+  measured MYM exit lag — and rank decorrelation — named precedent: the OPEN Q-SIGID-1
+  signal-identity gap) all FAIL as designed; sanity companion M8 ADMITs. **8/8 on the
+  synthetic self-test — this is Phase 1 only, not family-level parity evidence.** Phase 2
+  (first family manual TV anchor, operator) and Phase 3 (assert the §6 V2 row) remain owed;
+  the §6 `RESOLVED` disposition is not fired by this freeze alone. $0/K=0, no live-risk
+  surface, `parity_gate.py`'s FROZEN-PRE-RUN bands untouched.
+
 ### 2026-08-07 — S1 environment + SPEC S3 Phase-0 / V2 scaffold
 
 - **V2 executes now at $0 under S1 incumbent env.** [`S1 ADR`](../adr/2026-08-07-loop-s1-environment-ratification.md)
@@ -216,7 +232,8 @@ V2 (now):
 - [x] §0 pending reads completed with anchors (re-verified at intake against `21e09c8`)
 - [x] Gen-2 scaffold landed (`parity_gen2_2026-08/`, bands FROZEN-PRE-RUN) — 2026-08-07
 - [ ] First family TV anchor (operator) — S3 Gate RESOLVED still open
-- [ ] Mutation battery frozen before the harness is trusted — owed, Phase 1
+- [x] Mutation battery frozen before the harness is trusted — 2026-08-18, 8/8 detection
+      (see Amendment log + [`pre-registration`](pre-registration/Q-FILLTAX-1-verdict-preregistration.md))
 - [x] Q-ID confirmed unclaimed (checked HEAD + origin/main at intake, 2026-08-05)
 
 V1 (sequenced under S1 Tradeify geometry; not at lock):

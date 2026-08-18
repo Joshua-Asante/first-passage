@@ -45,6 +45,7 @@ documents the camp boundary for humans/tools.
 | mnq_capflow_orb_r_2026-08 | c1 | HOLD | archive owed (FALSIFIED): `FALSIFIED` · **cap_spent:** `False` | lab/analysis/c1/mnq_capflow_orb_r_2026-08/ | — |
 | mnq_event_ceiling_2026-08-04 | c1 | ACTIVE | — | lab/analysis/c1/mnq_event_ceiling_2026-08-04/ | — |
 | mnq_ofchan_routeb_2026-08 | c1 | ACTIVE | — | lab/analysis/c1/mnq_ofchan_routeb_2026-08/ | — |
+| mnq_orb_flow_depth_2026-08-18 | c1 | ACTIVE | FROZEN, pull not authorized — MBP-10 depth escalation on ORB-MNQ-1/N14, fresh authorization per MNQFLOW-1's own FM-4 | lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/ | — |
 | mnq_orb_flow_substrate_2026-08-05 | c1 | ACTIVE | — | lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/ | — |
 | mnq_orb_level_proximity_tod_2026-08-06 | c1 | ACTIVE | — | lab/analysis/c1/mnq_orb_level_proximity_tod_2026-08-06/ | — |
 | mnq_r2agrun_routeb_2026-08 | c1 | HOLD | `AMBIGUOUS-HOLD` — empty candidate list (magnitude floor; G3 → **ITERATE**, not promote). | lab/analysis/c1/mnq_r2agrun_routeb_2026-08/ | — |
