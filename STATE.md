@@ -61,6 +61,16 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-17** — **Six-lead P3 (L5 curve-slope) un-HOLD → GO → sleeve CLOSED (venue).**
+  Operator un-HOLD. Paper read (Bianchi/Fan/Miffre/Zhang *JBF* 2023 / arXiv `2308.00383`):
+  profitable S-strategy is a same-commodity calendar spread (Δslope → long front / short
+  fourth). Distinguishes from the 2026-06-06 USOIL-carry kill (static state × outright) —
+  DISTINGUISHABLE, not ADMIT. Databento `estimate` on the 12 venue-legal parents: `ohlcv-1d`
+  / `ohlcv-1m` / `definition` all $0.0000 both windows; `tbbo` CL-parent $1,543.90 (contrast;
+  over ceiling). Binding close is the standing Tradeify calendar-spread SCREEN-FAIL, not
+  cost. No pull. Limb-2 untouched. P4/P5 stay HOLD. $0/K=0.
+  [`P3_DRYRUN`](lab/analysis/harvest/six_lead_cf_2026-08-17/P3_DRYRUN.md) ·
+  [`plan`](docs/briefs/2026-08-17-six-lead-pursuit-plan.md) §13.
 - **2026-08-17** — **Q-POLFRONT-1 intraday-honest remeasurement fork executed — 5.1× policy
   frontier does NOT survive; flat frontier survives only at low R.** Operator GO. Three design
   attempts (v1 units-conflation, v2 resampling-saturation, both invalidated pre-write-up; v3

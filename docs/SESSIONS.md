@@ -14,6 +14,32 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-17c — Six-lead P3 un-HOLD: dry-run $0, sleeve CLOSED (calendar-spread SCREEN-FAIL)
+
+**Focus:** Operator: "unHOLD P3." Record the GO; run only the plan's Phase-1 packet (paper
+read, USOIL-carry dedup, Databento multi-tenor `estimate`).
+
+**Shipped:** branch `docs/p3-unhold-dry-run` —
+[`P3_DRYRUN`](../lab/analysis/harvest/six_lead_cf_2026-08-17/P3_DRYRUN.md) · plan §13 mark
+HOLD→GO · STATE decision-index line · CANDIDATE_ROWS addendum. Paper (Bianchi et al. *JBF*
+2023 / arXiv `2308.00383`): S-strategy is long-front / short-fourth on Δslope. Dedup vs
+dead USOIL carry: DISTINGUISHABLE. Venue-legal 12-parent `estimate`: `ohlcv-1d` /
+`ohlcv-1m` / `definition` **$0.0000**; `tbbo` CL-parent **$1,543.90** (contrast). Sleeve
+closed on the standing Tradeify calendar-spread SCREEN-FAIL, not on cost. No pull. $0 · K=0.
+
+**Decisions/defects:** Screen-level "trades the change in slope" understated the load-bearing
+fact — the profitable expression is a **spread**. L (outright Δlevel) is venue-legal and
+unprofitable in the paper; an outright-on-Δslope rewrite is a different construct, not
+licensed. Limb-2 untouched (never admitted).
+
+**Open / next:** P4 (dealer-gamma) and P5 (13F fund-overweight) stay HOLD. Carry: 17e's
+Q-POLFRONT-1 intraday-honest finding (5.1× does not survive; deep-lane must not lean on it);
+F1 queue row 1; B7-REFIRE/M1 row 2; weekly token (deadline **2026-08-21**); four-firms §4
+2026-11-08.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-17e — Q-POLFRONT-1 intraday-honest fork executed: 5.1× policy frontier does not survive
 
 **Focus:** Operator GO ("open the intraday-honest remeasurement") on the named-but-unopened
