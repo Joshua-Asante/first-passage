@@ -7,35 +7,35 @@
 
 ## Matrix
 
-| Mechanism | 6J | BTCUSD | ES | EURGBP | EURUSD | GER40 | M2K | M6A | MCL | MES | MGC | MJY | MNQ | MYM | NAS100 | NG | NQ | SPX500 | USDCAD | USOIL | XAGUSD | XAUUSD | YM | ZB | ZF | ZN |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| band-pierce-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | F | . | . | . | . | . | . | . |
-| commodity-carry-term-structure | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . |
-| compression-gated-breakout | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . |
-| daily-range-state-persistence | . | . | . | . | . | . | . | . | A | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
-| day-of-week-selection-gate | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . |
-| event-window-reversal | . | . | . | . | D | . | . | . | . | . | D | . | . | D | . | D | . | . | . | . | . | . | . | . | . | D |
-| htf-compression-breakout-5m | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
-| ict-liquidity | . | . | . | . | . | . | . | . | . | . | . | . | D | D | . | . | . | D | . | . | . | . | . | . | . | . |
-| impulse-pullback-vwap-reclaim | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
-| index-dispersion | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . |
-| intraday-momentum | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | D | . | . | . | . | . | . | . | . | . |
-| london-range-failed-extension-fade | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
-| mean-reversion-fade | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | D | D | D | . | . | . | . | . | . |
-| naive-direction-mirror | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | D | . | . | . | . |
-| opening-pressure | . | . | . | . | . | . | . | . | . | . | . | . | D | D | . | . | D | . | . | . | . | . | . | . | . | . |
-| opening-range-breakout | . | . | . | . | . | A | . | . | . | . | . | . | A | . | A | . | A | D | D | . | . | . | . | D | D | . |
-| opening-range-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . |
-| order-flow-depth-imbalance | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . |
-| overnight-range-failed-extension-fade | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
-| pdh-pdl-breakout-rth | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
-| pdh-pdl-failed-break-reclaim | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
-| pullback-failure-resumption | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
-| regime-overlay | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | D | . | . | . | D | . | . | . | . |
-| sweep-failure-filtered-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
-| trend-following | . | D | . | . | . | . | . | . | . | . | . | . | . | L | L | . | . | . | D | A | D | L | . | . | . | . |
-| turn-of-month | . | . | A | . | A | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . |
-| venue-transfer | A | . | . | . | . | . | . | . | . | . | . | D | . | D | . | . | . | . | . | . | . | . | D | . | . | . |
+| Mechanism | 6J | BTCUSD | ES | EURGBP | EURUSD | GER40 | M2K | M6A | M6B | MCL | MES | MGC | MJY | MNQ | MYM | NAS100 | NG | NQ | SPX500 | USDCAD | USOIL | XAGUSD | XAUUSD | YM | ZB | ZF | ZN |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| band-pierce-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | F | . | . | . | . | . | . | . |
+| commodity-carry-term-structure | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . |
+| compression-gated-breakout | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . |
+| daily-range-state-persistence | . | . | . | . | . | . | . | . | . | A | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| day-of-week-selection-gate | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . |
+| event-window-reversal | . | . | . | . | D | . | . | . | . | . | . | D | . | . | D | . | D | . | . | . | . | . | . | . | . | . | D |
+| htf-compression-breakout-5m | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| ict-liquidity | . | . | . | . | . | . | . | . | . | . | . | . | . | D | D | . | . | . | D | . | . | . | . | . | . | . | . |
+| impulse-pullback-vwap-reclaim | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| index-dispersion | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . |
+| intraday-momentum | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | D | . | . | . | . | . | . | . | . | . |
+| london-range-failed-extension-fade | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| mean-reversion-fade | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | D | D | . | . | . | . | . | . |
+| naive-direction-mirror | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | D | . | . | . | . |
+| opening-pressure | . | . | . | . | . | . | . | . | . | . | . | . | . | D | D | . | . | D | . | . | . | . | . | . | . | . | . |
+| opening-range-breakout | . | . | . | . | . | A | . | . | . | . | . | . | . | A | . | A | . | A | D | D | . | . | . | . | D | D | . |
+| opening-range-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . |
+| order-flow-depth-imbalance | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| overnight-range-failed-extension-fade | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| pdh-pdl-breakout-rth | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| pdh-pdl-failed-break-reclaim | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| pullback-failure-resumption | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| regime-overlay | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | D | . | . | . | D | . | . | . | . |
+| sweep-failure-filtered-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| trend-following | . | D | . | . | . | . | . | . | . | . | . | . | . | . | L | L | . | . | . | D | A | D | L | . | . | . | . |
+| turn-of-month | . | . | A | . | A | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . |
+| venue-transfer | A | . | . | . | . | . | . | . | . | . | . | . | D | . | D | . | . | . | . | . | . | . | . | D | . | . | . |
 
 Legend: D=DEAD · A=AMBIGUOUS-PARKED · F=CONTINGENT-FORWARD · L=LIVE · `.`=untested
 
