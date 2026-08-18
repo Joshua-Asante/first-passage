@@ -4,6 +4,7 @@
 **Archived:** 2026-08-03
 **Body:** [`lab/archive/xindex_rv_recon_2026-07/`](../../archive/xindex_rv_recon_2026-07/)
 **Source card:** [`RESULTS.md`](../../archive/xindex_rv_recon_2026-07/RESULTS.md)
+**Addback cost dry-run (estimate only, 2026-08-18):** [`COST_DRYRUN_ES_RTY_2026-08-18.md`](../../archive/xindex_rv_recon_2026-07/COST_DRYRUN_ES_RTY_2026-08-18.md) — `$0.0000` streaming; no pull. Candidate stays FALSIFIED.
 
 > Open [`lab/CATALOG.md`](../../CATALOG.md) for the full registry.
 > Re-run harness from the body path, not from this stub.

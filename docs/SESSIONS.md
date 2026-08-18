@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-18m — xindex RV addback: ES+RTY Databento cost dry-run (estimate only)
+
+**Focus:** Price the closure's own ES+RTY intraday addback. Poor-prior falsifier, not a reopen.
+
+**Shipped:** branch `cursor/xindex-es-rty-cost-7784`. Estimate-only (`db_fetch estimate`; no `pull`, no `--force`). Owner: [`COST_DRYRUN_ES_RTY_2026-08-18.md`](../lab/archive/xindex_rv_recon_2026-07/COST_DRYRUN_ES_RTY_2026-08-18.md). Pointer on the CARD stub.
+
+**Decisions/defects:** none — candidate stays FALSIFIED. Operator still decides whether to spend the (priced) pull.
+
+**Open / next:** Carry 18k: MNQSR-1 / Q-CAPA-1 bank rulings discharged (live figure at MNQ.md §K_BANKED). Next slate admission screens claim horizon vs the E1 flat-by-16:00 envelope. S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. TRAINKILL census STOP — re-proposal is a new panel or an operator election. B1 Koijen admissibility parallel. B2 unblocked: elects on existing evidence + H1 screen, TRAINKILL holds disclosed. F1 / B7-REFIRE.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-18k — Operator "OK on both": MNQSR-1 and Q-CAPA-1 bank
 
 **Focus:** Discharge the two OPEN items from the MNQ ledger recon after operator *"OK on both"*. (Renumbered 18f→18k on merge with main — main already held 18f for Q-EXPR-1.)
