@@ -1,0 +1,122 @@
+{
+  "prereg_sha256": "91855ed188e6d5268ef2050e21d9f77649c6f21ac9b19716e181b3cc59981730",
+  "n_set": 15,
+  "n_scored": 8,
+  "n_bounded": 7,
+  "g0": 0.02436498828998388,
+  "gbar": 1.806768322389424e-05,
+  "fit_floor": 0.05,
+  "core_reading": "MISCALIBRATED",
+  "bounded_lo_reading": "MISCALIBRATED",
+  "bounded_hi_reading": "KILLS-INFORMATIVE",
+  "verdict": "AMBIGUOUS-HOLD",
+  "named_reading": "MISCALIBRATED|KILLS-INFORMATIVE",
+  "scored": [
+    {
+      "id": "Q-TNEC-CON-2",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "se": 0.05155612244897959,
+      "P_mu0": 0.9500042097035593,
+      "P_mubar": 0.508076189689834
+    },
+    {
+      "id": "Q-TNEC-CON-3",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "se": 0.07622448979591837,
+      "P_mu0": 0.9500042097035593,
+      "P_mubar": 0.7410011213139477
+    },
+    {
+      "id": "Q-TNEC-CON-4",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "se": 0.021096938775510204,
+      "P_mu0": 0.9500042097035593,
+      "P_mubar": 0.002717742508223764
+    },
+    {
+      "id": "Q-TNEC-CON-5",
+      "event": "AMBIGUOUS",
+      "mode": "one_arm",
+      "se": 0.14168367346938776,
+      "P_mu0": 0.9500042097035593,
+      "P_mubar": 0.8912754762203572
+    },
+    {
+      "id": "MSL-C1",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "se": {
+        "long": 0.04693877551020408,
+        "short": 0.04591836734693878
+      },
+      "P_mu0": 0.0006248947618414197,
+      "P_mubar": 3.7748278322109197e-10
+    },
+    {
+      "id": "MSL-C2",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "se": {
+        "long": 0.055102040816326525,
+        "short": 0.05535714285714285
+      },
+      "P_mu0": 0.0006248947618414197,
+      "P_mubar": 6.6286058894431036e-09
+    },
+    {
+      "id": "MSL-C3-K2",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "se": {
+        "long": 0.055612244897959184,
+        "short": 0.055612244897959184
+      },
+      "P_mu0": 0.0006248947618414197,
+      "P_mubar": 7.324270862837098e-09
+    },
+    {
+      "id": "Q-MNQDTL-CON-1",
+      "event": "FALSIFIED",
+      "mode": "both_arms",
+      "se": {
+        "long": 0.04460192384751241,
+        "short": 0.05197519136624474
+      },
+      "P_mu0": 0.0006248947618414197,
+      "P_mubar": 6.794664616853862e-10
+    }
+  ],
+  "bounded": [
+    {
+      "id": "MSL-S2A",
+      "reason": "N-ACT kill; mean-R CI did not fire FALSIFIED"
+    },
+    {
+      "id": "Q-R2VBUCK-1",
+      "reason": "association/\u03c1 cell; no mean-R CI"
+    },
+    {
+      "id": "Q-R2FLOW-1",
+      "reason": "association/\u03c1 cell; no mean-R CI"
+    },
+    {
+      "id": "Q-R2AGRUN-1",
+      "reason": "association/\u03c1 cell; no mean-R CI"
+    },
+    {
+      "id": "DL-1",
+      "reason": "ABANDONMENT on annSR/SPA nomination gates; confirm unread; not a mean-R CI event"
+    },
+    {
+      "id": "Q-CAPFLOW-1",
+      "reason": "\u03c1 CI, not mean-R; +0.10R bar does not translate"
+    },
+    {
+      "id": "H-DSTRUCT-MNQ-1",
+      "reason": "gateHit vs 0.50 screen; not a mean-R CI"
+    }
+  ]
+}

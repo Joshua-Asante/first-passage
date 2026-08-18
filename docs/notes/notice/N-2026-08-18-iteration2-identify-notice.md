@@ -6,12 +6,15 @@
 the quality of the questions") + Claude Code
 **Source:** committed record only — SESSIONS/STATE/CATALOG window 2026-08-08→08-18, the
 2026-08-16 bottleneck-solutions arc (S1–S4), and the PR #37 mechanism-program arc
-**Status:** `OPEN` — one GRADUATE candidate still named (Q-TRAINKILL-1; operator GO
-opens it). **Q-CONDVAL-1 GO'd and `FALSIFIED` 2026-08-18**
+**Status:** `OPEN` — GRADUATE packets all closed; Action/Forward rows remain.
+**Q-CONDVAL-1 GO'd and `FALSIFIED` 2026-08-18**
 ([closure](../../briefs/closures/Q-CONDVAL-1-closure-falsified.md)) — S1b
 conditioner-engineering branch parked; O2 discharged. **Q-EXPR-1 GO'd and `RESOLVED` (H1)
 2026-08-18** ([closure](../../briefs/closures/Q-EXPR-1-closure-resolved.md)) — next slate
-admission screens claim horizon vs the E1 flat-by-16:00 envelope. Action/Forward/Closed routing below.
+admission screens claim horizon vs the E1 flat-by-16:00 envelope. **Q-TRAINKILL-1 GO'd and
+`AMBIGUOUS-HOLD` 2026-08-18**
+([closure](../../briefs/closures/Q-TRAINKILL-1-closure-ambiguous-hold.md)) — no named
+power finding; no gate number moves. Action/Forward/Closed routing below.
 **D-S-A domain:** data (the I/N corpus). Two routed Action rows touch meta-process; they are
 routed, not gated here.
 
@@ -125,10 +128,10 @@ envelope (in which case the branch closes cleanly, cheap).
 
 | Observation | Route | Detail |
 |---|---|---|
-| A + C | **GRADUATE ×1 remaining** | Q-EXPR-1 **CLOSED `RESOLVED` (H1) 2026-08-18** ([closure](../../briefs/closures/Q-EXPR-1-closure-resolved.md)). Q-TRAINKILL-1 still named below — separate falsifiable question on gate power |
+| A + C | **CLOSED** | Q-EXPR-1 **CLOSED `RESOLVED` (H1) 2026-08-18** ([closure](../../briefs/closures/Q-EXPR-1-closure-resolved.md)). Q-TRAINKILL-1 **CLOSED `AMBIGUOUS-HOLD` 2026-08-18** ([closure](../../briefs/closures/Q-TRAINKILL-1-closure-ambiguous-hold.md)) — BOUNDED extremes disagree; scored core MISCALIBRATED; no named power finding |
 | D | **CLOSED** | Q-CONDVAL-1 GO'd → `FALSIFIED` 2026-08-18 ([closure](../../briefs/closures/Q-CONDVAL-1-closure-falsified.md)) — S1b conditioner-engineering parked; O2 discharged |
 | B1 — admissibility-side supply ($0) | **FORWARD, no dependency** | OpenAlex sourcing continuation + Req-1a admissibility screening of the six Koijen screen-leads proceeds IN PARALLEL with the two questions — admissibility deaths are orthogonal to both outputs by observation B's own decomposition; making them wait would re-run the one-bottleneck conflation this notice dissolves |
-| B2 — priced spends (Databento extension on harvest survivors; lane campaign #2 prereg freeze) | **FORWARD, dependent** | Q-EXPR-1's horizon screen is now in: weekly/daily-native claims are not priced until a session-horizon expression is named. Still consumes Q-TRAINKILL-1's power finding for campaign #2 n/panel design. **Expiry on the edge:** if TRAINKILL hasn't closed by 2026-09-01, B2 elects on existing evidence + the H1 screen, with TRAINKILL's absence disclosed |
+| B2 — priced spends (Databento extension on harvest survivors; lane campaign #2 prereg freeze) | **FORWARD, unblocked** | Q-EXPR-1's horizon screen is in: weekly/daily-native claims are not priced until a session-horizon expression is named. Q-TRAINKILL-1 closed `AMBIGUOUS-HOLD` — no named power finding to consume for campaign #2 n/panel. Elects on existing evidence + the H1 screen, with TRAINKILL's hold disclosed (not absence). Q-TRAINKILL-2 named, not opened |
 | S2 stage-1 cheap falsifier · S3 matched-day redesign | **FORWARD** | Standing chartered obligations carried for completeness (slate/spec-resident, not corpus observations); unchanged by this notice |
 | E(i) valence-blind null-validity | **ACTION** | Extend the null-fitness rule: every screen prereg §0 must cite the null-validity clause for its claim family, verdict-valence-blind (closes the fresh-battery/false-NULL hole the reuse-only clause leaves) |
 | E(ii) design-time doctrine read | **ACTION** | Same edit as E(i) — the §0 citation IS the design-time read, made mechanical |
@@ -140,8 +143,9 @@ envelope (in which case the branch closes cleanly, cheap).
 
 Ordered cheapest-falsifier-first. Each is symptom-named (no fix baked in), carries its cheapest
 falsifier, and names the decision its answer changes. Dependency edge: the §4 B2 row
-(priced spends) now waits on Q-TRAINKILL-1 only (Q-EXPR-1 closed H1; horizon screen is in),
-with a 2026-09-01 expiry; B1 (admissibility-side supply) runs in parallel now.
+(priced spends) is unblocked: Q-EXPR-1 closed H1 (horizon screen is in) and Q-TRAINKILL-1
+closed `AMBIGUOUS-HOLD` (no named power finding). B1 (admissibility-side supply) runs in
+parallel now.
 
 ### Q-CONDVAL-1 — does the validated range-state lift buy anything in R terms? ($0, one afternoon) — **CLOSED `FALSIFIED` 2026-08-18**
 
@@ -200,7 +204,7 @@ rediscovery:** Q-TXG-1 closed `FALSIFIED-at-walls`
 that is a partial, locked-book-scoped answer to this question's H2 branch; the Pre-Q treats it
 as evidence rows and a prior, never as an independent discovery.
 
-### Q-TRAINKILL-1 — are the train gates killing empty families, or killing true modest edges? ($0, one session)
+### Q-TRAINKILL-1 — are the train gates killing empty families, or killing true modest edges? ($0, one session) — **CLOSED `AMBIGUOUS-HOLD` 2026-08-18**
 
 **Symptom:** ~15 measured explore/train kills in 9 days; zero confirm reads ever; the
 admissibility bar is generous yet nothing survives to be measured against it (observation C).

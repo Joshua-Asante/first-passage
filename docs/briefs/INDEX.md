@@ -25,6 +25,15 @@ closure brief in `docs/ltm/briefs/` and delete its row here.
 
 ## Recently closed (cross-reference; not open)
 
+- **Q-TRAINKILL-1** — is the explore/train kill record consistent with zero edge, with
+  true +0.10R@$75 edges the designs are underpowered to pass, or with neither —
+  **`AMBIGUOUS-HOLD` 2026-08-18** (BOUNDED extremes disagree: `MISCALIBRATED` at ε vs
+  `KILLS-INFORMATIVE` at 1−ε; scored core n*=8 `MISCALIBRATED`, g(0)=0.024 < 0.05).
+  No named power finding. No gate number moves. $0/K=0.
+  [`closure`](closures/Q-TRAINKILL-1-closure-ambiguous-hold.md) ·
+  [`RESULTS`](../../lab/analysis/_inbox/q_trainkill_1_2026-08/RESULTS.md) ·
+  [`brief`](Q-TRAINKILL-1-train-gate-power.md) ·
+  [`pre-reg`](pre-registration/Q-TRAINKILL-1-verdict-preregistration.md).
 - **Q-EXPR-1** — what measurable property of the regularity→expression conversion accounts
   for the orphaning — **`RESOLVED` 2026-08-18** (H1 horizon-mismatch 4/4; H2 1/5 misses;
   H3 cannot fire — weekly+daily share 2026-06-19). Next slate admission screens claim

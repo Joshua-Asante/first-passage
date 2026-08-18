@@ -61,6 +61,12 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-18** — **Q-TRAINKILL-1 `AMBIGUOUS-HOLD` — no named power finding; no gate number moves.**
+  Operator GO off iteration-2 notice packet 3. Set n=15 / μ_bar=+0.10R / floor 0.05 frozen
+  before the table. Scored g(0)=0.024 < 0.05; BOUNDED extremes disagree. B2 elects on
+  existing evidence + H1 screen, hold disclosed. $0/K=0.
+  [`closure`](docs/briefs/closures/Q-TRAINKILL-1-closure-ambiguous-hold.md) ·
+  [`RESULTS`](lab/analysis/_inbox/q_trainkill_1_2026-08/RESULTS.md).
 - **2026-08-18** — **Q-EXPR-1 `RESOLVED` (H1) — next slate admission screens claim horizon vs E1.**
   Operator GO off iteration-2 notice packet 2. Share bar 0.50 frozen before the table.
   H1 4/4 weekly/daily vs session envelope; H2 1/5 misses; H3 cannot fire (W+D same first day).
