@@ -54,6 +54,7 @@ null design; S3 needs its matched-day prereg. Slate 2026-09-15 date now moot (RE
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-18c — S1b runs SIGNAL, adversarial review finds it NOT-CONFIRMED: placebo test invalidated
 
 **Focus:** Operator GO ("GO S1b") off the Step-0 slate queue — daily True-Range top-quintile
@@ -97,6 +98,7 @@ directional-drift clause. S2/S3 stay paused until then.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-18a — W×ORB gate stopped at dedup; H-DSTRUCT-MNQ-1 NULL; Step-0 daily-geometry slate drafted
 
 **Focus:** Mechanism-by-mechanism program kickoff (operator thread): can the validated W layer
@@ -125,6 +127,7 @@ Tier-1 screen tier working as designed.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-18b — S1a (GC range-state persistence) run: NULL near-miss, adversarially verified
 
 **Focus:** Operator GO ("GO S1a") off the Step-0 slate queue — first live lane-adjacent screen
@@ -153,9 +156,35 @@ bounded-materiality, not fixed (doesn't warrant a mid-campaign design change to 
 **Open / next:** S1b (MCL) is queued next per the slate's own order; the S1a near-miss (placebo
 clears, CI doesn't) is a live prior for it, not a blind re-test. Operator GO owed on S1b/S2/S3.
 
+---
+
+## 2026-08-17c — Six-lead P3 un-HOLD: dry-run $0, sleeve CLOSED (calendar-spread SCREEN-FAIL)
+
+**Focus:** Operator: "unHOLD P3." Record the GO; run only the plan's Phase-1 packet (paper
+read, USOIL-carry dedup, Databento multi-tenor `estimate`).
+
+**Shipped:** branch `docs/p3-unhold-dry-run` —
+[`P3_DRYRUN`](../lab/analysis/harvest/six_lead_cf_2026-08-17/P3_DRYRUN.md) · plan §13 mark
+HOLD→GO · STATE decision-index line · CANDIDATE_ROWS addendum. Paper (Bianchi et al. *JBF*
+2023 / arXiv `2308.00383`): S-strategy is long-front / short-fourth on Δslope. Dedup vs
+dead USOIL carry: DISTINGUISHABLE. Venue-legal 12-parent `estimate`: `ohlcv-1d` /
+`ohlcv-1m` / `definition` **$0.0000**; `tbbo` CL-parent **$1,543.90** (contrast). Sleeve
+closed on the standing Tradeify calendar-spread SCREEN-FAIL, not on cost. No pull. $0 · K=0.
+
+**Decisions/defects:** Screen-level "trades the change in slope" understated the load-bearing
+fact — the profitable expression is a **spread**. L (outright Δlevel) is venue-legal and
+unprofitable in the paper; an outright-on-Δslope rewrite is a different construct, not
+licensed. Limb-2 untouched (never admitted).
+
+**Open / next:** P4 (dealer-gamma) and P5 (13F fund-overweight) stay HOLD. Carry: 17e's
+Q-POLFRONT-1 intraday-honest finding (5.1× does not survive; deep-lane must not lean on it);
+F1 queue row 1; B7-REFIRE/M1 row 2; weekly token (deadline **2026-08-21**); four-firms §4
+2026-11-08.
+
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-17e — Q-POLFRONT-1 intraday-honest fork executed: 5.1× policy frontier does not survive
 
 **Focus:** Operator GO ("open the intraday-honest remeasurement") on the named-but-unopened
@@ -192,6 +221,7 @@ all (NAS100 base-only PF is 0.31). Six-lead pursuit thread (17d) and its carries
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-17d — Six-lead pursuit thread closes: P1-CF/P2-CF FAIL, limb-2 ruled, channel addendum landed
 
 **Focus:** Continue the six-lead pursuit plan from 17b's OpenAlex fork resolution — operator GO on
@@ -219,6 +249,7 @@ weekly token trade (deadline **2026-08-21**) still unrecorded this week.
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-17b — Koijen axis-2 (Carry) fork resolved: OpenAlex substitute → 6 screen-level leads
 
 **Focus:** Operator: "Take the Koijen axis-2 fork to me for a decision" (surfaced from the S3
@@ -255,6 +286,7 @@ as dry pending any of these actually clearing Req-1a). Carry: queue #0 weekly to
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-17a — MSL-S2B successor's CON-5 D2 falsifier executed: `D2_FAIL`
 
 **Focus:** Operator: "run the S3 falsifier gate once MYM_M15.csv is available." Panel had become
