@@ -51,7 +51,6 @@ BEHIND this list.** Items leave when done; it stays ≤5 so it cannot decay into
 |---|---|---|---|
 | 1 | **F1 — how §4 reads a Tradeify-resting discharge** (2026-11-08). Eval is live ([`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md)); locked Striker book barred. §4 still scores the frozen $100K×4 set with Tradeify in it. Ruling owed: whether a discharge resting *on Tradeify* (or the withdrawn Striker book) discharges the four-firms program. **Deciding it early would pre-empt §4** | [`ADR 2026-08-04`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) §7 F1 · [four-firms §4](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) | 2026-11-08 §4 verdict reading |
 | 2 | **B7-REFIRE Stage 1 + M1** — both wait on an acceptable strategy on the ruled (Python-native) host. Eval live; no book deployed | [`GO ADR Addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`S2`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) · [`M1`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) | live-signal / arming path |
-| 3 | **Six-lead pursuit — OpenAlex channel-scope amend-in-place note** still drafted, unlanded (the only remaining open item; P1-CF/P2-CF executed FAIL, limb-2 counter ruled `no` 2026-08-17) | [`six-lead pursuit plan`](docs/briefs/2026-08-17-six-lead-pursuit-plan.md) §13 · [`harvest intake ADR`](docs/adr/2026-07-15-external-mechanism-harvest-intake.md) | note landing |
 
 ---
 
@@ -62,6 +61,15 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-17** — **Six-lead pursuit channel-scope addendum landed; queue row 3 closes.** OpenAlex
+  admitted as a Semantic-Scholar-index-gap substitute citation-graph traversal channel (operator
+  GO, "land it as-is"), light tier — no admission requirement, §4 falsifier, or counting machinery
+  touched; retroactively documents the 2026-08-16 fork election. This was the only unlanded piece
+  of the six-lead pursuit thread — Phase 0 DONE, P1-CF/P2-CF FAIL all four legs, limb-2 ruled does
+  not increment (all landed earlier the same day, lines below). Thread has no open items;
+  P3–P5 stay HOLD per the operator's own 2026-08-17 marks. $0/K=0, no live-risk surface.
+  [`harvest intake ADR` addendum](docs/adr/2026-07-15-external-mechanism-harvest-intake.md#addendum-2026-08-17--openalex-admitted-as-a-sourcing-channel-substitute) ·
+  [`plan`](docs/briefs/2026-08-17-six-lead-pursuit-plan.md) §13.
 - **2026-08-17** — **Harvest §4 limb-2 counter ruled: P1-CF/P2-CF FAIL does NOT increment.**
   Operator direction ("rule the limb-2 counter question"). Two independent grounds: (1) neither
   lead was ever admitted through the intake — no manifest, no `register_search open`, no ratified
