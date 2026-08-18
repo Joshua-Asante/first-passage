@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-17c — Harvest Req-3 relief-valve line + parent-ADR reader-intercept
+
+**Focus:** Internal doc-skew on `strategy_harvest.md`: the relief-valve heading still called Req-3 (family K-bank) "truly final" after the 2026-08-04 demotion to disclosure-not-gate.
+
+**Shipped:** `cursor/harvest-req3-disclosure-intercept`. Living line rewritten to match the amended Req-3 row; one-line reader-intercept placed immediately above frozen §2 item 3 in [`2026-07-15-external-mechanism-harvest-intake.md`](adr/2026-07-15-external-mechanism-harvest-intake.md) (ratified text unedited). Source of the demotion: [`2026-08-04-family-k-bank-disclosure-not-gate.md`](adr/2026-08-04-family-k-bank-disclosure-not-gate.md). $0 / K=0.
+
+**Decisions/defects:** None new — intercept only. Living skill [`.claude/skills/futures-anomaly-discovery/SKILL.md`](../.claude/skills/futures-anomaly-discovery/SKILL.md) still restates "a burned family kills the seed" as current intake procedure (blast-radius owed, left outside this docs-only ask).
+
+**Open / next:** Skill restatement above is the leftover. Staging any of the 6 Koijen axis-2 leads for a real Req-1a Path 1a/1b pass is a fresh operator decision, not licensed by 2026-08-17b — none attempted here. If pursued, resolve the Della Corte/Kosowski overlap before staging either as independent. Not touched: whether this changes the broader MSL WHO-track disposition. Carry: queue #0 weekly token (deadline **2026-08-21**); S2 deep-iteration lane 1/2 abandonment budget spent; four-firms §4 2026-11-08.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-17b — Koijen axis-2 (Carry) fork resolved: OpenAlex substitute → 6 screen-level leads
 
 **Focus:** Operator: "Take the Koijen axis-2 fork to me for a decision" (surfaced from the S3
