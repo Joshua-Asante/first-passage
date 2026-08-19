@@ -57,7 +57,11 @@ def main():
         print(f"FAIL: {PERSONAS_DIR} does not exist")
         return 1
 
-    persona_files = sorted(p for p in PERSONAS_DIR.glob("*.md") if p.name != "INDEX.md")
+    NON_PERSONA_FILES = {"INDEX.md", "ownership-map.md"}
+    persona_files = sorted(
+        p for p in PERSONAS_DIR.glob("*.md")
+        if p.name not in NON_PERSONA_FILES and not p.name.endswith("-log.md")
+    )
 
     if not persona_files:
         print(f"FAIL: no persona files found in {PERSONAS_DIR}")
