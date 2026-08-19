@@ -12,8 +12,9 @@ First Passage's loop-tier doctrine (GRAND/STRATEGIC/OUTER/INNER — see
 what*. It says nothing about *who argues which side before a decision gets made*. This spec adds a
 persona layer on top: a stable roster of named roles, framed as a front/middle/back-office trading
 firm, that get spawned as real subagents to review GRAND and STRATEGIC-tier decisions before Joshua
-ratifies them — replacing a single-voice recommendation with independent, structurally-separated
-review.
+ratifies them — replacing *generic* multi-lens review (the existing `pre-ratification-adversarial-panel`
+already runs 6 lenses + 2 skeptics; this is not literally single-voice today) with review structured
+around named, domain-specific, front/middle/back-office roles and the independence mechanic in §6.2.
 
 The motivating principle, grounded in real trading-firm practice (research below): **the person who
 proposes a decision should never be the person who validates it.** Real firms enforce this through
@@ -22,6 +23,13 @@ of the fund"; Fed SR 11-7: model validation must be organizationally independent
 development). The documented failure mode when this collapses — Barings/Leeson, Société
 Générale/Kerviel, UBS/Adoboli — is one person holding both a front-office and a control-adjacent
 role, supervising their own risk. This design borrows the mechanism, not just the vocabulary.
+
+**Grounding caveat** *(added 2026-08-19 — see change history)*: every motivating incident above is
+external to First Passage. No in-repo near-miss or incident is cited as evidence this specific
+mechanism was needed here — the case rests on borrowed industry practice and the pre-existing
+generic panel's own track record (see `feedback_adversarial_review_before_ratification.md`: a
+green mechanical checker missed 6 real BLOCKERs on a prior brief), not on a local failure this
+design is a direct response to.
 
 ## 2. Scope boundary — what this does NOT change
 
@@ -41,6 +49,31 @@ This is an overlay. It does not touch:
 - **No AI persona gains independent authority to execute a GRAND Subtract or a STRATEGIC Delete.**
   Panels are advisory. Joshua decides, always — with one narrow exception (§6.3) that restates an
   existing non-negotiable, not a new grant of authority.
+
+### 2.1 Retention self-test (added 2026-08-19 — see change history)
+
+This spec proposes ~20 new permanent artifacts (18 persona definition files, up to 18 append-only
+log files, a roster index, a checker script). Applying CLAUDE.md's own retention test directly to
+that proposal, rather than leaving it unexamined:
+
+- **R1 (pipeline-consumed):** contingent, not yet true. Each persona file is *designed* to be read by
+  its own spawn prompt (§6.2) once the mechanism is in real use — but as of this writing nothing has
+  consumed them for a real (non-rehearsal) decision. The §10 falsifier is the mechanism that proves
+  or disproves this in use, not on faith.
+- **R2 (live-safety):** true for the CRO seat specifically — its hard-block exception (§6.3) is a
+  live-safety-adjacent control. The other 17 files are not live-safety artifacts on their own.
+- **R3 (re-proposal bar):** not directly applicable — personas aren't rejected candidates being
+  re-proposed. §11's open follow-up on a future Staff-seat intake rule (reusing GRAND §2.5) is the
+  nearest analogue.
+- **R4 (reproducibility manifest):** N/A — no data/backtest artifacts here.
+- **R5 (open fireable obligation):** true, indirectly — §10's falsifier *is* the fireable obligation.
+  If it fires (3 consecutive real uses with zero decision-difference), retention is answered
+  mechanically (demote), rather than left to accumulate the way GSUB-1's own retrospective found
+  happening elsewhere in this repo.
+
+Honestly stated: this spec does not pass R1/R5 cleanly today — it passes them *prospectively*,
+contingent on real use. That is a real gap, named here rather than left implicit, and it is the same
+gap §10 exists to close.
 
 ## 3. Architecture
 
@@ -71,7 +104,9 @@ A panel convenes on:
    ADR's own D2 definition. **Explicitly not** every OUTER-tier campaign closure (TRAINKILL-,
    Q-EXPR-, Q-CONDVAL-style dispositions) — those are frequent (several per week on current
    evidence) and keep their existing, lighter adjudication path untouched. Conflating the two would
-   multiply panel cost by roughly an order of magnitude for no rigor gained at the OUTER tier.
+   multiply panel cost substantially — OUTER-tier closures run several times a week on current
+   evidence, far more often than GRAND/STRATEGIC-tier events — for no rigor gained at the OUTER tier
+   (no per-panel cost model is derived here; this is a qualitative, not a scored, comparison).
 
 **Who gets spawned, per trigger:**
 
@@ -91,7 +126,7 @@ A panel convenes on:
 |---|---|---|---|
 | **CEO** | Joshua | Aim; sole GRAND ratification authority; sole owner-adjudication channel for STRATEGIC-tier Deletes (D2 channel c); sets the Survive bound; final word on every panel's synthesis | **Never — this is the literal human, not a persona.** |
 | **CRO** | AI persona | `dd_protection` integrity, the lifecycle authorization axis, M1 monitoring maturity, regime-robustness gate, strategy-validation discipline, c1 rail `dry_run`/`armed_until` invariants. The CLAUDE.md "Safety invariants (non-negotiable)" section is this seat's charter. | Yes — highest-stakes seat; mandatory on every GRAND decision (§4). |
-| **CIO** | AI persona | Front-office oversight: a3, a4, the strategy-generation side of a2. | Yes |
+| **CIO** | AI persona | Front-office oversight: a3, a4, and a2 (a2 is owned wholesale by Head of Execution per §5.2 — it has no separate strategy-generation component; its own pursuit record's Aim is deploy-and-operate-safely on the incumbent eval, not signal generation). | Yes |
 | **COO** | AI persona | Back-office oversight: a5, a6, the meta-belt (d1-d16), STATE/SESSIONS/CATALOG hygiene, retention discipline. | Yes |
 | **CFO** | AI persona | Survive bound (≤5 queue cap — concurrency-denominated per `docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md`; **not itself a capital concept**, despite sitting in this seat's domain), subscription spend (d11-d16), capital-allocation rulings (F1), the weekly token-trade compliance obligation. | Yes |
 
@@ -217,7 +252,7 @@ that domain.
 | **Full bespoke build** — new skill, new memory infrastructure from scratch, independent of `pre-ratification-adversarial-panel`. | Highest cost; duplicates most of what the existing skill and a plain markdown log already provide. Only worth revisiting if the lightweight design here proves insufficient in real use. |
 | **Fixed 4-6 fan-out per tier, forced to a target org-chart shape** (the original proposal) | Real current STRATEGIC-tier inventory supports 2-3 stable domains per office (7-8 total), not 12-18. Pre-minting empty seats to hit a target count reproduces the "belt that only grows" failure mode GSUB-1's own retrospective flagged. Roster grows only when a genuine new standing domain opens. |
 | **Manager layer between Senior Managers and Staff** (mirroring OUTER as its own persona tier) | The candidate "manager" functions (cheap-falsifier gating, cost-law screening, etc.) are staff-shaped work in real organizational terms — mechanical, checklist-driven, one-function-one-owner — not supervisory judgment over several such functions. Real front/middle/back offices also run 3 levels deep, not 4 (§9). |
-| **Persona-per-current-pursuit instances** (1:1 with the 37 `docs/pursuits/` records) | Pursuits churn on a near-weekly cadence (8 PARKs alone converting by 2026-11-08); this roster would need constant re-minting and would go stale within days. Stable functional roles persist across whatever pursuits currently sit in their domain, matching how real orgs actually staff departments. |
+| **Persona-per-current-pursuit instances** (1:1 with the 38 `docs/pursuits/` records) | Pursuits churn on a near-weekly cadence (7 of the original 8 GSUB-1 PARKs still convert absent renewal by 2026-11-08 — b5 was already renewed to 2027-02-08 on 2026-08-16, before this spec was drafted); this roster would need constant re-minting and would go stale within days. Stable functional roles persist across whatever pursuits currently sit in their domain, matching how real orgs actually staff departments. |
 
 ## 9. Real-world grounding (research summary)
 
@@ -310,3 +345,4 @@ history.
 | 2026-08-19 | §9 title-grounding bullet softened: dropped unscored "direct match" / "roughly a third (5-6)" verdicts with no attached research artifact; flagged the Risk Analyst (Intraday) row's "verbatim" Topstep quote as not surviving independent adversarial re-check. Same fix applied to `docs/personas/risk-analyst-intraday.md` and the Phase 1 plan's embedded copy. | Claude Code |
 | 2026-08-19 | §9 gained an "Organizational depth" bullet. §3 and §8 both cited "(§9)" as the source for the "three levels, not four" architectural decision, but §9 never actually carried that research — the citation pointer resolved to an empty set. | Claude Code |
 | 2026-08-19 | §10 restructured with explicit `H:`/`Falsifier:`/`Trigger check schedule:` tokens (N=3, dated to the 2026-11-08 quarterly gate). The prior prose claimed to match the GRAND ADR's own §4 discipline without reproducing its structure. | Claude Code |
+| 2026-08-19 | §1 reworded: dropped the inaccurate "replacing a single-voice recommendation" framing (the existing panel already runs 6 lenses + 2 skeptics) and added a grounding caveat that every motivating incident is external, not First-Passage-specific. Added §2.1 applying CLAUDE.md's own retention test (R1-R5) to this spec's ~20 proposed new artifacts, honestly stating it passes R1/R5 prospectively, not today. Softened §4's unsupported "order of magnitude" panel-cost claim. §5.1 CIO row and `docs/personas/cio.md` corrected: a2 has no "strategy-generation side" (contradicted both its own pursuit record and §5.2's wholesale Head-of-Execution assignment). §8's alternatives table corrected: 37 pursuits -> 38 (actual count); 8 PARKs -> 7 (b5 was renewed to 2027-02-08 on 2026-08-16, before this spec's own 2026-08-18 date). All found by the same 2026-08-19 adversarial review as the BLOCKERs above (confirmed CONCERNs, not blocking on their own). | Claude Code |
