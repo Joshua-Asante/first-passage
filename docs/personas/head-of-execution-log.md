@@ -8,6 +8,7 @@ contract and [`INDEX.md`](INDEX.md) for this persona's definition.
 
 ## 2026-08-19 — c1-rail deployed-vs-main skew, execution record (not a panel review)
 
+**Verdict:** n/a — execution record, not a reviewed-artifact panel verdict (see Type below)
 **Type:** Execution record, not a reviewed-artifact verdict — this entry departs from this log's
 usual shape because the underlying work was direct CC execution within this seat's Domain
 (`ops/c1_rail/`, primary owner per `docs/personas/ownership-map.md`), not an independent persona

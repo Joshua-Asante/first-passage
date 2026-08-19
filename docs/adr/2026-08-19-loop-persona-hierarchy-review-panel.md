@@ -62,6 +62,50 @@ governance-of-what-governs, the same LoR class as the three-loop binding ADR's o
   doctrine already exists on disk.
 - `docs/rule_0.md` — anchor `027a729` 2026-08-14.
 
+**Amendment-first / dedup (executed this session, backfilled 2026-08-19 — Rule 8 sub-rule 10 was in force as of 2026-08-15 and was omitted at original authoring):**
+
+```
+$ python scripts/check_advisor_dedup.py --keywords "persona hierarchy review panel front middle back office"
+check_advisor_dedup: keywords: 'persona hierarchy review panel front middle back office'
+  slugs found:    (none)
+  keywords found: 8 significant terms
+
+POSSIBLE PRIOR ART — review before treating the keywords as new work (top 8 of 51 candidate(s)):
+
+  [  6] docs/briefs/closures/GSUB-2-closure-resolved-loadbearing.md — GSUB-2 — CLOSURE: `RESOLVED-LOADBEARING` (2 ratified dispositions differ from PARK)
+        shared terms: ['front', 'hierarchy', 'office', 'panel', 'persona', 'review']
+
+  [  3] docs/notes/audits/2026-07-12-08-08-classA-reachability-audit.md — Audit — gate reachability of the ratified 08-08 Class-A slate
+        shared terms: ['back', 'panel', 'review']
+
+  [  3] docs/notes/audits/2026-08-08-conventions-delete-phase-gap-audit.md — Conventions friction — Delete-phase gap audit — 2026-08-08
+        shared terms: ['back', 'panel', 'review']
+
+  [  3] docs/notes/audits/2026-08-18-strategy-generation-assumptions-sweep.md — Audit Note — Strategy-generation pipeline assumptions sweep
+        shared terms: ['back', 'panel', 'review']
+
+  [  3] docs/notes/audits/programme-audit/2026-07-01-cross-layer-synthesis.md — Cross-layer synthesis — 5-week programme audit (2026-05-27 → 2026-07-01)
+        shared terms: ['back', 'panel', 'review']
+
+  [  3] docs/notes/audits/programme-audit/2026-07-11-core-fxify-anchoring-audit.md — Audit Note — Object-layer audit: `core/` conclusions vs the retired FXIFY/CFD ground truth
+        shared terms: ['back', 'panel', 'review']
+
+  [  3] docs/notes/audits/programme-audit/2026-08-05-claim-alignment/03-agent-facing.md — §3 — Agent-facing findings (round 2)
+        shared terms: ['hierarchy', 'panel', 'review']
+
+  [  3] docs/notes/audits/programme-audit/2026-08-05-claim-alignment/04-misleading.md — §4 — MISLEADING (not agent-facing)
+        shared terms: ['front', 'panel', 'review']
+```
+
+Catalog-surface grep (sub-rule 8/10 attestation surfaces; `check_advisor_dedup.py` does not search `docs/adr/` or `docs/superpowers/`):
+
+```
+$ rg -n -i "persona hierarchy|persona-hierarchy|review panel" lab/CATALOG.md docs/briefs/INDEX.md docs/rejected_candidates.md
+(no matches)
+```
+
+**Judgment:** no prior owner exists on the three sub-rule 8/10 surfaces (`lab/CATALOG.md`, `docs/briefs/INDEX.md`, `docs/rejected_candidates.md`). The `[6]` GSUB-2 closure hit is a same-day *downstream consumer* of this ADR (it used the panel this ADR registers), not an existing owner that should have taken an addendum. The remaining score-3 hits share generic tokens (`back`/`panel`/`review`) with unrelated audits. The existing owners are this ADR itself (amend-in-place) and the design spec it registers (`docs/superpowers/specs/2026-08-18-loop-persona-hierarchy-design.md`). Nothing is re-derived.
+
 **Provenance note.** The underlying design was substantively ratified in-session on 2026-08-19 (design
 spec's own Ratification note — operator direct instruction, "Accepted on the design" / "Accepting the
 proposal") and partially implemented (persona roster + ownership map shipped; panel-mechanics Task 1
@@ -72,13 +116,18 @@ ADR does not re-litigate anything already ratified — it registers that same de
 the repo's own tier test says it belonged on.
 
 **Self-review note.** Before ratification, this ADR (and the code/docs it registers) went through a
-4-dimension adversarial review (32 agents: JS-logic, ADR-citation-accuracy, checker-logic,
-ground-truth-consistency reviewers, each independently skeptic-verified). It found and fixed: a real
-fail-open defect in the CRO hard-block (fires:false when CRO's own review agent failed, indistinguishable
-from a genuinely clean review), a misattributed ADR citation (D2 belongs to the three-loop-binding ADR,
-not the GRAND-tier ADR — corrected above), a §10 audit hook that could structurally never match
-CLAUDE.md, and several smaller staleness/accuracy gaps in this file and the design spec. None of the
-underlying decisions (D1–D5) changed; only citation accuracy and code robustness.
+4-dimension adversarial review (JS-logic, ADR-citation-accuracy, checker-logic,
+ground-truth-consistency reviewers, each independently skeptic-verified). Agent count was reported as
+32; that figure is as-reported — no workflow run ID or journal path was preserved in-tree (searched
+the authoring commit `5d11cf8`, PR #56 body, persona logs, and `docs/SESSIONS.md`; none carry a
+`wf_*` id for this review, unlike the sibling convention at
+[`docs/notes/audits/2026-08-18-strategy-generation-assumptions-sweep.md`](../notes/audits/2026-08-18-strategy-generation-assumptions-sweep.md)
+§0). It found and fixed: a real fail-open defect in the CRO hard-block (fires:false when CRO's own
+review agent failed, indistinguishable from a genuinely clean review), a misattributed ADR citation
+(D2 belongs to the three-loop-binding ADR, not the GRAND-tier ADR — corrected above), a §10 audit
+hook that could structurally never match CLAUDE.md, and several smaller staleness/accuracy gaps in
+this file and the design spec. None of the underlying decisions (D1–D5) changed; only citation
+accuracy and code robustness.
 
 ---
 
@@ -251,8 +300,8 @@ Read unqualified, that range would sweep in any section added later under the sa
 this ADR ratifies the design spec **as it stood at the ratification commit (`66410ed`)**, not as a
 live-updating range. A section added to the design spec after that commit under a §-number inside
 3–7 (e.g. `§6.6`, drafted afterward at `2dd34ae`) is **not** ratified by D1 and needs its own
-separate ratification before it governs anything — exactly the same rule the design spec's §11 open
-follow-up already applies to whether a future addition needs a formal ADR. This is a standing
+separate ratification before it governs anything — the same rule the design spec's §11 applied to
+whether *this* decision needed a formal ADR (now closed; this ADR is that resolution). This is a standing
 reading rule for this ADR going forward, not a one-time fix: **the "§§3–7" pointer in D1 means the
 2026-08-19 ratified content of those sections, not whatever they contain when a reader looks later.**
 
@@ -265,71 +314,35 @@ Status line and Change History, not a retroactive widening of what D1 itself cov
 
 ---
 
-## Addendum 2026-08-19 (later) — retroactive dedup-first attestation + self-review evidentiary status
+## Addendum 2026-08-19 (later) — self-review evidentiary status: the design spec's §6.6 claim, and D2
 
-**Does not amend §0–§6, §10, D1–D5, or the Ratification note.** Two corrections, both found by a
+**Does not amend §0–§6, §10, D1–D5, or the Ratification note.** Originally drafted broader, from a
 packet-wide adversarial review of the design spec (46 agents, 2026-08-19) that also covered this
-ADR via the operator's `extraContext` flag on that run.
+ADR. **Narrowed on merge** with a parallel fix (PR #59, `cursor/persona-hierarchy-spec-staleness-
+1583`) that landed on `main` first and already covers most of the same ground directly in §0 above:
+a retroactive Rule 8 sub-rule 10 dedup-first attestation (executed via `check_advisor_dedup.py`,
+more rigorous than this addendum's own manual grep would have been) and a softened "32 agents"
+figure on this ADR's own ratification self-review. That fix is kept as-is rather than duplicated
+here. What it did **not** reach — a *different* self-review event, and D2 — is what this addendum
+still covers.
 
-### A. Retroactive dedup-first / amend-before-mint attestation (Rule 8 sub-rule 10)
-
-This ADR minted 2026-08-19 with no pasted search output naming an existing owner or stating none
-exists — a real gap under `docs/operational_rules.md` Rule 8 sub-rule 10 ("paste search output...
-or state none exists; attestation without executed output is void, same standard as sub-rule 8").
-The same-day §6.6 panel review had already found and logged this gap as a CONCERN/NIT (design spec
-Change History, the row covering `wf_88c21d8d-a7f`); the packet-wide review re-raised it with a
-disputed BLOCKER/CONCERN severity call between its two independent skeptics. Rather than adjudicate
-that dispute, this addendum cures the underlying gap directly — the search Rule 8 sub-rule 10 asks
-for, executed now:
-
-```bash
-$ grep -n "persona" docs/adr/2026-05-28-audit-doc-generation-doctrine.md docs/adr/2026-07-14-cc-cursor-surface-allocation.md docs/adr/2026-08-07-w6-rail-infra-closures.md
-docs/adr/2026-05-28-audit-doc-generation-doctrine.md:32: ...personal Pine knowledge...
-docs/adr/2026-05-28-audit-doc-generation-doctrine.md:57: ...personal Pine knowledge...
-docs/adr/2026-07-14-cc-cursor-surface-allocation.md:175: ...a personal desktop...
-docs/adr/2026-08-07-w6-rail-infra-closures.md:37: ...not a personal desktop...
-# All four hits are substring matches on "personal," not "persona" as a decision topic -- false positives.
-
-$ grep -rln "review panel\|adversarial panel\|front.office\|back.office\|middle.office\|C-suite" docs/adr/*.md | grep -v "2026-08-19-loop-persona-hierarchy-review-panel.md"
-(no output)
-```
-
-**Result: none exists.** No prior ADR owns a front/middle/back-office review-panel mechanism, an
-adversarial-panel-shaped decision, or C-suite/office terminology as a topic — the four surface-level
-"persona" hits above are unrelated substring matches, not a competing owner. This ADR was correctly
-minted as a new sibling, not an addendum to an existing owner; the gap was that this attestation
-wasn't pasted at authoring time, not that the wrong call was made. Retroactively satisfies Rule 8
-sub-rule 10.
-
-### B. Self-review evidentiary status (§0's "Self-review note")
-
-§0's Self-review note above claims a "4-dimension adversarial review (32 agents...)" that "found
-and fixed" four named defects. The design spec's own Change History separately claims the §6.6
-subsection was reviewed by "44 agents, 6 lenses... workflow run `wf_88c21d8d-a7f`," disposition
-`BLOCKED` with "6 confirmed BLOCKERs," and a "targeted recheck (workflow `wf_8d2086b0-27d`)."
-
-The 2026-08-19 packet-wide review checked this directly, independently, on both skeptic passes: a
-repo-wide search for both workflow IDs returns hits only inside these two documents' own prose —
-no `journal.jsonl`, per-lens findings file, or persona-log entry anywhere records either run's
-actual output. The design spec's own Change History already self-admitted "unbacked agent-count
-metadata" as a known gap from that same run, without following through on what that admission
-implies for the claims sitting next to it.
-
-**What this addendum does and does not do.** It does not claim the reviews didn't happen — that
-would be an equally unverifiable claim in the other direction. What *is* independently checkable:
-the specific content changes those claims describe landed as real, inspectable commits —
-`eba0701` ("§6.6 panel found BLOCKED -- 6 confirmed BLOCKERs, fixed"), `8e19126` ("targeted
-recheck confirmed fix 3 still open; redesign it"), `bc8d828` ("§6.6 cross-examination round
-Proposed -> Accepted") — each with a real diff matching its message, confirmed via `git log`.
-The specific claims that are *not* independently checkable, and should be read accordingly going
-forward, are the numeric scale (32 agents, 44 agents) and the workflow run IDs themselves.
-**Disposition: downgrade the framing from "a scored N-agent panel verdict" to "an editorial
-self-review pass of unconfirmed scale/mechanism, whose resulting content changes are
-independently verifiable in the commit history."** This does not reopen §6.6's `Accepted` status
-(Joshua ratified it directly, "ratify now" — a separate, sufficient authority channel under D5
-that never depended on the self-review's scale claims being true) or retroactively invalidate any
-of the content fixes the self-review produced (those stand on their own merits, checkable in the
-diff, independent of how the review that found them is described).
+**The design spec's own §6.6 Change History claims a "44 agents, 6 lenses... workflow run
+`wf_88c21d8d-a7f`," disposition `BLOCKED`, "6 confirmed BLOCKERs," and a "targeted recheck
+(workflow `wf_8d2086b0-27d`)"** — a separate review, of the §6.6 subsection specifically, distinct
+from this ADR's own "32 agents" ratification self-review that PR #59 already addressed. A
+repo-wide search for both workflow IDs returns hits only inside the design spec's own prose — no
+`journal.jsonl`, per-lens findings file, or persona-log entry anywhere records either run's actual
+output. What *is* independently checkable: the specific content changes those claims describe
+landed as real, inspectable commits — `eba0701` ("§6.6 panel found BLOCKED -- 6 confirmed
+BLOCKERs, fixed"), `8e19126` ("targeted recheck confirmed fix 3 still open; redesign it"),
+`bc8d828` ("§6.6 cross-examination round Proposed -> Accepted") — each with a real diff matching
+its message, confirmed via `git log`. **Disposition: downgrade the framing from "a scored N-agent
+panel verdict" to "an editorial self-review pass of unconfirmed scale/mechanism, whose resulting
+content changes are independently verifiable in the commit history."** This does not reopen §6.6's
+`Accepted` status (Joshua ratified it directly, "ratify now" — a separate, sufficient authority
+channel under D5 that never depended on the self-review's scale claims being true) or retroactively
+invalidate any of the content fixes the self-review produced (those stand on their own merits,
+checkable in the diff, independent of how the review that found them is described).
 
 **Same gap, same fix, for D2 above.** D2's "verified via a live regression run, 2026-08-19" claim
 has the identical evidentiary shape — no test log or session record anywhere shows this run
@@ -358,4 +371,5 @@ python scripts/check_adr_graph.py
 | 2026-08-19 | Self-review pass (32-agent, 4-dimension adversarial review, see §0 Self-review note): corrected D2's misattribution (three-loop-binding ADR, not GRAND ADR), fixed the §10 CRO-invariant grep that could never match CLAUDE.md, softened §4's unsupported "kept in sync by audit hook" claim, refreshed §0's design-spec and workflow-JS anchors past their own initial staleness, clarified D3's new-gate-vs-no-new-authority distinction. Same review also fixed a real fail-open CRO hard-block defect in the workflow JS itself (commit 84a941a) and a BLOCKER-undercount in the design spec's §13 (commit 47e3421) — logged there, not here, since neither is this ADR's own content. | Claude Code |
 | 2026-08-19 | Ratified `Proposed` → `Accepted` (operator in-session instruction, "ratify the ADR"; Ratification note populated). §6 ACCEPTED downstream updates landed same commit: `CLAUDE.md` standing-decision pointer row, `docs/adr/INDEX.md` regenerated, design spec cross-reference addendum. | Joshua + Claude Code |
 | 2026-08-19 | Addendum added — D1's "§§3–7" design-spec pointer clarified as a snapshot at ratification, not a live range, so a later same-numbered addition (§6.6) isn't read as already-ratified. Found by the §6.6 pre-ratification adversarial panel (44 agents, 6 lenses, workflow run `wf_88c21d8d-a7f`). | Claude Code |
-| 2026-08-19 | Addendum added — two corrections from a packet-wide adversarial review (46 agents) of the design spec that also covered this ADR: (A) retroactive dedup-first/amend-before-mint attestation for Rule 8 sub-rule 10, curing a real gap rather than adjudicating the review's own disputed BLOCKER/CONCERN severity call on it -- executed search pasted, result "none exists." (B) §0's Self-review note and D2's regression-run claim both cite specific run mechanics (agent counts, workflow IDs) with no recoverable artifact anywhere in the repo -- downgraded in framing to "editorial pass, unconfirmed scale" while leaving the underlying, independently-checkable content changes (real commits, verified via `git log`) untouched. Neither correction reopens §6.6's `Accepted` status or D1-D5. | Claude Code (drafted at operator request, following this file's own prior-addendum precedent -- correction/clarification, no re-litigation, no fresh ratification act required) |
+| 2026-08-19 | Backfilled Rule 8 sub-rule 10 dedup-first attestation into §0 (omitted at original authoring; in force since 2026-08-15). Marked the Self-review "32 agents" figure as-reported — run artifacts were not preserved. Found by the 2026-08-19 §6.6 adversarial panel (`wf_88c21d8d-a7f`) as a pre-existing regression, not caused by §6.6. | Claude Code (PR #59, `cursor/persona-hierarchy-spec-staleness-1583`) |
+| 2026-08-19 | Addendum added — self-review evidentiary status for the design spec's *separate* §6.6 self-review claim ("44 agents... workflow run `wf_88c21d8d-a7f`," "6 confirmed BLOCKERs") and D2's "live regression run" claim, both with no recoverable artifact anywhere in the repo — downgraded in framing to "editorial pass, unconfirmed scale" while leaving the underlying, independently-checkable content changes (real commits, verified via `git log`) untouched. Originally drafted broader, from a packet-wide adversarial review (46 agents) of the design spec that also covered this ADR; narrowed on merge with the parallel PR #59 fix above, which already covers this ADR's own dedup gap and ratification self-review — not duplicated here. Neither correction reopens §6.6's `Accepted` status or D1-D5. | Claude Code (drafted at operator request, following this file's own prior-addendum precedent — correction/clarification, no re-litigation, no fresh ratification act required) |
