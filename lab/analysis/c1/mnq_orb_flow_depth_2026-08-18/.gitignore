@@ -1,0 +1,9 @@
+# Vendor-derived MBP-10 quote windows (Databento GLBX, redistribution-restricted).
+# No pull script in this packet — listed so a later accident cannot commit them.
+quotes.parquet
+_quotes_partial.parquet
+# Derived event set. Rebuildable from the parent camp's free 1m panel.
+events.parquet
+__pycache__/
+*.pyc
+.pytest_cache/
