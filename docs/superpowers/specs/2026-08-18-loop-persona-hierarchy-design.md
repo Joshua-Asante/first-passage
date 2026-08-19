@@ -262,13 +262,28 @@ Full findings live in this session's research; key points repeated here since th
 
 ## 10. Testing — the built-in falsifier
 
-Matching how every other doctrine artifact in this repo is written (see the GRAND ADR's own §4 test
-on GSUB-1): **if, across the first several real GRAND/STRATEGIC uses, panel input never changes a
-ratified outcome from what Joshua would have decided solo, that is the signal this is ceremonial
-rather than load-bearing**, and the mechanism should be revisited rather than kept on faith. A
-secondary, mechanically-checkable signal: dissent preserved in a persona's log should always appear
-in the corresponding synthesis memo — a drift between the two (dissent logged but silently smoothed
-in synthesis) is a defect in the mechanism, not a judgment call.
+*(Restructured 2026-08-19 with explicit H:/Falsifier:/Trigger-check-schedule tokens — see change
+history. The original prose claimed parity with the GRAND ADR's own §4 discipline without actually
+reproducing its structure.)*
+
+**H:** Across the first 3 real (non-rehearsal) GRAND or STRATEGIC panel uses, at least one panel run
+changes what Joshua would have ratified without it — a confirmed BLOCKER, a CRO hard-block, or a
+preserved dissent that alters the disposition from what a single-voice recommendation would have
+produced.
+
+**Falsifier:** 3 consecutive real panel uses that each produce zero decision-difference (the
+synthesis's disposition matches what Joshua's own unassisted read would have concluded) falsifies
+the panel as load-bearing. Disposition on falsification: demote to a lighter, non-panel review path
+via a superseding record — never silent retention on faith.
+
+**Trigger check schedule:** at the 3rd real panel use, or the next quarterly programme-audit gate
+(2026-11-08), whichever comes first — matching how the GRAND ADR's own §4 test on GSUB-1 is read at
+the same cadence, rather than inventing a new one.
+
+A secondary, mechanically-checkable signal, independent of the H/Falsifier above: dissent preserved
+in a persona's log should always appear in the corresponding synthesis memo — a drift between the
+two (dissent logged but silently smoothed in synthesis) is a defect in the mechanism, not a judgment
+call, and should be treated as a bug report regardless of where the H/Falsifier trajectory stands.
 
 ## 11. Open follow-ups (not decided by this spec)
 
@@ -294,3 +309,4 @@ history.
 | 2026-08-19 | §5.1 CFO row corrected: Survive bound was mischaracterized as "capital-denominated," contradicting `docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md` (concurrency-denominated). Same fix applied to `docs/personas/cfo.md` and the Phase 1 plan's embedded copy. | Claude Code |
 | 2026-08-19 | §9 title-grounding bullet softened: dropped unscored "direct match" / "roughly a third (5-6)" verdicts with no attached research artifact; flagged the Risk Analyst (Intraday) row's "verbatim" Topstep quote as not surviving independent adversarial re-check. Same fix applied to `docs/personas/risk-analyst-intraday.md` and the Phase 1 plan's embedded copy. | Claude Code |
 | 2026-08-19 | §9 gained an "Organizational depth" bullet. §3 and §8 both cited "(§9)" as the source for the "three levels, not four" architectural decision, but §9 never actually carried that research — the citation pointer resolved to an empty set. | Claude Code |
+| 2026-08-19 | §10 restructured with explicit `H:`/`Falsifier:`/`Trigger check schedule:` tokens (N=3, dated to the 2026-11-08 quarterly gate). The prior prose claimed to match the GRAND ADR's own §4 discipline without reproducing its structure. | Claude Code |
