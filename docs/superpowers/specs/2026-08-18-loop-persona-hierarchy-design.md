@@ -497,6 +497,29 @@ demonstrated need. Any note this check produces is tagged the same way the exist
 yes` convention already tags non-counting entries (§13), so a future reader of
 `docs/personas/*-log.md` never mistakes this diagnostic for part of the real §10 N=3 count.
 
+### 10.2 Self-consistency companion checkpoint (added 2026-08-19)
+
+A distinct, earlier, and cheaper comparison point than the H/Falsifier above — sourced from 2026
+research finding automatically-designed multi-agent systems can underperform a single agent's
+Chain-of-Thought with Self-Consistency (the same agent sampled N times, majority vote), at a
+fraction of the compute cost.
+
+**Check.** On the first 1-2 real GRAND-tier reviews, alongside the real panel run, separately spawn
+3 same-persona samples of the CRO build prompt (already defined at `PERSONAS.find(p => p.key ===
+'cro').build()` in `.claude/workflows/pre-ratification-adversarial-panel.js`) via a plain
+`parallel()` call, majority-vote their `clean`/`findings` output, and compare against what the CRO
+seat produced inside the real panel run. No change to the ratified workflow file is needed — this
+runs alongside it, as an ad hoc side call, not inside it.
+
+**Explicitly a different H′, not a substitute measurement.** The §10 falsifier above is anchored to
+human ground truth ("changes what Joshua would have ratified"). Self-consistency-vs-panel agreement
+is AI-vs-AI — a panel could match the self-consistency baseline 100% of the time and still change
+what Joshua would have ratified, or diverge sharply and still match his actual call. This checkpoint
+is a supplementary, non-counting diagnostic, logged with the same explicit non-counting tag §13's
+rehearsal entries already use (e.g. `**Self-consistency checkpoint:** yes -- N=3 same-persona
+resample compared against full panel verdict; distinct H′, does not count toward §10's N=3`) —
+never folded silently into the real falsifier count.
+
 ## 11. Open follow-ups (not decided by this spec)
 
 - Whether this should also be ratified as a **formal ADR**, per the repo's existing brief-authoring
@@ -557,6 +580,7 @@ history.
 | 2026-08-19 | §14 added -- a one-time MAST pre-mortem procedure (arXiv:2503.13657, Cemri et al., NeurIPS 2025), checking the panel's own review PROCESS rather than §10's outcome-only measure. Read the full 14-mode taxonomy (previously only the 3-category summary was known); scoped down to the 9 modes actually reachable given this panel's fan-out, single-shot-call architecture (never a conversing multi-agent system), naming and excluding the other 4 (loss of conversation history, unaware of termination conditions, conversation reset, fail to ask for clarification) as architecturally inapplicable rather than silently dropping them. Run once per real panel use (not rehearsal-inclusive, not a standing recurring gate) against `journal.jsonl`; no new persona minted, extends Head of Governance's existing mandate if a standing owner is ever needed. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
 | 2026-08-19 | §9 gained an "Architectural correlation" bullet, and §6.2 gained a one-line cross-reference to it: fresh-context spawning (already built) prevents contextual contamination but not architectural correlation between personas that likely share one model family's blind spots and sycophancy pull, per 2025-2026 LLM-judge-collusion literature. No mitigation proposed -- documentation only, so "fresh subagents" is never silently read as having solved a risk it only partially addresses. Smallest item on the docket: no code, no new structure, no forward obligation. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
 | 2026-08-19 | §6.3 gained a drafted-not-wired-in extension: a deterministic `flagIndependentDissent`-shaped mechanic (diverging severity + non-matching `location` between two personas' findings) sketched as the frozen spec for a future synthesis-prompt addition, explicitly held until §10's N=3 falsifier clears (currently 1/3 -- GSUB-2). No code touched `.claude/workflows/pre-ratification-adversarial-panel.js` in this commit; the paragraph is the spec, not the patch. Narrowed from an earlier trained-classifier proposal to this purely syntactic, deterministic form specifically so it doesn't reopen the CRO hard-block's status as the sole non-advisory dissent case. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
+| 2026-08-19 | §10.2 added -- self-consistency companion checkpoint, a distinct H′ from the main §10 falsifier. Sourced from a 2026 benchmark finding automatically-designed multi-agent systems can underperform a single agent's Chain-of-Thought self-consistency at a fraction of the cost. Check: on the first 1-2 real GRAND reviews, spawn 3 extra same-persona CRO samples alongside the real run and compare majority-vote agreement -- an AI-vs-AI measurement, explicitly distinct from and not a substitute for the human-ground-truth §10 falsifier. No workflow-file code change; runs as an ad hoc side call. Non-counting, tagged the same way §13's rehearsal entries already are. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
 
 ## 12. Post-workflow log-append procedure (added during Phase 2 implementation; template extended
 2026-08-19 -- see Change History)
