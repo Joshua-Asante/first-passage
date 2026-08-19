@@ -216,6 +216,24 @@ authority.
 
 Everything else stays fully advisory. Joshua decides, always.
 
+**Drafted, not wired in (added 2026-08-19).** A deterministic extension to synthesis, sketched here
+for review and intentionally not yet active: for every pair of personas' non-NIT findings, flag
+where `severity` diverges (one flags BLOCKER/CONCERN, another says clean) **and** their `location`
+fields are an exact non-match — a purely syntactic proxy for "independently-sourced" dissent, no
+fuzzy topic-matching. Where it fires, inject a line into the synthesis prompt (mirroring how
+`hardBlockLine` is already injected today for the CRO hard-block above) instructing the synthesis
+pass to surface that finding prominently as independently-sourced dissent, never average it into
+general disagreement. This sharpens the "dissent preserved verbatim" rule above with a concrete
+escalation signal, without reopening the CRO hard-block's status as the *only* case where a dissent
+is elevated above uniform advisory status.
+
+**Held, explicitly, until the first real N=3 data point lands (§10) — currently 1/3 banked
+(GSUB-2, §13 addendum).** Wiring this into the live
+`.claude/workflows/pre-ratification-adversarial-panel.js` before the base mechanism itself has
+cleared its own falsifier gate would layer new analytical machinery onto a mechanism still on
+probation. This paragraph is the frozen spec for that future patch, not the patch itself — no code
+changes accompany this addition.
+
 ### 6.4 Persona memory
 
 One markdown file per persona (`docs/personas/<role-slug>-log.md`), append-only — matching how
@@ -538,6 +556,7 @@ history.
 | 2026-08-19 | §10.1 added -- preference-anchoring companion check, a distinct H′ from the main §10 falsifier. Sourced from 2026 research on stateful personal agents (durable-memory agreement-bias/failure-rate escalation on repeated retrieval) applied to the fact that persona memory (§6.4) is exactly the durable, read-before-every-spawn condition that research names as the trigger. Check: at every 5th real log entry, watch for agreement-rate-rising AND findings-count-falling *together*, not agreement alone. Manual/periodic, not automated tooling; non-counting, tagged the same way §13's rehearsal entries already are. Dispatch-eligibility checked against the surface-allocation ADR before authoring, same test as the row above -- stayed off Cursor. | Claude Code |
 | 2026-08-19 | §14 added -- a one-time MAST pre-mortem procedure (arXiv:2503.13657, Cemri et al., NeurIPS 2025), checking the panel's own review PROCESS rather than §10's outcome-only measure. Read the full 14-mode taxonomy (previously only the 3-category summary was known); scoped down to the 9 modes actually reachable given this panel's fan-out, single-shot-call architecture (never a conversing multi-agent system), naming and excluding the other 4 (loss of conversation history, unaware of termination conditions, conversation reset, fail to ask for clarification) as architecturally inapplicable rather than silently dropping them. Run once per real panel use (not rehearsal-inclusive, not a standing recurring gate) against `journal.jsonl`; no new persona minted, extends Head of Governance's existing mandate if a standing owner is ever needed. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
 | 2026-08-19 | §9 gained an "Architectural correlation" bullet, and §6.2 gained a one-line cross-reference to it: fresh-context spawning (already built) prevents contextual contamination but not architectural correlation between personas that likely share one model family's blind spots and sycophancy pull, per 2025-2026 LLM-judge-collusion literature. No mitigation proposed -- documentation only, so "fresh subagents" is never silently read as having solved a risk it only partially addresses. Smallest item on the docket: no code, no new structure, no forward obligation. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
+| 2026-08-19 | §6.3 gained a drafted-not-wired-in extension: a deterministic `flagIndependentDissent`-shaped mechanic (diverging severity + non-matching `location` between two personas' findings) sketched as the frozen spec for a future synthesis-prompt addition, explicitly held until §10's N=3 falsifier clears (currently 1/3 -- GSUB-2). No code touched `.claude/workflows/pre-ratification-adversarial-panel.js` in this commit; the paragraph is the spec, not the patch. Narrowed from an earlier trained-classifier proposal to this purely syntactic, deterministic form specifically so it doesn't reopen the CRO hard-block's status as the sole non-advisory dissent case. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
 
 ## 12. Post-workflow log-append procedure (added during Phase 2 implementation; template extended
 2026-08-19 -- see Change History)
