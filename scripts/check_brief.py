@@ -45,7 +45,10 @@ discipline stacks):
   adr / brief   — §0, §1, §4, §5, §6, §10   (the six general checks)
   handoff       — §0, §1, §4, §5, §6, §10   plus §0.5 and the §6 status taxonomy
   generic       — same as adr/brief; used when --type is omitted and inference
-                  finds no stronger signal.
+                  finds no stronger signal. Header `**Loop:** Inquire-…` /
+                  `**Type:** Inquire-…` wins over body §0.5 / spawn-taxonomy
+                  sniffing (those sections are copied into CC-handoff-ready
+                  Inquire briefs and are not a `--type handoff` signal).
 
 Relationship to the skill-side checker (CANONICAL):
   The authoritative brief-discipline checker is skill-side —
@@ -207,14 +210,23 @@ _UNMODELED_CONTRACT_TYPES = frozenset({"lock", "notice", "lesson", "audit"})
 _LIGHT_TIER_RE = re.compile(r"^\*\*Tier:\*\*\s*light\b", re.IGNORECASE | re.MULTILINE)
 
 
+def _header_block(text: str) -> str:
+    """Return the markdown header (everything before the first `## ` heading).
+
+    Shared by light-tier detection and type inference so a later prose mention
+    of a header field cannot flip either classification."""
+    return re.split(r"^## ", text, maxsplit=1, flags=re.MULTILINE)[0]
+
+
 def is_light_tier(text: str) -> bool:
     """True if this artifact declares itself a light-tier decision record.
 
     Only the header region counts — the boundary is the first `## ` heading, so
     a later prose mention of `**Tier:** light` (e.g. an ADR *about* the tiering
     convention quoting it) is not miscounted as a self-declaration."""
-    head = re.split(r"^## ", text, maxsplit=1, flags=re.MULTILINE)[0]
-    return bool(_LIGHT_TIER_RE.search(head))
+    return bool(_LIGHT_TIER_RE.search(_header_block(text)))
+
+
 # Every value the CLI / callers may pass.
 ACCEPTED_TYPES = _INTERNAL_TYPES + tuple(_TYPE_ALIASES)
 
@@ -437,19 +449,78 @@ def _check_handoff_extras(sections: dict[str, str]) -> list[Violation]:
 
 # ── Type inference ─────────────────────────────────────────────
 
+# House header fields that declare the artifact's own type. Header-scoped so a
+# later prose mention ("when spawned as a CC handoff") cannot flip inference.
+# `Loop-of-Record` is a different field — the colon must follow `Loop` immediately.
+_HEADER_FIELD_RE = re.compile(
+    r"^\*\*(Loop|Brief type|Type):\*\*\s*(.+)$",
+    re.IGNORECASE | re.MULTILINE,
+)
+# Inquire self-declaration at the START of the field value. "N/A — blocked
+# before the Inquire-phase" must not match.
+_INQUIRE_DECL_RE = re.compile(
+    r"^\s*inquire(?:-style|-phase|-light)?\b",
+    re.IGNORECASE,
+)
+# "…brief, CC-handoff-ready" is still an Inquire-style brief (spawnable), not
+# a CC-handoff. Matches the GSUB-1 house line.
+_HANDOFF_READY_BRIEF_RE = re.compile(
+    r"\bbrief,\s*cc-handoff-ready\b",
+    re.IGNORECASE,
+)
+# Genuine CC/Cursor handoff self-declaration. `(?!-ready)` keeps
+# "CC-handoff-ready" (the Inquire-style qualifier) from counting.
+_HANDOFF_DECL_RE = re.compile(
+    r"\b(?:cc[/\s-]*cursor|cursor|cc)[\s-]+handoff\b(?!-ready)",
+    re.IGNORECASE,
+)
+
+
+def _declared_type_from_header(text: str) -> str | None:
+    """Return an internal type if the header self-declares one, else None.
+
+    Inquire-style / Inquire-phase / Inquire-light (and the
+    `brief, CC-handoff-ready` qualifier) win over a CC-handoff declaration on
+    another header line, because CC-handoff-ready Inquire briefs are still
+    Inquire briefs — they copy §0.5 / spawn-taxonomy language without being
+    `--type handoff` artifacts.
+    """
+    head = _header_block(text)
+    saw_handoff = False
+    for m in _HEADER_FIELD_RE.finditer(head):
+        value = m.group(2)
+        if _INQUIRE_DECL_RE.match(value) or _HANDOFF_READY_BRIEF_RE.search(value):
+            return "brief"
+        if _HANDOFF_DECL_RE.search(value):
+            saw_handoff = True
+    if saw_handoff:
+        return "handoff"
+    return None
+
+
 def infer_type(path: Path, text: str) -> str:
     """Best-effort brief-type inference when --type is omitted.
 
-    Signals (cheap, conservative — default to 'generic' on no signal):
-      - a §0.5 section or the four-state status taxonomy ⇒ handoff
-      - filename / first heading mentioning 'ADR' ⇒ adr
+    Precedence (first match wins):
+      1. Header self-declaration (`**Loop:**` / `**Brief type:**` / `**Type:**`).
+         An Inquire-style / Inquire-phase line is authoritative even when the
+         body also has §0.5 or the four-state spawn taxonomy (those sections
+         are copied into CC-handoff-ready Inquire briefs; treating them as
+         `--type handoff` is a FORM false-positive).
+      2. Filename containing handoff / cc-handoff / spawn ⇒ handoff
+      3. A §0.5 section or the four-state status taxonomy anywhere ⇒ handoff
+      4. Filename / first heading mentioning ADR ⇒ adr
+      5. generic (no stronger signal)
     """
-    head = text[:400].lower()
+    declared = _declared_type_from_header(text)
+    if declared is not None:
+        return declared
     name = path.name.lower()
-    if "0.5" in split_sections(text) or all(t in text for t in _HANDOFF_STATUS_TOKENS):
-        return "handoff"
     if "handoff" in name or "cc-handoff" in name or "spawn" in name:
         return "handoff"
+    if "0.5" in split_sections(text) or all(t in text for t in _HANDOFF_STATUS_TOKENS):
+        return "handoff"
+    head = text[:400].lower()
     if name.startswith("adr") or "adr" in name or re.search(r"^#\s*adr\b", head):
         return "adr"
     return "generic"
@@ -514,7 +585,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="brief type: internal {adr,brief,handoff,generic} or a "
                              "skill-side name {cc_handoff,inquire,lock,notice,lesson,"
                              "audit} (mapped to the closest internal type). "
-                             "Default: infer from content/filename.")
+                             "Default: infer from header Loop/Type, then "
+                             "filename/content.")
     args = parser.parse_args(argv)
 
     if not args.brief.exists():
