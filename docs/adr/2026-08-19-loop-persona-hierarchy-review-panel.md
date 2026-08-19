@@ -8,9 +8,11 @@
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Related:** [three-loop binding](2026-06-12-three-loop-methodology-binding.md) (`Accepted` — extended one
-tier of *scope*, not amended; same pattern the GRAND ADR itself used) ·
+tier of *scope*, not amended; same pattern the GRAND ADR itself used; also the ADR whose own D2 defines
+the three Delete-execution channels this ADR's "strict-D2 STRATEGIC-tier Deletes" trigger scope refers
+to) ·
 [GRAND tier](2026-08-09-grand-tier-quintessentials-binding.md) (`Accepted` — this ADR's panel reviews
-GRAND-tier ratifications and strict-D2 STRATEGIC-tier Deletes, per that ADR's own §2.6/D2) ·
+GRAND-tier ratifications, per that ADR's own §2.6 cadence) ·
 [ceremony tiering](2026-08-08-adr-ceremony-tiering.md) (limb-4 fires — see §0; this ADR's own tier
 justification) · [design spec](../superpowers/specs/2026-08-18-loop-persona-hierarchy-design.md) (the
 content of record — this ADR is a pointer-tier registration, not a retelling, per CLAUDE.md's own
@@ -24,15 +26,19 @@ governance-of-what-governs, the same LoR class as the three-loop binding ADR's o
 
 ## §0 — Rule 0 reads (this worktree, 2026-08-19)
 
-- Design spec — `docs/superpowers/specs/2026-08-18-loop-persona-hierarchy-design.md` — anchor `ca01be3`
+- Design spec — `docs/superpowers/specs/2026-08-18-loop-persona-hierarchy-design.md` — anchor `47e3421`
   2026-08-19 (post-ratification, all 4 confirmed BLOCKERs + 6 CONCERNs from its own adversarial review
-  already fixed; Status `Accepted`).
+  already fixed; Status `Accepted`; §12/§13 added and the §13 rehearsal-count corrected during this
+  ADR's own adversarial review).
 - Three-loop binding ADR — `docs/adr/2026-06-12-three-loop-methodology-binding.md` — anchor `027a729`
-  2026-08-14. D1 binds OODA=INNER / INQHIORI=OUTER / Algorithm=STRATEGIC; this ADR's panel sits above
-  that binding, not inside it.
+  2026-08-14. D1 binds OODA=INNER / INQHIORI=OUTER / Algorithm=STRATEGIC; D2 defines the three
+  Delete-execution channels (programme-audit cadence / fired stopping rule / explicit owner
+  adjudication) that this ADR's "strict-D2 STRATEGIC-tier Deletes" trigger scope refers to; this ADR's
+  panel sits above that binding, not inside it.
 - GRAND tier ADR — `docs/adr/2026-08-09-grand-tier-quintessentials-binding.md` — anchor `57d355e`
-  2026-08-19. §2.6 cadence and D2's three Delete-execution channels are what this ADR's panel-trigger
-  scope (§2 D1 below) is built against.
+  2026-08-19. §2.6's cadence (binds GRAND review to the existing quarterly programme-audit gate) is
+  what this ADR's panel-trigger scope (§2 D1 below) additionally builds against for the GRAND-tier half
+  of that scope.
 - Ceremony-tiering ADR — `docs/adr/2026-08-08-adr-ceremony-tiering.md` — anchor `91e6caa` 2026-08-15.
   **Tier test applied directly:** limb 1 (spends K/money) — no, $0/K=0. Limb 2 (touches a live-risk
   surface) — arguable but not decisive: the CRO hard-block (design spec §6.3) references but does not
@@ -45,9 +51,12 @@ governance-of-what-governs, the same LoR class as the three-loop binding ADR's o
   **full-tier**, not light.
 - CLAUDE.md — anchor `d88e5f2` 2026-08-15. §Standing decision table has no row for this decision as of
   this anchor — the gap this ADR closes.
-- `.claude/workflows/pre-ratification-adversarial-panel.js` — anchor `35b2a31` 2026-08-18. The
-  existing mechanism this decision extends (persona-mode input branch already landed; lens/synthesis
-  wiring not yet built — see design spec §11 and the panel-mechanics plan).
+- `.claude/workflows/pre-ratification-adversarial-panel.js` — anchor `84a941a` 2026-08-19. The
+  existing mechanism this decision extends. Persona-mode input branch, persona-driven lens list, the
+  CRO safety-invariant hard block, and the frozen-artifact precondition gate are all now built and
+  wired into run/synthesis/return (panel-mechanics plan, all 3 tasks); a live GRAND-tier rehearsal has
+  already run against the closed GSUB-1 inventory (design spec §13) and this ADR's own adversarial
+  review (§0 note below) found and fixed a real fail-open defect in the CRO hard-block before merge.
 - `docs/personas/INDEX.md` — anchor `c0a30b8` 2026-08-19. The 19-file roster this ADR registers as
   doctrine already exists on disk.
 - `docs/rule_0.md` — anchor `027a729` 2026-08-14.
@@ -60,6 +69,15 @@ was doctrine-shaped from the start (ceremony-tiering limb 4), but was ratified o
 `docs/superpowers/specs/` surface, which CLAUDE.md's own standing-decision table never points to. This
 ADR does not re-litigate anything already ratified — it registers that same decision on the surface
 the repo's own tier test says it belonged on.
+
+**Self-review note.** Before ratification, this ADR (and the code/docs it registers) went through a
+4-dimension adversarial review (32 agents: JS-logic, ADR-citation-accuracy, checker-logic,
+ground-truth-consistency reviewers, each independently skeptic-verified). It found and fixed: a real
+fail-open defect in the CRO hard-block (fires:false when CRO's own review agent failed, indistinguishable
+from a genuinely clean review), a misattributed ADR citation (D2 belongs to the three-loop-binding ADR,
+not the GRAND-tier ADR — corrected above), a §10 audit hook that could structurally never match
+CLAUDE.md, and several smaller staleness/accuracy gaps in this file and the design spec. None of the
+underlying decisions (D1–D5) changed; only citation accuracy and code robustness.
 
 ---
 
@@ -91,7 +109,11 @@ existing non-persona-mode caller is unaffected (verified via a live regression r
 **D3 — The CRO safety-invariant hard-block restates existing doctrine; it grants no new authority.** A
 CRO dissent citing a CLAUDE.md non-negotiable (`dry_run`/M1/`armed_until`) is a hard block on panel
 synthesis (design spec §6.3) — this is the existing non-negotiable set, mechanically enforced one layer
-earlier in the review chain, not a new AI power to overrule the operator.
+earlier in the review chain, not a new AI power to overrule the operator. Two distinct claims, not one:
+the *procedural gate* (checking for this citation before synthesis, in code) is novel — this is exactly
+what §0's limb-4 firing is about — while the *underlying safety invariant it enforces* is not novel and
+grants no new authority. A new gate over an old rule is still governance-of-what-governs, not new
+substantive power.
 
 **D4 — The repo's contents are divided among the roster.** `docs/personas/ownership-map.md`
 (directory skeleton + all 38 `docs/pursuits/` records classified) gives every future decision or new
@@ -128,8 +150,8 @@ superseding record — never silent retention.
 **Trigger check schedule:** at the 3rd real panel use, or the next quarterly programme-audit gate
 (2026-11-08), whichever comes first — same cadence the GRAND ADR's own §4 re-read uses, not a new one.
 
-*(Restated compactly from design spec §10, which is the canonical, fuller version — kept in sync by
-the audit hook in §10 below.)*
+*(Restated compactly from design spec §10, which is the canonical, fuller version — manually kept in
+sync at authoring time; re-check both on any future edit to either document's falsifier terms.)*
 
 ---
 
@@ -177,12 +199,15 @@ python scripts/check_brief.py docs/adr/2026-08-19-loop-persona-hierarchy-review-
 python scripts/check_adr_graph.py
 
 # Rule-0 anchor spot-check
-git log -1 -- docs/superpowers/specs/2026-08-18-loop-persona-hierarchy-design.md   # expect ca01be3 or later
-git log -1 -- .claude/workflows/pre-ratification-adversarial-panel.js             # expect 35b2a31 or later
+git log -1 -- docs/superpowers/specs/2026-08-18-loop-persona-hierarchy-design.md   # expect 47e3421 or later
+git log -1 -- .claude/workflows/pre-ratification-adversarial-panel.js             # expect 84a941a or later
 
-# CRO hard-block invariant text stays in sync between the design spec and CLAUDE.md
-# (mirrors the LOCKED-strategy-table recall-guard pattern in ops/recall/guard.py)
-grep -n "dry_run\|armed_until\|M1" CLAUDE.md docs/superpowers/specs/2026-08-18-loop-persona-hierarchy-design.md | grep -i "non-negotiable\|hard block"
+# CRO hard-block invariant text stays in sync between CLAUDE.md and the design spec --
+# two independent checks (a single-line grep pipeline can't span CLAUDE.md's own
+# heading-to-bullet structure, since the two required patterns land on different lines there;
+# mirrors the LOCKED-strategy-table recall-guard pattern in ops/recall/guard.py in spirit)
+grep -A5 "Safety invariants (non-negotiable)" CLAUDE.md | grep -q "dry_run\|armed_until\|M1" && echo "CLAUDE.md: safety invariants present"
+grep -A3 "non-negotiable" docs/superpowers/specs/2026-08-18-loop-persona-hierarchy-design.md | grep -q "dry_run\|armed_until\|M1" && echo "design spec §6.3: safety invariants cited"
 
 # Ownership map has no remaining unconfirmed rows
 grep -in "unconfirmed\|inferred by naming\|not yet run" docs/personas/ownership-map.md
@@ -211,3 +236,4 @@ python scripts/check_adr_graph.py
 | Date | Change | By |
 |---|---|---|
 | 2026-08-19 | Initial authoring — registers the already-ratified persona-hierarchy decision on the doctrine-tier surface the ceremony-tiering ADR's own limb-4 test says it belongs on | Claude Code (drafted at operator request, judged beneficial per the ceremony-tiering tier test — see §0) |
+| 2026-08-19 | Self-review pass (32-agent, 4-dimension adversarial review, see §0 Self-review note): corrected D2's misattribution (three-loop-binding ADR, not GRAND ADR), fixed the §10 CRO-invariant grep that could never match CLAUDE.md, softened §4's unsupported "kept in sync by audit hook" claim, refreshed §0's design-spec and workflow-JS anchors past their own initial staleness, clarified D3's new-gate-vs-no-new-authority distinction. Same review also fixed a real fail-open CRO hard-block defect in the workflow JS itself (commit 84a941a) and a BLOCKER-undercount in the design spec's §13 (commit 47e3421) — logged there, not here, since neither is this ADR's own content. | Claude Code |
