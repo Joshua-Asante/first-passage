@@ -108,6 +108,16 @@ const VERIFY_SCHEMA = {
   required: ['refuted', 'rationale'],
 }
 
+const PRECONDITION_SCHEMA = {
+  type: 'object',
+  properties: {
+    uncommittedChanges: { type: 'boolean', description: 'true if `git status --porcelain` shows any output for this path' },
+    hasCommitHistory: { type: 'boolean', description: 'true if `git log -1` for this path returns at least one commit' },
+    rawOutput: { type: 'string', description: 'the verbatim output of both commands' },
+  },
+  required: ['uncommittedChanges', 'hasCommitHistory', 'rawOutput'],
+}
+
 // ---- the six adversarial lenses ----------------------------------------
 
 const LENSES = [
@@ -301,9 +311,27 @@ const formCheckPromise = agent(
   { label: 'form-check', phase: 'Form Check', effort: 'low' }
 )
 
+if (personaMode) {
+  const precondition = await agent(
+    `Run exactly these two commands against the First Passage repo and report the results, nothing else: ` +
+      `(1) \`git status --porcelain -- ${targetPath}\` (2) \`git log -1 --oneline -- ${targetPath}\`. ` +
+      `Report whether command (1) produced any output (uncommittedChanges) and whether command (2) produced ` +
+      `at least one line (hasCommitHistory), plus the verbatim combined output.`,
+    { label: 'precondition-check', phase: 'Form Check', effort: 'low', schema: PRECONDITION_SCHEMA }
+  )
+  if (precondition.uncommittedChanges || !precondition.hasCommitHistory) {
+    throw new Error(
+      `pre-ratification-adversarial-panel persona mode requires ${targetPath} to be a frozen, committed ` +
+        `artifact (design spec §6.1) -- ${precondition.uncommittedChanges ? 'it has uncommitted changes' : 'it has no commit history'}. ` +
+        `Raw check output: ${precondition.rawOutput}. Commit the artifact first, then re-run.`
+    )
+  }
+}
+
 phase('Review')
+const activeLenses = personaMode ? PERSONAS : LENSES
 const lensResults = await pipeline(
-  LENSES,
+  activeLenses,
   (lens) => agent(lens.build(), { label: `review:${lens.key}`, phase: 'Review', schema: LENS_FINDINGS_SCHEMA }),
   (reviewResult, lens) => verifyLensFindings(reviewResult, lens)
 )
@@ -313,6 +341,16 @@ const formCheckResult = await formCheckPromise
 const confirmedCount = lensResults.reduce((n, r) => n + (r ? r.confirmed.length : 0), 0)
 const disputedCount = lensResults.reduce((n, r) => n + (r ? r.disputed.length : 0), 0)
 log(`Review+verify done: ${confirmedCount} confirmed, ${disputedCount} disputed findings across ${LENSES.length} lenses`)
+
+
+const hardBlock = personaMode ? croHardBlockFires(lensResults) : { fires: false, citing: [] }
+const hardBlockLine = hardBlock.fires
+  ? `\n\nCRO SAFETY-INVARIANT HARD BLOCK: CRO's review confirmed or disputed a finding citing a CLAUDE.md ` +
+    `non-negotiable safety invariant (dry_run/armed_until/M1-RESOLVED/arm-not-send). Per design spec §6.3, this ` +
+    `is a HARD BLOCK on synthesis -- state "Overall disposition: BLOCKED" at the top of your memo regardless of ` +
+    `what any other persona found, and do not let any other finding soften this. Citing finding(s): ` +
+    `${JSON.stringify(hardBlock.citing.map((c) => c.finding))}`
+  : ''
 
 phase('Synthesize')
 const synthesis = await agent(
@@ -339,10 +377,18 @@ const synthesis = await agent(
     `- Findings discarded on independent re-read, with why.\n` +
     `- Any NITs, listed briefly without much discussion.\n` +
     `- One closing line noting what the mechanical check_brief.py pass covers (FORM only) vs what this panel ` +
-    `additionally covers.`,
+    `additionally covers.${hardBlockLine}`,
   { label: 'synthesis', phase: 'Synthesize', effort: 'high' }
 )
 
 log(`Pre-ratification adversarial panel complete for ${targetPath}`)
 
-return { targetPath, formCheckResult, lensResults, synthesis }
+return {
+  targetPath,
+  formCheckResult,
+  lensResults,
+  synthesis,
+  personaMode,
+  personaSlugs: personaMode ? personaSlugs : undefined,
+  croHardBlock: personaMode ? hardBlock.fires : undefined,
+}
