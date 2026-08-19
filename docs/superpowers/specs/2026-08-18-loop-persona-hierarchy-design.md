@@ -36,32 +36,38 @@ design is a direct response to.
 This is an overlay. It does not touch:
 
 - **The 4-tier loop doctrine** (GRAND/STRATEGIC/OUTER/INNER) or its authority rules — the D-user-gate
-  (`docs/methodology/inqhiori-canon.md` L282: Claude proposes, Joshua authorizes), D2/D3 no-borrowing
+  (`docs/methodology/inqhiori-canon.md` L284: Claude proposes, Joshua authorizes), D2/D3 no-borrowing
   (`docs/adr/2026-06-12-three-loop-methodology-binding.md`). Personas are a *different axis*: how many
   named review seats exist and what they argue, not who is allowed to execute what.
 - **The CC/Cursor surface-allocation ADR** (`docs/adr/2026-07-14-cc-cursor-surface-allocation.md`) —
   orthogonal axis (execution surface vs. decision authority). Cursor's role in this design (§5.3) is
   exactly its existing role under `cursor-fleet`, not a new one.
-- **c1 Q-XMEM-1** (the parked cross-surface memory sidecar pilot) — persona memory (§6.4) is a
+- **c1 Q-XMEM-1** (the cross-surface memory sidecar pilot, ratified `SUBTRACT` 2026-08-19 via GSUB-2
+  *(corrected 2026-08-19 — see change history; previously called "parked" here after its own
+  disposition had already changed)* — `docs/pursuits/c1-q-xmem-1.md`) — persona memory (§6.4) is a
   narrower, distinct mechanism (a plain per-persona markdown log read/written by this panel
   mechanism only). It is not a general cross-surface visibility system and does not revive that
-  parked pursuit or its re-entry armor.
+  pursuit or its re-entry armor.
 - **No AI persona gains independent authority to execute a GRAND Subtract or a STRATEGIC Delete.**
   Panels are advisory. Joshua decides, always — with one narrow exception (§6.3) that restates an
   existing non-negotiable, not a new grant of authority.
 
 ### 2.1 Retention self-test (added 2026-08-19 — see change history)
 
-This spec proposes ~20 new permanent artifacts (18 persona definition files, up to 18 append-only
-log files, a roster index, a checker script). Applying CLAUDE.md's own retention test directly to
-that proposal, rather than leaving it unexamined:
+This spec proposes 21 new permanent artifacts that exist at authoring time *(corrected 2026-08-19
+— see change history; the prior "~20" headline didn't sum to its own listed components)*: 19
+persona definition files on disk (18 spawnable AI personas plus a `ceo.md` kept for roster-index
+completeness even though CEO is never spawned, §5.1), a roster index, and a checker script — plus
+up to 18 more append-only log files that accrue only once a persona's first real run happens
+(§6.4) and are explicitly excluded from this count. Applying CLAUDE.md's own retention test
+directly to that proposal, rather than leaving it unexamined:
 
 - **R1 (pipeline-consumed):** contingent, not yet true. Each persona file is *designed* to be read by
   its own spawn prompt (§6.2) once the mechanism is in real use — but as of this writing nothing has
   consumed them for a real (non-rehearsal) decision. The §10 falsifier is the mechanism that proves
   or disproves this in use, not on faith.
 - **R2 (live-safety):** true for the CRO seat specifically — its hard-block exception (§6.3) is a
-  live-safety-adjacent control. The other 17 files are not live-safety artifacts on their own.
+  live-safety-adjacent control. The other 18 files are not live-safety artifacts on their own.
 - **R3 (re-proposal bar):** not directly applicable — personas aren't rejected candidates being
   re-proposed. §11's open follow-up on a future Staff-seat intake rule (reusing GRAND §2.5) is the
   nearest analogue.
@@ -198,7 +204,9 @@ Each relevant persona is spawned fresh via `agent()`:
 Staff-tier reviews (where they exist — Falsifier Analyst, TCA Analyst, etc.) apply the same
 independence principle at lower cost: one fresh agent call reading only the candidate/data artifact,
 not the proposing session's framing or enthusiasm for the candidate. This is the direct
-operationalization of SR 11-7's "validator independent of developer."
+operationalization of SR 11-7's principle that a validator must be organizationally independent of
+the developer *(reworded 2026-08-19 — see change history; not the letter's literal wording, an
+accurate paraphrase)*.
 
 This mechanic addresses *contextual* contamination only — see §9's "Architectural correlation"
 bullet for the distinct, unaddressed risk of same-model-family correlated bias across personas.
@@ -317,8 +325,9 @@ domain-crispness §7's error-handling table already protects one layer down.
 
 **CRO carve-out (mandatory, not an ownership-map lookup).** CRO is always an eligible cross-
 examination participant on any GRAND-tier item, regardless of what `ownership-map.md` lists —
-this mirrors the ADR's own §4 mandatory-CRO rule ("CRO on every single GRAND decision, with no
-exceptions") verbatim, one layer down. Checked against the map directly: CRO is named Primary or
+this mirrors this spec's own §4 mandatory-CRO rule ("CRO on every single GRAND decision, with no
+exceptions") verbatim, one layer down *(corrected 2026-08-19 — see change history; previously
+misattributed to the sibling ADR's own §4, which contains only H:/Falsifier: text)*. Checked against the map directly: CRO is named Primary or
 Secondary owner on exactly 1 of 38 tracked pursuit rows (`e1`), so without this carve-out the
 ownership gate would hard-fail-closed on the other 37 even though CRO's own Stage-1 participation
 producing the disputed finding was itself mandatory. The gate as applied to every *other* persona
@@ -452,9 +461,9 @@ instinct is reaching for.
 |---|---|
 | **Same-session multi-voice** — one CC session sequentially writes each persona's take in shared context. Cheap, no new tooling. | Fails the independence principle this whole design is built on — the exact failure shape as Kerviel/Adoboli (one party holding both the proposing and reviewing role). Acceptable only for low-stakes OUTER-tier labeling, never for GRAND/STRATEGIC panel decisions. |
 | **Full bespoke build** — new skill, new memory infrastructure from scratch, independent of `pre-ratification-adversarial-panel`. | Highest cost; duplicates most of what the existing skill and a plain markdown log already provide. Only worth revisiting if the lightweight design here proves insufficient in real use. |
-| **Fixed 4-6 fan-out per tier, forced to a target org-chart shape** (the original proposal) | Real current STRATEGIC-tier inventory supports 2-3 stable domains per office (7-8 total), not 12-18. Pre-minting empty seats to hit a target count reproduces the "belt that only grows" failure mode GSUB-1's own retrospective flagged. Roster grows only when a genuine new standing domain opens. |
+| **Fixed 4-6 fan-out per tier, forced to a target org-chart shape** (the original proposal) | Real current STRATEGIC-tier inventory supports 2-3 stable domains per office (7-8 total), not 12-18. Pre-minting empty seats to hit a target count reproduces the volume/bloat failure shape the GRAND ADR's own motivating language names "a belt that only grows" *(corrected 2026-08-19 — see change history; a related but distinct symptom from what GSUB-1's own retrospective actually found — ownerless, un-expiring drift, not raw volume)*. Roster grows only when a genuine new standing domain opens. |
 | **Manager layer between Senior Managers and Staff** (mirroring OUTER as its own persona tier) | The candidate "manager" functions (cheap-falsifier gating, cost-law screening, etc.) are staff-shaped work in real organizational terms — mechanical, checklist-driven, one-function-one-owner — not supervisory judgment over several such functions. Real front/middle/back offices also run 3 levels deep, not 4 (§9). |
-| **Persona-per-current-pursuit instances** (1:1 with the 38 `docs/pursuits/` records) | Pursuits churn on a near-weekly cadence (7 of the original 8 GSUB-1 PARKs still convert absent renewal by 2026-11-08 — b5 was already renewed to 2027-02-08 on 2026-08-16, before this spec was drafted); this roster would need constant re-minting and would go stale within days. Stable functional roles persist across whatever pursuits currently sit in their domain, matching how real orgs actually staff departments. |
+| **Persona-per-current-pursuit instances** (1:1 with the 38 `docs/pursuits/` records) | Pursuits churn on a near-weekly cadence — of the original 8 GSUB-1 PARKs, only 5 (b1, b3, b6, b7, c3) still ride to the 2026-11-08 default *(corrected 2026-08-19 — see change history; previously stated "7," undercounting two further same-day dispositions)*: b5 was renewed to 2027-02-08 on 2026-08-16, and b2/c1 were separately ratified `SUBTRACT` via GSUB-2 on 2026-08-19 — itself evidence of the churn this row describes. This roster would need constant re-minting and would go stale within days. Stable functional roles persist across whatever pursuits currently sit in their domain, matching how real orgs actually staff departments. |
 
 ## 9. Real-world grounding (research summary)
 
@@ -530,6 +539,15 @@ in a persona's log should always appear in the corresponding synthesis memo — 
 two (dissent logged but silently smoothed in synthesis) is a defect in the mechanism, not a judgment
 call, and should be treated as a bug report regardless of where the H/Falsifier trajectory stands.
 
+**A limitation this falsifier cannot see (added 2026-08-19 — see §9's "Architectural correlation"
+bullet).** The H/Falsifier above measures divergence from what Joshua would have concluded
+unassisted. A panel that is correlated-but-wrong — sharing the same underlying-model blind spot
+Joshua himself might share, per §9 — looks identical, on this measure, to a panel that is genuinely
+unnecessary: both produce zero decision-difference. This falsifier can detect "the panel added
+nothing"; it cannot distinguish *why* — redundant panel vs. panel-and-operator sharing one blind
+spot together. No fix is proposed here, consistent with §9's own stance on the underlying risk —
+named as an open limitation of the measurement itself, not left implicit.
+
 ### 10.1 Preference-anchoring companion check (added 2026-08-19)
 
 A distinct risk from the H/Falsifier above, surfaced by 2025-2026 research on stateful personal
@@ -581,12 +599,12 @@ never folded silently into the real falsifier count.
 
 ## 11. Open follow-ups (not decided by this spec)
 
-- Whether this should also be ratified as a **formal ADR**, per the repo's existing brief-authoring
-  convention — *updated 2026-08-19: this spec itself was ratified in-session (see Ratification note
-  below), but not via a formal ADR.* Whether a separate ADR should still follow, to give the decision
-  doctrine-tier status (`docs/adr/`) rather than living only as an accepted `docs/superpowers/specs/`
-  document, remains open — this was disputed finding B from the 2026-08-19 adversarial review and
-  was not resolved by the acceptance itself.
+- Whether this should also be ratified as a **formal ADR** — **RESOLVED 2026-08-19 (later the same
+  day):** the sibling ADR now exists and is `Accepted` —
+  [`docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md`](../../adr/2026-08-19-loop-persona-hierarchy-review-panel.md),
+  per the Change History row below. This bullet is left in place as a record that the question was
+  once open, not because it still is *(corrected 2026-08-19 — see change history; previously read
+  as still-open after the ADR had already landed)*.
 - The exact `pre-ratification-adversarial-panel` skill edits needed to carry named personas instead
   of generic adversarial-reviewer framings — implementation detail for the plan, not this spec.
 - Whether any additional Staff seats should be added later, and under what evidence bar (the same
@@ -605,9 +623,12 @@ is reviewed and accepted, with all 4 confirmed BLOCKERs and 6 confirmed CONCERNs
 review already fixed as prior commits on this branch (see Change history below).
 
 **Disputed finding B** (whether this spec needs a separate, formal ADR for its own Draft→Accepted
-transition) is **not** resolved by this note — the operator accepted the design as drafted, in its
-`docs/superpowers/specs/` genre, matching the `docs/spec/` precedent the panel itself found (no
-inline binary gate). Whether a formal ADR should still follow remains open per §11 above.
+transition) was **not** resolved by this note at the time it was written — the operator accepted the
+design as drafted, in its `docs/superpowers/specs/` genre, matching the `docs/spec/` precedent the
+panel itself found (no inline binary gate). It was resolved later the same day: the sibling ADR
+(`docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md`) was authored and ratified, per the
+Change History row below *(clarified 2026-08-19 — see change history; this note is left as
+originally written, not backdated, so the sequence of events stays honest)*.
 
 **Not licensed by this acceptance:** anything the design's own §2 Scope boundary already excludes —
 the loop-tier doctrine, the CC/Cursor surface-allocation ADR, and c1 Q-XMEM-1 stay untouched. This
@@ -642,6 +663,7 @@ history.
 | 2026-08-19 | §10.2 added -- self-consistency companion checkpoint, a distinct H′ from the main §10 falsifier. Sourced from a 2026 benchmark finding automatically-designed multi-agent systems can underperform a single agent's Chain-of-Thought self-consistency at a fraction of the cost. Check: on the first 1-2 real GRAND reviews, spawn 3 extra same-persona CRO samples alongside the real run and compare majority-vote agreement -- an AI-vs-AI measurement, explicitly distinct from and not a substitute for the human-ground-truth §10 falsifier. No workflow-file code change; runs as an ad hoc side call. Non-counting, tagged the same way §13's rehearsal entries already are. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
 | 2026-08-19 | §6.7 added -- persona retirement procedure for an individual seat, distinct from §10's whole-panel demotion disposition. Modeled on this repo's own Great Prune precedent (66/69 candidate deletions rescued on adversarial review before that PR merged): operator-decided trigger only, 5-step freeze/reassign/archive/index/ratify-before-merge sequence routing through PR review the same way Great Prune itself was ratified, never auto-executed. Dropped the source proposal's "disable endpoints/credentials" step -- no literal referent, since personas are fresh per-review spawns with no standing credentials; step 4 (index update) already covers the intent. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
 | 2026-08-19 | §6.4.1 added -- charter versioning (§12 template gains a third field, `Charter-Commit`, the short SHA of the persona's own `.md` file at spawn time -- no code change, filled at log-append time) and a bounded, Governance-gated self-refinement procedure: a persona may propose (never silently apply) a charter edit on a pre-registered trigger (2 consecutive real entries where Joshua's ratification diverges from the persona's own recommendation, same root cause), but for control-layer personas (CRO, Head of Risk & Sizing, Model Validation Analyst, Head of Governance itself) the proposal must clear an independent Head of Governance read before Joshua ever sees it -- otherwise a control-layer persona would be auditing its own proposed redefinition, the exact failure §5.2.1 already reasoned through once for Governance's own placement. Closes this docket's last open item; final item in the sequence. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
+| 2026-08-19 | **Packet-wide adversarial review (46 agents, 6 lenses + double-skeptic verify, run against the full document post the 8-item sequence above) -- disposition `BLOCKED`, 14 confirmed findings + 1 disputed.** Two are genuinely defects in this pass's own §14 addition, fixed here: the MAST framework-count citation (150-trace/κ=0.88 set is 5 frameworks, not 7 -- that figure belongs to a separate 1,600+-trace corpus), and §14's mode-count arithmetic (4 excluded + 9 listed = 13, one short of the stated 14 -- the published taxonomy's two "Disobey" modes were bundled into one row; now split into two, making a true 10-row table). The rest were pre-existing, found in passing in the same file by the same run (matching this document's own established convention, see the §6.6 fix-in-passing rows above): §2/Ratification-note's "c1 Q-XMEM-1... parked" (SUBTRACTed via GSUB-2 same day, never updated); §2.1's "~20 new permanent artifacts" not summing to its own listed components (corrected to 21 existing-at-authoring-time + up to 18 accruing later, explicitly separated; also fixed the adjacent 18-vs-19-persona-file undercount, `ceo.md` exists on disk); §8's stale "7 of 8" PARK count (5 remain once GSUB-2's same-day b2/c1 SUBTRACTs are counted, not just b5's renewal) and its misattribution of "belt that only grows" to GSUB-1's retrospective (the phrase originates in the GRAND ADR; GSUB-1's own retrospective found a different failure shape -- ownerless drift, not volume); §6.6's CRO carve-out citing "the ADR's own §4" for a rule that only exists in this spec's own §4; §2's D-user-gate line citation (L282 -> L284); §6.2's SR-11-7 phrase de-quoted as an acknowledged paraphrase, not the letter's literal wording. Also added, from the run's Steelman and structural-completeness lenses: a named limitation connecting §9's architectural-correlation risk to §10's own falsifier (it cannot distinguish a redundant panel from a panel sharing the operator's blind spot), and a new §15 Watch-items index consolidating every "held/not-yet-active/named-risk" item into one place. **Not fixed here, flagged for a separate operator decision:** the run's #1 confirmed BLOCKER (the §6.6 self-review's own claimed run IDs/agent-counts and the ADR's D2 regression-run claim have no recoverable artifact anywhere in the repo) and the disputed dedup-first-attestation severity call -- both live partly or fully in `docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md`, an `Accepted` ADR whose ratified body this repo's convention keeps byte-unedited (amendments via addendum, not direct edit) -- out of scope for a same-surface doc-text fix and requiring an operator call on how to characterize unrecoverable prior-session evidence. | Claude Code |
 
 ## 12. Post-workflow log-append procedure (added during Phase 2 implementation; template extended
 2026-08-19 -- see Change History)
@@ -719,8 +741,9 @@ A one-time, read-only process check against the panel's own mechanism — distin
 falsifier, which measures OUTCOME only ("does panel input ever change a ratified disposition").
 Sourced from Cemri, Pan, Yang et al., "Why Do Multi-Agent LLM Systems Fail?" (arXiv:2503.13657,
 NeurIPS 2025 Datasets & Benchmarks) — MAST, an empirically-derived 14-mode taxonomy of multi-agent
-failures, built from 150+ expert-annotated traces (κ=0.88 on the IAA subset) across 7 popular
-frameworks.
+failures, built from 150+ expert-annotated traces (κ=0.88 on the IAA subset) across 5 MAS
+frameworks *(corrected 2026-08-19 — see change history; a separate, later 1,600+-trace corpus,
+MAST-Data, spans 7 frameworks total — a different figure this section doesn't otherwise rely on)*.
 
 **Scope, narrowed to this panel's actual architecture.** MAST was built from systems where agents
 converse (AutoGen, ChatDev, AppWorld). This panel is a fan-out of independent, schema-constrained,
@@ -731,11 +754,15 @@ termination conditions, conversation reset, fail to ask for clarification (the l
 separately-named design gap — a persona has no mechanism to request more context mid-review today
 — but that is a design question, not a MAST-checkable defect in a completed run).
 
-The other nine modes map onto this panel's actual stages:
+The other ten modes map onto this panel's actual stages, across the following table's ten rows
+*(corrected 2026-08-19 — see change history; the published taxonomy's two distinct "Disobey" modes
+were previously bundled into one row, making 4 excluded + 9 listed = 13, one short of the stated
+14)*:
 
 | Mode | Stage | Check |
 |---|---|---|
-| Disobey task/role specification | Review | Did the persona's finding stay inside its stated Domain (`docs/personas/<slug>.md`)? |
+| Disobey task specification | Review | Did the persona's finding stay inside the target artifact's actual subject matter, not a different task? |
+| Disobey role specification | Review | Did the persona's finding stay inside its stated Domain (`docs/personas/<slug>.md`)? |
 | Task derailment | Review | Does `notes`/`findings` actually address the target artifact? |
 | Information withholding | Synthesize | Does every CONFIRMED/DISPUTED finding in `lensResults` surface in the synthesis memo? |
 | Ignored other agent's input | Synthesize | Does the memo engage with a persona that said `clean:true` with a substantive rationale? |
@@ -759,3 +786,24 @@ Governance's existing 3rd-line mandate (§5.2.1) rather than minting a 9th Staff
 
 Findings, if any, are recorded as a dated note appended below this section — never editing this
 procedure's own text, matching the append-only ethic §6.4 already uses.
+
+## 15. Watch-items index (added 2026-08-19)
+
+A pointer collection, not new content — every item below is already fully specified in its own
+section; this just answers "what in this design is deliberately not-yet-active, or a named-but-
+unmitigated risk" in one place. Closes a structural-completeness gap a same-day adversarial review
+flagged: each item below was already individually labeled where it lives, just never indexed
+together.
+
+- **§6.3, drafted-not-wired-in dissent flag** — held until §10's N=3 falsifier clears (1/3 banked).
+- **§9, architectural correlation** — a named, unmitigated risk in the independence mechanic; no
+  fix proposed.
+- **§10, falsifier/architectural-correlation limitation** — the H/Falsifier cannot distinguish a
+  redundant panel from a panel sharing the operator's own blind spot.
+- **§10.1, preference-anchoring companion check** — a manual, periodic diagnostic, not automated
+  tooling.
+- **§10.2, self-consistency companion checkpoint** — a bounded, 1-2-use side experiment, not a
+  standing feature.
+
+None of the above requires action; each stays exactly as specified in its own section until its own
+stated trigger fires.
