@@ -56,6 +56,7 @@ strategy-signal fill has ever occurred.
 | CFD estate + manual trading retired | [CFD estate](docs/adr/2026-07-11-ops-cfd-estate-retirement.md) |
 | GRAND tier bound above STRATEGIC (Quintessentials; pursuit domain + intake rule) | [GRAND](docs/adr/2026-08-09-grand-tier-quintessentials-binding.md) |
 | MYM1!/MNQ1! occupancy released for new non-Striker research (Striker legs stay barred) | [occupancy](docs/adr/2026-08-12-msl-mym-occupancy-release.md) |
+| Persona-hierarchy review panel (front/middle/back-office C-suite/Senior-Manager/Staff roster) over GRAND ratifications + strict-D2 STRATEGIC-tier Deletes; advisory only, CRO safety-invariant hard-block | [persona hierarchy](docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md) |
 
 ⚠ **Eval bust figures remain EOD-clock lower bounds unless they cite an intraday-honest RESULTS
 path.** Class-S 0.50× full+halves on the honest clock:
