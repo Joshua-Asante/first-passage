@@ -27,6 +27,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-18r — lifecycle map: drop retired ConceptRecords from stage-1 artifacts
 
 **Focus:** Correct D5 map stage-1 Key artifacts — `ConceptRecords` named a Gen-1 pydantic intake that no longer exists. (Renumbered 18o→18r on merge with main — main already held 18p for M6B.)
@@ -40,6 +41,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-18p — M6B ledger opened; initial Databento census estimate-only
 
 **Focus:** First-touch ledger for M6B + price an initial census pull. Dedup clean (only firm_rules L58).
@@ -53,6 +55,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-18m — xindex RV addback: ES+RTY Databento cost dry-run (estimate only)
 
 **Focus:** Price the closure's own ES+RTY intraday addback. Poor-prior falsifier, not a reopen. (Session letter 18m kept on merge with main — main already held 18n for Q-SIGID / 18l for ECON EXPORT.)
