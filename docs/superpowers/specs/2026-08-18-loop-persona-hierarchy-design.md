@@ -400,7 +400,7 @@ fires mechanically) against the already-closed GSUB-1 inventory
 (`docs/briefs/GSUB-1-inventory-and-dispositions.md`) purely to prove the mechanism produces sensible
 independent output and writes well-formed logs. Outcome: overall disposition **CLEAR-WITH-CONCERNS**
 — one CONCERN confirmed unanimously by both independent skeptics (an unanchored §0 Rule-0 citation),
-one BLOCKER and three further CONCERNs raised and all unanimously refuted on independent re-read
+two BLOCKERs and three further CONCERNs raised and all unanimously refuted on independent re-read
 (including a real case of a reviewer missing a same-day resolving ADR reachable from the very row it
 cited — exactly the kind of miss the verify stage's independent skeptics exist to catch),
 `croHardBlock: false`. 19 agents, ~10.6 minutes wall-clock. Because GSUB-1 was already ratified and
