@@ -1,8 +1,9 @@
 # GSUB-2 — Early-review pass over the GSUB-1 PARK cohort, first real persona-panel use
 
-**Status:** `OPEN` — Phase 1–2 executed 2026-08-19; Phase 2.5 (persona panel) executed 2026-08-19,
-verdict `CLEAR-WITH-CONCERNS` (no CRO hard-block, no confirmed BLOCKER, one confirmed CONCERN fixed
-in place — see §7 Phase 2.5 note); Phase 3 (operator ratification) pending
+**Status:** `CLOSED` `RESOLVED-LOADBEARING` 2026-08-19 — all phases executed same day → both
+nominations (b2, c1) ratified by Joshua →
+[`closure`](closures/GSUB-2-closure-resolved-loadbearing.md) · records at
+[`b2`](../pursuits/b2-striker-mym-reconstruction.md) / [`c1`](../pursuits/c1-q-xmem-1.md)
 **Authored:** 2026-08-19
 **Closed:** N/A
 **Authors:** Claude Code (proposing office)

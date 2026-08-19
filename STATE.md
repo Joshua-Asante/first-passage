@@ -61,6 +61,18 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-19** — **Persona-hierarchy review panel ADR ratified; first real C-suite panel run
+  (GSUB-2) SUBTRACTs b2 + c1.** ADR `Proposed`→`Accepted` (operator: "ratify the ADR"). First
+  real (non-rehearsal) GRAND-tier panel use: CIO+COO+CRO reviewed a frozen SUBTRACT-candidate
+  proposal over the GSUB-1 PARK cohort, `CLEAR-WITH-CONCERNS` (no CRO hard-block, no confirmed
+  BLOCKER, one CONCERN fixed pre-ratification). Operator ratified both nominations: **b2** (Striker
+  MYM reconstruction — re-entry blocked by the standing Striker bar) and **c1** (Q-XMEM-1 — same
+  permitted test GSUB-1 used, re-applied on updated elapsed-idle evidence) → `SUBTRACT`, ~80 days
+  ahead of their scheduled 2026-11-08 expiry. Six other PARKs unchanged. $0/K=0, no live-risk
+  surface (CRO's own independent review confirmed no `dry_run`/M1/`armed_until`/DD-constant touch).
+  [`ADR`](docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md) ·
+  [`GSUB-2`](docs/briefs/GSUB-2-park-cohort-early-review.md) ·
+  [`closure`](docs/briefs/closures/GSUB-2-closure-resolved-loadbearing.md).
 - **2026-08-18** — **MNQ family-K disclosure: Notice-phase closed manifests and Cap-seat K bank.**
   Operator *"OK on both"*. Disclosure-only; `K_eff` untouched. Live figure at owner.
   [`ADR 2026-08-04` Addendum](docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md) ·
