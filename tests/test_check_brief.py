@@ -326,6 +326,108 @@ def test_infer_adr_from_filename(tmp_path):
     assert cb.infer_type(p, WELL_FORMED) == "adr"
 
 
+# GSUB-2 shape: Inquire-style header + §0.5 Ambiguity halt, WITHOUT the
+# four-state spawn taxonomy. Pre-fix, `"0.5" in split_sections` classified
+# this as handoff and HARD-failed the missing DONE/DONE_WITH_CONCERNS/…
+# tokens — the Form Check false-positive on
+# docs/briefs/GSUB-2-park-cohort-early-review.md (2026-08-19 panel).
+INQUIRE_WITH_SECTION_05 = WELL_FORMED.replace(
+    "# ADR — sample decision",
+    "# GSUB-2 — park-cohort early review\n\n"
+    "**Loop:** Inquire-style brief, GRAND-tier",
+).replace(
+    "## §1 — Context",
+    "## §0.5 — Ambiguity halt\n"
+    "Halt for operator ratification rather than defaulting. Do not spawn.\n\n"
+    "## §1 — Context",
+)
+
+
+def test_infer_inquire_header_beats_section_05(tmp_path):
+    """Header Loop: Inquire-style wins over a copied §0.5 Ambiguity halt."""
+    p = tmp_path / "GSUB-2-park-cohort-early-review.md"
+    assert cb.infer_type(p, INQUIRE_WITH_SECTION_05) == "brief"
+    # And the brief must not be scored as a malformed handoff.
+    assert _hard(cb.check_brief(INQUIRE_WITH_SECTION_05, "brief")) == []
+
+
+def test_main_inquire_autodetect_exits_0(tmp_path, capsys):
+    p = tmp_path / "GSUB-2-park-cohort-early-review.md"
+    p.write_text(INQUIRE_WITH_SECTION_05, encoding="utf-8")
+    rc = cb.main([str(p)])  # no --type
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "type=brief" in out
+    assert "type=handoff" not in out
+    assert "well-formed" in out
+    assert "MALFORMED" not in out
+
+
+def test_infer_handoff_ready_suffix_is_still_inquire(tmp_path):
+    """`Loop: …brief, CC-handoff-ready` is an Inquire brief, not a handoff."""
+    text = INQUIRE_WITH_SECTION_05.replace(
+        "**Loop:** Inquire-style brief, GRAND-tier",
+        "**Loop:** Inquire-style brief, CC-handoff-ready — closure gated on §4",
+    )
+    p = tmp_path / "GSUB-1-first-grand-subtract-pass.md"
+    assert cb.infer_type(p, text) == "brief"
+
+
+def test_infer_body_handoff_prose_does_not_override_inquire_header(tmp_path):
+    """Spawn-taxonomy tokens in the body must not beat an Inquire Loop line."""
+    text = INQUIRE_WITH_SECTION_05.replace(
+        "RESOLVED when the test passes; FALSIFIED if it fails; AMBIGUOUS otherwise.",
+        "Return one of DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED.\n"
+        "RESOLVED when accepted.",
+    )
+    p = tmp_path / "anything.md"
+    assert cb.infer_type(p, text) == "brief"
+
+
+def test_infer_loop_na_before_inquire_phase_is_not_inquire(tmp_path):
+    """`Loop: N/A — blocked before the Inquire-phase` is not a self-declaration."""
+    text = WELL_FORMED.replace(
+        "# ADR — sample decision",
+        "# Q-MSCHAN-1\n\n**Loop:** N/A — blocked before the Inquire-phase Pre-Q could gate anything",
+    )
+    p = tmp_path / "Q-MSCHAN-1-microstructure-sourcing-channel-scoping.md"
+    assert cb.infer_type(p, text) != "brief"
+
+
+def test_infer_handoff_from_brief_type_header(tmp_path):
+    """`**Brief type:** CC handoff` is enough even without §0.5 or a handoff filename."""
+    text = WELL_FORMED.replace(
+        "# ADR — sample decision",
+        "# CC Handoff — sample\n\n**Brief type:** CC handoff (single-step)",
+    )
+    p = tmp_path / "notes.md"
+    assert cb.infer_type(p, text) == "handoff"
+
+
+def test_infer_real_gsub1_is_brief_not_handoff():
+    path = REPO_ROOT / "docs/briefs/GSUB-1-first-grand-subtract-pass.md"
+    assert path.exists(), "GSUB-1 is the live Inquire-style + §0.5 fixture"
+    text = path.read_text(encoding="utf-8")
+    assert cb.infer_type(path, text) == "brief"
+
+
+def test_infer_real_gsub2_is_brief_not_handoff():
+    path = REPO_ROOT / "docs/briefs/GSUB-2-park-cohort-early-review.md"
+    if not path.exists():
+        return  # not on this checkout; INQUIRE_WITH_SECTION_05 covers the shape
+    text = path.read_text(encoding="utf-8")
+    assert cb.infer_type(path, text) == "brief"
+    v = cb.check_brief(text, cb.infer_type(path, text))
+    assert _hard(v) == [], [str(x) for x in _hard(v)]
+
+
+def test_infer_real_cc_handoff_still_handoff():
+    path = REPO_ROOT / "docs/briefs/handoffs/2026-07-24-cc-handoff-core-dead-code-prune.md"
+    assert path.exists(), "canonical CC-handoff fixture missing"
+    text = path.read_text(encoding="utf-8")
+    assert cb.infer_type(path, text) == "handoff"
+
+
 # ── regression: the two real ADRs are well-formed ──────────────
 
 def test_real_adrs_well_formed():
