@@ -27,7 +27,7 @@ scaffolding that already existed, not an invented structure.
 | `data/` (vendor CSVs, frozen `bar_data/`) | Head of Research | Head of Validation | Raw research material; integrity is Validation's concern, not custody |
 | `strategies/` (locked Pine + `_archive/`, MANIFEST.sha256) | Head of Research | Head of Risk & Sizing | Strategy *content* originates in discovery; authorization/lifecycle status is Risk & Sizing's |
 | `historical_challenge.py` | Head of Governance | — | Challenge-era substrate, retired (terminal register, `e2`) — custodian of dead things |
-| `lib/` | Head of Engineering | *(per-consumer)* | Generic shared infra; Phase 2 may split by actual import graph |
+| `lib/` | Head of Engineering | *(per-consumer)* | Confirmed generic shared infra, not a Risk & Sizing private bag: eight modules, live style `from lib.X` (plus `from ..lib.mvd` in `core/mc/`). Sixteen import statements across ten live files span `dd_protection.py`/`lifecycle.py` (atomic_io, mvd, validation), `core/mc/{ingest,modes}.py` (mvd), `tv_export_loader.py` + `research_utils.breadth` (mvd), three `ops/c1_rail/` modules (atomic_io, file_lock), and `ops/cli.py` (tearsheet, validation); `correlation.py`/`nonlinear.py`/`regime_bootstrap.py` have test-only importers. |
 
 ### `lab/` — research (Front office home)
 
@@ -37,7 +37,7 @@ scaffolding that already existed, not an invented structure.
 | `CATALOG.md` | Head of Research | — | The registry of what's in `analysis/` |
 | `discovery/` | Head of Research | — | S5 promotion-lane code (Q-S5CAP-1) |
 | `databento_fetch/` | Head of Research | CFO | Data acquisition tooling; CFO stake is the cost-gated spend discipline |
-| `research_utils/`, `tools/` | Head of Research / Head of Engineering | — | Split by content: research-specific helpers vs. generic tooling |
+| `research_utils/`, `tools/` | Head of Research | — | Same owner, not a Research/Engineering split: `research_utils/` (18 `.py` files) is imported as `from research_utils.*` by `lab/discovery/` (`stage24_runner`, `admission_schema`, `register_search`, `realism_mgc`) and hot `lab/analysis/` (`camp_import` in nine c1 tests; `universe_gate` in `dl1_mgc_orc_2026-08-16/score.py`), with no `core/`/`ops/`/`scripts/` Python importers. `lab/tools/` has no `.py` and zero `from lab.tools` hits — it is the `econ_export/` Pine+CSV drop zone, path-consumed by Research-owned `scripts/diff_econ_calendar.py`. |
 | `validation_selftest.py`, `conftest.py` | Head of Validation | Head of Engineering | Named for validating the lab pipeline's own correctness |
 | `archive/` | Head of Governance | Head of Research | Retention/pruning custodianship, per Governance's charter |
 | `data/` | Head of Research | — | Lab-local research data |
