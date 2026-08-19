@@ -248,6 +248,32 @@ fabricating history.
 **Explicitly distinct from c1 Q-XMEM-1** (§2) — this is a narrow, single-purpose artifact bound to
 this panel mechanism only, not a general cross-surface memory system.
 
+#### 6.4.1 Charter versioning and bounded self-refinement (added 2026-08-19)
+
+**Charter versioning (no caveat).** Every `docs/personas/<slug>.md` file is already ordinary
+committed markdown. The only addition is capturing the charter's git state at spawn time:
+`Charter-Commit` (§12's template) records the short SHA of `docs/personas/<slug>.md`
+(`git log -1 --format=%h -- docs/personas/<slug>.md`) at spawn time, filled in by the calling
+session during the §12 log-append procedure — no change to the Workflow script itself. This makes a
+review reproducible against the exact charter text in force when it ran.
+
+**Bounded self-refinement, Governance-gated.** A persona may *propose* — never silently apply — a
+charter edit, but only on a pre-registered trigger: **2 consecutive real log entries where Joshua's
+ratification diverges from the persona's recommendation, citing the same root cause.** On that
+trigger, the persona drafts a proposed charter diff + rationale, appended to its own log as a
+flagged, not-yet-ratified entry.
+
+**Before Joshua ever sees it, a fresh Head of Governance spawn independently reads only the
+proposed diff + stated rationale — not the underlying case history — and endorses or objects,
+logged to `docs/personas/head-of-governance-log.md` per its own existing convention.** This
+Governance hop is required specifically for control-layer personas (CRO, Head of Risk & Sizing,
+Model Validation Analyst, and Head of Governance itself) proposing edits to their *own* review
+scope — without it, a control-layer persona auditing its own proposed redefinition reproduces, in
+miniature, exactly the self-audit failure §5.2.1 already reasoned through once ("placing [Head of
+Governance] under CRO would have Risk auditing itself"). Only after Governance's independent pass
+does the diff reach Joshua, as an ordinary doc-change PR — the same ratification path any other
+charter or doctrine edit in this repo already takes.
+
 ### 6.5 Permanent Staff trigger (independent of the panel)
 
 Permanent Staff personas (§5.3) fire at their own natural gate, independent of any GRAND/STRATEGIC
@@ -615,6 +641,7 @@ history.
 | 2026-08-19 | §6.3 gained a drafted-not-wired-in extension: a deterministic `flagIndependentDissent`-shaped mechanic (diverging severity + non-matching `location` between two personas' findings) sketched as the frozen spec for a future synthesis-prompt addition, explicitly held until §10's N=3 falsifier clears (currently 1/3 -- GSUB-2). No code touched `.claude/workflows/pre-ratification-adversarial-panel.js` in this commit; the paragraph is the spec, not the patch. Narrowed from an earlier trained-classifier proposal to this purely syntactic, deterministic form specifically so it doesn't reopen the CRO hard-block's status as the sole non-advisory dissent case. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
 | 2026-08-19 | §10.2 added -- self-consistency companion checkpoint, a distinct H′ from the main §10 falsifier. Sourced from a 2026 benchmark finding automatically-designed multi-agent systems can underperform a single agent's Chain-of-Thought self-consistency at a fraction of the cost. Check: on the first 1-2 real GRAND reviews, spawn 3 extra same-persona CRO samples alongside the real run and compare majority-vote agreement -- an AI-vs-AI measurement, explicitly distinct from and not a substitute for the human-ground-truth §10 falsifier. No workflow-file code change; runs as an ad hoc side call. Non-counting, tagged the same way §13's rehearsal entries already are. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
 | 2026-08-19 | §6.7 added -- persona retirement procedure for an individual seat, distinct from §10's whole-panel demotion disposition. Modeled on this repo's own Great Prune precedent (66/69 candidate deletions rescued on adversarial review before that PR merged): operator-decided trigger only, 5-step freeze/reassign/archive/index/ratify-before-merge sequence routing through PR review the same way Great Prune itself was ratified, never auto-executed. Dropped the source proposal's "disable endpoints/credentials" step -- no literal referent, since personas are fresh per-review spawns with no standing credentials; step 4 (index update) already covers the intent. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
+| 2026-08-19 | §6.4.1 added -- charter versioning (§12 template gains a third field, `Charter-Commit`, the short SHA of the persona's own `.md` file at spawn time -- no code change, filled at log-append time) and a bounded, Governance-gated self-refinement procedure: a persona may propose (never silently apply) a charter edit on a pre-registered trigger (2 consecutive real entries where Joshua's ratification diverges from the persona's own recommendation, same root cause), but for control-layer personas (CRO, Head of Risk & Sizing, Model Validation Analyst, Head of Governance itself) the proposal must clear an independent Head of Governance read before Joshua ever sees it -- otherwise a control-layer persona would be auditing its own proposed redefinition, the exact failure §5.2.1 already reasoned through once for Governance's own placement. Closes this docket's last open item; final item in the sequence. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
 
 ## 12. Post-workflow log-append procedure (added during Phase 2 implementation; template extended
 2026-08-19 -- see Change History)
@@ -626,7 +653,9 @@ After a persona-mode `Workflow` call returns, for each slug in `result.personaSl
    against.
 2. Extract that persona's verdict from `result.synthesis` (the synthesis memo names each
    persona's confirmed/disputed findings by lens key), including the specific file:line or artifact
-   section the verdict was keyed off -- this is `Evidence-Cited` below, not a re-derivation.
+   section the verdict was keyed off -- this is `Evidence-Cited` below, not a re-derivation. Also
+   capture the persona's own charter commit at spawn time (`git log -1 --format=%h -- docs/personas/
+   <slug>.md`) -- this is `Charter-Commit` below (§6.4.1).
 3. Append (never edit prior entries) a new entry using this exact template, with today's date filled
    in by the calling session (never computed inside the Workflow script):
 
@@ -640,18 +669,20 @@ result.synthesis's per-persona breakdown -- "n/a" if clean with nothing to cite>
 **Deviation-from-Precedent:** <a one-line note on how this verdict differs from what this
 persona's own prior log entries would have predicted, or "None" if it doesn't -- "n/a -- first
 entry" if step 1 found no prior log>
+**Charter-Commit:** <short git SHA of docs/personas/<slug>.md at spawn time>
 **Ratified as recommended:** <Yes | No | Pending -- operator has not yet ratified>
 ```
 
 4. If `result.croHardBlock` is true, every persona's log entry for this review additionally carries
    a line: `**CRO hard block fired:** yes -- disposition is BLOCKED regardless of this persona's own verdict.`
 
-**Non-goal, stated explicitly so a future editor doesn't over-build this:** `Evidence-Cited` and
-`Deviation-from-Precedent` are record-keeping fields, filled from what the synthesis pass already
-produced -- they do not gate anything. A log entry missing either field (e.g. an early entry
-written before this extension) is not retroactively invalid, and no synthesis is ever blocked from
-reaching Joshua for an incomplete log -- that would be a new automatic-block class outside the
-CRO's own narrow §6.3 carve-out, which this extension does not touch.
+**Non-goal, stated explicitly so a future editor doesn't over-build this:** `Evidence-Cited`,
+`Deviation-from-Precedent`, and `Charter-Commit` are record-keeping fields, filled from what the
+synthesis pass, the prior-log read, and a single `git log` call already produce -- they do not gate
+anything. A log entry missing any of them (e.g. an early entry written before an extension landed)
+is not retroactively invalid, and no synthesis is ever blocked from reaching Joshua for an
+incomplete log -- that would be a new automatic-block class outside the CRO's own narrow §6.3
+carve-out, which none of these extensions touch.
 
 ## 13. Rehearsal record (added during Phase 3 implementation)
 
