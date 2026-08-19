@@ -223,6 +223,13 @@ that domain.
 
 Full findings live in this session's research; key points repeated here since they're load-bearing:
 
+- **Organizational depth** *(added 2026-08-19 — see change history; this is the source for §3's "three
+  levels, not four" and §8's Manager-layer rejection, both of which cited this section before it
+  actually carried the finding)*: this session's front/middle/back-office research characterized real
+  trading-firm hierarchies as running a realistic 2-3 levels of depth per office — C-suite →
+  department-head/senior-manager → staff/analyst — not four. Like the title-grounding bullet below,
+  this is an unarchived, directional research characterization (no capture dates or scoring table
+  retained), not a formally scored count.
 - **SEC Rule 18f-4** (derivatives risk management): a fund's risk manager "may not be a portfolio
   manager of the fund" — literal role-independence language, borrowed directly for §6.2.
 - **Fed SR 11-7** (model risk management): model validation must be organizationally independent from
@@ -286,3 +293,4 @@ history.
 |---|---|---|
 | 2026-08-19 | §5.1 CFO row corrected: Survive bound was mischaracterized as "capital-denominated," contradicting `docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md` (concurrency-denominated). Same fix applied to `docs/personas/cfo.md` and the Phase 1 plan's embedded copy. | Claude Code |
 | 2026-08-19 | §9 title-grounding bullet softened: dropped unscored "direct match" / "roughly a third (5-6)" verdicts with no attached research artifact; flagged the Risk Analyst (Intraday) row's "verbatim" Topstep quote as not surviving independent adversarial re-check. Same fix applied to `docs/personas/risk-analyst-intraday.md` and the Phase 1 plan's embedded copy. | Claude Code |
+| 2026-08-19 | §9 gained an "Organizational depth" bullet. §3 and §8 both cited "(§9)" as the source for the "three levels, not four" architectural decision, but §9 never actually carried that research — the citation pointer resolved to an empty set. | Claude Code |
