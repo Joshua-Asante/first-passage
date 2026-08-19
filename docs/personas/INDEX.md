@@ -13,3 +13,9 @@ architecture, panel mechanics, and independence rules this roster implements.
 | [CIO](cio.md) | GRAND | Front | CEO | `cio-log.md` |
 | [COO](coo.md) | GRAND | Back | CEO | `coo-log.md` |
 | [CFO](cfo.md) | GRAND | Cross-office | CEO | `cfo-log.md` |
+| [Head of Research](head-of-research.md) | STRATEGIC | Front | CIO | `head-of-research-log.md` |
+| [Head of Execution](head-of-execution.md) | STRATEGIC | Front | CIO | `head-of-execution-log.md` |
+| [Head of Risk & Sizing](head-of-risk-sizing.md) | STRATEGIC | Middle | CRO | `head-of-risk-sizing-log.md` |
+| [Head of Validation](head-of-validation.md) | STRATEGIC | Middle | CRO | `head-of-validation-log.md` |
+| [Head of Engineering](head-of-engineering.md) | STRATEGIC | Back | COO | `head-of-engineering-log.md` |
+| [Head of Governance](head-of-governance.md) | STRATEGIC | Back | COO | `head-of-governance-log.md` |
