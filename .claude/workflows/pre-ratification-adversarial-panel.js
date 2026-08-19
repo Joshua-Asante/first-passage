@@ -27,6 +27,52 @@ const extraContextLine = extraContext.length
   ? `\n\nThe operator has additionally flagged these cited documents as required full reads for this review: ${extraContext.join(', ')}.`
   : ''
 
+// ---- persona mode (design spec §6) -----------------------------------------
+// Structural registry only -- slug/role/tier/office. The full mandate/independence-rule
+// prose stays canonical in docs/personas/*.md; each spawned agent reads its own file.
+const PERSONA_REGISTRY = {
+  cro: { role: 'CRO', tier: 'GRAND', office: 'Middle' },
+  cio: { role: 'CIO', tier: 'GRAND', office: 'Front' },
+  coo: { role: 'COO', tier: 'GRAND', office: 'Back' },
+  cfo: { role: 'CFO', tier: 'GRAND', office: 'Cross-office' },
+  'head-of-research': { role: 'Head of Research', tier: 'STRATEGIC', office: 'Front' },
+  'head-of-execution': { role: 'Head of Execution', tier: 'STRATEGIC', office: 'Front' },
+  'head-of-risk-sizing': { role: 'Head of Risk & Sizing', tier: 'STRATEGIC', office: 'Middle' },
+  'head-of-validation': { role: 'Head of Validation', tier: 'STRATEGIC', office: 'Middle' },
+  'head-of-engineering': { role: 'Head of Engineering', tier: 'STRATEGIC', office: 'Back' },
+  'head-of-governance': { role: 'Head of Governance', tier: 'STRATEGIC', office: 'Back' },
+}
+
+const personaMode = Boolean(cfg.tier || (Array.isArray(cfg.personas) && cfg.personas.length))
+let personaSlugs = []
+
+if (personaMode) {
+  if (cfg.tier !== 'GRAND' && cfg.tier !== 'STRATEGIC') {
+    throw new Error(
+      `pre-ratification-adversarial-panel persona mode requires args.tier of 'GRAND' or 'STRATEGIC', got '${cfg.tier}'. ` +
+        'Omit both args.tier and args.personas entirely to use the original generic-lens mode.'
+    )
+  }
+  if (!Array.isArray(cfg.personas) || cfg.personas.length === 0) {
+    throw new Error(
+      'pre-ratification-adversarial-panel persona mode requires args.personas: a non-empty array of persona ' +
+        'slugs from docs/personas/INDEX.md, e.g. args: { targetPath: "...", tier: "GRAND", personas: ["cio", "coo"] }'
+    )
+  }
+  for (const slug of cfg.personas) {
+    if (!PERSONA_REGISTRY[slug]) {
+      throw new Error(
+        `Unknown persona slug '${slug}' -- not in PERSONA_REGISTRY. Valid slugs: ${Object.keys(PERSONA_REGISTRY).join(', ')}. ` +
+          'Check docs/personas/INDEX.md.'
+      )
+    }
+  }
+  // Mandatory-CRO rule (design spec §4): every GRAND-tier decision gets CRO review, no exceptions.
+  personaSlugs = cfg.tier === 'GRAND' && !cfg.personas.includes('cro')
+    ? [...cfg.personas, 'cro']
+    : [...cfg.personas]
+}
+
 // ---- schemas ----------------------------------------------------------
 
 const LENS_FINDINGS_SCHEMA = {
