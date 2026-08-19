@@ -212,7 +212,8 @@ const PERSONAS = personaMode
   ? personaSlugs.map((slug) => ({
       key: slug,
       build: () =>
-        `You are the ${PERSONA_REGISTRY[slug].role} persona reviewing ${targetPath} in the First Passage repo ` +
+        `You are the ${PERSONA_REGISTRY[slug].role} persona (${PERSONA_REGISTRY[slug].office} office, ` +
+        `${PERSONA_REGISTRY[slug].tier} tier) reviewing ${targetPath} in the First Passage repo ` +
         `(a futures prop-trading research/ops monorepo). First, read your own persona definition in full: ` +
         `docs/personas/${slug}.md -- this states your Domain (what you are accountable for) and your ` +
         `Independence rule. Then check whether docs/personas/${slug}-log.md exists; if it does, read it for ` +
@@ -284,16 +285,39 @@ async function verifyLensFindings(reviewResult, lens) {
 // enforcing non-negotiable safety invariants in code, not in a prompt (see
 // validate_c1_monitoring_acceptance.validate in ops/c1_rail/, a Python function, not an
 // instruction). Runs on CRO's own structured findings, already in memory from the pipeline.
-const SAFETY_INVARIANT_KEYWORDS = /dry_run|armed_until|M1[^.]{0,15}RESOLVED|\barm(ing)?\b[^.]{0,25}\bnot\b[^.]{0,25}\bsend\b/i
+// Scope: CRO-specific, matching design spec §6.3's own framing ("a CRO dissent"). A
+// STRATEGIC-tier call that omits 'cro' from args.personas gets no automated safety-invariant
+// hard block -- by design, not an oversight; CRO coverage is only guaranteed on GRAND-tier
+// calls per the mandatory-CRO rule above.
+// Deliberately biased toward over-triggering: a false positive costs an operator one glance at
+// an unnecessary hard block, a false negative lets an actual safety-invariant citation through
+// undetected. A fixed-width proximity regex (an earlier version of this check) missed realistic
+// multi-clause LLM prose where the two related terms are >80 chars apart -- these check for
+// co-occurrence anywhere in the field instead of requiring tight adjacency.
+function citesSafetyInvariant(text) {
+  if (!text) return false
+  if (/dry_run/i.test(text)) return true
+  if (/armed_until/i.test(text)) return true
+  if (/\bM1\b/i.test(text) && /\bRESOLVED\b/i.test(text)) return true
+  if (/\barm(ing)?\b/i.test(text) && /\bnot\b/i.test(text) && /\bsend\b/i.test(text)) return true
+  return false
+}
 
-function croHardBlockFires(lensResults) {
+function croHardBlockFires(lensResults, expectCro) {
   const croResult = lensResults.find((r) => r && r.key === 'cro')
-  if (!croResult) return { fires: false, citing: [] }
+  if (!expectCro) return { fires: false, citing: [], croReviewMissing: false }
+  if (!croResult || croResult.notes === '(lens agent returned no result)') {
+    // Fail CLOSED, not open: CRO was required (mandatory-CRO rule above) but its review never
+    // completed. A deterministic safety backstop must not silently degrade to "not blocked"
+    // precisely when its own input is missing -- that is the one failure mode it exists to be
+    // robust against.
+    return { fires: true, citing: [], croReviewMissing: true }
+  }
   const candidates = [...croResult.confirmed, ...croResult.disputed]
   const citing = candidates.filter(
-    (v) => SAFETY_INVARIANT_KEYWORDS.test(v.finding.claim) || SAFETY_INVARIANT_KEYWORDS.test(v.finding.evidence)
+    (v) => citesSafetyInvariant(v.finding.claim) || citesSafetyInvariant(v.finding.evidence)
   )
-  return { fires: citing.length > 0, citing }
+  return { fires: citing.length > 0, citing, croReviewMissing: false }
 }
 
 // ---- run ----------------------------------------------------------------
@@ -311,6 +335,11 @@ const formCheckPromise = agent(
   { label: 'form-check', phase: 'Form Check', effort: 'low' }
 )
 
+// Note (known, accepted limitation): this check confirms the artifact is frozen/committed at
+// this instant, but each persona later does its own live read of targetPath (see PERSONAS
+// above) rather than pinning to the commit sha validated here -- a TOCTOU gap if the file is
+// modified mid-run. Accepted for now given a review's short wall-clock and low collision odds;
+// revisit (e.g. read via `git show <sha>:targetPath`) if this ever proves load-bearing.
 if (personaMode) {
   const precondition = await agent(
     `Run exactly these two commands against the First Passage repo and report the results, nothing else: ` +
@@ -319,6 +348,12 @@ if (personaMode) {
       `at least one line (hasCommitHistory), plus the verbatim combined output.`,
     { label: 'precondition-check', phase: 'Form Check', effort: 'low', schema: PRECONDITION_SCHEMA }
   )
+  if (!precondition) {
+    throw new Error(
+      `pre-ratification-adversarial-panel persona mode: the precondition-check agent for ${targetPath} returned ` +
+        `no result -- cannot verify the artifact is frozen/committed (design spec §6.1). Re-run.`
+    )
+  }
   if (precondition.uncommittedChanges || !precondition.hasCommitHistory) {
     throw new Error(
       `pre-ratification-adversarial-panel persona mode requires ${targetPath} to be a frozen, committed ` +
@@ -343,14 +378,20 @@ const disputedCount = lensResults.reduce((n, r) => n + (r ? r.disputed.length : 
 log(`Review+verify done: ${confirmedCount} confirmed, ${disputedCount} disputed findings across ${activeLenses.length} lenses`)
 
 
-const hardBlock = personaMode ? croHardBlockFires(lensResults) : { fires: false, citing: [] }
-const hardBlockLine = hardBlock.fires
-  ? `\n\nCRO SAFETY-INVARIANT HARD BLOCK: CRO's review confirmed or disputed a finding citing a CLAUDE.md ` +
-    `non-negotiable safety invariant (dry_run/armed_until/M1-RESOLVED/arm-not-send). Per design spec §6.3, this ` +
-    `is a HARD BLOCK on synthesis -- state "Overall disposition: BLOCKED" at the top of your memo regardless of ` +
-    `what any other persona found, and do not let any other finding soften this. Citing finding(s): ` +
-    `${JSON.stringify(hardBlock.citing.map((c) => c.finding))}`
-  : ''
+const expectCro = personaMode && personaSlugs.includes('cro')
+const hardBlock = personaMode ? croHardBlockFires(lensResults, expectCro) : { fires: false, citing: [], croReviewMissing: false }
+const hardBlockLine = hardBlock.croReviewMissing
+  ? `\n\nCRO SAFETY-INVARIANT HARD BLOCK (FAIL-CLOSED): CRO was required for this GRAND-tier review but its ` +
+    `review did not complete (agent failure or no result). Per design spec §6.3, a deterministic safety backstop ` +
+    `must fail closed, not open, when its own input is missing -- state "Overall disposition: BLOCKED" at the ` +
+    `top of your memo and note that this is a coverage failure requiring a re-run, not a substantive finding.`
+  : hardBlock.fires
+    ? `\n\nCRO SAFETY-INVARIANT HARD BLOCK: CRO's review confirmed or disputed a finding citing a CLAUDE.md ` +
+      `non-negotiable safety invariant (dry_run/armed_until/M1-RESOLVED/arm-not-send). Per design spec §6.3, this ` +
+      `is a HARD BLOCK on synthesis -- state "Overall disposition: BLOCKED" at the top of your memo regardless of ` +
+      `what any other persona found, and do not let any other finding soften this. Citing finding(s): ` +
+      `${JSON.stringify(hardBlock.citing.map((c) => c.finding))}`
+    : ''
 
 phase('Synthesize')
 const synthesis = await agent(
@@ -391,4 +432,5 @@ return {
   personaMode,
   personaSlugs: personaMode ? personaSlugs : undefined,
   croHardBlock: personaMode ? hardBlock.fires : undefined,
+  croReviewMissing: personaMode ? hardBlock.croReviewMissing : undefined,
 }
