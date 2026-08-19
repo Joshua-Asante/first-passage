@@ -93,7 +93,7 @@ A panel convenes on:
 | **CRO** | AI persona | `dd_protection` integrity, the lifecycle authorization axis, M1 monitoring maturity, regime-robustness gate, strategy-validation discipline, c1 rail `dry_run`/`armed_until` invariants. The CLAUDE.md "Safety invariants (non-negotiable)" section is this seat's charter. | Yes — highest-stakes seat; mandatory on every GRAND decision (§4). |
 | **CIO** | AI persona | Front-office oversight: a3, a4, the strategy-generation side of a2. | Yes |
 | **COO** | AI persona | Back-office oversight: a5, a6, the meta-belt (d1-d16), STATE/SESSIONS/CATALOG hygiene, retention discipline. | Yes |
-| **CFO** | AI persona | Survive bound (≤5 queue cap) as a capital-denominated concept, subscription spend (d11-d16), capital-allocation rulings (F1), the weekly token-trade compliance obligation. | Yes |
+| **CFO** | AI persona | Survive bound (≤5 queue cap — concurrency-denominated per `docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md`; **not itself a capital concept**, despite sitting in this seat's domain), subscription spend (d11-d16), capital-allocation rulings (F1), the weekly token-trade compliance obligation. | Yes |
 
 ### 5.2 STRATEGIC tier — Senior Managers (front / middle / back office)
 
