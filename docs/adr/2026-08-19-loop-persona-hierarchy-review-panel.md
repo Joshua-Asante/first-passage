@@ -314,6 +314,46 @@ Status line and Change History, not a retroactive widening of what D1 itself cov
 
 ---
 
+## Addendum 2026-08-19 (later) — self-review evidentiary status: the design spec's §6.6 claim, and D2
+
+**Does not amend §0–§6, §10, D1–D5, or the Ratification note.** Originally drafted broader, from a
+packet-wide adversarial review of the design spec (46 agents, 2026-08-19) that also covered this
+ADR. **Narrowed on merge** with a parallel fix (PR #59, `cursor/persona-hierarchy-spec-staleness-
+1583`) that landed on `main` first and already covers most of the same ground directly in §0 above:
+a retroactive Rule 8 sub-rule 10 dedup-first attestation (executed via `check_advisor_dedup.py`,
+more rigorous than this addendum's own manual grep would have been) and a softened "32 agents"
+figure on this ADR's own ratification self-review. That fix is kept as-is rather than duplicated
+here. What it did **not** reach — a *different* self-review event, and D2 — is what this addendum
+still covers.
+
+**The design spec's own §6.6 Change History claims a "44 agents, 6 lenses... workflow run
+`wf_88c21d8d-a7f`," disposition `BLOCKED`, "6 confirmed BLOCKERs," and a "targeted recheck
+(workflow `wf_8d2086b0-27d`)"** — a separate review, of the §6.6 subsection specifically, distinct
+from this ADR's own "32 agents" ratification self-review that PR #59 already addressed. A
+repo-wide search for both workflow IDs returns hits only inside the design spec's own prose — no
+`journal.jsonl`, per-lens findings file, or persona-log entry anywhere records either run's actual
+output. What *is* independently checkable: the specific content changes those claims describe
+landed as real, inspectable commits — `eba0701` ("§6.6 panel found BLOCKED -- 6 confirmed
+BLOCKERs, fixed"), `8e19126` ("targeted recheck confirmed fix 3 still open; redesign it"),
+`bc8d828` ("§6.6 cross-examination round Proposed -> Accepted") — each with a real diff matching
+its message, confirmed via `git log`. **Disposition: downgrade the framing from "a scored N-agent
+panel verdict" to "an editorial self-review pass of unconfirmed scale/mechanism, whose resulting
+content changes are independently verifiable in the commit history."** This does not reopen §6.6's
+`Accepted` status (Joshua ratified it directly, "ratify now" — a separate, sufficient authority
+channel under D5 that never depended on the self-review's scale claims being true) or retroactively
+invalidate any of the content fixes the self-review produced (those stand on their own merits,
+checkable in the diff, independent of how the review that found them is described).
+
+**Same gap, same fix, for D2 above.** D2's "verified via a live regression run, 2026-08-19" claim
+has the identical evidentiary shape — no test log or session record anywhere shows this run
+happened. Partially mitigated, as the packet-wide review itself noted: `.claude/workflows/
+pre-ratification-adversarial-panel.js` structurally gates persona-mode logic behind
+`if (personaMode)` (confirmed by direct read), so a non-persona-mode caller plausibly does fall
+through unchanged — but that is code-reading, not a shown run. Read D2's regression claim as
+"structurally supported by code inspection," not as a scored test result.
+
+---
+
 ## Verification
 
 ```bash
@@ -331,4 +371,5 @@ python scripts/check_adr_graph.py
 | 2026-08-19 | Self-review pass (32-agent, 4-dimension adversarial review, see §0 Self-review note): corrected D2's misattribution (three-loop-binding ADR, not GRAND ADR), fixed the §10 CRO-invariant grep that could never match CLAUDE.md, softened §4's unsupported "kept in sync by audit hook" claim, refreshed §0's design-spec and workflow-JS anchors past their own initial staleness, clarified D3's new-gate-vs-no-new-authority distinction. Same review also fixed a real fail-open CRO hard-block defect in the workflow JS itself (commit 84a941a) and a BLOCKER-undercount in the design spec's §13 (commit 47e3421) — logged there, not here, since neither is this ADR's own content. | Claude Code |
 | 2026-08-19 | Ratified `Proposed` → `Accepted` (operator in-session instruction, "ratify the ADR"; Ratification note populated). §6 ACCEPTED downstream updates landed same commit: `CLAUDE.md` standing-decision pointer row, `docs/adr/INDEX.md` regenerated, design spec cross-reference addendum. | Joshua + Claude Code |
 | 2026-08-19 | Addendum added — D1's "§§3–7" design-spec pointer clarified as a snapshot at ratification, not a live range, so a later same-numbered addition (§6.6) isn't read as already-ratified. Found by the §6.6 pre-ratification adversarial panel (44 agents, 6 lenses, workflow run `wf_88c21d8d-a7f`). | Claude Code |
-| 2026-08-19 | Backfilled Rule 8 sub-rule 10 dedup-first attestation into §0 (omitted at original authoring; in force since 2026-08-15). Marked the Self-review "32 agents" figure as-reported — run artifacts were not preserved. Found by the 2026-08-19 §6.6 adversarial panel (`wf_88c21d8d-a7f`) as a pre-existing regression, not caused by §6.6. | Claude Code |
+| 2026-08-19 | Backfilled Rule 8 sub-rule 10 dedup-first attestation into §0 (omitted at original authoring; in force since 2026-08-15). Marked the Self-review "32 agents" figure as-reported — run artifacts were not preserved. Found by the 2026-08-19 §6.6 adversarial panel (`wf_88c21d8d-a7f`) as a pre-existing regression, not caused by §6.6. | Claude Code (PR #59, `cursor/persona-hierarchy-spec-staleness-1583`) |
+| 2026-08-19 | Addendum added — self-review evidentiary status for the design spec's *separate* §6.6 self-review claim ("44 agents... workflow run `wf_88c21d8d-a7f`," "6 confirmed BLOCKERs") and D2's "live regression run" claim, both with no recoverable artifact anywhere in the repo — downgraded in framing to "editorial pass, unconfirmed scale" while leaving the underlying, independently-checkable content changes (real commits, verified via `git log`) untouched. Originally drafted broader, from a packet-wide adversarial review (46 agents) of the design spec that also covered this ADR; narrowed on merge with the parallel PR #59 fix above, which already covers this ADR's own dedup gap and ratification self-review — not duplicated here. Neither correction reopens §6.6's `Accepted` status or D1-D5. | Claude Code (drafted at operator request, following this file's own prior-addendum precedent — correction/clarification, no re-litigation, no fresh ratification act required) |

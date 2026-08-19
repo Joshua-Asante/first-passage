@@ -42,26 +42,32 @@ This is an overlay. It does not touch:
 - **The CC/Cursor surface-allocation ADR** (`docs/adr/2026-07-14-cc-cursor-surface-allocation.md`) —
   orthogonal axis (execution surface vs. decision authority). Cursor's role in this design (§5.3) is
   exactly its existing role under `cursor-fleet`, not a new one.
-- **c1 Q-XMEM-1** (the parked cross-surface memory sidecar pilot) — persona memory (§6.4) is a
+- **c1 Q-XMEM-1** (the cross-surface memory sidecar pilot, ratified `SUBTRACT` 2026-08-19 via GSUB-2
+  *(corrected 2026-08-19 — see change history; previously called "parked" here after its own
+  disposition had already changed)* — `docs/pursuits/c1-q-xmem-1.md`) — persona memory (§6.4) is a
   narrower, distinct mechanism (a plain per-persona markdown log read/written by this panel
   mechanism only). It is not a general cross-surface visibility system and does not revive that
-  parked pursuit or its re-entry armor.
+  pursuit or its re-entry armor.
 - **No AI persona gains independent authority to execute a GRAND Subtract or a STRATEGIC Delete.**
   Panels are advisory. Joshua decides, always — with one narrow exception (§6.3) that restates an
   existing non-negotiable, not a new grant of authority.
 
 ### 2.1 Retention self-test (added 2026-08-19 — see change history)
 
-This spec proposes ~20 new permanent artifacts (18 persona definition files, up to 18 append-only
-log files, a roster index, a checker script). Applying CLAUDE.md's own retention test directly to
-that proposal, rather than leaving it unexamined:
+This spec proposes 21 new permanent artifacts that exist at authoring time *(corrected 2026-08-19
+— see change history; the prior "~20" headline didn't sum to its own listed components)*: 19
+persona definition files on disk (18 spawnable AI personas plus a `ceo.md` kept for roster-index
+completeness even though CEO is never spawned, §5.1), a roster index, and a checker script — plus
+up to 18 more append-only log files that accrue only once a persona's first real run happens
+(§6.4) and are explicitly excluded from this count. Applying CLAUDE.md's own retention test
+directly to that proposal, rather than leaving it unexamined:
 
 - **R1 (pipeline-consumed):** contingent, not yet true. Each persona file is *designed* to be read by
   its own spawn prompt (§6.2) once the mechanism is in real use — but as of this writing nothing has
   consumed them for a real (non-rehearsal) decision. The §10 falsifier is the mechanism that proves
   or disproves this in use, not on faith.
 - **R2 (live-safety):** true for the CRO seat specifically — its hard-block exception (§6.3) is a
-  live-safety-adjacent control. The other 17 files are not live-safety artifacts on their own.
+  live-safety-adjacent control. The other 18 files are not live-safety artifacts on their own.
 - **R3 (re-proposal bar):** not directly applicable — personas aren't rejected candidates being
   re-proposed. §11's open follow-up on a future Staff-seat intake rule (reusing GRAND §2.5) is the
   nearest analogue.
@@ -199,7 +205,12 @@ Each relevant persona is spawned fresh via `agent()`:
 Staff-tier reviews (where they exist — Falsifier Analyst, TCA Analyst, etc.) apply the same
 independence principle at lower cost: one fresh agent call reading only the candidate/data artifact,
 not the proposing session's framing or enthusiasm for the candidate. This is the direct
-operationalization of SR 11-7's "validator independent of developer."
+operationalization of SR 11-7's principle that a validator must be organizationally independent of
+the developer *(reworded 2026-08-19 — see change history; not the letter's literal wording, an
+accurate paraphrase)*.
+
+This mechanic addresses *contextual* contamination only — see §9's "Architectural correlation"
+bullet for the distinct, unaddressed risk of same-model-family correlated bias across personas.
 
 ### 6.3 Synthesis and the one hard-block exception
 
@@ -214,6 +225,24 @@ authority.
 
 Everything else stays fully advisory. Joshua decides, always.
 
+**Drafted, not wired in (added 2026-08-19).** A deterministic extension to synthesis, sketched here
+for review and intentionally not yet active: for every pair of personas' non-NIT findings, flag
+where `severity` diverges (one flags BLOCKER/CONCERN, another says clean) **and** their `location`
+fields are an exact non-match — a purely syntactic proxy for "independently-sourced" dissent, no
+fuzzy topic-matching. Where it fires, inject a line into the synthesis prompt (mirroring how
+`hardBlockLine` is already injected today for the CRO hard-block above) instructing the synthesis
+pass to surface that finding prominently as independently-sourced dissent, never average it into
+general disagreement. This sharpens the "dissent preserved verbatim" rule above with a concrete
+escalation signal, without reopening the CRO hard-block's status as the *only* case where a dissent
+is elevated above uniform advisory status.
+
+**Held, explicitly, until the first real N=3 data point lands (§10) — currently 1/3 banked
+(GSUB-2, §13 addendum).** Wiring this into the live
+`.claude/workflows/pre-ratification-adversarial-panel.js` before the base mechanism itself has
+cleared its own falsifier gate would layer new analytical machinery onto a mechanism still on
+probation. This paragraph is the frozen spec for that future patch, not the patch itself — no code
+changes accompany this addition.
+
 ### 6.4 Persona memory
 
 One markdown file per persona (`docs/personas/<role-slug>-log.md`), append-only — matching how
@@ -227,6 +256,32 @@ fabricating history.
 
 **Explicitly distinct from c1 Q-XMEM-1** (§2) — this is a narrow, single-purpose artifact bound to
 this panel mechanism only, not a general cross-surface memory system.
+
+#### 6.4.1 Charter versioning and bounded self-refinement (added 2026-08-19)
+
+**Charter versioning (no caveat).** Every `docs/personas/<slug>.md` file is already ordinary
+committed markdown. The only addition is capturing the charter's git state at spawn time:
+`Charter-Commit` (§12's template) records the short SHA of `docs/personas/<slug>.md`
+(`git log -1 --format=%h -- docs/personas/<slug>.md`) at spawn time, filled in by the calling
+session during the §12 log-append procedure — no change to the Workflow script itself. This makes a
+review reproducible against the exact charter text in force when it ran.
+
+**Bounded self-refinement, Governance-gated.** A persona may *propose* — never silently apply — a
+charter edit, but only on a pre-registered trigger: **2 consecutive real log entries where Joshua's
+ratification diverges from the persona's recommendation, citing the same root cause.** On that
+trigger, the persona drafts a proposed charter diff + rationale, appended to its own log as a
+flagged, not-yet-ratified entry.
+
+**Before Joshua ever sees it, a fresh Head of Governance spawn independently reads only the
+proposed diff + stated rationale — not the underlying case history — and endorses or objects,
+logged to `docs/personas/head-of-governance-log.md` per its own existing convention.** This
+Governance hop is required specifically for control-layer personas (CRO, Head of Risk & Sizing,
+Model Validation Analyst, and Head of Governance itself) proposing edits to their *own* review
+scope — without it, a control-layer persona auditing its own proposed redefinition reproduces, in
+miniature, exactly the self-audit failure §5.2.1 already reasoned through once ("placing [Head of
+Governance] under CRO would have Risk auditing itself"). Only after Governance's independent pass
+does the diff reach Joshua, as an ordinary doc-change PR — the same ratification path any other
+charter or doctrine edit in this repo already takes.
 
 ### 6.5 Permanent Staff trigger (independent of the panel)
 
@@ -271,8 +326,9 @@ domain-crispness §7's error-handling table already protects one layer down.
 
 **CRO carve-out (mandatory, not an ownership-map lookup).** CRO is always an eligible cross-
 examination participant on any GRAND-tier item, regardless of what `ownership-map.md` lists —
-this mirrors the ADR's own §4 mandatory-CRO rule ("CRO on every single GRAND decision, with no
-exceptions") verbatim, one layer down. Checked against the map directly: CRO is named Primary or
+this mirrors this spec's own §4 mandatory-CRO rule ("CRO on every single GRAND decision, with no
+exceptions") verbatim, one layer down *(corrected 2026-08-19 — see change history; previously
+misattributed to the sibling ADR's own §4, which contains only H:/Falsifier: text)*. Checked against the map directly: CRO is named Primary or
 Secondary owner on exactly 1 of 38 tracked pursuit rows (`e1`), so without this carve-out the
 ownership gate would hard-fail-closed on the other 37 even though CRO's own Stage-1 participation
 producing the disputed finding was itself mandatory. The gate as applied to every *other* persona
@@ -357,6 +413,39 @@ produced zero disputed-finding-between-personas events (everything landed unanim
 unanimous-refute at the verify stage), which is a real data point toward branch (c) being the
 likely outcome at the first checkpoint, not evidence either for or against the mechanism itself.
 
+### 6.7 Persona retirement procedure (individual seat — added 2026-08-19)
+
+Distinct from §10's falsifier disposition, which demotes the *whole panel mechanism* if it fires
+("demote to a lighter, non-panel review path"). Retiring one named persona is a separate, narrower,
+human-initiated event with its own evidence — this subsection is the previously-missing procedure
+for that case, modeled on this repo's own Great Prune precedent
+(`docs/adr/2026-08-08-great-prune.md`): PR-merge is the ratification, and dead-weight has to be
+proven, not assumed. Great Prune's own adversarial "prove each file is dead" review rescued 66 of
+69 candidate deletions (4.3% classifier precision) before its own PR merged — persona retirement
+carries the same proof burden, scaled down.
+
+**Trigger.** Operator-decided only, never automatic — e.g. N consecutive reviews with zero
+findings, or a direct Joshua call. Never inferred solely from the §10 falsifier firing on the whole
+panel, which is a distinct, broader event.
+
+**Procedure.**
+1. **Freeze intake** — stop assigning new `docs/personas/ownership-map.md` rows to the persona.
+2. **Reassign** — move every existing ownership-map row (primary or secondary) to the covering
+   persona, per the existing reporting line (a retired Staff seat's rows go to its Head; a retired
+   Senior Manager's rows go to its GRAND-tier officer).
+3. **Archive, don't delete** — the persona's log file (`docs/personas/<slug>-log.md`) stops
+   receiving new entries; git history is the archive, matching how Great Prune treats every
+   deleted byte (`git show pre-prune-2026-08-08:<path>`).
+4. **Update the index** — mark the row RETIRED in `docs/personas/INDEX.md` with a pointer, the same
+   tombstone convention `docs/adr/TOMBSTONES.md` already uses elsewhere in this repo.
+5. **Ratify before merge** — the whole diff (ownership-map reassignment + INDEX update + a short
+   retirement note stating the trigger and evidence) goes to Joshua as one PR, never auto-executed
+   — the same D5 discipline every other structural change in this design already carries.
+
+Explicitly not part of this procedure: disabling "endpoints or credentials" — personas are fresh
+per-review spawns with no standing credentials to revoke; step 4 above already covers what that
+instinct is reaching for.
+
 ## 7. Error handling
 
 | Condition | Behavior |
@@ -373,9 +462,9 @@ likely outcome at the first checkpoint, not evidence either for or against the m
 |---|---|
 | **Same-session multi-voice** — one CC session sequentially writes each persona's take in shared context. Cheap, no new tooling. | Fails the independence principle this whole design is built on — the exact failure shape as Kerviel/Adoboli (one party holding both the proposing and reviewing role). Acceptable only for low-stakes OUTER-tier labeling, never for GRAND/STRATEGIC panel decisions. |
 | **Full bespoke build** — new skill, new memory infrastructure from scratch, independent of `pre-ratification-adversarial-panel`. | Highest cost; duplicates most of what the existing skill and a plain markdown log already provide. Only worth revisiting if the lightweight design here proves insufficient in real use. |
-| **Fixed 4-6 fan-out per tier, forced to a target org-chart shape** (the original proposal) | Real current STRATEGIC-tier inventory supports 2-3 stable domains per office (7-8 total), not 12-18. Pre-minting empty seats to hit a target count reproduces the "belt that only grows" failure mode GSUB-1's own retrospective flagged. Roster grows only when a genuine new standing domain opens. |
+| **Fixed 4-6 fan-out per tier, forced to a target org-chart shape** (the original proposal) | Real current STRATEGIC-tier inventory supports 2-3 stable domains per office (7-8 total), not 12-18. Pre-minting empty seats to hit a target count reproduces the volume/bloat failure shape the GRAND ADR's own motivating language names "a belt that only grows" *(corrected 2026-08-19 — see change history; a related but distinct symptom from what GSUB-1's own retrospective actually found — ownerless, un-expiring drift, not raw volume)*. Roster grows only when a genuine new standing domain opens. |
 | **Manager layer between Senior Managers and Staff** (mirroring OUTER as its own persona tier) | The candidate "manager" functions (cheap-falsifier gating, cost-law screening, etc.) are staff-shaped work in real organizational terms — mechanical, checklist-driven, one-function-one-owner — not supervisory judgment over several such functions. Real front/middle/back offices also run 3 levels deep, not 4 (§9). |
-| **Persona-per-current-pursuit instances** (1:1 with the 38 `docs/pursuits/` records) | Pursuits churn on a near-weekly cadence (7 of the original 8 GSUB-1 PARKs still convert absent renewal by 2026-11-08 — b5 was already renewed to 2027-02-08 on 2026-08-16, before this spec was drafted); this roster would need constant re-minting and would go stale within days. Stable functional roles persist across whatever pursuits currently sit in their domain, matching how real orgs actually staff departments. |
+| **Persona-per-current-pursuit instances** (1:1 with the 38 `docs/pursuits/` records) | Pursuits churn on a near-weekly cadence — of the original 8 GSUB-1 PARKs, only 5 (b1, b3, b6, b7, c3) still ride to the 2026-11-08 default *(corrected 2026-08-19 — see change history; previously stated "7," undercounting two further same-day dispositions)*: b5 was renewed to 2027-02-08 on 2026-08-16, and b2/c1 were separately ratified `SUBTRACT` via GSUB-2 on 2026-08-19 — itself evidence of the churn this row describes. This roster would need constant re-minting and would go stale within days. Stable functional roles persist across whatever pursuits currently sit in their domain, matching how real orgs actually staff departments. |
 
 ## 9. Real-world grounding (research summary)
 
@@ -405,6 +494,14 @@ Full findings live in this session's research; key points repeated here since th
   non-PM principal) — the generalizable rule this design borrows: independence comes from the
   context/reporting boundary (§6.2's fresh-spawn-reads-only-the-artifact rule), not from having
   enough bodies to staff three offices.
+- **Architectural correlation — an open risk, not solved by this design** *(added 2026-08-19)*:
+  fresh-context spawning (§6.2) prevents *contextual* contamination — a reviewer never sees the
+  proposer's live reasoning, or any other reviewer's draft opinion. It does nothing about
+  *architectural* correlation: CRO/CIO/COO/CFO personas likely share one underlying model family's
+  blind spots and its pull toward "the artifact looks complete, therefore approve." 2025-2026
+  literature on LLM-judge/evaluator collusion documents this as a real, unsolved failure mode for
+  nominally independent AI reviewers. No mitigation is proposed here — this bullet exists so "fresh
+  subagents" is never silently read as having solved a risk it only partially addresses.
 - **Title grounding** *(corrected 2026-08-19 — see change history)*: this session's research
   characterized the roster's titles against real job postings and fund career pages, but no capture
   dates, source URLs, or per-role scoring table were retained or attached anywhere in this repo.
@@ -443,6 +540,64 @@ in a persona's log should always appear in the corresponding synthesis memo — 
 two (dissent logged but silently smoothed in synthesis) is a defect in the mechanism, not a judgment
 call, and should be treated as a bug report regardless of where the H/Falsifier trajectory stands.
 
+**A limitation this falsifier cannot see (added 2026-08-19 — see §9's "Architectural correlation"
+bullet).** The H/Falsifier above measures divergence from what Joshua would have concluded
+unassisted. A panel that is correlated-but-wrong — sharing the same underlying-model blind spot
+Joshua himself might share, per §9 — looks identical, on this measure, to a panel that is genuinely
+unnecessary: both produce zero decision-difference. This falsifier can detect "the panel added
+nothing"; it cannot distinguish *why* — redundant panel vs. panel-and-operator sharing one blind
+spot together. No fix is proposed here, consistent with §9's own stance on the underlying risk —
+named as an open limitation of the measurement itself, not left implicit.
+
+### 10.1 Preference-anchoring companion check (added 2026-08-19)
+
+A distinct risk from the H/Falsifier above, surfaced by 2025-2026 research on stateful personal
+agents: once a claim is committed to durable (not session-only) memory, agreement-bias/failure
+rate has been measured to rise sharply on repeated retrieval — agents can promote a user-favored
+conclusion to higher epistemic authority over time. The persona-memory design (§6.4) is durable,
+append-only, and read before every spawn — precisely the condition that research names as the
+trigger. This is a plausible latent exposure in an already-built, already-ratified mechanism, not
+a new risk this addition introduces.
+
+**Check (a distinct H′, not folded into the §10 count above).** After a given persona's log
+accumulates its 5th and every 5th subsequent real (non-rehearsal) entry, read the trend of two
+figures across that persona's history: (i) the plain agreement rate — entries where `Ratified as
+recommended` reads `Yes`, divided by total; (ii) the `Confirmed findings` trend — is it drifting
+toward "none." The specific red flag is **both trending together** — agreement rising while
+findings-count falls — not high agreement alone, since a genuinely careful reviewer can legitimately
+agree with a careful operator often. That combined signature is what "hollowing into a rubber
+stamp" actually looks like on paper, distinct from ordinary competent agreement.
+
+This is a manual, periodic read (Joshua or CC eyeballing a log file), not automated tooling —
+proportionate to a diagnostic that is only meaningful past a handful of data points, and consistent
+with this spec's own anti-belt-growth stance (§8) against building infrastructure ahead of
+demonstrated need. Any note this check produces is tagged the same way the existing `**Rehearsal:**
+yes` convention already tags non-counting entries (§13), so a future reader of
+`docs/personas/*-log.md` never mistakes this diagnostic for part of the real §10 N=3 count.
+
+### 10.2 Self-consistency companion checkpoint (added 2026-08-19)
+
+A distinct, earlier, and cheaper comparison point than the H/Falsifier above — sourced from 2026
+research finding automatically-designed multi-agent systems can underperform a single agent's
+Chain-of-Thought with Self-Consistency (the same agent sampled N times, majority vote), at a
+fraction of the compute cost.
+
+**Check.** On the first 1-2 real GRAND-tier reviews, alongside the real panel run, separately spawn
+3 same-persona samples of the CRO build prompt (already defined at `PERSONAS.find(p => p.key ===
+'cro').build()` in `.claude/workflows/pre-ratification-adversarial-panel.js`) via a plain
+`parallel()` call, majority-vote their `clean`/`findings` output, and compare against what the CRO
+seat produced inside the real panel run. No change to the ratified workflow file is needed — this
+runs alongside it, as an ad hoc side call, not inside it.
+
+**Explicitly a different H′, not a substitute measurement.** The §10 falsifier above is anchored to
+human ground truth ("changes what Joshua would have ratified"). Self-consistency-vs-panel agreement
+is AI-vs-AI — a panel could match the self-consistency baseline 100% of the time and still change
+what Joshua would have ratified, or diverge sharply and still match his actual call. This checkpoint
+is a supplementary, non-counting diagnostic, logged with the same explicit non-counting tag §13's
+rehearsal entries already use (e.g. `**Self-consistency checkpoint:** yes -- N=3 same-persona
+resample compared against full panel verdict; distinct H′, does not count toward §10's N=3`) —
+never folded silently into the real falsifier count.
+
 ## 11. Open follow-ups (not decided by this spec)
 
 - **Formal ADR — closed 2026-08-19.** Disputed finding B (whether a separate ADR should follow, to
@@ -450,7 +605,8 @@ call, and should be treated as a bug report regardless of where the H/Falsifier 
   `docs/superpowers/specs/` document) is resolved by
   [`docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md`](../../adr/2026-08-19-loop-persona-hierarchy-review-panel.md)
   (`Accepted` same day). That ADR *is* the resolution — a pointer-tier registration of the decision
-  this spec already carries. See Change History.
+  this spec already carries. This bullet is left in place as a record that the question was once
+  open, not because it still is. See Change History.
 - The exact `pre-ratification-adversarial-panel` skill edits needed to carry named personas instead
   of generic adversarial-reviewer framings — implementation detail for the plan, not this spec.
 - Whether any additional Staff seats should be added later, and under what evidence bar (the same
@@ -473,7 +629,8 @@ transition) is **resolved same day** by
 [`docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md`](../../adr/2026-08-19-loop-persona-hierarchy-review-panel.md)
 (`Accepted` 2026-08-19). The operator originally accepted the design in its
 `docs/superpowers/specs/` genre; the ADR is the subsequent pointer-tier registration on the
-doctrine surface. See §11 and Change History.
+doctrine surface *(clarified 2026-08-19 — see change history; this note is left as originally
+written, not backdated, so the sequence of events stays honest)*. See §11 and Change History.
 
 **Not licensed by this acceptance:** anything the design's own §2 Scope boundary already excludes —
 the loop-tier doctrine, the CC/Cursor surface-allocation ADR, and c1 Q-XMEM-1 stay untouched. This
@@ -501,14 +658,30 @@ history.
 | 2026-08-19 | **Correction to the row above.** The row's characterization of the previous fix — "a `Cross-exam (operator-framed): yes` provenance tag, closing a durable-log contamination path" — overclaimed. A targeted, operator-requested re-check (workflow `wf_8d2086b0-27d`: one steelman-the-kill lens re-run against the fixed text, double-skeptic-verified) confirmed unanimously that the tag was visibility-only: nothing in §6.2/§6.4 told a future Stage-1 spawn to treat a tagged entry any differently, so the influence pathway the original BLOCKER named stayed fully open, just human-auditable. The same re-check confirmed fixes 1, 4, 5 (the Status line, CRO hard-block extension, Falsifier third branch) genuinely closed their BLOCKERs, and flagged (disputed 1-1, non-gating per its own synthesis) that the CRO carve-out expands cross-exam eligibility from 1/38 to 38/38 GRAND items, compounding the tag's gap specifically for the panel's highest-stakes seat. **Redesigned, not re-patched:** mechanics point 5 now routes a cross-examination round's written record to a separate file (`docs/personas/<slug>-cross-exam-log.md`) that §6.2's Stage-1 spawn never reads, closing the pathway structurally rather than by label — and, as a side effect, substantially moots the CRO-exposure CONCERN, since no cross-exam content reaches any persona's Stage-1 read path regardless of how many items that persona is eligible for. The CRO hard-block extension was also re-scoped to CRO-authored citations specifically, matching §6.3's literal wording and the underlying `croHardBlockFires` code (keys off the `cro` lens result only), closing the NIT the same re-check raised about unscoped hard-block-triggering authority. Still `PROPOSED` — this redesign has not itself been re-verified by a fresh check. | Claude Code |
 | 2026-08-19 | §6.6 ratified `PROPOSED` → `Accepted` (operator in-session instruction, "ratify now"). The redesigned mechanics point 5 (§6.6-cross-exam-log.md file separation, ratified without a third review round — operator judgment call) is now the entirety of what this subsection describes. Status line, §7's row, and this Change History updated to match; §5.1's own mandatory-CRO-participation framing and §6.3's hard-block scoping were re-read at ratification and found unaffected by anything in §6.6. | Joshua + Claude Code |
 | 2026-08-19 | §1 reworded: dropped the inaccurate "replacing a single-voice recommendation" framing (the existing panel already runs 6 lenses + 2 skeptics) and added a grounding caveat that every motivating incident is external, not First-Passage-specific. Added §2.1 applying CLAUDE.md's own retention test (R1-R5) to this spec's ~20 proposed new artifacts, honestly stating it passes R1/R5 prospectively, not today. Softened §4's unsupported "order of magnitude" panel-cost claim. §5.1 CIO row and `docs/personas/cio.md` corrected: a2 has no "strategy-generation side" (contradicted both its own pursuit record and §5.2's wholesale Head-of-Execution assignment). §8's alternatives table corrected: 37 pursuits -> 38 (actual count); 8 PARKs -> 7 (b5 was renewed to 2027-02-08 on 2026-08-16, before this spec's own 2026-08-18 date). All found by the same 2026-08-19 adversarial review as the BLOCKERs above (confirmed CONCERNs, not blocking on their own). | Claude Code |
+| 2026-08-19 | §12's log-append template gained two fields, `Evidence-Cited` and `Deviation-from-Precedent`, filled from data the synthesis pass and the prior-log read already produce -- not new data collection. Sourced from a landscape survey of 2025-2026 multi-agent memory practice (arXiv:2508.08997, "Intrinsic Memory Agents": uniform structured per-role templates beat free-text logs on both role-adherence and token efficiency); the survey found the three other fields the source proposed (Artifact-Reviewed, Verdict, Ratified-or-Overridden) were already covered by this template's existing minimum contract. Record-keeping only, explicitly non-gating (new §12 closing paragraph) -- existing entries are unaffected, no synthesis is blocked for an incomplete log. Dispatch-eligibility checked against `docs/adr/2026-07-14-cc-cursor-surface-allocation.md` §2 routing test 1 ("does the task author doctrine... -> CC, full stop") before authoring: this file is the content-of-record for an `Accepted` ADR, so the edit stayed on this surface rather than routing to Cursor. | Claude Code |
+| 2026-08-19 | §10.1 added -- preference-anchoring companion check, a distinct H′ from the main §10 falsifier. Sourced from 2026 research on stateful personal agents (durable-memory agreement-bias/failure-rate escalation on repeated retrieval) applied to the fact that persona memory (§6.4) is exactly the durable, read-before-every-spawn condition that research names as the trigger. Check: at every 5th real log entry, watch for agreement-rate-rising AND findings-count-falling *together*, not agreement alone. Manual/periodic, not automated tooling; non-counting, tagged the same way §13's rehearsal entries already are. Dispatch-eligibility checked against the surface-allocation ADR before authoring, same test as the row above -- stayed off Cursor. | Claude Code |
+| 2026-08-19 | §14 added -- a one-time MAST pre-mortem procedure (arXiv:2503.13657, Cemri et al., NeurIPS 2025), checking the panel's own review PROCESS rather than §10's outcome-only measure. Read the full 14-mode taxonomy (previously only the 3-category summary was known); scoped down to the 9 modes actually reachable given this panel's fan-out, single-shot-call architecture (never a conversing multi-agent system), naming and excluding the other 4 (loss of conversation history, unaware of termination conditions, conversation reset, fail to ask for clarification) as architecturally inapplicable rather than silently dropping them. Run once per real panel use (not rehearsal-inclusive, not a standing recurring gate) against `journal.jsonl`; no new persona minted, extends Head of Governance's existing mandate if a standing owner is ever needed. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
+| 2026-08-19 | §9 gained an "Architectural correlation" bullet, and §6.2 gained a one-line cross-reference to it: fresh-context spawning (already built) prevents contextual contamination but not architectural correlation between personas that likely share one model family's blind spots and sycophancy pull, per 2025-2026 LLM-judge-collusion literature. No mitigation proposed -- documentation only, so "fresh subagents" is never silently read as having solved a risk it only partially addresses. Smallest item on the docket: no code, no new structure, no forward obligation. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
+| 2026-08-19 | §6.3 gained a drafted-not-wired-in extension: a deterministic `flagIndependentDissent`-shaped mechanic (diverging severity + non-matching `location` between two personas' findings) sketched as the frozen spec for a future synthesis-prompt addition, explicitly held until §10's N=3 falsifier clears (currently 1/3 -- GSUB-2). No code touched `.claude/workflows/pre-ratification-adversarial-panel.js` in this commit; the paragraph is the spec, not the patch. Narrowed from an earlier trained-classifier proposal to this purely syntactic, deterministic form specifically so it doesn't reopen the CRO hard-block's status as the sole non-advisory dissent case. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
+| 2026-08-19 | §10.2 added -- self-consistency companion checkpoint, a distinct H′ from the main §10 falsifier. Sourced from a 2026 benchmark finding automatically-designed multi-agent systems can underperform a single agent's Chain-of-Thought self-consistency at a fraction of the cost. Check: on the first 1-2 real GRAND reviews, spawn 3 extra same-persona CRO samples alongside the real run and compare majority-vote agreement -- an AI-vs-AI measurement, explicitly distinct from and not a substitute for the human-ground-truth §10 falsifier. No workflow-file code change; runs as an ad hoc side call. Non-counting, tagged the same way §13's rehearsal entries already are. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
+| 2026-08-19 | §6.7 added -- persona retirement procedure for an individual seat, distinct from §10's whole-panel demotion disposition. Modeled on this repo's own Great Prune precedent (66/69 candidate deletions rescued on adversarial review before that PR merged): operator-decided trigger only, 5-step freeze/reassign/archive/index/ratify-before-merge sequence routing through PR review the same way Great Prune itself was ratified, never auto-executed. Dropped the source proposal's "disable endpoints/credentials" step -- no literal referent, since personas are fresh per-review spawns with no standing credentials; step 4 (index update) already covers the intent. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
+| 2026-08-19 | §6.4.1 added -- charter versioning (§12 template gains a third field, `Charter-Commit`, the short SHA of the persona's own `.md` file at spawn time -- no code change, filled at log-append time) and a bounded, Governance-gated self-refinement procedure: a persona may propose (never silently apply) a charter edit on a pre-registered trigger (2 consecutive real entries where Joshua's ratification diverges from the persona's own recommendation, same root cause), but for control-layer personas (CRO, Head of Risk & Sizing, Model Validation Analyst, Head of Governance itself) the proposal must clear an independent Head of Governance read before Joshua ever sees it -- otherwise a control-layer persona would be auditing its own proposed redefinition, the exact failure §5.2.1 already reasoned through once for Governance's own placement. Closes this docket's last open item; final item in the sequence. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
+| 2026-08-19 | **Packet-wide adversarial review (46 agents, 6 lenses + double-skeptic verify, run against the full document post the 8-item sequence above) -- disposition `BLOCKED`, 14 confirmed findings + 1 disputed.** Two are genuinely defects in this pass's own §14 addition, fixed here: the MAST framework-count citation (150-trace/κ=0.88 set is 5 frameworks, not 7 -- that figure belongs to a separate 1,600+-trace corpus), and §14's mode-count arithmetic (4 excluded + 9 listed = 13, one short of the stated 14 -- the published taxonomy's two "Disobey" modes were bundled into one row; now split into two, making a true 10-row table). The rest were pre-existing, found in passing in the same file by the same run (matching this document's own established convention, see the §6.6 fix-in-passing rows above): §2/Ratification-note's "c1 Q-XMEM-1... parked" (SUBTRACTed via GSUB-2 same day, never updated); §2.1's "~20 new permanent artifacts" not summing to its own listed components (corrected to 21 existing-at-authoring-time + up to 18 accruing later, explicitly separated; also fixed the adjacent 18-vs-19-persona-file undercount, `ceo.md` exists on disk); §8's stale "7 of 8" PARK count (5 remain once GSUB-2's same-day b2/c1 SUBTRACTs are counted, not just b5's renewal) and its misattribution of "belt that only grows" to GSUB-1's retrospective (the phrase originates in the GRAND ADR; GSUB-1's own retrospective found a different failure shape -- ownerless drift, not volume); §6.6's CRO carve-out citing "the ADR's own §4" for a rule that only exists in this spec's own §4; §2's D-user-gate line citation (L282 -> L284); §6.2's SR-11-7 phrase de-quoted as an acknowledged paraphrase, not the letter's literal wording. Also added, from the run's Steelman and structural-completeness lenses: a named limitation connecting §9's architectural-correlation risk to §10's own falsifier (it cannot distinguish a redundant panel from a panel sharing the operator's blind spot), and a new §15 Watch-items index consolidating every "held/not-yet-active/named-risk" item into one place. **Not fixed here, flagged for a separate operator decision:** the run's #1 confirmed BLOCKER (the §6.6 self-review's own claimed run IDs/agent-counts and the ADR's D2 regression-run claim have no recoverable artifact anywhere in the repo) and the disputed dedup-first-attestation severity call -- both live partly or fully in `docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md`, an `Accepted` ADR whose ratified body this repo's convention keeps byte-unedited (amendments via addendum, not direct edit) -- out of scope for a same-surface doc-text fix and requiring an operator call on how to characterize unrecoverable prior-session evidence. | Claude Code |
+| 2026-08-19 | **Resolves the row above's flagged BLOCKER/disputed item, discovered on `git push`.** A parallel session (PR #59, `cursor/persona-hierarchy-spec-staleness-1583`) had independently found and fixed an overlapping subset of the same §6.6 spun-off punch list this document's own Change History already named -- the D-user-gate line cite, §5.2's "direct match" labels, §11/Ratification-note staleness, the GRAND ADR §5 forbidden-move quote, §13's unbacked "19 agents" figure, *and* the ADR's dedup-first attestation + "32 agents" self-review claim -- landing on `main` before this branch pushed. A `git merge origin/main` produced real conflicts (not a silent bad merge) on the D-user-gate/§11/Ratification-note text, where origin's wording was kept (equivalent substance, more precise); PR #59's ADR-side fix was kept as-is rather than duplicated. The ADR's own addendum (drafted in response to the row above) was narrowed on merge to cover only what PR #59's fix did not reach -- see `docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md` Change History for the full account. | Claude Code |
 
-## 12. Post-workflow log-append procedure (added during Phase 2 implementation)
+## 12. Post-workflow log-append procedure (added during Phase 2 implementation; template extended
+2026-08-19 -- see Change History)
 
 After a persona-mode `Workflow` call returns, for each slug in `result.personaSlugs`:
 
-1. Read `docs/personas/<slug>-log.md` if it exists; treat as empty (first entry) if not.
+1. Read `docs/personas/<slug>-log.md` if it exists; treat as empty (first entry) if not. This read
+   also supplies the prior entry (if any) that step 3's `Deviation-from-Precedent` field compares
+   against.
 2. Extract that persona's verdict from `result.synthesis` (the synthesis memo names each
-   persona's confirmed/disputed findings by lens key).
+   persona's confirmed/disputed findings by lens key), including the specific file:line or artifact
+   section the verdict was keyed off -- this is `Evidence-Cited` below, not a re-derivation. Also
+   capture the persona's own charter commit at spawn time (`git log -1 --format=%h -- docs/personas/
+   <slug>.md`) -- this is `Charter-Commit` below (§6.4.1).
 3. Append (never edit prior entries) a new entry using this exact template, with today's date filled
    in by the calling session (never computed inside the Workflow script):
 
@@ -517,11 +690,25 @@ After a persona-mode `Workflow` call returns, for each slug in `result.personaSl
 
 **Verdict:** <BLOCKED | CLEAR-WITH-CONCERNS | CLEAR, from result.synthesis for this persona>
 **Confirmed findings:** <count, or "none">
+**Evidence-Cited:** <the specific file:line or artifact section this verdict was keyed off, from
+result.synthesis's per-persona breakdown -- "n/a" if clean with nothing to cite>
+**Deviation-from-Precedent:** <a one-line note on how this verdict differs from what this
+persona's own prior log entries would have predicted, or "None" if it doesn't -- "n/a -- first
+entry" if step 1 found no prior log>
+**Charter-Commit:** <short git SHA of docs/personas/<slug>.md at spawn time>
 **Ratified as recommended:** <Yes | No | Pending -- operator has not yet ratified>
 ```
 
 4. If `result.croHardBlock` is true, every persona's log entry for this review additionally carries
    a line: `**CRO hard block fired:** yes -- disposition is BLOCKED regardless of this persona's own verdict.`
+
+**Non-goal, stated explicitly so a future editor doesn't over-build this:** `Evidence-Cited`,
+`Deviation-from-Precedent`, and `Charter-Commit` are record-keeping fields, filled from what the
+synthesis pass, the prior-log read, and a single `git log` call already produce -- they do not gate
+anything. A log entry missing any of them (e.g. an early entry written before an extension landed)
+is not retroactively invalid, and no synthesis is ever blocked from reaching Joshua for an
+incomplete log -- that would be a new automatic-block class outside the CRO's own narrow §6.3
+carve-out, which none of these extensions touch.
 
 ## 13. Rehearsal record (added during Phase 3 implementation)
 
@@ -556,3 +743,76 @@ proposal, verdict `CLEAR-WITH-CONCERNS`, one confirmed CONCERN fixed before rati
 real data point 1 of the needed 3." The persona-hierarchy ADR's own §4 tracker is the canonical
 count, not this line — restated here only so this section stops reading as if that first real
 review still lay entirely in the future, which it no longer does.
+
+## 14. MAST pre-mortem procedure (added 2026-08-19)
+
+A one-time, read-only process check against the panel's own mechanism — distinct from §10's
+falsifier, which measures OUTCOME only ("does panel input ever change a ratified disposition").
+Sourced from Cemri, Pan, Yang et al., "Why Do Multi-Agent LLM Systems Fail?" (arXiv:2503.13657,
+NeurIPS 2025 Datasets & Benchmarks) — MAST, an empirically-derived 14-mode taxonomy of multi-agent
+failures, built from 150+ expert-annotated traces (κ=0.88 on the IAA subset) across 5 MAS
+frameworks *(corrected 2026-08-19 — see change history; a separate, later 1,600+-trace corpus,
+MAST-Data, spans 7 frameworks total — a different figure this section doesn't otherwise rely on)*.
+
+**Scope, narrowed to this panel's actual architecture.** MAST was built from systems where agents
+converse (AutoGen, ChatDev, AppWorld). This panel is a fan-out of independent, schema-constrained,
+single-shot `agent()` calls across three pipeline stages (Review → Verify → Synthesize) — never a
+live back-and-forth dialogue. Four of the 14 modes assume a conversation that doesn't exist here
+and are excluded by architecture, not oversight: loss of conversation history, unaware of
+termination conditions, conversation reset, fail to ask for clarification (the last is a real,
+separately-named design gap — a persona has no mechanism to request more context mid-review today
+— but that is a design question, not a MAST-checkable defect in a completed run).
+
+The other ten modes map onto this panel's actual stages, across the following table's ten rows
+*(corrected 2026-08-19 — see change history; the published taxonomy's two distinct "Disobey" modes
+were previously bundled into one row, making 4 excluded + 9 listed = 13, one short of the stated
+14)*:
+
+| Mode | Stage | Check |
+|---|---|---|
+| Disobey task specification | Review | Did the persona's finding stay inside the target artifact's actual subject matter, not a different task? |
+| Disobey role specification | Review | Did the persona's finding stay inside its stated Domain (`docs/personas/<slug>.md`)? |
+| Task derailment | Review | Does `notes`/`findings` actually address the target artifact? |
+| Information withholding | Synthesize | Does every CONFIRMED/DISPUTED finding in `lensResults` surface in the synthesis memo? |
+| Ignored other agent's input | Synthesize | Does the memo engage with a persona that said `clean:true` with a substantive rationale? |
+| Reasoning-action mismatch | Review + Verify | Does a finding's `why_wrong` support its `severity`? Does a skeptic's `rationale` support its `refuted` call? |
+| Premature termination | Review | Is a `clean:true` result backed by specific section/line engagement, not a generic one-liner? |
+| No/incomplete verification | Review + Verify | Open every cited `location` and confirm it exists and says what's claimed — the highest-value check, the same class MEMORY.md already tracks (`verify-content-not-path`, `green-gate-is-not-coverage`). |
+| Incorrect verification | Verify | Re-check a sample of the Verify stage's own `refuted` calls independently. |
+| Step repetition | Verify (weak) | Do the two independent skeptic votes read as genuinely independent, or templated restatement of each other? |
+
+MAST's own Appendix E reports individual-mode correlations up to 0.63 — expect real findings to
+trip several adjacent modes at once; this checklist does not force one-mode-per-incident labeling.
+
+**Cadence — one-time, not periodic.** Run once, against `<transcriptDir>/journal.jsonl` from each
+of the first 3 real (non-rehearsal) panel uses tracked by §10's own falsifier — not against
+rehearsal data (§13's rehearsal is explicitly excluded from the N=3 count, and admitting it here
+through a side door would re-open the exact conflation that exclusion exists to prevent), and not
+as a standing recurring gate (a new permanent addition needs the same intake-rule discipline GRAND
+applies to pursuits, §11, not a pass because it's cheap). No named persona owns this — Joshua or CC
+runs the checklist directly; if a standing owner is ever needed later, it extends Head of
+Governance's existing 3rd-line mandate (§5.2.1) rather than minting a 9th Staff seat.
+
+Findings, if any, are recorded as a dated note appended below this section — never editing this
+procedure's own text, matching the append-only ethic §6.4 already uses.
+
+## 15. Watch-items index (added 2026-08-19)
+
+A pointer collection, not new content — every item below is already fully specified in its own
+section; this just answers "what in this design is deliberately not-yet-active, or a named-but-
+unmitigated risk" in one place. Closes a structural-completeness gap a same-day adversarial review
+flagged: each item below was already individually labeled where it lives, just never indexed
+together.
+
+- **§6.3, drafted-not-wired-in dissent flag** — held until §10's N=3 falsifier clears (1/3 banked).
+- **§9, architectural correlation** — a named, unmitigated risk in the independence mechanic; no
+  fix proposed.
+- **§10, falsifier/architectural-correlation limitation** — the H/Falsifier cannot distinguish a
+  redundant panel from a panel sharing the operator's own blind spot.
+- **§10.1, preference-anchoring companion check** — a manual, periodic diagnostic, not automated
+  tooling.
+- **§10.2, self-consistency companion checkpoint** — a bounded, 1-2-use side experiment, not a
+  standing feature.
+
+None of the above requires action; each stays exactly as specified in its own section until its own
+stated trigger fires.
