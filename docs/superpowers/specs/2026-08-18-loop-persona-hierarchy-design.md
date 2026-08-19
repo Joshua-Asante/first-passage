@@ -497,14 +497,19 @@ history.
 | 2026-08-19 | **Correction to the row above.** The row's characterization of the previous fix — "a `Cross-exam (operator-framed): yes` provenance tag, closing a durable-log contamination path" — overclaimed. A targeted, operator-requested re-check (workflow `wf_8d2086b0-27d`: one steelman-the-kill lens re-run against the fixed text, double-skeptic-verified) confirmed unanimously that the tag was visibility-only: nothing in §6.2/§6.4 told a future Stage-1 spawn to treat a tagged entry any differently, so the influence pathway the original BLOCKER named stayed fully open, just human-auditable. The same re-check confirmed fixes 1, 4, 5 (the Status line, CRO hard-block extension, Falsifier third branch) genuinely closed their BLOCKERs, and flagged (disputed 1-1, non-gating per its own synthesis) that the CRO carve-out expands cross-exam eligibility from 1/38 to 38/38 GRAND items, compounding the tag's gap specifically for the panel's highest-stakes seat. **Redesigned, not re-patched:** mechanics point 5 now routes a cross-examination round's written record to a separate file (`docs/personas/<slug>-cross-exam-log.md`) that §6.2's Stage-1 spawn never reads, closing the pathway structurally rather than by label — and, as a side effect, substantially moots the CRO-exposure CONCERN, since no cross-exam content reaches any persona's Stage-1 read path regardless of how many items that persona is eligible for. The CRO hard-block extension was also re-scoped to CRO-authored citations specifically, matching §6.3's literal wording and the underlying `croHardBlockFires` code (keys off the `cro` lens result only), closing the NIT the same re-check raised about unscoped hard-block-triggering authority. Still `PROPOSED` — this redesign has not itself been re-verified by a fresh check. | Claude Code |
 | 2026-08-19 | §6.6 ratified `PROPOSED` → `Accepted` (operator in-session instruction, "ratify now"). The redesigned mechanics point 5 (§6.6-cross-exam-log.md file separation, ratified without a third review round — operator judgment call) is now the entirety of what this subsection describes. Status line, §7's row, and this Change History updated to match; §5.1's own mandatory-CRO-participation framing and §6.3's hard-block scoping were re-read at ratification and found unaffected by anything in §6.6. | Joshua + Claude Code |
 | 2026-08-19 | §1 reworded: dropped the inaccurate "replacing a single-voice recommendation" framing (the existing panel already runs 6 lenses + 2 skeptics) and added a grounding caveat that every motivating incident is external, not First-Passage-specific. Added §2.1 applying CLAUDE.md's own retention test (R1-R5) to this spec's ~20 proposed new artifacts, honestly stating it passes R1/R5 prospectively, not today. Softened §4's unsupported "order of magnitude" panel-cost claim. §5.1 CIO row and `docs/personas/cio.md` corrected: a2 has no "strategy-generation side" (contradicted both its own pursuit record and §5.2's wholesale Head-of-Execution assignment). §8's alternatives table corrected: 37 pursuits -> 38 (actual count); 8 PARKs -> 7 (b5 was renewed to 2027-02-08 on 2026-08-16, before this spec's own 2026-08-18 date). All found by the same 2026-08-19 adversarial review as the BLOCKERs above (confirmed CONCERNs, not blocking on their own). | Claude Code |
+| 2026-08-19 | §12's log-append template gained two fields, `Evidence-Cited` and `Deviation-from-Precedent`, filled from data the synthesis pass and the prior-log read already produce -- not new data collection. Sourced from a landscape survey of 2025-2026 multi-agent memory practice (arXiv:2508.08997, "Intrinsic Memory Agents": uniform structured per-role templates beat free-text logs on both role-adherence and token efficiency); the survey found the three other fields the source proposed (Artifact-Reviewed, Verdict, Ratified-or-Overridden) were already covered by this template's existing minimum contract. Record-keeping only, explicitly non-gating (new §12 closing paragraph) -- existing entries are unaffected, no synthesis is blocked for an incomplete log. Dispatch-eligibility checked against `docs/adr/2026-07-14-cc-cursor-surface-allocation.md` §2 routing test 1 ("does the task author doctrine... -> CC, full stop") before authoring: this file is the content-of-record for an `Accepted` ADR, so the edit stayed on this surface rather than routing to Cursor. | Claude Code |
 
-## 12. Post-workflow log-append procedure (added during Phase 2 implementation)
+## 12. Post-workflow log-append procedure (added during Phase 2 implementation; template extended
+2026-08-19 -- see Change History)
 
 After a persona-mode `Workflow` call returns, for each slug in `result.personaSlugs`:
 
-1. Read `docs/personas/<slug>-log.md` if it exists; treat as empty (first entry) if not.
+1. Read `docs/personas/<slug>-log.md` if it exists; treat as empty (first entry) if not. This read
+   also supplies the prior entry (if any) that step 3's `Deviation-from-Precedent` field compares
+   against.
 2. Extract that persona's verdict from `result.synthesis` (the synthesis memo names each
-   persona's confirmed/disputed findings by lens key).
+   persona's confirmed/disputed findings by lens key), including the specific file:line or artifact
+   section the verdict was keyed off -- this is `Evidence-Cited` below, not a re-derivation.
 3. Append (never edit prior entries) a new entry using this exact template, with today's date filled
    in by the calling session (never computed inside the Workflow script):
 
@@ -513,11 +518,23 @@ After a persona-mode `Workflow` call returns, for each slug in `result.personaSl
 
 **Verdict:** <BLOCKED | CLEAR-WITH-CONCERNS | CLEAR, from result.synthesis for this persona>
 **Confirmed findings:** <count, or "none">
+**Evidence-Cited:** <the specific file:line or artifact section this verdict was keyed off, from
+result.synthesis's per-persona breakdown -- "n/a" if clean with nothing to cite>
+**Deviation-from-Precedent:** <a one-line note on how this verdict differs from what this
+persona's own prior log entries would have predicted, or "None" if it doesn't -- "n/a -- first
+entry" if step 1 found no prior log>
 **Ratified as recommended:** <Yes | No | Pending -- operator has not yet ratified>
 ```
 
 4. If `result.croHardBlock` is true, every persona's log entry for this review additionally carries
    a line: `**CRO hard block fired:** yes -- disposition is BLOCKED regardless of this persona's own verdict.`
+
+**Non-goal, stated explicitly so a future editor doesn't over-build this:** `Evidence-Cited` and
+`Deviation-from-Precedent` are record-keeping fields, filled from what the synthesis pass already
+produced -- they do not gate anything. A log entry missing either field (e.g. an early entry
+written before this extension) is not retroactively invalid, and no synthesis is ever blocked from
+reaching Joshua for an incomplete log -- that would be a new automatic-block class outside the
+CRO's own narrow §6.3 carve-out, which this extension does not touch.
 
 ## 13. Rehearsal record (added during Phase 3 implementation)
 
