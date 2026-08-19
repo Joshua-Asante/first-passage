@@ -101,17 +101,76 @@ scaffolding that already existed, not an invented structure.
 | `PIPELINES.md`, `REPO_MAP.md`, `README.md` | Head of Governance | — | Repo-map/reference docs |
 | `Makefile`, `pyproject.toml`, `requirements-*` | Head of Engineering | — | Build/dependency tooling |
 
-## Layer 2 — Pursuit refinement (Phase 2, not yet run)
+## Layer 2 — Pursuit refinement (done 2026-08-19)
 
-Fan out over all 38 `docs/pursuits/` records the same way Phase 1 of the persona-roster work fanned
-out over the 11 Q-briefs from PR #53 — read each record, confirm or correct the office/persona it
-inherits from the Layer-1 skeleton above, flag genuinely cross-cutting ones rather than forcing a
-single owner. Most should inherit cleanly (e.g., `a3-mnq-discovery-pipeline.md` → Head of Research
-via `lab/discovery/` + `lab/analysis/`; `a2-c1-rail-incumbent-eval-operations.md` → Head of Execution
-via `ops/c1_rail/`) — this layer exists to catch the ones that don't, and to give every pursuit an
-explicit row rather than an inherited default.
+All 38 `docs/pursuits/` records read in full and classified — same Workflow fan-out pattern used for
+the 11 PR-53 Q-briefs, one agent per pursuit, each confirming or correcting the office it would
+inherit from Layer 1's directory skeleton.
 
-**Not run yet.** See the phased plan for scope and sequencing.
+**18 of 38 diverged from their Layer-1 default** (a1, a4, b4, b5, b6, c1, c2, c3, c5, d1, d3, d11,
+d12, d13, d14, d15, d16, e1) — a real signal, not noise: the directory skeleton is a decent coarse
+prior, but pursuit-level content changed the answer on nearly half the cases. Divergence clusters in
+two shapes: (1) an artifact's *location* (docs/pursuits/, .claude/skills/) implied Governance/Back,
+but its actual subject matter was Front/Middle (a1, a4, b4, b6, c3, c5, d3); (2) GRAND-tier's own
+CFO domain line ("subscription spend, d11-d16") wins the *spend-authority* question even when the
+*operational* stakeholder is a different office entirely (d11-d16) — CFO as primary, the actual
+day-to-day user as secondary.
+
+**28 of 38 are flagged cross-cutting.** That's most of the registry, and it's expected: a pursuit is
+by definition a "whole commitment" (design spec §5.2's framing), which routinely touches more than
+one office even when it has one clear first-line owner.
+
+| Pursuit | Title | Standing | Office (inherited → confirmed) | Primary | Secondary |
+|---|---|---|---|---|---|
+| **a1** | Four-firms prop-portfolio program (umbrella) | KEEP | Back → **Front** | CIO | Head of Execution, Head of Research, Head of Validation |
+| **a2** | c1 rail + incumbent-eval operations | KEEP | Front | Head of Execution | Head of Validation, CFO |
+| **a3** | MNQ discovery pipeline (TNEC intake · Route A/B · CapFLOW · dense-1m/instrument/W1) | KEEP | Front | Head of Research | Head of Validation |
+| **a4** | Harvest / external-mechanism intake + sourcing radar | KEEP | Back → **Front** | Head of Research | — |
+| **a5** | R&D tooling lane (T2/T3/T4 gated adoption · sentinel promotion) | KEEP | Back | Head of Engineering | Head of Governance, Head of Validation |
+| **a6** | Cursor-fleet worker capability | KEEP | Back | Head of Engineering | Head of Research |
+| **b1** | Aegis→6J transfer lane | PARK | Front | Head of Research | Head of Execution |
+| **b2** | Striker MYM reconstruction (S-MYM-ORC-02, TERMINAL lane) | PARK | Front | Head of Research | Head of Execution, Head of Governance |
+| **b3** | ORB-MNQ payability line (orb_mnq · eodadv) | PARK | Front | Head of Research | Head of Execution |
+| **b4** | Q-USOIL-1 (+ `usoil_regime_capture` legacy harness) | SUBTRACT | Front → **Back** | Head of Governance | Head of Research |
+| **b5** | Q-FUNDPOL-1 funded-phase policy inheritance | PARK | Front → **Middle** | Head of Risk & Sizing | Head of Validation, Head of Execution |
+| **b6** | Q-NAS-ECR-1 NAS100 live edge-captured ratio | PARK | Back → **Front** | Head of Execution | Head of Research, Head of Governance |
+| **b7** | ICT line (PREREG-1M / Q-ICTEXP-1) | PARK | Front | Head of Research | Falsifier/Pre-Registration Analyst (executes the Q-ICTEXP-1 §9 zero-K falsifier), Head of Governance (tracks the 2026-11-08 auto-convert-to-SUBTRACT deadline) |
+| **b8** | Guardian→MGC transfer lane (R7) | SUBTRACT | Front | Head of Governance | Head of Research |
+| **c1** | Q-XMEM-1 cross-surface memory sidecar pilot | PARK | Front → **Back** | Head of Engineering | Head of Governance |
+| **c2** | Q-SIGID-1 signal-identity gap | KEEP | Front → **Cross-office** | Head of Execution | Head of Validation, Head of Research |
+| **c3** | Q-TOM-SPX-1 SPX500 turn-of-month | PARK | Back → **Front** | Head of Research | Head of Governance |
+| **c4** | Q-TVCOV-1 TV intraday bar-coverage census — SUBTRACT-complete | SUBTRACT | Back | Head of Governance | — |
+| **c5** | Q-MSCHAN-1 microstructure sourcing-channel (blind form) | SUBTRACT | Front → **Back** | Head of Governance | Head of Research |
+| **c6** | Notion estate (frozen workspace) | SUBTRACT | Back | Head of Governance | — |
+| **d1** | Repo belt — 19 version-controlled skills | KEEP | Back → **Cross-office** | Head of Governance | Head of Engineering |
+| **d2** | brief-authoring (user-level skill) | KEEP | Back | Head of Governance | Head of Engineering |
+| **d3** | rule-0 (user-level skill) | KEEP | Back → **Middle** | Head of Risk & Sizing | Head of Validation, Head of Governance, Head of Engineering |
+| **d4** | trade-csv-reconcile (user-level skill) | MERGE | Back | Head of Governance | — |
+| **d5** | mql-developer (user-level skill) | SUBTRACT | Back | Head of Governance | Head of Engineering |
+| **d6** | notion-mcp-api-patterns (user-level skill) | SUBTRACT | Back | Head of Governance | Head of Engineering |
+| **d7** | fxify-challenge (plugin bundle) | SUBTRACT | Back | Head of Governance | — |
+| **d8** | live-execution-journal (plugin bundle) | SUBTRACT | Back | Head of Governance | Head of Execution |
+| **d9** | inqhiori-algorithm (plugin bundle) | SUBTRACT | Back | Head of Governance | Head of Engineering |
+| **d10** | anthropic-skills plugin duplicate set (7 skills, marker-only) | MERGE | Back | Head of Governance | Head of Engineering |
+| **d11** | TradingView subscription | KEEP | Back → **Cross-office** | CFO | Head of Research |
+| **d12** | databento subscription | KEEP | Back → **Cross-office** | CFO | Head of Research |
+| **d13** | Fly.io subscription | KEEP | Front → **Cross-office** | CFO | Head of Execution, Head of Governance |
+| **d14** | CrossTrade subscription | KEEP | Back → **Front** | Head of Execution | CFO |
+| **d15** | Tradeify Select 100K account | KEEP | Back → **Front** | Head of Execution | CFO |
+| **d16** | Cursor subscription | KEEP | Back → **Cross-office** | CFO | Head of Engineering |
+| **e1** | First Passage program (the Aim itself) | KEEP | Back → **Cross-office** | **CEO** | Head of Governance (record custodian), CRO, CIO |
+| **e2** | Already-terminal register (CFD estate, manual trading, challenge-era substrate, retired feeds, Hermes NO-GO, Bulenox/futures-prop R6) | no action | Back | Head of Governance | — |
+
+**One correction made on review**: the classification run initially assigned e1 ("the Aim itself") to
+Head of Governance — the nearest spawnable AI custodian, since CEO is never spawned. But the roster's
+own charter is explicit ("CEO | Joshua | Aim..."), so e1's true primary is CEO; Governance custodies
+the pursuit *record*, not the Aim it describes.
+
+**Known rough edge, not fixed in this pass**: the `confirmedOffice` field's `Cross-office` value and
+the separate `crossCuttingFlag` boolean overlap conceptually — several rows above (c2, d1, d11-d13,
+d16, e1) got `Cross-office` where a single-office-with-secondaries reading might have been cleaner.
+Left as-is rather than re-litigated solo; worth tightening the schema before this pattern is reused
+for Layer 3 classifications going forward.
 
 ## Layer 3 — Standing classification procedure (for anything new)
 

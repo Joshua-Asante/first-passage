@@ -56,7 +56,20 @@ No task checkboxes here — this phase is complete, not pending.
 
 ---
 
-### Phase 2: Pursuit refinement (not yet run)
+### Phase 2: Pursuit refinement — SHIPPED
+
+**Status:** Done, same commit as this update. All 38 pursuits classified via the exact Workflow
+pattern specified below; 18/38 diverged from their Layer-1 directory default, 28/38 flagged
+cross-cutting. One manual correction made on review (e1 → CEO, not Head of Governance, per the
+roster's own Aim-ownership charter line). See `docs/personas/ownership-map.md` Layer 2 for the full
+table and the divergence/cross-cutting synthesis.
+
+**Known rough edge carried into Layer 3**: the `confirmedOffice` schema's `Cross-office` value
+overlapped conceptually with the separate `crossCuttingFlag` boolean in this run — worth tightening
+before reusing this schema shape again.
+
+<details>
+<summary>Original task spec (superseded by the above — preserved for provenance)</summary>
 
 **Files:**
 - Modify: `docs/personas/ownership-map.md` (append a "Layer 2" results table, replacing the current
@@ -117,6 +130,8 @@ coarse skeleton and the content-level read diverged and why.
 git add docs/personas/ownership-map.md
 git commit -m "docs(personas): ownership map Layer 2 -- all 38 pursuits classified"
 ```
+
+</details>
 
 ---
 
