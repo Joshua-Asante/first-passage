@@ -116,6 +116,7 @@
 | 2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md | Accepted | 2026-08-16 | none | operator election 2026-08-16 (in-session, presented as a blocking scope ruling with three options — narrow / broad / narrow-gated-by-cheap-falsifier; "cheap falsifier gate" elected) |
 | 2026-08-16-deep-iteration-lane-charter.md | Accepted | 2026-08-16 | none | operator GO (JA) 2026-08-16 ("P2 + GO", electing the recommendation as given), **an explicit overriding election against this charter's own HOLD default**, on the independent-grounds argument in §1. The GO carries the two recommended sequencing conditions as binding: **(GO-1)** the first campaign prereg freezes only after the P2 policy-frontier measurement lands **[LANDED 2026-08-16 — RESOLVED-QUANTIFIED, median R_max ratio 5.107×; the intraday-clock caveat in its closure §3 is a MANDATORY named risk in the first campaign's prereg, not optional]** and the Databento parent-era cost dry-run is on record **[LANDED 2026-08-16 — bar schemas (1d/1h/1m) on the design-box triad price at $0.0000 both windows; GO-1 fully discharged, see Addendum below]**; **(GO-2)** the first campaign declares **K ≈ 10** (floor 1.265 at a 6.5-year confirm; ≈ 0.93 Gaussian-approx power against a true-1.83 target), reserving the K=33 corner for a family that has earned it. |
 | 2026-08-19-great-prune-is-not-grand-subtract.md | Proposed | 2026-08-19 | none | Proposed |
+| 2026-08-19-rule-1-citation-not-three-meanings.md | Proposed | 2026-08-19 | none | Proposed |
 
 ## Partially superseded
 

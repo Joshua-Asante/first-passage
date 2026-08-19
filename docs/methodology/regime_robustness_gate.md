@@ -92,7 +92,7 @@ The gate is necessary but not sufficient. A passing candidate still requires the
 | Rule 0 (audit-first) | Pre-loop | Production source | Before INQHIORI begins |
 | Pre-Q gate (D-S-A on data) | Inside INQHIORI | The I/N corpus | Before Q is asked |
 | **Regime-robustness gate** | **Inside INQHIORI** | **Candidate configs** | **Before LOCK recommendation** |
-| Rule 1 (partition-hypothesis permutation) | Post-observation | Specific partition hypotheses | When partition-specific dominance is asserted |
+| Rule 1 extension (partition-hypothesis permutation) | Post-observation | Specific partition hypotheses | When partition-specific dominance is asserted |
 | Observation routing gate | Post-pre-Q | Observations | After Q produces evidence |
 
 These compose; they don't compete. A brief running this gate may also need to run Rule 1 if the gate's failure surfaces a specific partition hypothesis worth formal screening (e.g. "C2 wins in H2 but not H1 — is this stochastic or systematic?"). When in doubt, run both.
@@ -195,7 +195,7 @@ Steps 4–5 are not part of the brief that ran this gate — they are downstream
 
 - **INQHIORI canon**: `docs/methodology/inqhiori-canon.md` (§14 three-loop binding); skill `.claude/skills/inqhiori/SKILL.md`
 - **Rule 0**: `docs/rule_0.md`
-- **Rule 1 (partition-hypothesis permutation gate)**: methodology canon in skill registry, reference implementation deferred until first formal use
+- **Rule 1 extension (partition-hypothesis permutation):** same INQHIORI Rule 1 as canon §12, not a third numeral. Owner [`rule-1-small-cell-variance-prior.md`](archive/notion/rule-1-small-cell-variance-prior.md) (core top-k + 2026-04-24 partition extension). No `rule1_gate.py` exists; the archive gated that script on CFD-era USDJPY OHLC panel ingestion that never landed — implementation is **not pending**. Build only if a live n≤10 / partition investigation needs it ([citation ADR](../adr/2026-08-19-rule-1-citation-not-three-meanings.md)).
 - **Observation routing gate**: `docs/methodology/observation_routing.md`
 - **Q-DDP-1 worked example**: retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/Q-DDP-1/recommendation.md`
 - **Locked dd_protection config**: `core/dd_protection.py` (literals owned there; human summary [`CLAUDE.md`](../../CLAUDE.md) §Protection; C2 relock + concept-not-constant ADRs)

@@ -14,6 +14,20 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-19c — merge origin/main into PR #52 (conflict fix)
+
+**Focus:** Resolve PR #52 conflicts after PR #51 landed both-sides edits on `docs/adr/INDEX.md` and the Quintessentials notice.
+
+**Shipped:** merge `origin/main` into `cursor/great-prune-grand-subtract-0f6f`. Both 2026-08-19 ADRs kept in INDEX. Notice §4 Anchor + Subtract ACTION rows both discharged. Restored 19b Open/next + Live-ops dropped by the auto-merge.
+
+**Decisions/defects:** none new — union of #51 and #52 discharges.
+
+**Open / next:** Carry 19b/19a/18t: MNQFLOW-1-DEPTH still needs operator sign-off (§9.1) then P0 cost re-estimate before any pull. MNQSR-1 / Q-CAPA-1 bank rulings discharged (live figure at MNQ.md §K_BANKED). Next slate admission screens claim horizon vs the E1 flat-by-16:00 envelope. S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. TRAINKILL census STOP — re-proposal is a new panel or an operator election. B1 Koijen admissibility parallel. B2 unblocked: elects on existing evidence + H1 screen, TRAINKILL holds disclosed. F1 / B7-REFIRE.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+
 ## 2026-08-19b — Great Prune is not a GRAND Subtract
 
 **Focus:** Re-verify the Subtract cross-tier silence finding and dispose whether Great Prune should be wired as Delete(parts) or stay uncrossed.
@@ -27,6 +41,21 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
+## 2026-08-19a — Rule 1 citation diagnostic: one rule, no gate script, no Anchor-family merge
+
+**Focus:** Re-verify the Anchor / Rule-1 fragmentation finding against `origin/main` and dispose (a) rename, (b) `rule1_gate.py`, (c) sibling cross-wire.
+
+**Shipped:** branch `cursor/anchor-discipline-fragment-0f6f`. Light ADR [`2026-08-19-rule-1-citation-not-three-meanings.md`](adr/2026-08-19-rule-1-citation-not-three-meanings.md) (`Proposed`). Pointer-only on [`regime_robustness_gate.md`](methodology/regime_robustness_gate.md). Addendum on the Rule 2 ADR. Notice [`N-2026-08-18-quintessentials-ml-lifecycle-mapping`](notes/notice/N-2026-08-18-quintessentials-ml-lifecycle-mapping.md) §4 Anchor ACTION discharged.
+
+**Decisions/defects:** (a) no rename — gate "Rule 1" is the 2026-04-24 extension of the same INQHIORI Rule 1. (b) do not build `rule1_gate.py`; drop "implementation deferred." (c) do not sibling-wire `mc_anchor_history.md`. Full `Rule N` prefixing stays with the [2026-08-08 audit](notes/audits/2026-08-08-conventions-delete-phase-gap-audit.md) §5.
+
+**Open / next:** Carry 18t: MNQFLOW-1-DEPTH still needs operator sign-off (§9.1) then P0 cost re-estimate before any pull. MNQSR-1 / Q-CAPA-1 bank rulings discharged (live figure at MNQ.md §K_BANKED). Next slate admission screens claim horizon vs the E1 flat-by-16:00 envelope. S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. TRAINKILL census STOP — re-proposal is a new panel or an operator election. B1 Koijen admissibility parallel. B2 unblocked: elects on existing evidence + H1 screen, TRAINKILL holds disclosed. F1 / B7-REFIRE.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+
 ## 2026-08-18t — MNQFLOW-1-DEPTH: synthetic harness + unit tests (§9 step 4)
 
 **Focus:** Build the scoring harness and hand-computed unit tests for the frozen MBP-10 depth escalation pre-registration — prep only; no pull. (Renumbered 18s→18t on merge with main — main already held 18s for stage-5 wiring.)

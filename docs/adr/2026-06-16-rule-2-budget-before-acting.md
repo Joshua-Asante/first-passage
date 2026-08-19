@@ -178,6 +178,20 @@ Re-widening propagation is available once the trip-log actually accrues
 evidence at the next programme audit — narrower footprint until then, per the
 same "run tight, loosen only on evidence" bias §4 already states.
 
+## Addendum 2026-08-19 — §0 "third meaning" is the Rule 1 extension
+
+**Does not amend §2 / §4 / §6 / §5.8.** Citation repair only.
+
+The §0 note that `regime_robustness_gate.md` "carries a third meaning of
+Rule 1 (partition-hypothesis permutation gate)" is incomplete: that row is
+the 2026-04-24 extension of the same small-cell-variance-prior Rule 1
+([owner](../methodology/archive/notion/rule-1-small-cell-variance-prior.md)).
+Pointer expanded at
+[`2026-08-19-rule-1-citation-not-three-meanings.md`](2026-08-19-rule-1-citation-not-three-meanings.md)
+and on the gate doc. Full four-namespace deconflict (`OPS` / `INQ` /
+skill-local) remains out of scope per §5.8 and the
+[2026-08-08 conventions audit](../notes/audits/2026-08-08-conventions-delete-phase-gap-audit.md) §5.
+
 # 4. Forward trip-log exists (the falsifier is live, not theater)
 ls docs/notes/audits/ | grep -i "rule-2-trip-log"
 # at each programme audit: confirm >=1 entry per active loop class, else flag the rule inert
