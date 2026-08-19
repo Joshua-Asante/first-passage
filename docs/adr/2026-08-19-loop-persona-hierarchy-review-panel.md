@@ -256,6 +256,13 @@ follow-up already applies to whether a future addition needs a formal ADR. This 
 reading rule for this ADR going forward, not a one-time fix: **the "§§3–7" pointer in D1 means the
 2026-08-19 ratified content of those sections, not whatever they contain when a reader looks later.**
 
+**Follow-up, same day: §6.6 has now separately cleared that bar.** After two rounds of adversarial
+review (full panel `wf_88c21d8d-a7f`, `BLOCKED` then fixed; targeted recheck `wf_8d2086b0-27d`,
+which found one fix inadequate and prompted a structural redesign) Joshua ratified §6.6 directly
+("ratify now"), per its own Status line. D1's "§§3–7" pointer still means the 2026-08-19-at-`66410ed`
+snapshot, unchanged — §6.6's ratification is a separate act, recorded on the design spec's own
+Status line and Change History, not a retroactive widening of what D1 itself covers.
+
 ---
 
 ## Verification
