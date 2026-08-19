@@ -19,3 +19,15 @@ architecture, panel mechanics, and independence rules this roster implements.
 | [Head of Validation](head-of-validation.md) | STRATEGIC | Middle | CRO | `head-of-validation-log.md` |
 | [Head of Engineering](head-of-engineering.md) | STRATEGIC | Back | COO | `head-of-engineering-log.md` |
 | [Head of Governance](head-of-governance.md) | STRATEGIC | Back | COO | `head-of-governance-log.md` |
+| [Falsifier Analyst](falsifier-analyst.md) | STAFF | Front | Head of Research | `falsifier-analyst-log.md` |
+| [Pre-Registration Analyst](pre-registration-analyst.md) | STAFF | Front | Head of Research | `pre-registration-analyst-log.md` |
+| [TCA Analyst](tca-analyst.md) | STAFF | Front | Head of Execution | `tca-analyst-log.md` |
+| [Risk Analyst (Intraday)](risk-analyst-intraday.md) | STAFF | Middle | Head of Risk & Sizing | `risk-analyst-intraday-log.md` |
+| [Model Validation Analyst](model-validation-analyst.md) | STAFF | Middle | Head of Validation | `model-validation-analyst-log.md` |
+| [Robustness Analyst](robustness-analyst.md) | STAFF | Middle | Head of Validation | `robustness-analyst-log.md` |
+| [Documentation Analyst](documentation-analyst.md) | STAFF | Back | Head of Governance | `documentation-analyst-log.md` |
+| [Research Registry Analyst](research-registry-analyst.md) | STAFF | Back | Head of Governance | `research-registry-analyst-log.md` |
+
+**Not on this roster:** Head of Engineering's staff are the literal Cursor worker agents dispatched
+per packet under the existing `cursor-fleet` skill — ephemeral, not a persistent named persona (see
+`head-of-engineering.md`).
