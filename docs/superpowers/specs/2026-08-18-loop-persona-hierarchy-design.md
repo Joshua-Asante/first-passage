@@ -1,7 +1,7 @@
 # Persona Hierarchy for the GRAND/STRATEGIC Loop Tiers — Design Spec
 
 **Date:** 2026-08-18
-**Status:** Draft — pending Joshua's review of this file
+**Status:** Accepted — ratified by Joshua 2026-08-19, in-session direct instruction ("Accepted on the design" / "Accepting the proposal"); see Ratification note
 **Author:** Claude Code, design collaboration with Joshua (brainstorming session, 2026-08-18)
 
 ## 1. Purpose
@@ -322,14 +322,38 @@ call, and should be treated as a bug report regardless of where the H/Falsifier 
 
 ## 11. Open follow-ups (not decided by this spec)
 
-- Whether this should also be ratified as a formal ADR once implemented, per the repo's existing
-  brief-authoring convention — this spec is a pre-implementation design document, not itself a
-  ratified decision.
+- Whether this should also be ratified as a **formal ADR**, per the repo's existing brief-authoring
+  convention — *updated 2026-08-19: this spec itself was ratified in-session (see Ratification note
+  below), but not via a formal ADR.* Whether a separate ADR should still follow, to give the decision
+  doctrine-tier status (`docs/adr/`) rather than living only as an accepted `docs/superpowers/specs/`
+  document, remains open — this was disputed finding B from the 2026-08-19 adversarial review and
+  was not resolved by the acceptance itself.
 - The exact `pre-ratification-adversarial-panel` skill edits needed to carry named personas instead
   of generic adversarial-reviewer framings — implementation detail for the plan, not this spec.
 - Whether any additional Staff seats should be added later, and under what evidence bar (the same
   intake-rule discipline GRAND already applies to pursuits, §2.5 of the GRAND ADR, is the natural
   candidate to reuse rather than inventing a separate one).
+
+## Ratification note (2026-08-19)
+
+**Ratified by:** Joshua, in-session direct instruction — *"Accepted on the design" / "Accepting the
+proposal"* (2026-08-19, mid-PR-creation flow on branch `claude/grand-strategy-review-5d9eae`).
+Authority channel: explicit owner adjudication.
+
+This closes **disputed finding A** from the 2026-08-19 adversarial review (the "pending review"
+framing vs. same-evening implementation, §1/§11's prior wording) — the spec is no longer pending; it
+is reviewed and accepted, with all 4 confirmed BLOCKERs and 6 confirmed CONCERNs from that same
+review already fixed as prior commits on this branch (see Change history below).
+
+**Disputed finding B** (whether this spec needs a separate, formal ADR for its own Draft→Accepted
+transition) is **not** resolved by this note — the operator accepted the design as drafted, in its
+`docs/superpowers/specs/` genre, matching the `docs/spec/` precedent the panel itself found (no
+inline binary gate). Whether a formal ADR should still follow remains open per §11 above.
+
+**Not licensed by this acceptance:** anything the design's own §2 Scope boundary already excludes —
+the loop-tier doctrine, the CC/Cursor surface-allocation ADR, and c1 Q-XMEM-1 stay untouched. This
+ratifies the *design*; it does not itself authorize skipping Phase 2's remaining tasks or Phase 3's
+validation — those still execute per the existing three-phase plan.
 
 ## Change history
 
