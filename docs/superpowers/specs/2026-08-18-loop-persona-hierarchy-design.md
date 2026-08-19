@@ -200,6 +200,9 @@ independence principle at lower cost: one fresh agent call reading only the cand
 not the proposing session's framing or enthusiasm for the candidate. This is the direct
 operationalization of SR 11-7's "validator independent of developer."
 
+This mechanic addresses *contextual* contamination only — see §9's "Architectural correlation"
+bullet for the distinct, unaddressed risk of same-model-family correlated bias across personas.
+
 ### 6.3 Synthesis and the one hard-block exception
 
 A separate synthesis pass combines panel outputs into one memo for Joshua. Dissent is preserved
@@ -404,6 +407,14 @@ Full findings live in this session's research; key points repeated here since th
   non-PM principal) — the generalizable rule this design borrows: independence comes from the
   context/reporting boundary (§6.2's fresh-spawn-reads-only-the-artifact rule), not from having
   enough bodies to staff three offices.
+- **Architectural correlation — an open risk, not solved by this design** *(added 2026-08-19)*:
+  fresh-context spawning (§6.2) prevents *contextual* contamination — a reviewer never sees the
+  proposer's live reasoning, or any other reviewer's draft opinion. It does nothing about
+  *architectural* correlation: CRO/CIO/COO/CFO personas likely share one underlying model family's
+  blind spots and its pull toward "the artifact looks complete, therefore approve." 2025-2026
+  literature on LLM-judge/evaluator collusion documents this as a real, unsolved failure mode for
+  nominally independent AI reviewers. No mitigation is proposed here — this bullet exists so "fresh
+  subagents" is never silently read as having solved a risk it only partially addresses.
 - **Title grounding** *(corrected 2026-08-19 — see change history)*: this session's research
   characterized the roster's titles against real job postings and fund career pages, but no capture
   dates, source URLs, or per-role scoring table were retained or attached anywhere in this repo.
@@ -526,6 +537,7 @@ history.
 | 2026-08-19 | §12's log-append template gained two fields, `Evidence-Cited` and `Deviation-from-Precedent`, filled from data the synthesis pass and the prior-log read already produce -- not new data collection. Sourced from a landscape survey of 2025-2026 multi-agent memory practice (arXiv:2508.08997, "Intrinsic Memory Agents": uniform structured per-role templates beat free-text logs on both role-adherence and token efficiency); the survey found the three other fields the source proposed (Artifact-Reviewed, Verdict, Ratified-or-Overridden) were already covered by this template's existing minimum contract. Record-keeping only, explicitly non-gating (new §12 closing paragraph) -- existing entries are unaffected, no synthesis is blocked for an incomplete log. Dispatch-eligibility checked against `docs/adr/2026-07-14-cc-cursor-surface-allocation.md` §2 routing test 1 ("does the task author doctrine... -> CC, full stop") before authoring: this file is the content-of-record for an `Accepted` ADR, so the edit stayed on this surface rather than routing to Cursor. | Claude Code |
 | 2026-08-19 | §10.1 added -- preference-anchoring companion check, a distinct H′ from the main §10 falsifier. Sourced from 2026 research on stateful personal agents (durable-memory agreement-bias/failure-rate escalation on repeated retrieval) applied to the fact that persona memory (§6.4) is exactly the durable, read-before-every-spawn condition that research names as the trigger. Check: at every 5th real log entry, watch for agreement-rate-rising AND findings-count-falling *together*, not agreement alone. Manual/periodic, not automated tooling; non-counting, tagged the same way §13's rehearsal entries already are. Dispatch-eligibility checked against the surface-allocation ADR before authoring, same test as the row above -- stayed off Cursor. | Claude Code |
 | 2026-08-19 | §14 added -- a one-time MAST pre-mortem procedure (arXiv:2503.13657, Cemri et al., NeurIPS 2025), checking the panel's own review PROCESS rather than §10's outcome-only measure. Read the full 14-mode taxonomy (previously only the 3-category summary was known); scoped down to the 9 modes actually reachable given this panel's fan-out, single-shot-call architecture (never a conversing multi-agent system), naming and excluding the other 4 (loss of conversation history, unaware of termination conditions, conversation reset, fail to ask for clarification) as architecturally inapplicable rather than silently dropping them. Run once per real panel use (not rehearsal-inclusive, not a standing recurring gate) against `journal.jsonl`; no new persona minted, extends Head of Governance's existing mandate if a standing owner is ever needed. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
+| 2026-08-19 | §9 gained an "Architectural correlation" bullet, and §6.2 gained a one-line cross-reference to it: fresh-context spawning (already built) prevents contextual contamination but not architectural correlation between personas that likely share one model family's blind spots and sycophancy pull, per 2025-2026 LLM-judge-collusion literature. No mitigation proposed -- documentation only, so "fresh subagents" is never silently read as having solved a risk it only partially addresses. Smallest item on the docket: no code, no new structure, no forward obligation. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
 
 ## 12. Post-workflow log-append procedure (added during Phase 2 implementation; template extended
 2026-08-19 -- see Change History)
