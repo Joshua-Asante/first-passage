@@ -14,6 +14,20 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-18s — MNQFLOW-1-DEPTH: synthetic harness + unit tests (§9 step 4)
+
+**Focus:** Build the scoring harness and hand-computed unit tests for the frozen MBP-10 depth escalation pre-registration — prep only; no pull.
+
+**Shipped:** branch `feat/mnqflow-1-depth-harness`. [`depth_lib.py`](../lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/depth_lib.py) + [`test_depth_lib.py`](../lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/test_depth_lib.py) (49 tests). Owner: [`PREREG.md`](../lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PREREG.md).
+
+**Decisions/defects:** none — §9.1 still blank; no MBP-10 data read. S2 index formula pinned; parent bootstrap/placebo reused at seed `20260818`.
+
+**Open / next:** Carry 18r/18p: MNQSR-1 / Q-CAPA-1 bank rulings discharged (live figure at MNQ.md §K_BANKED). MNQFLOW-1-DEPTH still needs operator sign-off (§9.1) then P0 cost re-estimate before any pull. Next slate admission screens claim horizon vs the E1 flat-by-16:00 envelope. S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. TRAINKILL census STOP — re-proposal is a new panel or an operator election. B1 Koijen admissibility parallel. B2 unblocked: elects on existing evidence + H1 screen, TRAINKILL holds disclosed. F1 / B7-REFIRE.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+
 ## 2026-08-18r — lifecycle map: drop retired ConceptRecords from stage-1 artifacts
 
 **Focus:** Correct D5 map stage-1 Key artifacts — `ConceptRecords` named a Gen-1 pydantic intake that no longer exists. (Renumbered 18o→18r on merge with main — main already held 18p for M6B.)
