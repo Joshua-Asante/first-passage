@@ -27,6 +27,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-19c — merge origin/main into PR #52 (conflict fix)
 
 **Focus:** Resolve PR #52 conflicts after PR #51 landed both-sides edits on `docs/adr/INDEX.md` and the Quintessentials notice.
