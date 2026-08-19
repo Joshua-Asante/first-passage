@@ -67,7 +67,7 @@ scaffolding that already existed, not an invented structure.
 | `historical/`, `ltm/` | Head of Governance | — | Archive/retention |
 | `lessons/` | Head of Governance | — | Methodology-lesson custody |
 | `templates/` | Head of Governance | — | Brief-authoring discipline artifacts |
-| `analytics/` | Head of Validation | — | *(unconfirmed — flagged for Phase 2 content check)* |
+| `analytics/` | Head of Validation | — | Frozen MC-anchor trajectory (pass/bust/p99-DD lock-gate charts, bust attribution, sourced data.csv) is a statistical-validity record of the portfolio MC lock, same class as `core/mc/` |
 | `external/` | Head of Research | — | External reference material feeding harvest/discovery |
 | Root: `operational_rules.md`, `rule_0.md`, `rejected_candidates.md`, `mc_anchor_history.md` | Head of Governance (registry custody) | Head of Research / Head of Validation (content) | Rules/registry custodian; content ties are strong but distinct from custody |
 
