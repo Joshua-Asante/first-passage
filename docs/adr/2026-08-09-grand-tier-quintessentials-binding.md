@@ -291,6 +291,17 @@ above; a §10 hook is machinery, not a frozen verdict construct.
 **Not licensed by this addendum:** anything at a lower tier (§2.2 downward interface is scoping
 authority only), and no campaign inside a KEEP pursuit is adjudicated by its KEEP.
 
+## Addendum 2026-08-19 — Great Prune is not a Subtract
+
+**Does not amend §2 / §3 / §4.** Citation only.
+
+[`2026-08-08-great-prune.md`](2026-08-08-great-prune.md) is a documentation-class retention
+test (keep-if R1–R5 on *parts*). It is not a GRAND Subtract and was not authored as The
+Algorithm's Delete. §2.4's handoff names distinct objects; the L283 "deleted at the Great
+Prune" line is an incident cite, not an operator identification. Live test owner:
+`docs/operational_rules.md` Rule 16. Ruling:
+[`2026-08-19-great-prune-is-not-grand-subtract.md`](2026-08-19-great-prune-is-not-grand-subtract.md).
+
 ---
 
 ## Verification

@@ -153,6 +153,12 @@ not an unmet obligation. Re-stating it as owed work would be the accretion this 
 
 Supersedes-in-part: `2026-07-16-root-doc-charter-dedup` (charter absorbed into pointer-form CLAUDE.md); STATE's 08-08 board section (discharged by the audit note). Composes with: ceremony tiering (forward instrument), W5 diet (gate composition authority unchanged). Does **not** touch: lifecycle axis, dd_protection chain, venue posture, MNQDTL-1.
 
+## Addendum 2026-08-19 — not a GRAND Subtract
+
+**Does not amend §1 / §2 / §4.** Citation only.
+
+This prune keeps or deletes documentation *parts* under the §2 retention test (object = files/classes; domain = meta-process). It is **not** a GRAND pursuit-Subtract and is not The Algorithm's Delete worked example. Handoff owner: [`2026-08-09-grand-tier-quintessentials-binding.md`](2026-08-09-grand-tier-quintessentials-binding.md) §2.2/§2.4. Live test owner: [`operational_rules.md`](../operational_rules.md) Rule 16. Ruling: [`2026-08-19-great-prune-is-not-grand-subtract.md`](2026-08-19-great-prune-is-not-grand-subtract.md).
+
 ## §10 — Audit hooks
 
 ```bash
