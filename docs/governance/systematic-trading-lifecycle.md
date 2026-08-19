@@ -47,5 +47,6 @@ Sweep runs per supervised hour; fraction of candidates killed pre-brief; add-bac
 ## Pointers
 
 - `docs/adr/2026-06-12-three-loop-methodology-binding.md` — three-loop methodology binding (canonical decision; this map is its D5)
+- `docs/methodology/strategy_lifecycle.md` — authorization axis (`CANDIDATE → AUTHORIZED → WATCH{-1,-2} → RETIRED`). Stage-5 "kill/scale" on this map is The Algorithm's Delete/Accelerate, not the WATCH haircut. WATCH demotions are reversible OUTER acts (Call 5). Only `RETIRED` and full beta shutdown are STRATEGIC-LoR Deletes (D2).
 - INQHIORI canon mirror `docs/methodology/inqhiori-canon.md` — carries the binding as §14 (Notion surface RETIRED 2026-06-12 per `docs/adr/2026-06-12-notion-surface-retirement.md`; legacy page `34ddc0b53c1181479d7bdecc61f47078` frozen read-only pending migration)
 - Two-loops-on-two-clocks doctrine (R&D automation session, 2026-06-05) — superseded-by-extension: this map adds the Strategic tier and stage names; the two-clock content is unchanged within it.
