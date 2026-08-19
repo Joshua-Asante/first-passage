@@ -235,6 +235,72 @@ which is constant and unrelated to whether a GRAND/STRATEGIC decision is in flig
 *into* the relevant Senior Manager's review only when a STRATEGIC-tier decision actually touches
 that domain.
 
+### 6.6 Cross-examination round (interactive, opt-in — added 2026-08-19)
+
+Everything in §6.1–§6.5 stays exactly as ratified: Stage 1 is blind, independent, and no persona
+reads another's live reasoning during its *own* review. This subsection adds a strictly additive,
+**post-synthesis** extension for the case where Joshua wants two personas to argue a specific point
+directly, rather than only reading the synthesis memo's account of their disagreement.
+
+**Trigger.** Elective, never automatic. Either (a) Joshua names a finding and a persona pair
+directly, or (b) the synthesizing session proposes it when Stage 1's own verify pass already
+produced a *disputed* (not unanimous) finding between two personas who both own the item — since
+that is exactly the shape of disagreement this round exists to deepen. Forcing it on every panel
+run would blur "genuine disagreement worth debating" into ceremony, the same failure class the
+retention self-test (§2.1) already worries about for the rest of this design.
+
+**Ownership precondition (hard gate, not a judgment call).** A cross-examination round between
+persona A and persona B on item X may run **only if both A and B are named Primary or Secondary
+owner of X** in `docs/personas/ownership-map.md` — or, for an item the ownership map doesn't yet
+cover, both are in the panel's own spawn list for X under the §4 office-touches-domain rule. If
+this fails, the round does not run — same fail-closed posture as the frozen-artifact precondition
+(§6.1), and for the same reason: without it, cross-examination becomes a free-for-all where any
+persona can dogpile any other persona's finding outside its own mandate, which is exactly the
+domain-crispness §7's error-handling table already protects one layer down.
+
+**Mechanics.**
+1. Stage 1 findings are **frozen** once produced. A cross-examination round never edits, deletes,
+   or retroactively softens a Stage-1 finding — it produces new, clearly-labeled response entries
+   layered on top, matching the append-only ethic persona memory (§6.4) already uses.
+2. The round is a single fresh `agent()` spawn for persona **B** — never persona A rewriting
+   itself. B reads: (a) its own Stage-1 finding on this item, if any; (b) persona A's Stage-1
+   finding on this item, verbatim, in full; (c) nothing else — not the synthesis memo's framing of
+   it, not any other persona's take. B is prompted to state agreement, refutation, or partial
+   agreement with its own reasoning — not asked to "resolve" the disagreement, since resolution
+   stays Joshua's alone (D5, unchanged).
+3. Capped at **one response round per (finding, persona-pair) by default.** A second round (B
+   responds, then A responds to B's response) requires Joshua's explicit ask each time — bounding
+   the round prevents unbounded ping-pong and keeps it deliberate rather than automatic, the same
+   discipline the verify stage already applies (two skeptics per finding, not unlimited).
+4. Joshua may inject his own question or framing into what persona B reads (e.g., *"B, does A's
+   point hold given the March allocation ADR?"*). This is safe specifically because by the time a
+   cross-examination round exists, **every** Stage-1 review of the item is already complete and
+   locked — there is no remaining unbiased persona left to protect from seeing the CEO's framing,
+   and Joshua's ratification authority (D5) already presumes he can steer the conversation openly
+   once independent judgment has been recorded.
+5. A round produces a short, separate written record: a supplementary synthesis addendum if it
+   changes the operator-facing recommendation, or a persona-log entry on B's log if it doesn't —
+   never silently folded back into the original synthesis text (same "dissent preserved verbatim"
+   rule §6.3 already states for the first-pass synthesis).
+
+**What this does not change.** The CRO hard-block (§6.3/D3) is untouched: if the disputed finding
+under cross-examination is itself a CRO safety-invariant citation, the hard-block already fired at
+synthesis, and a round can only have B explain its own reasoning — never overrule CRO's blocking
+citation. Cross-examination is scaffolding around the existing mechanism, not a second decision
+axis; it cannot substitute for Joshua's own ratification any more than the first-pass synthesis
+can (persona-hierarchy ADR §5, "letting a persona panel's synthesis substitute for the D-user-gate").
+
+**Grounding note.** This mirrors how real risk/investment committees actually run: independent
+written opinions submitted blind, *then* a live discussion round where the already-recorded
+opinions get debated. The discussion phase does not reopen the independence guarantee — it debates
+its output. Directional, unscored grounding, same caveat §9 already carries for the rest of this
+design's real-world citations.
+
+**Falsifier.** Rides the existing §10 tracker rather than opening a second clock: if
+cross-examination is available at ≥3 real disputed-finding opportunities and is never invoked, or
+is invoked and never changes the operator-facing synthesis addendum, that is itself informative —
+logged at the same review point (3rd real panel use or 2026-11-08, whichever comes first).
+
 ## 7. Error handling
 
 | Condition | Behavior |
@@ -243,6 +309,7 @@ that domain.
 | First-ever run for a given persona | Empty/absent log is normal; the persona states this explicitly rather than fabricating prior history. |
 | Two personas' verdicts flatly contradict | Preserved as dissent in the synthesis; Joshua adjudicates — except the CRO safety-invariant case (§6.3), which hard-blocks regardless. |
 | A persona is asked to review something outside its office's mandate | Declines rather than opining, keeping domain boundaries crisp (the same discipline the GRAND ADR's §2.4 domain-table guard already enforces one tier up). |
+| A cross-examination round (§6.6) is requested between two personas who don't both own the item under discussion | Does not run. Hard fail-closed, same posture as the frozen-artifact precondition (§6.1) — not a soft skip. |
 
 ## 8. Alternatives considered
 
@@ -370,6 +437,7 @@ history.
 | 2026-08-19 | §9 gained an "Organizational depth" bullet. §3 and §8 both cited "(§9)" as the source for the "three levels, not four" architectural decision, but §9 never actually carried that research — the citation pointer resolved to an empty set. | Claude Code |
 | 2026-08-19 | §10 restructured with explicit `H:`/`Falsifier:`/`Trigger check schedule:` tokens (N=3, dated to the 2026-11-08 quarterly gate). The prior prose claimed to match the GRAND ADR's own §4 discipline without reproducing its structure. | Claude Code |
 | 2026-08-19 | This decision was registered as a formal ADR — [`docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md`](../../adr/2026-08-19-loop-persona-hierarchy-review-panel.md), ratified same day — resolving §11's open "disputed finding B" (whether a separate ADR should follow). No content in this spec changed; the ADR is a pointer-tier registration of the decision this spec already carries. | Claude Code |
+| 2026-08-19 | §6.6 added — cross-examination round, a strictly-additive, post-synthesis, opt-in extension letting Joshua route one persona's already-locked Stage-1 position to a co-owning persona for direct response. Motivated by operator question, same day, about whether personas could see/react to each other's work interactively — answer: not during Stage 1 (that would reopen the SEC 18f-4 / SR 11-7 independence property §1 is built on), but yes as a bounded debate round after independent judgment is already on record, same shape real risk committees use. §7 error-handling table gained a matching fail-closed row (ownership mismatch declines the round). **PROPOSED — not yet ratified; §6.1–§6.5 and the persona-hierarchy ADR are unaffected either way.** | Claude Code (drafted at operator request) |
 | 2026-08-19 | §1 reworded: dropped the inaccurate "replacing a single-voice recommendation" framing (the existing panel already runs 6 lenses + 2 skeptics) and added a grounding caveat that every motivating incident is external, not First-Passage-specific. Added §2.1 applying CLAUDE.md's own retention test (R1-R5) to this spec's ~20 proposed new artifacts, honestly stating it passes R1/R5 prospectively, not today. Softened §4's unsupported "order of magnitude" panel-cost claim. §5.1 CIO row and `docs/personas/cio.md` corrected: a2 has no "strategy-generation side" (contradicted both its own pursuit record and §5.2's wholesale Head-of-Execution assignment). §8's alternatives table corrected: 37 pursuits -> 38 (actual count); 8 PARKs -> 7 (b5 was renewed to 2027-02-08 on 2026-08-16, before this spec's own 2026-08-18 date). All found by the same 2026-08-19 adversarial review as the BLOCKERs above (confirmed CONCERNs, not blocking on their own). | Claude Code |
 
 ## 12. Post-workflow log-append procedure (added during Phase 2 implementation)
