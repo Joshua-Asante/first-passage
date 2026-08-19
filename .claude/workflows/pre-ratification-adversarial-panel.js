@@ -340,7 +340,7 @@ const formCheckResult = await formCheckPromise
 
 const confirmedCount = lensResults.reduce((n, r) => n + (r ? r.confirmed.length : 0), 0)
 const disputedCount = lensResults.reduce((n, r) => n + (r ? r.disputed.length : 0), 0)
-log(`Review+verify done: ${confirmedCount} confirmed, ${disputedCount} disputed findings across ${LENSES.length} lenses`)
+log(`Review+verify done: ${confirmedCount} confirmed, ${disputedCount} disputed findings across ${activeLenses.length} lenses`)
 
 
 const hardBlock = personaMode ? croHardBlockFires(lensResults) : { fires: false, citing: [] }
