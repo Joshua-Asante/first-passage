@@ -290,6 +290,23 @@ subsequent act, per design spec §13's own distinction between rehearsal and rea
 
 ---
 
+## Addendum 2026-08-19 (same day, later) — D1's design-spec pointer is a snapshot, not a live range
+
+**Does not amend §2.** Citation-scope clarification only, found by the §6.6 pre-ratification
+adversarial panel (see the design spec's own §6.6 Status line for the full finding).
+
+D1 says the design spec's "§§3–7" carries "full roster, independence mechanics, and trigger scope."
+Read unqualified, that range would sweep in any section added later under the same numbers — but
+this ADR ratifies the design spec **as it stood at the ratification commit (`66410ed`)**, not as a
+live-updating range. A section added to the design spec after that commit under a §-number inside
+3–7 (e.g. `§6.6`, drafted afterward at `2dd34ae`) is **not** ratified by D1 and needs its own
+separate ratification before it governs anything — the same rule the design spec's §11 applied to
+whether *this* decision needed a formal ADR (now closed; this ADR is that resolution). This is a standing
+reading rule for this ADR going forward, not a one-time fix: **the "§§3–7" pointer in D1 means the
+2026-08-19 ratified content of those sections, not whatever they contain when a reader looks later.**
+
+---
+
 ## Verification
 
 ```bash
@@ -306,4 +323,5 @@ python scripts/check_adr_graph.py
 | 2026-08-19 | Initial authoring — registers the already-ratified persona-hierarchy decision on the doctrine-tier surface the ceremony-tiering ADR's own limb-4 test says it belongs on | Claude Code (drafted at operator request, judged beneficial per the ceremony-tiering tier test — see §0) |
 | 2026-08-19 | Self-review pass (32-agent, 4-dimension adversarial review, see §0 Self-review note): corrected D2's misattribution (three-loop-binding ADR, not GRAND ADR), fixed the §10 CRO-invariant grep that could never match CLAUDE.md, softened §4's unsupported "kept in sync by audit hook" claim, refreshed §0's design-spec and workflow-JS anchors past their own initial staleness, clarified D3's new-gate-vs-no-new-authority distinction. Same review also fixed a real fail-open CRO hard-block defect in the workflow JS itself (commit 84a941a) and a BLOCKER-undercount in the design spec's §13 (commit 47e3421) — logged there, not here, since neither is this ADR's own content. | Claude Code |
 | 2026-08-19 | Ratified `Proposed` → `Accepted` (operator in-session instruction, "ratify the ADR"; Ratification note populated). §6 ACCEPTED downstream updates landed same commit: `CLAUDE.md` standing-decision pointer row, `docs/adr/INDEX.md` regenerated, design spec cross-reference addendum. | Joshua + Claude Code |
+| 2026-08-19 | Addendum added — D1's "§§3–7" design-spec pointer clarified as a snapshot at ratification, not a live range, so a later same-numbered addition (§6.6) isn't read as already-ratified. Found by the §6.6 pre-ratification adversarial panel (44 agents, 6 lenses, workflow run `wf_88c21d8d-a7f`). | Claude Code |
 | 2026-08-19 | Backfilled Rule 8 sub-rule 10 dedup-first attestation into §0 (omitted at original authoring; in force since 2026-08-15). Marked the Self-review "32 agents" figure as-reported — run artifacts were not preserved. Found by the 2026-08-19 §6.6 adversarial panel (`wf_88c21d8d-a7f`) as a pre-existing regression, not caused by §6.6. | Claude Code |
