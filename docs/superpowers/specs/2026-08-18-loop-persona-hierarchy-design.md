@@ -391,3 +391,23 @@ After a persona-mode `Workflow` call returns, for each slug in `result.personaSl
 
 4. If `result.croHardBlock` is true, every persona's log entry for this review additionally carries
    a line: `**CRO hard block fired:** yes -- disposition is BLOCKED regardless of this persona's own verdict.`
+
+## 13. Rehearsal record (added during Phase 3 implementation)
+
+**2026-08-19 — retroactive dry run, NOT a real falsifier data point.** Ran the persona-mode panel
+(GRAND tier, personas `cio`/`coo`/`cfo` + auto-added `cro`, confirming the mandatory-GRAND-CRO rule
+fires mechanically) against the already-closed GSUB-1 inventory
+(`docs/briefs/GSUB-1-inventory-and-dispositions.md`) purely to prove the mechanism produces sensible
+independent output and writes well-formed logs. Outcome: overall disposition **CLEAR-WITH-CONCERNS**
+— one CONCERN confirmed unanimously by both independent skeptics (an unanchored §0 Rule-0 citation),
+one BLOCKER and three further CONCERNs raised and all unanimously refuted on independent re-read
+(including a real case of a reviewer missing a same-day resolving ADR reachable from the very row it
+cited — exactly the kind of miss the verify stage's independent skeptics exist to catch),
+`croHardBlock: false`. 19 agents, ~10.6 minutes wall-clock. Because GSUB-1 was already ratified and
+closed before this mechanism existed, this run **cannot** change a ratified outcome and therefore does
+not count toward the §10 falsifier ("does panel input ever change a ratified outcome"). The first real
+data point toward that falsifier can only come from a genuine future GRAND or strict-D2
+STRATEGIC-tier decision reviewed *before* ratification. Every log entry this rehearsal wrote
+(`docs/personas/{cio,coo,cfo,cro}-log.md`) carries an explicit `**Rehearsal:** yes` line for exactly
+this reason -- so a future reader of `docs/personas/*-log.md` never mistakes rehearsal output for a
+real review.
