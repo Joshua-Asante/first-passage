@@ -18,3 +18,21 @@ prior log existed to draw on.
 **Rehearsal:** yes -- retroactive dry run against an already-closed decision, not a real
 ratification-influencing review; does not count toward the design spec §10 falsifier
 **CRO hard block fired:** no
+
+## 2026-08-19 — docs/briefs/GSUB-2-park-cohort-early-review.md
+
+**Verdict:** CLEAR -- checked every one of the eight PARK rows (not just the two SUBTRACT
+nominations) against this seat's charter (`dd_protection` integrity, lifecycle authorization axis,
+M1 monitoring, regime-robustness gate, strategy-validation discipline, c1 rail `dry_run`/
+`armed_until` invariants). None proposes changing `dry_run`, `armed_until`, M1 status, any locked
+strategy's authorization multiplier, or `DD_TRIGGER`/`DD_SCALE`. The b2 (Striker MYM) nomination
+correctly treats the 2026-08-04 Striker bar as still-standing and requires a fresh ADR to lift it
+before re-entry, not a unilateral reversal. The c1 (Q-XMEM-1) nomination is unrelated to the c1
+execution rail despite the label collision (flagged as a NIT by the CIO lens, not a safety issue).
+This is a GRAND-tier pursuit-disposition housekeeping pass, entirely outside this seat's Domain --
+clean with no findings is the honest verdict, consistent with my own GSUB-1 rehearsal precedent.
+**Confirmed findings:** none
+**Ratified as recommended:** Pending -- operator has not yet ratified
+**Rehearsal:** no -- first real (non-rehearsal) review; first data point toward the
+persona-hierarchy ADR's own §4 falsifier
+**CRO hard block fired:** no

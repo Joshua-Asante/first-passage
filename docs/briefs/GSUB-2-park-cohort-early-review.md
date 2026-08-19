@@ -1,7 +1,8 @@
 # GSUB-2 — Early-review pass over the GSUB-1 PARK cohort, first real persona-panel use
 
-**Status:** `OPEN` — Phase 1–2 executed 2026-08-19; Phase 2.5 (persona panel) and Phase 3 (operator
-ratification) pending
+**Status:** `OPEN` — Phase 1–2 executed 2026-08-19; Phase 2.5 (persona panel) executed 2026-08-19,
+verdict `CLEAR-WITH-CONCERNS` (no CRO hard-block, no confirmed BLOCKER, one confirmed CONCERN fixed
+in place — see §7 Phase 2.5 note); Phase 3 (operator ratification) pending
 **Authored:** 2026-08-19
 **Closed:** N/A
 **Authors:** Claude Code (proposing office)
@@ -194,11 +195,19 @@ proposals for the panel (Phase 2.5) and Joshua (Phase 3) to accept, reject, or a
 
 Convened via `Workflow({ name: "pre-ratification-adversarial-panel", args: { targetPath:
 "docs/briefs/GSUB-2-park-cohort-early-review.md", tier: "GRAND", personas: ["cio", "coo"] } })`
-(`cro` auto-added per the mandatory-GRAND-CRO rule). CIO covers b1/b2/b3/b6/b7 (Front office, Head
-of Research/Execution domains); COO covers c1 (Back office, Head of Engineering domain); CRO reviews
-every row against the CLAUDE.md safety invariants regardless of domain, per design spec §4.
+(`cro` auto-added per the mandatory-GRAND-CRO rule). CIO covers b1/b2/b3/b6/b7/c3 (Front office, Head
+of Research/Execution domains — per `docs/personas/ownership-map.md` Layer 2, all six rows are
+Office=Front); COO covers c1 (Back office, Head of Engineering domain); CRO reviews every row
+against the CLAUDE.md safety invariants regardless of domain, per design spec §4.
 Precondition: this brief must be a committed, frozen artifact before the panel spawns (design spec
 §6.1) — committed in the same commit as this brief's authoring, before Phase 2.5 runs.
+
+> **Post-panel correction (2026-08-19):** the first real panel run confirmed a CONCERN (COO lens,
+> unanimous) that c3 carried an active Phase 2 proposal but was absent from this coverage list —
+> the omission above is fixed (c3 added to CIO's list). This is a coverage-table completeness fix
+> only; it changes no disposition proposal, no test applied, and no nomination in §7 Phase 1/2.
+> Not re-run through the panel — see the closure/synthesis record for why a re-run wasn't warranted
+> for a routing-table correction that touches no substantive finding.
 
 ### Phase 3 — Operator ratification
 
@@ -270,3 +279,4 @@ git log -1 -- docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md  # expe
 | Date | Change | By |
 |---|---|---|
 | 2026-08-19 | Initial authoring — Phase 1 inventory + Phase 2 disposition proposals for the eight GSUB-1 PARK pursuits; two nominations (b2, c1) surfaced for Phase 2.5 persona-panel review. | Claude Code |
+| 2026-08-19 | Phase 2.5 executed — first real (non-rehearsal) persona-hierarchy panel review (CIO + COO + CRO, per `docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md`). Verdict `CLEAR-WITH-CONCERNS`: no CRO hard-block; two BLOCKER claims (CIO/COO domain-routing scope) raised and both unanimously refuted by independent skeptics; one CONCERN (c3 missing from the Phase 2.5 coverage table) confirmed unanimously and fixed in place. Neither SUBTRACT nomination's substance (b2, c1) was challenged by any surviving finding. Persona logs appended per design spec §12. Phase 3 (operator ratification) still owed — this brief does not execute either nomination. | Claude Code |
