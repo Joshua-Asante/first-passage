@@ -525,6 +525,7 @@ history.
 | 2026-08-19 | §1 reworded: dropped the inaccurate "replacing a single-voice recommendation" framing (the existing panel already runs 6 lenses + 2 skeptics) and added a grounding caveat that every motivating incident is external, not First-Passage-specific. Added §2.1 applying CLAUDE.md's own retention test (R1-R5) to this spec's ~20 proposed new artifacts, honestly stating it passes R1/R5 prospectively, not today. Softened §4's unsupported "order of magnitude" panel-cost claim. §5.1 CIO row and `docs/personas/cio.md` corrected: a2 has no "strategy-generation side" (contradicted both its own pursuit record and §5.2's wholesale Head-of-Execution assignment). §8's alternatives table corrected: 37 pursuits -> 38 (actual count); 8 PARKs -> 7 (b5 was renewed to 2027-02-08 on 2026-08-16, before this spec's own 2026-08-18 date). All found by the same 2026-08-19 adversarial review as the BLOCKERs above (confirmed CONCERNs, not blocking on their own). | Claude Code |
 | 2026-08-19 | §12's log-append template gained two fields, `Evidence-Cited` and `Deviation-from-Precedent`, filled from data the synthesis pass and the prior-log read already produce -- not new data collection. Sourced from a landscape survey of 2025-2026 multi-agent memory practice (arXiv:2508.08997, "Intrinsic Memory Agents": uniform structured per-role templates beat free-text logs on both role-adherence and token efficiency); the survey found the three other fields the source proposed (Artifact-Reviewed, Verdict, Ratified-or-Overridden) were already covered by this template's existing minimum contract. Record-keeping only, explicitly non-gating (new §12 closing paragraph) -- existing entries are unaffected, no synthesis is blocked for an incomplete log. Dispatch-eligibility checked against `docs/adr/2026-07-14-cc-cursor-surface-allocation.md` §2 routing test 1 ("does the task author doctrine... -> CC, full stop") before authoring: this file is the content-of-record for an `Accepted` ADR, so the edit stayed on this surface rather than routing to Cursor. | Claude Code |
 | 2026-08-19 | §10.1 added -- preference-anchoring companion check, a distinct H′ from the main §10 falsifier. Sourced from 2026 research on stateful personal agents (durable-memory agreement-bias/failure-rate escalation on repeated retrieval) applied to the fact that persona memory (§6.4) is exactly the durable, read-before-every-spawn condition that research names as the trigger. Check: at every 5th real log entry, watch for agreement-rate-rising AND findings-count-falling *together*, not agreement alone. Manual/periodic, not automated tooling; non-counting, tagged the same way §13's rehearsal entries already are. Dispatch-eligibility checked against the surface-allocation ADR before authoring, same test as the row above -- stayed off Cursor. | Claude Code |
+| 2026-08-19 | §14 added -- a one-time MAST pre-mortem procedure (arXiv:2503.13657, Cemri et al., NeurIPS 2025), checking the panel's own review PROCESS rather than §10's outcome-only measure. Read the full 14-mode taxonomy (previously only the 3-category summary was known); scoped down to the 9 modes actually reachable given this panel's fan-out, single-shot-call architecture (never a conversing multi-agent system), naming and excluding the other 4 (loss of conversation history, unaware of termination conditions, conversation reset, fail to ask for clarification) as architecturally inapplicable rather than silently dropping them. Run once per real panel use (not rehearsal-inclusive, not a standing recurring gate) against `journal.jsonl`; no new persona minted, extends Head of Governance's existing mandate if a standing owner is ever needed. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
 
 ## 12. Post-workflow log-append procedure (added during Phase 2 implementation; template extended
 2026-08-19 -- see Change History)
@@ -591,3 +592,50 @@ proposal, verdict `CLEAR-WITH-CONCERNS`, one confirmed CONCERN fixed before rati
 real data point 1 of the needed 3." The persona-hierarchy ADR's own §4 tracker is the canonical
 count, not this line — restated here only so this section stops reading as if that first real
 review still lay entirely in the future, which it no longer does.
+
+## 14. MAST pre-mortem procedure (added 2026-08-19)
+
+A one-time, read-only process check against the panel's own mechanism — distinct from §10's
+falsifier, which measures OUTCOME only ("does panel input ever change a ratified disposition").
+Sourced from Cemri, Pan, Yang et al., "Why Do Multi-Agent LLM Systems Fail?" (arXiv:2503.13657,
+NeurIPS 2025 Datasets & Benchmarks) — MAST, an empirically-derived 14-mode taxonomy of multi-agent
+failures, built from 150+ expert-annotated traces (κ=0.88 on the IAA subset) across 7 popular
+frameworks.
+
+**Scope, narrowed to this panel's actual architecture.** MAST was built from systems where agents
+converse (AutoGen, ChatDev, AppWorld). This panel is a fan-out of independent, schema-constrained,
+single-shot `agent()` calls across three pipeline stages (Review → Verify → Synthesize) — never a
+live back-and-forth dialogue. Four of the 14 modes assume a conversation that doesn't exist here
+and are excluded by architecture, not oversight: loss of conversation history, unaware of
+termination conditions, conversation reset, fail to ask for clarification (the last is a real,
+separately-named design gap — a persona has no mechanism to request more context mid-review today
+— but that is a design question, not a MAST-checkable defect in a completed run).
+
+The other nine modes map onto this panel's actual stages:
+
+| Mode | Stage | Check |
+|---|---|---|
+| Disobey task/role specification | Review | Did the persona's finding stay inside its stated Domain (`docs/personas/<slug>.md`)? |
+| Task derailment | Review | Does `notes`/`findings` actually address the target artifact? |
+| Information withholding | Synthesize | Does every CONFIRMED/DISPUTED finding in `lensResults` surface in the synthesis memo? |
+| Ignored other agent's input | Synthesize | Does the memo engage with a persona that said `clean:true` with a substantive rationale? |
+| Reasoning-action mismatch | Review + Verify | Does a finding's `why_wrong` support its `severity`? Does a skeptic's `rationale` support its `refuted` call? |
+| Premature termination | Review | Is a `clean:true` result backed by specific section/line engagement, not a generic one-liner? |
+| No/incomplete verification | Review + Verify | Open every cited `location` and confirm it exists and says what's claimed — the highest-value check, the same class MEMORY.md already tracks (`verify-content-not-path`, `green-gate-is-not-coverage`). |
+| Incorrect verification | Verify | Re-check a sample of the Verify stage's own `refuted` calls independently. |
+| Step repetition | Verify (weak) | Do the two independent skeptic votes read as genuinely independent, or templated restatement of each other? |
+
+MAST's own Appendix E reports individual-mode correlations up to 0.63 — expect real findings to
+trip several adjacent modes at once; this checklist does not force one-mode-per-incident labeling.
+
+**Cadence — one-time, not periodic.** Run once, against `<transcriptDir>/journal.jsonl` from each
+of the first 3 real (non-rehearsal) panel uses tracked by §10's own falsifier — not against
+rehearsal data (§13's rehearsal is explicitly excluded from the N=3 count, and admitting it here
+through a side door would re-open the exact conflation that exclusion exists to prevent), and not
+as a standing recurring gate (a new permanent addition needs the same intake-rule discipline GRAND
+applies to pursuits, §11, not a pass because it's cheap). No named persona owns this — Joshua or CC
+runs the checklist directly; if a standing owner is ever needed later, it extends Head of
+Governance's existing 3rd-line mandate (§5.2.1) rather than minting a 9th Staff seat.
+
+Findings, if any, are recorded as a dated note appended below this section — never editing this
+procedure's own text, matching the append-only ethic §6.4 already uses.
