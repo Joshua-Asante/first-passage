@@ -2,7 +2,10 @@
 
 One row per persona defined under `docs/personas/`. See the
 [design spec](../superpowers/specs/2026-08-18-loop-persona-hierarchy-design.md) for the full
-architecture, panel mechanics, and independence rules this roster implements.
+architecture, panel mechanics, and independence rules this roster implements, and the
+[ownership map](ownership-map.md) for which persona owns which part of the repo (directory skeleton
+shipped; pursuit-level and per-artifact layers phased per
+[the ownership-map plan](../superpowers/plans/2026-08-19-ownership-map-plan.md)).
 
 **Verification:** `python scripts/check_personas.py`
 
