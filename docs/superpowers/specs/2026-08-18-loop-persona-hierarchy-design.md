@@ -240,13 +240,18 @@ Full findings live in this session's research; key points repeated here since th
   non-PM principal) — the generalizable rule this design borrows: independence comes from the
   context/reporting boundary (§6.2's fresh-spawn-reads-only-the-artifact rule), not from having
   enough bodies to staff three offices.
-- **Title grounding**: of 16 Senior Manager + original Staff functions researched against real
-  job postings and fund career pages, roughly a third (5-6) are direct matches, a few are close
-  analogues, and the remainder — mostly at the Staff tier — have no clean real-world equivalent
-  because real funds bundle those functions into a generic "Quantitative Researcher" role rather
-  than staffing them separately. This pipeline's per-gate accountability is more granular than
-  typical industry practice, consistent with its existing culture of explicit, falsifiable,
-  individually-owned checks.
+- **Title grounding** *(corrected 2026-08-19 — see change history)*: this session's research
+  characterized the roster's titles against real job postings and fund career pages, but no capture
+  dates, source URLs, or per-role scoring table were retained or attached anywhere in this repo.
+  **Treat this as a directional, unscored characterization, not a verified count.** Several Senior
+  Manager titles (Head of Execution, Head of Risk, Head of Quantitative Engineering) read as
+  close-to-exact matches to real industry titles; most Staff-tier functions have no clean real-world
+  equivalent, plausibly because real funds bundle those functions into a generic "Quantitative
+  Researcher" role rather than staffing them separately — but that plausibility judgment is
+  unscored too. A specific claim of "direct match" or "verbatim" wording for any individual role
+  (including the Risk Analyst (Intraday) row in §5.3, whose sourced quote did **not** survive
+  independent adversarial re-check — see change history) should not be treated as confirmed unless a
+  primary-source artifact (capture date, quote block) is attached to back it.
 
 ## 10. Testing — the built-in falsifier
 
@@ -268,3 +273,16 @@ in synthesis) is a defect in the mechanism, not a judgment call.
 - Whether any additional Staff seats should be added later, and under what evidence bar (the same
   intake-rule discipline GRAND already applies to pursuits, §2.5 of the GRAND ADR, is the natural
   candidate to reuse rather than inventing a separate one).
+
+## Change history
+
+Corrections below were found by running `pre-ratification-adversarial-panel` against this spec as a
+regression test for an unrelated Phase 2 code change (2026-08-19) — the panel's own doctrine and
+structural-completeness lenses read this document adversarially and surfaced real defects, several
+already propagated into shipped Phase 1/2 artifacts. Fixed as new commits, not by rewriting prior
+history.
+
+| Date | Change | By |
+|---|---|---|
+| 2026-08-19 | §5.1 CFO row corrected: Survive bound was mischaracterized as "capital-denominated," contradicting `docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md` (concurrency-denominated). Same fix applied to `docs/personas/cfo.md` and the Phase 1 plan's embedded copy. | Claude Code |
+| 2026-08-19 | §9 title-grounding bullet softened: dropped unscored "direct match" / "roughly a third (5-6)" verdicts with no attached research artifact; flagged the Risk Analyst (Intraday) row's "verbatim" Topstep quote as not surviving independent adversarial re-check. Same fix applied to `docs/personas/risk-analyst-intraday.md` and the Phase 1 plan's embedded copy. | Claude Code |
