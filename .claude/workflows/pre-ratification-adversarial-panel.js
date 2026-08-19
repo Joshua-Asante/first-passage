@@ -193,6 +193,31 @@ const LENSES = [
   },
 ]
 
+// ---- persona-mode lenses (design spec §6.2) --------------------------------
+// Each persona is spawned exactly like a LENSES entry -- independent agent() call via
+// pipeline(), no shared context with any other persona. This is what makes the SR-11-7 /
+// 18f-4 independence property (reviewer never sees the proposer's live reasoning, or any
+// other reviewer's draft opinion) already true here, not something new to build.
+const PERSONAS = personaMode
+  ? personaSlugs.map((slug) => ({
+      key: slug,
+      build: () =>
+        `You are the ${PERSONA_REGISTRY[slug].role} persona reviewing ${targetPath} in the First Passage repo ` +
+        `(a futures prop-trading research/ops monorepo). First, read your own persona definition in full: ` +
+        `docs/personas/${slug}.md -- this states your Domain (what you are accountable for) and your ` +
+        `Independence rule. Then check whether docs/personas/${slug}-log.md exists; if it does, read it for ` +
+        `your own prior review history. If it does not exist, this is your first review -- say so explicitly ` +
+        `rather than fabricating history.\n\n` +
+        `Now read the ENTIRE target file at ${targetPath}. Review it strictly from your persona's Domain and ` +
+        `mandate -- do not opine outside it. If this decision falls entirely outside your Domain, say so ` +
+        `explicitly (clean:true, notes explaining why) rather than manufacturing a finding to seem useful.\n\n` +
+        `Flag every disagreement explicitly and specifically -- do not soften toward consensus. You cannot see ` +
+        `any other reviewer's input; this is deliberate, matching how a real risk/validation reviewer must form ` +
+        `an independent view before seeing the proposer's or any other reviewer's framing. Return findings via ` +
+        `the schema, each classified BLOCKER / CONCERN / NIT.${extraContextLine}`,
+    }))
+  : []
+
 // ---- verify stage: independent skeptics try to refute every non-NIT finding ----
 
 async function verifyLensFindings(reviewResult, lens) {
@@ -243,6 +268,22 @@ async function verifyLensFindings(reviewResult, lens) {
     nits,
     notes: reviewResult.notes,
   }
+}
+// ---- CRO safety-invariant hard block (design spec §6.3) --------------------
+// Deterministic, not LLM-judgment-dependent -- mirrors this repo's own pattern of
+// enforcing non-negotiable safety invariants in code, not in a prompt (see
+// validate_c1_monitoring_acceptance.validate in ops/c1_rail/, a Python function, not an
+// instruction). Runs on CRO's own structured findings, already in memory from the pipeline.
+const SAFETY_INVARIANT_KEYWORDS = /dry_run|armed_until|M1[^.]{0,15}RESOLVED|\barm(ing)?\b[^.]{0,25}\bnot\b[^.]{0,25}\bsend\b/i
+
+function croHardBlockFires(lensResults) {
+  const croResult = lensResults.find((r) => r && r.key === 'cro')
+  if (!croResult) return { fires: false, citing: [] }
+  const candidates = [...croResult.confirmed, ...croResult.disputed]
+  const citing = candidates.filter(
+    (v) => SAFETY_INVARIANT_KEYWORDS.test(v.finding.claim) || SAFETY_INVARIANT_KEYWORDS.test(v.finding.evidence)
+  )
+  return { fires: citing.length > 0, citing }
 }
 
 // ---- run ----------------------------------------------------------------
