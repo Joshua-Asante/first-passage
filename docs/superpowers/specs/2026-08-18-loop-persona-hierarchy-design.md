@@ -442,6 +442,32 @@ in a persona's log should always appear in the corresponding synthesis memo — 
 two (dissent logged but silently smoothed in synthesis) is a defect in the mechanism, not a judgment
 call, and should be treated as a bug report regardless of where the H/Falsifier trajectory stands.
 
+### 10.1 Preference-anchoring companion check (added 2026-08-19)
+
+A distinct risk from the H/Falsifier above, surfaced by 2025-2026 research on stateful personal
+agents: once a claim is committed to durable (not session-only) memory, agreement-bias/failure
+rate has been measured to rise sharply on repeated retrieval — agents can promote a user-favored
+conclusion to higher epistemic authority over time. The persona-memory design (§6.4) is durable,
+append-only, and read before every spawn — precisely the condition that research names as the
+trigger. This is a plausible latent exposure in an already-built, already-ratified mechanism, not
+a new risk this addition introduces.
+
+**Check (a distinct H′, not folded into the §10 count above).** After a given persona's log
+accumulates its 5th and every 5th subsequent real (non-rehearsal) entry, read the trend of two
+figures across that persona's history: (i) the plain agreement rate — entries where `Ratified as
+recommended` reads `Yes`, divided by total; (ii) the `Confirmed findings` trend — is it drifting
+toward "none." The specific red flag is **both trending together** — agreement rising while
+findings-count falls — not high agreement alone, since a genuinely careful reviewer can legitimately
+agree with a careful operator often. That combined signature is what "hollowing into a rubber
+stamp" actually looks like on paper, distinct from ordinary competent agreement.
+
+This is a manual, periodic read (Joshua or CC eyeballing a log file), not automated tooling —
+proportionate to a diagnostic that is only meaningful past a handful of data points, and consistent
+with this spec's own anti-belt-growth stance (§8) against building infrastructure ahead of
+demonstrated need. Any note this check produces is tagged the same way the existing `**Rehearsal:**
+yes` convention already tags non-counting entries (§13), so a future reader of
+`docs/personas/*-log.md` never mistakes this diagnostic for part of the real §10 N=3 count.
+
 ## 11. Open follow-ups (not decided by this spec)
 
 - Whether this should also be ratified as a **formal ADR**, per the repo's existing brief-authoring
@@ -498,6 +524,7 @@ history.
 | 2026-08-19 | §6.6 ratified `PROPOSED` → `Accepted` (operator in-session instruction, "ratify now"). The redesigned mechanics point 5 (§6.6-cross-exam-log.md file separation, ratified without a third review round — operator judgment call) is now the entirety of what this subsection describes. Status line, §7's row, and this Change History updated to match; §5.1's own mandatory-CRO-participation framing and §6.3's hard-block scoping were re-read at ratification and found unaffected by anything in §6.6. | Joshua + Claude Code |
 | 2026-08-19 | §1 reworded: dropped the inaccurate "replacing a single-voice recommendation" framing (the existing panel already runs 6 lenses + 2 skeptics) and added a grounding caveat that every motivating incident is external, not First-Passage-specific. Added §2.1 applying CLAUDE.md's own retention test (R1-R5) to this spec's ~20 proposed new artifacts, honestly stating it passes R1/R5 prospectively, not today. Softened §4's unsupported "order of magnitude" panel-cost claim. §5.1 CIO row and `docs/personas/cio.md` corrected: a2 has no "strategy-generation side" (contradicted both its own pursuit record and §5.2's wholesale Head-of-Execution assignment). §8's alternatives table corrected: 37 pursuits -> 38 (actual count); 8 PARKs -> 7 (b5 was renewed to 2027-02-08 on 2026-08-16, before this spec's own 2026-08-18 date). All found by the same 2026-08-19 adversarial review as the BLOCKERs above (confirmed CONCERNs, not blocking on their own). | Claude Code |
 | 2026-08-19 | §12's log-append template gained two fields, `Evidence-Cited` and `Deviation-from-Precedent`, filled from data the synthesis pass and the prior-log read already produce -- not new data collection. Sourced from a landscape survey of 2025-2026 multi-agent memory practice (arXiv:2508.08997, "Intrinsic Memory Agents": uniform structured per-role templates beat free-text logs on both role-adherence and token efficiency); the survey found the three other fields the source proposed (Artifact-Reviewed, Verdict, Ratified-or-Overridden) were already covered by this template's existing minimum contract. Record-keeping only, explicitly non-gating (new §12 closing paragraph) -- existing entries are unaffected, no synthesis is blocked for an incomplete log. Dispatch-eligibility checked against `docs/adr/2026-07-14-cc-cursor-surface-allocation.md` §2 routing test 1 ("does the task author doctrine... -> CC, full stop") before authoring: this file is the content-of-record for an `Accepted` ADR, so the edit stayed on this surface rather than routing to Cursor. | Claude Code |
+| 2026-08-19 | §10.1 added -- preference-anchoring companion check, a distinct H′ from the main §10 falsifier. Sourced from 2026 research on stateful personal agents (durable-memory agreement-bias/failure-rate escalation on repeated retrieval) applied to the fact that persona memory (§6.4) is exactly the durable, read-before-every-spawn condition that research names as the trigger. Check: at every 5th real log entry, watch for agreement-rate-rising AND findings-count-falling *together*, not agreement alone. Manual/periodic, not automated tooling; non-counting, tagged the same way §13's rehearsal entries already are. Dispatch-eligibility checked against the surface-allocation ADR before authoring, same test as the row above -- stayed off Cursor. | Claude Code |
 
 ## 12. Post-workflow log-append procedure (added during Phase 2 implementation; template extended
 2026-08-19 -- see Change History)
