@@ -377,6 +377,39 @@ produced zero disputed-finding-between-personas events (everything landed unanim
 unanimous-refute at the verify stage), which is a real data point toward branch (c) being the
 likely outcome at the first checkpoint, not evidence either for or against the mechanism itself.
 
+### 6.7 Persona retirement procedure (individual seat — added 2026-08-19)
+
+Distinct from §10's falsifier disposition, which demotes the *whole panel mechanism* if it fires
+("demote to a lighter, non-panel review path"). Retiring one named persona is a separate, narrower,
+human-initiated event with its own evidence — this subsection is the previously-missing procedure
+for that case, modeled on this repo's own Great Prune precedent
+(`docs/adr/2026-08-08-great-prune.md`): PR-merge is the ratification, and dead-weight has to be
+proven, not assumed. Great Prune's own adversarial "prove each file is dead" review rescued 66 of
+69 candidate deletions (4.3% classifier precision) before its own PR merged — persona retirement
+carries the same proof burden, scaled down.
+
+**Trigger.** Operator-decided only, never automatic — e.g. N consecutive reviews with zero
+findings, or a direct Joshua call. Never inferred solely from the §10 falsifier firing on the whole
+panel, which is a distinct, broader event.
+
+**Procedure.**
+1. **Freeze intake** — stop assigning new `docs/personas/ownership-map.md` rows to the persona.
+2. **Reassign** — move every existing ownership-map row (primary or secondary) to the covering
+   persona, per the existing reporting line (a retired Staff seat's rows go to its Head; a retired
+   Senior Manager's rows go to its GRAND-tier officer).
+3. **Archive, don't delete** — the persona's log file (`docs/personas/<slug>-log.md`) stops
+   receiving new entries; git history is the archive, matching how Great Prune treats every
+   deleted byte (`git show pre-prune-2026-08-08:<path>`).
+4. **Update the index** — mark the row RETIRED in `docs/personas/INDEX.md` with a pointer, the same
+   tombstone convention `docs/adr/TOMBSTONES.md` already uses elsewhere in this repo.
+5. **Ratify before merge** — the whole diff (ownership-map reassignment + INDEX update + a short
+   retirement note stating the trigger and evidence) goes to Joshua as one PR, never auto-executed
+   — the same D5 discipline every other structural change in this design already carries.
+
+Explicitly not part of this procedure: disabling "endpoints or credentials" — personas are fresh
+per-review spawns with no standing credentials to revoke; step 4 above already covers what that
+instinct is reaching for.
+
 ## 7. Error handling
 
 | Condition | Behavior |
@@ -581,6 +614,7 @@ history.
 | 2026-08-19 | §9 gained an "Architectural correlation" bullet, and §6.2 gained a one-line cross-reference to it: fresh-context spawning (already built) prevents contextual contamination but not architectural correlation between personas that likely share one model family's blind spots and sycophancy pull, per 2025-2026 LLM-judge-collusion literature. No mitigation proposed -- documentation only, so "fresh subagents" is never silently read as having solved a risk it only partially addresses. Smallest item on the docket: no code, no new structure, no forward obligation. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
 | 2026-08-19 | §6.3 gained a drafted-not-wired-in extension: a deterministic `flagIndependentDissent`-shaped mechanic (diverging severity + non-matching `location` between two personas' findings) sketched as the frozen spec for a future synthesis-prompt addition, explicitly held until §10's N=3 falsifier clears (currently 1/3 -- GSUB-2). No code touched `.claude/workflows/pre-ratification-adversarial-panel.js` in this commit; the paragraph is the spec, not the patch. Narrowed from an earlier trained-classifier proposal to this purely syntactic, deterministic form specifically so it doesn't reopen the CRO hard-block's status as the sole non-advisory dissent case. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
 | 2026-08-19 | §10.2 added -- self-consistency companion checkpoint, a distinct H′ from the main §10 falsifier. Sourced from a 2026 benchmark finding automatically-designed multi-agent systems can underperform a single agent's Chain-of-Thought self-consistency at a fraction of the cost. Check: on the first 1-2 real GRAND reviews, spawn 3 extra same-persona CRO samples alongside the real run and compare majority-vote agreement -- an AI-vs-AI measurement, explicitly distinct from and not a substitute for the human-ground-truth §10 falsifier. No workflow-file code change; runs as an ad hoc side call. Non-counting, tagged the same way §13's rehearsal entries already are. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
+| 2026-08-19 | §6.7 added -- persona retirement procedure for an individual seat, distinct from §10's whole-panel demotion disposition. Modeled on this repo's own Great Prune precedent (66/69 candidate deletions rescued on adversarial review before that PR merged): operator-decided trigger only, 5-step freeze/reassign/archive/index/ratify-before-merge sequence routing through PR review the same way Great Prune itself was ratified, never auto-executed. Dropped the source proposal's "disable endpoints/credentials" step -- no literal referent, since personas are fresh per-review spawns with no standing credentials; step 4 (index update) already covers the intent. Dispatch-eligibility checked, same test as the rows above -- stayed off Cursor. | Claude Code |
 
 ## 12. Post-workflow log-append procedure (added during Phase 2 implementation; template extended
 2026-08-19 -- see Change History)
