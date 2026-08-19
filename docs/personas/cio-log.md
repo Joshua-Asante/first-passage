@@ -17,3 +17,19 @@ argued for.
 **Rehearsal:** yes -- retroactive dry run against an already-closed decision, not a real
 ratification-influencing review; does not count toward the design spec §10 falsifier
 **CRO hard block fired:** no
+
+## 2026-08-19 — docs/briefs/GSUB-2-park-cohort-early-review.md
+
+**Verdict:** CLEAR-WITH-CONCERNS (panel-level synthesis; my own lens raised one BLOCKER-severity
+finding -- Phase 2.5 routing me over b1/b2/b3/b6/b7/c3, pursuits absent from my persona file's
+literal Domain-bullet enumeration -- which both independent skeptics unanimously refuted: the
+design spec §4 GRAND-tier spawn rule keys on Office (Front), not the illustrative Domain-bullet
+text, and `docs/personas/ownership-map.md`'s same-day Layer 2 table independently classifies all
+six rows Office=Front. I did not opine on the substance of any of the six pursuits' dispositions,
+consistent with surfacing the scope question rather than compounding a possible mis-scoping.
+**Confirmed findings:** none (my own BLOCKER was raised and refuted; the panel's one confirmed
+CONCERN was raised by the COO lens, not mine)
+**Ratified as recommended:** Pending -- operator has not yet ratified
+**Rehearsal:** no -- first real (non-rehearsal) review; first data point toward the
+persona-hierarchy ADR's own §4 falsifier
+**CRO hard block fired:** no

@@ -165,7 +165,7 @@ the same way across every campaign regardless of which specific Q-brief is runni
 | Head of Research | Falsifier Analyst | Cheap-falsifier / pre-G0 kill discipline | In-house — no clean equivalent (bundled into "Quant Researcher" at real funds) |
 | Head of Research | Pre-Registration Analyst | G0-freeze discipline before any test runs | In-house — imported from open-science practice, not a finance role |
 | Head of Execution | TCA Analyst | Cost-law pre-screen — edge must survive realistic costs before further investment | **Transaction Cost Analysis Analyst — direct match** |
-| Head of Risk & Sizing | Risk Analyst (Intraday) | DD-tier compliance checks on any live-risk-touching item | **Direct match — found verbatim at an actual prop firm (Topstep), down to "monitor accounts intraday for drawdowns"** |
+| Head of Risk & Sizing | Risk Analyst (Intraday) | DD-tier compliance checks on any live-risk-touching item | In-house — see §9's correction: the "verbatim, found at Topstep" sourcing claim previously stated here did **not** survive independent adversarial re-check; treat as unscored until a primary-source artifact is attached |
 | Head of Validation | Model Validation Analyst | Overfit / DSR screen | In-house — loose borrow from banking model-validation practice |
 | Head of Validation | Robustness Analyst | Regime-robustness (both-halves) gate | In-house — no clean equivalent |
 | Head of Governance | Documentation Analyst | Brief-compliance (`check_brief.py`-style) gate | In-house — nearest is technical-writer/IC-memo review, a different artifact class |
@@ -235,6 +235,127 @@ which is constant and unrelated to whether a GRAND/STRATEGIC decision is in flig
 *into* the relevant Senior Manager's review only when a STRATEGIC-tier decision actually touches
 that domain.
 
+### 6.6 Cross-examination round (interactive, opt-in — added 2026-08-19)
+
+**Status: ACCEPTED — ratified by Joshua 2026-08-19, in-session direct instruction ("ratify now"),
+separately from the persona-hierarchy ADR's own D1 pointer** (which predates this subsection by
+roughly two hours the same day and does not itself cover it — see the ADR's own addendum). No
+implementing code exists yet for anything in this subsection; ratification licenses building it,
+it does not retroactively assert it is built. Preceded by two rounds of adversarial review before
+ratification was asked for: the full panel (workflow `wf_88c21d8d-a7f`, `BLOCKED`, 6 confirmed
+BLOCKERs, fixed same day) and a targeted recheck of those fixes (workflow `wf_8d2086b0-27d`, which
+found one fix still inadequate and prompted the structural redesign in mechanics point 5 below —
+that redesign itself was ratified on the operator's own judgment, without a third review round).
+
+Everything in §6.1–§6.5 stays exactly as ratified: Stage 1 is blind, independent, and no persona
+reads another's live reasoning during its *own* review. This subsection adds a strictly additive,
+**post-synthesis** extension for the case where Joshua wants two personas to argue a specific point
+directly, rather than only reading the synthesis memo's account of their disagreement.
+
+**Trigger.** Elective, never automatic. Either (a) Joshua names a finding and a persona pair
+directly, or (b) the synthesizing session proposes it when Stage 1's own verify pass already
+produced a *disputed* (not unanimous) finding between two personas who both own the item — since
+that is exactly the shape of disagreement this round exists to deepen. Forcing it on every panel
+run would blur "genuine disagreement worth debating" into ceremony, the same failure class the
+retention self-test (§2.1) already worries about for the rest of this design.
+
+**Ownership precondition (hard gate, not a judgment call).** A cross-examination round between
+persona A and persona B on item X may run **only if both A and B are named Primary or Secondary
+owner of X** in `docs/personas/ownership-map.md` — or, for an item the ownership map doesn't yet
+cover, both are in the panel's own spawn list for X under the §4 office-touches-domain rule. If
+this fails, the round does not run — same fail-closed posture as the frozen-artifact precondition
+(§6.1), and for the same reason: without it, cross-examination becomes a free-for-all where any
+persona can dogpile any other persona's finding outside its own mandate, which is exactly the
+domain-crispness §7's error-handling table already protects one layer down.
+
+**CRO carve-out (mandatory, not an ownership-map lookup).** CRO is always an eligible cross-
+examination participant on any GRAND-tier item, regardless of what `ownership-map.md` lists —
+this mirrors the ADR's own §4 mandatory-CRO rule ("CRO on every single GRAND decision, with no
+exceptions") verbatim, one layer down. Checked against the map directly: CRO is named Primary or
+Secondary owner on exactly 1 of 38 tracked pursuit rows (`e1`), so without this carve-out the
+ownership gate would hard-fail-closed on the other 37 even though CRO's own Stage-1 participation
+producing the disputed finding was itself mandatory. The gate as applied to every *other* persona
+pair is unchanged.
+
+**Mechanics.**
+1. Stage 1 findings are **frozen** once produced. A cross-examination round never edits, deletes,
+   or retroactively softens a Stage-1 finding — it produces new, clearly-labeled response entries
+   layered on top, matching the append-only ethic persona memory (§6.4) already uses.
+2. The round is a single fresh `agent()` spawn for persona **B** — never persona A rewriting
+   itself. B reads: (a) its own Stage-1 finding on this item, if any; (b) persona A's Stage-1
+   finding on this item, verbatim, in full; (c) nothing else — not the synthesis memo's framing of
+   it, not any other persona's take. B is prompted to state agreement, refutation, or partial
+   agreement with its own reasoning — not asked to "resolve" the disagreement, since resolution
+   stays Joshua's alone (D5, unchanged).
+3. Capped at **one response round per (finding, persona-pair) by default.** A second round (B
+   responds, then A responds to B's response) requires Joshua's explicit ask each time — bounding
+   the round prevents unbounded ping-pong and keeps it deliberate rather than automatic, the same
+   discipline the verify stage already applies (two skeptics per finding, not unlimited).
+4. Joshua may inject his own question or framing into what persona B reads (e.g., *"B, does A's
+   point hold given the March allocation ADR?"*). This is safe specifically because by the time a
+   cross-examination round exists, **every** Stage-1 review of the item is already complete and
+   locked — there is no remaining unbiased persona left to protect from seeing the CEO's framing,
+   and Joshua's ratification authority (D5) already presumes he can steer the conversation openly
+   once independent judgment has been recorded.
+5. **A round's written record lives in a separate file, `docs/personas/<slug>-cross-exam-log.md`
+   — never in `docs/personas/<slug>-log.md`, the file §6.2's fresh Stage-1 spawn actually reads.**
+   This supersedes an earlier draft of this point (see Change History) that tried tagging entries
+   *within* the Stage-1 log instead — a targeted re-check (2026-08-19, workflow `wf_8d2086b0-27d`)
+   found that approach visibility-only: nothing anywhere in §6.2/§6.4 told a future Stage-1 spawn to
+   read a tagged entry any differently from an untagged one, so the influence pathway the original
+   BLOCKER named stayed fully open under a human-auditable label. File-separation closes it
+   structurally instead of relying on a "please discount this" instruction: a future Stage-1 spawn
+   of persona B, per §6.2, reads only `<slug>-log.md` — the cross-exam log is never in that read
+   path, so operator-framed content genuinely cannot reach a not-yet-run Stage-1 judgment on an
+   unrelated future item, not merely "reach it but be labeled." The cross-exam log is read by: a
+   human auditing the mechanism, a future *cross-examination* round involving that persona (where
+   seeing its own prior cross-exam responses is appropriate — that mode is already interactive by
+   design), and the supplementary synthesis addendum author. It is never in a Stage-1 spawn's read
+   list. This also substantially moots the CRO-carve-out CONCERN the same re-check raised (fix 2
+   below): expanding CRO's cross-exam eligibility from 1/38 to 38/38 items no longer multiplies any
+   contamination surface, because no item's cross-exam content reaches any persona's Stage-1 read
+   path regardless of how many items that persona is eligible for.
+6. A round still produces a supplementary synthesis addendum when it changes the operator-facing
+   recommendation — same as before, never silently folded back into the original synthesis text
+   (the "dissent preserved verbatim" rule §6.3 already states for the first-pass synthesis).
+
+**What this does not change.** The CRO hard-block (§6.3/D3) is untouched: if the disputed finding
+under cross-examination is itself a CRO safety-invariant citation, the hard-block already fired at
+synthesis, and a round can only have B explain its own reasoning — never overrule CRO's blocking
+citation. **A new safety-invariant citation, authored by CRO specifically and surfaced for the
+first time by cross-examination itself** (not present in Stage 1), is not exempt just because it
+arrived late: the same `citesSafetyInvariant` check (§6.3) applies to CRO's own cross-exam text
+before it reaches any operator-facing addendum, hard-blocking exactly as it would have at
+first-pass synthesis. Scoped to CRO specifically, matching §6.3's own literal wording ("a CRO
+dissent") and the underlying code (`croHardBlockFires` keys off the `cro` lens result only) — a
+non-CRO persona's citation during cross-examination does not trigger this deterministic hard-block
+(it can still be flagged as a CONCERN in the addendum for Joshua's judgment, same as any other
+non-CRO finding always could). This closes the gap a naive reading might leave — that the hard-block
+only ever checks Stage-1 output — without silently expanding hard-block-triggering authority beyond
+CRO, which nothing else in this design licenses. Cross-examination is scaffolding around the
+existing mechanism, not a second decision axis; it cannot substitute for Joshua's own ratification
+any more than the first-pass synthesis can (persona-hierarchy ADR §5, "letting a persona panel's
+synthesis substitute for the D-user-gate").
+
+**Grounding note.** This mirrors how real risk/investment committees actually run: independent
+written opinions submitted blind, *then* a live discussion round where the already-recorded
+opinions get debated. The discussion phase does not reopen the independence guarantee — it debates
+its output. Directional, unscored grounding, same caveat §9 already carries for the rest of this
+design's real-world citations.
+
+**Falsifier.** Rides the existing §10 tracker rather than opening a second clock, with an explicit
+third branch so a low-opportunity count isn't silently read either way: **(a)** if ≥3 real
+disputed-finding opportunities (a genuine disagreement between two co-owning personas, not merely
+2-skeptic non-unanimity within the verify stage — a distinct, narrower event) accrue and
+cross-examination is never invoked, that is informative against the mechanism; **(b)** if invoked
+≥1 time and never changes the operator-facing synthesis addendum, that is also informative against
+it; **(c)** if fewer than 3 disputed-finding opportunities have accrued by the shared checkpoint
+(3rd real panel use or 2026-11-08, whichever comes first), the mechanism is **not yet tested**, not
+passing — say so explicitly rather than defaulting to either branch above. The §13 rehearsal
+produced zero disputed-finding-between-personas events (everything landed unanimous-confirm or
+unanimous-refute at the verify stage), which is a real data point toward branch (c) being the
+likely outcome at the first checkpoint, not evidence either for or against the mechanism itself.
+
 ## 7. Error handling
 
 | Condition | Behavior |
@@ -243,6 +364,7 @@ that domain.
 | First-ever run for a given persona | Empty/absent log is normal; the persona states this explicitly rather than fabricating prior history. |
 | Two personas' verdicts flatly contradict | Preserved as dissent in the synthesis; Joshua adjudicates — except the CRO safety-invariant case (§6.3), which hard-blocks regardless. |
 | A persona is asked to review something outside its office's mandate | Declines rather than opining, keeping domain boundaries crisp (the same discipline the GRAND ADR's §2.4 domain-table guard already enforces one tier up). |
+| A cross-examination round (§6.6, `Accepted`, not yet built) is requested between two personas who don't both own the item under discussion | Does not run: hard fail-closed, same posture as the frozen-artifact precondition (§6.1) — not a soft skip. |
 
 ## 8. Alternatives considered
 
@@ -369,6 +491,11 @@ history.
 | 2026-08-19 | §9 title-grounding bullet softened: dropped unscored "direct match" / "roughly a third (5-6)" verdicts with no attached research artifact; flagged the Risk Analyst (Intraday) row's "verbatim" Topstep quote as not surviving independent adversarial re-check. Same fix applied to `docs/personas/risk-analyst-intraday.md` and the Phase 1 plan's embedded copy. | Claude Code |
 | 2026-08-19 | §9 gained an "Organizational depth" bullet. §3 and §8 both cited "(§9)" as the source for the "three levels, not four" architectural decision, but §9 never actually carried that research — the citation pointer resolved to an empty set. | Claude Code |
 | 2026-08-19 | §10 restructured with explicit `H:`/`Falsifier:`/`Trigger check schedule:` tokens (N=3, dated to the 2026-11-08 quarterly gate). The prior prose claimed to match the GRAND ADR's own §4 discipline without reproducing its structure. | Claude Code |
+| 2026-08-19 | This decision was registered as a formal ADR — [`docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md`](../../adr/2026-08-19-loop-persona-hierarchy-review-panel.md), ratified same day — resolving §11's open "disputed finding B" (whether a separate ADR should follow). No content in this spec changed; the ADR is a pointer-tier registration of the decision this spec already carries. | Claude Code |
+| 2026-08-19 | §6.6 added — cross-examination round, a strictly-additive, post-synthesis, opt-in extension letting Joshua route one persona's already-locked Stage-1 position to a co-owning persona for direct response. Motivated by operator question, same day, about whether personas could see/react to each other's work interactively — answer: not during Stage 1 (that would reopen the SEC 18f-4 / SR 11-7 independence property §1 is built on), but yes as a bounded debate round after independent judgment is already on record, same shape real risk committees use. §7 error-handling table gained a matching fail-closed row (ownership mismatch declines the round). **PROPOSED — not yet ratified; §6.1–§6.5 and the persona-hierarchy ADR are unaffected either way.** | Claude Code (drafted at operator request) |
+| 2026-08-19 | §6.6 self-reviewed via its own pre-ratification adversarial panel (44 agents, 6 lenses + double-skeptic verify, workflow run `wf_88c21d8d-a7f`) before ratification was even asked for — disposition `BLOCKED`, 6 confirmed BLOCKERs. Fixed same day: explicit "Status: PROPOSED, no implementing code" line added at §6.6's own top (was previously only in Change History); §7's row hedged to match; ownership gate gained a mandatory CRO carve-out (was 1/38-eligible without it); mechanics gained point 6, a `**Cross-exam (operator-framed):** yes` provenance tag, closing a durable-log contamination path into unrelated future Stage-1 reviews; the CRO hard-block paragraph gained explicit coverage for a safety-invariant citation surfacing for the first time *during* cross-examination, not only at Stage-1; Falsifier clause gained a third branch (`not yet tested`) so a low-opportunity-count checkpoint isn't misread either way. Also fixed in passing, same commit, since found by the same panel run in the same file: §5.3's unhedged fabricated Topstep "verbatim" quote (contradicted the document's own §9 correction, which had touched everything *except* its origin point) and §13's stale "first real data point... can only come from a genuine future" claim (GSUB-2 had already supplied it, same day, before this file's own prior edit). Remaining CONCERNS/NITs from the same run (stale §5.2 labels, a wrong `inqhiori-canon.md` line citation, §11's stale "remains open," unbacked agent-count metadata, sibling ADR's missing dedup-first attestation) are pre-existing and out of §6.6's own scope — spun off as a separate follow-up rather than bundled here. | Claude Code |
+| 2026-08-19 | **Correction to the row above.** The row's characterization of the previous fix — "a `Cross-exam (operator-framed): yes` provenance tag, closing a durable-log contamination path" — overclaimed. A targeted, operator-requested re-check (workflow `wf_8d2086b0-27d`: one steelman-the-kill lens re-run against the fixed text, double-skeptic-verified) confirmed unanimously that the tag was visibility-only: nothing in §6.2/§6.4 told a future Stage-1 spawn to treat a tagged entry any differently, so the influence pathway the original BLOCKER named stayed fully open, just human-auditable. The same re-check confirmed fixes 1, 4, 5 (the Status line, CRO hard-block extension, Falsifier third branch) genuinely closed their BLOCKERs, and flagged (disputed 1-1, non-gating per its own synthesis) that the CRO carve-out expands cross-exam eligibility from 1/38 to 38/38 GRAND items, compounding the tag's gap specifically for the panel's highest-stakes seat. **Redesigned, not re-patched:** mechanics point 5 now routes a cross-examination round's written record to a separate file (`docs/personas/<slug>-cross-exam-log.md`) that §6.2's Stage-1 spawn never reads, closing the pathway structurally rather than by label — and, as a side effect, substantially moots the CRO-exposure CONCERN, since no cross-exam content reaches any persona's Stage-1 read path regardless of how many items that persona is eligible for. The CRO hard-block extension was also re-scoped to CRO-authored citations specifically, matching §6.3's literal wording and the underlying `croHardBlockFires` code (keys off the `cro` lens result only), closing the NIT the same re-check raised about unscoped hard-block-triggering authority. Still `PROPOSED` — this redesign has not itself been re-verified by a fresh check. | Claude Code |
+| 2026-08-19 | §6.6 ratified `PROPOSED` → `Accepted` (operator in-session instruction, "ratify now"). The redesigned mechanics point 5 (§6.6-cross-exam-log.md file separation, ratified without a third review round — operator judgment call) is now the entirety of what this subsection describes. Status line, §7's row, and this Change History updated to match; §5.1's own mandatory-CRO-participation framing and §6.3's hard-block scoping were re-read at ratification and found unaffected by anything in §6.6. | Joshua + Claude Code |
 | 2026-08-19 | §1 reworded: dropped the inaccurate "replacing a single-voice recommendation" framing (the existing panel already runs 6 lenses + 2 skeptics) and added a grounding caveat that every motivating incident is external, not First-Passage-specific. Added §2.1 applying CLAUDE.md's own retention test (R1-R5) to this spec's ~20 proposed new artifacts, honestly stating it passes R1/R5 prospectively, not today. Softened §4's unsupported "order of magnitude" panel-cost claim. §5.1 CIO row and `docs/personas/cio.md` corrected: a2 has no "strategy-generation side" (contradicted both its own pursuit record and §5.2's wholesale Head-of-Execution assignment). §8's alternatives table corrected: 37 pursuits -> 38 (actual count); 8 PARKs -> 7 (b5 was renewed to 2027-02-08 on 2026-08-16, before this spec's own 2026-08-18 date). All found by the same 2026-08-19 adversarial review as the BLOCKERs above (confirmed CONCERNs, not blocking on their own). | Claude Code |
 
 ## 12. Post-workflow log-append procedure (added during Phase 2 implementation)
@@ -411,3 +538,12 @@ STRATEGIC-tier decision reviewed *before* ratification. Every log entry this reh
 (`docs/personas/{cio,coo,cfo,cro}-log.md`) carries an explicit `**Rehearsal:** yes` line for exactly
 this reason -- so a future reader of `docs/personas/*-log.md` never mistakes rehearsal output for a
 real review.
+
+**Addendum 2026-08-19 (same day, later) — the "future" arrived: real data point 1/3.** Immediately
+after this rehearsal, [`GSUB-2`](../../briefs/GSUB-2-park-cohort-early-review.md) ran the first
+genuine pre-ratification GRAND-tier panel review (CIO/COO/CRO against a frozen SUBTRACT-candidate
+proposal, verdict `CLEAR-WITH-CONCERNS`, one confirmed CONCERN fixed before ratification) and its
+[closure](../../briefs/closures/GSUB-2-closure-resolved-loadbearing.md) states explicitly: "this is
+real data point 1 of the needed 3." The persona-hierarchy ADR's own §4 tracker is the canonical
+count, not this line — restated here only so this section stops reading as if that first real
+review still lay entirely in the future, which it no longer does.

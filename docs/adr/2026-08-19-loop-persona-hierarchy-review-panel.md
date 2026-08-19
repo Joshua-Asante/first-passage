@@ -1,6 +1,7 @@
 # ADR 2026-08-19 — Persona hierarchy: a front/middle/back-office review panel over the GRAND/STRATEGIC loop tiers
 
-**Status:** `Proposed`
+**Status:** `Accepted` — ratified by operator (Joshua) 2026-08-19, in-session direct instruction
+("ratify the ADR"); see Ratification note
 **Decision date:** 2026-08-19
 **Authors:** Joshua + Claude Code (design collaboration, 2026-08-18–19)
 **Supersedes:** none
@@ -218,7 +219,49 @@ grep -in "unconfirmed\|inferred by naming\|not yet run" docs/personas/ownership-
 
 ## Ratification note
 
-*(Populated on operator ratification — not yet ratified as of authoring.)*
+**Ratified by:** Joshua, in-session direct instruction — *"ratify the ADR"* (2026-08-19). Authority
+channel: explicit owner adjudication.
+
+**§6 preconditions at ratification:** §0 populated with anchors (done, authoring commit) ✓ · operator
+ratification of this ADR specifically (this note — distinct from the design spec's own prior informal
+acceptance, per §6's own instruction) ✓ · `python scripts/check_brief.py
+docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md --type adr` → `RESULT: well-formed` (0 HARD,
+0 WARN) ✓ · `python scripts/check_adr_graph.py` → `OK` ✓.
+
+**§6 ACCEPTED same-commit downstream updates (this commit):** `CLAUDE.md` §Standing decision table
+gains a pointer row · `docs/adr/INDEX.md` regenerated via `check_adr_graph.py --regenerate-index` ·
+design spec (`docs/superpowers/specs/2026-08-18-loop-persona-hierarchy-design.md`) gains a one-line
+cross-reference addendum in its own Change History pointing at this ADR.
+
+**Not licensed by this ratification:** anything §5's forbidden moves already exclude — this ratifies
+the *registration* of the persona-hierarchy panel as GRAND/STRATEGIC-tier doctrine; it does not itself
+convene a panel or dispose of any pursuit. The first real (non-rehearsal) panel use is a separate,
+subsequent act, per design spec §13's own distinction between rehearsal and real data points toward
+§4's falsifier.
+
+---
+
+## Addendum 2026-08-19 (same day, later) — D1's design-spec pointer is a snapshot, not a live range
+
+**Does not amend §2.** Citation-scope clarification only, found by the §6.6 pre-ratification
+adversarial panel (see the design spec's own §6.6 Status line for the full finding).
+
+D1 says the design spec's "§§3–7" carries "full roster, independence mechanics, and trigger scope."
+Read unqualified, that range would sweep in any section added later under the same numbers — but
+this ADR ratifies the design spec **as it stood at the ratification commit (`66410ed`)**, not as a
+live-updating range. A section added to the design spec after that commit under a §-number inside
+3–7 (e.g. `§6.6`, drafted afterward at `2dd34ae`) is **not** ratified by D1 and needs its own
+separate ratification before it governs anything — exactly the same rule the design spec's §11 open
+follow-up already applies to whether a future addition needs a formal ADR. This is a standing
+reading rule for this ADR going forward, not a one-time fix: **the "§§3–7" pointer in D1 means the
+2026-08-19 ratified content of those sections, not whatever they contain when a reader looks later.**
+
+**Follow-up, same day: §6.6 has now separately cleared that bar.** After two rounds of adversarial
+review (full panel `wf_88c21d8d-a7f`, `BLOCKED` then fixed; targeted recheck `wf_8d2086b0-27d`,
+which found one fix inadequate and prompted a structural redesign) Joshua ratified §6.6 directly
+("ratify now"), per its own Status line. D1's "§§3–7" pointer still means the 2026-08-19-at-`66410ed`
+snapshot, unchanged — §6.6's ratification is a separate act, recorded on the design spec's own
+Status line and Change History, not a retroactive widening of what D1 itself covers.
 
 ---
 
@@ -237,3 +280,5 @@ python scripts/check_adr_graph.py
 |---|---|---|
 | 2026-08-19 | Initial authoring — registers the already-ratified persona-hierarchy decision on the doctrine-tier surface the ceremony-tiering ADR's own limb-4 test says it belongs on | Claude Code (drafted at operator request, judged beneficial per the ceremony-tiering tier test — see §0) |
 | 2026-08-19 | Self-review pass (32-agent, 4-dimension adversarial review, see §0 Self-review note): corrected D2's misattribution (three-loop-binding ADR, not GRAND ADR), fixed the §10 CRO-invariant grep that could never match CLAUDE.md, softened §4's unsupported "kept in sync by audit hook" claim, refreshed §0's design-spec and workflow-JS anchors past their own initial staleness, clarified D3's new-gate-vs-no-new-authority distinction. Same review also fixed a real fail-open CRO hard-block defect in the workflow JS itself (commit 84a941a) and a BLOCKER-undercount in the design spec's §13 (commit 47e3421) — logged there, not here, since neither is this ADR's own content. | Claude Code |
+| 2026-08-19 | Ratified `Proposed` → `Accepted` (operator in-session instruction, "ratify the ADR"; Ratification note populated). §6 ACCEPTED downstream updates landed same commit: `CLAUDE.md` standing-decision pointer row, `docs/adr/INDEX.md` regenerated, design spec cross-reference addendum. | Joshua + Claude Code |
+| 2026-08-19 | Addendum added — D1's "§§3–7" design-spec pointer clarified as a snapshot at ratification, not a live range, so a later same-numbered addition (§6.6) isn't read as already-ratified. Found by the §6.6 pre-ratification adversarial panel (44 agents, 6 lenses, workflow run `wf_88c21d8d-a7f`). | Claude Code |
