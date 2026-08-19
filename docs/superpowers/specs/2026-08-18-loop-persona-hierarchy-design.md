@@ -36,7 +36,7 @@ design is a direct response to.
 This is an overlay. It does not touch:
 
 - **The 4-tier loop doctrine** (GRAND/STRATEGIC/OUTER/INNER) or its authority rules — the D-user-gate
-  (`docs/methodology/inqhiori-canon.md` L282: Claude proposes, Joshua authorizes), D2/D3 no-borrowing
+  (`docs/methodology/inqhiori-canon.md` L284: "Claude Code and web Claude both propose deletions; Joshua authorizes"), D2/D3 no-borrowing
   (`docs/adr/2026-06-12-three-loop-methodology-binding.md`). Personas are a *different axis*: how many
   named review seats exist and what they argue, not who is allowed to execute what.
 - **The CC/Cursor surface-allocation ADR** (`docs/adr/2026-07-14-cc-cursor-surface-allocation.md`) —
@@ -112,8 +112,9 @@ A panel convenes on:
 
 - *GRAND:* the office(s) the pursuit's domain touches (mandatory) **plus CRO on every single GRAND
   decision, with no exceptions** — risk review isn't skippable because a pursuit looks unrelated to
-  risk on its face. This is how the GRAND ADR's own forbidden-move #1 ("relitigating a lower-tier
-  risk-control constant") gets caught in practice, not just prohibited on paper.
+  risk on its face. This is how the GRAND ADR's own forbidden-move #1 (paraphrase of that ADR's §5:
+  using the ADR to relitigate any lower-tier lock, allocation, pre-registration, or risk-control
+  constant) gets caught in practice, not just prohibited on paper.
 - *STRATEGIC:* the proposing office (1st line, owns/operates) + at least one other office as
   independent challenge (2nd line) — Three Lines of Defense shape, documented challenge rather than a
   majority vote.
@@ -138,10 +139,10 @@ alternative of forcing a fixed fan-out.
 | Office | Seat | Owns | Real-world title basis |
 |---|---|---|---|
 | Front (CIO) | **Head of Research** | [a3 MNQ discovery pipeline](../../pursuits/a3-mnq-discovery-pipeline.md) + [a4 harvest/external-mechanism intake](../../pursuits/a4-harvest-external-mechanism-intake.md) | Head of Quantitative Research — close analogue (real senior title exists; industry scope is broader than just this intake-gate function) |
-| Front (CIO) | **Head of Execution** | [a2 c1 rail + incumbent-eval operations](../../pursuits/a2-c1-rail-incumbent-eval-operations.md) | Head of Execution — direct match |
-| Middle (CRO) | **Head of Risk & Sizing** | `dd_protection`, the lifecycle axis, DD tier | Head of Risk — direct match |
+| Front (CIO) | **Head of Execution** | [a2 c1 rail + incumbent-eval operations](../../pursuits/a2-c1-rail-incumbent-eval-operations.md) | Head of Execution — close-to-exact match (unscored characterization; see §9) |
+| Middle (CRO) | **Head of Risk & Sizing** | `dd_protection`, the lifecycle axis, DD tier | Head of Risk — close-to-exact match (unscored characterization; see §9) |
 | Middle (CRO) | **Head of Validation** | M1 monitoring, regime-robustness gate, strategy-validation (Step-0, DSR, overfitting) | Head of Model Validation — close analogue (established in banking/asset management; title kept short per Joshua) |
-| Back (COO) | **Head of Engineering** | [a5 R&D tooling lane](../../pursuits/a5-rd-tooling-lane.md) + [a6 Cursor-fleet capability](../../pursuits/a6-cursor-fleet-worker-capability.md); personally performs the AI-agent-orchestration function (decompose, freeze specs, own the claim manifest, review, integrate, adjudicate — per the `cursor-fleet` skill) | Head of Quantitative Engineering — direct match; orchestration function folded in rather than delegated to a separate staff seat |
+| Back (COO) | **Head of Engineering** | [a5 R&D tooling lane](../../pursuits/a5-rd-tooling-lane.md) + [a6 Cursor-fleet capability](../../pursuits/a6-cursor-fleet-worker-capability.md); personally performs the AI-agent-orchestration function (decompose, freeze specs, own the claim manifest, review, integrate, adjudicate — per the `cursor-fleet` skill) | Head of Quantitative Engineering — close-to-exact match (unscored characterization; see §9); orchestration function folded in rather than delegated to a separate staff seat |
 | Back (COO) | **Head of Governance** | Cross-office inventory (`docs/pursuits/`), ADR discipline, retention/pruning | Mandate sharpened toward banking's "Head of Model Risk Governance" (firm-wide inventory + governance-transformation); **placement kept under COO, not CRO** — see §5.2.1 |
 
 #### 5.2.1 Why Head of Governance stays under COO, not CRO
@@ -444,12 +445,12 @@ call, and should be treated as a bug report regardless of where the H/Falsifier 
 
 ## 11. Open follow-ups (not decided by this spec)
 
-- Whether this should also be ratified as a **formal ADR**, per the repo's existing brief-authoring
-  convention — *updated 2026-08-19: this spec itself was ratified in-session (see Ratification note
-  below), but not via a formal ADR.* Whether a separate ADR should still follow, to give the decision
-  doctrine-tier status (`docs/adr/`) rather than living only as an accepted `docs/superpowers/specs/`
-  document, remains open — this was disputed finding B from the 2026-08-19 adversarial review and
-  was not resolved by the acceptance itself.
+- **Formal ADR — closed 2026-08-19.** Disputed finding B (whether a separate ADR should follow, to
+  give the decision doctrine-tier status rather than living only as an accepted
+  `docs/superpowers/specs/` document) is resolved by
+  [`docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md`](../../adr/2026-08-19-loop-persona-hierarchy-review-panel.md)
+  (`Accepted` same day). That ADR *is* the resolution — a pointer-tier registration of the decision
+  this spec already carries. See Change History.
 - The exact `pre-ratification-adversarial-panel` skill edits needed to carry named personas instead
   of generic adversarial-reviewer framings — implementation detail for the plan, not this spec.
 - Whether any additional Staff seats should be added later, and under what evidence bar (the same
@@ -468,9 +469,11 @@ is reviewed and accepted, with all 4 confirmed BLOCKERs and 6 confirmed CONCERNs
 review already fixed as prior commits on this branch (see Change history below).
 
 **Disputed finding B** (whether this spec needs a separate, formal ADR for its own Draft→Accepted
-transition) is **not** resolved by this note — the operator accepted the design as drafted, in its
-`docs/superpowers/specs/` genre, matching the `docs/spec/` precedent the panel itself found (no
-inline binary gate). Whether a formal ADR should still follow remains open per §11 above.
+transition) is **resolved same day** by
+[`docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md`](../../adr/2026-08-19-loop-persona-hierarchy-review-panel.md)
+(`Accepted` 2026-08-19). The operator originally accepted the design in its
+`docs/superpowers/specs/` genre; the ADR is the subsequent pointer-tier registration on the
+doctrine surface. See §11 and Change History.
 
 **Not licensed by this acceptance:** anything the design's own §2 Scope boundary already excludes —
 the loop-tier doctrine, the CC/Cursor surface-allocation ADR, and c1 Q-XMEM-1 stay untouched. This
@@ -494,6 +497,7 @@ history.
 | 2026-08-19 | This decision was registered as a formal ADR — [`docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md`](../../adr/2026-08-19-loop-persona-hierarchy-review-panel.md), ratified same day — resolving §11's open "disputed finding B" (whether a separate ADR should follow). No content in this spec changed; the ADR is a pointer-tier registration of the decision this spec already carries. | Claude Code |
 | 2026-08-19 | §6.6 added — cross-examination round, a strictly-additive, post-synthesis, opt-in extension letting Joshua route one persona's already-locked Stage-1 position to a co-owning persona for direct response. Motivated by operator question, same day, about whether personas could see/react to each other's work interactively — answer: not during Stage 1 (that would reopen the SEC 18f-4 / SR 11-7 independence property §1 is built on), but yes as a bounded debate round after independent judgment is already on record, same shape real risk committees use. §7 error-handling table gained a matching fail-closed row (ownership mismatch declines the round). **PROPOSED — not yet ratified; §6.1–§6.5 and the persona-hierarchy ADR are unaffected either way.** | Claude Code (drafted at operator request) |
 | 2026-08-19 | §6.6 self-reviewed via its own pre-ratification adversarial panel (44 agents, 6 lenses + double-skeptic verify, workflow run `wf_88c21d8d-a7f`) before ratification was even asked for — disposition `BLOCKED`, 6 confirmed BLOCKERs. Fixed same day: explicit "Status: PROPOSED, no implementing code" line added at §6.6's own top (was previously only in Change History); §7's row hedged to match; ownership gate gained a mandatory CRO carve-out (was 1/38-eligible without it); mechanics gained point 6, a `**Cross-exam (operator-framed):** yes` provenance tag, closing a durable-log contamination path into unrelated future Stage-1 reviews; the CRO hard-block paragraph gained explicit coverage for a safety-invariant citation surfacing for the first time *during* cross-examination, not only at Stage-1; Falsifier clause gained a third branch (`not yet tested`) so a low-opportunity-count checkpoint isn't misread either way. Also fixed in passing, same commit, since found by the same panel run in the same file: §5.3's unhedged fabricated Topstep "verbatim" quote (contradicted the document's own §9 correction, which had touched everything *except* its origin point) and §13's stale "first real data point... can only come from a genuine future" claim (GSUB-2 had already supplied it, same day, before this file's own prior edit). Remaining CONCERNS/NITs from the same run (stale §5.2 labels, a wrong `inqhiori-canon.md` line citation, §11's stale "remains open," unbacked agent-count metadata, sibling ADR's missing dedup-first attestation) are pre-existing and out of §6.6's own scope — spun off as a separate follow-up rather than bundled here. | Claude Code |
+| 2026-08-19 | Pre-existing staleness caught in passing by the §6.6 adversarial panel (`wf_88c21d8d-a7f`; confirmed, double-skeptic-verified; does not block §6.6's own ratification). Softened §5.2 "direct match" labels to "close-to-exact match (unscored characterization; see §9)" so they no longer contradict §9; same wording applied to the three Senior Manager persona files and the Phase 1 plan's embedded copies (labeled mirrors of §5.2). Corrected §2 D-user-gate citation L282 → L284 (L282 is an unrelated brief-header bullet; L284 carries the quoted text). Closed §11 / Ratification-note disputed finding B as resolved by the Accepted persona-hierarchy ADR. Dropped quotation marks around the GRAND ADR §5 forbidden-move #1 paraphrase. Marked §13's "19 agents, ~10.6 minutes" as-reported — run artifacts were not preserved. Same regression-check pattern as the rows above. Discharges the follow-up named in the row above. | Claude Code |
 | 2026-08-19 | **Correction to the row above.** The row's characterization of the previous fix — "a `Cross-exam (operator-framed): yes` provenance tag, closing a durable-log contamination path" — overclaimed. A targeted, operator-requested re-check (workflow `wf_8d2086b0-27d`: one steelman-the-kill lens re-run against the fixed text, double-skeptic-verified) confirmed unanimously that the tag was visibility-only: nothing in §6.2/§6.4 told a future Stage-1 spawn to treat a tagged entry any differently, so the influence pathway the original BLOCKER named stayed fully open, just human-auditable. The same re-check confirmed fixes 1, 4, 5 (the Status line, CRO hard-block extension, Falsifier third branch) genuinely closed their BLOCKERs, and flagged (disputed 1-1, non-gating per its own synthesis) that the CRO carve-out expands cross-exam eligibility from 1/38 to 38/38 GRAND items, compounding the tag's gap specifically for the panel's highest-stakes seat. **Redesigned, not re-patched:** mechanics point 5 now routes a cross-examination round's written record to a separate file (`docs/personas/<slug>-cross-exam-log.md`) that §6.2's Stage-1 spawn never reads, closing the pathway structurally rather than by label — and, as a side effect, substantially moots the CRO-exposure CONCERN, since no cross-exam content reaches any persona's Stage-1 read path regardless of how many items that persona is eligible for. The CRO hard-block extension was also re-scoped to CRO-authored citations specifically, matching §6.3's literal wording and the underlying `croHardBlockFires` code (keys off the `cro` lens result only), closing the NIT the same re-check raised about unscoped hard-block-triggering authority. Still `PROPOSED` — this redesign has not itself been re-verified by a fresh check. | Claude Code |
 | 2026-08-19 | §6.6 ratified `PROPOSED` → `Accepted` (operator in-session instruction, "ratify now"). The redesigned mechanics point 5 (§6.6-cross-exam-log.md file separation, ratified without a third review round — operator judgment call) is now the entirety of what this subsection describes. Status line, §7's row, and this Change History updated to match; §5.1's own mandatory-CRO-participation framing and §6.3's hard-block scoping were re-read at ratification and found unaffected by anything in §6.6. | Joshua + Claude Code |
 | 2026-08-19 | §1 reworded: dropped the inaccurate "replacing a single-voice recommendation" framing (the existing panel already runs 6 lenses + 2 skeptics) and added a grounding caveat that every motivating incident is external, not First-Passage-specific. Added §2.1 applying CLAUDE.md's own retention test (R1-R5) to this spec's ~20 proposed new artifacts, honestly stating it passes R1/R5 prospectively, not today. Softened §4's unsupported "order of magnitude" panel-cost claim. §5.1 CIO row and `docs/personas/cio.md` corrected: a2 has no "strategy-generation side" (contradicted both its own pursuit record and §5.2's wholesale Head-of-Execution assignment). §8's alternatives table corrected: 37 pursuits -> 38 (actual count); 8 PARKs -> 7 (b5 was renewed to 2027-02-08 on 2026-08-16, before this spec's own 2026-08-18 date). All found by the same 2026-08-19 adversarial review as the BLOCKERs above (confirmed CONCERNs, not blocking on their own). | Claude Code |
@@ -530,7 +534,12 @@ independent output and writes well-formed logs. Outcome: overall disposition **C
 two BLOCKERs and three further CONCERNs raised and all unanimously refuted on independent re-read
 (including a real case of a reviewer missing a same-day resolving ADR reachable from the very row it
 cited — exactly the kind of miss the verify stage's independent skeptics exist to catch),
-`croHardBlock: false`. 19 agents, ~10.6 minutes wall-clock. Because GSUB-1 was already ratified and
+`croHardBlock: false`. 19 agents, ~10.6 minutes wall-clock *(as-reported; no workflow run ID or
+journal path was preserved in-tree — searched commits `7032184` / `55012da`, PR #54/#56 bodies,
+persona logs, and `docs/SESSIONS.md`; none carry a `wf_*` id for this rehearsal, unlike the sibling
+convention at
+[`docs/notes/audits/2026-08-18-strategy-generation-assumptions-sweep.md`](../../notes/audits/2026-08-18-strategy-generation-assumptions-sweep.md)
+§0)*. Because GSUB-1 was already ratified and
 closed before this mechanism existed, this run **cannot** change a ratified outcome and therefore does
 not count toward the §10 falsifier ("does panel input ever change a ratified outcome"). The first real
 data point toward that falsifier can only come from a genuine future GRAND or strict-D2

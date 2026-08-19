@@ -14,6 +14,17 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-19e — persona-hierarchy spec/ADR staleness from the §6.6 panel
+
+**Focus:** Fix pre-existing design-spec/ADR staleness the 2026-08-19 §6.6 panel (`wf_88c21d8d-a7f`) caught in passing — not caused by §6.6, does not block that section's ratification.
+
+**Shipped:** branch `cursor/persona-hierarchy-spec-staleness-1583` (stacked on PR #58). Dedup-first attestation backfilled into [`2026-08-19-loop-persona-hierarchy-review-panel.md`](adr/2026-08-19-loop-persona-hierarchy-review-panel.md) §0. Design spec §5.2 / §2 / §4 / §11 / §13 reconciled; persona-file + roster-plan mirrors of the three Senior Manager "direct match" labels updated.
+
+**Decisions/defects:** none new — citation/attestation hygiene only. 19-agent and 32-agent process figures remain as-reported (run artifacts not preserved).
+
+**Open / next:** Carry 19c/19b/19a/18t: MNQFLOW-1-DEPTH still needs operator sign-off (§9.1) then P0 cost re-estimate before any pull. MNQSR-1 / Q-CAPA-1 bank rulings discharged (live figure at MNQ.md §K_BANKED). Next slate admission screens claim horizon vs the E1 flat-by-16:00 envelope. S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. TRAINKILL census STOP — re-proposal is a new panel or an operator election. B1 Koijen admissibility parallel. B2 unblocked: elects on existing evidence + H1 screen, TRAINKILL holds disclosed. F1 / B7-REFIRE.
+
+---
 ## 2026-08-19d — check_brief.py Inquire auto-detect false-positive
 
 **Focus:** Stop `scripts/check_brief.py` (no `--type`) from classifying Inquire-style briefs as `handoff` because they copy §0.5 / spawn-taxonomy language.
