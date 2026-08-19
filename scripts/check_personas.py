@@ -19,6 +19,44 @@ VALID_TIERS = {"GRAND", "STRATEGIC", "STAFF"}
 VALID_OFFICES = {"Front", "Middle", "Back", "Cross-office", "N/A"}
 EXPECTED_COUNT = 19
 
+LOG_ENTRY_HEADER = re.compile(r"^##\s+(\d{4}-\d{2}-\d{2})\s+—\s+(.+)$", re.MULTILINE)
+LOG_HEADING_LOOSE = re.compile(r"^##\s+(.+)$", re.MULTILINE)
+LOG_REQUIRED_SUBFIELDS = ["Verdict", "Confirmed findings", "Ratified as recommended"]
+
+
+def check_logs(errors):
+    log_files = sorted(PERSONAS_DIR.glob("*-log.md"))
+    for path in log_files:
+        text = path.read_text(encoding="utf-8")
+        all_headings = list(LOG_HEADING_LOOSE.finditer(text))
+        valid_headers = list(LOG_ENTRY_HEADER.finditer(text))
+        if not all_headings:
+            errors.append(f"{path.name}: exists but has no entries matching '## YYYY-MM-DD — <path>'")
+            continue
+
+        # Every ## heading gets validated, not just the ones the strict pattern happens to match --
+        # otherwise a malformed heading silently becomes body text of the preceding valid entry
+        # instead of being flagged, which is exactly the failure mode this checker exists to catch.
+        valid_starts = {m.start() for m in valid_headers}
+        for m in all_headings:
+            if m.start() not in valid_starts:
+                errors.append(
+                    f"{path.name}: malformed entry header '{m.group(0).strip()}' -- expected "
+                    f"'## YYYY-MM-DD — <path>'"
+                )
+
+        for i, m in enumerate(valid_headers):
+            start = m.end()
+            # Block ends at the next heading of ANY kind (valid or malformed), not just the next
+            # valid one -- otherwise a malformed heading between two valid entries gets absorbed
+            # into the preceding entry's field-presence check instead of ending it.
+            next_heading = next((h.start() for h in all_headings if h.start() > m.start()), len(text))
+            block = text[start:next_heading]
+            missing = [f for f in LOG_REQUIRED_SUBFIELDS if f"**{f}:**" not in block]
+            if missing:
+                errors.append(
+                    f"{path.name}: entry dated {m.group(1)} missing required field(s): {', '.join(missing)}"
+                )
 
 def parse_fields(text):
     fields = {}
@@ -36,7 +74,11 @@ def main():
         print(f"FAIL: {PERSONAS_DIR} does not exist")
         return 1
 
-    persona_files = sorted(p for p in PERSONAS_DIR.glob("*.md") if p.name != "INDEX.md")
+    NON_PERSONA_FILES = {"INDEX.md", "ownership-map.md"}
+    persona_files = sorted(
+        p for p in PERSONAS_DIR.glob("*.md")
+        if p.name not in NON_PERSONA_FILES and not p.name.endswith("-log.md")
+    )
 
     if not persona_files:
         print(f"FAIL: no persona files found in {PERSONAS_DIR}")
@@ -90,6 +132,8 @@ def main():
         index_rows = len(re.findall(r"^\|\s*\[", index_text, re.MULTILINE))
         if index_rows != len(persona_files):
             errors.append(f"INDEX.md has {index_rows} persona rows, but {len(persona_files)} persona files exist")
+
+    check_logs(errors)
 
     if errors:
         print(f"FAIL: {len(errors)} issue(s) found:")

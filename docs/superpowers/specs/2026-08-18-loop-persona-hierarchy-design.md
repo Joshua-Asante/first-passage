@@ -370,3 +370,44 @@ history.
 | 2026-08-19 | §9 gained an "Organizational depth" bullet. §3 and §8 both cited "(§9)" as the source for the "three levels, not four" architectural decision, but §9 never actually carried that research — the citation pointer resolved to an empty set. | Claude Code |
 | 2026-08-19 | §10 restructured with explicit `H:`/`Falsifier:`/`Trigger check schedule:` tokens (N=3, dated to the 2026-11-08 quarterly gate). The prior prose claimed to match the GRAND ADR's own §4 discipline without reproducing its structure. | Claude Code |
 | 2026-08-19 | §1 reworded: dropped the inaccurate "replacing a single-voice recommendation" framing (the existing panel already runs 6 lenses + 2 skeptics) and added a grounding caveat that every motivating incident is external, not First-Passage-specific. Added §2.1 applying CLAUDE.md's own retention test (R1-R5) to this spec's ~20 proposed new artifacts, honestly stating it passes R1/R5 prospectively, not today. Softened §4's unsupported "order of magnitude" panel-cost claim. §5.1 CIO row and `docs/personas/cio.md` corrected: a2 has no "strategy-generation side" (contradicted both its own pursuit record and §5.2's wholesale Head-of-Execution assignment). §8's alternatives table corrected: 37 pursuits -> 38 (actual count); 8 PARKs -> 7 (b5 was renewed to 2027-02-08 on 2026-08-16, before this spec's own 2026-08-18 date). All found by the same 2026-08-19 adversarial review as the BLOCKERs above (confirmed CONCERNs, not blocking on their own). | Claude Code |
+
+## 12. Post-workflow log-append procedure (added during Phase 2 implementation)
+
+After a persona-mode `Workflow` call returns, for each slug in `result.personaSlugs`:
+
+1. Read `docs/personas/<slug>-log.md` if it exists; treat as empty (first entry) if not.
+2. Extract that persona's verdict from `result.synthesis` (the synthesis memo names each
+   persona's confirmed/disputed findings by lens key).
+3. Append (never edit prior entries) a new entry using this exact template, with today's date filled
+   in by the calling session (never computed inside the Workflow script):
+
+```markdown
+## <YYYY-MM-DD> — <result.targetPath>
+
+**Verdict:** <BLOCKED | CLEAR-WITH-CONCERNS | CLEAR, from result.synthesis for this persona>
+**Confirmed findings:** <count, or "none">
+**Ratified as recommended:** <Yes | No | Pending -- operator has not yet ratified>
+```
+
+4. If `result.croHardBlock` is true, every persona's log entry for this review additionally carries
+   a line: `**CRO hard block fired:** yes -- disposition is BLOCKED regardless of this persona's own verdict.`
+
+## 13. Rehearsal record (added during Phase 3 implementation)
+
+**2026-08-19 — retroactive dry run, NOT a real falsifier data point.** Ran the persona-mode panel
+(GRAND tier, personas `cio`/`coo`/`cfo` + auto-added `cro`, confirming the mandatory-GRAND-CRO rule
+fires mechanically) against the already-closed GSUB-1 inventory
+(`docs/briefs/GSUB-1-inventory-and-dispositions.md`) purely to prove the mechanism produces sensible
+independent output and writes well-formed logs. Outcome: overall disposition **CLEAR-WITH-CONCERNS**
+— one CONCERN confirmed unanimously by both independent skeptics (an unanchored §0 Rule-0 citation),
+two BLOCKERs and three further CONCERNs raised and all unanimously refuted on independent re-read
+(including a real case of a reviewer missing a same-day resolving ADR reachable from the very row it
+cited — exactly the kind of miss the verify stage's independent skeptics exist to catch),
+`croHardBlock: false`. 19 agents, ~10.6 minutes wall-clock. Because GSUB-1 was already ratified and
+closed before this mechanism existed, this run **cannot** change a ratified outcome and therefore does
+not count toward the §10 falsifier ("does panel input ever change a ratified outcome"). The first real
+data point toward that falsifier can only come from a genuine future GRAND or strict-D2
+STRATEGIC-tier decision reviewed *before* ratification. Every log entry this rehearsal wrote
+(`docs/personas/{cio,coo,cfo,cro}-log.md`) carries an explicit `**Rehearsal:** yes` line for exactly
+this reason -- so a future reader of `docs/personas/*-log.md` never mistakes rehearsal output for a
+real review.
