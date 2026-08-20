@@ -354,6 +354,39 @@ through unchanged — but that is code-reading, not a shown run. Read D2's regre
 
 ---
 
+## Addendum 2026-08-19 (later still) — roster/spec simplification pass; D1's counts now stale by design
+
+**Does not amend §0–§7, §10, D1–D5, or the Ratification note.** D1's "the 19-file roster is already
+built" (§2 above) and the design spec's own "18 spawnable personas" / "8 named, persistent Staff"
+language are now stale **on purpose**, not by drift: an operator-authorized simplification pass, the
+same day as ratification, per
+[`docs/notes/audits/2026-08-19-governance-friction-persona-panel-audit.md`](../notes/audits/2026-08-19-governance-friction-persona-panel-audit.md),
+archived seven never-executed spec extensions (§6.3's dissent-flag addendum, §6.4.1, §6.6, §10.1,
+§10.2, §12's extended log fields, §14) to
+`docs/superpowers/specs/archive/2026-08-19-persona-hierarchy-archived-sections.md`, and moved 5 of
+the 8 Staff-tier personas (the Middle/Back-office analysts — Risk Analyst (Intraday), Model
+Validation Analyst, Robustness Analyst, Documentation Analyst, Research Registry Analyst; all zero
+real log entries) to `docs/personas/archive/` per the design spec's own §6.7 retirement procedure.
+The active roster is now 14 files, not 19. Front-office Staff (Falsifier Analyst, Pre-Registration
+Analyst, TCA Analyst) were explicitly excluded from the cut — in active use in a parallel session —
+and are unaffected, as is the CRO hard-block and the GRAND tier.
+
+**Independent check on the audit itself.** A fresh-spawned Head of Governance pass (first-ever spawn
+for that seat — `docs/personas/head-of-governance-log.md` did not exist before this) independently
+re-verified the audit's headline claims against the live repo (catching and correcting two small
+figures) and confirmed all seven archival candidates' factual predicates. It also flagged, without
+softening it for being its own seat's use, that this review was not itself triggered by a literal
+strict-D2 STRATEGIC-tier pursuit Delete (this action touches no `docs/pursuits/` object) and marked
+its own entry `Rehearsal: yes` for that reason.
+
+**What this does not do.** No content in §0–§7, §10, or D1–D5 changed; nothing here reopens the
+GRAND/STRATEGIC panel decision itself, the CRO hard-block, or any prior addendum's findings. This is
+the same class of edit as the two addenda above — a correction/scope-clarification to what the
+ratified decision's supporting artifacts now say, landed via addendum per this file's own
+established convention, not a re-litigation of D1.
+
+---
+
 ## Verification
 
 ```bash
@@ -373,3 +406,4 @@ python scripts/check_adr_graph.py
 | 2026-08-19 | Addendum added — D1's "§§3–7" design-spec pointer clarified as a snapshot at ratification, not a live range, so a later same-numbered addition (§6.6) isn't read as already-ratified. Found by the §6.6 pre-ratification adversarial panel (44 agents, 6 lenses, workflow run `wf_88c21d8d-a7f`). | Claude Code |
 | 2026-08-19 | Backfilled Rule 8 sub-rule 10 dedup-first attestation into §0 (omitted at original authoring; in force since 2026-08-15). Marked the Self-review "32 agents" figure as-reported — run artifacts were not preserved. Found by the 2026-08-19 §6.6 adversarial panel (`wf_88c21d8d-a7f`) as a pre-existing regression, not caused by §6.6. | Claude Code (PR #59, `cursor/persona-hierarchy-spec-staleness-1583`) |
 | 2026-08-19 | Addendum added — self-review evidentiary status for the design spec's *separate* §6.6 self-review claim ("44 agents... workflow run `wf_88c21d8d-a7f`," "6 confirmed BLOCKERs") and D2's "live regression run" claim, both with no recoverable artifact anywhere in the repo — downgraded in framing to "editorial pass, unconfirmed scale" while leaving the underlying, independently-checkable content changes (real commits, verified via `git log`) untouched. Originally drafted broader, from a packet-wide adversarial review (46 agents) of the design spec that also covered this ADR; narrowed on merge with the parallel PR #59 fix above, which already covers this ADR's own dedup gap and ratification self-review — not duplicated here. Neither correction reopens §6.6's `Accepted` status or D1-D5. | Claude Code (drafted at operator request, following this file's own prior-addendum precedent — correction/clarification, no re-litigation, no fresh ratification act required) |
+| 2026-08-19 | Addendum added — roster/spec simplification pass makes D1's "19-file roster" pointer stale by design: 7 never-executed spec extensions archived (not deleted) to `docs/superpowers/specs/archive/`, 5 of 8 Staff-tier personas (never spawned, zero log entries) retired to `docs/personas/archive/` per the design spec's own §6.7, active roster now 14 files. Driven by `docs/notes/audits/2026-08-19-governance-friction-persona-panel-audit.md` plus an independently-spawned Head of Governance review that flagged its own use as outside its literal strict-D2 trigger. Front-office Staff and the CRO hard-block unaffected. | Claude Code (operator-authorized) |
