@@ -27,6 +27,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-20a — sync overnight-range-fade class finding + M2K PROFILE cells to MSL-C3-K2 FALSIFIED
 
 **Focus:** Close the mechanism-registry lag: `overnight-range-failed-extension-fade` still read "none yet / scored axis" after M2K explore FALSIFIED 2026-08-13.
@@ -40,6 +41,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
 
 ---
+
 ## 2026-08-19g — Cursor Grok 4.6 dispatch-autonomy eval surfaces a live shell-hook bug + CI/gate-stack staleness
 
 **Focus:** Evaluate giving Cursor's `--mode plan`/`--resume` a CC-gated plan→approve dispatch flow. Investigation surfaced a live Windows bug and a much bigger governance finding first.
@@ -51,6 +53,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Open / next:** Branch-protection-for-`main` packet still unopened. 34 non-M1 HIGH-risk `cursor/*` PRs from the dead-CI window not individually re-verified (operator said skip). Cursor forum thread has no fix ETA — `-CleanHome` is the standing workaround.
 
 ---
+
 ## 2026-08-19f — CME breadth revival + candidate reproducibility index (2-stage, CC+Cursor fleet)
 
 **Focus:** Admit a `"cme"` broker panel to `core/mc/modes.py` for Stage-8 breadth work (retired since the challenge-era substrate cutover), and give portfolio-composition candidates a reproducibility path that doesn't require storing raw return series.
