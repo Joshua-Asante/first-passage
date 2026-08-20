@@ -318,7 +318,21 @@ sub-rules of Rule 0 / Rule 2 — each anchored to a specific brief failure.
    project-level dedup probe ever read that ledger. Caught by the operator
    asking whether the new work overlapped the instrument ledger, not by any
    automated gate. See `scripts/check_advisor_dedup.py`'s own docstring for
-   the full account.)_
+   the full account. **2026-08-19, same-day follow-up (Head of Research's own
+   review of the near-miss):** the pattern is broader than this one instance
+   — e.g. `docs/rejected_candidates.md`'s ORB-MNQ-1 Tradeify-rejection row is
+   flagged in its own text as carrying no dedup-machinery tag, "must be
+   checked by hand." `scripts/check_instrument_ledger_coverage.py <artifact>`
+   is a mechanical, WARN-tier companion for the specific narrow slice of this
+   pattern that's checkable without judgment: it derives the known-instrument
+   set from `ops/instruments/*.md` filenames (no hand-maintained list to
+   drift), flags any symbol the artifact mentions without citing that
+   symbol's ledger, and prints (advisory only, not scored) the raw
+   `docs/rejected_candidates.md` hit count per symbol as a by-hand-check
+   reminder. Not wired into `scripts/gates.yml` — like `check_advisor_dedup.py`,
+   it's a per-artifact assistant invoked at authoring time, not a
+   staged-file-scanning pre-commit gate; run it alongside the dedup probe
+   above, same discipline.)_
 9. **Registry line on every new closure.** A non-grandfathered file under
    `docs/briefs/closures/` must carry `- **Registry:**` in the Iterate block:
    either `rejected_candidates.md — ### <heading>` (strategy-grounds
