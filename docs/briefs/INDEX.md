@@ -37,6 +37,16 @@ All 11 above opened 2026-08-18 from [`docs/notes/audits/2026-08-18-strategy-gene
 
 ## Recently closed (cross-reference; not open)
 
+- **Q-NSURV-1** — is the N-SURV single-history magnitude blindspot (parent Notice
+  `N-2026-08-15-nsurv-single-history-magnitude-blindspot`) general or idiosyncratic to c1 —
+  **`RESOLVED` 2026-08-20** — confirmed general on a second candidate (ORB-MNQ-1): both books show a
+  material single-history-vs-magnitude-resampled gap, but on *different* axes (bust for c1's flat
+  sizing, pass for ORB-MNQ-1's cushion-proportional sizing) — a nuance the parent Notice didn't
+  anticipate. No closed N-SURV verdict re-opened. Fix-design question explicitly deferred to a future
+  session (`STATE.md` queue #3). Parent Notice graduated HOLD→RESOLVED same day. $0/K=0.
+  [`closure`](closures/Q-NSURV-1-closure-resolved.md) ·
+  [`brief`](Q-NSURV-1-single-history-magnitude-blindspot.md) ·
+  [`parent Notice`](../notes/notice/N-2026-08-15-nsurv-single-history-magnitude-blindspot.md).
 - **Q-ORBCUSH-1** — does a trailing edge/cost-fraction classifier explain ORB-MNQ-1's 2021-09-28
   cushion-proportional-sizing regime break — **`FALSIFIED` 2026-08-20** — trailing mean-R
   date-correlation clears 0 of 3 pre-registered windows (lower-edge bucket's ≤40% ceiling missed

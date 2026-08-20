@@ -4,7 +4,7 @@
 **Observed:** 2026-08-15
 **Author:** Claude Code (parent-side computation, fell out of building a Q-GEOFIT-1 successor family — not the task that was being run)
 **Source:** `lab/analysis/c1/geofit_skewed_family_construction_2026-08-15/characterize.json` (this session's own MC output)
-**Status:** `HOLD` — recorded, not adjudicated. See §4/§5.
+**Status:** `GRADUATED to Q-NSURV-1` (2026-08-20, operator ruling, in-session direct instruction "graduate N-SURV") — see [`Q-NSURV-1`](../../briefs/Q-NSURV-1-single-history-magnitude-blindspot.md) / [`closure`](../../briefs/closures/Q-NSURV-1-closure-resolved.md), `RESOLVED` same day. §4/§5 below preserved as the historical record of the HOLD reasoning; superseded by the graduation, not edited.
 **Lives in:** `docs/notes/notice/N-2026-08-15-nsurv-single-history-magnitude-blindspot.md`
 
 ---

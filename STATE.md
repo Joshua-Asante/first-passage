@@ -51,6 +51,7 @@ BEHIND this list.** Items leave when done; it stays ≤5 so it cannot decay into
 |---|---|---|---|
 | 1 | **F1 — how §4 reads a Tradeify-resting discharge** (2026-11-08). Eval is live ([`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md)); locked Striker book barred. §4 still scores the frozen $100K×4 set with Tradeify in it. Ruling owed: whether a discharge resting *on Tradeify* (or the withdrawn Striker book) discharges the four-firms program. **Deciding it early would pre-empt §4** | [`ADR 2026-08-04`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) §7 F1 · [four-firms §4](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) | 2026-11-08 §4 verdict reading |
 | 2 | **B7-REFIRE Stage 1 + M1** — both wait on an acceptable strategy on the ruled (Python-native) host. Eval live; no book deployed | [`GO ADR Addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`S2`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) · [`M1`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) | live-signal / arming path |
+| 3 | **N-SURV second-uncertainty-layer fix design + ORB-MNQ-1 re-PARK scope question** (deferred, 2026-08-20 operator direction — next session). Confirmed general (2/2 candidates, axis-dependent on sizing mechanism); does the gate need a layer, and does cushion-sized ORB-MNQ-1 fall outside what the flat-sizing-only re-PARK ADR falsified | [`Q-NSURV-1`](docs/briefs/closures/Q-NSURV-1-closure-resolved.md) · [`re-PARK ADR`](docs/adr/2026-08-03-orb-mnq-repark-payability-falsified.md) · [`ops/instruments/MNQ.md`](ops/instruments/MNQ.md) N18 | next session's own scope |
 
 ---
 
@@ -61,6 +62,10 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-20** — **N-SURV single-history magnitude blindspot graduated HOLD→RESOLVED (`Q-NSURV-1`).**
+  Operator: "graduate N-SURV." Confirmed general on a second candidate (ORB-MNQ-1), not idiosyncratic
+  to c1 — axis-dependent on sizing mechanism (bust for flat, pass for cushion-proportional). No closed
+  N-SURV verdict re-opened. Fix-design question deferred to next session (queue #3 above).
 - **2026-08-19** — **Persona-hierarchy review panel ADR ratified; first real C-suite panel run
   (GSUB-2) SUBTRACTs b2 + c1.** ADR `Proposed`→`Accepted` (operator: "ratify the ADR"). First
   real (non-rehearsal) GRAND-tier panel use: CIO+COO+CRO reviewed a frozen SUBTRACT-candidate
