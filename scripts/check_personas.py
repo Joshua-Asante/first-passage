@@ -17,7 +17,7 @@ REQUIRED_FIELDS = [
 ]
 VALID_TIERS = {"GRAND", "STRATEGIC", "STAFF"}
 VALID_OFFICES = {"Front", "Middle", "Back", "Cross-office", "N/A"}
-EXPECTED_COUNT = 19
+EXPECTED_COUNT = 20
 
 LOG_ENTRY_HEADER = re.compile(r"^##\s+(\d{4}-\d{2}-\d{2})\s+—\s+(.+)$", re.MULTILINE)
 LOG_HEADING_LOOSE = re.compile(r"^##\s+(.+)$", re.MULTILINE)
