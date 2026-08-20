@@ -232,6 +232,20 @@ without a mechanism is fine; deploying without one is not.
   Magnitude-persistence claims take the corrected class battery
   (`docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md`).
 
+- **Fresh batteries need the same check reuse gets.** The reuse-only red flag above
+  catches a battery *reused* on a new claim family; it does not catch a battery
+  *freshly authored* whose null construction was never validated against its own
+  family's confound. Every screen's PREREG.md §0 must cite the governing
+  null-validity doc for its claim family (e.g. the corrected-null-battery spec above
+  for magnitude-persistence; the family's own spec/audit note otherwise) —
+  **valence-blind**: cited regardless of whether the screen's expected or landed
+  verdict is NULL or SIGNAL. A fresh battery that fails generously toward NULL is
+  exactly as unchecked as one that fails toward SIGNAL. Anchor:
+  [`N-2026-08-18-iteration2-identify-notice.md`](../../../docs/notes/notice/N-2026-08-18-iteration2-identify-notice.md)
+  E(i)/E(ii) — null-validity lensing was valence-scoped (S1a's NULL got the full
+  4-lens design review that structurally could not catch an invalid null; only
+  S1b's SIGNAL triggered the lens that did).
+
 ## Hand-offs
 
 - **The gate itself + universe-level correction (White RC / SPA / Romano–Wolf, DSR/PBO, CPCV):** `strategy-validation`.
