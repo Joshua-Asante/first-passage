@@ -257,6 +257,38 @@ Rejected nearest classes (one-line):
 - `event-window-reversal` / `Q-MCLTAS-1` — TAS/settlement; different modality.
 - `london-range-failed-extension-fade` / `pdh-pdl-failed-break-reclaim` — slate-1 MR-at-level fades; opposite family.
 
+## tod-baseline-range-trigger
+
+**NEW 2026-08-20 (`Q-TODVOL-1`).** Within-instrument temporal selectivity under
+[`ADR 2026-08-10`](../../docs/adr/2026-08-10-temporal-selectivity-outside-mapped-levers.md) §2-B —
+first RTH bar, outside the opening-range window, whose range exceeds a frozen multiple of the
+**same time-of-day slot's own trailing median range** (causal, `.shift(1)`); enter in that bar's
+own close-vs-open direction; stop/target sized off the triggering bar's own range (not an
+independent point count); session-flat; first valid signal per session (k=1). Causal story:
+volatility clustering (ARCH/GARCH-class serial dependence in absolute returns) as a real-time,
+per-moment information-arrival signal — distinct from a fixed clock window (ORB) or a reference
+price level (PDH/PDL, VWAP). Runs on **native 15m RTH bars** — explicitly outside the paused
+dense-1m/G=10 lane ([`DENSE1M-UNPAUSE closure`](../../docs/briefs/closures/DENSE1M-UNPAUSE-closure-resolved-u0-keep.md),
+U0 KEEP stands) — so gated by the [`2026-08-16 CON-5-scope ADR`](../../docs/adr/2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md)
+§2 D2 pre-G0 cheap falsifier before route ① counts as open for it.
+
+Rejected nearest classes (one-line):
+- `compression-gated-breakout` / `htf-compression-breakout-5m` — requires a *prior compression phase resolving into expansion*; this class has no compression precondition and can trigger on the very first eligible bar of a session if it alone clears the threshold.
+- `intraday-momentum` (Baltussen-class) — fixed-lag prior-bar/prior-session momentum continuation, statistically ABSENT on modern MNQ (class finding above); this class conditions entry timing on a real-time volatility-threshold crossing, not a blanket prior-period-direction claim.
+- `opening-range-breakout` / `opening-range-continuation` — fixed first-N-bars window (ORB-MNQ-1's own territory, explicitly excluded here); this class's trigger window is data-dependent and can fire at any point later in the session.
+- `pdh-pdl-breakout-rth` / `pdh-pdl-failed-break-reclaim` / `impulse-pullback-vwap-reclaim` / `band-pierce-continuation` / `ict-liquidity` — all keyed to a fixed **reference price level**; this class is keyed to a **time-of-day-conditioned volatility baseline**, no price level involved.
+- `opening-pressure` — opening-session volume/range only; this class's trigger can occur at any RTH slot, not just the open.
+
+- **Class finding:** MNQ D2 pre-G0 falsifier `FAIL` — mean signed gross **+0.2546 pt** vs the
+  generous **2.82 pt** pass bar (0.5× the 4×RT hurdle), n=975 signals, 54.26% session coverage.
+  Not a close call — 9% of the required bar. Route ① stays open in principle
+  ([`ADR 2026-08-10`](../../docs/adr/2026-08-10-temporal-selectivity-outside-mapped-levers.md));
+  this specific causal story (volatility-threshold entry, stop/target sized off the trigger bar's
+  own range) does not supply a candidate through it. Re-proposal bar: a structurally different
+  criterion, not a re-tuned θ/lookback/stop-target on this shape.
+  [`FREEZE`](../../lab/analysis/c1/todvol_1_2026-08-20/FREEZE.md) ·
+  [`RESULTS`](../../lab/analysis/c1/todvol_1_2026-08-20/RESULTS.md).
+
 ## sweep-failure-filtered-continuation
 
 **NEW 2026-08-14 (MSL-S2B).** Trend-continuation entry on **MYM** **gated** by a PDH/PDL sweep-failure state — the sweep-failure is a **filter, never the entry**; hard stop; target at `rr` ∈ [2, 3]; session-flat by 16:00 ET; k=1 first valid signal per session. Consumes C1's DELETE-PASS selection evidence in **filter role** (entry-role construct remains dead). Not OR continuation; not PDH/PDL failed-break reclaim entry; not through-break.

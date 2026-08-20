@@ -1,7 +1,9 @@
 # Six-lead pursuit plan — Koijen axis-2 survivors
 
 **Status:** Phase 0 EXECUTED · P1-CF/P2-CF FAIL · P3 GO executed 2026-08-17 and **CLOSED
-(venue SCREEN-FAIL)** · P4/P5 still HOLD · OpenAlex channel addendum landed (17d) ·
+(venue SCREEN-FAIL)** · P4 un-HOLD'd 2026-08-20 → route memo, disposition **HOLD** (data-sourcing
+question, not a kill) · P5 un-HOLD'd 2026-08-20 → access probe, disposition **`UNSCREENABLE`**,
+closed · OpenAlex channel addendum landed (17d) ·
 **this document is the claim manifest for the program** — the orchestrator session is its
 only writer. Title still says "six" pending a forward correction (L3=L6 same paper; five
 distinct programs).
@@ -250,8 +252,8 @@ fact itself); the marks below are about what to *do* with the now-five-lead coho
 | **P1 (L3=L6)** overnight-reversal | **GO** — operator, 2026-08-17 | Overlap resolved; MGC+6J panels on hand at the primary checkout; MCL pre-kill confirmed by arithmetic so excluded from the CF's instrument set; 6J needs a fresh cost-bp measurement before its own CF leg, not before MGC's |
 | **P2 (L1)** index-flow reversal | **GO** — operator, 2026-08-17 | Same $0 panels; venue-expressible-slice discipline already specified in the plan (§4) |
 | **P3 (L5)** curve-slope momentum | **GO** — operator un-HOLD, 2026-08-17 (this session); prior HOLD same day discharged | Dry-run + paper read + USOIL-carry dedup executed. Sleeve **CLOSED** on standing calendar-spread SCREEN-FAIL (paper S-strategy = long front / short fourth). Bars $0; `tbbo` CL-parent $1,543.90 (contrast only). Dedup: DISTINGUISHABLE from static USOIL carry, not ADMIT. [`P3_DRYRUN`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/P3_DRYRUN.md) |
-| **P4 (L2)** dealer-gamma EOD | **HOLD** — operator, 2026-08-17 | H-OD-1 dedup (§3 item 0.6) strengthens the existing Q-ORB-GEX-1 + intraday-momentum-decay caution; this is exactly the graveyard-adjacent shape the plan already flagged. No CF licensed for P4 |
-| **P5 (L4)** mutual-fund overweight | **HOLD** — operator, 2026-08-17 | 13F/N-Q ~45-day disclosure lag is a hard real-time-reconstructibility wall on its face; no panel work licensed until the access question is separately resolved |
+| **P4 (L2)** dealer-gamma EOD | **HOLD** — operator, 2026-08-17; **un-HOLD'd 2026-08-20 → route memo run, disposition HOLD (unchanged verdict, sharper reason)** | H-OD-1 dedup (§3 item 0.6) strengthens the existing Q-ORB-GEX-1 + intraday-momentum-decay caution. Route memo found L2 is mechanism-distinct from `Q-ORB-GEX-1` (momentum-continuation vs. regime-gate) but shares the same exogenous flow series and the same orthogonality risk that killed it — not disqualified outright, but not licensed to proceed either. Open question is a data-sourcing one (no orthogonal CME-native dealer-hedging-flow feed identified or priced), not a mechanism verdict. [`P4_ROUTEMEMO`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/P4_ROUTEMEMO.md) |
+| **P5 (L4)** mutual-fund overweight | **HOLD** — operator, 2026-08-17; **un-HOLD'd 2026-08-20 → access probe run, disposition `UNSCREENABLE`, CLOSED** | 13F/N-Q ~45-day disclosure lag is a hard real-time-reconstructibility wall on its face. Confirmed by web verification 2026-08-20: 13F = 45-day lag, Form N-PORT = 60-day lag, 2026 SEC proposal narrows rather than accelerates disclosure; no systematic near-real-time substitute exists. [`P5_ACCESSPROBE`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/P5_ACCESSPROBE.md) |
 
 **Still unmarked** (not addressed by the P1/P2 GO): the limb-2 counter ruling and the
 channel-scope amend-in-place note, both below. The GO licenses *attempting* P1-CF/P2-CF — it does

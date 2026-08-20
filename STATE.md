@@ -53,7 +53,8 @@ BEHIND this list.** Items leave when done; it stays ≤5 so it cannot decay into
 |---|---|---|---|
 | 1 | **F1 — how §4 reads a Tradeify-resting discharge** (2026-11-08). Eval is live ([`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md)); locked Striker book barred. §4 still scores the frozen $100K×4 set with Tradeify in it. Ruling owed: whether a discharge resting *on Tradeify* (or the withdrawn Striker book) discharges the four-firms program. **Deciding it early would pre-empt §4** | [`ADR 2026-08-04`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) §7 F1 · [four-firms §4](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) | 2026-11-08 §4 verdict reading |
 | 2 | **B7-REFIRE Stage 1 + M1** — both wait on an acceptable strategy on the ruled (Python-native) host. Eval live; no book deployed | [`GO ADR Addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`S2`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) · [`M1`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) | live-signal / arming path |
-| 3 | **N-SURV second-uncertainty-layer fix design + ORB-MNQ-1 re-PARK scope question** (deferred, 2026-08-20 operator direction — next session). Confirmed general (2/2 candidates, axis-dependent on sizing mechanism); does the gate need a layer, and does cushion-sized ORB-MNQ-1 fall outside what the flat-sizing-only re-PARK ADR falsified | [`Q-NSURV-1`](docs/briefs/closures/Q-NSURV-1-closure-resolved.md) · [`re-PARK ADR`](docs/adr/2026-08-03-orb-mnq-repark-payability-falsified.md) · [`ops/instruments/MNQ.md`](ops/instruments/MNQ.md) N18 | next session's own scope |
+| 3 | **N-SURV magnitude-resampling disclosure ADR** — `Proposed`, ratification owed. `Q-NSURV-2` RESOLVED (wrapper reproduces both candidates' headlines within 2.0pp, zero core internals touched); this ADR is its named INTEGRATE routing | [`ADR`](docs/adr/2026-08-20-nsurv-magnitude-resampling-disclosure.md) · [`Q-NSURV-2 closure`](docs/briefs/closures/Q-NSURV-2-closure-resolved.md) | ADR ratification |
+| 4 | **Rule 0 anchor-check + triage-discipline ADR** — `Proposed`, ratification owed. Mechanizes `check_brief.py`'s §0 anchor check (evidenced by the two already-documented Rule 0 incidents); separately names a non-Rule-0 triage-verification discipline for leverage-ranking work (evidenced by 2026-08-20's own session pattern) | [`ADR`](docs/adr/2026-08-20-rule0-anchor-verification-and-triage-discipline.md) | ADR ratification |
 
 ---
 
@@ -64,6 +65,50 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-20** — **`Q-TODVOL-1` — first within-instrument temporal-selectivity candidate since the 2026-08-10 route-① opening, frozen and D2-falsified same day.**
+  Operator direction ("write it up as a proper causally-named G0 freeze and then check whether it
+  can actually be tested"). Froze `tod-baseline-range-trigger` (declared NEW in `MECHANISMS.md`,
+  same commit): first RTH 15m bar outside the opening-range window whose range ≥ 2.0× the trailing
+  60-session same-time-of-day median, entered in the bar's own direction, stop/target sized off
+  the trigger bar's own range (rr=2). Runs on native 15m bars, explicitly outside the paused
+  dense-1m/G=10 lane (U0 KEEP untouched) — gated instead by the 2026-08-16 ADR's D2 pre-G0
+  falsifier, reused verbatim. `K_intrinsic=1`, single cell, no sweep. D2 result: **`FAIL`** — mean
+  signed gross +0.2546pt vs the 2.82pt bar (9% of required), n=975 signals, 54.26% coverage. Closes
+  at $0, no G0, no Board debate, matching the CON-N precedent. Route ① stays open in principle;
+  re-proposal needs a structurally different criterion. $0/K=0, no live-risk surface.
+  [`FREEZE`](lab/analysis/c1/todvol_1_2026-08-20/FREEZE.md) ·
+  [`RESULTS`](lab/analysis/c1/todvol_1_2026-08-20/RESULTS.md) ·
+  [`ops/instruments/MECHANISMS.md`](ops/instruments/MECHANISMS.md).
+- **2026-08-20** — **Six-lead pursuit P4/P5 un-HOLD'd and dispositioned — P4 stays `HOLD` (sharper reason), P5 closes `UNSCREENABLE`.**
+  Operator un-HOLD election. **P4 (L2 dealer-gamma EOD):** route memo found the mechanism is
+  construction-distinct from `Q-ORB-GEX-1` (momentum-continuation vs. regime-gate) but shares its
+  exogenous flow series and orthogonality risk; verdict unchanged (`HOLD`) but the blocker is now
+  named precisely — no orthogonal CME-native dealer-hedging-flow data source identified or priced.
+  Next licensed step (not run): a Databento options-schema cost dry-run. **P5 (L4 mutual-fund
+  overweight):** access probe confirmed 13F 45-day / Form N-PORT 60-day regulatory disclosure lag
+  structurally exceeds the mechanism's own next-day signal horizon; no systematic near-real-time
+  substitute exists (web-verified). Closed `UNSCREENABLE` as pre-registered. Neither admitted
+  through intake; harvest §4 limb-2 does not increment. $0/K=0.
+  [`P4_ROUTEMEMO`](lab/analysis/harvest/six_lead_cf_2026-08-17/P4_ROUTEMEMO.md) ·
+  [`P5_ACCESSPROBE`](lab/analysis/harvest/six_lead_cf_2026-08-17/P5_ACCESSPROBE.md) ·
+  [`plan`](docs/briefs/2026-08-17-six-lead-pursuit-plan.md) §2/§13.
+- **2026-08-20** — **`Q-ORBSURV-1` closed `FALSIFIED` — cushion-sizing's gate-clear is k-dependent, not robust.**
+  Operator: "execute them now." Full-panel k=2 misses the pass floor (41.51% < 50%, bust still 0.00%);
+  post-2021-09-28-only sub-window clears comfortably at both k=1 (81.35%) and k=2 (64.11%). The k=1
+  full-panel clear measured earlier the same day held by only a 2.27pp margin. Does not license ORB-MNQ-1
+  unpark or GSUB-1 `b3` renewal. $0/K=0, no live-risk surface.
+  [`closure`](docs/briefs/closures/Q-ORBSURV-1-closure-falsified.md) ·
+  [`brief`](docs/briefs/Q-ORBSURV-1-cushion-sizing-gate-configurations.md) ·
+  [`ops/instruments/MNQ.md`](ops/instruments/MNQ.md) N19.
+- **2026-08-20** — **`Q-NSURV-2` closed `RESOLVED` — additive N-SURV disclosure layer confirmed buildable; light ADR drafted `Proposed`.**
+  Operator: "execute them now." Wrapper reproduces both known candidates' (c1, ORB-MNQ-1) headline point
+  estimates within 2.0pp, zero `run_partition_mc`/`blocks_from_daily_pnl` internals touched (grep-audited).
+  A pre-Phase-1 drafting defect in the pre-registration (conflated single-history headline with
+  resampled-distribution mean for c1) was caught and corrected before Phase 1 ran. Successor ADR drafted
+  `Proposed`, ratification owed (queue #3). $0/K=0.
+  [`closure`](docs/briefs/closures/Q-NSURV-2-closure-resolved.md) ·
+  [`brief`](docs/briefs/Q-NSURV-2-second-uncertainty-layer-design.md) ·
+  [`ADR`](docs/adr/2026-08-20-nsurv-magnitude-resampling-disclosure.md).
 - **2026-08-20** — **N-SURV single-history magnitude blindspot graduated HOLD→RESOLVED (`Q-NSURV-1`).**
   Operator: "graduate N-SURV." Confirmed general on a second candidate (ORB-MNQ-1), not idiosyncratic
   to c1 — axis-dependent on sizing mechanism (bust for flat, pass for cushion-proportional). No closed
@@ -398,7 +443,6 @@ deleted (not struck).
 - **Sentinel Tier-2/3 promotion (limb B1)** — before next quarterly slate; promotion not a build. [`sentinel design`](docs/spec/2026-06-23-inqhiori-sentinel-design.md) · [`Hermes closure`](docs/briefs/closures/2026-07-27-hermes-agent-adoption-closure-resolved.md)
 - **PREREG-C1-DEDUPE-1** — gated on M1 `RESOLVED` + separate operator GO. [`pre-reg`](docs/spec/PREREG-C1-DEDUPE-1-intent-key-functional-property.md) · [`impl plan`](docs/spec/PREREG-C1-DEDUPE-1-implementation-plan.md)
 - **R&D tooling T2 / T3 / T4** — adoption ADR §7 (T4 rides 2026-08-08 Call-1 OC). [`ADR §7`](docs/adr/2026-07-11-tradable-anomalies-statistics-adoption.md)
-- **N-SURV single-history vs. magnitude-resampled uncertainty** — operator ruling owed on scope (Pre-Q / re-read a closed verdict / drop). One case study (c1); not blocking. [`notice`](docs/notes/notice/N-2026-08-15-nsurv-single-history-magnitude-blindspot.md)
 - **Per-fill add-slippage capture (B7 Stage 2b)** — waits first strategy-signal **add** fill; prerequisite ledger price-capture landed. [`Q-COSTGEO-3`](docs/briefs/closures/Q-COSTGEO-3-closure-ambiguous-needs-depth.md) · B7 procedure in the private archive
 - **Forward regime monitor / decompound limb-2 successor** — ORPHANED same hole: CFD limb-2 cannot fire; venue-native design landed (not ratified); gated on first live fill. [`decompound ADR §Addendum 2026-08-03`](docs/adr/2026-06-07-decompound-remc-hold.md) · [`Pepperstone retirement`](docs/adr/2026-08-02-pepperstone-feed-retirement.md)
 - **CFD data-estate class-wide delete** — trigger-dated; blocked on T1 (F3 FUTURES_LOCK) + substrate Phase-6 confirm. [`CFD estate ADR`](docs/adr/2026-07-11-ops-cfd-estate-retirement.md) · [gate audit](docs/notes/audits/2026-07-17_gate_cfd-estate-classwide-delete.md)

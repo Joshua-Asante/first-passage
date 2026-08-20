@@ -37,6 +37,25 @@ All 11 above opened 2026-08-18 from [`docs/notes/audits/2026-08-18-strategy-gene
 
 ## Recently closed (cross-reference; not open)
 
+- **Q-NSURV-2** — can a magnitude-resampling second-uncertainty-layer be added to N-SURV
+  reporting as a pure, headline-preserving addition — **`RESOLVED` 2026-08-20** — a wrapper
+  reproduces both known candidates' (c1, ORB-MNQ-1) headline point estimates within 2.0pp,
+  zero `run_partition_mc`/`blocks_from_daily_pnl` internals touched (grep-audited). Successor:
+  light disclosure-only ADR drafted `Proposed`, ratification owed. $0/K=0.
+  [`closure`](closures/Q-NSURV-2-closure-resolved.md) ·
+  [`brief`](Q-NSURV-2-second-uncertainty-layer-design.md) ·
+  [`pre-reg`](pre-registration/Q-NSURV-2-verdict-preregistration.md) ·
+  [`ADR`](../adr/2026-08-20-nsurv-magnitude-resampling-disclosure.md).
+- **Q-ORBSURV-1** — does cushion-proportional sizing clear the frozen survivor-scoring gate
+  at the configurations the 08-20 informal probes never checked (full-panel k=2; post-break-only
+  k=1/k=2) — **`FALSIFIED` 2026-08-20** — full-panel k=2 misses the pass floor (41.51% < 50%,
+  bust still 0.00%); both post-break-only configurations clear comfortably (81.35%/64.11% pass).
+  Cushion sizing's gate-clear is k-dependent, not a robust mechanism property; the k=1 full-panel
+  clear measured earlier the same day held by only a 2.27pp margin. Does not license unpark. $0/K=0.
+  [`closure`](closures/Q-ORBSURV-1-closure-falsified.md) ·
+  [`brief`](Q-ORBSURV-1-cushion-sizing-gate-configurations.md) ·
+  [`pre-reg`](pre-registration/Q-ORBSURV-1-verdict-preregistration.md) ·
+  [`results`](../../lab/analysis/c1/orbmnq1_survivor_scoring_2026-08-20/full_k2_and_postbreak_results.json).
 - **Q-NSURV-1** — is the N-SURV single-history magnitude blindspot (parent Notice
   `N-2026-08-15-nsurv-single-history-magnitude-blindspot`) general or idiosyncratic to c1 —
   **`RESOLVED` 2026-08-20** — confirmed general on a second candidate (ORB-MNQ-1): both books show a

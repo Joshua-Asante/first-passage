@@ -2,7 +2,16 @@
 # LTM cold corpus lives in .rgignore + .cursorindexingignore (NOT here),
 # so CATALOG → explicit archive/LTM Read paths stay reachable.
 
-.worktrees/
+# .worktrees/ is dispatch_cursor.ps1's own designated worktree spot
+# (Worktree = <repo>/.worktrees/<Slug>, per that script's own doc) -- a blanket
+# block here made every cursor-fleet dispatch structurally unable to read its
+# own pointer file (found 2026-08-20, dispatch b53dd04/aegis-3leg-risk-param:
+# Cursor halted NEEDS_CONTEXT, traced the block to this exact rule, refused to
+# fabricate a plan from the filename). Re-included below: block bare files
+# dropped directly in .worktrees/, but allow descent into <slug>/ subdirs, so
+# a dispatched agent can read what it was actually pointed at.
+.worktrees/*
+!.worktrees/*/
 .claude/worktrees/
 .venv/
 .venv-research/
