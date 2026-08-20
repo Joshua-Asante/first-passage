@@ -1,0 +1,91 @@
+[gate ] C:\Users\joshu\multi_firm_operations\.claude\worktrees\tradeify-bottleneck-solutions-84e1e6\docs\briefs\pre-registration\2026-07-13-prop-survivor-scoring-prereg.md
+[gate ] horizon=1500 seeds=(42, 123, 2026) sims/seed=10000 eval_bust_ceiling=3.0% pass_floor=50%
+
+================================================================================================
+STEP 1 -- reconstruct ORB-MNQ-1's own daily P&L (Control B mirror check)
+================================================================================================
+  Control B mirror check: PASS (n=1846)
+  full k=1 panel: 1878 business days (2019-05-06 -> 2026-07-15)
+  n_active=1846  mean=9.63  sd=256.90  skew=+2.0939  worst_day=-783.82  max_day=3433.68  p_win=0.4637
+
+================================================================================================
+STEP 2 -- fit skewed-gamma family to ORB-MNQ-1's OWN active-day P&L
+================================================================================================
+  fitted params: {"n_active": 1846, "p_win": 0.4637, "win_mean": 211.34, "win_sd": 223.3158, "win_max": 3433.68, "loss_mean": -164.7751, "loss_sd": 119.7675, "loss_min": -783.82, "k_win": 0.8956, "k_loss": 1.8928}
+
+================================================================================================
+STEP 3 -- fidelity check: real book's own single-history cushion result, intraday-honest vs EOD-only
+================================================================================================
+  real book, intraday-honest: bust=0.0000%  pass=52.2700%
+  real book, EOD-only       : bust=0.0000%  pass=52.2700%
+  EOD-only == intraday-honest on the real draw: True (load-bearing check for the EOD-only substitution used on synthetic draws below)
+
+================================================================================================
+STEP 4/5 -- draw N=50 synthetic realizations, gate-check each (EOD-only, see module docstring 'SCOPE DECISION')
+================================================================================================
+  [ 1/50] seed=20260820100  n_active=1846  skew=+1.146  worst=-878.34  bust=0.0000%  pass=79.9600%  floor_ok=True  (7.2s, total 48s)
+  [ 2/50] seed=20260820101  n_active=1846  skew=+1.125  worst=-871.27  bust=0.0000%  pass=39.9500%  floor_ok=False  (7.0s, total 55s)
+  [ 3/50] seed=20260820102  n_active=1846  skew=+1.042  worst=-892.95  bust=0.0000%  pass=81.6033%  floor_ok=True  (7.0s, total 62s)
+  [ 4/50] seed=20260820103  n_active=1846  skew=+0.957  worst=-1020.22  bust=0.0000%  pass=7.0333%  floor_ok=False  (6.6s, total 68s)
+  [ 5/50] seed=20260820104  n_active=1846  skew=+1.132  worst=-961.26  bust=0.0000%  pass=65.0667%  floor_ok=True  (7.1s, total 75s)
+  [ 6/50] seed=20260820105  n_active=1846  skew=+1.303  worst=-892.73  bust=0.0000%  pass=11.4800%  floor_ok=False  (5.7s, total 81s)
+  [ 7/50] seed=20260820106  n_active=1846  skew=+1.094  worst=-1033.57  bust=0.0000%  pass=24.3633%  floor_ok=False  (6.8s, total 88s)
+  [ 8/50] seed=20260820107  n_active=1846  skew=+1.070  worst=-720.50  bust=0.0000%  pass=71.2933%  floor_ok=True  (7.0s, total 95s)
+  [ 9/50] seed=20260820108  n_active=1846  skew=+1.371  worst=-742.47  bust=0.0000%  pass=68.3233%  floor_ok=True  (7.1s, total 102s)
+  [10/50] seed=20260820109  n_active=1846  skew=+1.057  worst=-761.59  bust=0.0000%  pass=44.0200%  floor_ok=False  (7.5s, total 109s)
+  [11/50] seed=20260820110  n_active=1846  skew=+1.313  worst=-718.08  bust=0.0000%  pass=46.8633%  floor_ok=False  (7.5s, total 117s)
+  [12/50] seed=20260820111  n_active=1846  skew=+1.155  worst=-744.15  bust=0.0000%  pass=69.0700%  floor_ok=True  (7.1s, total 124s)
+  [13/50] seed=20260820112  n_active=1846  skew=+1.211  worst=-762.14  bust=0.0000%  pass=46.6400%  floor_ok=False  (7.4s, total 131s)
+  [14/50] seed=20260820113  n_active=1846  skew=+0.818  worst=-872.29  bust=0.0000%  pass=43.3667%  floor_ok=False  (7.2s, total 139s)
+  [15/50] seed=20260820114  n_active=1846  skew=+1.055  worst=-707.54  bust=0.0000%  pass=42.2267%  floor_ok=False  (6.8s, total 145s)
+  [16/50] seed=20260820115  n_active=1846  skew=+1.569  worst=-879.68  bust=0.0000%  pass=14.0533%  floor_ok=False  (5.8s, total 151s)
+  [17/50] seed=20260820116  n_active=1846  skew=+1.037  worst=-740.29  bust=0.0000%  pass=18.6767%  floor_ok=False  (6.1s, total 157s)
+  [18/50] seed=20260820117  n_active=1846  skew=+1.112  worst=-731.58  bust=0.0000%  pass=54.4333%  floor_ok=True  (7.4s, total 165s)
+  [19/50] seed=20260820118  n_active=1846  skew=+1.123  worst=-724.12  bust=0.0000%  pass=39.4667%  floor_ok=False  (7.1s, total 172s)
+  [20/50] seed=20260820119  n_active=1846  skew=+1.314  worst=-813.08  bust=0.0000%  pass=14.8400%  floor_ok=False  (6.2s, total 178s)
+  [21/50] seed=20260820120  n_active=1846  skew=+1.043  worst=-762.51  bust=0.0000%  pass=60.8033%  floor_ok=True  (7.1s, total 185s)
+  [22/50] seed=20260820121  n_active=1846  skew=+1.140  worst=-747.55  bust=0.0000%  pass=44.1900%  floor_ok=False  (7.0s, total 192s)
+  [23/50] seed=20260820122  n_active=1846  skew=+1.250  worst=-1093.33  bust=0.0000%  pass=48.0900%  floor_ok=False  (6.9s, total 199s)
+  [24/50] seed=20260820123  n_active=1846  skew=+1.323  worst=-788.11  bust=0.0000%  pass=28.2967%  floor_ok=False  (4.8s, total 204s)
+  [25/50] seed=20260820124  n_active=1846  skew=+1.331  worst=-730.31  bust=0.0000%  pass=74.1133%  floor_ok=True  (5.2s, total 209s)
+  [26/50] seed=20260820125  n_active=1846  skew=+0.925  worst=-844.38  bust=0.0000%  pass=67.5767%  floor_ok=True  (5.3s, total 214s)
+  [27/50] seed=20260820126  n_active=1846  skew=+1.411  worst=-775.60  bust=0.0000%  pass=92.8933%  floor_ok=True  (4.8s, total 219s)
+  [28/50] seed=20260820127  n_active=1846  skew=+1.190  worst=-797.91  bust=0.0000%  pass=75.6033%  floor_ok=True  (5.2s, total 224s)
+  [29/50] seed=20260820128  n_active=1846  skew=+1.019  worst=-905.75  bust=0.0000%  pass=82.0267%  floor_ok=True  (5.4s, total 230s)
+  [30/50] seed=20260820129  n_active=1846  skew=+1.070  worst=-755.68  bust=0.0000%  pass=46.1700%  floor_ok=False  (5.1s, total 235s)
+  [31/50] seed=20260820130  n_active=1846  skew=+1.189  worst=-785.76  bust=0.0000%  pass=57.8167%  floor_ok=True  (5.2s, total 240s)
+  [32/50] seed=20260820131  n_active=1846  skew=+1.145  worst=-821.27  bust=0.0000%  pass=58.9300%  floor_ok=True  (5.2s, total 245s)
+  [33/50] seed=20260820132  n_active=1846  skew=+1.035  worst=-733.34  bust=0.0000%  pass=21.6267%  floor_ok=False  (5.2s, total 250s)
+  [34/50] seed=20260820133  n_active=1846  skew=+0.935  worst=-894.62  bust=0.0000%  pass=15.8000%  floor_ok=False  (4.8s, total 255s)
+  [35/50] seed=20260820134  n_active=1846  skew=+1.923  worst=-745.14  bust=0.0000%  pass=19.3400%  floor_ok=False  (4.6s, total 260s)
+  [36/50] seed=20260820135  n_active=1846  skew=+1.149  worst=-821.47  bust=0.0000%  pass=28.1200%  floor_ok=False  (4.9s, total 265s)
+  [37/50] seed=20260820136  n_active=1846  skew=+1.154  worst=-985.03  bust=0.0000%  pass=31.2000%  floor_ok=False  (5.1s, total 270s)
+  [38/50] seed=20260820137  n_active=1846  skew=+1.289  worst=-704.59  bust=0.0000%  pass=60.1167%  floor_ok=True  (5.9s, total 276s)
+  [39/50] seed=20260820138  n_active=1846  skew=+1.382  worst=-713.75  bust=0.0000%  pass=94.9633%  floor_ok=True  (5.2s, total 281s)
+  [40/50] seed=20260820139  n_active=1846  skew=+1.649  worst=-747.26  bust=0.0000%  pass=96.4033%  floor_ok=True  (5.5s, total 286s)
+  [41/50] seed=20260820140  n_active=1846  skew=+1.054  worst=-924.56  bust=0.0000%  pass=5.9967%  floor_ok=False  (4.6s, total 291s)
+  [42/50] seed=20260820141  n_active=1846  skew=+1.386  worst=-673.26  bust=0.0000%  pass=78.1933%  floor_ok=True  (5.6s, total 296s)
+  [43/50] seed=20260820142  n_active=1846  skew=+1.508  worst=-691.51  bust=0.0000%  pass=72.9767%  floor_ok=True  (5.4s, total 302s)
+  [44/50] seed=20260820143  n_active=1846  skew=+1.034  worst=-798.02  bust=0.0000%  pass=47.5333%  floor_ok=False  (5.8s, total 308s)
+  [45/50] seed=20260820144  n_active=1846  skew=+1.253  worst=-931.48  bust=0.0000%  pass=50.7300%  floor_ok=True  (5.4s, total 313s)
+  [46/50] seed=20260820145  n_active=1846  skew=+1.315  worst=-1001.68  bust=0.0000%  pass=78.2400%  floor_ok=True  (5.5s, total 319s)
+  [47/50] seed=20260820146  n_active=1846  skew=+1.194  worst=-692.56  bust=0.0000%  pass=50.0067%  floor_ok=True  (5.4s, total 324s)
+  [48/50] seed=20260820147  n_active=1846  skew=+1.050  worst=-962.46  bust=0.0000%  pass=61.8267%  floor_ok=True  (5.9s, total 330s)
+  [49/50] seed=20260820148  n_active=1846  skew=+1.155  worst=-902.64  bust=0.0000%  pass=45.6267%  floor_ok=False  (5.2s, total 335s)
+  [50/50] seed=20260820149  n_active=1846  skew=+1.275  worst=-702.34  bust=0.0000%  pass=56.6933%  floor_ok=True  (5.6s, total 341s)
+
+================================================================================================
+STEP 6 -- distribution summary
+================================================================================================
+  bust%  mean=0.0000  median=0.0000  sd=0.0000  min=0.0000  max=0.0000
+  bust%  percentiles: p10=0.0000 p25=0.0000 p50=0.0000 p75=0.0000 p90=0.0000
+  pass%  mean=50.6927  median=49.0483  sd=24.1700  min=5.9967  max=96.4033
+  n realizations clearing floor_ok (bust<=3.0% AND pass>=50%): 25/50 (50.0%)
+  n realizations with bust==0.00%: 50/50 (100.0%)
+  real single-history bust (0.0000%) rank within the 50-draw distribution: 100.0th percentile (fraction of synthetic draws AT OR BELOW the real value)
+
+  FIDELITY CHECK: real skew +2.0939 vs synthetic-draw skew mean=+1.1956 median=+1.1514 (range +0.8178..+1.9232)
+  FIDELITY CHECK: real worst-day -783.82 vs synthetic-draw worst-day mean=-818.03 median=-786.94 (range -1093.33..-673.26)
+
+[write] C:\Users\joshu\multi_firm_operations\.claude\worktrees\tradeify-bottleneck-solutions-84e1e6\lab\analysis\c1\orbmnq1_nsurv_magnitude_probe_2026-08-20\nsurv_magnitude_probe_results.json
+[time ] total elapsed 341s
