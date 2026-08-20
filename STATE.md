@@ -53,7 +53,7 @@ BEHIND this list.** Items leave when done; it stays ≤5 so it cannot decay into
 |---|---|---|---|
 | 1 | **F1 — how §4 reads a Tradeify-resting discharge** (2026-11-08). Eval is live ([`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md)); locked Striker book barred. §4 still scores the frozen $100K×4 set with Tradeify in it. Ruling owed: whether a discharge resting *on Tradeify* (or the withdrawn Striker book) discharges the four-firms program. **Deciding it early would pre-empt §4** | [`ADR 2026-08-04`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) §7 F1 · [four-firms §4](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) | 2026-11-08 §4 verdict reading |
 | 2 | **B7-REFIRE Stage 1 + M1** — both wait on an acceptable strategy on the ruled (Python-native) host. Eval live; no book deployed | [`GO ADR Addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`S2`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) · [`M1`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) | live-signal / arming path |
-| 3 | **`Q-NSURV-2` + `Q-ORBSURV-1` opened and pre-registered** (2026-08-20, operator "go bigger"), successors to the deferred N-SURV-layer-design + ORB-MNQ-1 re-PARK-scope question. Both FROZEN, Phase 1 not yet run — needs operator GO to execute (each ~few-minutes wall time, $0/K=0, no live-risk surface). `Q-ORBSURV-1` explicitly does **not** license unpark on `RESOLVED` (§5) | [`Q-NSURV-2`](docs/briefs/Q-NSURV-2-second-uncertainty-layer-design.md) · [`Q-ORBSURV-1`](docs/briefs/Q-ORBSURV-1-cushion-sizing-gate-configurations.md) | Phase 1 execution GO |
+| 3 | **N-SURV magnitude-resampling disclosure ADR** — `Proposed`, ratification owed. `Q-NSURV-2` RESOLVED (wrapper reproduces both candidates' headlines within 2.0pp, zero core internals touched); this ADR is its named INTEGRATE routing | [`ADR`](docs/adr/2026-08-20-nsurv-magnitude-resampling-disclosure.md) · [`Q-NSURV-2 closure`](docs/briefs/closures/Q-NSURV-2-closure-resolved.md) | ADR ratification |
 
 ---
 
@@ -64,6 +64,23 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-20** — **`Q-ORBSURV-1` closed `FALSIFIED` — cushion-sizing's gate-clear is k-dependent, not robust.**
+  Operator: "execute them now." Full-panel k=2 misses the pass floor (41.51% < 50%, bust still 0.00%);
+  post-2021-09-28-only sub-window clears comfortably at both k=1 (81.35%) and k=2 (64.11%). The k=1
+  full-panel clear measured earlier the same day held by only a 2.27pp margin. Does not license ORB-MNQ-1
+  unpark or GSUB-1 `b3` renewal. $0/K=0, no live-risk surface.
+  [`closure`](docs/briefs/closures/Q-ORBSURV-1-closure-falsified.md) ·
+  [`brief`](docs/briefs/Q-ORBSURV-1-cushion-sizing-gate-configurations.md) ·
+  [`ops/instruments/MNQ.md`](ops/instruments/MNQ.md) N19.
+- **2026-08-20** — **`Q-NSURV-2` closed `RESOLVED` — additive N-SURV disclosure layer confirmed buildable; light ADR drafted `Proposed`.**
+  Operator: "execute them now." Wrapper reproduces both known candidates' (c1, ORB-MNQ-1) headline point
+  estimates within 2.0pp, zero `run_partition_mc`/`blocks_from_daily_pnl` internals touched (grep-audited).
+  A pre-Phase-1 drafting defect in the pre-registration (conflated single-history headline with
+  resampled-distribution mean for c1) was caught and corrected before Phase 1 ran. Successor ADR drafted
+  `Proposed`, ratification owed (queue #3). $0/K=0.
+  [`closure`](docs/briefs/closures/Q-NSURV-2-closure-resolved.md) ·
+  [`brief`](docs/briefs/Q-NSURV-2-second-uncertainty-layer-design.md) ·
+  [`ADR`](docs/adr/2026-08-20-nsurv-magnitude-resampling-disclosure.md).
 - **2026-08-20** — **N-SURV single-history magnitude blindspot graduated HOLD→RESOLVED (`Q-NSURV-1`).**
   Operator: "graduate N-SURV." Confirmed general on a second candidate (ORB-MNQ-1), not idiosyncratic
   to c1 — axis-dependent on sizing mechanism (bust for flat, pass for cushion-proportional). No closed

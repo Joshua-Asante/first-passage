@@ -1,0 +1,80 @@
+{
+  "tol_pp": 2.0,
+  "candidates": {
+    "c1": {
+      "headline_A_bust_pct": 4.7433000000000005,
+      "recomputed_B": {
+        "mean": 7.463666666666667,
+        "median": 5.573333333333332,
+        "sd": 6.997835197005174,
+        "min": 0.6799999999999999,
+        "max": 36.526666666666664,
+        "p10": 1.6456666666666666,
+        "p25": 2.270833333333333,
+        "p50": 5.573333333333332,
+        "p75": 10.2725,
+        "p90": 14.125333333333336
+      },
+      "stored_B_mean_pct": 7.463666666666667,
+      "stored_B_sd_pct": 7.068881030611799,
+      "delta_mean_pp": 0.0,
+      "delta_sd_pp": -0.07104583360662442,
+      "reproduction_ok": true
+    },
+    "orb_mnq_1": {
+      "headline_A": {
+        "bust_pct": 0.0,
+        "pass_pct": 52.27,
+        "per_seed": [
+          {
+            "bust_pct": 0.0,
+            "pass_pct": 53.04
+          },
+          {
+            "bust_pct": 0.0,
+            "pass_pct": 52.26
+          },
+          {
+            "bust_pct": 0.0,
+            "pass_pct": 51.51
+          }
+        ]
+      },
+      "recomputed_B_bust": {
+        "mean": 0.0,
+        "median": 0.0,
+        "sd": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "p10": 0.0,
+        "p25": 0.0,
+        "p50": 0.0,
+        "p75": 0.0,
+        "p90": 0.0
+      },
+      "recomputed_B_pass": {
+        "mean": 50.69266666666667,
+        "median": 49.04833333333333,
+        "sd": 23.927044020429175,
+        "min": 5.996666666666667,
+        "max": 96.40333333333335,
+        "p10": 15.703999999999999,
+        "p25": 33.266666666666666,
+        "p50": 49.04833333333333,
+        "p75": 68.88333333333334,
+        "p90": 80.12433333333333
+      },
+      "stored_B_bust_mean": 0.0,
+      "stored_B_pass_mean": 50.69266666666667,
+      "stored_B_pass_sd": 24.16996440084929,
+      "delta_bust_mean_pp": 0.0,
+      "delta_pass_mean_pp": 0.0,
+      "delta_pass_sd_pp": -0.24292038042011654,
+      "reproduction_ok": true
+    }
+  },
+  "c1_reproduction_ok": true,
+  "orb_mnq_1_reproduction_ok": true,
+  "overall_reproduction_ok": true,
+  "verdict": "RESOLVED"
+}
