@@ -14,8 +14,10 @@ entry first).
 
 **Anti-accretion (standing):**
 
-- New operator decision → **one decision-index line** + owning ADR (never a
-  paragraph here).
+- New operator decision → **a concise decision-index entry** + owning ADR
+  (never a paragraph here) — relaxed 2026-08-19 from a strict one-line cap;
+  concise still means no multi-sentence narrative, see
+  [`docs/operational_rules.md`](docs/operational_rules.md) Rule 7 edit log.
 - Item leaves the queue or closes → **delete the STATE row**; do not leave
   “Cleared …” footnotes.
 - Forward triggers: date/criterion + owner link only; detail stays with the owner.
