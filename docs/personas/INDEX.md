@@ -24,6 +24,7 @@ shipped; pursuit-level and per-artifact layers phased per
 | [Head of Governance](head-of-governance.md) | STRATEGIC | Back | COO | `head-of-governance-log.md` |
 | [Falsifier Analyst](falsifier-analyst.md) | STAFF | Front | Head of Research | `falsifier-analyst-log.md` |
 | [Pre-Registration Analyst](pre-registration-analyst.md) | STAFF | Front | Head of Research | `pre-registration-analyst-log.md` |
+| [Research Analyst](research-analyst.md) | STAFF | Front | Head of Research | `research-analyst-log.md` |
 | [TCA Analyst](tca-analyst.md) | STAFF | Front | Head of Execution | `tca-analyst-log.md` |
 | [Documentation Analyst](documentation-analyst.md) | STAFF | Back | Head of Governance | `documentation-analyst-log.md` |
 | [Research Registry Analyst](research-registry-analyst.md) | STAFF | Back | Head of Governance | `research-registry-analyst-log.md` |

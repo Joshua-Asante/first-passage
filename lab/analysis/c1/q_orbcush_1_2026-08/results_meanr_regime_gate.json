@@ -1,0 +1,229 @@
+{
+  "cutoff": "2021-09-28",
+  "K": 1,
+  "windows_trades": {
+    "W1": 20,
+    "W2": 63,
+    "W3": 126
+  },
+  "min_trades_sparsity_floor": 30,
+  "gate_thresholds": {
+    "eval_bust_ceiling_pct": 3.0,
+    "pass_floor_pct": 50.0,
+    "horizon": 1500,
+    "seeds": [
+      42,
+      123,
+      2026
+    ],
+    "sims_per_seed": 10000
+  },
+  "n_triggering_days": 1846,
+  "fidelity_control": {
+    "1": {
+      "bust_pct": 67.66666666666667,
+      "pass_pct": 32.333333333333336,
+      "published": 67.67,
+      "delta_pp": -0.0033333333333303017,
+      "within_tol": true
+    },
+    "2": {
+      "bust_pct": 77.00999999999999,
+      "pass_pct": 22.99,
+      "published": 77.01,
+      "delta_pp": -1.4210854715202004e-14,
+      "within_tol": true
+    }
+  },
+  "fidelity_control_pass_k1": true,
+  "windows": {
+    "W1": {
+      "window_trades": 20,
+      "classifier": {
+        "n_trades_total": 1846,
+        "n_warmup_trades": 20,
+        "n_higher_trades": 1020,
+        "n_lower_trades": 806,
+        "expanding_median_spotcheck_pass": true
+      },
+      "date_correlation": {
+        "n_higher_days": 1036,
+        "n_lower_days": 822,
+        "frac_higher_days_post_cutoff": 0.6901544401544402,
+        "frac_lower_days_post_cutoff": 0.6532846715328468,
+        "date_corr_pass": false
+      },
+      "gate": {
+        "HIGHER": {
+          "meta": {
+            "n_days_in_label": 1036,
+            "n_days_in_blocks": 874,
+            "n_runs_used": 41,
+            "n_runs_skipped": 72,
+            "n_blocks": 148
+          },
+          "flat": {
+            "bust_pct": 30.720000000000002,
+            "pass_pct": 69.28000000000002,
+            "gate_pass": false
+          },
+          "cushion": {
+            "bust_pct": 0.0,
+            "pass_pct": 98.47333333333334,
+            "gate_pass": true
+          }
+        },
+        "LOWER": {
+          "meta": {
+            "n_days_in_label": 822,
+            "n_days_in_blocks": 647,
+            "n_runs_used": 38,
+            "n_runs_skipped": 76,
+            "n_blocks": 99
+          },
+          "flat": {
+            "bust_pct": 93.87666666666667,
+            "pass_pct": 6.123333333333334,
+            "gate_pass": false
+          },
+          "cushion": {
+            "bust_pct": 0.0,
+            "pass_pct": 1.4933333333333334,
+            "gate_pass": false
+          }
+        }
+      },
+      "direction": "HIGHER_CLEARS_LOWER_DOES_NOT",
+      "sparsity_flag": false
+    },
+    "W2": {
+      "window_trades": 63,
+      "classifier": {
+        "n_trades_total": 1846,
+        "n_warmup_trades": 63,
+        "n_higher_trades": 1127,
+        "n_lower_trades": 656,
+        "expanding_median_spotcheck_pass": true
+      },
+      "date_correlation": {
+        "n_higher_days": 1142,
+        "n_lower_days": 672,
+        "frac_higher_days_post_cutoff": 0.7495621716287215,
+        "frac_lower_days_post_cutoff": 0.5892857142857143,
+        "date_corr_pass": false
+      },
+      "gate": {
+        "HIGHER": {
+          "meta": {
+            "n_days_in_label": 1142,
+            "n_days_in_blocks": 1070,
+            "n_runs_used": 24,
+            "n_runs_skipped": 32,
+            "n_blocks": 194
+          },
+          "flat": {
+            "bust_pct": 45.4,
+            "pass_pct": 54.6,
+            "gate_pass": false
+          },
+          "cushion": {
+            "bust_pct": 0.0,
+            "pass_pct": 88.0,
+            "gate_pass": true
+          }
+        },
+        "LOWER": {
+          "meta": {
+            "n_days_in_label": 672,
+            "n_days_in_blocks": 583,
+            "n_runs_used": 19,
+            "n_runs_skipped": 38,
+            "n_blocks": 102
+          },
+          "flat": {
+            "bust_pct": 98.25666666666666,
+            "pass_pct": 1.7433333333333334,
+            "gate_pass": false
+          },
+          "cushion": {
+            "bust_pct": 0.0,
+            "pass_pct": 0.11333333333333333,
+            "gate_pass": false
+          }
+        }
+      },
+      "direction": "HIGHER_CLEARS_LOWER_DOES_NOT",
+      "sparsity_flag": false
+    },
+    "W3": {
+      "window_trades": 126,
+      "classifier": {
+        "n_trades_total": 1846,
+        "n_warmup_trades": 126,
+        "n_higher_trades": 1190,
+        "n_lower_trades": 530,
+        "expanding_median_spotcheck_pass": true
+      },
+      "date_correlation": {
+        "n_higher_days": 1208,
+        "n_lower_days": 543,
+        "frac_higher_days_post_cutoff": 0.8054635761589404,
+        "frac_lower_days_post_cutoff": 0.5138121546961326,
+        "date_corr_pass": false
+      },
+      "gate": {
+        "HIGHER": {
+          "meta": {
+            "n_days_in_label": 1208,
+            "n_days_in_blocks": 1143,
+            "n_runs_used": 16,
+            "n_runs_skipped": 30,
+            "n_blocks": 218
+          },
+          "flat": {
+            "bust_pct": 37.00333333333334,
+            "pass_pct": 62.99666666666667,
+            "gate_pass": false
+          },
+          "cushion": {
+            "bust_pct": 0.0,
+            "pass_pct": 96.39666666666666,
+            "gate_pass": true
+          }
+        },
+        "LOWER": {
+          "meta": {
+            "n_days_in_label": 543,
+            "n_days_in_blocks": 478,
+            "n_runs_used": 16,
+            "n_runs_skipped": 31,
+            "n_blocks": 84
+          },
+          "flat": {
+            "bust_pct": 96.55666666666667,
+            "pass_pct": 3.4433333333333334,
+            "gate_pass": false
+          },
+          "cushion": {
+            "bust_pct": 0.0,
+            "pass_pct": 0.8633333333333333,
+            "gate_pass": false
+          }
+        }
+      },
+      "direction": "HIGHER_CLEARS_LOWER_DOES_NOT",
+      "sparsity_flag": false
+    }
+  },
+  "summary": {
+    "date_correlation_windows_passing": 0,
+    "date_correlation_fires_at_ge2_of_3": false,
+    "directions_by_window": {
+      "W1": "HIGHER_CLEARS_LOWER_DOES_NOT",
+      "W2": "HIGHER_CLEARS_LOWER_DOES_NOT",
+      "W3": "HIGHER_CLEARS_LOWER_DOES_NOT"
+    },
+    "direction_stable_no_sign_flip": true,
+    "any_window_sparse": false
+  }
+}

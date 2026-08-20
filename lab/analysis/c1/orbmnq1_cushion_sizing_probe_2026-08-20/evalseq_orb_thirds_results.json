@@ -1,0 +1,85 @@
+{
+  "cushion_thirds": {
+    "T1": {
+      "base_k1": {
+        "n_blocks": 125,
+        "flat_bust_pct": 96.13,
+        "flat_pass_pct": 3.856666666666667,
+        "flat_gate_pass": false,
+        "cushion_bust_pct": 0.0,
+        "cushion_pass_pct": 0.5133333333333333,
+        "cushion_gate_pass": false,
+        "delta_bust_pp": -96.13
+      },
+      "base_k2": {
+        "n_blocks": 125,
+        "flat_bust_pct": 90.64999999999999,
+        "flat_pass_pct": 9.35,
+        "flat_gate_pass": false,
+        "cushion_bust_pct": 0.0,
+        "cushion_pass_pct": 2.853333333333333,
+        "cushion_gate_pass": false,
+        "delta_bust_pp": -90.64999999999999
+      }
+    },
+    "T2": {
+      "base_k1": {
+        "n_blocks": 124,
+        "flat_bust_pct": 39.63999999999999,
+        "flat_pass_pct": 60.36000000000001,
+        "flat_gate_pass": false,
+        "cushion_bust_pct": 0.0,
+        "cushion_pass_pct": 89.86666666666667,
+        "cushion_gate_pass": true,
+        "delta_bust_pp": -39.63999999999999
+      },
+      "base_k2": {
+        "n_blocks": 124,
+        "flat_bust_pct": 61.18666666666667,
+        "flat_pass_pct": 38.81333333333333,
+        "flat_gate_pass": false,
+        "cushion_bust_pct": 0.0,
+        "cushion_pass_pct": 79.61666666666666,
+        "cushion_gate_pass": true,
+        "delta_bust_pp": -61.18666666666667
+      }
+    },
+    "T3": {
+      "base_k1": {
+        "n_blocks": 124,
+        "flat_bust_pct": 65.88333333333334,
+        "flat_pass_pct": 34.11666666666667,
+        "flat_gate_pass": false,
+        "cushion_bust_pct": 0.0,
+        "cushion_pass_pct": 74.67999999999999,
+        "cushion_gate_pass": true,
+        "delta_bust_pp": -65.88333333333334
+      },
+      "base_k2": {
+        "n_blocks": 124,
+        "flat_bust_pct": 77.70333333333333,
+        "flat_pass_pct": 22.296666666666667,
+        "flat_gate_pass": false,
+        "cushion_bust_pct": 0.0,
+        "cushion_pass_pct": 53.72333333333333,
+        "cushion_gate_pass": true,
+        "delta_bust_pp": -77.70333333333333
+      }
+    }
+  },
+  "third_split": {
+    "n_bdays": 1878,
+    "cut1": 626,
+    "cut2": 1252,
+    "t1_start": "2019-05-06",
+    "t1_end": "2021-09-27",
+    "t2_start": "2021-09-28",
+    "t2_end": "2024-02-20",
+    "t3_start": "2024-02-21",
+    "t3_end": "2026-07-15"
+  },
+  "gate": {
+    "bust_ceiling_pct": 3.0,
+    "pass_floor_pct": 50.0
+  }
+}

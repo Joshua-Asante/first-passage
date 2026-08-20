@@ -1,0 +1,155 @@
+{
+  "loss_tail": {
+    "l_empirical": -783.82,
+    "l_theoretical": -1244.18,
+    "dd": 3000.0,
+    "ceil_breakeven_emp_k1": 3.8274093541884615,
+    "ceil_breakeven_theo_k1": 2.411226671381954,
+    "ceil_breakeven_theo_k2": 1.205613335690977
+  },
+  "candidates": {
+    "borrowed_0.75": {
+      "ceiling": 0.75,
+      "note": "Q-EVALSEQ-1's original, quoted verbatim"
+    },
+    "derived_ceil_max_1.00": {
+      "ceiling": 1.0,
+      "note": "max ceiling consistent with (*) at k=1 -- see derivation"
+    },
+    "derived_ceil_half_0.50": {
+      "ceiling": 0.5,
+      "note": "deliberately conservative bracket, round number below borrowed"
+    }
+  },
+  "fidelity_control": {
+    "bust_pct": 67.66666666666667,
+    "pass_pct": 32.333333333333336,
+    "published": 67.67,
+    "delta_pp": -0.0033333333333303017,
+    "within_tol": true
+  },
+  "split": {
+    "FULL": {
+      "start": "2019-05-06",
+      "end": "2026-07-15",
+      "n_bdays": 1878
+    },
+    "H1": {
+      "start": "2019-05-06",
+      "end": "2022-12-08",
+      "n_bdays": 939
+    },
+    "H2": {
+      "start": "2022-12-09",
+      "end": "2026-07-15",
+      "n_bdays": 939
+    },
+    "T1": {
+      "start": "2019-05-06",
+      "end": "2021-09-27",
+      "n_bdays": 626
+    },
+    "T2": {
+      "start": "2021-09-28",
+      "end": "2024-02-20",
+      "n_bdays": 626
+    },
+    "T3": {
+      "start": "2024-02-21",
+      "end": "2026-07-15",
+      "n_bdays": 626
+    }
+  },
+  "comparison": {
+    "FULL": {
+      "n_blocks": 375,
+      "flat_bust_pct": 67.66666666666667,
+      "flat_pass_pct": 32.333333333333336,
+      "flat_horizon_cap_pct": 0.0,
+      "borrowed_0.75_bust_pct": 0.0,
+      "borrowed_0.75_pass_pct": 52.27,
+      "borrowed_0.75_horizon_cap_pct": 47.73,
+      "derived_ceil_max_1.00_bust_pct": 0.0,
+      "derived_ceil_max_1.00_pass_pct": 50.69,
+      "derived_ceil_max_1.00_horizon_cap_pct": 49.31,
+      "derived_ceil_half_0.50_bust_pct": 0.0,
+      "derived_ceil_half_0.50_pass_pct": 44.93333333333334,
+      "derived_ceil_half_0.50_horizon_cap_pct": 55.06666666666666
+    },
+    "H1": {
+      "n_blocks": 187,
+      "flat_bust_pct": 77.85333333333334,
+      "flat_pass_pct": 22.146666666666665,
+      "flat_horizon_cap_pct": 0.0,
+      "borrowed_0.75_bust_pct": 0.0,
+      "borrowed_0.75_pass_pct": 17.983333333333334,
+      "borrowed_0.75_horizon_cap_pct": 82.01666666666667,
+      "derived_ceil_max_1.00_bust_pct": 0.0,
+      "derived_ceil_max_1.00_pass_pct": 20.336666666666666,
+      "derived_ceil_max_1.00_horizon_cap_pct": 79.66333333333333,
+      "derived_ceil_half_0.50_bust_pct": 0.0,
+      "derived_ceil_half_0.50_pass_pct": 10.58,
+      "derived_ceil_half_0.50_horizon_cap_pct": 89.42
+    },
+    "H2": {
+      "n_blocks": 187,
+      "flat_bust_pct": 59.71,
+      "flat_pass_pct": 40.29,
+      "flat_horizon_cap_pct": 0.0,
+      "borrowed_0.75_bust_pct": 0.0,
+      "borrowed_0.75_pass_pct": 78.3,
+      "borrowed_0.75_horizon_cap_pct": 21.700000000000003,
+      "derived_ceil_max_1.00_bust_pct": 0.0,
+      "derived_ceil_max_1.00_pass_pct": 74.48333333333333,
+      "derived_ceil_max_1.00_horizon_cap_pct": 25.516666666666666,
+      "derived_ceil_half_0.50_bust_pct": 0.0,
+      "derived_ceil_half_0.50_pass_pct": 75.56666666666666,
+      "derived_ceil_half_0.50_horizon_cap_pct": 24.433333333333337
+    },
+    "T1": {
+      "n_blocks": 125,
+      "flat_bust_pct": 96.13,
+      "flat_pass_pct": 3.856666666666667,
+      "flat_horizon_cap_pct": 0.013333333333337638,
+      "borrowed_0.75_bust_pct": 0.0,
+      "borrowed_0.75_pass_pct": 0.5133333333333333,
+      "borrowed_0.75_horizon_cap_pct": 99.48666666666666,
+      "derived_ceil_max_1.00_bust_pct": 0.0,
+      "derived_ceil_max_1.00_pass_pct": 1.2266666666666668,
+      "derived_ceil_max_1.00_horizon_cap_pct": 98.77333333333333,
+      "derived_ceil_half_0.50_bust_pct": 0.0,
+      "derived_ceil_half_0.50_pass_pct": 0.07666666666666666,
+      "derived_ceil_half_0.50_horizon_cap_pct": 99.92333333333333
+    },
+    "T2": {
+      "n_blocks": 124,
+      "flat_bust_pct": 39.63999999999999,
+      "flat_pass_pct": 60.36000000000001,
+      "flat_horizon_cap_pct": 0.0,
+      "borrowed_0.75_bust_pct": 0.0,
+      "borrowed_0.75_pass_pct": 89.86666666666667,
+      "borrowed_0.75_horizon_cap_pct": 10.133333333333326,
+      "derived_ceil_max_1.00_bust_pct": 0.0,
+      "derived_ceil_max_1.00_pass_pct": 88.44333333333333,
+      "derived_ceil_max_1.00_horizon_cap_pct": 11.556666666666672,
+      "derived_ceil_half_0.50_bust_pct": 0.0,
+      "derived_ceil_half_0.50_pass_pct": 86.64999999999999,
+      "derived_ceil_half_0.50_horizon_cap_pct": 13.350000000000009
+    },
+    "T3": {
+      "n_blocks": 124,
+      "flat_bust_pct": 65.88333333333334,
+      "flat_pass_pct": 34.11666666666667,
+      "flat_horizon_cap_pct": 0.0,
+      "borrowed_0.75_bust_pct": 0.0,
+      "borrowed_0.75_pass_pct": 74.67999999999999,
+      "borrowed_0.75_horizon_cap_pct": 25.320000000000007,
+      "derived_ceil_max_1.00_bust_pct": 0.0,
+      "derived_ceil_max_1.00_pass_pct": 69.09333333333333,
+      "derived_ceil_max_1.00_horizon_cap_pct": 30.906666666666666,
+      "derived_ceil_half_0.50_bust_pct": 0.0,
+      "derived_ceil_half_0.50_pass_pct": 74.32333333333334,
+      "derived_ceil_half_0.50_horizon_cap_pct": 25.676666666666662
+    }
+  }
+}

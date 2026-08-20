@@ -25,6 +25,26 @@ Corpus searched (the surfaces this repo already treats as closure-of-record):
   docs/SESSIONS.md                 one chunk per "## " entry
   lab/CATALOG.md                   one chunk per "| slug | ..." row
   docs/rejected_candidates.md      one chunk per "### " entry
+  ops/instruments/*.md             one chunk per file
+  docs/briefs/rnd-pipeline/*.md    one chunk per file
+
+Second motivating incident (2026-08-19): a Research Analyst inaugural-session
+draft recommended GRADUATE on the D5 Baltussen intraday-momentum-footprint
+axis for MNQ as "genuinely unspent," running check_advisor_dedup with
+project-level keywords first. The tool correctly found no prior *project*
+like it -- but the axis itself had already been ratified (Q-KBUDGET-1),
+built, Stage-2-killed on IS-era prices, re-derived on OOS-native prices
+(D5-RECOST-1, 2026-07-21) and killed again, HIGH-confidence, K=1 banked --
+all recorded in ops/instruments/MNQ.md (finding N5) and docs/briefs/
+rnd-pipeline/, neither of which this tool searched. Project-level dedup and
+mechanism-level dedup are different questions; this tool answered the first
+correctly and was silent on the second because its corpus never covered the
+one surface (ops/instruments/) that repo doctrine already makes MANDATORY
+reading for exactly this question ("any session deriving/testing/
+adjudicating on <SYM> MUST read ops/instruments/<SYM>.md at session start").
+Closing the corpus gap, not adding new judgment logic -- this tool still
+only ranks by vocabulary overlap; a human/agent still has to read the hit
+and decide.
 
 Usage:
     python scripts/check_advisor_dedup.py <path-to-staged-file> [--top N]
@@ -168,6 +188,20 @@ def load_corpus(repo_root: Path) -> list[Chunk]:
             title = _title_of(entry, "rejected-candidates entry")
             chunks.append(Chunk(surface, title, entry))
 
+    instruments_dir = repo_root / "ops" / "instruments"
+    if instruments_dir.is_dir():
+        for md in sorted(instruments_dir.glob("*.md")):
+            text = md.read_text(encoding="utf-8", errors="replace")
+            surface = md.relative_to(repo_root).as_posix()
+            chunks.append(Chunk(surface, _title_of(text, md.stem), text))
+
+    rnd_pipeline_dir = repo_root / "docs" / "briefs" / "rnd-pipeline"
+    if rnd_pipeline_dir.is_dir():
+        for md in sorted(rnd_pipeline_dir.glob("*.md")):
+            text = md.read_text(encoding="utf-8", errors="replace")
+            surface = md.relative_to(repo_root).as_posix()
+            chunks.append(Chunk(surface, _title_of(text, md.stem), text))
+
     return chunks
 
 
@@ -240,7 +274,8 @@ def main(argv: list[str] | None = None) -> int:
     if not corpus:
         print("check_advisor_dedup: no corpus found under docs/briefs/closures, "
               "docs/notes/audits, docs/SESSIONS.md, lab/CATALOG.md, "
-              "docs/rejected_candidates.md — nothing to compare against.")
+              "docs/rejected_candidates.md, ops/instruments, "
+              "docs/briefs/rnd-pipeline — nothing to compare against.")
         return 0
 
     ranked = []
