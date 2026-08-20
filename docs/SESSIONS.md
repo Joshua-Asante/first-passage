@@ -14,6 +14,17 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-19f — Cursor Grok 4.6 dispatch-autonomy eval surfaces a live shell-hook bug + CI/gate-stack staleness
+
+**Focus:** Evaluate giving Cursor's `--mode plan`/`--resume` a CC-gated plan→approve dispatch flow. Investigation surfaced a live Windows bug and a much bigger governance finding first.
+
+**Shipped:** (1) Found a Cursor CLI bug — on Windows, any Claude Code PreToolUse hook (e.g. hookify) plus `MSYSTEM` set makes every cursor-agent shell command silently reject; already reported upstream (forum #168129, engineering-acked), replied with hookify + plan-mode corroboration. (2) Independently re-verified the M1 arming interlock directly (37/37 + 257/257 pytest) — genuinely sound, superseding an earlier unverified Cursor PR. (3) Audited 151 merged `cursor/*` PRs since 07-06: CI was dead (not "format-only") through 08-14; 35 made unverified numeric test claims, none safety-critical beyond the M1 case already re-checked. (4) Ran Q-GATESTACK-1 to verdict `FALSIFIED` (both limbs: `main` unprotected + CI-status docs actively wrong) — closure authored, `INDEX.md` updated, stale claims corrected in 5 files (CLAUDE.md, manifest-check.yml, post-merge, pine_lint.py, check_pine_manifest.py). (5) Extended `dispatch_cursor.ps1` with `-Plan`/`-ResumeSessionId`/`-CleanHome` — plan and execute are separate calls, judgment stays with whoever reads the plan.
+
+**Decisions/defects:** Branch-protection ruleset packet named, not opened (repo security-setting, operator's own call). "Cursor Grok 4.6" (a model in the existing governed `cursor-agent` CLI) is unrelated to the previously-rejected "Grok Bot" (separate xAI product) — do not conflate in future sessions.
+
+**Open / next:** Branch-protection-for-`main` packet still unopened. 34 non-M1 HIGH-risk `cursor/*` PRs from the dead-CI window not individually re-verified (operator said skip). Cursor forum thread has no fix ETA — `-CleanHome` is the standing workaround.
+
+---
 ## 2026-08-19e — persona-hierarchy spec/ADR staleness from the §6.6 panel
 
 **Focus:** Fix pre-existing design-spec/ADR staleness the 2026-08-19 §6.6 panel (`wf_88c21d8d-a7f`) caught in passing — not caused by §6.6, does not block that section's ratification.

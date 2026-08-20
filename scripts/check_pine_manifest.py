@@ -78,15 +78,20 @@ commit-author identity (agent/bot addresses) and CI-environment markers, so a re
 from Joshua's local checkout — the only place these bytes durably live — passes
 untouched. Remedy is never to relax the pin: re-pin from a machine that keeps the file.
 
-Three call sites, only two of them live (2026-07-31):
+Three call sites, all three live (updated 2026-08-19, Q-GATESTACK-1 Limb-D — GitHub
+Actions has run live and green since the 2026-08-15 public transition):
   - pre-commit (staged mode) — cannot see the case it was written for: a fresh
     cloud-agent clone has no hooks installed. It guards the durable machine only.
-  - a pull_request job — the one surface that could catch a pin BEFORE the bytes are
-    lost, currently INERT because GitHub Actions is disabled repo-wide.
-  - post-merge (range mode, --base ORIG_HEAD) — the only live limb, and it fires on
-    arrival, i.e. after the bytes are already gone. Worth having anyway: acting while
-    the authoring PR is fresh is the difference between re-pinning from a source that
+  - a pull_request job (.github/workflows/manifest-check.yml pine-pin-provenance) —
+    the surface that catches a pin BEFORE the bytes are lost; confirmed executing
+    and passing at job granularity, not just skipped/inert.
+  - post-merge (range mode, --base ORIG_HEAD) — fires on arrival, i.e. after the
+    bytes are already gone; now a backstop for what the PR job's checkout-based view
+    can miss, not the only detection point. Worth having anyway: acting while the
+    authoring PR is fresh is the difference between re-pinning from a source that
     still exists and reconstructing one that does not.
+  None of the three block a merge — main carries no branch protection or required
+  checks (Q-GATESTACK-1 Limb-A).
 
 Exit codes:
     0 — check passed (EXTRA warns), or no Pine present locally (warn-only)
