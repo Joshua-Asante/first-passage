@@ -22,7 +22,7 @@
 ```bash
 ls lab/analysis/c1/aegis3leg_engine_param_2026-08-20/run_aegis1p_rescore_parameterized.py 2>/dev/null && echo "ALREADY EXISTS -- STOP, return DONE with the commit that added it"
 git log --oneline -- ops/instruments/6J.md | head -1   # confirm J13/J14 haven't been superseded since this packet was authored
-grep -n "risk-bracket IS CLOSED" ops/instruments/6J.md || echo "J14's closure language has changed or moved -- STOP, return NEEDS_CONTEXT, this packet's whole scope rationale depends on it still reading this way"
+grep -n "THE RISK BRACKET IS CLOSED" ops/instruments/6J.md || echo "J14's closure language has changed or moved -- STOP, return NEEDS_CONTEXT, this packet's whole scope rationale depends on it still reading this way"
 git log --oneline -- "lab/analysis/c1/aegis1p_3leg_rescore_2026-07-27/*" | head -3   # confirm no newer composed-gate work has landed on this campaign since 2026-08-20
 ```
 
