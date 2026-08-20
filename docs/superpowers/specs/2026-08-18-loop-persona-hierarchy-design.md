@@ -172,17 +172,25 @@ the same way across every campaign regardless of which specific Q-brief is runni
 | Head of Research | Falsifier Analyst | Cheap-falsifier / pre-G0 kill discipline | In-house — no clean equivalent (bundled into "Quant Researcher" at real funds) |
 | Head of Research | Pre-Registration Analyst | G0-freeze discipline before any test runs | In-house — imported from open-science practice, not a finance role |
 | Head of Execution | TCA Analyst | Cost-law pre-screen — edge must survive realistic costs before further investment | **Transaction Cost Analysis Analyst — direct match** |
+| Head of Governance | Documentation Analyst | Brief-compliance (`check_brief.py`-style) gate | In-house — nearest is technical-writer/IC-memo review, a different artifact class |
+| Head of Governance | Research Registry Analyst | Dedup-first-before-new-work discipline | In-house — informally practiced at large funds, never a titled role |
 | **Head of Engineering** | *(no named persona)* | Implementation work on frozen specs | **Staff here are the literal Cursor worker agents dispatched per packet** — ephemeral, frozen-spec implementers per the existing `cursor-fleet` skill. They never exercise independent judgment (they bounce `NEEDS_CONTEXT` rather than deciding), so they don't fit the persistent-persona-with-a-log pattern every other Staff seat uses. This row is governed entirely by existing `cursor-fleet` mechanics — nothing new is built for it. |
 
-**Archived 2026-08-19 (operator-authorized cut — see Change History):** Risk Analyst (Intraday)
-(Head of Risk & Sizing), Model Validation Analyst (Head of Validation), Robustness Analyst (Head of
-Validation), Documentation Analyst (Head of Governance), Research Registry Analyst (Head of
-Governance) — all 5 never spawned, zero log entries from ratification to archival. Full charters
+**Archived 2026-08-19, briefly, then partly restored same day (see Change History).** All 5
+Middle/Back-office analysts (above the Head of Engineering row: Risk Analyst Intraday, Model
+Validation Analyst, Robustness Analyst originally alongside Documentation Analyst and Research
+Registry Analyst) were archived same-day as never-spawned. After operator pushback, all 5 were
+retroactively tested against real repo artifacts. Documentation Analyst and Research Registry
+Analyst each found a genuine, previously-uncaught defect in a real artifact on first spawn — see
+`docs/notes/audits/2026-08-19-governance-friction-persona-panel-audit.md` — and are restored above.
+**Still archived, tested-but-inconclusive** (came back clean against a target outside their
+domains, not shown to add no value): Risk Analyst (Intraday) (Head of Risk & Sizing), Model
+Validation Analyst (Head of Validation), Robustness Analyst (Head of Validation) — full charters
 preserved at [`docs/personas/archive/`](../../personas/archive/); retirement procedure per §6.7.
-Front-office Staff (above) are unaffected and in active use.
+Front-office Staff (above) are unaffected and in active use throughout.
 
-3 active, persistent Staff personas (down from 8 built); Engineering's staff pool is the existing
-Cursor dispatch mechanism, unmodified.
+5 active, persistent Staff personas (down from 8 built, up from the initial 3-personas cut);
+Engineering's staff pool is the existing Cursor dispatch mechanism, unmodified.
 
 ## 6. Mechanics — how a panel actually runs
 
@@ -495,6 +503,7 @@ history.
 | 2026-08-19 | **Packet-wide adversarial review (46 agents, 6 lenses + double-skeptic verify, run against the full document post the 8-item sequence above) -- disposition `BLOCKED`, 14 confirmed findings + 1 disputed.** Two are genuinely defects in this pass's own §14 addition, fixed here: the MAST framework-count citation (150-trace/κ=0.88 set is 5 frameworks, not 7 -- that figure belongs to a separate 1,600+-trace corpus), and §14's mode-count arithmetic (4 excluded + 9 listed = 13, one short of the stated 14 -- the published taxonomy's two "Disobey" modes were bundled into one row; now split into two, making a true 10-row table). The rest were pre-existing, found in passing in the same file by the same run (matching this document's own established convention, see the §6.6 fix-in-passing rows above): §2/Ratification-note's "c1 Q-XMEM-1... parked" (SUBTRACTed via GSUB-2 same day, never updated); §2.1's "~20 new permanent artifacts" not summing to its own listed components (corrected to 21 existing-at-authoring-time + up to 18 accruing later, explicitly separated; also fixed the adjacent 18-vs-19-persona-file undercount, `ceo.md` exists on disk); §8's stale "7 of 8" PARK count (5 remain once GSUB-2's same-day b2/c1 SUBTRACTs are counted, not just b5's renewal) and its misattribution of "belt that only grows" to GSUB-1's retrospective (the phrase originates in the GRAND ADR; GSUB-1's own retrospective found a different failure shape -- ownerless drift, not volume); §6.6's CRO carve-out citing "the ADR's own §4" for a rule that only exists in this spec's own §4; §2's D-user-gate line citation (L282 -> L284); §6.2's SR-11-7 phrase de-quoted as an acknowledged paraphrase, not the letter's literal wording. Also added, from the run's Steelman and structural-completeness lenses: a named limitation connecting §9's architectural-correlation risk to §10's own falsifier (it cannot distinguish a redundant panel from a panel sharing the operator's blind spot), and a new §15 Watch-items index consolidating every "held/not-yet-active/named-risk" item into one place. **Not fixed here, flagged for a separate operator decision:** the run's #1 confirmed BLOCKER (the §6.6 self-review's own claimed run IDs/agent-counts and the ADR's D2 regression-run claim have no recoverable artifact anywhere in the repo) and the disputed dedup-first-attestation severity call -- both live partly or fully in `docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md`, an `Accepted` ADR whose ratified body this repo's convention keeps byte-unedited (amendments via addendum, not direct edit) -- out of scope for a same-surface doc-text fix and requiring an operator call on how to characterize unrecoverable prior-session evidence. | Claude Code |
 | 2026-08-19 | **Resolves the row above's flagged BLOCKER/disputed item, discovered on `git push`.** A parallel session (PR #59, `cursor/persona-hierarchy-spec-staleness-1583`) had independently found and fixed an overlapping subset of the same §6.6 spun-off punch list this document's own Change History already named -- the D-user-gate line cite, §5.2's "direct match" labels, §11/Ratification-note staleness, the GRAND ADR §5 forbidden-move quote, §13's unbacked "19 agents" figure, *and* the ADR's dedup-first attestation + "32 agents" self-review claim -- landing on `main` before this branch pushed. A `git merge origin/main` produced real conflicts (not a silent bad merge) on the D-user-gate/§11/Ratification-note text, where origin's wording was kept (equivalent substance, more precise); PR #59's ADR-side fix was kept as-is rather than duplicated. The ADR's own addendum (drafted in response to the row above) was narrowed on merge to cover only what PR #59's fix did not reach -- see `docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md` Change History for the full account. | Claude Code |
 | 2026-08-19 | **Operator-authorized simplification pass, same day as ratification, per `docs/notes/audits/2026-08-19-governance-friction-persona-panel-audit.md` (4-reader-agent audit + an independently-spawned Head of Governance review that flagged its own spawn as outside its literal strict-D2 trigger and marked itself `Rehearsal: yes`).** Archived to `docs/superpowers/specs/archive/2026-08-19-persona-hierarchy-archived-sections.md` (verbatim text preserved, not deleted): §6.3's citation-diff/dissent-flag addendum, §6.4.1 (charter versioning + self-refinement), §6.6 (cross-examination round), §10.1 (preference-anchoring check), §10.2 (self-consistency checkpoint), §12's extended log-append fields (Evidence-Cited/Deviation-from-Precedent/Charter-Commit), §14 (MAST pre-mortem). Every one of the seven had zero executions from ratification to archival; none is a "proven wrong" verdict, only "never used, archived rather than carried as live spec weight." §5.3's Staff table collapsed from 8 to 3 active personas -- the 5 Middle/Back-office analysts that were never spawned (Risk Analyst (Intraday), Model Validation Analyst, Robustness Analyst, Documentation Analyst, Research Registry Analyst) moved to `docs/personas/archive/` via `git mv`, retired per this document's own §6.7 procedure; the 3 Front-office Staff (Falsifier Analyst, Pre-Registration Analyst, TCA Analyst) were explicitly excluded from the cut at operator instruction (in active use in a parallel session) and are unaffected. `scripts/check_personas.py`'s `EXPECTED_COUNT` updated 19 -> 14 to match. §15's Watch-items index updated to point at the archive instead of listing these as held-pending-trigger. What was **not** cut: the CRO safety-invariant hard-block (§6.3's core exception), the GRAND tier, §6.1-6.2/6.4-6.5/6.7 base mechanics, the 3 Front-office Staff personas, and the ownership map -- all independently confirmed load-bearing by the audit (real logged output, or deterministic code wired into the pipeline that actually runs). Nothing here reopens the ratification (§1-§11, D1-D5) or the CRO hard-block's status. | Claude Code (operator-authorized) |
+| 2026-08-19 | **Correction to the row above, same day, after operator pushback.** Operator pushed back on the archival pass before merge: "push back on archiving all of the spec extensions and STAFF personas, because they are brand new and haven't had a chance to be used yet... test them to see if they would earn their keep based on existing evidence we have in the repo." Re-tested every archived item against real, already-existing evidence (GSUB-2's preserved panel journal `wf_e016a5d9-3f6`; retroactive spawns against real repo artifacts) rather than leaving "never fired" unexamined. Result: §14 MAST **restored** (run for real, found 2 genuine findings the panel's own verify stage hadn't caught -- falsifies the original "duplicated by a higher-fidelity source" rationale). §10.2 self-consistency **discharged, not restored** (actually run: 3 blinded CRO resamples against the frozen GSUB-2 artifact, majority matched the real verdict; logged at `docs/personas/cro-log.md`; stays archived since it was always a bounded 1-2-use diagnostic, now used). §6.3 citation-diff **stays archived on stronger evidence** (the deterministic rule was run against GSUB-2's real findings and produced a false positive -- flagged two unrelated findings as "dissent" purely on severity+location mismatch; needs redesign, not just N=3 data). §6.6/§6.4.1/§10.1 **confirmed genuinely blocked on data** (checked real panel history directly for each trigger precondition; none has fired -- not the same claim as "unused"). Of the 5 archived Middle/Back-office Staff personas, 2 (Documentation Analyst, Research Registry Analyst) were spawned against real repo artifacts and each found a genuine, previously-uncaught defect in `docs/notes/audits/2026-08-19-governance-friction-persona-panel-audit.md` itself on first use -- restored to `docs/personas/`, first log entries at `docs/personas/documentation-analyst-log.md` / `docs/personas/research-registry-analyst-log.md`. The other 3 (Risk Analyst Intraday, Model Validation Analyst, Robustness Analyst) came back clean against the one target tried (a CME data-panel ADR outside all three domains) -- inconclusive, not negative; stay archived pending a better-fitting target. `check_personas.py` `EXPECTED_COUNT` updated 14 → 16. Full account in `docs/notes/audits/2026-08-19-governance-friction-persona-panel-audit.md`'s Disposition section. | Claude Code (operator-authorized, after operator pushback) |
 
 ## 12. Post-workflow log-append procedure (added during Phase 2 implementation; template extended
 2026-08-19 -- see Change History)
@@ -561,16 +570,63 @@ real data point 1 of the needed 3." The persona-hierarchy ADR's own §4 tracker 
 count, not this line — restated here only so this section stops reading as if that first real
 review still lay entirely in the future, which it no longer does.
 
-## 14. MAST pre-mortem procedure — ARCHIVED 2026-08-19
+## 14. MAST pre-mortem procedure (added 2026-08-19; briefly archived and restored same day — see
+Change History)
 
-Never run once; its own citation (framework count, mode count) needed two rounds of self-correction
-before it was ever exercised. Duplicated by a higher-fidelity source already in the corpus — the
-existing `pre-ratification-adversarial-panel` already performs pre-mortem-style failure enumeration
-on every real run. Operator-authorized cut (see Change History). Full text — the 10-mode mapping
-table, scope/exclusion rationale, cadence — preserved at
-[`docs/superpowers/specs/archive/2026-08-19-persona-hierarchy-archived-sections.md`](archive/2026-08-19-persona-hierarchy-archived-sections.md#14--mast-pre-mortem-procedure-added-2026-08-19).
-Re-propose against real `journal.jsonl` data once 3 real panel uses exist, if still worth a
-one-time read at that point.
+A one-time, read-only process check against the panel's own mechanism — distinct from §10's
+falsifier, which measures OUTCOME only ("does panel input ever change a ratified disposition").
+Sourced from Cemri, Pan, Yang et al., "Why Do Multi-Agent LLM Systems Fail?" (arXiv:2503.13657,
+NeurIPS 2025 Datasets & Benchmarks) — MAST, an empirically-derived 14-mode taxonomy of multi-agent
+failures, built from 150+ expert-annotated traces (κ=0.88 on the IAA subset) across 5 MAS
+frameworks.
+
+**Scope, narrowed to this panel's actual architecture.** MAST was built from systems where agents
+converse (AutoGen, ChatDev, AppWorld). This panel is a fan-out of independent, schema-constrained,
+single-shot `agent()` calls across three pipeline stages (Review → Verify → Synthesize) — never a
+live back-and-forth dialogue. Four of the 14 modes assume a conversation that doesn't exist here
+and are excluded by architecture, not oversight: loss of conversation history, unaware of
+termination conditions, conversation reset, fail to ask for clarification.
+
+The other ten modes map onto this panel's actual stages:
+
+| Mode | Stage | Check |
+|---|---|---|
+| Disobey task specification | Review | Did the persona's finding stay inside the target artifact's actual subject matter, not a different task? |
+| Disobey role specification | Review | Did the persona's finding stay inside its stated Domain (`docs/personas/<slug>.md`)? |
+| Task derailment | Review | Does `notes`/`findings` actually address the target artifact? |
+| Information withholding | Synthesize | Does every CONFIRMED/DISPUTED finding in `lensResults` surface in the synthesis memo? |
+| Ignored other agent's input | Synthesize | Does the memo engage with a persona that said `clean:true` with a substantive rationale? |
+| Reasoning-action mismatch | Review + Verify | Does a finding's `why_wrong` support its `severity`? Does a skeptic's `rationale` support its `refuted` call? |
+| Premature termination | Review | Is a `clean:true` result backed by specific section/line engagement, not a generic one-liner? |
+| No/incomplete verification | Review + Verify | Open every cited `location` and confirm it exists and says what's claimed. |
+| Incorrect verification | Verify | Re-check a sample of the Verify stage's own `refuted` calls independently. |
+| Step repetition | Verify (weak) | Do the two independent skeptic votes read as genuinely independent, or templated restatement of each other? |
+
+**Cadence — one-time per real panel use, up to the first 3 (§10's own falsifier count), not
+periodic.** No standing owner — Joshua or CC runs the checklist directly; extends Head of
+Governance's 3rd-line mandate (§5.2.1) if one is ever needed.
+
+**Findings — run 1/3, 2026-08-19, against GSUB-2's real panel journal (`wf_e016a5d9-3f6`,
+preserved).** Two real hits, both worth carrying forward, neither BLOCKER-severity against GSUB-2
+itself (already ratified, not reopened by this note):
+- **Ignored other agent's input:** the GSUB-2 synthesis memo never engages with CRO's `clean:true`
+  verdict — the most domain-comprehensive review of any lens in that run (checked all 8 rows
+  against every named safety invariant) — at all. Recommendation: synthesis prompts should name
+  and briefly credit at least one `clean:true` rationale per run, not only report confirmed/refuted
+  findings.
+- **Incomplete verification, self-corrected:** the original CIO-lens BLOCKER finding
+  (`docs/briefs/GSUB-2-park-cohort-early-review.md` §7 Phase 2.5) quoted `cio.md` by trimming its
+  leading "Front-office oversight:" qualifier before the narrower enumeration — a real, if minor,
+  citation-integrity defect at the Review stage. Caught and refuted at the Verify stage by a
+  skeptic who explicitly re-read the untrimmed source ("I re-read all the cited files directly, not
+  the reviewer's paraphrase"). The two-stage architecture worked as designed; the defect it caught
+  is itself the evidence this check adds value beyond what the existing verify stage already
+  covers — the verify stage checks whether a *conclusion* survives re-reading the source, not
+  whether a *citation was quoted in full*, and this is the distinction that let the trim slip
+  through to the finding-authoring step in the first place.
+
+This directly falsifies this section's own original archival rationale ("duplicated by a
+higher-fidelity source already in the corpus") — see Change History.
 
 ## 15. Watch-items index (added 2026-08-19)
 
@@ -580,24 +636,39 @@ unmitigated risk" in one place. Closes a structural-completeness gap a same-day 
 flagged: each item below was already individually labeled where it lives, just never indexed
 together.
 
-- **§6.3, drafted-not-wired-in dissent flag** — ARCHIVED 2026-08-19 (was: held until §10's N=3
-  falsifier clears, 1/3 banked). See archive.
-- **§6.4.1, charter versioning / self-refinement** — ARCHIVED 2026-08-19. See archive.
-- **§6.6, cross-examination round** — ARCHIVED 2026-08-19 (was: `Accepted`, never built). See
-  archive.
+- **§6.3, drafted-not-wired-in dissent flag** — ARCHIVED 2026-08-19, and stays archived on
+  stronger evidence than "unused": the deterministic rule was run against GSUB-2's real findings
+  and produced a false positive (flagged CIO's BLOCKER and COO's unrelated CONCERN as
+  "independently-sourced dissent" purely on severity+location mismatch, though the two findings
+  aren't about the same question). Needs redesign — a same-item/same-nomination constraint, not
+  just non-matching `location` strings — before re-proposing, not just N=3 data. See archive.
+- **§6.4.1, charter versioning / self-refinement** — ARCHIVED 2026-08-19; checked 2026-08-19
+  whether its trigger (2 consecutive divergent ratifications) has fired anywhere in real panel
+  history — it hasn't (1 real review, 0 divergence). Genuinely blocked on data, not deprioritized.
+  See archive.
+- **§6.6, cross-examination round** — ARCHIVED 2026-08-19; checked 2026-08-19 whether its trigger
+  (a disputed, non-unanimous Stage-1 finding) has fired anywhere in real panel history — it
+  hasn't: GSUB-2's own synthesis states "No lens finding landed in a genuinely split... state."
+  Genuinely blocked on data. See archive.
 - **§9, architectural correlation** — a named, unmitigated risk in the independence mechanic; no
   fix proposed. Not archived — this is a live-standing caveat on the mechanism as built, not a
   not-yet-active extension.
 - **§10, falsifier/architectural-correlation limitation** — the H/Falsifier cannot distinguish a
   redundant panel from a panel sharing the operator's own blind spot. Not archived, same reason.
-- **§10.1, preference-anchoring companion check** — ARCHIVED 2026-08-19. See archive.
-- **§10.2, self-consistency companion checkpoint** — ARCHIVED 2026-08-19 (trigger fired at GSUB-2,
-  never executed). See archive.
-- **§14, MAST pre-mortem procedure** — ARCHIVED 2026-08-19 (never run). See archive.
+- **§10.1, preference-anchoring companion check** — ARCHIVED 2026-08-19; checked 2026-08-19 against
+  real log depth — deepest persona log (CRO) has 3 entries, trigger needs 5. Genuinely blocked on
+  data. See archive.
+- **§10.2, self-consistency companion checkpoint** — exercised retroactively 2026-08-19 against the
+  frozen GSUB-2 artifact (3 fresh blinded CRO samples, majority `clean:true`, matched the real
+  panel's CRO verdict) — result logged at `docs/personas/cro-log.md`. Discharged as the bounded
+  1-2-use side experiment it was designed to be; not restored to live spec text since nothing about
+  it is meant to be standing. See archive for the pre-exercise text.
+- **§14, MAST pre-mortem procedure** — **restored to §14 above, 2026-08-19**, after being briefly
+  archived then run for real against GSUB-2's preserved journal and surfacing two genuine findings.
+  No longer archived.
 
-Six of the original nine watch-items are now archived rather than merely indexed as not-yet-active
-— per `docs/notes/audits/2026-08-19-governance-friction-persona-panel-audit.md`, an indexed-but-
-never-triggered item still reads as live spec weight to a future author, which this index alone
-didn't prevent. The two remaining (§9/§10's architectural-correlation caveat) are not extensions
-awaiting a trigger — they're an honestly-named limitation of the mechanism as it already runs, so
-archiving them would misrepresent the mechanism as more solved than it is.
+Was: six watch-items archived as not-yet-active. After operator pushback ("test them against
+existing evidence before archiving") and an actual test pass per item: 1 restored (§14, earned it),
+1 discharged (§10.2, ran once, done), 3 confirmed genuinely blocked on data that doesn't exist yet
+(§6.4.1, §6.6, §10.1 — not the same claim as "unused"), 1 stays archived on stronger evidence than
+before (§6.3 — tested and found to produce a false positive, not just untested).

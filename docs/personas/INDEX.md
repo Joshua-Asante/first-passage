@@ -25,16 +25,22 @@ shipped; pursuit-level and per-artifact layers phased per
 | [Falsifier Analyst](falsifier-analyst.md) | STAFF | Front | Head of Research | `falsifier-analyst-log.md` |
 | [Pre-Registration Analyst](pre-registration-analyst.md) | STAFF | Front | Head of Research | `pre-registration-analyst-log.md` |
 | [TCA Analyst](tca-analyst.md) | STAFF | Front | Head of Execution | `tca-analyst-log.md` |
+| [Documentation Analyst](documentation-analyst.md) | STAFF | Back | Head of Governance | `documentation-analyst-log.md` |
+| [Research Registry Analyst](research-registry-analyst.md) | STAFF | Back | Head of Governance | `research-registry-analyst-log.md` |
 
-**Archived 2026-08-19** (operator-authorized cut; never spawned, zero log entries, kept for future
-reference rather than deleted — see
-[the audit](../notes/audits/2026-08-19-governance-friction-persona-panel-audit.md) and the design
-spec's [§6.7 retirement procedure](../superpowers/specs/2026-08-18-loop-persona-hierarchy-design.md#67-persona-retirement-procedure-individual-seat--added-2026-08-19)):
-Risk Analyst (Intraday), Model Validation Analyst, Robustness Analyst, Documentation Analyst,
-Research Registry Analyst — full charters preserved at
-[`docs/personas/archive/`](archive/). Front-office Staff are unaffected and still in active use.
-Re-propose any of these (or a new Staff seat in their domain) if a Middle/Back-office STAFF-tier
-review is actually needed — same intake-rule discipline GRAND already applies to pursuits (§11).
+**Restored 2026-08-19** (same day as archival — operator pushed back on archiving brand-new,
+never-fired personas without testing them first; both found genuine, previously-uncaught defects
+in a real repo artifact on their first-ever spawn — see their log entries above and
+[the audit](../notes/audits/2026-08-19-governance-friction-persona-panel-audit.md)): Documentation
+Analyst, Research Registry Analyst.
+
+**Archived 2026-08-19** (never spawned, zero log entries, kept for future reference rather than
+deleted — tested against a real artifact outside all three domains, inconclusive rather than
+negative, see the audit): Risk Analyst (Intraday), Model Validation Analyst, Robustness Analyst —
+full charters preserved at [`docs/personas/archive/`](archive/). Front-office Staff are unaffected
+and still in active use. Re-propose any of these (or a new Staff seat in their domain) against a
+naturally-occurring, better-fitting real artifact — same intake-rule discipline GRAND already
+applies to pursuits (§11).
 
 **Not on this roster:** Head of Engineering's staff are the literal Cursor worker agents dispatched
 per packet under the existing `cursor-fleet` skill — ephemeral, not a persistent named persona (see

@@ -17,9 +17,13 @@ REQUIRED_FIELDS = [
 ]
 VALID_TIERS = {"GRAND", "STRATEGIC", "STAFF"}
 VALID_OFFICES = {"Front", "Middle", "Back", "Cross-office", "N/A"}
-EXPECTED_COUNT = 14  # 19 built 2026-08-19; 5 non-front-office STAFF analysts archived to
-# docs/personas/archive/ 2026-08-19 (operator-authorized cut, never spawned --
-# see docs/notes/audits/2026-08-19-governance-friction-persona-panel-audit.md)
+EXPECTED_COUNT = 16  # 19 built 2026-08-19; 5 non-front-office STAFF analysts archived same day
+# (operator-authorized cut, never spawned), then 2 restored same day after testing
+# against real repo evidence found genuine value on first use (Documentation Analyst,
+# Research Registry Analyst) -- see
+# docs/notes/audits/2026-08-19-governance-friction-persona-panel-audit.md. 3 remain
+# archived (Risk Analyst Intraday, Model Validation Analyst, Robustness Analyst) --
+# tested against a mismatched target, inconclusive, not negative.
 
 LOG_ENTRY_HEADER = re.compile(r"^##\s+(\d{4}-\d{2}-\d{2})\s+—\s+(.+)$", re.MULTILINE)
 LOG_HEADING_LOOSE = re.compile(r"^##\s+(.+)$", re.MULTILINE)

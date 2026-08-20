@@ -38,6 +38,17 @@ condition (N=3 real data) clears. Archiving simply enforces the hold that was al
 nothing here reverses a decision, it removes standing spec text for a patch that was never applied
 and whose own gate hadn't opened.
 
+**Confirmed stays archived, 2026-08-19 (tested, not just deprioritized).** Operator pushback asked
+whether archived items would "earn their keep" against real evidence rather than being assumed
+ceremonial. Ran the actual rule (severity diverges AND `location` fields don't match, across every
+pair of non-NIT findings) against GSUB-2's real panel output: CIO's BLOCKER (routing authority,
+`§7 Phase 2.5 lines 193-201`) and COO's CONCERN (c3 coverage gap, `lines 197-199`) differ in both
+severity and location, so the rule fires — flagging them as "independently-sourced dissent." They
+are not: the two findings are about unrelated questions and no genuine disagreement exists between
+the personas on either topic. The syntactic proxy produces a false positive on the one real data
+point available. Needs a same-item/same-nomination constraint (not just non-matching `location`
+strings) before re-proposing — a design flaw found by testing, not just an unmet N=3 precondition.
+
 ---
 
 ## §6.4.1 — Charter versioning and bounded self-refinement (added 2026-08-19)
@@ -171,6 +182,12 @@ a recheck that found the fix "visibility-only" and forced a redesign) reviewing 
 never built. Per Great Prune R5: an obligation whose check cannot fire is deletable even when signed.
 Re-propose alongside the first real disputed Stage-1 finding that actually needs it.
 
+**Confirmed genuinely blocked on data, 2026-08-19 (tested, not just deprioritized).** Checked
+GSUB-2's real synthesis output directly: "DISPUTED FINDINGS FOR OPERATOR JUDGMENT: None... every
+non-nit finding was either unanimously confirmed or unanimously refuted." Zero disputed findings
+exist anywhere in this repo's real panel history — the trigger genuinely hasn't fired, not "wasn't
+given a chance." No test can manufacture this precondition without inventing a fake disagreement.
+
 ---
 
 ## §10.1 — Preference-anchoring companion check (added 2026-08-19)
@@ -204,6 +221,9 @@ is CRO's, at 3 total entries (1 rehearsal + 2 real). Structurally unreachable at
 source it's drawn from (durable personal-agent memory research) is also a different system class
 than this review-panel mechanism. Re-propose once any persona's log approaches 5 real entries.
 
+**Reconfirmed 2026-08-19 (re-checked, not just re-asserted):** CRO's log now has 4 entries after the
+§10.2 self-consistency test below was logged — still short of 5. Genuinely blocked on data.
+
 ---
 
 ## §10.2 — Self-consistency companion checkpoint (added 2026-08-19)
@@ -232,6 +252,17 @@ checkpoint was never executed — a grep for "Self-consistency checkpoint" acros
 returns zero hits. A diagnostic whose own qualifying event already passed unexercised isn't a live
 obligation, it's a missed one; archiving rather than re-running it after the fact avoids manufacturing
 a retroactive data point. Re-propose fresh at the next real GRAND-tier review if still wanted.
+
+**Superseded 2026-08-19 — actually exercised, retroactively, and discharged.** Reconsidered after
+operator pushback: the frozen GSUB-2 artifact already exists, so running this side-experiment
+against it now isn't "manufacturing a retroactive data point," it's testing against evidence that
+was already there. Spawned 3 fresh CRO samples, blinded to the real outcome (given only the
+pre-GSUB-2 log state), against the same frozen brief. Result: 3/3 `clean:true`, majority matches
+the real panel's CRO verdict exactly; one sample independently found the same NIT the real CIO lens
+raised. Logged at `docs/personas/cro-log.md` (2026-08-19, tagged non-counting). This was always
+designed as a bounded 1-2-use diagnostic, not a standing mechanism — having now run it once, the
+spec text stays archived (nothing left to keep "live"), but the archival reason changes from
+"missed" to "exercised and done."
 
 ---
 
@@ -263,7 +294,16 @@ populate/require them), not as prose alone.
 
 ---
 
-## §14 — MAST pre-mortem procedure (added 2026-08-19)
+## §14 — MAST pre-mortem procedure — RESTORED 2026-08-19, same day, see below
+
+**This section is no longer archived.** Kept here only as a record of the brief archival episode.
+Tested against GSUB-2's real preserved journal (`wf_e016a5d9-3f6`) the same day it was archived;
+found 2 genuine findings the panel's own verify stage had not caught, falsifying the "duplicated by
+a higher-fidelity source" rationale below. Live text is back at
+[design spec §14](../2026-08-18-loop-persona-hierarchy-design.md#14-mast-pre-mortem-procedure-added-2026-08-19-briefly-archived-and-restored-same-day--see-change-history),
+including the actual findings from that run. Original archived text preserved below for the record.
+
+## §14 — MAST pre-mortem procedure (added 2026-08-19) — ORIGINAL ARCHIVE ENTRY, SUPERSEDED ABOVE
 
 > A one-time, read-only process check against the panel's own mechanism — distinct from §10's
 > falsifier, which measures OUTCOME only ("does panel input ever change a ratified disposition").
