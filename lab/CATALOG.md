@@ -128,7 +128,7 @@ documents the camp boundary for humans/tools.
 | limb_b_remeasure_2026-08 | harvest | ACTIVE | FTS5-as-Delete falsifier v3 (Limb B re-measurement) results | lab/analysis/harvest/limb_b_remeasure_2026-08/ | — |
 | q_kbudget_harvest_1_2026-07 | harvest | ACTIVE | Phase-1 literature fan-out + Phase-2 K-budget ratification | lab/analysis/harvest/q_kbudget_harvest_1_2026-07/ | — |
 | radar_tier_a_burst_2026-07 | harvest | ACTIVE | first burst EXECUTED; proceed items 1–3 complete (`H-TSMOM-6J` Clause-N FAIL; carry Table-1 moments recovered / timin... | lab/analysis/harvest/radar_tier_a_burst_2026-07/ | — |
-| six_lead_cf_2026-08-17 | harvest | ACTIVE | P1/P2 CF FAIL all four legs; P3 dry-run $0 then CLOSED (calendar-spread SCREEN-FAIL); L3=L6 same-paper (6→5) | lab/analysis/harvest/six_lead_cf_2026-08-17/ | — |
+| six_lead_cf_2026-08-17 | harvest | ACTIVE | P1/P2 CF FAIL all four legs; P3 dry-run $0 then CLOSED (calendar-spread SCREEN-FAIL); L3=L6 same-paper (6→5); P4 route memo → HOLD (data-sourcing question); P5 access probe → `UNSCREENABLE`, CLOSED | lab/analysis/harvest/six_lead_cf_2026-08-17/ | — |
 | st_eh_2026-07 | harvest | ACTIVE | ST-EH campaign engine + fidelity harness (harvest) | lab/analysis/harvest/st_eh_2026-07/ | — |
 | tnec_l2_sourcing_2026-08-10 | harvest | ACTIVE | TNEC L2 sourcing pass — R8 gold-fix δ-extracted SCREEN-FAIL (informed-flow + cost-law); C2/C3/C4 closed at 0 admissible | lab/analysis/harvest/tnec_l2_sourcing_2026-08-10/ | — |
 

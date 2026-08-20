@@ -64,6 +64,19 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-20** — **Six-lead pursuit P4/P5 un-HOLD'd and dispositioned — P4 stays `HOLD` (sharper reason), P5 closes `UNSCREENABLE`.**
+  Operator un-HOLD election. **P4 (L2 dealer-gamma EOD):** route memo found the mechanism is
+  construction-distinct from `Q-ORB-GEX-1` (momentum-continuation vs. regime-gate) but shares its
+  exogenous flow series and orthogonality risk; verdict unchanged (`HOLD`) but the blocker is now
+  named precisely — no orthogonal CME-native dealer-hedging-flow data source identified or priced.
+  Next licensed step (not run): a Databento options-schema cost dry-run. **P5 (L4 mutual-fund
+  overweight):** access probe confirmed 13F 45-day / Form N-PORT 60-day regulatory disclosure lag
+  structurally exceeds the mechanism's own next-day signal horizon; no systematic near-real-time
+  substitute exists (web-verified). Closed `UNSCREENABLE` as pre-registered. Neither admitted
+  through intake; harvest §4 limb-2 does not increment. $0/K=0.
+  [`P4_ROUTEMEMO`](lab/analysis/harvest/six_lead_cf_2026-08-17/P4_ROUTEMEMO.md) ·
+  [`P5_ACCESSPROBE`](lab/analysis/harvest/six_lead_cf_2026-08-17/P5_ACCESSPROBE.md) ·
+  [`plan`](docs/briefs/2026-08-17-six-lead-pursuit-plan.md) §2/§13.
 - **2026-08-20** — **`Q-ORBSURV-1` closed `FALSIFIED` — cushion-sizing's gate-clear is k-dependent, not robust.**
   Operator: "execute them now." Full-panel k=2 misses the pass floor (41.51% < 50%, bust still 0.00%);
   post-2021-09-28-only sub-window clears comfortably at both k=1 (81.35%) and k=2 (64.11%). The k=1
