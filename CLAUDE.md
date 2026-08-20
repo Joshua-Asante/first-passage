@@ -216,9 +216,13 @@ bash scripts/install_hooks.sh
 ```
 
 (Windows cmd: `scripts\install_hooks.bat`. ⚠ PowerShell `bash` is WSL, not Git Bash — the `.sh`
-files are CRLF; prefer the `.bat`.) CI is **format-only** and cannot re-hash gitignored bytes;
-deriving CI jobs from the gate manifest is owed
-([W5](docs/adr/2026-08-07-w5-governance-diet.md)). Escape hatch `git commit --no-verify` is not the
+files are CRLF; prefer the `.bat`.) GitHub Actions runs for real (live and green since the
+2026-08-15 public transition — [`Q-GATESTACK-1`](docs/briefs/closures/Q-GATESTACK-1-closure-falsified.md)
+Limb-D) and cannot re-hash gitignored bytes; deriving the rest of the CI jobs from the gate
+manifest is owed ([W5](docs/adr/2026-08-07-w5-governance-diet.md)). **CI passing is still not a
+merge precondition** — `main` carries no branch protection or required checks
+([`Q-GATESTACK-1`](docs/briefs/closures/Q-GATESTACK-1-closure-falsified.md) Limb-A; a ruleset packet
+is named, not opened). Escape hatch `git commit --no-verify` is not the
 standing path. See [manifest integrity gate](docs/adr/2026-05-10-manifest-integrity-gate.md).
 
 ### Gate composition authority
