@@ -26,11 +26,22 @@ shipped; pursuit-level and per-artifact layers phased per
 | [Pre-Registration Analyst](pre-registration-analyst.md) | STAFF | Front | Head of Research | `pre-registration-analyst-log.md` |
 | [Research Analyst](research-analyst.md) | STAFF | Front | Head of Research | `research-analyst-log.md` |
 | [TCA Analyst](tca-analyst.md) | STAFF | Front | Head of Execution | `tca-analyst-log.md` |
-| [Risk Analyst (Intraday)](risk-analyst-intraday.md) | STAFF | Middle | Head of Risk & Sizing | `risk-analyst-intraday-log.md` |
-| [Model Validation Analyst](model-validation-analyst.md) | STAFF | Middle | Head of Validation | `model-validation-analyst-log.md` |
-| [Robustness Analyst](robustness-analyst.md) | STAFF | Middle | Head of Validation | `robustness-analyst-log.md` |
 | [Documentation Analyst](documentation-analyst.md) | STAFF | Back | Head of Governance | `documentation-analyst-log.md` |
 | [Research Registry Analyst](research-registry-analyst.md) | STAFF | Back | Head of Governance | `research-registry-analyst-log.md` |
+
+**Restored 2026-08-19** (same day as archival — operator pushed back on archiving brand-new,
+never-fired personas without testing them first; both found genuine, previously-uncaught defects
+in a real repo artifact on their first-ever spawn — see their log entries above and
+[the audit](../notes/audits/2026-08-19-governance-friction-persona-panel-audit.md)): Documentation
+Analyst, Research Registry Analyst.
+
+**Archived 2026-08-19** (never spawned, zero log entries, kept for future reference rather than
+deleted — tested against a real artifact outside all three domains, inconclusive rather than
+negative, see the audit): Risk Analyst (Intraday), Model Validation Analyst, Robustness Analyst —
+full charters preserved at [`docs/personas/archive/`](archive/). Front-office Staff are unaffected
+and still in active use. Re-propose any of these (or a new Staff seat in their domain) against a
+naturally-occurring, better-fitting real artifact — same intake-rule discipline GRAND already
+applies to pursuits (§11).
 
 **Not on this roster:** Head of Engineering's staff are the literal Cursor worker agents dispatched
 per packet under the existing `cursor-fleet` skill — ephemeral, not a persistent named persona (see

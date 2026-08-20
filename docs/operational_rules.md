@@ -173,10 +173,11 @@ Roles that must **not** restate canonical values:
   cross-session threads with no other home + the forward-trigger board). Not a
   state snapshot: carries no working-tree status, risk %, anchor number, version,
   hash, or owner table — points here (this §7) for ownership. See its header.
-  Executed operator decisions appear only in its **decision index** (one line +
-  owner link per decision), never as dated narrative sections (demoted
-  2026-07-16; reaffirmed 2026-08-03 — see edit log). Closed/retired rows are
-  deleted from STATE (not struck); detail stays with the owning ADR/closure.
+  Executed operator decisions appear only in its **decision index** (a concise
+  entry + owner link per decision — relaxed 2026-08-19 from a strict one-line
+  cap, see edit log), never as dated narrative sections (demoted 2026-07-16;
+  reaffirmed 2026-08-03 — see edit log). Closed/retired rows are deleted from
+  STATE (not struck); detail stays with the owning ADR/closure.
 - **`docs/SESSIONS.md`** — narrates work; links the ADR/CHANGELOG/commit instead
   of duplicating its values. Prefer W5 entry classes; keep prose beyond the
   five fields short (~40 words) — [`W5 ADR`](adr/2026-08-07-w5-governance-diet.md).
@@ -693,6 +694,19 @@ Edits to existing rules must be logged with a dated entry explaining what change
 
 ### Edit log
 
+- **2026-08-19 — Rule 7 STATE decision-index cap relaxed from strict one-line
+  to concise.** Practice had already drifted (the persona-hierarchy panel's
+  own 08-19 decision-index entry ran ~6 lines/~100 words) without a matching
+  edit-log entry — the exact silent-drift failure this section exists to
+  prevent, caught by a COO executive-opinion review requested directly by the
+  operator (`docs/personas/coo-log.md`) as part of a broader governance-
+  friction audit (`docs/notes/audits/2026-08-19-governance-friction-persona-panel-audit.md`).
+  Operator ruled: relax the rule to match practice rather than re-enforce the
+  literal cap. "Concise" still bars multi-sentence narrative (the anti-
+  accretion intent is unchanged) — only the strict single-line mechanical
+  limit is dropped. Same text updated in `STATE.md`'s own header mirror.
+  Additive; no locked config, allocation, `dd_protection`, Pine, or rail
+  touched.
 - **2026-08-15 — Rule 8 sub-rules 9–10 added (registry feed + amendment-first).**
   Sub-rule 9: new closures carry a `Registry:` line (`rejected_candidates.md`
   heading or explicit `n/a`). Closes the 2026-08-03→08-11 feed-stop (gated

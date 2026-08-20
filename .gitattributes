@@ -14,6 +14,21 @@
 # integrity gate") is unaffected.
 tests/fixtures/*.jsonl text eol=lf
 
+# M1 monitoring acceptance pin (docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json
+# fixture_hashes): all 6 pinned files hash content that is byte-identical to the
+# current git blob once CRLF is normalized to LF (verified 2026-08-20) — the last
+# pin refresh ran on a Windows checkout with core.autocrlf=true, so every pinned
+# hash is the right code, wrong line ending. Linux CI (and the Fly host's Linux
+# container) checks these out as LF, so a Windows-refreshed pin will always read
+# as skew there even with zero real content drift. eol=lf pins future refreshes
+# to LF regardless of the refreshing machine's autocrlf setting, closing the class
+# of bug going forward. Does NOT retroactively fix the fixture_hashes already
+# recorded in the JSON pin — per that artifact's own documented discipline, a pin
+# is only rewritten in the same motion as a real redeploy, from hashes read
+# IN-CONTAINER, never from local/tree bytes.
+tests/ops/test_m1_acceptance_drills.py text eol=lf
+ops/c1_rail/*.py text eol=lf
+
 # Hash-gated analysis CSVs: WAVE1_SHA256SUMS is LF-blob-based, so autocrlf checkout
 # (CRLF) fails the harness hash-gate in a fresh worktree — and would halt a Cursor
 # dispatch. eol=lf pins the checkout to LF (matches the blob), is renormalize-safe,

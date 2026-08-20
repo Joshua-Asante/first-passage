@@ -14,8 +14,10 @@ entry first).
 
 **Anti-accretion (standing):**
 
-- New operator decision → **one decision-index line** + owning ADR (never a
-  paragraph here).
+- New operator decision → **a concise decision-index entry** + owning ADR
+  (never a paragraph here) — relaxed 2026-08-19 from a strict one-line cap;
+  concise still means no multi-sentence narrative, see
+  [`docs/operational_rules.md`](docs/operational_rules.md) Rule 7 edit log.
 - Item leaves the queue or closes → **delete the STATE row**; do not leave
   “Cleared …” footnotes.
 - Forward triggers: date/criterion + owner link only; detail stays with the owner.
@@ -66,6 +68,14 @@ One line per executed decision, newest first — consequence only. Posture summa
   Operator: "graduate N-SURV." Confirmed general on a second candidate (ORB-MNQ-1), not idiosyncratic
   to c1 — axis-dependent on sizing mechanism (bust for flat, pass for cushion-proportional). No closed
   N-SURV verdict re-opened. Fix-design question deferred to next session (queue #3 above).
+- **2026-08-19** — **`"cme"` broker panel admitted; `breadth.py`'s risk-N_eff mechanism revived on
+  canonical data.** ADR `Proposed`→`Accepted` (operator: "I accept... and you can touch
+  core/mc/modes.py"). 2-leg baseline (Striker DJ30/MYM, Striker NAS100/MNQ — Guardian/Aegis
+  deliberately excluded, see ADR §2), consumed only by the Stage-8 portfolio-breadth tool, not the MC
+  engine's own panel loader. First real anchor: `n_eff_dependence=1.9988, n_eff_risk=1.0871` (2-leg,
+  not comparable to the retired 4-leg Pepperstone Q-NEFF-1 anchor). $0/K=0, research tooling only, no
+  live-risk surface. [`ADR`](docs/adr/2026-08-19-cme-broker-panel-admission-for-breadth-revival.md) ·
+  [`design spec`](docs/superpowers/specs/2026-08-19-cme-breadth-revival-candidate-index-design.md).
 - **2026-08-19** — **Persona-hierarchy review panel ADR ratified; first real C-suite panel run
   (GSUB-2) SUBTRACTs b2 + c1.** ADR `Proposed`→`Accepted` (operator: "ratify the ADR"). First
   real (non-rehearsal) GRAND-tier panel use: CIO+COO+CRO reviewed a frozen SUBTRACT-candidate
@@ -410,7 +420,7 @@ deleted (not struck).
 
 - **ADR ceremony-tiering §Falsifier review** — first quarterly programme audit after 2026-08-08; check light share ≥⅕ and dated omitted-apparatus incidents (incl. 2026-08-14 candidate: implied-SR light records). Count 1-vs-2 is operator/audit. [`ADR addendum`](docs/adr/2026-08-08-adr-ceremony-tiering.md)
 - **GRAND-tier ADR §4 scheduled re-read** — H already satisfied 2026-08-09 (19 ratified differences; tier load-bearing, sunset did **not** arm). This slate is the first scheduled re-check, not a sunset. [`ADR addendum`](docs/adr/2026-08-09-grand-tier-quintessentials-binding.md) · [`closure`](docs/briefs/closures/GSUB-1-closure-resolved-loadbearing.md)
-- **GSUB-1 PARK expiries (8)** — b1 Aegis→6J · b2 Striker-MYM · b3 ORB-MNQ line · b5 Q-FUNDPOL-1 · b6 Q-NAS-ECR-1 · b7 ICT line · c1 Q-XMEM-1 · c3 Q-TOM-SPX-1. Each converts to SUBTRACT absent explicit operator renewal (ADR §2.3). [`docs/pursuits/`](docs/pursuits/)
+- **GSUB-1 PARK expiries (6)** — b1 Aegis→6J · b3 ORB-MNQ line · b5 Q-FUNDPOL-1 · b6 Q-NAS-ECR-1 · b7 ICT line · c3 Q-TOM-SPX-1. Each converts to SUBTRACT absent explicit operator renewal (ADR §2.3). b2 (Striker-MYM) and c1 (Q-XMEM-1) already resolved to `SUBTRACT` early via GSUB-2 (2026-08-19, ~80 days ahead of this expiry) — dropped from this row, not still pending. [`docs/pursuits/`](docs/pursuits/)
 - **Guardian-MGC (R7) transfer lane — SUBTRACT / DEAD(N-SURV) 2026-08-11** — exploratory N-SURV FAIL (full 42.2% / H1 72.4% / H2 16.5% bust vs ≤3.0%); margin-decisive; retroactive cell PREREG + typed closure filed. Re-entry = new mechanism evidence (not param retune). [`b8`](docs/pursuits/b8-guardian-mgc-transfer-lane.md) · [`closure`](docs/briefs/closures/2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md)
 - **Prop-portfolio §4 primary falsifier (HARD)** — ≥1 candidate clears bust ceiling on ≥2 of 4 FRIENDLY firms; else demote program to research-only. Status undischarged (2026-07-22 withdrawal). [`four-firms ADR §4`](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) · [`withdrawal ADR`](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md)
 - **Mechanism-boundaries ADR §4** — clauses 2-A / 2-B / 2-C first check. [`ADR`](docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md)

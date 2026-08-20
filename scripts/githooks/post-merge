@@ -31,11 +31,14 @@ cd "$ROOT" || exit 0
 # moment that machine is torn down — the bad8068d... case, where the "active
 # working edition" had to be reconstructed from its predecessor.
 #
-# This is the ONLY live limb of that guard. The pre-commit limb never sees the
-# case (a fresh cloud-agent clone has no hooks installed), and the PR job added
-# alongside it is inert while GitHub Actions is disabled repo-wide (verified
-# 2026-07-31: actions/permissions {"enabled":false}; no run since 2026-07-16).
-# Arrival on a durable machine is therefore the first moment anyone can notice.
+# The pre-commit limb never sees this case (a fresh cloud-agent clone has no
+# hooks installed). The PR job (.github/workflows/manifest-check.yml
+# pine-pin-provenance) is now ALSO live (verified 2026-08-19, Q-GATESTACK-1
+# Limb-D — GitHub Actions has run for real since the 2026-08-15 public
+# transition) and catches this class at PR time, before the bytes are gone —
+# this post-merge limb is the backstop for anything that job's checkout-based
+# view can miss, not the only detection point anymore. Neither limb blocks:
+# main carries no branch protection or required checks (Q-GATESTACK-1 Limb-A).
 #
 # It CANNOT block — the pin is already committed upstream and the bytes are
 # already gone. Detection is still worth having: acting now, while the authoring

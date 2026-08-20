@@ -37,3 +37,44 @@ same commit as this log entry)
 **Rehearsal:** no -- first real (non-rehearsal) review; first data point toward the
 persona-hierarchy ADR's own §4 falsifier
 **CRO hard block fired:** no
+
+## 2026-08-19 — Standing executive opinion: ADR/preregistration/gate culture (operator-requested, not a ratification review)
+
+**Verdict:** PROPORTIONATE-WITH-ONE-CORRECTED-EXCESS-AND-ONE-OPEN-GAP -- the standing controls
+(ceremony-tiering, dedup-first, R1-R5 retention test, CRO hard-block) are measurably working, not
+ceremonial: independently reverified 36% (12/33) post-2026-08-08 light-tier ADR adoption against the
+ADR's own >=1/5 falsifier, and confirmed the Great Prune's classifier caught 4 live near-misses
+(including the M1 arming-gate artifact) and rescued 66/69 files on its second sweep (4.3% naive-delete
+precision). The persona-hierarchy panel's speculative extensions (cross-exam round, MAST pre-mortem,
+charter versioning, two borrowed companion checkpoints, an unwired dissent flag, unenforced log fields)
+were genuinely over-built -- confirmed via `git show dd23588 --diff-filter=D`: zero pure deletions,
+everything archived via git mv or verbatim copy, correctly following Great-Prune convention -- and are
+already corrected as of this artifact. The open item is the persona ADR's own uncheckable self-review
+scale claim (32->44->46 agents, no preserved journal for most passes), discovered post-ratification by
+a same-day sibling PR rather than any standing control; nothing in the corpus read closes that class.
+**Confirmed findings:** 2 new (both COO-domain, not previously raised by the audit or Head of
+Governance) -- (1) STATE.md's Rule 7 "one line per decision" norm is not held in practice (the
+persona-panel's own 08-19 decision-index entry runs ~6 lines/~100 words); recommend a dated edit-log
+correction to either the rule text or enforcement, not a new gate. (2) `scripts/roll_sessions.py`'s
+quarterly SESSIONS archive exists and is correctly not-yet-fired (nothing predates the current quarter
+post-Great-Prune-truncation) -- flagged as a trigger to watch at the 2026-10-01 quarter boundary, not a
+current defect; recommend against building a second cap mechanism, since this is a case where an
+existing control already does the job.
+**Ratified as recommended:** N/A -- this entry is a standing executive opinion requested directly by
+the operator, not a ratification-gate review of a single frozen decision artifact; no proposal is
+submitted for accept/reject here. Any of the two recommendations above, if acted on, would need their
+own light-tier record per ceremony-tiering.
+**Rehearsal:** N/A, deliberately not marked yes/no -- this is not a dry run against an already-closed
+decision (my two prior entries were), and it is not the panel's ratification-gate mechanism running at
+all, so "rehearsal" as used in this log's prior entries doesn't cleanly apply. It is a real,
+first-of-its-kind exercise of my Domain's "retention discipline" and "back-office oversight" lines,
+substantively identical to how a future request of this shape would be handled -- but it also does not
+bank as a ratification precedent, since nothing here was submitted for or received an accept/reject.
+Noting for the record, in the same spirit as Head of Governance's own entry: this spawn was requested
+directly by the operator rather than triggered by any literal condition in my own charter (which names
+no specific firing trigger, unlike Head of Governance's strict-D2 gate) -- I am not exempt from the
+audit's own "apparatus invoked because it is plausible and present" critique merely by being the one
+applying it, and I am naming that plainly rather than treating my charter's silence on triggers as
+license.
+**CRO hard block fired:** N/A -- solo COO opinion pass, not a wired multi-persona panel invocation
+through `.claude/workflows/pre-ratification-adversarial-panel.js`; CRO did not participate.

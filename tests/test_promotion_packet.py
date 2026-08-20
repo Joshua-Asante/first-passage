@@ -58,3 +58,54 @@ def test_missing_artifact_rejected_when_repo_root_set():
     result = validate_promotion_packet(packet, repo_root=REPO_ROOT)
     assert result.decision == "Fail"
     assert any("artifact_missing" in r for r in result.reasons)
+
+
+def test_clean_packet_without_discovery_run_id_still_passes():
+    """Optional field (2026-08-19 K-ledger check) -- absence is the status quo."""
+    packet = json.loads(CLEAN.read_text(encoding="utf-8"))
+    assert "discovery_run_id" not in packet
+    result = validate_promotion_packet(packet, repo_root=REPO_ROOT)
+    assert result.ok, result.reasons
+
+
+def test_discovery_run_id_backed_by_closed_manifest_passes(tmp_path, monkeypatch):
+    monkeypatch.setenv("DISCOVERY_LEDGER", str(tmp_path))
+    (tmp_path / "backing_run.json").write_text(
+        json.dumps({"run_id": "backing_run", "status": "closed", "K": 2,
+                    "results": {"n_submitted": 1}}),
+        encoding="utf-8",
+    )
+    packet = json.loads(CLEAN.read_text(encoding="utf-8"))
+    packet["discovery_run_id"] = "backing_run"
+    result = validate_promotion_packet(packet, repo_root=REPO_ROOT)
+    assert result.ok, result.reasons
+
+
+def test_discovery_run_id_with_no_manifest_fails(tmp_path, monkeypatch):
+    monkeypatch.setenv("DISCOVERY_LEDGER", str(tmp_path))
+    packet = json.loads(CLEAN.read_text(encoding="utf-8"))
+    packet["discovery_run_id"] = "no_such_run"
+    result = validate_promotion_packet(packet, repo_root=REPO_ROOT)
+    assert result.decision == "Fail"
+    assert any("discovery_run_id_unbacked:no_manifest" in r for r in result.reasons)
+
+
+def test_discovery_run_id_pointing_at_open_manifest_fails(tmp_path, monkeypatch):
+    monkeypatch.setenv("DISCOVERY_LEDGER", str(tmp_path))
+    (tmp_path / "still_open.json").write_text(
+        json.dumps({"run_id": "still_open", "status": "open", "K": 2, "results": None}),
+        encoding="utf-8",
+    )
+    packet = json.loads(CLEAN.read_text(encoding="utf-8"))
+    packet["discovery_run_id"] = "still_open"
+    result = validate_promotion_packet(packet, repo_root=REPO_ROOT)
+    assert result.decision == "Fail"
+    assert any("manifest_not_closed" in r for r in result.reasons)
+
+
+def test_discovery_run_id_empty_string_fails():
+    packet = json.loads(CLEAN.read_text(encoding="utf-8"))
+    packet["discovery_run_id"] = "   "
+    result = validate_promotion_packet(packet, repo_root=REPO_ROOT)
+    assert result.decision == "Fail"
+    assert "discovery_run_id_empty" in result.reasons

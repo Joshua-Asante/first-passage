@@ -53,12 +53,24 @@ from mc.modes import (  # noqa: E402
 from lib.mvd import assert_tv_export  # noqa: E402
 
 # Q-NEFF-1 anchor (docs/briefs/Q-NEFF-1-closure-resolved-benign.md), reproduced
-# against the real Pepperstone panel in the design doc §3.
+# against the real Pepperstone panel in the design doc §3. Historical 4-leg
+# CFD/Pepperstone record -- retired feed, not comparable to any other panel.
 NEFF_DEPENDENCE_ANCHOR = 3.98
 NEFF_RISK_ANCHOR = 3.09
 ANCHOR_TOLERANCE = 0.02
 EXPECTED_N_BDAYS = 1141
 EXPECTED_N_BLOCKS = 227
+
+# "cme" 2-leg anchor (ADR 2026-08-19-cme-broker-panel-admission-for-breadth-revival),
+# first measured 2026-08-19 against Striker DJ30/MYM (2026-07-11_15d8b.csv) +
+# Striker NAS100/MNQ (2026-08-19_3ad92.csv) -- this run's own output IS the anchor
+# being established, not an independently-verified target, same epistemic status
+# Q-NEFF-1's own anchor had at first measurement.
+CME_NEFF_DEPENDENCE_ANCHOR = 1.9988
+CME_NEFF_RISK_ANCHOR = 1.0871
+CME_EXPECTED_N_BDAYS = 1711
+CME_EXPECTED_N_BLOCKS = 341
+
 MIN_OVERLAP_BLOCKS = 30  # ~7 months; below this, thin_overlap fires (design §6)
 # --self-test exits: 0 PASS / 1 FAIL (universe_gate, temporal_consistency);
 # 2 SKIP when the vendor panel is absent (pine_lint missing-fixture convention).
@@ -116,16 +128,58 @@ def load_baseline_panel(panel_name: str = "pepperstone") -> pd.DataFrame:
     expected_versions = EXPECTED_VERSIONS_BY_BROKER[panel_name]
     trades_by_strat = {}
     for strategy, path in panels.items():
-        assert_tv_export(
-            path,
-            expected_strategy=STRATEGY_FILENAME_TOKEN[strategy],
-            expected_version=expected_versions[strategy],
-            expected_broker=panel_name.upper(),
-            expected_symbol=expected_symbols[strategy],
-        )
+        if panel_name == "cme":
+            # CME TV-exports don't follow OANDA/Pepperstone's strict 7-field
+            # pattern -- see _assert_cme_export's own docstring for why.
+            _assert_cme_export(
+                path,
+                expected_strategy_token=STRATEGY_FILENAME_TOKEN[strategy],
+                expected_symbol=expected_symbols[strategy],
+            )
+        else:
+            assert_tv_export(
+                path,
+                expected_strategy=STRATEGY_FILENAME_TOKEN[strategy],
+                expected_version=expected_versions[strategy],
+                expected_broker=panel_name.upper(),
+                expected_symbol=expected_symbols[strategy],
+            )
         trades_by_strat[strategy] = load_trades(path, strategy=strategy)
     panel, _scale_info = build_daily_panel(trades_by_strat, ALLOCATIONS)
     return panel
+
+
+def _assert_cme_export(csv_path, *, expected_strategy_token: str, expected_symbol: str) -> None:
+    """Lighter identity check for CME TV-exports (2026-08-19, ADR
+    2026-08-19-cme-broker-panel-admission-for-breadth-revival).
+
+    `lib.mvd.assert_tv_export`/`parse_tv_export_filename` expect a strict
+    7-field `<Strategy>_<Instrument>_<Version>_<Broker>_<Symbol>_<Date>_<hash>`
+    pattern built for the OANDA/Pepperstone convention. CME TV-exports do not
+    follow one consistent positional pattern -- verified against this repo's
+    own manifest: Guardian's export has 9 underscore-delimited fields, Striker
+    DJ30's has 9 in a different shape, Striker NAS100's has 8 with no version
+    token, and Aegis's carries parentheses/hyphens. Forcing a second rigid
+    positional pattern would be brittle and need re-patching per file.
+
+    This checks only that the expected strategy and symbol tokens both appear
+    in the filename -- no position, no field count. The actual integrity
+    guarantee for these files is the SHA256 pin in
+    `core/data/tv_exports/cme/SHA256SUMS` (`scripts/check_data_manifests.py
+    --check`); this is a secondary sanity check against a wrong-file-in-slot
+    mistake, not the security boundary.
+    """
+    filename = Path(csv_path).name
+    if expected_strategy_token not in filename:
+        raise AssertionError(
+            f"CME TV-export identity fail (strategy): expected "
+            f"{expected_strategy_token!r} to appear in {filename!r}"
+        )
+    if expected_symbol not in filename:
+        raise AssertionError(
+            f"CME TV-export identity fail (symbol): expected "
+            f"{expected_symbol!r} to appear in {filename!r}"
+        )
 
 
 def _align_candidate(panel: pd.DataFrame, candidate: pd.Series) -> tuple[pd.DataFrame, dict]:
@@ -253,8 +307,33 @@ def _print_report(result: dict, label: str = "") -> None:
         print(f"{prefix}N_eff risk delta       = {result['n_eff_risk_delta']:+.4f}")
 
 
+# Per-panel self-test anchors. "pepperstone" is the historical 4-leg CFD
+# record (retired feed, kept for regression continuity of the math itself);
+# "cme" is the 2-leg AUTHORIZED-only futures panel (ADR 2026-08-19-cme-broker-
+# panel-admission-for-breadth-revival). Adding a future panel means adding a
+# row here, not overloading the Pepperstone constants.
+_SELF_TEST_ANCHORS = {
+    "pepperstone": {
+        "n_bdays": EXPECTED_N_BDAYS,
+        "n_blocks": EXPECTED_N_BLOCKS,
+        "dependence": NEFF_DEPENDENCE_ANCHOR,
+        "risk": NEFF_RISK_ANCHOR,
+        "label": "Q-NEFF-1",
+    },
+    "cme": {
+        "n_bdays": CME_EXPECTED_N_BDAYS,
+        "n_blocks": CME_EXPECTED_N_BLOCKS,
+        "dependence": CME_NEFF_DEPENDENCE_ANCHOR,
+        "risk": CME_NEFF_RISK_ANCHOR,
+        "label": "cme-2026-08-19",
+    },
+}
+
+
 def _self_test(panel_name: str) -> int:
-    """Reproduce the Q-NEFF-1 anchor. Exit: 0 PASS, 1 FAIL, 2 SKIP (panel absent)."""
+    """Reproduce this panel's own recorded anchor. Exit: 0 PASS, 1 FAIL,
+    2 SKIP (panel absent). Unregistered panel names fail loudly rather than
+    silently comparing against the wrong anchor."""
     if not baseline_panel_available(panel_name):
         print(
             f"[self-test] SKIP: vendor CSVs for panel {panel_name!r} not present "
@@ -263,29 +342,37 @@ def _self_test(panel_name: str) -> int:
         # Not a pass: SKIP must be distinguishable from PASS (0) and FAIL (1).
         return SELF_TEST_SKIP
 
+    if panel_name not in _SELF_TEST_ANCHORS:
+        sys.exit(
+            f"ABORT: no self-test anchor registered for panel {panel_name!r} "
+            f"(registered: {sorted(_SELF_TEST_ANCHORS)}). Measure once, then add "
+            f"a row to _SELF_TEST_ANCHORS -- do not guess an anchor."
+        )
+    anchor = _SELF_TEST_ANCHORS[panel_name]
+
     panel = load_baseline_panel(panel_name)
     result = compute_breadth(panel)
     _print_report(result, label="self-test")
 
     ok = True
-    if result["n_bdays"] != EXPECTED_N_BDAYS or result["n_blocks"] != EXPECTED_N_BLOCKS:
+    if result["n_bdays"] != anchor["n_bdays"] or result["n_blocks"] != anchor["n_blocks"]:
         print(
             f"[self-test] FAIL: panel shape {result['n_bdays']}/{result['n_blocks']} "
-            f"!= expected {EXPECTED_N_BDAYS}/{EXPECTED_N_BLOCKS} — the frame is "
+            f"!= expected {anchor['n_bdays']}/{anchor['n_blocks']} — the frame is "
             f"being consumed wrong."
         )
         ok = False
-    if abs(result["n_eff_dependence"] - NEFF_DEPENDENCE_ANCHOR) > ANCHOR_TOLERANCE:
+    if abs(result["n_eff_dependence"] - anchor["dependence"]) > ANCHOR_TOLERANCE:
         print(
             f"[self-test] FAIL: N_eff dependence {result['n_eff_dependence']:.4f} "
-            f"does not reproduce the Q-NEFF-1 anchor {NEFF_DEPENDENCE_ANCHOR} "
+            f"does not reproduce the {anchor['label']} anchor {anchor['dependence']} "
             f"(tolerance {ANCHOR_TOLERANCE})."
         )
         ok = False
-    if abs(result["n_eff_risk"] - NEFF_RISK_ANCHOR) > ANCHOR_TOLERANCE:
+    if abs(result["n_eff_risk"] - anchor["risk"]) > ANCHOR_TOLERANCE:
         print(
             f"[self-test] FAIL: N_eff risk {result['n_eff_risk']:.4f} does not "
-            f"reproduce the Q-NEFF-1 anchor {NEFF_RISK_ANCHOR} "
+            f"reproduce the {anchor['label']} anchor {anchor['risk']} "
             f"(tolerance {ANCHOR_TOLERANCE})."
         )
         ok = False

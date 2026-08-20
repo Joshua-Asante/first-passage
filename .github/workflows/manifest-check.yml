@@ -79,13 +79,13 @@ jobs:
   # Regression case: commit 66c2a14 (PR #574), bad8068d... pinned by a Cursor cloud
   # agent, bytes lost.
   #
-  # INERT AS SHIPPED: GitHub Actions is disabled repo-wide (verified 2026-07-31 —
-  # actions/permissions {"enabled":false}; no workflow run since 2026-07-16). This job
-  # will not execute until Actions is re-enabled, which also resumes the Tests / Pylint
-  # / Skills Check workflows that were failing when it was switched off. Until then the
-  # live limb is detection-on-arrival in scripts/githooks/post-merge, which runs on a
-  # durable machine but only AFTER the bytes are already gone. Kept here, wired and
-  # tested, so re-enabling Actions restores the intended pre-loss gate with no new work.
+  # LIVE (verified 2026-08-19, Q-GATESTACK-1 Limb-D): GitHub Actions has run for real
+  # since the 2026-08-15 public transition, and this job specifically executes and
+  # passes on every push/PR (confirmed at job granularity, not just workflow-wrapper
+  # level). It is real PR-time detection, catching a bad pin before the bytes are gone
+  # rather than only after, the way scripts/githooks/post-merge's post-hoc limb does.
+  # It is still advisory-only: main carries no branch protection or required checks
+  # (Q-GATESTACK-1 Limb-A), so a red run here does not block a merge on its own.
   pine-pin-provenance:
     runs-on: ubuntu-latest
     steps:

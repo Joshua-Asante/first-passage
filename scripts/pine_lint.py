@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """§2.3 — pine_lint.py: static linter for codification-stage candidate .pine.
 
-⚠ STATUS (corrected 2026-08-08): this module is NOT wired. It appears in no
-Makefile target, no scripts/gates.yml entry, no git hook and no CI workflow, and
-GitHub Actions is disabled repo-wide. The previous docstring called it "THE
+⚠ STATUS (corrected 2026-08-08; Actions-status clause corrected 2026-08-19 per
+Q-GATESTACK-1): this module is NOT wired. It appears in no Makefile target, no
+scripts/gates.yml entry, and no git hook or CI workflow — that absence is about
+this script specifically, independent of GitHub Actions being enabled repo-wide
+(it has run live and green since the 2026-08-15 public transition). The previous docstring called it "THE
 LOAD-BEARING CHECK of the R&D pipeline ... this linter owns it" — that was a
 claim about importance, not about wiring, and a reader could not tell the
 difference. Run it deliberately, or wire it (a `.pine`-scoped data-conditional
