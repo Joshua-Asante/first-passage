@@ -1,9 +1,13 @@
 # ORB-MNQ-1 cushion-proportional sizing probe (2026-08-20)
 
 Not a pre-registered campaign -- an informal $0/K=0 probe, preserved for provenance and
-re-derivation. Primary write-up, findings, and routing decision live at
-[`docs/notes/notice/N-2026-08-20-orbmnq1-cushion-sizing-regime-break-unexplained.md`](../../../docs/notes/notice/N-2026-08-20-orbmnq1-cushion-sizing-regime-break-unexplained.md)
--- read that first.
+re-derivation. The write-up notice this README originally pointed to
+(`N-2026-08-20-orbmnq1-cushion-sizing-regime-break-unexplained.md`) was never committed --
+dangling reference, caught and corrected 2026-08-20. Findings and routing decision instead
+live at [`ops/instruments/MNQ.md`](../../../../ops/instruments/MNQ.md) N17/N18 and
+[`docs/briefs/closures/Q-ORBCUSH-1-closure-falsified.md`](../../../../docs/briefs/closures/Q-ORBCUSH-1-closure-falsified.md)
+(regime-break mechanism, `FALSIFIED`/`STOP`) -- read those first. Follow-on gate work:
+[`Q-ORBSURV-1`](../../../../docs/briefs/Q-ORBSURV-1-cushion-sizing-gate-configurations.md).
 
 ## What's here
 
