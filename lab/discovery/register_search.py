@@ -101,6 +101,58 @@ def _resolve_params(args) -> str:
     return text
 
 
+def _resolve_rule_provenance(args) -> dict[str, str] | None:
+    """Optional companion mapping for close_run candidate provenance pointers.
+
+    Mirrors --params-file / --admission-file: a JSON file bypasses shell quoting
+    and is validated before any manifest write. Shape is a flat dict mapping
+    candidate_id -> path (not the load_frozen_rules list shape — one provenance
+    file may be shared by siblings from the same campaign).
+
+    All-or-nothing on the flag itself: omit --rule-provenance-file and close_run
+    is byte-identical to today (no rule_provenance_path keys). When supplied,
+    only candidate ids present in the mapping gain a rule_provenance_path key;
+    missing ids get no key (not null/empty). Governing design:
+    docs/superpowers/specs/2026-08-19-cme-breadth-revival-candidate-index-design.md
+    §3.2 / §5.
+    """
+    provenance_file = getattr(args, "rule_provenance_file", None)
+    if provenance_file is None:
+        return None
+    text = Path(provenance_file).read_text(encoding="utf-8")
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as exc:
+        sys.exit(
+            f"ABORT: --rule-provenance-file {provenance_file} is not valid JSON: {exc}"
+        )
+    if not isinstance(payload, dict):
+        sys.exit(
+            "ABORT: --rule-provenance-file must be a flat JSON object mapping "
+            f"candidate_id -> path (got {type(payload).__name__})."
+        )
+    mapping: dict[str, str] = {}
+    for key, value in payload.items():
+        if not isinstance(key, str) or not isinstance(value, str):
+            sys.exit(
+                "ABORT: --rule-provenance-file must be a flat dict[str, str] "
+                f"(candidate_id -> path); bad entry {key!r}: {type(value).__name__}."
+            )
+        mapping[key] = value
+    return mapping
+
+
+def _candidates_with_provenance(labelled, rule_provenance: dict[str, str] | None) -> list[dict]:
+    """Build close_run candidate rows; attach rule_provenance_path only when mapped."""
+    rows: list[dict] = []
+    for cid, p in labelled:
+        row: dict = {"id": cid, "pvalue": p}
+        if rule_provenance is not None and cid is not None and cid in rule_provenance:
+            row["rule_provenance_path"] = rule_provenance[cid]
+        rows.append(row)
+    return rows
+
+
 # Four fields ADR 2026-07-25 §2a established for cost_hurdle; reused here for
 # every bundled reachability clause. units is recorded as-stated, never normalized.
 _CLAUSE_FIELDS = ("value", "units", "basis", "source")
@@ -534,6 +586,9 @@ def close_run(args):
     if manifest["status"] != "open":
         sys.exit(f"ABORT: '{args.run_id}' is '{manifest['status']}', not open. Cannot re-close.")
 
+    # Optional; validated before any close write when the flag is present.
+    rule_provenance = _resolve_rule_provenance(args)
+
     # Operator-stopped closure (ADR 2026-07-26 clause 2-C): a campaign halted by
     # operator direction BEFORE its declared reads executed banks the EXECUTED
     # selection events, not the declared K. Guarded, because the difference is the
@@ -634,7 +689,7 @@ def close_run(args):
         "bh_rows": bh_rows,
         "n_pass_bh": max_reject,
         "expected_false_positives_global_null": round(exp_fp, 4),
-        "candidates": [{"id": cid, "pvalue": p} for cid, p in labelled],
+        "candidates": _candidates_with_provenance(labelled, rule_provenance),
     }
     manifest["verdict"] = (
         "FIRST-PASS ONLY. Candidates clearing the crude multiplicity floor are "
@@ -763,6 +818,11 @@ def build_parser():
     c.add_argument("--executed-looks", default=None,
                    help="With --operator-stopped: enumerate every executed look and its "
                         "examiner (ADR 2-C condition iii).")
+    c.add_argument("--rule-provenance-file", default=None,
+                   help="Optional JSON file mapping candidate_id -> frozen-rule "
+                        "provenance path. When supplied, matching close candidates "
+                        "gain a rule_provenance_path field (additive; omit for "
+                        "byte-identical legacy manifests).")
     c.set_defaults(func=close_run)
 
     s = sub.add_parser("status", help="Print one manifest, or list all.")
