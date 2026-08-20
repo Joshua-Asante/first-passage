@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-20a — sync overnight-range-fade class finding + M2K PROFILE cells to MSL-C3-K2 FALSIFIED
+
+**Focus:** Close the mechanism-registry lag: `overnight-range-failed-extension-fade` still read "none yet / scored axis" after M2K explore FALSIFIED 2026-08-13.
+
+**Shipped:** `ops/instruments/MECHANISMS.md` class findings (overnight + sibling `pdh-pdl-failed-break-reclaim` "Revive in flight") point at [MSL-C3-K2 closure](briefs/closures/MSL-C3-K2-closure-falsified.md). `M2K.md` PROFILE cells `DEAD` 2026-08-13; rebuilt `PROFILES.md` / `profiles.json`.
+
+**Decisions/defects:** Cell vocabulary remains `DEAD` (closed four-value schema); class-finding prose carries `FALSIFIED` + evidence numbers from the closure. No Pine / `dd_protection` / allocation change.
+
+**Open / next:** Carry 19g: branch-protection-for-`main` packet still unopened; 34 non-M1 HIGH-risk `cursor/*` PRs from the dead-CI window not individually re-verified; Cursor forum thread has no fix ETA (`-CleanHome` workaround). Pre-existing registry lags not in this footprint: MYM × `pdh-pdl-failed-break-reclaim` PROFILE cell (C1 FALSIFIED); MGC × `london-range-failed-extension-fade` PROFILE cell (C2 FALSIFIED); M2K W4 still says "no panel" against the landed `M2K_M15.csv`.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-19g — Cursor Grok 4.6 dispatch-autonomy eval surfaces a live shell-hook bug + CI/gate-stack staleness
 
 **Focus:** Evaluate giving Cursor's `--mode plan`/`--resume` a CC-gated plan→approve dispatch flow. Investigation surfaced a live Windows bug and a much bigger governance finding first.

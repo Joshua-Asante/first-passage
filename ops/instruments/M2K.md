@@ -15,6 +15,15 @@ family: []
 venue_tradable: true
 venue_note: "Tradeify Equity Index Product Group ($1.82 all-in -> $0.91/side). Withdrawn MYM+MNQ legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred; LEG_MAP code untouched."
 k_bank_source: "../../discovery_manifests/"
+cells:
+  - mechanism: overnight-range-failed-extension-fade
+    verdict: DEAD
+    date: 2026-08-13
+    source: "../../docs/briefs/closures/MSL-C3-K2-closure-falsified.md"
+  - mechanism: pdh-pdl-failed-break-reclaim
+    verdict: DEAD
+    date: 2026-08-13
+    source: "../../docs/briefs/closures/MSL-C3-K2-closure-falsified.md"
 cost_hurdle:
   value: 11.89
   units: "bp/round-trip"
@@ -55,6 +64,8 @@ structure:
 | Rejection | Discriminator | Source |
 |---|---|---|
 | Cross-index RV **selection/rotation** over an ES/NQ/YM/RTY universe | Selection dilutes edge: +2.64 bp RV-ranked vs +5.19 bp always-MNQ; strictly dominated by single-instrument incumbent. **Not** a rejection of single-instrument M2K work. | rejected 2026-07-21 — [`docs/rejected_candidates.md`](../../docs/rejected_candidates.md) · [`RESULTS`](../../lab/archive/xindex_rv_recon_2026-07/RESULTS.md) |
+| `overnight-range-failed-extension-fade` × M2K (MSL-C3-K2 Axis B) | Explore IS both-arms session-block 95% CI entirely &lt; 0 (long n=359; short n=378). CONFIRM unread. | FALSIFIED 2026-08-13 — [closure](../../docs/briefs/closures/MSL-C3-K2-closure-falsified.md) · [`RESULTS_g2`](../../lab/archive/msl_c3_m2k_2026-08/RESULTS_g2.md) |
+| `pdh-pdl-failed-break-reclaim` × M2K (MSL-C3-K2 Axis A) | Explore IS both-arms session-block 95% CI entirely &lt; 0 (long n=293; short n=295). Does not reopen the MYM C1 kill. | FALSIFIED 2026-08-13 — [closure](../../docs/briefs/closures/MSL-C3-K2-closure-falsified.md) · [`RESULTS_g2`](../../lab/archive/msl_c3_m2k_2026-08/RESULTS_g2.md) |
 
 ## ACTIVE / OPEN
 
