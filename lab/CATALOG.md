@@ -57,6 +57,7 @@ documents the camp boundary for humans/tools.
 | mnq_tnec_con4_pdh_pdl_break_2026-08 | c1 | HOLD | `AMBIGUOUS-HOLD` — both arms near-zero; CIs straddle 0; aux limbs fail live-pass. | lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/ | — |
 | mnq_tnec_con5_impulse_pullback_vwap_2026-08 | c1 | HOLD | `AMBIGUOUS-HOLD` — both arms mean-negative; CIs straddle 0; aux limbs fail live-pass. | lab/analysis/c1/mnq_tnec_con5_impulse_pullback_vwap_2026-08/ | — |
 | msl_s2b_mym_2026-08 | c1 | HOLD | archive owed (STAGE-1 FAIL route): pre-G0 kill — [closure](../../../../docs/briefs/closures/MSL-S2B-closure-stage1-fa... | lab/analysis/c1/msl_s2b_mym_2026-08/ | — |
+| orbmnq1_cushion_sizing_probe_2026-08-20 | c1 | ACTIVE | Informal $0/K=0 probe (not pre-registered) — cushion-proportional sizing eliminates ORB-MNQ-1's bust intraday-honestly (mathematically real, regime-agnostic); a real 2021-09-28 pass-rate regime break survives a thirds split but its trailing-vol mechanism is REFUTED. Formalized as [`Q-ORBCUSH-1`](../../../docs/briefs/Q-ORBCUSH-1-regime-break-mechanism.md), named not opened. | lab/analysis/c1/orbmnq1_cushion_sizing_probe_2026-08-20/ | — |
 | parity_gen2_2026-08 | c1 | ACTIVE | — | lab/analysis/c1/parity_gen2_2026-08/ | — |
 | q_evalseq_1_2026-08 | c1 | HOLD | archive owed (FALSIFIED): `FALSIFIED` — schedule lever spent for eval-pass lift (best −1.06pt vs +5pt bar); flat WATC... | lab/analysis/c1/q_evalseq_1_2026-08/ | — |
 | q_polfront_1_2026-08 | c1 | ACTIVE | — | lab/analysis/c1/q_polfront_1_2026-08/ | — |

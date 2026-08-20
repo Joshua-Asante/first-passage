@@ -1,0 +1,65 @@
+{
+  "window": 63,
+  "k": 1,
+  "cutoff": "2021-09-28",
+  "median_threshold_pt": 252.93253968253967,
+  "n_days": {
+    "HIGH": 907,
+    "LOW": 908,
+    "WARMUP": 63
+  },
+  "date_correlation": {
+    "frac_high_days_post_cutoff": 0.8632855567805954,
+    "frac_low_days_post_cutoff": 0.5165198237885462,
+    "frac_post_cutoff_days_that_are_high": 0.6253993610223643,
+    "frac_pre_cutoff_days_that_are_high": 0.19808306709265175
+  },
+  "n_segments": {
+    "HIGH": 13,
+    "LOW": 13
+  },
+  "gate": {
+    "HIGH": {
+      "meta": {
+        "n_days_in_label": 907,
+        "n_days_in_blocks": 891,
+        "n_runs_used": 8,
+        "n_runs_skipped": 5,
+        "n_blocks": 172
+      },
+      "flat": {
+        "bust_pct": 67.61,
+        "pass_pct": 32.38999999999999,
+        "gate_pass": false
+      },
+      "cushion": {
+        "bust_pct": 0.0,
+        "pass_pct": 64.60666666666667,
+        "gate_pass": true
+      }
+    },
+    "LOW": {
+      "meta": {
+        "n_days_in_label": 908,
+        "n_days_in_blocks": 903,
+        "n_runs_used": 11,
+        "n_runs_skipped": 2,
+        "n_blocks": 172
+      },
+      "flat": {
+        "bust_pct": 68.13,
+        "pass_pct": 31.87,
+        "gate_pass": false
+      },
+      "cushion": {
+        "bust_pct": 0.0,
+        "pass_pct": 33.703333333333326,
+        "gate_pass": false
+      }
+    }
+  },
+  "gate_thresholds": {
+    "eval_bust_ceiling_pct": 3.0,
+    "pass_floor_pct": 50.0
+  }
+}

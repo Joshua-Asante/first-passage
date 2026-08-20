@@ -1,0 +1,91 @@
+{
+  "control_g": {
+    "n": 1846,
+    "meanR": 0.0626136067573826,
+    "net_1lot": 17779.780000000017,
+    "wr": 0.4637053087757313,
+    "stopped_frac": 0.38028169014084506,
+    "maxdd_1lot": -6527.019999999955
+  },
+  "orb_native_secondary_check": {
+    "1": {
+      "bust_pct": 68.0,
+      "pass_pct": 32.0,
+      "n": 3000,
+      "seed": 42
+    },
+    "2": {
+      "bust_pct": 76.7,
+      "pass_pct": 23.3,
+      "n": 3000,
+      "seed": 42
+    }
+  },
+  "fidelity_control": {
+    "1": {
+      "bust_pct": 67.66666666666667,
+      "pass_pct": 32.333333333333336,
+      "published": 67.67,
+      "delta_pp": -0.0033333333333303017,
+      "within_tol": true,
+      "eod_bust_pct": 65.23,
+      "eod_published": 65.23
+    },
+    "2": {
+      "bust_pct": 77.00999999999999,
+      "pass_pct": 22.99,
+      "published": 77.01,
+      "delta_pp": -1.4210854715202004e-14,
+      "within_tol": true,
+      "eod_bust_pct": 74.00333333333333,
+      "eod_published": 74.0
+    }
+  },
+  "fidelity_control_pass": true,
+  "cushion": {
+    "H1": {
+      "base_k1": {
+        "n_blocks": 187,
+        "flat_bust_pct": 77.85333333333334,
+        "flat_pass_pct": 22.146666666666665,
+        "cushion_bust_pct": 0.0,
+        "cushion_pass_pct": 17.983333333333334,
+        "delta_bust_pp": -77.85333333333334
+      },
+      "base_k2": {
+        "n_blocks": 187,
+        "flat_bust_pct": 78.36666666666666,
+        "flat_pass_pct": 21.633333333333336,
+        "cushion_bust_pct": 0.0,
+        "cushion_pass_pct": 19.950000000000003,
+        "delta_bust_pp": -78.36666666666666
+      }
+    },
+    "H2": {
+      "base_k1": {
+        "n_blocks": 187,
+        "flat_bust_pct": 59.71,
+        "flat_pass_pct": 40.29,
+        "cushion_bust_pct": 0.0,
+        "cushion_pass_pct": 78.3,
+        "delta_bust_pp": -59.71
+      },
+      "base_k2": {
+        "n_blocks": 187,
+        "flat_bust_pct": 74.93333333333334,
+        "flat_pass_pct": 25.066666666666663,
+        "cushion_bust_pct": 0.0,
+        "cushion_pass_pct": 61.326666666666675,
+        "delta_bust_pp": -74.93333333333334
+      }
+    }
+  },
+  "half_split": {
+    "n_bdays": 1878,
+    "mid": 939,
+    "h1_start": "2019-05-06",
+    "h1_end": "2022-12-08",
+    "h2_start": "2022-12-09",
+    "h2_end": "2026-07-15"
+  }
+}

@@ -53,3 +53,53 @@ restated here.
 **Ratified as recommended:** Pending — this is an independent recommendation surfaced to the
 operator/CIO; opening `Q-POLFRONT-1` needs its own brief + operator GO per Q-EVALSEQ-1's own stop
 rule, not a ratification of this log entry.
+
+---
+
+## 2026-08-20 — Addendum: the (a)/(b) pre-checks ran; findings materially refine (not confirm) the above
+
+The operator ran both gating pre-checks named in finding 4 above, then two further rounds of
+follow-on verification (each independently, adversarially checked — three full rounds total). This
+addendum records the outcome so this log entry doesn't stand as-is once the record has moved past
+it — the recommendation above is superseded in its specifics, not in its overall direction.
+
+**Verdict:** Finding 4 of the 2026-08-19 entry is superseded in its specifics (literal `Q-POLFRONT-1`
+reopen is not the right action) but confirmed in its overall direction (the lever is real; a sibling
+Q now carries the remaining question forward).
+
+**Confirmed findings:** see "What held" / "What changed" below.
+
+**What held:** finding 3 (the real blocker is venue-specific DD/cost geometry colliding with static
+sizing on `ORB-MNQ-1`) is now *more* substantiated, not less — cushion-proportional sizing does
+eliminate `ORB-MNQ-1`'s trailing-DD bust, intraday-honestly (not just on the EOD clock finding 4(a)
+flagged as a risk), and this is mathematically derivable and regime-agnostic (verified true across
+every time slice and volatility bucket tested).
+
+**What changed:** (i) applying the lever to the *original* `Q-EVALSEQ-1` 2-leg pyramided book (the
+literal reading of finding 4) proved `NOT-REACHABLE-AT-$0` — no per-day intraday-excursion data
+exists for that book, and reconstructing it needs real engineering (position-ladder reconstruction
+across two pyramided, cross-instrument legs), correctly declined rather than faked. (ii) `ORB-MNQ-1`'s
+own skew (finding 4(b)'s own-stated precondition) measured at +2.09, ~42% weaker than the book the
+original 20.18pt headline came from — directionally supportive but not a full-magnitude transfer.
+(iii) Once tested directly on `ORB-MNQ-1`'s own already-intraday-honest engine, bust-elimination held
+but pass-rate improvement turned out sharply regime-dependent — a real, triple-verified, non-boundary-luck
+break at ~2021-09-28 (bad before, clears the frozen re-`PARK` ADR's own gate after), but a trailing-
+volatility mechanism test for *why* was **REFUTED** (window-unstable, no clean date-correlation).
+
+**Corrected recommendation:** not "reopen `Q-POLFRONT-1`" as literally stated in finding 4 — that
+question stays exactly as `Q-EVALSEQ-1` commissioned it, still blocked on the reconstruction problem,
+still unopened. Instead: **`Q-ORBCUSH-1`** (`docs/briefs/Q-ORBCUSH-1-regime-break-mechanism.md`, sibling
+to `Q-POLFRONT-1`, not a replacement) is now drafted and pre-registered, scoped narrowly to the one
+remaining falsifiable question — does a trailing edge (mean-R) or cost-fraction classifier explain the
+2021-09-28 break — before any deployment-adjacent decision treats that break as more than an
+unexplained historical pattern. Named, not opened; needs its own operator GO for Phase 1, same
+convention as every other Q in the roster.
+
+**Evidence-Cited:** `lab/analysis/c1/orbmnq1_cushion_sizing_probe_2026-08-20/` (three independently-
+verified probe rounds) + `docs/briefs/Q-ORBCUSH-1-regime-break-mechanism.md` + `docs/briefs/pre-registration/Q-ORBCUSH-1-verdict-preregistration.md`.
+
+**Deviation-from-Precedent:** refines finding 4 of this persona's own first entry, same day —
+recorded as an addendum per this log's append-only convention, not an edit to the original entry.
+
+**Ratified as recommended:** Pending — `Q-ORBCUSH-1` is named, not opened; Phase 1 needs a fresh
+operator GO.
