@@ -86,9 +86,14 @@ but pass-rate improvement turned out sharply regime-dependent — a real, triple
 break at ~2021-09-28 (bad before, clears the frozen re-`PARK` ADR's own gate after), but a trailing-
 volatility mechanism test for *why* was **REFUTED** (window-unstable, no clean date-correlation).
 
-**Corrected recommendation:** not "reopen `Q-POLFRONT-1`" as literally stated in finding 4 — that
-question stays exactly as `Q-EVALSEQ-1` commissioned it, still blocked on the reconstruction problem,
-still unopened. Instead: **`Q-ORBCUSH-1`** (`docs/briefs/Q-ORBCUSH-1-regime-break-mechanism.md`, sibling
+**Corrected recommendation:** not "reopen `Q-POLFRONT-1`" as literally stated in finding 4 —
+**`Q-POLFRONT-1` is not unopened; it closed `RESOLVED-QUANTIFIED` 2026-08-16, with a 2026-08-17
+addendum finding its own 5.1× headline does not survive intraday-honest remeasurement** (a same-day
+correction to this addendum's own first draft, which repeated the "unopened" error — see
+`docs/briefs/Q-ORBCUSH-1-regime-break-mechanism.md` §2 for the full correction). What finding 4
+actually pointed at and this probe found `NOT-REACHABLE-AT-$0` was a distinct, never-formally-opened
+literal re-derivation of `Q-EVALSEQ-1`'s own result on the real 2-leg book — not `Q-POLFRONT-1`
+itself. Instead: **`Q-ORBCUSH-1`** (`docs/briefs/Q-ORBCUSH-1-regime-break-mechanism.md`, sibling
 to `Q-POLFRONT-1`, not a replacement) is now drafted and pre-registered, scoped narrowly to the one
 remaining falsifiable question — does a trailing edge (mean-R) or cost-fraction classifier explain the
 2021-09-28 break — before any deployment-adjacent decision treats that break as more than an
