@@ -26,7 +26,6 @@ closure brief in `docs/ltm/briefs/` and delete its row here.
 | **Q-DATAFIDELITY-1** — do the stated data-integrity safety nets (TV price fidelity, feed-equivalence pre-flight, manifest gate scope) cover what they're trusted to cover (C2+C3) | **`OPEN — DRAFT (pre-lock)`** 2026-08-18 | [`Q-DATAFIDELITY-1-tv-price-fidelity-and-integrity-gate-scope.md`](Q-DATAFIDELITY-1-tv-price-fidelity-and-integrity-gate-scope.md) | Named, not opened. Operator GO → Phase 1 (~10-row OHLC diff vs CME settlement + doc grep, $0/K=0). |
 | **Q-PUBTRANS-1** — did the 2026-08-14 public-visibility transition complete cleanly (ADR Status stale, residual-disclosure risk untested, sentinel queue orphaned; B5+D8+D9) | **`OPEN — DRAFT (pre-lock)`** 2026-08-18 | [`Q-PUBTRANS-1-public-transition-completeness.md`](Q-PUBTRANS-1-public-transition-completeness.md) | Named, not opened. **Operator-only limb (B5) needs withheld literal account/$ values** — rest is agent-doable at $0/K=0. |
 | **Q-CALLBOUND-1** — are the lifecycle Call-system's automation-authority boundaries symmetric and complete (Call-1 no promote-back path; Call-5 zero-contract reachable via a side door; D3+D6) | **`OPEN — DRAFT (pre-lock)`** 2026-08-18 | [`Q-CALLBOUND-1-automation-boundary-symmetry.md`](Q-CALLBOUND-1-automation-boundary-symmetry.md) | Named, not opened. Operator GO → Phase 1 (grep/diff sweep, $0/K=0). |
-| **Q-ORBCUSH-1** — does a trailing edge/cost-fraction classifier explain ORB-MNQ-1's 2021-09-28 cushion-proportional-sizing regime break (triple-verified real, not boundary-luck; trailing-vol mechanism already REFUTED same discipline) | **`OPEN`** 2026-08-20 — Phase 1 running (operator GO given) | [`Q-ORBCUSH-1-regime-break-mechanism.md`](Q-ORBCUSH-1-regime-break-mechanism.md) · [pre-reg](pre-registration/Q-ORBCUSH-1-verdict-preregistration.md) · [probe](../../lab/analysis/c1/orbmnq1_cushion_sizing_probe_2026-08-20/) | **Corrected 2026-08-20** (an earlier version of this row mischaracterized `Q-POLFRONT-1` as unopened — it is `RESOLVED-QUANTIFIED` 2026-08-16, see its own row above; a 2026-08-17 addendum found its 5.1× headline does NOT survive intraday-honest remeasurement, directly relevant caution for this Q). What this probe actually found `NOT-REACHABLE-AT-$0` was a distinct, never-formally-opened attempt to re-derive Q-EVALSEQ-1's own result on the real 2-leg book's real data — not `Q-POLFRONT-1` itself. Awaiting Phase 1 verdict. |
 
 All 11 above opened 2026-08-18 from [`docs/notes/audits/2026-08-18-strategy-generation-assumptions-sweep.md`](../notes/audits/2026-08-18-strategy-generation-assumptions-sweep.md) (assumption-sweep audit, 25 verified-unexamined findings; these 11 Qs combine 22 of them — 3 stay audit-note-resident: D1 MEMORY.md governance reach, D5 Notice-phase 5-tool coverage, D10 D-S-A canon staleness routed to the next quarterly methodology audit instead).
 
@@ -38,6 +37,19 @@ All 11 above opened 2026-08-18 from [`docs/notes/audits/2026-08-18-strategy-gene
 
 ## Recently closed (cross-reference; not open)
 
+- **Q-ORBCUSH-1** — does a trailing edge/cost-fraction classifier explain ORB-MNQ-1's 2021-09-28
+  cushion-proportional-sizing regime break — **`FALSIFIED` 2026-08-20** — trailing mean-R
+  date-correlation clears 0 of 3 pre-registered windows (lower-edge bucket's ≤40% ceiling missed
+  by 11–25pp at every window); direction stable but irrelevant once date-correlation fails. Second
+  classifier refuted under the same discipline that already refuted trailing volatility — the
+  2021-09-28 break stays real, triple-verified, and mechanistically unexplained
+  (`ops/instruments/MNQ.md` N17). Bust-elimination itself is unaffected (regime-agnostic,
+  independently verified). $0/K=0.
+  [`closure`](closures/Q-ORBCUSH-1-closure-falsified.md) ·
+  [`RESULTS`](../../lab/analysis/c1/q_orbcush_1_2026-08/RESULTS_meanr_regime_gate.md) ·
+  [`brief`](Q-ORBCUSH-1-regime-break-mechanism.md) ·
+  [`pre-reg`](pre-registration/Q-ORBCUSH-1-verdict-preregistration.md) ·
+  [`probe`](../../lab/analysis/c1/orbmnq1_cushion_sizing_probe_2026-08-20/).
 - **Q-XMEM-1** — cost of per-surface agent-memory invisibility; time-boxed Mem0 sidecar pilot —
   **`CLOSED` / GRAND-tier `SUBTRACT` 2026-08-19** (GSUB-2 c1, pursuit-level; not a re-verdict of
   the 2026-08-15 `ASSISTIVE-ONLY` Limb B measurement, which stands unchanged). Re-entry armor: a
@@ -91,7 +103,10 @@ All 11 above opened 2026-08-18 from [`docs/notes/audits/2026-08-18-strategy-gene
   newly-admitted cells, no reversal under quantization). ⚠ **Load-bearing caveat carried
   forward, not a footnote:** the policy's bust rate is far more EOD-clock-fragile than flat
   sizing (median stress delta +55.2pp vs +1.63pp) — feeds deep-lane GO-1 **with the caveat
-  named in the first campaign's prereg**; intraday-honest remeasurement fork named, not opened.
+  named in the first campaign's prereg**. **Fork executed 2026-08-17 (operator GO, corrected
+  2026-08-20 — a stale copy of this row previously said the fork was still unopened):** the 5.1×
+  headline does NOT survive intraday-honest remeasurement — policy-arm median bust delta +98.1pp,
+  only 1/26 cells still clear 3.0%; `SAFE_WITH_CAVEATS` on independent adversarial re-verification.
   [`closure`](closures/Q-POLFRONT-1-closure-resolved-quantified.md) ·
   [`RESULTS`](../../lab/analysis/c1/q_polfront_1_2026-08/RESULTS.md) ·
   [`brief`](Q-POLFRONT-1-policy-augmented-seed-frontier.md)
