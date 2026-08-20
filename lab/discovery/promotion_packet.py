@@ -14,6 +14,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal, TypedDict
 
+from discovery.k_ledger_check import verify_manifest_backing
+
 Decision = Literal["Pass", "Fail"]
 
 SCHEMA_VERSION = "s5.v1"
@@ -175,6 +177,21 @@ def validate_promotion_packet(
         return _fail(f"ceilings_unreadable:{exc}")
 
     reasons.extend(_check_sandbox_ceilings(sandbox, ceilings))
+
+    # Optional K-ledger backing check (Rule-0 finding 2026-08-19): when a packet
+    # declares which register_search run backs it, verify that run is CLOSED
+    # with recorded results before promotion. `discovery_run_id` is not in the
+    # required-keys list above -- omitting it keeps today's status quo for
+    # packets that predate this check or aren't backed by lab/discovery mining
+    # (schema_version is unchanged; this is additive, not a new required field).
+    run_id = raw.get("discovery_run_id")
+    if run_id is not None:
+        if not isinstance(run_id, str) or not run_id.strip():
+            reasons.append("discovery_run_id_empty")
+        else:
+            ledger_result = verify_manifest_backing(run_id)
+            if not ledger_result.ok:
+                reasons.append(f"discovery_run_id_unbacked:{','.join(ledger_result.reasons)}")
 
     claims = raw["claims"]
     if not isinstance(claims, list) or not claims:
