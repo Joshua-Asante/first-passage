@@ -87,6 +87,7 @@ All hooks ran clean; none errored or needed `AMBIGUOUS-HOLD`.
 | Date | Change | By |
 |---|---|---|
 | 2026-08-19 | Closure authored, both limbs run and scored | Joshua (GO) + Claude Code |
+| 2026-08-19 | Addendum: successor packet #1 (branch-protection ruleset) opened and executed same day — `main-protection` ruleset id `21071355` created via `gh api repos/Joshua-Asante/first-passage/rulesets`: requires PR (0 approvals), blocks force-push/deletion, requires `skills (3.12)` status check, `current_user_can_bypass: never`. `pytest`/`build`/`manifest-check`/`validation-controls` deliberately NOT yet required — path-filtered on most workflows (would deadlock doc-only PRs) and `pytest (3.11)` is independently red on `main` right now (pre-existing, unrelated: `test_validate_c1_monitoring_acceptance.py::test_live_artifact_records_the_open_skew_rather_than_hiding_it`, `ops/c1_rail/c1_rail_arm.py` skew not named in the acceptance artifact's note — flagged as its own follow-up, not fixed here). Limb-A of this closure's own verdict is therefore stale as of this addendum — re-running `gh api .../branches/main/protection` today returns real enforcement, not 404. The `FALSIFIED` verdict itself stands unedited above per Trap #12; this addendum is the current-state pointer. | Joshua (GO: "no bypass" + "create it now") + Claude Code |
 
 ---
 
