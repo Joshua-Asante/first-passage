@@ -12,6 +12,11 @@ session task journal). Operator context: JA "take that on now, and identify how 
 S1a's result" + ultracode re-enabled ("this is an important problem that deserves resources").
 **Spend at freeze:** $0 · K unchanged (the S1a/S1b re-scores are re-measurements of already-
 disclosed looks, not new looks; anything beyond the pre-named follow-ups here is new K).
+**Retention-review:** 2026-11-08 (riding the standing slate date) — if no third
+magnitude-persistence screen has consumed this battery by then, it gets a retention
+test at the quarterly programme audit. Per
+[`N-2026-08-18-iteration2-identify-notice.md`](../notes/notice/N-2026-08-18-iteration2-identify-notice.md)
+§4 E(iii).
 
 ---
 

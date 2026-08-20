@@ -58,8 +58,6 @@ BEHIND this list.** Items leave when done; it stays ≤5 so it cannot decay into
 |---|---|---|---|
 | 1 | **F1 — how §4 reads a Tradeify-resting discharge** (2026-11-08). Eval is live ([`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md)); locked Striker book barred. §4 still scores the frozen $100K×4 set with Tradeify in it. Ruling owed: whether a discharge resting *on Tradeify* (or the withdrawn Striker book) discharges the four-firms program. **Deciding it early would pre-empt §4** | [`ADR 2026-08-04`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) §7 F1 · [four-firms §4](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) | 2026-11-08 §4 verdict reading |
 | 2 | **B7-REFIRE Stage 1 + M1** — both wait on an acceptable strategy on the ruled (Python-native) host. Eval live; no book deployed | [`GO ADR Addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`S2`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) · [`M1`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) | live-signal / arming path |
-| 3 | **N-SURV magnitude-resampling disclosure ADR** — `Proposed`, ratification owed. `Q-NSURV-2` RESOLVED (wrapper reproduces both candidates' headlines within 2.0pp, zero core internals touched); this ADR is its named INTEGRATE routing | [`ADR`](docs/adr/2026-08-20-nsurv-magnitude-resampling-disclosure.md) · [`Q-NSURV-2 closure`](docs/briefs/closures/Q-NSURV-2-closure-resolved.md) | ADR ratification |
-| 4 | **Rule 0 anchor-check + triage-discipline ADR** — `Proposed`, ratification owed. Mechanizes `check_brief.py`'s §0 anchor check (evidenced by the two already-documented Rule 0 incidents); separately names a non-Rule-0 triage-verification discipline for leverage-ranking work (evidenced by 2026-08-20's own session pattern) | [`ADR`](docs/adr/2026-08-20-rule0-anchor-verification-and-triage-discipline.md) | ADR ratification |
 
 ---
 
@@ -70,6 +68,21 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-20** — **P4 (L2 dealer-gamma EOD) Databento cost dry-run + moneyness/tenor concentration
+  check executed — HOLD stands, evidence now leans against.** Operator direction (draft the dry-run,
+  then "run the small definition+trades pull to check volume concentration by moneyness/tenor").
+  `NQ.OPT` cost trivial (~$5.34 full-history `tbbo`, 130× under the $700 ceiling) but complex-wide
+  trade density is 367× thinner than `NQ.FUT`. The near-the-money/near-dated slice a real
+  construction would use is **thinner relative to the underlying (~1,423×), not richer** —
+  narrowing to the plausible-construction region widens the density gap instead of closing it.
+  Trade-size/notional-weighted signal strength untested; not a kill. Not admitted through intake;
+  harvest §4 limb-2 does not increment. $0.00 billed, K=0, no live-risk surface.
+  [`P4_DRYRUN`](lab/analysis/harvest/six_lead_cf_2026-08-17/P4_DRYRUN.md) ·
+  [`concentration RESULTS`](lab/analysis/harvest/six_lead_cf_2026-08-17/p4_concentration_2026-08-20/RESULTS.md) ·
+  [`plan`](docs/briefs/2026-08-17-six-lead-pursuit-plan.md) §2.
+- **2026-08-20** — **Two light/FULL-tier ADRs ratified — N-SURV magnitude-resampling disclosure; Rule 0 anchor-check + triage-discipline.** Operator: *"I ratify the N-SURV disclosure ADR, Rule 0 anchor-check + triage-discipline ADR."* Both `Proposed`→`Accepted`, queue #3/#4 discharged (deleted, not left as footnotes). N-SURV ADR: reporting-only disclosure line for future N-SURV-gated verdicts, no gate-arithmetic change. Rule 0 ADR: 2-A (mechanize `check_brief.py`'s §0 anchor check) and 2-B (name a separate, non-mechanized triage-verification discipline) both ratified as the ruling; **Phase 1 implementation (the actual `check_brief.py` code change) is separately scoped and not yet done** — ratification ships the ADR, not the patch. $0/K=0, no live-risk surface.
+  [`N-SURV ADR`](docs/adr/2026-08-20-nsurv-magnitude-resampling-disclosure.md) ·
+  [`Rule 0 ADR`](docs/adr/2026-08-20-rule0-anchor-verification-and-triage-discipline.md).
 - **2026-08-20** — **`Q-TODVOL-1` — first within-instrument temporal-selectivity candidate since the 2026-08-10 route-① opening, frozen and D2-falsified same day.**
   Operator direction ("write it up as a proper causally-named G0 freeze and then check whether it
   can actually be tested"). Froze `tod-baseline-range-trigger` (declared NEW in `MECHANISMS.md`,

@@ -1,6 +1,6 @@
 # ADR 2026-08-20 — N-SURV magnitude-resampling gap becomes a mandatory disclosure line, not a gate change
 
-**Status:** `Proposed` — drafted at operator direction (`Q-NSURV-2` RESOLVED, "go bigger" election), ratification owed
+**Status:** `Accepted` — ratified by operator (Joshua) 2026-08-20, in-session direct instruction ("I ratify the N-SURV disclosure ADR, Rule 0 anchor-check + triage-discipline ADR")
 **Decision date:** 2026-08-20
 **Supersedes:** none
 **Superseded-by:** none
