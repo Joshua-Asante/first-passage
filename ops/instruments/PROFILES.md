@@ -33,6 +33,7 @@
 | pullback-failure-resumption | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | regime-overlay | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | D | . | . | . | D | . | . | . | . |
 | sweep-failure-filtered-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| tod-baseline-range-trigger | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | trend-following | . | D | . | . | . | . | . | . | . | . | . | . | . | . | L | L | . | . | . | D | A | D | L | . | . | . | . |
 | turn-of-month | . | . | A | . | A | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . |
 | venue-transfer | A | . | . | . | . | . | . | . | . | . | . | . | D | . | D | . | . | . | . | . | . | . | . | D | . | . | . |
@@ -309,6 +310,15 @@ A deploy-vs-wait or sizing gate keyed to an inferred market regime state rather 
 **NEW 2026-08-14 (MSL-S2B).** Trend-continuation entry on **MYM** **gated** by a PDH/PDL sweep-failure state — the sweep-failure is a **filter, never the entry**; hard stop; target at `rr` ∈ [2, 3]; session-flat by 16:00 ET; k=1 first valid signal per session. Consumes C1's DELETE-PASS selection evidence in **filter role** (entry-role construct remains dead). Not OR continuation; not PDH/PDL failed-break reclaim entry; not through-break.
 
 - **Class finding:** Stage-1 **FAIL** (route) — index raised bar unbound for continuation *entry*; SLR route ① clears MR-at-level *filter* only; temporal-selectivity route blocked by Q-TNEC-CON-5 pause; composite clearance forbidden. [STAGE1](../../lab/analysis/c1/msl_s2b_mym_2026-08/STAGE1.md) · [closure](../../docs/briefs/closures/MSL-S2B-closure-stage1-fail-route.md). $0 / K=0; G0 never frozen.
+
+_No instrument has a recorded verdict on this mechanism._
+
+
+## tod-baseline-range-trigger
+
+**NEW 2026-08-20 (`Q-TODVOL-1`).** Within-instrument temporal selectivity under
+
+- **Class finding:** none yet — D2 pre-G0 falsifier pending (this session).
 
 _No instrument has a recorded verdict on this mechanism._
 

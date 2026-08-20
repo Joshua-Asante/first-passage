@@ -1106,6 +1106,12 @@
         "Stage-1 **FAIL** (route) \u2014 index raised bar unbound for continuation *entry*; SLR route \u2460 clears MR-at-level *filter* only; temporal-selectivity route blocked by Q-TNEC-CON-5 pause; composite clearance forbidden. [STAGE1](../../lab/analysis/c1/msl_s2b_mym_2026-08/STAGE1.md) \u00b7 [closure](../../docs/briefs/closures/MSL-S2B-closure-stage1-fail-route.md). $0 / K=0; G0 never frozen."
       ]
     },
+    "tod-baseline-range-trigger": {
+      "definition": "**NEW 2026-08-20 (`Q-TODVOL-1`).** Within-instrument temporal selectivity under",
+      "findings": [
+        "none yet \u2014 D2 pre-G0 falsifier pending (this session)."
+      ]
+    },
     "trend-following": {
       "definition": "Riding an established directional move rather than fading it or timing its start (regime-capture / breakout-and-hold constructs).",
       "findings": [
