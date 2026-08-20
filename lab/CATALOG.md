@@ -24,6 +24,7 @@ documents the camp boundary for humans/tools.
 | slug | theme | status | one-liner | body | heavy |
 |---|---|---|---|---|---|
 | aegis1p_3leg_rescore_2026-07-27 | c1 | ACTIVE | Aegis@1.00% 3-leg corrected-geometry re-MC under Tradeify envelope | lab/analysis/c1/aegis1p_3leg_rescore_2026-07-27/ | — |
+| aegis3leg_engine_param_2026-08-20 | c1 | ACTIVE | Parameterized Aegis 3-leg rescore engine (default 1.00% only; J14 bars new risk-arm measurement) | lab/analysis/c1/aegis3leg_engine_param_2026-08-20/ | inputs gitignored |
 | band_quantization_2026-08-02 | c1 | ACTIVE | MNQ zero-floors at every FRIENDLY tier below 100K under the locked-proportional split; the two published 50K clearers... | lab/analysis/c1/band_quantization_2026-08-02/ | — |
 | c1_band_rescore_2026-07-24 | c1 | ACTIVE | two Part A clearers at 50K band; RIDER FAIL stands a fortiori | lab/analysis/c1/c1_band_rescore_2026-07-24/ | — |
 | c1_cadence_coverage_2026-08-03 | c1 | ACTIVE | 0.50× fails 16.0% of eval starts once overlapping pyramid holds are priced (critical scale 0.441×; 0.40× clean under ... | lab/analysis/c1/c1_cadence_coverage_2026-08-03/ | — |
