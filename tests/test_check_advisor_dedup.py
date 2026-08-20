@@ -81,11 +81,13 @@ def test_split_by_h3_groups_rejected_candidates_entries():
     assert "Custodian" in parts[1]
 
 
-def test_load_corpus_reads_all_five_surfaces(tmp_path: Path):
+def test_load_corpus_reads_all_seven_surfaces(tmp_path: Path):
     (tmp_path / "docs" / "briefs" / "closures").mkdir(parents=True)
     (tmp_path / "docs" / "notes" / "audits").mkdir(parents=True)
+    (tmp_path / "docs" / "briefs" / "rnd-pipeline").mkdir(parents=True)
     (tmp_path / "docs").mkdir(exist_ok=True)
     (tmp_path / "lab").mkdir(exist_ok=True)
+    (tmp_path / "ops" / "instruments").mkdir(parents=True)
 
     (tmp_path / "docs" / "briefs" / "closures" / "Q-X-1-closure.md").write_text(
         "# Q-X-1 -- closure MOOT\n\nQ-X-1 details here.\n", encoding="utf-8")
@@ -102,6 +104,10 @@ def test_load_corpus_reads_all_five_surfaces(tmp_path: Path):
     (tmp_path / "docs" / "rejected_candidates.md").write_text(
         "# Rejected\n\n## Entries\n\n### Q-X-1 rejected sub-thesis\n\ndetail\n",
         encoding="utf-8")
+    (tmp_path / "ops" / "instruments" / "ZZZ.md").write_text(
+        "# INSTRUMENT LEDGER -- ZZZ\n\nQ-X-1 finding lives here too.\n", encoding="utf-8")
+    (tmp_path / "docs" / "briefs" / "rnd-pipeline" / "Q-X-1-rescope.md").write_text(
+        "# Campaign scoping -- Q-X-1 rescope\n\nQ-X-1 rescope detail.\n", encoding="utf-8")
 
     chunks = cad.load_corpus(tmp_path)
     surfaces = {c.surface for c in chunks}
@@ -110,6 +116,8 @@ def test_load_corpus_reads_all_five_surfaces(tmp_path: Path):
     assert any(c.surface == "docs/SESSIONS.md" and "Q-X-1 session" in c.label for c in chunks)
     assert any(c.surface == "lab/CATALOG.md" and c.label == "q_x_1_2026" for c in chunks)
     assert any(c.surface == "docs/rejected_candidates.md" and "Q-X-1 rejected" in c.label for c in chunks)
+    assert any(c.surface == "ops/instruments/ZZZ.md" and "ZZZ" in c.label for c in chunks)
+    assert any(c.surface == "docs/briefs/rnd-pipeline/Q-X-1-rescope.md" for c in chunks)
 
 
 def test_score_prioritizes_slug_match_over_keyword_volume():

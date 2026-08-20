@@ -293,16 +293,32 @@ sub-rules of Rule 0 / Rule 2 — each anchored to a specific brief failure.
    `lab/CATALOG.md` and `docs/briefs/INDEX.md` (and a cheap companion
    `git log --oneline -20` / keyword probe via
    `python scripts/check_advisor_dedup.py --keywords "..."`). An attestation
-   without executed search output is void. This is the creation-side mirror of
-   sub-rule 1's deletion-side "cross-reference grep before classifying isolated
-   cruft," lifting the binding procedure from the 2026-07-26 forced-flow census
-   past its harvest-only origin. _(Anchored:
+   without executed search output is void. **Any work naming a candidate
+   mechanism for a specific instrument additionally reads
+   `ops/instruments/<SYM>.md` in full** — that ledger's own purpose line
+   already makes this mandatory ("any session deriving/testing/adjudicating on
+   `<SYM>` MUST read this at session start"), and `check_advisor_dedup.py`'s
+   corpus now includes `ops/instruments/*.md` + `docs/briefs/rnd-pipeline/*.md`
+   so a mechanism-specific keyword probe surfaces it too — but the ledger read
+   is the primary check; the probe is the cheap companion, same relationship
+   as CATALOG/INDEX above. This is the creation-side mirror of sub-rule 1's
+   deletion-side "cross-reference grep before classifying isolated cruft,"
+   lifting the binding procedure from the 2026-07-26 forced-flow census past
+   its harvest-only origin. _(Anchored:
    [`ADR 2026-08-13`](adr/2026-08-13-dedup-first-before-new-work.md);
    2026-08-13 Tradeify eval-battery near-miss (caught by deliberate sweep) and
    Magdon-Ismail closed-form MDD duplicate (uncaught until pre-commit
    `lab-catalog`); source language
    [`N-2026-07-26-forced-flow-census`](notes/notice/N-2026-07-26-forced-flow-census.md)
-   L195-208.)_
+   L195-208. **2026-08-19 addendum:** a Research Analyst inaugural draft
+   recommended GRADUATE on the D5 Baltussen intraday-momentum axis for MNQ as
+   "unspent" — it had already been ratified, built, and killed twice (IS-era
+   Stage-2, then OOS-era via D5-RECOST-1), HIGH-confidence, recorded in
+   `ops/instruments/MNQ.md` N5 — because neither the mining pass nor the
+   project-level dedup probe ever read that ledger. Caught by the operator
+   asking whether the new work overlapped the instrument ledger, not by any
+   automated gate. See `scripts/check_advisor_dedup.py`'s own docstring for
+   the full account.)_
 9. **Registry line on every new closure.** A non-grandfathered file under
    `docs/briefs/closures/` must carry `- **Registry:**` in the Iterate block:
    either `rejected_candidates.md — ### <heading>` (strategy-grounds
