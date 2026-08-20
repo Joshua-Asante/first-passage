@@ -98,16 +98,27 @@ Guardian (DEAD) are deliberately excluded from the baseline; either could still 
 candidate* via `breadth.py`'s existing 5th-column mechanism (exactly like ORB-MNQ-1 was), but neither
 belongs in the locked baseline given their current standing.
 
-**Open question, not resolved by this design (see §7):** multiple dated exports exist per leg in
-`core/data/tv_exports/cme/SHA256SUMS` and no single one is obviously canonical:
+**Canonical export resolved by reading the pre-transition history in the private `first-passage-archive`
+remote** (git history for this manifest is empty in the public repo past the 2026-08-14 transition
+commit; the archive remote already exists at `archive` and required no unarchiving to read — GitHub
+archived-repo state blocks writes, not reads/fetches):
 
-- MYM candidates: `Striker_DJ30_v4.5_MYM_CBOT_MINI_MYM1!_2026-07-{11,17×4,21}_*.csv` (the 07-17 date
-  alone has four distinct hash suffixes — same-day re-exports, cause not yet investigated).
-- MNQ candidates: `Striker_NAS100_MNQ_CME_MINI_MNQ1!_2026-07-17_*.csv` (four same-day hash suffixes,
-  same open question) plus an older `Striker_NAS100_v1_CME_MINI_MNQ1!_2026-07-11_beabf.csv`.
-
-Picking the wrong export silently biases the panel. This must be resolved by an operator/Rule-0 read
-of what produced the four same-day 07-17 variants before Stage 1 is implemented — not guessed.
+- **MYM — resolved.** `Striker_DJ30_v4.5_MYM_CBOT_MINI_MYM1!_2026-07-21_73182.csv`. Commit `7d80037`
+  ("data: pin latest MYM strategy export", 2026-07-22) is the canonical, explicitly-labeled latest
+  strategy export.
+- **MNQ — not ambiguous once traced, just narrower than it first looked.** The four same-day
+  `Striker_NAS100_MNQ_CME_MINI_MNQ1!_2026-07-17_*.csv` files are **not** general-purpose strategy
+  exports at all — commit `05b94e4` ("data: archive the 12 Q-RAIL-1 F3 Step-2/C3 evidence CSVs")
+  names them explicitly as Q-RAIL-1's F3 Step-2 per-candle parity + C3 attribution-ladder evidence
+  (`STEP2_PARITY.md` / `STEP3_1A/1B/1C.md`), a narrow rail-execution-parity study, not a backtest
+  panel. Using any of them as a breadth baseline would be a category error. MNQ never received an
+  equivalent "pin latest strategy export" commit the way MYM did — the 07-21 "fresher panels" commit
+  (`da075a1`) only landed a raw `BAR_EXPORT_v0.2_CME_MINI_MNQ1!_2026-07-21_dd9d8.csv`, not a re-pinned
+  `Striker_NAS100` strategy export. **The only remaining general-purpose MNQ candidate is the older
+  `Striker_NAS100_v1_CME_MINI_MNQ1!_2026-07-11_beabf.csv`** (predates the `Striker_NAS100_MNQ` naming
+  convention) — usable, but ~6 weeks stale relative to MYM's 07-21 pin. Whether that staleness gap
+  matters enough to pull a fresh MNQ export before Stage 1 ships (mirroring what was done for MYM) is
+  an operator call, not a design default — flagged in §7, not resolved here.
 
 **Mechanism:**
 1. Determine the canonical CSV per leg (§7 open item).
@@ -246,13 +257,16 @@ Stage 2 (per-candidate, on demand):
 
 ## §7 — Open questions (must resolve before implementation, not guessed here)
 
-1. **Which dated CME export is canonical per leg**, given multiple same-day variants exist for both
-   MYM and MNQ on 2026-07-17. Needs a Rule-0 read of what produced four same-day re-exports before
-   picking one — silently picking the alphabetically-first or most-recent-by-mtime would be exactly
-   the kind of unexamined choice this repo's own discipline exists to prevent.
-2. **Whether Stage 1 needs its own ADR**, or can land as opt-in tooling the way Option E did (cheap,
-   no new mandatory gate, cites the governing precedent). Leaning toward the latter — `breadth.py`
-   itself is unchanged, only its data source is populated, and nothing becomes newly binding.
+1. **Resolved for MYM, open for MNQ (see §2's updated canonical-export finding).** MYM: use
+   `2026-07-21_73182.csv`, explicitly pinned as latest. MNQ: the only general-purpose (non-parity)
+   candidate is the ~6-week-stale `2026-07-11_beabf.csv` — whether to ship Stage 1 on that stale
+   export or pull a fresh one first is the remaining operator call.
+2. **Resolved — an ADR is required, not a judgment call.** `core/mc/modes.py`'s own header comment on
+   `PANELS_BY_BROKER` states explicitly: "New panels require an admitting ADR + explicit registration
+   here." This session's earlier "leaning toward no ADR needed" was wrong — corrected on direct Rule-0
+   read of the file, not a preference. See
+   [`docs/adr/2026-08-19-cme-broker-panel-admission-for-breadth-revival.md`](../../adr/2026-08-19-cme-broker-panel-admission-for-breadth-revival.md)
+   (`Proposed`, awaiting operator ratification).
 3. **Whether Aegis (PARKED, expiring 2026-11-08) should be test-injected as a candidate now**, given
    its expiry clock, or left untouched pending its own separate renewal decision — an operator call,
    not a design-doc default.
@@ -290,3 +304,6 @@ Stage 2 (per-candidate, on demand):
 | Date | Change | By |
 |---|---|---|
 | 2026-08-19 | Initial authoring — design conversation write-up, Rule-0 grounded against `breadth.py`, the Stage-8 ADR, the Q-COMPOSE-1 closure, and this session's transfer-lane/data-manifest survey. Status `Proposed` — not yet reviewed or approved for implementation. | Claude Code (drafted at operator request, "write up the design spec from the previous turn") |
+| 2026-08-19 | §2/§7 open item 1 resolved by reading the pre-transition history in the private `first-passage-archive` remote (operator confirmed readable without unarchiving). MYM's canonical export is now a resolved fact (`2026-07-21_73182.csv`, explicitly commit-pinned); MNQ's four same-day 07-17 candidates were traced to Q-RAIL-1 parity-evidence CSVs, not general-purpose exports, narrowing the real open item to a staleness tradeoff on the remaining `2026-07-11_beabf.csv` candidate. | Claude Code (investigated at operator's "you can verify in the first-passage-archive repo" direction) |
+| 2026-08-19 | Operator pulled a fresh MNQ export (`2026-08-19_3ad92.csv`), closing item 1's staleness tradeoff outright — both legs now have a fresh, non-parity, general-purpose export. Manifest regenerated by hand-inserting the new line (not `--regenerate` in write mode, which would have silently dropped the 28 pre-existing entries not physically present in this session's worktree — same class of defect as the known CATALOG.md worktree-clobber pattern); the 28 pre-existing CSVs were copied in from the operator's main checkout (same repo, same bytes, different local worktree) to keep `check_data_manifests.py --check` meaningful rather than false-failing on partial presence. §7 item 2 corrected from "leaning toward no ADR needed" to **resolved: an ADR is required** — found on direct Rule-0 read of `core/mc/modes.py`'s own header comment mid-implementation, not a preference call. See [`docs/adr/2026-08-19-cme-broker-panel-admission-for-breadth-revival.md`](../../adr/2026-08-19-cme-broker-panel-admission-for-breadth-revival.md) (`Proposed`). | Claude Code (mid-Stage-1 build, course-corrected) |
+| 2026-08-19 | **Both stages executed.** Stage 1: ADR ratified and built — `core/mc/modes.py` registered, `breadth.py` gained a CME-appropriate identity check (§3.1's "breadth.py needs no code change" claim was falsified at implementation time by the strict OANDA-shaped `assert_tv_export` parser not fitting any real CME filename; fixed, recorded in the ADR's own Ratification note, not silently patched) plus a panel-aware self-test; MYM's registered export corrected from the "latest pinned" file (343-day span, too short) to the actual long-history one (`2026-07-11_15d8b.csv`, 2359 days) after direct measurement. First real anchor: `n_eff_dependence=1.9988, n_eff_risk=1.0871` on a 2-leg panel — 19 pre-existing `breadth.py` tests still pass. Stage 2: dispatched to Cursor (`docs/briefs/handoffs/2026-08-19-cursor-handoff-candidate-return-series-index.md`), returned `DONE_WITH_CONCERNS` — §4's falsifiable premise held (regenerated series matches `evaluate_rule`'s own output at `atol=1e-15`), one self-disclosed footprint violation (an out-of-scope `docs/SESSIONS.md` touch, reverted rather than merged) found and corrected on review, 121 tests independently re-verified green. Both pending final commit/merge on operator go. | Claude Code (Stage 1 build + Stage 2 review, same session) |
