@@ -92,6 +92,7 @@ STRATEGY_FILENAME_TOKEN: Dict[str, str] = {
 }
 
 PEPPERSTONE_DIR = Path(__file__).parents[1] / "data" / "tv_exports" / "pepperstone"
+CME_DIR = Path(__file__).parents[1] / "data" / "tv_exports" / "cme"
 
 # Q-SWAP-4 Phase 2 candidate Guardian CSV path (historical; not a registered
 # default panel). Substrate Phase 3 retired the Pepperstone executable-anchor
@@ -103,11 +104,47 @@ GUARDIAN_V56_CSV = PEPPERSTONE_DIR / "Guardian_Gold_v5.6_PEPPERSTONE_XAUUSD_2026
 # DEFAULT_PANEL contract are retired. Engine correctness lives in
 # tests/core/test_mc_synthetic_engine.py (+ planted defects). New panels
 # require an admitting ADR + explicit registration here.
-PANELS_BY_BROKER: Dict[str, Dict[str, Path]] = {}
+#
+# "cme" admitted by ADR 2026-08-19-cme-broker-panel-admission-for-breadth-revival:
+# a 2-leg baseline scoped to the two AUTHORIZED futures legs only (Striker DJ30/MYM,
+# Striker NAS100/MNQ). Guardian (MGC, SUBTRACT/DEAD) and Aegis (6J, PARK) are
+# deliberately excluded from this panel, not merely unpopulated — see that ADR §2.
+# Consumed by lab/research_utils/breadth.py's Stage-8 portfolio-breadth tool;
+# NOT wired into this module's own _load_all/MC-engine panel path, which is a
+# separate, currently-unexercised-for-"cme" consumer, out of that ADR's scope.
+PANELS_BY_BROKER: Dict[str, Dict[str, Path]] = {
+    "cme": {
+        # NOT the "pin latest MYM strategy export" commit's file (2026-07-21_73182.csv) --
+        # measured this session at only 343 days' trade-date span, well under the
+        # 4yr MVD assert_window floor (core/mc/ingest.py::load_trades). "Latest
+        # pinned" turned out to mean a short recency-check re-export, not a full
+        # backtest. 2026-07-11_15d8b.csv measured at 2020-01-14..2026-06-30
+        # (2359 days, 534 rows) -- the longer of two same-span exports 3 days apart.
+        "striker": CME_DIR / "Striker_DJ30_v4.5_MYM_CBOT_MINI_MYM1!_2026-07-11_15d8b.csv",
+        "striker_nas100": CME_DIR / "Striker_NAS100_MNQ_CME_MINI_MNQ1!_2026-08-19_3ad92.csv",
+    },
+}
 
-EXPECTED_SYMBOLS_BY_BROKER: Dict[str, Dict[str, str]] = {}
+EXPECTED_SYMBOLS_BY_BROKER: Dict[str, Dict[str, str]] = {
+    "cme": {
+        "striker": "MYM1!",
+        "striker_nas100": "MNQ1!",
+    },
+}
 
-EXPECTED_VERSIONS_BY_BROKER: Dict[str, Dict[str, str]] = {}
+# Recorded for documentation parity with STRATEGY_FILENAME_TOKEN; the "cme"
+# loader path (breadth.py::load_baseline_panel) does not positionally parse a
+# version token out of these filenames (CME TV-exports don't follow one
+# consistent 7-field pattern the way OANDA/Pepperstone's did — see that
+# function's docstring). "v1" for striker_nas100 is sourced from CLAUDE.md's
+# Strategy Reference table (Striker NAS100 v1 LOCKED); the filename itself
+# carries no version token to check against.
+EXPECTED_VERSIONS_BY_BROKER: Dict[str, Dict[str, str]] = {
+    "cme": {
+        "striker": "v4.5",
+        "striker_nas100": "v1",
+    },
+}
 
 
 # ── Swap modeling (Q-SWAP-1; FXIFY rates per docs/external/fxify_swap_rates_2026-05-25.md) ──

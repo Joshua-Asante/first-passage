@@ -52,6 +52,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from discovery.admission_schema import evaluate_admission, load_admission
+from discovery.cost_model import bp_hurdle
 from research_utils.repo_root import repo_root
 
 # Committed home for manifests: <repo-root>/discovery_manifests, cwd-independent.
@@ -98,6 +99,58 @@ def _resolve_params(args) -> str:
     except json.JSONDecodeError as exc:
         sys.exit(f"ABORT: --params-file {params_file} is not valid JSON: {exc}")
     return text
+
+
+def _resolve_rule_provenance(args) -> dict[str, str] | None:
+    """Optional companion mapping for close_run candidate provenance pointers.
+
+    Mirrors --params-file / --admission-file: a JSON file bypasses shell quoting
+    and is validated before any manifest write. Shape is a flat dict mapping
+    candidate_id -> path (not the load_frozen_rules list shape — one provenance
+    file may be shared by siblings from the same campaign).
+
+    All-or-nothing on the flag itself: omit --rule-provenance-file and close_run
+    is byte-identical to today (no rule_provenance_path keys). When supplied,
+    only candidate ids present in the mapping gain a rule_provenance_path key;
+    missing ids get no key (not null/empty). Governing design:
+    docs/superpowers/specs/2026-08-19-cme-breadth-revival-candidate-index-design.md
+    §3.2 / §5.
+    """
+    provenance_file = getattr(args, "rule_provenance_file", None)
+    if provenance_file is None:
+        return None
+    text = Path(provenance_file).read_text(encoding="utf-8")
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as exc:
+        sys.exit(
+            f"ABORT: --rule-provenance-file {provenance_file} is not valid JSON: {exc}"
+        )
+    if not isinstance(payload, dict):
+        sys.exit(
+            "ABORT: --rule-provenance-file must be a flat JSON object mapping "
+            f"candidate_id -> path (got {type(payload).__name__})."
+        )
+    mapping: dict[str, str] = {}
+    for key, value in payload.items():
+        if not isinstance(key, str) or not isinstance(value, str):
+            sys.exit(
+                "ABORT: --rule-provenance-file must be a flat dict[str, str] "
+                f"(candidate_id -> path); bad entry {key!r}: {type(value).__name__}."
+            )
+        mapping[key] = value
+    return mapping
+
+
+def _candidates_with_provenance(labelled, rule_provenance: dict[str, str] | None) -> list[dict]:
+    """Build close_run candidate rows; attach rule_provenance_path only when mapped."""
+    rows: list[dict] = []
+    for cid, p in labelled:
+        row: dict = {"id": cid, "pvalue": p}
+        if rule_provenance is not None and cid is not None and cid in rule_provenance:
+            row["rule_provenance_path"] = rule_provenance[cid]
+        rows.append(row)
+    return rows
 
 
 # Four fields ADR 2026-07-25 §2a established for cost_hurdle; reused here for
@@ -378,6 +431,83 @@ def _require_admission(args, lane):
     return result.summary
 
 
+def _require_cost_law(args):
+    """Optional Requirement-5 / §2.2 cost-reachability pre-flight.
+
+    ADR 2026-07-16 §4/§6 names this exact mechanical gate as "optional later
+    handoff": "a `register_search open` pre-flight that computes the §2.2
+    inequality from declared manifest fields and refuses." No formula lives
+    here -- `docs/methodology/strategy_harvest.md` §1 Requirement 5 is the
+    sole authority; this only executes `cost_model.bp_hurdle`'s existing
+    arithmetic against declared values, the same way D5 and H-OD-1's deaths
+    were hand-computed in one division each.
+
+    All-or-nothing opt-in on EITHER lane: supply all five --cost-law-* flags
+    together, or none. Omitting them keeps today's status quo unchanged --
+    the inequality checked by hand inside the reachability attestation.
+    **Not yet mandatory** -- graduating this to a hard-required flag on every
+    mechanism-first open needs its own ADR follow-up once the opt-in path has
+    been exercised (the same graduate-after-use pattern as G10 F3 / R3 in the
+    2026-08-03 gate-stack audit), not a silent default change here.
+
+    Returns a summary dict on ADMIT, or None when not supplied.
+    """
+    instrument = getattr(args, "cost_law_instrument", None)
+    firm_key = getattr(args, "cost_law_firm_key", None)
+    panel_price = getattr(args, "cost_law_panel_price", None)
+    cohort_delta_bp = getattr(args, "cost_law_cohort_delta_bp", None)
+    slip_ticks = getattr(args, "cost_law_slip_ticks", None)
+    supplied = (instrument, firm_key, panel_price, cohort_delta_bp, slip_ticks)
+    if all(v is None for v in supplied):
+        return None
+    if any(v is None for v in supplied):
+        names = (
+            "--cost-law-instrument", "--cost-law-firm-key", "--cost-law-panel-price",
+            "--cost-law-cohort-delta-bp", "--cost-law-slip-ticks",
+        )
+        missing = [n for n, v in zip(names, supplied) if v is None]
+        sys.exit(
+            "ABORT: the cost-law pre-flight is all-or-nothing -- supply all five "
+            f"--cost-law-* flags or none (Requirement 5 / ADR 2026-07-16 §2.2). "
+            f"Missing: {', '.join(missing)}."
+        )
+    slip_convention = getattr(args, "cost_law_slip_convention", None) or "per_side"
+    try:
+        hurdle = bp_hurdle(
+            instrument,
+            float(panel_price),
+            firm_key=firm_key,
+            slip_ticks=float(slip_ticks),
+            slip_convention=slip_convention,
+        )
+    except (ValueError, KeyError) as exc:
+        sys.exit(f"ABORT: --cost-law-* pre-flight could not price the declared inputs: {exc}")
+    delta = float(cohort_delta_bp)
+    if delta < hurdle.hurdle_4x_bp:
+        sys.exit(
+            f"ABORT: cost-law pre-flight REFUSE -- declared cohort delta {delta:.4f} "
+            f"bp/event < 4x RT hurdle {hurdle.hurdle_4x_bp:.4f} bp at {instrument}/"
+            f"{firm_key}, panel price {panel_price:g} (Requirement 5, "
+            "docs/methodology/strategy_harvest.md §1; ADR 2026-07-16 §2.2). The "
+            "gate/instrument pairing as declared is unreachable -- redesign it, "
+            "do not open."
+        )
+    print(
+        f"[cost-law] ADMIT  delta={delta:.4f}bp  hurdle_4x={hurdle.hurdle_4x_bp:.4f}bp  "
+        f"margin={delta - hurdle.hurdle_4x_bp:+.4f}bp  {instrument}/{firm_key}"
+    )
+    return {
+        "instrument": instrument,
+        "firm_key": firm_key,
+        "panel_price": float(panel_price),
+        "cohort_delta_bp": delta,
+        "hurdle_4x_bp": hurdle.hurdle_4x_bp,
+        "slip_ticks": float(slip_ticks),
+        "slip_convention": hurdle.slip_convention,
+        "margin_bp": delta - hurdle.hurdle_4x_bp,
+    }
+
+
 def open_run(args):
     run_id = args.run_id or f"disc_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     if _path(run_id).exists():
@@ -396,6 +526,9 @@ def open_run(args):
     # SPEC S6: after mechanism-first attestation gates, before any manifest write.
     admission_summary = _require_admission(args, lane)
     prereg_rel = _require_prereg(getattr(args, "prereg", None), lane)
+    # Optional Requirement-5/§2.2 mechanical pre-flight (ADR 2026-07-16 §4/§6);
+    # opt-in on either lane, before any manifest write.
+    cost_law_summary = _require_cost_law(args)
     params = _resolve_params(args)
     manifest = {
         "run_id": run_id,
@@ -425,6 +558,8 @@ def open_run(args):
         manifest["admission"] = admission_summary
     if prereg_rel is not None:
         manifest["prereg"] = prereg_rel
+    if cost_law_summary is not None:
+        manifest["cost_law_preflight"] = cost_law_summary
     _save(manifest)
     print(f"[open]   registered '{run_id}'")
     print(f"[open]   tool={args.tool}  K={args.search_space_size:,}  alpha={args.alpha}")
@@ -450,6 +585,9 @@ def close_run(args):
     manifest = _load(args.run_id)
     if manifest["status"] != "open":
         sys.exit(f"ABORT: '{args.run_id}' is '{manifest['status']}', not open. Cannot re-close.")
+
+    # Optional; validated before any close write when the flag is present.
+    rule_provenance = _resolve_rule_provenance(args)
 
     # Operator-stopped closure (ADR 2026-07-26 clause 2-C): a campaign halted by
     # operator direction BEFORE its declared reads executed banks the EXECUTED
@@ -551,7 +689,7 @@ def close_run(args):
         "bh_rows": bh_rows,
         "n_pass_bh": max_reject,
         "expected_false_positives_global_null": round(exp_fp, 4),
-        "candidates": [{"id": cid, "pvalue": p} for cid, p in labelled],
+        "candidates": _candidates_with_provenance(labelled, rule_provenance),
     }
     manifest["verdict"] = (
         "FIRST-PASS ONLY. Candidates clearing the crude multiplicity floor are "
@@ -636,6 +774,31 @@ def build_parser():
                         "Required when --lane mechanism-first (SPEC S6 + TNEC-1); "
                         "optional on blind — when present, Cap/EM0, N-EDGE, and "
                         "power refusals still abort with no manifest write.")
+    o.add_argument("--cost-law-instrument", default=None,
+                   help="Optional Requirement-5/§2.2 cost-reachability pre-flight "
+                        "(ADR 2026-07-16 §4/§6) -- computes cost_model.bp_hurdle and "
+                        "refuses if the declared cohort delta cannot clear it. "
+                        "All five --cost-law-* value flags are all-or-nothing; omit "
+                        "all to keep today's manual-attestation status quo. Symbol "
+                        "known to core.firm_rules.cost_model (e.g. MNQ, MYM, MGC).")
+    o.add_argument("--cost-law-firm-key", default=None,
+                   help="FIRM_RULES key to price commissions from (e.g. "
+                        "Tradeify_Select_100K). Required together with the other "
+                        "--cost-law-* flags.")
+    o.add_argument("--cost-law-panel-price", type=float, default=None,
+                   help="Panel-era median price for the instrument, at the "
+                        "adjudication basis (ADR 2026-07-16 §2 rule 3 -- never a "
+                        "present-day or convenience basis).")
+    o.add_argument("--cost-law-cohort-delta-bp", type=float, default=None,
+                   help="Declared cohort edge magnitude in bp/event, at the same "
+                        "panel basis as --cost-law-panel-price.")
+    o.add_argument("--cost-law-slip-ticks", type=float, default=None,
+                   help="Assumed round-trip slippage in ticks, per the declared "
+                        "--cost-law-slip-convention.")
+    o.add_argument("--cost-law-slip-convention", choices=["per_side", "total_rt"],
+                   default=None,
+                   help="Slippage convention for the cost-law pre-flight (default "
+                        "per_side when the pre-flight is supplied).")
     o.set_defaults(func=open_run)
 
     c = sub.add_parser("close", help="Submit survivor p-values AFTER the run.")
@@ -655,6 +818,11 @@ def build_parser():
     c.add_argument("--executed-looks", default=None,
                    help="With --operator-stopped: enumerate every executed look and its "
                         "examiner (ADR 2-C condition iii).")
+    c.add_argument("--rule-provenance-file", default=None,
+                   help="Optional JSON file mapping candidate_id -> frozen-rule "
+                        "provenance path. When supplied, matching close candidates "
+                        "gain a rule_provenance_path field (additive; omit for "
+                        "byte-identical legacy manifests).")
     c.set_defaults(func=close_run)
 
     s = sub.add_parser("status", help="Print one manifest, or list all.")

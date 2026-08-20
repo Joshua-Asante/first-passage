@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from discovery.cost_mgc import hurdle_from_price, passes_cost_law
+from discovery.ic_similarity import DEFAULT_IC_THRESHOLD, SimilarityFinding, pairwise_similarity_report
 from discovery.motif_rules import FrozenRule, RuleEval, evaluate_rule
 
 DSR_UNREACHABLE_N = 250  # ADR §6 / pre-reg §2 power disclosure
@@ -30,6 +31,10 @@ class ScoredCandidate:
 class ScoreBundle:
     survivors: list[ScoredCandidate]
     killed_cost: list[ScoredCandidate] = field(default_factory=list)
+    # Advisory only (2026-08-19) -- near-duplicate IS bar-return pairs among
+    # survivors, per discovery.ic_similarity. Never filters survivors; the
+    # caller decides what, if anything, to do with a finding.
+    near_duplicates: list[SimilarityFinding] = field(default_factory=list)
 
 
 def _perm_pvalue(
@@ -62,6 +67,7 @@ def score_rules(
     cost_frac_per_rt: float | None = None,
     n_perm: int = 200,
     seed: int = 0,
+    ic_threshold: float = DEFAULT_IC_THRESHOLD,
 ) -> ScoreBundle:
     """Score frozen rules on IS (triage) and OOS (matrix). Holdout unseen for selection."""
     hurdle = hurdle_from_price(mgc_price)
@@ -92,4 +98,10 @@ def score_rules(
             survivors.append(cand)
         else:
             killed.append(cand)
-    return ScoreBundle(survivors=survivors, killed_cost=killed)
+    near_dupes: list[SimilarityFinding] = []
+    if len(survivors) > 1:
+        named_bar_returns = {
+            cand.rule.candidate_id: cand.is_eval.bar_returns for cand in survivors
+        }
+        near_dupes = pairwise_similarity_report(named_bar_returns, threshold=ic_threshold)
+    return ScoreBundle(survivors=survivors, killed_cost=killed, near_duplicates=near_dupes)
