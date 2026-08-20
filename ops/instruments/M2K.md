@@ -1,10 +1,10 @@
 # INSTRUMENT LEDGER — M2K
 
 **Symbol:** CME Micro E-mini Russell 2000 ($5/index pt) futures (M2K; Globex, Databento dataset `GLBX.MDP3`) · **Parent:** RTY ($50/pt, tick $5.00 — **un-ledgered**, see §ACTIVE) · **Asset class:** equity index futures
-**Status:** **Research/discovery only. No panel, no candidate, no manifest, K bank 0.** Listed in Tradeify's Equity Index Product Group (cost basis useful) but **not a c1 leg** and not proposed as one — no live firm deployment to share a book with.
+**Status:** **Research/discovery only. TV 15m panel landed 2026-08-13 (`M2K_M15.csv`); no candidate, no manifest, K bank 0.** Listed in Tradeify's Equity Index Product Group (cost basis useful) but **not a c1 leg** and not proposed as one — no live firm deployment to share a book with.
 **Last updated:** 2026-08-13
 
-**Purpose:** single source of instrument-level truth (operational rule 10, [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](../../docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md)). Any session deriving/testing/adjudicating on M2K MUST read this at session start and append a dated disposition. **Created 2026-07-27** as the live touching session for [`WSTRUCT-M2K-1`](../../docs/briefs/rnd-pipeline/WSTRUCT-M2K-1-weekly-structure-component-confirm-scoping.md) scoping — ADR [`2026-07-25-instrument-profile-index.md`](../../docs/adr/2026-07-25-instrument-profile-index.md) §5 permits ledger creation on a live touching session, and forbids it for a "complete the matrix" motive. **This ledger records near-absence of prior work; that is its content.** Creating it makes the class-level bar M1 *binding and visible* on this instrument, which is the whole point of the index layer.
+**Purpose:** single source of instrument-level truth (operational rule 10, [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](../../docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md)). Any session deriving/testing/adjudicating on M2K MUST read this at session start and append a dated disposition. **Created 2026-07-27** as the live touching session for [`WSTRUCT-M2K-1`](../../docs/briefs/rnd-pipeline/WSTRUCT-M2K-1-weekly-structure-component-confirm-scoping.md) scoping — ADR [`2026-07-25-instrument-profile-index.md`](../../docs/adr/2026-07-25-instrument-profile-index.md) §5 permits ledger creation on a live touching session, and forbids it for a "complete the matrix" motive. **Created to record near-absence of prior work.** Later MSL-C3-K2 work landed a TV panel and PROFILE cells — see W4 and `## PROFILE`. Creating the ledger made the class-level bar M1 *binding and visible* on this instrument, which is the whole point of the index layer.
 
 ## PROFILE (machine-readable)
 
@@ -15,6 +15,15 @@ family: []
 venue_tradable: true
 venue_note: "Tradeify Equity Index Product Group ($1.82 all-in -> $0.91/side). Withdrawn MYM+MNQ legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred; LEG_MAP code untouched."
 k_bank_source: "../../discovery_manifests/"
+cells:
+  - mechanism: overnight-range-failed-extension-fade
+    verdict: DEAD
+    date: 2026-08-13
+    source: "../../docs/briefs/closures/MSL-C3-K2-closure-falsified.md"
+  - mechanism: pdh-pdl-failed-break-reclaim
+    verdict: DEAD
+    date: 2026-08-13
+    source: "../../docs/briefs/closures/MSL-C3-K2-closure-falsified.md"
 cost_hurdle:
   value: 11.89
   units: "bp/round-trip"
@@ -37,7 +46,7 @@ structure:
 - **W1 — `.c.0` continuous is calendar-roll, front-month, UNADJUSTED.** Feed-general, measured on ES ([`ES.md`](ES.md) W1: a +1.35% / +69.5pt ESH4→ESM4 phantom jump). RTY/M2K roll **quarterly, mid-month** (3rd-Fri expiry Mar/Jun/Sep/Dec) exactly like ES/YM/ZN — any M2K return window spanning a roll date carries a phantom calendar-spread jump. **A weekly-bar construct spans roll dates ~4×/yr by construction**, so this is load-bearing for any WSTRUCT work, not incidental. Use `.v.0` (volume-lead, = TV's `1!`) or an explicitly roll-masked window; `.c.0` is inadmissible for P&L.
 - **W2 — Databento `ohlcv-1d` buckets by UTC calendar day → phantom Sunday bars.** Feed-general. The Sunday-evening Globex reopen lands in a thin Sunday-settle-date bar. **Drop settle-date weekday > 4 before any trade-date offset work.** For weekly aggregation this shifts week boundaries — verify the week-start convention explicitly rather than trusting a resample.
 - **W3 — micro-era floor.** M2K, like all index micros, launched **2019-05-06**. Deep history requires the RTY parent and the parent→micro proxy discipline ([`.claude/skills/databento-data/reference/proxy-discipline.md`](../../.claude/skills/databento-data/reference/proxy-discipline.md)): re-scale economics 1:10, do **not** inherit the parent's fill model, and reserve 2019+ native-micro as a genuine OOS gate.
-- **W4 — no panel exists locally.** Nothing for M2K/RTY is in `core/data/bar_data/` or any databento cache. Any pull needs a recorded cost dry-run pre-pull with a hard `--max-cost` and `--force` forbidden (the Q-COSTGEO-2 lesson: a "$0.00, ~22 GB" §0 claim extrapolated from one month measured at **$272.91**). **Estimate; never extrapolate.**
+- **W4 — TV 15m panel landed; Databento cache still empty.** Operator-supplied CME BAR EXPORT `M2K_M15.csv` landed 2026-08-13 (sha256 `81922570…`, 106,131 bars → 2026-07-02 UTC; tracked in `core/data/bar_data/SHA256SUMS`, bytes gitignored). RTY parent and any Databento cache remain absent. Any *new* Databento/IS pull still needs a recorded cost dry-run pre-pull with a hard `--max-cost` and `--force` forbidden (the Q-COSTGEO-2 lesson: a "$0.00, ~22 GB" §0 claim extrapolated from one month measured at **$272.91**). **Estimate; never extrapolate.**
 
 ---
 
@@ -55,6 +64,8 @@ structure:
 | Rejection | Discriminator | Source |
 |---|---|---|
 | Cross-index RV **selection/rotation** over an ES/NQ/YM/RTY universe | Selection dilutes edge: +2.64 bp RV-ranked vs +5.19 bp always-MNQ; strictly dominated by single-instrument incumbent. **Not** a rejection of single-instrument M2K work. | rejected 2026-07-21 — [`docs/rejected_candidates.md`](../../docs/rejected_candidates.md) · [`RESULTS`](../../lab/archive/xindex_rv_recon_2026-07/RESULTS.md) |
+| `overnight-range-failed-extension-fade` × M2K (MSL-C3-K2 Axis B) | Explore IS both-arms session-block 95% CI entirely &lt; 0 (long n=359; short n=378). CONFIRM unread. | FALSIFIED 2026-08-13 — [closure](../../docs/briefs/closures/MSL-C3-K2-closure-falsified.md) · [`RESULTS_g2`](../../lab/archive/msl_c3_m2k_2026-08/RESULTS_g2.md) |
+| `pdh-pdl-failed-break-reclaim` × M2K (MSL-C3-K2 Axis A) | Explore IS both-arms session-block 95% CI entirely &lt; 0 (long n=293; short n=295). Does not reopen the MYM C1 kill. | FALSIFIED 2026-08-13 — [closure](../../docs/briefs/closures/MSL-C3-K2-closure-falsified.md) · [`RESULTS_g2`](../../lab/archive/msl_c3_m2k_2026-08/RESULTS_g2.md) |
 
 ## ACTIVE / OPEN
 
@@ -64,7 +75,7 @@ structure:
 - **[`MSL-C3` Stage-1 ≤1-story](../../lab/archive/msl_c3_m2k_2026-08/STAGE1.md) (2026-08-13) — historical.** **B4 DECLINED** → [OPERATOR-KILL](../../docs/briefs/closures/MSL-C3-closure-operator-kill.md); superseded as live license by STAGE1_K2 above.
 - **Paid order-flow procurement is CLOSED at the gate, not at the price** ([ruling 2026-07-28](../../docs/briefs/2026-07-28-m2k-order-flow-avenue-a-ruling.md)). Priced this session (estimate-only, $0 billed): M2K `trades` **$82.69** / `tbbo` $137.81 / `mbp-10` $638.62; RTY parent $140.64 / $234.40 / $711.04. The cost limb of [Avenue-A](../../docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md) §6 **passes for the first time** ($82.69, or ~$32 Wed/Thu-targeted, inside the $125 credit) — and the gate still shuts on **limb 3 (survivor-tied)**, which fails **by construction** because M2K has no admitted mechanism and the pull's purpose is to find one. Limb 1 (depth-shape) fails independently: `trades` carries no book geometry, and `mbp-10` is barred pre-survivor by databento Rule 2. **Do NOT re-propose the $19.91 MYM/MNQ `mbp-10` pull as the survivor-tied workaround** — declined 2026-07-24 on *no lever exists* (`STATE.md:288`). Cheapest re-open is free: a published cohort δ for aggressor-signed flow → Russell futures response, citable without procurement.
 - **RTY parent is un-ledgered.** Deliberate: creating `RTY.md` without a live touching session on RTY itself would be the "complete the matrix" motive ADR 2026-07-25 §5 forbids. Consequence to keep in view — M2K therefore inherits **no** bars via `family`, so class-level bars must be declared here directly (that is why M1 is a first-class finding rather than an inherited pointer). If RTY is ever ledgered, reconcile M1 and M3 rather than duplicating them.
-- **No panel, no fill model, no liquidity measurement.** M2K displayed depth vs order size is unmeasured; per Q-COSTGEO-3 that is now a Phase-0 admissibility item for any size-scaling construct, not a Stage-7 refinement. A weekly single-contract construct is unlikely to bind, but "unlikely" is not "measured."
+- **No fill model, no liquidity measurement.** TV 15m panel landed (W4). M2K displayed depth vs order size is unmeasured; per Q-COSTGEO-3 that is now a Phase-0 admissibility item for any size-scaling construct, not a Stage-7 refinement. A weekly single-contract construct is unlikely to bind, but "unlikely" is not "measured."
 
 ## SESSION LOG
 
