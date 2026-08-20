@@ -64,6 +64,20 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-20** — **`Q-TODVOL-1` — first within-instrument temporal-selectivity candidate since the 2026-08-10 route-① opening, frozen and D2-falsified same day.**
+  Operator direction ("write it up as a proper causally-named G0 freeze and then check whether it
+  can actually be tested"). Froze `tod-baseline-range-trigger` (declared NEW in `MECHANISMS.md`,
+  same commit): first RTH 15m bar outside the opening-range window whose range ≥ 2.0× the trailing
+  60-session same-time-of-day median, entered in the bar's own direction, stop/target sized off
+  the trigger bar's own range (rr=2). Runs on native 15m bars, explicitly outside the paused
+  dense-1m/G=10 lane (U0 KEEP untouched) — gated instead by the 2026-08-16 ADR's D2 pre-G0
+  falsifier, reused verbatim. `K_intrinsic=1`, single cell, no sweep. D2 result: **`FAIL`** — mean
+  signed gross +0.2546pt vs the 2.82pt bar (9% of required), n=975 signals, 54.26% coverage. Closes
+  at $0, no G0, no Board debate, matching the CON-N precedent. Route ① stays open in principle;
+  re-proposal needs a structurally different criterion. $0/K=0, no live-risk surface.
+  [`FREEZE`](lab/analysis/c1/todvol_1_2026-08-20/FREEZE.md) ·
+  [`RESULTS`](lab/analysis/c1/todvol_1_2026-08-20/RESULTS.md) ·
+  [`ops/instruments/MECHANISMS.md`](ops/instruments/MECHANISMS.md).
 - **2026-08-20** — **Six-lead pursuit P4/P5 un-HOLD'd and dispositioned — P4 stays `HOLD` (sharper reason), P5 closes `UNSCREENABLE`.**
   Operator un-HOLD election. **P4 (L2 dealer-gamma EOD):** route memo found the mechanism is
   construction-distinct from `Q-ORB-GEX-1` (momentum-continuation vs. regime-gate) but shares its

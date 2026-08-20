@@ -279,7 +279,15 @@ Rejected nearest classes (one-line):
 - `pdh-pdl-breakout-rth` / `pdh-pdl-failed-break-reclaim` / `impulse-pullback-vwap-reclaim` / `band-pierce-continuation` / `ict-liquidity` — all keyed to a fixed **reference price level**; this class is keyed to a **time-of-day-conditioned volatility baseline**, no price level involved.
 - `opening-pressure` — opening-session volume/range only; this class's trigger can occur at any RTH slot, not just the open.
 
-- **Class finding:** none yet — D2 pre-G0 falsifier pending (this session).
+- **Class finding:** MNQ D2 pre-G0 falsifier `FAIL` — mean signed gross **+0.2546 pt** vs the
+  generous **2.82 pt** pass bar (0.5× the 4×RT hurdle), n=975 signals, 54.26% session coverage.
+  Not a close call — 9% of the required bar. Route ① stays open in principle
+  ([`ADR 2026-08-10`](../../docs/adr/2026-08-10-temporal-selectivity-outside-mapped-levers.md));
+  this specific causal story (volatility-threshold entry, stop/target sized off the trigger bar's
+  own range) does not supply a candidate through it. Re-proposal bar: a structurally different
+  criterion, not a re-tuned θ/lookback/stop-target on this shape.
+  [`FREEZE`](../../lab/analysis/c1/todvol_1_2026-08-20/FREEZE.md) ·
+  [`RESULTS`](../../lab/analysis/c1/todvol_1_2026-08-20/RESULTS.md).
 
 ## sweep-failure-filtered-continuation
 

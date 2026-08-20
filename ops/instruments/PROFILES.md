@@ -318,7 +318,7 @@ _No instrument has a recorded verdict on this mechanism._
 
 **NEW 2026-08-20 (`Q-TODVOL-1`).** Within-instrument temporal selectivity under
 
-- **Class finding:** none yet — D2 pre-G0 falsifier pending (this session).
+- **Class finding:** MNQ D2 pre-G0 falsifier `FAIL` — mean signed gross **+0.2546 pt** vs the
 
 _No instrument has a recorded verdict on this mechanism._
 

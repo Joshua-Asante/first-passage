@@ -1109,7 +1109,7 @@
     "tod-baseline-range-trigger": {
       "definition": "**NEW 2026-08-20 (`Q-TODVOL-1`).** Within-instrument temporal selectivity under",
       "findings": [
-        "none yet \u2014 D2 pre-G0 falsifier pending (this session)."
+        "MNQ D2 pre-G0 falsifier `FAIL` \u2014 mean signed gross **+0.2546 pt** vs the"
       ]
     },
     "trend-following": {
