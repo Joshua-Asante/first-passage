@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-19f — CME breadth revival + candidate reproducibility index (2-stage, CC+Cursor fleet)
+
+**Focus:** Admit a `"cme"` broker panel to `core/mc/modes.py` for Stage-8 breadth work (retired since the challenge-era substrate cutover), and give portfolio-composition candidates a reproducibility path that doesn't require storing raw return series.
+
+**Shipped:** ADR [`2026-08-19-cme-broker-panel-admission-for-breadth-revival.md`](adr/2026-08-19-cme-broker-panel-admission-for-breadth-revival.md) (ratified) registers the CME panel (Striker MYM long-history export, Striker NAS100 fresh 2026-08-19 export); `lab/research_utils/breadth.py` gained a CME-specific filename-identity check (the strict OANDA-shaped parser doesn't fit CME exports) and a panel-aware self-test with a fresh measured anchor (dependence N_eff 1.9988 / risk N_eff 1.0871). Stage 2, dispatched to Cursor per [`handoff brief`](briefs/handoffs/2026-08-19-cursor-handoff-candidate-return-series-index.md): `lab/discovery/return_series_index.py` (`regenerate_return_series`) reconstructs a candidate's date-indexed return series on demand from its `FrozenRule` provenance pointer; `register_search.py close --rule-provenance-file` wires it in. Commits `67d1f8c` (Stage 1) + `4028be7` (Stage 2, on `cursor/candidate-return-series-index`) merged into this branch.
+
+**Decisions/defects:** Two corrections surfaced mid-build, documented in the ADR's Ratification note rather than silently patched: the originally-registered MYM export was too short for the ≥4yr window floor (swapped to the long-history file); design spec's "no code change needed" claim for `breadth.py` was falsified by testing the real parser against real CME filenames. Cursor's return self-disclosed a `docs/SESSIONS.md` touch outside its declared footprint — reverted before commit (SESSIONS.md stays orchestrator-only). Independently re-verified: 121 tests pass, `check_boundaries` clean.
+
+**Open / next:** No further action owed by this packet. Carry 19e/19d/19c/19b/19a/18t forward unchanged (persona-hierarchy, check_brief, MNQFLOW-1-DEPTH, S1b/S2/S3, TRAINKILL, B1/B2/F1/B7-REFIRE) — none touched by this work.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-19e — persona-hierarchy spec/ADR staleness from the §6.6 panel
 
 **Focus:** Fix pre-existing design-spec/ADR staleness the 2026-08-19 §6.6 panel (`wf_88c21d8d-a7f`) caught in passing — not caused by §6.6, does not block that section's ratification.

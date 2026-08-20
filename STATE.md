@@ -61,6 +61,14 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-19** — **`"cme"` broker panel admitted; `breadth.py`'s risk-N_eff mechanism revived on
+  canonical data.** ADR `Proposed`→`Accepted` (operator: "I accept... and you can touch
+  core/mc/modes.py"). 2-leg baseline (Striker DJ30/MYM, Striker NAS100/MNQ — Guardian/Aegis
+  deliberately excluded, see ADR §2), consumed only by the Stage-8 portfolio-breadth tool, not the MC
+  engine's own panel loader. First real anchor: `n_eff_dependence=1.9988, n_eff_risk=1.0871` (2-leg,
+  not comparable to the retired 4-leg Pepperstone Q-NEFF-1 anchor). $0/K=0, research tooling only, no
+  live-risk surface. [`ADR`](docs/adr/2026-08-19-cme-broker-panel-admission-for-breadth-revival.md) ·
+  [`design spec`](docs/superpowers/specs/2026-08-19-cme-breadth-revival-candidate-index-design.md).
 - **2026-08-19** — **Persona-hierarchy review panel ADR ratified; first real C-suite panel run
   (GSUB-2) SUBTRACTs b2 + c1.** ADR `Proposed`→`Accepted` (operator: "ratify the ADR"). First
   real (non-rehearsal) GRAND-tier panel use: CIO+COO+CRO reviewed a frozen SUBTRACT-candidate
