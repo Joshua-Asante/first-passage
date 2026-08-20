@@ -55,3 +55,35 @@ change requiring escalation.
 Operator drove every Fly-side command directly (I lack Fly credentials this session by design).
 **Rehearsal:** no — real, live-infrastructure action with real effect.
 **CRO hard block fired:** no.
+
+## 2026-08-19 — Self-consistency companion checkpoint (design spec §10.2), retroactive exercise against docs/briefs/GSUB-2-park-cohort-early-review.md
+
+**Self-consistency checkpoint:** yes -- N=3 same-persona resample compared against the real panel's
+CRO verdict; distinct H′, does not count toward §10's N=3 falsifier.
+
+**Verdict:** 3/3 samples returned `clean:true`, matching the real panel run's CRO verdict exactly
+(also `clean:true`, per `docs/briefs/closures/GSUB-2-closure-resolved-loadbearing.md` synthesis,
+workflow `wf_e016a5d9-3f6`). Two samples found zero findings; one independently surfaced the same
+NIT the real CIO lens raised (pursuit-ID "c1" colliding with the "c1 rail" infrastructure name).
+No sample manufactured a BLOCKER or CONCERN. This is not high-variance/noisy output on this
+artifact — three independent draws converged.
+
+**Method (per §10.2's own spec, exercised retroactively since the real trigger — "first 1-2 real
+GRAND-tier reviews" — already fired at GSUB-2 without this checkpoint being run alongside it):**
+3 fresh, independent CRO spawns against the frozen `docs/briefs/GSUB-2-park-cohort-early-review.md`
+artifact, each given the exact CRO build-prompt template from
+`.claude/workflows/pre-ratification-adversarial-panel.js`, and — to avoid contaminating the
+comparison with the real answer — each given only the prior log content that existed *before*
+GSUB-2's real review ran (the single 2026-08-19 GSUB-1-rehearsal entry above), not the live
+`cro-log.md` file, which already contains the real GSUB-2 entry and would have leaked the answer.
+
+**Confirmed findings:** none of the 3 samples raised a BLOCKER or CONCERN.
+
+**Ratified as recommended:** N/A — this is a supplementary AI-vs-AI diagnostic per §10.2, not a
+ratification-gate review; no proposal is submitted for accept/reject.
+
+**Rehearsal:** N/A (see Self-consistency checkpoint tag above — this is the same non-counting
+category §13 established, not the panel's real-vs-rehearsal axis). Discharges §10.2's own bounded
+1-2-use design; not intended to recur as a standing check.
+
+**CRO hard block fired:** N/A — self-consistency side-experiment, not a wired panel invocation.
