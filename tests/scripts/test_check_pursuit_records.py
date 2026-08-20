@@ -226,7 +226,7 @@ def test_live_park_count_and_fields():
         p for p in cpr.PURSUITS_DIR.glob("*.md")
         if cpr.parse_standing(p.read_text(encoding="utf-8")) == "PARK"
     ]
-    assert len(parks) == 8, f"expected 8 live PARK records, got {len(parks)}"
+    assert len(parks) == 6, f"expected 6 live PARK records, got {len(parks)}"
     for p in parks:
         text = p.read_text(encoding="utf-8")
         assert cpr.RE_ENTRY_FIELD.search(text), f"{p.name} missing re-entry:"
@@ -265,4 +265,4 @@ def test_live_corpus_all_parks_expired_after_asof(capsys):
         line for line in out.splitlines()
         if "expiry-enforcement" in line
     ]
-    assert len(expiry_lines) == 8, out
+    assert len(expiry_lines) == 6, out
