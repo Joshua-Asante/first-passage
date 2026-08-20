@@ -1,0 +1,80 @@
+# Claude Code / Cursor handoff — parameterize the Aegis→6J 3-leg composed engine's risk allocation (engineering-only, no new measurement)
+
+**Status:** ready to dispatch
+**Authority:** operator direction 2026-08-20 ("hand off the engineering fix... to Cursor"), scoped by operator election ("Engineering-only, no new number") after a J15 conflict was surfaced and flagged before any spec was written.
+**Layer:** `lab/analysis/` research engineering only. **No `core/`, Pine, allocation, `dd_protection`, rail, K ledger, or live-risk surface touched. $0. Nothing armed.**
+
+---
+
+## §0 — Rule 0 reads (this session, verified before this handoff was written)
+
+- [`ops/instruments/6J.md`](../../../ops/instruments/6J.md) J13/J14/J15 — read in full. J14: a separate, already-validated 3-leg composed harness (`aegis1p_3leg_rescore_2026-07-27`) exists, distinct from the Trap #11-constrained Q-COMPOSE-1 breadth engine; controls reproduce published 2-leg pins to 0.00pp; gating result at Aegis risk=1.00%: `Tradeify_Select_100K` **10.96% FAIL**, `Tradeify_Select_50K` **3.78% FAIL**, `MFFU_Rapid_50K` **3.54% FAIL**. J15: the Aegis risk-bracket question is **explicitly closed** — *"no further risk-arm measurement is owed; any future re-open requires new mechanism evidence, not a new parameter."* This is why this packet is scoped engineering-only — see §5.
+- `lab/analysis/c1/aegis1p_3leg_rescore_2026-07-27/RESULTS.md` — read in full. Runner script `run_aegis1p_rescore.py` is referenced but **absent from the working tree** — pruned by the Great Prune (`git log -- <dir>` shows commit `283d1de`, "drop closed-campaign harnesses/panels from lab/analysis; keep RESULTS*/PREREG*/CARD"). Retrieved this session via `git show pre-prune-2026-08-08:lab/analysis/c1/aegis1p_3leg_rescore_2026-07-27/run_aegis1p_rescore.py` — confirmed readable, full source below informs §2.
+- The retrieved script itself, read in full this session. Load-bearing lines: `AEGIS_RISK = 0.0100` (module constant, hardcoded); `AEGIS_EXPECT_1R = {"dollars": 2163.57, "n": 7, "scale": 0.924398}` (a calibration pin whose `scale` factor is coupled to `AEGIS_RISK` — **not independently verified this session whether `scale` is a pure linear function of `AEGIS_RISK` or requires its own re-derivation per risk level; this is Cursor's Phase-1 job to determine from the code, not to guess**); `ALLOCS_3 = {"striker": 0.0070, "striker_nas100": 0.0037, AEGIS_LEG: AEGIS_RISK}`; `CONTROL_PINS`/`CONTROL_TOL = 0.0015` (the existing reproduction-tolerance convention this packet's validation reuses).
+- [`docs/adr/2026-07-14-cc-cursor-surface-allocation.md`](../../adr/2026-07-14-cc-cursor-surface-allocation.md) — this packet's routing: `lab/analysis/` is not a locked surface (test 1 clear); spec is freezable without mid-build judgment calls (test 2 — see §2's explicit fallback for the one genuine ambiguity); estimated build > 1hr / >3 files plausible (test 3). Standard single-Cursor-handoff routing, not a fleet (only one packet).
+- Vendor-data note: the 6J CSV panels this script reads (`Aegis_6J1_CME_6J1!_2026-07-27_ac331.csv` + the Striker MYM/MNQ byte-pinned exports `15d8b`/`beabf`) are gitignored and **absent from this worktree** (confirmed via `find`). They exist in the **primary checkout** (`C:/Users/joshu/multi_firm_operations/`). **This packet must run from a LOCAL worktree with access to the primary checkout's `lab/analysis/` inputs, not a cloud environment** (`cursor-fleet` skill Test-0: vendor bytes → local, never cloud).
+
+---
+
+## §0.9 — Phase-0 staleness check (run these before touching anything)
+
+```bash
+ls lab/analysis/c1/aegis3leg_engine_param_2026-08-20/run_aegis1p_rescore_parameterized.py 2>/dev/null && echo "ALREADY EXISTS -- STOP, return DONE with the commit that added it"
+git log --oneline -- ops/instruments/6J.md | head -1   # confirm J13/J14/J15 haven't been superseded since this packet was authored
+grep -n "risk-bracket IS CLOSED" ops/instruments/6J.md || echo "J15's closure language has changed or moved -- STOP, return NEEDS_CONTEXT, this packet's whole scope rationale depends on it still reading this way"
+git log --oneline -- "lab/analysis/c1/aegis1p_3leg_rescore_2026-07-27/*" | head -3   # confirm no newer composed-gate work has landed on this campaign since 2026-08-20
+```
+
+If any staleness check fails its expected condition, stop and return the state noted above rather than proceeding on stale premises.
+
+## §1 — Context
+
+`ops/instruments/6J.md` J13 named two admissible routes to test Aegis→6J's composed-book behavior at the deployed WATCH-1 (0.50×) lifecycle scale, distinct from the Trap #11-constrained Q-COMPOSE-1 breadth engine. Investigation this session found the cleaner of the two isn't "extend a 2-leg engine to 3 legs" (J13's route (a)) — it's that a **separate, already-correct, already-validated 3-leg harness already exists** (`aegis1p_3leg_rescore_2026-07-27`), just hardcoded to one risk level (1.00%) it was pre-registered to test. But a **separate standing ruling** (J15) explicitly closed the risk-bracket question and bars re-measuring at a new risk% without new mechanism evidence — a bar this packet does not attempt to clear. Operator election: build the engineering *capability* now (so a future, evidence-backed reopening can fire fast), without producing any new measurement today.
+
+## §2 — Frozen scope
+
+**Do:**
+1. Retrieve the pruned runner: `git show pre-prune-2026-08-08:lab/analysis/c1/aegis1p_3leg_rescore_2026-07-27/run_aegis1p_rescore.py` and land it, **unmodified**, at a **new** path: `lab/analysis/c1/aegis3leg_engine_param_2026-08-20/run_aegis1p_rescore_ORIGINAL.py` (reference copy — do not edit this file; it is provenance).
+2. Create `lab/analysis/c1/aegis3leg_engine_param_2026-08-20/run_aegis1p_rescore_parameterized.py` — a fork of the original with exactly one behavioral change: `AEGIS_RISK` becomes a function/CLI parameter (default value `0.0100`, preserving current behavior byte-for-byte when unset) instead of a module-level constant. Everything else — panel loading, `ALLOCS_3` construction (now built from the parameter), tier list, control pins, cost-true delta, cap-feasibility note — stays **structurally identical** to the original.
+3. **Resolve, do not guess, the `AEGIS_EXPECT_1R["scale"]` coupling.** Read how `scale` is used downstream in the original script (the 1R-normalization math in the panel-scaling call). Determine from the code whether `scale` is: (a) a pure function of `AEGIS_RISK` you can derive algebraically and recompute for any input risk level, or (b) an empirically-fitted pin specific to the 1.00% panel that has no general formula. **If (b), or if this is ambiguous from the code alone: stop, do not invent a formula, return `NEEDS_CONTEXT`** citing the exact line and why it's not resolvable from source alone. This is the one place a wrong guess would silently corrupt any future measurement — it is not yours to resolve by judgment.
+4. **Validation run (the only execution this packet performs):** run the parameterized script with `AEGIS_RISK` at its default (0.0100) — i.e., byte-identical inputs to the original — and confirm it reproduces, to the **same tolerance the original script already uses** (`CONTROL_TOL = 0.0015` for controls; exact match expected for the gating cells since this is the same seeds/inputs, not a fresh MC draw): controls `4.74%/1.06%/0.96%`, gating `10.96% / 3.78% / 3.54%` (Tradeify_Select_100K / Tradeify_Select_50K / MFFU_Rapid_50K). Write the validation output to `VALIDATION.md` in the same directory — numbers only, no narrative framing beyond "reproduces / does not reproduce."
+5. Update `lab/CATALOG.md` with one new row for `aegis3leg_engine_param_2026-08-20` (theme `c1`, status `ACTIVE`), following the existing slug-sorted, one-liner convention in that file — **do not** run `--regenerate-catalog` (known to clobber unrelated hand-curated rows from a worktree; hand-insert only).
+
+**Do NOT:**
+- Run the parameterized script at any `AEGIS_RISK` value other than the default `0.0100`. Not 0.0075, not 0.0050, not a sweep, not "just to see." This is the load-bearing constraint of the whole packet — J15 bars it, and this packet's entire purpose is to stay clear of that bar while building the capability. If you find yourself wanting to run it at a different value "to test the parameterization works" — it doesn't need to; reproducing the default value **is** the test.
+- Touch `run_class_s_c1_scoring.py`, `run_class_s_c1_regime_gate.py`, or anything under `Q-COMPOSE-1`'s own engine path — this packet builds on the separate, already-correct harness, not the Trap #11-constrained one. Confirm your new file's imports point only at the retrieved original's own dependencies.
+- Touch `docs/rejected_candidates.md`, `STATE.md`, `docs/SESSIONS.md`, or any ADR/pre-registration/closure file — this is a research-engineering packet, not a decision artifact; those stay with the orchestrator.
+- Edit or delete `lab/analysis/c1/aegis1p_3leg_rescore_2026-07-27/RESULTS.md` (the closed campaign's own record) — leave it exactly as-is.
+
+## §0.5 — Ambiguity surfacing (read before executing)
+
+If anything in §2 step 3 (the `scale` coupling) is not resolvable from the code alone, **stop and return `NEEDS_CONTEXT`** — do not proceed past it with an assumption. If the retrieved original script's behavior at default parameters doesn't reproduce the published numbers within tolerance on your first validation run, **stop and return `BLOCKED` (context-problem)** with the actual numbers you got — do not adjust the script to force a match; that would mean something about the retrieval or environment is wrong, not the target numbers.
+
+## §3 — Forbidden moves
+
+- Running the parameterized engine at any risk level besides the validated default (J15; see §2).
+- Reading this packet as license to also test the composed gate under any *other* changed input (cap, commission, panel export) — scope is the risk-allocation parameter only.
+- Treating a successful validation run as itself a new measurement worth reporting to `ops/instruments/6J.md` as a finding — it reproduces an already-published number; it is not new information. The orchestrator (not this packet) will decide whether/how to record the engineering capability in the ledger.
+- Committing anything under `lab/analysis/c1/aegis1p_3leg_rescore_2026-07-27/` itself — all new work lands in the new `aegis3leg_engine_param_2026-08-20/` directory.
+
+## §6 — Return contract
+
+Branch: `cursor/aegis-3leg-risk-param`. One PR. Four-state status:
+- **`DONE`** — parameterized script exists, validation run reproduces all 6 published numbers within tolerance, `VALIDATION.md` + `CATALOG.md` row committed, no forbidden move touched.
+- **`DONE_WITH_CONCERNS`** — validated, but something about the `scale`-coupling resolution (step 3) felt like a judgment call even though you made one — flag exactly what and why so the orchestrator can adjudicate before trust.
+- **`NEEDS_CONTEXT`** — step 3's `scale` question is genuinely unresolvable from source; state the exact blocker.
+- **`BLOCKED`** — validation doesn't reproduce; state which numbers diverged and by how much, unmodified.
+
+---
+
+## Verification (orchestrator, post-return)
+
+```bash
+git log -1 --format='%h' -- lab/analysis/c1/aegis3leg_engine_param_2026-08-20/run_aegis1p_rescore_parameterized.py
+diff <(git show pre-prune-2026-08-08:lab/analysis/c1/aegis1p_3leg_rescore_2026-07-27/run_aegis1p_rescore.py) lab/analysis/c1/aegis3leg_engine_param_2026-08-20/run_aegis1p_rescore_ORIGINAL.py
+# Expected: empty (byte-identical reference copy)
+grep -n "AEGIS_RISK" lab/analysis/c1/aegis3leg_engine_param_2026-08-20/run_aegis1p_rescore_parameterized.py
+# Expected: a parameter/default, not a bare module constant
+cat lab/analysis/c1/aegis3leg_engine_param_2026-08-20/VALIDATION.md
+# Expected: 10.96% / 3.78% / 3.54% gating, 4.74% / 1.06% / 0.96% controls, within tolerance
+```
