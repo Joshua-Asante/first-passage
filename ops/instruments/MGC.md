@@ -24,6 +24,10 @@ cells:
     verdict: DEAD
     date: 2026-08-18
     source: "../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md"
+  - mechanism: london-range-failed-extension-fade
+    verdict: DEAD
+    date: 2026-08-13
+    source: "../../docs/briefs/closures/MSL-C2-closure-falsified.md"
 bars:
   - id: free-data-5th-leg-snag-closed-2026-07-01
     source: "../../docs/rejected_candidates.md"
@@ -75,6 +79,7 @@ structure:
 | ~~`E-K` (third-leg)~~ | **VOID as gate** — K-bank ADR; bank remains disclosure | RESULTS banner 2026-08-04+ |
 | DISC-CAMP-0 wide mining (GC/MGC family) | Closed campaign — **disclosure / Req-3**, not inherited MGC elimination | campaign artifacts via [`lab/CATALOG.md`](../../lab/CATALOG.md) |
 | Benchmark-fix-window flow (LBMA PM/AM fix) on GC/MGC — family-scoped to venue-legal metals incl. SI/SIL · mechanism cell `event-window-reversal` | **Informed-flow + Req-5 cost-law, on the seed's own record** (replaces the void 2026-07 R8 K-kill). Caminschi–Heaney *JFM* 2014 (DOI `10.1002/fut.21636`) GC cohort: adjusted (fix-direction-signed) drift ~9.6+4 bp is participant-knowledge — inadmissible; **public unadjusted first-2-min ≈ −1.8 bp, i=3,4 n.s.**; causal MKTDIR residue **1.32–3.21 bp/event** vs 4× hurdles **6.34–10.30 bp (MGC)** / **3.40 bp (full GC, generous top)** — under at every legal expression *before* the adverse post-2015-reform haircut (*JFM* 2020: spreads↓ depth↑). **ENV-1 concordant kill (second unit system):** envelope re-score δ **8.35 ticks** vs **11.6-tick** 4× hurdle → `FAIL/cost` ([`mgc-benchmark-fix-window-r8-rescore.json`](../../lab/archive/tnec_envelope_compile_2026-08/entries/mgc-benchmark-fix-window-r8-rescore.json); [`N-2026-08-11-daily-auction-settlement-MGC.md`](../../docs/notes/notice/N-2026-08-11-daily-auction-settlement-MGC.md)). **Re-proposal bar** (quoted from R8 closure): *a post-reform, publicly-conditioned cohort δ ≥ the 4× hurdle at a named venue-legal expression — not a re-read of pre-reform tables, not the informed-side numbers, not a window re-tune* | `SCREEN-FAIL` 2026-08-10 — [`DELTA_EXTRACTION_R8.md`](../../lab/analysis/harvest/tnec_l2_sourcing_2026-08-10/DELTA_EXTRACTION_R8.md) |
+| `london-range-failed-extension-fade` × MGC (MSL-C2) | Explore IS both-arms session-block 95% CI entirely &lt; 0 (long n=327; short n=310; mean ≈ −0.18R). CONFIRM unread. | FALSIFIED 2026-08-13 — [closure](../../docs/briefs/closures/MSL-C2-closure-falsified.md) · [`RESULTS_g2`](../../lab/archive/msl_c2_mgc_2026-08/RESULTS_g2.md) |
 
 ## ACTIVE / OPEN
 
@@ -105,6 +110,7 @@ structure:
   caught + fixed a CI-block-size defect, verdict-preserving). New `MECHANISMS.md` heading
   `daily-range-state-persistence`. Routes to S1b (MCL) per the slate queue. $0 / K=1.
   [`RESULTS_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md)
+- **2026-08-13** — **MSL-C2 explore FALSIFIED** ([closure](../../docs/briefs/closures/MSL-C2-closure-falsified.md) · [`RESULTS_g2`](../../lab/archive/msl_c2_mgc_2026-08/RESULTS_g2.md)). `london-range-failed-extension-fade` × MGC; both-arms IS 95% CI entirely &lt; 0; CONFIRM unread; $0 / K=0.
 - **2026-08-12c** — **MSL P3.1 B4 GO → G0 FROZEN:** [`PREREG_G0`](../../lab/archive/msl_c2_mgc_2026-08/PREREG_G0.md); explore/Pine unpaid. $0 / K=0.
 - **2026-08-12b** — **MSL P3.1 Stage-1 PASS (pre-G0):** freeze `london-range-failed-extension-fade`; SNAG CLEAR via R-FRAMING §2.1; RT $4.12 screens PASS; delete/flip unpaid pending B4. [`STAGE1`](../../lab/archive/msl_c2_mgc_2026-08/STAGE1.md). $0 / K=0.
 - **2026-08-12** — **PROFILE `bars:` Stage-0 (MSL P3.1 / C2):** registered `free-data-5th-leg-snag-closed-2026-07-01` → `docs/rejected_candidates.md` (SNAG-CLOSED 2026-07-01). Door-check non-vacuous; index OHLCV bar intentionally omitted (C2 outside that domain). `profiles.json` rebuilt same commit. $0 / K=0.

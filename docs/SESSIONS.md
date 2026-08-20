@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-20b — remaining MSL FALSIFIED-without-cell registry lags + M2K W4 panel contradiction
+
+**Focus:** Same class as 20a: FALSIFIED closures already on disk, PROFILE cells still `.`.
+
+**Shipped:** MYM × `pdh-pdl-failed-break-reclaim` → C1 closure; MGC × `london-range-failed-extension-fade` → C2 closure (parser-harvestable `Class finding:` + missing session-log kill line); MCL × `pullback-failure-resumption` → S2A closure. M2K W4/status no longer claim "no panel". Rebuilt `PROFILES.md` / `profiles.json`.
+
+**Decisions/defects:** Did not map CON-2/3/4/5 `AMBIGUOUS-HOLD` or S2B Stage-1 FAIL onto cells — those are ITERATE / pre-G0, not explore-FALSIFIED. Did not widen the `Class finding (` parser.
+
+**Open / next:** Carry 19g: branch-protection-for-`main` packet still unopened; 34 non-M1 HIGH-risk `cursor/*` PRs from the dead-CI window not individually re-verified; Cursor forum `-CleanHome` workaround. Optional later: MNQ CON-2/3/4/5 `AMBIGUOUS-HOLD` cells; S2B pre-G0 consult cell; `Class finding (` harvest.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
 ## 2026-08-20a — sync overnight-range-fade class finding + M2K PROFILE cells to MSL-C3-K2 FALSIFIED
 
 **Focus:** Close the mechanism-registry lag: `overnight-range-failed-extension-fade` still read "none yet / scored axis" after M2K explore FALSIFIED 2026-08-13.

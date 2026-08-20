@@ -20,7 +20,7 @@
 | impulse-pullback-vwap-reclaim | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | index-dispersion | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . |
 | intraday-momentum | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | D | . | . | . | . | . | . | . | . | . |
-| london-range-failed-extension-fade | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| london-range-failed-extension-fade | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | mean-reversion-fade | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | D | D | . | . | . | . | . | . |
 | naive-direction-mirror | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | D | . | . | . | . |
 | opening-pressure | . | . | . | . | . | . | . | . | . | . | . | . | . | D | D | . | . | D | . | . | . | . | . | . | . | . | . |
@@ -29,8 +29,8 @@
 | order-flow-depth-imbalance | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | overnight-range-failed-extension-fade | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | pdh-pdl-breakout-rth | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
-| pdh-pdl-failed-break-reclaim | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
-| pullback-failure-resumption | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| pdh-pdl-failed-break-reclaim | . | . | . | . | . | . | D | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . |
+| pullback-failure-resumption | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | regime-overlay | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | D | . | . | . | D | . | . | . | . |
 | sweep-failure-filtered-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | tod-baseline-range-trigger | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
@@ -174,7 +174,11 @@ A next-bar or intraday continuation signal keyed to the prior bar's or prior ses
 
 **NEW 2026-08-12 (MSL-C2).** Fade a failed extension of the London-session high/low (formed before COMEX RTH) into the COMEX open: reclaim after a break that does not follow through; structural stop beyond the swept London extreme; truncated-loss exit; session-flat; first valid signal per session. Session-structure displacement — **not** a scheduled auction/fix window.
 
-_No instrument has a recorded verdict on this mechanism._
+- **Class finding:** MGC explore IS **FALSIFIED 2026-08-13** — both arms mean ≈ −0.18R, CI entirely &lt; 0 (long n=327 CI [−0.287, −0.071]; short n=310 CI [−0.292, −0.075]); DELETE FAIL. CONFIRM unread. [closure](../../docs/briefs/closures/MSL-C2-closure-falsified.md) · [RESULTS](../../lab/archive/msl_c2_mgc_2026-08/RESULTS_g2.md)
+
+| Instrument | Verdict | Date | Source |
+|---|---|---|---|
+| MGC | DEAD | 2026-08-13 | ../../docs/briefs/closures/MSL-C2-closure-falsified.md |
 
 
 ## mean-reversion-fade
@@ -285,6 +289,7 @@ _No instrument has a recorded verdict on this mechanism._
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
 | M2K | DEAD | 2026-08-13 | ../../docs/briefs/closures/MSL-C3-K2-closure-falsified.md |
+| MYM | DEAD | 2026-08-13 | ../../docs/briefs/closures/MSL-C1-closure-falsified.md |
 
 
 ## pullback-failure-resumption
@@ -293,7 +298,9 @@ _No instrument has a recorded verdict on this mechanism._
 
 - **Class finding:** MCL explore **FALSIFIED** (N-ACT 0.511 trades/week; long FLIP FAIL) — [S2A RESULTS](../../lab/archive/msl_s2a_mcl_2026-08/RESULTS_g2.md) · [closure](../../docs/briefs/closures/MSL-S2A-closure-falsified.md). CONFIRM unread.
 
-_No instrument has a recorded verdict on this mechanism._
+| Instrument | Verdict | Date | Source |
+|---|---|---|---|
+| MCL | DEAD | 2026-08-13 | ../../docs/briefs/closures/MSL-S2A-closure-falsified.md |
 
 
 ## regime-overlay

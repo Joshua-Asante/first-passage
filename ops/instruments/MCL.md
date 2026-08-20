@@ -28,6 +28,10 @@ cells:
     verdict: AMBIGUOUS-PARKED
     date: 2026-08-18
     source: "../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md"
+  - mechanism: pullback-failure-resumption
+    verdict: DEAD
+    date: 2026-08-13
+    source: "../../docs/briefs/closures/MSL-S2A-closure-falsified.md"
 structure:
   - claim: "Frozen CONFIG-B-MCL geometry clears expressibility under SIGMA-NATIVE; geometry is not edge — N-SURV/N-EDGE/N-SIZE remain U until a mechanism trade series exists."
     source: "#C2"

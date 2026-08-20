@@ -47,6 +47,10 @@ cells:
     verdict: DEAD
     date: 2026-07-29
     source: "../../docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md"
+  - mechanism: pdh-pdl-failed-break-reclaim
+    verdict: DEAD
+    date: 2026-08-13
+    source: "../../docs/briefs/closures/MSL-C1-closure-falsified.md"
 bars:
   - id: index-intraday-ohlcv-directional-timing-2026-07-21
     source: "../../docs/rejected_candidates.md"
@@ -87,6 +91,7 @@ structure:
 | `OPENPRESS-1` (MYM limb) — opening-volume × directional efficiency | **Wrong-signed** plus cost FAIL; no threshold/window/instrument rescue licensed | 0 | FALSIFIED 2026-07-21 — [`RESULTS.md`](../../lab/archive/opening_pressure_map_2026-07/RESULTS.md) |
 | Striker DJ30 → MYM *transfer* (R5 successor) | OOS PF ratio **0.559 < 0.8×** on structural venue costs — fired the R6 §4 falsifier | — | FALSIFIED 2026-07-09 — see [`YM.md`](YM.md) Y3 |
 | `SLR-MYM-1` — liquidity sweep-and-reclaim at the open (`ict-liquidity`) | **Closed at Stage 0 on two independent gates, mechanism never tested.** (a) Harvest Req-1a: both constraint framings fail the delete- and flip-tests (ADR 2026-07-26 §2-A). (b) **S3 order-symbol occupancy** — shares `MYM1!` with the incumbent leg, and the venue nets one position per symbol, so Tue+Fri close structurally; best compliant day set Mon+Wed+Thu = **81 IS entries vs a 120 floor** (upper-bound proxy) | **0** | FALSIFIED (as scoped) 2026-07-29 — [`closure`](../../docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md) |
+| `pdh-pdl-failed-break-reclaim` × MYM (MSL-C1) | Explore IS both-arms session-block 95% CI entirely &lt; 0 (long n=406; short n=444). CONFIRM unread. | 0 | FALSIFIED 2026-08-13 — [closure](../../docs/briefs/closures/MSL-C1-closure-falsified.md) · [`RESULTS_g2`](../../lab/archive/msl_c1_mym_2026-08/RESULTS_g2.md) |
 
 **Re-proposal bar (standing).** A candidate #3 on the continuation mechanism requires fresh operator authorization **and** a fresh frozen pre-registration. Named-forbidden by the ORC-02 closure: lower-cost rerun, parameter grid, opening-window selection, date deletion, gross-only rescue. Ahead of that, the 2026-07-21 **raised bar** on single-instrument index-futures intraday OHLCV directional timing gates any new candidate of this class ([`rejected_candidates.md`](../../docs/rejected_candidates.md)).
 
