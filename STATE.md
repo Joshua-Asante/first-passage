@@ -27,6 +27,11 @@ entry first).
   Hygiene — see [`W5 ADR`](docs/adr/2026-08-07-w5-governance-diet.md); prefer links
   over prose.
 
+**Standing base case:** absent an N-clear candidate, the 2026-11-08 §4 falsifier
+(prop-portfolio program) reads **FALSIFIED** — the four-firms ADR's demotion clause is
+the designed, legitimate outcome if the date passes without one. See
+[`N-2026-08-18-iteration2-identify-notice.md`](docs/notes/notice/N-2026-08-18-iteration2-identify-notice.md) §0.
+
 ---
 
 ## OPERATOR QUEUE — strictly ordered, ≤5 live items
