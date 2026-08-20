@@ -189,3 +189,51 @@ note (a3 and a4 need not sit at the same letter). The run hit one transient infr
 and one session interrupt (a verify agent killed by an unrelated user interrupt mid-run) — both
 recovered via `resumeFromRunId`, which replayed completed agents from cache rather than re-running
 the full panel.
+
+## Addendum — Head of Engineering owns generation-orchestration tooling (design conversation, 2026-08-19, later)
+
+**Status: a candidate direction from a design conversation, not a ratification.** No ownership-map
+edit, ADR, or persona-file change has been made. Recorded here so the reasoning survives past this
+session, per this note's own "appearance-of-independence" and "operator attention economics" themes —
+the same discipline this note argues for is worth applying to itself.
+
+**The question that came up:** if Option E's B+C-hybrid (bounded per-campaign fan-out plus a
+first-line Research Validation role) is ever built, and the orchestrator role is given a name and a
+versioned charter (matching the review panel's own convention, for legibility) — does that clash with
+the existing persona hierarchy, or mesh with it?
+
+**Considered and rejected: expanding Head of Research's own role to include execution.** Head of
+Research already sits in the review chain for a3/a4 — per its own file, it participates in the
+strict-D2 STRATEGIC-tier Delete trigger "either as proposing office (1st line) or independent
+challenger (2nd line)." Its `Independence rule` is identical boilerplate to every other panel persona:
+"Spawned fresh per review, reading only the frozen decision artifact under review... never the
+proposing session's live reasoning." Making that same identity also the live executor of a3/a4
+generation would be a literal instance of the Kerviel/Adoboli threat model this whole panel is built
+against — not an analogy to it, since the actor auditing a decision and the actor who produced it
+would share persona identity, log, and lineage. It also structurally doesn't fit: "spawned fresh,
+reads one frozen artifact" is the wrong shape for a persistent, multi-session orchestration job.
+
+**Resolution: Head of Engineering already owns exactly this pattern for a6, and the same shape
+extends cleanly to a3/a4's orchestration mechanism.** Its own file: *"personally performs the
+AI-agent-orchestration function (decompose, freeze specs, own the claim manifest, review, integrate,
+adjudicate)... rather than delegating it to a separate staff seat"* for a6 (Cursor-fleet worker
+capability) — and the ownership map already records that split: `Head of Engineering primary, Head of
+Research secondary`. The same split applied to a3/a4: Head of Engineering would own the orchestration
+**mechanism** (the Workflow script, the discipline that only the orchestrator ever calls
+`register_search.py open`/`close`, the subagent dispatch pattern) as infrastructure — not the
+persona itself executing live, but a domain/ownership assignment, same as a6's ephemeral Cursor
+workers are owned without being rostered. a3/a4 **content** ownership stays exactly as it is today,
+unchanged: Head of Research remains the first-line reviewer, now reviewing the output of a tool
+Engineering owns rather than of a fellow reviewer wearing a second hat. Domains stay cleanly
+separable — Engineering never sits in the review chain for a3/a4 content Deletes, Research never
+executes — so there is no dual-hat collapse.
+
+**What would NOT mesh:** spawning the persona "Head of Engineering" itself as the live, stateful,
+multi-session executor. Its file carries the same spawn-fresh-per-review boilerplate as every other
+panel member; treating it as a standing operational role repeats the exact structural mismatch named
+above, just relocated to a different seat.
+
+**Net, if this direction is ever acted on:** cheapest of the options discussed for this seam — an
+ownership-map extension (or a small new pursuit record sibling to a5's R&D tooling lane) plus a
+Primary/Secondary row mirroring a6's exact shape, not a new roster entry requiring its own
+independence-rule ratification.
