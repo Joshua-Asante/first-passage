@@ -14,6 +14,36 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-21f — Rule 2 ratified (override); two light ADRs ratified; Q-M1WIRE-1 closed FALSIFIED
+
+**Focus:** Governance-culture review (genealogy of ADR/gate growth) surfaced Rule 2's two-month
+PROPOSED limbo and six other open ADRs; a PR #75 review claimed to relate to Q-M1WIRE-1 and, on
+independent re-verification, instead confirmed two of its three falsifiable limbs directly.
+
+**Shipped:** Rule 2 (budget-before-acting) ratified as a logged operator override, not a §4/§6
+graduation ([Addendum 2026-08-21](adr/2026-06-16-rule-2-budget-before-acting.md)). Two light-tier
+citation ADRs ratified on independently-verified-met gates (`great-prune-is-not-grand-subtract`,
+`rule-1-citation-not-three-meanings`). Four other Proposed ADRs deliberately left unruled, each
+for a stated reason. `Q-M1WIRE-1` closed `FALSIFIED`: A2 (zero production call sites for
+confirmed-base) and A5 (no `gates.yml` wiring, arm path never calls `tree_skew()`) both directly
+confirmed; A4 (unannounced alert-reachability drill) stays untested, not load-bearing to the
+verdict. [`PR #76`](https://github.com/Joshua-Asante/first-passage/pull/76) merged ·
+[`closure`](briefs/closures/Q-M1WIRE-1-closure-falsified.md).
+
+**Decisions/defects:** Rule 2's own trip-log has been deferred to a ruling three times running
+(2026-08-08 → 08-09 → "2026-11-08, do not infer now") before this override; named as the clearest
+instance of the governance-growth pattern under review. Q-M1WIRE-1 was never formally opened
+(no standalone pre-registration file, no pre-Phase-1 GO) — closure records this as a procedural
+gap, not a threshold change, since §4's thresholds were frozen at authoring, before any check ran.
+
+**Open / next:** A fix-scoping spec for Q-M1WIRE-1's confirmed gaps (mechanical alert-log monitor
++ wired confirmed-base call site) is being authored as a separate, unlanded artifact — no
+`ops/c1_rail/` or `scripts/gates.yml` change lands from this session. A4's unannounced drill stays
+a named, un-opened re-test candidate. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1.
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`, not `RESOLVED`.
+
+---
 ## 2026-08-21e — Incumbent CI honesty patches (PARK pin / M1 note / CON-4 skip)
 
 **Focus:** Repair documented `pytest (3.11)` + `validation-controls` reds without refreshing deployed hashes or adding a parquet engine.
