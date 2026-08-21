@@ -70,6 +70,10 @@ One line per executed decision, newest first — consequence only. Posture summa
 
 - **2026-08-21** — **`REPO_MAP.md` second-pass coherence repair — the doc the 2026-08-21 root-doc campaign left out of scope.** Its own runnable §5 "Zero unmapped" coverage-check was silently **failing** against production (`LICENSE` + `.markdownlint.json`, landed 2026-08-17 with the public-transition config drop, were never added to the exemption regex — both now rowed in §2 and added to the regex, re-run clean). §2.1's self-flagged "incomplete" scripts inventory had drifted further, 35→48 files (13 gate scripts landed 2026-08-17→08-21, 7 now correctly named as `gates.yml`/`make`-wired instead of parked in the unlisted list). No gate change, no new `Q-*`, no delete; all four root-doc mechanical gates re-run green. $0/K=0.
   [`campaign addendum`](docs/notes/audits/2026-08-21-coherence-campaign.md) (§11 "Addendum 2026-08-21 (second pass)").
+- **2026-08-21** — **CFO subscription-ledger consolidation ratified — one ledger, a mechanical required-field gate, monthly reconfirm.** Operator: "I want to implement 1-4, reconfirm ledger once a month" (all four of the CFO's C-1-closure recommendations). `docs/pursuits/SUBSCRIPTION_LEDGER.md` (D1) replaces seven scattered per-record tags; `check_pursuit_records.py` gains a WARN-tier `ledger-pointer` limb (D2); monthly reconfirm (next 2026-09-21) reuses the existing `daily-repo-truth-sync` radar via this file's own forward-trigger board, plus a standing-check line on the CFO's own charter (D3). Mechanical build (ledger + 7 pursuit-record edits + checker extension) delegated to a companion Cursor handoff per "dispatch engineering tasks to Cursor" — pending operator fire, this session runs cloud-side with no local access to `dispatch_cursor.ps1`. $0/K=0, no live-risk surface.
+  [`ADR`](docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md) ·
+  [`handoff brief`](docs/briefs/handoffs/2026-08-21-cc-handoff-subscription-ledger-consolidation.md) ·
+  [`cfo-log.md`](docs/personas/cfo-log.md).
 - **2026-08-21** — **`REGIME-CANDIDATE` flag lane ratified `Accepted`; its missing template owner restored from the private archive.** Operator override-free — the ADR's own §2 trigger is plain ratification, no evidentiary gate blocked it. ST-EH-1, the one existing instance, closed `operator-stopped` the same day it was drafted with zero of 80 grid reads executed; §4's forward falsifier has no evidence yet either way. `docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md` (canonical owner of Default #1–#6, cited by 8+ live briefs and one Accepted ADR) was absent from this tree — not the 2026-08-14 public-transition curation rule, but the private archive's own 2026-08-08 `prune(T1)` misclassifying it as cold. Restored verbatim from the archive's last-good commit, four pre-existing broken relative links fixed, the Default #1 extension recorded in it. A wider sweep of that same prune commit's 190 files found no other comparably load-bearing gap — the rest are expected historical pointers, retrievable via `git show` per this repo's own retention design. $0/K=0. [`ADR`](docs/adr/2026-07-26-regime-candidate-flag-lane.md).
 - **2026-08-21** — **Persona hierarchy narrowed to Front Office; Middle/Back-office functions run as mechanical gates, not spawned personas.** Operator direct instruction: First Passage is primarily a research entity (deployment validates research, not a parallel institutional line), so it needs middle/back-office *services*, not a standing Middle/Back-office persona roster. Retired 6 C-suite/Senior-Manager seats + 2 Back-office Staff (CRO, Head of Risk & Sizing, Head of Validation, COO, Head of Engineering, Head of Governance, Documentation Analyst, Research Registry Analyst) to `docs/personas/archive/`; each seat's function maps to an existing code/script gate (`dd_protection.py`, `check_brief.py`, `check_advisor_dedup.py`, `check_adr_graph.py`, `cursor-fleet` skill, etc.). Roster 17→9. CRO safety-invariant hard-block re-implemented as an unconditional deterministic scan of the target artifact's own text, no longer requiring a spawned CRO. CEO/CFO explicitly out of scope (operator confirmed). $0/K=0, no live-risk surface (the underlying safety invariants and their arming-time enforcement are unchanged).
   [`ADR`](docs/adr/2026-08-21-persona-hierarchy-front-office-only.md) ·
@@ -450,6 +454,24 @@ deleted (not struck).
   section for obligations dated within 7 days, and row 0's queue-table placement was invisible to
   it.   [`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md) ·
   [audit FU-1](docs/notes/audits/programme-audit/2026-08-05-post-descope-claim-alignment-audit.md)
+
+### Monthly — recurring (rolling; next deadline **2026-09-21**)
+
+> **Recurrence ruled 2026-08-21** ([`ADR`](docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md)
+> D3, operator: "reconfirm ledger once a month"): the same recurring-obligation shape as the weekly
+> row above, reusing the same radar rather than standing up a second scheduling surface. **Roll this
+> date forward each occurrence** (same day-of-month as this row's own creation, 21st).
+
+- **Subscription-ledger reconfirm — `docs/pursuits/SUBSCRIPTION_LEDGER.md`'s seven d11-d17 rows
+  re-checked against current reality.**
+  Confirm each "Last confirmed" date and $/mo figure still holds; update any that changed; chase the
+  two still-open rows (Fly.io, Tradeify) if a figure has since surfaced. A null result (nothing
+  changed) is still a reconfirm — record it, don't skip it (CFO 2026-08-21 recommendation #4: silence
+  is not evidence of currency). Booked here *specifically so the existing daily `daily-repo-truth-sync`
+  forward-obligation radar surfaces it*, same mechanism as the weekly row above — no new
+  infrastructure. [`ADR`](docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md) ·
+  [`cfo.md`](docs/personas/cfo.md) (standing check + Writes field, D3) ·
+  [`cfo-log.md`](docs/personas/cfo-log.md) (source recommendations, 2026-08-21)
 
 ### No fixed date / gated
 
