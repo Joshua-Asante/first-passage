@@ -14,6 +14,31 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-21g — CFO subscription-ledger consolidation ratified; mechanical build dispatched to Cursor
+
+**Focus:** Following same-day C-1 closure + d17 (Claude Max) tracking, operator ratified all four of
+the CFO's process recommendations, cadence set to monthly.
+
+**Shipped:** [`ADR`](adr/2026-08-21-cfo-subscription-ledger-consolidation.md) ratified (D1 ledger, D2
+mechanical `ledger-pointer` WARN gate, D3 monthly reconfirm reusing `daily-repo-truth-sync` +
+`cfo.md` standing-check line, D4 practice norm no artifact). `cfo.md` charter amended (Writes gains
+the ledger; `d11-d16` corrected to `d11-d17`). `STATE.md` gains a Monthly recurring row (next
+2026-09-21). Mechanical build (ledger + 7 pursuit-record edits + `check_pursuit_records.py`
+extension) fully spec-frozen in a Cursor handoff brief per "dispatch engineering tasks to Cursor" —
+this session cannot self-fire `dispatch_cursor.ps1` (Windows-local, not present in this cloud
+environment); handoff is ready, pending operator dispatch.
+
+**Decisions/defects:** none — clean ratification, all gates green (`check_brief.py`,
+`check_adr_graph.py`, `check_personas.py`, `check_pursuit_records.py`, pre-commit tier).
+
+**Open / next:** dispatch `docs/briefs/handoffs/2026-08-21-cc-handoff-subscription-ledger-consolidation.md`
+to Cursor; on return, CC reviews per its §7 two-pass discipline, then merge. First monthly reconfirm
+due 2026-09-21. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1.
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
+
+---
+
 ## 2026-08-21f — Rule 2 ratified (override); two light ADRs ratified; Q-M1WIRE-1 closed FALSIFIED
 
 **Focus:** Governance-culture review (genealogy of ADR/gate growth) surfaced Rule 2's two-month
@@ -44,6 +69,7 @@ a named, un-opened re-test candidate. **STATE queue unchanged:** #1 F1 · #2 B7-
 **Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`, not `RESOLVED`.
 
 ---
+
 ## 2026-08-21d — Persona hierarchy narrowed to Front Office; Middle/Back-office retired to mechanical gates
 
 **Focus:** Operator insight — First Passage is primarily a research entity (deployment validates
@@ -63,6 +89,9 @@ addendum.
 **Open / next:** Carry `2026-08-21a`/`2026-08-20g` — ICT-family re-proposal needs new mechanism
 evidence. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. New: watch the new ADR's §4 falsifier
 (3 real panel uses under the narrowed roster, or 2026-11-08, whichever first).
+
+---
+
 ## 2026-08-21e — Incumbent CI honesty patches (PARK pin / M1 note / CON-4 skip)
 
 **Focus:** Repair documented `pytest (3.11)` + `validation-controls` reds without refreshing deployed hashes or adding a parquet engine.
@@ -76,6 +105,7 @@ evidence. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. New: watch the 
 **Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
 
 ---
+
 ## 2026-08-21d — CATALOG `--slug` archive (C-P1-10)
 
 **Focus:** Flip CATALOG Status on closed camps via `archive_lab_analysis.py --slug`, not regenerate or hand-edit.
@@ -89,6 +119,7 @@ evidence. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. New: watch the 
 **Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
 
 ---
+
 ## 2026-08-21c — Operator menu: F1/B7 HOLD; H1–H5 GO
 
 **Focus:** Ratified next-steps menu after the coherence campaign.
@@ -102,6 +133,7 @@ evidence. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. New: watch the 
 **Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
 
 ---
+
 ## 2026-08-21b — Coherence campaign blast-radius: leftover pointer repairs
 
 **Focus:** Rule-7 blast-radius on the 2026-08-21a coherence edits.
@@ -115,6 +147,7 @@ evidence. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. New: watch the 
 **Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
 
 ---
+
 ## 2026-08-21a — Coherence campaign: root→pipeline walk, Packets A–C landed, no deletes
 
 **Focus:** Repo-wide coherence audit from the five root docs through generate → evaluate → deploy → measure → update. Findings-first; not a Great Prune retry.
@@ -128,6 +161,7 @@ evidence. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. New: watch the 
 **Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
 
 ---
+
 ## 2026-08-20g — Frozen 1H DOL target distance-swept zero-run: target exonerated, entries are the problem (corrects 2026-08-20f)
 
 **Focus:** Operator asked to investigate the frozen 1H DOL target itself, and whether different
@@ -157,6 +191,7 @@ explicitly new mechanism evidence, not an exit-distance retune. 11th-consecutive
 `2026-08-20f` is unchanged by this disclosure-only pass (no new K, no new construct).
 
 ---
+
 ## 2026-08-20f — Order Blocks spec'd, override pre-approved, `Q-ICT-OB-1` `FALSIFIED` at $0 — third entry family dies on the same DOL target
 
 **Focus:** Operator asked to spec Order Blocks and pre-approved an override ADR in the same
@@ -182,6 +217,7 @@ microstructure thread. Breaker Blocks and SMT Divergence remain unadmitted (thei
 findings from the earlier ranking pass still apply — worse population, and SMT doubly barred).
 
 ---
+
 ## 2026-08-20e — Operator override ratified, cheap falsifier run: `Q-ICT-OTE-1` `FALSIFIED` at $0
 
 **Focus:** Operator approved an override ADR against the analogue-modality pause specifically for
@@ -207,6 +243,7 @@ sweep-retracement). No further ICT-vocabulary candidate is licensed by this over
 Breaker Blocks, and SMT Divergence each still need their own ADR if pursued.
 
 ---
+
 ## 2026-08-20d — `Q-ICT-OTE-1` (Optimal Trade Entry) scoped, not run — blocked by two independent pause ADRs
 
 **Focus:** Following the ICT concept-gap ranking (OTE first among Order Blocks/OTE/Breaker
@@ -231,6 +268,7 @@ shape as the CON-4 one just spent; or wait for a genuine new modality) and the c
 next 3 steps if the override path is chosen. Nothing scored, no K spent, no manifest open.
 
 ---
+
 ## 2026-08-20c — Operator override: U1 exception reopens `Q-TNEC-CON-4` CONFIRM inside the dense-1m pause
 
 **Focus:** Operator instructed reopening `Q-TNEC-CON-4` (PDH/PDL RTH with-break) and
@@ -261,6 +299,7 @@ microstructure thread. No further exception auto-granted; the dense-1m OHLCV pau
 unconditional lane-wide again pending a genuinely new modality or its own fresh ADR.
 
 ---
+
 ## 2026-08-20b — remaining MSL FALSIFIED-without-cell registry lags + M2K W4 panel contradiction
 
 **Focus:** Same class as 20a: FALSIFIED closures already on disk, PROFILE cells still `.`.
