@@ -240,14 +240,18 @@ this remains true after ratification, not resolved by it.
 **Phase 1 discharge:**
 - Status → `Accepted` — done, this addendum.
 - `STATE.md` forward-board line for the §4 bootstrap trigger — added.
-- Template `§Campaign-defaults` row — **NOT done. `docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md`
-  does not exist in this tree or in its git history.** It was excluded from the 2026-08-14
-  public-transition seed as "cold long-term-memory archive" (`docs/ltm/**` curation rule), but a
-  blast-radius grep this session found it's still cited as the canonical owner of "Default #1–#6"
-  by at least eight live briefs (H-TSMOM-1, H-ZNAUC-1, D5, H-OD-1, Q-KBUDGET-1, Q-TVCOV-1,
-  Q-KBUDGET-HARVEST-1) and one **Accepted** ADR (`2026-08-05-avenue-a-generate-confirm-route.md`).
-  That's a larger gap than this ADR's own Phase 1 — flagged to the operator separately, not
-  silently worked around or fabricated here.
+- Template `§Campaign-defaults` row — **done, as of a follow-up sweep the same day.**
+  `docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md` did not exist in this tree or its
+  git history — not because of the 2026-08-14 public-transition curation rule (a red herring; the
+  file was already gone from the source before that transition even ran), but because the private
+  archive's own `2026-08-08` `prune(T1): delete docs/ltm cold mass` commit deleted it (and 189
+  other files) 6 days earlier, misclassifying it as cold despite it still being the canonical
+  owner of "Default #1–#6" for at least eight live briefs and one **Accepted** ADR
+  (`2026-08-05-avenue-a-generate-confirm-route.md`). Restored verbatim from the archive's
+  last-good commit (`3921ef88`, 2026-08-05) via `git show`, four internally-broken relative links
+  fixed in the same motion (pre-existing bug in the file itself, unrelated to the prune — some
+  ADR links used `../../adr/` where the file's own working links two lines over correctly use
+  `../../../adr/`), and this Default #1 extension recorded in it directly.
 
 **Phase 2 (hook 3) re-run this session:** `grep -rniE "flag.{0,40}promot" docs/briefs/pre-registration/ docs/adr/ | grep -vi "never promot"`
 → clean, 0 hits. No campaign mis-cites the lane as a promotion path.
