@@ -202,11 +202,17 @@ PROPOSED→ACCEPTED graduation (§6) is unreached.
 **Ratified anyway**, by explicit operator instruction ("ratify Rule 2"), 2026-08-21, during a
 review of this repo's governance-growth pattern (belt-churn evidence: 56 adds / 7 removes per the
 2026-08-03 gate-stack audit; ADR corpus 121→132 in 6 days against the 2026-08-08 audit's own
-stated target). Operator reasoning, recorded rather than folded into a fabricated "H holds": the
-rule's discipline — declare a budget, stop and decide at the tripwire rather than drift — is
-judged sound on its face, and a third deferral (2026-08-08 slate → 2026-08-09 correction →
-"rule at 2026-11-08, do not infer now") would repeat exactly the deferral pattern under review
-rather than resolve it.
+stated target). Operator reasoning, recorded rather than folded into a fabricated "H holds":
+**Rule 2 would have caught earlier errors** — a forced stop-and-decide point beats open-ended
+drift. This is retrodiction-as-mechanism-check, which §4 explicitly permits (barred only from
+*tuning the 3/8/3 thresholds* on past instances, never from justifying the mechanism itself on
+them). Two concrete cases stand behind that judgment: (1) the cfg00–12 sweep this ADR's own §1 is
+already anchored to — a checkpoint at cfg08 would have converted nine further configs of silent
+drift into an explicit decision; (2) discovered in this same session, Rule 2's *own* ratification
+history — PROPOSED for over two months, deferred three times (2026-08-08 slate write → 2026-08-09
+correction → "rule at 2026-11-08, do not infer now") with no forced stop-and-decide point — which
+is itself exactly the failure shape a STRATEGIC-class budget exists to catch. A third deferral
+would have repeated that pattern rather than resolved it.
 
 This is an **override**, not a claim the evidentiary bar was met — logged as such per the same
 convention already used elsewhere in this repo for an operator call against an unmet or adverse
