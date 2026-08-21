@@ -37,7 +37,7 @@
 | 2026-06-12-three-loop-methodology-binding.md | Accepted | 2026-06-12 | none | ratified 2026-07-06 by PO (Joshua); D1/D2/D3 graduated Proposed to Accepted per the Section 4 hook (see blockquote header above for the full ratification note). |
 | 2026-06-14-reject-usoil-rdm-spike-fader.md | Accepted | 2026-06-14 | none | REJECT (edge-failure + venue/cost-constraint). The kill is **confirmed on the canonical `PEPPERSTONE:SPOTCRUDE` feed** (the load-bearing reproduction the `Proposed` draft was waiting on). All three pre-registered limbs falsified. |
 | 2026-06-14-rejected-candidate-patterns.md | Accepted | 2026-06-14 | none | (2026-06-14) — taxonomy, dedup-axis separation, add-back gate, and the additive schema extension are all adopted; the §7 downstream sweep landed (SCHEMA.md note + registry pointer + `feedback.py` field extension with a round-trip test, 19/19 intake tests green). |
-| 2026-06-16-rule-2-budget-before-acting.md | Proposed | 2026-06-16 | none | PROPOSED |
+| 2026-06-16-rule-2-budget-before-acting.md | Accepted | 2026-06-16 | none | ratified by operator (JA) 2026-08-21, as an explicit override ahead of §4/§6's evidentiary graduation gate (trip-log has not accrued ≥1 entry per active loop class). See Addendum 2026-08-21. |
 | 2026-06-22-cost-geometry-pregate.md | Accepted | 2026-06-22 | none | Accepted |
 | 2026-06-30-no-manual-trading-cfd-retirement.md | Accepted | 2026-06-30 | none | (operator executive decision, recorded) |
 | 2026-06-30-state-md-role-reduction.md | Accepted | 2026-06-30 | none | decision made 2026-06-30 by owner authorization (in-session, named). Executed same session via Claude Code (STATE.md restructure + `operational_rules.md` §7 amendment landed in this commit). |
