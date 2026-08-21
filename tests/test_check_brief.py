@@ -241,6 +241,27 @@ def test_section0_no_repo_path_fails():
     assert any(vi.section == "§0" for vi in _hard(v)), v
 
 
+def test_section0_path_without_anchor_fails():
+    """ADR 2026-08-20 Phase 1: path-only §0 is a new HARD (Known Trap #3)."""
+    text = WELL_FORMED.replace(
+        "Read `dd_protection.py` (confirmed at commit abc1234 on 2026-06-04) and\n"
+        "`docs/adr/2026-06-04-lean-portfolio-meta-layer.md`.",
+        "Read `core/dd_protection.py` before authoring.",
+    )
+    v = cb.check_brief(text, "adr")
+    hard = _hard(v)
+    assert any(vi.section == "§0" and "anchor" in vi.message.lower() for vi in hard), v
+    assert hard, "expected at least one HARD violation; empty list would pass vacuously"
+
+
+def test_section0_paths_direct_hook_missing_anchor():
+    """ADR 2026-08-20 §10 hook: path present, no hash/date → HARD."""
+    v = cb._check_section0_paths(
+        {"0": "Read core/dd_protection.py before authoring."}
+    )
+    assert any(vi.severity == "HARD" and "anchor" in vi.message.lower() for vi in v), v
+
+
 # ── WARN path: present-but-empty section ───────────────────────
 
 def test_empty_section_warns_not_fails():
