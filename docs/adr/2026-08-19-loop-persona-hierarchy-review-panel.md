@@ -6,7 +6,12 @@
 **Authors:** Joshua + Claude Code (design collaboration, 2026-08-18–19)
 **Supersedes:** none
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** `2026-08-21-persona-hierarchy-front-office-only.md` — D1's spawnable
+roster (narrowed to Front Office + CEO apex + cross-office CFO; the six Middle/Back-office
+C-suite/Senior-Manager seats and their two Back-office Staff retired to mechanical gates) and D3's
+*implementation* of the CRO safety-invariant hard-block (now a standalone deterministic scan, not
+conditional on a spawned CRO persona). D2, D4's delegation mechanism, D5, and the GRAND/STRATEGIC
+trigger scope are untouched — see the addendum below.
 **Retain-until:** none
 **Related:** [three-loop binding](2026-06-12-three-loop-methodology-binding.md) (`Accepted` — extended one
 tier of *scope*, not amended; same pattern the GRAND ADR itself used; also the ADR whose own D2 defines
@@ -409,6 +414,33 @@ files**, not 14. `check_personas.py`'s `EXPECTED_COUNT` updated 14 → 16.
 
 ---
 
+## Addendum 2026-08-21 — partially superseded: roster narrowed to Front Office
+
+**Does not amend §1–§2's D2/D4/D5, §5, §6, §10, or the Ratification note.** Operator direct
+instruction, in-session: First Passage is primarily a research entity, with deployment as a means of
+validating that research; it does not need a standing Middle/Back-office persona roster with its own
+reporting chains, only middle/back-office *services*. Recorded as a partial supersession, per
+[`2026-08-21-persona-hierarchy-front-office-only.md`](2026-08-21-persona-hierarchy-front-office-only.md)
+(see this file's own header `Superseded-in-part-by` line above for the exact clause scope).
+
+**What changed:** D1's roster narrows from 19-file/16-file/17-file (this file's own count churned
+same-day and again 2026-08-20 — see change history) to 9: Front Office (CIO, Head of Research, Head
+of Execution, Falsifier Analyst, Pre-Registration Analyst, Research Analyst, TCA Analyst) plus the
+CEO apex and cross-office CFO, both explicitly confirmed out of scope for this cut. The six retired
+Middle/Back-office seats' functions continue running as mechanical gates (2026-08-21 ADR's §2 D2
+table), not LLM spawns. D3's CRO hard-block is re-implemented as a standalone deterministic scan of
+the target artifact's own text, unconditional on any persona spawn — its underlying claim (restates
+existing doctrine, grants no new AI authority) is unchanged and not superseded.
+
+**What did not change:** D2 (extend the existing panel workflow, never replace) · D4's ownership-map
+delegation *mechanism* (rows reassigned to the mechanical gates per the new ADR, not the mechanism
+itself abolished) · D5 (Joshua decides, always) · the GRAND/STRATEGIC panel trigger scope (GRAND
+ratifications + strict-D2 STRATEGIC-tier Deletes) · this ADR's own §4 falsifier (the whole-panel
+mechanism question) and its 2026-11-08/3rd-real-use trigger schedule, tracked independently of the
+new ADR's own narrower §4.
+
+---
+
 ## Verification
 
 ```bash
@@ -430,3 +462,4 @@ python scripts/check_adr_graph.py
 | 2026-08-19 | Addendum added — self-review evidentiary status for the design spec's *separate* §6.6 self-review claim ("44 agents... workflow run `wf_88c21d8d-a7f`," "6 confirmed BLOCKERs") and D2's "live regression run" claim, both with no recoverable artifact anywhere in the repo — downgraded in framing to "editorial pass, unconfirmed scale" while leaving the underlying, independently-checkable content changes (real commits, verified via `git log`) untouched. Originally drafted broader, from a packet-wide adversarial review (46 agents) of the design spec that also covered this ADR; narrowed on merge with the parallel PR #59 fix above, which already covers this ADR's own dedup gap and ratification self-review — not duplicated here. Neither correction reopens §6.6's `Accepted` status or D1-D5. | Claude Code (drafted at operator request, following this file's own prior-addendum precedent — correction/clarification, no re-litigation, no fresh ratification act required) |
 | 2026-08-19 | Addendum added — roster/spec simplification pass makes D1's "19-file roster" pointer stale by design: 7 never-executed spec extensions archived (not deleted) to `docs/superpowers/specs/archive/`, 5 of 8 Staff-tier personas (never spawned, zero log entries) retired to `docs/personas/archive/` per the design spec's own §6.7, active roster now 14 files. Driven by `docs/notes/audits/2026-08-19-governance-friction-persona-panel-audit.md` plus an independently-spawned Head of Governance review that flagged its own use as outside its literal strict-D2 trigger. Front-office Staff and the CRO hard-block unaffected. | Claude Code (operator-authorized) |
 | 2026-08-19 | Addendum added — operator pushback before merge, re-tested every archived item against real repo evidence. §14 MAST restored (2 genuine findings on real re-run); §10.2 discharged (run for real, not restored to spec text); §6.3 stays archived on stronger evidence (tested, produced a false positive); §6.6/§6.4.1/§10.1 confirmed genuinely blocked on data. 2 of 5 archived Staff analysts (Documentation Analyst, Research Registry Analyst) restored after each found a real, previously-uncaught defect in the governing audit note on first spawn. Active roster now 16 files, not 14. | Claude Code (operator-authorized, after operator pushback) |
+| 2026-08-21 | Header field `Superseded-in-part-by` set + addendum added — operator direct instruction narrows D1's spawnable roster to Front Office (+ CEO apex, cross-office CFO), retiring six Middle/Back-office seats and their two Back-office Staff to mechanical gates; D3's CRO hard-block re-implemented as a standalone deterministic scan. See [`2026-08-21-persona-hierarchy-front-office-only.md`](2026-08-21-persona-hierarchy-front-office-only.md). D2, D4's mechanism, D5, and this ADR's own §4 falsifier/trigger schedule are unaffected. | Joshua + Claude Code |
