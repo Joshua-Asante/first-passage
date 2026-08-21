@@ -92,6 +92,13 @@ structure:
 
 ## SESSION LOG
 
+- **2026-08-21c** — **MSL-S4 real Explore-confirm drafted** — the informal cheap falsifier's
+  fixed-offset control turned out trend-confounded (same cycles converged/diverged in both
+  windows); corrected design adopts an IAAFT-surrogate null (same methodology this repo already
+  proved out for `daily-range-state-persistence`'s analogous autocorrelation confound), weeklies +
+  monthlies, and a partition boundary excluding what's already been viewed. Statistical core
+  unit-tested (23/23) on synthetic data; no live pull yet. $0 / K=0.
+  [`EXPLORE_GO.DRAFT.md`](../../lab/analysis/c1/msl_s4_mgc_2026-08/EXPLORE_GO.DRAFT.md).
 - **2026-08-21b** — **MSL-S4 Stage-1 PASS → operator B4 GO → G0 FROZEN → Pine authored CC-solo,
   same session.** New mechanism `expiry-oi-strike-convergence` (NEW, `MECHANISMS.md`): near a
   published Gold options expiry, price converges toward the strike carrying the largest open

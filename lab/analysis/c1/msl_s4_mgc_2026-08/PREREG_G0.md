@@ -139,16 +139,28 @@ non-zero.
 
 ## §4 — Scoring (EXPLORATION — not run this freeze; named for the future session that does)
 
+**Concrete operationalization: [`EXPLORE_GO.DRAFT.md`](EXPLORE_GO.DRAFT.md)** (drafted 2026-08-21,
+after the informal cheap falsifier — see `STAGE1.md` — found the naive fixed-offset control
+window trend-confounded). Corrects the design below from a single control-window comparison to an
+IAAFT-surrogate null (methodology precedent:
+`docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md`), and upgrades the
+partitions to properly account for what the cheap falsifier and the operator's TV backtest already
+viewed. The abstract limb table below stands as the original frozen intent; the DRAFT token is
+where its concrete mechanics live and where any future adjustment gets recorded, append-only.
+
 | Limb | Definition |
 |---|---|
-| Delete/flip (Req 1a) | Convergence vs. divergence arms, near-expiry displaced population vs. non-expiry control sessions. Mandatory before any live/TV-informed decision beyond the operator's own step-7 backtest. |
-| Primary | Mean net R; session-block bootstrap 95% CI |
+| Delete/flip (Req 1a) | Convergence vs. divergence arms, near-expiry displaced population vs. a generic (non-OI-derived) sham reference. Mandatory before any live/TV-informed decision beyond the operator's own step-7 backtest. Concrete sham + gate logic: `EXPLORE_GO.DRAFT.md` §Req 1a. |
+| Primary | IAAFT-surrogate significance test on mean displacement reduction (superseded from "mean net R / session-block bootstrap" — no trade-level P&L series exists for this construct at the Explore stage, only a price-displacement statistic; see `EXPLORE_GO.DRAFT.md` §The corrected null) |
 | DSR | ≥ **0.650** at `K_intrinsic=1` (disclosure floor) |
 | Cost-law | Gross/trade vs **$16.48** at realized stop distances |
-| Disclose | WR · stop_dist · events/cycle · coverage · $200/$750 at explored qty · which arm (convergence/divergence) separates |
+| Disclose | Convergence rate alongside the mean · the cheap falsifier's own naive control re-run at full n (non-gating) · per-cycle trend-correlation check · $200/$750 at explored qty |
 
 At G0 freeze: all TNEC N-* limbs **U**. This table is a template for the deferred Explore pass —
-none of it has been executed.
+none of it has been executed. `EXPLORE_GO.DRAFT.md`'s statistical core
+(`explore_confirm_lib.py`) is unit-tested on synthetic fixtures (23/23 passing, incl. a power
+check and a false-positive check) but has never touched real data — no live pull has run under
+either PREREG.
 
 ---
 

@@ -14,6 +14,44 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-21l — MSL-S4 real Explore-confirm drafted: IAAFT-surrogate null replaces the naive control
+
+**Focus:** `21k`'s finding (the cheap falsifier's control window is trend-confounded, same cycles
+converge/diverge in both arm and control) meant the deferred Explore-confirm needed a genuinely
+different significance test, not just a re-run with more data.
+
+**Shipped:** [`EXPLORE_GO.DRAFT.md`](../lab/analysis/c1/msl_s4_mgc_2026-08/EXPLORE_GO.DRAFT.md) —
+corrects the control design to an IAAFT-surrogate null (methodology precedent: the corrected-null-
+battery this repo already proved out for an analogous autocorrelation-confound problem,
+`docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md`, adapted from a
+TR-persistence statistic to strike-convergence), upgrades the universe to weeklies + monthlies
+(the cheap falsifier used monthlies only, n=7 — CME's 2024 weekly expansion makes real power
+available), and corrects the IS/CONFIRM partition to exclude the window the TV backtest + cheap
+falsifier already viewed (2025-09-30→2026-08-21), reserving a genuinely untouched CONFIRM block
+(2025-04-01→2025-09-29). Statistical core
+[`explore_confirm_lib.py`](../lab/analysis/c1/msl_s4_mgc_2026-08/explore_confirm_lib.py) +
+[`test_explore_confirm_lib.py`](../lab/analysis/c1/msl_s4_mgc_2026-08/test_explore_confirm_lib.py)
+— 23/23 passing on synthetic fixtures, including a power check (detects an injected synthetic
+convergence signal) and a false-positive check (does not flag pure autocorrelated noise). No
+driver script yet (no `DATABENTO_API_KEY` here) — writing it is the promoted token's first step,
+not a claimed-done item. `PREREG_G0.md` §4 points to the new token.
+
+**Decisions/defects:** one caught and fixed before commit — an early injected-signal test used a
+stale pre-injection price snapshot to pick pull direction, which let earlier cycles' compounding
+pulls silently flip later cycles' effective sign and produced net divergence instead of the
+intended convergence; fixed to recompute direction from the live, incrementally-injected price.
+Diagnostic-gate tolerance deliberately left uncalibrated (pilot-calibration owed on real data, not
+borrowed from the battery's own TR-specific numbers).
+
+**Open / next:** a local session with Databento access writes the driver script and runs the
+pilot phase (diagnostic-gate calibration) before drawing the official IAAFT seed block. Operator
+TV backtest (already partially done, one cycle) can continue in parallel — neither substitutes for
+the other. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1 (still not yet an *acceptable*
+strategy).
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`. (unchanged)
+
+---
 ## 2026-08-21k — MSL-S4 Step-4 falsifier independently re-verified; per-cycle correlation disclosed
 
 **Focus:** `21j`'s local-run `NOT DECISIVE` result landed on the `ptpa57` branch, not pushed by the
