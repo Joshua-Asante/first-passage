@@ -961,7 +961,36 @@ git commit -m "feat(research_utils): batch validator/ingest CLI for proposed tag
 **Interfaces:**
 - Produces: `RawEntry` (dataclass: `title: str`, `body: str`, `source_ref: str`), `split_entries(markdown_text: str) -> list[RawEntry]`, `load_entries(path: Path) -> list[RawEntry]` — consumed by Task 7's driver step.
 
-**Rule-0 note:** verified against the real file before writing this task — `docs/rejected_candidates.md` demarcates each of its 117 entries with a `### ` heading under a `## Entries` section header; ~31 of those entries additionally carry a structured `<!-- concept-intake-entry ... -->` HTML comment (instrument, class, date attributes), but this coverage is too partial (27%) and the attribute vocabulary too heterogeneous (14 distinct, mostly-singleton `class=` values) to use as a mechanical substitute for tagging — it's useful *context* handed to the tagging pass in Task 7, not a shortcut around it.
+**Rule-0 note (RE-VERIFIED 2026-08-21 — supersedes this task's original 2026-08-20 note, which
+is now stale):** `docs/rejected_candidates.md` was reorganized upstream between this task's
+original authoring and dispatch — a real drift a Cursor-fleet dispatch of the *original* version
+of this task correctly caught and bounced `NEEDS_CONTEXT` on, rather than guessing (see
+`docs/briefs/handoffs/2026-08-21-cursor-fleet-mechanism-prior-tasks-5-6.md` Packet B's return).
+Verified directly against the file at `origin/main`@1b53833: it now has **6 `##` sections**, not
+one flat `## Entries` list:
+
+| `##` section | `###` count | Per-candidate entries? |
+|---|---|---|
+| Entries | 17 | Yes |
+| Queryable index (concept-intake gate, added 2026-06-05) | 15 | Yes — same prose-field shape as Entries, confirmed by direct read (Rejection scope / Closure date / Class / Authoritative artifact); historically served a since-retired machine dedup consumer, but the records themselves are real per-candidate closures, not duplicates of the Entries section |
+| Harness-fed rejections (auto-appended) | 0 (currently empty) | Yes, by name/design — future auto-appended per-candidate records |
+| Domain-level SNAG closures | 1 | **No** — explicitly "distinct from the per-direction entries above": a whole research *domain* closed on SNAG-budget exhaustion, spanning many instruments as one roll-up record (verified: the one entry cites XAGUSD/USOIL/EURGBP/EURUSD/GEX/T10Y3M/Friday/rates-MR/dispersion as its object-level instances) — does not fit the schema's one-`target_instrument_family`-per-record assumption |
+| Domain-level tail-exhaustion raised bars | 2 | **No** — same reasoning: a domain-level re-proposal-bar record, not a per-candidate outcome |
+| Audit hooks | 0 (currently empty) | No — mechanical/process content, never per-candidate entries |
+
+Design: `split_entries` parses `### ` headings from every `##` section **except** a named
+denylist (`Domain-level SNAG closures`, `Domain-level tail-exhaustion raised bars`, `Audit
+hooks`) — a denylist rather than an allowlist so a future new per-candidate section (like
+`Harness-fed rejections` once it's populated) is picked up automatically without a further code
+change, while the two structurally-different domain-rollup sections stay permanently excluded
+by name. Current real yield: 17 + 15 + 0 = **32 per-candidate entries** (not the 117 this task
+originally assumed, and not the 35 total `###` headings in the file — 3 of those are domain-
+level rollups, correctly excluded).
+
+~31 of the per-candidate entries additionally carry a structured
+`<!-- concept-intake-entry ... -->` HTML comment (instrument, class, date attributes), but this
+coverage is partial and the attribute vocabulary heterogeneous — it's useful *context* handed to
+the tagging pass in Task 7, not a shortcut around it.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -987,33 +1016,66 @@ Some preamble text that is not an entry.
 ### Second entry title -- STAGE-1 FAIL
 
 **Rejection scope:** other blah.
+
+## Domain-level SNAG closures
+
+### A domain rollup that must be excluded
+
+**Scope:** spans many instruments -- not a per-candidate entry.
+
+## Queryable index (concept-intake gate, added 2026-06-05)
+
+### Third entry title -- from the index section
+
+**Rejection scope:** index-section blah.
+
+## Audit hooks
+
+### Not a candidate either
+
+Mechanical check text, also excluded.
 """
 
 
-def test_split_entries_ignores_preamble_before_entries_section():
+def test_split_entries_ignores_preamble_before_first_section():
     entries = split_entries(SAMPLE)
-    assert len(entries) == 2
-    assert "not an entry" not in entries[0].body
-    assert "not an entry" not in entries[1].body
+    titles = [e.title for e in entries]
+    assert "First entry title -- FALSIFIED" in titles
+    assert all("not an entry" not in e.body for e in entries)
 
 
 def test_split_entries_captures_title_and_body():
     entries = split_entries(SAMPLE)
-    assert entries[0].title == "First entry title -- FALSIFIED"
-    assert "Rejection scope" in entries[0].body
-    assert "concept-intake-entry" in entries[0].body
+    first = entries[0]
+    assert first.title == "First entry title -- FALSIFIED"
+    assert "Rejection scope" in first.body
+    assert "concept-intake-entry" in first.body
 
 
-def test_split_entries_assigns_stable_source_refs():
+def test_split_entries_excludes_domain_level_and_audit_sections():
     entries = split_entries(SAMPLE)
-    assert entries[0].source_ref == "entry-1"
-    assert entries[1].source_ref == "entry-2"
+    titles = [e.title for e in entries]
+    assert "A domain rollup that must be excluded" not in titles
+    assert "Not a candidate either" not in titles
 
 
-def test_split_entries_last_entry_runs_to_end_of_text():
+def test_split_entries_includes_queryable_index_section():
     entries = split_entries(SAMPLE)
-    assert "Second entry title" not in entries[0].body
-    assert entries[1].body.strip().endswith("other blah.")
+    titles = [e.title for e in entries]
+    assert "Third entry title -- from the index section" in titles
+
+
+def test_split_entries_assigns_stable_source_refs_across_included_sections_only():
+    entries = split_entries(SAMPLE)
+    # 3 included entries total (Entries x2 + Queryable index x1); excluded
+    # sections never consume a source_ref, so numbering has no gaps.
+    assert [e.source_ref for e in entries] == ["entry-1", "entry-2", "entry-3"]
+
+
+def test_split_entries_last_entry_in_a_section_runs_to_next_section_boundary():
+    entries = split_entries(SAMPLE)
+    first = entries[0]
+    assert "Second entry title" not in first.body
 
 
 def test_split_entries_empty_text_returns_empty_list():
@@ -1024,7 +1086,7 @@ def test_load_entries_reads_real_file(tmp_path):
     p = tmp_path / "rejected.md"
     p.write_text(SAMPLE, encoding="utf-8")
     entries = load_entries(p)
-    assert len(entries) == 2
+    assert len(entries) == 3
 ```
 
 - [ ] **Step 2: Run tests to verify they fail**
@@ -1038,10 +1100,15 @@ Expected: FAIL — `ModuleNotFoundError: No module named 'lab.research_utils.mec
 # lab/research_utils/mechanism_prior_extract.py
 """Split docs/rejected_candidates.md into individually-taggable entries.
 
-Each entry is demarcated by a `### ` heading under the `## Entries`
-section. This module does no classification -- only splitting and
-locating -- see mechanism_prior_ingest.py and Task 7 of the implementation
-plan for the LLM tagging step that consumes this output.
+The file is organized into several `##` sections. Most contain individual
+per-candidate closure records (in a shared prose-field shape); two are
+DOMAIN-LEVEL rollups (a whole research theme closed or bar-raised,
+spanning many instruments as one record) rather than per-candidate
+entries, and are excluded by name -- see the Rule-0 note in Task 6 of the
+implementation plan for the verified current section list and why a
+denylist (not an allowlist) is used. This module does no classification --
+only splitting and locating -- see mechanism_prior_ingest.py and Task 7 of
+the implementation plan for the LLM tagging step that consumes this output.
 """
 
 from __future__ import annotations
@@ -1050,7 +1117,17 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+SECTION_HEADING_RE = re.compile(r"^## (.+)$", re.MULTILINE)
 ENTRY_HEADING_RE = re.compile(r"^### (.+)$", re.MULTILINE)
+
+# Domain-level rollups and meta/process sections are NOT per-candidate
+# entries. Denylist, not allowlist, so a future new per-candidate section
+# (e.g. "Harness-fed rejections" once populated) is picked up automatically.
+EXCLUDED_SECTIONS = {
+    "Domain-level SNAG closures",
+    "Domain-level tail-exhaustion raised bars",
+    "Audit hooks",
+}
 
 
 @dataclass(frozen=True)
@@ -1061,22 +1138,31 @@ class RawEntry:
 
 
 def split_entries(markdown_text: str) -> list[RawEntry]:
-    """Return one RawEntry per `### ` heading found after `## Entries`.
+    """Return one RawEntry per `### ` heading, across every `##` section
+    except EXCLUDED_SECTIONS.
 
-    Text before `## Entries` (front-matter, registry preamble) is never
-    treated as an entry.
+    Text before the first `## ` section (front-matter, registry preamble)
+    is never treated as an entry. source_ref numbering is continuous
+    across included sections only -- an excluded section never consumes
+    a number, so there are no gaps.
     """
-    entries_start = markdown_text.find("## Entries")
-    body_text = markdown_text[entries_start:] if entries_start != -1 else markdown_text
+    sections = [(m.start(), m.group(1).strip()) for m in SECTION_HEADING_RE.finditer(markdown_text)]
+    sections.append((len(markdown_text), None))  # sentinel end boundary
 
-    headings = list(ENTRY_HEADING_RE.finditer(body_text))
-    entries = []
-    for i, match in enumerate(headings):
-        title = match.group(1).strip()
-        start = match.end()
-        end = headings[i + 1].start() if i + 1 < len(headings) else len(body_text)
-        body = body_text[start:end].strip()
-        entries.append(RawEntry(title=title, body=body, source_ref=f"entry-{i + 1}"))
+    entries: list[RawEntry] = []
+    counter = 0
+    for (start, name), (end, _) in zip(sections, sections[1:]):
+        if name in EXCLUDED_SECTIONS:
+            continue
+        section_text = markdown_text[start:end]
+        headings = list(ENTRY_HEADING_RE.finditer(section_text))
+        for i, match in enumerate(headings):
+            counter += 1
+            title = match.group(1).strip()
+            body_start = match.end()
+            body_end = headings[i + 1].start() if i + 1 < len(headings) else len(section_text)
+            body = section_text[body_start:body_end].strip()
+            entries.append(RawEntry(title=title, body=body, source_ref=f"entry-{counter}"))
     return entries
 
 
@@ -1087,7 +1173,7 @@ def load_entries(path: Path) -> list[RawEntry]:
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `pytest tests/test_mechanism_prior_extract.py -v`
-Expected: 6 passed
+Expected: 8 passed
 
 - [ ] **Step 5: Commit**
 
