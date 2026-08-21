@@ -19,13 +19,41 @@ def test_closed_grammar_rejects_explore_record_and_date_aliases():
     assert not inventory_closed.has_machine_closed("**Verdict:** `FALSIFIED` · 2026-08-11 · $0\n")
 
 
+# Q-SCORE-1 Block 1 undated residue still on disk under the frozen F3 grammar.
+# Pin the filenames, not the date_coverage ratio: new *dated* closures raise the
+# ratio without healing anyone (68/85 = 0.80 after Q-M1WIRE-1 tripped
+# `date_coverage < 0.80` on every later lab/** CI run). This is not an H_A
+# recount and does not authorize Block 2.
+UNDATED_RESIDUE = frozenset({
+    "2026-07-27-hermes-agent-adoption-closure-resolved.md",
+    "2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md",
+    "MNQBASE-1-closure-intake-dry.md",
+    "Q-6JCOMPOSE-1-closure-void-unexecutable.md",
+    "Q-6JCOMPOSE-2-closure-void-c2-red-gate-unreachable.md",
+    "Q-ICT-1-closure-moot.md",
+    "Q-JOINT-TAIL-WEEKLY-closure-retired.md",
+    "Q-KBUDGET-1-axis-reachability-screen.md",
+    "Q-KBUDGET-HARVEST-1-bounded-axis-literature-sweep.md",
+    "Q-MCLTAS-1-closure-falsified.md",
+    "Q-TNEC-CON-3-closure-ambiguous-hold.md",
+    "Q-TNEC-CON-4-closure-ambiguous-hold.md",
+    "Q-TNEC-CON-5-closure-ambiguous-hold.md",
+    "Q-TNEC-ENV-1-closure.md",
+    "Q-USOIL-1-closure-subtract.md",
+    "Q-XMEM-1-closure-subtract.md",
+    "ST-EH-1-closure-operator-stopped.md",
+})
+
+
 def test_design_time_coverage_floor_at_head():
-    # Design §3: 13/50 = 74% at measurement time. HEAD may grow; coverage must stay
-    # honest under the frozen grammar (never "fixed" by broadening the regex).
+    # Design §3: 13/50 = 74% at measurement time. HEAD may grow; the undated
+    # residue must stay honest under the frozen grammar (never "fixed" by
+    # broadening the regex). Healing = drop a name from UNDATED_RESIDUE after
+    # a new campaign, not a silent Closed: edit or CLOSED_RE broaden.
     s = inventory_closed.summarize()
     assert s["n_closures"] >= 50
     assert s["n_without_closed"] >= 13
-    assert s["date_coverage"] < 0.80  # H_A date limb still fails unless corpus healed
+    assert UNDATED_RESIDUE <= set(s["without_closed"])
 
 
 def test_concentration_rule_labels_recent_spread_when_applicable():
