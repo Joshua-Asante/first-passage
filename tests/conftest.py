@@ -23,3 +23,30 @@ FIXTURES_DIR = Path(__file__).parent / "fixtures"
 def usdjpy_fixtures() -> pd.DataFrame:
     path = FIXTURES_DIR / "usdjpy_pnl_fixtures.csv"
     return pd.read_csv(path)
+
+
+@pytest.fixture
+def valid_tag_record():
+    """Factory fixture: call with field overrides to build a valid tag record dict.
+
+    `valid_tag_record()` returns a record that passes validate_tag_record()
+    unmodified; `valid_tag_record(mechanism_tier="B")` overrides one field.
+    Overriding "provenance" replaces the whole sub-dict (pass a complete one).
+    """
+
+    def _make(**overrides):
+        record = {
+            "mechanism_tier": "A",
+            "sourcing_channel_rank": "3",
+            "target_instrument_family": "MNQ",
+            "outcome": "SURVIVED",
+            "provenance": {
+                "source_path": "docs/rejected_candidates.md",
+                "source_ref": "entry-1",
+                "tagged_at": "2026-08-20",
+            },
+        }
+        record.update(overrides)
+        return record
+
+    return _make
