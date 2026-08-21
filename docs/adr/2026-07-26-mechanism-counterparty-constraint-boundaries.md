@@ -8,7 +8,7 @@
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Amends-in-part:** [`2026-07-15-external-mechanism-harvest-intake.md`](2026-07-15-external-mechanism-harvest-intake.md) / [`docs/methodology/strategy_harvest.md`](../methodology/strategy_harvest.md) (Requirement 1a sharpened; §2.3 sourcing channel added; edits land on ratification, not before) and [`2026-07-11-discovery-campaign-defaults-ratified.md`](2026-07-11-discovery-campaign-defaults-ratified.md) Default #5 (decay monitor extended for constraint-flow seeds) + Default #2 K semantics (executed-vs-declared clause for operator-stopped campaigns).
-**Related:** [`2026-07-26-regime-candidate-flag-lane.md`](2026-07-26-regime-candidate-flag-lane.md) (sibling Proposed ADR, same session); ST-EH-1 closure (first case for §2-C).
+**Related:** [`2026-07-26-regime-candidate-flag-lane.md`](2026-07-26-regime-candidate-flag-lane.md) (sibling ADR, same session, Accepted 2026-08-21); ST-EH-1 closure (first case for §2-C).
 **Layer:** methodology (research rules of evidence only). No strategy/risk-control parameter, allocation, `dd_protection` constant, or Pine source is touched.
 
 ---
