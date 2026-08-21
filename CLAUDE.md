@@ -2,15 +2,14 @@
 
 ## Purpose
 
-Research + operational layer for a futures prop-trading program. The mission pipeline is
+Research + operational layer for First Passage. The mission pipeline is
 **generate → evaluate → deploy → measure → update**: discover, validate, and deploy automated
-futures strategies at four automation-friendly prop firms
+futures strategies at automation-friendly prop firms
 (`core/firm_rules.AUTOMATION_FRIENDLY_PROP_FIRMS`).
 
 **Documentation exists to serve that pipeline, not to be maintained by it.** Every artifact must
-pass the retention test in [`docs/operational_rules.md`](docs/operational_rules.md) §Retention
-(R1 pipeline-consumed · R2 live-safety · R3 re-proposal bar · R4 reproducibility manifest ·
-R5 open *fireable* obligation). Anything else is deleted, retrievable via
+pass the retention test in [`docs/operational_rules.md`](docs/operational_rules.md) §Retention.
+Anything else is deleted, retrievable via
 `git show pre-prune-2026-08-08:<path>` — [`Great Prune ADR`](docs/adr/2026-08-08-great-prune.md).
 
 **ADRs are canonical for every decision.** This file carries **pointers only** — never a retelling.
@@ -163,7 +162,8 @@ firm's rules). A different execution feed additionally requires the feed-equival
 * **Rule 0 — audit-first**: [`docs/rule_0.md`](docs/rule_0.md). Read production code first when
   authoring anything touching risk controls. Extends to locked Pine.
 * **INQHIORI canon** (entry point; §14 binds the three loops; §15 owns Rule 2 —
-  budget before acting, still PROPOSED):
+  budget before acting, ratified 2026-08-21 as an operator override ahead of its own
+  evidentiary graduation gate — [Addendum](docs/adr/2026-06-16-rule-2-budget-before-acting.md)):
   [`docs/methodology/inqhiori-canon.md`](docs/methodology/inqhiori-canon.md).
 * **Regime-robustness gate** (mandatory before any LOCK CANDIDATE on a `dd_protection`-class
   constant): [`docs/methodology/regime_robustness_gate.md`](docs/methodology/regime_robustness_gate.md).

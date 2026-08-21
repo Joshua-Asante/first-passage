@@ -337,6 +337,31 @@ Recurrence: next quarterly programme audit, or any session that edits PIPELINES/
 - **Structural leftovers:** C-P1-10 `--slug` archive landed 2026-08-21; W5 CI roster + W6 lockfile (H6/H7 HOLD); `Q-M1WIRE-1` / C-P1-05 / C-P1-06 named not opened; `time_to_pass.py` retire GO; `msl_s2b_mym` still HOLD (STAGE-1 FAIL route, not `--slug`-able)
 - **Follow-up audits:** none spawned
 
+### Addendum 2026-08-21 (second pass — `REPO_MAP.md`, out of Packets A–C's scope)
+
+Operator asked for a further root-doc sharpening pass. `REPO_MAP.md` was never edited by
+this campaign (Phase 0 read it into the owner-map table; its only finding, C-P0-03, was
+`LEFT`) — the branch point re-verification below is fresh, not a re-check of Packets A–C.
+
+- **§2.1 scripts inventory stale:** its own self-flagged "incomplete" count (`35 files /
+  14 unlisted`) had drifted further — `git ls-files 'scripts/*.py'` now returns **48**
+  (13 gate scripts landed 2026-08-17→08-21: `check_instrument_ledger_coverage.py`,
+  `check_personas.py`, `gate_manifest.py`, `check_closure_disposition.py`,
+  `check_supersession_placement.py`, `check_governance_prose_control_chars.py`,
+  `check_pursuit_records.py`, `check_md_relative_links.py`,
+  `check_falsifier_reachability.py`, `archive_strategy.py`, `gate_fire_log.py`,
+  `repo_retrieve.py`, `sync_liveness_indexes.py`). Seven of the thirteen are wired into
+  `gates.yml` or a `make` target and are now named in the governance bullet instead of
+  the unlisted parenthetical; the count and both lists are corrected.
+- **§5 "Zero unmapped" coverage-check was FAILING against production** — a runnable
+  claim, not prose. `LICENSE` + `.markdownlint.json` (landed 2026-08-17, PR #29, public-
+  transition config drop) were never added to the exemption regex. Repaired: both rows
+  added to §2, both paths added to the §5 regex, re-ran the command clean
+  (`zero unmapped OK`).
+- **No gate change, no new `Q-*`, no delete.** Root doc mechanical gates
+  (`check_root_doc_liveness.py`, `check_path_liveness.py`, `check_status_consistency.py`,
+  `check_adr_graph.py`) re-run clean after the edit. $0/K=0.
+
 ---
 
 ## Verification
