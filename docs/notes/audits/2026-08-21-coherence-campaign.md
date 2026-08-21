@@ -145,7 +145,7 @@ Classes: **inconsistency** · **ambiguity** · **trap**. Dispositions: `link` ·
 | C-P1-07 | inconsistency | INDEX LTM path | = C-P0-05 | **REPAIRED** |
 | C-P1-08 | inconsistency | Q-GATESTACK in Open | = C-P0-06 | **REPAIRED** |
 | C-P1-09 | ambiguity | P1 "every OTHER axis unfunded" stricter than `axis_screen.py` / Q-KBUDGET-1 | simplify constraint #2 | **REPAIRED** |
-| C-P1-10 | inconsistency | `lab/CATALOG.md` ACTIVE rows on closed/falsified camps | do not hand-edit CATALOG (regenerate path) | **OWED** — H2 dry-run 2026-08-21: `--check --catalog-only` OK; Status tokens unchanged; regenerate would clobber committed one-liners. Flips need `--slug` archive, not regenerate. |
+| C-P1-10 | inconsistency | `lab/CATALOG.md` ACTIVE rows on closed/falsified camps | do not hand-edit CATALOG (regenerate path) | **REPAIRED** — 2026-08-21 `--slug` archive of 10 closed camps; geofit pair retagged ACTIVE (stay-hot imports); `msl_s2b_mym` left HOLD (STAGE-1 FAIL is not archiveable). |
 | C-P1-11 | trap | P1 Stages 5–7 look like a generic runner; hot generic runner is Stages 2–4 only | simplify P1 flow caveat | **REPAIRED** |
 | C-P1-12 | ambiguity | manifest `close` hands to skill §8 vs `universe_gate.py` | left — P1 W4 pointer is the cheap fix | **LEFT** |
 | C-P1-16 | omission | P1 omitted W4 live floor (G0–G5+G8) | link | **REPAIRED** |
@@ -334,7 +334,7 @@ Recurrence: next quarterly programme audit, or any session that edits PIPELINES/
 
 - **Status:** `Closed (immediate + structural complete for Packets A–C; leftovers OWED)`
 - **Immediate repair completed:** 2026-08-21
-- **Structural leftovers:** CATALOG ACTIVE-on-closed needs `--slug` archive (C-P1-10; regenerate withheld 2026-08-21); W5 CI roster + W6 lockfile (H6/H7 HOLD); `Q-M1WIRE-1` / C-P1-05 / C-P1-06 named not opened; `time_to_pass.py` retire GO
+- **Structural leftovers:** C-P1-10 `--slug` archive landed 2026-08-21; W5 CI roster + W6 lockfile (H6/H7 HOLD); `Q-M1WIRE-1` / C-P1-05 / C-P1-06 named not opened; `time_to_pass.py` retire GO; `msl_s2b_mym` still HOLD (STAGE-1 FAIL route, not `--slug`-able)
 - **Follow-up audits:** none spawned
 
 ---

@@ -41,9 +41,8 @@ documents the camp boundary for humans/tools.
 | eval_shape_diagnostics_2026-07-28 | c1 | ACTIVE | eval-shape diagnostics under corrected Tradeify geometry | lab/analysis/c1/eval_shape_diagnostics_2026-07-28/ | — |
 | eval_slow_archetype_2026-08-04 | c1 | ACTIVE | — | lab/analysis/c1/eval_slow_archetype_2026-08-04/ | — |
 | f3_cadence_successor_venues_2026-08-05 | c1 | ACTIVE | the cadence axis F3 required is measured, and **F3 is not decidable on it.** Bulenox and MFFU sit in the same inactiv... | lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/ | — |
-| geofit_iid_sufficiency_power_2026-08-15 | c1 | HOLD | archive owed (CLOSED): scoping probe, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_skew_prob... | lab/analysis/c1/geofit_iid_sufficiency_power_2026-08-15/ | — |
-| geofit_skewed_family_construction_2026-08-15 | c1 | HOLD | archive owed (CLOSED): scoping construction, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_sk... | lab/analysis/c1/geofit_skewed_family_construction_2026-08-15/ | — |
-| mnq_capflow_orb_r_2026-08 | c1 | HOLD | archive owed (FALSIFIED): `FALSIFIED` · **cap_spent:** `False` | lab/analysis/c1/mnq_capflow_orb_r_2026-08/ | — |
+| geofit_iid_sufficiency_power_2026-08-15 | c1 | ACTIVE | scoping probe, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_skew_probe_2026-07-25/README.md)... | lab/analysis/c1/geofit_iid_sufficiency_power_2026-08-15/ | — |
+| geofit_skewed_family_construction_2026-08-15 | c1 | ACTIVE | scoping construction, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_skew_probe_2026-07-25/REA... | lab/analysis/c1/geofit_skewed_family_construction_2026-08-15/ | — |
 | mnq_event_ceiling_2026-08-04 | c1 | ACTIVE | — | lab/analysis/c1/mnq_event_ceiling_2026-08-04/ | — |
 | mnq_ofchan_routeb_2026-08 | c1 | ACTIVE | — | lab/analysis/c1/mnq_ofchan_routeb_2026-08/ | — |
 | mnq_orb_flow_depth_2026-08-18 | c1 | ACTIVE | FROZEN, pull not authorized — MBP-10 depth escalation on ORB-MNQ-1/N14, fresh authorization per MNQFLOW-1's own FM-4 | lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/ | — |
@@ -56,21 +55,15 @@ documents the camp boundary for humans/tools.
 | mnq_tnec_con2_compression_break_2026-08 | c1 | HOLD | `AMBIGUOUS-HOLD` — gross-positive / net-negative; halves sign-flip; non-promotable close. | lab/analysis/c1/mnq_tnec_con2_compression_break_2026-08/ | — |
 | mnq_tnec_con3_htf_native_break_2026-08 | c1 | HOLD | `AMBIGUOUS-HOLD` — long mean net-positive but CI straddles 0; short net-negative; aux limbs fail live-pass. | lab/analysis/c1/mnq_tnec_con3_htf_native_break_2026-08/ | — |
 | mnq_tnec_con4_pdh_pdl_break_2026-08 | c1 | HOLD | `AMBIGUOUS-HOLD` — both arms near-zero; CIs straddle 0; aux limbs fail live-pass. | lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/ | — |
-| ict_target_investigation_2026-08-20 | c1 | ACTIVE | `AMBIGUOUS` — zero-run distance sweep (5-300pt) on `Q-ICT-OTE-1`/`Q-ICT-OB-1`'s already-run entries; mean R negative at every tested distance; frozen DOL target exonerated, entries lack directional edge | lab/analysis/c1/ict_target_investigation_2026-08-20/ | — |
 | mnq_tnec_con5_impulse_pullback_vwap_2026-08 | c1 | HOLD | `AMBIGUOUS-HOLD` — both arms mean-negative; CIs straddle 0; aux limbs fail live-pass. | lab/analysis/c1/mnq_tnec_con5_impulse_pullback_vwap_2026-08/ | — |
 | msl_s2b_mym_2026-08 | c1 | HOLD | archive owed (STAGE-1 FAIL route): pre-G0 kill — [closure](../../../../docs/briefs/closures/MSL-S2B-closure-stage1-fa... | lab/analysis/c1/msl_s2b_mym_2026-08/ | — |
-| nsurv_layer_design_2026-08-20 | c1 | ACTIVE | `Q-NSURV-2` Phase 1 — additive magnitude-resampling wrapper reproduction check, `RESOLVED`. Reproduces both known N-SURV candidates' headlines within 2.0pp, zero `run_partition_mc`/`blocks_from_daily_pnl` internals touched (grep-audited). See [closure](../../../docs/briefs/closures/Q-NSURV-2-closure-resolved.md). | lab/analysis/c1/nsurv_layer_design_2026-08-20/ | — |
 | orbmnq1_cushion_sizing_probe_2026-08-20 | c1 | ACTIVE | Informal $0/K=0 probe (not pre-registered) — cushion-proportional sizing eliminates ORB-MNQ-1's bust intraday-honestly (mathematically real, regime-agnostic); a real 2021-09-28 pass-rate regime break survives a thirds split but its trailing-vol mechanism is REFUTED. Formalized as [`Q-ORBCUSH-1`](../../../docs/briefs/Q-ORBCUSH-1-regime-break-mechanism.md), which itself closed `FALSIFIED` 2026-08-20 (trailing mean-R also refuted — `ops/instruments/MNQ.md` N17). | lab/analysis/c1/orbmnq1_cushion_sizing_probe_2026-08-20/ | — |
 | orbmnq1_nsurv_magnitude_probe_2026-08-20 | c1 | ACTIVE | N=50 magnitude-resampled skewed-gamma fit to ORB-MNQ-1's own P&L, testing whether cushion-sizing bust-elimination is robust or a lucky single-history draw. Bust axis: 50/50 robust. Pass axis: real ~50/50 proposition (sd 24pp). See [MNQ.md](../../../ops/instruments/MNQ.md) N18. | lab/analysis/c1/orbmnq1_nsurv_magnitude_probe_2026-08-20/ | — |
 | orbmnq1_skew_sizing_probe_2026-08-20 | c1 | ACTIVE | Skew-derived `pol_cushion` sizing ceiling vs the borrowed 0.75 constant — informal $0/K=0 null, neither derived candidate beats the borrowed constant on pass rate. See [MNQ.md](../../../ops/instruments/MNQ.md) N18. | lab/analysis/c1/orbmnq1_skew_sizing_probe_2026-08-20/ | — |
-| orbmnq1_survivor_scoring_2026-08-20 | c1 | ACTIVE | `Q-ORBSURV-1` Phase 1/2 — full-panel k=2 + post-2021-09-28-only k=1/k=2 cushion-sizing gate check, `FALSIFIED`. Full-panel k=2 misses the pass floor (41.51% < 50%); post-break-only clears at both k. See [closure](../../../docs/briefs/closures/Q-ORBSURV-1-closure-falsified.md) · [MNQ.md](../../../ops/instruments/MNQ.md) N19. | lab/analysis/c1/orbmnq1_survivor_scoring_2026-08-20/ | — |
 | parity_gen2_2026-08 | c1 | ACTIVE | — | lab/analysis/c1/parity_gen2_2026-08/ | — |
-| q_evalseq_1_2026-08 | c1 | HOLD | archive owed (FALSIFIED): `FALSIFIED` — schedule lever spent for eval-pass lift (best −1.06pt vs +5pt bar); flat WATC... | lab/analysis/c1/q_evalseq_1_2026-08/ | — |
-| q_orbcush_1_2026-08 | c1 | ACTIVE | `Q-ORBCUSH-1` Phase 1 — trailing mean-R regime classifier vs ORB-MNQ-1's 2021-09-28 break — closed `FALSIFIED`, date-correlation clears 0/3 pre-registered windows. See [closure](../../../docs/briefs/closures/Q-ORBCUSH-1-closure-falsified.md). | lab/analysis/c1/q_orbcush_1_2026-08/ | — |
 | q_polfront_1_2026-08 | c1 | ACTIVE | — | lab/analysis/c1/q_polfront_1_2026-08/ | — |
 | q_rail_1_2026-07 | c1 | ACTIVE | c1 rail Phases 0–4 CLOSED RESOLVED; ceiling $700 operator-signed | lab/analysis/c1/q_rail_1_2026-07/ | — |
 | research-analyst-mnq-atomic-facts-2026-08-19 | c1 | ACTIVE | Research Analyst inaugural session — MNQ atomic-fact decomposition draft (cross-campaign synthesis, not a new backtest); routing corrected same-day 2026-08-19 (DROP D5 -- already killed twice, ledger-contradicted first GRADUATE call / HOLD temporal-selectivity / DROP weekly-bias) | lab/analysis/c1/research-analyst-mnq-atomic-facts-2026-08-19/ | — |
-| todvol_1_2026-08-20 | c1 | ACTIVE | `Q-TODVOL-1` `tod-baseline-range-trigger` D2 pre-G0 falsifier `FAIL` — mean signed gross +0.25pt vs 2.82pt bar (9% of required), n=975. Route 1 stays open in principle; this causal story does not supply a candidate. See [`ops/instruments/MECHANISMS.md`](../../ops/instruments/MECHANISMS.md). | lab/analysis/c1/todvol_1_2026-08-20/ | — |
 | tradeify_book_composition_2026-07-23 | c1 | ACTIVE | eval-lock fix + §2 book-composition re-derivation | lab/analysis/c1/tradeify_book_composition_2026-07-23/ | inputs gitignored |
 | tradeify_eval_lock_correction_2026-07-22 | c1 | ACTIVE | Tradeify/MFFU eval drawdown-lock correction re-MC | lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/ | — |
 | tradeify_fade_stage0_2026-07-30 | c1 | ACTIVE | Stage 0 instrumentation complete; Stage 1 region computed at 1x/2x/4x; no mechanism scored, K=0, $0 spend | lab/analysis/c1/tradeify_fade_stage0_2026-07-30/ | — |
@@ -156,20 +149,12 @@ documents the camp boundary for humans/tools.
 | us500_discovery_2026-06-22 | legacy | ACTIVE | US500 widest-net edge discovery results | lab/analysis/legacy/us500_discovery_2026-06-22/ | — |
 | xauusd_cgb_2026-06-15 | legacy | HOLD | AMBIGUOUS (brief §6) / operational HOLD — build NOT triggered | lab/analysis/legacy/xauusd_cgb_2026-06-15/ | — |
 
-### deep_lane
-
-| slug | theme | status | one-liner | body | heavy |
-|---|---|---|---|---|---|
-| dl1_mgc_orc_2026-08-16 | deep_lane | HOLD | archive owed (CLOSED): `AMBIGUOUS` — ABANDONMENT (prereg roster mapping: confirm never read, nothing | lab/analysis/deep_lane/dl1_mgc_orc_2026-08-16/ | — |
-
 ### _inbox
 
 | slug | theme | status | one-liner | body | heavy |
 |---|---|---|---|---|---|
 | dstruct_mnq_2026-08 | _inbox | ACTIVE | NULL: daily close-vs-EMA20 bias carries nothing at daily granularity (Tier-1 screen, 3 of 4 limbs failed; K=1 disclosed) | lab/analysis/_inbox/dstruct_mnq_2026-08/ | — |
 | ict_mnq_2026-08 | _inbox | ACTIVE | ICT cascade re-run on NQ/MNQ at $0/K=0/Cap seat unspent: W and D confirm on independent instruments, pools falsified ... | lab/analysis/_inbox/ict_mnq_2026-08/ | — |
-| q_condval_1_2026-08 | _inbox | HOLD | archive owed (FALSIFIED): `FALSIFIED` (S1b conditioner-engineering branch parked) | lab/analysis/_inbox/q_condval_1_2026-08/ | — |
-| q_expr_1_2026-08 | _inbox | HOLD | archive owed (CLOSED): H1 horizon-mismatch 4/4 models the orphaning; H2 1/5 misses; H3 cannot fire | lab/analysis/_inbox/q_expr_1_2026-08/ | — |
 | q_trainkill_1_2026-08 | _inbox | HOLD | BOUNDED extremes disagree; scored core MISCALIBRATED | lab/analysis/_inbox/q_trainkill_1_2026-08/ | — |
 | q_trainkill_2_2026-08 | _inbox | HOLD | both named alternates fit (NEG and DEP-ZERO) | lab/analysis/_inbox/q_trainkill_2_2026-08/ | — |
 | q_trainkill_3_2026-08 | _inbox | HOLD | Block F NEG and Block A DEP (split) | lab/analysis/_inbox/q_trainkill_3_2026-08/ | — |
@@ -190,6 +175,7 @@ documents the camp boundary for humans/tools.
 | custodian_eurusd | CLOSED | SHELVED (probe not completed) | lab/analysis/custodian_eurusd/CARD.md | lab/archive/custodian_eurusd/ | — | 2026-07-11 |
 | d5_recost_2026-07 | FALSIFIED | Stage-2 KILL (binding cause is edge decay, not cost). | lab/analysis/d5_recost_2026-07/CARD.md | lab/archive/d5_recost_2026-07/ | — | 2026-08-03 |
 | decompound_ddprot_2026-06-21 | CLOSED | DONE_WITH_CONCERNS. | lab/analysis/decompound_ddprot_2026-06-21/CARD.md | lab/archive/decompound_ddprot_2026-06-21/ | — | 2026-07-12 |
+| dl1_mgc_orc_2026-08-16 | CLOSED | `AMBIGUOUS` — ABANDONMENT (prereg roster mapping: confirm never read, nothing | lab/analysis/dl1_mgc_orc_2026-08-16/CARD.md | lab/archive/dl1_mgc_orc_2026-08-16/ | — | 2026-08-21 |
 | external_sourcing_2026-06-30 | CLOSED | RESOLVED zero saved candidates (thesis-first narrow pass) | lab/analysis/external_sourcing_2026-06-30/CARD.md | lab/archive/external_sourcing_2026-06-30/ | — | 2026-07-12 |
 | feed_divergence_2026-06 | CLOSED | RESOLVED-BY-RETIREMENT. Q-FEED-1's cross-feed transfer-validity question diss... | lab/analysis/feed_divergence_2026-06/CARD.md | lab/archive/feed_divergence_2026-06/ | — | 2026-08-03 |
 | fixrev_costscreen_2026-06-22 | FALSIFIED | FAIL-COST** (best-of-grid break-even 0.277 pip vs FXIFY all-in 0.80 pip). | lab/analysis/fixrev_costscreen_2026-06-22/CARD.md | lab/archive/fixrev_costscreen_2026-06-22/ | — | 2026-07-11 |
@@ -201,8 +187,10 @@ documents the camp boundary for humans/tools.
 | harv_0_month_end_rebalance_es_2026-07 | CLOSED | H1 corroborated but placebo magnitude un-passable; successor pre-... | lab/analysis/harv_0_month_end_rebalance_es_2026-07/CARD.md | lab/archive/harv_0_month_end_rebalance_es_2026-07/ | — | 2026-07-12 |
 | ict_cascade_2026-06-18 | CLOSED | Q-ICT-CASCADE-1 CLOSED (1M insufficient N) | lab/analysis/ict_cascade_2026-06-18/CARD.md | lab/archive/ict_cascade_2026-06-18/ | — | 2026-07-12 |
 | ict_revcon_2026-06-19 | CLOSED | CLOSED NOT-CONFIRMED — 1H REVCON ambiguous / insufficient N | lab/analysis/ict_revcon_2026-06-19/CARD.md | lab/archive/ict_revcon_2026-06-19/ | — | 2026-07-12 |
+| ict_target_investigation_2026-08-20 | CLOSED | zero-run distance sweep (5-300pt); mean R negative at every tested distance; ... | lab/analysis/ict_target_investigation_2026-08-20/CARD.md | lab/archive/ict_target_investigation_2026-08-20/ | — | 2026-08-21 |
 | identify_nas100_2026-06-20 | CLOSED | Identify-only incomplete; stats JSON only — closed without Question phase | lab/analysis/identify_nas100_2026-06-20/CARD.md | lab/archive/identify_nas100_2026-06-20/ | — | 2026-07-12 |
 | mnq_capa_n14_tripwire_2026-08-06 | CLOSED | `RESOLVED` (W5) — Cap seat **marked spent** on this Route A cell; companion r... | lab/analysis/mnq_capa_n14_tripwire_2026-08-06/CARD.md | lab/archive/mnq_capa_n14_tripwire_2026-08-06/ | — | 2026-08-13 |
+| mnq_capflow_orb_r_2026-08 | FALSIFIED | `FALSIFIED` · **cap_spent:** `False` | lab/analysis/mnq_capflow_orb_r_2026-08/CARD.md | lab/archive/mnq_capflow_orb_r_2026-08/ | — | 2026-08-21 |
 | mnq_con1_dense1m_stage0_2026-08 | FALSIFIED | `FALSIFIED` — ES/NQ 5m divergence explore; both arms CI&lt;0; STOP catalogue | lab/analysis/mnq_con1_dense1m_stage0_2026-08/CARD.md | lab/archive/mnq_con1_dense1m_stage0_2026-08/ | — | 2026-08-13 |
 | mnq_fvg_draw_probe_2026-08-04 | CLOSED | UNDERPOWERED — V5 fired (n=117 < 150), and the disclosure beneath the power f... | lab/analysis/mnq_fvg_draw_probe_2026-08-04/CARD.md | lab/archive/mnq_fvg_draw_probe_2026-08-04/ | — | 2026-08-13 |
 | mnq_orb_level_proximity_2026-08-05 | CLOSED | VOID-TOD-CONFOUND (W6) — highest-precedence amended §7 gate; Δ not interprete... | lab/analysis/mnq_orb_level_proximity_2026-08-05/CARD.md | lab/archive/mnq_orb_level_proximity_2026-08-05/ | — | 2026-08-13 |
@@ -219,15 +207,20 @@ documents the camp boundary for humans/tools.
 | mym_3fps_recon_2026-07 | FALSIFIED | `FALSIFIED` | lab/analysis/mym_3fps_recon_2026-07/CARD.md | lab/archive/mym_3fps_recon_2026-07/ | — | 2026-08-03 |
 | ng_eia_recon_2026-07 | FALSIFIED | FALSIFIED at Phase-0 (both P0.2 power and P0.3 cost-law fail decisively; per-... | lab/analysis/ng_eia_recon_2026-07/CARD.md | lab/archive/ng_eia_recon_2026-07/ | — | 2026-08-03 |
 | noct_spx | FALSIFIED | FALSIFIED | lab/analysis/noct_spx/CARD.md | lab/archive/noct_spx/ | — | 2026-07-11 |
+| nsurv_layer_design_2026-08-20 | CLOSED | Q-NSURV-2 RESOLVED; additive magnitude-resampling wrapper reproduces both can... | lab/analysis/nsurv_layer_design_2026-08-20/CARD.md | lab/archive/nsurv_layer_design_2026-08-20/ | — | 2026-08-21 |
 | oanda_stage1 | RETIRED | OANDA retired 2026-06-24; frozen historical evidence | lab/analysis/oanda_stage1/CARD.md | lab/archive/oanda_stage1/ | — | 2026-07-12 |
 | oil_carry | FALSIFIED | F1-FALSIFIED — rejected candidate | lab/analysis/oil_carry/CARD.md | lab/archive/oil_carry/ | — | 2026-07-12 |
 | opening_pressure_map_2026-07 | FALSIFIED | `FALSIFIED` | lab/analysis/opening_pressure_map_2026-07/CARD.md | lab/archive/opening_pressure_map_2026-07/ | — | 2026-08-03 |
 | orb_zb_recon_2026-07 | FALSIFIED | FALSIFIED at Phase-0 (P0.1 cost-law KILL on every window; the ORB breakout ha... | lab/analysis/orb_zb_recon_2026-07/CARD.md | lab/archive/orb_zb_recon_2026-07/ | — | 2026-08-03 |
+| orbmnq1_survivor_scoring_2026-08-20 | FALSIFIED | full-panel k=2 misses the pass floor (41.51% < 50%); post-break-only clears a... | lab/analysis/orbmnq1_survivor_scoring_2026-08-20/CARD.md | lab/archive/orbmnq1_survivor_scoring_2026-08-20/ | — | 2026-08-21 |
 | p2_replay_2026-07 | FALSIFIED | P2 FALSIFIED for this venue — both legs K2-kill | lab/analysis/p2_replay_2026-07/CARD.md | lab/archive/p2_replay_2026-07/ | — | 2026-07-12 |
 | pharos_us500_sweepfvg | FALSIFIED | FALSIFIED (2026-06-17)** — directional signal is | lab/analysis/pharos_us500_sweepfvg/CARD.md | lab/archive/pharos_us500_sweepfvg/ | — | 2026-07-12 |
 | q_bookfit_1_2026-07 | CLOSED | RESOLVED (3/3 forks PASS: `ρ < 1.0` AND `n_eff_risk_delta > 0` @ 0.37%). Cano... | lab/analysis/q_bookfit_1_2026-07/CARD.md | lab/archive/q_bookfit_1_2026-07/ | — | 2026-08-03 |
 | q_compose_1_2026-07 | FALSIFIED | `FALSIFIED` (§6 row 2 — both limbs, every tier) | lab/analysis/q_compose_1_2026-07/CARD.md | lab/archive/q_compose_1_2026-07/ | — | 2026-07-20 |
+| q_condval_1_2026-08 | FALSIFIED | `FALSIFIED` (S1b conditioner-engineering branch parked) | lab/analysis/q_condval_1_2026-08/CARD.md | lab/archive/q_condval_1_2026-08/ | — | 2026-08-21 |
 | q_decay_1_2026-07-10 | CLOSED | SCOPE-SPLIT — Guardian-only coverage; rest UNCOVERED | lab/analysis/q_decay_1_2026-07-10/CARD.md | lab/archive/q_decay_1_2026-07-10/ | — | 2026-07-12 |
+| q_evalseq_1_2026-08 | FALSIFIED | `FALSIFIED` — schedule lever spent for eval-pass lift (best −1.06pt vs +5pt b... | lab/analysis/q_evalseq_1_2026-08/CARD.md | lab/archive/q_evalseq_1_2026-08/ | — | 2026-08-21 |
+| q_expr_1_2026-08 | CLOSED | H1 horizon-mismatch 4/4 models the orphaning; H2 1/5 misses; H3 cannot fire | lab/analysis/q_expr_1_2026-08/CARD.md | lab/archive/q_expr_1_2026-08/ | — | 2026-08-21 |
 | q_fbeia_1_2026-07 | CLOSED | SCREEN-FAIL (informed-flow — no unconditional edge). Canonical closure: [`doc... | lab/analysis/q_fbeia_1_2026-07/CARD.md | lab/archive/q_fbeia_1_2026-07/ | — | 2026-08-03 |
 | q_fccarry_1_2026-07 | CLOSED | SCREEN-FAIL (effect absent — carry-timing Sharpe ≈ 0). Canonical closure: [`d... | lab/analysis/q_fccarry_1_2026-07/CARD.md | lab/archive/q_fccarry_1_2026-07/ | — | 2026-08-03 |
 | q_funnel_1_2026-07 | CLOSED | RESOLVED (funnel-EV materially prefers 1.00x over ratified WATCH-1 0.50x on 2... | lab/analysis/q_funnel_1_2026-07/CARD.md | lab/archive/q_funnel_1_2026-07/ | — | 2026-08-03 |
@@ -236,6 +229,7 @@ documents the camp boundary for humans/tools.
 | q_joint_tail_weekly_2026-07 | RETIRED | §9 panel-shape sanity gate FAILED at authoring time, before any CC handoff. C... | lab/analysis/q_joint_tail_weekly_2026-07/CARD.md | lab/archive/q_joint_tail_weekly_2026-07/ | — | 2026-07-22 |
 | q_kbudget_1_2026-07 | CLOSED | `RESOLVED`** (frozen pre-reg §D: ≥1 axis PASSES both clauses) — flipped 2026-... | lab/analysis/q_kbudget_1_2026-07/CARD.md | lab/archive/q_kbudget_1_2026-07/ | — | 2026-08-03 |
 | q_nas_4_2026-06-20 | FALSIFIED | PARTIAL** — strict gate **FALSIFIED**; a weak graded directional tendency s... | lab/analysis/q_nas_4_2026-06-20/CARD.md | lab/archive/q_nas_4_2026-06-20/ | — | 2026-07-12 |
+| q_orbcush_1_2026-08 | FALSIFIED | trailing mean-R regime classifier vs ORB-MNQ-1's 2021-09-28 break; date-corre... | lab/analysis/q_orbcush_1_2026-08/CARD.md | lab/archive/q_orbcush_1_2026-08/ | — | 2026-08-21 |
 | q_pyrparity_1_2026-07 | FALSIFIED | `FALSIFIED-NONPROPORTIONAL` | lab/analysis/q_pyrparity_1_2026-07/CARD.md | lab/archive/q_pyrparity_1_2026-07/ | — | 2026-08-03 |
 | q_znauc_1_2026-07 | CLOSED | SCREEN-FAIL (cost-wall — δ ≈ 1 bp vs 6–10 bp hurdle). Canonical closure: [`do... | lab/analysis/q_znauc_1_2026-07/CARD.md | lab/archive/q_znauc_1_2026-07/ | — | 2026-08-03 |
 | rates_ev_zf_recon_2026-07 | FALSIFIED | FALSIFIED at Phase-0 (P0.2 cost-law + P0.4 power both fail; the instrument-ch... | lab/analysis/rates_ev_zf_recon_2026-07/CARD.md | lab/archive/rates_ev_zf_recon_2026-07/ | — | 2026-08-03 |
@@ -249,6 +243,7 @@ documents the camp boundary for humans/tools.
 | striker_dj30_mym_prototype_2026-07 | FALSIFIED | Stage-1 NOT CLEARED (OOS holdout MISS) | lab/analysis/striker_dj30_mym_prototype_2026-07/CARD.md | lab/archive/striker_dj30_mym_prototype_2026-07/ | — | 2026-07-11 |
 | timeframe_5m_2026-06-25 | CLOSED | NO-GO — 5m conversion degrades all four strategies. Original: NO-GO. The 5m c... | lab/analysis/timeframe_5m_2026-06-25/CARD.md | lab/archive/timeframe_5m_2026-06-25/ | — | 2026-07-12 |
 | tnec_envelope_compile_2026-08 | NULL | H_B = 0, STOP / NULL per PREREG F7 · closure: docs/briefs/closures/Q-TNEC-ENV-1-closure.md | lab/analysis/tnec_envelope_compile_2026-08/CARD.md | lab/archive/tnec_envelope_compile_2026-08/ | — | 2026-08-13 |
+| todvol_1_2026-08-20 | FALSIFIED | D2 FAIL; mean signed gross +0.25pt vs 2.82pt bar (9% of required), n=975. See... | lab/analysis/todvol_1_2026-08-20/CARD.md | lab/archive/todvol_1_2026-08-20/ | — | 2026-08-21 |
 | tradeify_selectflex_remc_2026-07-10 | FALSIFIED | Tradeify Select Flex integer-micro re-MC gates fail under costs | lab/analysis/tradeify_selectflex_remc_2026-07-10/CARD.md | lab/archive/tradeify_selectflex_remc_2026-07-10/ | — | 2026-07-12 |
 | transfer_expression_grid_2026-08 | FALSIFIED | `CLOSED — FALSIFIED-at-walls` · operator elected **(A) CLOSE** on the H_A re-... | lab/analysis/transfer_expression_grid_2026-08/CARD.md | lab/archive/transfer_expression_grid_2026-08/ | — | 2026-08-13 |
 | usdcad_fade_2026-06-26 | FALSIFIED | the up-fade asymmetry is REAL but SUB-COST and REGIME-FRAGILE. | lab/analysis/usdcad_fade_2026-06-26/CARD.md | lab/archive/usdcad_fade_2026-06-26/ | — | 2026-07-11 |

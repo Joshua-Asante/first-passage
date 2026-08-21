@@ -56,7 +56,7 @@ All 11 above opened 2026-08-18 from [`docs/notes/audits/2026-08-18-strategy-gene
   [`closure`](closures/Q-ORBSURV-1-closure-falsified.md) ·
   [`brief`](Q-ORBSURV-1-cushion-sizing-gate-configurations.md) ·
   [`pre-reg`](pre-registration/Q-ORBSURV-1-verdict-preregistration.md) ·
-  [`results`](../../lab/analysis/c1/orbmnq1_survivor_scoring_2026-08-20/full_k2_and_postbreak_results.json).
+  [`results`](../../lab/archive/orbmnq1_survivor_scoring_2026-08-20/full_k2_and_postbreak_results.json).
 - **Q-NSURV-1** — is the N-SURV single-history magnitude blindspot (parent Notice
   `N-2026-08-15-nsurv-single-history-magnitude-blindspot`) general or idiosyncratic to c1 —
   **`RESOLVED` 2026-08-20** — confirmed general on a second candidate (ORB-MNQ-1): both books show a
@@ -76,7 +76,7 @@ All 11 above opened 2026-08-18 from [`docs/notes/audits/2026-08-18-strategy-gene
   (`ops/instruments/MNQ.md` N17). Bust-elimination itself is unaffected (regime-agnostic,
   independently verified). $0/K=0.
   [`closure`](closures/Q-ORBCUSH-1-closure-falsified.md) ·
-  [`RESULTS`](../../lab/analysis/c1/q_orbcush_1_2026-08/RESULTS_meanr_regime_gate.md) ·
+  [`RESULTS`](../../lab/archive/q_orbcush_1_2026-08/RESULTS_meanr_regime_gate.md) ·
   [`brief`](Q-ORBCUSH-1-regime-break-mechanism.md) ·
   [`pre-reg`](pre-registration/Q-ORBCUSH-1-verdict-preregistration.md) ·
   [`probe`](../../lab/analysis/c1/orbmnq1_cushion_sizing_probe_2026-08-20/).
@@ -117,7 +117,7 @@ All 11 above opened 2026-08-18 from [`docs/notes/audits/2026-08-18-strategy-gene
   H3 cannot fire — weekly+daily share 2026-06-19). Next slate admission screens claim
   horizon vs the E1 flat-by-16:00 envelope. $0/K=0.
   [`closure`](closures/Q-EXPR-1-closure-resolved.md) ·
-  [`RESULTS`](../../lab/analysis/_inbox/q_expr_1_2026-08/RESULTS.md) ·
+  [`RESULTS`](../../lab/archive/q_expr_1_2026-08/RESULTS.md) ·
   [`brief`](Q-EXPR-1-regularity-expression-conversion.md) ·
   [`pre-reg`](pre-registration/Q-EXPR-1-verdict-preregistration.md).
 - **Q-CONDVAL-1** — does the validated CL range-state lift buy anything in R terms —
@@ -125,7 +125,7 @@ All 11 above opened 2026-08-18 from [`docs/notes/audits/2026-08-18-strategy-gene
   cell (R=$75, RT=$4.12, slate-2 center); S1b conditioner-engineering branch parked; O2
   discharged; SIGNAL-GENERIC stands. $0/K=0.
   [`closure`](closures/Q-CONDVAL-1-closure-falsified.md) ·
-  [`RESULTS`](../../lab/analysis/_inbox/q_condval_1_2026-08/RESULTS.md) ·
+  [`RESULTS`](../../lab/archive/q_condval_1_2026-08/RESULTS.md) ·
   [`brief`](Q-CONDVAL-1-range-state-r-terms.md) ·
   [`pre-reg`](pre-registration/Q-CONDVAL-1-verdict-preregistration.md).
 - **Q-POLFRONT-1** — policy-augmented seed-target frontier — **`RESOLVED-QUANTIFIED` 2026-08-16**
@@ -145,7 +145,7 @@ All 11 above opened 2026-08-18 from [`docs/notes/audits/2026-08-18-strategy-gene
   cushion-proportional sizing cut bust 20.18% → 0.00% (both halves) at 1.06pt of pass — routed to
   Q-POLFRONT-1 (bust-axis reframe). No θ-retune of the family; no registry row (policy-lever, not
   mechanism). [`closure`](closures/Q-EVALSEQ-1-closure-falsified.md) ·
-  [`RESULTS`](../../lab/analysis/c1/q_evalseq_1_2026-08/RESULTS.md) ·
+  [`RESULTS`](../../lab/archive/q_evalseq_1_2026-08/RESULTS.md) ·
   [`pre-reg`](pre-registration/2026-07-24-2leg-eval-frontload-schedule-preregistration.md)
 
 - **Q-CAPBAND-1** — has `CAP = 1.0` ever excluded an axis that would otherwise have survived —
@@ -168,7 +168,7 @@ All 11 above opened 2026-08-18 from [`docs/notes/audits/2026-08-18-strategy-gene
   **`FALSIFIED` 2026-08-14** — coverage 255/255; ρ +0.020012; CI95 includes 0;
   Cap **held**; C11 stands. Reservation [`Q-CAPRES-2`](Q-CAPRES-2-mnq-cap-seat-reservation.md)
   unpaid-score obligation discharged. [`closure`](closures/Q-CAPFLOW-1-closure-falsified.md) ·
-  [`RESULTS`](../../lab/analysis/c1/mnq_capflow_orb_r_2026-08/RESULTS.md).
+  [`RESULTS`](../../lab/archive/mnq_capflow_orb_r_2026-08/RESULTS.md).
 - **Q-TNEC-CON-5** — impulse→pullback→VWAP-reclaim (pullback stop; first/session) —
   **`AMBIGUOUS-HOLD` → Branch A STOP 2026-08-12** — non-promotable; CONFIRM unread forever;
   dense-1m OHLCV temporal-selectivity lane default **paused** pending new modality /
