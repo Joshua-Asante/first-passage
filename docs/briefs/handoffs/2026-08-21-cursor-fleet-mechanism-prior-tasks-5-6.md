@@ -100,8 +100,8 @@ twice in a row — two bounces means the spec wasn't actually freezable.
 
 | Packet | Task | Branch | Files | Status |
 |---|---|---|---|---|
-| A | 5 — ingest CLI | `cursor/mechanism-prior-p1` | `lab/research_utils/mechanism_prior_ingest.py`, `tests/test_mechanism_prior_ingest.py` | DISPATCHED 2026-08-21 (worktree `.worktrees/mechanism-prior-p1`, off `origin/main`@1b53833) |
-| B | 6 — corpus extraction | `cursor/mechanism-prior-p2` | `lab/research_utils/mechanism_prior_extract.py`, `tests/test_mechanism_prior_extract.py` | DISPATCHED 2026-08-21 (worktree `.worktrees/mechanism-prior-p2`, off `origin/main`@1b53833) |
+| A | 5 — ingest CLI | `cursor/mechanism-prior-p1` | `lab/research_utils/mechanism_prior_ingest.py`, `tests/test_mechanism_prior_ingest.py` | **MERGED** 2026-08-21T15:04:12Z (PR [#83](https://github.com/Joshua-Asante/first-passage/pull/83)) — clean first attempt, 6/6 tests |
+| B | 6 — corpus extraction | `cursor/mechanism-prior-p2` | `lab/research_utils/mechanism_prior_extract.py`, `tests/test_mechanism_prior_extract.py` | **MERGED** 2026-08-21T15:19:50Z (PR [#84](https://github.com/Joshua-Asante/first-passage/pull/84)) — first attempt correctly bounced `NEEDS_CONTEXT` (registry file reorganized upstream since Task 6 was scoped: 6 `##` sections now, not 1; corrected + re-verified against real data before re-dispatch), second attempt clean, 8/8 tests |
 
 Orchestrator (this session) owns this table. Before any session dispatches into this area,
 check this table's Status column first.
