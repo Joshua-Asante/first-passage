@@ -1,5 +1,6 @@
 # Q-TODVOL-1 — D2 pre-G0 falsifier RESULTS: `FAIL`
 
+**Verdict:** FALSIFIED — D2 FAIL; mean signed gross +0.25pt vs 2.82pt bar (9% of required), n=975. See RESULTS body.
 **Date:** 2026-08-20
 **Frozen spec:** [`FREEZE.md`](FREEZE.md), committed `060b13f` before this script ran.
 **Driver:** [`run_d2_falsifier.py`](run_d2_falsifier.py) · data [`d2_falsifier_results.json`](d2_falsifier_results.json)

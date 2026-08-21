@@ -1,6 +1,6 @@
 # ADR 2026-08-19 — Rule 1 citation is one rule, not three; no gate script; no Anchor-family merge
 
-**Status:** `Proposed`
+**Status:** `Accepted` — ratified by operator (JA) 2026-08-21. Gate independently re-verified this session: `docs/methodology/regime_robustness_gate.md` L95 already names the Rule 1 row as the extension (not a third numeral), and L198 already names the owner, cites this ADR, and reads "implementation is **not pending**" — the Gate condition was met at authoring; only this Status field lagged.
 **Decision date:** 2026-08-19
 **Supersedes:** none
 **Superseded-by:** none

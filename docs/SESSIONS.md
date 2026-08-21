@@ -33,6 +33,28 @@ addendum.
 **Open / next:** Carry `2026-08-21a`/`2026-08-20g` — ICT-family re-proposal needs new mechanism
 evidence. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. New: watch the new ADR's §4 falsifier
 (3 real panel uses under the narrowed roster, or 2026-11-08, whichever first).
+## 2026-08-21e — Incumbent CI honesty patches (PARK pin / M1 note / CON-4 skip)
+
+**Focus:** Repair documented `pytest (3.11)` + `validation-controls` reds without refreshing deployed hashes or adding a parquet engine.
+
+**Shipped:** PARK live-count pin follows GSUB-2; M1 `fixture_hashes_note` names every current `tree_skew` rel (pin hashes unchanged); CON-4 confirm tests skip without a parquet engine. [`PR #75`](https://github.com/Joshua-Asante/first-passage/pull/75).
+
+**Decisions/defects:** Honesty path only. H6 (CI-from-`gates.yml`) still HOLD. CI green still not a merge precondition ([Q-GATESTACK-1](briefs/closures/Q-GATESTACK-1-closure-falsified.md)).
+
+**Open / next:** Carry `2026-08-21d` / `2026-08-21c` / `2026-08-20g` — ICT-family re-proposal needs new mechanism evidence. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. H6/H7/H8 still HOLD.
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
+
+---
+## 2026-08-21d — CATALOG `--slug` archive (C-P1-10)
+
+**Focus:** Flip CATALOG Status on closed camps via `archive_lab_analysis.py --slug`, not regenerate or hand-edit.
+
+**Shipped:** 10 closed slugs → `lab/archive/` + stubs; geofit pair retagged ACTIVE (stay-hot imports); instrument C3 + INDEX RESULTS repoints. Owner: [`C-P1-10`](notes/audits/2026-08-21-coherence-campaign.md) · [`CATALOG`](../lab/CATALOG.md).
+
+**Decisions/defects:** `msl_s2b_mym` stays HOLD (STAGE-1 FAIL is not archiveable). Informal ORB probes stay ACTIVE. One-liners restored after `--slug` regenerate.
+
+**Open / next:** Carry `2026-08-21c` / `2026-08-20g` — ICT-family re-proposal needs new mechanism evidence. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. H6/H7/H8 still HOLD.
 
 **Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
 

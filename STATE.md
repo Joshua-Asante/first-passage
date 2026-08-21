@@ -71,6 +71,8 @@ One line per executed decision, newest first — consequence only. Posture summa
 - **2026-08-21** — **Persona hierarchy narrowed to Front Office; Middle/Back-office functions run as mechanical gates, not spawned personas.** Operator direct instruction: First Passage is primarily a research entity (deployment validates research, not a parallel institutional line), so it needs middle/back-office *services*, not a standing Middle/Back-office persona roster. Retired 6 C-suite/Senior-Manager seats + 2 Back-office Staff (CRO, Head of Risk & Sizing, Head of Validation, COO, Head of Engineering, Head of Governance, Documentation Analyst, Research Registry Analyst) to `docs/personas/archive/`; each seat's function maps to an existing code/script gate (`dd_protection.py`, `check_brief.py`, `check_advisor_dedup.py`, `check_adr_graph.py`, `cursor-fleet` skill, etc.). Roster 17→9. CRO safety-invariant hard-block re-implemented as an unconditional deterministic scan of the target artifact's own text, no longer requiring a spawned CRO. CEO/CFO explicitly out of scope (operator confirmed). $0/K=0, no live-risk surface (the underlying safety invariants and their arming-time enforcement are unchanged).
   [`ADR`](docs/adr/2026-08-21-persona-hierarchy-front-office-only.md) ·
   [`prior ADR (partially superseded)`](docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md).
+- **2026-08-21** — **Incumbent CI honesty patches landed** (`pytest (3.11)` PARK pin + M1 open-skew note; `validation-controls` CON-4 parquet skip). Deployed `fixture_hashes` unchanged. Queue #1/#2 unchanged. [`SESSIONS 2026-08-21e`](docs/SESSIONS.md) · [`PR #75`](https://github.com/Joshua-Asante/first-passage/pull/75).
+- **2026-08-21** — **C-P1-10 CATALOG `--slug` archive landed.** Ten closed camps now Archived; geofit pair stays ACTIVE (live imports). Queue #1/#2 unchanged. [`campaign`](docs/notes/audits/2026-08-21-coherence-campaign.md) · [`CATALOG`](lab/CATALOG.md).
 - **2026-08-21** — **Coherence leftover menu ratified: F1 HOLD; B7/M1 HOLD until an acceptable strategy; H1–H5 GO; H6–H13 HOLD.** Queue #1/#2 unchanged. H2 dry-run: CATALOG Status match, regenerate withheld (would clobber one-liners). H3/H4 addenda on the GO ADR and W5. H5 = Rule 0 Phase 1 (`check_brief.py` §0 anchor HARD). H1 = merge the coherence-campaign branch. $0/K=0, no live-risk surface.
   [`campaign`](docs/notes/audits/2026-08-21-coherence-campaign.md) ·
   [`GO ADR addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) ·
@@ -102,8 +104,8 @@ One line per executed decision, newest first — consequence only. Posture summa
   signed gross +0.2546pt vs the 2.82pt bar (9% of required), n=975 signals, 54.26% coverage. Closes
   at $0, no G0, no Board debate, matching the CON-N precedent. Route ① stays open in principle;
   re-proposal needs a structurally different criterion. $0/K=0, no live-risk surface.
-  [`FREEZE`](lab/analysis/c1/todvol_1_2026-08-20/FREEZE.md) ·
-  [`RESULTS`](lab/analysis/c1/todvol_1_2026-08-20/RESULTS.md) ·
+  [`FREEZE`](lab/archive/todvol_1_2026-08-20/FREEZE.md) ·
+  [`RESULTS`](lab/archive/todvol_1_2026-08-20/RESULTS.md) ·
   [`ops/instruments/MECHANISMS.md`](ops/instruments/MECHANISMS.md).
 - **2026-08-20** — **Six-lead pursuit P4/P5 un-HOLD'd and dispositioned — P4 stays `HOLD` (sharper reason), P5 closes `UNSCREENABLE`.**
   Operator un-HOLD election. **P4 (L2 dealer-gamma EOD):** route memo found the mechanism is
@@ -184,14 +186,14 @@ One line per executed decision, newest first — consequence only. Posture summa
   H1 4/4 weekly/daily vs session envelope; H2 1/5 misses; H3 cannot fire (W+D same first day).
   $0/K=0.
   [`closure`](docs/briefs/closures/Q-EXPR-1-closure-resolved.md) ·
-  [`RESULTS`](lab/analysis/_inbox/q_expr_1_2026-08/RESULTS.md).
+  [`RESULTS`](lab/archive/q_expr_1_2026-08/RESULTS.md).
 - **2026-08-18** — **Q-CONDVAL-1 `FALSIFIED` — S1b conditioner-engineering branch parked.**
   Operator GO off iteration-2 notice packet 1. Three levers frozen before the lift was
   substituted (slate-2 center · α=0 C−U mapping · 0.50× hurdle at R=$75/RT=$4.12).
   Measured L=0.130 < `L_star`=0.423. O2 discharged. SIGNAL-GENERIC stands; mechanism-owed
   stands. $0/K=0.
   [`closure`](docs/briefs/closures/Q-CONDVAL-1-closure-falsified.md) ·
-  [`RESULTS`](lab/analysis/_inbox/q_condval_1_2026-08/RESULTS.md).
+  [`RESULTS`](lab/archive/q_condval_1_2026-08/RESULTS.md).
 - **2026-08-17** — **Six-lead P3 (L5 curve-slope) un-HOLD → GO → sleeve CLOSED (venue).**
   Operator un-HOLD. Paper read (Bianchi/Fan/Miffre/Zhang *JBF* 2023 / arXiv `2308.00383`):
   profitable S-strategy is a same-commodity calendar spread (Δslope → long front / short
@@ -288,7 +290,7 @@ One line per executed decision, newest first — consequence only. Posture summa
   net-negative on TRAIN. Confirm partition (MGC.FUT) never read, per prereg §5. Charter counters:
   abandoned 1 (consecutive 1/2), active campaign none. $0/K=0 — no new pulls, K already declared
   at freeze. [`charter`](docs/adr/2026-08-16-deep-iteration-lane-charter.md) ·
-  [`results`](lab/analysis/deep_lane/dl1_mgc_orc_2026-08-16/train_results.json)
+  [`results`](lab/archive/dl1_mgc_orc_2026-08-16/train_results.json)
 - **2026-08-16** — **CON-5 pause scope ruled: dense-1m route-scoped, with a $0 cheap-falsifier gate for out-of-lane route-① reliance (operator election, third of three options).** Resolves MSL-S2B's internal inconsistency (same "dense-1m" qualifier read two ways in adjacent BINDING-BAR rows); harmonizes with — supersedes nothing of — the DL-1 GO's per-campaign pause adjudication and U0 KEEP (pause itself stands; nothing unpaused; S2B verdict untouched). Falsifier spec frozen, unexecuted (`MYM_M15.csv` absent in authoring worktree). $0/K=0. [`ADR`](docs/adr/2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md)
 - **2026-08-16** — **Weekly venue-idle token trade: recurrence ruled — fresh-decision-per-week is the
   standing, closed design, not an open gap (operator election, closes S4's 5th governance hole).**
@@ -381,7 +383,7 @@ as×MYM PREREG](docs/briefs/pre-registration/2026-08-12-q-txg-1-striker-nas100-m
 - **2026-08-09** — **GRAND tier `Accepted` + GSUB-1 CLOSED `RESOLVED-LOADBEARING` (JA in-session, same day).** Quintessentials bound above STRATEGIC (pursuit domain; PARK re-entry+expiry; SUBTRACT armor; intake rule). 37-row inventory → **19 dispositions ratified** (8 PARK · 9 SUBTRACT · 2 MERGE) → 37 records at `docs/pursuits/`; 3 user-skill dirs archived+removed; ADR §4 satisfied (sunset did not arm). $0/K=0; no live-risk surface touched. [`ADR`](docs/adr/2026-08-09-grand-tier-quintessentials-binding.md) · [`closure`](docs/briefs/closures/GSUB-1-closure-resolved-loadbearing.md)
 - **2026-08-09** — **`Q-MNQDTL-CON-1` explore GO → `FALSIFIED` (STOP catalogue) at $0.** ES−NQ 5m log divergence @ G=10 session-flat: long mean_R **−0.106** CI entirely &lt;0 (n=10,093); short **−0.111** (n=9,000); stop ~91%; TNEC `U U U F U`. Cap not claimed. [`closure`](docs/briefs/closures/Q-MNQDTL-CON-1-closure-falsified.md) · [`RESULTS`](lab/archive/mnq_con1_dense1m_stage0_2026-08/RESULTS.md)
 - **2026-08-09** — **`Q-MNQDTL-CON-1` ENTRY named + explore harness wired.** ES−NQ 5m log-return divergence (relative contrarian) frozen in [`PREREG_G0`](lab/archive/mnq_con1_dense1m_stage0_2026-08/PREREG_G0.md); cheap falsifier `CHEAP_FALSIFIER_OK`; path-PnL scorer GO-gated (now discharged). Cap not claimed. PR [#699](https://github.com/Joshua-Asante/first-passage-archive/pull/699).
-- **2026-08-08** — **PR693 parallel integrate:** CapFLOW Cap-spend path **BLOCKED** on join (estimate ~USD1.47 OK; Cap held). Construct Stage-0 geometry frozen; ENTRY later named 2026-08-09 (see above). [Cap RESULTS](lab/analysis/c1/mnq_capflow_orb_r_2026-08/RESULTS.md) · [Con PREREG_G0](lab/archive/mnq_con1_dense1m_stage0_2026-08/PREREG_G0.md) · PRs #695/#697/#696/#699
+- **2026-08-08** — **PR693 parallel integrate:** CapFLOW Cap-spend path **BLOCKED** on join (estimate ~USD1.47 OK; Cap held). Construct Stage-0 geometry frozen; ENTRY later named 2026-08-09 (see above). [Cap RESULTS](lab/archive/mnq_capflow_orb_r_2026-08/RESULTS.md) · [Con PREREG_G0](lab/archive/mnq_con1_dense1m_stage0_2026-08/PREREG_G0.md) · PRs #695/#697/#696/#699
 - **2026-08-08** — **TNEC-1 intake gate `RATIFIED` + edge-cohort ADR `Accepted` (§8 JA).** TNEC supersedes MNQDTL-1 **as intake gate** (MNQDTL stays RATIFIED historical; C1–C11 stand). `Q-CAPRES-2` reservation GO signed; Cap-spend / CapFLOW unpaid. Construct Stage-0 geometry frozen; ENTRY named 2026-08-09 (see board top). [`ADR`](docs/adr/2026-08-08-edge-cohort-correction-and-necessity-retarget.md) · [`TNEC-1`](docs/spec/2026-08-08-tradeify-necessary-conditions-target-spec.md) · [`Q-CAPRES-2`](docs/briefs/Q-CAPRES-2-mnq-cap-seat-reservation.md) · [`Q-MNQDTL-CON-1`](docs/briefs/Q-MNQDTL-CON-1-dense-1m-em-construct-scoping.md)
 - **2026-08-08** — **Absolute path items 1–3 landed:** `Q-MNQSEL-2` Phase-0 `RESOLVED` (dense 1m G=10; S3 ≈0.858 both arms); `Q-CAPRES-2` Cap reservation unpaid + CapFLOW PREREG frozen unpaid; `Q-MNQDTL-CON-1` construct scoping unpaid; `Q-R2FLOW-1` closed FALSIFIED. $0 / Cap not re-spent. [`MNQSEL-2 RESULTS`](lab/analysis/c1/mnq_selection_ceiling_allbars_2026-08/RESULTS.md) · [`Q-CAPRES-2`](docs/briefs/Q-CAPRES-2-mnq-cap-seat-reservation.md) · [`Q-MNQDTL-CON-1`](docs/briefs/Q-MNQDTL-CON-1-dense-1m-em-construct-scoping.md)
 - **2026-08-08** — **`Q-R2FLOW-1` explore GO → G2 `FALSIFIED` (STOP catalogue) at $0.** Clock-minute net signed aggressor size→60s mid: n **48,360**/48,360 coverage **100%**; ρ **−0.000701** CI includes 0; empty candidates. CONFIRM untouched; Cap not claimed. Re-proposal = new G0. [`RESULTS_g2`](lab/archive/mnq_r2flow_routeb_2026-08/RESULTS_g2.md) · [`brief`](docs/briefs/Q-R2FLOW-1-signed-minute-flow-route-b-scoping.md)

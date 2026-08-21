@@ -10,6 +10,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pytest
 
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE))
@@ -38,7 +39,19 @@ def _session_bars(date_str: str, o: float, h: float, lo: float, c: float):
     return bars
 
 
+def _require_parquet_engine():
+    """CI ops lock has neither pyarrow nor fastparquet (validation-controls.yml)."""
+    for name in ("pyarrow", "fastparquet"):
+        try:
+            __import__(name)
+            return
+        except ImportError:
+            continue
+    pytest.skip("optional parquet engine not in requirements-ops.lock")
+
+
 def _write_panel(tmp_path, sessions):
+    _require_parquet_engine()
     rows = []
     for date_str, o, h, lo, c in sessions:
         rows.extend(_session_bars(date_str, o, h, lo, c))
