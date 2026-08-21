@@ -55,6 +55,10 @@ Both ACTION items are diagnostic-first: each spawned task is instructed to confi
 
 ---
 
+**Addendum (2026-08-20):** this notice's DROP became the anchor precedent for two further external-mapping instances this program-week (`N-2026-08-20-anthropic-training-principles-pipeline-mapping.md`, `N-2026-08-20-peer-firm-conversion-bottleneck-mapping.md`), both of which also DROPped. A triggered programme-audit of the resulting move-class (all three instances) closed `DEGENERATING` — [`AUDIT-2026-08-20-external-mapping-move-class`](../audits/programme-audit/2026-08-20-external-mapping-move-class-audit.md). Does not reopen this notice's own DROP or the GRAND ADR §3 ruling it cites.
+
+---
+
 ## §10 — Audit hooks
 
 ```bash
