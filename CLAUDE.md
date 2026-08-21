@@ -129,9 +129,7 @@ by a pre-registered trigger — **never re-optimization**. Automation moves auth
 only**, except the bounded sandbox-up lane ([S5](docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md));
 retirement and full beta shutdown are operator GO/NO-GO.
 
-**Current state:** all four legs `AUTHORIZED · MECHANISM @ 1.00×`. ⚠ The deployed host ran the c1
-book at **WATCH-1 0.50×** per the rail GO ADR — the 1.00× record and the deployed value differ by
-design; do not read either as the other.
+**Current state:** all four legs `AUTHORIZED · MECHANISM @ 1.00×` (no `lifecycle_state.json` ⇒ code default). ⚠ **Historical:** the c1 host, while the Striker book was the deployment limb, ran at **WATCH-1 0.50×** per the rail GO ADR. That book was withdrawn 2026-08-04 — there is no live deployed sizing today. Do not read the 1.00× record as a current live haircut, or the 0.50× GO figure as a current book.
 
 ## Protection
 

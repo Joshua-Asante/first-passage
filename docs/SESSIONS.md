@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-21a — Coherence campaign: root→pipeline walk, Packets A–C landed, no deletes
+
+**Focus:** Repo-wide coherence audit from the five root docs through generate → evaluate → deploy → measure → update. Findings-first; not a Great Prune retry.
+
+**Shipped:** [`AUDIT-2026-08-21-coherence-campaign`](notes/audits/2026-08-21-coherence-campaign.md) · S7 [tombstone](notes/2026-08-07-posture-a-alignment-manifest.md) · PIPELINES/INDEX/README/CLAUDE + skill/methodology path-and-status repairs.
+
+**Decisions/defects:** no file deletes; GO ADR §7 / CATALOG ACTIVE / W5 CI / W6 lockfile left owed.
+
+**Open / next:** Carry `2026-08-20g` — ICT-family re-proposal needs new mechanism evidence, not an exit-distance retune. **STATE queue unchanged:** #1 F1 (Tradeify-resting §4 read) · #2 B7-REFIRE + M1 wait on an acceptable strategy. Campaign leftovers: CATALOG regenerate, named-not-opened `Q-M1WIRE-1`.
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
+
+---
 ## 2026-08-20g — Frozen 1H DOL target distance-swept zero-run: target exonerated, entries are the problem (corrects 2026-08-20f)
 
 **Focus:** Operator asked to investigate the frozen 1H DOL target itself, and whether different

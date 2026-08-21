@@ -84,11 +84,11 @@ are **not** restated here — see the gated CLAUDE.md "Protection" block and
 
 ## Portfolio MC (historical — CLI retired)
 
-> **The `portfolio_mc` CLI no longer runs.** Substrate Phase 3 retired the
-> Pepperstone executable anchor (2026-07-24); `PANELS_BY_BROKER` is empty by
-> code, so every former invocation exits 1 with *"no registered broker
-> panel"* on any machine. The MC anchor survives as a **historical record**,
-> not a re-runnable command — see [`docs/mc_anchor_history.md`](docs/mc_anchor_history.md).
+> **The Pepperstone `portfolio_mc` CLI is retired.** Substrate Phase 3
+> (2026-07-24) removed that executable anchor. A 2-leg `cme` panel exists
+> for breadth only ([ADR 2026-08-19](docs/adr/2026-08-19-cme-broker-panel-admission-for-breadth-revival.md));
+> it is not a working MC re-run. The MC anchor survives as a **historical
+> record** — see [`docs/mc_anchor_history.md`](docs/mc_anchor_history.md).
 
 Engine correctness is checked vendor-free, against synthetic fixtures and
 planted defects:
