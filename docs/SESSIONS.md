@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-21b — Coherence campaign blast-radius: leftover pointer repairs
+
+**Focus:** Rule-7 blast-radius on the 2026-08-21a coherence edits.
+
+**Shipped:** four stale one-line pointers on already-touched / sibling hot surfaces (c1-rail skill, deploy README, fable-judge, lock-check). Register: [`AUDIT-2026-08-21-coherence-campaign`](notes/audits/2026-08-21-coherence-campaign.md).
+
+**Decisions/defects:** historical ADR / old-handoff bodies left; CATALOG ACTIVE-on-closed still operator-owed.
+
+**Open / next:** Carry `2026-08-21a` / `2026-08-20g` — ICT-family re-proposal needs new mechanism evidence. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. Campaign leftovers: CATALOG regenerate, named-not-opened `Q-M1WIRE-1`, GO ADR §7, W5 CI, W6 lockfile.
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
+
+---
 ## 2026-08-21a — Coherence campaign: root→pipeline walk, Packets A–C landed, no deletes
 
 **Focus:** Repo-wide coherence audit from the five root docs through generate → evaluate → deploy → measure → update. Findings-first; not a Great Prune retry.
