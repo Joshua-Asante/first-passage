@@ -5,9 +5,10 @@
 **Measure:** account stays registered/dormant-capable; weekly token-trade obligation discharged
 each week it falls due (owned by pursuit a2; recurrence ruled 2026-08-16 — fresh-decision-per-week
 is the standing design, `STATE.md` decision index)
-**Survive bound:** account-carrying cost **unverified in-repo** (C-1 — still open for this row:
-operator supplied figures for five of six d11–d16 rows 2026-08-21; Tradeify was asked and not
-among them); the binding weekly cost is the operator's token-trade decision, not a dollar figure
+**Survive bound:** account-carrying cost unverified — tracked as open in
+[`SUBSCRIPTION_LEDGER.md`](SUBSCRIPTION_LEDGER.md) (C-1 still open for this row: asked
+2026-08-21, not supplied); the binding weekly cost is the operator's token-trade decision, not
+a dollar figure
 **Review date:** none fixed — tied to a2/the four-firms §4 gate (2026-11-08)
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3)
 
