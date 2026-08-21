@@ -14,6 +14,29 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-21d — Persona hierarchy narrowed to Front Office; Middle/Back-office retired to mechanical gates
+
+**Focus:** Operator insight — First Passage is primarily a research entity (deployment validates
+research); Middle/Back-office functions need to be services, not a standing persona roster.
+
+**Shipped:** [`ADR`](adr/2026-08-21-persona-hierarchy-front-office-only.md) narrowing the spawnable
+roster 17→9 (Front Office + CEO apex + cross-office CFO); 8 retired personas moved to
+`docs/personas/archive/`; `ownership-map.md` reassigned; `check_personas.py` `EXPECTED_COUNT` 17→9;
+`pre-ratification-adversarial-panel.js` CRO hard-block re-implemented as an unconditional
+deterministic scan (no longer requires a spawned CRO); `CLAUDE.md` pointer row updated;
+[prior ADR](adr/2026-08-19-loop-persona-hierarchy-review-panel.md) gains `Superseded-in-part-by` +
+addendum.
+
+**Decisions/defects:** CEO/CFO explicitly out of scope (operator confirmed). Ownership-map Layer 2
+(38-pursuit table) not hand-reconciled — redirect note added instead, documented as owed.
+
+**Open / next:** Carry `2026-08-21a`/`2026-08-20g` — ICT-family re-proposal needs new mechanism
+evidence. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. New: watch the new ADR's §4 falsifier
+(3 real panel uses under the narrowed roster, or 2026-11-08, whichever first).
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
+
+---
 ## 2026-08-21c — Operator menu: F1/B7 HOLD; H1–H5 GO
 
 **Focus:** Ratified next-steps menu after the coherence campaign.

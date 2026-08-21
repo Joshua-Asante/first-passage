@@ -17,15 +17,13 @@ REQUIRED_FIELDS = [
 ]
 VALID_TIERS = {"GRAND", "STRATEGIC", "STAFF"}
 VALID_OFFICES = {"Front", "Middle", "Back", "Cross-office", "N/A"}
-EXPECTED_COUNT = 17  # 19 built 2026-08-19; 5 non-front-office STAFF analysts archived same day
-# (operator-authorized cut, never spawned), then 2 restored same day after testing
-# against real repo evidence found genuine value on first use (Documentation Analyst,
-# Research Registry Analyst) -- see
-# docs/notes/audits/2026-08-19-governance-friction-persona-panel-audit.md. 3 remain
-# archived (Risk Analyst Intraday, Model Validation Analyst, Robustness Analyst) --
-# tested against a mismatched target, inconclusive, not negative. Plus Research
-# Analyst, spawned same day on a separate branch (STAFF/Front/Head of Research,
-# generalist charter) -- merged in 2026-08-20: 16 + 1 = 17.
+EXPECTED_COUNT = 9  # 17 as of 2026-08-20 (see docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md
+# change history for that count's own lineage). Narrowed to Front-Office-only (+ CEO apex, CFO
+# cross-office) 2026-08-21: six Middle/Back-office C-suite/Senior-Manager seats (CRO, Head of Risk &
+# Sizing, Head of Validation, COO, Head of Engineering, Head of Governance) plus their two
+# Back-office Staff (Documentation Analyst, Research Registry Analyst) retired to mechanical gates
+# and moved to docs/personas/archive/ -- see
+# docs/adr/2026-08-21-persona-hierarchy-front-office-only.md §2 D1/D2. 17 - 8 = 9.
 
 LOG_ENTRY_HEADER = re.compile(r"^##\s+(\d{4}-\d{2}-\d{2})\s+—\s+(.+)$", re.MULTILINE)
 LOG_HEADING_LOOSE = re.compile(r"^##\s+(.+)$", re.MULTILINE)

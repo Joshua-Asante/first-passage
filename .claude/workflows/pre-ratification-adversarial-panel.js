@@ -27,20 +27,18 @@ const extraContextLine = extraContext.length
   ? `\n\nThe operator has additionally flagged these cited documents as required full reads for this review: ${extraContext.join(', ')}.`
   : ''
 
-// ---- persona mode (design spec §6) -----------------------------------------
+// ---- persona mode (design spec §6, narrowed to Front Office per
+// docs/adr/2026-08-21-persona-hierarchy-front-office-only.md) ---------------
 // Structural registry only -- slug/role/tier/office. The full mandate/independence-rule
 // prose stays canonical in docs/personas/*.md; each spawned agent reads its own file.
+// Middle/Back-office seats (cro, coo, head-of-risk-sizing, head-of-validation,
+// head-of-engineering, head-of-governance) are retired from this registry as of 2026-08-21 --
+// their functions run as mechanical gates (see that ADR's §2 D2 mapping table), not spawns.
 const PERSONA_REGISTRY = {
-  cro: { role: 'CRO', tier: 'GRAND', office: 'Middle' },
   cio: { role: 'CIO', tier: 'GRAND', office: 'Front' },
-  coo: { role: 'COO', tier: 'GRAND', office: 'Back' },
   cfo: { role: 'CFO', tier: 'GRAND', office: 'Cross-office' },
   'head-of-research': { role: 'Head of Research', tier: 'STRATEGIC', office: 'Front' },
   'head-of-execution': { role: 'Head of Execution', tier: 'STRATEGIC', office: 'Front' },
-  'head-of-risk-sizing': { role: 'Head of Risk & Sizing', tier: 'STRATEGIC', office: 'Middle' },
-  'head-of-validation': { role: 'Head of Validation', tier: 'STRATEGIC', office: 'Middle' },
-  'head-of-engineering': { role: 'Head of Engineering', tier: 'STRATEGIC', office: 'Back' },
-  'head-of-governance': { role: 'Head of Governance', tier: 'STRATEGIC', office: 'Back' },
 }
 
 const personaMode = Boolean(cfg.tier || (Array.isArray(cfg.personas) && cfg.personas.length))
@@ -56,21 +54,24 @@ if (personaMode) {
   if (!Array.isArray(cfg.personas) || cfg.personas.length === 0) {
     throw new Error(
       'pre-ratification-adversarial-panel persona mode requires args.personas: a non-empty array of persona ' +
-        'slugs from docs/personas/INDEX.md, e.g. args: { targetPath: "...", tier: "GRAND", personas: ["cio", "coo"] }'
+        'slugs from docs/personas/INDEX.md, e.g. args: { targetPath: "...", tier: "GRAND", personas: ["cio"] }'
     )
   }
   for (const slug of cfg.personas) {
     if (!PERSONA_REGISTRY[slug]) {
       throw new Error(
         `Unknown persona slug '${slug}' -- not in PERSONA_REGISTRY. Valid slugs: ${Object.keys(PERSONA_REGISTRY).join(', ')}. ` +
-          'Check docs/personas/INDEX.md.'
+          'Check docs/personas/INDEX.md. If this is a retired Middle/Back-office slug (cro, coo, ' +
+          'head-of-risk-sizing, head-of-validation, head-of-engineering, head-of-governance), see ' +
+          'docs/adr/2026-08-21-persona-hierarchy-front-office-only.md -- its function now runs as a ' +
+          'mechanical gate, not a panel spawn.'
       )
     }
   }
-  // Mandatory-CRO rule (design spec §4): every GRAND-tier decision gets CRO review, no exceptions.
-  personaSlugs = cfg.tier === 'GRAND' && !cfg.personas.includes('cro')
-    ? [...cfg.personas, 'cro']
-    : [...cfg.personas]
+  // No mandatory-CRO auto-add: CRO is retired from this registry (2026-08-21 ADR). The
+  // safety-invariant hard-block below runs unconditionally on every GRAND-tier call instead,
+  // independent of which personas are requested.
+  personaSlugs = [...cfg.personas]
 }
 
 // ---- schemas ----------------------------------------------------------
@@ -280,15 +281,17 @@ async function verifyLensFindings(reviewResult, lens) {
     notes: reviewResult.notes,
   }
 }
-// ---- CRO safety-invariant hard block (design spec §6.3) --------------------
+// ---- safety-invariant hard block (design spec §6.3, re-targeted per
+// docs/adr/2026-08-21-persona-hierarchy-front-office-only.md §2 D3) ---------------------------
 // Deterministic, not LLM-judgment-dependent -- mirrors this repo's own pattern of
 // enforcing non-negotiable safety invariants in code, not in a prompt (see
 // validate_c1_monitoring_acceptance.validate in ops/c1_rail/, a Python function, not an
-// instruction). Runs on CRO's own structured findings, already in memory from the pipeline.
-// Scope: CRO-specific, matching design spec §6.3's own framing ("a CRO dissent"). A
-// STRATEGIC-tier call that omits 'cro' from args.personas gets no automated safety-invariant
-// hard block -- by design, not an oversight; CRO coverage is only guaranteed on GRAND-tier
-// calls per the mandatory-CRO rule above.
+// instruction). Previously ran on a spawned CRO persona's own structured findings; CRO is
+// retired from PERSONA_REGISTRY as of 2026-08-21, so this now scans the target artifact's own
+// committed text directly, unconditionally, on every GRAND-tier call -- no persona spawn, no
+// dependency on any reviewer happening to surface the citation. Runs only on GRAND-tier calls,
+// matching the prior mandatory-CRO-on-GRAND scope exactly (a STRATEGIC-tier call still gets no
+// automated safety-invariant hard block -- by design, not an oversight, unchanged from before).
 // Deliberately biased toward over-triggering: a false positive costs an operator one glance at
 // an unnecessary hard block, a false negative lets an actual safety-invariant citation through
 // undetected. A fixed-width proximity regex (an earlier version of this check) missed realistic
@@ -303,21 +306,20 @@ function citesSafetyInvariant(text) {
   return false
 }
 
-function croHardBlockFires(lensResults, expectCro) {
-  const croResult = lensResults.find((r) => r && r.key === 'cro')
-  if (!expectCro) return { fires: false, citing: [], croReviewMissing: false }
-  if (!croResult || croResult.notes === '(lens agent returned no result)') {
-    // Fail CLOSED, not open: CRO was required (mandatory-CRO rule above) but its review never
-    // completed. A deterministic safety backstop must not silently degrade to "not blocked"
-    // precisely when its own input is missing -- that is the one failure mode it exists to be
-    // robust against.
-    return { fires: true, citing: [], croReviewMissing: true }
-  }
-  const candidates = [...croResult.confirmed, ...croResult.disputed]
-  const citing = candidates.filter(
-    (v) => citesSafetyInvariant(v.finding.claim) || citesSafetyInvariant(v.finding.evidence)
+async function safetyInvariantHardBlockFires(targetPath, tier) {
+  if (tier !== 'GRAND') return { fires: false, scanFailed: false }
+  const raw = await agent(
+    `Run \`git show HEAD:${targetPath}\` in the First Passage repo and return the raw file contents ` +
+      `verbatim, nothing else -- no summary, no commentary, no truncation.`,
+    { label: 'safety-invariant-scan', phase: 'Form Check', effort: 'low' }
   )
-  return { fires: citing.length > 0, citing, croReviewMissing: false }
+  if (!raw) {
+    // Fail CLOSED, not open: this deterministic backstop must not silently degrade to "not
+    // blocked" precisely when its own input (the raw target text) never arrived -- the same
+    // principle the prior CRO-review-missing branch encoded, now applied to the scan itself.
+    return { fires: true, scanFailed: true }
+  }
+  return { fires: citesSafetyInvariant(raw), scanFailed: false }
 }
 
 // ---- run ----------------------------------------------------------------
@@ -378,19 +380,21 @@ const disputedCount = lensResults.reduce((n, r) => n + (r ? r.disputed.length : 
 log(`Review+verify done: ${confirmedCount} confirmed, ${disputedCount} disputed findings across ${activeLenses.length} lenses`)
 
 
-const expectCro = personaMode && personaSlugs.includes('cro')
-const hardBlock = personaMode ? croHardBlockFires(lensResults, expectCro) : { fires: false, citing: [], croReviewMissing: false }
-const hardBlockLine = hardBlock.croReviewMissing
-  ? `\n\nCRO SAFETY-INVARIANT HARD BLOCK (FAIL-CLOSED): CRO was required for this GRAND-tier review but its ` +
-    `review did not complete (agent failure or no result). Per design spec §6.3, a deterministic safety backstop ` +
-    `must fail closed, not open, when its own input is missing -- state "Overall disposition: BLOCKED" at the ` +
-    `top of your memo and note that this is a coverage failure requiring a re-run, not a substantive finding.`
+const hardBlock = personaMode
+  ? await safetyInvariantHardBlockFires(targetPath, cfg.tier)
+  : { fires: false, scanFailed: false }
+const hardBlockLine = hardBlock.scanFailed
+  ? `\n\nSAFETY-INVARIANT HARD BLOCK (FAIL-CLOSED): the deterministic safety-invariant scan of ${targetPath} ` +
+    `for this GRAND-tier review did not complete (agent failure or no result). Per ` +
+    `docs/adr/2026-08-21-persona-hierarchy-front-office-only.md §2 D3, this backstop must fail closed, not ` +
+    `open, when its own input is missing -- state "Overall disposition: BLOCKED" at the top of your memo and ` +
+    `note that this is a coverage failure requiring a re-run, not a substantive finding.`
   : hardBlock.fires
-    ? `\n\nCRO SAFETY-INVARIANT HARD BLOCK: CRO's review confirmed or disputed a finding citing a CLAUDE.md ` +
-      `non-negotiable safety invariant (dry_run/armed_until/M1-RESOLVED/arm-not-send). Per design spec §6.3, this ` +
-      `is a HARD BLOCK on synthesis -- state "Overall disposition: BLOCKED" at the top of your memo regardless of ` +
-      `what any other persona found, and do not let any other finding soften this. Citing finding(s): ` +
-      `${JSON.stringify(hardBlock.citing.map((c) => c.finding))}`
+    ? `\n\nSAFETY-INVARIANT HARD BLOCK: ${targetPath}'s own committed text cites a CLAUDE.md non-negotiable ` +
+      `safety invariant (dry_run/armed_until/M1-RESOLVED/arm-not-send). Per ` +
+      `docs/adr/2026-08-21-persona-hierarchy-front-office-only.md §2 D3, this is a HARD BLOCK on synthesis -- ` +
+      `state "Overall disposition: BLOCKED" at the top of your memo regardless of what any persona found, and ` +
+      `do not let any other finding soften this.`
     : ''
 
 phase('Synthesize')
@@ -431,6 +435,6 @@ return {
   synthesis,
   personaMode,
   personaSlugs: personaMode ? personaSlugs : undefined,
-  croHardBlock: personaMode ? hardBlock.fires : undefined,
-  croReviewMissing: personaMode ? hardBlock.croReviewMissing : undefined,
+  safetyInvariantHardBlock: personaMode ? hardBlock.fires : undefined,
+  safetyInvariantScanFailed: personaMode ? hardBlock.scanFailed : undefined,
 }
