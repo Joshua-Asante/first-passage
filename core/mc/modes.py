@@ -9,12 +9,10 @@ See the FINAL decision page: https://www.notion.so/346dc0b53c11816085bbf2292be93
 
 Invocation (top-level module — pyproject declares flat py-modules, no
 package namespace):
-    python portfolio_mc.py                                 # default run (Pepperstone)
-    python portfolio_mc.py --historical                    # deterministic
-    python portfolio_mc.py --sensitivity                   # DD-trigger grid
-    python portfolio_mc.py --dd-trigger 0.01 --dd-scale 0.40
-    python portfolio_mc.py --no-protection
-    python portfolio_mc.py --guardian-risk 0.0025          # what-if at reduced Guardian risk
+    python -m pytest tests/core/test_mc_synthetic_engine.py  # engine owner
+    python core/portfolio_mc.py --panel cme                  # registered; MVD gate
+                                                             # fails on CME export names
+    # Pepperstone default run is retired (substrate Phase 3).
 """
 
 from __future__ import annotations
@@ -99,11 +97,13 @@ CME_DIR = Path(__file__).parents[1] / "data" / "tv_exports" / "cme"
 # map — research loads panels via panels_override with explicit Paths.
 GUARDIAN_V56_CSV = PEPPERSTONE_DIR / "Guardian_Gold_v5.6_PEPPERSTONE_XAUUSD_2026-05-27_9a871.csv"
 
-# Broker panel registry — empty after substrate Phase 3 (ADR 2026-07-22 §2-C).
-# The four 2026-05-24 Pepperstone anchor CSVs and PEPPERSTONE_PANELS /
-# DEFAULT_PANEL contract are retired. Engine correctness lives in
-# tests/core/test_mc_synthetic_engine.py (+ planted defects). New panels
-# require an admitting ADR + explicit registration here.
+# Broker panel registry — Pepperstone map empty after substrate Phase 3
+# (ADR 2026-07-22 §2-C). The four 2026-05-24 Pepperstone anchor CSVs and
+# PEPPERSTONE_PANELS / DEFAULT_PANEL contract are retired. Engine
+# correctness lives in tests/core/test_mc_synthetic_engine.py (+ planted
+# defects). New panels require an admitting ADR + explicit registration
+# here. The "cme" key below is a later admission, not a revival of the
+# Pepperstone CLI.
 #
 # "cme" admitted by ADR 2026-08-19-cme-broker-panel-admission-for-breadth-revival:
 # a 2-leg baseline scoped to the two AUTHORIZED futures legs only (Striker DJ30/MYM,
@@ -435,8 +435,10 @@ def _load_all(allocs: Dict[str, float], panel_name: str | None = None,
               *,
               account_basis: float | None = None):
     # MVD identity gate on each loaded CSV — catches the 'wrong CSV in load
-    # slot' class. Registered panels are empty after substrate Phase 3; callers
-    # supply panels_override (+ expected symbol/version maps) explicitly.
+    # slot' class. Pepperstone default is gone; a named panel (today: "cme")
+    # loads PANELS_BY_BROKER[panel_name]. That "cme" path is breadth-admitted
+    # and still hits the strict 7-field MVD filename gate here. Callers may
+    # also supply panels_override (+ expected symbol/version maps) explicitly.
     registered = panel_name is not None and panel_name in PANELS_BY_BROKER
     if registered:
         panels = dict(PANELS_BY_BROKER[panel_name])
@@ -1366,9 +1368,10 @@ def main():
     p = argparse.ArgumentParser(
         prog="portfolio_mc",
         description=(
-            "Parameterized challenge-outcome simulator. No registered broker "
-            "panel ships after substrate Phase 3 (Pepperstone executable "
-            "anchor retired); engine correctness is synthetic-fixture gated."
+            "Parameterized challenge-outcome simulator. Pepperstone default "
+            "retired; --panel cme is registered for breadth only and is not a "
+            "working 4-leg MC re-run. Engine correctness is synthetic-fixture "
+            "gated."
         ),
     )
     p.add_argument("--dd-trigger", type=float, default=DD_TRIGGER,
