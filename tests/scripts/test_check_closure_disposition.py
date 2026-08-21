@@ -363,6 +363,11 @@ def _coverage_repo(tmp_path: Path, *, with_ofchan_closure: bool = False) -> Path
     (tmp_path / "lab").mkdir(parents=True)
     (tmp_path / "docs" / "briefs" / "INDEX.md").write_text(_INDEX_FIXTURE, encoding="utf-8")
     (tmp_path / "lab" / "CATALOG.md").write_text(_CATALOG_FIXTURE, encoding="utf-8")
+    # Sentinel joinable LTM file so the fixture is a "full checkout" (corpus
+    # present). Public-seed / template-only trees are covered by dedicated tests.
+    (tmp_path / "docs" / "ltm" / "briefs" / "Q-LTMCORPUS-1-closure.md").write_text(
+        COMPLIANT, encoding="utf-8"
+    )
     # Present closure for the positive control
     (tmp_path / "docs" / "briefs" / "closures" / "Q-HASCLOS-1-closure-falsified.md").write_text(
         COMPLIANT, encoding="utf-8"
@@ -488,8 +493,32 @@ def test_coverage_public_seed_missing_ltm_dir_is_silent(tmp_path):
     repo = _coverage_repo(tmp_path, with_ofchan_closure=False)
     ltm_dir = repo / "docs" / "ltm" / "briefs"
     for f in ltm_dir.iterdir():
-        f.unlink()
+        if f.is_file():
+            f.unlink()
+        elif f.is_dir():
+            for child in f.iterdir():
+                child.unlink()
+            f.rmdir()
     ltm_dir.rmdir()
+    assert ccd.missing_closure_campaigns(repo) == []
+
+
+def test_coverage_public_seed_ltm_dir_without_joinable_closures_is_silent(tmp_path):
+    """A nested non-closure restore must not re-arm HARD coverage.
+
+    Recreates the 2026-08-21 public-seed state: docs/ltm/briefs/ exists
+    because rnd-pipeline/discovery-campaign-template.md was restored, but
+    no joinable Q-* closure file is present.
+    """
+    repo = _coverage_repo(tmp_path, with_ofchan_closure=False)
+    ltm_dir = repo / "docs" / "ltm" / "briefs"
+    for f in ltm_dir.iterdir():
+        if f.is_file():
+            f.unlink()
+    nested = ltm_dir / "rnd-pipeline"
+    nested.mkdir()
+    (nested / "discovery-campaign-template.md").write_text("# template\n", encoding="utf-8")
+    assert ccd.ltm_closure_corpus_present(ltm_dir) is False
     assert ccd.missing_closure_campaigns(repo) == []
 
 
@@ -500,8 +529,7 @@ def test_coverage_owning_adr_is_accepted_and_armed(capsys):
     )
     assert ccd.adr_status(ccd.COVERAGE_OWNING_ADR) == "Accepted"
     missing = ccd.missing_closure_campaigns()
-    ltm_briefs = Path(__file__).resolve().parents[2] / "docs" / "ltm" / "briefs"
-    if missing and not ltm_briefs.is_dir():
+    if missing and not ccd.ltm_closure_corpus_present():
         pytest.skip(
             "closure bodies live under docs/ltm/briefs/ "
             "(excluded from the public seed)"

@@ -70,6 +70,33 @@ KEEP_MISSING_MEASURE = """# Fixture KEEP — missing Measure
 **Review date:** 2026-11-08
 """
 
+COMPLIANT_SUBSCRIPTION_KEEP = """# Fixture — subscription KEEP with ledger pointer
+
+**Class:** (d) meta-belt (subscription) · **Standing:** KEEP
+**Aim served:** A2
+**Measure:** live consumer confirmed
+**Survive bound:** $/mo tracked in [`SUBSCRIPTION_LEDGER.md`](SUBSCRIPTION_LEDGER.md)
+**Review date:** none fixed
+"""
+
+SUBSCRIPTION_KEEP_MISSING_LEDGER = """# Fixture — subscription KEEP missing ledger pointer
+
+**Class:** (d) meta-belt (subscription) · **Standing:** KEEP
+**Aim served:** A2
+**Measure:** live consumer confirmed
+**Survive bound:** $ unverified in-repo
+**Review date:** none fixed
+"""
+
+NON_SUBSCRIPTION_KEEP_NO_LEDGER_NEEDED = """# Fixture — non-subscription KEEP, ledger check does not apply
+
+**Class:** (a) active campaign · **Standing:** KEEP
+**Aim served:** A1
+**Measure:** progress metric
+**Survive bound:** operator gate-walk cadence
+**Review date:** 2026-11-08
+"""
+
 KEEP_NO_REENTRY_FIELD = """# Fixture KEEP — correctly lacks park fields
 
 **Class:** (a) active campaign · **Standing:** KEEP
@@ -188,6 +215,35 @@ def test_keep_missing_measure_fails(tmp_path):
     assert any(f.limb == "entry-record" and "Measure" in f.message for f in findings), (
         findings
     )
+
+
+def test_subscription_keep_with_ledger_pointer_passes(tmp_path):
+    findings = cpr.scan_file(
+        _write(tmp_path, "sub-keep-ok.md", COMPLIANT_SUBSCRIPTION_KEEP), asof=ASOF_BEFORE
+    )
+    assert not any(f.limb == "ledger-pointer" for f in findings), findings
+
+
+def test_subscription_keep_missing_ledger_pointer_fails(tmp_path):
+    findings = cpr.scan_file(
+        _write(tmp_path, "sub-keep-bad.md", SUBSCRIPTION_KEEP_MISSING_LEDGER), asof=ASOF_BEFORE
+    )
+    assert any(f.limb == "ledger-pointer" for f in findings), findings
+
+
+def test_non_subscription_keep_not_ledger_flagged(tmp_path):
+    findings = cpr.scan_file(
+        _write(tmp_path, "non-sub-keep.md", NON_SUBSCRIPTION_KEEP_NO_LEDGER_NEEDED), asof=ASOF_BEFORE
+    )
+    assert not any(f.limb == "ledger-pointer" for f in findings), findings
+
+
+def test_live_subscription_keeps_have_ledger_pointer():
+    subs = sorted(cpr.PURSUITS_DIR.glob("d1[1-7]-*.md"))
+    assert len(subs) == 7, f"expected 7 subscription/venue-account pursuit records (d11-d17), got {len(subs)}"
+    for p in subs:
+        text = p.read_text(encoding="utf-8")
+        assert cpr.LEDGER_POINTER.search(text), f"{p.name} missing SUBSCRIPTION_LEDGER.md pointer"
 
 
 @pytest.mark.parametrize(

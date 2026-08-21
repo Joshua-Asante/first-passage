@@ -19,6 +19,11 @@ THE MECHANICAL RULE (deliberately narrow — M-8):
      and a Review date (§2.5).
   4. standing-vocabulary — Standing must open with KEEP / PARK / MERGE /
      SUBTRACT (optional qualifier) or the e2 terminal form `no action`.
+  5. ledger-pointer — every KEEP whose Class is (d) meta-belt (subscription) or
+     (d) meta-belt (venue account) must reference SUBSCRIPTION_LEDGER.md
+     somewhere in its body (§2.5-adjacent; added 2026-08-21 per the CFO's
+     C-1-closure recommendation, docs/adr/2026-08-21-cfo-subscription-
+     ledger-consolidation.md D2).
 
 SEVERITY:
 
@@ -61,6 +66,12 @@ EXPIRY_FIELD = re.compile(r"(?im)^\*\*expiry:\*\*|^expiry:")
 EXPIRY_DATE = re.compile(
     r"(?im)(?:^\*\*expiry:\*\*|^expiry:)\s*[^\n]*?(?P<d>\d{4}-\d{2}-\d{2})"
 )
+CLASS_LEDGER_TRACKED = re.compile(
+    r"(?m)^\*\*Class:\*\*.*\(d\)\s*meta-belt\s*\((subscription|venue account)",
+    re.IGNORECASE,
+)
+LEDGER_POINTER = re.compile(r"SUBSCRIPTION_LEDGER\.md")
+LEDGER_FILENAME = "SUBSCRIPTION_LEDGER.md"
 
 KEEP_FIELDS = (
     ("Aim served", re.compile(r"(?m)^\*\*Aim served:\*\*")),
@@ -217,6 +228,18 @@ def scan_file(path: Path, asof: date) -> list[Finding]:
                         f"KEEP missing **{label}:** (ADR §2.5 intake rule)",
                     )
                 )
+        if CLASS_LEDGER_TRACKED.search(text) and not LEDGER_POINTER.search(text):
+            findings.append(
+                Finding(
+                    "WARN",
+                    "ledger-pointer",
+                    path,
+                    "subscription/venue-account-class KEEP missing a SUBSCRIPTION_LEDGER.md "
+                    "pointer (CFO 2026-08-21 recommendation — $/mo tracked at row-creation "
+                    "time, not backfilled later; see docs/adr/2026-08-21-"
+                    "cfo-subscription-ledger-consolidation.md D2)",
+                )
+            )
 
     return findings
 
@@ -224,7 +247,9 @@ def scan_file(path: Path, asof: date) -> list[Finding]:
 def in_scope(pursuits_dir: Path = PURSUITS_DIR) -> list[Path]:
     if not pursuits_dir.is_dir():
         return []
-    return sorted(pursuits_dir.glob("*.md"))
+    return sorted(
+        p for p in pursuits_dir.glob("*.md") if p.name != LEDGER_FILENAME
+    )
 
 
 def scan_paths(paths: list[Path], asof: date) -> list[Finding]:

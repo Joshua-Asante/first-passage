@@ -8,9 +8,9 @@ Front-Office-only persona narrowing and this record's own creation) — closer i
 Cursor (A2/A4, fleet workers) than to a single-Aim data/feed subscription, and per the CFO's
 2026-08-21 review, arguably more central than Cursor to that same orchestration work.
 **Measure:** live consumer confirmed — this session is itself the evidence
-**Survive bound:** **$200/mo** (operator-confirmed 2026-08-21)
-**Review date:** none fixed — tied to the program's own life; folded into the CFO's proposed
-consolidated subscription ledger (recommended `cfo-log.md` 2026-08-21, not yet built)
+**Survive bound:** $/mo tracked in [`SUBSCRIPTION_LEDGER.md`](SUBSCRIPTION_LEDGER.md)
+**Review date:** none fixed — tied to the program's own life; folded into
+[`SUBSCRIPTION_LEDGER.md`](SUBSCRIPTION_LEDGER.md)
 **Ratified:** 2026-08-21 (operator direct instruction, in-session — CFO's same-day review flagged
 Claude Max as untracked and out-of-scope-list; operator elected "track it" as a new record over
 "leave out of scope" and "flag and revisit")
