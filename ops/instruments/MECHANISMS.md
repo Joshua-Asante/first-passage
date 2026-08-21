@@ -286,8 +286,8 @@ Rejected nearest classes (one-line):
   this specific causal story (volatility-threshold entry, stop/target sized off the trigger bar's
   own range) does not supply a candidate through it. Re-proposal bar: a structurally different
   criterion, not a re-tuned θ/lookback/stop-target on this shape.
-  [`FREEZE`](../../lab/analysis/c1/todvol_1_2026-08-20/FREEZE.md) ·
-  [`RESULTS`](../../lab/analysis/c1/todvol_1_2026-08-20/RESULTS.md).
+  [`FREEZE`](../../lab/archive/todvol_1_2026-08-20/FREEZE.md) ·
+  [`RESULTS`](../../lab/archive/todvol_1_2026-08-20/RESULTS.md).
 
 ## sweep-failure-filtered-continuation
 

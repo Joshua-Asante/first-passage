@@ -1,6 +1,6 @@
 # Skewed-family construction + characterization — Q-GEOFIT-1 successor scoping (2026-08-15)
 
-**Status:** scoping construction, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_skew_probe_2026-07-25/README.md) and [`geofit_iid_sufficiency_power_2026-08-15`](../geofit_iid_sufficiency_power_2026-08-15/README.md). **Not** part of Q-GEOFIT-1 (CLOSED `AMBIGUOUS-PARAMETERIZATION`, 2026-07-25) and **not** a re-open of it. No envelope, no grid, no cells, no candidate claim. **$0.00 spend, zero K.**
+**Status:** ACTIVE — scoping construction, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_skew_probe_2026-07-25/README.md) and [`geofit_iid_sufficiency_power_2026-08-15`](../geofit_iid_sufficiency_power_2026-08-15/README.md). Stay hot: `family_skewed_gamma` is imported by the N-SURV magnitude probe. **Not** a re-open of Q-GEOFIT-1. No envelope, no grid, no cells, no candidate claim. **$0.00 spend, zero K.**
 **Driver:** [`family_skewed_gamma.py`](family_skewed_gamma.py) (the reusable family: `fit_family`, `draw_series`) · [`run_characterize.py`](run_characterize.py) (pre-declaration in its module docstring) · data [`characterize.json`](characterize.json) · log [`run_characterize.log`](run_characterize.log)
 
 ## What this is
