@@ -2,7 +2,9 @@
 
 **Status:** `STAGE-1 PASS` · **B4 GO paid 2026-08-21** · G0 [`PREREG_G0.md`](PREREG_G0.md) **FROZEN** ·
 Explore-confirm **DEFERRED BY OPERATOR OVERRIDE** (no market-data access this session) · Pine
-**authored CC-solo** — [runbook](RUNBOOK.md) · **$0 · K=0**
+**authored CC-solo** — [runbook](RUNBOOK.md) · **$0 · K=0** · Step-4 cheap falsifier **filled
+2026-08-21 addendum** — [`NOT DECISIVE`](_cheap_falsifier_expiry_oi_strike_convergence_2026-08-21_LOG.md),
+Explore-confirm still owed
 **Card:** MSL-S4 · instrument **MGC** · mechanism **`expiry-oi-strike-convergence`** (NEW)
 **Parent:** [MSL charter](../../../../docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md) steps
 1–4 · [E1 HOLD closure](../../../../docs/briefs/closures/MSL-S7-closure-resolved-e1-hold.md)
@@ -139,14 +141,25 @@ to compute an implied-SR figure.
 
 ## Step 4 — Cheap falsifier
 
-**NOT AVAILABLE this session.** A cheap falsifier requires touching real price/OI data (even a
-generous, parent-side 5-minute check), and this session's environment has no Databento API key and
-no cached market-data panel on disk (`core/data/bar_data/` and `core/data/tv_exports/cme/` contain
-only manifests, not bytes — vendor-licensed CSVs are gitignored per the repo's public-clone
-posture). This is the same environmental block that stopped the databento data-mining sourcing
-lane outright. **Disclosed as a gap, not silently skipped** — this is one of the two things the
-operator explicitly elected to proceed without (the other being Explore-confirm; see
-[`PREREG_G0.md`](PREREG_G0.md)).
+**NOT AVAILABLE this session** (record as of G0 freeze, 2026-08-21, unchanged below). A cheap
+falsifier requires touching real price/OI data (even a generous, parent-side 5-minute check), and
+this session's environment has no Databento API key and no cached market-data panel on disk
+(`core/data/bar_data/` and `core/data/tv_exports/cme/` contain only manifests, not bytes —
+vendor-licensed CSVs are gitignored per the repo's public-clone posture). This is the same
+environmental block that stopped the databento data-mining sourcing lane outright. **Disclosed as
+a gap, not silently skipped** — this is one of the two things the operator explicitly elected to
+proceed without (the other being Explore-confirm; see [`PREREG_G0.md`](PREREG_G0.md)).
+
+**Addendum, 2026-08-21 (later same day, separate local environment with `DATABENTO_API_KEY`
+configured):** the gap above is now filled —
+[`_cheap_falsifier_expiry_oi_strike_convergence_2026-08-21_LOG.md`](_cheap_falsifier_expiry_oi_strike_convergence_2026-08-21_LOG.md).
+**Verdict: `NOT DECISIVE`** — a generous/informal delete-test analogue (7 completed OG monthly
+cycles, $0 cost): arm-window (3 sessions pre-expiry) and control-window (matched length,
+non-expiry) convergence toward the max-OI strike both land at 4/7 — identical rate, no
+differential signal. This is **not** the pre-registered Explore-confirm (§4 below still applies
+unchanged: no IS/CONFIRM partition reserved, no significance test, monthlies only). Does not kill
+the card, does not clear it — full Explore-confirm remains the owed step before any TV/live
+build-out.
 
 ---
 
@@ -156,4 +169,7 @@ operator explicitly elected to proceed without (the other being Explore-confirm;
 Explore-confirm (charter step 5a) deferred by operator override (data-access gap). Pine authored
 CC-solo this same session (charter step 6) — [`RUNBOOK.md`](RUNBOOK.md). No K spend. No TV seat yet.
 
-**Next:** operator TV backtest (charter step 7) per the runbook.
+**Next:** operator TV backtest (charter step 7) per the runbook. Step-4 cheap falsifier filled
+2026-08-21 (addendum above) — `NOT DECISIVE`, does not change this verdict or the TV-seat path;
+full Explore-confirm remains owed before any TV/live build-out regardless of the TV backtest's own
+result (§5 forbidden moves).

@@ -14,6 +14,30 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-21j — MSL-S4 Step-4 cheap falsifier filled via local databento run — `NOT DECISIVE`
+
+**Focus:** `ptpa57`'s G0-frozen MSL-S4 card (`expiry-oi-strike-convergence`, MGC) disclosed Step-4
+as `NOT AVAILABLE` — its cloud container had no `DATABENTO_API_KEY`. Operator asked a local
+session (with the key configured) to run it and report back.
+
+**Shipped:** 7 completed OG (Gold monthly options) expiry cycles pulled ($0 — `definition`/
+`statistics`/`ohlcv-1d` schemas only), a generous delete-test analogue: does price converge toward
+the max-OI strike more in the 3-session pre-expiry arm window than in a matched non-expiry control
+window? Both land at 4/7 — identical rate, no differential signal.
+[`STAGE1.md`](../lab/analysis/c1/msl_s4_mgc_2026-08/STAGE1.md) §Step 4 addendum +
+[`_cheap_falsifier_expiry_oi_strike_convergence_2026-08-21_LOG.md`](../lab/analysis/c1/msl_s4_mgc_2026-08/_cheap_falsifier_expiry_oi_strike_convergence_2026-08-21_LOG.md).
+
+**Decisions/defects:** none — this is evidence for the deferred Explore-confirm, not a gate
+result. No `K_intrinsic`, `MECHANISMS.md`, or `candidates_CARD.md` change; not the pre-registered
+Explore-confirm (no IS/CONFIRM partition, no significance test, monthlies only, n=7).
+
+**Open / next:** full Explore-confirm (proper IS/CONFIRM, weeklies, real stats) still owed before
+any TV/live build-out, unchanged from the G0 freeze. Operator TV backtest (charter step 7) remains
+the immediate next step per the runbook.
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`. (unchanged)
+
+---
 ## 2026-08-21i — MSL-S4 sources a NEW WHO, discharges E1; G0 frozen, Pine authored CC-solo
 
 **Focus:** Operator asked to find a viable Tradeify strategy this session, using MSL's iterative
