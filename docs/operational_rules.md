@@ -375,9 +375,8 @@ migration rationale is unaffected. See CLAUDE.md §Public-clone posture.**]**
 posture"). Gitignored files are **not** shared across git worktrees: the locked
 `.pine` live only in the primary checkout. Any worktree from `git worktree add`
 starts with `core/strategies/*/*.pine` **absent**, which silently blocks every
-Pine-dependent task — codification / scaffold extraction, any decision-brief §0
-that reads `*.pine`, and `scripts/validate_params.py`'s Pine-default cross-check
-(which no-ops to WARN when Pine is missing, so the gap is invisible).
+Pine-dependent task — codification / scaffold extraction, and any decision-brief §0
+that reads `*.pine`.
 
 **Procedure (run at the start of any Pine-dependent task):**
 
@@ -404,7 +403,10 @@ locked `.pine` as scaffold templates) was dispatched into worktree
 `xenodochial-nobel-a54b80` and would have hit absent Pine — a `NEEDS_CONTEXT`
 bounce at best, a silent Rule-0 citation substitution at worst. `validate_params`
 Pine cross-check had already been silently no-op'ing in worktrees for the same
-reason. `scripts/sync_pine_to_worktree.py` + this rule close the class.
+reason (that script was retired 2026-08-03 with the `params.toml` hub —
+[ADR](adr/2026-08-03-params-toml-gate-retirement.md) — this is historical
+illustration only, not a live cross-check today). `scripts/sync_pine_to_worktree.py`
++ this rule close the class.
 
 ---
 
@@ -436,7 +438,8 @@ canonical: [`docs/adr/2026-07-25-instrument-profile-index.md`](adr/2026-07-25-in
 The session-end disposition includes updating the ledger's `PROFILE` block when a
 verdict changed, and rebuilding the derived view
 (`python scripts/instrument_profiles.py build`). Enforcement is mechanical — a
-stale generated view fails pre-commit gate (11) — so this clause documents the
+stale generated view fails the `instrument-profiles` gate
+([`scripts/gates.yml`](../scripts/gates.yml)) — so this clause documents the
 obligation rather than carrying it.
 
 **Phase-0 cost-geometry pre-gate (added 2026-06-22; canonical:
@@ -632,7 +635,8 @@ author skips because the correction feels "already handled" by the addendum
 they just wrote.
 
 **Mechanical backstop (deliberately narrow):**
-`scripts/check_supersession_placement.py` (pre-commit gate 13) hard-fails any
+`scripts/check_supersession_placement.py` (the `supersession-placement` gate,
+[`scripts/gates.yml`](../scripts/gates.yml)) hard-fails any
 in-scope document (desk cards, `lab/analysis/*/RESULTS*.md`) whose
 addendum-confined supersession token has no upstream marker or pointer. It
 catches the addendum-shaped instance only; the in-section instance (a claim
@@ -694,6 +698,19 @@ Edits to existing rules must be logged with a dated entry explaining what change
 
 ### Edit log
 
+- **2026-08-21 — Reference-repair pass (Rule 9, Rule 10, Rule 14): retired script
+  + drifted gate-number pointers.** Rule 9's worktree-Pine example cited
+  `scripts/validate_params.py`'s cross-check as a live risk illustration; that
+  script was retired 2026-08-03 with the `params.toml` hub
+  ([ADR](adr/2026-08-03-params-toml-gate-retirement.md)) — dropped the stale
+  example from the rule body, kept it (with a retirement parenthetical) in the
+  historical Origin note. Rule 10 and Rule 14 each cited a fixed ordinal
+  position in the pre-commit gate list (`gate (11)`, `gate 13`); verified against
+  the current `scripts/gates.yml` (18 gates, insertion order), the intended
+  targets (`instrument-profiles`, `supersession-placement`) now sit at positions
+  13 and 16 — both ordinals had drifted off their target as later gates were
+  inserted ahead of them. Replaced both with the gate's stable `id:` field, which
+  cannot drift as new gates are inserted. No rule *behavior* changed; reference-only.
 - **2026-08-19 — Rule 7 STATE decision-index cap relaxed from strict one-line
   to concise.** Practice had already drifted (the persona-hierarchy panel's
   own 08-19 decision-index entry ran ~6 lines/~100 words) without a matching
