@@ -93,8 +93,8 @@ Flagged quarters: **2021Q1, 2021Q4, 2022Q1, 2022Q3, 2023Q1, 2023Q3, 2024Q1, 2025
 - Replay is a wired research consumer; still not live-fired / not demotion-wired.
 - Call-1 action-on-breach at `CANDIDATE` owned by
   [`ADR 2026-08-06-candidate-call1-action-on-breach`](../../../docs/adr/2026-08-06-candidate-call1-action-on-breach.md)
-  (`Proposed`): this harness's `OPERATOR_REVIEW_FLAG`-only posture matches that rule;
-  Accept (or supersession) is operator — do not rewrite this runner into demotion.
+  (`Accepted` 2026-08-21): this harness's `OPERATOR_REVIEW_FLAG`-only posture matches that
+  rule; supersession is operator — do not rewrite this runner into demotion.
 
 Reproduce:
 

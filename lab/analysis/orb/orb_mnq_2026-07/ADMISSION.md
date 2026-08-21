@@ -65,9 +65,9 @@ scoped to the four locked legs' demotion tracking — an absent entry already me
   `CANDIDATE @ 1.00×` starting-multiplier decision). A seed, not a fired monitor — no live
   venue exists yet. Call-1 action-on-breach at `CANDIDATE`:
   [`ADR 2026-08-06-candidate-call1-action-on-breach`](../../../docs/adr/2026-08-06-candidate-call1-action-on-breach.md)
-  (**`Proposed`** — operator review flag only; no autonomous demotion; awaiting Accept).
+  (**`Accepted`** 2026-08-21 — operator review flag only; no autonomous demotion; in force).
   **Backtest-replay harness wired 2026-08-06** (calendar quarters vs frozen floor;
-  `OPERATOR_REVIEW_FLAG` only — aligns with that Proposed rule; not demotion-wired /
+  `OPERATOR_REVIEW_FLAG` only — aligns with that rule; not demotion-wired /
   not live-fired) —
   [`RESULTS_decay_monitor_replay.md`](RESULTS_decay_monitor_replay.md).
 - ~~**Cap tripwire companion (pre-P&L)**~~ — **registered 2026-08-06 (docs-only; not live-wired)**

@@ -1,6 +1,6 @@
 # ADR 2026-08-06 — Call-1 action-on-breach at `CANDIDATE` (operator review flag only)
 
-**Status:** `Proposed` — awaiting operator Accept (not self-accepting)
+**Status:** `Accepted` — ratified 2026-08-21 by operator (Joshua)
 **Decision date:** 2026-08-06
 **Authors:** Joshua (packet GO: close governance gap first) + Cursor (drafter)
 **Supersedes:** none
@@ -182,3 +182,4 @@ git log -1 --format="%h %ci" -- core/lifecycle.py
 | Date | Change | By |
 |---|---|---|
 | 2026-08-06 | Initial authoring — `Proposed`, awaiting operator Accept | Joshua + Cursor |
+| 2026-08-21 | Accepted — Status flipped, five downstream mirrors refreshed, INDEX regenerated (CC handoff) | Joshua + Claude Code |
