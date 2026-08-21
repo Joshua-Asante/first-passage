@@ -88,6 +88,8 @@ rg -n "Q-TNEC-CON-6" docs/briefs/INDEX.md lab/CATALOG.md || echo "no CON-6 yet"
 | Date | Change | By |
 |---|---|---|
 | 2026-08-15 | U0 KEEP recorded (leave the pause) | JA · Cursor |
+| 2026-08-20 | **U1 (ADMIT-ONE) now marked** — [`ADR`](../../adr/2026-08-20-dense1m-u1-operator-override-con4-reopen.md) (`Accepted`, operator override, no new evidence), scoped to `Q-TNEC-CON-4` CONFIRM-scoring only. This closure's own §3 "does NOT license" list stays historically accurate as of 2026-08-15 — U2 remains unmarked, and `CON-1/2/3/5`/any future `CON-6` are unaffected. | Claude Code (operator-ratified) |
+| 2026-08-20 | **U1 exception discharged same day** — `CON-4` CONFIRM scored `AMBIGUOUS-HOLD`, exception spent, `CON-4` reverted to `U0`. The pause this closure kept is once again unconditional lane-wide. U2 still unmarked; still needs its own full limb-4 ADR if ever proposed. | Claude Code (operator-ratified run) |
 
 ---
 
