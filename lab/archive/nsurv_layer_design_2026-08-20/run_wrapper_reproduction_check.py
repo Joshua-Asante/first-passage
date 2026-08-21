@@ -18,7 +18,14 @@ import json
 import statistics
 from pathlib import Path
 
-REPO = Path(r"C:/Users/joshu/multi_firm_operations/.claude/worktrees/cursor-grok-dispatch-4de91f")
+def _repo_root() -> Path:
+    for parent in Path(__file__).resolve().parents:
+        if (parent / "lab" / "CATALOG.md").is_file():
+            return parent
+    raise SystemExit("cannot locate repo root from " + str(Path(__file__)))
+
+
+REPO = _repo_root()
 OUT_DIR = Path(__file__).resolve().parent
 TOL_PP = 2.0
 

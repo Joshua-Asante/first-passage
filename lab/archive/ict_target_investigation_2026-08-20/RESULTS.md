@@ -1,5 +1,6 @@
 # Frozen 1H DOL target — distance sweep — `AMBIGUOUS` (null across the whole tested range)
 
+**Verdict:** AMBIGUOUS — zero-run distance sweep (5-300pt); mean R negative at every tested distance; frozen DOL target exonerated, entries lack directional edge.
 **Date:** 2026-08-20 · **Cost:** $0.00 · **K:** 0 (zero-run, disclosure-only counterfactual — no new
 entry construct, reuses `Q-ICT-OTE-1`/`Q-ICT-OB-1`'s already-licensed, already-run entry+stop logic
 unchanged)

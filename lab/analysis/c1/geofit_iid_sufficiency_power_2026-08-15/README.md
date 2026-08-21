@@ -1,6 +1,6 @@
 # i.i.d.-sufficiency power-up — Q-GEOFIT-1 successor scoping (2026-08-15)
 
-**Status:** scoping probe, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_skew_probe_2026-07-25/README.md). **Not** part of Q-GEOFIT-1 (CLOSED `AMBIGUOUS-PARAMETERIZATION`, 2026-07-25) and **not** a re-open of it. Produces no envelope, no grid, no cells, no candidate claim. **$0.00 spend, zero K.**
+**Status:** ACTIVE — scoping probe, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_skew_probe_2026-07-25/README.md). Stay hot: `aegis3leg_engine_param` imports this scoring tree. **Not** a re-open of Q-GEOFIT-1. Produces no envelope, no grid, no cells, no candidate claim. **$0.00 spend, zero K.**
 **Verdict:** `MARGINALS-SUFFICIENT`
 **Driver:** [`run_power_up.py`](run_power_up.py) (pre-declaration in its module docstring, fixed before it ran) · [`combine_verdict.py`](combine_verdict.py) (pooling arithmetic) · data [`power_up_new45.json`](power_up_new45.json), [`combined_n50_verdict.json`](combined_n50_verdict.json) · log [`run_power_up.log`](run_power_up.log)
 

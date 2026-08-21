@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-21d — CATALOG `--slug` archive (C-P1-10)
+
+**Focus:** Flip CATALOG Status on closed camps via `archive_lab_analysis.py --slug`, not regenerate or hand-edit.
+
+**Shipped:** 10 closed slugs → `lab/archive/` + stubs; geofit pair retagged ACTIVE (stay-hot imports); instrument C3 + INDEX RESULTS repoints. Owner: [`C-P1-10`](notes/audits/2026-08-21-coherence-campaign.md) · [`CATALOG`](../lab/CATALOG.md).
+
+**Decisions/defects:** `msl_s2b_mym` stays HOLD (STAGE-1 FAIL is not archiveable). Informal ORB probes stay ACTIVE. One-liners restored after `--slug` regenerate.
+
+**Open / next:** Carry `2026-08-21c` / `2026-08-20g` — ICT-family re-proposal needs new mechanism evidence. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. H6/H7/H8 still HOLD.
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
+
+---
 ## 2026-08-21c — Operator menu: F1/B7 HOLD; H1–H5 GO
 
 **Focus:** Ratified next-steps menu after the coherence campaign.
