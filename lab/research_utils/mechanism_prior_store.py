@@ -44,7 +44,9 @@ def load_latest_records(store_path: Path = DEFAULT_STORE_PATH) -> list[dict]:
         latest[key] = record
         if "supersedes" in record:
             sup = record["supersedes"]
-            superseded_keys.add((sup["source_path"], sup["source_ref"]))
+            sup_key = (sup["source_path"], sup["source_ref"])
+            if sup_key != key:
+                superseded_keys.add(sup_key)
 
     return [rec for key, rec in latest.items() if key not in superseded_keys]
 

@@ -87,3 +87,34 @@ def test_load_latest_keeps_unrelated_records(tmp_path, valid_tag_record):
         valid_tag_record(provenance={"source_path": "x", "source_ref": "2", "tagged_at": "d"}), store_path=store
     )
     assert len(load_latest_records(store)) == 2
+
+
+def test_load_latest_same_key_correction(tmp_path, valid_tag_record):
+    """Test the realistic case: a correction has the same source_path/source_ref as the original.
+
+    This exercises the bug fix where a correction with the same key as what it supersedes
+    must not be dropped from the result. Only the tagged_at and mechanism_tier differ.
+    """
+    store = tmp_path / "tags.json"
+
+    # Original record
+    original = valid_tag_record(
+        mechanism_tier="B",
+        provenance={"source_path": "docs/rejected_candidates.md", "source_ref": "entry-5", "tagged_at": "2026-08-18"},
+    )
+    append_record(original, store_path=store)
+
+    # Correction: same source_path and source_ref (the natural real-world case),
+    # but corrected mechanism_tier and later tagged_at
+    correction = valid_tag_record(
+        mechanism_tier="A",
+        provenance={"source_path": "docs/rejected_candidates.md", "source_ref": "entry-5", "tagged_at": "2026-08-20"},
+        supersedes={"source_path": "docs/rejected_candidates.md", "source_ref": "entry-5"},
+    )
+    append_record(correction, store_path=store)
+
+    # load_latest_records must return the correction, not an empty list
+    latest = load_latest_records(store)
+    assert len(latest) == 1
+    assert latest[0]["mechanism_tier"] == "A"
+    assert latest[0]["provenance"]["tagged_at"] == "2026-08-20"
