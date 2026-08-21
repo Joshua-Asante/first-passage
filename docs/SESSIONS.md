@@ -14,10 +14,10 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
-## 2026-08-20e — Frozen 1H DOL target distance-swept zero-run: target exonerated, entries are the problem (corrects 2026-08-20d)
+## 2026-08-20g — Frozen 1H DOL target distance-swept zero-run: target exonerated, entries are the problem (corrects 2026-08-20f)
 
 **Focus:** Operator asked to investigate the frozen 1H DOL target itself, and whether different
-target distances would produce significantly different results — following `2026-08-20d`'s
+target distances would produce significantly different results — following `2026-08-20f`'s
 observation that three constructs died anchored to it.
 
 **Shipped:** [`ict_target_investigation_2026-08-20/RESULTS.md`](../lab/analysis/c1/ict_target_investigation_2026-08-20/RESULTS.md)
@@ -34,16 +34,16 @@ after the first pivot's touch-search failed, contrary to the original's actual c
 via `inspect.getsource`, not memory). Fixed and re-verified byte-identical to the already-recorded
 result (mean stop_dist matches to 15 significant figures) before any grid number was trusted.
 
-**Open / next:** **Corrects `2026-08-20d`'s own framing** — "the shared DOL target, not any one entry
+**Open / next:** **Corrects `2026-08-20f`'s own framing** — "the shared DOL target, not any one entry
 rule, is the more informative candidate point of failure" does not survive this test and is retracted,
 not left standing; `ops/instruments/MNQ.md` updated accordingly. The honest read: raid/sweep/
 displacement-based entry timing on MNQ shows no measurable directional edge at any exit distance
 checked. Re-proposal bar for any ICT-family entry construct on this DOL target (or any target) is now
 explicitly new mechanism evidence, not an exit-distance retune. 11th-consecutive-null count from
-`2026-08-20d` is unchanged by this disclosure-only pass (no new K, no new construct).
+`2026-08-20f` is unchanged by this disclosure-only pass (no new K, no new construct).
 
 ---
-## 2026-08-20d — Order Blocks spec'd, override pre-approved, `Q-ICT-OB-1` `FALSIFIED` at $0 — third entry family dies on the same DOL target
+## 2026-08-20f — Order Blocks spec'd, override pre-approved, `Q-ICT-OB-1` `FALSIFIED` at $0 — third entry family dies on the same DOL target
 
 **Focus:** Operator asked to spec Order Blocks and pre-approved an override ADR in the same
 instruction ("if it requires an ADR override then I approve it").
@@ -68,7 +68,7 @@ microstructure thread. Breaker Blocks and SMT Divergence remain unadmitted (thei
 findings from the earlier ranking pass still apply — worse population, and SMT doubly barred).
 
 ---
-## 2026-08-20c — Operator override ratified, cheap falsifier run: `Q-ICT-OTE-1` `FALSIFIED` at $0
+## 2026-08-20e — Operator override ratified, cheap falsifier run: `Q-ICT-OTE-1` `FALSIFIED` at $0
 
 **Focus:** Operator approved an override ADR against the analogue-modality pause specifically for
 `Q-ICT-OTE-1`; per that ADR's own §2, the cheap falsifier was licensed and run immediately.
@@ -93,7 +93,7 @@ sweep-retracement). No further ICT-vocabulary candidate is licensed by this over
 Breaker Blocks, and SMT Divergence each still need their own ADR if pursued.
 
 ---
-## 2026-08-20b — `Q-ICT-OTE-1` (Optimal Trade Entry) scoped, not run — blocked by two independent pause ADRs
+## 2026-08-20d — `Q-ICT-OTE-1` (Optimal Trade Entry) scoped, not run — blocked by two independent pause ADRs
 
 **Focus:** Following the ICT concept-gap ranking (OTE first among Order Blocks/OTE/Breaker
 Blocks/SMT on population + cost-geometry), operator asked to scope OTE and name what needs
@@ -117,7 +117,7 @@ shape as the CON-4 one just spent; or wait for a genuine new modality) and the c
 next 3 steps if the override path is chosen. Nothing scored, no K spent, no manifest open.
 
 ---
-## 2026-08-20a — Operator override: U1 exception reopens `Q-TNEC-CON-4` CONFIRM inside the dense-1m pause
+## 2026-08-20c — Operator override: U1 exception reopens `Q-TNEC-CON-4` CONFIRM inside the dense-1m pause
 
 **Focus:** Operator instructed reopening `Q-TNEC-CON-4` (PDH/PDL RTH with-break) and
 unpausing dense-1m OHLCV, explicitly without new mechanism evidence — an authority-only
@@ -147,6 +147,34 @@ microstructure thread. No further exception auto-granted; the dense-1m OHLCV pau
 unconditional lane-wide again pending a genuinely new modality or its own fresh ADR.
 
 ---
+## 2026-08-20b — remaining MSL FALSIFIED-without-cell registry lags + M2K W4 panel contradiction
+
+**Focus:** Same class as 20a: FALSIFIED closures already on disk, PROFILE cells still `.`.
+
+**Shipped:** MYM × `pdh-pdl-failed-break-reclaim` → C1 closure; MGC × `london-range-failed-extension-fade` → C2 closure (parser-harvestable `Class finding:` + missing session-log kill line); MCL × `pullback-failure-resumption` → S2A closure. M2K W4/status no longer claim "no panel". Rebuilt `PROFILES.md` / `profiles.json`.
+
+**Decisions/defects:** Did not map CON-2/3/4/5 `AMBIGUOUS-HOLD` or S2B Stage-1 FAIL onto cells — those are ITERATE / pre-G0, not explore-FALSIFIED. Did not widen the `Class finding (` parser.
+
+**Open / next:** Carry 19g: branch-protection-for-`main` packet still unopened; 34 non-M1 HIGH-risk `cursor/*` PRs from the dead-CI window not individually re-verified; Cursor forum `-CleanHome` workaround. Optional later: MNQ CON-2/3/4/5 `AMBIGUOUS-HOLD` cells; S2B pre-G0 consult cell; `Class finding (` harvest.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+
+## 2026-08-20a — sync overnight-range-fade class finding + M2K PROFILE cells to MSL-C3-K2 FALSIFIED
+
+**Focus:** Close the mechanism-registry lag: `overnight-range-failed-extension-fade` still read "none yet / scored axis" after M2K explore FALSIFIED 2026-08-13.
+
+**Shipped:** `ops/instruments/MECHANISMS.md` class findings (overnight + sibling `pdh-pdl-failed-break-reclaim` "Revive in flight") point at [MSL-C3-K2 closure](briefs/closures/MSL-C3-K2-closure-falsified.md). `M2K.md` PROFILE cells `DEAD` 2026-08-13; rebuilt `PROFILES.md` / `profiles.json`.
+
+**Decisions/defects:** Cell vocabulary remains `DEAD` (closed four-value schema); class-finding prose carries `FALSIFIED` + evidence numbers from the closure. No Pine / `dd_protection` / allocation change.
+
+**Open / next:** Carry 19g: branch-protection-for-`main` packet still unopened; 34 non-M1 HIGH-risk `cursor/*` PRs from the dead-CI window not individually re-verified; Cursor forum thread has no fix ETA (`-CleanHome` workaround). Pre-existing registry lags not in this footprint: MYM × `pdh-pdl-failed-break-reclaim` PROFILE cell (C1 FALSIFIED); MGC × `london-range-failed-extension-fade` PROFILE cell (C2 FALSIFIED); M2K W4 still says "no panel" against the landed `M2K_M15.csv`.
+
+**Live-ops state:** c1 warm/disarmed at incumbent; eval live; no book; no arming.
+
+---
+
 ## 2026-08-19g — Cursor Grok 4.6 dispatch-autonomy eval surfaces a live shell-hook bug + CI/gate-stack staleness
 
 **Focus:** Evaluate giving Cursor's `--mode plan`/`--resume` a CC-gated plan→approve dispatch flow. Investigation surfaced a live Windows bug and a much bigger governance finding first.
@@ -158,6 +186,7 @@ unconditional lane-wide again pending a genuinely new modality or its own fresh 
 **Open / next:** Branch-protection-for-`main` packet still unopened. 34 non-M1 HIGH-risk `cursor/*` PRs from the dead-CI window not individually re-verified (operator said skip). Cursor forum thread has no fix ETA — `-CleanHome` is the standing workaround.
 
 ---
+
 ## 2026-08-19f — CME breadth revival + candidate reproducibility index (2-stage, CC+Cursor fleet)
 
 **Focus:** Admit a `"cme"` broker panel to `core/mc/modes.py` for Stage-8 breadth work (retired since the challenge-era substrate cutover), and give portfolio-composition candidates a reproducibility path that doesn't require storing raw return series.

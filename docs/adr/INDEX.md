@@ -122,8 +122,8 @@
 | 2026-08-20-analogue-modality-override-ict-ob-1-admit.md | Accepted | 2026-08-20 | none | ratified by operator (Joshua) 2026-08-20, in-session direct instruction |
 | 2026-08-20-analogue-modality-override-ict-ote-1-admit.md | Accepted | 2026-08-20 | none | ratified by operator (Joshua) 2026-08-20, in-session direct instruction |
 | 2026-08-20-dense1m-u1-operator-override-con4-reopen.md | Accepted | 2026-08-20 | none | ratified by operator (Joshua) 2026-08-20, in-session |
-| 2026-08-20-nsurv-magnitude-resampling-disclosure.md | Proposed | 2026-08-20 | none | drafted at operator direction (`Q-NSURV-2` RESOLVED, "go bigger" election), ratification owed |
-| 2026-08-20-rule0-anchor-verification-and-triage-discipline.md | Proposed | 2026-08-20 | none | drafted at operator direction ("the tactical pattern is making the case for Rule 0, and perhaps this rule needs to be enforced more consistently"), ratification owed |
+| 2026-08-20-nsurv-magnitude-resampling-disclosure.md | Accepted | 2026-08-20 | none | ratified by operator (Joshua) 2026-08-20, in-session direct instruction ("I ratify the N-SURV disclosure ADR, Rule 0 anchor-check + triage-discipline ADR") |
+| 2026-08-20-rule0-anchor-verification-and-triage-discipline.md | Accepted | 2026-08-20 | none | ratified by operator (Joshua) 2026-08-20, in-session direct instruction ("I ratify the N-SURV disclosure ADR, Rule 0 anchor-check + triage-discipline ADR") |
 
 ## Partially superseded
 

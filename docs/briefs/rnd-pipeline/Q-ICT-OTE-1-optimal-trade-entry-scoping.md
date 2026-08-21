@@ -12,7 +12,7 @@ falsifier class (see §9 — this is a genuinely new entry-geometry construct, n
 so no further scoping work is owed before an operator GO — and state, without softening, exactly what
 currently blocks it.
 **Occasioned by:** operator instruction, 2026-08-20, following the [ICT concept-gap
-ranking](../../SESSIONS.md#2026-08-20a--operator-override-u1-exception-reopens-q-tnec-con-4-confirm-inside-the-dense-1m-pause)
+ranking](../../SESSIONS.md#2026-08-20c--operator-override-u1-exception-reopens-q-tnec-con-4-confirm-inside-the-dense-1m-pause)
 that placed OTE first among the untested wider-ICT-vocabulary candidates on population and
 cost-geometry grounds.
 **Loop of record:** OUTER (INQHIORI) — candidate scoping, not a STRATEGIC-tier decision. **Authored:**

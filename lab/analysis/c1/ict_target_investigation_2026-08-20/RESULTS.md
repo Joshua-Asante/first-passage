@@ -108,7 +108,7 @@ one.
   retune specifically would not have helped either construct.
 - No further target-swapping experiment is warranted on either construct without new mechanism
   evidence for the entry itself.
-- The prior session's "shared DOL target" framing in `docs/SESSIONS.md` (`2026-08-20d`) and
+- The prior session's "shared DOL target" framing in `docs/SESSIONS.md` (`2026-08-20f`) and
   `ops/instruments/MNQ.md`'s DEAD-list row for `Q-ICT-OB-1` is corrected by this result, not silently
   left standing — see the addenda filed alongside this result.
 

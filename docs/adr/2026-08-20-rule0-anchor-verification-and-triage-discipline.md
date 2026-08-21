@@ -1,6 +1,6 @@
 # ADR 2026-08-20 — Mechanize `check_brief.py`'s §0 anchor check; name a separate triage-verification discipline (not a Rule 0 scope extension)
 
-**Status:** `Proposed` — drafted at operator direction ("the tactical pattern is making the case for Rule 0, and perhaps this rule needs to be enforced more consistently"), ratification owed
+**Status:** `Accepted` — ratified by operator (Joshua) 2026-08-20, in-session direct instruction ("I ratify the N-SURV disclosure ADR, Rule 0 anchor-check + triage-discipline ADR")
 **Decision date:** 2026-08-20
 **Authors:** Joshua (direction) + Claude Code (Sonnet 5, drafter)
 **Supersedes:** none
@@ -119,3 +119,4 @@ git diff main -- docs/rule_0.md
 | Date | Change | By |
 |---|---|---|
 | 2026-08-20 | Initial authoring, drafted at operator direction, ratification owed | Joshua (direction) + Claude Code (Sonnet 5) |
+| 2026-08-20 | Ratified — `Proposed` → `Accepted` (operator: "I ratify...") | Joshua (ratification) |

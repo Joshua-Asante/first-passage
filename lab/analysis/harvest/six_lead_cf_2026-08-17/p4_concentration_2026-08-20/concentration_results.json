@@ -1,0 +1,107 @@
+{
+  "window": "2026-05-20 to 2026-08-20",
+  "n_sessions": 79,
+  "trades_pulled_total": 100455,
+  "trades_matched_to_definition_and_underlying": 69285,
+  "trades_dropped_unmatched_definition": 31170,
+  "trades_dropped_unmatched_underlying": 0,
+  "total_contracts_traded": 264416,
+  "by_moneyness": {
+    "0-2%": {
+      "trades": 16960,
+      "contracts": 53087,
+      "trade_pct": 24.48,
+      "contract_pct": 20.08
+    },
+    "2-5%": {
+      "trades": 16471,
+      "contracts": 57793,
+      "trade_pct": 23.77,
+      "contract_pct": 21.86
+    },
+    "5-10%": {
+      "trades": 15766,
+      "contracts": 60304,
+      "trade_pct": 22.76,
+      "contract_pct": 22.81
+    },
+    "10-20%": {
+      "trades": 12232,
+      "contracts": 55996,
+      "trade_pct": 17.65,
+      "contract_pct": 21.18
+    },
+    ">20%": {
+      "trades": 7856,
+      "contracts": 37236,
+      "trade_pct": 11.34,
+      "contract_pct": 14.08
+    }
+  },
+  "by_tenor": {
+    "0-7d": {
+      "trades": 13732,
+      "contracts": 44735,
+      "trade_pct": 19.82,
+      "contract_pct": 16.92
+    },
+    "8-30d": {
+      "trades": 17191,
+      "contracts": 68820,
+      "trade_pct": 24.81,
+      "contract_pct": 26.03
+    },
+    "31-90d": {
+      "trades": 23865,
+      "contracts": 86759,
+      "trade_pct": 34.44,
+      "contract_pct": 32.81
+    },
+    ">90d": {
+      "trades": 14497,
+      "contracts": 64102,
+      "trade_pct": 20.92,
+      "contract_pct": 24.24
+    }
+  },
+  "cross_moneyness_x_tenor_pct_of_trades": {
+    "0-2%": {
+      "0-7d": 9.02,
+      "8-30d": 7.17,
+      "31-90d": 6.55,
+      ">90d": 1.73
+    },
+    "2-5%": {
+      "0-7d": 5.21,
+      "8-30d": 7.6,
+      "31-90d": 8.6,
+      ">90d": 2.36
+    },
+    "5-10%": {
+      "0-7d": 2.75,
+      "8-30d": 5.85,
+      "31-90d": 9.91,
+      ">90d": 4.24
+    },
+    "10-20%": {
+      "0-7d": 1.48,
+      "8-30d": 3.06,
+      "31-90d": 6.88,
+      ">90d": 6.24
+    },
+    ">20%": {
+      "0-7d": 1.36,
+      "8-30d": 1.13,
+      "31-90d": 2.51,
+      ">90d": 6.34
+    }
+  },
+  "near_the_money_near_dated_slice": {
+    "definition": "moneyness<=5% AND tenor<=30d",
+    "trade_count": 20099,
+    "pct_of_all_matched_trades": 29.01,
+    "trades_per_session_this_slice": 254.4,
+    "trades_per_session_complex_wide": 877.0,
+    "trades_per_session_NQ_FUT_from_dryrun": 361389.5
+  }
+}
