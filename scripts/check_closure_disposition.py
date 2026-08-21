@@ -509,6 +509,24 @@ def campaign_id_from_closure_filename(name: str) -> str | None:
     return None
 
 
+def ltm_closure_corpus_present(ltm_briefs_dir: Path = LTM_BRIEFS_DIR) -> bool:
+    """True iff this checkout has joinable LTM closure files.
+
+    Public seed excludes ``docs/ltm/**`` (2026-08-14 transition ADR). A later
+    restore of a non-closure artifact under ``docs/ltm/briefs/`` (e.g. the
+    2026-08-21 ``rnd-pipeline/discovery-campaign-template.md``) creates the
+    directory without the historical Q-* corpus. Directory existence is not
+    corpus presence — the same six campaigns ``b7eb60d`` waived when the
+    directory was absent.
+    """
+    if not ltm_briefs_dir.is_dir():
+        return False
+    return any(
+        campaign_id_from_closure_filename(path.name)
+        for path in ltm_briefs_dir.glob("*.md")
+    )
+
+
 def closure_campaign_ids_on_disk(
     *,
     closures_dir: Path = CLOSURES_DIR,
@@ -672,10 +690,12 @@ def missing_closure_campaigns(
         closures_dir=closures_dir, ltm_briefs_dir=ltm_dir
     )
 
-    if not ltm_dir.is_dir():
+    if not ltm_closure_corpus_present(ltm_dir):
         # Public seed excludes docs/ltm/** (2026-08-14 transition ADR). A
         # campaign whose closure lives only there is unverifiable here, not
-        # missing — same posture as check_adr_graph.py's A3 check.
+        # missing — same posture as check_adr_graph.py's A3 check. Directory
+        # existence is not enough: a nested non-closure restore must not
+        # re-arm HARD coverage against an absent corpus (b7eb60d class).
         return []
 
     by_id: dict[str, list[str]] = {}
