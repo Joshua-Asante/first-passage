@@ -20,7 +20,7 @@ from research_utils.breadth import (
 
 
 def test_baseline_panel_available_false_when_registry_empty():
-    """After substrate Phase 3, PANELS_BY_BROKER is empty — no real panel to load."""
+    """Pepperstone is unregistered after substrate Phase 3 — that panel does not load."""
     assert baseline_panel_available("pepperstone") is False
 
 

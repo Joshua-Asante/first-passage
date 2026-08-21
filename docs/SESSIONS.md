@@ -14,6 +14,45 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-21c — Operator menu: F1/B7 HOLD; H1–H5 GO
+
+**Focus:** Ratified next-steps menu after the coherence campaign.
+
+**Shipped:** H2 dry-run (CATALOG regenerate withheld) · GO ADR + W5 addenda · Rule 0 Phase 1 `check_brief.py` §0 anchor HARD. Owners: [campaign](notes/audits/2026-08-21-coherence-campaign.md) · [GO ADR](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [W5](adr/2026-08-07-w5-governance-diet.md) · [Rule 0](adr/2026-08-20-rule0-anchor-verification-and-triage-discipline.md).
+
+**Decisions/defects:** F1 HOLD · B7/M1 HOLD until acceptable strategy · H6–H13 HOLD. CATALOG Status flips still need `--slug` archive.
+
+**Open / next:** Carry `2026-08-21a` / `2026-08-20g` — ICT-family re-proposal needs new mechanism evidence. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. Next operator: new-mechanism generate vs H3/H4 already landed; H6/H7/H8 still HOLD.
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
+
+---
+## 2026-08-21b — Coherence campaign blast-radius: leftover pointer repairs
+
+**Focus:** Rule-7 blast-radius on the 2026-08-21a coherence edits.
+
+**Shipped:** four stale one-line pointers on already-touched / sibling hot surfaces (c1-rail skill, deploy README, fable-judge, lock-check). Register: [`AUDIT-2026-08-21-coherence-campaign`](notes/audits/2026-08-21-coherence-campaign.md).
+
+**Decisions/defects:** historical ADR / old-handoff bodies left; CATALOG ACTIVE-on-closed still operator-owed.
+
+**Open / next:** Carry `2026-08-21a` / `2026-08-20g` — ICT-family re-proposal needs new mechanism evidence. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. Campaign leftovers: CATALOG regenerate, named-not-opened `Q-M1WIRE-1`, GO ADR §7, W5 CI, W6 lockfile.
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
+
+---
+## 2026-08-21a — Coherence campaign: root→pipeline walk, Packets A–C landed, no deletes
+
+**Focus:** Repo-wide coherence audit from the five root docs through generate → evaluate → deploy → measure → update. Findings-first; not a Great Prune retry.
+
+**Shipped:** [`AUDIT-2026-08-21-coherence-campaign`](notes/audits/2026-08-21-coherence-campaign.md) · S7 [tombstone](notes/2026-08-07-posture-a-alignment-manifest.md) · PIPELINES/INDEX/README/CLAUDE + skill/methodology path-and-status repairs.
+
+**Decisions/defects:** no file deletes; GO ADR §7 / CATALOG ACTIVE / W5 CI / W6 lockfile left owed.
+
+**Open / next:** Carry `2026-08-20g` — ICT-family re-proposal needs new mechanism evidence, not an exit-distance retune. **STATE queue unchanged:** #1 F1 (Tradeify-resting §4 read) · #2 B7-REFIRE + M1 wait on an acceptable strategy. Campaign leftovers: CATALOG regenerate, named-not-opened `Q-M1WIRE-1`.
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
+
+---
 ## 2026-08-20g — Frozen 1H DOL target distance-swept zero-run: target exonerated, entries are the problem (corrects 2026-08-20f)
 
 **Focus:** Operator asked to investigate the frozen 1H DOL target itself, and whether different

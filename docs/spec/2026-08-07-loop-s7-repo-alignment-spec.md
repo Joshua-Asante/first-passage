@@ -6,10 +6,12 @@ Objective: Every Posture-A ruling lands with its propagation sweep executed in t
 from the pre-built [alignment manifest](../notes/2026-08-07-posture-a-alignment-manifest.md)
 — no surface left silently restating the superseded state.
 
-**Progress (2026-08-07 Phase 7):** W1 ADR `Proposed` (method freeze + re-run authorized;
+**Progress (2026-08-07 Phase 7; tombstone 2026-08-21):** W1 ADR `Proposed` (method freeze + re-run authorized;
 RESULTS owed) · W3 **blocked/deferred** (gated on first S3 family TV anchor) · W4/W5/W6
 ADRs `Accepted` with same-PR sweeps · CI re-enable + `requirements-research.lock` + W1
-RESULTS remain owed. See manifest dated `✔` / owed / blocked rows.
+RESULTS remain owed. The row-body manifest is a **tombstone** on this public tree
+([`docs/notes/2026-08-07-posture-a-alignment-manifest.md`](../notes/2026-08-07-posture-a-alignment-manifest.md))
+— do not treat missing `✔` rows as discharged. S7 `RESOLVED` is blocked until restore.
 
 Steps:
 1. At each trigger ADR/build's landing, discharge that trigger's manifest section in the

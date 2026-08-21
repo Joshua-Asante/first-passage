@@ -327,6 +327,17 @@ def _looks_like_repo_path(token: str) -> bool:
     return token.endswith(REPO_PATH_EXTS)
 
 
+# §0 anchor (ADR 2026-08-20-rule0-anchor-verification-and-triage-discipline.md
+# Phase 1): commit hash, ISO date, or "last-modified". Presence only — not
+# that the hash is current (a stale-but-real anchor is legitimate).
+_COMMIT_ANCHOR_RE = re.compile(r"\b[0-9a-f]{7,40}\b")
+_DATE_ANCHOR_RE = re.compile(
+    r"last[- ]modified|\b20\d{2}-\d{2}-\d{2}\b",
+    re.IGNORECASE,
+)
+_BARE_PATH_TOKEN_RE = re.compile(r"[A-Za-z0-9_./\-]+")
+
+
 def _section0_cites_repo_path(body: str) -> bool:
     """True if §0 names at least one concrete repo path (SKILL.md check #1)."""
     for m in _MD_LINK_RE.finditer(body):
@@ -340,7 +351,15 @@ def _section0_cites_repo_path(body: str) -> bool:
             word = word.split("#", 1)[0]
             if _looks_like_repo_path(word):
                 return True
+    for word in _BARE_PATH_TOKEN_RE.findall(body):
+        if _looks_like_repo_path(word.split("#", 1)[0]):
+            return True
     return False
+
+
+def _section0_has_anchor(body: str) -> bool:
+    """True if §0 carries a hash-shaped or date / last-modified anchor."""
+    return bool(_COMMIT_ANCHOR_RE.search(body) or _DATE_ANCHOR_RE.search(body))
 
 
 # ── Individual checks ──────────────────────────────────────────
@@ -362,7 +381,7 @@ def _check_required_present(sections: dict[str, str], brief_type: str) -> list[V
 
 
 def _check_section0_paths(sections: dict[str, str]) -> list[Violation]:
-    """§0 must cite at least one concrete repo path (SKILL.md check #1, trap #3)."""
+    """§0 must cite a repo path *and* an adjacent-section anchor (ADR 2026-08-20)."""
     body = sections.get("0")
     if body is None or _is_empty_body(body):
         return []  # missing/empty already reported by the presence check
@@ -370,6 +389,10 @@ def _check_section0_paths(sections: dict[str, str]) -> list[Violation]:
         return [Violation("HARD", "§0",
                           "Rule-0 reads cite no concrete repo path "
                           "(need e.g. `dd_protection.py` or `docs/adr/...`)")]
+    if not _section0_has_anchor(body):
+        return [Violation("HARD", "§0",
+                          "Rule-0 path citation has no anchor "
+                          "(commit hash or date / last-modified)")]
     return []
 
 

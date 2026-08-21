@@ -23,8 +23,11 @@ files below (CLAUDE.md; `docs/rule_0.md`).
   MC calibration 99.83/0.17/4.37 is recorded in `docs/mc_anchor_history.md`;
   engine regression is pinned by `tests/core/test_mc_synthetic_engine.py`
   (substrate Phase 3 retired the Pepperstone executable pin 2026-07-24).
-- Changing any of them requires **re-running `portfolio_mc` + a lock decision
-  brief** (`docs/adr/2026-05-08-dd-trigger-c2-relock.md` for the DD tier).
+- Changing any of them requires a **lock decision brief + vendor-free engine
+  regression** (`tests/core/test_mc_synthetic_engine.py`) and the change-control
+  in `docs/adr/2026-05-08-dd-trigger-c2-relock.md` (DD tier). The Pepperstone
+  `portfolio_mc` CLI pin is retired — do not treat `python portfolio_mc.py` as
+  the re-MC.
   (`RISK_TIERS` / `BASELINE_RISK` were multiplier-spine aliases removed in
   substrate Phase 2 — do not reintroduce without a new ADR.)
 

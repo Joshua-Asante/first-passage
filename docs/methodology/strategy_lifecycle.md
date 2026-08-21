@@ -37,7 +37,7 @@ A live edge in a normal drawdown and a dead edge are statistically indistinguish
 - **Floor (ratified):** rolling live PF below **[baseline PF − 1.0σ of the MC PF distribution]** for **2 consecutive** review windows → demote one tier (→ WATCH-1).
 - **σ = 1.0** (tighter than a kill-trigger's 2σ, *because* the action is reversible); **window = the review cadence** (Call 3); **consecutive count = 2**.
 - **Below `AUTHORIZED` / at `CANDIDATE`:** the coded demotion ladder in `core/lifecycle.py` starts at `AUTHORIZED`. Action-on-breach when authorization standing is `CANDIDATE` is **not** an autonomous tier-step — Proposed rule (awaiting Accept): operator review flag only; `RETIRED` remains Call 5 — [`docs/adr/2026-08-06-candidate-call1-action-on-breach.md`](../adr/2026-08-06-candidate-call1-action-on-breach.md).
-- **Provisional-until-data:** with manual trading retired and the automated rail unbuilt, live PF may not accrue to a minimum trade count for a long time. These floors are **pre-registration against future data**, not live-evaluable at 2026-08-08 — the ADR §6 AMBIGUOUS clause governs, re-confirm at 2026-11-08 if the count is short.
+- **Provisional-until-data:** with manual trading retired and the automated rail **built / disarmed / no book deployed**, live PF may not accrue to a minimum trade count for a long time. These floors are **pre-registration against future data**, not live-evaluable at 2026-08-08 — the ADR §6 AMBIGUOUS clause governs, re-confirm at 2026-11-08 if the count is short.
 
 ### Call 2 — Sizing as the response variable (stepped, not smooth)
 

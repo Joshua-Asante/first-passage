@@ -360,6 +360,14 @@ remains 1 of the 4 firms in the frozen prop-portfolio §4 falsifier set.
 
 ---
 
+## Addendum 2026-08-21 — §7 B6 cell is the 2026-07 build-order snapshot
+
+**Does not amend §2 / §4 / §5.** Header clarification 2026-08-08 already records B6 PASSED 2026-07-20 for this build (operator-signed). The §7 table's B6 **PENDING** cell is the 2026-07-17 build-order snapshot and stays byte-unedited (Trap #12). Readers take this-build B6 status from the header, not from §7. A rebuilt or re-hosted signal path still needs its own dry-fire (same header: the principle re-arms). B7 stays PENDING behind STATE queue #2 (acceptable strategy on the ruled host).
+
+Reads: this file header L9–19 + §7 B6 row @ `027a729` (2026-08-14).
+
+---
+
 ## Change history
 
 | Date | Change | By |
@@ -370,3 +378,4 @@ remains 1 of the 4 firms in the frozen prop-portfolio §4 falsifier set.
 | 2026-07-22 | Addendum: Tradeify hedging rule verified — c1 CLEARS by construction (long-only at Pine, rail, realized); adds §5 forbidden move (no short-capable Equity Index leg); account-aggregate contract cap defect FIXED via 69/11 split (operator-approved) + f2_floors re-pin; flat deadline 16:59 → 16:45 ET; flags §6's WATCH-1 0.50× figures as unmeasured under corrected eval geometry | Joshua (cap disposition) + Claude Code (verification + recorder) |
 | 2026-07-24 | Addendum: §6 WATCH-1 0.50× figures **measured** under corrected geometry (operator "proceed with the two unmeasured arms") — full 0.11% / H1 0.22% / H2 0.04%, all PASS; open B7 input **closed benign**; corrected 0.50× bootstrap-95th declared the remaining separable long pole | Joshua (directive) + Claude Code (runner + recorder) |
 | 2026-07-28 | Addendum: the declared separable long pole **measured and CLEARS** — corrected 0.50× bootstrap-95th **1.20%** vs the 3.0% ceiling (pass-5th 95.5%); every partition of the deployed rung now measured + passing; same pass found corrected 1.00× boot-95th 17.79% | Claude Code (Opus 5) — adjudication of PR #541 |
+| 2026-08-21 | Addendum: §7 B6 **PENDING** cell is the 2026-07 build-order snapshot; this-build B6 status is the header PASSED record | Joshua (H3 GO) + Cursor |

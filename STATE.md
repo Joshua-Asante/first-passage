@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-08-18
+**Last curated:** 2026-08-21
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
@@ -68,6 +68,11 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-21** — **Coherence leftover menu ratified: F1 HOLD; B7/M1 HOLD until an acceptable strategy; H1–H5 GO; H6–H13 HOLD.** Queue #1/#2 unchanged. H2 dry-run: CATALOG Status match, regenerate withheld (would clobber one-liners). H3/H4 addenda on the GO ADR and W5. H5 = Rule 0 Phase 1 (`check_brief.py` §0 anchor HARD). H1 = merge the coherence-campaign branch. $0/K=0, no live-risk surface.
+  [`campaign`](docs/notes/audits/2026-08-21-coherence-campaign.md) ·
+  [`GO ADR addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) ·
+  [`W5 addendum`](docs/adr/2026-08-07-w5-governance-diet.md) ·
+  [`Rule 0 ADR`](docs/adr/2026-08-20-rule0-anchor-verification-and-triage-discipline.md).
 - **2026-08-20** — **P4 (L2 dealer-gamma EOD) Databento cost dry-run + moneyness/tenor concentration
   check executed — HOLD stands, evidence now leans against.** Operator direction (draft the dry-run,
   then "run the small definition+trades pull to check volume concentration by moneyness/tenor").

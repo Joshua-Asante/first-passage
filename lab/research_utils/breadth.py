@@ -410,8 +410,8 @@ def main() -> int:
     )
     ap.add_argument(
         "--panel", default="pepperstone",
-        help="Broker panel to load (default: pepperstone; must be registered in "
-             "PANELS_BY_BROKER — empty after substrate Phase 3).",
+        help="Broker panel to load (default: pepperstone, which is unregistered. "
+             "Use --panel cme for the 2-leg breadth baseline).",
     )
     ap.add_argument("--json", action="store_true", help="Emit JSON instead of a printed report.")
     args = ap.parse_args()
