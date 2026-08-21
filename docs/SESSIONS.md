@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-21h — Q-SCORE-1 living pin retargeted off the date_coverage ceiling
+
+**Focus:** `validation-controls` red on every later `lab/**` PR (incl. #86) after a new dated closure tripped the Q-SCORE-1 Block 1 ratio pin.
+
+**Shipped:** `cursor/q-score-pin-retarget-8a16` @ `49d75ed` — [`test_inventory_closed.py`](../lab/archive/approach_scoreboard_2026-08/test_inventory_closed.py) pins the undated residue set; drops `date_coverage < 0.80`. PR #87. Not an H_A recount; Block 2 still gated.
+
+**Decisions/defects:** none. Campaign F3 grammar / `CLOSED_RE` unchanged. PR #86 left untouched.
+
+**Open / next:** PR #87 review/merge. PR #86 Accept stands on its own (Step 2.2 `NEEDS_CONTEXT`). Ledger handoff from 2026-08-21g already merged (#81). First monthly reconfirm due 2026-09-21. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1.
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
+
+---
 ## 2026-08-21g — CFO subscription-ledger consolidation ratified; mechanical build dispatched to Cursor
 
 **Focus:** Following same-day C-1 closure + d17 (Claude Max) tracking, operator ratified all four of
