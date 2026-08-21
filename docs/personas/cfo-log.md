@@ -48,3 +48,18 @@ determination.
 accompanying process recommendations for operator review; the six pursuit-record edits and the
 ledger/required-field/check-in recommendations are proposals for the operator to apply or decline,
 not self-executed by this persona.
+
+## 2026-08-21 — docs/pursuits/d17-claude-max-subscription.md
+
+**Verdict:** RESOLVED -- operator ruled on the Claude Max question this entry's own earlier review
+flagged as an open call, same day. Of three options presented (track as a new record / leave
+out of scope / flag and revisit), operator elected "track it." `docs/pursuits/d17-claude-max-subscription.md`
+created at $200/mo, KEEP standing, same entry-record shape as d11-d16, ratified via this in-session
+direct instruction (not a GSUB-cycle addition, since d17 postdates GSUB-1's original inventory).
+`docs/personas/ownership-map.md` Layer 2 gains a matching d17 row, Secondary set to Operator rather
+than Head of Engineering (d16's secondary) since that seat is retired per the same-day
+Front-Office-only narrowing.
+**Confirmed findings:** none -- this is a ratified addition, not an adversarial review; no
+BLOCKER/CONCERN classification applies.
+**Ratified as recommended:** Yes -- operator's own election, recorded directly, not this persona's
+recommendation standing unconfirmed.

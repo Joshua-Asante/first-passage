@@ -173,6 +173,7 @@ one office even when it has one clear first-line owner.
 | **d14** | CrossTrade subscription | KEEP | Back → **Front** | Head of Execution | CFO |
 | **d15** | Tradeify Select 100K account | KEEP | Back → **Front** | Head of Execution | CFO |
 | **d16** | Cursor subscription | KEEP | Back → **Cross-office** | CFO | Head of Engineering |
+| **d17** | Claude Max subscription (added 2026-08-21, after this table's own 2026-08-19 pass) | KEEP | Cross-office | CFO | **Operator** (no persona backstop — Head of Engineering, the nearest analogue to d16's secondary, is retired per the 2026-08-21 narrowing; see that ADR's D2 mapping) |
 | **e1** | First Passage program (the Aim itself) | KEEP | Back → **Cross-office** | **CEO** | Head of Governance (record custodian), CRO, CIO |
 | **e2** | Already-terminal register (CFD estate, manual trading, challenge-era substrate, retired feeds, Hermes NO-GO, Bulenox/futures-prop R6) | no action | Back | Head of Governance | — |
 
