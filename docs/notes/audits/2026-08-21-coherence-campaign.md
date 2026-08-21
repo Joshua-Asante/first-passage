@@ -145,7 +145,7 @@ Classes: **inconsistency** · **ambiguity** · **trap**. Dispositions: `link` ·
 | C-P1-07 | inconsistency | INDEX LTM path | = C-P0-05 | **REPAIRED** |
 | C-P1-08 | inconsistency | Q-GATESTACK in Open | = C-P0-06 | **REPAIRED** |
 | C-P1-09 | ambiguity | P1 "every OTHER axis unfunded" stricter than `axis_screen.py` / Q-KBUDGET-1 | simplify constraint #2 | **REPAIRED** |
-| C-P1-10 | inconsistency | `lab/CATALOG.md` ACTIVE rows on closed/falsified camps | do not hand-edit CATALOG (regenerate path) | **OWED** |
+| C-P1-10 | inconsistency | `lab/CATALOG.md` ACTIVE rows on closed/falsified camps | do not hand-edit CATALOG (regenerate path) | **OWED** — H2 dry-run 2026-08-21: `--check --catalog-only` OK; Status tokens unchanged; regenerate would clobber committed one-liners. Flips need `--slug` archive, not regenerate. |
 | C-P1-11 | trap | P1 Stages 5–7 look like a generic runner; hot generic runner is Stages 2–4 only | simplify P1 flow caveat | **REPAIRED** |
 | C-P1-12 | ambiguity | manifest `close` hands to skill §8 vs `universe_gate.py` | left — P1 W4 pointer is the cheap fix | **LEFT** |
 | C-P1-16 | omission | P1 omitted W4 live floor (G0–G5+G8) | link | **REPAIRED** |
@@ -172,7 +172,7 @@ Classes: **inconsistency** · **ambiguity** · **trap**. Dispositions: `link` ·
 | C-P3-03 | inconsistency | P5 substrate "Strategy alerts" (TV framing) vs S2 Python host | simplify | **REPAIRED** |
 | C-P3-04 | inconsistency | P2 "Pine remains the execution language of the P5 rail" vs S2 | simplify | **REPAIRED** |
 | C-P3-05 | trap | `docs/notes/rail_build/RUNBOOK.md` 404; public owners still cite it | live owners → `deploy/c1_rail/README.md`; historical briefs left | **REPAIRED** (live) |
-| C-P3-06 | inconsistency | GO ADR §7 still B6 PENDING vs header B6 PASSED | leave-historical (ADR body) | **LEFT** |
+| C-P3-06 | inconsistency | GO ADR §7 still B6 PENDING vs header B6 PASSED | leave-historical (ADR body) | **REPAIRED** — addendum 2026-08-21 (table left; header owns this-build B6) |
 | C-P3-08 | inconsistency | c1-rail skill L10 "daemon … specified, not built" vs tree + L8 | simplify | **REPAIRED** |
 | C-P3-09 | inconsistency | deploy README "fork F2 (08-08)" reads open; S1 ruled F2 | simplify banner | **REPAIRED** |
 | C-P3-10 | inconsistency | `strategy_lifecycle.md` "automated rail unbuilt" | simplify | **REPAIRED** |
@@ -198,7 +198,7 @@ Classes: **inconsistency** · **ambiguity** · **trap**. Dispositions: `link` ·
 | C-P5-03 | trap | S7 manifest 404 | = C-P0-01 | **REPAIRED** |
 | C-P5-04 | trap | W5 CI jobs from `gates.yml` still owed | name — do not open | **OWED** |
 | C-P5-05 | trap | `requirements-research.lock` OWED (W6) | name — do not invent | **OWED** |
-| C-P5-06 | inconsistency | W5 claims `make validate` ≡ `make check`; `gate_manifest.py` validate tier is 2 gates | leave (CLAUDE already correct; ADR addendum owed) | **LEFT** |
+| C-P5-06 | inconsistency | W5 claims `make validate` ≡ `make check`; `gate_manifest.py` validate tier is 2 gates | leave (CLAUDE already correct; ADR addendum owed) | **REPAIRED** — W5 addendum 2026-08-21 |
 | C-P5-07 | trap | R5 unfireable ceremony (quarterly-only falsifiers) | programme-audit cadence; not this campaign | **LEFT** |
 
 ---
@@ -334,7 +334,7 @@ Recurrence: next quarterly programme audit, or any session that edits PIPELINES/
 
 - **Status:** `Closed (immediate + structural complete for Packets A–C; leftovers OWED)`
 - **Immediate repair completed:** 2026-08-21
-- **Structural leftovers:** CATALOG regenerate (C-P1-10); GO ADR §7 addendum (C-P3-06, operator); W5 CI roster + W6 lockfile (already owed); `Q-M1WIRE-1` / C-P1-05 / C-P1-06 named not opened; `time_to_pass.py` retire GO
+- **Structural leftovers:** CATALOG ACTIVE-on-closed needs `--slug` archive (C-P1-10; regenerate withheld 2026-08-21); W5 CI roster + W6 lockfile (H6/H7 HOLD); `Q-M1WIRE-1` / C-P1-05 / C-P1-06 named not opened; `time_to_pass.py` retire GO
 - **Follow-up audits:** none spawned
 
 ---
