@@ -68,6 +68,10 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-21** — **CFO subscription-ledger consolidation ratified — one ledger, a mechanical required-field gate, monthly reconfirm.** Operator: "I want to implement 1-4, reconfirm ledger once a month" (all four of the CFO's C-1-closure recommendations). `docs/pursuits/SUBSCRIPTION_LEDGER.md` (D1) replaces seven scattered per-record tags; `check_pursuit_records.py` gains a WARN-tier `ledger-pointer` limb (D2); monthly reconfirm (next 2026-09-21) reuses the existing `daily-repo-truth-sync` radar via this file's own forward-trigger board, plus a standing-check line on the CFO's own charter (D3). Mechanical build (ledger + 7 pursuit-record edits + checker extension) delegated to a companion Cursor handoff per "dispatch engineering tasks to Cursor" — pending operator fire, this session runs cloud-side with no local access to `dispatch_cursor.ps1`. $0/K=0, no live-risk surface.
+  [`ADR`](docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md) ·
+  [`handoff brief`](docs/briefs/handoffs/2026-08-21-cc-handoff-subscription-ledger-consolidation.md) ·
+  [`cfo-log.md`](docs/personas/cfo-log.md).
 - **2026-08-21** — **Persona hierarchy narrowed to Front Office; Middle/Back-office functions run as mechanical gates, not spawned personas.** Operator direct instruction: First Passage is primarily a research entity (deployment validates research, not a parallel institutional line), so it needs middle/back-office *services*, not a standing Middle/Back-office persona roster. Retired 6 C-suite/Senior-Manager seats + 2 Back-office Staff (CRO, Head of Risk & Sizing, Head of Validation, COO, Head of Engineering, Head of Governance, Documentation Analyst, Research Registry Analyst) to `docs/personas/archive/`; each seat's function maps to an existing code/script gate (`dd_protection.py`, `check_brief.py`, `check_advisor_dedup.py`, `check_adr_graph.py`, `cursor-fleet` skill, etc.). Roster 17→9. CRO safety-invariant hard-block re-implemented as an unconditional deterministic scan of the target artifact's own text, no longer requiring a spawned CRO. CEO/CFO explicitly out of scope (operator confirmed). $0/K=0, no live-risk surface (the underlying safety invariants and their arming-time enforcement are unchanged).
   [`ADR`](docs/adr/2026-08-21-persona-hierarchy-front-office-only.md) ·
   [`prior ADR (partially superseded)`](docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md).
@@ -447,6 +451,24 @@ deleted (not struck).
   section for obligations dated within 7 days, and row 0's queue-table placement was invisible to
   it.   [`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md) ·
   [audit FU-1](docs/notes/audits/programme-audit/2026-08-05-post-descope-claim-alignment-audit.md)
+
+### Monthly — recurring (rolling; next deadline **2026-09-21**)
+
+> **Recurrence ruled 2026-08-21** ([`ADR`](docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md)
+> D3, operator: "reconfirm ledger once a month"): the same recurring-obligation shape as the weekly
+> row above, reusing the same radar rather than standing up a second scheduling surface. **Roll this
+> date forward each occurrence** (same day-of-month as this row's own creation, 21st).
+
+- **Subscription-ledger reconfirm — `docs/pursuits/SUBSCRIPTION_LEDGER.md`'s seven d11-d17 rows
+  re-checked against current reality.**
+  Confirm each "Last confirmed" date and $/mo figure still holds; update any that changed; chase the
+  two still-open rows (Fly.io, Tradeify) if a figure has since surfaced. A null result (nothing
+  changed) is still a reconfirm — record it, don't skip it (CFO 2026-08-21 recommendation #4: silence
+  is not evidence of currency). Booked here *specifically so the existing daily `daily-repo-truth-sync`
+  forward-obligation radar surfaces it*, same mechanism as the weekly row above — no new
+  infrastructure. [`ADR`](docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md) ·
+  [`cfo.md`](docs/personas/cfo.md) (standing check + Writes field, D3) ·
+  [`cfo-log.md`](docs/personas/cfo-log.md) (source recommendations, 2026-08-21)
 
 ### No fixed date / gated
 
