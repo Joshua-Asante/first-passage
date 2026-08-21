@@ -10,9 +10,9 @@
 |---|---|---|---|---|
 | **P1** | **Discovery / research (Gen-2)** | Databento GLBX.MDP3 CME futures (parents 2010+, micros 2019+) | **ACTIVE** (research) | `.claude/skills/*`, `lab/`, `discovery_manifests/` |
 | **P2** | **Codification bridge (Python→Pine)** | — | **RETIRED 2026-08-02** (retrieve via git) | ~~`lab/codification/`~~ |
-| **P3** | **Portfolio construction (MC)** | Locked-strategy TV trade-lists | **IDLE** (anchor frozen; CLI not runnable) | `core/mc/`, `core/{dd_protection,firm_rules,portfolio_mc}` |
+| **P3** | **Portfolio construction (MC)** | Locked-strategy TV trade-lists | **IDLE** (Pepperstone anchor retired; `cme` 2-leg panel is breadth-only — see P3) | `core/mc/`, `core/{dd_protection,firm_rules,portfolio_mc}` |
 | **P4** | **Firm application / sizing** | Portfolio + prop-firm rule set | **IDLE** — legacy book has no venue; the c1 eval deployment was withdrawn 2026-08-04 | `core/{firm_rules,lifecycle}`, `ops/cli.py` |
-| **P5** | **Live execution rail (c1)** | Strategy alerts → broker fills | **BUILT · DISARMED** — incumbent eval live ([S1](docs/adr/2026-08-07-loop-s1-environment-ratification.md)); no book deployed; Striker legs barred | `ops/c1_rail_*.py`, `ops/c1_rail/c1_sizing_host_reference.py`, `ops/c1_rail/crosstrade_payload.py`, `deploy/c1_rail/` |
+| **P5** | **Live execution rail (c1)** | Ruled host B1 signals → broker fills | **BUILT · DISARMED** — incumbent eval live ([S1](docs/adr/2026-08-07-loop-s1-environment-ratification.md)); no book deployed; Striker legs barred | `ops/c1_rail/` · `ops/c1_signal_daemon/` · `deploy/c1_rail/` · `deploy/c1_signal_daemon/` |
 | **P6** | **Monitoring (edge / decay / tail / execution)** | Live fills vs backtest counterfactual | **CFD estate RETIRED; venue-native M1 spine CODE_LANDED** | `ops/c1_rail/c1_rail_telemetry.py`, `ops/sentinel/` |
 | **X** | **Governance / discipline** | Every artifact the other six emit | **LIVE throughout** | `scripts/check_*`, `docs/`, hash-pinned manifests |
 
@@ -39,12 +39,11 @@ GLBX.MDP3 ───────────────────────�
       ▼  Stage 2 MINE  — catch22 → STUMPY → ruptures (least-overfit tool first); outputs are OBSERVATIONS
       ▼  Stage 3 BIND K — register_search.py open  ──▶  discovery_manifests/<run_id>.json  (K frozen BEFORE any p-value)
       ▼  Stage 4 SCORE (IS)   — per-candidate edge/return series on IS window only
-      ▼  Stage 5 BLOCK SIZE   — block_size from IS-return ACF (never sqrt(T)), bound before any SPA p-value
-      ▼  Stage 6 CONFIRM (OOS) — §8 universe gate + temporal-consistency battery, on native-micro OOS era
-      │        SPA/StepM/MCS (arch.bootstrap) · DSR≥0.95 (deflated_sharpe.py) · PBO<0.5 via CPCV (skfolio)
-      │        + sign-consistency ≥5/7 · drop-top-year · regime-slice-as-test-condition · own-edge CUSUM
+      ▼  Stage 5 BLOCK SIZE   — library primitive (no generic hot-path runner beyond Stages 2–4)
+      ▼  Stage 6 CONFIRM (OOS) — temporal-consistency battery + DSR; SPA/StepM/PBO are W4-dormant
+      │        (do not read this ASCII as "SPA/MCS live") — live admission floor = G0–G5+G8
       ▼  Stage 7 REALISM      — GC→MGC 1:10 re-scale + native-micro fill re-parameterization (realism, NOT independence)
-      ▼  Stage 8 BREADTH      — ENB / cross-leg-correlation delta vs the existing frame
+      ▼  Stage 8 BREADTH      — W4-tombstoned as a live producer; report-optional until re-arm ADR
       ▼  ADMIT                — strategies-never-locked lifecycle intake at CANDIDATE; ships its calibrated
                                 Stage-6d CUSUM decay-monitor as its "death certificate"
 ```
@@ -58,18 +57,18 @@ GLBX.MDP3 ───────────────────────�
 | **Proxy discipline** | Parents = deep-history **discovery only**; micros (2019+) = OOS realism gate; 1:10 tick/margin re-scale mandatory before P&L; **JPY micro (M6J vs MJY + quote inversion) is UNRESOLVED — resolve before building the FX lane** | `reference/proxy-discipline.md` |
 | **Candidate generation** | STUMPY (motif/discord), ruptures (change-point), tsfresh/catch22 (features), hmmlearn (regime), PySR/gplearn (symbolic) — each manufactures multiplicity at scale | `.claude/skills/futures-anomaly-discovery/` |
 | **Trial-count ledger (K)** | `open` binds K + hypothesis + window **before** results (pre-registration-as-a-file); `close` records survivor p-values; **verdict is always a hand-off to the gate, never a promotion** | `register_search.py` → **`discovery_manifests/<run_id>.json`** (committed) |
-| **Universe gate** | Rigorous correction consuming K + the K return-set: SPA/StepM/MCS via `arch`, DSR via `deflated_sharpe.py`, PBO/CPCV via `skfolio`. **"Do not reimplement — subtle correctness lives in the vetted library."** | `.claude/skills/strategy-validation/SKILL.md` §8 |
+| **Universe gate** | Orchestrator in `lab/research_utils/universe_gate.py`. **W4:** SPA/StepM and PBO/CPCV are **dormant** as the default promote/reject path; DSR remains callable. Live admission floor is prop survivor-scoring **G0–G5+G8**. Do not reimplement the dormant library calls. | [W4 ADR](docs/adr/2026-08-07-w4-minimal-gate-set-dormancy.md) · `.claude/skills/strategy-validation/SKILL.md` §8 |
 | **Realism** | Fast bar-level triage in `vectorbt`; fill-realism in `nautilus_trader` (**research-only — no Rithmic adapter, cannot execute**) | research venv (`requirements-research.txt`) |
 | **Admission** | Survivor enters the revocable `strategies-never-locked` lifecycle at CANDIDATE, carrying a decay monitor calibrated *at admission* | [`docs/methodology/strategy_lifecycle.md`](docs/methodology/strategy_lifecycle.md), `core/lifecycle.py` |
 
 ### Ratified rules of evidence (campaign defaults, inherited by reference)
 
-Temporal-**not**-instrument OOS axis (IS `2010–2018` parent / OOS `2019-05-06+` native micro — same order book ⇒ instrument is not an independent axis) · two-level K (campaign-local feeds SPA/StepM, program-cumulative-per-family feeds DSR; abandoned campaigns still bank K) · SPA p<0.05 + DSR≥0.95 + PBO<0.5 · temporal-consistency battery (≥⌈0.7·Y⌉ sign, drop-top-year, regime-slice-as-test, CUSUM) · decay-monitor-at-admission · per-campaign `--max-cost`. A campaign overrides a single default **only** with a stated reason in its §8 pre-registration.
+Temporal-**not**-instrument OOS axis (IS `2010–2018` parent / OOS `2019-05-06+` native micro — same order book ⇒ instrument is not an independent axis) · two-level K (campaign-local *would* feed SPA/StepM when re-armed; program-cumulative-per-family feeds DSR) · temporal-consistency battery (≥⌈0.7·Y⌉ sign, drop-top-year, regime-slice-as-test, CUSUM) · decay-monitor-at-admission · per-campaign `--max-cost`. SPA p<0.05 / PBO<0.5 are **W4-dormant defaults**, not a live promote/reject stack. A campaign overrides a single default **only** with a stated reason in its §8 pre-registration + operator GO to re-arm a dormant gate.
 
 ### Two standing constraints on new campaigns
 
 1. **The §8 gate is real code, but unexercised on a live survivor.** [`lab/research_utils/universe_gate.py`](lab/research_utils/universe_gate.py) wraps `arch` SPA/StepM/MCS + DSR + `skfolio` PBO/CPCV against the frozen thresholds, and [`lab/discovery/stage24_runner.py`](lab/discovery/stage24_runner.py) is the generic Stage-2/4 runner. **Caveat:** DISC-CAMP-0 (the shakedown campaign, [CLOSED FALSIFIED 2026-07-13](docs/briefs/DISC-CAMP-0-closure-falsified.md)) found 0 candidates, so Stages 5–7 exited `SKIPPED` without ever calling the gate on real data — the *wiring* is exercised, the *gate logic on a live survivor* is not.
-2. **A K-budget reachability screen gates new campaigns.** Q-GATECART-1 closed FALSIFIED at Phase 0.5 (the DSR selection floor at K=3,177 sits above even the best in-house validated edge); its fork [Q-KBUDGET-1](docs/briefs/closures/Q-KBUDGET-1-axis-reachability-screen.md) closed `RESOLVED` (2026-07-15); **D5** (NQ/MNQ intraday-momentum footprint) may proceed to campaign scoping. Standing HARD gates: HARV §R reachability attestation before `register_search open`; net-of-cost Sharpe vs the Clause-K floor at K_eff ≤ 3. **Every OTHER axis remains unfunded for the 2026-11-08 falsifier.** Screen PASS never blesses a candidate and never authorizes a Databento pull. This screen sits *before* Stage 2.
+2. **A K-budget reachability screen gates new campaigns.** Q-GATECART-1 closed FALSIFIED at Phase 0.5; its fork [Q-KBUDGET-1](docs/briefs/closures/Q-KBUDGET-1-axis-reachability-screen.md) closed `RESOLVED` (2026-07-15). Standing HARD gates: harvest-intake ADR + [`lab/research_utils/axis_screen.py`](lab/research_utils/axis_screen.py) + HARV §R reachability attestation before `register_search open`; net-of-cost Sharpe vs the Clause-K floor at K_eff ≤ 3. Screen PASS never blesses a candidate and never authorizes a Databento pull. Axes that fail the screen stay unfunded for the 2026-11-08 falsifier — do not read this as "only D5 exists." This screen sits *before* Stage 2. The generic hot-path runner is Stages 2–4 ([`stage24_runner.py`](lab/discovery/stage24_runner.py)); Stages 5–7 are library primitives / per-campaign harnesses (often archived).
 
 **Manifest ledger:** `discovery_manifests/` is committed (committed = the pin). Read the per-manifest `status` field, not the file count — **open manifests do not bank K** (2026-07-31 ORB-MNQ ruling).
 
@@ -79,7 +78,7 @@ Temporal-**not**-instrument OOS axis (IS `2010–2018` parent / OOS `2019-05-06+
 
 **Was:** the only Python→Pine translator (survivor spec → scaffold → emitted `.pine` → identity-checked against the Python reference → hand to P5).
 
-**Status:** **RETIRED** by operator ruling 2026-08-02, superseding the 2026-07-11 do-not-delete park. Bytes retrieve via git history. Pine remains the execution language of the P5 rail, so a future survivor still needs a Python→Pine crossing with an identity check (the Aegis→6J 129/129 pattern) — but that is a **fresh build against the then-current survivor format**, not a revival of this bridge.
+**Status:** **RETIRED** by operator ruling 2026-08-02, superseding the 2026-07-11 do-not-delete park. Bytes retrieve via git history. Pine/TV remains the **research/export** surface ([S2](docs/adr/2026-08-07-loop-s2-signal-host-fork.md)); P5 live execution is the Python sizing host + CrossTrade path. A future survivor still needs a Python→Pine crossing with an identity check (the Aegis→6J 129/129 pattern) for research/export — that is a **fresh build against the then-current survivor format**, not a revival of this bridge.
 
 ---
 
@@ -103,7 +102,7 @@ core/mc/modes.py      (configs, reporting, orchestration, CLI)  ── portfolio
 MC anchor (pass% / bust% / p99 DD%) + bust-probability distribution
 ```
 
-⚠ **Not runnable on demand.** The executable anchor was retired 2026-07-24 (substrate Phase 3); `PANELS_BY_BROKER` is empty by code, so `portfolio_mc.py` and `lab/analysis/time_to_pass.py --regime-check` exit 1 with *"No registered broker panel"* on any machine. Engine correctness now lives in `tests/core/test_mc_synthetic_engine.py` (vendor-free). Anchor numbers + provenance: [`docs/mc_anchor_history.md`](docs/mc_anchor_history.md).
+⚠ **Legacy 4-leg Pepperstone CLI is retired** (substrate Phase 3, 2026-07-24). `PANELS_BY_BROKER` is **not** empty: ADR 2026-08-19 admitted a 2-leg `cme` panel (MYM + MNQ) for [`breadth.py`](lab/research_utils/breadth.py) only. `python core/portfolio_mc.py --panel cme` is **not** a working MC re-run — `_load_all` still applies the strict 7-field MVD filename gate and the ADR left that path out of scope. Prop-candidate evaluate is [`lab/discovery/prop_survivor_scoring.py`](lab/discovery/prop_survivor_scoring.py) (G0–G8), not this CLI. Engine correctness: `tests/core/test_mc_synthetic_engine.py`. Anchor numbers: [`docs/mc_anchor_history.md`](docs/mc_anchor_history.md).
 
 **Note:** tail risk here is largely a *construction-time* property (the shared-mechanism common-mode tail, Q-DECAY-1) — not something P6 can detect at runtime.
 
@@ -140,7 +139,7 @@ MC anchor (pass% / bust% / p99 DD%) + bust-probability distribution
 
 **Disposition:** the DXTrade/manual-CFD estate is **RETIRED** ([ADR](docs/adr/2026-07-11-ops-cfd-estate-retirement.md)) — `ops/live_journal/`, `ops/regime_gate/`, `scripts/run_ecr.py`, and `make ecr` are gone (retrieve via `git show`). Provenance kept under `ops/data/reconciles/` and `docs/notes/audits/` (issue #54 ULP survey relocated from `ops/data/audits/` 2026-08-03). Surviving adjacent governance monitor: `ops/sentinel/` (`make sentinel`).
 
-**Venue-native rebuild (c1):** [ADR](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) `Accepted` 2026-07-23. **M1 spine CODE_LANDED** in `ops/c1_rail/c1_rail_telemetry.py` — structured events, honest transport, attested evidence reconcile, confirmed-base interlock. M1 `RESOLVED` gates arming (see CLAUDE.md); M2/M3 remain fill/data-dependent. **Do not restore the DXTrade-shaped engine.** Q-NAS-ECR-1 stays PARKED-DORMANT; its release condition (first live fill) is **unreachable** — ADR [2026-08-04](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) §6 records that the first live fill never happens and names the Q-NAS-ECR successor among five threads stranded with no live source anywhere in the estate. Any re-triage depends on fork **F3** (successor venue, 2026-08-08) / `Q-MONSURF-1`, and per the thread's own dormancy flag a re-point to a different venue is **not type-preserving** and needs a fresh Pre-Q, not an edit.
+**Venue-native rebuild (c1):** [ADR](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) `Accepted` 2026-07-23. **M1 spine CODE_LANDED** in `ops/c1_rail/c1_rail_telemetry.py` — structured events, honest transport, attested evidence reconcile, confirmed-base interlock. Acceptance artifact [`docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json`](docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json) still reads `CODE_LANDED` (`operator_signoff` null). **Landed ≠ resolved** — M1 `RESOLVED` gates arming (see CLAUDE.md); item 5 waits on an acceptable strategy ([`STATE.md`](STATE.md) queue #2). M2/M3 remain fill/data-dependent. **Do not restore the DXTrade-shaped engine.** Q-NAS-ECR-1 stays PARKED-DORMANT; its release condition (first live fill) is **unreachable** — ADR [2026-08-04](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) §6 records that the first live fill never happens and names the Q-NAS-ECR successor among five threads stranded with no live source anywhere in the estate. Any re-triage depends on fork **F3** (successor venue, 2026-08-08) / `Q-MONSURF-1`, and per the thread's own dormancy flag a re-point to a different venue is **not type-preserving** and needs a fresh Pre-Q, not an edit.
 
 ---
 
@@ -170,7 +169,7 @@ Rides every pipeline; this is the "without self-deception" layer, and it is demo
 | `core/data/external/` | Exogenous series for mechanism/decay research (COT gold, COR3M, DSPX, S5FI, sector SPDR) | `SHA256SUMS` |
 | `core/strategies/` | Hot: `CATALOG.md` + `*_CARD.md` stubs; cold Pine + LOCK/CHANGELOG/CANDIDATE under `_archive/` | `MANIFEST.sha256` / `PORT_MANIFEST.sha256` (archive paths) |
 | **`discovery_manifests/`** | Gen-2 pre-registration manifests (`<run_id>.json`) — **committed** for auditability | committed = the pin |
-| `ops/data/` | `audits/`, `reconciles/` | — |
+| `ops/data/` | `reconciles/` only (`audits/` deleted 2026-08-03; issue #54 relocated to `docs/notes/audits/`) | — |
 | DBN cache | Databento pulls, keyed by request params | **gitignored** (research venv) |
 
 **Retired feeds:** OANDA + Dukascopy left the active manifest contract in substrate Phase 5 (`tombstone` (pruned; `git show pre-prune-2026-08-08:docs/ltm/notes/2026-07-30-oanda-dukascopy-data-tombstone.md`)); **Pepperstone left it 2026-08-02 with the feed itself** ([ADR](docs/adr/2026-08-02-pepperstone-feed-retirement.md) · `tombstone` (pruned; `git show pre-prune-2026-08-08:docs/ltm/notes/2026-08-02-pepperstone-data-tombstone.md`)); **CFD-era `bar_data` panels + `tv_exports/candidates/` deleted 2026-08-03** ([ADR](docs/adr/2026-08-03-bar-data-cfd-and-candidates-retirement.md) · `tombstone` (pruned; `git show pre-prune-2026-08-08:docs/ltm/notes/2026-08-03-bar-data-cfd-candidates-tombstone.md`)). There is **no canonical CFD feed** — historical CFD-era numbers keep their provenance labels and gain no successor.

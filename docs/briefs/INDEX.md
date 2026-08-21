@@ -2,20 +2,20 @@
 
 Created 2026-06-13 as part of the Notion Phase-2 migration (`docs/adr/2026-06-12-notion-surface-retirement.md` §2.5).
 The Notion Command Center previously held the live Q-roster; that surface is retired (read-only). This file is the
-repo home for **open / dormant** investigation questions — one home per open Q. Closed questions live in `docs/ltm/briefs/`
-(and `git log`) as their own closure briefs; they are not re-listed here.
+repo home for **open / dormant** investigation questions — one home per open Q. Closed questions live in
+[`docs/briefs/closures/`](closures/) (hot) and, for pre-prune / restored history, `docs/ltm/briefs/` + `git log`.
+They are not re-listed in Open.
 
-**Convention:** each open Q has exactly one canonical repo home (the row's "Home"). When a Q closes, move it to a
-closure brief in `docs/ltm/briefs/` and delete its row here.
+**Convention:** each open Q has exactly one canonical repo home (the row's "Home"). When a Q closes, file the
+closure under `docs/briefs/closures/` and delete its Open row (Recently-closed may keep a one-line pointer).
 
 ## Open
 
 | Q | Status | Home (canonical) | Next action |
 |---|---|---|---|
 | **Q-TOM-SPX-1** — SPX500 turn-of-month existence and capturability | Layer A **RESOLVED-ABSENT** on canonical Pepperstone (2026-06-16); formal DEAD close reserved | [`docs/briefs/Q-TOM-SPX-1.md`](Q-TOM-SPX-1.md) | Run only the brief-reserved native Pine confirmation. Do not widen the window, change thresholds, or rerun Dukascopy to rescue the null. |
-| **Q-SIGID-1** — measured live↔backtest signal-identity gap from mid-bar `alert()`/`strategy.entry` on c1 venue editions; architectures that close it (locked-axis, not EQ) | **`OPEN`** 2026-07-28 — cheap falsifier: 07-28 MNQ bar is a phantom (`longSignal` mid-true / close-false on `body_ok`); offline phantoms ~0.7× confirmed signals; Fri §2b clean re-measure owed | [`Q-SIGID-1-intra-bar-signal-identity.md`](Q-SIGID-1-intra-bar-signal-identity.md) · [pre-reg](pre-registration/Q-SIGID-1-verdict-preregistration.md) · [RESULTS](../../lab/analysis/c1/c1_signal_identity_2026-07-28/RESULTS.md) | **STRANDED on alert / signal-host disposition** (F2 closed via S1; Rule-11 intercept 2026-08-06) — §2b needs no fill/order/arming; offline limb MNQ 0.68 / MYM 0.70 stands. Pine edit only under separate operator GO. |
+| **Q-SIGID-1** — measured live↔backtest signal-identity gap from mid-bar `alert()`/`strategy.entry` on c1 venue editions; architectures that close it (locked-axis, not EQ) | **`OPEN`** 2026-07-28 — cheap falsifier: 07-28 MNQ bar is a phantom (`longSignal` mid-true / close-false on `body_ok`); offline phantoms ~0.7× confirmed signals; Fri §2b clean re-measure owed | [`Q-SIGID-1-intra-bar-signal-identity.md`](Q-SIGID-1-intra-bar-signal-identity.md) · [pre-reg](pre-registration/Q-SIGID-1-verdict-preregistration.md) · [RESULTS](../../lab/analysis/c1/c1_signal_identity_2026-07-28/RESULTS.md) | Ruled host is **built** (S2b, `emit_enabled=false`). Offline limb MNQ 0.68 / MYM 0.70 stands. §2b re-measure needs no fill/order/arming. Pine edit only under separate operator GO. |
 | **Q-FILLTAX-1** — TV fill-optimism gap + Pine↔Python / engine↔TV parity | **`OPEN`** — V2 Phase-0 scaffold `CODE_LANDED` 2026-08-07 ($0 under S1 incumbent); V1 disposition follows S1 (Tradeify geometry); Gate RESOLVED needs first family TV anchor | [`Q-FILLTAX-1-fill-realism-and-parity-scoping.md`](Q-FILLTAX-1-fill-realism-and-parity-scoping.md) · [`parity_gen2`](../../lab/analysis/c1/parity_gen2_2026-08/) · [`RESULTS`](../../lab/analysis/c1/parity_gen2_2026-08/RESULTS.md) | Operator: first family same-feed CME TV anchor → Gen-2 ADMIT. No post-hoc band tuning. Mutation battery (Phase 1) still owed. |
-| **Q-GATESTACK-1** — does anything on GitHub actually require the gate stack to pass before `main`, and is CI-status doc current (assumption-sweep A1+D7) | **`CLOSED — FALSIFIED`** 2026-08-19 | [`closures/Q-GATESTACK-1-closure-falsified.md`](closures/Q-GATESTACK-1-closure-falsified.md) | Both limbs reject: `main` unprotected (404/`[]`/`push:true`), CI-status docs stale (Actions live + green since 2026-08-15). Branch-protection packet named-not-opened; doc-correction packet executed same turn. |
 | **Q-M1WIRE-1** — does the M1 arming interlock verify everything its acceptance package claims (confirmed-base interlock, alert reachability, skew-audit gap; A2+A4+A5) | **`OPEN — DRAFT (pre-lock)`** 2026-08-18 | [`Q-M1WIRE-1-arming-interlock-coverage.md`](Q-M1WIRE-1-arming-interlock-coverage.md) | Named, not opened. Operator GO → Phase 1 (grep + artifact read + unannounced operator drill, $0/K=0). |
 | **Q-SIZECOMP-1** — does live c1 sizing actually compose lifecycle × DD × beta-death the way doctrine says (A3+D4) | **`OPEN — DRAFT (pre-lock)`** 2026-08-18 | [`Q-SIZECOMP-1-sizing-composition.md`](Q-SIZECOMP-1-sizing-composition.md) | Named, not opened. Operator GO → Phase 1 (grep + local pytest snippet, $0/K=0). |
 | **Q-TRADECAP-1** — is there any per-trade dollar-loss bound anywhere in the sizing/arming path on the intraday-enforced Tradeify geometry (A6, orphaned `1r_estimation.md` Forward question) | **`OPEN — DRAFT (pre-lock)`** 2026-08-18 | [`Q-TRADECAP-1-per-trade-loss-bound.md`](Q-TRADECAP-1-per-trade-loss-bound.md) | Named, not opened. Operator GO → Phase 1 (grep + read, $0/K=0). |
@@ -37,6 +37,7 @@ All 11 above opened 2026-08-18 from [`docs/notes/audits/2026-08-18-strategy-gene
 
 ## Recently closed (cross-reference; not open)
 
+- **Q-GATESTACK-1** — does anything on GitHub actually require the gate stack to pass before `main`, and is CI-status doc current — **`FALSIFIED` 2026-08-19** — `main` unprotected (404/`[]`/`push:true`); Actions live + green since 2026-08-15. Branch-protection packet named-not-opened; doc-correction packet executed same turn. [`closure`](closures/Q-GATESTACK-1-closure-falsified.md).
 - **Q-NSURV-2** — can a magnitude-resampling second-uncertainty-layer be added to N-SURV
   reporting as a pure, headline-preserving addition — **`RESOLVED` 2026-08-20** — a wrapper
   reproduces both known candidates' (c1, ORB-MNQ-1) headline point estimates within 2.0pp,
@@ -176,9 +177,13 @@ All 11 above opened 2026-08-18 from [`docs/notes/audits/2026-08-18-strategy-gene
   [`RESULTS`](../../lab/analysis/c1/mnq_tnec_con5_impulse_pullback_vwap_2026-08/RESULTS.md).
 - **Q-TNEC-CON-4** — PDH/PDL RTH with-break — **`AMBIGUOUS-HOLD` 2026-08-11**; successor
   CON-5 Branch A STOP paused the lane, so this row left Open. INDEX repair 2026-08-15
-  (liveness sweep). CONFIRM unread; Cap unclaimed.
+  (liveness sweep). **U1 exception granted and spent same day, 2026-08-20** (operator
+  override [`ADR`](../adr/2026-08-20-dense1m-u1-operator-override-con4-reopen.md)) —
+  CONFIRM scored `AMBIGUOUS-HOLD` (short arm mean −0.0611R); cell **reverted to `U0`
+  (paused)**, same as CON-1/2/3/5. Cap unclaimed.
   [`closure`](closures/Q-TNEC-CON-4-closure-ambiguous-hold.md) ·
-  [`RESULTS`](../../lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/RESULTS.md).
+  [`EXPLORE RESULTS`](../../lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/RESULTS.md) ·
+  [`CONFIRM RESULTS`](../../lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/RESULTS_CONFIRM.md).
 - **Q-TNEC-CON-3** — HTF-native 5m compression→expansion break — **`AMBIGUOUS-HOLD`
   2026-08-10**; successor CON-4/CON-5 lane paused (same repair). CONFIRM unread; Cap
   unclaimed. [`closure`](closures/Q-TNEC-CON-3-closure-ambiguous-hold.md) ·
@@ -213,7 +218,7 @@ All 11 above opened 2026-08-18 from [`docs/notes/audits/2026-08-18-strategy-gene
 - **Q-MNQDTL-CON-1** — EM construct on dense RTH 1m opens (G=10) — **CLOSED FALSIFIED 2026-08-09** — ES/NQ 5m divergence explore STOP; both arms CI entirely &lt; 0 — [closure](closures/Q-MNQDTL-CON-1-closure-falsified.md) · [RESULTS](../../lab/archive/mnq_con1_dense1m_stage0_2026-08/RESULTS.md).
 
 
-These had Notion tracker cards that are now retired. Closure records live in `docs/ltm/briefs/` / `git log`:
+These had Notion tracker cards that are now retired. Hot closures live in `docs/briefs/closures/`; older restored records may still sit in `docs/ltm/briefs/` / `git log`:
 
 - **Q-R2FLOW-1** — clock-minute net signed aggressor → 60 s mid — **Stage-G FALSIFIED 2026-08-08** — n 48,360 / coverage 100% / CI includes 0; empty candidates; CONFIRM unread — [`closure`](closures/Q-R2FLOW-1-closure-falsified.md) · [`RESULTS_g2`](../../lab/archive/mnq_r2flow_routeb_2026-08/RESULTS_g2.md).
 - **Q-MNQSEL-2** — dense RTH 1m selection ceiling at G=10 — **RESOLVED (C4) 2026-08-08** — S3 long 0.8584 / short 0.8566; S1 negative; construct ITERATE — [`closure`](closures/Q-MNQSEL-2-closure-resolved.md) · [`RESULTS`](../../lab/analysis/c1/mnq_selection_ceiling_allbars_2026-08/RESULTS.md).

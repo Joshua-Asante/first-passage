@@ -19,7 +19,7 @@ This module does NOT:
   - change execution policy (``order_type=market`` stays)
   - buy or propose the declined $19.91 ``mbp-10`` escalation
 
-Owner: docs/notes/rail_build/RUNBOOK.md §B7 Stage 2b ·
+Owner: deploy/c1_rail/README.md + GO ADR (public). Private RUNBOOK §B7 Stage 2b is not on this tree.
        docs/notes/2026-07-24-execution-quality-investigation.md P1.
 
 Usage (in-container, after operator-attested evidence is on disk)::

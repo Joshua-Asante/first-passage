@@ -31,7 +31,7 @@ function Invoke-FlyDump([string]$RemoteCmd, [string]$DestPath, [scriptblock]$Fil
 
 # Status (informational; always expect dry_run=True going into Stage 1)
 Write-Host ">> host status"
-& fly ssh console -a $App -C "python ops/c1_rail_arm.py --status" 2>&1 |
+& fly ssh console -a $App -C "python ops/c1_rail/c1_rail_arm.py --status" 2>&1 |
     ForEach-Object { "$_" } |
     Where-Object { $_ -notmatch "Error: The handle is invalid" -and $_ -notmatch "^Connecting to " }
 

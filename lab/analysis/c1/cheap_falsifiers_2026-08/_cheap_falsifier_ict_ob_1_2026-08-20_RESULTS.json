@@ -1,0 +1,30 @@
+{
+  "verdict": "FALSIFIED",
+  "detail": "both arms n>=100 and session-block CI entirely < 0",
+  "mechanism_id": "ict-ob-last-opposing-candle",
+  "reconstruction_note": "displacement detector reconstructed fresh from prose spec (dispMlt=1.5xATR14); original code unavailable in this public worktree",
+  "n_eligible_sessions": 1679,
+  "n_trade_sessions": 995,
+  "trade_frac": 0.5926146515783204,
+  "n_trades": 995,
+  "mean_signed_pts": -2.6035175879396983,
+  "mean_stop_dist": 14.754271356783919,
+  "gross_vs_4x_rt": -0.4616165936063295,
+  "long": {
+    "n": 376,
+    "mean_R": -1.0388677204716374,
+    "wr": 0.1196808510638298,
+    "ci_lo": -1.3814136235007712,
+    "ci_hi": -0.6812951303991557
+  },
+  "short": {
+    "n": 619,
+    "mean_R": -0.37873941392619187,
+    "wr": 0.11631663974151858,
+    "ci_lo": -0.7042194007295957,
+    "ci_hi": -0.0435257963049289
+  },
+  "elapsed_s": 20.268612500000017,
+  "cost_usd": 0.0,
+  "panel": "C:\\Users\\joshu\\multi_firm_operations\\.claude\\worktrees\\mlops-trading-pipeline-838395\\lab\\analysis\\c1\\mnq_selection_ceiling_allbars_2026-08\\_mnq_1m.parquet"
+}

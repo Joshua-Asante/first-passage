@@ -20,7 +20,7 @@ Target: the most recent completed work in this conversation, or whatever the ope
 3. **Re-run every claimed verification yourself.** Do not read code and nod. Repo surfaces:
    - `make validate` — params + data manifests + pine manifest gates.
    - `python -m pytest tests/` or the exact test node the claim names. **Count skips:** vendor-CSV-dependent tests skip-if-missing; "400+ tests pass" on a tree without local data is a different claim than the same sentence with data present.
-   - `python -m pytest tests/core/test_mc_synthetic_engine.py -q` whenever anything on the MC path was touched — vendor-free engine regression. (`python core/portfolio_mc.py --panel pepperstone` raises since the executable anchor retired 2026-07-24; `PANELS_BY_BROKER = {}`. The 99.83/0.17/4.37 figures are historical record, not a live pin.)
+   - `python -m pytest tests/core/test_mc_synthetic_engine.py -q` whenever anything on the MC path was touched — vendor-free engine regression. (`python core/portfolio_mc.py --panel pepperstone` raises since the executable Pepperstone anchor retired 2026-07-24; `PANELS_BY_BROKER` is not globally empty — owner `core/mc/modes.py` / PIPELINES P3. Historical MC numerals stay record-only — see `docs/mc_anchor_history.md`.)
    - `python scripts/check_boundaries.py` for any layer-contract claim (`lab↔ops` isolation, `core` imports nothing internal).
    - "Byte-identical" / "no functional change" claims → an actual diff or hash, never prose.
    - A claim that cannot be re-run here (missing vendor CSVs, TV-side behavior — there is no TV backtest API and TV egress is never automated) is labeled **UNVERIFIABLE**, never assumed true.

@@ -1,0 +1,30 @@
+{
+  "verdict": "FALSIFIED",
+  "detail": "both arms n>=100 and session-block CI entirely < 0",
+  "mechanism_id": "ict-ote-fib-retracement",
+  "reconstruction_note": "raid/pivot detector reconstructed fresh from prose spec (pvLen=2, raidWin=8); original code unavailable in this public worktree",
+  "n_eligible_sessions": 1679,
+  "n_trade_sessions": 1675,
+  "trade_frac": 0.9976176295413937,
+  "n_trades": 1675,
+  "mean_signed_pts": -1.7786567164179103,
+  "mean_stop_dist": 13.164776119402985,
+  "gross_vs_4x_rt": -0.3153646660315444,
+  "long": {
+    "n": 781,
+    "mean_R": -0.525157868453784,
+    "wr": 0.11907810499359796,
+    "ci_lo": -0.7793671720672767,
+    "ci_hi": -0.24399942950482484
+  },
+  "short": {
+    "n": 894,
+    "mean_R": -0.5181431069814421,
+    "wr": 0.08165548098434004,
+    "ci_lo": -0.7933293423623471,
+    "ci_hi": -0.24091327640612542
+  },
+  "elapsed_s": 38.409831000026315,
+  "cost_usd": 0.0,
+  "panel": "C:\\Users\\joshu\\multi_firm_operations\\.claude\\worktrees\\mlops-trading-pipeline-838395\\lab\\analysis\\c1\\mnq_selection_ceiling_allbars_2026-08\\_mnq_1m.parquet"
+}

@@ -14,6 +14,178 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-21c — Operator menu: F1/B7 HOLD; H1–H5 GO
+
+**Focus:** Ratified next-steps menu after the coherence campaign.
+
+**Shipped:** H2 dry-run (CATALOG regenerate withheld) · GO ADR + W5 addenda · Rule 0 Phase 1 `check_brief.py` §0 anchor HARD. Owners: [campaign](notes/audits/2026-08-21-coherence-campaign.md) · [GO ADR](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [W5](adr/2026-08-07-w5-governance-diet.md) · [Rule 0](adr/2026-08-20-rule0-anchor-verification-and-triage-discipline.md).
+
+**Decisions/defects:** F1 HOLD · B7/M1 HOLD until acceptable strategy · H6–H13 HOLD. CATALOG Status flips still need `--slug` archive.
+
+**Open / next:** Carry `2026-08-21a` / `2026-08-20g` — ICT-family re-proposal needs new mechanism evidence. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. Next operator: new-mechanism generate vs H3/H4 already landed; H6/H7/H8 still HOLD.
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
+
+---
+## 2026-08-21b — Coherence campaign blast-radius: leftover pointer repairs
+
+**Focus:** Rule-7 blast-radius on the 2026-08-21a coherence edits.
+
+**Shipped:** four stale one-line pointers on already-touched / sibling hot surfaces (c1-rail skill, deploy README, fable-judge, lock-check). Register: [`AUDIT-2026-08-21-coherence-campaign`](notes/audits/2026-08-21-coherence-campaign.md).
+
+**Decisions/defects:** historical ADR / old-handoff bodies left; CATALOG ACTIVE-on-closed still operator-owed.
+
+**Open / next:** Carry `2026-08-21a` / `2026-08-20g` — ICT-family re-proposal needs new mechanism evidence. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. Campaign leftovers: CATALOG regenerate, named-not-opened `Q-M1WIRE-1`, GO ADR §7, W5 CI, W6 lockfile.
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
+
+---
+## 2026-08-21a — Coherence campaign: root→pipeline walk, Packets A–C landed, no deletes
+
+**Focus:** Repo-wide coherence audit from the five root docs through generate → evaluate → deploy → measure → update. Findings-first; not a Great Prune retry.
+
+**Shipped:** [`AUDIT-2026-08-21-coherence-campaign`](notes/audits/2026-08-21-coherence-campaign.md) · S7 [tombstone](notes/2026-08-07-posture-a-alignment-manifest.md) · PIPELINES/INDEX/README/CLAUDE + skill/methodology path-and-status repairs.
+
+**Decisions/defects:** no file deletes; GO ADR §7 / CATALOG ACTIVE / W5 CI / W6 lockfile left owed.
+
+**Open / next:** Carry `2026-08-20g` — ICT-family re-proposal needs new mechanism evidence, not an exit-distance retune. **STATE queue unchanged:** #1 F1 (Tradeify-resting §4 read) · #2 B7-REFIRE + M1 wait on an acceptable strategy. Campaign leftovers: CATALOG regenerate, named-not-opened `Q-M1WIRE-1`.
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
+
+---
+## 2026-08-20g — Frozen 1H DOL target distance-swept zero-run: target exonerated, entries are the problem (corrects 2026-08-20f)
+
+**Focus:** Operator asked to investigate the frozen 1H DOL target itself, and whether different
+target distances would produce significantly different results — following `2026-08-20f`'s
+observation that three constructs died anchored to it.
+
+**Shipped:** [`ict_target_investigation_2026-08-20/RESULTS.md`](../lab/analysis/c1/ict_target_investigation_2026-08-20/RESULTS.md)
+— an excursion-bounded counterfactual (strategy-validation §3, zero-run/zero-K, reuses `Q-ICT-OTE-1`/
+`Q-ICT-OB-1`'s already-licensed entries unchanged) swept candidate target distances 5pt→300pt
+(bracketing both entries' own ~13-15pt stops through and past the DOL's own measured ~263-285pt mean
+distance). Mean R stayed **negative at every tested distance for both entries** — OTE's CI never
+crosses zero anywhere in the range; OB's crosses fractionally positive at only 3 of 13 cells, each
+noise-level. **No target distance rescues either construct.**
+
+**Decisions/defects:** a real bug was caught before trusting any number — the script's first-draft
+reuse of `Q-ICT-OTE-1`'s entry logic undercounted entries (1,257 vs. the recorded 1,675) by giving up
+after the first pivot's touch-search failed, contrary to the original's actual control flow (verified
+via `inspect.getsource`, not memory). Fixed and re-verified byte-identical to the already-recorded
+result (mean stop_dist matches to 15 significant figures) before any grid number was trusted.
+
+**Open / next:** **Corrects `2026-08-20f`'s own framing** — "the shared DOL target, not any one entry
+rule, is the more informative candidate point of failure" does not survive this test and is retracted,
+not left standing; `ops/instruments/MNQ.md` updated accordingly. The honest read: raid/sweep/
+displacement-based entry timing on MNQ shows no measurable directional edge at any exit distance
+checked. Re-proposal bar for any ICT-family entry construct on this DOL target (or any target) is now
+explicitly new mechanism evidence, not an exit-distance retune. 11th-consecutive-null count from
+`2026-08-20f` is unchanged by this disclosure-only pass (no new K, no new construct).
+
+---
+## 2026-08-20f — Order Blocks spec'd, override pre-approved, `Q-ICT-OB-1` `FALSIFIED` at $0 — third entry family dies on the same DOL target
+
+**Focus:** Operator asked to spec Order Blocks and pre-approved an override ADR in the same
+instruction ("if it requires an ADR override then I approve it").
+
+**Shipped:** [`Q-ICT-OB-1` scoping`](briefs/rnd-pipeline/Q-ICT-OB-1-order-blocks-scoping.md) +
+[`override ADR`](adr/2026-08-20-analogue-modality-override-ict-ob-1-admit.md) (`Accepted`,
+ratified same-turn on the advance approval) + cheap falsifier, all in one pass. Verdict
+`FALSIFIED`: long n=376 **−1.039R** CI [−1.381, −0.681], short n=619 **−0.379R** CI [−0.704,
+−0.044], mean stop_dist **14.75pt** (tighter than `Q-ICT-OTE-1`'s 13.16pt, confirming the
+scoping doc's own prediction), WR 11-12%. `PREREG_G0` never frozen; $0/K=0.
+
+**Decisions/defects:** none new — same reconstruction-note pattern as OTE (original detector code
+absent from this public worktree, reconstructed fresh from documented parameters).
+
+**Open / next:** **Cross-cutting finding worth carrying forward**: three distinct entry-geometry
+families this session (CON-4's through-break, OTE's sweep-retracement, OB's last-opposing-candle)
+all died anchored to the *same* frozen 1H DOL target inherited from `Q-ICTEXP-1`. The shared
+target — not any one entry rule — is now the more informative candidate point of failure. Any
+future ICT-family entry proposal against this target should address that directly rather than
+varying the entry again. 11th consecutive zero-yield close in the short-horizon MNQ
+microstructure thread. Breaker Blocks and SMT Divergence remain unadmitted (their own governance
+findings from the earlier ranking pass still apply — worse population, and SMT doubly barred).
+
+---
+## 2026-08-20e — Operator override ratified, cheap falsifier run: `Q-ICT-OTE-1` `FALSIFIED` at $0
+
+**Focus:** Operator approved an override ADR against the analogue-modality pause specifically for
+`Q-ICT-OTE-1`; per that ADR's own §2, the cheap falsifier was licensed and run immediately.
+
+**Shipped:** [`override ADR`](adr/2026-08-20-analogue-modality-override-ict-ote-1-admit.md)
+(`Accepted`, ratified same-turn — "Approve an override ADR"). Cheap falsifier reconstructed the
+sweep/pivot detector fresh (original code absent from this public worktree — pre-transition history is
+private-archive-only) and scored decisively `FALSIFIED`: both arms n≥100, CI entirely below 0 (long
+−0.525R, short −0.518R), mean stop_dist **13.16pt** confirming the scoping doc's own predicted
+CON-5-shaped risk exactly, WR 8-12%, gross itself net-adverse (−0.32× the 4×RT bar). `PREREG_G0` never
+frozen — the override's own §4 revert trigger fired, exception spent. `Q-ICT-OTE-1` closes `STOP` at
+$0/K=0. Recorded in `ops/instruments/MNQ.md` DEAD list, the scoping doc, and the ADR itself.
+
+**Decisions/defects:** none new. The reused `Q-ICTEXP-1` raid-scan code being absent from this public
+worktree (pre-transition history is private-archive-only) was discovered and worked around by
+reconstructing the algorithm fresh from its already-documented prose parameters — noted explicitly in
+the falsifier's own file, not silently assumed equivalent.
+
+**Open / next:** 10th consecutive zero-yield close in the short-horizon MNQ microstructure thread
+(across four distinct entry-geometry families now: through-break, pullback-reclaim, PDH/PDL-through,
+sweep-retracement). No further ICT-vocabulary candidate is licensed by this override — Order Blocks,
+Breaker Blocks, and SMT Divergence each still need their own ADR if pursued.
+
+---
+## 2026-08-20d — `Q-ICT-OTE-1` (Optimal Trade Entry) scoped, not run — blocked by two independent pause ADRs
+
+**Focus:** Following the ICT concept-gap ranking (OTE first among Order Blocks/OTE/Breaker
+Blocks/SMT on population + cost-geometry), operator asked to scope OTE and name what needs
+approval.
+
+**Shipped:** [`Q-ICT-OTE-1` scoping`](briefs/rnd-pipeline/Q-ICT-OTE-1-optimal-trade-entry-scoping.md)
+(`SCOPED — not run`) — full construct definition (reuses `Q-ICTEXP-1`'s raid-scan and 1H DOL
+target verbatim; only the impulse-leg/Fib-zone entry logic is new), but §1 leads with the
+governance verdict: OTE names entry geometry, so it stays paused "on their own terms" per
+the 2026-08-15 analogue-modality ADR — checked the 2026-08-16 timeframe-scope ADR too (a
+15m rescope does not help; that ADR only exempts constructs that don't invoke route ① via
+dense-1m lane-membership, a different axis). §2.4 flags the stop is likely leg-scale
+(CON-5-shaped, not CON-4-shaped) — the cheap falsifier, once licensed, must test that first.
+Deliberately filed as a standalone `Q-ICT-OTE-1`, not `CON-6` (unlicensed by
+`DENSE1M-UNPAUSE`). $0/K=0 at this stage — no manifest opened.
+
+**Decisions/defects:** none. Dedup-clean (`check_advisor_dedup.py`, no prior owner).
+
+**Open / next:** Operator decision owed — §9 names two paths (a fresh override ADR, same
+shape as the CON-4 one just spent; or wait for a genuine new modality) and the concrete
+next 3 steps if the override path is chosen. Nothing scored, no K spent, no manifest open.
+
+---
+## 2026-08-20c — Operator override: U1 exception reopens `Q-TNEC-CON-4` CONFIRM inside the dense-1m pause
+
+**Focus:** Operator instructed reopening `Q-TNEC-CON-4` (PDH/PDL RTH with-break) and
+unpausing dense-1m OHLCV, explicitly without new mechanism evidence — an authority-only
+override of the 08-12/08-15 operator decisions that imposed and kept the pause.
+
+**Shipped:** [`ADR`](adr/2026-08-20-dense1m-u1-operator-override-con4-reopen.md)
+(`Accepted`, ratified in-session) marked **U1 (admit-one)**, scoped to `CON-4` only, then
+Phase 3 (operator: "go ahead, execute the run") re-pulled the MNQ 1m panel ($0.0000) and
+scored the reserved CONFIRM window (2025-09-01→2026-08-05) against the already-frozen
+gate via a new window-only sibling runner (`run_confirm_g0.py` — neither
+`run_construct_g0.py` nor `construct_lib.py` touched). Verdict `AMBIGUOUS-HOLD` (short
+arm mean **−0.0611R**) — [`RESULTS_CONFIRM.md`](../lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/RESULTS_CONFIRM.md).
+Per the ADR's own §4, the exception is now spent: `CON-4` reverts to `U0`, same as
+`CON-1/2/3/5`. U2 never marked. Addenda filed on all three closures + INDEX/CATALOG rows.
+$0, no new K.
+
+**Decisions/defects:** 11 new/existing unit tests caught a real latent bug in the
+EXPLORE runner's halves-aggregation helper (crashes on an all-zero-trades half) before
+it could hit real CONFIRM data — fixed in the new sibling file only, EXPLORE's own
+frozen runner left untouched since it already scored successfully. This session also
+corrected `b7` (ICT raid→FVG→DOL line) from a stale `PARK` to `SUBTRACT` — its named
+re-entry falsifiers had already fired before the GSUB-1 ratification — and published an
+ICT concept coverage ledger.
+
+**Open / next:** Ninth consecutive zero-yield close in the short-horizon MNQ
+microstructure thread. No further exception auto-granted; the dense-1m OHLCV pause is
+unconditional lane-wide again pending a genuinely new modality or its own fresh ADR.
+
+---
 ## 2026-08-20b — remaining MSL FALSIFIED-without-cell registry lags + M2K W4 panel contradiction
 
 **Focus:** Same class as 20a: FALSIFIED closures already on disk, PROFILE cells still `.`.

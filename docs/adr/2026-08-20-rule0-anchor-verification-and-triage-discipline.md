@@ -120,3 +120,4 @@ git diff main -- docs/rule_0.md
 |---|---|---|
 | 2026-08-20 | Initial authoring, drafted at operator direction, ratification owed | Joshua (direction) + Claude Code (Sonnet 5) |
 | 2026-08-20 | Ratified — `Proposed` → `Accepted` (operator: "I ratify...") | Joshua (ratification) |
+| 2026-08-21 | Phase 1 landed — `_check_section0_paths` HARD-fails a path-citing, anchor-less §0; regression tests pin pass + fail | Joshua (H5 GO) + Cursor |

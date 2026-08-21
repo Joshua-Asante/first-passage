@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-08-18
+**Last curated:** 2026-08-21
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
@@ -68,6 +68,11 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence only. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-21** — **Coherence leftover menu ratified: F1 HOLD; B7/M1 HOLD until an acceptable strategy; H1–H5 GO; H6–H13 HOLD.** Queue #1/#2 unchanged. H2 dry-run: CATALOG Status match, regenerate withheld (would clobber one-liners). H3/H4 addenda on the GO ADR and W5. H5 = Rule 0 Phase 1 (`check_brief.py` §0 anchor HARD). H1 = merge the coherence-campaign branch. $0/K=0, no live-risk surface.
+  [`campaign`](docs/notes/audits/2026-08-21-coherence-campaign.md) ·
+  [`GO ADR addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) ·
+  [`W5 addendum`](docs/adr/2026-08-07-w5-governance-diet.md) ·
+  [`Rule 0 ADR`](docs/adr/2026-08-20-rule0-anchor-verification-and-triage-discipline.md).
 - **2026-08-20** — **P4 (L2 dealer-gamma EOD) Databento cost dry-run + moneyness/tenor concentration
   check executed — HOLD stands, evidence now leans against.** Operator direction (draft the dry-run,
   then "run the small definition+trades pull to check volume concentration by moneyness/tenor").
@@ -482,7 +487,7 @@ deleted (not struck).
 
 - **ADR ceremony-tiering §Falsifier review** — first quarterly programme audit after 2026-08-08; check light share ≥⅕ and dated omitted-apparatus incidents (incl. 2026-08-14 candidate: implied-SR light records). Count 1-vs-2 is operator/audit. [`ADR addendum`](docs/adr/2026-08-08-adr-ceremony-tiering.md)
 - **GRAND-tier ADR §4 scheduled re-read** — H already satisfied 2026-08-09 (19 ratified differences; tier load-bearing, sunset did **not** arm). This slate is the first scheduled re-check, not a sunset. [`ADR addendum`](docs/adr/2026-08-09-grand-tier-quintessentials-binding.md) · [`closure`](docs/briefs/closures/GSUB-1-closure-resolved-loadbearing.md)
-- **GSUB-1 PARK expiries (6)** — b1 Aegis→6J · b3 ORB-MNQ line · b5 Q-FUNDPOL-1 · b6 Q-NAS-ECR-1 · b7 ICT line · c3 Q-TOM-SPX-1. Each converts to SUBTRACT absent explicit operator renewal (ADR §2.3). b2 (Striker-MYM) and c1 (Q-XMEM-1) already resolved to `SUBTRACT` early via GSUB-2 (2026-08-19, ~80 days ahead of this expiry) — dropped from this row, not still pending. [`docs/pursuits/`](docs/pursuits/)
+- **GSUB-1 PARK expiries (5)** — b1 Aegis→6J · b3 ORB-MNQ line · b5 Q-FUNDPOL-1 · b6 Q-NAS-ECR-1 · c3 Q-TOM-SPX-1. Each converts to SUBTRACT absent explicit operator renewal (ADR §2.3). b2 (Striker-MYM) and c1 (Q-XMEM-1) already resolved to `SUBTRACT` early via GSUB-2 (2026-08-19, ~80 days ahead of this expiry); b7 (ICT line) also already resolved to `SUBTRACT` — its own named re-entry step had already fired 2026-08-04, ~96 days ahead of this expiry, corrected this session (2026-08-20) — all three dropped from this row, not still pending. [`docs/pursuits/`](docs/pursuits/)
 - **Guardian-MGC (R7) transfer lane — SUBTRACT / DEAD(N-SURV) 2026-08-11** — exploratory N-SURV FAIL (full 42.2% / H1 72.4% / H2 16.5% bust vs ≤3.0%); margin-decisive; retroactive cell PREREG + typed closure filed. Re-entry = new mechanism evidence (not param retune). [`b8`](docs/pursuits/b8-guardian-mgc-transfer-lane.md) · [`closure`](docs/briefs/closures/2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md)
 - **Prop-portfolio §4 primary falsifier (HARD)** — ≥1 candidate clears bust ceiling on ≥2 of 4 FRIENDLY firms; else demote program to research-only. Status undischarged (2026-07-22 withdrawal). [`four-firms ADR §4`](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) · [`withdrawal ADR`](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md)
 - **Mechanism-boundaries ADR §4** — clauses 2-A / 2-B / 2-C first check. [`ADR`](docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md)
