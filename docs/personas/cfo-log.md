@@ -63,3 +63,26 @@ Front-Office-only narrowing.
 BLOCKER/CONCERN classification applies.
 **Ratified as recommended:** Yes -- operator's own election, recorded directly, not this persona's
 recommendation standing unconfirmed.
+
+## 2026-08-21 — docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md
+
+**Verdict:** RESOLVED -- operator ratified all four of this entry's earlier recommendations
+("I want to implement 1-4, reconfirm ledger once a month"). `docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md`
+authored and ratified same session, consolidating D1 (one ledger, `docs/pursuits/SUBSCRIPTION_LEDGER.md`)
++ D2 (mechanical `ledger-pointer` WARN-tier check in `check_pursuit_records.py`) + D3 (monthly
+reconfirm cadence, next deadline 2026-09-21, reusing the existing `daily-repo-truth-sync` radar via
+`STATE.md`'s forward-trigger board -- not a new scheduling surface -- plus a standing-check line
+added to this persona's own charter, `cfo.md`) + D4 (recommendation #4 recorded as practice, no
+hookify artifact built pending evidence it's needed). This charter file's `Writes:` field now also
+names `docs/pursuits/SUBSCRIPTION_LEDGER.md`, and its `Domain:` line corrected `d11-d16` to `d11-d17`
+(stale since the same-day d17 addition, caught while making this edit). The mechanical build (ledger
+creation, seven pursuit-record edits, checker extension) is specified in a companion Cursor handoff
+(`docs/briefs/handoffs/2026-08-21-cc-handoff-subscription-ledger-consolidation.md`) per the
+operator's "dispatch engineering tasks to Cursor" instruction, not yet executed as of this entry --
+the ADR is `Accepted` as a design ratification with execution phased separately (its own §7).
+**Confirmed findings:** none -- design ratification, not an adversarial review.
+**Ratified as recommended:** Yes -- operator's own direct instruction, all four recommendations
+accepted without amendment; cadence set to monthly per explicit operator statement (this persona's
+own memo had left the exact interval as "at minimum" the 2026-11-08 quarterly gate, plus
+ask-whenever-consulted -- the operator's monthly figure is tighter than either, and now the binding
+one).

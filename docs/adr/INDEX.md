@@ -41,7 +41,7 @@
 | 2026-06-22-cost-geometry-pregate.md | Accepted | 2026-06-22 | none | Accepted |
 | 2026-06-30-no-manual-trading-cfd-retirement.md | Accepted | 2026-06-30 | none | (operator executive decision, recorded) |
 | 2026-06-30-state-md-role-reduction.md | Accepted | 2026-06-30 | none | decision made 2026-06-30 by owner authorization (in-session, named). Executed same session via Claude Code (STATE.md restructure + `operational_rules.md` §7 amendment landed in this commit). |
-| 2026-07-01-add-back-metric-layer-split.md | Proposed | 2026-07-01 | none | PROPOSED |
+| 2026-07-01-add-back-metric-layer-split.md | Accepted | 2026-07-01 | none | ratified by operator (JA) 2026-08-21, as an explicit override ahead of §4's evidentiary graduation gate (no programme audit has ever computed both layers' add-back rates since authoring — checked across every audit note under `docs/notes/audits/programme-audit/`, zero hits post-2026-07-01). See Addendum 2026-08-21. |
 | 2026-07-06-bust-day-maxdd-inclusion.md | Accepted | 2026-07-06 | none | Accepted |
 | 2026-07-10-databento-research-stack.md | Accepted | 2026-07-10 | none | the strategic decision was made operator-side on 2026-07-10 (advisor session authored the deliverables; the CC handoff enacting it states "this handoff does not re-litigate it"). This ADR records the decision and lands with the integration commit. |
 | 2026-07-11-fxify-ops-surface-retirement.md | Accepted | 2026-07-11 | none | **operator STRATEGIC-LoR ratification recorded 2026-07-11 (Joshua): FXIFY is retired whether or not Tradeify is locked — see the §2 disposition override.** **Executed 2026-07-11** on branch `claude/fxify-ops-retirement-90703d` (`git rm` of validator/TV-MT5/zero-fills + `accounts.py`/`cli.py` FXIFY-path excision). Retiring ops machinery coupled to the account model is a subsystem-tier Delete (three-loop binding ADR reserves it to STRATEGIC-LoR). |
@@ -61,7 +61,7 @@
 | 2026-07-22-prop-portfolio-s4-discharge-withdrawal.md | Accepted | 2026-07-22 | `2026-07-12-prop-portfolio-four-friendly-firms.md` in part — the §4 **discharge status only**. The program, its four-firm target set, the envelope, and the 2026-11-08 hard date all stand unchanged. | Accepted |
 | 2026-07-25-instrument-profile-index.md | Accepted | 2026-07-25 | none | Accepted |
 | 2026-07-26-mechanism-counterparty-constraint-boundaries.md | Accepted | 2026-07-26 | none | **all three clauses ratified by the operator 2026-07-26** ("Bank executed K per 2-C, and ratify all three clauses"). Drafted same day at operator direction ("question what we require of a 'mechanism'... this is the source of our edge as a strategy research pipeline"). Downstream §6 edits landed with the ratification commit; 2-C's first application (ST-EH-1) executed the same session. |
-| 2026-07-26-regime-candidate-flag-lane.md | Proposed | 2026-07-26 | none | operator ratification pending — drafted at operator direction 2026-07-26; ST-EH-1 instantiates the structure campaign-locally under the existing override clause regardless of this ADR's fate |
+| 2026-07-26-regime-candidate-flag-lane.md | Accepted | 2026-07-26 | none | ratified by operator (JA) 2026-08-21, after re-reading the ADR directly. See Addendum 2026-08-21 for Phase 1 discharge and one owed item found during the blast-radius sweep. |
 | 2026-07-27-hermes-agent-adoption-nogo.md | Accepted | 2026-07-27 | none | ratified by the operator 2026-07-27 (chat directive: "ratify the NO-GO") |
 | 2026-07-27-tv-agent-browser-access.md | Accepted | 2026-07-27 | none | Accepted |
 | 2026-07-28-c1-disaster-stop-payload-supported.md | Proposed | 2026-07-28 | none | (NOT self-accepting — this changes what the live rail submits to the broker; requires operator GO per the standing c1-rail invariant "arming is an operator GO, never an agent action," extended here to any order-shape change, not just the dry_run flag; authored 2026-07-28, operator decision pending) |
@@ -123,6 +123,7 @@
 | 2026-08-20-dense1m-u1-operator-override-con4-reopen.md | Accepted | 2026-08-20 | none | ratified by operator (Joshua) 2026-08-20, in-session |
 | 2026-08-20-nsurv-magnitude-resampling-disclosure.md | Accepted | 2026-08-20 | none | ratified by operator (Joshua) 2026-08-20, in-session direct instruction ("I ratify the N-SURV disclosure ADR, Rule 0 anchor-check + triage-discipline ADR") |
 | 2026-08-20-rule0-anchor-verification-and-triage-discipline.md | Accepted | 2026-08-20 | none | ratified by operator (Joshua) 2026-08-20, in-session direct instruction ("I ratify the N-SURV disclosure ADR, Rule 0 anchor-check + triage-discipline ADR") |
+| 2026-08-21-cfo-subscription-ledger-consolidation.md | Accepted | 2026-08-21 | none | ratified by operator (Joshua) 2026-08-21, in-session direct instruction |
 | 2026-08-21-persona-hierarchy-front-office-only.md | Accepted | 2026-08-21 | `2026-08-19-loop-persona-hierarchy-review-panel.md` in part — D1's spawnable roster | ratified by operator (Joshua) 2026-08-21, in-session direct instruction ("What |
 
 ## Partially superseded

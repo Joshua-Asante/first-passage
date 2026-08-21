@@ -1,7 +1,7 @@
 # ADR 2026-07-01 — Add-back metric layer split (meta-layer signal vs object-layer strategy)
 
 **Path:** `docs/adr/2026-07-01-add-back-metric-layer-split.md`
-**Status:** PROPOSED
+**Status:** Accepted — ratified by operator (JA) 2026-08-21, as an explicit override ahead of §4's evidentiary graduation gate (no programme audit has ever computed both layers' add-back rates since authoring — checked across every audit note under `docs/notes/audits/programme-audit/`, zero hits post-2026-07-01). See Addendum 2026-08-21.
 **Decision date:** 2026-07-01
 **Supersedes:** none
 **Superseded-by:** none
@@ -162,8 +162,42 @@ grep -c 'meta-layer signal add-back' docs/methodology/inqhiori-canon.md docs/adr
 
 ---
 
+## Addendum 2026-08-21 — Operator ratification (explicit override, not §4 graduation)
+
+**Does not amend §2 / §4 / §6.** §6's mechanical landing criteria (items 1–4) are independently
+re-verified this session: canon §14 and the three-loop ADR §2 D4 both carry the (a)/(b) split and
+agree with each other; the contamination guard is clean — a grep for "Guardian Silver" +
+"add-back" across every file under `docs/notes/audits/programme-audit/` finds only the 2026-07-01
+founding audit, and it is already correctly scoped meta-layer-only, never a later contamination.
+
+**§4's actual graduation trigger has never fired.** §4 requires both layers' add-back rates to be
+computed *at a programme audit*, without cross-citation, at least once. A grep for "add-back"
+across every programme-audit note since authoring returns zero hits outside 2026-07-01 itself —
+across at least eight subsequent audit cycles (07-11, 07-15, 07-21, 08-03, 08-05, 08-08 quarterly,
+08-14, 08-15). This is not a case where the split was tested and came back ambiguous; it is a gate
+no audit has ever consulted — the same shape as `lesson_gate_reachability_preregistration`'s
+UNBINDING failure mode, applied to this repo's own methodology layer rather than a research gate.
+
+**Ratified anyway**, by explicit operator instruction, 2026-08-21. Supporting evidence gathered
+this session — a direct re-run of §10 hook 1, **not** a programme audit, so it does not itself
+satisfy §4's "at a programme audit" language: `docs/methodology/rejected_signals.md` currently
+carries 2 rejected signals (grown from 1 at authoring), 0 re-accepted — meta-layer rate **0/2**,
+cleanly computable, no cross-layer citation observed.
+
+**This is an override, not a claim the evidentiary bar was met** — logged as such per the same
+convention already used for the Rule 2 ratification
+([`docs/adr/2026-06-16-rule-2-budget-before-acting.md`](2026-06-16-rule-2-budget-before-acting.md)
+Addendum 2026-08-21): the gate result is recorded honestly (never fired), and the operator's
+separate judgment sits alongside it, not inside it.
+
+**Audit discipline is unchanged.** Future programme audits should still run the §10 add-back
+computation on their own cadence — ratification here does not retroactively manufacture an
+audit-time computation that never happened. Worth flagging to whoever runs the 2026-11-08
+quarterly: this gate has sat unexercised since authoring and is due a real first run.
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-07-01 | Initial authoring — split D4 add-back into meta-layer (a) + object-layer (b); PROPOSED | Joshua + Claude Code |
+| 2026-08-21 | Ratified `Accepted` as an explicit operator override (Addendum 2026-08-21) | Claude Code, per operator direction |
