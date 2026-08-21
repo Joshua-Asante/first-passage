@@ -63,3 +63,33 @@ cleanly. This is a generous, informal read, not a scored verdict.
   as if the gap were still unaddressed.
 - No `K_intrinsic` change, no `MECHANISMS.md` change, no disposition flip in `candidates_CARD.md` —
   this is evidence for whoever runs the deferred Explore-confirm next, not a new gate result.
+
+## Addendum 2026-08-21 — independent re-verification (orchestrating session)
+
+Re-derived every number in `_RESULTS.json` from the raw per-cycle rows rather than trusting the
+summary fields: all 7 `arm_converged`/`ctrl_converged` flags, `arm_converge_rate`/
+`ctrl_converge_rate` (both exactly 4/7 = 0.5714285714285714), and both mean-displacement-reduction
+figures (arm −1.4714285714285703, ctrl −48.00000000000001) reproduce exactly by hand. No arithmetic
+defect found.
+
+**One disclosure beyond what the raw numbers alone show:** the "identical 4/7 rate" is not an
+aggregate coincidence — it is the *same four* cycles (`OGN6`, `OGM6`, `OGK6`, `OGJ6`) converging in
+**both** the arm and control window, and the *same three* (`OGQ6`, `OGH6`, `OGG6`) diverging in
+**both**. Per-cycle outcome is perfectly correlated between the two windows. That is a more specific
+piece of evidence than "the rates happen to match": it suggests a slower-moving common factor (a
+multi-week price trend spanning both the arm and control windows of a given cycle) is driving the
+observed convergence/divergence, rather than anything specific to the final 3 sessions before
+expiry — the construct's own load-bearing claim. This *reinforces* `NOT DECISIVE` rather than
+changing it (n=7, no significance test, monthlies only — the same caveats already stated still
+apply), but it is a sharper reason to expect the real Explore-confirm needs a proper control for
+trend/autocorrelation, not just a fixed-offset control window, before this construct's directional
+claim can be taken seriously one way or the other.
+
+**Not independently re-run:** the actual Databento pulls (no `DATABENTO_API_KEY` in this
+environment) or the `GC.c.0` continuous-contract roll/adjustment convention the runner relies on for
+price levels (`databento-data` skill's own proxy-discipline note: difference-adjusted continuous
+series can distort price *levels*, which this check's strike-displacement arithmetic depends on).
+Given the short window (7 monthly cycles, ≤2 roll events) and the large displacement magnitudes
+observed (mostly 100s of points) relative to a typical single-roll gap, this is unlikely to flip the
+qualitative verdict — but it was not checked here and should be named explicitly, not assumed clean,
+before the real Explore-confirm run.

@@ -22,7 +22,7 @@ disclosure: GC/MGC bank **K=3,177** (`disccamp0_gc_2010_18`) — disclosure only
 
 | Check | Result |
 |---|---|
-| Stage-1 record | [`STAGE1.md`](STAGE1.md) — three $0 limbs PASS at RT **$4.12**; cheap falsifier NOT AVAILABLE (disclosed) |
+| Stage-1 record | [`STAGE1.md`](STAGE1.md) — three $0 limbs PASS at RT **$4.12**; cheap falsifier recorded NOT AVAILABLE at freeze, **filled 2026-08-21 via a local run once data access existed** — [`NOT DECISIVE`](_cheap_falsifier_expiry_oi_strike_convergence_2026-08-21_LOG.md), Explore-confirm below still owed |
 | Cost basis | `firm_rules.py` Tradeify Metals `cost_per_side_usd: 1.06` + tick_value $1.00 × 2 sides → RT **$4.12**; 4× = **$16.48** |
 | Cell door-check | `instrument_profiles.py cell MGC expiry-oi-strike-convergence` → BINDING BAR `free-data-5th-leg-snag-closed-2026-07-01` answered **CLEAR via R-FRAMING §2.1** (inherits MSL-C2's own resolution of the identical bar on the identical ledger) |
 | Occupancy | **CLEAR** — MGC is not an MYM/MNQ occupancy-release instrument (B8 does not apply); MGC's own K-void was cleared 2026-08-09 (`ops/instruments/MGC.md` G1) |

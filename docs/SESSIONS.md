@@ -14,6 +14,30 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-21k — MSL-S4 Step-4 falsifier independently re-verified; per-cycle correlation disclosed
+
+**Focus:** `21j`'s local-run `NOT DECISIVE` result landed on the `ptpa57` branch, not pushed by the
+orchestrating session. Re-derived rather than trusted per this thread's own standing discipline.
+
+**Shipped:** Every `_RESULTS.json` number reproduces exactly by hand (converge flags, both
+converge rates, both mean-displacement-reduction figures). One disclosure beyond the original
+write-up: the identical 4/7 arm/control rate is the *same* four cycles converging and *same*
+three diverging in both windows — outcome-correlated per cycle, consistent with a shared
+multi-week trend driving both windows rather than anything expiry-specific. Reinforces
+`NOT DECISIVE`, doesn't change it. Also flagged, not checked: `GC.c.0` continuous-contract
+roll-adjustment convention untested against the databento-data skill's own level-distortion
+warning. [`LOG.md` addendum](../lab/analysis/c1/msl_s4_mgc_2026-08/_cheap_falsifier_expiry_oi_strike_convergence_2026-08-21_LOG.md#addendum-2026-08-21--independent-re-verification-orchestrating-session) ·
+[`PREREG_G0.md`](../lab/analysis/c1/msl_s4_mgc_2026-08/PREREG_G0.md) §0 pointer added for consistency.
+
+**Decisions/defects:** none found. No verdict change, no `K_intrinsic`/`MECHANISMS.md` change.
+
+**Open / next:** unchanged from `21j` — full Explore-confirm (proper IS/CONFIRM, weeklies, real
+significance test, and a trend/autocorrelation-aware control) still owed. Operator TV backtest
+remains the immediate next step per the runbook.
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`. (unchanged)
+
+---
 ## 2026-08-21j — MSL-S4 Step-4 cheap falsifier filled via local databento run — `NOT DECISIVE`
 
 **Focus:** `ptpa57`'s G0-frozen MSL-S4 card (`expiry-oi-strike-convergence`, MGC) disclosed Step-4
