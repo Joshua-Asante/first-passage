@@ -96,16 +96,15 @@ operator's explicit, dated 2026-07-16 "admit it" at `CANDIDATE @ 1.00×`
 determination is wrong, it is cheap to correct (flip `DURABILITY_TAG` in
 `run_decay_monitor.py` and re-run) and does not touch anything already decided.
 
-### 3. Call-1 action-on-breach at CANDIDATE — Proposed ADR (awaiting Accept)
+### 3. Call-1 action-on-breach at CANDIDATE — Accepted ADR (in force)
 
 `core/lifecycle.py`'s coded ladder starts at `AUTHORIZED`; ORB-MNQ-1 sits at
 `CANDIDATE`. Governance for Call-1 breach at that standing is owned by
 [`ADR 2026-08-06-candidate-call1-action-on-breach`](../../../docs/adr/2026-08-06-candidate-call1-action-on-breach.md)
-(**Status: `Proposed`** — awaiting operator Accept): **operator review flag only;
-no autonomous demotion; `RETIRED` remains Call-5 GO**. Until Accept, treat that
-rule as the standing interim posture (same sentence the calibration recorded
-before the ADR existed). This calibration still owns only the numeric floor —
-it does not invent ladder rungs or Cap fire thresholds.
+(**Status: `Accepted`** — ratified 2026-08-21): **operator review flag only;
+no autonomous demotion; `RETIRED` remains Call-5 GO**. This calibration still
+owns only the numeric floor — it does not invent ladder rungs or Cap fire
+thresholds.
 
 ### 4. Provisional, not ratified
 
