@@ -176,9 +176,13 @@ All 11 above opened 2026-08-18 from [`docs/notes/audits/2026-08-18-strategy-gene
   [`RESULTS`](../../lab/analysis/c1/mnq_tnec_con5_impulse_pullback_vwap_2026-08/RESULTS.md).
 - **Q-TNEC-CON-4** — PDH/PDL RTH with-break — **`AMBIGUOUS-HOLD` 2026-08-11**; successor
   CON-5 Branch A STOP paused the lane, so this row left Open. INDEX repair 2026-08-15
-  (liveness sweep). CONFIRM unread; Cap unclaimed.
+  (liveness sweep). **U1 exception granted and spent same day, 2026-08-20** (operator
+  override [`ADR`](../adr/2026-08-20-dense1m-u1-operator-override-con4-reopen.md)) —
+  CONFIRM scored `AMBIGUOUS-HOLD` (short arm mean −0.0611R); cell **reverted to `U0`
+  (paused)**, same as CON-1/2/3/5. Cap unclaimed.
   [`closure`](closures/Q-TNEC-CON-4-closure-ambiguous-hold.md) ·
-  [`RESULTS`](../../lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/RESULTS.md).
+  [`EXPLORE RESULTS`](../../lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/RESULTS.md) ·
+  [`CONFIRM RESULTS`](../../lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/RESULTS_CONFIRM.md).
 - **Q-TNEC-CON-3** — HTF-native 5m compression→expansion break — **`AMBIGUOUS-HOLD`
   2026-08-10**; successor CON-4/CON-5 lane paused (same repair). CONFIRM unread; Cap
   unclaimed. [`closure`](closures/Q-TNEC-CON-3-closure-ambiguous-hold.md) ·
