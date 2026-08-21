@@ -1,7 +1,7 @@
 # ADR 2026-06-16 — Rule 2: Budget Before Acting (scaled to reversibility)
 
 **Path:** `docs/adr/2026-06-16-rule-2-budget-before-acting.md`
-**Status:** PROPOSED
+**Status:** Accepted — ratified by operator (JA) 2026-08-21, as an explicit override ahead of §4/§6's evidentiary graduation gate (trip-log has not accrued ≥1 entry per active loop class). See Addendum 2026-08-21.
 **Decision date:** 2026-06-16
 **Supersedes:** none
 **Superseded-by:** none
@@ -131,9 +131,9 @@ Thresholds are validated **forward, never by retrodiction.** Retrodiction onto p
 ## §10 — Audit hooks (runnable)
 
 ```bash
-# 1. ADR present, PROPOSED, own-file (date-prefixed convention)
+# 1. ADR present, Accepted (operator override 2026-08-21, not a §4 graduation), own-file (date-prefixed convention)
 ls docs/adr/ | grep -i "rule-2-budget-before-acting"
-grep -n "Status:\*\* PROPOSED" docs/adr/2026-06-16-rule-2-budget-before-acting.md
+grep -n "Status:\*\* Accepted" docs/adr/2026-06-16-rule-2-budget-before-acting.md
 
 # 2. Rule 2 is in canon as a section, beside the Rule-0/Rule-1 pointers
 grep -n "Rule 2 — Budget before acting" docs/methodology/inqhiori-canon.md
@@ -191,6 +191,39 @@ Pointer expanded at
 and on the gate doc. Full four-namespace deconflict (`OPS` / `INQ` /
 skill-local) remains out of scope per §5.8 and the
 [2026-08-08 conventions audit](../notes/audits/2026-08-08-conventions-delete-phase-gap-audit.md) §5.
+
+## Addendum 2026-08-21 — Operator ratification (explicit override, not §4 graduation)
+
+**Does not amend §2 / §4 / §6.** §4's falsifier and §6's gate criteria stand as written and are
+**not** met on their own terms: the trip-log carries one non-trip baseline row (OUTER,
+2026-06-16); INNER and STRATEGIC have zero entries; the ≥1-entry-per-active-loop-class bar for
+PROPOSED→ACCEPTED graduation (§6) is unreached.
+
+**Ratified anyway**, by explicit operator instruction ("ratify Rule 2"), 2026-08-21, during a
+review of this repo's governance-growth pattern (belt-churn evidence: 56 adds / 7 removes per the
+2026-08-03 gate-stack audit; ADR corpus 121→132 in 6 days against the 2026-08-08 audit's own
+stated target). Operator reasoning, recorded rather than folded into a fabricated "H holds":
+**Rule 2 would have caught earlier errors** — a forced stop-and-decide point beats open-ended
+drift. This is retrodiction-as-mechanism-check, which §4 explicitly permits (barred only from
+*tuning the 3/8/3 thresholds* on past instances, never from justifying the mechanism itself on
+them). Two concrete cases stand behind that judgment: (1) the cfg00–12 sweep this ADR's own §1 is
+already anchored to — a checkpoint at cfg08 would have converted nine further configs of silent
+drift into an explicit decision; (2) discovered in this same session, Rule 2's *own* ratification
+history — PROPOSED for over two months, deferred three times (2026-08-08 slate write → 2026-08-09
+correction → "rule at 2026-11-08, do not infer now") with no forced stop-and-decide point — which
+is itself exactly the failure shape a STRATEGIC-class budget exists to catch. A third deferral
+would have repeated that pattern rather than resolved it.
+
+This is an **override**, not a claim the evidentiary bar was met — logged as such per the same
+convention already used elsewhere in this repo for an operator call against an unmet or adverse
+gate (the regime-robustness-gate C2 override; the Guardian Silver admission override, "logged as
+such"). The gate result is recorded honestly here; the operator's separate judgment sits alongside
+it, not inside it.
+
+**Trip-log discipline is unchanged.** Still one table, still no fabricated rows (§5.6), still
+validated forward only (§4). Ratification does not retroactively manufacture trip-log evidence —
+the log stays exactly as sparse as it is, and future audits should read it as such, not as
+"already validated."
 
 # 4. Forward trip-log exists (the falsifier is live, not theater)
 ls docs/notes/audits/ | grep -i "rule-2-trip-log"

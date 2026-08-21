@@ -312,7 +312,7 @@ Lifecycle overlay: STRATEGIC funds stage 1 (alpha research) and owns kill/scale 
 
 ## 15. Rule 2 — Budget before acting (added 2026-06-16)
 
-**Canonical source:** `docs/adr/2026-06-16-rule-2-budget-before-acting.md` (ADR of record, PROPOSED). This section is the canon-side statement; if it and the ADR ever disagree, the ADR wins. **Numeral note:** the originating handoff proposed "Rule 1"; that slot is held by the small-cell-variance-prior rule (§10/§12), so this is **Rule 2** (owner-adjudicated 2026-06-16). It binds both loops (the test for earning a numeral): a budget is OODA's time-boundedness restated, and it is the discipline the unbudgeted cfg00–12 sweep visibly lacked. Reversibility-classification is its *sizing function*, not a separate rule — which is why it earns no numeral of its own.
+**Canonical source:** `docs/adr/2026-06-16-rule-2-budget-before-acting.md` (ADR of record, **Accepted 2026-08-21 — operator override, ahead of §4/§6's evidentiary graduation gate; see the ADR's Addendum 2026-08-21**). This section is the canon-side statement; if it and the ADR ever disagree, the ADR wins. **Numeral note:** the originating handoff proposed "Rule 1"; that slot is held by the small-cell-variance-prior rule (§10/§12), so this is **Rule 2** (owner-adjudicated 2026-06-16). It binds both loops (the test for earning a numeral): a budget is OODA's time-boundedness restated, and it is the discipline the unbudgeted cfg00–12 sweep visibly lacked. Reversibility-classification is its *sizing function*, not a separate rule — which is why it earns no numeral of its own.
 
 **Rule 2 — Budget before acting, scaled to reversibility.**
 

@@ -1,6 +1,6 @@
 # ADR 2026-08-19 — Great Prune is not a GRAND Subtract
 
-**Status:** `Proposed`
+**Status:** `Accepted` — ratified by operator (JA) 2026-08-21. Gate independently re-verified this session: both target ADRs already carry their "not a Subtract" addenda (great-prune.md Addendum 2026-08-19; grand-tier ADR Addendum 2026-08-19 "Great Prune is not a Subtract"), and neither's §2/§4 decision text changed — the Gate condition was met at authoring; only this Status field lagged.
 **Decision date:** 2026-08-19
 **Supersedes:** none
 **Superseded-by:** none
