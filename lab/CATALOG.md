@@ -52,6 +52,7 @@ documents the camp boundary for humans/tools.
 | mnq_selection_ceiling_allbars_2026-08 | c1 | ACTIVE | — | lab/analysis/c1/mnq_selection_ceiling_allbars_2026-08/ | — |
 | mnq_sizediv_blind_2026-08 | c1 | ACTIVE | — | lab/analysis/c1/mnq_sizediv_blind_2026-08/ | — |
 | mnq_stop_distribution_2026-08-02 | c1 | ACTIVE | MNQ stop distribution vs qty≥1 floor — Monday window realism | lab/analysis/c1/mnq_stop_distribution_2026-08-02/ | — |
+| msl_s4_mgc_2026-08 | c1 | ACTIVE | MSL-S4 `expiry-oi-strike-convergence` (NEW) on MGC — G0 FROZEN, Pine authored CC-solo; discharges the 2026-08-14 WHO-track E1 stop rule; Explore-confirm deferred by operator override (no data access); operator TV backtest owed | lab/analysis/c1/msl_s4_mgc_2026-08/ | — |
 | mnq_tnec_con2_compression_break_2026-08 | c1 | HOLD | `AMBIGUOUS-HOLD` — gross-positive / net-negative; halves sign-flip; non-promotable close. | lab/analysis/c1/mnq_tnec_con2_compression_break_2026-08/ | — |
 | mnq_tnec_con3_htf_native_break_2026-08 | c1 | HOLD | `AMBIGUOUS-HOLD` — long mean net-positive but CI straddles 0; short net-negative; aux limbs fail live-pass. | lab/analysis/c1/mnq_tnec_con3_htf_native_break_2026-08/ | — |
 | mnq_tnec_con4_pdh_pdl_break_2026-08 | c1 | HOLD | `AMBIGUOUS-HOLD` — both arms near-zero; CIs straddle 0; aux limbs fail live-pass. | lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/ | — |

@@ -83,10 +83,31 @@ structure:
 
 ## ACTIVE / OPEN
 
+- **MSL-S4 `expiry-oi-strike-convergence` — G0 FROZEN 2026-08-21, Pine authored CC-solo, operator
+  TV backtest owed.** First WHO named since the 2026-08-14 estate-wide WHO-track sweep found the
+  door dry; discharges E1. Explore-confirm deferred by operator override (no data access this
+  session) — not yet a scored candidate. See `lab/analysis/c1/msl_s4_mgc_2026-08/`.
 - Instrument-lane re-screen complete 2026-08-09. Election out of scope.
 - Self-funded Guardian→MGC lane remains PARKED/CLOSED (program posture); this ledger does not reopen it.
 
 ## SESSION LOG
+
+- **2026-08-21b** — **MSL-S4 Stage-1 PASS → operator B4 GO → G0 FROZEN → Pine authored CC-solo,
+  same session.** New mechanism `expiry-oi-strike-convergence` (NEW, `MECHANISMS.md`): near a
+  published Gold options expiry, price converges toward the strike carrying the largest open
+  interest; entry direction read off observable price-vs-strike displacement, never off an
+  assumption about dealer gamma sign — the reason it survives where a directional dealer-gamma
+  sibling construct stays dead (BE1 sign-not-entailed). BINDING BAR
+  `free-data-5th-leg-snag-closed-2026-07-01` answered **CLEAR via R-FRAMING §2.1**, inheriting
+  MSL-C2's own resolution of the identical bar. RT $4.12 screens PASS. Cheap falsifier NOT
+  AVAILABLE (no market-data access this session — disclosed, not skipped). Explore-confirm
+  (charter step 5a) **deferred by explicit operator override** — no `SHAPE-CLEAR` verdict exists;
+  Pine was authored directly off the frozen construct, with the operator's own TV backtest named
+  as the first empirical evidence instead. Sourced by a dedicated cross-lane search after the
+  estate-wide WHO-track (2026-08-14) found the door dry — first WHO discharging that stop rule.
+  $0 / K=0 (nothing scored on real data). [`STAGE1`](../../lab/analysis/c1/msl_s4_mgc_2026-08/STAGE1.md) ·
+  [`PREREG_G0`](../../lab/analysis/c1/msl_s4_mgc_2026-08/PREREG_G0.md) ·
+  [`RUNBOOK`](../../lab/analysis/c1/msl_s4_mgc_2026-08/RUNBOOK.md).
 
 - **2026-08-18c** — **OFFICIAL corrected-null re-score: cell → `DEAD`; near-miss framing
   retracted (CASE A).** Under the frozen class battery (IAAFT normal-scores null + L4 by-year

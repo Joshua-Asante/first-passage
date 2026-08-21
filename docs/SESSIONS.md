@@ -14,6 +14,47 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-21i — MSL-S4 sources a NEW WHO, discharges E1; G0 frozen, Pine authored CC-solo
+
+**Focus:** Operator asked to find a viable Tradeify strategy this session, using MSL's iterative
+sourcing loop. MSL Phase 3 was `HOLD (E1)` since 2026-08-14 — every prior card dead, an
+estate-wide manual sweep found the whole envelope dry.
+
+**Shipped:** Three parallel sourcing lanes (databento data-mining — blocked, no
+`DATABENTO_API_KEY`/cached panel in this environment, confirmed as a genuinely untried method;
+literature harvest — revived the open P4 dealer-gamma lead, surfaced a gold-options-density
+finding; manual gap-hunt — five doors investigated and honestly killed) plus a fourth focused
+verification pass resolved a live disagreement between two lanes over whether "options-expiry
+pinning" on metals inherits an already-dead directional dealer-gamma-sign construct's kill. It
+does not: the pinning construct's trade direction is read off observable price-vs-published-strike
+displacement, never an assumed dealer-gamma sign — new mechanism id
+`expiry-oi-strike-convergence` declared NEW in `MECHANISMS.md`. Operator **B4 GO** 2026-08-21 →
+G0 [`PREREG_G0`](../lab/analysis/c1/msl_s4_mgc_2026-08/PREREG_G0.md) FROZEN on MGC. Explore-confirm
+(charter step 5a) **deferred by explicit operator override** (no market-data access this
+session) — Pine authored CC-solo directly off the frozen construct
+(`pine_lint` 13/13 PASS), sent to the operator rather than committed (avoids the
+unrecoverable-pin-bytes failure `check_pine_manifest.py` guards against — an ephemeral cloud
+session cannot durably hold gitignored `.pine` bytes). Full runbook with exact inputs/window/TZ
+and the durable-machine pin instructions:
+[`RUNBOOK.md`](../lab/analysis/c1/msl_s4_mgc_2026-08/RUNBOOK.md).
+
+**Decisions/defects:** none found in the frozen construct's own reasoning under adversarial
+re-check (ran the actual `instrument_profiles.py cell` door-check, re-derived the delete/flip
+test independently rather than trusting the sourcing lane's self-report). The deferred
+Explore-confirm step is a real, disclosed gap, not a defect — it is an operator-elected trade of
+rigor for speed, recorded as such in three places (`MECHANISMS.md`, `PREREG_G0.md` §0a,
+`RUNBOOK.md`) so it is never read as a silent skip.
+
+**Open / next:** operator TV backtest per the runbook. If it looks dead on sight, this closes as
+cheaply as any other MSL Explore kill. If it looks live, the deferred Explore-confirm (real
+MGC/GC panel + delete/flip on real data) is still owed before any survivor-MC / TNEC-1 intake
+step. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1 (both still wait on an eventually
+*acceptable* strategy — this card is not yet one). Live-ops posture unchanged: rail built /
+disarmed; no book.
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
+
+---
 ## 2026-08-21h — Q-SCORE-1 living pin retargeted off the date_coverage ceiling
 
 **Focus:** `validation-controls` red on every later `lab/**` PR (incl. #86) after a new dated closure tripped the Q-SCORE-1 Block 1 ratio pin.

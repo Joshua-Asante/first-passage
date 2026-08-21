@@ -15,6 +15,7 @@
 | daily-range-state-persistence | . | . | . | . | . | . | . | . | . | A | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | day-of-week-selection-gate | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . |
 | event-window-reversal | . | . | . | . | D | . | . | . | . | . | . | D | . | . | D | . | D | . | . | . | . | . | . | . | . | . | D |
+| expiry-oi-strike-convergence | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | htf-compression-breakout-5m | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | ict-liquidity | . | . | . | . | . | . | . | . | . | . | . | . | . | D | D | . | . | . | D | . | . | . | . | . | . | . | . |
 | impulse-pullback-vwap-reclaim | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
@@ -112,6 +113,15 @@ A directional bet keyed to a scheduled settlement, auction, or macro-release win
 | MYM | DEAD | 2026-07-21 | ../../docs/briefs/closures/MYM-3FPS-1-closure-falsified.md |
 | NG | DEAD | 2026-07-21 | ../../lab/archive/ng_eia_recon_2026-07/RESULTS.md |
 | ZN | DEAD | 2026-07-20 | ../../docs/briefs/closures/H-ZNAUC-1-closure-screen-fail.md |
+
+
+## expiry-oi-strike-convergence
+
+**NEW 2026-08-21 (MSL-S4).** Discharges the 2026-08-14 WHO-track E1 stop rule
+
+- **Class finding:** none yet — G0 frozen on operator B4 GO 2026-08-21; Explore-confirm (charter
+
+_No instrument has a recorded verdict on this mechanism._
 
 
 ## htf-compression-breakout-5m

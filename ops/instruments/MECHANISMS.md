@@ -304,3 +304,49 @@ Rejected nearest classes (one-line):
 - `impulse-pullback-vwap-reclaim` — CON-5; paused dense-1m lane; different selector.
 - `trend-following` / `band-pierce-continuation` — unconstrained or σ-band continuation; no sweep-failure filter.
 - `mean-reversion-fade` — USOIL spike-fader **entry** bar; role-asymmetry does not auto-clear a continuation entry.
+
+## expiry-oi-strike-convergence
+
+**NEW 2026-08-21 (MSL-S4).** Discharges the 2026-08-14 WHO-track E1 stop rule
+([closure](../../docs/briefs/closures/MSL-S7-closure-resolved-e1-hold.md)) — first WHO named
+outside the 2026-08-10 INTAKE-DRY set and outside a transfer of C1/C2/C3/S2A/S2B. Near a
+published options expiry, price statistically converges toward the strike carrying the largest
+open interest more than on non-expiry control sessions; enter in the direction that closes the
+gap between current price and that strike when price is displaced from it by more than a
+threshold, inside a declared pre-expiry window. WHO: options market-makers who wrote the
+concentrated open interest at that strike, mechanically obligated to keep a delta-neutral book
+as time-to-expiry shrinks and near-the-money gamma rises (Γ ∝ 1/√T) — a hedging-requirements /
+expiry-mechanics constraint (ADR clause-1-admissible), not a preference. The trade direction is
+read directly off observable data (spot price vs. the published strike), never off an assumption
+about unobservable dealer gamma sign — the load-bearing distinction from the sibling construct
+below, which this class does **not** reopen.
+
+- **Class finding:** none yet — G0 frozen on operator B4 GO 2026-08-21; Explore-confirm (charter
+  step 5a) **deferred by explicit operator override** (no Databento/market-data access in the
+  sourcing session's environment) rather than scored — Pine authored CC-solo directly off the
+  frozen construct, with the operator's own TV backtest as the first empirical evidence instead
+  of a pre-Pine Explore score. This is a disclosed deviation from the charter's default step
+  ordering, not a silent skip. [`STAGE1`](../../lab/analysis/c1/msl_s4_mgc_2026-08/STAGE1.md) ·
+  [`PREREG_G0`](../../lab/analysis/c1/msl_s4_mgc_2026-08/PREREG_G0.md) ·
+  [`RUNBOOK`](../../lab/analysis/c1/msl_s4_mgc_2026-08/RUNBOOK.md).
+
+Rejected nearest classes (one-line):
+- **Directional dealer-gamma-sign forecast** (informal sibling construct, never declared an id —
+  "assume dealers are net long/short gamma at a strike, predict trend-continuation or
+  mean-reversion accordingly") — stays correctly **DEAD**, not reopened here: dealer sign at a
+  specific strike/day is unobservable, so the trade direction is never entailed (same BE1
+  "constraint carries neither sign nor level" failure that killed the FX 10:00 NY option cut and
+  the `regime-overlay` NAS100 dealer-gamma gate below). This class's direction is read off
+  price-vs-published-strike instead, which is always observable — the reason it survives where
+  the sibling does not.
+- `london-range-failed-extension-fade` / `pdh-pdl-failed-break-reclaim` /
+  `overnight-range-failed-extension-fade` — nearest **generic** MR-at-level family (the sharpest
+  honest adjacency: `london-range-failed-extension-fade` is **FALSIFIED on this exact instrument,
+  MGC**). Distinct data-generating process: session price-action level (every session) vs.
+  published options-positioning level (only near a listed expiry).
+- `event-window-reversal` — scheduled release whose *direction* is itself uncertain a priori
+  (symmetric information-shock framing); this construct's direction is deterministic given
+  observable displacement, not an event-shock guess.
+- `regime-overlay` (XAUUSD KER/TSMOM sizing gate; NAS100 dealer-gamma-regime-gate) — a
+  sizing/deploy gate on inferred regime state; this construct is an entry-role trigger, not a
+  conditioning overlay.

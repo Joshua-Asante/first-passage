@@ -1,0 +1,21 @@
+# MSL-S4 Stage-1 card YAML — evidence input for msl_preflight only.
+# p/rr are NOT freeze-time claims. They exist so the tool can emit geometry
+# tables; campaign manager adjudicates the three kill limbs (cost-law /
+# payability / survival) without gating on implied-SR.
+id: msl-s4-mgc-expiry-oi-strike-convergence
+instrument: MGC
+mechanism: expiry-oi-strike-convergence
+dedup_query: pin|pinning|expiry-cluster|gamma|dealer.hedg|OI.by.strike
+dedup_paths:
+  - docs/rejected_candidates.md
+  - lab/CATALOG.md
+  - ops/instruments/MECHANISMS.md
+# Placeholder for tool arithmetic only — not an assumed-edge region freeze:
+p: 0.55
+rr: 2.0
+n_trades: 1
+rt_cost_usd: 4.12
+point_value_usd: 10.0
+contracts: 1
+stop_pts: 15.0
+target_pts: 30.0
