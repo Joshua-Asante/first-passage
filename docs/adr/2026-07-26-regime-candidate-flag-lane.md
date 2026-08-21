@@ -1,6 +1,6 @@
 # ADR 2026-07-26 — REGIME-CANDIDATE flag lane + reserved-holdout mechanics for grid campaigns
 
-**Status:** `Proposed` — operator ratification pending — drafted at operator direction 2026-07-26; ST-EH-1 instantiates the structure campaign-locally under the existing override clause regardless of this ADR's fate
+**Status:** `Accepted` — ratified by operator (JA) 2026-08-21, after re-reading the ADR directly. See Addendum 2026-08-21 for Phase 1 discharge and one owed item found during the blast-radius sweep.
 **Decision date:** 2026-07-26
 **Authors:** Joshua (direction) + Claude Code (Fable 5, drafter)
 **Supersedes:** none
@@ -220,8 +220,47 @@ grep -n "superseding ADR" docs/adr/2026-07-11-discovery-campaign-defaults-ratifi
 
 ---
 
+## Addendum 2026-08-21 — Ratification, Phase 1 discharge, one owed item
+
+**Does not amend §2 / §4 / §5.** Straightforward ratification — no evidentiary gate blocked this
+one (unlike Rule 2 or the add-back-metric-layer-split override); §2's own "Effective: upon
+operator ratification" is the entire trigger.
+
+**ST-EH-1 status, for the record.** The one existing instance of this pattern closed
+`operator-stopped` the same day it was drafted (`docs/briefs/closures/ST-EH-1-closure-operator-stopped.md`).
+The stop was unrelated to the flag-lane mechanism — "I have stopped the pulls. Supertrend is
+closed" — and **zero of the 80 grid reads executed**; the dual-track/reserved-holdout logic was
+never exercised on real cells. The closure's own asset table explicitly rules the pattern
+unaffected: *"Dual-track / reserved-holdout pattern ... survives this campaign."* What did run and
+pass: the Phase-2 replication fidelity gate (10/10 checks) and an adversarially-tested
+reserved-holdout guard — real, tested infrastructure, just never fed a live grid. §4's forward
+falsifier (two flag-lane follow-ups closing FALSIFIED) has no evidence yet in either direction —
+this remains true after ratification, not resolved by it.
+
+**Phase 1 discharge:**
+- Status → `Accepted` — done, this addendum.
+- `STATE.md` forward-board line for the §4 bootstrap trigger — added.
+- Template `§Campaign-defaults` row — **NOT done. `docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md`
+  does not exist in this tree or in its git history.** It was excluded from the 2026-08-14
+  public-transition seed as "cold long-term-memory archive" (`docs/ltm/**` curation rule), but a
+  blast-radius grep this session found it's still cited as the canonical owner of "Default #1–#6"
+  by at least eight live briefs (H-TSMOM-1, H-ZNAUC-1, D5, H-OD-1, Q-KBUDGET-1, Q-TVCOV-1,
+  Q-KBUDGET-HARVEST-1) and one **Accepted** ADR (`2026-08-05-avenue-a-generate-confirm-route.md`).
+  That's a larger gap than this ADR's own Phase 1 — flagged to the operator separately, not
+  silently worked around or fabricated here.
+
+**Phase 2 (hook 3) re-run this session:** `grep -rniE "flag.{0,40}promot" docs/briefs/pre-registration/ docs/adr/ | grep -vi "never promot"`
+→ clean, 0 hits. No campaign mis-cites the lane as a promotion path.
+
+**Blast-radius sweep (this session):** one live mirror found and fixed —
+[`2026-07-26-mechanism-counterparty-constraint-boundaries.md`](2026-07-26-mechanism-counterparty-constraint-boundaries.md)
+called this "sibling Proposed ADR"; updated. `docs/adr/INDEX.md` regenerated mechanically. The
+ST-EH-1 closure and its pre-registration still say "Proposed" in dated, `FINAL`/frozen bodies —
+left untouched per this repo's append-don't-rewrite convention for closed records.
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-07-26 | Drafted `Proposed` at operator direction, alongside ST-EH-1 Stage-0 (first campaign-local instance). Operator ratification pending. | Joshua (direction) + Claude Code (Fable 5) |
+| 2026-08-21 | Ratified `Accepted` (Addendum 2026-08-21). Template-row step blocked — target file absent from this tree. | Claude Code, per operator direction |
