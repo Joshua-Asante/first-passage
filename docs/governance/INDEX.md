@@ -34,5 +34,32 @@ facts remain with the linked owners; this page does not restate locked values.
   [`../spec/2026-06-27-session-log-rolloff-design.md`](../spec/2026-06-27-session-log-rolloff-design.md)).
 - Hygiene sentinel: `make sentinel`.
 - Skill mirror check/copy: `make sync-skills-check` / `make sync-skills`.
+- INDEX/CATALOG liveness census (report-only): `make sync-liveness`.
+  Not in [`../../scripts/gates.yml`](../../scripts/gates.yml) — Phase 5b named.
 - Session narrative: read the newest entry in
   [`../SESSIONS.md`](../SESSIONS.md); older entries are indexed at its end.
+
+## Liveness census (2026-08-22)
+
+Pointer, not a second owner. Re-run: `make sync-liveness`.
+`--apply-index` unused (reserved-close Open rows stay Open).
+
+| limb | count |
+|---|---|
+| `stale_index_open` | 0 |
+| `open_with_hot_closure` | 0 |
+| `archive_owed_active` | 0 |
+
+Verdict: **CLEAN**. `scripts/gates.yml` untouched this pass.
+
+## Named-not-opened (nav leftover)
+
+Not a sixth root doc. Pointers only.
+
+| Item | Disposition |
+|---|---|
+| Phase 5b — wire `sync_liveness` into `gates.yml` | Named. GO only if this census stays CLEAN. Candidate: `path-conditional` on `docs/briefs/INDEX.md` + `lab/CATALOG.md`. Not W5 leftover C-P5-04 / H6 (CI composition). |
+| Phase 7 — ADR topic view | Named. Needs a new `AdrHeader` field + `check_adr_graph.py --regenerate-index`. No miss evidence from P0–P4. |
+| Phase 8 — unify `ops/` imports | Named. Dual layout is intentional ([`REPO_MAP.md`](../../REPO_MAP.md) §2.2). Architecture ADR + Fly/deploy blast; out of nav scope. |
+| Phase 2b — further CATALOG stamps | Named. Leftovers on [`lab/analysis/README.md`](../../lab/analysis/README.md). Do not mass-stamp `Verdict:`. `time_to_pass.py` stays C-P2-05. |
+| Non-nav leftovers | C-P1-06 DISC-CAMP-0 prereg body · W5 CI-from-`gates.yml` (H6 HOLD) · Q-PUBTRANS-1 still `Proposed` · W6 lockfile discharged (PR #92). |

@@ -173,11 +173,12 @@ Roles that must **not** restate canonical values:
   cross-session threads with no other home + the forward-trigger board). Not a
   state snapshot: carries no working-tree status, risk %, anchor number, version,
   hash, or owner table — points here (this §7) for ownership. See its header.
-  Executed operator decisions appear only in its **decision index** (a concise
-  entry + owner link per decision — relaxed 2026-08-19 from a strict one-line
-  cap, see edit log), never as dated narrative sections (demoted 2026-07-16;
-  reaffirmed 2026-08-03 — see edit log). Closed/retired rows are deleted from
-  STATE (not struck); detail stays with the owning ADR/closure.
+  Executed operator decisions appear only in its **decision index** (one line
+  + owner link per decision — restored 2026-08-22 after the Phase 6 diet; the
+  2026-08-19 concise relaxation is historical, see edit log), never as dated
+  narrative sections (demoted 2026-07-16; reaffirmed 2026-08-03 — see edit
+  log). Closed/retired rows are deleted from STATE (not struck); detail stays
+  with the owning ADR/closure.
 - **`docs/SESSIONS.md`** — narrates work; links the ADR/CHANGELOG/commit instead
   of duplicating its values. Prefer W5 entry classes; keep prose beyond the
   five fields short (~40 words) — [`W5 ADR`](adr/2026-08-07-w5-governance-diet.md).
@@ -711,6 +712,12 @@ Edits to existing rules must be logged with a dated entry explaining what change
   13 and 16 — both ordinals had drifted off their target as later gates were
   inserted ahead of them. Replaced both with the gate's stable `id:` field, which
   cannot drift as new gates are inserted. No rule *behavior* changed; reference-only.
+- **2026-08-22 — Rule 7 STATE decision-index restored to one line + owner.**
+  Phase 6 diet collapsed the 105 remaining executed-decision bullets after
+  the 2026-08-19 concise relaxation had grown them back into multi-paragraph
+  restatements. Body of this §7 and `STATE.md`'s anti-accretion header match.
+  Additive; no locked config, allocation, `dd_protection`, Pine, or rail
+  touched.
 - **2026-08-19 — Rule 7 STATE decision-index cap relaxed from strict one-line
   to concise.** Practice had already drifted (the persona-hierarchy panel's
   own 08-19 decision-index entry ran ~6 lines/~100 words) without a matching
