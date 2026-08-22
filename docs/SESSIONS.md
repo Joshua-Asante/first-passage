@@ -14,7 +14,7 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
-## 2026-08-22n — Part B ADR drafted (two-ledger K question), `Proposed`
+## 2026-08-22o — Part B ADR drafted (two-ledger K question), `Proposed`
 
 **Focus:** Decision. Filed the GROW spec v2 Part B ADR (two-ledger K question), unlocked by
 08-22m's GROW-0 `RESOLVED` verdict.
@@ -35,6 +35,21 @@ citation-attribution pattern and recommends a further independent read before ra
 **Live-ops state:** unchanged — rail disarmed; no book. No Databento spend.
 
 ---
+
+## 2026-08-22n — Ox Alpha (OpenRouter stealth model) evaluated and scoped for Tradeify-sprint use
+
+**Focus:** Decision. Evaluate OpenRouter's free stealth model (`stealth/ox-alpha`) as a resource for the Tradeify bottleneck sprint; scope and ratify its actual role.
+
+**Shipped:** [`ADR`](adr/2026-08-22-ox-alpha-adversarial-lens-scope.md) `Accepted` — sanctions it only as a stateless, zero-authority, sanitized-only adversarial second-opinion lens run ahead of `fable-judge`/the human pre-ratification panel; declines a public-mechanism-harvest lane and a walled-off engineering-assist lane (research workflow found the harvest channel already exhausted and the real engine blocker sits in excluded `core/portfolio_mc.py`-adjacent territory). Validation addendum: 2 of the real SLR-MYM-1 brief's 14-agent-caught BLOCKERs (the pure logic/arithmetic ones, needing no repo context) were genericized and sent blind — both independently caught with correct supporting arithmetic (16x double-multiplier derivation; N-basis gate mismatch, 120/0.64≈188).
+
+**Decisions/defects:** EULA finding logged in the ADR's §0 — the model's own listing page claims prompts aren't used for training, but the incorporated Stealth Program EULA grants an irrevocable/perpetual/royalty-free training license; the two contradict.
+
+**Open / next:** First named uses per the ADR: the F1 fork ruling (how the four-firms ADR §4 reads a Tradeify-resting discharge) and the GROW-lane pre-registration/streak-checker artifacts. Revert trigger: one fingerprinting incident, or 3 consecutive uses catching nothing a human pass wouldn't have.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-22m — GROW-0 harness: real full-scale run, `RESOLVED`
 
 **Focus:** Measurement. Ran the frozen N=5,500/c=7 GROW-0 harness for real (Task 13 Step 7 of
@@ -57,6 +72,7 @@ question filing decision is unlocked for the operator — not decided here, no A
 **Live-ops state:** unchanged — rail disarmed; no book. No Databento spend.
 
 ---
+
 ## 2026-08-22l — GROW-0 harness implementation: 13 tasks, subagent-driven
 
 **Focus:** Build. Implemented the frozen GROW-0 prereg's harness against
@@ -82,6 +98,7 @@ still waits on that gate.
 **Live-ops state:** unchanged — rail disarmed; no book. No Databento spend.
 
 ---
+
 ## 2026-08-22k — GROW-0 synthetic calibration harness pre-registration: drafted and frozen
 
 **Focus:** Build-prep. Drafted the GROW-0 PREREG named as forward work in 2026-08-22j, per the
@@ -107,6 +124,7 @@ GROW-0's own RESOLVED/FALSIFIED gate.
 **Live-ops state:** unchanged — rail disarmed; no book. No Databento spend.
 
 ---
+
 ## 2026-08-22j — GROW-lane build authorization; deep-lane tooling slice 1
 
 **Focus:** Build. Operator GO ("ratify, accept, and begin the build") on GROW spec v2 Part A.
@@ -120,6 +138,7 @@ GROW-0's own RESOLVED/FALSIFIED gate.
 **Live-ops state:** unchanged — rail disarmed; no book. No Databento spend.
 
 ---
+
 ## 2026-08-22i — Blast-radius pointer repair after catalog ADR Phase 1
 
 **Focus:** Rule 7 sweep after Phase 1. Report-first; parentheticals only. No mass `--slug`. No sixth root doc.
@@ -133,6 +152,7 @@ GROW-0's own RESOLVED/FALSIFIED gate.
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-22h — Accept catalog hot-vs-disposition ADR; Phase 1 GO
 
 **Focus:** Operator `Accepted` + GO. Verdict-wins parser, C2 joins to `hot`, regenerate CATALOG. No mass `--slug`. No sixth root doc.
@@ -146,6 +166,7 @@ GROW-0's own RESOLVED/FALSIFIED gate.
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-22g — Draft catalog hot-vs-disposition ADR (CC)
 
 **Focus:** Draft the commissioned ADR (PR #98). ADR only — no parser/C2, no `--slug`, no CATALOG hand-edit.
@@ -159,6 +180,7 @@ GROW-0's own RESOLVED/FALSIFIED gate.
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-22f — Commission catalog hot-vs-disposition ADR
 
 **Focus:** Open a draft PR with a CC handoff so Claude Code drafts the catalog `hot` vs `disposition` ADR. No parser/C2. No sixth root doc.
@@ -172,6 +194,7 @@ GROW-0's own RESOLVED/FALSIFIED gate.
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-22e — Liveness census + STATE diet (nav P5/P6)
 
 **Focus:** Phase 5 census + report-only `make sync-liveness`; Phase 6 collapse STATE decision-index to one line + owner. No sixth root doc. `gates.yml` untouched.
@@ -185,6 +208,7 @@ GROW-0's own RESOLVED/FALSIFIED gate.
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-22d — CATALOG hygiene (Phase 2)
 
 **Focus:** Archive spent CATALOG ACTIVE slugs via `--slug`; name leftovers. No sixth root doc. No CATALOG Status hand-edits.
@@ -198,6 +222,7 @@ GROW-0's own RESOLVED/FALSIFIED gate.
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-22c — Index honesty + pointer maps (P1/P3/P4)
 
 **Focus:** make existing indexes stop 404ing or lying; extend Phase-0 READMEs; public-clone retrieval honesty. No sixth root doc. No CATALOG Status flips.
@@ -211,6 +236,7 @@ GROW-0's own RESOLVED/FALSIFIED gate.
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-22b — merge origin/main into PR #91 (conflict fix)
 
 **Focus:** Resolve PR #91 conflicts after #89/#90 landed MSL-S4 Explore-confirm + `PARKED` on `docs/SESSIONS.md`.
