@@ -16,6 +16,10 @@ facts remain with the linked owners; this page does not restate locked values.
 - [`deletion_ledger.md`](deletion_ledger.md) — C1–C4 deletion/attic criteria and
   restore provenance.
 - [`../briefs/INDEX.md`](../briefs/INDEX.md) — open/dormant question roster.
+- [`../../lab/CATALOG.md`](../../lab/CATALOG.md) — lab campaign registry (open first).
+- [`../../core/strategies/CATALOG.md`](../../core/strategies/CATALOG.md) — strategy dispositions.
+- [`../../ops/instruments/PROFILES.md`](../../ops/instruments/PROFILES.md) — mechanism × instrument matrix.
+- [`../adr/INDEX.md`](../adr/INDEX.md) — derived ADR lifecycle index.
 - [`../../STATE.md`](../../STATE.md) — cross-session open threads and forward
   obligations.
 

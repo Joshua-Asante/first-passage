@@ -90,6 +90,14 @@ def test_load_profiles_parses_a_valid_block(tmp_path):
     assert profiles[0].cells[0].verdict == "DEAD"
 
 
+def test_load_profiles_skips_directory_readme(tmp_path):
+    d = _write_ledger(tmp_path, "TST.md", VALID_LEDGER)
+    (d / "README.md").write_text("# hops only\n", encoding="utf-8")
+    profiles, findings = ip.load_profiles(d)
+    assert findings == []
+    assert [p.symbol for p in profiles] == ["TST"]
+
+
 def test_p1_flags_unknown_verdict(tmp_path):
     d = _write_ledger(tmp_path, "TST.md", VALID_LEDGER.replace("DEAD", "MOSTLY-DEAD"))
     _, findings = ip.load_profiles(d)
