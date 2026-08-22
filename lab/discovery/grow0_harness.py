@@ -125,3 +125,31 @@ def run_red_leak(n: int = LIMB_B_N, c: int = LIMB_B_C) -> str:
             sum_clears += 1
     detected_leak = sum_clears >= c  # Limb-B-shaped check applied to this rigged run
     return "FAILED_AS_EXPECTED" if detected_leak else "PASSED_UNEXPECTEDLY"
+
+
+_RED_BLIND_NULL_INDICES = tuple(i for i in range(10) if i != TRUE_EDGE_VARIANT_INDEX)
+# (0, 1, 2, 3, 4, 6, 7, 8, 9) -- the 9 original grammar indices RED-BLIND draws from,
+# in the same order spawn_panel_streams(..., 9) below produces its 9 leaves. theta*
+# (index 5) is not a member of this tuple by construction.
+
+
+def run_red_blind() -> str:
+    """Prereg §6.4 (v3 mechanism): full K=10 grammar's theta* is structurally
+    excluded from RED-BLIND's own draw set (only 9 null-shape leaves, at
+    original grammar indices _RED_BLIND_NULL_INDICES, are ever spawned from
+    the red_blind branch). run_panel's own `nominee` field is an array
+    position (0-8) into THIS 9-element list, not an original grammar index --
+    mapping it back via _RED_BLIND_NULL_INDICES[result.nominee] is what makes
+    "== TRUE_EDGE_VARIANT_INDEX" a genuine structural impossibility rather
+    than comparing two different index spaces as if they were the same one.
+    Because the nominee is still the MAXIMUM of several draws (positively
+    biased, like the normal flow), it passes nomination gates (a)/(b) in the
+    overwhelming majority of trials and reaches the real comparison -- unlike
+    v2's abandoned argmin design, which mostly re-tested gate (a) instead.
+    """
+    branches = build_root_branches()
+    train_children, confirm_children = spawn_panel_streams(branches["red_blind"], 9)
+    result = run_panel(train_children, confirm_children, edge_variant_index=None, floor=FLOOR)
+    grammar_nominee = _RED_BLIND_NULL_INDICES[result.nominee]
+    passed = (not result.abandoned) and grammar_nominee == TRUE_EDGE_VARIANT_INDEX and result.clears
+    return "PASSED_UNEXPECTEDLY" if passed else "FAILED_AS_EXPECTED"

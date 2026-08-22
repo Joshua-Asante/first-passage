@@ -92,3 +92,25 @@ def test_run_red_leak_fails_as_expected_at_frozen_scale():
 
     verdict = run_red_leak(n=2000, c=1)
     assert verdict == "FAILED_AS_EXPECTED"
+
+
+def test_run_red_blind_fails_as_expected():
+    """RED-BLIND draws only the 9 non-theta* grammar indices
+    (0,1,2,3,4,6,7,8,9 -- theta*, grammar index 5, is never drawn at all).
+    run_red_blind maps the winning ARRAY position (0-8, from a freshly
+    spawn_panel_streams'd list) back to its ORIGINAL grammar index before
+    comparing against TRUE_EDGE_VARIANT_INDEX -- so 'grammar_nominee == 5' is
+    a TRUE structural impossibility (5 is not a member of the 9-index set
+    being drawn from), not merely a low-probability coincidence. (An earlier
+    draft of this task compared the raw array position directly against 5
+    without remapping -- since array positions 0-8 DO include the value 5,
+    that would only have been safe by accident, via the separate near-zero
+    confirm-clear probability masking a real ~1/9 nominee-position coincidence;
+    caught and fixed before implementation, not left as a latent gap.) This is
+    deterministic BY CONSTRUCTION, not merely deterministic-in-practice; a
+    single frozen-seed run is sufficient (matches Limb A's own single-panel
+    design)."""
+    from discovery.grow0_harness import run_red_blind
+
+    verdict = run_red_blind()
+    assert verdict == "FAILED_AS_EXPECTED"
