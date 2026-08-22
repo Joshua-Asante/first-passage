@@ -79,3 +79,14 @@ def test_run_limb_b_small_n_returns_consistent_shape():
     assert len(results) == small_n
     assert sum_clears == sum(1 for r in results if r.clears)
     assert (verdict == "FAIL") == (sum_clears >= small_c)
+
+
+def test_run_red_leak_fails_as_expected_at_frozen_scale():
+    """RED-LEAK's own expected clear rate (~0.63%, ~9.97x baseline per prereg §6.3)
+    means even a small-N test should reliably see it exceed a LOW c -- use a small
+    N/c pair scaled proportionally so the expected-clears arithmetic still holds
+    (500 panels x 0.0059 ~= 3 expected clears; c=1 makes this deterministic-in-practice)."""
+    from discovery.grow0_harness import run_red_leak
+
+    verdict = run_red_leak(n=500, c=1)
+    assert verdict == "FAILED_AS_EXPECTED"

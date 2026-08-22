@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from discovery.cost_model import resolve_commission
 from discovery.grow0_dgp import TRUE_EDGE_VARIANT_INDEX, build_root_branches, spawn_panel_streams
-from discovery.grow0_scoring import PanelResult, run_panel
+from discovery.grow0_scoring import PanelResult, run_panel, run_panel_leaked
 from research_utils.axis_screen import floor_at_k
 
 FLOOR = floor_at_k(10, years=6.5)  # prereg §4: floor_at_k(10, 6.5) = 1.265
@@ -106,3 +106,22 @@ def run_limb_b(n: int = LIMB_B_N, c: int = LIMB_B_C):
     sum_clears = sum(1 for r in results if r.clears)
     verdict = "FAIL" if sum_clears >= c else "PASS"
     return verdict, sum_clears, results
+
+
+def run_red_leak(n: int = LIMB_B_N, c: int = LIMB_B_C) -> str:
+    """Prereg §6.3: same N/c structure as Limb B, but CONFIRM is the panel's own
+    TRAIN max replayed (run_panel_leaked) instead of an independent draw.
+    Expected clear rate ~0.63% (~9.97x baseline) -- this rig is EXPECTED to make
+    Limb B's own binomial check report FAIL; that FAIL is what "FAILED_AS_EXPECTED"
+    means (the calibration check correctly detected the injected leak).
+    """
+    branches = build_root_branches()
+    panel_seqs = branches["red_leak"].spawn(n)
+    sum_clears = 0
+    for panel_seq in panel_seqs:
+        train_children, _ = spawn_panel_streams(panel_seq, 10)
+        result = run_panel_leaked(train_children, edge_variant_index=None, floor=FLOOR)
+        if result.clears:
+            sum_clears += 1
+    detected_leak = sum_clears >= c  # Limb-B-shaped check applied to this rigged run
+    return "FAILED_AS_EXPECTED" if detected_leak else "PASSED_UNEXPECTEDLY"
