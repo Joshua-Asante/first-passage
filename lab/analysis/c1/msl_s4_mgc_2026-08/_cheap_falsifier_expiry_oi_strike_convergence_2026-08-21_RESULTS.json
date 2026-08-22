@@ -1,0 +1,27 @@
+{
+  "verdict": "NOT_DECISIVE",
+  "detail": "arm and control windows converge toward the max-OI strike at an identical 4/7 rate; magnitude also noisy (n=7, no significance test) -- this generous check neither clears nor kills the construct",
+  "mechanism_id": "expiry-oi-strike-convergence",
+  "instrument": "MGC",
+  "proxy_instrument": "GC (parent, per PREREG_G0.md Sec6 proxy note)",
+  "cost_usd": 0.0,
+  "schemas_used": ["definition", "statistics", "ohlcv-1d"],
+  "n_cycles": 7,
+  "cycles": [
+    {"contract": "OGQ6", "expiry": "2026-07-28", "strike_star": 4400.0, "arm_disp_start": 352.3, "arm_disp_end": 374.3, "arm_converged": false, "ctrl_disp_start": 277.4, "ctrl_disp_end": 353.5, "ctrl_converged": false},
+    {"contract": "OGN6", "expiry": "2026-06-25", "strike_star": 3800.0, "arm_disp_start": 379.9, "arm_disp_end": 215.8, "arm_converged": true, "ctrl_disp_start": 523.8, "ctrl_disp_end": 417.4, "ctrl_converged": true},
+    {"contract": "OGM6", "expiry": "2026-05-26", "strike_star": 4500.0, "arm_disp_start": 6.5, "arm_disp_end": 1.1, "arm_converged": true, "ctrl_disp_start": 236.2, "ctrl_disp_end": 200.0, "ctrl_converged": true},
+    {"contract": "OGK6", "expiry": "2026-04-27", "strike_star": 4400.0, "arm_disp_start": 342.2, "arm_disp_end": 280.9, "arm_converged": true, "ctrl_disp_start": 338.9, "ctrl_disp_end": 319.9, "ctrl_converged": true},
+    {"contract": "OGJ6", "expiry": "2026-03-26", "strike_star": 4500.0, "arm_disp_start": 129.7, "arm_disp_end": 56.9, "arm_converged": true, "ctrl_disp_start": 637.9, "ctrl_disp_end": 627.0, "ctrl_converged": true},
+    {"contract": "OGH6", "expiry": "2026-02-24", "strike_star": 4500.0, "arm_disp_start": 484.5, "arm_disp_end": 632.1, "arm_converged": false, "ctrl_disp_start": 232.0, "ctrl_disp_end": 529.0, "ctrl_converged": false},
+    {"contract": "OGG6", "expiry": "2026-01-27", "strike_star": 4400.0, "arm_disp_start": 507.9, "arm_disp_end": 652.2, "arm_converged": false, "ctrl_disp_start": 47.3, "ctrl_disp_end": 182.7, "ctrl_converged": false}
+  ],
+  "arm_converge_rate": 0.5714285714285714,
+  "ctrl_converge_rate": 0.5714285714285714,
+  "mean_arm_displacement_reduction_pts": -1.4714285714285703,
+  "mean_ctrl_displacement_reduction_pts": -48.00000000000001,
+  "std_arm_displacement_reduction_pts": 114.81332260508384,
+  "std_ctrl_displacement_reduction_pts": 134.97936879390124,
+  "runner": "_cheap_falsifier_expiry_oi_strike_convergence_2026-08-21.py",
+  "excluded_live_cycle": {"contract": "OGU6", "expiry": "2026-08-26", "reason": "still open as of the run date (2026-08-21) -- no post-expiry price data available, excluded to avoid look-ahead"}
+}

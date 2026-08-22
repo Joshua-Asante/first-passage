@@ -29,4 +29,4 @@ and ADR 2026-08-04 (Tradeify de-scope).
 | striker_dj30_v4.5_mnq_qtxg1 | striker | PARKED_PROTOTYPE | Q-TXG-1 sibling-swap: DJ30 v4.5 → MNQ research port (not F1 redeploy) | core/strategies/striker/striker_dj30_v4.5_mnq_qtxg1_CARD.md | core/strategies/_archive/striker/ |
 | aegis_jpy_futures_v0_3 | aegis | PARKED_PROTOTYPE | Aegis 6J futures prototypes (base + bepad); research only | core/strategies/aegis/aegis_jpy_futures_v0_3_CARD.md | core/strategies/_archive/aegis/ |
 | orb_mnq | orb | FALSIFIED_PARKED | ORB-MNQ-1 v0.1/v0.2 (+ CANDIDATE docs); payability target falsified | core/strategies/orb/orb_mnq_CARD.md | core/strategies/_archive/orb/ |
-| candidates | candidates | FALSIFIED_PARKED | Research candidate pine + sweep yamls; not live | core/strategies/candidates/candidates_CARD.md | core/strategies/_archive/candidates/ |
+| candidates | candidates | PARKED_PROTOTYPE | Phase A cold-store body FALSIFIED_PARKED; MSL-S4 `expiry-oi-strike-convergence` (MGC) live, G0 FROZEN, not yet hash-pinned (see card) | core/strategies/candidates/candidates_CARD.md | core/strategies/_archive/candidates/ |

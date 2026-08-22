@@ -1025,6 +1025,12 @@
         "*Auction limb (2026-07-27) \u2014 dies at the PROCUREMENT GATE, not on edge, on ANY instrument.* Closing-auction/MOC-imbalance is reject-at-bar for an instrument-independent reason, hence recorded as a class finding rather than a cell. It is **not** killed by the free-data classification (the signal is exchange-licensed, unlike LETF EOD rebalance whose signal is public-AUM-derivable) nor by the a4 category prior (a published **signed** imbalance is not participant-category splitting) \u2014 those non-kills are stated so a future session does not borrow the wrong one. What binds: free-data route 1 requires **demonstrating** a vol-orthogonal, within-era-robust edge (F1 had no \u03b4 at all \u2014 unclaimed, not cleared); the order-flow modality is parenthesised to the standing *\"don't buy explanatory data before a survivor justifies it\"* rule (Avenue-A qualifying triple unmet; *scoped-not-procured*); and harvest Req 2 independently renders it UNSCREENABLE with the \u03b4-extraction probe route **circular** (it needs the gated data). Cheapest re-open is free: a published cohort \u03b4 for imbalance \u2192 index-futures response, citable without procurement. [F1 ruling](../../docs/briefs/2026-07-27-f1-moc-imbalance-mym-ruling.md)"
       ]
     },
+    "expiry-oi-strike-convergence": {
+      "definition": "**NEW 2026-08-21 (MSL-S4).** Discharges the 2026-08-14 WHO-track E1 stop rule",
+      "findings": [
+        "none yet \u2014 G0 frozen on operator B4 GO 2026-08-21; Explore-confirm (charter"
+      ]
+    },
     "htf-compression-breakout-5m": {
       "definition": "**NEW 2026-08-10.** Trade the **5m** compression\u2192expansion break itself (not an HTF bias filter on 1m scalps): structural stop at the opposite quiet extreme; first valid signal per RTH session only (temporal selectivity under [`ADR 2026-08-10`](../../docs/adr/2026-08-10-temporal-selectivity-outside-mapped-levers.md)); session-flat; Tradeify RT. Distinct from `compression-gated-breakout` dense-1m / fixed-G cells.",
       "findings": [

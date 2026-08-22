@@ -14,6 +14,133 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-21l — MSL-S4 real Explore-confirm drafted: IAAFT-surrogate null replaces the naive control
+
+**Focus:** `21k`'s finding (the cheap falsifier's control window is trend-confounded, same cycles
+converge/diverge in both arm and control) meant the deferred Explore-confirm needed a genuinely
+different significance test, not just a re-run with more data.
+
+**Shipped:** [`EXPLORE_GO.DRAFT.md`](../lab/analysis/c1/msl_s4_mgc_2026-08/EXPLORE_GO.DRAFT.md) —
+corrects the control design to an IAAFT-surrogate null (methodology precedent: the corrected-null-
+battery this repo already proved out for an analogous autocorrelation-confound problem,
+`docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md`, adapted from a
+TR-persistence statistic to strike-convergence), upgrades the universe to weeklies + monthlies
+(the cheap falsifier used monthlies only, n=7 — CME's 2024 weekly expansion makes real power
+available), and corrects the IS/CONFIRM partition to exclude the window the TV backtest + cheap
+falsifier already viewed (2025-09-30→2026-08-21), reserving a genuinely untouched CONFIRM block
+(2025-04-01→2025-09-29). Statistical core
+[`explore_confirm_lib.py`](../lab/analysis/c1/msl_s4_mgc_2026-08/explore_confirm_lib.py) +
+[`test_explore_confirm_lib.py`](../lab/analysis/c1/msl_s4_mgc_2026-08/test_explore_confirm_lib.py)
+— 23/23 passing on synthetic fixtures, including a power check (detects an injected synthetic
+convergence signal) and a false-positive check (does not flag pure autocorrelated noise). No
+driver script yet (no `DATABENTO_API_KEY` here) — writing it is the promoted token's first step,
+not a claimed-done item. `PREREG_G0.md` §4 points to the new token.
+
+**Decisions/defects:** one caught and fixed before commit — an early injected-signal test used a
+stale pre-injection price snapshot to pick pull direction, which let earlier cycles' compounding
+pulls silently flip later cycles' effective sign and produced net divergence instead of the
+intended convergence; fixed to recompute direction from the live, incrementally-injected price.
+Diagnostic-gate tolerance deliberately left uncalibrated (pilot-calibration owed on real data, not
+borrowed from the battery's own TR-specific numbers).
+
+**Open / next:** a local session with Databento access writes the driver script and runs the
+pilot phase (diagnostic-gate calibration) before drawing the official IAAFT seed block. Operator
+TV backtest (already partially done, one cycle) can continue in parallel — neither substitutes for
+the other. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1 (still not yet an *acceptable*
+strategy).
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`. (unchanged)
+
+---
+## 2026-08-21k — MSL-S4 Step-4 falsifier independently re-verified; per-cycle correlation disclosed
+
+**Focus:** `21j`'s local-run `NOT DECISIVE` result landed on the `ptpa57` branch, not pushed by the
+orchestrating session. Re-derived rather than trusted per this thread's own standing discipline.
+
+**Shipped:** Every `_RESULTS.json` number reproduces exactly by hand (converge flags, both
+converge rates, both mean-displacement-reduction figures). One disclosure beyond the original
+write-up: the identical 4/7 arm/control rate is the *same* four cycles converging and *same*
+three diverging in both windows — outcome-correlated per cycle, consistent with a shared
+multi-week trend driving both windows rather than anything expiry-specific. Reinforces
+`NOT DECISIVE`, doesn't change it. Also flagged, not checked: `GC.c.0` continuous-contract
+roll-adjustment convention untested against the databento-data skill's own level-distortion
+warning. [`LOG.md` addendum](../lab/analysis/c1/msl_s4_mgc_2026-08/_cheap_falsifier_expiry_oi_strike_convergence_2026-08-21_LOG.md#addendum-2026-08-21--independent-re-verification-orchestrating-session) ·
+[`PREREG_G0.md`](../lab/analysis/c1/msl_s4_mgc_2026-08/PREREG_G0.md) §0 pointer added for consistency.
+
+**Decisions/defects:** none found. No verdict change, no `K_intrinsic`/`MECHANISMS.md` change.
+
+**Open / next:** unchanged from `21j` — full Explore-confirm (proper IS/CONFIRM, weeklies, real
+significance test, and a trend/autocorrelation-aware control) still owed. Operator TV backtest
+remains the immediate next step per the runbook.
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`. (unchanged)
+
+---
+## 2026-08-21j — MSL-S4 Step-4 cheap falsifier filled via local databento run — `NOT DECISIVE`
+
+**Focus:** `ptpa57`'s G0-frozen MSL-S4 card (`expiry-oi-strike-convergence`, MGC) disclosed Step-4
+as `NOT AVAILABLE` — its cloud container had no `DATABENTO_API_KEY`. Operator asked a local
+session (with the key configured) to run it and report back.
+
+**Shipped:** 7 completed OG (Gold monthly options) expiry cycles pulled ($0 — `definition`/
+`statistics`/`ohlcv-1d` schemas only), a generous delete-test analogue: does price converge toward
+the max-OI strike more in the 3-session pre-expiry arm window than in a matched non-expiry control
+window? Both land at 4/7 — identical rate, no differential signal.
+[`STAGE1.md`](../lab/analysis/c1/msl_s4_mgc_2026-08/STAGE1.md) §Step 4 addendum +
+[`_cheap_falsifier_expiry_oi_strike_convergence_2026-08-21_LOG.md`](../lab/analysis/c1/msl_s4_mgc_2026-08/_cheap_falsifier_expiry_oi_strike_convergence_2026-08-21_LOG.md).
+
+**Decisions/defects:** none — this is evidence for the deferred Explore-confirm, not a gate
+result. No `K_intrinsic`, `MECHANISMS.md`, or `candidates_CARD.md` change; not the pre-registered
+Explore-confirm (no IS/CONFIRM partition, no significance test, monthlies only, n=7).
+
+**Open / next:** full Explore-confirm (proper IS/CONFIRM, weeklies, real stats) still owed before
+any TV/live build-out, unchanged from the G0 freeze. Operator TV backtest (charter step 7) remains
+the immediate next step per the runbook.
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`. (unchanged)
+
+---
+## 2026-08-21i — MSL-S4 sources a NEW WHO, discharges E1; G0 frozen, Pine authored CC-solo
+
+**Focus:** Operator asked to find a viable Tradeify strategy this session, using MSL's iterative
+sourcing loop. MSL Phase 3 was `HOLD (E1)` since 2026-08-14 — every prior card dead, an
+estate-wide manual sweep found the whole envelope dry.
+
+**Shipped:** Three parallel sourcing lanes (databento data-mining — blocked, no
+`DATABENTO_API_KEY`/cached panel in this environment, confirmed as a genuinely untried method;
+literature harvest — revived the open P4 dealer-gamma lead, surfaced a gold-options-density
+finding; manual gap-hunt — five doors investigated and honestly killed) plus a fourth focused
+verification pass resolved a live disagreement between two lanes over whether "options-expiry
+pinning" on metals inherits an already-dead directional dealer-gamma-sign construct's kill. It
+does not: the pinning construct's trade direction is read off observable price-vs-published-strike
+displacement, never an assumed dealer-gamma sign — new mechanism id
+`expiry-oi-strike-convergence` declared NEW in `MECHANISMS.md`. Operator **B4 GO** 2026-08-21 →
+G0 [`PREREG_G0`](../lab/analysis/c1/msl_s4_mgc_2026-08/PREREG_G0.md) FROZEN on MGC. Explore-confirm
+(charter step 5a) **deferred by explicit operator override** (no market-data access this
+session) — Pine authored CC-solo directly off the frozen construct
+(`pine_lint` 13/13 PASS), sent to the operator rather than committed (avoids the
+unrecoverable-pin-bytes failure `check_pine_manifest.py` guards against — an ephemeral cloud
+session cannot durably hold gitignored `.pine` bytes). Full runbook with exact inputs/window/TZ
+and the durable-machine pin instructions:
+[`RUNBOOK.md`](../lab/analysis/c1/msl_s4_mgc_2026-08/RUNBOOK.md).
+
+**Decisions/defects:** none found in the frozen construct's own reasoning under adversarial
+re-check (ran the actual `instrument_profiles.py cell` door-check, re-derived the delete/flip
+test independently rather than trusting the sourcing lane's self-report). The deferred
+Explore-confirm step is a real, disclosed gap, not a defect — it is an operator-elected trade of
+rigor for speed, recorded as such in three places (`MECHANISMS.md`, `PREREG_G0.md` §0a,
+`RUNBOOK.md`) so it is never read as a silent skip.
+
+**Open / next:** operator TV backtest per the runbook. If it looks dead on sight, this closes as
+cheaply as any other MSL Explore kill. If it looks live, the deferred Explore-confirm (real
+MGC/GC panel + delete/flip on real data) is still owed before any survivor-MC / TNEC-1 intake
+step. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1 (both still wait on an eventually
+*acceptable* strategy — this card is not yet one). Live-ops posture unchanged: rail built /
+disarmed; no book.
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
+
+---
 ## 2026-08-21h — Q-SCORE-1 living pin retargeted off the date_coverage ceiling
 
 **Focus:** `validation-controls` red on every later `lab/**` PR (incl. #86) after a new dated closure tripped the Q-SCORE-1 Block 1 ratio pin.
