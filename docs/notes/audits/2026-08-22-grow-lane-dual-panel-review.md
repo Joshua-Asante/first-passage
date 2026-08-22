@@ -43,7 +43,8 @@ Accepted [deep-iteration lane charter](../../adr/2026-08-16-deep-iteration-lane-
   net-of-cost, which the fitness function already scores" is false at HEAD: no
   incumbent-comparison term exists anywhere in the scoring code; the raised bar's route ③
   demands beats-incumbent, "not merely clears the cost floor" — which is precisely what the
-  step-4 composite computes; STATE.md's 2026-08-10 row records route ③ "unclearable ex ante"
+  step-4 composite computes; the 2026-08-10 falsifier LOG (L78; the STATE decision-index row
+  carrying it was collapsed by the same-day nav pass) records route ③ "unclearable ex ante"
   for the sibling lane. Separately (audit G-DOOR): v1's own Verify block accepted the
   `instrument_profiles.py` exit-2 FATAL as proof the door check "executes" — on that path
   `cmd_cell` returns **before** the BINDING BAR loop, proving execution without consultation.

@@ -126,8 +126,9 @@ Steps:
    route ③ (beats-incumbent-ORB-MNQ net-of-cost) **requires an explicit frozen
    incumbent-comparison term in confirm scoring** — nothing at HEAD computes it (v1's "already
    scores" claim was false), the incumbent basis on record is always-MNQ ORB +5.19 bp
-   (`rejected_candidates.md` cross-index entry), and STATE's 2026-08-10 row records route ③
-   "unclearable ex ante" for the sibling lane — or route ① under the 2026-08-10
+   (`rejected_candidates.md` cross-index entry), and the 2026-08-10 falsifier LOG records
+   route ③ as "a *results* bar — unclearable ex ante, by construction" (so only a wired
+   comparison term, never a PREREG promise, can discharge it) — or route ① under the 2026-08-10
    temporal-selectivity ruling where its §2-B conditions hold. The EOD-adversity raised bar
    (2026-08-02; + ADR 2026-07-31 §5's 15:30-exit bar) binds the grammar's exit-geometry
    construct class yet sits in zero profile ledgers: register it in the index profile ledgers
@@ -180,7 +181,10 @@ blind-unbound residual; L388 `_require_admission`) · CON-4 + CON-5 closures @ `
 @ `85a83ba` (frozen gate: bust ≤ 3.0% ∧ P(pass) ≥ 50%; the intraday-honest qualifier arrived
 via W1/TNEC-1) · W4 dormancy ADR @ `85a83ba` (re-arm condition) · F3 spec ·
 [dual-panel audit note](../notes/audits/2026-08-22-grow-lane-dual-panel-review.md) (this
-change-set) · STATE.md 2026-08-10 row (route ③ unclearable ex ante) ·
+change-set) ·
+[2026-08-10 falsifier LOG](../../lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_cost_geometry_2026-08-10_LOG.md)
+L78 @ `85a83ba` (route ③ = results bar, unclearable ex ante; the prior STATE decision-index row
+was collapsed by the 2026-08-22 nav pass — cite the LOG, not STATE) ·
 `docs/rejected_candidates.md` cross-index entry (+5.19 bp incumbent basis) · Q-EVALSEQ-1 /
 Q-POLFRONT-1 closures (EOD-clock bounds; 2026-08-17 remeasure)
 Verify (Phase-0, implementer runs before build): `grep -n "Status:" docs/adr/2026-08-16-deep-iteration-lane-charter.md`
