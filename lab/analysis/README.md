@@ -12,3 +12,33 @@ to infer what is live.
 Theme READMEs today: `c1/`, `harvest/`, `regime/`, `striker/`, `aegis/`,
 `orb/`, `legacy/`, `mc/`, `_inbox/`.
 Archive tool: `python scripts/archive_lab_analysis.py --help`.
+
+## Phase 2 leftovers (2026-08-22)
+
+Not a second catalog. Status cells still flip only via
+`python scripts/archive_lab_analysis.py --slug …` then `--regenerate-catalog`.
+Inventory this pass: **0 archiveable** as stamped (88 ACTIVE / 11 HOLD);
+`ACTIVE` as the first `Status:` field masks a later terminal token.
+
+**This pass slugged:** `dstruct_mnq_2026-08` (`NULL` — already on the RESULTS
+card; Verdict stamped first so `--slug` could see it). Body:
+[`lab/archive/dstruct_mnq_2026-08/`](../archive/dstruct_mnq_2026-08/).
+
+| Hold / leave | Why `--slug` is refused or withheld |
+|---|---|
+| `msl_s2b_mym_2026-08` | HOLD; STAGE-1 FAIL is not archiveable |
+| `cheap_falsifiers_2026-08` | HOLD; stay hot while CON-* cite them |
+| `mnq_r2agrun_routeb_2026-08`, TNEC CON-2…5 | `AMBIGUOUS-HOLD` |
+| `q_trainkill_{1,2,3}_2026-08` | HOLD |
+| `xauusd_cgb_2026-06-15` | operational HOLD |
+| `lab/analysis/time_to_pass.py` | C-P2-05; separate GO; Rule 16 inbound index first |
+| `geofit_iid_sufficiency_power_2026-08-15`, `geofit_skewed_family_construction_2026-08-15` | stay-hot imports (C-P1-10) |
+| `aegis_6j_prop_reconstruction_2026-07` | Wave-1 artifacts retained hot |
+| `q_rail_1_2026-07` | rail evidence; many living cites |
+| `msl_s4_mgc_2026-08` | PARKED; no source card |
+| informal ORB probes (`orbmnq1_*_probe_2026-08-20`) | C-P1-10 left ACTIVE |
+| `rangestate_gc_2026-08` / `rangestate_corrected_2026-08` / `rangestate_mcl_2026-08` | family coupled; mixed SIGNAL-GENERIC |
+| `ict_mnq_2026-08` | mixed W/D confirm; `cheap_falsifiers` coupling |
+| `driftex_2026-08`, `eodadv_mnq_2026-08` | body already FALSIFIED; frozen prereg + `rejected_candidates` + sentinel path pins |
+| `tnec_l2_sourcing_2026-08-10` | SCREEN-FAIL is not archiveable |
+| NO_SOURCE slugs (`msl_s4_mgc`, `six_lead_cf`, `research-analyst-mnq-atomic-facts`, …) | no RESULTS/README for `--slug` |
