@@ -7,7 +7,12 @@ lab/research_utils/attested_patch.py does not exist yet (F3 spec status: PROPOSE
 """
 from __future__ import annotations
 
-from joblib import Parallel, delayed
+try:
+    from joblib import Parallel, delayed
+except ImportError as e:
+    raise ImportError(
+        "grow0_red_patch requires joblib. Install with: pip install -e .[mc]"
+    ) from e
 
 _FIRM_KEY = "Tradeify_Select_100K"
 _PATCH_KEY = "dd_lock_offset_usd"

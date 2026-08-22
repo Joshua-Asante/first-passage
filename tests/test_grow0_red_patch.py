@@ -1,5 +1,7 @@
 import pytest
 
+pytest.importorskip("joblib")  # optional [mc] extra -- see pyproject.toml
+
 from discovery.grow0_red_patch import (
     assert_intraday_channel_required,
     assert_singleton_attestation,
