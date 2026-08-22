@@ -7,7 +7,9 @@ An empty Grep is not evidence of absence — use
 
 Lookup order: [`lab/CATALOG.md`](../../lab/CATALOG.md) →
 [`docs/briefs/INDEX.md`](../briefs/INDEX.md) → this tree →
-`git show pre-prune-2026-08-08:<path>` for Great-Prune evictions.
+historical retrieval. `pre-prune-2026-08-08` is **not a tag on this public
+clone** — `git show pre-prune-2026-08-08:<path>` works only in the private
+archive; on this tree use `git log --follow -- <path>` or that archive.
 
 | On this public tree today | Job |
 |---|---|

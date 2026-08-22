@@ -6,7 +6,7 @@ to infer what is live.
 | Layout | Meaning |
 |---|---|
 | `<theme>/<slug>/` | Hot body (theme README names the family) |
-| `<slug>/CARD.md` | Archived stub; body is `lab/archive/<slug>/` |
+| `<slug>/CARD.md` | Archived stub only; body is `lab/archive/<slug>/` — **not** a second live tree |
 | `_inbox/` | Unassigned — must leave before archive |
 
 Theme READMEs today: `c1/`, `harvest/`, `regime/`, `striker/`, `aegis/`,

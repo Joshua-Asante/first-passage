@@ -114,13 +114,15 @@ These cannot relocate without breaking the harness, the build, GitHub, or `REPO_
 
 The layer roots (`core/ lab/ ops/`) are **import roots, not packages** — modules inside a layer import each other as top-level (e.g. `from research_utils.repo_root import repo_root`, `from research_utils import breadth`). Phase C pinned this via `sys.path`/`pythonpath` (ADR `2026-06-05-monorepo-layer-boundaries` §rev.3 #4), **not** package-ification, so there is no `ops.live_journal` / `lab.codification` dotted path.
 
-`pytest` puts the roots on `sys.path` automatically (`pyproject.toml` `[tool.pytest.ini_options] pythonpath = ["core","lab","ops","."]` — **there is no `governance` entry: the layer is root-resident and has no directory**, §1). A standalone `python -m <module>` does **not** — so prefix the invocation with the owning layer root on `PYTHONPATH`:
+`pytest` puts the roots on `sys.path` automatically (`pyproject.toml` `[tool.pytest.ini_options] pythonpath = ["core","lab","ops","ops/c1_rail","ops/c1_signal_daemon","."]` — **there is no `governance` entry: the layer is root-resident and has no directory**, §1). A standalone `python -m <module>` does **not** — so prefix the invocation with the owning import root on `PYTHONPATH`:
 
 | To run | Use |
 |--------|-----|
 | ~~ECR rolling report~~ | **RETIRED 2026-07-11** with `ops/live_journal/` ([estate ADR](docs/adr/2026-07-11-ops-cfd-estate-retirement.md)); `make ecr` removed |
 | ~~DXTrade↔TV reconciler~~ | **RETIRED 2026-07-11** (same estate ADR) |
-| Codification emit | `PYTHONPATH=lab python -m codification.emit …` |
+| ~~Codification emit~~ | **RETIRED 2026-08-02** with `lab/codification/` (ruling #3 / prune Packet D) |
+| c1 rail (flat modules) | `PYTHONPATH=ops/c1_rail python -m c1_rail_arm …` (same root for `c1_rail_listener`, `c1_sizing_host_reference`, …) |
+| c1 signal daemon (package) | `PYTHONPATH=ops/c1_signal_daemon python -m c1_signal_daemon` |
 | Deflated Sharpe | `PYTHONPATH=lab python -m research_utils.deflated_sharpe …` |
 | Step-0 battery | `PYTHONPATH=lab python -m research_utils.step0_battery …` |
 | Selection tests | `PYTHONPATH=lab python -m research_utils.selection_tests …` |

@@ -2,6 +2,8 @@
 
 One line per pruned ADR — the decision's *current consequence* survives here; the
 full body is retrievable via `git show pre-prune-2026-08-08:docs/adr/<file>`
+in the **private archive** — that tag is not on this public clone
+(`git log --follow -- docs/adr/<file>` is the fallback here)
 (ADR [`2026-08-08-great-prune`](2026-08-08-great-prune.md) §3 class 4; retention
 test R1–R5). Revival of any tombstoned decision requires fresh pre-registration
 under the standing chain — never a lookup. Rows are grouped by disposition,
