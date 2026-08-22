@@ -94,6 +94,24 @@ def test_run_red_leak_fails_as_expected_at_frozen_scale():
     assert verdict == "FAILED_AS_EXPECTED"
 
 
+def test_run_red_leak_seed_diversity_check_fires_on_a_collapsed_run(monkeypatch):
+    """RED-LEAK omitted the prereg §3 runtime seed-diversity assertion entirely (only
+    run_limb_b called it) -- force a collapse deterministically (same no-vacuous-tests
+    standard as test_run_panel_abandoned_has_no_confirm_read) rather than hoping the
+    frozen tree happens to exercise the failure path."""
+    from discovery import grow0_dgp, grow0_harness
+
+    branches = grow0_dgp.build_root_branches()
+    fixed_train, _ = grow0_dgp.spawn_panel_streams(branches["limb_a"], 10)
+
+    def _collapsed_spawn(panel_seq, n_variants):
+        return fixed_train, []  # every "panel" resolves to the SAME 10 train leaves
+
+    monkeypatch.setattr(grow0_harness, "spawn_panel_streams", _collapsed_spawn)
+    with pytest.raises(AssertionError):
+        grow0_harness.run_red_leak(n=5, c=1)
+
+
 def test_run_red_blind_fails_as_expected():
     """RED-BLIND draws only the 9 non-theta* grammar indices
     (0,1,2,3,4,6,7,8,9 -- theta*, grammar index 5, is never drawn at all).
@@ -155,6 +173,8 @@ def test_run_grow0_returns_all_five_tokens_and_a_verdict(tmp_path):
         "run_id",
         "started_at_arg",
         "prereg_commit",
+        "limb_b_n",
+        "limb_b_c",
         "limb_a",
         "limb_b",
         "red_leak",
@@ -162,6 +182,10 @@ def test_run_grow0_returns_all_five_tokens_and_a_verdict(tmp_path):
         "red_patch",
         "overall",
     }
+    # limb_b_n/limb_b_c let the ledger distinguish a smoke-test run (this test's n=100)
+    # from the authoritative N=5,500 production run.
+    assert result["limb_b_n"] == 100
+    assert result["limb_b_c"] == 3
     assert result["limb_a"] in ("PASS", "FAIL")
     assert result["overall"] in ("RESOLVED", "FALSIFIED")
     # ledger got exactly one line for this run
@@ -190,14 +214,62 @@ def test_run_grow0_overall_resolved_iff_all_five_conditions_hold(tmp_path):
     assert (result["overall"] == "RESOLVED") == expected_resolved
 
 
+def test_run_grow0_ledgers_a_failure_entry_and_reraises_on_mid_run_exception(tmp_path, monkeypatch):
+    """Prereg §6.6: 'every invocation ... regardless of outcome' -- a mid-run exception
+    used to abort run_grow0 with NO ledger entry at all. Force a raise partway through
+    (after Limb A/B/RED-LEAK have already completed, before RED-BLIND) and confirm: the
+    original exception still propagates, exactly one ledger line is written, the tokens
+    computed so far are recorded, the tokens that never ran are null, and an "error"
+    field captures the failure."""
+    import json
+
+    from discovery import grow0_harness
+
+    ledger_path = tmp_path / "grow0_retry_ledger.jsonl"
+
+    def _boom():
+        raise RuntimeError("simulated mid-run failure")
+
+    monkeypatch.setattr(grow0_harness, "run_red_blind", _boom)
+
+    with pytest.raises(RuntimeError, match="simulated mid-run failure"):
+        grow0_harness.run_grow0(
+            run_id="test-crash-1",
+            started_at_arg="2026-08-22T00:00:00Z",
+            limb_b_n=100,
+            limb_b_c=3,
+            ledger_path=ledger_path,
+        )
+
+    lines = ledger_path.read_text(encoding="utf-8").strip().splitlines()
+    assert len(lines) == 1
+    entry = json.loads(lines[0])
+    assert entry["run_id"] == "test-crash-1"
+    assert entry["limb_a"] in ("PASS", "FAIL")  # completed before the raise
+    assert entry["limb_b"] in ("PASS", "FAIL")
+    assert entry["red_leak"] in ("FAILED_AS_EXPECTED", "PASSED_UNEXPECTEDLY")
+    assert entry["red_blind"] is None  # never completed
+    assert entry["red_patch"] is None  # never reached
+    assert entry["overall"] is None
+    assert "simulated mid-run failure" in entry["error"]
+
+
 def test_main_exit_code_matches_overall_verdict(tmp_path, monkeypatch, capsys):
+    import json
+
     from discovery import grow0_harness
 
     ledger_path = tmp_path / "grow0_retry_ledger.jsonl"
     monkeypatch.setattr(grow0_harness, "RETRY_LEDGER_PATH", ledger_path)
     exit_code = grow0_harness.main(
-        ["--run-id", "test-run-3", "--started-at", "2026-08-22T00:00:00Z", "--limb-b-n", "100", "--limb-b-c", "3"]
+        [
+            "--run-id", "test-run-3",
+            "--started-at", "2026-08-22T00:00:00Z",
+            "--prereg-commit", "test-commit-sha",
+            "--limb-b-n", "100",
+            "--limb-b-c", "3",
+        ]
     )
     out = capsys.readouterr().out
-    assert exit_code in (0, 1)
-    assert '"overall"' in out
+    parsed = json.loads(out)
+    assert exit_code == (0 if parsed["overall"] == "RESOLVED" else 1)

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 from pathlib import Path
 
 from discovery.cost_model import resolve_commission
@@ -19,10 +20,12 @@ from research_utils.repo_root import repo_root
 
 FLOOR = floor_at_k(10, years=6.5)  # prereg §4: floor_at_k(10, 6.5) = 1.265
 
+_logger = logging.getLogger(__name__)
+
 _COST_FIRM_KEY = "Tradeify_Select_100K"
 _COST_RESOLVABLE_INSTRUMENT = "MNQ"
 _COST_UNRESOLVABLE_INSTRUMENT = "MGC"
-_COST_RESOLVABLE_EXPECTED = 0.91
+_COST_RESOLVABLE_EXPECTED = 0.91  # prereg §3: resolve_commission("Tradeify_Select_100K", "MNQ") = 0.91
 
 
 def check_cost_wiring() -> None:
@@ -56,6 +59,36 @@ def check_cost_wiring() -> None:
         )
 
 
+def _evaluate_limb_a_shaped_verdict(
+    result: PanelResult, nominee_grammar_index: int, edge_index: int
+) -> tuple[str, dict]:
+    """Shared conjunct evaluation behind both Limb A's own PASS/FAIL verdict
+    (prereg §6.1 step 6) and RED-BLIND's identically-shaped boolean check
+    (prereg §6.4 v3) -- the two callers differ only in what they DO with the
+    result afterward (RED-BLIND inverts it into
+    PASSED_UNEXPECTEDLY/FAILED_AS_EXPECTED; see run_red_blind), not in the
+    underlying three-conjunct test itself, which is now written once.
+
+    Returns ``(verdict, conjuncts)`` where ``conjuncts`` exposes each of the
+    three gates individually, so a caller (or a human reading the debug log)
+    can see WHICH conjunct -- abandoned / nominee-mismatch / clears -- drove
+    a FAIL, rather than just the opaque final string.
+
+    ``nominee_grammar_index`` is the winning variant's ORIGINAL grammar index
+    (Limb A passes ``result.nominee`` directly, since it draws from the full
+    K=10 grammar; RED-BLIND passes it already remapped through its own
+    ``_RED_BLIND_NULL_INDICES``, since its own ``result.nominee`` is an array
+    position into a 9-element subset, not a grammar index).
+    """
+    conjuncts = {
+        "not_abandoned": not result.abandoned,
+        "nominee_matches": nominee_grammar_index == edge_index,
+        "clears": result.clears,
+    }
+    passed = all(conjuncts.values())
+    return ("PASS" if passed else "FAIL"), conjuncts
+
+
 def run_limb_a() -> tuple[str, PanelResult]:
     """Prereg §6.1: single panel, K=10 grammar with theta* at index 5."""
     branches = build_root_branches()
@@ -66,8 +99,11 @@ def run_limb_a() -> tuple[str, PanelResult]:
         edge_variant_index=TRUE_EDGE_VARIANT_INDEX,
         floor=FLOOR,
     )
-    passed = (not result.abandoned) and result.nominee == TRUE_EDGE_VARIANT_INDEX and result.clears
-    return ("PASS" if passed else "FAIL"), result
+    verdict, conjuncts = _evaluate_limb_a_shaped_verdict(
+        result, result.nominee, TRUE_EDGE_VARIANT_INDEX
+    )
+    _logger.debug("run_limb_a conjuncts=%s -> verdict=%s", conjuncts, verdict)
+    return verdict, result
 
 
 LIMB_B_N = 5500  # prereg §4 (measured nominal_p0=0.00059070, N/c sized with CI margin)
@@ -122,12 +158,18 @@ def run_red_leak(n: int = LIMB_B_N, c: int = LIMB_B_C) -> str:
     """
     branches = build_root_branches()
     panel_seqs = branches["red_leak"].spawn(n)
-    sum_clears = 0
+    results = []
+    leaves = []
     for panel_seq in panel_seqs:
         train_children, _ = spawn_panel_streams(panel_seq, 10)
+        leaves.extend(train_children)  # confirm_children discarded above -- RED-LEAK never
+        # spawns them at all (run_panel_leaked replays TRAIN as its own CONFIRM), so only
+        # the 10 train leaves per panel are actually consumed; hence min_distinct=n*10
+        # below, not Limb B's n*20 (which also spawns and consumes a confirm side).
         result = run_panel_leaked(train_children, edge_variant_index=None, floor=FLOOR)
-        if result.clears:
-            sum_clears += 1
+        results.append(result)
+    assert_seed_diversity(leaves, min_distinct=n * 10)
+    sum_clears = sum(1 for r in results if r.clears)
     detected_leak = sum_clears >= c  # Limb-B-shaped check applied to this rigged run
     return "FAILED_AS_EXPECTED" if detected_leak else "PASSED_UNEXPECTEDLY"
 
@@ -151,13 +193,28 @@ def run_red_blind() -> str:
     biased, like the normal flow), it passes nomination gates (a)/(b) in the
     overwhelming majority of trials and reaches the real comparison -- unlike
     v2's abandoned argmin design, which mostly re-tested gate (a) instead.
+
+    Shares its three-conjunct evaluation with run_limb_a via
+    _evaluate_limb_a_shaped_verdict -- the boolean shape is identical, only the
+    downstream PASS/FAIL-to-PASSED_UNEXPECTEDLY/FAILED_AS_EXPECTED inversion
+    below is RED-BLIND-specific (verdict semantics unchanged from before that
+    extraction; do NOT read this refactor as touching the frozen §6.4 v3
+    design).
     """
     branches = build_root_branches()
     train_children, confirm_children = spawn_panel_streams(branches["red_blind"], 9)
     result = run_panel(train_children, confirm_children, edge_variant_index=None, floor=FLOOR)
     grammar_nominee = _RED_BLIND_NULL_INDICES[result.nominee]
-    passed = (not result.abandoned) and grammar_nominee == TRUE_EDGE_VARIANT_INDEX and result.clears
-    return "PASSED_UNEXPECTEDLY" if passed else "FAILED_AS_EXPECTED"
+    limb_a_shaped_verdict, conjuncts = _evaluate_limb_a_shaped_verdict(
+        result, grammar_nominee, TRUE_EDGE_VARIANT_INDEX
+    )
+    _logger.debug(
+        "run_red_blind conjuncts=%s -> limb_a_shaped_verdict=%s", conjuncts, limb_a_shaped_verdict
+    )
+    # RED-BLIND inverts Limb A's own PASS/FAIL semantics: a Limb-A-shaped PASS here means the
+    # structural impossibility happened (bad -- the control failed to fire), so RED-BLIND's own
+    # vocabulary is the opposite of the shared helper's PASS/FAIL.
+    return "PASSED_UNEXPECTEDLY" if limb_a_shaped_verdict == "PASS" else "FAILED_AS_EXPECTED"
 
 
 RETRY_LEDGER_PATH = repo_root() / "discovery_manifests" / "grow0_retry_ledger.jsonl"
@@ -189,17 +246,46 @@ def run_grow0(
 ) -> dict:
     """Runs Limb A, Limb B, RED-LEAK, RED-BLIND, RED-PATCH in that order and
     computes the prereg §6.7 Gate verdict. Appends one line to the retry ledger
-    (prereg §6.6) regardless of outcome, then returns the same dict.
+    (prereg §6.6) regardless of outcome -- including a mid-run exception, so no
+    invocation goes un-ledgered (prereg §6.6: "Every invocation ... regardless
+    of outcome") -- then returns the same dict. On a mid-run exception, the
+    ledger entry records whichever tokens completed before the raise (the
+    rest default to None) plus an "error" field, and the original exception
+    is re-raised after the ledger write.
     """
-    from discovery.grow0_red_patch import run_red_patch
+    limb_a_verdict = None
+    limb_b_verdict = None
+    red_leak_verdict = None
+    red_blind_verdict = None
+    red_patch_verdict = None
 
-    check_cost_wiring()
+    try:
+        from discovery.grow0_red_patch import run_red_patch
 
-    limb_a_verdict, _ = run_limb_a()
-    limb_b_verdict, _, _ = run_limb_b(n=limb_b_n, c=limb_b_c)
-    red_leak_verdict = run_red_leak(n=limb_b_n, c=limb_b_c)
-    red_blind_verdict = run_red_blind()
-    red_patch_verdict = run_red_patch()
+        check_cost_wiring()
+
+        limb_a_verdict, _ = run_limb_a()
+        limb_b_verdict, _, _ = run_limb_b(n=limb_b_n, c=limb_b_c)
+        red_leak_verdict = run_red_leak(n=limb_b_n, c=limb_b_c)
+        red_blind_verdict = run_red_blind()
+        red_patch_verdict = run_red_patch()
+    except Exception as e:
+        failure_entry = {
+            "run_id": run_id,
+            "started_at_arg": started_at_arg,
+            "prereg_commit": prereg_commit,
+            "limb_b_n": limb_b_n,
+            "limb_b_c": limb_b_c,
+            "limb_a": limb_a_verdict,
+            "limb_b": limb_b_verdict,
+            "red_leak": red_leak_verdict,
+            "red_blind": red_blind_verdict,
+            "red_patch": red_patch_verdict,
+            "overall": None,
+            "error": str(e),
+        }
+        append_retry_ledger(failure_entry, path=ledger_path)
+        raise
 
     all_red_green = (
         red_leak_verdict == "FAILED_AS_EXPECTED"
@@ -212,6 +298,8 @@ def run_grow0(
         "run_id": run_id,
         "started_at_arg": started_at_arg,
         "prereg_commit": prereg_commit,
+        "limb_b_n": limb_b_n,
+        "limb_b_c": limb_b_c,
         "limb_a": limb_a_verdict,
         "limb_b": limb_b_verdict,
         "red_leak": red_leak_verdict,
@@ -227,7 +315,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="GROW-0 synthetic calibration harness")
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--started-at", required=True, help="ISO timestamp, caller-supplied")
-    parser.add_argument("--prereg-commit", default=_PREREG_COMMIT_PLACEHOLDER)
+    parser.add_argument(
+        "--prereg-commit",
+        required=True,
+        help="commit hash pinning the frozen prereg this run is authoritative against",
+    )
     parser.add_argument("--limb-b-n", type=int, default=LIMB_B_N)
     parser.add_argument("--limb-b-c", type=int, default=LIMB_B_C)
     args = parser.parse_args(argv)
