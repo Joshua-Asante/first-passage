@@ -7,6 +7,7 @@ prereg's own framing of it as independent of the stochastic panels.
 """
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 
@@ -171,3 +172,76 @@ def append_retry_ledger(entry: dict, *, path: Path | None = None) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
     with target.open("a", encoding="utf-8") as f:
         f.write(json.dumps(entry) + "\n")
+
+
+_PREREG_COMMIT_PLACEHOLDER = "unset"  # overwritten by --prereg-commit at CLI invocation time;
+# the prereg itself has no fixed commit hash known ahead of its own freeze commit landing
+
+
+def run_grow0(
+    *,
+    run_id: str,
+    started_at_arg: str,
+    limb_b_n: int = LIMB_B_N,
+    limb_b_c: int = LIMB_B_C,
+    prereg_commit: str = _PREREG_COMMIT_PLACEHOLDER,
+    ledger_path: Path | None = None,
+) -> dict:
+    """Runs Limb A, Limb B, RED-LEAK, RED-BLIND, RED-PATCH in that order and
+    computes the prereg §6.7 Gate verdict. Appends one line to the retry ledger
+    (prereg §6.6) regardless of outcome, then returns the same dict.
+    """
+    from discovery.grow0_red_patch import run_red_patch
+
+    check_cost_wiring()
+
+    limb_a_verdict, _ = run_limb_a()
+    limb_b_verdict, _, _ = run_limb_b(n=limb_b_n, c=limb_b_c)
+    red_leak_verdict = run_red_leak(n=limb_b_n, c=limb_b_c)
+    red_blind_verdict = run_red_blind()
+    red_patch_verdict = run_red_patch()
+
+    all_red_green = (
+        red_leak_verdict == "FAILED_AS_EXPECTED"
+        and red_blind_verdict == "FAILED_AS_EXPECTED"
+        and red_patch_verdict == "FAILED_AS_EXPECTED"
+    )
+    resolved = all_red_green and limb_a_verdict == "PASS" and limb_b_verdict == "PASS"
+
+    result = {
+        "run_id": run_id,
+        "started_at_arg": started_at_arg,
+        "prereg_commit": prereg_commit,
+        "limb_a": limb_a_verdict,
+        "limb_b": limb_b_verdict,
+        "red_leak": red_leak_verdict,
+        "red_blind": red_blind_verdict,
+        "red_patch": red_patch_verdict,
+        "overall": "RESOLVED" if resolved else "FALSIFIED",
+    }
+    append_retry_ledger(result, path=ledger_path)
+    return result
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="GROW-0 synthetic calibration harness")
+    parser.add_argument("--run-id", required=True)
+    parser.add_argument("--started-at", required=True, help="ISO timestamp, caller-supplied")
+    parser.add_argument("--prereg-commit", default=_PREREG_COMMIT_PLACEHOLDER)
+    parser.add_argument("--limb-b-n", type=int, default=LIMB_B_N)
+    parser.add_argument("--limb-b-c", type=int, default=LIMB_B_C)
+    args = parser.parse_args(argv)
+
+    result = run_grow0(
+        run_id=args.run_id,
+        started_at_arg=args.started_at,
+        limb_b_n=args.limb_b_n,
+        limb_b_c=args.limb_b_c,
+        prereg_commit=args.prereg_commit,
+    )
+    print(json.dumps(result, indent=2))
+    return 0 if result["overall"] == "RESOLVED" else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

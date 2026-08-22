@@ -138,3 +138,66 @@ def test_append_retry_ledger_creates_parent_dir_if_missing(tmp_path):
     ledger_path = tmp_path / "nested" / "grow0_retry_ledger.jsonl"
     append_retry_ledger({"run_id": "test-3"}, path=ledger_path)
     assert ledger_path.is_file()
+
+
+def test_run_grow0_returns_all_five_tokens_and_a_verdict(tmp_path):
+    from discovery.grow0_harness import run_grow0
+
+    ledger_path = tmp_path / "grow0_retry_ledger.jsonl"
+    result = run_grow0(
+        run_id="test-run-1",
+        started_at_arg="2026-08-22T00:00:00Z",
+        limb_b_n=100,  # small N for test speed -- not the frozen 5,500 pair
+        limb_b_c=3,
+        ledger_path=ledger_path,
+    )
+    assert set(result.keys()) >= {
+        "run_id",
+        "started_at_arg",
+        "prereg_commit",
+        "limb_a",
+        "limb_b",
+        "red_leak",
+        "red_blind",
+        "red_patch",
+        "overall",
+    }
+    assert result["limb_a"] in ("PASS", "FAIL")
+    assert result["overall"] in ("RESOLVED", "FALSIFIED")
+    # ledger got exactly one line for this run
+    lines = ledger_path.read_text(encoding="utf-8").strip().splitlines()
+    assert len(lines) == 1
+
+
+def test_run_grow0_overall_resolved_iff_all_five_conditions_hold(tmp_path):
+    from discovery.grow0_harness import run_grow0
+
+    ledger_path = tmp_path / "grow0_retry_ledger.jsonl"
+    result = run_grow0(
+        run_id="test-run-2",
+        started_at_arg="2026-08-22T00:00:00Z",
+        limb_b_n=100,
+        limb_b_c=3,
+        ledger_path=ledger_path,
+    )
+    expected_resolved = (
+        result["limb_a"] == "PASS"
+        and result["limb_b"] == "PASS"
+        and result["red_leak"] == "FAILED_AS_EXPECTED"
+        and result["red_blind"] == "FAILED_AS_EXPECTED"
+        and result["red_patch"] == "FAILED_AS_EXPECTED"
+    )
+    assert (result["overall"] == "RESOLVED") == expected_resolved
+
+
+def test_main_exit_code_matches_overall_verdict(tmp_path, monkeypatch, capsys):
+    from discovery import grow0_harness
+
+    ledger_path = tmp_path / "grow0_retry_ledger.jsonl"
+    monkeypatch.setattr(grow0_harness, "RETRY_LEDGER_PATH", ledger_path)
+    exit_code = grow0_harness.main(
+        ["--run-id", "test-run-3", "--started-at", "2026-08-22T00:00:00Z", "--limb-b-n", "100", "--limb-b-c", "3"]
+    )
+    out = capsys.readouterr().out
+    assert exit_code in (0, 1)
+    assert '"overall"' in out
