@@ -83,18 +83,24 @@ structure:
 
 ## ACTIVE / OPEN
 
-- **MSL-S4 `expiry-oi-strike-convergence` — G0 FROZEN 2026-08-21, Pine authored CC-solo, Explore-
-  confirm RUN 2026-08-21 → `AMBIGUOUS-HOLD`.** First WHO named since the 2026-08-14 estate-wide
-  WHO-track sweep found the door dry; discharges E1. Explore-confirm (deferred at freeze, no data
-  access) has since run on 75 IS-window cycles: negative-signed real effect (net divergence, not
-  convergence), `p_upper=0.5724` not significant, FLIP-FAIL. Leans dead, not formally FALSIFIED
-  under the frozen gate's literal threshold; operator TV backtest / further build-out decision
-  still owed. See `lab/analysis/c1/msl_s4_mgc_2026-08/`.
+- **MSL-S4 `expiry-oi-strike-convergence` — G0 FROZEN 2026-08-21, Explore-confirm RUN 2026-08-21 →
+  `AMBIGUOUS-HOLD` → operator `PARKED` 2026-08-21.** First WHO named since the 2026-08-14
+  estate-wide WHO-track sweep found the door dry; discharges E1. Explore-confirm (deferred at
+  freeze, no data access) ran on 75 IS-window cycles: negative-signed real effect (net divergence,
+  not convergence), `p_upper=0.5724` not significant, FLIP-FAIL. Not formally FALSIFIED under the
+  frozen gate's literal threshold, but the operator elected to park the card rather than pursue a
+  TV backtest or further build-out —
+  [`candidates_CARD.md`](../../core/strategies/candidates/candidates_CARD.md). Re-proposal bar:
+  new mechanism evidence, not a θ-retune or a re-read of this same result. See
+  `lab/analysis/c1/msl_s4_mgc_2026-08/`.
 - Instrument-lane re-screen complete 2026-08-09. Election out of scope.
 - Self-funded Guardian→MGC lane remains PARKED/CLOSED (program posture); this ledger does not reopen it.
 
 ## SESSION LOG
 
+- **2026-08-21e** — **MSL-S4 candidate `PARKED`** (operator decision, post-`AMBIGUOUS-HOLD`
+  Explore-confirm) — [`candidates_CARD.md`](../../core/strategies/candidates/candidates_CARD.md).
+  Not `FALSIFIED_PARKED` (the frozen `p_upper>0.95` line wasn't crossed). Never hash-pinned.
 - **2026-08-21d** — **MSL-S4 Explore-confirm EXECUTED (not just drafted)** — 75 completed
   weekly+monthly OG cycles pulled (IS window only, CONFIRM never read), pilot-calibrated
   rank-ACF tolerance fresh (not borrowed from the corrected-null-battery's own numbers), official

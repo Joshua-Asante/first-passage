@@ -14,6 +14,27 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-21n — MSL-S4 candidate `PARKED` (operator decision, post-Explore-confirm)
+
+**Focus:** `21m`'s `AMBIGUOUS-HOLD` Explore-confirm result (negative-signed real effect, FLIP-FAIL)
+left the formal card disposition as an explicit operator call, not a driver-script call. Operator
+made that call this session.
+
+**Shipped:** `core/strategies/candidates/candidates_CARD.md` — `expiry_oi_strike_convergence_
+mgc_v0_1.pine` marked **`PARKED` 2026-08-21** (operator decision), not `FALSIFIED_PARKED` (the
+Explore-confirm's `p_upper=0.5724` doesn't cross the frozen `>0.95` FALSIFIED line, so that label
+would overclaim). Re-proposal bar recorded: new mechanism evidence (different OI-derived
+reference or displacement/direction rule), not a θ-retune, not a re-read of this same IAAFT
+result, not the TV backtest as a substitute score. Never hash-pinned — parked before any pin step.
+
+**Decisions/defects:** none.
+
+**Open / next:** card closed for build-out purposes. **STATE queue unchanged:** #1 F1 · #2
+B7-REFIRE + M1 (still not yet an *acceptable* strategy).
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`. (unchanged)
+
+---
 ## 2026-08-21m — MSL-S4 Explore-confirm EXECUTED (driver written + run) — `AMBIGUOUS-HOLD`
 
 **Focus:** `21l`'s drafted Explore-confirm (`EXPLORE_GO.DRAFT.md`, `explore_confirm_lib.py`) named
