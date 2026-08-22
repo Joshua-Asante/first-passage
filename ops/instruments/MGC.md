@@ -28,6 +28,10 @@ cells:
     verdict: DEAD
     date: 2026-08-13
     source: "../../docs/briefs/closures/MSL-C2-closure-falsified.md"
+  - mechanism: expiry-oi-strike-convergence
+    verdict: AMBIGUOUS-PARKED
+    date: 2026-08-21
+    source: "../../lab/analysis/c1/msl_s4_mgc_2026-08/_explore_confirm_2026-08-21_LOG.md"
 bars:
   - id: free-data-5th-leg-snag-closed-2026-07-01
     source: "../../docs/rejected_candidates.md"
