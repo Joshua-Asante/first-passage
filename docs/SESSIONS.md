@@ -14,6 +14,49 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-21m — MSL-S4 Explore-confirm EXECUTED (driver written + run) — `AMBIGUOUS-HOLD`
+
+**Focus:** `21l`'s drafted Explore-confirm (`EXPLORE_GO.DRAFT.md`, `explore_confirm_lib.py`) named
+the driver script as owed to a session with `DATABENTO_API_KEY`. Operator asked this local session
+to promote the token and run it.
+
+**Shipped:** Read `EXPLORE_GO.DRAFT.md`/`explore_confirm_lib.py`/`test_explore_confirm_lib.py` in
+full; re-ran the 23/23 unit suite independently before trusting it. Promoted to
+[`EXPLORE_GO.md`](../lab/analysis/c1/msl_s4_mgc_2026-08/EXPLORE_GO.md) (ISSUED, gitignored). Wrote
+[`explore_confirm_driver.py`](../lab/analysis/c1/msl_s4_mgc_2026-08/explore_confirm_driver.py)
+(discovered weeklies via `OG1-4.OPT` parent symbols — not under `OG.OPT` itself, found by probing
+candidate roots since the DRAFT didn't name the exact tickers — + monthlies via `OG.OPT`; 75
+completed IS-window cycles, 0 skipped) and
+[`explore_confirm_score.py`](../lab/analysis/c1/msl_s4_mgc_2026-08/explore_confirm_score.py)
+(fresh pilot calibration of the rank-ACF tolerance — two disjoint pilot batches, 1.4× headroom
+convention from the corrected-null-battery precedent but freshly measured numbers, not borrowed —
+passed at n_iter=100, no escalation needed; official M=1000 IAAFT test + delete/flip). Cost
+estimate run before every pull per the standing rule (all $0, matching precedent).
+
+**Result — `AMBIGUOUS-HOLD`:** real mean displacement reduction **−5.52pts** (net divergence, not
+convergence), sitting at the **42.8th percentile** of the surrogate null (`p_upper=0.5724`, not
+significant). DELETE weak-PASS (real strike less-divergent than a generic sham level, both still
+negative). **FLIP FAILs** (divergence beats convergence empirically) — the construct's own
+directional claim does not hold up. Not formally `FALSIFIED` under the frozen `p_upper>0.95` line,
+but substantively close (wrong sign + FLIP-FAIL). Disclosure: the n=7 cheap falsifier's "same
+cycles converge in both arm and control" trend-confound finding does **not** replicate at full
+n=75 (outcome-correlation drops from 100% to 48%, near coin-flip) — likely a small-sample artifact,
+not the robust confound `21l` reasoned toward; the IAAFT result is the trustworthy read regardless.
+
+**Decisions/defects:** two pandas bugs caught fixing the driver (index-aligned assignment on a
+duplicate-timestamp definition-schema index; `ts_recv` is the `DBNStore.to_df()` index, not a
+column) — both fixed before the first successful run, not silently worked around.
+`STAGE1.md`/`PREREG_G0.md`/`MECHANISMS.md`/`MGC.md` updated with disclosed pointers to this result
+(not re-freezing anything). `K_intrinsic` unchanged; CONFIRM (2025-04-01→2025-09-29) never read —
+verified directly against the pulled panel (max date 2025-03-30).
+
+**Open / next:** formal card disposition (park / hold / re-propose bar) is an operator call, not
+this session's — flagged in the LOG rather than unilaterally decided. **STATE queue unchanged:**
+#1 F1 · #2 B7-REFIRE + M1 (still not yet an *acceptable* strategy — this card leans dead).
+
+**Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`. (unchanged)
+
+---
 ## 2026-08-21l — MSL-S4 real Explore-confirm drafted: IAAFT-surrogate null replaces the naive control
 
 **Focus:** `21k`'s finding (the cheap falsifier's control window is trend-confounded, same cycles
@@ -52,6 +95,7 @@ strategy).
 **Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`. (unchanged)
 
 ---
+
 ## 2026-08-21k — MSL-S4 Step-4 falsifier independently re-verified; per-cycle correlation disclosed
 
 **Focus:** `21j`'s local-run `NOT DECISIVE` result landed on the `ptpa57` branch, not pushed by the
@@ -76,6 +120,7 @@ remains the immediate next step per the runbook.
 **Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`. (unchanged)
 
 ---
+
 ## 2026-08-21j — MSL-S4 Step-4 cheap falsifier filled via local databento run — `NOT DECISIVE`
 
 **Focus:** `ptpa57`'s G0-frozen MSL-S4 card (`expiry-oi-strike-convergence`, MGC) disclosed Step-4
@@ -100,6 +145,7 @@ the immediate next step per the runbook.
 **Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`. (unchanged)
 
 ---
+
 ## 2026-08-21i — MSL-S4 sources a NEW WHO, discharges E1; G0 frozen, Pine authored CC-solo
 
 **Focus:** Operator asked to find a viable Tradeify strategy this session, using MSL's iterative
@@ -141,6 +187,7 @@ disarmed; no book.
 **Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
 
 ---
+
 ## 2026-08-21h — Q-SCORE-1 living pin retargeted off the date_coverage ceiling
 
 **Focus:** `validation-controls` red on every later `lab/**` PR (incl. #86) after a new dated closure tripped the Q-SCORE-1 Block 1 ratio pin.
@@ -154,6 +201,7 @@ disarmed; no book.
 **Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`.
 
 ---
+
 ## 2026-08-21g — CFO subscription-ledger consolidation ratified; mechanical build dispatched to Cursor
 
 **Focus:** Following same-day C-1 closure + d17 (Claude Max) tracking, operator ratified all four of

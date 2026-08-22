@@ -1028,7 +1028,7 @@
     "expiry-oi-strike-convergence": {
       "definition": "**NEW 2026-08-21 (MSL-S4).** Discharges the 2026-08-14 WHO-track E1 stop rule",
       "findings": [
-        "none yet \u2014 G0 frozen on operator B4 GO 2026-08-21; Explore-confirm (charter"
+        "G0 frozen on operator B4 GO 2026-08-21; Explore-confirm (charter"
       ]
     },
     "htf-compression-breakout-5m": {

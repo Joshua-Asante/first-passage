@@ -119,7 +119,7 @@ A directional bet keyed to a scheduled settlement, auction, or macro-release win
 
 **NEW 2026-08-21 (MSL-S4).** Discharges the 2026-08-14 WHO-track E1 stop rule
 
-- **Class finding:** none yet — G0 frozen on operator B4 GO 2026-08-21; Explore-confirm (charter
+- **Class finding:** G0 frozen on operator B4 GO 2026-08-21; Explore-confirm (charter
 
 _No instrument has a recorded verdict on this mechanism._
 

@@ -83,15 +83,28 @@ structure:
 
 ## ACTIVE / OPEN
 
-- **MSL-S4 `expiry-oi-strike-convergence` — G0 FROZEN 2026-08-21, Pine authored CC-solo, operator
-  TV backtest owed.** First WHO named since the 2026-08-14 estate-wide WHO-track sweep found the
-  door dry; discharges E1. Explore-confirm deferred by operator override (no data access this
-  session) — not yet a scored candidate. See `lab/analysis/c1/msl_s4_mgc_2026-08/`.
+- **MSL-S4 `expiry-oi-strike-convergence` — G0 FROZEN 2026-08-21, Pine authored CC-solo, Explore-
+  confirm RUN 2026-08-21 → `AMBIGUOUS-HOLD`.** First WHO named since the 2026-08-14 estate-wide
+  WHO-track sweep found the door dry; discharges E1. Explore-confirm (deferred at freeze, no data
+  access) has since run on 75 IS-window cycles: negative-signed real effect (net divergence, not
+  convergence), `p_upper=0.5724` not significant, FLIP-FAIL. Leans dead, not formally FALSIFIED
+  under the frozen gate's literal threshold; operator TV backtest / further build-out decision
+  still owed. See `lab/analysis/c1/msl_s4_mgc_2026-08/`.
 - Instrument-lane re-screen complete 2026-08-09. Election out of scope.
 - Self-funded Guardian→MGC lane remains PARKED/CLOSED (program posture); this ledger does not reopen it.
 
 ## SESSION LOG
 
+- **2026-08-21d** — **MSL-S4 Explore-confirm EXECUTED (not just drafted)** — 75 completed
+  weekly+monthly OG cycles pulled (IS window only, CONFIRM never read), pilot-calibrated
+  rank-ACF tolerance fresh (not borrowed from the corrected-null-battery's own numbers), official
+  IAAFT test (M=1000, frozen seed block) + delete/flip run. **Verdict `AMBIGUOUS-HOLD`**: real mean
+  displacement reduction is negative (−5.52pts, net divergence) at the 42.8th percentile of the
+  surrogate null (`p_upper=0.5724`, not significant); FLIP FAILs (divergence beats convergence).
+  Not formally FALSIFIED under the frozen `p_upper>0.95` line, but the qualitative story (wrong
+  sign + FLIP-FAIL) reads the same as most FALSIFIED cases this program has produced. `K_intrinsic`
+  unchanged. $0 / K=0.
+  [`_explore_confirm_2026-08-21_LOG.md`](../../lab/analysis/c1/msl_s4_mgc_2026-08/_explore_confirm_2026-08-21_LOG.md).
 - **2026-08-21c** — **MSL-S4 real Explore-confirm drafted** — the informal cheap falsifier's
   fixed-offset control turned out trend-confounded (same cycles converged/diverged in both
   windows); corrected design adopts an IAAFT-surrogate null (same methodology this repo already
