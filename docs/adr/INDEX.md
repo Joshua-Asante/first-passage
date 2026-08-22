@@ -128,6 +128,7 @@
 | 2026-08-21-stage2-stage3-progression-criteria.md | Accepted | 2026-08-21 | none | ratified 2026-08-21 by operator (Joshua) |
 | 2026-08-22-catalog-hot-vs-disposition.md | Accepted | 2026-08-22 | none | ratified by operator (Joshua) 2026-08-22, in-session ("accepted. GO"); Phase 1 (parser + C2 + `hot` column) lands in the same GO. |
 | 2026-08-22-grow-lane-build-authorization.md | Accepted | 2026-08-22 | none | operator GO (JA) 2026-08-22 ("ratify, accept, and begin the build"), |
+| 2026-08-22-ox-alpha-adversarial-lens-scope.md | Accepted | 2026-08-22 | none | ratified by operator (JA) 2026-08-22, after the validation-test |
 
 ## Partially superseded
 
