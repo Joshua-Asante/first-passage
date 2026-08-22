@@ -339,7 +339,7 @@ geometry restated off the micro ledgers) in at least:
 - [`docs/notes/rail_build/RUNBOOK.md`](../notes/rail_build/RUNBOOK.md) §B7 / §B8
 - the activity / inactivity specs under `docs/spec/`
 - the book-composition brief
-- the ladder-rung ADR [`2026-08-03-lifecycle-ladder-intermediate-rung.md`](2026-08-03-lifecycle-ladder-intermediate-rung.md) (driver-dead; withdrawal is operator O-D)
+- the ladder-rung ADR [`2026-08-03-lifecycle-ladder-intermediate-rung.md`](2026-08-03-lifecycle-ladder-intermediate-rung.md) (driver-dead; operator O-D discharged 2026-08-22 — Status on that ADR)
 - parent instrument ledgers [`ops/instruments/{YM,NQ}.md`](../../ops/instruments/)
 - the 08-08 packet / pretriage surfaces
 

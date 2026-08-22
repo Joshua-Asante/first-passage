@@ -310,7 +310,7 @@ done
 
 ## Addendum 2026-08-14 — Status framing: stalled/bypassed; T1 likely fired
 
-**Type:** dated status-framing correction under Rule 14. **Status field remains `Proposed`.** §2 decision text is not edited and is not withdrawn.
+**Type:** dated status-framing correction under Rule 14. **Status field remained `Proposed` as of this addendum** (flipped `Accepted` 2026-08-22 — header + Addendum 2026-08-22). §2 decision text is not edited and is not withdrawn.
 
 This ADR was never ratified; `ops/venue_editions/` was never created. Its own T1 fires on any venue-scope decision recorded without an edition-state transition. [`2026-08-07-loop-s1-environment-ratification.md`](2026-08-07-loop-s1-environment-ratification.md) resolved F2 and F3 in prose (rail keep-warm/disarmed; no successor migration) with no edition-state transition through that never-built registry. The [2026-08-05 claim-alignment follow-ups](../notes/audits/programme-audit/2026-08-05-claim-alignment/07-followups.md) item 5 already named "ratify before F2/F3" as the T1 reachability clock; that step was not taken.
 
