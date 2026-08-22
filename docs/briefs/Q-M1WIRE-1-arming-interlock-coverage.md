@@ -1,8 +1,8 @@
 # Q-M1WIRE-1 — Does the M1 arming interlock actually verify everything its own acceptance package and doctrine claim it verifies?
 
-**Status:** `OPEN — DRAFT (pre-lock)` — execution requires a separate operator GO (parent-Q convention: naming is not opening)
+**Status:** `CLOSED — FALSIFIED` — see [`closures/Q-M1WIRE-1-closure-falsified.md`](closures/Q-M1WIRE-1-closure-falsified.md)
 **Authored:** 2026-08-18
-**Closed:** N/A
+**Closed:** 2026-08-21
 **Authors:** Joshua + Claude Code
 **Parent question:** N/A — opened from the assumption-sweep audit note
 **Sub-questions opened:** none

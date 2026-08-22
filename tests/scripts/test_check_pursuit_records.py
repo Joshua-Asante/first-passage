@@ -238,6 +238,16 @@ def test_non_subscription_keep_not_ledger_flagged(tmp_path):
     assert not any(f.limb == "ledger-pointer" for f in findings), findings
 
 
+def test_in_scope_skips_directory_readme(tmp_path):
+    (tmp_path / "README.md").write_text("# hops only\n", encoding="utf-8")
+    (tmp_path / "a1-example.md").write_text(COMPLIANT_KEEP, encoding="utf-8")
+    (tmp_path / cpr.LEDGER_FILENAME).write_text("# ledger\n", encoding="utf-8")
+    names = {p.name for p in cpr.in_scope(tmp_path)}
+    assert "README.md" not in names
+    assert cpr.LEDGER_FILENAME not in names
+    assert "a1-example.md" in names
+
+
 def test_live_subscription_keeps_have_ledger_pointer():
     subs = sorted(cpr.PURSUITS_DIR.glob("d1[1-7]-*.md"))
     assert len(subs) == 7, f"expected 7 subscription/venue-account pursuit records (d11-d17), got {len(subs)}"

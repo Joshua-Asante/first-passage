@@ -85,6 +85,11 @@
         "source": "../../lab/analysis/harvest/tnec_l2_sourcing_2026-08-10/DELTA_EXTRACTION_R8.md",
         "verdict": "DEAD"
       },
+      "expiry-oi-strike-convergence": {
+        "date": "2026-08-21",
+        "source": "../../lab/analysis/c1/msl_s4_mgc_2026-08/_explore_confirm_2026-08-21_LOG.md",
+        "verdict": "AMBIGUOUS-PARKED"
+      },
       "london-range-failed-extension-fade": {
         "date": "2026-08-13",
         "source": "../../docs/briefs/closures/MSL-C2-closure-falsified.md",
@@ -1028,7 +1033,7 @@
     "expiry-oi-strike-convergence": {
       "definition": "**NEW 2026-08-21 (MSL-S4).** Discharges the 2026-08-14 WHO-track E1 stop rule",
       "findings": [
-        "none yet \u2014 G0 frozen on operator B4 GO 2026-08-21; Explore-confirm (charter"
+        "G0 frozen on operator B4 GO 2026-08-21; Explore-confirm (charter"
       ]
     },
     "htf-compression-breakout-5m": {

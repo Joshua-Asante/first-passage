@@ -1,8 +1,11 @@
 # MSL-S4 — Stage G0 PREREG — expiry-OI-strike convergence (MGC)
 
 **Status:** `FROZEN` 2026-08-21 — operator **B4 GO** paid; Explore-confirm **DEFERRED BY OPERATOR
-OVERRIDE** (no market-data access in the sourcing session's environment — see §0a); Pine
+OVERRIDE** at freeze (no market-data access in the sourcing session's environment — see §0a); Pine
 **authored CC-solo same session** ([runbook](RUNBOOK.md)); TV backtest is the operator's next step
+· **Explore-confirm subsequently RUN 2026-08-21 under `EXPLORE_GO.md`** —
+[`AMBIGUOUS-HOLD`](_explore_confirm_2026-08-21_LOG.md) (§4 below, disclosed execution record, not
+a re-freeze)
 **Date:** 2026-08-21 (freeze)
 **Card / campaign:** MSL-S4 · [`STAGE1.md`](STAGE1.md) (`STAGE-1 PASS`)
 **Parent charter:** [`docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md`](../../../../docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md) step 5
@@ -22,7 +25,7 @@ disclosure: GC/MGC bank **K=3,177** (`disccamp0_gc_2010_18`) — disclosure only
 
 | Check | Result |
 |---|---|
-| Stage-1 record | [`STAGE1.md`](STAGE1.md) — three $0 limbs PASS at RT **$4.12**; cheap falsifier recorded NOT AVAILABLE at freeze, **filled 2026-08-21 via a local run once data access existed** — [`NOT DECISIVE`](_cheap_falsifier_expiry_oi_strike_convergence_2026-08-21_LOG.md), Explore-confirm below still owed |
+| Stage-1 record | [`STAGE1.md`](STAGE1.md) — three $0 limbs PASS at RT **$4.12**; cheap falsifier recorded NOT AVAILABLE at freeze, **filled 2026-08-21 via a local run once data access existed** — [`NOT DECISIVE`](_cheap_falsifier_expiry_oi_strike_convergence_2026-08-21_LOG.md); Explore-confirm (below §4) **also since run 2026-08-21** — [`AMBIGUOUS-HOLD`](_explore_confirm_2026-08-21_LOG.md) |
 | Cost basis | `firm_rules.py` Tradeify Metals `cost_per_side_usd: 1.06` + tick_value $1.00 × 2 sides → RT **$4.12**; 4× = **$16.48** |
 | Cell door-check | `instrument_profiles.py cell MGC expiry-oi-strike-convergence` → BINDING BAR `free-data-5th-leg-snag-closed-2026-07-01` answered **CLEAR via R-FRAMING §2.1** (inherits MSL-C2's own resolution of the identical bar on the identical ledger) |
 | Occupancy | **CLEAR** — MGC is not an MYM/MNQ occupancy-release instrument (B8 does not apply); MGC's own K-void was cleared 2026-08-09 (`ops/instruments/MGC.md` G1) |
@@ -161,6 +164,14 @@ none of it has been executed. `EXPLORE_GO.DRAFT.md`'s statistical core
 (`explore_confirm_lib.py`) is unit-tested on synthetic fixtures (23/23 passing, incl. a power
 check and a false-positive check) but has never touched real data — no live pull has run under
 either PREREG.
+
+**Executed 2026-08-21, under `EXPLORE_GO.md` (ISSUED 2026-08-21):** the deferred Explore pass
+above has now run —
+[`_explore_confirm_2026-08-21_LOG.md`](_explore_confirm_2026-08-21_LOG.md). 75 completed
+weekly+monthly cycles, IS-only (CONFIRM never read). **Verdict: `AMBIGUOUS-HOLD`** —
+`p_upper=0.5724` (not significant), DELETE weak-PASS, **FLIP FAIL** (divergence beat convergence).
+This freeze's own text and constants (`K_intrinsic=1`, DSR floor, cost-law) are unchanged by this
+result — this is a disclosed execution record, not a re-freeze.
 
 ---
 
