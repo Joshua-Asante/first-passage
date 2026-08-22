@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-22a — Directory pointer READMEs + root hop table
+
+**Focus:** what would make the repo easier to navigate — empirical walk of layer roots, catalogs, and indexes (no sixth root doc).
+
+**Shipped:** `cursor/repo-navigation-pointers-126f` @ `d7a8a7f` — hop table on [`README.md`](../README.md); pointer-only READMEs at layer roots and major subtrees; [`docs/ltm/README.md`](ltm/README.md); Q-M1WIRE-1 off the Open roster; glob-all-md checkers skip `README.md`.
+
+**Decisions/defects:** none new. Stale INDEX Open row repaired against the existing [`closure`](briefs/closures/Q-M1WIRE-1-closure-falsified.md).
+
+**Open / next:** carry `2026-08-21l` — MSL-S4 Explore-confirm driver + IAAFT pilot still need a Databento-local session; operator TV backtest can continue in parallel. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. Remaining nav debt (not this PR): CATALOG `ACTIVE` rows that look closed; `STATE.md` decision-index length; topic index on the derived ADR INDEX.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-21l — MSL-S4 real Explore-confirm drafted: IAAFT-surrogate null replaces the naive control
 
 **Focus:** `21k`'s finding (the cheap falsifier's control window is trend-confounded, same cycles
