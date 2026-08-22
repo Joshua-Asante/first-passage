@@ -1,7 +1,15 @@
 # `docs/pursuits/` — GRAND-tier pursuit records
 
 One file per ratified inventory row (GSUB-1 / GSUB-2). There is no
-derived INDEX — the files *are* the register.
+derived INDEX — the files *are* the register. Filename prefix is the class:
+
+| Prefix | Class |
+|---|---|
+| `a-` | Program / pipeline KEEP |
+| `b-` | Transfer / reconstruction lanes |
+| `c-` | Named-Q pursuits |
+| `d-` | Meta-belt (skills, plugins, subscriptions, accounts) |
+| `e-` | Aim-scale / terminal |
 
 | Also here | Job |
 |---|---|

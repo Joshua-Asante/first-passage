@@ -9,6 +9,8 @@ facts remain with the linked owners; this page does not restate locked values.
 - [`../operational_rules.md`](../operational_rules.md) — earned operational rules
   and canonical-owner table.
 - [`../rule_0.md`](../rule_0.md) — audit production sources before decisions.
+- [`../methodology/README.md`](../methodology/README.md) — standing method files
+  (canon, lifecycle, harvest, both-halves, …).
 - [`../methodology/strategy_lifecycle.md`](../methodology/strategy_lifecycle.md) —
   parameter lock versus revocable capital authorization.
 - [`systematic-trading-lifecycle.md`](systematic-trading-lifecycle.md) —

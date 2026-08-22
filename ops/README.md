@@ -14,6 +14,11 @@ restated here.
 | [`cli.py`](cli.py) | Tearsheet-only historical CLI |
 | [`prop_envelope_default.md`](prop_envelope_default.md) | Prop-envelope v1 pointer |
 
+Import split: rail modules are **flat** (`c1_rail_arm`, … under
+`PYTHONPATH=ops/c1_rail`); the daemon is a **package**
+(`python -m c1_signal_daemon` under `PYTHONPATH=ops/c1_signal_daemon`).
+See [`REPO_MAP.md`](../REPO_MAP.md) §2.2.
+
 Deploy packaging: [`deploy/c1_rail/`](../deploy/c1_rail/) ·
 [`deploy/c1_signal_daemon/`](../deploy/c1_signal_daemon/).
 Layer contract: [`REPO_MAP.md`](../REPO_MAP.md).
