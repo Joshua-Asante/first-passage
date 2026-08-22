@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-22g — Draft catalog hot-vs-disposition ADR (CC)
+
+**Focus:** Draft the commissioned ADR (PR #98). ADR only — no parser/C2, no `--slug`, no CATALOG hand-edit.
+
+**Shipped:** [`docs/adr/2026-08-22-catalog-hot-vs-disposition.md`](adr/2026-08-22-catalog-hot-vs-disposition.md) (`Proposed`, full tier). Two axes (`hot`/`disposition`); Verdict-wins parser rule; C2 retargeted to `hot`; column call = keep `status`, add `hot` (less parser/C2 blast per Phase 0). `docs/adr/INDEX.md` regenerated. Both gates green.
+
+**Decisions/defects:** none new. Parser/C2/`--slug` implementation is Phase 1, gated on `Accepted` + a separate operator GO.
+
+**Open / next:** carry `2026-08-21n` — MSL-S4 card closed for build-out (`PARKED`). **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. PR #98 comment posted for Cursor spec-compliance review; ratification (`Accepted`) is an operator call.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-22f — Commission catalog hot-vs-disposition ADR
 
 **Focus:** Open a draft PR with a CC handoff so Claude Code drafts the catalog `hot` vs `disposition` ADR. No parser/C2. No sixth root doc.
