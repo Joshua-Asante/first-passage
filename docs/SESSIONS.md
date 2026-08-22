@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-22d — CATALOG hygiene (Phase 2)
+
+**Focus:** Archive spent CATALOG ACTIVE slugs via `--slug`; name leftovers. No sixth root doc. No CATALOG Status hand-edits.
+
+**Shipped:** `cursor/nav-catalog-hygiene-126f` — inventory 0 archiveable / 88 ACTIVE / 11 HOLD; stamped + `--slug` `dstruct_mnq_2026-08` (`NULL`); leftovers named on [`lab/analysis/README.md`](../lab/analysis/README.md). MNQ ledger C3-repointed. Regenerated one-liners restored.
+
+**Decisions/defects:** none new. `ACTIVE` as first `Status:` field still masks later terminals; do not mass-stamp Verdict. Frozen-prereg / stay-hot / HOLD-outs left. Historical SESSIONS inbox cites left (append-only).
+
+**Open / next:** carry `2026-08-21n` — MSL-S4 card closed for build-out (`PARKED`). **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. Remaining nav debt: Phase 5 named-not-opened (ADR topic view, STATE diet, ops import unify, gate-wire `sync_liveness`).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-22c — Index honesty + pointer maps (P1/P3/P4)
 
 **Focus:** make existing indexes stop 404ing or lying; extend Phase-0 READMEs; public-clone retrieval honesty. No sixth root doc. No CATALOG Status flips.

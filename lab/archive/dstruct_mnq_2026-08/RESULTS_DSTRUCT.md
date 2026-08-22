@@ -1,3 +1,4 @@
+**Verdict:** NULL — daily close-vs-EMA20 bias carries nothing at daily granularity (Tier-1 screen, 3 of 4 limbs failed; K=1 disclosed)
 **Theme:** _inbox
 **Status:** ACTIVE — NULL: daily close-vs-EMA20 bias carries nothing at daily granularity (Tier-1 screen, 3 of 4 limbs failed; K=1 disclosed)
 # `H-DSTRUCT-MNQ-1` — RESULTS: daily structural bias carries nothing at its own granularity
