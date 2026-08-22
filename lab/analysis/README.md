@@ -15,10 +15,11 @@ Archive tool: `python scripts/archive_lab_analysis.py --help`.
 
 ## Phase 2 leftovers (2026-08-22)
 
-Not a second catalog. Status cells still flip only via
+Not a second catalog. Status / `hot` cells still flip only via
 `python scripts/archive_lab_analysis.py --slug …` then `--regenerate-catalog`.
-Inventory this pass: **0 archiveable** as stamped (88 ACTIVE / 11 HOLD);
-`ACTIVE` as the first `Status:` field masks a later terminal token.
+Owner for the column split: [`docs/adr/2026-08-22-catalog-hot-vs-disposition.md`](../../docs/adr/2026-08-22-catalog-hot-vs-disposition.md)
+(`Accepted` 2026-08-22). This table remains the pin list (`--slug` still two-part);
+CATALOG can now list a stay-hot terminal `status` with `hot=yes`.
 
 **This pass slugged:** `dstruct_mnq_2026-08` (`NULL` — already on the RESULTS
 card; Verdict stamped first so `--slug` could see it). Body:

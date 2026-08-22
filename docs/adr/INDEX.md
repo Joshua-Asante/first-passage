@@ -126,6 +126,7 @@
 | 2026-08-21-cfo-subscription-ledger-consolidation.md | Accepted | 2026-08-21 | none | ratified by operator (Joshua) 2026-08-21, in-session direct instruction |
 | 2026-08-21-persona-hierarchy-front-office-only.md | Accepted | 2026-08-21 | `2026-08-19-loop-persona-hierarchy-review-panel.md` in part — D1's spawnable roster | ratified by operator (Joshua) 2026-08-21, in-session direct instruction ("What |
 | 2026-08-21-stage2-stage3-progression-criteria.md | Accepted | 2026-08-21 | none | ratified 2026-08-21 by operator (Joshua) |
+| 2026-08-22-catalog-hot-vs-disposition.md | Accepted | 2026-08-22 | none | ratified by operator (Joshua) 2026-08-22, in-session ("accepted. GO"); Phase 1 (parser + C2 + `hot` column) lands in the same GO. |
 
 ## Partially superseded
 

@@ -159,6 +159,47 @@ def test_only_first_40_lines_scanned():
     assert ala.parse_disposition("".join(lines)) is None
 
 
+def test_verdict_wins_over_earlier_status_active():
+    """ADR 2026-08-22: separate Verdict line beats a preceding Status: ACTIVE."""
+    text = (
+        "**Status:** ACTIVE — still listed in the Active table\n"
+        "**Verdict:** FALSIFIED — terminal on the honest clock\n"
+    )
+    d = ala.parse_disposition(text)
+    assert d is not None
+    assert d.status == "FALSIFIED"
+
+
+def test_verdict_null_wins_over_status_active():
+    text = (
+        "**Status:** ACTIVE — house-style mask\n"
+        "**Verdict:** NULL — leftover stay-hot body\n"
+    )
+    d = ala.parse_disposition(text)
+    assert d is not None
+    assert d.status == "NULL"
+    assert ala.is_archiveable(d.status) is True
+
+
+def test_hold_in_verdict_clause_still_dominates_status_active():
+    text = (
+        "**Status:** ACTIVE — scanning\n"
+        "**Verdict:** AMBIGUOUS-HOLD — do not archive\n"
+    )
+    d = ala.parse_disposition(text)
+    assert d is not None
+    assert d.status == "HOLD"
+    assert ala.is_archiveable(d.status) is False
+
+
+def test_inline_status_active_null_without_verdict_line_stays_active():
+    """House style without a separate Verdict line is unchanged — ACTIVE dominates."""
+    text = "**Status:** ACTIVE — NULL: leftover one-liner\n"
+    d = ala.parse_disposition(text)
+    assert d is not None
+    assert d.status == "ACTIVE"
+
+
 def test_parse_theme_from_bold_field():
     text = "**Theme:** c1\n**Status:** ACTIVE — measuring\n"
     assert ala.parse_theme(text) == "c1"
@@ -319,7 +360,7 @@ def test_render_catalog_groups_active_by_theme(tmp_path: Path):
     text = ala.render_catalog(ala.scan_lab(tmp_path, tracked_override=tracked))
     assert "### c1" in text and "### orb" in text
     assert "### striker" not in text  # omit empty
-    assert "| slug | theme | status | one-liner | body | heavy |" in text
+    assert "| slug | theme | status | hot | one-liner | body | heavy |" in text
     assert "lab/analysis/c1/a/" in text
 
 
@@ -857,8 +898,8 @@ def test_check_catalog_only_ignores_unstubbed_close(tmp_path: Path):
     assert rc == 0
 
 
-def test_full_dir_archiveable_coerced_to_hold_in_catalog(tmp_path: Path):
-    """Unstubbed FALSIFIED stays Active-table HOLD so C2 status-consistency holds."""
+def test_full_dir_archiveable_keeps_disposition_and_hot_yes(tmp_path: Path):
+    """Unstubbed FALSIFIED stays Active with honest disposition; C2 joins to hot."""
     closed = tmp_path / "lab" / "analysis" / "done_study"
     closed.mkdir(parents=True)
     (closed / "RESULTS.md").write_text(
@@ -866,11 +907,12 @@ def test_full_dir_archiveable_coerced_to_hold_in_catalog(tmp_path: Path):
     )
     rows = ala.scan_lab(tmp_path)
     assert len(rows) == 1
-    assert rows[0].status == "HOLD"
-    assert "archive owed (FALSIFIED)" in rows[0].one_liner
+    assert rows[0].status == "FALSIFIED"
+    assert rows[0].hot == "yes"
     text = ala.render_catalog(rows)
-    assert "## Active" in text and "done_study" in text
-    assert "| FALSIFIED |" not in text.split("## Archived")[0]
+    active = text.split("## Archived")[0]
+    assert "## Active" in active and "done_study" in active
+    assert "| FALSIFIED | yes |" in active
 
 
 def test_check_catalog_only_fails_when_stale(tmp_path: Path):

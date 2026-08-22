@@ -10,7 +10,7 @@ This gate treats CATALOG as the machine-readable status authority and flags a
 SHARED slug (joined via the lab/(analysis|archive)/<slug>/ path that all three
 surfaces carry) whose status drifts:
 
-  C2 (HARD) — a CATALOG row self-inconsistent: table vs status word vs body-tier.
+  C2 (HARD) — a CATALOG row self-inconsistent: table vs `hot` vs body-tier.
   C3 (HARD) — a lab/analysis/<slug>/<file> link that no longer resolves but is
               present under lab/archive/<slug>/ (stale tier link; suggest
               repoint) OR under lab/analysis/<theme>/<slug>/ (flat-to-theme-nest
@@ -98,6 +98,7 @@ _CLAUSE_STOP = frozenset(" \t`;)")
 DEAD_HEADER_RE = re.compile(r"^#{1,6}\s+.*\b(?:DEAD|REJECTED|PARKED)\b", re.IGNORECASE)
 HEADER_RE = re.compile(r"^(#{1,6})\s+\S")
 
+# Disposition vocabulary (not a C2 join key — C2 joins to `hot` / body-path).
 LIVE_STATUS = frozenset({"ACTIVE", "HOLD"})
 TERMINAL_STATUS = frozenset({"CLOSED", "FALSIFIED", "RETIRED"})
 
@@ -109,6 +110,7 @@ class CatalogEntry:
     table: str            # "active" | "archived"
     body_tier: str | None  # "live" | "archived" | None
     lineno: int
+    hot: str | None = None  # "yes" | "no" | None (legacy rows omit the column)
 
 
 @dataclass(frozen=True)
@@ -137,9 +139,9 @@ def parse_catalog(text: str) -> dict[str, CatalogEntry]:
     link, else None (correctly handling an archived row whose `card` stub is a
     lab/analysis/ path while its `body` is lab/archive/).
 
-    Column layout: if the table header includes ``theme``, map ``status`` / ``body``
-    by header name (Active 6-col schema). Otherwise use legacy fixed positions
-    (status at 1, body at 4 — the pre-theme 7-col Active / Archived schema)."""
+    Column layout: if the table header includes ``theme``, map ``status`` /
+    ``body`` / ``hot`` by header name (Active 7-col schema). Otherwise use
+    legacy fixed positions (status at 1, body at 4 — pre-theme / pre-hot)."""
     catalog: dict[str, CatalogEntry] = {}
     table: str | None = None
     # None => legacy fixed positions; dict => name->index from a themed header.
@@ -188,23 +190,32 @@ def parse_catalog(text: str) -> dict[str, CatalogEntry]:
             body_cell = (
                 cells[body_idx] if body_idx is not None and body_idx < len(cells) else ""
             )
+            hot_idx = col_map.get("hot")
+            hot_cell = (
+                cells[hot_idx] if hot_idx is not None and hot_idx < len(cells) else ""
+            )
         else:
             status = cells[1]
             body_cell = cells[4] if len(cells) >= 5 else ""
+            hot_cell = ""
+        hot = hot_cell.lower() if hot_cell.lower() in {"yes", "no"} else None
         if "lab/archive/" in body_cell:
             body_tier: str | None = "archived"
         elif "lab/analysis/" in body_cell:
             body_tier = "live"
         else:
             body_tier = None
-        catalog[slug] = CatalogEntry(slug, status, table, body_tier, lineno)
+        catalog[slug] = CatalogEntry(slug, status, table, body_tier, lineno, hot)
     return catalog
 
 
 def check_catalog_internal(catalog: dict[str, CatalogEntry]) -> list[Finding]:
-    """C2 — a CATALOG row whose table membership disagrees with its body-path tier
-    or with the class of its status word. Only known status words (LIVE/TERMINAL)
-    are class-checked, so an unrecognised status word never false-positives."""
+    """C2 — table membership vs body-path tier, and vs the `hot` column.
+
+    Disposition class is not a C2 join key (ADR 2026-08-22-catalog-hot-vs-disposition):
+    a terminal status in Active is legal when ``hot=yes``. Unrecognised / missing
+    ``hot`` cells are not class-checked (legacy 6-col rows).
+    """
     findings: list[Finding] = []
     for e in catalog.values():
         expected_tier = "live" if e.table == "active" else "archived"
@@ -213,15 +224,13 @@ def check_catalog_internal(catalog: dict[str, CatalogEntry]) -> list[Finding]:
                 "HARD", "C2", "lab/CATALOG.md", e.lineno,
                 f"{e.slug}: in the {e.table} table but its body path is "
                 f"{e.body_tier}-tier (expected {expected_tier})"))
-        su = e.status.upper()
-        status_class = ("live" if su in LIVE_STATUS
-                        else "terminal" if su in TERMINAL_STATUS else None)
-        expected_class = "live" if e.table == "active" else "terminal"
-        if status_class is not None and status_class != expected_class:
-            findings.append(Finding(
-                "HARD", "C2", "lab/CATALOG.md", e.lineno,
-                f"{e.slug}: status '{e.status}' is {status_class} but sits in the "
-                f"{e.table} table"))
+        if e.hot in {"yes", "no"}:
+            expected_hot = "yes" if e.table == "active" else "no"
+            if e.hot != expected_hot:
+                findings.append(Finding(
+                    "HARD", "C2", "lab/CATALOG.md", e.lineno,
+                    f"{e.slug}: hot={e.hot!r} but sits in the {e.table} table "
+                    f"(expected hot={expected_hot!r})"))
     return findings
 
 

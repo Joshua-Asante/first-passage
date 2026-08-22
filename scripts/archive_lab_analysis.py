@@ -10,7 +10,7 @@ import re
 import shutil
 import subprocess
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -193,6 +193,7 @@ class CatalogRow:
     body: str
     heavy: str
     closed: str
+    hot: str = ""
 
 
 def parse_theme(text: str) -> str:
@@ -226,16 +227,22 @@ def _normalize_status(value: str) -> str | None:
     return None
 
 
-def _extract_value_from_line(line: str) -> str | None:
-    """Return disposition field value from a single line, or None."""
+def _extract_field_and_value(line: str) -> tuple[str | None, str | None]:
+    """Return (field_name, value) from a disposition field line, or (None, None)."""
     stripped = line.strip()
     m = _FIELD_RE.match(stripped) or _BOLD_COMBO_RE.match(stripped)
     if m:
-        return m.group(2).strip().rstrip("*").strip()
+        return m.group(1), m.group(2).strip().rstrip("*").strip()
     m = _INLINE_RE.search(stripped)
     if m:
-        return m.group(2).strip().rstrip("*").strip()
-    return None
+        return m.group(1), m.group(2).strip().rstrip("*").strip()
+    return None, None
+
+
+def _extract_value_from_line(line: str) -> str | None:
+    """Return disposition field value from a single line, or None."""
+    _field, value = _extract_field_and_value(line)
+    return value
 
 
 def _raw_token_for_status(value: str, status: str) -> str:
@@ -280,13 +287,22 @@ def _clean_one_liner(value: str, status: str) -> str:
 
 
 def parse_disposition(text: str) -> Disposition | None:
+    """Resolve campaign disposition from a card head.
+
+    When both a Verdict field and a Status/Disposition field are present as
+    separate lines, Verdict wins (ADR 2026-08-22-catalog-hot-vs-disposition).
+    Dominance *inside* a single value still uses ``_NON_TERMINAL_DOMINANT``
+    on the verdict clause — HOLD in that clause still dominates.
+    """
     head = "\n".join(text.splitlines()[:FIELD_HEAD_LINES])
+    verdict_hit: Disposition | None = None
+    other_hit: Disposition | None = None
     for line in head.splitlines():
         stripped = line.strip()
         # v1 stamp-first: blockquote-only VERDICT lines do not auto-qualify
         if stripped.startswith(">"):
             continue
-        value = _extract_value_from_line(line)
+        field, value = _extract_field_and_value(line)
         if value is None:
             continue
         status = _normalize_status(value)
@@ -300,8 +316,17 @@ def parse_disposition(text: str) -> Disposition | None:
         if len(one) > 120:
             one = one[:117] + "..."
         raw = _raw_token_for_status(value, status)
-        return Disposition(raw_token=raw, status=status, one_liner=one, decisive_hint=hint)
-    return None
+        hit = Disposition(
+            raw_token=raw, status=status, one_liner=one, decisive_hint=hint
+        )
+        if field is not None and field.lower() == "verdict":
+            if verdict_hit is None:
+                verdict_hit = hit
+        elif other_hit is None:
+            other_hit = hit
+        if verdict_hit is not None and other_hit is not None:
+            break
+    return verdict_hit if verdict_hit is not None else other_hit
 
 
 def choose_source_card(slug_dir: Path) -> Path | None:
@@ -526,6 +551,7 @@ def _row_from_stub(
         body=f"{ARCHIVE_REL}/{slug}/",
         heavy=_heavy_note(archive_body),
         closed=_closed_from_card(text),
+        hot="no",
     )
 
 
@@ -537,16 +563,9 @@ def _row_from_full_dir(
     disp = parse_disposition(source_text) if source is not None else None
     status = disp.status if disp else "ACTIVE"
     one_liner = disp.one_liner if disp else "—"
-    # Terminal disposition still sitting in a full STM dir is an unstubbed close
-    # (flagged by --check). Catalog Active rows must stay LIVE-class for
-    # check_status_consistency C2 — surface the owed archive without claiming
-    # the body has moved.
-    if is_archiveable(status):
-        detail = one_liner if one_liner and one_liner != "—" else status
-        one_liner = f"archive owed ({status}): {detail}"
-        if len(one_liner) > 120:
-            one_liner = one_liner[:117] + "..."
-        status = "HOLD"
+    # Terminal disposition may sit in a full STM dir (stay-hot pin). C2 joins
+    # to `hot`, not disposition class — do not coerce to HOLD / "archive owed".
+    # Unstubbed closes remain a --check finding; --slug is still two-part.
     rel = slug_dir.relative_to(repo).as_posix()
     card = f"{rel}/{source.name}" if source is not None else "—"
     return CatalogRow(
@@ -558,6 +577,7 @@ def _row_from_full_dir(
         body=f"{rel}/",
         heavy=_heavy_note(slug_dir),
         closed="—",
+        hot="yes",
     )
 
 
@@ -608,10 +628,11 @@ def scan_lab(
 
 def _render_active_table(rows: list[CatalogRow]) -> str:
     lines = [
-        "| slug | theme | status | one-liner | body | heavy |",
-        "|---|---|---|---|---|---|",
+        "| slug | theme | status | hot | one-liner | body | heavy |",
+        "|---|---|---|---|---|---|---|",
     ]
     for row in rows:
+        hot = row.hot or "yes"
         lines.append(
             "| "
             + " | ".join(
@@ -620,6 +641,7 @@ def _render_active_table(rows: list[CatalogRow]) -> str:
                     row.slug,
                     row.theme,
                     row.status,
+                    hot,
                     row.one_liner,
                     row.body,
                     row.heavy,
@@ -699,11 +721,60 @@ def _normalize_catalog_text(text: str) -> str:
     return "\n".join(lines).strip() + "\n"
 
 
+def _one_liners_from_catalog(text: str) -> dict[str, str]:
+    """Slug → one-liner from an on-disk CATALOG, header-name keyed."""
+    out: dict[str, str] = {}
+    one_i: int | None = None
+    for raw in text.splitlines():
+        if not raw.startswith("|"):
+            continue
+        cells = [c.strip() for c in raw.strip().strip("|").split("|")]
+        if not cells:
+            continue
+        lower = [c.lower() for c in cells]
+        if "slug" in lower and "one-liner" in lower:
+            one_i = lower.index("one-liner")
+            continue
+        if one_i is None or set(cells[0]) <= set("-: "):
+            continue
+        if one_i < len(cells):
+            out[cells[0]] = cells[one_i]
+    return out
+
+
+def _preserve_authored_one_liners(
+    rows: list[CatalogRow], existing: dict[str, str]
+) -> list[CatalogRow]:
+    """Keep committed CATALOG one-liners; drop the old HOLD-coerce 'archive owed' prefix."""
+    out: list[CatalogRow] = []
+    for row in rows:
+        old = existing.get(row.slug)
+        # Only keep committed prose when the scan cannot derive a one-liner
+        # (same contract as --check). Non-empty scan text wins so freshness
+        # stays green; "archive owed (…)" prefixes are never preserved.
+        if (
+            old
+            and not _is_empty_one_liner(old)
+            and _is_empty_one_liner(row.one_liner)
+            and not re.match(r"(?i)archive\s+owed\s*\(", old)
+        ):
+            out.append(replace(row, one_liner=old))
+        else:
+            out.append(row)
+    return out
+
+
 def regenerate_catalog(
     repo: Path,
     tracked_override: dict[str, frozenset[str]] | None = None,
 ) -> str:
+    existing: dict[str, str] = {}
+    path = repo / CATALOG_REL
+    if path.is_file():
+        existing = _one_liners_from_catalog(path.read_text(encoding="utf-8"))
     rows = scan_lab(repo, tracked_override=tracked_override)
+    if existing:
+        rows = _preserve_authored_one_liners(rows, existing)
     text = render_catalog(rows)
     write_catalog(repo, text)
     return text
@@ -1066,18 +1137,19 @@ def _theme_mismatch_issue(dir_theme: str, stamped: str, slug: str) -> str | None
         return f"theme mismatch: {slug} dir={dir_theme} stamp={stamped}"
     return None
 
-# Index of the `heavy` cell in both rendered schemas (Active 6-col and Archived
-# 7-col). Active: slug, theme, status, one-liner, body, heavy.
-# Archived: slug, status, one-liner, card, body, heavy, closed.
-_HEAVY_COL = 5
-_ACTIVE_COLS = 6
+# Active (7-col): slug, theme, status, hot, one-liner, body, heavy.
+# Archived (7-col): slug, status, one-liner, card, body, heavy, closed.
+# Legacy Active (6-col, no `hot`) is still accepted by the splitter so a
+# mid-transition --check can name the schema drift instead of dropping rows.
+_ACTIVE_COLS = 7
+_ACTIVE_COLS_LEGACY = 6
 _ARCHIVED_COLS = 7
 
 
 def _split_catalog_row(line: str) -> list[str] | None:
     """Split a machine-rendered catalog data row into its cells, else None.
 
-    Accepts Active (6-col) and Archived (7-col) schemas. Renderers join cells
+    Accepts Active (7-col, or legacy 6-col) and Archived (7-col) schemas. Renderers join cells
     with ``" | "`` and wrap them in ``"| … |"``; ``_escape_cell`` only turns
     ``|`` into ``\\|`` (which carries no surrounding spaces), so the ``" | "``
     delimiter is unambiguous. The ``|---|`` separator (no spaces) and non-table
@@ -1088,7 +1160,7 @@ def _split_catalog_row(line: str) -> list[str] | None:
     if len(s) < 2 or not s.startswith("|") or not s.endswith("|"):
         return None
     cells = [c.strip() for c in s[1:-1].split(" | ")]
-    if len(cells) not in (_ACTIVE_COLS, _ARCHIVED_COLS):
+    if len(cells) not in (_ACTIVE_COLS, _ACTIVE_COLS_LEGACY, _ARCHIVED_COLS):
         return None
     return cells
 
@@ -1187,12 +1259,15 @@ def _compare_catalog(on_disk: str, expected: str) -> tuple[list[str], list[str]]
             continue
         if len(disk_cells) != len(exp_cells):
             return ([_CATALOG_STALE], warnings)
-        # Active: slug, theme, status, one-liner, body, heavy.
-        # Archived: slug, status, one-liner, card, body, heavy, closed.
-        status_i = 2 if len(disk_cells) == _ACTIVE_COLS else 1
-        one_liner_i = 3 if len(disk_cells) == _ACTIVE_COLS else 2
+        # Active 7-col: slug, theme, status, hot, one-liner, body, heavy.
+        # Archived 7-col: slug, status, one-liner, card, body, heavy, closed.
+        # Distinguish by section — both schemas are 7 cells.
+        if _section == "active":
+            status_i, one_liner_i, heavy_i = 2, 4, 6
+        else:
+            status_i, one_liner_i, heavy_i = 1, 2, 5
         for i in range(len(disk_cells)):
-            if i == _HEAVY_COL:
+            if i == heavy_i:
                 continue
             if disk_cells[i] == exp_cells[i]:
                 continue
@@ -1220,15 +1295,15 @@ def _compare_catalog(on_disk: str, expected: str) -> tuple[list[str], list[str]]
         # checked out. ``exp == "—"`` IS the "absent in this environment" signal —
         # so committed "—" → scanned annotation (files added but catalog not
         # regenerated) is the opposite direction and stays a hard-fail.
-        if disk_cells[_HEAVY_COL] == exp_cells[_HEAVY_COL]:
+        if disk_cells[heavy_i] == exp_cells[heavy_i]:
             continue
         if (
-            disk_cells[_HEAVY_COL] in _HEAVY_GITIGNORED
-            and exp_cells[_HEAVY_COL] == _HEAVY_NONE
+            disk_cells[heavy_i] in _HEAVY_GITIGNORED
+            and exp_cells[heavy_i] == _HEAVY_NONE
         ):
             warnings.append(
                 f"{slug}: heavy artifacts gitignored and absent from this "
-                f"checkout (committed {disk_cells[_HEAVY_COL]!r}, not verified)"
+                f"checkout (committed {disk_cells[heavy_i]!r}, not verified)"
             )
             continue
         return ([_CATALOG_STALE], warnings)
@@ -1289,10 +1364,12 @@ def warn_new_slug_same_theme_collisions(
     catalogued_slugs = {slug for _section, slug in catalog_rows}
     by_theme: dict[str, list[tuple[str, str]]] = {}
     for (_section, slug), cells in catalog_rows.items():
-        if len(cells) != _ACTIVE_COLS:
+        if _section != "active":
+            continue
+        if len(cells) not in {_ACTIVE_COLS, _ACTIVE_COLS_LEGACY}:
             continue
         theme = cells[1]
-        one_liner = cells[3]
+        one_liner = cells[4] if len(cells) == _ACTIVE_COLS else cells[3]
         by_theme.setdefault(theme, []).append((slug, one_liner))
 
     for dir_theme, slug, _slug_dir in iter_hot_bodies(repo):
@@ -1850,10 +1927,13 @@ def main(argv: list[str] | None = None) -> int:
         print(label)
         return 0
     if args.regenerate_catalog:
-        rows = scan_lab(root)
-        text = render_catalog(rows)
-        write_catalog(root, text)
-        print(f"Wrote {CATALOG_REL} ({len(rows)} rows)")
+        text = regenerate_catalog(root)
+        n_rows = sum(
+            1
+            for line in text.splitlines()
+            if line.startswith("|") and not line.startswith("| slug") and "|---" not in line
+        )
+        print(f"Wrote {CATALOG_REL} ({n_rows} rows)")
         return 0
     if args.theme and not args.unarchive:
         print("--theme requires --unarchive", file=sys.stderr)
