@@ -25,6 +25,7 @@ REPO = Path(__file__).resolve().parent.parent
 INDEX = REPO / "docs" / "briefs" / "INDEX.md"
 CATALOG = REPO / "lab" / "CATALOG.md"
 ARCHIVE = REPO / "scripts" / "archive_lab_analysis.py"
+CLOSURES = REPO / "docs" / "briefs" / "closures"
 
 BOLD_Q = re.compile(
     r"\*\*(?P<id>(?:Q|H|GSUB|MNQBASE|OPENPRESS|MYM|SLR|ST|MSL)"
@@ -111,6 +112,45 @@ def stale_index_open(text: str) -> list[str]:
     return stale
 
 
+_CLOSURE_STEM = re.compile(
+    r"^(?P<id>(?:Q|H|GSUB|MNQBASE|OPENPRESS|MYM|SLR|ST|MSL)"
+    r"-[A-Z0-9]+(?:-[A-Z0-9]+)*)-closure"
+)
+
+
+def hot_closure_ids(closure_dir: Path | None = None) -> set[str]:
+    """Q-ids that already have a hot ``docs/briefs/closures/<id>-closure*.md``."""
+    root = CLOSURES if closure_dir is None else closure_dir
+    ids: set[str] = set()
+    if not root.is_dir():
+        return ids
+    for path in root.glob("*-closure*.md"):
+        m = _CLOSURE_STEM.match(path.name)
+        if m:
+            ids.add(m.group("id"))
+    return ids
+
+
+def open_with_hot_closure(
+    text: str, closure_ids: set[str] | None = None
+) -> list[str]:
+    """Open-table Q-id whose hot closure file already exists.
+
+    Complements ``stale_index_open``: that limb requires a terminal Status
+    *and* a named Recently-closed successor, so it missed Q-M1WIRE-1
+    (Status still said OPEN while ``Q-M1WIRE-1-closure-*.md`` existed).
+    Report-only — do not auto-rewrite INDEX.
+    """
+    present = hot_closure_ids() if closure_ids is None else closure_ids
+    hits: list[str] = []
+    for cid, status, _nxt in _open_table_rows(text):
+        if cid in present:
+            hits.append(
+                f"{cid}: Open table Status={status!r} but hot closure exists"
+            )
+    return hits
+
+
 def archive_owed_active(text: str) -> list[str]:
     hits: list[str] = []
     for raw in text.splitlines():
@@ -144,7 +184,9 @@ def main(argv: list[str] | None = None) -> int:
 
     problems: list[str] = []
     if INDEX.is_file():
-        problems.extend(stale_index_open(INDEX.read_text(encoding="utf-8")))
+        index_text = INDEX.read_text(encoding="utf-8")
+        problems.extend(stale_index_open(index_text))
+        problems.extend(open_with_hot_closure(index_text))
     if CATALOG.is_file():
         problems.extend(archive_owed_active(CATALOG.read_text(encoding="utf-8")))
 

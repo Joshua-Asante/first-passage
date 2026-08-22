@@ -2,7 +2,8 @@
 
 Imports `core` + `lab` + `ops` at once by design
 ([boundaries ADR](../docs/adr/2026-06-05-monorepo-layer-boundaries.md) §8 Q-c).
-`pyproject.toml` sets `pythonpath = ["core","lab","ops","."]`.
+Pytest import roots are owned by [`pyproject.toml`](../pyproject.toml)
+`[tool.pytest.ini_options] pythonpath` — see [`REPO_MAP.md`](../REPO_MAP.md) §2.2.
 
 | Path | Mirrors |
 |---|---|

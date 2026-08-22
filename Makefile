@@ -1,7 +1,16 @@
 # First Passage - convenience targets.
 # Wrappers around scripts that the pre-commit hook also calls.
 
-.PHONY: check validate validate-data validate-pine skills-no-constants boundaries path-liveness root-doc-liveness md-relative-links lab-path-relocation status-consistency adr-graph adr-graph-index lab-catalog lab-catalog-check lab-archive-check test test-ops skills-check sync-skills sync-skills-check roll-sessions roll-sessions-dry instrument-profiles instrument-profiles-build gate-manifest gate-manifest-list
+.PHONY: help check validate validate-data validate-pine skills-no-constants boundaries path-liveness root-doc-liveness md-relative-links lab-path-relocation status-consistency adr-graph adr-graph-index lab-catalog lab-catalog-check lab-archive-check test test-ops skills-check sync-skills sync-skills-check roll-sessions roll-sessions-dry instrument-profiles instrument-profiles-build gate-manifest gate-manifest-list
+
+help:
+	@echo "check                 run check-tier gates (scripts/gates.yml)"
+	@echo "validate              data manifests + pine"
+	@echo "lab-catalog           regenerate lab/CATALOG.md"
+	@echo "sentinel              INQHIORI sentinel scan (report-only)"
+	@echo "gate-manifest-list    print the hard-gate roster"
+	@echo "test / test-ops       pytest (all / ops/)"
+	@echo "root-doc-liveness     five-root-doc markdown link gate"
 
 # W5: composition owned by scripts/gates.yml via gate_manifest.py
 # (docs/adr/2026-08-07-w5-governance-diet.md). Individual targets below remain
