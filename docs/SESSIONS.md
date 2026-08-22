@@ -22,7 +22,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 
 **Decisions/defects:** none new. Parser + C2 wait on `Accepted` + separate GO.
 
-**Open / next:** carry `2026-08-21n` — MSL-S4 card closed for build-out (`PARKED`). **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. Wait for CC ping-back on this PR. Named leftovers: P5b / P7 / P8 / P2b / STATE rolloff / find-owner — [`docs/governance/INDEX.md`](governance/INDEX.md).
+**Open / next:** carry `2026-08-21n` — MSL-S4 card closed for build-out (`PARKED`). **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. Wait for CC ping-back on this PR. Named leftovers on [`docs/governance/INDEX.md`](governance/INDEX.md): P5b / P7 / P8 / P2b. STATE rolloff / find-owner remain named-not-filed.
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 
