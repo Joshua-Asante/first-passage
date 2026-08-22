@@ -165,7 +165,7 @@ blind/mechanism-first lanes.
 
 | Date | Slice | Commit |
 |---|---|---|
-| 2026-08-22 | `deep_lane_admission.py` + `grammar.py` + `--lane deep` wiring + `burned_segments.py`/seed — this session | (recorded on push) |
+| 2026-08-22 | `deep_lane_admission.py` + `grammar.py` + `--lane deep` wiring + `burned_segments.py`/seed — this session | `a5ee05e` |
 
 ---
 
