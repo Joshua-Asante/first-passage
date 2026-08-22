@@ -14,6 +14,56 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-22l — GROW-0 harness implementation: 13 tasks, subagent-driven
+
+**Focus:** Build. Implemented the frozen GROW-0 prereg's harness against
+[the implementation plan](superpowers/plans/2026-08-22-grow0-harness-implementation.md) —
+13 tasks, subagent-driven per `superpowers:subagent-driven-development`.
+
+**Shipped:** `lab/discovery/grow0_dgp.py` (DGP + seed tree) · `grow0_scoring.py`
+(statistic/gates/panel runner) · `grow0_harness.py` (Limb A/B, RED-LEAK/BLIND, retry ledger, CLI) ·
+`grow0_red_patch.py` (RED-PATCH) · `discovery_manifests/grow0_grammar.json` (frozen K=10 grammar,
+SHA256-pinned). 37/37 tests green. Final whole-branch review then found and fixed: an un-ledgered
+crash path in `run_grow0`, a missing `limb_b_n`/`limb_b_c` ledger schema pair, RED-LEAK's missing
+runtime seed-diversity assertion, a tautological grammar-drift test, and duplicated Limb-A/RED-BLIND
+verdict logic (now shared via `_evaluate_limb_a_shaped_verdict`) — plus this doc gap itself.
+
+**Decisions/defects:** none new beyond the fix pass above; RED-BLIND's frozen §6.4 v3 verdict
+semantics were diagnosed (conjunct-level detail added), not changed — theta* stays structurally
+excluded from its own draw pool by design.
+
+**Open/next:** Step 7's manual full-scale invocation (the real N=5,500 Limb B/RED-LEAK run
+producing GROW-0's actual RESOLVED/FALSIFIED verdict) — not yet run. First real deep-lane campaign
+still waits on that gate.
+
+**Live-ops state:** unchanged — rail disarmed; no book. No Databento spend.
+
+---
+## 2026-08-22k — GROW-0 synthetic calibration harness pre-registration: drafted and frozen
+
+**Focus:** Build-prep. Drafted the GROW-0 PREREG named as forward work in 2026-08-22j, per the
+spec's own requirement that a harness this statistically load-bearing gets a frozen design before
+any code is written.
+
+**Shipped:** [prereg](briefs/pre-registration/2026-08-22-grow-0-synthetic-calibration-prereg.md)
+`FROZEN` — operator GO (JA). Three adversarial-review rounds (69-agent BLOCKED → 24-agent BLOCKED
+→ 4-agent RATIFY WITH MINOR CHANGES) caught and fixed: a K-selection-vs-independent-draw
+statistical conflation (off by 2 orders of magnitude), an unvalidated Gaussian-tail extrapolation
+of `deep_lane_power` (off by ~5–10% in the far tail), a RED-BLIND control that mostly re-tested
+the wrong gate, a seed-collision bug, and smaller errata. `nominal_p0=0.00059070` is now
+**measured** (20M-trial MC, not closed-form); N=5,500/c=7 sized with margin against the
+measurement's own 95% CI. $0/K=0 throughout — synthetic data only.
+
+**Decisions/defects:** none new beyond the prereg's own frozen design — see its Revision record
+for the itemized fix history across all three review rounds.
+
+**Open/next:** `lab/discovery/grow0_harness.py` implementation (Limb A/B, three RED rigs, retry
+ledger) against this frozen prereg — not yet built. First real deep-lane campaign still waits on
+GROW-0's own RESOLVED/FALSIFIED gate.
+
+**Live-ops state:** unchanged — rail disarmed; no book. No Databento spend.
+
+---
 ## 2026-08-22j — GROW-lane build authorization; deep-lane tooling slice 1
 
 **Focus:** Build. Operator GO ("ratify, accept, and begin the build") on GROW spec v2 Part A.
