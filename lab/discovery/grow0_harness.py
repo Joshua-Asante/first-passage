@@ -63,3 +63,46 @@ def run_limb_a() -> tuple[str, PanelResult]:
     )
     passed = (not result.abandoned) and result.nominee == TRUE_EDGE_VARIANT_INDEX and result.clears
     return ("PASS" if passed else "FAIL"), result
+
+
+LIMB_B_N = 5500  # prereg §4 (measured nominal_p0=0.00059070, N/c sized with CI margin)
+LIMB_B_C = 7
+
+
+def assert_seed_diversity(leaves, *, min_distinct: int) -> None:
+    """Prereg §3 'Runtime diversity assertion' -- a lightweight-review-round fix.
+
+    The design-time SeedSequence spawn tree is collision-proof by construction, but that does
+    NOT prove the harness's own consuming loop reads a distinct panel_seqs[i] per panel i --
+    a vectorization broadcast mistake or Python loop-variable-capture bug could silently
+    collapse many/all panels onto the same seed while the spawn tree itself stays perfectly
+    distinct. This must run against every leaf actually consumed in a real run, not a
+    design-time sample.
+    """
+    states = {tuple(s.generate_state(4)) for s in leaves}
+    if len(states) < min_distinct:
+        raise AssertionError(
+            f"seed-diversity check failed: {len(leaves)} leaves consumed, only "
+            f"{len(states)} distinct states (expected >= {min_distinct}) -- likely a "
+            "cross-panel seed-collapse bug (prereg §3), not a design-time collision"
+        )
+
+
+def run_limb_b(n: int = LIMB_B_N, c: int = LIMB_B_C):
+    """Prereg §6.2: N null-only panels, sum(clears) >= c -> FAIL, else PASS."""
+    branches = build_root_branches()
+    panel_seqs = branches["limb_b"].spawn(n)
+    results = []
+    leaves = []
+    for panel_seq in panel_seqs:
+        train_children, confirm_children = spawn_panel_streams(panel_seq, 10)
+        leaves.extend(train_children)
+        leaves.extend(confirm_children)
+        result = run_panel(
+            train_children, confirm_children, edge_variant_index=None, floor=FLOOR
+        )
+        results.append(result)
+    assert_seed_diversity(leaves, min_distinct=n * 20)
+    sum_clears = sum(1 for r in results if r.clears)
+    verdict = "FAIL" if sum_clears >= c else "PASS"
+    return verdict, sum_clears, results

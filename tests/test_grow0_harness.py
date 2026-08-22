@@ -32,3 +32,50 @@ def test_run_limb_a_passes_with_frozen_seed():
     assert verdict == "PASS"
     assert result.nominee == TRUE_EDGE_VARIANT_INDEX
     assert result.clears is True
+
+
+def test_limb_b_constants_match_prereg_section_4():
+    from discovery.grow0_harness import LIMB_B_C, LIMB_B_N
+
+    assert LIMB_B_N == 5500
+    assert LIMB_B_C == 7
+
+
+def test_assert_seed_diversity_passes_on_distinct_leaves():
+    from discovery.grow0_dgp import build_root_branches, spawn_panel_streams
+    from discovery.grow0_harness import assert_seed_diversity
+
+    branches = build_root_branches()
+    panels = branches["limb_b"].spawn(20)
+    leaves = []
+    for p in panels:
+        tr, co = spawn_panel_streams(p, 10)
+        leaves.extend(tr)
+        leaves.extend(co)
+    assert_seed_diversity(leaves, min_distinct=400)  # 20 panels x 20 leaves = 400, all distinct
+
+
+def test_assert_seed_diversity_catches_a_collapsed_run():
+    from discovery.grow0_dgp import build_root_branches
+    from discovery.grow0_harness import assert_seed_diversity
+
+    branches = build_root_branches()
+    one_panel = branches["limb_b"].spawn(1)[0]
+    collapsed_leaves = [one_panel] * 400  # simulates a broadcast/closure bug: every
+    # "panel" resolves to the SAME underlying SeedSequence
+    with pytest.raises(AssertionError):
+        assert_seed_diversity(collapsed_leaves, min_distinct=400)
+
+
+def test_run_limb_b_small_n_returns_consistent_shape():
+    """Uses a small N for speed (this plan's local-compute-budget constraint) --
+    the frozen N=5,500/c=7 pair is exercised only by the manual full-scale
+    invocation documented in Task 13, never by the automated test suite."""
+    from discovery.grow0_harness import run_limb_b
+
+    small_n, small_c = 100, 3  # not the frozen pair -- structural test only
+    verdict, sum_clears, results = run_limb_b(n=small_n, c=small_c)
+    assert verdict in ("PASS", "FAIL")
+    assert len(results) == small_n
+    assert sum_clears == sum(1 for r in results if r.clears)
+    assert (verdict == "FAIL") == (sum_clears >= small_c)
