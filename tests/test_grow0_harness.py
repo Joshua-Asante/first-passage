@@ -114,3 +114,27 @@ def test_run_red_blind_fails_as_expected():
 
     verdict = run_red_blind()
     assert verdict == "FAILED_AS_EXPECTED"
+
+
+def test_append_retry_ledger_appends_one_line(tmp_path):
+    import json
+
+    from discovery.grow0_harness import append_retry_ledger
+
+    ledger_path = tmp_path / "grow0_retry_ledger.jsonl"
+    entry1 = {"run_id": "test-1", "started_at_arg": "2026-08-22T00:00:00Z", "overall": "PASS"}
+    entry2 = {"run_id": "test-2", "started_at_arg": "2026-08-22T00:01:00Z", "overall": "FAIL"}
+    append_retry_ledger(entry1, path=ledger_path)
+    append_retry_ledger(entry2, path=ledger_path)
+    lines = ledger_path.read_text(encoding="utf-8").strip().splitlines()
+    assert len(lines) == 2
+    assert json.loads(lines[0]) == entry1
+    assert json.loads(lines[1]) == entry2
+
+
+def test_append_retry_ledger_creates_parent_dir_if_missing(tmp_path):
+    from discovery.grow0_harness import append_retry_ledger
+
+    ledger_path = tmp_path / "nested" / "grow0_retry_ledger.jsonl"
+    append_retry_ledger({"run_id": "test-3"}, path=ledger_path)
+    assert ledger_path.is_file()

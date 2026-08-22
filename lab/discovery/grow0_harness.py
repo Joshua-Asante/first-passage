@@ -7,10 +7,14 @@ prereg's own framing of it as independent of the stochastic panels.
 """
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from discovery.cost_model import resolve_commission
 from discovery.grow0_dgp import TRUE_EDGE_VARIANT_INDEX, build_root_branches, spawn_panel_streams
 from discovery.grow0_scoring import PanelResult, run_panel, run_panel_leaked
 from research_utils.axis_screen import floor_at_k
+from research_utils.repo_root import repo_root
 
 FLOOR = floor_at_k(10, years=6.5)  # prereg §4: floor_at_k(10, 6.5) = 1.265
 
@@ -153,3 +157,17 @@ def run_red_blind() -> str:
     grammar_nominee = _RED_BLIND_NULL_INDICES[result.nominee]
     passed = (not result.abandoned) and grammar_nominee == TRUE_EDGE_VARIANT_INDEX and result.clears
     return "PASSED_UNEXPECTEDLY" if passed else "FAILED_AS_EXPECTED"
+
+
+RETRY_LEDGER_PATH = repo_root() / "discovery_manifests" / "grow0_retry_ledger.jsonl"
+
+
+def append_retry_ledger(entry: dict, *, path: Path | None = None) -> None:
+    """Prereg §6.6: append-only, one JSON line per harness invocation. Never
+    edits or deletes an existing line. ``path`` defaults to RETRY_LEDGER_PATH;
+    tests override it with a tmp_path.
+    """
+    target = path if path is not None else RETRY_LEDGER_PATH
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with target.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(entry) + "\n")
