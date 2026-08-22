@@ -125,6 +125,7 @@
 | 2026-08-20-rule0-anchor-verification-and-triage-discipline.md | Accepted | 2026-08-20 | none | ratified by operator (Joshua) 2026-08-20, in-session direct instruction ("I ratify the N-SURV disclosure ADR, Rule 0 anchor-check + triage-discipline ADR") |
 | 2026-08-21-cfo-subscription-ledger-consolidation.md | Accepted | 2026-08-21 | none | ratified by operator (Joshua) 2026-08-21, in-session direct instruction |
 | 2026-08-21-persona-hierarchy-front-office-only.md | Accepted | 2026-08-21 | `2026-08-19-loop-persona-hierarchy-review-panel.md` in part — D1's spawnable roster | ratified by operator (Joshua) 2026-08-21, in-session direct instruction ("What |
+| 2026-08-21-stage2-stage3-progression-criteria.md | Accepted | 2026-08-21 | none | ratified 2026-08-21 by operator (Joshua) |
 
 ## Partially superseded
 

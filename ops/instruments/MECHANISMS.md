@@ -321,14 +321,25 @@ read directly off observable data (spot price vs. the published strike), never o
 about unobservable dealer gamma sign — the load-bearing distinction from the sibling construct
 below, which this class does **not** reopen.
 
-- **Class finding:** none yet — G0 frozen on operator B4 GO 2026-08-21; Explore-confirm (charter
-  step 5a) **deferred by explicit operator override** (no Databento/market-data access in the
-  sourcing session's environment) rather than scored — Pine authored CC-solo directly off the
+- **Class finding:** G0 frozen on operator B4 GO 2026-08-21; Explore-confirm (charter
+  step 5a) **deferred by explicit operator override** at freeze (no Databento/market-data access in
+  the sourcing session's environment) rather than scored — Pine authored CC-solo directly off the
   frozen construct, with the operator's own TV backtest as the first empirical evidence instead
   of a pre-Pine Explore score. This is a disclosed deviation from the charter's default step
   ordering, not a silent skip. [`STAGE1`](../../lab/analysis/c1/msl_s4_mgc_2026-08/STAGE1.md) ·
   [`PREREG_G0`](../../lab/analysis/c1/msl_s4_mgc_2026-08/PREREG_G0.md) ·
   [`RUNBOOK`](../../lab/analysis/c1/msl_s4_mgc_2026-08/RUNBOOK.md).
+- **Explore-confirm result, 2026-08-21 (`AMBIGUOUS-HOLD`):** the deferred score above has since
+  run, under `EXPLORE_GO.md` — 75 completed IS-window weekly+monthly cycles, IAAFT-surrogate null
+  (CONFIRM never read). Real mean displacement reduction is **negative** (−5.52pts, i.e. net
+  divergence, not convergence) and lands at the 42.8th percentile of the surrogate null
+  (`p_upper=0.5724`, not significant); **FLIP FAILs** (betting divergence beats betting
+  convergence). This corrects the paragraph above's opening claim ("price statistically converges
+  toward the strike... more than on non-expiry control sessions") — that description was the
+  sourcing session's *hypothesis*, stated before any data contact; it did not hold up under the
+  pre-registered test. Not formally `FALSIFIED` under the frozen gate's literal `p_upper>0.95`
+  line, but substantively close to it (wrong sign + FLIP-FAIL).
+  [`Explore-confirm LOG`](../../lab/analysis/c1/msl_s4_mgc_2026-08/_explore_confirm_2026-08-21_LOG.md).
 
 Rejected nearest classes (one-line):
 - **Directional dealer-gamma-sign forecast** (informal sibling construct, never declared an id —
