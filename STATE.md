@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-08-21
+**Last curated:** 2026-08-22
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
@@ -437,9 +437,9 @@ Canonical dates/criteria live with their owners; this board is a pointer so
 obligations are not lost between sessions. Closed/retired/discharged rows are
 deleted (not struck).
 
-### Weekly — recurring (rolling; next deadline **2026-08-21**, bucket 08-17→08-21)
+### Weekly — recurring (rolling; next deadline **2026-08-28**, bucket 08-24→08-28)
 
-> Prior week 08-10→08-14 satisfied (operator-placed 2026-08-12). New week unpaid. Row stays
+> Prior week 08-17→08-21 satisfied (operator-confirmed 2026-08-22). New week unpaid. Row stays
 > live — roll this date forward each Monday. **Recurrence ruled 2026-08-16** (decision index,
 > above): re-electing coverage every week is the standing design, not an open question — this
 > row's own weekly cadence is that design in practice, not a symptom of anything unresolved.
