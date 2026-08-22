@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-22f — Commission catalog hot-vs-disposition ADR
+
+**Focus:** Open a draft PR with a CC handoff so Claude Code drafts the catalog `hot` vs `disposition` ADR. No parser/C2. No sixth root doc.
+
+**Shipped:** `cursor/catalog-hot-disposition-adr-126f` — [`handoff`](briefs/handoffs/2026-08-22-cc-handoff-catalog-hot-vs-disposition.md). ADR path owed: `docs/adr/2026-08-22-catalog-hot-vs-disposition.md`.
+
+**Decisions/defects:** none new. Parser + C2 wait on `Accepted` + separate GO.
+
+**Open / next:** carry `2026-08-21n` — MSL-S4 card closed for build-out (`PARKED`). **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. Wait for CC ping-back on this PR. Named leftovers: P5b / P7 / P8 / P2b / STATE rolloff / find-owner — [`docs/governance/INDEX.md`](governance/INDEX.md).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-22e — Liveness census + STATE diet (nav P5/P6)
 
 **Focus:** Phase 5 census + report-only `make sync-liveness`; Phase 6 collapse STATE decision-index to one line + owner. No sixth root doc. `gates.yml` untouched.
