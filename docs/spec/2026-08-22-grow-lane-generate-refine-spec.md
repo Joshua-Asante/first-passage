@@ -1,155 +1,209 @@
-# SPEC: GROW lane — generate→refine→confirm strategy growth with two-ledger K accounting
+# SPEC: GROW — deep-iteration lane extension: automated grammar engine + synthetic calibration harness
 
-Status: PROPOSED · 2026-08-22 · authorizes nothing ($0 · K=0; ratification = ADR carrying
-decision points D1–D3 + operator GO) · depends:
-[TNEC-1](2026-08-08-tradeify-necessary-conditions-target-spec.md) `RATIFIED` ·
-[Route B ADR](../adr/2026-08-05-avenue-a-generate-confirm-route.md) `Accepted` ·
-[S6](2026-08-07-loop-s6-k-aware-generation-spec.md) `CODE_LANDED` ·
-[F3 attestation-library spec](2026-08-22-eval-lock-geometry-attestation-library-spec.md)
-`PROPOSED` (pooled-scoring dependency) · sibling:
-[dense-1m lane](2026-08-09-dense1m-entry-mechanism-lane-spec.md) (paused; unchanged)
+Status: PROPOSED · 2026-08-22 **v2** (same-day recast — see Review block) · authorizes nothing
+($0 · K=0; Part A rides the charter's already-licensed §7 steps 2–4, campaign-gated as the
+charter requires; Part B proposes nothing yet) · depends:
+[deep-iteration lane charter](../adr/2026-08-16-deep-iteration-lane-charter.md) `Accepted`
+(**owner**) · [F3 attestation-library spec](2026-08-22-eval-lock-geometry-attestation-library-spec.md)
+`PROPOSED` (pooled-scoring dependency)
 
-Objective: stand up a search topology in which candidates are **grown** — arbitrarily wide
-mutation/refinement on frozen EXPLORATION windows at zero confirm-spend — and only **M ≤ 3
-lineage survivors per campaign** ever consult a sealed CONFIRM segment, so the DSR/Cap wall
-is paid at M, not at generation width.
+**Review (why v2 exists):** v1 (merged via PR #96 at `a02126f`) proposed a sibling "GROW lane"
+with decision points D1–D3. Same-day dual adversarial review — gate-reachability audit
+**BLOCKED-AT-FREEZE**; pre-ratification panel **BLOCKED, do not ratify D1–D3** —
+[full findings](../notes/audits/2026-08-22-grow-lane-dual-panel-review.md). **D1–D3 are
+withdrawn.** The Accepted charter owns the refinement thesis (v1 was an amendment-first miss:
+its dedup search was never executed); D3's "reserved-but-unread CONFIRM windows" class is
+empty (the shared CON window was read 2026-08-20; CON-5 carries an unread-forever election;
+the dense-1m pause is lane-wide); D2 contradicted EM0/TNEC-1/S6 and the blind-channel split
+clause with none of those owners in its supersession list.
+
+Executed dedup / amend-first (Rule 8.8/8.10 — pasted, not attested):
+
+```
+$ grep -rlniE "deep.iteration|iteration lane|--lane deep" docs/adr/ docs/spec/ docs/briefs/pre-registration/
+docs/adr/2026-08-16-deep-iteration-lane-charter.md
+docs/adr/INDEX.md
+docs/briefs/pre-registration/2026-08-16-deep-lane-dl1-mgc-orc-prereg.md
+$ grep -in "grow" lab/CATALOG.md docs/briefs/INDEX.md | grep -iv growing
+(no output — no GROW prior)
+```
+
+Owner found: the charter. This packet docks there and adds **no sourcing channel, no counter,
+no clock** (the N=3 third-door discipline is not re-engaged).
+
+Objective: equip the Accepted deep-iteration lane with a machine-generated variant-roster
+engine and a synthetic calibration harness (GROW-0), so lane campaigns can be grown by
+automation **at the charter's own declared-K discipline (K ≤ 33, fully counted)** — and name,
+without proposing, the two-ledger K question that would have to be ratified before any wider
+automation.
 
 Origin: operator thesis 2026-08-22 (session record) — Striker/Aegis were filtered and sized
-into profitability from seeds that would not have passed intake raw; the one-shot
-generate→gate topology (2026 record: ~40 FALSIFIED/zero-yield closures, no promotions)
-tests seeds, not the refinement process that historically produced the book. This lane
-makes that thesis falsifiable instead of assumed: its own Gate can kill it at $0.
+into profitability from seeds that would not have passed intake raw. Charter §1 already
+ratifies the disciplined form of that thesis; this packet supplies the automation. Record,
+stated precisely: one generated admission since 2026-07-16 (ORB-MNQ-1, later
+payability-falsified at the venue), none since; the zero-yield streak among generation
+campaigns continued through the MSL slate and DL-1 (all 10 variants net-negative on TRAIN;
+abandonment 1/2 on the charter's counter). Sizing-policy motivation carries its label:
+cushion-proportional sizing's bust 20.18% → 0.00% (Q-EVALSEQ-1) is an **EOD-clock lower-bound
+figure**, and the 2026-08-17 intraday-honest remeasure (Q-POLFRONT-1 fork) collapsed the
+related 5.107× headline — sizing operators stay in the grammar, scored intraday-honest only.
 
-## Ratification decision points (each an S5-style bounded amendment — exactly this, no wider)
-
-- **D1 — grammar replaces catalogue (this lane only).** Route B G0's hard rule "the
-  catalogue and windows do not grow" is amended for GROW campaigns: the frozen object is an
-  **operator grammar** — enumerated mutation-operator families (entry/filter conditions,
-  exit/stop geometry, sizing policy) with parameter ranges, a generation budget, and a
-  selection rule — committed at G0 and immutable mid-campaign. New operator family = new
-  campaign. Window discipline unchanged.
-- **D2 — two-ledger K.** For GROW candidates, `K_select` (variants examined explore-side;
-  unbounded; **disclosure-only**, logged per lineage in the campaign manifest) is split from
-  `K_confirm` (sealed-segment consultations; = confirm-budget **M ≤ 3**, frozen at G0).
-  TNEC-1 N-EDGE `DSR ≥ floor_at_k` and the S6 Cap-wall arithmetic evaluate at `K_confirm`;
-  per-candidate confirm bars are Holm-adjusted for M per Route B C0. EM0's catalogue ≤ 3 is
-  preserved as M ≤ 3. `K_select` is quoted in every RESULTS/closure — never hidden. The
-  statistical claim underneath D2 (selection the sealed segment never saw deflates only
-  through M) is **not assumed**: GROW-0 Limb B tests it and can falsify the lane.
-- **D3 — bounded graveyard addback (GROW-1 only).** Rescue seeds are enumerated at PREREG
-  from closed candidates; a rescued lineage is scored **exclusively** on a sealed segment
-  disjoint from every window its original campaign scored — for seeds whose campaigns
-  reserved CONFIRM windows still unread (CON-2…5, Q-OFCHAN-1, Q-R2FLOW-1 class), the D3
-  exception licenses reading that reserved window **once**, at the M-adjusted bar,
-  notwithstanding the closure's own "CONFIRM unread" STOP line — enumerated seeds only.
-  Seeds with neither an unread reserved window nor an unscored terminal slice take a
-  forward-accruing segment (scored once at its PREREG'd length) or are excluded. A rescued
-  artifact is a **new lineage ID** entering `SURVIVAL-ONLY`; the original registry row,
-  DEAD-list entry, and re-proposal bar stay intact (nothing is un-rejected); a failed
-  rescue re-DEAD-lists under this lane's own bar. Seeds whose closure names re-entry armor
-  this cohort cannot satisfy (e.g. Q-TXG-1's different-loss-side-shape / venue-class
-  clause) are excluded at enumeration.
+## Part A — engine + harness (no doctrine change; hosted by the charter)
 
 Steps:
 
-1. **Rule 0 (implementer, before any build).** Read in full: the Reads list below at its
-   anchors — especially Route B's G0 hard rule + C0 M-bar (what D1/D2 amend),
-   `prop_survivor_scoring.py` + the 2026-07-13 survivor-scoring prereg (the frozen gate the
-   fitness function embeds), and the dense-1m spec's two reader-intercepts (the two lane
-   failure modes this spec inherits repairs for).
-2. **CC drafts the ratifying ADR** carrying D1–D3 verbatim, full §0–§7 tier (amends
-   doctrine), Supersedes-in-part lines against the Route B ADR (D1, D2) and
-   `rejected_candidates.md` governance (D3). Operator ratifies or strikes each decision
-   point independently — D3 struck still leaves a lane (GROW-1 becomes fresh-generation
-   only, renumbered).
-3. **GROW-0 — synthetic non-vacuity + accounting-validity harness** (Cursor builds from
-   this spec after ADR Accept; $0 data; blocks everything downstream):
-   - **Limb A (power):** a planted DGP with net-positive intraday edge above the Req-5
-     cost floor, embedded in realistic noise; the loop must recover it on EXPLORATION and
-     its survivor must clear the sealed synthetic segment at the M-adjusted bar.
-   - **Limb B (calibration — D2 under test):** ≥ 20 pure-noise panels (magnitude-matched
-     surrogates, Q-NSURV-2 wrapper pattern); the full pipeline runs on each; the fraction
-     of panels whose promoted survivors clear the sealed-segment bar must sit at or below
-     the frozen adjusted-α binomial envelope (exact α, panel count, and envelope frozen in
-     GROW-0's PREREG before build). Excess clears = leakage ⇒ D2 unsound as implemented.
-   - **RED-first** (F3/W1 precedent): rig a leaking pipeline and a powerless loop; watch
-     Limb B fail and Limb A fail respectively before trusting either green.
-4. **Engine.** Extend `lab/discovery/stage24_runner.py` with the refine loop; fitness is a
-   frozen composite scored on EXPLORATION only — hard constraints N-ACT and N-SHAPE
-   (flat-by-16:00 ET, no pyramiding, micro-expressible, deployable integer sizing);
-   objective = `prop_survivor_scoring` intraday-honest bust + P(pass) at Req-5 costs
-   ($0.91/side Tradeify actual; $0.95 screen) + net-of-cost expectancy. Sizing-policy
-   operators include flat and cushion-proportional (bust-elimination measured 20.18% → 0.00%
-   at Q-EVALSEQ-1; EOD-clock fragility per Q-POLFRONT-1 — intraday-honest scoring is the
-   lane default and **no fitness term may read an EOD-clock metric**). Eval-geometry
-   patching through the F3 library (`lab/research_utils/eval_lock_geometry.py`) once
-   landed; until then the attested per-worker pattern inline. `universe_gate`/DSR calls
-   keep module default `var_trials = 1/n`.
-5. **Partition per campaign PREREG.** EXPLORATION windows (refinement + loop-internal
-   validation splits — still explore-side) · sealed CONFIRM segment (exact dates frozen at
-   G0; disjoint from all EXPLORATION windows and, for GROW-1, from every seed's originally
-   scored windows per D3). One consultation per survivor, ledgered in the campaign
-   manifest; a burned segment is never re-cut for a successor campaign — fresh holdout or
-   fresh instrument.
-6. **Door checks per campaign (dense-1m step-1a pattern — executed, not remembered).**
-   `python scripts/instrument_profiles.py cell <SYM> <mechanism-family>` output pasted into
-   the campaign PREREG §0 with every `BINDING BAR` answered by route — for index-intraday
-   OHLCV directional cells the default declared route is ③ beats-incumbent-ORB-MNQ
-   net-of-cost, which the fitness function already scores; grammar mechanism families are
-   declared in `MECHANISMS.md` at PREREG (the CLI hard-fails unknowns). Dedup attestation
-   against `rejected_candidates.md` + instrument DEAD lists for generated lineages; GROW-1
-   seeds instead disclose their registry row and the D3 exception covering them.
-7. **Campaign order** (each under its own Q-ID `Q-GROW-<n>`, frozen PREREG committed
-   strictly before any score, operator explore GO; cache-reuse only — any Databento pull
-   takes its own cost dry-run + separate GO): GROW-0 synthetic → GROW-1 graveyard rescue
-   (D3 cohort) → GROW-2 fresh blind generation. No campaign opens while its predecessor's
-   verdict is unfiled.
-8. **Survivor routing unchanged.** Close with the TNEC-1 verdict string
-   `N-ACT N-SURV N-EDGE N-SHAPE N-SIZE | bust | P(pass) | μ(disclosed)`; an N-clear routes
-   to operator GO → (post-M1, post-S4) S5 sandbox admission. The lane creates no deploy
-   path, no Pine, no arming, no `LEG_MAP` claim. Survivors enter the authorization axis
-   `SURVIVAL-ONLY` (lifecycle-owner default for unexplained discovery-stack signals):
-   smaller start / faster review / tighter trigger.
-9. **Lane stop-rule** (2026-08-16 amended form, inherited): 3 consecutive
-   FALSIFIED-or-zero-yield campaigns → lane-review packet to the operator, never a 4th by
-   default; a close resets the streak only if it yields an admitted candidate.
+1. **Rule 0 (implementer, before any build).** Read in full: the charter (incl. §4 counting
+   machinery + the DL-1 record), blind-channel ADR L208 (the split clause Part B would
+   challenge), EM screen §2.0b + §8 change control, TNEC-1, Route B checklist,
+   the dense-1m spec's two reader-intercepts, the
+   [dual-panel audit note](../notes/audits/2026-08-22-grow-lane-dual-panel-review.md),
+   `prop_survivor_scoring.py` + the 2026-07-13 survivor-scoring prereg, the F3 spec.
+2. **Grammar engine** (charter §7 step 2 — `--lane deep` on `register_search`, already
+   licensed): the campaign prereg freezes an operator grammar — enumerated mutation-operator
+   families over entry/filter conditions, exit/stop geometry, and sizing policy (flat +
+   cushion-proportional included) — plus a generation budget **G**. **K = G, fully counted**
+   ("every variant available to be chosen counts", charter §2.2 imported verbatim; adaptive
+   generation is fine — the budget, not the enumeration, is what freezes). All three charter
+   conjuncts computed and shown at freeze: K ≤ 33 · `floor_at_k(K, confirm_years)` ≤ 2.0 ·
+   power ≥ 0.50 against the named design-target edge. `grammar.json` committed at G0, SHA256
+   pinned in the prereg, hash recomputed at every run start, stamped into every emitted row.
+   Iteration reads TRAIN only; one survivor by frozen nomination rule; confirm read once.
+   `--lane deep` gets its own admission function implementing the charter §2.2 predicate
+   (S6's mechanism-first path refuses K ≥ 4 by design and is not loosened — charter §2.2's
+   "measured demand replaces the prior" is lane-local).
+3. **Scoring discipline in the engine:** costs bound **per instrument** via the cost_model
+   discipline, never the $0.91/$0.95 index literals (MGC/MCL run $1.06/$1.10 actual). Fitness
+   is intraday-honest only: hard limbs coded, including **N-ACT** (≥ 1 trade per Mon–Fri week
+   over a window frozen at G0) and N-SHAPE (flat-by-16:00 ET, no pyramiding,
+   micro-expressible); integer sizing scored under N-SURV/N-SIZE. Every fitness term
+   clock-tagged; construction raises on `clock='eod'` (⚠ `score_candidate`'s default path
+   omits `intraday_blocks` — wire non-vacuously and run
+   `assert_intraday_channel_nonvacuous` per campaign). Eval-geometry patching per the F3
+   attested pattern: per-worker attestation dicts into the manifest; a non-singleton attested
+   set hard-fails (M-23 shape). SPA/StepM thresholds named in each prereg (W4 re-arm at K > 3,
+   charter §2.6); the engine emits the full K-variant TRAIN return matrix so SPA is computable.
+4. **GROW-0 — synthetic calibration harness.** Engine validation, **not a lane campaign**: it
+   is filed outside the charter's §4 counters — a placement this packet's ratification must
+   rule explicitly, not assume. Three limbs, built RED-first:
+   - **Limb A (power):** a planted DGP with net-positive intraday edge above the per-instrument
+     cost floor; the loop must recover it on TRAIN and its survivor must clear the sealed
+     synthetic segment at the frozen confirm bar.
+   - **Limb B (calibration):** N pure-noise panels (magnitude-matched surrogates — Q-NSURV-2's
+     wrapper cited as implementation style only); full pipeline per panel; sealed-segment
+     clear-rate must sit at/below the frozen adjusted-α binomial envelope. **N is sized in the
+     GROW-0 PREREG for ≥ 0.80 power against leakage ≥ 3× nominal α** — the bare ≥ 20 floor
+     (~13–35% power) is insufficient and is not the test.
+   - **RED rigs, all three on record:** a deliberately leaking pipeline (Limb B must fail), a
+     powerless loop (Limb A must fail), a parent-only patch (attestation must fail).
+   Machine-readable `limb_a` / `limb_b` / `red_*` tokens with nonzero exit on any FAIL;
+   harness retries ledgered.
+5. **Enforcement build manifest** (audit repairs — every gate names a mechanical executor;
+   per-gate detail in the audit note and the workflow record):
+   - campaign manifest schema: frozen K/G, grammar SHA256, `sealed_consults[]`, per-worker
+     attestations; a `grow_ledger_check` exits nonzero on any unledgered or duplicate sealed
+     read;
+   - real-panel scoring refused without `--predecessor-verdict` naming GROW-0's filed
+     RESOLVED closure (`bind_real_k` lifts only behind it);
+   - survivor DSR scored at the **full declared K** with `universe_gate` verdict propagated to
+     exit code, plus a k=3199 RED rig;
+   - charter §4 counting machinery mechanized: a streak checker walking lane closures against
+     the ADR 2026-08-16 zero-yield classes, maintaining the charter's running-count line —
+     discharging the charter's own "without this, the limbs are unbinding" note;
+   - door-check limb in `gates.yml`, path-conditional on deep-lane campaign dirs, requiring an
+     **exit-1** `instrument_profiles.py cell` consult record (T3 ruled pre-emptively satisfied
+     by the audit). A FATAL exit-2 proves execution, **not consultation** — MECHANISMS.md
+     declaration + profiles build land in a commit before the consult. Adjacency consult of
+     the nearest registered family for every new grammar family name (parked-not-DEAD cells
+     escape DEAD-list attestation). Correct `rejected_candidates.md`'s stale tier=always
+     claims (the gate is path-conditional on `^ops/instruments/`);
+   - `discovery_manifests/burned_segments.json` consulted at every open — the shared CON
+     window (MNQ, 2025-09-01→2026-08-05) enters it as **burned** (read 2026-08-20);
+   - LOCKED-leg denylist: no Striker identity reused as a lineage ID; no redeploy;
+   - Rule-0 anchor checker on each prereg §0.
+6. **Domain bars, named per campaign (never a default discharge):** charter §2.1's non-index
+   default avoids the index raised bar entirely. A campaign that elects an index-intraday cell
+   must answer `index-intraday-ohlcv-directional-timing-2026-07-21` by a route it can show:
+   route ③ (beats-incumbent-ORB-MNQ net-of-cost) **requires an explicit frozen
+   incumbent-comparison term in confirm scoring** — nothing at HEAD computes it (v1's "already
+   scores" claim was false), the incumbent basis on record is always-MNQ ORB +5.19 bp
+   (`rejected_candidates.md` cross-index entry), and the 2026-08-10 falsifier LOG records
+   route ③ as "a *results* bar — unclearable ex ante, by construction" (so only a wired
+   comparison term, never a PREREG promise, can discharge it) — or route ① under the 2026-08-10
+   temporal-selectivity ruling where its §2-B conditions hold. The EOD-adversity raised bar
+   (2026-08-02; + ADR 2026-07-31 §5's 15:30-exit bar) binds the grammar's exit-geometry
+   construct class yet sits in zero profile ledgers: register it in the index profile ledgers
+   AND answer it in PREREG §0 wherever exit-geometry operators are enabled. Standing pauses
+   attested per charter §2.1 — including the dense-1m temporal-selectivity pause (lane-wide
+   unconditional as of 2026-08-20) and CON-5's unread-forever election.
+7. **Campaigns are ordinary deep-lane campaigns** — charter Q-IDs, counters, prereg GOs,
+   confirm-read GOs, falsification budget all apply unchanged; this packet adds tooling, not a
+   channel. Rescue of a rejected family is already possible under charter §2.1: a campaign
+   whose prereg clears that family's own re-proposal bar in writing; anything barred by a
+   closure election takes the U1-style per-seed override ADR path. **No blanket exception
+   exists; v1's D3 is not licensed by anything.**
 
-Gate: RESOLVED if GROW-0 passes both limbs (A: planted edge recovered ∧ sealed-clear at the
-M-adjusted bar; B: noise-panel sealed-clear rate ≤ its frozen binomial envelope) with the
-RED-first controls on record — resolving the **spec** (machinery + accounting sound);
-GROW-1+ verdicts belong to their own PREREGs. FALSIFIED if Limb B exceeds its envelope (D2
-unsound as implemented — lane dead pending a redesign ADR), if any sealed segment is
-consulted outside the ledger, or if the loop runs on real panels before GROW-0 resolves.
-Boundary (each genuinely tempting): no fitness term on any EOD-clock metric · no second
-consultation of a burned segment "to sanity-check" · no grammar additions or M growth after
-G0 — new campaign, always · no θ-retune claims on LOCKED-book parameters and no Striker-leg
-redeploy (rescued Striker-descended lineages are research artifacts under new IDs) · no
-un-rejecting registry rows (D3 leaves the original row + bar intact) · no reading GROW
-survivors as deployable without the full TNEC-1 → operator GO → S5 chain · no Databento
-spend in GROW-0/GROW-1 beyond existing caches.
-Reads (verified 2026-08-22 at branch HEAD `6377a28`): TNEC-1 @ `85a83ba` ·
-[Route B checklist](../methodology/avenue_a_generate_confirm.md) (G0 hard rule + C0 M-bar)
-· S6 spec @ `85a83ba` (explore-free/confirm-spends; Cap crosses at K=4) ·
-`lab/discovery/register_search.py` @ `4028be7` (blind lane; `--prereg` binding) ·
-`lab/discovery/stage24_runner.py` + `prop_survivor_scoring.py` + `k_count.py` @ `85a83ba` ·
+## Part B — the two-ledger K question (named only; not proposed here)
+
+The claim v1 called D2 — that for a statistic computed on a sealed segment the search never
+touched, the chargeable K is the number of sealed consultations (M), not the generation width —
+would supersede in part **five owners**: blind-channel ADR L208 ("Splitting is a bias control,
+not a K control"), EM0 §2.0b's K_eff = K_intrinsic identity + EM screen §8 change control,
+TNEC-1 N-EDGE's `floor_at_k(K_intrinsic)`, S6/`admission_schema.py`'s landed refusal
+semantics, and charter §2.2(i)'s K ≤ 33. It is **filed only if GROW-0 Limb B RESOLVES at its
+pinned power**, and then as its own full-tier ADR carrying all five Supersedes-in-part lines,
+the Limb-B measurement as evidence, and a cross-campaign sealed-consultation accounting rule
+(fresh confirm budgets on finite cached data are currently unpriced). Until such an ADR is
+Accepted, **every campaign under this packet counts full K ≤ 33** and nothing in Part A
+depends on Part B.
+
+Gate: RESOLVED if GROW-0 passes Limb A ∧ Limb B at the PREREG-pinned power with all three RED
+tokens `FAILED_AS_EXPECTED` on record and machine-readable limb results — resolving this
+packet (engine + calibration instrument sound; Part B's filing decision then goes to the
+operator). FALSIFIED if, after the RED controls run green-side, Limb A fails, Limb B exceeds
+its envelope, or any RED control passes — the engine is defective; a fix re-runs GROW-0 under
+a fresh ledgered PREREG, and Part B is not filed. Campaign outcomes belong to the charter's §4
+counters, not to this Gate.
+Boundary (each genuinely tempting): no campaign above K = 33 and no under-counted K pending a
+ratified Part-B ADR · GROW-0 sits outside charter §4 counters **only if this packet's
+ratification says so in writing** · no read of the burned CON segment and no v1-D3 rescue
+moves (charter §2.1 bar clearance or per-seed override ADR are the only doors) · no EOD-clock
+fitness term · no new sourcing channel/counter/clock · `--lane blind` is never the GROW open
+path (blind opens are unbound by design — `register_search.py:357-360`) · no deploy, no Pine,
+no arming, no `LEG_MAP` claim · charter §5 forbidden moves apply in full.
+Reads (verified 2026-08-22 at branch HEAD `0815bba`): charter @ `85a83ba` (§2 discipline; §4
+counters incl. DL-1 ABANDONED 1/2) · blind-channel ADR @ `85a83ba` (L208) · EM screen @
+`85a83ba` (§2.0b; §8 L288) · TNEC-1 @ `85a83ba` · `lab/discovery/admission_schema.py` @
+`85a83ba` (L61, refusal path) · `lab/discovery/register_search.py` @ `4028be7` (L357–360
+blind-unbound residual; L388 `_require_admission`) · CON-4 + CON-5 closures @ `6545ad5`
+(burned shared window; unread-forever election; lane-wide pause) ·
+[Route B checklist](../methodology/avenue_a_generate_confirm.md) ·
 [survivor-scoring prereg](../briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md)
-@ `85a83ba` (frozen gate: intraday-honest bust ≤ 3.0% ∧ P(pass) ≥ 50%) ·
-`docs/rejected_candidates.md` @ `85a83ba` (re-proposal rule + per-row addback conditions) ·
-`docs/methodology/strategy_lifecycle.md` @ `fc95425` (`SURVIVAL-ONLY` default for
-discovery-stack signals) · dense-1m lane spec (step-1a door-check + amended stop-rule) ·
-F3 spec (attested patching) ·
-[Q-EVALSEQ-1 closure](../briefs/closures/Q-EVALSEQ-1-closure-falsified.md) (cushion-sizing
-bust finding) ·
-[Q-POLFRONT-1 closure](../briefs/closures/Q-POLFRONT-1-closure-resolved-quantified.md)
-(EOD-clock fragility) ·
-[Q-NSURV-2 closure](../briefs/closures/Q-NSURV-2-closure-resolved.md) (magnitude-resampling
-wrapper) · `lab/analysis/c1/catalogue_k_wall_2026-08-05/RESULTS.md` (Cap wall)
-Verify (Phase-0, implementer runs before build): `rg -n "do not grow"
-docs/methodology/avenue_a_generate_confirm.md` (expect the G0 hard rule D1 amends) ·
-`rg -n "def floor_at_k" lab/research_utils/axis_screen.py` ·
-`python scripts/instrument_profiles.py cell MNQ orb-open-drive 2>&1 | head -3` (expect
-`BINDING BAR` or unknown-mechanism FATAL — proves the door check executes) ·
-`ls lab/research_utils/attested_patch.py` (F3 pending — inline attested pattern until it
-lands)
-Owner: TNEC-1 §2 intake (second construct lane beside dense-1m); the step-2 ADR becomes the
-lane's doctrine owner on Accept; campaigns dock under `Q-GROW-<n>`.
+@ `85a83ba` (frozen gate: bust ≤ 3.0% ∧ P(pass) ≥ 50%; the intraday-honest qualifier arrived
+via W1/TNEC-1) · W4 dormancy ADR @ `85a83ba` (re-arm condition) · F3 spec ·
+[dual-panel audit note](../notes/audits/2026-08-22-grow-lane-dual-panel-review.md) (this
+change-set) ·
+[2026-08-10 falsifier LOG](../../lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_cost_geometry_2026-08-10_LOG.md)
+L78 @ `85a83ba` (route ③ = results bar, unclearable ex ante; the prior STATE decision-index row
+was collapsed by the 2026-08-22 nav pass — cite the LOG, not STATE) ·
+`docs/rejected_candidates.md` cross-index entry (+5.19 bp incumbent basis) · Q-EVALSEQ-1 /
+Q-POLFRONT-1 closures (EOD-clock bounds; 2026-08-17 remeasure)
+Verify (Phase-0, implementer runs before build): `grep -n "Status:" docs/adr/2026-08-16-deep-iteration-lane-charter.md`
+(expect `Accepted`) · `grep -n "Running counts"
+docs/adr/2026-08-16-deep-iteration-lane-charter.md` (current counters before any campaign) ·
+the charter §10 floor command (expect `1.0 0.95 1.475 2.09`) · after declaring a family in
+`MECHANISMS.md` + profiles build: `python scripts/instrument_profiles.py cell <SYM> <family>`
+(expect **exit 1 with BINDING BAR lines** — an exit-2 FATAL proves execution only, never
+consultation) · `ls lab/research_utils/attested_patch.py` (F3 pending — inline attested
+pattern until it lands)
+Owner: [deep-iteration lane charter](../adr/2026-08-16-deep-iteration-lane-charter.md) (this
+spec is its §7 step-2/step-4 tooling packet); campaigns dock under the charter's own Q-IDs and
+counters; Part B, if ever filed, docks as a superseding ADR against the five owners named
+above.
+
+## Revision record
+
+| Date | Change |
+|---|---|
+| 2026-08-22 | v1 authored as a sibling "GROW lane" (D1–D3); merged via PR #96 pre-review |
+| 2026-08-22 | Dual adversarial review: gate audit BLOCKED-AT-FREEZE · panel BLOCKED (B1–B5) — [audit note](../notes/audits/2026-08-22-grow-lane-dual-panel-review.md) |
+| 2026-08-22 | v2: D1–D3 withdrawn; recast as deep-iteration-lane extension packet (Part A tooling + Part B named question); all confirmed findings folded in |
