@@ -14,6 +14,27 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-22n — Part B ADR drafted (two-ledger K question), `Proposed`
+
+**Focus:** Decision. Filed the GROW spec v2 Part B ADR (two-ledger K question), unlocked by
+08-22m's GROW-0 `RESOLVED` verdict.
+
+**Shipped:** [`2026-08-22-grow0-two-ledger-k-question.md`](adr/2026-08-22-grow0-two-ledger-k-question.md),
+`Proposed`. Rejects the within-campaign "charge M not K_intrinsic" claim; adopts a new,
+disclosure-only charter §2.2(iv) conjunct for the genuinely open cross-campaign
+sealed-consultation question. Went through three rounds of adversarial review same day — each
+caught a real defect in the drafting session's own reasoning (an invalid empirical inference, an
+invalid replacement doctrinal argument, a misattributed citation count) — all fixed, documented in
+the ADR's own Change History.
+
+**Decisions/defects:** None new beyond the three self-caught defects above (recorded, not hidden).
+
+**Open/next:** Operator GO/NO-GO on the ADR. The ADR's own header flags the recurring
+citation-attribution pattern and recommends a further independent read before ratification.
+
+**Live-ops state:** unchanged — rail disarmed; no book. No Databento spend.
+
+---
 ## 2026-08-22m — GROW-0 harness: real full-scale run, `RESOLVED`
 
 **Focus:** Measurement. Ran the frozen N=5,500/c=7 GROW-0 harness for real (Task 13 Step 7 of
