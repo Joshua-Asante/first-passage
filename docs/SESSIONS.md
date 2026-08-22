@@ -14,6 +14,28 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-22m — GROW-0 harness: real full-scale run, `RESOLVED`
+
+**Focus:** Measurement. Ran the frozen N=5,500/c=7 GROW-0 harness for real (Task 13 Step 7 of
+[the implementation plan](superpowers/plans/2026-08-22-grow0-harness-implementation.md)) — the
+gap 08-22l's Open/next named.
+
+**Shipped:** Real verdict `RESOLVED`: limb_a PASS, limb_b PASS (5/5500 clears, c=7), red_leak
+`FAILED_AS_EXPECTED` (29/5500), red_blind/red_patch `FAILED_AS_EXPECTED` — independently
+re-derived, bit-identical. [Closure](briefs/closures/GROW-0-closure-resolved.md). Along the way,
+found+fixed a Windows-checkout CRLF/`.gitattributes` artifact on `grow0_grammar.json` (5th
+instance of this repo's own known class; content never drifted).
+
+**Decisions/defects:** None new beyond the CRLF fix (build-artifact, not prereg content —
+closure §4).
+
+**Open/next:** GROW-0 resolved; engine + calibration instrument validated. First real deep-lane
+campaign (GROW-1 or later) may now open via `--lane deep`. GROW spec v2 Part B's two-ledger K
+question filing decision is unlocked for the operator — not decided here, no ADR filed.
+
+**Live-ops state:** unchanged — rail disarmed; no book. No Databento spend.
+
+---
 ## 2026-08-22l — GROW-0 harness implementation: 13 tasks, subagent-driven
 
 **Focus:** Build. Implemented the frozen GROW-0 prereg's harness against
