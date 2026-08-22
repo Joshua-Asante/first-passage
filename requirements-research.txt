@@ -2,9 +2,10 @@
 # Recreate IN A RESEARCH WORKTREE/CHECKOUT: py -3.11 -m venv .venv-research && .venv-research\Scripts\python -m pip install -r requirements-research.txt
 # Do NOT install into the main clone's existing .venv — that is the ops env (pyproject.toml deps); keep the two isolated.
 # Isolated research env only — these deps deliberately do NOT enter pyproject.toml (ops env).
-# OWED (W6 2026-08-07): hash-locked requirements-research.lock via pip-compile / freeze
-# after a clean research-venv install — do not invent a lockfile by hand
-# (docs/adr/2026-08-07-w6-rail-infra-closures.md).
+# Hash-locked pins: requirements-research.lock (W6 2026-08-07 obligation discharged
+# 2026-08-22 — docs/adr/2026-08-07-w6-rail-infra-closures.md). This file remains the
+# human-readable pin list / source of truth for version bumps; regenerate the .lock
+# via the same recipe (clean venv install, then hash-pin from PyPI) after editing it.
 aiohappyeyeballs==2.7.1
 aiohttp==3.14.3
 aiosignal==1.4.0
@@ -60,6 +61,7 @@ packaging==26.2
 pandas==2.3.3
 parso==0.8.7
 patsy==1.0.2
+pexpect==4.9.0
 pillow==12.3.0
 pip_system_certs==5.3
 plotly==6.9.0
@@ -68,6 +70,7 @@ prompt_toolkit==3.0.52
 propcache==0.5.2
 psutil==7.2.2
 psygnal==0.15.1
+ptyprocess==0.7.0
 pure_eval==0.2.3
 pyarrow==25.0.0
 pycatch22==0.4.5
@@ -104,6 +107,7 @@ typing_extensions==4.16.0
 tzdata==2026.3
 tzlocal==5.4.4
 urllib3==2.7.0
+uvloop==0.22.1
 vectorbt==1.0.0
 wcwidth==0.8.2
 widgetsnbextension==4.0.15
