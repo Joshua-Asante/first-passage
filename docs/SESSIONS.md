@@ -14,6 +14,31 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-22k — GROW-0 synthetic calibration harness pre-registration: drafted and frozen
+
+**Focus:** Build-prep. Drafted the GROW-0 PREREG named as forward work in 2026-08-22j, per the
+spec's own requirement that a harness this statistically load-bearing gets a frozen design before
+any code is written.
+
+**Shipped:** [prereg](briefs/pre-registration/2026-08-22-grow-0-synthetic-calibration-prereg.md)
+`FROZEN` — operator GO (JA). Three adversarial-review rounds (69-agent BLOCKED → 24-agent BLOCKED
+→ 4-agent RATIFY WITH MINOR CHANGES) caught and fixed: a K-selection-vs-independent-draw
+statistical conflation (off by 2 orders of magnitude), an unvalidated Gaussian-tail extrapolation
+of `deep_lane_power` (off by ~5–10% in the far tail), a RED-BLIND control that mostly re-tested
+the wrong gate, a seed-collision bug, and smaller errata. `nominal_p0=0.00059070` is now
+**measured** (20M-trial MC, not closed-form); N=5,500/c=7 sized with margin against the
+measurement's own 95% CI. $0/K=0 throughout — synthetic data only.
+
+**Decisions/defects:** none new beyond the prereg's own frozen design — see its Revision record
+for the itemized fix history across all three review rounds.
+
+**Open/next:** `lab/discovery/grow0_harness.py` implementation (Limb A/B, three RED rigs, retry
+ledger) against this frozen prereg — not yet built. First real deep-lane campaign still waits on
+GROW-0's own RESOLVED/FALSIFIED gate.
+
+**Live-ops state:** unchanged — rail disarmed; no book. No Databento spend.
+
+---
 ## 2026-08-22j — GROW-lane build authorization; deep-lane tooling slice 1
 
 **Focus:** Build. Operator GO ("ratify, accept, and begin the build") on GROW spec v2 Part A.
