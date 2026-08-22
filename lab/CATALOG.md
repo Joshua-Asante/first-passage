@@ -154,7 +154,6 @@ documents the camp boundary for humans/tools.
 
 | slug | theme | status | one-liner | body | heavy |
 |---|---|---|---|---|---|
-| dstruct_mnq_2026-08 | _inbox | ACTIVE | NULL: daily close-vs-EMA20 bias carries nothing at daily granularity (Tier-1 screen, 3 of 4 limbs failed; K=1 disclosed) | lab/analysis/_inbox/dstruct_mnq_2026-08/ | — |
 | ict_mnq_2026-08 | _inbox | ACTIVE | ICT cascade re-run on NQ/MNQ at $0/K=0/Cap seat unspent: W and D confirm on independent instruments, pools falsified ... | lab/analysis/_inbox/ict_mnq_2026-08/ | — |
 | q_trainkill_1_2026-08 | _inbox | HOLD | BOUNDED extremes disagree; scored core MISCALIBRATED | lab/analysis/_inbox/q_trainkill_1_2026-08/ | — |
 | q_trainkill_2_2026-08 | _inbox | HOLD | both named alternates fit (NEG and DEP-ZERO) | lab/analysis/_inbox/q_trainkill_2_2026-08/ | — |
@@ -177,6 +176,7 @@ documents the camp boundary for humans/tools.
 | d5_recost_2026-07 | FALSIFIED | Stage-2 KILL (binding cause is edge decay, not cost). | lab/analysis/d5_recost_2026-07/CARD.md | lab/archive/d5_recost_2026-07/ | — | 2026-08-03 |
 | decompound_ddprot_2026-06-21 | CLOSED | DONE_WITH_CONCERNS. | lab/analysis/decompound_ddprot_2026-06-21/CARD.md | lab/archive/decompound_ddprot_2026-06-21/ | — | 2026-07-12 |
 | dl1_mgc_orc_2026-08-16 | CLOSED | `AMBIGUOUS` — ABANDONMENT (prereg roster mapping: confirm never read, nothing | lab/analysis/dl1_mgc_orc_2026-08-16/CARD.md | lab/archive/dl1_mgc_orc_2026-08-16/ | — | 2026-08-21 |
+| dstruct_mnq_2026-08 | NULL | daily close-vs-EMA20 bias carries nothing at daily granularity (Tier-1 screen... | lab/analysis/dstruct_mnq_2026-08/CARD.md | lab/archive/dstruct_mnq_2026-08/ | — | 2026-08-22 |
 | external_sourcing_2026-06-30 | CLOSED | RESOLVED zero saved candidates (thesis-first narrow pass) | lab/analysis/external_sourcing_2026-06-30/CARD.md | lab/archive/external_sourcing_2026-06-30/ | — | 2026-07-12 |
 | feed_divergence_2026-06 | CLOSED | RESOLVED-BY-RETIREMENT. Q-FEED-1's cross-feed transfer-validity question diss... | lab/analysis/feed_divergence_2026-06/CARD.md | lab/archive/feed_divergence_2026-06/ | — | 2026-08-03 |
 | fixrev_costscreen_2026-06-22 | FALSIFIED | FAIL-COST** (best-of-grid break-even 0.277 pip vs FXIFY all-in 0.80 pip). | lab/analysis/fixrev_costscreen_2026-06-22/CARD.md | lab/archive/fixrev_costscreen_2026-06-22/ | — | 2026-07-11 |
