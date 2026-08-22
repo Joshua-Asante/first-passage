@@ -1,6 +1,6 @@
 # Strategy organization gains a third axis: venue binding (book → venue edition → deployment) — `strategy-venue-binding-axis`
 
-**Status:** `Proposed` — operator-directed 2026-08-05 ("develop into an ADR"); the two open design questions were ruled in-session before authoring (§2.4)
+**Status:** `Accepted` — operator GO 2026-08-22 (the fresh GO the 2026-08-14 addendum required). Axis is standing doctrine. §7 Phase 1 registry still owed; T1 already fired (S1 F2/F3 in prose) and is acknowledged, not reopened.
 **Decision date:** 2026-08-05
 **Supersedes:** none
 **Superseded-by:** none
@@ -12,7 +12,7 @@
 
 ---
 
-> ⚠ **2026-08-14 reader-intercept:** ratification is **stalled/bypassed by events** (T1 likely fired), not an uncomplicated pending path. **Status remains `Proposed`.** See Addendum 2026-08-14.
+> ⚠ **2026-08-22 reader-intercept:** operator Accepted this ADR (fresh GO). The 2026-08-14 stall note is historical. T1 remains acknowledged as already fired. §7 Phase 1 registry still owed. See Addendum 2026-08-22.
 
 ## §0 — Rule 0 reads (production-source verification, all executed 2026-08-05)
 
@@ -181,7 +181,7 @@ Conflating these is exactly the error made in this programme on 2026-08-05, when
 
 ## §4 — Falsifier (revert trigger)
 
-> ⚠ **2026-08-14:** T1 has likely fired — F2/F3 were recorded without an edition-state transition. See Addendum 2026-08-14. Status remains `Proposed`.
+> ⚠ **2026-08-14 / 2026-08-22:** T1 fired — F2/F3 were recorded without an edition-state transition. Status is now `Accepted` (operator GO 2026-08-22); T1 stays acknowledged. See Addenda 2026-08-14 and 2026-08-22.
 
 **H (binary):** *Naming venue binding as a third axis, with edition-level authorization state, prevents premise-dead claim propagation and layer-leak defects that the two-axis model structurally cannot prevent — at a maintenance cost below the cost of the prose workaround.*
 
@@ -316,6 +316,17 @@ This ADR was never ratified; `ops/venue_editions/` was never created. Its own T1
 
 Do not read `Proposed` as a live, pending, uncomplicated ratification path. Revisit would need a fresh GO, not a quiet flip. The underlying B3 layer-leak analysis (venue-fit facts must not leak into book-level artifacts) is **not** judged wrong and could still matter if venue-binding is reopened.
 
+## Addendum 2026-08-22 — Operator Accept (fresh GO)
+
+**Type:** status flip. **Status field is now `Accepted`.** §2 decision text is not edited.
+
+Operator Accept 2026-08-22 is the fresh GO the 2026-08-14 addendum required. T1 (S1 recorded F2/F3 with no edition-state transition) is **acknowledged as already fired** — Accept ratifies the axis as standing doctrine going forward; it does not claim T1 did not fire and does not rewrite S1.
+
+§7 Phase 0 (this flip) is done. **Phase 1 remains owed** (`ops/venue_editions/Tradeify_Select_100K.md` with the three already-true rows; live edition set EMPTY). Phase 2 pointer one-liners land with this ratification. Phase 4's T1 clock is historical.
+
+Forbidden here: wiring `M_edition` into live sizing; editing `core/lifecycle.py`; treating this Accept as a Phase 1 registry land.
+
 | Date | Change | By |
 |---|---|---|
 | 2026-08-14 | Addendum 2026-08-14 — stalled/bypassed framing; T1 likely fired. Status remains Proposed. §2 body byte-unchanged. | claim-alignment reconciliation |
+| 2026-08-22 | **Operator Accept** (fresh GO named by the 2026-08-14 addendum). Status `Proposed` → `Accepted`. T1 acknowledged as already fired (S1 F2/F3 in prose; no edition transition). §2 body byte-unchanged. §7 Phase 1 registry still owed. | Joshua (GO) + Cursor (record) |

@@ -1,6 +1,6 @@
 # ADR 2026-07-28 — Rail-side payload-supported disaster stop for c1 base-entry orders
 
-**Status:** Proposed (NOT self-accepting — this changes what the live rail submits to the broker; requires operator GO per the standing c1-rail invariant "arming is an operator GO, never an agent action," extended here to any order-shape change, not just the dry_run flag; authored 2026-07-28, operator decision pending)
+**Status:** `Accepted` — operator GO 2026-08-22. Accept is the decision GO; §7 Phase 0 empirical SIM remains the implementation gate before any `sl=` wiring lands armed. Does not authorize skipping Phase 0 or setting `dry_run=false`.
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
@@ -210,3 +210,4 @@ grep -n "sl: float | None = None, tp: float | None = None" ops/c1_rail/crosstrad
 |---|---|---|
 | 2026-07-28 | Initial authoring (brainstorm item C2); Phase 0 (§7) not yet run; operator decision pending | Joshua (pending) + Claude Code |
 | 2026-07-28 | Correction: §2 Scope, §5, and §7 Phase 0a wrongly implied Phase 0 runs on a free/demo "SIM environment." Corrected — Phase 0 fires on the real Tradeify eval account (same class as the 2026-07-20 −$[redacted] and 2026-07-27 +$[redacted] precedents), cost-bounded by account-minimum quantity, in-eval P&L not counted against the $700 ceiling per standing convention. §7 Phase 0a now points to [`RUNBOOK.md` §B8](../notes/rail_build/RUNBOOK.md) (written same session) as the authoritative procedure. No change to §2 Decision, §4 Falsifier, or §5/§6 substance beyond this wording fix. | Joshua (flagged) + Claude Code (correction) |
+| 2026-08-22 | **Operator Accept.** Status `Proposed` → `Accepted`. Decision GO recorded. §7 Phase 0 empirical SIM remains the implementation gate; no `sl=` listener wiring and no arming land with this flip. | Joshua (GO) + Cursor (record) |

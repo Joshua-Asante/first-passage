@@ -1,6 +1,6 @@
 # ADR 2026-08-07 — W1: intraday-honest engine re-measure (method freeze + $0 re-run GO)
 
-**Status:** `Proposed` — authorizes the re-run and freezes method; does **not** publish new bust figures
+**Status:** `Accepted` — operator 2026-08-22. Method freeze stands. Class-S 0.50× honest-clock RESULTS landed; the other three decisions of record remain owed as measurement, not as a status gate. Still does **not** invent bust figures.
 **Decision date:** 2026-08-07
 **Authors:** Joshua (Posture-A direction) + Cursor (drafter)
 **Supersedes:** none
@@ -82,10 +82,11 @@ The 08-04 firm-rules fix made unreachable `dd_lock_offset_usd` the **default** f
 
 | Limb | Verdict |
 |---|---|
-| Method frozen + re-run authorized at $0 | **this ADR (`Proposed`)** |
-| Harness restore-to-100 hygiene + orientation scoping-notes | **same PR as land** |
-| RESULTS for four decisions of record | **owed** — flips this ADR toward `Accepted` when published |
-| `firm_rules` RESIDUAL caveat Superseded-by | **owed** at Accept with RESULTS |
+| Method frozen + re-run authorized at $0 | **this ADR (`Accepted` 2026-08-22)** |
+| Harness restore-to-100 hygiene + orientation scoping-notes | **landed with the W1 PR** |
+| RESULTS — Class-S 0.50× full+halves | **MEASURED** — [`RESULTS_INTRADAY_W1`](../../lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/RESULTS_INTRADAY_W1.md) |
+| RESULTS — remaining three decisions of record | **owed** as measurement (not a status gate) |
+| `firm_rules` RESIDUAL caveat Superseded-by | **owed** when the remaining RESULTS publish |
 
 ---
 
@@ -96,3 +97,14 @@ grep -n "pending W1\|EOD-clock lower bound" CLAUDE.md STATE.md
 rg -n "dd_lock_offset_usd.*= *100|expect 100|OPEN-DEFECT" lab/analysis/c1 --glob "*.py"
 grep -n "Status:" docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md
 ```
+
+## Addendum 2026-08-22 — Operator Accept
+
+**Status `Proposed` → `Accepted`.** Method freeze and the $0 re-run GO stand. Class-S 0.50× full+halves on the honest clock is MEASURED ([`RESULTS_INTRADAY_W1`](../../lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/RESULTS_INTRADAY_W1.md)). The other three decisions of record named in §2 remain owed as measurement. This flip does not invent or republish bust figures.
+
+## Change history
+
+| Date | Change | By |
+|---|---|---|
+| 2026-08-07 | Initial authoring — `Proposed`; method freeze + $0 re-run GO | Joshua (Posture-A) + Cursor |
+| 2026-08-22 | **Operator Accept.** Status `Proposed` → `Accepted`. Class-S 0.50× RESULTS already MEASURED; remaining three decisions still owed. | Joshua (Accept) + Cursor (record) |
