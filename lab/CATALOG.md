@@ -21,146 +21,146 @@ documents the camp boundary for humans/tools.
 
 ### c1
 
-| slug | theme | status | one-liner | body | heavy |
-|---|---|---|---|---|---|
-| aegis1p_3leg_rescore_2026-07-27 | c1 | ACTIVE | Aegis@1.00% 3-leg corrected-geometry re-MC under Tradeify envelope | lab/analysis/c1/aegis1p_3leg_rescore_2026-07-27/ | — |
-| aegis3leg_engine_param_2026-08-20 | c1 | ACTIVE | Parameterized Aegis 3-leg rescore engine (default 1.00% only; J14 bars new risk-arm measurement) | lab/analysis/c1/aegis3leg_engine_param_2026-08-20/ | inputs gitignored |
-| band_quantization_2026-08-02 | c1 | ACTIVE | MNQ zero-floors at every FRIENDLY tier below 100K under the locked-proportional split; the two published 50K clearers... | lab/analysis/c1/band_quantization_2026-08-02/ | — |
-| c1_band_rescore_2026-07-24 | c1 | ACTIVE | two Part A clearers at 50K band; RIDER FAIL stands a fortiori | lab/analysis/c1/c1_band_rescore_2026-07-24/ | — |
-| c1_cadence_coverage_2026-08-03 | c1 | ACTIVE | 0.50× fails 16.0% of eval starts once overlapping pyramid holds are priced (critical scale 0.441×; 0.40× clean under ... | lab/analysis/c1/c1_cadence_coverage_2026-08-03/ | — |
-| c1_cadence_inactivity_2026-08-02 | c1 | ACTIVE | token trade owed 82/312 Mon–Fri weeks (max 4 consecutive); 0.50× haircut raises inactivity exposure | lab/analysis/c1/c1_cadence_inactivity_2026-08-02/ | — |
-| c1_cost_geometry_mym_add_2026-07-24 | c1 | ACTIVE | MYM add@67 TBBO cost geometry; D1 inside-sufficiency measured 0.0 | lab/analysis/c1/c1_cost_geometry_mym_add_2026-07-24/ | — |
-| c1_liveness_diversification_2026-08-02 | c1 | ACTIVE | how much an added leg cuts dead weeks on the c1 book | lab/analysis/c1/c1_liveness_diversification_2026-08-02/ | — |
-| c1_signal_identity_2026-07-28 | c1 | ACTIVE | full-panel MEASURED** (2026-07-29); Q-SIGID-1 §6 offline limb = **FULL** (plan `docs/superpowers/plans/2026-07-29-c1-... | lab/analysis/c1/c1_signal_identity_2026-07-28/ | — |
-| c1_thirdleg_instrument_map_2026-07-27 | c1 | ACTIVE | Stage 1 discharges the contract-specs limb; Stage 2 measured sigma + tau_max for all four (RESULTS_stage2.md) | lab/analysis/c1/c1_thirdleg_instrument_map_2026-07-27/ | — |
-| catalogue_k_wall_2026-08-05 | c1 | ACTIVE | — | lab/analysis/c1/catalogue_k_wall_2026-08-05/ | — |
-| cheap_falsifiers_2026-08 | c1 | HOLD | parent-side cheap falsifiers for the TNEC/dense-1m lane (spent; stay hot while CON-* cite them) | lab/analysis/c1/cheap_falsifiers_2026-08/ | — |
-| class_s_c1_haircut_regime_remc_2026-07-16 | c1 | ACTIVE | lifecycle-haircut regime re-MC for Class-S candidate #1 | lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/ | — |
-| class_s_candidate1_scoring_2026-07-15 | c1 | ACTIVE | G0–G8 scoring for Class-S candidate #1 (locked-book MYM+MNQ) | lab/analysis/c1/class_s_candidate1_scoring_2026-07-15/ | — |
-| eval_inverse_requirements_2026-08-03 | c1 | ACTIVE | max risk/trade is ~flat in trades/day ($275 at a 0.65R edge, k=1 through 4), so daily profit scales linearly with FRE... | lab/analysis/c1/eval_inverse_requirements_2026-08-03/ | — |
-| eval_shape_diagnostics_2026-07-28 | c1 | ACTIVE | eval-shape diagnostics under corrected Tradeify geometry | lab/analysis/c1/eval_shape_diagnostics_2026-07-28/ | — |
-| eval_slow_archetype_2026-08-04 | c1 | ACTIVE | — | lab/analysis/c1/eval_slow_archetype_2026-08-04/ | — |
-| f3_cadence_successor_venues_2026-08-05 | c1 | ACTIVE | the cadence axis F3 required is measured, and **F3 is not decidable on it.** Bulenox and MFFU sit in the same inactiv... | lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/ | — |
-| geofit_iid_sufficiency_power_2026-08-15 | c1 | ACTIVE | scoping probe, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_skew_probe_2026-07-25/README.md)... | lab/analysis/c1/geofit_iid_sufficiency_power_2026-08-15/ | — |
-| geofit_skewed_family_construction_2026-08-15 | c1 | ACTIVE | scoping construction, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_skew_probe_2026-07-25/REA... | lab/analysis/c1/geofit_skewed_family_construction_2026-08-15/ | — |
-| mnq_event_ceiling_2026-08-04 | c1 | ACTIVE | — | lab/analysis/c1/mnq_event_ceiling_2026-08-04/ | — |
-| mnq_ofchan_routeb_2026-08 | c1 | ACTIVE | — | lab/analysis/c1/mnq_ofchan_routeb_2026-08/ | — |
-| mnq_orb_flow_depth_2026-08-18 | c1 | ACTIVE | FROZEN, pull not authorized — MBP-10 depth escalation on ORB-MNQ-1/N14, fresh authorization per MNQFLOW-1's own FM-4 | lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/ | — |
-| mnq_orb_flow_substrate_2026-08-05 | c1 | ACTIVE | — | lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/ | — |
-| mnq_orb_level_proximity_tod_2026-08-06 | c1 | ACTIVE | — | lab/analysis/c1/mnq_orb_level_proximity_tod_2026-08-06/ | — |
-| mnq_r2agrun_routeb_2026-08 | c1 | HOLD | `AMBIGUOUS-HOLD` — empty candidate list (magnitude floor; G3 → **ITERATE**, not promote). | lab/analysis/c1/mnq_r2agrun_routeb_2026-08/ | — |
-| mnq_selection_ceiling_allbars_2026-08 | c1 | ACTIVE | — | lab/analysis/c1/mnq_selection_ceiling_allbars_2026-08/ | — |
-| mnq_sizediv_blind_2026-08 | c1 | ACTIVE | — | lab/analysis/c1/mnq_sizediv_blind_2026-08/ | — |
-| mnq_stop_distribution_2026-08-02 | c1 | ACTIVE | MNQ stop distribution vs qty≥1 floor — Monday window realism | lab/analysis/c1/mnq_stop_distribution_2026-08-02/ | — |
-| msl_s4_mgc_2026-08 | c1 | ACTIVE | MSL-S4 `expiry-oi-strike-convergence` (NEW) on MGC — G0 FROZEN, Pine authored CC-solo; discharges the 2026-08-14 WHO-track E1 stop rule; Explore-confirm deferred by operator override (no data access); operator TV backtest owed | lab/analysis/c1/msl_s4_mgc_2026-08/ | — |
-| mnq_tnec_con2_compression_break_2026-08 | c1 | HOLD | `AMBIGUOUS-HOLD` — gross-positive / net-negative; halves sign-flip; non-promotable close. | lab/analysis/c1/mnq_tnec_con2_compression_break_2026-08/ | — |
-| mnq_tnec_con3_htf_native_break_2026-08 | c1 | HOLD | `AMBIGUOUS-HOLD` — long mean net-positive but CI straddles 0; short net-negative; aux limbs fail live-pass. | lab/analysis/c1/mnq_tnec_con3_htf_native_break_2026-08/ | — |
-| mnq_tnec_con4_pdh_pdl_break_2026-08 | c1 | HOLD | `AMBIGUOUS-HOLD` — both arms near-zero; CIs straddle 0; aux limbs fail live-pass. | lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/ | — |
-| mnq_tnec_con5_impulse_pullback_vwap_2026-08 | c1 | HOLD | `AMBIGUOUS-HOLD` — both arms mean-negative; CIs straddle 0; aux limbs fail live-pass. | lab/analysis/c1/mnq_tnec_con5_impulse_pullback_vwap_2026-08/ | — |
-| msl_s2b_mym_2026-08 | c1 | HOLD | archive owed (STAGE-1 FAIL route): pre-G0 kill — [closure](../../../../docs/briefs/closures/MSL-S2B-closure-stage1-fa... | lab/analysis/c1/msl_s2b_mym_2026-08/ | — |
-| orbmnq1_cushion_sizing_probe_2026-08-20 | c1 | ACTIVE | Informal $0/K=0 probe (not pre-registered) — cushion-proportional sizing eliminates ORB-MNQ-1's bust intraday-honestly (mathematically real, regime-agnostic); a real 2021-09-28 pass-rate regime break survives a thirds split but its trailing-vol mechanism is REFUTED. Formalized as [`Q-ORBCUSH-1`](../../../docs/briefs/Q-ORBCUSH-1-regime-break-mechanism.md), which itself closed `FALSIFIED` 2026-08-20 (trailing mean-R also refuted — `ops/instruments/MNQ.md` N17). | lab/analysis/c1/orbmnq1_cushion_sizing_probe_2026-08-20/ | — |
-| orbmnq1_nsurv_magnitude_probe_2026-08-20 | c1 | ACTIVE | N=50 magnitude-resampled skewed-gamma fit to ORB-MNQ-1's own P&L, testing whether cushion-sizing bust-elimination is robust or a lucky single-history draw. Bust axis: 50/50 robust. Pass axis: real ~50/50 proposition (sd 24pp). See [MNQ.md](../../../ops/instruments/MNQ.md) N18. | lab/analysis/c1/orbmnq1_nsurv_magnitude_probe_2026-08-20/ | — |
-| orbmnq1_skew_sizing_probe_2026-08-20 | c1 | ACTIVE | Skew-derived `pol_cushion` sizing ceiling vs the borrowed 0.75 constant — informal $0/K=0 null, neither derived candidate beats the borrowed constant on pass rate. See [MNQ.md](../../../ops/instruments/MNQ.md) N18. | lab/analysis/c1/orbmnq1_skew_sizing_probe_2026-08-20/ | — |
-| parity_gen2_2026-08 | c1 | ACTIVE | — | lab/analysis/c1/parity_gen2_2026-08/ | — |
-| q_polfront_1_2026-08 | c1 | ACTIVE | — | lab/analysis/c1/q_polfront_1_2026-08/ | — |
-| q_rail_1_2026-07 | c1 | ACTIVE | c1 rail Phases 0–4 CLOSED RESOLVED; ceiling $700 operator-signed | lab/analysis/c1/q_rail_1_2026-07/ | — |
-| research-analyst-mnq-atomic-facts-2026-08-19 | c1 | ACTIVE | Research Analyst inaugural session — MNQ atomic-fact decomposition draft (cross-campaign synthesis, not a new backtest); routing corrected same-day 2026-08-19 (DROP D5 -- already killed twice, ledger-contradicted first GRADUATE call / HOLD temporal-selectivity / DROP weekly-bias) | lab/analysis/c1/research-analyst-mnq-atomic-facts-2026-08-19/ | — |
-| tradeify_book_composition_2026-07-23 | c1 | ACTIVE | eval-lock fix + §2 book-composition re-derivation | lab/analysis/c1/tradeify_book_composition_2026-07-23/ | inputs gitignored |
-| tradeify_eval_lock_correction_2026-07-22 | c1 | ACTIVE | Tradeify/MFFU eval drawdown-lock correction re-MC | lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/ | — |
-| tradeify_fade_stage0_2026-07-30 | c1 | ACTIVE | Stage 0 instrumentation complete; Stage 1 region computed at 1x/2x/4x; no mechanism scored, K=0, $0 spend | lab/analysis/c1/tradeify_fade_stage0_2026-07-30/ | — |
-| tradeify_futures3_bustcut_2026-07-11 | c1 | ACTIVE | Tradeify Select Flex 50K bust-cut Tests 1+2 | lab/analysis/c1/tradeify_futures3_bustcut_2026-07-11/ | — |
-| tradeify_futures3_remc_2026-07-11 | c1 | ACTIVE | Tradeify Select Flex 3-leg futures remc panel | lab/analysis/c1/tradeify_futures3_remc_2026-07-11/ | — |
-| tradeify_seed_target_spec_2026-08-04 | c1 | ACTIVE | at the ratified Part A gate the eval's binding constraint for a seed construct is the **weekly activity rule and noth... | lab/analysis/c1/tradeify_seed_target_spec_2026-08-04/ | — |
-| tvcov_2026-07 | c1 | ACTIVE | TV intraday bar-coverage census (Q-TVCOV-1) | lab/analysis/c1/tvcov_2026-07/ | — |
-| venuegeo_dp3_bustceiling_2026-08-05 | c1 | ACTIVE | bust-ceiling half of DP3 measured; EV/$ half (pass-EV per eval-dollar) NOT run — each firm's evaluation-purchase pric... | lab/analysis/c1/venuegeo_dp3_bustceiling_2026-08-05/ | — |
-| wstruct_cost_geometry_2026-07-28 | c1 | ACTIVE | corrects WSTRUCT-M2K-1 §2.2 on cost; asymmetric-payoff frontier is OPEN but harvest returns 0 seeds (modality-barred) | lab/analysis/c1/wstruct_cost_geometry_2026-07-28/ | — |
+| slug | theme | status | hot | one-liner | body | heavy |
+|---|---|---|---|---|---|---|
+| aegis1p_3leg_rescore_2026-07-27 | c1 | ACTIVE | yes | Aegis@1.00% 3-leg corrected-geometry re-MC under Tradeify envelope | lab/analysis/c1/aegis1p_3leg_rescore_2026-07-27/ | — |
+| aegis3leg_engine_param_2026-08-20 | c1 | ACTIVE | yes | Parameterized Aegis 3-leg rescore engine (default 1.00% only; J14 bars new risk-arm measurement) | lab/analysis/c1/aegis3leg_engine_param_2026-08-20/ | — |
+| band_quantization_2026-08-02 | c1 | ACTIVE | yes | MNQ zero-floors at every FRIENDLY tier below 100K under the locked-proportional split; the two published 50K clearers... | lab/analysis/c1/band_quantization_2026-08-02/ | — |
+| c1_band_rescore_2026-07-24 | c1 | ACTIVE | yes | two Part A clearers at 50K band; RIDER FAIL stands a fortiori | lab/analysis/c1/c1_band_rescore_2026-07-24/ | — |
+| c1_cadence_coverage_2026-08-03 | c1 | ACTIVE | yes | 0.50× fails 16.0% of eval starts once overlapping pyramid holds are priced (critical scale 0.441×; 0.40× clean under ... | lab/analysis/c1/c1_cadence_coverage_2026-08-03/ | — |
+| c1_cadence_inactivity_2026-08-02 | c1 | ACTIVE | yes | token trade owed 82/312 Mon–Fri weeks (max 4 consecutive); 0.50× haircut raises inactivity exposure | lab/analysis/c1/c1_cadence_inactivity_2026-08-02/ | — |
+| c1_cost_geometry_mym_add_2026-07-24 | c1 | ACTIVE | yes | MYM add@67 TBBO cost geometry; D1 inside-sufficiency measured 0.0 | lab/analysis/c1/c1_cost_geometry_mym_add_2026-07-24/ | — |
+| c1_liveness_diversification_2026-08-02 | c1 | ACTIVE | yes | how much an added leg cuts dead weeks on the c1 book | lab/analysis/c1/c1_liveness_diversification_2026-08-02/ | — |
+| c1_signal_identity_2026-07-28 | c1 | ACTIVE | yes | full-panel MEASURED** (2026-07-29); Q-SIGID-1 §6 offline limb = **FULL** (plan `docs/superpowers/plans/2026-07-29-c1-... | lab/analysis/c1/c1_signal_identity_2026-07-28/ | — |
+| c1_thirdleg_instrument_map_2026-07-27 | c1 | ACTIVE | yes | Stage 1 discharges the contract-specs limb; Stage 2 measured sigma + tau_max for all four (RESULTS_stage2.md) | lab/analysis/c1/c1_thirdleg_instrument_map_2026-07-27/ | — |
+| catalogue_k_wall_2026-08-05 | c1 | ACTIVE | yes | — | lab/analysis/c1/catalogue_k_wall_2026-08-05/ | — |
+| cheap_falsifiers_2026-08 | c1 | HOLD | yes | parent-side cheap falsifiers for the TNEC/dense-1m lane (spent; stay hot while CON-* cite them) | lab/analysis/c1/cheap_falsifiers_2026-08/ | — |
+| class_s_c1_haircut_regime_remc_2026-07-16 | c1 | ACTIVE | yes | lifecycle-haircut regime re-MC for Class-S candidate #1 | lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/ | — |
+| class_s_candidate1_scoring_2026-07-15 | c1 | ACTIVE | yes | G0–G8 scoring for Class-S candidate #1 (locked-book MYM+MNQ) | lab/analysis/c1/class_s_candidate1_scoring_2026-07-15/ | — |
+| eval_inverse_requirements_2026-08-03 | c1 | ACTIVE | yes | max risk/trade is ~flat in trades/day ($275 at a 0.65R edge, k=1 through 4), so daily profit scales linearly with FRE... | lab/analysis/c1/eval_inverse_requirements_2026-08-03/ | — |
+| eval_shape_diagnostics_2026-07-28 | c1 | ACTIVE | yes | eval-shape diagnostics under corrected Tradeify geometry | lab/analysis/c1/eval_shape_diagnostics_2026-07-28/ | — |
+| eval_slow_archetype_2026-08-04 | c1 | ACTIVE | yes | — | lab/analysis/c1/eval_slow_archetype_2026-08-04/ | — |
+| f3_cadence_successor_venues_2026-08-05 | c1 | ACTIVE | yes | the cadence axis F3 required is measured, and **F3 is not decidable on it.** Bulenox and MFFU sit in the same inactiv... | lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/ | — |
+| geofit_iid_sufficiency_power_2026-08-15 | c1 | ACTIVE | yes | scoping probe, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_skew_probe_2026-07-25/README.md)... | lab/analysis/c1/geofit_iid_sufficiency_power_2026-08-15/ | — |
+| geofit_skewed_family_construction_2026-08-15 | c1 | ACTIVE | yes | scoping construction, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_skew_probe_2026-07-25/REA... | lab/analysis/c1/geofit_skewed_family_construction_2026-08-15/ | — |
+| mnq_event_ceiling_2026-08-04 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_event_ceiling_2026-08-04/ | — |
+| mnq_ofchan_routeb_2026-08 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_ofchan_routeb_2026-08/ | — |
+| mnq_orb_flow_depth_2026-08-18 | c1 | ACTIVE | yes | FROZEN, pull not authorized — MBP-10 depth escalation on ORB-MNQ-1/N14, fresh authorization per MNQFLOW-1's own FM-4 | lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/ | — |
+| mnq_orb_flow_substrate_2026-08-05 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/ | — |
+| mnq_orb_level_proximity_tod_2026-08-06 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_orb_level_proximity_tod_2026-08-06/ | — |
+| mnq_r2agrun_routeb_2026-08 | c1 | HOLD | yes | `AMBIGUOUS-HOLD` — empty candidate list (magnitude floor; G3 → **ITERATE**, not promote). | lab/analysis/c1/mnq_r2agrun_routeb_2026-08/ | — |
+| mnq_selection_ceiling_allbars_2026-08 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_selection_ceiling_allbars_2026-08/ | — |
+| mnq_sizediv_blind_2026-08 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_sizediv_blind_2026-08/ | — |
+| mnq_stop_distribution_2026-08-02 | c1 | ACTIVE | yes | MNQ stop distribution vs qty≥1 floor — Monday window realism | lab/analysis/c1/mnq_stop_distribution_2026-08-02/ | — |
+| mnq_tnec_con2_compression_break_2026-08 | c1 | HOLD | yes | `AMBIGUOUS-HOLD` — gross-positive / net-negative; halves sign-flip; non-promotable close. | lab/analysis/c1/mnq_tnec_con2_compression_break_2026-08/ | — |
+| mnq_tnec_con3_htf_native_break_2026-08 | c1 | HOLD | yes | `AMBIGUOUS-HOLD` — long mean net-positive but CI straddles 0; short net-negative; aux limbs fail live-pass. | lab/analysis/c1/mnq_tnec_con3_htf_native_break_2026-08/ | — |
+| mnq_tnec_con4_pdh_pdl_break_2026-08 | c1 | HOLD | yes | `AMBIGUOUS-HOLD` — both arms near-zero; CIs straddle 0; aux limbs fail live-pass. | lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/ | — |
+| mnq_tnec_con5_impulse_pullback_vwap_2026-08 | c1 | HOLD | yes | `AMBIGUOUS-HOLD` — both arms mean-negative; CIs straddle 0; aux limbs fail live-pass. | lab/analysis/c1/mnq_tnec_con5_impulse_pullback_vwap_2026-08/ | — |
+| msl_s2b_mym_2026-08 | c1 | HOLD | yes | archive owed (STAGE-1 FAIL route): pre-G0 kill — [closure](../../../../docs/briefs/closures/MSL-S2B-closure-stage1-fa... | lab/analysis/c1/msl_s2b_mym_2026-08/ | — |
+| msl_s4_mgc_2026-08 | c1 | ACTIVE | yes | MSL-S4 `expiry-oi-strike-convergence` (NEW) on MGC — G0 FROZEN, Pine authored CC-solo; discharges the 2026-08-14 WHO-track E1 stop rule; Explore-confirm deferred by operator override (no data access); operator TV backtest owed | lab/analysis/c1/msl_s4_mgc_2026-08/ | — |
+| orbmnq1_cushion_sizing_probe_2026-08-20 | c1 | ACTIVE | yes | Informal $0/K=0 probe (not pre-registered) — cushion-proportional sizing eliminates ORB-MNQ-1's bust intraday-honestly (mathematically real, regime-agnostic); a real 2021-09-28 pass-rate regime break survives a thirds split but its trailing-vol mechanism is REFUTED. Formalized as [`Q-ORBCUSH-1`](../../../docs/briefs/Q-ORBCUSH-1-regime-break-mechanism.md), which itself closed `FALSIFIED` 2026-08-20 (trailing mean-R also refuted — `ops/instruments/MNQ.md` N17). | lab/analysis/c1/orbmnq1_cushion_sizing_probe_2026-08-20/ | — |
+| orbmnq1_nsurv_magnitude_probe_2026-08-20 | c1 | ACTIVE | yes | N=50 magnitude-resampled skewed-gamma fit to ORB-MNQ-1's own P&L, testing whether cushion-sizing bust-elimination is robust or a lucky single-history draw. Bust axis: 50/50 robust. Pass axis: real ~50/50 proposition (sd 24pp). See [MNQ.md](../../../ops/instruments/MNQ.md) N18. | lab/analysis/c1/orbmnq1_nsurv_magnitude_probe_2026-08-20/ | — |
+| orbmnq1_skew_sizing_probe_2026-08-20 | c1 | ACTIVE | yes | Skew-derived `pol_cushion` sizing ceiling vs the borrowed 0.75 constant — informal $0/K=0 null, neither derived candidate beats the borrowed constant on pass rate. See [MNQ.md](../../../ops/instruments/MNQ.md) N18. | lab/analysis/c1/orbmnq1_skew_sizing_probe_2026-08-20/ | — |
+| parity_gen2_2026-08 | c1 | ACTIVE | yes | — | lab/analysis/c1/parity_gen2_2026-08/ | — |
+| q_polfront_1_2026-08 | c1 | ACTIVE | yes | — | lab/analysis/c1/q_polfront_1_2026-08/ | — |
+| q_rail_1_2026-07 | c1 | ACTIVE | yes | c1 rail Phases 0–4 CLOSED RESOLVED; ceiling $700 operator-signed | lab/analysis/c1/q_rail_1_2026-07/ | — |
+| research-analyst-mnq-atomic-facts-2026-08-19 | c1 | ACTIVE | yes | Research Analyst inaugural session — MNQ atomic-fact decomposition draft (cross-campaign synthesis, not a new backtest); routing corrected same-day 2026-08-19 (DROP D5 -- already killed twice, ledger-contradicted first GRADUATE call / HOLD temporal-selectivity / DROP weekly-bias) | lab/analysis/c1/research-analyst-mnq-atomic-facts-2026-08-19/ | — |
+| tradeify_book_composition_2026-07-23 | c1 | ACTIVE | yes | eval-lock fix + §2 book-composition re-derivation | lab/analysis/c1/tradeify_book_composition_2026-07-23/ | — |
+| tradeify_eval_lock_correction_2026-07-22 | c1 | ACTIVE | yes | Tradeify/MFFU eval drawdown-lock correction re-MC | lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/ | — |
+| tradeify_fade_stage0_2026-07-30 | c1 | ACTIVE | yes | Stage 0 instrumentation complete; Stage 1 region computed at 1x/2x/4x; no mechanism scored, K=0, $0 spend | lab/analysis/c1/tradeify_fade_stage0_2026-07-30/ | — |
+| tradeify_futures3_bustcut_2026-07-11 | c1 | ACTIVE | yes | Tradeify Select Flex 50K bust-cut Tests 1+2 | lab/analysis/c1/tradeify_futures3_bustcut_2026-07-11/ | — |
+| tradeify_futures3_remc_2026-07-11 | c1 | ACTIVE | yes | Tradeify Select Flex 3-leg futures remc panel | lab/analysis/c1/tradeify_futures3_remc_2026-07-11/ | — |
+| tradeify_seed_target_spec_2026-08-04 | c1 | ACTIVE | yes | at the ratified Part A gate the eval's binding constraint for a seed construct is the **weekly activity rule and noth... | lab/analysis/c1/tradeify_seed_target_spec_2026-08-04/ | — |
+| tvcov_2026-07 | c1 | ACTIVE | yes | TV intraday bar-coverage census (Q-TVCOV-1) | lab/analysis/c1/tvcov_2026-07/ | — |
+| venuegeo_dp3_bustceiling_2026-08-05 | c1 | ACTIVE | yes | bust-ceiling half of DP3 measured; EV/$ half (pass-EV per eval-dollar) NOT run — each firm's evaluation-purchase pric... | lab/analysis/c1/venuegeo_dp3_bustceiling_2026-08-05/ | — |
+| wstruct_cost_geometry_2026-07-28 | c1 | ACTIVE | yes | corrects WSTRUCT-M2K-1 §2.2 on cost; asymmetric-payoff frontier is OPEN but harvest returns 0 seeds (modality-barred) | lab/analysis/c1/wstruct_cost_geometry_2026-07-28/ | — |
 
 ### striker
 
-| slug | theme | status | one-liner | body | heavy |
-|---|---|---|---|---|---|
-| striker_mym_reconstruction_candidate1_2026-07 | striker | ACTIVE | S-MYM-ORC-02 development candidate (reconstruction TERMINAL lane) | lab/analysis/striker/striker_mym_reconstruction_candidate1_2026-07/ | — |
+| slug | theme | status | hot | one-liner | body | heavy |
+|---|---|---|---|---|---|---|
+| striker_mym_reconstruction_candidate1_2026-07 | striker | ACTIVE | yes | S-MYM-ORC-02 development candidate (reconstruction TERMINAL lane) | lab/analysis/striker/striker_mym_reconstruction_candidate1_2026-07/ | — |
 
 ### orb
 
-| slug | theme | status | one-liner | body | heavy |
-|---|---|---|---|---|---|
-| d5_nq_intraday_mom_2026-07 | orb | ACTIVE | Baltussen H1 on NQ IS — Stage-2/4 results | lab/analysis/orb/d5_nq_intraday_mom_2026-07/ | — |
-| eodadv_mnq_2026-08 | orb | ACTIVE | no pre-registered mechanism survives; 15:30 exit stays barred | lab/analysis/orb/eodadv_mnq_2026-08/ | — |
-| orb_mnq_2026-07 | orb | ACTIVE | NAS100-ORB-30 on native MNQ; Stage-2 cost-law PASS then T2 payability FIRED | lab/analysis/orb/orb_mnq_2026-07/ | inputs gitignored |
-| orb_universe_2026-06-22 | orb | ACTIVE | which FXIFY CFD best suits Opening Range Breakout | lab/analysis/orb/orb_universe_2026-06-22/ | pkl gitignored |
-| sessconf_mnq_2026-08 | orb | ACTIVE | faithful close_tod session-truncation sweep (MNQ, Tradeify) | lab/analysis/orb/sessconf_mnq_2026-08/ | — |
+| slug | theme | status | hot | one-liner | body | heavy |
+|---|---|---|---|---|---|---|
+| d5_nq_intraday_mom_2026-07 | orb | ACTIVE | yes | Baltussen H1 on NQ IS — Stage-2/4 results | lab/analysis/orb/d5_nq_intraday_mom_2026-07/ | — |
+| eodadv_mnq_2026-08 | orb | ACTIVE | yes | no pre-registered mechanism survives; 15:30 exit stays barred | lab/analysis/orb/eodadv_mnq_2026-08/ | — |
+| orb_mnq_2026-07 | orb | ACTIVE | yes | NAS100-ORB-30 on native MNQ; Stage-2 cost-law PASS then T2 payability FIRED | lab/analysis/orb/orb_mnq_2026-07/ | — |
+| orb_universe_2026-06-22 | orb | ACTIVE | yes | which FXIFY CFD best suits Opening Range Breakout | lab/analysis/orb/orb_universe_2026-06-22/ | — |
+| sessconf_mnq_2026-08 | orb | ACTIVE | yes | faithful close_tod session-truncation sweep (MNQ, Tradeify) | lab/analysis/orb/sessconf_mnq_2026-08/ | — |
 
 ### aegis
 
-| slug | theme | status | one-liner | body | heavy |
-|---|---|---|---|---|---|
-| aegis_6j_prop_reconstruction_2026-07 | aegis | ACTIVE | Stage-1 FALSIFIED (operator accepted); Wave-1 sweep artifacts retained hot | lab/analysis/aegis/aegis_6j_prop_reconstruction_2026-07/ | — |
-| aegis_6j_trail_tradeify_2026-07-29 | aegis | ACTIVE | J4 re-run at true Tradeify Select 100K geometry (Aegis→6J v0.3) | lab/analysis/aegis/aegis_6j_trail_tradeify_2026-07-29/ | — |
-| aegis_6j_transfer_2026-07-05 | aegis | ACTIVE | Bulenox Option-2 trail-survival MC sequence (Aegis→6J v0.3) | lab/analysis/aegis/aegis_6j_transfer_2026-07-05/ | inputs gitignored |
+| slug | theme | status | hot | one-liner | body | heavy |
+|---|---|---|---|---|---|---|
+| aegis_6j_prop_reconstruction_2026-07 | aegis | ACTIVE | yes | Stage-1 FALSIFIED (operator accepted); Wave-1 sweep artifacts retained hot | lab/analysis/aegis/aegis_6j_prop_reconstruction_2026-07/ | — |
+| aegis_6j_trail_tradeify_2026-07-29 | aegis | ACTIVE | yes | J4 re-run at true Tradeify Select 100K geometry (Aegis→6J v0.3) | lab/analysis/aegis/aegis_6j_trail_tradeify_2026-07-29/ | — |
+| aegis_6j_transfer_2026-07-05 | aegis | ACTIVE | yes | Bulenox Option-2 trail-survival MC sequence (Aegis→6J v0.3) | lab/analysis/aegis/aegis_6j_transfer_2026-07-05/ | — |
 
 ### regime
 
-| slug | theme | status | one-liner | body | heavy |
-|---|---|---|---|---|---|
-| decompound_remc_2026-06-07 | regime | ACTIVE | decompounded full-history MC breaches both lock gates | lab/analysis/regime/decompound_remc_2026-06-07/ | inputs gitignored |
-| q_ddtrig_1_2026-06-07 | regime | ACTIVE | dd_protection trigger re-MC on proposed de-risk bundle | lab/analysis/regime/q_ddtrig_1_2026-06-07/ | inputs gitignored |
-| regime_fit_2026-06-17 | regime | ACTIVE | Q-REGIME-FIT-1 closure findings | lab/analysis/regime/regime_fit_2026-06-17/ | — |
-| regime_oos_2026-06-21 | regime | ACTIVE | Phase-1 gold-gate face-validity (descriptive, unscored) | lab/analysis/regime/regime_oos_2026-06-21/ | — |
-| regime_postcovid_2026-06-22 | regime | ACTIVE | post-COVID held-out regime probe | lab/analysis/regime/regime_postcovid_2026-06-22/ | — |
-| regime_stress_2026-06-15 | regime | ACTIVE | regime-stress investigation chain | lab/analysis/regime/regime_stress_2026-06-15/ | — |
-| regime_time_cost_2026-06-09 | regime | ACTIVE | Q-REGIME-TIME-1 RESOLVED-LARGE, but stagnation's recoverable cost is tail-risk/survivability, NOT speed; both LARGE c... | lab/analysis/regime/regime_time_cost_2026-06-09/ | — |
+| slug | theme | status | hot | one-liner | body | heavy |
+|---|---|---|---|---|---|---|
+| decompound_remc_2026-06-07 | regime | ACTIVE | yes | decompounded full-history MC breaches both lock gates | lab/analysis/regime/decompound_remc_2026-06-07/ | inputs gitignored |
+| q_ddtrig_1_2026-06-07 | regime | ACTIVE | yes | dd_protection trigger re-MC on proposed de-risk bundle | lab/analysis/regime/q_ddtrig_1_2026-06-07/ | inputs gitignored |
+| regime_fit_2026-06-17 | regime | ACTIVE | yes | Q-REGIME-FIT-1 closure findings | lab/analysis/regime/regime_fit_2026-06-17/ | — |
+| regime_oos_2026-06-21 | regime | ACTIVE | yes | Phase-1 gold-gate face-validity (descriptive, unscored) | lab/analysis/regime/regime_oos_2026-06-21/ | — |
+| regime_postcovid_2026-06-22 | regime | ACTIVE | yes | post-COVID held-out regime probe | lab/analysis/regime/regime_postcovid_2026-06-22/ | — |
+| regime_stress_2026-06-15 | regime | ACTIVE | yes | regime-stress investigation chain | lab/analysis/regime/regime_stress_2026-06-15/ | — |
+| regime_time_cost_2026-06-09 | regime | ACTIVE | yes | Q-REGIME-TIME-1 RESOLVED-LARGE, but stagnation's recoverable cost is tail-risk/survivability, NOT speed; both LARGE c... | lab/analysis/regime/regime_time_cost_2026-06-09/ | — |
 
 ### harvest
 
-| slug | theme | status | one-liner | body | heavy |
-|---|---|---|---|---|---|
-| disccamp0_gc_2010_18 | harvest | ACTIVE | DISC-CAMP-0 binding artifacts (Stage 2/3/5 staging) | lab/analysis/harvest/disccamp0_gc_2010_18/ | — |
-| driftex_2026-08 | harvest | ACTIVE | drift exhaustion falsified; phenomenon is equity-index-specific | lab/analysis/harvest/driftex_2026-08/ | — |
-| fts5_delete_falsifier_2026-07-27 | harvest | ACTIVE | FTS5-as-Delete falsifier harness results | lab/analysis/harvest/fts5_delete_falsifier_2026-07-27/ | — |
-| h_od_1_es_overnight_drift_2026-07 | harvest | ACTIVE | SR917 overnight hour on ES IS — Stage-2/4 results | lab/analysis/harvest/h_od_1_es_overnight_drift_2026-07/ | — |
-| harv_a4_footprint_2026-07 | harvest | ACTIVE | A4 month-end footprint diagnostic (Cursor return) | lab/analysis/harvest/harv_a4_footprint_2026-07/ | — |
-| harvest_mechanism_deep_search_2026-07-23 | harvest | ACTIVE | harvest mechanism deep search fan-out (2026-07-23) | lab/analysis/harvest/harvest_mechanism_deep_search_2026-07-23/ | — |
-| koijen_axis2_openalex_2026-08-17 | harvest | ACTIVE | Koijen Carry axis-2 OpenAlex substitute traversal — 6 screen-level leads survived, none Req-1a admitted | lab/analysis/harvest/koijen_axis2_openalex_2026-08-17/ | — |
-| limb_b_remeasure_2026-08 | harvest | ACTIVE | FTS5-as-Delete falsifier v3 (Limb B re-measurement) results | lab/analysis/harvest/limb_b_remeasure_2026-08/ | — |
-| q_kbudget_harvest_1_2026-07 | harvest | ACTIVE | Phase-1 literature fan-out + Phase-2 K-budget ratification | lab/analysis/harvest/q_kbudget_harvest_1_2026-07/ | — |
-| radar_tier_a_burst_2026-07 | harvest | ACTIVE | first burst EXECUTED; proceed items 1–3 complete (`H-TSMOM-6J` Clause-N FAIL; carry Table-1 moments recovered / timin... | lab/analysis/harvest/radar_tier_a_burst_2026-07/ | — |
-| six_lead_cf_2026-08-17 | harvest | ACTIVE | P1/P2 CF FAIL all four legs; P3 dry-run $0 then CLOSED (calendar-spread SCREEN-FAIL); L3=L6 same-paper (6→5); P4 route memo → HOLD (data-sourcing question); P5 access probe → `UNSCREENABLE`, CLOSED | lab/analysis/harvest/six_lead_cf_2026-08-17/ | — |
-| st_eh_2026-07 | harvest | ACTIVE | ST-EH campaign engine + fidelity harness (harvest) | lab/analysis/harvest/st_eh_2026-07/ | — |
-| tnec_l2_sourcing_2026-08-10 | harvest | ACTIVE | TNEC L2 sourcing pass — R8 gold-fix δ-extracted SCREEN-FAIL (informed-flow + cost-law); C2/C3/C4 closed at 0 admissible | lab/analysis/harvest/tnec_l2_sourcing_2026-08-10/ | — |
+| slug | theme | status | hot | one-liner | body | heavy |
+|---|---|---|---|---|---|---|
+| disccamp0_gc_2010_18 | harvest | ACTIVE | yes | DISC-CAMP-0 binding artifacts (Stage 2/3/5 staging) | lab/analysis/harvest/disccamp0_gc_2010_18/ | — |
+| driftex_2026-08 | harvest | ACTIVE | yes | drift exhaustion falsified; phenomenon is equity-index-specific | lab/analysis/harvest/driftex_2026-08/ | — |
+| fts5_delete_falsifier_2026-07-27 | harvest | ACTIVE | yes | FTS5-as-Delete falsifier harness results | lab/analysis/harvest/fts5_delete_falsifier_2026-07-27/ | — |
+| h_od_1_es_overnight_drift_2026-07 | harvest | ACTIVE | yes | SR917 overnight hour on ES IS — Stage-2/4 results | lab/analysis/harvest/h_od_1_es_overnight_drift_2026-07/ | — |
+| harv_a4_footprint_2026-07 | harvest | ACTIVE | yes | A4 month-end footprint diagnostic (Cursor return) | lab/analysis/harvest/harv_a4_footprint_2026-07/ | — |
+| harvest_mechanism_deep_search_2026-07-23 | harvest | ACTIVE | yes | harvest mechanism deep search fan-out (2026-07-23) | lab/analysis/harvest/harvest_mechanism_deep_search_2026-07-23/ | — |
+| koijen_axis2_openalex_2026-08-17 | harvest | ACTIVE | yes | Koijen Carry axis-2 OpenAlex substitute traversal — 6 screen-level leads survived, none Req-1a admitted | lab/analysis/harvest/koijen_axis2_openalex_2026-08-17/ | — |
+| limb_b_remeasure_2026-08 | harvest | ACTIVE | yes | FTS5-as-Delete falsifier v3 (Limb B re-measurement) results | lab/analysis/harvest/limb_b_remeasure_2026-08/ | — |
+| q_kbudget_harvest_1_2026-07 | harvest | ACTIVE | yes | Phase-1 literature fan-out + Phase-2 K-budget ratification | lab/analysis/harvest/q_kbudget_harvest_1_2026-07/ | — |
+| radar_tier_a_burst_2026-07 | harvest | ACTIVE | yes | first burst EXECUTED; proceed items 1–3 complete (`H-TSMOM-6J` Clause-N FAIL; carry Table-1 moments recovered / timin... | lab/analysis/harvest/radar_tier_a_burst_2026-07/ | — |
+| six_lead_cf_2026-08-17 | harvest | ACTIVE | yes | P1/P2 CF FAIL all four legs; P3 dry-run $0 then CLOSED (calendar-spread SCREEN-FAIL); L3=L6 same-paper (6→5); P4 route memo → HOLD (data-sourcing question); P5 access probe → `UNSCREENABLE`, CLOSED | lab/analysis/harvest/six_lead_cf_2026-08-17/ | — |
+| st_eh_2026-07 | harvest | ACTIVE | yes | ST-EH campaign engine + fidelity harness (harvest) | lab/analysis/harvest/st_eh_2026-07/ | — |
+| tnec_l2_sourcing_2026-08-10 | harvest | ACTIVE | yes | TNEC L2 sourcing pass — R8 gold-fix δ-extracted SCREEN-FAIL (informed-flow + cost-law); C2/C3/C4 closed at 0 admissible | lab/analysis/harvest/tnec_l2_sourcing_2026-08-10/ | — |
 
 ### mc
 
-| slug | theme | status | one-liner | body | heavy |
-|---|---|---|---|---|---|
-| mc_mdd_closed_form_2026-08 | mc | ACTIVE | Magdon-Ismail (2004) closed-form G_D vs `simulate_path` absolute-$ trailing bust rates | lab/analysis/mc/mc_mdd_closed_form_2026-08/ | — |
+| slug | theme | status | hot | one-liner | body | heavy |
+|---|---|---|---|---|---|---|
+| mc_mdd_closed_form_2026-08 | mc | ACTIVE | yes | Magdon-Ismail (2004) closed-form G_D vs `simulate_path` absolute-$ trailing bust rates | lab/analysis/mc/mc_mdd_closed_form_2026-08/ | — |
 
 ### legacy
 
-| slug | theme | status | one-liner | body | heavy |
-|---|---|---|---|---|---|
-| eurusd_pattern_enum | legacy | ACTIVE | EURUSD pattern-enumeration harness | lab/analysis/legacy/eurusd_pattern_enum/ | — |
-| futures_conversion_2026-07-01 | legacy | ACTIVE | Phase A provisional MNQ/MYM granularity floors | lab/analysis/legacy/futures_conversion_2026-07-01/ | — |
-| guardian_filter_sweep_2026-06-20 | legacy | ACTIVE | Guardian XAUUSD filter-validity sweep harness | lab/analysis/legacy/guardian_filter_sweep_2026-06-20/ | — |
-| guardian_parity_2026-06-23 | legacy | ACTIVE | Guardian v5.5 parity port harness | lab/analysis/legacy/guardian_parity_2026-06-23/ | — |
-| silver_be_off_2026-06-11 | legacy | ACTIVE | Silver BE-off reconcile + remc gate harness | lab/analysis/legacy/silver_be_off_2026-06-11/ | — |
-| silver_counterbalance_2026-06-13 | legacy | ACTIVE | Silver counterbalance equity curve & required-hedge envelope | lab/analysis/legacy/silver_counterbalance_2026-06-13/ | — |
-| silver_regime_2026-06-10 | legacy | ACTIVE | Guardian Silver v1.0 allocation frontier + regime stress | lab/analysis/legacy/silver_regime_2026-06-10/ | — |
-| tom_spx | legacy | ACTIVE | SPX500 turn-of-month Layer-A inference harness | lab/analysis/legacy/tom_spx/ | — |
-| us500_discovery_2026-06-22 | legacy | ACTIVE | US500 widest-net edge discovery results | lab/analysis/legacy/us500_discovery_2026-06-22/ | — |
-| xauusd_cgb_2026-06-15 | legacy | HOLD | AMBIGUOUS (brief §6) / operational HOLD — build NOT triggered | lab/analysis/legacy/xauusd_cgb_2026-06-15/ | — |
+| slug | theme | status | hot | one-liner | body | heavy |
+|---|---|---|---|---|---|---|
+| eurusd_pattern_enum | legacy | ACTIVE | yes | EURUSD pattern-enumeration harness | lab/analysis/legacy/eurusd_pattern_enum/ | — |
+| futures_conversion_2026-07-01 | legacy | ACTIVE | yes | Phase A provisional MNQ/MYM granularity floors | lab/analysis/legacy/futures_conversion_2026-07-01/ | — |
+| guardian_filter_sweep_2026-06-20 | legacy | ACTIVE | yes | Guardian XAUUSD filter-validity sweep harness | lab/analysis/legacy/guardian_filter_sweep_2026-06-20/ | — |
+| guardian_parity_2026-06-23 | legacy | ACTIVE | yes | Guardian v5.5 parity port harness | lab/analysis/legacy/guardian_parity_2026-06-23/ | — |
+| silver_be_off_2026-06-11 | legacy | ACTIVE | yes | Silver BE-off reconcile + remc gate harness | lab/analysis/legacy/silver_be_off_2026-06-11/ | — |
+| silver_counterbalance_2026-06-13 | legacy | ACTIVE | yes | Silver counterbalance equity curve & required-hedge envelope | lab/analysis/legacy/silver_counterbalance_2026-06-13/ | — |
+| silver_regime_2026-06-10 | legacy | ACTIVE | yes | Guardian Silver v1.0 allocation frontier + regime stress | lab/analysis/legacy/silver_regime_2026-06-10/ | — |
+| tom_spx | legacy | ACTIVE | yes | SPX500 turn-of-month Layer-A inference harness | lab/analysis/legacy/tom_spx/ | — |
+| us500_discovery_2026-06-22 | legacy | ACTIVE | yes | US500 widest-net edge discovery results | lab/analysis/legacy/us500_discovery_2026-06-22/ | — |
+| xauusd_cgb_2026-06-15 | legacy | HOLD | yes | AMBIGUOUS (brief §6) / operational HOLD — build NOT triggered | lab/analysis/legacy/xauusd_cgb_2026-06-15/ | — |
 
 ### _inbox
 
-| slug | theme | status | one-liner | body | heavy |
-|---|---|---|---|---|---|
-| ict_mnq_2026-08 | _inbox | ACTIVE | ICT cascade re-run on NQ/MNQ at $0/K=0/Cap seat unspent: W and D confirm on independent instruments, pools falsified ... | lab/analysis/_inbox/ict_mnq_2026-08/ | — |
-| q_trainkill_1_2026-08 | _inbox | HOLD | BOUNDED extremes disagree; scored core MISCALIBRATED | lab/analysis/_inbox/q_trainkill_1_2026-08/ | — |
-| q_trainkill_2_2026-08 | _inbox | HOLD | both named alternates fit (NEG and DEP-ZERO) | lab/analysis/_inbox/q_trainkill_2_2026-08/ | — |
-| q_trainkill_3_2026-08 | _inbox | HOLD | Block F NEG and Block A DEP (split) | lab/analysis/_inbox/q_trainkill_3_2026-08/ | — |
-| rangestate_corrected_2026-08 | _inbox | ACTIVE | OFFICIAL corrected-null re-score complete: S1a (GC) NULL (driving L2,L4; obs at 8.4th pct of its own linear-ACF band ... | lab/analysis/_inbox/rangestate_corrected_2026-08/ | — |
-| rangestate_gc_2026-08 | _inbox | ACTIVE | NULL, now official under the corrected battery (driving L2+L4; obs at 8.4th pct of GC's own linear-ACF band — near-mi... | lab/analysis/_inbox/rangestate_gc_2026-08/ | — |
-| rangestate_mcl_2026-08 | _inbox | ACTIVE | SIGNAL-GENERIC under the corrected battery (official 2026-08-18): canon-attributed volatility clustering (69th pct of... | lab/analysis/_inbox/rangestate_mcl_2026-08/ | — |
+| slug | theme | status | hot | one-liner | body | heavy |
+|---|---|---|---|---|---|---|
+| ict_mnq_2026-08 | _inbox | ACTIVE | yes | ICT cascade re-run on NQ/MNQ at $0/K=0/Cap seat unspent: W and D confirm on independent instruments, pools falsified ... | lab/analysis/_inbox/ict_mnq_2026-08/ | — |
+| q_trainkill_1_2026-08 | _inbox | HOLD | yes | `AMBIGUOUS-HOLD`. BOUNDED extremes disagree (`MISCALIBRATED` at ε vs `KILLS-INFORMATIVE` at 1−ε). Scored-only core (n... | lab/analysis/_inbox/q_trainkill_1_2026-08/ | — |
+| q_trainkill_2_2026-08 | _inbox | HOLD | yes | `AMBIGUOUS-HOLD`. Limb 1 did not fire (1 promotion; extremes still disagree). Limb 2: both `NEG` and `DEP-ZERO` fit. | lab/analysis/_inbox/q_trainkill_2_2026-08/ | — |
+| q_trainkill_3_2026-08 | _inbox | HOLD | yes | `AMBIGUOUS-HOLD`. Block F winner `NEG` (ratio 9.83). Block A winner `DEP` (ratio 0.246 = DEP at 4.06:1). Split. | lab/analysis/_inbox/q_trainkill_3_2026-08/ | — |
+| rangestate_corrected_2026-08 | _inbox | ACTIVE | yes | OFFICIAL corrected-null re-score complete: S1a (GC) NULL (driving L2,L4; obs at 8.4th pct of its own linear-ACF band ... | lab/analysis/_inbox/rangestate_corrected_2026-08/ | — |
+| rangestate_gc_2026-08 | _inbox | NULL | yes | `NULL`** (per the frozen §3 gate — limb `ci_lb` failed; | lab/analysis/_inbox/rangestate_gc_2026-08/ | — |
+| rangestate_mcl_2026-08 | _inbox | ACTIVE | yes | SIGNAL-GENERIC under the corrected battery (official 2026-08-18): canon-attributed volatility clustering (69th pct of... | lab/analysis/_inbox/rangestate_mcl_2026-08/ | — |
 
 ## Archived
 

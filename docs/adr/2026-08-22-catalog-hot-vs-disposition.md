@@ -2,7 +2,7 @@
 
 Filename: `docs/adr/2026-08-22-catalog-hot-vs-disposition.md`
 
-**Status:** `Proposed`
+**Status:** `Accepted` — ratified by operator (Joshua) 2026-08-22, in-session ("accepted. GO"); Phase 1 (parser + C2 + `hot` column) lands in the same GO.
 **Decision date:** 2026-08-22
 **Supersedes:** none
 **Superseded-by:** none
@@ -68,7 +68,7 @@ The mechanism is `parse_disposition` returning on the **first** field line in a 
 
 6. **Regenerator stays the sole CATALOG writer.** `archive_lab_analysis.py --regenerate-catalog` remains the only path that touches `lab/CATALOG.md`'s table rows (C-P1-10). This ADR does not authorize hand-editing a `status` or `hot` cell.
 
-**Effective:** upon `Accepted` — this `Proposed` draft freezes the model and the column-naming call for operator ratification. **No mechanical edit lands with this commission**; the parser rewrite (item 3), the C2 retarget (item 4), and the `lab/CATALOG.md` regeneration to add the `hot` column are §7 Phase 1, gated on a separate operator GO after `Accepted` (per the commissioning handoff's forbidden-moves list).
+**Effective:** upon `Accepted` (operator 2026-08-22). Phase 1 mechanical edits (parser, C2, `hot` column) land in the same GO; they do not wait on a later Status flip.
 **Scope:** `lab/CATALOG.md` Active/Archived tables, `scripts/archive_lab_analysis.py` (`parse_disposition`, `--slug` gating unchanged), `scripts/check_status_consistency.py` (C2 only — the tier limb is untouched), and `lab/analysis/README.md`'s Phase 2 leftovers table (which becomes partially obsolete once implementation lands, since several of its held-back rows will list honestly).
 
 ---
@@ -132,19 +132,15 @@ The mechanism is `parse_disposition` returning on the **first** field line in a 
 
 ## §7 — Implementation plan
 
-**Phase 0 (this commission, done):** §0 reads above; this ADR lands `Proposed`.
+**Phase 0 (done):** §0 reads above; ADR authored `Proposed`.
 
-**Phase 1 (NOT authorized by this ADR — separate operator GO after `Accepted`):**
-- Rewrite `parse_disposition` for Verdict-wins field precedence.
-- Retarget C2's join key in `check_status_consistency.py`.
-- Regenerate `lab/CATALOG.md` (`archive_lab_analysis.py --regenerate-catalog`) to add the `hot` column.
-- A companion CC handoff will be authored at that time, referencing this ADR by filename.
+**Phase 1 (this GO, 2026-08-22):** Verdict-wins `parse_disposition`; C2 join retargeted to `hot`; `lab/CATALOG.md` regenerated with a `hot` column. `--slug` gating unread-as-rewritten.
 
-**Phase 2 (with Phase 1, when it lands):** grep-sweep in two limbs — (i) stale references to the pre-decision C2 behavior description (this ADR's own §1 wording, any docstring in `check_status_consistency.py` describing the old join) and (ii) consumers of the CATALOG `status`/table-membership invariant beyond the two scripts named in §0 — `sync_liveness_indexes.py`'s 11 `status` references are the first place to check, since Phase 0 already flagged it as a `status`-column consumer.
+**Phase 2 (with Phase 1):** grep-sweep — (i) `check_status_consistency.py` C2 docstring retargeted; (ii) `sync_liveness_indexes.py` `archive_owed_active` is header-name-keyed so the new `hot` column does not steal the one-liner index. §1 above is the pre-implementation defect record.
 
-**Phase 3 (with Phase 1, when it lands):** verification block re-run; `check_status_consistency.py` full-corpus pass confirms §4's falsifier clause (a) and (b) both hold; ADR status flips to `Accepted` only once §6's downstream list is the union of the enumeration above and the Phase-2 sweep output, with every hit dispositioned.
+**Phase 3 (with Phase 1):** `check_status_consistency.py` full-corpus pass is the §4 falsifier check. Status is already `Accepted` by operator ratification; this phase does not flip it.
 
-This commission's own deliverable is policy only for Phase 1 onward — no mechanical edit to `scripts/` or `lab/CATALOG.md` lands with this ADR.
+Phase 1 is authorized by the 2026-08-22 operator GO, not by this file's original "ADR only" commission.
 
 ---
 
@@ -201,3 +197,4 @@ git diff origin/main --name-only -- scripts/ lab/CATALOG.md
 | Date | Change | By |
 |---|---|---|
 | 2026-08-22 | Initial authoring (`Proposed`) | Cursor Cloud Agent (commission) + Claude Code (draft) |
+| 2026-08-22 | Operator `Accepted` + Phase 1 GO (parser / C2 / `hot` column) | Joshua (in-session) + Cursor Cloud Agent |

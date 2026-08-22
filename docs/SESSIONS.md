@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-22h — Accept catalog hot-vs-disposition ADR; Phase 1 GO
+
+**Focus:** Operator `Accepted` + GO. Verdict-wins parser, C2 joins to `hot`, regenerate CATALOG. No mass `--slug`. No sixth root doc.
+
+**Shipped:** [`ADR`](adr/2026-08-22-catalog-hot-vs-disposition.md) `Accepted`. Parser + C2 + `hot` column on [`lab/CATALOG.md`](../lab/CATALOG.md). `--slug` still two-part.
+
+**Decisions/defects:** none new. Leftover pins stay on [`lab/analysis/README.md`](../lab/analysis/README.md).
+
+**Open / next:** carry `2026-08-21n` — MSL-S4 card closed for build-out (`PARKED`). **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. Named leftovers on [`docs/governance/INDEX.md`](governance/INDEX.md): P5b / P7 / P8 / P2b. STATE rolloff / find-owner remain named-not-filed.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-22g — Draft catalog hot-vs-disposition ADR (CC)
 
 **Focus:** Draft the commissioned ADR (PR #98). ADR only — no parser/C2, no `--slug`, no CATALOG hand-edit.

@@ -153,14 +153,25 @@ def open_with_hot_closure(
 
 def archive_owed_active(text: str) -> list[str]:
     hits: list[str] = []
+    status_i: int | None = None
+    one_i: int | None = None
     for raw in text.splitlines():
         if not raw.startswith("|"):
             continue
         cells = [c.strip() for c in raw.strip("|").split("|")]
-        if len(cells) < 4:
+        if not cells:
             continue
-        slug, status, one = cells[0], cells[2] if len(cells) > 2 else "", cells[3] if len(cells) > 3 else ""
-        if slug in {"slug", "---"}:
+        lower = [c.lower() for c in cells]
+        if "slug" in lower and "status" in lower:
+            status_i = lower.index("status")
+            one_i = lower.index("one-liner") if "one-liner" in lower else None
+            continue
+        if status_i is None or one_i is None:
+            continue
+        if len(cells) <= max(status_i, one_i):
+            continue
+        slug, status, one = cells[0], cells[status_i], cells[one_i]
+        if slug in {"slug", "---"} or set(slug) <= set("-: "):
             continue
         if status == "ACTIVE" and re.search(r"(?i)archive\s+owed", one):
             hits.append(f"{slug}: CATALOG ACTIVE but one-liner says archive owed")

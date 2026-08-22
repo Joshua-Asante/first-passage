@@ -112,12 +112,54 @@ def test_c2_active_row_with_archive_body_is_flagged():
     assert any(f.code == "C2" and "orb_universe_2026-06-22" in f.message for f in findings)
 
 
-def test_c2_terminal_status_in_active_table_is_flagged():
+def test_c2_terminal_disposition_in_active_without_hot_is_not_flagged():
+    """Legacy rows omit `hot`; disposition class is no longer a C2 join key."""
     bad = CATALOG_MINI.replace(
         "| q_kbudget_1_2026-07 | HOLD |", "| q_kbudget_1_2026-07 | FALSIFIED |",
     )
     findings = csc.check_catalog_internal(csc.parse_catalog(bad))
-    assert any(f.code == "C2" and "q_kbudget_1_2026-07" in f.message for f in findings)
+    assert not any(f.code == "C2" and "q_kbudget_1_2026-07" in f.message for f in findings)
+
+
+CATALOG_THEMED_HOT = """# Lab analysis catalog
+
+## Active
+
+### c1
+
+| slug | theme | status | hot | one-liner | body | heavy |
+|---|---|---|---|---|---|---|
+| stay_hot | c1 | FALSIFIED | yes | leftover | lab/analysis/c1/stay_hot/ | — |
+
+## Archived
+
+| slug | status | one-liner | card | body | heavy | closed |
+|---|---|---|---|---|---|---|
+| old | CLOSED | done | lab/analysis/old/CARD.md | lab/archive/old/ | — | 2026-08-01 |
+"""
+
+
+def test_c2_terminal_disposition_in_active_with_hot_yes_is_clean():
+    assert csc.check_catalog_internal(csc.parse_catalog(CATALOG_THEMED_HOT)) == []
+
+
+def test_c2_hot_no_in_active_table_is_flagged():
+    bad = CATALOG_THEMED_HOT.replace("| stay_hot | c1 | FALSIFIED | yes |", "| stay_hot | c1 | FALSIFIED | no |")
+    findings = csc.check_catalog_internal(csc.parse_catalog(bad))
+    assert any(f.code == "C2" and "stay_hot" in f.message and "hot=" in f.message for f in findings)
+
+
+def test_c2_hot_yes_in_archived_table_is_flagged():
+    archived_hot = """# Lab analysis catalog
+
+## Archived
+
+| slug | theme | status | hot | one-liner | body | heavy |
+|---|---|---|---|---|---|---|
+| old | — | CLOSED | yes | done | lab/archive/old/ | — |
+"""
+    findings = csc.check_catalog_internal(csc.parse_catalog(archived_hot))
+    assert any(f.code == "C2" and "old" in f.message for f in findings)
 
 
 def test_c2_clean_catalog_has_no_findings():
@@ -125,8 +167,8 @@ def test_c2_clean_catalog_has_no_findings():
 
 
 def test_c2_unknown_status_word_not_flagged():
-    # A status word outside LIVE/TERMINAL (e.g. WATCH) must not trigger a status-class
-    # C2; with a live-tier body in the Active table there is no tier mismatch either.
+    # A status word outside LIVE/TERMINAL (e.g. WATCH) is not a C2 join key;
+    # with a live-tier body in the Active table there is no tier/`hot` mismatch either.
     cat = CATALOG_MINI.replace("| q_kbudget_1_2026-07 | HOLD |", "| q_kbudget_1_2026-07 | WATCH |")
     findings = csc.check_catalog_internal(csc.parse_catalog(cat))
     assert not any(f.code == "C2" and "q_kbudget_1_2026-07" in f.message for f in findings)
