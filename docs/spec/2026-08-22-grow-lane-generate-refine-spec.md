@@ -1,8 +1,9 @@
 # SPEC: GROW — deep-iteration lane extension: automated grammar engine + synthetic calibration harness
 
-Status: PROPOSED · 2026-08-22 **v2** (same-day recast — see Review block) · authorizes nothing
-($0 · K=0; Part A rides the charter's already-licensed §7 steps 2–4, campaign-gated as the
-charter requires; Part B proposes nothing yet) · depends:
+Status: Part A `Accepted` — [build-authorization ADR](../adr/2026-08-22-grow-lane-build-authorization.md),
+operator GO 2026-08-22 ("ratify, accept, and begin the build"); Part B still `PROPOSED — named,
+not filed` · $0 · K=0; Part A rides the charter's already-licensed §7 steps 2–4, campaign-gated
+as the charter requires · depends:
 [deep-iteration lane charter](../adr/2026-08-16-deep-iteration-lane-charter.md) `Accepted`
 (**owner**) · [F3 attestation-library spec](2026-08-22-eval-lock-geometry-attestation-library-spec.md)
 `PROPOSED` (pooled-scoring dependency)
@@ -207,3 +208,4 @@ above.
 | 2026-08-22 | v1 authored as a sibling "GROW lane" (D1–D3); merged via PR #96 pre-review |
 | 2026-08-22 | Dual adversarial review: gate audit BLOCKED-AT-FREEZE · panel BLOCKED (B1–B5) — [audit note](../notes/audits/2026-08-22-grow-lane-dual-panel-review.md) |
 | 2026-08-22 | v2: D1–D3 withdrawn; recast as deep-iteration-lane extension packet (Part A tooling + Part B named question); all confirmed findings folded in |
+| 2026-08-22 | Part A `Accepted` ([build-authorization ADR](../adr/2026-08-22-grow-lane-build-authorization.md)); slice 1 landed same day: `deep_lane_admission.py`, `grammar.py`, `--lane deep`, `burned_segments.py`/seed — 39 tests green |

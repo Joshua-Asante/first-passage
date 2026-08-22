@@ -1,0 +1,10 @@
+[
+  {
+    "instrument": "MNQ",
+    "window_start": "2025-09-01",
+    "window_end": "2026-08-05",
+    "read_date": "2026-08-20",
+    "reason": "Shared CON-2/3/4/5 reserved CONFIRM window; CON-4's read spent it under the U1 override (Q-TNEC-CON-4 closure change history line 127; RESULTS_CONFIRM.md on disk). A second consultation is forbidden regardless of which CON-class campaign proposes it.",
+    "source": "docs/notes/audits/2026-08-22-grow-lane-dual-panel-review.md B1"
+  }
+]

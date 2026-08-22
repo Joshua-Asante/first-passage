@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-22j — GROW-lane build authorization; deep-lane tooling slice 1
+
+**Focus:** Build. Operator GO ("ratify, accept, and begin the build") on GROW spec v2 Part A.
+
+**Shipped:** [`ADR`](adr/2026-08-22-grow-lane-build-authorization.md) `Accepted` — GROW-0 exempted from charter §4 counters; Part A tooling commissioned. Slice 1 landed: `lab/discovery/deep_lane_admission.py` (charter §2.2 three-conjunct predicate, reproduces the charter's own worked examples: floor(33,6.5y)=1.475, power≈0.82 at target 1.83, boundary power=0.50 at target=floor) · `lab/discovery/grammar.py` (grammar schema + SHA256 freeze/drift check) · `--lane deep` on `register_search.py` (separate from S6/TNEC-1's mechanism-first corridor — different threshold, no shared code, per the dual-panel review's B3 finding) · `discovery_manifests/burned_segments.json` + `lab/discovery/burned_segments.py` (seeds the shared CON-2/3/4/5 MNQ window, read 2026-08-20, as burned). 39 new tests, all green; `check_boundaries` + pre-commit gate tier green.
+
+**Decisions/defects:** none new.
+
+**Open / next:** named forward work (ADR §2.2 last bullet, not yet built): GROW-0 harness (Limb A/B/RED), charter §4 streak checker, `gates.yml` door-check limb, LOCKED-leg denylist, Rule-0 anchor checker, `universe_gate` exit-code propagation. First real deep-lane campaign after GROW-0 resolves.
+
+**Live-ops state:** unchanged — rail disarmed; no book. No Databento spend.
+
+---
 ## 2026-08-22i — Blast-radius pointer repair after catalog ADR Phase 1
 
 **Focus:** Rule 7 sweep after Phase 1. Report-first; parentheticals only. No mass `--slug`. No sixth root doc.

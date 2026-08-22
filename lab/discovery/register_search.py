@@ -53,6 +53,8 @@ from pathlib import Path
 
 from discovery.admission_schema import evaluate_admission, load_admission
 from discovery.cost_model import bp_hurdle
+from discovery.deep_lane_admission import DeepLaneAdmission, evaluate_deep_admission
+from discovery.grammar import GrammarDriftError, GrammarValidationError, load_grammar_with_hash_check
 from research_utils.repo_root import repo_root
 
 # Committed home for manifests: <repo-root>/discovery_manifests, cwd-independent.
@@ -355,14 +357,15 @@ def _require_prereg(prereg_path, lane):
     manifest stays portable and greppable across clones.
 
     Lane asymmetry mirrors ``_require_admission``: required on mechanism-first (the
-    default and live lane), omittable on blind so the frozen legacy 11-key schema
-    stays byte-identical. Blind opens therefore remain unbound -- a known residual,
+    default and live lane) and deep (charter §2.1 names a frozen prereg as the
+    binding object), omittable on blind so the frozen legacy 11-key schema stays
+    byte-identical. Blind opens therefore remain unbound -- a known residual,
     not an oversight.
     """
     if prereg_path is None:
-        if lane == "mechanism-first":
+        if lane in ("mechanism-first", "deep"):
             sys.exit(
-                "ABORT: mechanism-first campaign requires --prereg <path-to-frozen "
+                f"ABORT: {lane} campaign requires --prereg <path-to-frozen "
                 "pre-registration .md>. W4's live gate set is a function of the "
                 "campaign's own frozen body; an unnamed body makes that clause "
                 "unevaluable. Pass the path you froze."
@@ -429,6 +432,83 @@ def _require_admission(args, lane):
         f"power={result.summary.get('power')}"
     )
     return result.summary
+
+
+def _require_deep_admission(args):
+    """Deep-iteration-lane charter §2.2 predicate (docs/adr/2026-08-16-deep-
+    iteration-lane-charter.md; build authorization docs/adr/2026-08-22-grow-
+    lane-build-authorization.md). Distinct from ``_require_admission`` --
+    that one scores S6/TNEC-1's mechanism-first corridor at CAP=1.0; this one
+    scores the charter's own three conjuncts (K<=33, floor<=2.0, power>=0.50)
+    at whatever confirm-years the campaign declares. The two must never share
+    a threshold (2026-08-22 dual-panel review, finding B3).
+
+    All four flags are required together on --lane deep: --grammar-file,
+    --grammar-sha256 (drift-checked against the PREREG-pinned hash),
+    --confirm-years, --target-sr. --search-space-size (K) must equal the
+    grammar's own generation_budget ("K = G, fully counted" -- GROW spec v2
+    Part A step 2); a mismatch is refused before any manifest write, the same
+    way EM0's K_mismatch works for mechanism-first.
+
+    Returns (admission_summary, grammar) on ADMIT.
+    """
+    grammar_file = getattr(args, "grammar_file", None)
+    grammar_sha256 = getattr(args, "grammar_sha256", None)
+    confirm_years = getattr(args, "confirm_years", None)
+    target_sr = getattr(args, "target_sr", None)
+    if grammar_file is None or grammar_sha256 is None:
+        sys.exit(
+            "ABORT: deep-lane campaign requires --grammar-file <path> and "
+            "--grammar-sha256 <expected-hash> (charter §7 step 2 / GROW spec "
+            "v2 Part A step 2 -- the grammar is frozen at G0 and hash-pinned)."
+        )
+    if confirm_years is None or target_sr is None:
+        sys.exit(
+            "ABORT: deep-lane campaign requires --confirm-years and "
+            "--target-sr (charter §2.2 -- both named a priori in the prereg, "
+            "never fit to data)."
+        )
+    try:
+        grammar = load_grammar_with_hash_check(
+            grammar_file, expected_sha256=grammar_sha256
+        )
+    except GrammarDriftError as exc:
+        sys.exit(f"ABORT: {exc}")
+    except (GrammarValidationError, FileNotFoundError, ValueError) as exc:
+        sys.exit(f"ABORT: --grammar-file {grammar_file} invalid: {exc}")
+    if args.search_space_size != grammar.generation_budget:
+        sys.exit(
+            f"ABORT: --search-space-size {args.search_space_size} does not "
+            f"match the grammar's generation_budget {grammar.generation_budget} "
+            "-- K = G, fully counted (GROW spec v2 Part A step 2); the "
+            "declared K and the grammar's own budget must be the same number."
+        )
+    result = evaluate_deep_admission(
+        DeepLaneAdmission(
+            declared_k=args.search_space_size,
+            confirm_years=float(confirm_years),
+            target_sr=float(target_sr),
+        )
+    )
+    if not result.admitted:
+        reason = ",".join(result.reasons)
+        print(
+            f"[refuse] deep-lane admission REFUSE reasons={reason} "
+            f"K={args.search_space_size} floor={result.summary.get('floor_at_k')} "
+            f"power={result.summary.get('power')}",
+            file=sys.stderr,
+        )
+        sys.exit(
+            f"ABORT: deep-lane admission refused ({reason}). Charter §2.2 "
+            "conjunct failed at declared K/confirm-years/target-sr -- no "
+            "manifest written."
+        )
+    print(
+        f"[admit]  deep-lane admission ADMIT K={args.search_space_size} "
+        f"floor={result.summary.get('floor_at_k')} "
+        f"power={result.summary.get('power')}"
+    )
+    return result.summary, grammar
 
 
 def _require_cost_law(args):
@@ -525,6 +605,12 @@ def open_run(args):
         _require_profile_consult(profile_consult, profile_cell)
     # SPEC S6: after mechanism-first attestation gates, before any manifest write.
     admission_summary = _require_admission(args, lane)
+    deep_admission_summary = None
+    deep_grammar = None
+    if lane == "deep":
+        # Charter §2.2's own predicate -- separate from S6/TNEC-1's corridor
+        # above (which is a no-op for this lane; see _require_admission).
+        deep_admission_summary, deep_grammar = _require_deep_admission(args)
     prereg_rel = _require_prereg(getattr(args, "prereg", None), lane)
     # Optional Requirement-5/§2.2 mechanical pre-flight (ADR 2026-07-16 §4/§6);
     # opt-in on either lane, before any manifest write.
@@ -554,6 +640,15 @@ def open_run(args):
         manifest["profile_consult"] = profile_consult
         if reachability_clauses is not None:
             manifest["reachability_clauses"] = reachability_clauses
+    if lane == "deep":
+        manifest["lane"] = lane
+        manifest["grammar_path"] = getattr(args, "grammar_file", None)
+        manifest["grammar_sha256"] = getattr(args, "grammar_sha256", None)
+        manifest["confirm_years"] = float(getattr(args, "confirm_years"))
+        manifest["target_sr"] = float(getattr(args, "target_sr"))
+        manifest["deep_admission"] = deep_admission_summary
+        manifest["grammar_generation_budget"] = deep_grammar.generation_budget
+        manifest["grammar_families"] = deep_grammar.families
     if admission_summary is not None:
         manifest["admission"] = admission_summary
     if prereg_rel is not None:
@@ -745,14 +840,31 @@ def build_parser():
                    help="Path to a JSON file with the search config -- reads the file "
                         "directly, bypassing shell-quoting entirely (mutually exclusive "
                         "with --params; validated as JSON before the manifest is written).")
-    o.add_argument("--lane", choices=["blind", "mechanism-first"],
+    o.add_argument("--lane", choices=["blind", "mechanism-first", "deep"],
                    default="mechanism-first",
                    help="Discovery lane. Default mechanism-first (SPEC S6 + TNEC-1). "
                         "mechanism-first requires --reachability-attestation "
                         "(HARV ADR 2026-07-13 §2 HARD gate), profile consult "
                         "(ADR 2026-07-25), and --admission-file (SPEC S6 + TNEC-1 "
                         "N-EDGE; EM1/D1/D2 disclosure-only). "
+                        "deep (charter 2026-08-16-deep-iteration-lane-charter.md) "
+                        "requires --prereg, --grammar-file/--grammar-sha256, "
+                        "--confirm-years, --target-sr -- its own §2.2 predicate, "
+                        "separate from mechanism-first's S6/TNEC-1 corridor. "
                         "Pass --lane blind for the legacy 11-key schema.")
+    o.add_argument("--grammar-file", default=None,
+                   help="Path to the frozen grammar.json (deep lane only; "
+                        "K = generation_budget, fully counted).")
+    o.add_argument("--grammar-sha256", default=None,
+                   help="Expected SHA256 of --grammar-file, pinned at PREREG "
+                        "freeze (deep lane only; drift hard-fails the open).")
+    o.add_argument("--confirm-years", type=float, default=None,
+                   help="Frozen confirm-partition length in years (deep lane "
+                        "only; charter §2.2's floor_at_k(K, confirm_years)).")
+    o.add_argument("--target-sr", type=float, default=None,
+                   help="Campaign's own design-target annualized Sharpe, "
+                        "named a priori (deep lane only; charter §2.2(iii) "
+                        "confirm-power).")
     o.add_argument("--reachability-attestation", default=None,
                    help="Path to a non-empty reachability-attestation file. "
                         "Required when --lane mechanism-first; ignored on blind.")
