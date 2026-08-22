@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-22n — Ox Alpha (OpenRouter stealth model) evaluated and scoped for Tradeify-sprint use
+
+**Focus:** Decision. Evaluate OpenRouter's free stealth model (`stealth/ox-alpha`) as a resource for the Tradeify bottleneck sprint; scope and ratify its actual role.
+
+**Shipped:** [`ADR`](adr/2026-08-22-ox-alpha-adversarial-lens-scope.md) `Accepted` — sanctions it only as a stateless, zero-authority, sanitized-only adversarial second-opinion lens run ahead of `fable-judge`/the human pre-ratification panel; declines a public-mechanism-harvest lane and a walled-off engineering-assist lane (research workflow found the harvest channel already exhausted and the real engine blocker sits in excluded `core/portfolio_mc.py`-adjacent territory). Validation addendum: 2 of the real SLR-MYM-1 brief's 14-agent-caught BLOCKERs (the pure logic/arithmetic ones, needing no repo context) were genericized and sent blind — both independently caught with correct supporting arithmetic (16x double-multiplier derivation; N-basis gate mismatch, 120/0.64≈188).
+
+**Decisions/defects:** EULA finding logged in the ADR's §0 — the model's own listing page claims prompts aren't used for training, but the incorporated Stealth Program EULA grants an irrevocable/perpetual/royalty-free training license; the two contradict.
+
+**Open / next:** First named uses per the ADR: the F1 fork ruling (how the four-firms ADR §4 reads a Tradeify-resting discharge) and the GROW-lane pre-registration/streak-checker artifacts. Revert trigger: one fingerprinting incident, or 3 consecutive uses catching nothing a human pass wouldn't have.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-22m — GROW-0 harness: real full-scale run, `RESOLVED`
 
 **Focus:** Measurement. Ran the frozen N=5,500/c=7 GROW-0 harness for real (Task 13 Step 7 of
