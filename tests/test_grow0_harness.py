@@ -82,11 +82,13 @@ def test_run_limb_b_small_n_returns_consistent_shape():
 
 
 def test_run_red_leak_fails_as_expected_at_frozen_scale():
-    """RED-LEAK's own expected clear rate (~0.63%, ~9.97x baseline per prereg §6.3)
-    means even a small-N test should reliably see it exceed a LOW c -- use a small
-    N/c pair scaled proportionally so the expected-clears arithmetic still holds
-    (500 panels x 0.0059 ~= 3 expected clears; c=1 makes this deterministic-in-practice)."""
+    """RED-LEAK's own expected clear rate (~0.59%, per RED-BLIND's empirical measurement)
+    is low enough that even c=1 requires a large N to be deterministic-in-practice.
+    n=500 had P(zero clears) ≈ 0.0521 (~5.2%), causing ~5.2% spurious failures.
+    n=2000 gives P(zero clears) ≈ 0.0000066 (~0.00066%), rendering the test
+    deterministic for all practical purposes (standard used elsewhere for SR=4.0 edges).
+    2000 panels x ~0.0059 ≈ 12 expected clears; c=1 makes FAIL verdict reliable."""
     from discovery.grow0_harness import run_red_leak
 
-    verdict = run_red_leak(n=500, c=1)
+    verdict = run_red_leak(n=2000, c=1)
     assert verdict == "FAILED_AS_EXPECTED"
