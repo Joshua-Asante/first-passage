@@ -5,7 +5,11 @@ series, identical formula on TRAIN and CONFIRM. Nomination gates per prereg §6.
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import numpy as np
+
+from discovery.grow0_dgp import draw_daily_pnl
 
 _TRADING_DAYS_PER_YEAR = 252
 _TRADING_DAYS_PER_WEEK = 5.0
@@ -32,11 +36,6 @@ def gate_b_passes(train_pnl: np.ndarray) -> bool:
     n_weeks = n_days / _TRADING_DAYS_PER_WEEK
     active_days = int(np.count_nonzero(train_pnl))
     return (active_days / n_weeks) >= 1.0
-
-
-from dataclasses import dataclass
-
-from discovery.grow0_dgp import draw_daily_pnl
 
 
 @dataclass(frozen=True)
@@ -109,7 +108,7 @@ def run_panel(
     only, and -- if both gates pass -- draw an INDEPENDENT CONFIRM for the
     nominee and compare to ``floor``.
     """
-    abandoned_result, nominee, pnls, stats, ga, gb = _nominate_and_gate(
+    abandoned_result, nominee, _, stats, ga, gb = _nominate_and_gate(
         train_children, edge_variant_index
     )
     if abandoned_result is not None:
@@ -140,7 +139,7 @@ def run_panel_leaked(
     nominee's own winning TRAIN value replayed -- no independent draw at all.
     Deliberately violates the TRAIN/CONFIRM independence run_panel relies on.
     """
-    abandoned_result, nominee, pnls, stats, ga, gb = _nominate_and_gate(
+    abandoned_result, nominee, _, stats, ga, gb = _nominate_and_gate(
         train_children, edge_variant_index
     )
     if abandoned_result is not None:
