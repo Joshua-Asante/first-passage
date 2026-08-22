@@ -61,5 +61,5 @@ Not a sixth root doc. Pointers only.
 | Phase 5b — wire `sync_liveness` into `gates.yml` | Named. GO only if this census stays CLEAN. Candidate: `path-conditional` on `docs/briefs/INDEX.md` + `lab/CATALOG.md`. Not W5 leftover C-P5-04 / H6 (CI composition). |
 | Phase 7 — ADR topic view | Named. Needs a new `AdrHeader` field + `check_adr_graph.py --regenerate-index`. No miss evidence from P0–P4. |
 | Phase 8 — unify `ops/` imports | Named. Dual layout is intentional ([`REPO_MAP.md`](../../REPO_MAP.md) §2.2). Architecture ADR + Fly/deploy blast; out of nav scope. |
-| Phase 2b — further CATALOG stamps | Named. Leftovers on [`lab/analysis/README.md`](../../lab/analysis/README.md). Do not mass-stamp `Verdict:`. `time_to_pass.py` stays C-P2-05. |
+| Phase 2b — further CATALOG stamps | Named. Leftovers on [`lab/analysis/README.md`](../../lab/analysis/README.md). Axis split [`ADR`](../adr/2026-08-22-catalog-hot-vs-disposition.md) `Accepted`; Phase 1 landed. Do not mass-stamp `Verdict:`. `time_to_pass.py` stays C-P2-05. |
 | Non-nav leftovers | C-P1-06 DISC-CAMP-0 prereg body · W5 CI-from-`gates.yml` (H6 HOLD) · Q-PUBTRANS-1 still `Proposed` · W6 lockfile discharged (PR #92). |

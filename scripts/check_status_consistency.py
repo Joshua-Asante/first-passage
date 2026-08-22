@@ -10,7 +10,7 @@ This gate treats CATALOG as the machine-readable status authority and flags a
 SHARED slug (joined via the lab/(analysis|archive)/<slug>/ path that all three
 surfaces carry) whose status drifts:
 
-  C2 (HARD) — a CATALOG row self-inconsistent: table vs status word vs body-tier.
+  C2 (HARD) — a CATALOG row self-inconsistent: table vs `hot` vs body-tier.
   C3 (HARD) — a lab/analysis/<slug>/<file> link that no longer resolves but is
               present under lab/archive/<slug>/ (stale tier link; suggest
               repoint) OR under lab/analysis/<theme>/<slug>/ (flat-to-theme-nest

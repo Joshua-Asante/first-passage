@@ -88,17 +88,17 @@ The mechanism is `parse_disposition` returning on the **first** field line in a 
 
 **H:** Retargeting C2's join key from disposition-status-class to `hot`, and making the parser resolve `disposition` by field type (Verdict wins) rather than by line order, will let the Active table list stay-hot terminal bodies truthfully without losing C2's ability to catch genuine table/body mismatches, and without producing new false positives against the stay-hot pins `lab/analysis/README.md` already names.
 
-**Revert trigger:** After the separate-GO parser/C2 implementation lands and `python scripts/check_status_consistency.py` is re-run against the full corpus, **either** (a) C2 raises a HARD finding on any row whose `hot=yes` matches a pin already named in `lab/analysis/README.md`'s Phase 2 leftovers "Hold / leave" table (a false positive this ADR's join was supposed to clear), **or** (b) C2 fails to flag a row where `hot` and table membership genuinely disagree (a case the pre-ADR status-class join would have caught) — either one falsifies H for that clause.
+**Revert trigger:** After the parser/C2 implementation lands (Phase 1, this GO — see §7) and `python scripts/check_status_consistency.py` is re-run against the full corpus, **either** (a) C2 raises a HARD finding on any row whose `hot=yes` matches a pin already named in `lab/analysis/README.md`'s Phase 2 leftovers "Hold / leave" table (a false positive this ADR's join was supposed to clear), **or** (b) C2 fails to flag a row where `hot` and table membership genuinely disagree (a case the pre-ADR status-class join would have caught) — either one falsifies H for that clause.
 
 **Revert action:** author a superseding ADR (full or in-part per the standard edge rules) that restores some blend of the two join keys or repairs the specific parser/C2 defect; never hand-edit `check_status_consistency.py`'s C2 logic or this ADR's decision text silently.
 
-**Trigger check schedule:** the first full-corpus `check_status_consistency.py` run immediately after the parser/C2 implementation PR lands (that PR is a separate operator GO, not scheduled by this ADR); re-checked again at the next quarterly programme audit if the implementation has not yet landed by then.
+**Trigger check schedule:** the first full-corpus `check_status_consistency.py` run immediately after the parser/C2 implementation lands (Phase 1 landed in this PR under the 2026-08-22 operator GO — see §7; that check is this GO's `check_status_consistency.py` pass); re-checked again at the next quarterly programme audit.
 
 ---
 
 ## §5 — Forbidden moves (under this ADR)
 
-- **Implementing the parser/C2 change, or regenerating `lab/CATALOG.md` with a `hot` column, in this same commission.** The handoff commissioning this ADR is explicit: ADR only, no `scripts/` edit, no CATALOG regen. Tempting because the fix is now fully specified and small — ruled out because `Proposed → Accepted` is the operator ratification gate this decision needs before it binds `archive_lab_analysis.py` and `check_status_consistency.py`.
+- **Implementing the parser/C2 change, or regenerating `lab/CATALOG.md` with a `hot` column, in this same commission.** The handoff commissioning this ADR is explicit: ADR only, no `scripts/` edit, no CATALOG regen. Tempting because the fix is now fully specified and small — ruled out because `Proposed → Accepted` is the operator ratification gate this decision needs before it binds `archive_lab_analysis.py` and `check_status_consistency.py`. (Discharged: the later 2026-08-22 operator GO authorized Phase 1 in this PR; see §7.)
 - **Mass-stamping `**Verdict:**` fields or mass `--slug`-ing now that the leftovers are enumerated.** Out of scope for this ADR; a separate GO per the handoff and per standing dedup-first discipline.
 - **Renaming `status` → `disposition` "while in the file" for symmetry with the axis names.** §2 item 2 makes a specific blast-radius call against this; revisiting it requires new Phase-0 evidence that the blast estimate above was wrong, not a naming preference.
 - **A third schema (e.g., encoding `hot` as a third status token instead of a column, or inventing a third table).** §3 already weighed and ruled out both; do not re-litigate without new evidence.
@@ -122,7 +122,7 @@ The mechanism is `parse_disposition` returning on the **first** field line in a 
 - Implementation drift: if the parser rewrite (item 3) and the C2 retarget (item 4) land in separate, uncoordinated changes, the two could disagree on what "Verdict wins" means in an edge case. Mitigation: §7 Phase 1 requires both land in the same implementation PR, sharing one column-detection/field-precedence understanding.
 - The `hot` column, once added, is only as correct as `_hot_sys_path_dependent`'s import-detection plus the manually-named inbound pins — a body could be `hot=no` and still be depended on by something the scanner can't see (e.g. a non-Python reference). This is an existing risk of the current stay-hot mechanism, not new; unaffected by this ADR.
 
-**Downstream artifacts that need updating (Phase 1, separate GO — not this commission):**
+**Downstream artifacts that need updating (Phase 1, landed this GO — see §7):**
 - `scripts/archive_lab_analysis.py` — `parse_disposition` field-precedence rewrite (Verdict wins over Status when both present as separate lines); `--slug` gating (`is_archiveable`, `_hot_sys_path_dependent`) is read, not rewritten.
 - `scripts/check_status_consistency.py` — C2's status-class join in `check_catalog_internal` retargeted to the `hot` column.
 - `lab/CATALOG.md` — regenerated (regenerator only) to add the `hot` column to the Active table header and rows.
@@ -152,18 +152,22 @@ test -f docs/adr/2026-08-22-catalog-hot-vs-disposition.md
 python scripts/check_brief.py docs/adr/2026-08-22-catalog-hot-vs-disposition.md --type adr
 python scripts/check_adr_graph.py
 
-# This commission touched only the authorized files
+# ADR-only commission file set (historical of the draft pass; Phase 1 later
+# landed in this PR under the 2026-08-22 operator GO — see §7)
 git diff origin/main --name-only
-# expected: docs/adr/2026-08-22-catalog-hot-vs-disposition.md
-#           docs/adr/INDEX.md
-#           docs/briefs/handoffs/2026-08-22-cc-handoff-catalog-hot-vs-disposition.md
-#           docs/SESSIONS.md
-# forbidden: scripts/archive_lab_analysis.py scripts/check_status_consistency.py lab/CATALOG.md
+# draft-pass expected: docs/adr/2026-08-22-catalog-hot-vs-disposition.md
+#                      docs/adr/INDEX.md
+#                      docs/briefs/handoffs/2026-08-22-cc-handoff-catalog-hot-vs-disposition.md
+#                      docs/SESSIONS.md
+# Phase 1 also touched: scripts/archive_lab_analysis.py
+#                       scripts/check_status_consistency.py
+#                       lab/CATALOG.md
+#                       lab/analysis/README.md
 
 # Frozen-decision vocabulary present (not silently narrowed)
 rg -n "hot|disposition|Verdict wins" docs/adr/2026-08-22-catalog-hot-vs-disposition.md
 
-# Phase 1 readiness check (run once Accepted, before the separate implementation GO)
+# Phase 1 readiness check (historical of the draft pass; Phase 1 landed — see §7)
 rg -n 'col_map.get\("status"\)' scripts/check_status_consistency.py
 rg -c 'status' scripts/sync_liveness_indexes.py
 
@@ -185,9 +189,9 @@ python scripts/check_adr_graph.py
 # Production-source verification (Rule 0 confirmation)
 git log -1 --format='%h %ci' -- scripts/archive_lab_analysis.py scripts/check_status_consistency.py lab/CATALOG.md lab/analysis/README.md docs/adr/2026-08-08-adr-ceremony-tiering.md docs/adr/2026-07-16-root-doc-charter-dedup.md docs/notes/audits/2026-08-21-coherence-campaign.md
 
-# No scripts/CATALOG mutation in this commission
+# ADR-only commission expected empty scripts/CATALOG delta; Phase 1 later
+# landed those paths in this PR (see §7)
 git diff origin/main --name-only -- scripts/ lab/CATALOG.md
-# Expected: empty
 ```
 
 ---
@@ -198,3 +202,4 @@ git diff origin/main --name-only -- scripts/ lab/CATALOG.md
 |---|---|---|
 | 2026-08-22 | Initial authoring (`Proposed`) | Cursor Cloud Agent (commission) + Claude Code (draft) |
 | 2026-08-22 | Operator `Accepted` + Phase 1 GO (parser / C2 / `hot` column) | Joshua (in-session) + Cursor Cloud Agent |
+| 2026-08-22 | Blast-radius parentheticals: Phase 1 landed (this GO); §0/§1 left as defect record | Cursor Cloud Agent |

@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-22i — Blast-radius pointer repair after catalog ADR Phase 1
+
+**Focus:** Rule 7 sweep after Phase 1. Report-first; parentheticals only. No mass `--slug`. No sixth root doc.
+
+**Shipped:** [`ADR`](adr/2026-08-22-catalog-hot-vs-disposition.md) §4/§5/§6/§10 parentheticals (Phase 1 landed this GO). [`docs/governance/INDEX.md`](governance/INDEX.md) P2b points at the `Accepted` ADR. C2 module header joins to `hot`.
+
+**Decisions/defects:** none new. §0/§1 left as pre-implementation defect record.
+
+**Open / next:** carry `2026-08-21n` — MSL-S4 card closed for build-out (`PARKED`). **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. Named leftovers on [`docs/governance/INDEX.md`](governance/INDEX.md): P5b / P7 / P8 / P2b. STATE rolloff / find-owner remain named-not-filed.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-22h — Accept catalog hot-vs-disposition ADR; Phase 1 GO
 
 **Focus:** Operator `Accepted` + GO. Verdict-wins parser, C2 joins to `hot`, regenerate CATALOG. No mass `--slug`. No sixth root doc.
