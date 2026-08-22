@@ -59,6 +59,44 @@ def _score_all_variants(train_children, edge_variant_index):
     return pnls, stats
 
 
+def _nominate_and_gate(train_children, edge_variant_index):
+    """Shared nomination and gating logic for run_panel and run_panel_leaked.
+
+    Scores all variants, nominates by argmax, and applies nomination gates
+    (§6.1 step 4) to the nominee only. If either gate fails, constructs and
+    returns the abandoned PanelResult immediately. If both gates pass, returns
+    None as the first element, allowing the caller to proceed to their own
+    confirm step.
+
+    Returns:
+        tuple: (abandoned_result, nominee, pnls, stats, ga, gb)
+            - abandoned_result: PanelResult with abandoned=True if gates fail,
+                                else None
+            - nominee: Index of the winning variant
+            - pnls: TRAIN P&L arrays for all variants
+            - stats: TRAIN Sharpe stats for all variants
+            - ga, gb: Gate pass/fail results
+    """
+    pnls, stats = _score_all_variants(train_children, edge_variant_index)
+    nominee = int(max(range(len(stats)), key=lambda i: stats[i]))
+    ga = gate_a_passes(stats[nominee])
+    gb = gate_b_passes(pnls[nominee])
+
+    if not (ga and gb):
+        abandoned_result = PanelResult(
+            nominee=nominee,
+            train_stat=stats[nominee],
+            gate_a=ga,
+            gate_b=gb,
+            abandoned=True,
+            confirm_stat=None,
+            clears=False,
+        )
+        return abandoned_result, nominee, pnls, stats, ga, gb
+
+    return None, nominee, pnls, stats, ga, gb
+
+
 def run_panel(
     train_children,
     confirm_children,
@@ -71,20 +109,12 @@ def run_panel(
     only, and -- if both gates pass -- draw an INDEPENDENT CONFIRM for the
     nominee and compare to ``floor``.
     """
-    pnls, stats = _score_all_variants(train_children, edge_variant_index)
-    nominee = int(max(range(len(stats)), key=lambda i: stats[i]))
-    ga = gate_a_passes(stats[nominee])
-    gb = gate_b_passes(pnls[nominee])
-    if not (ga and gb):
-        return PanelResult(
-            nominee=nominee,
-            train_stat=stats[nominee],
-            gate_a=ga,
-            gate_b=gb,
-            abandoned=True,
-            confirm_stat=None,
-            clears=False,
-        )
+    abandoned_result, nominee, pnls, stats, ga, gb = _nominate_and_gate(
+        train_children, edge_variant_index
+    )
+    if abandoned_result is not None:
+        return abandoned_result
+
     confirm_pnl = draw_daily_pnl(
         confirm_children[nominee], edge=(nominee == edge_variant_index)
     )
@@ -110,20 +140,12 @@ def run_panel_leaked(
     nominee's own winning TRAIN value replayed -- no independent draw at all.
     Deliberately violates the TRAIN/CONFIRM independence run_panel relies on.
     """
-    pnls, stats = _score_all_variants(train_children, edge_variant_index)
-    nominee = int(max(range(len(stats)), key=lambda i: stats[i]))
-    ga = gate_a_passes(stats[nominee])
-    gb = gate_b_passes(pnls[nominee])
-    if not (ga and gb):
-        return PanelResult(
-            nominee=nominee,
-            train_stat=stats[nominee],
-            gate_a=ga,
-            gate_b=gb,
-            abandoned=True,
-            confirm_stat=None,
-            clears=False,
-        )
+    abandoned_result, nominee, pnls, stats, ga, gb = _nominate_and_gate(
+        train_children, edge_variant_index
+    )
+    if abandoned_result is not None:
+        return abandoned_result
+
     leaked_confirm_stat = stats[nominee]
     return PanelResult(
         nominee=nominee,
