@@ -3,8 +3,10 @@
 **Status:** `STAGE-1 PASS` · **B4 GO paid 2026-08-21** · G0 [`PREREG_G0.md`](PREREG_G0.md) **FROZEN** ·
 Explore-confirm **DEFERRED BY OPERATOR OVERRIDE** (no market-data access this session) · Pine
 **authored CC-solo** — [runbook](RUNBOOK.md) · **$0 · K=0** · Step-4 cheap falsifier **filled
-2026-08-21 addendum** — [`NOT DECISIVE`](_cheap_falsifier_expiry_oi_strike_convergence_2026-08-21_LOG.md),
-Explore-confirm still owed
+2026-08-21 addendum** — [`NOT DECISIVE`](_cheap_falsifier_expiry_oi_strike_convergence_2026-08-21_LOG.md)
+· Explore-confirm **run 2026-08-21** —
+[`AMBIGUOUS-HOLD`](_explore_confirm_2026-08-21_LOG.md) (negative-signed, FLIP-FAIL; not
+literally FALSIFIED under the frozen gate)
 **Card:** MSL-S4 · instrument **MGC** · mechanism **`expiry-oi-strike-convergence`** (NEW)
 **Parent:** [MSL charter](../../../../docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md) steps
 1–4 · [E1 HOLD closure](../../../../docs/briefs/closures/MSL-S7-closure-resolved-e1-hold.md)
@@ -161,6 +163,18 @@ unchanged: no IS/CONFIRM partition reserved, no significance test, monthlies onl
 the card, does not clear it — full Explore-confirm remains the owed step before any TV/live
 build-out.
 
+**Addendum, 2026-08-21 (Explore-confirm, under `EXPLORE_GO.md` ISSUED 2026-08-21):** the owed
+Explore-confirm ran — [`_explore_confirm_2026-08-21_LOG.md`](_explore_confirm_2026-08-21_LOG.md).
+75 completed weekly+monthly OG cycles (IS window 2024-01-01→2025-03-31; CONFIRM 2025-04-01→
+2025-09-29 never read). **Verdict: `AMBIGUOUS-HOLD`** — IAAFT-surrogate `p_upper=0.5724` (real
+mean displacement reduction −5.52pts sits at the 42.8th percentile of the null, i.e.
+indistinguishable from generic autocorrelated price dynamics); DELETE weakly PASSes (real strike
+less-divergent than a generic sham level, both still negative); **FLIP FAILs** (divergence beats
+convergence empirically — the construct's own directional claim does not hold up). Substantively
+close to dead (wrong sign + FLIP-FAIL), though the frozen `p_upper > 0.95` FALSIFIED line isn't
+literally crossed. `K_intrinsic` unchanged; CONFIRM untouched; formal card disposition left to
+operator review.
+
 ---
 
 ## Verdict
@@ -169,7 +183,10 @@ build-out.
 Explore-confirm (charter step 5a) deferred by operator override (data-access gap). Pine authored
 CC-solo this same session (charter step 6) — [`RUNBOOK.md`](RUNBOOK.md). No K spend. No TV seat yet.
 
-**Next:** operator TV backtest (charter step 7) per the runbook. Step-4 cheap falsifier filled
-2026-08-21 (addendum above) — `NOT DECISIVE`, does not change this verdict or the TV-seat path;
-full Explore-confirm remains owed before any TV/live build-out regardless of the TV backtest's own
-result (§5 forbidden moves).
+**Next:** operator TV backtest (charter step 7) per the runbook, understanding the deferred
+Explore-confirm has since run (addendum above) and landed `AMBIGUOUS-HOLD` — leaning dead
+(negative-signed effect, FLIP-FAIL), not a clean kill under the frozen gate's own literal
+threshold. Step-4 cheap falsifier filled 2026-08-21 — `NOT DECISIVE` (superseded in design by the
+Explore-confirm's IAAFT null, per `EXPLORE_GO.md`). Neither TV nor this Explore-confirm result
+substitutes for the other (§5 forbidden moves) — but the operator should weigh the Explore-confirm
+result before spending further effort on a TV seat or any build-out.

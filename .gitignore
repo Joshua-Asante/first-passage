@@ -198,6 +198,21 @@ lab/analysis/_inbox/rangestate_mcl_2026-08/cl_1d.parquet
 lab/analysis/harvest/six_lead_cf_2026-08-17/p4_concentration_2026-08-20/*.parquet
 lab/analysis/**/orb_universe_2026-06-22/*.out
 lab/analysis/**/orb_universe_2026-06-22/_screen_*.json
+# MSL-S4 Explore-confirm: local weekly-definitions cache + raw pulled panel
+# (real GC bars + per-cycle strikes/OI) -- regenerable at $0.00 by
+# explore_confirm_driver.py; the committed deliverable is the scored
+# _RESULTS.json + _LOG.md, not the vendor bytes themselves.
+lab/analysis/c1/msl_s4_mgc_2026-08/_explore_confirm_*_weekly_defs_cache.parquet
+lab/analysis/c1/msl_s4_mgc_2026-08/_explore_confirm_*_RAW.json
+
+# Operator-issued Explore GO tokens (MSL cards): promoted from the tracked
+# EXPLORE_GO.DRAFT.md via each card's own Promote rule. Every MSL closure doc
+# that references one describes it as "promoted -> gitignored EXPLORE_GO.md"
+# (MSL-C1/C2/C3-K2/S2A closures, Q-TNEC-CON-2..5 closures) -- this pattern was
+# missing from .gitignore itself despite that repeated claim; added so the
+# convention is actually enforced, not just documented. Matches every existing
+# `**/EXPLORE_GO.md` path those closures cite.
+**/EXPLORE_GO.md
 
 # (`.worktrees/` is already ignored at line 164 — the duplicate that sat here was
 # removed 2026-07-31; git resolved to this later copy, so line 164 never decided
