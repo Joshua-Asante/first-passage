@@ -35,7 +35,10 @@ def _worker_read_patch_target():
     process's own import resolved -- not necessarily the parent's runtime patch
     (the M-23 shape).
     """
-    from firm_rules import FIRM_RULES
+    try:
+        from firm_rules import FIRM_RULES
+    except ImportError:  # pragma: no cover -- fallback path outside pytest's PYTHONPATH widening
+        from core.firm_rules import FIRM_RULES
 
     return FIRM_RULES[_FIRM_KEY][_PATCH_KEY]
 
@@ -46,7 +49,12 @@ def reproduce_m23_parent_only_patch() -> list:
     same key. Returns the list of attestations (restores the original value
     before returning, success or failure).
     """
-    from firm_rules import FIRM_RULES
+    try:
+        from firm_rules import FIRM_RULES
+    except ImportError:  # pragma: no cover
+        # Fallback when invoked outside pytest: PYTHONPATH=lab alone does not put core/
+        # on sys.path; only pytest's conftest.py widening does. See lab/discovery/cost_mnq.py.
+        from core.firm_rules import FIRM_RULES
 
     FIRM_RULES[_FIRM_KEY][_PATCH_KEY] = _PATCHED_VALUE
     try:
