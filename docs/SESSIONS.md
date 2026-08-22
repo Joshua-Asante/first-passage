@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-22c — Index honesty + pointer maps (P1/P3/P4)
+
+**Focus:** make existing indexes stop 404ing or lying; extend Phase-0 READMEs; public-clone retrieval honesty. No sixth root doc. No CATALOG Status flips.
+
+**Shipped:** `cursor/nav-index-honesty-126f` @ `900136c` + `d059a31` — INDEX LTM retrieval notes; [`docs/methodology/archive/README.md`](methodology/archive/README.md); [`REPO_MAP.md`](../REPO_MAP.md) §2.2; `open_with_hot_closure`; `make help`; subtree pointer tables; prune-tag / mc_anchor retrieval notes.
+
+**Decisions/defects:** none new. Blast-radius one-liner on [`tests/README.md`](../tests/README.md) repaired (links §2.2).
+
+**Open / next:** carry `2026-08-21n` — MSL-S4 card closed for build-out (`PARKED`). **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. Remaining nav debt: CATALOG `ACTIVE` hygiene (operator GO, Phase 2); Phase 5 named-not-opened (ADR topic view, STATE diet, ops import unify, gate-wire `sync_liveness`).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-22b — merge origin/main into PR #91 (conflict fix)
 
 **Focus:** Resolve PR #91 conflicts after #89/#90 landed MSL-S4 Explore-confirm + `PARKED` on `docs/SESSIONS.md`.
