@@ -1,0 +1,6 @@
+{
+  "generation_budget": 10,
+  "families": {
+    "session_offset_min": [0, 15, 30, 45, 60, 75, 90, 105, 120, 135]
+  }
+}

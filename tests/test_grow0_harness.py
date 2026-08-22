@@ -1,0 +1,275 @@
+import pytest
+
+from discovery.grow0_dgp import TRUE_EDGE_VARIANT_INDEX
+from discovery.grow0_harness import FLOOR, check_cost_wiring, run_limb_a
+
+
+def test_floor_matches_prereg():
+    assert round(FLOOR, 3) == 1.265
+
+
+def test_check_cost_wiring_passes():
+    check_cost_wiring()  # must not raise
+
+
+def test_check_cost_wiring_catches_a_broken_mnq_resolution(monkeypatch):
+    import discovery.grow0_harness
+
+    def _broken_resolve(firm_key, instrument):
+        raise ValueError("simulated breakage")
+
+    monkeypatch.setattr(discovery.grow0_harness, "resolve_commission", _broken_resolve)
+    with pytest.raises(AssertionError):
+        check_cost_wiring()
+
+
+def test_run_limb_a_passes_with_frozen_seed():
+    verdict, result = run_limb_a()
+    # SR=4.0 planted edge is deterministic-in-practice per the prereg's own power
+    # derivation (confirm-clear probability 1.00000000 at this target) -- a fresh,
+    # frozen-tree run should PASS; a FAIL here means the harness code has a bug,
+    # not that the design is underpowered (see prereg §3 "Why SR=4.0")
+    assert verdict == "PASS"
+    assert result.nominee == TRUE_EDGE_VARIANT_INDEX
+    assert result.clears is True
+
+
+def test_limb_b_constants_match_prereg_section_4():
+    from discovery.grow0_harness import LIMB_B_C, LIMB_B_N
+
+    assert LIMB_B_N == 5500
+    assert LIMB_B_C == 7
+
+
+def test_assert_seed_diversity_passes_on_distinct_leaves():
+    from discovery.grow0_dgp import build_root_branches, spawn_panel_streams
+    from discovery.grow0_harness import assert_seed_diversity
+
+    branches = build_root_branches()
+    panels = branches["limb_b"].spawn(20)
+    leaves = []
+    for p in panels:
+        tr, co = spawn_panel_streams(p, 10)
+        leaves.extend(tr)
+        leaves.extend(co)
+    assert_seed_diversity(leaves, min_distinct=400)  # 20 panels x 20 leaves = 400, all distinct
+
+
+def test_assert_seed_diversity_catches_a_collapsed_run():
+    from discovery.grow0_dgp import build_root_branches
+    from discovery.grow0_harness import assert_seed_diversity
+
+    branches = build_root_branches()
+    one_panel = branches["limb_b"].spawn(1)[0]
+    collapsed_leaves = [one_panel] * 400  # simulates a broadcast/closure bug: every
+    # "panel" resolves to the SAME underlying SeedSequence
+    with pytest.raises(AssertionError):
+        assert_seed_diversity(collapsed_leaves, min_distinct=400)
+
+
+def test_run_limb_b_small_n_returns_consistent_shape():
+    """Uses a small N for speed (this plan's local-compute-budget constraint) --
+    the frozen N=5,500/c=7 pair is exercised only by the manual full-scale
+    invocation documented in Task 13, never by the automated test suite."""
+    from discovery.grow0_harness import run_limb_b
+
+    small_n, small_c = 100, 3  # not the frozen pair -- structural test only
+    verdict, sum_clears, results = run_limb_b(n=small_n, c=small_c)
+    assert verdict in ("PASS", "FAIL")
+    assert len(results) == small_n
+    assert sum_clears == sum(1 for r in results if r.clears)
+    assert (verdict == "FAIL") == (sum_clears >= small_c)
+
+
+def test_run_red_leak_fails_as_expected_at_frozen_scale():
+    """RED-LEAK's own expected clear rate (~0.59%, per RED-BLIND's empirical measurement)
+    is low enough that even c=1 requires a large N to be deterministic-in-practice.
+    n=500 had P(zero clears) ≈ 0.0521 (~5.2%), causing ~5.2% spurious failures.
+    n=2000 gives P(zero clears) ≈ 0.0000066 (~0.00066%), rendering the test
+    deterministic for all practical purposes (standard used elsewhere for SR=4.0 edges).
+    2000 panels x ~0.0059 ≈ 12 expected clears; c=1 makes FAIL verdict reliable."""
+    from discovery.grow0_harness import run_red_leak
+
+    verdict = run_red_leak(n=2000, c=1)
+    assert verdict == "FAILED_AS_EXPECTED"
+
+
+def test_run_red_leak_seed_diversity_check_fires_on_a_collapsed_run(monkeypatch):
+    """RED-LEAK omitted the prereg §3 runtime seed-diversity assertion entirely (only
+    run_limb_b called it) -- force a collapse deterministically (same no-vacuous-tests
+    standard as test_run_panel_abandoned_has_no_confirm_read) rather than hoping the
+    frozen tree happens to exercise the failure path."""
+    from discovery import grow0_dgp, grow0_harness
+
+    branches = grow0_dgp.build_root_branches()
+    fixed_train, _ = grow0_dgp.spawn_panel_streams(branches["limb_a"], 10)
+
+    def _collapsed_spawn(panel_seq, n_variants):
+        return fixed_train, []  # every "panel" resolves to the SAME 10 train leaves
+
+    monkeypatch.setattr(grow0_harness, "spawn_panel_streams", _collapsed_spawn)
+    with pytest.raises(AssertionError):
+        grow0_harness.run_red_leak(n=5, c=1)
+
+
+def test_run_red_blind_fails_as_expected():
+    """RED-BLIND draws only the 9 non-theta* grammar indices
+    (0,1,2,3,4,6,7,8,9 -- theta*, grammar index 5, is never drawn at all).
+    run_red_blind maps the winning ARRAY position (0-8, from a freshly
+    spawn_panel_streams'd list) back to its ORIGINAL grammar index before
+    comparing against TRUE_EDGE_VARIANT_INDEX -- so 'grammar_nominee == 5' is
+    a TRUE structural impossibility (5 is not a member of the 9-index set
+    being drawn from), not merely a low-probability coincidence. (An earlier
+    draft of this task compared the raw array position directly against 5
+    without remapping -- since array positions 0-8 DO include the value 5,
+    that would only have been safe by accident, via the separate near-zero
+    confirm-clear probability masking a real ~1/9 nominee-position coincidence;
+    caught and fixed before implementation, not left as a latent gap.) This is
+    deterministic BY CONSTRUCTION, not merely deterministic-in-practice; a
+    single frozen-seed run is sufficient (matches Limb A's own single-panel
+    design)."""
+    from discovery.grow0_harness import run_red_blind
+
+    verdict = run_red_blind()
+    assert verdict == "FAILED_AS_EXPECTED"
+
+
+def test_append_retry_ledger_appends_one_line(tmp_path):
+    import json
+
+    from discovery.grow0_harness import append_retry_ledger
+
+    ledger_path = tmp_path / "grow0_retry_ledger.jsonl"
+    entry1 = {"run_id": "test-1", "started_at_arg": "2026-08-22T00:00:00Z", "overall": "PASS"}
+    entry2 = {"run_id": "test-2", "started_at_arg": "2026-08-22T00:01:00Z", "overall": "FAIL"}
+    append_retry_ledger(entry1, path=ledger_path)
+    append_retry_ledger(entry2, path=ledger_path)
+    lines = ledger_path.read_text(encoding="utf-8").strip().splitlines()
+    assert len(lines) == 2
+    assert json.loads(lines[0]) == entry1
+    assert json.loads(lines[1]) == entry2
+
+
+def test_append_retry_ledger_creates_parent_dir_if_missing(tmp_path):
+    from discovery.grow0_harness import append_retry_ledger
+
+    ledger_path = tmp_path / "nested" / "grow0_retry_ledger.jsonl"
+    append_retry_ledger({"run_id": "test-3"}, path=ledger_path)
+    assert ledger_path.is_file()
+
+
+def test_run_grow0_returns_all_five_tokens_and_a_verdict(tmp_path):
+    from discovery.grow0_harness import run_grow0
+
+    ledger_path = tmp_path / "grow0_retry_ledger.jsonl"
+    result = run_grow0(
+        run_id="test-run-1",
+        started_at_arg="2026-08-22T00:00:00Z",
+        limb_b_n=100,  # small N for test speed -- not the frozen 5,500 pair
+        limb_b_c=3,
+        ledger_path=ledger_path,
+    )
+    assert set(result.keys()) >= {
+        "run_id",
+        "started_at_arg",
+        "prereg_commit",
+        "limb_b_n",
+        "limb_b_c",
+        "limb_a",
+        "limb_b",
+        "red_leak",
+        "red_blind",
+        "red_patch",
+        "overall",
+    }
+    # limb_b_n/limb_b_c let the ledger distinguish a smoke-test run (this test's n=100)
+    # from the authoritative N=5,500 production run.
+    assert result["limb_b_n"] == 100
+    assert result["limb_b_c"] == 3
+    assert result["limb_a"] in ("PASS", "FAIL")
+    assert result["overall"] in ("RESOLVED", "FALSIFIED")
+    # ledger got exactly one line for this run
+    lines = ledger_path.read_text(encoding="utf-8").strip().splitlines()
+    assert len(lines) == 1
+
+
+def test_run_grow0_overall_resolved_iff_all_five_conditions_hold(tmp_path):
+    from discovery.grow0_harness import run_grow0
+
+    ledger_path = tmp_path / "grow0_retry_ledger.jsonl"
+    result = run_grow0(
+        run_id="test-run-2",
+        started_at_arg="2026-08-22T00:00:00Z",
+        limb_b_n=100,
+        limb_b_c=3,
+        ledger_path=ledger_path,
+    )
+    expected_resolved = (
+        result["limb_a"] == "PASS"
+        and result["limb_b"] == "PASS"
+        and result["red_leak"] == "FAILED_AS_EXPECTED"
+        and result["red_blind"] == "FAILED_AS_EXPECTED"
+        and result["red_patch"] == "FAILED_AS_EXPECTED"
+    )
+    assert (result["overall"] == "RESOLVED") == expected_resolved
+
+
+def test_run_grow0_ledgers_a_failure_entry_and_reraises_on_mid_run_exception(tmp_path, monkeypatch):
+    """Prereg §6.6: 'every invocation ... regardless of outcome' -- a mid-run exception
+    used to abort run_grow0 with NO ledger entry at all. Force a raise partway through
+    (after Limb A/B/RED-LEAK have already completed, before RED-BLIND) and confirm: the
+    original exception still propagates, exactly one ledger line is written, the tokens
+    computed so far are recorded, the tokens that never ran are null, and an "error"
+    field captures the failure."""
+    import json
+
+    from discovery import grow0_harness
+
+    ledger_path = tmp_path / "grow0_retry_ledger.jsonl"
+
+    def _boom():
+        raise RuntimeError("simulated mid-run failure")
+
+    monkeypatch.setattr(grow0_harness, "run_red_blind", _boom)
+
+    with pytest.raises(RuntimeError, match="simulated mid-run failure"):
+        grow0_harness.run_grow0(
+            run_id="test-crash-1",
+            started_at_arg="2026-08-22T00:00:00Z",
+            limb_b_n=100,
+            limb_b_c=3,
+            ledger_path=ledger_path,
+        )
+
+    lines = ledger_path.read_text(encoding="utf-8").strip().splitlines()
+    assert len(lines) == 1
+    entry = json.loads(lines[0])
+    assert entry["run_id"] == "test-crash-1"
+    assert entry["limb_a"] in ("PASS", "FAIL")  # completed before the raise
+    assert entry["limb_b"] in ("PASS", "FAIL")
+    assert entry["red_leak"] in ("FAILED_AS_EXPECTED", "PASSED_UNEXPECTEDLY")
+    assert entry["red_blind"] is None  # never completed
+    assert entry["red_patch"] is None  # never reached
+    assert entry["overall"] is None
+    assert "simulated mid-run failure" in entry["error"]
+
+
+def test_main_exit_code_matches_overall_verdict(tmp_path, monkeypatch, capsys):
+    import json
+
+    from discovery import grow0_harness
+
+    ledger_path = tmp_path / "grow0_retry_ledger.jsonl"
+    monkeypatch.setattr(grow0_harness, "RETRY_LEDGER_PATH", ledger_path)
+    exit_code = grow0_harness.main(
+        [
+            "--run-id", "test-run-3",
+            "--started-at", "2026-08-22T00:00:00Z",
+            "--prereg-commit", "test-commit-sha",
+            "--limb-b-n", "100",
+            "--limb-b-c", "3",
+        ]
+    )
+    out = capsys.readouterr().out
+    parsed = json.loads(out)
+    assert exit_code == (0 if parsed["overall"] == "RESOLVED" else 1)
