@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-22e — Liveness census + STATE diet (nav P5/P6)
+
+**Focus:** Phase 5 census + report-only `make sync-liveness`; Phase 6 collapse STATE decision-index to one line + owner. No sixth root doc. `gates.yml` untouched.
+
+**Shipped:** `cursor/nav-liveness-census-126f` — census CLEAN (`stale_index_open` 0 / `open_with_hot_closure` 0 / `archive_owed_active` 0) on [`docs/governance/INDEX.md`](governance/INDEX.md). `make sync-liveness` next to the warn-only targets. STATE 105 bullets collapsed. Named leftovers (P5b/P7/P8/P2b) on the same INDEX.
+
+**Decisions/defects:** none new. Phase 5b gate-wire stays named until this census stays CLEAN + GO.
+
+**Open / next:** carry `2026-08-21n` — MSL-S4 card closed for build-out (`PARKED`). **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. Remaining nav debt named-not-opened: P5b (`gates.yml` wire), P7 ADR topics, P8 `ops/` import unify, P2b CATALOG stamps — [`docs/governance/INDEX.md`](governance/INDEX.md).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-22d — CATALOG hygiene (Phase 2)
 
 **Focus:** Archive spent CATALOG ACTIVE slugs via `--slug`; name leftovers. No sixth root doc. No CATALOG Status hand-edits.
