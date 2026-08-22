@@ -248,7 +248,8 @@ def in_scope(pursuits_dir: Path = PURSUITS_DIR) -> list[Path]:
     if not pursuits_dir.is_dir():
         return []
     return sorted(
-        p for p in pursuits_dir.glob("*.md") if p.name != LEDGER_FILENAME
+        p for p in pursuits_dir.glob("*.md")
+        if p.name not in {LEDGER_FILENAME, "README.md"}
     )
 
 

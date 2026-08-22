@@ -51,6 +51,14 @@ def test_parse_status_token_normalizes_case_unquoted():
     assert "override" in ann or ann.startswith("(")
 
 
+def test_load_adr_headers_skips_directory_readme(tmp_path):
+    (tmp_path / "README.md").write_text("# hops only\n", encoding="utf-8")
+    (tmp_path / "2026-05-14-example.md").write_text(HEADER_ACCEPTED, encoding="utf-8")
+    headers = cag.load_adr_headers(tmp_path)
+    assert "README.md" not in headers
+    assert "2026-05-14-example.md" in headers
+
+
 def test_parse_adr_header_ignores_status_after_body():
     text = HEADER_ACCEPTED + "\n## Addendum\n\n**Status:** `Withdrawn`\n"
     h = cag.parse_adr_header("docs/adr/x.md", text)

@@ -276,9 +276,10 @@ def load_adr_headers(adr_dir: Path) -> dict[str, AdrHeader]:
     if not adr_dir.is_dir():
         return out
     for fp in sorted(adr_dir.glob("*.md")):
-        if fp.name.upper() in ("INDEX.MD", "TOMBSTONES.MD"):
-            # Derived surfaces, not ADRs: INDEX is regenerated; TOMBSTONES is the
-            # one-line-per-pruned-ADR index (ADR 2026-08-08-great-prune §3 class 4).
+        if fp.name.upper() in ("INDEX.MD", "TOMBSTONES.MD", "README.MD"):
+            # Derived / pointer surfaces, not ADRs: INDEX is regenerated;
+            # TOMBSTONES is the one-line-per-pruned-ADR index (ADR
+            # 2026-08-08-great-prune §3 class 4); README is the directory hop.
             continue
         body = fp.read_text(encoding="utf-8", errors="replace")
         rel = f"docs/adr/{fp.name}"

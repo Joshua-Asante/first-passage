@@ -147,7 +147,7 @@ def load_profiles(instruments_dir: Path) -> tuple[list[Profile], list[Finding]]:
     profiles: list[Profile] = []
     findings: list[Finding] = []
     for path in sorted(instruments_dir.glob("*.md")):
-        if path.name in {"MECHANISMS.md", "PROFILES.md"}:
+        if path.name in {"MECHANISMS.md", "PROFILES.md", "README.md"}:
             continue
         rel = _rel(path)
         text = path.read_text(encoding="utf-8")
