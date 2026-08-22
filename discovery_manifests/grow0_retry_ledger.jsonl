@@ -1,0 +1,1 @@
+{"run_id": "grow0-real-20260822T211844Z", "started_at_arg": "2026-08-22T21:18:44Z", "prereg_commit": "e21e80334c01e5c3334d997c7afbe158c5015697", "limb_b_n": 5500, "limb_b_c": 7, "limb_a": "PASS", "limb_b": "PASS", "red_leak": "FAILED_AS_EXPECTED", "red_blind": "FAILED_AS_EXPECTED", "red_patch": "FAILED_AS_EXPECTED", "overall": "RESOLVED"}

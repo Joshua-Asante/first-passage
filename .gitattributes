@@ -36,6 +36,16 @@ ops/c1_rail/*.py text eol=lf
 # after confirming its manifest is LF-based. Vendor data (data/*) stays CRLF-hashed.
 lab/analysis/aegis_6j_prop_reconstruction_2026-07/*.csv text eol=lf
 
+# GROW-0 frozen grammar (discovery_manifests/grow0_grammar.json): its SHA256 is
+# pinned as a literal in tests/test_grow0_grammar_file.py and in the GROW-0 PREREG
+# §2, both computed from the LF-blob bytes. Same class of bug as the pins above —
+# a Windows checkout with core.autocrlf=true rewrote this file's on-disk bytes to
+# CRLF, so load_grammar_with_hash_check() (lab/discovery/grammar.py) correctly, but
+# spuriously, reported GrammarDriftError against a checkout artifact, not a real
+# edit to the frozen grammar (found running the GROW-0 harness's full-scale
+# invocation 2026-08-22, zero content difference confirmed via git show HEAD).
+discovery_manifests/grow0_grammar.json text eol=lf
+
 # Append-only logs (reverse-chron / additions-only). Every branch inserts a new
 # entry at the SAME top anchor, so the default merge conflicts on parallel
 # worktrees (e.g. the 2026-06-07 3-way SESSIONS.md collision across PRs
