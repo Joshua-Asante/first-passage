@@ -80,7 +80,7 @@ def main():
         print(f"FAIL: {PERSONAS_DIR} does not exist")
         return 1
 
-    NON_PERSONA_FILES = {"INDEX.md", "ownership-map.md"}
+    NON_PERSONA_FILES = {"INDEX.md", "ownership-map.md", "README.md"}
     persona_files = sorted(
         p for p in PERSONAS_DIR.glob("*.md")
         if p.name not in NON_PERSONA_FILES and not p.name.endswith("-log.md")

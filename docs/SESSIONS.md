@@ -14,6 +14,34 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-22b — merge origin/main into PR #91 (conflict fix)
+
+**Focus:** Resolve PR #91 conflicts after #89/#90 landed MSL-S4 Explore-confirm + `PARKED` on `docs/SESSIONS.md`.
+
+**Shipped:** merge `origin/main` into `cursor/repo-navigation-pointers-126f`. Union-merge splice (missing `---` before `2026-08-21n`) fixed via `python scripts/roll_sessions.py --normalize`.
+
+**Decisions/defects:** none new.
+
+**Open / next:** carry `2026-08-21n` — MSL-S4 card closed for build-out (`PARKED`, operator decision). **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. Remaining nav debt (not this PR): CATALOG `ACTIVE` rows that look closed; `STATE.md` decision-index length; topic index on the derived ADR INDEX.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-22a — Directory pointer READMEs + root hop table
+
+**Focus:** what would make the repo easier to navigate — empirical walk of layer roots, catalogs, and indexes (no sixth root doc).
+
+**Shipped:** `cursor/repo-navigation-pointers-126f` @ `d7a8a7f` — hop table on [`README.md`](../README.md); pointer-only READMEs at layer roots and major subtrees; [`docs/ltm/README.md`](ltm/README.md); Q-M1WIRE-1 off the Open roster; glob-all-md checkers skip `README.md`.
+
+**Decisions/defects:** none new. Stale INDEX Open row repaired against the existing [`closure`](briefs/closures/Q-M1WIRE-1-closure-falsified.md).
+
+**Open / next:** carry `2026-08-21l` — MSL-S4 Explore-confirm driver + IAAFT pilot still need a Databento-local session; operator TV backtest can continue in parallel. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. Remaining nav debt (not this PR): CATALOG `ACTIVE` rows that look closed; `STATE.md` decision-index length; topic index on the derived ADR INDEX.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-21n — MSL-S4 candidate `PARKED` (operator decision, post-Explore-confirm)
 
 **Focus:** `21m`'s `AMBIGUOUS-HOLD` Explore-confirm result (negative-signed real effect, FLIP-FAIL)
@@ -35,6 +63,7 @@ B7-REFIRE + M1 (still not yet an *acceptable* strategy).
 **Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`. (unchanged)
 
 ---
+
 ## 2026-08-21m — MSL-S4 Explore-confirm EXECUTED (driver written + run) — `AMBIGUOUS-HOLD`
 
 **Focus:** `21l`'s drafted Explore-confirm (`EXPLORE_GO.DRAFT.md`, `explore_confirm_lib.py`) named
@@ -78,6 +107,7 @@ this session's — flagged in the LOG rather than unilaterally decided. **STATE 
 **Live-ops state:** rail built / disarmed; no book; M1 `CODE_LANDED`. (unchanged)
 
 ---
+
 ## 2026-08-21l — MSL-S4 real Explore-confirm drafted: IAAFT-surrogate null replaces the naive control
 
 **Focus:** `21k`'s finding (the cheap falsifier's control window is trend-confounded, same cycles
