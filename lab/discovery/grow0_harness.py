@@ -8,6 +8,8 @@ prereg's own framing of it as independent of the stochastic panels.
 from __future__ import annotations
 
 from discovery.cost_model import resolve_commission
+from discovery.grow0_dgp import TRUE_EDGE_VARIANT_INDEX, build_root_branches, spawn_panel_streams
+from discovery.grow0_scoring import PanelResult, run_panel
 from research_utils.axis_screen import floor_at_k
 
 FLOOR = floor_at_k(10, years=6.5)  # prereg §4: floor_at_k(10, 6.5) = 1.265
@@ -47,3 +49,17 @@ def check_cost_wiring() -> None:
             f"{_COST_UNRESOLVABLE_INSTRUMENT!r}) did not raise -- cost-wiring check failed "
             "(unresolvable side; the module should refuse this instrument, not resolve it)"
         )
+
+
+def run_limb_a() -> tuple[str, PanelResult]:
+    """Prereg §6.1: single panel, K=10 grammar with theta* at index 5."""
+    branches = build_root_branches()
+    train_children, confirm_children = spawn_panel_streams(branches["limb_a"], 10)
+    result = run_panel(
+        train_children,
+        confirm_children,
+        edge_variant_index=TRUE_EDGE_VARIANT_INDEX,
+        floor=FLOOR,
+    )
+    passed = (not result.abandoned) and result.nominee == TRUE_EDGE_VARIANT_INDEX and result.clears
+    return ("PASS" if passed else "FAIL"), result
