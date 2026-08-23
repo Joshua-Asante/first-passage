@@ -14,6 +14,32 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23o — merge origin/main into PR #112 (conflict fix)
+
+**Focus:** Resolve PR #112 conflicts after #109/#111 landed venue-binding Phase 1–3 and the ox-alpha brief-authoring review on `docs/SESSIONS.md`.
+
+**Shipped:** merge `origin/main` into `cursor/grow-open-run-burned-475b`. Union-merge splice (missing `---` before `2026-08-23l`) fixed via `--normalize`. Duplicate `2026-08-23a` (ox-alpha vs venue-binding plan) renumbered: ox-alpha → `2026-08-23m`.
+
+**Decisions/defects:** none new.
+
+**Open / next:** carry `2026-08-23n` / `2026-08-22r` — DL-2 step 2 train scoring. Campaign next: W5 CI-from-`gates.yml`, then substrate Phase 6 docs. Follow-on grow slices still named. Operator GO/NO-GO on ox-alpha surviving cluster before any brief-authoring skill edit. #7/#8 stay PENDING GO.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-23n — Grow-lane `open_run` burned-segment wiring
+
+**Focus:** Build. Execute campaign plan #3 wiring slice only.
+
+**Shipped:** `register_search.open_run --lane deep` refuses overlap (seed MNQ window); unlisted discloses `consultation_count=0`. Blind 11-key schema unchanged. Follow-on slices not in this PR.
+
+**Decisions/defects:** none. `--instrument` required on deep. Consultation count is not a refuse.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: substrate Phase 6 docs. Follow-on grow slices (streak / door-check / denylist / Rule-0 checker / `universe_gate`) still named. #7/#8 stay PENDING GO.
+
+---
+
 ## 2026-08-23l — Venue-binding Phase 1–3 registry landed
 
 **Focus:** Build. Execute plan #1.
@@ -27,6 +53,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23k — Tradable-anomalies T4 plan (PENDING GO)
 
 **Focus:** Hygiene. Campaign plan 8c — last file in this campaign.
@@ -40,6 +67,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23j — Tradable-anomalies T3 plan (PENDING GO)
 
 **Focus:** Hygiene. Campaign plan 8b.
@@ -53,6 +81,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23i — Tradable-anomalies T2 plan (PENDING GO)
 
 **Focus:** Hygiene. Campaign plan 8a.
@@ -66,6 +95,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23h — Coldstore Phase C plan (PENDING GO)
 
 **Focus:** Hygiene. Campaign plan 7b.
@@ -79,6 +109,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23g — Coldstore Phase B plan (PENDING GO)
 
 **Focus:** Hygiene. Campaign plan 7a.
@@ -92,6 +123,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23f — Disaster-stop Phase 0 then 1 plan
 
 **Focus:** Hygiene. Campaign plan 6.
@@ -105,6 +137,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23e — Call-4 beta-cohesion diagnostic plan
 
 **Focus:** Hygiene. Campaign plan 5.
@@ -118,6 +151,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23d — Substrate Phase 6 docs implementation plan
 
 **Focus:** Hygiene. Campaign plan 4.
@@ -131,6 +165,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23c — Grow-lane leftovers implementation plan
 
 **Focus:** Hygiene. Campaign plan 3.
@@ -144,6 +179,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23b — W5 CI-from-gates.yml implementation plan
 
 **Focus:** Hygiene. Campaign plan 2.
@@ -157,6 +193,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23a — Venue-binding Phase 1–3 implementation plan
 
 **Focus:** Hygiene. Campaign of worker-executable plans for Accepted-but-owed ADR limbs; first file only.
@@ -171,7 +208,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 
 ---
 
-## 2026-08-23a — Ox-alpha sanitized review of brief-authoring, reconciled
+## 2026-08-23m — Ox-alpha sanitized review of brief-authoring, reconciled
 
 **Focus:** Measurement. Sanitized-only ox-alpha second opinion on the brief-authoring skill; reconcile before treating any objection as a finding.
 
@@ -211,6 +248,7 @@ handoff. If DL-2 abandons at step 2, that's the 2nd consecutive after DL-1 and t
 per the charter's own GO-1 dry-run).
 
 ---
+
 ## 2026-08-22q — Disposition leftover Proposed ADRs
 
 **Focus:** Decision. Operator Accept of four leftover Proposed ADRs; reject of the intermediate-rung ADR; STATE pointer refresh.

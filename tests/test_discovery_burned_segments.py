@@ -3,9 +3,9 @@
 CON-2/3/4/5 share one physical MNQ CONFIRM window (2025-09-01 -> 2026-08-05);
 CON-4's read spent it 2026-08-20. A deep-lane campaign that later touches this
 window is a second consultation of a burned segment, forbidden by GROW spec
-v2's Boundary. This module is a standalone checker (not yet wired into
-register_search.open_run -- named forward work in the 2026-08-22 build ADR
-§2.2) that answers one question: is (instrument, window) already burned?
+v2's Boundary. ``register_search.open_run --lane deep`` refuses on overlap (see
+``tests/test_register_search_burned.py``). This module answers: is
+(instrument, window) already burned?
 
 Extended 2026-08-22 (docs/adr/2026-08-22-grow0-two-ledger-k-question.md §2 Part
 B, charter §2.2(iv)): each segment's single read_date/source pair migrated to

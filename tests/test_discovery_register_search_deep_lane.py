@@ -58,7 +58,7 @@ def _deep_args(tmp_path, **kw):
         run_id="deep_run", tool="grammar-refine", search_space_size=10,
         alpha=0.05, data_window="2010-01-01:2020-01-01",
         hypothesis="h", params="", params_file=None,
-        lane="deep",
+        lane="deep", instrument="MGC",
         reachability_attestation=None,
         profile_cell=None, profile_consult=None,
         admission_file=None,
