@@ -1,0 +1,151 @@
+{
+  "campaign": "DL2-M6A-PDHPDL",
+  "nominee": 9,
+  "gates": {
+    "2a_cost_law": {
+      "annsr_positive": false,
+      "ratio_ge_4x": true,
+      "passed": false,
+      "detail": {
+        "median_stop_ticks": 118.00000000000033,
+        "ratio": 18.153846153846203,
+        "passed": true
+      }
+    },
+    "2b_spa": {
+      "p_value": 0.9755,
+      "passed": false,
+      "better_variants": [],
+      "order": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    "2c_cadence": {
+      "cadence_per_week": 2.558466453674121,
+      "passed": true
+    },
+    "2d_m16_slip": {
+      "net_annsr_plus1tick": -0.9185301935300275,
+      "passed": false
+    }
+  },
+  "all_pass": false,
+  "verdict": "ABANDONMENT",
+  "per_variant": {
+    "1": {
+      "n_trades": 1811,
+      "net_annsr": -1.609993267489444,
+      "cadence_per_week": 4.050159744408946,
+      "cost_law": {
+        "median_stop_ticks": 81.99999999999984,
+        "ratio": 12.615384615384592,
+        "passed": true
+      }
+    },
+    "2": {
+      "n_trades": 1811,
+      "net_annsr": -1.6103521747272374,
+      "cadence_per_week": 4.050159744408946,
+      "cost_law": {
+        "median_stop_ticks": 81.99999999999984,
+        "ratio": 12.615384615384592,
+        "passed": true
+      }
+    },
+    "3": {
+      "n_trades": 1364,
+      "net_annsr": -1.6121131193722527,
+      "cadence_per_week": 3.0504792332268367,
+      "cost_law": {
+        "median_stop_ticks": 84.00000000000018,
+        "ratio": 12.92307692307695,
+        "passed": true
+      }
+    },
+    "4": {
+      "n_trades": 1364,
+      "net_annsr": -1.621975292822175,
+      "cadence_per_week": 3.0504792332268367,
+      "cost_law": {
+        "median_stop_ticks": 84.00000000000018,
+        "ratio": 12.92307692307695,
+        "passed": true
+      }
+    },
+    "5": {
+      "n_trades": 1500,
+      "net_annsr": -1.259573402437598,
+      "cadence_per_week": 3.3546325878594248,
+      "cost_law": {
+        "median_stop_ticks": 116.00000000000054,
+        "ratio": 17.84615384615393,
+        "passed": true
+      }
+    },
+    "6": {
+      "n_trades": 1500,
+      "net_annsr": -1.2749732382997185,
+      "cadence_per_week": 3.3546325878594248,
+      "cost_law": {
+        "median_stop_ticks": 116.00000000000054,
+        "ratio": 17.84615384615393,
+        "passed": true
+      }
+    },
+    "7": {
+      "n_trades": 1179,
+      "net_annsr": -1.3654221938921995,
+      "cadence_per_week": 2.636741214057508,
+      "cost_law": {
+        "median_stop_ticks": 120.99999999999999,
+        "ratio": 18.615384615384613,
+        "passed": true
+      }
+    },
+    "8": {
+      "n_trades": 1327,
+      "net_annsr": -0.8471295314926189,
+      "cadence_per_week": 2.967731629392971,
+      "cost_law": {
+        "median_stop_ticks": 80.00000000000007,
+        "ratio": 12.307692307692319,
+        "passed": true
+      }
+    },
+    "9": {
+      "n_trades": 1144,
+      "net_annsr": -0.6839921965198812,
+      "cadence_per_week": 2.558466453674121,
+      "cost_law": {
+        "median_stop_ticks": 118.00000000000033,
+        "ratio": 18.153846153846203,
+        "passed": true
+      }
+    },
+    "10": {
+      "n_trades": 1752,
+      "net_annsr": -0.757970522238055,
+      "cadence_per_week": 3.918210862619808,
+      "cost_law": {
+        "median_stop_ticks": 79.00000000000017,
+        "ratio": 12.15384615384618,
+        "passed": true
+      }
+    }
+  },
+  "train_window": {
+    "start": "2010-06-06",
+    "end": "2019-01-01",
+    "n_sessions": 2200,
+    "n_roll_sessions": 35
+  }
+}
