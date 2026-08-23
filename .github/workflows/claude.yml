@@ -42,6 +42,10 @@ jobs:
           # Cursor's PR/review comments come from the cursor[bot] GitHub App, which
           # claude-code-action otherwise refuses as a non-human actor (fails fast,
           # after the ack reaction, with no Claude run ever starting).
+          # Automatic judgment-review requests (cursor/* + governed surface, or
+          # an explicit `claude-review` label / body token) live in the sibling
+          # workflow claude-judgment-review.yml — they call this action with a
+          # prompt, they do not post @claude, and they do not widen this list.
           allowed_bots: "cursor"
 
           # Optional: Customize the trigger phrase (default: @claude)

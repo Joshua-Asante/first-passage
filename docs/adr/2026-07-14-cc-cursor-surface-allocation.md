@@ -189,6 +189,7 @@ git log -1 --format='%h %ci' -- docs/operational_rules.md .claude/skills/handoff
 | 2026-07-16 | Addendum drafted (DRAFT — pending ratification) — routing-test Step 0 + handoff-contract 5th item, local-only dependency pre-check, after three cloud→local bounces in 48h | Claude Code (drafted at operator request, not yet ratified) |
 | 2026-07-16 | Addendum RATIFIED — Step 0 + handoff-contract 5th item now binding; `cc_handoff.md` §0.75 marker flipped in the same commit | Joshua (chat directive: "Step-0 cloud-dispatch addendum: ratify") |
 | 2026-08-14 | Addendum RATIFIED — see below (narrows §2 return-contract + §5 forbidden-move on merge) | Joshua (explicit ruling, in-session) |
+| 2026-08-23 | Addendum RATIFIED — see below (automatic Claude judgment review on Cursor-first / opted-in PRs; review-only) | Joshua (chat: wire automatic Claude review on judgment-heavy PRs, especially Cursor-scoped) |
 
 ---
 
@@ -203,3 +204,35 @@ git log -1 --format='%h %ci' -- docs/operational_rules.md .claude/skills/handoff
 **What does not change:** the §2 routing test (which tasks are Cursor-eligible at all, including the locked-surface exclusion) is untouched. The chip-approval step for *dispatch* also narrows under the sibling ADR (chips become the exception path, not the default), but that is a separate clause recorded there, not here — this addendum only tracks what the sibling ADR takes from *this* file's text.
 
 **Why an addendum and not an edit:** per Rule 14 / Trap #12, this ADR's ratified body stays byte-unedited below this line. The narrowing is real and load-bearing, so it gets a proper cross-referenced record here, not silent supersession discoverable only from the other file.
+
+---
+
+<a id="addendum-2026-08-23-judgment-review"></a>
+
+## Addendum (2026-08-23, RATIFIED same day — operator chat: wire automatic Claude review on judgment-heavy PRs) — review request, not merge
+
+**Reads (before authoring):** `.github/workflows/claude.yml` `53a8968` (2026-08-23, `allowed_bots: "cursor"`; triggers only on comments/reviews/issues containing `@claude` — **not** on `pull_request` opened). This file `027a729` (public-clone seed; §2 return contract still says the PR is reviewed in a CC session). Sibling [`2026-08-14-cc-cursor-autonomous-loop.md`](2026-08-14-cc-cursor-autonomous-loop.md) `027a729` (auto-merge is a **separate** binary gate; this addendum does not touch it). Cheap falsifier: a Cursor-scoped judgment PR today gets a Claude look only if someone comments `@claude`.
+
+**Trigger:** operator asked to wire an automatic Claude review request on PRs that need an extra level of judgment, especially when the work is scoped on Cursor first instead of in Claude Code. That is the exact gap the §2 return contract named ("reviewed in a CC session") and left as a manual mention.
+
+**What changes:** a review-only GitHub Action requests a Claude adjudication pass when **all** of the following hold, implemented by `scripts/check_claude_judgment_review.py` + `.github/workflows/claude-judgment-review.yml`:
+
+1. The PR is **not** a draft.
+2. No prior `<!-- claude-judgment-review -->` comment exists (idempotent; re-review stays the existing `@claude` mention).
+3. At least one opt-in matches:
+   - label `claude-review`, or
+   - body token `claude-review: judgment` (case-insensitive), or
+   - head branch starts with `cursor/` **and** the diff touches a judgment surface (doctrine / governed `core/` / rail / skills / workflows — see the script's `JUDGMENT_*` lists).
+
+Events: `opened`, `ready_for_review`, `reopened`, `labeled` (label must be `claude-review`). **Not** `synchronize`. `pull_request`, not `pull_request_target`. `allowed_bots` stays an explicit list (`cursor`); never `*`. The request calls `anthropics/claude-code-action@v1` with a prompt — it does **not** post `@claude`, so `claude.yml`'s mention allow-list is unchanged.
+
+**What does not change:**
+- The §2 routing test (which tasks are Cursor-eligible) is untouched.
+- The 2026-08-14 auto-merge gate is untouched. This addendum does not merge, does not green-wash CI, and does not satisfy gate (a) `fable-judge VERIFIED`.
+- Tests-only / lab-harness `cursor/*` chores do not auto-fire.
+- Human / `claude/*` PRs do not auto-fire unless labeled or body-tokened (CC is already in the room).
+- No STATE queue row. No sixth root doc. $0.
+
+**Forbidden:** treating a Claude review comment as merge authority; firing on every push; widening `allowed_bots` to `*`; using `pull_request_target`; auto-requesting on every `cursor/*` PR regardless of surface.
+
+**Revert trigger:** either (1) a tests-only `cursor/*` PR receives an automatic request, or (2) a `cursor/*` PR that edits `docs/adr/**` (non-draft, first look) does not. Both are mechanically checkable from the predicate tests + one live workflow run.
