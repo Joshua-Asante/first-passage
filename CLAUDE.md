@@ -118,7 +118,7 @@ stops rejecting the anchor as authority. Change the phrasing only alongside that
 [ADR](docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md); canonical owner
 [`docs/methodology/strategy_lifecycle.md`](docs/methodology/strategy_lifecycle.md).
 A third axis (venue binding: BOOK → VENUE EDITION → DEPLOYMENT) is
-[`Accepted`](docs/adr/2026-08-05-strategy-venue-binding-axis.md); registry still owed:
+[`Accepted`](docs/adr/2026-08-05-strategy-venue-binding-axis.md); registry: [`ops/venue_editions/Tradeify_Select_100K.md`](ops/venue_editions/Tradeify_Select_100K.md) (live set empty).
 
 * **Parameter axis — `LOCKED`**: SL/TP/ATR/risk%/pyramid/Pine are immutable. Decay never
   authorizes editing these.
