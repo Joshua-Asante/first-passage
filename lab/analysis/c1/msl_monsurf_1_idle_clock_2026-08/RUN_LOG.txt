@@ -1,0 +1,17 @@
+[fetch] retrieving daily_panel.csv from pre-prune-2026-08-08 ...
+[sanity] parsed panel: {'n_days': 1556, 'n_active_days': 329, 'n_weeks': 312, 'n_zero_trade_weeks': 82, 'pct_zero_trade_weeks': 26.3, 'n_one_day_weeks': 141, 'pct_one_day_weeks': 45.2}
+[sanity] all anchors reproduce RESULTS.md exactly -- panel parsing confirmed correct
+
+[mutation] planting a logic defect: single-day lookback instead of full-week lookback...
+[mutation] buggy-monitor score: {'n_weeks': 312, 'n_breached': 82, 'n_missed': 0, 'n_spurious': 380, 'pass': False}
+[mutation] caught: 380 spurious alert(s) + 0 missed week(s) surfaced under the buggy lookback -- battery IS sensitive to this defect class
+
+[mutation 2] planting a false-negative defect: lookback always reports 'already active'...
+[mutation 2] buggy-monitor score: {'n_weeks': 312, 'n_breached': 82, 'n_missed': 164, 'n_spurious': 0, 'pass': False}
+[mutation 2] caught: 164 missed alerts across all 82 real breached weeks -- battery catches false-negative suppression too
+[mutation] reverting to the correct (frozen) lookback for the actual acceptance run...
+
+[battery] running against the real, unmutated panel (all 312 weeks)...
+[battery] result: {'n_weeks': 312, 'n_breached': 82, 'n_missed': 0, 'n_spurious': 0, 'pass': True}
+
+VERDICT: PASS (RESOLVED)

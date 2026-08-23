@@ -45,6 +45,8 @@ Design §6 owed the re-argument after two consecutive elected-cell FALSIFIEDs. T
 - **Stop rule / re-proposal bar:** **new mechanism evidence with a demonstrably different loss-side shape**, or a **venue class whose survival geometry differs** (not an EOD-trailing prop clone) — **not** new cells, new instruments, or ATR-input spend alone.
 - **Board write:** STATE · lab/CATALOG · docs/briefs/INDEX · rejected_candidates · GRID/RESULTS status · SESSIONS — this pass.
 
+- **Registry:** rejected_candidates.md — ### Transfer/expression lane (Q-TXG-1) — FALSIFIED-at-walls
+
 ## §10 audit-hook discharge
 
 ```text

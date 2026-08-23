@@ -36,6 +36,8 @@ Eligible sessions 1,645; signal coverage 100%; ~11.6 trades/eligible session (EM
 - **Model update:** Relative-contrarian ES−NQ 5m log divergence → MNQ session-flat @ G=10 is a **loser** on the MNQSEL-2 panel under Tradeify RT 1.41; stop-dominated (~91%) with single-digit WR.
 - **Board write:** construct catalogue cell closed; CapFLOW join + weekly token / S2b / F1 carry unchanged. No Cap claim from this packet.
 
+- **Registry:** rejected_candidates.md — ### MNQDTL-CON-1 ES-NQ 5m divergence relative-contrarian × MNQ — FALSIFIED (explore IS)
+
 ---
 
 ## Change history

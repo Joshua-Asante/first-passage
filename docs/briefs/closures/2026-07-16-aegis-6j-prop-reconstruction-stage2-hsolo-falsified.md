@@ -63,6 +63,8 @@ Gated on Run-2; seeds 42/123/2026; 10k×3; horizon 1500; `dd_protection` OFF.
 - Do **not** treat pass≈93% as a soft pass — the frozen ceiling is bust ≤ 3.0%.
 - Do **not** cite the v2.2 1R re-spec as able to change the MC outcome.
 
+- **Registry:** rejected_candidates.md — ### Aegis→6J v0.3 native-venue solo reconstruction (Stage-2 H-SOLO) — FALSIFIED
+
 ---
 
 ## Artifacts

@@ -1,8 +1,8 @@
 # Q-TRADECAP-1 — Is there any bound on a single trade's realized dollar loss?
 
-**Status:** `OPEN — DRAFT (pre-lock)` — execution requires a separate operator GO (parent-Q convention: naming is not opening)
+**Status:** `CLOSED-RESOLVED 2026-08-23` — all four checks confirm no per-trade dollar-loss bound exists anywhere in the live sizing/arming path. Closure: [`closures/Q-TRADECAP-1-closure-resolved.md`](closures/Q-TRADECAP-1-closure-resolved.md).
 **Authored:** 2026-08-18
-**Closed:** N/A
+**Closed:** 2026-08-23
 **Authors:** Joshua + Claude Code
 **Parent question:** N/A — opened from the 2026-08-18 assumption-sweep audit note, finding A6
 **Sub-questions opened:** none
@@ -161,6 +161,6 @@ grep -n "71.2%" docs/methodology/1r_estimation.md
 - [x] Section 4 hypothesis binary (three limbs, all-hold vs. any-fail)
 - [x] Section 5 forbidden moves genuinely tempting — three (daily max-loss `L`, EM2, account-level Max Loss Lock) were live near-misses surfaced by this brief's own §0 reads, not strawmen
 - [x] Section 6 triggers specific
-- [ ] Section 8 pre-registration owed at operator GO
+- [x] Section 8 pre-registration committed 2026-08-23, before Phase 1 ran
 - [x] Section 10 hooks runnable
-- [ ] Operator GO owed before Phase 1 — this brief is named, not opened
+- [x] Operator GO given 2026-08-23 ("GO on Q-TRADECAP-1"); Phase 1 executed same session — see [`closures/Q-TRADECAP-1-closure-resolved.md`](closures/Q-TRADECAP-1-closure-resolved.md)

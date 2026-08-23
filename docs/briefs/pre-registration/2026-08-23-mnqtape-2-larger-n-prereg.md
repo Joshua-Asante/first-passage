@@ -1,10 +1,13 @@
 # MNQTAPE-2 — large-trade aggressor imbalance on MNQ's own tape → same-session continuation: fresh, larger-N replication window (successor to MNQTAPE-1's underpowered near-miss)
 
-**Status:** **FROZEN — PROPOSED. No GO given.** This document is authored and frozen before any
-CONFIRM-grade byte is read. The only things touched this session are (a) a real, $0
-Databento cost **dry-run** on the new window (metadata-only per Rule 1 — never bills, §3), and (b)
-text-only dedup/window-collision greps against already-committed repo files. **No pull. No test. No
-spend. No operator authorization exists yet for anything beyond reading this document.**
+**Status:** **NO-GO — operator declined 2026-08-23** (chat directive: *"NO GO on the $308.69. I am
+confident we can find a viable strategy without it"*). Design GO was never given before the decline,
+so this closes at the pre-Design-GO stage — the only things touched this session remain (a) the
+real, $0 Databento cost **dry-run** on the new window (metadata-only per Rule 1 — never bills, §3),
+and (b) text-only dedup/window-collision greps against already-committed repo files. **No pull. No
+test. No spend. Zero K banked** (§6, §11 — this campaign never opened `register_search`, so there is
+no K slot to release). Re-proposal bar: unchanged from §9's own window-shopping bar — a future
+proposal on this instrument/mechanism needs a fresh freeze, not a revival of this one.
 **Campaign tag:** `MNQTAPE-2` — a **new** campaign, banking a **fresh** `K_intrinsic = 1` (not a
 continuation of `MNQTAPE-1`'s own already-(pending-)banked slot). Reasoning in §6 — read before
 assuming this is "the same trial, more data."

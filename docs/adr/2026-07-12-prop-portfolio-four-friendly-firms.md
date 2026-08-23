@@ -179,11 +179,22 @@ own 2026-08-16 "§4 gains a fourth branch" addendum
 ([`docs/adr/2026-07-15-external-mechanism-harvest-intake.md`](2026-07-15-external-mechanism-harvest-intake.md)) —
 same shape of gap, same tightening/completeness-only remedy.
 
-**Operator note (2026-08-23):** ratification explicitly deferred, not declined — same posture as
+**Operator note (2026-08-23, 12:23):** ratification explicitly deferred, not declined — same posture as
 the sibling F1 item (STATE.md queue row 1): deciding this before the exactly-one-tier state
 actually occurs would pre-empt §4 on evidence that doesn't exist yet (currently 0-of-4 clearers,
 per §0 below). Revisit at trigger time (first tier clearance, or the 2026-11-08 hard date,
 whichever comes first). Status stays `Proposed` until then.
+
+⚠ **Superseding note (2026-08-23, 12:59, concurrent session — reconciled on merge, Rule 14
+correction-lands-where-read):** F1 itself was ruled 36 minutes after the note above, by explicit,
+considered operator election, ahead of trigger time —
+[`Addendum 2026-08-23`](2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-08-23--f1-ruled-a-tradeify-resting-discharge-does-not-satisfy-4)
+to the 2026-08-04 de-scope ADR. The "same posture as the sibling F1 item" analogy above is now
+**historical** — F1 no longer sits at trigger-time deferral. **This addendum's own ratification
+is unaffected**: it was deferred on its own merits (§4's own evidentiary-floor logic, independent
+of F1's disposition), not solely by analogy to F1, and stays `Proposed` pending trigger time as
+written above. Flagged so a future reader does not mistake the stale analogy for a reason to
+reopen this addendum's status.
 
 ### §0 — Rule 0 reads for this addendum (production-source verification, 2026-08-22)
 

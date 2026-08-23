@@ -35,6 +35,8 @@ All three priced Q-BOOKFIT forks are now closed, each by a **distinct null mode*
 - **The book's remaining levers are sizing and live-data authorization**, not breadth from these seeds. New book breadth requires **new mechanism evidence** (a fresh Tier-A seed clearing the harvest §2.1 cost-wall) — the 2026-11-08 idle review is its standing home. Not a re-run of any of these three (Trap #12).
 - **K:** F-B banked K=1 (manifest committed). Fork-program K spend total = 2 (F-C carry + F-B EIA; F-A was a published-effect confirm, no K). CL family now carries two closed manifests (carry + EIA).
 
+- **Registry:** rejected_candidates.md — ### H-FBEIA-1 (F-B) EIA post-release unconditional reversal × CL — SCREEN-FAIL (informed-flow)
+
 ## Lesson note (no new registry entry)
 
 F-B is the cleanest instance yet of the **informed-flow trap** the harvest Requirement-2 guards against: a real, large, published event-reaction (25 bp) that is entirely surprise-conditional and carries **zero** unconditional tradeable edge. The `|m0|=25 bp` faithfulness anchor is the tell — a big reaction with a ~0 unconditional forward δ *is* the informed-flow signature. Already encoded in `strategy_harvest.md` Req-2; logged as its sharpest worked example.

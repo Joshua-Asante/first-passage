@@ -103,6 +103,8 @@ general form. Watch; no new lesson filed.
 - **Board write:** `STATE.md` decision-index line + `docs/SESSIONS.md` entry + `ops/instruments/MCL.md`
   session-log cell + `rejected_candidates.md` registry row — all in this commit.
 
+- **Registry:** rejected_candidates.md — ### TAS settlement-window replication on MCL (CME CL 14:28–14:30 ET)
+
 ## §10 audit-hook discharge
 
 ```text

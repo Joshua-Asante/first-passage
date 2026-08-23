@@ -40,6 +40,8 @@ Instrument MYM and MSL channel stand. Occupancy B8 stands. Stage-1 deaths counte
 - **Stop rule / re-proposal bar:** see §3
 - **Board write:** plan §6 P3.5 → STAGE-1 FAIL (route) · Stage-1 deaths **2/3**
 
+- **Registry:** rejected_candidates.md — ### MSL-S2B sweep-failure-filtered-continuation × MYM — SCREEN-FAIL (D2 route-B cheap falsifier)
+
 ## Change history
 
 | Date | Change | By |
