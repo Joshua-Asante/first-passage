@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23h — Coldstore Phase C plan (PENDING GO)
+
+**Focus:** Hygiene. Campaign plan 7b.
+
+**Shipped:** [`2026-08-23-coldstore-phase-c-implementation.md`](superpowers/plans/2026-08-23-coldstore-phase-c-implementation.md).
+
+**Decisions/defects:** none. Header is PENDING OPERATOR GO plus a fresh admitting ADR — this commit is not that ADR.
+
+**Open / next:** carry 2026-08-23g / 2026-08-22r. Campaign next: tradable-anomalies T2–T4 (PENDING GO).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-23g — Coldstore Phase B plan (PENDING GO)
 
 **Focus:** Hygiene. Campaign plan 7a.
