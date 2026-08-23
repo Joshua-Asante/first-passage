@@ -14,6 +14,32 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23w — merge origin/main into PR #115 (conflict fix)
+
+**Focus:** Resolve PR #115 conflicts after #112–#114 landed grow-lane wiring, discovery-skill repairs, and the adr-decay-audit skill.
+
+**Shipped:** merge `origin/main` into `cursor/substrate-phase-6-475b`. Union-merge splice (missing `---` before `2026-08-23u`) fixed via `--normalize`. Later colliding `2026-08-23o` (substrate Phase 6) remapped to `2026-08-23v`. `docs/adr/INDEX.md` auto-merged.
+
+**Decisions/defects:** none new.
+
+**Open / next:** carry `2026-08-23v` / `2026-08-22r` — DL-2 step 2 train scoring. Campaign next: Call-4 beta-cohesion diagnostic. Carry `2026-08-23t` — two undocumented decay findings still need discharge addenda. Follow-on grow slices still named. Operator GO/NO-GO on brief-authoring ox-alpha surviving cluster before any skill edit. #7/#8 stay PENDING GO.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-23v — Substrate Phase 6 docs + §10 checklist
+
+**Focus:** Build. Execute campaign plan #4 (docs slice only).
+
+**Shipped:** [`2026-08-23-substrate-phase-6-completion.md`](ltm/notes/2026-08-23-substrate-phase-6-completion.md). Owning ADR Change History + Status pointer. Destroy-copy not done.
+
+**Decisions/defects:** none. §10 Class-S original path and full `pytest tests/` skipped (note records why). No `ACTIVE_FIRM` reintroduced.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: Call-4 beta-cohesion diagnostic. #7/#8 stay PENDING GO.
+
+---
+
 ## 2026-08-23u — merge origin/main into PR #114 (conflict fix)
 
 **Focus:** Resolve PR #114 conflicts after #112/#113 landed grow-lane wiring, discovery-skill repairs, and remapped `2026-08-23m` to the brief-authoring ox-alpha review.
