@@ -215,3 +215,4 @@ git log -1 --oneline -- core/dd_protection.py core/lifecycle.py ops/c1_rail/c1_s
 | Date | Change | By |
 |---|---|---|
 | 2026-08-04 | Initial authoring — Phase A admitting ADR (`Accepted`) | Joshua + Cursor SDD Task 1 |
+| 2026-08-23 | Phase B pre-GO retrieve of the pruned design **failed** on this public clone ([note](../notes/2026-08-23-coldstore-phase-b-prego-blocked.md)). No GO packet. Approach 3 not invented. B/C still separately GO’d. | Cursor Cloud Agent |
