@@ -8,7 +8,7 @@
 **Superseded-in-part-by:** `2026-08-23-strategy-coldstore-phase-c.md` — living Guardian/Aegis `BASE_RISK` keys retired
 **Retain-until:** none
 **Authors:** Joshua (operator GO) + Cursor (SDD Task 1 recorder)
-**Related:** [`2026-08-03-claude-md-futures-refocus.md`](2026-08-03-claude-md-futures-refocus.md) §7 (CFD code retirement scoped, not executed — that work is Phase C, not this ADR) · [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) (Striker stays `AUTHORIZED · MECHANISM @ 1.00×`; venue-fit ≠ decay) · design `docs/superpowers/specs/2026-08-04-strategy-coldstore-retirement-design.md` (pruned; 2026-08-23 retrieve `BLOCKED` — [note](../notes/2026-08-23-coldstore-phase-b-prego-blocked.md)) · plan [`docs/superpowers/plans/2026-08-04-strategy-coldstore-phase-a.md`](../superpowers/plans/2026-08-04-strategy-coldstore-phase-a.md)
+**Related:** [`2026-08-03-claude-md-futures-refocus.md`](2026-08-03-claude-md-futures-refocus.md) §7 (CFD code retirement scoped in 08-03; living-key retirement is the [`Phase C ADR`](2026-08-23-strategy-coldstore-phase-c.md), not this ADR) · [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) (Striker stays `AUTHORIZED · MECHANISM @ 1.00×`; venue-fit ≠ decay) · design `docs/superpowers/specs/2026-08-04-strategy-coldstore-retirement-design.md` (pruned; 2026-08-23 retrieve `BLOCKED` — [note](../notes/2026-08-23-coldstore-phase-b-prego-blocked.md)) · plan [`docs/superpowers/plans/2026-08-04-strategy-coldstore-phase-a.md`](../superpowers/plans/2026-08-04-strategy-coldstore-phase-a.md)
 **Layer:** strategy surface (filesystem + discoverability). **No** `BASE_RISK`, lifecycle, `LEG_MAP`, or Pine-parameter edit.
 
 ---

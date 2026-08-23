@@ -23,7 +23,7 @@
 |---|---|---|
 | Phase A ADR non-touch | `027a729` | `BASE_RISK` / `_BASE_RISK` / `LEG_MAP` / lifecycle untouched in A |
 | `core/dd_protection.py` `BASE_RISK` | `027a729` | Guardian / Striker / Aegis / Striker NAS100 still present |
-| Futures-refocus ADR §7 | (related) | CFD code retirement scoped, not executed |
+| Futures-refocus ADR §7 | (related) | CFD code retirement scoped, not executed *(pre-GO read of the 08-03 ADR; living-key retirement is now the Phase C ADR)* |
 
 ---
 
