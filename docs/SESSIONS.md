@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23d — Substrate Phase 6 docs implementation plan
+
+**Focus:** Hygiene. Campaign plan 4.
+
+**Shipped:** [`2026-08-23-substrate-phase-6-implementation.md`](superpowers/plans/2026-08-23-substrate-phase-6-implementation.md).
+
+**Decisions/defects:** none. Destroy-copy stays operator confirm.
+
+**Open / next:** carry 2026-08-23c / 2026-08-22r. Campaign next: Call-4 beta-cohesion plan.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-23c — Grow-lane leftovers implementation plan
 
 **Focus:** Hygiene. Campaign plan 3.
