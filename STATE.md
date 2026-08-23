@@ -54,7 +54,7 @@ BEHIND this list.** Items leave when done; it stays ≤5 so it cannot decay into
 
 | # | Item | Owner artifact | Blocks |
 |---|---|---|---|
-| 1 | **F1 — how §4 reads a Tradeify-resting discharge** (2026-11-08). Eval is live ([`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md)); locked Striker book barred. §4 still scores the frozen $100K×4 set with Tradeify in it. Ruling owed: whether a discharge resting *on Tradeify* (or the withdrawn Striker book) discharges the four-firms program. **Deciding it early would pre-empt §4** | [`ADR 2026-08-04`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) §7 F1 · [four-firms §4](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) | 2026-11-08 §4 verdict reading |
+| 1 | **F1 — how §4 reads a Tradeify-resting discharge** (2026-11-08). Eval is live ([`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md)); locked Striker book barred. §4 still scores the frozen $100K×4 set with Tradeify in it. Ruling owed: whether a discharge resting *on Tradeify* (or the withdrawn Striker book) discharges the four-firms program. **Deciding it early would pre-empt §4.** Sibling fork also deferred to the same trigger: the [PARTIAL disposition addendum](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-08-22-4s-successrevert-dichotomy-does-not-cover-an-exactly-one-tier-clear-proposed) (exactly-one-tier-clear case) — operator explicitly deferred ratification 2026-08-23, not declined | [`ADR 2026-08-04`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) §7 F1 · [four-firms §4](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) | 2026-11-08 §4 verdict reading |
 | 2 | **B7-REFIRE Stage 1 + M1** — both wait on an acceptable strategy on the ruled (Python-native) host. Eval live; no book deployed | [`GO ADR Addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`S2`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) · [`M1`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) | live-signal / arming path |
 
 ---
@@ -280,6 +280,13 @@ deleted (not struck).
 > [`2026-08-08-quarterly-audit.md`](docs/notes/audits/programme-audit/2026-08-08-quarterly-audit.md).
 > The former ~90-line rider blockquote is deleted per the retention test — it restated obligations
 > the audit note now owns. **Operator rulings still open** are carried as queue rows, not here.
+
+### 2026-08-24 (Monday)
+
+- **Disaster-stop Phase 0a — attended real-account SIM.** Operator will attend and run the
+  `stop_loss=` / `closeposition` observation on the real (non-paper) Tradeify eval account this
+  session (committed 2026-08-23). Only a recorded PASS unlocks Phase 1 (`sl=` wiring into
+  `ops/c1_rail/c1_rail_listener.py`); the prior unattended attempt came back BLOCKED. [`plan`](docs/superpowers/plans/2026-08-23-disaster-stop-phase-0-1-implementation.md) · [`BLOCKED note`](docs/notes/rail_build/2026-08-23-disaster-stop-phase-0.md)
 
 ### 2026-10-11 (approx.)
 

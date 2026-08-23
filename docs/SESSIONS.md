@@ -30,6 +30,34 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-24n — operator ruled on 4 of the daily-sync's flagged open decisions
+
+**Focus:** Decision. Operator worked through the daily repo-truth-sync digest's "awaiting operator decision" sweep (18 items found via an 8-finder workflow + adversarial per-cluster verify). Ruled on the first four; explanations owed on three more; batch GO issued on 9 Pre-Q briefs and the registry-backfill debt separately (see follow-up entries).
+
+**Shipped:** [`adr-decay-audit ratification`](adr/2026-08-23-adr-decay-audit-skill-ratification.md) Status → `Accepted`, INDEX regenerated · [`Rule 2 addendum`](adr/2026-06-16-rule-2-budget-before-acting.md) Status → `Withdrawn` (body kept for audit trail, not deleted — repo convention is mark-withdrawn, not erase) · [`four-firms PARTIAL addendum`](adr/2026-07-12-prop-portfolio-four-friendly-firms.md) — ratification explicitly deferred to trigger time, same posture as sibling F1 row · [`STATE.md`](../STATE.md) — disaster-stop Phase 0a booked as a 2026-08-24 (Monday) forward trigger, operator-committed.
+
+**Decisions/defects:** `adr-decay-audit` skill ACCEPTED (standing periodic ADR-corpus decay sweep now ratified). Rule-2 audit-cycle-counting addendum WITHDRAWN (moot per its own text — 2026-08-20 STRATEGIC trip already makes the trip-log non-empty). Four-firms PARTIAL-disposition addendum stays `Proposed`, ratification DEFERRED to first tier clearance or 2026-11-08. Disaster-stop Phase 0a: operator will personally run the attended real-account SIM 2026-08-24.
+
+**Open / next:** Q-M1WIRE-1 wire-vs-risk-accept, closure-disposition-coverage-hard severity, and the blind-channel FM-4 doctrinal seams — explained to operator this session, ruling still owed. Registry-backfill (33 rows) and 9 Pre-Q brief GOs dispatched separately this session — see their own entries once landed. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-24k — queue-bind plan + pain-point packet charter
+
+**Focus:** Decision. First-look control-plane defect: approve bind approach B (queue-led Open/next + doable row 3 + SESSIONS-only gate); sequence the other pain points as parked packets. No bind build this session.
+
+**Shipped:** [`bind plan`](superpowers/plans/2026-08-23-bind-operator-queue-implementation.md) · [`pain-point packets`](superpowers/plans/2026-08-23-repo-pain-point-packets.md)
+
+**Decisions/defects:** Bind PENDING row-3 GO (existing channel only). P1–P5 stay behind the queue. No new generation channel. No second prune.
+
+**Open / next:** **STATE queue:** #1 F1 · #2 B7-REFIRE + M1. Bind Task 1: operator names row 3, then build the bind plan. Remaining first-look items live on the pain-point charter (P1 orientation · P2 MEMORY · P3 docs-runtime inventory · P4 museum rules · P5 REPO_MAP gate) — not as a leftover lead.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-24h — merge origin/main into PR #122 (conflict fix)
 
 **Focus:** Resolve PR #122 conflicts after #121. Same-day `2026-08-24e` is taken by nav leftovers on `main`.
