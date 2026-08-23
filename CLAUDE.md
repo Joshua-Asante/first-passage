@@ -96,10 +96,10 @@ is deliberately untouched (`ops/c1_rail/c1_sizing_host_reference.py` still consu
 
 | Strategy | Instrument / TF | Risk/trade | Version | DXTrade contractValue |
 |---|---|---|---|---|
-| Guardian Gold | XAUUSD 15m | 0.34% | v5.5 LOCKED | 100 |
 | Striker DJ30 | DJ30 15m | **0.70%** (pyramid 750%) | v4.5 LOCKED | **10** (critical — default 1 ⇒ ~7% risk) |
-| Aegis USDJPY | USDJPY 15m | 1.50% | v4.3 LOCKED | default (1) |
 | Striker NAS100 | NAS100 15m | **0.37%** (pyramid 1000%) | v1 LOCKED | 10 |
+
+Guardian Gold / Aegis USDJPY are **historical CFD book** — not living `BASE_RISK`. Frozen risk% live in `historical_challenge.HISTORICAL_CHALLENGE_BASE_RISK` (0.34% / 1.50%); Pine + LOCK bodies are under `core/strategies/_archive/`. [Phase C](docs/adr/2026-08-23-strategy-coldstore-phase-c.md).
 
 Strategy parameters (SL/TP/ATR/session/BE/trail) live in **Pine only** — never duplicated here;
 risk% and pyramid are mirrored above from `firm_rules.py`/Pine as the human-readable record. Lock

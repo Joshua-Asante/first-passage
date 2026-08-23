@@ -38,7 +38,7 @@ def test_denylist_sources_dd_protection_constants(dl):
 
 
 def test_denylist_sources_locked_risk_pcts(dl):
-    """risk %-forms derived from firm_rules._BASE_RISK decimals (×100)."""
+    """risk %-forms from the historical 4-leg book (living is a subset)."""
     for v in ("0.34", "0.70", "1.50", "0.37"):
         assert v in dl.values, f"{v} missing from sourced denylist"
 

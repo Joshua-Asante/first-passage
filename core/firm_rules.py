@@ -22,6 +22,8 @@ and the F2 fixed-$-vs-%-of-peak faithfulness caveat for the ``trailing`` firms.
 Every prop tier must carry ``starting_balance`` — there is no $200K fallback.
 """
 
+from historical_challenge import HISTORICAL_CHALLENGE_BASE_RISK
+
 FIRM_RULES = {
     # Define when onboarding:
     # "FundedNext": { ... },
@@ -563,8 +565,11 @@ AUTOMATION_FRIENDLY_PROP_FIRMS = {
 }
 
 # Unified allocations — challenge phase = funded phase.
-# Source of truth: this module (`_BASE_RISK`) is canonical for live-sizing risk %.
-# Consumers derive: `dd_protection.BASE_RISK` (display keys) and `mc.modes.ALLOCATIONS`.
+# Living source of truth for *deployable* risk %: this module (`_BASE_RISK`).
+# The frozen 4-leg lock book (Guardian/Aegis included) lives on
+# historical_challenge.HISTORICAL_CHALLENGE_BASE_RISK — Phase C 2026-08-23.
+# Consumers: `dd_protection.BASE_RISK` (living display keys) and
+# `mc.modes.ALLOCATIONS` (historical 4-leg book).
 # Allocation rationale: docs/adr/2026-05-23-allocation-refresh-2.md (current lock ADR).
 # (Prior Notion pointer 346…d1b8d5 = SUPERSEDED/archived 2026-04-17 brief.)
 # Unified 2026-04-17; Guardian re-locked 0.30% → 0.34% on 2026-04-23 after
@@ -580,13 +585,12 @@ AUTOMATION_FRIENDLY_PROP_FIRMS = {
 # RISK_TIERS / BASELINE_RISK (challenge|funded phase wrappers for the continuous-lot
 # multiplier spine) were removed in substrate Phase 2 — ops/accounts.py retired;
 # live sizing is c1 + dd_protection.BASE_RISK, not a $200K lot multiplier.
-_BASE_RISK = {"guardian": 0.0034, "striker": 0.0070, "aegis": 0.0150, "striker_nas100": 0.0037}
+_LIVE_BASE_RISK_SLUGS = ("striker", "striker_nas100")
+_BASE_RISK = {k: HISTORICAL_CHALLENGE_BASE_RISK[k] for k in _LIVE_BASE_RISK_SLUGS}
 
 # Slug → Title-Case keys used by dd_protection.BASE_RISK / c1 LEG_MAP leg_key.
 _BASE_RISK_DISPLAY_KEYS = {
-    "guardian": "Guardian",
     "striker": "Striker",
-    "aegis": "Aegis",
     "striker_nas100": "Striker NAS100",
 }
 
