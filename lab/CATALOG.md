@@ -68,6 +68,7 @@ documents the camp boundary for humans/tools.
 | q_polfront_1_2026-08 | c1 | ACTIVE | yes | — | lab/analysis/c1/q_polfront_1_2026-08/ | — |
 | q_rail_1_2026-07 | c1 | ACTIVE | yes | c1 rail Phases 0–4 CLOSED RESOLVED; ceiling $700 operator-signed | lab/analysis/c1/q_rail_1_2026-07/ | — |
 | research-analyst-mnq-atomic-facts-2026-08-19 | c1 | ACTIVE | yes | Research Analyst inaugural session — MNQ atomic-fact decomposition draft (cross-campaign synthesis, not a new backtest); routing corrected same-day 2026-08-19 (DROP D5 -- already killed twice, ledger-contradicted first GRADUATE call / HOLD temporal-selectivity / DROP weekly-bias) | lab/analysis/c1/research-analyst-mnq-atomic-facts-2026-08-19/ | — |
+| shape_feasibility_map_2026-08 | c1 | ACTIVE | yes | 630-cell region published, Tradeify/MFFU identical, 8/8 full-N validation cells agree; screens shape, not mechanisms. | lab/analysis/c1/shape_feasibility_map_2026-08/ | — |
 | tradeify_book_composition_2026-07-23 | c1 | ACTIVE | yes | eval-lock fix + §2 book-composition re-derivation | lab/analysis/c1/tradeify_book_composition_2026-07-23/ | inputs gitignored |
 | tradeify_eval_lock_correction_2026-07-22 | c1 | ACTIVE | yes | Tradeify/MFFU eval drawdown-lock correction re-MC | lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/ | — |
 | tradeify_fade_stage0_2026-07-30 | c1 | ACTIVE | yes | Stage 0 instrumentation complete; Stage 1 region computed at 1x/2x/4x; no mechanism scored, K=0, $0 spend | lab/analysis/c1/tradeify_fade_stage0_2026-07-30/ | — |
