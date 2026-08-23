@@ -1,0 +1,31 @@
+[cache] 155 day files found at C:\Users\joshu\.databento_cache\q_ofchan_1_exploration_tbbo\GLBX-20260807-EHX5KUSF7K
+[20/155] day files processed
+[40/155] day files processed
+[60/155] day files processed
+[80/155] day files processed
+[100/155] day files processed
+[120/155] day files processed
+[140/155] day files processed
+[155/155] day files processed
+{
+  "n_sessions_scored_pre_roll": 128,
+  "n_roll_excluded": 2,
+  "n_usable": 126,
+  "rho_observed": 0.07513760779902512,
+  "p_emp": 0.20539730134932535,
+  "gate_a_n_usable_ge_60": true,
+  "gate_b_sign_positive": true,
+  "gate_c_p_emp_lt_0_20": false,
+  "PROMOTE": false,
+  "roll_excluded_dates": [
+    "2026-03-19",
+    "2026-06-17"
+  ]
+}
+REPRODUCTION CHECK vs original artifact: {
+  "n_usable_matches": true,
+  "rho_observed_matches": true,
+  "p_emp_matches": true,
+  "roll_dates_match": true
+}
+wrote C:\Temp\claude\C--Users-joshu-multi-firm-operations--claude-worktrees-openrouter-ox-alpha-test-fff246\f0aee6d1-68de-4409-a31e-d09cebc35265\scratchpad\r_pm_series.json
