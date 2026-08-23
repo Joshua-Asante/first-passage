@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23o — Substrate Phase 6 docs + §10 checklist
+
+**Focus:** Build. Execute campaign plan #4 (docs slice only).
+
+**Shipped:** [`2026-08-23-substrate-phase-6-completion.md`](ltm/notes/2026-08-23-substrate-phase-6-completion.md). Owning ADR Change History + Status pointer. Destroy-copy not done.
+
+**Decisions/defects:** none. §10 Class-S original path and full `pytest tests/` skipped (note records why). No `ACTIVE_FIRM` reintroduced.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: Call-4 beta-cohesion diagnostic. #7/#8 stay PENDING GO.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-23l — Venue-binding Phase 1–3 registry landed
 
 **Focus:** Build. Execute plan #1.
