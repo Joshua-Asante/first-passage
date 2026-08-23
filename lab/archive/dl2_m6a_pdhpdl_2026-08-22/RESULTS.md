@@ -67,8 +67,55 @@ slices ([`test_units_synthetic.py`](test_units_synthetic.py), all (a)-(e) gates 
 including a known synthetic roll day correctly skip-back'd and a known synthetic
 break-and-hold reproducing the exact hand-worked R multiple) before the full TRAIN run.
 
+## Geometric feasibility diagnostic (2026-08-22, post-closure -- not a Sec6 step, no
+confirm touched, no OUTER-investigation slot consumed; discharges the Iterate block's own
+stop rule below)
+
+Ran [`geometric_feasibility_diagnostic.py`](geometric_feasibility_diagnostic.py) per the
+Iterate block's own stop rule (ox-alpha's Q3 proposal, reconciled). Two measures, both on
+TRAIN data already read:
+
+**(A) Full-session ratio, unconditional (no signal needed) -- R = a session's own achievable
+range (open through the 16:55 ET force-flat bar) / the reference-window width its PDH/PDL
+level would be derived from:**
+
+| Lookback | n sessions | median R | mean R | % R<1.0 | % R<0.5 | % R>2.0 | % R>3.0 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 session | 2163 | 1.000 | 1.159 | 49.8% | 8.5% | 7.8% | 1.8% |
+| 2 sessions | 2162 | 0.687 | 0.779 | 77.4% | 24.8% | 1.3% | 0.2% |
+
+**(B) Realized-trade MFE ratio, conditional on trades that actually fired** (an
+already-favorably-selected subset -- these are the sessions where price broke out at all)
+-- max favorable excursion from entry to force-flat, as a fraction of that trade's own risk
+(stop distance):
+
+| V | Lookback | Target | n | median MFE/R | mean MFE/R | % never reach 1R | % reach own target |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 1 | 2R | 1811 | 0.342 | 0.476 | 89.3% | 1.1% |
+| 2 | 1 | 3R | 1811 | 0.342 | 0.476 | 89.3% | 0.3% |
+| 3 | 1 | 2R | 1364 | 0.328 | 0.448 | 90.2% | 0.9% |
+| 4 | 1 | 3R | 1364 | 0.328 | 0.448 | 90.2% | 0.1% |
+| 5 | 2 | 2R | 1500 | 0.230 | 0.317 | 96.7% | 0.3% |
+| 6 | 2 | 3R | 1500 | 0.230 | 0.317 | 96.7% | 0.0% |
+| 7 | 2 | 3R | 1179 | 0.219 | 0.303 | 96.9% | 0.0% |
+| 8 | 1 | 2R | 1327 | 0.380 | 0.527 | 87.0% | 2.0% |
+| 9 | 2 | 3R | 1144 | 0.255 | 0.343 | 96.0% | 0.0% |
+| 10 | 1 | 2R | 1752 | 0.397 | 0.564 | 85.6% | 2.2% |
+
+**Verdict: the construction is confirmed geometrically infeasible on M6A at this holding
+period -- not a marginal mismatch.** Even the median SESSION (lookback=1) barely retraces
+its own reference width (R=1.0), which only clears the STOP distance, with essentially no
+room left for a 2-3R target beyond it (only 7.8%/1.8% of sessions ever have that much room).
+Lookback=2 is measurably worse (median R=0.687, wider reference window without a
+proportionally wider achievable range). Among trades that actually fired -- already the
+favorable subset, since a breakout had to occur for entry to trigger at all -- 85-97% never
+even complete a full 1R favorable move, and essentially none (0-2.2%) ever reach their own
+2R/3R target. This resolves the Iterate block's stop rule: **R << 1, construction retired
+for M6A**, per the pre-committed rule -- not an ad hoc call made after seeing this result.
+
 ## Iterate -- loop exit (canon `docs/methodology/inqhiori-canon.md` Sec16; mandatory per
-`docs/adr/2026-08-04-iterate-closure-exit-mandatory.md`)
+`docs/adr/2026-08-04-iterate-closure-exit-mandatory.md`; updated 2026-08-22 post-diagnostic,
+append-only -- the original text stands above the "post-diagnostic update" callouts below)
 
 - **Verdict used:** `AMBIGUOUS` -- ABANDONMENT (prereg roster mapping; confirm never read,
   nothing tested).
@@ -108,8 +155,17 @@ break-and-hold reproducing the exact hand-worked R multiple) before the full TRA
   replicates DL-2's pathology (R << 1, i.e. cutoff-forced exits would dominate), this
   construction is retired for that instrument class without burning a further OUTER-
   investigation slot on it.
+  **>> RESOLVED 2026-08-22 (post-diagnostic update, append-only — see the section above):**
+  R replicates the pathology, decisively (median R=1.0 at lookback=1 with essentially no
+  target-reaching room; 0.687 at lookback=2; 85-97% of realized trades never complete a
+  full 1R move). **This construction (opposite-prior-extreme stop/target derived from a
+  1-2 session lookback, single-session force-flat hold) is retired for M6A**, per the
+  pre-committed rule. It remains untested for generality on other instruments -- the entry
+  packet's own requirement (any successor must run this same diagnostic for its own target
+  instrument, not assume the M6A result transfers) is unaffected by this resolution.
 - **Board write:** [`STATE.md` Scheduled forward triggers, No fixed date / gated section
-  ("Deep-iteration lane -- geometric-feasibility-ratio audit owed before DL-3")](../../../STATE.md).
+  ("Deep-iteration lane -- geometric-feasibility-ratio audit RESOLVED: construction retired
+  for M6A")](../../../STATE.md).
 
 ## Change history
 
@@ -117,3 +173,4 @@ break-and-hold reproducing the exact hand-worked R multiple) before the full TRA
 |---|---|---|
 | 2026-08-22 | RESULTS.md authored; Sec6 step 2 closed ABANDONMENT | Claude Code (train-scoring session) |
 | 2026-08-22 | Iterate block added (canon Sec16); ox-alpha sanitized second opinion sought and reconciled against a re-run of DL-1's own archived harness | Claude Code (same session) |
+| 2026-08-22 | Geometric-feasibility-ratio diagnostic run per the Iterate block's own stop rule (`geometric_feasibility_diagnostic.py`) -- construction confirmed geometrically infeasible on M6A (median R=1.0 at lookback=1, 0.687 at lookback=2; 85-97% of realized trades never complete a 1R move). Retired for M6A per the pre-committed rule; Iterate block's Stop-rule field updated in place (append-only) with the resolution. | Claude Code (same session) |

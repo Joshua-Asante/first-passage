@@ -15,6 +15,32 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 
 ---
 
+## 2026-08-23b — DL-2 Iterate block's own stop rule discharged: geometric-feasibility-ratio diagnostic RESOLVED
+
+**Focus:** Measurement. Ran the diagnostic named at DL-2's own closure (per an ox-alpha
+second opinion, reconciled 2026-08-22) before any operator decision on a DL-3.
+
+**Shipped:** [`geometric_feasibility_diagnostic.py`](../lab/archive/dl2_m6a_pdhpdl_2026-08-22/geometric_feasibility_diagnostic.py)
+— two measures on TRAIN data already read, no confirm touched, no OUTER-investigation slot
+spent. (A) Unconditional full-session ratio: median R=1.000 at 1-session lookback (only 7.8%
+of sessions ever have 2R-target room), R=0.687 at 2-session lookback. (B) Realized-trade MFE:
+85–97% of trades that actually fired never complete a full 1R favorable move. **Verdict:
+construction (opposite-prior-extreme stop/target + single-session force-flat hold) confirmed
+geometrically infeasible on M6A — retired for that instrument, per the pre-committed stop
+rule.** Recorded on DL-2's own [Iterate block](../lab/archive/dl2_m6a_pdhpdl_2026-08-22/RESULTS.md)
+(append-only update) and [`STATE.md`](../STATE.md).
+
+**Decisions/defects:** none.
+
+**Open/next:** operator decision owed — DL-3 on a different instrument under this
+construction (now gated on its own feasibility-ratio clearance first), a genuinely different
+construction, or a broader lane pause given 2/3 of the STRATEGIC budget is spent with zero
+survivors.
+
+**Live-ops state:** unchanged — rail disarmed; no book. $0 spend (diagnostic only, cached data).
+
+---
+
 ## 2026-08-22s — DL-2 step 2 TRAIN scoring → ABANDONMENT; ox-alpha consult; Iterate blocks landed
 
 **Focus:** Build → Measurement → Decision. Executed the DL-2 step-2 handoff: built and
