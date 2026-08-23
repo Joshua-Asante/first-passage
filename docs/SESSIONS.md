@@ -14,6 +14,25 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-22p — Part B ADR ratified; charter §2.2(iv) + burned_segments.py extension landed
+
+**Focus:** Build. Operator GO ("ratify it as-is") on 08-22o's Part B ADR; executed §7 same session.
+
+**Shipped:** ADR `Proposed` → `Accepted`. Charter §2.2(iv) (disclosure-only sealed-consultation
+conjunct) added to [`2026-08-16-deep-iteration-lane-charter.md`](adr/2026-08-16-deep-iteration-lane-charter.md).
+`lab/discovery/burned_segments.py` extended: `consultations` list schema (seed MNQ entry migrated,
+no data loss), channel-agnostic `consultation_count`/`consultation_history`. 11/11 tests green
+(`tests/test_discovery_burned_segments.py`, 4 new).
+
+**Decisions/defects:** None new. Phase 3 sweep clean — no stale restatement of the rejected
+within-campaign K→M claim.
+
+**Open/next:** `register_search.open_run` wiring for §2.2(iv) stays named forward work
+(build-authorization ADR). No open item from this ADR itself — disposition final on both claims.
+
+**Live-ops state:** unchanged — rail disarmed; no book. No Databento spend.
+
+---
 ## 2026-08-22o — Part B ADR drafted (two-ledger K question), `Proposed`
 
 **Focus:** Decision. Filed the GROW spec v2 Part B ADR (two-ledger K question), unlocked by
