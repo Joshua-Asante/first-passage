@@ -90,9 +90,9 @@ grep "N-YYYY-MM-DD-slug" docs/briefs/Q-*.md
 ## Verification
 
 ```bash
-# Discipline checks (mechanical — notice type is lighter)
-$ python /path/to/brief-authoring/scripts/check_brief.py <this-file>.md --type notice
-# Expected: §0 source / §1 observation / §2 baseline+delta / §4 routing decision all present
+# Discipline checks (mechanical — notice type is unmodeled here)
+$ python scripts/check_brief.py <this-file>.md --type notice
+# Expected: RESULT: NOT CHECKED — fill this template; that is not a pass
 ```
 
 Notices fail by being too ceremonial. If you find yourself writing five-section observations with falsifiers, you're authoring a Pre-Q, not a notice — promote it.

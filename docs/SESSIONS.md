@@ -14,6 +14,33 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+
+## 2026-08-24b — merge origin/main into PR #118 (conflict fix)
+
+**Focus:** Resolve PR #118 conflicts after #117. Same-day `2026-08-23` letters `a`–`z` are taken, so this wrap-up and the remapped O1–O5 record use the next calendar date.
+
+**Shipped:** merge `origin/main` into `cursor/ox-alpha-brief-o1-o5-b77d`. Union-merge splice (missing `---` before `2026-08-23z`) fixed via `--normalize`. Later colliding `2026-08-23m` (O1–O5 vs ox-alpha review on `main`) remapped to `2026-08-24a`. Skill/checker/notice bytes unchanged.
+
+**Decisions/defects:** none new.
+
+**Open / next:** leftover surviving cluster (O10 grounding quotes, O15+O24 judgment wiring, O7 Trap-12 detection). Carry `2026-08-22r` — DL-2 step 2 train scoring. Attended disaster-stop 0a is operator-only. Carry `2026-08-23t` — two undocumented decay findings still need discharge addenda. Follow-on grow slices still named. #7/#8 stay PENDING GO.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-24a — Brief-authoring O1–O5 aligned (D1–D4 GO)
+
+**Focus:** Decision. Operator GO on D1–D4; write the type × check law the checker already enforces into the skill.
+
+**Shipped:** [`SKILL.md`](../.claude/skills/brief-authoring/SKILL.md) matrix + type-table fix + inline 8/9. [`check_brief.py`](../scripts/check_brief.py) `--type closure` delegates. [Notice addendum](notes/notice/N-2026-08-23-ox-alpha-brief-authoring-review.md). No new ADR.
+
+**Decisions/defects:** D1 codify not expand · D2 keep tier-independent · D3 drop lock type · D4 inline 8/9/10 only.
+
+**Open / next:** leftover surviving cluster (O10 grounding quotes, O15+O24 judgment wiring, O7 Trap-12 detection). Carry 2026-08-23l — W5 CI-from-`gates.yml` plan; #7/#8 stay PENDING GO. Carry 2026-08-22r — DL-2 step 2 train scoring.
+
+---
+
 ## 2026-08-23z — merge origin/main into PR #117 (conflict fix)
 
 **Focus:** Resolve PR #117 conflicts after #112–#116. Same-day letters `a`–`y` are taken; this wrap-up reuses the last free letter and records the remapped disaster-stop entry in Shipped.

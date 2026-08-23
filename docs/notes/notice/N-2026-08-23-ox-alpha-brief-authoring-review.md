@@ -4,7 +4,7 @@
 **Observed:** 2026-08-23
 **Author:** Cursor Cloud Agent (commission: send a sanitized copy of the brief-authoring skill to ox-alpha via `$OPEN_ROUTER_API` and reconcile objections against the real skill before treating any as findings)
 **Source:** `stealth/ox-alpha` chat-completions call (OpenRouter, no tools, no repo access) against a genericized rewrite of `.claude/skills/brief-authoring/SKILL.md`, then a Rule-0 read of the real skill + templates + repo-side checker
-**Status:** `HELD` — surviving findings are logged; skill edits are doctrine (ceremony limb 4) and need operator GO
+**Status:** `HELD` — O1–O5 released on operator GO 2026-08-23 (D1–D4); remainder still held
 **Lives in:** `docs/notes/notice/N-2026-08-23-ox-alpha-brief-authoring-review.md`
 
 **D-S-A domain:** meta-process (adversarial review of an authoring skill). No production-control change.
@@ -88,25 +88,23 @@ Disposition vocabulary: **SURVIVES** = treat as a finding against the real skill
 
 ## §4 — Routing decision
 
-**Decision:** HOLD until operator GO
-**Reason:** surviving items are real methodology findings; editing the skill (or promoting any of them into checks) is ceremony-limb-4 doctrine and is out of scope for this send-and-reconcile turn.
+**Decision:** HOLD (remainder) — O1–O5 released
+**Reason:** operator GO 2026-08-23 signed off D1–D4 (codify, keep tier-independent, drop lock type, inline 8/9/10). O10 / O15+O24 / O7 and the cheaper leftover cluster stay held.
 
 ---
 
 ## §5 — If HOLD: re-check trigger
 
-- **Re-check date:** next operator pass on this notice, or the next quarterly methodology audit, whichever first
-- **Trigger condition:** operator GO to amend `brief-authoring` (or to open a Pre-Q that picks a subset). Highest-leverage surviving cluster, ranked post-reconciliation:
-  1. **O1** — write the type × check matrix the checker already implements into SKILL.md (stop claiming “every brief, six checks”)
-  2. **O10** — require a production quote (`path:line`) inside the question/hypothesis, so Rule 0 ordering is structural
-  3. **O15 + O24** — tag each check `[MECHANICAL]` / `[JUDGMENT]`; name `fable-judge` / the panel / ox-alpha as the judgment performer; make a green checker print judgment-outstanding
-  4. **O7** — detect Trap-12 gate rewrites (hash or equivalent), not just advise
-  5. **O4 residue + O2** — add closure to the type table; fix the “six” count drift
-  6. **O21 / O22 / O9 / O11 / O14 / O17 / O18** — spawn answer-addenda + concern dispositions; amendment protocol; lesson→skill path; verification transcripts; hook triggers
-- **Drop trigger:** operator NO-GO, or a skill amendment ADR that accepts/declines each surviving row so this notice is not the owner
+- **Re-check date:** next operator pass on the remaining cluster, or the next quarterly methodology audit, whichever first
+- **Trigger condition:** operator GO on the leftover surviving cluster:
+  1. **O10** — require a production quote (`path:line`) inside the question/hypothesis
+  2. **O15 + O24** — tag each check `[MECHANICAL]` / `[JUDGMENT]`; name the judgment performer
+  3. **O7** — detect Trap-12 gate rewrites
+  4. **O21 / O22 / O9 / O11 / O14 / O17 / O18** — spawn loops, amendment protocol, lesson→skill path, verification transcripts, hook triggers
+- **Drop trigger:** operator NO-GO on the remainder, or a later amendment that accepts/declines each leftover row
 - **Calendar entry:** none minted — board write is the SESSIONS Open/next line
 
-**Not in scope this turn:** no SKILL.md edit, no new checker, no template rewrite.
+**Released this GO (2026-08-23):** O1 matrix-in-body · O2 count drift · O3 light stays `NOT CHECKED` · O4 type-table (drop lock; add closure; `--type closure` delegates) · O5 inline 8/9/10.
 
 ---
 
@@ -127,9 +125,9 @@ grep -c 'SURVIVES\|DISCHARGED\|DECLINED\|PARTIAL' \
   docs/notes/notice/N-2026-08-23-ox-alpha-brief-authoring-review.md
 # Expected: table + this grep both populated
 
-# Skill body still carries the O1 universal claim (until a GO amends it)
+# Skill body no longer carries the O1 universal claim (GO 2026-08-23)
 grep -n 'Every brief, regardless of type' .claude/skills/brief-authoring/SKILL.md
-# Expected: one hit (the skew this notice records)
+# Expected: empty
 
 # Checker already declines the universal contract
 grep -n '_UNMODELED_CONTRACT_TYPES\|_LIGHT_TIER_RE' scripts/check_brief.py
@@ -142,9 +140,13 @@ grep -n '_UNMODELED_CONTRACT_TYPES\|_LIGHT_TIER_RE' scripts/check_brief.py
 
 ```bash
 python scripts/check_brief.py docs/notes/notice/N-2026-08-23-ox-alpha-brief-authoring-review.md --type notice
-# Expected: RESULT: NOT CHECKED — notice contract not modeled in the repo-side subset
-# (this is the O1/O4 residue: skill says run the checker; repo checker refuses the type)
+# Expected: RESULT: NOT CHECKED — notice contract not modeled (D1: unmodeled types stay declined)
 
 git log -1 --format='%H %ad' --date=short -- .claude/skills/brief-authoring/SKILL.md
-# Expected: d88e5f22be12ef9b009dcba2bdb07de9f421747c 2026-08-15
 ```
+
+---
+
+## Addendum 2026-08-23 — O1–O5 addressed (D1–D4 GO)
+
+Operator signed off the recommended rulings and gave GO. Codify-only: type × check matrix written into `SKILL.md`; lock row dropped from the type table; closure row added; `--type closure` delegates to `check_closure_disposition.py`; sub-rules 8/9 inlined next to 10; light ADRs stay `NOT CHECKED`. No new ADR. O6+ untouched.

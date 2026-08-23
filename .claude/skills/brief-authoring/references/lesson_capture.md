@@ -97,8 +97,9 @@ grep -rn "E-[N]" docs/ /mnt/skills/user/ 2>/dev/null
 ## Verification
 
 ```bash
-$ python /path/to/brief-authoring/scripts/check_brief.py <this-file>.md --type lesson
-# Expected: pattern, anchor incident(s), repair rule, enforcement point all present
+$ python scripts/check_brief.py <this-file>.md --type lesson
+# Expected: RESULT: NOT CHECKED (lesson is an unmodeled contract type)
+# Pattern, anchor incident(s), repair rule, enforcement point all present in the template
 # Candidate lessons pass with empty repair-enforcement if status is explicitly Candidate
 ```
 
