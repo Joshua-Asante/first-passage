@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23f — Disaster-stop Phase 0 then 1 plan
+
+**Focus:** Hygiene. Campaign plan 6.
+
+**Shipped:** [`2026-08-23-disaster-stop-phase-0-1-implementation.md`](superpowers/plans/2026-08-23-disaster-stop-phase-0-1-implementation.md).
+
+**Decisions/defects:** none. Phase 0 is operator-attended; no `sl=` until a recorded 0a PASS. No `dry_run=false`.
+
+**Open / next:** carry 2026-08-23e / 2026-08-22r. Campaign next: coldstore Phase B then C (PENDING GO).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-23e — Call-4 beta-cohesion diagnostic plan
 
 **Focus:** Hygiene. Campaign plan 5.
