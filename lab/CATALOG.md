@@ -45,7 +45,7 @@ documents the camp boundary for humans/tools.
 | geofit_skewed_family_construction_2026-08-15 | c1 | ACTIVE | yes | scoping construction, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_skew_probe_2026-07-25/REA... | lab/analysis/c1/geofit_skewed_family_construction_2026-08-15/ | — |
 | mnq_event_ceiling_2026-08-04 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_event_ceiling_2026-08-04/ | — |
 | mnq_ofchan_routeb_2026-08 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_ofchan_routeb_2026-08/ | — |
-| mnq_orb_flow_depth_2026-08-18 | c1 | ACTIVE | yes | FROZEN, pull not authorized — MBP-10 depth escalation on ORB-MNQ-1/N14, fresh authorization per MNQFLOW-1's own FM-4 | lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/ | — |
+| mnq_orb_flow_depth_2026-08-18 | c1 | ACTIVE | yes | HOLD 2026-08-23 (operator) — blocked at P0 twice (original $148.04, redraw S2B $154.73, both vs $125.00 ceiling; structural ~$150 true cost); "not ruling it out but I do not know if it is worth the spend"; no pull run, $0 spent | lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/ | — |
 | mnq_orb_flow_substrate_2026-08-05 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/ | — |
 | mnq_orb_level_proximity_tod_2026-08-06 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_orb_level_proximity_tod_2026-08-06/ | — |
 | mnq_r2agrun_routeb_2026-08 | c1 | HOLD | yes | `AMBIGUOUS-HOLD` — empty candidate list (magnitude floor; G3 → **ITERATE**, not promote). | lab/analysis/c1/mnq_r2agrun_routeb_2026-08/ | — |
@@ -178,6 +178,7 @@ documents the camp boundary for humans/tools.
 | d5_recost_2026-07 | FALSIFIED | Stage-2 KILL (binding cause is edge decay, not cost). | lab/analysis/d5_recost_2026-07/CARD.md | lab/archive/d5_recost_2026-07/ | — | 2026-08-03 |
 | decompound_ddprot_2026-06-21 | CLOSED | DONE_WITH_CONCERNS. | lab/analysis/decompound_ddprot_2026-06-21/CARD.md | lab/archive/decompound_ddprot_2026-06-21/ | — | 2026-07-12 |
 | dl1_mgc_orc_2026-08-16 | CLOSED | `AMBIGUOUS` — ABANDONMENT (prereg roster mapping: confirm never read, nothing | lab/analysis/dl1_mgc_orc_2026-08-16/CARD.md | lab/archive/dl1_mgc_orc_2026-08-16/ | — | 2026-08-21 |
+| dl2_m6a_pdhpdl_2026-08-22 | CLOSED | `AMBIGUOUS` -- ABANDONMENT (nominee V9 fails gates 2a/2b/2d; gate 2c passed; confirm never read) | lab/analysis/dl2_m6a_pdhpdl_2026-08-22/CARD.md | lab/archive/dl2_m6a_pdhpdl_2026-08-22/ | — | 2026-08-22 |
 | dstruct_mnq_2026-08 | NULL | daily close-vs-EMA20 bias carries nothing at daily granularity (Tier-1 screen... | lab/analysis/dstruct_mnq_2026-08/CARD.md | lab/archive/dstruct_mnq_2026-08/ | — | 2026-08-22 |
 | external_sourcing_2026-06-30 | CLOSED | RESOLVED zero saved candidates (thesis-first narrow pass) | lab/analysis/external_sourcing_2026-06-30/CARD.md | lab/archive/external_sourcing_2026-06-30/ | — | 2026-07-12 |
 | feed_divergence_2026-06 | CLOSED | RESOLVED-BY-RETIREMENT. Q-FEED-1's cross-feed transfer-validity question diss... | lab/analysis/feed_divergence_2026-06/CARD.md | lab/archive/feed_divergence_2026-06/ | — | 2026-08-03 |

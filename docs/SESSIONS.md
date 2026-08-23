@@ -138,6 +138,194 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-24l — Blind channel: canonical kill-count corrected (2/3); door re-walk against cached non-index panels
+
+**Focus:** Measurement + Hygiene. Operator asked to contemplate the no-counterparty blind
+channel's next move; elected "B" — a free (no candidate named) door re-walk + diagnostics,
+using a Workflow fan-out (6 survey agents + 8 door-reassessment agents).
+
+**Shipped:** Two of six survey agents returned garbage placeholder output (silent failure,
+not caught by the workflow's own success reporting) — redone directly rather than trusted.
+The corrected dedup pass surfaced `MNQ-SIZEDIV-1`, a second blind-channel construct frozen
+and killed pre-G0 the same day as `MNQ-ANALOGUE-1` (2026-08-15, ported 2026-08-16) that
+neither the original contemplation nor any of the six survey agents had accounted for.
+**Its kill means the channel's canonical pre-G0 count was 2/3, not the 1/3 the channel
+ADR's own "canonical" line had displayed for 8 days** — `STATE.md` and `ops/instruments/MNQ.md`
+had it right since the port; only the ADR's own line lagged. Corrected in place. Door
+re-walk (the 08-15 "naming set empty" table, re-assessed against panels the deep-iteration
+lane has since cached at $0 for 6A/M6A and GC/MGC): the CON-5/dense-1m entry-geometry pause
+reopens on those two non-index instruments specifically (still blocked on MNQ, per D2a's
+own non-index/route-independence exemption, already operator-ratified twice on these exact
+panels); two doors flagged operator-call-needed (FM-4's reach to a pre-G0 kill's
+instrument-hop; whether the sibling lane's GO/cost-dry-run discharges this channel's own
+identical requirement); four doors remain blocked on all instruments regardless. A
+`burned_segments` consultation-ledger hygiene gap disclosed (M=0 recorded for all four
+6A/M6A/GC/MGC windows despite DL-1/DL-2's own real TRAIN reads), not fixed. Recorded as a
+dated addendum on the [channel ADR](../adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md).
+
+**Decisions/defects:** two workflow survey agents silently returned placeholder text instead
+of doing their assigned task — caught only because their outputs were implausible on
+inspection, not by any harness-level failure signal. Re-ran both directly.
+
+**Open/next:** operator decision owed on the two flagged doctrinal seams; the channel now
+has exactly one pre-G0 kill slot remaining before generation-dry fires at the next quarterly
+audit. No construct named, no manifest opened, no K spent.
+
+**Live-ops state:** unchanged — rail disarmed; no book. $0 spend this session.
+
+---
+
+## 2026-08-24m — `MNQFLOW-1-DEPTH` closed out for now: operator disposition `HOLD`
+
+**Focus:** Decision. Operator response to the two P0 aborts, presented with three named forward
+paths: *"HOLD for now. I am not ruling it out but I do not know if it is worth the spend."*
+
+**Shipped:** Recorded verbatim as its own disposition (`HOLD`) rather than rounded to the
+nearest named path — genuinely different from "decline" (no scientific/cost-finality claimed)
+and from "blocked" (a mechanical P0 fact, not a judgment). Updated in place: `PREREG_S2B.md`
+Status block (primary record) + amendment log; `PREREG.md` Status block cross-reference +
+amendment log; `lab/CATALOG.md` one-liner; `STATE.md`'s forward-trigger row; the
+[2026-08-23 supply audit](notes/audits/programme-audit/2026-08-23-deep-lane-supply-audit.md)
+§5 item 1 (third and final update this thread) + Change history. No forced re-test date — the
+lane's own 2026-11-08 slate is the natural next checkpoint, not a deadline invented here.
+
+**Decisions/defects:** none.
+
+**Open/next:** none forced on this thread. The audit's other two named supply routes (free
+MOC-imbalance literature check; blind channel, unsourced 1/3) remain independently available
+and untouched by this HOLD. The lane's own slot-3 decision (deep-iteration charter) is separate
+and still open.
+
+**Live-ops state:** unchanged — rail disarmed; no book. $0 spend total across this entire thread.
+
+---
+
+## 2026-08-24g — `MNQFLOW-1-DEPTH` S2 redraw ALSO blocked at P0 ($154.73) — structural finding, FM-9 holds
+
+**Focus:** Measurement. Operator elected "redraw the sample" from the three paths named after
+the first P0 abort. Authored a minimal-spec sibling pre-registration (`PREREG_S2B.md`,
+inherits `H`/statistics/gates verbatim from `PREREG.md`, freezes only a replacement S2), signed
+it, and ran P0 again.
+
+**Shipped:** New S2 derived mechanically (no cost byte read before freeze): exclude the
+original 30 burned trigger indices from the 255-trigger list, apply the identical full-range
+systematic-sampling shape to the remaining 225 — verified zero overlap with the first sample.
+P0 on these 30 dates: **$154.7320 against the $125.00 ceiling (23.8% over)** — worse than the
+first sample's $148.04 (18.4% over). **Two independent, disjoint, unbiased draws both landing
+18-24% over the same ceiling is a structural finding, not two unlucky samples**: real 30-day
+MBP-10 cost for this construct is closer to $150 than the $125 the ceiling was set from (a
+single-day extrapolation that undershot both times). Pre-committed FM-9 (written into
+`PREREG_S2B.md` *before* this outcome was known) bars an automatic third redraw. `PREREG.md`,
+`PREREG_S2B.md` §9.1/§9.2, `lab/CATALOG.md`, `STATE.md`, and the
+[2026-08-23 supply audit](notes/audits/programme-audit/2026-08-23-deep-lane-supply-audit.md)
+(§5 item 1, second update) all corrected. $0 spent, both attempts combined.
+
+**Decisions/defects:** two malformed markdown links (stray backtick before `]`) introduced
+while drafting this session's STATE.md/PREREG_S2B.md edits, caught by a self-grep sweep and
+fixed before commit.
+
+**Open/next:** operator decision, now cost-informed by two real draws rather than one
+extrapolated day: raise the ceiling to ≈$160–175, pre-register a smaller N (≈20 of 255, a
+fresh document, not a further resample of either burned set), or fall back to the audit's other
+two named routes (free MOC-imbalance literature check; blind channel).
+
+**Live-ops state:** unchanged — rail disarmed; no book. $0 spend (all estimate calls; no pull billed).
+
+---
+
+## 2026-08-24h — `MNQFLOW-1-DEPTH` signed, then BLOCKED AT P0 — actual cost $148.04 vs $125.00 ceiling
+
+**Focus:** Measurement. Operator authorized the pull the supply audit named; executed the
+frozen protocol order (§9 sign-off -> P0 cost gate) rather than pulling straight through.
+
+**Shipped:** Recovered `build_events.py` read-only from its pre-prune commit (`283d1de^`,
+documented Great-Prune recovery path) to reconstruct MNQFLOW-1's exact 255-trigger
+chronological list (elementwise-verified against `orb_lib.orb_backtest`'s own output, not
+guessed); applied the frozen S2 systematic-sampling formula (`round(i x 254/29)`, i=0..29) to
+get the exact 30 calendar dates; ran the mandatory P0 re-estimate on each. **Total $148.0357
+against the $125.00 ceiling — 18.4% over. ABORT per the prereg's own frozen instruction. $0
+spent, no pull ran.** Recorded in [`PREREG.md` §9.1/§9.2](../lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PREREG.md)
+(the one mutable field in an otherwise-frozen document); `lab/CATALOG.md`, `STATE.md`, and the
+[2026-08-23 supply audit](notes/audits/programme-audit/2026-08-23-deep-lane-supply-audit.md)
+(§5 item 1 + Change history) corrected — its "one sign-off away" framing was stale within
+hours of being written.
+
+**Decisions/defects:** none — FM-5 (no cherry-picking/resizing the sample once costs are seen)
+held; no forbidden move taken in response to the abort.
+
+**Open/next:** operator decision, sharper than before the audit named it: raise the ceiling
+(confirm the Avenue-A credit itself extends past $125 first), redraw S2 under a fresh
+pre-registration (this sample is cost-contaminated, not resamplable in place), or fall back to
+the audit's other two named routes (free MOC-imbalance literature check; blind channel).
+
+**Live-ops state:** unchanged — rail disarmed; no book. $0 spend (all estimate calls; no pull billed).
+
+---
+
+## 2026-08-24i — Deep-lane §4(c) supply-side audit: `AMBIGUOUS`, slot 3 held on a supply event
+
+**Focus:** Decision. Operator brought the tripped §4(c) audit-report duty forward; ran it as a
+supply-side audit under the programme-audit protocol (evidence before verdict).
+
+**Shipped:** [`2026-08-23-deep-lane-supply-audit.md`](notes/audits/programme-audit/2026-08-23-deep-lane-supply-audit.md)
+— seven diagnostic questions (hard core preserved; belt 3 adds/0 removes baseline; **zero
+falsifier drift**, §4 limb text byte-identical `f60959a`→HEAD; no degeneration; boundaries held).
+Supply census across [`MECHANISMS.md`](../ops/instruments/MECHANISMS.md) (30 ids), the Koijen
+harvest push (0 admissions), MSL WHO-track, and the blind channel: **no family satisfies
+new-mechanism ∧ data-reachable ∧ venue-shape-compatible with bytes on hand**; nearest satisfier
+is `MNQFLOW-1-DEPTH` (order-flow, FROZEN, ≤$125, K=0 — one sign-off from conjunct (ii)). Verdict
+`AMBIGUOUS`, re-test = any supply event, else the 2026-11-08 slate escalates to PARK/supersede.
+Charter running-count line + Change history annotated (duty DISCHARGED); STATE row updated.
+
+**Decisions/defects:** none — audit changed no thresholds, spent $0/K=0.
+
+**Open/next:** operator decision item (audit §5.1): authorize or decline the `MNQFLOW-1-DEPTH`
+pull — the single cheapest supply-unlocking action estate-wide. Slot 3 stays held meanwhile.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-24j — DL-2 Iterate block's own stop rule discharged: geometric-feasibility-ratio diagnostic RESOLVED
+
+**Focus:** Measurement. Ran the diagnostic named at DL-2's own closure (per an ox-alpha
+second opinion, reconciled 2026-08-22) before any operator decision on a DL-3.
+
+**Shipped:** [`geometric_feasibility_diagnostic.py`](../lab/archive/dl2_m6a_pdhpdl_2026-08-22/geometric_feasibility_diagnostic.py)
+— two measures on TRAIN data already read, no confirm touched, no OUTER-investigation slot
+spent. (A) Unconditional full-session ratio: median R=1.000 at 1-session lookback (only 7.8%
+of sessions ever have 2R-target room), R=0.687 at 2-session lookback. (B) Realized-trade MFE:
+85–97% of trades that actually fired never complete a full 1R favorable move. **Verdict:
+construction (opposite-prior-extreme stop/target + single-session force-flat hold) confirmed
+geometrically infeasible on M6A — retired for that instrument, per the pre-committed stop
+rule.** Recorded on DL-2's own [Iterate block](../lab/archive/dl2_m6a_pdhpdl_2026-08-22/RESULTS.md)
+(append-only update) and [`STATE.md`](../STATE.md).
+
+**Decisions/defects:** none.
+
+**Open/next:** operator decision owed — DL-3 on a different instrument under this
+construction (now gated on its own feasibility-ratio clearance first), a genuinely different
+construction, or a broader lane pause given 2/3 of the STRATEGIC budget is spent with zero
+survivors.
+
+**Live-ops state:** unchanged — rail disarmed; no book. $0 spend (diagnostic only, cached data).
+
+---
+
+## 2026-08-23m — SESSIONS entry-class tightened to a judgment-call gate
+
+**Focus:** Decision. Full entries now require a real judgment call, not "skip Hygiene-only" — the class had drifted (12 entries in one day).
+
+**Shipped:** [`docs/SESSIONS.md`](SESSIONS.md) header rewrite (judgment-gate + stub-entry mechanism). [`W5 ADR addendum`](adr/2026-08-07-w5-governance-diet.md). [`STATE.md`](../STATE.md) decision-index line. [`PR #120`](https://github.com/Joshua-Asante/first-passage/pull/120).
+
+**Decisions/defects:** Stub entries (heading + Open/next only) replace in-place edits — `sessions-append-only` hard-fails mutating an already-merged entry. Entry-class table (A–D) itself unchanged; amended the W5 ADR per Rule 8 sub-rule 10 rather than minting a sibling.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: execute W5 CI-from-`gates.yml` plan. #7/#8 stay PENDING GO. PR #120 open, awaiting CI/merge.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-23z — merge origin/main into PR #117 (conflict fix)
 
 **Focus:** Resolve PR #117 conflicts after #112–#116. Same-day letters `a`–`y` are taken; this wrap-up reuses the last free letter and records the remapped disaster-stop entry in Shipped.
@@ -487,6 +675,39 @@ any entry, full or stub (a-first; bare claims `a`).
 **Open / next:** carry 2026-08-22r — DL-2 step 2 (train scoring + nomination). New: operator GO/NO-GO on the surviving cluster (O1 matrix-in-body, O10 grounding quotes, O15+O24 judgment wiring, O7 Trap-12 detection) before any skill edit. Carry 2026-08-22q — `register_search.open_run`; named ox-alpha uses (F1 fork; GROW-lane); disaster-stop Phase 0; venue-binding Phase 1; W1 remaining decisions of record.
 
 **Live-ops state:** unchanged — rail disarmed; no book. $0 OpenRouter spend.
+
+---
+
+## 2026-08-22s — DL-2 step 2 TRAIN scoring → ABANDONMENT; ox-alpha consult; Iterate blocks landed
+
+**Focus:** Build → Measurement → Decision. Executed the DL-2 step-2 handoff: built and
+unit-tested the TRAIN harness, scored all 10 frozen variants, ran all four nomination gates.
+
+**Shipped:** Harness at [`lab/archive/dl2_m6a_pdhpdl_2026-08-22/`](../lab/archive/dl2_m6a_pdhpdl_2026-08-22/)
+(roll-day signal derived from the TRAIN `ohlcv-1m` cache itself — no `ohlcv-1d` cache exists
+for 6A/M6A; validated byte-equivalent to a native pull against DL-1's own cache pair,
+0/83,165 mismatches). Nominee V9 fails gates 2a/2b/2d (SPA p=0.9755); passes 2c only →
+`ABANDONMENT`, confirm never read. 2nd consecutive after DL-1 — charter §4(c) audit-report
+duty tripped. Recorded on the [prereg](briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md),
+[charter](adr/2026-08-16-deep-iteration-lane-charter.md), and `lab/CATALOG.md` (`414e537`).
+Sanitized `stealth/ox-alpha` second opinion sought per
+[`ox-alpha ADR`](adr/2026-08-22-ox-alpha-adversarial-lens-scope.md) on the template-vs-bad-luck
+question; its "one disease at two stages" hypothesis was tested by re-running DL-1's own
+harness and refuted (DL-1 resolves 40–70% of trades to genuine stop/target; DL-2 is 85–95%
+force-flat). Typed `## Iterate` blocks (canon §16) added to both DL-1 and DL-2's RESULTS.md —
+a gap this session found: `check_closure_disposition.py` never scans `lab/archive/**`, only
+`docs/briefs/closures/`, so neither campaign had ever produced one.
+
+**Decisions/defects:** DL-2 `CATALOG.md` row hand-typed with an em-dash where the scanner
+derives `--` from the source card's own text — hard-failed `check_catalog_stale`, fixed by
+copying the scanner-derived one-liner verbatim rather than guessing.
+
+**Open/next:** [`STATE.md`](../STATE.md) "Deep-iteration lane — geometric-feasibility-ratio
+audit owed before DL-3" — no successor prereg reusing DL-2's reference-window stop/target
+construction may freeze without disclosing that ratio for its own instrument first.
+
+**Live-ops state:** unchanged — rail disarmed; no book. $0 Databento spend (both partitions
+already cached); ox-alpha consult $0 (free listing).
 
 ---
 
