@@ -32,6 +32,20 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-25f — P6–P10 one commit per packet
+
+**Focus:** Decision + Hygiene. `queue-exception: operator asked to start working on the P6–P10 plans`. Follow-up: commit after each plan is implemented (rewrite the batched land into five commits).
+
+**Shipped:** `cursor/pain-point-p6-p10-6bd4` — P6 README lead; P7 identifier table; P8 keep-15 + LTM archive; P9 withdrawn-book tense; P10 Q-TOM-SPX-1 formal DEAD (this commit).
+
+**Decisions/defects:** [impl plan](superpowers/plans/2026-08-23-p6-p10-residuals-implementation.md) · [Q-TOM-SPX-1 DEAD](briefs/closures/Q-TOM-SPX-1-closure-dead.md) · [turn-of-month-premium × SPX500](rejected_candidates.md).
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)). Residue (same exception): P6–P10 land complete; do not promote leftovers.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-25d — Repoint pruned forced-flow-census citations
 
 **Focus:** Hygiene + Decision. `queue-exception: operator-assigned GitHub issue — dangling N-2026-07-26-forced-flow-census citations`. Retention-test read; do not restore the Notice.

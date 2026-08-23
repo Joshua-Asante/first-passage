@@ -12,6 +12,27 @@ The intake bar is the same as for any candidate: a mechanism-level claim with fa
 
 ## Entries
 
+### turn-of-month-premium × SPX500
+
+**Rejection scope:** the Q-TOM-SPX-1 construct `turn-of-month-premium` on
+**SPX500** / Pepperstone US500 daily (`[T+1:T+3]` window vs off-days; Etula
+dash-for-cash) as frozen in [`Q-TOM-SPX-1.md`](briefs/Q-TOM-SPX-1.md) — not
+SPX500 the instrument, not other calendar families.
+**Closure date:** 2026-08-23
+**Authoritative artifact:** [`Q-TOM-SPX-1-closure-dead`](briefs/closures/Q-TOM-SPX-1-closure-dead.md) ·
+Layer-A record on [`SPX500.md`](../ops/instruments/SPX500.md) F5
+**Closure basis:** Layer-A 2026-06-16 on the canonical Pepperstone US500 daily
+feed (n=113) hard-absent (Welch t=0.64, perm p=0.2544, COVID-concentrated,
+halves sign-reverse). Formal Pine confirmation unpaid since 2026-06; operator
+GO (P10) did not reserve it. $0/K=0 this close. Decay UNTESTED (feed starts
+2017); capturability PENDING (W3).
+**Surviving finding (NOT rejected):** SPX500 instrument standing; Layer-A
+harness + frozen thresholds; other SPX500 families (D1/D2/D3) on their own rows.
+**Re-proposal bar:** new mechanism evidence — **not** a wider window, new
+thresholds, or a Dukascopy re-run of this key.
+
+<!-- concept-intake-entry mechanism_family="turn-of-month-premium" instrument="SPX500" rejection_reason="Layer-A RESOLVED-ABSENT on canonical Pepperstone US500 daily (t=0.64, perm p=0.2544, COVID-concentrated, halves sign-reverse); reserved Pine unpaid; operator DEAD 2026-08-23" harness_disposition_ref="Q-TOM-SPX-1 Layer-A 2026-06-16 (ops/instruments/SPX500.md F5)" date="2026-08-23" class="dead-absent" role_tested="existence" falsifier_failed="existence battery hard-absent (t<1.0; perm p>=0.10; drop-top-k / halves)" addback_condition="new mechanism evidence — NOT window/threshold retune or Dukascopy re-run" -->
+
 ### MSL-S2B sweep-failure-filtered continuation × MYM — STAGE-1 FAIL (route; pre-G0)
 
 **Rejection scope:** the MSL-S2B card’s unpaid G0 path for `sweep-failure-filtered-continuation`

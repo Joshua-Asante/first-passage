@@ -2,11 +2,11 @@
 
 > **For agentic workers:** This is a **portfolio**, not one implementation. Each packet below needs its own later plan (or is already owned). Do not scaffold packet work from this file. REQUIRED when a packet is GO’d: writing-plans → a dated `docs/superpowers/plans/YYYY-MM-DD-<packet>-implementation.md`.
 
-**AUTHORIZATION:** Plans only. No packet in this file is GO’d by committing it. Bind ([`2026-08-23-bind-operator-queue-implementation.md`](2026-08-23-bind-operator-queue-implementation.md)) **GO landed 2026-08-23**; bind row 3 then **closed** (Lane A scoped decline; last pre-G0 slot unspent). P2 Approach A **GO landed 2026-08-23** ([plan](2026-08-23-p2-memory-demote-implementation.md)). P3 **GO landed 2026-08-23** ([plan](2026-08-23-p3-docs-runtime-inventory-implementation.md)). P4 **GO landed 2026-08-23** ([plan](2026-08-23-p4-museum-rules-implementation.md)). P5 **GO landed 2026-08-23** ([plan](2026-08-23-p5-repo-map-layers-implementation.md)). Keep-20 roll + W5 CI-from-`gates.yml` (H6) **GO landed 2026-08-23**. Buildable packets P0–P5 and those two parked GOs are closed. **P6–P10 are second-wave residuals** (first-look 2026-08-23 evening): plans only, not GO, not a queue row.
+**AUTHORIZATION:** Plans only. No packet in this file is GO’d by committing it. Bind ([`2026-08-23-bind-operator-queue-implementation.md`](2026-08-23-bind-operator-queue-implementation.md)) **GO landed 2026-08-23**; bind row 3 then **closed** (Lane A scoped decline; last pre-G0 slot unspent). P2 Approach A **GO landed 2026-08-23** ([plan](2026-08-23-p2-memory-demote-implementation.md)). P3 **GO landed 2026-08-23** ([plan](2026-08-23-p3-docs-runtime-inventory-implementation.md)). P4 **GO landed 2026-08-23** ([plan](2026-08-23-p4-museum-rules-implementation.md)). P5 **GO landed 2026-08-23** ([plan](2026-08-23-p5-repo-map-layers-implementation.md)). Keep-20 roll + W5 CI-from-`gates.yml` (H6) **GO landed 2026-08-23**. Buildable packets P0–P5 and those two parked GOs are closed. **P6–P10 GO landed 2026-08-23** ([plan](2026-08-23-p6-p10-residuals-implementation.md)). Not a queue row.
 
 **Goal:** Name the first-look / second-look pain points that the bind plan explicitly left open, group them into independent packets, and sequence them so we do not open a new control-plane campaign that recreates the defect. Second wave: split leftover first-look claims into packets that do not duplicate P0–P5, keep-20, W5 H6, or the [`viable-strategy sequence`](2026-08-23-viable-strategy-sequence-overview.md).
 
-**Architecture:** One charter, six first-wave packets (closed), five second-wave packets (P6–P10, plans only), one parked-with-owner list. Packets are independent (different files, different falsifiers). Only one may sit on the operator queue at a time (Survive cap). Object-layer dryness is **not** a pain-point packet — it already has the viable-strategy sequence (`AWAITING GO`).
+**Architecture:** One charter, six first-wave packets (closed), five second-wave packets (P6–P10, landed 2026-08-23), one parked-with-owner list. Packets are independent (different files, different falsifiers). Only one may sit on the operator queue at a time (Survive cap). Object-layer dryness is **not** a pain-point packet — it already has the viable-strategy sequence (`AWAITING GO`).
 
 **Tech Stack:** none in this charter. Per-packet stacks live in the later implementation plans.
 
@@ -70,7 +70,7 @@ flowchart TD
   p1 --> p10
 ```
 
-P2–P5 are closed. P6–P10 are parallel after P1 except P7 may share a PR with P6 (both README-only). Only one may sit on the operator queue at a time (Survive cap).
+P2–P5 are closed. P6–P10 landed 2026-08-23 (same PR; README + STATE diet + tense + Q-TOM-SPX-1 DEAD). Only one may sit on the operator queue at a time (Survive cap).
 
 ---
 
@@ -200,7 +200,7 @@ Attestation (this session, before authoring): `lab/CATALOG.md` and `docs/briefs/
 - Touch `CLAUDE.md` lock-surface literals (`99.83%` / `0.17%` / `p99 DD 4.37%`) — `ops/recall/guard.py` parses them.
 - Open the viable-strategy sequence from this packet.
 
-**Start when:** operator GO. README-only; may share a PR with P7.
+**Start when:** GO landed 2026-08-23.
 
 **Falsifier:** a newcomer reading only README lines 1–12 still cannot tell whether a book is deployed.
 
@@ -228,7 +228,7 @@ Attestation (this session, before authoring): `lab/CATALOG.md` and `docs/briefs/
 - Add `docs/glossary.md`.
 - Expand the table past ~20 rows; if it does not fit, drop the lowest-collision series and leave a pointer at `docs/spec/2026-08-07-loop-spec-index.md` + this charter.
 
-**Start when:** operator GO. README-only; may share a PR with P6.
+**Start when:** GO landed 2026-08-23.
 
 **Falsifier:** README still has no row that distinguishes pipeline-P from pain-point-P from phase-letter.
 
@@ -255,7 +255,7 @@ Attestation (this session, before authoring): `lab/CATALOG.md` and `docs/briefs/
 - Edit historical ADR bodies to shrink the index.
 - Auto-open a queue row to “hold” the standing lead.
 
-**Start when:** operator GO + approach election (A/B/C).
+**Start when:** GO landed 2026-08-23, Approach A (keep-15).
 
 **Falsifier:** `STATE.md` still contains a multi-sentence mechanism-supply narrative above the operator queue, or the executed-decision index is longer than the elected keep-N with no archive pointer.
 
@@ -277,7 +277,7 @@ Attestation (this session, before authoring): `lab/CATALOG.md` and `docs/briefs/
 - Shorten `firm_rules.py` Bulenox/cost provenance comments.
 - Touch `99.83%` / `0.17%` / `p99 DD 4.37%` literals.
 
-**Start when:** operator GO.
+**Start when:** GO landed 2026-08-23.
 
 **Falsifier:** `c1_sizing_host_reference.py` docstring still asserts the module is the live host of a deployed book.
 
@@ -299,7 +299,7 @@ Attestation (this session, before authoring): `lab/CATALOG.md` and `docs/briefs/
 - Mass-stamp `lab/CATALOG.md` (catalog ADR §5 / §7).
 - Invent a new Q to hold the census.
 
-**Start when:** operator GO. Census is $0; each close is its own closure record.
+**Start when:** GO landed 2026-08-23. Census is $0; Q-TOM-SPX-1 closed DEAD.
 
 **Falsifier:** Q-TOM-SPX-1 remains in INDEX Open after a GO that elected formal DEAD, or a live Open row (Q-SIGID-1 / Q-FILLTAX-1) was closed by this packet.
 
@@ -322,4 +322,4 @@ Attestation (this session, before authoring): `lab/CATALOG.md` and `docs/briefs/
 
 ## Success for this charter
 
-The charter succeeds when every named packet has an owner, a start gate, and a falsifier, and none of them is being worked as an immortal SESSIONS leftover. **P0–P5 + keep-20 + W5 H6 landed 2026-08-23.** **P6–P10 are plans only until their own GO.** Remaining parked rows stay parked.
+The charter succeeds when every named packet has an owner, a start gate, and a falsifier, and none of them is being worked as an immortal SESSIONS leftover. **P0–P10 + keep-20 + W5 H6 landed 2026-08-23.** Remaining parked rows stay parked.

@@ -153,7 +153,7 @@ one office even when it has one clear first-line owner.
 | **b8** | Guardian→MGC transfer lane (R7) | SUBTRACT | Front | Head of Governance | Head of Research |
 | **c1** | Q-XMEM-1 cross-surface memory sidecar pilot | PARK | Front → **Back** | Head of Engineering | Head of Governance |
 | **c2** | Q-SIGID-1 signal-identity gap | KEEP | Front → **Cross-office** | Head of Execution | Head of Validation, Head of Research |
-| **c3** | Q-TOM-SPX-1 SPX500 turn-of-month | PARK | Back → **Front** | Head of Research | Head of Governance |
+| **c3** | Q-TOM-SPX-1 SPX500 turn-of-month | SUBTRACT | Back → **Front** | Head of Research | Head of Governance |
 | **c4** | Q-TVCOV-1 TV intraday bar-coverage census — SUBTRACT-complete | SUBTRACT | Back | Head of Governance | — |
 | **c5** | Q-MSCHAN-1 microstructure sourcing-channel (blind form) | SUBTRACT | Front → **Back** | Head of Governance | Head of Research |
 | **c6** | Notion estate (frozen workspace) | SUBTRACT | Back | Head of Governance | — |

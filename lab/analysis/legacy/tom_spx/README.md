@@ -10,13 +10,14 @@ close-to-close returns by trading-day-of-month (forward count, matching
 liquidity (deliberately independent of any hawkish-regime thesis - the
 source-diversity discriminating test from the 2026-06-10..14 audit).
 
-> **Status: Layer A RESOLVED-ABSENT on the canonical Pepperstone feed
-> (2026-06-16).** The frozen existence battery hard-failed (Welch t=0.64,
-> permutation p=0.2544, COVID concentration, halves sign reversal). The only
-> remaining step is the brief-reserved native Pine confirmation before formal
-> DEAD closure; do not rerun wider windows or change thresholds. See
+> **Status: `DEAD` 2026-08-23.** Layer A RESOLVED-ABSENT on the canonical
+> Pepperstone feed (2026-06-16). The frozen existence battery hard-failed
+> (Welch t=0.64, permutation p=0.2544, COVID concentration, halves sign
+> reversal). Reserved native Pine confirmation unpaid and not reserved.
+> Do not rerun wider windows or change thresholds. See
+> [`closure`](../../../docs/briefs/closures/Q-TOM-SPX-1-closure-dead.md),
 > [`docs/briefs/Q-TOM-SPX-1.md`](../../../docs/briefs/Q-TOM-SPX-1.md) and the
-> [SPX500 ledger](../../../ops/instruments/SPX500.md)).
+> [SPX500 ledger](../../../ops/instruments/SPX500.md).
 
 ## Two-layer measurement (read before interpreting any result)
 
