@@ -15,6 +15,43 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 
 ---
 
+## 2026-08-23g — Blind channel: canonical kill-count corrected (2/3); door re-walk against cached non-index panels
+
+**Focus:** Measurement + Hygiene. Operator asked to contemplate the no-counterparty blind
+channel's next move; elected "B" — a free (no candidate named) door re-walk + diagnostics,
+using a Workflow fan-out (6 survey agents + 8 door-reassessment agents).
+
+**Shipped:** Two of six survey agents returned garbage placeholder output (silent failure,
+not caught by the workflow's own success reporting) — redone directly rather than trusted.
+The corrected dedup pass surfaced `MNQ-SIZEDIV-1`, a second blind-channel construct frozen
+and killed pre-G0 the same day as `MNQ-ANALOGUE-1` (2026-08-15, ported 2026-08-16) that
+neither the original contemplation nor any of the six survey agents had accounted for.
+**Its kill means the channel's canonical pre-G0 count was 2/3, not the 1/3 the channel
+ADR's own "canonical" line had displayed for 8 days** — `STATE.md` and `ops/instruments/MNQ.md`
+had it right since the port; only the ADR's own line lagged. Corrected in place. Door
+re-walk (the 08-15 "naming set empty" table, re-assessed against panels the deep-iteration
+lane has since cached at $0 for 6A/M6A and GC/MGC): the CON-5/dense-1m entry-geometry pause
+reopens on those two non-index instruments specifically (still blocked on MNQ, per D2a's
+own non-index/route-independence exemption, already operator-ratified twice on these exact
+panels); two doors flagged operator-call-needed (FM-4's reach to a pre-G0 kill's
+instrument-hop; whether the sibling lane's GO/cost-dry-run discharges this channel's own
+identical requirement); four doors remain blocked on all instruments regardless. A
+`burned_segments` consultation-ledger hygiene gap disclosed (M=0 recorded for all four
+6A/M6A/GC/MGC windows despite DL-1/DL-2's own real TRAIN reads), not fixed. Recorded as a
+dated addendum on the [channel ADR](../adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md).
+
+**Decisions/defects:** two workflow survey agents silently returned placeholder text instead
+of doing their assigned task — caught only because their outputs were implausible on
+inspection, not by any harness-level failure signal. Re-ran both directly.
+
+**Open/next:** operator decision owed on the two flagged doctrinal seams; the channel now
+has exactly one pre-G0 kill slot remaining before generation-dry fires at the next quarterly
+audit. No construct named, no manifest opened, no K spent.
+
+**Live-ops state:** unchanged — rail disarmed; no book. $0 spend this session.
+
+---
+
 ## 2026-08-23f — `MNQFLOW-1-DEPTH` closed out for now: operator disposition `HOLD`
 
 **Focus:** Decision. Operator response to the two P0 aborts, presented with three named forward
