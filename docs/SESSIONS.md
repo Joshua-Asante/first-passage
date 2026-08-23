@@ -14,6 +14,33 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+
+## 2026-08-22r — DL-2 (M6A × prior-session-breakout-continuation) sourced, prereg frozen, step 1 landed
+
+**Focus:** Build. Sourced + froze the deep-iteration lane's second campaign; declared a `NEW`
+mechanism id after an ox-alpha second opinion reversed the reuse election; fired step 1.
+
+**Shipped:** [DL-2 prereg](briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md)
+`FROZEN` (K=10, floor 1.170). `prior-session-breakout-continuation` `NEW` in
+[`MECHANISMS.md`](../ops/instruments/MECHANISMS.md). 6-lens adversarial review (2 BLOCKERs fixed:
+cost pin $2.82→$2.60, pause-attestation ground). Ox-alpha sanitized second opinion (per
+[`2026-08-22-ox-alpha-adversarial-lens-scope.md`](adr/2026-08-22-ox-alpha-adversarial-lens-scope.md))
+reversed the mechanism-id election. §6 step 1 pulls fired, $0.0000 both (TRAIN 3.26M rows,
+CONFIRM 2.11M rows cached, unread). [CC handoff for step 2](briefs/rnd-pipeline/2026-08-22-cc-handoff-dl2-m6a-step2-train-scoring.md)
+authored.
+
+**Decisions/defects:** `pre-ratification-adversarial-panel` skill's Workflow call failed (harness
+error) — replicated its phases by hand via direct Agent calls. Charter's own stale
+`lab/analysis/deep_lane/...` citation (never existed) corrected to the real DL-1 path.
+
+**Open/next:** Step 2 (train scoring + nomination, 4 gates) is the next work item — see the CC
+handoff. If DL-2 abandons at step 2, that's the 2nd consecutive after DL-1 and trips the charter
+§4(c) audit-report duty.
+
+**Live-ops state:** unchanged — rail disarmed; no book. $0 Databento spend (both pulls $0.0000
+per the charter's own GO-1 dry-run).
+
+---
 ## 2026-08-22q — Disposition leftover Proposed ADRs
 
 **Focus:** Decision. Operator Accept of four leftover Proposed ADRs; reject of the intermediate-rung ADR; STATE pointer refresh.
@@ -27,6 +54,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-22p — Part B ADR ratified; charter §2.2(iv) + burned_segments.py extension landed
 
 **Focus:** Build. Operator GO ("ratify it as-is") on 08-22o's Part B ADR; executed §7 same session.
@@ -46,6 +74,7 @@ within-campaign K→M claim.
 **Live-ops state:** unchanged — rail disarmed; no book. No Databento spend.
 
 ---
+
 ## 2026-08-22o — Part B ADR drafted (two-ledger K question), `Proposed`
 
 **Focus:** Decision. Filed the GROW spec v2 Part B ADR (two-ledger K question), unlocked by
