@@ -113,6 +113,40 @@ Both class findings below are OFFICIAL under it (2026-08-18, operator PROCEED).
 **NEW 2026-08-10.** First RTH close beyond prior-RTH high (long) or low (short) → enter next 1m open; structural stop at the opposite prior extreme; first valid signal per session; session-flat; Tradeify RT. Through-break continuation — distinct from compression-break (CON-2/3), ORB, MNQPROX OF-approach contrast, and N9/C10 level-touch attraction/fade.
 
 - **Class finding:** MNQ PDH/PDL with-break (`Q-TNEC-CON-4`) explore → `AMBIGUOUS-HOLD` — long −0.007R / short +0.005R; CIs straddle; stop ≈257 pt; gross/(4×RT) ≈0.27×; not FALSIFIED; not live-pass; CONFIRM unread. [MNQ.md](MNQ.md) · [`RESULTS`](../../lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/RESULTS.md)
+- **Sibling id split (2026-08-22):** `prior-session-breakout-continuation` (below) is the
+  full-native-session generalization of this id, minted `NEW` rather than folded in here —
+  deep-lane DL-2 (M6A) elected the split after a sanitized adversarial second opinion argued this
+  repo's own precedent (`overnight-range-failed-extension-fade` splitting from
+  `pdh-pdl-failed-break-reclaim` for the identical class of move) puts the burden on minting a new
+  label, not reusing this one, when the reference/entry window is substituted wholesale rather
+  than merely re-parameterized. This id's own definition (RTH-scoped) and MNQ class finding are
+  unchanged and are not this construct's own prior.
+
+## prior-session-breakout-continuation
+
+**NEW 2026-08-22 (deep-lane DL-2).** A break of the immediately-prior *full trading session's*
+high or low, confirmed by a subsequent session close beyond the level before entry; structural
+stop at the opposite prior extreme; target at a fixed multiple of that risk; first valid signal
+per session (k=1); session-flat. The full-session generalization of `pdh-pdl-breakout-rth`: that
+id's one prior use (MNQ) implicitly took an equity-cash "RTH" window as both the reference and
+entry window; this id's reference/entry window is the instrument's own full native trading
+session (e.g. the complete CME Globex day for a currency future), not an RTH-scoped sub-window.
+The distinction is deliberate, not cosmetic — swapping which hours count as "the session" changes
+the volatility regime and event population the level is drawn from, the same load-bearing reason
+`overnight-range-failed-extension-fade` was split from `pdh-pdl-failed-break-reclaim` rather than
+folded into it. First campaign under this id: [DL-2 prereg](../../docs/briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md)
+(M6A) — no class finding yet, this id is untested on every instrument at authoring time.
+
+Rejected nearest classes (one-line):
+- `pdh-pdl-breakout-rth` — same trigger/stop/target logic, but its reference and entry window is
+  an equity-cash RTH subset (its one score, MNQ, never tested a full-session window); this id is
+  the full-session generalization, not a retune or reuse of that one.
+- `overnight-range-failed-extension-fade` / `pdh-pdl-failed-break-reclaim` — fade at a level after
+  a failed break, not continuation through it; opposite role, and the direct precedent for this
+  id's own split.
+- `opening-range-continuation` — anchors to the *current* session's own opening range, not the
+  *prior* session's full range; DL-1's dead MGC family (abandoned on train), a different
+  construct entirely — this id's split is unrelated to that kill.
 
 ## impulse-pullback-vwap-reclaim
 
