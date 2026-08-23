@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23p — Call-4 beta-cohesion diagnostic
+
+**Focus:** Build. Execute campaign plan #5 (diagnostic only).
+
+**Shipped:** [`lab/research_utils/beta_cohesion.py`](../lab/research_utils/beta_cohesion.py) + [`scripts/beta_cohesion_read.py`](../scripts/beta_cohesion_read.py). Missing vendor CSV skips. No `lifecycle_state.json` write.
+
+**Decisions/defects:** none. Does not re-implement `beta_death_assessment`. No 2026-08-08 review claimed.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: disaster-stop Phase 0 record (`BLOCKED` if unattended). #7/#8 stay PENDING GO.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-23l — Venue-binding Phase 1–3 registry landed
 
 **Focus:** Build. Execute plan #1.
