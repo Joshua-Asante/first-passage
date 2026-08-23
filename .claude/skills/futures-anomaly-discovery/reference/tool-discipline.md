@@ -45,7 +45,9 @@ usage is left to the investigation — the discipline is what's fixed.
 - **Produces:** latent state sequences (regime detection) to condition anomalies on
   market state.
 - **K:** the number-of-states choice is a degree of freedom; selecting it by fit on
-  the same data is overfitting.
+  the same data is overfitting. Declared K includes restart / seed / init
+  attempts (HMM random inits). A re-run with a new seed is a new search
+  increment, not a free peek.
 - **Discipline:** choose state count by held-out likelihood or a pre-registered
   criterion, not in-sample fit. States are conditioning variables. **Filtered, not
   smoothed:** `predict` / `predict_proba` / `decode` run the forward–backward (or
@@ -63,11 +65,13 @@ usage is left to the investigation — the discipline is what's fixed.
 - **K:** effectively enormous and hard to bound — the expression space. This is the
   highest false-discovery risk in the stack.
 - **Discipline:** pre-register the operator set, complexity ceiling, and
-  population/generation budget as the (bounded) declared search. Prefer expressions
-  at the **knee** of the Pareto front — a complex expression that barely beats a
-  simple one is overfit. Treat any survivor with maximum suspicion: it must clear
-  the strictest OOS plus universe-level correction before it is anything but a
-  curiosity.
+  population/generation budget as the (bounded) declared search. Declared K also
+  includes restart / seed / init attempts (independent PySR / gplearn runs). A
+  re-run with a new seed is a new search increment, not a free peek. Prefer
+  expressions at the **knee** of the Pareto front — a complex expression that
+  barely beats a simple one is overfit. Treat any survivor with maximum
+  suspicion: it must clear the strictest OOS plus universe-level correction
+  before it is anything but a curiosity.
 
 ## Pre-mining data hygiene (or you mine the artifact)
 
@@ -97,5 +101,5 @@ Step-0 panel-integrity battery (which is TV/CFD-shaped). Rationale: field guide
 Discovery generates candidates and attaches K. It never blesses. Every output
 above enters the Notice phase as an observation; only a K-registered candidate
 that clears the first-pass multiplicity floor (`register_search.py close`) is
-promoted to an Inquire-phase falsifiable hypothesis, where `strategy-validation`
+routed as an Inquire-phase falsifiable hypothesis, where `strategy-validation`
 and `inqhiori` take over.
