@@ -82,6 +82,7 @@ OWNING_ADR = REPO / "docs" / "adr" / "2026-08-04-iterate-closure-exit-mandatory.
 COVERAGE_OWNING_ADR = (
     REPO / "docs" / "adr" / "2026-08-12-closure-disposition-coverage-hard.md"
 )
+REJECTED_CANDIDATES = REPO / "docs" / "rejected_candidates.md"
 
 # A heading whose text contains "Iterate" ("## Iterate — loop exit",
 # "## 6. Iterate", "### §5 — Iterate" all match; "Iterating" does not).
@@ -251,8 +252,11 @@ COVERAGE_GRANDFATHERED: frozenset[str] = frozenset()
 # reached "pre-adjudication" with no H1/H2 verdict ever computed). None of
 # these assert a mechanism was tried and found not to work.
 REGISTRY_GRANDFATHERED_NA = frozenset({
-    "Q-SCORE-1-closure-falsified.md",  # 2026-08-24 backfill: agent found this is a governance-ops closure (docs-assignability gate), not a strategy-mechanism kill -- misfiled in REGISTRY_DEBT_2026_08 originally (filename contains "FALSIFIED" but tests a documentation hypothesis, not a trading candidate)
-    "Q-OBJCOHERE-1-closure-falsified-coherent.md",  # 2026-08-24 backfill: agent found this is a governance/coherence audit, not a strategy-mechanism kill -- misfiled in REGISTRY_DEBT_2026_08 originally
+    # 2026-08-24: three misfiles moved DEBT → NA (partition-internal;
+    # union stays the 2026-08-15 66-name snapshot). Not a discharge.
+    "Q-BUSTGATE-1-closure-falsified.md",  # threshold/gate re-derivation, not a strategy-grounds kill (same self-classification as Q-BUSTGATE-2)
+    "Q-SCORE-1-closure-falsified.md",  # governance-ops (docs-assignability gate); filename says FALSIFIED, substance is a documentation hypothesis
+    "Q-OBJCOHERE-1-closure-falsified-coherent.md",  # governance/coherence audit, not a strategy-mechanism kill
     "2026-07-16-striker-mym-reconstruction-candidate-1-ambiguous.md",
     "2026-07-27-hermes-agent-adoption-closure-resolved.md",
     "GSUB-1-closure-resolved-loadbearing.md",
@@ -288,21 +292,84 @@ REGISTRY_GRANDFATHERED_NA = frozenset({
     "ST-EH-1-closure-operator-stopped.md",
 })
 
-# REGISTRY_DEBT_2026_08 — strategy-grounds kills (FALSIFIED / DEAD / STOP /
-# STAGE-1 FAIL / OPERATOR-KILL, or a SCREEN-FAIL whose own text states the
-# mechanism has no edge / doesn't clear costs — same substance, caught at an
-# earlier stage) that owe a `rejected_candidates.md` row and never got one.
-# Each row's own re-proposal bar (new mechanism evidence, not new packaging)
-# depends on this registry actually naming what was tried — see STATE.md's
-# "registry backfill debt" row. Backfilling is operator-paced, one row is
-# one judgment call on how to phrase the heading; this set only says which
-# 33 closures still owe that call, not what the heading should say.
+# REGISTRY_DEBT_2026_08 — 2026-08-15 owed-row snapshot. Strategy-grounds
+# kills (FALSIFIED / DEAD / STOP / STAGE-1 FAIL / OPERATOR-KILL, or a
+# SCREEN-FAIL whose own text states the mechanism has no edge) that lacked
+# a rejected_candidates.md row at registry-feed land. Forward-only
+# exemption bucket — the split is a triage aid, not a gate-behavior change.
+# 2026-08-24: three misfiles moved to NA (Q-SCORE-1, Q-OBJCOHERE-1,
+# Q-BUSTGATE-1); the remaining 30 stay here even after their rows landed.
+# Unpaid status is unpaid_registry_debt() / --list-debt against the
+# registry file. Do not empty this set to claim discharge.
 REGISTRY_DEBT_2026_08 = frozenset({
+    "2026-07-16-aegis-6j-prop-reconstruction-stage1-falsified.md",
+    "2026-07-16-aegis-6j-prop-reconstruction-stage2-hsolo-falsified.md",
+    "2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md",
+    "2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md",
+    "2026-08-12-q-txg-1-striker-mnq-cell-dead-nsurv.md",
+    "2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md",
+    "H-FBEIA-1-closure-screen-fail.md",
+    "H-FCCARRY-1-closure-screen-fail.md",
+    "H-ZNAUC-1-closure-screen-fail.md",
+    "MSL-C1-closure-falsified.md",
+    "MSL-C2-closure-falsified.md",
+    "MSL-C3-closure-operator-kill.md",
+    "MSL-C3-K2-closure-falsified.md",
+    "MSL-S2A-closure-falsified.md",
+    "MSL-S2B-closure-stage1-fail-route.md",
+    "MYM-3FPS-1-closure-falsified.md",
+    "OPENPRESS-1-closure-falsified.md",
+    "Q-CAPFLOW-1-closure-falsified.md",
+    "Q-COMPOSE-1-closure-falsified.md",
+    "Q-GATECART-1-survivor-gate-cartography.md",
+    "Q-INVENTORY-1-closure-falsified.md",
+    "Q-MCLTAS-1-closure-falsified.md",
+    "Q-MNQDTL-CON-1-closure-falsified.md",
+    "Q-MNQSEL-1-closure-falsified.md",
+    "Q-PYRPARITY-1-closure-falsified-nonproportional.md",
+    "Q-R2FLOW-1-closure-falsified.md",
+    "Q-R2VBUCK-1-closure-falsified.md",
+    "Q-TVCOV-1-closure-falsified.md",
+    "Q-TXG-1-closure-falsified-at-walls.md",
+    "SLR-MYM-1-closure-falsified-stage0.md",
 })
 
 # Union — the mechanical gate's exemption set. Every name above, either
 # bucket. Do not append here directly; append to the correct sub-set.
 REGISTRY_GRANDFATHERED = REGISTRY_GRANDFATHERED_NA | REGISTRY_DEBT_2026_08
+
+# 2026-08-24 reclassifications (DEBT → NA). Pinned so a later edit that
+# drops one of them from NA without returning it to DEBT shrinks the union.
+_REGISTRY_RECLASSIFIED_TO_NA_2026_08_24 = frozenset({
+    "Q-BUSTGATE-1-closure-falsified.md",
+    "Q-SCORE-1-closure-falsified.md",
+    "Q-OBJCOHERE-1-closure-falsified-coherent.md",
+})
+if not _REGISTRY_RECLASSIFIED_TO_NA_2026_08_24 <= REGISTRY_GRANDFATHERED_NA:
+    raise RuntimeError(
+        "2026-08-24 DEBT→NA reclassifications missing from "
+        "REGISTRY_GRANDFATHERED_NA — restore them or return them to DEBT "
+        "so the 66-name union does not shrink"
+    )
+
+
+def unpaid_registry_debt(
+    debt_names: frozenset[str] | None = None,
+    registry_path: Path | None = None,
+) -> list[str]:
+    """Return debt-set members that still lack a rejected_candidates.md row.
+
+    Discharge is landing a row that names the closure filename, not
+    deleting the name from REGISTRY_DEBT_2026_08. A missing or unreadable
+    registry fails closed (every remaining name still owes).
+    """
+    names = REGISTRY_DEBT_2026_08 if debt_names is None else debt_names
+    path = REJECTED_CANDIDATES if registry_path is None else registry_path
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return sorted(names)
+    return sorted(name for name in names if name not in text)
 
 
 def _strip_fences(lines: list[str]) -> list[str]:
@@ -722,12 +789,13 @@ def main(argv: list[str] | None = None) -> int:
 
     if argv and argv[0] == "--list-debt":
         # 2026-08-15 (governance-belt audit action 4): operator triage list
-        # for REGISTRY_DEBT_2026_08 -- closures that owe a rejected_candidates
-        # row and never got one. Report-only; does not touch closure files or
-        # rejected_candidates.md itself.
-        names = sorted(REGISTRY_DEBT_2026_08)
+        # of snapshot names that still lack a rejected_candidates.md row.
+        # Report-only; does not touch closure files, the registry, or the
+        # REGISTRY_DEBT_2026_08 frozenset. Discharge is a landed row.
+        names = unpaid_registry_debt()
         print(f"check_closure_disposition: {len(names)} closure(s) owe a "
-              "rejected_candidates.md row (REGISTRY_DEBT_2026_08):")
+              "rejected_candidates.md row (unpaid of "
+              f"{len(REGISTRY_DEBT_2026_08)}-name 2026-08-15 snapshot):")
         for name in names:
             print(f"  - {name}")
         return 0

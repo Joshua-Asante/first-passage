@@ -290,7 +290,13 @@ def test_registry_grandfathered_split_is_exact_partition():
     assert ccd.REGISTRY_GRANDFATHERED_NA.isdisjoint(ccd.REGISTRY_DEBT_2026_08)
     assert (ccd.REGISTRY_GRANDFATHERED_NA | ccd.REGISTRY_DEBT_2026_08) == ccd.REGISTRY_GRANDFATHERED
     assert len(ccd.REGISTRY_GRANDFATHERED) == 66  # count at 2026-08-15 split; grows forward-only
-    assert len(ccd.REGISTRY_DEBT_2026_08) == 33
+    # 33 at split minus 3 reclassified DEBT → NA on 2026-08-24 (not discharged).
+    assert len(ccd.REGISTRY_DEBT_2026_08) == 30
+    assert len(ccd.REGISTRY_GRANDFATHERED_NA) == 36
+    assert ccd._REGISTRY_RECLASSIFIED_TO_NA_2026_08_24 <= ccd.REGISTRY_GRANDFATHERED_NA
+    assert ccd._REGISTRY_RECLASSIFIED_TO_NA_2026_08_24.isdisjoint(
+        ccd.REGISTRY_DEBT_2026_08
+    )
 
 
 def test_scan_registry_skips_debt_name_too(tmp_path):
@@ -301,14 +307,51 @@ def test_scan_registry_skips_debt_name_too(tmp_path):
     assert ccd.scan_registry(path) is None
 
 
-def test_list_debt_cli_lists_every_debt_name(capsys):
+def test_unpaid_registry_debt_reports_missing_row(tmp_path):
+    registry = tmp_path / "rejected_candidates.md"
+    registry.write_text("# empty registry\n", encoding="utf-8")
+    assert ccd.unpaid_registry_debt(
+        debt_names=frozenset({"MSL-C1-closure-falsified.md"}),
+        registry_path=registry,
+    ) == ["MSL-C1-closure-falsified.md"]
+
+
+def test_unpaid_registry_debt_clears_when_filename_lands(tmp_path):
+    registry = tmp_path / "rejected_candidates.md"
+    registry.write_text(
+        "briefs/closures/MSL-C1-closure-falsified.md\n", encoding="utf-8"
+    )
+    assert ccd.unpaid_registry_debt(
+        debt_names=frozenset({"MSL-C1-closure-falsified.md"}),
+        registry_path=registry,
+    ) == []
+
+
+def test_unpaid_registry_debt_fails_closed_on_missing_registry(tmp_path):
+    missing = tmp_path / "no-such-registry.md"
+    names = frozenset({"MSL-C1-closure-falsified.md", "MSL-C2-closure-falsified.md"})
+    assert ccd.unpaid_registry_debt(debt_names=names, registry_path=missing) == sorted(
+        names
+    )
+
+
+def test_live_registry_clears_all_debt_snapshot_names():
+    """2026-08-24 backfill landed a row for every remaining DEBT name."""
+    assert ccd.unpaid_registry_debt() == []
+
+
+def test_list_debt_cli_lists_unpaid_not_the_snapshot(capsys):
     rc = ccd.main(["--list-debt"])
     assert rc == 0
     out = capsys.readouterr().out
-    for name in ccd.REGISTRY_DEBT_2026_08:
+    unpaid = set(ccd.unpaid_registry_debt())
+    for name in unpaid:
         assert name in out
+    for name in ccd.REGISTRY_DEBT_2026_08 - unpaid:
+        assert name not in out
     for name in ccd.REGISTRY_GRANDFATHERED_NA:
         assert name not in out
+    assert f"{len(unpaid)} closure(s) owe" in out
 
 
 # ── coverage limb: closed campaign with no closure file (lesson_green_gate) ──
