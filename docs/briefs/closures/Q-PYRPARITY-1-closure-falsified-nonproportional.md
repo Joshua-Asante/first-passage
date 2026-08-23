@@ -30,6 +30,8 @@ Pine is linear in `riskPerTrade` (Phase 0). The falsifier is a **TV/symbol qty c
 - **c1 / locked book:** no Pine edit; no `BASE_RISK` / lifecycle-constant change. The haircut re-MC's book-level ×0.5 remains the evidence; execution realizes it via lot-multiplier, not risk input.
 - **K-accounting:** TV observation + mechanical verify — no discovery search; no K banked.
 
+- **Registry:** rejected_candidates.md — ### Striker DJ30 pyramid-stack risk%-input scaling × MYM — FALSIFIED-NONPROPORTIONAL
+
 ## Lesson candidate
 
 Source-linear Pine + TV symbol ceiling = “proportional in code, non-proportional in fills.” The §0 OPEN item’s exact risk. Uncapped-slice evidence shows the *input* path is fine; the *runtime ceiling* is the falsifier. Sibling of the Phase-0 note that integer-contract rounding on CME charts is invisible in source.

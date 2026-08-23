@@ -322,6 +322,904 @@ When the next closure note appends to this registry, that closure's author write
 
 ---
 
+### Aegis→6J prop-reconstruction Wave-1 sizing/EOD-fill sweep × 6J — FALSIFIED (H-SWEEP Stage-1)
+
+**Rejection scope:** the Aegis→6J prop-reconstruction pre-reg's Stage-1 H-SWEEP path — the
+frozen Wave-1 grid (`c01`–`c12`, 9 unique sha256 panels after operator-confirmed
+byte-identical collapses) of `max_contracts` × `risk_pct_display` × `eod_fill_deadline_et`
+sizing/EOD-fill variants of the locked Aegis v0.3 mechanism on CME **6J**, scored against
+the pinned 2022-01-12→2024-12-31 selection window under hard filters (a)–(e) — not 6J the
+instrument, not the Aegis→6J native-futures v0.3 mechanism finding (untouched), not the
+Class-S venue/sizing-reconstruction candidate class generally, not locked CFD Aegis v4.3.
+**Closure date:** 2026-07-16
+**Authoritative artifact:** [`2026-07-16-aegis-6j-prop-reconstruction-stage1-falsified`](briefs/closures/2026-07-16-aegis-6j-prop-reconstruction-stage1-falsified.md) ·
+[`SWEEP_LOG`](../lab/analysis/aegis/aegis_6j_prop_reconstruction_2026-07/SWEEP_LOG.md) ·
+[`prereg (FROZEN)`](briefs/pre-registration/2026-07-16-aegis-6j-prop-reconstruction-prereg.md)
+**Closure basis:** 0/12 Wave-1 cells clear the frozen hard-filter set. Filters (a)
+overnight-holds = 0%, (a2) exit fills ≤ cell deadline, (c) selection-window maxDD ≤ 6%
+(measured 0.49–1.24%), and (e) holdout-window net ≥ 0 **PASS on all 12 cells**; filter
+**(d) selection-window N ≥ 80 FAILS on all 12** — the pinned 2022-01-12→2024-12-31 window
+yields only 73 trades (cap3/cap5@0.25% cells) or 74 trades (cap5/8@≥0.40% cells) against a
+full-span N of 129–130 (Stage-0's own N≥80 envelope check PASSed at 130 using the *full*
+2022-01-12→2026-07-15 span — the selection-window truncation, not the mechanism, produces
+the miss). The mechanical max-mean-quantity selection rule was never reached (zero
+survivors to rank); Stage-2 H-SOLO not authorized.
+**Surviving finding (NOT rejected):** 6J instrument standing; the Aegis→6J native-futures
+v0.3 mechanism finding cited in this pre-reg's own Rule-0 reads (`ops/instruments/6J.md`
+J1: PF 2.318 / EOD-flat 60.0% of net) — untouched, not itself re-tested by this sizing
+sweep; the Class-S venue/sizing-reconstruction candidate class generally (candidate #1
+MYM+MNQ Part A DISCHARGED separately, Tradeify 2.65% / MFFU 2.64%); locked CFD Aegis v4.3;
+Stage-0 ENVELOPE-YES baseline (`68f0e`, N=130 full-span) as measurement.
+**Re-proposal bar:** a **fresh** pre-registration (this one stays closed per Known Trap
+#12) that either sources a materially longer/deeper 6J export to raise the realized
+selection-window trade count, or independently pre-declares its own selection-window/N-bar
+**before** any cell is run — not derived post-hoc from this sweep's realized 73–74 count.
+**Not** an in-place amendment of N≥80 or the 2022-01-12→2024-12-31 window on this pre-reg,
+**not** picking a "best" cell by PF / expectancy / full-span N, and **not** treating the
+0.40%≡0.55% sizing-profile degeneracy as license to retune BE/SL/TP/ATR.
+
+<!-- concept-intake-entry mechanism_family="aegis-6j-sizing-eod-fill-wave1-sweep" instrument="6J" rejection_reason="Stage-1 H-SWEEP FALSIFIED: 0/12 Wave-1 cells clear hard filters (a)-(e); filter (d) sel N>=80 FAILS all 12 (sel N=73-74 vs full-span N=129-130 on pinned 2022-01-12-2024-12-31 window; Stage-0 envelope N>=80 PASSed at full-span 130); all other filters PASS all 12; mechanical max-mean-qty rule never reached (0 survivors)." harness_disposition_ref="Aegis-6J Wave-1 SWEEP_LOG (lab/analysis/aegis/aegis_6j_prop_reconstruction_2026-07/SWEEP_LOG.md)" date="2026-07-16" class="stage1-fail-n-gate" role_tested="venue-sizing-selection" falsifier_failed="Stage-1 hard filter (d) sel N>=80 FAIL all 12 cells (sel N 73-74 < 80; full-span N 129-130)" addback_condition="fresh pre-reg with an independently pre-declared selection-window/N-bar (not derived post-hoc from this sweep's 73-74 count) or a materially longer 6J export -- NOT in-place N-bar/window amendment (Trap #12), NOT best-of-12 pick by PF/expectancy/full-span N" -->
+
+### Aegis→6J v0.3 native-venue solo reconstruction (Stage-2 H-SOLO) — FALSIFIED
+
+**Rejection scope:** the Class-S venue/sizing reconstruction of locked Aegis v4.3 → CME **6J**
+native futures, tested **solo** (no MYM/MNQ compose) as Stage-2 H-SOLO Part A on the v2.1
+tie-break winner cell **c05** (`max_contracts=8` / `risk_pct_display=0.40%` /
+`eod_fill_deadline_et=16:00`; panel sha `ED91CD2D5D40`) under the v2 / v2.1 / v2.2 pre-reg
+chain — not the locked Aegis v4.3 CFD strategy on USDJPY (untouched), not 6J the instrument,
+not the other Wave-1 cells individually, not the composed Aegis+MYM+MNQ book (Stage-3, never
+reached — the winner expression closes here).
+**Closure date:** 2026-07-16
+**Authoritative artifact:** [`2026-07-16-aegis-6j-prop-reconstruction-stage2-hsolo-falsified.md`](briefs/closures/2026-07-16-aegis-6j-prop-reconstruction-stage2-hsolo-falsified.md) ·
+[`RESULTS.md`](../lab/archive/class_s_aegis_solo_scoring_2026-07-16/RESULTS.md) ·
+[`v2.2 native-guard prereg`](briefs/pre-registration/2026-07-16-aegis-6j-prop-reconstruction-v2.2-1r-native-guard-prereg.md)
+**Closure basis:** frozen gate 2026-07-13 (Part A: bust ≤ 3.0% ∧ P(pass) ≥ 50%, Run-2, seeds
+42/123/2026, 10k×3, horizon 1500, `dd_protection` OFF) run on the native c05 $100K daily book
+(n=128 trades, span 2022-01-12→2026-06-22, envelope YES, net_static $13,736.16, 1R median $87
+diagnostic-only / 0 full-stops above $1,000): **both** required firms FAIL Part A —
+Tradeify_Select_100K and MFFU_Rapid_100K each show `bust_trailing` **0.0641** (6.41%, more
+than double the 3.0% ceiling) while `bust_daily` / `bust_static` / `bust_inactivity` are all
+0.0 (the **trailing**-DD rule alone kills it); `pass_rate` **0.9327** clears the 50% floor on
+both, so the shortfall is on the bust ceiling only, not participation. v2.2's native-path
+1R-guard re-spec (hard-fail → non-gating median diagnostic) is confirmed **not** load-bearing
+on this outcome — 1R is not a scoring input on the native-no-rescale path, so the guard-drop
+could not and did not bias the verdict.
+**Surviving finding (NOT rejected):** locked Aegis v4.3 on USDJPY (parameter axis untouched);
+6J the instrument (venue-legal; occupancy released 2026-08-12 for non-Striker research); the
+Class-S venue/sizing-reconstruction candidate route itself (ADR 2026-07-14 — Class-S candidate
+#1 MYM+MNQ separately DISCHARGED Part A with its own regime-fragile caveat); the Stage-1-v2
+window-realignment fix (reachability defect correctly repaired, N≥80 retained not lowered,
+12/12 cells honestly cleared); four-firms ADR §4 discharge (carried by candidate #1,
+independent of this result); self-funded Aegis→M6J scale-path (PARKED separately the same day,
+not by this Part A result).
+**Re-proposal bar:** new mechanism evidence — a demonstrably different **trailing-DD
+loss-side shape** on a genuinely **native** (non-rescaled) Aegis-6J book, or a venue class
+whose trailing-survival geometry differs from Tradeify/MFFU's EOD-trailing rule. **NOT**
+reweighting c05's risk%/cap or swapping its fill deadline (forbidden by the closure itself),
+**NOT** selecting a different Wave-1 cell on sizing/fill alone (all share the same v0.3
+mean-reversion/spot-inversion signal and loss distribution), **NOT** composing with MYM+MNQ to
+dilute the standalone bust rate, **NOT** re-reading pass≈93% as a soft pass against the frozen
+3.0% ceiling, **NOT** re-litigating the v2.2 1R guard-drop as able to change the MC outcome.
+
+<!-- concept-intake-entry mechanism_family="aegis-6j-native-venue-solo-reconstruction" instrument="6J" rejection_reason="H-SOLO Part A FALSIFIED: both required firms (Tradeify_Select_100K, MFFU_Rapid_100K) bust_trailing 0.0641 (6.41%) vs 3.0% ceiling on c05 native $100K panel (n=128, Run-2 seeds 42/123/2026); pass_rate 0.9327 clears 50% floor; bust_daily/static/inactivity all 0.0 -- trailing-DD rule alone is the killer; v2.2 1R guard-drop confirmed not load-bearing (1R not a scoring input on native-no-rescale path)." harness_disposition_ref="Stage-2 H-SOLO RESULTS.md (lab/archive/class_s_aegis_solo_scoring_2026-07-16/RESULTS.md)" date="2026-07-16" class="trailing-dd-survival-failure" role_tested="sizing/venue-reconstruction (solo book, no compose)" falsifier_failed="Part A bust ceiling: bust_trailing 0.0641 vs 0.03 ceiling on both required firms (Run-2)" addback_condition="new mechanism evidence: different trailing-DD loss-side shape on a native non-rescaled Aegis-6J book, or a venue class with different trailing-survival geometry -- NOT c05 risk%/cap reweight, NOT a different Wave-1 cell on sizing/fill alone, NOT MYM+MNQ compose to dilute bust, NOT re-reading pass~93% as soft pass" -->
+
+### S-MYM-ORC-02 session-aware opening-range continuation × MYM — FALSIFIED (development)
+
+**Rejection scope:** the `S-MYM-ORC-02` exact frozen construct — long-only CBOT **MYM** 15m
+opening-range continuation (OR = 09:30+09:45 bars; entry on the first 10:00–11:45 ET bar closing
+above OR-high; 2.00×ATR(11) stop; one 100%-add at +1.00R; 4.00R target; 12-bar max hold; exact
+53-date session-aware force-flat calendar; `K_reconstruction=2`) as frozen in
+[`PREREG`](briefs/pre-registration/2026-07-16-striker-mym-reconstruction-candidate-2-prereg.md) —
+not MYM the instrument, not the Striker→MYM reconstruction programme generally (a fresh
+candidate #3 remains available under new operator authorization), not the locked Striker DJ30
+v4.5 / NAS100 v1 book, not `S-MYM-ORC-01` (separately closed `AMBIGUOUS`).
+**Closure date:** 2026-07-16
+**Authoritative artifact:** [`2026-07-16-striker-mym-reconstruction-candidate-2-falsified`](briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md) ·
+[`DEVELOPMENT_RESULTS.md`](../lab/analysis/striker/striker_mym_reconstruction_candidate1_2026-07/DEVELOPMENT_RESULTS.md)
+**Closure basis:** the valid development-only run (2020-07-01→2023-12-31, N=403 completed base
+trades; D0 Step-0 integrity and D1 N≥120 both PASS) failed seven of the nine remaining frozen
+hard gates: D2 opening-anchor placebo p=0.2144 (gate requires p &lt; 0.05 across 10,000 date-wise
+anchor reassignments); D3 gross expectancy / mean actual cost_R = 0.6929× (gate requires ≥
+4.00×); D4 net expectancy −0.0210R with net PF 0.9514 (gate requires net &gt; 0R and PF ≥ 1.25);
+D5 stationary-bootstrap 95% CI for mean net R = [−0.1221, 0.0806], lower bound negative (gate
+requires lower bound &gt; 0); D6 first-half/second-half net expectancy −0.0367R / −0.0052R, both
+negative (gate requires both &gt; 0R); D7 drop-top-five-trades net expectancy −0.0673R (gate
+requires &gt; 0R); D8 max closed-equity drawdown 6.625% (gate ceiling 6.0%). D9 execution
+integrity PASSed (0 fills after scheduled force-flat across 387 standard / 16 allowlisted-session
+trades; max 34 contracts; 0.0% quantity-zero skip rate). Under the frozen §6.4 verdict table, any
+one valid D1–D9 failure is terminal `FALSIFIED`; the untouched 2024-01-01→2026-06-30 holdout
+(H0–H9) was never opened.
+**Surviving finding (NOT rejected):** MYM instrument standing is untouched (the disclosed prior
+look — the R5 mapped edition, OOS PF 2.038 / preservation ratio 0.559 on a different, excluded
+parameter set — is neither retested nor contradicted here); the session-aware 53-date force-flat
+calendar repair mechanism itself worked as designed (0 fills after scheduled force-flat on both
+standard and allowlisted-early-close sessions) and is reusable by any future MYM candidate; the
+Striker→MYM reconstruction programme remains open to a fresh candidate #3 under new
+authorization; locked Striker DJ30 v4.5 / NAS100 v1 parameters untouched.
+**Re-proposal bar:** genuinely new mechanism evidence for a distinct entry construct (different
+opening anchor, breakout definition, or reference class) under a fresh candidate ID and fresh
+signed pre-registration — **not** a retune of the 2.00×ATR stop / 4.00R target / add threshold,
+**not** a lower-cost model, **not** promoting one of the six placebo-null opening anchors
+(09:45–11:00 ET, pre-registered as nulls, not candidate variants) into a rescued signal, and
+**not** deleting losing dates, years, or force-flat trades to pass D6–D8.
+
+<!-- concept-intake-entry mechanism_family="mym-opening-range-continuation" instrument="MYM" rejection_reason="FALSIFIED at development: D2 placebo p=0.2144 (>=0.05); D3 gross/cost_R=0.6929x (<4.00x); D4 net expectancy -0.0210R, PF 0.9514 (PF<1.25); D5 95% CI [-0.1221,0.0806] lower<0; D6 half-window -0.0367R/-0.0052R both negative; D7 drop-top-5 -0.0673R; D8 max DD 6.625% (>6.0%). D0/D1/D9 PASS, N=403. Holdout never opened." harness_disposition_ref="S-MYM-ORC-02 DEVELOPMENT_RESULTS.md (lab/analysis/striker/striker_mym_reconstruction_candidate1_2026-07/DEVELOPMENT_RESULTS.md)" date="2026-07-16" class="edge-failure" role_tested="entry" falsifier_failed="D2 placebo p>=0.05; D3 gross/cost<4.00x; D4 net<=0R/PF<1.25; D5 CI lower<=0; D6 both half-windows negative; D7 drop-top-5<=0; D8 DD>6.0%" addback_condition="new mechanism evidence for candidate #3 (distinct entry construct) + fresh operator authorization + fresh frozen pre-registration — NOT stop/target/add retune, NOT lower-cost model, NOT promoting a placebo-null opening anchor, NOT date/year deletion" -->
+
+### Guardian→MGC transfer cell (R7 / b8) — DEAD(N-SURV)
+
+**Rejection scope:** the Guardian Gold v5.5 → MGC venue-transfer cell (execution-mechanics
+port only; locked parameters untouched), not Guardian-on-XAUUSD and not MGC-the-instrument.
+**Closure date:** 2026-08-11
+**Authoritative artifact:** [`docs/briefs/closures/2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md`](briefs/closures/2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md) ·
+[`cell PREREG (retroactive)`](briefs/pre-registration/2026-08-11-guardian-mgc-transfer-cell-prereg.md) ·
+[`b8`](pursuits/b8-guardian-mgc-transfer-lane.md)
+**Closure basis:** `nsurv_channel.py` on the v0.3 native MGC1! panel (N=329 / daily n=276)
+against `Tradeify_Select_100K` at the frozen 2026-07-13 floors (bust ≤3.0% ∧ P(pass)≥50%).
+Bust **42.2%** full / **72.4%** H1 / **16.5%** H2 — 5.5×–24× over ceiling on every
+partition. Same trailing-survival failure class as Aegis→6J J4b, more severe. Two
+disclosed caveats (unpre-registered half-boundary; AE-approximated `intraday_low`) keep
+the score exploratory-grade; the margin settles the qualitative DEAD.
+**Surviving finding (NOT rejected):** MGC remains venue-legal / instrument-lane eligible;
+Guardian v5.5 on XAUUSD is untouched. ⚠ Q-TXG-1 lane later **FALSIFIED-at-walls** (operator A, 2026-08-12) — further transfer elections under that Q-ID are barred; see lane row above.
+**Re-proposal bar:** new mechanism evidence (fresh cell PREREG + operator election under
+Q-TXG-1 or equivalent) — **not** locked-parameter retune, **not** re-reading the
+AE-approximated score, **not** amending the 3.0% floor.
+
+<!-- concept-intake-entry mechanism_family="guardian-v5.5-venue-transfer-port" instrument="MGC" rejection_reason="DEAD(N-SURV): nsurv_channel.py on v0.3 native MGC1! panel (N=329 trades / daily n=276) vs Tradeify_Select_100K frozen floors (bust ≤3.0% ∧ P(pass) ≥50%); bust 42.2% full / 72.4% H1 / 16.5% H2 — 5.5×–24× over ceiling on every partition; exploratory grade (AE-approximated intraday_low; unpre-registered half-boundary), margin-decisive" harness_disposition_ref="nsurv_channel.py exploratory cell score (docs/briefs/closures/2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md; no lab/analysis RESULTS artifact — K=1 cell score, no manifest/pull)" date="2026-08-11" class="dd-survival-failure" role_tested="venue-transfer (execution-mechanics port; N-SURV gate)" falsifier_failed="any partition busts >3.0% or P(pass) <50% — all three partitions failed the bust ceiling (42.2/72.4/16.5% vs 3.0%)" addback_condition="new mechanism evidence (fresh cell PREREG + operator election under Q-TXG-1 or equivalent) — NOT locked-parameter retune, NOT re-reading the AE-approximated score, NOT amending the 3.0% floor" -->
+
+### Striker DJ30 → MNQ sibling-swap (Q-TXG-1 cell #2) — DEAD(N-SURV)
+
+**Rejection scope:** the Striker DJ30 v4.5 → CME **MNQ** cross-underlying sibling-swap cell
+(execution-mechanics port only; locked parameters untouched) — not MNQ the instrument, not
+the Q-TXG-1 lane generally, not Striker-on-DJ30 (home identity), and not the WITHDRAWN(F1)
+striker×MYM redeploy.
+**Closure date:** 2026-08-12
+**Authoritative artifact:** [docs/briefs/closures/2026-08-12-q-txg-1-striker-mnq-cell-dead-nsurv.md](briefs/closures/2026-08-12-q-txg-1-striker-mnq-cell-dead-nsurv.md) ·
+[cell PREREG](briefs/pre-registration/2026-08-12-q-txg-1-striker-mnq-cell-prereg.md) ·
+[manifest](../discovery_manifests/q_txg1_striker_mnq_20260812.json)
+**Closure basis:** native-TV panel cost gate **PASS_COST** (N=222 legs; static-equity recompute
+OK, max|Δ|≈0; Net +$22,789.58; PF 1.308; WR 62.61%; mean_net_r **0.0419** > required_net_r
+**0.03**). Then `nsurv_channel.py` on the bar-derived `MNQ_M15` daily series (n=164 business
+days, 4 post-panel days dropped for missing bar coverage; bars SHA `6c86f41a…e00a`) against
+`Tradeify_Select_100K` at the frozen 2026-07-13 floors (bust ≤3.0% ∧ P(pass)≥50%): full bust
+**98.13%** / pass 1.87% (n=164); H1 bust **96.76%** / pass 3.24% (n=82); H2 bust **99.37%** /
+pass 0.63% (n=82) — every partition fails, ~32×–33× over the 3.0% ceiling. N-SURV FAIL.
+**Surviving finding (NOT rejected):** MNQ instrument standing and ENV-1 lane eligibility beyond
+this cell; Striker DJ30 v4.5 on its home DJ30/MYM locked-book identity is untouched; the
+execution-mechanics port itself cleared the cost gate — only the trailing-DD survival wall
+killed it; sibling cell #1 (`striker_nas100×MYM`, DEAD(cost)) is adjudicated separately, not
+by this row. ⚠ The Q-TXG-1 lane itself later closed FALSIFIED-at-walls (operator elected CLOSE,
+2026-08-12) — further transfer elections under that Q-ID are barred; see the lane-level row
+above.
+**Re-proposal bar:** subsumed by the lane-level Q-TXG-1 FALSIFIED-at-walls bar above (different
+loss-side shape or different venue-class survival geometry) — not a locked-parameter retune,
+not amending the 3.0% floor, not inventing an ENV-1 panel N, not a silent third election.
+
+<!-- concept-intake-entry mechanism_family="striker-dj30-v4.5-cross-underlying-sibling-swap" instrument="MNQ" rejection_reason="DEAD(N-SURV): cost gate PASS (N=222, Net +$22,789.58, PF 1.308, mean_net_r 0.0419 > required 0.03) but nsurv_channel.py FAIL on bar-derived MNQ_M15 (n=164 bdays) at Tradeify_Select_100K frozen floors (bust<=3.0% AND P(pass)>=50%) -- full bust 98.13%/pass 1.87%, H1 bust 96.76%/pass 3.24%, H2 bust 99.37%/pass 0.63%, ~32x-33x over ceiling every partition" harness_disposition_ref="Q-TXG-1 striker×MNQ RESULTS + PANEL_SCORE.json (lab/archive/transfer_expression_grid_2026-08/cells/striker_mnq/RESULTS.md)" date="2026-08-12" class="portfolio-fit" role_tested="entry" falsifier_failed="N-SURV floor bust<=3.0% AND P(pass)>=50% at Tradeify_Select_100K -- full/H1/H2 all FAIL (bust 98.13%/96.76%/99.37%), ~32x-33x over ceiling every partition" addback_condition="a validated counterbalance or venue-class whose survival geometry clears the trailing-DD wall (re-MC <= ceiling) -- NOT a locked-parameter retune, NOT amending the 3.0% floor, NOT inventing an ENV-1 panel N, NOT a silent third election under Q-TXG-1 (subsumed by the lane-level FALSIFIED-at-walls bar)" -->
+
+### Striker NAS100 → MYM sibling-swap (Q-TXG-1 cell #1) — DEAD(cost)
+
+**Rejection scope:** the Striker NAS100 v1 → CBOT MYM cross-underlying sibling-swap cell
+(execution-mechanics port only; locked parameters untouched), not Striker-on-NAS100 and not
+the WITHDRAWN(F1) striker_nas100×MNQ redeploy.
+**Closure date:** 2026-08-12
+**Authoritative artifact:** [docs/briefs/closures/2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md](briefs/closures/2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md) ·
+[cell PREREG](briefs/pre-registration/2026-08-12-q-txg-1-striker-nas100-mym-cell-prereg.md) ·
+[manifest](../discovery_manifests/q_txg1_striker_nas100_mym_20260812.json)
+**Closure basis:** native-TV panel cost FAIL vs frozen `required_net_r` 0.06 / `port_must_beat`
+(N=190; Net +$4,356.40; mean_net_r **0.0129** < 0.06; PF 1.110; WR 53.68%; static-equity
+recompute OK, max|Δ|~0). N-SURV not reached — cost gate closed the cell first.
+**Surviving finding (NOT rejected):** MYM instrument standing (killing MYM the instrument is
+not licensed by this cell result); Striker NAS100 on its home instrument NAS100 untouched; the
+WITHDRAWN(F1) striker_nas100×MNQ redeploy unaffected. ⚠ Q-TXG-1 lane later FALSIFIED-at-walls
+(operator election (A) CLOSE, 2026-08-12) — further transfer elections under that Q-ID are
+barred; see lane row above.
+**Re-proposal bar:** subsumed by the lane-level Q-TXG-1 FALSIFIED-at-walls bar above (different loss-side shape or different venue-class survival geometry) — not a locked-parameter retune, not amending `required_net_r`, not firm-shopping, not a silent third election.
+
+<!-- concept-intake-entry mechanism_family="striker-nas100-cross-underlying-sibling-swap" instrument="MYM" rejection_reason="DEAD(cost): native-TV panel (N=190) Net +$4,356.40 but mean_net_r 0.0129 < required_net_r 0.06 (port_must_beat; ~4.6x below cost-tax floor); PF 1.110; WR 53.68%; static-equity recompute OK (max|delta|~0). N-SURV not reached (cost gate closed the cell first)." harness_disposition_ref="Q-TXG-1 cell #1 PANEL_SCORE.json (lab/archive/transfer_expression_grid_2026-08/cells/striker_nas100_mym/PANEL_SCORE.json)" date="2026-08-12" class="venue-cost-constraint" role_tested="entry" falsifier_failed="cost-tax floor: mean_net_r 0.0129 < required_net_r 0.06 (net>0 alone insufficient per PREREG §4 / design §5 step4)" addback_condition="subsumed by lane-level Q-TXG-1 FALSIFIED-at-walls bar — new mechanism evidence with a different loss-side shape or different venue-class survival geometry — NOT locked-parameter retune, NOT amending required_net_r, NOT firm-shopping, NOT a silent third election" -->
+
+### H-FBEIA-1 (F-B) EIA post-release unconditional reversal × CL — SCREEN-FAIL (informed-flow)
+
+**Rejection scope:** the H-FBEIA-1 / F-B `eia-postrelease-reversal` PRIMARY construct on NYMEX **CL** (CL.c.0 continuous, 1m; fade `-sign(m0)` where `m0` is the 10:30→10:35 ET EIA-release log-return, entered 10:35 ET, held to 10:50 ET; K=1) as pre-registered in [`fb_eia_cl_reversal`](../discovery_manifests/fb_eia_cl_reversal.json) — not CL the instrument, not the EIA inventory-*surprise*-conditioned expression of the same release (never tested here; per the closure it is the surprise number, not the realized price move, that carries the 25.6 bp effect), and not the sibling Q-BOOKFIT-1 F-A (ZN auction) / F-C (carry) forks or the Q-BOOKFIT-1 book-*fit* (risk-geometry) result for this same expression, which is a separate axis that PASSED (ρ 0.615, risk-N_eff Δ +0.945) and stands undisturbed.
+**Closure date:** 2026-07-20
+**Authoritative artifact:** [`H-FBEIA-1-closure-screen-fail`](briefs/closures/H-FBEIA-1-closure-screen-fail.md) · [`RESULTS`](../lab/archive/q_fbeia_1_2026-07/RESULTS.md) · manifest [`fb_eia_cl_reversal`](../discovery_manifests/fb_eia_cl_reversal.json)
+**Closure basis:** N=445 EIA Weekly Petroleum Status Report events, CL.c.0 ohlcv-1m (Databento GLBX.MDP3, est+billed $0.00), IS era 2010-06-06→2018-12-31. Faithfulness anchor: release reaction |m0| (10:30→10:35 ET) = **25.6 bp**, matching the published Rousse-Sévi (2019) ~25 bp conditional effect — confirms correct event dating and a real underlying mechanism. PRIMARY unconditional reversal (fade m0, 10:35→10:50 ET): δ = **−1.163 bp**, σ 50.0 bp, δ/σ **−0.0233**, t **−0.49**, two-sided p **≈0.623–0.624**. SANITY unconditional long (10:30→10:45 ET): δ = −1.888 bp, t −0.68 (≈0, consistent with surprise-symmetry). Manifest survivors **0/0/0** at naive/Bonferroni/BH. **Req-4 power FAIL** (|δ/σ| 0.0233 vs the 0.122 floor) and **Req-5 cost-law FAIL** (|δ| 1.16 bp vs the 6–10 bp CL round-trip hurdle) — both fail by roughly an order of magnitude. K=1 banked (`register_search` opened before any return was computed; expression frozen in the extraction-script header).
+**Surviving finding (NOT rejected):** CL instrument standing (open to other constructs, including the separately-scored Q-BOOKFIT-1 F-C carry fork on the same instrument family); the Q-BOOKFIT-1 book-*fit* (risk-geometry) result for this same expression — ρ 0.615, risk-N_eff Δ +0.945, PASS — is a different axis (portfolio-composition coordinate, not edge) and is untouched by this edge-side rejection; the EIA release itself is a real, correctly-dated 25.6 bp event (faithfulness confirmed) — only the *unconditional* fade/continuation trade around it is dead; `strategy_harvest.md` Requirement-2's informed-flow guard is corroborated, not created, by this instance (this is its first confirmed worked example; the later NG-EIA-1 and Q-MCLTAS-1 closures both cite it as precedent).
+**Re-proposal bar:** genuine access to the EIA inventory-*surprise* number (i.e., an actually informed/conditional expression that trades the surprise, not the realized post-release price) that then clears its own cost-law and power floors — NOT a retune of the m0 window, the 10:35→10:50 hold, the σ/δ normalization, or a re-run of the unconditional fade/continuation pair (continuation = −reversal was already scored here and is equally sub-cost).
+
+<!-- concept-intake-entry mechanism_family="eia-postrelease-reversal" instrument="CL" rejection_reason="SCREEN-FAIL (informed-flow): unconditional PRIMARY reversal (fade 10:30-10:35 ET release reaction m0, hold 10:35-10:50 ET) delta=-1.163bp, sigma=50.0bp, delta/sigma=-0.0233, t=-0.49, two-sided p=0.623-0.624 on N=445 EIA events. Req-4 power FAIL (0.0233 vs 0.122 floor). Req-5 cost-law FAIL (1.16bp vs 6-10bp CL RT hurdle). 0/0/0 manifest survivors naive/Bonferroni/BH. Faithfulness anchor |m0|=25.6bp matches Rousse-Sevi(2019) ~25bp conditional effect -- event dating and mechanism confirmed real; the null is on the UNCONDITIONAL edge only. SANITY unconditional long delta=-1.888bp t=-0.68 (~0, surprise-symmetry)." harness_disposition_ref="F-B eia-postrelease-reversal manifest (register_search open, K=1; discovery_manifests/fb_eia_cl_reversal.json; lab/archive/q_fbeia_1_2026-07/eia_results.json)" date="2026-07-20" class="screen-fail-informed-flow" role_tested="entry" falsifier_failed="Req-4 power |delta/sigma| 0.0233 vs 0.122 floor; Req-5 cost-law |delta| 1.16bp vs 6-10bp hurdle; two-sided p=0.623-0.624; 0/0/0 manifest survivors" addback_condition="genuine EIA inventory-surprise-conditioned expression (new data input) clearing cost-law + power -- NOT a m0-window/hold retune, NOT a re-run of the unconditional fade/continuation pair" -->
+
+### F-C carry-timing (own-carry-sign) × 6E/6J/CL — SCREEN-FAIL (effect absent)
+
+**Rejection scope:** the F-C pre-committed **own-carry-sign carry-timing** construct under **H-FCCARRY-1** — per-instrument front−second carry sign as the timing signal, monthly rebalance, equal-weight combined portfolio across **6E/6J/CL** (one combined return series, K=1), as frozen in [`extract_carry_delta.py`](../lab/archive/q_fccarry_1_2026-07/extract_carry_delta.py) header + manifest `fc_carry_6e6j6cl` — not 6E/6J/CL the instruments, not carry as a factor in general, and not Q-BOOKFIT-1's risk-geometry PASS for this fork (ρ 0.295), which this does not disturb.
+**Closure date:** 2026-07-20
+**Authoritative artifact:** [`H-FCCARRY-1-closure-screen-fail`](briefs/closures/H-FCCARRY-1-closure-screen-fail.md) ·
+[`carry_results.json`](../lab/archive/q_fccarry_1_2026-07/carry_results.json) ·
+[manifest `fc_carry_6e6j6cl`](../discovery_manifests/fc_carry_6e6j6cl.json)
+**Closure basis:** the pre-committed combined portfolio (N=103 months, 2010-06-06→2018-12-31 IS)
+earns δ=6.75 bp/mo on σ=253.3 bp/mo, δ/σ=0.0267 — **Req-4 power FAIL** (≪ the 0.122 threshold);
+annualized Sharpe **0.092**; t=0.27, one-sided p=**0.394**. Manifest survivors 0/0/0 at naive-α /
+Bonferroni / BH. Per-leg Sharpe all small-positive (6E 0.058 / 6J 0.112 / CL 0.041) — the M-15
+faithfulness check confirms the null is real, not a sign-inversion artifact (CL front-month
+reproduces the known 2014–2016 oil-crash decline, ~$105→~$31). Req-5 cost-law never reached —
+moot, no edge to charge cost against. K=1 banked.
+**Surviving finding (NOT rejected):** 6E/6J/CL instrument standing; carry as a factor class in
+general — a **cross-sectional** carry factor (rank a broad universe, long top / short bottom) or a
+magnitude-weighted timing rule is a distinct, unpre-registered hypothesis; Q-BOOKFIT-1's RESOLVED
+risk-geometry PASS for this fork (F-C ρ 0.295, risk-N_eff Δ +0.321 at the 0.37% reference weight —
+"the risk geometry fits," never "edge exists") stands untouched; F-A (H-ZNAUC-1, separate Stage-2
+cost-wall death) and F-B (CL EIA, formally un-run) as distinct, separately-dispositioned forks.
+**Re-proposal bar:** new mechanism evidence — a **cross-sectional** carry factor or a
+magnitude-weighted timing rule, each requiring its own pre-registration and K — **not** a re-run
+or parameter retune of this own-carry-sign construction, and not a wider instrument grid on the
+same construction (re-running variants until one works is the multiplicity the K-ledger forbids,
+per the closure's own Trap #12 note).
+
+<!-- concept-intake-entry mechanism_family="carry-timing-own-sign" instrument="6E/6J/CL (combined portfolio)" rejection_reason="SCREEN-FAIL (effect absent): pre-committed combined carry-timing portfolio N=103mo (2010-06-06:2018-12-31) delta=6.75bp/mo sigma=253.3bp/mo delta/sigma=0.0267 far below Req-4 0.122; Sharpe_ann 0.092; t=0.27 one-sided p=0.394; manifest survivors 0/0/0 naive/Bonferroni/BH. Per-leg Sharpe all small-positive (6E 0.058/6J 0.112/CL 0.041); M-15 faithfulness confirms real null (CL front-month reproduces 2014-16 oil crash ~$105->~$31). Req-5 cost-law never reached (moot)." harness_disposition_ref="H-FCCARRY-1 carry_results.json (lab/archive/q_fccarry_1_2026-07/carry_results.json); manifest fc_carry_6e6j6cl (discovery_manifests/fc_carry_6e6j6cl.json)" date="2026-07-20" class="edge-failure" role_tested="entry(timing)" falsifier_failed="Req-4 power delta/sigma>=0.122" addback_condition="new mechanism evidence: cross-sectional carry factor OR magnitude-weighted timing rule, each with fresh pre-registration and K -- NOT a re-run/retune of this own-carry-sign construct" -->
+
+### H-ZNAUC-1 post-auction dealer-hedging-unwind drift × ZN — SCREEN-FAIL (cost-wall)
+
+**Rejection scope:** the H-ZNAUC-1 primary construct — an **unconditional** long in ZN opened at
+the auction-close minute and held over a fixed post-auction window (15/30/60m), scored on the
+pre-committed PRIMARY 10-Year-family cohort (verdict-bearing) and SECONDARY all-coupon cohort
+(disclosed robustness), as frozen pre-δ in [`extract_delta.py`](../lab/archive/q_znauc_1_2026-07/extract_delta.py)
+— not ZN the instrument, not the Treasury-complex generally (ZB/`ORB-ZB-1` and ZF/`RATES-EV-ZF-1`
+are separate, independently-dead constructs on other tenors), and not the bid-to-cover-conditional
+variant (never run — a distinct F-B informed-flow question, explicitly barred from being read as
+this construct's edge).
+**Closure date:** 2026-07-20
+**Authoritative artifact:** [`H-ZNAUC-1-closure-screen-fail`](briefs/closures/H-ZNAUC-1-closure-screen-fail.md) ·
+[`RESULTS`](../lab/archive/q_znauc_1_2026-07/RESULTS.md) ·
+[`delta_results.json`](../lab/archive/q_znauc_1_2026-07/delta_results.json)
+**Closure basis:** K=0 own-cohort δ-extraction (Databento `ZN.c.0` ohlcv-1m, GLBX.MDP3, IS
+2010-06-06→2018-12-31, est+billed $0.00; auction dates from fiscaldata.treasury.gov, free; cohort/
+window/gate defined in `extract_delta.py`'s header before any δ was read). PRIMARY 10Y-family
+[0→15m] (the gated verdict): N=134, δ = **1.01 bp**, σ=7.29bp, δ/σ=0.139, t=1.61. **Req-5 cost-law
+(binding kill):** ZN single-RT ≈1.5bp (1 tick = 1/64 pt = $15.625 ≈1.25bp at the in-era median
+price 126.4, + commission) → 4×=**6bp** hurdle; conservative two-RT ≈2.5bp → 4×=**10bp** hurdle.
+Every one of the six measured cohort/window cells in `delta_results.json` fails both hurdles:
+PRIMARY 0→30m δ=0.28bp, 0→60m δ=1.45bp; SECONDARY all-coupon 0→15m δ=0.39bp, 0→30m δ=0.63bp,
+0→60m δ=0.83bp — all **6–10× under**. Req-4 power is a secondary, marginal consideration: the
+δ/σ≥0.122 floor was calibrated at the pre-registered N≈259 (Q-INVENTORY-1) and is nominally
+cleared at the realized δ/σ=0.139, but at the realized N=134 the power-0.50 break-even rises to
+≈0.170 — above the measured margin, and t=1.61 does not clear significance; the cost-wall is
+decisive regardless. Direction is positive and confirms the Smales (2021) primary-dealer
+short-hedge-unwind mechanism — real in direction, ~6–10× too small to trade net of ZN
+microstructure cost. Third Tier-B/C futures event-drift seed (after D5, H-OD-1) to confirm
+mechanism direction and die at the identical Stage-2 cost-law.
+**Surviving finding (NOT rejected):** ZN instrument standing (family bank stays 0, Req-3 CLEAR);
+the Smales (2021) mechanism direction itself (confirmed, just sub-cost); Q-BOOKFIT-1's
+composition/book-fit finding (ρ 0.512, risk-N_eff Δ +0.787 — "risk geometry fits" is a separate,
+undisturbed claim from "edge exists"); fork **F-C** (carry timing-δ, 6J/6E/CL) — steps up next
+per the F-A→F-C→F-B priority order, pending its own family-K operator nod; the bid-to-cover-
+conditional variant, never run.
+**Re-proposal bar:** new mechanism evidence for a genuinely different ZN construct — e.g. a real,
+measured execution cost materially below the modeled 1.5–2.5bp RT, or a distinct non-drift
+mechanism — not a window retune (15/30/60m already swept, all fail), not a cross-instrument δ
+transplant (forbidden under Req 2), and not reading the bid-to-cover-conditional coefficient as
+the tradeable δ (the informed-flow trap the scoping brief's §4 explicitly bars).
+
+<!-- concept-intake-entry mechanism_family="post-auction-dealer-hedging-unwind-drift" instrument="ZN" rejection_reason="SCREEN-FAIL (cost-wall): own-cohort K=0 delta-extraction on native ZN.c.0 (Databento GLBX, $0.00, IS 2010-06-06 to 2018-12-31). PRIMARY 10Y-family [0->15m] N=134 delta=1.01bp sigma=7.29bp delta/sigma=0.139 t=1.61. Req-5 cost-law KILL: ZN RT ~1.5bp single / ~2.5bp two-RT -> 4x hurdle 6bp/10bp; measured delta 6-10x under at every one of 6 cohort/window cells (PRIMARY 0->30m 0.28bp, 0->60m 1.45bp; SECONDARY all-coupon 0->15m 0.39bp, 0->30m 0.63bp, 0->60m 0.83bp - all FAIL). Req-4 power nominally clears the N=259-calibrated 0.122 floor (0.139) but at realized N=134 the power-0.50 break-even rises to ~0.170, above the margin (t=1.61 not significant). Direction confirms Smales (2021) dealer short-hedge-unwind mechanism, real in direction, sub-cost. Third Tier-B/C event-drift seed (after D5, H-OD-1) to confirm mechanism and die at the identical Stage-2 cost-law." harness_disposition_ref="H-ZNAUC-1 delta-extraction (no harness DispositionRecord; lab/archive/q_znauc_1_2026-07/delta_results.json)" date="2026-07-20" class="venue-cost-constraint" role_tested="entry" falsifier_failed="Req-5 cost-law: PRIMARY 0->15m delta 1.01bp vs 6bp/10bp hurdle (6-10x under); all 6 cohort/window cells FAIL" addback_condition="new mechanism evidence for a different ZN construct (materially lower measured cost basis or a distinct non-drift mechanism) - NOT a window retune (15/30/60m already swept), NOT cross-instrument delta transplant, NOT the bid-to-cover-conditional coefficient read as the tradeable delta" -->
+
+### MSL-C1 PDH/PDL failed-break reclaim × MYM — FALSIFIED (explore IS)
+
+**Rejection scope:** the MSL-C1 G0 construct `pdh-pdl-failed-break-reclaim` on CBOT **MYM**
+(15m; prior-day RTH PDH/PDL failed-break reclaim; k=1) as frozen in
+[`PREREG_G0`](../lab/archive/msl_c1_mym_2026-08/PREREG_G0.md) — not MYM the instrument,
+not MSL the channel, not other session-structure fades.
+**Closure date:** 2026-08-13
+**Authoritative artifact:** [`MSL-C1-closure-falsified`](briefs/closures/MSL-C1-closure-falsified.md) ·
+[`RESULTS_g2`](../lab/archive/msl_c1_mym_2026-08/RESULTS_g2.md)
+**Closure basis:** both arms n≥100, mean net R ≈ −0.18 / −0.11, session-block 95% CI entirely &lt; 0
+(FALSIFIED). DELETE PASS both arms (moot). CONFIRM unread; Cap unclaimed; $0/K=0.
+**Surviving finding (NOT rejected):** MYM instrument standing; B8 occupancy ADR; MSL channel;
+Stage-0/1 door-check discharge for this card.
+**Re-proposal bar:** new mechanism evidence — not stop-buffer / overnight-sham / window retune on this G0.
+
+<!-- concept-intake-entry mechanism_family="pdh-pdl-failed-break-reclaim" instrument="MYM" rejection_reason="explore IS FALSIFIED: both arms CI upper < 0 (mean ≈ −0.18/−0.11R)" harness_disposition_ref="MSL-C1 RESULTS_g2 (lab/archive/msl_c1_mym_2026-08/RESULTS_g2.md)" date="2026-08-13" class="explore-falsified" role_tested="entry" falsifier_failed="primary CI entirely < 0 both arms" addback_condition="new mechanism evidence — NOT θ-retune of this G0" -->
+
+### MSL-C2 London-range failed-extension fade × MGC — FALSIFIED (explore IS)
+
+**Rejection scope:** the MSL-C2 G0 construct `london-range-failed-extension-fade` on COMEX **MGC**
+(15m; London H/L fade after failed extension; k=1) as frozen in
+[`PREREG_G0`](../lab/archive/msl_c2_mgc_2026-08/PREREG_G0.md) — not MGC the instrument,
+not MSL the channel, not other session-structure fades.
+**Closure date:** 2026-08-13
+**Authoritative artifact:** [`MSL-C2-closure-falsified`](briefs/closures/MSL-C2-closure-falsified.md) ·
+[`RESULTS_g2`](../lab/archive/msl_c2_mgc_2026-08/RESULTS_g2.md)
+**Closure basis:** both arms n≥300, mean net R ≈ −0.18, session-block 95% CI entirely &lt; 0
+(FALSIFIED). DELETE FAIL both arms (sham prior-RTH less negative than London-constrained).
+CONFIRM unread; Cap unclaimed; $0/K=0.
+**Surviving finding (NOT rejected):** MGC instrument standing; MSL channel; Stage-1 screen
+arithmetic as a pre-G0 filter (passed here; explore killed).
+**Re-proposal bar:** new mechanism evidence (different reference class / direction / TF) —
+**not** stop-buffer, rr, or London-window retune on this G0.
+
+<!-- concept-intake-entry mechanism_family="london-range-failed-extension-fade" instrument="MGC" rejection_reason="edge-failure (FALSIFIED): explore IS both arms mean_R≈-0.18, CI entirely <0 (long n327 [-0.287,-0.071]; short n310 [-0.292,-0.075]); DELETE FAIL (sham prior-RTH less negative). CONFIRM unread." harness_disposition_ref="MSL-C2 explore G0 (lab/archive/msl_c2_mgc_2026-08/RESULTS_g2.md)" date="2026-08-13" class="edge-failure" role_tested="entry" falsifier_failed="both-arms CI upper <0; DELETE Req1a FAIL" addback_condition="new mechanism evidence — NOT stop-buffer/window/rr retune on this G0" -->
+
+### MSL-C3-K2 dual-axis MR-at-level × M2K — FALSIFIED (explore IS; K=2)
+
+**Rejection scope:** the dual-axis G0 on **M2K** licensing both `pdh-pdl-failed-break-reclaim`
+and `overnight-range-failed-extension-fade` at `K_intrinsic=2` — not M2K the instrument, not
+MSL the channel, not MYM/C1 (already separate).
+**Closure date:** 2026-08-13
+**Authoritative artifact:** [`MSL-C3-K2-closure-falsified`](briefs/closures/MSL-C3-K2-closure-falsified.md) ·
+[`RESULTS_g2`](../lab/archive/msl_c3_m2k_2026-08/RESULTS_g2.md) ·
+[`PREREG_G0`](../lab/archive/msl_c3_m2k_2026-08/PREREG_G0.md)
+**Closure basis:** both axes both arms CI entirely &lt; 0 on IS (A means ≈ −0.15/−0.20R; B ≈ −0.12/−0.11R).
+CONFIRM unread; Cap unclaimed; $0/K=0.
+**Surviving finding (NOT rejected):** M2K instrument standing; MSL channel; Stage-0/1 screen arithmetic;
+estate Cap/DSR/floor ladder unchanged.
+**Re-proposal bar:** new mechanism evidence — NOT θ-retune / stop-buffer / silent K=1 drop on this G0.
+
+<!-- concept-intake-entry mechanism_family="pdh-pdl-failed-break-reclaim" instrument="M2K" rejection_reason="explore IS FALSIFIED (C3-K2 Axis A): both arms CI upper < 0 (mean ≈ −0.15/−0.20R)" harness_disposition_ref="MSL-C3-K2 RESULTS_g2 (lab/archive/msl_c3_m2k_2026-08/RESULTS_g2.md)" date="2026-08-13" class="explore-falsified" role_tested="entry" falsifier_failed="primary CI entirely < 0 both arms" addback_condition="new mechanism evidence — NOT θ-retune of this G0" -->
+<!-- concept-intake-entry mechanism_family="overnight-range-failed-extension-fade" instrument="M2K" rejection_reason="explore IS FALSIFIED (C3-K2 Axis B): both arms CI upper < 0 (mean ≈ −0.12/−0.11R)" harness_disposition_ref="MSL-C3-K2 RESULTS_g2 (lab/archive/msl_c3_m2k_2026-08/RESULTS_g2.md)" date="2026-08-13" class="explore-falsified" role_tested="entry" falsifier_failed="primary CI entirely < 0 both arms" addback_condition="new mechanism evidence — NOT θ-retune of this G0" -->
+
+### MSL-C3 PDH/PDL failed-break reclaim × M2K — OPERATOR-KILL (B4 declined; pre-G0)
+
+**Rejection scope:** the MSL-C3 card’s unpaid G0 path for `pdh-pdl-failed-break-reclaim` on
+**M2K** after Stage-1 PASS — not M2K the instrument, not the mechanism **class**, not MYM/C1.
+**Closure date:** 2026-08-13
+**Authoritative artifact:** [`MSL-C3-closure-operator-kill`](briefs/closures/MSL-C3-closure-operator-kill.md) ·
+[`STAGE1`](../lab/archive/msl_c3_m2k_2026-08/STAGE1.md)
+**Closure basis:** operator declined B4; no G0 freeze; $0/K=0. Stage-1 screens had PASSed.
+**Surviving finding (NOT rejected):** M2K instrument standing; MSL channel; mechanism class
+`pdh-pdl-failed-break-reclaim` (available to MSL-C1 on MYM); Stage-0 L3/WSTRUCT/W4 discharge.
+**Re-proposal bar:** fresh Stage-1 + new B4 — not a silent revive of this unpaid path.
+**Addback closed (does not clear this row):** [`STAGE1_K2`](../lab/archive/msl_c3_m2k_2026-08/STAGE1_K2.md) +
+[ADR 2026-08-13](adr/2026-08-13-msl-c3-k2-dual-axis-revive.md) +
+[`PREREG_G0`](../lab/archive/msl_c3_m2k_2026-08/PREREG_G0.md) → explore
+**`FALSIFIED`** both axes ([closure](briefs/closures/MSL-C3-K2-closure-falsified.md)). New mechanism
+evidence still required for any further M2K addback of this class.
+
+<!-- concept-intake-entry mechanism_family="pdh-pdl-failed-break-reclaim" instrument="M2K" rejection_reason="operator-kill pre-G0 (B4 declined): Stage-1 PASS but G0 never frozen; slot handed to MSL-C1." harness_disposition_ref="MSL-C3 STAGE1 (lab/archive/msl_c3_m2k_2026-08/STAGE1.md)" date="2026-08-13" class="operator-stop" role_tested="entry" falsifier_failed="n/a — B4 declined" addback_condition="fresh Stage-1 + new B4 GO — NOT silent revive of this unpaid G0 path" -->
+
+### MSL-S2A pullback-failure resumption × MCL — FALSIFIED (explore IS)
+
+**Rejection scope:** the MSL-S2A G0 construct `pullback-failure-resumption` on NYMEX **MCL**
+(15m; impulse + failed-pullback resumption; k=1; rr=3; 09:00–14:30 ET) as frozen in
+[`PREREG_G0`](../lab/archive/msl_s2a_mcl_2026-08/PREREG_G0.md) — not MCL the instrument,
+not MSL the channel, not other continuation classes.
+**Closure date:** 2026-08-13
+**Authoritative artifact:** [`MSL-S2A-closure-falsified`](briefs/closures/MSL-S2A-closure-falsified.md) ·
+[`RESULTS_g2`](../lab/archive/msl_s2a_mcl_2026-08/RESULTS_g2.md)
+**Closure basis:** N-ACT FAIL (0.511 trades/week &lt; 1). Long FLIP FAIL (join-pullback beat
+resumption). DELETE PASS both arms (moot under FALSIFIED). Means negative; CI not entirely
+&lt; 0 (n 31/46). CONFIRM unread; Cap unclaimed; $0/K=0. Not `BOOK-CONDITIONAL(cadence)`.
+**Surviving finding (NOT rejected):** MCL instrument standing; MSL channel; Stage-1 screen
+arithmetic as a pre-G0 filter (passed here; explore killed); DELETE selection vs TOD sham.
+**Re-proposal bar:** new mechanism evidence (different reference class / direction / TF) —
+**not** I/P-window, stop-buffer, or rr retune on this G0.
+
+<!-- concept-intake-entry mechanism_family="pullback-failure-resumption" instrument="MCL" rejection_reason="explore IS FALSIFIED: N-ACT 0.511 trades/week; long FLIP FAIL (join-pullback +0.047 vs resume -0.175). DELETE PASS both. CONFIRM unread." harness_disposition_ref="MSL-S2A RESULTS_g2 (lab/archive/msl_s2a_mcl_2026-08/RESULTS_g2.md)" date="2026-08-13" class="explore-falsified" role_tested="entry" falsifier_failed="N-ACT trades/week < 1; long FLIP Req1a FAIL" addback_condition="new mechanism evidence — NOT I/P-window/stop-buffer/rr retune on this G0" -->
+
+### MSL-S2B sweep-failure-filtered-continuation × MYM — SCREEN-FAIL (D2 route-B cheap falsifier)
+
+**Rejection scope:** the ADR 2026-08-16 D2 cheap-falsifier test of *route B* (temporal-selectivity-
+as-continuation via the CON-5 pause's own dense-1m-scoped textual opening) for
+`sweep-failure-filtered-continuation` × **MYM** 15m — specifically the one operationalization run:
+MSL-C1's own PDH/PDL sweep + failed-extension-reclaim signal (`construct_lib.find_failed_extension_signal`)
+taken on the **flip** (continuation) side, entered next-bar-open, against S2B's own frozen
+placeholder box (40 pt stop / 120 pt target, rr=3, k=1). Not MYM the instrument, not the MSL
+channel, not the base MSL-S2B 2026-08-14 `STAGE-1 FAIL` (route) verdict (registered separately,
+entry above; unedited by this test — ADR D3 is prospective only), not the CON-5 pause's own
+dense-1m lane (untouched), not any other untested operationalization of "sweep-failure gates
+continuation."
+**Closure date:** 2026-08-17
+**Authoritative artifact:**
+[`_cheap_falsifier_s2b_con5_d2_2026-08-17_LOG`](../lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_s2b_con5_d2_2026-08-17_LOG.md) ·
+[`ADR 2026-08-16`](adr/2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md) §2 D2 (falsifier spec) ·
+[`STAGE1 addendum`](../lab/analysis/c1/msl_s2b_mym_2026-08/STAGE1.md) ·
+[`MSL-S2B-closure-stage1-fail-route`](briefs/closures/MSL-S2B-closure-stage1-fail-route.md) (base
+verdict, unedited by this test)
+**Closure basis:** IS partition only (panel start .. 2025-08-31; CONFIRM never touched). 1,605
+eligible sessions (valid prior-day PDH/PDL); signal fired on 850 (coverage **52.96%**; exits: stop
+627 · target 192 · flat 31). Mean signed gross **−1.00 pt** across those 850 signals; WR **25.41%**
+(≈ the box's own rr=3 breakeven WR of 25%); gross/(4×RT) **−0.044×** against the ADR's own generous
+**+0.5× (11.28 pt)** pass bar (0.5 × 4 × $2.82 RT ÷ $0.5/pt) — a clean, non-marginal `D2_FAIL`. (An
+initial run mis-paid the asymmetric 40/120 box via an unmodified C1 path-function bug — corrected
+before this result was scored.)
+**Surviving finding (NOT rejected):** MYM instrument standing; MSL channel standing; the base
+MSL-S2B 2026-08-14 `STAGE-1 FAIL` (route) verdict (registered separately above, unedited — ADR D3
+is prospective only); the ADR's own D1 textual-narrow scoping of the CON-5 pause (still stands — a
+15m/non-dense-1m card may still invoke route ① via temporal selectivity, subject to this falsifier
+gate); the D2 falsifier-gate mechanism itself as a reusable channel tool (this is one gated card's
+result, not a verdict on the gate — ADR §4 tracks that separately); MSL-C1's own DELETE PASS
+filter-role finding (untouched — this test reused the same underlying signal only on its
+flip/continuation *entry* role, not the filter role C1 established).
+**Re-proposal bar:** a different entry-trigger operationalization of "trend-continuation gated by
+sweep-failure" — a new construct/box pairing run through its own fresh D2-class falsifier — **not**
+a re-run of this same C1-flip-signal / 40-pt-stop-120-pt-target pairing, **not** a θ-retune of the
+box, **not** treating this FAIL as reopening the base 2026-08-14 Stage-1 FAIL verdict.
+
+<!-- concept-intake-entry mechanism_family="sweep-failure-filtered-continuation" instrument="MYM" rejection_reason="D2 cheap-falsifier route-B closure (ADR 2026-08-16 sec 2 D2): reused MSL-C1's PDH/PDL sweep+failed-extension-reclaim signal on the flip side, S2B's own 40/120 placeholder box, IS-only; 850/1605 eligible sessions fired (coverage 52.96%); mean signed gross -1.00 pt; WR 25.41% (~rr=3 breakeven); gross/(4xRT) -0.044x vs +0.5x (11.28 pt) pass bar. D2_FAIL." harness_disposition_ref="MSL-S2B D2 cheap-falsifier LOG (lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_s2b_con5_d2_2026-08-17_LOG.md)" date="2026-08-17" class="edge-failure" role_tested="entry (route-B/D2 falsifier)" falsifier_failed="ADR 2026-08-16 D2 pass bar: mean signed gross -1.00 pt < +11.28 pt (0.5x4xRT); WR 25.41% ~= rr=3 breakeven; gross/(4xRT) -0.044x" addback_condition="different entry-trigger operationalization of sweep-failure-filtered-continuation (not this C1-flip-signal/40-120-box pairing), tested under its own fresh D2-class falsifier -- NOT a re-run of this signal/box pairing, NOT reopening the base 2026-08-14 Stage-1 FAIL route verdict" -->
+
+### Third-Friday derivative-settlement reversal on MYM
+
+**Rejection scope:** the exact Baltussen/Terstegge/Whelan derivative-payoff-bias expression on native MYM: short the calendar third-Friday 09:30 ET open and cover at 12:00 ET. The overnight Thursday-close→Friday-open spike is a mechanism-faithfulness measurement, not a traded limb.
+**Closure date:** 2026-07-21
+**Class:** edge-failure (underpowered, unstable) + venue/cost-geometry
+**Authoritative artifact:** [`lab/archive/mym_3fps_recon_2026-07/RESULTS.md`](../lab/archive/mym_3fps_recon_2026-07/RESULTS.md) + [`closure`](briefs/closures/MYM-3FPS-1-closure-falsified.md).
+**Closure basis:** frozen K=0 native-micro extraction, 2019-05-06→2026-07-21, exact timestamps and no nearest-bar substitutions. Coverage passed (84/87, 96.6%), but the overnight spike was only +1.54 bp (`delta/sigma=0.0256`, power 0.042) and the open-to-noon short only +2.68 bp (`delta/sigma=0.0500`, power 0.067), both far below the frozen 0.2139 standardized-effect floor. The short also failed the Tradeify cost law: +2.68 bp vs 6.57 bp 4× hurdle. Year signs were unstable and the tradable limb was negative in 2019, 2024, 2025, and 2026. The published ~12 bp DJIA effect does not transfer at useful magnitude to the native MYM era.
+**Re-proposal bar:** new target-instrument mechanism evidence. NOT a 09:15/09:20 entry, different exit, quarterly/triple-witch subset, MNQ rescue, overnight limb, or pooled-index version; each is a new hypothesis and the first three are precisely the post-result selection moves this probe froze out.
+
+<!-- concept-intake-entry mechanism_family="third-friday-derivative-settlement-reversal" instrument="MYM" rejection_reason="edge-failure + venue/cost-geometry: frozen K=0 native-MYM third-Friday 09:30->12:00 short, n=84/87 exact events (96.6%). Overnight spike +1.54bp, delta/sigma 0.0256, power 0.042; open-to-noon short +2.68bp, delta/sigma 0.0500, power 0.067; both below 0.2139 floor. Cost-law FAIL: +2.68bp vs 6.57bp 4x Tradeify hurdle. Year signs unstable; short negative 2019/2024/2025/2026. Published ~12bp DJIA effect absent at useful magnitude in native MYM era." harness_disposition_ref="MYM-3FPS-1 Phase-0 (K=0 delta extraction; lab/archive/mym_3fps_recon_2026-07/RESULTS.md)" date="2026-07-21" class="edge-failure+venue-cost-geometry" role_tested="entry" falsifier_failed="P0.1 overnight delta/sigma 0.0256; P0.2 reversal delta/sigma 0.0500 vs 0.2139 floor; P0.3 +2.68bp vs 6.57bp hurdle" addback_condition="new target-instrument mechanism evidence - NOT timing/exit/expiry-subtype retune, MNQ rescue, overnight limb, or pooled-index variant" config_fingerprint="3fps/MYM.v.0/calendar-third-Friday/short-open09:30ET->12:00ET/cost=Tradeify0.91+1tick-side/feed=Databento-GLBX-MYM.v.0-ohlcv1m-2019-05-06..2026-07-21" -->
+
+### Opening-volume × directional-efficiency pressure map on MNQ/MYM
+
+**Rejection scope:** the continuous BAR EXPORT opening-pressure mechanism — high opening volume as continuation when the first 30 minutes are directionally efficient and as reversal when absorbed into a low-efficiency range — on native MNQ and MYM M15 panels. Not a strategy or entry rule.
+**Closure date:** 2026-07-21
+**Class:** edge-failure (underpowered / wrong-signed on development)
+**Authoritative artifact:** [`lab/archive/opening_pressure_map_2026-07/RESULTS.md`](../lab/archive/opening_pressure_map_2026-07/RESULTS.md) + [`closure`](briefs/closures/OPENPRESS-1-closure-falsified.md).
+**Closure basis:** frozen K=0 hash-pinned diagnostic (`MNQ_M15.csv` `ddb14f…e1f7e3ac`, `MYM_M15.csv` `298ab8…f9059c`). Neither instrument passed. MNQ development t=1.53 and pooled t=1.60 (both <2) despite positive slopes and a cost-clearing P90−P10 spread; MYM development slope wrong-signed (−3.63 bp) and predicted spread 1.71 bp below the 6.41 bp 4× Tradeify hurdle. Exactly-zero instruments passed → overall `FALSIFIED` (not AMBIGUOUS).
+**Re-proposal bar:** new modality / mechanism evidence (e.g. true order-flow or absorption measures). NOT an RV threshold, alternate opening window, weekday slice, single-instrument selection after seeing the pair, or re-pin to a newer BAR EXPORT panel to rescue the slope.
+
+<!-- concept-intake-entry mechanism_family="opening-volume-directional-efficiency" instrument="MNQ+MYM" rejection_reason="edge-failure: frozen K=0 BAR EXPORT pressure-alignment diagnostic. MNQ FAIL (dev t=1.53, pooled t=1.60 <2); MYM FAIL (dev slope -3.63bp wrong-signed; pred spread 1.71bp < 6.41bp 4x cost). Neither PASS → FALSIFIED." harness_disposition_ref="OPENPRESS-1 (lab/archive/opening_pressure_map_2026-07/RESULTS.md)" date="2026-07-21" class="edge-failure" role_tested="mechanism-diagnostic" falsifier_failed="MNQ HAC t<2; MYM wrong-signed + cost FAIL" addback_condition="new modality/mechanism - NOT threshold/window/instrument rescue on same OHLCV" -->
+
+### OR-window net signed aggressor size × MNQ — FALSIFIED (CI includes 0)
+
+**Rejection scope:** the Q-CAPFLOW-1 Cap-spend cell testing OR-window **net signed aggressor
+size** (tape-flow Feature A, §2 S3 of the frozen construct: Σ size·(+1 buy-aggressor, −1
+sell-aggressor) over prints in `[OR_start, t_trigger)`) against realized R of CME **MNQ**
+ORB-MNQ-1 trades, as frozen in [`PREREG`](../lab/archive/mnq_capflow_orb_r_2026-08/PREREG.md)
+— not MNQ the instrument, not ORB-MNQ-1 the survivor (lifecycle PARKED, unchanged), not the
+resting-L1 order-flow construct (N14), which is a distinct, untouched cell.
+**Closure date:** 2026-08-14
+**Authoritative artifact:** [`Q-CAPFLOW-1-closure-falsified`](briefs/closures/Q-CAPFLOW-1-closure-falsified.md) ·
+[`RESULTS`](../lab/archive/mnq_capflow_orb_r_2026-08/RESULTS.md) ·
+[`PREREG`](../lab/archive/mnq_capflow_orb_r_2026-08/PREREG.md)
+**Closure basis:** coverage/power cleared (255/255 triggers covered, coverage 1.000 —
+VOID-POWER/VOID-COVERAGE not fired). Primary Pearson ρ(A, R) = **+0.020012**; session-block
+bootstrap 95% CI **[−0.089845, +0.114398]** includes 0; within-session shuffle placebo |·| p95
+= **0.020012**, empirical p = **1.00** (observed ρ indistinguishable from the placebo noise
+floor). Halves disagree in sign (H1 ρ=+0.0419, H2 ρ=−0.0067) as a non-reached secondary — the
+CI/placebo limb fired first per §5. Cap held: `cap_spent=false`, `k_intrinsic=0`, $0 spend.
+**Surviving finding (NOT rejected):** MNQ instrument standing; ORB-MNQ-1 survivor and its
+PARKED lifecycle status (untouched); the Cap-reservation seat Q-CAPRES-2 (RESOLVED — discharged
+its unpaid score obligation, not consumed); the C11/N14 resting-L1 tripwire (a distinct cell);
+other Cap-spend features or survivor-tied questions on this or other survivors.
+**Re-proposal bar:** a fresh Cap-reservation GO + Cap-spend GO + new G0/construct testing a
+**different feature or different survivor-tied question** — not a retune of the |ρ|≥0.02
+magnitude floor, the OR-window definition, or a re-score of this same event set.
+
+<!-- concept-intake-entry mechanism_family="or-window-net-signed-aggressor-size" instrument="MNQ" rejection_reason="Cap-spend cell FALSIFIED: session-block CI95 [-0.089845,+0.114398] includes 0 on rho=+0.020012 (n=255, coverage 1.000); within-session shuffle placebo |.| p95=0.020012, p_emp=1.00 (observed rho indistinguishable from placebo); halves disagree in sign (h1=+0.0419, h2=-0.0067). Cap held, cap_spent=false, k_intrinsic=0." harness_disposition_ref="Q-CAPFLOW-1 RESULTS.json (lab/archive/mnq_capflow_orb_r_2026-08/RESULTS.json)" date="2026-08-14" class="edge-failure" role_tested="correlation/companion (Cap-spend association test, not an ORB entry mechanism)" falsifier_failed="S5 verdict gate: CI95 includes 0 or fails placebo — both fired (CI spans 0; observed |rho| equals placebo p95)" addback_condition="fresh Cap-reservation GO + Cap-spend GO + new G0/construct (different feature or different survivor-tied question) — NOT a retune of the |rho|>=0.02 magnitude floor, the OR-window definition, or this event set" -->
+
+### Q-COMPOSE-1 ORB-MNQ-1 breadth-leg composition × MYM+MNQ Class-S c1 book — FALSIFIED (regime-breadth re-MC)
+
+**Rejection scope:** the Q-COMPOSE-1 pre-registered composed 3-leg book — MYM-Striker @0.70% +
+MNQ-Striker @0.37% (both byte-pinned, un-reweighted from Class-S candidate #1) + **ORB-MNQ-1
+@0.37%** (SINGLE frozen weight, 1.00× lifecycle, operator-signed §9) — as a book-level
+regime-breadth remedy for the 2-leg Class-S c1 book's H1 chop-fragility, at this tested
+weight/geometry only. **Not** ORB-MNQ-1 the mechanism (standalone lifecycle standing unchanged),
+not MYM/MNQ the instruments, not the c1 book's sizing/haircut lever (which passed), not the
+combined composed×haircut arm (never licensed — the haircut single didn't also fail).
+**Closure date:** 2026-07-17
+**Authoritative artifact:** [`Q-COMPOSE-1-closure-falsified`](briefs/closures/Q-COMPOSE-1-closure-falsified.md) ·
+[`RESULTS`](../lab/archive/q_compose_1_2026-07/RESULTS.md) ·
+[`pre-reg`](briefs/pre-registration/Q-COMPOSE-1-verdict-preregistration.md)
+**Closure basis:** the §4/§6 `FALSIFIED` trigger (H1 headline bust exceeding 3.0% OR
+bootstrap-95th bust exceeding 3.0% on every tier) fired on all 4 tiers via **both** limbs: H1
+headline bust ranged 54.17% (MFFU_Rapid_100K) to 67.63% (BluSky_Premium_100K); bootstrap-95th
+bust ranged 46.80% (MFFU_Rapid_100K) to 59.58% (BluSky_Premium_100K) — 15–23× over the 3.0%
+ceiling. Discharge-tier detail vs the 2-leg baseline (`REGIME_GATE.md`): Tradeify_Select_100K
+full 2.65%→38.75%, H1 4.37%→54.73%, H2 1.70%→25.84%, boot-95th 10.37%→47.14%; MFFU_Rapid_100K
+full 2.64%→38.54%, H1 4.36%→54.17%, H2 ~1.70%→25.79%, boot-95th 10.33%→46.80% — every partition
+worse under composition, including full-panel and H2, which the 2-leg book passes. Zero tiers
+cleared all four partitions (0 `RESOLVED` clearers). Mechanism, from the §2-required breadth
+declaration: dependence N_eff rose 1.9948→2.9502 (Δ+0.9554, near-max correlation breadth) while
+risk N_eff stayed flat at 1.9593→1.9628 (Δ+0.0034) — ORB-MNQ-1 alone carries roughly $438/day std
+at the $100K basis vs $273/day for the entire 2-leg book (composed roughly $539/day, ~2×),
+against the unchanged $3,000 trailing barrier: the added leg is variance-dominant, so correlation
+breadth without risk-weight balance did not shrink the dollar-denominated trailing-DD tail.
+**Surviving finding (NOT rejected):** MYM-Striker/MNQ-Striker instrument and 2-leg c1 book
+standing — the sizing lever passed its own sibling haircut re-MC (WATCH-1 0.50× clears all four
+partitions × both discharge tiers) and is the c1 book's sole deployable path (2026-07-17 G8
+ratification), independent of this fork. ORB-MNQ-1 standalone lifecycle standing is unchanged —
+remains `CANDIDATE @ 1.00×` with its own ADMISSION.md caveats; this closure kills only its role
+as a book leg at the tested weight/geometry, it does not demote the candidate. The dependence-vs-risk-N_eff
+decomposition itself (check PR(cov), not just PR(corr), before composing) is a portfolio-construction
+lesson, not a rejection.
+**Re-proposal bar:** new mechanism evidence — a breadth-leg candidate (ORB-MNQ-1 or otherwise)
+whose risk N_eff (PR-cov), not just its dependence N_eff (PR-corr), also rises under composition —
+i.e. NOT variance-dominant relative to the existing book (daily $ vol materially below the ~2× ORB
+showed here) — so diversification can actually shrink the dollar trailing-DD tail. **Not** a
+re-tune/re-sweep of ORB's own weight (§5 bars weight iteration on a failed composed candidate — a
+failed candidate closes, it does not iterate weight; 0.70%/1.50% were disclosed §7 prior-looks,
+never tested arms, and stay untested). **Not** reopening the combined composed×haircut arm — that
+arm is licensed only if both singles fail, and the haircut single passed.
+
+<!-- concept-intake-entry mechanism_family="regime-breadth-composition-leg" instrument="ORB-MNQ-1+MYM-Striker+MNQ-Striker (composed 3-leg c1 book)" rejection_reason="composed 3-leg book (MYM@0.70%+MNQ@0.37%+ORB-MNQ-1@0.37%/1.00x lifecycle) FALSIFIED: H1 bust 54.17-67.63% and bootstrap-95th bust 46.80-59.58% vs 3.0% ceiling on all 4 tiers; dependence N_eff rose 1.9948->2.9502 while risk N_eff stayed flat 1.9593->1.9628" harness_disposition_ref="Q-COMPOSE-1 RESULTS (lab/archive/q_compose_1_2026-07/RESULTS.md)" date="2026-07-17" class="regime-remc-falsified" role_tested="portfolio-breadth-leg (book composition, not entry/filter)" falsifier_failed="§4/§6 FALSIFIED trigger: H1 bust > 3.0% OR bootstrap-95th bust > 3.0% on every tier — met on all 4 tiers via both limbs" addback_condition="new mechanism evidence: a breadth leg whose risk N_eff (not just dependence N_eff) also rises under composition, i.e. not variance-dominant vs the book — NOT a re-tune of ORB's weight (failed candidate closes, does not iterate weight, §5), NOT reopening the combined composed x haircut arm (singles didn't both fail)" -->
+
+### Blind high-K discovery-axis mining (Q-GATECART-1 DSR-admission reachability) — FALSIFIED (K-conditional, K=3,177)
+
+**Rejection scope:** the finding that **blind, high-K discovery-axis mining** (K banked at
+**3,177** — DISC-CAMP-0's blind matrix-profile search) cannot produce a realistically-demonstrable
+single-strategy candidate for the frozen Part-A survivor gate at the $100K band — not the survivor
+bust/pass gate itself (3.0% / 50% / 1.0% ceilings, untouched — its own amendment route is its own
+close-and-reopen), not `DD_TRIGGER`/`DD_SCALE`, not any specific instrument or mechanism family
+(no candidate was ever scored — "N/A" per the closure's Deployability annotation), and not
+**low-K (≤441), pre-committed mechanism-first axes** (the HARV lane), which this same finding
+leaves open.
+**Closure date:** 2026-07-14 (CLOSED-FALSIFIED at Phase 0.5, ahead of the Phase-1 cartography grid
+— the grid was never run; the realism-band anchors alone settled it)
+**Authoritative artifact:** [`Q-GATECART-1 closure`](briefs/closures/Q-GATECART-1-survivor-gate-cartography.md) ·
+[`Q-GATECART-1 brief`](briefs/Q-GATECART-1-survivor-gate-cartography.md) ·
+verdict pre-registration §F results annex, frozen `453148a` / §F filled `1367265` — moved into the
+LTM corpus same-day (`fad8984`) then pruned at the Great Prune; retrieve via
+`git show pre-prune-2026-08-08:docs/ltm/briefs/pre-registration/Q-GATECART-1-verdict-preregistration.md`
+**Closure basis:** frozen formula (§B, byte-stable through close): a profile is realistic iff
+S_floor ≤ annualized Sharpe ≤ Cap, Cap = smallest grid rung ≥ max(S_A, S_B). Measured post-freeze
+(§F, 2026-07-14): **S_A = 1.828** (Aegis — max standalone annualized Sharpe of the four locked legs
+on the canonical Pepperstone panel; Guardian 1.48, DJ30 1.11, NAS100 1.45; portfolio-of-4 reference
+2.80 is *not* S_A — single-leg only). **S_B = 0.85** (top-decile net-of-cost annualized Sharpe from
+the multiple-testing-corrected published anomaly/CTA literature; range 0.6–1.05; median
+single-strategy ~0.3–0.5). |S_A−S_B| = 0.978 &gt; 0.5 → divergence branch fired, so Cap is
+operator-adjudicated within the admissible range **[1.0, 2.0]**. **S_floor = 2.050** at K=3,177 /
+V=1/n (production `deflated_sharpe`; robust 2.05–2.06 across the frozen frequency set 0.5–4
+trades/day). Every admissible Cap ≤ 2.0 &lt; S_floor 2.05 — the band [S_floor, Cap] is **empty
+under every resolution of the divergence branch**, so H-CART's "otherwise" branch fired vacuously
+and the Phase-1 grid became moot. The DSR-floor-vs-K scan shows the constraint is K-governed, not
+n-governed: floor ≤ Aegis quality (1.83) needs K ≤ 441; ≤ Guardian quality (1.48) needs K ≤ 33; ≤
+typical corrected-anomaly quality (1.00) needs K ≤ 3.
+**Surviving finding (NOT rejected):** the frozen survivor bust/pass gate (3.0% / 50% / 1.0%) and
+`DD_TRIGGER` 1.5% / `DD_SCALE` 0.40× — untouched; the four locked legs' own standing (Aegis remains
+the best in-house validated single edge at 1.83); **low-K (≤441), pre-committed mechanism-first
+discovery axes (the HARV lane)** — the K-scope explicitly reopens the band at K≤441, so this is a
+kill of blind high-K mining, not of discovery generally; the Phase-1 grid harness spec (frozen +
+Cursor-ready) — DEFERRED as moot at the banked K, never run and never disproven on its own terms.
+**Re-proposal bar:** not a wider grid, a re-tuned felt cap, or more sims at the same K — the finding
+is K-governed, so re-proposal needs either (a) a genuinely **low-K (≤441, better ≤33 for
+Guardian-quality margin) pre-committed mechanism-first axis** under the HARV lane discipline, or
+(b) new external evidence that moves an anchor — a corrected S_B figure materially above the
+measured 0.85 top-decile ceiling, or a different S_floor K-accounting (not a re-derivation of the
+3,177 constant itself, which belongs to DISC-CAMP-0's own closure). Amending the frozen survivor
+gate ceilings or the DSR K/V rule in response to this finding is forbidden by H-CART §5, carried
+verbatim into the closure.
+
+<!-- concept-intake-entry mechanism_family="blind-high-k-discovery-mining" instrument="n/a (program-level DSR-admission reachability finding; anchors reference all four locked legs, no candidate scored)" rejection_reason="FALSIFIED at Phase 0.5 (ahead of the Phase-1 grid): realism-band S_floor 2.050 (K=3177,V=1/n) > every admissible Cap in [1.0,2.0] (Cap=max(S_A=1.828 Aegis, S_B=0.85 top-decile-net); |S_A-S_B|=0.978>0.5 fired divergence branch). Band [S_floor,Cap] empty under every Cap resolution -> H-CART otherwise branch fired vacuously; blind high-K (K=3,177) mining structurally dead at DSR admission; floor is K-governed not n-governed (K<=441 for Aegis-quality, K<=33 for Guardian-quality, K<=3 for typical-anomaly-quality)." harness_disposition_ref="Q-GATECART-1 closure (docs/briefs/closures/Q-GATECART-1-survivor-gate-cartography.md); verdict pre-reg freeze 453148a / §F filled 1367265 (pruned from working tree at the Great Prune 2026-08-08 — git show pre-prune-2026-08-08:docs/ltm/briefs/pre-registration/Q-GATECART-1-verdict-preregistration.md)" date="2026-07-14" class="reachability-constraint" role_tested="n/a (axis-reachability screen, not a scored entry/filter mechanism — Deployability annotation: N/A, no candidate scored)" falsifier_failed="S_floor 2.050 (K=3,177) > Cap ceiling admissible range [1.0,2.0]; zero realism-band-compliant grid points possible under any Cap resolution" addback_condition="K<=441 low-K pre-committed mechanism-first axis (HARV lane) reopens band to Aegis-quality; K<=33 to Guardian-quality — NOT wider/high-K mining, NOT felt-cap retune, NOT touching the frozen survivor gate (3.0%/50%/1.0%) or DD_TRIGGER/DD_SCALE" -->
+
+### Q-INVENTORY-1 external-mechanism harvest sourcing burst × multi-instrument — FALSIFIED (0 admissible seeds)
+
+**Rejection scope:** the bounded Q-INVENTORY-1 sourcing burst run under `docs/methodology/strategy_harvest.md` §1 admission requirements 1–5 — rank-1 forward-citation traversal from Baltussen-Da-Lammers-Martens 2021 (≈90 unique S2+OpenAlex citing works, 15 detail-reviewed), rank-2 survey/meta pass (10 searches), rank-3 futures-native journal pass (12 searches), all under the inherited Q1–Q6 query families — and the eight specific published-mechanism expressions it staged and sniff-screened dead: pre-FOMC ES drift (Lucca-Moench / Kurov-Wolfe-Gilbert); macro pre-release ES/ZN drift (Kurov-Sancetta-Strasser-Wolfe); FX fixing-window 6E/6J drift (Krohn-Mueller-Whelan); post-FOMC Treasury drift (Brooks-Katz-Lustig) + Pan-Peng pre-FOMC bonds; announcement-day SPX premium (Savor-Wilson / Knox-Londono-Samadi); VIX-complex momentum + EOD-pressure (Huang et al. / Bangsgaard-Kokholm); the venue-walled KC/Nikkei/Deribit/China rows; gold-fix rows (Caminschi-Heaney). Not ES, ZN, 6E, 6J, SPX, GC, or MGC the instruments; not the harvest-intake channel/lane; not the three UNSCREENABLE probe-funding stubs (priced, not screened).
+**Closure date:** 2026-07-17
+**Authoritative artifact:** [`Q-INVENTORY-1-closure-falsified`](briefs/closures/Q-INVENTORY-1-closure-falsified.md) · [`RESULTS`](../lab/archive/q_inventory_1_2026-07/RESULTS.md) · [`CANDIDATE_ROWS`](../lab/archive/q_inventory_1_2026-07/CANDIDATE_ROWS.md)
+**Closure basis:** zero of eight staged row-groups cleared Req 1–5 at sniff-arithmetic level (Default-#1 OOS clock, 2019-05-06→). Power-wall ×3: pre-FOMC ES post-2016 δ≈9.2bp/event vs σ(24h ES)≈110bp → δ/σ≈0.08, N≈58 → power≈0.09 (break-even needs ≈28bp/event; only the decayed pre-2015 figure clears); announcement-day SPX +8.3bp/event vs σ≈110bp → δ/σ 0.075, N≈252 → power≈0.22; post-FOMC Treasuries (cash-yield cohort, not per-contract futures δ) + Pan-Peng long-bond pre-FOMC 0.68bp/event, ~4–8 events/yr → power dead. Cost-wall ×1 at the 4× multiple: FX fixing-window 6E/6J (n=2515, 2009–2018) — the strongest row staged, EUR pre-Europe window published net +5.53%/yr, SR 0.99 — ÷252 ≈2.2bp/event net → ≈3.3bp gross, against a 6E RT_frac≈1.1bp × 4 = 4.4bp hurdle; a published net-positive intraday effect still fails Req-5. Informed-flow/Req-2 ×1: macro pre-release ES/ZN δ (γ 0.066–0.154%/1σ surprise) is signed by the realized surprise itself; the "Drift Begone!" causal shutoff (UK ended prerelease access Jul 2017) erases ≈40% of the total adjustment. Venue-wall ×5: VIX-complex (VX untradeable at the four FRIENDLY firms; the ES EOD-pressure footprint is D5's Tier-C sibling — no extractable δ, documented reversal); KC coffee (ICE), Nikkei 225 (JPX), Deribit BTC, SHFE-class China commodity — none expressible at the four firms' CME micro books. K-wall ×1 (permanent): gold-fix rows, GC/MGC bank 3,177. Burst discipline held throughout: `discovery_manifests/` count 5→5 (delta 0), zero `register_search`, zero pulls, zero K spent across 22 total targeted searches (ranks 2–3) plus the rank-1 citation traversal.
+**Surviving finding (NOT rejected):** ES, ZN, 6E, 6J, SPX, GC, and MGC instrument standing — the kill lands on these specific published expressions/parameters, not the instruments; the harvest-intake channel/lane itself (accept-idle firing the 2026-11-08 idle guard is the intake ADR's own success-eligible outcome, not a lane failure); the deployment axis (Q-RAIL-1, closed `RESOLVED` the same day) unaffected; the three UNSCREENABLE probe-funding stubs — ZN Treasury-auction dealer-hedging δ (Smales 2021), CL EIA-inventory unconditional-event δ, and the 6J/6E/CL carry timing-δ — priced (≈$0 data + one family-K each) but **not funded**, pending a fresh operator GO/NO-GO, not falsified; the standing 4× cost-law doctrine multiple, sharpened (not newly discovered) by the FX fixing-window row.
+**Re-proposal bar:** new external mechanism evidence — a fresh published cohort δ clearing the Req-5 4× cost inequality at the panel basis, or a funded probe resolving one of the three named UNSCREENABLE stubs' missing input (per the closure's priced forks) — not a re-citation of any of the eight dead classes under a different paper (Req-3 dedup-first rule; GC/MGC bank 3,177 is a permanent K-wall), not a transplanted or invented δ, not a relaxed Default-#1 OOS start date (2019-05-06), and not "one more channel" appended to this closed burst.
+
+<!-- concept-intake-entry mechanism_family="external-mechanism-harvest-sourcing-burst" instrument="ES+ZN+6E+6J+SPX+VX+GC+MGC" rejection_reason="H-INVENTORY-1 FALSIFIED: bounded rank-1 (~90 unique S2+OpenAlex citing works of Baltussen-Da-Lammers-Martens 2021) + rank-2 (10 searches) + rank-3 (12 searches) sourcing burst staged 8 row-groups, 0 cleared Req 1-5. Power-wall x3: pre-FOMC ES post-2016 delta~9.2bp vs sigma(24h)~110bp -> delta/sigma~0.08, N~58, power~0.09; announcement-day SPX +8.3bp/event vs sigma~110bp -> delta/sigma 0.075, N~252, power~0.22; post-FOMC Treasuries (cash-yield cohort, not futures delta) + Pan-Peng 0.68bp/event, ~4-8/yr, power dead. Cost-wall x1 at 4x hurdle: FX fixing-window 6E/6J (Krohn-Mueller-Whelan, n=2515) EUR pre-Europe window net +5.53%/yr SR0.99 published -> ~2.2bp/event net -> ~3.3bp gross vs 6E RT_frac~1.1bp x4=4.4bp hurdle. Informed-flow Req-2 x1: macro pre-release ES/ZN delta signed by realized surprise (gamma 0.066-0.154%/1sigma); Drift Begone causal shutoff (UK ended prerelease access Jul-2017) erases ~40% of total drift. Venue-wall x5: VX untradeable at the four FRIENDLY firms + ES EOD-pressure footprint (D5 Tier-C sibling, no delta, documented reversal); KC coffee/Nikkei 225/Deribit BTC/SHFE-class China commodity not expressible at the four firms' CME micro books. K-wall x1 (permanent): gold-fix rows, GC/MGC bank 3,177. Burst discipline held: discovery_manifests count 5->5 delta 0, zero register_search, zero pulls, zero K, 22 total targeted searches plus rank-1 citation traversal." harness_disposition_ref="Q-INVENTORY-1 RESULTS + CANDIDATE_ROWS (lab/archive/q_inventory_1_2026-07/RESULTS.md, lab/archive/q_inventory_1_2026-07/CANDIDATE_ROWS.md)" date="2026-07-17" class="screen-fail-multi-mechanism" role_tested="sourcing-screen (Req 1-5 sniff-arithmetic, pre-harness)" falsifier_failed="0-of-8 staged row-groups cleared Req 1-5 (power-wall x3 / cost-wall x1 at 4x / Req-2 informed-flow x1 / venue-wall x5 / K-wall x1 permanent)" addback_condition="new published cohort delta clearing the Req-5 4x cost inequality at the panel basis, OR a funded probe resolving one of the three named UNSCREENABLE stubs (ZN auction delta / CL EIA unconditional delta / 6J-6E-CL carry timing-delta) - NOT re-citation of any of the 8 dead classes under a new paper (GC/MGC bank 3,177 is a PERMANENT K-wall), NOT a transplanted/invented delta, NOT a relaxed Default-#1 OOS start (2019-05-06)" -->
+
+### TAS settlement-window replication on MCL (CME CL 14:28–14:30 ET)
+
+**Rejection scope:** the **outright** MCL expression of CME CL settlement-window benchmark-replication
+flow — enter with the mandated-flow direction in the 14:28–14:30 ET settlement window, 20-tick stop,
+~120 s horizon. Rejected on **magnitude reachability**, at $0/K=0, without the δ-extraction probe ever
+being run. Distinct from `BE3`/`SFX-1` (killed by the *fade-program* $200/1.83 design law, ruled
+fade-scoped and not a TNEC limb on 2026-08-10) and from `R8` (gold benchmark-fix, whose family scope is
+the venue-legal **metals** set — MCL is Energy and outside it).
+**Closure date:** 2026-08-11
+**Class:** magnitude-unreachable (screened-dead pre-probe; mechanism plausible, required effect out of range)
+**Authoritative artifact:** [`Q-MCLTAS-1 closure`](briefs/closures/Q-MCLTAS-1-closure-falsified.md) +
+[`Stage 0 RESULTS`](../lab/analysis/c1/cheap_falsifiers_2026-08/_probe_stage0_RESULTS_2026-08-11.md)
+**Closure basis:** two independent walls, pre-registered. **Wall B (dispositive)** — the Req-5 hurdle is
+11.60 ticks/event ($11.60/contract) = **14.87 bp** at the 2023 panel basis vs an estate causal-public δ
+ceiling of **3.21 bp** (4.63×), falling only to 3.01× at an implausible $120 oil and surviving the
+forbidden bare-commission ablation (3.04×). Converted to cohort-bound **δ/σ** against MCL's own *measured*
+σ surface, the required δ/σ is **0.62–1.35** vs D5's committed **0.113 conservative / 0.194 optimistic** —
+a floor of **3.2×** under maximal stacked generosity and **7.0×** at the defensible reading. **Wall A** —
+the intersection of {free ∧ signed ∧ price-exogenous ∧ window-aligned} sign sources is **EMPTY**: published
+TAS volume is gross by construction, ΔOI is directionally agnostic, COT is weekly and lagged, and CME
+publishes **no** settlement-window imbalance print (the structural asymmetry vs the equity closing auction
+that `F1`/MOC traded). One entitled-but-**costed** route (TAS-book order flow in `GLBX.MDP3`) survives
+unverified; it cannot reach Wall B. Adverse mechanism prior: TAS exists *so that* mandated flow can lock
+settlement without revealing direction to the outright book, so the public residue is small by
+construction — R8's measured structure, and the informed-flow signature's **third** confirmed instance
+on the family where it was **first** confirmed (`H-FBEIA-1`, −1.16 bp, wrong-signed).
+**Re-proposal bar:** a **published, post-hoc-free cohort δ for CL/MCL settlement-window flow ≥ the 4×
+hurdle at a named venue-legal outright expression** (mirrors R8's bar). NOT a re-read of this arithmetic,
+a window/stop re-tune, the DISCLOSURE bare-commission basis, a spread re-frame (a **new campaign** per
+ENV-1 §6.4.1, and `SFX-1` is already dead), or resolution of Wall A's costed route — which cannot reach
+Wall B. **MCL the instrument is NOT rejected** — what dies is this design region, per the ledger's
+2026-08-10c precedent.
+
+<!-- concept-intake-entry mechanism_family="tas-settlement-window-replication" instrument="MCL" rejection_reason="magnitude-unreachable (screened dead pre-probe, $0/K=0): outright MCL expression of CME CL settlement-window (14:28-14:30 ET) benchmark-replication flow, 20-tick stop, 120s horizon. Wall B dispositive: Req-5 hurdle 11.60 ticks/event = 14.87bp at 2023 panel basis vs estate causal-public delta ceiling 3.21bp (4.63x); 3.01x at implausible $120 oil; 3.04x under the forbidden bare-commission ablation. In cohort-bound delta/sigma against MCL's own MEASURED sigma surface (stage2_sigma.windowed_sigma, wed_thu ex-FOMC, 15-min column sqrt-time scaled to the 2-min window): required delta/sigma 0.62-1.35 vs D5 committed 0.113 conservative / 0.194 optimistic = floor 3.2x under maximal stacked generosity, 7.0x defensible. Wall A: intersection of {free, signed, price-exogenous, window-aligned} sign sources EMPTY - published TAS volume is gross by construction, delta-OI directionally agnostic, COT weekly+lagged, and CME publishes NO settlement-window imbalance print (structural asymmetry vs the equity closing auction F1/MOC traded); one entitled-but-costed route (TAS-book order flow in GLBX.MDP3) survives unverified and cannot reach Wall B. Adverse mechanism prior: TAS exists so mandated flow can lock settlement WITHOUT revealing direction to the outright book, so public residue is small by construction - informed-flow signature third confirmed instance, on the family where it was first confirmed (H-FBEIA-1, -1.16bp, wrong-signed). Probe never run; the two free pre-stages establish it is unfundable before design. NOT the BE3/SFX-1 kill (fade-program design law, ruled fade-scoped 2026-08-10) and NOT inside R8's metals-only family scope." harness_disposition_ref="Q-MCLTAS-1 Stage 0a+0b (no harness DispositionRecord; lab/analysis/c1/cheap_falsifiers_2026-08/_probe_stage0_RESULTS_2026-08-11.md)" date="2026-08-11" class="magnitude-unreachable" role_tested="entry" falsifier_failed="Wall B: required delta 14.87bp vs 3.21bp estate causal-public ceiling (4.63x, min 3.01x); cohort-bound required delta/sigma 0.62-1.35 vs D5 0.113/0.194 (floor 3.2x, defensible 7.0x)" addback_condition="published post-hoc-free cohort delta for CL/MCL settlement-window flow >= the 4x hurdle at a named venue-legal OUTRIGHT expression (mirrors R8's bar) - NOT a re-read of this arithmetic, window/stop re-tune, DISCLOSURE bare-commission basis, spread re-frame (new campaign per ENV-1 6.4.1; SFX-1 already dead), or resolution of Wall A's costed route" config_fingerprint="tas-settlement/MCL/window=1428-1430ET/stop=20t/horizon=120s/RT=2.90-F3-primary/hurdle=4x/sigma=stage2-windowed-wed-thu-exFOMC" -->
+
+### MNQDTL-CON-1 ES-NQ 5m divergence relative-contrarian × MNQ — FALSIFIED (explore IS)
+
+**Rejection scope:** the Q-MNQDTL-CON-1 G0 construct catalogue cell C1 —
+`es-nq-log-divergence-relative-contrarian` (ES−NQ 5m log-return divergence vs 20-session
+median |d| threshold, relative contrarian, LONG iff d≥+θ / SHORT iff d≤−θ) on CME **MNQ**
+(dense RTH 1m opens; G=10 hard stop; session-flat exit; EM3 independence; k=1) as frozen in
+[`PREREG_G0`](../lab/archive/mnq_con1_dense1m_stage0_2026-08/PREREG_G0.md) §2 — not MNQ the
+instrument, not the MNQSEL-2 dense-1m-@-G=10 selection-ceiling result that licensed this
+construct, not the broader construct catalogue (other entry rules on this universe are
+untested by this cell).
+**Closure date:** 2026-08-09
+**Authoritative artifact:** [`Q-MNQDTL-CON-1-closure-falsified`](briefs/closures/Q-MNQDTL-CON-1-closure-falsified.md) ·
+[`RESULTS`](../lab/archive/mnq_con1_dense1m_stage0_2026-08/RESULTS.md) ·
+[`PREREG_G0`](../lab/archive/mnq_con1_dense1m_stage0_2026-08/PREREG_G0.md)
+**Closure basis:** both arms `FALSIFIED` on the default full joined MNQSEL-2 panel (1,645
+eligible sessions, 100% signal coverage, ~11.6 trades/eligible session). Long n=10,093 mean
+net R **−0.1065**, session-block 95% CI **[−0.191, −0.017]** (entirely &lt;0), WR 0.083, stop
+rate 0.915, halves h1/h2 both negative (sign agree), annSR −0.899, **DSR 0.011** (floor
+0.650). Short n=9,000 mean net R **−0.1113**, CI **[−0.209, −0.005]** (entirely &lt;0), WR
+0.075, stop rate 0.920, halves both negative (sign agree), annSR −0.825, **DSR 0.021**. Kill
+is negative edge with CI below 0 on both arms — not thin-n, not halves VOID. CONFIRM /
+N-SURV / deploy unread; Cap not claimed; $0.00 / K_intrinsic=1.
+**Surviving finding (NOT rejected):** MNQ instrument standing; the `Q-MNQSEL-2` RESOLVED
+dense-RTH-1m-@-G=10 selection-ceiling result that unlocked this universe; TNEC-1 intake-gate
+discharge (Stage-0 cheap-falsifier `CHEAP_FALSIFIER_OK`) as a process finding; the construct
+catalogue itself (untested entry rules on this universe remain open).
+**Re-proposal bar:** a new entry mechanism — **not** G / lookback / θ-window retune of this
+cell. Sign inversion is explicitly forbidden: it collapses into own-instrument momentum,
+already dead as C5 / D5-RECOST-1.
+
+<!-- concept-intake-entry mechanism_family="es-nq-log-divergence-relative-contrarian" instrument="MNQ" rejection_reason="explore IS FALSIFIED: both arms session-block 95% CI entirely <0 (long n=10093 mean_R=-0.1065 CI[-0.191,-0.017]; short n=9000 mean_R=-0.1113 CI[-0.209,-0.005]); stop-dominated (WR 0.083/0.075, stop rate 0.915/0.920); halves sign-agree both negative; DSR 0.011/0.021 far below 0.650 floor. CONFIRM/N-SURV/deploy unread." harness_disposition_ref="Q-MNQDTL-CON-1 RESULTS (lab/archive/mnq_con1_dense1m_stage0_2026-08/RESULTS.md)" date="2026-08-09" class="explore-falsified" role_tested="entry" falsifier_failed="primary CI entirely < 0 both arms; DSR 0.011/0.021 << 0.650 floor" addback_condition="new entry mechanism — NOT G/lookback/theta-window retune of this cell; sign invert explicitly forbidden (own-instrument momentum = C5/D5-RECOST-1, already dead)" -->
+
+### Q-MNQSEL-1 restart-clock oracle top-1/day selection ceiling × MNQ — FALSIFIED (C2; Phase-0 ceiling)
+
+**Rejection scope:** the Q-MNQSEL-1 Phase-0 measurement of **perfect (oracle) top-1/day
+take/skip selection** among causal **restart-clock** candidates (session-open bar + the bar
+immediately after each completed window, reused unmodified from Step-1's greedy `s=40`/`G=17.41`
+partition) on CME **MNQ** — not MNQ the instrument, not the Step-1 event-ceiling count
+(median 145 clocks/session) that fed it, not other candidate-set definitions (denser
+order-flow sub-sampling or completed-window ranking are explicitly out of scope for any
+successor, not tested or rejected here on their own terms).
+**Closure date:** 2026-08-07
+**Authoritative artifact:** [`Q-MNQSEL-1-closure-falsified`](briefs/closures/Q-MNQSEL-1-closure-falsified.md) ·
+[`RESULTS`](../lab/archive/mnq_selection_ceiling_2026-08/RESULTS.md) ·
+[`PREREG`](../lab/archive/mnq_selection_ceiling_2026-08/PREREG.md)
+**Closure basis:** frozen gate C2 fired — oracle top-1/day mean net R (S3) **below** EM1 0.40
+on **both** arms (long **0.3998**, short **0.3984**; n_sessions **1,674** ≥ 250, so C1
+`INSUFFICIENT-N` did not fire). All-take (S1) is deeply negative on both arms (long **−0.0364**,
+short **−0.0362**), ruling out C3 `SURPRISE-DIRECTION`. By the `G(s)=0.40·s+1.41` construction
+(G=17.41 at s=40; round-trip cost 1.41 pt = 2×0.91/$2.00pt) a clean target-hit earns ≈0.40R
+almost by definition, and S6 shows 99.9%/99.7% of sessions have ≥1 target-hit (S5 median
+98.0/97.0 hits/day) — winner density is not the bottleneck. The ~0.1–0.3% of sessions with
+**no** target-hit pull the oracle mean a few ten-thousandths under the 0.40 floor, with zero
+margin on either arm.
+**Surviving finding (NOT rejected):** MNQ instrument standing; the Step-1 restart-clock
+construction and event count (median 145 clocks/session at s=40) as a measurement technique;
+the finding that all-take carries no free direction bias (S1 deeply negative both arms); the
+target-hit density itself (S5/S6) as evidence that winners are abundant on this clock set — the
+gate failure is a **selection ceiling**, not opportunity scarcity.
+**Re-proposal bar:** a **different causal candidate set** — **not** denser order-flow
+sub-sampling on the same restart clocks, **not** completed-window ranking (look-ahead, already
+forbidden under FM-1), and not reading S3 ≈ 0.40 as "close enough" to clear EM1.
+
+<!-- concept-intake-entry mechanism_family="restart-clock-oracle-top1-selection" instrument="MNQ" rejection_reason="Phase-0 FALSIFIED (C2): oracle top-1/day mean net R (S3) below EM1 0.40 both arms (long 0.3998, short 0.3984; n=1,674 sessions >= 250). All-take (S1) deeply negative both arms (-0.0364/-0.0362), no SURPRISE-DIRECTION. Target-hit density high (S5 97-98/day, S6 99.7-99.9%) but the ~0.1-0.3% no-hit sessions pull the oracle mean under the 0.40 knife-edge with zero margin." harness_disposition_ref="Q-MNQSEL-1 RESULTS (lab/archive/mnq_selection_ceiling_2026-08/RESULTS.md)" date="2026-08-07" class="phase0-selection-ceiling" role_tested="selection (oracle take/skip among fixed causal restart-clock entries)" falsifier_failed="C2: S3 oracle top-1/day < 0.40 both arms (0.3998 long / 0.3984 short)" addback_condition="different causal candidate set — NOT denser order-flow on the same restart clocks, NOT completed-window ranking (FM-1, look-ahead)" -->
+
+### Striker DJ30 pyramid-stack risk%-input scaling × MYM — FALSIFIED-NONPROPORTIONAL
+
+**Rejection scope:** the risk%-input-scaling route for realizing a lifecycle authorization haircut
+(e.g. WATCH-1 0.50×) on the Striker DJ30 v4.5 pyramided leg (750% pyramid add) via TV on
+CBOT **MYM1!** at the $200K panel-of-record account size — i.e., halving `riskPerTrade` as the
+mechanism to halve the executed base+add stack — not MYM1! the instrument, not Striker DJ30's
+LOCKED parameters/Pine (untouched), not the account-multiplier-layer haircut mechanism (the
+surviving fallback), and not the NAS100/MNQ1! leg (that cohort scored `AMBIGUOUS-HOLD` on this
+same protocol, not `FALSIFIED`).
+**Closure date:** 2026-07-17
+**Authoritative artifact:** [`Q-PYRPARITY-1-closure-falsified-nonproportional`](briefs/closures/Q-PYRPARITY-1-closure-falsified-nonproportional.md) ·
+[`RESULTS`](../lab/archive/q_pyrparity_1_2026-07/RESULTS.md) ·
+[`PHASE0`](../lab/archive/q_pyrparity_1_2026-07/PHASE0.md) ·
+[`pre-registration`](briefs/pre-registration/Q-PYRPARITY-1-verdict-preregistration.md)
+**Closure basis:** Branch B (equity-normalized, add normalized on entry-bar equity per Phase 0)
+per-fill ratio harness (`verify_phase2.py`) on paired native TV exports, MYM1! @ $200K, Striker
+DJ30 (750% pyramid): base cohort n=232 paired fills, median ratio **0.8707** (frac inside the
+±0.02 band = 0.082); add cohort n=35 paired, median **0.9164** (frac in ±0.02 = 0.086) — both
+cohorts miss the pre-registered accept bands (median within 0.500 ± 0.005 AND ≥95% of paired
+fills within 0.500 ± 0.02) by a wide margin and trip the reject clause (median outside
+0.500 ± 0.02). Mechanism, read off the r0 export: MYM1! carries a hard TV/symbol-runtime qty
+ceiling — base clips at **17** contracts (210/232 r0 base fills sit at exactly 17), add clips at
+**127** (= 17 × 7.5 floored; 30/35 r0 adds at exactly 127). Sliced by whether r0 sits at the
+ceiling: fills where r0 is below the cap reproduce H-PYRPARITY-1 almost exactly (base n=22 median
+**0.502**, raw-qty median 0.500; add n=5 median **0.496**, raw-qty median 0.495), while fills at
+the cap collapse toward 1.0 (both-at-17 n=87 median 1.042; r0-at-17/r½-below n=123 median 0.764).
+The Phase-0 Pine-source read confirms the sizing path (`calcSize`, `striker_dj30_v4.5.pine:149-151`;
+add derivation `:275-276`) is exactly linear in `riskPerTrade` with no floor/cap/round/min-qty —
+the ceiling is TV/broker-runtime behavior on `CBOT_MINI:MYM1!` at this account size, not a Pine
+defect.
+**Surviving finding (NOT rejected):** MYM1! instrument standing and the Striker DJ30 v4.5 leg
+itself (LOCKED parameters, no Pine edit — parameter axis untouched); below-ceiling proportionality
+(H-PYRPARITY-1 holds structurally per the Phase-0 source read and empirically on the below-cap
+fill slices); the account-multiplier-layer haircut as the surviving WATCH-1 realization mechanism
+(`strategy_lifecycle.md:113` → CONFIRMED-FALLBACK 2026-07-17; Q-RAIL-1 F1 = PASS-via-fallback); the
+NAS100/MNQ1! leg's own parity test, which scored `AMBIGUOUS-HOLD` (list misalignment + base-cohort
+fill-fraction FAIL) on this same protocol — a separate, unresolved finding, not itself a rejection.
+**Re-proposal bar:** new evidence that the $200K-account MYM1! TV/broker qty ceiling (base 17 /
+add 127) does not bind at the account tier actually deployed — not a re-run of this same protocol
+at the same $200K test size, not a Pine parameter retune (parameter axis LOCKED), and not loosening
+the pre-registered 0.500 ± 0.02 / ± 0.005 tolerance bands (Known Trap #12 — no amendment after data
+is seen).
+
+<!-- concept-intake-entry mechanism_family="risk-pct-input-pyramid-stack-scaling" instrument="MYM" rejection_reason="FALSIFIED-NONPROPORTIONAL: TV/symbol qty ceiling on MYM1!@$200K (base clip 17, add clip 127=17×7.5 floored) collapses the realized halve-risk ratio toward 1.0 above the ceiling. Branch-B median ratio: base 0.8707 (n=232 paired, frac in ±0.02 = 0.082), add 0.9164 (n=35 paired, frac in ±0.02 = 0.086), vs required median 0.500±0.005 / ≥95% in ±0.02. Below-ceiling slices confirm proportionality holds (base n=22 median 0.502; add n=5 median 0.496). Pine sizing path confirmed exactly linear in riskPerTrade, no floor/cap/round (Phase 0)." harness_disposition_ref="Q-PYRPARITY-1 RESULTS Phase 2 (lab/archive/q_pyrparity_1_2026-07/RESULTS.md)" date="2026-07-17" class="execution-fidelity-failure" role_tested="sizing-realization-route" falsifier_failed="median Branch-B ratio outside 0.500±0.02 on both MYM cohorts (base 0.8707 n=232 paired; add 0.9164 n=35 paired) vs required median 0.500±0.005 AND ≥95% of paired fills within 0.500±0.02" addback_condition="new evidence the $200K MYM1! TV qty ceiling (base 17 / add 127) does not bind at the deployed account tier — NOT a re-test at the same $200K size, NOT a Pine parameter retune (LOCKED), NOT a tolerance-band change (Trap #12)" -->
+
+### R2FLOW clock-minute net signed aggressor flow × MNQ — FALSIFIED (Stage-G association null)
+
+**Rejection scope:** the Q-R2FLOW-1 Route B G0 catalogue's single frozen cell C1 — clock-minute
+net signed aggressor size (buy_sz − sell_sz contracts, `tbbo` schema) → 60-second mid return on
+`MNQ.v.0` continuous RTH, at `K_intrinsic=1` — as frozen in
+[`PREREG_G0`](../lab/archive/mnq_r2flow_routeb_2026-08/PREREG_G0.md) — not MNQ the instrument,
+not the Route B / Avenue A generate-confirm channel, not the sibling OF cells (OFCHAN resting-size
+flicker-filter, R2VBUCK imbalance **ratio**, R2AGRUN aggressor-run **length**), which are
+separately scoped and closed on their own limbs.
+**Closure date:** 2026-08-08
+**Authoritative artifact:** [`Q-R2FLOW-1-closure-falsified`](briefs/closures/Q-R2FLOW-1-closure-falsified.md) ·
+[`RESULTS_g2`](../lab/archive/mnq_r2flow_routeb_2026-08/RESULTS_g2.md) ·
+[`PREREG_G0`](../lab/archive/mnq_r2flow_routeb_2026-08/PREREG_G0.md)
+**Closure basis:** Stage-G EXPLORATION-only (2026-02-06→2026-08-06, OFCHAN-cache reuse, 124
+sessions scored). VOID-POWER PASS (n_retained 48,360 ≥ 2,000) and VOID-COVERAGE PASS
+(48,360/48,360 = 100%), but Pearson ρ(A, r) = **−0.000701** with 95% session-block bootstrap CI
+**[−0.014612, +0.013510]** (10,000 reps, seed 20260808) — CI includes 0, primary limb FAIL.
+\|ρ\| 0.000701 is also below the 0.02 magnitude floor. Halves disagree in sign (H1 −0.020313 /
+H2 +0.014732), not reached as the deciding limb since CI already failed; placebo skipped under
+PREREG CI-precedence. Candidate list **empty** ([]) → zero promotions. CONFIRM
+(2025-09-01→2026-02-06) unread; Cap seat not claimed; $0 spend, `K_intrinsic=1` disclosure-only.
+**Surviving finding (NOT rejected):** MNQ instrument standing; the OFCHAN `tbbo` cache / Route B
+data pipeline; the Avenue A generate/confirm methodology itself; the three prior Route B OF
+cells' own independent findings (OFCHAN VOID-COVERAGE, R2VBUCK ratio FALSIFIED, R2AGRUN magnitude
+AMBIGUOUS-HOLD) — this entry rejects only the net-signed-aggressor-flow construct on the
+clock-minute grid, not the broader order-flow / microstructure channel.
+**Re-proposal bar:** new mechanism evidence — a genuinely different order-flow construct — not a
+grid, horizon, or catalogue retune of this G0 (per PREREG_G0's own re-proposal bar / brief §6
+STOP disposition).
+
+<!-- concept-intake-entry mechanism_family="clock-minute-net-signed-aggressor-flow" instrument="MNQ" rejection_reason="Stage-G association null (FALSIFIED): EXPLORATION-only 2026-02-06->2026-08-06 (124 sessions), n_retained 48,360/48,360=100% coverage, VOID-POWER/COVERAGE both PASS; Pearson rho(A,r)=-0.000701, 95% session-block bootstrap CI [-0.014612,+0.013510] includes 0 (primary limb FAIL); |rho| 0.000701 << 0.02 magnitude floor; halves disagree sign (H1 -0.020313 / H2 +0.014732, not reached); placebo skipped under CI-precedence. Candidate list empty. CONFIRM unread." harness_disposition_ref="Q-R2FLOW-1 RESULTS_g2 (lab/archive/mnq_r2flow_routeb_2026-08/RESULTS_g2.md)" date="2026-08-08" class="edge-failure" role_tested="entry" falsifier_failed="Stage-G CI-excludes-0 limb FAIL; |rho|>=0.02 magnitude limb FAIL" addback_condition="new mechanism evidence (a genuinely different order-flow construct) — NOT a grid/horizon/catalogue retune of this G0" -->
+
+### Q-R2VBUCK-1 volume-bucket aggressor imbalance × MNQ — FALSIFIED (Stage-G association-null)
+
+**Rejection scope:** the Q-R2VBUCK-1 Route B G0 construct `volume-bucket-aggressor-imbalance` on
+CME **MNQ.v.0** (RTH; signed tape-aggressor size imbalance inside completed volume buckets
+B=2550 → 60 s mid return; `tbbo` schema only; k=1) as frozen in
+[`PREREG_G0`](../lab/archive/mnq_r2vbuck_routeb_2026-08/PREREG_G0.md) — not MNQ the instrument,
+not the order-flow/tape-aggressor mechanism class generally, not the OFCHAN minute-grid
+resting-ToB-size cell (separate construct, already closed VOID-COVERAGE), not volume-bucket
+sampling as a coverage technique.
+**Closure date:** 2026-08-08
+**Authoritative artifact:** [`Q-R2VBUCK-1-closure-falsified`](briefs/closures/Q-R2VBUCK-1-closure-falsified.md) ·
+[`RESULTS_g2`](../lab/archive/mnq_r2vbuck_routeb_2026-08/RESULTS_g2.md) ·
+[`PREREG_G0`](../lab/archive/mnq_r2vbuck_routeb_2026-08/PREREG_G0.md)
+**Closure basis:** VOID-POWER PASS (n_retained **77,656** ≥ 2,000) and VOID-COVERAGE PASS
+(**77,656 / 77,656 = 100%** ≥ 90%), but every association limb fails: ρ **−0.005478**,
+session-block bootstrap CI95 **[−0.016881, +0.005984]** includes 0 (CI limb FAIL); \|ρ\| =
+0.005478 &lt; within-session placebo \|·\| p95 **0.007958** (placebo limb FAIL); \|ρ\| &lt; **0.02**
+magnitude floor (FAIL); halves disagree in sign (H1 **−0.017417** / H2 **+0.002439**, not
+reached as the deciding limb since CI/placebo already failed). Candidate list = **[]** → G3
+STOP. CONFIRM (**2025-09-01→2026-02-06**) unread; Cap seat not claimed; $0.00 spend;
+`K_intrinsic=1`.
+**Surviving finding (NOT rejected):** MNQ.v.0 instrument standing (occupancy released
+2026-08-12 for new non-Striker research); the Avenue A / Route B generate→confirm methodology;
+volume-bucket sampling as a technique that cleared the OFCHAN minute-grid coverage pathology
+(100% coverage here vs 7.36% on OFCHAN's clock-minute flicker filter) — the failure here is
+association, not denseness; C9's tape-aggressor-vs-resting-ToB-size distinction (this construct
+clears C9 limb 1, independent of this cell's outcome); the CONFIRM window itself, still unread
+and reserved.
+**Re-proposal bar:** new G0 / new mechanism (a different causal object) — **not** a retune of
+B (bucket size), the 60 s horizon, or this catalogue (FM-9 / Trap #12).
+
+<!-- concept-intake-entry mechanism_family="volume-bucket-aggressor-imbalance" instrument="MNQ" rejection_reason="Stage-G association-null (explore IS): VOID-POWER/COVERAGE both PASS (n=77,656/77,656=100%) but rho=-0.005478, CI95[-0.016881,+0.005984] includes 0, |rho|<placebo p95 0.007958, |rho|<0.02 magnitude floor, halves disagree (H1 -0.017417/H2 +0.002439). Candidate list=[]. CONFIRM unread; Cap unclaimed; $0/K=1(disclosure)." harness_disposition_ref="Q-R2VBUCK-1 RESULTS_g2 (lab/archive/mnq_r2vbuck_routeb_2026-08/RESULTS_g2.md)" date="2026-08-08" class="association-null" role_tested="signal" falsifier_failed="CI95 includes 0; |rho|<placebo p95; |rho|<0.02 magnitude floor; empty candidate list at G3" addback_condition="new G0 / new mechanism (different causal object) — NOT a retune of B, horizon, or this catalogue" -->
+
+### TV bar-coverage-artifact hypothesis (2022 trade-rate break) × MYM/MNQ/6J — FALSIFIED (H; MYM operator BREAK-REAL)
+
+**Rejection scope:** the Q-TVCOV-1 H (coverage-artifact) explanation for the 2022 MYM/MNQ/6J
+trade-rate discontinuity — tested on the pre-registered 9-month frozen grid (2019-09/2020-03/
+2020-09/2021-03/2021-09 pre-break, 2022-03/2023-06/2024-03/2025-06 post-break) as either
+(a) Databento GLBX.MDP3 volume-rolled (`.v.0`) canonical coverage pre-break trailing post-break
+by ≥5pp, or (b) canonical complete but TV 15m (BAR EXPORT v0.2) bar counts ≥5% below canonical
+on ≥2 pre-break months — not MYM/MNQ/6J the instruments, not the locked strategies that trade
+them (Guardian Gold / Striker DJ30 / Aegis USDJPY / Striker NAS100), not the 2026-07-12
+seven-year evidential panels' standing, and not the calendar-rolled `.c.0` first-pass symbology
+(that ARTIFACT-CONFIRMED read was withdrawn same day as the audit's own roll-rule artifact, not
+re-adjudicated here).
+**Closure date:** 2026-07-13 (verdicts landed, same day as the roll-rule correction); roster row
+bookkeeping-closed 2026-08-09 (GSUB-1 c4, no re-verdict); formal closure brief backfilled
+2026-08-11 (records-completeness reconstruction, not a re-adjudication).
+**Authoritative artifact:** [`Q-TVCOV-1-closure-falsified`](briefs/closures/Q-TVCOV-1-closure-falsified.md) ·
+[`RESULTS.md`](../lab/analysis/c1/tvcov_2026-07/RESULTS.md) ·
+[`pursuit c4`](pursuits/c4-q-tvcov-1.md)
+**Closure basis:** corrected canonical series (`.v.0`, volume-rolled) coverage complete both eras
+— 6J 98.86% pre / 99.16% post (Δ+0.31pp); MYM/MNQ 96.35% pre / 99.04% post (Δ+2.69pp, the
+residual traced to the pre-2021 16:15-ET equity-index maintenance-halt slot, not liquidity) —
+limb (a) NOT MET on all three (&lt;5pp). TV (BAR EXPORT v0.2) matches canonical exactly (0.0%
+deviation) on all 5 pre-break months for 6J and within ±0.1% for MNQ — limb (b) NOT MET,
+±1%-match falsifier MET → **6J/MNQ H FALSIFIED, break real**. MYM matches exactly on 4/5
+pre-break months; 2020-03 is −4.3% = a single missing TV day (2020-03-16, the COVID limit-down
+session; 29/31 slots), not era-wide thinness — below the limb-(b) bar (needs ≥5% on ≥2 months) →
+grid **AMBIGUOUS**, operator-accepted **BREAK-REAL** 2026-07-13. First-pass calendar-rolled
+`.c.0` had issued 6J **ARTIFACT-CONFIRMED** (57.61%→72.87%, +15.26pp) same day — traced to a
+serial-month roll-mapping defect (`6J.c.0` 2021-09 = 335 slots vs `6J.v.0`/TV = 734 slots
+identically) and **withdrawn**. Two independent blind recomputes matched all 27 corrected-series
+cells each (54/54); a third skeptic-agent pass returned 4/4 CONFIRMED on the roll-rule
+attribution.
+**Surviving finding (NOT rejected):** the 2026-07-12 seven-year evidential panels retain full
+standing (MYM carries the standing 2020-03-16 annotation obligation); MYM/MNQ/6J instrument
+standing and the locked Guardian/Striker/Aegis/NAS100 strategies that trade them are untouched —
+this audit tested TV data-coverage only (its own brief states "not a discovery campaign; K=0, no
+candidate is mined"); BAR EXPORT v0.2 stands as the default TV-side leg for future coverage/
+parity questions; the `.v.0`-not-`.c.0` roll-rule pin for TV-`1!` comparisons (already discharged
+in the `databento-data` skill reference since 2026-07-13).
+**Re-proposal bar:** new mechanism evidence about bar *availability* — a different feed class, a
+different roll protocol, or a day TV actually served that was previously missing — **not** a
+re-census of the same nine quarterly-expiry months on `.c.0` (already shown to be the audit's own
+symbology artifact, not a property of the data the backtests ran on).
+
+<!-- concept-intake-entry mechanism_family="tv-bar-coverage-artifact-hypothesis" instrument="6J" rejection_reason="H FALSIFIED -- break real: corrected canonical (.v.0) 98.86% pre / 99.16% post (delta +0.31pp, limb-a NOT MET); TV (BAR EXPORT v0.2) matches canonical exactly (0.0% dev) on all 5 pre-break months (limb-b NOT MET, +/-1% falsifier MET). First-pass .c.0 ARTIFACT-CONFIRMED (+15.26pp) withdrawn as a serial-month roll-mapping artifact (335 vs 734 slots, 2021-09)." harness_disposition_ref="Q-TVCOV-1 RESULTS.md sec.Falsifier disposition (lab/analysis/c1/tvcov_2026-07/RESULTS.md)" date="2026-07-13" class="data-integrity-coverage-artifact-falsified" role_tested="n/a -- data-coverage audit (K=0, no strategy candidate mined), not entry/exit/filter/size" falsifier_failed="canonical coverage complete (delta +0.31pp < 5pp); TV 0.0% deviation all 5 pre-break months (< 5% and < 1%)" addback_condition="new mechanism evidence about bar availability (different feed class, different roll protocol, or a previously-missing day TV actually served) -- NOT a re-census of the same 9 quarterly-expiry months on .c.0" -->
+<!-- concept-intake-entry mechanism_family="tv-bar-coverage-artifact-hypothesis" instrument="MNQ" rejection_reason="H FALSIFIED -- break real: corrected canonical (.v.0) 96.35% pre / 99.04% post (delta +2.69pp, limb-a NOT MET, fully explained by the pre-2021 16:15-ET equity-index halt-slot elimination); TV within +/-0.1% all pre-break months (limb-b NOT MET, +/-1% falsifier MET)." harness_disposition_ref="Q-TVCOV-1 RESULTS.md sec.Falsifier disposition (lab/analysis/c1/tvcov_2026-07/RESULTS.md)" date="2026-07-13" class="data-integrity-coverage-artifact-falsified" role_tested="n/a -- data-coverage audit (K=0, no strategy candidate mined), not entry/exit/filter/size" falsifier_failed="canonical coverage complete (delta +2.69pp < 5pp, halt-slot-explained); TV max +0.1% deviation all pre-break months (< 5% and < 1%)" addback_condition="new mechanism evidence about bar availability (different feed class, different roll protocol, or a previously-missing day TV actually served) -- NOT a re-census of the same 9 quarterly-expiry months on .c.0" -->
+<!-- concept-intake-entry mechanism_family="tv-bar-coverage-artifact-hypothesis" instrument="MYM" rejection_reason="Grid AMBIGUOUS -> operator-accepted BREAK-REAL 2026-07-13: corrected canonical (.v.0) 96.35% pre / 99.04% post (delta +2.69pp, limb-a NOT MET); TV matches exactly 4/5 pre-break months, 2020-03 -4.3% = single missing TV day (2020-03-16 COVID limit-down, 29/31 slots) not era-wide thinness -- below limb-b bar (needs >=5% on >=2 months); +/-1%-match falsifier NOT MET on 2020-03 alone." harness_disposition_ref="Q-TVCOV-1 RESULTS.md sec.Falsifier disposition + sec.Operator disposition (lab/analysis/c1/tvcov_2026-07/RESULTS.md)" date="2026-07-13" class="data-integrity-coverage-artifact-falsified" role_tested="n/a -- data-coverage audit (K=0, no strategy candidate mined), not entry/exit/filter/size" falsifier_failed="grid AMBIGUOUS on +/-1% limb (2020-03 -4.3%, single day); limb-b NOT MET (one month, needs >=2-month bar); operator parent call taken, not a mechanical FALSIFIED" addback_condition="new mechanism evidence about bar availability (different feed class, different roll protocol, or a previously-missing day TV actually served) -- NOT a re-census of the same 9 quarterly-expiry months on .c.0; standing 2020-03-16 annotation obligation stays wherever 2020-Q1 Striker-MYM behavior is analyzed" -->
+
+### Transfer/expression lane (Q-TXG-1) — FALSIFIED-at-walls
+
+**Rejection scope:** the Q-TXG-1 transfer/expression programme — incumbent locked mechanisms
+(Guardian / Striker / Striker NAS100 / Aegis) × ENV-1 7-micro pool at Tradeify Select
+EOD-trailing survival geometry — as a *lane*, not any single home-instrument strategy and not
+ENV-1 instruments as a class.
+**Closure date:** 2026-08-12
+**Authoritative artifact:** [`docs/briefs/Q-TXG-1-ha-reargument.md`](briefs/Q-TXG-1-ha-reargument.md)
+(operator elected **(A) CLOSE**) ·
+[`lane closure`](briefs/closures/Q-TXG-1-closure-falsified-at-walls.md) ·
+cell closures [`nas100×MYM DEAD(cost)`](briefs/closures/2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md) ·
+[`striker×MNQ DEAD(N-SURV)`](briefs/closures/2026-08-12-q-txg-1-striker-mnq-cell-dead-nsurv.md) ·
+[`Guardian→MGC DEAD(N-SURV)`](briefs/closures/2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md) ·
+Aegis→6J both-layers ([`ops/instruments/6J.md`](../ops/instruments/6J.md) J4b+J14)
+**Closure basis:** two consecutive elected-cell FALSIFIEDs forced H_A re-argument (design §6);
+operator elected CLOSE. Four positive-net transfers; zero survivors against the composition of
+the frozen per-trade cost floor and the trailing-DD survival ceiling
+(`lesson_trailing_dd_survival_is_skew_governed`). Remaining 23 OPEN cells are stop-unscreenable
+(ATR-median unlock refused without new mechanism evidence).
+**Surviving finding (NOT rejected):** locked-book mechanisms on home instruments; ENV-1
+instrument-lane eligibility; ORB payability and paid/new-venue generation routes.
+**Re-proposal bar:** new mechanism evidence with a **demonstrably different loss-side shape**,
+or a **venue class whose survival geometry differs** (not an EOD-trailing prop clone) —
+**not** new cells, new instruments, or ATR-input spend alone.
+
+<!-- concept-intake-entry mechanism_family="locked-mechanism-cross-underlying-transfer-expression" instrument="ENV-1" rejection_reason="lane FALSIFIED-at-walls (H_A re-argument, design §6): two consecutive elected-cell kills — striker_nas100×MYM DEAD(cost) mean_net_r 0.0129<required_net_r 0.06 (N=190, net +$4,356.40, PF 1.110); striker×MNQ PASS_COST (mean_net_r 0.0419>0.03, N=222, net +$22,789.58) then DEAD(N-SURV) bust 98.13%/96.76%/99.37% full/H1/H2 vs ≤3.0% ceiling — forced re-argument; operator elected CLOSE. All four positive-net transfer expressions died at the same composition of frozen cost floor + trailing-DD survival ceiling: Guardian→MGC DEAD(N-SURV) bust 42.2%/72.4%/16.5%; Aegis→6J J4b best cell 3.88% bust (1.3× over) + J14 composed 3-leg 0/3 tiers and cap-infeasible. Edge transfer itself was never falsified — GRID_RESULTS.json confirms 25 compile-open cells, 23 stop-unscreenable (Aegis 7 / Guardian 6 / Striker 5 / Striker_NAS100 5), only the 2 mapped-stop cells (the elected, now-dead pair) were scorable without ATR-median spend." harness_disposition_ref="Q-TXG-1 H_A re-argument (docs/briefs/Q-TXG-1-ha-reargument.md); lane closure docs/briefs/closures/Q-TXG-1-closure-falsified-at-walls.md" date="2026-08-12" class="falsified-at-walls" role_tested="cross-underlying locked-mechanism transfer/expression port (cost-tax + trailing-DD N-SURV gates)" falsifier_failed="composition of frozen required_net_r/port_must_beat cost floor AND trailing-DD bust≤3.0% N-SURV ceiling across all four positive-net transfer expressions (lesson_trailing_dd_survival_is_skew_governed)" addback_condition="new mechanism evidence with a demonstrably different loss-side shape, or a venue class whose survival geometry differs (not an EOD-trailing prop clone) — NOT new cells, new instruments, or ATR-input spend alone" -->
+
+### SLR-MYM-1 liquidity sweep-and-reclaim × MYM — FALSIFIED (as scoped; Stage 0, pre-G0)
+
+**Rejection scope:** the frozen SLR-MYM-1 `liquidity-sweep-and-reclaim` construct (§1: long-only,
+09:30–10:15 ET sweep of the nearest level below the open + 1m bar-close reclaim, gated by weekly
+**and** daily `vStruct` EMA(20) bullish, stop = sweep extreme − buffer capped at 0.50×ATR(14,daily),
+target +1.5R, flat 13:00 ET) proposed as a **same-account third leg sharing the `MYM1!` order symbol**
+with the incumbent Striker DJ30→MYM leg — not MYM the instrument, not the `ict-liquidity` mechanism
+class generally, not the ICT cascade's weekly `vStruct` finding, not the domain raised bar's route-1
+ruling, and not a future expression on an unoccupied symbol or a calendar-disjoint day set.
+**Closure date:** 2026-07-29
+**Authoritative artifact:** [`SLR-MYM-1-closure-falsified-stage0`](briefs/closures/SLR-MYM-1-closure-falsified-stage0.md) ·
+[`SLR-MYM-1-liquidity-sweep-reclaim-scoping`](briefs/rnd-pipeline/SLR-MYM-1-liquidity-sweep-reclaim-scoping.md) (frozen §1 spec, §2.5/§2.6 scoring) ·
+[`phase05_census RESULTS`](../lab/archive/slr_mym_phase05_2026-07-29/RESULTS.md)
+**Closure basis:** two independent Stage-0 gates fired, either alone decisive; Stages 1–4 never
+reached. **0-A admissibility** (ADR 2026-07-26 §2-A four-clause constraint test) — two constraint
+framings were drafted (mechanical forced-liquidation; overnight Globex inventory rebalancing at the
+RTH open, citing H-OD-1's measured ES +1.444 bp) and **both fail the DELETE test** (removing the
+constraint paragraph changes no §1 rule) **and the FLIP test** (reversing the constraint's sign does
+not change the trade) — Path 1a ruled unwritable. **0-C day set** (S5 contract-cap ∧ S3 order-symbol
+occupancy) — the incumbent Striker DJ30→MYM leg fires Tue/Fri and shares order symbol `MYM1!`; the
+venue nets one position per symbol per account, so those two days close structurally regardless of
+cap. The best S5+S3-compliant day set (Mon+Wed+Thu), measured by `phase05_census.py` on the local
+`MYM_M15.csv` panel (n=141,477 bars, 1,481 scoreable RTH sessions, IS partition n=860,
+2019–2023) on a deliberately loose (any-time-of-day) 15m upper-bound proxy, yields **81 IS
+entries** against the pre-registered **120-entry floor**. Full-panel entry rate **17.96%**
+(266/1,481 sessions); IS-partition **16.63%** (143/860) — power was not the binding constraint; the
+day-set/occupancy collision was. $0.00 spent · 0 K consumed · no manifest opened · no
+pre-registration authored.
+**Surviving finding (NOT rejected):** MYM instrument standing (incumbent Striker DJ30→MYM leg
+PF 1.80 / WR 40.3% / n=263, `ops/instruments/MYM.md` M1); the `ict-liquidity` mechanism class
+generally, including H-OD-1's measured overnight-inventory effect on ES (+1.444 bp, t≈5.0, 9/9 IS
+years positive), which stands independently on its own instrument; the ICT cascade's weekly
+`vStruct` RESOLVED finding (leg (a), 0.5571 hit-rate) — only its untested per-entry transfer
+(leg (b)) to this 1m expression falls with this closure; the domain raised bar's route-1 ruling
+(**GRANTED/CLEAR**, closure §2.7.1) — survives for future candidates; F1 order-symbol occupancy on
+shared `MYM1!` — a durable structural constraint, now standing in `ops/instruments/MYM.md`,
+that applies to any future same-account MYM leg. **No claim, positive or negative, is made about
+sweep-and-reclaim's edge anywhere — the mechanism itself was never scored** (closure §6).
+**Re-proposal bar:** needs **both**: (i) a Path-1a four-clause constraint claim that passes the
+delete- and flip-tests, **or** a funded Path-1b evidence pass (≥3 decades, ≥3 independent cohorts,
+≥1 replication ≥10 yr post-discovery, no known sign-reversal — all four); **and** (ii) an
+**unoccupied order symbol**, or a session-disjointness argument that survives F1 and still reaches
+the power floor. Neither a re-tuned day set, a different level menu, nor a wider panel clears (i).
+
+<!-- concept-intake-entry mechanism_family="liquidity-sweep-and-reclaim" instrument="MYM" rejection_reason="Stage-0 dual-gate kill, mechanism never tested: 0-A admissibility — both constraint framings (forced-liquidation; overnight-inventory) fail DELETE+FLIP tests (ADR 2026-07-26 §2-A); 0-C day set — S3 order-symbol occupancy on shared MYM1! with incumbent Striker DJ30->MYM (fires Tue/Fri) plus S5 zero free cap on Tue jointly close Tue+Fri; best compliant set (Mon+Wed+Thu) = 81 IS entries vs 120 floor (15m upper-bound proxy, IS n=860)." harness_disposition_ref="SLR-MYM-1 Phase 0.5 census (lab/archive/slr_mym_phase05_2026-07-29/phase05_census.py + RESULTS.md)" date="2026-07-29" class="admissibility-fail+occupancy-fail" role_tested="entry" falsifier_failed="0-A: DELETE+FLIP tests fail both framings (Path 1a unwritable); 0-C: best S5+S3-compliant day set 81 IS entries < 120 floor" addback_condition="(i) Path-1a four-clause constraint claim passing delete/flip, OR funded Path-1b (>=3 decades / >=3 cohorts / >=1 replication >=10yr / no sign-reversal, all four); AND (ii) an unoccupied order symbol or a session-disjointness argument surviving F1 that still reaches the power floor — NOT a re-tuned day set, different level menu, or wider panel" -->
+
 ## Queryable index (concept-intake gate, added 2026-06-05)
 
 > ⚠ **CORRECTED 2026-08-08 — the machine consumer described below no longer exists.**

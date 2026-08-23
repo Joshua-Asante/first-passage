@@ -190,14 +190,9 @@ Dormant threads b6/b7 (PARK — open) → [`docs/pursuits/`](docs/pursuits/) (ra
 Phase 3). c5/Q-MSCHAN-1 (SUBTRACT — dead) left this section per its own rule above; its record
 stands alone at [`c5`](docs/pursuits/c5-q-mschan-1.md).
 
-**Registry backfill debt (2026-08-15).** 33 closures classified as strategy-grounds kills
-(read against each one's actual `**Verdict:**` line, not filename) never got a
-`rejected_candidates.md` row — the 2026-08-03→08-11 feed-stop the registry-feed sub-rule
-(9) was written to close. Forward-only: nothing new accretes here. Backfill is one
-judgment call per row (which heading, how it's worded) and stays operator-paced —
-`python scripts/check_closure_disposition.py --list-debt` lists the current set;
-rows leave this debt only by landing in `docs/rejected_candidates.md`, not by editing
-`REGISTRY_DEBT_2026_08` directly.
+**Registry backfill (2026-08-15).** Snapshot + unpaid enumerator:
+[`scripts/check_closure_disposition.py`](scripts/check_closure_disposition.py)
+(`--list-debt`).
 
 ---
 

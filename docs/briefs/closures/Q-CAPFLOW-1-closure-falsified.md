@@ -54,6 +54,8 @@ Below the two-incident bar — watch: CapFLOW camp path math vs theme-nest prune
 - **Stop rule / re-proposal bar:** New Cap-spend cell requires a fresh Cap-reservation GO + Cap-spend GO + new G0/construct (different feature or survivor-tied question) — not a retune of ρ floor, OR window, or this event set.
 - **Board write:** `SESSIONS Open/next: CapFLOW Cap-spend FALSIFIED (Cap held). Carry: F-2; F1 2026-11-08; M1; weekly token; Magdon-Ismail B; no slate-4 until NEW WHO.` Owner: this closure · [`RESULTS`](../../../lab/analysis/c1/mnq_capflow_orb_r_2026-08/RESULTS.md)
 
+- **Registry:** rejected_candidates.md — ### OR-window net signed aggressor size × MNQ — FALSIFIED (CI includes 0)
+
 ## §10 audit-hook discharge
 
 ```text

@@ -175,6 +175,8 @@ Prior looks remained exactly those disclosed before freeze:
 
 Any next reconstruction candidate is a new trial with a new ID, incremented candidate bank, fresh operator authorization, and a fresh signed pre-registration. Nothing in this closure authorizes such a candidate.
 
+- **Registry:** rejected_candidates.md — ### S-MYM-ORC-02 session-aware opening-range continuation × MYM — FALSIFIED (development)
+
 ---
 
 ## §10 — Audit hooks

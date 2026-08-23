@@ -79,3 +79,5 @@ cd lab/analysis/aegis/aegis_6j_prop_reconstruction_2026-07 && sha256sum -c WAVE1
 ## Next (if revisited)
 
 Fresh pre-reg only. Candidate amendments (not decided here): selection-window N bar calibrated to this panel’s ~74 exits; and/or acknowledge risk%/cap degeneracies in the grid design before TV spend. Operator GO required.
+
+- **Registry:** rejected_candidates.md — ### Aegis→6J prop-reconstruction Wave-1 sizing/EOD-fill sweep × 6J — FALSIFIED (H-SWEEP Stage-1)

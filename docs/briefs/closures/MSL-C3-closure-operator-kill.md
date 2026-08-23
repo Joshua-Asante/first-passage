@@ -39,6 +39,8 @@ New operator B4 on a **fresh** Stage-1 record (or new mechanism story election) 
 - **Stop rule / re-proposal bar:** see §3
 - **Board write:** plan §6 P3.2 → OPERATOR-KILL · Stage-1 deaths **1/3** · P3.3 → NEXT
 
+- **Registry:** rejected_candidates.md — ### MSL-C3 PDH/PDL failed-break reclaim × M2K — OPERATOR-KILL (B4 declined; pre-G0)
+
 ## Change history
 
 | Date | Change | By |

@@ -51,6 +51,8 @@ Below two-incident bar — watch: Stage-1 entry-rate honesty was a **design** 1/
 - **Stop rule / re-proposal bar:** new mechanism evidence (different reference class / direction / TF), not I/P-window, stop-buffer, or rr retune on this G0. Re-proposal ≠ S2B.
 - **Board write:** Open/next was S2B at close; **superseded 2026-08-13** by [C3-K2 revive](../../adr/2026-08-13-msl-c3-k2-dual-axis-revive.md) ahead of S2B — live pointer [`SESSIONS`](../../SESSIONS.md) top · plan §6 P3.2b.
 
+- **Registry:** rejected_candidates.md — ### MSL-S2A pullback-failure resumption × MCL — FALSIFIED (explore IS)
+
 ## §10 audit-hook discharge
 
 ```text
