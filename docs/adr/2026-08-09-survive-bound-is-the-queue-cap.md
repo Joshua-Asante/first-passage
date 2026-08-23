@@ -39,6 +39,6 @@ Do **not** quietly introduce an hours figure into a pursuit Survive-bound line (
 
 **Repair:** (1) Open/next lead line is the live STATE queue (`#1` … `#N`); (2) while #1/#2 stay waits, row 3 is a doable next step on an **existing** channel owner — operator GO 2026-08-23: blind / no-counterparty channel, name or decline the next construct on the reopened 6A/M6A or GC/MGC doors ([channel ADR](2026-08-15-no-counterparty-statistical-sourcing-channel.md)). Mechanical limb: `scripts/check_sessions_queue_bind.py` (newest SESSIONS Open/next vs live row numbers only).
 
-**Succession:** when row 3 leaves, do not auto-open a channel or promote a leftover. Cite remaining rows until the operator promotes a replacement.
+**Succession:** when row 3 leaves, do not auto-open a channel or promote a leftover. Cite remaining rows until the operator promotes a replacement. Row 3 closed the same day — scoped decline of the reopened 6A/M6A and GC/MGC cell; last pre-G0 slot unspent ([channel ADR](2026-08-15-no-counterparty-statistical-sourcing-channel.md#addendum-2026-08-23--scoped-decline-of-the-reopened-6am6a-and-gcmgc-entry-geometry--dense-1m-cell)).
 
 **Forbidden:** leftover names leading Open/next; a new generation channel to fill the doable slot; `tier: soft` on the checker; an hours figure (Boundary unchanged).

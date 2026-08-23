@@ -31,6 +31,26 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-24q — blind-channel scoped decline of the reopened 6A/GC cell
+
+**Focus:** Decision. Operator accepted the scoped decline: do not name on the reopened 6A/M6A or GC/MGC entry-geometry / dense-1m doors. Last pre-G0 slot unspent.
+
+**Shipped:** [`channel ADR addendum`](adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md#addendum-2026-08-23--scoped-decline-of-the-reopened-6am6a-and-gcmgc-entry-geometry--dense-1m-cell) · [`STATE.md`](../STATE.md) row 3 deleted (succession: no auto-replace).
+
+**Decisions/defects:** Door stays legally open; construct refused (sibling-contaminated cell, not an 08-15 empty walk). Count stays 2/3. Not generation-dry. S1/S2 still unruled. Later spend of the last slot needs a fresh GO.
+
+**Open / next:** STATE queue: #1 F1 — how §4 reads a Tradeify-resting discharge ([`descope §7`](adr/2026-08-04-tradeify-venue-descope-eval-included.md)) · #2 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-24p — P1 README status glossary (queue-exception)
+
+**Open / next:** STATE queue: #1 F1 — how §4 reads a Tradeify-resting discharge ([`descope §7`](adr/2026-08-04-tradeify-venue-descope-eval-included.md)) · #2 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #3 Blind — name or decline the next construct on 6A/M6A or GC/MGC entry-geometry / dense-1m doors ([`channel ADR`](adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md)). queue-exception: operator directed the pain-point sequence after bind land; P1 README glossary is on this branch (charter start-when). Bind commit [`02c5f5e`](https://github.com/Joshua-Asante/first-passage/commit/02c5f5e).
+
+---
+
 ## 2026-08-24o — Lane A GO + operator-queue bind land
 
 **Focus:** Decision + Build. Operator named bind row 3 = Lane A (blind / no-counterparty channel). Landed queue-led Open/next, carry-forward rewrite, and the SESSIONS-only bind gate.
