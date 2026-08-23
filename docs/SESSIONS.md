@@ -1,20 +1,34 @@
 # Session Log
 
-Chronological progress log, **newest first**. One entry per working session. Each entry
+Chronological progress log, **newest first**. Each entry
 **links out** to the detailed artifacts (ADRs, notices, briefs, commits) rather than
 duplicating them. Complements `MEMORY.md` (durable atomic facts, recalled by relevance);
 this file is the narrative timeline you can scan top-to-bottom.
 
+**A full entry is written only for a session that made a real judgment call** — a
+choice among options, a decision that changes scope/priority/risk, a measurement
+result that resolves something open. Mechanical output (a plan authored to an
+already-decided spec, code shipped with no branching decision, routine hygiene) does
+not earn a full entry even if it produced a commit — that's already recoverable from
+`git log`. *(Judgment-gate added 2026-08-23, replacing the looser "skip Hygiene-only"
+rule; entry-class origin below is unchanged.)*
+
 **Entry classes (W5 direction):** Decision / Build / Measurement / Hygiene — prefer
 links; keep prose beyond the five fields ≤ **~40 words** where possible
-([`W5 ADR`](adr/2026-08-07-w5-governance-diet.md)). Skip Hygiene-only turns.
+([`W5 ADR`](adr/2026-08-07-w5-governance-diet.md)).
 
-Next session opens by reading the top entry's **Open / next**.
+**Open / next never goes stale between full entries.** Next session opens by reading
+the top entry's **Open / next**. If a no-judgment-call session changes what's open/next,
+write a new **stub entry** — heading + `Open / next` line only, skip the other four
+fields — instead of editing the old top entry. `scripts/roll_sessions.py`'s
+`sessions-append-only` gate hard-fails any edit to an already-merged entry (its own
+message: "edit Open/next on the NEW top entry, not this one") — a stub is the
+gate-compatible way to keep the pointer current without a full entry.
 
-Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
+Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing
+any entry, full or stub (a-first; bare claims `a`).
 
 ---
-
 ## 2026-08-24e — Nav leftovers: P5b wire, P2b stamps, find-owner
 
 **Focus:** Sequence named nav leftovers. P5b + two Verdict stamps + Rule 7 lookup. No mass `--slug`. No P7/P8. No SESSIONS roll.
@@ -23,7 +37,21 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 
 **Decisions/defects:** none new. P7 Topic and P8 `ops/` unify stay named. SESSIONS keep-20 dry-run 20/155 — roll is a separate GO.
 
-**Open / next:** leftover surviving cluster (O10 grounding quotes, O15+O24 judgment wiring, O7 Trap-12 detection). Carry `2026-08-22r` — DL-2 step 2 train scoring. Attended disaster-stop 0a is operator-only. Carry `2026-08-23t` — two undocumented decay findings still need discharge addenda. Operator: restore the coldstore design (private archive) before any Phase B GO. T2/T3/T4 and Phase C stay PENDING GO. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1.
+**Open / next:** leftover surviving cluster (O10 grounding quotes, O15+O24 judgment wiring, O7 Trap-12 detection). Carry `2026-08-22r` — DL-2 step 2 train scoring. Attended disaster-stop 0a is operator-only. Carry `2026-08-23t` — two undocumented decay findings still need discharge addenda. Operator: restore the coldstore design (private archive) before any Phase B GO. T2/T3/T4 and Phase C stay PENDING GO. Campaign next: W5 CI-from-`gates.yml` (H6 HOLD; not this PR). **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-24f — SESSIONS entry-class tightened to a judgment-call gate
+
+**Focus:** Decision. Full entries now require a real judgment call, not "skip Hygiene-only" — the class had drifted (12 entries in one day).
+
+**Shipped:** [`docs/SESSIONS.md`](SESSIONS.md) header rewrite (judgment-gate + stub-entry mechanism). [`W5 ADR addendum`](adr/2026-08-07-w5-governance-diet.md). [`STATE.md`](../STATE.md) decision-index line. [`PR #120`](https://github.com/Joshua-Asante/first-passage/pull/120). Heading remapped from colliding `2026-08-23m` on merge into this branch.
+
+**Decisions/defects:** Stub entries (heading + Open/next only) replace in-place edits — `sessions-append-only` hard-fails mutating an already-merged entry. Entry-class table (A–D) itself unchanged; amended the W5 ADR per Rule 8 sub-rule 10 rather than minting a sibling.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: execute W5 CI-from-`gates.yml` plan. #7/#8 stay PENDING GO. PR #120 merged.
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 
