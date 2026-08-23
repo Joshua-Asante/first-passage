@@ -232,6 +232,136 @@ ls docs/notes/audits/ | grep -i "rule-2-trip-log"
 
 ---
 
+## Addendum 2026-08-22 (Status: PROPOSED — pending operator ratification) — audit-cycle counting convention for the §4 empty-log falsifier
+
+**Does not amend §2 / §4's 3/8/3 thresholds / §5 / §6's per-loop-class graduation bar.** This
+addendum proposes a counting *convention* for reading §4's "empty across ≥2 audit cycles"
+falsifier when a scheduled cycle's own review is disputed — it resolves a genuinely open
+ambiguity the trip-log's own text (`docs/notes/audits/rule-2-trip-log.md:59-64`) flags and
+explicitly defers ("Rule at the 2026-11-08 gate, and state the counting convention there rather
+than inferring one now"). **Tier: FULL** under `docs/adr/2026-08-08-adr-ceremony-tiering.md`
+limb 4 (states a convention binding future audit-cadence counting, not just this file) — and,
+per that ADR's own escalation rule, an ambiguous tier defaults to FULL regardless. Landed as an
+**addendum to this ADR**, not a sibling file, per the 2026-08-15 amend-in-place convention
+(`2026-08-08-adr-ceremony-tiering.md` Addendum 2026-08-15): the dispute is entirely about how
+*this* ADR's own §4 falsifier counts, so this file is already the correct owner — a new ADR would
+duplicate reasoning this file already carries in its 2026-08-15/-19/-21 addenda.
+
+**Reads (this run, 2026-08-22, full text unless noted):**
+- `docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md` — `b2e5f15d2b11a72759d3734eba89806c2375c38b` (2026-08-22). Scopes the sanitized second-opinion lens this task originated from as candidate-objection input only, carrying zero authority over a governing decision — the framing this addendum honors in the next paragraph.
+- `docs/notes/audits/rule-2-trip-log.md` — `f6f92dce914c9a36780de29b14e07e22d79174b7` (2026-08-20). The 2026-08-09 correction block (its own lines ~44–64) is the primary artifact for this dispute; the 2026-08-20 STRATEGIC trip row (added by the same commit that is this file's last touch) is load-bearing new evidence the correction block predates.
+- `docs/adr/2026-06-16-rule-2-budget-before-acting.md` (this file) — `d060698a3519737e9b9ed53dab542a8dbc599d25` (2026-08-21), i.e. the version immediately prior to this addendum. §4 (empty-log ≥2-cycle clause), §6 (per-loop-class graduation gate), and the 2026-08-21 addendum's own "override, logged as such, not a claim the gate was met" framing — the precedent this addendum reuses for landing PROPOSED rather than silently inferring a convention.
+- `docs/notes/audits/programme-audit/2026-07-01-methodology-belt-scoped-audit.md` — `937b9a23869f347a4eee015fcc2632e3e30e3361` (2026-08-15). §3 Q-B and §11 confirm this audit *did* execute a reasoned Rule-2 disposition (AMBIGUOUS-on-schedule, correctly reasoned as <2 cycles elapsed) — the positive control for "what an executed cycle looks like."
+- `docs/notes/audits/programme-audit/2026-08-08-quarterly-audit.md` — `937b9a23869f347a4eee015fcc2632e3e30e3361` (2026-08-15). Directly re-verified this run: `grep -c "Rule 2\|trip log"` returns **0** — confirms the trip-log's own claim that this slate's Rule-2 checklist item was never executed, not merely under-documented.
+- `docs/adr/2026-08-09-rejection-register-topology-and-bar-wiring.md` — `027a729589c815fda8286f3d74f1306f121dd7ac` (2026-08-14). D2's "ratification-and-wiring rule" (a bar is operative only when both a stamp and a machine consult exist) is the closest existing doctrine, cited by the trip-log as the disposition mechanism for the phantom-discharge class generally — confirmed by this read to resolve *that* class (false-record correction) but **not** to state any audit-cycle-counting convention; D2 governs bar operativeness, not cycle tallies. This addendum fills that specific residual gap, not a re-litigation of D2.
+- `docs/rejected_candidates.md` — `027a729589c815fda8286f3d74f1306f121dd7ac` (2026-08-14), lines 692–705. Confirmed the twin phantom-discharge correction cited by the trip-log is real, same shape, same 2026-08-09 date, same "same sweep" attribution — corroborates rather than resolves the counting question.
+- `docs/adr/2026-08-08-adr-ceremony-tiering.md` — `91e6caad0993e59b1ca79471de708a91d6ea9a15` (2026-08-15). Supplies the tier test applied above and the amend-in-place addendum it names.
+- `docs/adr/2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md` — `b4768601213cfaadc4bc34f5617cfdfe7ec3a021` (2026-08-16). Read as the closest structural precedent for a repo counting-convention ADR (full tier, limb 4, patches counting mechanisms via dated addenda rather than in-place rewrites) — its shape is followed here; its *content* (zero-yield disposition counting) is unrelated and not extended by this addendum.
+- Also confirmed by direct search this run: no ADR or `docs/SESSIONS.md` entry dated after 2026-08-09 states a Rule-2 counting convention or otherwise closes this question (`git log` on the trip-log file shows exactly one post-2026-08-09 touch, `f6f92dce9`, 2026-08-20, which added the STRATEGIC trip row and left the counting-ambiguity block byte-unchanged — confirmed via `git show f6f92dc -- docs/notes/audits/rule-2-trip-log.md`).
+
+**Context — what changed since the 2026-08-09 correction was written.** That correction (still
+current text) leaves the cycle-count "not determinable" because the 2026-07-01 audit named
+"~2026-09" and "~2026-12" as the 1st/2nd post-codification audits, but the real quarterly gates
+are 2026-08-08 (whose Rule-2 item never executed) and 2026-11-08. Two things the correction block
+itself could not have known when written: (1) the 2026-08-08 quarterly audit *did* happen as a
+real, substantive audit event (`2026-08-08-quarterly-audit.md` exists and runs seven other
+diagnostics) — the defect is a skipped checklist item inside a real audit, not a missing audit;
+(2) on 2026-08-20, a genuine STRATEGIC-class trip fired and was recorded with a fully reasoned,
+hindsight-correct disposition (`rule-2-trip-log.md`'s second table row). Neither fact is reflected
+in the still-standing "not determinable" text.
+
+**Proposed convention.** An audit cycle counts toward an audit-cadence falsifier (here, §4's
+empty-log clause) if and only if that cycle's audit artifact contains an **executed,
+disposition-recording** review of the specific item — a null or negative disposition still
+counts, but a checklist item that was never touched does not, regardless of whether some other
+audit activity occurred on or near the scheduled date. This extends the same principle
+`2026-08-09-rejection-register-topology-and-bar-wiring.md` D2 already applies to bars (a stamp
+and a wire, not proximity to one, make it operative) into the audit-cadence-counting domain, and
+matches how `2026-07-01-methodology-belt-scoped-audit.md` §3 Q-B is plainly a genuine cycle
+(reasoned disposition present) while `2026-08-08-quarterly-audit.md` plainly is not (zero
+occurrences, confirmed above).
+
+**Applying it.** Exactly **one** genuine post-codification cycle has executed to date —
+2026-07-01. 2026-08-08 does not count under this convention. Read narrowly, that would put the
+§4 empty-log clock at 1 of the required ≥2 cycles, not 2 — i.e. **one tick, not two, and not
+"indeterminate."** But this narrow reading is now moot in practice: the trip-log is no longer
+"empty" under any plain reading of §4 regardless of cycle count — the 2026-08-20 genuine
+STRATEGIC trip (reasoned, hindsight-correct, correctly following owner-adjudication-only
+extension authority) means the inert-rule branch of §4 has nothing to fire on today. The
+residual value of stating the convention is forward (the next disputed phantom-discharge, not
+this one) and for §6's separate per-loop-class graduation gate, which the STRATEGIC trip does
+not satisfy on its own (INNER still carries zero entries).
+
+**One-sentence note on the originating review lens.** A sanitized, genericized restatement of
+this exact counting ambiguity was run this session through the stateless, zero-authority external
+second-opinion lens scoped by `2026-08-22-ox-alpha-adversarial-lens-scope.md`; per that ADR's §2/§5
+its output is candidate-objection input only and carries no authority here — the convention and
+resolution above are derived independently from the primary sources listed, not from that lens's
+output.
+
+**Falsifier (of this convention, distinct from §4's own 3/8/3 falsifier).** This convention is
+miscalibrated if it is later invoked to let an audit-cadence falsifier be indefinitely deferred by
+repeatedly, unaccountably skipping the checklist item while other diagnostics in the same audit
+run normally — i.e., if "the item wasn't executed" becomes a standing excuse rather than a
+single-cycle miss. Check: at the 2026-11-08 quarterly audit, does the Rule-2 trip-log checklist
+item (parent ADR §7) actually execute? A second consecutive skip is no longer a "single-cycle
+miss" (the framing the 2026-08-09 correction used) and escalates to a process-compliance defect
+in its own right, separate from anything about Rule 2's calibration.
+
+**Gate.** This addendum stays `PROPOSED` until operator ratification (mirrors the parent ADR's
+own 2026-08-21 addendum: an explicit, logged operator call, not a silent CC inference — ratifying
+early does not itself violate the trip-log's "rather than inferring one now," since that text
+guards against an *unratified* inference, not against an *operator-ratified* one landing ahead of
+the named gate). If ratified before 2026-11-08, that gate becomes the first live test of the
+convention (does the checklist item execute this time) rather than the moment the convention is
+authored. If left unratified, it holds as a dated proposal and the operator may instead state a
+convention fresh at 2026-11-08, exactly as the trip-log's own text anticipates.
+
+**Forbidden moves.**
+- Counting 2026-08-08 as a completed Rule-2 cycle solely because a real audit note exists dated
+  near it — under this convention, proximity is not execution.
+- Backfilling a disposition into `2026-08-08-quarterly-audit.md` now to make the tally come out
+  even — that would manufacture the exact after-the-fact-record shape the 2026-08-09 correction
+  exists to name, applied to the same slate a second time.
+- Treating the 2026-08-20 STRATEGIC trip as satisfying §6's graduation gate — that gate needs
+  ≥1 entry **per active loop class**; INNER remains unexercised. The empty-log question and the
+  graduation question are separate counts and must not be conflated.
+- Treating this addendum's authorship, on its own, as discharging the trip-log's "state the
+  counting convention... at the 2026-11-08 gate" instruction — it is a proposal awaiting the
+  operator's own ratification (see Gate above), not a unilateral resolution.
+- Generalizing this convention repo-wide (e.g. to the ceremony-tiering ADR's own quarterly-review
+  trigger, or to `2026-08-09-rejection-register-topology-and-bar-wiring.md`'s 2026-11-08
+  falsifier) without a dedicated sweep and its own ADR, in the shape
+  `2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md` used for streak-counters. Named
+  here as a plausible future generalization, not assumed or executed by this addendum.
+
+**Consequences.** No mechanical edits required beyond this text (policy-only, like the parent
+ADR's other addenda). A `docs/SESSIONS.md` entry noting this proposal is owed at land time per
+this repo's session-log discipline, not included here. If ratified, the natural downstream
+artifact is a one-line addition to the parent ADR's own §7 audit-checklist item, making explicit
+that "confirm the item was executed, not merely that an audit note exists near the date" — not
+drafted here, since this addendum is `PROPOSED`, not yet a landed decision.
+
+**Audit hooks (runnable).**
+
+```bash
+# Confirm the 2026-08-08 slate still shows zero executed Rule-2 review (the fact this addendum turns on)
+grep -c "Rule 2\|trip log" docs/notes/audits/programme-audit/2026-08-08-quarterly-audit.md
+# Expected: 0
+
+# Confirm the 2026-08-20 genuine trip is still on record and the counting-ambiguity block is unmodified since
+git log --format="%H %ad %s" --date=short -- docs/notes/audits/rule-2-trip-log.md
+git show f6f92dce9 -- docs/notes/audits/rule-2-trip-log.md   # expect: +1 line only (the STRATEGIC row)
+
+# At the 2026-11-08 gate: did the checklist item actually execute this time?
+grep -c "Rule 2\|trip log" docs/notes/audits/programme-audit/2026-11-08*.md 2>/dev/null
+
+# §6 graduation is still separately gated on a per-loop-class basis (not satisfied by the STRATEGIC trip alone)
+grep -n "INNER" docs/notes/audits/rule-2-trip-log.md
+```
+
+---
+
 ## Verification
 
 ```bash

@@ -1,0 +1,70 @@
+====================================================================================================
+Q-ORBPOS-1 POSITIVE CONTROL -- synthetic two-regime classifier, IDENTICAL pipeline
+====================================================================================================
+  design: N(0.0,1.0^2) pre-break / N(2.0,1.0^2) post-break, Cohen's d=2.00, seed=20260823
+  single-draw misclassification rate vs population midpoint (Phi(-d/2)): 15.9%
+
+--- synthetic classifier construction (replaces Phase 1 CFTC pull) ---
+  n_rows=311  first report_date=2020-08-04  last report_date=2026-07-14
+  independent synthetic prints available BEFORE the 2021-09-28 break: 60
+  Sec4-equivalent Ambiguous-hold trigger 1 (W1 sparsity, floor=4): does not fire
+
+--- ORB-MNQ-1 own panel + Control B mirror (harness reused unchanged) ---
+  panel: C:\Users\joshu\multi_firm_operations\lab\analysis\orb\orb_mnq_2026-07\_mnq_15m.pkl
+  rows=169,409  span=2019-05-05 20:00:00-04:00 -> 2026-07-15 19:45:00-04:00
+  Control B PASS -- n=1846 triggering days  recon date span 2019-05-06 -> 2026-07-15
+
+[gate ] C:\Users\joshu\multi_firm_operations\.claude\worktrees\openrouter-ox-alpha-test-fff246\docs\briefs\pre-registration\2026-07-13-prop-survivor-scoring-prereg.md
+[gate ] horizon=1500  seeds=(42, 123, 2026)  sims/seed=10000  eval_bust_ceiling=3.0%  pass_floor=50%
+[firm ] FIRM_RULES already ships dd_lock_offset_usd=1,000,000 (no override needed).
+
+--- FIDELITY CONTROL: flat policy, m=1.0, full panel, k=1/k=2 (reused day_loop_intraday) ---
+  k=1  bust=67.67%  pass=32.33%  published=67.67%  delta=-0.00pp  PASS  (elapsed 14s)
+  k=2  bust=77.01%  pass=22.99%  published=77.01%  delta=-0.00pp  PASS  (elapsed 17s)
+
+[panel] business-day span: 2019-05-06 -> 2026-07-15  n_days=1878
+
+====================================================================================================
+W1 -- rolling window = 4 synthetic weekly prints
+====================================================================================================
+[classifier] n_prints_total=311  WARMUP=3  HIGHER=237  LOWER=71  expanding-median spot-check (5 pts): PASS  degenerate-threshold: no
+[date-corr] HIGHER bucket: n_days=1179  post-cutoff frac=89.2%  (need >= 75%)
+[date-corr] LOWER  bucket: n_days=355  post-cutoff frac=56.3%  (need <= 40%)
+[date-corr] window condition: does not fire (fail)
+[gate] HIGHER  n_blocks=213  flat: bust=46.70% pass=53.30% gate=FAIL  |  cushion: bust=0.00% pass=86.23% gate=PASS
+[gate] LOWER   n_blocks=48  flat: bust=30.15% pass=69.85% gate=FAIL  |  cushion: bust=0.00% pass=98.46% gate=PASS   (elapsed 32s)
+[direction] W1: BOTH_CLEAR
+
+====================================================================================================
+W2 -- rolling window = 13 synthetic weekly prints
+====================================================================================================
+[classifier] n_prints_total=311  WARMUP=12  HIGHER=236  LOWER=63  expanding-median spot-check (5 pts): PASS  degenerate-threshold: no
+[date-corr] HIGHER bucket: n_days=1174  post-cutoff frac=91.9%  (need >= 75%)
+[date-corr] LOWER  bucket: n_days=315  post-cutoff frac=54.9%  (need <= 40%)
+[date-corr] window condition: does not fire (fail)
+[gate] HIGHER  n_blocks=218  flat: bust=46.45% pass=53.55% gate=FAIL  |  cushion: bust=0.00% pass=86.89% gate=PASS
+[gate] LOWER   n_blocks=46  flat: bust=33.04% pass=66.96% gate=FAIL  |  cushion: bust=0.00% pass=97.63% gate=PASS   (elapsed 47s)
+[direction] W2: BOTH_CLEAR
+
+====================================================================================================
+W3 -- rolling window = 26 synthetic weekly prints
+====================================================================================================
+[classifier] n_prints_total=311  WARMUP=25  HIGHER=207  LOWER=79  expanding-median spot-check (5 pts): PASS  degenerate-threshold: no
+[date-corr] HIGHER bucket: n_days=1030  post-cutoff frac=92.7%  (need >= 75%)
+[date-corr] LOWER  bucket: n_days=394  post-cutoff frac=75.4%  (need <= 40%)
+[date-corr] window condition: does not fire (fail)
+[gate] HIGHER  n_blocks=193  flat: bust=37.64% pass=62.36% gate=FAIL  |  cushion: bust=0.00% pass=96.43% gate=PASS
+[gate] LOWER   n_blocks=65  flat: bust=86.00% pass=14.00% gate=FAIL  |  cushion: bust=0.00% pass=24.89% gate=FAIL   (elapsed 62s)
+[direction] W3: HIGHER_CLEARS_LOWER_DOES_NOT
+
+====================================================================================================
+POSITIVE-CONTROL VERDICT (same Accept/Reject shape as H-ORBPOS's own §4)
+====================================================================================================
+  date-correlation clears (a)/(b) at >=2 of 3 windows?  0/3  -> NO
+  gate-clearance direction same sign at every window, no exceptions?  NO  (per-window: {'W1': 'BOTH_CLEAR', 'W2': 'BOTH_CLEAR', 'W3': 'HIGHER_CLEARS_LOWER_DOES_NOT'})
+  Ambiguous-hold-equivalent (W1 sparsity or degenerate threshold)?  does not fire
+
+  ==> POSITIVE CONTROL: REJECT (pipeline FAILS to recover the known synthetic relationship)
+
+[write] C:\Users\joshu\multi_firm_operations\.claude\worktrees\openrouter-ox-alpha-test-fff246\lab\analysis\c1\q_orbpos_1_2026-08\results_orbpos_positive_control.json
+[time ] total elapsed 62s

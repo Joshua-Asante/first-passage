@@ -1,0 +1,14 @@
+N_usable r_pm sessions loaded: 126
+r_pm mean=0.000250 std=0.006145 skew=0.0936 kurtosis_excess=1.8360
+lag-1 autocorrelation of real r_pm sequence: -0.1056
+rho_true=0.000  rho_N_used=0.0000  realized_mean_rho=-0.0019  power(p<0.2)=0.1936 (se=0.0079)  [35.8s]
+rho_true=0.050  rho_N_used=0.0524  realized_mean_rho=0.0506  power(p<0.2)=0.3864 (se=0.0097)  [35.5s]
+rho_true=0.075  rho_N_used=0.0785  realized_mean_rho=0.0741  power(p<0.2)=0.4992 (se=0.0100)  [31.8s]
+rho_true=0.100  rho_N_used=0.1047  realized_mean_rho=0.0999  power(p<0.2)=0.6092 (se=0.0098)  [32.0s]
+rho_true=0.150  rho_N_used=0.1569  realized_mean_rho=0.1513  power(p<0.2)=0.8100 (se=0.0078)  [32.1s]
+rho_true=0.200  rho_N_used=0.2091  realized_mean_rho=0.1995  power(p<0.2)=0.9252 (se=0.0053)  [32.5s]
+rho_true=0.250  rho_N_used=0.2611  realized_mean_rho=0.2484  power(p<0.2)=0.9828 (se=0.0026)  [32.5s]
+rho_true=0.300  rho_N_used=0.3129  realized_mean_rho=0.3006  power(p<0.2)=0.9980 (se=0.0009)  [32.9s]
+rho_true=0.350  rho_N_used=0.3645  realized_mean_rho=0.3491  power(p<0.2)=0.9992 (se=0.0006)  [32.7s]
+TOTAL wall time: 297.8s
+wrote C:\Temp\claude\C--Users-joshu-multi-firm-operations--claude-worktrees-openrouter-ox-alpha-test-fff246\f0aee6d1-68de-4409-a31e-d09cebc35265\scratchpad\power_check_results.json

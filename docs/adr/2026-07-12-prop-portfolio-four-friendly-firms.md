@@ -163,6 +163,199 @@ staleness in the **frozen** scoring gate's §10 hook 7 is recorded (and delibera
 
 ---
 
+## Addendum 2026-08-22 — §4's success/revert dichotomy does not cover an exactly-one-tier clear (PROPOSED)
+
+**Status:** `Proposed` — drafted by Claude Code, awaiting operator (JA) ratification. Not yet
+effective; §4's original text (H, revert trigger, both hard-coded below) is unchanged unless and
+until this addendum is **`Accepted`**. **Tier: FULL** — ceremony-tiering limb 4 fires (creates a
+disposition rule for a falsifier threshold that binds how the 2026-11-08 hard-date verdict is
+read); limb 2 arguably also fires (this is the open "sibling fork" to the already-queued F1 item,
+STATE.md queue row 1). Ambiguity on limb 2 does not matter — limb 4 alone forces FULL. **Vehicle:**
+amend-in-place addendum on this file, per the 2026-08-15 "amend-in-place beats a sibling ADR"
+convention ([`ceremony-tiering ADR`](2026-08-08-adr-ceremony-tiering.md) addendum) — this is the
+ADR that defines §4 itself, so no sibling ADR is minted. **$0 / K=0.** No live-risk surface, Pine,
+allocation, or `dd_protection` constant touched. Structurally modeled on the harvest-intake ADR's
+own 2026-08-16 "§4 gains a fourth branch" addendum
+([`docs/adr/2026-07-15-external-mechanism-harvest-intake.md`](2026-07-15-external-mechanism-harvest-intake.md)) —
+same shape of gap, same tightening/completeness-only remedy.
+
+### §0 — Rule 0 reads for this addendum (production-source verification, 2026-08-22)
+
+- This file, §4 (H: "≥2 of the four FRIENDLY firm tiers"; revert trigger: "no pre-registered
+  portfolio candidate clears the pass-rate ceiling on **any** ... tier ... by 2026-11-08") —
+  anchor `027a729` (2026-08-14, this file's post-transplant seed commit; content unchanged from
+  the original 2026-07-12 acceptance and 2026-07-25 header repair).
+- [`docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md`](../briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md)
+  §6 (frozen gate table: RESOLVED = "≥1 candidate clears ... on ≥2 distinct firms"; FALSIFIED =
+  "No pre-registered candidate clears Part A on **any** tier by 2026-11-08"; AMBIGUOUS = the
+  §7(9) calibration reference itself clears the ceiling) — anchor `027a729` (2026-08-14). The
+  same two-condition shape as §4, reproduced verbatim, with a third row that is scoped to a
+  discriminability failure, not to a partial clearance count.
+- [`docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md`](2026-07-22-prop-portfolio-s4-discharge-withdrawal.md)
+  (full text) — anchor `0723587` (2026-08-22). Confirms the discharge that once rested on two
+  tiers (Tradeify 2.65%/MFFU 2.64%) was withdrawn on corrected eval-lock geometry; **current
+  measured state at the four frozen $100K tiers is zero Part A clearers**
+  ([`lab/analysis/c1/class_s_candidate1_scoring_2026-07-15/RESULTS.md:15`](../../lab/analysis/c1/class_s_candidate1_scoring_2026-07-15/RESULTS.md),
+  anchor `027a729`, 2026-08-14: "there are zero Part A clearers"). The exactly-one-clear state
+  has **not occurred yet** — this addendum closes the gap pre-emptively, before any result would
+  make the ruling self-serving (the same discipline the 2026-07-13 pre-registration's own §1
+  invokes against ad-hoc scoring).
+- [`lab/analysis/c1/c1_band_rescore_2026-07-24/RESULTS.md`](../../lab/analysis/c1/c1_band_rescore_2026-07-24/RESULTS.md)
+  (full text) — anchor `027a729` (2026-08-14). Two Part A clearers exist, but only at the
+  diagnostic-only **50K** band (`Tradeify_Select_50K` / `MFFU_Rapid_50K`), which the prereg's §3
+  frozen tier cross-section explicitly excludes from §4 discharge — confirms the $100K count is
+  the only count that matters here, and it is currently 0-of-4, not 1-of-4.
+- [`docs/adr/2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md`](2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md)
+  (full text) — anchor `b476860` (2026-08-16). §2/§5 explicitly decline to touch "any
+  programme-level, date-boxed hard falsifier (e.g. the prop-portfolio §4 ... existence test)" —
+  confirming that ADR is not a ruling on this gap and §4's exact wording remains untouched by it.
+- [`docs/adr/2026-08-08-adr-ceremony-tiering.md`](2026-08-08-adr-ceremony-tiering.md) (full text)
+  — anchor `91e6caa` (2026-08-15) — tier test applied above; its own 2026-08-15 addendum
+  ("amend-in-place beats a sibling ADR") governs the vehicle choice.
+- [`STATE.md`](../../STATE.md) — anchor `0723587` (2026-08-22). Queue row 1 (F1, the
+  Tradeify-resting-discharge fork) and the "Standing base case" line ("absent an N-clear
+  candidate, the 2026-11-08 §4 falsifier reads FALSIFIED") are the closest existing repo
+  statements adjacent to this gap — neither rules on an exactly-one-tier clear specifically; F1
+  is a different question (whether a discharge *resting on Tradeify* counts, not whether *one*
+  tier is enough), and the base-case line is an informal heuristic in a forward-obligation
+  register, not a governing definition of §4's own disposition space.
+- [`docs/SESSIONS.md`](../SESSIONS.md) — anchor `3ff0fee` (2026-08-23, this branch's current
+  head). Carry-forward lines name a never-elaborated "D3 fork" alongside "AMBIGUOUS-HOLD
+  counting" as siblings from an "original diagnostic slate... governance holes"
+  (e.g. line 1501). Repo-wide search (content and `git log -S "D3 fork"`) found no definition
+  reachable in this checkout beyond those two carry-forward mentions — **this addendum does not
+  claim "D3 fork" is this gap**; it is flagged only as an unconfirmed adjacent possibility, not
+  relied upon.
+- **External-lens note** (non-authoritative, per scope): a sanitized, genericized version of
+  this exact success/revert-dichotomy shape was also run through the sanctioned
+  stateless second-opinion lane under
+  [`2026-08-22-ox-alpha-adversarial-lens-scope.md`](2026-08-22-ox-alpha-adversarial-lens-scope.md)
+  (anchor `b2e5f15`, 2026-08-22) as a blind candidate-objection check; per that ADR's
+  own §2/§5, its output carries **zero authority** over this ruling and is not otherwise
+  reproduced or relied upon here — this addendum's reasoning below is derived independently from
+  the real, unsanitized artifacts cited above.
+
+### The gap this closes
+
+§4 as written is a two-condition dichotomy: **H (success)** requires clearing on "≥2 of the four
+`FRIENDLY` firm tiers"; the **revert trigger** requires "no pre-registered portfolio candidate
+clears ... on **any**" tier. The 2026-07-13 pre-registration's frozen §6 gate table reproduces the
+identical shape almost verbatim: **RESOLVED** needs ≥2 distinct firms; **FALSIFIED** needs zero
+tiers cleared on any candidate; **AMBIGUOUS** is scoped only to a calibration-reference
+discriminability failure (the §7(9) non-candidate reference itself clearing the ceiling), which
+is a different failure mode entirely and does not cover a genuine partial clearance.
+
+If, at the 2026-11-08 hard date, **exactly one** of the four frozen $100K tiers has cleared Part A
+(bust ≤3.0% + pass ≥50%, Run-2) and no second distinct firm has also cleared, that state satisfies
+**neither** H (needs ≥2) **nor** the revert trigger (needs zero) **nor** the AMBIGUOUS branch
+(wrong failure mode). No document in this repo rules on it. This is not hypothetical scope-padding
+— the pre-registration's own stated purpose (§1) is to prevent exactly this kind of disposition
+being written only after a candidate's numbers are already visible (the "best-of-K / criteria-drift"
+failure the `programme-audit` protocol's degeneration signal #4 names). The gap is currently
+dormant (measured state is 0-of-4, not 1-of-4, per §0 above) — which is precisely why it should be
+closed now, not left to be resolved for the first time under the pressure of an actual near-miss
+result at the hard date.
+
+### Ruling (proposed)
+
+**Fourth branch, added to §4's disposition space** (and, on acceptance, pointed to by a
+reader-intercept banner on the prereg — see Implementation, below; the prereg's frozen §6 body is
+**not** edited in place):
+
+If, at 2026-11-08, exactly one of the four frozen `Bulenox_100K` / `Tradeify_Select_100K` /
+`MFFU_Rapid_100K` / `BluSky_Premium_100K` tiers has a pre-registered candidate clearing Part A and
+no second distinct firm has also cleared:
+
+- **H does not fire.** No G8 admission proceeds under §4's own authority — the ≥2-firm
+  cross-validation bar (and, where the clearer is `trailing_locking`, the geometry-diversity
+  rationale in the prereg's §3 F2 optimism labels) is the operative design intent, not a
+  formality; one tier is not "the ceiling doesn't discriminate," but it is also not
+  cross-validated evidence of a deployable programme-level edge.
+- **The revert trigger does not fire.** It is written as "no candidate clears ... on any tier" —
+  literally false when one has. Auto-demoting to research-only on this state would fire the
+  falsifier on evidence that contradicts its own trigger condition, the same category of error
+  the 2026-08-16 ADR named for AMBIGUOUS-HOLD (though that ADR explicitly declines to reach this
+  falsifier — §0 above).
+- **Disposition: `PARTIAL`.** The programme is **not** discharged and **not** demoted. The single
+  clearing candidate carries forward as an ordinary lifecycle `CANDIDATE`-track lead (ordinary
+  `strategy_lifecycle.md` gates apply), but **without** §4-authority G8 admission or any claim
+  that the programme-level falsifier is resolved. The falsifier stays open, re-read at the
+  **next quarterly programme audit (2027-02-08)** — the cadence §4 already names ("Trigger check
+  schedule: quarterly ... 2027-02-08") — under the same frozen ceiling, tiers, and discharge rule
+  (no re-derivation; Trap #12 stays in force).
+- **At that 2027-02-08 re-check:** if a second distinct firm has since cleared, H fires and the
+  programme discharges normally. If the count is still ≤1, the revert trigger is read as
+  satisfied by extension — a single clearer sustained three additional months without a second
+  corroborating firm is treated as the functional equivalent of "no cross-validated candidate
+  exists," which is what the revert trigger exists to detect — and the programme demotes to
+  research-only at that point, closing the gap definitively rather than leaving it open
+  indefinitely.
+
+### §3 — Alternatives considered
+
+| Alternative | Why not chosen |
+|---|---|
+| Round n=1 up to RESOLVED | Contradicts §4's own explicit "≥2" text and the prereg's explicit rejection of single-geometry (Bulenox/BluSky-only) clearance as insufficient; would discharge the programme on evidence the designers deliberately said was not enough. |
+| Round n=1 down to FALSIFIED at 2026-11-08 | Over-reads the revert trigger, which requires **zero**, not "fewer than two." A candidate that did clear one real tier is not the same evidence class as "no pre-registered candidate clears any tier" — collapsing them loses real information the falsifier was designed to detect. |
+| Leave the gap open, rule ad hoc if it ever happens | The status quo, and the exact failure mode this addendum exists to close — the pre-registration's own §1 names ad-hoc post-hoc scoring as the degeneration pattern to avoid, and it is avoidable here because the state has not occurred yet. |
+| Extend indefinitely with no re-check date | Rejected — an open-ended "wait for a second clearer" would let the programme run past 2026-11-08 forever without any accountable falsifier state, defeating the entire point of a date-boxed programme-level existence test. The chosen ruling reuses §4's own already-named quarterly cadence (2027-02-08) instead of inventing a new one. |
+
+### Forbidden moves (under this addendum)
+
+- **Treating `PARTIAL` as a `FALSIFIED`-equivalent or `RESOLVED`-equivalent strike anywhere else**
+  (the harvest-intake §4, the no-counterparty channel §4, or any other date-boxed existence
+  falsifier). This ruling is scoped to this ADR's own §4 only.
+- **Moving the 3.0% ceiling, the 50% pass floor, the `trailing_locking` requirement, or the frozen
+  four-tier cross-section to manufacture a second clearer.** The gate stays frozen; only the
+  *disposition* for an already-observed one-tier state is being defined.
+- **Editing the pre-registration's frozen §6 body in place.** On acceptance, only a
+  reader-intercept banner (matching the established convention — the 2026-07-22 ADR's own
+  W1 banners; the 2026-08-16 ADR's dense-1m banner) is added, pointing here; Trap #12 (no
+  amendment after a result is seen) is honored by the fact that no n=1 result exists yet.
+- **Treating this addendum as also ruling on F1** (whether a discharge resting on Tradeify, or on
+  the withdrawn Striker book, counts). F1 is a different question — orthogonal to *how many*
+  tiers clear — and stays a separate, still-open queue item (STATE.md row 1). Deciding it here
+  would be exactly the pre-emption STATE.md's own F1 note warns against.
+- **Treating the sanitized external-lens pass as evidence for or against this ruling.** Per
+  [`2026-08-22-ox-alpha-adversarial-lens-scope.md`](2026-08-22-ox-alpha-adversarial-lens-scope.md)
+  §2/§5, that lane is zero-authority tripwire input only; this ruling stands or falls on the real
+  artifacts cited in §0, not on that lane's output.
+
+### What is unchanged
+
+§4's original H text, revert trigger, secondary (eligibility) trigger, and 2026-11-08 hard date;
+the prereg's frozen §2 protocol, §3 ceiling/tiers, §4 H-SCORE, §5 forbidden moves, and §6
+RESOLVED/FALSIFIED/AMBIGUOUS rows — all untouched. This addendum adds a fourth, previously
+uncovered disposition; it does not withdraw or loosen any existing one.
+
+### Implementation (owed only upon acceptance — not executed while this addendum is Proposed)
+
+1. Reader-intercept banner (top of file, below any existing banner) on
+   `docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md`, pointing to this
+   addendum for the exactly-one-tier-clear disposition. No edit to its frozen §2–§7 body.
+2. One STATE.md forward-obligation line update noting the `PARTIAL` disposition and its
+   2027-02-08 re-check, alongside the existing F1 queue row (kept as a separate row — Forbidden
+   move 4 above).
+3. `docs/SESSIONS.md` entry recording the ratification, per this repo's session-log discipline.
+
+### Falsifier (for this ruling itself)
+
+**H:** the `PARTIAL`/2027-02-08-extension disposition correctly distinguishes "one real clearer,
+cross-validation still pending" from both outright programme failure and programme success,
+without functionally extending the hard date in a way that erodes the falsifier's bindingness.
+
+**Revert trigger:** if this disposition is ever invoked and, at the 2027-02-08 re-check, the
+operator judges in hindsight that the extension delayed a demotion decision that should have
+fired at 2026-11-08 (i.e., the single clearer never looked like a real path to a second firm), a
+superseding addendum should tighten the ruling — e.g., dropping the extension and reading n=1 as
+FALSIFIED-at-the-hard-date on any future occurrence — rather than reverting to today's undefined
+gap.
+
+**Trigger check schedule:** at 2026-11-08 (does the gap fire for real) and, if it does, again at
+2027-02-08 (was the extension the right call).
+
+---
+
 ## Change history
 
 | Date | Change | By |
@@ -171,3 +364,4 @@ staleness in the **frozen** scoring gate's §10 hook 7 is recorded (and delibera
 | 2026-07-15 | Superseded in part (candidate class) by existing-strategy-candidates ADR — header + §2 R6-boundary + §5 deploy bullet annotated | Joshua + Cursor |
 | 2026-07-24 | §10 hook-3 staleness note added (`ACTIVE_FIRM == 'FXIFY'` hard-fails since substrate Phase 1; property intact, hook line unedited). Non-material — no §2/§4 edit, no decision or status change; the §4 falsifier's status is owned by [`2026-07-22-prop-portfolio-s4-discharge-withdrawal.md`](2026-07-22-prop-portfolio-s4-discharge-withdrawal.md). | Claude Code |
 | 2026-07-25 | `Superseded-in-part-by` reciprocal added for `2026-07-22-prop-portfolio-s4-discharge-withdrawal.md` (§4 discharge status only). Was invisible to `check_adr_graph.py`'s A2 check — the withdrawal ADR's `Supersedes:` line uses markdown-link citation style, which the edge parser silently dropped rather than flagging; fixed in the same pass (`scripts/check_adr_graph.py`). Non-material header repair — no §2/§4 prose edit. | Claude Code |
+| 2026-08-22 | **Addendum drafted (`Proposed`, not yet `Accepted`):** §4's success/revert dichotomy does not cover an exactly-one-of-four-tiers-clears state; proposes a fourth `PARTIAL` disposition holding the falsifier open to the existing 2027-02-08 quarterly check rather than firing either branch on the wrong evidence. No §2/§4 original text edited; awaits operator ratification. | Claude Code |

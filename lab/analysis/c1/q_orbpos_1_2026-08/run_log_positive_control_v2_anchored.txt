@@ -1,0 +1,71 @@
+====================================================================================================
+Q-ORBPOS-1 POSITIVE CONTROL v2 -- CORRECTED (anchored-threshold) bucket construction
+====================================================================================================
+Control B PASS -- n=1846 triggering days  recon date span 2019-05-06 -> 2026-07-15
+
+--- FIDELITY CONTROL: flat policy, m=1.0, full panel, k=1/k=2 (reused day_loop_intraday) ---
+  k=1  bust=67.67%  published=67.67%  delta=-0.00pp  PASS
+  k=2  bust=77.01%  published=77.01%  delta=-0.00pp  PASS
+
+####################################################################################################
+VARIANT: PRIMARY (d=2.00 positive control)  (mu_pre=0.0, mu_post=2.0, sigma=1.0, seed=20260823, Cohen's d=2.00)
+####################################################################################################
+  n_rows=311  n_prebreak_prints=60  sparsity_trigger=no
+
+--- W1 (window=4 prints) ---
+  [classifier] WARMUP=3 HIGHER=277 LOWER=31 i_freeze=59 frozen_value=0.0049 spotcheck=PASS degenerate_pre=no
+  [assoc] n_higher=277 n_lower=31 frac_higher_post=90.6% frac_lower_post=0.0% separation=+90.6% fisher_p=3.43e-27 point_biserial_r=0.839 (p=6.09e-83) corrected_pass=YES
+  [ground-truth] overall=91.6% pre_correct(LOWER)=54.4% (n=57) post_correct(HIGHER)=100.0% (n=251)
+  [gate] HIGHER cushion pass=79.84% gate=PASS  |  LOWER cushion pass=64.42% gate=PASS  direction=BOTH_CLEAR  (elapsed 48s)
+
+--- W2 (window=13 prints) ---
+  [classifier] WARMUP=12 HIGHER=269 LOWER=30 i_freeze=59 frozen_value=0.0341 spotcheck=PASS degenerate_pre=no
+  [assoc] n_higher=269 n_lower=30 frac_higher_post=92.9% frac_lower_post=3.3% separation=+89.6% fisher_p=1.86e-26 point_biserial_r=0.875 (p=1.71e-95) corrected_pass=YES
+  [ground-truth] overall=93.3% pre_correct(LOWER)=60.4% (n=48) post_correct(HIGHER)=99.6% (n=251)
+  [gate] HIGHER cushion pass=76.58% gate=PASS  |  LOWER cushion pass=55.24% gate=PASS  direction=BOTH_CLEAR  (elapsed 69s)
+
+--- W3 (window=26 prints) ---
+  [classifier] WARMUP=25 HIGHER=263 LOWER=23 i_freeze=59 frozen_value=0.0996 spotcheck=PASS degenerate_pre=no
+  [assoc] n_higher=263 n_lower=23 frac_higher_post=94.3% frac_lower_post=13.0% separation=+81.3% fisher_p=1.74e-18 point_biserial_r=0.826 (p=1.05e-72) corrected_pass=YES
+  [ground-truth] overall=93.7% pre_correct(LOWER)=57.1% (n=35) post_correct(HIGHER)=98.8% (n=251)
+  [gate] HIGHER cushion pass=84.59% gate=PASS  |  LOWER cushion pass=0.55% gate=FAIL  direction=HIGHER_CLEARS_LOWER_DOES_NOT  (elapsed 92s)
+
+  ==> PRIMARY (d=2.00 positive control) VERDICT: REJECT (corrected method does NOT recover the relationship)
+      corrected association clears >=2/3?  3/3
+      direction same sign every window?  False  ({'W1': 'BOTH_CLEAR', 'W2': 'BOTH_CLEAR', 'W3': 'HIGHER_CLEARS_LOWER_DOES_NOT'})
+
+####################################################################################################
+VARIANT: BONUS Type-I check (pure noise, mu_pre=mu_post=0)  (mu_pre=0.0, mu_post=0.0, sigma=1.0, seed=20260824, Cohen's d=0.00)
+####################################################################################################
+  n_rows=311  n_prebreak_prints=60  sparsity_trigger=no
+
+--- W1 (window=4 prints) ---
+  [classifier] WARMUP=3 HIGHER=162 LOWER=146 i_freeze=59 frozen_value=-0.0752 spotcheck=PASS degenerate_pre=no
+  [assoc] n_higher=162 n_lower=146 frac_higher_post=83.3% frac_lower_post=79.5% separation=+3.9% fisher_p=0.463 point_biserial_r=0.135 (p=0.018) corrected_pass=NO
+  [ground-truth] overall=53.6% pre_correct(LOWER)=52.6% (n=57) post_correct(HIGHER)=53.8% (n=251)
+  [gate] HIGHER cushion pass=64.87% gate=PASS  |  LOWER cushion pass=90.70% gate=PASS  direction=BOTH_CLEAR  (elapsed 115s)
+
+--- W2 (window=13 prints) ---
+  [classifier] WARMUP=12 HIGHER=174 LOWER=125 i_freeze=59 frozen_value=-0.1080 spotcheck=PASS degenerate_pre=no
+  [assoc] n_higher=174 n_lower=125 frac_higher_post=83.3% frac_lower_post=84.8% separation=-1.5% fisher_p=0.753 point_biserial_r=0.187 (p=0.00115) corrected_pass=NO
+  [ground-truth] overall=54.8% pre_correct(LOWER)=39.6% (n=48) post_correct(HIGHER)=57.8% (n=251)
+  [gate] HIGHER cushion pass=27.37% gate=FAIL  |  LOWER cushion pass=98.94% gate=PASS  direction=LOWER_CLEARS_HIGHER_DOES_NOT  (elapsed 142s)
+
+--- W3 (window=26 prints) ---
+  [classifier] WARMUP=25 HIGHER=183 LOWER=103 i_freeze=59 frozen_value=-0.1226 spotcheck=PASS degenerate_pre=no
+  [assoc] n_higher=183 n_lower=103 frac_higher_post=88.5% frac_lower_post=86.4% separation=+2.1% fisher_p=0.707 point_biserial_r=0.160 (p=0.00678) corrected_pass=NO
+  [ground-truth] overall=61.5% pre_correct(LOWER)=40.0% (n=35) post_correct(HIGHER)=64.5% (n=251)
+  [gate] HIGHER cushion pass=92.54% gate=PASS  |  LOWER cushion pass=84.53% gate=PASS  direction=BOTH_CLEAR  (elapsed 168s)
+
+  ==> BONUS Type-I check (pure noise, mu_pre=mu_post=0) VERDICT: REJECT (corrected method does NOT recover the relationship)
+      corrected association clears >=2/3?  0/3
+      direction same sign every window?  False  ({'W1': 'BOTH_CLEAR', 'W2': 'LOWER_CLEARS_HIGHER_DOES_NOT', 'W3': 'BOTH_CLEAR'})
+
+====================================================================================================
+FINAL SUMMARY
+====================================================================================================
+  PRIMARY (d=2.0)   verdict: REJECT (corrected method does NOT recover the relationship)
+  NULL (d=0.0)      verdict: REJECT (corrected method does NOT recover the relationship)
+
+[write] C:\Users\joshu\multi_firm_operations\.claude\worktrees\openrouter-ox-alpha-test-fff246\lab\analysis\c1\q_orbpos_1_2026-08\results_orbpos_positive_control_v2_anchored.json
+[time ] total elapsed 168s

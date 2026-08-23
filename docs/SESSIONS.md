@@ -664,20 +664,6 @@ survivors.
 
 ---
 
-## 2026-08-23a — Ox-alpha sanitized review of brief-authoring, reconciled
-
-**Focus:** Measurement. Sanitized-only ox-alpha second opinion on the brief-authoring skill; reconcile before treating any objection as a finding.
-
-**Shipped:** [notice](notes/notice/N-2026-08-23-ox-alpha-brief-authoring-review.md). 26 objections; both claimed BLOCKERs discharged (O1 = body/checker skew, not missing matrix; O20 already in `cc_handoff.md`). Eight survive. Skill not edited (doctrine limb).
-
-**Decisions/defects:** none new. §4(b) three-zero-yield revert does not fire (third named use still yielded).
-
-**Open / next:** carry 2026-08-22r — DL-2 step 2 (train scoring + nomination). New: operator GO/NO-GO on the surviving cluster (O1 matrix-in-body, O10 grounding quotes, O15+O24 judgment wiring, O7 Trap-12 detection) before any skill edit. Carry 2026-08-22q — `register_search.open_run`; named ox-alpha uses (F1 fork; GROW-lane); disaster-stop Phase 0; venue-binding Phase 1; W1 remaining decisions of record.
-
-**Live-ops state:** unchanged — rail disarmed; no book. $0 OpenRouter spend.
-
----
-
 ## 2026-08-23m — Ox-alpha sanitized review of brief-authoring, reconciled
 
 **Focus:** Measurement. Sanitized-only ox-alpha second opinion on the brief-authoring skill; reconcile before treating any objection as a finding.
