@@ -3,7 +3,7 @@
 **Date:** 2026-08-23
 **Plans:** [`t2`](../../superpowers/plans/2026-08-23-tradable-anomalies-t2-implementation.md) · [`t3`](../../superpowers/plans/2026-08-23-tradable-anomalies-t3-implementation.md)
 **Owner ADR:** [`2026-07-11-tradable-anomalies-statistics-adoption.md`](../../adr/2026-07-11-tradable-anomalies-statistics-adoption.md)
-**Authorization:** still PENDING OPERATOR GO. This note is inventory only.
+**Authorization:** inventory recorded pre-GO; operator GO 2026-08-23 executed T2–T4 (no state writer). This note stays inventory, not RESULTS.
 
 Catalog attestation (this session, before writing): `lab/CATALOG.md` / `docs/briefs/INDEX.md` / `docs/rejected_candidates.md` have no T2/T3 harness slug.
 

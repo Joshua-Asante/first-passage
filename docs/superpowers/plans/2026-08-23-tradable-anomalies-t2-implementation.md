@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**AUTHORIZATION: PENDING OPERATOR GO.** Owning ADR [`2026-07-11-tradable-anomalies-statistics-adoption.md`](../../adr/2026-07-11-tradable-anomalies-statistics-adoption.md) parked T2 on the forward board. Tranche 1 doctrine already landed. This plan is not a GO and does not restore `guardian_signal.py`.
+**AUTHORIZATION: GO 2026-08-23.** Owning ADR [`2026-07-11-tradable-anomalies-statistics-adoption.md`](../../adr/2026-07-11-tradable-anomalies-statistics-adoption.md) §7 T2. Does not restore `guardian_signal.py`.
 
 **Goal:** After GO, land a reusable event-study harness (constraint/flow family first) and a cheap detector kit: Lo–MacKinlay VR (already-installed `arch`/`statsmodels` path), Ljung-Box on r vs |r|, HAC-t, autocorrelation-corrected n_eff.
 
@@ -28,13 +28,13 @@
 
 ### Task 1: Pre-GO inventory
 
-- [ ] **Step 1:** Grep `lab/` for existing VR / Ljung-Box / HAC helpers so this plan does not duplicate.
-- [ ] **Step 2:** Stop for GO.
+- [x] **Step 1:** Pre-GO inventory: no VR/LB/HAC helpers under `lab/`.
+- [x] **Step 2:** GO 2026-08-23.
 
 ### Task 2: On GO — failing tests then kit
 
-- [ ] **Step 1:** Synthetic tests: white-noise VR ≈ 1; known-AR n_eff < n; event-study recovers a planted mean shift.
-- [ ] **Step 2:** Implement. CLI writes a JSON report, not a lock decision.
+- [x] **Step 1:** `tests/test_detector_kit.py` + `tests/test_event_study.py`.
+- [x] **Step 2:** `lab/research_utils/{detector_kit,event_study}.py` + `scripts/event_study_read.py`.
 
 ### Task 3: Verification
 

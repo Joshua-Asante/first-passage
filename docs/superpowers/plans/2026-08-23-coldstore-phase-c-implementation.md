@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**AUTHORIZATION: PENDING OPERATOR GO.** Phase A ADR does not authorize Phase C. Requires a **fresh admitting ADR + operator GO** (Phase A §5 / T2). This file is not that ADR and not that GO.
+**AUTHORIZATION: GO 2026-08-23.** Fresh admitting ADR [`2026-08-23-strategy-coldstore-phase-c.md`](../../adr/2026-08-23-strategy-coldstore-phase-c.md). Phase A Accept is still not C authority.
 
 **Goal:** After GO, retire Guardian / Aegis (and only what the GO names) from living `BASE_RISK` / `firm_rules._BASE_RISK` / CLAUDE Strategy Reference — the CFD code-retirement limb scoped in [`2026-08-03-claude-md-futures-refocus.md`](../../adr/2026-08-03-claude-md-futures-refocus.md) §7 and deferred.
 
@@ -23,20 +23,20 @@
 |---|---|---|
 | Phase A ADR non-touch | `027a729` | `BASE_RISK` / `_BASE_RISK` / `LEG_MAP` / lifecycle untouched in A |
 | `core/dd_protection.py` `BASE_RISK` | `027a729` | Guardian / Striker / Aegis / Striker NAS100 still present |
-| Futures-refocus ADR §7 | (related) | CFD code retirement scoped, not executed |
+| Futures-refocus ADR §7 | (related) | CFD code retirement scoped, not executed *(pre-GO read of the 08-03 ADR; living-key retirement is now the Phase C ADR)* |
 
 ---
 
 ### Task 1: Pre-GO — admitting ADR outline (this campaign may draft `Proposed` only if asked)
 
-- [ ] **Step 1:** List every import of `BASE_RISK["Guardian"]` / `["Aegis"]` in `core/`, `ops/`, `tests/`. That list **is** the Phase C blast radius.
-- [ ] **Step 2:** Do not apply the delete in the same session as a `Proposed` draft unless the operator GOs.
+- [x] **Step 1:** Subscript consumers were two test files (cheap falsifier). Derived: MC ALLOCATIONS, verify_lock_anchors, recall denylist, CLAUDE table.
+- [x] **Step 2:** Operator GO 2026-08-23. Admitting ADR `Accepted` in the same session.
 
 ### Task 2: On GO only — delete in test-first slices
 
-- [ ] **Step 1:** Failing tests that expect Guardian/Aegis keys **gone** (or moved to `historical_challenge`).
-- [ ] **Step 2:** Remove keys. Update CLAUDE Strategy Reference to pointer-only historical.
-- [ ] **Step 3:** `pytest tests/test_lifecycle.py tests/core/test_firm_constants_single_source.py -q` plus any newly failing consumers.
+- [x] **Step 1:** `tests/test_coldstore_phase_c.py` + firm-constants split.
+- [x] **Step 2:** Living keys removed. CLAUDE CFD rows pointer-only. Call-4 stays `STRATEGY_KEYS`.
+- [x] **Step 3:** Targeted pytest green (see verification).
 
 ### Task 3: Verification
 

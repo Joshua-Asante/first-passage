@@ -307,6 +307,123 @@ def _print_report(result: dict, label: str = "") -> None:
         print(f"{prefix}N_eff risk delta       = {result['n_eff_risk_delta']:+.4f}")
 
 
+# ── T3 additive calibration (does not swap the IID default) ───────────────
+
+NULL_KIND_IID = "iid_gaussian"
+NULL_KIND_GARCH = "garch_fitted"
+# Pre-registered FPR band for a nominal 5% two-sided mean test on white noise.
+SURROGATE_FPR_NOMINAL = 0.05
+SURROGATE_FPR_BAND = (0.01, 0.15)
+
+
+def downside_correlation(a, b) -> float:
+    """Pearson corr on dates where both observations are strictly negative."""
+    x = np.asarray(a, dtype=float)
+    y = np.asarray(b, dtype=float)
+    if x.shape != y.shape:
+        raise ValueError("downside_correlation inputs must share shape")
+    mask = (x < 0) & (y < 0) & np.isfinite(x) & np.isfinite(y)
+    if mask.sum() < 3:
+        return float("nan")
+    return float(np.corrcoef(x[mask], y[mask])[0, 1])
+
+
+def downside_corr_matrix(panel: pd.DataFrame) -> np.ndarray:
+    """Pairwise downside-correlation matrix on the panel columns."""
+    cols = list(panel.columns)
+    n = len(cols)
+    out = np.eye(n)
+    values = panel.to_numpy(dtype=float)
+    for i in range(n):
+        for j in range(i + 1, n):
+            c = downside_correlation(values[:, i], values[:, j])
+            out[i, j] = out[j, i] = c
+    return out
+
+
+def simulate_garch11(
+    n: int,
+    *,
+    omega: float = 1e-6,
+    alpha: float = 0.05,
+    beta: float = 0.90,
+    rng: np.random.Generator,
+) -> np.ndarray:
+    """GARCH(1,1) residual path (mean zero). Additive null, not a default swap."""
+    if alpha + beta >= 1:
+        raise ValueError("GARCH(1,1) requires alpha+beta < 1")
+    z = rng.standard_normal(n)
+    var = np.empty(n)
+    var[0] = omega / max(1e-12, (1 - alpha - beta))
+    r = np.empty(n)
+    r[0] = np.sqrt(var[0]) * z[0]
+    for t in range(1, n):
+        var[t] = omega + alpha * r[t - 1] ** 2 + beta * var[t - 1]
+        r[t] = np.sqrt(max(var[t], 1e-18)) * z[t]
+    return r
+
+
+def simulate_null_series(
+    n: int,
+    *,
+    kind: str = NULL_KIND_IID,
+    scale: float = 1.0,
+    rng: np.random.Generator,
+) -> np.ndarray:
+    """Draw a null series. Default remains IID Gaussian (no silent swap)."""
+    if kind == NULL_KIND_IID:
+        return rng.standard_normal(n) * scale
+    if kind == NULL_KIND_GARCH:
+        return simulate_garch11(n, rng=rng) * scale
+    raise ValueError(f"unknown null kind {kind!r}")
+
+
+def surrogate_false_positive_rate(
+    n: int,
+    n_surrogates: int,
+    *,
+    kind: str = NULL_KIND_IID,
+    alpha: float = SURROGATE_FPR_NOMINAL,
+    rng: np.random.Generator,
+) -> float:
+    """Share of null series whose |mean| HAC-style z exceeds the two-sided z_{α/2}.
+
+    Uses a z-test on the sample mean (σ known = 1 for IID; sample σ for GARCH).
+    Pre-registered band: SURROGATE_FPR_BAND around nominal 5%.
+    """
+    z_crit = 1.959963984540054  # Φ^{-1}(0.975)
+    hits = 0
+    for _ in range(n_surrogates):
+        x = simulate_null_series(n, kind=kind, rng=rng)
+        se = float(np.std(x, ddof=1) / np.sqrt(n))
+        if se <= 0:
+            continue
+        z = abs(float(x.mean()) / se)
+        if z > z_crit:
+            hits += 1
+    return hits / n_surrogates
+
+
+def marginal_admission_delta(baseline: dict, with_candidate: dict) -> dict:
+    """With/without-candidate deltas (ENB + PR + mean downside-corr)."""
+    out = {
+        "n_eff_dependence_delta": float(
+            with_candidate["n_eff_dependence"] - baseline["n_eff_dependence"]
+        ),
+        "n_eff_risk_delta": float(
+            with_candidate.get("n_eff_risk", 0.0) - baseline.get("n_eff_risk", 0.0)
+        ),
+        "enb_dependence_delta": float(
+            with_candidate["enb_dependence"] - baseline["enb_dependence"]
+        ),
+    }
+    if "downside_corr_mean" in baseline and "downside_corr_mean" in with_candidate:
+        out["downside_corr_mean_delta"] = float(
+            with_candidate["downside_corr_mean"] - baseline["downside_corr_mean"]
+        )
+    return out
+
+
 # Per-panel self-test anchors. "pepperstone" is the historical 4-leg CFD
 # record (retired feed, kept for regression continuity of the math itself);
 # "cme" is the 2-leg AUTHORIZED-only futures panel (ADR 2026-08-19-cme-broker-

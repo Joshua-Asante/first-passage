@@ -4,19 +4,22 @@
 Slimmed 2026-08-03 (ADR docs/adr/2026-08-03-params-toml-gate-retirement.md):
 the retired `params.toml` hub is no longer a source. This script asks only:
 
-  Are live DD_TRIGGER / DD_SCALE readable in `dd_protection.py`, and is Guardian
-  risk in canonical `firm_rules._BASE_RISK` inside the documented safe band?
+  Are live DD_TRIGGER / DD_SCALE readable in `dd_protection.py`, is historical
+  Guardian risk in `HISTORICAL_CHALLENGE_BASE_RISK` inside the documented safe
+  band, and are CFD slugs absent from living `firm_rules._BASE_RISK`?
 
 Routing (per `docs/methodology/observation_routing.md`):
 
-  Closed   — `dd_protection.py` + `firm_rules.py` present; DD_TRIGGER / DD_SCALE /
-             Guardian `_BASE_RISK` parseable; Guardian inside [0.30%, 0.34%]. Exit 0.
+  Closed   — `dd_protection.py` + `firm_rules.py` + `historical_challenge.py`
+             present; DD_TRIGGER / DD_SCALE parseable; historical Guardian
+             inside [0.30%, 0.34%]; living `_BASE_RISK` has no guardian/aegis.
+             Exit 0.
 
-  Forward  — Guardian risk in `firm_rules.py:_BASE_RISK['guardian']`
-             outside the documented [0.30%, 0.34%] safe band. Exit 2.
-             Does NOT auto-run portfolio_mc.
+  Forward  — historical Guardian outside the documented [0.30%, 0.34%] safe
+             band. Exit 2. Does NOT auto-run portfolio_mc.
 
-  Error    — required files missing, or required constants not parseable. Exit 3.
+  Error    — required files missing, required constants not parseable, or
+             living `_BASE_RISK` still lists guardian/aegis. Exit 3.
 
   Action   — unused after params.toml retirement (kept in the Literal for
              observation_routing compatibility; never emitted).
@@ -60,9 +63,11 @@ class Sources:
         default_factory=lambda: REPO_ROOT / "core" / "dd_protection.py")
     firm_rules: Path = field(
         default_factory=lambda: REPO_ROOT / "core" / "firm_rules.py")
+    historical_challenge: Path = field(
+        default_factory=lambda: REPO_ROOT / "core" / "historical_challenge.py")
 
     def required(self) -> list[Path]:
-        return [self.dd_protection, self.firm_rules]
+        return [self.dd_protection, self.firm_rules, self.historical_challenge]
 
 
 @dataclass
@@ -116,23 +121,45 @@ def parse_dd_protection_constants(text: str) -> dict:
     return out
 
 
-def parse_firm_rules_guardian_risk(text: str) -> float | None:
-    """Pull `_BASE_RISK['guardian']` from firm_rules.py (canonical allocation)."""
+def _parse_str_float_dict(text: str, name: str) -> dict[str, float] | None:
+    """Pull a module-level `{str: float}` assignment by name (AST Constant)."""
     tree = ast.parse(text)
     for node in tree.body:
         if not isinstance(node, ast.Assign):
             continue
         for target in node.targets:
-            if not isinstance(target, ast.Name) or target.id != "_BASE_RISK":
+            if not isinstance(target, ast.Name) or target.id != name:
                 continue
             if not isinstance(node.value, ast.Dict):
                 continue
+            out: dict[str, float] = {}
             for k, v in zip(node.value.keys, node.value.values):
-                if (isinstance(k, ast.Constant)
-                        and isinstance(v, ast.Constant)
-                        and k.value == "guardian"):
-                    return float(v.value)
+                if isinstance(k, ast.Constant) and isinstance(v, ast.Constant):
+                    out[str(k.value)] = float(v.value)
+            return out
     return None
+
+
+def parse_historical_guardian_risk(text: str) -> float | None:
+    """Pull `HISTORICAL_CHALLENGE_BASE_RISK['guardian']`."""
+    book = _parse_str_float_dict(text, "HISTORICAL_CHALLENGE_BASE_RISK")
+    if book is None or "guardian" not in book:
+        return None
+    return book["guardian"]
+
+
+def parse_living_base_risk_slugs(text: str) -> set[str] | None:
+    """Pull living `_BASE_RISK` slug keys. None if the dict is not parseable.
+
+    After Phase C the living dict is a comprehension over
+    ``HISTORICAL_CHALLENGE_BASE_RISK``. A literal `_BASE_RISK = {...}` is the
+    fixture shape; a comprehension is treated as “no CFD slugs in a literal”
+    and the caller must not require a literal.
+    """
+    book = _parse_str_float_dict(text, "_BASE_RISK")
+    if book is None:
+        return None
+    return set(book)
 
 
 def check_guardian_safe_band(guardian_risk: float) -> Trigger | None:
@@ -141,8 +168,9 @@ def check_guardian_safe_band(guardian_risk: float) -> Trigger | None:
     if not (lo - PCT_EPS <= g_pct <= hi + PCT_EPS):
         return Trigger(
             "guardian_safe_band",
-            f"firm_rules.py:_BASE_RISK['guardian']={g_pct:.4f}% is outside "
-            f"documented safe band [{lo:.2f}%, {hi:.2f}%] (±{PCT_EPS:.0e}).",
+            f"historical_challenge.py:HISTORICAL_CHALLENGE_BASE_RISK['guardian']"
+            f"={g_pct:.4f}% is outside documented safe band "
+            f"[{lo:.2f}%, {hi:.2f}%] (±{PCT_EPS:.0e}).",
         )
     return None
 
@@ -169,7 +197,17 @@ def decide(sources: Sources | None = None) -> Decision:
         )
 
     try:
-        guardian_risk = parse_firm_rules_guardian_risk(
+        guardian_risk = parse_historical_guardian_risk(
+            sources.historical_challenge.read_text(encoding="utf-8")
+        )
+    except Exception as exc:
+        return Decision(
+            routing="Error",
+            errors=[f"historical_challenge.py: parse failure — {exc}"],
+        )
+
+    try:
+        living_slugs = parse_living_base_risk_slugs(
             sources.firm_rules.read_text(encoding="utf-8")
         )
     except Exception as exc:
@@ -186,15 +224,26 @@ def decide(sources: Sources | None = None) -> Decision:
             )
     if guardian_risk is None:
         parse_errors.append(
-            "firm_rules.py: required constant '_BASE_RISK[\"guardian\"]' not parseable"
+            "historical_challenge.py: required constant "
+            "'HISTORICAL_CHALLENGE_BASE_RISK[\"guardian\"]' not parseable"
         )
+    cfd_in_living = set()
+    if living_slugs is not None:
+        cfd_in_living = living_slugs & {"guardian", "aegis"}
+        if cfd_in_living:
+            parse_errors.append(
+                "firm_rules.py: living _BASE_RISK still lists CFD slugs "
+                f"{sorted(cfd_in_living)} (Phase C: historical book only)"
+            )
     if parse_errors:
         return Decision(
             routing="Error",
             errors=parse_errors,
             notes=["Fix dd_protection.py so DD_TRIGGER / DD_SCALE are "
-                   "ast.Constant assignments, and firm_rules.py so "
-                   "_BASE_RISK['guardian'] is an ast.Constant dict entry."],
+                   "ast.Constant assignments, historical_challenge.py so "
+                   "HISTORICAL_CHALLENGE_BASE_RISK['guardian'] is an "
+                   "ast.Constant dict entry, and firm_rules.py so living "
+                   "_BASE_RISK has no guardian/aegis keys."],
         )
 
     triggers: list[Trigger] = []

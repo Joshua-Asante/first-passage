@@ -81,6 +81,7 @@ SCRIPTS_LAYER = {
     # lab — research
     "mc_user_guardian": "lab",
     "beta_cohesion_read": "lab",
+    "event_study_read": "lab",
     "pine_lint": "lab",
     "cost_geometry_pregate": "lab",
     "parse_econ_export": "lab",

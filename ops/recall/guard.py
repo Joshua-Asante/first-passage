@@ -93,6 +93,28 @@ def load_denylist(repo_root: Path) -> Denylist:
                         dl.values.add(v)
         dl.sources.append(str(firms.relative_to(repo_root)))
 
+    # Phase C: CFD percents left living _BASE_RISK. Still locked — source the
+    # historical 4-leg book so 0.34 / 1.50 stay denylisted as authority.
+    hist = repo_root / "core" / "historical_challenge.py"
+    if hist.exists():
+        text = hist.read_text(encoding="utf-8")
+        if m := re.search(
+            r"^HISTORICAL_CHALLENGE_BASE_RISK\s*=\s*\{(.+?)\}",
+            text,
+            re.M | re.S,
+        ):
+            for num in re.findall(r"([0-9]*\.[0-9]+)", m.group(1)):
+                if v := _distinctive(num):
+                    dl.values.add(v)
+                try:
+                    pct = float(num) * 100.0
+                except ValueError:
+                    continue
+                for form in (f"{pct}", f"{pct:.2f}"):
+                    if v := _distinctive(form):
+                        dl.values.add(v)
+        dl.sources.append(str(hist.relative_to(repo_root)))
+
     # MC anchor triple — the historical calibration, denylisted as authority.
     claude_md = repo_root / "CLAUDE.md"
     if claude_md.exists():
