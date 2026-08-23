@@ -232,7 +232,15 @@ ls docs/notes/audits/ | grep -i "rule-2-trip-log"
 
 ---
 
-## Addendum 2026-08-22 (Status: PROPOSED — pending operator ratification) — audit-cycle counting convention for the §4 empty-log falsifier
+## Addendum 2026-08-22 (Status: `WITHDRAWN` 2026-08-23 — operator declined to ratify) — audit-cycle counting convention for the §4 empty-log falsifier
+
+**Withdrawal note (2026-08-23):** operator declined to ratify. Not superseded, not re-proposed —
+the convention below does not govern §4's counting going forward. Per this addendum's own text,
+the practical dispute it targeted is moot anyway (the 2026-08-20 STRATEGIC trip already makes the
+trip-log non-empty regardless of cycle count), so nothing operational hinges on withdrawal. Body
+kept below, unedited, for the audit trail — do not read any of it as adopted. If a counting
+convention is needed later, author it fresh at the 2026-11-08 gate per the trip-log's own original
+instruction, not by reviving this text.
 
 **Does not amend §2 / §4's 3/8/3 thresholds / §5 / §6's per-loop-class graduation bar.** This
 addendum proposes a counting *convention* for reading §4's "empty across ≥2 audit cycles"
