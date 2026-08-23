@@ -40,6 +40,12 @@ EXPECTED_PATH_CONDITIONAL = {
     "governance-prose-control-chars",
 }
 
+# --tier check / make check / CI gate-manifest.yml battery.
+CHECK_TIER_REQUIRED = EXPECTED_ALWAYS | EXPECTED_PATH_CONDITIONAL | {"data-manifests"}
+# Named exception 2026-08-23: data-conditional, not forced by --tier check.
+# CI companion is path-filtered (.github/workflows/pursuit-records.yml).
+PURSUIT_RECORDS_CI_DISPOSITION = "path-filtered companion; not --tier check"
+
 
 def test_manifest_lists_all_always_gates():
     out = subprocess.check_output(
@@ -84,6 +90,34 @@ def test_pre_commit_includes_path_conditional_on_matching_paths(monkeypatch):
     selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
     assert "closure-disposition" in selected
     assert "sessions-order" not in selected
+
+
+def test_check_tier_selects_every_hard_gate_except_pursuit_records():
+    """CI / make check composition: no always/path-conditional/data-manifests id dropped.
+
+    pursuit-records is the dated named exception (data-conditional; CI companion
+    is path-filtered — see test_ci_workflow_calls_check_tier).
+    """
+    data = gm.load_manifest(MANIFEST)
+    selected = {g["id"] for g in gm.select_gates(data["gates"], "check")}
+    assert CHECK_TIER_REQUIRED <= selected
+    all_ids = {g["id"] for g in data["gates"]}
+    leftover = all_ids - selected
+    assert leftover == {"pursuit-records"}, leftover
+    assert "pursuit-records" not in selected
+
+
+def test_ci_workflow_calls_check_tier():
+    """W5: GitHub Actions composition is the runner, not a second hand-list."""
+    wf = REPO / ".github" / "workflows" / "gate-manifest.yml"
+    assert wf.is_file(), "gate-manifest.yml missing — CI is not derived from gates.yml"
+    text = wf.read_text(encoding="utf-8")
+    assert "gate_manifest.py --tier check" in text or "--tier check" in text
+    companion = REPO / ".github" / "workflows" / "pursuit-records.yml"
+    assert companion.is_file(), "pursuit-records CI companion missing (named exception)"
+    companion_text = companion.read_text(encoding="utf-8")
+    assert "check_pursuit_records.py" in companion_text
+    assert "docs/pursuits" in companion_text
 
 
 def test_check_tier_dry_run_includes_path_conditional():

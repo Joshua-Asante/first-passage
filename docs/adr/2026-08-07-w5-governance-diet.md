@@ -1,6 +1,6 @@
 # ADR 2026-08-07 — W5: governance diet (gate-manifest runner + tiered entries)
 
-**Status:** `Accepted` — composition/tier owned by one runner; entry-class diet
+**Status:** `Accepted` — composition/tier owned by one runner; entry-class diet. CI `--tier check` landed 2026-08-23; Limb-A (no required checks) stands.
 **Decision date:** 2026-08-07
 **Authors:** Joshua (Posture-A direction) + Cursor (drafter)
 **Supersedes:** none
@@ -119,3 +119,9 @@ Both gates detect **dead links** in root orientation docs. Their `staged_regex` 
 ## Addendum 2026-08-21 — `make validate` is not `make check`
 
 **Does not amend §2's no-gate-dropped land, §4, or §5.** §2 item 4's "equivalent behavior" sentence over-claims. Production `scripts/gate_manifest.py::select_gates` @ `91e6caa` (2026-08-15): `--tier validate` / `make validate` runs `data-manifests` + `pine-manifest` only; `--tier check` / `make check` runs every `always` + `path-conditional` gate (plus forced `data-manifests`). CLAUDE.md already points at the runner. Deriving CI jobs from `gates.yml` remains owed and is **not** this addendum.
+
+## Change History
+
+| Date | Change | By |
+|---|---|---|
+| 2026-08-23 | CI composition landed: `.github/workflows/gate-manifest.yml` runs `python scripts/gate_manifest.py --tier check`. Retired hand-list in `skills-check.yml`. Dropped standalone `check_boundaries.py` from `tests.yml` (still in `--tier check`). Named exception: `pursuit-records` stays data-conditional; CI companion is path-filtered `.github/workflows/pursuit-records.yml`. No branch protection. | Cursor (plan execution) |

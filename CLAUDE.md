@@ -219,8 +219,9 @@ bash scripts/install_hooks.sh
 (Windows cmd: `scripts\install_hooks.bat`. ⚠ PowerShell `bash` is WSL, not Git Bash — the `.sh`
 files are CRLF; prefer the `.bat`.) GitHub Actions runs for real (live and green since the
 2026-08-15 public transition — [`Q-GATESTACK-1`](docs/briefs/closures/Q-GATESTACK-1-closure-falsified.md)
-Limb-D) and cannot re-hash gitignored bytes; deriving the rest of the CI jobs from the gate
-manifest is owed ([W5](docs/adr/2026-08-07-w5-governance-diet.md)). **CI passing is still not a
+Limb-D) and cannot re-hash gitignored bytes; CI composition is
+[`gate-manifest.yml`](.github/workflows/gate-manifest.yml) (`python scripts/gate_manifest.py --tier check`;
+[W5](docs/adr/2026-08-07-w5-governance-diet.md)). **CI passing is still not a
 merge precondition** — `main` carries no branch protection or required checks
 ([`Q-GATESTACK-1`](docs/briefs/closures/Q-GATESTACK-1-closure-falsified.md) Limb-A; a ruleset packet
 is named, not opened). Escape hatch `git commit --no-verify` is not the
@@ -229,7 +230,8 @@ standing path. See [manifest integrity gate](docs/adr/2026-05-10-manifest-integr
 ### Gate composition authority
 
 [`scripts/gates.yml`](scripts/gates.yml) via
-[`scripts/gate_manifest.py`](scripts/gate_manifest.py) — pre-commit and `make check` call the
+[`scripts/gate_manifest.py`](scripts/gate_manifest.py) — pre-commit, `make check`, and
+[`.github/workflows/gate-manifest.yml`](.github/workflows/gate-manifest.yml) call the
 runner. **Do not hand-maintain a parallel list.** The `params.toml` hub validator was retired
 ([ADR](docs/adr/2026-08-03-params-toml-gate-retirement.md)); Pine remains canonical for strategy
 behavior, `dd_protection.py` / `firm_rules.py` for live-sizing constants.

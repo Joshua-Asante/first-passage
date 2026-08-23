@@ -1,0 +1,35 @@
+name: Pursuit records
+
+# Named exception 2026-08-23 (W5): --tier check does not force data-conditional
+# pursuit-records. Path-filtered companion so docs/pursuits/ PRs still run it.
+# Not a gates.yml drop. Script is WARN-tier (exits 0).
+on:
+  pull_request:
+    paths:
+      - "docs/pursuits/**"
+      - "scripts/check_pursuit_records.py"
+      - ".github/workflows/pursuit-records.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/pursuits/**"
+      - "scripts/check_pursuit_records.py"
+      - ".github/workflows/pursuit-records.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  pursuit-records:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.11"
+      - name: Install package + ops lock
+        run: python -m pip install --require-hashes -r requirements-ops.lock
+      - name: Check pursuit records
+        run: python scripts/check_pursuit_records.py

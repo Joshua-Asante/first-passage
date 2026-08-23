@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23m — W5 CI composition from gates.yml
+
+**Focus:** Build. Execute campaign plan #2.
+
+**Shipped:** [`.github/workflows/gate-manifest.yml`](../.github/workflows/gate-manifest.yml) (`--tier check`). Retired `skills-check.yml` hand-list. `pursuit-records` path-filtered companion. No branch protection.
+
+**Decisions/defects:** none. Named exception recorded on the W5 ADR Change History.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: execute grow-lane leftovers plan. Venue-binding Phase 1 is on a sibling branch. #7/#8 stay PENDING GO.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-23k — Tradable-anomalies T4 plan (PENDING GO)
 
 **Focus:** Hygiene. Campaign plan 8c — last file in this campaign.
