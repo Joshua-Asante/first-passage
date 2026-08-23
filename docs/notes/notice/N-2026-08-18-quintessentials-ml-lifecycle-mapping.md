@@ -6,6 +6,7 @@
 **Source:** cross-session deep-dive, two verification workflows (`wf_e162d82d-6e8`; `wf_b1b3d57d-38d`) plus direct reads of `docs/adr/2026-08-09-grand-tier-quintessentials-binding.md`, `docs/briefs/GSUB-1-inventory-and-dispositions.md`, `docs/briefs/closures/GSUB-1-closure-resolved-loadbearing.md`
 **Status:** `OPEN` → routed below (primary: `DROP`; two supplementary `ACTION` items spawned as background tasks)
 **Lives in:** `docs/notes/notice/N-2026-08-18-quintessentials-ml-lifecycle-mapping.md`
+**Mapping-audit:** [`AUDIT-2026-08-20-external-mapping-move-class`](../audits/programme-audit/2026-08-20-external-mapping-move-class-audit.md). Guardrails (canonical, action 4): [`external_mapping_guardrails.md`](../../methodology/external_mapping_guardrails.md).
 
 ---
 

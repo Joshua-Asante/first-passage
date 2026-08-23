@@ -138,8 +138,8 @@ Five of seven diagnostics graded RED or RED-leaning (§3.2, §3.4, §3.6, §3.7 
 1. **Stop further instances of this move-class without a fresh, explicit owner GO.** The Rule-2 STRATEGIC cap (3 constituent OUTER investigations) is exactly consumed; per the ADR's own text, extension is "owner adjudication or a re-audit — never self-granted." This audit is that re-audit; it does not itself grant an extension. **Owner: operator. Due: before any fourth attempt, event-gated not calendar-gated.**
 2. ~~Decide on Q-TRAINKILL-2~~ — **withdrawn as moot** (see "Correction (2026-08-20, same session, post-close)" above). `Q-TRAINKILL-2`/`-3` already ran to `STOP` on 2026-08-18 with their own re-proposal bar (a new panel — fresh data, operator GO + K — or an operator election between `NEG-FAMILIES`/`KILLS-INFORMATIVE-DEP`). **Replacement:** there is no cheap pending alternative on this specific object-level question left to redirect to. If the operator wants further progress on the conversion-death bottleneck at all, the honest menu is: (a) fund a new TRAINKILL panel, (b) make the TRAINKILL operator election, (c) pursue a genuinely different object-level angle — not another external-framework search, since the STRATEGIC cap for that move-class is spent (action 1) — or (d) accept the bottleneck's current state and direct attention elsewhere. This audit does not recommend among (a)–(d); that choice belongs to the operator, on its own evidence, not to this move-class's re-audit. **Owner: operator. Due: n/a — no longer time-pressured by this audit's original framing.**
 3. **Log the Rule-2 trip.** Append a first-ever STRATEGIC-tier row to `docs/notes/audits/rule-2-trip-log.md`, per that log's own instruction ("append one row each time a budget trips… at each programme audit, confirm ≥1 entry per active loop class"). **Owner: this audit. Done below, same session.**
-4. **Consolidate the two sharpened guardrails into one canonical location.** They currently live embedded inside two separate Notice bodies (instances 2 and 3); a fourth instance, if ever GO'd, would need to re-read both in full to inherit them rather than citing one place. No placement decision is made here — named, not opened, per this repo's standing convention for un-GO'd work. **Owner: operator (placement call). Due: n/a until GO'd.**
-5. **Cross-reference this audit from all three Notices.** So a future reader lands here rather than re-deriving the pattern a fourth time. **Owner: this audit. Not yet done — flagged for immediate follow-up in this same session if the operator wants it.**
+4. **Consolidate the two sharpened guardrails into one canonical location.** They currently live embedded inside two separate Notice bodies (instances 2 and 3); a fourth instance, if ever GO'd, would need to re-read both in full to inherit them rather than citing one place. No placement decision is made here — named, not opened, per this repo's standing convention for un-GO'd work. **Owner: operator (placement call). Due: n/a until GO'd.** **Discharged 2026-08-23:** [`docs/methodology/external_mapping_guardrails.md`](../../../methodology/external_mapping_guardrails.md) — consolidation, not a sixth belt add. Instance 4 GO: [`N-2026-08-23-nemo-guardrails-reconciliation.md`](../../notice/N-2026-08-23-nemo-guardrails-reconciliation.md).
+5. **Cross-reference this audit from all three Notices.** So a future reader lands here rather than re-deriving the pattern a fourth time. **Owner: this audit.** **Discharged 2026-08-23** (all three notices now carry `AUDIT-2026-08-20-external-mapping-move-class`).
 
 ---
 
@@ -147,8 +147,8 @@ Five of seven diagnostics graded RED or RED-leaning (§3.2, §3.4, §3.6, §3.7 
 
 ```bash
 # 1. Has a fourth instance of this move-class run without a fresh owner GO recorded?
-grep -rl "external-mapping-move-class\|external-mechanism.*mapping" docs/notes/notice/ | wc -l
-# Expected now: 3 (the three audited instances). A 4th hit needs a paired operator-GO citation.
+grep -rl "external-mapping-move-class\|external-mechanism.*mapping\|nemo-guardrails-reconciliation" docs/notes/notice/ | wc -l
+# Expected after 2026-08-23: 4. The 4th (N-2026-08-23-nemo-guardrails-reconciliation) must cite Operator GO (instance 4).
 
 # 2. Rule-2 STRATEGIC row exists (action 3)
 grep -c "STRATEGIC" docs/notes/audits/rule-2-trip-log.md

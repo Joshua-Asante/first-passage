@@ -127,6 +127,7 @@
 | 2026-08-22-grow0-two-ledger-k-question.md | Accepted | 2026-08-22 | `2026-08-16-deep-iteration-lane-charter.md` in part — adds §2.2(iv), a | operator GO (JA) 2026-08-22 ("GO on the ADR — ratify it as-is"), after |
 | 2026-08-22-ox-alpha-adversarial-lens-scope.md | Accepted | 2026-08-22 | none | ratified by operator (JA) 2026-08-22, after the validation-test |
 | 2026-08-23-adr-decay-audit-skill-ratification.md | Accepted | 2026-08-23 | none | ratified 2026-08-23 (operator GO via chat) |
+| 2026-08-23-nemo-guardrails-pin-not-runtime.md | Proposed | 2026-08-23 | none | records the pin-and-map; operator flip to `Accepted` is a separate GO |
 | 2026-08-23-strategy-coldstore-phase-b.md | Accepted | 2026-08-23 | `2026-08-04-strategy-coldstore-phase-a.md` in part — Phase B is now GO’d; this ADR is that GO + the disposition table | operator GO 2026-08-23: restore design then execute Phase B Tasks 2+ (design body unrestored; Approach 2 + Phase A inventory used; Approach 3 not invented) |
 | 2026-08-23-strategy-coldstore-phase-c.md | Accepted | 2026-08-23 | `2026-08-04-strategy-coldstore-phase-a.md` in part — Phase C non-touch list released for living Guardian/Aegis `BASE_RISK` keys only; `2026-08-03-claude-md-futures-refocus.md` in part — §7 CFD living-`BASE_RISK` / CLAUDE table retirement now executed (Striker keys + `LEG_MAP` stay) | operator GO 2026-08-23 for Phase C (fresh admitting ADR; Phase A Accept is not C authority) |
 

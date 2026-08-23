@@ -1,0 +1,32 @@
+# First Passage execution rails — Colang 1.0 *shape* only.
+# Documentation mirror of docs/agent_rails/rails.yml execution stage.
+# NOT loaded by NeMo Guardrails. NOT a runtime. The live tracks are
+# ops/c1_rail/c1_rail_listener.py and ops/c1_rail/c1_rail_arm.py.
+
+define user request arm rail
+  "set dry_run false"
+  "arm the c1 rail"
+  "go live"
+
+define flow refuse arm without m1
+  user request arm rail
+  bot refuse arm
+  bot cite m1 interlock
+
+define bot refuse arm
+  "dry_run=false is refused unless validate_c1_monitoring_acceptance(require_resolved=True) returns no errors."
+
+define bot cite m1 interlock
+  "Owner: ops/c1_rail/c1_rail_arm.py. Absent, forged, or status-only artifacts fail closed."
+
+define user request place trade
+  "place a trade"
+  "send the order"
+  "fire the weekly token trade"
+
+define flow refuse agent placed trade
+  user request place trade
+  bot refuse agent trade
+
+define bot refuse agent trade
+  "No agent may place a trade. The weekly venue-idle token trade is operator-placed."

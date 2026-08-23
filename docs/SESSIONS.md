@@ -32,6 +32,20 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-24y — NeMo Guardrails pinned and mapped; not adopted as a runtime
+
+**Focus:** Decision. Operator GO for a constrained 4th mapping instance: download NeMo and reconcile with existing rails.
+
+**Shipped:** [`rails.yml`](agent_rails/rails.yml) · [`check_agent_rails.py`](../scripts/check_agent_rails.py) · [`fetch_nemo_guardrails.py`](../scripts/fetch_nemo_guardrails.py) · [`N-2026-08-23`](notes/notice/N-2026-08-23-nemo-guardrails-reconciliation.md) · [`external_mapping_guardrails.md`](methodology/external_mapping_guardrails.md).
+
+**Decisions/defects:** Pin `v0.23.0` @ `dc046e4`; no pip/runtime. Light ADR [`2026-08-23-nemo-guardrails-pin-not-runtime.md`](adr/2026-08-23-nemo-guardrails-pin-not-runtime.md) `Proposed`. Belt consolidated (audit action 4).
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-24x — P4 museum rules + P5 REPO_MAP layer gate (pain-point close-out)
 
 **Focus:** Decision + Build. Operator closed remaining buildable pain-point packets (P4 + P5). Parked rows stay parked.

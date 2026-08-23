@@ -1,0 +1,130 @@
+# First Passage agent-rails inventory.
+# Labeled mirror of existing deterministic gates — not a second owner.
+# NeMo Guardrails v0.23.0 stage names are the index only; live authority
+# stays with each rail's `owner` path. Consumed by scripts/check_agent_rails.py.
+#
+# Runtime posture: pin-and-map. Do not `pip install nemoguardrails` into
+# this repo. Re-fetch the study clone with:
+#   python scripts/fetch_nemo_guardrails.py
+
+schema_version: 1
+
+nemo_pin:
+  repo: https://github.com/NVIDIA-NeMo/Guardrails
+  tag: v0.23.0
+  commit: dc046e4e1db894893214ffab487c35f451f5baad
+  license: Apache-2.0
+  runtime: not-adopted
+
+# Grok conversation model: engine / vehicle / tracks.
+model:
+  id: llm-engine
+  note: Cursor / Claude (and any other session model). Not in-tree.
+
+harness:
+  id: agent-runtime
+  surfaces:
+    - .claude/skills/
+    - .cursor/rules/
+    - ops/c1_rail/
+    - ops/c1_signal_daemon/
+
+# Five NeMo stages. hardness=hard fail-closes in code; soft is paved-road prose.
+stages:
+  input:
+    - id: rule0-read-production
+      hardness: hard
+      owner: docs/rule_0.md
+      anchors:
+        - path: docs/rule_0.md
+          must_contain: read the production code directly first
+    - id: handoff-verify
+      hardness: soft
+      owner: .claude/skills/handoff-verify/SKILL.md
+      anchors:
+        - path: .claude/skills/handoff-verify/SKILL.md
+          must_contain: "HANDOFF-VERIFY: PASS"
+
+  dialog:
+    - id: inqhiori-pre-q-gate
+      hardness: soft
+      owner: docs/methodology/inqhiori-canon.md
+      anchors:
+        - path: docs/methodology/inqhiori-canon.md
+          must_contain: Pre-Q
+    - id: persona-front-office-only
+      hardness: soft
+      owner: docs/adr/2026-08-21-persona-hierarchy-front-office-only.md
+      anchors:
+        - path: docs/adr/2026-08-21-persona-hierarchy-front-office-only.md
+          must_contain: mechanical gates
+
+  retrieval:
+    - id: verify-source
+      hardness: soft
+      owner: .claude/skills/verify-source/SKILL.md
+      anchors:
+        - path: .claude/skills/verify-source/SKILL.md
+          must_contain: verify the source is the RIGHT source
+    - id: repo-retrieve-assistive-only
+      hardness: hard
+      owner: scripts/repo_retrieve.py
+      anchors:
+        - path: .cursor/rules/session-discipline.mdc
+          must_contain: ASSISTIVE-ONLY
+
+  execution:
+    - id: dry-run-default-true
+      hardness: hard
+      owner: ops/c1_rail/c1_rail_listener.py
+      anchors:
+        - path: ops/c1_rail/c1_rail_listener.py
+          must_contain: 'dry_run = config.get("dry_run", True)'
+    - id: m1-arming-interlock
+      hardness: hard
+      owner: ops/c1_rail/c1_rail_arm.py
+      anchors:
+        - path: ops/c1_rail/c1_rail_arm.py
+          must_contain: require_resolved=True
+        - path: scripts/validate_c1_monitoring_acceptance.py
+          must_contain: "def validate(path: Path, *, require_resolved: bool)"
+    - id: no-agent-placed-trades
+      hardness: hard
+      owner: CLAUDE.md
+      anchors:
+        - path: CLAUDE.md
+          must_contain: No agent may place a trade
+        - path: CLAUDE.md
+          must_contain: may not be set while M1 is not
+    - id: dd-protection-import-guard
+      hardness: hard
+      owner: core/dd_protection.py
+      anchors:
+        - path: core/dd_protection.py
+          must_contain: def _validate_protection_rule()
+    - id: third-party-agent-runtime-nogo
+      hardness: hard
+      owner: docs/adr/2026-07-27-hermes-agent-adoption-nogo.md
+      anchors:
+        - path: docs/adr/2026-07-27-hermes-agent-adoption-nogo.md
+          must_contain: NOT adopted
+
+  output:
+    - id: brief-well-formedness
+      hardness: hard
+      owner: scripts/check_brief.py
+      anchors:
+        - path: scripts/check_brief.py
+          must_contain: "RESULT: well-formed"
+    - id: blast-radius
+      hardness: soft
+      owner: .claude/skills/blast-radius/SKILL.md
+      anchors:
+        - path: .claude/skills/blast-radius/SKILL.md
+          must_contain: "BLAST-RADIUS: CLEAN"
+    - id: fable-judge
+      hardness: soft
+      owner: .claude/skills/fable-judge/SKILL.md
+      anchors:
+        - path: .claude/skills/fable-judge/SKILL.md
+          must_contain: a report is a set of claims, not evidence
