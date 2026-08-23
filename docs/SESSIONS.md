@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23q — Disaster-stop Phase 0 recorded BLOCKED
+
+**Focus:** Build. Execute campaign plan #6 as far as an unattended worker can.
+
+**Shipped:** [`2026-08-23-disaster-stop-phase-0.md`](notes/rail_build/2026-08-23-disaster-stop-phase-0.md). 0a/0b `BLOCKED / capability-problem`. 0c pine-manifest ran. No listener `sl=`.
+
+**Decisions/defects:** none. Not a 0a FAIL. Phase 1 stays gated on attended PASS.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign #7/#8 stay PENDING GO. Attended 0a is operator-only.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-23l — Venue-binding Phase 1–3 registry landed
 
 **Focus:** Build. Execute plan #1.
