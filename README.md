@@ -69,6 +69,15 @@ directory to infer what is live.
 | `ACTIVE` | Often the `status` token on a stay-hot card | In-flight / undecided / “do this next” | same |
 | Survive queue | The numbered `STATE.md` rows (cap ≤5) | Every leftover name in SESSIONS | [`STATE.md`](STATE.md) · [`Survive-bound ADR`](docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md) |
 | `Open / next` | Queue-led pointer on the newest SESSIONS entry | The prior leftover cluster is the work list | [`SESSIONS.md`](docs/SESSIONS.md) header |
+| pipeline `P1–P6` | Object pipelines in [`PIPELINES.md`](PIPELINES.md) | Pain-point packets P0–P10, or viable-strategy Phase A–D | [`PIPELINES.md`](PIPELINES.md) |
+| pain-point `P0–P10` | Repo-hygiene packets | Pipeline-P or phase-letter | [`pain-point charter`](docs/superpowers/plans/2026-08-23-repo-pain-point-packets.md) |
+| Phase A–D | Viable-strategy sequence phases | Pipeline-P or pain-point-P | [`sequence overview`](docs/superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) |
+| `S1–S7` | Closed-loop specs | S2b daemon, or the Survive queue | [`loop-spec index`](docs/spec/2026-08-07-loop-spec-index.md) |
+| `F1/F2/F3` | S1 environment forks | Pain-point-F or firm-class F | [`S1 ADR`](docs/adr/2026-08-07-loop-s1-environment-ratification.md) |
+| `B6/B7` | c1 rail stages | Pipeline-P or pain-point-P | [`rail GO ADR`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) |
+| `M1` | Venue-native monitoring maturity | Q-MONSURF M-A / M-B / M-C | [`M1 ADR`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) |
+| `G0–G8` | Survivor-scoring gates | GRAND-tier G or generation-G | [`strategy-validation`](.claude/skills/strategy-validation/SKILL.md) |
+| `Q-*` | Brief roster | Queue rows | [`docs/briefs/INDEX.md`](docs/briefs/INDEX.md) |
 
 An empty default-grep of `lab/archive/`, `docs/ltm/`, or `core/strategies/_archive/` is not evidence the work is absent — those trees are excluded from the default index; open the catalog and Read by path ([`.cursor/rules/search-ltm.mdc`](.cursor/rules/search-ltm.mdc)). Pine sources and vendor CSVs are gitignored; CARD/LOCK stubs plus the tracked manifests are the public surface ([`CLAUDE.md`](CLAUDE.md) §Public-clone posture).
 
