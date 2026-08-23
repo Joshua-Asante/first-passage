@@ -52,6 +52,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from discovery.admission_schema import evaluate_admission, load_admission
+from discovery.burned_segments import (
+    consultation_count,
+    consultation_history,
+    is_window_burned,
+)
 from discovery.cost_model import bp_hurdle
 from discovery.deep_lane_admission import DeepLaneAdmission, evaluate_deep_admission
 from discovery.grammar import GrammarDriftError, GrammarValidationError, load_grammar_with_hash_check
@@ -511,6 +516,50 @@ def _require_deep_admission(args):
     return result.summary, grammar
 
 
+def _parse_iso_data_window(data_window: str):
+    """Parse ``YYYY-MM-DD:YYYY-MM-DD``. Return (start, end) or None."""
+    if not data_window or ":" not in data_window:
+        return None
+    start, end = data_window.split(":", 1)
+    try:
+        datetime.strptime(start, "%Y-%m-%d")
+        datetime.strptime(end, "%Y-%m-%d")
+    except ValueError:
+        return None
+    return start, end
+
+
+def _require_deep_burned_consultation(args) -> dict:
+    """GROW Boundary / finding B1: refuse a deep open that overlaps a burned
+    window. Unlisted is disclosure-only (consultation_count=0), never a
+    silent pass. Charter §2.2(iv) count is not a refuse.
+    """
+    parsed = _parse_iso_data_window(getattr(args, "data_window", "") or "")
+    instrument = getattr(args, "instrument", None)
+    if instrument is None or parsed is None:
+        sys.exit(
+            "ABORT: deep-lane campaign requires --instrument <SYMBOL> and "
+            "--data-window YYYY-MM-DD:YYYY-MM-DD (burned-segment check; "
+            "an unlisted window is not a pass)."
+        )
+    start, end = parsed
+    count = consultation_count(instrument, start, end)
+    history = consultation_history(instrument, start, end)
+    if is_window_burned(instrument, start, end):
+        sys.exit(
+            f"ABORT: deep-lane window {instrument} {start}->{end} overlaps a "
+            f"burned segment (consultation_count={count}). GROW Boundary / "
+            "finding B1 -- no manifest written."
+        )
+    return {
+        "instrument": instrument,
+        "window_start": start,
+        "window_end": end,
+        "consultation_count": count,
+        "consultation_history": history,
+    }
+
+
 def _require_cost_law(args):
     """Optional Requirement-5 / §2.2 cost-reachability pre-flight.
 
@@ -607,10 +656,12 @@ def open_run(args):
     admission_summary = _require_admission(args, lane)
     deep_admission_summary = None
     deep_grammar = None
+    burned_consultation = None
     if lane == "deep":
         # Charter §2.2's own predicate -- separate from S6/TNEC-1's corridor
         # above (which is a no-op for this lane; see _require_admission).
         deep_admission_summary, deep_grammar = _require_deep_admission(args)
+        burned_consultation = _require_deep_burned_consultation(args)
     prereg_rel = _require_prereg(getattr(args, "prereg", None), lane)
     # Optional Requirement-5/§2.2 mechanical pre-flight (ADR 2026-07-16 §4/§6);
     # opt-in on either lane, before any manifest write.
@@ -649,6 +700,7 @@ def open_run(args):
         manifest["deep_admission"] = deep_admission_summary
         manifest["grammar_generation_budget"] = deep_grammar.generation_budget
         manifest["grammar_families"] = deep_grammar.families
+        manifest["burned_consultation"] = burned_consultation
     if admission_summary is not None:
         manifest["admission"] = admission_summary
     if prereg_rel is not None:
@@ -834,6 +886,10 @@ def build_parser():
                         "expressions tried, penalty grid size, ...). The true search size.")
     o.add_argument("--alpha", type=float, default=0.05, help="Significance level. Default 0.05.")
     o.add_argument("--data-window", required=True, help="e.g. 2010-06-06:2026-01-01")
+    o.add_argument("--instrument", default=None,
+                   help="Instrument symbol for the burned-segment check "
+                        "(deep lane required; e.g. MNQ, MGC). Unlisted is "
+                        "disclosure-only, not a pass.")
     o.add_argument("--hypothesis", required=True, help="The Notice-phase observation being probed.")
     o.add_argument("--params", default="", help="Free-text / JSON of the search config.")
     o.add_argument("--params-file", default=None,
