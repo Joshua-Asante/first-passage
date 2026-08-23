@@ -1,7 +1,7 @@
 # First Passage - convenience targets.
 # Wrappers around scripts that the pre-commit hook also calls.
 
-.PHONY: help check validate validate-data validate-pine skills-no-constants boundaries path-liveness root-doc-liveness md-relative-links lab-path-relocation sync-liveness status-consistency adr-graph adr-graph-index lab-catalog lab-catalog-check lab-archive-check test test-ops skills-check sync-skills sync-skills-check roll-sessions roll-sessions-dry instrument-profiles instrument-profiles-build gate-manifest gate-manifest-list
+.PHONY: help check validate validate-data validate-pine skills-no-constants boundaries path-liveness root-doc-liveness md-relative-links lab-path-relocation sync-liveness find-owner status-consistency adr-graph adr-graph-index lab-catalog lab-catalog-check lab-archive-check test test-ops skills-check sync-skills sync-skills-check roll-sessions roll-sessions-dry instrument-profiles instrument-profiles-build gate-manifest gate-manifest-list
 
 help:
 	@echo "check                 run check-tier gates (scripts/gates.yml)"
@@ -12,6 +12,7 @@ help:
 	@echo "test / test-ops       pytest (all / ops/)"
 	@echo "root-doc-liveness     five-root-doc markdown link gate"
 	@echo "sync-liveness         INDEX/CATALOG liveness census (report-only)"
+	@echo "find-owner            Rule 7 owner lookup (path or token)"
 
 # W5: composition owned by scripts/gates.yml via gate_manifest.py
 # (docs/adr/2026-08-07-w5-governance-diet.md). Individual targets below remain
@@ -64,11 +65,14 @@ lab-path-relocation:
 	@python scripts/check_lab_path_relocation.py
 
 # Report-only INDEX/CATALOG liveness census (Open-row stale, Open+hot-closure,
-# CATALOG ACTIVE archive-owed). NOT in scripts/gates.yml — a later Open-row miss
-# is judgment-bearing; Phase 5b (gate-wire) stays named until this census stays
-# CLEAN and an operator GO lands. `--apply-index` unused on purpose.
+# CATALOG ACTIVE archive-owed). Wired gates.yml path-conditional (Phase 5b);
+# script still exits 0. `--apply-index` unused on purpose.
 sync-liveness:
 	@python scripts/sync_liveness_indexes.py
+
+# Rule 7 lookup. Not a sixth index; prints the owner row + pointer.
+find-owner:
+	@python scripts/find_owner.py $(Q)
 
 # Cross-surface status-consistency gate (CATALOG <-> instrument-ledger DEAD-lists
 # <-> rejected_candidates.md; C2 CATALOG self-consistency + C3 stale analysis->archive tier).
