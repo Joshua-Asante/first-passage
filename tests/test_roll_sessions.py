@@ -1010,6 +1010,46 @@ def test_append_only_rejects_dropping_a_prior_heading():
     assert any("older" in p or "removed" in p.lower() for p in problems), problems
 
 
+def test_append_only_allows_heading_rolled_to_archive_with_rebased_body():
+    """keep-20 roll: live heading may leave iff archive holds the frozen rebased body."""
+    base = _doc([("2026-08-13z", "kept"), ("2026-08-13w", "rolled")])
+    ours = _doc([("2026-08-13z", "kept")])
+    _, base_entries = rs.parse(base)
+    rolled = next(e for e in base_entries if e.title == "rolled")
+    archived = rs.Entry(
+        rolled.date,
+        rolled.title,
+        rs.rewrite_links_for_archive(rolled.text),
+    )
+    archived_by = {rs.heading_line(archived): archived}
+    assert rs.append_only_problems(base, ours, archived_by_heading=archived_by) == []
+
+
+def test_append_only_rejects_heading_dropped_without_archive_copy():
+    base = _doc([("2026-08-13z", "kept"), ("2026-08-13w", "rolled")])
+    ours = _doc([("2026-08-13z", "kept")])
+    problems = rs.append_only_problems(base, ours, archived_by_heading={})
+    assert any("removed" in p.lower() or "rolled" in p for p in problems), problems
+
+
+def test_append_only_rejects_archive_copy_with_drifted_body():
+    base = _doc([("2026-08-13z", "kept"), ("2026-08-13w", "rolled")])
+    ours = _doc([("2026-08-13z", "kept")])
+    _, base_entries = rs.parse(base)
+    rolled = next(e for e in base_entries if e.title == "rolled")
+    drifted = rs.Entry(
+        rolled.date,
+        rolled.title,
+        rs.rewrite_links_for_archive(rolled.text).replace(
+            "shipped for rolled", "shipped for rolled — archive drift"
+        ),
+    )
+    archived_by = {rs.heading_line(drifted): drifted}
+    problems = rs.append_only_problems(base, ours, archived_by_heading=archived_by)
+    assert problems, "gate went VACUOUS: drifted archive body passed"
+    assert any("rolled" in p or "archive" in p.lower() for p in problems)
+
+
 def test_append_only_tolerates_trailing_separator_debris_on_a_frozen_entry():
     """--normalize-class trailing --- / blank runs are not a body edit."""
     base = _doc([("2026-08-13w", "older")])

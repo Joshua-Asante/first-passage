@@ -243,3 +243,6 @@ lab/analysis/c1/msl_s4_mgc_2026-08/_explore_confirm_*_RAW.json
 # file; they are review scratch, not a record of authority (ledgers/SESSIONS
 # own that), so they are deliberately local-only too.
 ops/data/recall.db
+
+# Untracked vendor / study clones — not a runtime dependency.
+third_party/

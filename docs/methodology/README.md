@@ -13,6 +13,7 @@
 | [`objective_composition_map.md`](objective_composition_map.md) | Objective composition |
 | [`backtest_live_shrinkage.md`](backtest_live_shrinkage.md) | Backtest→live shrinkage |
 | [`prefilter_rank_correlation_gate.md`](prefilter_rank_correlation_gate.md) | Prefilter rank-correlation gate |
+| [`external_mapping_guardrails.md`](external_mapping_guardrails.md) | Domain-conflation + evidentiary-substitution (mapping move-class) |
 | [`lessons/`](lessons/) | Methodology lessons |
 | [`archive/`](archive/) | Frozen Notion-era ports (not a second roster) |
 
