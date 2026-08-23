@@ -14,6 +14,20 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+
+## 2026-08-23m — Brief-authoring O1–O5 aligned (D1–D4 GO)
+
+**Focus:** Decision. Operator GO on D1–D4; write the type × check law the checker already enforces into the skill.
+
+**Shipped:** [`SKILL.md`](../.claude/skills/brief-authoring/SKILL.md) matrix + type-table fix + inline 8/9. [`check_brief.py`](../scripts/check_brief.py) `--type closure` delegates. [Notice addendum](notes/notice/N-2026-08-23-ox-alpha-brief-authoring-review.md). No new ADR.
+
+**Decisions/defects:** D1 codify not expand · D2 keep tier-independent · D3 drop lock type · D4 inline 8/9/10 only.
+
+**Open / next:** leftover surviving cluster (O10 grounding quotes, O15+O24 judgment wiring, O7 Trap-12 detection). Carry 2026-08-23l — W5 CI-from-`gates.yml` plan; #7/#8 stay PENDING GO. Carry 2026-08-22r — DL-2 step 2 train scoring.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-23l — Venue-binding Phase 1–3 registry landed
 
 **Focus:** Build. Execute plan #1.

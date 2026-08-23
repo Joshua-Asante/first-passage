@@ -13,8 +13,8 @@ The 04-17 dd_protection retune → reversal → delete-and-retune cycle is the l
 
 **Boundary with sibling skills:**
 - `inqhiori` — methodology framing (when to inquire, what gates a question, pre-Q routing) and the home of The Algorithm operator (Question / Delete / Simplify / Accelerate). This skill executes the artifact step *after* inqhiori has decided one is needed; briefs authored here should pass The Algorithm before they ship, which this skill enforces at the verification block.
-- `prop-firm-challenge` — live ops, allocation locks, dd_protection. This skill produces the lock-decision briefs that record those decisions; it does not make them.
-- `pinescript-v6` — strategy code. Lock decision briefs reference Pine source; they do not modify it.
+- `prop-firm-challenge` — live ops, allocation locks, dd_protection. This skill records those decisions (as ADRs); it does not make them.
+- `pinescript-v6` — strategy code. Decision artifacts may reference Pine source; they do not modify it.
 - `trade-csv-reconcile` — produces broker/TV CSV metrics referenced inside briefs; not consumed in reverse. (`live-execution-journal` retired 2026-07-11 with the CFD estate.)
 
 ---
@@ -23,9 +23,13 @@ The 04-17 dd_protection retune → reversal → delete-and-retune cycle is the l
 
 Any brief that touches risk controls, locked parameters, or production code must list the production files read **before** the brief was authored. Reading "during Phase 1 of the investigation" is too late — the brief is already framed by then, and re-framing after Rule 0 fires costs more than authoring after Rule 0 succeeded.
 
-**Canonical sub-rules (1–10)** live in [`docs/operational_rules.md` §8](../../../docs/operational_rules.md) — including sub-rule 8 (paste search output before new `lab/analysis/` / `core/`-adjacent work), sub-rule 9 (closure `Registry:` line → `rejected_candidates.md` or explicit `n/a`), and sub-rule 10 (amend the existing owner before minting a sibling artifact). A session that follows only this skill and never opens that file still misses those teeth; open §8 when authoring.
+**Canonical sub-rules 1–7** live in [`docs/operational_rules.md` §8](../../../docs/operational_rules.md). The three teeth this skill already names are inlined below so a session that never opens §8 still has them. Open §8 for 1–7.
 
-**Amendment-first check (sub-rule 10).** Before authoring a new file under `docs/adr/`, `docs/briefs/`, or `docs/notes/`, name the existing owner that should take an addendum, or paste search output showing none exists. Default is amend-in-place. New file only when no owner can hold the decision.
+**Sub-rule 8 (paste-search before new work).** Before opening any new `lab/analysis/<theme>/<slug>/` or scoping new `core/`-adjacent work, paste the *literal command output* — not a conclusion — of searches against `lab/CATALOG.md` and `docs/briefs/INDEX.md` (and a cheap `git log --oneline -20` / `python scripts/check_advisor_dedup.py --keywords "..."`). Attestation without executed output is void. Work naming a candidate mechanism for a specific instrument additionally reads `ops/instruments/<SYM>.md` in full.
+
+**Sub-rule 9 (Registry line on every new closure).** A non-grandfathered file under `docs/briefs/closures/` must carry `- **Registry:**` in the Iterate block: `rejected_candidates.md — ### <heading>` or `n/a — <reason>`. Token-only; heading-join quality is judgment.
+
+**Amendment-first (sub-rule 10).** Before authoring a new file under `docs/adr/`, `docs/briefs/`, or `docs/notes/`, name the existing owner that should take an addendum, or paste search output showing none exists. Default is amend-in-place. New file only when no owner can hold the decision. This is a cross-cutting pre-condition, not a 7th numbered check.
 
 **Anchor:** 2026-04-17 dd_protection cycle. Three iterations of brief authoring (retune → reversal → delete-and-retune) traced to assumed semantics being reconstructed mid-investigation. The §0 production-read section, when honestly populated, blocks this failure mode at the structural level.
 
@@ -37,27 +41,40 @@ Any brief that touches risk controls, locked parameters, or production code must
 
 ## The six load-bearing discipline checks
 
-Every brief, regardless of type, must pass these checks. The check_brief.py script automates the mechanical ones; the others require human judgment.
+These six are the authoring-side stack. They are **type-scoped** — see the applicability matrix below. `scripts/check_brief.py` automates the mechanical subset for types it models (inquire / full ADR / handoff). The others require human judgment. Amendment-first (sub-rule 10) is a cross-cutting pre-condition, not a 7th numbered check.
 
-**1. §0 Rule 0 reads populated.** At least one production file with a verification anchor (commit hash, timestamp, line range, or `last-modified` date). Empty or "TBD" §0 fails.
+**1. §0 Rule 0 reads populated.** At least one production file with a verification anchor (commit hash, timestamp, line range, or `last-modified` date). Empty or "TBD" §0 fails. Light ADRs keep the *read* (tier-independent) but drop the §0 table — the Reads line is the form.
 
-**2. Falsifiable hypothesis stated.** Inquire-phase briefs and ADRs must contain a specific testable claim, phrased so a future check can determine whether it held. The form: "If [observation], then [conclusion]; otherwise [alternative]." Briefs that conclude "look further" without a binary outcome fail this check.
+**2. Falsifiable hypothesis stated.** Inquire-phase briefs and full ADRs must contain a specific testable claim, phrased so a future check can determine whether it held. The form: "If [observation], then [conclusion]; otherwise [alternative]." Briefs that conclude "look further" without a binary outcome fail this check.
 
 **3. Forbidden moves explicit and actually forbidden.** §5 must list moves the author genuinely considered or was tempted by — not theatrical lists of things never on the table. The check: would removing this section change behavior? If no, it's ceremony. If yes, it's load-bearing.
 
 **4. Gate criteria binary.** §6 closure criteria must produce a clean RESOLVED / FALSIFIED / AMBIGUOUS verdict. "When we have more data" is not a gate; "when N≥30 trades accumulate AND PF deviation from baseline is within ±0.5σ" is.
 
-**5. Question names a symptom, not a fix.** Pre-Q gate test: rephrase the question to mention only what's wrong, not what to do about it. "Should we use K=2 or K=3 in the regime filter?" bakes in K-of-something. "What's the cost of the current pattern, and what alternative architectures exist?" doesn't. If the symptom-only rephrase is impossible, the question itself is the problem — return to inqhiori.
+**5. Question names a symptom, not a fix.** Pre-Q only. Rephrase the question to mention only what's wrong, not what to do about it. "Should we use K=2 or K=3 in the regime filter?" bakes in K-of-something. "What's the cost of the current pattern, and what alternative architectures exist?" doesn't. If the symptom-only rephrase is impossible, the question itself is the problem — return to inqhiori.
 
 **6. Audit hooks runnable.** §10 must contain commands or checks executable later (grep strings, file paths, specific assertions), not vague "review at quarterly check-in." Audit hooks that nobody can mechanically run will not be checked.
 
-**Amendment-first (Rule 8 sub-rule 10).** Is this an addendum to an existing owner, or a genuinely new owner? If an existing ADR/brief/notice can hold the decision, amend it. A sibling file that restates the same decision is the accretion this check exists to block.
+### Type × check applicability
+
+`M` = mechanical (`scripts/check_brief.py` or `scripts/check_closure_disposition.py`). `J` = judgment. `—` = not owed. Repo `check_brief.py` prints `NOT CHECKED` (not a pass) for light ADRs and for `{lock, notice, lesson, audit}`.
+
+| Type | 1 §0 | 2 H | 3 forbidden | 4 gate | 5 Q-shape | 6 hooks | amend-first | 7–10 spawn | Iterate |
+|---|---|---|---|---|---|---|---|---|---|
+| Inquire / full ADR | M | M+J | J | M+J | J (inquire only) | M | J | — | — |
+| Light ADR | Reads line (J; no §0 table) | — | Boundary or `none` (J) | Gate or `none` (J) | — | — | J | — | — |
+| CC handoff | M | if executing a Pre-Q else `N/A` | J | status taxonomy M | — | M | J | M+J | — |
+| Notice / lesson / audit | type-owned template; repo checker `NOT CHECKED` | — | — | — | — | — | J | — | — |
+| Closure | — | — | — | discharged in Iterate | — | parent §10 paste | J | — | M tokens (`check_closure_disposition.py`) |
+| Minimal spec | — | — | — | — | — | — | J | — | — |
+
+`--type lock` remains an unmodeled alias so old verification blocks do not argparse-die. Do not author new lock-decision briefs; that type was deleted 2026-08-08.
 
 ---
 
 ## Additional checks for CC handoff briefs (patterns 7–10)
 
-The six checks above apply to every brief. The four below apply when the brief is a Claude Code handoff (i.e., it spawns a fresh execution session). They were extracted from `obra/superpowers:subagent-driven-development` after evaluation against this skill's existing structure; the patterns they encode are spawn-specific failure modes that the six general checks did not catch.
+The six checks above apply to inquire / full ADR / handoff per the matrix. The four below apply when the brief is a Claude Code handoff (i.e., it spawns a fresh execution session). They were extracted from `obra/superpowers:subagent-driven-development` after evaluation against this skill's existing structure; the patterns they encode are spawn-specific failure modes that the six general checks did not catch.
 
 **7. Clarifying questions surfaced before §2 execution.** The handoff template includes a §0.5 block where the spawn must list ambiguities and ask before running the plan. The check at brief authoring time: does §0.5 instruct the spawn to halt on ambiguity, or does it implicitly assume the §1/§2 statements are complete? Implicit-completeness handoffs fail this check — the spawn will guess rather than ask, and a guess that misreads the task wastes the entire session. Anchor: any CC session that ran the wrong analysis because the brief was ambiguous and the spawn defaulted instead of asking.
 
@@ -85,7 +102,7 @@ The six general checks plus patterns 7–10 are the union of two independently-d
 
 The two stacks overlap in spirit (both treat the brief as a structural artifact, both are skeptical of ceremony), but they catch different failure classes. The general checks catch authoring-side failures (ceremonial sections, solution-baked questions, vague gates). The CC additions catch spawn-side failures (ambiguity defaulting, conflated status returns, scope-creep in the diff, integration drift across steps). Both are load-bearing.
 
-If a CC handoff brief passes 1–6 but fails 7–10, the spawn will produce work the parent can't trust even if the brief looks well-formed. If it passes 7–10 but fails 1–6, the brief itself is malformed and the spawn is being asked the wrong thing. The two layers compose; they do not substitute.
+If a CC handoff brief passes its applicable 1–6 checks but fails 7–10, the spawn will produce work the parent can't trust even if the brief looks well-formed. If it passes 7–10 but fails its applicable 1–6 checks, the brief itself is malformed and the spawn is being asked the wrong thing. The two layers compose; they do not substitute.
 
 ---
 
@@ -93,18 +110,18 @@ If a CC handoff brief passes 1–6 but fails 7–10, the spawn will produce work
 
 | Triggering need | Use type | Lives in |
 |---|---|---|
-| Opening structured investigation | **Inquire-phase brief** (Pre-Q) | `docs/briefs/Q-X-name.md` or Notion |
-| Locking a structural decision (architecture, doctrine, methodology rule) | **ADR** | `docs/adr/NNN-decision-title.md` |
-| Strategy version lock | **Lock decision brief** | `docs/briefs/locks/` (Notion surface retired 2026-06-12) |
+| Opening structured investigation | **Inquire-phase brief** (Pre-Q) | `docs/briefs/Q-X-name.md` |
+| Locking a structural decision (architecture, doctrine, methodology rule) | **ADR** | `docs/adr/YYYY-MM-DD-slug.md` (the filename slug **is** the identifier — `ADR-NNN` numbering was dropped) |
 | Spawning Claude Code for an execution task | **CC handoff brief** | Inline (passed to Claude Code) |
 | Recording an observation that may graduate to inquiry | **Notice-phase observation log** | `docs/notes/notice/` |
 | Adding a methodology/execution lesson to the registry | **Lesson capture** | Inline-edit the relevant `references/*lessons.md` |
-| Documenting a methodology failure or unexpected outcome | **Audit note** | `docs/notes/audits/` or Notion |
+| Documenting a methodology failure or unexpected outcome | **Audit note** | `docs/notes/audits/` |
+| Closing any Q | **Closure record** | `docs/briefs/closures/` per `references/closure_record.md` |
 | Commissioning steps that decide nothing (PROPOSED, $0/K=0) | **Minimal spec** | `docs/spec/` per `docs/spec/TEMPLATE-minimal-spec.md` (standing style, ratified JA 2026-08-07) |
 
 **When the type is unclear:** if the artifact will gate a future investigation → Inquire brief. If it locks a decision → ADR. If it captures past learning → lesson capture or audit note. When in doubt, default to ADR — the structure forces falsifier and forbidden moves, which catch most ceremony.
 
-**ADR ceremony is stakes-tiered** ([ADR 2026-08-08](../../../docs/adr/2026-08-08-adr-ceremony-tiering.md), ratified): full §0–§7 apparatus only when a limb fires (spends K/money · live-risk surface · LOCKED/frozen surface or non-regenerable deletion · creates/amends doctrine). Otherwise a **light decision record** — standard header field block + `**Tier:** light` + ≤300-word body in the minimal-spec style. Ambiguous tier → full; escalation = supersede, never pad. Rule 0 reads are tier-independent.
+**ADR ceremony is stakes-tiered** ([ADR 2026-08-08](../../../docs/adr/2026-08-08-adr-ceremony-tiering.md), ratified): full §0–§7 apparatus only when a limb fires (spends K/money · live-risk surface · LOCKED/frozen surface or non-regenerable deletion · creates/amends doctrine). Otherwise a **light decision record** — standard header field block + `**Tier:** light` + ≤300-word body in the minimal-spec style. Ambiguous tier → full; escalation = supersede, never pad. Rule 0 reads are tier-independent (the read always happens; only the §0 table is dropped). `scripts/check_brief.py` detects `**Tier:** light` and prints `NOT CHECKED` — that is the ratified shape, not a skip of the Reads line. Header fields still go through `scripts/check_adr_graph.py`.
 
 **When NOT to author a brief:**
 - Casual conversation / quick decisions with low reversibility cost — OODA loop, no artifact.
@@ -140,12 +157,20 @@ Every authored brief ends with a verification block that the author runs before 
 ```
 ## Verification
 
-# Discipline checks (mechanical)
-$ python /path/to/brief-authoring/scripts/check_brief.py <brief.md>
-# Expected: all 6 checks PASS
+# Modeled types (inquire / full ADR / handoff)
+$ python scripts/check_brief.py <brief.md> --type inquire|adr|cc_handoff
+# Expected: RESULT: well-formed  (applicable mechanical checks for this type)
+
+# Light ADR / notice / lesson / audit (unmodeled here)
+$ python scripts/check_brief.py <file.md> --type notice
+# Expected: RESULT: NOT CHECKED — fill the type template; this is not a pass
+
+# Closure
+$ python scripts/check_closure_disposition.py <closure.md>
+# Expected: exit 0 (Iterate tokens present)
 
 # Production-source verification (Rule 0 confirmation)
-$ <grep / cat / git log commands that confirm §0 anchors>
+$ <grep / cat / git log commands that confirm §0 / Reads anchors>
 
 # Cross-reference verification (cited facts match canonical sources)
 $ <grep commands that verify cited numbers / commit hashes / page IDs>
@@ -159,7 +184,7 @@ If a verification command fails, the brief is not complete. Re-author the sectio
 
 Failure modes that recur, ranked by frequency:
 
-**1. Ceremonial sections.** All six discipline checks formally present, content is "TBD" / "any improvement is acceptable" / "review later." Looks like discipline; isn't. The script catches mechanical instances (empty §0, no falsifier in §4); judgment catches the rest.
+**1. Ceremonial sections.** Applicable discipline checks formally present, content is "TBD" / "any improvement is acceptable" / "review later." Looks like discipline; isn't. The script catches mechanical instances (empty §0, no falsifier in §4); judgment catches the rest.
 
 **2. Solution-baked questions.** "Should we add an X filter?" instead of "What's the cost of the current pattern?" Pre-Q gate (check #5) catches this if applied honestly. The signal: if rephrasing to symptom-only is hard, the question is the problem.
 
@@ -188,21 +213,29 @@ Failure modes that recur, ranked by frequency:
 ## Discipline check summary
 
 ```
+[ ] Amendment-first: existing owner named or search output showing none (every new file)
+[ ] Applicable checks for this type (matrix above) — do not run the inquire/ADR six on a notice
+[ ] Verification block executed; the command that applies to this type passed (or printed NOT CHECKED)
+
+If inquire / full ADR:
 [ ] §0 Rule 0 reads populated with file paths + verification anchors
-[ ] Falsifiable hypothesis stated in §4 (if Inquire-phase or ADR)
+[ ] Falsifiable hypothesis stated in §4
 [ ] Forbidden moves explicit and genuinely tempting (not strawmen)
 [ ] Gate criteria binary (RESOLVED / FALSIFIED / AMBIGUOUS each have specific triggers)
-[ ] Question names symptom not fix (Pre-Q gate test passes)
-[ ] Audit hooks runnable (commands / paths / assertions, not vague review notes)
-[ ] Brief connects to standing doctrine where any exists
-[ ] Lesson captures (if any) have dated anchors and dollar costs
-[ ] Verification block executed and passing before declaring complete
+[ ] Question names symptom not fix (inquire only)
+[ ] Audit hooks runnable
+
+If light ADR:
+[ ] Reads line populated (the read happened; no §0 table)
+[ ] Decision / Grounds / Gate / Boundary filled (Boundary and Gate may be `none`)
+[ ] `check_brief.py` printed NOT CHECKED; `check_adr_graph.py` still applies to headers
 
 If the artifact is a closure record, also:
 [ ] Typed `## Iterate` block present (Next: INTEGRATE | ITERATE | STOP)
 [ ] Entry packet populated iff ITERATE (frozen constraints + carry-forwards + forbidden re-opens + budget); successor named, not opened
 [ ] Stop rule / re-proposal bar present for ITERATE and STOP ("n/a — integrated" legal for INTEGRATE)
 [ ] Board write line present (verbatim pointer, or "none — STOP, nothing owed")
+[ ] `Registry:` line present (`rejected_candidates.md — ### <heading>` or `n/a — <reason>`)
 
 If brief is a CC handoff, also:
 [ ] §0.5 instructs spawn to surface ambiguities BEFORE §2 execution
@@ -216,11 +249,11 @@ If brief is a CC handoff, also:
 
 ## Reference files
 
-- `scripts/check_brief.py` — mechanical discipline checker. Run as:
+- `scripts/check_brief.py` — mechanical subset for modeled types. Run as:
   ```
-  python scripts/check_brief.py <brief.md> [--type inquire|adr|lock|cc_handoff|notice|lesson|audit]
+  python scripts/check_brief.py <brief.md> [--type inquire|adr|cc_handoff|notice|lesson|audit|lock|closure]
   ```
-  Output: PASS / FAIL per check, with specific repair guidance on failures.
+  Modeled: inquire / adr / cc_handoff → well-formed or MALFORMED. Unmodeled notice / lesson / audit / lock / light ADR → `NOT CHECKED`. `--type closure` delegates to `scripts/check_closure_disposition.py` (prints the command; exit 0). `--type lock` is a back-compat alias, not a live authoring type.
 
 - `references/inquire_brief.md` — Pre-Q template (§0–§10 structure)
 - `references/adr.md` — ADR template

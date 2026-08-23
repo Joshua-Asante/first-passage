@@ -201,8 +201,8 @@ diff <(grep -A5 "thresholds" docs/briefs/pre-registration/Q-X-verdict-preregistr
 
 ```bash
 # Mechanical discipline check on this handoff brief
-$ python /path/to/brief-authoring/scripts/check_brief.py <this-file>.md --type cc_handoff
-# Expected: all 6 general checks + checks 7–10 PASS
+$ python scripts/check_brief.py <this-file>.md --type cc_handoff
+# Expected: RESULT: well-formed  (applicable 1–6 + spawn extras this subset models)
 
 # Confirm CC's closure report uses the four-state taxonomy
 $ grep -E "^Status: (DONE|DONE_WITH_CONCERNS|NEEDS_CONTEXT|BLOCKED)" <cc-return-path>

@@ -166,7 +166,8 @@ grep -rn "AUDIT-YYYY-MM-DD-slug" references/*lessons.md
 
 ```bash
 # Discipline checks (mechanical)
-$ python /path/to/brief-authoring/scripts/check_brief.py <this-file>.md --type audit
+$ python scripts/check_brief.py <this-file>.md --type audit
+# Expected: RESULT: NOT CHECKED (audit is an unmodeled contract type)
 
 # Confirm §5 structural repair list is actually executed
 $ <grep / git log commands confirming each structural-repair line shipped>
