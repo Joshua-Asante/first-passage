@@ -15,6 +15,39 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 
 ---
 
+## 2026-08-22s — DL-2 step 2 TRAIN scoring → ABANDONMENT; ox-alpha consult; Iterate blocks landed
+
+**Focus:** Build → Measurement → Decision. Executed the DL-2 step-2 handoff: built and
+unit-tested the TRAIN harness, scored all 10 frozen variants, ran all four nomination gates.
+
+**Shipped:** Harness at [`lab/archive/dl2_m6a_pdhpdl_2026-08-22/`](../lab/archive/dl2_m6a_pdhpdl_2026-08-22/)
+(roll-day signal derived from the TRAIN `ohlcv-1m` cache itself — no `ohlcv-1d` cache exists
+for 6A/M6A; validated byte-equivalent to a native pull against DL-1's own cache pair,
+0/83,165 mismatches). Nominee V9 fails gates 2a/2b/2d (SPA p=0.9755); passes 2c only →
+`ABANDONMENT`, confirm never read. 2nd consecutive after DL-1 — charter §4(c) audit-report
+duty tripped. Recorded on the [prereg](briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md),
+[charter](adr/2026-08-16-deep-iteration-lane-charter.md), and `lab/CATALOG.md` (`414e537`).
+Sanitized `stealth/ox-alpha` second opinion sought per
+[`ox-alpha ADR`](adr/2026-08-22-ox-alpha-adversarial-lens-scope.md) on the template-vs-bad-luck
+question; its "one disease at two stages" hypothesis was tested by re-running DL-1's own
+harness and refuted (DL-1 resolves 40–70% of trades to genuine stop/target; DL-2 is 85–95%
+force-flat). Typed `## Iterate` blocks (canon §16) added to both DL-1 and DL-2's RESULTS.md —
+a gap this session found: `check_closure_disposition.py` never scans `lab/archive/**`, only
+`docs/briefs/closures/`, so neither campaign had ever produced one.
+
+**Decisions/defects:** DL-2 `CATALOG.md` row hand-typed with an em-dash where the scanner
+derives `--` from the source card's own text — hard-failed `check_catalog_stale`, fixed by
+copying the scanner-derived one-liner verbatim rather than guessing.
+
+**Open/next:** [`STATE.md`](../STATE.md) "Deep-iteration lane — geometric-feasibility-ratio
+audit owed before DL-3" — no successor prereg reusing DL-2's reference-window stop/target
+construction may freeze without disclosing that ratio for its own instrument first.
+
+**Live-ops state:** unchanged — rail disarmed; no book. $0 Databento spend (both partitions
+already cached); ox-alpha consult $0 (free listing).
+
+---
+
 ## 2026-08-22r — DL-2 (M6A × prior-session-breakout-continuation) sourced, prereg frozen, step 1 landed
 
 **Focus:** Build. Sourced + froze the deep-iteration lane's second campaign; declared a `NEW`

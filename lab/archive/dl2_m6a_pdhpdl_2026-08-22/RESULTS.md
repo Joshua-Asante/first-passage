@@ -66,3 +66,54 @@ detail: [`train_results.json`](train_results.json). Engine: `stitch.py` / `engin
 slices ([`test_units_synthetic.py`](test_units_synthetic.py), all (a)-(e) gates pass,
 including a known synthetic roll day correctly skip-back'd and a known synthetic
 break-and-hold reproducing the exact hand-worked R multiple) before the full TRAIN run.
+
+## Iterate -- loop exit (canon `docs/methodology/inqhiori-canon.md` Sec16; mandatory per
+`docs/adr/2026-08-04-iterate-closure-exit-mandatory.md`)
+
+- **Verdict used:** `AMBIGUOUS` -- ABANDONMENT (prereg roster mapping; confirm never read,
+  nothing tested).
+- **Model update:** Cross-checked against a sanitized ox-alpha second opinion
+  (2026-08-22, per `docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md`) that hypothesized
+  DL-1's and DL-2's failures might be "one disease at two stages." Reconciled by re-running
+  DL-1's own archived harness and computing its exit-reason mix: DL-1 resolves 40-70% of
+  trades to genuine stop/target (an adverse hit-rate-ratio, candidate-level failure), sharply
+  unlike DL-2's 85-95% force-flat non-resolution. **The hypothesis does not survive contact
+  with the data** -- these are two structurally different failures, not one shared lane-wide
+  construction defect. What DOES generalize from DL-2 specifically: a stop/target derived from
+  a reference window materially wider than what price can traverse within the allowed holding
+  period before force-flat is a live, disclosed, untested-for-generality risk in this
+  construction family (1-2 session lookback -> opposite-extreme stop -> fixed-R target ->
+  single-session force-flat), independent of DL-1's own unrelated candidate-level failure.
+- **Next:** `ITERATE`
+- **Routing:** dated packet / operator decision item -- not a fresh Q/H reframe yet, not a
+  new Identify thread. The lane's next campaign (if any) is gated on an operator decision
+  informed by a cheap diagnostic, not an automatic successor.
+- **Entry packet:** A successor reusing this construction (reference-window-derived
+  stop/target + single-session force-flat hold), on any instrument or mechanism id, must
+  carry into its own prereg Sec0 Rule-0 reads: (1) the geometric-feasibility-ratio diagnostic
+  below, computed and disclosed for its own target instrument -- not assumed healthy; (2) the
+  roll-day-derivation-from-1m-cache technique (Sec3/stitch.py, proven byte-equivalent to a
+  native `ohlcv-1d` pull against DL-1's own cache pair, 0/83,165 mismatches) as a reusable,
+  already-validated positive carry-forward, needing no re-validation; (3) explicit
+  acknowledgment that DL-1's own abandonment is NOT corroborating evidence for a shared
+  construction defect (Model update above) -- citing it as such would be a fresh error, not
+  inherited from this one.
+- **Stop rule / re-proposal bar:** No successor may freeze a prereg reusing this stop/target/
+  hold construction without first running and disclosing the **geometric-feasibility-ratio**
+  diagnostic (ox-alpha's Q3 proposal, reconciled as sound): R = (distribution of price
+  movement reachable within one holding period, from market data alone) / (reference-window-
+  derived stop/target width), for the target instrument. If R is healthy (reachable move
+  comparable to or exceeding the reference width), the construction is cleared for that
+  instrument and a fresh campaign may proceed, K-accounted separately, on its own merits. If R
+  replicates DL-2's pathology (R << 1, i.e. cutoff-forced exits would dominate), this
+  construction is retired for that instrument class without burning a further OUTER-
+  investigation slot on it.
+- **Board write:** [`STATE.md` Scheduled forward triggers, No fixed date / gated section
+  ("Deep-iteration lane -- geometric-feasibility-ratio audit owed before DL-3")](../../../STATE.md).
+
+## Change history
+
+| Date | Change | By |
+|---|---|---|
+| 2026-08-22 | RESULTS.md authored; Sec6 step 2 closed ABANDONMENT | Claude Code (train-scoring session) |
+| 2026-08-22 | Iterate block added (canon Sec16); ox-alpha sanitized second opinion sought and reconciled against a re-run of DL-1's own archived harness | Claude Code (same session) |
