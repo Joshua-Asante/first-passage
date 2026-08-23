@@ -29,6 +29,34 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 any entry, full or stub (a-first; bare claims `a`).
 
 ---
+## 2026-08-24e — Nav leftovers: P5b wire, P2b stamps, find-owner
+
+**Focus:** Sequence named nav leftovers. P5b + two Verdict stamps + Rule 7 lookup. No mass `--slug`. No P7/P8. No SESSIONS roll.
+
+**Shipped:** `sync-liveness` in [`gates.yml`](../scripts/gates.yml) (report-only). `**Verdict:**` on `driftex_2026-08` / `eodadv_mnq_2026-08` (`hot=yes`). [`find_owner.py`](../scripts/find_owner.py). Leftovers on [`docs/governance/INDEX.md`](governance/INDEX.md).
+
+**Decisions/defects:** none new. P7 Topic and P8 `ops/` unify stay named. SESSIONS keep-20 dry-run 20/155 — roll is a separate GO.
+
+**Open / next:** leftover surviving cluster (O10 grounding quotes, O15+O24 judgment wiring, O7 Trap-12 detection). Carry `2026-08-22r` — DL-2 step 2 train scoring. Attended disaster-stop 0a is operator-only. Carry `2026-08-23t` — two undocumented decay findings still need discharge addenda. Operator: restore the coldstore design (private archive) before any Phase B GO. T2/T3/T4 and Phase C stay PENDING GO. Campaign next: W5 CI-from-`gates.yml` (H6 HOLD; not this PR). **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-24f — SESSIONS entry-class tightened to a judgment-call gate
+
+**Focus:** Decision. Full entries now require a real judgment call, not "skip Hygiene-only" — the class had drifted (12 entries in one day).
+
+**Shipped:** [`docs/SESSIONS.md`](SESSIONS.md) header rewrite (judgment-gate + stub-entry mechanism). [`W5 ADR addendum`](adr/2026-08-07-w5-governance-diet.md). [`STATE.md`](../STATE.md) decision-index line. [`PR #120`](https://github.com/Joshua-Asante/first-passage/pull/120). Heading remapped from colliding `2026-08-23m` on merge into this branch.
+
+**Decisions/defects:** Stub entries (heading + Open/next only) replace in-place edits — `sessions-append-only` hard-fails mutating an already-merged entry. Entry-class table (A–D) itself unchanged; amended the W5 ADR per Rule 8 sub-rule 10 rather than minting a sibling.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: execute W5 CI-from-`gates.yml` plan. #7/#8 stay PENDING GO. PR #120 merged.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-24d — merge origin/main into PR #119 (conflict fix)
 
 **Focus:** Resolve PR #119 conflicts after #118. Same-day `2026-08-23` letters are exhausted; `24a`/`24b` are taken, so this wrap-up and the remapped pre-GO record use the next two letters.
@@ -81,7 +109,7 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
-## 2026-08-24e — Blind channel: canonical kill-count corrected (2/3); door re-walk against cached non-index panels
+## 2026-08-24l — Blind channel: canonical kill-count corrected (2/3); door re-walk against cached non-index panels
 
 **Focus:** Measurement + Hygiene. Operator asked to contemplate the no-counterparty blind
 channel's next move; elected "B" — a free (no candidate named) door re-walk + diagnostics,
@@ -118,7 +146,7 @@ audit. No construct named, no manifest opened, no K spent.
 
 ---
 
-## 2026-08-24f — `MNQFLOW-1-DEPTH` closed out for now: operator disposition `HOLD`
+## 2026-08-24m — `MNQFLOW-1-DEPTH` closed out for now: operator disposition `HOLD`
 
 **Focus:** Decision. Operator response to the two P0 aborts, presented with three named forward
 paths: *"HOLD for now. I am not ruling it out but I do not know if it is worth the spend."*
@@ -252,20 +280,6 @@ construction, or a broader lane pause given 2/3 of the STRATEGIC budget is spent
 survivors.
 
 **Live-ops state:** unchanged — rail disarmed; no book. $0 spend (diagnostic only, cached data).
-
----
-
-## 2026-08-24k — Ox-alpha sanitized review of brief-authoring, reconciled
-
-**Focus:** Measurement. Sanitized-only ox-alpha second opinion on the brief-authoring skill; reconcile before treating any objection as a finding.
-
-**Shipped:** [notice](notes/notice/N-2026-08-23-ox-alpha-brief-authoring-review.md). 26 objections; both claimed BLOCKERs discharged (O1 = body/checker skew, not missing matrix; O20 already in `cc_handoff.md`). Eight survive. Skill not edited (doctrine limb).
-
-**Decisions/defects:** none new. §4(b) three-zero-yield revert does not fire (third named use still yielded).
-
-**Open / next:** carry 2026-08-22r — DL-2 step 2 (train scoring + nomination). New: operator GO/NO-GO on the surviving cluster (O1 matrix-in-body, O10 grounding quotes, O15+O24 judgment wiring, O7 Trap-12 detection) before any skill edit. Carry 2026-08-22q — `register_search.open_run`; named ox-alpha uses (F1 fork; GROW-lane); disaster-stop Phase 0; venue-binding Phase 1; W1 remaining decisions of record.
-
-**Live-ops state:** unchanged — rail disarmed; no book. $0 OpenRouter spend.
 
 ---
 
@@ -618,6 +632,34 @@ survivors.
 **Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: W5 CI-from-`gates.yml` plan. Carry 2026-08-22q — disaster-stop Phase 0; venue-binding Phase 1 *execution*; W1 remaining three.
 
 **Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-23a — Ox-alpha sanitized review of brief-authoring, reconciled
+
+**Focus:** Measurement. Sanitized-only ox-alpha second opinion on the brief-authoring skill; reconcile before treating any objection as a finding.
+
+**Shipped:** [notice](notes/notice/N-2026-08-23-ox-alpha-brief-authoring-review.md). 26 objections; both claimed BLOCKERs discharged (O1 = body/checker skew, not missing matrix; O20 already in `cc_handoff.md`). Eight survive. Skill not edited (doctrine limb).
+
+**Decisions/defects:** none new. §4(b) three-zero-yield revert does not fire (third named use still yielded).
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 (train scoring + nomination). New: operator GO/NO-GO on the surviving cluster (O1 matrix-in-body, O10 grounding quotes, O15+O24 judgment wiring, O7 Trap-12 detection) before any skill edit. Carry 2026-08-22q — `register_search.open_run`; named ox-alpha uses (F1 fork; GROW-lane); disaster-stop Phase 0; venue-binding Phase 1; W1 remaining decisions of record.
+
+**Live-ops state:** unchanged — rail disarmed; no book. $0 OpenRouter spend.
+
+---
+
+## 2026-08-23m — Ox-alpha sanitized review of brief-authoring, reconciled
+
+**Focus:** Measurement. Sanitized-only ox-alpha second opinion on the brief-authoring skill; reconcile before treating any objection as a finding.
+
+**Shipped:** [notice](notes/notice/N-2026-08-23-ox-alpha-brief-authoring-review.md). 26 objections; both claimed BLOCKERs discharged (O1 = body/checker skew, not missing matrix; O20 already in `cc_handoff.md`). Eight survive. Skill not edited (doctrine limb).
+
+**Decisions/defects:** none new. §4(b) three-zero-yield revert does not fire (third named use still yielded).
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 (train scoring + nomination). New: operator GO/NO-GO on the surviving cluster (O1 matrix-in-body, O10 grounding quotes, O15+O24 judgment wiring, O7 Trap-12 detection) before any skill edit. Carry 2026-08-22q — `register_search.open_run`; named ox-alpha uses (F1 fork; GROW-lane); disaster-stop Phase 0; venue-binding Phase 1; W1 remaining decisions of record.
+
+**Live-ops state:** unchanged — rail disarmed; no book. $0 OpenRouter spend.
 
 ---
 

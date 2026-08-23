@@ -86,7 +86,7 @@ documents the camp boundary for humans/tools.
 | slug | theme | status | hot | one-liner | body | heavy |
 |---|---|---|---|---|---|---|
 | d5_nq_intraday_mom_2026-07 | orb | ACTIVE | yes | Baltussen H1 on NQ IS — Stage-2/4 results | lab/analysis/orb/d5_nq_intraday_mom_2026-07/ | — |
-| eodadv_mnq_2026-08 | orb | ACTIVE | yes | no pre-registered mechanism survives; 15:30 exit stays barred | lab/analysis/orb/eodadv_mnq_2026-08/ | — |
+| eodadv_mnq_2026-08 | orb | FALSIFIED | yes | no pre-registered mechanism survives; 15:30 exit stays barred | lab/analysis/orb/eodadv_mnq_2026-08/ | — |
 | orb_mnq_2026-07 | orb | ACTIVE | yes | NAS100-ORB-30 on native MNQ; Stage-2 cost-law PASS then T2 payability FIRED | lab/analysis/orb/orb_mnq_2026-07/ | — |
 | orb_universe_2026-06-22 | orb | ACTIVE | yes | which FXIFY CFD best suits Opening Range Breakout | lab/analysis/orb/orb_universe_2026-06-22/ | — |
 | sessconf_mnq_2026-08 | orb | ACTIVE | yes | faithful close_tod session-truncation sweep (MNQ, Tradeify) | lab/analysis/orb/sessconf_mnq_2026-08/ | — |
@@ -116,7 +116,7 @@ documents the camp boundary for humans/tools.
 | slug | theme | status | hot | one-liner | body | heavy |
 |---|---|---|---|---|---|---|
 | disccamp0_gc_2010_18 | harvest | ACTIVE | yes | DISC-CAMP-0 binding artifacts (Stage 2/3/5 staging) | lab/analysis/harvest/disccamp0_gc_2010_18/ | — |
-| driftex_2026-08 | harvest | ACTIVE | yes | drift exhaustion falsified; phenomenon is equity-index-specific | lab/analysis/harvest/driftex_2026-08/ | — |
+| driftex_2026-08 | harvest | FALSIFIED | yes | drift exhaustion is not the mechanism; phenomenon is equity-index-specific | lab/analysis/harvest/driftex_2026-08/ | — |
 | fts5_delete_falsifier_2026-07-27 | harvest | ACTIVE | yes | FTS5-as-Delete falsifier harness results | lab/analysis/harvest/fts5_delete_falsifier_2026-07-27/ | — |
 | h_od_1_es_overnight_drift_2026-07 | harvest | ACTIVE | yes | SR917 overnight hour on ES IS — Stage-2/4 results | lab/analysis/harvest/h_od_1_es_overnight_drift_2026-07/ | — |
 | harv_a4_footprint_2026-07 | harvest | ACTIVE | yes | A4 month-end footprint diagnostic (Cursor return) | lab/analysis/harvest/harv_a4_footprint_2026-07/ | — |

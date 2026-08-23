@@ -1,5 +1,6 @@
 **Theme:** orb
 **Status:** ACTIVE — no pre-registered mechanism survives; 15:30 exit stays barred
+**Verdict:** FALSIFIED — no pre-registered mechanism survives; 15:30 exit stays barred
 # Q-EODADV-1 — RESULTS: **FALSIFIED**. No pre-registered mechanism survives; the 15:30 exit stays barred.
 
 **Pre-registration:** [`Q-EODADV-1`](../../../docs/briefs/rnd-pipeline/Q-EODADV-1-mnq-final-half-hour-adversity-scoping.md), frozen `43cdde0` **before** this ran (§4 hypotheses, §6 gate, 60% channel threshold).

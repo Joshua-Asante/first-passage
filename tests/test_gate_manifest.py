@@ -38,6 +38,7 @@ EXPECTED_PATH_CONDITIONAL = {
     "supersession-placement",
     "closure-disposition",
     "governance-prose-control-chars",
+    "sync-liveness",
 }
 
 
@@ -83,6 +84,7 @@ def test_pre_commit_includes_path_conditional_on_matching_paths(monkeypatch):
     data = gm.load_manifest(MANIFEST)
     selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
     assert "closure-disposition" in selected
+    assert "sync-liveness" in selected
     assert "sessions-order" not in selected
 
 
@@ -135,6 +137,7 @@ REACHABILITY_PROBES = {
     "supersession-placement": "docs/adr/2026-01-01-example.md",
     "closure-disposition": "docs/briefs/closures/Q-EXAMPLE-closure-falsified.md",
     "governance-prose-control-chars": "docs/rejected_candidates.md",
+    "sync-liveness": "docs/briefs/INDEX.md",
 }
 
 

@@ -1,5 +1,6 @@
 **Theme:** harvest
 **Status:** ACTIVE — drift exhaustion falsified; phenomenon is equity-index-specific
+**Verdict:** FALSIFIED — drift exhaustion is not the mechanism; phenomenon is equity-index-specific
 # Q-DRIFTEX-1 — RESULTS: **FALSIFIED**. Drift exhaustion is not the mechanism; the phenomenon is equity-index-specific.
 
 > ⚠ **The headline cliff does NOT survive multiplicity — read [Addendum 2026-08-01] before citing

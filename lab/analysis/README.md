@@ -40,6 +40,6 @@ card; Verdict stamped first so `--slug` could see it). Body:
 | informal ORB probes (`orbmnq1_*_probe_2026-08-20`) | C-P1-10 left ACTIVE |
 | `rangestate_gc_2026-08` / `rangestate_corrected_2026-08` / `rangestate_mcl_2026-08` | family coupled; mixed SIGNAL-GENERIC |
 | `ict_mnq_2026-08` | mixed W/D confirm; `cheap_falsifiers` coupling |
-| `driftex_2026-08`, `eodadv_mnq_2026-08` | body already FALSIFIED; frozen prereg + `rejected_candidates` + sentinel path pins |
+| `driftex_2026-08`, `eodadv_mnq_2026-08` | `**Verdict:** FALSIFIED` stamped 2026-08-23; stay-hot (frozen prereg + `rejected_candidates` + sentinel path pins); no `--slug` |
 | `tnec_l2_sourcing_2026-08-10` | SCREEN-FAIL is not archiveable |
 | NO_SOURCE slugs (`msl_s4_mgc`, `six_lead_cf`, `research-analyst-mnq-atomic-facts`, …) | no RESULTS/README for `--slug` |
