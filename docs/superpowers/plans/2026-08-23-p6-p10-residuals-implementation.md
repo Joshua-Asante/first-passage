@@ -4,6 +4,8 @@
 
 **AUTHORIZATION:** **GO 2026-08-23.** Operator: start working on the plans formulated earlier this session. Charter [`2026-08-23-repo-pain-point-packets.md`](2026-08-23-repo-pain-point-packets.md) second wave. `queue-exception: operator asked to start working on the P6–P10 plans`. Not a STATE queue row.
 
+**Routing note:** this land ran on a `cursor/*` branch and touches `CLAUDE.md`, `STATE.md`, and a new closure. That is a **one-packet exception** to [`2026-07-14` §2 routing test 1](../../adr/2026-07-14-cc-cursor-surface-allocation.md) (doctrine / governed surface → CC, full stop). It does not widen Cursor's doctrine-authoring eligibility. Same treatment as the 2026-08-23 judgment-review addendum. Recorded because the adjudication pass on this PR named the violation (run `32673602611`).
+
 **Goal:** Land the five residual packets without opening a control-plane campaign or the viable-strategy sequence.
 
 **Approach elections (this GO):**
