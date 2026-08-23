@@ -1,9 +1,9 @@
 # SPEC: GROW — deep-iteration lane extension: automated grammar engine + synthetic calibration harness
 
 Status: Part A `Accepted` — [build-authorization ADR](../adr/2026-08-22-grow-lane-build-authorization.md),
-operator GO 2026-08-22 ("ratify, accept, and begin the build"); Part B now filed as
+operator GO 2026-08-22 ("ratify, accept, and begin the build"); Part B resolved and ratified as
 [`2026-08-22-grow0-two-ledger-k-question.md`](../adr/2026-08-22-grow0-two-ledger-k-question.md)
-`Proposed` (not yet ratified) · $0 · K=0; Part A rides the charter's already-licensed §7 steps 2–4,
+`Accepted` · $0 · K=0; Part A rides the charter's already-licensed §7 steps 2–4,
 campaign-gated as the charter requires · depends:
 [deep-iteration lane charter](../adr/2026-08-16-deep-iteration-lane-charter.md) `Accepted`
 (**owner**) · [F3 attestation-library spec](2026-08-22-eval-lock-geometry-attestation-library-spec.md)
@@ -211,4 +211,4 @@ above.
 | 2026-08-22 | v2: D1–D3 withdrawn; recast as deep-iteration-lane extension packet (Part A tooling + Part B named question); all confirmed findings folded in |
 | 2026-08-22 | Part A `Accepted` ([build-authorization ADR](../adr/2026-08-22-grow-lane-build-authorization.md)); slice 1 landed same day: `deep_lane_admission.py`, `grammar.py`, `--lane deep`, `burned_segments.py`/seed — 39 tests green |
 | 2026-08-22 | GROW-0 harness built (Limb A/B, three RED controls, retry ledger, CLI) against its own frozen PREREG; then run for real at the frozen N=5,500/c=7 scale for the first time — Gate `RESOLVED` ([closure](../briefs/closures/GROW-0-closure-resolved.md)). Part B's filing decision (the two-ledger K question) is now unlocked for the operator per this Gate's own text |
-| 2026-08-22 | Part B ADR drafted: [`2026-08-22-grow0-two-ledger-k-question.md`](../adr/2026-08-22-grow0-two-ledger-k-question.md), `Proposed` (not yet ratified). Disposition: the within-campaign "K→M" claim is rejected (K_intrinsic's ratified definition stands); the cross-campaign sealed-consultation claim is adopted as a new, disclosure-only charter §2.2(iv) conjunct pending operator GO. Went through three rounds of adversarial review same day, each catching a real defect (an invalid empirical inference, an invalid replacement doctrinal argument, a misattributed citation) — the ADR's own header flags this pattern and recommends a further independent read before ratification |
+| 2026-08-22 | Part B ADR filed and **ratified same day**: [`2026-08-22-grow0-two-ledger-k-question.md`](../adr/2026-08-22-grow0-two-ledger-k-question.md), `Accepted` (operator GO, "ratify it as-is"). Disposition: the within-campaign "K→M" claim is **rejected** (`K_intrinsic`'s ratified definition stands, unedited); the cross-campaign sealed-consultation claim is **adopted** as a new, disclosure-only charter §2.2(iv) conjunct — `lab/discovery/burned_segments.py` extended with channel-agnostic `consultation_count`/`consultation_history`. Went through three rounds of adversarial review same day before ratification, each catching a real defect in the drafting session's own reasoning (an invalid empirical inference, an invalid replacement doctrinal argument, a misattributed citation) — none in the underlying decision; documented transparently in the ADR's own Change History |

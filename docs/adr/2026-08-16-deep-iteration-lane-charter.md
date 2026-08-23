@@ -3,7 +3,9 @@
 **Status:** `Accepted` — operator GO (JA) 2026-08-16 ("P2 + GO", electing the recommendation as given), **an explicit overriding election against this charter's own HOLD default**, on the independent-grounds argument in §1. The GO carries the two recommended sequencing conditions as binding: **(GO-1)** the first campaign prereg freezes only after the P2 policy-frontier measurement lands **[LANDED 2026-08-16 — RESOLVED-QUANTIFIED, median R_max ratio 5.107×; the intraday-clock caveat in its closure §3 is a MANDATORY named risk in the first campaign's prereg, not optional]** and the Databento parent-era cost dry-run is on record **[LANDED 2026-08-16 — bar schemas (1d/1h/1m) on the design-box triad price at $0.0000 both windows; GO-1 fully discharged, see Addendum below]**; **(GO-2)** the first campaign declares **K ≈ 10** (floor 1.265 at a 6.5-year confirm; ≈ 0.93 Gaussian-approx power against a true-1.83 target), reserving the K=33 corner for a family that has earned it.
 **Tier:** full — limb 4 of the [ceremony-tiering ADR](2026-08-08-adr-ceremony-tiering.md) fires (creates doctrine: a new candidate-producing channel with its own falsifier).
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** `2026-08-22-grow0-two-ledger-k-question.md` — adds §2.2(iv), a
+disclosure-only fourth conjunct (cross-campaign sealed-consultation ledger); §2.2(i)–(iii), §4,
+§5, §6 stand byte-unedited
 **Retain-until:** none
 **Decision date:** 2026-08-16
 **Date note:** drafting date — Status `Proposed`; the ratification date lands in the change history on operator GO
@@ -60,6 +62,22 @@ Charter a **deep-iteration lane** (`--lane deep`) with the following properties,
    - **(i) `K ≤ 33`** — M-19's Guardian-quality crossing, a hard literal. This, not the floor alone, is what confines the lane to the tens corner: `floor_at_k(K, confirm_years) ≤ 2.0` by itself would admit K ≈ 2000 on a 6.5-year confirm (floor_at_k(441)=1.830, floor_at_k(2000)=2.000 — computed this session), i.e. wide mining through the long-confirm back door.
    - **(ii) `floor_at_k(K, confirm_years) ≤ 2.0`** — the M-19 overfit-suspect zone (SR > 2) stays unreachable; this is the conjunct that bites when the confirm is short (K=33 on a 3.25-year confirm → floor 2.090 → refused).
    - **(iii) power ≥ `POWER_MIN` (0.50), binding** — Clause-N-style pass probability at the frozen confirm length against the campaign's **design-target edge, named a priori in the prereg** (Gaussian approx., se ≈ 1/√years, method stated in the prereg). A prereg whose own target edge cannot clear its own floor at ≥ 0.50 power is refused, not disclosed-and-waved-through. Worked example at the defaults: target 1.83, K=33, 6.5-year confirm → floor 1.475, power ≈ 0.82 → admissible; target at-the-bar → power 0.50 → boundary-admissible and the prereg must say so.
+
+   **(iv) Sealed-consultation disclosure — added
+   [2026-08-22](2026-08-22-grow0-two-ledger-k-question.md), disclosure-only, not a refusal
+   conjunct** (does not join "all three hold" above — a prereg is never refused at freeze by
+   (iv) alone). A deep-lane prereg must query `burned_segments`-derived consultation history for
+   its declared (instrument, CONFIRM window), **channel-agnostically** — covering every recorded
+   consultation regardless of which channel originated it, not deep-lane campaigns only — and
+   disclose, in its own §K-equivalent block: whether the window (or any overlapping window) has
+   been consulted by any prior read, from any channel, and if so how many times (`M`) and by
+   which campaign/date/source, plus the `floor_at_k(K)` (or equivalent) each prior consultation
+   was scored against, where known. Mirrors `K_banked(family)`'s own disclosure-not-gate shape
+   (family-K ADR §2). Enforced by human review at prereg time, not by an automated gate, until the
+   separately-named `register_search.open_run` wiring (build-authorization ADR forward work)
+   lands — see the owning ADR's §2 Part B / §7 for the full design and the code this conjunct
+   depends on (`consultation_count`/`consultation_history` on `lab/discovery/burned_segments.py`,
+   landed in its own dated commit, not this one).
 
    **This is not a Cap change:** `CAP = 1.0` remains the reachability prior for every one-shot channel; this lane replaces the *prior* with a *measured demand* — the survivor must itself clear `floor_at_k(K, confirm_years)` on data the search never touched. The K-cap addendum's rationale (refuse expensive deaths at the cheapest possible moment) is traded against deliberately here: the lane buys potentially-expensive confirm-stage deaths, bounded by §4's two-campaign falsification budget — that trade is the charter's price, stated, not hidden.
 3. **Frozen train/confirm partition, confirm ≥ the years the floor was computed at.** Named in the prereg before any variant is scored. All iteration feedback reads **train only**; the confirm partition is read **once**, on the single pre-nominated survivor (nomination rule frozen at prereg: best-on-train under a stated statistic — selection is in-sample only). Per-variant confirm results are never computed. A 6.5-year confirm in practice means parent-era Databento history on the train side (cost dry-run mandatory before any pull) with the native panel era reserved for confirm, or an explicitly shorter confirm with the floor honestly recomputed at that length.
@@ -129,11 +147,12 @@ Charter a **deep-iteration lane** (`--lane deep`) with the following properties,
 
 ## §7 — Implementation plan (licensed only on `Accepted`, in order)
 
-1. **First campaign prereg** — filed as `docs/briefs/pre-registration/*deep-lane*.md` (mandatory filename pattern; its path is recorded on this ADR's running-count line at freeze) — family (design-box geometry, non-index micro), declared K, train/confirm partition + years, all three §2.2 conjuncts computed and shown, half-split + per-half floor, nomination rule, SPA/StepM thresholds (W4 re-arm), cost-law arithmetic at the venue-legal expression, `instrument_profiles.py cell` output pasted, standing-pause attestation, dedup attestation pasted, re-proposal-bar clearance if any bar is adjacent. Operator GO on the prereg is a separate mark.
-2. **Code:** `--lane deep` flag on `register_search` (open requires the prereg path + declared K + partition; refuses on the §2.2 predicate), lane-scoped tests. No change to other lanes' predicates.
+1. **First campaign prereg** — filed as `docs/briefs/pre-registration/*deep-lane*.md` (mandatory filename pattern; its path is recorded on this ADR's running-count line at freeze) — family (design-box geometry, non-index micro), declared K, train/confirm partition + years, all three §2.2(i)–(iii) refusal conjuncts computed and shown **plus §2.2(iv)'s sealed-consultation disclosure** (added 2026-08-22, disclosure-only — does not refuse at freeze on its own), half-split + per-half floor, nomination rule, SPA/StepM thresholds (W4 re-arm), cost-law arithmetic at the venue-legal expression, `instrument_profiles.py cell` output pasted, standing-pause attestation, dedup attestation pasted, re-proposal-bar clearance if any bar is adjacent. Operator GO on the prereg is a separate mark.
+2. **Code:** `--lane deep` flag on `register_search` (open requires the prereg path + declared K + partition; refuses on the §2.2(i)–(iii) predicate), lane-scoped tests. No change to other lanes' predicates.
 3. **Doc scoping:** one-line lane-scoping note on `docs/methodology/strategy_harvest.md` Clause-K and a reader-intercept on M-19 (its K-sweep will otherwise be quoted against the lane without §2.2's answer).
 4. **Skill wiring:** `futures-anomaly-discovery` SKILL K-accounting section gains the lane row.
 5. **Data (if the 6.5-year-confirm geometry is elected):** Databento parent-era cost dry-run → operator GO → pull → panel manifest.
+6. **§2.2(iv) code (owned by [`2026-08-22-grow0-two-ledger-k-question.md`](2026-08-22-grow0-two-ledger-k-question.md), not this charter's own §7)** — `lab/discovery/burned_segments.py`'s `consultation_count`/`consultation_history` extension lands in that ADR's own dated commit; §2.2(iv) is enforced by human review at prereg-authoring time until `register_search.open_run` wiring (build-authorization ADR forward work) lands. This charter's own item 2 above is unaffected — `--lane deep`'s code-enforced refusal predicate stays §2.2(i)–(iii) only.
 
 ---
 
@@ -153,6 +172,15 @@ grep -n "CAP = 1.0" lab/research_utils/axis_screen.py
 
 # Inertness limb (post-Accept): a lane prereg exists within 6 weeks (mandatory *deep-lane* pattern, §7.1) —
 ls docs/briefs/pre-registration/ | grep -i "deep-lane" || echo "no lane prereg yet"
+
+# §2.2(iv) sealed-consultation disclosure landed (2026-08-22):
+grep -n "Sealed-consultation disclosure" docs/adr/2026-08-16-deep-iteration-lane-charter.md
+grep -n "Superseded-in-part-by:" docs/adr/2026-08-16-deep-iteration-lane-charter.md
+# Expected: both non-empty, pointing at 2026-08-22-grow0-two-ledger-k-question.md
+
+# §2.2(iv)'s own code (burned_segments.py extension) -- landed only once its own dated commit
+# exists per the owning ADR's §7; empty here is not a defect until that commit is claimed:
+grep -n "consultation_count\|consultation_history" lab/discovery/burned_segments.py
 
 # Counter hygiene — lane kills recorded here, never on the blind/harvest counters:
 grep -n "Running counts (canonical, this ADR)" docs/adr/2026-08-16-deep-iteration-lane-charter.md
@@ -237,3 +265,4 @@ estate's own ratified IS boundary, reused, not re-struck.
 | 2026-08-16 | Addendum: Databento parent-era cost dry-run executed (GO-1's second condition). Bar schemas (1d/1h/1m) on GC/CL/6A (train) and MGC/MCL/M6A (confirm) all $0.0000; tbbo priced for contrast ($2,209.69 train / $274.89 confirm) to show where the real cost gate sits. GO-1 fully discharged | Claude Code (operator direction) |
 | 2026-08-16 | **DL-1 prereg FROZEN on operator GO** ("GO on DL-1") — first lane campaign live; the GO adjudicated the five gathered items (bar-scope · pause reach · channel-origin · gold-ORB clearance · step-4 mapping) as recorded on the prereg's Status block. §6 step-1 pulls fired same day; train scoring is the next session's first item | Joshua (GO) + Claude Code |
 | 2026-08-16 | **DL-1 ABANDONED** — §6 steps 1–2 executed (train pulls confirmed landed; all 10 frozen variants scored on GC.FUT TRAIN, 2010-06-06→2019-01-01, 2,168 CME trading sessions). Nominee = V7 (60min OR, drift-aligned, breakout, 3R; argmax train net annSR, no fallback). Failed gate 2a (net annSR −0.42, not >0), gate 2b (SPA consistent p=0.94 vs the ≤0.10 bar, full 10-variant universe), and gate 2d (M-16 +1-tick slip annSR −0.66); passed gate 2c (cadence 2.99/wk). All 10 variants scored net-negative on TRAIN — confirm partition (MGC.FUT) never read, per prereg §5. Running-count line updated: abandoned 1 (consecutive 1/2), active campaign none. Engine + full per-variant results: `lab/analysis/deep_lane/dl1_mgc_orc_2026-08-16/` | Claude Code (train-scoring session) |
+| 2026-08-22 | **§2.2(iv) added** — operator GO ("GO on the ADR — ratify it as-is") on [`2026-08-22-grow0-two-ledger-k-question.md`](2026-08-22-grow0-two-ledger-k-question.md): a disclosure-only fourth conjunct (cross-campaign sealed-consultation ledger), enforced by human review at prereg time until `register_search.open_run` wiring lands. Does not join the §2.2(i)–(iii) refusal predicate — a prereg is never refused at freeze by (iv) alone. §2.2(i)–(iii), §4, §5, §6 stand byte-unedited; `Superseded-in-part-by` header line added | Joshua (GO) + Claude Code |
