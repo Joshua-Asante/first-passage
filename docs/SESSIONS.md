@@ -27,6 +27,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-22p — Part B ADR ratified; charter §2.2(iv) + burned_segments.py extension landed
 
 **Focus:** Build. Operator GO ("ratify it as-is") on 08-22o's Part B ADR; executed §7 same session.
@@ -46,6 +47,7 @@ within-campaign K→M claim.
 **Live-ops state:** unchanged — rail disarmed; no book. No Databento spend.
 
 ---
+
 ## 2026-08-22o — Part B ADR drafted (two-ledger K question), `Proposed`
 
 **Focus:** Decision. Filed the GROW spec v2 Part B ADR (two-ledger K question), unlocked by

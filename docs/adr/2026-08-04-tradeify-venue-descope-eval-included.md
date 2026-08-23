@@ -1,6 +1,6 @@
 # ADR 2026-08-04 — The Tradeify venue is de-scoped as a program target, **evaluation included**
 
-**Status:** `Accepted` — operator ruling recorded 2026-08-04 in session, against an options card that named every consequence listed in §6 below; the ruling was made with those consequences in front of it. **§6 downstream sweep COMPLETE 2026-08-04 at its six enumerated sites only** (§7 Phase 3 / §6 Downstream list): 08-02 ADR withdrawn to LTM · CLAUDE.md posture + suspended research interest · STATE.md queue reset, forward board, decision index · `ops/instruments/{MYM,MNQ}.md` status + dated dispositions · INDEX regenerated · SESSIONS entry. ⚠ **Bound reading (Addendum 2026-08-06 / claim-alignment M8):** `COMPLETE` certifies those six sites — **not** a repo-wide live-target sweep. Wider-pass residue named in that addendum. **AMENDED 2026-08-04, operator-ratified (Addendum 2026-08-04): §2 clause 3 is narrowed to work whose sole justification is redeploying the locked Striker book at this venue — Tradeify-shaped base-construct *research* is not barred.** The de-scope itself (both phases, both legs, both forks F2/F3, the §4 falsifier) is unchanged.
+**Status:** `Accepted` — operator ruling recorded 2026-08-04 in session, against an options card that named every consequence listed in §6 below; the ruling was made with those consequences in front of it. **§6 downstream sweep COMPLETE 2026-08-04 at its six enumerated sites only** (§7 Phase 3 / §6 Downstream list): 08-02 ADR withdrawn to LTM · CLAUDE.md posture + suspended research interest · STATE.md queue reset, forward board, decision index · `ops/instruments/{MYM,MNQ}.md` status + dated dispositions · INDEX regenerated · SESSIONS entry. ⚠ **Bound reading (Addendum 2026-08-06 / claim-alignment M8):** `COMPLETE` certifies those six sites — **not** a repo-wide live-target sweep. Wider-pass residue named in that addendum. **AMENDED 2026-08-04, operator-ratified (Addendum 2026-08-04): §2 clause 3 is narrowed to work whose sole justification is redeploying the locked Striker book at this venue — Tradeify-shaped base-construct *research* is not barred.** The de-scope itself (both phases, both legs, both forks F2/F3, the §4 falsifier) is unchanged. **Addendum 2026-08-22 (`Proposed` — pending operator ratification): pre-commits an evidence canon + mandatory disclosure rule for how fork F1 gets adjudicated *when it triggers* (first qualifying clearance, or 2026-11-08). Does not rule F1, does not pre-empt §4 — see the dated addendum below.**
 **Decision date:** 2026-08-04
 **Supersedes:** `2026-07-17-c1-rail-build-account-registration-go.md` in part — the **deployment limb only**: Tradeify ceases to be a deployment target for the locked Striker book, evaluation included, and both legs are withdrawn from the c1 eval deployment. That ADR's rail build, account registration, attended-only posture, $700 spend ceiling and arm gate are **untouched and stand**; the rail is retained and disarmed pending fork F2.
 **Supersedes:** `2026-07-23-c1-rung-selection-ev-objective.md` in part — the **live-rung / deployment-premise limb only**: every "live c1 rung stays WATCH-1 0.50× / disarmed" sentence becomes historical; carrying 0.50× to a different venue geometry is not authorized by that ADR. Its EV objective and both-halves gate for rungs *above* 0.50× **stand**.
@@ -357,9 +357,80 @@ and `RUNBOOK.md`.
 |---|---|---|
 | 2026-08-06 | Addendum 2026-08-06 — bound COMPLETE to six enumerated sites; name wider-pass residue; widen §10 hook 3. No §2/§4/fork change; B1 header edge not redone. | claim-alignment Phase 2 (M8) |
 
+---
+
+## Addendum 2026-08-22 — F1 evidence-canon pre-commitment (non-ruling) — `Proposed`
+
+**Status of this addendum: `Proposed` — awaits operator ratification.** It is procedural scaffolding
+only. It does not rule fork F1, does not touch §2 or §4, and does not pre-empt the falsifier —
+consistent with §5's forbidden move above and with F1's own note that "deciding this here would
+pre-empt §4, which §5 forbids."
+
+**Reads for this addendum (verified 2026-08-22):**
+
+| Source | Anchor | Supplies |
+|---|---|---|
+| This ADR, §7 fork table (line ~176) | `2c3b3c5` 2026-08-22 | F1's exact text: "§4 scores eval-phase bust on the frozen $100K×4 set by simulation, and Tradeify stays in that set — so the arithmetic is unchanged. What needs an operator reading is whether a discharge resting on Tradeify counts as discharging a program that no longer targets it." Owner: Operator. Date: 2026-11-08. |
+| This ADR, §5 | same | Forbids citing this ADR to pre-empt, discharge, or moot the §4 falsifier; the de-scope does not remove Tradeify from the frozen simulation set. |
+| [`2026-07-12-prop-portfolio-four-friendly-firms.md`](2026-07-12-prop-portfolio-four-friendly-firms.md) §4 | `027a729` 2026-08-14 | The governed falsifier itself: H = at least one pre-registered candidate clears on ≥2 of the four `FRIENDLY` firm tiers by 2026-11-08; revert trigger = zero candidates clear on any tier by that date → demote to research-only. |
+| [`lab/discovery/prop_survivor_scoring.py`](../../lab/discovery/prop_survivor_scoring.py) `discharges_falsifier` | `027a729` 2026-08-14 | §4 discharges **on simulation** — frozen seeds/sims/horizon over the frozen $100K×4 set. No live outcome enters it; a venue's later deployment status is not an input to this function. |
+
+**Context — why this is worth pre-committing now rather than waiting for 2026-11-08.** An external,
+sanitized, zero-authority second-opinion lens ([`2026-08-22-ox-alpha-adversarial-lens-scope.md`](2026-08-22-ox-alpha-adversarial-lens-scope.md))
+was asked a genericized version of F1's structure as a blind test. Its recommendation — act now only
+*procedurally*, reserve the substantive ruling for trigger time, and quarantine the purposivist
+"but Tradeify is disavowed" intuition into mandatory disclosure rather than the metric itself — is
+adopted below because it independently reaches the same shape this ADR's own §5 already committed
+to (frozen-set arithmetic is not amended by a deployment de-scope), and it closes a real gap this
+ADR left open: **nothing currently specifies what happens at the moment F1 actually triggers.**
+Reconciled against the real text above (not accepted on the external lens's authority — see the
+scope ADR's own §2/§5, which bar exactly that): the external lens proposed a "distinct governance
+function" as arbiter, which does not fit this repo's actual structure — F1 is already explicitly
+**Operator**-owned per the fork table, so no new role is created here; what was actually missing is
+the evidence canon the operator's eventual reading will apply, not a decider.
+
+**The canon (binding on how F1 is read, not on what F1's answer is):**
+
+1. **The frozen $100K×4 simulation set is not amended by this ADR's deployment de-scope.** Already
+   explicit in F1's own text ("Tradeify stays in that set — so the arithmetic is unchanged") — this
+   line restates it as a canon entry so it survives being re-derived from scratch at trigger time.
+2. **A specific clearance may be excluded from the §4 count only by an affirmative, dated,
+   contemporaneously-documented finding that `discharges_falsifier`'s simulation is no longer a
+   valid proxy for that venue** (e.g., a post-freeze rule, fee, or contract-geometry change at the
+   venue that the frozen configuration does not reflect) — **never** by citing the 2026-08-04
+   deployment de-scope alone. This mirrors §5's existing bar and closes the door on re-litigating
+   F1 by a different route than a direct operator ruling.
+3. **Mandatory disclosure, regardless of which way F1 is eventually ruled.** Any report claiming §4
+   success that rests in whole or in part on a Tradeify-attributable clearance must state, at the
+   time of that report: that Tradeify was withdrawn as a deployment target 2026-08-04, and whether
+   fork F1 has been separately, affirmatively ruled by the operator as of the report date. A success
+   claim may not be reported as unconditional while F1 is still open.
+4. **Timing is unchanged.** The operator's actual F1 ruling stays reserved for trigger time — first
+   qualifying clearance, or the 2026-11-08 hard date, whichever comes first — per the fork table.
+   This addendum fixes the canon the ruling will be read against; it does not move the ruling
+   earlier.
+
+**Forbidden moves (this addendum only, additive to §5 above):**
+
+- Reading this addendum as a ruling on F1, in either direction.
+- Treating the external lens's generic recommendation as authoritative over this text — it is
+  candidate input, reconciled here against the real ADR/falsifier text, per
+  [`2026-08-22-ox-alpha-adversarial-lens-scope.md`](2026-08-22-ox-alpha-adversarial-lens-scope.md)
+  §2/§5.
+- Using canon entry 2 to manufacture a data-validity finding after the fact once it's known whether
+  a clearance rests on Tradeify — the finding must be dated and independent of which way it cuts for
+  §4's count.
+
+**Gate:** this addendum's canon is live once the operator ratifies it (Status → `Accepted`).
+Falsifier: if the operator's actual F1 ruling, when it lands, does not use this canon (e.g., rules
+on grounds the canon didn't anticipate), that is not a failure of this addendum — it is evidence the
+canon was incomplete, and should be noted in F1's own eventual ruling record rather than silently
+overridden here.
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
+| 2026-08-22 | **Addendum 2026-08-22 authored — `Proposed`, pending operator ratification.** Pre-commits an F1 evidence canon (frozen-set arithmetic unamended by the de-scope; exclusion only via a dated data-validity finding, never by the de-scope alone; mandatory disclosure on any §4 success claim resting on Tradeify while F1 is open) and closes a gap left by this ADR: nothing previously specified what happens *at* F1's trigger moment. Does not rule F1, does not touch §2/§4, does not move F1's decision timing. Motivated by an external, sanitized, zero-authority second-opinion lens's independent convergence on the same procedural-not-substantive shape; reconciled against this ADR's own real text before being logged as candidate input, per [`2026-08-22-ox-alpha-adversarial-lens-scope.md`](2026-08-22-ox-alpha-adversarial-lens-scope.md) §2/§5. | Claude Code (draft, informed by external second-opinion lens) — pending Joshua (ratify) |
 | 2026-08-04 | **Addendum 2026-08-04 RATIFIED** — operator ruling *"draft the addendum, then open the pr,"* given after being shown the exact narrow scope (clause 3 + title reading only). **§2 clause 3 narrowed**: "no further work is authorized whose sole justification is reaching, holding, or passing a Tradeify account" → "…**to deploy those two legs**" — old text quoted verbatim in the addendum. Title left as-filed (stable cross-link identifier); its reading corrected via the Status-line gloss instead, per this repo's addendum convention (07-31b precedent). Grounds: `MNQBASE-1` §1.1 recorded the same-session divergence between clause 1 (Striker-scoped, matches the operator's clarification) and clause 3 (read literally, venue-wide) rather than resolving it silently, and had already run two $0/K=0 research steps under the corrected reading before this addendum existed. Propagated to 6 normative sites same commit: this ADR (§2 + Status), CLAUDE.md (posture paragraph + bullet), STATE.md (new decision-index row), `ops/instruments/{MYM,MNQ}.md` (status headers). Does **not** touch clauses 1–2, §4's falsifier/frozen set, or forks F1/F2/F3; does **not** widen to the other three friendly firms; does **not** license deployment of anything a future construct might find — that still needs its own Stage-0 pre-registration and operator GO. | Joshua (ruling) + Claude Code (draft + apply) |
 | 2026-08-04 | Initial authoring — `Proposed`. Operator elected the wider scope (whole venue, eval included) that the 2026-08-02 ADR's §3 row 2 had declined, against an options card naming every §6 consequence. That ADR is **withdrawn** (never ratified) rather than superseded; its §1 measurements and the contrary Q-GEOFIT-1 skew limb are carried forward here unedited. Three forks (F1 §4-reading, F2 rail disposition, F3 successor venue) named and deliberately left undecided. | Joshua (ruling) + Claude Code (recorder) |

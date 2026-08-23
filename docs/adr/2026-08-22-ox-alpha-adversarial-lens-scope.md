@@ -259,6 +259,7 @@ $ git log -1 --format="%H %ad" --date=short -- docs/adr/2026-08-08-adr-ceremony-
 |---|---|---|
 | 2026-08-22 | Initial authoring | Joshua + Claude Code |
 | 2026-08-22 | Ratified `Proposed` → `Accepted`; appended non-material evidentiary addendum below (validation-test result) | Joshua + Claude Code |
+| 2026-08-22 | **Bounded extension addendum — `Accepted`, operator real-time authorization.** §2 Scope amended narrowly: authorizes ONE sanitized candidate-generation ask (Tradeify eval-strategy-fit constraint), the exact pattern §3/§5 had previously rejected in general form. Does not lift §5's harvest-worker/engineering-assist prohibition generally — a different or repeated ask needs its own authorization. | Joshua (real-time GO in chat, in response to an explicit tradeoff question) + Claude Code (draft + apply) |
 
 ---
 
@@ -303,3 +304,52 @@ run is evidence the guard is necessary, not evidence it can be relaxed.
 
 **Full detail, including both raw transcripts:** `project_ox_alpha_openrouter_evaluation_2026_08_22.md`
 (memory, battery 4).
+
+---
+
+## Addendum 2026-08-22 (second) — Bounded extension: one candidate-generation ask, Tradeify eval-strategy-fit
+
+**Amends §2 Scope narrowly. Does not touch §4 Falsifier, §0, or the general §5 forbidden-move list
+except by carving one explicit, bounded exception into it.** Everything else in this ADR —
+sanitization discipline, zero-authority framing, reconciliation-before-finding, the retention/
+training-license caveat — stands unchanged and governs this use too.
+
+**Context.** Same-session work quantified (via the real production engine, not estimation) why the
+locked Striker book fails a Tradeify-shaped consistency rule: its win distribution is dominated by
+rare, large, pyramid-driven days, and a per-day-profit ceiling mathematically requires several
+comparably-sized offsetting wins to clear — a payoff-shape problem, not a sizing problem. This sits
+on top of an already-documented finding (`project_tradeify_discovery_channels_dry_2026_08_20.md`)
+that this repo's own discovery channels are close to fully mined for new mechanisms. §3's original
+"Public-mechanism/literature-harvest worker" alternative was rejected on exactly that near-zero-
+marginal-leverage ground — but that rejection was about a **standing, general-purpose harvest lane**,
+not about one bounded, sanitized ask targeted at a single, freshly-quantified constraint.
+
+**Decision.** Claude Code may send `stealth/ox-alpha` **one** sanitized prompt asking for candidate
+strategy-mechanism ideas that would plausibly satisfy the quantified constraint (high win-frequency,
+low payoff-skew, non-pyramid-dependent shape, clearing a per-day-profit-share ceiling in reasonable
+time under a tight trailing-DD budget) — genericized exactly as every prior sanitized send in this
+ADR has been: no real strategy name, parameter, instrument, firm name, dollar figure, or Pine logic.
+Output is candidate-objection-grade input only, per §2/§5 above — reconciled against real repo
+context before anything is treated as a lead, never wired into any tool/code path, never used to
+justify skipping this repo's own pre-registration/K-accounting discipline
+(`futures-anomaly-discovery` skill) for whatever, if anything, comes of it.
+
+**Why this is a real extension, not a re-reading of the existing scope.** §2's original text is
+"adversarial second-opinion lens on... decision-authoring artifacts" — reviewing something already
+drafted. Asking for candidate mechanisms is generative, the pattern §3/§5 named and declined. Calling
+this an extension rather than quietly treating it as already-covered is the point of this addendum.
+
+**Bound (what this does NOT authorize).** A second or different candidate-generation ask — a new
+constraint, a different firm, a follow-up "give me more ideas" — is **not** covered by this
+addendum and needs its own authorization, the same way §5 already required for the general pattern.
+This is a one-time, one-constraint carve-out, not a standing lane. Nothing here changes the F1/F3
+fork ownership, the ceremony-tiering ADR's rules, or any live-risk surface.
+
+**Authorization record.** Real-time operator GO in chat, 2026-08-22, in direct response to an
+explicit question naming the tradeoff (fresh-authorization requirement + the §0 training-license
+retention risk already on record in this ADR) and three concrete alternatives (in-scope adversarial
+review only / bounded extension / skip ox-alpha) — "Extend scope deliberately" selected.
+
+**Falsifier (of this addendum, distinct from §4 above).** If this bounded-exception pattern is
+invoked a second time without a fresh, explicit authorization citing this addendum's own bound
+paragraph, that is a violation of this addendum's own terms, not a permitted continuation.
