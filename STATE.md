@@ -66,6 +66,7 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence + owner. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-23** — `Q-MONSURF-1` closed `RESOLVED` — monitoring obligations corrected from one stranded "first live fill" class to three true gate depths; M-B (idle-clock monitor) acceptance battery passes 0 missed / 0 spurious across all 312 real historical weeks, mutation-verified, registration-ready (gated on F3 only). Board triage rewritten. [`closure`](docs/briefs/closures/Q-MONSURF-1-closure-resolved.md)
 - **2026-08-23** — `Q-TRADECAP-1` closed `RESOLVED` — no per-trade dollar-loss bound exists anywhere in the live sizing/arming path (sizing law, M1 arming interlock, EM2, disaster-stop all checked, all confirmed absent) on Tradeify's intraday-enforced geometry. Successor decision packet queued (row 2). [`closure`](docs/briefs/closures/Q-TRADECAP-1-closure-resolved.md)
 - **2026-08-23** — Fork F1 ruled (12:59, after an 11:37/12:23 concurrent-session sweep had just re-confirmed F1's deferred posture as precedent for the sibling PARTIAL-disposition addendum — considered override, not a miss): a Tradeify-resting §4 discharge does not satisfy the four-firms falsifier (functionally a 3-firm set — Bulenox/MFFU/BluSky — for §4 counting purposes); queue row 1 closed. `MNQTAPE-2` ($308.69 larger-N tape-aggressor replication) declined NO-GO same session. MSL-S4 (MGC) Pine hash-pinned locally; confirmed already `PARKED` (post-`AMBIGUOUS-HOLD` Explore-confirm) — its RUNBOOK's TV-backtest recommendation is stale/superseded, not a live next step. Every currently-sourced MSL Tradeify candidate is now closed or PARKED. [`ADR addendum`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) [`prereg`](docs/briefs/pre-registration/2026-08-23-mnqtape-2-larger-n-prereg.md) [`MSL-S4 card`](core/strategies/candidates/candidates_CARD.md)
 - **2026-08-23** — Coldstore Phase B/C: operator GO retired Guardian Gold + Aegis USDJPY from living `dd_protection.BASE_RISK` (LOCKED legacy book table now 2 strategies — Striker DJ30/NAS100 only); frozen risk% moved to `historical_challenge.HISTORICAL_CHALLENGE_BASE_RISK`, authorization axis unchanged. [`Phase B ADR`](docs/adr/2026-08-23-strategy-coldstore-phase-b.md) [`Phase C ADR`](docs/adr/2026-08-23-strategy-coldstore-phase-c.md) [`PR #122`](https://github.com/Joshua-Asante/first-passage/pull/122)
@@ -247,30 +248,47 @@ deleted (not struck).
 
 ### No fixed date / gated
 
-> ⚠ **Five threads are gated on first strategy-signal fill.** That gate is **an acceptable
-> strategy**, not a missing venue. [`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md)
-> kept the incumbent `Tradeify_Select_100K` eval as the environment; the weekly idle-clock is
-> live; there is no c1 book (locked Striker legs stay barred). **Q-SIGID-1** is **not** among
-> them — pursuit standing **KEEP**, resolving via the S2b daemon; see [`c2`](docs/pursuits/c2-q-sigid-1.md).
-> **Three have rows in the list below** — **PREREG-C1-DEDUPE-1**, **per-fill add-slippage
-> capture (B7 Stage 2b)**, and the **forward regime-monitor successor**. **Two do not, and
-> are re-homed here** because their only prior home was the deleted operator-queue row 3:
+> ⚠ **Monitoring obligations were recorded as one stranded "first live fill" class; `Q-MONSURF-1`
+> (`RESOLVED` 2026-08-23) found they sit at three distinct gate depths — corrected here, not
+> restated as before.** [`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md) kept the
+> incumbent `Tradeify_Select_100K` eval as the environment; the weekly idle-clock is live; there
+> is no c1 book (locked Striker legs stay barred). **Q-SIGID-1** is **not** among any of the below
+> — pursuit standing **KEEP**, resolving via the S2b daemon; see [`c2`](docs/pursuits/c2-q-sigid-1.md).
+>
+> - **M-B (idle-clock monitor) — gated on F3 (a registered account), NOT first live fill.**
+>   `RESOLVED`/registration-ready: acceptance battery passed 0 missed / 0 spurious across all 312
+>   real historical weeks, mutation-tested. No further design work owed — deploys alert-only the
+>   moment F3 registers a successor venue (Phase 5: re-freeze idle-clock semantics against that
+>   venue's own DP2-verified rules if they differ from the Tradeify-shaped provisional freeze used
+>   here, then wire to the live account). [`closure`](docs/briefs/closures/Q-MONSURF-1-closure-resolved.md)
+> - **M-C (ECR live-edge-capture monitor + per-fill add-slippage capture) — genuinely fill-gated.**
+>   Correctly waits on first strategy-signal fill; row below, pointing at its own prereg.
+> - **M-A (shadow market-data regime observer) — elective, not scheduled, gate itself unruled.**
+>   Venue-free but low-consequence (alerts on a book that isn't trading). Whether the design's
+>   own "first live fill" build gate binds a pure market-data observer (vs. only a fill-coupled
+>   monitor) is an **explicit operator ruling still owed** — not assumed either way. Row below.
+>
+> **Two other threads share the same prior home** (deleted operator-queue row 3), unrelated to
+> the monitoring triage above:
 >
 > - **lifecycle Call-1** — rolling-PF σ-source has no live data until a strategy is on the
 >   book. Its 2026-08-08 review row below still stands but can only return AMBIGUOUS on thin data.
 > - **ORB decay re-scope** — no other row in this file; recorded here so the deletion of queue
 >   row 3 does not silently lose it.
 >
-> All five wait on the same thing as queue row 2 (B7 / M1). They are not closed, not
-> discharged, and not re-homed to a successor venue — F3 was no-migration (S1).
+> `PREREG-C1-DEDUPE-1` (row below) is unrelated to monitoring — waits on M1 `RESOLVED` + a
+> separate operator GO, not on a live fill. Everything above except M-B waits on the same thing as
+> queue row 1 (B7 / M1); M-B alone is now gated on F3 only. Not closed, not discharged, not
+> re-homed to a successor venue — F3 was no-migration (S1).
 > [`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md) ·
 > [`ADR 2026-08-04`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) (Striker-book bar)
 
+- **Idle-clock monitor (M-B) — registration-ready, gated on F3 only** — Q-MONSURF-1 `RESOLVED`; standalone module built and acceptance-tested (0 missed / 0 spurious, all 312 real historical weeks, mutation-verified). No design work owed; wire to the live account at F3 registration (Phase 5 — re-freeze idle-clock semantics against the actual successor's DP2-verified rules first if they differ from the Tradeify-shaped provisional freeze). [`module`](lab/analysis/c1/msl_monsurf_1_idle_clock_2026-08/idle_clock_monitor.py) · [`closure`](docs/briefs/closures/Q-MONSURF-1-closure-resolved.md)
 - **Sentinel Tier-2/3 promotion (limb B1)** — before next quarterly slate; promotion not a build. [`sentinel design`](docs/spec/2026-06-23-inqhiori-sentinel-design.md) · [`Hermes closure`](docs/briefs/closures/2026-07-27-hermes-agent-adoption-closure-resolved.md)
 - **PREREG-C1-DEDUPE-1** — gated on M1 `RESOLVED` + separate operator GO. [`pre-reg`](docs/spec/PREREG-C1-DEDUPE-1-intent-key-functional-property.md) · [`impl plan`](docs/spec/PREREG-C1-DEDUPE-1-implementation-plan.md)
 - **R&D tooling T2 / T3 / T4** — GO 2026-08-23 executed (kit + breadth calibration + synthetic Call-1 OC). T4 Task 3 state writer still fill-gated. [`ADR §7`](docs/adr/2026-07-11-tradable-anomalies-statistics-adoption.md) · [T4 RESULTS](docs/notes/research/2026-08-23-call1-oc-synthetic.md)
-- **Per-fill add-slippage capture (B7 Stage 2b)** — waits first strategy-signal **add** fill; prerequisite ledger price-capture landed. [`Q-COSTGEO-3`](docs/briefs/closures/Q-COSTGEO-3-closure-ambiguous-needs-depth.md) · B7 procedure in the private archive
-- **Forward regime monitor / decompound limb-2 successor** — ORPHANED same hole: CFD limb-2 cannot fire; venue-native design landed (not ratified); gated on first live fill. [`decompound ADR §Addendum 2026-08-03`](docs/adr/2026-06-07-decompound-remc-hold.md) · [`Pepperstone retirement`](docs/adr/2026-08-02-pepperstone-feed-retirement.md)
+- **Per-fill add-slippage capture (B7 Stage 2b) — Q-MONSURF-1 M-C** — waits first strategy-signal **add** fill; prerequisite ledger price-capture landed. [`Q-COSTGEO-3`](docs/briefs/closures/Q-COSTGEO-3-closure-ambiguous-needs-depth.md) · B7 procedure in the private archive
+- **Forward regime monitor / decompound limb-2 successor — Q-MONSURF-1 M-A (elective, not scheduled)** — ORPHANED same hole: CFD limb-2 cannot fire; venue-native design landed (not ratified); build-gate scope ruling owed (does "first live fill" bind a pure market-data observer?) before this is even buildable. [`decompound ADR §Addendum 2026-08-03`](docs/adr/2026-06-07-decompound-remc-hold.md) · [`Pepperstone retirement`](docs/adr/2026-08-02-pepperstone-feed-retirement.md) · [`Q-MONSURF-1 closure`](docs/briefs/closures/Q-MONSURF-1-closure-resolved.md)
 - **CFD data-estate class-wide delete** — trigger-dated; blocked on T1 (F3 FUTURES_LOCK) + substrate Phase-6 confirm. [`CFD estate ADR`](docs/adr/2026-07-11-ops-cfd-estate-retirement.md) · [gate audit](docs/notes/audits/2026-07-17_gate_cfd-estate-classwide-delete.md)
 - **Mechanism-sourcing radar** — on-demand cadence; 08-08/11-08 = progress/idle checkpoints; idle guard 2026-11-08. [`harvest §2`](docs/methodology/strategy_harvest.md)
 - **Deep-iteration lane — §4(c) supply-side audit DELIVERED 2026-08-23 (`AMBIGUOUS`); its named nearest supply lead, `MNQFLOW-1-DEPTH`, is now `HOLD` (operator, value-uncertain — not cost-blocked, not declined).** The audit ([note](docs/notes/audits/programme-audit/2026-08-23-deep-lane-supply-audit.md)) named `MNQFLOW-1-DEPTH` (order-flow) as the nearest reachable supply lead, "one sign-off away." Two independent, non-overlapping 30-day systematic samples of its own frozen 255-trigger population were each P0-priced and each blocked (original **$148.04**, redraw **$154.73**, both vs the **$125.00** ceiling) — reading as structural (~$150 true cost, not $125), not unlucky draws. Presented with three named forward paths (raise the ceiling to ≈$160–175; a smaller-N fresh pre-registration; decline), the **operator held**: *"I am not ruling it out but I do not know if it is worth the spend"* — recorded verbatim in [`PREREG_S2B.md`](lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PREREG_S2B.md)'s own Status block. No forced re-test date; naturally revisited at 2026-11-08 alongside the lane's own broader supply question, or sooner at the operator's initiative. $0 spent across both pricing attempts. The free alternate (a published MOC-imbalance cohort δ) and the blind channel (unsourced, 1/3) remain the estate's other two named supply routes — **neither requires any further action on the order-flow route to stay available.** Background: DL-2's construction retired for M6A (geometric-feasibility diagnostic, median R=1.0/0.687, 85–97% of fired trades never reach 1R); DL-1 is a separate candidate-level failure — no shared template defect. [`PREREG.md`§9.2](lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PREREG.md) · [`charter`](docs/adr/2026-08-16-deep-iteration-lane-charter.md)

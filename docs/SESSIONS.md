@@ -30,6 +30,20 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-24p — Q-MONSURF-1 RESOLVED: M-B idle-clock monitor built, tested, registration-ready
+
+**Focus:** Build + Measurement. Second-ranked Pre-Q executed to verdict on operator GO.
+
+**Shipped:** [`lab/analysis/c1/msl_monsurf_1_idle_clock_2026-08/`](../lab/analysis/c1/msl_monsurf_1_idle_clock_2026-08/) — standalone idle-clock monitor (`idle_clock_monitor.py`) + acceptance battery (`acceptance_battery.py`), no `ops/c1_rail` import. Retrieved the pruned `daily_panel.csv` read-only from the `pre-prune-2026-08-08` tag; reproduced every `c1_cadence_inactivity_2026-08-02/RESULTS.md` anchor exactly before trusting anything downstream. Ran against all 312 real historical Mon–Fri weeks (resolved the "simulated quarter" vs "full frozen distribution" tension in H-MONSURF-1's own wording toward the stronger, full-panel test). Two mutation classes planted and caught (380 spurious alerts from a single-day-lookback bug; exactly 164 missed alerts from an always-suppressed lookback) before trusting the clean run: **0 missed, 0 spurious** on the real, unmutated panel. `Q-MONSURF-1` closed `RESOLVED`. STATE.md's "No fixed date / gated" section rewritten — monitoring obligations were one stranded "first live fill" block, corrected to three true gate depths (M-B now registration-ready, gated on F3 only; M-C stays fill-gated; M-A stays elective, its own build-gate scope ruling still owed).
+
+**Decisions/defects:** Resolved an internal tension in the parent brief's own H-MONSURF-1 wording ("simulated quarter" vs "the full frozen distribution draw") conservatively toward the full 312-week panel — a strict superset of any 13-week sample, so the stronger bar, not an invented threshold. One stale cross-reference found and disclosed, not repaired (out of scope): the activity-rule disposition spec cites two spec files that don't resolve in the current tree.
+
+**Open / next:** Phase 5 (wire M-B to the live account) fires automatically at F3 registration, not before. M-A's build-gate scope ruling is a standing, explicit operator-ruling request. MSL still needs a fresh WHO sourced for an actual Tradeify strategy candidate — this closes infrastructure gaps, not the strategy-search gap itself.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-24o — F1 ruled; MNQTAPE-2 NO-GO; Q-TRADECAP-1 RESOLVED; status-skew fixes; Pre-Q priority pass
 
 **Focus:** Decision + Measurement. Operator rulings on the two open Tradeify-strategy threads, the

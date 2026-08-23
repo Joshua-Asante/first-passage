@@ -37,6 +37,15 @@ Ten of the eleven 2026-08-18 assumption-sweep Qs remain Open (Q-M1WIRE-1 closed 
 
 ## Recently closed (cross-reference; not open)
 
+- **Q-MONSURF-1** — which monitoring surfaces are buildable venue-free now, and on what acceptance
+  evidence (M-A/M-B/M-C triage) — **`RESOLVED` 2026-08-23** — M-B (idle-clock monitor) acceptance
+  battery passes 0 missed / 0 spurious across all 312 real historical weeks, mutation-verified;
+  registration-ready, gated on F3 only (not first live fill, as previously recorded). M-C stays
+  fill-gated; M-A stays elective with its own build-gate scope ruling still owed. Triage written to
+  STATE.md's board. $0/K=0. [`closure`](closures/Q-MONSURF-1-closure-resolved.md) ·
+  [`brief`](Q-MONSURF-1-monitoring-surface-triage-scoping.md) ·
+  [`pre-reg`](pre-registration/Q-MONSURF-1-verdict-preregistration.md) ·
+  [`results`](../../lab/analysis/c1/msl_monsurf_1_idle_clock_2026-08/RESULTS.md).
 - **Q-TRADECAP-1** — is there any per-trade dollar-loss bound anywhere in the sizing/arming path on
   the intraday-enforced Tradeify geometry (A6, orphaned `1r_estimation.md` Forward question) —
   **`RESOLVED` 2026-08-23** — confirmed absent on all four checked limbs (sizing law, arming
