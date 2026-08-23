@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23c — Grow-lane leftovers implementation plan
+
+**Focus:** Hygiene. Campaign plan 3.
+
+**Shipped:** [`2026-08-23-grow-lane-leftovers-implementation.md`](superpowers/plans/2026-08-23-grow-lane-leftovers-implementation.md).
+
+**Decisions/defects:** none. GROW-0 skipped (plan already exists).
+
+**Open / next:** carry 2026-08-23b. Campaign next: substrate Phase 6 plan.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-23b — W5 CI-from-gates.yml implementation plan
 
 **Focus:** Hygiene. Campaign plan 2.
