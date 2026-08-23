@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23i — Tradable-anomalies T2 plan (PENDING GO)
+
+**Focus:** Hygiene. Campaign plan 8a.
+
+**Shipped:** [`2026-08-23-tradable-anomalies-t2-implementation.md`](superpowers/plans/2026-08-23-tradable-anomalies-t2-implementation.md).
+
+**Decisions/defects:** none. Header is PENDING OPERATOR GO. Does not restore `guardian_signal.py`.
+
+**Open / next:** carry 2026-08-23h / 2026-08-22r. Campaign next: tradable-anomalies T3 then T4.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-23h — Coldstore Phase C plan (PENDING GO)
 
 **Focus:** Hygiene. Campaign plan 7b.
