@@ -1,4 +1,4 @@
-# Notice — Ox-alpha review of `futures-anomaly-discovery`: most objections miss or restated withdrawn doctrine; four skill-text skews survive
+# Notice — Ox-alpha review of `futures-anomaly-discovery`: most objections miss or restated withdrawn doctrine; five skill-text skews survive
 
 **Notice ID:** N-2026-08-23-ox-alpha-futures-anomaly-discovery-skill-review
 **Observed:** 2026-08-23
@@ -20,7 +20,7 @@ Lane: [`2026-08-22-ox-alpha-adversarial-lens-scope.md`](../../adr/2026-08-22-ox-
 
 ## §1 — The observation
 
-A sanitized copy of the discovery skill was sent with a genericized "our purposes" brief (trial-count is the binding constraint; published-mechanism confirmation is the fundable route; agents execute so mechanical gates beat exhortation; discovery never blesses; same-units cost attestation; claim-family-specific nulls). Ox-alpha produced ~18 numbered objections plus ranked edits, all in the reasoning channel. Reconciled against the real skill and its owners, four items survive as skill-text skews; the rest are already discharged, wrong-layer, or prompt artifacts.
+A sanitized copy of the discovery skill was sent with a genericized "our purposes" brief (trial-count is the binding constraint; published-mechanism confirmation is the fundable route; agents execute so mechanical gates beat exhortation; discovery never blesses; same-units cost attestation; claim-family-specific nulls). Ox-alpha produced ~18 numbered objections plus ranked edits, all in the reasoning channel. Reconciled against the real skill and its owners, five items survive as skill-text skews; the rest are already discharged, wrong-layer, or prompt artifacts.
 
 ---
 
