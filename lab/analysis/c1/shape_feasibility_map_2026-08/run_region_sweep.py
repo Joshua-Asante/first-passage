@@ -20,6 +20,16 @@ axis that moves is sims_per_seed, disclosed on every output row via
 A separate `--validation` pass re-scores a small reference subset at the full
 frozen sims_per_seed=10,000 to cross-check the reduced-N sweep's verdicts.
 
+A second `--marginal-validation` pass (added post-publication, as a review
+fix -- see RESULTS.md Sec4.1) re-scores MARGINAL_VALIDATION_CELLS, also at
+the full frozen N: the original VALIDATION_CELLS above are all far-from-gate
+corner cases (chosen for coverage diversity before the sweep ran), so they
+never actually tested whether a cell landing MARGINAL under the reduced
+sweep-N would resolve to a clear PASS/FAIL (or stay MARGINAL) at full N --
+exactly the risk the N-reduction introduces. MARGINAL_VALIDATION_CELLS is
+selected AFTER the sweep completed, by gate proximity (every cell whose
+verdict was MARGINAL in the committed region_data.jsonl), not by outcome.
+
 Sharded execution: pass --shard-index i --n-shards N to score only cells
 i, i+N, i+2N, ... of the fixed 630-cell enumeration (deterministic, so shards
 partition the grid exactly once with no overlap and no gap). Each shard
@@ -71,6 +81,31 @@ VALIDATION_CELLS: List[Tuple[float, str, int, float]] = [
     (0.70, "bounded_clustered", 8, 250.0),  # expected fast-pass corner
     (0.40, "symmetric", 8, 325.0),  # expected fast-bust corner
     (0.65, "mild_right_skew", 3, 275.0),  # mid-grid, positive skew
+]
+
+# MARGINAL-band cross-check cells -- added as a fix for a review finding on
+# the original 630-cell sweep (RESULTS.md Sec4.1): VALIDATION_CELLS above are
+# all far-from-gate corner cases, chosen for coverage diversity BEFORE the
+# sweep ran, so none of them tested whether a cell landing MARGINAL under the
+# reduced sweep-N (sims_per_seed=500) would resolve to a clear PASS/FAIL (or
+# stay MARGINAL) at the frozen full N=30,000 -- exactly the risk a smaller N
+# introduces (wider SE bars pushing a true-PASS or true-FAIL cell's interval
+# across the gate line). Selection criterion here is deliberately POST-sweep
+# and outcome-blind in a different sense than VALIDATION_CELLS: every one of
+# these 5 was picked from the completed region_data.jsonl by GATE PROXIMITY
+# (bust_status == "MARGINAL"), not by whether re-scoring was expected to
+# agree or disagree -- the whole point is to stress-test the population most
+# at risk from the N reduction. Of the 19 MARGINAL tuples in the committed
+# sweep, all 19 are marginal on the BUST gate specifically (pass is never
+# within 2*SE of the 50% floor anywhere in this grid) -- these 5 span all
+# three shapes and both sides of DD_GATE=0.03 (reduced-N bust point estimate
+# noted per cell, from region_data.jsonl):
+MARGINAL_VALIDATION_CELLS: List[Tuple[float, str, int, float]] = [
+    (0.65, "symmetric", 8, 325.0),          # reduced-N bust=0.0227 (leans PASS side)
+    (0.60, "bounded_clustered", 1, 250.0),  # reduced-N bust=0.0240 (leans PASS side)
+    (0.50, "mild_right_skew", 2, 250.0),    # reduced-N bust=0.0287 (closest to the 0.03 line)
+    (0.55, "mild_right_skew", 5, 275.0),    # reduced-N bust=0.0360 (leans FAIL side)
+    (0.60, "bounded_clustered", 3, 275.0),  # reduced-N bust=0.0360 (leans FAIL side, other shape)
 ]
 
 
@@ -235,7 +270,13 @@ def main(argv=None) -> int:
     ap.add_argument("--n-sims", type=int, default=500, help="sims_per_seed (frozen seeds/horizon untouched)")
     ap.add_argument("--out", required=True)
     ap.add_argument("--validation", action="store_true", help="run VALIDATION_CELLS at full frozen N instead")
+    ap.add_argument(
+        "--marginal-validation", action="store_true",
+        help="run MARGINAL_VALIDATION_CELLS (gate-boundary cross-check, review fix) at full frozen N instead",
+    )
     args = ap.parse_args(argv)
+    if args.validation and args.marginal_validation:
+        ap.error("--validation and --marginal-validation are mutually exclusive")
 
     thr = load_scoring_thresholds()
     assert abs(thr.eval_bust_ceiling - DD_GATE) < 1e-9, thr.eval_bust_ceiling
@@ -248,15 +289,20 @@ def main(argv=None) -> int:
     if args.validation:
         cells = [(*t, firm) for t in VALIDATION_CELLS for firm in FIRM_KEYS]
         n_sims = thr.sims_per_seed
+    elif args.marginal_validation:
+        full_marg = [(*t, firm) for t in MARGINAL_VALIDATION_CELLS for firm in FIRM_KEYS]
+        cells = full_marg[args.shard_index :: args.n_shards]
+        n_sims = thr.sims_per_seed
     else:
         full = all_cells()
         cells = full[args.shard_index :: args.n_shards]
         n_sims = args.n_sims
 
     panel_cache: Dict[Tuple[float, str, int, float], Tuple[np.ndarray, np.ndarray]] = {}
+    mode = "validation" if args.validation else ("marginal-validation" if args.marginal_validation else "sweep")
     print(
-        f"[sweep] shard={args.shard_index}/{args.n_shards} cells={len(cells)} "
-        f"n_sims/seed={n_sims} validation={args.validation} out={out_path}",
+        f"[sweep] mode={mode} shard={args.shard_index}/{args.n_shards} cells={len(cells)} "
+        f"n_sims/seed={n_sims} out={out_path}",
         flush=True,
     )
     n_done_now = 0

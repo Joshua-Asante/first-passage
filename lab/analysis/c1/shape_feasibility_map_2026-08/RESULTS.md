@@ -2,7 +2,7 @@
 
 # Payoff-shape feasibility map (Phase A Task A2 — the target spec)
 
-**Status:** **ACTIVE** — 630-cell region published, Tradeify/MFFU identical, 8/8 full-N validation cells agree; screens shape, not mechanisms.
+**Status:** **ACTIVE** — 630-cell region published, Tradeify/MFFU identical; 8/8 corner-case + 3/5 MARGINAL-band validation tuples resolve clean at full N (2/5 stay MARGINAL, 0 confident-verdict flips); screens shape, not mechanisms.
 
 **What this is not:** not a strategy, not a candidate, not a backtest of anything real. It is a
 coverage map over a *synthetic* trade-generating process, scored through the production
@@ -181,6 +181,63 @@ well inside the reduced-N SE bars themselves. This is the concrete evidence behi
 the sweep-N reduction is a precision cost (wider bars), not an accuracy cost (the point estimates
 track the frozen-N standard closely).
 
+### §4.1 — MARGINAL-band cross-check (review fix, added 2026-08-23)
+
+**Why this exists:** a reviewer pass on the initial publication noted that the 4-tuple/8-cell
+`VALIDATION_CELLS` above are all far-from-gate corner cases, chosen for coverage diversity *before*
+the sweep ran — none of them tested whether a cell landing `MARGINAL` under the reduced sweep-N
+(`sims_per_seed=500`) would resolve to a clear `PASS`/`FAIL` (or stay `MARGINAL`) at the frozen full
+N, which is exactly the risk the N-reduction introduces. This subsection closes that gap.
+
+**Selection (post-sweep, by gate proximity, not by outcome):** of the 630 committed cells, 19
+tuples (38 cells, identical across both firms per §6.1) landed `MARGINAL` — every one of them on
+the **bust** gate specifically (`pass` is never within 2·SE of the 50% floor anywhere in this grid,
+§6 throughout). 5 of the 19 were selected for full-N re-scoring, spanning all three shapes and both
+sides of `DD_GATE=0.03` (reduced-N bust point estimate in parentheses): `symmetric` (2.27%),
+`bounded_clustered` ×2 (2.40%, 3.60%), `mild_right_skew` ×2 (2.87%, 3.60%) — recorded in
+`run_region_sweep.py`'s `MARGINAL_VALIDATION_CELLS` list and its own comment, re-stated here per the
+same "checkable against the code's git history" discipline the paragraph above uses for
+`VALIDATION_CELLS`. Re-scored via a new `--marginal-validation` CLI mode that mirrors
+`--validation`'s call shape exactly (`simulate_path`/`run_seed` untouched, same as every other path
+in this harness); raw output committed at
+[`marginal_validation_data.jsonl`](marginal_validation_data.jsonl) (10 rows: 5 tuples × 2 firms).
+
+| Cell | Reduced-N sweep (`N=1,500`) | Full-N validation (`N=30,000`) | Resolution |
+|---|---|---|---|
+| `wr0.65_symmetric_cd8_rk325` — both firms | bust 2.27% (`MARGINAL`) | bust 1.88% (`FEASIBLE`) | `MARGINAL` → `FEASIBLE` |
+| `wr0.60_bounded_clustered_cd1_rk250` — both firms | bust 2.40% (`MARGINAL`) | bust 3.00% (`MARGINAL`) | stays `MARGINAL` (point estimate crosses the line — see below) |
+| `wr0.50_mild_right_skew_cd2_rk250` — both firms | bust 2.87% (`MARGINAL`) | bust 3.04% (`MARGINAL`) | stays `MARGINAL` (point estimate crosses the line — see below) |
+| `wr0.55_mild_right_skew_cd5_rk275` — both firms | bust 3.60% (`MARGINAL`) | bust 3.79% (`INFEASIBLE`) | `MARGINAL` → `INFEASIBLE` |
+| `wr0.60_bounded_clustered_cd3_rk275` — both firms | bust 3.60% (`MARGINAL`) | bust 3.83% (`INFEASIBLE`) | `MARGINAL` → `INFEASIBLE` |
+
+**Both firms remain bit-identical at full N on every one of these 5 tuples too** (verified directly
+on the raw JSONL — e.g. `wr0.60_bounded_clustered_cd3_rk275`: both firms `bust=0.03826666666666667`
+to full float precision) — the same pattern §6.1 already reports, not a separate new instance of it.
+**Median days-to-pass also matched exactly between the reduced-N and full-N re-score for all 5
+tuples** (33.0/33.0, 476.0/476.0, 146.0/146.0, 50.0/50.0, 146.0/146.0) — noted as an observation,
+not chased further here (the mechanism was not separately verified and no claim is made about it).
+
+**Reading, stated precisely:** 3 of the 5 `MARGINAL` tuples resolved to a clear verdict at full N
+(1 `FEASIBLE`, 2 `INFEASIBLE`), each consistent with which side of the gate its own reduced-N point
+estimate already leaned toward. 2 of the 5 remained `MARGINAL` at full N — and for those two, the
+bust point estimate actually **crossed** the exact `0.03` line between the reduced-N and full-N
+re-score (2.40%→3.00% and 2.87%→3.04%). That is not glossed over here: **2 of 5 point estimates
+did land on the opposite side of the gate at full N than at reduced N.** What did not happen is a
+*confident*-verdict flip — `gate_status()`'s own SE-of-proportion band correctly kept both cells
+`MARGINAL` at both N's rather than reporting a false confident `FEASIBLE`/`INFEASIBLE` on either
+side. This is the calibration working as intended: a point estimate this close to a gate line is
+expected to wobble across it between two different finite-N draws, and the honest response is
+exactly what happened — stay `MARGINAL`, not report a coin-flip as a verdict.
+
+**Scope, stated plainly:** because every tuple in this subset was selected *for* landing `MARGINAL`
+at reduced N, this check cannot — by construction — test the specific failure mode of "a confident
+`FEASIBLE`/`INFEASIBLE` verdict at reduced N flips to the opposite confident verdict at full N."
+That is what the original 8-cell corner-case subset above already tests (8/8 agree, unchanged by
+this addition). What this subsection adds: no clearly-`FEASIBLE` or clearly-`INFEASIBLE` reduced-N
+cell in this grid has now been shown to hide a `MARGINAL`-band full-N surprise near a gate boundary
+— the region most at risk from the N-reduction was checked, not just asserted safe by analogy to
+the corner cases.
+
 ---
 
 ## §5 — Firms scored
@@ -215,7 +272,12 @@ tested** — verified directly on the raw JSONL (e.g. `wr0.55_mild_right_skew_cd
 harness bug: the two tiers' geometry differs only in `consistency_rule_pct` (40.0 vs 50.0) and
 `min_trading_days` (3 vs 2) — bust never depends on consistency at all (§3), `min_trading_days`
 is already satisfied for every tuple in this grid by the time any path is near its profit target
-(median days-to-pass is never below ~30, §6.2), and **none of this map's three shape archetypes
+(the grid's own minimum median days-to-pass is **16.0** — `wr0.70_mild_right_skew_cd8_rk325`, both
+firms tied at that value — computed directly from `region_data.jsonl`'s 590 non-null
+`median_days_to_pass` rows, not eyeballed from a heatmap; §6.2's tables carry bust/pass % only, not
+days-to-pass, so that number is never itself a §6.2 citation. 16.0 is still comfortably above
+`min_trading_days` 3 (Tradeify) / 2 (MFFU) — the argument this parenthetical supports holds at the
+correct number, it just isn't "~30"), and **none of this map's three shape archetypes
 ever produces a single day whose profit share falls in the narrow (40%, 50%] band** that would be
 the only way the two firms' consistency thresholds could diverge. Put differently: **this map's
 own numbers show the consistency rule is not the binding constraint for any of the three shapes
@@ -455,9 +517,68 @@ numbers show that same qualitative pattern).
 
 1. Gross of commission (§2). 2. No gap-through-stop tail (§2). 3. DGP not calibrated to any real
 instrument (§2). 4. Reduced-N sweep (§4) — wider SE bars than the frozen 30,000-path standard;
-mitigated by the full-N validation subset. 5. EM2's $ cells are frontier **arithmetic**, not a
-provenance claim about any real R (§0/§1). 6. B1/B2 first-consumer checks (§8) are only as
-complete as those lanes' own not-yet-fully-specified predicted shapes.
+mitigated by the full-N corner-case validation subset (§4) **and** the full-N MARGINAL-band
+validation subset (§4.1) — 2 of the 19 MARGINAL tuples in the committed sweep remain `MARGINAL`
+even at the frozen full N (§4.1), which is the honest, expected behavior for a point estimate
+genuinely close to the gate line, not an unmitigated gap. 5. EM2's $ cells are frontier
+**arithmetic**, not a provenance claim about any real R (§0/§1). 6. B1/B2 first-consumer checks
+(§8) are only as complete as those lanes' own not-yet-fully-specified predicted shapes. 7. The
+original 8-cell corner-case validation subset's raw per-path output (§4) was never committed as a
+JSONL — only narrated in its table — unlike §4.1's `marginal_validation_data.jsonl`; not
+re-run/backfilled by the review-fix pass (§12) since the finding it addresses was scoped to
+MARGINAL-band coverage, not corner-case reproducibility.
+
+---
+
+## §12 — Fix report — review response (2026-08-23)
+
+A reviewer pass on the initial publication (commits `22c57a1` + `702f19a`) surfaced three findings.
+All three are addressed **in place**, at the point the reader encounters the original claim — not
+as a disconnected addendum — per this repo's own standing lesson that corrections belong where they
+are read. Summary; full narrative lives at each fix's own location:
+
+1. **§6.1's days-to-pass claim was false, not just imprecise.** The initial text read "median
+   days-to-pass is never below ~30, §6.2." The actual minimum, computed directly from the committed
+   `region_data.jsonl`, is **16.0** (`wr0.70_mild_right_skew_cd8_rk325`, both firms). §6.1 is
+   corrected in place to state 16.0, with the correct citation (the raw JSONL — §6.2's own tables
+   carry bust/pass % only, never days-to-pass) and a re-check that the underlying argument
+   (`min_trading_days` clears well before any path nears its target) still holds at the correct
+   number — it does, by a wide margin (16.0 vs. `min_trading_days` 2–3).
+2. **The full-N validation subset never tested a `MARGINAL` cell.** §4's original 8 cells were all
+   far-from-gate corner cases, chosen for coverage diversity before the sweep ran, so none tested
+   whether a `MARGINAL` verdict under the reduced sweep-N would resolve differently at full N — the
+   specific risk the N-reduction introduces. New §4.1 re-scores 5 additional tuples (10 cells),
+   selected by gate proximity from the sweep's own 19 `MARGINAL` tuples, at the full frozen
+   `sims_per_seed=10,000`, committed at `marginal_validation_data.jsonl`. Result: 3/5 resolve to a
+   clear verdict consistent with their reduced-N lean, 2/5 remain honestly `MARGINAL` (their point
+   estimates cross the exact gate line between N's, and the SE-of-proportion band correctly keeps
+   both `MARGINAL` rather than reporting a false confident verdict), 0/5 show a confident-verdict
+   flip. Harness change: `run_region_sweep.py` gained a `MARGINAL_VALIDATION_CELLS` list and a
+   `--marginal-validation` CLI mode mirroring `--validation`'s call shape exactly
+   (`simulate_path`/`run_seed` untouched).
+3. **The audit note quoted the plan's `AUTHORIZATION` line incompletely and overclaimed independent
+   corroboration.** `docs/notes/audits/2026-08-23-shape-feasibility-map-audit.md` omitted the plan
+   doc's "not yet given" clause and treated a sibling artifact's self-reported byline as independent
+   operator confirmation of a GO — neither holds up. Self-review item 1 is corrected to quote the
+   line in full and to state plainly that no first-party evidence in this tree confirms a GO for
+   A1/A2; the same correction is promoted to a new Concerns item 1 for prominence. This RESULTS.md
+   never itself quoted the `AUTHORIZATION` line (confirmed by direct grep of the pre-fix text — no
+   `AUTHORIZATION`/`GO` reference existed here), so no separate RESULTS.md edit was needed for this
+   finding beyond this entry.
+
+**Considered and not done:** re-running the original 8-cell corner-case subset to backfill a
+committed raw JSONL for it (§11 item 7) — out of scope for the findings above, which concerned
+MARGINAL-band coverage and two text-accuracy defects, not that subset's own reproducibility;
+flagged rather than done silently.
+
+**Verification of this fix pass:** `test_shape_generator.py` re-run 14/14 passing (unaffected — no
+change to `shape_generator.py`); `run_region_sweep.py` re-compiled clean
+(`python -m py_compile`) and its new `--marginal-validation` CLI path was not merely written but
+**actually executed** for all 10 new cells (raw output in `marginal_validation_data.jsonl`, greppable
+against §4.1's table); the corrected minimum days-to-pass (16.0) and the AUTHORIZATION full-line
+quote were each independently re-derived from source (the committed JSONL; the plan doc itself) in
+this fix pass, not copied from the reviewer's own finding text. See the Verification section below
+for the exact commands.
 
 ---
 
@@ -490,6 +611,24 @@ python lab/analysis/c1/shape_feasibility_map_2026-08/analyze_region.py --shards-
 # Bulenox/BluSky are structurally absent, not redacted
 grep -c "Bulenox\|BluSky" lab/analysis/c1/shape_feasibility_map_2026-08/run_region_sweep.py
 # Expected: 0 (both firm keys never appear in the scoring code)
+
+# --- Review-fix pass (§12), re-run this session ---
+
+# Corrected minimum median_days_to_pass (§6.1) -- computed fresh from the committed JSONL
+python -c "import json; vals=[json.loads(l).get('median_days_to_pass') for l in open('lab/analysis/c1/shape_feasibility_map_2026-08/region_data.jsonl', encoding='utf-8')]; vals=[v for v in vals if v is not None]; print(min(vals), len(vals))"
+# Expected: 16.0 590
+
+# MARGINAL-band validation subset (§4.1) -- row count == 10, all from MARGINAL_VALIDATION_CELLS
+python -c "import json; rows=[json.loads(l) for l in open('lab/analysis/c1/shape_feasibility_map_2026-08/marginal_validation_data.jsonl', encoding='utf-8')]; print(len(rows)); print(sorted(r['verdict'] for r in rows))"
+# Expected: 10 ['FEASIBLE', 'FEASIBLE', 'INFEASIBLE', 'INFEASIBLE', 'INFEASIBLE', 'INFEASIBLE', 'MARGINAL', 'MARGINAL', 'MARGINAL', 'MARGINAL']
+
+# --marginal-validation CLI mode compiles and is wired (does not itself re-run the full-N sims)
+python -m py_compile lab/analysis/c1/shape_feasibility_map_2026-08/run_region_sweep.py
+python lab/analysis/c1/shape_feasibility_map_2026-08/run_region_sweep.py --help | grep -A1 "marginal-validation"
+
+# AUTHORIZATION line -- confirm the audit note now quotes it in full
+grep -c "not yet given" docs/notes/audits/2026-08-23-shape-feasibility-map-audit.md
+# Expected: >= 1
 ```
 
 ---
@@ -499,3 +638,4 @@ grep -c "Bulenox\|BluSky" lab/analysis/c1/shape_feasibility_map_2026-08/run_regi
 | Date | Change | By |
 |---|---|---|
 | 2026-08-23 | Initial authoring — harness, 630-cell region sweep, validation subset, first-consumer checks | Claude Code (Sonnet 5) |
+| 2026-08-23 | Review-fix pass (§12): corrected the false §6.1 days-to-pass minimum (~30 → verified 16.0); added §4.1 MARGINAL-band full-N validation subset (`--marginal-validation` CLI mode, `marginal_validation_data.jsonl`, 10 new cells); updated Status line, §11 Limitations, Verification | Claude Code (Sonnet 5) |
