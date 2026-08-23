@@ -29,6 +29,19 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 any entry, full or stub (a-first; bare claims `a`).
 
 ---
+## 2026-08-23m — SESSIONS entry-class tightened to a judgment-call gate
+
+**Focus:** Decision. Full entries now require a real judgment call, not "skip Hygiene-only" — the class had drifted (12 entries in one day).
+
+**Shipped:** [`docs/SESSIONS.md`](SESSIONS.md) header rewrite (judgment-gate + stub-entry mechanism). [`W5 ADR addendum`](adr/2026-08-07-w5-governance-diet.md). [`STATE.md`](../STATE.md) decision-index line. [`PR #120`](https://github.com/Joshua-Asante/first-passage/pull/120).
+
+**Decisions/defects:** Stub entries (heading + Open/next only) replace in-place edits — `sessions-append-only` hard-fails mutating an already-merged entry. Entry-class table (A–D) itself unchanged; amended the W5 ADR per Rule 8 sub-rule 10 rather than minting a sibling.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: execute W5 CI-from-`gates.yml` plan. #7/#8 stay PENDING GO. PR #120 open, awaiting CI/merge.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-23l — Venue-binding Phase 1–3 registry landed
 
 **Focus:** Build. Execute plan #1.
