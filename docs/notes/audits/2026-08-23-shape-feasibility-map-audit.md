@@ -201,7 +201,15 @@ Not touched: `STATE.md`, `docs/SESSIONS.md` (per the run's own rule — the cont
 python scripts/check_brief.py docs/notes/audits/2026-08-23-shape-feasibility-map-audit.md --type audit
 ```
 
-(Expected: this note deliberately fails the template's methodology-failure-shaped checks — e.g. no `§1 Failure class` row-content in the discipline-check sense — for the reason stated in the header; the mechanical checks that DO apply — §0 populated with anchors, audit hooks runnable — should pass.)
+**Actually run, this session** (not a speculative "expected" — the command was executed, not just written):
+
+```
+note: 'audit' has a per-type section contract this repo-side subset does NOT model, so NO checks were run. This is not a pass and not a failure. Fill the type template under .claude/skills/brief-authoring/references/.
+check_brief: docs\notes\audits\2026-08-23-shape-feasibility-map-audit.md  (type=audit)
+RESULT: NOT CHECKED — 'audit' contract not modeled in this subset; fill the type template
+```
+
+`check_brief.py`'s repo-side `--type audit` contract is not implemented at all (independent of this note's own structure — a stock `--type audit` brief would get the identical `NOT CHECKED`), so this command cannot confirm or deny compliance with the `audit_note.md` template either way. Recorded verbatim rather than the speculative "should pass" line an earlier draft of this note carried, per this skill's own Known Trap #6 (audit hooks no one can run) and #10 (never assert a check's outcome without having run it).
 
 ---
 
