@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23l — Venue-binding Phase 1–3 registry landed
+
+**Focus:** Build. Execute plan #1.
+
+**Shipped:** [`ops/venue_editions/Tradeify_Select_100K.md`](../ops/venue_editions/Tradeify_Select_100K.md) (3 rows; `grep -c ACTIVE` = 0). Phase 2 leftover phrase on the 08-04 ADR. Phase 3 dated note on the third-leg spec. `check_adr_graph.py` OK. No `M_edition` / `lifecycle.py` / `LEG_MAP` edit.
+
+**Decisions/defects:** none. T1 still acknowledged. Book Striker legs stay `AUTHORIZED · MECHANISM @ 1.00×`.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: execute W5 CI-from-`gates.yml` plan. #7/#8 stay PENDING GO.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-23k — Tradable-anomalies T4 plan (PENDING GO)
 
 **Focus:** Hygiene. Campaign plan 8c — last file in this campaign.

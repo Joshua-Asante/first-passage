@@ -21,7 +21,7 @@ Live edges decay, and "consistent over time" can only be *disproven*, never conf
 | **Authorization** | `CANDIDATE → AUTHORIZED → WATCH{-1,-2} → RETIRED` | **Yes — always revocable** (down only, plus S5 bounded sandbox-up; see Call 5) | this file |
 | **Durability-source tag** | `{MECHANISM \| SURVIVAL-ONLY}` | set at go-live; selects surveillance regime | this file |
 
-**Third axis (venue binding), Accepted 2026-08-22:** BOOK → VENUE EDITION → DEPLOYMENT — [`venue-binding ADR`](../adr/2026-08-05-strategy-venue-binding-axis.md). Does not edit this table or `core/lifecycle.py`. Registry (`ops/venue_editions/`) still owed.
+**Third axis (venue binding), Accepted 2026-08-22:** BOOK → VENUE EDITION → DEPLOYMENT — [`venue-binding ADR`](../adr/2026-08-05-strategy-venue-binding-axis.md). Does not edit this table or `core/lifecycle.py`. Registry: [`ops/venue_editions/Tradeify_Select_100K.md`](../../ops/venue_editions/Tradeify_Select_100K.md) (Phase 1 landed; live set empty).
 
 A live strategy's descriptor is the triple **`<version> · LOCKED · <authorization> · <durability-source>`** — e.g. *"Guardian v5.5 · LOCKED · AUTHORIZED · MECHANISM."*
 
