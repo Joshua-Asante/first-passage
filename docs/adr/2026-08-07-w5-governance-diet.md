@@ -132,3 +132,17 @@ Both gates detect **dead links** in root orientation docs. Their `staged_regex` 
 
 Lead line: `STATE queue: #1 … · #2 … · #3 …` (titles + owner links). Default wrap-up does **not** copy leftover names from the prior top entry. Residue after the lead only with `queue-exception: <reason>` and an existing owner.
 
+## Addendum 2026-08-23 — H6 HOLD lifted: CI composition from `gates.yml`
+
+**Does not amend §4 or §5's forbidden moves** (no gate dropped; no branch protection / required checks). This **is** the dedicated CI-composition land §2 / §5 owed.
+
+`.github/workflows/gate-manifest.yml` runs `python scripts/gate_manifest.py --tier check` on `pull_request` + `push` to `main`. The hand-list in `.github/workflows/skills-check.yml` is deleted. Job id remains `skills` + Python 3.12 so the existing required check name `skills (3.12)` keeps matching (ruleset unchanged — not a Limb-A reopen). `tests.yml` no longer re-lists `check_boundaries.py`.
+
+**Dated exceptions (not silent drops):**
+
+- `pursuit-records` — `data-conditional`; not in `--tier check` (same as `make check`).
+- `pine-pin-provenance --base` — stronger CI-only form stays in `manifest-check.yml`; the runner still runs the no-`--base` argv from `gates.yml`.
+- `data-manifests` — forced in `--tier check`; CI absent-tree WARN-skip is the existing public-clone soft-degrade.
+
+Owner plan: [`docs/superpowers/plans/2026-08-23-w5-ci-from-gates-yml-implementation.md`](../superpowers/plans/2026-08-23-w5-ci-from-gates-yml-implementation.md). Coherence leftover C-P5-04 / H6 discharged.
+

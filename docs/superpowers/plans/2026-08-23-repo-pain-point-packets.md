@@ -2,7 +2,7 @@
 
 > **For agentic workers:** This is a **portfolio**, not one implementation. Each packet below needs its own later plan (or is already owned). Do not scaffold packet work from this file. REQUIRED when a packet is GO’d: writing-plans → a dated `docs/superpowers/plans/YYYY-MM-DD-<packet>-implementation.md`.
 
-**AUTHORIZATION:** Plans only. No packet in this file is GO’d by committing it. Bind ([`2026-08-23-bind-operator-queue-implementation.md`](2026-08-23-bind-operator-queue-implementation.md)) **GO landed 2026-08-23**; bind row 3 then **closed** (Lane A scoped decline; last pre-G0 slot unspent). P2 Approach A **GO landed 2026-08-23** ([plan](2026-08-23-p2-memory-demote-implementation.md)). P3 **GO landed 2026-08-23** ([plan](2026-08-23-p3-docs-runtime-inventory-implementation.md)). P4 **GO landed 2026-08-23** ([plan](2026-08-23-p4-museum-rules-implementation.md)). P5 **GO landed 2026-08-23** ([plan](2026-08-23-p5-repo-map-layers-implementation.md)). Buildable packets P0–P5 are closed; parked rows below stay parked until their own GO.
+**AUTHORIZATION:** Plans only. No packet in this file is GO’d by committing it. Bind ([`2026-08-23-bind-operator-queue-implementation.md`](2026-08-23-bind-operator-queue-implementation.md)) **GO landed 2026-08-23**; bind row 3 then **closed** (Lane A scoped decline; last pre-G0 slot unspent). P2 Approach A **GO landed 2026-08-23** ([plan](2026-08-23-p2-memory-demote-implementation.md)). P3 **GO landed 2026-08-23** ([plan](2026-08-23-p3-docs-runtime-inventory-implementation.md)). P4 **GO landed 2026-08-23** ([plan](2026-08-23-p4-museum-rules-implementation.md)). P5 **GO landed 2026-08-23** ([plan](2026-08-23-p5-repo-map-layers-implementation.md)). Keep-20 roll + W5 CI-from-`gates.yml` (H6) **GO landed 2026-08-23**. Buildable packets P0–P5 and the two parked GOs above are closed; remaining parked rows stay parked until their own GO.
 
 **Goal:** Name the first-look / second-look pain points that the bind plan explicitly left open, group them into independent packets, and sequence them so we do not open a new control-plane campaign that recreates the defect.
 
@@ -31,8 +31,8 @@
 | Museum operational rules / stale LOCK path | **P4** |
 | `REPO_MAP.md` hand-coupled to `check_boundaries.py` | **P5** |
 | Hop-table / vocabulary tax | **P1** (same packet; no new glossary root file) |
-| W5 CI-from-`gates.yml` | Parked — plan already exists, H6 HOLD |
-| SESSIONS keep-20 roll | Parked — named separate GO |
+| W5 CI-from-`gates.yml` | **Landed 2026-08-23** (H6 HOLD lifted) |
+| SESSIONS keep-20 roll | **Landed 2026-08-23** |
 | Personas, dual venvs/skills, folder name vs `first-passage` | Parked — operating-model, not a defect to “fix” in-tree |
 | Pine gitignored; LTM search exclude | Parked — correct scars; P1 teaches them |
 
@@ -161,15 +161,15 @@ P2–P5 are parallel after P1. Only one may sit on the operator queue at a time 
 
 | Item | Why parked | Owner |
 |---|---|---|
-| W5 CI-from-`gates.yml` (H6) | HOLD; plan exists | [`2026-08-23-w5-ci-from-gates-yml-implementation.md`](2026-08-23-w5-ci-from-gates-yml-implementation.md) |
-| SESSIONS keep-20 roll | named separate GO | [`scripts/roll_sessions.py`](../../../scripts/roll_sessions.py) |
+| W5 CI-from-`gates.yml` (H6) | **Landed 2026-08-23** | [`2026-08-23-w5-ci-from-gates-yml-implementation.md`](2026-08-23-w5-ci-from-gates-yml-implementation.md) · [W5 addendum](../../adr/2026-08-07-w5-governance-diet.md#addendum-2026-08-23--h6-hold-lifted-ci-composition-from-gatesyml) |
+| SESSIONS keep-20 roll | **Landed 2026-08-23** | [`scripts/roll_sessions.py`](../../../scripts/roll_sessions.py) · archive `docs/ltm/notes/archive/sessions/` |
 | Generation dryness | bind row 3 closed (scoped decline; slot unspent); no new channel | [channel ADR addendum](../../adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md#addendum-2026-08-23--scoped-decline-of-the-reopened-6am6a-and-gcmgc-entry-geometry--dense-1m-cell) |
 | Mass CATALOG Verdict / `--slug` | catalog ADR forbids without its own GO | [`2026-08-22-catalog-hot-vs-disposition.md`](../../adr/2026-08-22-catalog-hot-vs-disposition.md) |
 | Personas / dual skill homes / two venvs | operating model | leave |
 | Folder `multi_firm_operations` vs GitHub `first-passage` | cosmetic identity | operator-only |
 | Pine gitignored; LTM `.rgignore` | correct; P1 teaches | [`.cursor/rules/search-ltm.mdc`](../../../.cursor/rules/search-ltm.mdc) |
-| Windows `bash` vs Git Bash for hooks | install-doc sentence only; fold into P1 if touched | [`scripts/install_hooks.bat`](../../../scripts/install_hooks.bat) |
+| Windows `bash` vs Git Bash for hooks | **Landed** — sentence on `install_hooks.sh` | [`scripts/install_hooks.sh`](../../../scripts/install_hooks.sh) · [`scripts/install_hooks.bat`](../../../scripts/install_hooks.bat) |
 
 ## Success for this charter
 
-The charter succeeds when P0–P5 each have a named owner, a start gate, and a falsifier, and none of them is being worked as an immortal SESSIONS leftover. **P0–P5 buildable packets landed 2026-08-23.** Parked rows remain parked until their own GO.
+The charter succeeds when P0–P5 each have a named owner, a start gate, and a falsifier, and none of them is being worked as an immortal SESSIONS leftover. **P0–P5 buildable packets landed 2026-08-23.** Keep-20 + W5 H6 landed 2026-08-23. Remaining parked rows stay parked until their own GO.

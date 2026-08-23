@@ -624,7 +624,29 @@ def _frozen_entry_body(text: str) -> str:
     return _strip_trailing_debris(_normalize_historical_github_urls(text))
 
 
-def append_only_problems(base_doc: str, ours_doc: str) -> list[str]:
+def load_archived_entries_by_heading(root: Path) -> dict[str, Entry]:
+    """Map heading line -> entry for every quarterly SESSIONS archive under root.
+
+    Last file wins on duplicate headings (archives are deduped by heading on
+    write; a collision here is a repair signal, not a soft merge).
+    """
+    archive_dir = root / ARCHIVE_REL
+    by_heading: dict[str, Entry] = {}
+    if not archive_dir.is_dir():
+        return by_heading
+    for path in sorted(archive_dir.glob("SESSIONS-*.md")):
+        _, entries = parse(path.read_text(encoding="utf-8"))
+        for e in entries:
+            by_heading[heading_line(e)] = e
+    return by_heading
+
+
+def append_only_problems(
+    base_doc: str,
+    ours_doc: str,
+    *,
+    archived_by_heading: dict[str, Entry] | None = None,
+) -> list[str]:
     """Prior headings must keep their bodies; new headings are allowed.
 
     Keyed by the heading line. Trailing separator debris is stripped so a
@@ -635,15 +657,32 @@ def append_only_problems(base_doc: str, ours_doc: str) -> list[str]:
     that is the PR-URL pin. A first-passage → first-passage-archive rewrite
     of ``/pull/`` or ``/commit/`` hrefs is also not a mutation (public-repo
     transplant; objects live only on the archive).
+
+    Keep-20 roll exemption: a heading removed from the live file is legal iff
+    ``archived_by_heading`` holds that heading with the frozen body after the
+    documented relative-link rebase (``rewrite_links_for_archive``). A drop
+    without an archive copy, or with a drifted archive body, still fails.
     """
     _, base_entries = parse(base_doc or "")
     _, ours_entries = parse(ours_doc or "")
     ours_by_heading = {heading_line(e): e for e in ours_entries}
+    archived = archived_by_heading or {}
     problems: list[str] = []
     for e in base_entries:
         heading = heading_line(e)
         got = ours_by_heading.get(heading)
         if got is None:
+            archived_e = archived.get(heading)
+            if archived_e is not None:
+                expected = _frozen_entry_body(rewrite_links_for_archive(e.text))
+                actual = _frozen_entry_body(archived_e.text)
+                if expected == actual:
+                    continue
+                problems.append(
+                    f"append-only: archived body drifted for {e.title!r} "
+                    "(live roll must preserve entry bytes after link rebase)"
+                )
+                continue
             problems.append(f"append-only: removed heading {heading!r}")
             continue
         if _frozen_entry_body(e.text) != _frozen_entry_body(got.text):
@@ -683,7 +722,11 @@ def check_append_only(
         ours_doc = path.read_text(encoding="utf-8") if path.is_file() else ""
     else:
         ours_doc = _sessions_at_ref(root, ours_ref)
-    return append_only_problems(base_doc, ours_doc)
+    return append_only_problems(
+        base_doc,
+        ours_doc,
+        archived_by_heading=load_archived_entries_by_heading(root),
+    )
 
 
 def _hr_line_before(body: str, heading_start: int) -> bool:

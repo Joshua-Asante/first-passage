@@ -107,6 +107,19 @@ def test_check_tier_dry_run_includes_path_conditional():
         assert gid_cmd_fragment in out
 
 
+def test_check_tier_selects_ci_composition_ids():
+    """CI gate-manifest.yml calls --tier check; every always/path-conditional
+    id plus forced data-manifests must be selected. pursuit-records stays
+    data-conditional-only (dated exception — same as make check).
+    """
+    data = gm.load_manifest(MANIFEST)
+    selected = {g["id"] for g in gm.select_gates(data["gates"], "check")}
+    assert EXPECTED_ALWAYS <= selected
+    assert EXPECTED_PATH_CONDITIONAL <= selected
+    assert "data-manifests" in selected
+    assert "pursuit-records" not in selected
+
+
 def test_validate_tier_is_data_plus_pine():
     out = subprocess.check_output(
         [sys.executable, str(SCRIPT), "--tier", "validate", "--dry-run"],

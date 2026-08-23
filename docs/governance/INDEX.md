@@ -66,4 +66,4 @@ Not a sixth root doc. Pointers only.
 | Phase 2b — further CATALOG stamps | This GO: `**Verdict:**` on `driftex_2026-08` + `eodadv_mnq_2026-08` (stay-hot; no `--slug`). Remaining leftovers on [`lab/analysis/README.md`](../../lab/analysis/README.md). Do not mass-stamp. `time_to_pass.py` stays C-P2-05. |
 | SESSIONS keep-20 | Named. `--dry-run` 2026-08-23: keep 20 / roll 155 → `2026-Q3`. Actual roll is a separate GO. STATE diet already landed 2026-08-22e. |
 | find-owner | Landed. [`../../scripts/find_owner.py`](../../scripts/find_owner.py) looks up Rule 7 + owner-surfaces. Not a sixth index. |
-| Non-nav leftovers | C-P1-06 DISC-CAMP-0 prereg body · W5 CI-from-`gates.yml` (H6 HOLD) · Q-PUBTRANS-1 still `Proposed` · W6 lockfile discharged (PR #92). |
+| Non-nav leftovers | C-P1-06 DISC-CAMP-0 prereg body · W5 CI-from-`gates.yml` (H6 **landed** 2026-08-23) · Q-PUBTRANS-1 still `Proposed` · W6 lockfile discharged (PR #92). |

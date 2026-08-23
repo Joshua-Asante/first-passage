@@ -68,6 +68,7 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence + owner. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-23** — Keep-20 SESSIONS roll + W5 CI-from-`gates.yml` (H6 HOLD lifted). Queue row 3 opened and closed same session (succession: no auto-replace). [`W5 addendum`](docs/adr/2026-08-07-w5-governance-diet.md#addendum-2026-08-23--h6-hold-lifted-ci-composition-from-gatesyml) · [`gate-manifest.yml`](.github/workflows/gate-manifest.yml) · [`roll_sessions.py`](scripts/roll_sessions.py)
 - **2026-08-23** — P4 museum rules + P5 REPO_MAP layer compare-gate landed; pain-point buildable packets P0–P5 closed (parked items stay parked). [`P4 plan`](docs/superpowers/plans/2026-08-23-p4-museum-rules-implementation.md) · [`P5 plan`](docs/superpowers/plans/2026-08-23-p5-repo-map-layers-implementation.md)
 - **2026-08-23** — P3 docs-runtime inventory landed (report-only); queue row 3 opened and closed same session (succession: no auto-replace). [`inventory`](docs/notes/audits/docs-runtime-inventory.md) · [`P3 plan`](docs/superpowers/plans/2026-08-23-p3-docs-runtime-inventory-implementation.md)
 - **2026-08-23** — P2 Approach A: Rule 7 durable-atoms owner demoted; Claude-project MEMORY assistive-only. Queue row 3 opened and closed same session (succession: no auto-replace). [`state-md addendum`](docs/adr/2026-06-30-state-md-role-reduction.md#addendum-2026-08-23--memory-is-assistive-only-not-the-rule-7-owner)

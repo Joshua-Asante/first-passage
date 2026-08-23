@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**AUTHORIZATION:** Accepted ADR [`2026-08-07-w5-governance-diet.md`](../../adr/2026-08-07-w5-governance-diet.md) — this plan is executable. It **is** the dedicated CI-composition commit that ADR §5 forbids doing casually. It is **not** a branch-protection / required-checks GO ([`Q-GATESTACK-1`](../../briefs/closures/Q-GATESTACK-1-closure-falsified.md) Limb-A stands).
+**AUTHORIZATION:** Accepted ADR [`2026-08-07-w5-governance-diet.md`](../../adr/2026-08-07-w5-governance-diet.md) — this plan is executable. It **is** the dedicated CI-composition commit that ADR §5 forbids doing casually. It is **not** a branch-protection / required-checks GO ([`Q-GATESTACK-1`](../../briefs/closures/Q-GATESTACK-1-closure-falsified.md) Limb-A stands). **Landed 2026-08-23** (H6 HOLD lifted).
 
 **Goal:** Adding or removing a hard gate is a `gates.yml` edit (plus tests). GitHub Actions runs that same composition instead of a second hand-list in `.github/workflows/skills-check.yml`.
 
