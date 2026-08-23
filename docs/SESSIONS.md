@@ -32,6 +32,20 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-25b — Repoint pruned forced-flow-census citations
+
+**Focus:** Hygiene + Decision. `queue-exception: operator-assigned GitHub issue — dangling N-2026-07-26-forced-flow-census citations`. Retention-test read; do not restore the Notice.
+
+**Shipped:** 13 live citing surfaces + Phase-A plan repointed to `git show pre-prune-2026-08-08:docs/notes/notice/N-2026-07-26-forced-flow-census.md`. File stays pruned.
+
+**Decisions/defects:** Fails R1–R5 as a working-tree file (verdicts already in ledgers/closures; `rejected_candidates.md` does not cite it). Restore also blocked: tag is private-archive-only ([`docs/ltm/README.md`](ltm/README.md)). Channel §2-B stays live on the ADR.
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-25a — Reject Proposed NeMo ADR; tear down standing analog surface
 
 **Focus:** Decision. Operator rejected the Proposed NeMo pin ADR; borrow principles as needed. Ox-alpha consulted on pin-versus-inspiration.
