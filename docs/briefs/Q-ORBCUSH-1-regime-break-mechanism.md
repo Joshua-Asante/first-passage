@@ -1,8 +1,8 @@
 # Q-ORBCUSH-1 — Does a trailing edge/cost-fraction classifier explain ORB-MNQ-1's 2021-09-28 cushion-sizing regime break?
 
-**Status:** `OPEN — DRAFT (pre-lock)`
+**Status:** `CLOSED-FALSIFIED 2026-08-20` — trailing mean-R does not explain the 2021-09-28 break; date-correlation clears 0 of 3 pre-registered windows. STOP per tail-methodology-exhaustion. Closure: [`closures/Q-ORBCUSH-1-closure-falsified.md`](closures/Q-ORBCUSH-1-closure-falsified.md).
 **Authored:** 2026-08-20
-**Closed:** N/A
+**Closed:** 2026-08-20
 **Authors:** Joshua + Claude Code (Sonnet 5) — informal probe work 2026-08-19/20, this brief drafted 2026-08-20
 **Parent question:** N/A — not forked from a gated parent, but see §2 for the Q-EVALSEQ-1/Q-POLFRONT-1 relationship this pivots away from
 **Sub-questions opened:** N/A

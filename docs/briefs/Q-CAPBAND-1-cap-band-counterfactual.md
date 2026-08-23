@@ -1,8 +1,8 @@
 # Q-CAPBAND-1 — Has `CAP = 1.0` ever excluded an axis that would otherwise have survived?
 
-**Status:** `OPEN — DRAFT (pre-lock)` — authored 2026-08-15; **execution requires a separate operator GO** (parent-Q convention: naming is not opening)
+**Status:** `CLOSED-RESOLVED 2026-08-15` — Cap 1.0 evidence-ratified; both D6 and D2-low independently fail a non-Cap gate. Closure: [`closures/Q-CAPBAND-1-closure-resolved.md`](closures/Q-CAPBAND-1-closure-resolved.md).
 **Authored:** 2026-08-15
-**Closed:** N/A
+**Closed:** 2026-08-15
 **Authors:** Joshua (raised the challenge to the 1.83 anchor) + Claude Code (authoring)
 **Parent question:** N/A — opened from the [2026-08-03 gate-stack audit](../notes/audits/programme-audit/2026-08-03-gate-stack-audit.md) §5.4 item 3, which named this as something the audit could **not** establish
 **Sub-questions opened:** none

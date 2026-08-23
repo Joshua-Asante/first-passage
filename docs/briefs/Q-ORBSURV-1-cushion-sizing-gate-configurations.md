@@ -1,8 +1,8 @@
 # Q-ORBSURV-1 — Does cushion-proportional sizing clear the frozen survivor-scoring gate on the ORB-MNQ-1/Tradeify configurations today's informal probes didn't already check?
 
-**Status:** `OPEN — DRAFT (pre-lock)`
+**Status:** `CLOSED-FALSIFIED 2026-08-20` — full-panel k=2 misses the pass floor (41.51% < 50%); cushion sizing's gate-clear is k-dependent, not a robust property. Closure: [`closures/Q-ORBSURV-1-closure-falsified.md`](closures/Q-ORBSURV-1-closure-falsified.md).
 **Authored:** 2026-08-20
-**Closed:** N/A
+**Closed:** 2026-08-20
 **Authors:** Joshua (operator election: "go bigger — open formal Pre-Qs") + Claude Code (Sonnet 5)
 **Parent question:** `N/A` — forks from the deferred re-PARK-scope half of `Q-NSURV-1`'s named forward obligation, but is its own, narrower question (see §2)
 **Sub-questions opened:** none
@@ -134,6 +134,6 @@ git log --oneline docs/briefs/pre-registration/Q-ORBSURV-1-verdict-preregistrati
 - [x] §4 hypothesis is genuinely falsifiable (binary triggers in §6)
 - [x] §5 forbidden moves are genuinely tempting, not strawmen
 - [x] §6 gates have specific numerical triggers
-- [ ] §8 pre-registration committed BEFORE Phase 1 runs — see companion file
+- [x] §8 pre-registration committed BEFORE Phase 1 runs — frozen at `97f301f`, same day as Phase 1/2 execution, operator GO ("execute them now")
 - [x] §10 audit hooks are runnable commands
-- [ ] Verification block executed and passing — owed once Phase 1 script exists
+- [x] Verification block executed and passing — see [`closures/Q-ORBSURV-1-closure-falsified.md`](closures/Q-ORBSURV-1-closure-falsified.md) §10 audit-hook discharge
