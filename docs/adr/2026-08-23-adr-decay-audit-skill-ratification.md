@@ -1,6 +1,6 @@
 # ADR 2026-08-23 — Ratify the `adr-decay-audit` skill: a periodic/triggered sweep of the Accepted-ADR corpus for continued applicability
 
-**Status:** `Proposed` — authored by Claude Code in an autonomous PR-based session; ratification is the operator's PR review/merge decision, not asserted here.
+**Status:** `Accepted` — ratified 2026-08-23 (operator GO via chat)
 **Decision date:** 2026-08-23
 **Authors:** Joshua (direction: asked which of the ~150 Accepted ADRs still hold, and whether a process exists to catch decay) + Claude Code (audit execution, skill draft, this ADR)
 **Supersedes:** none
@@ -307,3 +307,4 @@ git diff --stat HEAD -- core/ | grep -E "dd_protection|firm_rules|params.toml" |
 | Date | Change | By |
 |---|---|---|
 | 2026-08-23 | Initial authoring — process ratification for the `adr-decay-audit` skill, following the one-off audit this session ran on operator request; `ox-alpha` external adversarial pass attempted, not completed (no credential reachable this session), self-review substituted and documented | Joshua (direction) + Claude Code |
+| 2026-08-23 | **Ratified — Status → `Accepted`.** Operator GO via chat. | Operator (Joshua) |

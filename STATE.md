@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-08-22
+**Last curated:** 2026-08-23
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
@@ -67,7 +67,8 @@ One line per executed decision, newest first — consequence + owner. Posture su
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
 - **2026-08-23** — `Q-TRADECAP-1` closed `RESOLVED` — no per-trade dollar-loss bound exists anywhere in the live sizing/arming path (sizing law, M1 arming interlock, EM2, disaster-stop all checked, all confirmed absent) on Tradeify's intraday-enforced geometry. Successor decision packet queued (row 2). [`closure`](docs/briefs/closures/Q-TRADECAP-1-closure-resolved.md)
-- **2026-08-23** — Fork F1 ruled: a Tradeify-resting §4 discharge does not satisfy the four-firms falsifier (functionally a 3-firm set — Bulenox/MFFU/BluSky — for §4 counting purposes); queue row 1 closed. `MNQTAPE-2` ($308.69 larger-N tape-aggressor replication) declined NO-GO same session. MSL-S4 (MGC) Pine hash-pinned locally; confirmed already `PARKED` (post-`AMBIGUOUS-HOLD` Explore-confirm) — its RUNBOOK's TV-backtest recommendation is stale/superseded, not a live next step. Every currently-sourced MSL Tradeify candidate is now closed or PARKED. [`ADR addendum`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) [`prereg`](docs/briefs/pre-registration/2026-08-23-mnqtape-2-larger-n-prereg.md) [`MSL-S4 card`](core/strategies/candidates/candidates_CARD.md)
+- **2026-08-23** — Fork F1 ruled (12:59, after an 11:37/12:23 concurrent-session sweep had just re-confirmed F1's deferred posture as precedent for the sibling PARTIAL-disposition addendum — considered override, not a miss): a Tradeify-resting §4 discharge does not satisfy the four-firms falsifier (functionally a 3-firm set — Bulenox/MFFU/BluSky — for §4 counting purposes); queue row 1 closed. `MNQTAPE-2` ($308.69 larger-N tape-aggressor replication) declined NO-GO same session. MSL-S4 (MGC) Pine hash-pinned locally; confirmed already `PARKED` (post-`AMBIGUOUS-HOLD` Explore-confirm) — its RUNBOOK's TV-backtest recommendation is stale/superseded, not a live next step. Every currently-sourced MSL Tradeify candidate is now closed or PARKED. [`ADR addendum`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) [`prereg`](docs/briefs/pre-registration/2026-08-23-mnqtape-2-larger-n-prereg.md) [`MSL-S4 card`](core/strategies/candidates/candidates_CARD.md)
+- **2026-08-23** — Coldstore Phase B/C: operator GO retired Guardian Gold + Aegis USDJPY from living `dd_protection.BASE_RISK` (LOCKED legacy book table now 2 strategies — Striker DJ30/NAS100 only); frozen risk% moved to `historical_challenge.HISTORICAL_CHALLENGE_BASE_RISK`, authorization axis unchanged. [`Phase B ADR`](docs/adr/2026-08-23-strategy-coldstore-phase-b.md) [`Phase C ADR`](docs/adr/2026-08-23-strategy-coldstore-phase-c.md) [`PR #122`](https://github.com/Joshua-Asante/first-passage/pull/122)
 - **2026-08-23** — SESSIONS class D tightened to a judgment-call gate; stub-entry mechanism added for Open/next continuity without violating `sessions-append-only`. [`W5 ADR addendum`](docs/adr/2026-08-07-w5-governance-diet.md) [`PR #120`](https://github.com/Joshua-Asante/first-passage/pull/120)
 - **2026-08-23** — Blind channel: canonical pre-G0 kill count corrected 1/3 → 2/3 (`MNQ-SIZEDIV-1`'s own 2026-08-15 kill had been recorded in this file and `MNQ.md` since the 2026-08-16 port but never synced to the channel ADR's own canonical line — 8-day mirror/owner lag, disclosed and fixed). Second door re-walk against the deep-lane's cached 6A/M6A and GC/MGC panels: entry-geometry/dense-1m temporal-selectivity doors reopen on those two non-index instruments (still blocked on MNQ); FM-4's reach to a pre-G0 kill's instrument-hop, and whether the sibling lane's own GO/cost-dry-run discharges this channel's identical requirement, both flagged operator-call-needed. No construct named; one pre-G0 kill slot remains before generation-dry. [`channel ADR addendum`](docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md)
 - **2026-08-22** — DL-2 (M6A × `prior-session-breakout-continuation`, `NEW` mechanism id) prereg `FROZEN`; §6 step 1 pulls landed $0.0000. [`charter`](docs/adr/2026-08-16-deep-iteration-lane-charter.md) [`prereg`](docs/briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md)
@@ -281,6 +282,13 @@ deleted (not struck).
 > [`2026-08-08-quarterly-audit.md`](docs/notes/audits/programme-audit/2026-08-08-quarterly-audit.md).
 > The former ~90-line rider blockquote is deleted per the retention test — it restated obligations
 > the audit note now owns. **Operator rulings still open** are carried as queue rows, not here.
+
+### 2026-08-24 (Monday)
+
+- **Disaster-stop Phase 0a — attended real-account SIM.** Operator will attend and run the
+  `stop_loss=` / `closeposition` observation on the real (non-paper) Tradeify eval account this
+  session (committed 2026-08-23). Only a recorded PASS unlocks Phase 1 (`sl=` wiring into
+  `ops/c1_rail/c1_rail_listener.py`); the prior unattended attempt came back BLOCKED. [`plan`](docs/superpowers/plans/2026-08-23-disaster-stop-phase-0-1-implementation.md) · [`BLOCKED note`](docs/notes/rail_build/2026-08-23-disaster-stop-phase-0.md)
 
 ### 2026-10-11 (approx.)
 

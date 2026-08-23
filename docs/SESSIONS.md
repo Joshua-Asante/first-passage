@@ -30,16 +30,42 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
-## 2026-08-24k — F1 ruled; MNQTAPE-2 NO-GO; Q-TRADECAP-1 RESOLVED; status-skew fixes; Pre-Q priority pass
+## 2026-08-24o — F1 ruled; MNQTAPE-2 NO-GO; Q-TRADECAP-1 RESOLVED; status-skew fixes; Pre-Q priority pass
 
 **Focus:** Decision + Measurement. Operator rulings on the two open Tradeify-strategy threads, the
 top-ranked Pre-Q executed to verdict on operator GO, plus doc-hygiene.
 
 **Shipped:** F1 ruled `Accepted` — Tradeify-resting §4 discharge does not count (3-firm effective set for §4). `MNQTAPE-2` ($308.69) declined NO-GO. Three stale `OPEN — DRAFT` brief headers corrected to match their own already-recorded closures (Q-ORBSURV-1 `FALSIFIED`, Q-ORBCUSH-1 `FALSIFIED`, Q-CAPBAND-1 `RESOLVED` — STATE.md/INDEX were already correct in all three; only each brief's own header had skewed). MSL-S4 Pine landed + hash-pinned locally from the operator's Downloads copy (`pine_lint` 13/13 re-verified); `candidates_CARD.md` corrected — its RUNBOOK's recommended TV backtest is superseded same-day by the real Explore-confirm that actually ran (`AMBIGUOUS-HOLD`, PARKED). Pending Pre-Qs ranked (Q-TRADECAP-1 top, Q-MONSURF-1 second, Q-FIRMEOD-1/Q-PUBTRANS-1 deferred out of today's scope); D-S-A run on the four genuinely-open ones (two of the original six were already closed, same stale-header defect — Q-ORBCUSH-1, Q-CAPBAND-1 above). Operator GO given on Q-TRADECAP-1 same turn; pre-registration committed, Phase 1 executed (repo-wide grep + two end-to-end code reads), closed `RESOLVED` — confirmed no per-trade dollar-loss bound exists anywhere in the live sizing/arming path on Tradeify's intraday-enforced geometry (sizing law, M1 arming interlock, EM2, disaster-stop all checked). Successor decision packet (per-trade hard-cap vs. live-observed tripwire, from the orphaned CFD-era `1r_estimation.md` fork) queued on STATE.md for operator election.
 
-**Decisions/defects:** F1 ruled ahead of its designed trigger-time reservation, by explicit operator election, against a zero-clearer scoreboard — recorded as a deliberate override, not an oversight ([addendum](adr/2026-08-04-tradeify-venue-descope-eval-included.md)). Does not ratify either pending `Proposed` F1-adjacent addendum. **Load-bearing finding:** every currently-sourced MSL Tradeify candidate (C1, C2, C3, C3-K2, S4) is now closed FALSIFIED or PARKED — no candidate is currently backtest-ready; a fresh WHO needs sourcing.
+**Decisions/defects:** F1 ruled ahead of its designed trigger-time reservation, by explicit operator election, against a zero-clearer scoreboard — recorded as a deliberate override, not an oversight ([addendum](adr/2026-08-04-tradeify-venue-descope-eval-included.md)). Does not ratify either pending `Proposed` F1-adjacent addendum. **Governance collision on push:** a concurrent session (`b378361`, 12:23) had just re-confirmed F1's deferred posture as precedent for the sibling PARTIAL-disposition addendum, 36 minutes before F1 was ruled here (12:59) — real content collision, not a false alarm; confirmed as a considered override (operator), merged with a superseding note appended where the stale analogy is read (four-firms ADR §Addendum 2026-08-22), STATE.md queue row reconciled by hand, SESSIONS label collision (`2026-08-24k` claimed twice) renumbered to `o`. **Load-bearing finding:** every currently-sourced MSL Tradeify candidate (C1, C2, C3, C3-K2, S4) is now closed FALSIFIED or PARKED — no candidate is currently backtest-ready; a fresh WHO needs sourcing.
 
 **Open / next:** Successor decision packet on STATE.md row 2 (per-trade hard-cap vs. live-observed tripwire) needs operator election. MSL needs a new WHO sourced (S4 line is dead) — no candidate is currently backtest-ready for Tradeify. Q-MONSURF-1 (idle-clock monitor) is next-ranked Pre-Q if the operator wants another GO. Q-FIRMEOD-1/Q-PUBTRANS-1 deferred, not dropped. **STATE queue:** #1 B7-REFIRE + M1 · #2 per-trade loss-bound election (F1 closed, its row removed).
+
+---
+
+## 2026-08-24n — operator ruled on 4 of the daily-sync's flagged open decisions
+
+**Focus:** Decision. Operator worked through the daily repo-truth-sync digest's "awaiting operator decision" sweep (18 items found via an 8-finder workflow + adversarial per-cluster verify). Ruled on the first four; explanations owed on three more; batch GO issued on 9 Pre-Q briefs and the registry-backfill debt separately (see follow-up entries).
+
+**Shipped:** [`adr-decay-audit ratification`](adr/2026-08-23-adr-decay-audit-skill-ratification.md) Status → `Accepted`, INDEX regenerated · [`Rule 2 addendum`](adr/2026-06-16-rule-2-budget-before-acting.md) Status → `Withdrawn` (body kept for audit trail, not deleted — repo convention is mark-withdrawn, not erase) · [`four-firms PARTIAL addendum`](adr/2026-07-12-prop-portfolio-four-friendly-firms.md) — ratification explicitly deferred to trigger time, same posture as sibling F1 row · [`STATE.md`](../STATE.md) — disaster-stop Phase 0a booked as a 2026-08-24 (Monday) forward trigger, operator-committed.
+
+**Decisions/defects:** `adr-decay-audit` skill ACCEPTED (standing periodic ADR-corpus decay sweep now ratified). Rule-2 audit-cycle-counting addendum WITHDRAWN (moot per its own text — 2026-08-20 STRATEGIC trip already makes the trip-log non-empty). Four-firms PARTIAL-disposition addendum stays `Proposed`, ratification DEFERRED to first tier clearance or 2026-11-08. Disaster-stop Phase 0a: operator will personally run the attended real-account SIM 2026-08-24.
+
+**Open / next:** Q-M1WIRE-1 wire-vs-risk-accept, closure-disposition-coverage-hard severity, and the blind-channel FM-4 doctrinal seams — explained to operator this session, ruling still owed. Registry-backfill (33 rows) and 9 Pre-Q brief GOs dispatched separately this session — see their own entries once landed. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-24k — queue-bind plan + pain-point packet charter
+
+**Focus:** Decision. First-look control-plane defect: approve bind approach B (queue-led Open/next + doable row 3 + SESSIONS-only gate); sequence the other pain points as parked packets. No bind build this session.
+
+**Shipped:** [`bind plan`](superpowers/plans/2026-08-23-bind-operator-queue-implementation.md) · [`pain-point packets`](superpowers/plans/2026-08-23-repo-pain-point-packets.md)
+
+**Decisions/defects:** Bind PENDING row-3 GO (existing channel only). P1–P5 stay behind the queue. No new generation channel. No second prune.
+
+**Open / next:** **STATE queue:** #1 F1 · #2 B7-REFIRE + M1. Bind Task 1: operator names row 3, then build the bind plan. Remaining first-look items live on the pain-point charter (P1 orientation · P2 MEMORY · P3 docs-runtime inventory · P4 museum rules · P5 REPO_MAP gate) — not as a leftover lead.
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 
