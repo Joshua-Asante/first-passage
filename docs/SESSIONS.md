@@ -32,6 +32,34 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-25a — Reject Proposed NeMo ADR; tear down standing analog surface
+
+**Focus:** Decision. Operator rejected the Proposed NeMo pin ADR; borrow principles as needed. Ox-alpha consulted on pin-versus-inspiration.
+
+**Shipped:** teardown of `docs/agent_rails/` · `check_agent_rails.py` · `fetch_nemo_guardrails.py` · Proposed ADR. Refuse-trail: [`N-2026-08-23-nemo-guardrails-reconciliation.md`](notes/notice/N-2026-08-23-nemo-guardrails-reconciliation.md). Consult: [`N-2026-08-23-ox-alpha-analog-pin-vs-inspiration.md`](notes/notice/N-2026-08-23-ox-alpha-analog-pin-vs-inspiration.md).
+
+**Decisions/defects:** Standing analog surface rejected (no successor ADR). Mapping-guardrails consolidation and the instance-4 GO record stay.
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-24y — NeMo Guardrails pinned and mapped; not adopted as a runtime
+
+**Focus:** Decision. Operator GO for a constrained 4th mapping instance: download NeMo and reconcile with existing rails.
+
+**Shipped:** [`rails.yml`](agent_rails/rails.yml) · [`check_agent_rails.py`](../scripts/check_agent_rails.py) · [`fetch_nemo_guardrails.py`](../scripts/fetch_nemo_guardrails.py) · [`N-2026-08-23`](notes/notice/N-2026-08-23-nemo-guardrails-reconciliation.md) · [`external_mapping_guardrails.md`](methodology/external_mapping_guardrails.md).
+
+**Decisions/defects:** Pin `v0.23.0` @ `dc046e4`; no pip/runtime. Light ADR [`2026-08-23-nemo-guardrails-pin-not-runtime.md`](adr/2026-08-23-nemo-guardrails-pin-not-runtime.md) `Proposed`. Belt consolidated (audit action 4).
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-24i — keep-20 SESSIONS roll + W5 CI-from-gates (H6 lift)
 
 **Focus:** Decision + Build. Operator GO for parked keep-20 roll and W5 CI-from-`gates.yml` (H6 HOLD). `queue-exception: operator GO for parked keep-20 + H6`.
@@ -269,44 +297,6 @@ top-ranked Pre-Q executed to verdict on operator GO, plus doc-hygiene.
 
 ---
 
-## 2026-08-24c — Campaign pre-GO: coldstore B retrieve blocked; T2/T3 inventory
-
-**Focus:** Hygiene. Plans #7a Task 1 and #8a/#8b Task 1 only.
-
-**Shipped:** [`coldstore-phase-b-prego-blocked.md`](notes/2026-08-23-coldstore-phase-b-prego-blocked.md). [`t2-t3-prego-inventory.md`](notes/research/2026-08-23-tradable-anomalies-t2-t3-prego-inventory.md). No B schema. No T2/T3 code.
-
-**Decisions/defects:** none. Retrieve fail is `BLOCKED / context-problem`, not a GO.
-
-**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Operator: restore the coldstore design (private archive) before any Phase B GO. T2/T3/T4 and Phase C stay PENDING GO.
-
----
-
-## 2026-08-24b — merge origin/main into PR #118 (conflict fix)
-
-**Focus:** Resolve PR #118 conflicts after #117. Same-day `2026-08-23` letters `a`–`z` are taken, so this wrap-up and the remapped O1–O5 record use the next calendar date.
-
-**Shipped:** merge `origin/main` into `cursor/ox-alpha-brief-o1-o5-b77d`. Union-merge splice (missing `---` before `2026-08-23z`) fixed via `--normalize`. Later colliding `2026-08-23m` (O1–O5 vs ox-alpha review on `main`) remapped to `2026-08-24a`. Skill/checker/notice bytes unchanged.
-
-**Decisions/defects:** none new.
-
-**Open / next:** leftover surviving cluster (O10 grounding quotes, O15+O24 judgment wiring, O7 Trap-12 detection). Carry `2026-08-22r` — DL-2 step 2 train scoring. Attended disaster-stop 0a is operator-only. Carry `2026-08-23t` — two undocumented decay findings still need discharge addenda. Follow-on grow slices still named. #7/#8 stay PENDING GO.
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
-## 2026-08-24a — Brief-authoring O1–O5 aligned (D1–D4 GO)
-
-**Focus:** Decision. Operator GO on D1–D4; write the type × check law the checker already enforces into the skill.
-
-**Shipped:** [`SKILL.md`](../.claude/skills/brief-authoring/SKILL.md) matrix + type-table fix + inline 8/9. [`check_brief.py`](../scripts/check_brief.py) `--type closure` delegates. [Notice addendum](notes/notice/N-2026-08-23-ox-alpha-brief-authoring-review.md). No new ADR.
-
-**Decisions/defects:** D1 codify not expand · D2 keep tier-independent · D3 drop lock type · D4 inline 8/9/10 only.
-
-**Open / next:** leftover surviving cluster (O10 grounding quotes, O15+O24 judgment wiring, O7 Trap-12 detection). Carry 2026-08-23l — W5 CI-from-`gates.yml` plan; #7/#8 stay PENDING GO. Carry 2026-08-22r — DL-2 step 2 train scoring.
-
----
-
 <!-- ARCHIVE-INDEX:START -->
 ## Archive index
 
@@ -320,6 +310,9 @@ Older entries rolled to `docs/ltm/notes/archive/sessions/` (newest first).
 | 2026-08-24 | `MNQFLOW-1-DEPTH` signed, then BLOCKED AT P0 — actual cost $148.04 vs $125.00... | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
 | 2026-08-24 | Deep-lane §4(c) supply-side audit: `AMBIGUOUS`, slot 3 held on a supply event | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
 | 2026-08-24 | DL-2 Iterate block's own stop rule discharged: geometric-feasibility-ratio di... | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-24 | Campaign pre-GO: coldstore B retrieve blocked; T2/T3 inventory | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-24 | merge origin/main into PR #118 (conflict fix) | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-24 | Brief-authoring O1–O5 aligned (D1–D4 GO) | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
 | 2026-08-23 | SESSIONS entry-class tightened to a judgment-call gate | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
 | 2026-08-23 | merge origin/main into PR #117 (conflict fix) | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
 | 2026-08-23 | merge origin/main into PR #116 (conflict fix) | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
