@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23l — Ox-alpha sanitized review of `futures-anomaly-discovery`
+
+**Focus:** Decision. Sanitized skill copy to `stealth/ox-alpha`; reconcile before findings.
+
+**Shipped:** [`notice`](notes/notice/N-2026-08-23-ox-alpha-futures-anomaly-discovery-skill-review.md). ADR use-2 addendum on [`ox-alpha lens`](adr/2026-08-22-ox-alpha-adversarial-lens-scope.md). Skill not edited.
+
+**Decisions/defects:** surviving cluster is skill/harvest drift (Req-3 still a kill; four vs five admission reqs). Revert trigger (b) does not tick.
+
+**Open / next:** carry 2026-08-23k / 2026-08-22r — DL-2 step 2 train scoring. Operator GO to apply the notice's surviving skill-text repairs, or leave them. Campaign plans #1–8 stay as 2026-08-23k left them.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-23k — Tradable-anomalies T4 plan (PENDING GO)
 
 **Focus:** Hygiene. Campaign plan 8c — last file in this campaign.
