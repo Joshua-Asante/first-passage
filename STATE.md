@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-08-22
+**Last curated:** 2026-08-23
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
@@ -66,6 +66,7 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence + owner. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-23** — Coldstore Phase B/C: operator GO retired Guardian Gold + Aegis USDJPY from living `dd_protection.BASE_RISK` (LOCKED legacy book table now 2 strategies — Striker DJ30/NAS100 only); frozen risk% moved to `historical_challenge.HISTORICAL_CHALLENGE_BASE_RISK`, authorization axis unchanged. [`Phase B ADR`](docs/adr/2026-08-23-strategy-coldstore-phase-b.md) [`Phase C ADR`](docs/adr/2026-08-23-strategy-coldstore-phase-c.md) [`PR #122`](https://github.com/Joshua-Asante/first-passage/pull/122)
 - **2026-08-23** — SESSIONS class D tightened to a judgment-call gate; stub-entry mechanism added for Open/next continuity without violating `sessions-append-only`. [`W5 ADR addendum`](docs/adr/2026-08-07-w5-governance-diet.md) [`PR #120`](https://github.com/Joshua-Asante/first-passage/pull/120)
 - **2026-08-23** — Blind channel: canonical pre-G0 kill count corrected 1/3 → 2/3 (`MNQ-SIZEDIV-1`'s own 2026-08-15 kill had been recorded in this file and `MNQ.md` since the 2026-08-16 port but never synced to the channel ADR's own canonical line — 8-day mirror/owner lag, disclosed and fixed). Second door re-walk against the deep-lane's cached 6A/M6A and GC/MGC panels: entry-geometry/dense-1m temporal-selectivity doors reopen on those two non-index instruments (still blocked on MNQ); FM-4's reach to a pre-G0 kill's instrument-hop, and whether the sibling lane's own GO/cost-dry-run discharges this channel's identical requirement, both flagged operator-call-needed. No construct named; one pre-G0 kill slot remains before generation-dry. [`channel ADR addendum`](docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md)
 - **2026-08-22** — DL-2 (M6A × `prior-session-breakout-continuation`, `NEW` mechanism id) prereg `FROZEN`; §6 step 1 pulls landed $0.0000. [`charter`](docs/adr/2026-08-16-deep-iteration-lane-charter.md) [`prereg`](docs/briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md)
