@@ -128,6 +128,7 @@
 | 2026-08-22-grow-lane-build-authorization.md | Accepted | 2026-08-22 | none | operator GO (JA) 2026-08-22 ("ratify, accept, and begin the build"), |
 | 2026-08-22-grow0-two-ledger-k-question.md | Accepted | 2026-08-22 | `2026-08-16-deep-iteration-lane-charter.md` in part — adds §2.2(iv), a | operator GO (JA) 2026-08-22 ("GO on the ADR — ratify it as-is"), after |
 | 2026-08-22-ox-alpha-adversarial-lens-scope.md | Accepted | 2026-08-22 | none | ratified by operator (JA) 2026-08-22, after the validation-test |
+| 2026-08-23-adr-decay-audit-skill-ratification.md | Proposed | 2026-08-23 | none | authored by Claude Code in an autonomous PR-based session; ratification is the operator's PR review/merge decision, not asserted here. |
 
 ## Partially superseded
 
