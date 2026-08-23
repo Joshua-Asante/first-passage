@@ -36,9 +36,11 @@ methodology skills.
 
 Notice-phase mining → **candidate + K** → first-pass multiplicity check →
 Inquire-phase falsifiable-H. Discovery lives entirely in the Notice phase: it
-surfaces observations. A candidate only crosses into an Inquire-phase falsifiable
-hypothesis after its K is registered and it clears the crude multiplicity floor.
-From there, `strategy-validation` + `inqhiori` take over.
+surfaces observations. After K is registered, the cheap multiplicity floor
+**filters** which p-values are worth carrying; the manifest verdict remains a
+hand-off to `strategy-validation`. Crossing into Inquire **routes / licenses a
+hypothesis** — never a promotion (promotion is strategy graduation, forbidden
+here). From there, `strategy-validation` + `inqhiori` take over.
 
 ## Harvest intake — sourcing candidates from published literature (ADR 2026-07-15)
 
@@ -49,21 +51,11 @@ confirmation cost — entering at K_intrinsic ≤ 3, a beatable floor. This is n
 the primary fundable discovery route (worked proof: D5, Baltussen et al. 2021
 *JFE* intraday momentum, the only axis to PASS the Q-KBUDGET screen).
 
-Externally-published mechanisms enter **only** via four admission
-requirements, checked *before* screening, in [`docs/methodology/strategy_harvest.md`](../../../docs/methodology/strategy_harvest.md):
-
-1. **Economic grounding** — a named mechanism (who loses money and why), **or**
-   evidence-robustness in lieu of one for anomalies with no consensus
-   mechanism (momentum-class): ≥3 decades covered, ≥3 independent cohorts,
-   ≥1 replication ≥10yr post-discovery, no known sign-reversal condition —
-   all four required, not a subset.
-2. **Cohort-cited per-instrument δ/σ** with a conservative-central +
-   decay-haircut reading. No cross-instrument transplants.
-3. **Unburned family K-bank** — re-check `discovery_manifests/`; a
-   burned family (e.g. GC/MGC) kills the seed regardless of quality.
-4. **Confirm-power ≥ 0.50** at the declared panel N (frozen Clause-N
-   formula) — daily/intraday event frequency is the practical bar; monthly
-   bp-scale mechanisms are presumptively dead (killed twice: D3, D7).
+Externally-published mechanisms enter **only** via the five admission
+requirements in [`docs/methodology/strategy_harvest.md`](../../../docs/methodology/strategy_harvest.md)
+§1, checked *before* screening. Do not restate the list here. Req-3 is
+mandatory disclosure, not a gate
+([`docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md`](../../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md)).
 
 Screen with `lab/research_utils/axis_screen.py` (manifest-driven; screen
 constants Cap/DSR/power/K-floor are frozen, never tuned per-seed). **A PASS
@@ -91,16 +83,25 @@ the size of the search that produced it.
 
 **Register the search space K *before* examining results.** The bundled script
 makes this mechanical. Default lane is **mechanism-first** (SPEC S6 + TNEC-1): it
-requires reachability attestation, profile consult, an `--admission-file` JSON that
-clears **EM0 / EM2–EM5 + TNEC N-EDGE + DSR-cap / confirm-power** (EM1 0.40R and
+requires reachability attestation, profile consult, an `--admission-file` JSON
+(schema + refuse reasons: [`lab/discovery/admission_schema.py`](../../../lab/discovery/admission_schema.py))
+that clears **EM0 / EM2–EM5 + TNEC N-EDGE + DSR-cap / confirm-power** (EM1 0.40R and
 D1/D2 are **disclosure-only** — recorded, never refuse; live edge intake is
 [TNEC-1](../../../docs/spec/2026-08-08-tradeify-necessary-conditions-target-spec.md)
 N-EDGE: net expectancy > 0 after Req-5 costs, CI excluding 0, DSR ≥
 `floor_at_k`), and a `--prereg` path naming this campaign's own frozen
 pre-registration body — refuse at open writes **no** manifest
-(`ABORT: admission refused (Cap/EM0|N-EDGE|power|…)`). Wide blind mining still
-needs an explicit `--lane blind` (legacy 11-key schema; no admission gate, and
-`--prereg` omittable there — blind opens stay unbound by design).
+(`ABORT: admission refused (Cap/EM0|N-EDGE|power|…)`). A
+`python scripts/instrument_profiles.py cell` consult that prints BLOCKING
+(`DEAD`, `AMBIGUOUS-PARKED`, `CONTINGENT-FORWARD`) must be addressed in the
+prereg or the open does not proceed; `LIVE` is a note, not a refuse. Wide
+blind mining still needs an explicit `--lane blind` (legacy 11-key schema;
+`--admission-file` is **not required**, and `--prereg` is omittable — if an
+admission file is supplied, Cap/EM0 / N-EDGE / power refusals still abort with
+no manifest). `--lane deep` is the third lane (charter
+[`docs/adr/2026-08-16-deep-iteration-lane-charter.md`](../../../docs/adr/2026-08-16-deep-iteration-lane-charter.md));
+required flags `--prereg`, `--grammar-file` / `--grammar-sha256`,
+`--confirm-years`, `--target-sr` — do not restate the charter §2.2 predicate.
 
 `--prereg` exists because W4 (2026-08-07) defines the live minimal gate set as
 "G0–G5 + G8, **and any limb a campaign's own frozen prereg still binds**". Before
@@ -121,6 +122,19 @@ PYTHONPATH=lab python -m discovery.register_search open \
     --profile-consult path/to/consult.txt \
     --admission-file path/to/admission.json \
     --prereg lab/analysis/<theme>/<slug>/PREREG.md
+
+# Deep lane (charter 2026-08-16) — own predicate, not the S6/TNEC corridor:
+PYTHONPATH=lab python -m discovery.register_search open \
+    --lane deep \
+    --run-id <campaign_id> --tool catch22 \
+    --search-space-size <K> --alpha 0.05 \
+    --data-window <start>:<end> \
+    --hypothesis "<frozen expression>" \
+    --prereg lab/analysis/<theme>/<slug>/PREREG.md \
+    --grammar-file path/to/grammar.json \
+    --grammar-sha256 <pin> \
+    --confirm-years <n> \
+    --target-sr <named a priori>
 
 # Refusal schema (no manifest written): Cap/EM0 when floor_at_k(K)>Cap (K≥4);
 # power when confirm-power < 0.50; N-EDGE when supplied net/CI/DSR limbs fail;
@@ -253,5 +267,5 @@ without a mechanism is fine; deploying without one is not.
 - **The data these tools run on (cost-gated, proxy-disciplined):** `databento-data`.
 - **A candidate that graduates into a Pre-Q / decision artifact:** `brief-authoring`.
 - **The campaign this discovery runs inside (Stage-0 universe registration + the ratified rules of evidence):** `git show pre-prune-2026-08-08:docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md` (pruned 2026-08-08).
-- **Sourcing/admitting a published external mechanism (the four requirements, sourcing tiers, seed manifest):** `docs/methodology/strategy_harvest.md` (ADR `docs/adr/2026-07-15-external-mechanism-harvest-intake.md`).
+- **Sourcing/admitting a published external mechanism (§1 requirements, sourcing tiers, seed manifest):** `docs/methodology/strategy_harvest.md` (ADR `docs/adr/2026-07-15-external-mechanism-harvest-intake.md`).
 - **Why the K-ledger / least-overfit-first discipline exists (the statistics):** `docs/methodology/references/statistics-of-tradable-anomalies.md` (Domain 4 = multiplicity; Part II = the stage pipeline).

@@ -14,7 +14,21 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
-## 2026-08-23m — ADR-corpus decay audit run; `adr-decay-audit` skill proposed
+## 2026-08-23u — merge origin/main into PR #114 (conflict fix)
+
+**Focus:** Resolve PR #114 conflicts after #112/#113 landed grow-lane wiring, discovery-skill repairs, and remapped `2026-08-23m` to the brief-authoring ox-alpha review.
+
+**Shipped:** merge `origin/main` into `claude/adr-decay-maintenance-glcctw`. Union-merge splice (missing `---` before `2026-08-23s`) fixed via `--normalize`. Later colliding `2026-08-23m` (adr-decay-audit) remapped to `2026-08-23t`.
+
+**Decisions/defects:** none new.
+
+**Open / next:** carry `2026-08-23t` — two undocumented decay findings still need discharge addenda; this ADR's ratification is PR review/merge. Carry `2026-08-23s` / `2026-08-22r` — DL-2 step 2 train scoring. Campaign next: W5 CI-from-`gates.yml`, then substrate Phase 6 docs. Follow-on grow slices still named. Operator GO/NO-GO on brief-authoring ox-alpha surviving cluster before any skill edit. #7/#8 stay PENDING GO.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-23t — ADR-corpus decay audit run; `adr-decay-audit` skill proposed
 
 **Focus:** Decision. Operator asked which Accepted ADRs still hold and whether a process exists to catch decay; ran a one-off full-corpus audit, then drafted a standing skill to close the gap.
 
@@ -24,7 +38,69 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 
 **Open / next:** Remediate the two undocumented findings with short discharge addenda — `2026-04-17-portfolio-allocations.md`'s stale Striker figure (mirrored in INDEX.md) and `2026-06-23-tv-backtest-egress-automation.md`'s addendum premise invalidated by the later S2 signal-host-fork ADR. Operator PR review/merge is this new ADR's ratification event.
 
+---
+
+## 2026-08-23s — merge origin/main into PR #113 (conflict fix)
+
+**Focus:** Resolve PR #113 conflicts after #112 landed grow-lane `open_run` wiring and remapped the brief-authoring ox-alpha session to `2026-08-23m`.
+
+**Shipped:** merge `origin/main` into `cursor/ox-alpha-discovery-skill-review-4fd4`. Union-merge splices (missing `---` before `2026-08-23o` / `2026-08-23n`) fixed via `--normalize`. Later colliding labels remapped: discovery-skill review `23l`→`23p`, skew plan `23m`→`23q`, GO `23n`→`23r`.
+
+**Decisions/defects:** none new.
+
+**Open / next:** carry `2026-08-23r` / `2026-08-22r` — DL-2 step 2 train scoring. Campaign next: W5 CI-from-`gates.yml`, then substrate Phase 6 docs. Follow-on grow slices still named. Operator GO/NO-GO on brief-authoring ox-alpha surviving cluster before any skill edit. #7/#8 stay PENDING GO.
+
 **Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-23r — Discovery-skill skew repairs (GO executed)
+
+**Focus:** Decision. Execute the ox-alpha skill-text repairs after operator GO.
+
+**Shipped:** GO on [`plan`](superpowers/plans/2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md). Skill + tool-discipline + harvest §2 token. Notice addendum on [`N-2026-08-23`](notes/notice/N-2026-08-23-ox-alpha-futures-anomaly-discovery-skill-review.md).
+
+**Decisions/defects:** none new. Still DROP as a Q. No new ADR.
+
+**Open / next:** carry 2026-08-23q / 2026-08-23p / 2026-08-23k / 2026-08-22r — DL-2 step 2 train scoring. Campaign plans #1–8 stay as 2026-08-23k left them.
+
+---
+
+## 2026-08-23o — merge origin/main into PR #112 (conflict fix)
+
+**Focus:** Resolve PR #112 conflicts after #109/#111 landed venue-binding Phase 1–3 and the ox-alpha brief-authoring review on `docs/SESSIONS.md`.
+
+**Shipped:** merge `origin/main` into `cursor/grow-open-run-burned-475b`. Union-merge splice (missing `---` before `2026-08-23l`) fixed via `--normalize`. Duplicate `2026-08-23a` (ox-alpha vs venue-binding plan) renumbered: ox-alpha → `2026-08-23m`.
+
+**Decisions/defects:** none new.
+
+**Open / next:** carry `2026-08-23n` / `2026-08-22r` — DL-2 step 2 train scoring. Campaign next: W5 CI-from-`gates.yml`, then substrate Phase 6 docs. Follow-on grow slices still named. Operator GO/NO-GO on ox-alpha surviving cluster before any brief-authoring skill edit. #7/#8 stay PENDING GO.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-23q — Discovery-skill skew plan (PENDING GO)
+
+**Focus:** Decision. Specify the ox-alpha surviving skill-text repairs as a fill-gated work order.
+
+**Shipped:** [`plan`](superpowers/plans/2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md) `PENDING OPERATOR GO`. Notice addendum on [`N-2026-08-23`](notes/notice/N-2026-08-23-ox-alpha-futures-anomaly-discovery-skill-review.md). Skill still unedited.
+
+**Decisions/defects:** none. Plan is not a GO and does not amend harvest doctrine.
+
+**Open / next:** carry 2026-08-23p / 2026-08-23k / 2026-08-22r — DL-2 step 2 train scoring. Operator GO on this plan to apply the five skill-text repairs, or leave them. Campaign plans #1–8 stay as 2026-08-23k left them.
+
+---
+
+## 2026-08-23n — Grow-lane `open_run` burned-segment wiring
+
+**Focus:** Build. Execute campaign plan #3 wiring slice only.
+
+**Shipped:** `register_search.open_run --lane deep` refuses overlap (seed MNQ window); unlisted discloses `consultation_count=0`. Blind 11-key schema unchanged. Follow-on slices not in this PR.
+
+**Decisions/defects:** none. `--instrument` required on deep. Consultation count is not a refuse.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: substrate Phase 6 docs. Follow-on grow slices (streak / door-check / denylist / Rule-0 checker / `universe_gate`) still named. #7/#8 stay PENDING GO.
 
 ---
 
@@ -37,6 +113,20 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Decisions/defects:** none. T1 still acknowledged. Book Striker legs stay `AUTHORIZED · MECHANISM @ 1.00×`.
 
 **Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: execute W5 CI-from-`gates.yml` plan. #7/#8 stay PENDING GO.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-23p — Ox-alpha sanitized review of `futures-anomaly-discovery`
+
+**Focus:** Decision. Sanitized skill copy to `stealth/ox-alpha`; reconcile before findings.
+
+**Shipped:** [`notice`](notes/notice/N-2026-08-23-ox-alpha-futures-anomaly-discovery-skill-review.md). ADR use-2 addendum on [`ox-alpha lens`](adr/2026-08-22-ox-alpha-adversarial-lens-scope.md). Skill not edited.
+
+**Decisions/defects:** surviving cluster is skill/harvest drift (Req-3 still a kill; four vs five admission reqs). Revert trigger (b) does not tick.
+
+**Open / next:** carry 2026-08-23k / 2026-08-22r — DL-2 step 2 train scoring. Operator GO to apply the notice's surviving skill-text repairs, or leave them. Campaign plans #1–8 stay as 2026-08-23k left them.
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 
@@ -193,6 +283,20 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: W5 CI-from-`gates.yml` plan. Carry 2026-08-22q — disaster-stop Phase 0; venue-binding Phase 1 *execution*; W1 remaining three.
 
 **Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-23m — Ox-alpha sanitized review of brief-authoring, reconciled
+
+**Focus:** Measurement. Sanitized-only ox-alpha second opinion on the brief-authoring skill; reconcile before treating any objection as a finding.
+
+**Shipped:** [notice](notes/notice/N-2026-08-23-ox-alpha-brief-authoring-review.md). 26 objections; both claimed BLOCKERs discharged (O1 = body/checker skew, not missing matrix; O20 already in `cc_handoff.md`). Eight survive. Skill not edited (doctrine limb).
+
+**Decisions/defects:** none new. §4(b) three-zero-yield revert does not fire (third named use still yielded).
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 (train scoring + nomination). New: operator GO/NO-GO on the surviving cluster (O1 matrix-in-body, O10 grounding quotes, O15+O24 judgment wiring, O7 Trap-12 detection) before any skill edit. Carry 2026-08-22q — `register_search.open_run`; named ox-alpha uses (F1 fork; GROW-lane); disaster-stop Phase 0; venue-binding Phase 1; W1 remaining decisions of record.
+
+**Live-ops state:** unchanged — rail disarmed; no book. $0 OpenRouter spend.
 
 ---
 
