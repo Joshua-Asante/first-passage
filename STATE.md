@@ -190,12 +190,9 @@ Dormant threads b6/b7 (PARK — open) → [`docs/pursuits/`](docs/pursuits/) (ra
 Phase 3). c5/Q-MSCHAN-1 (SUBTRACT — dead) left this section per its own rule above; its record
 stands alone at [`c5`](docs/pursuits/c5-q-mschan-1.md).
 
-**Registry backfill (2026-08-15).** Snapshot + unpaid enumerator live on
+**Registry backfill (2026-08-15).** Snapshot + unpaid enumerator:
 [`scripts/check_closure_disposition.py`](scripts/check_closure_disposition.py)
-(`--list-debt`). Rows leave the unpaid list by landing in
-[`docs/rejected_candidates.md`](docs/rejected_candidates.md), not by editing
-`REGISTRY_DEBT_2026_08`. Three 2026-08-24 misfiles moved DEBT → NA
-(partition-internal; union stays the land-time snapshot).
+(`--list-debt`).
 
 ---
 
