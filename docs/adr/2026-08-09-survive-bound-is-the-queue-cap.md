@@ -28,3 +28,17 @@ RESOLVED — rationale restored in `STATE.md`, repairing the runnable check at `
 ## Boundary
 
 Do **not** quietly introduce an hours figure into a pursuit Survive-bound line (Rule 2 §5 #2 by the back door), nor build a time-metering subsystem to make an hours bound possible (Rule 2 §5 #6).
+
+## Addendum 2026-08-23 — Out-of-order serving is the live defect
+
+**Does not amend** the concurrency-denominated ≤5 cap, the no-hours Boundary, or the 2026-11-08 first-check date. **$0 / K=0.**
+
+**Rule 0 (this addendum):** [`STATE.md`](../../STATE.md) OPERATOR QUEUE @ `b378361` (2026-08-23) — two live rows, both waits (F1; B7/M1). This file @ `027a729` Gate — falsifier clause includes "work repeatedly served out of order". Cheap falsifier (plan Task 2): `rg -n "carry the prior|Carry the prior" .cursor/rules/session-discipline.mdc .cursor/rules/session-log.mdc .claude/hookify.session-log.local.md` — **3 hits**, one per wrap-up surface; [`docs/SESSIONS.md`](../SESSIONS.md) header L20–26 still tells the next session to resume from the prior Open/next; newest merged entry `2026-08-24n` leads with leftover names and only tags the queue as "unchanged."
+
+**Live defect:** the ≤5 cap is intact; work is still served out of order. #1 and #2 cannot be executed (do-not-decide-early; wait on a strategy), so agents execute carried leftover names.
+
+**Repair:** (1) Open/next lead line is the live STATE queue (`#1` … `#N`); (2) while #1/#2 stay waits, row 3 is a doable next step on an **existing** channel owner — operator GO 2026-08-23: blind / no-counterparty channel, name or decline the next construct on the reopened 6A/M6A or GC/MGC doors ([channel ADR](2026-08-15-no-counterparty-statistical-sourcing-channel.md)). Mechanical limb: `scripts/check_sessions_queue_bind.py` (newest SESSIONS Open/next vs live row numbers only).
+
+**Succession:** when row 3 leaves, do not auto-open a channel or promote a leftover. Cite remaining rows until the operator promotes a replacement. Row 3 closed the same day — scoped decline of the reopened 6A/M6A and GC/MGC cell; last pre-G0 slot unspent ([channel ADR](2026-08-15-no-counterparty-statistical-sourcing-channel.md#addendum-2026-08-23--scoped-decline-of-the-reopened-6am6a-and-gcmgc-entry-geometry--dense-1m-cell)).
+
+**Forbidden:** leftover names leading Open/next; a new generation channel to fill the doable slot; `tier: soft` on the checker; an hours figure (Boundary unchanged).

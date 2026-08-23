@@ -129,6 +129,8 @@ Ranked by **blast radius first, then evidentiary strength** (see §5 — the raw
 
 **D1. Rule 7 names "MEMORY.md + memory files" as the canonical owner of durable atomic facts, injected into every session — but that path lives entirely outside the git worktree, so no Great-Prune retention category and no gate-battery check can ever reach it.** A stale memory line has zero mechanical tripwire; it just re-enters every future session as settled fact. *(Direct, load-bearing for this very audit's own Sources-Read discipline.)*
 
+**Disposition 2026-08-23 (P2 Approach A):** Rule 7 owner demoted — see [`addendum`](../../adr/2026-06-30-state-md-role-reduction.md#addendum-2026-08-23--memory-is-assistive-only-not-the-rule-7-owner). Finding text left as the measured defect.
+
 **D2. `scripts/check_advisor_dedup.py`'s hardcoded 5-surface corpus structurally excludes `docs/adr/`** — and dead-candidate prior art (MNQ-ANALOGUE-1, the six-lead P1-CF/P2-CF legs) increasingly lives only in ADR addenda, invisible to the mandated dedup-first check.
 
 **D3. The Call-1 decay trigger is calibrated tight (σ=1.0 vs a kill-trigger's 2.0) on the explicit premise that a false-positive demotion is "cheap because reversible" — but no coded, ADR, or state-file mechanism exists to promote a demoted incumbent leg back up.** The only paths back are an undocumented hand-edit or a ~6-month whole-ADR revert trigger.

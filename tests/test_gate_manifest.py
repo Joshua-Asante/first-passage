@@ -35,10 +35,13 @@ EXPECTED_PATH_CONDITIONAL = {
     "instrument-profiles",
     "sessions-order",
     "sessions-append-only",
+    "sessions-queue-bind",
     "supersession-placement",
     "closure-disposition",
     "governance-prose-control-chars",
     "sync-liveness",
+    "docs-runtime-inventory",
+    "repo-map-layers",
 }
 
 
@@ -134,10 +137,13 @@ REACHABILITY_PROBES = {
     "instrument-profiles": "ops/instruments/MNQ.md",
     "sessions-order": "docs/SESSIONS.md",
     "sessions-append-only": "docs/SESSIONS.md",
+    "sessions-queue-bind": "docs/SESSIONS.md",
     "supersession-placement": "docs/adr/2026-01-01-example.md",
     "closure-disposition": "docs/briefs/closures/Q-EXAMPLE-closure-falsified.md",
     "governance-prose-control-chars": "docs/rejected_candidates.md",
     "sync-liveness": "docs/briefs/INDEX.md",
+    "docs-runtime-inventory": "ops/c1_rail/c1_rail_arm.py",
+    "repo-map-layers": "scripts/check_boundaries.py",
 }
 
 

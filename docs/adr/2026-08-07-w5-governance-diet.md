@@ -123,3 +123,12 @@ Both gates detect **dead links** in root orientation docs. Their `staged_regex` 
 ## Addendum 2026-08-23 — SESSIONS class D tightened to a judgment-call gate
 
 **Does not amend §2's class table.** `docs/SESSIONS.md`'s own header now gates a *full* entry on a real judgment call rather than "skip Hygiene-only"; a no-judgment session that still needs to update Open/next writes a stub entry (heading + Open/next only, gate-compatible with `sessions-append-only`) instead of a full one — see the SESSIONS.md header for the rule.
+
+## Addendum 2026-08-23 — Open/next lead is the STATE queue
+
+**Does not amend the A–D class table**, the 2026-08-23 judgment-gate (full vs stub), or H6 HOLD (CI-from-`gates.yml`). This addendum owns the *content* of Open/next.
+
+**Rule 0 (this addendum):** this file @ `d8ef99e` (judgment-gate addendum). Cheap falsifier same as the [Survive-bound addendum](2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-23--out-of-order-serving-is-the-live-defect): three wrap-up surfaces still copy the prior Open/next.
+
+Lead line: `STATE queue: #1 … · #2 … · #3 …` (titles + owner links). Default wrap-up does **not** copy leftover names from the prior top entry. Residue after the lead only with `queue-exception: <reason>` and an existing owner.
+

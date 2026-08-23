@@ -56,6 +56,23 @@ directory to infer what is live.
 | Gates / `make` targets | [`scripts/gates.yml`](scripts/gates.yml) · `python scripts/gate_manifest.py --list` |
 | Closed-loop specs S1–S7 | [`docs/spec/2026-08-07-loop-spec-index.md`](docs/spec/2026-08-07-loop-spec-index.md) |
 
+**Status words** — these tokens do not mean English. Owners below; do not restate their values here.
+
+| Token | Means | Does not mean | Owner |
+|---|---|---|---|
+| `LOCKED` | Parameter axis is frozen (SL/TP/ATR/risk%/pyramid/Pine) | Capital is authorized indefinitely | [`strategy_lifecycle.md`](docs/methodology/strategy_lifecycle.md) |
+| `CANDIDATE` → `AUTHORIZED` → `WATCH` → `RETIRED` | Capital-authorization ladder (revocable; down-only plus S5 sandbox-up) | A parameter edit | same |
+| `AUTHORIZED @ 1.00×` | Code default when `lifecycle_state.json` is absent | A live deployed haircut | [`CLAUDE.md`](CLAUDE.md) §Strategy Authorization Lifecycle |
+| eval is live | The incumbent Tradeify eval account exists | A book is trading, or the rail is armed | [`CLAUDE.md`](CLAUDE.md) §Live-execution posture |
+| four-layer | `core/` · `lab/` · `ops/` plus **root-resident** governance | A physical `governance/` directory | [`boundaries ADR`](docs/adr/2026-06-05-monorepo-layer-boundaries.md) · [`REPO_MAP.md`](REPO_MAP.md) |
+| CATALOG `hot` | Body still lives under `lab/analysis/<theme>/<slug>/` | The campaign is in-flight | [`catalog-hot ADR`](docs/adr/2026-08-22-catalog-hot-vs-disposition.md) |
+| CATALOG `status` | Disposition word (`ACTIVE` / `HOLD` / `FALSIFIED` / …) | A work queue | same · [`lab/CATALOG.md`](lab/CATALOG.md) |
+| `ACTIVE` | Often the `status` token on a stay-hot card | In-flight / undecided / “do this next” | same |
+| Survive queue | The numbered `STATE.md` rows (cap ≤5) | Every leftover name in SESSIONS | [`STATE.md`](STATE.md) · [`Survive-bound ADR`](docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md) |
+| `Open / next` | Queue-led pointer on the newest SESSIONS entry | The prior leftover cluster is the work list | [`SESSIONS.md`](docs/SESSIONS.md) header |
+
+An empty default-grep of `lab/archive/`, `docs/ltm/`, or `core/strategies/_archive/` is not evidence the work is absent — those trees are excluded from the default index; open the catalog and Read by path ([`.cursor/rules/search-ltm.mdc`](.cursor/rules/search-ltm.mdc)). Pine sources and vendor CSVs are gitignored; CARD/LOCK stubs plus the tracked manifests are the public surface ([`CLAUDE.md`](CLAUDE.md) §Public-clone posture).
+
 Governance and decision records:
 
 - [`docs/operational_rules.md`](docs/operational_rules.md) — the canonical-owner

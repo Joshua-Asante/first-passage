@@ -47,6 +47,8 @@ PDH/PDL failed-break reclaim now explore-FALSIFIED on **MYM and M2K**. Overnight
 - **Stop rule / re-proposal bar:** new mechanism evidence (different reference class / direction / TF / instrument story), **not** stop-buffer / window / rr retune on this G0; **not** silent revive of either axis.
 - **Board write:** plan §6 P3.2b → explore FALSIFIED; Open/next → S2B or Board.
 
+- **Registry:** rejected_candidates.md — ### MSL-C3-K2 dual-axis MR-at-level × M2K — FALSIFIED (explore IS; K=2)
+
 ## §10 audit-hook discharge
 
 ```text

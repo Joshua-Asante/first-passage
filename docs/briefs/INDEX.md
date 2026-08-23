@@ -18,16 +18,8 @@ closure under `docs/briefs/closures/` and delete its Open row (Recently-closed m
 | **Q-TOM-SPX-1** — SPX500 turn-of-month existence and capturability | Layer A **RESOLVED-ABSENT** on canonical Pepperstone (2026-06-16); formal DEAD close reserved | [`docs/briefs/Q-TOM-SPX-1.md`](Q-TOM-SPX-1.md) | Run only the brief-reserved native Pine confirmation. Do not widen the window, change thresholds, or rerun Dukascopy to rescue the null. |
 | **Q-SIGID-1** — measured live↔backtest signal-identity gap from mid-bar `alert()`/`strategy.entry` on c1 venue editions; architectures that close it (locked-axis, not EQ) | **`OPEN`** 2026-07-28 — cheap falsifier: 07-28 MNQ bar is a phantom (`longSignal` mid-true / close-false on `body_ok`); offline phantoms ~0.7× confirmed signals; Fri §2b clean re-measure owed | [`Q-SIGID-1-intra-bar-signal-identity.md`](Q-SIGID-1-intra-bar-signal-identity.md) · [pre-reg](pre-registration/Q-SIGID-1-verdict-preregistration.md) · [RESULTS](../../lab/analysis/c1/c1_signal_identity_2026-07-28/RESULTS.md) | Ruled host is **built** (S2b, `emit_enabled=false`). Offline limb MNQ 0.68 / MYM 0.70 stands. §2b re-measure needs no fill/order/arming. Pine edit only under separate operator GO. |
 | **Q-FILLTAX-1** — TV fill-optimism gap + Pine↔Python / engine↔TV parity | **`OPEN`** — V2 Phase-0 scaffold `CODE_LANDED` 2026-08-07 ($0 under S1 incumbent); V1 disposition follows S1 (Tradeify geometry); Gate RESOLVED needs first family TV anchor | [`Q-FILLTAX-1-fill-realism-and-parity-scoping.md`](Q-FILLTAX-1-fill-realism-and-parity-scoping.md) · [`parity_gen2`](../../lab/analysis/c1/parity_gen2_2026-08/) · [`RESULTS`](../../lab/analysis/c1/parity_gen2_2026-08/RESULTS.md) | Operator: first family same-feed CME TV anchor → Gen-2 ADMIT. No post-hoc band tuning. Mutation battery (Phase 1) still owed. |
-| **Q-SIZECOMP-1** — does live c1 sizing actually compose lifecycle × DD × beta-death the way doctrine says (A3+D4) | **`OPEN — DRAFT (pre-lock)`** 2026-08-18 | [`Q-SIZECOMP-1-sizing-composition.md`](Q-SIZECOMP-1-sizing-composition.md) | Named, not opened. Operator GO → Phase 1 (grep + local pytest snippet, $0/K=0). |
-| **Q-STATVALID-1** — has the repo's own DSR/multiplicity rigor ever been pointed at the MC engine's resampling unit or the risk-control constants' own calibration search (B1+C1) | **`OPEN — DRAFT (pre-lock)`** 2026-08-18 | [`Q-STATVALID-1-mc-resampling-and-constant-multiplicity.md`](Q-STATVALID-1-mc-resampling-and-constant-multiplicity.md) | Named, not opened. Operator GO → Phase 1 (Ljung-Box on existing panel + arithmetic on logged grid scores, $0/K=0). |
-| **Q-INTAKEGOV-1** — does discovery-intake/rejected-registry governance tooling (K_intrinsic self-report, dedup corpus, re-proposal cadence) cover what it's relied on to cover (B2+D2+C4) | **`OPEN — DRAFT (pre-lock)`** 2026-08-18 | [`Q-INTAKEGOV-1-intake-registry-governance-coverage.md`](Q-INTAKEGOV-1-intake-registry-governance-coverage.md) | Named, not opened. Operator GO → Phase 1 (ledger read + grep, $0/K=0). |
-| **Q-S5CAP-1** — does S5's "capped concurrency" hold at the system level or only as a per-packet self-report (B3) | **`OPEN — DRAFT (pre-lock)`** 2026-08-18 | [`Q-S5CAP-1-capped-concurrency-invariant.md`](Q-S5CAP-1-capped-concurrency-invariant.md) | Named, not opened. Operator GO → Phase 1 (3 synthetic packets through the local validators, $0/K=0). |
-| **Q-FIRMEOD-1** — does the Tradeify-proven EOD-vs-intraday breach-clock defect apply to Bulenox/BluSky, never checked (B4) | **`OPEN — DRAFT (pre-lock)`** 2026-08-18 | [`Q-FIRMEOD-1-eod-breach-clock-bulenox-blusky.md`](Q-FIRMEOD-1-eod-breach-clock-bulenox-blusky.md) | Named, not opened. Operator GO → Phase 1 (primary-source re-read + seed/path re-diff, $0/K=0). |
-| **Q-DATAFIDELITY-1** — do the stated data-integrity safety nets (TV price fidelity, feed-equivalence pre-flight, manifest gate scope) cover what they're trusted to cover (C2+C3) | **`OPEN — DRAFT (pre-lock)`** 2026-08-18 | [`Q-DATAFIDELITY-1-tv-price-fidelity-and-integrity-gate-scope.md`](Q-DATAFIDELITY-1-tv-price-fidelity-and-integrity-gate-scope.md) | Named, not opened. Operator GO → Phase 1 (~10-row OHLC diff vs CME settlement + doc grep, $0/K=0). |
-| **Q-PUBTRANS-1** — did the 2026-08-14 public-visibility transition complete cleanly (ADR Status stale, residual-disclosure risk untested, sentinel queue orphaned; B5+D8+D9) | **`OPEN — DRAFT (pre-lock)`** 2026-08-18 | [`Q-PUBTRANS-1-public-transition-completeness.md`](Q-PUBTRANS-1-public-transition-completeness.md) | Named, not opened. **Operator-only limb (B5) needs withheld literal account/$ values** — rest is agent-doable at $0/K=0. |
-| **Q-CALLBOUND-1** — are the lifecycle Call-system's automation-authority boundaries symmetric and complete (Call-1 no promote-back path; Call-5 zero-contract reachable via a side door; D3+D6) | **`OPEN — DRAFT (pre-lock)`** 2026-08-18 | [`Q-CALLBOUND-1-automation-boundary-symmetry.md`](Q-CALLBOUND-1-automation-boundary-symmetry.md) | Named, not opened. Operator GO → Phase 1 (grep/diff sweep, $0/K=0). |
 
-Ten of the eleven 2026-08-18 assumption-sweep Qs remain Open (Q-M1WIRE-1 closed `FALSIFIED` 2026-08-21). Origin: [`docs/notes/audits/2026-08-18-strategy-generation-assumptions-sweep.md`](../notes/audits/2026-08-18-strategy-generation-assumptions-sweep.md) (25 verified-unexamined findings; these Qs combine 22 of them — 3 stay audit-note-resident: D1 MEMORY.md governance reach, D5 Notice-phase 5-tool coverage, D10 D-S-A canon staleness routed to the next quarterly methodology audit instead).
+Ten of the eleven 2026-08-18 assumption-sweep Qs are now closed (Q-M1WIRE-1 `FALSIFIED` 2026-08-21; Q-TRADECAP-1 `RESOLVED`, Q-SIZECOMP-1 `RESOLVED`, Q-STATVALID-1 `FALSIFIED`, Q-INTAKEGOV-1 `AMBIGUOUS-HOLD`, Q-S5CAP-1 `RESOLVED`, Q-FIRMEOD-1 `FALSIFIED`, Q-DATAFIDELITY-1 `FALSIFIED`, Q-PUBTRANS-1 `FALSIFIED`, Q-CALLBOUND-1 `AMBIGUOUS-HOLD`, the latter nine all 2026-08-23) — see `## Recently closed` below for each. Origin: [`docs/notes/audits/2026-08-18-strategy-generation-assumptions-sweep.md`](../notes/audits/2026-08-18-strategy-generation-assumptions-sweep.md) (25 verified-unexamined findings; these Qs combine 22 of them — 2 stay audit-note-resident: D5 Notice-phase 5-tool coverage, D10 D-S-A canon staleness routed to the next quarterly methodology audit instead (D1 MEMORY reach closed 2026-08-23, P2 Approach A)).
 
 ## Dormant (no current session home; resurface before assuming dead)
 
@@ -54,6 +46,96 @@ Ten of the eleven 2026-08-18 assumption-sweep Qs remain Open (Q-M1WIRE-1 closed 
   [`closure`](closures/Q-TRADECAP-1-closure-resolved.md) ·
   [`brief`](Q-TRADECAP-1-per-trade-loss-bound.md) ·
   [`pre-reg`](pre-registration/Q-TRADECAP-1-verdict-preregistration.md).
+- **Q-STATVALID-1** — has the repo's own DSR/multiplicity rigor ever been pointed at the MC
+  engine's resampling unit or the risk-control constants' own calibration search (B1+C1) —
+  **`FALSIFIED` 2026-08-23** — Limb C fires on both grids (DD-trigger grid: 3/5 losing-candidate
+  scores never retained; both grids: winner margin collapses to z≈0.8–1.2 vs the 2-sigma SE
+  noise floor at N=30,000 paths). Limb B independently AMBIGUOUS — locked Pepperstone 4-strategy
+  panel unrecoverable at $0 (retired 2026-08-03, no rollback copy). Successor named, not opened:
+  a DSR/PBO correction-pass packet on both grids; separate re-test trigger for Limb B on next
+  4-leg panel availability.
+  [`closure`](closures/Q-STATVALID-1-closure-falsified.md) ·
+  [`brief`](Q-STATVALID-1-mc-resampling-and-constant-multiplicity.md) ·
+  [`pre-reg`](pre-registration/Q-STATVALID-1-verdict-preregistration.md).
+- **Q-SIZECOMP-1** — does the live c1 sizing host's `r_eff` computation and the diagnostic
+  CLI's own production call chain compose lifecycle × `DD_SCALE` × Call-4 beta-death the way
+  `strategy_lifecycle.md` doctrine claims (A3+D4) — **`RESOLVED` 2026-08-23** — the rail never
+  composes beta-death at all (0 `ops/` hits; imports `TIER_MULTIPLIER` only); the CLI's own
+  triple-compound arithmetic checks out exactly against a hand computation; no 3-way test exists
+  in `tests/test_lifecycle.py`. No code change under this brief — test-coverage gap and rail
+  beta-wiring both named as an operator decision, not opened.
+  [`closure`](closures/Q-SIZECOMP-1-closure-resolved.md) ·
+  [`brief`](Q-SIZECOMP-1-sizing-composition.md) ·
+  [`pre-reg`](pre-registration/Q-SIZECOMP-1-verdict-preregistration.md).
+- **Q-S5CAP-1** — does S5's "capped concurrency" hold at the system level or only as a
+  per-packet self-report (B3) — **`RESOLVED` 2026-08-23** — both `validate_promotion_packet()`
+  and `refute_promotion_packet()` pass all 3 cloned synthetic packets sequentially (cumulative
+  `concurrency_slots`=3 > `max_concurrency`=2, zero rejections); code inspection confirms neither
+  function reads or writes state external to the single packet under evaluation. Mechanism gap,
+  not a realized incident (zero real S5 promotions on record). Successor `Q-S5CAP-2` (wire a
+  real counter, or decide not to) named, not opened, gated on M1 `RESOLVED`.
+  [`closure`](closures/Q-S5CAP-1-closure-resolved.md) ·
+  [`brief`](Q-S5CAP-1-capped-concurrency-invariant.md) ·
+  [`pre-reg`](pre-registration/Q-S5CAP-1-verdict-preregistration.md).
+- **Q-FIRMEOD-1** — does the Tradeify-proven EOD-vs-intraday breach-clock defect and
+  lock/no-lock branch misclassification also apply to the 7 Bulenox/BluSky trailing tiers (B4)
+  — **`FALSIFIED` 2026-08-23** — CLOCK fails: a CI-stable engine fixture parametrized to
+  `Bulenox_100K`'s own `firm_kwargs()` shows `bust_trailing` flips 0→1 between
+  `intraday_low=None` and populated. LOCK fails for Bulenox: its own Master Account primary
+  source carries lock-adjacent language never captured in `firm_rules.py`'s sourcing comment —
+  a new, separately-scoped finding. LOCK holds for BluSky (no lock language found on either
+  stage's primary page). No live surface touched (neither firm has a c1 book). Every
+  Bulenox/BluSky bust figure stays an EOD-clock lower bound until a successor re-runs the
+  W1-pattern intraday fix.
+  [`closure`](closures/Q-FIRMEOD-1-closure-falsified.md) ·
+  [`brief`](Q-FIRMEOD-1-eod-breach-clock-bulenox-blusky.md) ·
+  [`pre-reg`](pre-registration/Q-FIRMEOD-1-verdict-preregistration.md).
+- **Q-DATAFIDELITY-1** — do the stated data-integrity safety nets (TV price fidelity,
+  feed-equivalence pre-flight, manifest gate scope) cover what they're trusted to cover (C2+C3)
+  — **`FALSIFIED` 2026-08-23** — both limbs fire: Limb C2 (MGC, 9 sampled trade dates) shows
+  7/9 exact-match vs an independent Databento reference, 2/9 exceeding 1-tick tolerance on
+  High/Low (one at a confirmed continuous-contract roll, one on a Databento-flagged
+  degraded-quality date); Limb C3 confirms 0 documented manifest-gate scope caveat and 0
+  CME-era feed-equivalence successor.
+  [`closure`](closures/Q-DATAFIDELITY-1-closure-falsified.md) ·
+  [`brief`](Q-DATAFIDELITY-1-tv-price-fidelity-and-integrity-gate-scope.md) ·
+  [`pre-reg`](pre-registration/Q-DATAFIDELITY-1-verdict-preregistration.md).
+- **Q-INTAKEGOV-1** — does discovery-intake/rejected-registry governance tooling
+  (K_intrinsic self-report, dedup corpus, re-proposal cadence) cover what it's relied on to
+  cover (B2+D2+C4) — **`AMBIGUOUS-HOLD` 2026-08-23`** (split verdict, not averaged) — B2 holds
+  (no live `K_intrinsic` undercount found across 14 ledgered runs; 0 have any automated K
+  cross-check); D2 confirms a real gap (mechanism-level dedup query misses `MNQ-ANALOGUE-1`
+  entirely — returns noise, not the real hit — while `docs/adr/` sits outside the corpus); C4
+  confirms no scheduled/symmetric re-examination mechanism exists for a standing REJECTED
+  verdict. B2 re-tests at next discovery-run close; D2/C4 remediation named, not opened.
+  [`closure`](closures/Q-INTAKEGOV-1-closure-ambiguous-hold.md) ·
+  [`brief`](Q-INTAKEGOV-1-intake-registry-governance-coverage.md) ·
+  [`pre-reg`](pre-registration/Q-INTAKEGOV-1-verdict-preregistration.md).
+- **Q-CALLBOUND-1** — are the lifecycle Call-system's automation-authority boundaries
+  symmetric and complete (Call-1 no promote-back path; Call-5 zero-contract reachable via a
+  side door; D3+D6) — **`AMBIGUOUS-HOLD` 2026-08-23** — D3 (symmetry) CONFIRMED clean, no
+  reverse path beyond the two already-named exceptions; D6 (completeness) inconclusive — one
+  topically-adjacent, non-conclusive hit at `docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md`
+  (M1's own sign-off, not Call-5's). Dormant; re-test only if a leg floors to zero live or a
+  session needs the D3 reverse path.
+  [`closure`](closures/Q-CALLBOUND-1-closure-ambiguous-hold.md) ·
+  [`brief`](Q-CALLBOUND-1-automation-boundary-symmetry.md) ·
+  [`pre-reg`](pre-registration/Q-CALLBOUND-1-verdict-preregistration.md).
+- **Q-PUBTRANS-1** — did the 2026-08-14 public-visibility transition complete cleanly (ADR
+  Status stale, residual-disclosure risk untested, sentinel queue orphaned; B5+D8+D9) —
+  **`FALSIFIED` 2026-08-23** — H-PUBTRANS rejected outright: Limb D8 concretely fails —
+  Guardian Gold's ATR multiplier (1.55×), grace-stop multiplier (2.0×), and grace-bar window
+  are stated in cleartext at `docs/methodology/1r_estimation.md:77,379`, a file absent from the
+  admitting ADR's own downstream-artifact inventory and missed by the 2026-08-14 sweep — a live
+  leak of Pine-only-locked strategy detail on the now-public repo, still present. ⚠ **Not
+  remediated by this closure — flagged for immediate operator attention, see chat.** Limb B5
+  (withheld literal account/$ grep) and Limb D9 (pre-transition sentinel-queue disposition —
+  corrected count 12, not 11) remain individually open pending operator input; D9's own premise
+  that it "needs private-archive access" is shown to be wrong (the archive is an already-fetched
+  local git remote).
+  [`closure`](closures/Q-PUBTRANS-1-closure-falsified.md) ·
+  [`brief`](Q-PUBTRANS-1-public-transition-completeness.md) ·
+  [`pre-reg`](pre-registration/Q-PUBTRANS-1-verdict-preregistration.md).
 - **Q-M1WIRE-1** — does the M1 arming interlock verify everything its acceptance package claims — **`FALSIFIED` 2026-08-21** — A2 (no production confirmed-base write path) and A5 (fixture-hash drift not wired into arm/`gates.yml`) both confirmed; A4 untested and not required for the verdict. Rail stays disarmed; M1 stays not-`RESOLVED`. [`closure`](closures/Q-M1WIRE-1-closure-falsified.md).
 - **Q-GATESTACK-1** — does anything on GitHub actually require the gate stack to pass before `main`, and is CI-status doc current — **`FALSIFIED` 2026-08-19** — `main` unprotected (404/`[]`/`push:true`); Actions live + green since 2026-08-15. Branch-protection packet named-not-opened; doc-correction packet executed same turn. [`closure`](closures/Q-GATESTACK-1-closure-falsified.md).
 - **Q-NSURV-2** — can a magnitude-resampling second-uncertainty-layer be added to N-SURV

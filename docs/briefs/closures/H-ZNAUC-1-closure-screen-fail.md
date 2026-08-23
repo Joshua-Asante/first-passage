@@ -28,6 +28,8 @@
 - **Q-BOOKFIT-1 composition finding stands, undisturbed:** F-A's book-*fit* (ρ 0.512, risk-N_eff Δ +0.787) was always "risk geometry fits," never "edge exists." This closure confirms the edge side fails — exactly the split the M-21 coordinates are careful to keep separate. No re-open of Q-BOOKFIT.
 - **ZN instrument-ledger card (`ops/instruments/ZN.md`) deferred** — was a Stage-0 *prerequisite for SCREEN-PASS only*; not owed for a screen-stage close. Cost facts recorded here for re-use if ZN is ever re-proposed with new mechanism evidence.
 
+- **Registry:** rejected_candidates.md — ### H-ZNAUC-1 post-auction dealer-hedging-unwind drift × ZN — SCREEN-FAIL (cost-wall)
+
 ## Lesson candidate
 
 **(strengthens existing §2.1 doctrine, third instance)** Futures event-drift mechanisms (Tier-B auction-drift + Tier-C microstructure) are **structurally cost-walled**: D5 (11.06bp hurdle vs 2.97bp), H-OD-1 (5.05bp vs 1.5bp), now H-ZNAUC-1 (6–10bp vs 1.01bp) all **confirmed the mechanism direction** and all died on per-event δ being ~1/4 to ~1/10 of the round-trip cost. The pattern is now 3/3 — sourcing effort in these tiers should treat the cost-law as the *first* screen (it was here: the δ-extraction was cheap, $0.00), and the §2.1 "Tier-A fund-first" priority is empirically re-validated. Not a new registry entry — this is the exact pattern `strategy_harvest.md` §2.1 already encodes; logged as its third corroborating instance.

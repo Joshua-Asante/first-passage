@@ -57,6 +57,8 @@ BEHIND this list.** Items leave when done; it stays ≤5 so it cannot decay into
 | 1 | **B7-REFIRE Stage 1 + M1** — both wait on an acceptable strategy on the ruled (Python-native) host. Eval live; no book deployed | [`GO ADR Addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`S2`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) · [`M1`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) | live-signal / arming path |
 | 2 | **Per-trade dollar-loss bound — elect within-day hard-cap vs. live-observed tripwire** (Q-TRADECAP-1 `RESOLVED`: confirmed no bound exists anywhere in the live sizing/arming path on Tradeify's intraday-enforced geometry). Orphaned CFD-era fork from `1r_estimation.md`, never re-scoped until now | [`Q-TRADECAP-1 closure`](docs/briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](docs/methodology/1r_estimation.md) L231–263 | any future arming session carries the gap unresolved |
 
+Off-queue leftovers stay on their owner artifacts. Re-entry is promote to a numbered queue row and drop something else (cap ≤5). When a doable row leaves, do not auto-open a replacement — cite remaining rows until the operator promotes one.
+
 ---
 
 ## Executed operator decisions — decision index
@@ -66,6 +68,11 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence + owner. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-23** — P4 museum rules + P5 REPO_MAP layer compare-gate landed; pain-point buildable packets P0–P5 closed (parked items stay parked). [`P4 plan`](docs/superpowers/plans/2026-08-23-p4-museum-rules-implementation.md) · [`P5 plan`](docs/superpowers/plans/2026-08-23-p5-repo-map-layers-implementation.md)
+- **2026-08-23** — P3 docs-runtime inventory landed (report-only); queue row 3 opened and closed same session (succession: no auto-replace). [`inventory`](docs/notes/audits/docs-runtime-inventory.md) · [`P3 plan`](docs/superpowers/plans/2026-08-23-p3-docs-runtime-inventory-implementation.md)
+- **2026-08-23** — P2 Approach A: Rule 7 durable-atoms owner demoted; Claude-project MEMORY assistive-only. Queue row 3 opened and closed same session (succession: no auto-replace). [`state-md addendum`](docs/adr/2026-06-30-state-md-role-reduction.md#addendum-2026-08-23--memory-is-assistive-only-not-the-rule-7-owner)
+- **2026-08-23** — Blind channel: scoped decline of the reopened 6A/M6A and GC/MGC entry-geometry / dense-1m cell; last pre-G0 slot unspent; count unchanged. Queue row 3 deleted (succession: no auto-replace). [`channel ADR addendum`](docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md#addendum-2026-08-23--scoped-decline-of-the-reopened-6am6a-and-gcmgc-entry-geometry--dense-1m-cell)
+- **2026-08-23** — Operator-queue bind: Open/next is queue-led; row 3 = blind channel (name or decline next 6A/M6A or GC/MGC construct). [`Survive-bound addendum`](docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-23--out-of-order-serving-is-the-live-defect) [`W5 addendum`](docs/adr/2026-08-07-w5-governance-diet.md#addendum-2026-08-23--opennext-lead-is-the-state-queue)
 - **2026-08-23** — `Q-MONSURF-1` closed `RESOLVED` — monitoring obligations corrected from one stranded "first live fill" class to three true gate depths; M-B (idle-clock monitor) acceptance battery passes 0 missed / 0 spurious across all 312 real historical weeks, mutation-verified, registration-ready (gated on F3 only). Board triage rewritten. [`closure`](docs/briefs/closures/Q-MONSURF-1-closure-resolved.md)
 - **2026-08-23** — `Q-TRADECAP-1` closed `RESOLVED` — no per-trade dollar-loss bound exists anywhere in the live sizing/arming path (sizing law, M1 arming interlock, EM2, disaster-stop all checked, all confirmed absent) on Tradeify's intraday-enforced geometry. Successor decision packet queued (row 2). [`closure`](docs/briefs/closures/Q-TRADECAP-1-closure-resolved.md)
 - **2026-08-23** — Fork F1 ruled (12:59, after an 11:37/12:23 concurrent-session sweep had just re-confirmed F1's deferred posture as precedent for the sibling PARTIAL-disposition addendum — considered override, not a miss): a Tradeify-resting §4 discharge does not satisfy the four-firms falsifier (functionally a 3-firm set — Bulenox/MFFU/BluSky — for §4 counting purposes); queue row 1 closed. `MNQTAPE-2` ($308.69 larger-N tape-aggressor replication) declined NO-GO same session. MSL-S4 (MGC) Pine hash-pinned locally; confirmed already `PARKED` (post-`AMBIGUOUS-HOLD` Explore-confirm) — its RUNBOOK's TV-backtest recommendation is stale/superseded, not a live next step. Every currently-sourced MSL Tradeify candidate is now closed or PARKED. [`ADR addendum`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) [`prereg`](docs/briefs/pre-registration/2026-08-23-mnqtape-2-larger-n-prereg.md) [`MSL-S4 card`](core/strategies/candidates/candidates_CARD.md)
@@ -193,14 +200,9 @@ Dormant threads b6/b7 (PARK — open) → [`docs/pursuits/`](docs/pursuits/) (ra
 Phase 3). c5/Q-MSCHAN-1 (SUBTRACT — dead) left this section per its own rule above; its record
 stands alone at [`c5`](docs/pursuits/c5-q-mschan-1.md).
 
-**Registry backfill debt (2026-08-15).** 33 closures classified as strategy-grounds kills
-(read against each one's actual `**Verdict:**` line, not filename) never got a
-`rejected_candidates.md` row — the 2026-08-03→08-11 feed-stop the registry-feed sub-rule
-(9) was written to close. Forward-only: nothing new accretes here. Backfill is one
-judgment call per row (which heading, how it's worded) and stays operator-paced —
-`python scripts/check_closure_disposition.py --list-debt` lists the current set;
-rows leave this debt only by landing in `docs/rejected_candidates.md`, not by editing
-`REGISTRY_DEBT_2026_08` directly.
+**Registry backfill (2026-08-15).** Snapshot + unpaid enumerator:
+[`scripts/check_closure_disposition.py`](scripts/check_closure_disposition.py)
+(`--list-debt`).
 
 ---
 

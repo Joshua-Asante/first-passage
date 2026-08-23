@@ -54,6 +54,8 @@ N/A — no candidate was scored. This is a program-level *reachability* finding,
 - **M-19** — the DSR floor (not the bust/pass gate) is a discovery axis's binding reachability constraint, and it is K-governed; screen it against the best in-house edge + corrected literature before committing an axis. Dated anchor: 2026-07-14, Q-GATECART-1; quantified counterfactual: floor 2.05 vs best-validated 1.83 at K=3,177.
 - Methodological win recorded: freezing the realism ceiling as a *formula over external data* before measuring surfaced the floor > ceiling inversion that the initial felt cap (SR ≤ 2.0) would have masked (2.0 sat exactly between S_A and S_floor).
 
+- **Registry:** rejected_candidates.md — ### Blind high-K discovery-axis mining (Q-GATECART-1 DSR-admission reachability) — FALSIFIED (K-conditional, K=3,177)
+
 ## Forbidden moves carried out of closure (H-CART §5)
 
 - Do **not** amend the frozen survivor-scoring ceilings (3.0% / 50% / 1.0%) in response to this — that gate's only amendment route is its own close-and-reopen.

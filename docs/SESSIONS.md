@@ -2,7 +2,8 @@
 
 Chronological progress log, **newest first**. Each entry
 **links out** to the detailed artifacts (ADRs, notices, briefs, commits) rather than
-duplicating them. Complements `MEMORY.md` (durable atomic facts, recalled by relevance);
+duplicating them. Durable atoms live with their owners (ADRs / `docs/methodology/lessons/`);
+Claude-project `MEMORY.md` is assistive-only, never attestation;
 this file is the narrative timeline you can scan top-to-bottom.
 
 **A full entry is written only for a session that made a real judgment call** — a
@@ -17,16 +18,103 @@ rule; entry-class origin below is unchanged.)*
 links; keep prose beyond the five fields ≤ **~40 words** where possible
 ([`W5 ADR`](adr/2026-08-07-w5-governance-diet.md)).
 
-**Open / next never goes stale between full entries.** Next session opens by reading
-the top entry's **Open / next**. If a no-judgment-call session changes what's open/next,
-write a new **stub entry** — heading + `Open / next` line only, skip the other four
-fields — instead of editing the old top entry. `scripts/roll_sessions.py`'s
-`sessions-append-only` gate hard-fails any edit to an already-merged entry (its own
-message: "edit Open/next on the NEW top entry, not this one") — a stub is the
-gate-compatible way to keep the pointer current without a full entry.
+**Open / next is queue-led.** The lead line cites every live [`STATE.md`](../STATE.md)
+operator-queue row (`STATE queue: #1 … · #2 … · #3 …`, titles + owner links). Default
+wrap-up does **not** copy leftover names from the prior top entry. Off-queue residue
+may follow the lead only if this session used `queue-exception: <reason>` and the
+residue's owner already exists. If a no-judgment-call session still needs to refresh
+the pointer, write a **stub** — heading + `Open / next` only — instead of editing the
+old top entry. `sessions-append-only` hard-fails any edit to an already-merged entry;
+`sessions-queue-bind` hard-fails if any live `#N` is missing from the newest Open/next.
 
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing
 any entry, full or stub (a-first; bare claims `a`).
+
+---
+
+## 2026-08-24x — P4 museum rules + P5 REPO_MAP layer gate (pain-point close-out)
+
+**Focus:** Decision + Build. Operator closed remaining buildable pain-point packets (P4 + P5). Parked rows stay parked.
+
+**Shipped:** [`operational_rules.md`](operational_rules.md) Rule 1 HISTORICAL origin + Rule 7 `_archive` lock paths · [`repo_map_layers.yml`](../scripts/repo_map_layers.yml) · [`check_repo_map_layers.py`](../scripts/check_repo_map_layers.py) · `repo-map-layers` in [`gates.yml`](../scripts/gates.yml). Plans: [`P4`](superpowers/plans/2026-08-23-p4-museum-rules-implementation.md) · [`P5`](superpowers/plans/2026-08-23-p5-repo-map-layers-implementation.md). P3 commit [`2c89694`](https://github.com/Joshua-Asante/first-passage/commit/2c89694).
+
+**Decisions/defects:** P0–P5 buildable set closed. W5 CI-from-gates / keep-20 / mass-CATALOG remain parked on their owners.
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-24w — P3 docs-runtime inventory (report-only)
+
+**Focus:** Decision + Build. Operator promoted P3 as queue #3. Index only; not a prune.
+
+**Shipped:** [`check_docs_runtime_inventory.py`](../scripts/check_docs_runtime_inventory.py) · [`inventory`](notes/audits/docs-runtime-inventory.md) · [`P3 plan`](superpowers/plans/2026-08-23-p3-docs-runtime-inventory-implementation.md) · `docs-runtime-inventory` in [`gates.yml`](../scripts/gates.yml) (exit 0). P2 commit [`9ea8d81`](https://github.com/Joshua-Asante/first-passage/commit/9ea8d81).
+
+**Decisions/defects:** Quoted-path + pathlib-join (backslash continuations). Known reads present (guard.py CLAUDE.md; c1_rail_arm M1 artifact; register_search docs/). Row 3 closed on land. P4/P5 not auto-opened.
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-24v — P2 Approach A: MEMORY demoted to assistive-only
+
+**Focus:** Decision. Operator promoted P2 as queue #3 and picked Approach A.
+
+**Shipped:** [`state-md addendum`](adr/2026-06-30-state-md-role-reduction.md#addendum-2026-08-23--memory-is-assistive-only-not-the-rule-7-owner) · [`Rule 7`](operational_rules.md) owner-table row · [`plan`](superpowers/plans/2026-08-23-p2-memory-demote-implementation.md). Reconciled `origin/main` first (F1 already ruled; live queue is B7/M1 + Q-TRADECAP-1).
+
+**Decisions/defects:** Durable atoms live in ADRs / lessons. Claude-project MEMORY is assistive-only, never §0. Not Approach B/C. Row 3 closed on land (succession: no auto-replace).
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-24s — blind-channel scoped decline of the reopened 6A/GC cell
+
+**Focus:** Decision. Operator accepted the scoped decline: do not name on the reopened 6A/M6A or GC/MGC entry-geometry / dense-1m doors. Last pre-G0 slot unspent.
+
+**Shipped:** [`channel ADR addendum`](adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md#addendum-2026-08-23--scoped-decline-of-the-reopened-6am6a-and-gcmgc-entry-geometry--dense-1m-cell) · [`STATE.md`](../STATE.md) row 3 deleted (succession: no auto-replace).
+
+**Decisions/defects:** Door stays legally open; construct refused (sibling-contaminated cell, not an 08-15 empty walk). Count stays 2/3. Not generation-dry. S1/S2 still unruled. Later spend of the last slot needs a fresh GO.
+
+**Open / next:** STATE queue: #1 F1 — how §4 reads a Tradeify-resting discharge ([`descope §7`](adr/2026-08-04-tradeify-venue-descope-eval-included.md)) · #2 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)).
+
+---
+
+## 2026-08-24r — merge origin/main into PR #128 (conflict fix)
+
+**Focus:** Resolve PR #128 conflicts after #127. Same-day `2026-08-24o` is taken by the registry-snapshot entry on `main`.
+
+**Shipped:** merge `origin/main` into `claude/tradeify-strategy-review-6fe189`. Union-merge splice (missing `---` after `24p`) fixed. Colliding PR-side `2026-08-24o` (F1 ruled) remapped to `2026-08-24q`. Main's `24o` registry heading left byte-identical. F1 / Q-TRADECAP-1 / Q-MONSURF-1 bytes unchanged.
+
+**Decisions/defects:** none new.
+
+**Open / next:** Phase 5 (wire M-B at F3) — not before. M-A build-gate scope ruling owed. MSL needs a fresh WHO. Successor per-trade loss-bound election on STATE row 2. Q-FIRMEOD-1 / Q-PUBTRANS-1 deferred. **STATE queue:** #1 B7-REFIRE + M1 · #2 per-trade loss-bound election.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-24t — P1 README status glossary (queue-exception)
+
+**Open / next:** STATE queue: #1 F1 — how §4 reads a Tradeify-resting discharge ([`descope §7`](adr/2026-08-04-tradeify-venue-descope-eval-included.md)) · #2 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #3 Blind — name or decline the next construct on 6A/M6A or GC/MGC entry-geometry / dense-1m doors ([`channel ADR`](adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md)). queue-exception: operator directed the pain-point sequence after bind land; P1 README glossary is on this branch (charter start-when). Bind commit [`02c5f5e`](https://github.com/Joshua-Asante/first-passage/commit/02c5f5e).
+
+---
+
+## 2026-08-24u — Lane A GO + operator-queue bind land
+
+**Focus:** Decision + Build. Operator named bind row 3 = Lane A (blind / no-counterparty channel). Landed queue-led Open/next, carry-forward rewrite, and the SESSIONS-only bind gate.
+
+**Shipped:** [`Survive-bound addendum`](adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-23--out-of-order-serving-is-the-live-defect) · [`W5 addendum`](adr/2026-08-07-w5-governance-diet.md#addendum-2026-08-23--opennext-lead-is-the-state-queue) · [`STATE.md`](../STATE.md) row 3 · [`check_sessions_queue_bind.py`](../scripts/check_sessions_queue_bind.py) · `sessions-queue-bind` in [`gates.yml`](../scripts/gates.yml). Branch `docs/queue-bind-and-pain-point-plans`. Claude hookify files are `.local.md` / gitignored; Cursor always-apply is the tracked refuse surface.
+
+**Decisions/defects:** Lane A GO — next concrete step is name or decline a construct on the reopened 6A/M6A or GC/MGC doors; do not spend the last pre-G0 slot unnamed. Succession: when row 3 leaves, do not auto-open a replacement. P1–P5 stay on the [pain-point charter](superpowers/plans/2026-08-23-repo-pain-point-packets.md).
+
+**Open / next:** STATE queue: #1 F1 — how §4 reads a Tradeify-resting discharge ([`descope §7`](adr/2026-08-04-tradeify-venue-descope-eval-included.md)) · #2 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #3 Blind — name or decline the next construct on 6A/M6A or GC/MGC entry-geometry / dense-1m doors ([`channel ADR`](adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md)).
 
 ---
 
@@ -40,11 +128,23 @@ any entry, full or stub (a-first; bare claims `a`).
 
 **Open / next:** Phase 5 (wire M-B to the live account) fires automatically at F3 registration, not before. M-A's build-gate scope ruling is a standing, explicit operator-ruling request. MSL still needs a fresh WHO sourced for an actual Tradeify strategy candidate — this closes infrastructure gaps, not the strategy-search gap itself.
 
+---
+
+## 2026-08-24o — keep REGISTRY_DEBT snapshot; unpaid is a registry read
+
+**Focus:** Build. PR #127 pytest pin (`66` / `33`) failed after the backfill emptied `REGISTRY_DEBT_2026_08`. Discharge is a landed `rejected_candidates.md` row, not a frozenset edit.
+
+**Shipped:** [`check_closure_disposition.py`](../scripts/check_closure_disposition.py) — restore 30-name debt snapshot; 3 misfiles DEBT → NA (union stays 66); `--list-debt` → `unpaid_registry_debt()`. Tests + [`STATE.md`](../STATE.md) pointer.
+
+**Decisions/defects:** none new — implements the snapshot-vs-empty choice already ruled this session.
+
+**Open / next:** Q-M1WIRE-1 wire-vs-risk-accept, closure-disposition-coverage-hard severity, and the blind-channel FM-4 doctrinal seams — ruling still owed. 9 Pre-Q brief GOs still dispatched separately. Registry-backfill unpaid is now a `--list-debt` read. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1.
+
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
 
-## 2026-08-24o — F1 ruled; MNQTAPE-2 NO-GO; Q-TRADECAP-1 RESOLVED; status-skew fixes; Pre-Q priority pass
+## 2026-08-24q — F1 ruled; MNQTAPE-2 NO-GO; Q-TRADECAP-1 RESOLVED; status-skew fixes; Pre-Q priority pass
 
 **Focus:** Decision + Measurement. Operator rulings on the two open Tradeify-strategy threads, the
 top-ranked Pre-Q executed to verdict on operator GO, plus doc-hygiene.
