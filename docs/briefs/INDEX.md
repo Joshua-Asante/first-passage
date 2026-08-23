@@ -19,7 +19,6 @@ closure under `docs/briefs/closures/` and delete its Open row (Recently-closed m
 | **Q-SIGID-1** — measured live↔backtest signal-identity gap from mid-bar `alert()`/`strategy.entry` on c1 venue editions; architectures that close it (locked-axis, not EQ) | **`OPEN`** 2026-07-28 — cheap falsifier: 07-28 MNQ bar is a phantom (`longSignal` mid-true / close-false on `body_ok`); offline phantoms ~0.7× confirmed signals; Fri §2b clean re-measure owed | [`Q-SIGID-1-intra-bar-signal-identity.md`](Q-SIGID-1-intra-bar-signal-identity.md) · [pre-reg](pre-registration/Q-SIGID-1-verdict-preregistration.md) · [RESULTS](../../lab/analysis/c1/c1_signal_identity_2026-07-28/RESULTS.md) | Ruled host is **built** (S2b, `emit_enabled=false`). Offline limb MNQ 0.68 / MYM 0.70 stands. §2b re-measure needs no fill/order/arming. Pine edit only under separate operator GO. |
 | **Q-FILLTAX-1** — TV fill-optimism gap + Pine↔Python / engine↔TV parity | **`OPEN`** — V2 Phase-0 scaffold `CODE_LANDED` 2026-08-07 ($0 under S1 incumbent); V1 disposition follows S1 (Tradeify geometry); Gate RESOLVED needs first family TV anchor | [`Q-FILLTAX-1-fill-realism-and-parity-scoping.md`](Q-FILLTAX-1-fill-realism-and-parity-scoping.md) · [`parity_gen2`](../../lab/analysis/c1/parity_gen2_2026-08/) · [`RESULTS`](../../lab/analysis/c1/parity_gen2_2026-08/RESULTS.md) | Operator: first family same-feed CME TV anchor → Gen-2 ADMIT. No post-hoc band tuning. Mutation battery (Phase 1) still owed. |
 | **Q-SIZECOMP-1** — does live c1 sizing actually compose lifecycle × DD × beta-death the way doctrine says (A3+D4) | **`OPEN — DRAFT (pre-lock)`** 2026-08-18 | [`Q-SIZECOMP-1-sizing-composition.md`](Q-SIZECOMP-1-sizing-composition.md) | Named, not opened. Operator GO → Phase 1 (grep + local pytest snippet, $0/K=0). |
-| **Q-TRADECAP-1** — is there any per-trade dollar-loss bound anywhere in the sizing/arming path on the intraday-enforced Tradeify geometry (A6, orphaned `1r_estimation.md` Forward question) | **`OPEN — DRAFT (pre-lock)`** 2026-08-18 | [`Q-TRADECAP-1-per-trade-loss-bound.md`](Q-TRADECAP-1-per-trade-loss-bound.md) | Named, not opened. Operator GO → Phase 1 (grep + read, $0/K=0). |
 | **Q-STATVALID-1** — has the repo's own DSR/multiplicity rigor ever been pointed at the MC engine's resampling unit or the risk-control constants' own calibration search (B1+C1) | **`OPEN — DRAFT (pre-lock)`** 2026-08-18 | [`Q-STATVALID-1-mc-resampling-and-constant-multiplicity.md`](Q-STATVALID-1-mc-resampling-and-constant-multiplicity.md) | Named, not opened. Operator GO → Phase 1 (Ljung-Box on existing panel + arithmetic on logged grid scores, $0/K=0). |
 | **Q-INTAKEGOV-1** — does discovery-intake/rejected-registry governance tooling (K_intrinsic self-report, dedup corpus, re-proposal cadence) cover what it's relied on to cover (B2+D2+C4) | **`OPEN — DRAFT (pre-lock)`** 2026-08-18 | [`Q-INTAKEGOV-1-intake-registry-governance-coverage.md`](Q-INTAKEGOV-1-intake-registry-governance-coverage.md) | Named, not opened. Operator GO → Phase 1 (ledger read + grep, $0/K=0). |
 | **Q-S5CAP-1** — does S5's "capped concurrency" hold at the system level or only as a per-packet self-report (B3) | **`OPEN — DRAFT (pre-lock)`** 2026-08-18 | [`Q-S5CAP-1-capped-concurrency-invariant.md`](Q-S5CAP-1-capped-concurrency-invariant.md) | Named, not opened. Operator GO → Phase 1 (3 synthetic packets through the local validators, $0/K=0). |
@@ -38,6 +37,23 @@ Ten of the eleven 2026-08-18 assumption-sweep Qs remain Open (Q-M1WIRE-1 closed 
 
 ## Recently closed (cross-reference; not open)
 
+- **Q-MONSURF-1** — which monitoring surfaces are buildable venue-free now, and on what acceptance
+  evidence (M-A/M-B/M-C triage) — **`RESOLVED` 2026-08-23** — M-B (idle-clock monitor) acceptance
+  battery passes 0 missed / 0 spurious across all 312 real historical weeks, mutation-verified;
+  registration-ready, gated on F3 only (not first live fill, as previously recorded). M-C stays
+  fill-gated; M-A stays elective with its own build-gate scope ruling still owed. Triage written to
+  STATE.md's board. $0/K=0. [`closure`](closures/Q-MONSURF-1-closure-resolved.md) ·
+  [`brief`](Q-MONSURF-1-monitoring-surface-triage-scoping.md) ·
+  [`pre-reg`](pre-registration/Q-MONSURF-1-verdict-preregistration.md) ·
+  [`results`](../../lab/analysis/c1/msl_monsurf_1_idle_clock_2026-08/RESULTS.md).
+- **Q-TRADECAP-1** — is there any per-trade dollar-loss bound anywhere in the sizing/arming path on
+  the intraday-enforced Tradeify geometry (A6, orphaned `1r_estimation.md` Forward question) —
+  **`RESOLVED` 2026-08-23** — confirmed absent on all four checked limbs (sizing law, arming
+  interlock, EM2, disaster-stop). Successor decision packet (per-trade hard-cap vs. live tripwire,
+  from `1r_estimation.md`) named on STATE.md for operator election. $0/K=0.
+  [`closure`](closures/Q-TRADECAP-1-closure-resolved.md) ·
+  [`brief`](Q-TRADECAP-1-per-trade-loss-bound.md) ·
+  [`pre-reg`](pre-registration/Q-TRADECAP-1-verdict-preregistration.md).
 - **Q-M1WIRE-1** — does the M1 arming interlock verify everything its acceptance package claims — **`FALSIFIED` 2026-08-21** — A2 (no production confirmed-base write path) and A5 (fixture-hash drift not wired into arm/`gates.yml`) both confirmed; A4 untested and not required for the verdict. Rail stays disarmed; M1 stays not-`RESOLVED`. [`closure`](closures/Q-M1WIRE-1-closure-falsified.md).
 - **Q-GATESTACK-1** — does anything on GitHub actually require the gate stack to pass before `main`, and is CI-status doc current — **`FALSIFIED` 2026-08-19** — `main` unprotected (404/`[]`/`push:true`); Actions live + green since 2026-08-15. Branch-protection packet named-not-opened; doc-correction packet executed same turn. [`closure`](closures/Q-GATESTACK-1-closure-falsified.md).
 - **Q-NSURV-2** — can a magnitude-resampling second-uncertainty-layer be added to N-SURV
