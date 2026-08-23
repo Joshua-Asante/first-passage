@@ -2,7 +2,7 @@
 
 > **For agentic workers:** This is a **portfolio**, not one implementation. Each packet below needs its own later plan (or is already owned). Do not scaffold packet work from this file. REQUIRED when a packet is GO’d: writing-plans → a dated `docs/superpowers/plans/YYYY-MM-DD-<packet>-implementation.md`.
 
-**AUTHORIZATION:** Plans only. No packet in this file is GO’d by committing it. Bind ([`2026-08-23-bind-operator-queue-implementation.md`](2026-08-23-bind-operator-queue-implementation.md)) is the first build and is itself PENDING row-3 GO. These packets queue **behind** STATE #1 F1 / #2 B7–M1 (and #3 once named). Promote one to the queue to start it; do not serve them from leftover `Open / next`.
+**AUTHORIZATION:** Plans only. No packet in this file is GO’d by committing it. Bind ([`2026-08-23-bind-operator-queue-implementation.md`](2026-08-23-bind-operator-queue-implementation.md)) **GO landed 2026-08-23** (row 3 = Lane A, blind channel). These packets stay **behind** the live STATE queue. Promote one to a numbered row to start it; do not serve them from leftover `Open / next`.
 
 **Goal:** Name the first-look / second-look pain points that the bind plan explicitly left open, group them into independent packets, and sequence them so we do not open a new control-plane campaign that recreates the defect.
 
@@ -59,7 +59,7 @@ P2–P5 are parallel after P1. Only one may sit on the operator queue at a time 
 
 **Owner plan:** [`2026-08-23-bind-operator-queue-implementation.md`](2026-08-23-bind-operator-queue-implementation.md)
 
-**Start when:** operator names row 3.
+**Start when:** done — row 3 named (Lane A). Remaining bind work is this land, not a second GO.
 
 **Not this packet:** CATALOG, MEMORY, prune inventory, CI-from-gates, keep-20.
 

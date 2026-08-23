@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**AUTHORIZATION:** **PENDING operator GO.** Design approved 2026-08-23 (approach B). Do not land Tasks 2–5 until the operator names queue row 3 from the existing-channel short list in Task 1. This packet serves the Survive bound; it does not jump F1 / B7–M1.
+**AUTHORIZATION:** **GO — landed 2026-08-23.** Operator named row 3 = Lane A (blind / no-counterparty channel). Tasks 2–5 execute on this GO. This packet serves the Survive bound; it does not jump F1 / B7–M1.
 
 **Goal:** Stop leftover/nav/SESSIONS work from being served ahead of the operator queue by making `Open / next` queue-led, adding one doable generation row (the current top two are waits), and enforcing that at session start plus a SESSIONS-only gate.
 
@@ -58,8 +58,8 @@
 | Deep lane | DL-1/DL-2 abandoned; only if a DL-3 is already chartered | [`docs/adr/2026-08-16-deep-iteration-lane-charter.md`](../../adr/2026-08-16-deep-iteration-lane-charter.md) |
 | Harvest P4 | currently HOLD | [`lab/analysis/harvest/six_lead_cf_2026-08-17/P4_DRYRUN.md`](../../../lab/analysis/harvest/six_lead_cf_2026-08-17/P4_DRYRUN.md) |
 
-- [ ] **Step 1:** Operator picks one row and one *next concrete step* (not a channel reboot).
-- [ ] **Step 2:** If no pick, stop. Do not implement Tasks 2–5 (bind with only wait-rows produces idle or universal `queue-exception:`).
+- [x] **Step 1:** Operator picks one row and one *next concrete step* (not a channel reboot). **Lane A** — blind channel; name or decline the next construct on the reopened 6A/M6A or GC/MGC doors.
+- [x] **Step 2:** If no pick, stop. Do not implement Tasks 2–5 (bind with only wait-rows produces idle or universal `queue-exception:`).
 
 ### Task 2: ADR addenda + STATE row
 
@@ -68,11 +68,11 @@
 - Modify: `docs/adr/2026-08-07-w5-governance-diet.md`
 - Modify: `STATE.md` operator table
 
-- [ ] **Step 1:** Cheap falsifier: `rg -n "Open / next|carry the prior" .cursor/rules/session-discipline.mdc .claude/hookify.session-log.local.md docs/SESSIONS.md` — those three hits are the carry-forward bug Task 3 rewrites. Write the addenda against that count, not a remembered list.
-- [ ] **Step 2:** Survive-bound addendum: name the live defect (out-of-order serving); name the repair (queue-led Open/next + doable row 3); reaffirm no hours figure; forbidden = leftover names leading Open/next, new generation channel, `tier: soft`.
-- [ ] **Step 3:** W5 addendum: does not amend the A–D class table; Open/next lead = `STATE queue: #1 … · #2 … · #3 …`; residue after that line only with `queue-exception:` and an existing owner.
-- [ ] **Step 4:** STATE: keep #1 F1 and #2 B7–M1; add #3 from Task 1; one parking sentence under the table — leftovers stay on their owners; re-entry = promote to a queue row and drop something else (cap ≤5). No new section.
-- [ ] **Step 5:** STATE decision-index one-liner + owner addenda links.
+- [x] **Step 1:** Cheap falsifier: `rg -n "Open / next|carry the prior" .cursor/rules/session-discipline.mdc .claude/hookify.session-log.local.md docs/SESSIONS.md` — those three hits are the carry-forward bug Task 3 rewrites. Write the addenda against that count, not a remembered list.
+- [x] **Step 2:** Survive-bound addendum: name the live defect (out-of-order serving); name the repair (queue-led Open/next + doable row 3); reaffirm no hours figure; forbidden = leftover names leading Open/next, new generation channel, `tier: soft`.
+- [x] **Step 3:** W5 addendum: does not amend the A–D class table; Open/next lead = `STATE queue: #1 … · #2 … · #3 …`; residue after that line only with `queue-exception:` and an existing owner.
+- [x] **Step 4:** STATE: keep #1 F1 and #2 B7–M1; add #3 from Task 1; one parking sentence under the table — leftovers stay on their owners; re-entry = promote to a queue row and drop something else (cap ≤5). No new section.
+- [x] **Step 5:** STATE decision-index one-liner + owner addenda links.
 
 ### Task 3: Rewrite carry-forward + session-start refuse
 
@@ -93,9 +93,9 @@ Session-start (Cursor always-apply + Claude hook):
 - First read: `STATE.md` operator table.
 - If the user ask is not a queue row, refuse and name the three rows unless they wrote `queue-exception: <reason>`.
 
-- [ ] **Step 1:** Edit the three wrap-up surfaces to the replacement rule.
-- [ ] **Step 2:** Land the SessionStart/warn hookify file; keep `warn-session-log` for wrap-up (do not collapse the two hooks).
-- [ ] **Step 3:** `rg -n "Carry the prior top entry" .cursor/rules .claude docs/SESSIONS.md` — expect zero hits on the old sentence.
+- [x] **Step 1:** Edit the three wrap-up surfaces to the replacement rule.
+- [x] **Step 2:** Land the SessionStart/warn hookify file; keep `warn-session-log` for wrap-up (do not collapse the two hooks).
+- [x] **Step 3:** `rg -n "Carry the prior top entry" .cursor/rules .claude docs/SESSIONS.md` — expect zero hits on the old sentence.
 
 ### Task 4: SESSIONS-only gate
 
@@ -114,20 +114,20 @@ Checker contract:
 - Do not parse leftover names. Do not scan other files.
 - `--file` / `--state` flags for tests (default repo paths).
 
-- [ ] **Step 1:** Write failing tests: (a) Open/next missing `#2` → exit 1; (b) Open/next cites every live `#N` → exit 0; (c) checker does not open `lab/` or `docs/adr/`.
-- [ ] **Step 2:** Run `pytest tests/test_sessions_queue_bind.py -q` — expect fail (script missing).
-- [ ] **Step 3:** Implement the checker; re-run tests — expect pass.
-- [ ] **Step 4:** Add `sessions-queue-bind` to `gates.yml` as `path-conditional` with `when.staged_regex: '^docs/SESSIONS[.]md$'` (same class as `sessions-order` / `sessions-append-only`). Update `test_path_conditional_gates_are_reachable`.
-- [ ] **Step 5:** Cheap falsifier on current `docs/SESSIONS.md` (top entry as of this plan still leads with leftovers): `python scripts/check_sessions_queue_bind.py` — expect fail until Task 5’s stub.
+- [x] **Step 1:** Write failing tests: (a) Open/next missing `#2` → exit 1; (b) Open/next cites every live `#N` → exit 0; (c) checker does not open `lab/` or `docs/adr/`.
+- [x] **Step 2:** Run `pytest tests/test_sessions_queue_bind.py -q` — expect fail (script missing).
+- [x] **Step 3:** Implement the checker; re-run tests — expect pass.
+- [x] **Step 4:** Add `sessions-queue-bind` to `gates.yml` as `path-conditional` with `when.staged_regex: '^docs/SESSIONS[.]md$'` (same class as `sessions-order` / `sessions-append-only`). Update `test_path_conditional_gates_are_reachable`.
+- [x] **Step 5:** Cheap falsifier on current `docs/SESSIONS.md` (top entry as of this plan still leads with leftovers): `python scripts/check_sessions_queue_bind.py` — expect fail until Task 5’s stub.
 
 ### Task 5: First queue-led stub entry
 
 **Files:**
 - Modify: `docs/SESSIONS.md` (append-only new top entry)
 
-- [ ] **Step 1:** `python scripts/roll_sessions.py --next-label <today>` and write a **stub** (heading + `Open / next` only). Lead line cites `#1` F1, `#2` B7–M1, `#3` <named shot>. Do not copy O10/O15/P7/P8/W5 CI/keep-20/coldstore into the lead.
-- [ ] **Step 2:** `python scripts/check_sessions_queue_bind.py` — expect pass.
-- [ ] **Step 3:** `python scripts/roll_sessions.py --check-order` and `--check-append-only` — expect pass.
+- [x] **Step 1:** `python scripts/roll_sessions.py --next-label <today>` and write a **stub** (heading + `Open / next` only). Lead line cites `#1` F1, `#2` B7–M1, `#3` <named shot>. Do not copy O10/O15/P7/P8/W5 CI/keep-20/coldstore into the lead. *(Landed as a full judgment+build entry `2026-08-24o` — Lane A GO is a judgment call.)*
+- [x] **Step 2:** `python scripts/check_sessions_queue_bind.py` — expect pass.
+- [x] **Step 3:** `python scripts/roll_sessions.py --check-order` and `--check-append-only` — expect pass.
 
 ## Success / falsifier
 

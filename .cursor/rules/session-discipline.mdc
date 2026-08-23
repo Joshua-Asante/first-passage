@@ -14,10 +14,20 @@ rules cannot see — so it is not mirrored here.)
 At the end of any substantive turn, append a reverse-chron entry to
 `docs/SESSIONS.md` — append-only, **link out** (never restate canonical values).
 Five fields: Focus / Shipped (branch+commit) / Decisions-defects (link the
-ADR/brief) / Open-next / Live-ops state. Carry the prior entry's **Open / next**
-forward so the next session resumes without re-deriving state. Skip trivial /
+ADR/brief) / Open-next / Live-ops state. Lead line of **Open / next** is
+`STATE queue: #1 <title> · #2 <title> · #3 <title>` (titles + owner links).
+Default wrap-up does **not** copy leftover names from the previous top entry.
+Off-queue residue may follow the lead only if this session used
+`queue-exception: <reason>` and the residue's owner already exists. Skip trivial /
 read-only turns. Grounding: `feedback_session_log_discipline` (owner
-`docs/operational_rules.md §7`).
+`docs/operational_rules.md §7`); bind:
+[`Survive-bound addendum`](../../docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md).
+
+## Session start (queue bind)
+
+First read: `STATE.md` operator table. If the user ask is not a live queue row,
+refuse and name the live rows unless they wrote `queue-exception: <reason>`.
+Do not serve leftover Open/next names ahead of the queue.
 
 ## Fetch before a multi-step build
 

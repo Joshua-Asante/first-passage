@@ -17,16 +17,31 @@ rule; entry-class origin below is unchanged.)*
 links; keep prose beyond the five fields ≤ **~40 words** where possible
 ([`W5 ADR`](adr/2026-08-07-w5-governance-diet.md)).
 
-**Open / next never goes stale between full entries.** Next session opens by reading
-the top entry's **Open / next**. If a no-judgment-call session changes what's open/next,
-write a new **stub entry** — heading + `Open / next` line only, skip the other four
-fields — instead of editing the old top entry. `scripts/roll_sessions.py`'s
-`sessions-append-only` gate hard-fails any edit to an already-merged entry (its own
-message: "edit Open/next on the NEW top entry, not this one") — a stub is the
-gate-compatible way to keep the pointer current without a full entry.
+**Open / next is queue-led.** The lead line cites every live [`STATE.md`](../STATE.md)
+operator-queue row (`STATE queue: #1 … · #2 … · #3 …`, titles + owner links). Default
+wrap-up does **not** copy leftover names from the prior top entry. Off-queue residue
+may follow the lead only if this session used `queue-exception: <reason>` and the
+residue's owner already exists. If a no-judgment-call session still needs to refresh
+the pointer, write a **stub** — heading + `Open / next` only — instead of editing the
+old top entry. `sessions-append-only` hard-fails any edit to an already-merged entry;
+`sessions-queue-bind` hard-fails if any live `#N` is missing from the newest Open/next.
 
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing
 any entry, full or stub (a-first; bare claims `a`).
+
+---
+
+## 2026-08-24o — Lane A GO + operator-queue bind land
+
+**Focus:** Decision + Build. Operator named bind row 3 = Lane A (blind / no-counterparty channel). Landed queue-led Open/next, carry-forward rewrite, and the SESSIONS-only bind gate.
+
+**Shipped:** [`Survive-bound addendum`](adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-23--out-of-order-serving-is-the-live-defect) · [`W5 addendum`](adr/2026-08-07-w5-governance-diet.md#addendum-2026-08-23--opennext-lead-is-the-state-queue) · [`STATE.md`](../STATE.md) row 3 · [`check_sessions_queue_bind.py`](../scripts/check_sessions_queue_bind.py) · `sessions-queue-bind` in [`gates.yml`](../scripts/gates.yml). Branch `docs/queue-bind-and-pain-point-plans`. Claude hookify files are `.local.md` / gitignored; Cursor always-apply is the tracked refuse surface.
+
+**Decisions/defects:** Lane A GO — next concrete step is name or decline a construct on the reopened 6A/M6A or GC/MGC doors; do not spend the last pre-G0 slot unnamed. Succession: when row 3 leaves, do not auto-open a replacement. P1–P5 stay on the [pain-point charter](superpowers/plans/2026-08-23-repo-pain-point-packets.md).
+
+**Open / next:** STATE queue: #1 F1 — how §4 reads a Tradeify-resting discharge ([`descope §7`](adr/2026-08-04-tradeify-venue-descope-eval-included.md)) · #2 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #3 Blind — name or decline the next construct on 6A/M6A or GC/MGC entry-geometry / dense-1m doors ([`channel ADR`](adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
 
