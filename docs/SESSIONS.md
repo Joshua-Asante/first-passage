@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23a — ADR-corpus decay audit run; `adr-decay-audit` skill proposed
+
+**Focus:** Decision. Operator asked which Accepted ADRs still hold and whether a process exists to catch decay; ran a one-off full-corpus audit, then drafted a standing skill to close the gap.
+
+**Shipped:** One-off audit of all 151 Accepted ADRs (two-phase batch-scan + adversarial verify): 107 still applicable, 42 decayed-but-documented, 2 decayed-undocumented. [`adr-decay-audit-skill-ratification`](adr/2026-08-23-adr-decay-audit-skill-ratification.md) `Proposed` + `.claude/skills/adr-decay-audit/SKILL.md` landed.
+
+**Decisions/defects:** `ox-alpha` adversarial pass on the skill draft attempted, not completed — no `OPENROUTER_API_KEY` reachable this session (operator's `setx` doesn't cross into the remote container); self-review substituted instead. One Phase-2 verify call returned degenerate placeholder output; caught and manually re-checked rather than trusted.
+
+**Open / next:** Remediate the two undocumented findings with short discharge addenda — `2026-04-17-portfolio-allocations.md`'s stale Striker figure (mirrored in INDEX.md) and `2026-06-23-tv-backtest-egress-automation.md`'s addendum premise invalidated by the later S2 signal-host-fork ADR. Operator PR review/merge is this new ADR's ratification event.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-22q — Disposition leftover Proposed ADRs
 
 **Focus:** Decision. Operator Accept of four leftover Proposed ADRs; reject of the intermediate-rung ADR; STATE pointer refresh.
