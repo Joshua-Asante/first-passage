@@ -8,9 +8,9 @@ Hard rules. No exceptions. Each rule is here because it was violated or nearly v
 
 If the strategy fires a valid signal per its Pine code, take the trade. Do not skip it because of a scheduled macro event, a conflict headline, a Fed meeting, a BOJ decision, or any other forecast about what volatility might do.
 
-**Origin:** Guardian fired a valid long during the Iran ceasefire announcement (entry 4653.26, 1:18.1 R:R). Trade was skipped on the reasoning that ceasefire-driven gold volatility was unpredictable. The trade subsequently moved in favor through breakeven. The skip had no basis in the system's measured edge — it was intuition dressed up as risk management.
+**The overlay mechanism exists for this.** If a regime genuinely warrants reduced exposure, apply a risk overlay. No overlays are currently active. Do not improvise per-trade skips.
 
-**The overlay mechanism exists for this.** If a regime genuinely warrants reduced exposure, apply a risk overlay. No overlays are currently active; the Guardian conflict-risk overlay was deactivated 2026-04-23 and evicted 2026-06-05. Retrieve it with `git show pre-prune-2026-06-05:archive/docs/methodology/archive/overlays/guardian_conflict_risk.md`. Do not improvise per-trade skips.
+**Origin (HISTORICAL):** Guardian (CFD book; cold-stored / venue-less as of Phase B/C 2026-08-23) fired a valid long during the Iran ceasefire announcement (entry 4653.26, 1:18.1 R:R). Trade was skipped on the reasoning that ceasefire-driven gold volatility was unpredictable. The trade subsequently moved in favor through breakeven. The skip had no basis in the system's measured edge — it was intuition dressed up as risk management. The Guardian conflict-risk overlay was deactivated 2026-04-23 and evicted 2026-06-05 — retrieve with `git show pre-prune-2026-06-05:archive/docs/methodology/archive/overlays/guardian_conflict_risk.md`. The *principle* (no per-trade skip of a valid signal; overlays only) remains live; Guardian is not a live book.
 
 ---
 
@@ -157,12 +157,12 @@ This generalizes Rule 5 (Pine owns strategy parameters) from constants to
 | Fact class | Canonical owner |
 |---|---|
 | Strategy parameters (risk %, pyramid, SL/TP) | Pine source (per Rule 5) |
-| Current lock state + source blob hashes | `core/strategies/<strat>/LOCK.md` |
+| Current lock state + source blob hashes | `core/strategies/_archive/<family>/LOCK.md` + hot `*_CARD.md` stubs ([`core/strategies/CATALOG.md`](../core/strategies/CATALOG.md)) |
 | `dd_protection` / allocation constants | `core/dd_protection.py` / `core/firm_rules.py` |
 | MC anchors (historical record + engine pins) | `docs/mc_anchor_history.md` + `tests/core/test_mc_synthetic_engine.py` |
 | Decision rationale (the *why*) | `docs/adr/` |
 | ADR lifecycle status (`Proposed`/`Accepted`/`Superseded`/`Withdrawn`/`Retired`) | ADR header fields + derived `docs/adr/INDEX.md` + `scripts/check_adr_graph.py` |
-| Per-strategy version lineage | `core/strategies/<strat>/*_CHANGELOG.md` |
+| Per-strategy version lineage | `core/strategies/_archive/<family>/*_CHANGELOG.md` (bodies); CARD stubs under `core/strategies/<family>/` |
 | What happened, session by session | `docs/SESSIONS.md` (append-only, links out) |
 | Carried-forward "open / next" | top entry of `docs/SESSIONS.md` |
 | Per-Q forward disposition (Iterate exit) | closure's own `## Iterate` block (`docs/adr/2026-08-04-iterate-closure-exit-mandatory.md`); a STATE forward-board row is a labeled pointer mirror only |
@@ -699,6 +699,12 @@ Edits to existing rules must be logged with a dated entry explaining what change
 
 ### Edit log
 
+- **2026-08-23 — P4 museum rules: Rule 1 origin HISTORICAL; Rule 7 lock paths → `_archive`.**
+  Rule 1 principle unchanged (no per-trade skip; overlays only). Origin marked
+  HISTORICAL — Guardian is cold-stored / venue-less (Phase B/C). Rule 7 lock-state
+  and version-lineage rows retargeted to `core/strategies/_archive/<family>/`
+  + CARD stubs per [`core/strategies/CATALOG.md`](../core/strategies/CATALOG.md).
+  Does not touch Rule 5 or live sizing constants.
 - **2026-08-23 — Rule 7 durable-atoms owner demoted (P2 Approach A).**
   D1 of the 2026-08-18 assumptions sweep: the prior owner path lives
   outside the worktree (no retention test, no gate). Durable atoms that

@@ -32,6 +32,20 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-24x — P4 museum rules + P5 REPO_MAP layer gate (pain-point close-out)
+
+**Focus:** Decision + Build. Operator closed remaining buildable pain-point packets (P4 + P5). Parked rows stay parked.
+
+**Shipped:** [`operational_rules.md`](operational_rules.md) Rule 1 HISTORICAL origin + Rule 7 `_archive` lock paths · [`repo_map_layers.yml`](../scripts/repo_map_layers.yml) · [`check_repo_map_layers.py`](../scripts/check_repo_map_layers.py) · `repo-map-layers` in [`gates.yml`](../scripts/gates.yml). Plans: [`P4`](superpowers/plans/2026-08-23-p4-museum-rules-implementation.md) · [`P5`](superpowers/plans/2026-08-23-p5-repo-map-layers-implementation.md). P3 commit [`2c89694`](https://github.com/Joshua-Asante/first-passage/commit/2c89694).
+
+**Decisions/defects:** P0–P5 buildable set closed. W5 CI-from-gates / keep-20 / mass-CATALOG remain parked on their owners.
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-24w — P3 docs-runtime inventory (report-only)
 
 **Focus:** Decision + Build. Operator promoted P3 as queue #3. Index only; not a prune.

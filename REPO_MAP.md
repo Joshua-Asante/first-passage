@@ -1,8 +1,13 @@
 # REPO_MAP — the standing layer map (`core / governance / lab / ops`)
 
-> **Status:** authoritative path→layer partition for the monorepo-boundaries restructure (ADR `docs/adr/2026-06-05-monorepo-layer-boundaries.md`, ACCEPTED 2026-06-05). This is the **human-readable source of truth for `check_boundaries.py`** — note the coupling is by hand, not by code: the scanner **never opens this file** (its own docstring says so), it hard-codes the equivalent mapping in `APP_LAYER_PREFIX` / `GOVERNANCE_PREFIXES` / `SCRIPTS_LAYER`, and **no gate compares the two**. Edit both together. It is also the spec the Phase-C `git mv` executes against — **NOT** a deletion feed (the deletion instrument was retired on main, `a9d16d0`).
+> **Status:** authoritative path→layer partition for the monorepo-boundaries restructure (ADR `docs/adr/2026-06-05-monorepo-layer-boundaries.md`, ACCEPTED 2026-06-05). Human-readable map for operators. The scanner (`scripts/check_boundaries.py`) **never opens this file** — it hard-codes `APP_LAYER_PREFIX` / `GOVERNANCE_PREFIXES` / `SCRIPTS_LAYER`. Those three maps are mirrored in [`scripts/repo_map_layers.yml`](scripts/repo_map_layers.yml) and compared by [`scripts/check_repo_map_layers.py`](scripts/check_repo_map_layers.py) (P5). Edit the Python dicts and the YAML together. This file is **NOT** a deletion feed (the deletion instrument was retired on main, `a9d16d0`).
 > **Authored:** Phase C, Step C2 (before the move), so the partition is written-then-executed, not inferred.
 > **Coverage rule:** every `git ls-files` path resolves to exactly one layer via the rules below. Zero unmapped (verified — see §Coverage check).
+
+```yaml
+# MACHINE BLOCK POINTER (do not paste free prose here — edit scripts/repo_map_layers.yml)
+# compared by: python scripts/check_repo_map_layers.py
+```
 
 ---
 

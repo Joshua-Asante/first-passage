@@ -188,6 +188,15 @@ gates:
       - scripts/check_docs_runtime_inventory.py
       - --check
 
+  # HARD: check_boundaries layer maps must match scripts/repo_map_layers.yml (P5).
+  - id: repo-map-layers
+    tier: path-conditional
+    when:
+      staged_regex: '^(REPO_MAP[.]md|scripts/check_boundaries[.]py|scripts/repo_map_layers[.]yml|scripts/check_repo_map_layers[.]py)$'
+    cmd:
+      - python
+      - scripts/check_repo_map_layers.py
+
   # Rejects stray C0 controls (esp. form-feed) in union-merge / high-traffic
   # governance prose — 2026-08-11 SESSIONS repair-hook double-damage incident.
   - id: governance-prose-control-chars

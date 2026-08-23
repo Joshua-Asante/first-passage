@@ -2,7 +2,7 @@
 
 > **For agentic workers:** This is a **portfolio**, not one implementation. Each packet below needs its own later plan (or is already owned). Do not scaffold packet work from this file. REQUIRED when a packet is GO’d: writing-plans → a dated `docs/superpowers/plans/YYYY-MM-DD-<packet>-implementation.md`.
 
-**AUTHORIZATION:** Plans only. No packet in this file is GO’d by committing it. Bind ([`2026-08-23-bind-operator-queue-implementation.md`](2026-08-23-bind-operator-queue-implementation.md)) **GO landed 2026-08-23**; bind row 3 then **closed** (Lane A scoped decline; last pre-G0 slot unspent). P2 Approach A **GO landed 2026-08-23** ([plan](2026-08-23-p2-memory-demote-implementation.md)). P3 **GO landed 2026-08-23** ([plan](2026-08-23-p3-docs-runtime-inventory-implementation.md)). P4–P5 stay **behind** the live STATE queue. Promote one to a numbered row to start it; do not serve them from leftover `Open / next`.
+**AUTHORIZATION:** Plans only. No packet in this file is GO’d by committing it. Bind ([`2026-08-23-bind-operator-queue-implementation.md`](2026-08-23-bind-operator-queue-implementation.md)) **GO landed 2026-08-23**; bind row 3 then **closed** (Lane A scoped decline; last pre-G0 slot unspent). P2 Approach A **GO landed 2026-08-23** ([plan](2026-08-23-p2-memory-demote-implementation.md)). P3 **GO landed 2026-08-23** ([plan](2026-08-23-p3-docs-runtime-inventory-implementation.md)). P4 **GO landed 2026-08-23** ([plan](2026-08-23-p4-museum-rules-implementation.md)). P5 **GO landed 2026-08-23** ([plan](2026-08-23-p5-repo-map-layers-implementation.md)). Buildable packets P0–P5 are closed; parked rows below stay parked until their own GO.
 
 **Goal:** Name the first-look / second-look pain points that the bind plan explicitly left open, group them into independent packets, and sequence them so we do not open a new control-plane campaign that recreates the defect.
 
@@ -133,9 +133,9 @@ P2–P5 are parallel after P1. Only one may sit on the operator queue at a time 
 - Rule 7: retarget the lock-state row to `_archive/<family>/LOCK.md` + CARD stubs, matching the catalog.
 - Do not touch Rule 5 (Pine canonical) or live `dd_protection` / `firm_rules` rows.
 
-**Start when:** promoted after P0. Cheap; can ride with P1 if still pointer/path-only.
+**Start when:** GO landed 2026-08-23 (operator: close remaining pain-point packets).
 
-**Falsifier:** Rule 1 still reads as “Guardian is a live book,” or Rule 7 still points at `core/strategies/<strat>/LOCK.md`.
+**Falsifier:** Rule 1 still reads as “Guardian is a live book,” or Rule 7 still points at `core/strategies/<strat>/LOCK.md`. — **cleared**.
 
 ---
 
@@ -151,9 +151,9 @@ P2–P5 are parallel after P1. Only one may sit on the operator queue at a time 
 
 **Do not:** make `check_boundaries.py` import `REPO_MAP.md` as its runtime map (the scanner’s job is AST edges, not markdown). Keep the hard-coded dicts; compare them.
 
-**Start when:** promoted after P0.
+**Start when:** GO landed 2026-08-23 (operator: close remaining pain-point packets).
 
-**Falsifier:** a prefix exists in `APP_LAYER_PREFIX` and not in the machine block (or the reverse) and `make check` is green.
+**Falsifier:** a prefix exists in `APP_LAYER_PREFIX` and not in the machine block (or the reverse) and `make check` is green. — **cleared**.
 
 ---
 
@@ -172,4 +172,4 @@ P2–P5 are parallel after P1. Only one may sit on the operator queue at a time 
 
 ## Success for this charter
 
-The charter succeeds when P0–P5 each have a named owner, a start gate, and a falsifier, and none of them is being worked as an immortal SESSIONS leftover. It does **not** succeed by implementing P1–P5 in the bind PR.
+The charter succeeds when P0–P5 each have a named owner, a start gate, and a falsifier, and none of them is being worked as an immortal SESSIONS leftover. **P0–P5 buildable packets landed 2026-08-23.** Parked rows remain parked until their own GO.

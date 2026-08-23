@@ -41,6 +41,7 @@ EXPECTED_PATH_CONDITIONAL = {
     "governance-prose-control-chars",
     "sync-liveness",
     "docs-runtime-inventory",
+    "repo-map-layers",
 }
 
 
@@ -142,6 +143,7 @@ REACHABILITY_PROBES = {
     "governance-prose-control-chars": "docs/rejected_candidates.md",
     "sync-liveness": "docs/briefs/INDEX.md",
     "docs-runtime-inventory": "ops/c1_rail/c1_rail_arm.py",
+    "repo-map-layers": "scripts/check_boundaries.py",
 }
 
 
