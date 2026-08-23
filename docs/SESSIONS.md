@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23s — Campaign pre-GO: coldstore B retrieve blocked; T2/T3 inventory
+
+**Focus:** Hygiene. Plans #7a Task 1 and #8a/#8b Task 1 only.
+
+**Shipped:** [`coldstore-phase-b-prego-blocked.md`](notes/2026-08-23-coldstore-phase-b-prego-blocked.md). [`t2-t3-prego-inventory.md`](notes/research/2026-08-23-tradable-anomalies-t2-t3-prego-inventory.md). No B schema. No T2/T3 code.
+
+**Decisions/defects:** none. Retrieve fail is `BLOCKED / context-problem`, not a GO.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Operator: restore the coldstore design (private archive) before any Phase B GO. T2/T3/T4 and Phase C stay PENDING GO.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-23o — merge origin/main into PR #112 (conflict fix)
 
 **Focus:** Resolve PR #112 conflicts after #109/#111 landed venue-binding Phase 1–3 and the ox-alpha brief-authoring review on `docs/SESSIONS.md`.
