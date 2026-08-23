@@ -4,7 +4,7 @@
 **Observed:** 2026-08-23
 **Author:** Cursor Cloud Agent (commission: send a sanitized copy of the skill to `stealth/ox-alpha` via `$OPEN_ROUTER_API`, ask how to improve it for our purposes, reconcile every objection against the real skill before treating any as a finding)
 **Source:** OpenRouter `stealth/ox-alpha` chat-completions, two calls (both `finish=length` in the reasoning channel; content field empty). Reconciled against the real skill and its owners, not against the sanitized excerpt.
-**Status:** `OPEN` — routed `DROP` as an Inquire-phase question (no new Q). Surviving repairs specified in [`2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md`](../../superpowers/plans/2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md) (`PENDING OPERATOR GO`). Skill still unedited.
+**Status:** `OPEN` — routed `DROP` as an Inquire-phase question (no new Q). Repairs landed 2026-08-23 against [`2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md`](../../superpowers/plans/2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md) (`GO 2026-08-23`). Skill now points at the harvest / admission / deep-lane owners. Still DROP as a Q.
 **Lives in:** `docs/notes/notice/N-2026-08-23-ox-alpha-futures-anomaly-discovery-skill-review.md`
 
 Lane: [`2026-08-22-ox-alpha-adversarial-lens-scope.md`](../../adr/2026-08-22-ox-alpha-adversarial-lens-scope.md) (use 2 of the sanctioned lens; DL-2 prereg was use 1). Zero authority; objections are not findings until the table below.
@@ -68,9 +68,9 @@ Prompt artifacts (do not treat as findings): "blind must stay expensive" (purpos
 
 ## §4 — Routing decision
 
-**DROP** as an Inquire-phase question. Reason: nothing here needs a new Q — the surviving cluster is the skill restating owners that already moved (`strategy_harvest.md` Req-3/5, `register_search` deep lane, `admission_schema.py`). Apply on operator GO as skill-text repairs specified in [`2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md`](../../superpowers/plans/2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md); do not open a Pre-Q to re-decide ratified harvest doctrine. The skill is still unedited.
+**DROP** as an Inquire-phase question. Reason: nothing here needs a new Q — the surviving cluster is the skill restating owners that already moved (`strategy_harvest.md` Req-3/5, `register_search` deep lane, `admission_schema.py`). Applied 2026-08-23 as skill-text repairs specified in [`2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md`](../../superpowers/plans/2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md); do not open a Pre-Q to re-decide ratified harvest doctrine. The skill now points at those owners.
 
-Surviving findings, ranked by agent-harm if left stale (not applied this turn):
+Surviving findings, ranked by agent-harm if left stale (applied 2026-08-23):
 
 1. **Req-3 text is withdrawn doctrine.** Skill L62–64 still kills on a burned family. Owner ADR 2026-08-04: mandatory disclosure, cannot fail a seed. Same cluster: O2, O9, O18.
 2. **Admission list is a stale subset.** Skill says four requirements; harvest owner has five (same-units / cost-law is Req-5, not a sidecar). Pointer-only repair: name the owner, stop restating the list.
@@ -91,15 +91,15 @@ Skipped (`§4 = DROP`).
 ## §10 — Audit hooks
 
 ```bash
-# Skill still restates withdrawn family-bank kill (finding 1)
+# Finding 1 gone from the skill; harvest owner remains the list
 grep -n "kills the seed regardless of quality" .claude/skills/futures-anomaly-discovery/SKILL.md
-# Expected until repaired: a hit. After repair: empty; harvest owner remains the list.
+# Expected after GO: empty.
 
-# Skill still says "four admission requirements" (finding 2)
+# Finding 2: no restated four-req list in the skill
 grep -n "four admission" .claude/skills/futures-anomaly-discovery/SKILL.md
-# Expected until repaired: a hit. After repair: pointer at strategy_harvest.md only.
+# Expected after GO: empty; pointer at strategy_harvest.md only.
 
-# Deep lane exists in code, unnamed in the skill (reconciliation-side)
+# Deep lane named
 grep -n "lane deep" .claude/skills/futures-anomaly-discovery/SKILL.md
 grep -n 'choices=\[\"blind\"' lab/discovery/register_search.py
 
@@ -107,11 +107,10 @@ grep -n 'choices=\[\"blind\"' lab/discovery/register_search.py
 grep -n "N-2026-08-23-ox-alpha-futures-anomaly-discovery-skill-review" \
   docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md
 
-# Repairs specified (PENDING GO); skill still unedited until that GO
-grep -n "PENDING OPERATOR GO" \
+# Plan no longer PENDING
+grep -n "AUTHORIZATION: GO 2026-08-23" \
   docs/superpowers/plans/2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md
-# Expected: a hit. After the GO executes that plan's Tasks 1–3, the two
-# skill greps above go empty.
+# Expected after GO: a hit.
 ```
 
 ---
@@ -122,18 +121,24 @@ Work order: [`2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md`
 
 ---
 
+## Addendum 2026-08-23 — repairs landed (GO executed)
+
+Operator GO on the plan. Tasks 1–3 landed: skill harvest intake is pointer-only (five requirements; Req-3 disclosure-not-gate); `--admission-file` points at `lab/discovery/admission_schema.py`; bound-cell BLOCKING action named; `--lane deep` stub present; tool-discipline uses “routed as” and counts restart/seed K; harvest §2 token is “five”. Status stays `DROP` as a Q. No new ADR.
+
+---
+
 ## Verification
 
 ```
 $ python scripts/check_brief.py docs/notes/notice/N-2026-08-23-ox-alpha-futures-anomaly-discovery-skill-review.md --type notice
 # Expected: type=notice is unmodeled (type-agnostic checks only); no HARD on a notice.
 
-$ git log -1 --format='%h %ci' -- .claude/skills/futures-anomaly-discovery/SKILL.md
-# Expected: b2e5f15 2026-08-22 (matches §0)
-
 $ grep -n "kills the seed regardless of quality" .claude/skills/futures-anomaly-discovery/SKILL.md
-# Expected: L63 (finding 1 still present until the PENDING-GO plan executes)
+# Expected after GO: empty
 
-$ grep -n "PENDING OPERATOR GO" docs/superpowers/plans/2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md
+$ grep -n "four admission" .claude/skills/futures-anomaly-discovery/SKILL.md
+# Expected after GO: empty
+
+$ grep -n "AUTHORIZATION: GO 2026-08-23" docs/superpowers/plans/2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md
 # Expected: a hit
 ```
