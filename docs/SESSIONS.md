@@ -15,6 +15,30 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 
 ---
 
+## 2026-08-23c — Deep-lane §4(c) supply-side audit: `AMBIGUOUS`, slot 3 held on a supply event
+
+**Focus:** Decision. Operator brought the tripped §4(c) audit-report duty forward; ran it as a
+supply-side audit under the programme-audit protocol (evidence before verdict).
+
+**Shipped:** [`2026-08-23-deep-lane-supply-audit.md`](notes/audits/programme-audit/2026-08-23-deep-lane-supply-audit.md)
+— seven diagnostic questions (hard core preserved; belt 3 adds/0 removes baseline; **zero
+falsifier drift**, §4 limb text byte-identical `f60959a`→HEAD; no degeneration; boundaries held).
+Supply census across [`MECHANISMS.md`](../ops/instruments/MECHANISMS.md) (30 ids), the Koijen
+harvest push (0 admissions), MSL WHO-track, and the blind channel: **no family satisfies
+new-mechanism ∧ data-reachable ∧ venue-shape-compatible with bytes on hand**; nearest satisfier
+is `MNQFLOW-1-DEPTH` (order-flow, FROZEN, ≤$125, K=0 — one sign-off from conjunct (ii)). Verdict
+`AMBIGUOUS`, re-test = any supply event, else the 2026-11-08 slate escalates to PARK/supersede.
+Charter running-count line + Change history annotated (duty DISCHARGED); STATE row updated.
+
+**Decisions/defects:** none — audit changed no thresholds, spent $0/K=0.
+
+**Open/next:** operator decision item (audit §5.1): authorize or decline the `MNQFLOW-1-DEPTH`
+pull — the single cheapest supply-unlocking action estate-wide. Slot 3 stays held meanwhile.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-23b — DL-2 Iterate block's own stop rule discharged: geometric-feasibility-ratio diagnostic RESOLVED
 
 **Focus:** Measurement. Ran the diagnostic named at DL-2's own closure (per an ox-alpha
