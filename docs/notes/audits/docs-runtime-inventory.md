@@ -91,7 +91,7 @@ Regenerate: `python scripts/check_docs_runtime_inventory.py --write`
 | `docs/adr/whatever.md` | quoted | `tests/test_check_brief.py:533` |
 | `docs/adr/x` | quoted | `tests/test_check_md_relative_links.py:40` |
 | `docs/adr/x.md` | quoted | `scripts/check_skill_refs.py:29`, `tests/test_check_adr_graph.py:64`, `tests/test_check_advisor_dedup.py:41`, `tests/test_check_md_relative_links.py:46` |
-| `docs/adr/x.py` | quoted | `tests/test_check_boundaries.py:49` |
+| `docs/adr/x.py` | quoted | `tests/test_check_boundaries.py:50` |
 | `docs/adr/y.md` | quoted | `tests/test_check_adr_graph.py:83` |
 | `docs/agent_rails/rails.yml` | pathlib,quoted | `scripts/check_agent_rails.py:119`, `scripts/check_agent_rails.py:21`, `scripts/check_agent_rails.py:2`, `scripts/fetch_nemo_guardrails.py:5` |
 | `docs/analytics/mc_anchor_evolution` | pathlib | `tests/test_mc_anchor_chart.py:20` |
