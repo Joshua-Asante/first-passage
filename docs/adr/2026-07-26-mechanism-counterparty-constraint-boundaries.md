@@ -44,7 +44,7 @@ Separately, ST-EH-1's operator-stop exposed a hole in K semantics: `register_sea
 3. **WHY it survives — a capacity/awkwardness argument.** An explicit reason arbitrage capital has not consumed the rent: capacity below institutional minimum size, assembly-awkward data, or mandate-inelastic demand. "Nobody has noticed" is inadmissible. This clause operationalizes "lesser-mined": mined-ness is a property of (data × expressibility × capacity) triples, and a seed must claim its niche on at least one axis.
 4. **HOW it dies — a constraint observable.** For constraint-flow seeds, the Default-#5 decay monitor must watch the constraint's own observable (AUM, fix volume, imbalance size, OI) alongside the edge-series CUSUM. The constraint disappearing is the death certificate; PnL decay is only the symptom.
 
-**2-B. Structural flow census as a sourcing channel.** §2.3's channel portfolio gains a rank: **direct enumeration of mandated/mechanical flows on venue-legal instruments** (census artifact: a Notice-phase log; first instance `docs/notes/notice/N-2026-07-26-forced-flow-census.md`). A census entry is an observation, not a seed: it consumes **zero K** (no PnL examined) until it graduates via the unchanged admission path — five requirements, δ via citation or extraction probe, screen, pre-registration. Census entries must carry the four §2-A clauses, a venue check, the family K-floor arithmetic, and a graveyard-adjacency attestation.
+**2-B. Structural flow census as a sourcing channel.** §2.3's channel portfolio gains a rank: **direct enumeration of mandated/mechanical flows on venue-legal instruments** (census artifact: a Notice-phase log; first instance `docs/notes/notice/N-2026-07-26-forced-flow-census.md`, pruned at the Great Prune; retrieve via `git show pre-prune-2026-08-08:docs/notes/notice/N-2026-07-26-forced-flow-census.md`). A census entry is an observation, not a seed: it consumes **zero K** (no PnL examined) until it graduates via the unchanged admission path — five requirements, δ via citation or extraction probe, screen, pre-registration. Census entries must carry the four §2-A clauses, a venue check, the family K-floor arithmetic, and a graveyard-adjacency attestation.
 
 > ⚠ **Addendum 2026-08-08 — the "family K-floor arithmetic" limb is narrowed to a DISCLOSURE.**
 > [`ADR 2026-08-04 — family K-bank is disclosure, not a gate`](2026-08-04-family-k-bank-disclosure-not-gate.md)
@@ -127,9 +127,11 @@ Separately, ST-EH-1's operator-stop exposed a hole in K semantics: `register_sea
 # 1. Status + amendment references
 grep -n "Status:\|Amends-in-part" docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md
 
-# 2. Census exists, is Notice-phase, and quotes no PnL (expect zero numeric-PnL hits)
-grep -n "WHO\|WHEN\|WHY\|HOW" docs/notes/notice/N-2026-07-26-forced-flow-census.md | head -5
-grep -niE "pnl|sharpe [0-9]|expectancy \$|delta = [0-9]" docs/notes/notice/N-2026-07-26-forced-flow-census.md
+# 2. Census is Notice-phase and quotes no PnL (expect zero numeric-PnL hits).
+#    Working-tree path was pruned; retrieve then grep (tag is private-archive-only
+#    on this public clone — docs/ltm/README.md).
+git show pre-prune-2026-08-08:docs/notes/notice/N-2026-07-26-forced-flow-census.md | grep -n "WHO\|WHEN\|WHY\|HOW" | head -5
+git show pre-prune-2026-08-08:docs/notes/notice/N-2026-07-26-forced-flow-census.md | grep -niE "pnl|sharpe [0-9]|expectancy \$|delta = [0-9]"
 
 # 3. 2-C's first case closed correctly: banked executed, declared retained, no verdict
 python -c "import json; m=json.load(open('discovery_manifests/st_eh_supertrend_grid.json')); print(m['status'], m['K'], m['declared_K'], m['closure_mode'])"
