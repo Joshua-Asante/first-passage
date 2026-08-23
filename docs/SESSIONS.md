@@ -23,6 +23,15 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Decisions/defects:** `ox-alpha` adversarial pass on the skill draft attempted, not completed — no `OPENROUTER_API_KEY` reachable this session (operator's `setx` doesn't cross into the remote container); self-review substituted instead. One Phase-2 verify call returned degenerate placeholder output; caught and manually re-checked rather than trusted.
 
 **Open / next:** Remediate the two undocumented findings with short discharge addenda — `2026-04-17-portfolio-allocations.md`'s stale Striker figure (mirrored in INDEX.md) and `2026-06-23-tv-backtest-egress-automation.md`'s addendum premise invalidated by the later S2 signal-host-fork ADR. Operator PR review/merge is this new ADR's ratification event.
+## 2026-08-23l — Venue-binding Phase 1–3 registry landed
+
+**Focus:** Build. Execute plan #1.
+
+**Shipped:** [`ops/venue_editions/Tradeify_Select_100K.md`](../ops/venue_editions/Tradeify_Select_100K.md) (3 rows; `grep -c ACTIVE` = 0). Phase 2 leftover phrase on the 08-04 ADR. Phase 3 dated note on the third-leg spec. `check_adr_graph.py` OK. No `M_edition` / `lifecycle.py` / `LEG_MAP` edit.
+
+**Decisions/defects:** none. T1 still acknowledged. Book Striker legs stay `AUTHORIZED · MECHANISM @ 1.00×`.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: execute W5 CI-from-`gates.yml` plan. #7/#8 stay PENDING GO.
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 
