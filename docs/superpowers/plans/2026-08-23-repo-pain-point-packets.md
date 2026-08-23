@@ -2,7 +2,7 @@
 
 > **For agentic workers:** This is a **portfolio**, not one implementation. Each packet below needs its own later plan (or is already owned). Do not scaffold packet work from this file. REQUIRED when a packet is GO’d: writing-plans → a dated `docs/superpowers/plans/YYYY-MM-DD-<packet>-implementation.md`.
 
-**AUTHORIZATION:** Plans only. No packet in this file is GO’d by committing it. Bind ([`2026-08-23-bind-operator-queue-implementation.md`](2026-08-23-bind-operator-queue-implementation.md)) **GO landed 2026-08-23**; bind row 3 then **closed** (Lane A scoped decline; last pre-G0 slot unspent). P2 Approach A **GO landed 2026-08-23** ([plan](2026-08-23-p2-memory-demote-implementation.md)). P3–P5 stay **behind** the live STATE queue. Promote one to a numbered row to start it; do not serve them from leftover `Open / next`.
+**AUTHORIZATION:** Plans only. No packet in this file is GO’d by committing it. Bind ([`2026-08-23-bind-operator-queue-implementation.md`](2026-08-23-bind-operator-queue-implementation.md)) **GO landed 2026-08-23**; bind row 3 then **closed** (Lane A scoped decline; last pre-G0 slot unspent). P2 Approach A **GO landed 2026-08-23** ([plan](2026-08-23-p2-memory-demote-implementation.md)). P3 **GO landed 2026-08-23** ([plan](2026-08-23-p3-docs-runtime-inventory-implementation.md)). P4–P5 stay **behind** the live STATE queue. Promote one to a numbered row to start it; do not serve them from leftover `Open / next`.
 
 **Goal:** Name the first-look / second-look pain points that the bind plan explicitly left open, group them into independent packets, and sequence them so we do not open a new control-plane campaign that recreates the defect.
 
@@ -117,7 +117,7 @@ P2–P5 are parallel after P1. Only one may sit on the operator queue at a time 
 
 **Do not:** delete any `docs/` file; escalate to a doc-budget gate; treat the inventory as a prune list.
 
-**Start when:** promoted to the operator queue after P0. Independent of P2/P4/P5.
+**Start when:** GO landed 2026-08-23 (operator: P3 as queue #3). Independent of P2/P4/P5.
 
 **Falsifier:** a known runtime read (e.g. `ops/recall/guard.py` → `CLAUDE.md`, `register_search.py` reachability attestation paths) is missing from the generated inventory.
 

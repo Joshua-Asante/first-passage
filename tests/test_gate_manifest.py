@@ -40,6 +40,7 @@ EXPECTED_PATH_CONDITIONAL = {
     "closure-disposition",
     "governance-prose-control-chars",
     "sync-liveness",
+    "docs-runtime-inventory",
 }
 
 
@@ -140,6 +141,7 @@ REACHABILITY_PROBES = {
     "closure-disposition": "docs/briefs/closures/Q-EXAMPLE-closure-falsified.md",
     "governance-prose-control-chars": "docs/rejected_candidates.md",
     "sync-liveness": "docs/briefs/INDEX.md",
+    "docs-runtime-inventory": "ops/c1_rail/c1_rail_arm.py",
 }
 
 

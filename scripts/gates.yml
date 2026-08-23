@@ -177,6 +177,17 @@ gates:
       - python
       - scripts/sync_liveness_indexes.py
 
+  # Report-only docs-as-runtime inbound index (P3). Always exit 0.
+  # staged_regex includes scanned trees so a new pathlib/docs cite selects it.
+  - id: docs-runtime-inventory
+    tier: path-conditional
+    when:
+      staged_regex: '^((core|ops|lab|scripts|tests)/.*[.]py$|docs/notes/audits/docs-runtime-inventory[.]md$|scripts/check_docs_runtime_inventory[.]py$)'
+    cmd:
+      - python
+      - scripts/check_docs_runtime_inventory.py
+      - --check
+
   # Rejects stray C0 controls (esp. form-feed) in union-merge / high-traffic
   # governance prose — 2026-08-11 SESSIONS repair-hook double-damage incident.
   - id: governance-prose-control-chars
