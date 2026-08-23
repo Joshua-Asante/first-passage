@@ -27,6 +27,8 @@
 - **Model update:** Absolute signed minute flow → 60s mid is association-null after coverage cleared (fourth OF Route B stop in lineage: OFCHAN coverage → R2VBUCK ratio → AGRUN magnitude → R2FLOW null)
 - **Board write:** absolute path continues via MNQSEL-2 / Cap reservation / construct — not another OF ρ cell without new mechanism
 
+- **Registry:** rejected_candidates.md — ### R2FLOW clock-minute net signed aggressor flow × MNQ — FALSIFIED (Stage-G association null)
+
 ---
 
 ## Change history

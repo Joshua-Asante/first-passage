@@ -78,6 +78,8 @@ already pinned in the databento-data skill.
 - **Board write:** none — STOP, nothing owed (INDEX Recently closed + c4 pursuit already carry
   the disposition; GSUB-1 closed the roster row 2026-08-09).
 
+- **Registry:** rejected_candidates.md — ### TV bar-coverage-artifact hypothesis (2022 trade-rate break) × MYM/MNQ/6J — FALSIFIED (H; MYM operator BREAK-REAL)
+
 ## §10 audit-hook discharge
 
 ```bash

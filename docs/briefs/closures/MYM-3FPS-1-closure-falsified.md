@@ -23,3 +23,5 @@ The native MYM cohort does not reproduce the published DJIA effect at useful mag
 - No timing, quarterly-expiry, MNQ, overnight, or pooled rescue is licensed.
 - Re-proposal requires new target-instrument mechanism evidence, not a window or expiry-subtype change.
 - No Pine, rail, account, allocation, lifecycle, or live-trading change.
+
+- **Registry:** rejected_candidates.md — ### Third-Friday derivative-settlement reversal on MYM

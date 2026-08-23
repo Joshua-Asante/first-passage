@@ -61,6 +61,8 @@ None that change the verdict.
 - **Stop rule / re-proposal bar:** Re-proposal = a **different causal candidate set** — **not** denser OF on the same clocks, **not** completed-window ranking.
 - **Board write:** none — STOP, nothing owed (roster row deletion is bookkeeping only).
 
+- **Registry:** rejected_candidates.md — ### Q-MNQSEL-1 restart-clock oracle top-1/day selection ceiling × MNQ — FALSIFIED (C2; Phase-0 ceiling)
+
 ---
 
 ## Change history

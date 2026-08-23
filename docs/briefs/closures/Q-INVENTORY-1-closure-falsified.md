@@ -11,6 +11,8 @@
 
 **Accept-idle is now the recorded default.** The harvest lane's 2026-11-08 idle guard fires as designed — that is the intake ADR's own success-eligible outcome. Discovery effort stays parked pending new external evidence; re-proposal bar remains new *mechanism evidence*, not new packaging. The deployment axis (Q-RAIL-1, closed `RESOLVED` same day) is unaffected. The standing SESSIONS "zero-survivor harvest disposition" line is **DISCHARGED**.
 
+- **Registry:** rejected_candidates.md — ### Q-INVENTORY-1 external-mechanism harvest sourcing burst × multi-instrument — FALSIFIED (0 admissible seeds)
+
 ## Staged-row summary (full scorecards in CANDIDATE_ROWS.md)
 
 | Row | Class / instrument | Kill | Pattern |

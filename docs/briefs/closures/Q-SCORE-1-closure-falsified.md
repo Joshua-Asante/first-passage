@@ -44,3 +44,5 @@ loosening F3 to accept `Closed (explore record):` or `Date:` aliases.
 - **Stop rule / re-proposal bar:** new *structure* evidence (forward fields in force on post-amendment
   closures), not a broadened regex that reclassifies `Closed (explore record):` as `Closed:`.
 - **Board write:** STATE + CATALOG + SESSIONS lines in the closing commit.
+
+- **Registry:** n/a — governance-ops closure (approach-scoreboard assignability gate, PREREG `lab/archive/approach_scoreboard_2026-08/PREREG.md`); no strategy, instrument, or mechanism was proposed, screened, or tested (report-only, `docs/rejected_candidates.md` is intake-scoped to strategy/instrument candidates per its own preamble). Forward vehicle is the Board-write line above.

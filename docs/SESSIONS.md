@@ -30,6 +30,20 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-24r — merge origin/main into PR #128 (conflict fix)
+
+**Focus:** Resolve PR #128 conflicts after #127. Same-day `2026-08-24o` is taken by the registry-snapshot entry on `main`.
+
+**Shipped:** merge `origin/main` into `claude/tradeify-strategy-review-6fe189`. Union-merge splice (missing `---` after `24p`) fixed. Colliding PR-side `2026-08-24o` (F1 ruled) remapped to `2026-08-24q`. Main's `24o` registry heading left byte-identical. F1 / Q-TRADECAP-1 / Q-MONSURF-1 bytes unchanged.
+
+**Decisions/defects:** none new.
+
+**Open / next:** Phase 5 (wire M-B at F3) — not before. M-A build-gate scope ruling owed. MSL needs a fresh WHO. Successor per-trade loss-bound election on STATE row 2. Q-FIRMEOD-1 / Q-PUBTRANS-1 deferred. **STATE queue:** #1 B7-REFIRE + M1 · #2 per-trade loss-bound election.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-24p — Q-MONSURF-1 RESOLVED: M-B idle-clock monitor built, tested, registration-ready
 
 **Focus:** Build + Measurement. Second-ranked Pre-Q executed to verdict on operator GO.
@@ -40,11 +54,23 @@ any entry, full or stub (a-first; bare claims `a`).
 
 **Open / next:** Phase 5 (wire M-B to the live account) fires automatically at F3 registration, not before. M-A's build-gate scope ruling is a standing, explicit operator-ruling request. MSL still needs a fresh WHO sourced for an actual Tradeify strategy candidate — this closes infrastructure gaps, not the strategy-search gap itself.
 
+---
+
+## 2026-08-24o — keep REGISTRY_DEBT snapshot; unpaid is a registry read
+
+**Focus:** Build. PR #127 pytest pin (`66` / `33`) failed after the backfill emptied `REGISTRY_DEBT_2026_08`. Discharge is a landed `rejected_candidates.md` row, not a frozenset edit.
+
+**Shipped:** [`check_closure_disposition.py`](../scripts/check_closure_disposition.py) — restore 30-name debt snapshot; 3 misfiles DEBT → NA (union stays 66); `--list-debt` → `unpaid_registry_debt()`. Tests + [`STATE.md`](../STATE.md) pointer.
+
+**Decisions/defects:** none new — implements the snapshot-vs-empty choice already ruled this session.
+
+**Open / next:** Q-M1WIRE-1 wire-vs-risk-accept, closure-disposition-coverage-hard severity, and the blind-channel FM-4 doctrinal seams — ruling still owed. 9 Pre-Q brief GOs still dispatched separately. Registry-backfill unpaid is now a `--list-debt` read. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1.
+
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
 
-## 2026-08-24o — F1 ruled; MNQTAPE-2 NO-GO; Q-TRADECAP-1 RESOLVED; status-skew fixes; Pre-Q priority pass
+## 2026-08-24q — F1 ruled; MNQTAPE-2 NO-GO; Q-TRADECAP-1 RESOLVED; status-skew fixes; Pre-Q priority pass
 
 **Focus:** Decision + Measurement. Operator rulings on the two open Tradeify-strategy threads, the
 top-ranked Pre-Q executed to verdict on operator GO, plus doc-hygiene.
