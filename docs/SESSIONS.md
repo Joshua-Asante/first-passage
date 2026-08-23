@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23k — Tradable-anomalies T4 plan (PENDING GO)
+
+**Focus:** Hygiene. Campaign plan 8c — last file in this campaign.
+
+**Shipped:** [`2026-08-23-tradable-anomalies-t4-implementation.md`](superpowers/plans/2026-08-23-tradable-anomalies-t4-implementation.md).
+
+**Decisions/defects:** none. Header is PENDING OPERATOR GO and fill-gated. No state writer unless a later GO names it.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring (`docs/briefs/rnd-pipeline/2026-08-22-cc-handoff-dl2-m6a-step2-train-scoring.md`). Campaign plans #1–8 are authored; **execution** of executable plans (#1 venue-binding, #2 W5, #3 grow leftovers, #4 substrate P6, #5 Call-4, #6 disaster-stop Phase 0) is a later worker. #7/#8 stay PENDING GO.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-23j — Tradable-anomalies T3 plan (PENDING GO)
 
 **Focus:** Hygiene. Campaign plan 8b.
