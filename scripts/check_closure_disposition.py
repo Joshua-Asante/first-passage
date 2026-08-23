@@ -251,6 +251,8 @@ COVERAGE_GRANDFATHERED: frozenset[str] = frozenset()
 # reached "pre-adjudication" with no H1/H2 verdict ever computed). None of
 # these assert a mechanism was tried and found not to work.
 REGISTRY_GRANDFATHERED_NA = frozenset({
+    "Q-SCORE-1-closure-falsified.md",  # 2026-08-24 backfill: agent found this is a governance-ops closure (docs-assignability gate), not a strategy-mechanism kill -- misfiled in REGISTRY_DEBT_2026_08 originally (filename contains "FALSIFIED" but tests a documentation hypothesis, not a trading candidate)
+    "Q-OBJCOHERE-1-closure-falsified-coherent.md",  # 2026-08-24 backfill: agent found this is a governance/coherence audit, not a strategy-mechanism kill -- misfiled in REGISTRY_DEBT_2026_08 originally
     "2026-07-16-striker-mym-reconstruction-candidate-1-ambiguous.md",
     "2026-07-27-hermes-agent-adoption-closure-resolved.md",
     "GSUB-1-closure-resolved-loadbearing.md",
@@ -296,39 +298,6 @@ REGISTRY_GRANDFATHERED_NA = frozenset({
 # one judgment call on how to phrase the heading; this set only says which
 # 33 closures still owe that call, not what the heading should say.
 REGISTRY_DEBT_2026_08 = frozenset({
-    "2026-07-16-aegis-6j-prop-reconstruction-stage1-falsified.md",
-    "2026-07-16-aegis-6j-prop-reconstruction-stage2-hsolo-falsified.md",
-    "2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md",
-    "2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md",
-    "2026-08-12-q-txg-1-striker-mnq-cell-dead-nsurv.md",
-    "2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md",
-    "H-FBEIA-1-closure-screen-fail.md",
-    "H-FCCARRY-1-closure-screen-fail.md",
-    "H-ZNAUC-1-closure-screen-fail.md",
-    "MSL-C1-closure-falsified.md",
-    "MSL-C2-closure-falsified.md",
-    "MSL-C3-closure-operator-kill.md",
-    "MSL-C3-K2-closure-falsified.md",
-    "MSL-S2A-closure-falsified.md",
-    "MSL-S2B-closure-stage1-fail-route.md",
-    "MYM-3FPS-1-closure-falsified.md",
-    "OPENPRESS-1-closure-falsified.md",
-    "Q-BUSTGATE-1-closure-falsified.md",
-    "Q-CAPFLOW-1-closure-falsified.md",
-    "Q-COMPOSE-1-closure-falsified.md",
-    "Q-GATECART-1-survivor-gate-cartography.md",
-    "Q-INVENTORY-1-closure-falsified.md",
-    "Q-MCLTAS-1-closure-falsified.md",
-    "Q-MNQDTL-CON-1-closure-falsified.md",
-    "Q-MNQSEL-1-closure-falsified.md",
-    "Q-OBJCOHERE-1-closure-falsified-coherent.md",
-    "Q-PYRPARITY-1-closure-falsified-nonproportional.md",
-    "Q-R2FLOW-1-closure-falsified.md",
-    "Q-R2VBUCK-1-closure-falsified.md",
-    "Q-SCORE-1-closure-falsified.md",
-    "Q-TVCOV-1-closure-falsified.md",
-    "Q-TXG-1-closure-falsified-at-walls.md",
-    "SLR-MYM-1-closure-falsified-stage0.md",
 })
 
 # Union — the mechanical gate's exemption set. Every name above, either

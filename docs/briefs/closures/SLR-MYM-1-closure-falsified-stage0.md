@@ -210,6 +210,8 @@ grep -n "sweep-reclaim\|SLR-MYM" ops/instruments/MYM.md
 
 ---
 
+- **Registry:** rejected_candidates.md — ### SLR-MYM-1 liquidity sweep-and-reclaim × MYM — FALSIFIED (as scoped; Stage 0, pre-G0)
+
 ## §9 — Addendum 2026-08-04 — ground 1 REFUTED (appended post-closure)
 
 **Appended, not rewritten.** The closure verdict, its two Stage-0 gates, the §8 disposition, the

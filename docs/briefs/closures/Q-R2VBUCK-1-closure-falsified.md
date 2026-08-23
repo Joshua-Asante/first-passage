@@ -60,6 +60,8 @@ None that change the verdict.
 - **Stop rule / re-proposal bar:** Re-proposal = **new G0 / new mechanism** — **not** a retune of B, horizon, or this catalogue.
 - **Board write:** none — STOP, nothing owed (roster row deletion is bookkeeping only).
 
+- **Registry:** rejected_candidates.md — ### Q-R2VBUCK-1 volume-bucket aggressor imbalance × MNQ — FALSIFIED (Stage-G association-null)
+
 ---
 
 ## Change history

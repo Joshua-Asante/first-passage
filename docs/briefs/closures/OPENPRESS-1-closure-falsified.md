@@ -20,3 +20,5 @@ Both instruments fail the frozen PASS set. MNQ clears coverage, holdout sign, an
 - K=0 consumed; no threshold, window, weekday, or single-instrument rescue licensed.
 - Re-proposal requires a different modality or mechanism (true order-flow / absorption evidence), not a re-cut of RV or efficiency on the same OHLCV panels.
 - No Pine, rail, account, allocation, lifecycle, or live-trading change.
+
+- **Registry:** rejected_candidates.md — ### Opening-volume × directional-efficiency pressure map on MNQ/MYM
