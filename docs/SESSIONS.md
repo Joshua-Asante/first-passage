@@ -15,6 +15,32 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 
 ---
 
+## 2026-08-24d — merge origin/main into PR #119 (conflict fix)
+
+**Focus:** Resolve PR #119 conflicts after #118. Same-day `2026-08-23` letters are exhausted; `24a`/`24b` are taken, so this wrap-up and the remapped pre-GO record use the next two letters.
+
+**Shipped:** merge `origin/main` into `cursor/campaign-prego-475b`. Union-merge splice (missing `---` before `2026-08-24b`) fixed via `--normalize`. Later colliding `2026-08-23s` (campaign pre-GO vs #113 wrap-up on `main`) remapped to `2026-08-24c`. Notes, Phase A Related, and STATE T2 board row unchanged.
+
+**Decisions/defects:** none new.
+
+**Open / next:** leftover surviving cluster (O10 grounding quotes, O15+O24 judgment wiring, O7 Trap-12 detection). Carry `2026-08-22r` — DL-2 step 2 train scoring. Attended disaster-stop 0a is operator-only. Carry `2026-08-23t` — two undocumented decay findings still need discharge addenda. Operator: restore the coldstore design (private archive) before any Phase B GO. T2/T3/T4 and Phase C stay PENDING GO.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-24c — Campaign pre-GO: coldstore B retrieve blocked; T2/T3 inventory
+
+**Focus:** Hygiene. Plans #7a Task 1 and #8a/#8b Task 1 only.
+
+**Shipped:** [`coldstore-phase-b-prego-blocked.md`](notes/2026-08-23-coldstore-phase-b-prego-blocked.md). [`t2-t3-prego-inventory.md`](notes/research/2026-08-23-tradable-anomalies-t2-t3-prego-inventory.md). No B schema. No T2/T3 code.
+
+**Decisions/defects:** none. Retrieve fail is `BLOCKED / context-problem`, not a GO.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Operator: restore the coldstore design (private archive) before any Phase B GO. T2/T3/T4 and Phase C stay PENDING GO.
+
+---
+
 ## 2026-08-24b — merge origin/main into PR #118 (conflict fix)
 
 **Focus:** Resolve PR #118 conflicts after #117. Same-day `2026-08-23` letters `a`–`z` are taken, so this wrap-up and the remapped O1–O5 record use the next calendar date.
