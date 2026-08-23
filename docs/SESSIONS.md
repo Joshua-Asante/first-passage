@@ -74,6 +74,18 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-24a — ox-alpha Uses 3–4 reconciled; viable-strategy sequence authored as 6 phase plans
+
+**Focus:** Decision + Measurement. Mechanism-supply question run through the sanctioned external lens twice (methodology critique, then a freshly-authorized candidate-generation ask), both fully reconciled; the path-to-viable-strategy sequence written up as per-phase plans.
+
+**Shipped:** [`Use-3 notice`](notes/notice/N-2026-08-23-ox-alpha-msl-who-sourcing-methodology-review.md) (its concrete suggestions all already dead internally; 5 methodology threads survived) · [`Use-4 notice`](notes/notice/N-2026-08-23-ox-alpha-mechanism-supply-candidates.md) (4 candidates: MOC-imbalance wake converges with the estate's own named free supply route via the [F1 ruling](briefs/2026-07-27-f1-moc-imbalance-mym-ruling.md)'s procurement-gate grounds; London-fix wake OPEN behind F3's re-proposal bar + cost arithmetic; buyback-blackout abstention novel/sleeve-only; TOM confirms existing registry kills) · ADR Use-ledger rows 3–4 with the second bounded-extension authorization recorded · six plan docs: [`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`A target-derivation`](superpowers/plans/2026-08-23-viable-strategy-phase-a-target-derivation.md) · [`B mechanism-supply`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`C gauntlet`](superpowers/plans/2026-08-23-viable-strategy-phase-c-gauntlet.md) · [`D deployment`](superpowers/plans/2026-08-23-viable-strategy-phase-d-deployment.md) · [`∥ §4 firm-repair`](superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md).
+
+**Decisions/defects:** The Use-3 SPAN+COT cascade thread was **conceded dead by its own proposer** at Use 4 ("nothing converts WHETHER into WHERE — demote to filter") — removed from the candidate lanes. Ox-alpha's "scoped overnight" relaxation recorded as mostly foreclosed by venue fact (flat-16:45 is a firm rule), not adopted. All plans `AWAITING GO` — per-phase gates; two operator bar-readings named inside Phase B (F1 re-proposal terms for the MOC lane; F3 "not a different fix" for the fix-wake lane).
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)). Behind the queue: Phase A GO (A1 audit + A2 shape map, $0) and the parallel firm-repair Q GO are the sequence's next operator decisions.
+
+---
+
 ## 2026-08-24x — P4 museum rules + P5 REPO_MAP layer gate (pain-point close-out)
 
 **Focus:** Decision + Build. Operator closed remaining buildable pain-point packets (P4 + P5). Parked rows stay parked.

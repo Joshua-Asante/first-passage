@@ -1,0 +1,149 @@
+# Phase B — Mechanism Supply (candidate lanes, cost-ordered, falsify-first)
+
+> **For agentic workers:** REQUIRED SUB-SKILL: superpowers:subagent-driven-development or
+> superpowers:executing-plans. Checkbox (`- [ ]`) syntax for tracking.
+
+**AUTHORIZATION:** `AWAITING GO` — per-lane. Two lanes additionally carry named operator
+bar-readings that must be ruled before their candidate can become a card (B1, B2). Nothing here
+opens a card by itself; E1's stop rule stands until a candidate clears the full admission bar.
+**Cost:** $0 through every falsifier task below. Any data spend needs its own Rule-2 dry-run +
+operator GO and is out of this plan's scope.
+**Parent:** [`sequence overview`](2026-08-23-viable-strategy-sequence-overview.md) ·
+**Inputs:** Phase A2's feasible-shape region (pre-check), Phase A1's revival list (B4 lane).
+**Provenance:** candidate lanes B1–B3 originate from the reconciled ox-alpha Use-4 output
+([notice](../../notes/notice/N-2026-08-23-ox-alpha-mechanism-supply-candidates.md)) — zero
+authority; every lane's admission depends only on repo-verified evidence produced by its own
+falsifier tasks.
+
+**Standing guard (all lanes):** the MSL yield falsifier counts 6 consecutive pre-G0 deaths across
+≥2 families as channel-closing. Lanes below run their $0 falsifiers **before** any card is
+authored, so an arithmetic death never consumes a card slot. A lane's falsifier-kill is recorded
+in the registry/notice layer, not as an MSL pre-G0 death.
+
+---
+
+## Lane B1 — MOC-imbalance wake (MES) — strongest lane
+
+**Mechanism (one line):** NYSE-published closing-imbalance sign (public, non-price registry) →
+post-close dealer/arb inventory normalization → fade the imbalance sign in MES inside
+16:01–16:45 ET (fits the verified 16:45 flat deadline; window fragments around the CME equity
+pause — task 0 verifies hours).
+
+**Why this lane leads:** the prior kill ([F1 ruling
+2026-07-27](../../briefs/2026-07-27-f1-moc-imbalance-mym-ruling.md)) was **reject-at-bar at the
+paid-data procurement gate** — the WHO clauses were judged clean, and the a4 scope note
+explicitly spares "a published, signed imbalance number." The estate's own deep-lane supply audit
+independently names *"a published MOC-imbalance cohort δ"* as a live free route. Two independent
+sources converge on this door.
+
+- [ ] **B1.0 — venue/hours fact-check ($0, minutes):** verify current CME equity-index futures
+  afternoon hours (the ~16:15–16:30 ET daily pause) against CME's own contract page; record the
+  real tradable wake window. Verify MES tick/point values and recompute the cost floor from
+  `firm_rules` ($0.91/side + slippage convention ⇒ ~2.3 ES-points/trade net hurdle — confirm).
+- [ ] **B1.1 — literature route (harvest Req 1b, $0):** search for a published, citable cohort δ
+  for post-close imbalance-conditioned index-futures reversal (the exact object the F1 ruling
+  said was missing). Outcome A: citable δ found → proceed to B1.3. Outcome B: none → B1.2 is the
+  only door.
+- [ ] **B1.2 — free-access check for the paper-log ($0):** determine whether MOC imbalance
+  numbers are republished free at ~15:50 ET (broker platforms, public terminals). The primary
+  NYSE feed is exchange-licensed — **buying it is barred pre-survivor** (Avenue-A gate). If no
+  free source: lane parks with a named re-entry (a free republication appearing, or a survivor
+  justifying procurement).
+- [ ] **B1.3 — operator bar-reading (named, not self-cleared):** does this lane satisfy the F1
+  ruling's own re-proposal terms (published cohort δ per Req 2, or the Avenue-A qualifying
+  triple)? Present B1.1/B1.2 evidence; operator rules admit/decline.
+- [ ] **B1.4 — shape pre-check:** score the lane's predicted payoff profile (bounded window,
+  clustered wins, ~2–4 events/week) against the A2 region before any card is drafted.
+- [ ] **B1.5 — on admit:** 20-session forward paper-log ($0, zero capital, calendar time only) or
+  historical test if B1.1 found data — then hand to Phase C as a card candidate.
+
+**Kill criteria (frozen now):** no free sign source AND no citable δ → PARK. Paper-log mean net
+capture below the recomputed hurdle at 20 sessions → dead, registry row, no card ever authored.
+
+---
+
+## Lane B2 — London-fix wake (FX futures) — second lane
+
+**Mechanism (one line):** benchmark-mandated fix flow (10:58–11:04 ET cluster) creates dealer
+inventory whose normalization is faded 11:10–13:00 ET; sign read from the mechanically-defined
+fix-window impulse.
+
+**Honest posture:** adjacent to a dead family — F3 killed the fix cluster at event time on
+cost-law with a re-proposal bar of *"not a different fix."* The wake-WHO (dealer normalization,
+different window) is arguably new mechanism evidence; that reading is the operator's, and the
+lane's own arithmetic is knife-edge.
+
+- [ ] **B2.0 — cost + venue arithmetic ($0, minutes):** recompute the 4× floor per expression
+  from `firm_rules` cost fields: micro (M6E ~9–10 pips required vs 3–8 pip literature drift —
+  expected fail) vs full-size 6E/6B (~2.6 pips — feasible on paper). Verify full-size FX
+  venue-legality on `Tradeify_Select_100K` and DD-fit (a 4–8 pip stop ≈ $50–100/contract vs the
+  $3,000 trail). If micro-only is legal, the lane dies here at $0.
+- [ ] **B2.1 — operator bar-reading (named, not self-cleared):** does the wake-WHO clear F3's
+  *"not a different fix"* re-proposal bar as new mechanism evidence? Present the F3 kill text +
+  this lane's distinct WHO/window; operator rules admit/decline. **Ruled before any data is
+  touched.**
+- [ ] **B2.2 — placebo battery ($0, one scripted afternoon, only after B2.0+B2.1 both pass):**
+  2 years of hourly 6E bars (Databento `ohlcv-1h`, $0-class — Rule-1 estimate first). Mean
+  11:10→13:00 return conditioned on impulse sign vs 1,000 placebo windows matched on day-of-week
+  + trailing vol; plus the orthogonality regression (trailing-vol + prior-hour-return controls —
+  the gamma-family precedent). Kill if the fix dummy adds nothing over generic reversal or sits
+  ≤ placebo 60th percentile.
+- [ ] **B2.3 — shape pre-check** against the A2 region; then Phase C on survival.
+
+**Kill criteria (frozen now):** B2.0 arithmetic fail at every legal expression → dead. B2.1
+declined → dead (bar holds). B2.2 placebo/orthogonality fail → dead, registry row citing F3
+lineage.
+
+---
+
+## Lane B3 — Buyback-blackout abstention (short MNQ sleeve) — background lane
+
+**Mechanism (one line):** aggregate cap-weight-in-blackout B_t (EDGAR quarter-ends + published
+earnings dates), threshold-crossing + hysteresis as the discrete trigger; daily short-at-open /
+cover-15:45 inside above-threshold regimes.
+
+**Honest posture:** genuinely novel (zero repo hits) but structurally a **sleeve** — clustered
+frequency cannot satisfy the activity rule alone — and its magnitude class sits in the shadow of
+the registry's power-wall precedent (F5/D3: power 0.24–0.30 at single-digit bp/session).
+
+- [ ] **B3.0 — arithmetic falsifier (folded into Phase A1's audit session, ~5 min):** cadence vs
+  activity floor; implied per-session δ vs the power wall. Expected outcome: PARK-or-dead before
+  any assembly.
+- [ ] **B3.1 — only if B3.0 survives:** half-day calendar assembly (top-30 S&P-100 weights, 3 yrs
+  of earnings dates → B_t) + conditional-mean differential on MNQ session returns. Kill < ~5
+  bp/session or FLIP fail.
+- [ ] **B3.2 — if alive:** sleeve-only designation recorded (pairs with a daily mechanism, never
+  standalone); shape pre-check; Phase C.
+
+---
+
+## Lane B4 — Revived cells (from Phase A1 × A3)
+
+- [ ] Only cells on A1's pre-registered revival list, only under A3-`Accepted` amendments, only
+  through the impact-persistence battery with **event-time** costing. Each revived cell re-enters
+  as its own candidate with the original kill cited and the specific amendment that reopens it
+  named. Empty revival list or A3 declined → this lane is void.
+
+## Demoted — not a lane
+
+**SPAN+COT margin-cascade wake:** conceded dead by its own proposer at Use 4 ("nothing converts
+WHETHER into WHERE — demote to filter"). Residue: margin-advisory effective-dates as a
+volatility/timing **conditioner** for stops/sizing on independently-signed mechanisms — available
+to Phase C candidates as a disclosed input, never as a sign source. The optional one-afternoon
+empirical nail (CME advisory archive × COT quartiles vs matched placebos) is on record in the
+Use-4 notice; run only on explicit operator election — the proposer's own prior is that it dies.
+
+## Supply routes of last resort (unchanged, deliberately after the free lanes)
+
+- Published MOC-imbalance cohort δ **is** lane B1.1 (the free route, already first-class here).
+- `MNQFLOW-1-DEPTH` (~$150 vs the $125 ceiling, operator HOLD): stays HOLD; revisiting it is an
+  operator election, naturally at 2026-11-08 or earlier at operator initiative.
+- The blind channel's last pre-G0 slot: not spent by anything in this plan.
+
+## Exit criteria (Phase B whole)
+
+≥1 lane hands a falsifier-surviving, shape-prechecked, bar-cleared candidate to Phase C — or all
+lanes record honest kills/parks at $0, in which case the channel falsifiers govern and the
+programme's designed terminal state is in play. Board: registry/notice rows per kill; SESSIONS
+per session; the two operator bar-readings (B1.3, B2.1) surface as explicit decision asks, never
+buried in execution.
