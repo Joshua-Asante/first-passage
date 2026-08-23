@@ -4,6 +4,12 @@
 Ratification does **not** admit any candidate, authorize a rail slot, or license spend; it makes
 §7 the standing screen that a third-leg proposal is measured against before any K or pull is spent.
 
+> **2026-08-23 — §2.5 re-homing (venue-binding ADR, recorded not executed as a rescoring).**
+> Limbs S1/S2/S4/S6 are EDITION (Tradeify venue facts). S5/S7 and R1–R4 are DEPLOYMENT
+> and vacuous while the account is empty. T1–T5 and M1–M3 stay BOOK and remain the real bar.
+> This note does not score any limb PASS/FAIL and does not lift SCOPE DEAD.
+> Owner: [`2026-08-05-strategy-venue-binding-axis.md`](../adr/2026-08-05-strategy-venue-binding-axis.md) §2.5.
+
 > ⚠ **SCOPE DEAD 2026-08-04 — do not score limbs PASS/FAIL.** This spec's own header scopes it to
 > "a third leg **on the same account as the c1 book**". As of the Tradeify de-scope
 > ([`ADR 2026-08-04`](../adr/2026-08-04-tradeify-venue-descope-eval-included.md)), there is **no book**,
