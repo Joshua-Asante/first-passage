@@ -32,6 +32,20 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-25c — Automatic Claude judgment review on Cursor-first PRs
+
+**Focus:** Decision. Operator asked to auto-request a Claude review on judgment-heavy PRs, especially when scoped on Cursor first. `queue-exception: operator asked to wire automatic Claude review for judgment-heavy PRs`.
+
+**Shipped:** predicate + `@claude` request workflow + 2026-07-14 addendum (review-only; not merge; not a queue row). Direct action invocation dropped after run `32672069340` self-skipped on the workflow diff. `head.ref` passed via `env:` after the first adjudication named the interpolation footgun.
+
+**Decisions/defects:** [`07-14 addendum`](adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-08-23-judgment-review). Drafts silent; re-review stays `@claude`.
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-25b — First-look residuals split into P6–P10 plans
 
 **Focus:** Decision. Operator asked to separate first-look problems and write targeted plans. Second-wave packets named; none GO’d.
