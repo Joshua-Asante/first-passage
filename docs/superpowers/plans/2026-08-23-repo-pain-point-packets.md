@@ -263,13 +263,13 @@ Attestation (this session, before authoring): `lab/CATALOG.md` and `docs/briefs/
 
 ### P9 — Withdrawn-book live-surface tense
 
-**Problem:** Coldstore B/C moved living `BASE_RISK`. P4 retargeted operational-rules museum paths. Hot **code comments** still speak as if the Striker book is the live deployment: [`ops/c1_rail/c1_sizing_host_reference.py`](../../../ops/c1_rail/c1_sizing_host_reference.py) module docstring (“This module IS the live sizing host”, NT8 port as if pending), [`CLAUDE.md`](../../../CLAUDE.md) Strategy Reference table still readable as current architecture. `firm_rules.py` provenance novels stay — they pin `cost_per_side_usd`, they are not tense defects.
+**Problem:** Coldstore B/C moved living `BASE_RISK`. P4 retargeted operational-rules museum paths. The live defect is one sentence in [`ops/c1_rail/c1_sizing_host_reference.py`](../../../ops/c1_rail/c1_sizing_host_reference.py): “This module IS the live sizing host” (predates the 2026-08-04 book withdrawal). The same docstring already records the NinjaScript/NT8 port as “a dormant fallback and was never built” — leave that clause. [`CLAUDE.md`](../../../CLAUDE.md) Strategy Reference table is still readable as current architecture. `firm_rules.py` provenance novels stay — they pin `cost_per_side_usd`, they are not tense defects.
 
 **Do:**
 
-- Rewrite the sizing-host module docstring: this is the listener’s sizing reference **when armed**; no book is deployed; NT8/NinjaScript port is **dormant, never built**. Do not change `r_eff` / `qty` / fail-safe behavior.
+- Retense only the “IS the live sizing host” sentence: listener’s sizing reference **when armed**; no book is deployed. Do not rewrite the already-accurate NT8/NinjaScript dormant clause. Do not change `r_eff` / `qty` / fail-safe behavior.
 - One sentence on the CLAUDE Strategy Reference table: historical record of the locked CFD / withdrawn futures editions; not a live book. Do not move or delete the table (guard.py / lock-surface).
-- Grep blast-radius for “IS the live sizing host” and “NinjaScript port” on hot surfaces only; repair silent restatements of the same tense.
+- Grep blast-radius for “IS the live sizing host” on hot surfaces only; repair silent restatements of that tense.
 
 **Do not:**
 
