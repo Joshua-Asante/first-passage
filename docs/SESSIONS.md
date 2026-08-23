@@ -30,6 +30,20 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-24k — queue-bind plan + pain-point packet charter
+
+**Focus:** Decision. First-look control-plane defect: approve bind approach B (queue-led Open/next + doable row 3 + SESSIONS-only gate); sequence the other pain points as parked packets. No bind build this session.
+
+**Shipped:** [`bind plan`](superpowers/plans/2026-08-23-bind-operator-queue-implementation.md) · [`pain-point packets`](superpowers/plans/2026-08-23-repo-pain-point-packets.md)
+
+**Decisions/defects:** Bind PENDING row-3 GO (existing channel only). P1–P5 stay behind the queue. No new generation channel. No second prune.
+
+**Open / next:** **STATE queue:** #1 F1 · #2 B7-REFIRE + M1. Bind Task 1: operator names row 3, then build the bind plan. Remaining first-look items live on the pain-point charter (P1 orientation · P2 MEMORY · P3 docs-runtime inventory · P4 museum rules · P5 REPO_MAP gate) — not as a leftover lead.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-24h — merge origin/main into PR #122 (conflict fix)
 
 **Focus:** Resolve PR #122 conflicts after #121. Same-day `2026-08-24e` is taken by nav leftovers on `main`.
