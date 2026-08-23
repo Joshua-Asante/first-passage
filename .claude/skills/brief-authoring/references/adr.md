@@ -36,7 +36,9 @@ Ambiguous tier → FULL. Escalation = supersede with a full ADR
 (the read always happens; only the §0 table format is dropped for light).
 
 If light: fill the header fields, add `**Tier:** light`, write the five-line
-body above, stop — do not fill §0–§7.
+body above, stop — do not fill §0–§7. Repo `scripts/check_brief.py` will
+print `NOT CHECKED` on a light record; that is the ratified shape, not a
+skip of the Reads line. Header fields still go through `check_adr_graph.py`.
 
 ---
 
@@ -351,9 +353,9 @@ diff <(grep -rl "<superseded value>" docs/) /dev/null
 ## Verification
 
 ```bash
-# Discipline checks (mechanical)
-$ python /path/to/brief-authoring/scripts/check_brief.py <this-file>.md --type adr
-# Expected: all 6 checks PASS
+# Discipline checks (mechanical) — inquire / full ADR
+$ python scripts/check_brief.py <this-file>.md --type adr
+# Expected: RESULT: well-formed  (applicable mechanical checks). Light records print NOT CHECKED.
 
 # ADR lifecycle graph — header fields, edges, cold-store shape, INDEX sync
 $ python scripts/check_adr_graph.py

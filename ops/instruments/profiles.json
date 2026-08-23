@@ -1127,6 +1127,10 @@
         "MYM explore **FALSIFIED** (both-arms CI &lt; 0) \u2014 [C1 RESULTS](../../lab/archive/msl_c1_mym_2026-08/RESULTS_g2.md) \u00b7 [closure](../../docs/briefs/closures/MSL-C1-closure-falsified.md). M2K unpaid path [OPERATOR-KILL](../../docs/briefs/closures/MSL-C3-closure-operator-kill.md) (B4 declined; class not killed at C3). **M2K dual-axis explore FALSIFIED 2026-08-13** (Axis A both-arms IS 95% CI entirely &lt; 0; long n=293 CI [\u22120.256, \u22120.038]; short n=295 CI [\u22120.307, \u22120.089]; pooled \u22120.171R) \u2014 [closure](../../docs/briefs/closures/MSL-C3-K2-closure-falsified.md) \u00b7 [RESULTS](../../lab/archive/msl_c3_m2k_2026-08/RESULTS_g2.md). Does not clear or reopen the MYM explore kill."
       ]
     },
+    "prior-session-breakout-continuation": {
+      "definition": "**NEW 2026-08-22 (deep-lane DL-2).** A break of the immediately-prior *full trading session's*",
+      "findings": []
+    },
     "pullback-failure-resumption": {
       "definition": "**NEW 2026-08-13 (MSL-S2A).** Join an established **intraday** directional move after a pullback fails to reverse it \u2014 continuation entry on the resumption bar; hard stop beyond the pullback extreme; target at `rr` \u2208 [2, 3] of that stop; session-flat; k=1 first valid signal per session. One trigger class: *pullback-failure resumption*. Not breakout-from-range, not compression-expansion, not MR-at-level.",
       "findings": [

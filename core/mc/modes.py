@@ -26,10 +26,10 @@ import pandas as pd
 
 try:
     from ..dd_protection import DD_TRIGGER, DD_SCALE
-    from ..firm_rules import _BASE_RISK
     from ..lib.mvd import assert_min_rows, assert_window, assert_no_fallback, assert_tv_export
     from ..historical_challenge import (
         DAILY_LOSS_PCT_SIGNED,
+        HISTORICAL_CHALLENGE_BASE_RISK,
         INACTIVITY_LIMIT,
         MIN_TRADING_DAYS,
         PROFIT_TARGET_ABS,
@@ -44,10 +44,10 @@ try:
     )
 except ImportError:
     from dd_protection import DD_TRIGGER, DD_SCALE
-    from firm_rules import _BASE_RISK
     from lib.mvd import assert_min_rows, assert_window, assert_no_fallback, assert_tv_export
     from historical_challenge import (
         DAILY_LOSS_PCT_SIGNED,
+        HISTORICAL_CHALLENGE_BASE_RISK,
         INACTIVITY_LIMIT,
         MIN_TRADING_DAYS,
         PROFIT_TARGET_ABS,
@@ -76,8 +76,8 @@ HORIZON_CAP = 1500
 SIMS_PER_SEED = 10_000
 SEEDS = (42, 123, 2026)
 
-# Default MC book — derived from firm_rules._BASE_RISK (do not re-literal).
-ALLOCATIONS: Dict[str, float] = dict(_BASE_RISK)
+# Default MC book — historical 4-leg lock (Phase C: not living firm_rules._BASE_RISK).
+ALLOCATIONS: Dict[str, float] = dict(HISTORICAL_CHALLENGE_BASE_RISK)
 STRATS = tuple(ALLOCATIONS.keys())
 
 # Filename token used by the MVD identity gate. Both Striker variants (DJ30 + NAS100)
@@ -676,7 +676,7 @@ PRE_SHOCK_1R: Dict[str, float] = {
 # pyramid 500%. Surfaced as a DONE_WITH_CONCERNS note in closure.
 #
 # Variant cells override only the legs that differ from the locked book;
-# unchanged legs come from ALLOCATIONS (= firm_rules._BASE_RISK). REG is the
+# unchanged legs come from ALLOCATIONS (= historical 4-leg book). REG is the
 # lock itself — do not re-literal the lock bytes here.
 _LOCK_ALLOC = dict(ALLOCATIONS)
 SWEEP_CONFIGS: list = [
@@ -1038,7 +1038,7 @@ PINE_SHRINK_FACTORS: Tuple[float, ...] = (0.25, 0.50, 0.75, 1.00)
 
 # Canonical 2026-05-23 ADR allocations (pinned by pre-reg §"Reference anchor";
 # every sweep cell runs at these allocations; only the Guardian pnl panel is
-# modified per cell). Derived — same bytes as ALLOCATIONS / firm_rules._BASE_RISK.
+# modified per cell). Derived — same bytes as ALLOCATIONS / historical 4-leg book.
 PINE_SHRINK_ALLOCATIONS: Dict[str, float] = dict(ALLOCATIONS)
 
 # Phase 1 feasibility threshold (pre-reg §"Phase 1 verdict triggers"). A cell

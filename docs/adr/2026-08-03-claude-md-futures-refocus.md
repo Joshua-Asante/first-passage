@@ -2,7 +2,7 @@
 
 **Status:** `Accepted`
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** `2026-08-23-strategy-coldstore-phase-c.md` — §7 CFD living-`BASE_RISK` / CLAUDE table retirement executed (Striker keys + `LEG_MAP` stay)
 **Retain-until:** none
 **Decision date:** 2026-08-03
 **Authors:** Joshua + Claude Code

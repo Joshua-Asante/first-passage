@@ -564,3 +564,17 @@ def test_full_tier_adr_still_checked():
     broken = WELL_FORMED.replace("## §5 — Forbidden moves", "## §99 — Nothing")
     assert not cb.is_light_tier(broken)
     assert _hard(cb.check_brief(broken, "adr")), "a malformed full-tier ADR must still fail"
+
+
+def test_type_closure_delegates_and_does_not_apply_general_contract(tmp_path, capsys):
+    """`--type closure` must not argparse-die and must not run §0–§10."""
+    p = tmp_path / "Q-X-closure-resolved.md"
+    p.write_text("# Q-X — CLOSURE: `RESOLVED` (test)\n\n## Iterate\n- **Next:** INTEGRATE\n",
+                 encoding="utf-8")
+    rc = cb.main([str(p), "--type", "closure"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "DELEGATED" in out
+    assert "check_closure_disposition.py" in out
+    assert "well-formed" not in out
+    assert cb.check_brief(p.read_text(encoding="utf-8"), "closure") == []

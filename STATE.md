@@ -66,6 +66,8 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence + owner. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-23** — SESSIONS class D tightened to a judgment-call gate; stub-entry mechanism added for Open/next continuity without violating `sessions-append-only`. [`W5 ADR addendum`](docs/adr/2026-08-07-w5-governance-diet.md) [`PR #120`](https://github.com/Joshua-Asante/first-passage/pull/120)
+- **2026-08-22** — DL-2 (M6A × `prior-session-breakout-continuation`, `NEW` mechanism id) prereg `FROZEN`; §6 step 1 pulls landed $0.0000. [`charter`](docs/adr/2026-08-16-deep-iteration-lane-charter.md) [`prereg`](docs/briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md)
 - **2026-08-22** — Leftover Proposed ADRs: four `Accepted`, one `Withdrawn`. [`disaster-stop`](docs/adr/2026-07-28-c1-disaster-stop-payload-supported.md) [`venue-binding`](docs/adr/2026-08-05-strategy-venue-binding-axis.md) [`W1`](docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md) [`public-visibility`](docs/adr/2026-08-14-repo-public-visibility-transition.md) [`WATCH-1H withdrawn`](docs/adr/2026-08-03-lifecycle-ladder-intermediate-rung.md)
 - **2026-08-21** — `REPO_MAP.md` second-pass coherence repair; §5 coverage-check repaired. [`campaign addendum`](docs/notes/audits/2026-08-21-coherence-campaign.md)
 - **2026-08-21** — CFO subscription-ledger consolidation ratified (one ledger + monthly reconfirm). [`ADR`](docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md)
@@ -262,7 +264,7 @@ deleted (not struck).
 
 - **Sentinel Tier-2/3 promotion (limb B1)** — before next quarterly slate; promotion not a build. [`sentinel design`](docs/spec/2026-06-23-inqhiori-sentinel-design.md) · [`Hermes closure`](docs/briefs/closures/2026-07-27-hermes-agent-adoption-closure-resolved.md)
 - **PREREG-C1-DEDUPE-1** — gated on M1 `RESOLVED` + separate operator GO. [`pre-reg`](docs/spec/PREREG-C1-DEDUPE-1-intent-key-functional-property.md) · [`impl plan`](docs/spec/PREREG-C1-DEDUPE-1-implementation-plan.md)
-- **R&D tooling T2 / T3 / T4** — adoption ADR §7 (T4 rides 2026-08-08 Call-1 OC). [`ADR §7`](docs/adr/2026-07-11-tradable-anomalies-statistics-adoption.md)
+- **R&D tooling T2 / T3 / T4** — GO 2026-08-23 executed (kit + breadth calibration + synthetic Call-1 OC). T4 Task 3 state writer still fill-gated. [`ADR §7`](docs/adr/2026-07-11-tradable-anomalies-statistics-adoption.md) · [T4 RESULTS](docs/notes/research/2026-08-23-call1-oc-synthetic.md)
 - **Per-fill add-slippage capture (B7 Stage 2b)** — waits first strategy-signal **add** fill; prerequisite ledger price-capture landed. [`Q-COSTGEO-3`](docs/briefs/closures/Q-COSTGEO-3-closure-ambiguous-needs-depth.md) · B7 procedure in the private archive
 - **Forward regime monitor / decompound limb-2 successor** — ORPHANED same hole: CFD limb-2 cannot fire; venue-native design landed (not ratified); gated on first live fill. [`decompound ADR §Addendum 2026-08-03`](docs/adr/2026-06-07-decompound-remc-hold.md) · [`Pepperstone retirement`](docs/adr/2026-08-02-pepperstone-feed-retirement.md)
 - **CFD data-estate class-wide delete** — trigger-dated; blocked on T1 (F3 FUTURES_LOCK) + substrate Phase-6 confirm. [`CFD estate ADR`](docs/adr/2026-07-11-ops-cfd-estate-retirement.md) · [gate audit](docs/notes/audits/2026-07-17_gate_cfd-estate-classwide-delete.md)

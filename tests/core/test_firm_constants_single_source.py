@@ -41,25 +41,30 @@ def test_dd_protection_constants_match_historical_fixture():
 
 
 def test_locked_allocations_agree_across_consumers():
-    expected = firm_rules._BASE_RISK
-    dd_allocations = {
-        "guardian": dd_protection.BASE_RISK["Guardian"],
+    historical = hc.HISTORICAL_CHALLENGE_BASE_RISK
+    living = firm_rules._BASE_RISK
+    assert set(living) == {"striker", "striker_nas100"}
+    assert "guardian" not in living and "aegis" not in living
+    dd_living = {
         "striker": dd_protection.BASE_RISK["Striker"],
-        "aegis": dd_protection.BASE_RISK["Aegis"],
         "striker_nas100": dd_protection.BASE_RISK["Striker NAS100"],
     }
-
-    assert portfolio_mc.ALLOCATIONS == expected == dd_allocations
+    assert living == dd_living
     assert dd_protection.BASE_RISK == firm_rules.base_risk_display()
-    assert portfolio_mc.PINE_SHRINK_ALLOCATIONS == expected
+    assert set(dd_protection.BASE_RISK) == {"Striker", "Striker NAS100"}
+    assert portfolio_mc.ALLOCATIONS == historical
+    assert portfolio_mc.PINE_SHRINK_ALLOCATIONS == historical
+    for slug in living:
+        assert living[slug] == historical[slug]
 
 
 def test_sweep_reg_and_ga4_derive_from_lock_not_re_literalized():
-    """Q-SWAP-3 REG is the lock; GA4_ALLOCATIONS is SWEEP GA-4 (no duplicate literals)."""
+    """Q-SWAP-3 REG is the historical 4-leg lock; GA4_ALLOCATIONS is SWEEP GA-4."""
+    historical = hc.HISTORICAL_CHALLENGE_BASE_RISK
     sweep = dict(portfolio_mc.SWEEP_CONFIGS)
-    assert sweep["REG"] == portfolio_mc.ALLOCATIONS == firm_rules._BASE_RISK
+    assert sweep["REG"] == portfolio_mc.ALLOCATIONS == historical
     assert portfolio_mc.GA4_ALLOCATIONS == sweep["GA-4"]
-    # Unchanged legs on GA-4 still match the lock (only guardian is the variant).
+    # Unchanged legs on GA-4 still match the historical lock (guardian is the variant).
     for leg in ("striker", "aegis", "striker_nas100"):
-        assert sweep["GA-4"][leg] == firm_rules._BASE_RISK[leg]
+        assert sweep["GA-4"][leg] == historical[leg]
     assert sweep["GA-4"]["guardian"] == 0.0024
