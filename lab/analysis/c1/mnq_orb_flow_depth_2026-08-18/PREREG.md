@@ -1,6 +1,14 @@
 # `MNQFLOW-1-DEPTH` — does ORB-MNQ-1's L1 book-tilt survive at MBP-10 depth?
 
-**Status:** `FROZEN — PULL NOT AUTHORIZED.` MNQFLOW-1's own stop-rule (`RESULTS.md` L177-180) bars
+**Status:** `SIGNED 2026-08-23 — BLOCKED AT P0 (cost ceiling exceeded, no pull run); construct
+now HOLD.` Operator authorized the pull (§9.1); the frozen $125.00 P0 re-estimate gate (§2.2)
+then fired on the actual 30 selected calendar days' real cost ($148.04 — see §9.2) and aborted
+before any data was read. A redraw ([`PREREG_S2B.md`](PREREG_S2B.md), the same construct's own
+S2-only sibling) also blocked at P0 ($154.73) — two independent draws reading as a structural
+~$150 true cost, not a $125 one. **Operator disposition: `HOLD`** (2026-08-23, recorded in
+`PREREG_S2B.md`'s own Status block — *"not ruling it out but I do not know if it is worth the
+spend"*), not one of the three named forward paths. $0.00 spent throughout. MNQFLOW-1's own
+stop-rule (`RESULTS.md` L177-180) bars
 re-cutting its frozen L1 design and explicitly lists "**MBP-10 arm**" among the forbidden re-cuts —
 that passage is a **prohibition, not a designation**; it does not name or pre-authorize this
 document. What it *does* say (its parent's own FM-4, quoted and answered in §5) is that any such
@@ -294,10 +302,12 @@ expected outcome, not discovered as a disappointing one.
 5. Single run. RESULTS discharges exactly one §7 branch. Board write owed in every branch (mirrors
    MNQFLOW-1's own discipline).
 
-### §9.1 — Operator signature block (DRAFT until filled; gates step 2 above)
+### §9.1 — Operator signature block (SIGNED 2026-08-23 — see §9.2 for the P0 outcome)
 
 ```
-SIGNED / FROZEN: ____ / ____   (date / initials)
+SIGNED / FROZEN: 2026-08-23 / JA   (date / initials — authorized via chat to Claude Code,
+this session; durable record below is that authorization's landing place per this document's
+own design)
 Authorized: MNQFLOW-1-DEPTH — the MBP-10 depth escalation on ORB-MNQ-1's own frozen trigger
 subsample (S2: 30 of 255, full-range systematic sample), schema mbp-10, window
 2025-08-06 -> 2026-08-04, ceiling <= $125.00 subject to §2.2's P0 re-estimate gate.
@@ -307,6 +317,75 @@ reasoned in §6; K_banked(MNQ) disclosed as >= 6 (possibly >= 20, genuinely unre
 acknowledged at signature time, not hidden.
 No pull runs before this block is filled.
 ```
+
+### §9.2 — P0 outcome (append-only record of what happened after §9.1 signature; not itself
+a Trap #12 edit — §9's own protocol order names P0 as the very next gate after sign-off, and
+this section is where that gate's result lands, same discipline as §9.1 itself)
+
+**P0 FIRED. ABORT. No pull executed. $0.00 actual spend (estimates never bill).**
+
+Per §2.2's own frozen instruction ("re-estimate `metadata.get_cost` for the actual 30 selected
+calendar days... Abort if the re-estimated total exceeds $125.00"), the 30 exact calendar dates
+were derived from S2's frozen systematic-sampling formula (`round(i × 254/29)` for `i = 0..29`)
+applied to a faithful reconstruction of MNQFLOW-1's own 255-trigger chronological list — the
+original harness (`build_events.py`) was recovered read-only from its pre-prune commit
+(`283d1de^`, per this repo's own documented Great-Prune recovery path) and re-run against the
+still-present `orb_lib.py` dependency and the already-cached 1m panel; its elementwise
+faithfulness assertions against `orb_lib.orb_backtest`'s own output (`n=255`, `range` array
+match) passed, confirming the reconstruction is not a guess.
+
+| Date | Cost | | Date | Cost | | Date | Cost |
+|---|---:|---|---|---:|---|---|---:|
+| 2025-08-06 | $3.3304 | | 2025-11-12 | $5.9371 | | 2026-02-20 | $6.8653 |
+| 2025-08-19 | $3.6124 | | 2025-11-25 | $6.9445 | | 2026-03-05 | $8.8522 |
+| 2025-09-01 | $0.5989 | | 2025-12-08 | $3.9936 | | 2026-03-18 | $1.9252 |
+| 2025-09-11 | $3.0686 | | 2025-12-18 | $6.9208 | | 2026-03-30 | $6.3451 |
+| 2025-09-24 | $3.4330 | | 2026-01-02 | $5.6335 | | 2026-04-13 | $4.1831 |
+| 2025-10-07 | $4.2396 | | 2026-01-15 | $5.5219 | | 2026-04-24 | $5.5846 |
+| 2025-10-20 | $3.5785 | | 2026-01-28 | $5.1188 | | 2026-05-07 | $6.7095 |
+| 2025-10-30 | $6.2457 | | 2026-02-09 | $5.5870 | | 2026-05-19 | $8.9180 |
+
+(remaining 6: 2026-06-01 $5.5775, 2026-06-15 $2.9483, 2026-06-29 $9.1216, 2026-07-09 $7.2410,
+2026-07-22 $0.0000, 2026-08-04 $0.0000 — the two zero-cost days are genuine Databento-side
+`get_cost` results, not a data-availability gap: `get_billable_size`/`get_record_count`
+returned 12.50GB/33.96M records and 14.39GB/39.10M records respectively for those two dates,
+confirming real data exists and is priced at $0 by Databento's own metadata API, not by any
+estimate on this repo's side.)
+
+**Total: $148.0357. Ceiling: $125.00. Over by $23.0357 (18.4% over).**
+
+This is the exact failure mode §4 named as possible, not ruled out, at freeze time: "The 16%
+day-to-day variance measured in §4 means the actual 30-day total could land anywhere in that
+range or slightly outside it — P0's re-estimate, not either single-day figure, is the real
+gate." The flat single-day extrapolation ($99.91–$119.10) undershot because the frozen S2
+sample happens to draw several above-average-cost days (five of 30 at $6.25–$9.12) against
+only two at $0.00 — the day-to-day cost variance is not symmetric enough for a flat multiply
+to be a safe proxy for the real total, exactly the gap P0 exists to catch.
+
+**No forbidden move taken in response.** FM-5 bars widening or cherry-picking the sample "if
+it isn't enough" or "after seeing partial data" — the same discipline bars silently swapping
+expensive days for cheap ones, shrinking the sample, or raising the ceiling to fit, once the
+per-day costs are known. None of those happened. This document's own frozen S2 sample and
+§2.2 ceiling stand byte-unedited; only this append-only §9.2 record was added.
+
+**Disposition: BLOCKED at P0 — operator decision owed, not resolved here.** The construct as
+frozen does not fit inside its own pre-registered $125.00 ceiling. Legitimate paths forward,
+named without electing one:
+1. **Raise the ceiling** — a fresh operator authorization of a higher spend (the credit itself
+   may or may not extend that far; confirm with Databento/Avenue-A's own accounting before
+   assuming $148 is available, since §4 describes $125 as "the untouched Avenue-A credit," a
+   resource balance, not merely a self-imposed policy number).
+2. **A fresh S2 sample** (different systematic-sampling parameters, or a different subsample
+   size) is a NEW pre-registration under this same construct's own logic — not an amendment of
+   this one, and not decidable now that this sample's actual costs are known (that knowledge
+   would contaminate any "redraw," the same concern FM-5 encodes for the existing sample).
+3. **Decline** — mark this route dead at the cost gate, disclosed as a structural/budget kill,
+   not an edge or power finding. Zero effect on `MNQFLOW-1`'s own `RESOLVED` L1 verdict either
+   way (FM-4b).
+
+$0.00 actual spend throughout (estimate calls never bill, confirmed by this repo's own
+`db_fetch.py` design). K_intrinsic unaffected (still 0 — no data was read, no outcome-bearing
+byte exists to inflate a trial count).
 
 ---
 
@@ -375,3 +454,30 @@ grep -n "SIGNED / FROZEN: ____" lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PR
   verdict pre-registration had its §3 table assign `RESOLVED` to the synthetic-only battery result
   while its own prose said the opposite — reworded to require the Phase 2 pinned-anchor run; the
   parity-mutation test suite now pins `EPS_DENOM` alongside the other frozen band constants.
+
+- **2026-08-23 — Operator sign-off given (§9.1); P0 fired, pull BLOCKED (§9.2).** Following the
+  deep-iteration-lane's own §4(c) supply-side audit
+  ([note](../../../../docs/notes/audits/programme-audit/2026-08-23-deep-lane-supply-audit.md)),
+  which named this document as the estate's cheapest reachable supply lead pending exactly this
+  sign-off, the operator authorized the pull via chat. §9.1 filled. The frozen S2 sample's 30
+  exact calendar dates were derived by recovering `build_events.py` read-only from its pre-prune
+  commit (`283d1de^`) and re-running it against still-present dependencies (`orb_lib.py`,
+  the already-cached 1m panel) — its own elementwise faithfulness asserts against
+  `orb_lib.orb_backtest` passed (n=255, `range` array match), confirming the reconstruction, not
+  a guess. §2.2's P0 blocking re-estimate on those 30 exact days totaled **$148.0357** against
+  the frozen **$125.00** ceiling — **18.4% over, ABORT per this document's own instruction.** No
+  pull ran; $0.00 spent; K_intrinsic unaffected (still 0). Full per-day breakdown and the three
+  named forward paths (raise the ceiling / a fresh S2 sample under a new pre-registration /
+  decline) in §9.2. No forbidden move taken — FM-5's bar on cherry-picking or resizing the
+  sample after seeing partial data was read as covering this situation symmetrically (not
+  swapping expensive days for cheap ones either), and held to. Operator decision owed; not
+  resolved here. `lab/CATALOG.md`, `STATE.md`, and the supply audit's own pointer updated in the
+  same commit to correct the "one sign-off away" characterization, now stale.
+
+- **2026-08-23 — Redraw (`PREREG_S2B.md`) also blocked at P0 ($154.73); operator disposition
+  `HOLD`.** The operator elected the redraw path; a second, independent, non-overlapping 30-day
+  sample also failed P0 (23.8% over, worse than this document's own 18.4%). Two draws now read
+  as a structural ~$150 true cost, not a $125 one. Presented with three named paths, the
+  operator held: *"not ruling it out but I do not know if it is worth the spend"* — recorded in
+  `PREREG_S2B.md`'s own Status block, this document's header updated to cross-reference it.
+  `lab/CATALOG.md`, `STATE.md`, and the supply audit corrected a third time.
