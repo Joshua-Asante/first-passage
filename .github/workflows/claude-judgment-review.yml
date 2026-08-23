@@ -1,11 +1,18 @@
-# Automatic Claude review request for judgment-heavy PRs.
+# Automatic Claude review *request* for judgment-heavy PRs.
 # Owner: docs/adr/2026-07-14-cc-cursor-surface-allocation.md addendum 2026-08-23.
-# Review-only. Does not merge. Does not replace @claude on comments (claude.yml).
+# Review-only. Does not merge.
 #
-# Fires once per PR (HTML marker). Re-review is the existing @claude mention.
+# This workflow only decides and posts `@claude`. The review itself runs in
+# claude.yml on the default branch (issue_comment), so a PR that edits
+# workflows still gets a review. Direct action invocation on pull_request
+# is skipped by anthropics/claude-code-action whenever the diff touches
+# .github/workflows/ — that path is intentionally not used here.
+#
+# Fires once per PR (HTML marker). Re-review is a fresh `@claude` mention
+# after deleting the marker, or an operator/cursor comment.
 # Drafts are silent; ready_for_review is the first look.
 # pull_request (not pull_request_target). allowed_bots is an explicit list,
-# never '*'. Fork PRs do not receive CLAUDE_CODE_OAUTH_TOKEN.
+# never '*'.
 
 name: Claude judgment review
 
@@ -28,8 +35,6 @@ jobs:
       contents: read
       pull-requests: write
       issues: write
-      id-token: write
-      actions: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -52,8 +57,6 @@ jobs:
 
       - name: Decide
         id: decide
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           python3 scripts/check_claude_judgment_review.py \
             --head-branch "${{ github.event.pull_request.head.ref }}" \
@@ -65,46 +68,18 @@ jobs:
             --event-action "${{ github.event.action }}" \
             --event-label "${{ github.event.label.name || '' }}"
 
-      - name: Record request
+      - name: Request @claude review
         if: steps.decide.outputs.trigger == 'yes'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh pr comment "${{ github.event.pull_request.number }}" --body "$(cat <<'EOF'
-          Automatic Claude judgment review requested (`REASON` from the predicate is recorded on the workflow run).
+          gh pr comment "${{ github.event.pull_request.number }}" --body "$(cat <<EOF
+          @claude review this PR as the Claude Code adjudication pass for a judgment-heavy change scoped on Cursor first (or opted in via the \`claude-review\` label / \`claude-review: judgment\` body token). Reason: \`${{ steps.decide.outputs.reason }}\`.
 
-          This is review-only. It does not merge and does not replace operator / Claude Code adjudication on the auto-merge-forbidden surface. Re-review: comment `@claude` (or add the `claude-review` label after deleting this marker).
+          Review-only. Do not merge. Do not expand scope. Owner: \`docs/adr/2026-07-14-cc-cursor-surface-allocation.md\` addendum 2026-08-23.
+
+          Adjudicate: (1) does the change hold under the owners it cites? (2) did it skip a Claude Code freeze the 2026-07-14 routing test required? (3) any silent restatement (blast-radius)?
 
           <!-- claude-judgment-review -->
           EOF
           )"
-
-      - name: Run Claude Code review
-        if: steps.decide.outputs.trigger == 'yes'
-        uses: anthropics/claude-code-action@v1
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # Cursor cloud agents open these PRs; the mention workflow already
-          # allow-lists the same App. Do not use '*'.
-          allowed_bots: "cursor"
-          prompt: |
-            Review this pull request as the Claude Code adjudication pass
-            for a judgment-heavy change that was scoped on Cursor first
-            (or explicitly opted in via the `claude-review` label /
-            `claude-review: judgment` body token).
-
-            Owner ADR: docs/adr/2026-07-14-cc-cursor-surface-allocation.md
-            (2026-08-23 addendum — automatic judgment review). Sibling
-            auto-merge ADR is out of scope: do not merge.
-
-            Adjudicate:
-            1. Does the change hold under the owners it cites?
-            2. Did it skip a Claude Code freeze the 2026-07-14 routing
-               test required (doctrine / locked-surface authored on Cursor
-               without a frozen spec)?
-            3. Any silent restatement of a prior finding (blast-radius)?
-
-            Do not expand scope. Do not push commits unless the operator
-            later asks via @claude. Post the review on this PR.
-          claude_args: |
-            --model claude-sonnet-5

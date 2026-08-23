@@ -224,7 +224,7 @@ git log -1 --format='%h %ci' -- docs/operational_rules.md .claude/skills/handoff
    - body token `claude-review: judgment` (case-insensitive), or
    - head branch starts with `cursor/` **and** the diff touches a judgment surface (doctrine / governed `core/` / rail / skills / workflows — see the script's `JUDGMENT_*` lists).
 
-Events: `opened`, `ready_for_review`, `reopened`, `labeled` (label must be `claude-review`). **Not** `synchronize`. `pull_request`, not `pull_request_target`. `allowed_bots` stays an explicit list (`cursor`); never `*`. The request calls `anthropics/claude-code-action@v1` with a prompt — it does **not** post `@claude`, so `claude.yml`'s mention allow-list is unchanged.
+Events: `opened`, `ready_for_review`, `reopened`, `labeled` (label must be `claude-review`). **Not** `synchronize`. `pull_request`, not `pull_request_target`. Never `*`. The request **posts `@claude`** (plus the marker) as `github-actions[bot]`; `claude.yml` on the **default branch** allow-lists `cursor,github-actions` and runs the review. That hop exists because a direct `pull_request` invocation of `anthropics/claude-code-action` **self-skips** on any PR that edits `.github/workflows/` (observed on this introducing PR, run `32672069340`: "workflow validation skip… will begin working once you merge"). Workflow diffs are themselves a judgment surface, so the mention path on `main` is the one that still fires.
 
 **What does not change:**
 - The §2 routing test (which tasks are Cursor-eligible) is untouched.
@@ -233,6 +233,6 @@ Events: `opened`, `ready_for_review`, `reopened`, `labeled` (label must be `clau
 - Human / `claude/*` PRs do not auto-fire unless labeled or body-tokened (CC is already in the room).
 - No STATE queue row. No sixth root doc. $0.
 
-**Forbidden:** treating a Claude review comment as merge authority; firing on every push; widening `allowed_bots` to `*`; using `pull_request_target`; auto-requesting on every `cursor/*` PR regardless of surface.
+**Forbidden:** treating a Claude review comment as merge authority; firing on every push; widening `allowed_bots` to `*`; using `pull_request_target`; auto-requesting on every `cursor/*` PR regardless of surface; invoking `claude-code-action` directly from the `pull_request` workflow (that path skips on workflow diffs).
 
 **Revert trigger:** either (1) a tests-only `cursor/*` PR receives an automatic request, or (2) a `cursor/*` PR that edits `docs/adr/**` (non-draft, first look) does not. Both are mechanically checkable from the predicate tests + one live workflow run.
