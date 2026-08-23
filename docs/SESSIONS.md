@@ -32,6 +32,20 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-25b — First-look residuals split into P6–P10 plans
+
+**Focus:** Decision. Operator asked to separate first-look problems and write targeted plans. Second-wave packets named; none GO’d.
+
+**Shipped:** [`pain-point charter`](superpowers/plans/2026-08-23-repo-pain-point-packets.md) P6–P10 (front-door lead · identifier table · STATE diet · withdrawn-book tense · open-roster hygiene). `queue-exception: operator asked for targeted plans on first-look residuals`.
+
+**Decisions/defects:** Object-layer dryness stays on the viable-strategy sequence, not a new pain-point. Personas / Limb-A / S3–S7 stay parked.
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-25a — Reject Proposed NeMo ADR; tear down standing analog surface
 
 **Focus:** Decision. Operator rejected the Proposed NeMo pin ADR; borrow principles as needed. Ox-alpha consulted on pin-versus-inspiration.
