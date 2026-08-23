@@ -14,6 +14,20 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23z — merge origin/main into PR #117 (conflict fix)
+
+**Focus:** Resolve PR #117 conflicts after #112–#116. Same-day letters `a`–`y` are taken; this wrap-up reuses the last free letter and records the remapped disaster-stop entry in Shipped.
+
+**Shipped:** merge `origin/main` into `cursor/disaster-stop-phase-0-475b`. Union-merge splice (missing `---` before `2026-08-23y`) fixed via `--normalize`. Later colliding `2026-08-23q` (disaster-stop Phase 0) remapped here as `2026-08-23z` (no letter left for a second heading). [`2026-08-23-disaster-stop-phase-0.md`](notes/rail_build/2026-08-23-disaster-stop-phase-0.md): 0a/0b `BLOCKED / capability-problem`; 0c pine-manifest ran; no listener `sl=`. `docs/adr/INDEX.md` auto-merged.
+
+**Decisions/defects:** none new. Not a 0a FAIL. Phase 1 stays gated on attended PASS.
+
+**Open / next:** carry `2026-08-22r` — DL-2 step 2 train scoring. Attended 0a is operator-only. Carry `2026-08-23t` — two undocumented decay findings still need discharge addenda. Follow-on grow slices still named. Operator GO/NO-GO on brief-authoring ox-alpha surviving cluster before any skill edit. #7/#8 stay PENDING GO.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-23y — merge origin/main into PR #116 (conflict fix)
 
 **Focus:** Resolve PR #116 conflicts after #112–#115 landed grow-lane wiring, discovery-skill repairs, adr-decay-audit, and substrate Phase 6 docs.
