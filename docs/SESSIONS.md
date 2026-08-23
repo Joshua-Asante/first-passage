@@ -14,7 +14,7 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
-## 2026-08-23a — ADR-corpus decay audit run; `adr-decay-audit` skill proposed
+## 2026-08-23l — ADR-corpus decay audit run; `adr-decay-audit` skill proposed
 
 **Focus:** Decision. Operator asked which Accepted ADRs still hold and whether a process exists to catch decay; ran a one-off full-corpus audit, then drafted a standing skill to close the gap.
 
@@ -23,6 +23,11 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Decisions/defects:** `ox-alpha` adversarial pass on the skill draft attempted, not completed — no `OPENROUTER_API_KEY` reachable this session (operator's `setx` doesn't cross into the remote container); self-review substituted instead. One Phase-2 verify call returned degenerate placeholder output; caught and manually re-checked rather than trusted.
 
 **Open / next:** Remediate the two undocumented findings with short discharge addenda — `2026-04-17-portfolio-allocations.md`'s stale Striker figure (mirrored in INDEX.md) and `2026-06-23-tv-backtest-egress-automation.md`'s addendum premise invalidated by the later S2 signal-host-fork ADR. Operator PR review/merge is this new ADR's ratification event.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-23k — Tradable-anomalies T4 plan (PENDING GO)
 
 **Focus:** Hygiene. Campaign plan 8c — last file in this campaign.
@@ -36,6 +41,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23j — Tradable-anomalies T3 plan (PENDING GO)
 
 **Focus:** Hygiene. Campaign plan 8b.
@@ -49,6 +55,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23i — Tradable-anomalies T2 plan (PENDING GO)
 
 **Focus:** Hygiene. Campaign plan 8a.
@@ -62,6 +69,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23h — Coldstore Phase C plan (PENDING GO)
 
 **Focus:** Hygiene. Campaign plan 7b.
@@ -75,6 +83,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23g — Coldstore Phase B plan (PENDING GO)
 
 **Focus:** Hygiene. Campaign plan 7a.
@@ -88,6 +97,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23f — Disaster-stop Phase 0 then 1 plan
 
 **Focus:** Hygiene. Campaign plan 6.
@@ -101,6 +111,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23e — Call-4 beta-cohesion diagnostic plan
 
 **Focus:** Hygiene. Campaign plan 5.
@@ -114,6 +125,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23d — Substrate Phase 6 docs implementation plan
 
 **Focus:** Hygiene. Campaign plan 4.
@@ -127,6 +139,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23c — Grow-lane leftovers implementation plan
 
 **Focus:** Hygiene. Campaign plan 3.
@@ -140,6 +153,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23b — W5 CI-from-gates.yml implementation plan
 
 **Focus:** Hygiene. Campaign plan 2.
@@ -153,6 +167,7 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
+
 ## 2026-08-23a — Venue-binding Phase 1–3 implementation plan
 
 **Focus:** Hygiene. Campaign of worker-executable plans for Accepted-but-owed ADR limbs; first file only.
@@ -193,6 +208,7 @@ handoff. If DL-2 abandons at step 2, that's the 2nd consecutive after DL-1 and t
 per the charter's own GO-1 dry-run).
 
 ---
+
 ## 2026-08-22q — Disposition leftover Proposed ADRs
 
 **Focus:** Decision. Operator Accept of four leftover Proposed ADRs; reject of the intermediate-rung ADR; STATE pointer refresh.
