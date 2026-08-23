@@ -31,7 +31,7 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
-## 2026-08-24q — blind-channel scoped decline of the reopened 6A/GC cell
+## 2026-08-24s — blind-channel scoped decline of the reopened 6A/GC cell
 
 **Focus:** Decision. Operator accepted the scoped decline: do not name on the reopened 6A/M6A or GC/MGC entry-geometry / dense-1m doors. Last pre-G0 slot unspent.
 
@@ -41,17 +41,29 @@ any entry, full or stub (a-first; bare claims `a`).
 
 **Open / next:** STATE queue: #1 F1 — how §4 reads a Tradeify-resting discharge ([`descope §7`](adr/2026-08-04-tradeify-venue-descope-eval-included.md)) · #2 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)).
 
+---
+
+## 2026-08-24r — merge origin/main into PR #128 (conflict fix)
+
+**Focus:** Resolve PR #128 conflicts after #127. Same-day `2026-08-24o` is taken by the registry-snapshot entry on `main`.
+
+**Shipped:** merge `origin/main` into `claude/tradeify-strategy-review-6fe189`. Union-merge splice (missing `---` after `24p`) fixed. Colliding PR-side `2026-08-24o` (F1 ruled) remapped to `2026-08-24q`. Main's `24o` registry heading left byte-identical. F1 / Q-TRADECAP-1 / Q-MONSURF-1 bytes unchanged.
+
+**Decisions/defects:** none new.
+
+**Open / next:** Phase 5 (wire M-B at F3) — not before. M-A build-gate scope ruling owed. MSL needs a fresh WHO. Successor per-trade loss-bound election on STATE row 2. Q-FIRMEOD-1 / Q-PUBTRANS-1 deferred. **STATE queue:** #1 B7-REFIRE + M1 · #2 per-trade loss-bound election.
+
 **Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
 
-## 2026-08-24p — P1 README status glossary (queue-exception)
+## 2026-08-24t — P1 README status glossary (queue-exception)
 
 **Open / next:** STATE queue: #1 F1 — how §4 reads a Tradeify-resting discharge ([`descope §7`](adr/2026-08-04-tradeify-venue-descope-eval-included.md)) · #2 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #3 Blind — name or decline the next construct on 6A/M6A or GC/MGC entry-geometry / dense-1m doors ([`channel ADR`](adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md)). queue-exception: operator directed the pain-point sequence after bind land; P1 README glossary is on this branch (charter start-when). Bind commit [`02c5f5e`](https://github.com/Joshua-Asante/first-passage/commit/02c5f5e).
 
 ---
 
-## 2026-08-24o — Lane A GO + operator-queue bind land
+## 2026-08-24u — Lane A GO + operator-queue bind land
 
 **Focus:** Decision + Build. Operator named bind row 3 = Lane A (blind / no-counterparty channel). Landed queue-led Open/next, carry-forward rewrite, and the SESSIONS-only bind gate.
 
@@ -61,7 +73,44 @@ any entry, full or stub (a-first; bare claims `a`).
 
 **Open / next:** STATE queue: #1 F1 — how §4 reads a Tradeify-resting discharge ([`descope §7`](adr/2026-08-04-tradeify-venue-descope-eval-included.md)) · #2 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #3 Blind — name or decline the next construct on 6A/M6A or GC/MGC entry-geometry / dense-1m doors ([`channel ADR`](adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md)).
 
+---
+
+## 2026-08-24p — Q-MONSURF-1 RESOLVED: M-B idle-clock monitor built, tested, registration-ready
+
+**Focus:** Build + Measurement. Second-ranked Pre-Q executed to verdict on operator GO.
+
+**Shipped:** [`lab/analysis/c1/msl_monsurf_1_idle_clock_2026-08/`](../lab/analysis/c1/msl_monsurf_1_idle_clock_2026-08/) — standalone idle-clock monitor (`idle_clock_monitor.py`) + acceptance battery (`acceptance_battery.py`), no `ops/c1_rail` import. Retrieved the pruned `daily_panel.csv` read-only from the `pre-prune-2026-08-08` tag; reproduced every `c1_cadence_inactivity_2026-08-02/RESULTS.md` anchor exactly before trusting anything downstream. Ran against all 312 real historical Mon–Fri weeks (resolved the "simulated quarter" vs "full frozen distribution" tension in H-MONSURF-1's own wording toward the stronger, full-panel test). Two mutation classes planted and caught (380 spurious alerts from a single-day-lookback bug; exactly 164 missed alerts from an always-suppressed lookback) before trusting the clean run: **0 missed, 0 spurious** on the real, unmutated panel. `Q-MONSURF-1` closed `RESOLVED`. STATE.md's "No fixed date / gated" section rewritten — monitoring obligations were one stranded "first live fill" block, corrected to three true gate depths (M-B now registration-ready, gated on F3 only; M-C stays fill-gated; M-A stays elective, its own build-gate scope ruling still owed).
+
+**Decisions/defects:** Resolved an internal tension in the parent brief's own H-MONSURF-1 wording ("simulated quarter" vs "the full frozen distribution draw") conservatively toward the full 312-week panel — a strict superset of any 13-week sample, so the stronger bar, not an invented threshold. One stale cross-reference found and disclosed, not repaired (out of scope): the activity-rule disposition spec cites two spec files that don't resolve in the current tree.
+
+**Open / next:** Phase 5 (wire M-B to the live account) fires automatically at F3 registration, not before. M-A's build-gate scope ruling is a standing, explicit operator-ruling request. MSL still needs a fresh WHO sourced for an actual Tradeify strategy candidate — this closes infrastructure gaps, not the strategy-search gap itself.
+
+---
+
+## 2026-08-24o — keep REGISTRY_DEBT snapshot; unpaid is a registry read
+
+**Focus:** Build. PR #127 pytest pin (`66` / `33`) failed after the backfill emptied `REGISTRY_DEBT_2026_08`. Discharge is a landed `rejected_candidates.md` row, not a frozenset edit.
+
+**Shipped:** [`check_closure_disposition.py`](../scripts/check_closure_disposition.py) — restore 30-name debt snapshot; 3 misfiles DEBT → NA (union stays 66); `--list-debt` → `unpaid_registry_debt()`. Tests + [`STATE.md`](../STATE.md) pointer.
+
+**Decisions/defects:** none new — implements the snapshot-vs-empty choice already ruled this session.
+
+**Open / next:** Q-M1WIRE-1 wire-vs-risk-accept, closure-disposition-coverage-hard severity, and the blind-channel FM-4 doctrinal seams — ruling still owed. 9 Pre-Q brief GOs still dispatched separately. Registry-backfill unpaid is now a `--list-debt` read. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1.
+
 **Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-24q — F1 ruled; MNQTAPE-2 NO-GO; Q-TRADECAP-1 RESOLVED; status-skew fixes; Pre-Q priority pass
+
+**Focus:** Decision + Measurement. Operator rulings on the two open Tradeify-strategy threads, the
+top-ranked Pre-Q executed to verdict on operator GO, plus doc-hygiene.
+
+**Shipped:** F1 ruled `Accepted` — Tradeify-resting §4 discharge does not count (3-firm effective set for §4). `MNQTAPE-2` ($308.69) declined NO-GO. Three stale `OPEN — DRAFT` brief headers corrected to match their own already-recorded closures (Q-ORBSURV-1 `FALSIFIED`, Q-ORBCUSH-1 `FALSIFIED`, Q-CAPBAND-1 `RESOLVED` — STATE.md/INDEX were already correct in all three; only each brief's own header had skewed). MSL-S4 Pine landed + hash-pinned locally from the operator's Downloads copy (`pine_lint` 13/13 re-verified); `candidates_CARD.md` corrected — its RUNBOOK's recommended TV backtest is superseded same-day by the real Explore-confirm that actually ran (`AMBIGUOUS-HOLD`, PARKED). Pending Pre-Qs ranked (Q-TRADECAP-1 top, Q-MONSURF-1 second, Q-FIRMEOD-1/Q-PUBTRANS-1 deferred out of today's scope); D-S-A run on the four genuinely-open ones (two of the original six were already closed, same stale-header defect — Q-ORBCUSH-1, Q-CAPBAND-1 above). Operator GO given on Q-TRADECAP-1 same turn; pre-registration committed, Phase 1 executed (repo-wide grep + two end-to-end code reads), closed `RESOLVED` — confirmed no per-trade dollar-loss bound exists anywhere in the live sizing/arming path on Tradeify's intraday-enforced geometry (sizing law, M1 arming interlock, EM2, disaster-stop all checked). Successor decision packet (per-trade hard-cap vs. live-observed tripwire, from the orphaned CFD-era `1r_estimation.md` fork) queued on STATE.md for operator election.
+
+**Decisions/defects:** F1 ruled ahead of its designed trigger-time reservation, by explicit operator election, against a zero-clearer scoreboard — recorded as a deliberate override, not an oversight ([addendum](adr/2026-08-04-tradeify-venue-descope-eval-included.md)). Does not ratify either pending `Proposed` F1-adjacent addendum. **Governance collision on push:** a concurrent session (`b378361`, 12:23) had just re-confirmed F1's deferred posture as precedent for the sibling PARTIAL-disposition addendum, 36 minutes before F1 was ruled here (12:59) — real content collision, not a false alarm; confirmed as a considered override (operator), merged with a superseding note appended where the stale analogy is read (four-firms ADR §Addendum 2026-08-22), STATE.md queue row reconciled by hand, SESSIONS label collision (`2026-08-24k` claimed twice) renumbered to `o`. **Load-bearing finding:** every currently-sourced MSL Tradeify candidate (C1, C2, C3, C3-K2, S4) is now closed FALSIFIED or PARKED — no candidate is currently backtest-ready; a fresh WHO needs sourcing.
+
+**Open / next:** Successor decision packet on STATE.md row 2 (per-trade hard-cap vs. live-observed tripwire) needs operator election. MSL needs a new WHO sourced (S4 line is dead) — no candidate is currently backtest-ready for Tradeify. Q-MONSURF-1 (idle-clock monitor) is next-ranked Pre-Q if the operator wants another GO. Q-FIRMEOD-1/Q-PUBTRANS-1 deferred, not dropped. **STATE queue:** #1 B7-REFIRE + M1 · #2 per-trade loss-bound election (F1 closed, its row removed).
 
 ---
 

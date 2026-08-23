@@ -72,6 +72,8 @@ dollar-denominated trailing-DD tail — the tail is owned by the dominant-varian
 - **K-accounting:** pre-registered single-arm portfolio re-MC (no search, no sweep) — no
   discovery manifest consumed; no K banked.
 
+- **Registry:** rejected_candidates.md — ### Q-COMPOSE-1 ORB-MNQ-1 breadth-leg composition × MYM+MNQ Class-S c1 book — FALSIFIED (regime-breadth re-MC)
+
 ## Lesson candidates
 
 1. **Dependence N_eff is not a bust-geometry input; risk N_eff is.** A leg that lifts

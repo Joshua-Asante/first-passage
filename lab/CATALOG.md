@@ -43,6 +43,7 @@ documents the camp boundary for humans/tools.
 | f3_cadence_successor_venues_2026-08-05 | c1 | ACTIVE | yes | the cadence axis F3 required is measured, and **F3 is not decidable on it.** Bulenox and MFFU sit in the same inactiv... | lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/ | — |
 | geofit_iid_sufficiency_power_2026-08-15 | c1 | ACTIVE | yes | scoping probe, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_skew_probe_2026-07-25/README.md)... | lab/analysis/c1/geofit_iid_sufficiency_power_2026-08-15/ | — |
 | geofit_skewed_family_construction_2026-08-15 | c1 | ACTIVE | yes | scoping construction, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_skew_probe_2026-07-25/REA... | lab/analysis/c1/geofit_skewed_family_construction_2026-08-15/ | — |
+| mnq_capflow_orb_r_2026-08 | c1 | ACTIVE | yes | `FALSIFIED` · **cap_spent:** `False` | lab/analysis/c1/mnq_capflow_orb_r_2026-08/ | — |
 | mnq_event_ceiling_2026-08-04 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_event_ceiling_2026-08-04/ | — |
 | mnq_ofchan_routeb_2026-08 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_ofchan_routeb_2026-08/ | — |
 | mnq_orb_flow_depth_2026-08-18 | c1 | ACTIVE | yes | HOLD 2026-08-23 (operator) — blocked at P0 twice (original $148.04, redraw S2B $154.73, both vs $125.00 ceiling; structural ~$150 true cost); "not ruling it out but I do not know if it is worth the spend"; no pull run, $0 spent | lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/ | — |
@@ -57,6 +58,7 @@ documents the camp boundary for humans/tools.
 | mnq_tnec_con4_pdh_pdl_break_2026-08 | c1 | HOLD | yes | `AMBIGUOUS-HOLD` — both arms near-zero; CIs straddle 0; aux limbs fail live-pass. | lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/ | — |
 | mnq_tnec_con5_impulse_pullback_vwap_2026-08 | c1 | HOLD | yes | `AMBIGUOUS-HOLD` — both arms mean-negative; CIs straddle 0; aux limbs fail live-pass. | lab/analysis/c1/mnq_tnec_con5_impulse_pullback_vwap_2026-08/ | — |
 | mnqtape1_power_check_2026-08-23 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnqtape1_power_check_2026-08-23/ | — |
+| msl_monsurf_1_idle_clock_2026-08 | c1 | ACTIVE | yes | `Q-MONSURF-1` M-B idle-clock monitor — `RESOLVED` 2026-08-23: 0 missed / 0 spurious across all 312 real historical weeks, mutation-verified. Registration-ready (gated on F3 only). [closure](../../../docs/briefs/closures/Q-MONSURF-1-closure-resolved.md) | lab/analysis/c1/msl_monsurf_1_idle_clock_2026-08/ | — |
 | msl_s2b_mym_2026-08 | c1 | HOLD | yes | archive owed (STAGE-1 FAIL route): pre-G0 kill — [closure](../../../../docs/briefs/closures/MSL-S2B-closure-stage1-fa... | lab/analysis/c1/msl_s2b_mym_2026-08/ | — |
 | msl_s4_mgc_2026-08 | c1 | ACTIVE | yes | MSL-S4 `expiry-oi-strike-convergence` (NEW) on MGC — G0 FROZEN, Pine authored CC-solo; discharges the 2026-08-14 WHO-track E1 stop rule; Explore-confirm deferred by operator override (no data access); operator TV backtest owed | lab/analysis/c1/msl_s4_mgc_2026-08/ | — |
 | orbmnq1_cushion_sizing_probe_2026-08-20 | c1 | ACTIVE | yes | Informal $0/K=0 probe (not pre-registered) — cushion-proportional sizing eliminates ORB-MNQ-1's bust intraday-honestly (mathematically real, regime-agnostic); a real 2021-09-28 pass-rate regime break survives a thirds split but its trailing-vol mechanism is REFUTED. Formalized as [`Q-ORBCUSH-1`](../../../docs/briefs/Q-ORBCUSH-1-regime-break-mechanism.md), which itself closed `FALSIFIED` 2026-08-20 (trailing mean-R also refuted — `ops/instruments/MNQ.md` N17). | lab/analysis/c1/orbmnq1_cushion_sizing_probe_2026-08-20/ | — |
@@ -67,7 +69,7 @@ documents the camp boundary for humans/tools.
 | q_polfront_1_2026-08 | c1 | ACTIVE | yes | — | lab/analysis/c1/q_polfront_1_2026-08/ | — |
 | q_rail_1_2026-07 | c1 | ACTIVE | yes | c1 rail Phases 0–4 CLOSED RESOLVED; ceiling $700 operator-signed | lab/analysis/c1/q_rail_1_2026-07/ | — |
 | research-analyst-mnq-atomic-facts-2026-08-19 | c1 | ACTIVE | yes | Research Analyst inaugural session — MNQ atomic-fact decomposition draft (cross-campaign synthesis, not a new backtest); routing corrected same-day 2026-08-19 (DROP D5 -- already killed twice, ledger-contradicted first GRADUATE call / HOLD temporal-selectivity / DROP weekly-bias) | lab/analysis/c1/research-analyst-mnq-atomic-facts-2026-08-19/ | — |
-| tradeify_book_composition_2026-07-23 | c1 | ACTIVE | yes | eval-lock fix + §2 book-composition re-derivation | lab/analysis/c1/tradeify_book_composition_2026-07-23/ | — |
+| tradeify_book_composition_2026-07-23 | c1 | ACTIVE | yes | eval-lock fix + §2 book-composition re-derivation | lab/analysis/c1/tradeify_book_composition_2026-07-23/ | inputs gitignored |
 | tradeify_eval_lock_correction_2026-07-22 | c1 | ACTIVE | yes | Tradeify/MFFU eval drawdown-lock correction re-MC | lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/ | — |
 | tradeify_fade_stage0_2026-07-30 | c1 | ACTIVE | yes | Stage 0 instrumentation complete; Stage 1 region computed at 1x/2x/4x; no mechanism scored, K=0, $0 spend | lab/analysis/c1/tradeify_fade_stage0_2026-07-30/ | — |
 | tradeify_futures3_bustcut_2026-07-11 | c1 | ACTIVE | yes | Tradeify Select Flex 50K bust-cut Tests 1+2 | lab/analysis/c1/tradeify_futures3_bustcut_2026-07-11/ | — |
@@ -89,8 +91,8 @@ documents the camp boundary for humans/tools.
 |---|---|---|---|---|---|---|
 | d5_nq_intraday_mom_2026-07 | orb | ACTIVE | yes | Baltussen H1 on NQ IS — Stage-2/4 results | lab/analysis/orb/d5_nq_intraday_mom_2026-07/ | — |
 | eodadv_mnq_2026-08 | orb | FALSIFIED | yes | no pre-registered mechanism survives; 15:30 exit stays barred | lab/analysis/orb/eodadv_mnq_2026-08/ | — |
-| orb_mnq_2026-07 | orb | ACTIVE | yes | NAS100-ORB-30 on native MNQ; Stage-2 cost-law PASS then T2 payability FIRED | lab/analysis/orb/orb_mnq_2026-07/ | — |
-| orb_universe_2026-06-22 | orb | ACTIVE | yes | which FXIFY CFD best suits Opening Range Breakout | lab/analysis/orb/orb_universe_2026-06-22/ | — |
+| orb_mnq_2026-07 | orb | ACTIVE | yes | NAS100-ORB-30 on native MNQ; Stage-2 cost-law PASS then T2 payability FIRED | lab/analysis/orb/orb_mnq_2026-07/ | inputs gitignored |
+| orb_universe_2026-06-22 | orb | ACTIVE | yes | which FXIFY CFD best suits Opening Range Breakout | lab/analysis/orb/orb_universe_2026-06-22/ | pkl gitignored |
 | sessconf_mnq_2026-08 | orb | ACTIVE | yes | faithful close_tod session-truncation sweep (MNQ, Tradeify) | lab/analysis/orb/sessconf_mnq_2026-08/ | — |
 
 ### aegis
@@ -99,7 +101,7 @@ documents the camp boundary for humans/tools.
 |---|---|---|---|---|---|---|
 | aegis_6j_prop_reconstruction_2026-07 | aegis | ACTIVE | yes | Stage-1 FALSIFIED (operator accepted); Wave-1 sweep artifacts retained hot | lab/analysis/aegis/aegis_6j_prop_reconstruction_2026-07/ | — |
 | aegis_6j_trail_tradeify_2026-07-29 | aegis | ACTIVE | yes | J4 re-run at true Tradeify Select 100K geometry (Aegis→6J v0.3) | lab/analysis/aegis/aegis_6j_trail_tradeify_2026-07-29/ | — |
-| aegis_6j_transfer_2026-07-05 | aegis | ACTIVE | yes | Bulenox Option-2 trail-survival MC sequence (Aegis→6J v0.3) | lab/analysis/aegis/aegis_6j_transfer_2026-07-05/ | — |
+| aegis_6j_transfer_2026-07-05 | aegis | ACTIVE | yes | Bulenox Option-2 trail-survival MC sequence (Aegis→6J v0.3) | lab/analysis/aegis/aegis_6j_transfer_2026-07-05/ | inputs gitignored |
 
 ### regime
 

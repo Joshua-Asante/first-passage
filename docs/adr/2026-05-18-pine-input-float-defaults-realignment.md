@@ -58,8 +58,8 @@ only outlier.
 
 Adjacent stale tooltips/defaults observed but **not in scope for this ADR**
 (out of v1 manifest tracking — flagged as v2 expansion candidates):
-- `striker_dj30_v4.5.pine:32` `maxDailyDD` default 1.15 vs tooltip "LOCKED: 1.00%"
-- `striker_dj30_v4.5.pine:35` `maxDailyTrades` default 2 vs tooltip "LOCKED: 3"
+- `striker_dj30_v4.5.pine:32` `maxDailyDD` default-vs-tooltip drift (values redacted from the public tree, 2026-08-24, per [`docs/adr/2026-08-14-repo-public-visibility-transition.md`](2026-08-14-repo-public-visibility-transition.md) — see the private operational archive; unlike `riskPerTrade`/pyramid ratio, this field is not mirrored to public tracked source)
+- `striker_dj30_v4.5.pine:35` `maxDailyTrades` default-vs-tooltip drift (values redacted from the public tree, 2026-08-24 — see the private operational archive)
 - `striker_dj30_v4.5.pine:97` `pyramidSize` default 750.0 vs tooltip "LOCKED: 350%"
 - `guardian_gold_v5.5_indicator.pine:40` tooltip says "LOCKED: 0.30%" — stale
   post-2026-04-23 risk relock to 0.34%; default 0.34% is correct.

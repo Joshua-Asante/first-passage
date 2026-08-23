@@ -74,6 +74,8 @@ N-SURV FAIL
 - **Stop rule / re-proposal bar:** **new mechanism evidence** for a Striker-family × MNQ expression (or a fresh Q-TXG-1 election + cell PREREG on a different OPEN cell) — **not** a locked-parameter retune, **not** amending the 3.0% floor, **not** firm-shopping, **not** inventing an ENV-1 panel N.
 - **Board write:** STATE · lab/CATALOG · docs/briefs/INDEX · rejected_candidates · SESSIONS `2026-08-12j` — this pass.
 
+- **Registry:** rejected_candidates.md — ### Striker DJ30 → MNQ sibling-swap (Q-TXG-1 cell #2) — DEAD(N-SURV)
+
 ## §10 audit-hook discharge
 
 ```text

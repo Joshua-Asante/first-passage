@@ -60,6 +60,8 @@ Below the two-incident bar as a standalone lesson. Paired with cell #2's DEAD(N-
 - **Stop rule / re-proposal bar:** **new mechanism evidence** (or a fresh Q-TXG-1 election **after** H_A re-argument + cell PREREG) — **not** a locked-parameter retune, **not** amending `required_net_r` / 3.0% floors, **not** firm-shopping.
 - **Board write:** STATE forward-trigger — Q-TXG-1 dual-dead → H_A re-argument owed before third election; SESSIONS Open/next carries the same.
 
+- **Registry:** rejected_candidates.md — ### Striker NAS100 → MYM sibling-swap (Q-TXG-1 cell #1) — DEAD(cost)
+
 ## §10 audit-hook discharge
 
 ```text

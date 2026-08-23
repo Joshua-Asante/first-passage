@@ -1,9 +1,9 @@
 # Q-MONSURF-1 — Which monitoring surfaces are buildable venue-free now, and on what acceptance evidence? (MONITORING)
 
-**Status:** `OPEN — F2 unblocked (rail retained)` — S1 ADR 2026-08-07 ruled F2 keep-warm; M1 spine retained. M-B Phase-3 logic battery buildable now; live-pointing still gated on M1 `RESOLVED`. Intaken 2026-08-05 (drafted 2026-08-04 by Joshua + claude.ai advisor from the four-tool-stack research report); `check_brief.py --type inquire` PASS (6/6)
+**Status:** `CLOSED-RESOLVED 2026-08-23` — M-B acceptance battery passes (0 missed / 0 spurious, all 312 real historical weeks, mutation-verified); triage written to the board. Closure: [`closures/Q-MONSURF-1-closure-resolved.md`](closures/Q-MONSURF-1-closure-resolved.md).
 **Authored:** 2026-08-04
 **Intaken:** 2026-08-05 (handoff-verify PASS; anchors re-verified at `origin/main` `21e09c8`; DP2-dependency + M1-spine-risk notes added — see Amendment log)
-**Closed:** N/A
+**Closed:** 2026-08-23
 **Authors:** Joshua + claude.ai (advisor); intake + amendment by CC
 **Parent question:** N/A (triage parent; M-B/M-C surfaces open as their own Pre-Qs when their gates unlock)
 **Sub-questions opened:** none yet (**M-B** idle-clock monitor is the limb that matters — venue-conditional; **M-A** shadow observer demoted to optional)
@@ -199,11 +199,11 @@ rg -n "MONSURF.*ruling" docs/notes/ STATE.md
 
 ## Pre-Lock Checklist
 
-- [x] §0 pending reads completed with anchors (re-verified at intake against `21e09c8`; premise confirmed — no monitor exists)
-- [ ] Triage written to the board (Phase 1) — the deliverable, not deferred to closure — **owed, not run at intake**
-- [ ] Simulated-quarter draw + T-2/T-1 lead times + tolerances frozen at §8 — owed, Phase 2
-- [ ] Idle-clock semantics sourced from DP2 verified facts (or the Tradeify-shaped provisional freeze, explicitly labelled) — owed, Phase 2
-- [ ] Zero order-send paths asserted mechanically — owed, Phase 3
-- [ ] Zero hard M1-schema import asserted mechanically (intake addition) — owed, Phase 3
-- [ ] M-A confirmed NOT built (elective; no build without operator election + ruling)
+- [x] §0 pending reads completed with anchors (re-verified at intake against `21e09c8`; premise confirmed — no monitor exists; remaining pending items completed 2026-08-23 at GO, see closure §2)
+- [x] Triage written to the board (Phase 1) — STATE.md "No fixed date / gated" section rewritten, three gate depths — see [`closures/Q-MONSURF-1-closure-resolved.md`](closures/Q-MONSURF-1-closure-resolved.md)
+- [x] Simulated-quarter draw + T-2/T-1 lead times + tolerances frozen at [`pre-registration`](pre-registration/Q-MONSURF-1-verdict-preregistration.md), before Phase 3 ran
+- [x] Idle-clock semantics sourced from the Tradeify-shaped provisional freeze, explicitly labelled (pre-reg §3) — DP2 re-freeze still owed at F3, per Phase 5
+- [x] Zero order-send paths asserted mechanically — see closure §10 audit-hook discharge
+- [x] Zero hard M1-schema import asserted mechanically (intake addition) — see closure §10 audit-hook discharge
+- [x] M-A confirmed NOT built (elective; no build without operator election + ruling) — remains unbuilt, its own build-gate scope ruling still owed
 - [x] Q-ID confirmed unclaimed (checked HEAD + origin/main at intake, 2026-08-05)

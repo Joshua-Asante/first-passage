@@ -48,6 +48,8 @@ Below two-incident bar — watch: PDH/PDL failed-break reclaim now FALSIFIED on 
 - **Stop rule / re-proposal bar:** new mechanism evidence (different reference class / direction / TF), not stop-buffer or overnight-sham retune on this G0.
 - **Board write:** plan §6 P3.3 → FALSIFIED (explore IS); Open/next → Board (slate exhausted).
 
+- **Registry:** rejected_candidates.md — ### MSL-C1 PDH/PDL failed-break reclaim × MYM — FALSIFIED (explore IS)
+
 ## §10 audit-hook discharge
 
 ```text

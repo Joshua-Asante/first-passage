@@ -72,6 +72,8 @@ No new methodology lesson filed.
 - **Stop rule / re-proposal bar:** **new mechanism evidence** for a Guardian-family metals expression (or a different mechanism × MGC cell under a fresh Q-TXG-1 election + cell PREREG) — **not** a locked-parameter retune, **not** a re-read of the AE-approximated score, **not** firm-shopping, **not** amending the 3.0% floor. A genuine bar-derived N-SURV re-run that somehow cleared ≤3.0% on full + both halves would be the only instrumentation path that could challenge this verdict; given the 5.5×–24× margin it is not treated as an open rescue ticket.
 - **Board write:** `docs/pursuits/b8-guardian-mgc-transfer-lane.md` Standing PARK→SUBTRACT · `STATE.md` forward-trigger line · `docs/SESSIONS.md` `2026-08-11z` · `docs/rejected_candidates.md` registry row — this pass.
 
+- **Registry:** rejected_candidates.md — ### Guardian→MGC transfer cell (R7 / b8) — DEAD(N-SURV)
+
 ## §10 audit-hook discharge
 
 ```text

@@ -37,6 +37,8 @@ The pre-committed rule was deliberately the **simplest faithful carry-timing for
 ## Disposition — the fork program is now exhausted on the edge side
 
 - **H-FCCARRY-1 CLOSED**, **K=1 banked** (manifest committed; `discovery_manifests/` count +1). First non-zero carry-construct bank on record for 6E/6J/CL.
+
+- **Registry:** rejected_candidates.md — ### F-C carry-timing (own-carry-sign) × 6E/6J/CL — SCREEN-FAIL (effect absent)
 - **Two of three priced forks fail on edge:** **F-A** (H-ZNAUC-1) died at the Stage-2 **cost-wall** (δ 1bp vs 6–10bp); **F-C** (this) dies at **effect-absence** (Sharpe 0.09). Two distinct null modes. **F-B** (CL EIA) remains formally un-run — lowest priority, and scoping already flagged it as bid-to-cover-style informed-flow + in-session overlap.
 - **Q-BOOKFIT-1's book-*fit* finding stands, undisturbed:** the M-21 risk-geometry projection (F-A ρ 0.512, F-C ρ 0.295) was always "the risk geometry fits," never "edge exists." Both forks confirm the edge side fails — exactly the split the M-21 coordinates keep separate. **No re-open of Q-BOOKFIT** (its RESOLVED verdict was risk-geometry-only).
 - **The breadth lever is empty at current supply.** This is the disposition Q-BOOKFIT §6 anticipated for its downstream: the priced fork inventory does not yield a deployable book-diversifying edge. It **strengthens the decompound-HOLD "no static counterbalance" finding** (extended from sizing → breadth-leg → now the whole priced fork set). The book's remaining levers are **sizing** and **live-data authorization moves**, not breadth from these seeds.
