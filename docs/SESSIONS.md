@@ -15,6 +15,31 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 
 ---
 
+## 2026-08-23f — `MNQFLOW-1-DEPTH` closed out for now: operator disposition `HOLD`
+
+**Focus:** Decision. Operator response to the two P0 aborts, presented with three named forward
+paths: *"HOLD for now. I am not ruling it out but I do not know if it is worth the spend."*
+
+**Shipped:** Recorded verbatim as its own disposition (`HOLD`) rather than rounded to the
+nearest named path — genuinely different from "decline" (no scientific/cost-finality claimed)
+and from "blocked" (a mechanical P0 fact, not a judgment). Updated in place: `PREREG_S2B.md`
+Status block (primary record) + amendment log; `PREREG.md` Status block cross-reference +
+amendment log; `lab/CATALOG.md` one-liner; `STATE.md`'s forward-trigger row; the
+[2026-08-23 supply audit](notes/audits/programme-audit/2026-08-23-deep-lane-supply-audit.md)
+§5 item 1 (third and final update this thread) + Change history. No forced re-test date — the
+lane's own 2026-11-08 slate is the natural next checkpoint, not a deadline invented here.
+
+**Decisions/defects:** none.
+
+**Open/next:** none forced on this thread. The audit's other two named supply routes (free
+MOC-imbalance literature check; blind channel, unsourced 1/3) remain independently available
+and untouched by this HOLD. The lane's own slot-3 decision (deep-iteration charter) is separate
+and still open.
+
+**Live-ops state:** unchanged — rail disarmed; no book. $0 spend total across this entire thread.
+
+---
+
 ## 2026-08-23e — `MNQFLOW-1-DEPTH` S2 redraw ALSO blocked at P0 ($154.73) — structural finding, FM-9 holds
 
 **Focus:** Measurement. Operator elected "redraw the sample" from the three paths named after

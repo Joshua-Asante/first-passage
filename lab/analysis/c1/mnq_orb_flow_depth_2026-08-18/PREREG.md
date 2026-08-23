@@ -1,10 +1,13 @@
 # `MNQFLOW-1-DEPTH` — does ORB-MNQ-1's L1 book-tilt survive at MBP-10 depth?
 
-**Status:** `SIGNED 2026-08-23 — BLOCKED AT P0 (cost ceiling exceeded, no pull run).` Operator
-authorized the pull (§9.1); the frozen $125.00 P0 re-estimate gate (§2.2) then fired on the
-actual 30 selected calendar days' real cost ($148.04 — see §9.2) and aborted before any data
-was read, per this document's own frozen instruction. $0.00 spent. Operator decision owed on
-how to proceed (§9.2's three named paths) — not resolved by this document. MNQFLOW-1's own
+**Status:** `SIGNED 2026-08-23 — BLOCKED AT P0 (cost ceiling exceeded, no pull run); construct
+now HOLD.` Operator authorized the pull (§9.1); the frozen $125.00 P0 re-estimate gate (§2.2)
+then fired on the actual 30 selected calendar days' real cost ($148.04 — see §9.2) and aborted
+before any data was read. A redraw ([`PREREG_S2B.md`](PREREG_S2B.md), the same construct's own
+S2-only sibling) also blocked at P0 ($154.73) — two independent draws reading as a structural
+~$150 true cost, not a $125 one. **Operator disposition: `HOLD`** (2026-08-23, recorded in
+`PREREG_S2B.md`'s own Status block — *"not ruling it out but I do not know if it is worth the
+spend"*), not one of the three named forward paths. $0.00 spent throughout. MNQFLOW-1's own
 stop-rule (`RESULTS.md` L177-180) bars
 re-cutting its frozen L1 design and explicitly lists "**MBP-10 arm**" among the forbidden re-cuts —
 that passage is a **prohibition, not a designation**; it does not name or pre-authorize this
@@ -470,3 +473,11 @@ grep -n "SIGNED / FROZEN: ____" lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PR
   swapping expensive days for cheap ones either), and held to. Operator decision owed; not
   resolved here. `lab/CATALOG.md`, `STATE.md`, and the supply audit's own pointer updated in the
   same commit to correct the "one sign-off away" characterization, now stale.
+
+- **2026-08-23 — Redraw (`PREREG_S2B.md`) also blocked at P0 ($154.73); operator disposition
+  `HOLD`.** The operator elected the redraw path; a second, independent, non-overlapping 30-day
+  sample also failed P0 (23.8% over, worse than this document's own 18.4%). Two draws now read
+  as a structural ~$150 true cost, not a $125 one. Presented with three named paths, the
+  operator held: *"not ruling it out but I do not know if it is worth the spend"* — recorded in
+  `PREREG_S2B.md`'s own Status block, this document's header updated to cross-reference it.
+  `lab/CATALOG.md`, `STATE.md`, and the supply audit corrected a third time.

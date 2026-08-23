@@ -45,7 +45,7 @@ documents the camp boundary for humans/tools.
 | geofit_skewed_family_construction_2026-08-15 | c1 | ACTIVE | yes | scoping construction, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_skew_probe_2026-07-25/REA... | lab/analysis/c1/geofit_skewed_family_construction_2026-08-15/ | — |
 | mnq_event_ceiling_2026-08-04 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_event_ceiling_2026-08-04/ | — |
 | mnq_ofchan_routeb_2026-08 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_ofchan_routeb_2026-08/ | — |
-| mnq_orb_flow_depth_2026-08-18 | c1 | ACTIVE | yes | SIGNED 2026-08-23, BLOCKED AT P0 TWICE (original $148.04, redraw S2B $154.73, both vs $125.00 ceiling) — structural finding, true cost ~$150 not $125; no pull run either time, $0 spent; FM-9 bars a third redraw, operator decision owed (raise ceiling ~$160-175 / smaller N / decline) | lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/ | — |
+| mnq_orb_flow_depth_2026-08-18 | c1 | ACTIVE | yes | HOLD 2026-08-23 (operator) — blocked at P0 twice (original $148.04, redraw S2B $154.73, both vs $125.00 ceiling; structural ~$150 true cost); "not ruling it out but I do not know if it is worth the spend"; no pull run, $0 spent | lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/ | — |
 | mnq_orb_flow_substrate_2026-08-05 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/ | — |
 | mnq_orb_level_proximity_tod_2026-08-06 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_orb_level_proximity_tod_2026-08-06/ | — |
 | mnq_r2agrun_routeb_2026-08 | c1 | HOLD | yes | `AMBIGUOUS-HOLD` — empty candidate list (magnitude floor; G3 → **ITERATE**, not promote). | lab/analysis/c1/mnq_r2agrun_routeb_2026-08/ | — |

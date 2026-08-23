@@ -182,8 +182,13 @@ process questions (Q1–Q7) came back clean.
    third resample follows automatically — the operator decision is now: raise the ceiling to
    ≈$160–175 (informed by two real draws, not one extrapolated day), pre-register a smaller N
    (e.g. 20 of 255, ≈$100–103 at the measured pooled rate), or fall back to the two remaining
-   named routes (free MOC-imbalance literature check; blind channel). Owner: operator. Standing
-   until decided or 2026-11-08.
+   named routes (free MOC-imbalance literature check; blind channel). **Operator disposition,
+   2026-08-23 (elects none of the above): `HOLD`** — *"I am not ruling it out but I do not know
+   if it is worth the spend."* No forced re-test date; owner remains operator, naturally
+   revisited at 2026-11-08 alongside the lane's own broader supply question, or sooner at the
+   operator's own initiative. The two remaining named supply routes (free MOC-imbalance
+   literature check; blind channel, unsourced) are unaffected and remain independently
+   available regardless of this HOLD.
 2. **Free literature check (bounded):** one pass for a published, citable MOC-imbalance cohort δ
    (the auction limb's own recorded cheapest re-open). Owner: any future research session;
    bounded to citation-search only, no procurement. No date — opportunistic.
@@ -218,3 +223,4 @@ git log --oneline --since=2026-08-23 -- docs/adr/2026-08-16-deep-iteration-lane-
 | 2026-08-23 | Audit authored; §4(c) report duty discharged early on operator instruction ("run the supply-side audit"); verdict `AMBIGUOUS` with named supply-event re-test conditions; slot-3 hold recommended | Claude Code |
 | 2026-08-23 | §5 item 1 updated same day: operator signed `MNQFLOW-1-DEPTH`; its own P0 cost gate fired ($148.04 actual vs $125.00 ceiling, 18.4% over) — blocked, $0 spent, no pull. The audit's "one sign-off away" characterization corrected as stale. Verdict/§3.5 census unchanged — this is a downstream event on the named lead, not a revision of the process findings | Claude Code |
 | 2026-08-23 | §5 item 1 updated again, same day: operator elected the redraw path; a second independent 30-day sample (`PREREG_S2B.md`) also blocked at P0 ($154.73 vs $125.00, 23.8% over). Two draws now read as a structural cost finding (~$150 true cost, not $125), not an unlucky sample. FM-9 (pre-committed on the redraw) bars a third automatic resample. Verdict/§3.5 census still unchanged | Claude Code |
+| 2026-08-23 | §5 item 1 closed out for now: operator disposition `HOLD` ("not ruling it out but I do not know if it is worth the spend"), electing none of the three named paths. No re-test date forced; the audit's other two named routes (free MOC-imbalance check; blind channel) stand unaffected. Verdict/§3.5 census still unchanged | Claude Code |

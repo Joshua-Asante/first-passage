@@ -1,10 +1,17 @@
 # `MNQFLOW-1-DEPTH` — S2 redraw (`S2B`), after the original sample's P0 abort
 
-**Status:** `SIGNED 2026-08-23 — BLOCKED AT P0, SECOND CONSECUTIVE ABORT (no pull run).` §9.1
-signed; §2.2's P0 re-estimate on these 30 dates came back **$154.7320**, again over the
-$125.00 ceiling (see §9.2). Per this document's own pre-committed FM-9, **no third redraw
-follows automatically** — reported to the operator as a structural finding (§9.2), not
-resolved here. $0.00 spent. Redraw only, not a new construct. Inherits `H`, S1,
+**Status:** `HOLD 2026-08-23 (operator) — value-uncertain, not cost-blocked.` §9.1 signed;
+§2.2's P0 re-estimate on these 30 dates came back **$154.7320**, over the $125.00 ceiling (see
+§9.2) — a structural finding, not a resolved credit question (two independent draws both land
+18–24% over; the true cost is nearer $150). Presented with three named paths (raise the
+ceiling / smaller-N pre-registration / decline), the operator elected **none of them**: *"I am
+not ruling it out but I do not know if it is worth the spend."* Recorded verbatim, not
+rounded to the nearest named path — this is a genuine fourth disposition (HOLD), not a
+soft decline. No forced re-test date; naturally revisited at the 2026-11-08 slate the
+deep-iteration lane's own supply question already rides, or sooner at the operator's own
+initiative (e.g. if the Avenue-A credit's real balance is confirmed, or the lane's own
+slot-3 decision makes this construct's value case sharper). $0.00 spent, both samples
+combined. Redraw only, not a new construct. Inherits `H`, S1,
 S3, S3', S4, S5, S6, S7, S8, and §§5–8 of [`PREREG.md`](PREREG.md) **verbatim, unedited** — that
 document stays frozen byte-for-byte (Trap #12); this is a sibling artifact, not an amendment.
 The **only** thing this document freezes fresh is a **replacement S2** (the 30-of-255 event
@@ -199,6 +206,10 @@ open):**
 4. **Decline** — mark the route dead on cost at this instrument's current activity level, not on
    any scientific finding. Zero effect on `MNQFLOW-1`'s own `RESOLVED` L1 verdict (FM-4b).
 
+**Operator disposition, 2026-08-23 (elects none of the four above): `HOLD` — see the Status
+block.** Not a fifth named path so much as a decision *not* to choose among the four yet,
+recorded as its own state rather than forced into the nearest one.
+
 $0.00 actual spend throughout, both samples combined. K_intrinsic unaffected (still 0).
 
 ## §10 — Audit hooks
@@ -235,3 +246,7 @@ grep -n "SIGNED / FROZEN: ____" lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PR
   ($148.0357, 18.4% over). Two independent draws now point at the same structural conclusion
   (true cost ≈$150, not the $125 credit). FM-9 held: no third redraw. Reported to the operator
   with four named forward paths, none elected.
+- **2026-08-23 — Operator disposition: `HOLD`.** *"I am not ruling it out but I do not know if
+  it is worth the spend."* None of the four named paths elected; recorded as its own state, not
+  rounded to "decline." No forced re-test date. Status block updated in place (this is the
+  document's own live status field, not frozen §§1–9 body text).
