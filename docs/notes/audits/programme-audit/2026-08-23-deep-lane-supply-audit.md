@@ -167,11 +167,18 @@ process questions (Q1–Q7) came back clean.
 
 ## §5 — Spawned follow-ups
 
-1. **Operator decision item (primary):** the `MNQFLOW-1-DEPTH` sign-off is now the single
-   cheapest supply-unlocking action estate-wide (≤$125, K=0, frozen prereg already written,
-   named route-2 successor by two independent exhaustion rulings). This audit does not authorize
-   it — it names it as the highest-information-per-dollar next decision. Owner: operator.
-   Standing until decided or 2026-11-08.
+1. **Operator decision item (primary) — UPDATED 2026-08-23, same day, post-audit.** The
+   operator signed off on `MNQFLOW-1-DEPTH` same day this audit landed. Its own P0 cost gate
+   then fired: the frozen 30-day sample's actual cost is $148.04 against the $125.00 ceiling
+   (18.4% over) — blocked, $0 spent, no pull ran ([§9.2](../../../../lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PREREG.md)).
+   This audit's own characterization of that route as "≤$125, one sign-off away" is **stale as
+   of the same day it was written** — left uncorrected above per this note's own dated-record
+   convention (Trap #12-adjacent: audit findings are dated snapshots, not living text), corrected
+   here instead. The operator decision is now sharper, not resolved: raise the ceiling (confirm
+   the credit itself extends past $125 first), redraw S2 under a fresh pre-registration (this
+   sample is cost-contaminated, not resamplable in place), or fall back to the two remaining
+   named routes (free MOC-imbalance literature check; blind channel). Owner: operator. Standing
+   until decided or 2026-11-08.
 2. **Free literature check (bounded):** one pass for a published, citable MOC-imbalance cohort δ
    (the auction limb's own recorded cheapest re-open). Owner: any future research session;
    bounded to citation-search only, no procurement. No date — opportunistic.
@@ -204,3 +211,4 @@ git log --oneline --since=2026-08-23 -- docs/adr/2026-08-16-deep-iteration-lane-
 | Date | Change | By |
 |---|---|---|
 | 2026-08-23 | Audit authored; §4(c) report duty discharged early on operator instruction ("run the supply-side audit"); verdict `AMBIGUOUS` with named supply-event re-test conditions; slot-3 hold recommended | Claude Code |
+| 2026-08-23 | §5 item 1 updated same day: operator signed `MNQFLOW-1-DEPTH`; its own P0 cost gate fired ($148.04 actual vs $125.00 ceiling, 18.4% over) — blocked, $0 spent, no pull. The audit's "one sign-off away" characterization corrected as stale. Verdict/§3.5 census unchanged — this is a downstream event on the named lead, not a revision of the process findings | Claude Code |

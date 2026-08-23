@@ -45,7 +45,7 @@ documents the camp boundary for humans/tools.
 | geofit_skewed_family_construction_2026-08-15 | c1 | ACTIVE | yes | scoping construction, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_skew_probe_2026-07-25/REA... | lab/analysis/c1/geofit_skewed_family_construction_2026-08-15/ | — |
 | mnq_event_ceiling_2026-08-04 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_event_ceiling_2026-08-04/ | — |
 | mnq_ofchan_routeb_2026-08 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_ofchan_routeb_2026-08/ | — |
-| mnq_orb_flow_depth_2026-08-18 | c1 | ACTIVE | yes | FROZEN, pull not authorized — MBP-10 depth escalation on ORB-MNQ-1/N14, fresh authorization per MNQFLOW-1's own FM-4 | lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/ | — |
+| mnq_orb_flow_depth_2026-08-18 | c1 | ACTIVE | yes | SIGNED 2026-08-23, BLOCKED AT P0 — actual 30-day cost $148.04 exceeds the frozen $125.00 ceiling; no pull run, $0 spent; operator decision owed (raise ceiling / fresh S2 sample / decline) | lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/ | — |
 | mnq_orb_flow_substrate_2026-08-05 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/ | — |
 | mnq_orb_level_proximity_tod_2026-08-06 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_orb_level_proximity_tod_2026-08-06/ | — |
 | mnq_r2agrun_routeb_2026-08 | c1 | HOLD | yes | `AMBIGUOUS-HOLD` — empty candidate list (magnitude floor; G3 → **ITERATE**, not promote). | lab/analysis/c1/mnq_r2agrun_routeb_2026-08/ | — |

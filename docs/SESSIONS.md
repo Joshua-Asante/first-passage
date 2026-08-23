@@ -15,6 +15,35 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 
 ---
 
+## 2026-08-23d — `MNQFLOW-1-DEPTH` signed, then BLOCKED AT P0 — actual cost $148.04 vs $125.00 ceiling
+
+**Focus:** Measurement. Operator authorized the pull the supply audit named; executed the
+frozen protocol order (§9 sign-off -> P0 cost gate) rather than pulling straight through.
+
+**Shipped:** Recovered `build_events.py` read-only from its pre-prune commit (`283d1de^`,
+documented Great-Prune recovery path) to reconstruct MNQFLOW-1's exact 255-trigger
+chronological list (elementwise-verified against `orb_lib.orb_backtest`'s own output, not
+guessed); applied the frozen S2 systematic-sampling formula (`round(i x 254/29)`, i=0..29) to
+get the exact 30 calendar dates; ran the mandatory P0 re-estimate on each. **Total $148.0357
+against the $125.00 ceiling — 18.4% over. ABORT per the prereg's own frozen instruction. $0
+spent, no pull ran.** Recorded in [`PREREG.md` §9.1/§9.2](../lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PREREG.md)
+(the one mutable field in an otherwise-frozen document); `lab/CATALOG.md`, `STATE.md`, and the
+[2026-08-23 supply audit](notes/audits/programme-audit/2026-08-23-deep-lane-supply-audit.md)
+(§5 item 1 + Change history) corrected — its "one sign-off away" framing was stale within
+hours of being written.
+
+**Decisions/defects:** none — FM-5 (no cherry-picking/resizing the sample once costs are seen)
+held; no forbidden move taken in response to the abort.
+
+**Open/next:** operator decision, sharper than before the audit named it: raise the ceiling
+(confirm the Avenue-A credit itself extends past $125 first), redraw S2 under a fresh
+pre-registration (this sample is cost-contaminated, not resamplable in place), or fall back to
+the audit's other two named routes (free MOC-imbalance literature check; blind channel).
+
+**Live-ops state:** unchanged — rail disarmed; no book. $0 spend (all estimate calls; no pull billed).
+
+---
+
 ## 2026-08-23c — Deep-lane §4(c) supply-side audit: `AMBIGUOUS`, slot 3 held on a supply event
 
 **Focus:** Decision. Operator brought the tripped §4(c) audit-report duty forward; ran it as a
