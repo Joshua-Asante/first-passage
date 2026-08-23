@@ -14,6 +14,149 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23k — Tradable-anomalies T4 plan (PENDING GO)
+
+**Focus:** Hygiene. Campaign plan 8c — last file in this campaign.
+
+**Shipped:** [`2026-08-23-tradable-anomalies-t4-implementation.md`](superpowers/plans/2026-08-23-tradable-anomalies-t4-implementation.md).
+
+**Decisions/defects:** none. Header is PENDING OPERATOR GO and fill-gated. No state writer unless a later GO names it.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring (`docs/briefs/rnd-pipeline/2026-08-22-cc-handoff-dl2-m6a-step2-train-scoring.md`). Campaign plans #1–8 are authored; **execution** of executable plans (#1 venue-binding, #2 W5, #3 grow leftovers, #4 substrate P6, #5 Call-4, #6 disaster-stop Phase 0) is a later worker. #7/#8 stay PENDING GO.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+## 2026-08-23j — Tradable-anomalies T3 plan (PENDING GO)
+
+**Focus:** Hygiene. Campaign plan 8b.
+
+**Shipped:** [`2026-08-23-tradable-anomalies-t3-implementation.md`](superpowers/plans/2026-08-23-tradable-anomalies-t3-implementation.md).
+
+**Decisions/defects:** none. Header is PENDING OPERATOR GO. Prefer T2 first.
+
+**Open / next:** carry 2026-08-23i / 2026-08-22r. Campaign next: tradable-anomalies T4.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+## 2026-08-23i — Tradable-anomalies T2 plan (PENDING GO)
+
+**Focus:** Hygiene. Campaign plan 8a.
+
+**Shipped:** [`2026-08-23-tradable-anomalies-t2-implementation.md`](superpowers/plans/2026-08-23-tradable-anomalies-t2-implementation.md).
+
+**Decisions/defects:** none. Header is PENDING OPERATOR GO. Does not restore `guardian_signal.py`.
+
+**Open / next:** carry 2026-08-23h / 2026-08-22r. Campaign next: tradable-anomalies T3 then T4.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+## 2026-08-23h — Coldstore Phase C plan (PENDING GO)
+
+**Focus:** Hygiene. Campaign plan 7b.
+
+**Shipped:** [`2026-08-23-coldstore-phase-c-implementation.md`](superpowers/plans/2026-08-23-coldstore-phase-c-implementation.md).
+
+**Decisions/defects:** none. Header is PENDING OPERATOR GO plus a fresh admitting ADR — this commit is not that ADR.
+
+**Open / next:** carry 2026-08-23g / 2026-08-22r. Campaign next: tradable-anomalies T2–T4 (PENDING GO).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+## 2026-08-23g — Coldstore Phase B plan (PENDING GO)
+
+**Focus:** Hygiene. Campaign plan 7a.
+
+**Shipped:** [`2026-08-23-coldstore-phase-b-implementation.md`](superpowers/plans/2026-08-23-coldstore-phase-b-implementation.md).
+
+**Decisions/defects:** none. Header is PENDING OPERATOR GO — this commit is not a GO.
+
+**Open / next:** carry 2026-08-23f / 2026-08-22r. Campaign next: coldstore Phase C plan (PENDING GO).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+## 2026-08-23f — Disaster-stop Phase 0 then 1 plan
+
+**Focus:** Hygiene. Campaign plan 6.
+
+**Shipped:** [`2026-08-23-disaster-stop-phase-0-1-implementation.md`](superpowers/plans/2026-08-23-disaster-stop-phase-0-1-implementation.md).
+
+**Decisions/defects:** none. Phase 0 is operator-attended; no `sl=` until a recorded 0a PASS. No `dry_run=false`.
+
+**Open / next:** carry 2026-08-23e / 2026-08-22r. Campaign next: coldstore Phase B then C (PENDING GO).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+## 2026-08-23e — Call-4 beta-cohesion diagnostic plan
+
+**Focus:** Hygiene. Campaign plan 5.
+
+**Shipped:** [`2026-08-23-call4-beta-cohesion-implementation.md`](superpowers/plans/2026-08-23-call4-beta-cohesion-implementation.md).
+
+**Decisions/defects:** none. Diagnostic only; no live-fill Call-1 σ-source.
+
+**Open / next:** carry 2026-08-23d / 2026-08-22r. Campaign next: disaster-stop Phase 0 then 1 plan.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+## 2026-08-23d — Substrate Phase 6 docs implementation plan
+
+**Focus:** Hygiene. Campaign plan 4.
+
+**Shipped:** [`2026-08-23-substrate-phase-6-implementation.md`](superpowers/plans/2026-08-23-substrate-phase-6-implementation.md).
+
+**Decisions/defects:** none. Destroy-copy stays operator confirm.
+
+**Open / next:** carry 2026-08-23c / 2026-08-22r. Campaign next: Call-4 beta-cohesion plan.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+## 2026-08-23c — Grow-lane leftovers implementation plan
+
+**Focus:** Hygiene. Campaign plan 3.
+
+**Shipped:** [`2026-08-23-grow-lane-leftovers-implementation.md`](superpowers/plans/2026-08-23-grow-lane-leftovers-implementation.md).
+
+**Decisions/defects:** none. GROW-0 skipped (plan already exists).
+
+**Open / next:** carry 2026-08-23b. Campaign next: substrate Phase 6 plan.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+## 2026-08-23b — W5 CI-from-gates.yml implementation plan
+
+**Focus:** Hygiene. Campaign plan 2.
+
+**Shipped:** [`2026-08-23-w5-ci-from-gates-yml-implementation.md`](superpowers/plans/2026-08-23-w5-ci-from-gates-yml-implementation.md).
+
+**Decisions/defects:** none. `--tier check` is the CI battery; `pursuit-records` named exception.
+
+**Open / next:** carry 2026-08-23a / 2026-08-22r. Campaign next: grow-lane leftovers plan.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+## 2026-08-23a — Venue-binding Phase 1–3 implementation plan
+
+**Focus:** Hygiene. Campaign of worker-executable plans for Accepted-but-owed ADR limbs; first file only.
+
+**Shipped:** [`2026-08-23-venue-binding-registry-implementation.md`](superpowers/plans/2026-08-23-venue-binding-registry-implementation.md). Does **not** create `ops/venue_editions/`.
+
+**Decisions/defects:** none. T1 stays acknowledged; plan forbids rewriting S1.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: W5 CI-from-`gates.yml` plan. Carry 2026-08-22q — disaster-stop Phase 0; venue-binding Phase 1 *execution*; W1 remaining three.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 
 ## 2026-08-22r — DL-2 (M6A × prior-session-breakout-continuation) sourced, prereg frozen, step 1 landed
 
