@@ -40,15 +40,20 @@ Severity model (mirrors validate_params.py's HARD/WARN tiers):
                   failure mode, SKILL.md trap #1), or a soft nudge fires
                   (e.g. §6 has no binary-verdict keyword).
 
-Type → required-section sets (from SKILL.md "Brief type selection" + the two
-discipline stacks):
-  adr / brief   — §0, §1, §4, §5, §6, §10   (the six general checks)
+Type → required-section sets (SKILL.md type × check matrix, 2026-08-23):
+  adr / brief   — §0, §1, §4, §5, §6, §10   (inquire / full ADR)
   handoff       — §0, §1, §4, §5, §6, §10   plus §0.5 and the §6 status taxonomy
   generic       — same as adr/brief; used when --type is omitted and inference
                   finds no stronger signal. Header `**Loop:** Inquire-…` /
                   `**Type:** Inquire-…` wins over body §0.5 / spawn-taxonomy
                   sniffing (those sections are copied into CC-handoff-ready
                   Inquire briefs and are not a `--type handoff` signal).
+  lock/notice/lesson/audit — NOT CHECKED (type-owned templates; this subset
+                  does not model their section contracts).
+  light ADR     — NOT CHECKED (`**Tier:** light`; Decision/Grounds/Reads/Gate/
+                  Boundary). Header fields still go through check_adr_graph.py.
+  closure       — not modeled here; `--type closure` delegates to
+                  scripts/check_closure_disposition.py.
 
 Relationship to the skill-side checker (CANONICAL):
   The authoritative brief-discipline checker is skill-side —
@@ -227,8 +232,12 @@ def is_light_tier(text: str) -> bool:
     return bool(_LIGHT_TIER_RE.search(_header_block(text)))
 
 
+# Closure is accepted so a copied `--type closure` does not argparse-die;
+# main() delegates to check_closure_disposition.py and does not run §0–§10.
+_CLOSURE_DELEGATE_TYPE = "closure"
+
 # Every value the CLI / callers may pass.
-ACCEPTED_TYPES = _INTERNAL_TYPES + tuple(_TYPE_ALIASES)
+ACCEPTED_TYPES = _INTERNAL_TYPES + tuple(_TYPE_ALIASES) + (_CLOSURE_DELEGATE_TYPE,)
 
 
 def _normalize_type(brief_type: str) -> str:
@@ -558,6 +567,8 @@ def check_brief(text: str, brief_type: str) -> list[Violation]:
     'cc_handoff'); skill-side names are normalized to the closest internal type
     so a doc-copied invocation behaves consistently."""
     requested = brief_type
+    if requested == _CLOSURE_DELEGATE_TYPE:
+        return []
     brief_type = _normalize_type(brief_type)
     sections = split_sections(text)
     violations: list[Violation] = []
@@ -605,9 +616,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("brief", type=Path, help="path to the brief markdown file")
     parser.add_argument("--type", choices=list(ACCEPTED_TYPES),
                         default=None, metavar="TYPE",
-                        help="brief type: internal {adr,brief,handoff,generic} or a "
-                             "skill-side name {cc_handoff,inquire,lock,notice,lesson,"
-                             "audit} (mapped to the closest internal type). "
+                        help="Modeled: adr, brief, handoff, generic, inquire, "
+                             "cc_handoff. Unmodeled (NOT CHECKED): lock, notice, "
+                             "lesson, audit, and any **Tier:** light record. "
+                             "closure delegates to check_closure_disposition.py. "
                              "Default: infer from header Loop/Type, then "
                              "filename/content.")
     args = parser.parse_args(argv)
@@ -622,6 +634,14 @@ def main(argv: list[str] | None = None) -> int:
     text = args.brief.read_text(encoding="utf-8", errors="replace")
     requested = args.type or infer_type(args.brief, text)
     brief_type = _normalize_type(requested)
+    if requested == _CLOSURE_DELEGATE_TYPE:
+        print("note: closure records are gated by "
+              "scripts/check_closure_disposition.py, not this subset.",
+              file=sys.stderr)
+        print(f"check_brief: {args.brief}  (type=closure)")
+        print("RESULT: DELEGATED — run: "
+              f"python scripts/check_closure_disposition.py {args.brief}")
+        return 0
     if is_light_tier(text):
         print("note: light-tier decision record (ADR 2026-08-08-adr-ceremony-tiering) "
               "— the numbered-section contract does not apply; no checks were run.",
@@ -633,13 +653,12 @@ def main(argv: list[str] | None = None) -> int:
     if requested in _UNMODELED_CONTRACT_TYPES:
         print(f"note: '{requested}' has a per-type section contract this repo-side "
               f"subset does NOT model, so NO checks were run. This is not a pass "
-              f"and not a failure. Run the canonical skill-side checker: "
-              f"~/.claude/skills/brief-authoring/scripts/check_brief.py "
-              f"--type {requested} <file>",
+              f"and not a failure. Fill the type template under "
+              f".claude/skills/brief-authoring/references/.",
               file=sys.stderr)
         print(f"check_brief: {args.brief}  (type={requested})")
         print(f"RESULT: NOT CHECKED — '{requested}' contract not modeled "
-              f"in the repo-side subset; use the skill-side checker")
+              f"in this subset; fill the type template")
         return 0
     if requested in SKILL_ONLY_TYPES:
         print(f"note: '{requested}' is a skill-side brief type; this repo-side "

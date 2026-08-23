@@ -150,9 +150,9 @@ python scripts/<analysis_script>.py --reproduce-q-x
 ## Verification
 
 ```bash
-# Discipline checks (mechanical)
-$ python /path/to/brief-authoring/scripts/check_brief.py <this-file>.md --type inquire
-# Expected: all 6 checks PASS (plus checks 7–10 if this is a CC handoff)
+# Discipline checks (mechanical) — inquire
+$ python scripts/check_brief.py <this-file>.md --type inquire
+# Expected: RESULT: well-formed  (applicable mechanical checks for this type)
 
 # Production-source verification (Rule 0 confirmation)
 $ <grep / cat / git log commands that confirm §0 anchors>

@@ -7,7 +7,7 @@
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Authors:** Joshua (operator GO) + Cursor (SDD Task 1 recorder)
-**Related:** [`2026-08-03-claude-md-futures-refocus.md`](2026-08-03-claude-md-futures-refocus.md) §7 (CFD code retirement scoped, not executed — that work is Phase C, not this ADR) · [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) (Striker stays `AUTHORIZED · MECHANISM @ 1.00×`; venue-fit ≠ decay) · design [`docs/superpowers/specs/2026-08-04-strategy-coldstore-retirement-design.md`](../superpowers/specs/2026-08-04-strategy-coldstore-retirement-design.md) · plan [`docs/superpowers/plans/2026-08-04-strategy-coldstore-phase-a.md`](../superpowers/plans/2026-08-04-strategy-coldstore-phase-a.md)
+**Related:** [`2026-08-03-claude-md-futures-refocus.md`](2026-08-03-claude-md-futures-refocus.md) §7 (CFD code retirement scoped, not executed — that work is Phase C, not this ADR) · [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) (Striker stays `AUTHORIZED · MECHANISM @ 1.00×`; venue-fit ≠ decay) · design `docs/superpowers/specs/2026-08-04-strategy-coldstore-retirement-design.md` (pruned; 2026-08-23 retrieve `BLOCKED` — [note](../notes/2026-08-23-coldstore-phase-b-prego-blocked.md)) · plan [`docs/superpowers/plans/2026-08-04-strategy-coldstore-phase-a.md`](../superpowers/plans/2026-08-04-strategy-coldstore-phase-a.md)
 **Layer:** strategy surface (filesystem + discoverability). **No** `BASE_RISK`, lifecycle, `LEG_MAP`, or Pine-parameter edit.
 
 ---
@@ -215,3 +215,4 @@ git log -1 --oneline -- core/dd_protection.py core/lifecycle.py ops/c1_rail/c1_s
 | Date | Change | By |
 |---|---|---|
 | 2026-08-04 | Initial authoring — Phase A admitting ADR (`Accepted`) | Joshua + Cursor SDD Task 1 |
+| 2026-08-23 | Phase B pre-GO retrieve of the pruned design **failed** on this public clone ([note](../notes/2026-08-23-coldstore-phase-b-prego-blocked.md)). No GO packet. Approach 3 not invented. B/C still separately GO’d. | Cursor Cloud Agent |

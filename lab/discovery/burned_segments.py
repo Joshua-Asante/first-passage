@@ -16,13 +16,11 @@ count every recorded read regardless of which channel (deep-lane, CON-class,
 or otherwise) originated it, per the ADR's own correction that this ledger is
 already cross-channel in practice.
 
-Standalone checker only -- NOT yet wired into register_search.open_run (named
-forward work, docs/adr/2026-08-22-grow-lane-build-authorization.md section
-2.2). A campaign author calls this by hand at prereg-authoring time until the
-wiring lands; an unlisted window is neither burned nor clean -- callers must
-not read absence as "safe". Section 2.2(iv)'s own disclosure obligation is
-likewise enforced by human review at prereg time, not by an automated gate,
-until that same wiring lands.
+Wired into ``register_search.open_run`` for ``--lane deep``: overlap refuses
+with no manifest write; every deep open records ``consultation_count`` /
+``consultation_history`` (charter §2.2(iv), disclosure-only — the count is
+never a refuse). An unlisted window is neither burned nor clean — callers
+must not read absence as "safe". Other lanes stay disclosure-optional.
 """
 from __future__ import annotations
 
