@@ -368,6 +368,8 @@ Use-count only, so the §4 trigger schedule stays evaluable.
 
 No transcript is stored in-repo (reasoning-channel dump; sanitization bar). The notice holds the objection table.
 
+- **Use 3** (2026-08-23, this row): sanitized MSL WHO-sourcing-methodology critique, sent under §2 base scope (adversarial lens on the WHO-track sweep + Req 1a admission bar, not the bounded-extension candidate-generation carve-out). Reconciliation owner: [`N-2026-08-23-ox-alpha-msl-who-sourcing-methodology-review.md`](../notes/notice/N-2026-08-23-ox-alpha-msl-who-sourcing-methodology-review.md). Every objection concrete enough to name a specific already-tried mechanism (macro-print-on-index, index-roll/reconstitution, gamma-sign-from-OI, crude margin-call substitution) did **not** survive reconciliation — each was already tested and killed internally, several on sharper grounds than the objection assumed. Five more abstract/methodological threads (SPAN+COT-signed liquidation cascades, compelled-abstention mechanisms, an impact-persistence reframing of the size screen, bounded-duration-compulsion as a payoff-shape selection heuristic, a pre-G0 rule-feasibility Monte-Carlo simulator) remain open and unrefuted. Revert trigger (b) (three consecutive zero-value uses) does not tick — real objections survived.
+
 **Concurrent-session note (added at merge, 2026-08-23):** this "Use N" ledger and the second
 addendum above were authored independently by separate sessions with no cross-visibility until
 merge. This session made additional sanitized ox-alpha sends today under both the original §2
