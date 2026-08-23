@@ -1,17 +1,32 @@
 # Session Log
 
-Chronological progress log, **newest first**. One entry per working session. Each entry
+Chronological progress log, **newest first**. Each entry
 **links out** to the detailed artifacts (ADRs, notices, briefs, commits) rather than
 duplicating them. Complements `MEMORY.md` (durable atomic facts, recalled by relevance);
 this file is the narrative timeline you can scan top-to-bottom.
 
+**A full entry is written only for a session that made a real judgment call** — a
+choice among options, a decision that changes scope/priority/risk, a measurement
+result that resolves something open. Mechanical output (a plan authored to an
+already-decided spec, code shipped with no branching decision, routine hygiene) does
+not earn a full entry even if it produced a commit — that's already recoverable from
+`git log`. *(Judgment-gate added 2026-08-23, replacing the looser "skip Hygiene-only"
+rule; entry-class origin below is unchanged.)*
+
 **Entry classes (W5 direction):** Decision / Build / Measurement / Hygiene — prefer
 links; keep prose beyond the five fields ≤ **~40 words** where possible
-([`W5 ADR`](adr/2026-08-07-w5-governance-diet.md)). Skip Hygiene-only turns.
+([`W5 ADR`](adr/2026-08-07-w5-governance-diet.md)).
 
-Next session opens by reading the top entry's **Open / next**.
+**Open / next never goes stale between full entries.** Next session opens by reading
+the top entry's **Open / next**. If a no-judgment-call session changes what's open/next,
+write a new **stub entry** — heading + `Open / next` line only, skip the other four
+fields — instead of editing the old top entry. `scripts/roll_sessions.py`'s
+`sessions-append-only` gate hard-fails any edit to an already-merged entry (its own
+message: "edit Open/next on the NEW top entry, not this one") — a stub is the
+gate-compatible way to keep the pointer current without a full entry.
 
-Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
+Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing
+any entry, full or stub (a-first; bare claims `a`).
 
 ---
 ## 2026-08-23l — Venue-binding Phase 1–3 registry landed

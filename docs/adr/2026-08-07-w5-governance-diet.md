@@ -119,3 +119,7 @@ Both gates detect **dead links** in root orientation docs. Their `staged_regex` 
 ## Addendum 2026-08-21 — `make validate` is not `make check`
 
 **Does not amend §2's no-gate-dropped land, §4, or §5.** §2 item 4's "equivalent behavior" sentence over-claims. Production `scripts/gate_manifest.py::select_gates` @ `91e6caa` (2026-08-15): `--tier validate` / `make validate` runs `data-manifests` + `pine-manifest` only; `--tier check` / `make check` runs every `always` + `path-conditional` gate (plus forced `data-manifests`). CLAUDE.md already points at the runner. Deriving CI jobs from `gates.yml` remains owed and is **not** this addendum.
+
+## Addendum 2026-08-23 — SESSIONS class D tightened to a judgment-call gate
+
+**Does not amend §2's class table.** `docs/SESSIONS.md`'s own header now gates a *full* entry on a real judgment call rather than "skip Hygiene-only"; a no-judgment session that still needs to update Open/next writes a stub entry (heading + Open/next only, gate-compatible with `sessions-append-only`) instead of a full one — see the SESSIONS.md header for the rule.
