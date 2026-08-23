@@ -152,4 +152,15 @@ git log -1 --format='%h %cs' -- STATE.md                    # expected 74ef32c 2
 
 | Date | Change | By |
 |---|---|---|
+| 2026-08-23 | Addendum: MEMORY assistive-only; Rule 7 owner demoted | Joshua + Cursor |
 | 2026-06-30 | Initial authoring + execution (STATE.md 4→2 roles; §7 charter amended) | Joshua + Claude Code |
+
+## Addendum 2026-08-23 — MEMORY is assistive-only, not the Rule 7 owner
+
+**Does not amend** the 4→2 STATE reduction, the two kept register sections, or §3 / §5 (“do not fold STATE into MEMORY”; “do not revive delete-STATE”). **$0 / K=0.** Limb 4 (doctrine): the Rule 7 owner-table row.
+
+**Rule 0 (this addendum):** `docs/operational_rules.md` §7 owner table @ `e159743` (2026-08-22) — row still read `| Durable atomic facts (by relevance) | MEMORY.md + memory files |`. Cheap falsifier (plan Task 1): repo-root `MEMORY.md` absent; SESSIONS header still named MEMORY as the complementary atom store.
+
+**Decision:** Durable atoms that bind future work are owned by the ADR / methodology-lesson that already holds them. Claude-project `MEMORY.md` is assistive-only (outside the clone). A MEMORY paste is not a Rule 0 read and is not a sub-rule 8/10 attestation.
+
+**Boundary:** Do not copy the Claude project memory directory into this public tree (Approach C). Do not stand up `docs/memory_index.md` (Approach B — separate GO). Do not treat this addendum as a Q-XMEM-1 re-verdict (Mem0 sidecar stays SUBTRACT).

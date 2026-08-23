@@ -1,0 +1,37 @@
+# Machine block for REPO_MAP.md ↔ check_boundaries.py coupling (P5).
+# Keep in lockstep with scripts/check_boundaries.py:
+#   APP_LAYER_PREFIX, GOVERNANCE_PREFIXES, SCRIPTS_LAYER
+# Do not parse REPO_MAP.md free prose — this file is the compare target.
+
+app_layer_prefix:
+  core/: core
+  lab/: lab
+  ops/: ops
+
+governance_prefixes:
+  - docs/
+  - .claude/
+  - .github/
+
+scripts_layer:
+  check_brief: governance
+  archive_lab_analysis: governance
+  check_boundaries: governance
+  check_data_manifests: governance
+  check_pine_manifest: governance
+  check_skill_refs: governance
+  check_path_liveness: governance
+  pine_check: governance
+  parse_bar_export: governance
+  check_skills_no_constants: governance
+  verify_lock_anchors: governance
+  sync_pine_to_worktree: governance
+  sync_skills: governance
+  mc_user_guardian: lab
+  beta_cohesion_read: lab
+  event_study_read: lab
+  pine_lint: lab
+  cost_geometry_pregate: lab
+  parse_econ_export: lab
+  diff_econ_calendar: lab
+  lock_event_hook: ops

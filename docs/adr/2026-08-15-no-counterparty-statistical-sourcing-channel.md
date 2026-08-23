@@ -441,3 +441,36 @@ Since the last attempt, the sibling [deep-iteration-lane charter](2026-08-16-dee
 | Date | Change | By |
 |---|---|---|
 | 2026-08-23 | Canonical pre-G0 kill count corrected 1/3 → 2/3 (`MNQ-SIZEDIV-1` had been recorded correctly in `STATE.md`/`MNQ.md` since 2026-08-16 but never synced to this file's own canonical line). Second door re-walk of the 08-15 table against the deep-lane's newly-cached 6A/M6A and GC/MGC panels: 2 of 8 doors reopen on those two instruments specifically (still blocked on MNQ); 2 flagged operator-call-needed (FM-4 pre-G0/instrument-hop reach; cross-channel GO/cost-dry-run discharge); 4 remain blocked on all instruments. `burned_segments` consultation-ledger hygiene gap disclosed, not fixed. No construct named; no manifest opened; no K spent. | Claude Sonnet 5 |
+
+---
+
+## Addendum 2026-08-23 — Scoped decline of the reopened 6A/M6A and GC/MGC entry-geometry / dense-1m cell
+
+**Status:** ratified by operator (JA) 2026-08-23, in-session ("decline this cell"). Dated finding, not a new threshold. **$0 / K=0.** No screen. No manifest. No Q-ID. Count **unchanged at 2/3** — N=3 (b) does not increment when no construct is specified. This is **not** generation-dry. This is **not** the [08-15 empty naming pass](#addendum-2026-08-15--first-post-election-generation-attempt-naming-set-empty).
+
+### Rule 0 reads (this addendum)
+
+- This file @ `532ac5a` (2026-08-23) — canonical count **2/3**; door table: CON-sibling / dense-1m **reopened** on 6A/M6A and GC/MGC, still blocked on MNQ; S1 (FM-4 vs pre-G0) and S2 (sibling GO/cost transfer) **operator-call-needed**, not resolved; Part C `burned_segments` hygiene gap disclosed, not fixed. "Two doors reopening on scope grounds is not itself a proposal."
+- This file N=3 (b) @ same commit — do not increment for a naming-pass that never executes a screen. (c) reset = manifest-opening survivor only. An empty or declined pass neither increments nor resets.
+- Sibling mechanism ids (contamination, not a hop of their results): DL-1 MGC × opening-range (`DL1-MGC-ORC`, abandoned) · DL-2 M6A × prior-session-breakout-continuation (`DL2-M6A-PDHPDL`, abandoned). [`deep-lane charter`](2026-08-16-deep-iteration-lane-charter.md).
+- Cheap falsifier (this write): `rg` of the canonical count line still reads `2 / 3`; `rg` of "reopened on 6A/M6A and GC/MGC" still hits the two door rows; `lab/CATALOG.md` / `docs/briefs/INDEX.md` / `docs/rejected_candidates.md` have no prior scoped-decline of this cell. Owner is this ADR.
+
+### Disposition
+
+**The reopened entry-geometry / dense-1m cell on 6A/M6A and GC/MGC is declined.** The doors remain legally open. No construct is named. The last pre-G0 slot is **not** spent.
+
+This is a different epistemic state from the 08-15 empty walk (every then-legal door was closed). Here the door is open and the construct is refused: the only cleanly reopened cell is the same geometry class the sibling deep lane just abandoned on **both** candidate panels. Naming there would shop the leftover door. A parameterized CON-sibling / time-of-day family with free knobs would be a disguised new lane (D-K1; declared K ≤ 3 would not match realized degrees of freedom). S1 is a catch-22 if a name is forced today (use the `MNQ-SIZEDIV-1` F3 lesson → knowledge-transplant; ignore it → the exact disguise neighborhood FM-3 already forbids). S2 is not a wait: a later name, if ever authorized, re-attests this channel's own GO/cost on the cached bytes.
+
+### What this finding does not license
+
+- Incrementing the pre-G0 kill count (no construct, no screen).
+- Reporting generation-dry (N = 3 has not fired).
+- Filing this as a second 08-15-class empty walk (that walk's completeness property does not hold when a door is open).
+- Treating the door as closed, or S1/S2 as resolved.
+- Immediately authoring a CON-sibling / ORC / PDHPDL / time-of-day construct "to have something to screen."
+- Opening a third sourcing channel.
+- Spending the last pre-G0 slot later without a **fresh** operator GO, informed by the 2/3 count and by this decline.
+
+| Date | Change | By |
+|---|---|---|
+| 2026-08-23 | Addendum: scoped decline of the reopened 6A/M6A and GC/MGC entry-geometry / dense-1m cell; doors stay legally open; last pre-G0 slot unspent; count remains 2/3; not generation-dry; not an 08-15 empty walk. | Joshua (operator) + Cursor |

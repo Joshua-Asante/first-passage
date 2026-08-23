@@ -142,6 +142,14 @@ gates:
       - scripts/roll_sessions.py
       - --check-append-only
 
+  - id: sessions-queue-bind
+    tier: path-conditional
+    when:
+      staged_regex: '^docs/SESSIONS[.]md$'
+    cmd:
+      - python
+      - scripts/check_sessions_queue_bind.py
+
   - id: supersession-placement
     tier: path-conditional
     when:
@@ -168,6 +176,26 @@ gates:
     cmd:
       - python
       - scripts/sync_liveness_indexes.py
+
+  # Report-only docs-as-runtime inbound index (P3). Always exit 0.
+  # staged_regex includes scanned trees so a new pathlib/docs cite selects it.
+  - id: docs-runtime-inventory
+    tier: path-conditional
+    when:
+      staged_regex: '^((core|ops|lab|scripts|tests)/.*[.]py$|docs/notes/audits/docs-runtime-inventory[.]md$|scripts/check_docs_runtime_inventory[.]py$)'
+    cmd:
+      - python
+      - scripts/check_docs_runtime_inventory.py
+      - --check
+
+  # HARD: check_boundaries layer maps must match scripts/repo_map_layers.yml (P5).
+  - id: repo-map-layers
+    tier: path-conditional
+    when:
+      staged_regex: '^(REPO_MAP[.]md|scripts/check_boundaries[.]py|scripts/repo_map_layers[.]yml|scripts/check_repo_map_layers[.]py)$'
+    cmd:
+      - python
+      - scripts/check_repo_map_layers.py
 
   # Rejects stray C0 controls (esp. form-feed) in union-merge / high-traffic
   # governance prose — 2026-08-11 SESSIONS repair-hook double-damage incident.

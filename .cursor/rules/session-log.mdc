@@ -30,8 +30,9 @@ Do not add noise.
 - **Focus** — what the session set out to do
 - **Shipped** — branch + commit + concrete deltas (link artifacts, don't duplicate)
 - **Decisions/defects** — link the ADR / notice / brief produced
-- **Open / next** — carried-forward items (read first next session); carry the prior top
-  entry's Open/next forward
+- **Open / next** — lead line is `STATE queue: #1 <title> · #2 <title> · #3 <title>`
+  (titles + owner links). Do not copy leftover names from the previous top entry.
+  Residue after the lead only with `queue-exception: <reason>` and an existing owner.
 - **Live-ops state** — lock / allocation / gate status where relevant
 
 Canonical owner: `docs/operational_rules.md §7`. Do **not** restate risk %, MC anchor,
