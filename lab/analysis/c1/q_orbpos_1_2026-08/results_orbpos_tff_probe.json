@@ -1,0 +1,248 @@
+{
+  "cutoff": "2021-09-28",
+  "K": 1,
+  "windows_tff_prints": {
+    "W1": 4,
+    "W2": 13,
+    "W3": 26
+  },
+  "min_w1_prebreak_prints_floor": 4,
+  "mnq_standalone_line_check": {
+    "mnq_code": "209747",
+    "mnq_name": "MICRO E-MINI NASDAQ-100 INDEX",
+    "other_nasdaq_family_lines": {
+      "20974+": "NASDAQ-100 Consolidated",
+      "209741": "NASDAQ-100 STOCK INDEX",
+      "209742": "NASDAQ MINI"
+    }
+  },
+  "pull": {
+    "n_rows": 301,
+    "first_report_date": "2020-08-04",
+    "last_report_date": "2026-08-18",
+    "mnq_launch": "2019-05-06",
+    "max_crosscheck_delta_pp": 0.09592376335794128
+  },
+  "n_prebreak_published_prints": 45,
+  "ambiguous_hold_trigger_1_prebreak_sparsity": false,
+  "n_triggering_days": 1846,
+  "gate_thresholds": {
+    "eval_bust_ceiling_pct": 3.0,
+    "pass_floor_pct": 50.0,
+    "horizon": 1500,
+    "seeds": [
+      42,
+      123,
+      2026
+    ],
+    "sims_per_seed": 10000
+  },
+  "fidelity_control": {
+    "1": {
+      "bust_pct": 67.66666666666667,
+      "pass_pct": 32.333333333333336,
+      "published": 67.67,
+      "delta_pp": -0.0033333333333303017,
+      "within_tol": true
+    },
+    "2": {
+      "bust_pct": 77.00999999999999,
+      "pass_pct": 22.99,
+      "published": 77.01,
+      "delta_pp": -1.4210854715202004e-14,
+      "within_tol": true
+    }
+  },
+  "fidelity_control_pass_k1": true,
+  "windows": {
+    "W1": {
+      "window_prints": 4,
+      "classifier": {
+        "n_prints_total": 301,
+        "n_warmup": 3,
+        "n_higher": 143,
+        "n_lower": 155,
+        "spotcheck_pass": true,
+        "degenerate_threshold": false
+      },
+      "date_correlation": {
+        "n_higher_days": 724,
+        "n_lower_days": 810,
+        "frac_higher_days_post_cutoff": 0.8964088397790055,
+        "frac_lower_days_post_cutoff": 0.7444444444444445,
+        "date_corr_pass": false
+      },
+      "gate": {
+        "HIGHER": {
+          "meta": {
+            "n_days_in_label": 724,
+            "n_days_in_blocks": 714,
+            "n_runs_used": 12,
+            "n_runs_skipped": 2,
+            "n_blocks": 131
+          },
+          "flat": {
+            "bust_pct": 83.64666666666666,
+            "pass_pct": 16.35333333333333,
+            "gate_pass": false
+          },
+          "cushion": {
+            "bust_pct": 0.0,
+            "pass_pct": 23.05333333333333,
+            "gate_pass": false
+          }
+        },
+        "LOWER": {
+          "meta": {
+            "n_days_in_label": 810,
+            "n_days_in_blocks": 800,
+            "n_runs_used": 12,
+            "n_runs_skipped": 2,
+            "n_blocks": 148
+          },
+          "flat": {
+            "bust_pct": 18.633333333333333,
+            "pass_pct": 81.36666666666667,
+            "gate_pass": false
+          },
+          "cushion": {
+            "bust_pct": 0.0,
+            "pass_pct": 99.23666666666666,
+            "gate_pass": true
+          }
+        }
+      },
+      "direction": "LOWER_CLEARS_HIGHER_DOES_NOT"
+    },
+    "W2": {
+      "window_prints": 13,
+      "classifier": {
+        "n_prints_total": 301,
+        "n_warmup": 12,
+        "n_higher": 140,
+        "n_lower": 149,
+        "spotcheck_pass": true,
+        "degenerate_threshold": false
+      },
+      "date_correlation": {
+        "n_higher_days": 674,
+        "n_lower_days": 750,
+        "frac_higher_days_post_cutoff": 0.9629080118694362,
+        "frac_lower_days_post_cutoff": 0.804,
+        "date_corr_pass": false
+      },
+      "gate": {
+        "HIGHER": {
+          "meta": {
+            "n_days_in_label": 674,
+            "n_days_in_blocks": 674,
+            "n_runs_used": 7,
+            "n_runs_skipped": 0,
+            "n_blocks": 128
+          },
+          "flat": {
+            "bust_pct": 69.81333333333333,
+            "pass_pct": 30.186666666666667,
+            "gate_pass": false
+          },
+          "cushion": {
+            "bust_pct": 0.0,
+            "pass_pct": 62.98,
+            "gate_pass": true
+          }
+        },
+        "LOWER": {
+          "meta": {
+            "n_days_in_label": 750,
+            "n_days_in_blocks": 745,
+            "n_runs_used": 6,
+            "n_runs_skipped": 1,
+            "n_blocks": 143
+          },
+          "flat": {
+            "bust_pct": 23.64,
+            "pass_pct": 76.36,
+            "gate_pass": false
+          },
+          "cushion": {
+            "bust_pct": 0.0,
+            "pass_pct": 98.63666666666666,
+            "gate_pass": true
+          }
+        }
+      },
+      "direction": "BOTH_CLEAR"
+    },
+    "W3": {
+      "window_prints": 26,
+      "classifier": {
+        "n_prints_total": 301,
+        "n_warmup": 25,
+        "n_higher": 141,
+        "n_lower": 135,
+        "spotcheck_pass": true,
+        "degenerate_threshold": false
+      },
+      "date_correlation": {
+        "n_higher_days": 674,
+        "n_lower_days": 680,
+        "frac_higher_days_post_cutoff": 0.9925816023738873,
+        "frac_lower_days_post_cutoff": 0.8573529411764705,
+        "date_corr_pass": false
+      },
+      "gate": {
+        "HIGHER": {
+          "meta": {
+            "n_days_in_label": 674,
+            "n_days_in_blocks": 669,
+            "n_runs_used": 2,
+            "n_runs_skipped": 1,
+            "n_blocks": 132
+          },
+          "flat": {
+            "bust_pct": 68.56333333333332,
+            "pass_pct": 31.436666666666667,
+            "gate_pass": false
+          },
+          "cushion": {
+            "bust_pct": 0.0,
+            "pass_pct": 49.52333333333333,
+            "gate_pass": false
+          }
+        },
+        "LOWER": {
+          "meta": {
+            "n_days_in_label": 680,
+            "n_days_in_blocks": 675,
+            "n_runs_used": 2,
+            "n_runs_skipped": 1,
+            "n_blocks": 133
+          },
+          "flat": {
+            "bust_pct": 23.77,
+            "pass_pct": 76.23,
+            "gate_pass": false
+          },
+          "cushion": {
+            "bust_pct": 0.0,
+            "pass_pct": 99.43666666666667,
+            "gate_pass": true
+          }
+        }
+      },
+      "direction": "LOWER_CLEARS_HIGHER_DOES_NOT"
+    }
+  },
+  "summary": {
+    "date_correlation_windows_passing": 0,
+    "date_correlation_fires_at_ge2_of_3": false,
+    "directions_by_window": {
+      "W1": "LOWER_CLEARS_HIGHER_DOES_NOT",
+      "W2": "BOTH_CLEAR",
+      "W3": "LOWER_CLEARS_HIGHER_DOES_NOT"
+    },
+    "direction_same_sign_every_window": false,
+    "w1_ambiguous_hold_fired": false,
+    "verdict": "REJECT (H-ORBPOS REFUTED)"
+  }
+}

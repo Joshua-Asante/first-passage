@@ -1,0 +1,76 @@
+====================================================================================================
+Q-ORBPOS-1 IMPLEMENTATION A -- CFTC TFF Leveraged-Funds positioning-extremity classifier
+====================================================================================================
+
+--- live re-confirmation: MNQ standalone TFF line (Phase 0 RESULTS.md item 1) ---
+  MNQ code=209747  name='MICRO E-MINI NASDAQ-100 INDEX'
+  other NASDAQ-family lines (distinct codes): {'20974+': 'NASDAQ-100 Consolidated', '209741': 'NASDAQ-100 STOCK INDEX', '209742': 'NASDAQ MINI'}
+
+--- Phase 1: CFTC TFF pull (Socrata, free, no key) ---
+  dataset: https://publicreporting.cftc.gov/resource/gpe5-46if.json  where cftc_contract_market_code='209747'
+  n_rows=301  first report_date=2020-08-04  last report_date=2026-08-18
+  MNQ launch (pre-reg): 2019-05-06  first usable TFF print: 2020-08-04  (gap: category not yet broken out at launch -- Phase 0's own caveat)
+  %OI derived-vs-published cross-check: max |delta|=0.096pp (OK, within 1-decimal rounding)
+
+  independent published TFF prints available BEFORE the 2021-09-28 break: 45
+  Sec4 Ambiguous-hold trigger 1 (W1 sparsity, floor=4): does not fire
+
+--- ORB-MNQ-1 own panel + Control B mirror (harness reused unchanged) ---
+  panel: C:\Users\joshu\multi_firm_operations\lab\analysis\orb\orb_mnq_2026-07\_mnq_15m.pkl
+  rows=169,409  span=2019-05-05 20:00:00-04:00 -> 2026-07-15 19:45:00-04:00
+  Control B PASS -- n=1846 triggering days  recon date span 2019-05-06 -> 2026-07-15
+
+[gate ] C:\Users\joshu\multi_firm_operations\.claude\worktrees\openrouter-ox-alpha-test-fff246\docs\briefs\pre-registration\2026-07-13-prop-survivor-scoring-prereg.md
+[gate ] horizon=1500  seeds=(42, 123, 2026)  sims/seed=10000  eval_bust_ceiling=3.0%  pass_floor=50%
+[firm ] FIRM_RULES already ships dd_lock_offset_usd=1,000,000 (no override needed).
+
+--- FIDELITY CONTROL: flat policy, m=1.0, full panel, k=1/k=2 (reused day_loop_intraday) ---
+  k=1  bust=67.67%  pass=32.33%  published=67.67%  delta=-0.00pp  PASS  (elapsed 30s)
+  k=2  bust=77.01%  pass=22.99%  published=77.01%  delta=-0.00pp  PASS  (elapsed 40s)
+
+[panel] business-day span: 2019-05-06 -> 2026-07-15  n_days=1878
+
+====================================================================================================
+W1 -- rolling window = 4 TFF weekly prints
+====================================================================================================
+[classifier] n_prints_total=301  WARMUP=3  HIGHER=143  LOWER=155  expanding-median spot-check (5 pts): PASS  degenerate-threshold: no
+[date-corr] HIGHER bucket: n_days=724  post-cutoff frac=89.6%  (need >= 75%)
+[date-corr] LOWER  bucket: n_days=810  post-cutoff frac=74.4%  (need <= 40%)
+[date-corr] window condition: does not fire (fail)
+[gate] HIGHER  n_blocks=131  flat: bust=83.65% pass=16.35% gate=FAIL  |  cushion: bust=0.00% pass=23.05% gate=FAIL
+[gate] LOWER   n_blocks=148  flat: bust=18.63% pass=81.37% gate=FAIL  |  cushion: bust=0.00% pass=99.24% gate=PASS   (elapsed 84s)
+[direction] W1: LOWER_CLEARS_HIGHER_DOES_NOT
+
+====================================================================================================
+W2 -- rolling window = 13 TFF weekly prints
+====================================================================================================
+[classifier] n_prints_total=301  WARMUP=12  HIGHER=140  LOWER=149  expanding-median spot-check (5 pts): PASS  degenerate-threshold: no
+[date-corr] HIGHER bucket: n_days=674  post-cutoff frac=96.3%  (need >= 75%)
+[date-corr] LOWER  bucket: n_days=750  post-cutoff frac=80.4%  (need <= 40%)
+[date-corr] window condition: does not fire (fail)
+[gate] HIGHER  n_blocks=128  flat: bust=69.81% pass=30.19% gate=FAIL  |  cushion: bust=0.00% pass=62.98% gate=PASS
+[gate] LOWER   n_blocks=143  flat: bust=23.64% pass=76.36% gate=FAIL  |  cushion: bust=0.00% pass=98.64% gate=PASS   (elapsed 117s)
+[direction] W2: BOTH_CLEAR
+
+====================================================================================================
+W3 -- rolling window = 26 TFF weekly prints
+====================================================================================================
+[classifier] n_prints_total=301  WARMUP=25  HIGHER=141  LOWER=135  expanding-median spot-check (5 pts): PASS  degenerate-threshold: no
+[date-corr] HIGHER bucket: n_days=674  post-cutoff frac=99.3%  (need >= 75%)
+[date-corr] LOWER  bucket: n_days=680  post-cutoff frac=85.7%  (need <= 40%)
+[date-corr] window condition: does not fire (fail)
+[gate] HIGHER  n_blocks=132  flat: bust=68.56% pass=31.44% gate=FAIL  |  cushion: bust=0.00% pass=49.52% gate=FAIL
+[gate] LOWER   n_blocks=133  flat: bust=23.77% pass=76.23% gate=FAIL  |  cushion: bust=0.00% pass=99.44% gate=PASS   (elapsed 151s)
+[direction] W3: LOWER_CLEARS_HIGHER_DOES_NOT
+
+====================================================================================================
+VERDICT ASSERTION (Sec4/Sec6)
+====================================================================================================
+  date-correlation clears (a)/(b) at >=2 of 3 windows?  0/3  -> NO
+  gate-clearance direction same sign at every window, no exceptions?  NO  (per-window: {'W1': 'LOWER_CLEARS_HIGHER_DOES_NOT', 'W2': 'BOTH_CLEAR', 'W3': 'LOWER_CLEARS_HIGHER_DOES_NOT'})
+  Sec4 Ambiguous-hold (W1 sparsity or degenerate threshold)?  does not fire
+
+  ==> H-ORBPOS: REJECT (H-ORBPOS REFUTED)
+
+[write] C:\Users\joshu\multi_firm_operations\.claude\worktrees\openrouter-ox-alpha-test-fff246\lab\analysis\c1\q_orbpos_1_2026-08\results_orbpos_tff_probe.json
+[time ] total elapsed 151s
