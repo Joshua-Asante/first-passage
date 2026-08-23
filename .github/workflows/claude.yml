@@ -39,6 +39,11 @@ jobs:
           # 1 year) and store as the CLAUDE_CODE_OAUTH_TOKEN repo secret.
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
+          # Cursor's PR/review comments come from the cursor[bot] GitHub App, which
+          # claude-code-action otherwise refuses as a non-human actor (fails fast,
+          # after the ack reaction, with no Claude run ever starting).
+          allowed_bots: "cursor"
+
           # Optional: Customize the trigger phrase (default: @claude)
           # trigger_phrase: "/claude"
 
