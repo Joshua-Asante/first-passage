@@ -32,6 +32,20 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-24i — keep-20 SESSIONS roll + W5 CI-from-gates (H6 lift)
+
+**Focus:** Decision + Build. Operator GO for parked keep-20 roll and W5 CI-from-`gates.yml` (H6 HOLD). `queue-exception: operator GO for parked keep-20 + H6`.
+
+**Shipped:** append-only archive exemption in [`roll_sessions.py`](../scripts/roll_sessions.py); live window 20 + [`SESSIONS-2026-Q3.md`](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md); [`.github/workflows/gate-manifest.yml`](../.github/workflows/gate-manifest.yml) (`--tier check`); deleted hand-list `skills-check.yml`; [`W5 addendum`](adr/2026-08-07-w5-governance-diet.md#addendum-2026-08-23--h6-hold-lifted-ci-composition-from-gatesyml); `install_hooks.sh` Windows bash warning.
+
+**Decisions/defects:** H6 HOLD lifted. Dated exceptions: `pursuit-records` off `--tier check`; `pine-pin-provenance --base` stays in manifest-check. No branch protection. Queue row 3 opened and closed same session (succession: no auto-replace).
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-24x — P4 museum rules + P5 REPO_MAP layer gate (pain-point close-out)
 
 **Focus:** Decision + Build. Operator closed remaining buildable pain-point packets (P4 + P5). Parked rows stay parked.
