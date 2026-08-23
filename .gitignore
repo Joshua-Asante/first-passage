@@ -244,8 +244,5 @@ lab/analysis/c1/msl_s4_mgc_2026-08/_explore_confirm_*_RAW.json
 # own that), so they are deliberately local-only too.
 ops/data/recall.db
 
-# NeMo Guardrails clone (NVIDIA/NeMo-Guardrails). Pin lives in
-# docs/agent_rails/rails.yml; re-fetch with
-# `python scripts/fetch_nemo_guardrails.py`. Do not commit the tree —
-# Apache-2.0 source, large, and not a runtime dependency.
-third_party/nemo-guardrails/
+# Untracked vendor / study clones — not a runtime dependency.
+third_party/

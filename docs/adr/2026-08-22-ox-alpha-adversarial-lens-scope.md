@@ -262,6 +262,7 @@ $ git log -1 --format="%H %ad" --date=short -- docs/adr/2026-08-08-adr-ceremony-
 | 2026-08-22 | **Bounded extension addendum — `Accepted`, operator real-time authorization.** §2 Scope amended narrowly: authorizes ONE sanitized candidate-generation ask (Tradeify eval-strategy-fit constraint), the exact pattern §3/§5 had previously rejected in general form. Does not lift §5's harvest-worker/engineering-assist prohibition generally — a different or repeated ask needs its own authorization. | Joshua (real-time GO in chat, in response to an explicit tradeoff question) + Claude Code (draft + apply) |
 | 2026-08-23 | Use 2 of the sanctioned lens recorded (methodology-skill review). Does not amend §2 / §4 / §5. Pointer only. | Cursor Cloud Agent |
 | 2026-08-23 | **Merge note (concurrent-session reconciliation).** The two rows above were authored independently by separate concurrent sessions and only discovered each other at merge time. Flagging honestly rather than silently combining: this session (see the second addendum below, and the mechanism-supply-sourcing / "hardest problems" / reformulation-tension asks recorded in `project_tradeify_consistency_payoff_shape_constraint_2026_08_22.md`, memory) made several additional sanitized ox-alpha sends today, some under the original §2 adversarial-lens scope and some under the separately-authorized bounded extension below — **none were logged against the "Use N" counter the other session introduced**, because this session was not aware that convention existed until this merge. The §4 revert trigger ("three consecutive zero-value uses") should not be read as accurately tracked until a full cross-session reconciliation of every actual send this date is done — this row exists so that gap is visible, not silently inherited. | Claude Code (merge-time note) |
+| 2026-08-23 | Use N of the sanctioned lens recorded (analog-pin vs inspiration). Does not amend §2 / §4 / §5. Pointer only. | Cursor Cloud Agent |
 
 ---
 
@@ -375,3 +376,22 @@ scope and the bounded extension above that are **not** reflected in the Use 1/Us
 see the Change history row dated 2026-08-23 ("Merge note") for the explicit gap disclosure. Do
 not treat Use 1/Use 2 as a complete count of this date's activity without a fresh reconciliation
 sweep.
+
+---
+
+## Addendum 2026-08-23 — Use N: sanitized analog-pin vs inspiration consult
+
+**Dated note; does not amend §Decision / §2 Scope / §4 Falsifier / §5 Forbidden moves.**
+Use-count only, so the §4 trigger schedule stays evaluable.
+
+One sanitized governance question (when an external-framework analog should become a standing
+pin versus remaining disposable inspiration) was sent to `stealth/ox-alpha` via OpenRouter
+chat-completions. No vendor, product, repo, or operator identifiers. Reconciliation owner:
+[`N-2026-08-23-ox-alpha-analog-pin-vs-inspiration.md`](../notes/notice/N-2026-08-23-ox-alpha-analog-pin-vs-inspiration.md).
+Several objections survived, so revert trigger (b) (three consecutive zero-value uses) does
+not tick.
+
+No transcript is stored in-repo (sanitization bar). The notice holds the objection table.
+
+The Use-N ledger remains incomplete across concurrent sessions — see the Change history
+merge note. This row does not claim to be Use 3 of a complete series.

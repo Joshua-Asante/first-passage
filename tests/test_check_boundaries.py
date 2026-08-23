@@ -44,7 +44,7 @@ _spec.loader.exec_module(cb)
     (".claude/worktrees/foo/tests/test_x.py", None),   # nested worktree exempt (2026-07-06 fix)
     (".claude/worktrees/foo/lab/analysis/x.py", None), # nested worktree exempt, not "governance"
     (".venv/Lib/site-packages/pkg/mod.py", None),      # venv exempt (2026-07-10 fix)
-    ("third_party/nemo-guardrails/nemoguardrails/x.py", None),  # study clone exempt
+    ("third_party/study_clone/pkg/x.py", None),  # untracked vendor / study tree exempt
     ("venv/lib/python3.11/site-packages/x.py", None),  # bare venv/ variant exempt
     ("env/Scripts/activate_this.py", None),            # env/ variant exempt
     ("docs/adr/x.py", "governance"),        # governance prefix

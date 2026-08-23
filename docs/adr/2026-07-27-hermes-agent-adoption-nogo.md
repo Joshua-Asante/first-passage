@@ -69,7 +69,3 @@ ls .claude/workflows/ 2>/dev/null || echo "LIMB B STILL OPEN (tracked on the STA
 # No Hermes runtime crept into the perimeter
 rg -n "hermes" --glob '!docs/**' --glob '!*.md' . || echo "OK: no hermes runtime referenced in code"
 ```
-
-## Addendum 2026-08-23 — NeMo Guardrails is the same exclusion class as a runtime
-
-Does **not** amend §1 / §4. NVIDIA NeMo Guardrails was pinned as a study analog ([`2026-08-23-nemo-guardrails-pin-not-runtime.md`](2026-08-23-nemo-guardrails-pin-not-runtime.md), `Proposed`). A NeMo rails *server* or `pip install nemoguardrails` inside this perimeter still has to fire §4's three limbs. The pin is not that firing.

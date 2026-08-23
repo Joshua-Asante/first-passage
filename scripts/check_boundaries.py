@@ -61,7 +61,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 EXEMPT_PREFIXES = ("tests/", "archive/", ".claude/worktrees/", ".worktrees/",
                    ".venv/", ".venv-research/", "venv/", "env/",
-                   "third_party/")  # venv roots + study clones (NeMo pin)
+                   "third_party/")  # venv-class: untracked vendor / study trees
 APP_LAYER_PREFIX = {"core/": "core", "lab/": "lab", "ops/": "ops"}
 GOVERNANCE_PREFIXES = ("docs/", ".claude/", ".github/")
 

@@ -3,7 +3,7 @@
 **Owner:** this file. Distilled from the 2026-08-18→08-20 mapping notices; consolidated here so a later instance does not have to re-read both bodies ([audit](../notes/audits/programme-audit/2026-08-20-external-mapping-move-class-audit.md) §5 action 4).
 **Not a new belt item.** The two guardrails below already bound instances 2 and 3. This file **removes the split location**, it does not add a third test.
 
-A fourth (or later) instance of the external-framework / peer-firm mapping move-class requires **fresh owner GO**. Instance 4 (NeMo Guardrails, 2026-08-23) was GO'd as download + pin + map of *existing* First Passage rails — no imported mechanism, no new pipeline stage.
+A fourth (or later) instance of the external-framework / peer-firm mapping move-class requires **fresh owner GO**. Instance 4 (2026-08-23) was GO'd as download + map of *existing* First Passage rails — no imported mechanism, no new pipeline stage. The standing pin / inventory / Proposed ADR that first session added was later rejected; borrow principles as needed ([notice](../notes/notice/N-2026-08-23-nemo-guardrails-reconciliation.md)).
 
 ## Guardrail 1 — domain-conflation
 

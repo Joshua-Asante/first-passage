@@ -93,7 +93,6 @@ Regenerate: `python scripts/check_docs_runtime_inventory.py --write`
 | `docs/adr/x.md` | quoted | `scripts/check_skill_refs.py:29`, `tests/test_check_adr_graph.py:64`, `tests/test_check_advisor_dedup.py:41`, `tests/test_check_md_relative_links.py:46` |
 | `docs/adr/x.py` | quoted | `tests/test_check_boundaries.py:50` |
 | `docs/adr/y.md` | quoted | `tests/test_check_adr_graph.py:83` |
-| `docs/agent_rails/rails.yml` | pathlib,quoted | `scripts/check_agent_rails.py:119`, `scripts/check_agent_rails.py:21`, `scripts/check_agent_rails.py:2`, `scripts/fetch_nemo_guardrails.py:5` |
 | `docs/analytics/mc_anchor_evolution` | pathlib | `tests/test_mc_anchor_chart.py:20` |
 | `docs/analytics/mc_anchor_evolution/plot.py` | quoted | `tests/test_mc_anchor_chart.py:3` |
 | `docs/api/webhook-trading` | quoted | `ops/c1_rail/crosstrade_payload.py:9` |
