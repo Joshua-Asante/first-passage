@@ -14,6 +14,32 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23y — merge origin/main into PR #116 (conflict fix)
+
+**Focus:** Resolve PR #116 conflicts after #112–#115 landed grow-lane wiring, discovery-skill repairs, adr-decay-audit, and substrate Phase 6 docs.
+
+**Shipped:** merge `origin/main` into `cursor/call4-beta-cohesion-475b`. Union-merge splice (missing `---` before `2026-08-23w`) fixed via `--normalize`. Later colliding `2026-08-23p` (Call-4 diagnostic) remapped to `2026-08-23x`. Restored merge-base `2026-08-23a` ox-alpha heading (append-only vs `4ae2f1c`); `23m` kept. `docs/adr/INDEX.md` auto-merged.
+
+**Decisions/defects:** none new.
+
+**Open / next:** carry `2026-08-23x` / `2026-08-22r` — DL-2 step 2 train scoring. Campaign next: disaster-stop Phase 0 record (`BLOCKED` if unattended). Carry `2026-08-23t` — two undocumented decay findings still need discharge addenda. Follow-on grow slices still named. Operator GO/NO-GO on brief-authoring ox-alpha surviving cluster before any skill edit. #7/#8 stay PENDING GO.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-23x — Call-4 beta-cohesion diagnostic
+
+**Focus:** Build. Execute campaign plan #5 (diagnostic only).
+
+**Shipped:** [`lab/research_utils/beta_cohesion.py`](../lab/research_utils/beta_cohesion.py) + [`scripts/beta_cohesion_read.py`](../scripts/beta_cohesion_read.py). Missing vendor CSV skips. No `lifecycle_state.json` write.
+
+**Decisions/defects:** none. Does not re-implement `beta_death_assessment`. No 2026-08-08 review claimed.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: disaster-stop Phase 0 record (`BLOCKED` if unattended). #7/#8 stay PENDING GO.
+
+---
+
 ## 2026-08-23w — merge origin/main into PR #115 (conflict fix)
 
 **Focus:** Resolve PR #115 conflicts after #112–#114 landed grow-lane wiring, discovery-skill repairs, and the adr-decay-audit skill.
@@ -309,6 +335,20 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: W5 CI-from-`gates.yml` plan. Carry 2026-08-22q — disaster-stop Phase 0; venue-binding Phase 1 *execution*; W1 remaining three.
 
 **Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-23a — Ox-alpha sanitized review of brief-authoring, reconciled
+
+**Focus:** Measurement. Sanitized-only ox-alpha second opinion on the brief-authoring skill; reconcile before treating any objection as a finding.
+
+**Shipped:** [notice](notes/notice/N-2026-08-23-ox-alpha-brief-authoring-review.md). 26 objections; both claimed BLOCKERs discharged (O1 = body/checker skew, not missing matrix; O20 already in `cc_handoff.md`). Eight survive. Skill not edited (doctrine limb).
+
+**Decisions/defects:** none new. §4(b) three-zero-yield revert does not fire (third named use still yielded).
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 (train scoring + nomination). New: operator GO/NO-GO on the surviving cluster (O1 matrix-in-body, O10 grounding quotes, O15+O24 judgment wiring, O7 Trap-12 detection) before any skill edit. Carry 2026-08-22q — `register_search.open_run`; named ox-alpha uses (F1 fork; GROW-lane); disaster-stop Phase 0; venue-binding Phase 1; W1 remaining decisions of record.
+
+**Live-ops state:** unchanged — rail disarmed; no book. $0 OpenRouter spend.
 
 ---
 
