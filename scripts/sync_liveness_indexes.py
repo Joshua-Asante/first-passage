@@ -105,7 +105,7 @@ def stale_index_open(text: str) -> list[str]:
         named |= {m.group("id") for m in BOLD_Q.finditer(status)}
         named |= {f"Q-TNEC-{m}" for m in re.findall(r"\b(CON-\d+)\b", status)}
         # Plan: terminal Status AND named successor already Recently-closed.
-        # Reserved-close rows (e.g. Q-TOM-SPX-1) stay Open on purpose.
+        # Reserved-close rows stay Open until a filed closure exists.
         if not (named & recently_closed):
             continue
         stale.append(f"{cid}: Open table Status={status!r}")

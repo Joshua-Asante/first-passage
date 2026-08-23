@@ -2,6 +2,7 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+- **2026-08-22** — DL-2 (M6A × `prior-session-breakout-continuation`, `NEW` mechanism id) prereg `FROZEN`; §6 step 1 pulls landed $0.0000. [`charter`](../../../../../docs/adr/2026-08-16-deep-iteration-lane-charter.md) [`prereg`](../../../../../docs/briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md)
 - **2026-08-22** — Leftover Proposed ADRs: four `Accepted`, one `Withdrawn`. [`disaster-stop`](../../../../../docs/adr/2026-07-28-c1-disaster-stop-payload-supported.md) [`venue-binding`](../../../../../docs/adr/2026-08-05-strategy-venue-binding-axis.md) [`W1`](../../../../../docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md) [`public-visibility`](../../../../../docs/adr/2026-08-14-repo-public-visibility-transition.md) [`WATCH-1H withdrawn`](../../../../../docs/adr/2026-08-03-lifecycle-ladder-intermediate-rung.md)
 - **2026-08-21** — `REPO_MAP.md` second-pass coherence repair; §5 coverage-check repaired. [`campaign addendum`](../../../../../docs/notes/audits/2026-08-21-coherence-campaign.md)
 - **2026-08-21** — CFO subscription-ledger consolidation ratified (one ledger + monthly reconfirm). [`ADR`](../../../../../docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md)

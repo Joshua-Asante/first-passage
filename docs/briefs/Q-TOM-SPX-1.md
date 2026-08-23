@@ -1,8 +1,8 @@
 # Q-TOM-SPX-1 — SPX500 turn-of-month: existence, post-2001 persistence, real-time capturability
 
-**Status:** `OPEN — DRAFT (pre-run)`
+**Status:** `CLOSED — DEAD` (Layer-A `RESOLVED-ABSENT` 2026-06-16; reserved Pine unpaid; operator GO 2026-08-23)
 **Authored:** 2026-06-15
-**Closed:** N/A
+**Closed:** 2026-08-23
 **Authors:** Joshua + claude.ai (advisor) + Claude Code (landing / execution)
 **Parent question:** N/A
 **Sub-questions opened:** none

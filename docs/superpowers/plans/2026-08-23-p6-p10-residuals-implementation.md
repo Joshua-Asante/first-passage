@@ -29,4 +29,4 @@
 - P7: no row distinguishing pipeline-P / pain-point-P / phase-letter — **cleared**.
 - P8: multi-sentence standing-lead narrative remains, or index >15 with no archive pointer — **cleared**.
 - P9: docstring still asserts the module is the live host of a deployed book — **cleared**.
-- P10: Q-TOM-SPX-1 remains in INDEX Open, or Q-SIGID-1 / Q-FILLTAX-1 were closed — pending.
+- P10: Q-TOM-SPX-1 remains in INDEX Open, or Q-SIGID-1 / Q-FILLTAX-1 were closed — **cleared**.
