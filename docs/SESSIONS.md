@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23n — Grow-lane `open_run` burned-segment wiring
+
+**Focus:** Build. Execute campaign plan #3 wiring slice only.
+
+**Shipped:** `register_search.open_run --lane deep` refuses overlap (seed MNQ window); unlisted discloses `consultation_count=0`. Blind 11-key schema unchanged. Follow-on slices not in this PR.
+
+**Decisions/defects:** none. `--instrument` required on deep. Consultation count is not a refuse.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: substrate Phase 6 docs. Follow-on grow slices (streak / door-check / denylist / Rule-0 checker / `universe_gate`) still named. #7/#8 stay PENDING GO.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-23k — Tradable-anomalies T4 plan (PENDING GO)
 
 **Focus:** Hygiene. Campaign plan 8c — last file in this campaign.

@@ -82,8 +82,8 @@ before its own commit says so.
      the existing per-lane gate shape (`_require_admission`, `_require_prereg`).
    - `discovery_manifests/burned_segments.json` + `lab/discovery/burned_segments.py` — seeds the
      shared CON window (MNQ, 2025-09-01→2026-08-05, read 2026-08-20) as burned, per dual-panel
-     finding B1; a standalone checker, not yet wired into `open_run` (§7 tracks that as forward
-     work, named, not claimed).
+     finding B1; wired into `open_run` for `--lane deep` 2026-08-23 (see §7). Unlisted is
+     disclosure-only, not a pass.
    - **Named forward work, not built in this ADR's first slice:** GROW-0 harness (Limb A/B/RED),
      charter §4 streak checker, `gates.yml` door-check limb, LOCKED-leg denylist, Rule-0 anchor
      checker, `universe_gate` exit-code propagation. Each ships as its own dated commit against
@@ -168,6 +168,7 @@ blind/mechanism-first lanes.
 | 2026-08-22 | `deep_lane_admission.py` + `grammar.py` + `--lane deep` wiring + `burned_segments.py`/seed — this session | `a5ee05e` |
 | 2026-08-22 | GROW-0 harness (`grow0_dgp.py`/`grow0_scoring.py`/`grow0_harness.py`/`grow0_red_patch.py`, Limb A/B + three RED controls + retry ledger + CLI), built against its own frozen PREREG | `a90e70c` |
 | 2026-08-22 | GROW-0's real full-scale invocation (N=5,500/c=7) run for the first time — `RESOLVED` (engine + calibration instrument sound); Part B's filing decision now unlocked for the operator, not decided here | [closure](../briefs/closures/GROW-0-closure-resolved.md) |
+| 2026-08-23 | `burned_segments` wired into `register_search.open_run` for `--lane deep` (overlap refuses; unlisted discloses `consultation_count=0`; no silent pass). Follow-on slices (streak checker, `gates.yml` door-check, LOCKED-leg denylist, Rule-0 anchor checker, `universe_gate` exit-code) still named. | this session |
 
 ---
 
