@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23a — Venue-binding Phase 1–3 implementation plan
+
+**Focus:** Hygiene. Campaign of worker-executable plans for Accepted-but-owed ADR limbs; first file only.
+
+**Shipped:** [`2026-08-23-venue-binding-registry-implementation.md`](superpowers/plans/2026-08-23-venue-binding-registry-implementation.md). Does **not** create `ops/venue_editions/`.
+
+**Decisions/defects:** none. T1 stays acknowledged; plan forbids rewriting S1.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: W5 CI-from-`gates.yml` plan. Carry 2026-08-22q — disaster-stop Phase 0; venue-binding Phase 1 *execution*; W1 remaining three.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 
 ## 2026-08-22r — DL-2 (M6A × prior-session-breakout-continuation) sourced, prereg frozen, step 1 landed
 
