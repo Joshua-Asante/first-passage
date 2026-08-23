@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23b — W5 CI-from-gates.yml implementation plan
+
+**Focus:** Hygiene. Campaign plan 2.
+
+**Shipped:** [`2026-08-23-w5-ci-from-gates-yml-implementation.md`](superpowers/plans/2026-08-23-w5-ci-from-gates-yml-implementation.md).
+
+**Decisions/defects:** none. `--tier check` is the CI battery; `pursuit-records` named exception.
+
+**Open / next:** carry 2026-08-23a / 2026-08-22r. Campaign next: grow-lane leftovers plan.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-23a — Venue-binding Phase 1–3 implementation plan
 
 **Focus:** Hygiene. Campaign of worker-executable plans for Accepted-but-owed ADR limbs; first file only.
