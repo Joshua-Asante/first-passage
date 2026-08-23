@@ -179,6 +179,12 @@ own 2026-08-16 "§4 gains a fourth branch" addendum
 ([`docs/adr/2026-07-15-external-mechanism-harvest-intake.md`](2026-07-15-external-mechanism-harvest-intake.md)) —
 same shape of gap, same tightening/completeness-only remedy.
 
+**Operator note (2026-08-23):** ratification explicitly deferred, not declined — same posture as
+the sibling F1 item (STATE.md queue row 1): deciding this before the exactly-one-tier state
+actually occurs would pre-empt §4 on evidence that doesn't exist yet (currently 0-of-4 clearers,
+per §0 below). Revisit at trigger time (first tier clearance, or the 2026-11-08 hard date,
+whichever comes first). Status stays `Proposed` until then.
+
 ### §0 — Rule 0 reads for this addendum (production-source verification, 2026-08-22)
 
 - This file, §4 (H: "≥2 of the four FRIENDLY firm tiers"; revert trigger: "no pre-registered
