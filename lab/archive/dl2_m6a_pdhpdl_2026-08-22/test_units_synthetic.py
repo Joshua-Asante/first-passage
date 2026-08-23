@@ -4,7 +4,13 @@ hand-constructed synthetic slices before running the full 3.26M-row TRAIN
 set. Plain-assert script (matches this lab's runnable-script convention,
 not a pytest suite) -- run:
 
-    PYTHONPATH=lab python lab/analysis/dl2_m6a_pdhpdl_2026-08-22/test_units_synthetic.py
+    PYTHONPATH=lab python lab/archive/dl2_m6a_pdhpdl_2026-08-22/test_units_synthetic.py
+
+CI-ignored (validation-controls.yml): the campaign is ABANDONED and this
+file's `test_*` names still get swept by a generic `pytest lab/`, but
+importing its sibling `stitch.py` pulls in `databento` at module scope --
+a research-stack-only package not in requirements-ops.lock. Run the command
+above from `.venv-research` instead.
 """
 from __future__ import annotations
 

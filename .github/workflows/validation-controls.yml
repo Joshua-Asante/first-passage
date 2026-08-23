@@ -36,6 +36,11 @@ jobs:
   #   - archive transfer/envelope/funnel/p2_diff/harv_0 camps (cross-camp sys.path /
   #     floor_scan / roll_mask path drift, or optional parquet engine not in
   #     requirements-ops.lock — run from their own dirs if needed)
+  #   - lab/archive/dl2_m6a_pdhpdl_2026-08-22 (DL-2, ABANDONED — its
+  #     test_units_synthetic.py loads stitch.py, which does `import databento`
+  #     at module scope; databento is research-stack-only, not in
+  #     requirements-ops.lock — run via .venv-research per the file's own
+  #     docstring)
   #
   # Basename collisions: hyphenated camp slugs (…_2026-08) are not valid Python
   # packages, so empty __init__.py alone cannot uniquify shared test_*.py names
@@ -76,4 +81,5 @@ jobs:
             --ignore=lab/archive/q_funnel_1_2026-07 \
             --ignore=lab/archive/p2_replay_2026-07/test_p2_diff_k2.py \
             --ignore=lab/archive/p2_replay_2026-07/test_p2_diff_k2_tolerant.py \
-            --ignore=lab/archive/harv_0_month_end_rebalance_es_2026-07
+            --ignore=lab/archive/harv_0_month_end_rebalance_es_2026-07 \
+            --ignore=lab/archive/dl2_m6a_pdhpdl_2026-08-22
