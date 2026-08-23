@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23m — Discovery-skill skew plan (PENDING GO)
+
+**Focus:** Decision. Specify the ox-alpha surviving skill-text repairs as a fill-gated work order.
+
+**Shipped:** [`plan`](superpowers/plans/2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md) `PENDING OPERATOR GO`. Notice addendum on [`N-2026-08-23`](notes/notice/N-2026-08-23-ox-alpha-futures-anomaly-discovery-skill-review.md). Skill still unedited.
+
+**Decisions/defects:** none. Plan is not a GO and does not amend harvest doctrine.
+
+**Open / next:** carry 2026-08-23l / 2026-08-23k / 2026-08-22r — DL-2 step 2 train scoring. Operator GO on this plan to apply the five skill-text repairs, or leave them. Campaign plans #1–8 stay as 2026-08-23k left them.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-23l — Ox-alpha sanitized review of `futures-anomaly-discovery`
 
 **Focus:** Decision. Sanitized skill copy to `stealth/ox-alpha`; reconcile before findings.

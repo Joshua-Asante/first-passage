@@ -4,7 +4,7 @@
 **Observed:** 2026-08-23
 **Author:** Cursor Cloud Agent (commission: send a sanitized copy of the skill to `stealth/ox-alpha` via `$OPEN_ROUTER_API`, ask how to improve it for our purposes, reconcile every objection against the real skill before treating any as a finding)
 **Source:** OpenRouter `stealth/ox-alpha` chat-completions, two calls (both `finish=length` in the reasoning channel; content field empty). Reconciled against the real skill and its owners, not against the sanitized excerpt.
-**Status:** `OPEN` — routed `DROP` as an Inquire-phase question (no new Q). Surviving items are owed skill-text repairs against already-ratified owners, not a new investigation.
+**Status:** `OPEN` — routed `DROP` as an Inquire-phase question (no new Q). Surviving repairs specified in [`2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md`](../../superpowers/plans/2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md) (`PENDING OPERATOR GO`). Skill still unedited.
 **Lives in:** `docs/notes/notice/N-2026-08-23-ox-alpha-futures-anomaly-discovery-skill-review.md`
 
 Lane: [`2026-08-22-ox-alpha-adversarial-lens-scope.md`](../../adr/2026-08-22-ox-alpha-adversarial-lens-scope.md) (use 2 of the sanctioned lens; DL-2 prereg was use 1). Zero authority; objections are not findings until the table below.
@@ -68,7 +68,7 @@ Prompt artifacts (do not treat as findings): "blind must stay expensive" (purpos
 
 ## §4 — Routing decision
 
-**DROP** as an Inquire-phase question. Reason: nothing here needs a new Q — the surviving cluster is the skill restating owners that already moved (`strategy_harvest.md` Req-3/5, `register_search` deep lane, `admission_schema.py`). Apply on operator GO as skill-text repairs; do not open a Pre-Q to re-decide ratified harvest doctrine.
+**DROP** as an Inquire-phase question. Reason: nothing here needs a new Q — the surviving cluster is the skill restating owners that already moved (`strategy_harvest.md` Req-3/5, `register_search` deep lane, `admission_schema.py`). Apply on operator GO as skill-text repairs specified in [`2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md`](../../superpowers/plans/2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md); do not open a Pre-Q to re-decide ratified harvest doctrine. The skill is still unedited.
 
 Surviving findings, ranked by agent-harm if left stale (not applied this turn):
 
@@ -106,7 +106,19 @@ grep -n 'choices=\[\"blind\"' lab/discovery/register_search.py
 # This notice is the owner for the review; ADR addendum points here
 grep -n "N-2026-08-23-ox-alpha-futures-anomaly-discovery-skill-review" \
   docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md
+
+# Repairs specified (PENDING GO); skill still unedited until that GO
+grep -n "PENDING OPERATOR GO" \
+  docs/superpowers/plans/2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md
+# Expected: a hit. After the GO executes that plan's Tasks 1–3, the two
+# skill greps above go empty.
 ```
+
+---
+
+## Addendum 2026-08-23 — repairs specified, PENDING GO
+
+Work order: [`2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md`](../../superpowers/plans/2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md). Header is `PENDING OPERATOR GO`. This notice stays `DROP` as a Q. The skill is still unedited. After that GO, the plan’s Task 4 writes the “repairs landed” line here.
 
 ---
 
@@ -120,5 +132,8 @@ $ git log -1 --format='%h %ci' -- .claude/skills/futures-anomaly-discovery/SKILL
 # Expected: b2e5f15 2026-08-22 (matches §0)
 
 $ grep -n "kills the seed regardless of quality" .claude/skills/futures-anomaly-discovery/SKILL.md
-# Expected: L63 (finding 1 still present; this turn does not edit the skill)
+# Expected: L63 (finding 1 still present until the PENDING-GO plan executes)
+
+$ grep -n "PENDING OPERATOR GO" docs/superpowers/plans/2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md
+# Expected: a hit
 ```
