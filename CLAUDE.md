@@ -60,8 +60,8 @@ strategy-signal fill has ever occurred.
 ⚠ **Eval bust figures remain EOD-clock lower bounds unless they cite an intraday-honest RESULTS
 path.** Class-S 0.50× full+halves on the honest clock:
 [`RESULTS_INTRADAY_W1`](lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/RESULTS_INTRADAY_W1.md)
-([W1 ADR](docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md) — other decisions of record
-still pending).
+([W1 ADR](docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md) `Accepted` 2026-08-22 —
+other decisions of record still pending as measurement).
 
 ## Architecture
 
@@ -116,7 +116,9 @@ stops rejecting the anchor as authority. Change the phrasing only alongside that
 
 "LOCKED" splits into two **orthogonal** axes —
 [ADR](docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md); canonical owner
-[`docs/methodology/strategy_lifecycle.md`](docs/methodology/strategy_lifecycle.md):
+[`docs/methodology/strategy_lifecycle.md`](docs/methodology/strategy_lifecycle.md).
+A third axis (venue binding: BOOK → VENUE EDITION → DEPLOYMENT) is
+[`Accepted`](docs/adr/2026-08-05-strategy-venue-binding-axis.md); registry still owed:
 
 * **Parameter axis — `LOCKED`**: SL/TP/ATR/risk%/pyramid/Pine are immutable. Decay never
   authorizes editing these.

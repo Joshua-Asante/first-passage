@@ -66,6 +66,7 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence + owner. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
+- **2026-08-22** — Leftover Proposed ADRs: four `Accepted`, one `Withdrawn`. [`disaster-stop`](docs/adr/2026-07-28-c1-disaster-stop-payload-supported.md) [`venue-binding`](docs/adr/2026-08-05-strategy-venue-binding-axis.md) [`W1`](docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md) [`public-visibility`](docs/adr/2026-08-14-repo-public-visibility-transition.md) [`WATCH-1H withdrawn`](docs/adr/2026-08-03-lifecycle-ladder-intermediate-rung.md)
 - **2026-08-21** — `REPO_MAP.md` second-pass coherence repair; §5 coverage-check repaired. [`campaign addendum`](docs/notes/audits/2026-08-21-coherence-campaign.md)
 - **2026-08-21** — CFO subscription-ledger consolidation ratified (one ledger + monthly reconfirm). [`ADR`](docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md)
 - **2026-08-21** — `REGIME-CANDIDATE` flag lane `Accepted`; discovery-campaign template restored. [`ADR`](docs/adr/2026-07-26-regime-candidate-flag-lane.md)
@@ -79,7 +80,7 @@ One line per executed decision, newest first — consequence + owner. Posture su
 - **2026-08-20** — `Q-TODVOL-1` frozen and D2-falsified same day. [`RESULTS`](lab/archive/todvol_1_2026-08-20/RESULTS.md)
 - **2026-08-20** — Six-lead pursuit P4/P5 un-HOLD'd and dispositioned — P4 stays `HOLD` (sharper reason), P5 closes `UNSCREENABLE`. [`plan`](docs/briefs/2026-08-17-six-lead-pursuit-plan.md) [`P4_ROUTEMEMO`](lab/analysis/harvest/six_lead_cf_2026-08-17/P4_ROUTEMEMO.md)
 - **2026-08-20** — `Q-ORBSURV-1` closed `FALSIFIED` — cushion-sizing's gate-clear is k-dependent, not robust. [`closure`](docs/briefs/closures/Q-ORBSURV-1-closure-falsified.md) [`brief`](docs/briefs/Q-ORBSURV-1-cushion-sizing-gate-configurations.md)
-- **2026-08-20** — `Q-NSURV-2` closed `RESOLVED` — additive N-SURV disclosure layer confirmed buildable; light ADR drafted `Proposed`. [`ADR`](docs/adr/2026-08-20-nsurv-magnitude-resampling-disclosure.md) [`closure`](docs/briefs/closures/Q-NSURV-2-closure-resolved.md)
+- **2026-08-20** — `Q-NSURV-2` closed `RESOLVED` — additive N-SURV disclosure layer confirmed buildable; light ADR `Accepted` same day. [`ADR`](docs/adr/2026-08-20-nsurv-magnitude-resampling-disclosure.md) [`closure`](docs/briefs/closures/Q-NSURV-2-closure-resolved.md)
 - **2026-08-20** — N-SURV single-history magnitude blindspot HOLD→RESOLVED (`Q-NSURV-1`). [`closure`](docs/briefs/closures/Q-NSURV-1-closure-resolved.md)
 - **2026-08-19** — `"cme"` broker panel admitted; `breadth.py`'s risk-N_eff mechanism revived on canonical data. [`ADR`](docs/adr/2026-08-19-cme-broker-panel-admission-for-breadth-revival.md) [`design spec`](docs/superpowers/specs/2026-08-19-cme-breadth-revival-candidate-index-design.md)
 - **2026-08-19** — Persona-hierarchy review panel ADR ratified; first real C-suite panel run (GSUB-2) SUBTRACTs b2 + c1. [`ADR`](docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md) [`closure`](docs/briefs/closures/GSUB-2-closure-resolved-loadbearing.md)
@@ -109,7 +110,7 @@ One line per executed decision, newest first — consequence + owner. Posture su
 - **2026-08-15** — Blind-channel staged GO elected; `MNQ-SIZEDIV-1` frozen pre-data. [`freeze`](lab/analysis/c1/mnq_sizediv_blind_2026-08/DESIGN_FREEZE.md)
 - **2026-08-15** — Harvest §4 limb 2 pin marked `no`. [`harvest addendum`](docs/adr/2026-07-15-external-mechanism-harvest-intake.md)
 - **2026-08-15** — Harvest §4 limb 2 (R10) `Accepted`. [`harvest addendum`](docs/adr/2026-07-15-external-mechanism-harvest-intake.md)
-- **2026-08-15** — 08-03 gate-stack R3/R4/R5/R6 executed; R10 drafted `Proposed`. [`harvest addendum`](docs/adr/2026-07-15-external-mechanism-harvest-intake.md) [`08-03 audit`](docs/notes/audits/programme-audit/2026-08-03-gate-stack-audit.md)
+- **2026-08-15** — 08-03 gate-stack R3/R4/R5/R6 executed; R10 drafted then `Accepted` same day. [`harvest addendum`](docs/adr/2026-07-15-external-mechanism-harvest-intake.md) [`08-03 audit`](docs/notes/audits/programme-audit/2026-08-03-gate-stack-audit.md)
 - **2026-08-15** — Dense-1m unpause Board U0 KEEP recorded. [`closure`](docs/briefs/closures/DENSE1M-UNPAUSE-closure-resolved-u0-keep.md) [`packet`](docs/briefs/2026-08-15-dense1m-lane-unpause-review.md)
 - **2026-08-15** — Blind-channel generation attempt: naming set empty. [`addendum`](docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md)
 - **2026-08-15** — Blind-channel consecutive-pre-G0-kill threshold elected N = 3. [`addendum`](docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md)
@@ -168,7 +169,7 @@ One line per executed decision, newest first — consequence + owner. Posture su
 - **2026-08-08** — `Q-R2VBUCK-1` explore GO ratified (MNQDTL R2) → G2 `FALSIFIED` (STOP catalogue) at $0. [`brief`](docs/briefs/Q-R2VBUCK-1-volume-bucket-aggressor-route-b-scoping.md) [`RESULTS_g2`](lab/archive/mnq_r2vbuck_routeb_2026-08/RESULTS_g2.md)
 - **2026-08-08** — SPEC S2b `Accepted` + S2b build ADR `Accepted` + operator build GO. [`build ADR`](docs/adr/2026-08-08-s2b-signal-daemon-build.md) [`SPEC S2b`](docs/spec/2026-08-07-loop-s2b-python-signal-daemon-spec.md)
 - **2026-08-07** — Loop S1 environment ratification `Accepted` — F2+F3 ruled. [`S1 ADR`](docs/adr/2026-08-07-loop-s1-environment-ratification.md) [SPEC S1](docs/spec/2026-08-07-loop-s1-environment-ratification-spec.md)
-- **2026-08-07** — Closed-loop S1–S6 `PROPOSED` + minimal-spec convention ratified. [index](docs/spec/2026-08-07-loop-spec-index.md)
+- **2026-08-07** — Closed-loop S1–S6 specs opened; S1 ADR `Accepted` same day; S3/S7 specs remain `PROPOSED`. [index](docs/spec/2026-08-07-loop-spec-index.md)
 - **2026-08-07** — `Q-MNQSEL-1` Phase-0 RUN → `FALSIFIED` (C2) at $0/K=0 — STOP this restart-clock universe. [`brief`](docs/briefs/rnd-pipeline/Q-MNQSEL-1-selection-value-ceiling-scoping.md) [`RESULTS`](lab/archive/mnq_selection_ceiling_2026-08/RESULTS.md)
 - **2026-08-06** — EM0–EM5 screen `RATIFIED`; `Q-OFCHAN-1` G2 `VOID-COVERAGE`. [`spec`](docs/spec/2026-08-05-eval-mechanism-shape-screen.md)
 

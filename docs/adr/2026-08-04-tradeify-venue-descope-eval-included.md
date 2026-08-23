@@ -10,7 +10,7 @@
 **Retain-until:** superseded by a venue re-scope under §4, or by registration of a successor execution venue
 **Withdraws:** [`2026-08-02-striker-tradeify-funded-phase-descope.md`](2026-08-02-striker-tradeify-funded-phase-descope.md) — that ADR was `Proposed`, never ratified, and decided the **funded phase only**; its §3 row 2 considered this wider scope and declined it as *"larger than the evidence."* The operator has now elected the wider scope. Because that ADR never reached `Accepted`, it is **withdrawn, not superseded** — nothing was in force to replace. Its §1 measurements and its §7 F1 ruling are carried forward here by citation (§1, §6) rather than lost. **Measurement cells are byte-faithful; two Source cells were narrowed in the first draft and are restored — see the correction note under the §1 table.**
 **Authors:** Joshua (ruling, 2026-08-04) + Claude Code (Opus 5, recorder)
-**Related:** [`2026-07-12-prop-portfolio-four-friendly-firms.md`](2026-07-12-prop-portfolio-four-friendly-firms.md) (§4 falsifier — **not** pre-empted, §5) · [`2026-07-10-strategies-never-locked-lifecycle-governance.md`](2026-07-10-strategies-never-locked-lifecycle-governance.md) (the axis this ADR deliberately does **not** move) · [`2026-08-03-lifecycle-ladder-intermediate-rung.md`](2026-08-03-lifecycle-ladder-intermediate-rung.md) (loses its decision driver — §6) · [`2026-08-03-c1-cadence-leg-preregistration.md`](../briefs/pre-registration/2026-08-03-c1-cadence-leg-preregistration.md) (moot in its deployment limb — §6)
+**Related:** [`2026-07-12-prop-portfolio-four-friendly-firms.md`](2026-07-12-prop-portfolio-four-friendly-firms.md) (§4 falsifier — **not** pre-empted, §5) · [`2026-07-10-strategies-never-locked-lifecycle-governance.md`](2026-07-10-strategies-never-locked-lifecycle-governance.md) (the axis this ADR deliberately does **not** move) · [`2026-08-05-strategy-venue-binding-axis.md`](2026-08-05-strategy-venue-binding-axis.md) (`Accepted` 2026-08-22 — de-scope re-expressed as an edition WITHDRAWN, not book decay; registry still owed) · [`2026-08-03-lifecycle-ladder-intermediate-rung.md`](2026-08-03-lifecycle-ladder-intermediate-rung.md) (`Withdrawn` 2026-08-22 — lost its decision driver; §6) · [`2026-08-03-c1-cadence-leg-preregistration.md`](../briefs/pre-registration/2026-08-03-c1-cadence-leg-preregistration.md) (moot in its deployment limb — §6)
 **Layer:** deployment scope. **No locked parameter, allocation, `dd_protection` constant, `core/lifecycle.py` state, Pine file, or `LEG_MAP` entry is touched.**
 
 ---
@@ -339,7 +339,7 @@ geometry restated off the micro ledgers) in at least:
 - [`docs/notes/rail_build/RUNBOOK.md`](../notes/rail_build/RUNBOOK.md) §B7 / §B8
 - the activity / inactivity specs under `docs/spec/`
 - the book-composition brief
-- the ladder-rung ADR [`2026-08-03-lifecycle-ladder-intermediate-rung.md`](2026-08-03-lifecycle-ladder-intermediate-rung.md) (driver-dead; withdrawal is operator O-D)
+- the ladder-rung ADR [`2026-08-03-lifecycle-ladder-intermediate-rung.md`](2026-08-03-lifecycle-ladder-intermediate-rung.md) (driver-dead; operator O-D discharged 2026-08-22 — Status on that ADR)
 - parent instrument ledgers [`ops/instruments/{YM,NQ}.md`](../../ops/instruments/)
 - the 08-08 packet / pretriage surfaces
 

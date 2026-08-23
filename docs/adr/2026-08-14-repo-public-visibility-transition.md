@@ -2,8 +2,7 @@
 
 Filename: `docs/adr/2026-08-14-repo-public-visibility-transition.md`
 
-**Status:** `Proposed` — mechanical remediation (§7 Phase 1) not yet landed; flips to
-`Accepted` once Phase 1 merges and the §10 verification sweep returns clean
+**Status:** `Accepted` — operator 2026-08-22. Phase 1 remediation and the fresh-repo transplant already executed; this public clone is that seed. Status field lagged the executed work.
 **Decision date:** 2026-08-14
 **Supersedes:** `2026-07-01-guardian-pyport-public-tracking.md` in part — the
 "repo is currently private; this posture is what ships if it is ever public again"
@@ -330,3 +329,4 @@ $ grep -A1 "Superseded-in-part-by" docs/adr/2026-07-01-guardian-pyport-public-tr
 | Date | Change | By |
 |---|---|---|
 | 2026-08-14 | Initial authoring | Joshua + claude.ai |
+| 2026-08-22 | **Operator Accept.** Status `Proposed` → `Accepted`. Phase 1 remediation and the fresh-repo transplant already executed; this public clone is that seed. Status field lagged the executed work. | Joshua (Accept) + Cursor (record) |

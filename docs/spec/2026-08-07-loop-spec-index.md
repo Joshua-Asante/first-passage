@@ -7,7 +7,7 @@ automated within operator-set ceilings; rule changes stay human.
 Status: S1+S2+S5 `RESOLVED` (ADRs Accepted; S5 + validator fixtures); S2b `Accepted`
 2026-08-08 (build still needs build ADR + operator GO) · S3–S4+S6–S7 `PROPOSED` · S3
 scaffold `CODE_LANDED` 2026-08-07 (Gate RESOLVED still needs first family TV anchor) ·
-**S7 Phase 7:** W1 `Proposed` · W3 blocked · W4/W5/W6 `Accepted` (sweeps in progress on
+**S7 Phase 7:** W1 `Accepted` 2026-08-22 (Class-S 0.50× RESULTS landed; three decisions still owed) · W3 blocked · W4/W5/W6 `Accepted` (sweeps in progress on
 branch) · authorize nothing beyond Accepted lane doctrine ($0 · K=0) · each spec styled
 per [TEMPLATE-minimal-spec.md](TEMPLATE-minimal-spec.md) (standing convention, ratified
 JA 2026-08-07 — recorded in `STATE.md` decision index + `docs/SESSIONS.md`).

@@ -14,6 +14,19 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-22q — Disposition leftover Proposed ADRs
+
+**Focus:** Decision. Operator Accept of four leftover Proposed ADRs; reject of the intermediate-rung ADR; STATE pointer refresh.
+
+**Shipped:** [`disaster-stop`](adr/2026-07-28-c1-disaster-stop-payload-supported.md) `Accepted` (Phase 0 still the wiring gate) · [`venue-binding`](adr/2026-08-05-strategy-venue-binding-axis.md) `Accepted` (registry owed; T1 acknowledged) · [`W1`](adr/2026-08-07-w1-intraday-honest-engine-remeasure.md) `Accepted` (Class-S 0.50× MEASURED) · [`public-visibility`](adr/2026-08-14-repo-public-visibility-transition.md) `Accepted` (status catch-up) · [`WATCH-1H`](adr/2026-08-03-lifecycle-ladder-intermediate-rung.md) `Withdrawn`. STATE decision-index + live Proposed-pointer mirrors updated.
+
+**Decisions/defects:** graph vocabulary has no `Rejected` token — reject recorded as `Withdrawn`. Accept does not implement disaster-stop `sl=` wiring or `ops/venue_editions/`.
+
+**Open / next:** carry 2026-08-22p — `register_search.open_run` wiring for charter §2.2(iv) stays named forward work. Carry 2026-08-22n — first named ox-alpha uses (F1 fork ruling; GROW-lane prereg/streak-checker). Plus: disaster-stop Phase 0 SIM before any armed `sl=`; venue-binding Phase 1 registry; W1 remaining three decisions of record.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
 ## 2026-08-22p — Part B ADR ratified; charter §2.2(iv) + burned_segments.py extension landed
 
 **Focus:** Build. Operator GO ("ratify it as-is") on 08-22o's Part B ADR; executed §7 same session.
