@@ -259,6 +259,7 @@ $ git log -1 --format="%H %ad" --date=short -- docs/adr/2026-08-08-adr-ceremony-
 |---|---|---|
 | 2026-08-22 | Initial authoring | Joshua + Claude Code |
 | 2026-08-22 | Ratified `Proposed` → `Accepted`; appended non-material evidentiary addendum below (validation-test result) | Joshua + Claude Code |
+| 2026-08-23 | Use 2 of the sanctioned lens recorded (methodology-skill review). Does not amend §2 / §4 / §5. Pointer only. | Cursor Cloud Agent |
 
 ---
 
@@ -303,3 +304,15 @@ run is evidence the guard is necessary, not evidence it can be relaxed.
 
 **Full detail, including both raw transcripts:** `project_ox_alpha_openrouter_evaluation_2026_08_22.md`
 (memory, battery 4).
+
+---
+
+## Addendum 2026-08-23 — Use 2: sanitized `futures-anomaly-discovery` skill review
+
+**Dated note; does not amend §Decision / §2 Scope / §4 Falsifier / §5 Forbidden moves.**
+Use-count only, so the §4 trigger schedule stays evaluable.
+
+- **Use 1** (production): DL-2 prereg, 2026-08-22 — objections survived reconciliation (axis-coverage imbalance; mechanism-id reuse). Recorded on that prereg, not here.
+- **Use 2** (this note): sanitized copy of `.claude/skills/futures-anomaly-discovery` sent to `stealth/ox-alpha` via OpenRouter chat-completions. Reconciliation owner: [`N-2026-08-23-ox-alpha-futures-anomaly-discovery-skill-review.md`](../notes/notice/N-2026-08-23-ox-alpha-futures-anomaly-discovery-skill-review.md). Several objections survived, so revert trigger (b) (three consecutive zero-value uses) does not tick. Third-use review still owed.
+
+No transcript is stored in-repo (reasoning-channel dump; sanitization bar). The notice holds the objection table.

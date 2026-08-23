@@ -14,6 +14,32 @@ Next session opens by reading the top entry's **Open / next**.
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing (a-first; bare claims `a`).
 
 ---
+## 2026-08-23s — merge origin/main into PR #113 (conflict fix)
+
+**Focus:** Resolve PR #113 conflicts after #112 landed grow-lane `open_run` wiring and remapped the brief-authoring ox-alpha session to `2026-08-23m`.
+
+**Shipped:** merge `origin/main` into `cursor/ox-alpha-discovery-skill-review-4fd4`. Union-merge splices (missing `---` before `2026-08-23o` / `2026-08-23n`) fixed via `--normalize`. Later colliding labels remapped: discovery-skill review `23l`→`23p`, skew plan `23m`→`23q`, GO `23n`→`23r`.
+
+**Decisions/defects:** none new.
+
+**Open / next:** carry `2026-08-23r` / `2026-08-22r` — DL-2 step 2 train scoring. Campaign next: W5 CI-from-`gates.yml`, then substrate Phase 6 docs. Follow-on grow slices still named. Operator GO/NO-GO on brief-authoring ox-alpha surviving cluster before any skill edit. #7/#8 stay PENDING GO.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-23r — Discovery-skill skew repairs (GO executed)
+
+**Focus:** Decision. Execute the ox-alpha skill-text repairs after operator GO.
+
+**Shipped:** GO on [`plan`](superpowers/plans/2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md). Skill + tool-discipline + harvest §2 token. Notice addendum on [`N-2026-08-23`](notes/notice/N-2026-08-23-ox-alpha-futures-anomaly-discovery-skill-review.md).
+
+**Decisions/defects:** none new. Still DROP as a Q. No new ADR.
+
+**Open / next:** carry 2026-08-23q / 2026-08-23p / 2026-08-23k / 2026-08-22r — DL-2 step 2 train scoring. Campaign plans #1–8 stay as 2026-08-23k left them.
+
+---
+
 ## 2026-08-23o — merge origin/main into PR #112 (conflict fix)
 
 **Focus:** Resolve PR #112 conflicts after #109/#111 landed venue-binding Phase 1–3 and the ox-alpha brief-authoring review on `docs/SESSIONS.md`.
@@ -25,6 +51,18 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Open / next:** carry `2026-08-23n` / `2026-08-22r` — DL-2 step 2 train scoring. Campaign next: W5 CI-from-`gates.yml`, then substrate Phase 6 docs. Follow-on grow slices still named. Operator GO/NO-GO on ox-alpha surviving cluster before any brief-authoring skill edit. #7/#8 stay PENDING GO.
 
 **Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-23q — Discovery-skill skew plan (PENDING GO)
+
+**Focus:** Decision. Specify the ox-alpha surviving skill-text repairs as a fill-gated work order.
+
+**Shipped:** [`plan`](superpowers/plans/2026-08-23-futures-anomaly-discovery-skill-skew-implementation.md) `PENDING OPERATOR GO`. Notice addendum on [`N-2026-08-23`](notes/notice/N-2026-08-23-ox-alpha-futures-anomaly-discovery-skill-review.md). Skill still unedited.
+
+**Decisions/defects:** none. Plan is not a GO and does not amend harvest doctrine.
+
+**Open / next:** carry 2026-08-23p / 2026-08-23k / 2026-08-22r — DL-2 step 2 train scoring. Operator GO on this plan to apply the five skill-text repairs, or leave them. Campaign plans #1–8 stay as 2026-08-23k left them.
 
 ---
 
@@ -49,6 +87,20 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 **Decisions/defects:** none. T1 still acknowledged. Book Striker legs stay `AUTHORIZED · MECHANISM @ 1.00×`.
 
 **Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: execute W5 CI-from-`gates.yml` plan. #7/#8 stay PENDING GO.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-23p — Ox-alpha sanitized review of `futures-anomaly-discovery`
+
+**Focus:** Decision. Sanitized skill copy to `stealth/ox-alpha`; reconcile before findings.
+
+**Shipped:** [`notice`](notes/notice/N-2026-08-23-ox-alpha-futures-anomaly-discovery-skill-review.md). ADR use-2 addendum on [`ox-alpha lens`](adr/2026-08-22-ox-alpha-adversarial-lens-scope.md). Skill not edited.
+
+**Decisions/defects:** surviving cluster is skill/harvest drift (Req-3 still a kill; four vs five admission reqs). Revert trigger (b) does not tick.
+
+**Open / next:** carry 2026-08-23k / 2026-08-22r — DL-2 step 2 train scoring. Operator GO to apply the notice's surviving skill-text repairs, or leave them. Campaign plans #1–8 stay as 2026-08-23k left them.
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 
