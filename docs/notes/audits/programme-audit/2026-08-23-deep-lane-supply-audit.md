@@ -167,16 +167,21 @@ process questions (Q1–Q7) came back clean.
 
 ## §5 — Spawned follow-ups
 
-1. **Operator decision item (primary) — UPDATED 2026-08-23, same day, post-audit.** The
+1. **Operator decision item (primary) — UPDATED 2026-08-23 twice, same day, post-audit.** The
    operator signed off on `MNQFLOW-1-DEPTH` same day this audit landed. Its own P0 cost gate
-   then fired: the frozen 30-day sample's actual cost is $148.04 against the $125.00 ceiling
-   (18.4% over) — blocked, $0 spent, no pull ran ([§9.2](../../../../lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PREREG.md)).
-   This audit's own characterization of that route as "≤$125, one sign-off away" is **stale as
-   of the same day it was written** — left uncorrected above per this note's own dated-record
-   convention (Trap #12-adjacent: audit findings are dated snapshots, not living text), corrected
-   here instead. The operator decision is now sharper, not resolved: raise the ceiling (confirm
-   the credit itself extends past $125 first), redraw S2 under a fresh pre-registration (this
-   sample is cost-contaminated, not resamplable in place), or fall back to the two remaining
+   fired ($148.04 vs $125.00, 18.4% over — [§9.2](../../../../lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PREREG.md)).
+   The operator then elected the redraw path; a second, independent, non-overlapping 30-day
+   sample (`PREREG_S2B.md`) was drawn, signed, and P0-checked — **also blocked**, $154.73 vs
+   $125.00 (23.8% over — [§9.2](../../../../lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PREREG_S2B.md)).
+   **Two independent draws landing 18–24% over the same ceiling reframes this from "unlucky
+   sample" to a structural finding**: this construct's real 30-day MBP-10 cost at MNQ's current
+   activity level is closer to $150 than the $125 the ceiling was set from (a single-day
+   extrapolation that undershot both times). This audit's own characterization of the route as
+   "≤$125, one sign-off away" was stale within hours; left uncorrected above per this note's own
+   dated-record convention, corrected here instead. Per the redraw's own pre-committed FM-9, no
+   third resample follows automatically — the operator decision is now: raise the ceiling to
+   ≈$160–175 (informed by two real draws, not one extrapolated day), pre-register a smaller N
+   (e.g. 20 of 255, ≈$100–103 at the measured pooled rate), or fall back to the two remaining
    named routes (free MOC-imbalance literature check; blind channel). Owner: operator. Standing
    until decided or 2026-11-08.
 2. **Free literature check (bounded):** one pass for a published, citable MOC-imbalance cohort δ
@@ -212,3 +217,4 @@ git log --oneline --since=2026-08-23 -- docs/adr/2026-08-16-deep-iteration-lane-
 |---|---|---|
 | 2026-08-23 | Audit authored; §4(c) report duty discharged early on operator instruction ("run the supply-side audit"); verdict `AMBIGUOUS` with named supply-event re-test conditions; slot-3 hold recommended | Claude Code |
 | 2026-08-23 | §5 item 1 updated same day: operator signed `MNQFLOW-1-DEPTH`; its own P0 cost gate fired ($148.04 actual vs $125.00 ceiling, 18.4% over) — blocked, $0 spent, no pull. The audit's "one sign-off away" characterization corrected as stale. Verdict/§3.5 census unchanged — this is a downstream event on the named lead, not a revision of the process findings | Claude Code |
+| 2026-08-23 | §5 item 1 updated again, same day: operator elected the redraw path; a second independent 30-day sample (`PREREG_S2B.md`) also blocked at P0 ($154.73 vs $125.00, 23.8% over). Two draws now read as a structural cost finding (~$150 true cost, not $125), not an unlucky sample. FM-9 (pre-committed on the redraw) bars a third automatic resample. Verdict/§3.5 census still unchanged | Claude Code |

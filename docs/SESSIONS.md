@@ -15,6 +15,39 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 
 ---
 
+## 2026-08-23e — `MNQFLOW-1-DEPTH` S2 redraw ALSO blocked at P0 ($154.73) — structural finding, FM-9 holds
+
+**Focus:** Measurement. Operator elected "redraw the sample" from the three paths named after
+the first P0 abort. Authored a minimal-spec sibling pre-registration (`PREREG_S2B.md`,
+inherits `H`/statistics/gates verbatim from `PREREG.md`, freezes only a replacement S2), signed
+it, and ran P0 again.
+
+**Shipped:** New S2 derived mechanically (no cost byte read before freeze): exclude the
+original 30 burned trigger indices from the 255-trigger list, apply the identical full-range
+systematic-sampling shape to the remaining 225 — verified zero overlap with the first sample.
+P0 on these 30 dates: **$154.7320 against the $125.00 ceiling (23.8% over)** — worse than the
+first sample's $148.04 (18.4% over). **Two independent, disjoint, unbiased draws both landing
+18-24% over the same ceiling is a structural finding, not two unlucky samples**: real 30-day
+MBP-10 cost for this construct is closer to $150 than the $125 the ceiling was set from (a
+single-day extrapolation that undershot both times). Pre-committed FM-9 (written into
+`PREREG_S2B.md` *before* this outcome was known) bars an automatic third redraw. `PREREG.md`,
+`PREREG_S2B.md` §9.1/§9.2, `lab/CATALOG.md`, `STATE.md`, and the
+[2026-08-23 supply audit](notes/audits/programme-audit/2026-08-23-deep-lane-supply-audit.md)
+(§5 item 1, second update) all corrected. $0 spent, both attempts combined.
+
+**Decisions/defects:** two malformed markdown links (stray backtick before `]`) introduced
+while drafting this session's STATE.md/PREREG_S2B.md edits, caught by a self-grep sweep and
+fixed before commit.
+
+**Open/next:** operator decision, now cost-informed by two real draws rather than one
+extrapolated day: raise the ceiling to ≈$160–175, pre-register a smaller N (≈20 of 255, a
+fresh document, not a further resample of either burned set), or fall back to the audit's other
+two named routes (free MOC-imbalance literature check; blind channel).
+
+**Live-ops state:** unchanged — rail disarmed; no book. $0 spend (all estimate calls; no pull billed).
+
+---
+
 ## 2026-08-23d — `MNQFLOW-1-DEPTH` signed, then BLOCKED AT P0 — actual cost $148.04 vs $125.00 ceiling
 
 **Focus:** Measurement. Operator authorized the pull the supply audit named; executed the
