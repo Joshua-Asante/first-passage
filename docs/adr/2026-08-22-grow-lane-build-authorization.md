@@ -150,10 +150,10 @@ charter's falsification budget on a tooling bug instead of the depth premise.
 
 **Negative (real, stated):** two parallel admission predicates now exist in `lab/discovery/`
 (mechanism-first vs deep) — a future reader must know which lane a campaign is on before
-reading its refusal reasons; the named forward-work items are real gaps until they land, and a
-`--lane deep` campaign opened before the burned-segments checker is wired into `open_run` still
-depends on a human pasting the check by hand (no regression from DL-1, but no improvement yet
-either).
+reading its refusal reasons; the named forward-work items are real gaps until they land. The
+`burned_segments` → `open_run` leftover landed 2026-08-23 as consultation-only
+(`ABORT` on overlap; `consultation_count` is not a refuse). Remaining Task-5
+slices (streak / door-check / denylist / Rule-0 / `universe_gate`) stay human-gated.
 
 **Downstream artifacts NOT changed:** `core/` (all), `axis_screen.py` constants, S6/
 `admission_schema.py` semantics, the charter's own §2 text, `register_search.py`'s existing
