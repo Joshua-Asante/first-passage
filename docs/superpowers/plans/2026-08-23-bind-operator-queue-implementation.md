@@ -10,7 +10,7 @@
 
 **Tech Stack:** existing `gate_manifest.py` / `gates.yml`, stdlib argparse checker, Cursor always-apply rule + Claude hookify SessionStart/warn.
 
-**Companion:** remaining first-look pain points are sequenced in [`2026-08-23-repo-pain-point-packets.md`](2026-08-23-repo-pain-point-packets.md) and stay parked until this bind lands (or a named `queue-exception:`).
+**Companion:** first-look residuals live on [`2026-08-23-repo-pain-point-packets.md`](2026-08-23-repo-pain-point-packets.md) (charter owns the live packet list). Bind has landed.
 
 ## Global Constraints
 

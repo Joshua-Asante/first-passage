@@ -34,7 +34,19 @@ jobs:
         id: claude
         uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Draws from the Claude Max/Pro subscription's included usage rather than
+          # separate metered API billing. Generate with `claude setup-token` (valid
+          # 1 year) and store as the CLAUDE_CODE_OAUTH_TOKEN repo secret.
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+          # Cursor's PR/review comments come from the cursor[bot] GitHub App, which
+          # claude-code-action otherwise refuses as a non-human actor (fails fast,
+          # after the ack reaction, with no Claude run ever starting).
+          # github-actions is the commenter for automatic judgment-review
+          # requests (claude-judgment-review.yml posts `@claude` + a marker).
+          # Do not use '*'. The mention workflow on the default branch is what
+          # actually runs Claude, so a PR that edits workflows still gets a look.
+          allowed_bots: "cursor,github-actions"
 
           # Optional: Customize the trigger phrase (default: @claude)
           # trigger_phrase: "/claude"
