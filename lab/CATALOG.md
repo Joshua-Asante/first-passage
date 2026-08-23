@@ -43,7 +43,6 @@ documents the camp boundary for humans/tools.
 | f3_cadence_successor_venues_2026-08-05 | c1 | ACTIVE | yes | the cadence axis F3 required is measured, and **F3 is not decidable on it.** Bulenox and MFFU sit in the same inactiv... | lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/ | — |
 | geofit_iid_sufficiency_power_2026-08-15 | c1 | ACTIVE | yes | scoping probe, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_skew_probe_2026-07-25/README.md)... | lab/analysis/c1/geofit_iid_sufficiency_power_2026-08-15/ | — |
 | geofit_skewed_family_construction_2026-08-15 | c1 | ACTIVE | yes | scoping construction, follow-up to [`geofit_skew_probe_2026-07-25`](../../../archive/geofit_skew_probe_2026-07-25/REA... | lab/analysis/c1/geofit_skewed_family_construction_2026-08-15/ | — |
-| mnq_capflow_orb_r_2026-08 | c1 | ACTIVE | yes | `FALSIFIED` · **cap_spent:** `False` | lab/analysis/c1/mnq_capflow_orb_r_2026-08/ | — |
 | mnq_event_ceiling_2026-08-04 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_event_ceiling_2026-08-04/ | — |
 | mnq_ofchan_routeb_2026-08 | c1 | ACTIVE | yes | — | lab/analysis/c1/mnq_ofchan_routeb_2026-08/ | — |
 | mnq_orb_flow_depth_2026-08-18 | c1 | ACTIVE | yes | HOLD 2026-08-23 (operator) — blocked at P0 twice (original $148.04, redraw S2B $154.73, both vs $125.00 ceiling; structural ~$150 true cost); "not ruling it out but I do not know if it is worth the spend"; no pull run, $0 spent | lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/ | — |
