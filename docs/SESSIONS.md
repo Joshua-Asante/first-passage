@@ -29,15 +29,29 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 any entry, full or stub (a-first; bare claims `a`).
 
 ---
-## 2026-08-23m — SESSIONS entry-class tightened to a judgment-call gate
+## 2026-08-24e — Nav leftovers: P5b wire, P2b stamps, find-owner
+
+**Focus:** Sequence named nav leftovers. P5b + two Verdict stamps + Rule 7 lookup. No mass `--slug`. No P7/P8. No SESSIONS roll.
+
+**Shipped:** `sync-liveness` in [`gates.yml`](../scripts/gates.yml) (report-only). `**Verdict:**` on `driftex_2026-08` / `eodadv_mnq_2026-08` (`hot=yes`). [`find_owner.py`](../scripts/find_owner.py). Leftovers on [`docs/governance/INDEX.md`](governance/INDEX.md).
+
+**Decisions/defects:** none new. P7 Topic and P8 `ops/` unify stay named. SESSIONS keep-20 dry-run 20/155 — roll is a separate GO.
+
+**Open / next:** leftover surviving cluster (O10 grounding quotes, O15+O24 judgment wiring, O7 Trap-12 detection). Carry `2026-08-22r` — DL-2 step 2 train scoring. Attended disaster-stop 0a is operator-only. Carry `2026-08-23t` — two undocumented decay findings still need discharge addenda. Operator: restore the coldstore design (private archive) before any Phase B GO. T2/T3/T4 and Phase C stay PENDING GO. Campaign next: W5 CI-from-`gates.yml` (H6 HOLD; not this PR). **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-24f — SESSIONS entry-class tightened to a judgment-call gate
 
 **Focus:** Decision. Full entries now require a real judgment call, not "skip Hygiene-only" — the class had drifted (12 entries in one day).
 
-**Shipped:** [`docs/SESSIONS.md`](SESSIONS.md) header rewrite (judgment-gate + stub-entry mechanism). [`W5 ADR addendum`](adr/2026-08-07-w5-governance-diet.md). [`STATE.md`](../STATE.md) decision-index line. [`PR #120`](https://github.com/Joshua-Asante/first-passage/pull/120).
+**Shipped:** [`docs/SESSIONS.md`](SESSIONS.md) header rewrite (judgment-gate + stub-entry mechanism). [`W5 ADR addendum`](adr/2026-08-07-w5-governance-diet.md). [`STATE.md`](../STATE.md) decision-index line. [`PR #120`](https://github.com/Joshua-Asante/first-passage/pull/120). Heading remapped from colliding `2026-08-23m` on merge into this branch.
 
 **Decisions/defects:** Stub entries (heading + Open/next only) replace in-place edits — `sessions-append-only` hard-fails mutating an already-merged entry. Entry-class table (A–D) itself unchanged; amended the W5 ADR per Rule 8 sub-rule 10 rather than minting a sibling.
 
-**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: execute W5 CI-from-`gates.yml` plan. #7/#8 stay PENDING GO. PR #120 open, awaiting CI/merge.
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: execute W5 CI-from-`gates.yml` plan. #7/#8 stay PENDING GO. PR #120 merged.
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 
