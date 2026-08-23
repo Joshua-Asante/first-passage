@@ -67,6 +67,7 @@ from historical_challenge import (
 )
 from firm_rules import base_risk_display
 from lifecycle import (
+    STRATEGY_KEYS,
     beta_death_assessment,
     get_effective_multipliers,
     get_lifecycle_multipliers,
@@ -446,9 +447,11 @@ def main():
         if equity > state["peak_equity"]:
             state["peak_equity"] = equity
 
-        beta = beta_death_assessment(get_lifecycle_multipliers(BASE_RISK.keys()))
+        # Call-4 stays 4-leg (STRATEGY_KEYS). Living scaled_risk uses BASE_RISK.
+        eff = get_effective_multipliers(STRATEGY_KEYS)
+        beta = beta_death_assessment(get_lifecycle_multipliers(STRATEGY_KEYS))
         result = calculate_protection(
-            equity, state["peak_equity"], get_effective_multipliers(BASE_RISK.keys())
+            equity, state["peak_equity"], {k: eff[k] for k in BASE_RISK}
         )
 
         # Log entry
@@ -470,9 +473,12 @@ def main():
 
     else:
         # Status mode — show current state without updating
-        beta = beta_death_assessment(get_lifecycle_multipliers(BASE_RISK.keys()))
+        eff = get_effective_multipliers(STRATEGY_KEYS)
+        beta = beta_death_assessment(get_lifecycle_multipliers(STRATEGY_KEYS))
         result = calculate_protection(
-            state["last_equity"], state["peak_equity"], get_effective_multipliers(BASE_RISK.keys())
+            state["last_equity"],
+            state["peak_equity"],
+            {k: eff[k] for k in BASE_RISK},
         )
         display_status(state["last_equity"], state["peak_equity"], result, beta=beta)
 

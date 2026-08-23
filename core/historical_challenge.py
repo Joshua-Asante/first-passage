@@ -54,3 +54,29 @@ HISTORICAL_CHALLENGE_FIRM_KWARGS: dict = {
 }
 
 HISTORICAL_CHALLENGE_BASIS: float = STARTING_EQUITY
+
+# Frozen 4-leg lock percents (allocation-refresh-2). Living sizing is the
+# Striker pair only — see firm_rules._BASE_RISK. Phase C (2026-08-23) moved
+# this book here so MC ALLOCATIONS stay byte-identical after Guardian/Aegis
+# leave the live map. Do not retune these literals without a lock-decision ADR.
+HISTORICAL_CHALLENGE_BASE_RISK = {
+    "guardian": 0.0034,
+    "striker": 0.0070,
+    "aegis": 0.0150,
+    "striker_nas100": 0.0037,
+}
+
+_HISTORICAL_BASE_RISK_DISPLAY_KEYS = {
+    "guardian": "Guardian",
+    "striker": "Striker",
+    "aegis": "Aegis",
+    "striker_nas100": "Striker NAS100",
+}
+
+
+def historical_challenge_base_risk_display() -> dict[str, float]:
+    """Title-case form of the frozen 4-leg book (MC / historical record)."""
+    return {
+        _HISTORICAL_BASE_RISK_DISPLAY_KEYS[k]: v
+        for k, v in HISTORICAL_CHALLENGE_BASE_RISK.items()
+    }

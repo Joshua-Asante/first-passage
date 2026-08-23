@@ -1,25 +1,15 @@
-# Coldstore Phase B pre-GO — retrieve BLOCKED
+# Coldstore Phase B — retrieve still BLOCKED; GO proceeded on Approach 2
 
 **Date:** 2026-08-23
-**Plan:** [`2026-08-23-coldstore-phase-b-implementation.md`](../superpowers/plans/2026-08-23-coldstore-phase-b-implementation.md) Task 1
-**Owner ADR:** [`2026-08-04-strategy-coldstore-phase-a.md`](../adr/2026-08-04-strategy-coldstore-phase-a.md) — Accept is **not** Phase B authority
+**Plan:** [`2026-08-23-coldstore-phase-b-implementation.md`](../superpowers/plans/2026-08-23-coldstore-phase-b-implementation.md)
+**Owner ADR:** [`2026-08-23-strategy-coldstore-phase-b.md`](../adr/2026-08-23-strategy-coldstore-phase-b.md)
 
-**Result:** `BLOCKED / context-problem`
+**Retrieve:** still `BLOCKED / context-problem`. Re-attempted this session:
 
-Task 1 Step 1 required quoting the Phase B section of the pruned design before any GO packet:
+- `git show pre-prune-2026-08-08:docs/superpowers/specs/2026-08-04-strategy-coldstore-retirement-design.md` → `fatal: invalid object name`
+- `git clone https://github.com/Joshua-Asante/first-passage-archive.git` → `Repository not found`
+- `gh api repos/Joshua-Asante/first-passage-archive` → HTTP 404
 
-```
-git show pre-prune-2026-08-08:docs/superpowers/specs/2026-08-04-strategy-coldstore-retirement-design.md
-```
+**GO 2026-08-23:** operator named Phase B Tasks 2+, Phase C, and T2–T4, and asked to restore the design first. Spec body was **not** recovered. Tasks 2+ used Phase A’s already-elected **Approach 2** + frozen inventory. **Approach 3 was not invented.**
 
-This public clone has **no** `pre-prune-2026-08-08` tag (`fatal: invalid object name`). Path is absent on `origin/main`. `git log --all --follow` on that path is empty. Owner-repo code search did not surface the file. Phase A Related still cites the spec; the bytes are not here.
-
-**Not done (plan: STOP):**
-- No GO packet
-- No Proposed Phase B ADR
-- No Approach 3 schema
-- No `lifecycle_state.json` write
-- No `LEG_MAP` / `BASE_RISK` / Pine edit
-- Phase C not started
-
-**Operator resume:** retrieve the design from the private archive (or restore the tag), quote Phase B into a GO packet, then dated GO. Until then Tasks 2+ stay unrun.
+Prior pre-GO stop (no GO packet) is superseded by the Phase B ADR.

@@ -82,10 +82,10 @@ class TestDDProtectionIntegration:
         from dd_protection import calculate_protection, BASE_RISK
 
         lifecycle = {k: 1.0 for k in BASE_RISK}
-        lifecycle["Guardian"] = 0.50  # WATCH-1
+        lifecycle["Striker"] = 0.50  # WATCH-1
         result = calculate_protection(equity=200_000.0, peak=200_000.0, lifecycle=lifecycle)
-        assert result["scaled_risk"]["Guardian"] == pytest.approx(BASE_RISK["Guardian"] * 0.50)
-        assert result["scaled_risk"]["Aegis"] == pytest.approx(BASE_RISK["Aegis"])
+        assert result["scaled_risk"]["Striker"] == pytest.approx(BASE_RISK["Striker"] * 0.50)
+        assert result["scaled_risk"]["Striker NAS100"] == pytest.approx(BASE_RISK["Striker NAS100"])
 
     def test_lifecycle_compounds_multiplicatively_with_dd_scale(self):
         # The ratified 0.20x: a WATCH-1 leg (0.50x) simultaneously in DD (0.40x).
@@ -93,18 +93,18 @@ class TestDDProtectionIntegration:
 
         equity = 200_000.0 * (1.0 - 0.020)  # DD triggered
         lifecycle = {k: 1.0 for k in BASE_RISK}
-        lifecycle["Guardian"] = 0.50
+        lifecycle["Striker"] = 0.50
         result = calculate_protection(equity=equity, peak=200_000.0, lifecycle=lifecycle)
         assert result["dd_triggered"] is True
-        assert result["scaled_risk"]["Guardian"] == pytest.approx(BASE_RISK["Guardian"] * 0.20)
+        assert result["scaled_risk"]["Striker"] == pytest.approx(BASE_RISK["Striker"] * 0.20)
 
     def test_retired_tier_zeroes_risk(self):
         from dd_protection import calculate_protection, BASE_RISK
 
         lifecycle = {k: 1.0 for k in BASE_RISK}
-        lifecycle["Guardian"] = 0.0  # RETIRED
+        lifecycle["Striker"] = 0.0  # RETIRED
         result = calculate_protection(equity=200_000.0, peak=200_000.0, lifecycle=lifecycle)
-        assert result["scaled_risk"]["Guardian"] == 0.0
+        assert result["scaled_risk"]["Striker"] == 0.0
 
 
 class TestAxisSeparation:
@@ -119,8 +119,8 @@ class TestAxisSeparation:
         base_snapshot = dict(BASE_RISK)
         equity = 200_000.0 * (1.0 - 0.020)
         lifecycle = {k: 1.0 for k in BASE_RISK}
-        lifecycle["Guardian"] = 0.25  # WATCH-2
-        lifecycle["Aegis"] = 0.0      # RETIRED
+        lifecycle["Striker"] = 0.25  # WATCH-2
+        lifecycle["Striker NAS100"] = 0.0  # RETIRED
         calculate_protection(equity=equity, peak=200_000.0, lifecycle=lifecycle)
         # Locked constants untouched by the tier change.
         assert dd_protection.BASE_RISK == base_snapshot

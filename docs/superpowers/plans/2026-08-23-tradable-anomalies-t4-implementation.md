@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**AUTHORIZATION: PENDING OPERATOR GO.** Owning ADR [`2026-07-11-tradable-anomalies-statistics-adoption.md`](../../adr/2026-07-11-tradable-anomalies-statistics-adoption.md) §7 T4 **and** lifecycle ADR pending item (a). Live-PF σ-source is **fill-gated** ([`STATE.md`](../../../STATE.md)). This plan is not a GO and does not arm a book.
+**AUTHORIZATION: GO 2026-08-23 for Tasks 1–2 (historical/synthetic OC only).** Task 3 state writer is **not** named — no `lifecycle_state.json` write. Owning ADR [`2026-07-11-tradable-anomalies-statistics-adoption.md`](../../adr/2026-07-11-tradable-anomalies-statistics-adoption.md) §7 T4.
 
 **Goal:** After GO **and** a live-PF source exists (or a dated synthetic/historical substitute the GO names): compute Call-1 kill-line operating characteristics (false-kill rate, detection lag vs horizon); build the rolling-PF σ-source harness + tier-demotion state writer that `decay_breach` / `autonomous_demote` already implement as pure logic.
 
@@ -30,13 +30,13 @@
 
 ### Task 1: Pre-GO — OC design box
 
-- [ ] **Step 1:** Write the OC experiment (N, horizon, σ, false-kill target) as a short prereg **if** the GO wants a lab slug. Otherwise keep it in this plan.
-- [ ] **Step 2:** Stop. Do not write `lifecycle_state.json`.
+- [x] **Step 1:** Kept in-plan + [`2026-08-23-call1-oc-synthetic.md`](../../notes/research/2026-08-23-call1-oc-synthetic.md). No new lab slug.
+- [x] **Step 2:** No `lifecycle_state.json`.
 
 ### Task 2: On GO — OC study (historical/synthetic)
 
-- [ ] **Step 1:** Tests on synthetic PF paths: known-decay series trips `decay_breach`; flat series does not at the ratified k=1.0.
-- [ ] **Step 2:** Publish RESULTS. No demotion write.
+- [x] **Step 1:** `tests/test_call1_oc.py`.
+- [x] **Step 2:** RESULTS published. `wrote_lifecycle_state = false`.
 
 ### Task 3: On a **separate** GO — state writer
 

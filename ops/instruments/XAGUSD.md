@@ -2,8 +2,8 @@
 
 **Symbol:** XAGUSD (Silver spot) · **Tradable:** FXIFY / DXTrade (historical research surface) · **Asset class:** precious metal
 **Canonical feed:** TV CSV export — Pepperstone (TV-CSV policy). Staging feeds TV-verified before they gate anything.
-**Status:** **NO LIVE STRATEGY.** Guardian-family direction REJECTED (Q-CORR-1). Guardian Silver v1.0 override attempt **CLOSED NOT ADMITTED 2026-07-01**. Not in `firm_rules.py` `_BASE_RISK` (4 keys only).
-**Last updated:** 2026-07-16
+**Status:** **NO LIVE STRATEGY.** Guardian-family direction REJECTED (Q-CORR-1). Guardian Silver v1.0 override attempt **CLOSED NOT ADMITTED 2026-07-01**. Not in living `firm_rules.py` `_BASE_RISK` — living slugs are owned by [`docs/adr/2026-08-23-strategy-coldstore-phase-c.md`](../../docs/adr/2026-08-23-strategy-coldstore-phase-c.md); this card is not a living-key roster.
+**Last updated:** 2026-08-23
 
 **Purpose:** Single source of instrument-level truth (operational rule 10, [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](../../docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md)). **Created 2026-07-16** under a scoped ADR §5 override (operator GO after coverage inventory — see ADR Addendum 2026-07-16). Seeded from existing registry + lab closures; not a live R&D session on silver. Canonical path: `ops/instruments/XAGUSD.md`.
 

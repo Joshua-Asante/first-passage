@@ -1,13 +1,14 @@
 # ADR 2026-08-04 — Admit Phase A strategy cold-store (filesystem surface only)
 
-**Status:** `Accepted` — operator GO to execute Phase A via subagent-driven development, recorded 2026-08-04; this ADR is the admitting gate. Phase B (lifecycle disposition) and Phase C (hot-path code retirement) remain separately GO’d and are **not** authorized by this document.
+**Status:** `Accepted` — operator GO to execute Phase A via subagent-driven development, recorded 2026-08-04; this ADR is the admitting gate. Phase B/C were separately GO’d 2026-08-23 — owners [`2026-08-23-strategy-coldstore-phase-b.md`](2026-08-23-strategy-coldstore-phase-b.md) / [`2026-08-23-strategy-coldstore-phase-c.md`](2026-08-23-strategy-coldstore-phase-c.md).
 **Decision date:** 2026-08-04
 **Supersedes:** none
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** `2026-08-23-strategy-coldstore-phase-b.md` — Phase B GO + disposition table
+**Superseded-in-part-by:** `2026-08-23-strategy-coldstore-phase-c.md` — living Guardian/Aegis `BASE_RISK` keys retired
 **Retain-until:** none
 **Authors:** Joshua (operator GO) + Cursor (SDD Task 1 recorder)
-**Related:** [`2026-08-03-claude-md-futures-refocus.md`](2026-08-03-claude-md-futures-refocus.md) §7 (CFD code retirement scoped, not executed — that work is Phase C, not this ADR) · [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) (Striker stays `AUTHORIZED · MECHANISM @ 1.00×`; venue-fit ≠ decay) · design `docs/superpowers/specs/2026-08-04-strategy-coldstore-retirement-design.md` (pruned; 2026-08-23 retrieve `BLOCKED` — [note](../notes/2026-08-23-coldstore-phase-b-prego-blocked.md)) · plan [`docs/superpowers/plans/2026-08-04-strategy-coldstore-phase-a.md`](../superpowers/plans/2026-08-04-strategy-coldstore-phase-a.md)
+**Related:** [`2026-08-03-claude-md-futures-refocus.md`](2026-08-03-claude-md-futures-refocus.md) §7 (CFD code retirement scoped in 08-03; living-key retirement is the [`Phase C ADR`](2026-08-23-strategy-coldstore-phase-c.md), not this ADR) · [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) (Striker stays `AUTHORIZED · MECHANISM @ 1.00×`; venue-fit ≠ decay) · design `docs/superpowers/specs/2026-08-04-strategy-coldstore-retirement-design.md` (pruned; 2026-08-23 retrieve `BLOCKED` — [note](../notes/2026-08-23-coldstore-phase-b-prego-blocked.md)) · plan [`docs/superpowers/plans/2026-08-04-strategy-coldstore-phase-a.md`](../superpowers/plans/2026-08-04-strategy-coldstore-phase-a.md)
 **Layer:** strategy surface (filesystem + discoverability). **No** `BASE_RISK`, lifecycle, `LEG_MAP`, or Pine-parameter edit.
 
 ---
@@ -216,3 +217,13 @@ git log -1 --oneline -- core/dd_protection.py core/lifecycle.py ops/c1_rail/c1_s
 |---|---|---|
 | 2026-08-04 | Initial authoring — Phase A admitting ADR (`Accepted`) | Joshua + Cursor SDD Task 1 |
 | 2026-08-23 | Phase B pre-GO retrieve of the pruned design **failed** on this public clone ([note](../notes/2026-08-23-coldstore-phase-b-prego-blocked.md)). No GO packet. Approach 3 not invented. B/C still separately GO’d. | Cursor Cloud Agent |
+| 2026-08-23 | Operator GO for Phase B Tasks 2+ and Phase C. Design body still unrestored; B/C admitted by their own ADRs. Approach 3 not invented. | Cursor Cloud Agent |
+
+## Addendum 2026-08-23 — Phase B/C GO (pointer only)
+
+Operator GO recorded 2026-08-23. This ADR remains Phase A only. Authority:
+
+- Phase B disposition table: [`2026-08-23-strategy-coldstore-phase-b.md`](2026-08-23-strategy-coldstore-phase-b.md)
+- Phase C living-key retirement: [`2026-08-23-strategy-coldstore-phase-c.md`](2026-08-23-strategy-coldstore-phase-c.md)
+
+Design spec body still unrestored. Approach 2 (already elected here) used. Approach 3 not invented.

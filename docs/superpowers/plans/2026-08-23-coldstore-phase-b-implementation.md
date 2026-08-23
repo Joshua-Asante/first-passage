@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**AUTHORIZATION: PENDING OPERATOR GO.** Owning Phase A ADR [`2026-08-04-strategy-coldstore-phase-a.md`](../../adr/2026-08-04-strategy-coldstore-phase-a.md) **forbids** treating Accept as Phase B authority. This file is a plan, not a GO. Do not execute Tasks 2+ until a dated operator GO names this plan.
+**AUTHORIZATION: GO 2026-08-23.** Operator named this plan. Design body unrestored; Tasks 2+ executed from Phase A Approach 2 + frozen inventory. Owner ADR [`2026-08-23-strategy-coldstore-phase-b.md`](../../adr/2026-08-23-strategy-coldstore-phase-b.md).
 
 **Goal:** After GO, record lifecycle (authorization-axis) consequences of catalog dispositions **without** collapsing venue-fit into book decay. Striker stays `AUTHORIZED · MECHANISM @ 1.00×` at book level unless the GO says otherwise.
 
@@ -30,13 +30,13 @@
 
 ### Task 1: Pre-GO (this campaign may do now)
 
-- [ ] **Step 1:** Retrieve the pruned design. Quote the Phase B section into the GO packet. If retrieve fails, STOP — do not invent Approach 3.
-- [ ] **Step 2:** Draft the GO ask: what B writes, what it will not write. Leave Status of any new ADR `Proposed` until the operator speaks.
+- [x] **Step 1:** Retrieve failed (public clone + archive 404). Approach 3 not invented. Phase A Approach 2 + inventory used.
+- [x] **Step 2:** Operator GO 2026-08-23. Admitting ADR `Accepted`.
 
 ### Task 2: On GO only — disposition table
 
-- [ ] **Step 1:** For each Phase A catalog row (`VENUE_LESS_CFD`, `VENUE_WITHDRAWN`, `PARKED_PROTOTYPE`, `FALSIFIED_PARKED`), write the authorization-axis action (usually **none** for VENUE_WITHDRAWN).
-- [ ] **Step 2:** Tests: axis-separation — a B write does not change `BASE_RISK` / `DD_SCALE` / `TIER_MULTIPLIER`.
+- [x] **Step 1:** Disposition table on the Phase B ADR — **none** for every class.
+- [x] **Step 2:** `tests/test_coldstore_phase_b.py` pins DD_*/TIER_MULTIPLIER / default AUTHORIZED.
 
 ### Task 3: Verification
 

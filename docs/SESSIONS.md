@@ -29,6 +29,35 @@ Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` befor
 any entry, full or stub (a-first; bare claims `a`).
 
 ---
+
+## 2026-08-24h — merge origin/main into PR #122 (conflict fix)
+
+**Focus:** Resolve PR #122 conflicts after #121. Same-day `2026-08-24e` is taken by nav leftovers on `main`.
+
+**Shipped:** merge `origin/main` into `cursor/coldstore-bc-t2t4-475b`. Union-merge splice (stacked `24e` headings + mixed `24f` body) fixed via `--normalize`. Later colliding `2026-08-24e` (coldstore B/C + T2–T4 GO) remapped to `2026-08-24g`. Dropped the PR-side `2026-08-23m` judgment-gate heading already remapped to `24f` on `main` (post-merge `check-order` vs `origin/main`). Phase B/C and T2–T4 bytes unchanged.
+
+**Decisions/defects:** none new.
+
+**Open / next:** leftover surviving cluster (O10 grounding quotes, O15+O24 judgment wiring, O7 Trap-12 detection). Carry `2026-08-22r` — DL-2 step 2 train scoring. Attended disaster-stop 0a is operator-only. Carry `2026-08-23t` — two undocumented decay findings still need discharge addenda. T4 state writer still fill-gated. Archive restore of the coldstore design still blocked. P7 Topic and P8 `ops/` unify stay named. SESSIONS keep-20 roll is a separate GO. Campaign next: W5 CI-from-`gates.yml` (H6 HOLD). **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-24g — Coldstore B/C + T2–T4 GO (design unrestored)
+
+**Focus:** Decision + Build. Operator GO for Phase B Tasks 2+, Phase C, T2–T4 after a failed private-archive restore.
+
+**Shipped:** [`phase-b ADR`](adr/2026-08-23-strategy-coldstore-phase-b.md) · [`phase-c ADR`](adr/2026-08-23-strategy-coldstore-phase-c.md) · living `BASE_RISK` = Striker pair · historical 4-leg book on `historical_challenge` · T2 kit · T3 additive null · T4 synthetic OC. No `lifecycle_state.json`. No `LEG_MAP` / `DD_*` / Pine. Heading remapped from colliding `2026-08-24e` on merge into this branch.
+
+**Decisions/defects:** Design spec unrestored (archive 404). Proceeded from Phase A Approach 2; Approach 3 not invented. Call-4 stays 4-leg via `STRATEGY_KEYS`. T4 Task 3 writer not named.
+
+**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. T4 state writer still fill-gated. Substrate destroy-copy still operator-gated. Disaster-stop 0a still needs an attended eval. Grow follow-on slices still named. Archive restore of the coldstore design still blocked.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-24e — Nav leftovers: P5b wire, P2b stamps, find-owner
 
 **Focus:** Sequence named nav leftovers. P5b + two Verdict stamps + Rule 7 lookup. No mass `--slug`. No P7/P8. No SESSIONS roll.
