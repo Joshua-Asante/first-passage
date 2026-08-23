@@ -2,7 +2,8 @@
 
 Chronological progress log, **newest first**. Each entry
 **links out** to the detailed artifacts (ADRs, notices, briefs, commits) rather than
-duplicating them. Complements `MEMORY.md` (durable atomic facts, recalled by relevance);
+duplicating them. Durable atoms live with their owners (ADRs / `docs/methodology/lessons/`);
+Claude-project `MEMORY.md` is assistive-only, never attestation;
 this file is the narrative timeline you can scan top-to-bottom.
 
 **A full entry is written only for a session that made a real judgment call** — a
@@ -28,6 +29,20 @@ old top entry. `sessions-append-only` hard-fails any edit to an already-merged e
 
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing
 any entry, full or stub (a-first; bare claims `a`).
+
+---
+
+## 2026-08-24v — P2 Approach A: MEMORY demoted to assistive-only
+
+**Focus:** Decision. Operator promoted P2 as queue #3 and picked Approach A.
+
+**Shipped:** [`state-md addendum`](adr/2026-06-30-state-md-role-reduction.md#addendum-2026-08-23--memory-is-assistive-only-not-the-rule-7-owner) · [`Rule 7`](operational_rules.md) owner-table row · [`plan`](superpowers/plans/2026-08-23-p2-memory-demote-implementation.md). Reconciled `origin/main` first (F1 already ruled; live queue is B7/M1 + Q-TRADECAP-1).
+
+**Decisions/defects:** Durable atoms live in ADRs / lessons. Claude-project MEMORY is assistive-only, never §0. Not Approach B/C. Row 3 closed on land (succession: no auto-replace).
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
 
 ---
 

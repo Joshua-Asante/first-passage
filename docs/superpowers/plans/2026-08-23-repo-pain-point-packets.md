@@ -2,7 +2,7 @@
 
 > **For agentic workers:** This is a **portfolio**, not one implementation. Each packet below needs its own later plan (or is already owned). Do not scaffold packet work from this file. REQUIRED when a packet is GO’d: writing-plans → a dated `docs/superpowers/plans/YYYY-MM-DD-<packet>-implementation.md`.
 
-**AUTHORIZATION:** Plans only. No packet in this file is GO’d by committing it. Bind ([`2026-08-23-bind-operator-queue-implementation.md`](2026-08-23-bind-operator-queue-implementation.md)) **GO landed 2026-08-23**; bind row 3 then **closed** (Lane A scoped decline; last pre-G0 slot unspent). These packets stay **behind** the live STATE queue. Promote one to a numbered row to start it; do not serve them from leftover `Open / next`.
+**AUTHORIZATION:** Plans only. No packet in this file is GO’d by committing it. Bind ([`2026-08-23-bind-operator-queue-implementation.md`](2026-08-23-bind-operator-queue-implementation.md)) **GO landed 2026-08-23**; bind row 3 then **closed** (Lane A scoped decline; last pre-G0 slot unspent). P2 Approach A **GO landed 2026-08-23** ([plan](2026-08-23-p2-memory-demote-implementation.md)). P3–P5 stay **behind** the live STATE queue. Promote one to a numbered row to start it; do not serve them from leftover `Open / next`.
 
 **Goal:** Name the first-look / second-look pain points that the bind plan explicitly left open, group them into independent packets, and sequence them so we do not open a new control-plane campaign that recreates the defect.
 
@@ -99,7 +99,7 @@ P2–P5 are parallel after P1. Only one may sit on the operator queue at a time 
 
 **Do not:** treat a MEMORY paste as Rule 0 evidence; sync the Claude project directory.
 
-**Start when:** promoted to the operator queue after P0.
+**Start when:** GO landed 2026-08-23, Approach A (operator: P2 as queue #3).
 
 **Falsifier:** Rule 7 still names an unreadable-from-clone path as canonical owner, with no “assistive-only” mark.
 

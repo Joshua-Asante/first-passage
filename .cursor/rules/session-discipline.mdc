@@ -56,6 +56,11 @@ search aid; its output is just never sufficient on its own as the pasted
 attestation. Full record:
 [`lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md`](../../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md).
 
+Claude-project `MEMORY.md` (outside this worktree) is the same class:
+assistive-only, never a Rule 7 owner, never a pasted §0 attestation.
+Owner: [`Rule 7`](../../docs/operational_rules.md) ·
+[state-md addendum](../../docs/adr/2026-06-30-state-md-role-reduction.md).
+
 ~~Before creating a new `lab/analysis/` slug or a new file under `docs/adr/` or
 `docs/briefs/`, run `python scripts/repo_retrieve.py --query "<terms>"` and
 paste the output.~~ Suspended per the disposition above. The index is paths +

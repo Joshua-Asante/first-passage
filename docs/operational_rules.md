@@ -166,7 +166,7 @@ This generalizes Rule 5 (Pine owns strategy parameters) from constants to
 | What happened, session by session | `docs/SESSIONS.md` (append-only, links out) |
 | Carried-forward "open / next" | top entry of `docs/SESSIONS.md` |
 | Per-Q forward disposition (Iterate exit) | closure's own `## Iterate` block (`docs/adr/2026-08-04-iterate-closure-exit-mandatory.md`); a STATE forward-board row is a labeled pointer mirror only |
-| Durable atomic facts (by relevance) | `MEMORY.md` + memory files |
+| Durable atomic facts | Owning ADRs and [`docs/methodology/lessons/`](methodology/lessons/). Claude-project `MEMORY.md` + memory files (outside this worktree) are **assistive-only** — never a Rule 7 owner, never Rule 0 / §0 attestation. Same class as `repo_retrieve.py` ([Limb B](../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md)). |
 
 Roles that must **not** restate canonical values:
 - **`STATE.md`** — the open-threads + forward-obligation register (dormant
@@ -699,6 +699,14 @@ Edits to existing rules must be logged with a dated entry explaining what change
 
 ### Edit log
 
+- **2026-08-23 — Rule 7 durable-atoms owner demoted (P2 Approach A).**
+  D1 of the 2026-08-18 assumptions sweep: the prior owner path lives
+  outside the worktree (no retention test, no gate). Durable atoms that
+  bind future work live in owning ADRs / `docs/methodology/lessons/`.
+  Claude-project MEMORY stays as a private injection surface,
+  assistive-only. Does not copy the corpus in-tree. Does not touch
+  Rule 5, lock-state paths (P4), or live sizing constants.
+  [`state-md role-reduction addendum`](adr/2026-06-30-state-md-role-reduction.md#addendum-2026-08-23--memory-is-assistive-only-not-the-rule-7-owner).
 - **2026-08-21 — Reference-repair pass (Rule 9, Rule 10, Rule 14): retired script
   + drifted gate-number pointers.** Rule 9's worktree-Pine example cited
   `scripts/validate_params.py`'s cross-check as a live risk illustration; that
