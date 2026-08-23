@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**AUTHORIZATION: PENDING OPERATOR GO.** Owning ADR [`2026-07-11-tradable-anomalies-statistics-adoption.md`](../../adr/2026-07-11-tradable-anomalies-statistics-adoption.md) §7 T3. Do not execute without GO. Prefer T2 landed first (null hygiene) unless the GO says otherwise.
+**AUTHORIZATION: GO 2026-08-23.** Owning ADR [`2026-07-11-tradable-anomalies-statistics-adoption.md`](../../adr/2026-07-11-tradable-anomalies-statistics-adoption.md) §7 T3. T2 landed first in the same GO.
 
 **Goal:** After GO: GARCH-fitted-null / surrogate-data calibration (also upgrades corpus-FDR IID-Gaussian null); promote ENB + downside-correlation + with/without-candidate marginal-delta into committed tools. Recover Q-NEFF-1 computation into the ENB breadth column (operator Track C).
 
@@ -28,14 +28,14 @@
 
 ### Task 1: Pre-GO
 
-- [ ] **Step 1:** Read Q-NEFF-1 closure + current `breadth.py`. List functions already present vs owed.
-- [ ] **Step 2:** Stop for GO.
+- [x] **Step 1:** Pre-GO inventory: ENB/PR present; GARCH/surrogate/downside-corr owed.
+- [x] **Step 2:** GO 2026-08-23.
 
 ### Task 2: On GO — test-first
 
-- [ ] **Step 1:** Surrogate test: null series false-positive rate within a pre-registered band.
-- [ ] **Step 2:** ENB / downside-corr / marginal-delta tests against a tiny fixture.
-- [ ] **Step 3:** Implement. Commit a calibration RESULTS under `lab/analysis/` only if a new slug is needed — grep `lab/CATALOG.md` first (sub-rule 8).
+- [x] **Step 1:** `tests/test_breadth_t3.py` FPR band `[0.01, 0.15]`.
+- [x] **Step 2:** Downside-corr + `marginal_admission_delta` fixture.
+- [x] **Step 3:** Extended `breadth.py`. Dated note under `docs/notes/research/` (no new `lab/analysis/` slug).
 
 ## Forbidden moves
 
