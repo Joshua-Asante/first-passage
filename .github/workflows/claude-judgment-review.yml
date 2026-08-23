@@ -57,24 +57,31 @@ jobs:
 
       - name: Decide
         id: decide
+        env:
+          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+          EVENT_ACTION: ${{ github.event.action }}
+          EVENT_LABEL: ${{ github.event.label.name || '' }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
         run: |
           python3 scripts/check_claude_judgment_review.py \
-            --head-branch "${{ github.event.pull_request.head.ref }}" \
+            --head-branch "$HEAD_BRANCH" \
             --draft false \
-            --labels "${{ join(github.event.pull_request.labels.*.name, ',') }}" \
+            --labels "$PR_LABELS" \
             --body-file /tmp/pr-body \
             --changed-files-file /tmp/changed-files \
             --existing-comments-file /tmp/comments \
-            --event-action "${{ github.event.action }}" \
-            --event-label "${{ github.event.label.name || '' }}"
+            --event-action "$EVENT_ACTION" \
+            --event-label "$EVENT_LABEL"
 
       - name: Request @claude review
         if: steps.decide.outputs.trigger == 'yes'
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REASON: ${{ steps.decide.outputs.reason }}
         run: |
-          gh pr comment "${{ github.event.pull_request.number }}" --body "$(cat <<EOF
-          @claude review this PR as the Claude Code adjudication pass for a judgment-heavy change scoped on Cursor first (or opted in via the \`claude-review\` label / \`claude-review: judgment\` body token). Reason: \`${{ steps.decide.outputs.reason }}\`.
+          gh pr comment "$PR_NUMBER" --body "$(cat <<EOF
+          @claude review this PR as the Claude Code adjudication pass for a judgment-heavy change scoped on Cursor first (or opted in via the \`claude-review\` label / \`claude-review: judgment\` body token). Reason: \`$REASON\`.
 
           Review-only. Do not merge. Do not expand scope. Owner: \`docs/adr/2026-07-14-cc-cursor-surface-allocation.md\` addendum 2026-08-23.
 

@@ -36,7 +36,7 @@ any entry, full or stub (a-first; bare claims `a`).
 
 **Focus:** Decision. Operator asked to auto-request a Claude review on judgment-heavy PRs, especially when scoped on Cursor first. `queue-exception: operator asked to wire automatic Claude review for judgment-heavy PRs`.
 
-**Shipped:** predicate + `@claude` request workflow + 2026-07-14 addendum (review-only; not merge; not a queue row). Direct action invocation dropped after run `32672069340` self-skipped on the workflow diff.
+**Shipped:** predicate + `@claude` request workflow + 2026-07-14 addendum (review-only; not merge; not a queue row). Direct action invocation dropped after run `32672069340` self-skipped on the workflow diff. `head.ref` passed via `env:` after the first adjudication named the interpolation footgun.
 
 **Decisions/defects:** [`07-14 addendum`](adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-08-23-judgment-review). Drafts silent; re-review stays `@claude`.
 

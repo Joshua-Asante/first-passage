@@ -215,6 +215,8 @@ git log -1 --format='%h %ci' -- docs/operational_rules.md .claude/skills/handoff
 
 **Trigger:** operator asked to wire an automatic Claude review request on PRs that need an extra level of judgment, especially when the work is scoped on Cursor first instead of in Claude Code. That is the exact gap the §2 return contract named ("reviewed in a CC session") and left as a manual mention.
 
+**Routing note:** this addendum was implemented on a `cursor/*` branch at that same operator direction, with no CC-frozen handoff brief. That is a **one-packet exception** to §2 routing test 1 (doctrine → CC, full stop). It does not widen Cursor's doctrine-authoring eligibility. The mechanism installed here is the catch for the same class of PR going forward. Recorded because the first adjudication pass on this introducing PR named the violation (run `32672196619`).
+
 **What changes:** a review-only GitHub Action requests a Claude adjudication pass when **all** of the following hold, implemented by `scripts/check_claude_judgment_review.py` + `.github/workflows/claude-judgment-review.yml`:
 
 1. The PR is **not** a draft.
