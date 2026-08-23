@@ -80,6 +80,7 @@ SCRIPTS_LAYER = {
     "sync_skills": "governance",
     # lab — research
     "mc_user_guardian": "lab",
+    "beta_cohesion_read": "lab",
     "pine_lint": "lab",
     "cost_geometry_pregate": "lab",
     "parse_econ_export": "lab",
