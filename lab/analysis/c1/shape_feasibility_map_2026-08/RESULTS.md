@@ -4,6 +4,21 @@
 
 **Status:** **ACTIVE** — 945-cell region published (Tradeify Select / MFFU / **Tradeify Growth**, the last added 2026-08-24); Select≡MFFU bit-identical; 8/8 corner-case + 3/5 MARGINAL-band validation tuples resolve clean at full N (2/5 stay MARGINAL, 0 confident-verdict flips). §4 `sims_per_seed` reduction **operator-accepted 2026-08-24** (published region's N; not a frozen-N re-sweep; not a Phase B GO). ⚠ **§7.2's "no cell at win_rate ≤ 50% is FEASIBLE" is scoped to the $3,000 rope and does NOT hold for Growth's $3,500 rope — see §13.** Screens shape, not mechanisms.
 
+> ⚠ **2026-08-24 reader-intercept — §13.2's scoping of §7.2 does not survive a longer panel; frozen body unedited (Trap #12).**
+> `build_panel` draws **one** 520-week realisation per tuple and the block-bootstrap can only resample it, so the reported
+> `se_bust` bars (path re-sampling from a *fixed* panel) omit the panel-draw term entirely — and §4 / §4.1 / §13.4 all re-run
+> more **paths** from the **same** panel, so none of the three can detect it. `wr0.50_mild_right_skew_cd2_rk250` — the single
+> cell §13.2 rests on — carries the grid's most extreme panel draw (**z = +3.12**, realised drift **1.50×** intended) and flips
+> **`FEASIBLE` → `INFEASIBLE`** on Growth (bust 0.0093 → 0.0927 at a 5,200-week panel) and **`MARGINAL` → `INFEASIBLE`** on
+> Select (0.0287 → 0.1627). At that panel length **no cell at `win_rate ≤ 50%` is `FEASIBLE` on Growth either**, so
+> **§7.2 as originally written stands.**
+> **Explicitly NOT disturbed — checked, not assumed:** §13.1 and §13.3 are **paired** Select-vs-Growth comparisons on
+> identical panels, so panel noise cancels; re-run at 5,200 weeks the paired result is **33 improve / 282 unchanged /
+> 0 degrade** against §13.1's own 38 / 277 / 0. **The rope finding replicates and should be read as it stands.** §6.1's
+> Select≡MFFU bit-identity is paired in the same way and likewise stands. What moves is the near-gate **boundary** —
+> which is where §13.2 lives. Owner of the re-score:
+> [`a2_panel_noise_venue_bound_2026-08-24`](../a2_panel_noise_venue_bound_2026-08-24/RESULTS.md) §1/§6.
+
 **What this is not:** not a strategy, not a candidate, not a backtest of anything real. It is a
 coverage map over a *synthetic* trade-generating process, scored through the production
 survivor-MC engine, so Phase B can source a mechanism against a quantified target instead of an
@@ -686,6 +701,17 @@ finding: a strictly wider rope on otherwise identical geometry cannot make any p
 the engine agrees on all 315 cells.
 
 ### §13.2 — The win-rate floor moves 5 points for two of three shapes
+
+> ⚠ **2026-08-24 reader-intercept (see the Status banner).** These floors are a property of the
+> 520-week panels, not of the ropes. Re-scored at a 5,200-week panel — same generator, same tuple
+> seeds, same engine, same frozen seeds / horizon / `sims_per_seed`, **same risk levels** — Growth's
+> floors read **65% / 55% / 60%** (`symmetric` / `mild_right_skew` / `bounded_clustered`) against
+> Select's **65% / 55% / 65%**. So the advantage is **one** shape of three, not two, and it is a
+> *different* shape than the table below names: `symmetric` and `mild_right_skew` land on Select's
+> floor exactly, and only `bounded_clustered` keeps a 5-point edge. Correspondingly, **no
+> `win_rate ≤ 50%` cell is `FEASIBLE` on Growth**, so the ⚠ below does not fire and §7.2 stands.
+> Frozen body unedited.
+> [`a2_panel_noise_venue_bound_2026-08-24`](../a2_panel_noise_venue_bound_2026-08-24/RESULTS.md) §6.2.
 
 | Shape | Select floor | Growth floor |
 |---|---|---|

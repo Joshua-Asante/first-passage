@@ -23,6 +23,7 @@ documents the camp boundary for humans/tools.
 
 | slug | theme | status | hot | one-liner | body | heavy |
 |---|---|---|---|---|---|---|
+| a2_panel_noise_venue_bound_2026-08-24 | c1 | ACTIVE | yes | the A2 map's dominant uncertainty is the single 520-week DGP panel each cell sits on, not the MC path count its `se_b... | lab/analysis/c1/a2_panel_noise_venue_bound_2026-08-24/ | — |
 | aegis1p_3leg_rescore_2026-07-27 | c1 | ACTIVE | yes | Aegis@1.00% 3-leg corrected-geometry re-MC under Tradeify envelope | lab/analysis/c1/aegis1p_3leg_rescore_2026-07-27/ | — |
 | aegis3leg_engine_param_2026-08-20 | c1 | ACTIVE | yes | Parameterized Aegis 3-leg rescore engine (default 1.00% only; J14 bars new risk-arm measurement) | lab/analysis/c1/aegis3leg_engine_param_2026-08-20/ | — |
 | band_quantization_2026-08-02 | c1 | ACTIVE | yes | MNQ zero-floors at every FRIENDLY tier below 100K under the locked-proportional split; the two published 50K clearers... | lab/analysis/c1/band_quantization_2026-08-02/ | — |
