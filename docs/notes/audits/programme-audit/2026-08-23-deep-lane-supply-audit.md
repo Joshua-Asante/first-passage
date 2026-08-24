@@ -128,6 +128,32 @@ venue-compatible shape). The constraint genuinely kills daily hold-to-close reve
 does not pre-kill an intraday order-flow-derived construct. Conjunct (iii) is satisfiable but
 per-candidate, at construction time, through the existing screen.
 
+⚠ **CORRECTED 2026-08-24 — the bolded clause above, read as a sufficiency claim, is falsified by
+measurement.** [`RESULTS_DESIGNBOX_EXT.md`](../../../../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS_DESIGNBOX_EXT.md)
+(design-box vs A2-region reconciliation, operator-GO'd 2026-08-24) extended the A2 payoff-shape
+feasibility map to the design box's own geometry — win rates spanning its 30–40% floor (shared row
+with A2; 42% not tested), A2's own cadence axis, A2's own EM2 risk axis, **plus the box's own
+computed bust-≤3.0% diffusion frontier-R** (an executable closed form from
+[N-2026-08-13 §9](../../notice/N-2026-08-13-msl-design-box-rederivation.md), independently re-run
+and verified against the notice's own published table) — scored against the identical production
+survivor-MC engine and gates A2 uses, on both `Tradeify_Select_100K` and `MFFU_Rapid_100K`.
+**Result: 80/80 cells `INFEASIBLE`. 0 `FEASIBLE`, 0 `MARGINAL`.** The closest cell (WR=35%,
+cadence=1, frontier-R $124.21) posts 5.05% bust — 68% over the 3.0% ceiling the closed form was
+solved to hit exactly, and a confident fail (2σ lower bound 4.80%), not a near-miss obscured by
+noise. **Landing inside the design box's stated geometry is not, by itself, sufficient for
+venue-shape-compatibility** at the win rates this extension covers. What survives, and is
+reinforced: this paragraph's own final sentence — "satisfiable but **per-candidate**, at
+construction time, **through the existing screen**" — already declined to claim automatic
+clearance; the correction sharpens that qualifier rather than reversing it. The design box's own
+*directional* premise is independently corroborated by the same measurement (its 2–3R-win shape
+cuts bust 3–10× versus A2's best-surviving shape at the identical win rate/risk, RESULTS_DESIGNBOX_EXT.md
+§7) — the shape is a real improvement, just not shown sufficient on its own at these win rates.
+This correction does not change §4's `AMBIGUOUS` disposition (conjunct (ii) remains the binding
+constraint there) and does not itself decide the deep-iteration lane's fate — see
+RESULTS_DESIGNBOX_EXT.md §10/§11 for the full reconciliation and the owed reader-intercepts (the
+charter and the design-box ADR itself, both ratified decision artifacts, neither edited by this
+correction).
+
 **Answer:** **No candidate family satisfies all three conjuncts with data on hand.** The nearest
 satisfier is the order-flow route: (i) ✓ genuinely new modality, (iii) ✓ determinable at
 construction via the existing shape screen, (ii) **one operator sign-off away** (≤$125, K=0,
@@ -224,3 +250,4 @@ git log --oneline --since=2026-08-23 -- docs/adr/2026-08-16-deep-iteration-lane-
 | 2026-08-23 | §5 item 1 updated same day: operator signed `MNQFLOW-1-DEPTH`; its own P0 cost gate fired ($148.04 actual vs $125.00 ceiling, 18.4% over) — blocked, $0 spent, no pull. The audit's "one sign-off away" characterization corrected as stale. Verdict/§3.5 census unchanged — this is a downstream event on the named lead, not a revision of the process findings | Claude Code |
 | 2026-08-23 | §5 item 1 updated again, same day: operator elected the redraw path; a second independent 30-day sample (`PREREG_S2B.md`) also blocked at P0 ($154.73 vs $125.00, 23.8% over). Two draws now read as a structural cost finding (~$150 true cost, not $125), not an unlucky sample. FM-9 (pre-committed on the redraw) bars a third automatic resample. Verdict/§3.5 census still unchanged | Claude Code |
 | 2026-08-23 | §5 item 1 closed out for now: operator disposition `HOLD` ("not ruling it out but I do not know if it is worth the spend"), electing none of the three named paths. No re-test date forced; the audit's other two named routes (free MOC-imbalance check; blind channel) stand unaffected. Verdict/§3.5 census still unchanged | Claude Code |
+| 2026-08-24 | §3.5 conjunct (iii) corrected in place, dated: the design-box-vs-A2-region reconciliation (`RESULTS_DESIGNBOX_EXT.md`, operator-GO'd) scored 80/80 design-box-geometry cells `INFEASIBLE` against the production engine — the bolded "is itself the venue-compatible shape" clause is falsified as a sufficiency claim; the paragraph's own "satisfiable but per-candidate" qualifier is sharpened, not reversed. §4's `AMBIGUOUS` disposition and conjunct (ii)'s binding status are unchanged — this correction does not decide the lane's fate | Claude Code |
