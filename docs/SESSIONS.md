@@ -32,6 +32,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-25q — Blast-radius on Packet 0 accept
+
+**Focus:** blast-radius skill on the Packet 0 accept (`eaf5574`).
+**Shipped:** Packet 0 section heading retitled (`not executed` → `accepted 2026-08-24`) on [`consistency plan`](superpowers/plans/2026-08-24-viable-strategy-surface-consistency.md).
+**Decisions/defects:** **BLAST-RADIUS: REPAIRED**. Live residual-unsigned consumers were already closed; leftover hits below are historical.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)).
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-25p — Accept A2 N-reduction (Packet 0)
 
 **Focus:** Operator accept of A2's disclosed `sims_per_seed` reduction. Fast-forwarded local `main` to `origin/main` and re-checked Packet 0 premises against post-#155 commits.

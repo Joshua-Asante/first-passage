@@ -43,7 +43,7 @@ Leave these alone (operator already cleared them):
 
 ---
 
-## Packet 0 — Named operator ask (not executed by this plan)
+## Packet 0 — Named operator ask (accepted 2026-08-24)
 
 **A2 N-reduction sign-off.** The disclosed deviation is `sims_per_seed` 500
 (N=1,500) vs the frozen 10,000 (N=30,000), seeds/horizon untouched, full-N
