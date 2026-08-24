@@ -39,6 +39,9 @@ re-purchased).
   Q-FIRMEOD-1 closure's own pin (92,104,116,128,140,508,524) has **shifted by a constant +30**
   since it was recorded — confirmed stale-but-consistent (same 7 tiers, same relative order), not
   a changed tier set.
+  **2026-08-24 currency:** still 7 hits; BluSky pair moved again (now 122, 134, 146, 158, 170,
+  600, 616). Durable hook: `grep -c '"dd_type": "trailing"' core/firm_rules.py` expected `7`.
+  Closure §10 carries the same note.
 - `core/mc/simulation.py` (`simulate_path`, full function) — the `equity_test = min(equity_new,
   equity + intraday_low[day]*scale)` construction (L131-134) and the `dd_type=="trailing"` branch
   (L141-151).

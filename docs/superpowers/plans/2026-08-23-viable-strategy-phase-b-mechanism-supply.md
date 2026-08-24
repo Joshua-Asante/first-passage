@@ -119,12 +119,14 @@ the registry's power-wall precedent (F5/D3: power 0.24–0.30 at single-digit bp
 
 ---
 
-## Lane B4 — Revived cells (from Phase A1 × A3)
+## Lane B4 — Revived cells (from Phase A1 × A3) — **voided**
 
-- [ ] Only cells on A1's pre-registered revival list, only under A3-`Accepted` amendments, only
+A1 revival list empty; A3 voided. This lane is void.
+
+- [x] Only cells on A1's pre-registered revival list, only under A3-`Accepted` amendments, only
   through the impact-persistence battery with **event-time** costing. Each revived cell re-enters
   as its own candidate with the original kill cited and the specific amendment that reopens it
-  named. Empty revival list or A3 declined → this lane is void.
+  named. **Voided-not-run** (empty revival list).
 
 ## Demoted — not a lane
 
