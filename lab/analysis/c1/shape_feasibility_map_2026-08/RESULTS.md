@@ -29,7 +29,7 @@ Task A2).
 | `docs/briefs/closures/Q-STATVALID-1-closure-falsified.md` | `50396fc` 2026-08-23 | The SE-of-proportion / 2-sigma noise-floor convention this harness's `gate_status()` implements, at the same `N` semantics (proportion out of total MC paths) Q-STATVALID-1 itself used. |
 | `docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md` + `lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/run_w1_intraday_both_halves.py` | ADR `56663b2` 2026-08-22 · harness `027a729` 2026-08-14 | The citable prior art for "intraday-honest limb": pair `daily_pnl` with `intraday_low` via `paired_blocks_from_daily`, thread both through `run_tier_remc(..., intraday_blocks=...)`, never let the intraday channel be silently vacuous. This harness's `score_cell` follows the identical call shape. |
 | `docs/adr/2026-08-13-implied-sr-report-only-fade-reopen.md` | `027a729` 2026-08-14 | First-consumer check (i) input — the reopened Tradeify-native fade design-region (§8 below). |
-| `docs/superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md` | `3ea7988` 2026-08-23 | First-consumer check (ii) input — the three Phase-B lanes' card-precheck rows (§8 below). |
+| `docs/superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md` | `3ea7988` 2026-08-23 | First-consumer check (ii) input — Phase-B live card-precheck rows B1.4 / B2.3 (§8 below). B3 KILL at A1 (same day, earlier); not a live pre-check. |
 | `lab/CATALOG.md` header + Active›c1 table | `c42e7e7` 2026-08-23 | Row format for this campaign's CATALOG entry. |
 
 **Full-corpus search for the 2026-08-22 consistency-constraint quantification harness** (memory:
@@ -445,8 +445,8 @@ gate at the *same* win rate, for the reason §7 already names (mean edge, not wi
 
 ### (ii) Confirm legibility for Phase-B candidate pre-checks
 
-`docs/superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md` names each lane's
-own card-precheck row (B1.4 / B2.3 / B3.2) as the point where a candidate's predicted shape is
+`docs/superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md` names each *live*
+lane's own card-precheck row (B1.4 / B2.3) as the point where a candidate's predicted shape is
 checked against this region — **that check is each lane's own job, not this document's**; the
 brief for A2 asks only that the region's axes be legible/usable for that purpose. Confirmed:
 
@@ -462,11 +462,13 @@ brief for A2 asks only that the region's axes be legible/usable for that purpose
   this map's three shape buckets and 7-point win-rate axis are ready to receive B2's own
   precheck once B2.0/B2.1 clear and a predicted shape is named — A2 does not supply that
   assumption on B2's behalf.
-- **B3 (buyback-blackout abstention)** — its own doc already states the structural reason it can
-  only be a *sleeve* ("clustered frequency cannot satisfy the activity rule alone"), which is
-  **consistent with** (not contradicted by) this map's cadence axis starting at 1/week: B3's blocked
-  quarterly clustering sits below every cadence value this grid tests, confirming — from a second,
-  independent angle — why B3 cannot stand alone on this venue.
+- **B3 (buyback-blackout abstention) — KILL, not a live pre-check.** A1 audit §6 (2026-08-23,
+  earlier the same day this RESULTS was authored) ruled B3 **KILL** (POWER class, category-inherited
+  from F5/D3). Phase B proceeds with B1/B2 only. The cadence observation below is **historical** —
+  it is not a live card-precheck. The plan's own sleeve note ("clustered frequency cannot satisfy
+  the activity rule alone") was **consistent with** (not contradicted by) this map's cadence axis
+  starting at 1/week; that consistency does not reopen the kill. Re-proposal: a materially different
+  magnitude argument than F5's three failed instances — [`A1 §6`](../../../../docs/notes/audits/2026-08-23-kill-register-attribution-audit.md).
 
 ---
 
@@ -640,6 +642,7 @@ grep -c "not yet given" docs/notes/audits/2026-08-23-shape-feasibility-map-audit
 |---|---|---|
 | 2026-08-23 | Initial authoring — harness, 630-cell region sweep, validation subset, first-consumer checks | Claude Code (Sonnet 5) |
 | 2026-08-23 | Review-fix pass (§12): corrected the false §6.1 days-to-pass minimum (~30 → verified 16.0); added §4.1 MARGINAL-band full-N validation subset (`--marginal-validation` CLI mode, `marginal_validation_data.jsonl`, 10 new cells); updated Status line, §11 Limitations, Verification | Claude Code (Sonnet 5) |
+| 2026-08-24 | §8 (ii) / §0: B3 dropped as a live card-precheck (A1 KILL same day, earlier); cadence note kept as historical. B1.4 / B2.3 remain the live pre-check rows | Cursor (surface-consistency Packet 2) |
 
 ---
 
