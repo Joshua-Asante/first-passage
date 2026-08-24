@@ -1,0 +1,268 @@
+{
+  "cutoff": "2021-09-28",
+  "K": 1,
+  "windows_tff_prints": {
+    "W1": 4,
+    "W2": 13,
+    "W3": 26
+  },
+  "assoc_alpha": 0.01,
+  "min_separation_pp": 0.35,
+  "mnq_standalone_line_check": {
+    "mnq_code": "209747",
+    "mnq_name": "MICRO E-MINI NASDAQ-100 INDEX",
+    "other_nasdaq_family_lines": {
+      "20974+": "NASDAQ-100 Consolidated",
+      "209741": "NASDAQ-100 STOCK INDEX",
+      "209742": "NASDAQ MINI"
+    }
+  },
+  "pull": {
+    "n_rows": 301,
+    "first_report_date": "2020-08-04",
+    "last_report_date": "2026-08-18",
+    "max_crosscheck_delta_pp": 0.09592376335794128
+  },
+  "n_prebreak_published_prints": 45,
+  "ambiguous_hold_trigger_1_prebreak_sparsity": false,
+  "n_triggering_days": 1846,
+  "fidelity_control": {
+    "1": {
+      "bust_pct": 67.66666666666667,
+      "pass_pct": 32.333333333333336,
+      "published": 67.67,
+      "delta_pp": -0.0033333333333303017,
+      "within_tol": true
+    },
+    "2": {
+      "bust_pct": 77.00999999999999,
+      "pass_pct": 22.99,
+      "published": 77.01,
+      "delta_pp": -1.4210854715202004e-14,
+      "within_tol": true
+    }
+  },
+  "fidelity_control_pass_k1": true,
+  "windows": {
+    "W1": {
+      "window_prints": 4,
+      "classifier": {
+        "n_warmup": 3,
+        "n_higher": 171,
+        "n_lower": 127,
+        "i_freeze": 44,
+        "frozen_value": 20.924999999999997,
+        "spotcheck_pass": true,
+        "degenerate_threshold": false
+      },
+      "association": {
+        "n_higher": 171,
+        "n_lower": 127,
+        "frac_higher_post": 0.9590643274853801,
+        "frac_lower_post": 0.7244094488188977,
+        "contingency_table": {
+          "higher_post": 164,
+          "higher_pre": 7,
+          "lower_post": 92,
+          "lower_pre": 35
+        },
+        "fisher_p": 1.2276608955043957e-08,
+        "separation_pp": 0.23465487866648238,
+        "point_biserial_r": 0.03996085234312062,
+        "point_biserial_p": 0.49195252907025633,
+        "corrected_pass": false
+      },
+      "gate": {
+        "HIGHER": {
+          "meta": {
+            "n_days_in_label": 864,
+            "n_days_in_blocks": 859,
+            "n_runs_used": 13,
+            "n_runs_skipped": 1,
+            "n_blocks": 159
+          },
+          "flat": {
+            "bust_pct": 72.68,
+            "pass_pct": 27.319999999999997,
+            "gate_pass": false
+          },
+          "cushion": {
+            "bust_pct": 0.0,
+            "pass_pct": 51.03666666666666,
+            "gate_pass": true
+          }
+        },
+        "LOWER": {
+          "meta": {
+            "n_days_in_label": 670,
+            "n_days_in_blocks": 665,
+            "n_runs_used": 13,
+            "n_runs_skipped": 1,
+            "n_blocks": 120
+          },
+          "flat": {
+            "bust_pct": 30.426666666666662,
+            "pass_pct": 69.57333333333334,
+            "gate_pass": false
+          },
+          "cushion": {
+            "bust_pct": 0.0,
+            "pass_pct": 91.43333333333334,
+            "gate_pass": true
+          }
+        }
+      },
+      "direction": "BOTH_CLEAR"
+    },
+    "W2": {
+      "window_prints": 13,
+      "classifier": {
+        "n_warmup": 12,
+        "n_higher": 154,
+        "n_lower": 135,
+        "i_freeze": 44,
+        "frozen_value": 22.146153846153844,
+        "spotcheck_pass": true,
+        "degenerate_threshold": false
+      },
+      "association": {
+        "n_higher": 154,
+        "n_lower": 135,
+        "frac_higher_post": 0.974025974025974,
+        "frac_lower_post": 0.7851851851851852,
+        "contingency_table": {
+          "higher_post": 150,
+          "higher_pre": 4,
+          "lower_post": 106,
+          "lower_pre": 29
+        },
+        "fisher_p": 3.4178932827830103e-07,
+        "separation_pp": 0.1888407888407888,
+        "point_biserial_r": 0.03486411132264237,
+        "point_biserial_p": 0.554989049720886,
+        "corrected_pass": false
+      },
+      "gate": {
+        "HIGHER": {
+          "meta": {
+            "n_days_in_label": 744,
+            "n_days_in_blocks": 734,
+            "n_runs_used": 6,
+            "n_runs_skipped": 2,
+            "n_blocks": 141
+          },
+          "flat": {
+            "bust_pct": 69.44333333333334,
+            "pass_pct": 30.55666666666667,
+            "gate_pass": false
+          },
+          "cushion": {
+            "bust_pct": 0.0,
+            "pass_pct": 56.70333333333334,
+            "gate_pass": true
+          }
+        },
+        "LOWER": {
+          "meta": {
+            "n_days_in_label": 680,
+            "n_days_in_blocks": 670,
+            "n_runs_used": 6,
+            "n_runs_skipped": 2,
+            "n_blocks": 128
+          },
+          "flat": {
+            "bust_pct": 39.22666666666667,
+            "pass_pct": 60.77333333333333,
+            "gate_pass": false
+          },
+          "cushion": {
+            "bust_pct": 0.0,
+            "pass_pct": 93.43999999999998,
+            "gate_pass": true
+          }
+        }
+      },
+      "direction": "BOTH_CLEAR"
+    },
+    "W3": {
+      "window_prints": 26,
+      "classifier": {
+        "n_warmup": 25,
+        "n_higher": 127,
+        "n_lower": 149,
+        "i_freeze": 44,
+        "frozen_value": 27.721153846153847,
+        "spotcheck_pass": true,
+        "degenerate_threshold": false
+      },
+      "association": {
+        "n_higher": 127,
+        "n_lower": 149,
+        "frac_higher_post": 0.9921259842519685,
+        "frac_lower_post": 0.87248322147651,
+        "contingency_table": {
+          "higher_post": 126,
+          "higher_pre": 1,
+          "lower_post": 130,
+          "lower_pre": 19
+        },
+        "fisher_p": 7.744352995521121e-05,
+        "separation_pp": 0.11964276277545849,
+        "point_biserial_r": 0.032068418362692634,
+        "point_biserial_p": 0.5957797721877853,
+        "corrected_pass": false
+      },
+      "gate": {
+        "HIGHER": {
+          "meta": {
+            "n_days_in_label": 604,
+            "n_days_in_blocks": 599,
+            "n_runs_used": 4,
+            "n_runs_skipped": 1,
+            "n_blocks": 116
+          },
+          "flat": {
+            "bust_pct": 79.09333333333335,
+            "pass_pct": 20.906666666666666,
+            "gate_pass": false
+          },
+          "cushion": {
+            "bust_pct": 0.0,
+            "pass_pct": 20.01,
+            "gate_pass": false
+          }
+        },
+        "LOWER": {
+          "meta": {
+            "n_days_in_label": 750,
+            "n_days_in_blocks": 740,
+            "n_runs_used": 3,
+            "n_runs_skipped": 2,
+            "n_blocks": 145
+          },
+          "flat": {
+            "bust_pct": 39.18333333333334,
+            "pass_pct": 60.81666666666666,
+            "gate_pass": false
+          },
+          "cushion": {
+            "bust_pct": 0.0,
+            "pass_pct": 98.06666666666666,
+            "gate_pass": true
+          }
+        }
+      },
+      "direction": "LOWER_CLEARS_HIGHER_DOES_NOT"
+    }
+  },
+  "summary": {
+    "corrected_association_windows_passing": 0,
+    "corrected_association_fires_at_ge2_of_3": false,
+    "directions_by_window": {
+      "W1": "BOTH_CLEAR",
+      "W2": "BOTH_CLEAR",
+      "W3": "LOWER_CLEARS_HIGHER_DOES_NOT"
+    },
+    "direction_same_sign_every_window": false
+  }
+}
