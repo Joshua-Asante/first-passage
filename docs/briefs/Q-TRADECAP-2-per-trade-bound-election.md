@@ -1,8 +1,8 @@
 # Q-TRADECAP-2 — Which close is licensed for the unbounded per-trade realized loss?
 
-**Status:** `OPEN`
+**Status:** `CLOSED-RESOLVED 2026-08-24` — licensed close is frozen ID **2** (observe-only). Closure: [`closures/Q-TRADECAP-2-closure-resolved.md`](closures/Q-TRADECAP-2-closure-resolved.md).
 **Authored:** 2026-08-24
-**Closed:** `N/A` while OPEN
+**Closed:** 2026-08-24
 **Authors:** Joshua + Cursor
 **Parent question:** [`Q-TRADECAP-1`](Q-TRADECAP-1-per-trade-loss-bound.md) (`RESOLVED` 2026-08-23) — absence confirmed; this brief is the opened successor
 **Sub-questions opened:** none
@@ -43,7 +43,7 @@ Nearest owners: this Q (new), the parent closure, `1r_estimation.md` (CFD-era fo
 
 ## §1 — Context and motivation
 
-Q-TRADECAP-1 confirmed the gap. STATE queue row 2 is the election. The CFD-era fork assumed a daily-cadence layer to sit on and used 2.0% of equity as the example threshold. Tradeify Select 100K has **no daily-loss rule** and a **$3,000** trailing DD; 2.0% of $100K is $2,000 — two-thirds of the whole trail. A realized-loss hard-cap also needs a flatten/stop path; disaster-stop Phase 0a is `BLOCKED` and the listener still does not pass `sl=`. Starting the bound is possible only for the closes that do not require those missing pieces.
+Q-TRADECAP-1 confirmed the gap. STATE queue row 2 held the election (now deleted). The CFD-era fork assumed a daily-cadence layer to sit on and used 2.0% of equity as the example threshold. Tradeify Select 100K has **no daily-loss rule** and a **$3,000** trailing DD; 2.0% of $100K is $2,000 — two-thirds of the whole trail. A realized-loss hard-cap also needs a flatten/stop path; disaster-stop Phase 0a is `BLOCKED` and the listener still does not pass `sl=`. Starting the bound is possible only for the closes that do not require those missing pieces.
 
 ---
 
@@ -55,7 +55,7 @@ Q-TRADECAP-1 confirmed the gap. STATE queue row 2 is the election. The CFD-era f
 - M1 ADR — size-bound vs identity-bound; realized-magnitude is the unnamed third axis.
 - Assumption-sweep A6 — origin of the parent.
 - Ox-alpha consult (zero authority): [`N-2026-08-24-ox-alpha-per-trade-bound-election.md`](../notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md). Surviving rows travel with the election; they do not elect.
-- Election record (`Proposed`): [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) — ID **2**; not ratified.
+- Election record (`Accepted`): [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) — ID **2**.
 
 ---
 
@@ -105,8 +105,8 @@ Q-TRADECAP-1 confirmed the gap. STATE queue row 2 is the election. The CFD-era f
 ## §7 — Execution plan (self-executing; $0 / K=0)
 
 - **Phase 0 — Geometry (done this session, before lock).** G1/G2/G3 measured in §0. **H-GEO accepts:** Option 1-as-staged is not startable. Recommended default for the *operator* (not elected here): **2** (alert tripwire), threshold not imported from 2.0%. **1-realized** waits on disaster-stop Phase 0a. **1-size** is available if the operator wants a size bound knowing it does not close realized loss.
-- **Phase 1 — Operator election.** Recorded `Proposed` on [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) (ID **2**). Do not wire until that ADR is `Accepted`.
-- **Phase 2 — Verdict assertion** per §6.
+- **Phase 1 — Operator election.** `Accepted` on [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) (ID **2**). Observe-only; threshold later; not a wire.
+- **Phase 2 — Verdict assertion** per §6: `RESOLVED`. See [`closures/Q-TRADECAP-2-closure-resolved.md`](closures/Q-TRADECAP-2-closure-resolved.md).
 
 ---
 
@@ -136,7 +136,7 @@ PYTHONPATH=core python -c "from firm_rules import FIRM_RULES; t=FIRM_RULES['Trad
 sed -n '262,266p' ops/c1_rail/c1_rail_listener.py
 rg -n "stop_loss=" ops/c1_rail/crosstrade_payload.py
 
-# Parent still closed; this Q still open until election
+# Parent still closed; this Q closed on INDEX Recently-closed
 rg -n "Q-TRADECAP-2" docs/briefs/INDEX.md
 rg -n "CLOSED-RESOLVED 2026-08-23" docs/briefs/Q-TRADECAP-1-per-trade-loss-bound.md
 
@@ -166,5 +166,5 @@ sed -n '262,266p' ops/c1_rail/c1_rail_listener.py
 - [x] §4 binary (G1/G2/G3 + election)
 - [x] §5 tempting, not strawmen
 - [x] §6 specific triggers
-- [x] §8 pre-registration authored before Phase 1 (election unpaid)
+- [x] §8 pre-registration authored before Phase 1 (frozen `4d6761b`; election now `Accepted`)
 - [x] §10 hooks runnable

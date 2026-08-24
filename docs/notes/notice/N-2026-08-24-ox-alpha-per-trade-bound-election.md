@@ -4,7 +4,7 @@
 **Observed:** 2026-08-24
 **Author:** Cursor Cloud Agent (commission: send the crux of the Q-TRADECAP-2 problem to `stealth/ox-alpha`, sanitized, with enough context)
 **Source:** OpenRouter `stealth/ox-alpha` chat-completions, one sanitized adversarial review of a genericized election packet. Reconciled against the real brief before any row is a finding.
-**Status:** `HOLD` until [`elect-2`](../../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) is `Accepted` (or declined)
+**Status:** `RESOLVED` — elect-2 [`Accepted`](../../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md); O4/O5/O6/O7/O9 disposed there
 **Lives in:** `docs/notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md`
 
 Lane: [`2026-08-22-ox-alpha-adversarial-lens-scope.md`](../../adr/2026-08-22-ox-alpha-adversarial-lens-scope.md) §2 (adversarial lens on a decision-authoring artifact — not the candidate-generation carve-out). Zero authority; objections are not findings until the table below. Frozen option set is not amended.
@@ -66,10 +66,10 @@ Verdicts: **SURVIVES** (carries into the unpaid election) · **PARTIAL** · **DI
 
 ## §4 — Routing decision
 
-**HOLD** until the Proposed elect-2 ADR is `Accepted` or declined. Do not graduate a new Q. Do not amend the frozen pre-reg. Do not wire a tripwire or cap from this notice.
+**RESOLVED** — elect-2 is `Accepted`. Do not graduate a new Q. Do not amend the frozen pre-reg. Do not wire a tripwire or cap from this notice.
 
-Decision: HOLD
-Reason: ID **2** is recorded `Proposed`; O4/O5/O6/O7/O9 are disposed on that ADR. HOLD until `Accepted` or declined.
+Decision: RESOLVED
+Reason: surviving rows disposed on the Accepted ADR.
 
 ---
 

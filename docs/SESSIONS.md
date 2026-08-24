@@ -32,6 +32,20 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-25j — Q-TRADECAP-2 ratified (ID 2 Accepted)
+
+**Focus:** Decision. Queue row 2: operator ratified the elect-2 light ADR.
+
+**Shipped:** [`elect-2`](adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) `Accepted`. [`closure`](briefs/closures/Q-TRADECAP-2-closure-resolved.md) `RESOLVED`. STATE row 2 deleted (no auto-replace). No rail wire.
+
+**Decisions/defects:** licensed close is observe-only ID **2**. Threshold later. Consult `RESOLVED`.
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-25h — Q-TRADECAP-2 elects 2 (Proposed light ADR)
 
 **Focus:** Decision. Queue row 2: operator asked for the light ADR after the consult recommendation.

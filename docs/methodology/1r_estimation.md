@@ -267,7 +267,7 @@ is currently unquantified. Tagged Forward, gated downstream on either
 allocation review or 6-month live reconciliation, whichever fires first.
 Tradeify election owner (opened 2026-08-24; this CFD-era fork is not the
 live option set): [`Q-TRADECAP-2`](../briefs/Q-TRADECAP-2-per-trade-bound-election.md)
-· [`elect-2` `Proposed`](../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md).
+· [`elect-2` `Accepted`](../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md).
 
 #### Live ↔ backtest pyramid divergence (one-liner caveat)
 

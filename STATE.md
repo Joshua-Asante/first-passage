@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-08-23
+**Last curated:** 2026-08-24
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
@@ -57,7 +57,6 @@ BEHIND this list.** Items leave when done; it stays ≤5 so it cannot decay into
 | # | Item | Owner artifact | Blocks |
 |---|---|---|---|
 | 1 | **B7-REFIRE Stage 1 + M1** — both wait on an acceptable strategy on the ruled (Python-native) host. Eval live; no book deployed | [`GO ADR Addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`S2`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) · [`M1`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) | live-signal / arming path |
-| 2 | **Per-trade dollar-loss bound — ratify ID 2 tripwire** (`Proposed` light ADR; Q still `OPEN`) | [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](docs/adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) · [`Q-TRADECAP-2`](docs/briefs/Q-TRADECAP-2-per-trade-bound-election.md) · [consult](docs/notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md) | any future arming session carries the gap unresolved until `Accepted` |
 
 Off-queue leftovers stay on their owner artifacts. Re-entry is promote to a numbered queue row and drop something else (cap ≤5). When a doable row leaves, do not auto-open a replacement — cite remaining rows until the operator promotes one.
 
@@ -72,6 +71,7 @@ One line per executed decision, newest first — consequence + owner. Posture su
 
 Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md) (P8 keep-15 roll, 2026-08-23).
 
+- **2026-08-24** — `Q-TRADECAP-2` closed `RESOLVED` — licensed close is frozen ID **2** (observe-only). Queue row 2 deleted (no auto-replace). No tripwire wire. [`elect-2`](docs/adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) [`closure`](docs/briefs/closures/Q-TRADECAP-2-closure-resolved.md)
 - **2026-08-23** — Pain-point residuals P6–P10 landed (README lead · identifier table · STATE keep-15 · withdrawn-book tense · Q-TOM-SPX-1 DEAD). [`impl plan`](docs/superpowers/plans/2026-08-23-p6-p10-residuals-implementation.md)
 - **2026-08-23** — Automatic Claude judgment review on non-draft Cursor-first (or opted-in) PRs that touch a governed surface; review-only, not merge. [`07-14 addendum`](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-08-23-judgment-review)
 - **2026-08-23** — ox-alpha Uses 3–4 (WHO-methodology critique; freshly-authorized mechanism-supply generation) reconciled; viable-strategy sequence authored as six `AWAITING GO` phase plans. Cascade thread conceded dead by its own proposer; MOC-imbalance wake converges with the estate's named free supply route. [`Use-4 notice`](docs/notes/notice/N-2026-08-23-ox-alpha-mechanism-supply-candidates.md) [`overview`](docs/superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md)
@@ -86,7 +86,6 @@ Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state
 - **2026-08-23** — Fork F1 ruled (12:59, after an 11:37/12:23 concurrent-session sweep had just re-confirmed F1's deferred posture as precedent for the sibling PARTIAL-disposition addendum — considered override, not a miss): a Tradeify-resting §4 discharge does not satisfy the four-firms falsifier (functionally a 3-firm set — Bulenox/MFFU/BluSky — for §4 counting purposes); queue row 1 closed. `MNQTAPE-2` ($308.69 larger-N tape-aggressor replication) declined NO-GO same session. MSL-S4 (MGC) Pine hash-pinned locally; confirmed already `PARKED` (post-`AMBIGUOUS-HOLD` Explore-confirm) — its RUNBOOK's TV-backtest recommendation is stale/superseded, not a live next step. Every currently-sourced MSL Tradeify candidate is now closed or PARKED. [`ADR addendum`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) [`prereg`](docs/briefs/pre-registration/2026-08-23-mnqtape-2-larger-n-prereg.md) [`MSL-S4 card`](core/strategies/candidates/candidates_CARD.md)
 - **2026-08-23** — Coldstore Phase B/C: operator GO retired Guardian Gold + Aegis USDJPY from living `dd_protection.BASE_RISK` (LOCKED legacy book table now 2 strategies — Striker DJ30/NAS100 only); frozen risk% moved to `historical_challenge.HISTORICAL_CHALLENGE_BASE_RISK`, authorization axis unchanged. [`Phase B ADR`](docs/adr/2026-08-23-strategy-coldstore-phase-b.md) [`Phase C ADR`](docs/adr/2026-08-23-strategy-coldstore-phase-c.md) [`PR #122`](https://github.com/Joshua-Asante/first-passage/pull/122)
 - **2026-08-23** — SESSIONS class D tightened to a judgment-call gate; stub-entry mechanism added for Open/next continuity without violating `sessions-append-only`. [`W5 ADR addendum`](docs/adr/2026-08-07-w5-governance-diet.md) [`PR #120`](https://github.com/Joshua-Asante/first-passage/pull/120)
-- **2026-08-23** — Blind channel: canonical pre-G0 kill count corrected 1/3 → 2/3 (`MNQ-SIZEDIV-1`'s own 2026-08-15 kill had been recorded in this file and `MNQ.md` since the 2026-08-16 port but never synced to the channel ADR's own canonical line — 8-day mirror/owner lag, disclosed and fixed). Second door re-walk against the deep-lane's cached 6A/M6A and GC/MGC panels: entry-geometry/dense-1m temporal-selectivity doors reopen on those two non-index instruments (still blocked on MNQ); FM-4's reach to a pre-G0 kill's instrument-hop, and whether the sibling lane's own GO/cost-dry-run discharges this channel's identical requirement, both flagged operator-call-needed. No construct named; one pre-G0 kill slot remains before generation-dry. [`channel ADR addendum`](docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md)
 
 > ⚠ **Truncated to the newest 15 at the 2026-08-08 Great Prune.** Older executed decisions are
 > owned by their ADRs (`docs/adr/`, tombstoned rows in [`TOMBSTONES.md`](docs/adr/TOMBSTONES.md));
