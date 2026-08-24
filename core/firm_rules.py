@@ -393,6 +393,68 @@ FIRM_RULES = {
         "consistency_rule_pct": 40.0,
     },
 
+    # Tradeify "Growth" EVALUATION tier -- added 2026-08-24.
+    # PRIMARY SOURCE: help.tradeify.co art. 10495915 "Growth Evaluation Accounts",
+    # article-dated 2026-06-05, read in-browser 2026-08-24. Rules table, $100k row,
+    # verbatim: Profit Target $6,000 | Daily Loss Limit (Soft Breach) $2,500 |
+    # Trailing Max Drawdown $3,500 | Max Position Size 8 Contracts (80 Micros).
+    # Same article: min trading days "1 day (can pass immediately)"; consistency
+    # "None"; "there is no time limit to complete a Growth Evaluation."
+    #
+    # WHY THIS ROW EXISTS: the 2026-08-23 shape feasibility map
+    # (lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md Sec7) found the
+    # $3,000 Select rope -- not the $6,000 target, not the 40% consistency rule
+    # (which never binds: Select 40% and MFFU 50% scored bit-identically across
+    # all 315 tuples) -- is the binding gate through most of the grid. Growth
+    # carries the SAME $6,000 target on a $3,500 rope: +16.7% headroom on the one
+    # constraint that actually binds. This row exists to measure that.
+    #
+    # (!) daily_loss_pct STAYS None. That is a modeling decision, not an oversight.
+    #   Growth's DLL is a SOFT breach -- art. 10495915 verbatim: "If you hit this
+    #   limit, trading is stopped for the day but your account is not failed."
+    #   `simulate_path` has no representation for a lockout: its daily_loss_pct
+    #   branch returns "bust_daily", a HARD fail (core/mc/simulation.py L137-140).
+    #   Encoding 2.5 here would model a rule the venue does not have and fail
+    #   paths Tradeify merely pauses. Modeling it as None instead OMITS the
+    #   lockout, leaving the modeled daily left tail FATTER than the venue's (the
+    #   venue truncates a losing day near -$2,500; the model does not). Direction
+    #   is therefore PESSIMISTIC on the trailing rope. A Growth bust figure from
+    #   this row is consequently an UPPER bound w.r.t. the missing lockout while
+    #   remaining a LOWER bound w.r.t. the intraday clock (below) -- two-sided,
+    #   not a point estimate. A faithful soft-DLL limb is an engine change and
+    #   needs its own ADR + re-MC.
+    #
+    # (!) CLOCK: same two-clock geometry as Select -- the floor ratchets EOD, the
+    #   breach is enforced intraday (art. 10495897, quoted verbatim in
+    #   core/mc/simulation.py::simulate_path, read 2026-07-30). Art. 10495915's
+    #   "intraday fluctuations won't affect the drawdown level" describes the
+    #   floor's RATCHET, not the breach test, and does NOT license an EOD-only
+    #   read -- see Q-FIRMEOD-1 (FALSIFIED) and the standing lower-bound rule in
+    #   CLAUDE.md. Score this tier on the intraday-honest limb, same as Select.
+    #   Re-verification of 10495897 for Growth specifically is OWED (the 2026-08-24
+    #   in-browser pass could not reload it; relying on the dated 2026-07-30 read).
+    #
+    # Promoted into AUTOMATION_FRIENDLY_PROP_FIRMS["tradeify"] (below) by
+    # operator GO 2026-08-24 (chat), ratifying
+    # docs/adr/2026-08-24-tradeify-growth-tier-scoring-only.md. That dict is
+    # the operational target set governed by ADR
+    # 2026-07-12-prop-portfolio-four-friendly-firms (firm-level, not tier-level
+    # -- Select's four tiers sit under it without a per-tier amendment).
+    "Tradeify_Growth_100K": {
+        "dd_type": "trailing_locking",  # fixed-$ EOD-ratcheting trail (NOT %-of-peak `trailing`)
+        "starting_balance": 100_000,
+        "max_dd_pct": 3.5,              # $3,500 trailing max DD / $100,000 (Select tier = $3,000)
+        "dd_lock_offset_usd": 1_000_000.0,  # unreachable -- eval has no lock (art. 10495897)
+        "daily_loss_pct": None,         # $2,500 SOFT breach; no engine representation -- see above
+        "profit_target_pct": 6.0,       # $6,000 (identical to Select_100K)
+        "min_trading_days": 1,          # "1 day (can pass immediately)" -- no consistency rule to force 3
+        "weekend_holds": False,         # firm-wide 16:45 ET auto-flatten (prop_envelope, art. 10495876)
+        "inactivity_max_idle_days": 5,  # firm-wide >=1 trade/week eval+funded (art. 10468318)
+        "micro_contract_cap": 80,       # 8 mini / 80 micro (post-2025-09-12 purchases)
+        "cost_per_side_usd": 0.91,
+        "consistency_rule_pct": None,   # art. 10495915: "does NOT have a consistency requirement"
+    },
+
     # MyFundedFutures "Rapid" eval tiers — added 2026-07-12 (ADR 2026-07-12-prop-portfolio).
     # Eval stage: EOD trailing MLL; funded/sim-funded switches to intraday trailing with
     # $100 lock (same trailing_locking semantic as Tradeify Select). Consistency 50% eval-only.
@@ -583,6 +645,11 @@ AUTOMATION_FRIENDLY_PROP_FIRMS = {
         "Tradeify_Select_50K",
         "Tradeify_Select_100K",
         "Tradeify_Select_150K",
+        # Growth product line -- operator GO 2026-08-24 (chat), ratifying
+        # docs/adr/2026-08-24-tradeify-growth-tier-scoring-only.md. Only the
+        # $100K tier is defined (FIRM_RULES); add the 25K/50K/150K rows before
+        # extending this list to them.
+        "Tradeify_Growth_100K",
     ],
     "myfundedfutures": [
         "MFFU_Rapid_50K",
