@@ -36,9 +36,9 @@ any entry, full or stub (a-first; bare claims `a`).
 
 **Focus:** Decision. Queue row 2 consult. Crux sent under the ox-alpha §2 lens; no close elected; no rail wire.
 
-**Shipped:** [`N-2026-08-24-ox-alpha-per-trade-bound-election.md`](notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md) · Use-N pointer on [`ox-alpha ADR`](adr/2026-08-22-ox-alpha-adversarial-lens-scope.md).
+**Shipped:** [`N-2026-08-24-ox-alpha-per-trade-bound-election.md`](notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md) · Use-N pointer on [`ox-alpha ADR`](adr/2026-08-22-ox-alpha-adversarial-lens-scope.md). Blast-radius: STATE/INDEX gained the consult link; this entry slimmed to links.
 
-**Decisions/defects:** Surviving rows travel with the unpaid election (threat-model precision · tripwire fail-open · non-discharge label · 1-size only if tighter). Frozen set unchanged.
+**Decisions/defects:** Surviving rows on the notice; they do not elect. Frozen set unchanged.
 
 **Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-2`](briefs/Q-TRADECAP-2-per-trade-bound-election.md) · [`consult`](notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md)).
 

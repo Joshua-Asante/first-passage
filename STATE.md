@@ -57,7 +57,7 @@ BEHIND this list.** Items leave when done; it stays ≤5 so it cannot decay into
 | # | Item | Owner artifact | Blocks |
 |---|---|---|---|
 | 1 | **B7-REFIRE Stage 1 + M1** — both wait on an acceptable strategy on the ruled (Python-native) host. Eval live; no book deployed | [`GO ADR Addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`S2`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) · [`M1`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) | live-signal / arming path |
-| 2 | **Per-trade dollar-loss bound — elect among frozen closes** (Q-TRADECAP-1 `RESOLVED`; successor opened) | [`Q-TRADECAP-2`](docs/briefs/Q-TRADECAP-2-per-trade-bound-election.md) · [pre-reg](docs/briefs/pre-registration/Q-TRADECAP-2-verdict-preregistration.md) · [`Q-TRADECAP-1 closure`](docs/briefs/closures/Q-TRADECAP-1-closure-resolved.md) | any future arming session carries the gap unresolved |
+| 2 | **Per-trade dollar-loss bound — elect among frozen closes** (Q-TRADECAP-1 `RESOLVED`; successor opened) | [`Q-TRADECAP-2`](docs/briefs/Q-TRADECAP-2-per-trade-bound-election.md) · [pre-reg](docs/briefs/pre-registration/Q-TRADECAP-2-verdict-preregistration.md) · [consult](docs/notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md) · [`Q-TRADECAP-1 closure`](docs/briefs/closures/Q-TRADECAP-1-closure-resolved.md) | any future arming session carries the gap unresolved |
 
 Off-queue leftovers stay on their owner artifacts. Re-entry is promote to a numbered queue row and drop something else (cap ≤5). When a doable row leaves, do not auto-open a replacement — cite remaining rows until the operator promotes one.
 
