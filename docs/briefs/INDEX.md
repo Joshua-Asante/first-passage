@@ -28,6 +28,12 @@ Ten of the eleven 2026-08-18 assumption-sweep Qs are now closed (Q-M1WIRE-1 `FAL
 
 ## Recently closed (cross-reference; not open)
 
+- **Q-TRADECAP-2** — which close is licensed for the confirmed unbounded per-trade realized loss on Tradeify_Select_100K —
+  **`RESOLVED` 2026-08-24** — operator elected frozen ID **2** (observe-only). No tripwire wire; threshold later. $0/K=0.
+  [`closure`](closures/Q-TRADECAP-2-closure-resolved.md) ·
+  [`brief`](Q-TRADECAP-2-per-trade-bound-election.md) ·
+  [`pre-reg`](pre-registration/Q-TRADECAP-2-verdict-preregistration.md) ·
+  [`elect-2`](../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md).
 - **Q-TOM-SPX-1** — SPX500 turn-of-month existence and capturability —
   **`DEAD` 2026-08-23** — Layer-A `RESOLVED-ABSENT` on canonical Pepperstone
   (2026-06-16); reserved native-Pine confirmation unpaid and not reserved.
@@ -45,9 +51,9 @@ Ten of the eleven 2026-08-18 assumption-sweep Qs are now closed (Q-M1WIRE-1 `FAL
   [`results`](../../lab/analysis/c1/msl_monsurf_1_idle_clock_2026-08/RESULTS.md).
 - **Q-TRADECAP-1** — is there any per-trade dollar-loss bound anywhere in the sizing/arming path on
   the intraday-enforced Tradeify geometry (A6, orphaned `1r_estimation.md` Forward question) —
-  **`RESOLVED` 2026-08-23** — confirmed absent on all four checked limbs (sizing law, arming
-  interlock, EM2, disaster-stop). Successor decision packet (per-trade hard-cap vs. live tripwire,
-  from `1r_estimation.md`) named on STATE.md for operator election. $0/K=0.
+  **`RESOLVED` 2026-08-23** —   confirmed absent on all four checked limbs (sizing law, arming
+  interlock, EM2, disaster-stop). Successor closed `RESOLVED` 2026-08-24:
+  [`Q-TRADECAP-2`](Q-TRADECAP-2-per-trade-bound-election.md). $0/K=0.
   [`closure`](closures/Q-TRADECAP-1-closure-resolved.md) ·
   [`brief`](Q-TRADECAP-1-per-trade-loss-bound.md) ·
   [`pre-reg`](pre-registration/Q-TRADECAP-1-verdict-preregistration.md).

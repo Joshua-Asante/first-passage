@@ -42,3 +42,15 @@ Do **not** quietly introduce an hours figure into a pursuit Survive-bound line (
 **Succession:** when row 3 leaves, do not auto-open a channel or promote a leftover. Cite remaining rows until the operator promotes a replacement. Row 3 closed the same day — scoped decline of the reopened 6A/M6A and GC/MGC cell; last pre-G0 slot unspent ([channel ADR](2026-08-15-no-counterparty-statistical-sourcing-channel.md#addendum-2026-08-23--scoped-decline-of-the-reopened-6am6a-and-gcmgc-entry-geometry--dense-1m-cell)).
 
 **Forbidden:** leftover names leading Open/next; a new generation channel to fill the doable slot; `tier: soft` on the checker; an hours figure (Boundary unchanged).
+
+## Addendum 2026-08-24 — The blocker of B7/M1 is queue #1
+
+**Does not amend** the concurrency-denominated ≤5 cap, the no-hours Boundary, or the 2026-11-08 first-check date. **Does not GO** any viable-strategy phase. **$0 / K=0.**
+
+**Rule 0 (this addendum):** [`STATE.md`](../../STATE.md) OPERATOR QUEUE @ `57d8100` (2026-08-24) — sole live row is B7/M1, which names its own blocker (no book on the ruled host). Standing lead (same file) already pointed at the [`viable-strategy sequence`](../superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) (`AWAITING GO` @ `3ea7988`). This file's 2026-08-23 addendum still said #1/#2 "cannot be executed (wait on a strategy)."
+
+**Live defect:** dependency order was inverted. The wait sat on the queue; the work that clears the wait sat off it as a "standing lead."
+
+**Repair:** operator 2026-08-24 — promote the existing mechanism-supply owner to `#1`; B7/M1 is `#2` and waits on `#1`. Queue placement is not Phase A (or any phase) GO. 2026-08-23 repair (1) (Open/next is the live queue) stands. Repair (2) (row 3 while #1/#2 stay waits) is not the live repair.
+
+**Forbidden:** treating this row as a phase GO; starting B7-REFIRE / arming; a new generation channel; an hours figure (Boundary unchanged).

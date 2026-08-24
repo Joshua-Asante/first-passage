@@ -32,6 +32,76 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-25k — Queue: mechanism supply precedes B7/M1
+
+**Focus:** Decision. Operator: the blocker of #1 belongs on the queue ahead of it.
+
+**Shipped:** [`Survive-bound addendum`](adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--the-blocker-of-b7m1-is-queue-1). STATE `#1` = acceptable strategy (existing sequence; GO unpaid). `#2` = B7/M1. Standing-lead paragraph deleted (now the row). No phase GO. No rail wire.
+
+**Decisions/defects:** 2026-08-23 “#1/#2 cannot be executed” is not the live repair.
+
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase A`](superpowers/plans/2026-08-23-viable-strategy-phase-a-target-derivation.md)) · #2 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-25j — Q-TRADECAP-2 ratified (ID 2 Accepted)
+
+**Focus:** Decision. Queue row 2: operator ratified the elect-2 light ADR.
+
+**Shipped:** [`elect-2`](adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) `Accepted`. [`closure`](briefs/closures/Q-TRADECAP-2-closure-resolved.md) `RESOLVED`. STATE row 2 deleted (no auto-replace). No rail wire.
+
+**Decisions/defects:** licensed close is observe-only ID **2**. Threshold later. Consult `RESOLVED`.
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-25h — Q-TRADECAP-2 elects 2 (Proposed light ADR)
+
+**Focus:** Decision. Queue row 2: operator asked for the light ADR after the consult recommendation.
+
+**Shipped:** [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) `Proposed`. No rail wire. Q stays `OPEN` until `Accepted`. Blast-radius: phase-D D4, consult HOLD, brief Phase 1, and `1r_estimation.md` retargeted at the Proposed ADR.
+
+**Decisions/defects:** ID **2** observe-only. Surviving consult rows on the notice. Claude judgment review requested.
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`elect-2`](adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) · [`Q-TRADECAP-2`](briefs/Q-TRADECAP-2-per-trade-bound-election.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-25g — ox-alpha consult on Q-TRADECAP-2 (sanitized)
+
+**Focus:** Decision. Queue row 2 consult. Crux sent under the ox-alpha §2 lens; no close elected; no rail wire.
+
+**Shipped:** [`N-2026-08-24-ox-alpha-per-trade-bound-election.md`](notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md) · Use-N pointer on [`ox-alpha ADR`](adr/2026-08-22-ox-alpha-adversarial-lens-scope.md). Blast-radius: STATE/INDEX gained the consult link; this entry slimmed to links.
+
+**Decisions/defects:** Surviving rows on the notice; they do not elect. Frozen set unchanged.
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-2`](briefs/Q-TRADECAP-2-per-trade-bound-election.md) · [`consult`](notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-25e — Q-TRADECAP-2 opened (per-trade bound election)
+
+**Focus:** Decision. Queue row 2 started. Successor packet opened; no close elected; no rail wire.
+
+**Shipped:** [`Q-TRADECAP-2`](briefs/Q-TRADECAP-2-per-trade-bound-election.md) · [pre-reg](briefs/pre-registration/Q-TRADECAP-2-verdict-preregistration.md). Phase 0 on the brief. Blast-radius: phase-D D4 + `1r_estimation.md` retargeted; STATE/INDEX/SESSIONS slimmed to links.
+
+**Decisions/defects:** Option 1-as-staged not startable; election unpaid. Frozen set and forbidden moves on the brief / pre-reg.
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-2`](briefs/Q-TRADECAP-2-per-trade-bound-election.md) · [`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-25f — P6–P10 one commit per packet
 
 **Focus:** Decision + Hygiene. `queue-exception: operator asked to start working on the P6–P10 plans`. Follow-up: commit after each plan is implemented (rewrite the batched land into five commits).

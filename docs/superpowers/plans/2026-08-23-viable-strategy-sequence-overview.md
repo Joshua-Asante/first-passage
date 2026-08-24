@@ -3,7 +3,9 @@
 **Status:** `AWAITING GO` — authored 2026-08-23 at operator request ("write these up as full
 plans, each phase a separate document"). Each phase carries its own GO gate; nothing below is
 authorized by this overview. Queue-bind note: under the 2026-08-23 queue-led convention, phase
-GOs function as operator promotions.
+GOs function as operator promotions. STATE `#1` as of 2026-08-24
+([addendum](../../adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--the-blocker-of-b7m1-is-queue-1));
+that placement is not a phase GO.
 
 **Objective:** a strategy that (a) clears the frozen survivor gate — bust ≤ 3.0% ∧ P(pass) ≥ 50%,
 intraday-honest — on `Tradeify_Select_100K`'s real geometry, deployable on the S2b→rail path, and

@@ -56,11 +56,9 @@ unblock downstream of the first strategy-signal fill.
 
 ## Task D4 — Pre-arming hygiene (parallel, cheap, before first armed session)
 
-- [ ] **Per-trade loss-bound election** (STATE queue row 2, from Q-TRADECAP-1): operator elects
-  within-day hard-cap vs live-observed tripwire. The tripwire (alert at any single trade
-  exceeding ~2% of equity at entry) is near-zero cost and closes the confirmed gap for a first
-  armed session; the hard-cap variant needs its own re-MC (94% of pyramid-era profit sat above
-  the clip line — re-derive for the new book's shape).
+- [x] **Per-trade loss-bound election** — [`elect-2`](../../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md)
+  `Accepted` 2026-08-24 (ID **2**, observe-only). Threshold later. Do not treat as a wire.
+  Do not elect from the CFD-era fork in `1r_estimation.md`.
 - [ ] **Disaster-stop Phase 0a** — attended real-account SIM observation (operator-committed
   2026-08-24 forward trigger). Only a recorded PASS unlocks Phase 1 (`sl=` wiring into the
   listener). If it lands, the survivor's first armed sessions carry a broker-side stop; if not,
