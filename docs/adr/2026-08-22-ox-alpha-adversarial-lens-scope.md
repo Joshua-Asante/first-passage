@@ -445,3 +445,32 @@ set is not amended by this use.
 
 The Use-N ledger remains incomplete across concurrent sessions — see the
 Change history merge note. This row does not claim a complete series number.
+
+---
+
+## Addendum 2026-08-24 — Use N: sanitized open-ended agentic-mining review
+
+**Dated note; does not amend §Decision / §2 Scope / §4 Falsifier / §5 Forbidden moves.**
+Use-count only, so the §4 trigger schedule stays evaluable.
+
+Sent under §2's **base scope** (adversarial lens on a reasoning/judgment call — not the
+candidate-generation extension), at operator direction ("pose the open-ended mining question to
+ox-alpha, I want to get its read on it"), following this session's own finding that an
+unrelated external paper (arXiv 2603.24517, GPU-kernel-optimization, not a market paper) raised a
+genuine methodology question about whether open-ended agentic evolutionary search has any bounded
+place in a K-ledger-governed discovery pipeline. Genericized past recognition — no firm name,
+instrument, dollar figure, K value, or DSR threshold. Reconciliation table, net verdict, and audit
+hooks: [`N-2026-08-24-ox-alpha-open-ended-mining-review.md`](../notes/notice/N-2026-08-24-ox-alpha-open-ended-mining-review.md).
+
+Net: no new candidate, no methodology change proposed. Several claims independently re-derived
+existing repo discipline (the K_eff-never-shrinks rule, the OOS-holdout-burns-on-selection rule,
+the offline-simulation-inflates-edge lesson); two threads survive as genuinely novel and
+not-yet-actionable (LLM-pretraining-era holdout contamination as an unnamed leak class; anytime-
+valid/e-process sequential testing as an unconsidered alternative to the frozen DSR/Bonferroni
+formula). Revert trigger (b) (three consecutive zero-value uses) does not tick.
+
+No transcript of the hidden-reasoning channel is stored in-repo (sanitization bar). The notice
+holds the reconciliation table.
+
+The Use-N ledger remains incomplete across concurrent sessions — see the Change history merge
+note. This row does not claim a complete series number.
