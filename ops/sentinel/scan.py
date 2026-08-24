@@ -757,9 +757,22 @@ def _git_lines(root: Path, *args: str) -> list[str] | None:
 
 
 def _window_commits(root: Path, asof: date, lookback_days: int) -> list[str]:
+    """Commits in [asof - lookback_days, asof], by committer date.
+
+    Both bounds matter. `--since` alone leaves the window open at the top, so a
+    past `--asof` still swept every commit up to HEAD -- the scan returned the
+    same answer for every historical date, which silently defeats §4.1's injected
+    `today` and §8's determinism criterion. Correct in the weekly case (asof ==
+    today == HEAD) and wrong for every re-run of a past window, including the
+    addenda's own "verified against live history" checks. See the 2026-08-24
+    addendum in the design spec.
+    """
     cutoff = (asof - timedelta(days=lookback_days)).isoformat()
     lines = _git_lines(
-        root, "log", "--no-merges", "--since", f"{cutoff} 00:00:00", "--pretty=format:%H",
+        root, "log", "--no-merges",
+        "--since", f"{cutoff} 00:00:00",
+        "--until", f"{asof.isoformat()} 23:59:59",
+        "--pretty=format:%H",
     )
     return [ln.strip() for ln in lines if ln.strip()] if lines else []
 
@@ -772,7 +785,13 @@ def _changed_files(root: Path, sha: str) -> list[tuple[str, str]]:
     # every prereg+closure pair that merely coexists in the tree. We can only
     # audit freeze-vs-results when the commit's real delta against its parent is
     # visible.
-    lines = _git_lines(root, "diff-tree", "--no-commit-id", "--name-status", "-r", sha)
+    # -M (rename detection) is load-bearing, not a tidy-up. Without it git reports a
+    # MOVE as delete-old + add-new, and `A` is exactly what "introduced here" keys on
+    # -- so archiving a closed camp (`lab/analysis/<slug>/` -> `lab/archive/<slug>/`,
+    # which relocates PREREG and RESULTS together by construction) read as a freeze
+    # violation. Anchors: 1e40b11 and f2cbb7b on the 2026-08-24 weekly run, both pure
+    # `--slug` relocations. See the 2026-08-24 addendum in the design spec.
+    lines = _git_lines(root, "diff-tree", "--no-commit-id", "--name-status", "-M", "-r", sha)
     if not lines:
         return []
     changed: list[tuple[str, str]] = []
@@ -780,7 +799,17 @@ def _changed_files(root: Path, sha: str) -> list[tuple[str, str]]:
         parts = line.split("\t")
         if len(parts) < 2:
             continue
-        changed.append((parts[0][:1], parts[-1]))  # rename lines: new path is last field
+        raw, path = parts[0], parts[-1]  # rename lines: new path is the last field
+        code = raw[:1]
+        if code == "R":
+            # A rename is not an introduction: the artifact's freeze history lives at
+            # the OLD path, which artifact-pairing cannot adjudicate. A pure move
+            # (R100) therefore contributes nothing. A move that also EDITED the file
+            # still moved frozen text, so it carries through as a modification.
+            if raw[1:] in ("", "100"):
+                continue
+            code = "M"
+        changed.append((code, path))
     return changed
 
 

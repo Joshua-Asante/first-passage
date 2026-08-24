@@ -15,6 +15,7 @@ from sentinel.scan import (
     Finding,
     ROUTING,
     SLATE_DATE,
+    _changed_files,
     _corresponds,
     _git_lines,
     _is_prereg_artifact,
@@ -664,6 +665,87 @@ def test_preregistration_scan_git_flags_substantive_prereg_edit(tmp_path):
     assert f.category == "prereg"
     # The message must NOT claim a self-attested freeze — the freeze IS an ancestor.
     assert "self-attested" not in f.summary
+
+
+@pytest.mark.skipif(shutil.which("git") is None, reason="git not available")
+def test_preregistration_scan_ignores_archival_move(tmp_path):
+    """Relocating a CLOSED camp into lab/archive/ moves PREREG and RESULTS together
+    by construction. Without rename detection git reports that as delete-old +
+    add-new, and the add is what "introduced here" keys on -- so a pure `--slug`
+    move read as a freeze violation. Anchors: 1e40b11, f2cbb7b (2026-08-24 run)."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git(repo, "init", "-q")
+    _commit(repo, {"README.md": "base\n"}, "base", when="2026-08-18T09:00:00")
+    # Gold standard in-place: freeze, THEN run. Nothing to flag.
+    _commit(repo, {
+        "lab/analysis/dstruct_mnq/PREREG_DSTRUCT.md":
+            "# Pre-registration\n**Gate:** reject H if D1 < 5%.\n",
+    }, "prereg(freeze): DSTRUCT", when="2026-08-18T10:00:00")
+    _commit(repo, {
+        "lab/analysis/dstruct_mnq/RESULTS_DSTRUCT.md": "NULL.\n",
+    }, "run: DSTRUCT NULL", when="2026-08-19T10:00:00")
+    # Now archive the closed camp: a pure relocation of both artifacts.
+    (repo / "lab/archive").mkdir(parents=True, exist_ok=True)
+    _git(repo, "mv", "lab/analysis/dstruct_mnq", "lab/archive/dstruct_mnq")
+    _git(repo, "-c", "user.email=t@t", "-c", "user.name=t",
+         "commit", "-m", "fix(lab): archive dstruct_mnq via --slug",
+         when="2026-08-20T10:00:00")
+
+    assert preregistration_scan(repo, asof=date(2026, 8, 24), lookback_days=14) == []
+
+
+@pytest.mark.skipif(shutil.which("git") is None, reason="git not available")
+def test_changed_files_skips_pure_move_but_keeps_edited_move(tmp_path):
+    """The rename mapping, at the boundary it guards: R100 contributes nothing (the
+    freeze history lives at the old path, which artifact-pairing cannot adjudicate),
+    but a move that ALSO edited the file still moved frozen text -> "M"."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git(repo, "init", "-q")
+    _commit(repo, {
+        "a/PREREG_ONE.md": "# One\n" + "body line\n" * 40,
+        "a/PREREG_TWO.md": "# Two\n" + "body line\n" * 40,
+    }, "seed", when="2026-08-18T09:00:00")
+    (repo / "b").mkdir(parents=True, exist_ok=True)
+    _git(repo, "mv", "a/PREREG_ONE.md", "b/PREREG_ONE.md")
+    _git(repo, "mv", "a/PREREG_TWO.md", "b/PREREG_TWO.md")
+    # ...and edit ONE of them beyond a pure move.
+    (repo / "b/PREREG_TWO.md").write_text(
+        "# Two\n" + "body line\n" * 40 + "**Gate:** reject H if D1 < 2%.\n",
+        encoding="utf-8",
+    )
+    _git(repo, "add", "-A")
+    _git(repo, "-c", "user.email=t@t", "-c", "user.name=t",
+         "commit", "-m", "move both, edit one", when="2026-08-19T10:00:00")
+    head = _git_lines(repo, "rev-parse", "HEAD")[0]
+
+    changed = {p: s for s, p in _changed_files(repo, head)}
+    assert "b/PREREG_ONE.md" not in changed          # pure move -> dropped
+    assert changed.get("b/PREREG_TWO.md") == "M"     # moved AND edited -> carried
+
+
+@pytest.mark.skipif(shutil.which("git") is None, reason="git not available")
+def test_preregistration_scan_excludes_commits_after_asof(tmp_path):
+    """`asof` bounds the window at BOTH ends. `--since` alone left it open at the
+    top, so a past --asof still swept every commit up to HEAD and every historical
+    window returned the same answer -- defeating the injected `today` (spec §4.1)
+    and the determinism criterion (§8)."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git(repo, "init", "-q")
+    _commit(repo, {"README.md": "base\n"}, "base", when="2026-08-18T09:00:00")
+    _commit(repo, {
+        "docs/briefs/Q-LATER-1-closure-falsified.md": "closed.\n",
+        "docs/briefs/pre-registration/Q-LATER-1-verdict-preregistration.md": "frozen.\n",
+    }, "Q-LATER-1: violation AFTER the asof date", when="2026-08-22T10:00:00")
+    short = _git_lines(repo, "rev-parse", "--short=7", "HEAD")[0]
+
+    # In-window from a later asof...
+    late = preregistration_scan(repo, asof=date(2026, 8, 24), lookback_days=14)
+    assert [f.id for f in late] == [f"PREREG-SAMECOMMIT-{short}"]
+    # ...but invisible to an asof that predates it.
+    assert preregistration_scan(repo, asof=date(2026, 8, 20), lookback_days=14) == []
 
 
 @pytest.mark.skipif(shutil.which("git") is None, reason="git not available")
