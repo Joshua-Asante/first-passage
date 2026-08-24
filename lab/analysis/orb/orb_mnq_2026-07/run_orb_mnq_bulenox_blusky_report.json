@@ -1,0 +1,117 @@
+{
+  "date": "2026-08-24",
+  "gate": {
+    "bust_ceiling": 0.03,
+    "pass_floor": 0.5
+  },
+  "firms": {
+    "Bulenox_100K": {
+      "cost_per_side_usd": 0.61,
+      "rt_cost_pt": 1.1099999999999999,
+      "consistency_frac": null,
+      "derivation": {
+        "n_days": 1846,
+        "n_stopped": 702,
+        "n_held_to_close": 1144,
+        "worst_realized_day_usd_1lot": -783.22,
+        "worst_intraday_day_usd_1lot": -783.22
+      },
+      "k": {
+        "1": {
+          "headline_bust": 0.6237,
+          "pass_rate": 0.3763,
+          "median_days_to_pass": NaN,
+          "clears_part_a": false
+        },
+        "2": {
+          "headline_bust": 0.7186333333333333,
+          "pass_rate": 0.2813666666666667,
+          "median_days_to_pass": NaN,
+          "clears_part_a": false
+        },
+        "3": {
+          "headline_bust": 0.7592333333333333,
+          "pass_rate": 0.24076666666666666,
+          "median_days_to_pass": NaN,
+          "clears_part_a": false
+        }
+      },
+      "nonvacuity": {
+        "eod_bust": 0.5950000000000001,
+        "real_bust": 0.6166666666666667
+      }
+    },
+    "BluSky_Premium_100K": {
+      "cost_per_side_usd": 0.95,
+      "rt_cost_pt": 1.45,
+      "consistency_frac": 0.34,
+      "derivation": {
+        "n_days": 1846,
+        "n_stopped": 702,
+        "n_held_to_close": 1144,
+        "worst_realized_day_usd_1lot": -783.9,
+        "worst_intraday_day_usd_1lot": -783.9
+      },
+      "k": {
+        "1": {
+          "headline_bust": 0.6726,
+          "pass_rate": 0.3274,
+          "median_days_to_pass": NaN,
+          "clears_part_a": false
+        },
+        "2": {
+          "headline_bust": 0.7717333333333333,
+          "pass_rate": 0.22826666666666665,
+          "median_days_to_pass": NaN,
+          "clears_part_a": false
+        },
+        "3": {
+          "headline_bust": 0.8222333333333333,
+          "pass_rate": 0.17776666666666666,
+          "median_days_to_pass": NaN,
+          "clears_part_a": false
+        }
+      },
+      "nonvacuity": {
+        "eod_bust": 0.6433333333333333,
+        "real_bust": 0.67
+      }
+    },
+    "MFFU_Rapid_100K": {
+      "cost_per_side_usd": 0.95,
+      "rt_cost_pt": 1.45,
+      "consistency_frac": 0.5,
+      "derivation": {
+        "n_days": 1846,
+        "n_stopped": 702,
+        "n_held_to_close": 1144,
+        "worst_realized_day_usd_1lot": -783.9,
+        "worst_intraday_day_usd_1lot": -783.9
+      },
+      "k": {
+        "1": {
+          "headline_bust": 0.664,
+          "pass_rate": 0.336,
+          "median_days_to_pass": NaN,
+          "clears_part_a": false
+        },
+        "2": {
+          "headline_bust": 0.7595333333333333,
+          "pass_rate": 0.2404666666666667,
+          "median_days_to_pass": NaN,
+          "clears_part_a": false
+        },
+        "3": {
+          "headline_bust": 0.7849,
+          "pass_rate": 0.21509999999999999,
+          "median_days_to_pass": NaN,
+          "clears_part_a": false
+        }
+      },
+      "nonvacuity": {
+        "eod_bust": 0.6266666666666666,
+        "real_bust": 0.6566666666666667
+      }
+    }
+  }
+}
