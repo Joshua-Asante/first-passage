@@ -323,3 +323,5 @@ Attestation (this session, before authoring): `lab/CATALOG.md` and `docs/briefs/
 ## Success for this charter
 
 The charter succeeds when every named packet has an owner, a start gate, and a falsifier, and none of them is being worked as an immortal SESSIONS leftover. **P0–P10 + keep-20 + W5 H6 landed 2026-08-23.** Remaining parked rows stay parked.
+
+**Advice (not a packet, not P11):** operator-requested cleaning recommendations + glossary live at [`2026-08-24-repo-clean-recommendations.md`](2026-08-24-repo-clean-recommendations.md). Do not open a parallel first-look campaign from that file. The parked CATALOG Verdict / `--slug` row above still needs its own GO.

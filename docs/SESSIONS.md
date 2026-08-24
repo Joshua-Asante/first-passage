@@ -32,6 +32,20 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-25i — Repo clean recommendations (advice, not P11)
+
+**Focus:** Decision + Hygiene. `queue-exception: operator asked to land the clean-recommendations plan`. Not a queue row. Not a Phase A or CATALOG GO.
+
+**Shipped:** [`2026-08-24-repo-clean-recommendations.md`](superpowers/plans/2026-08-24-repo-clean-recommendations.md) — standing rec + glossary + CATALOG recipe. Charter pointer: not P11.
+
+**Decisions/defects:** stop hygiene campaigns; README stays glossary owner; no `docs/glossary.md`.
+
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase A`](superpowers/plans/2026-08-23-viable-strategy-phase-a-target-derivation.md)) · #2 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)). Residue (same exception): recommendations landed; do not promote leftovers.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-25k — Queue: mechanism supply precedes B7/M1
 
 **Focus:** Decision. Operator: the blocker of #1 belongs on the queue ahead of it.
