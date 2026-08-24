@@ -4,7 +4,7 @@
 **Authored:** 2026-08-24
 **Closed:** `N/A` while OPEN
 **Authors:** Joshua + Cursor
-**Parent question:** [`Q-TRADECAP-1`](Q-TRADECAP-1-per-trade-loss-bound.md) (`RESOLVED` 2026-08-23) — absence confirmed; successor named, not opened
+**Parent question:** [`Q-TRADECAP-1`](Q-TRADECAP-1-per-trade-loss-bound.md) (`RESOLVED` 2026-08-23) — absence confirmed; this brief is the opened successor
 **Sub-questions opened:** none
 **Loop:** Inquire-phase Pre-Q — closure gated on operator election among a frozen option set, after a $0 geometry re-scope of the CFD-era fork to `Tradeify_Select_100K`
 **Artifact path:** `docs/briefs/Q-TRADECAP-2-per-trade-bound-election.md`
