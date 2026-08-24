@@ -9,7 +9,7 @@ opens a card by itself; E1's stop rule stands until a candidate clears the full 
 **Cost:** $0 through every falsifier task below. Any data spend needs its own Rule-2 dry-run +
 operator GO and is out of this plan's scope.
 **Parent:** [`sequence overview`](2026-08-23-viable-strategy-sequence-overview.md) ·
-**Inputs:** Phase A2's feasible-shape region (pre-check; disclosed-N residual unsigned — [`RESULTS §4`](../../../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)), Phase A1's revival list (B4 lane — voided, empty list).
+**Inputs:** Phase A2's feasible-shape region (pre-check; disclosed-N accepted — [`RESULTS §4`](../../../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)), Phase A1's revival list (B4 lane — voided, empty list).
 **Provenance:** candidate lanes B1–B2 live; B3 KILL (A1). Lanes originate from the reconciled
 ox-alpha Use-4 output
 ([notice](../../notes/notice/N-2026-08-23-ox-alpha-mechanism-supply-candidates.md)) — zero
