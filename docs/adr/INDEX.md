@@ -131,6 +131,7 @@
 | 2026-08-23-strategy-coldstore-phase-c.md | Accepted | 2026-08-23 | `2026-08-04-strategy-coldstore-phase-a.md` in part — Phase C non-touch list released for living Guardian/Aegis `BASE_RISK` keys only; `2026-08-03-claude-md-futures-refocus.md` in part — §7 CFD living-`BASE_RISK` / CLAUDE table retirement now executed (Striker keys + `LEG_MAP` stay) | operator GO 2026-08-23 for Phase C (fresh admitting ADR; Phase A Accept is not C authority) |
 | 2026-08-24-q-tradecap-2-elect-alert-tripwire.md | Accepted | 2026-08-24 | none | operator ratified 2026-08-24 after Claude judgment review |
 | 2026-08-24-tradeify-growth-tier-scoring-only.md | Accepted | 2026-08-24 | none | ratified by operator (JA) 2026-08-24, in-session instruction ("Add Growth |
+| 2026-08-24-venue-binding-axis-t1-disposition.md | Proposed | 2026-08-24 | `2026-08-05-strategy-venue-binding-axis.md` in part — §4 T1's disposition and prospective applicability window only. §2 (the three-level axis), §3, §5, §6, T2–T4, and the `Accepted` status token are untouched. | drafted at operator request ("author a superseding ADR for T1"); the ruling is Claude Code's, not yet operator-ratified. Flips to `Accepted` on operator GO (§7 Phase 0). |
 
 ## Partially superseded
 
