@@ -53,18 +53,22 @@ extends its scope from Tradeify/Class-S to these firms, landed in the same commi
 [`RESULTS`](../../../lab/analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md) ·
 [`audit note`](../../notes/audits/2026-08-23-r1-bulenox-blusky-clock-repair.md).
 
-## Task R2 — Bulenox lock-scope resolution (primary source, then classification)
+## Task R2 — Bulenox lock-scope resolution (primary source, then classification) — `RESOLVED`
 
-- [ ] Answer with primary-source grounding: does the Master-account "stops moving at initial
+- [x] Answer with primary-source grounding: does the Master-account "stops moving at initial
   balance +100" lock reach the **currently-simulated horizon** (Qualification-only,
   absorbing-at-pass), yes or no? The closure left this genuinely open — a successor must
-  investigate, not assume either way.
-- [ ] If the lock does **not** bite the modeled horizon: record the finding + fix the
+  investigate, not assume either way. **Answer: NO** — confirmed two independent ways (textual
+  scope on both re-fetched primary sources; `simulate_path`'s absorbing-at-pass structure never
+  threads a post-pass stage). [`audit note`](../../notes/audits/2026-08-23-bulenox-lock-scope-resolution.md).
+- [x] If the lock does **not** bite the modeled horizon: record the finding + fix the
   `firm_rules.py` sourcing comment's completeness gap (the "silence read as completeness"
-  defect the closure documented) — comment-only change, no constant moves.
+  defect the closure documented) — comment-only change, no constant moves. Landed at
+  [`65dc17b`](https://github.com/Joshua-Asante/first-passage/commit/65dc17bdc969f562a952951cb5273e7913384864).
 - [ ] If the lock **does** bite: re-classifying Bulenox to `trailing_locking` with sourced lock
   terms is a **separate change-control action** — its own pre-registration → re-derivation →
-  admitting ADR, never an in-place edit riding on this plan (the closure's own bar).
+  admitting ADR, never an in-place edit riding on this plan (the closure's own bar). **Did not
+  fire** — the answer above is NO, so this branch is correctly untaken.
 
 ## Task R3 — Survivor §4 scoring (blocks on R1; consumes a Phase-C survivor)
 
