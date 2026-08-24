@@ -32,6 +32,20 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-25k — Queue: mechanism supply precedes B7/M1
+
+**Focus:** Decision. Operator: the blocker of #1 belongs on the queue ahead of it.
+
+**Shipped:** [`Survive-bound addendum`](adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--the-blocker-of-b7m1-is-queue-1). STATE `#1` = acceptable strategy (existing sequence; GO unpaid). `#2` = B7/M1. Standing-lead paragraph deleted (now the row). No phase GO. No rail wire.
+
+**Decisions/defects:** 2026-08-23 “#1/#2 cannot be executed” is not the live repair.
+
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase A`](superpowers/plans/2026-08-23-viable-strategy-phase-a-target-derivation.md)) · #2 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-25j — Q-TRADECAP-2 ratified (ID 2 Accepted)
 
 **Focus:** Decision. Queue row 2: operator ratified the elect-2 light ADR.
