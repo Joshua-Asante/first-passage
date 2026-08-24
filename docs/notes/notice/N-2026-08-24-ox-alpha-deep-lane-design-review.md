@@ -123,3 +123,51 @@ grep -n "AMBIGUOUS" docs/adr/2026-08-16-deep-iteration-lane-charter.md   # expec
 ```bash
 python scripts/check_brief.py docs/notes/notice/N-2026-08-24-ox-alpha-deep-lane-design-review.md --type notice
 ```
+
+---
+
+## Addendum 2026-08-24 — GROW-0 Limb C executed: rows 2/14 now measured
+
+**Status:** append-only; the reconciliation table (§1) and everything above this line is
+unedited. Recorded here per this session's own task scope, not a reopening of this notice's own
+`RESOLVED` status line.
+
+**What ran:** the concrete follow-up row 14 itself named ("a GROW-0 'Limb C' run planting effects
+at design-box-realistic sizes and reporting end-to-end P(accept \| true edge)") was designed
+([Limb C design note](../../briefs/pre-registration/2026-08-24-grow-0-limb-c-marginal-effect-prereg.md),
+`Status: PROPOSED`) and executed this session at the frozen N=1,150-per-condition scale, both
+named operating points (as-run target_sr=1.8; boundary target_sr=floor=1.265, the exact
+`POWER_MIN=0.50` admissible point) — full numbers, population-scoped, CIs, and a Gaussian
+cross-check in
+[`2026-08-24-grow-0-limb-c-marginal-effect-RESULTS.md`](../../briefs/pre-registration/2026-08-24-grow-0-limb-c-marginal-effect-RESULTS.md).
+
+**Row 14 (composite acceptance probability never computed) — measurement gap discharged.** The
+composite is now measured, not merely flagged as computable: **0.9009** [0.8822, 0.9168] at the
+realistic (as-run) point, **0.4330** [0.4047, 0.4619] at the boundary point. The as-run figure's
+own closed-form pre-estimate (0.9095) is statistically consistent with measurement
+(`CORROBORATED`); the boundary figure's closed-form pre-estimate (0.4656) is **not**
+(`DIVERGED` — measured lower). This closes the measurement gap row 14 named; it does not, by
+itself, rule on whether the resulting numbers are acceptable — that remains an operator call.
+
+**Row 2 (falsifier error rate coupled to per-campaign power, up to 0.25 mutual-miss at the
+POWER_MIN boundary) — sharpened, not discharged.** Recomputing row 2's own two-consecutive-miss
+arithmetic with the measured boundary composite (rather than the naive power=0.50 reading row 2
+used) gives **≈0.32** at the measured point estimate, and **every point in the measured 95% CI —
+including its most favorable end (0.29)** — exceeds row 2's original 0.25 figure. This is the
+empirical confirmation of what the design note's own §1 flagged as an unvalidated projection:
+ox-alpha's own 0.25 figure is an **understatement** at this operating point, now stated as
+measured rather than projected. The row's own disposition line stands unchanged by this
+addendum — still "an operator call, flagged not made" — but the flag now carries a measured
+number instead of a bound inferred from the declared power alone.
+
+**Not discharged by this addendum, named so a future reader does not over-read it:** whether the
+charter's own falsifier should become power-conditioned, whether a boundary-admissible campaign
+should be barred or specially flagged, and whether GROW-0 Limb C's own composite figures
+generalize beyond the two synthetic operating points measured — all remain open, operator-owned
+questions, per this notice's own §3 scope line and the Limb C task's own explicit scope boundary
+(no lane-continuation conclusion drawn).
+
+```bash
+# This addendum's own load-bearing figures, reproducible:
+cat docs/briefs/pre-registration/2026-08-24-grow-0-limb-c-marginal-effect-RESULTS.md | grep -A1 "Composite P(accept)" | head -4
+```

@@ -28,6 +28,7 @@ def draw_daily_pnl(
     *,
     n_days: int = N_TRAIN_DAYS,
     edge: bool = False,
+    edge_dollars: float = EDGE_DOLLARS,
 ) -> np.ndarray:
     """One draw of a daily P&L series under the frozen null (or edge) shape.
 
@@ -36,9 +37,17 @@ def draw_daily_pnl(
 
     Edge shape is a pure location shift on the null shape's win/loss means (prereg §3): variance
     is unchanged, isolating the detection problem to a mean shift.
+
+    ``edge_dollars`` is an additive, default-preserving extension point (Limb C design note §9
+    item 1, docs/briefs/pre-registration/2026-08-24-grow-0-limb-c-marginal-effect-prereg.md) --
+    it defaults to the frozen module-level ``EDGE_DOLLARS`` constant, so every existing call site
+    (Limb A/B/RED-LEAK/RED-BLIND, none of which pass this kwarg) is behaviorally unchanged. A
+    caller that wants a different planted-effect size (e.g. Limb C's own smaller, marginal
+    shifts) passes ``edge_dollars=`` explicitly; this never mutates the frozen ``EDGE_DOLLARS``
+    constant itself.
     """
     rng = np.random.default_rng(seed)
-    shift = EDGE_DOLLARS if edge else 0.0
+    shift = edge_dollars if edge else 0.0
     p = NULL_PARAMS
     active = rng.random(n_days) < p["p_active"]
     win = rng.random(n_days) < p["p_win"]
