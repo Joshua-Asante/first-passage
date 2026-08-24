@@ -67,6 +67,8 @@ sources converge on this door.
   historical test if B1.1 found data — then hand to Phase C as a card candidate. **Licensed by
   the B1.3 admit above; not started — B1.1 found no historical data, so this is the real-time
   forward path only, which spans ~4 calendar weeks and cannot be executed in one session.**
+  Tracking scaffolding (protocol + empty log) is ready:
+  [`paper-log tracker`](../../notes/research/2026-08-24-phase-b-lane-b1-paper-log-tracker.md).
 
 **Kill criteria (frozen now):** no free sign source AND no citable δ → PARK. Paper-log mean net
 capture below the recomputed hurdle at 20 sessions → dead, registry row, no card ever authored.
