@@ -6,7 +6,7 @@
 (the plan-facing narrative, disposition, and runnable Verification section live there — this
 file is the harness's own detailed numeric record)
 **Harness:** [`run_b22_placebo_battery.py`](run_b22_placebo_battery.py) · raw log [`run_output.txt`](run_output.txt)
-**Status:** `CLOSED` — **DEAD, both 6E and 6B**
+**Status:** CLOSED — B2.2 battery: 6E and 6B both DEAD via orthogonality (|t|<2/wrong-signed); placebo leg decisive only for 6B (rank 4.9)
 **Date:** 2026-08-24
 
 ---
@@ -73,7 +73,9 @@ applied. **6E's precise and hourly-proxy point estimates disagree in sign** (+0.
 −0.000030) — a real fragility signal: a genuine mechanism should not flip sign under a ~10-minute
 clock perturbation (11:00 vs 11:10 entry). 6B's two clock versions agree in sign (both negative =
 fade loses / momentum, not reversal) — internally consistent, but consistently **wrong-signed**
-against the fade hypothesis.
+against the fade hypothesis. (This same 6E sign-fragility resurfaces in the placebo-rank comparison
+below, Step 4b: the minute-resolution null ranks 6E's *positive* `R_precise` far higher than the
+hourly null ranks its *negative* `R_hourly`.)
 
 ## Step 5 — orthogonality regression (decisive gate)
 
@@ -90,44 +92,88 @@ sign is **negative**, vs. the precedent's momentum-continuation `coef>0`).
 not fade) regardless of magnitude. Robustness (excluding the 2 degraded-quality days per symbol)
 leaves both numbers materially unchanged (6E: t=−0.92 vs −0.90; 6B: t=+1.64 vs +1.63).
 
-## Step 4/6 — placebo null (1,000 replicates, hourly-clock family)
+## Step 4/4b — placebo null (1,000 replicates each; two clock resolutions)
 
-Candidate offset hours (ET): 06,07,08,09,12,13. Each replicate draws an i.i.d. random offset per
-trading day, applied to the **same** day-set as the real sample — day-of-week and trailing-vol
-composition are matched **by construction** (verified below, not merely assumed).
+Candidate anchor hours (ET): 06,07,08,09,12,13 — identical menu for both resolutions. Each
+replicate draws an i.i.d. random anchor-hour offset per trading day, applied to the **same**
+day-set as the real sample — day-of-week and trailing-vol composition are matched **by
+construction** for both resolutions (verified below, not merely assumed; the check depends only on
+the shared per-day index/offset-sampling mechanism, not on which `R` matrix is sampled, so one
+check covers both).
 
-| Symbol | real stat mean(R_hourly) | null mean | null p60 | real rank in null (pctile) | Kill (real ≤ p60)? |
-|---|---|---|---|---|---|
-| 6E.v.0 | −0.000030 | +0.000036 | +0.000054 | 20.9 | YES |
-| 6B.v.0 | −0.000094 | +0.000086 | +0.000113 | 3.9 | YES |
+**Step 4 (original) — hourly-proxy null:** `R_hourly` (built from `ohlcv-1h` bars) ranked against a
+placebo null also built from `ohlcv-1h` bars. **Step 4b (added on adversarial review of the first
+B2.2 pass) — minute-resolution null:** the decisive orthogonality leg (Step 5) scores
+`target_precise`, built from `ohlcv-1m` bars — but Step 4 ranked that leg's real-world counterpart
+(Step 3's `R_precise`) against a coarser `R_hourly`-based null. That mismatch was disclosed as a
+design choice (comparability with the hourly-only candidate menu), not silently assumed, but a
+same-resolution test was feasible since the 1-minute panel was already pulled and had not been run.
+Step 4b replaces the hourly-bar placebo construction with the literal minute-offset structure of
+the real window (−2min/+4min impulse, +10min/+2h00m outcome) at each of the same 6 candidate
+anchor hours, using `ohlcv-1m` opens throughout — so `R_precise`'s own mean is now ranked against a
+matched-resolution null. **Step 4b is the decisive placebo comparison as of this revision; Step 4
+is retained as a documented cross-check, not removed or silently dropped.**
 
-Both real statistics sit **below the null's own median** (p50), let alone its 60th percentile —
-6B's real statistic is worse than 96% of random-clock placebo draws. The placebo null itself being
-centered comfortably above zero (mean +0.000036/+0.000086) is a genuine finding: some form of
-generic "fade the last hour's move" pattern has positive gross expectancy at *various* clock
-times in this 2-year 6E/6B panel — the fix-specific clock (10:58→11:10→13:00 ET) is not merely
-unremarkable, it under-performs the generic version. (Caveat: `ohlcv-1m`/`ohlcv-1h` bar
+| Symbol | Resolution | real stat mean | null mean | null p60 | real rank in null (pctile) | Kill (real ≤ p60)? |
+|---|---|---|---|---|---|---|
+| 6E.v.0 | 4b minute-resolution — **decisive** | +0.000065 | +0.000035 | +0.000051 | 67.1 | **NO** |
+| 6E.v.0 | 4 hourly-proxy — cross-check | −0.000030 | +0.000036 | +0.000054 | 20.9 | YES |
+| 6B.v.0 | 4b minute-resolution — **decisive** | −0.000131 | +0.000013 | +0.000035 | 4.9 | YES |
+| 6B.v.0 | 4 hourly-proxy — cross-check | −0.000094 | +0.000086 | +0.000113 | 3.9 | YES |
+
+**6E's placebo leg flips under the matched-resolution test.** The coarse hourly-proxy null (Step 4)
+ranks 6E's real statistic at the 20.9th percentile — kill-eligible. The minute-resolution null
+(Step 4b), matched to the same clock resolution as the decisive orthogonality leg, ranks it at the
+67.1th percentile — **clears** the 60th-percentile bar. This is the same sign-fragility already
+flagged in Step 3 (6E's precise vs hourly-proxy point estimates disagree in sign, +0.000065 vs
+−0.000030) propagating into the placebo-rank space — not a new or independent anomaly, and not a
+result any subset/direction search produced (both nulls apply the identical pre-specified
+construction to the identical whole sample). **It does not change 6E's overall verdict**: the
+frozen kill criterion is an OR of two legs, and 6E's orthogonality leg (Step 5) independently fails
+on its own (`|t|=0.90 < 2`, computed identically before and after this revision — unaffected by
+the placebo-resolution change). It does mean 6E's DEAD verdict now rests on the orthogonality leg
+**alone**, not on two independently-corroborating legs, which the first B2.2 pass's "both legs
+fail independently" framing overstated for this symbol. 6B's placebo leg is unaffected in
+direction by the resolution change — both nulls kill it (4.9th and 3.9th percentile) — so 6B's DEAD
+verdict remains corroborated by both legs at both clock resolutions, the more robust of the two
+symbols' kills.
+
+Both Step-4 (hourly) real statistics, and 6B's Step-4b (minute) real statistic, sit **below the
+respective null's own median** (p50), let alone its 60th percentile — 6B's real statistic is worse
+than 96.1% of hourly-resolution placebo draws and 95.1% of minute-resolution placebo draws. The
+placebo null itself being centered comfortably above zero at hourly resolution (mean
++0.000036/+0.000086) — and near zero at minute resolution (mean +0.000035/+0.000013) — is a
+genuine finding: some form of generic "fade the last window's move" pattern has positive-or-near-
+zero gross expectancy at *various* clock times in this 2-year 6E/6B panel. For 6B the fix-specific
+clock is not merely unremarkable against that backdrop, it *underperforms* the generic version at
+both resolutions; for 6E's Step-4b null the real statistic sits above the null's own median, inside
+the ordinary range of the generic pattern rather than below it. (Caveat: `ohlcv-1m`/`ohlcv-1h` bar
 opens are trade prints, not midpoints — per the databento-data skill's own data-hygiene note, part
 of this generic-reversal magnitude could be bid-ask-bounce microstructure rather than pure economic
-mean reversion; the measured effect sizes here, ~$0.00003–0.00009 on 6E/6B, are the same order of
-magnitude as a single tick, 0.00005. This does not change the kill verdict — a mechanism that
-cannot even clear microstructure-noise-scale placebo variation is dead either way — but it means
-the "generic reversal exists and is economically real" framing should not be over-claimed.)
+mean reversion; the measured effect sizes here, ~$0.00001–0.00013 across both resolutions, are the
+same order of magnitude as a single tick, 0.00005. This does not change 6B's kill verdict — a
+mechanism that cannot even clear microstructure-noise-scale placebo variation is dead either way —
+but it means the "generic reversal exists and is economically real" framing should not be
+over-claimed.)
 
 **Verification (placebo day-of-week + trailing-vol match):** confirmed for both symbols — max
 day-of-week frequency deviation ≤0.2pp, trailing-vol quartile relative deviation ≤0.3% (see
-`run_output.txt` for the full per-weekday table).
+`run_output.txt` for the full per-weekday table). One check covers both resolutions (see above).
 
 ## Frozen kill criterion
 
 > "Kill if the fix dummy adds nothing over generic reversal or sits ≤ placebo 60th percentile."
 
-Both legs fail independently for **both** symbols (not a knife-edge single-leg call):
+The placebo leg below uses Step 4b (minute-resolution, decisive); Step 4 (hourly, cross-check) is
+shown in the Step 4/4b table above. Both legs still fail independently for **6B**; **6E** is now a
+single-leg kill (orthogonality only) — the frozen criterion's OR still kills it, but this is a
+materially different (weaker, single-leg) finding than the first B2.2 pass reported for 6E, and is
+disclosed as such rather than restated unchanged:
 
-| Symbol | Orthogonality leg | Placebo leg | Verdict |
+| Symbol | Orthogonality leg | Placebo leg (4b, decisive) | Verdict |
 |---|---|---|---|
-| 6E.v.0 | FAIL (\|t\|=0.90 < 2) | FAIL (rank 20.9 ≤ 60) | **DEAD** |
-| 6B.v.0 | FAIL (wrong sign, \|t\|=1.63) | FAIL (rank 3.9 ≤ 60) | **DEAD** |
+| 6E.v.0 | FAIL (\|t\|=0.90 < 2) | PASS (rank 67.1 > 60) | **DEAD** (orthogonality leg alone) |
+| 6B.v.0 | FAIL (wrong sign, \|t\|=1.63) | FAIL (rank 4.9 ≤ 60) | **DEAD** (both legs) |
 
 ## What was deliberately not done
 
@@ -136,6 +182,13 @@ days," or a different placebo-hour menu) was run after the whole-sample test fai
 discipline (`lesson_snag_best_of_k_anchor_graveyard`, `feedback_adversarial_review_before_ratification`),
 hunting for a surviving cut after a pre-specified test kills the whole sample is exactly the
 degenerate move the frozen kill criterion exists to foreclose.
+
+6E's Step 4b placebo leg clearing the bar (above) is **not** treated as grounds to reopen or
+re-litigate the verdict, run a third placebo resolution, or search for a cut where both legs pass —
+the frozen criterion is an explicit OR of two legs, one failing leg is sufficient by its own text,
+and 6E's orthogonality leg fails on a computation this revision left untouched. Reporting the
+single-leg nuance honestly (rather than silently re-asserting "both legs fail" for 6E) is disclosure,
+not an invitation to keep searching until some cut clears both legs at once.
 
 ## Verification
 

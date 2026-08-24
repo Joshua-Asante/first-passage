@@ -26,6 +26,13 @@ panel: 624 ET calendar dates in range; 469 valid fix-observations (2 flagged deg
   real stat's percentile RANK within the 1000-draw null distribution = 20.9
   -> KILL (real <= placebo 60th pct)
 
+--- Step 4b: placebo null (1000 replicates, MINUTE-RESOLUTION clock family -- same literal -2min/+4min/+10min/+2h00m minute-offset structure as the real precise window -- PRIMARY/decisive placebo comparison as of this revision) ---
+  candidate anchor hours (ET): [6, 7, 8, 9, 12, 13]  finite-cell coverage=0.992
+  REAL precise (1m) statistic mean(R_precise) = +0.000065
+  placebo null: mean=+0.000035 std=0.000069 p10=-0.000055 p50=+0.000035 p60=+0.000051 p90=+0.000125
+  real stat's percentile RANK within the 1000-draw MINUTE-RESOLUTION null = 67.1
+  -> clears placebo 60th pct
+
 --- verification: placebo-window day-of-week + trailing-vol match check ---
     dow=Mon  real=0.205  placebo-pooled=0.205  delta=-0.001
     dow=Tue  real=0.203  placebo-pooled=0.203  delta=-0.000
@@ -40,7 +47,8 @@ panel: 624 ET calendar dates in range; 469 valid fix-observations (2 flagged deg
 --- FROZEN KILL CRITERION ---
   "Kill if the fix dummy adds nothing over generic reversal OR sits <= placebo 60th percentile."
   orthogonality leg : FAIL -> kill-eligible (imp_sign |t|=0.90, sign=neg (correct))
-  placebo leg       : FAIL -> kill-eligible (real rank pct=20.9, need > 60)
+  placebo leg (b)   : PASS (minute-resolution real rank pct=67.1, need > 60)  [DECISIVE]
+  placebo leg (a)   : FAIL -> kill-eligible (hourly-proxy real rank pct=20.9, need > 60)  [cross-check]
   VERDICT (6E.v.0): DEAD
 ====================================================================================================
 SYMBOL: 6B.v.0
@@ -70,6 +78,13 @@ panel: 624 ET calendar dates in range; 447 valid fix-observations (2 flagged deg
   real stat's percentile RANK within the 1000-draw null distribution = 3.9
   -> KILL (real <= placebo 60th pct)
 
+--- Step 4b: placebo null (1000 replicates, MINUTE-RESOLUTION clock family -- same literal -2min/+4min/+10min/+2h00m minute-offset structure as the real precise window -- PRIMARY/decisive placebo comparison as of this revision) ---
+  candidate anchor hours (ET): [6, 7, 8, 9, 12, 13]  finite-cell coverage=0.965
+  REAL precise (1m) statistic mean(R_precise) = -0.000131
+  placebo null: mean=+0.000013 std=0.000088 p10=-0.000103 p50=+0.000011 p60=+0.000035 p90=+0.000130
+  real stat's percentile RANK within the 1000-draw MINUTE-RESOLUTION null = 4.9
+  -> KILL (real <= placebo 60th pct)
+
 --- verification: placebo-window day-of-week + trailing-vol match check ---
     dow=Mon  real=0.197  placebo-pooled=0.198  delta=-0.001
     dow=Tue  real=0.201  placebo-pooled=0.201  delta=-0.000
@@ -84,11 +99,12 @@ panel: 624 ET calendar dates in range; 447 valid fix-observations (2 flagged deg
 --- FROZEN KILL CRITERION ---
   "Kill if the fix dummy adds nothing over generic reversal OR sits <= placebo 60th percentile."
   orthogonality leg : FAIL -> kill-eligible (imp_sign |t|=1.63, sign=pos (wrong))
-  placebo leg       : FAIL -> kill-eligible (real rank pct=3.9, need > 60)
+  placebo leg (b)   : FAIL -> kill-eligible (minute-resolution real rank pct=4.9, need > 60)  [DECISIVE]
+  placebo leg (a)   : FAIL -> kill-eligible (hourly-proxy real rank pct=3.9, need > 60)  [cross-check]
   VERDICT (6B.v.0): DEAD
 
 ====================================================================================================
 SUMMARY (per B2.1 ruling: 6E and 6B scored separately, never pooled)
 ====================================================================================================
-6E.v.0: n=469  imp_sign t(orthogonal)=-0.90 coef=-0.000060  placebo_rank=20.9pct  -> DEAD
-6B.v.0: n=447  imp_sign t(orthogonal)=+1.63 coef=+0.000130  placebo_rank=3.9pct  -> DEAD
+6E.v.0: n=469  imp_sign t(orthogonal)=-0.90 coef=-0.000060  placebo_rank(b:minute,DECISIVE)=67.1pct  placebo_rank(a:hourly,x-check)=20.9pct  -> DEAD
+6B.v.0: n=447  imp_sign t(orthogonal)=+1.63 coef=+0.000130  placebo_rank(b:minute,DECISIVE)=4.9pct  placebo_rank(a:hourly,x-check)=3.9pct  -> DEAD

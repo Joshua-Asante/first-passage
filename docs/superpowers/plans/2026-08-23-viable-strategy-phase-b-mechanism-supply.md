@@ -106,12 +106,16 @@ lane's own arithmetic is knife-edge.
   11:10→13:00 return conditioned on impulse sign vs 1,000 placebo windows matched on day-of-week
   + trailing vol; plus the orthogonality regression (trailing-vol + prior-hour-return controls —
   the gamma-family precedent). Kill if the fix dummy adds nothing over generic reversal or sits
-  ≤ placebo 60th percentile. **KILL, both 6E and 6B (2026-08-24) — both legs of the frozen
-  criterion failed independently for both symbols: orthogonality regression \|t\|<2 or
-  wrong-signed (6E t=−0.90 correct-signed but short of the bar; 6B t=+1.63 wrong-signed), and the
-  real hourly-clock statistic ranked at the 20.9th (6E) / 3.9th (6B) percentile of the 1,000-draw
-  placebo null — both below the null's own median. Escalated to `ohlcv-1m` (own Rule-1 estimate,
-  $0.0000) for the precise 10:58–11:04 ET impulse the plan's own hourly-only text cannot resolve.**
+  ≤ placebo 60th percentile. **KILL, both 6E and 6B (2026-08-24; placebo leg revised 2026-08-24 on
+  adversarial review) — orthogonality regression \|t\|<2 or wrong-signed (6E t=−0.90
+  correct-signed but short of the bar; 6B t=+1.63 wrong-signed) kills both symbols on its own. The
+  placebo leg is decided on a null matched to the orthogonality leg's own (minute) clock
+  resolution (added on review — the first pass ranked the real statistic only against a coarser
+  hourly-bar null): 6B fails it too (4.9th percentile of 1,000 draws, below the null's own
+  median), but 6E's placebo leg clears it (67.1st percentile) — so 6E is a single-leg kill
+  (orthogonality alone), not the two independently-failing legs first reported; 6B stays a
+  two-leg kill. Escalated to `ohlcv-1m` (own Rule-1 estimate, $0.0000) for the precise 10:58–11:04
+  ET impulse the plan's own hourly-only text cannot resolve.**
   [`results`](../../notes/research/2026-08-24-phase-b-lane-b2-placebo-battery-results.md) ·
   [`registry row`](../../rejected_candidates.md#london-fix-wake-dealer-inventory-normalization-fade-on-6e6b--falsified-placeboorthogonality-battery).
 - [ ] **B2.3 — shape pre-check** against the A2 region; then Phase C on survival. **Does not fire

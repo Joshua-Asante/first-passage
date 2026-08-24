@@ -159,7 +159,7 @@ documents the camp boundary for humans/tools.
 
 | slug | theme | status | hot | one-liner | body | heavy |
 |---|---|---|---|---|---|---|
-| b2_london_fix_wake_2026-08-24 | _inbox | CLOSED | yes | B2.2 placebo/orthogonality battery FALSIFIED both 6E and 6B — orthogonality \|t\|<2 or wrong-signed, placebo rank 20.9th/3.9th pctile; docs/rejected_candidates.md fx-fixing-reversal-dealer-wake entry | lab/analysis/_inbox/b2_london_fix_wake_2026-08-24/ | — |
+| b2_london_fix_wake_2026-08-24 | _inbox | CLOSED | yes | B2.2 battery: 6E and 6B both DEAD via orthogonality (\|t\|<2/wrong-signed); placebo leg decisive only for 6B (rank 4.9) | lab/analysis/_inbox/b2_london_fix_wake_2026-08-24/ | — |
 | ict_mnq_2026-08 | _inbox | ACTIVE | yes | ICT cascade re-run on NQ/MNQ at $0/K=0/Cap seat unspent: W and D confirm on independent instruments, pools falsified ... | lab/analysis/_inbox/ict_mnq_2026-08/ | — |
 | q_trainkill_1_2026-08 | _inbox | HOLD | yes | `AMBIGUOUS-HOLD`. BOUNDED extremes disagree (`MISCALIBRATED` at ε vs `KILLS-INFORMATIVE` at 1−ε). Scored-only core (n... | lab/analysis/_inbox/q_trainkill_1_2026-08/ | — |
 | q_trainkill_2_2026-08 | _inbox | HOLD | yes | `AMBIGUOUS-HOLD`. Limb 1 did not fire (1 promotion; extremes still disagree). Limb 2: both `NEG` and `DEP-ZERO` fit. | lab/analysis/_inbox/q_trainkill_2_2026-08/ | — |

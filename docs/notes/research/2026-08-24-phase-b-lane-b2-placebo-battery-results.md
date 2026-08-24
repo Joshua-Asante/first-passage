@@ -100,35 +100,63 @@ momentum-continuation one):**
 | 6E.v.0 | −0.000060 | −0.90 | yes (negative) | no | **NO** |
 | 6B.v.0 | +0.000130 | +1.63 | no (positive = momentum) | no | **NO** |
 
-**Step 4/6 (placebo null, 1,000 replicates, hourly-clock family, day-of-week + trailing-vol
-matched by construction — every replicate draws a random non-fix clock hour independently per
-trading day, applied to the identical set of real trading days, so the matching is exact identity,
-not approximate resampling; verified programmatically against differential NaN-dropping, see the
-lab RESULTS.md):**
+**Step 4/4b (placebo null, 1,000 replicates EACH, two clock resolutions, day-of-week +
+trailing-vol matched by construction — every replicate draws a random non-fix candidate anchor hour
+independently per trading day, applied to the identical set of real trading days, so the matching
+is exact identity, not approximate resampling; verified programmatically against differential
+NaN-dropping, see the lab RESULTS.md):**
 
-| Symbol | real stat | null p60 | real's percentile rank | ≤ p60? |
-|---|---|---|---|---|
-| 6E.v.0 | −0.000030 | +0.000054 | 20.9th | **YES — kill** |
-| 6B.v.0 | −0.000094 | +0.000113 | 3.9th | **YES — kill** |
+**Revision note (added on adversarial review of the first B2.2 pass):** the original design (Step
+4 below) ranked the real statistic against a null built only from `ohlcv-1h` bars, while the
+decisive orthogonality leg (Step 5 above) scores a `target_precise` built from `ohlcv-1m` bars —
+disclosed as a design choice at the time (comparability with the hourly-only candidate menu), not
+silently assumed, but not the tightest test available: the 1-minute panel was already pulled, so a
+matched-resolution placebo (Step 4b) was feasible and had not been run. Step 4b applies the
+literal minute-offset structure of the real precise window to each of the same 6 candidate anchor
+hours, using 1-minute bar opens throughout, and is now the decisive placebo comparison; Step 4 is
+retained as a documented cross-check.
 
-Both real fix-window statistics sit **below the null distribution's own median**, not just below
-its 60th percentile — 6B's real statistic is worse than 96% of random-clock placebo draws. Both
-day-of-week and trailing-vol matching were verified to hold (not merely assumed): max day-of-week
-frequency deviation ≤0.2 percentage points, trailing-vol quartile relative deviation ≤0.3%, for
-both symbols.
+| Symbol | Resolution | real stat | null p60 | real's percentile rank | ≤ p60? |
+|---|---|---|---|---|---|
+| 6E.v.0 | 4b minute — **decisive** | +0.000065 | +0.000051 | 67.1th | **NO — clears** |
+| 6E.v.0 | 4 hourly — cross-check | −0.000030 | +0.000054 | 20.9th | YES — kill |
+| 6B.v.0 | 4b minute — **decisive** | −0.000131 | +0.000035 | 4.9th | **YES — kill** |
+| 6B.v.0 | 4 hourly — cross-check | −0.000094 | +0.000113 | 3.9th | YES — kill |
+
+**6E's placebo leg flips under the matched-resolution test** and now clears the bar (67.1st
+percentile) rather than failing it (20.9th at hourly resolution) — the same sign-fragility already
+noted above (6E's precise vs hourly-proxy point estimates disagree in sign) surfacing in the
+placebo-rank space. This does **not** change 6E's overall verdict: the frozen criterion is an OR of
+two legs, and 6E's orthogonality leg (Step 5, unaffected by this revision) independently fails on
+its own. It does mean 6E is now a **single-leg kill** (orthogonality only), not the two
+independently-corroborating legs the first B2.2 pass reported. 6B's placebo leg is unaffected in
+direction — both resolutions kill it — so 6B remains corroborated by both legs at both resolutions.
+
+Both hourly-resolution real statistics, and 6B's minute-resolution real statistic, sit **below the
+respective null distribution's own median**, not just below its 60th percentile — 6B's real
+statistic is worse than 96.1% of hourly-resolution and 95.1% of minute-resolution random-clock
+placebo draws. Both day-of-week and trailing-vol matching were verified to hold (not merely
+assumed, and identical for both resolutions since both draw from the same per-day index/offset
+mechanism): max day-of-week frequency deviation ≤0.2 percentage points, trailing-vol quartile
+relative deviation ≤0.3%, for both symbols.
 
 **A side finding, not decision-relevant but worth recording:** the placebo null itself is centered
-comfortably above zero for both symbols (mean +0.000036 / +0.000086) — some generic "fade the
-prior hour's move" pattern has positive gross expectancy at *various* clock times across this
-panel. The fix-specific window is not merely unremarkable against that backdrop; it *underperforms*
-the generic version. (Caveat carried from the lab RESULTS.md: bar opens are trade prints, not
-midpoints, so part of this generic-reversal magnitude — on the order of a single 6E/6B tick — could
-be bid-ask-bounce microstructure rather than pure economic reversion; this does not change the kill
-verdict either way.)
+comfortably above zero at hourly resolution for both symbols (mean +0.000036 / +0.000086), and
+near zero at minute resolution (mean +0.000035 / +0.000013) — some generic "fade the prior
+window's move" pattern has positive-or-near-zero gross expectancy at *various* clock times across
+this panel. For 6B the fix-specific window is not merely unremarkable against that backdrop, it
+*underperforms* the generic version at both resolutions; for 6E's decisive (minute) null the real
+statistic sits inside the ordinary range of the generic pattern rather than below it. (Caveat
+carried from the lab RESULTS.md: bar opens are trade prints, not midpoints, so part of this
+generic-reversal magnitude — on the order of a single 6E/6B tick — could be bid-ask-bounce
+microstructure rather than pure economic reversion; this does not change 6B's kill verdict either
+way.)
 
 No post-hoc subset or direction search for a rescuing cut was run after the whole-sample test
 failed (`lesson_snag_best_of_k_anchor_graveyard`) — the frozen kill criterion is applied exactly as
-written, once, on the pre-specified full sample.
+written, on the pre-specified full sample, at both resolutions. 6E's placebo leg clearing the bar
+is disclosed, not treated as grounds to search for a cut where both legs pass for 6E — one failing
+leg (orthogonality) is sufficient under the criterion's own OR.
 
 ---
 
@@ -140,13 +168,16 @@ written, once, on the pre-specified full sample.
 > Applied criterion (B2.2 task text): "Kill if the fix dummy adds nothing over generic reversal or
 > sits ≤ placebo 60th percentile."
 
-Both legs fail independently, for **both** symbols — not a knife-edge single-leg call requiring
-judgment:
+Both legs fail independently for **6B** — not a knife-edge call for that symbol. **6E** is a
+single-leg kill: its decisive (minute-resolution) placebo leg clears the bar, so only its
+orthogonality leg fails — still sufficient under the criterion's own OR, but a materially weaker
+finding than "both legs fail" for that symbol specifically (see Step 4/4b above for the full
+breakdown; not restated unchanged from the first B2.2 pass):
 
-| Symbol | Orthogonality leg | Placebo leg | Verdict |
+| Symbol | Orthogonality leg | Placebo leg (4b, decisive) | Verdict |
 |---|---|---|---|
-| 6E.v.0 | FAIL | FAIL | **DEAD** |
-| 6B.v.0 | FAIL | FAIL | **DEAD** |
+| 6E.v.0 | FAIL | PASS (67.1th pctile) | **DEAD** (orthogonality leg alone) |
+| 6B.v.0 | FAIL | FAIL (4.9th pctile) | **DEAD** (both legs) |
 
 This is a self-clearing outcome — zero judgment left, per the task's own framing. A
 `docs/rejected_candidates.md` row is added (this note) citing the F3 lineage the plan's own kill
