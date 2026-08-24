@@ -1,0 +1,70 @@
+cells: Select=315  Growth=315  MFFU=315  |  paired=315 of 315
+
+==============================================================================
+1. VERDICT COUNTS (paired cells only)
+  Select  FEASIBLE=94   MARGINAL=19   INFEASIBLE=202 
+  Growth  FEASIBLE=120  MARGINAL=12   INFEASIBLE=183 
+
+==============================================================================
+2. VERDICT TRANSITIONS  Select -> Growth
+  INFEASIBLE  -> INFEASIBLE    183   same
+  FEASIBLE    -> FEASIBLE       94   same
+  MARGINAL    -> FEASIBLE       19   BETTER
+  INFEASIBLE  -> MARGINAL       12   BETTER
+  INFEASIBLE  -> FEASIBLE        7   BETTER
+  ---- improved=38  unchanged=277  degraded=0
+
+==============================================================================
+3. WIN-RATE FLOOR per shape (lowest win_rate with >=1 FEASIBLE cell)
+   RESULTS.md Sec7.2 baseline: no cell at win_rate <= 50% is FEASIBLE, any firm.
+  symmetric           Select floor=65%  Growth floor=60%
+  mild_right_skew     Select floor=55%  Growth floor=50%
+  bounded_clustered   Select floor=60%  Growth floor=60%
+
+==============================================================================
+4. BUST DELTA (Growth - Select), mean by win_rate  [negative = Growth safer]
+  wr=40%  n=45   Select bust=0.9468  Growth bust=0.9306  delta=-0.0162
+  wr=45%  n=45   Select bust=0.8281  Growth bust=0.7916  delta=-0.0366
+  wr=50%  n=45   Select bust=0.6230  Growth bust=0.5663  delta=-0.0567
+  wr=55%  n=45   Select bust=0.2976  Growth bust=0.2201  delta=-0.0775
+  wr=60%  n=45   Select bust=0.0791  Growth bust=0.0431  delta=-0.0361
+  wr=65%  n=45   Select bust=0.0151  Growth bust=0.0056  delta=-0.0095
+  wr=70%  n=45   Select bust=0.0022  Growth bust=0.0005  delta=-0.0017
+
+==============================================================================
+5. CELLS THAT FLIP TO FEASIBLE UNDER GROWTH (the actionable set)
+  wr=50% mild_right_skew    cd=2 $250 | Select MARGINAL bust=0.0287 -> Growth FEASIBLE bust=0.0093
+  wr=55% mild_right_skew    cd=3 $275 | Select MARGINAL bust=0.0260 -> Growth FEASIBLE bust=0.0100
+  wr=55% mild_right_skew    cd=5 $250 | Select INFEASIBLE bust=0.0480 -> Growth FEASIBLE bust=0.0220
+  wr=55% mild_right_skew    cd=5 $275 | Select MARGINAL bust=0.0360 -> Growth FEASIBLE bust=0.0133
+  wr=55% mild_right_skew    cd=5 $325 | Select INFEASIBLE bust=0.0500 -> Growth FEASIBLE bust=0.0207
+  wr=55% mild_right_skew    cd=8 $250 | Select MARGINAL bust=0.0287 -> Growth FEASIBLE bust=0.0093
+  wr=55% mild_right_skew    cd=8 $275 | Select MARGINAL bust=0.0240 -> Growth FEASIBLE bust=0.0093
+  wr=60% bounded_clustered  cd=1 $250 | Select MARGINAL bust=0.0240 -> Growth FEASIBLE bust=0.0127
+  wr=60% bounded_clustered  cd=3 $250 | Select MARGINAL bust=0.0253 -> Growth FEASIBLE bust=0.0120
+  wr=60% bounded_clustered  cd=3 $275 | Select MARGINAL bust=0.0360 -> Growth FEASIBLE bust=0.0107
+  wr=60% bounded_clustered  cd=8 $250 | Select MARGINAL bust=0.0347 -> Growth FEASIBLE bust=0.0127
+  wr=60% bounded_clustered  cd=8 $275 | Select INFEASIBLE bust=0.0513 -> Growth FEASIBLE bust=0.0200
+  wr=60% mild_right_skew    cd=1 $325 | Select MARGINAL bust=0.0233 -> Growth FEASIBLE bust=0.0067
+  wr=60% mild_right_skew    cd=2 $325 | Select MARGINAL bust=0.0233 -> Growth FEASIBLE bust=0.0133
+  wr=60% mild_right_skew    cd=3 $325 | Select MARGINAL bust=0.0247 -> Growth FEASIBLE bust=0.0100
+  wr=60% symmetric          cd=5 $250 | Select INFEASIBLE bust=0.0420 -> Growth FEASIBLE bust=0.0147
+  wr=65% bounded_clustered  cd=2 $325 | Select MARGINAL bust=0.0227 -> Growth FEASIBLE bust=0.0113
+  wr=65% bounded_clustered  cd=5 $325 | Select MARGINAL bust=0.0340 -> Growth FEASIBLE bust=0.0147
+  wr=65% bounded_clustered  cd=8 $325 | Select MARGINAL bust=0.0347 -> Growth FEASIBLE bust=0.0167
+  wr=65% symmetric          cd=1 $275 | Select INFEASIBLE bust=0.0407 -> Growth FEASIBLE bust=0.0140
+  wr=65% symmetric          cd=2 $275 | Select INFEASIBLE bust=0.0447 -> Growth FEASIBLE bust=0.0173
+  wr=65% symmetric          cd=2 $325 | Select INFEASIBLE bust=0.0487 -> Growth FEASIBLE bust=0.0173
+  wr=65% symmetric          cd=3 $325 | Select MARGINAL bust=0.0333 -> Growth FEASIBLE bust=0.0153
+  wr=65% symmetric          cd=5 $325 | Select MARGINAL bust=0.0340 -> Growth FEASIBLE bust=0.0113
+  wr=65% symmetric          cd=8 $275 | Select MARGINAL bust=0.0273 -> Growth FEASIBLE bust=0.0107
+  wr=65% symmetric          cd=8 $325 | Select MARGINAL bust=0.0227 -> Growth FEASIBLE bust=0.0060
+
+==============================================================================
+6. MEDIAN DAYS-TO-PASS, FEASIBLE cells only (Growth min_trading_days=1 vs Select 3)
+  Select  n=94   median-of-medians=78 days  min=16  max=426
+  Growth  n=120  median-of-medians=78 days  min=16  max=481
+
+==============================================================================
+7. SANITY: Select cells reproduce the committed sweep byte-for-byte?
+  compared=315  bust mismatches=0 (OK - Select untouched)
