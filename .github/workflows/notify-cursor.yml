@@ -14,7 +14,7 @@ jobs:
     # Deliberately unscoped to "was this review cursor-requested": pinging @cursor on
     # a PR it didn't open is a harmless no-op for it, not worth an extra API call to avoid.
     if: |
-      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.user.login == 'claude[bot]') ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.user.login == 'claude[bot]' && !contains(github.event.comment.body, 'Claude Code review — in progress')) ||
       (github.event_name == 'pull_request_review' && github.event.review.user.login == 'claude[bot]')
     runs-on: ubuntu-latest
     permissions:

@@ -32,6 +32,20 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-25m — Claude review: allow git-read tools
+
+**Focus:** Build. `queue-exception: operator asked to proceed with the workflow fix`. Not a queue row.
+
+**Shipped:** `.github/workflows/claude.yml` `--allowedTools` for `git diff`/`git log`/`git status` (quoted). `notify-cursor.yml` skips the in-progress ack.
+
+**Decisions/defects:** do not widen `allowed_bots` to `*`. Takes effect after merge to `main`. Owner remains [`07-14 addendum`](adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-08-23-judgment-review).
+
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase A`](superpowers/plans/2026-08-23-viable-strategy-phase-a-target-derivation.md)) · #2 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)). Residue (same exception): workflow allowlist; do not promote leftovers.
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-25k — Queue: mechanism supply precedes B7/M1
 
 **Focus:** Decision. Operator: the blocker of #1 belongs on the queue ahead of it.
