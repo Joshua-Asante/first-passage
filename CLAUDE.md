@@ -231,11 +231,17 @@ files are CRLF; prefer the `.bat`.) GitHub Actions runs for real (live and green
 Limb-D) and cannot re-hash gitignored bytes; the hard-gate battery is
 [`scripts/gates.yml`](scripts/gates.yml) via
 [`.github/workflows/gate-manifest.yml`](.github/workflows/gate-manifest.yml)
-([W5](docs/adr/2026-08-07-w5-governance-diet.md) H6 lifted 2026-08-23). **CI passing is still not a
-merge precondition** — `main` carries no branch protection or required checks
-([`Q-GATESTACK-1`](docs/briefs/closures/Q-GATESTACK-1-closure-falsified.md) Limb-A; a ruleset packet
-is named, not opened). Escape hatch `git commit --no-verify` is not the
-standing path. See [manifest integrity gate](docs/adr/2026-05-10-manifest-integrity-gate.md).
+([W5](docs/adr/2026-08-07-w5-governance-diet.md) H6 lifted 2026-08-23). ⚠ **`main` is protected —
+you cannot push to it directly.** The `main-protection` ruleset (id `21071355`, created
+2026-08-19, no bypass) requires a **PR** (0 approvals), blocks force-push/deletion, and requires
+**exactly one** status check: `skills (3.12)` — the
+[`gate-manifest`](.github/workflows/gate-manifest.yml) job. `pytest` / `build` / `manifest-check` /
+`validation-controls` are deliberately **not** required (path-filtered; would deadlock doc-only
+PRs), so those staying red does **not** block a merge.
+⚠ The [`Q-GATESTACK-1` closure](docs/briefs/closures/Q-GATESTACK-1-closure-falsified.md) verdict
+line still reads Limb-A `FALSIFIED` (404/`[]`/unprotected) — that verdict is **stale by design**
+(kept unedited per Trap #12); its 2026-08-19 addendum row is the current-state pointer.
+Escape hatch `git commit --no-verify` is not the standing path. See [manifest integrity gate](docs/adr/2026-05-10-manifest-integrity-gate.md).
 
 ### Gate composition authority
 

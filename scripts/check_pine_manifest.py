@@ -90,8 +90,10 @@ Actions has run live and green since the 2026-08-15 public transition):
     can miss, not the only detection point. Worth having anyway: acting while the
     authoring PR is fresh is the difference between re-pinning from a source that
     still exists and reconstructing one that does not.
-  None of the three block a merge — main carries no branch protection or required
-  checks (Q-GATESTACK-1 Limb-A).
+  None of the three block a merge — but NOT because main is unprotected. The
+  `main-protection` ruleset (created 2026-08-19, Q-GATESTACK-1 closure addendum)
+  requires a PR and the `skills (3.12)` check; none of these three limbs is among
+  the required checks, so a red run here is advisory only.
 
 Exit codes:
     0 — check passed (EXTRA warns), or no Pine present locally (warn-only)

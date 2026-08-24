@@ -84,8 +84,10 @@ jobs:
   # passes on every push/PR (confirmed at job granularity, not just workflow-wrapper
   # level). It is real PR-time detection, catching a bad pin before the bytes are gone
   # rather than only after, the way scripts/githooks/post-merge's post-hoc limb does.
-  # It is still advisory-only: main carries no branch protection or required checks
-  # (Q-GATESTACK-1 Limb-A), so a red run here does not block a merge on its own.
+  # It is still advisory-only, but NOT because main is unprotected -- the
+  # `main-protection` ruleset (created 2026-08-19, Q-GATESTACK-1 closure addendum)
+  # requires a PR and the `skills (3.12)` check. THIS job is deliberately not among
+  # the required checks, so a red run here does not block a merge on its own.
   pine-pin-provenance:
     runs-on: ubuntu-latest
     steps:
