@@ -36,26 +36,37 @@ explicitly spares "a published, signed imbalance number." The estate's own deep-
 independently names *"a published MOC-imbalance cohort δ"* as a live free route. Two independent
 sources converge on this door.
 
-- [ ] **B1.0 — venue/hours fact-check ($0, minutes):** verify current CME equity-index futures
+- [x] **B1.0 — venue/hours fact-check ($0, minutes):** verify current CME equity-index futures
   afternoon hours (the ~16:15–16:30 ET daily pause) against CME's own contract page; record the
   real tradable wake window. Verify MES tick/point values and recompute the cost floor from
   `firm_rules` ($0.91/side + slippage convention ⇒ ~2.3 ES-points/trade net hurdle — confirm).
-- [ ] **B1.1 — literature route (harvest Req 1b, $0):** search for a published, citable cohort δ
+  **Corrected, not confirmed:** the CME halt was removed 2021-06-28 (month-end only now — the
+  fragmented-window premise above is stale); real hurdle recomputes to ≈3.46 points, not ≈2.3.
+  [`results`](../../notes/research/2026-08-23-phase-b-lane-b1-falsifier-results.md#b10--venue-hours--cost-floor-recompute).
+- [x] **B1.1 — literature route (harvest Req 1b, $0):** search for a published, citable cohort δ
   for post-close imbalance-conditioned index-futures reversal (the exact object the F1 ruling
   said was missing). Outcome A: citable δ found → proceed to B1.3. Outcome B: none → B1.2 is the
-  only door.
-- [ ] **B1.2 — free-access check for the paper-log ($0):** determine whether MOC imbalance
+  only door. **Outcome B** — no citable δ found (real search run, documented).
+- [x] **B1.2 — free-access check for the paper-log ($0):** determine whether MOC imbalance
   numbers are republished free at ~15:50 ET (broker platforms, public terminals). The primary
   NYSE feed is exchange-licensed — **buying it is barred pre-survivor** (Avenue-A gate). If no
   free source: lane parks with a named re-entry (a free republication appearing, or a survivor
-  justifying procurement).
-- [ ] **B1.3 — operator bar-reading (named, not self-cleared):** does this lane satisfy the F1
+  justifying procurement). **A candidate free source found (Financial Juice), but the concrete
+  evidence is one dated 2024 artifact + an unverified recurrence claim — not a live-confirmed
+  current source.** Whether that's enough to count is the B1.3 question.
+- [x] **B1.3 — operator bar-reading (named, not self-cleared):** does this lane satisfy the F1
   ruling's own re-proposal terms (published cohort δ per Req 2, or the Avenue-A qualifying
-  triple)? Present B1.1/B1.2 evidence; operator rules admit/decline.
-- [ ] **B1.4 — shape pre-check:** score the lane's predicted payoff profile (bounded window,
-  clustered wins, ~2–4 events/week) against the A2 region before any card is drafted.
+  triple)? Present B1.1/B1.2 evidence; operator rules admit/decline. **Ruled `ADMIT`, operator,
+  2026-08-24, real-time GO — the weaker B1.2 evidence still counts as a free sign source, and
+  F1's §6 reversal clause does not trip.**
+- [x] **B1.4 — shape pre-check:** score the lane's predicted payoff profile (bounded window,
+  clustered wins, ~2–4 events/week) against the A2 region before any card is drafted. Target:
+  win_rate ≥65% clean (cadence 2) or ≥65% clean / 60% MARGINAL (cadence 3), risk=$275. B1 has
+  zero measured win-rate evidence yet — this is the bar the paper-log will be read against.
 - [ ] **B1.5 — on admit:** 20-session forward paper-log ($0, zero capital, calendar time only) or
-  historical test if B1.1 found data — then hand to Phase C as a card candidate.
+  historical test if B1.1 found data — then hand to Phase C as a card candidate. **Licensed by
+  the B1.3 admit above; not started — B1.1 found no historical data, so this is the real-time
+  forward path only, which spans ~4 calendar weeks and cannot be executed in one session.**
 
 **Kill criteria (frozen now):** no free sign source AND no citable δ → PARK. Paper-log mean net
 capture below the recomputed hurdle at 20 sessions → dead, registry row, no card ever authored.
@@ -73,15 +84,21 @@ cost-law with a re-proposal bar of *"not a different fix."* The wake-WHO (dealer
 different window) is arguably new mechanism evidence; that reading is the operator's, and the
 lane's own arithmetic is knife-edge.
 
-- [ ] **B2.0 — cost + venue arithmetic ($0, minutes):** recompute the 4× floor per expression
+- [x] **B2.0 — cost + venue arithmetic ($0, minutes):** recompute the 4× floor per expression
   from `firm_rules` cost fields: micro (M6E ~9–10 pips required vs 3–8 pip literature drift —
   expected fail) vs full-size 6E/6B (~2.6 pips — feasible on paper). Verify full-size FX
   venue-legality on `Tradeify_Select_100K` and DD-fit (a 4–8 pip stop ≈ $50–100/contract vs the
-  $3,000 trail). If micro-only is legal, the lane dies here at $0.
-- [ ] **B2.1 — operator bar-reading (named, not self-cleared):** does the wake-WHO clear F3's
+  $3,000 trail). If micro-only is legal, the lane dies here at $0. **Corrected, not confirmed:**
+  M6E fails as expected (9.1–13.1 pips); 6E and 6B are NOT equivalent — 6E recomputes to
+  3.98–5.98 pips (arithmetically alive), 6B to 7.97–11.97 pips (close to the dead micro zone).
+  Both confirmed legal at Tradeify. DD-fit holds trivially either way.
+  [`notice`](../../notes/notice/N-2026-08-24-b2-london-fix-wake-cost-arithmetic.md#2--the-4-cost-floor-arithmetic-two-conventions-both-run).
+- [x] **B2.1 — operator bar-reading (named, not self-cleared):** does the wake-WHO clear F3's
   *"not a different fix"* re-proposal bar as new mechanism evidence? Present the F3 kill text +
   this lane's distinct WHO/window; operator rules admit/decline. **Ruled before any data is
-  touched.**
+  touched.** **Ruled `ADMIT`, operator, 2026-08-24, real-time GO — scope: both 6E AND 6B stay
+  live** (operator elected to keep 6B for its own re-examination rather than dropping it on this
+  session's arithmetic alone).
 - [ ] **B2.2 — placebo battery ($0, one scripted afternoon, only after B2.0+B2.1 both pass):**
   2 years of hourly 6E bars (Databento `ohlcv-1h`, $0-class — Rule-1 estimate first). Mean
   11:10→13:00 return conditioned on impulse sign vs 1,000 placebo windows matched on day-of-week
@@ -106,9 +123,12 @@ cover-15:45 inside above-threshold regimes.
 frequency cannot satisfy the activity rule alone — and its magnitude class sits in the shadow of
 the registry's power-wall precedent (F5/D3: power 0.24–0.30 at single-digit bp/session).
 
-- [ ] **B3.0 — arithmetic falsifier (folded into Phase A1's audit session, ~5 min):** cadence vs
-  activity floor; implied per-session δ vs the power wall. Expected outcome: PARK-or-dead before
-  any assembly.
+- [x] **B3.0 — arithmetic falsifier (folded into Phase A1's audit session, ~5 min):** cadence vs
+  activity floor; implied per-session δ vs the power wall. **KILL (POWER class, category-inherited
+  from the F5/D3 precedent — power 0.24–0.30 at single-digit bp, three independent measured
+  instances).** Cadence clears the activity floor via the operator token-trade disclosure, but
+  power does not. [`A1 audit §6`](../../notes/audits/2026-08-23-kill-register-attribution-audit.md#6--compelled-abstention-arithmetic-fold-in-phase-b-candidate-b3).
+  B3.1/B3.2 do not fire (killed before any assembly, as this task anticipated).
 - [ ] **B3.1 — only if B3.0 survives:** half-day calendar assembly (top-30 S&P-100 weights, 3 yrs
   of earnings dates → B_t) + conditional-mean differential on MNQ session returns. Kill < ~5
   bp/session or FLIP fail.

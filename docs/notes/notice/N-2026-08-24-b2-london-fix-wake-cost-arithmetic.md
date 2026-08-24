@@ -259,6 +259,20 @@ part of what the operator is being asked to weigh).
 
 This note takes no position between these two readings. **Disposition: LIVE-AWAITING-BAR-READING.**
 
+**RESOLVED — B2.1 ruled `ADMIT`, operator, 2026-08-24, real-time GO. Scope: both 6E AND 6B stay
+live** — the operator elected to keep 6B in scope for its own re-examination rather than dropping
+it on this session's arithmetic alone, notwithstanding that 6B's recomputed hurdle (7.97–11.97
+pips) sits close to micro M6E's dead-zone. The wake-WHO (dealer-inventory normalization,
+11:10–13:00 ET, distinct from the 10:58–11:04 ET fix print F3 scored) is ruled to clear F3's
+"not a different fix" bar as new mechanism evidence. The window-vs-F3-clock ambiguity named above
+(this lane's ET cluster vs. F3's "London 16:00" framing) was not separately resolved before this
+ruling — it stays an open interpretive note, not a blocker, per the operator's ruling.
+
+**Next step:** Task B2.2 (placebo battery) is now licensed — both B2.0 and B2.1 have passed. It is
+gated on its own Rule-1 Databento cost dry-run first (mandatory per the `databento-data` skill),
+covering both 6E and 6B per the scope ruling above, not just 6E as the plan's own literal text
+named.
+
 ---
 
 ## Verification

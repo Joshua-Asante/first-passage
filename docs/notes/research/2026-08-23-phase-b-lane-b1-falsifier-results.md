@@ -96,7 +96,15 @@ Confirmed against §6.2's `bounded_clustered` (risk=$275) table directly: cadenc
 
 ## Disposition
 
-**LIVE-AWAITING-BAR-READING.** Lane does not mechanically self-clear to PARK — B1.2's finding, even after the date correction above knocks it down from "a candidate free source found" to "a dated, unverified-as-current artifact of a free republication format," is still not the clean absence the plan's frozen text requires alongside B1.1's clean absence. Whether that weaker finding is enough to keep the door open, or whether it should now be read as effectively no free source, is a judgment call this note does not make. B1.3 needs an explicit operator ruling on both the strength of the (now corrected) B1.2 evidence and the F1 §6 reversal-clause question. See structured output for the exact bar-reading question.
+**RESOLVED — B1.3 ruled `ADMIT`, operator, 2026-08-24, real-time GO.** The corrected (weaker) B1.2 evidence still counts as "a free sign source" for the plan's PARK-conjunction purposes, and F1's §6 condition-3 reversal clause does **not** trip — the operator's reading is that an unofficial third-party republication is not the same as "the data becoming freely available" in the sense F1 meant (F1 anticipated the licensed feed itself going free, not a lossy, unverified, unofficial proxy for it). The lane does not self-clear to PARK and is not ruled dead by the reversal clause either — it stays open, per the task's own "on admit" branch (Task B1.5).
+
+**Next step (not executed by this note or session — spans real calendar time):** Task B1.5's "historical test if B1.1 found data" branch does not apply (B1.1 found no citable δ). The licensed path is the **20-session forward paper-log** — a genuinely real-time observation task (record Financial Juice's daily signed imbalance figure each session at ~15:50 ET, then check MES's post-close/next-session price action against the B1.4 target: win_rate ≥65% clean at cadence 2, or ≥65% clean / 60% MARGINAL at cadence 3, risk=$275) — that cannot be fabricated or compressed into a single working session. See the follow-up scaffolding note for how this is being tracked.
+
+<details><summary>Original (pre-ruling) disposition text, superseded above — kept for the audit trail, not deleted</summary>
+
+LIVE-AWAITING-BAR-READING. Lane does not mechanically self-clear to PARK — B1.2's finding, even after the date correction above knocks it down from "a candidate free source found" to "a dated, unverified-as-current artifact of a free republication format," is still not the clean absence the plan's frozen text requires alongside B1.1's clean absence. Whether that weaker finding is enough to keep the door open, or whether it should now be read as effectively no free source, is a judgment call this note does not make. B1.3 needs an explicit operator ruling on both the strength of the (now corrected) B1.2 evidence and the F1 §6 reversal-clause question. See structured output for the exact bar-reading question.
+
+</details>
 
 ---
 
