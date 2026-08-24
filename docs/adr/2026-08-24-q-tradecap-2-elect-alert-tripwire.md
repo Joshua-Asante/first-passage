@@ -9,7 +9,7 @@
 **Tier:** light
 **Layer:** election record. **$0 / K=0.** No live-risk wire.
 
-Decision: Elect frozen ID **2** (alert tripwire) as the licensed close for [`Q-TRADECAP-2`](../briefs/Q-TRADECAP-2-per-trade-bound-election.md). Observe-only: does not flatten and does not discharge the realized-loss gap. Do not wire **1-size** or **1-realized**. Threshold is a later election; do not import the CFD-era example percent. If a tripwire is later implemented, freeze an MTM-or-dual trigger and threshold-before-first-fill, or accept fail-open on that implementation record.
+Decision: Elect frozen ID **2** (alert tripwire) as the licensed close for [`Q-TRADECAP-2`](../briefs/Q-TRADECAP-2-per-trade-bound-election.md). Observe-only: does not flatten and does not discharge the realized-loss gap. Do not wire **1-size** or **1-realized**. Threshold is a later election; do not import the CFD-era example percent. If a tripwire is later implemented, freeze an MTM-or-dual trigger and threshold-before-first-fill, or accept fail-open on that implementation record. O4 declined as re-litigation of absence (parent “unbounded” = no per-trade bound inside the trail; **2** is pre-breach warning). O9 N/A: **1-size** is not elected.
 
 Grounds: [`Q-TRADECAP-2`](../briefs/Q-TRADECAP-2-per-trade-bound-election.md) · [pre-reg](../briefs/pre-registration/Q-TRADECAP-2-verdict-preregistration.md) @ `4d6761b` · [consult](../notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md) (O4/O5/O6/O7/O9) · operator ask after the consult recommendation.
 

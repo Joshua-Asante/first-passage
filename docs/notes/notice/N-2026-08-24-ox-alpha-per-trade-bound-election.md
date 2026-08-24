@@ -69,7 +69,7 @@ Verdicts: **SURVIVES** (carries into the unpaid election) · **PARTIAL** · **DI
 **HOLD** until the Proposed elect-2 ADR is `Accepted` or declined. Do not graduate a new Q. Do not amend the frozen pre-reg. Do not wire a tripwire or cap from this notice.
 
 Decision: HOLD
-Reason: ID **2** is recorded `Proposed`; surviving rows still constrain the ratification write-up.
+Reason: ID **2** is recorded `Proposed`; O4/O5/O6/O7/O9 are disposed on that ADR. HOLD until `Accepted` or declined.
 
 ---
 
