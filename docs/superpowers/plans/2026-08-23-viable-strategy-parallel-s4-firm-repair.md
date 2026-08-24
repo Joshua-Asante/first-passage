@@ -53,6 +53,16 @@ extends its scope from Tradeify/Class-S to these firms, landed in the same commi
 [`RESULTS`](../../../lab/analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md) ·
 [`audit note`](../../notes/audits/2026-08-23-r1-bulenox-blusky-clock-repair.md).
 
+**Operator ratification (2026-08-23, real-time GO in chat):** the implementer's self-authored
+three-way disposition — the task reviewer's own phrasing was "done for what's live, openly
+incomplete for what isn't" — is ratified as-is. `Bulenox_100K`/`BluSky_Premium_100K` (the tiers
+R3 actually consumes; the 50K band is diagnostic-only per R3's own scope and the other archived
+tiers aren't named there at all) are genuinely, fully re-measured. The named residual
+(`Bulenox_25K/50K/150K/250K` PASS-side cells in the closed/NO-GO'd archived campaign) stays
+un-re-run for the three stated reasons; reviving it is not authorized by this ratification and
+would need its own case if ever raised. This closes the one item the task reviewer flagged as
+needing explicit sign-off rather than implementer self-authorization.
+
 ## Task R2 — Bulenox lock-scope resolution (primary source, then classification) — `RESOLVED`
 
 - [x] Answer with primary-source grounding: does the Master-account "stops moving at initial
