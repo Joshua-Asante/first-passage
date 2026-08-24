@@ -32,6 +32,20 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-25e — Q-TRADECAP-2 opened (per-trade bound election)
+
+**Focus:** Decision. Queue row 2 started. Successor packet opened; no close elected; no rail wire.
+
+**Shipped:** [`Q-TRADECAP-2`](briefs/Q-TRADECAP-2-per-trade-bound-election.md) · [pre-reg](briefs/pre-registration/Q-TRADECAP-2-verdict-preregistration.md). Phase 0: CFD 2.0% = $2,000 = 66.7% of Tradeify $3,000 trail; `daily_loss_pct=None`; listener omits `sl=`.
+
+**Decisions/defects:** Option 1-as-staged is not startable. Frozen set: **2** alert tripwire · **1-size** entry $ ceiling · **1-realized** gated on disaster-stop Phase 0a. Do not import 2.0%.
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-2`](briefs/Q-TRADECAP-2-per-trade-bound-election.md) · [`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-25f — P6–P10 one commit per packet
 
 **Focus:** Decision + Hygiene. `queue-exception: operator asked to start working on the P6–P10 plans`. Follow-up: commit after each plan is implemented (rewrite the batched land into five commits).
