@@ -445,3 +445,28 @@ set is not amended by this use.
 
 The Use-N ledger remains incomplete across concurrent sessions — see the
 Change history merge note. This row does not claim a complete series number.
+
+---
+
+## Addendum 2026-08-24 — Use N: sanitized deep-iteration-lane design review
+
+**Dated note; does not amend §Decision / §2 Scope / §4 Falsifier / §5 Forbidden moves.**
+Use-count only, so the §4 trigger schedule stays evaluable.
+
+One sanitized adversarial design review of the deep-iteration lane (what its implementation
+missed or overlooked, judged against its two-abandonment record), sent under §2 base scope at
+explicit operator direction ("judge it yourself, and pose this question to ox-alpha"). Fully
+genericized — no campaign codenames, instruments, firms, or repo constants. Reconciliation owner:
+[`N-2026-08-24-ox-alpha-deep-lane-design-review.md`](../notes/notice/N-2026-08-24-ox-alpha-deep-lane-design-review.md).
+
+Notable both ways: **two genuinely new findings survived** (the POWER_MIN-0.50 ×
+two-strike-falsifier coupling implies up to a ~25% false-falsification rate at the admissible
+power floor; the stacked gate set's composite acceptance probability has never been computed),
+one objection was **verified stronger** against the charter's own §4 text than as sent
+(post-confirm N-SURV and half-split deaths count as falsifier strikes), and **three objections
+were cleanly refuted** by charter text the sanitized prompt could not carry (the conjunct-(iii)
+satisfiability refusal rule; the train gates' SPA + slippage-stress battery; the audit's
+supply-side scoping). Several more converged with this session's own independently-authored
+findings. Revert trigger (b) does not tick.
+
+No transcript of the hidden-reasoning channel is stored in-repo (sanitization bar).
