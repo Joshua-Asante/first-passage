@@ -259,15 +259,17 @@ At the row both maps share (WR=40%, risk ∈ {$250, $275}, the EM2 axis both use
 | A2 `symmetric` (mean win ≈1.0R) | 99.87%–100.00% |
 | A2 `bounded_clustered` (mean win ≈1.0R, tight) | 99.87%–100.00% |
 
-**This is the extension's second load-bearing finding.** At the identical win rate and identical
-$-risk levels, `design_box`'s 2–3R wins cut bust by **3× to 10×** relative to A2's *best* shape
-(`mild_right_skew`) and by roughly an order of magnitude relative to `symmetric`/`bounded_clustered`.
-The design box's own directional premise — that a larger, asymmetric win size is what the trailing-DD
-barrier actually rewards, more than skew or win-clustering per se (matching A2's own §7 point 3
-reading, extended here to a materially larger win size than A2 ever tested) — is **strongly
-corroborated** by this comparison. What it does not do, at WR=40%/EM2-risk, is cross the 3.0% line:
-`design_box`'s own closest EM2-axis cell at WR=40% (9.71%, cd=5/$275) is still more than 3× the
-ceiling, even though it is the best-surviving shape either map has tested.
+**This is the extension's second load-bearing finding.** Paired cell-by-cell (same cadence, same
+$-risk — 10 pairs), `design_box`'s 2–3R wins cut bust by **2.5× to 9.3×** relative to A2's *best*
+shape (`mild_right_skew`) — e.g. cadence=5/$275: 9.71% vs 90.40%, the widest gap; cadence=2/$275:
+29.67% vs 74.87%, the narrowest — and by roughly an order of magnitude relative to
+`symmetric`/`bounded_clustered` (which sit at ≈100% bust throughout this row, so the ratio there is
+effectively unbounded). The design box's own directional premise — that a larger, asymmetric win
+size is what the trailing-DD barrier actually rewards, more than skew or win-clustering per se
+(matching A2's own §7 point 3 reading, extended here to a materially larger win size than A2 ever
+tested) — is **strongly corroborated** by this comparison. What it does not do, at WR=40%/EM2-risk,
+is cross the 3.0% line: `design_box`'s own closest EM2-axis cell at WR=40% (9.71%, cd=5/$275) is
+still more than 3× the ceiling, even though it is the best-surviving shape either map has tested.
 
 ---
 
