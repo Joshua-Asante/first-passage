@@ -27,22 +27,24 @@ Account quote ("stops moving... starting balance +100") + both Wayback capture U
 
 ## Task R1 — 7-tier intraday-honest re-run (the W1 pattern, applied)
 
-- [ ] Enumerate the 7 `dd_type="trailing"` tiers (Bulenox ×5, BluSky ×2) from `core/firm_rules.py`
+- [x] Enumerate the 7 `dd_type="trailing"` tiers (Bulenox ×5, BluSky ×2) from `core/firm_rules.py`
   — the closure's own grep pins them.
-- [ ] Re-run every published bust/pass figure that exists for those tiers with `intraday_low`
+- [x] Re-run every published bust/pass figure that exists for those tiers with `intraday_low`
   populated, per the W1 ADR's pattern (frozen seeds/sims/horizon via `load_scoring_thresholds()`;
   no re-picking). Where a tier has no published figure, record "none to re-measure" rather than
   manufacturing one.
-- [ ] Report per-tier: EOD-clock figure → honest-clock figure → flipped verdicts, in a RESULTS
+- [x] Report per-tier: EOD-clock figure → honest-clock figure → flipped verdicts, in a RESULTS
   doc under `lab/analysis/c1/` with a CATALOG row. Every prior figure that moved gets a
   reader-intercept note at the surface where it is read (Rule 14), not just here.
-- [ ] BluSky CLOCK specifically: run its tier(s) through the same direct `simulate_path` diff
+- [x] BluSky CLOCK specifically: run its tier(s) through the same direct `simulate_path` diff
   Bulenox got — the closure explicitly declined to assume BluSky is clean by analogy.
 
-**Gate (R1):** `RESOLVED` when all 7 tiers carry an honest-clock figure or an explicit
-none-to-re-measure line. The CLAUDE.md caveat line ("EOD-clock lower bounds unless
-intraday-honest") extends its scope from Tradeify/Class-S to these firms in the same commit —
-that scoping gap is the exact thing Q-FIRMEOD-1 proved was live.
+**Gate (R1):** `RESOLVED` — all 7 tiers carry an honest-clock figure (Bulenox_100K,
+BluSky_Premium_100K, both published arms) or an explicit none-to-re-measure line (the other 5).
+The CLAUDE.md caveat line ("EOD-clock lower bounds unless intraday-honest") now extends its scope
+from Tradeify/Class-S to these firms, landed in the same commit —
+[`RESULTS`](../../../lab/analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md) ·
+[`audit note`](../../notes/audits/2026-08-23-r1-bulenox-blusky-clock-repair.md).
 
 ## Task R2 — Bulenox lock-scope resolution (primary source, then classification)
 

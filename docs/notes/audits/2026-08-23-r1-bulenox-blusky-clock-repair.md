@@ -252,3 +252,100 @@ python lab/analysis/c1/firm_model_repair_r1_7tier_2026-08-23/run_r1_bulenox_blus
 grep -n '"dd_type": "trailing"' core/firm_rules.py
 grep -n "Bulenox/BluSky" CLAUDE.md
 ```
+
+---
+
+## §12 — Fix-pass addendum (2026-08-23, independent re-verification)
+
+**Trigger:** dispatched as a Task R1 "fix" pass with an **empty** reviewer-findings list (no
+Critical/Important items supplied). Rather than guess at unstated findings, this pass re-ran Rule
+0 independently against every substantive claim in §§0–9 above and in
+[`RESULTS.md`](../../../lab/analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md), acting
+as its own adversarial reviewer before deciding what, if anything, needed fixing.
+
+**Re-verified independently (all held, no discrepancy found):**
+
+- The 7 `"dd_type": "trailing"` line pins (122, 134, 146, 158, 170, 538, 554) — re-grepped and
+  read `core/firm_rules.py` directly at those lines; both BluSky tiers confirmed `dd_type="trailing"`.
+- `core/mc/simulation.py::simulate_path` — read in full. Confirmed the `equity_test = min(equity_new,
+  equity + intraday_low[day]*scale)` construction and that forward state (`equity`, `peak`) is
+  carried on `equity_new`, never `equity_test` — which is what makes the §4 monotonicity proof
+  (honest-clock bust rate ≥ EOD-clock bust rate, same seeds) actually sound rather than asserted:
+  traced the induction directly (identical state up to the first divergence day, and the honest
+  clock can only diverge by busting *earlier*, never later).
+- `core/mc/preflight.py::firm_kwargs` — read in full; confirmed `dd_type=="trailing"` (L169-171)
+  never threads `dd_lock_offset_usd` (that branch is `trailing_locking`-only, L172-180), so the
+  script's "no lock-unreachable patch needed" premise holds.
+- `lab/discovery/prop_survivor_scoring.py` — read in full, including that
+  `run_class_s_c1_regime_gate._consistency_frac` (used by `W1._run_partition`, which the new
+  runner reuses) is byte-identical to `prop_survivor_scoring._consistency_frac` — no drift between
+  the two copies.
+- `r1_bulenox_blusky_intraday_report.json` — every figure in the RESULTS.md §3 table and this
+  audit note's headline numbers traced back to this file field-by-field; internally consistent.
+- The "5 tiers carry no published figure" claim — independently repo-grepped for
+  `Bulenox_25K|Bulenox_50K|Bulenox_150K|Bulenox_250K|BluSky_Premium_50K` (11 files hit); read the
+  unfamiliar ones not already cited in §0 (`docs/briefs/Q-FIRMEOD-1-eod-breach-clock-bulenox-blusky.md`,
+  `docs/adr/2026-08-05-blusky-inactivity-unsourced-encoding.md`, `tests/core/test_mc_preflight.py`,
+  the `prop-firm-challenge` skill doc) — none carry a bust/pass MC figure, only rule-config/
+  inactivity-sourcing content. Claim holds.
+- The two monotonicity-disposed candidates' cited figures — read
+  `lab/archive/class_s_candidate2_scoring_2026-07-15/RESULTS.md` (Bulenox 7.38%, BluSky 8.76%) and
+  `lab/archive/q_compose_1_2026-07/RESULTS.md` (Bulenox 44.75%, BluSky 51.91%) directly; both
+  quoted figures match byte-for-byte.
+- All three reader-intercept banners (`CORRECTED_FULLPANEL.md`,
+  `class_s_candidate1_scoring_2026-07-15/RESULTS.md`, `tradeify_eval_lock_correction_2026-07-22/RESULTS.md`)
+  — read post-fix (commit `949b6b3` already corrected the one wrapped-heading defect); all three
+  render as single-line blockquote headers now.
+- Forbidden-moves compliance — `git diff` over the full R1 range touches no line in
+  `core/firm_rules.py`, `core/dd_protection.py`, `STATE.md`, or `docs/SESSIONS.md`.
+- Re-ran (not just re-read): `pytest tests/core/test_mc_intraday_barrier.py -q` → `9 passed`;
+  `pytest tests/core/ tests/test_prop_survivor_scoring.py -q` → `240 passed, 4 skipped in 261s`
+  (matches the prior implementer's figures exactly); `check_boundaries.py`,
+  `check_status_consistency.py`, `check_closure_disposition.py`, `sync_liveness_indexes.py`,
+  `check_root_doc_liveness.py`, `check_path_liveness.py`, `archive_lab_analysis.py --check
+  --catalog-only` — all `OK` (the CATALOG one-liner WARNs are pre-existing and affect ~10 other
+  unrelated rows, not specific to this campaign's row). Did **not** re-run the ~24-minute MC
+  campaign itself (`run_r1_bulenox_blusky_intraday.py`) — the deterministic seeded computation was
+  already traced code-path-by-code-path above and its output cross-checked field-by-field against
+  both the JSON and the RESULTS.md table; re-running would reconfirm an already-traced
+  deterministic result, not surface anything the code audit could not.
+
+**One gap found and fixed:** the parent plan
+([`docs/superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md`](../../superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md))
+opens with "REQUIRED SUB-SKILL: `superpowers:subagent-driven-development` or
+`superpowers:executing-plans`. Checkbox (`- [ ]`) syntax for tracking" — but Task R1's four
+checkboxes were still `- [ ]` and the Gate (R1) line still read as an unfired conditional
+("`RESOLVED` **when**...") even though every item was independently re-verified complete above.
+Left as-is, a reader of the plan (human or agent) would see an apparently-unstarted Task R1
+alongside this note's own `Closed` disposition — a source-of-truth fracture of exactly the class
+this repo's own doc-discipline culture flags. **Fixed:** checked all four Task R1 boxes and
+rewrote the Gate line to a fired `RESOLVED` statement pointing at this note and the RESULTS doc.
+Scope note: Task R2's and R3's checkboxes in the same plan file were **not** touched — out of
+scope for a Task R1 fix pass (R2 landed separately at `65dc17b` under its own task; R3 is
+unblocked-but-not-run per §11 above, correctly still open).
+
+**Nothing else changed.** No finding rose to a level requiring any edit to the RESULTS doc, the
+JSON report, the runner script, the CLAUDE.md caveat text, the CATALOG row, or any of the three
+reader-intercept banners — all held up under independent re-verification as written.
+
+**Verification (this pass):**
+
+```bash
+python -m pytest tests/core/test_mc_intraday_barrier.py -q
+# 9 passed
+
+python -m pytest tests/core/ tests/test_prop_survivor_scoring.py -q
+# 240 passed, 4 skipped
+
+python scripts/check_boundaries.py
+python scripts/check_status_consistency.py
+python scripts/check_closure_disposition.py
+python scripts/sync_liveness_indexes.py
+python scripts/check_root_doc_liveness.py
+python scripts/check_path_liveness.py
+python scripts/archive_lab_analysis.py --check --catalog-only
+# all OK/CLEAN
+
+grep -n '\[x\]' docs/superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md
+# Task R1's 4 items now checked
+```
