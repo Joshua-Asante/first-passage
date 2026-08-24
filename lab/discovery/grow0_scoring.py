@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from discovery.grow0_dgp import draw_daily_pnl
+from discovery.grow0_dgp import EDGE_DOLLARS, draw_daily_pnl
 
 _TRADING_DAYS_PER_YEAR = 252
 _TRADING_DAYS_PER_WEEK = 5.0
@@ -49,16 +49,21 @@ class PanelResult:
     clears: bool
 
 
-def _score_all_variants(train_children, edge_variant_index):
+def _score_all_variants(train_children, edge_variant_index, *, edge_dollars: float = EDGE_DOLLARS):
+    """``edge_dollars`` is an additive, default-preserving passthrough (Limb C design note §9
+    item 2) -- defaults to the frozen module constant, so every existing caller (unchanged) draws
+    exactly the same series as before this parameter existed."""
     pnls = [
-        draw_daily_pnl(train_children[i], edge=(i == edge_variant_index))
+        draw_daily_pnl(
+            train_children[i], edge=(i == edge_variant_index), edge_dollars=edge_dollars
+        )
         for i in range(len(train_children))
     ]
     stats = [annualized_sharpe(p) for p in pnls]
     return pnls, stats
 
 
-def _nominate_and_gate(train_children, edge_variant_index):
+def _nominate_and_gate(train_children, edge_variant_index, *, edge_dollars: float = EDGE_DOLLARS):
     """Shared nomination and gating logic for run_panel and run_panel_leaked.
 
     Scores all variants, nominates by argmax, and applies nomination gates
@@ -66,6 +71,9 @@ def _nominate_and_gate(train_children, edge_variant_index):
     returns the abandoned PanelResult immediately. If both gates pass, returns
     None as the first element, allowing the caller to proceed to their own
     confirm step.
+
+    ``edge_dollars`` is an additive, default-preserving passthrough (Limb C design note §9 item
+    2) -- see ``_score_all_variants`` / ``draw_daily_pnl``.
 
     Returns:
         tuple: (abandoned_result, nominee, pnls, stats, ga, gb)
@@ -76,7 +84,7 @@ def _nominate_and_gate(train_children, edge_variant_index):
             - stats: TRAIN Sharpe stats for all variants
             - ga, gb: Gate pass/fail results
     """
-    pnls, stats = _score_all_variants(train_children, edge_variant_index)
+    pnls, stats = _score_all_variants(train_children, edge_variant_index, edge_dollars=edge_dollars)
     nominee = int(max(range(len(stats)), key=lambda i: stats[i]))
     ga = gate_a_passes(stats[nominee])
     gb = gate_b_passes(pnls[nominee])
@@ -102,20 +110,27 @@ def run_panel(
     *,
     edge_variant_index: int | None,
     floor: float,
+    edge_dollars: float = EDGE_DOLLARS,
 ) -> PanelResult:
     """Prereg §6.1 steps 1-6 / §6.2: draw TRAIN for every variant, nominate by
     argmax (unconditional, no fallback), apply nomination gates on the nominee
     only, and -- if both gates pass -- draw an INDEPENDENT CONFIRM for the
     nominee and compare to ``floor``.
+
+    ``edge_dollars`` is an additive, default-preserving passthrough (Limb C design note §9 item
+    2) -- defaults to the frozen module constant, so every existing call site (Limb A/B/RED-LEAK,
+    none of which pass this kwarg) draws byte-identical series to before this parameter existed.
+    Limb C's own execution passes its own (smaller, marginal) frozen ``edge_dollars`` per
+    condition.
     """
     abandoned_result, nominee, _, stats, ga, gb = _nominate_and_gate(
-        train_children, edge_variant_index
+        train_children, edge_variant_index, edge_dollars=edge_dollars
     )
     if abandoned_result is not None:
         return abandoned_result
 
     confirm_pnl = draw_daily_pnl(
-        confirm_children[nominee], edge=(nominee == edge_variant_index)
+        confirm_children[nominee], edge=(nominee == edge_variant_index), edge_dollars=edge_dollars
     )
     confirm_stat = annualized_sharpe(confirm_pnl)
     return PanelResult(
