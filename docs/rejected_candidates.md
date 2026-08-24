@@ -1738,6 +1738,51 @@ not an end-of-day effect**; and the **MNQ family's last `K_intrinsic=1` Cap seat
 
 ---
 
+### COT/TFF positioning-extreme reversal (hedging-pressure contrarian signal) — DROP (unscreenable; shape + power)
+
+**Rejection scope:** the direction (fade CFTC COT/TFF non-commercial or leveraged-fund positioning once
+it reaches a rolling historical extreme, across a 9-instrument menu — 6E/6J/MGC/MCL/ZN/ZB/ZF/MES/M2K) is
+rejected as an **entry mechanism**, on **shape + power** grounds — not on mechanism-reality grounds (the
+underlying hedging-pressure literature is real and citable). Not `H-COTREV-6A` (AUD/M6A-scoped, a
+narrower prior instance of the same family) and not `Q-ORBPOS-1` (a diagnostic question about one dated
+MNQ regime break, not a strategy-candidate proposal).
+**Closure date:** 2026-08-24
+**Class:** shape-failure (primary, decisive) + power-starvation (independently sufficient) — not a
+cost-law kill; cost-law was never reached.
+**Authoritative artifact:** [`docs/notes/research/2026-08-24-cot-positioning-reversal-harvest-sourcing.md`](notes/research/2026-08-24-cot-positioning-reversal-harvest-sourcing.md)
+**Closure basis:** predicted payoff shape is symmetric, ~40–50% win rate (possibly sub-coin-flip), with
+no a-priori reason for mean-win > mean-loss — a contrarian entry into a persistent positioning extreme
+risks being stopped out just before the eventual reversal. The venue's own 630-cell shape-feasibility
+sweep ([`shape_feasibility_map_2026-08/RESULTS.md`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md))
+found no cell at win_rate ≤50% is FEASIBLE for any tested shape/cadence/risk — this candidate's predicted
+shape sits 15–30 points inside that dead zone, and the failure is structural (mechanism character, not
+sample noise), so a real-panel pull would very likely confirm rather than rescue it. Independently
+sufficient: realistic event count (accounting for multi-week autocorrelation/persistence of positioning
+extremes, not the raw 52 weekly releases/yr) is ~20–160/instrument over the ~20yr TFF era — the same
+low-N regime that killed H-TSMOM-1 (N≈86, power 0.34); the one usable literature Sharpe (Dreesmann,
+Herberger & Charifzadeh 2023, best-of-6-of-many-markets, fails portfolio-level aggregation) implies
+δ/σ ≈0.17–0.29, below this program's own applied 0.35–0.65 power floor at N<150 across nearly the whole
+plausible range. Cost-law never reached (moot).
+**Surviving finding (NOT rejected):** the hedging-pressure mechanism class itself — real and
+multi-decade-citable (Bessembinder 1992 through Kang-Rouwenhorst-Tang 2020, JF) — kept as a
+sourced-but-not-viable Tier-A entry, not a fabricated mechanism; the 6E/6J/MGC/MCL/ZN/ZB/ZF/MES/M2K
+instruments standing; a genuinely higher-frequency crowding proxy or a hedger-sentiment (not
+speculator-extreme) specification, neither evaluated here.
+**Re-proposal bar:** a higher-frequency (intraday/daily, not weekly-COT-derived) crowding proxy, using
+the hedger-sentiment rather than speculator-extreme specification (per `H-COTREV-6A`'s own unspent
+recovery path), with a demonstrably right-skewed rather than symmetric predicted payoff — **NOT** a
+parameter retune of the extreme threshold, a different instrument on the same speculator-extreme
+specification, or a wider COT-era window (the power problem is autocorrelation-driven, not
+sample-length-driven).
+
+<!-- concept-intake-entry mechanism_family="cot-tff-positioning-extreme-reversal" instrument="6E,6J,MGC,MCL,ZN,ZB,ZF,MES,M2K" rejection_reason="DROP (unscreenable-drop): predicted payoff shape symmetric ~40-50% WR (possibly sub-coin-flip), no a-priori mean-win>mean-loss -- sits 15-30pp inside the venue's own shape_feasibility_map dead zone (no win_rate<=50% cell FEASIBLE at any shape/cadence/risk). Independently sufficient power fail: realistic event count ~20-160/instrument over 20yr TFF era (autocorrelation-driven extreme-clustering, not raw 52/yr); best literature Sharpe (Dreesmann et al 2023, 6-of-many markets, portfolio-aggregation FAILS) implies delta/sigma ~0.17-0.29, below this program's own 0.35-0.65 applied floor at N<150 across nearly the whole plausible range. Cost-law never reached (moot). Wang(2003) sign-direction complication: speculator extremes CONTINUE, hedger extremes REVERSE -- undermines the literal 'speculator-extreme reversal' framing." harness_disposition_ref="literature sourcing note (docs/notes/research/2026-08-24-cot-positioning-reversal-harvest-sourcing.md); no register_search, no manifest, no K spent" date="2026-08-24" class="shape-failure+power-starvation" role_tested="entry" falsifier_failed="predicted shape inside venue's win_rate<=50% dead zone (independently sufficient); power delta/sigma 0.17-0.29 vs 0.35-0.65 applied floor at realistic N=20-160 (independently sufficient)" addback_condition="higher-frequency (intraday/daily) crowding proxy using the HEDGER-sentiment (not speculator-extreme) specification, with a demonstrably right-skewed predicted payoff -- NOT a threshold retune, a different instrument on the same speculator-extreme spec, or a wider COT-era window (power problem is autocorrelation-driven, not sample-length-driven)" -->
+- **cot-tff-positioning-extreme-reversal on 6E/6J/MGC/MCL/ZN/ZB/ZF/MES/M2K** — rejected 2026-08-24
+  (shape-failure + power-starvation: predicted ~40–50% WR symmetric shape sits inside the venue's own
+  win_rate≤50% dead zone; realistic event count ~20–160/instrument implies δ/σ ≈0.17–0.29 vs. the
+  0.35–0.65 applied power floor; cost-law never reached). Dedup: closest sibling `H-COTREV-6A` (AUD,
+  UNSCREENABLE Req-2, 2026-08-16) shares the same Wang-2003 sign defect; `Q-ORBPOS-1` (FALSIFIED
+  2026-08-23, MNQ diagnostic, no registry row per its own convention) independently reinforces. Artifact
+  [`docs/notes/research/2026-08-24-cot-positioning-reversal-harvest-sourcing.md`](notes/research/2026-08-24-cot-positioning-reversal-harvest-sourcing.md).
 ### London-fix wake (dealer-inventory-normalization fade) on 6E/6B — FALSIFIED (placebo/orthogonality battery)
 
 **Rejection scope:** the direction (fade the 10:58–11:04 ET benchmark-fix impulse sign in the 11:10–13:00 ET wake window, on full-size 6E and 6B futures) is rejected as an **entry mechanism**, on **edge-failure** grounds (not cost — B2.0 already confirmed 6E/6B clear the 4× cost floor at full size; this is a signal-does-not-exist finding on top of a cost-feasible venue expression). Adjacent to, but a distinct mechanism family from, the *FX intraday fixing-reversal (session mean-reversion) on EURUSD* entry above (F3): that entry scored the fix **print** itself (event-time, cash EURUSD, cost-killed); this lane scored a later dealer-normalization **wake** window (11:10–13:00 ET, full-size futures) that an operator ruling (B2.1, 2026-08-24) admitted as new mechanism evidence clearing F3's "not a different fix" re-proposal bar — the wake-WHO was tested on its own merits here, not dismissed by F3's cost-law wall.
