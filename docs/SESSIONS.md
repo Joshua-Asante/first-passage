@@ -246,6 +246,20 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-24c — Regime-gate scope precedent + K-tiering + `pursuit-records` retirement (PR #163)
+
+**Focus:** Decision. `queue-exception: executing a validation-phase-cuts plan carried forward from a prior conversation`. Not a queue row.
+
+**Shipped:** [PR #163](https://github.com/Joshua-Asante/first-passage/pull/163) (merged `0adf8ba`) — two ADRs: [`regime-gate scope + F1 discharge`](adr/2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md), [`K-tiering + cost-law split + gate retirement`](adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md). Worked non-example added to `regime_robustness_gate.md`; SKILL.md §8 gains K-tiering, §2 points to `cost_geometry_pregate.py`; `methodology_lessons.md` M-20 de-duplicated; `pursuit-records` removed from `gates.yml` (Rule 16 R5).
+
+**Decisions/defects:** the carried-forward plan misattributed the regime-gate rider anti-pattern to ORB-MNQ-1 — verified against production it's the Class-S candidate-1 chain instead, discharging the 2026-08-03 gate-stack audit's overdue **F1** item. "5 cost-law restatement sites, collapse to 1" was itself wrong — two distinct formulas exist, not one. `profile_cell`/`profile_consult`/`admission`/`prereg` enforcement question the plan wanted ruled on was already resolved in code. Post-merge conflict on `docs/adr/INDEX.md` (concurrent PR #162) resolved via `check_adr_graph.py --regenerate-index`, not by hand.
+
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)).
+
+**Live-ops state:** unchanged — rail disarmed; no book; no strategy deployed.
+
+---
+
 ## 2026-08-24b — Sentinel weekly + two scanner fixes; `main` IS protected
 
 **Focus:** Build. `queue-exception: scheduled weekly sentinel obligation (2026-07-24 ruling #1)`. Not a queue row. Filed below the 2026-08-25 block: those labels run a day ahead of the actual date, so this sits in true chronological position rather than borrowing a wrong one.
