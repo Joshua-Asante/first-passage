@@ -1,5 +1,14 @@
 # Corrected-geometry haircut arms — full/half-panel reference (2026-07-24)
 
+> ⚠ **2026-08-23 reader-intercept (R1 CLOCK repair):** the Bulenox_100K/BluSky_Premium_100K 0.50×
+> WATCH-1 row below (0.08% / 99.82% and 0.08% / 99.80%) is **EOD-clock** — the only place these two
+> figures are published. Honest-clock re-run, same book: both move to **0.59% / 99.3%** (no verdict
+> flip — both remain PASS, 2.41pp of headroom under the 3.0% ceiling). The Tradeify/MFFU rows in
+> this same table already have their own honest-clock successor at
+> [`RESULTS_INTRADAY_W1.md`](RESULTS_INTRADAY_W1.md); Bulenox/BluSky's is
+> [`../firm_model_repair_r1_7tier_2026-08-23/RESULTS.md`](../firm_model_repair_r1_7tier_2026-08-23/RESULTS.md).
+> Frozen body unedited.
+
 **Status:** `MEASURED — closes the c1 GO ADR §6 open B7 input`
 **Authorization:** operator chat directive 2026-07-24 ("proceed with the two unmeasured arms").
 **Runner:** [`run_corrected_haircut_fullpanel.py`](run_corrected_haircut_fullpanel.py) · report [`corrected_haircut_fullpanel_report.json`](corrected_haircut_fullpanel_report.json)

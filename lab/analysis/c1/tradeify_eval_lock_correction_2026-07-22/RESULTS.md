@@ -1,5 +1,15 @@
 **Theme:** c1
 **Status:** ACTIVE — Tradeify/MFFU eval drawdown-lock correction re-MC
+
+> ⚠ **2026-08-23 reader-intercept (R1 CLOCK repair):** §4's Bulenox_100K/BluSky_Premium_100K rows
+> are correct for the LOCK question this file answers (both are `dd_type="trailing"` controls,
+> genuinely unaffected by the locking defect) — but, like every figure in this file, they are
+> **EOD-clock**, not intraday-honest. Honest-clock re-run: 1.00× Bulenox 3.51%→**26.77%**, BluSky
+> 4.44%→**32.26%** (both remain FAIL either way, but do not cite 3.51%/4.44% as the current
+> honest-clock figure). See
+> [`../firm_model_repair_r1_7tier_2026-08-23/RESULTS.md`](../firm_model_repair_r1_7tier_2026-08-23/RESULTS.md).
+> Frozen body unedited.
+
 # Tradeify / MFFU eval-tier drawdown-locking correction — re-MC RESULTS
 
 **Status:** `MEASURED — Part A flips PASS → FAIL on both trailing_locking tiers; G8 discharge WITHDRAWN`

@@ -20,6 +20,18 @@
 > Measurement: [`../tradeify_eval_lock_correction_2026-07-22/RESULTS.md`](../tradeify_eval_lock_correction_2026-07-22/RESULTS.md) ·
 > decision: [`docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md`](../../../docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md)
 
+> ## ⚠ 2026-08-23 reader-intercept (R1 CLOCK repair) — a SECOND, independent defect on top of the
+> ## banner above
+>
+> The banner above corrects the LOCK defect (Tradeify/MFFU only) and, in doing so, cites
+> Bulenox 3.51% / BluSky 4.44% as still-valid ("already failing") — that citation is correct for
+> the LOCK question but, like every figure in this file, is **EOD-clock only**: the venue's
+> real-time intraday breach is not modeled. Honest-clock re-run: Bulenox 3.51%→**26.77%**, BluSky
+> 4.44%→**32.26%** — both remain FAIL either way (no verdict flip), but 3.51%/4.44% are not the
+> current honest-clock reference. See
+> [`../firm_model_repair_r1_7tier_2026-08-23/RESULTS.md`](../firm_model_repair_r1_7tier_2026-08-23/RESULTS.md).
+> Body (including the banner above) unedited.
+
 **Status:** `RESOLVED (DISCHARGED)` — **SUPERSEDED 2026-07-22, see banner above**
 **Date:** 2026-07-15
 **Engine posture:** 10,000 sims × seeds 42/123/2026; horizon 1500; inactivity off;
