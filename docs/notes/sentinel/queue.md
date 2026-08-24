@@ -8,6 +8,17 @@ _Reverse-chron. Report-only; the operator authorizes every item (Action = do it,
 
 weekly activity decision [2026-08-24->08-28]: NOT RECORDED (5 business days left) — operator call, see STATE row 0
 
+> ⚠ **Correction (same day, post-run).** This block is the run **as emitted**, retained unedited.
+> Two of its 20 `prereg` rows are **false positives — disregard them**:
+> `PREREG-SAMECOMMIT-1e40b11` and `PREREG-SAMECOMMIT-f2cbb7b` are pure `--slug` archival
+> relocations (`lab/analysis/<slug>/` -> `lab/archive/<slug>/`), which move PREREG and RESULTS
+> together by construction. `1e40b11` also double-counted the dstruct artifact already flagged at
+> its real origin (`4062562`). The scanner ran `diff-tree` without `-M`, so git reported a move as
+> delete + add and the add read as "introduced here". Fixed same day; the corrected count for this
+> window is **18**. A second defect fixed alongside it: `asof` bounded the commit window only at
+> the bottom, so re-running a past `--asof` swept every commit up to HEAD.
+> See the [2026-08-24 addendum](../../spec/2026-06-23-inqhiori-sentinel-design.md) in the design spec.
+
 ### Action
 - **PREREG-RUNEDIT-3c7ca2f** [prereg] — Commit 3c7ca2f introduces results/closure `docs/briefs/closures/STATE-POLICY-closure-resolved-p2.md` and also edits the pre-existing pre-registration `docs/briefs/pre-registration/2026-07-24-2leg-eval-frontload-schedule-preregistration.md` beyond its status header — the run commit must not move frozen verdict logic (Rule 8.7).
   - source: `docs/briefs/closures/STATE-POLICY-closure-resolved-p2.md`

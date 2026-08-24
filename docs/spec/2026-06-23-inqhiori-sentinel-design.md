@@ -158,6 +158,68 @@ Tests live in `tests/` (collected by the main pytest matrix) or skip-clean if a 
 
 ---
 
+## Addendum — 2026-08-24: `_changed_files` detects renames; `asof` bounds the window at both ends
+
+Two defects in the same helper layer, both surfaced by the 2026-08-24 weekly run. Neither
+changes what the convention forbids; both change which commits the scan can see correctly.
+
+### A. Archival moves read as freeze violations (rename detection)
+
+`_changed_files` ran `diff-tree --name-status` with **no `-M`**, so git reported a MOVE as
+delete-old + add-new — and `A` is exactly what "introduced here" keys on. Archiving a closed
+camp (`lab/analysis/<slug>/` → `lab/archive/<slug>/`) relocates `PREREG` and `RESULTS`
+*together by construction*, so every `--slug` archival commit read as a same-commit freeze.
+
+- **How it surfaced.** The 2026-08-24 run emitted 20 `prereg` findings, of which two —
+  `PREREG-SAMECOMMIT-1e40b11` (*"archive dstruct_mnq via --slug"*) and
+  `PREREG-SAMECOMMIT-f2cbb7b` (*"archive closed CATALOG camps via --slug"*) — were pure
+  relocations. `git show --stat -M` shows both files at 0 changed lines. Worse than noise:
+  `1e40b11` double-counted the *same* dstruct artifact already flagged at its real
+  `_inbox` origin (`4062562`), so one violation was reported twice under two IDs.
+- **The rule.** `-M` is now passed. A rename status `R100` (pure move) contributes nothing —
+  the artifact's freeze history lives at the **old** path, which artifact-pairing cannot
+  adjudicate. A rename with a similarity score below 100 carries through as `M`: the commit
+  moved frozen text, which is the `PREREG-RUNEDIT` claim, not the `SAMECOMMIT` one.
+- **What is deliberately NOT suppressed.** A results artifact genuinely added alongside its
+  prereg still flags; `4062562` (the real `_inbox` violation) is retained. Verified against
+  live history, not fixtures alone: the 2026-08-24 window drops 20 → 18, and every dropped
+  finding is a relocation.
+- **Residual (documented, no silent cap).** A prereg moved *and* materially edited by a run
+  commit is reported as `PREREG-RUNEDIT` via the `R<100` branch, but
+  `_prereg_edit_is_status_stamp_only` reads the new path without rename detection, so it
+  sees the whole file as added and cannot grant the status-stamp exemption. That errs
+  toward flagging, which is the safe direction for a report-only tool.
+
+### B. A past `--asof` swept every commit up to HEAD (window upper bound)
+
+`_window_commits` passed `--since` only. The window was therefore open at the top: `asof`
+set the floor and HEAD set the ceiling, so **every** historical `--asof` returned the same
+answer. Correct in the weekly case (`asof == today == HEAD`) and wrong for every re-run of a
+past window.
+
+- **Why it matters beyond tidiness.** §4.1 makes `today` injected *"so runs are deterministic
+  and testable"* and §8 requires *"same inputs + same `asof` → byte-identical queue output."*
+  Neither held for the git-based scanner. The earlier addenda's own
+  *"verified against live history"* checks were valid when written (HEAD was then) but are
+  not reproducible now — they cannot be re-derived by re-running with a past `--asof`.
+- **The rule.** `--until {asof} 23:59:59` is now passed alongside `--since`.
+- **Verified.** Re-running `asof=2026-08-17` now reproduces exactly the two findings that run
+  actually emitted (`PREREG-RUNEDIT-3c7ca2f`, `PREREG-SAMECOMMIT-ab303d0`); before the fix it
+  returned the full 08-24 set. Pre-2026-08-14 anchors (`7f60dad`, `efeda82`, `c050965`) are
+  **not** re-verifiable in this tree at all — the public repo's history begins at
+  `027a729` *"Initial public release"* (2026-08-14); those anchors live in
+  `first-passage-archive`. Recorded here so a future reader does not mistake an empty
+  historical window for a regression.
+
+### Tests
+
+`tests/governance/test_sentinel.py` — `test_preregistration_scan_ignores_archival_move`
+(freeze → run → `git mv` to `lab/archive/`, clean throughout),
+`test_changed_files_skips_pure_move_but_keeps_edited_move` (the `R100` vs `R<100` boundary),
+and `test_preregistration_scan_excludes_commits_after_asof`. All three were confirmed to
+**fail against the pre-fix module** before being accepted — a guard that passes either way
+guards nothing.
+
 ## Addendum — 2026-08-03: `_is_prereg_artifact` name-matching is documents-only
 
 The name-based branch matched `"PREREG"`/`"FREEZE"` anywhere in a basename, on **any**
