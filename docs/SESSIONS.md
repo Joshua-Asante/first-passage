@@ -32,6 +32,20 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-25i — M1 dated 08-24; test strategy licensed
+
+**Focus:** Decision. Operator: date M1 for 08-24; a test strategy can resolve item 5.
+
+**Shipped:** [`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`Survive-bound addendum`](adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--m1-item-5-no-longer-waits-on-queue-1). STATE `#2` no longer waits on `#1`. No emit. No arm.
+
+**Decisions/defects:** evaluate-hook test strategy qualifies; canned hand-POST still does not.
+
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase A`](superpowers/plans/2026-08-23-viable-strategy-phase-a-target-derivation.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)).
+
+**Live-ops state:** unchanged — rail disarmed; no book; M1 still `CODE_LANDED`.
+
+---
+
 ## 2026-08-25k — Queue: mechanism supply precedes B7/M1
 
 **Focus:** Decision. Operator: the blocker of #1 belongs on the queue ahead of it.
