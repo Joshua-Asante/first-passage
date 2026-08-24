@@ -1,0 +1,48 @@
+====================================================================================================
+Q-ORBPOS-1 REFIT -- CFTC TFF positioning-extremity under the corrected (anchored) method
+====================================================================================================
+
+--- live re-confirmation: MNQ standalone TFF line ---
+  MNQ code=209747  name='MICRO E-MINI NASDAQ-100 INDEX'
+
+--- fresh CFTC TFF pull (Socrata, free, no key) ---
+  n_rows=301  first=2020-08-04  last=2026-08-18
+  %OI derived-vs-published cross-check: max |delta|=0.096pp
+  prebreak prints available: 45  sparsity trigger: no
+[ctrl ] Control B mirror PASS -- n=1846 triggering days
+
+====================================================================================================
+(1) FIDELITY CONTROL -- flat policy, m=1.0, full panel, k=1/k=2
+====================================================================================================
+  k=1  bust=67.67%  published=67.67%  delta=-0.00pp  PASS
+  k=2  bust=77.01%  published=77.01%  delta=-0.00pp  PASS
+
+====================================================================================================
+W1 -- window=4 weekly prints
+====================================================================================================
+[classifier] WARMUP=3 HIGHER=171 LOWER=127 i_freeze=44 frozen_value=20.924999999999997 spotcheck=PASS degenerate_pre=no
+[assoc] n_higher=171 n_lower=127 frac_higher_post=95.9% frac_lower_post=72.4% separation=+23.5% fisher_p=1.23e-08 point_biserial_r=0.040 (p=0.492) corrected_pass=NO
+[gate] HIGHER cushion pass=51.04% gate=PASS  |  LOWER cushion pass=91.43% gate=PASS  direction=BOTH_CLEAR  (elapsed 33s)
+
+====================================================================================================
+W2 -- window=13 weekly prints
+====================================================================================================
+[classifier] WARMUP=12 HIGHER=154 LOWER=135 i_freeze=44 frozen_value=22.146153846153844 spotcheck=PASS degenerate_pre=no
+[assoc] n_higher=154 n_lower=135 frac_higher_post=97.4% frac_lower_post=78.5% separation=+18.9% fisher_p=3.42e-07 point_biserial_r=0.035 (p=0.555) corrected_pass=NO
+[gate] HIGHER cushion pass=56.70% gate=PASS  |  LOWER cushion pass=93.44% gate=PASS  direction=BOTH_CLEAR  (elapsed 47s)
+
+====================================================================================================
+W3 -- window=26 weekly prints
+====================================================================================================
+[classifier] WARMUP=25 HIGHER=127 LOWER=149 i_freeze=44 frozen_value=27.721153846153847 spotcheck=PASS degenerate_pre=no
+[assoc] n_higher=127 n_lower=149 frac_higher_post=99.2% frac_lower_post=87.2% separation=+12.0% fisher_p=7.74e-05 point_biserial_r=0.032 (p=0.596) corrected_pass=NO
+[gate] HIGHER cushion pass=20.01% gate=FAIL  |  LOWER cushion pass=98.07% gate=PASS  direction=LOWER_CLEARS_HIGHER_DOES_NOT  (elapsed 62s)
+
+====================================================================================================
+SUMMARY -- TWO AXES REPORTED SEPARATELY (per POSITIVE_CONTROL_METHOD_FIX.md Sec6.3)
+====================================================================================================
+  AXIS 1 -- corrected date-correlation-equivalent clears (>=2 of 3)?  0/3  -> does not fire
+  AXIS 2 -- gate-clearance direction same sign, every window?  NO  ({'W1': 'BOTH_CLEAR', 'W2': 'BOTH_CLEAR', 'W3': 'LOWER_CLEARS_HIGHER_DOES_NOT'})
+
+[write] C:\Users\joshu\multi_firm_operations\.claude\worktrees\openrouter-ox-alpha-test-fff246\lab\analysis\c1\orbcush_orbpos_refit_2026-08\results_tff_refit_anchored.json
+[time ] total elapsed 62s
