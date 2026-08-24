@@ -4,7 +4,7 @@
 **Decision date:** 2026-08-05
 **Supersedes:** none
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** `2026-08-24-venue-binding-axis-t1-disposition.md` — §4 T1's disposition and prospective applicability window only (the 2026-08-07/08 firing is dispositioned INAPPLICABLE, not FALSIFYING; T1 is amended to apply from 2026-08-22 forward, at the same "any 1 occurrence" strictness). §2/§3/§5/§6/§7 and T2–T4 are untouched by that ADR.
 **Retain-until:** none
 **Authors:** Joshua (direction + both design rulings) + Claude Code (authoring)
 **Related:** [`2026-07-10-strategies-never-locked-lifecycle-governance.md`](2026-07-10-strategies-never-locked-lifecycle-governance.md) (the two existing axes — **extended, not modified**) · [`docs/methodology/strategy_lifecycle.md`](../methodology/strategy_lifecycle.md) (canonical owner of the authorization axis) · [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) (the decision that exposed the gap) · [`2026-07-12-prop-portfolio-four-friendly-firms.md`](2026-07-12-prop-portfolio-four-friendly-firms.md) (the four-firm programme this axis serves) · [`docs/spec/2026-07-27-third-leg-target-spec.md`](../spec/2026-07-27-third-leg-target-spec.md) (a screen whose limbs this ADR re-homes) · [`2026-08-05 claim-alignment audit`](../notes/audits/programme-audit/2026-08-05-post-descope-claim-alignment-audit.md) (B3 + the 112-site premise-dead estate this axis would have prevented)
@@ -13,6 +13,8 @@
 ---
 
 > ⚠ **2026-08-22 reader-intercept:** operator Accepted this ADR (fresh GO). The 2026-08-14 stall note is historical. T1 remains acknowledged as already fired. §7 Phase 1–3 landed 2026-08-23 (ledger live set empty). See Addendum 2026-08-22 + Change History 2026-08-23.
+
+> ⚠ **2026-08-24 reader-intercept:** T1's 2026-08-07/08 firing is now dispositioned — [`2026-08-24-venue-binding-axis-t1-disposition.md`](2026-08-24-venue-binding-axis-t1-disposition.md) (`Accepted`) rules it INAPPLICABLE, not FALSIFYING (a bootstrap-timing artifact of the decision predating this ADR's own Phase 0 acceptance), and amends T1 to apply from 2026-08-22 forward at unchanged strictness. This §2/§4/§5 body stays byte-unchanged (Trap #12); the disposition lives entirely in the superseding-in-part ADR. Do not read this reader-intercept as reopening or relitigating §2.
 
 ## §0 — Rule 0 reads (production-source verification, all executed 2026-08-05)
 
@@ -331,3 +333,4 @@ Forbidden here: wiring `M_edition` into live sizing; editing `core/lifecycle.py`
 | 2026-08-14 | Addendum 2026-08-14 — stalled/bypassed framing; T1 likely fired. Status remains Proposed. §2 body byte-unchanged. | claim-alignment reconciliation |
 | 2026-08-22 | **Operator Accept** (fresh GO named by the 2026-08-14 addendum). Status `Proposed` → `Accepted`. T1 acknowledged as already fired (S1 F2/F3 in prose; no edition transition). §2 body byte-unchanged. §7 Phase 1 registry still owed. | Joshua (GO) + Cursor (record) |
 | 2026-08-23 | §7 Phase 1–3 landed: `ops/venue_editions/Tradeify_Select_100K.md` (three already-true rows; live set empty). Phase 2 leftover pointer on the 08-04 ADR. Phase 3 dated note on the third-leg spec (body unedited). §2 / §4 / §5 byte-unchanged. T1 still acknowledged. | Cursor (plan execution) |
+| 2026-08-24 | `Superseded-in-part-by` → [`2026-08-24-venue-binding-axis-t1-disposition.md`](2026-08-24-venue-binding-axis-t1-disposition.md) (T1 disposition + applicability window only; §2/§4/§5 byte-unchanged). T1's 2026-08-07/08 firing is now dispositioned INAPPLICABLE, not FALSIFYING, per that ADR — this ADR's own `Accepted` status and §2 axis are unaffected. | Claude Code (per operator GO) |
