@@ -6,6 +6,7 @@
 **Supersedes:** none
 **Superseded-by:** none
 **Superseded-in-part-by:** `2026-08-12-msl-sourcing-channel-ratification.md` — §2-C L2 channel taxonomy **by addition only** (MSL named as a sourcing channel); 2-A/2-B and L1/L3–L5 untouched.
+**Superseded-in-part-by:** `2026-08-24-sourcing-phase-channel-retirement.md` — §2-C row L1 only (Route B lane disposition, `PAUSED` → `RETIRED`); L2 (above), L3–L5, and §2-A/§2-B untouched.
 **Retain-until:** none
 **Related:** [TNEC-1 spec](../spec/2026-08-08-tradeify-necessary-conditions-target-spec.md) (the successor target, same packet) · [MNQBASE-1 §1.3](../briefs/rnd-pipeline/MNQBASE-1-tradeify-shaped-base-construct-harvest-scoping.md) (the correct cohort table) · [ORB re-park ADR](2026-08-03-orb-mnq-repark-payability-falsified.md) · [seed-target-spec RESULTS](../../lab/analysis/c1/tradeify_seed_target_spec_2026-08-04/RESULTS.md) · [S1 ADR](2026-08-07-loop-s1-environment-ratification.md) · [W1 ADR](2026-08-07-w1-intraday-honest-engine-remeasure.md) · [catalogue K wall](../../lab/analysis/c1/catalogue_k_wall_2026-08-05/RESULTS.md) · [MSL ratification](2026-08-12-msl-sourcing-channel-ratification.md)
 **Layer:** research-target doctrine + provenance correction. **$0 / K=0.** No `core/`, Pine, allocation, `dd_protection`, lifecycle, `LEG_MAP`, or rail change; nothing armed; no venue action. Full-tier per [ceremony tiering](2026-08-08-adr-ceremony-tiering.md) limbs 3+4 (supersession of ratified surfaces; doctrine), written compact.
@@ -86,6 +87,15 @@ The operator's direction is to do **only what is necessary to construct a Tradei
 | L3 | **Instrument pool** | MES and MGC **re-enter the candidate pool** — their third-leg eliminations (`E-KCAP`/`E-K`) rest on K arithmetic voided by [ADR 2026-08-04](2026-08-04-family-k-bank-disclosure-not-gate.md) and were never revisited. M2K's one-shot bank rule + WSTRUCT sequencing + W4 cost-dry-run gate stand; MCL is measured-never-scored and open (frozen `CONFIG-B-MCL` available). Instrument election per candidate remains an operator choice; data pulls remain cost-dry-run-gated. The instrument lane runs **in parallel with** MNQ work, not sequenced behind a 2026-11-08 falsification. |
 | L4 | **Book shape** | Admitted first-class (the "or book of strategies" direction). A book satisfies N-ACT **jointly** (measured co-idleness disclosed — the incumbent book's failure was correlated idleness), N-SURV **composed and both regime halves**, and EM5's compliance limbs (§4a Product-Group sign constraint · S7 order-symbol occupancy · account-aggregate cap). **Named ruling owed before any deployment:** `LEG_MAP`'s 69/11 allocation is retained-not-released under S1 — release/re-derivation is an explicit operator ruling at first deploy, for a single construct as much as for a book. |
 | L5 | **Explicitly NOT reopened** | MNQDTL §3.1 doors C1–C11 · ORB-MNQ at Tradeify (re-park R2/R3 are the only routes; T2 stands) · both Striker legs · Aegis→6J admission (H1-negative on the H1-covering panels; its blocker is regime sign, not composition — an optional **$0 hygiene cell** (0.50× standalone on the `76620` panel) may be run to make the ledger's stated blocker match reality; watch-don't-act) · harvest Req 1–5 · the M1 arm gate, per-session GO, and every safety invariant. |
+
+> ⚠ **Addendum 2026-08-24 — row L1 superseded from `PAUSED` to `RETIRED`.**
+> [`ADR 2026-08-24 — sourcing-phase channel retirement`](2026-08-24-sourcing-phase-channel-retirement.md)
+> (`Accepted`) retires Avenue A Route B (generate→confirm) **in full** — not only the one OF-minute
+> catalogue family this row paused. Ground: 0/4 campaigns, across the mechanism's entire life (not
+> just this family), ever reached the confirm stage; the governing ADR's own empirical falsifier
+> cannot fire because it requires a `RESOLVED` CONFIRM verdict that has never existed. Rows L2–L5 and
+> §2-A/§2-B above are untouched. The L1 row text above is left unedited (dated-decision integrity);
+> this note is the reader intercept.
 
 **Not commissioned here (already owned elsewhere, listed to keep the critical path visible):** W1 intraday-honest re-measure (`Proposed`, owed — every bust figure is an EOD lower bound) · S4 sensor layer / M1 `RESOLVED` (deploy gate) · Q-FILLTAX-1 (fill-tax validation of the $0.95 screen) · R8 / a watchdog on the weekly-activity clock (STATE row 0 — no gate currently observes it).
 

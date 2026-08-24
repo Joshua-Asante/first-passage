@@ -89,6 +89,16 @@ chosen: the "why it binds" column names the venue rule that generates it.
 
 ### 2.0a — **When** the screen is applied (binding, not stylistic)
 
+> ⚠ **Addendum 2026-08-24 — Route B retired; this section's own audit hook (§9 below) has fired.**
+> [`ADR 2026-08-05-avenue-a-generate-confirm-route`](../adr/2026-08-05-avenue-a-generate-confirm-route.md)
+> is now `Superseded` in full by [`ADR 2026-08-24 — sourcing-phase channel retirement`](../adr/2026-08-24-sourcing-phase-channel-retirement.md).
+> Per this section's own pre-registered contingency: "if it reverts, section 2.0a's Route B paragraph
+> is a dead pointer and the general form ('screen the class, not the winner') is what survives." The
+> Route B-specific G0/`K_intrinsic` address below is now historical (frozen, not deleted); the
+> **general form binds going forward** — apply EM0–EM5 to the candidate class/catalogue before any
+> data is examined, under whatever intake mechanism (harvest, deep-iteration lane) is live at the
+> time. Text below left unedited (dated-decision integrity); this note is the reader intercept.
+
 **EM0–EM5 is applied to a candidate *class* or a *catalogue*, before any data is examined — never to a
 scored candidate list afterward.** The screen consumes zero data and zero holdout: it is derived from
 venue rules plus frozen simulation, so applying it early costs nothing and applying it late costs K.
