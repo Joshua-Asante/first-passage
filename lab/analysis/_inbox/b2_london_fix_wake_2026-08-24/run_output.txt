@@ -1,0 +1,94 @@
+====================================================================================================
+SYMBOL: 6E.v.0
+====================================================================================================
+panel: 624 ET calendar dates in range; 469 valid fix-observations (2 flagged degraded-quality by Databento, included -- see robustness note)
+
+--- Step 3: mean target_precise (11:10-13:00 ET) conditioned on precise impulse sign ---
+  impulse UP (10:58-11:04 rose)    n= 224  mean_target=-0.000110  std=0.001295  t=-1.27
+  impulse DOWN (10:58-11:04 fell)  n= 245  mean_target=+0.000024  std=0.001573  t=+0.24
+  strategy-signed R_precise (fade the impulse): n=469 mean=+0.000065 t=+0.97
+  [cross-check, hourly-proxy clock] R_hourly: n=469 mean=-0.000030 t=-0.43
+
+--- Step 5: orthogonality regression (trailing-vol + prior-hour-return controls) ---
+  Model A  target ~ 1 + imp_sign                         : coef(imp_sign)=-0.000067  t=-1.00  (n=469, dof=467)
+  Model B  target ~ 1 + prior_hour_return                 : coef(phr)=+0.011129  t=+0.27  (n=469, dof=467)  [generic-reversal baseline]
+  Model C  target ~ 1 + trailing_vol + prior_hour_return + imp_sign  [THE DECISIVE GATE]
+           coef(trailing_vol)   =-0.075965  t=-1.67
+           coef(prior_hour_ret) =+0.013457  t=+0.32
+           coef(imp_sign)       =-0.000060  t=-0.90  (n=469, dof=465)
+           corr(imp_sign, prior_hour_return) = -0.017
+  -> imp_sign after partialling trailing_vol+prior_hour_return: PROXY/NULL (fix dummy adds nothing over generic reversal)
+
+--- Step 4: placebo null (1000 replicates, hourly-clock family, day-of-week + trailing-vol matched by construction) ---
+  candidate offsets (ET): [6, 7, 8, 9, 12, 13]  finite-cell coverage=0.996
+  REAL hourly-clock statistic mean(R_hourly) = -0.000030
+  placebo null: mean=+0.000036 std=0.000082 p10=-0.000068 p50=+0.000034 p60=+0.000054 p90=+0.000139
+  real stat's percentile RANK within the 1000-draw null distribution = 20.9
+  -> KILL (real <= placebo 60th pct)
+
+--- verification: placebo-window day-of-week + trailing-vol match check ---
+    dow=Mon  real=0.205  placebo-pooled=0.205  delta=-0.001
+    dow=Tue  real=0.203  placebo-pooled=0.203  delta=-0.000
+    dow=Wed  real=0.196  placebo-pooled=0.196  delta=+0.000
+    dow=Thu  real=0.205  placebo-pooled=0.205  delta=-0.001
+    dow=Fri  real=0.192  placebo-pooled=0.190  delta=+0.002
+    trailing_vol quartiles: real=[0.00290997 0.00378368 0.00451744]  placebo-pooled=[0.00290997 0.00378368 0.00453315]
+    -> MATCH CONFIRMED (max dow delta=0.002, tv quartile rel-dev=0.003)
+
+  robustness (excl. 2 degraded days): coef(imp_sign)=-0.000062 t=-0.92  (was -0.000060 / t=-0.90 with them included)
+
+--- FROZEN KILL CRITERION ---
+  "Kill if the fix dummy adds nothing over generic reversal OR sits <= placebo 60th percentile."
+  orthogonality leg : FAIL -> kill-eligible (imp_sign |t|=0.90, sign=neg (correct))
+  placebo leg       : FAIL -> kill-eligible (real rank pct=20.9, need > 60)
+  VERDICT (6E.v.0): DEAD
+====================================================================================================
+SYMBOL: 6B.v.0
+====================================================================================================
+panel: 624 ET calendar dates in range; 447 valid fix-observations (2 flagged degraded-quality by Databento, included -- see robustness note)
+
+--- Step 3: mean target_precise (11:10-13:00 ET) conditioned on precise impulse sign ---
+  impulse UP (10:58-11:04 rose)    n= 217  mean_target=+0.000079  std=0.001704  t=+0.69
+  impulse DOWN (10:58-11:04 fell)  n= 230  mean_target=-0.000179  std=0.001653  t=-1.64
+  strategy-signed R_precise (fade the impulse): n=447 mean=-0.000131 t=-1.65
+  [cross-check, hourly-proxy clock] R_hourly: n=447 mean=-0.000094 t=-1.09
+
+--- Step 5: orthogonality regression (trailing-vol + prior-hour-return controls) ---
+  Model A  target ~ 1 + imp_sign                         : coef(imp_sign)=+0.000129  t=+1.63  (n=447, dof=445)
+  Model B  target ~ 1 + prior_hour_return                 : coef(phr)=+0.013965  t=+0.34  (n=447, dof=445)  [generic-reversal baseline]
+  Model C  target ~ 1 + trailing_vol + prior_hour_return + imp_sign  [THE DECISIVE GATE]
+           coef(trailing_vol)   =+0.036978  t=+0.41
+           coef(prior_hour_ret) =+0.014851  t=+0.36
+           coef(imp_sign)       =+0.000130  t=+1.63  (n=447, dof=443)
+           corr(imp_sign, prior_hour_return) = -0.009
+  -> imp_sign after partialling trailing_vol+prior_hour_return: PROXY/NULL (fix dummy adds nothing over generic reversal)
+
+--- Step 4: placebo null (1000 replicates, hourly-clock family, day-of-week + trailing-vol matched by construction) ---
+  candidate offsets (ET): [6, 7, 8, 9, 12, 13]  finite-cell coverage=0.996
+  REAL hourly-clock statistic mean(R_hourly) = -0.000094
+  placebo null: mean=+0.000086 std=0.000099 p10=-0.000041 p50=+0.000088 p60=+0.000113 p90=+0.000215
+  real stat's percentile RANK within the 1000-draw null distribution = 3.9
+  -> KILL (real <= placebo 60th pct)
+
+--- verification: placebo-window day-of-week + trailing-vol match check ---
+    dow=Mon  real=0.197  placebo-pooled=0.198  delta=-0.001
+    dow=Tue  real=0.201  placebo-pooled=0.201  delta=-0.000
+    dow=Wed  real=0.210  placebo-pooled=0.210  delta=+0.000
+    dow=Thu  real=0.201  placebo-pooled=0.202  delta=-0.001
+    dow=Fri  real=0.190  placebo-pooled=0.188  delta=+0.002
+    trailing_vol quartiles: real=[0.00331441 0.00378251 0.0044851 ]  placebo-pooled=[0.00331459 0.00378251 0.00448654]
+    -> MATCH CONFIRMED (max dow delta=0.002, tv quartile rel-dev=0.000)
+
+  robustness (excl. 2 degraded days): coef(imp_sign)=+0.000131 t=+1.64  (was +0.000130 / t=+1.63 with them included)
+
+--- FROZEN KILL CRITERION ---
+  "Kill if the fix dummy adds nothing over generic reversal OR sits <= placebo 60th percentile."
+  orthogonality leg : FAIL -> kill-eligible (imp_sign |t|=1.63, sign=pos (wrong))
+  placebo leg       : FAIL -> kill-eligible (real rank pct=3.9, need > 60)
+  VERDICT (6B.v.0): DEAD
+
+====================================================================================================
+SUMMARY (per B2.1 ruling: 6E and 6B scored separately, never pooled)
+====================================================================================================
+6E.v.0: n=469  imp_sign t(orthogonal)=-0.90 coef=-0.000060  placebo_rank=20.9pct  -> DEAD
+6B.v.0: n=447  imp_sign t(orthogonal)=+1.63 coef=+0.000130  placebo_rank=3.9pct  -> DEAD

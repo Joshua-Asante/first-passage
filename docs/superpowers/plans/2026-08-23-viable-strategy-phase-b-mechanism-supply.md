@@ -101,13 +101,21 @@ lane's own arithmetic is knife-edge.
   touched.** **Ruled `ADMIT`, operator, 2026-08-24, real-time GO — scope: both 6E AND 6B stay
   live** (operator elected to keep 6B for its own re-examination rather than dropping it on this
   session's arithmetic alone).
-- [ ] **B2.2 — placebo battery ($0, one scripted afternoon, only after B2.0+B2.1 both pass):**
+- [x] **B2.2 — placebo battery ($0, one scripted afternoon, only after B2.0+B2.1 both pass):**
   2 years of hourly 6E bars (Databento `ohlcv-1h`, $0-class — Rule-1 estimate first). Mean
   11:10→13:00 return conditioned on impulse sign vs 1,000 placebo windows matched on day-of-week
   + trailing vol; plus the orthogonality regression (trailing-vol + prior-hour-return controls —
   the gamma-family precedent). Kill if the fix dummy adds nothing over generic reversal or sits
-  ≤ placebo 60th percentile.
-- [ ] **B2.3 — shape pre-check** against the A2 region; then Phase C on survival.
+  ≤ placebo 60th percentile. **KILL, both 6E and 6B (2026-08-24) — both legs of the frozen
+  criterion failed independently for both symbols: orthogonality regression \|t\|<2 or
+  wrong-signed (6E t=−0.90 correct-signed but short of the bar; 6B t=+1.63 wrong-signed), and the
+  real hourly-clock statistic ranked at the 20.9th (6E) / 3.9th (6B) percentile of the 1,000-draw
+  placebo null — both below the null's own median. Escalated to `ohlcv-1m` (own Rule-1 estimate,
+  $0.0000) for the precise 10:58–11:04 ET impulse the plan's own hourly-only text cannot resolve.**
+  [`results`](../../notes/research/2026-08-24-phase-b-lane-b2-placebo-battery-results.md) ·
+  [`registry row`](../../rejected_candidates.md#london-fix-wake-dealer-inventory-normalization-fade-on-6e6b--falsified-placeboorthogonality-battery).
+- [ ] **B2.3 — shape pre-check** against the A2 region; then Phase C on survival. **Does not fire
+  (Lane B2 killed at B2.2 for both 6E and 6B, as the plan's own gating text anticipated).**
 
 **Kill criteria (frozen now):** B2.0 arithmetic fail at every legal expression → dead. B2.1
 declined → dead (bar holds). B2.2 placebo/orthogonality fail → dead, registry row citing F3
