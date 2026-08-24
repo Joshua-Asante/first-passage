@@ -19,6 +19,8 @@ they run through + every citing surface for the two published bust/pass figures 
 - `core/firm_rules.py` — `grep -n '"dd_type": "trailing"'` re-run this session: lines **122, 134,
   146, 158, 170, 538, 554** (7 hits). Q-FIRMEOD-1's own pin (92,104,116,128,140,508,524) has
   shifted by a constant +30 since — same 7 tiers, same order, confirmed not a changed tier set.
+  **2026-08-24 currency:** still 7 hits, now at 122, 134, 146, 158, 170, 600, 616 (BluSky pair
+  moved again). Durable hook: `grep -c '"dd_type": "trailing"' core/firm_rules.py` expected `7`.
 - `core/mc/simulation.py` — `simulate_path`, full function read. The `intraday_low` barrier
   construction (`equity_test = min(equity_new, equity + intraday_low[day]*scale)`, L131-134) and
   the `dd_type == "trailing"` branch (L141-151).
