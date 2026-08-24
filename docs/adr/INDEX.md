@@ -129,6 +129,7 @@
 | 2026-08-23-adr-decay-audit-skill-ratification.md | Accepted | 2026-08-23 | none | ratified 2026-08-23 (operator GO via chat) |
 | 2026-08-23-strategy-coldstore-phase-b.md | Accepted | 2026-08-23 | `2026-08-04-strategy-coldstore-phase-a.md` in part — Phase B is now GO’d; this ADR is that GO + the disposition table | operator GO 2026-08-23: restore design then execute Phase B Tasks 2+ (design body unrestored; Approach 2 + Phase A inventory used; Approach 3 not invented) |
 | 2026-08-23-strategy-coldstore-phase-c.md | Accepted | 2026-08-23 | `2026-08-04-strategy-coldstore-phase-a.md` in part — Phase C non-touch list released for living Guardian/Aegis `BASE_RISK` keys only; `2026-08-03-claude-md-futures-refocus.md` in part — §7 CFD living-`BASE_RISK` / CLAUDE table retirement now executed (Striker keys + `LEG_MAP` stay) | operator GO 2026-08-23 for Phase C (fresh admitting ADR; Phase A Accept is not C authority) |
+| 2026-08-24-q-tradecap-2-elect-alert-tripwire.md | Proposed | 2026-08-24 | none | operator asked for this light ADR and a Claude judgment review; not ratified |
 
 ## Partially superseded
 

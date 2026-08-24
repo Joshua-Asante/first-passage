@@ -32,6 +32,20 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-25h — Q-TRADECAP-2 elects 2 (Proposed light ADR)
+
+**Focus:** Decision. Queue row 2: operator asked for the light ADR after the consult recommendation.
+
+**Shipped:** [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) `Proposed`. No rail wire. Q stays `OPEN` until `Accepted`.
+
+**Decisions/defects:** ID **2** observe-only. Surviving consult rows on the notice. Claude judgment review requested.
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`elect-2`](adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) · [`Q-TRADECAP-2`](briefs/Q-TRADECAP-2-per-trade-bound-election.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 ## 2026-08-25g — ox-alpha consult on Q-TRADECAP-2 (sanitized)
 
 **Focus:** Decision. Queue row 2 consult. Crux sent under the ox-alpha §2 lens; no close elected; no rail wire.

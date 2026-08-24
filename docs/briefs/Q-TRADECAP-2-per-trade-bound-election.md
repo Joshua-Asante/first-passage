@@ -55,6 +55,7 @@ Q-TRADECAP-1 confirmed the gap. STATE queue row 2 is the election. The CFD-era f
 - M1 ADR — size-bound vs identity-bound; realized-magnitude is the unnamed third axis.
 - Assumption-sweep A6 — origin of the parent.
 - Ox-alpha consult (zero authority): [`N-2026-08-24-ox-alpha-per-trade-bound-election.md`](../notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md). Surviving rows travel with the election; they do not elect.
+- Election record (`Proposed`): [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) — ID **2**; not ratified.
 
 ---
 
