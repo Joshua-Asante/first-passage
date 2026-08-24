@@ -39,10 +39,17 @@ Account quote ("stops moving... starting balance +100") + both Wayback capture U
 - [x] BluSky CLOCK specifically: run its tier(s) through the same direct `simulate_path` diff
   Bulenox got — the closure explicitly declined to assume BluSky is clean by analogy.
 
-**Gate (R1):** `RESOLVED` — all 7 tiers carry an honest-clock figure (Bulenox_100K,
-BluSky_Premium_100K, both published arms) or an explicit none-to-re-measure line (the other 5).
-The CLAUDE.md caveat line ("EOD-clock lower bounds unless intraday-honest") now extends its scope
-from Tradeify/Class-S to these firms, landed in the same commit —
+**Gate (R1):** `RESOLVED — WITH NAMED RESIDUAL` — the two tiers carrying a published figure on the
+live candidate book (Bulenox_100K, BluSky_Premium_100K, both published arms) carry a MEASURED
+honest-clock figure with no verdict flip; BluSky_Premium_50K carries an explicit
+none-to-re-measure line. **Correction (2026-08-23 fix-pass, reviewer-flagged):** the original text
+here claimed "an explicit none-to-re-measure line (the other 5)" — false for 4 of them. A separate,
+closed/NO-GO'd, Pepperstone-sourced archived campaign (`lab/archive/bulenox_futures_remc_2026-07-01/`)
+publishes EOD-clock figures for Bulenox_25K/50K/100K/150K/250K; most cells are monotonicity-disposed
+(already FAIL), a small PASS-side residual is explicitly named and not re-run (3 stated reasons —
+retired vendor feed, a verified-broken entry-point import, a dead/NO-GO'd program). Full accounting:
+RESULTS.md §2/§4b. The CLAUDE.md caveat line ("EOD-clock lower bounds unless intraday-honest") now
+extends its scope from Tradeify/Class-S to these firms, landed in the same commit —
 [`RESULTS`](../../../lab/analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md) ·
 [`audit note`](../../notes/audits/2026-08-23-r1-bulenox-blusky-clock-repair.md).
 

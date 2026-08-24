@@ -1,3 +1,13 @@
+> ⚠ **2026-08-23 reader-intercept (R1 CLOCK repair, fix-pass):** the Gate table below (25K 0.40% ·
+> 50K 1.13% · 100K 8.54% · 150K 8.54% · 250K 18.50% bust) is **EOD-clock**, produced on the same
+> live `simulate_path` engine R1 measures, with `intraday_low` never populated — every bust figure
+> here is a lower bound, not an estimate. The 100K/150K/250K cells are already FAIL against the
+> current 3.0% survivor-scoring ceiling and can only deepen on the honest clock (monotonicity); the
+> 25K/50K cells PASS on this clock but are a named, un-re-run residual — not confirmed to still PASS
+> honest-clock. See
+> [`../../analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md`](../../analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md)
+> §2/§4b for the full accounting and why this campaign is not re-run. Frozen body unedited below.
+
 # C4 — Bulenox force-flat re-MC (first full run)
 
 **Disposition:** CLOSED — R6 NO-GO — futures-prop program closed 2026-07-10

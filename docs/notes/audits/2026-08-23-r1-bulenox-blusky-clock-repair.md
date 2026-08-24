@@ -349,3 +349,158 @@ python scripts/archive_lab_analysis.py --check --catalog-only
 grep -n '\[x\]' docs/superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md
 # Task R1's 4 items now checked
 ```
+
+---
+
+## §13 — Fix-pass addendum round 2 (2026-08-23, reviewer-flagged false claim, corrected)
+
+**Trigger:** dispatched as a Task R1 fix pass with one Critical/Important reviewer finding, quoted
+in full: §2 of `RESULTS.md` (and §12 of this note, lines then 84–89/285–290) falsely claimed
+Bulenox_25K/50K/150K/250K have "zero repo hits" / "no RESULTS/closure exists anywhere in the tree."
+The reviewer named `lab/archive/bulenox_futures_remc_2026-07-01/RESULTS_C4_forceflat_2026-07-03.md:29-33`
+as a real, formally-CLOSED-but-not-superseded trailing-DD MC gate table for exactly those tiers,
+and noted that §12's own re-verification pass had the same 11-file grep hit that file, explicitly
+listed only 4 "unfamiliar" files as opened, and skipped it — both times — before re-asserting the
+negative.
+
+**Independent re-verification of the finding itself (before accepting it):** re-ran the exact
+`Bulenox_25K|Bulenox_50K|Bulenox_150K|Bulenox_250K|BluSky_Premium_50K` grep §12 cited. **Confirmed
+the finding is correct, and worse than stated** — root-caused why:
+
+- `.rgignore` (repo root) reads:
+  ```
+  # Agent/rg search exclude -- LTM cold corpus (git-tracked; still Readable by path).
+  # Keep in sync with .cursorindexingignore. Do NOT put these in .cursorignore
+  # (that would best-effort block Cursor from opening CATALOG-resolved paths).
+  # Force-search: rg --no-ignore  (NOT --no-ignore-vcs -- that still respects this file)
+  lab/archive/
+  docs/ltm/
+  core/strategies/_archive/
+  ```
+  ripgrep (and this harness's Grep tool, which is ripgrep-backed) honors it by default for an
+  **unscoped** (repo-root, no path filter) search — confirmed by literally reproducing both the
+  original pass's and §12's search: a plain, unscoped grep for the five tier names returns **zero**
+  hits under `lab/archive/bulenox_futures_remc_2026-07-01/`, even though `--no-ignore` (same
+  unscoped call) surfaces all **5** files there
+  (`run_bulenox_remc.py`, `RESULTS_C4_forceflat_2026-07-03.md`, `NOTES.md`, `dj30_only_remc.py`,
+  `c5_integer_remc.py`) that reference these tiers. (An explicit path or single-file grep is
+  **unaffected** — I re-confirmed this by targeting the archived file directly, which found it with
+  no `--no-ignore` flag needed; the exclusion only bites an *unscoped* sweep, exactly the search
+  shape both prior passes used.) This is the actual, root-caused mechanism behind both the original
+  miss and §12's repeated one: **the search tool itself silently excludes the exact corpus the
+  claim was about**, by design, with a documented force-search escape hatch neither pass used.
+- **The blast radius is larger than the reviewer's one cited file.** `lab/archive/bulenox_futures_remc_2026-07-01/`
+  contains **three** RESULTS docs, not one — `RESULTS_C4_forceflat_2026-07-03.md` (the one
+  flagged), plus `RESULTS_C5_integer_2026-07-03.md` (integer-contract, cap- and cost-aware
+  re-sizing) and `RESULTS_DJ30only_1leg_2026-07-03.md` (DJ30-only one-legged variant, CAPPED and
+  FULL arms) — read in full, both new to this session. All three publish bust/pass gate tables for
+  the five Bulenox tiers.
+- **A second citing surface exists outside `lab/archive/` entirely**, so unaffected by the
+  `.rgignore` mechanism and missed for a different reason (the tier-name-only grep pattern does not
+  match a dollar-amount citation): `lab/analysis/legacy/futures_conversion_2026-07-01/B0_GATE_2026-07-03.md`
+  (`ACTIVE`/hot in `lab/CATALOG.md`) quotes "the C4 25K gate number (99.60%)" and "C4's 91.46% gate
+  pass" directly in its own findings prose. Found via a figure-value grep
+  (`rg --no-ignore -l "99\.60%|98\.87%|91\.46%|..."`), then read in full and confirmed genuine (not
+  a coincidental percentage match — cross-checked against 6 other superficial hits from the same
+  sweep, all of which were confirmed coincidental on inspection, e.g. an unrelated 99.65%-pass cell
+  in a regime-stress study).
+- **A third set of citing surfaces was found and deliberately NOT bannered, disclosed rather than
+  silently decided:** `lab/archive/tradeify_selectflex_remc_2026-07-10/{RESULTS_tradeify_remc_2026-07-10.md,
+  RESULTS_tradeify_integer_2026-07-10.md,NOTES.md}` cite the same C4/C5 numbers as an inert "xref"
+  column in their own gate tables. Read in full; not bannered because that campaign is itself
+  archived/`FALSIFIED` and every cited row already fails on its own p99-DD dimension independent of
+  the bust-side CLOCK question — see RESULTS.md §4b for the full reasoning, stated there rather than
+  only in this note, since a future reader of RESULTS.md alone should see the same scoping decision.
+
+**Repair (RESULTS.md, this audit note, CLAUDE.md, `lab/CATALOG.md`, the parent plan doc, and 4
+archived/active RESULTS docs — see commit diff for the full file list):**
+
+1. RESULTS.md §2: replaced the false "none — zero repo hits" cells for Bulenox_25K/50K/150K/250K
+   with the actual figures, sourced, per config. Bulenox_100K gained a footnote for the *second*,
+   different-book figure the archived campaign also publishes (not previously accounted for at all,
+   even correctly, since it wasn't distinguished from the Class-S candidate #1 figure).
+2. RESULTS.md §4b (new): engine-equivalence check (`portfolio_mc.run_seed is mc.simulation.run_seed`
+   — literally the same function object, verified by identity, not just by behavior) grounding the
+   §4 monotonicity argument's applicability to this archived campaign; monotonicity-disposed every
+   cell already FAIL vs. the 3.0% ceiling; **named, explicitly-disclosed residual** for the cells
+   that PASS on the EOD clock and that monotonicity cannot resolve (chiefly Bulenox_25K/50K in
+   every config, plus the DJ30-only-CAPPED cells at 100K/150K/250K) — not re-run, for three stated
+   reasons (retired Pepperstone feed, a verified-broken entry-point import, and a dead/NO-GO'd
+   program with no live decision depending on it), consistent with Rule 2 (budget before acting).
+3. Reader-intercept banners added to 4 surfaces (the 3 archived RESULTS docs + the `ACTIVE` B0_GATE
+   doc) — frozen bodies otherwise unedited, matching this note's own §6 Trap #12 convention.
+4. RESULTS.md Status/Gate framing rewritten from an unqualified "MEASURED"/"RESOLVED" to explicitly
+   name the residual rather than imply full closure.
+5. `CLAUDE.md`'s own mirrored claim ("5 remaining tiers carry no published bust/pass figure to
+   re-measure") corrected to point at the same RESULTS.md §2/§4b accounting — this was the
+   highest-traffic surface restating the false claim and was not itself named by the reviewer, found
+   by checking for mirrors per this repo's own blast-radius discipline.
+6. `lab/CATALOG.md`'s one-liner for `firm_model_repair_r1_7tier_2026-08-23` corrected (same
+   restatement, same fix).
+7. The parent plan's own Gate (R1) line
+   (`docs/superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md`) corrected —
+   it repeated "an explicit none-to-re-measure line (the other 5)," which is what the reviewer's
+   finding falsifies.
+
+**Re-verification after the repair (this pass):**
+
+- Re-ran `pytest tests/core/test_mc_intraday_barrier.py -q` → `9 passed` (unchanged; no engine code
+  touched).
+- Re-ran the corrected `rg --no-ignore` sweep after editing, to confirm the new banners exist and
+  the corrected claims are internally consistent with what the files actually say.
+- Re-read `RESULTS_C4_forceflat_2026-07-03.md`, `RESULTS_C5_integer_2026-07-03.md`,
+  `RESULTS_DJ30only_1leg_2026-07-03.md`, `B0_GATE_2026-07-03.md` post-banner-insert to confirm the
+  banner renders as a single leading blockquote and the frozen body below it is byte-identical to
+  before, except for the inserted lines.
+- Re-ran `python scripts/check_boundaries.py`, `check_status_consistency.py`,
+  `check_closure_disposition.py`, `sync_liveness_indexes.py`, `check_root_doc_liveness.py`,
+  `check_path_liveness.py`, `archive_lab_analysis.py --check --catalog-only` — all OK/CLEAN (see
+  the commit's own verification block for the actual run transcript).
+- Forbidden-moves compliance re-checked: `git diff` over this fix-pass's own changes touches no
+  line in `core/firm_rules.py`, `core/dd_protection.py`, `STATE.md`, or `docs/SESSIONS.md`, and no
+  numeric field in any archived RESULTS doc (banners only, prepended).
+- Did **not** attempt to migrate `run_bulenox_remc.py`/`c5_integer_remc.py`/`dj30_only_remc.py` or
+  restore Pepperstone vendor data — out of scope per §4b's three stated reasons; flagged, not
+  fixed, pending an explicit operator GO.
+
+**Process finding, disclosed for whoever next runs a repo-wide "does X exist anywhere" sweep:** the
+`.rgignore` mechanism is intentional and documented (its own header explains the rationale and the
+escape hatch), but it is a **silent** exclusion from the tool's own default output — nothing in a
+plain `rg`/Grep-tool call signals that `lab/archive/`, `docs/ltm/`, or `core/strategies/_archive/`
+were skipped. Two consecutive passes (original + §12's own "independent" re-verification) both used
+the default surface and both concluded "zero hits" for a corpus that in fact contained the target.
+This is the same failure class as this repo's own `feedback_absence_in_known_location_is_not_absence`
+and `lesson_dedup_attestation_must_be_executed` memory lessons, now with the specific tooling
+mechanism identified. Not graduated to a new standing rule here (out of scope for a fix-pass to
+unilaterally add repo-wide process); named so the operator can decide whether a standing reminder
+(e.g. in the `rule-0` skill or a `docs/operational_rules.md` note) is warranted.
+
+**Verification (this pass):**
+
+```bash
+python -m pytest tests/core/test_mc_intraday_barrier.py -q
+# 9 passed
+
+rg -l "Bulenox_25K|Bulenox_50K|Bulenox_150K|Bulenox_250K|BluSky_Premium_50K" -g '!.git' | grep -c "bulenox_futures_remc_2026-07-01"
+# 0 -- plain rg cannot see the archived directory
+rg --no-ignore -l "Bulenox_25K|Bulenox_50K|Bulenox_150K|Bulenox_250K|BluSky_Premium_50K" -g '!.git' | grep -c "bulenox_futures_remc_2026-07-01"
+# 5 -- --no-ignore surfaces it
+
+python -c "import sys; sys.path.insert(0,'core'); import portfolio_mc as pm; import mc.simulation as sim; print(pm.run_seed is sim.run_seed)"
+# True
+
+python -c "import sys; sys.path.insert(0,'core'); from portfolio_mc import (ALLOCATIONS, BASELINE_BALANCE, PEPPERSTONE_PANELS, SEEDS, SIMS_PER_SEED, build_daily_panel, build_week_blocks, load_trades, run_seed)"
+# ImportError: cannot import name 'BASELINE_BALANCE' from 'portfolio_mc'
+
+python scripts/check_boundaries.py
+python scripts/check_status_consistency.py
+python scripts/check_closure_disposition.py
+python scripts/sync_liveness_indexes.py
+python scripts/check_root_doc_liveness.py
+python scripts/check_path_liveness.py
+python scripts/archive_lab_analysis.py --check --catalog-only
+# all OK/CLEAN
+
+grep -n "Bulenox/BluSky" CLAUDE.md
+grep -n "firm_model_repair_r1_7tier_2026-08-23" lab/CATALOG.md
+```

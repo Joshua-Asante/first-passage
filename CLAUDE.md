@@ -64,8 +64,9 @@ on all 7 `dd_type="trailing"` tiers, not just Tradeify/MFFU
 RESULTS: Class-S 0.50× full+halves —
 [`RESULTS_INTRADAY_W1`](lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/RESULTS_INTRADAY_W1.md);
 Bulenox_100K/BluSky_Premium_100K 1.00×/0.50× —
-[`R1 7-tier RESULTS`](lab/analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md) (5 remaining
-tiers carry no published bust/pass figure to re-measure)
+[`R1 7-tier RESULTS`](lab/analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md) (only
+BluSky_Premium_50K carries no published figure; the other 4 Bulenox tiers carry a since-corrected
+archived figure from a closed/NO-GO'd, non-live book — see RESULTS.md §2/§4b, not "none")
 ([W1 ADR](docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md) `Accepted` 2026-08-22 —
 other decisions of record still pending as measurement).
 

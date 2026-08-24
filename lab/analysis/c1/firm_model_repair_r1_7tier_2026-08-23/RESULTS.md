@@ -1,9 +1,17 @@
 **Theme:** c1
 # R1 — 7-tier intraday-honest re-run (Bulenox / BluSky, W1 pattern extended) — RESULTS
 
-**Status:** `MEASURED` — CLOCK re-run complete on both tiers carrying a published bust/pass figure
-(Bulenox_100K, BluSky_Premium_100K); the other 5 tiers carry no published bust/pass figure to
-re-run (recorded, not manufactured — see §2).
+**Status:** `MEASURED — WITH NAMED RESIDUAL (2026-08-23 fix-pass correction)` — CLOCK re-run
+complete on the two tiers carrying a published figure on the **live candidate book** (Bulenox_100K,
+BluSky_Premium_100K, Class-S candidate #1). The original claim that "the other 5 tiers carry no
+published bust/pass figure" was **false for 4 of them** — a separate, CLOSED/NO-GO'd,
+Pepperstone-sourced archived campaign (`lab/archive/bulenox_futures_remc_2026-07-01/`) publishes
+EOD-clock bust/pass figures for Bulenox_25K/50K/100K/150K/250K under three sizing configurations.
+The miss and its correction are recorded in §2/§4b — most cells are already-FAIL and
+monotonicity-disposed; a small, explicitly-named PASS-side residual (chiefly Bulenox_25K/50K) is
+**not re-run this pass**, for stated reasons, rather than silently left implying "resolved."
+BluSky_Premium_50K is the only tier of the 7 that genuinely carries no published figure anywhere
+(re-confirmed under a corrected search methodology — §2/§6).
 **Date:** 2026-08-23
 **Task:** [`docs/superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md`](../../../../docs/superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md)
 Task R1
@@ -112,18 +120,51 @@ BluSky's two tiers were diffed directly here, not inferred.
 
 ## §2 — Per-tier disposition
 
-**Gate (R1):** `RESOLVED` when all 7 tiers carry an honest-clock figure or an explicit
-none-to-re-measure line — verdict below.
+**Gate (R1):** `RESOLVED` when all 7 tiers carry an honest-clock figure, an explicit
+none-to-re-measure line, or (new, this fix-pass) an explicit named disposition for a published
+figure this campaign declines to re-run — verdict below.
+
+> ⚠ **Correction (2026-08-23 fix-pass, reviewer-flagged):** the table below originally read "none
+> — zero repo hits" for Bulenox_25K/50K/150K/250K. **That was false.** A separate archived campaign,
+> `lab/archive/bulenox_futures_remc_2026-07-01/` (CLOSED — R6 NO-GO, futures-prop program closed
+> 2026-07-10, per `lab/CATALOG.md`), publishes EOD-clock trailing-DD bust/pass figures for all five
+> Bulenox tiers across three RESULTS docs (`RESULTS_C4_forceflat_2026-07-03.md`,
+> `RESULTS_C5_integer_2026-07-03.md`, `RESULTS_DJ30only_1leg_2026-07-03.md`). The miss had two
+> independent causes, both fixed in this pass's search methodology (§6):
+> 1. **`.rgignore`** (repo root) deliberately excludes `lab/archive/` (+ `docs/ltm/`,
+>    `core/strategies/_archive/`) from the default `rg`/Grep-tool search surface — by design, per
+>    its own header comment, as a "cold corpus... still Readable by path," with a documented
+>    force-search escape hatch (`rg --no-ignore`) that neither the original pass nor the first
+>    fix-pass's "independent" repo-wide grep used. This is why a plain, **unscoped** (repo-root, no
+>    path filter) grep for these tier names returns **zero** hits under
+>    `lab/archive/bulenox_futures_remc_2026-07-01/`, even though the 5 files there are git-tracked
+>    and directly `Read`-able (an explicit path/single-file grep bypasses the exclusion — only an
+>    unscoped, repo-root sweep is affected, exactly the search shape both prior passes used — §6).
+> 2. The tier-name grep pattern itself (`Bulenox_25K` etc.) does not match citations that name a
+>    tier by dollar amount only (e.g. "the C4 25K gate number") — missing a citing surface
+>    (`lab/analysis/legacy/futures_conversion_2026-07-01/B0_GATE_2026-07-03.md`, `ACTIVE`/hot,
+>    outside `lab/archive/` and thus unaffected by cause 1) that quotes the same figures in its own
+>    prose findings.
+>
+> Corrected disposition below; full accounting (including why this pass does not re-run the
+> PASS-side cells) in §4b.
 
 | Tier | Published bust/pass figure(s) to re-run | Disposition |
 |---|---|---|
-| **Bulenox_100K** | 1.00×: 3.51%/96.49% ([`class_s_candidate1_scoring_2026-07-15/RESULTS.md`](../class_s_candidate1_scoring_2026-07-15/RESULTS.md), reproduced [`tradeify_eval_lock_correction_2026-07-22/RESULTS.md`](../tradeify_eval_lock_correction_2026-07-22/RESULTS.md)) · 0.50× WATCH-1: 0.08%/99.82% ([`CORRECTED_FULLPANEL.md`](../class_s_c1_haircut_regime_remc_2026-07-16/CORRECTED_FULLPANEL.md)) | **MEASURED — §3** |
-| **BluSky_Premium_100K** | 1.00×: 4.44%/95.54% (same sources) · 0.50× WATCH-1: 0.08%/99.80% (same source) | **MEASURED — §3** |
-| Bulenox_25K | none | **none to re-measure** — `band_quantization_2026-08-02/RESULTS.md` is arithmetic/sizing only (own banner: "no MC, no gate scored, no verdict claimed"); the sub-100K realizable-book scoring pre-reg (`docs/briefs/pre-registration/2026-08-02-sub100k-realizable-book-scoring-prereg.md`) is `SIGNED/FROZEN` but was **never executed** — no RESULTS/closure exists anywhere in the tree (verified: `find` + repo-wide grep, zero hits) |
-| Bulenox_50K | none | **none to re-measure** — same as Bulenox_25K |
-| Bulenox_150K | none | **none to re-measure** — zero repo hits outside `firm_rules.py`/skill docs |
-| Bulenox_250K | none | **none to re-measure** — zero repo hits outside `firm_rules.py`/skill docs/2026-07-12 four-firms ADR (config listing only) |
-| BluSky_Premium_50K | none | **none to re-measure** — same class as Bulenox_25K/50K (band_quantization sizing-only + un-executed pre-reg) |
+| **Bulenox_100K** | 1.00×: 3.51%/96.49% ([`class_s_candidate1_scoring_2026-07-15/RESULTS.md`](../class_s_candidate1_scoring_2026-07-15/RESULTS.md), reproduced [`tradeify_eval_lock_correction_2026-07-22/RESULTS.md`](../tradeify_eval_lock_correction_2026-07-22/RESULTS.md)) · 0.50× WATCH-1: 0.08%/99.82% ([`CORRECTED_FULLPANEL.md`](../class_s_c1_haircut_regime_remc_2026-07-16/CORRECTED_FULLPANEL.md)) | **MEASURED — §3** (live candidate book) |
+| **BluSky_Premium_100K** | 1.00×: 4.44%/95.54% (same sources) · 0.50× WATCH-1: 0.08%/99.80% (same source) | **MEASURED — §3** (live candidate book) |
+| Bulenox_25K | `bulenox_futures_remc_2026-07-01` (different, closed book): C4 0.40% · C5 0.50% · DJ30-only CAPPED 0.00% (VOID, 0-contract) · DJ30-only FULL 0.05% — **all PASS vs the 3.0% ceiling** | **NAMED RESIDUAL, not re-run — §4b** (was wrongly "none") |
+| Bulenox_50K | same source: C4 1.13% · C5 2.81% · DJ30-only CAPPED 0.02% (VOID) · DJ30-only FULL 0.19% — **all PASS** | **NAMED RESIDUAL, not re-run — §4b** (was wrongly "none") |
+| Bulenox_150K | same source: C4 8.54% FAIL · C5 8.74% FAIL · DJ30-only CAPPED 0.29% PASS · DJ30-only FULL 3.29% FAIL | **FAIL cells monotonicity-disposed; 0.29% PASS cell is a named residual — §4b** (was wrongly "none") |
+| Bulenox_250K | same source: C4 18.50% FAIL · C5 21.16% FAIL · DJ30-only CAPPED 2.41% PASS · DJ30-only FULL 10.69% FAIL | **FAIL cells monotonicity-disposed; 2.41% PASS cell is a named residual — §4b** (was wrongly "none") |
+| BluSky_Premium_50K | none | **none to re-measure** — re-confirmed under the corrected search methodology (§6, `rg --no-ignore`): `band_quantization_2026-08-02/RESULTS.md` is arithmetic/sizing only (own banner: "no MC, no gate scored, no verdict claimed"); the sub-100K realizable-book scoring pre-reg (`docs/briefs/pre-registration/2026-08-02-sub100k-realizable-book-scoring-prereg.md`) is `SIGNED/FROZEN` but was **never executed**; the archived Bulenox campaign does not model BluSky at all (Bulenox-tier-rules-only, per its own module docstring) — this tier's "none" claim holds |
+
+**Bulenox_100K note:** the archived `bulenox_futures_remc_2026-07-01` campaign ALSO publishes a
+Bulenox_100K figure (C4 8.54% FAIL, C5 12.42% FAIL, DJ30-only CAPPED 0.83% PASS, DJ30-only FULL
+3.29% FAIL, bucketed with 150K) for a **different book** (2-leg DJ30-force-flat + NAS100,
+%-equity/integer sizing) than the MEASURED Class-S candidate #1 figure above. Same disposition as
+150K/250K: FAIL cells monotonicity-disposed, the 0.83% PASS cell is part of the named residual —
+§4b.
 
 **Also considered, disposed by monotonicity rather than re-run (§4):**
 `class_s_candidate2_scoring_2026-07-15` (Bulenox_100K 7.38%/92.62% FAIL, BluSky_Premium_100K
@@ -211,6 +252,108 @@ manufacture here because the direction is already forced.
 
 ---
 
+## §4b — Archived Bulenox force-flat/integer campaign (added this fix-pass, 2026-08-23)
+
+**Source:** `lab/archive/bulenox_futures_remc_2026-07-01/` — CLOSED, R6 NO-GO, futures-prop program
+closed 2026-07-10 (`lab/CATALOG.md`). A 2-leg DJ30-force-flat(17:00 ET) + clean-NAS100 book under
+each Bulenox tier's own trailing-DD rules, across three RESULTS docs dated 2026-07-03:
+`RESULTS_C4_forceflat` (%-equity sizing, `PRE_SHOCK_1R`-pinned), `RESULTS_C5_integer` (integer
+CME-micro-contract sizing, Bulenox contract caps, $2.22/contract costs), `RESULTS_DJ30only_1leg`
+(DJ30-only, one-legged variant, both a CAPPED and a FULL-risk arm). **Not** the Class-S candidate #1
+book §3 measures — a different strategy composition and sizing basis entirely.
+
+**Engine-equivalence check (Rule 0, this session):** all three drivers (`run_bulenox_remc.py`,
+`c5_integer_remc.py`, `dj30_only_remc.py`) import `run_seed` from `portfolio_mc` (the compatibility
+facade `core/portfolio_mc.py` forwards from `core/mc/modes.py`/`core/mc/simulation.py`). Verified
+directly, this session:
+
+```
+python -c "import sys; sys.path.insert(0,'core'); import portfolio_mc as pm; import mc.simulation as sim; print(pm.run_seed is sim.run_seed)"
+# True — literally the same function object as the one §3/§4 measure against.
+```
+
+None of the three drivers' `firm_kwargs` dicts pass `intraday_low`/`intraday_blocks` (confirmed by
+reading each driver in full) — every cell in all three tables is a pure EOD-only-clock run on the
+**current, live** engine, not a frozen/superseded one. This is exactly the class of figure R1 exists
+to repair, and the §4 monotonicity property (`equity_test = min(equity_new, equity +
+intraday_low[day]*scale)` can only make a trailing-DD bust condition easier to trigger, never
+harder) applies to it identically.
+
+**Monotonicity-disposed (already FAIL vs. the frozen 3.0% ceiling on the EOD clock — honest-clock
+bust rate can only be `>=` these, so the verdict cannot flip FAIL→PASS and no re-run changes it):**
+
+| Tier | Book | Cited EOD-clock bust | 
+|---|---|---:|
+| Bulenox_100K (archived book) | C4 %-equity | 8.54% |
+| Bulenox_100K (archived book) | C5 integer+cost | 12.42% |
+| Bulenox_150K | C4 %-equity | 8.54% |
+| Bulenox_150K | C5 integer+cost | 8.74% |
+| Bulenox_150K | DJ30-only FULL (bucketed w/100K) | 3.29% |
+| Bulenox_250K | C4 %-equity | 18.50% |
+| Bulenox_250K | C5 integer+cost | 21.16% |
+| Bulenox_250K | DJ30-only FULL | 10.69% |
+
+**Named residual — NOT re-run this pass (published, PASSES the 3.0% ceiling on the EOD clock,
+genuinely unresolved by monotonicity):**
+
+| Tier | Book | Cited EOD-clock bust |
+|---|---|---:|
+| Bulenox_25K | C4 · C5 · DJ30-only CAPPED (VOID, 0-contract) · DJ30-only FULL | 0.40% · 0.50% · 0.00% · 0.05% |
+| Bulenox_50K | C4 · C5 · DJ30-only CAPPED (VOID, 0-contract) · DJ30-only FULL | 1.13% · 2.81% · 0.02% · 0.19% |
+| Bulenox_100K (archived book) | DJ30-only CAPPED | 0.83% |
+| Bulenox_150K | DJ30-only CAPPED | 0.29% |
+| Bulenox_250K | DJ30-only CAPPED | 2.41% |
+
+A published PASS cannot be monotonicity-disposed (only FAIL survives the "can only get worse"
+direction) — R1's own §3 shows deepening as large as ~7.6× at 1.00× on a *different* book, but
+borrowing that multiplier onto this book to declare these cells "probably still PASS" would bind a
+metric to the wrong cohort. **Why this pass does not re-run them instead, stated rather than
+silently skipped, per three independent reasons:**
+
+1. **The primary vendor feed is retired.** All three drivers read Pepperstone US30/NAS100 CFD
+   exports (`RAW_DJ30_CSV = PEPPERSTONE_PANELS["striker"]`). CLAUDE.md's canonical-feed policy:
+   "Canonical feed = CME futures TV exports... OANDA and Pepperstone are retired." Reproducing this
+   exact book on its original data source runs against current data policy, not merely a missing
+   file.
+2. **The entry point is provably broken today, not just data-blocked.** `run_bulenox_remc.py`'s own
+   import line (`from portfolio_mc import (..., BASELINE_BALANCE, PEPPERSTONE_PANELS, ...)`) raises
+   `ImportError` on the current `core/portfolio_mc.py` facade — verified directly this session:
+   ```
+   python -c "import sys; sys.path.insert(0,'core'); from portfolio_mc import (ALLOCATIONS, BASELINE_BALANCE, PEPPERSTONE_PANELS, SEEDS, SIMS_PER_SEED, build_daily_panel, build_week_blocks, load_trades, run_seed)"
+   # ImportError: cannot import name 'BASELINE_BALANCE' from 'portfolio_mc'
+   ```
+   `run_seed`/`simulate_path` migrated cleanly (engine-equivalence check above);
+   `BASELINE_BALANCE`/`PEPPERSTONE_PANELS` did not. Re-running needs a migration fix first, not
+   just `intraday_low` wiring.
+3. **The program is dead.** CLOSED — R6 NO-GO, 2026-07-10. No live capital-allocation or §4-discharge
+   decision depends on this book today (the operative candidate is the Class-S candidate #1 book §3
+   measures). Spending fresh compute + a migration fix to resurrect a NO-GO'd, retired-feed program
+   absent an operator GO would run against Rule 2 (budget before acting).
+
+**Disposition:** named explicitly, not silently dropped — reader-intercept banners added at the
+source (table below) so a reader landing on these figures directly is warned rather than misled; no
+further action taken or owed unless an operator explicitly revisits this archived program.
+
+**Reader-intercept banners added this fix-pass** (frozen bodies left otherwise unedited, Trap #12
+discipline — same convention as §6's original three):
+
+| Surface | Why bannered |
+|---|---|
+| `lab/archive/bulenox_futures_remc_2026-07-01/RESULTS_C4_forceflat_2026-07-03.md` | Reviewer-flagged source of the 4-tier false claim; the primary %-equity gate table |
+| `lab/archive/bulenox_futures_remc_2026-07-01/RESULTS_C5_integer_2026-07-03.md` | Same campaign, integer-sizing gate table (own PASS/FAIL cells) |
+| `lab/archive/bulenox_futures_remc_2026-07-01/RESULTS_DJ30only_1leg_2026-07-03.md` | Same campaign, DJ30-only variant (own PASS/FAIL cells) |
+| `lab/analysis/legacy/futures_conversion_2026-07-01/B0_GATE_2026-07-03.md` | `ACTIVE`/hot (not archived), directly quotes "the C4 25K gate number (99.60%)" and "C4's 91.46% gate pass" in its own prose findings |
+
+**Scoped out, disclosed rather than silently skipped:** `lab/archive/tradeify_selectflex_remc_2026-07-10/{RESULTS_tradeify_remc_2026-07-10.md,RESULTS_tradeify_integer_2026-07-10.md,NOTES.md}`
+also cite these same C4/C5 figures, as an inert "xref" comparison column in their own gate tables.
+Not bannered: that campaign is itself archived/`FALSIFIED` (`lab/CATALOG.md`), and its own verdict
+in every cited row already fails on the p99-DD dimension under its own stricter gate, independent
+of the bust-side CLOCK question this repair concerns — the more precise honest-clock bust number
+would not change that campaign's own conclusion. Judgment call, disclosed per this repo's own
+precedent (§6 of the audit note), not a mechanical rule.
+
+---
+
 ## §5 — What this does NOT license
 
 - Does not edit `dd_type`, `trailing_dd_pct`, or any `firm_rules.py` numeric field — the forbidden
@@ -229,6 +372,11 @@ manufacture here because the direction is already forced.
   comparison beyond what is reported here — Task R3 (survivor §4 scoring) is a separate,
   downstream task this campaign does not perform.
 - Does not open or amend the W1 ADR, the survivor-scoring pre-reg, or any frozen threshold.
+- Does not license citing Bulenox_25K/50K's (or 100K/150K/250K's DJ30-only-CAPPED) archived
+  PASS-side figures (§4b) as an honest-clock bound — they are a named, disclosed residual, not a
+  resolved one. Does not re-run or migrate the `bulenox_futures_remc_2026-07-01` drivers, or
+  restore Pepperstone vendor data for them — §4b's three reasons stand until an operator GO says
+  otherwise.
 
 ---
 
@@ -251,6 +399,24 @@ python lab/analysis/c1/firm_model_repair_r1_7tier_2026-08-23/run_r1_bulenox_blus
 grep -n '"dd_type": "trailing"' core/firm_rules.py
 # Expected: 122, 134, 146, 158, 170, 538, 554 (re-confirm before citing — these shift when
 # firm_rules.py grows above the Bulenox block, as they already have once since Q-FIRMEOD-1)
+
+# Corrected search methodology (this fix-pass) -- reaches the .rgignore-excluded cold corpus
+# (lab/archive/, docs/ltm/, core/strategies/_archive/) that an UNSCOPED repo-root grep silently
+# skips (an explicit path/single-file grep is unaffected -- only the "search the whole repo" shape
+# both prior passes used is blind to it). Path-separator-agnostic filename match, not a total file
+# count (which drifts as more surfaces cite these tier names, including this fix-pass's own prose):
+rg -l "Bulenox_25K|Bulenox_50K|Bulenox_150K|Bulenox_250K|BluSky_Premium_50K" -g '!.git' | grep -c "bulenox_futures_remc_2026-07-01"
+# Expected: 0 -- plain rg cannot see lab/archive/bulenox_futures_remc_2026-07-01/ at all.
+rg --no-ignore -l "Bulenox_25K|Bulenox_50K|Bulenox_150K|Bulenox_250K|BluSky_Premium_50K" -g '!.git' | grep -c "bulenox_futures_remc_2026-07-01"
+# Expected: 5 -- --no-ignore surfaces all 5 files in that directory that reference these tiers.
+
+# Engine-equivalence check backing §4b's monotonicity argument:
+python -c "import sys; sys.path.insert(0,'core'); import portfolio_mc as pm; import mc.simulation as sim; print(pm.run_seed is sim.run_seed)"
+# Expected: True
+
+# The archived campaign's own entry-point import is broken today (data-independent defect):
+python -c "import sys; sys.path.insert(0,'core'); from portfolio_mc import (ALLOCATIONS, BASELINE_BALANCE, PEPPERSTONE_PANELS, SEEDS, SIMS_PER_SEED, build_daily_panel, build_week_blocks, load_trades, run_seed)"
+# Expected: ImportError: cannot import name 'BASELINE_BALANCE' from 'portfolio_mc'
 ```
 
 ---
@@ -260,3 +426,4 @@ grep -n '"dd_type": "trailing"' core/firm_rules.py
 | Date | Change | By |
 |---|---|---|
 | 2026-08-23 | Initial. CLOCK sanity reproduced (test + independent firm_kwargs diff, all 7 tiers incl. both BluSky tiers directly diffed); honest-clock re-run for the two tiers carrying a published figure; monotonicity disposition for the two FALSIFIED candidates; 5 tiers recorded none-to-re-measure. | Claude Code (Sonnet 5) |
+| 2026-08-23 | **Fix-pass correction** (reviewer-flagged false claim). §2's "none — zero repo hits" for Bulenox_25K/50K/150K/250K was false: `lab/archive/bulenox_futures_remc_2026-07-01/` (CLOSED, R6 NO-GO) publishes EOD-clock bust/pass figures for all 5 Bulenox tiers across 3 RESULTS docs, missed by both the original pass and the first fix-pass's re-verification because `.rgignore` silently excludes `lab/archive/` from default `rg`/Grep-tool search. Added §4b: engine-equivalence-verified monotonicity disposal for already-FAIL cells; explicit named residual (not re-run, 3 stated reasons) for PASS-side cells; 4 reader-intercept banners added at source. Corrected the Gate/Status framing, CLAUDE.md's mirrored claim, and the CATALOG one-liner. See `docs/notes/audits/2026-08-23-r1-bulenox-blusky-clock-repair.md` §13. | Claude Code (Sonnet 5) |
