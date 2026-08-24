@@ -160,7 +160,7 @@ This is deliberately **not** a self-cleared routing decision. Task B2.1 is named
 as *"operator bar-reading (named, not self-cleared)"* and this note's own mandate forbids offering a
 recommendation on it. What follows is the comparison for the operator to weigh — evidence only.
 
-### F3's exact kill text and re-proposal bar (from primary source, quoted in full)
+### F3's exact kill text and re-proposal bar (from primary source, quoted at length)
 
 > **Kill 1 — the mechanism family is already rejected.**
 > [`rejected_candidates.md`] §"FX intraday fixing-reversal (session mean-reversion) on EURUSD"
@@ -175,9 +175,27 @@ recommendation on it. What follows is the comparison for the operator to weigh �
 >
 > **Kill 2 — M6E makes the cost geometry ~4× WORSE, not better.** [...] That is 11.8× over
 > break-even (the rejected CFD was 2.9× over).
+>
+> **Standing correction for the whole census:** *capacity smallness is not free.* Clause 3
+> (WHY it survives) and Requirement 5 (cost-law) pull in **opposite** directions for
+> small-δ mechanisms — the same littleness that keeps institutions out multiplies fixed
+> costs against a fixed-size edge. Any future entry claiming a micro-capacity niche must
+> carry the RT-in-δ-units arithmetic **in the entry itself**, before the word "strong"
+> appears. **(6E family bank/floor is unchanged and remains available to a *genuinely
+> different* 6E mechanism; this kill is about the fix family, not the instrument.)**
 
-(`git show pre-prune-2026-08-08:docs/notes/notice/N-2026-07-26-forced-flow-census.md`, F3 section,
-verbatim except for the elided M6E arithmetic already reproduced in §2 above.)
+(`git show pre-prune-2026-08-08:docs/notes/notice/N-2026-07-26-forced-flow-census.md`, F3 section.
+**Correction (this revision):** an earlier draft of this note claimed the above was "verbatim
+except for the elided M6E arithmetic already reproduced in §2 above" — that claim was false. The
+Standing-correction paragraph, including its closing parenthetical distinguishing "kill is about
+the fix family, not the instrument," was omitted entirely from that draft, not merely elided as
+duplicate arithmetic. It is quoted in full above because it is arguably the single most on-point
+primary-source sentence for the B2.1 question below — F3's own author drawing exactly the
+fix-family-vs-instrument line this note is asking the operator to rule on. What remains elided
+here (marked `[...]` / `...`) is genuinely redundant with §2's own arithmetic (the M6E RT/pip
+recomputation) or off-topic to B2.1 (the parenthetical naming the sibling month-end-fix registry
+entry, already cited independently in the "evidence for no" bullets below) — not load-bearing for
+the operator's ruling.
 
 Registry's own re-proposal bar (`docs/rejected_candidates.md` L289, verbatim): *"evidence of
 materially better-than-retail execution on the fix (the paper survives only at half-spread), OR a
@@ -217,6 +235,13 @@ part of what the operator is being asked to weigh).
 - Full-size 6E's cost floor (3.98–5.98 pips) is a materially different cost geometry than the
   micro M6E figure ($4.10, 3.28 pips RT) F3's Kill 2 scored — F3's "makes the cost geometry ~4×
   worse" finding was specific to the micro expression only; F3 never scored full-size 6E/6B.
+- F3's own author says this in as many words, verbatim, in the Standing-correction parenthetical
+  quoted above: *"6E family bank/floor is unchanged and remains available to a genuinely different
+  6E mechanism; this kill is about the fix family, not the instrument."* Read narrowly, that
+  sentence is about the instrument (micro vs. full-size), not the wake-WHO/window question B2.1
+  asks — but it is F3's own explicit statement that "this kill" (both Kill 1 and Kill 2) does not
+  foreclose every future 6E-family entry, which is at minimum adjacent to, and arguably softens,
+  the "still the same fix, re-tuned" reading below.
 
 **Evidence for "no, still the same fix, re-tuned":**
 - The underlying flow being faded is still the same WM/Reuters-mandated benchmark fix — the
