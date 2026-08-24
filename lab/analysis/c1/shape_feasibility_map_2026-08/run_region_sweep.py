@@ -69,7 +69,11 @@ from discovery.prop_survivor_scoring import (  # noqa: E402
 
 import shape_generator as sg  # noqa: E402
 
-FIRM_KEYS: Tuple[str, ...] = ("Tradeify_Select_100K", "MFFU_Rapid_100K")
+# 2026-08-24: Tradeify_Growth_100K added as a third scored firm. Same $6,000 target,
+# same 80-micro cap, same $0.91/side -- but a $3,500 rope vs Select's $3,000, no
+# consistency rule, and min_trading_days 1 vs 3. RESULTS.md Sec7.1 found the rope is
+# the binding gate, so this isolates +16.7% rope headroom on the binding constraint.
+FIRM_KEYS: Tuple[str, ...] = ("Tradeify_Select_100K", "MFFU_Rapid_100K", "Tradeify_Growth_100K")
 DD_GATE = 0.03  # eval_bust_ceiling, also independently confirmed == thr.eval_bust_ceiling below
 PASS_GATE = 0.50  # pass_floor, also independently confirmed == thr.pass_floor below
 

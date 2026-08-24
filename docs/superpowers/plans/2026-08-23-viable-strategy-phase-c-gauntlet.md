@@ -74,12 +74,13 @@ paper-log calendar time — not by build effort.
   untouched) → **Phase D**, and in parallel → **§4 scoring** (parallel plan) once the firm-model
   repair has landed.
 
-## Sleeve rule (B3-class candidates)
+## Sleeve rule
 
 A sleeve candidate (activity-insufficient alone) may run the gauntlet, but its card must name the
 daily mechanism it rides beside; a sleeve reaching step 8 alone parks at TNEC intake until a
 daily partner exists. The operator token-trade never substitutes for a sleeve's partner in any
-scored artifact.
+scored artifact. (B3 itself is **KILL** — [`A1 audit §6`](../../notes/audits/2026-08-23-kill-register-attribution-audit.md);
+the rule still binds any future sleeve.)
 
 ## Kill hygiene
 

@@ -41,7 +41,7 @@
 | Live-surface tense on a withdrawn book | **P9** — docstring / table framing only |
 | INDEX Open rows that are not open | **P10** — roster hygiene |
 | No admitted candidate / four-firm §4 | **Not a packet.** [`viable-strategy sequence`](2026-08-23-viable-strategy-sequence-overview.md) (`AWAITING GO`) |
-| CI green ≠ merge gate / no branch protection | Parked — [`Q-GATESTACK-1`](../../briefs/closures/Q-GATESTACK-1-closure-falsified.md) Limb-A stands; W5 H6 landed the composition, not required checks |
+| CI green ≠ merge gate / no branch protection | ⚠ **Stale as written (corrected 2026-08-24).** Limb-A does **not** stand: the `main-protection` ruleset landed 2026-08-19 (PR required, `skills (3.12)` required, no bypass) — [`Q-GATESTACK-1`](../../briefs/closures/Q-GATESTACK-1-closure-falsified.md) closure addendum. Only the *other* checks remain advisory |
 | Personas / dual agent surfaces | Parked — operating model (unchanged) |
 | S3/S7 still `PROPOSED`; session lettering | Parked — leave; do not reopen S7 |
 
@@ -314,7 +314,7 @@ Attestation (this session, before authoring): `lab/CATALOG.md` and `docs/briefs/
 | Generation dryness | bind row 3 closed; object-layer sequence already authored | [channel ADR addendum](../../adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md#addendum-2026-08-23--scoped-decline-of-the-reopened-6am6a-and-gcmgc-entry-geometry--dense-1m-cell) · [`viable-strategy sequence`](2026-08-23-viable-strategy-sequence-overview.md) |
 | Mass CATALOG Verdict / `--slug` | catalog ADR forbids without its own GO | [`2026-08-22-catalog-hot-vs-disposition.md`](../../adr/2026-08-22-catalog-hot-vs-disposition.md) |
 | Personas / dual skill homes / two venvs | operating model | leave |
-| CI green ≠ merge precondition / no branch protection | Limb-A stands; W5 H6 landed composition only | [`Q-GATESTACK-1`](../../briefs/closures/Q-GATESTACK-1-closure-falsified.md) |
+| CI green ≠ merge precondition / no branch protection | ⚠ **Stale (corrected 2026-08-24)** — ruleset landed 2026-08-19; `skills (3.12)` IS required | [`Q-GATESTACK-1`](../../briefs/closures/Q-GATESTACK-1-closure-falsified.md) closure addendum |
 | S3/S7 `PROPOSED`; session lettering | leave; do not reopen S7 | [`loop-spec index`](../../spec/2026-08-07-loop-spec-index.md) · [`roll_sessions.py`](../../../scripts/roll_sessions.py) |
 | Folder `multi_firm_operations` vs GitHub `first-passage` | cosmetic identity | operator-only |
 | Pine gitignored; LTM `.rgignore` | correct; P1 teaches | [`.cursor/rules/search-ltm.mdc`](../../../.cursor/rules/search-ltm.mdc) |

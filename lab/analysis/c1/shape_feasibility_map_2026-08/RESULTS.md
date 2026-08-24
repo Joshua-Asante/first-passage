@@ -2,7 +2,7 @@
 
 # Payoff-shape feasibility map (Phase A Task A2 — the target spec)
 
-**Status:** **ACTIVE** — 630-cell region published, Tradeify/MFFU identical; 8/8 corner-case + 3/5 MARGINAL-band validation tuples resolve clean at full N (2/5 stay MARGINAL, 0 confident-verdict flips); screens shape, not mechanisms.
+**Status:** **ACTIVE** — 945-cell region published (Tradeify Select / MFFU / **Tradeify Growth**, the last added 2026-08-24); Select≡MFFU bit-identical; 8/8 corner-case + 3/5 MARGINAL-band validation tuples resolve clean at full N (2/5 stay MARGINAL, 0 confident-verdict flips). ⚠ **§7.2's "no cell at win_rate ≤ 50% is FEASIBLE" is scoped to the $3,000 rope and does NOT hold for Growth's $3,500 rope — see §13.** Screens shape, not mechanisms.
 
 **What this is not:** not a strategy, not a candidate, not a backtest of anything real. It is a
 coverage map over a *synthetic* trade-generating process, scored through the production
@@ -29,7 +29,7 @@ Task A2).
 | `docs/briefs/closures/Q-STATVALID-1-closure-falsified.md` | `50396fc` 2026-08-23 | The SE-of-proportion / 2-sigma noise-floor convention this harness's `gate_status()` implements, at the same `N` semantics (proportion out of total MC paths) Q-STATVALID-1 itself used. |
 | `docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md` + `lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/run_w1_intraday_both_halves.py` | ADR `56663b2` 2026-08-22 · harness `027a729` 2026-08-14 | The citable prior art for "intraday-honest limb": pair `daily_pnl` with `intraday_low` via `paired_blocks_from_daily`, thread both through `run_tier_remc(..., intraday_blocks=...)`, never let the intraday channel be silently vacuous. This harness's `score_cell` follows the identical call shape. |
 | `docs/adr/2026-08-13-implied-sr-report-only-fade-reopen.md` | `027a729` 2026-08-14 | First-consumer check (i) input — the reopened Tradeify-native fade design-region (§8 below). |
-| `docs/superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md` | `3ea7988` 2026-08-23 | First-consumer check (ii) input — the three Phase-B lanes' card-precheck rows (§8 below). |
+| `docs/superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md` | `3ea7988` 2026-08-23 | First-consumer check (ii) input — Phase-B live card-precheck rows B1.4 / B2.3 (§8 below). B3 KILL at A1 (same day, earlier); not a live pre-check. |
 | `lab/CATALOG.md` header + Active›c1 table | `c42e7e7` 2026-08-23 | Row format for this campaign's CATALOG entry. |
 
 **Full-corpus search for the 2026-08-22 consistency-constraint quantification harness** (memory:
@@ -366,6 +366,7 @@ answering the wrong question for this venue — the $3,000 fixed rope, not the $
 what a real candidate has to survive first.
 
 **2. No cell at win_rate ≤ 50% is `FEASIBLE`, for any shape, cadence, or EM2 risk level tested.**
+⚠ **SCOPED 2026-08-24 — true for the $3,000 Select/MFFU rope only.** `Tradeify_Growth_100K`'s $3,500 rope makes `mild_right_skew`/cd2/$250 `FEASIBLE` at `win_rate=50%` (bust 1.17% at the full frozen N). Read this claim as a property of the rope, not of the venue class — see §13.2.
 The floor sits at 55%–70% depending on shape (§6.3). A mechanism whose own measured edge implies a
 win rate at or below breakeven-ish territory cannot be rescued by this venue's activity/consistency
 mechanics alone, regardless of how it trades cadence or sizes within the EM2 frontier.
@@ -444,8 +445,8 @@ gate at the *same* win rate, for the reason §7 already names (mean edge, not wi
 
 ### (ii) Confirm legibility for Phase-B candidate pre-checks
 
-`docs/superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md` names each lane's
-own card-precheck row (B1.4 / B2.3 / B3.2) as the point where a candidate's predicted shape is
+`docs/superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md` names each *live*
+lane's own card-precheck row (B1.4 / B2.3) as the point where a candidate's predicted shape is
 checked against this region — **that check is each lane's own job, not this document's**; the
 brief for A2 asks only that the region's axes be legible/usable for that purpose. Confirmed:
 
@@ -461,11 +462,13 @@ brief for A2 asks only that the region's axes be legible/usable for that purpose
   this map's three shape buckets and 7-point win-rate axis are ready to receive B2's own
   precheck once B2.0/B2.1 clear and a predicted shape is named — A2 does not supply that
   assumption on B2's behalf.
-- **B3 (buyback-blackout abstention)** — its own doc already states the structural reason it can
-  only be a *sleeve* ("clustered frequency cannot satisfy the activity rule alone"), which is
-  **consistent with** (not contradicted by) this map's cadence axis starting at 1/week: B3's blocked
-  quarterly clustering sits below every cadence value this grid tests, confirming — from a second,
-  independent angle — why B3 cannot stand alone on this venue.
+- **B3 (buyback-blackout abstention) — KILL, not a live pre-check.** A1 audit §6 (2026-08-23,
+  earlier the same day this RESULTS was authored) ruled B3 **KILL** (POWER class, category-inherited
+  from F5/D3). Phase B proceeds with B1/B2 only. The cadence observation below is **historical** —
+  it is not a live card-precheck. The plan's own sleeve note ("clustered frequency cannot satisfy
+  the activity rule alone") was **consistent with** (not contradicted by) this map's cadence axis
+  starting at 1/week; that consistency does not reopen the kill. Re-proposal: a materially different
+  magnitude argument than F5's three failed instances — [`A1 §6`](../../../../docs/notes/audits/2026-08-23-kill-register-attribution-audit.md).
 
 ---
 
@@ -639,3 +642,147 @@ grep -c "not yet given" docs/notes/audits/2026-08-23-shape-feasibility-map-audit
 |---|---|---|
 | 2026-08-23 | Initial authoring — harness, 630-cell region sweep, validation subset, first-consumer checks | Claude Code (Sonnet 5) |
 | 2026-08-23 | Review-fix pass (§12): corrected the false §6.1 days-to-pass minimum (~30 → verified 16.0); added §4.1 MARGINAL-band full-N validation subset (`--marginal-validation` CLI mode, `marginal_validation_data.jsonl`, 10 new cells); updated Status line, §11 Limitations, Verification | Claude Code (Sonnet 5) |
+| 2026-08-24 | §8 (ii) / §0: B3 dropped as a live card-precheck (A1 KILL same day, earlier); cadence note kept as historical. B1.4 / B2.3 remain the live pre-check rows | Cursor (surface-consistency Packet 2) |
+
+---
+
+<!-- GROWTH-SECTION-START -->
+
+## §13 — Growth-tier re-score (2026-08-24): the rope, isolated
+
+**What changed:** `Tradeify_Growth_100K` added to `core/firm_rules.py` (primary source:
+help.tradeify.co art. 10495915, article-dated 2026-06-05, read in-browser 2026-08-24) and to this
+harness's `FIRM_KEYS`. The 315 tuples were re-scored against it at the same reduced
+`sims_per_seed=500`, same frozen seeds `(42, 123, 2026)`, same frozen horizon `1500`, same
+intraday-honest limb. **Select and MFFU were not re-run** — their 630 committed rows are carried
+forward byte-identically and re-verified below.
+
+**Why this tier:** Growth is a controlled contrast to Select. Same $6,000 target, same 80-micro
+cap, same $0.91/side, same fixed-$ EOD-ratcheting trail geometry. Three things differ:
+**$3,500 rope vs $3,000** (+16.7%), **no consistency rule** (vs 40%), and **min_trading_days 1**
+(vs 3). §7.1 identified the rope as the binding gate and §6.1 found the consistency rule never
+binds — so this tier is close to a clean isolation of the rope term.
+
+### §13.1 — Verdict counts and transitions (315 paired cells)
+
+| Firm | FEASIBLE | MARGINAL | INFEASIBLE |
+|---|---:|---:|---:|
+| `Tradeify_Select_100K` | 94 | 19 | 202 |
+| `Tradeify_Growth_100K` | 120 | 12 | 183 |
+
+| Transition (Select → Growth) | cells |
+|---|---:|
+| INFEASIBLE → INFEASIBLE | 183 |
+| FEASIBLE → FEASIBLE | 94 |
+| MARGINAL → FEASIBLE **(better)** | 19 |
+| INFEASIBLE → MARGINAL **(better)** | 12 |
+| INFEASIBLE → FEASIBLE **(better)** | 7 |
+
+**38 cells improve, 277 unchanged, 0 degrade.** The monotonicity is a sanity check, not a
+finding: a strictly wider rope on otherwise identical geometry cannot make any path worse, and
+the engine agrees on all 315 cells.
+
+### §13.2 — The win-rate floor moves 5 points for two of three shapes
+
+| Shape | Select floor | Growth floor |
+|---|---|---|
+| `symmetric` | **65%** | **60%** |
+| `mild_right_skew` | **55%** | **50%** |
+| `bounded_clustered` | **60%** | **60%** |
+
+⚠ **This falsifies §7.2's claim as written.** §7.2 states: *"No cell at win_rate ≤ 50% is
+`FEASIBLE`, for any shape, cadence, or EM2 risk level tested."* That held for the two firms then
+scored. It does **not** hold for Growth: `mild_right_skew` / cadence 2 / $250 is `FEASIBLE` at
+`win_rate=50%` with bust **0.93%** (reduced N) / **1.17%** (full frozen N=30,000) against the
+3.0% ceiling — the same cell where Select sits at **2.87%** / **3.04%** (`MARGINAL`).
+The §7.2 sentence should be read as scoped to the $3,000 rope, not to the venue class.
+
+### §13.3 — Where the rope buys the most (mean bust by win rate)
+
+| win_rate | n | Select bust | Growth bust | delta |
+|---:|---:|---:|---:|---:|
+| 40% | 45 | 0.9468 | 0.9306 | -0.0162 |
+| 45% | 45 | 0.8281 | 0.7916 | -0.0366 |
+| 50% | 45 | 0.6230 | 0.5663 | -0.0567 |
+| 55% | 45 | 0.2976 | 0.2201 | -0.0775 |
+| 60% | 45 | 0.0791 | 0.0431 | -0.0361 |
+| 65% | 45 | 0.0151 | 0.0056 | -0.0095 |
+| 70% | 45 | 0.0022 | 0.0005 | -0.0017 |
+
+The benefit is **non-monotone and peaks in the transition zone** (`win_rate=55%`), which is the
+expected shape: below it almost every path busts regardless of rope width, above it almost none
+do. A wider rope is worth most exactly where a real candidate would sit.
+
+### §13.4 — Full-N validation of the Growth cells
+
+The five pre-registered `MARGINAL_VALIDATION_CELLS` (selected in the original sweep, **not**
+re-chosen here) re-scored for Growth at the full frozen `sims_per_seed=10,000` (N=30,000).
+Three of the five are among the 26 Growth flips, including the `win_rate=50%` cell above.
+
+| Cell | Growth N=1,500 | Growth N=30,000 | agree? |
+|---|---|---|---|
+| wr50% `mild_right_skew` cd2 $250 | 0.0093 FEASIBLE | 0.0117 FEASIBLE | **yes** |
+| wr55% `mild_right_skew` cd5 $275 | 0.0133 FEASIBLE | 0.0162 FEASIBLE | **yes** |
+| wr60% `bounded_clustered` cd1 $250 | 0.0127 FEASIBLE | 0.0117 FEASIBLE | **yes** |
+| wr60% `bounded_clustered` cd3 $275 | 0.0107 FEASIBLE | 0.0141 FEASIBLE | **yes** |
+| wr65% `symmetric` cd8 $325 | 0.0060 FEASIBLE | 0.0072 FEASIBLE | **yes** |
+
+**5 of 5 agree** (0 disagree). Growth's flipped cells sit further from the 3.0% gate than
+Select's marginal population (bust ≈0.7–1.6% vs a 3.0% ceiling), so they are structurally less
+N-sensitive — which is what the table shows.
+
+**Not validated, disclosed:** Growth has its own near-gate population (12 `MARGINAL` cells) that
+the pre-registered five do not cover. Selecting fresh Growth-specific validation cells *after*
+seeing the sweep would be exactly the post-hoc selection the original §4 was careful to avoid, so
+it was not done. A Growth-specific marginal battery is its own pre-registration.
+
+### §13.5 — What Growth does NOT buy
+
+**Speed — no gain.** Growth's `min_trading_days=1` ("can pass immediately") is worth nothing at
+EM2 risk levels. Median-of-medians days-to-pass over `FEASIBLE` cells: Select **78 days**
+(n=94, min 16) vs Growth **78 days** (n=120, min 16). The binding factor is accumulating
+$6,000 at $250–$325 of risk per trade, not the day-count floor. The venue's headline "pass in 1
+day" is reachable only by a mechanism that can make $6,000 in a day — nothing in this grid can.
+
+**Consistency — nothing, because it never bound.** §6.1 already established Select (40%) and MFFU
+(50%) score bit-identically. Growth removes the rule entirely and the effect is still zero. All of
+Growth's measured advantage is the rope.
+
+### §13.6 — Two-sided bound on every Growth figure here
+
+Growth's **daily loss limit is a soft breach** — art. 10495915 verbatim: *"If you hit this limit,
+trading is stopped for the day but your account is not failed."* `simulate_path` has no lockout
+representation (its `daily_loss_pct` branch returns `bust_daily`, a hard fail), so the tier carries
+`daily_loss_pct: None` and **the model omits the lockout entirely**. Consequences, both directions:
+
+* **Upper bound w.r.t. the missing lockout.** The venue truncates a losing day near −$2,500; the
+  model does not, so modeled daily left tails are fatter than the venue's. Every Growth bust
+  figure above is therefore *pessimistic* on this axis.
+* **Lower bound w.r.t. the clock.** Same two-clock geometry as Select (floor ratchets EOD, breach
+  enforced intraday). The intraday-honest limb is on, but the standing
+  [`Q-FIRMEOD-1`](../../../../docs/briefs/closures/Q-FIRMEOD-1-closure-falsified.md) caveat applies.
+
+**Neither bound is quantified.** These are not point estimates. A faithful soft-DLL limb is an
+engine change with its own ADR + re-MC. ⚠ Re-verification of art. 10495897 *for Growth
+specifically* is **owed** — the 2026-08-24 in-browser pass could not reload it, so the clock
+reading rests on the dated 2026-07-30 read quoted in `core/mc/simulation.py::simulate_path`.
+Art. 10495915's "intraday fluctuations won't affect the drawdown level" describes the floor's
+*ratchet*, not the breach test — but that sentence deserves a direct re-read before any Growth
+figure is used for a spend decision.
+
+### §13.7 — What this licenses, and what it does not
+
+**Licensed:** sourcing a Phase-B mechanism against a **~5-point lower win-rate floor** if Growth is
+the target tier, and treating the rope — not the consistency rule, not the target, not cadence —
+as the single lever worth shopping across Tradeify products.
+
+**Not licensed:** (1) This is still a *shape* map over a synthetic generating process. It admits no
+mechanism and no candidate. (2) **UPDATE 2026-08-24 (same day):** `Tradeify_Growth_100K` was
+promoted to `AUTOMATION_FRIENDLY_PROP_FIRMS['tradeify']` by operator GO, ratifying
+[`2026-08-24-tradeify-growth-tier-scoring-only.md`](../../../../docs/adr/2026-08-24-tradeify-growth-tier-scoring-only.md).
+Only the $100K tier is defined; 25K/50K/150K need their own `FIRM_RULES` rows before joining it.
+(3) The funded-phase rules differ (Growth has a fixed payout policy and a 35% payout-stage
+consistency rule); **nothing here measures the funded phase.** (4) No K consumed, $0 spent,
+nothing armed, no gate moved.
+
+<!-- GROWTH-SECTION-END -->

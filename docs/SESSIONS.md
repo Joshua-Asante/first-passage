@@ -32,6 +32,26 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-25o — Execute viable-strategy surface-consistency packets 1–5
+
+**Focus:** Operator `GO` on the consistency plan. Packets 1–5 landed. Packet 0 (A2 N-reduction sign-off) still operator-owed. `queue-exception: operator asked to plan the inconsistency repair on #1's owner artifacts`.
+**Shipped:** [`plan`](superpowers/plans/2026-08-24-viable-strategy-surface-consistency.md) (`GO` packets 1–5). Residual on `#1` + Phase B Inputs · B3 KILL in situ + registry row · s4/Phase A banners match body · Phase D gate = TNEC-1 · Q-FIRMEOD-1 `grep -c` hook.
+**Decisions/defects:** elections E1–E6 unchanged. **BLAST-RADIUS: REPAIRED** — R1 audit §0 pin got the same currency note. Left: overview Status + Phase B `AWAITING GO`; pain-point charter sequence lines; historical A2-audit quote of Phase A's old banner.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). Residue (`queue-exception: operator asked to plan the inconsistency repair on #1's owner artifacts`): [`consistency plan`](superpowers/plans/2026-08-24-viable-strategy-surface-consistency.md) Packet 0 still unpaid.
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
+## 2026-08-25n — Plan: viable-strategy surface consistency
+
+**Focus:** Hygiene plan for five contradictions on the viable-strategy owners (queue `#1`), plus two same-class banner lags. `queue-exception: operator asked to plan the inconsistency repair on #1's owner artifacts`.
+**Shipped:** [`plan`](superpowers/plans/2026-08-24-viable-strategy-surface-consistency.md) (`AWAITING GO`). Elections: propagate A2 N-reduction residual (do not invent sign-off) · B3 KILL in situ + registry row · s4/Phase A banners match body · Phase D trigger = TNEC-1 · Q-FIRMEOD-1 citation → count-stable hook.
+**Decisions/defects:** plan E1–E6. Not a Phase B GO. Not an A2 `sims_per_seed` ratification.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). Residue (`queue-exception: operator asked to plan the inconsistency repair on #1's owner artifacts`): [`consistency plan`](superpowers/plans/2026-08-24-viable-strategy-surface-consistency.md) GO unpaid.
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-25l — Merge #147 into M1-date branch
 
 **Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)).
@@ -203,6 +223,20 @@ any entry, full or stub (a-first; bare claims `a`).
 **Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
 
 **Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-24b — Sentinel weekly + two scanner fixes; `main` IS protected
+
+**Focus:** Build. `queue-exception: scheduled weekly sentinel obligation (2026-07-24 ruling #1)`. Not a queue row. Filed below the 2026-08-25 block: those labels run a day ahead of the actual date, so this sits in true chronological position rather than borrowing a wrong one.
+
+**Shipped:** [PR #150](https://github.com/Joshua-Asante/first-passage/pull/150) — weekly Tier-1 run (24 findings), `-M` rename detection + `--until` window bound in [`scan.py`](../ops/sentinel/scan.py), 3 regression tests, [design-spec addendum](spec/2026-06-23-inqhiori-sentinel-design.md).
+
+**Decisions/defects:** archival `--slug` moves read as freeze violations (20→18; `1e40b11`/`f2cbb7b` void, `1e40b11` double-counted `4062562`). A past `--asof` swept to HEAD, defeating spec §4.1/§8 determinism. ⚠ `main-protection` ruleset live since 08-19 — 5 surfaces still asserted Q-GATESTACK-1 Limb-A's superseded "no branch protection"; corrected, A1 hook DISCHARGED. Only `skills (3.12)` is required.
+
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)).
+
+**Live-ops state:** unchanged — rail disarmed; no book; no strategy deployed.
 
 ---
 
