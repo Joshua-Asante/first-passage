@@ -32,6 +32,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-25n — Plan: viable-strategy surface consistency
+
+**Focus:** Hygiene plan for five contradictions on the viable-strategy owners (queue `#1`), plus two same-class banner lags. `queue-exception: operator asked to plan the inconsistency repair on #1's owner artifacts`.
+**Shipped:** [`plan`](superpowers/plans/2026-08-24-viable-strategy-surface-consistency.md) (`AWAITING GO`). Elections: propagate A2 N-reduction residual (do not invent sign-off) · B3 KILL in situ + registry row · s4/Phase A banners match body · Phase D trigger = TNEC-1 · Q-FIRMEOD-1 citation → count-stable hook.
+**Decisions/defects:** plan E1–E6. Not a Phase B GO. Not an A2 `sims_per_seed` ratification.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). Residue (`queue-exception: operator asked to plan the inconsistency repair on #1's owner artifacts`): [`consistency plan`](superpowers/plans/2026-08-24-viable-strategy-surface-consistency.md) GO unpaid.
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-25l — Merge #147 into M1-date branch
 
 **Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)).
