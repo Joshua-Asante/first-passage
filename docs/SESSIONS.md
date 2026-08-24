@@ -206,6 +206,20 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-24b — Sentinel weekly + two scanner fixes; `main` IS protected
+
+**Focus:** Build. `queue-exception: scheduled weekly sentinel obligation (2026-07-24 ruling #1)`. Not a queue row. Filed below the 2026-08-25 block: those labels run a day ahead of the actual date, so this sits in true chronological position rather than borrowing a wrong one.
+
+**Shipped:** [PR #150](https://github.com/Joshua-Asante/first-passage/pull/150) — weekly Tier-1 run (24 findings), `-M` rename detection + `--until` window bound in [`scan.py`](../ops/sentinel/scan.py), 3 regression tests, [design-spec addendum](spec/2026-06-23-inqhiori-sentinel-design.md).
+
+**Decisions/defects:** archival `--slug` moves read as freeze violations (20→18; `1e40b11`/`f2cbb7b` void, `1e40b11` double-counted `4062562`). A past `--asof` swept to HEAD, defeating spec §4.1/§8 determinism. ⚠ `main-protection` ruleset live since 08-19 — 5 surfaces still asserted Q-GATESTACK-1 Limb-A's superseded "no branch protection"; corrected, A1 hook DISCHARGED. Only `skills (3.12)` is required.
+
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)).
+
+**Live-ops state:** unchanged — rail disarmed; no book; no strategy deployed.
+
+---
+
 ## 2026-08-24y — NeMo Guardrails pinned and mapped; not adopted as a runtime
 
 **Focus:** Decision. Operator GO for a constrained 4th mapping instance: download NeMo and reconcile with existing rails.
