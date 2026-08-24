@@ -1,5 +1,15 @@
 # Q-MSCHAN-1 microstructure sourcing-channel (blind form) — SUBTRACT
 
+> ⚠ **Banner 2026-08-24 — this record's "Test applied" and "Re-entry armor" fields are now STALE.**
+> Route B (generate→confirm) is **retired in full** as of
+> [`ADR 2026-08-24 — sourcing-phase channel retirement`](../adr/2026-08-24-sourcing-phase-channel-retirement.md)
+> (superseding [`ADR 2026-08-05-avenue-a-generate-confirm-route`](../adr/2026-08-05-avenue-a-generate-confirm-route.md)
+> in full). It is no longer "live under pursuit a3" (see [`a3`](a3-mnq-discovery-pipeline.md)'s own
+> matching banner) and the "already armored" re-entry path named below no longer exists. This
+> pursuit's SUBTRACT disposition itself is unaffected (it does not depend on Route B's continued
+> existence) — only the specific re-entry-path citation is stale. Fields below left unedited
+> (dated-decision integrity); this note is the reader intercept.
+
 **Class:** (c) standing exploration · **Standing:** SUBTRACT
 **Test applied:** duplicated by a higher-fidelity pursuit already retained — Route B
 (generate→confirm) is live under pursuit a3 and already supplied the depth census this brief's

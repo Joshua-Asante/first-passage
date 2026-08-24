@@ -1,5 +1,13 @@
 # MNQ discovery pipeline (TNEC intake · Route A/B · CapFLOW · dense-1m/instrument/W1) — KEEP
 
+> ⚠ **Banner 2026-08-24 — "Route A/B" in this record's title is now STALE; Route B is retired.**
+> [`ADR 2026-08-24 — sourcing-phase channel retirement`](../adr/2026-08-24-sourcing-phase-channel-retirement.md)
+> retires Avenue A Route B (generate→confirm) in full. This pipeline's own scope narrows to **Route A**
+> (survivor-tied — unaffected) plus TNEC intake, CapFLOW, and the dense-1m/instrument/W1 lanes, none
+> of which this ADR touches. This pursuit's `Class (a) active campaign · KEEP` standing is unchanged —
+> only the title's "Route A/B" claim is corrected; read it as **Route A** going forward. Title left
+> unedited above (dated-decision integrity); this note is the reader intercept.
+
 **Class:** (a) active campaign · **Standing:** KEEP
 **Aim served:** A2 — generate/validate candidate strategies for the MNQ discovery track
 **Measure:** TNEC-1 intake gate throughput; per-campaign pre-registered gates (G0/G2/G3 etc.) firing as designed, PASS or FALSIFIED

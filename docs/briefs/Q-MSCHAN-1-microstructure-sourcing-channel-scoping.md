@@ -82,6 +82,16 @@ under a fresh Q-ID.
 > The salvage list above (two-stage licensing, ≥5 s horizon floor, flicker filter, no ES→MNQ
 > lead-lag) transfers to any Route B successor and is now the natural input to its G0 freeze.
 
+> **Update 2026-08-24 — entry condition (a)'s reopen path is now RETIRED, not merely discharged.**
+> [`ADR 2026-08-05-avenue-a-generate-confirm-route`](../adr/2026-08-05-avenue-a-generate-confirm-route.md)
+> — the amendment condition (a) named above — is now `Superseded` in full by
+> [`ADR 2026-08-24 — sourcing-phase channel retirement`](../adr/2026-08-24-sourcing-phase-channel-retirement.md).
+> Route B no longer exists as a live reopen path for this channel; the 2026-08-05 update above is
+> historical record only. A successor to this brief now needs a **fresh ADR under corrected design**
+> (§5 of the retirement ADR) before entry condition (a) can be satisfied again — not a citation to
+> either the discharged-then-retired 2026-08-05 ADR or this brief's own now-superseded update block.
+> This brief itself stays `DRAFTED — NOT OPENED`, unchanged.
+
 **Disposition:** not intaken as an OPEN Inquire-phase Q. Filed here as a dormant-thread record (see
 `STATE.md` §Dormant cross-session threads) so the salvage list above is not lost, mirroring the
 `Q-ICT-1MEXEC-1` "DRAFTED, NOT OPENED" pattern. The original draft is preserved below, unedited

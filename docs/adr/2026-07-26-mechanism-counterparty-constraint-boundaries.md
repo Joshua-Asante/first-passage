@@ -5,7 +5,7 @@
 **Authors:** Joshua (direction) + Claude Code (Opus 5, drafter)
 **Supersedes:** none
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** `2026-08-24-sourcing-phase-channel-retirement.md` — clause 2-B only (structural flow census sourcing channel); 2-A and 2-C untouched
 **Retain-until:** none
 **Amends-in-part:** [`2026-07-15-external-mechanism-harvest-intake.md`](2026-07-15-external-mechanism-harvest-intake.md) / [`docs/methodology/strategy_harvest.md`](../methodology/strategy_harvest.md) (Requirement 1a sharpened; §2.3 sourcing channel added; edits land on ratification, not before) and [`2026-07-11-discovery-campaign-defaults-ratified.md`](2026-07-11-discovery-campaign-defaults-ratified.md) Default #5 (decay monitor extended for constraint-flow seeds) + Default #2 K semantics (executed-vs-declared clause for operator-stopped campaigns).
 **Related:** [`2026-07-26-regime-candidate-flag-lane.md`](2026-07-26-regime-candidate-flag-lane.md) (sibling ADR, same session, Accepted 2026-08-21); ST-EH-1 closure (first case for §2-C).
@@ -53,6 +53,16 @@ Separately, ST-EH-1's operator-stop exposed a hole in K semantics: `register_sea
 > longer derive or apply a floor from it, and a burned family no longer kills a seed. The §2-B clause text is left
 > unedited (dated-decision integrity); this note is the reader intercept. Live enforcement surface:
 > `lab/research_utils/axis_screen.py`, which deliberately does **not** sum `k_banked`.
+
+> ⚠ **Addendum 2026-08-24 — clause 2-B retired (rank struck from `strategy_harvest.md` §2.3).**
+> [`ADR 2026-08-24 — sourcing-phase channel retirement`](2026-08-24-sourcing-phase-channel-retirement.md)
+> (`Accepted`) supersedes clause 2-B **in part** — 2-B only; clauses 2-A and 2-C below are untouched
+> and stay in force exactly as written. Ground: zero seeds passed the §3 intake screen across all
+> 4–5 census passes (2026-07-26 → 2026-08-01), satisfying 2-B's own falsifier — the operator elected
+> to act on this now rather than wait for the formal second-quarterly-audit check date (2027-02-08).
+> The census's "1-tie" rank, its Notice-phase recording convention, and its required-fields template
+> are retired alongside it; no future entry opens under this rank. The 2-B clause text above is left
+> unedited (dated-decision integrity); this note is the reader intercept.
 
 **2-C. Executed-K closure rule for operator-stopped campaigns.** When a campaign is stopped by operator direction before declared reads execute, the manifest closes banking **executed selection events** (reads whose results any human or artifact examined), with the declared K preserved in provenance — subject to ALL of: (i) zero results artifacts exist; (ii) execution impossibility or non-occurrence is git-auditable (missing data, absent outputs, guard evidence); (iii) the closure note enumerates every executed look and its examiner; (iv) the operator signs the closure. Where any condition fails, the declared K banks in full ("abandoned campaigns still bank their K" is unchanged for campaigns that *looked*). First case: ST-EH-1 (declared 84; executed = 2 one-year TV baseline examinations, 1/family; manifest held OPEN pending the operator's ruling, which this clause's ratification would supply).
 
