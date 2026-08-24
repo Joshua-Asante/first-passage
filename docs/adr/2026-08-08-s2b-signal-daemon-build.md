@@ -117,3 +117,13 @@ test -f deploy/c1_signal_daemon/fly.toml && rg -n 'app = "c1-signal-daemon"' dep
 # Listener B1 fields unchanged:
 rg -n '_REQUIRED_PAYLOAD_FIELDS' ops/c1_rail/c1_sizing_host_reference.py
 ```
+
+---
+
+## Addendum 2026-08-24 — test-strategy emit GO for M1 item 5
+
+**Does not amend** §2 feed / fail-closed / second-app locks. **Does not** claim M1 `RESOLVED`. **Does not** arm. **$0 / K=0.**
+
+**Operator 2026-08-24:** the §2 “First emit waits a new strategy + any required `LEG_MAP` extension (separate GO)” gate is **GO’d for a test strategy only**, dated 2026-08-24, to discharge M1 item 5. `NullStrategy` stays the warm default until that attended emit. Withdrawn Striker / MYM / MNQ redeploy stays forbidden. `emit_enabled=true` remains the attended step the daemon already refuses without this GO.
+
+Owner: [M1 addendum](2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24).

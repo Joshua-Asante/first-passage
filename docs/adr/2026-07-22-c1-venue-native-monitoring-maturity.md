@@ -949,10 +949,25 @@ grep -n "M1_MONITORING_ACCEPTANCE" ops/c1_rail/c1_rail_arm.py
 
 ---
 
+## Addendum 2026-08-24 — test strategy licensed for item 5; dated 08-24
+
+**Does not amend** item 5’s limbs (real signal, expected non-zero sizing, Stage-1 `dry_run=true`, no silent redefinition, `--allow-live` must not write `dry_run_strategy_signal_event_id`). **Does not** claim M1 `RESOLVED`. **Does not** arm. **$0 / K=0.**
+
+**Rule 0 (this addendum):** this file Addendum 2026-08-07 @ `027a729` — discharge is a ruled-host B1 POST at expected non-zero dry-run sizing. [S2](2026-08-07-loop-s2-signal-host-fork.md) §4.2 @ `027a729` — canned / live-armed / zero-qty floors stay DEAD-list. [GO ADR](2026-07-17-c1-rail-build-account-registration-go.md) de-scope addendum @ `acc4f41` — “Deploying any qualifying strategy makes it dischargeable again.” `ops/c1_signal_daemon/strategy_protocol.py` `NullStrategy` @ `027a729` — default never emits. Cheap falsifier: `rg -n "any qualifying strategy" docs/adr/2026-07-17-c1-rail-build-account-registration-go.md` hits; `NullStrategy.on_bar` returns `None`.
+
+**Operator ruling 2026-08-24:** item 5 may be discharged with a **test strategy** on the ruled host — `Strategy.on_bar` → daemon B1 POST → structured dry-run decision at expected non-zero sizing. Dated on the [`STATE.md`](../../STATE.md) 2026-08-24 board next to disaster-stop Phase 0a. Queue `#2` no longer waits on `#1` for this limb ([Survive-bound addendum](2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--m1-item-5-no-longer-waits-on-queue-1)).
+
+**Qualifying instrument:** evaluate-hook strategy, not a canned hand-POST (item 6 class), not `NullStrategy`, not a fabricated event id, not a withdrawn Striker redeploy. Any required `LEG_MAP` extension is part of the attended 08-24 packet, not this commit.
+
+**Still owed after a recorded event id:** `operator_signoff`. `emit_enabled=true` is the attended emit step the daemon already refuses without a strategy GO — this addendum *is* that GO for a test strategy only. Q-M1WIRE-1 A2/A5 gaps do not block `RESOLVED`. `dry_run=false` stays forbidden.
+
+---
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
+| 2026-08-24 | **Test strategy licensed** as item-5 qualifying emit; dated 08-24. Limbs + deletion decline + no-arm stand; M1 stays `CODE_LANDED` until the attended session records the event id + `operator_signoff` | Joshua (ruling) · Cursor (recorder) |
 | 2026-08-07 | **§5 autonomous-promotion limb superseded in part** by S5 ADR (bounded sandbox lane). Header `Superseded-in-part-by` extended; no second tier/state writer; arm-gate + unattended bar stand | Cursor (drafter) · Joshua (plan GO) |
 | 2026-08-07 | **Item-5 signal-origin superseded in part** by S2 ADR (Python-native ruled host). Header `Superseded-in-part-by` + this addendum; historical body frozen; item 5 still owed; `status` unchanged | Cursor (drafter) · Joshua (plan GO) |
 | 2026-08-02 | **4-session review trigger RATIFIED** (Addendum 2026-07-31 item 3; operator ruling *"rule the 4-session trigger"*). Counting convention **derived from the proposal's own model, not chosen**: a session counts whether or not a signal arrived, because the stated *"~23% chance of nothing after four more"* reproduces only as `(1−0.307)^4 = 23.06%` — attended sessions, not signal-bearing ones. A session that never reached the entry window does not count. Reachability verified: fires at **23.1%** after 4 sessions ≈ 2 weeks; sessions 1–4 are **08-04 / 08-07 / 08-11 / 08-14**, review after **2026-08-14**. Schedules a look, **not** an outcome — no auto-delete of item 5, no gate relaxation, decline stands unless the operator changes it | Claude (specify + reachability) · Joshua (ruling) |

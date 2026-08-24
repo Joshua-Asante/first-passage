@@ -54,3 +54,13 @@ Do **not** quietly introduce an hours figure into a pursuit Survive-bound line (
 **Repair:** operator 2026-08-24 — promote the existing mechanism-supply owner to `#1`; B7/M1 is `#2` and waits on `#1`. Queue placement is not Phase A (or any phase) GO. 2026-08-23 repair (1) (Open/next is the live queue) stands. Repair (2) (row 3 while #1/#2 stay waits) is not the live repair.
 
 **Forbidden:** treating this row as a phase GO; starting B7-REFIRE / arming; a new generation channel; an hours figure (Boundary unchanged).
+
+## Addendum 2026-08-24 — M1 item 5 no longer waits on queue #1
+
+**Does not amend** the concurrency-denominated ≤5 cap, the no-hours Boundary, or the 2026-11-08 first-check date. **Does not GO** any viable-strategy phase. **Does not** arm. **$0 / K=0.**
+
+**Rule 0 (this addendum):** prior addendum on this file (blocker of B7/M1 is queue #1) @ `b855b4a`. [`STATE.md`](../../STATE.md) OPERATOR QUEUE @ `e7d2c8d` — `#2` still read “waits on #1.” [M1 addendum](2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) — operator licensed a test strategy for item 5 and dated it 2026-08-24.
+
+**Repair:** operator 2026-08-24 — M1 item 5 / B7 Stage 1 (unarmed) no longer waits on `#1`. `#1` stays the acceptable-strategy sequence. `#2` is dated 08-24 and is doable via the licensed test strategy. B7 Stage 2 / `dry_run=false` still waits on M1 `RESOLVED` + a separate arm GO.
+
+**Forbidden:** treating the test-strategy license as an arm; collapsing Stage 1 into Stage 2; a new generation channel; an hours figure (Boundary unchanged).

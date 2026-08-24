@@ -368,6 +368,16 @@ Reads: this file header L9–19 + §7 B6 row @ `027a729` (2026-08-14).
 
 ---
 
+## Addendum 2026-08-24 — test strategy is a qualifying strategy
+
+**Does not amend §2 / §4 / §5.** The de-scope addendum’s line “Deploying any qualifying strategy makes it dischargeable again” is the owner; this records the operator’s 2026-08-24 instrument. A **test strategy** on the ruled host (evaluate-hook → B1 POST, `dry_run=true`, expected non-zero sizing) qualifies for M1 item 5 / B7 Stage 1. Dated 2026-08-24. Not a canned hand-POST. Not Striker redeploy. Not an arm. B7 Stage 2 stays behind M1 `RESOLVED` + a separate arm GO.
+
+Owner: [M1 addendum](2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24). The 2026-08-21 sentence “B7 stays PENDING behind STATE queue #2 (acceptable strategy on the ruled host)” is stale for the Stage 1 limb — take `#2` from [`STATE.md`](../../STATE.md).
+
+Reads: de-scope addendum “any qualifying strategy” @ `acc4f41` · M1 addendum 2026-08-24 (this session).
+
+---
+
 ## Change history
 
 | Date | Change | By |
@@ -379,3 +389,4 @@ Reads: this file header L9–19 + §7 B6 row @ `027a729` (2026-08-14).
 | 2026-07-24 | Addendum: §6 WATCH-1 0.50× figures **measured** under corrected geometry (operator "proceed with the two unmeasured arms") — full 0.11% / H1 0.22% / H2 0.04%, all PASS; open B7 input **closed benign**; corrected 0.50× bootstrap-95th declared the remaining separable long pole | Joshua (directive) + Claude Code (runner + recorder) |
 | 2026-07-28 | Addendum: the declared separable long pole **measured and CLEARS** — corrected 0.50× bootstrap-95th **1.20%** vs the 3.0% ceiling (pass-5th 95.5%); every partition of the deployed rung now measured + passing; same pass found corrected 1.00× boot-95th 17.79% | Claude Code (Opus 5) — adjudication of PR #541 |
 | 2026-08-21 | Addendum: §7 B6 **PENDING** cell is the 2026-07 build-order snapshot; this-build B6 status is the header PASSED record | Joshua (H3 GO) + Cursor |
+| 2026-08-24 | Addendum: test strategy is a qualifying strategy for M1 item 5 / B7 Stage 1; dated 08-24; Stage 2 / arm unchanged | Joshua (ruling) + Cursor |
