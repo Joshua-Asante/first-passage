@@ -109,8 +109,11 @@ def test_check_tier_dry_run_includes_path_conditional():
 
 def test_check_tier_selects_ci_composition_ids():
     """CI gate-manifest.yml calls --tier check; every always/path-conditional
-    id plus forced data-manifests must be selected. pursuit-records stays
-    data-conditional-only (dated exception — same as make check).
+    id plus forced data-manifests must be selected. pursuit-records was
+    retired from gates.yml entirely 2026-08-24 (Rule 16 R5 — the underlying
+    check always exits 0 as invoked, so it could never fail regardless of
+    tier); this assertion now holds vacuously and is kept as a regression
+    guard against re-adding it as a --tier check member.
     """
     data = gm.load_manifest(MANIFEST)
     selected = {g["id"] for g in gm.select_gates(data["gates"], "check")}
