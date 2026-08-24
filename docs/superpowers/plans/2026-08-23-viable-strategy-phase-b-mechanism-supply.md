@@ -10,7 +10,8 @@ opens a card by itself; E1's stop rule stands until a candidate clears the full 
 operator GO and is out of this plan's scope.
 **Parent:** [`sequence overview`](2026-08-23-viable-strategy-sequence-overview.md) ·
 **Inputs:** Phase A2's feasible-shape region (pre-check; disclosed-N residual unsigned — [`RESULTS §4`](../../../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)), Phase A1's revival list (B4 lane — voided, empty list).
-**Provenance:** candidate lanes B1–B3 originate from the reconciled ox-alpha Use-4 output
+**Provenance:** candidate lanes B1–B2 live; B3 KILL (A1). Lanes originate from the reconciled
+ox-alpha Use-4 output
 ([notice](../../notes/notice/N-2026-08-23-ox-alpha-mechanism-supply-candidates.md)) — zero
 authority; every lane's admission depends only on repo-verified evidence produced by its own
 falsifier tasks.
@@ -96,7 +97,11 @@ lineage.
 
 ---
 
-## Lane B3 — Buyback-blackout abstention (short MNQ sleeve) — background lane
+## Lane B3 — Buyback-blackout abstention (short MNQ sleeve) — **KILL**
+
+**KILL (POWER, category-inherited from F5/D3)** — [`A1 audit §6`](../../notes/audits/2026-08-23-kill-register-attribution-audit.md).
+Phase B proceeds with B1/B2 only. B3.0–B3.2 are not-to-run. Mechanism paragraph kept as
+historical record.
 
 **Mechanism (one line):** aggregate cap-weight-in-blackout B_t (EDGAR quarter-ends + published
 earnings dates), threshold-crossing + hysteresis as the discrete trigger; daily short-at-open /
@@ -106,14 +111,11 @@ cover-15:45 inside above-threshold regimes.
 frequency cannot satisfy the activity rule alone — and its magnitude class sits in the shadow of
 the registry's power-wall precedent (F5/D3: power 0.24–0.30 at single-digit bp/session).
 
-- [ ] **B3.0 — arithmetic falsifier (folded into Phase A1's audit session, ~5 min):** cadence vs
-  activity floor; implied per-session δ vs the power wall. Expected outcome: PARK-or-dead before
-  any assembly.
-- [ ] **B3.1 — only if B3.0 survives:** half-day calendar assembly (top-30 S&P-100 weights, 3 yrs
-  of earnings dates → B_t) + conditional-mean differential on MNQ session returns. Kill < ~5
-  bp/session or FLIP fail.
-- [ ] **B3.2 — if alive:** sleeve-only designation recorded (pairs with a daily mechanism, never
-  standalone); shape pre-check; Phase C.
+- [x] **B3.0 — arithmetic falsifier (folded into Phase A1's audit session, ~5 min):** cadence vs
+  activity floor; implied per-session δ vs the power wall. **Ran: KILL on POWER** (cadence
+  survived with disclosure). Not a live task.
+- [x] **B3.1 — only if B3.0 survives:** not-to-run (B3.0 killed).
+- [x] **B3.2 — if alive:** not-to-run (B3.0 killed). Historical card-precheck row only.
 
 ---
 

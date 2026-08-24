@@ -103,21 +103,21 @@ it were the class.
 **Repair (E3):** mark killed in situ; write the kill where the next reader
 looks; keep the sleeve *rule* (it is a standing class rule).
 
-- [ ] **Phase B.** Banner Lane B3 `KILL` with a one-line cite of A1 audit §6
+- [x] **Phase B.** Banner Lane B3 `KILL` with a one-line cite of A1 audit §6
   (POWER, F5/D3). Check or strike B3.0–B3.2 as not-to-run. Do not delete the
   mechanism paragraph (historical record). Provenance line that says
   "candidate lanes B1–B3" → "B1–B2 live; B3 KILL (A1)."
-- [ ] **A2 RESULTS §8 (ii).** Drop B3.2 from the live pre-check list. Rewrite
+- [x] **A2 RESULTS §8 (ii).** Drop B3.2 from the live pre-check list. Rewrite
   the B3 bullet as: killed at A1 2026-08-23 (cite audit §6); the cadence
   observation is historical, not a live pre-check. Update the §0 row that
   cites Phase B as "three Phase-B lanes."
-- [ ] **`docs/rejected_candidates.md`.** Append a short pre-G0 row:
+- [x] **`docs/rejected_candidates.md`.** Append a short pre-G0 row:
   `buyback-blackout abstention × MNQ` — authoritative artifact = A1 audit §6;
   class POWER; category-inherited from F5/D3; re-proposal bar = a materially
   different magnitude argument than F5's three failed instances (A1's own
   words). HTML trailer required. No new closure (naming ≠ opening; the kill
   already happened).
-- [ ] **Phase C.** Retitle `## Sleeve rule (B3-class candidates)` →
+- [x] **Phase C.** Retitle `## Sleeve rule (B3-class candidates)` →
   `## Sleeve rule`. One parenthetical: B3 itself is KILL (A1); the rule
   still binds any future sleeve.
 

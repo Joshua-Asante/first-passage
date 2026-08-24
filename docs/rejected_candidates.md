@@ -12,6 +12,24 @@ The intake bar is the same as for any candidate: a mechanism-level claim with fa
 
 ## Entries
 
+### buyback-blackout abstention × MNQ — KILL (POWER; pre-G0)
+
+**Rejection scope:** the Phase B lane B3 construct `buyback-blackout abstention` on CBOT
+**MNQ** (aggregate cap-weight-in-blackout sleeve; daily short-at-open / cover-15:45) as folded
+into A1's compelled-abstention arithmetic check — not MNQ the instrument, not other
+compelled-absence families, not a sleeve riding beside an independent daily mechanism.
+**Closure date:** 2026-08-23
+**Authoritative artifact:** [`A1 audit §6`](notes/audits/2026-08-23-kill-register-attribution-audit.md)
+**Closure basis:** POWER class, category-inherited from F5/D3 (power 0.24–0.30 at single-digit
+bp/session). Cadence survived with disclosure (token-trade covers clustered gaps). No card
+authored; $0/K=0. Fold-in ran so this idea never consumed an MSL card slot.
+**Surviving finding (NOT rejected):** the Phase C sleeve *rule* (a sleeve must name a daily
+partner); MNQ instrument standing; B1/B2 live Phase B lanes.
+**Re-proposal bar:** a materially different magnitude argument than F5's three failed instances
+— **not** a cadence re-litigation, not a sleeve-only card, not a parameter retune.
+
+<!-- concept-intake-entry mechanism_family="buyback-blackout-abstention" instrument="MNQ" rejection_reason="pre-G0 POWER kill, category-inherited from F5/D3 (power 0.24–0.30 at single-digit bp/session); cadence survived with disclosure; no card authored" harness_disposition_ref="A1 audit §6 (docs/notes/audits/2026-08-23-kill-register-attribution-audit.md)" date="2026-08-23" class="pre-g0-power-kill" role_tested="arithmetic-fold-in" falsifier_failed="POWER vs F5/D3 class precedent" addback_condition="materially different magnitude argument than F5's three failed instances — NOT cadence re-litigation / sleeve-only card / param retune" -->
+
 ### turn-of-month-premium × SPX500
 
 **Rejection scope:** the Q-TOM-SPX-1 construct `turn-of-month-premium` on
