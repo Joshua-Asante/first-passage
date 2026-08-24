@@ -179,7 +179,7 @@ deleted (not struck).
 >
 > `PREREG-C1-DEDUPE-1` (row below) is unrelated to monitoring — waits on M1 `RESOLVED` + a
 > separate operator GO, not on a live fill. Everything above except M-B waits on the same thing as
-> queue row 1 (B7 / M1); M-B alone is now gated on F3 only. Not closed, not discharged, not
+> queue #2 (B7 / M1); M-B alone is now gated on F3 only. Not closed, not discharged, not
 > re-homed to a successor venue — F3 was no-migration (S1).
 > [`S1`](docs/adr/2026-08-07-loop-s1-environment-ratification.md) ·
 > [`ADR 2026-08-04`](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) (Striker-book bar)
