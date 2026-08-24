@@ -4,8 +4,9 @@
 > (`- [ ]`) syntax for tracking. One commit per packet unless a packet is a single
 > sentence on a file another packet already has open — then fold, and say so.
 
-**AUTHORIZATION:** `AWAITING GO`. `queue-exception: operator asked to plan the
-inconsistency repair on #1's owner artifacts`. This packet is hygiene of the
+**AUTHORIZATION:** **GO 2026-08-24.** Operator: `GO` on this plan. Packets 1–5
+execute; Packet 0 stays operator-only. `queue-exception: operator asked to plan
+the inconsistency repair on #1's owner artifacts`. This packet is hygiene of the
 [`viable-strategy sequence`](2026-08-23-viable-strategy-sequence-overview.md)
 owners so queue `#1` can be read without contradiction. It is **not** a Phase B
 GO, **not** an A2 `sims_per_seed` ratification, and **not** an R3 / arming GO.
@@ -71,16 +72,16 @@ mention of §4.
 **Repair (E1+E2):** one clause on every consumer; do not delete the
 decision-index residual until Packet 0 fires.
 
-- [ ] **`STATE.md` queue `#1`.** Keep "A1+A2 executed / region published /
+- [x] **`STATE.md` queue `#1`.** Keep "A1+A2 executed / region published /
   Phase B next doable (GO unpaid)." Add one clause: A2 `sims_per_seed`
   500-vs-frozen-10,000 residual still unsigned — link
   [`RESULTS §4`](../../../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md).
   40-word cap: prefer the link over restating N.
-- [ ] **Phase B Inputs line.** After "Phase A2's feasible-shape region
+- [x] **Phase B Inputs line.** After "Phase A2's feasible-shape region
   (pre-check)", add "disclosed-N residual unsigned — RESULTS §4." B4 lane
   already voided by empty revival list — say so in the same Inputs sentence
   if it is still implied live.
-- [ ] **Decision index.** Leave the 2026-08-23 residual bullets. Do not
+- [x] **Decision index.** Leave the 2026-08-23 residual bullets. Do not
   "refresh" them into a new newest-15 row (that would look like a new
   decision). The queue-row clause is the pointer the next reader hits first.
 
