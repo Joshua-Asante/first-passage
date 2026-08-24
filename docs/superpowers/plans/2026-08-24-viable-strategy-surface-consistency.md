@@ -4,19 +4,18 @@
 > (`- [ ]`) syntax for tracking. One commit per packet unless a packet is a single
 > sentence on a file another packet already has open — then fold, and say so.
 
-**AUTHORIZATION:** **GO 2026-08-24.** Operator: `GO` on this plan. Packets 1–5
-execute; Packet 0 stays operator-only. `queue-exception: operator asked to plan
-the inconsistency repair on #1's owner artifacts`. This packet is hygiene of the
+**AUTHORIZATION:** **GO 2026-08-24** (Packets 1–5). **Packet 0 accepted
+2026-08-24** — operator: `accept the A2 N-reduction`. Hygiene of the
 [`viable-strategy sequence`](2026-08-23-viable-strategy-sequence-overview.md)
-owners so queue `#1` can be read without contradiction. It is **not** a Phase B
-GO, **not** an A2 `sims_per_seed` ratification, and **not** an R3 / arming GO.
+owners so queue `#1` can be read without contradiction. Still **not** a Phase B
+GO and **not** an R3 / arming GO.
 
 **Goal:** make the six named surfaces agree about what is settled, residual,
 killed, or still awaiting GO — without inventing any of those statuses.
 
-**Do not:** execute Phase B · sign off A2's N-reduction · reopen B3 · flip the
-sequence-overview `AWAITING GO` (Phase B GO is still unpaid) · rewrite the
-Q-FIRMEOD-1 verdict · touch Pine / `dd_protection` / allocations / the rail.
+**Do not:** execute Phase B · reopen B3 · flip the sequence-overview
+`AWAITING GO` (Phase B GO is still unpaid) · rewrite the Q-FIRMEOD-1 verdict ·
+touch Pine / `dd_protection` / allocations / the rail.
 
 ---
 
@@ -35,8 +34,8 @@ Leave these alone (operator already cleared them):
 
 | # | Question | Election | Why |
 |---|---|---|---|
-| E1 | May this plan ratify A2's `sims_per_seed=500` vs frozen 10,000? | **No.** Propagate the residual. Sign-off is a named operator ask, not a packet. | Inventing the sign-off is the same defect as the s4 banner (body ran ahead of the authorization line). Owner of the residual: [`A2 RESULTS §4`](../../../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md). |
-| E2 | Is Phase B still the next doable packet? | **Yes**, with the region as a *disclosed-N screen*, not a ratified frozen-N map. | Queue placement is not a phase GO (already on the `#1` row). The residual is a caveat on the input, not a blocker of the packet. |
+| E1 | May this plan ratify A2's `sims_per_seed=500` vs frozen 10,000? | **No (plan-time).** Residual propagated. **Packet 0 accepted 2026-08-24** — operator named ask. | Inventing the sign-off would have been the same defect as the s4 banner. Owner: [`A2 RESULTS §4`](../../../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md). |
+| E2 | Is Phase B still the next doable packet? | **Yes**, with the region as a *disclosed-N screen* (now accepted), not a frozen-N re-sweep. | Queue placement is not a phase GO (already on the `#1` row). Acceptance closes the caveat; it does not open Phase B. |
 | E3 | What is B3's status? | **KILL** (POWER, category-inherited from F5/D3). Phase B proceeds B1/B2 only. | [`A1 audit §6`](../../notes/audits/2026-08-23-kill-register-attribution-audit.md) at 2026-08-23 17:46. A2 RESULTS §8, authored later the same day, never absorbed the kill. |
 | E4 | Where does a Phase-C candidate start Phase D? | **TNEC-1 intake (Phase C step 8).** Overview adopts Phase D's own trigger. | Phase D's document is the owner of its start gate. "Reaches Pine" is step 6 — two steps earlier than "a Phase-C survivor." |
 | E5 | How is a stale closure grep citation repaired? | Pointer-only currency note + count-stable hook. Do not rewrite the verdict. | Closures stay byte-unedited on the finding (Trap #12). The Iterate block already has a 2026-08-23 pointer-only update — same shape. |
@@ -53,10 +52,8 @@ corner subset 8/8 agree, MARGINAL-band subset 0 confident-verdict flips
 The 2026-08-23 decision-index bullets already name this as the one item still
 open after R1's Gate-line ratification.
 
-- [ ] **Operator only.** Accept the disclosed reduction as the published region's
-  N, **or** decline and require a frozen-N re-sweep before Phase B treats the
-  region as a screen. Until then, Packets 1–5 land the caveat; they do not
-  close this ask.
+- [x] **Accepted 2026-08-24.** Operator: accept the disclosed reduction as the
+  published region's N. Not a frozen-N re-sweep. Not a Phase B GO.
 
 ---
 
@@ -240,23 +237,21 @@ SESSIONS entry.
 
 ## Forbidden moves
 
-- Signing off Packet 0 from this plan's AUTHORIZATION.
 - Opening a Phase B lane, drafting a card, or spending K/$.
 - Deleting B3's mechanism paragraph or the A2 §8 historical cadence note.
 - Flipping overview Status or Phase B's per-lane `AWAITING GO`.
 - Rewriting Q-FIRMEOD-1's verdict or treating the line-number shift as a
   finding about CLOCK/LOCK.
-- Adding a newest-15 decision-index row that restates the A2 residual (the
-  residual already lives there).
+- Restating N / seeds / horizon into `STATE.md` (Rule 7 — link the owner).
 - New ADR / new brief / new lab slug — every owner already exists.
 
 ---
 
 ## Exit criteria
 
-All five packets landed · Packet 0 still named as operator-owed · overview
-Status and Phase B banner still `AWAITING GO` · blast-radius report filed ·
-no Pine / rail / allocation edit.
+All five packets landed · Packet 0 accepted · overview Status and Phase B
+banner still `AWAITING GO` · blast-radius report filed · no Pine / rail /
+allocation edit.
 
 ## Verification (execute session)
 

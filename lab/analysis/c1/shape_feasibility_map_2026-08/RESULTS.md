@@ -2,7 +2,7 @@
 
 # Payoff-shape feasibility map (Phase A Task A2 — the target spec)
 
-**Status:** **ACTIVE** — 945-cell region published (Tradeify Select / MFFU / **Tradeify Growth**, the last added 2026-08-24); Select≡MFFU bit-identical; 8/8 corner-case + 3/5 MARGINAL-band validation tuples resolve clean at full N (2/5 stay MARGINAL, 0 confident-verdict flips). ⚠ **§7.2's "no cell at win_rate ≤ 50% is FEASIBLE" is scoped to the $3,000 rope and does NOT hold for Growth's $3,500 rope — see §13.** Screens shape, not mechanisms.
+**Status:** **ACTIVE** — 945-cell region published (Tradeify Select / MFFU / **Tradeify Growth**, the last added 2026-08-24); Select≡MFFU bit-identical; 8/8 corner-case + 3/5 MARGINAL-band validation tuples resolve clean at full N (2/5 stay MARGINAL, 0 confident-verdict flips). §4 `sims_per_seed` reduction **operator-accepted 2026-08-24** (published region's N; not a frozen-N re-sweep; not a Phase B GO). ⚠ **§7.2's "no cell at win_rate ≤ 50% is FEASIBLE" is scoped to the $3,000 rope and does NOT hold for Growth's $3,500 rope — see §13.** Screens shape, not mechanisms.
 
 **What this is not:** not a strategy, not a candidate, not a backtest of anything real. It is a
 coverage map over a *synthetic* trade-generating process, scored through the production
@@ -138,6 +138,8 @@ anywhere below.
 ---
 
 ## §4 — Compute budget (disclosed deviation from the frozen sims_per_seed)
+
+**Operator acceptance (2026-08-24):** the disclosed `sims_per_seed=500` (N=1,500) reduction is accepted as the published region's N. Seeds `(42, 123, 2026)` and horizon `1500` stay frozen. This is not a frozen-N re-sweep and not a Phase B GO.
 
 Measured this session, on this machine, at the frozen `sims_per_seed=10,000` (3 seeds × 10,000 =
 30,000 paths, horizon 1,500), **uncontended** (isolated single-process timing, before any parallel
@@ -643,6 +645,7 @@ grep -c "not yet given" docs/notes/audits/2026-08-23-shape-feasibility-map-audit
 | 2026-08-23 | Initial authoring — harness, 630-cell region sweep, validation subset, first-consumer checks | Claude Code (Sonnet 5) |
 | 2026-08-23 | Review-fix pass (§12): corrected the false §6.1 days-to-pass minimum (~30 → verified 16.0); added §4.1 MARGINAL-band full-N validation subset (`--marginal-validation` CLI mode, `marginal_validation_data.jsonl`, 10 new cells); updated Status line, §11 Limitations, Verification | Claude Code (Sonnet 5) |
 | 2026-08-24 | §8 (ii) / §0: B3 dropped as a live card-precheck (A1 KILL same day, earlier); cadence note kept as historical. B1.4 / B2.3 remain the live pre-check rows | Cursor (surface-consistency Packet 2) |
+| 2026-08-24 | §4 N-reduction operator-accepted as the published region's N (Packet 0). Status + §4 point-of-read note. Sweep bytes unchanged | Cursor (surface-consistency Packet 0) |
 
 ---
 
