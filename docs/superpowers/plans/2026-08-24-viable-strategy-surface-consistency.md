@@ -204,11 +204,12 @@ citation is stale at its own location.
 
 **Repair (E5):**
 
-- [ ] In §10, keep the original printed numbers as as-of-authoring, and add a
+- [x] In §10, keep the original printed numbers as as-of-authoring, and add a
   dated currency line: 2026-08-24 re-run is 7 hits at the lines above;
   durable hook is `grep -c '"dd_type": "trailing"' core/firm_rules.py`
   expected `7`. Do not rewrite §1 / verdict / Iterate disposition.
-- [ ] One Change-history row for the currency note.
+- [x] One Change-history row for the currency note. Same-token currency note
+  on the R1 audit §0 pin (blast-radius).
 
 **Falsifier:** `python scripts/check_closure_disposition.py docs/briefs/closures/Q-FIRMEOD-1-closure-falsified.md`
 exits 0. `grep -c '"dd_type": "trailing"' core/firm_rules.py` equals 7.
