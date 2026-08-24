@@ -1,3 +1,13 @@
+> ⚠ **2026-08-23 reader-intercept (R1 CLOCK repair, fix-pass):** the CAPPED/FULL-arm tables below
+> (e.g. CAPPED 25K/50K 0.00%/0.02% VOID, 100K 0.83%, 150K 0.29%, 250K 2.41%; FULL 100K+150K 3.29%,
+> 250K 10.69%) are **EOD-clock**, produced on the same live `simulate_path` engine R1 measures, with
+> `intraday_low` never populated — every bust figure here is a lower bound, not an estimate. The
+> FULL-arm 100K+150K/250K cells are already FAIL against the current 3.0% survivor-scoring ceiling
+> and can only deepen on the honest clock (monotonicity); the CAPPED-arm cells PASS on this clock
+> but are a named, un-re-run residual — not confirmed to still PASS honest-clock. See
+> [`../../analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md`](../../analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md)
+> §2/§4b for the full accounting and why this campaign is not re-run. Frozen body unedited below.
+
 # DJ30-only (1-leg) Bulenox viability re-MC — VERIFIED result
 
 **Date:** 2026-07-03 · **Driver:** [`dj30_only_remc.py`](dj30_only_remc.py) · **Verdict:** **NEEDS-REWORK** (bust-safe but not a viability win; two cheap tiers design-void; needs a true integer re-run for lock-grade)

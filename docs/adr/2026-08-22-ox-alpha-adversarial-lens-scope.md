@@ -402,6 +402,29 @@ merge note. This row does not claim to be Use 3 of a complete series.
 
 ---
 
+## Addendum 2026-08-23 — Use N: sanitized review of three hard-decision judgment calls (Phase A / §4 firm-repair)
+
+**Dated note; does not amend §Decision / §2 Scope / §4 Falsifier / §5 Forbidden moves.**
+Use-count only, so the §4 trigger schedule stays evaluable.
+
+Sent under §2's **base scope** (adversarial lens on reasoning/judgment calls, not the
+candidate-generation extension) at operator direction ("send the hardest decision elements to
+ox-alpha, generalized with enough context to be useful"). Three scenarios genericized past
+recognition — no firm name, instrument, dollar figure, percentage, or internal naming. Full
+sanitization statement, reconciliation table, and audit hooks:
+[`N-2026-08-23-ox-alpha-phase-a-firm-repair-hard-decisions-review.md`](../notes/notice/N-2026-08-23-ox-alpha-phase-a-firm-repair-hard-decisions-review.md).
+
+Notable: one high-value, concrete objection (a possible day-1 scorer-semantics bug in a
+consistency-rule check) was independently checked directly against the real production engine
+(`core/mc/simulation.py:186-196`) and against real historical pass evidence, and does **not**
+survive — a rare case where reconciliation affirmatively clears an objection rather than just
+filtering it. Several other objections survive as open, actionable follow-ups. Revert trigger
+(b) (three consecutive zero-value uses) does not tick.
+
+No transcript of the hidden-reasoning channel is stored in-repo (sanitization bar).
+
+---
+
 ## Addendum 2026-08-24 — Use N: sanitized per-trade bound election review
 
 **Dated note; does not amend §Decision / §2 Scope / §4 Falsifier / §5 Forbidden moves.**

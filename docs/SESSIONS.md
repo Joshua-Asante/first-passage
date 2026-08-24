@@ -449,6 +449,40 @@ top-ranked Pre-Q executed to verdict on operator GO, plus doc-hygiene.
 
 ---
 
+## 2026-08-23h — Phase A GO (A1+A2) + §4 firm-model-repair Q (R1+R2) executed; ox-alpha reconciled
+
+**Focus:** Decision + Measurement. Operator GO for the viable-strategy sequence's Phase A
+(kill-register audit + payoff-shape feasibility map) and the parallel §4 firm-model-repair Q
+(7-tier intraday-honest re-run + Bulenox lock-scope resolution), run as a 15-agent
+implement-review(-fix) workflow with a final whole-branch forbidden-moves audit (`CLEAN`).
+
+**Shipped:** A1 [`kill-register audit`](notes/audits/2026-08-23-kill-register-attribution-audit.md)
+· R2 [`lock-scope audit`](notes/audits/2026-08-23-bulenox-lock-scope-resolution.md) + comment-only
+`firm_rules.py` fix · A2 [`shape-feasibility map`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)
+· R1 [`7-tier RESULTS`](../lab/analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md) +
+[`audit note`](notes/audits/2026-08-23-r1-bulenox-blusky-clock-repair.md) + CLAUDE.md caveat-scope
+extension · ox-alpha reconciliation: [`N-2026-08-23`](notes/notice/N-2026-08-23-ox-alpha-phase-a-firm-repair-hard-decisions-review.md).
+
+**Decisions/defects:** A1's revival list is **empty** (decisive) — **A3 voided**, no operator
+ruling owed, Phase B proceeds on B1/B2 only. R2: Bulenox Master lock does **not** bite the
+modeled horizon. A2: region non-empty, `FEASIBLE` from ~65-70% win rate up; Bulenox/BluSky stay
+`BLOCKED`. R1: `RESOLVED — WITH NAMED RESIDUAL` — WATCH-1 0.50× still clears (2.41pp headroom)
+despite a ~7.4× honest-clock deepening; a `.rgignore` blind spot (excludes `lab/archive/`) caused
+one real false "zero hits" claim, caught in R1's own second review round and corrected with
+reader-intercept banners. **Two items need operator sign-off, not yet ratified:** (1) R1
+self-rewrote the plan's own Gate line to a new three-way scheme; (2) A2 ran the primary 630-cell
+sweep at `sims_per_seed=500` (frozen value is 10,000) under a real compute-budget wall, cross-validated
+8/8 at full N with zero verdict flips but a literal departure from "never re-picked."
+
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md)
+· [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound
+([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) ·
+[`1r_estimation.md`](methodology/1r_estimation.md)).
+
+**Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
 <!-- ARCHIVE-INDEX:START -->
 ## Archive index
 

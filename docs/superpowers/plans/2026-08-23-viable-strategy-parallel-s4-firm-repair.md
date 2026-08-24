@@ -27,35 +27,58 @@ Account quote ("stops moving... starting balance +100") + both Wayback capture U
 
 ## Task R1 — 7-tier intraday-honest re-run (the W1 pattern, applied)
 
-- [ ] Enumerate the 7 `dd_type="trailing"` tiers (Bulenox ×5, BluSky ×2) from `core/firm_rules.py`
+- [x] Enumerate the 7 `dd_type="trailing"` tiers (Bulenox ×5, BluSky ×2) from `core/firm_rules.py`
   — the closure's own grep pins them.
-- [ ] Re-run every published bust/pass figure that exists for those tiers with `intraday_low`
+- [x] Re-run every published bust/pass figure that exists for those tiers with `intraday_low`
   populated, per the W1 ADR's pattern (frozen seeds/sims/horizon via `load_scoring_thresholds()`;
   no re-picking). Where a tier has no published figure, record "none to re-measure" rather than
   manufacturing one.
-- [ ] Report per-tier: EOD-clock figure → honest-clock figure → flipped verdicts, in a RESULTS
+- [x] Report per-tier: EOD-clock figure → honest-clock figure → flipped verdicts, in a RESULTS
   doc under `lab/analysis/c1/` with a CATALOG row. Every prior figure that moved gets a
   reader-intercept note at the surface where it is read (Rule 14), not just here.
-- [ ] BluSky CLOCK specifically: run its tier(s) through the same direct `simulate_path` diff
+- [x] BluSky CLOCK specifically: run its tier(s) through the same direct `simulate_path` diff
   Bulenox got — the closure explicitly declined to assume BluSky is clean by analogy.
 
-**Gate (R1):** `RESOLVED` when all 7 tiers carry an honest-clock figure or an explicit
-none-to-re-measure line. The CLAUDE.md caveat line ("EOD-clock lower bounds unless
-intraday-honest") extends its scope from Tradeify/Class-S to these firms in the same commit —
-that scoping gap is the exact thing Q-FIRMEOD-1 proved was live.
+**Gate (R1):** `RESOLVED — WITH NAMED RESIDUAL` — the two tiers carrying a published figure on the
+live candidate book (Bulenox_100K, BluSky_Premium_100K, both published arms) carry a MEASURED
+honest-clock figure with no verdict flip; BluSky_Premium_50K carries an explicit
+none-to-re-measure line. **Correction (2026-08-23 fix-pass, reviewer-flagged):** the original text
+here claimed "an explicit none-to-re-measure line (the other 5)" — false for 4 of them. A separate,
+closed/NO-GO'd, Pepperstone-sourced archived campaign (`lab/archive/bulenox_futures_remc_2026-07-01/`)
+publishes EOD-clock figures for Bulenox_25K/50K/100K/150K/250K; most cells are monotonicity-disposed
+(already FAIL), a small PASS-side residual is explicitly named and not re-run (3 stated reasons —
+retired vendor feed, a verified-broken entry-point import, a dead/NO-GO'd program). Full accounting:
+RESULTS.md §2/§4b. The CLAUDE.md caveat line ("EOD-clock lower bounds unless intraday-honest") now
+extends its scope from Tradeify/Class-S to these firms, landed in the same commit —
+[`RESULTS`](../../../lab/analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md) ·
+[`audit note`](../../notes/audits/2026-08-23-r1-bulenox-blusky-clock-repair.md).
 
-## Task R2 — Bulenox lock-scope resolution (primary source, then classification)
+**Operator ratification (2026-08-23, real-time GO in chat):** the implementer's self-authored
+three-way disposition — the task reviewer's own phrasing was "done for what's live, openly
+incomplete for what isn't" — is ratified as-is. `Bulenox_100K`/`BluSky_Premium_100K` (the tiers
+R3 actually consumes; the 50K band is diagnostic-only per R3's own scope and the other archived
+tiers aren't named there at all) are genuinely, fully re-measured. The named residual
+(`Bulenox_25K/50K/150K/250K` PASS-side cells in the closed/NO-GO'd archived campaign) stays
+un-re-run for the three stated reasons; reviving it is not authorized by this ratification and
+would need its own case if ever raised. This closes the one item the task reviewer flagged as
+needing explicit sign-off rather than implementer self-authorization.
 
-- [ ] Answer with primary-source grounding: does the Master-account "stops moving at initial
+## Task R2 — Bulenox lock-scope resolution (primary source, then classification) — `RESOLVED`
+
+- [x] Answer with primary-source grounding: does the Master-account "stops moving at initial
   balance +100" lock reach the **currently-simulated horizon** (Qualification-only,
   absorbing-at-pass), yes or no? The closure left this genuinely open — a successor must
-  investigate, not assume either way.
-- [ ] If the lock does **not** bite the modeled horizon: record the finding + fix the
+  investigate, not assume either way. **Answer: NO** — confirmed two independent ways (textual
+  scope on both re-fetched primary sources; `simulate_path`'s absorbing-at-pass structure never
+  threads a post-pass stage). [`audit note`](../../notes/audits/2026-08-23-bulenox-lock-scope-resolution.md).
+- [x] If the lock does **not** bite the modeled horizon: record the finding + fix the
   `firm_rules.py` sourcing comment's completeness gap (the "silence read as completeness"
-  defect the closure documented) — comment-only change, no constant moves.
+  defect the closure documented) — comment-only change, no constant moves. Landed at
+  [`65dc17b`](https://github.com/Joshua-Asante/first-passage/commit/65dc17bdc969f562a952951cb5273e7913384864).
 - [ ] If the lock **does** bite: re-classifying Bulenox to `trailing_locking` with sourced lock
   terms is a **separate change-control action** — its own pre-registration → re-derivation →
-  admitting ADR, never an in-place edit riding on this plan (the closure's own bar).
+  admitting ADR, never an in-place edit riding on this plan (the closure's own bar). **Did not
+  fire** — the answer above is NO, so this branch is correctly untaken.
 
 ## Task R3 — Survivor §4 scoring (blocks on R1; consumes a Phase-C survivor)
 
