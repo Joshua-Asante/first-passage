@@ -7,8 +7,9 @@ Implements the frozen spec docs/spec/c1_nt8_sizing_host_impl.md (B2, GO ADR
     qty     = min(floor(E_firm*r_eff / (SL_pts*$/pt)), floor(cap/(1+pyr%/100)))
     add     = floor(executed_base * pyr%/100)
 
-This module IS the live sizing host (Option C, adopted 2026-07-18 — see
-docs/spec/c1_nt8_sizing_host_impl.md): ops/c1_rail/c1_rail_listener.py runs
+This module is the listener's sizing reference when the rail is armed
+(Option C, adopted 2026-07-18 — see docs/spec/c1_nt8_sizing_host_impl.md).
+No book is deployed. ops/c1_rail/c1_rail_listener.py runs
 C1SizingHostReference directly on the TV->CrossTrade->Tradovate rail; the
 NinjaScript port is a dormant fallback and was never built. The sizing law
 remains proven against the committed F2 oracle

@@ -1,7 +1,7 @@
 # F1 — Closing-auction / MOC-imbalance flow on MYM: bar-ruling (admit-or-reject)
 
 **Type:** paid-data-procurement-gate ruling (zero-run, zero-K, zero-$). **Authored:** 2026-07-27.
-**Source:** entry **F1** of the forced-flow census [`N-2026-07-26-forced-flow-census.md`](../notes/notice/N-2026-07-26-forced-flow-census.md),
+**Source:** entry **F1** of the forced-flow census `N-2026-07-26-forced-flow-census.md` (pruned at the Great Prune; retrieve via `git show pre-prune-2026-08-08:docs/notes/notice/N-2026-07-26-forced-flow-census.md`),
 the census's only entry not already dead after its 2026-07-26 self-audit (F2/F3 were killed by prior rulings).
 **Verdict (this brief):** **FALSIFIED — reject-at-bar**, blocked at the **paid-data procurement gate**
 (not at the free-data domain bar — see §4, where F1 genuinely differs from D2). Not admitted for a full Pre-Q.
@@ -190,7 +190,9 @@ test -f docs/briefs/2026-07-27-f1-moc-imbalance-mym-ruling.md && echo AUTHORITAT
 ls discovery_manifests/ | rg -i "moc|imbalance" || echo "no manifest, as expected (zero K spent)"
 
 # Census cross-link: F1 must now read DEAD, not "only live entry"
-rg -n "F1 —" docs/notes/notice/N-2026-07-26-forced-flow-census.md
+# Working-tree path was pruned; retrieve then grep (tag is private-archive-only
+# on this public clone — docs/ltm/README.md).
+git show pre-prune-2026-08-08:docs/notes/notice/N-2026-07-26-forced-flow-census.md | rg -n "F1 —"
 ```
 
 ---

@@ -100,6 +100,8 @@ $ rg -n "index-futures intraday|session-confluence" docs/rejected_candidates.md
      longer-hold** thread (untested, low-priority — ORB-MNQ already occupies that class).
 ```
 
+⚠ **Reader note (2026-08-23):** the `ls` paste above is the original attestation and is not rewritten. `N-2026-07-26-forced-flow-census.md` was later pruned at the Great Prune; retrieve via `git show pre-prune-2026-08-08:docs/notes/notice/N-2026-07-26-forced-flow-census.md`.
+
 **Attestation result: CLEAR, with one raised bar and one adverse precedent — no prior closure bars
 this thread.** Audit follow-up #1 is **DISCHARGED** (the bar landed at L411; the audit's own §5 had
 listed it as owed to the operator at/before 08-08).

@@ -1,0 +1,92 @@
+# Automatic Claude review *request* for judgment-heavy PRs.
+# Owner: docs/adr/2026-07-14-cc-cursor-surface-allocation.md addendum 2026-08-23.
+# Review-only. Does not merge.
+#
+# This workflow only decides and posts `@claude`. The review itself runs in
+# claude.yml on the default branch (issue_comment), so a PR that edits
+# workflows still gets a review. Direct action invocation on pull_request
+# is skipped by anthropics/claude-code-action whenever the diff touches
+# .github/workflows/ — that path is intentionally not used here.
+#
+# Fires once per PR (HTML marker). Re-review is a fresh `@claude` mention
+# after deleting the marker, or an operator/cursor comment.
+# Drafts are silent; ready_for_review is the first look.
+# pull_request (not pull_request_target). allowed_bots is an explicit list,
+# never '*'.
+
+name: Claude judgment review
+
+on:
+  pull_request:
+    types: [opened, ready_for_review, reopened, labeled]
+
+concurrency:
+  group: claude-judgment-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  request-review:
+    if: >
+      github.event.pull_request.draft == false &&
+      (github.event.action != 'labeled' ||
+       github.event.label.name == 'claude-review')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Collect PR context
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+          printf '%s' "${PR_BODY}" > /tmp/pr-body
+          gh api --paginate \
+            "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" \
+            --jq '.[].filename' > /tmp/changed-files
+          gh api --paginate \
+            "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
+            --jq '.[].body // empty' > /tmp/comments
+
+      - name: Decide
+        id: decide
+        env:
+          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+          EVENT_ACTION: ${{ github.event.action }}
+          EVENT_LABEL: ${{ github.event.label.name || '' }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          python3 scripts/check_claude_judgment_review.py \
+            --head-branch "$HEAD_BRANCH" \
+            --draft false \
+            --labels "$PR_LABELS" \
+            --body-file /tmp/pr-body \
+            --changed-files-file /tmp/changed-files \
+            --existing-comments-file /tmp/comments \
+            --event-action "$EVENT_ACTION" \
+            --event-label "$EVENT_LABEL"
+
+      - name: Request @claude review
+        if: steps.decide.outputs.trigger == 'yes'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REASON: ${{ steps.decide.outputs.reason }}
+        run: |
+          gh pr comment "$PR_NUMBER" --body "$(cat <<EOF
+          @claude review this PR as the Claude Code adjudication pass for a judgment-heavy change scoped on Cursor first (or opted in via the \`claude-review\` label / \`claude-review: judgment\` body token). Reason: \`$REASON\`.
+
+          Review-only. Do not merge. Do not expand scope. Owner: \`docs/adr/2026-07-14-cc-cursor-surface-allocation.md\` addendum 2026-08-23.
+
+          Adjudicate: (1) does the change hold under the owners it cites? (2) did it skip a Claude Code freeze the 2026-07-14 routing test required? (3) any silent restatement (blast-radius)?
+
+          <!-- claude-judgment-review -->
+          EOF
+          )"

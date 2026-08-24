@@ -311,7 +311,8 @@ sub-rules of Rule 0 / Rule 2 — each anchored to a specific brief failure.
    2026-08-13 Tradeify eval-battery near-miss (caught by deliberate sweep) and
    Magdon-Ismail closed-form MDD duplicate (uncaught until pre-commit
    `lab-catalog`); source language
-   [`N-2026-07-26-forced-flow-census`](notes/notice/N-2026-07-26-forced-flow-census.md)
+   `N-2026-07-26-forced-flow-census` (pruned at the Great Prune; retrieve via
+   `git show pre-prune-2026-08-08:docs/notes/notice/N-2026-07-26-forced-flow-census.md`)
    L195-208. **2026-08-19 addendum:** a Research Analyst inaugural draft
    recommended GRADUATE on the D5 Baltussen intraday-momentum axis for MNQ as
    "unspent" — it had already been ratified, built, and killed twice (IS-era

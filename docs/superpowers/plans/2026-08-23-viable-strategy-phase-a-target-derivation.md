@@ -24,7 +24,7 @@ sibling; (c) whether an amended screen would re-open it.
 - [ ] **Inputs (read, not re-derived):** `docs/rejected_candidates.md` (now complete — 30-row
   backfill landed 2026-08-23, debt 0); the WHO-track notice
   ([`N-2026-08-14-msl-who-track.md`](../../notes/notice/N-2026-08-14-msl-who-track.md)) §3 door
-  tables; the forced-flow census (`N-2026-07-26-forced-flow-census.md`) passes 1–4; the
+  tables; the forced-flow census (`N-2026-07-26-forced-flow-census.md`, pruned at the Great Prune; retrieve via `git show pre-prune-2026-08-08:docs/notes/notice/N-2026-07-26-forced-flow-census.md`; tag is private-archive-only on this public clone — [`docs/ltm/README.md`](../../ltm/README.md)) passes 1–4; the
   INTAKE-DRY entries on `ops/instruments/MCL.md`; `lab/CATALOG.md` closed rows;
   `docs/briefs/closures/` verdict lines (read each `**Verdict:**` line, not filenames — standing
   lesson).

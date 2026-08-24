@@ -15,7 +15,6 @@ closure under `docs/briefs/closures/` and delete its Open row (Recently-closed m
 
 | Q | Status | Home (canonical) | Next action |
 |---|---|---|---|
-| **Q-TOM-SPX-1** — SPX500 turn-of-month existence and capturability | Layer A **RESOLVED-ABSENT** on canonical Pepperstone (2026-06-16); formal DEAD close reserved | [`docs/briefs/Q-TOM-SPX-1.md`](Q-TOM-SPX-1.md) | Run only the brief-reserved native Pine confirmation. Do not widen the window, change thresholds, or rerun Dukascopy to rescue the null. |
 | **Q-SIGID-1** — measured live↔backtest signal-identity gap from mid-bar `alert()`/`strategy.entry` on c1 venue editions; architectures that close it (locked-axis, not EQ) | **`OPEN`** 2026-07-28 — cheap falsifier: 07-28 MNQ bar is a phantom (`longSignal` mid-true / close-false on `body_ok`); offline phantoms ~0.7× confirmed signals; Fri §2b clean re-measure owed | [`Q-SIGID-1-intra-bar-signal-identity.md`](Q-SIGID-1-intra-bar-signal-identity.md) · [pre-reg](pre-registration/Q-SIGID-1-verdict-preregistration.md) · [RESULTS](../../lab/analysis/c1/c1_signal_identity_2026-07-28/RESULTS.md) | Ruled host is **built** (S2b, `emit_enabled=false`). Offline limb MNQ 0.68 / MYM 0.70 stands. §2b re-measure needs no fill/order/arming. Pine edit only under separate operator GO. |
 | **Q-FILLTAX-1** — TV fill-optimism gap + Pine↔Python / engine↔TV parity | **`OPEN`** — V2 Phase-0 scaffold `CODE_LANDED` 2026-08-07 ($0 under S1 incumbent); V1 disposition follows S1 (Tradeify geometry); Gate RESOLVED needs first family TV anchor | [`Q-FILLTAX-1-fill-realism-and-parity-scoping.md`](Q-FILLTAX-1-fill-realism-and-parity-scoping.md) · [`parity_gen2`](../../lab/analysis/c1/parity_gen2_2026-08/) · [`RESULTS`](../../lab/analysis/c1/parity_gen2_2026-08/RESULTS.md) | Operator: first family same-feed CME TV anchor → Gen-2 ADMIT. No post-hoc band tuning. Mutation battery (Phase 1) still owed. |
 
@@ -29,6 +28,18 @@ Ten of the eleven 2026-08-18 assumption-sweep Qs are now closed (Q-M1WIRE-1 `FAL
 
 ## Recently closed (cross-reference; not open)
 
+- **Q-TRADECAP-2** — which close is licensed for the confirmed unbounded per-trade realized loss on Tradeify_Select_100K —
+  **`RESOLVED` 2026-08-24** — operator elected frozen ID **2** (observe-only). No tripwire wire; threshold later. $0/K=0.
+  [`closure`](closures/Q-TRADECAP-2-closure-resolved.md) ·
+  [`brief`](Q-TRADECAP-2-per-trade-bound-election.md) ·
+  [`pre-reg`](pre-registration/Q-TRADECAP-2-verdict-preregistration.md) ·
+  [`elect-2`](../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md).
+- **Q-TOM-SPX-1** — SPX500 turn-of-month existence and capturability —
+  **`DEAD` 2026-08-23** — Layer-A `RESOLVED-ABSENT` on canonical Pepperstone
+  (2026-06-16); reserved native-Pine confirmation unpaid and not reserved.
+  $0/K=0. [`closure`](closures/Q-TOM-SPX-1-closure-dead.md) ·
+  [`brief`](Q-TOM-SPX-1.md) ·
+  [`census`](../notes/audits/2026-08-23-p10-open-roster-census.md).
 - **Q-MONSURF-1** — which monitoring surfaces are buildable venue-free now, and on what acceptance
   evidence (M-A/M-B/M-C triage) — **`RESOLVED` 2026-08-23** — M-B (idle-clock monitor) acceptance
   battery passes 0 missed / 0 spurious across all 312 real historical weeks, mutation-verified;
@@ -40,9 +51,9 @@ Ten of the eleven 2026-08-18 assumption-sweep Qs are now closed (Q-M1WIRE-1 `FAL
   [`results`](../../lab/analysis/c1/msl_monsurf_1_idle_clock_2026-08/RESULTS.md).
 - **Q-TRADECAP-1** — is there any per-trade dollar-loss bound anywhere in the sizing/arming path on
   the intraday-enforced Tradeify geometry (A6, orphaned `1r_estimation.md` Forward question) —
-  **`RESOLVED` 2026-08-23** — confirmed absent on all four checked limbs (sizing law, arming
-  interlock, EM2, disaster-stop). Successor decision packet (per-trade hard-cap vs. live tripwire,
-  from `1r_estimation.md`) named on STATE.md for operator election. $0/K=0.
+  **`RESOLVED` 2026-08-23** —   confirmed absent on all four checked limbs (sizing law, arming
+  interlock, EM2, disaster-stop). Successor closed `RESOLVED` 2026-08-24:
+  [`Q-TRADECAP-2`](Q-TRADECAP-2-per-trade-bound-election.md). $0/K=0.
   [`closure`](closures/Q-TRADECAP-1-closure-resolved.md) ·
   [`brief`](Q-TRADECAP-1-per-trade-loss-bound.md) ·
   [`pre-reg`](pre-registration/Q-TRADECAP-1-verdict-preregistration.md).

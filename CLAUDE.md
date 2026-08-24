@@ -95,7 +95,9 @@ Layer roots carry pointer-only READMEs; hop table lives in [`README.md`](README.
 
 ## Strategy Reference (LOCKED legacy book — do not modify)
 
-The four CFD-era locked strategies have **no live venue**. Live authority for sizing is
+The four CFD-era locked strategies have **no live venue**. This table is a
+historical record of the locked CFD book and the withdrawn futures editions —
+not a live book. Live authority for sizing is
 `dd_protection.BASE_RISK` / `firm_rules._BASE_RISK` — this table is the human-readable record.
 The two Striker legs' futures editions (MYM/MNQ) *were* the c1 book until 2026-08-04; the code path
 is deliberately untouched (`ops/c1_rail/c1_sizing_host_reference.py` still consumes

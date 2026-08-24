@@ -292,9 +292,9 @@ def test_live_park_count_and_fields():
         p for p in cpr.PURSUITS_DIR.glob("*.md")
         if cpr.parse_standing(p.read_text(encoding="utf-8")) == "PARK"
     ]
-    # Live PARK set after GSUB-2 (b2-striker-mym-reconstruction SUBTRACT):
-    # b1, b3, b5, b6, c3. Do not invent a sixth PARK to keep this pin.
-    assert len(parks) == 5, f"expected 5 live PARK records, got {len(parks)}"
+    # Live PARK set after P10 (c3-q-tom-spx-1 SUBTRACT / DEAD):
+    # b1, b3, b5, b6. Do not invent a fifth PARK to keep this pin.
+    assert len(parks) == 4, f"expected 4 live PARK records, got {len(parks)}"
     for p in parks:
         text = p.read_text(encoding="utf-8")
         assert cpr.RE_ENTRY_FIELD.search(text), f"{p.name} missing re-entry:"
@@ -333,4 +333,4 @@ def test_live_corpus_all_parks_expired_after_asof(capsys):
         line for line in out.splitlines()
         if "expiry-enforcement" in line
     ]
-    assert len(expiry_lines) == 5, out
+    assert len(expiry_lines) == 4, out
