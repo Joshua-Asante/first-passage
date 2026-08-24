@@ -1,3 +1,13 @@
+> ⚠ **2026-08-23 reader-intercept (R1 CLOCK repair, fix-pass):** the Gate-arm table below (25K
+> 0.50% · 50K 2.81% · 100K 12.42% · 150K 8.74% · 250K 21.16% bust) is **EOD-clock**, produced on the
+> same live `simulate_path` engine R1 measures, with `intraday_low` never populated — every bust
+> figure here is a lower bound, not an estimate. The 100K/150K/250K cells are already FAIL against
+> the current 3.0% survivor-scoring ceiling and can only deepen on the honest clock (monotonicity);
+> the 25K/50K cells PASS on this clock but are a named, un-re-run residual — not confirmed to still
+> PASS honest-clock. See
+> [`../../analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md`](../../analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md)
+> §2/§4b for the full accounting and why this campaign is not re-run. Frozen body unedited below.
+
 # C5 — integer-contract Bulenox re-MC (cap-aware, cost-aware)
 
 **Date:** 2026-07-03. Layers onto C4 ([`RESULTS_C4_forceflat_2026-07-03.md`](RESULTS_C4_forceflat_2026-07-03.md)): FF DJ30 + clean NAS100, static tier balance, `PRE_SHOCK_1R`-pinned ideal panel, C2-off gate arm — now with **per-trade integer-contract ratios** (time-matched roll-masked futures ATR(11) at each entry, era-correct), **Bulenox Option 1 contract caps** (primary-confirmed 30/70/120/150/250 micros), **RESERVE cap policy** (base ≤ ⌊cap/(1+pyr)⌋ so the pyramid add — the edge — fits at full ratio; matches the B1/B2 editions exactly), and **$2.22/contract RT costs** ($0.61/side all-in per Bulenox Rates.pdf + 1-tick slip/side).

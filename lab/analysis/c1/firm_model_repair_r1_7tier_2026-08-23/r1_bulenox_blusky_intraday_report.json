@@ -1,0 +1,162 @@
+{
+  "date": "2026-08-23",
+  "task": "R1 -- lab/analysis/c1/firm_model_repair_r1_7tier_2026-08-23",
+  "parent_plan": "docs/superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md",
+  "predecessor": "docs/briefs/closures/Q-FIRMEOD-1-closure-falsified.md",
+  "geometry": "intraday_low from 15m bars (same book as W1); dd_lock_offset_usd N/A (trailing, not trailing_locking)",
+  "floor": {
+    "bust_ceiling": 0.03,
+    "pass_floor": 0.5
+  },
+  "panel_meta": {
+    "legs": {
+      "striker": {
+        "file": "Striker_DJ30_v4.5_MYM_CBOT_MINI_MYM1!_2026-07-11_15d8b.csv",
+        "sha256": "9acfa29726a9530d2a3de5fc2290cc67672441fac2c805defd524677cce01b9e",
+        "export_initial": 200000.0,
+        "n_trades": 267,
+        "span": "2020-01-14->2026-06-30",
+        "1r_method": "full-stop mean (|loss| > 1% acct, n=8)",
+        "1r_dollars": 2535.611381430168,
+        "1r_n": 8,
+        "1r_warn": false,
+        "scale": 0.5521350827863669,
+        "risk_pct": 0.007,
+        "target_1r": 1400.0,
+        "net_scaled": 37180.70860444489,
+        "n_overnight_holds": 0
+      },
+      "striker_nas100": {
+        "file": "Striker_NAS100_v1_CME_MINI_MNQ1!_2026-07-11_beabf.csv",
+        "sha256": "8884e6dd56c786e1e59a8ab0b962a70be82f34e06af26a9582554c9f8ddc6419",
+        "export_initial": 200000.0,
+        "n_trades": 284,
+        "span": "2020-01-06->2026-06-30",
+        "1r_method": "full-stop mean (|loss| > 1% acct, n=19)",
+        "1r_dollars": 5899.31780718921,
+        "1r_n": 19,
+        "1r_warn": false,
+        "scale": 0.12543823272212903,
+        "risk_pct": 0.0037,
+        "target_1r": 740.0,
+        "net_scaled": 52219.07377123145,
+        "n_overnight_holds": 0
+      }
+    },
+    "panel_span": "2020-01-06->2026-06-30",
+    "n_bdays": 1692,
+    "book_net_200k": 89399.78237567632
+  },
+  "intraday_coverage": {
+    "legs": {
+      "striker": {
+        "n_trades": 267,
+        "bar_file": "MYM_M15.csv",
+        "bar_span": "2020-07-01->2026-07-02",
+        "scale": 0.5521350827863669,
+        "exc_sum": -123939.90642813616,
+        "exc_min": -4710.555143263882
+      },
+      "striker_nas100": {
+        "n_trades": 284,
+        "bar_file": "MNQ_M15.csv",
+        "bar_span": "2020-07-01->2026-07-02",
+        "scale": 0.12543823272212903,
+        "exc_sum": -108466.57288682752,
+        "exc_min": -4573.26834298813
+      }
+    },
+    "fallback_days": 0,
+    "bar_days": 0,
+    "book_exc_min_100k": -2562.417980338755,
+    "n_negative_days": 326
+  },
+  "nonvacuity": {
+    "Bulenox_100K": {
+      "eod_bust": 0.018333333333333333,
+      "eod_pass": 0.82,
+      "real_bust": 0.26166666666666666,
+      "real_pass": 0.6716666666666667,
+      "ok": true
+    },
+    "BluSky_Premium_100K": {
+      "eod_bust": 0.021666666666666667,
+      "eod_pass": 0.6333333333333333,
+      "real_bust": 0.3016666666666667,
+      "real_pass": 0.5283333333333333,
+      "ok": true
+    }
+  },
+  "arms": {
+    "1.00x": {
+      "lifecycle_mult": 1.0,
+      "tiers": {
+        "Bulenox_100K": {
+          "firm_key": "Bulenox_100K",
+          "consistency": null,
+          "n_sims": 10000,
+          "headline_bust": 0.26766666666666666,
+          "pass_rate": 0.7323333333333334,
+          "clears_part_a": false,
+          "floor_ok": false,
+          "gated_on": "run1_degenerate",
+          "intraday_low": true,
+          "published_eod_bust": 0.0351,
+          "published_eod_pass": 0.9649,
+          "delta_bust_pp": 23.256666666666668,
+          "verdict_flipped_pass_to_fail": false
+        },
+        "BluSky_Premium_100K": {
+          "firm_key": "BluSky_Premium_100K",
+          "consistency": 0.34,
+          "n_sims": 10000,
+          "headline_bust": 0.32256666666666667,
+          "pass_rate": 0.6774333333333332,
+          "clears_part_a": false,
+          "floor_ok": false,
+          "gated_on": "run2",
+          "intraday_low": true,
+          "published_eod_bust": 0.0444,
+          "published_eod_pass": 0.9554,
+          "delta_bust_pp": 27.816666666666666,
+          "verdict_flipped_pass_to_fail": false
+        }
+      }
+    },
+    "0.50x": {
+      "lifecycle_mult": 0.5,
+      "tiers": {
+        "Bulenox_100K": {
+          "firm_key": "Bulenox_100K",
+          "consistency": null,
+          "n_sims": 10000,
+          "headline_bust": 0.0059,
+          "pass_rate": 0.9933333333333333,
+          "clears_part_a": true,
+          "floor_ok": true,
+          "gated_on": "run1_degenerate",
+          "intraday_low": true,
+          "published_eod_bust": 0.0008,
+          "published_eod_pass": 0.9982,
+          "delta_bust_pp": 0.5099999999999999,
+          "verdict_flipped_pass_to_fail": false
+        },
+        "BluSky_Premium_100K": {
+          "firm_key": "BluSky_Premium_100K",
+          "consistency": 0.34,
+          "n_sims": 10000,
+          "headline_bust": 0.005933333333333333,
+          "pass_rate": 0.9930666666666667,
+          "clears_part_a": true,
+          "floor_ok": true,
+          "gated_on": "run2",
+          "intraday_low": true,
+          "published_eod_bust": 0.0008,
+          "published_eod_pass": 0.998,
+          "delta_bust_pp": 0.5133333333333333,
+          "verdict_flipped_pass_to_fail": false
+        }
+      }
+    }
+  }
+}

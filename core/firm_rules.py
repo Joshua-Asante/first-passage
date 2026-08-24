@@ -42,7 +42,37 @@ FIRM_RULES = {
     # no daily loss limit on Option 1 and no minimum trading days) and
     # bulenox.com/help/master-account/ (primary — the per-tier trailing-DD
     # dollar table below, which the page states carries over unchanged from
-    # Qualification, "no reset option" the only Master difference).
+    # Qualification).
+    #
+    # MASTER-ACCOUNT DIFFERENCES — sourced 2026-07-01 sweep, completeness
+    # gap closed 2026-08-23 (Q-FIRMEOD-1 closure + its R2 successor,
+    # docs/notes/audits/2026-08-23-bulenox-lock-scope-resolution.md). Two
+    # differences, not one:
+    #   (1) "no reset option" (originally the only one captured here).
+    #   (2) The Master Account Rules page ALSO states: "The trailing or EOD
+    #       drawdown stops moving when the trailing or EOD drawdown reaches
+    #       the initial starting balance +100." — a fixed +$100 lock offset,
+    #       Tradeify-`dd_lock_offset_usd`-shaped. Both pages verbatim-confirm
+    #       this lock is scoped to the MASTER stage (post-Qualification
+    #       promotion): the Qualification Account page's own Option 1
+    #       ("No Scaling Account (Trailing Drawdown)" — the exact geometry
+    #       this dd_type="trailing" tier encodes) describes the floor as
+    #       following the balance with NO lock language anywhere in that
+    #       section; the +100 language only appears under Option 2 (EOD)
+    #       prefixed "After Qualification, for Master Account:", and again
+    #       on the Master Account page itself under "Master Account Rules".
+    #       CONCLUSION (primary-source + engine-code grounded): the lock
+    #       does NOT reach the horizon this engine currently simulates:
+    #       simulate_path (core/mc/simulation.py) is absorbing at "pass" —
+    #       it returns the instant the Qualification profit target is hit
+    #       and never threads a post-pass/Master stage at all; firm_kwargs()
+    #       (core/mc/preflight.py) never sets dd_lock_offset_usd for
+    #       dd_type="trailing" tiers (that kwarg is trailing_locking-only,
+    #       Tradeify/MFFU). No numeric field here changes as a result — this
+    #       is a documentation-completeness fix only, not a reclassification.
+    #       Re-classifying to dd_type="trailing_locking" is intentionally
+    #       NOT done by this comment; it would require its own
+    #       pre-registration -> re-derivation -> admitting ADR.
     # profit_target_pct/micro_contract_cap/cost_per_side_usd are from the
     # 2026-07-03 primary sweep (bulenox.com pricing + help + Rates.pdf
     # 2024-09-25 vintage) — see project_futures_prop_pivot memory,

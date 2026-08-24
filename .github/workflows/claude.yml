@@ -56,8 +56,14 @@ jobs:
 
           # Optional: Configure Claude's behavior with CLI arguments (e.g. --max-turns 10,
           # --allowedTools "Bash(npm install),Bash(npm run build)", --system-prompt "...")
+          # --allowedTools *appends*; GitHub/Read/Grep stay. Default Bash is only
+          # git add|commit|push|rm, but the action system prompt tells Claude to
+          # run git diff/log/status — those were denied until the run died
+          # (PR #145 run 32683209126, 12 permission denials). Quote the value:
+          # unquoted Bash(git diff:*) is split on spaces (action issue #844).
           claude_args: |
             --model claude-sonnet-5
+            --allowedTools "Bash(git diff:*),Bash(git log:*),Bash(git status:*)"
 
           # Optional: Advanced settings configuration
           # settings: |
