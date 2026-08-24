@@ -39,17 +39,11 @@ gates:
       - scripts/check_data_manifests.py
       - --check
 
-  # WARN-tier / report-only (exits 0 regardless of findings — see the script's
-  # own docstring). data-conditional per PR #716's proposed tier: docs/pursuits/
-  # changes are rare enough that "runs only when staged" beats path-conditional's
-  # unconditional inclusion in `make check`; do not use tier: soft (dead, no caller — see header).
-  - id: pursuit-records
-    tier: data-conditional
-    when:
-      staged_regex: '^docs/pursuits/'
-    cmd:
-      - python
-      - scripts/check_pursuit_records.py
+  # pursuit-records retired 2026-08-24 (Rule 16 R5 — docs/operational_rules.md;
+  # docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md):
+  # scripts/check_pursuit_records.py always exits 0 as invoked, so this entry
+  # could never fail regardless of tier — unfalsifiable ceremony, deletable
+  # even when signed. Script retained on disk, runnable manually.
 
   - id: pine-manifest
     tier: always

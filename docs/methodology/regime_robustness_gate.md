@@ -34,6 +34,14 @@ This gate exists because of one structural asymmetry: in any Pareto-relaxation q
 
 If a brief is uncertain whether this gate applies **and** a risk-constant LOCK CANDIDATE is in play: default to running it. Do not fire it as ceremony on tooling or research CSVs with no risk-constant change. The false-positive LOCK CANDIDATE failure mode is expensive; calendar-forced re-runs without a candidate are not.
 
+**Do not import this gate as a per-candidate rider outside the scope above.** A candidate
+pre-registration whose subject matter sits in the "Not required" list (a book/strategy addition,
+an operational decision, ORB-MNQ/venue-native research) may cite this gate as informational
+context, but must not import a specific item from another frozen gate document as a rider whose
+consequence is fixed **before the gate runs** — see the worked non-example below. If a
+pre-registration wants this gate's verdict to be load-bearing, it must sit inside this gate's own
+declared scope, with a FAIL treated as a real falsifier, not pre-negotiated to non-blocking.
+
 ---
 
 ## Procedure
@@ -118,6 +126,37 @@ C2 rejected as **regime-fragile** by the gate. The H1↔H2 spread of 12.9pp is d
 Without this gate, the sweep would have produced a LOCK CANDIDATE recommendation on C2 with no dissenting evidence. **This gate is the specific reason the regime fragility entered the record.**
 
 **Postscript — 2026-05-08 OVERRIDE.** Joshua subsequently adopted C2 anyway, on broker-feed-resolution + median-pass-time grounds (see `archive/docs/briefs/Q-DDP-1/recommendation.md` OVERRIDE section + `archive/docs/briefs/bust_attribution_flip.md` closure). The gate's regime-fragility signal was preserved as dissent, with a forward revert trigger (rolling 6-month MC pass-rate <95% for two consecutive windows → revert to C0). The methodology value of this worked example is unchanged — the gate **correctly surfaced** fragility evidence; whether to act on that evidence is a separate decision Joshua made on broader information.
+
+---
+
+## Worked non-example: candidate-1 rider (2026-07-15/16)
+
+Documented in [`2026-08-24 ADR — regime-gate scope worked non-example and F1 discharge`](../adr/2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md);
+summarized here per Rule 14 (corrections land where the error is read).
+
+The `FROZEN` prop-survivor-scoring pre-registration
+([G1](../briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md) in the gate-stack
+audit's own shorthand) carries, in its §7 freeze list, item 7: *"Regime-robustness caveat — run
+the regime gate on the deployable expression before trusting the ceiling result."* That item's own
+subject — prop-tier book scoring, not a `dd_protection` Pareto sweep — sits inside this gate's
+"Not required" list above. A downstream `FROZEN` pre-registration (the Class-S existing-strategy
+book candidate #1 chain, frozen 2026-07-15) imported that item as a per-candidate rider and
+pre-declared, **before the gate ran**, that a FAIL would not overturn the candidate's discharge —
+only ride into the next gate as a standing caveat.
+
+The rider then ran (2026-07-16) and returned `GATE FAIL (regime-fragile)` on both discharge tiers
+(H1 bust ≈4.37%, bootstrap bust 95th-percentile ≈10.4% — both against a 3.0% ceiling). Per the
+pre-declared posture, the FAIL did not block anything: the candidate was recorded
+`discharges_falsifier: true` and admitted onward with the FAIL noted only as a caveat.
+
+This is not a hard-core violation of the gate's own acceptance criteria — computed honestly, and
+the gate-stack programme audit's own theory-comparison pass found the rider's criteria were
+*stricter* than this gate's canonical Part C (whose three limbs are pass-rate tests only; the
+rider's FAIL was driven partly by a bust limb Part C does not contain) while its *consequence* was
+relaxed to non-blocking. The defect is narrower and more specific: importing this gate outside its
+own scope, as a rider, with the outcome fixed in advance — bindingness theater, not a broken test.
+**Both source documents stay `FROZEN` and byte-unedited** (Trap #12); this section is the
+upstream-of-the-claim correction Rule 14 requires, not an edit to either.
 
 ---
 
