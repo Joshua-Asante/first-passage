@@ -105,7 +105,7 @@ Q-TRADECAP-1 confirmed the gap. STATE queue row 2 is the election. The CFD-era f
 ## §7 — Execution plan (self-executing; $0 / K=0)
 
 - **Phase 0 — Geometry (done this session, before lock).** G1/G2/G3 measured in §0. **H-GEO accepts:** Option 1-as-staged is not startable. Recommended default for the *operator* (not elected here): **2** (alert tripwire), threshold not imported from 2.0%. **1-realized** waits on disaster-stop Phase 0a. **1-size** is available if the operator wants a size bound knowing it does not close realized loss.
-- **Phase 1 — Operator election.** Pick exactly one frozen ID. Do not wire until the election artifact exists.
+- **Phase 1 — Operator election.** Recorded `Proposed` on [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) (ID **2**). Do not wire until that ADR is `Accepted`.
 - **Phase 2 — Verdict assertion** per §6.
 
 ---

@@ -36,7 +36,7 @@ any entry, full or stub (a-first; bare claims `a`).
 
 **Focus:** Decision. Queue row 2: operator asked for the light ADR after the consult recommendation.
 
-**Shipped:** [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) `Proposed`. No rail wire. Q stays `OPEN` until `Accepted`.
+**Shipped:** [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) `Proposed`. No rail wire. Q stays `OPEN` until `Accepted`. Blast-radius: phase-D D4, consult HOLD, brief Phase 1, and `1r_estimation.md` retargeted at the Proposed ADR.
 
 **Decisions/defects:** ID **2** observe-only. Surviving consult rows on the notice. Claude judgment review requested.
 

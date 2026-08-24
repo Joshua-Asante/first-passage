@@ -56,9 +56,10 @@ unblock downstream of the first strategy-signal fill.
 
 ## Task D4 — Pre-arming hygiene (parallel, cheap, before first armed session)
 
-- [ ] **Per-trade loss-bound election** (STATE queue row 2): operator elects on
-  [`Q-TRADECAP-2`](../../briefs/Q-TRADECAP-2-per-trade-bound-election.md). Do not elect from
-  the CFD-era two-option fork in `1r_estimation.md`.
+- [ ] **Per-trade loss-bound election** (STATE queue row 2): ratify
+  [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](../../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md)
+  (`Proposed`). Do not wire until `Accepted`. Do not elect from the CFD-era fork in
+  `1r_estimation.md`.
 - [ ] **Disaster-stop Phase 0a** — attended real-account SIM observation (operator-committed
   2026-08-24 forward trigger). Only a recorded PASS unlocks Phase 1 (`sl=` wiring into the
   listener). If it lands, the survivor's first armed sessions carry a broker-side stop; if not,

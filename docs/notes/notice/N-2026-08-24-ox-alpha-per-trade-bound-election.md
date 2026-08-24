@@ -4,7 +4,7 @@
 **Observed:** 2026-08-24
 **Author:** Cursor Cloud Agent (commission: send the crux of the Q-TRADECAP-2 problem to `stealth/ox-alpha`, sanitized, with enough context)
 **Source:** OpenRouter `stealth/ox-alpha` chat-completions, one sanitized adversarial review of a genericized election packet. Reconciled against the real brief before any row is a finding.
-**Status:** `HOLD` until operator election on [`Q-TRADECAP-2`](../../briefs/Q-TRADECAP-2-per-trade-bound-election.md)
+**Status:** `HOLD` until [`elect-2`](../../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) is `Accepted` (or declined)
 **Lives in:** `docs/notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md`
 
 Lane: [`2026-08-22-ox-alpha-adversarial-lens-scope.md`](../../adr/2026-08-22-ox-alpha-adversarial-lens-scope.md) §2 (adversarial lens on a decision-authoring artifact — not the candidate-generation carve-out). Zero authority; objections are not findings until the table below. Frozen option set is not amended.
@@ -66,19 +66,19 @@ Verdicts: **SURVIVES** (carries into the unpaid election) · **PARTIAL** · **DI
 
 ## §4 — Routing decision
 
-**HOLD** until the operator elects on `Q-TRADECAP-2`. Do not graduate a new Q. Do not amend the frozen pre-reg. Do not wire a tripwire or cap from this notice.
+**HOLD** until the Proposed elect-2 ADR is `Accepted` or declined. Do not graduate a new Q. Do not amend the frozen pre-reg. Do not wire a tripwire or cap from this notice.
 
 Decision: HOLD
-Reason: surviving rows constrain how an elected close is *recorded*; they do not pick the ID.
+Reason: ID **2** is recorded `Proposed`; surviving rows still constrain the ratification write-up.
 
 ---
 
 ## §5 — If HOLD: re-check trigger
 
-- **Re-check date:** operator election on `Q-TRADECAP-2`, or disaster-stop Phase 0a `PASS`, whichever first
-- **Trigger condition:** the light/full ADR that records the election must dispose O4/O5/O6/O7/O9 or explicitly decline them
-- **Drop trigger:** operator declines all three frozen IDs and deletes STATE queue row 2 (parent `AMBIGUOUS-HOLD`)
-- **Calendar entry:** none — board write is the Q-TRADECAP-2 lineage pointer
+- **Re-check date:** elect-2 ADR `Accepted` or declined, or disaster-stop Phase 0a `PASS`, whichever first
+- **Trigger condition:** the Accepted write-up disposes O4/O5/O6/O7/O9 or explicitly declines them
+- **Drop trigger:** operator declines the Proposed ADR and deletes STATE queue row 2 (parent `AMBIGUOUS-HOLD`)
+- **Calendar entry:** none — board write is the elect-2 ADR
 
 ---
 
