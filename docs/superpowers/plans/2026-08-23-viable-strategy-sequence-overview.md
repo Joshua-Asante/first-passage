@@ -22,11 +22,11 @@ step 0.
 
 | Phase | Document | Cost | Gate to start | Serial dependency |
 |---|---|---|---|---|
-| **A — Derive the target** | [`phase-a-target-derivation`](2026-08-23-viable-strategy-phase-a-target-derivation.md) | $0 / K=0 | operator GO (offered, not yet given) | none — starts immediately on GO |
-| **B — Mechanism supply** | [`phase-b-mechanism-supply`](2026-08-23-viable-strategy-phase-b-mechanism-supply.md) | $0 (falsifier stage) | per-candidate; two operator bar-readings named inside | A2's shape region (pre-check input); A1's revival list (for B-revive lane) |
+| **A — Derive the target** | [`phase-a-target-derivation`](2026-08-23-viable-strategy-phase-a-target-derivation.md) | $0 / K=0 | A1+A2 executed 2026-08-23; A3 voided | none — started on GO |
+| **B — Mechanism supply** | [`phase-b-mechanism-supply`](2026-08-23-viable-strategy-phase-b-mechanism-supply.md) | $0 (falsifier stage) | per-candidate; two operator bar-readings named inside | A2's shape region (pre-check input; disclosed-N residual unsigned); A1's revival list (B-revive lane voided) |
 | **C — The gauntlet** | [`phase-c-gauntlet`](2026-08-23-viable-strategy-phase-c-gauntlet.md) | $0 until data pulls; per-candidate | operator B4 GO per candidate (MSL charter step 5) | a Phase-B survivor |
-| **D — Deployment** | [`phase-d-deployment`](2026-08-23-viable-strategy-phase-d-deployment.md) | $0 | starts automatically when a candidate reaches Pine; arming GOs operator-only | a Phase-C survivor |
-| **∥ — §4 firm-model repair** | [`parallel-s4-firm-repair`](2026-08-23-viable-strategy-parallel-s4-firm-repair.md) | $0 / K=0 | operator GO (fresh Q per the Q-FIRMEOD-1 closure bar) | none — parallel with A/B |
+| **D — Deployment** | [`phase-d-deployment`](2026-08-23-viable-strategy-phase-d-deployment.md) | $0 | starts automatically when a candidate enters TNEC-1 intake (Phase C step 8); arming GOs operator-only | a Phase-C survivor |
+| **∥ — §4 firm-model repair** | [`parallel-s4-firm-repair`](2026-08-23-viable-strategy-parallel-s4-firm-repair.md) | $0 / K=0 | R1+R2 landed 2026-08-23; R3 gated on a Phase-C survivor | none — parallel with A/B |
 
 ## Standing constraints inherited by every phase
 

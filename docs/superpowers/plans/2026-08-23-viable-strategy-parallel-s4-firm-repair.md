@@ -3,10 +3,12 @@
 > **For agentic workers:** REQUIRED SUB-SKILL: superpowers:subagent-driven-development or
 > superpowers:executing-plans. Checkbox (`- [ ]`) syntax for tracking.
 
-**AUTHORIZATION:** `AWAITING GO` — this work is the successor the
-[Q-FIRMEOD-1 closure](../../briefs/closures/Q-FIRMEOD-1-closure-falsified.md) named but, per its
-own convention, did not open ("naming ≠ opening"). Opening it is a fresh Q + operator GO. Runs in
-parallel with Phases A/B; must land **before** any Phase-C survivor is scored for §4.
+**AUTHORIZATION:** R1+R2 GO executed 2026-08-23 (R1 ratified `RESOLVED — WITH NAMED RESIDUAL`;
+R2 `RESOLVED` at `65dc17b`). R3 remains gated on a Phase-C survivor. The
+[Q-FIRMEOD-1 closure](../../briefs/closures/Q-FIRMEOD-1-closure-falsified.md) named this
+successor but, per its own convention, did not open ("naming ≠ opening") — that sentence is
+history; the fresh-Q + operator-GO condition it named was met the same day. Runs in
+parallel with Phases A/B; R1+R2 must have landed **before** any Phase-C survivor is scored for §4.
 **Cost:** $0 / K=0 — reuses committed engine fixtures and free primary-source reads.
 **Parent:** [`sequence overview`](2026-08-23-viable-strategy-sequence-overview.md)
 

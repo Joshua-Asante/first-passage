@@ -146,15 +146,15 @@ Same class, found while reading the owners (not in the original five; E6):
 
 **Repair:** banners match body. Sequence-level Status stays `AWAITING GO`.
 
-- [ ] **s4 plan banner.** Replace `AWAITING GO` with: R1+R2 GO executed
+- [x] **s4 plan banner.** Replace `AWAITING GO` with: R1+R2 GO executed
   2026-08-23 (R1 ratified `WITH NAMED RESIDUAL`; R2 `RESOLVED`). R3 remains
   gated on a Phase-C survivor. Keep the "naming ≠ opening" sentence as
   history, not as the live condition.
-- [ ] **Phase A banner + checkboxes.** `AUTHORIZATION:` A1+A2 GO executed
+- [x] **Phase A banner + checkboxes.** `AUTHORIZATION:` A1+A2 GO executed
   2026-08-23; A3 voided (empty revival list). Mark A1/A2 tasks `[x]`; mark
   A3 `[x]` as voided-not-run (one-line why).
-- [ ] **Overview Phase A row.** Gate: "A1+A2 executed 2026-08-23; A3 voided."
-- [ ] **Overview ∥ row.** Gate: "R1+R2 landed 2026-08-23; R3 gated on a
+- [x] **Overview Phase A row.** Gate: "A1+A2 executed 2026-08-23; A3 voided."
+- [x] **Overview ∥ row.** Gate: "R1+R2 landed 2026-08-23; R3 gated on a
   Phase-C survivor."
 
 **Do not change:** overview Status `AWAITING GO` · Phase B `AUTHORIZATION:
@@ -174,12 +174,13 @@ a candidate reaches Pine" (Phase C step 6) and its dependency as "a Phase-C
 survivor" (Phase C step 8 / TNEC-1). Phase D's own document sides with the
 later definition. Latent — nothing has reached either point.
 
-**Repair (E4):** overview adopts the owner.
+**Repair (E4):** overview adopts the owner. **Folded into Packet 3** — single
+sentence on a file Packet 3 already had open.
 
-- [ ] **Overview Phase D row.** Gate: "starts automatically when a candidate
+- [x] **Overview Phase D row.** Gate: "starts automatically when a candidate
   enters TNEC-1 intake (Phase C step 8); arming GOs operator-only."
-  Dependency stays "a Phase-C survivor."
-- [ ] **Phase D / Phase C.** No body edit unless a sentence still says
+  Dependency stays "a Phase-C survivor." Folded into Packet 3 (same file).
+- [x] **Phase D / Phase C.** No body edit unless a sentence still says
   "reaches Pine" as the D trigger (none found on read). Phase C exit already
   says TNEC-1 → Phase D.
 
