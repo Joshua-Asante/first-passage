@@ -1,3 +1,8 @@
+# Avenue A Route B — generate→confirm checklist (runnable) — **WITHDRAWN 2026-08-24**
+
+> ⚠ **Withdrawn 2026-08-24.** The governing ADR, [`2026-08-05-avenue-a-generate-confirm-route`](../adr/2026-08-05-avenue-a-generate-confirm-route.md),
+> is now `Superseded` in full by [`2026-08-24-sourcing-phase-channel-retirement`](../adr/2026-08-24-sourcing-phase-channel-retirement.md) — ground: 0/4 campaigns, across the mechanism's entire life, ever reached the confirm stage. Per the note below ("if the ADR ever reverts to `Proposed`/`Withdrawn`, this file is a draft playbook again and authorizes no pull"), this checklist now authorizes **no pull, no G0 freeze, no campaign**. Re-entry requires a fresh ADR under corrected design (a redesigned promotion floor — the diagnosed flaw, per `2026-08-08-edge-cohort-correction-and-necessity-retarget.md`), not a revival of this checklist as written. The body below is left unedited (dated-decision integrity) as a historical/reference playbook only.
+
 # Avenue A Route B — generate→confirm checklist (runnable)
 
 **Status:** checklist for [`ADR 2026-08-05-avenue-a-generate-confirm-route`](../adr/2026-08-05-avenue-a-generate-confirm-route.md).  

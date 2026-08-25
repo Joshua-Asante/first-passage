@@ -12,6 +12,24 @@ The intake bar is the same as for any candidate: a mechanism-level claim with fa
 
 ## Entries
 
+### buyback-blackout abstention × MNQ — KILL (POWER; pre-G0)
+
+**Rejection scope:** the Phase B lane B3 construct `buyback-blackout abstention` on CBOT
+**MNQ** (aggregate cap-weight-in-blackout sleeve; daily short-at-open / cover-15:45) as folded
+into A1's compelled-abstention arithmetic check — not MNQ the instrument, not other
+compelled-absence families, not a sleeve riding beside an independent daily mechanism.
+**Closure date:** 2026-08-23
+**Authoritative artifact:** [`A1 audit §6`](notes/audits/2026-08-23-kill-register-attribution-audit.md)
+**Closure basis:** POWER class, category-inherited from F5/D3 (power 0.24–0.30 at single-digit
+bp/session). Cadence survived with disclosure (token-trade covers clustered gaps). No card
+authored; $0/K=0. Fold-in ran so this idea never consumed an MSL card slot.
+**Surviving finding (NOT rejected):** the Phase C sleeve *rule* (a sleeve must name a daily
+partner); MNQ instrument standing; B1/B2 live Phase B lanes.
+**Re-proposal bar:** a materially different magnitude argument than F5's three failed instances
+— **not** a cadence re-litigation, not a sleeve-only card, not a parameter retune.
+
+<!-- concept-intake-entry mechanism_family="buyback-blackout-abstention" instrument="MNQ" rejection_reason="pre-G0 POWER kill, category-inherited from F5/D3 (power 0.24–0.30 at single-digit bp/session); cadence survived with disclosure; no card authored" harness_disposition_ref="A1 audit §6 (docs/notes/audits/2026-08-23-kill-register-attribution-audit.md)" date="2026-08-23" class="pre-g0-power-kill" role_tested="arithmetic-fold-in" falsifier_failed="POWER vs F5/D3 class precedent" addback_condition="materially different magnitude argument than F5's three failed instances — NOT cadence re-litigation / sleeve-only card / param retune" -->
+
 ### turn-of-month-premium × SPX500
 
 **Rejection scope:** the Q-TOM-SPX-1 construct `turn-of-month-premium` on
@@ -1717,6 +1735,73 @@ not an end-of-day effect**; and the **MNQ family's last `K_intrinsic=1` Cap seat
 [`lab/analysis/orb/eodadv_mnq_2026-08/RESULTS.md`](../lab/analysis/orb/eodadv_mnq_2026-08/RESULTS.md) ·
 [`lab/analysis/harvest/driftex_2026-08/RESULTS.md`](../lab/analysis/harvest/driftex_2026-08/RESULTS.md) (incl. the
 §Addendum 2026-08-01 reachability pre-flight and the z→t correction).
+
+---
+
+### COT/TFF positioning-extreme reversal (hedging-pressure contrarian signal) — DROP (unscreenable; shape + power)
+
+**Rejection scope:** the direction (fade CFTC COT/TFF non-commercial or leveraged-fund positioning once
+it reaches a rolling historical extreme, across a 9-instrument menu — 6E/6J/MGC/MCL/ZN/ZB/ZF/MES/M2K) is
+rejected as an **entry mechanism**, on **shape + power** grounds — not on mechanism-reality grounds (the
+underlying hedging-pressure literature is real and citable). Not `H-COTREV-6A` (AUD/M6A-scoped, a
+narrower prior instance of the same family) and not `Q-ORBPOS-1` (a diagnostic question about one dated
+MNQ regime break, not a strategy-candidate proposal).
+**Closure date:** 2026-08-24
+**Class:** shape-failure (primary, decisive) + power-starvation (independently sufficient) — not a
+cost-law kill; cost-law was never reached.
+**Authoritative artifact:** [`docs/notes/research/2026-08-24-cot-positioning-reversal-harvest-sourcing.md`](notes/research/2026-08-24-cot-positioning-reversal-harvest-sourcing.md)
+**Closure basis:** predicted payoff shape is symmetric, ~40–50% win rate (possibly sub-coin-flip), with
+no a-priori reason for mean-win > mean-loss — a contrarian entry into a persistent positioning extreme
+risks being stopped out just before the eventual reversal. The venue's own 630-cell shape-feasibility
+sweep ([`shape_feasibility_map_2026-08/RESULTS.md`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md))
+found no cell at win_rate ≤50% is FEASIBLE for any tested shape/cadence/risk — this candidate's predicted
+shape sits 15–30 points inside that dead zone, and the failure is structural (mechanism character, not
+sample noise), so a real-panel pull would very likely confirm rather than rescue it. Independently
+sufficient: realistic event count (accounting for multi-week autocorrelation/persistence of positioning
+extremes, not the raw 52 weekly releases/yr) is ~20–160/instrument over the ~20yr TFF era — the same
+low-N regime that killed H-TSMOM-1 (N≈86, power 0.34); the one usable literature Sharpe (Dreesmann,
+Herberger & Charifzadeh 2023, best-of-6-of-many-markets, fails portfolio-level aggregation) implies
+δ/σ ≈0.17–0.29, below this program's own applied 0.35–0.65 power floor at N<150 across nearly the whole
+plausible range. Cost-law never reached (moot).
+**Surviving finding (NOT rejected):** the hedging-pressure mechanism class itself — real and
+multi-decade-citable (Bessembinder 1992 through Kang-Rouwenhorst-Tang 2020, JF) — kept as a
+sourced-but-not-viable Tier-A entry, not a fabricated mechanism; the 6E/6J/MGC/MCL/ZN/ZB/ZF/MES/M2K
+instruments standing; a genuinely higher-frequency crowding proxy or a hedger-sentiment (not
+speculator-extreme) specification, neither evaluated here.
+**Re-proposal bar:** a higher-frequency (intraday/daily, not weekly-COT-derived) crowding proxy, using
+the hedger-sentiment rather than speculator-extreme specification (per `H-COTREV-6A`'s own unspent
+recovery path), with a demonstrably right-skewed rather than symmetric predicted payoff — **NOT** a
+parameter retune of the extreme threshold, a different instrument on the same speculator-extreme
+specification, or a wider COT-era window (the power problem is autocorrelation-driven, not
+sample-length-driven).
+
+<!-- concept-intake-entry mechanism_family="cot-tff-positioning-extreme-reversal" instrument="6E,6J,MGC,MCL,ZN,ZB,ZF,MES,M2K" rejection_reason="DROP (unscreenable-drop): predicted payoff shape symmetric ~40-50% WR (possibly sub-coin-flip), no a-priori mean-win>mean-loss -- sits 15-30pp inside the venue's own shape_feasibility_map dead zone (no win_rate<=50% cell FEASIBLE at any shape/cadence/risk). Independently sufficient power fail: realistic event count ~20-160/instrument over 20yr TFF era (autocorrelation-driven extreme-clustering, not raw 52/yr); best literature Sharpe (Dreesmann et al 2023, 6-of-many markets, portfolio-aggregation FAILS) implies delta/sigma ~0.17-0.29, below this program's own 0.35-0.65 applied floor at N<150 across nearly the whole plausible range. Cost-law never reached (moot). Wang(2003) sign-direction complication: speculator extremes CONTINUE, hedger extremes REVERSE -- undermines the literal 'speculator-extreme reversal' framing." harness_disposition_ref="literature sourcing note (docs/notes/research/2026-08-24-cot-positioning-reversal-harvest-sourcing.md); no register_search, no manifest, no K spent" date="2026-08-24" class="shape-failure+power-starvation" role_tested="entry" falsifier_failed="predicted shape inside venue's win_rate<=50% dead zone (independently sufficient); power delta/sigma 0.17-0.29 vs 0.35-0.65 applied floor at realistic N=20-160 (independently sufficient)" addback_condition="higher-frequency (intraday/daily) crowding proxy using the HEDGER-sentiment (not speculator-extreme) specification, with a demonstrably right-skewed predicted payoff -- NOT a threshold retune, a different instrument on the same speculator-extreme spec, or a wider COT-era window (power problem is autocorrelation-driven, not sample-length-driven)" -->
+- **cot-tff-positioning-extreme-reversal on 6E/6J/MGC/MCL/ZN/ZB/ZF/MES/M2K** — rejected 2026-08-24
+  (shape-failure + power-starvation: predicted ~40–50% WR symmetric shape sits inside the venue's own
+  win_rate≤50% dead zone; realistic event count ~20–160/instrument implies δ/σ ≈0.17–0.29 vs. the
+  0.35–0.65 applied power floor; cost-law never reached). Dedup: closest sibling `H-COTREV-6A` (AUD,
+  UNSCREENABLE Req-2, 2026-08-16) shares the same Wang-2003 sign defect; `Q-ORBPOS-1` (FALSIFIED
+  2026-08-23, MNQ diagnostic, no registry row per its own convention) independently reinforces. Artifact
+  [`docs/notes/research/2026-08-24-cot-positioning-reversal-harvest-sourcing.md`](notes/research/2026-08-24-cot-positioning-reversal-harvest-sourcing.md).
+### London-fix wake (dealer-inventory-normalization fade) on 6E/6B — FALSIFIED (placebo/orthogonality battery)
+
+**Rejection scope:** the direction (fade the 10:58–11:04 ET benchmark-fix impulse sign in the 11:10–13:00 ET wake window, on full-size 6E and 6B futures) is rejected as an **entry mechanism**, on **edge-failure** grounds (not cost — B2.0 already confirmed 6E/6B clear the 4× cost floor at full size; this is a signal-does-not-exist finding on top of a cost-feasible venue expression). Adjacent to, but a distinct mechanism family from, the *FX intraday fixing-reversal (session mean-reversion) on EURUSD* entry above (F3): that entry scored the fix **print** itself (event-time, cash EURUSD, cost-killed); this lane scored a later dealer-normalization **wake** window (11:10–13:00 ET, full-size futures) that an operator ruling (B2.1, 2026-08-24) admitted as new mechanism evidence clearing F3's "not a different fix" re-proposal bar — the wake-WHO was tested on its own merits here, not dismissed by F3's cost-law wall.
+**Closure date:** 2026-08-24
+**Class:** edge-failure (the signal carries no orthogonal information over generic reversal for either symbol; 6B additionally sits below the placebo null's own median at both tested clock resolutions, 6E's decisive minute-resolution placebo statistic does not — see Closure basis) — NOT a cost-constraint (B2.0 already confirmed both symbols clear the 4× cost floor at full size).
+**Authoritative artifact:** [`docs/notes/research/2026-08-24-phase-b-lane-b2-placebo-battery-results.md`](notes/research/2026-08-24-phase-b-lane-b2-placebo-battery-results.md) (+ harness [`lab/analysis/_inbox/b2_london_fix_wake_2026-08-24/run_b22_placebo_battery.py`](../lab/analysis/_inbox/b2_london_fix_wake_2026-08-24/run_b22_placebo_battery.py) + `RESULTS.md` + raw log).
+**Closure basis:** frozen plan kill criterion (`docs/superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md`, Lane B2 task B2.2): "Kill if the fix dummy adds nothing over generic reversal or sits ≤ placebo 60th percentile." On 2 years of Databento GLBX.MDP3 `ohlcv-1m`/`ohlcv-1h` (continuous `.v.0`, 2024-08-24→2026-08-24; n=469 6E / n=447 6B valid fix-observations): orthogonality regression (`target ~ 1 + trailing_vol + prior_hour_return + imp_sign`, adapted from the gamma-family GEX-gate precedent's `partial_out_t`) fails for **both** symbols on its own — 6E correctly-signed but far short of significance (t=−0.90 vs the |t|≥2 bar); 6B wrong-signed (t=+1.63, positive = momentum-continuation, not fade). Placebo null, decided on the clock resolution matching the orthogonality leg (1-minute bars; 1,000 replicates, day-of-week + trailing-vol matched by construction and verified): 6B's real statistic ranks at the 4.9th percentile of the null (below its own median), also kill-eligible on this leg — but **6E's real statistic ranks at the 67.1st percentile, clearing the 60th-percentile bar** (a coarser hourly-bar null, run first and kept as a cross-check, had ranked it at the 20.9th — the two resolutions disagree, itself consistent with 6E's Step-3 sign-fragility across clock resolutions; see the artifact for the full breakdown). Net: 6B is killed by both legs independently; **6E is killed by the orthogonality leg alone**, its placebo leg does not corroborate at the resolution matching that leg — still sufficient under the criterion's own OR, but a narrower finding for 6E than for 6B.
+**Re-proposal bar:** evidence the wake effect is **orthogonal** to generic hourly mean reversion (|t|≥2, correctly signed, after controlling for trailing-vol and prior-hour-return) **and** clears the placebo-null 60th percentile, on a panel or window this battery did not already test — NOT a re-tune of the placebo-hour menu, the trailing-vol window, or the entry/exit clock offsets within the same 10:58–13:00 ET span; and NOT a subset/direction cut mined after this whole-sample test failed (the "adds nothing over generic reversal" finding is a whole-sample result, and post-hoc cuts are the named degeneration move this repo's own methodology already flags).
+
+<!-- concept-intake-entry
+     mechanism_family="fx-fixing-reversal-dealer-wake" instrument="6E,6B"
+     rejection_reason="FALSIFIED (B2.2 placebo/orthogonality battery, plan Lane B2): orthogonality regression (target ~ 1 + trailing_vol + prior_hour_return + imp_sign) NOT significant/correctly-signed for either symbol -- 6E t=-0.90 (correct sign, |t|<2), 6B t=+1.63 (wrong sign) -- kills both symbols on its own. Placebo null decided on the clock resolution matching the orthogonality leg (1-minute bars, 1000 replicates, day-of-week+trailing-vol matched): 6B ranks 4.9th pctile (below the null's own median, also kill-eligible); 6E ranks 67.1th pctile (CLEARS the 60th-pctile bar -- a coarser hourly-bar null, kept as cross-check, had ranked it 20.9th; the two resolutions disagree). Net: 6B killed by both legs, 6E killed by orthogonality alone. 2yr Databento GLBX.MDP3 ohlcv-1m/1h, continuous .v.0, 2024-08-24->2026-08-24, n=469/447."
+     harness_disposition_ref="B2.2 frozen kill criterion (lab/analysis/_inbox/b2_london_fix_wake_2026-08-24/RESULTS.md)"
+     date="2026-08-24"
+     class="edge-failure"
+     role_tested="entry"
+     falsifier_failed="orthogonality regression |t|<2 or wrong-signed (both symbols, sufficient alone) OR minute-resolution placebo rank <=60th pctile (6B only -- 6E's placebo leg clears at 67.1th pctile)"
+     addback_condition="orthogonal to generic hourly reversal (|t|>=2, correct sign) AND clears placebo 60th pctile, on a panel/window not already tested here -- NOT a placebo-menu/vol-window/clock re-tune, NOT a post-hoc subset/direction cut" -->
+- **fx-fixing-reversal-dealer-wake on 6E/6B** — rejected 2026-08-24 (edge-failure: B2.2 placebo/orthogonality battery FALSIFIED both symbols — orthogonality regression |t|<2 or wrong-signed kills both on its own (6E t=-0.90, 6B t=+1.63); minute-resolution placebo null additionally kills 6B (rank 4.9th pctile) but 6E's placebo leg clears it (rank 67.1th, vs 20.9th at the coarser hourly cross-check) — 6E is a single-leg kill; n=469/447 over 2yr Databento GLBX.MDP3); artifact `docs/notes/research/2026-08-24-phase-b-lane-b2-placebo-battery-results.md`.
 
 ---
 

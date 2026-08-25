@@ -71,7 +71,11 @@ $ git log -1 --format="%h %ad" --date=short -- core/mc/simulation.py core/mc/pre
 
 # 7 trailing tiers cross-reference (Bulenox 5 + BluSky 2)
 $ grep -n '"dd_type": "trailing"' core/firm_rules.py
-92,104,116,128,140,508,524   [7 hits, confirmed]
+92,104,116,128,140,508,524   [7 hits, confirmed]   # as-of-authoring 2026-08-23
+# 2026-08-24 currency: same 7 hits, lines now 122,134,146,158,170,600,616
+# Durable hook (line-number-free):
+$ grep -c '"dd_type": "trailing"' core/firm_rules.py
+7
 
 # CLOCK evidence reproduces verbatim (see §1 command + output above)
 $ python -m pytest tests/core/test_mc_intraday_barrier.py -q
@@ -96,6 +100,7 @@ $ git log --oneline -- docs/briefs/pre-registration/Q-FIRMEOD-1-verdict-preregis
 | Date | Change | By |
 |---|---|---|
 | 2026-08-23 | Operator GO recorded; pre-registration authored and frozen; Phase 1a (LOCK) + Phase 1b (CLOCK) executed same session; closure authored. `FALSIFIED` recorded. | Claude Code (Sonnet 5), operator GO |
+| 2026-08-24 | §10 currency note only: `dd_type=trailing` grep line numbers shifted (still 7 hits). Durable hook is `grep -c` expected 7. Verdict / Iterate unedited. | Cursor (surface-consistency Packet 5) |
 
 ---
 

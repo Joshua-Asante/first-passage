@@ -32,6 +32,46 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-25q — Blast-radius on Packet 0 accept
+
+**Focus:** blast-radius skill on the Packet 0 accept (`eaf5574`).
+**Shipped:** Packet 0 section heading retitled (`not executed` → `accepted 2026-08-24`) on [`consistency plan`](superpowers/plans/2026-08-24-viable-strategy-surface-consistency.md).
+**Decisions/defects:** **BLAST-RADIUS: REPAIRED**. Live residual-unsigned consumers were already closed; leftover hits below are historical.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)).
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
+## 2026-08-25p — Accept A2 N-reduction (Packet 0)
+
+**Focus:** Operator accept of A2's disclosed `sims_per_seed` reduction. Fast-forwarded local `main` to `origin/main` and re-checked Packet 0 premises against post-#155 commits.
+**Shipped:** Packet 0 on [`consistency plan`](superpowers/plans/2026-08-24-viable-strategy-surface-consistency.md) · queue `#1` residual clause removed · Phase B / overview Inputs · [`A2 RESULTS §4`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md) point-of-read · newest-15 keep-15 roll.
+**Decisions/defects:** post-#155 `main` (PR #156 T1 venue-binding disposition) did not move A2 §4 / B3 / Phase D / Q-FIRMEOD premises. Not a Phase B GO. **BLAST-RADIUS: CLEAN** — live `disclosed-N residual unsigned` gone; leftover hits are historical (2026-08-23 index bullets, Packet 1 repair text, prior SESSIONS Open/next).
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)).
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
+## 2026-08-25o — Execute viable-strategy surface-consistency packets 1–5
+
+**Focus:** Operator `GO` on the consistency plan. Packets 1–5 landed. Packet 0 (A2 N-reduction sign-off) still operator-owed. `queue-exception: operator asked to plan the inconsistency repair on #1's owner artifacts`.
+**Shipped:** [`plan`](superpowers/plans/2026-08-24-viable-strategy-surface-consistency.md) (`GO` packets 1–5). Residual on `#1` + Phase B Inputs · B3 KILL in situ + registry row · s4/Phase A banners match body · Phase D gate = TNEC-1 · Q-FIRMEOD-1 `grep -c` hook.
+**Decisions/defects:** elections E1–E6 unchanged. **BLAST-RADIUS: REPAIRED** — R1 audit §0 pin got the same currency note. Left: overview Status + Phase B `AWAITING GO`; pain-point charter sequence lines; historical A2-audit quote of Phase A's old banner.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). Residue (`queue-exception: operator asked to plan the inconsistency repair on #1's owner artifacts`): [`consistency plan`](superpowers/plans/2026-08-24-viable-strategy-surface-consistency.md) Packet 0 still unpaid.
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
+## 2026-08-25n — Plan: viable-strategy surface consistency
+
+**Focus:** Hygiene plan for five contradictions on the viable-strategy owners (queue `#1`), plus two same-class banner lags. `queue-exception: operator asked to plan the inconsistency repair on #1's owner artifacts`.
+**Shipped:** [`plan`](superpowers/plans/2026-08-24-viable-strategy-surface-consistency.md) (`AWAITING GO`). Elections: propagate A2 N-reduction residual (do not invent sign-off) · B3 KILL in situ + registry row · s4/Phase A banners match body · Phase D trigger = TNEC-1 · Q-FIRMEOD-1 citation → count-stable hook.
+**Decisions/defects:** plan E1–E6. Not a Phase B GO. Not an A2 `sims_per_seed` ratification.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). Residue (`queue-exception: operator asked to plan the inconsistency repair on #1's owner artifacts`): [`consistency plan`](superpowers/plans/2026-08-24-viable-strategy-surface-consistency.md) GO unpaid.
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-25l — Merge #147 into M1-date branch
 
 **Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)).
@@ -203,6 +243,20 @@ any entry, full or stub (a-first; bare claims `a`).
 **Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
 
 **Live-ops state:** unchanged — rail disarmed; no book.
+
+---
+
+## 2026-08-24c — Regime-gate scope precedent + K-tiering + `pursuit-records` retirement (PR #163)
+
+**Focus:** Decision. `queue-exception: executing a validation-phase-cuts plan carried forward from a prior conversation`. Not a queue row.
+
+**Shipped:** [PR #163](https://github.com/Joshua-Asante/first-passage/pull/163) (merged `0adf8ba`) — two ADRs: [`regime-gate scope + F1 discharge`](adr/2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md), [`K-tiering + cost-law split + gate retirement`](adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md). Worked non-example added to `regime_robustness_gate.md`; SKILL.md §8 gains K-tiering, §2 points to `cost_geometry_pregate.py`; `methodology_lessons.md` M-20 de-duplicated; `pursuit-records` removed from `gates.yml` (Rule 16 R5).
+
+**Decisions/defects:** the carried-forward plan misattributed the regime-gate rider anti-pattern to ORB-MNQ-1 — verified against production it's the Class-S candidate-1 chain instead, discharging the 2026-08-03 gate-stack audit's overdue **F1** item. "5 cost-law restatement sites, collapse to 1" was itself wrong — two distinct formulas exist, not one. `profile_cell`/`profile_consult`/`admission`/`prereg` enforcement question the plan wanted ruled on was already resolved in code. Post-merge conflict on `docs/adr/INDEX.md` (concurrent PR #162) resolved via `check_adr_graph.py --regenerate-index`, not by hand.
+
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)).
+
+**Live-ops state:** unchanged — rail disarmed; no book; no strategy deployed.
 
 ---
 

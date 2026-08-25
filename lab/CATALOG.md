@@ -23,6 +23,7 @@ documents the camp boundary for humans/tools.
 
 | slug | theme | status | hot | one-liner | body | heavy |
 |---|---|---|---|---|---|---|
+| a2_panel_noise_venue_bound_2026-08-24 | c1 | ACTIVE | yes | the A2 map's dominant uncertainty is the single 520-week DGP panel each cell sits on, not the MC path count its `se_b... | lab/analysis/c1/a2_panel_noise_venue_bound_2026-08-24/ | — |
 | aegis1p_3leg_rescore_2026-07-27 | c1 | ACTIVE | yes | Aegis@1.00% 3-leg corrected-geometry re-MC under Tradeify envelope | lab/analysis/c1/aegis1p_3leg_rescore_2026-07-27/ | — |
 | aegis3leg_engine_param_2026-08-20 | c1 | ACTIVE | yes | Parameterized Aegis 3-leg rescore engine (default 1.00% only; J14 bars new risk-arm measurement) | lab/analysis/c1/aegis3leg_engine_param_2026-08-20/ | — |
 | band_quantization_2026-08-02 | c1 | ACTIVE | yes | MNQ zero-floors at every FRIENDLY tier below 100K under the locked-proportional split; the two published 50K clearers... | lab/analysis/c1/band_quantization_2026-08-02/ | — |
@@ -160,6 +161,7 @@ documents the camp boundary for humans/tools.
 
 | slug | theme | status | hot | one-liner | body | heavy |
 |---|---|---|---|---|---|---|
+| b2_london_fix_wake_2026-08-24 | _inbox | CLOSED | yes | B2.2 battery: 6E and 6B both DEAD via orthogonality (\|t\|<2/wrong-signed); placebo leg decisive only for 6B (rank 4.9) | lab/analysis/_inbox/b2_london_fix_wake_2026-08-24/ | — |
 | ict_1mexec_1_2026-08 | _inbox | FALSIFIED | yes | **RESOLVED (FALSIFIED at Stage 2, F1).** The frozen construct's gross edge does not | lab/analysis/_inbox/ict_1mexec_1_2026-08/ | — |
 | ict_mnq_2026-08 | _inbox | ACTIVE | yes | ICT cascade re-run on NQ/MNQ at $0/K=0/Cap seat unspent: W and D confirm on independent instruments, pools falsified ... | lab/analysis/_inbox/ict_mnq_2026-08/ | — |
 | q_trainkill_1_2026-08 | _inbox | HOLD | yes | `AMBIGUOUS-HOLD`. BOUNDED extremes disagree (`MISCALIBRATED` at ε vs `KILLS-INFORMATIVE` at 1−ε). Scored-only core (n... | lab/analysis/_inbox/q_trainkill_1_2026-08/ | — |

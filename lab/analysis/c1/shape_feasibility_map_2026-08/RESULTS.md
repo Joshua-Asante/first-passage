@@ -2,7 +2,22 @@
 
 # Payoff-shape feasibility map (Phase A Task A2 — the target spec)
 
-**Status:** **ACTIVE** — 945-cell region published (Tradeify Select / MFFU / **Tradeify Growth**, the last added 2026-08-24); Select≡MFFU bit-identical; 8/8 corner-case + 3/5 MARGINAL-band validation tuples resolve clean at full N (2/5 stay MARGINAL, 0 confident-verdict flips). ⚠ **§7.2's "no cell at win_rate ≤ 50% is FEASIBLE" is scoped to the $3,000 rope and does NOT hold for Growth's $3,500 rope — see §13.** Screens shape, not mechanisms.
+**Status:** **ACTIVE** — 945-cell region published (Tradeify Select / MFFU / **Tradeify Growth**, the last added 2026-08-24); Select≡MFFU bit-identical; 8/8 corner-case + 3/5 MARGINAL-band validation tuples resolve clean at full N (2/5 stay MARGINAL, 0 confident-verdict flips). §4 `sims_per_seed` reduction **operator-accepted 2026-08-24** (published region's N; not a frozen-N re-sweep; not a Phase B GO). ⚠ **§7.2's "no cell at win_rate ≤ 50% is FEASIBLE" is scoped to the $3,000 rope and does NOT hold for Growth's $3,500 rope — see §13.** Screens shape, not mechanisms.
+
+> ⚠ **2026-08-24 reader-intercept — §13.2's scoping of §7.2 does not survive a longer panel; frozen body unedited (Trap #12).**
+> `build_panel` draws **one** 520-week realisation per tuple and the block-bootstrap can only resample it, so the reported
+> `se_bust` bars (path re-sampling from a *fixed* panel) omit the panel-draw term entirely — and §4 / §4.1 / §13.4 all re-run
+> more **paths** from the **same** panel, so none of the three can detect it. `wr0.50_mild_right_skew_cd2_rk250` — the single
+> cell §13.2 rests on — carries the grid's most extreme panel draw (**z = +3.12**, realised drift **1.50×** intended) and flips
+> **`FEASIBLE` → `INFEASIBLE`** on Growth (bust 0.0093 → 0.0927 at a 5,200-week panel) and **`MARGINAL` → `INFEASIBLE`** on
+> Select (0.0287 → 0.1627). At that panel length **no cell at `win_rate ≤ 50%` is `FEASIBLE` on Growth either**, so
+> **§7.2 as originally written stands.**
+> **Explicitly NOT disturbed — checked, not assumed:** §13.1 and §13.3 are **paired** Select-vs-Growth comparisons on
+> identical panels, so panel noise cancels; re-run at 5,200 weeks the paired result is **33 improve / 282 unchanged /
+> 0 degrade** against §13.1's own 38 / 277 / 0. **The rope finding replicates and should be read as it stands.** §6.1's
+> Select≡MFFU bit-identity is paired in the same way and likewise stands. What moves is the near-gate **boundary** —
+> which is where §13.2 lives. Owner of the re-score:
+> [`a2_panel_noise_venue_bound_2026-08-24`](../a2_panel_noise_venue_bound_2026-08-24/RESULTS.md) §1/§6.
 
 **What this is not:** not a strategy, not a candidate, not a backtest of anything real. It is a
 coverage map over a *synthetic* trade-generating process, scored through the production
@@ -29,7 +44,7 @@ Task A2).
 | `docs/briefs/closures/Q-STATVALID-1-closure-falsified.md` | `50396fc` 2026-08-23 | The SE-of-proportion / 2-sigma noise-floor convention this harness's `gate_status()` implements, at the same `N` semantics (proportion out of total MC paths) Q-STATVALID-1 itself used. |
 | `docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md` + `lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/run_w1_intraday_both_halves.py` | ADR `56663b2` 2026-08-22 · harness `027a729` 2026-08-14 | The citable prior art for "intraday-honest limb": pair `daily_pnl` with `intraday_low` via `paired_blocks_from_daily`, thread both through `run_tier_remc(..., intraday_blocks=...)`, never let the intraday channel be silently vacuous. This harness's `score_cell` follows the identical call shape. |
 | `docs/adr/2026-08-13-implied-sr-report-only-fade-reopen.md` | `027a729` 2026-08-14 | First-consumer check (i) input — the reopened Tradeify-native fade design-region (§8 below). |
-| `docs/superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md` | `3ea7988` 2026-08-23 | First-consumer check (ii) input — the three Phase-B lanes' card-precheck rows (§8 below). |
+| `docs/superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md` | `3ea7988` 2026-08-23 | First-consumer check (ii) input — Phase-B live card-precheck rows B1.4 / B2.3 (§8 below). B3 KILL at A1 (same day, earlier); not a live pre-check. |
 | `lab/CATALOG.md` header + Active›c1 table | `c42e7e7` 2026-08-23 | Row format for this campaign's CATALOG entry. |
 
 **Full-corpus search for the 2026-08-22 consistency-constraint quantification harness** (memory:
@@ -138,6 +153,8 @@ anywhere below.
 ---
 
 ## §4 — Compute budget (disclosed deviation from the frozen sims_per_seed)
+
+**Operator acceptance (2026-08-24):** the disclosed `sims_per_seed=500` (N=1,500) reduction is accepted as the published region's N. Seeds `(42, 123, 2026)` and horizon `1500` stay frozen. This is not a frozen-N re-sweep and not a Phase B GO.
 
 Measured this session, on this machine, at the frozen `sims_per_seed=10,000` (3 seeds × 10,000 =
 30,000 paths, horizon 1,500), **uncontended** (isolated single-process timing, before any parallel
@@ -445,8 +462,8 @@ gate at the *same* win rate, for the reason §7 already names (mean edge, not wi
 
 ### (ii) Confirm legibility for Phase-B candidate pre-checks
 
-`docs/superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md` names each lane's
-own card-precheck row (B1.4 / B2.3 / B3.2) as the point where a candidate's predicted shape is
+`docs/superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md` names each *live*
+lane's own card-precheck row (B1.4 / B2.3) as the point where a candidate's predicted shape is
 checked against this region — **that check is each lane's own job, not this document's**; the
 brief for A2 asks only that the region's axes be legible/usable for that purpose. Confirmed:
 
@@ -462,11 +479,13 @@ brief for A2 asks only that the region's axes be legible/usable for that purpose
   this map's three shape buckets and 7-point win-rate axis are ready to receive B2's own
   precheck once B2.0/B2.1 clear and a predicted shape is named — A2 does not supply that
   assumption on B2's behalf.
-- **B3 (buyback-blackout abstention)** — its own doc already states the structural reason it can
-  only be a *sleeve* ("clustered frequency cannot satisfy the activity rule alone"), which is
-  **consistent with** (not contradicted by) this map's cadence axis starting at 1/week: B3's blocked
-  quarterly clustering sits below every cadence value this grid tests, confirming — from a second,
-  independent angle — why B3 cannot stand alone on this venue.
+- **B3 (buyback-blackout abstention) — KILL, not a live pre-check.** A1 audit §6 (2026-08-23,
+  earlier the same day this RESULTS was authored) ruled B3 **KILL** (POWER class, category-inherited
+  from F5/D3). Phase B proceeds with B1/B2 only. The cadence observation below is **historical** —
+  it is not a live card-precheck. The plan's own sleeve note ("clustered frequency cannot satisfy
+  the activity rule alone") was **consistent with** (not contradicted by) this map's cadence axis
+  starting at 1/week; that consistency does not reopen the kill. Re-proposal: a materially different
+  magnitude argument than F5's three failed instances — [`A1 §6`](../../../../docs/notes/audits/2026-08-23-kill-register-attribution-audit.md).
 
 ---
 
@@ -640,6 +659,8 @@ grep -c "not yet given" docs/notes/audits/2026-08-23-shape-feasibility-map-audit
 |---|---|---|
 | 2026-08-23 | Initial authoring — harness, 630-cell region sweep, validation subset, first-consumer checks | Claude Code (Sonnet 5) |
 | 2026-08-23 | Review-fix pass (§12): corrected the false §6.1 days-to-pass minimum (~30 → verified 16.0); added §4.1 MARGINAL-band full-N validation subset (`--marginal-validation` CLI mode, `marginal_validation_data.jsonl`, 10 new cells); updated Status line, §11 Limitations, Verification | Claude Code (Sonnet 5) |
+| 2026-08-24 | §8 (ii) / §0: B3 dropped as a live card-precheck (A1 KILL same day, earlier); cadence note kept as historical. B1.4 / B2.3 remain the live pre-check rows | Cursor (surface-consistency Packet 2) |
+| 2026-08-24 | §4 N-reduction operator-accepted as the published region's N (Packet 0). Status + §4 point-of-read note. Sweep bytes unchanged | Cursor (surface-consistency Packet 0) |
 
 ---
 
@@ -680,6 +701,17 @@ finding: a strictly wider rope on otherwise identical geometry cannot make any p
 the engine agrees on all 315 cells.
 
 ### §13.2 — The win-rate floor moves 5 points for two of three shapes
+
+> ⚠ **2026-08-24 reader-intercept (see the Status banner).** These floors are a property of the
+> 520-week panels, not of the ropes. Re-scored at a 5,200-week panel — same generator, same tuple
+> seeds, same engine, same frozen seeds / horizon / `sims_per_seed`, **same risk levels** — Growth's
+> floors read **65% / 55% / 60%** (`symmetric` / `mild_right_skew` / `bounded_clustered`) against
+> Select's **65% / 55% / 65%**. So the advantage is **one** shape of three, not two, and it is a
+> *different* shape than the table below names: `symmetric` and `mild_right_skew` land on Select's
+> floor exactly, and only `bounded_clustered` keeps a 5-point edge. Correspondingly, **no
+> `win_rate ≤ 50%` cell is `FEASIBLE` on Growth**, so the ⚠ below does not fire and §7.2 stands.
+> Frozen body unedited.
+> [`a2_panel_noise_venue_bound_2026-08-24`](../a2_panel_noise_venue_bound_2026-08-24/RESULTS.md) §6.2.
 
 | Shape | Select floor | Growth floor |
 |---|---|---|

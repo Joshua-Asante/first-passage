@@ -23,9 +23,9 @@ Caught on 2026-06-11: a 4H chart masquerading as 15m, a duplicate export, a two-
 
 ## 2. Cost-law pre-flight (before designing, not after failing)
 
-Under risk-based sizing, **cost-in-R ∝ price / stop_distance** (tight stop → huge notional per $risk → commission on notional). Compute the round-trip hurdle from the intended stop width BEFORE building:
+Under risk-based sizing, **cost-in-R ∝ price / stop_distance** (tight stop → huge notional per $risk → commission on notional). Compute the round-trip hurdle from the intended stop width BEFORE building, using `scripts/cost_geometry_pregate.py` (canonical implementation — `round_trip_cost_price()` + `cost_r()`) — or the empirical version in `scripts/selection_tests.py costs` on any comparable panel. Convention: target expectancy ≥ 4× the hurdle (default ceiling `cost_R < 0.05`). Reference points: 0.097R at 1.42×ATR(15m) USDCAD (crippling); 0.055–0.072R at 2.5×ATR.
 
-`cost_R ≈ [2·commission_pct·price + 2·slippage_ticks·ticksize] · (price/stop_dist) / price` — or just run the empirical version in `scripts/selection_tests.py costs` on any comparable panel. Convention: target expectancy ≥ 4× the hurdle. Reference points: 0.097R at 1.42×ATR(15m) USDCAD (crippling); 0.055–0.072R at 2.5×ATR.
+This is the **per-trade, stop-distance-normalized** form. It is a distinct fact from `docs/methodology/strategy_harvest.md` §1 Requirement 5's **per-event, panel-price-bp** cost-law inequality (`cohort δ (bp/event) ≥ 4 × RT_frac`) — same 4× convention and round-trip-cost skeleton, different normalization basis and different use (this one is a pre-build design check; Requirement 5 is the harvest/admission-time reachability gate). Do not conflate the two or restate either formula from memory — `cost_geometry_pregate.py` owns this one; Requirement 5 owns the other.
 
 ## 3. Excursion-bounded counterfactuals (zero-run kill test)
 
@@ -76,6 +76,22 @@ series — the case the `futures-anomaly-discovery` ledger is built to feed. Its
 rigorous version. **Trigger:** any candidate that is the winner of a search over K
 strategies/configs (ledger output, grid winner, mined signal). If it came from a
 search, its naive p-value and Sharpe are inflated until corrected here.
+
+**K-tiering (declared, not silently skipped — 2026-08-24).** §8a (SPA/StepM/MCS) and §8c
+(PBO-via-CPCV) are gated on the declared search-space size K:
+- **K∈{0,1}** — no real multiplicity to correct for (a single candidate, or a trivial one-trial
+  "search"). The correction is a **declared no-op**: log "K≤1, correction not applicable" rather
+  than silently never invoking §8a/§8c — the audit trail should show this was a considered
+  decision, not an omission.
+- **K∈{2,3}** — the correction **runs**. This is the only band that is both reachable and
+  load-bearing under the current admission ceiling: in the standard (mechanism-first) lane,
+  `lab/discovery/admission_schema.py` refuses to open a manifest once
+  `research_utils.axis_screen.floor_at_k(K) > CAP` (`CAP = 1.0`), which the code's own comment
+  states occurs at **K≥4** for the standard 6.5-year confirm window — a candidate cannot reach
+  this section with K≥4 in that lane at all (`ABORT-NO-MANIFEST`, Phase 3). The separate
+  charter-governed deep lane has its own `K_CEILING = 33` and is out of scope for this tiering.
+- §8b (deflated Sharpe / DSR) needs no separate tiering — it is already K-aware by construction
+  (`SR0` is a function of K); this convention is scoped to §8a/§8c only.
 
 **8a. Universe-level data-snooping (arch — do not reimplement).** The whole
 correction layer is in `arch.bootstrap`, the same package as the block bootstrap:

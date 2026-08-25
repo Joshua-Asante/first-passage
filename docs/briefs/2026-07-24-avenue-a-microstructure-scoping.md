@@ -90,7 +90,15 @@ Absent the qualifying triple, the verdict is **FALSIFIED (as scoped)** → **sco
 estimate command is runnable today); it is deliberately hard to satisfy. A qualifying feature would
 re-open toward RESOLVED, never AMBIGUOUS (the gate is binary on the triple).
 
-### Addendum 2026-08-05 — condition 3 gains a second route (ADR [`2026-08-05-avenue-a-generate-confirm-route`](../adr/2026-08-05-avenue-a-generate-confirm-route.md), `Accepted`)
+### Addendum 2026-08-05 — condition 3 gains a second route (ADR [`2026-08-05-avenue-a-generate-confirm-route`](../adr/2026-08-05-avenue-a-generate-confirm-route.md), `Accepted`) — **WITHDRAWN 2026-08-24**
+
+> ⚠ **Withdrawn 2026-08-24.** [`ADR 2026-08-05-avenue-a-generate-confirm-route`](../adr/2026-08-05-avenue-a-generate-confirm-route.md)
+> is now `Superseded` in full by [`ADR 2026-08-24 — sourcing-phase channel retirement`](../adr/2026-08-24-sourcing-phase-channel-retirement.md).
+> Per that ADR's own §7 pre-specified revert instruction ("If this ADR ever reverts to
+> `Proposed`/`Withdrawn`, ... Avenue A §6's addendum block must be withdrawn in the same change"),
+> this entire addendum block is withdrawn. §6's frozen original text is restored as the sole reading:
+> condition 3 is **survivor-tied only** (Route A). This addendum's text below is left unedited
+> (dated-decision integrity); this note is the reader intercept.
 
 The frozen §6 text above is **unchanged and still binding**; this addendum **adds** an alternative
 way to satisfy condition 3. Conditions 1–2 (depth-shape-not-category; not fill-trivial) bind under
