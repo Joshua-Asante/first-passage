@@ -1,0 +1,12 @@
+=== MNQ x ict-liquidity ===
+ledger: ops/instruments/MNQ.md
+verdict: DEAD (2026-08-04)
+  source: ../../lab/archive/mnq_fvg_draw_probe_2026-08-04/RESULTS.md
+  BLOCKING — the re-proposal bar below must be met and addressed in the pre-registration.
+class finding (mechanism-wide, not specific to MNQ): Sweep→same-direction-FVG→opposing-pool-draw direction is real on SPX500 (block-permutation p=0.0144) but fails robustness (drop-top-3 = −0.152R, 95% block-CI straddles 0). [SPX500.md D2](SPX500.md)
+class finding (mechanism-wide, not specific to MNQ): **Liquidity pools are anti-attractors**, replicated on three independent instruments — old highs/lows are swept far *less* often than a radius-matched MC null, on every side measured (US500 0.55/0.34 vs base 0.76/0.61; NQ 0.5401/0.3128 vs 0.7756/0.6014; MNQ 0.5303/0.3397 vs 0.8020/0.6502). Any construct keying on "price is drawn to old highs/lows" argues against three panels. The companion **bear-FVG draw** is the real positive of this class (NQ 0.8630 vs base 0.7494, RESOLVED). [MNQ.md N9](MNQ.md) · [`RESULTS.md`](../../lab/analysis/_inbox/ict_mnq_2026-08/RESULTS.md) §3
+BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
+cost hurdle: 3.01 bp/session (4x modern-era MNQ hurdle (D5-RECOST-1)) — VERIFY at #N6
+K bank: read ../../discovery_manifests/ — never trust a snapshot.
+prior: ORB-MNQ-1's fills are known-good - the cost fragility is a commission sensitivity, not a fill-mechanics defect (median intrabar penetration 81 ticks entries / 64 ticks stops, 0.7% shallow-touch, zero non-traded levels). [#N2]
+prior: Both exit-redesign directions are pre-killed by an order-free counterfactual: tighter stops lose 0.03-0.06R (winners need the full-range stop) and no fixed profit target beats baseline - the 0.50R median close give-back is real but unharvestable. [#N3]

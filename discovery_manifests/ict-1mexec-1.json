@@ -1,0 +1,69 @@
+{
+  "run_id": "ict-1mexec-1",
+  "status": "closed",
+  "opened_at": "2026-08-24T17:44:29Z",
+  "tool": "manual-construct-reconstruction",
+  "K": 1,
+  "alpha": 0.05,
+  "data_window": "2019-05-06:2026-08-24",
+  "hypothesis": "The raid->same-direction-FVG->limit-fill 1-minute ICT execution construct, whose only prior blocker (a measured 0/247 fill rate on US500) was refuted on native MNQ/ES data 2026-08-04, produces post-cost expectancy on native MNQ 1-minute bars.",
+  "params": "{\n  \"construct\": \"raid(pvLen=2,raidWin=8) -> same-direction displacement FVG(dispMlt=1.5,atrLen=14,useBody=false) -> limit-on-return at FVG mid (retraceK=6) -> exit vs PDH/PDL target and swept-pool stop (+-1 tick), stop-first on same-bar ambiguity\",\n  \"instrument\": \"MNQ.v.0 continuous, databento GLBX.MDP3, ohlcv-1m\",\n  \"window\": \"2019-05-06:2026-08-24\",\n  \"cost_basis_binding\": \"Tradeify $0.91/side + 1 tick RT, 1.41pt total\",\n  \"arm_filters\": {\"min_rmult\": 4.0, \"min_abs_r_target\": 2.0},\n  \"roll_exclusion\": \"+-4 calendar days of quarterly 3rd-Friday expiry\",\n  \"K_intrinsic\": 1,\n  \"exit_geometry_status\": \"reconstructed (stop=swept-pool+-1tick, target=PDH/PDL), not recovered (Pine source lost) -- see PREREG 2026-08-24 disclosure 3\"\n}\n",
+  "closed_at": "2026-08-25T02:00:32Z",
+  "results": {
+    "n_submitted": 1,
+    "naive_alpha": 0.05,
+    "n_pass_naive_alpha": 0,
+    "bonferroni_threshold": 0.05,
+    "n_pass_bonferroni": 0,
+    "n_multiplicity_killed": 0,
+    "bh_rows": [
+      {
+        "rank": 1,
+        "pvalue": 1.0,
+        "bh_threshold": 0.05,
+        "bh_reject": false
+      }
+    ],
+    "n_pass_bh": 0,
+    "expected_false_positives_global_null": 0.05,
+    "candidates": [
+      {
+        "id": null,
+        "pvalue": 1.0
+      }
+    ]
+  },
+  "lane": "mechanism-first",
+  "reachability_attestation": "lab/analysis/_inbox/ict_1mexec_1_2026-08/reachability_attestation.md",
+  "profile_cell": "MNQ:ict-liquidity",
+  "profile_consult": "lab/analysis/_inbox/ict_1mexec_1_2026-08/profile_consult_MNQ_ict-liquidity.txt",
+  "admission": {
+    "decision": "ADMIT",
+    "reasons": [],
+    "catalogue_k": 1,
+    "registered_k": 1,
+    "floor_at_k": 0.65,
+    "cap": 1.0,
+    "power": null,
+    "power_min": 0.5,
+    "limbs": {
+      "catalogue_k": 1,
+      "em1_edge_r": null,
+      "em2_risk_usd": null,
+      "em2_measured_edge_r": null,
+      "em3_independence_and_stops": null,
+      "em4_weekly_cadence": null,
+      "em5_session_slot_legal": null,
+      "d1": null,
+      "d2": null,
+      "n_events": null,
+      "delta_over_sigma": null,
+      "n_edge_net_expectancy": null,
+      "n_edge_ci_excludes_zero": null,
+      "n_edge_dsr": null
+    },
+    "disclosures": {}
+  },
+  "prereg": "docs/briefs/pre-registration/2026-08-04-ict-1m-execution-mnq-preregistration.md",
+  "verdict": "FIRST-PASS ONLY. Candidates clearing the crude multiplicity floor are listed above. This is NOT a promotion. Hand the full candidate set (all K returns) to strategy-validation for universe-level correction (White RC / Hansen SPA / Romano-Wolf) and the native-micro OOS gate before any candidate is trusted."
+}

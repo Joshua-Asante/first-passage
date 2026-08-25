@@ -1,0 +1,41 @@
+{
+  "diag": {
+    "n_bars": 2573467,
+    "n_fvgs": 129331,
+    "n_bull_fvgs": 62230,
+    "n_raid_paired_trades": 26105,
+    "n_after_arm_filters": 24470,
+    "roll_excluded_bars": 274564,
+    "dropped_rmult": 348,
+    "dropped_absr": 1287
+  },
+  "n_trades": 24470,
+  "bases": {
+    "tradeify_binding": {
+      "tradeability_floor_pt": 1.4100000000000001,
+      "n_dropped_below_floor": 1771,
+      "n_valid": 22699,
+      "mean_gross_r": 0.06311402441280496,
+      "mean_cost_r": 0.2636236096036252,
+      "median_cost_r": 0.1978947368421053,
+      "ratio_edge_over_cost": 0.239409605640788,
+      "hurdle_4x_median_cost": 0.7915789473684212,
+      "mean_net_r": -0.2005095851908202,
+      "pct_net_positive": 10.304418696858892
+    },
+    "bulenox_report_only": {
+      "tradeability_floor_pt": 1.1099999999999999,
+      "n_dropped_below_floor": 1106,
+      "n_valid": 23364,
+      "mean_gross_r": 0.0530522217442702,
+      "mean_cost_r": 0.226955836211106,
+      "median_cost_r": 0.16145454545454543,
+      "ratio_edge_over_cost": 0.2337557060877825,
+      "hurdle_4x_median_cost": 0.6458181818181817,
+      "mean_net_r": -0.1739036144668358,
+      "pct_net_positive": 10.088169833932547
+    }
+  },
+  "verdict": "FALSIFIED_F1",
+  "f1_fires": true
+}
