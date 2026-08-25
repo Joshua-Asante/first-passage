@@ -264,6 +264,7 @@ $ git log -1 --format="%H %ad" --date=short -- docs/adr/2026-08-08-adr-ceremony-
 | 2026-08-23 | **Merge note (concurrent-session reconciliation).** The two rows above were authored independently by separate concurrent sessions and only discovered each other at merge time. Flagging honestly rather than silently combining: this session (see the second addendum below, and the mechanism-supply-sourcing / "hardest problems" / reformulation-tension asks recorded in `project_tradeify_consistency_payoff_shape_constraint_2026_08_22.md`, memory) made several additional sanitized ox-alpha sends today, some under the original §2 adversarial-lens scope and some under the separately-authorized bounded extension below — **none were logged against the "Use N" counter the other session introduced**, because this session was not aware that convention existed until this merge. The §4 revert trigger ("three consecutive zero-value uses") should not be read as accurately tracked until a full cross-session reconciliation of every actual send this date is done — this row exists so that gap is visible, not silently inherited. | Claude Code (merge-time note) |
 | 2026-08-23 | Use N of the sanctioned lens recorded (analog-pin vs inspiration). Does not amend §2 / §4 / §5. Pointer only. | Cursor Cloud Agent |
 | 2026-08-24 | Use N of the sanctioned lens recorded (per-trade bound election). Does not amend §2 / §4 / §5. Pointer only. | Cursor Cloud Agent |
+| 2026-08-25 | Use N of the sanctioned lens recorded (mechanism-first gate vs. historical iteration). Does not amend §2 / §4 / §5. Pointer only. | Cursor Cloud Agent |
 
 ---
 
@@ -493,6 +494,35 @@ the offline-simulation-inflates-edge lesson); two threads survive as genuinely n
 not-yet-actionable (LLM-pretraining-era holdout contamination as an unnamed leak class; anytime-
 valid/e-process sequential testing as an unconsidered alternative to the frozen DSR/Bonferroni
 formula). Revert trigger (b) (three consecutive zero-value uses) does not tick.
+
+No transcript of the hidden-reasoning channel is stored in-repo (sanitization bar). The notice
+holds the reconciliation table.
+
+The Use-N ledger remains incomplete across concurrent sessions — see the Change history merge
+note. This row does not claim a complete series number.
+
+---
+
+## Addendum 2026-08-25 — Use N: sanitized mechanism-gate vs. historical-iteration consult
+
+**Dated note; does not amend §Decision / §2 Scope / §4 Falsifier / §5 Forbidden moves.**
+Use-count only, so the §4 trigger schedule stays evaluable.
+
+Sent under §2's **base scope** (adversarial lens on a reasoning/judgment call — not the
+candidate-generation extension), at operator direction ("pose this question to ox-alpha, post
+the response"). The question: whether the mechanism-first admission gate is over-correcting
+relative to the historically-iterated held book, and whether a capped-trial iteration path
+exists for a mechanism-uncertain candidate. Genericized past recognition — no firm, instrument,
+strategy, date, or dollar tokens. Reconciliation owner:
+[`N-2026-08-25-ox-alpha-mechanism-gate-overcorrection.md`](../notes/notice/N-2026-08-25-ox-alpha-mechanism-gate-overcorrection.md).
+
+Net: no new candidate, no methodology change proposed. Part 1's load-bearing inferences fail
+against the wall-scope generation-input reading, A1's empty revival list, and the actual
+live-ops posture (there is no live book to be "live-validated"). Part 2 independently
+re-derives the estate's own binding argument. Part 3 converges on the already-chartered
+deep-lane / blind / harvest stack, described as a priced prior; one thread is genuinely novel
+and not-yet-actionable (gate-calibration probes that would measure the four-clause gate's
+false-negative rate). Revert trigger (b) (three consecutive zero-value uses) does not tick.
 
 No transcript of the hidden-reasoning channel is stored in-repo (sanitization bar). The notice
 holds the reconciliation table.

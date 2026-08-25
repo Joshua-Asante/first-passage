@@ -32,6 +32,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-25r — ox-alpha on mechanism-gate vs historical iteration
+
+**Focus:** Operator commission: pose the mechanism-first-gate vs. historically-iterated-book question to ox-alpha and post the response.
+**Shipped:** [`notice`](notes/notice/N-2026-08-25-ox-alpha-mechanism-gate-overcorrection.md) · [`ox-alpha ADR addendum`](adr/2026-08-22-ox-alpha-adversarial-lens-scope.md#addendum-2026-08-25--use-n-sanitized-mechanism-gate-vs-historical-iteration-consult). $0 / K=0.
+**Decisions/defects:** no methodology change. Part 1 inferences fail against wall-scope + A1 + no-live-book. Part 2 re-derives the estate's own argument. One novel thread (gate-calibration probes) recorded, not adopted. Revert trigger (b) does not tick.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)).
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-25q — Blast-radius on Packet 0 accept
 
 **Focus:** blast-radius skill on the Packet 0 accept (`eaf5574`).
