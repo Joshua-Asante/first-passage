@@ -204,6 +204,10 @@ lab/analysis/**/orb_universe_2026-06-22/_screen_*.json
 # _RESULTS.json + _LOG.md, not the vendor bytes themselves.
 lab/analysis/c1/msl_s4_mgc_2026-08/_explore_confirm_*_weekly_defs_cache.parquet
 lab/analysis/c1/msl_s4_mgc_2026-08/_explore_confirm_*_RAW.json
+# Q-ICT-1MEXEC-1: native MNQ.v.0 1m bars, regenerable at $0.00 via the exact
+# db_fetch.py pull command recorded in discovery_manifests/ict-1mexec-1.json
+# and lab/analysis/ict_1mexec_1_2026-08/RESULTS.md.
+lab/analysis/_inbox/ict_1mexec_1_2026-08/mnq_1m.parquet
 
 # Operator-issued Explore GO tokens (MSL cards): promoted from the tracked
 # EXPLORE_GO.DRAFT.md via each card's own Promote rule. Every MSL closure doc

@@ -1,17 +1,84 @@
 # Stage-0 verdict pre-registration — `Q-ICT-1MEXEC-1` (ICT 1M execution layer, native MNQ)
 
-**Status:** `DRAFT — NOT FROZEN · NOT SIGNED · NO K BOUND · NO MANIFEST OPENED · NO DATA PULLED`.
-This document exists so the operator can decide **whether** to open the track. Nothing here is
-ratified, and authoring it consumes no K and fetches no bytes. The freeze event is a separate
-commit; the K-bind is a separate `register_search open`; both are gated on the §8 operator GO.
+**Status:** `RESOLVED — FALSIFIED (F1, Stage 2)`. Closed 2026-08-24, same session as freezing.
+Stage 2's own cost-law screen (§8's designated cheapest, first kill point) fired: Tradeify-basis
+edge/cost ratio **0.239** against the required **≥4.0** (mean gross R +0.0631, mean cost R 0.2636).
+Per the frozen §6 verdict gate, `FALSIFIED` is any-of-§4-falsifier-1–3, and F1 fired — Stages 3–8
+never ran. `register_search close --run-id ict-1mexec-1` recorded **0 of 1** submitted survivors;
+`K_intrinsic=1` spent, MNQ's K bank increments accordingly. Full result:
+[`RESULTS.md`](../../../lab/analysis/_inbox/ict_1mexec_1_2026-08/RESULTS.md). See the **2026-08-24
+SUPERSESSION** banner immediately below — the §2 reachability screen as originally authored is
+**stale** (computed under a K-bank rule the operator amended, ratified, and executed the same
+session this document was drafted); it was never the reason this campaign closed — Stage 2's own
+number was.
 
-**⚠ Read §2 first. The reachability screen this document is required to carry reads
-`FAIL-AS-WRITTEN`.** The admissible annSR band at this campaign's K is **[0.980, 1.000]** — a
-0.020-wide window whose floor sits **above every result ever measured on MNQ**. Per
-[ADR 2026-07-12](../../adr/2026-07-12-dsr-k-rule-and-variance-floor-supersession.md) §4 clause 4,
-*"a campaign whose disclosed minimum exceeds a stated plausible-edge ceiling is malformed and
-must not freeze as written."* §8 states the three honest dispositions; the recommended one is
-**NO-GO**.
+---
+
+## ⚠ SUPERSESSION (2026-08-24) — §2's `FAIL-AS-WRITTEN` verdict is stale; read this before §2
+
+This document's original §2 computed `K_eff = K_intrinsic + K_banked = 1 + 2 = 3` and derived an
+annSR floor of **0.980** — a band the draft itself said sat "above every result ever measured on
+MNQ." **That arithmetic was correct under the rule in force when it was written, and that rule was
+amended the same session.** [ADR 2026-08-04](../../adr/2026-08-04-family-k-bank-disclosure-not-gate.md)
+(`Accepted`, ratified by the operator 2026-08-04, **"§7 executed the same session"**) sets
+`K_eff = K_intrinsic` — `K_banked(family)` is disclosed but no longer enters the gate. This is the
+identical correction independently recorded in [`ops/instruments/MNQ.md`](../../../ops/instruments/MNQ.md)
+N10, which flags this exact `K_eff=3` / floor-0.980 / 0.020-band arithmetic as superseded and gives
+the corrected figure directly.
+
+**Corrected reachability, this campaign, under the ratified rule:**
+
+| Term | Original (stale) | Corrected |
+|---|---|---|
+| `K_eff` | `K_intrinsic(1) + K_banked(2) = 3` | **`K_intrinsic = 1`** (`K_banked` disclosed only, does not enter) |
+| annSR floor @ DSR≥0.95 | 0.980 | **0.650** |
+| Admissible band vs Cap 1.0 | [0.980, 1.000] — 0.020 wide | **[0.650, 1.000] — 0.350 wide** |
+| vs `ORB-MNQ-1` Tradeify basis (+0.835, the repo's best MNQ result) | −0.145 FAIL | **−0.185, still below the best-ever result but no longer above it — a normal, reachable bar, not a malformed one** |
+
+`K_banked(MNQ)` is now **21** (live figure, [`MNQ.md` §K_BANKED](../../../ops/instruments/MNQ.md),
+reconciled 2026-08-18) — disclosed here in full per the ADR's mandatory-disclosure requirement, and
+**genuinely irrelevant to this campaign's floor**, which is exactly the amendment's point. §2 below is
+retained **as the original record**, unedited, per this repo's forward-only correction discipline —
+read it as history, not as the current gate. The operator GO in §8 was given knowing this
+correction; it is not a re-litigation of §2, it is why §8 was reachable at all.
+
+**Second disclosure, same freeze (2026-08-24) — the profile-consult BLOCKING bar, addressed.**
+`scripts/instrument_profiles.py cell MNQ ict-liquidity` flags `MNQ x ict-liquidity` `DEAD`
+(2026-08-04, [`mnq_fvg_draw_probe_2026-08-04/RESULTS.md`](../../../lab/archive/mnq_fvg_draw_probe_2026-08-04/RESULTS.md)),
+with a standing caution: *"Route-1 arguments on `MNQ × ict-liquidity` are presumptively exhausted;
+a third probe needs operator review via route 2 (order-flow) or route 3."* Addressed here, following
+`MNQPOOL-1`'s own precedent of discharging a domain bar inline rather than skipping past it:
+
+That DEAD verdict (`MNQFVG-1`, and its sibling `MNQPOOL-1`) tested **daily-horizon D-layer objects**
+— a `pvLen=3` daily pool, or a bear FVG's "nearest untouched near edge" — expressed as a
+**09:30→16:00 session-long hold, stop-free**. Both died on the same durable mechanism: *"the
+family's structure lives at the daily horizon [median target distance 291–572 pt]... the mismatch
+[with the session-length E1 flat-by-close constraint], not edge existence, is the binding wall."*
+`Q-ICT-1MEXEC-1` shares the `ict-liquidity` vocabulary but not the failure mode: it operates on
+**1-minute-bar objects** (raid window 8 *minutes*, not days), is **conditioned on a same-direction
+raid pairing** (neither DEAD probe required this), **carries a real stop** (both DEAD probes were
+explicitly stop-free — the disclosed cause of their tail bleed), and targets **PDH/PDL**, a
+same-session-reachable distance by construction, not "the nearest untouched daily object" whose
+median distance is exactly what killed both priors. This is a different horizon and a different
+failure surface, not a re-tuned parameter on either DEAD cell — the class of re-proposal the bar's
+own "operator review" clause anticipates, not the class it forbids. The operator's 2026-08-24
+instruction to build this construct, given after reading a report that named this exact distinction
+(1-minute execution-layer mechanics vs. the daily D/W-layer draw theses), is read as that review.
+
+**Third disclosure, same freeze (2026-08-24) — exit geometry is reconstructed, not recovered.**
+§3's frozen construct table cites `harness_1m.py`/`PREREG-1M.md` for the entry mechanism and cost
+law, both byte-recoverable. It does **not** specify the exact price geometry for `dolMode=range-extreme`'s
+target or for stop placement — those lived only in the lost Pine file (§0's citation-chain note).
+Operator-confirmed default (2026-08-24, before any code ran): **stop = the swept liquidity pool's
+own price ±1 mintick beyond it** (standard ICT convention for a sweep-driven entry); **target =
+the previous completed trading day's opposite extreme (PDH long / PDL short)** — the literal
+reading of "range extreme," consistent with PDH/PDL usage already load-bearing elsewhere in this
+repo's own instrument ledgers. Same-bar target/stop ambiguity (1-minute OHLC carries no intrabar
+order) resolves **stop-first**, conservative by construction. This is a **faithful reconstruction of
+a cousin of the original construct, not a byte-identical recovery of it** — the entry trigger (raid
+→ FVG → limit fill) is recovered exactly; the exit is not, and is disclosed as such everywhere this
+document or its RESULTS reference the construct. See `build_1m_trades.py`'s own module docstring for
+the full recovered-vs-reconstructed accounting.
 
 **Campaign:** `Q-ICT-1MEXEC-1` — the ICT raid → FVG → DOL-draw execution layer, reconstructed
 offline on native databento MNQ 1-minute data. **Sole anchor: MNQ.**
@@ -266,15 +333,32 @@ both died.
 
 ## §10 — Audit hooks (runnable)
 
-**Every hook below was executed at authoring time** (2026-08-04) and its output matched the stated
-expectation — including one that did **not** and was corrected (the `floor_scan.py` `__file__`
-case, trap M-AHF).
+**Post-closure hooks (2026-08-24; the document is now `RESOLVED`, not `DRAFT` — the two hooks
+immediately below are historical, they described the pre-freeze state only):**
 
 ```bash
-# This document's status must still read DRAFT until the operator signs §8 (expect >= 1):
+# The closed manifest exists, status=closed, 0 of 1 pass, K=1 (expect: closed 0 1):
+python -c "import json;d=json.load(open('discovery_manifests/ict-1mexec-1.json'));print(d['status'],d['results']['n_pass_naive_alpha'],d['K'])"
+
+# Stage 2's own number, reproducible from the committed artifact (expect ratio ~0.239, verdict FALSIFIED_F1):
+python -c "import json;d=json.load(open('lab/analysis/_inbox/ict_1mexec_1_2026-08/results_stage2_costlaw.json'));print(d['bases']['tradeify_binding']['ratio_edge_over_cost'],d['verdict'])"
+
+# The invariant that caught 3 real bugs is a standing AssertionError, not a one-off print:
+grep -c "INVARIANT VIOLATED" lab/analysis/_inbox/ict_1mexec_1_2026-08/run_stage2_costlaw.py
+
+# The standing MNQ x ict-liquidity DEAD verdict this campaign addressed, not reopened (expect verdict: DEAD):
+grep -A1 "mechanism: ict-liquidity" ops/instruments/MNQ.md
+```
+
+**Pre-freeze hooks (executed at authoring time, 2026-08-04; historical record only — the document's
+status has since moved past DRAFT, so re-running these two will no longer match their original
+expectation and that is correct, not a regression):**
+
+```bash
+# [HISTORICAL] the document's status read DRAFT until the operator signed §8:
 grep -c "NOT FROZEN" docs/briefs/pre-registration/2026-08-04-ict-1m-execution-mnq-preregistration.md
 
-# No manifest may exist for this campaign while the status is DRAFT (expect NO match, rc=1):
+# [HISTORICAL] no manifest existed for this campaign while the status was DRAFT:
 ls discovery_manifests/ | grep -i ict
 
 # K_banked(MNQ) = 2, read from manifests not prose (expect 1, then "2 operator-stopped"):
@@ -304,3 +388,31 @@ grep -c "CORRECTED 2026-08-04" ops/instruments/MECHANISMS.md
   in response to an operator instruction to draft the K-bound pre-registration that
   `CONFIRM-FREE-NODEPLOY-2026-08-03` forbidden-move 1 requires before any ICT result may be
   read as a step toward deployment.
+- **2026-08-24 — FROZEN, Option B (GO).** Direct operator instruction to build the real MNQ 1-minute
+  execution test now that Part C measured the fill wall false on native data. Discovered and recorded
+  the SUPERSESSION above before freezing: §2's `FAIL-AS-WRITTEN`/NO-GO rested on a K-bank rule the
+  same 2026-08-04 session amended (`ADR 2026-08-04-family-k-bank-disclosure-not-gate`, `Accepted`),
+  already independently flagged stale in `ops/instruments/MNQ.md` N10. Corrected reachability:
+  `K_eff=1`, floor 0.650, band [0.650,1.000] — reachable, not malformed. Also disclosed: the exact
+  Pine exit geometry (`dolMode=range-extreme` target price, stop placement) is permanently
+  unrecoverable; operator confirmed a named ICT-standard reconstruction (swept-pool stop, PDH/PDL
+  target) before any code ran. `register_search open --lane mechanism-first --search-space-size 1`
+  binds `K_intrinsic=1` this same session. Stage 2 (cost-law screen) runs first, per §8's own
+  sequencing.
+- **2026-08-24 — RESOLVED, FALSIFIED at Stage 2 (F1).** Native MNQ.v.0 1-minute bars,
+  2019-05-06→2026-08-23 (databento, $0.00), full frozen chain (raid → same-direction displacement
+  FVG → limit fill → reconstructed exit) simulated end-to-end: 129,331 FVGs → 26,105 raid-paired →
+  24,470 survive arm-time geometry filters → 22,699 clear the ledger-F8 tradeability floor.
+  Tradeify-basis edge/cost ratio **0.239** (mean gross R +0.0631, mean cost R 0.2636; need ≥4.0) —
+  **F1 fires**. Bulenox report-only basis: 0.234, same conclusion. Net of cost: mean net R −0.2005,
+  10.3% of trades net-positive. Per §6, Stages 3–8 never ran. Three implementation bugs were found
+  and fixed before this number was trustworthy (raid-detection performance/correctness reimplemented
+  against the verified heap-based reference; a missing PDH/PDL target-side validation that let the
+  2020-03-02 COVID gap produce a −85R "trade"; a deadline-bar check-order bug that let a stop-hit
+  on the 16:00 ET flat bar exit at that bar's open instead of the stop) — caught via a standing
+  `exit_price==stop_price` invariant now permanent in `run_stage2_costlaw.py`, not a one-off
+  diagnostic. Full account: [`lab/analysis/_inbox/ict_1mexec_1_2026-08/RESULTS.md`](../../../lab/analysis/_inbox/ict_1mexec_1_2026-08/RESULTS.md).
+  `register_search close --run-id ict-1mexec-1 --pvalues 1.0`: 0 of 1 submitted survivors.
+  **Does not reopen** the standing `MNQ x ict-liquidity` DEAD verdict this campaign's own §0/profile-
+  consult disclosure addressed — that verdict stands untouched. Re-proposal bar per §5 FM-2: a
+  genuinely different candidate mechanism on this cell, not a re-tuned parameter on this one.

@@ -160,6 +160,7 @@ documents the camp boundary for humans/tools.
 
 | slug | theme | status | hot | one-liner | body | heavy |
 |---|---|---|---|---|---|---|
+| ict_1mexec_1_2026-08 | _inbox | FALSIFIED | yes | **RESOLVED (FALSIFIED at Stage 2, F1).** The frozen construct's gross edge does not | lab/analysis/_inbox/ict_1mexec_1_2026-08/ | — |
 | ict_mnq_2026-08 | _inbox | ACTIVE | yes | ICT cascade re-run on NQ/MNQ at $0/K=0/Cap seat unspent: W and D confirm on independent instruments, pools falsified ... | lab/analysis/_inbox/ict_mnq_2026-08/ | — |
 | q_trainkill_1_2026-08 | _inbox | HOLD | yes | `AMBIGUOUS-HOLD`. BOUNDED extremes disagree (`MISCALIBRATED` at ε vs `KILLS-INFORMATIVE` at 1−ε). Scored-only core (n... | lab/analysis/_inbox/q_trainkill_1_2026-08/ | — |
 | q_trainkill_2_2026-08 | _inbox | HOLD | yes | `AMBIGUOUS-HOLD`. Limb 1 did not fire (1 promotion; extremes still disagree). Limb 2: both `NEG` and `DEP-ZERO` fit. | lab/analysis/_inbox/q_trainkill_2_2026-08/ | — |

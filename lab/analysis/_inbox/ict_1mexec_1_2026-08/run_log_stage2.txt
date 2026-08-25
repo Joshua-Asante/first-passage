@@ -1,0 +1,26 @@
+[data] C:\Users\joshu\multi_firm_operations\.claude\worktrees\openrouter-ox-alpha-test-fff246\lab\analysis\ict_1mexec_1_2026-08\mnq_1m.parquet  rows=2,573,467  span=2019-05-06 00:00:00+00:00 -> 2026-08-23 23:59:00+00:00
+[chain] {
+  "n_bars": 2573467,
+  "n_fvgs": 129331,
+  "n_bull_fvgs": 62230,
+  "n_raid_paired_trades": 26105,
+  "n_after_arm_filters": 24470,
+  "roll_excluded_bars": 274564,
+  "dropped_rmult": 348,
+  "dropped_absr": 1287
+}
+
+[tradeify_binding] tradeability floor=1.4100pt  dropped 1771/24470 trades below it (stop_dist < max(1 mintick, round-trip cost) -- PREREG ledger F8)
+
+[tradeify_binding] n_valid=22699  mean_gross_R=0.0631  mean_cost_R=0.2636  median_cost_R=0.1979  ratio(edge/cost)=0.239  hurdle(4x median)=0.7916  mean_net_R=-0.2005  pct_net_positive=10.3%
+
+[bulenox_report_only] tradeability floor=1.1100pt  dropped 1106/24470 trades below it (stop_dist < max(1 mintick, round-trip cost) -- PREREG ledger F8)
+
+[bulenox_report_only] n_valid=23364  mean_gross_R=0.0531  mean_cost_R=0.2270  median_cost_R=0.1615  ratio(edge/cost)=0.234  hurdle(4x median)=0.6458  mean_net_R=-0.1739  pct_net_positive=10.1%
+
+====================================================================================================
+STAGE 2 VERDICT (Tradeify $0.91 binding basis): edge/cost ratio = 0.239  (need >= 4.0)  ->  FALSIFIED_F1
+F1 FIRES -- FALSIFIED at Stage 2. Per the frozen falsifier table, Stages 3-8 never run.
+====================================================================================================
+
+[write] C:\Users\joshu\multi_firm_operations\.claude\worktrees\openrouter-ox-alpha-test-fff246\lab\analysis\ict_1mexec_1_2026-08\results_stage2_costlaw.json

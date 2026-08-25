@@ -1,0 +1,10 @@
+{
+  "construct": "raid(pvLen=2,raidWin=8) -> same-direction displacement FVG(dispMlt=1.5,atrLen=14,useBody=false) -> limit-on-return at FVG mid (retraceK=6) -> exit vs PDH/PDL target and swept-pool stop (+-1 tick), stop-first on same-bar ambiguity",
+  "instrument": "MNQ.v.0 continuous, databento GLBX.MDP3, ohlcv-1m",
+  "window": "2019-05-06:2026-08-24",
+  "cost_basis_binding": "Tradeify $0.91/side + 1 tick RT, 1.41pt total",
+  "arm_filters": {"min_rmult": 4.0, "min_abs_r_target": 2.0},
+  "roll_exclusion": "+-4 calendar days of quarterly 3rd-Friday expiry",
+  "K_intrinsic": 1,
+  "exit_geometry_status": "reconstructed (stop=swept-pool+-1tick, target=PDH/PDL), not recovered (Pine source lost) -- see PREREG 2026-08-24 disclosure 3"
+}
