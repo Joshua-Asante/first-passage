@@ -1,0 +1,46 @@
+{
+  "leg_contracts": {
+    "aegis": 2.0,
+    "orbmnq": 1.0
+  },
+  "overlap_window": {
+    "start": "2022-09-07",
+    "end": "2025-08-20"
+  },
+  "third_boundaries": {
+    "third2_start": "2023-09-01",
+    "third3_start": "2024-08-25"
+  },
+  "scenarios": {
+    "(a) true window start": {
+      "outcome": "pass",
+      "day": 61,
+      "max_dd_pct": 0.7798256548332977,
+      "max_dd_usd": 779.8256548332977,
+      "culprit_leg": null,
+      "start": "2022-09-07",
+      "end": "2025-08-20",
+      "n_bdays_in_path": 771
+    },
+    "(b) start of 2nd third": {
+      "outcome": "pass",
+      "day": 175,
+      "max_dd_pct": 1.8895157859171796,
+      "max_dd_usd": 1889.5157859171795,
+      "culprit_leg": null,
+      "start": "2023-09-01",
+      "end": "2025-08-20",
+      "n_bdays_in_path": 514
+    },
+    "(c) start of 3rd/final third": {
+      "outcome": "horizon_cap",
+      "day": 258,
+      "max_dd_pct": 1.7275662380768557,
+      "max_dd_usd": 1727.5662380768556,
+      "culprit_leg": null,
+      "start": "2024-08-25",
+      "end": "2025-08-20",
+      "n_bdays_in_path": 258
+    }
+  }
+}

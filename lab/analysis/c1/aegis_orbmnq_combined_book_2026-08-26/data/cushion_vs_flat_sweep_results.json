@@ -1,0 +1,134 @@
+[
+  {
+    "window": "3yr",
+    "mult": "0.5x",
+    "leg_contracts": {
+      "aegis": 2.5,
+      "orbmnq": 0.2
+    },
+    "flat": {
+      "outcome": "pass",
+      "day": 214,
+      "max_dd_pct": 0.4420973652499255,
+      "max_dd_usd": 442.09736524992553,
+      "culprit_leg": null
+    },
+    "cushion": {
+      "outcome": "pass",
+      "day": 455,
+      "max_dd_pct": 0.5194307390157465,
+      "max_dd_usd": 519.4307390157464,
+      "culprit_leg": null
+    }
+  },
+  {
+    "window": "3yr",
+    "mult": "1.0x",
+    "leg_contracts": {
+      "aegis": 5.0,
+      "orbmnq": 0.4
+    },
+    "flat": {
+      "outcome": "pass",
+      "day": 129,
+      "max_dd_pct": 0.8817352204825231,
+      "max_dd_usd": 881.735220482523,
+      "culprit_leg": null
+    },
+    "cushion": {
+      "outcome": "pass",
+      "day": 148,
+      "max_dd_pct": 0.6394840721284734,
+      "max_dd_usd": 639.4840721284733,
+      "culprit_leg": null
+    }
+  },
+  {
+    "window": "3yr",
+    "mult": "1.5x",
+    "leg_contracts": {
+      "aegis": 7.5,
+      "orbmnq": 0.6
+    },
+    "flat": {
+      "outcome": "pass",
+      "day": 127,
+      "max_dd_pct": 1.3189340331672814,
+      "max_dd_usd": 1318.9340331672813,
+      "culprit_leg": null
+    },
+    "cushion": {
+      "outcome": "pass",
+      "day": 131,
+      "max_dd_pct": 0.9541789656173363,
+      "max_dd_usd": 954.1789656173362,
+      "culprit_leg": null
+    }
+  },
+  {
+    "window": "1yr",
+    "mult": "0.5x",
+    "leg_contracts": {
+      "aegis": 2.5,
+      "orbmnq": 0.2
+    },
+    "flat": {
+      "outcome": "horizon_cap",
+      "day": 179,
+      "max_dd_pct": 0.19935553573707937,
+      "max_dd_usd": 199.35553573707938,
+      "culprit_leg": null
+    },
+    "cushion": {
+      "outcome": "horizon_cap",
+      "day": 179,
+      "max_dd_pct": 0.14885490140521862,
+      "max_dd_usd": 148.8549014052186,
+      "culprit_leg": null
+    }
+  },
+  {
+    "window": "1yr",
+    "mult": "1.0x",
+    "leg_contracts": {
+      "aegis": 5.0,
+      "orbmnq": 0.4
+    },
+    "flat": {
+      "outcome": "pass",
+      "day": 140,
+      "max_dd_pct": 0.391694136184873,
+      "max_dd_usd": 391.694136184873,
+      "culprit_leg": null
+    },
+    "cushion": {
+      "outcome": "pass",
+      "day": 163,
+      "max_dd_pct": 0.29109468199472127,
+      "max_dd_usd": 291.09468199472127,
+      "culprit_leg": null
+    }
+  },
+  {
+    "window": "1yr",
+    "mult": "1.5x",
+    "leg_contracts": {
+      "aegis": 7.5,
+      "orbmnq": 0.6
+    },
+    "flat": {
+      "outcome": "pass",
+      "day": 78,
+      "max_dd_pct": 0.5773798682555035,
+      "max_dd_usd": 577.3798682555035,
+      "culprit_leg": null
+    },
+    "cushion": {
+      "outcome": "pass",
+      "day": 140,
+      "max_dd_pct": 0.426951657910525,
+      "max_dd_usd": 426.951657910525,
+      "culprit_leg": null
+    }
+  }
+]

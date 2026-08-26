@@ -4,7 +4,7 @@
 **Status (2026-08-04):** ⚠ **NO LONGER A LIVE c1 LEG — withdrawn from deployment.** The Tradeify venue is de-scoped as a deployment target for the locked Striker book, evaluation included ([`ADR 2026-08-04`](../../docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md); ⚠ **narrowed same day, Addendum 2026-08-04** — the bar is on redeploying this leg, not on Tradeify-shaped base-construct research, e.g. `MNQBASE-1`'s harvest-intake pass below); this leg never took a strategy-signal-originated fill and now has no venue. **Lifecycle unchanged: `Striker NAS100` stays `AUTHORIZED · MECHANISM @ 1.00×`** (canonical: [`strategy_lifecycle.md`](../../docs/methodology/strategy_lifecycle.md)) — no `core/lifecycle.py` write, no demotion; venue-fit is not decay. Pine, parameters and `LEG_MAP` untouched. Prior status line preserved below as record.
 
 **Status (prior, through 2026-08-03):** **LIVE c1 leg (disarmed).** Hosts the Striker NAS100 v1 **venue edition** (`striker_nas100_v1_mnq.pine`) as one of the two c1 legs on the Tradeify Select 100K eval — `dry_run=true`, WATCH-1 0.50×, **no strategy-signal-originated fill yet** (rail has canned B4 fills: B6 dry-fire 2026-07-20 + 2026-07-27 SIM; account not pristine — see [`CLAUDE.md`](../../CLAUDE.md) live-execution posture). Also the venue of the only lifecycle-admitted reconstruction candidate (`ORB-MNQ-1`, **PARKED** 2026-07-23).
-**Last updated:** 2026-08-25
+**Last updated:** 2026-08-26
 
 **Purpose:** single source of instrument-level truth (operational rule 10, [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](../../docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md)). Any session deriving/testing/adjudicating on MNQ MUST read this at session start and append a dated disposition. **Created 2026-07-25** — every 2026-07 MNQ study closed with no ledger home, so the foreclosure record existed only inside scattered closures. **The DEAD list is the point:** falsified entries are the highest-value content here and must stay as prominent as any survivor.
 
@@ -153,6 +153,23 @@ structure:
 
 ## SESSION LOG
 
+- **2026-08-26** — **ORB-MNQ-1 x Aegis-6J1 combined-book Tradeify passability sweep — ORB-MNQ-1
+  solo confirms its own standing FAIL on the corrected full 6-year panel; a small-weight
+  combination with Aegis-6J1 clears the eval ceiling in bootstrap.** Distinct pairing from the
+  same-day MYM+MNQ combined-book calc below (different session, different second leg, different
+  firm-tier default — `Tradeify_Select_100K` here vs `Growth_100K` there). The corrected full
+  6-year ORB-MNQ export (2020-08-26 -> 2026-08-21, resolving an apparent 1yr/3yr version split as
+  an incomplete-export artifact, not a strategy toggle) finds ORB-MNQ solo now busts on its own
+  single realized path at every tested size (1-8 contracts) over the full history — worse than
+  previously measured, not safer; this reconfirms (does not newly establish) the standing payability
+  record at [`docs/pursuits/b3-orb-mnq-payability-line.md`](../../docs/pursuits/b3-orb-mnq-payability-line.md)
+  (addendum filed same session). A naive equal-\$-risk combination with Aegis-6J1 (ORB-MNQ weighted
+  down to a sliver, 0.18-0.40 contracts) nonetheless bootstraps to 1.51%/0.01% bust (3yr/1yr) — new
+  payability evidence about ORB-MNQ as a small overlay inside a specific combined construct, not
+  about ORB-MNQ as a standalone leg. Full write-up:
+  [`lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/RESULTS.md`](../../lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/RESULTS.md).
+  Exploratory, not pre-registered. No `core/`, allocation, `dd_protection`, Pine, or rail change;
+  nothing armed; K/lifecycle/cap-seat state on this ledger unchanged.
 - **2026-08-25 (later)** — **Combined MYM+MNQ book passability calculated on
   `Tradeify_Select_100K`/`Growth_100K` — see `MYM.md` M9 (full numbers there, not restated
   here).** Operator supplied a fresh TV-native export of the same-day DD-reduction

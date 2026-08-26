@@ -1,0 +1,134 @@
+{
+  "1yr": [
+    {
+      "contracts": 1,
+      "outcome": "pass",
+      "day": 167,
+      "max_dd_pct": 1.1632929230285967,
+      "max_dd_usd": 1163.2929230285968,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 2,
+      "outcome": "pass",
+      "day": 119,
+      "max_dd_pct": 1.951684764529085,
+      "max_dd_usd": 1951.684764529085,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 4,
+      "outcome": "pass",
+      "day": 32,
+      "max_dd_pct": 0.9985390390241773,
+      "max_dd_usd": 998.5390390241773,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 6,
+      "outcome": "pass",
+      "day": 20,
+      "max_dd_pct": 0.5694383819357525,
+      "max_dd_usd": 569.4383819357524,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 8,
+      "outcome": "pass",
+      "day": 8,
+      "max_dd_pct": 0.04472546861839576,
+      "max_dd_usd": 44.72546861839576,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 10,
+      "outcome": "pass",
+      "day": 8,
+      "max_dd_pct": 0.05536150491975158,
+      "max_dd_usd": 55.361504919751575,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 15,
+      "outcome": "pass",
+      "day": 8,
+      "max_dd_pct": 0.08106542063017724,
+      "max_dd_usd": 81.06542063017724,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 20,
+      "outcome": "pass",
+      "day": 8,
+      "max_dd_pct": 0.10557401790767004,
+      "max_dd_usd": 105.57401790767004,
+      "culprit_leg": null
+    }
+  ],
+  "3yr": [
+    {
+      "contracts": 1,
+      "outcome": "pass",
+      "day": 72,
+      "max_dd_pct": 1.3476250931416232,
+      "max_dd_usd": 1347.6250931416232,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 2,
+      "outcome": "pass",
+      "day": 57,
+      "max_dd_pct": 2.689247232184313,
+      "max_dd_usd": 2689.2472321843134,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 4,
+      "outcome": "bust_trailing",
+      "day": 7,
+      "max_dd_pct": 5.354642376302938,
+      "max_dd_usd": 5354.642376302938,
+      "culprit_leg": "orbmnq"
+    },
+    {
+      "contracts": 6,
+      "outcome": "bust_trailing",
+      "day": 7,
+      "max_dd_pct": 7.996501362905444,
+      "max_dd_usd": 7996.501362905444,
+      "culprit_leg": "orbmnq"
+    },
+    {
+      "contracts": 8,
+      "outcome": "bust_trailing",
+      "day": 7,
+      "max_dd_pct": 10.615134567563569,
+      "max_dd_usd": 10615.134567563568,
+      "culprit_leg": "orbmnq"
+    },
+    {
+      "contracts": 10,
+      "outcome": "bust_trailing",
+      "day": 7,
+      "max_dd_pct": 13.21084693242772,
+      "max_dd_usd": 13210.84693242772,
+      "culprit_leg": "orbmnq"
+    },
+    {
+      "contracts": 15,
+      "outcome": "bust_trailing",
+      "day": 3,
+      "max_dd_pct": 2.9758893537772018,
+      "max_dd_usd": 2975.8893537772014,
+      "culprit_leg": "orbmnq"
+    },
+    {
+      "contracts": 20,
+      "outcome": "bust_trailing",
+      "day": 3,
+      "max_dd_pct": 3.929850476421276,
+      "max_dd_usd": 3929.850476421276,
+      "culprit_leg": "orbmnq"
+    }
+  ]
+}

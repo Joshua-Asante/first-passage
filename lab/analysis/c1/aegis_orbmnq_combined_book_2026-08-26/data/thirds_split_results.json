@@ -1,0 +1,66 @@
+{
+  "aegis": {
+    "third1": {
+      "date_lo": "2022-09-07",
+      "date_hi": "2023-09-01",
+      "n_bdays": 258,
+      "n_nonzero": 29,
+      "wr_pct": 72.41379310344827,
+      "pf": 2.021982712624053,
+      "net_usd_per_contract": 957.7,
+      "max_dd_usd_per_contract": -249.69999999999996
+    },
+    "third2": {
+      "date_lo": "2023-09-01",
+      "date_hi": "2024-08-25",
+      "n_bdays": 255,
+      "n_nonzero": 27,
+      "wr_pct": 70.37037037037037,
+      "pf": 7.548090523338048,
+      "net_usd_per_contract": 1388.85,
+      "max_dd_usd_per_contract": -162.39999999999998
+    },
+    "third3": {
+      "date_lo": "2024-08-25",
+      "date_hi": "2025-08-20",
+      "n_bdays": 258,
+      "n_nonzero": 34,
+      "wr_pct": 50.0,
+      "pf": 2.386868766198068,
+      "net_usd_per_contract": 882.9500000000002,
+      "max_dd_usd_per_contract": -155.95000000000002
+    }
+  },
+  "orbmnq": {
+    "third1": {
+      "date_lo": "2022-08-25",
+      "date_hi": "2023-08-25",
+      "n_bdays": 262,
+      "n_nonzero": 169,
+      "wr_pct": 62.1301775147929,
+      "pf": 1.6250235471621048,
+      "net_usd_per_contract": 14200.760000000002,
+      "max_dd_usd_per_contract": -3194.599999999984
+    },
+    "third2": {
+      "date_lo": "2023-08-25",
+      "date_hi": "2024-08-25",
+      "n_bdays": 260,
+      "n_nonzero": 177,
+      "wr_pct": 63.27683615819209,
+      "pf": 1.5512767391094269,
+      "net_usd_per_contract": 8328.7,
+      "max_dd_usd_per_contract": -1932.7599999999993
+    },
+    "third3": {
+      "date_lo": "2024-08-25",
+      "date_hi": "2025-08-26",
+      "n_bdays": 262,
+      "n_nonzero": 178,
+      "wr_pct": 53.93258426966292,
+      "pf": 1.540638048735147,
+      "net_usd_per_contract": 10702.46,
+      "max_dd_usd_per_contract": -2348.0599999999986
+    }
+  }
+}

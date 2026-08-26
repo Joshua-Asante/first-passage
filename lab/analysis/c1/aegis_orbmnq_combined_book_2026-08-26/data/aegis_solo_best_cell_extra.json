@@ -1,0 +1,52 @@
+{
+  "throttle_on_3yr_c2": {
+    "outcome": "pass",
+    "day": 684,
+    "max_dd_pct": 0.4992741829058727,
+    "max_dd_usd": 499.27418290587275,
+    "culprit_leg": null
+  },
+  "throttle_on_1yr_c2": {
+    "outcome": "horizon_cap",
+    "day": 247,
+    "max_dd_pct": 0.30366509466545394,
+    "max_dd_usd": 303.6650946654539,
+    "culprit_leg": null
+  },
+  "bootstrap_1yr_c2": {
+    "rates": {
+      "pass": 1.0,
+      "bust_daily": 0.0,
+      "bust_static": 0.0,
+      "bust_trailing": 0.0,
+      "bust_inactivity": 0.0,
+      "horizon_cap": 0.0
+    },
+    "headline_bust": 0.0,
+    "pass_rate": 1.0,
+    "n_seeds": 5,
+    "sims_per_seed": 2000,
+    "leg_order": [
+      "aegis"
+    ],
+    "n_weeks_available": 49
+  },
+  "bootstrap_3yr_c2": {
+    "rates": {
+      "pass": 0.9875000000000002,
+      "bust_daily": 0.0,
+      "bust_static": 0.0,
+      "bust_trailing": 0.0,
+      "bust_inactivity": 0.0,
+      "horizon_cap": 0.0125
+    },
+    "headline_bust": 0.0,
+    "pass_rate": 0.9875000000000002,
+    "n_seeds": 5,
+    "sims_per_seed": 2000,
+    "leg_order": [
+      "aegis"
+    ],
+    "n_weeks_available": 154
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "1yr": [
+    {
+      "contracts": 1,
+      "outcome": "horizon_cap",
+      "day": 247,
+      "max_dd_pct": 0.15391238780200017,
+      "max_dd_usd": 153.91238780200015,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 2,
+      "outcome": "horizon_cap",
+      "day": 247,
+      "max_dd_pct": 0.30366509466545394,
+      "max_dd_usd": 303.6650946654539,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 3,
+      "outcome": "horizon_cap",
+      "day": 247,
+      "max_dd_pct": 0.4494245033554668,
+      "max_dd_usd": 449.42450335546675,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 4,
+      "outcome": "horizon_cap",
+      "day": 247,
+      "max_dd_pct": 0.5913482398816281,
+      "max_dd_usd": 591.3482398816282,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 5,
+      "outcome": "pass",
+      "day": 145,
+      "max_dd_pct": 0.18503355588483392,
+      "max_dd_usd": 185.03355588483393,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 6,
+      "outcome": "pass",
+      "day": 141,
+      "max_dd_pct": 0.22157426341861655,
+      "max_dd_usd": 221.57426341861657,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 7,
+      "outcome": "pass",
+      "day": 140,
+      "max_dd_pct": 0.2579619136674866,
+      "max_dd_usd": 257.9619136674866,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 8,
+      "outcome": "pass",
+      "day": 140,
+      "max_dd_pct": 0.29419746628332993,
+      "max_dd_usd": 294.1974662833299,
+      "culprit_leg": null
+    }
+  ],
+  "3yr": [
+    {
+      "contracts": 1,
+      "outcome": "horizon_cap",
+      "day": 771,
+      "max_dd_pct": 0.24966854176372028,
+      "max_dd_usd": 249.66854176372027,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 2,
+      "outcome": "pass",
+      "day": 684,
+      "max_dd_pct": 0.4992741829058727,
+      "max_dd_usd": 499.27418290587275,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 3,
+      "outcome": "pass",
+      "day": 501,
+      "max_dd_pct": 0.7488169471939957,
+      "max_dd_usd": 748.8169471939957,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 4,
+      "outcome": "pass",
+      "day": 376,
+      "max_dd_pct": 0.9982968583833922,
+      "max_dd_usd": 998.2968583833922,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 5,
+      "outcome": "pass",
+      "day": 309,
+      "max_dd_pct": 1.247713940217663,
+      "max_dd_usd": 1247.7139402176629,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 6,
+      "outcome": "pass",
+      "day": 214,
+      "max_dd_pct": 1.4970682164283626,
+      "max_dd_usd": 1497.0682164283626,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 7,
+      "outcome": "pass",
+      "day": 214,
+      "max_dd_pct": 1.7463597107350965,
+      "max_dd_usd": 1746.3597107350965,
+      "culprit_leg": null
+    },
+    {
+      "contracts": 8,
+      "outcome": "pass",
+      "day": 214,
+      "max_dd_pct": 1.9955884468456149,
+      "max_dd_usd": 1995.588446845615,
+      "culprit_leg": null
+    }
+  ]
+}

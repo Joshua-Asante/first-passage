@@ -31,3 +31,23 @@ friendly-firm set is exhausted as a re-entry path for this construct. A future r
 either a firm outside that set, or genuinely new payability/cost-geometry evidence per this
 document's own re-entry clause, not another venue swap among these four. $0 spend, no K, no
 manifest, nothing armed.
+
+## Addendum 2026-08-26 — new payability evidence: a combined book with Aegis-6J1 clears Tradeify in bootstrap; ORB-MNQ-1 solo does not
+
+Operator-supplied TradingView exports (Aegis-6J1 v3, ORB-MNQ-1 v6; 1yr/3yr/6yr) enabled a
+combined-book sweep at `Tradeify_Select_100K`, independent of the Bulenox/BluSky/MFFU R3 test
+above: [`lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/RESULTS.md`](../../lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/RESULTS.md).
+**ORB-MNQ-1 solo confirms this addendum's own standing** — the corrected full 6-year panel finds
+it now busts on its own single realized path at every tested size (1-8 contracts), worse than
+previously measured, not better. **But a naive equal-\$-risk combination with Aegis-6J1** (weighted
+so ORB-MNQ contributes a sliver, 0.18-0.40 contracts, never a comparably-sized leg) bootstraps to
+**1.51% bust / 1.49pp margin (3yr)** and **0.01% bust / 2.98pp margin (1yr)** against the 3.0%
+ceiling — under EOD-clock replay, with several open hypotheses still unresolved (rescale bias,
+EOD-vs-intraday clock correction — see that RESULTS.md §6/§8).
+
+This is new payability/cost-geometry evidence at an admissible venue (Tradeify) — on point for
+this document's own re-entry clause — but it is evidence about ORB-MNQ **as a small overlay inside
+a specific combined construct**, not about ORB-MNQ as a standalone leg (which this addendum leaves
+exactly as parked as the R3 finding above). Re-entry / re-scoping this pursuit around a combined-book
+framing, if warranted, is an operator call, not made here. $0 spend, no K, no manifest, nothing
+armed; exploratory research only, not pre-registered.
