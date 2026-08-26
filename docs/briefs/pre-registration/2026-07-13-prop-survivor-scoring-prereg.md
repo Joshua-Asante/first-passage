@@ -1,5 +1,16 @@
 # Pre-registration — Prop survivor scoring gate (four-firms ADR §4 falsifier)
 
+> ⚠ **2026-08-26 — CLOSED per this file's own Known Trap #12 instruction.** The operator elected
+> to raise the Part A eval bust ceiling from 3.0% to 5.0%, informed by (and same-day as) a measured
+> 4.34% result that failed the ceiling below — exactly the "amendment after a result is seen"
+> scenario this freeze names as the reason to close and reopen, not edit in place. Successor:
+> [`2026-08-26-prop-survivor-scoring-prereg-v2.md`](2026-08-26-prop-survivor-scoring-prereg-v2.md),
+> which documents the reversal, the full rationale (including that the 5% dial was **already
+> offered and declined** at this file's own §3 authoring, below), and sourced context on
+> discretionary-trader base rates. `lab/discovery/prop_survivor_scoring.py`'s `DEFAULT_PREREG`
+> now points to the v2 file. Body below is frozen exactly as ratified 2026-07-13 (Trap #12) — it
+> remains the accurate historical record of the original ceiling and its own stated rationale.
+
 **FROZEN 2026-07-13, before any scored prop-tier re-MC is read.** No item below
 changes after a result is seen. This artifact operationalizes the four-firms ADR
 §4 primary falsifier into a fixed scoring protocol + numeric ceiling; it is a
@@ -7,9 +18,11 @@ faithful transcription of the **ratified** recommendation (no numbers re-decided
 here — see §0). Amendments after a result require closing this pre-registration
 and opening a fresh one (Known Trap #12).
 
-**Status:** FROZEN / not-yet-exercised. No DISC-CAMP-0 survivor has been scored;
-`register_search` for the first campaign has not opened. This freezes the gate
-*before* the first candidate exists.
+**Status:** `CLOSED 2026-08-26 — superseded by v2 (ceiling 3.0% → 5.0%, operator ruling)`.
+Frozen body below is historical record — do not amend numbers in place (Known Trap #12).
+**Prior status:** FROZEN / not-yet-exercised. No DISC-CAMP-0 survivor was ever scored under this
+version; `register_search` for the first campaign never opened under it. This froze the gate
+*before* the first candidate existed.
 **Loop of record:** STRATEGIC
 **Feeds:** the four-firms ADR §4 falsifier (hard date **2026-11-08**; 08-08 is a
 progress check only).

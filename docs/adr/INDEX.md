@@ -130,6 +130,7 @@
 | 2026-08-24-tradeify-growth-tier-scoring-only.md | Accepted | 2026-08-24 | none | ratified by operator (JA) 2026-08-24, in-session instruction ("Add Growth |
 | 2026-08-24-validation-battery-k-tiering-and-gate-retirement.md | Accepted | 2026-08-24 | none | ratified via operator in-session instruction to execute the |
 | 2026-08-24-venue-binding-axis-t1-disposition.md | Accepted | 2026-08-24 | `2026-08-05-strategy-venue-binding-axis.md` in part — §4 T1's disposition and prospective applicability window only. §2 (the three-level axis), §3, §5, §6, T2–T4, and the `Accepted` status token are untouched. | operator GO 2026-08-24 ("Ratify it — flip to Accepted and run Phase 1"), given after the pre-ratification adversarial panel's confirmed BLOCKERs were fixed in place (see Change History). §7 Phase 1 executed same day. |
+| 2026-08-26-striker-legmap-cap-release.md | Accepted | 2026-08-26 | none | operator ruling 2026-08-26 (chat directive, verbatim: *"I want to zero out |
 
 ## Partially superseded
 

@@ -34,6 +34,30 @@ F2_FLOORS = REPO_ROOT / "lab" / "analysis" / "c1" / "q_rail_1_2026-07" / "f2_flo
 TIER = "Tradeify_Select_100K"
 E_FIRM = 100_000.0
 
+# Frozen historical cap_alloc snapshot (69/11), matching the worked example
+# pinned in docs/spec/c1_nt8_sizing_host_impl.md §7 Phase 1 and the oracle at
+# lab/analysis/c1/q_rail_1_2026-07/f2_floors.json. The live LEG_MAP's
+# cap_alloc was RELEASED to 0/0 2026-08-26 (docs/adr/2026-08-26-striker-legmap-cap-release.md).
+# Per Trap #12 that spec text and oracle stay frozen/unedited, so this suite's
+# math-correctness regressions pin against this explicit historical snapshot
+# rather than the live (now-zeroed) LEG_MAP — decoupled deliberately, not an
+# oversight. Only the release-specific tests near the bottom of this file use
+# the live LEG_MAP directly.
+HISTORICAL_LEG_MAP: dict[str, dict] = {
+    "dj30_mym": {
+        "leg_key": "Striker",
+        "pyr_pct": 750.0,
+        "dollars_per_pt": 0.50,
+        "cap_alloc": 69,
+    },
+    "nas100_mnq": {
+        "leg_key": "Striker NAS100",
+        "pyr_pct": 1000.0,
+        "dollars_per_pt": 2.00,
+        "cap_alloc": 11,
+    },
+}
+
 
 # ── fixtures ─────────────────────────────────────────────────────────────────
 
@@ -44,13 +68,20 @@ def _write_json(path: Path, obj) -> Path:
 
 @pytest.fixture
 def state_dir(tmp_path):
-    """A valid three-file state directory: WATCH-1 both legs, no DD."""
+    """A valid three-file state directory: WATCH-1 both legs, no DD.
+
+    Constants are generated from HISTORICAL_LEG_MAP (frozen 69/11 split), not
+    the live LEG_MAP — see that constant's docstring for why. Tests wanting
+    the live (post-release) LEG_MAP construct their own constants file
+    directly with ``generate_constants(TIER)`` (no override).
+    """
     _write_json(tmp_path / "lifecycle_state.json",
                 {"Striker": "WATCH-1", "Striker NAS100": "WATCH-1"})
     _write_json(tmp_path / "c1_dd_state.json",
                 {"account": TIER, "peak_equity": E_FIRM,
                  "last_updated_utc": "2026-07-17T20:00:00Z"})
-    _write_json(tmp_path / "c1_sizing_constants.json", generate_constants(TIER))
+    _write_json(tmp_path / "c1_sizing_constants.json",
+                generate_constants(TIER, leg_map=HISTORICAL_LEG_MAP))
     return tmp_path
 
 
@@ -396,9 +427,18 @@ def test_ladder_and_dd_constants_come_from_production():
 
 
 def test_cap_alloc_sums_to_account_cap():
-    """The split must allocate exactly the account cap — no over/under-commit."""
+    """The split must never OVER-commit the account cap; under-commit is now
+    legitimate (RELEASED 2026-08-26 — see LEG_MAP's own comment and
+    docs/adr/2026-08-26-striker-legmap-cap-release.md). This test's own
+    docstring used to read '— no over/under-commit'; that half of the
+    invariant was a deliberate design choice at the time (unclaimed headroom
+    was itself treated as a defect), not an accident — it no longer holds now
+    that headroom can be deliberately, documentedly released ahead of a new
+    leg's own allocation being chosen. The over-commit half is the one that
+    was ever actually dangerous (see test_combined_max_position_within_account_cap
+    for the worst-case-position math this guards)."""
     firm = FIRM_RULES["Tradeify_Select_100K"]
-    assert sum(leg["cap_alloc"] for leg in LEG_MAP.values()) == firm[
+    assert sum(leg["cap_alloc"] for leg in LEG_MAP.values()) <= firm[
         "micro_contract_cap"
     ]
 
@@ -426,6 +466,37 @@ def test_no_leg_alone_exceeds_account_cap():
         assert leg["cap_alloc"] <= FIRM_RULES["Tradeify_Select_100K"][
             "micro_contract_cap"
         ], leg_id
+
+
+def test_striker_legs_released_to_zero_cap_alloc():
+    """Live LEG_MAP (not the frozen HISTORICAL_LEG_MAP fixture): both Striker
+    legs' cap_alloc is 0 as of 2026-08-26 — the release this suite's
+    HISTORICAL_LEG_MAP decoupling exists to preserve regression coverage
+    around. If this ever fails, someone re-allocated cap without updating the
+    comment/ADR pointer, or accidentally reverted the release."""
+    assert LEG_MAP["dj30_mym"]["cap_alloc"] == 0
+    assert LEG_MAP["nas100_mnq"]["cap_alloc"] == 0
+
+
+def test_released_leg_sizes_to_zero_not_permissive_default(tmp_path):
+    """A live (post-release) signal for a Striker leg must floor to qty_out=0
+    via the normal reserve_cap=0 path — NOT halt, and NOT fall back to
+    cap_firm (which would silently resurrect the pre-2026-07-22 1.91x
+    over-cap bug). Uses generate_constants(TIER) with no override, i.e. the
+    real live LEG_MAP — deliberately NOT the state_dir fixture, which pins
+    HISTORICAL_LEG_MAP for the rest of this suite."""
+    _write_json(tmp_path / "lifecycle_state.json",
+                {"Striker": "WATCH-1", "Striker NAS100": "WATCH-1"})
+    _write_json(tmp_path / "c1_dd_state.json",
+                {"account": TIER, "peak_equity": E_FIRM,
+                 "last_updated_utc": "2026-08-26T00:00:00Z"})
+    _write_json(tmp_path / "c1_sizing_constants.json", generate_constants(TIER))
+    host = make_host(tmp_path)
+    d = host.process_signal(entry_payload("dj30_mym", 60.8201), current_equity=E_FIRM)
+    assert d.halt is False
+    assert d.reserve_cap == 0
+    assert d.qty_out == 0
+    assert d.submit is False
 
 
 def test_missing_cap_alloc_halts_rather_than_defaulting(state_dir):

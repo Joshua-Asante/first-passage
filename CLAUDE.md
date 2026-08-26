@@ -46,7 +46,7 @@ strategy-signal fill has ever occurred.
 |---|---|
 | Environment ratified (F2+F3); no successor migration | [S1](docs/adr/2026-08-07-loop-s1-environment-ratification.md) |
 | Signal host = Python daemon → listener; TV login automation prohibited | [S2](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) · [build](docs/adr/2026-08-08-s2b-signal-daemon-build.md) |
-| Tradeify de-scoped for the two Striker legs (eval included); F1 open, hard-dates 11-08 | [de-scope](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) |
+| Tradeify de-scoped for the two Striker legs (eval included); F1 ruled 2026-08-23 (a Tradeify-resting discharge does not satisfy §4 — three-firm set for §4 purposes), hard-dates 11-08 unchanged | [de-scope](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) |
 | Rail build + account registration GO; spend ceiling $700 | [rail GO](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) |
 | M1 venue-native monitoring maturity (arming gate) | [M1](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) |
 | Prop-portfolio program at four firms; §4 falsifier hard-dates **2026-11-08** | [four-firms](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) · [withdrawal](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md) |

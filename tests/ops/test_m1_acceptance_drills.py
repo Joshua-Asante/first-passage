@@ -51,6 +51,20 @@ LEG_ID = "dj30_mym"
 LEG_KEY = "Striker"
 STOP = 60.8201
 
+# Frozen historical cap_alloc snapshot (69/11) — see the identical constant's
+# docstring in tests/ops/test_c1_sizing_host_reference.py. Live LEG_MAP's
+# cap_alloc was RELEASED to 0/0 2026-08-26
+# (docs/adr/2026-08-26-striker-legmap-cap-release.md); these drills test
+# handle_signal's generic decision logic (halt/submit/qty semantics), not
+# whether Striker currently holds live cap, so they pin the historical split
+# to keep exercising non-zero-qty code paths.
+HISTORICAL_LEG_MAP = {
+    "dj30_mym": {"leg_key": "Striker", "pyr_pct": 750.0,
+                 "dollars_per_pt": 0.50, "cap_alloc": 69},
+    "nas100_mnq": {"leg_key": "Striker NAS100", "pyr_pct": 1000.0,
+                   "dollars_per_pt": 2.00, "cap_alloc": 11},
+}
+
 
 def _write_json(path, obj):
     path.write_text(json.dumps(obj), encoding="utf-8")
@@ -63,7 +77,8 @@ def _seed_state(tmp_path):
     _write_json(tmp_path / "c1_dd_state.json",
                 {"account": TIER, "peak_equity": E_FIRM,
                  "last_updated_utc": "2026-07-27T00:00:00Z"})
-    _write_json(tmp_path / "c1_sizing_constants.json", generate_constants(TIER))
+    _write_json(tmp_path / "c1_sizing_constants.json",
+                generate_constants(TIER, leg_map=HISTORICAL_LEG_MAP))
 
 
 def _make_host(tmp_path):

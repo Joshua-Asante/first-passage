@@ -27,6 +27,16 @@ original PARK's declaration — not archived by this correction); `Q-ICT-1MEXEC-
 all four original grounds, reason 3 now doubly discharged by measurement rather than merely
 absent.
 
+> **Correction 2026-08-26 — the "NO-GO stands" line above is stale.** Four days after this
+> ratification, the operator overrode `Q-ICT-1MEXEC-1`'s NO-GO recommendation (2026-08-24, Option
+> B GO) and the campaign ran to completion: **`RESOLVED — FALSIFIED at Stage 2 (F1)`** (cost-law
+> screen; Tradeify-basis edge/cost ratio 0.239, native MNQ 1-minute bars,
+> [`prereg`](../briefs/pre-registration/2026-08-04-ict-1m-execution-mnq-preregistration.md), K-bank
+> 21→22 — [`MNQ.md` row 9](../../ops/instruments/MNQ.md)). This SUBTRACT disposition **stands
+> unchanged** (the line under "Not a re-verdict" above already covers this: neither frozen
+> pre-registration verdict is reopened), but the reason changes — the pursuit is now closed by a
+> measured FALSIFIED verdict, not by an unexercised NO-GO.
+
 **Ratified:** 2026-08-20 (operator direct instruction, this session) — corrects the 2026-08-09
 GSUB-1 Phase 3 PARK, whose own §0 Rule-0 reads never touched
 `lab/analysis/_inbox/ict_mnq_2026-08/` directly and so did not surface that the named re-entry

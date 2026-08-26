@@ -69,5 +69,16 @@ bars:
 
 ## SESSION LOG
 
+- **2026-08-26b** — **`LEG_MAP` cap_alloc RELEASED (0/0, was 69/11)** — operator ruling,
+  [`2026-08-26-striker-legmap-cap-release.md`](../../docs/adr/2026-08-26-striker-legmap-cap-release.md).
+  Separate, narrower dimension than the 2026-08-12 occupancy release below: this one is the
+  code-level `cap_alloc` in `ops/c1_rail/c1_sizing_host_reference.py`, not research-symbol
+  permission. Full 80-micro account cap now unclaimed for a future leg's own allocation; N7's
+  "retained-not-released (headroom not freed)" line below is now historical on **both** dimensions.
+- **2026-08-26a** — **Mirror-sync gap closed (pointer):** MSL Board B8 released MYM/MNQ headroom for
+  new non-Striker research ([`ADR`](../../docs/adr/2026-08-12-msl-mym-occupancy-release.md)),
+  2026-08-12 — [`YM.md`](YM.md)'s mirror row Y4 got this pointer the same day; N7 below did not.
+  Canonical detail on [`MNQ.md`](MNQ.md). N7's "retained-not-released / headroom not freed" line is
+  historical for that 2026-08-06 claim-alignment pass.
 - **2026-08-06** — **Claim-alignment M21/C10:** Status rewritten to withdrawal + Rule-10 delegate to [`MNQ.md`](MNQ.md) (no restatement of deployment mechanics). ACTIVE/OPEN: deleted B7-REFIRE row (rail obligation, unreachable) and execution-quality row (SUSPENDED — no data source; W3 is not the binding obstacle) — both recorded here, not in ACTIVE. ORB row updated to re-PARK + target FALSIFIED + manifest closed. N1: struck "The live account is Tradeify"; no basis privileged (four friendly-firm bases; BluSky-NT $0.95 is NT-schedule proxy per M40). N7: voided "binds … order geometry" / live 11/69 reservation reading. N6 retitled only (account-multiplier layer retained). No `core/`, lock, allocation, lifecycle, Pine, rail, or `LEG_MAP` change.
 - **2026-07-24** — Ledger created (operator ruling #6, Algorithm repo review). Seeded W1–W3 + N1–N6 from the ORB-MNQ admission, D5/D5-RECOST, OPENPRESS-1, Q-COMPOSE-1, Q-PYRPARITY-1, and the rail-build record. No core/lock/allocation/dd_protection change.
