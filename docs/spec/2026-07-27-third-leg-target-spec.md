@@ -23,9 +23,14 @@ Ratification does **not** admit any candidate, authorize a rail slot, or license
 > uncurable by cap donation); S4's hedging logic; the §7.5 negative control and the S7
 > non-vacuity check.
 >
-> **Do not recompute §2.4's session counts in either direction** —
-> [`ops/instruments/MYM.md`](../../ops/instruments/MYM.md) withholds release of the
-> symbols (**retained-not-released** under [`S1`](../adr/2026-08-07-loop-s1-environment-ratification.md)).
+> **Do not recompute §2.4's session counts in either direction** — session-day recomputation stays
+> moot regardless of occupancy status while SCOPE DEAD holds (no book, no account). ⚠ **Correction
+> 2026-08-26:** the prior text here claimed `ops/instruments/MYM.md` "withholds release" of
+> `MYM1!`/`MNQ1!` (retained-not-released under S1) — that is now stale.
+> [`MSL Board B8`](../adr/2026-08-12-msl-mym-occupancy-release.md) released MYM1!/MNQ1!
+> symbol/cap occupancy for new **non-Striker** research 2026-08-12, and `MYM.md`'s own session log
+> confirms the release. This does not lift SCOPE DEAD or reopen §7 scoring — occupancy release
+> is orthogonal to the missing book/account this banner is about.
 
 
 ```

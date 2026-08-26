@@ -182,13 +182,28 @@ A candidate under this target must clear, in order:
 |---|---|---|---|
 | **EM0–EM5** (catalogue ≤3, edge ≥0.40R net at $0.95/side, edge-indexed risk ceiling, independence + stop integrity, weekly cadence, session/slot legality) | eval mechanism-shape screen | `RATIFIED 2026-08-06` | **D1 tightens EM4** (daily vs weekly). **D2 = L $325 is identity with the 0.85R EM2 cell** ($325 → $325); may still tighten weaker-edge frontier cells if any published cell exceeds $325. Neither limb loosens EM0–EM5. |
 | **E1–E7** four-firm tradability | `ops/prop_envelope_default.md` | RATIFIED | none |
-| **S1–S7** same-account slot legality | third-leg target spec | RATIFIED | applies **only if** a same-account slot is sought; LEG_MAP still retained-not-released under S1 (headroom not freed). The S7 kill of ORB-as-co-leg does not bind a *standalone* deployment (§3, O6). |
+| **S1–S7** same-account slot legality | third-leg target spec | RATIFIED | applies **only if** a same-account slot is sought; LEG_MAP retained-not-released **for deployment purposes** under S1 (headroom not freed at first-deploy ruling ⚠ **correction below: research-occupancy IS released**). The S7 kill of ORB-as-co-leg does not bind a *standalone* deployment (§3, O6). |
 | **Harvest Req 1–5** | `strategy_harvest.md` | Accepted | applies to harvested candidates; MNQBASE-1's intake pass already ran dry once (§3, O8) |
-| **Route A/B K discipline** | Avenue A ADR + K-bank ADR | Accepted | catalogue ≤3 cells (EM0), working budget K=1–2, Route A (survivor-tied, K=1) favoured per the catalogue-wall session finding; **Cap seat requires fresh reservation** (§0) |
+| **Route A/B K discipline** | Avenue A ADR + K-bank ADR | Accepted ⚠ **Route B retired 2026-08-24 — see correction below** | catalogue ≤3 cells (EM0), working budget K=1–2, Route A (survivor-tied, K=1) favoured per the catalogue-wall session finding; **Cap seat requires fresh reservation** (§0) |
 
 **Cost authority:** EM1's — `strategy_harvest.md` Requirement 5, screened at $0.95/side. This spec
 defines no cost formula (the §3a fracture is on the 08-08 board as G3; this spec re-points with EM1
 if that ruling moves).
+
+> ⚠ **Corrections 2026-08-26:**
+> 1. Avenue A Route B (generate→confirm) was retired in full by
+> [`the 2026-08-24 sourcing-phase-channel-retirement ADR`](../adr/2026-08-24-sourcing-phase-channel-retirement.md)
+> — `avenue_a_generate_confirm.md` is Withdrawn and no future campaign may open a G0 freeze under
+> it. The table row above and §"Falsifier triggers" R2 below still name a "Route B catalogue" as a
+> live construct route; that route is no longer available. Route A (survivor-tied) is explicitly
+> unaffected and remains open. Any future satisfaction of R2/F-B needs Route A or a fresh
+> redesigned successor to Route B under a new ADR — not a lookup of the retired grant.
+> 2. The S1–S7 row's "LEG_MAP retained-not-released" tag is stale for **research-occupancy**
+> purposes: [`MSL Board B8`](../adr/2026-08-12-msl-mym-occupancy-release.md) released
+> MYM1!/MNQ1! symbol/cap occupancy for new non-Striker research 2026-08-12. It remains accurate
+> for **deployment-time cap re-derivation**, which the edge-cohort ADR's L4 row still names as an
+> explicit operator ruling owed at first deploy — the row above has been re-worded to distinguish
+> the two axes.
 
 ---
 

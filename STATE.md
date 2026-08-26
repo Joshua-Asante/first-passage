@@ -94,9 +94,11 @@ Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state
 Open investigations with no current session home. Closed threads leave (owners =
 closures/ADRs).
 
-Dormant threads b6/b7 (PARK — open) → [`docs/pursuits/`](docs/pursuits/) (ratified 2026-08-09, GSUB-1
-Phase 3). c5/Q-MSCHAN-1 (SUBTRACT — dead) left this section per its own rule above; its record
-stands alone at [`c5`](docs/pursuits/c5-q-mschan-1.md).
+Dormant threads b1/b3/b6 (PARK — open) → [`docs/pursuits/`](docs/pursuits/) (ratified 2026-08-09,
+GSUB-1 Phase 3). b7 (ICT line) resolved to SUBTRACT 2026-08-20 and left this section (see the
+2026-11-08 GSUB-1 PARK-expiries row below for the current count). c5/Q-MSCHAN-1 (SUBTRACT — dead)
+left this section per its own rule above; its record stands alone at
+[`c5`](docs/pursuits/c5-q-mschan-1.md).
 
 **Registry backfill (2026-08-15).** Snapshot + unpaid enumerator:
 [`scripts/check_closure_disposition.py`](scripts/check_closure_disposition.py)
