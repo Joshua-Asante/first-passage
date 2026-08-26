@@ -1,0 +1,38 @@
+{
+  "c4": {
+    "rates": {
+      "pass": 0.9722,
+      "bust_daily": 0.0,
+      "bust_static": 0.0,
+      "bust_trailing": 0.027700000000000002,
+      "bust_inactivity": 0.0,
+      "horizon_cap": 0.0001
+    },
+    "headline_bust": 0.027700000000000002,
+    "pass_rate": 0.9722,
+    "n_seeds": 5,
+    "sims_per_seed": 2000,
+    "leg_order": [
+      "aegis"
+    ],
+    "n_weeks_available": 154
+  },
+  "c8": {
+    "rates": {
+      "pass": 0.8103000000000001,
+      "bust_daily": 0.0,
+      "bust_static": 0.0,
+      "bust_trailing": 0.1897,
+      "bust_inactivity": 0.0,
+      "horizon_cap": 0.0
+    },
+    "headline_bust": 0.1897,
+    "pass_rate": 0.8103000000000001,
+    "n_seeds": 5,
+    "sims_per_seed": 2000,
+    "leg_order": [
+      "aegis"
+    ],
+    "n_weeks_available": 154
+  }
+}

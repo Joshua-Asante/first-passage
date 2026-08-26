@@ -1,0 +1,38 @@
+{
+  "1yr_c8": {
+    "rates": {
+      "pass": 0.30629999999999996,
+      "bust_daily": 0.0,
+      "bust_static": 0.0,
+      "bust_trailing": 0.6937,
+      "bust_inactivity": 0.0,
+      "horizon_cap": 0.0
+    },
+    "headline_bust": 0.6937,
+    "pass_rate": 0.30629999999999996,
+    "n_seeds": 5,
+    "sims_per_seed": 2000,
+    "leg_order": [
+      "orbmnq"
+    ],
+    "n_weeks_available": 35
+  },
+  "3yr_c1": {
+    "rates": {
+      "pass": 0.7271,
+      "bust_daily": 0.0,
+      "bust_static": 0.0,
+      "bust_trailing": 0.27290000000000003,
+      "bust_inactivity": 0.0,
+      "horizon_cap": 0.0
+    },
+    "headline_bust": 0.27290000000000003,
+    "pass_rate": 0.7271,
+    "n_seeds": 5,
+    "sims_per_seed": 2000,
+    "leg_order": [
+      "orbmnq"
+    ],
+    "n_weeks_available": 156
+  }
+}
