@@ -5,7 +5,7 @@
 **Authors:** Joshua (direction) + Claude Code (Fable 5, drafter)
 **Supersedes:** none
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** [`2026-08-12-msl-mym-occupancy-release.md`](2026-08-12-msl-mym-occupancy-release.md) in part — the Addendum 2026-08-06 "Out of scope" claim that `MYM1!`/`MNQ1!` remain retained-not-released is superseded (see Addendum 2026-08-14 below). **S7 itself (the core §2 decision) is untouched.**
 **Retain-until:** none
 **Amends-in-part:** [`docs/spec/2026-07-27-third-leg-target-spec.md`](../spec/2026-07-27-third-leg-target-spec.md) — adds **S7** to §7.1, corrects §2.2's sufficiency claim, narrows §2.4 Slot 2, and adds a sixth failing row to the §7.5 negative control. This is the instrument that spec's own change-control clause requires (*"§7 thresholds change only by a superseding ADR or by the §6.1 verdict firing"*); §6.1 has **not** fired (no candidate has reached a composed re-MC).
 **Related:** [`SLR-MYM-1 closure`](../briefs/closures/SLR-MYM-1-closure-falsified-stage0.md) F1 (the finding that produced this).

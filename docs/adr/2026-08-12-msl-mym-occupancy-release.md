@@ -2,7 +2,7 @@
 
 **Status:** `Accepted` — operator election (Board B8) 2026-08-12
 **Decision date:** 2026-08-12
-**Supersedes:** none
+**Supersedes:** [`2026-07-29-third-leg-symbol-occupancy-limb.md`](2026-07-29-third-leg-symbol-occupancy-limb.md) in part — its Addendum 2026-08-06 "retained-not-released" occupancy-posture claim for `MYM1!`/`MNQ1!` only; S7 (the core decision) stands.
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none

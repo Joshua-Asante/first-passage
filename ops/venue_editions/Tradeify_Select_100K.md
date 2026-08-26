@@ -6,7 +6,7 @@ Markdown, hand-maintained (same convention as `ops/instruments/*.md`). T2 (stale
 
 **Live edition set is empty** — no row is live at this firm-tier. That is the §1.3 fact.
 
-**Book authorization is unchanged.** Striker and Striker NAS100 stay `AUTHORIZED · MECHANISM @ 1.00×` at book level. Venue-fit is not decay.
+**Book authorization is unchanged.** Striker and Striker NAS100 stay `AUTHORIZED · MECHANISM @ 1.00×` at book level (canonical: [`strategy_lifecycle.md`](../../docs/methodology/strategy_lifecycle.md)). Venue-fit is not decay.
 
 **ORB-MNQ-1** book entry is PARKED / payability FALSIFIED. `SCREEN-DEAD` here is edition-only (owning ADR §2.4 ruling 2) — do not read it as the book death.
 

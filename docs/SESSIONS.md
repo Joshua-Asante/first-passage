@@ -32,6 +32,26 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-26b — 8 more high-confidence memory/gate fixes: ADR pair, 2 gate-trigger bugs, CATALOG status, A5/A7 default-on, test crash, docs/README gaps
+
+**Focus:** Follow-up to the memory-architecture audit's "additional findings" list — implement every item judged high-confidence (mechanical, well-understood, low blast radius), leave the rest (SESSIONS letter-scheme redesign, C1/C4 revival, broader doc-taxonomy reorg) explicitly alone per the simplification pass.
+**Shipped:** ADR pair `2026-07-29-third-leg-symbol-occupancy-limb.md` / `2026-08-12-msl-mym-occupancy-release.md` given the reciprocal `in part` supersession edge their own prose already declared (same invisible-supersession shape as PR #170's blusky pair). `supersession-placement` and `adr-graph` gate triggers in `scripts/gates.yml` corrected — the former ran on `docs/adr/` edits despite never scanning `docs/adr/` at all (its real scope is DESK_CARD/RESULTS files); the latter widened to include `STATE.md` so A7 is reachable from a STATE-only edit. `check_adr_graph.py`'s `DEFAULT_ENABLED_CHECKS` now includes `A5`/`A7` (both verified clean on the live corpus before the flip). `lab/CATALOG.md`'s `mnq_orb_flow_depth_2026-08-18` row corrected `ACTIVE`→`HOLD` — root cause one level deeper than the row itself: no README/RESULTS/verdict/CLOSURE card existed for `choose_source_card()` to read, so the scanner silently defaulted to ACTIVE; added the missing `README.md` (sourced from `PREREG_S2B.md`'s own Status block) rather than hand-editing the derived row. `tests/test_universe_gate.py`: 4 unguarded `load_thresholds_from_prereg(_PREREG)` calls that would hard-crash (not skip) on a public clone once `arch`/`skfolio` are installed — one gets an explicit skip (its whole point is testing the real parser), three swap to the file's own existing `_thr()` guard. `scripts/roll_sessions.py`: new `archive_internal_duplicate_labels()` (NOTE-tier) catches a label collision *within* the archive itself — found 2 previously-unknown instances beyond the one already known (`2026-08-16h`, `2026-08-21d`, plus the known `2026-08-23m`). `docs/README.md` gained the 6 of 15 `docs/` subdirectories it was missing (`analytics/`, `external/`, `historical/`, `lessons/`, `superpowers/`, `templates/`).
+**Decisions/defects:** all mechanical; no policy change. Full gate suite + broader pytest clean (only the same pre-existing missing-dependency failures: matplotlib/scipy/statsmodels not installed here).
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). Off-queue: SESSIONS letter-scheme ceiling (2026-08-23/24 near/fully exhausted) still needs an operator call; the 3 archive-internal duplicates now surfaced as NOTEs have no fix available until then.
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
+## 2026-08-26a — Memory-architecture audit: 5 live defects fixed, SESSIONS cap recalibrated, lifecycle-consistency gate, LESSONS_INDEX.jsonl
+
+**Focus:** Operator commission on institutional-memory quality. Research pass found 5 confirmed live memory-organization defects (shipped separately, [PR #170](https://github.com/joshua-asante/first-passage/pull/170)); this session actioned three follow-ups: adjudicate a real `SESSIONS.md` cap, consolidate the lifecycle-multiplier fact, and build a consolidated lesson index.
+**Shipped:** `scripts/roll_sessions.py` cap raised 20→30 (velocity data: 7–31 entries/day, median ~16, most recent days 28/31) plus a new archive-collision guard (`retained_collisions`) that fixes a latent bug the recalibration would otherwise have triggered — the roll operation could silently duplicate a heading between live and archive when a colliding label crossed the keep-line; caught pre-commit by manual archive grep, not by the pre-existing tests. `scripts/check_lifecycle_consistency.py` (new gate) + citations added at all 8 live untethered restatement sites of the `TIER_MULTIPLIER` ladder. `docs/methodology/LESSONS_INDEX.jsonl` (new, 115 entries: 32 full/content-verified, 83 stub/pointer-only for external `feedback_*`/`lesson_*`/`project_*` names) + `docs/methodology/LESSONS_INDEX.md` + `scripts/_build_lessons_index.py` generator + `tests/test_lessons_index.py` (9 tests; caught a real anchor bug — `×` is stripped, not converted to "x", by GitHub's slugifier).
+**Decisions/defects:** cap recalibration and the lifecycle gate are both consolidation work (fewer untethered restatements, mechanically enforced), not new policy. LESSONS_INDEX stub entries carry zero fabricated content by construction (`content_verified: false` ⇒ title/lesson/cost fields are `null`) — do not infer stub content from the name.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). Off-queue: no forcing-hook yet consults `LESSONS_INDEX.jsonl`'s `trigger_globs`/`trigger_keywords`; stub entries stay pointer-only until someone migrates the external store's content.
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-25r — ox-alpha on mechanism-gate vs historical iteration
 
 **Focus:** Operator commission: pose the mechanism-first-gate vs. historically-iterated-book question to ox-alpha and post the response.
@@ -410,73 +430,6 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
-## 2026-08-24p — Q-MONSURF-1 RESOLVED: M-B idle-clock monitor built, tested, registration-ready
-
-**Focus:** Build + Measurement. Second-ranked Pre-Q executed to verdict on operator GO.
-
-**Shipped:** [`lab/analysis/c1/msl_monsurf_1_idle_clock_2026-08/`](../lab/analysis/c1/msl_monsurf_1_idle_clock_2026-08/) — standalone idle-clock monitor (`idle_clock_monitor.py`) + acceptance battery (`acceptance_battery.py`), no `ops/c1_rail` import. Retrieved the pruned `daily_panel.csv` read-only from the `pre-prune-2026-08-08` tag; reproduced every `c1_cadence_inactivity_2026-08-02/RESULTS.md` anchor exactly before trusting anything downstream. Ran against all 312 real historical Mon–Fri weeks (resolved the "simulated quarter" vs "full frozen distribution" tension in H-MONSURF-1's own wording toward the stronger, full-panel test). Two mutation classes planted and caught (380 spurious alerts from a single-day-lookback bug; exactly 164 missed alerts from an always-suppressed lookback) before trusting the clean run: **0 missed, 0 spurious** on the real, unmutated panel. `Q-MONSURF-1` closed `RESOLVED`. STATE.md's "No fixed date / gated" section rewritten — monitoring obligations were one stranded "first live fill" block, corrected to three true gate depths (M-B now registration-ready, gated on F3 only; M-C stays fill-gated; M-A stays elective, its own build-gate scope ruling still owed).
-
-**Decisions/defects:** Resolved an internal tension in the parent brief's own H-MONSURF-1 wording ("simulated quarter" vs "the full frozen distribution draw") conservatively toward the full 312-week panel — a strict superset of any 13-week sample, so the stronger bar, not an invented threshold. One stale cross-reference found and disclosed, not repaired (out of scope): the activity-rule disposition spec cites two spec files that don't resolve in the current tree.
-
-**Open / next:** Phase 5 (wire M-B to the live account) fires automatically at F3 registration, not before. M-A's build-gate scope ruling is a standing, explicit operator-ruling request. MSL still needs a fresh WHO sourced for an actual Tradeify strategy candidate — this closes infrastructure gaps, not the strategy-search gap itself.
-
----
-
-## 2026-08-24o — keep REGISTRY_DEBT snapshot; unpaid is a registry read
-
-**Focus:** Build. PR #127 pytest pin (`66` / `33`) failed after the backfill emptied `REGISTRY_DEBT_2026_08`. Discharge is a landed `rejected_candidates.md` row, not a frozenset edit.
-
-**Shipped:** [`check_closure_disposition.py`](../scripts/check_closure_disposition.py) — restore 30-name debt snapshot; 3 misfiles DEBT → NA (union stays 66); `--list-debt` → `unpaid_registry_debt()`. Tests + [`STATE.md`](../STATE.md) pointer.
-
-**Decisions/defects:** none new — implements the snapshot-vs-empty choice already ruled this session.
-
-**Open / next:** Q-M1WIRE-1 wire-vs-risk-accept, closure-disposition-coverage-hard severity, and the blind-channel FM-4 doctrinal seams — ruling still owed. 9 Pre-Q brief GOs still dispatched separately. Registry-backfill unpaid is now a `--list-debt` read. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1.
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
-## 2026-08-24q — F1 ruled; MNQTAPE-2 NO-GO; Q-TRADECAP-1 RESOLVED; status-skew fixes; Pre-Q priority pass
-
-**Focus:** Decision + Measurement. Operator rulings on the two open Tradeify-strategy threads, the
-top-ranked Pre-Q executed to verdict on operator GO, plus doc-hygiene.
-
-**Shipped:** F1 ruled `Accepted` — Tradeify-resting §4 discharge does not count (3-firm effective set for §4). `MNQTAPE-2` ($308.69) declined NO-GO. Three stale `OPEN — DRAFT` brief headers corrected to match their own already-recorded closures (Q-ORBSURV-1 `FALSIFIED`, Q-ORBCUSH-1 `FALSIFIED`, Q-CAPBAND-1 `RESOLVED` — STATE.md/INDEX were already correct in all three; only each brief's own header had skewed). MSL-S4 Pine landed + hash-pinned locally from the operator's Downloads copy (`pine_lint` 13/13 re-verified); `candidates_CARD.md` corrected — its RUNBOOK's recommended TV backtest is superseded same-day by the real Explore-confirm that actually ran (`AMBIGUOUS-HOLD`, PARKED). Pending Pre-Qs ranked (Q-TRADECAP-1 top, Q-MONSURF-1 second, Q-FIRMEOD-1/Q-PUBTRANS-1 deferred out of today's scope); D-S-A run on the four genuinely-open ones (two of the original six were already closed, same stale-header defect — Q-ORBCUSH-1, Q-CAPBAND-1 above). Operator GO given on Q-TRADECAP-1 same turn; pre-registration committed, Phase 1 executed (repo-wide grep + two end-to-end code reads), closed `RESOLVED` — confirmed no per-trade dollar-loss bound exists anywhere in the live sizing/arming path on Tradeify's intraday-enforced geometry (sizing law, M1 arming interlock, EM2, disaster-stop all checked). Successor decision packet (per-trade hard-cap vs. live-observed tripwire, from the orphaned CFD-era `1r_estimation.md` fork) queued on STATE.md for operator election.
-
-**Decisions/defects:** F1 ruled ahead of its designed trigger-time reservation, by explicit operator election, against a zero-clearer scoreboard — recorded as a deliberate override, not an oversight ([addendum](adr/2026-08-04-tradeify-venue-descope-eval-included.md)). Does not ratify either pending `Proposed` F1-adjacent addendum. **Governance collision on push:** a concurrent session (`b378361`, 12:23) had just re-confirmed F1's deferred posture as precedent for the sibling PARTIAL-disposition addendum, 36 minutes before F1 was ruled here (12:59) — real content collision, not a false alarm; confirmed as a considered override (operator), merged with a superseding note appended where the stale analogy is read (four-firms ADR §Addendum 2026-08-22), STATE.md queue row reconciled by hand, SESSIONS label collision (`2026-08-24k` claimed twice) renumbered to `o`. **Load-bearing finding:** every currently-sourced MSL Tradeify candidate (C1, C2, C3, C3-K2, S4) is now closed FALSIFIED or PARKED — no candidate is currently backtest-ready; a fresh WHO needs sourcing.
-
-**Open / next:** Successor decision packet on STATE.md row 2 (per-trade hard-cap vs. live-observed tripwire) needs operator election. MSL needs a new WHO sourced (S4 line is dead) — no candidate is currently backtest-ready for Tradeify. Q-MONSURF-1 (idle-clock monitor) is next-ranked Pre-Q if the operator wants another GO. Q-FIRMEOD-1/Q-PUBTRANS-1 deferred, not dropped. **STATE queue:** #1 B7-REFIRE + M1 · #2 per-trade loss-bound election (F1 closed, its row removed).
-
----
-
-## 2026-08-24n — operator ruled on 4 of the daily-sync's flagged open decisions
-
-**Focus:** Decision. Operator worked through the daily repo-truth-sync digest's "awaiting operator decision" sweep (18 items found via an 8-finder workflow + adversarial per-cluster verify). Ruled on the first four; explanations owed on three more; batch GO issued on 9 Pre-Q briefs and the registry-backfill debt separately (see follow-up entries).
-
-**Shipped:** [`adr-decay-audit ratification`](adr/2026-08-23-adr-decay-audit-skill-ratification.md) Status → `Accepted`, INDEX regenerated · [`Rule 2 addendum`](adr/2026-06-16-rule-2-budget-before-acting.md) Status → `Withdrawn` (body kept for audit trail, not deleted — repo convention is mark-withdrawn, not erase) · [`four-firms PARTIAL addendum`](adr/2026-07-12-prop-portfolio-four-friendly-firms.md) — ratification explicitly deferred to trigger time, same posture as sibling F1 row · [`STATE.md`](../STATE.md) — disaster-stop Phase 0a booked as a 2026-08-24 (Monday) forward trigger, operator-committed.
-
-**Decisions/defects:** `adr-decay-audit` skill ACCEPTED (standing periodic ADR-corpus decay sweep now ratified). Rule-2 audit-cycle-counting addendum WITHDRAWN (moot per its own text — 2026-08-20 STRATEGIC trip already makes the trip-log non-empty). Four-firms PARTIAL-disposition addendum stays `Proposed`, ratification DEFERRED to first tier clearance or 2026-11-08. Disaster-stop Phase 0a: operator will personally run the attended real-account SIM 2026-08-24.
-
-**Open / next:** Q-M1WIRE-1 wire-vs-risk-accept, closure-disposition-coverage-hard severity, and the blind-channel FM-4 doctrinal seams — explained to operator this session, ruling still owed. Registry-backfill (33 rows) and 9 Pre-Q brief GOs dispatched separately this session — see their own entries once landed. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1.
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
-## 2026-08-24k — queue-bind plan + pain-point packet charter
-
-**Focus:** Decision. First-look control-plane defect: approve bind approach B (queue-led Open/next + doable row 3 + SESSIONS-only gate); sequence the other pain points as parked packets. No bind build this session.
-
-**Shipped:** [`bind plan`](superpowers/plans/2026-08-23-bind-operator-queue-implementation.md) · [`pain-point packets`](superpowers/plans/2026-08-23-repo-pain-point-packets.md)
-
-**Decisions/defects:** Bind PENDING row-3 GO (existing channel only). P1–P5 stay behind the queue. No new generation channel. No second prune.
-
-**Open / next:** **STATE queue:** #1 F1 · #2 B7-REFIRE + M1. Bind Task 1: operator names row 3, then build the bind plan. Remaining first-look items live on the pain-point charter (P1 orientation · P2 MEMORY · P3 docs-runtime inventory · P4 museum rules · P5 REPO_MAP gate) — not as a leftover lead.
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
 ## 2026-08-24h — merge origin/main into PR #122 (conflict fix)
 
 **Focus:** Resolve PR #122 conflicts after #121. Same-day `2026-08-24e` is taken by nav leftovers on `main`.
@@ -500,48 +453,6 @@ top-ranked Pre-Q executed to verdict on operator GO, plus doc-hygiene.
 **Decisions/defects:** Design spec unrestored (archive 404). Proceeded from Phase A Approach 2; Approach 3 not invented. Call-4 stays 4-leg via `STRATEGY_KEYS`. T4 Task 3 writer not named.
 
 **Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. T4 state writer still fill-gated. Substrate destroy-copy still operator-gated. Disaster-stop 0a still needs an attended eval. Grow follow-on slices still named. Archive restore of the coldstore design still blocked.
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
-## 2026-08-24e — Nav leftovers: P5b wire, P2b stamps, find-owner
-
-**Focus:** Sequence named nav leftovers. P5b + two Verdict stamps + Rule 7 lookup. No mass `--slug`. No P7/P8. No SESSIONS roll.
-
-**Shipped:** `sync-liveness` in [`gates.yml`](../scripts/gates.yml) (report-only). `**Verdict:**` on `driftex_2026-08` / `eodadv_mnq_2026-08` (`hot=yes`). [`find_owner.py`](../scripts/find_owner.py). Leftovers on [`docs/governance/INDEX.md`](governance/INDEX.md).
-
-**Decisions/defects:** none new. P7 Topic and P8 `ops/` unify stay named. SESSIONS keep-20 dry-run 20/155 — roll is a separate GO.
-
-**Open / next:** leftover surviving cluster (O10 grounding quotes, O15+O24 judgment wiring, O7 Trap-12 detection). Carry `2026-08-22r` — DL-2 step 2 train scoring. Attended disaster-stop 0a is operator-only. Carry `2026-08-23t` — two undocumented decay findings still need discharge addenda. Operator: restore the coldstore design (private archive) before any Phase B GO. T2/T3/T4 and Phase C stay PENDING GO. Campaign next: W5 CI-from-`gates.yml` (H6 HOLD; not this PR). **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1.
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
-## 2026-08-24f — SESSIONS entry-class tightened to a judgment-call gate
-
-**Focus:** Decision. Full entries now require a real judgment call, not "skip Hygiene-only" — the class had drifted (12 entries in one day).
-
-**Shipped:** [`docs/SESSIONS.md`](SESSIONS.md) header rewrite (judgment-gate + stub-entry mechanism). [`W5 ADR addendum`](adr/2026-08-07-w5-governance-diet.md). [`STATE.md`](../STATE.md) decision-index line. [`PR #120`](https://github.com/Joshua-Asante/first-passage/pull/120). Heading remapped from colliding `2026-08-23m` on merge into this branch.
-
-**Decisions/defects:** Stub entries (heading + Open/next only) replace in-place edits — `sessions-append-only` hard-fails mutating an already-merged entry. Entry-class table (A–D) itself unchanged; amended the W5 ADR per Rule 8 sub-rule 10 rather than minting a sibling.
-
-**Open / next:** carry 2026-08-22r — DL-2 step 2 train scoring. Campaign next: execute W5 CI-from-`gates.yml` plan. #7/#8 stay PENDING GO. PR #120 merged.
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
-## 2026-08-24d — merge origin/main into PR #119 (conflict fix)
-
-**Focus:** Resolve PR #119 conflicts after #118. Same-day `2026-08-23` letters are exhausted; `24a`/`24b` are taken, so this wrap-up and the remapped pre-GO record use the next two letters.
-
-**Shipped:** merge `origin/main` into `cursor/campaign-prego-475b`. Union-merge splice (missing `---` before `2026-08-24b`) fixed via `--normalize`. Later colliding `2026-08-23s` (campaign pre-GO vs #113 wrap-up on `main`) remapped to `2026-08-24c`. Notes, Phase A Related, and STATE T2 board row unchanged.
-
-**Decisions/defects:** none new.
-
-**Open / next:** leftover surviving cluster (O10 grounding quotes, O15+O24 judgment wiring, O7 Trap-12 detection). Carry `2026-08-22r` — DL-2 step 2 train scoring. Attended disaster-stop 0a is operator-only. Carry `2026-08-23t` — two undocumented decay findings still need discharge addenda. Operator: restore the coldstore design (private archive) before any Phase B GO. T2/T3/T4 and Phase C stay PENDING GO.
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 
@@ -597,6 +508,14 @@ Older entries rolled to `docs/ltm/notes/archive/sessions/` (newest first).
 | 2026-08-24 | Campaign pre-GO: coldstore B retrieve blocked; T2/T3 inventory | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
 | 2026-08-24 | merge origin/main into PR #118 (conflict fix) | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
 | 2026-08-24 | Brief-authoring O1–O5 aligned (D1–D4 GO) | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-24 | Q-MONSURF-1 RESOLVED: M-B idle-clock monitor built, tested, registration-ready | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-24 | keep REGISTRY_DEBT snapshot; unpaid is a registry read | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-24 | F1 ruled; MNQTAPE-2 NO-GO; Q-TRADECAP-1 RESOLVED; status-skew fixes; Pre-Q pr... | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-24 | operator ruled on 4 of the daily-sync's flagged open decisions | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-24 | queue-bind plan + pain-point packet charter | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-24 | Nav leftovers: P5b wire, P2b stamps, find-owner | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-24 | SESSIONS entry-class tightened to a judgment-call gate | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-24 | merge origin/main into PR #119 (conflict fix) | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
 | 2026-08-23 | SESSIONS entry-class tightened to a judgment-call gate | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
 | 2026-08-23 | merge origin/main into PR #117 (conflict fix) | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
 | 2026-08-23 | merge origin/main into PR #116 (conflict fix) | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |

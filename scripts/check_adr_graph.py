@@ -25,7 +25,9 @@ STATUS_TOKENS = frozenset(
 COLD_TOKENS = frozenset({"Superseded", "Withdrawn", "Retired"})
 AGE_MONTHS = 6
 STUB_MAX_LINES = 40
-DEFAULT_ENABLED_CHECKS: frozenset[str] = frozenset({"A1", "A2", "A3", "A4", "A6"})
+DEFAULT_ENABLED_CHECKS: frozenset[str] = frozenset(
+    {"A1", "A2", "A3", "A4", "A5", "A6", "A7"}
+)
 VALID_CHECKS: frozenset[str] = frozenset({"A1", "A2", "A3", "A4", "A5", "A6", "A7"})
 
 HEADER_END_RE = re.compile(r"^(## |---\s*$)")
@@ -38,7 +40,7 @@ STATUS_BARE_RE = re.compile(
     r"^(?P<tok>[A-Za-z][\w/-]*)(?:\s*[—–-]\s*(?P<ann>.*)|\s+(?P<paren>\(.*)|$)"
 )
 ADR_FILE_RE = re.compile(
-    r"^`(?P<file>\d{4}-\d{2}-\d{2}-[^`]+?\.md)`"
+    r"^`(?P<file>\d{4}-\d{2}-\d{2}[a-z]?-[^`]+?\.md)`"
     r"(?:\s+(?P<scope>full|in part)(?:\s*[—–-]\s*(?P<clause>.*))?)?$"
 )
 EVENT_RE = re.compile(
@@ -56,7 +58,7 @@ EVENT_RE = re.compile(
 # drifted on the same fact. Normalize to the bare-backtick form and fall through
 # to the existing logic unchanged.
 MD_LINK_PREFIX_RE = re.compile(
-    r"^\[`(?P<file>\d{4}-\d{2}-\d{2}-[^`]+?\.md)`\]\([^)]*\)\s*(?P<rest>.*)$"
+    r"^\[`(?P<file>\d{4}-\d{2}-\d{2}[a-z]?-[^`]+?\.md)`\]\([^)]*\)\s*(?P<rest>.*)$"
 )
 DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})$")
 
@@ -175,7 +177,7 @@ def parse_edge_value(field: str, value: str, lineno: int) -> EdgeTarget | None:
     if not m:
         # bare filename without scope for Superseded-by / in-part-by + clause
         m2 = re.match(
-            r"^`(?P<file>\d{4}-\d{2}-\d{2}-[^`]+?\.md)`"
+            r"^`(?P<file>\d{4}-\d{2}-\d{2}[a-z]?-[^`]+?\.md)`"
             r"(?:\s*(?:[-\u2014]\s*(?P<clause>.*))?)?\s*$",
             value,
         )
@@ -686,8 +688,9 @@ def _state_forward_bullets(text: str) -> list[tuple[int, str]]:
 def check_a7(headers: dict[str, AdrHeader], state_text: str, state_surface: str) -> list[Finding]:
     """A7 -- a STATE.md forward-trigger bullet cites an ADR the graph shows has
     been superseded (full or in part), without the bullet also naming at least
-    one of the superseding ADRs. NOT in DEFAULT_ENABLED_CHECKS -- opt-in only,
-    same posture as A5; run periodically via `--enable A7`, not per-commit.
+    one of the superseding ADRs. In DEFAULT_ENABLED_CHECKS as of 2026-08-26 --
+    the corpus was clean under both A5 and A7 at flip time (6 findings existed
+    and were fixed by hand first, PR #170); same posture as A5.
 
     Deliberately NOT the C4 join check_status_consistency.py tried and dropped.
     That attempt joined STATE.md's forward board against STATE.md's OWN pointer

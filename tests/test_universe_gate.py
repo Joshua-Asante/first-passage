@@ -39,7 +39,15 @@ def _thr() -> ug.Thresholds:
 
 def test_thresholds_read_from_prereg_not_hardcoded():
     """Thresholds come from the campaign pre-registration file, never from
-    literals baked into the gate (forbidden-move + §10 audit hook)."""
+    literals baked into the gate (forbidden-move + §10 audit hook).
+
+    This test's whole point is verifying the real parser against the real
+    file, so it cannot fall back to _thr()'s hardcoded numbers like the other
+    tests below -- skip (not crash, not silently pass on a substitute) when
+    the public clone lacks the LTM prereg body, same posture as vendor-data
+    tests."""
+    if not _PREREG.exists():
+        pytest.skip(f"public clone lacks {_PREREG} -- LTM body not tracked")
     thr = ug.load_thresholds_from_prereg(_PREREG)
     assert thr.alpha == 0.05
     assert thr.dsr_min == 0.95
@@ -117,7 +125,7 @@ def test_load_returns_matrix_requires_benchmark_column(tmp_path):
 def test_self_test_discriminates():
     """THE load-bearing calibration gate: planted noise REJECTED, planted edge
     PROMOTED. A gate that cannot tell them apart is miscalibrated."""
-    thr = ug.load_thresholds_from_prereg(_PREREG)
+    thr = _thr()
     result = ug.self_test(thresholds=thr)
     assert result["negative"].promote is False
     assert result["positive"].promote is True
@@ -134,7 +142,7 @@ def test_verdict_requires_all_gates():
     drifts = np.linspace(0.0, 0.004, k)
     returns = np.column_stack([rng.normal(drifts[i], 0.01, n) for i in range(k)])
     benchmark = np.zeros(n)
-    thr = ug.load_thresholds_from_prereg(_PREREG)
+    thr = _thr()
     # Inflate cumulative K so SR0 (selection benchmark) is high -> DSR must fail.
     verdict = ug.run_universe_gate(
         returns=returns, benchmark=benchmark,
@@ -148,7 +156,7 @@ def test_verdict_requires_all_gates():
 def test_gate_verdict_carries_nulls_alive_ledger():
     """The verdict records which gates a candidate survived (the 'which nulls remain
     alive' ledger the brief requires), not just a boolean."""
-    thr = ug.load_thresholds_from_prereg(_PREREG)
+    thr = _thr()
     result = ug.self_test(thresholds=thr)
     v = result["positive"]
     assert set(v.gate_results) >= {"spa", "dsr", "pbo"}

@@ -3,7 +3,7 @@
 **Status:** `Accepted` — operator directive this session (2026-08-05): *"source BluSky's actual activity rule from help.blusky.pro"*, the limb ADR 2026-08-05 §4 T1 pre-registered as the thing that would decide F3.
 **Decision date:** 2026-08-05
 **Authors:** Joshua (directive) + Claude Code (sourcing + measurement + draft + apply)
-**Supersedes:** [`2026-08-05-blusky-inactivity-unsourced-encoding.md`](2026-08-05-blusky-inactivity-unsourced-encoding.md) — its §4 **T1 fired**. That ADR's containment was correct for what was known at the time and is now discharged, not overturned.
+**Supersedes:** [`2026-08-05-blusky-inactivity-unsourced-encoding.md`](2026-08-05-blusky-inactivity-unsourced-encoding.md) in part — its §4 **T1 fired**. That ADR's containment was correct for what was known at the time and is now discharged, not overturned.
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** superseded by a BluSky rule republication (§4 T2) or by an ADR that resolves the absorbing-vs-discretionary residual (§6)
