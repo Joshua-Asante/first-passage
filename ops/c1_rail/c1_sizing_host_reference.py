@@ -84,18 +84,29 @@ from lifecycle import TIER_MULTIPLIER  # noqa: E402
 # UPGRADE PATH (not a permanent ceiling): when the host gains verified live
 # position truth, this static split relaxes to a runtime headroom check. Same
 # re-add shape as the 2026-07-19 CrossTrade Account Manager trigger.
+#
+# RELEASED 2026-08-26 (operator ruling, docs/adr/2026-08-26-striker-legmap-cap-release.md):
+# both legs' cap_alloc set to 0. Discharges the "release/re-derivation is an
+# explicit operator ruling at first deploy" clause the edge-cohort ADR named as
+# owed (docs/adr/2026-08-08-edge-cohort-correction-and-necessity-retarget.md L4).
+# Both Striker legs were withdrawn from deployment 2026-08-04 and have sent no
+# signal since; a zeroed leg still halts-to-zero (never falls back to a
+# permissive default) if one ever somehow fires. The 69/11 split above is
+# retained as a historical record of the account-aggregate math, not deleted —
+# see the ADR for why (the frozen spec worked-example + f2_floors.json oracle
+# both cite it verbatim and are not touched by this release).
 LEG_MAP: dict[str, dict] = {
     "dj30_mym": {
         "leg_key": "Striker",
         "pyr_pct": 750.0,
         "dollars_per_pt": 0.50,
-        "cap_alloc": 69,
+        "cap_alloc": 0,  # was 69 until 2026-08-26 (RELEASED — see comment above)
     },
     "nas100_mnq": {
         "leg_key": "Striker NAS100",
         "pyr_pct": 1000.0,
         "dollars_per_pt": 2.00,
-        "cap_alloc": 11,
+        "cap_alloc": 0,  # was 11 until 2026-08-26 (RELEASED — see comment above)
     },
 }
 
@@ -104,14 +115,23 @@ _REQUIRED_PAYLOAD_FIELDS = ("leg_id", "signal_type", "bar_time", "close",
                             "stop_dist_pts")
 
 
-def generate_constants(tier: str) -> dict:
+def generate_constants(tier: str, leg_map: dict[str, dict] | None = None) -> dict:
     """Derive the c1_sizing_constants.json mirror from production sources.
 
     This is the re-pin mechanism (spec §2.3): run it, write the JSON, commit
     the delta alongside any firm_rules/locked-Pine change. Tests assert the
     generated values equal production so a stale mirror is caught mechanically.
+
+    ``leg_map`` defaults to the live module-level ``LEG_MAP`` (the real re-pin
+    path always wants current production). The optional override exists
+    solely so the test suite can pin the frozen historical 69/11 cap_alloc
+    split (matching docs/spec/c1_nt8_sizing_host_impl.md §7's worked example
+    and lab/analysis/c1/q_rail_1_2026-07/f2_floors.json's oracle) as a
+    regression fixture, independent of the live LEG_MAP's current values
+    (RELEASED to 0/0 2026-08-26 — see LEG_MAP's own comment).
     """
     firm = FIRM_RULES[tier]
+    leg_map = LEG_MAP if leg_map is None else leg_map
     return {
         "tier": tier,
         "E_firm": firm["starting_balance"],
@@ -125,7 +145,7 @@ def generate_constants(tier: str) -> dict:
                 "dollars_per_pt": leg["dollars_per_pt"],
                 "cap_alloc": leg["cap_alloc"],
             }
-            for leg_id, leg in LEG_MAP.items()
+            for leg_id, leg in leg_map.items()
         },
     }
 

@@ -55,6 +55,12 @@ bars:
 
 ## SESSION LOG
 
+- **2026-08-26** — **`LEG_MAP` cap_alloc RELEASED (0/0, was 69/11)** — operator ruling,
+  [`2026-08-26-striker-legmap-cap-release.md`](../../docs/adr/2026-08-26-striker-legmap-cap-release.md).
+  Separate, narrower dimension than the 2026-08-12 occupancy release below: this one is the
+  code-level `cap_alloc` in `ops/c1_rail/c1_sizing_host_reference.py`, not research-symbol
+  permission. Full 80-micro account cap now unclaimed for a future leg's own allocation; Y4's
+  "retained-not-released (headroom not freed)" line below is now historical on **both** dimensions.
 - **2026-08-12** — **Occupancy posture updated (pointer):** MSL Board B8 released MYM/MNQ headroom for new non-Striker research ([`ADR`](../../docs/adr/2026-08-12-msl-mym-occupancy-release.md)). Canonical detail on [`MYM.md`](MYM.md). The 2026-08-06 “retained-not-released / headroom not freed” line is historical for that claim-alignment pass.
 - **2026-08-06** — **Claim-alignment M22:** deleted sibling-status restatement from Status (pointer to [`MYM.md`](MYM.md) only). Moved former ACTIVE c1 row to past tense / out of live ACTIVE. Y4 (+ mirrored N7 on [`NQ.md`](NQ.md)): appended **retained-not-released** (then under S1 — headroom not freed) — 69/11 must not be quoted as consuming live headroom. ⚠ Superseded for *new non-Striker research occupancy* by B8 2026-08-12 (above). No `core/`, lock, allocation, lifecycle, Pine, rail, or `LEG_MAP` change.
 - **2026-07-25** — Closed the owed NQ↔YM mirror gap: added **Y4** (account-aggregate MYM 69 / MNQ 11, flat 16:45 ET, Treasuries untradable, hedging clears by construction, §4 undischarged, WATCH-1 0.50× B7 input CLOSED benign) matching [`NQ.md`](NQ.md) N7; pointed Status / ACTIVE / Y3 at [`MYM.md`](MYM.md) for the live c1 path. No `core/`, lock, allocation, `dd_protection`, or Pine change.

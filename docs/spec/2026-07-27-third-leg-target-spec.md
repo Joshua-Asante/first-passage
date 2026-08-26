@@ -31,6 +31,12 @@ Ratification does **not** admit any candidate, authorize a rail slot, or license
 > symbol/cap occupancy for new **non-Striker** research 2026-08-12, and `MYM.md`'s own session log
 > confirms the release. This does not lift SCOPE DEAD or reopen §7 scoring — occupancy release
 > is orthogonal to the missing book/account this banner is about.
+>
+> **Second correction, same day:** the *cap-dollar* dimension (S5's "day-of-week cap table...
+> without re-allocating cap from MYM or MNQ") is now also released, separately from occupancy.
+> [`2026-08-26-striker-legmap-cap-release.md`](../adr/2026-08-26-striker-legmap-cap-release.md)
+> zeroed `LEG_MAP`'s cap_alloc (was 69/11) — S5 admission math for a future leg may now use the
+> full 80-micro account cap without hand-subtracting Striker's former share.
 
 
 ```

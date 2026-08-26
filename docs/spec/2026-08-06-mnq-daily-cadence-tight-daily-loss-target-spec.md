@@ -198,12 +198,15 @@ if that ruling moves).
 > live construct route; that route is no longer available. Route A (survivor-tied) is explicitly
 > unaffected and remains open. Any future satisfaction of R2/F-B needs Route A or a fresh
 > redesigned successor to Route B under a new ADR — not a lookup of the retired grant.
-> 2. The S1–S7 row's "LEG_MAP retained-not-released" tag is stale for **research-occupancy**
-> purposes: [`MSL Board B8`](../adr/2026-08-12-msl-mym-occupancy-release.md) released
-> MYM1!/MNQ1! symbol/cap occupancy for new non-Striker research 2026-08-12. It remains accurate
-> for **deployment-time cap re-derivation**, which the edge-cohort ADR's L4 row still names as an
-> explicit operator ruling owed at first deploy — the row above has been re-worded to distinguish
-> the two axes.
+> 2. The S1–S7 row's "LEG_MAP retained-not-released" tag is stale on **both** axes now. Research-
+> occupancy: [`MSL Board B8`](../adr/2026-08-12-msl-mym-occupancy-release.md) released
+> MYM1!/MNQ1! symbol/cap occupancy for new non-Striker research 2026-08-12. Deployment-time cap:
+> the edge-cohort ADR's L4 row named this ruling owed at first deploy — it has now been made,
+> [`2026-08-26-striker-legmap-cap-release.md`](../adr/2026-08-26-striker-legmap-cap-release.md)
+> zeroing `LEG_MAP`'s cap_alloc (was 69/11). The row above's "LEG_MAP retained-not-released" tag
+> and "headroom not freed" language are fully historical now — a future R2/L4 book construct's own
+> cap_alloc is a fresh admission choice against the full 80-micro cap, not a hand-derivation
+> against a reserved 69/11 share.
 
 ---
 

@@ -69,7 +69,13 @@ bars:
 
 ## SESSION LOG
 
-- **2026-08-26** — **Mirror-sync gap closed (pointer):** MSL Board B8 released MYM/MNQ headroom for
+- **2026-08-26b** — **`LEG_MAP` cap_alloc RELEASED (0/0, was 69/11)** — operator ruling,
+  [`2026-08-26-striker-legmap-cap-release.md`](../../docs/adr/2026-08-26-striker-legmap-cap-release.md).
+  Separate, narrower dimension than the 2026-08-12 occupancy release below: this one is the
+  code-level `cap_alloc` in `ops/c1_rail/c1_sizing_host_reference.py`, not research-symbol
+  permission. Full 80-micro account cap now unclaimed for a future leg's own allocation; N7's
+  "retained-not-released (headroom not freed)" line below is now historical on **both** dimensions.
+- **2026-08-26a** — **Mirror-sync gap closed (pointer):** MSL Board B8 released MYM/MNQ headroom for
   new non-Striker research ([`ADR`](../../docs/adr/2026-08-12-msl-mym-occupancy-release.md)),
   2026-08-12 — [`YM.md`](YM.md)'s mirror row Y4 got this pointer the same day; N7 below did not.
   Canonical detail on [`MNQ.md`](MNQ.md). N7's "retained-not-released / headroom not freed" line is
