@@ -1,0 +1,17 @@
+{
+  "sizing": {
+    "aegis": 5.333333,
+    "orbmnq": 0.1812
+  },
+  "full_window_bust_pct": 0.11,
+  "full_n_weeks": 49,
+  "h1_start": "2025-08-26 00:00:00",
+  "h1_end": "2026-02-13 00:00:00",
+  "h1_bust_pct": 0.0,
+  "h1_n_weeks": 24,
+  "h2_start": "2026-02-13 00:00:00",
+  "h2_end": "2026-08-05 00:00:00",
+  "h2_bust_pct": 5.25,
+  "h2_n_weeks": 24,
+  "both_halves_clear_3pct": false
+}
