@@ -1,5 +1,11 @@
 # Aegis-6J1 x ORB-MNQ-1 combined book — Tradeify_Select_100K passability (2026-08-26)
 
+> ⚠ **The original 1.51%/0.01% headline bust figures below are SUPERSEDED (2026-08-26b) — see
+> §9.** A proper both-halves regime-robustness bootstrap and two sizing/measurement corrections
+> (§9.1-§9.5) revise the picture materially: the 1yr flagship fails outright, and the 3yr
+> flagship's margin shrinks or fails once corrections compound. Read §9 before citing any number
+> from §1-§8.
+
 **Status:** EXPLORATORY — not pre-registered, not lock-grade. A user-supplied-CSV sizing/bootstrap
 sweep against this repo's own frozen engine, adversarially spot-checked (independent reimplementation
 of the drawdown logic + correlation arithmetic), not a Rule-0 discovery campaign. Treat every figure
