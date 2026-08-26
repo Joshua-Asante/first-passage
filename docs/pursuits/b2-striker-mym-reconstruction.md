@@ -12,7 +12,7 @@ lifting (a posture change requiring its own ADR); attached falsifier = none exis
 authored fresh at re-entry time, since the original bar carries no falsifier of its own to inherit.
 **Not a scope bar on Striker generally:** this SUBTRACT is specific to the MYM reconstruction
 candidate's own research lane. It does not relitigate the 2026-08-04 withdrawal or the current
-`AUTHORIZED · MECHANISM @ 1.00×` lifecycle record for the locked Striker legs — those stand
+`AUTHORIZED · MECHANISM @ 1.00×` lifecycle record (canonical: [`strategy_lifecycle.md`](../methodology/strategy_lifecycle.md)) for the locked Striker legs — those stand
 untouched (GSUB-2 §5 forbidden moves).
 **Residuals:** `lab/analysis/striker/striker_mym_reconstruction_candidate1_2026-07/` (CATALOG:
 `striker_mym_reconstruction_candidate1_2026-07`, currently `ACTIVE`) — **not archived by this

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """roll_sessions.py — roll old docs/SESSIONS.md entries into quarterly archives.
 
-Keeps the newest N entries (default 20) live in docs/SESSIONS.md; moves older
+Keeps the newest N entries (default 30, recalibrated 2026-08-26 -- see roll()'s
+docstring) live in docs/SESSIONS.md; moves older
 entries into docs/ltm/notes/archive/sessions/SESSIONS-YYYY-Qn.md (routed by each
 entry's own date), preserving entry content while deterministically rebasing
 relative Markdown links; and regenerates a managed Archive-Index block at the
@@ -16,8 +17,8 @@ classified governance in REPO_MAP §2.1. Idempotent; --dry-run writes nothing.
 The git history is the lossless backstop regardless.
 
     python scripts/roll_sessions.py --dry-run     # show the plan, write nothing
-    python scripts/roll_sessions.py               # roll (keep newest 20)
-    python scripts/roll_sessions.py --keep 30
+    python scripts/roll_sessions.py               # roll (keep newest 30)
+    python scripts/roll_sessions.py --keep 20
     python scripts/roll_sessions.py --regenerate-from-git HEAD
     python scripts/roll_sessions.py --next-label 2026-08-11  # next free same-day letter
     python scripts/roll_sessions.py --check-order             # labels + separators + order
@@ -406,7 +407,7 @@ def regenerate_archives_from_source(
     root: Path,
     source_doc: str,
     *,
-    keep_n: int = 20,
+    keep_n: int = 30,
     dry_run: bool = False,
 ) -> dict[str, int]:
     """Rebuild quarterly archives from an unrolled source document."""
@@ -433,7 +434,17 @@ def regenerate_archives_from_source(
 
 def append_entries(root: Path, rolled: list[Entry], *, dry_run: bool = False) -> dict[str, int]:
     """Merge rolled entries into their quarterly archive files (dedup by heading,
-    newest-first). Returns {quarter: count_added}."""
+    newest-first). Returns {quarter: count_added}.
+
+    Dedup is by exact heading LINE (title included), not by label alone, so
+    this alone does NOT catch two entries sharing a YYYY-MM-DDx label with
+    different titles -- confirmed 2026-08-26: naively rolling such an entry
+    creates a genuine duplicate heading inside the archive. roll() guards
+    against this by filtering collisions out of ``rolled`` before calling
+    here (see roll()'s retained_collisions handling); --regenerate-from-git's
+    path calls this function directly and does NOT carry that guard -- if
+    that path sees real use, it needs the same pre-filter.
+    """
     groups: dict[str, list[Entry]] = {}
     for e in rolled:
         archived = Entry(e.date, e.title, rewrite_links_for_archive(e.text))
@@ -989,22 +1000,56 @@ def check_order(root: Path, *, window: int = ORDER_WINDOW) -> list[str]:
     return problems
 
 
-def roll(root: Path, keep_n: int = 20, dry_run: bool = False) -> dict:
-    """Roll SESSIONS.md: keep newest keep_n, archive the rest, regenerate index."""
+def roll(root: Path, keep_n: int = 30, dry_run: bool = False) -> dict:
+    """Roll SESSIONS.md: keep newest keep_n, archive the rest, regenerate index.
+
+    Default 30, not 20 (2026-08-26 recalibration): the 2026-Q3 archive's own
+    12 days of dated entries run 7-31/day (median ~16), and the two most
+    recently rolled days sat at 28 and 31 -- 20 covers under a day of current
+    velocity, so a session starting up on an ordinary morning would already
+    need an archive hop just to see yesterday, defeating the point of a live
+    window ("recent context, no archive hop"). 30 covers roughly a full busy
+    day (or ~2 median days) without growing into a second archive. Re-check
+    this number if shipping velocity materially shifts -- it is a recalibr-
+    atable target, not a load-bearing constant.
+    """
     sessions = root / SESSIONS_REL
     doc = sessions.read_text(encoding="utf-8")
     header, entries = parse(doc)
-    kept, rolled = entries[:keep_n], entries[keep_n:]
+    archived = archived_labels(root)
+    kept: list[Entry] = []
+    rolled: list[Entry] = []
+    retained_collisions: list[str] = []
+    for i, e in enumerate(entries):
+        label = lettered_label_of(e.text.splitlines()[0])
+        if i < keep_n:
+            kept.append(e)
+        elif label and label in archived:
+            # Archiving this entry would silently create a genuine duplicate
+            # heading INSIDE the archive file itself -- confirmed 2026-08-26:
+            # rolling a live/archive collision without this guard corrupts
+            # the archive (the settled, terminal side) rather than just
+            # leaving a live-side collision that --check-order can still
+            # flag. Fail closed: keep it live past the nominal cap instead.
+            # --check-order's archive_collisions() NOTE stays the visible
+            # signal that this entry needs a label-scheme fix, not this
+            # function silently working around it.
+            kept.append(e)
+            retained_collisions.append(label)
+        else:
+            rolled.append(e)
     archive_dir = root / ARCHIVE_REL
     # True no-op: nothing to roll AND no existing archive -> leave file pristine.
     if not rolled and not archive_dir.exists():
-        return {"kept": len(kept), "rolled": 0, "by_quarter": {}}
+        return {"kept": len(kept), "rolled": 0, "by_quarter": {},
+                 "retained_collisions": retained_collisions}
     migrate_archives(root, dry_run=dry_run)
     by_quarter = append_entries(root, rolled, dry_run=dry_run)
     new_doc = render(header, kept, build_index(root))
     if not dry_run:
         sessions.write_text(new_doc, encoding="utf-8")
-    return {"kept": len(kept), "rolled": len(rolled), "by_quarter": by_quarter}
+    return {"kept": len(kept), "rolled": len(rolled), "by_quarter": by_quarter,
+             "retained_collisions": retained_collisions}
 
 
 
@@ -1019,7 +1064,7 @@ def _safe_print(msg: str) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--keep", type=int, default=20, help="entries to keep live (default 20)")
+    ap.add_argument("--keep", type=int, default=30, help="entries to keep live (default 30)")
     ap.add_argument("--dry-run", action="store_true", help="print the plan, write nothing")
     ap.add_argument("--root", default=None, help="repo root (default: inferred)")
     ap.add_argument(
@@ -1224,6 +1269,12 @@ def main(argv: list[str] | None = None) -> int:
         res = roll(root, keep_n=args.keep, dry_run=args.dry_run)
     tag = "[dry-run] " if args.dry_run else ""
     print(f"{tag}kept {res['kept']}, rolled {res['rolled']} -> {res['by_quarter'] or '(none)'}")
+    for label in res.get("retained_collisions") or []:
+        _safe_print(
+            f"  NOTE: {label!r} kept live past the cap -- archiving it would "
+            f"duplicate an existing archive heading; renumber the live entry "
+            f"first (see --check-order)"
+        )
     return 0
 
 

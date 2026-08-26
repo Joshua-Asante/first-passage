@@ -171,6 +171,14 @@ gates:
       - python
       - scripts/sync_liveness_indexes.py
 
+  - id: lifecycle-consistency
+    tier: path-conditional
+    when:
+      staged_regex: '^(core/lifecycle[.]py|CLAUDE[.]md|[.]claude/skills/c1-rail/SKILL[.]md|docs/methodology/strategy_lifecycle[.]md|docs/pursuits/|ops/instruments/|ops/venue_editions/)'
+    cmd:
+      - python
+      - scripts/check_lifecycle_consistency.py
+
   # Report-only docs-as-runtime inbound index (P3). Always exit 0.
   # staged_regex includes scanned trees so a new pathlib/docs cite selects it.
   - id: docs-runtime-inventory

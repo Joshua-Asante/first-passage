@@ -42,6 +42,7 @@ EXPECTED_PATH_CONDITIONAL = {
     "sync-liveness",
     "docs-runtime-inventory",
     "repo-map-layers",
+    "lifecycle-consistency",
 }
 
 
@@ -160,6 +161,7 @@ REACHABILITY_PROBES = {
     "sync-liveness": "docs/briefs/INDEX.md",
     "docs-runtime-inventory": "ops/c1_rail/c1_rail_arm.py",
     "repo-map-layers": "scripts/check_boundaries.py",
+    "lifecycle-consistency": "core/lifecycle.py",
 }
 
 

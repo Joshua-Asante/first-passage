@@ -237,6 +237,34 @@ def test_roll_keeps_newest_and_rolls_rest(tmp_path):
     assert [e.title for e in arch_entries] == ["E2", "E1"]
 
 
+def test_roll_refuses_to_duplicate_an_archived_heading(tmp_path):
+    """2026-08-26 finding: naively rolling a live entry whose label already
+    exists in the archive (different title, same YYYY-MM-DDx) creates a
+    genuine duplicate heading INSIDE the archive file -- append_entries()
+    only dedups by exact heading line, not by label. roll() must keep such
+    an entry live past the cap rather than corrupt the archive."""
+    _archive(tmp_path, "2026-Q2").parent.mkdir(parents=True, exist_ok=True)
+    _archive(tmp_path, "2026-Q2").write_text(
+        "## 2026-06-01a — Already-archived entry\n**Focus:** f.\n", encoding="utf-8")
+    _write(tmp_path, _doc([
+        ("2026-06-05", "E5"), ("2026-06-04", "E4"), ("2026-06-03", "E3"),
+        ("2026-06-01a", "Colliding live entry"),
+    ]))
+    res = rs.roll(tmp_path, keep_n=3)
+    assert res["retained_collisions"] == ["2026-06-01a"]
+    assert res["kept"] == 4  # 3 under the cap + the retained collision
+    assert res["rolled"] == 0
+    _, kept = rs.parse(rs.split_index(_read(tmp_path))[0])
+    assert "Colliding live entry" in [e.title for e in kept]
+    _, arch_entries = rs.parse(_archive(tmp_path, "2026-Q2").read_text(encoding="utf-8"))
+    matching = [e for e in arch_entries if lettered_label_of_(e) == "2026-06-01a"]
+    assert len(matching) == 1, "archive must not gain a second 2026-06-01a heading"
+
+
+def lettered_label_of_(e) -> str:
+    return rs.lettered_label_of(e.text.splitlines()[0])
+
+
 def test_roll_preserves_every_entry_apart_from_link_rewrite(tmp_path):
     (tmp_path / "docs" / "briefs").mkdir(parents=True)
     (tmp_path / "docs" / "briefs" / "Q.md").write_text("brief", encoding="utf-8")
