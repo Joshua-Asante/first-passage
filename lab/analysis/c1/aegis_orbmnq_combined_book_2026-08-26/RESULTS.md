@@ -1,14 +1,16 @@
 # Aegis-6J1 x ORB-MNQ-1 combined book — Tradeify_Select_100K passability (2026-08-26)
 
 > ⚠ **The original 1.51%/0.01% headline bust figures below are SUPERSEDED (2026-08-26b, further
-> revised 2026-08-26c) — see §9 AND §10.** A proper both-halves regime-robustness bootstrap and
-> sizing/measurement corrections (§9.1-§9.5, §10.1-§10.3) revise the picture materially: the 1yr
-> flagship fails outright and gets worse under every tested correction, and the 3yr flagship — the
-> one cell §9 found survived its own both-halves check — now ALSO fails both halves once a
+> revised 2026-08-26c/d) — see §9, §10, AND §11.** A proper both-halves regime-robustness bootstrap
+> and sizing/measurement corrections (§9.1-§9.5, §10.1-§10.3) revise the picture materially: the
+> 1yr flagship fails outright and gets worse under every tested correction, and the 3yr flagship —
+> the one cell §9 found survived its own both-halves check — now ALSO fails both halves once a
 > tail-risk-consistent sizing ratio and a genuine timestamp-sequenced intraday-honest remeasure are
-> compounded together (§10.2). As of §10, no tested combined-book configuration in this entire
-> campaign, on either window, survives a full both-halves + tail-sizing + intraday-honesty gate.
-> Read §9 and §10 before citing any number from §1-§8.
+> compounded together (§10.2). No tested combined-book configuration in this entire campaign, on
+> either window, survives a full both-halves + tail-sizing + intraday-honesty gate. Separately,
+> §11 closes H4 (the one item §10 left open) with a clean, opposite-direction result on a different,
+> solo-Aegis cell — a native 4-contract re-export confirms rather than erodes that cell's own
+> originally-reported margin. Read §9, §10, and §11 before citing any number from §1-§8.
 
 **Status:** EXPLORATORY — not pre-registered, not lock-grade. A user-supplied-CSV sizing/bootstrap
 sweep against this repo's own frozen engine, adversarially spot-checked (independent reimplementation
@@ -26,8 +28,8 @@ operator: Aegis 1yr + 3yr, ORB-MNQ 1yr + 3yr + a corrective 6yr export. Engine r
 `core/mc/simulation.py::simulate_path`/`run_seed`, `core/mc/preflight.py::firm_kwargs` — no logic
 reimplemented except where independently re-derived for adversarial verification.
 
-**Headline finding — REVISED 2026-08-26c, read §9 AND §10 before citing any number below.** The
-original 1.51%/0.01% headline (naive equal-risk combined book, Aegis 5.33 : ORB-MNQ 0.29-0.40
+**Headline finding — REVISED 2026-08-26d, read §9, §10, AND §11 before citing any number below.**
+The original 1.51%/0.01% headline (naive equal-risk combined book, Aegis 5.33 : ORB-MNQ 0.29-0.40
 contracts) does not survive closer testing, and neither corrected window survives full
 compounding. A **proper both-halves regime-robustness bootstrap** (§9) found the 1yr flagship —
 the number that looked *safest* — **fails outright**: its second half alone bootstraps to
@@ -41,10 +43,13 @@ trade-level MAE proxy, §10.1) are compounded and the bootstrap re-split by regi
 **3.29% / 5.37% — both halves fail** (§10.2), reversing the one result §9 had established as
 surviving. **Each leg still fails this same eval standalone** at realistic sizing (§0), and as of
 §10 no tested combined configuration, at either window or any tried sizing, is a clean,
-uncontested PASS under a full both-halves + tail-sizing + intraday-honesty gate. One item from
-§9's own handoff remains genuinely open: H4, a native TradingView re-export at exactly 4 Aegis
-contracts (§10.4) — still not computable without TradingView access. See §9 and §10 for the full
-picture.
+uncontested PASS under a full both-halves + tail-sizing + intraday-honesty gate. **Separately, §11
+closes H4** (the one item §10 left open) with the opposite direction of result, on a different
+cell: a native TradingView re-export at exactly 4 Aegis-6J1 contracts (operator-supplied)
+reproduces the original linear-rescale bust figure exactly (2.77%, 0.00pp delta) — the
+sizing-matched Aegis-6J1 SOLO cell's rescale-bias concern from §6 does not apply, confirmed rather
+than eroded, though that solo cell still hasn't been checked against intraday-honesty (§11's own
+closing note). See §9, §10, and §11 for the full picture.
 
 ---
 
@@ -700,24 +705,65 @@ separately) but was cheap to compute with the same code and closes the natural n
 
 ### §10.4 — What's still owed
 
-Only one item from §9.4's list remains genuinely open:
+Only one item from §9.4's list remained genuinely open at this point:
 
-1. **H4 — native TradingView re-export at exactly 4 Aegis-6J1 contracts.** Still not computable:
-   this repo's standing policy prohibits automating TradingView login
+1. **H4 — native TradingView re-export at exactly 4 Aegis-6J1 contracts.** Not computable in this
+   session up to here: this repo's standing policy prohibits automating TradingView login
    (`project_tv_egress_automation.md`), and no raw export found locally — including three dated
    today — is a fixed-4-contract run; all are variable-qty (4-8 contracts), position-sized,
    cap-8-style backtests matching the committed data's own basis, not the flat `max_contracts=4`
-   configuration H4 needs. Requires operator action.
+   configuration H4 needs. Requires operator action. **Resolved same day — see §11.**
 
 Everything else §9.4 named is now resolved: the bar-level remeasure (§10.0-§10.1, in the
 timestamp-sequenced form justified in §10.0, not a literal OHLC-bar match, for the reasons given
 there), the 3yr both-halves-under-full-compounding check (§10.2), and the 1yr window's own
 H7/intraday sensitivity at its regime-split basis (§10.3).
 
-**Revised bottom line:** as of this session, no tested configuration of this combined book — at
-either window, at any sizing this campaign has tried — survives a full both-halves-regime +
-tail-risk-consistent-sizing + intraday-honesty gate applied together. The 3yr flagship was the last
-cell standing after §9; §10 closes it.
+**Bottom line as of §10:** no tested configuration of this combined book — at either window, at any
+sizing this campaign has tried — survives a full both-halves-regime + tail-risk-consistent-sizing +
+intraday-honesty gate applied together. The 3yr flagship was the last cell standing after §9; §10
+closes it. §11 (below) resolves H4, the one remaining open item, on a separate, solo-Aegis cell that
+this both-halves finding does not touch.
+
+---
+
+## §11 — Follow-up (2026-08-26d): H4 closes — native re-export confirms the linear rescale exactly
+
+Operator-supplied native TradingView export, provided directly to this session:
+`Aegis_6J1_CME_6J1!_2026-08-26_c59e9.csv` — a genuine flat `max_contracts=4` backtest (every one of
+154 trades has `Size (qty)==4`, not the variable 4-8 cap-8-style sizing behind the committed
+`aegis_3yr_trades.csv`), spanning 2020-02-24 → 2026-08-05. Sliced to the campaign's own 3yr window
+(2022-09-07 → 2025-08-20, 90 trading days — the same count as the committed data) and run through
+the identical bootstrap methodology that produced the original 2.77% linear-rescale figure
+(`data/aegis_solo_supplementary_bootstrap.json` key `"c4"`: `n_sims=2000`, seeds 1-5, weekly
+blocks, `Tradeify_Select_100K`, `consistency=0.40`, reused verbatim via
+`combined_sim.bootstrap_block_sweep`, no barrier logic reimplemented). Script:
+[`followup_h4_native_4contract.py`](followup_h4_native_4contract.py); raw result:
+[`data/followup_h4_native_4contract_results.json`](data/followup_h4_native_4contract_results.json).
+
+**Result: 2.77% bust — an EXACT match to the linear-rescale figure, 0.00pp delta.** The single-path
+result is byte-identical too (day 376, max_dd 0.9983%, matching `solo_recheck_results.json`'s own
+`contracts=4` entry exactly). This is not a coincidence: cross-checking individual trades shows
+Aegis-6J1's own signal generation is fully qty-independent — the 2022-09-07 trade, for example, has
+an identical entry price, exit price, and timing in both exports, with `net_pnl_usd` scaling
+exactly linearly (cap-8 export: $12.55/contract × 4 = $50.20; native 4-contract export: $50.20,
+exact) — and commission scales linearly with qty in both ($3.10/side/contract). A linear rescale is
+therefore mathematically exact for this specific strategy, at this specific sizing, on this
+specific window. §6's rescale-bias concern (the borrowed "0.37-0.61pp" figure that would have
+flipped this cell to a fail) was carried over by analogy from a different prior study — never
+measured on Aegis-6J1 itself. This is the first direct measurement, and it finds the concern
+doesn't apply here.
+
+**H4 is closed: the sizing-matched Aegis-6J1 solo cell clears the 3.0% ceiling with its
+originally-reported 0.23pp margin, confirmed rather than eroded.** This is the one figure in this
+entire campaign's own scrutiny that survives cleanly — rescale bias specifically, on this one solo
+cell. Two things this does NOT do: it does not retest §6's OTHER flagged correction for this same
+cell (EOD-clock intraday-honesty — §6 estimated by analogy that this cell "would fail outright"
+under that correction; still untested for Aegis-6J1 SOLO, since only the COMBINED book got a
+genuine intraday-honest remeasure, §10.1), and it says nothing about the combined-book conclusion
+above — §10's both-halves finding is about the COMBINED book at its own flagship sizings (5.333
+Aegis contracts, not 4), an entirely different cell. 0.23pp is thin enough that this solo cell
+should still not be read as robustly clearing without the intraday-honesty check too.
 
 ---
 
@@ -735,16 +781,21 @@ same-day local-session follow-up (2026-08-26c, §10) closed §9.4's remaining ha
 (timestamp-sequenced, not literal bar-panel) intraday-honest remeasure superseding §9.3's proxy,
 and the compounding checks §9 didn't run split by regime half — and **reversed §9's own surviving
 result**: the 3yr flagship, which §9.5 found cleared both regime halves, fails both once its own
-identified corrections are actually compounded together (§10.2). Published first as a standalone
-artifact, saved here per operator request 2026-08-26. Exploratory research throughout — no
-Pine-header baseline exists for either candidate strategy to reconcile against; every bust/pass
-figure through §8 is a single-path replay or 5-day-block bootstrap over end-of-day equity only;
-§9's intraday figures are a disclosed trade-level proxy; §10's are a timestamp-sequenced
-reconstruction from the raw, un-reduced trade exports (real entry/exit timestamps, not sub-trade
-bar resolution — §10.0 explains why a literal bar-panel match was rejected). H4 (a native
-4-contract TradingView re-export) remains open, requiring operator action (§10.4). Raw CSVs are
-TradingView "List of Trades" exports (not raw OHLCV vendor bar data) and are not committed; derived
-per-trade tables and daily-P&L panels are under [`data/`](data/); the reusable simulators are
-[`combined_sim.py`](combined_sim.py), [`followup_h7_h8_regime.py`](followup_h7_h8_regime.py),
-[`followup_intraday_mae_proxy.py`](followup_intraday_mae_proxy.py), and
-[`followup_s10_bar_level_and_compounding.py`](followup_s10_bar_level_and_compounding.py).
+identified corrections are actually compounded together (§10.2). A same-day closing follow-up
+(2026-08-26d, §11) resolves H4 — the one item §10 left open — with an operator-supplied native
+4-contract TradingView export that reproduces the original linear-rescale bust figure exactly
+(2.77%, 0.00pp delta), on a different, solo-Aegis cell §10's both-halves finding does not touch.
+Published first as a standalone artifact, saved here per operator request 2026-08-26. Exploratory
+research throughout — no Pine-header baseline exists for either candidate strategy to reconcile
+against; every bust/pass figure through §8 is a single-path replay or 5-day-block bootstrap over
+end-of-day equity only; §9's intraday figures are a disclosed trade-level proxy; §10's are a
+timestamp-sequenced reconstruction from the raw, un-reduced trade exports (real entry/exit
+timestamps, not sub-trade bar resolution — §10.0 explains why a literal bar-panel match was
+rejected); §11 is the first cell in this campaign to use a genuinely native (not rescaled or
+proxied) export end to end. Raw CSVs are TradingView "List of Trades" exports (not raw OHLCV
+vendor bar data) and are not committed; derived per-trade tables and daily-P&L panels are under
+[`data/`](data/); the reusable simulators are [`combined_sim.py`](combined_sim.py),
+[`followup_h7_h8_regime.py`](followup_h7_h8_regime.py),
+[`followup_intraday_mae_proxy.py`](followup_intraday_mae_proxy.py),
+[`followup_s10_bar_level_and_compounding.py`](followup_s10_bar_level_and_compounding.py), and
+[`followup_h4_native_4contract.py`](followup_h4_native_4contract.py).

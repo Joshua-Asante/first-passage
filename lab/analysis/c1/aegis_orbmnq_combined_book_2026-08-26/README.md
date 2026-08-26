@@ -2,7 +2,7 @@
 
 Aegis-6J1 x ORB-MNQ-1 **combined-book** Tradeify_Select_100K passability sweep (2026-08-26),
 built from five operator-supplied TradingView "List of Trades" CSV exports. See
-[`RESULTS.md`](RESULTS.md) — **read §0, §9, AND §10 first**: §0 is why this is evidence that a
+[`RESULTS.md`](RESULTS.md) — **read §0, §9, §10, AND §11 first**: §0 is why this is evidence that a
 specific small-weight *combination* of the two legs clears the eval ceiling in bootstrap, not that
 either leg is independently viable (both fail Tradeify solo on this repo's own prior record); §9
 and §10 (same-day, §10 from a local follow-up session) together **materially revise the
@@ -11,7 +11,8 @@ every tested correction (§9, §10.3), and the 3yr flagship — the one cell §9
 both-halves check — now **also fails both halves** once a tail-risk-consistent sizing ratio and a
 genuine timestamp-sequenced intraday-honest remeasure are compounded together (§10.2). As of §10,
 no tested combined configuration on either window survives a full both-halves + tail-sizing +
-intraday-honesty gate.
+intraday-honesty gate. §11 (same day) closes H4 on a separate, solo-Aegis cell with the opposite
+direction of result — a native 4-contract export confirms rather than erodes that cell's own margin.
 
 ## Status
 
@@ -22,11 +23,11 @@ reconcile against. Adversarially spot-checked (independent reimplementation of t
 EOD-clock lower bound per this repo's own standing posture; §9's intraday figures are a disclosed
 trade-level MAE proxy; §10's are a timestamp-sequenced reconstruction from the raw, un-reduced
 trade exports (real entry/exit timestamps — §10.0 explains why a literal bar-panel match was
-rejected as less trustworthy, not more, for this specific pair). H1/H5/H6/H7/H8/H9 are resolved;
-H2/H3/H10 are now resolved by §10.1's timestamp-sequenced remeasure (superseding the §9.3 proxy);
-H4 needs a native TradingView re-export and remains open — requires operator action
-(`RESULTS.md` §10.4), not computable by an automated session (TV login automation is prohibited
-repo policy).
+rejected as less trustworthy, not more, for this specific pair); §11 is the one cell built from a
+genuinely native (not rescaled or proxied) export end to end. H1/H5/H6/H7/H8/H9 are resolved;
+H2/H3/H10 are resolved by §10.1's timestamp-sequenced remeasure (superseding the §9.3 proxy); H4 is
+resolved by §11's native 4-contract export (operator-supplied, confirms the original linear-rescale
+figure exactly).
 
 ## Layout
 
@@ -61,6 +62,10 @@ repo policy).
   flat `O==H==L==C` at 6J's fine mintick — see the file's own docstring). Built and validated for
   §10 but ultimately NOT used for the final remeasure (§10.0 explains the cross-feed alignment
   finding that ruled it out); kept as a validated, reusable recovery utility for future 6J bar work.
+- [`followup_h4_native_4contract.py`](followup_h4_native_4contract.py) — closes H4 (RESULTS.md
+  §11): a genuine flat 4-contract TradingView export (operator-supplied, same day) run through the
+  exact bootstrap methodology behind the original linear-rescale 2.77% figure. Reproduces it
+  exactly (0.00pp delta) — the only cell in this campaign built end to end from a native export.
 - [`data/`](data/) — derived per-trade tables (`*_trades.csv`) and daily per-contract P&L panels
   (`daily_pnl/*.json`) reduced from the operator's raw TradingView exports, plus raw sweep-result
   JSONs backing every figure in `RESULTS.md`. **Raw CSVs are not committed** (TradingView "List of
