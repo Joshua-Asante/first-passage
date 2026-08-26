@@ -1,5 +1,7 @@
 # ORB-MNQ-1 N-SURV magnitude-resampling probe (2026-08-20)
 
+**Status:** ACTIVE — N=50 magnitude-resampled skewed-gamma fit to ORB-MNQ-1's own P&L, testing whether cushion-sizing bust-elimination is robust or a lucky single-history draw. Bust axis: 50/50 robust. Pass axis: real ~50/50 proposition (sd 24pp). See [MNQ.md](../../../ops/instruments/MNQ.md) N18.
+
 Not a pre-registered campaign — an informal $0.00 spend, zero-K probe. Answers notice
 [`N-2026-08-15-nsurv-single-history-magnitude-blindspot`](../../../docs/notes/notice/N-2026-08-15-nsurv-single-history-magnitude-blindspot.md)'s
 own open item §3-C ("only c1 has been tested") for a **second, independently-fitted book**

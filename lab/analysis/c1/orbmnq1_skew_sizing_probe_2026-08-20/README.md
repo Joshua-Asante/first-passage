@@ -1,5 +1,7 @@
 # ORB-MNQ-1 skew-derived sizing ceiling probe (2026-08-20)
 
+**Status:** ACTIVE — Skew-derived `pol_cushion` sizing ceiling vs the borrowed 0.75 constant — informal $0/K=0 null, neither derived candidate beats the borrowed constant on pass rate. See [MNQ.md](../../../ops/instruments/MNQ.md) N18.
+
 Informal $0/K=0 probe, not pre-registered (parameter-search null on an already-verified
 mechanism, not a mechanism-family question -- same class as Q-GEOFIT-1, no formal Pre-Q
 warranted per that precedent). Tests whether a `pol_cushion`-shaped sizing ceiling derived

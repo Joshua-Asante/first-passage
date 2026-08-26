@@ -1,5 +1,7 @@
 # ORB-MNQ-1 cushion-proportional sizing probe (2026-08-20)
 
+**Status:** ACTIVE — Informal $0/K=0 probe (not pre-registered) — cushion-proportional sizing eliminates ORB-MNQ-1's bust intraday-honestly (mathematically real, regime-agnostic); a real 2021-09-28 pass-rate regime break survives a thirds split but its trailing-vol mechanism is REFUTED. Formalized as [`Q-ORBCUSH-1`](../../../docs/briefs/Q-ORBCUSH-1-regime-break-mechanism.md), which itself closed `FALSIFIED` 2026-08-20 (trailing mean-R also refuted — `ops/instruments/MNQ.md` N17).
+
 Not a pre-registered campaign -- an informal $0/K=0 probe, preserved for provenance and
 re-derivation. The write-up notice this README originally pointed to
 (`N-2026-08-20-orbmnq1-cushion-sizing-regime-break-unexplained.md`) was never committed --

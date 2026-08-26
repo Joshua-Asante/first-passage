@@ -6,7 +6,8 @@
 > flagship's margin shrinks or fails once corrections compound. Read §9 before citing any number
 > from §1-§8.
 
-**Status:** EXPLORATORY — not pre-registered, not lock-grade. A user-supplied-CSV sizing/bootstrap
+**Status:** ACTIVE — naive equal-risk Aegis-6J1+ORB-MNQ-1 combined book (each leg fails Tradeify solo, §0) — headline 1.51%/0.01% bust REVISED §9: 1yr fails a proper both-halves regime bootstrap (4.02%), 3yr fails once tail-consistent sizing + intraday-honesty compound (4.34%)
+EXPLORATORY — not pre-registered, not lock-grade. A user-supplied-CSV sizing/bootstrap
 sweep against this repo's own frozen engine, adversarially spot-checked (independent reimplementation
 of the drawdown logic + correlation arithmetic), not a Rule-0 discovery campaign. Treat every figure
 below as a **single-path replay or 5-day-block bootstrap over end-of-day equity only** — an EOD-clock
