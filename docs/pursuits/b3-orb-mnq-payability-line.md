@@ -51,3 +51,13 @@ a specific combined construct**, not about ORB-MNQ as a standalone leg (which th
 exactly as parked as the R3 finding above). Re-entry / re-scoping this pursuit around a combined-book
 framing, if warranted, is an operator call, not made here. $0 spend, no K, no manifest, nothing
 armed; exploratory research only, not pre-registered.
+
+**Same-day follow-up (§9 of the cited RESULTS.md, landed after this addendum) materially weakens
+the 1.51%/0.01% figures above — do not cite them without also reading that section.** A proper
+both-halves regime-robustness bootstrap (not run when this addendum was first filed) finds the
+**1yr construct fails outright** (second half alone: 4.02% bust, masked by the pooled 0.01%
+figure); the 3yr construct passes both halves at its original basis but fails once a
+tail-risk-consistent sizing ratio and a trade-level intraday-honest proxy are applied together
+(4.34%). Net: this is still new payability evidence worth the re-entry-clause note above, but it
+is materially thinner evidence than the figures first quoted here suggested — closer to "a narrow,
+unconfirmed possibility" than "clears the ceiling with real margin."
