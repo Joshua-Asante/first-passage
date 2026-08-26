@@ -4,7 +4,7 @@
 **Status (2026-08-04):** ⚠ **NO LONGER A LIVE c1 LEG — withdrawn from deployment.** The Tradeify venue is de-scoped as a deployment target for the locked Striker book, evaluation included ([`ADR 2026-08-04`](../../docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md); ⚠ **narrowed same day, Addendum 2026-08-04** — the bar is on redeploying this leg, not on Tradeify-shaped base-construct research, e.g. `MNQBASE-1`'s harvest-intake pass below); this leg never took a strategy-signal-originated fill and now has no venue. **Lifecycle unchanged: `Striker NAS100` stays `AUTHORIZED · MECHANISM @ 1.00×`** — no `core/lifecycle.py` write, no demotion; venue-fit is not decay. Pine, parameters and `LEG_MAP` untouched. Prior status line preserved below as record.
 
 **Status (prior, through 2026-08-03):** **LIVE c1 leg (disarmed).** Hosts the Striker NAS100 v1 **venue edition** (`striker_nas100_v1_mnq.pine`) as one of the two c1 legs on the Tradeify Select 100K eval — `dry_run=true`, WATCH-1 0.50×, **no strategy-signal-originated fill yet** (rail has canned B4 fills: B6 dry-fire 2026-07-20 + 2026-07-27 SIM; account not pristine — see [`CLAUDE.md`](../../CLAUDE.md) live-execution posture). Also the venue of the only lifecycle-admitted reconstruction candidate (`ORB-MNQ-1`, **PARKED** 2026-07-23).
-**Last updated:** 2026-08-24
+**Last updated:** 2026-08-25
 
 **Purpose:** single source of instrument-level truth (operational rule 10, [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](../../docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md)). Any session deriving/testing/adjudicating on MNQ MUST read this at session start and append a dated disposition. **Created 2026-07-25** — every 2026-07 MNQ study closed with no ledger home, so the foreclosure record existed only inside scattered closures. **The DEAD list is the point:** falsified entries are the highest-value content here and must stay as prominent as any survivor.
 
@@ -153,6 +153,49 @@ structure:
 
 ## SESSION LOG
 
+- **2026-08-25 (later)** — **Combined MYM+MNQ book passability calculated on
+  `Tradeify_Select_100K`/`Growth_100K` — see `MYM.md` M9 (full numbers there, not restated
+  here).** Operator supplied a fresh TV-native export of the same-day DD-reduction
+  reconstruction (`ORB-MNQ-1_recon_v2_..._097d9.csv`, 1,164 trades, qty=2 constant, span
+  2022-01-03→2026-08-21, cumPnL reconciles to the cent) alongside a refreshed `ORB-MYM-1` v0.3
+  export; this MNQ export was parsed and Step-0-verified as the MNQ leg of that combined-book
+  calculation. Freshly-parsed standalone figures: net $80,982 / maxDD $9,284 (closed-trade) —
+  close to but not byte-identical to the earlier same-day reconstruction session's own reported
+  baseline ($81,036/$10,053); plausibly a slightly different export window, not independently
+  reconciled beyond noting the match is close. All five years individually positive (2022
+  +$17.2K … 2025 +$25.9K, 2026 +$1.0K) — a materially more stable year-shape than MYM's.
+  Standalone `Select_100K` rope walk (qty=1): 48.4% pass/48.9% bust — directionally better than
+  the pre-DD-reduction construct's ADR-recorded 67.67% at k=1, though not a like-for-like
+  re-test of the identical construct (different tuning pass, different clock/filter settings).
+  Does not touch `ORB-MNQ-1`'s T2/PARKED disposition, N11/N13, or `K_banked` — stays entirely
+  outside the repo pipeline (informal Downloads lane). $0/K=0, no manifest, no `core/` change.
+- **2026-08-25** — **Informal Downloads-lane DD-reduction tuning pass on the `ORB-MNQ-1` shape
+  (`orb_mnq_6_reconstruction.pine`, untracked, NOT the repo-tracked `orb_mnq_v0_2.pine`
+  CANDIDATE edition) — no new statistical test, no lifecycle/Cap/K change; recorded because it
+  is the session that reopened the multi-instrument diversification question this ledger's own
+  2026-08-04h/N13 line references.** Confirmed baseline (2022-01→2026-08, long-only, 15m): net
+  $81,036.12, PF 1.399, WR 59.19%, **maxDD −$10,052.56** — exceeds the $3,000 Select rope by
+  >3×, consistent with this ledger's own standing framing ("edge, too much DD"). Structural
+  finding: on the 62% of days with zero scale-in confirmation the construct is near-breakeven
+  (PF~1.07); the 38% that get a scale-in add carry PF~1.85 and 90%+ of total profit — the
+  entire measured maxDD episode (30 days) sat 100% in the no-add subgroup. **Nine
+  exposure-reducing levers tried, all rejected or reverted** (tighter stop, equity-curve DD
+  throttle, hard daily loss cap, vol-based sizing, both-direction trading, an exposure gate
+  later found to have an unexplained qty-vs-scale-in-reachability side effect, a partial
+  scale-out fixed for a real `strategy.exit()` call-order bug then found negative once firing,
+  a breakeven stop confirmed dead code) — each cuts into the same scale-in-confirmed days that
+  carry the edge. **One kept: an OR-window volume-participation filter (0.65× / 20-day
+  lookback)**, motivated by Gao/Han/Li/Zhou "Intraday Momentum" (SSRN 2552752) — the only
+  lever improving both profit (+2.3%) and DD (−1.4%) simultaneously; swept 0.5–1.0,
+  non-monotonic but stable at the neighbors of 0.65 (a single spike at 0.6 read as a fragile
+  boundary artifact, not a robust optimum). **This does not reopen `ORB-MNQ-1`'s T2/PARKED
+  disposition or touch N11/N13/K_banked** — it is DD-engineering on an already-payability-
+  FALSIFIED candidate, staying entirely outside the repo. Triggered the same-day MYM/MGC/6J
+  diversification survey (Man Group / Carver / Alvarez-Quant-style diversification-over-
+  per-trade-overlay motivation); **that search closed 2026-08-25 with no surviving branch** —
+  MYM found a sizing lever but no holdout remains to trust it (`MYM.md` M8), MGC is
+  granularity-blocked against the Select rope (`MGC.md` W5), 6J's structurally-identical shape
+  falsified on its one surviving holdout (`6J.md` J16). $0/K=0, no manifest, no `core/` change.
 - **2026-08-24** — **`Q-ICT-1MEXEC-1` RUN → `FALSIFIED` at Stage 2 (F1); MNQ bank 21→22 (disclosure).** Direct operator instruction to build the real MNQ 1-minute execution test now that Part C measured the 0/247 fill wall platform-side (2026-08-04). Full frozen chain (raid → same-direction displacement FVG → limit fill → reconstructed exit) simulated end-to-end on native `MNQ.v.0` 1-minute bars (databento, 2019-05-06→2026-08-23, $0.00): Tradeify-basis edge/cost ratio **0.239** (need ≥4.0) — a real, small, positive gross edge (mean gross R +0.0631) that does not clear round-trip cost by anywhere near the required margin. Per the frozen verdict gate, Stages 3–8 never ran. Three implementation bugs (raid-detection reimplementation, missing PDH/PDL target-side validation — a −85R "trade" on the 2020-03-02 COVID gap — and a deadline-bar check-order defect) found and fixed via a standing `exit_price==stop_price` invariant, now permanent in the Stage 2 runner, before the number was trustworthy. `register_search open/close --lane mechanism-first`, `K_intrinsic=1`, 0 of 1 submitted survivors. Does **not** reopen the standing `ict-liquidity` DEAD verdict this campaign's own profile-consult disclosure addressed as a genuinely different (1-minute, real-stop) construct. No `core/`, lock, allocation, `dd_protection`, Pine, or rail change. [`RESULTS.md`](../../lab/analysis/_inbox/ict_1mexec_1_2026-08/RESULTS.md) · [`pre-registration`](../../docs/briefs/pre-registration/2026-08-04-ict-1m-execution-mnq-preregistration.md)
 - **2026-08-20** — **`Q-TODVOL-1` frozen and D2-falsified same day — `tod-baseline-range-trigger` FAIL.** First within-instrument temporal-selectivity candidate since [`ADR 2026-08-10`](../../docs/adr/2026-08-10-temporal-selectivity-outside-mapped-levers.md) route ① opened. First RTH 15m bar outside the opening-range window whose range ≥2.0× the trailing 60-session same-time-of-day median, entered in the bar's own direction, stop/target sized off the trigger bar's own range (rr=2). Native 15m — explicitly outside the paused dense-1m lane (U0 KEEP untouched) — gated by the [2026-08-16 ADR](../../docs/adr/2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md) D2 pre-G0 falsifier, reused verbatim. `K_intrinsic=1`, single cell. D2: mean signed gross **+0.2546 pt** vs the 2.82 pt bar (9% of required), n=975, coverage 54.26%. Closes at $0, no G0, no Board debate. Mechanism `tod-baseline-range-trigger` NEW. No Cap / Pine / arming. [`FREEZE`](../../lab/archive/todvol_1_2026-08-20/FREEZE.md) · [`RESULTS`](../../lab/archive/todvol_1_2026-08-20/RESULTS.md)
 - **2026-08-18** — **Operator *"OK on both"* — `MNQSR-1` and `Q-CAPA-1` bank; `K_banked(MNQ)` 6→21.** Notice-phase closed manifests bank (K=14 once, not 28); Cap-seat K=1 folds into the family tally (seat SPENT **and** family increment). Read of the two OPEN items from the same-day recon. [ADR 2026-08-04 Addendum 2026-08-18](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md). Disclosure-only; no live-risk / `core/` / Pine / rail change.
