@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-08-24
+**Last curated:** 2026-08-26
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
@@ -112,10 +112,11 @@ deleted (not struck).
 
 ### Weekly — recurring (rolling; next deadline **2026-08-28**, bucket 08-24→08-28)
 
-> Prior week 08-17→08-21 satisfied (operator-confirmed 2026-08-22). New week unpaid. Row stays
-> live — roll this date forward each Monday. **Recurrence ruled 2026-08-16** (decision index,
-> above): re-electing coverage every week is the standing design, not an open question — this
-> row's own weekly cadence is that design in practice, not a symptom of anything unresolved.
+> ✅ **This week's trade placed 2026-08-26** (round-trip, MNQU6, both legs filled; bucket
+> 08-24→08-28 satisfied). Prior week 08-17→08-21 satisfied (operator-confirmed 2026-08-22). Row
+> stays live — roll this date forward each Monday. **Recurrence ruled 2026-08-16** (decision
+> index, above): re-electing coverage every week is the standing design, not an open question —
+> this row's own weekly cadence is that design in practice, not a symptom of anything unresolved.
 
 - **Venue idle-clock — ≥1 operator-placed trade per Mon–Fri week on the live account (identifier
   redacted from the public tree).**
