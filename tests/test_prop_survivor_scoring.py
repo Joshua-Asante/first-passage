@@ -23,21 +23,32 @@ from firm_rules import FIRM_RULES
 from mc.preflight import summarize_outcomes
 
 REPO = Path(__file__).resolve().parents[1]
-PREREG = REPO / "docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md"
+# v1 — CLOSED 2026-08-26 (see its own header banner), superseded by v2 below.
+# Kept as an explicit, decoupled fixture so this suite keeps regression-testing
+# the loader against v1's frozen 3.0% text forever, independent of whichever
+# file DEFAULT_PREREG currently points at (Trap #12 — v1's own numbers are
+# never edited in place, so this pin never needs to change).
+PREREG_V1 = REPO / "docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md"
+# v2 — the live default as of 2026-08-26 (operator risk-tolerance override,
+# Part A eval ceiling 3.0% -> 5.0%; see the file's own §8 for full rationale).
+PREREG_V2 = REPO / "docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md"
 
 # Tiny sim count for wall-clock; production default stays at pre-reg 10k.
 _TEST_SIMS = 40
 
 
 def _thr() -> ScoringThresholds:
-    return load_scoring_thresholds(PREREG)
+    return load_scoring_thresholds(PREREG_V2)
 
 
 # ── Step 2.1 — pre-reg loader ────────────────────────────────────────────────
 
 
-def test_loader_parses_live_prereg():
-    t = _thr()
+def test_loader_parses_frozen_v1_prereg():
+    """v1 is CLOSED, not deleted — its own frozen 3.0% text must still parse
+    exactly as it did before the 2026-08-26 reopening (Trap #12 permanence
+    check), independent of DEFAULT_PREREG's current target."""
+    t = load_scoring_thresholds(PREREG_V1)
     assert t.eval_bust_ceiling == pytest.approx(0.03)
     assert t.funded_bust_ceiling == pytest.approx(0.01)
     assert t.pass_floor == pytest.approx(0.50)
@@ -54,8 +65,34 @@ def test_loader_parses_live_prereg():
     assert t.trailing_locking_tiers == frozenset(
         {"Tradeify_Select_100K", "MFFU_Rapid_100K"}
     )
-    assert Path(t.source_path) == PREREG
-    assert DEFAULT_PREREG.name == PREREG.name
+    assert Path(t.source_path) == PREREG_V1
+
+
+def test_loader_parses_live_v2_prereg():
+    """DEFAULT_PREREG resolves to v2 and its Part A ceiling is 5.0% (was
+    3.0% under v1) -- the actual operative value as of 2026-08-26."""
+    assert DEFAULT_PREREG.name == PREREG_V2.name
+    t = _thr()
+    assert t.eval_bust_ceiling == pytest.approx(0.05)
+    assert t.funded_bust_ceiling == pytest.approx(0.01)  # unchanged from v1
+    assert t.pass_floor == pytest.approx(0.50)  # unchanged from v1
+    assert t.tier_keys == (
+        "Bulenox_100K",
+        "Tradeify_Select_100K",
+        "MFFU_Rapid_100K",
+        "BluSky_Premium_100K",
+    )
+    assert t.seeds == (42, 123, 2026)
+    assert t.sims_per_seed == 10_000
+    assert t.horizon == 1500
+    assert t.cost_law_multiple == pytest.approx(4.0)
+    assert t.trailing_locking_tiers == frozenset(
+        {"Tradeify_Select_100K", "MFFU_Rapid_100K"}
+    )
+    assert Path(t.source_path) == PREREG_V2
+    # DEFAULT_PREREG with no explicit path must resolve to the same file/values.
+    t_default = load_scoring_thresholds()
+    assert t_default.eval_bust_ceiling == pytest.approx(0.05)
 
 
 def test_loader_refuses_missing_ceiling(tmp_path: Path):

@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-08-24
+**Last curated:** 2026-08-26
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
@@ -94,9 +94,11 @@ Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state
 Open investigations with no current session home. Closed threads leave (owners =
 closures/ADRs).
 
-Dormant threads b6/b7 (PARK — open) → [`docs/pursuits/`](docs/pursuits/) (ratified 2026-08-09, GSUB-1
-Phase 3). c5/Q-MSCHAN-1 (SUBTRACT — dead) left this section per its own rule above; its record
-stands alone at [`c5`](docs/pursuits/c5-q-mschan-1.md).
+Dormant threads b1/b3/b6 (PARK — open) → [`docs/pursuits/`](docs/pursuits/) (ratified 2026-08-09,
+GSUB-1 Phase 3). b7 (ICT line) resolved to SUBTRACT 2026-08-20 and left this section (see the
+2026-11-08 GSUB-1 PARK-expiries row below for the current count). c5/Q-MSCHAN-1 (SUBTRACT — dead)
+left this section per its own rule above; its record stands alone at
+[`c5`](docs/pursuits/c5-q-mschan-1.md).
 
 **Registry backfill (2026-08-15).** Snapshot + unpaid enumerator:
 [`scripts/check_closure_disposition.py`](scripts/check_closure_disposition.py)
@@ -112,10 +114,11 @@ deleted (not struck).
 
 ### Weekly — recurring (rolling; next deadline **2026-08-28**, bucket 08-24→08-28)
 
-> Prior week 08-17→08-21 satisfied (operator-confirmed 2026-08-22). New week unpaid. Row stays
-> live — roll this date forward each Monday. **Recurrence ruled 2026-08-16** (decision index,
-> above): re-electing coverage every week is the standing design, not an open question — this
-> row's own weekly cadence is that design in practice, not a symptom of anything unresolved.
+> ✅ **This week's trade placed 2026-08-26** (round-trip, MNQU6, both legs filled; bucket
+> 08-24→08-28 satisfied). Prior week 08-17→08-21 satisfied (operator-confirmed 2026-08-22). Row
+> stays live — roll this date forward each Monday. **Recurrence ruled 2026-08-16** (decision
+> index, above): re-electing coverage every week is the standing design, not an open question —
+> this row's own weekly cadence is that design in practice, not a symptom of anything unresolved.
 
 - **Venue idle-clock — ≥1 operator-placed trade per Mon–Fri week on the live account (identifier
   redacted from the public tree).**
