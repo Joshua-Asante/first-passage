@@ -16,12 +16,18 @@ operator: Aegis 1yr + 3yr, ORB-MNQ 1yr + 3yr + a corrective 6yr export. Engine r
 `core/mc/simulation.py::simulate_path`/`run_seed`, `core/mc/preflight.py::firm_kwargs` — no logic
 reimplemented except where independently re-derived for adversarial verification.
 
-**Headline finding:** a naive equal-\$-risk combined book (Aegis 5.33 : ORB-MNQ 0.29-0.40
-contracts) bootstraps to **1.51% bust / 1.49pp margin** (3yr) and **0.01% bust / 2.98pp margin**
-(1yr) against the 3.0% ceiling — while **each leg fails this same eval standalone** at realistic
-sizing (see §0). This is new evidence that a *specific, small, equal-risk combined construct*
-clears the ceiling where either leg alone does not — it is **not** two independently-viable
-strategies, and every figure carries the EOD-clock caveat below.
+**Headline finding — REVISED 2026-08-26b, read §9 before citing any number below.** The original
+1.51%/0.01% headline (naive equal-risk combined book, Aegis 5.33 : ORB-MNQ 0.29-0.40 contracts)
+does not survive closer testing. A **proper both-halves regime-robustness bootstrap** (§9) finds
+the 1yr flagship — the number that looked *safest* — **fails outright**: its second half alone
+bootstraps to **4.02% bust**, masked entirely by the pooled full-window figure. The 3yr flagship
+passes both halves at its original basis, but a **trade-level intraday-honest remeasure** (§9)
+erodes its margin from 1.49pp to 0.61pp (2.39% bust), and compounding that with a
+**tail-risk-consistent sizing ratio** (§9, bootstrapped 95th-percentile DD instead of one
+historical worst day) pushes it to **4.34% — a clear fail**. **Each leg still fails this same eval
+standalone** at realistic sizing (§0), and no tested combined configuration is now a clean,
+uncontested PASS once these checks are applied together. See §9 for the full picture and what
+still needs a genuine bar-level remeasure (handed off, not computable in this environment).
 
 ---
 
@@ -354,7 +360,8 @@ futures before it clears cost — not a quick retune.
 
 ## §8 — Ranked open questions / hypotheses
 
-Ranked by blast radius. H1/H5/H6/H9 are resolved; H2-H4/H7/H8/H10 remain open.
+Ranked by blast radius. H1/H5/H6/H9/H7/H8 are resolved; H2/H3/H10 are partially resolved (a
+disclosed proxy, not ground truth — see §9); only H4 remains fully open, handed off in §9.4.
 
 - **H1 (resolved, adopted).** The 6J contract cap was inferred by analogy (no verbatim Tradeify
   source for how a full-size currency future counts against the mini/micro cap). Confirmed
@@ -363,18 +370,19 @@ Ranked by blast radius. H1/H5/H6/H9 are resolved; H2-H4/H7/H8/H10 remain open.
   that page's scope is minis/micros only and never names full-size-only instruments like 6J.
   **Operator-adopted working assumption** (not Tradeify-published): 1 full-size 6J = 1
   mini-equivalent = 10 micro-equivalents, so the 80-micro cap becomes an 8-contract cap for 6J.
-- **H2 (open).** The EOD-clock correction could flip the one already-thin PASS: applying this
-  repo's own measured EOD-vs-intraday delta (+0.61pp absolute, at a comparable sizing regime) to
-  the sizing-matched Aegis cell (2.77%, 0.23pp margin) pushes it to ~3.4% — a fail. Falsify via
-  threading real 6J intrabar excursions through `simulate_path`'s `intraday_low` argument for this
-  exact 4-contract configuration.
-- **H3 (open).** The same correction applied to the flagship combined-book number (1.19%
-  pre-correction bust) is genuinely uncertain, not "probably fine" — lands anywhere from ~1.8%
-  (still passing) to ~7.7% (failing) depending on which reading of the analogy is closer to true.
-  Falsify the same way as H2, at the 5.33-Aegis/0.29-ORB-MNQ pair over the 3yr window.
-- **H4 (open).** The rescale bias alone, with no clock correction, already fails the sizing-matched
-  Aegis cell (§6). Falsify via a native TradingView export re-run at 4 contracts, not a linear
-  rescale of the 8-contract data.
+- **H2 (partially resolved, §9.3).** A trade-level MAE-proxy intraday-honest remeasure (not the
+  bar-level remeasure this hypothesis originally called for — that's handed off, §9.4) confirms
+  the direction: the combined book's bootstrap bust rises under intraday-honesty (3yr flagship
+  1.50%->2.39%). The specific solo sizing-matched Aegis cell this H originally named was not
+  re-tested standalone in §9 (only the combined book was); still owed.
+- **H3 (partially resolved, §9.3).** The flagship combined-book number does move materially under
+  a (proxy, not bar-level) intraday-honest correction: 1.50%->2.39% at original sizing, and
+  2.87%->4.34% (fails) once compounded with H7's sizing correction. Confirms this was a real risk,
+  not "probably fine" — narrows the original ~1.8-7.7% uncertainty band to a concrete measurement,
+  though still on proxy data pending §9.4.
+- **H4 (open, handed off).** The rescale bias alone, with no clock correction, already fails the
+  sizing-matched Aegis cell (§6). Needs a native TradingView export re-run at exactly 4 contracts —
+  not computable without TradingView access; see §9.4.
 - **H5 (resolved).** Answered by the 6yr export (§1): not two strategy versions, one strategy with
   a real recurring multi-month pyramid toggle; the old files' apparent "instantaneous transitions"
   were an artifact of 129 missing trades.
@@ -382,21 +390,157 @@ Ranked by blast radius. H1/H5/H6/H9 are resolved; H2-H4/H7/H8/H10 remain open.
   worse than the 6 excluded Aegis trades alone suggested (-$3,258/contract ORB-MNQ losing stretch).
   The corrected combined-book bust rate is nonetheless still 0.01% (1yr) because ORB-MNQ's
   equal-risk weight is small enough (0.18 contracts) that even a real rough patch barely moves it.
-- **H7 (open).** Both sizing ratios (7.83:1 and 18.27:1 Aegis:ORB-MNQ) rest on a single historical
-  worst day per leg — a small-N tail statistic. Falsify via recomputing from each leg's
-  bootstrap-resampled 95th-percentile drawdown instead.
-- **H8 (open).** The correlation benefit (§4) was never measured at the sizing that actually
-  matters — tested at 2.5:1 and 1.25:1, the flagship pair sits at ~18:1. Falsify via re-running the
-  real-vs-independence-null bootstrap directly at 5.33-Aegis/0.29-ORB-MNQ.
+- **H7 (resolved, §9.2 — material).** Both sizing ratios rested on a single historical worst day
+  per leg. Recomputed from each leg's bootstrap-resampled 95th-percentile drawdown: 1yr basically
+  unchanged (29.44:1, 0.18->0.1812 contracts), but 3yr shifts materially (9.34:1, 0.40->0.5708
+  contracts) because Aegis's own bootstrapped tail risk is ~3x its single realized worst day. Bust
+  at the corrected 3yr sizing: 2.87% (was 1.51%) — still clears 3.0% alone, fails once compounded
+  with §9.3's intraday-honesty (4.34%).
+- **H8 (resolved, §9.1).** Re-ran the real-vs-independence-null bootstrap at the actual flagship
+  sizing (5.33-Aegis/0.40-ORB-MNQ, 3yr). Real is genuinely safer than the independence null
+  (1.50% vs 4.34%, -2.84pp) — the correlation benefit holds at the sizing that matters, not just at
+  the originally-tested proxies. 1yr: both near-zero, negligible either way.
 - **H9 (confirmed).** Under the H1-adopted account-wide conversion rule, 8 full 6J contracts alone
   consume the entire 80-micro-equivalent budget. Both §3 "1.5x" rows total **80.4-81.0 of 80**
   micro-equivalents — genuinely over the cap. The headline 1.0x base pair (53-54 of 80) is
   unaffected. Practical note: a real deployment at the 1.5x ratio should cap that tier below
   Aegis=8 whenever ORB-MNQ is held alongside it.
-- **H10 (open).** The EOD-clock blind spot scales with size on this session's own evidence: a rough
-  per-trade-MAE proxy found 0/82 close-call trading days at base sizing, but 2/81 (2.5%) at the
-  largest sizing tested. Falsify via threading real 6J and MNQ intrabar excursions into the engine's
-  intraday path across the same sizing grid.
+- **H10 (partially resolved, §9.3).** Confirmed and quantified with a systematic (not "rough")
+  trade-level MAE-proxy bootstrap, superseding the original single-path spot-check: the
+  EOD-clock blind spot is real and material at the flagship sizing (3yr bootstrap bust +0.89pp
+  intraday-honest, or +1.47pp compounded with H7). A genuine bar-level remeasure is still owed —
+  see §9.4 — this proxy establishes direction and rough magnitude, not ground truth.
+- **New (2026-08-26b, §9.5) — the both-halves regime-robustness gate, not previously run as a
+  bootstrap, FAILS the 1yr flagship.** Its second half alone (2026-02-13→2026-08-05) bootstraps to
+  4.02% bust, entirely masked by the pooled full-window 0.01% figure. The 3yr flagship clears both
+  halves at its original basis. **This — not any of H1-H10 — is now the single largest open item**:
+  the 1yr cell this report's own §3 table called the safer of the two windows should not be relied
+  on without a halves-consistent remeasure.
+
+---
+
+## §9 — Follow-up (2026-08-26b): closing the analysis-readiness gaps
+
+Addresses H2/H3/H7/H8/H10 directly (all four were "this analysis isn't decision-grade yet"
+concerns, not structural/authorization gaps). H4 is handed off — see §9.4. Scripts:
+[`followup_h7_h8_regime.py`](followup_h7_h8_regime.py),
+[`followup_intraday_mae_proxy.py`](followup_intraday_mae_proxy.py); raw results:
+[`data/followup_h7_h8_regime_results.json`](data/followup_h7_h8_regime_results.json),
+[`data/followup_intraday_mae_proxy_results.json`](data/followup_intraday_mae_proxy_results.json).
+**Uses the CORRECTED ORB-MNQ series throughout** (sliced from `orbmnq_6yr.json` to match each
+Aegis window exactly) — the committed `orbmnq_1yr.json`/`orbmnq_3yr.json` files are the original
+pre-H5/H6-correction data, kept only for the §1 reconciliation record. Reproduced the original
+1.51%/0.01% headline from this corrected slicing before extending it (bit-exact to within bootstrap
+seed noise) — the revision below is a genuine finding, not a data-basis artifact.
+
+### §9.1 — H8: correlation benefit at the real flagship sizing (RESOLVED)
+
+Re-ran the real-vs-independence-null bootstrap at the actual proposed sizing (5.33 Aegis :
+0.40/0.18 ORB-MNQ), not the 2.5:1/1.25:1 proxies §4 originally tested.
+
+| Window | Sizing | Real bust | Independence-null bust | Delta |
+|---|---|---|---|---|
+| 3yr | 5.33 / 0.40 | 1.50% | 4.34% | **-2.84pp — real is safer** |
+| 1yr | 5.33 / 0.18 | 0.01% | 0.00% | +0.01pp — negligible, both near-zero |
+
+The correlation-diversification benefit genuinely holds at the sizing that matters for the 3yr
+window — it is not an artifact of testing the wrong ratio. This is the one correction in this
+follow-up that does **not** erode the original finding.
+
+### §9.2 — H7: sizing ratio from bootstrapped tail risk, not one worst day (RESOLVED — material)
+
+Recomputed each leg's own tail drawdown via block-bootstrap (weekly blocks, same convention as the
+engine's own resampling) and took the 95th percentile instead of the single historical worst day,
+then re-derived the equal-risk ratio and re-ran the combined bootstrap at that sizing.
+
+| Window | Aegis 95th-pct DD/contract | vs. single worst day | ORB-MNQ 95th-pct DD/contract | vs. single worst day | New ratio | ORB-MNQ contracts (H7 vs original) | Re-run bust |
+|---|---|---|---|---|---|---|---|
+| 1yr | -$192.90 | -$156.05 (1.24x) | -$5,678.29 | -$4,642.14 (1.22x) | 29.44:1 | 0.1812 vs 0.18 | 0.01% (unchanged) |
+| 3yr | -$742.85 | -$249.70 (**2.98x**) | -$6,940.71 | -$3,313.08 (2.09x) | 9.34:1 | **0.5708 vs 0.40** | **2.87% (was 1.51%)** |
+
+Aegis's own bootstrapped tail risk is proportionally far worse than its single realized worst day
+(3yr: 3x, driven by its small trade count — 90 trades over 3 years gives resampling real room to
+cluster unluckily). That shrinks the Aegis:ORB-MNQ gap and licenses materially more ORB-MNQ
+(0.57 vs 0.40 contracts) under a tail-risk-consistent sizing rule — at the cost of the 3yr bust
+rate nearly doubling, to 2.87% (0.13pp margin). Still technically clears the ceiling, but the
+margin the original headline advertised (1.49pp) was real only under the single-worst-day
+convention; it is a Trap-#13-shaped derivation issue this repo's own third-leg spec has already
+named elsewhere ("only two (σ, bust) points exist; treat as a pre-screen, never a substitute for
+the run") — here the ratio *is* being treated as more than a pre-screen. 1yr is essentially
+unaffected (thin trade sample dominated by inactive days either way).
+
+### §9.3 — H2/H3/H10: trade-level MAE-proxy intraday-honest remeasure (PARTIALLY RESOLVED)
+
+**Not a true bar-level reconstruction.** The real `6J_M15.csv`/`MNQ_M15.csv` panels exist in this
+repo's own provenance (`core/data/bar_data/SHA256SUMS`) but the bytes are gitignored vendor data
+and are not present in this container ("usable but not regenerable" per that directory's own
+README) — a genuine tick/bar-level remeasure needs those bytes or a fresh CME BAR EXPORT and is
+handed off (§9.4), not attempted here. Instead: each trade's own recorded `mae_usd` (TradingView's
+own per-trade adverse-excursion figure, already committed in `data/*_trades.csv`) is used to build
+a disclosed, conservative per-day `intraday_low` series — same-leg same-day multi-trades (ORB-MNQ
+pyramid scale-ins) take that day's single most-negative per-trade MAE, not a fabricated sum;
+cross-leg same-day overlap (only ~9-10% of days, per §3's own mutual-exclusion finding) sums both
+legs' worst-day MAE, the conservative assumption absent intraday timestamps. Fed into
+`simulate_path`'s `intraday_low` / `run_seed`'s `intraday_blocks` — the same mechanism ORB-MNQ-1's
+own W1/T2 studies used, reused verbatim, just built from a trade-level proxy instead of real bars.
+
+| Config | Flat (EOD-only) bust | Intraday-honest (MAE-proxy) bust | Delta |
+|---|---|---|---|
+| 1yr flagship (5.33/0.18) | 0.01% | 0.11% | +0.10pp — still very safe |
+| 3yr flagship (5.33/0.40) | 1.50% | **2.39%** | +0.89pp — margin shrinks 1.50pp -> 0.61pp |
+| 3yr at H7-corrected sizing (5.33/0.5708) | 2.87% | **4.34%** | +1.47pp — **fails the 3.0% ceiling** |
+
+The single-path outcome never changes (still `pass`, same day, same max-DD%) — the effect is
+purely on the bootstrap tail, exactly where a lower-bound correction is expected to bite. The
+compounded cell (H7 sizing + intraday-honesty together) is the first configuration in this entire
+analysis to fail outright under a correction that is more rigorous than the original methodology,
+not merely a sensitivity check. Given this is a proxy, not ground truth, read the direction (real
+risk is understated by EOD-only bootstrap, worse at H7-consistent sizing) as the trustworthy part;
+treat the exact magnitude as directional pending §9.4.
+
+### §9.5 — Regime robustness: proper both-halves bootstrap (RESOLVED — the largest single finding)
+
+Replaces §5's single-deterministic-path thirds check with a genuine both-halves block-bootstrap
+per this repo's own methodology
+([`docs/methodology/regime_robustness_gate.md`](../../../../docs/methodology/regime_robustness_gate.md)):
+split the window in half, block-bootstrap **within each half independently** (never resampling
+across the boundary), require the bust rate to stay low in **both** halves, not just pooled.
+
+| Window | Sizing | Full-window bust (pooled) | H1 bust | H2 bust | Both halves clear 3.0%? |
+|---|---|---|---|---|---|
+| 1yr | 5.33/0.18 | 0.01% | 0.00% (2025-08-26→2026-02-13) | **4.02%** (2026-02-13→2026-08-05) | **NO** |
+| 3yr | 5.33/0.40 | 1.50% | 1.87% (2022-09-07→2024-02-28) | 0.54% (2024-02-28→2025-08-20) | YES |
+
+**The 1yr flagship — the number that looked safest in the entire report (0.01% bust, 2.98pp
+margin) — fails the both-halves regime-robustness gate outright.** Its second half, which contains
+the previously-hidden May-Aug 2026 ORB-MNQ rough patch (§2, H6), bootstraps to 4.02% bust entirely
+on its own; the pooled full-window statistic hid this completely because the first half's 0.00%
+swamps it in the blended figure. This is exactly the masking failure mode a both-halves gate exists
+to catch, and it fired on the cell this report's own §3 table flagged as the safer of the two
+windows. The 3yr flagship does clear both halves at its original (pre-§9.2/§9.3) basis — a real,
+independently-confirmed result, not yet re-tested under the §9.2/§9.3 corrections in combination
+(a further compounding check, not done here — see §9.4).
+
+### §9.4 — What's left, handed off
+
+Not computable in this container; next step for a local session with TradingView / real market-data
+access:
+
+1. **H4 — native TradingView re-export at exactly 4 Aegis contracts.** The rescale-bias correction
+   (§6) needs a native re-run, not a linear rescale of the 8-contract data. No workaround exists —
+   this needs an actual TV backtest export.
+2. **A genuine bar-level intraday-honest remeasure**, superseding §9.3's trade-level MAE proxy —
+   either restore the gitignored `6J_M15.csv`/`MNQ_M15.csv` bytes (repo provenance says they exist;
+   this container doesn't have them) or pull a fresh CME BAR EXPORT for both instruments over the
+   analysis windows, then thread real intrabar excursions through `intraday_low` the way this
+   repo's own W1 ADR did for a different book.
+3. **The 3yr both-halves gate re-tested under the §9.2 (H7 sizing) and §9.3 (intraday-honest)
+   corrections in combination**, and the 1yr window's own H7/intraday sensitivity at its
+   now-failing regime-split basis — neither compounding check was run here; §9.2-§9.3 only
+   compounded on the 3yr window.
+4. Given §9.5's finding, **the 1yr window should not be cited as the safer cell going forward**
+   without a halves-consistent remeasure — the original report's own framing (§3: "the corrected
+   1-year figure is essentially unchanged... [and] reassuring") is superseded by this section.
 
 ---
 
@@ -405,10 +549,17 @@ Ranked by blast radius. H1/H5/H6/H9 are resolved; H2-H4/H7/H8/H10 remain open.
 Originally produced by a 9-agent research workflow against `core/mc/simulation.py` and
 `Tradeify_Select_100K` firm rules; updated through a follow-up 6-year ORB-MNQ export (resolving
 H5/H6), the H1 contract-cap resolution (operator screenshot + decision), a mutual-exclusion timing
-test (§3), a synthetic third-leg sensitivity test (§7), and the in-repo third-leg instrument survey
-(§7.1). Published first as a standalone artifact, saved here per operator request 2026-08-26.
-Exploratory research throughout — no Pine-header baseline exists for either candidate strategy to
-reconcile against; every bust/pass figure is a single-path replay or 5-day-block bootstrap over
-end-of-day equity only. Raw CSVs are TradingView "List of Trades" exports (not raw OHLCV vendor
-bar data) and are not committed; derived per-trade tables and daily-P&L panels are under
-[`data/`](data/); the reusable simulator is [`combined_sim.py`](combined_sim.py).
+test (§3), a synthetic third-leg sensitivity test (§7), the in-repo third-leg instrument survey
+(§7.1), and — same day, follow-up pass 2026-08-26b — closing the H2/H3/H7/H8/H10
+analysis-readiness gaps (§9), which **materially revised the headline finding**: the 1yr flagship
+fails a proper both-halves regime bootstrap, and the 3yr flagship's margin shrinks or fails
+outright once tail-risk-consistent sizing and intraday-honesty are applied together. Published
+first as a standalone artifact, saved here per operator request 2026-08-26. Exploratory research
+throughout — no Pine-header baseline exists for either candidate strategy to reconcile against;
+every bust/pass figure through §8 is a single-path replay or 5-day-block bootstrap over
+end-of-day equity only, and §9's intraday figures are a disclosed trade-level proxy, not a
+bar-level remeasure (handed off, §9.4). Raw CSVs are TradingView "List of Trades" exports (not raw
+OHLCV vendor bar data) and are not committed; derived per-trade tables and daily-P&L panels are
+under [`data/`](data/); the reusable simulators are [`combined_sim.py`](combined_sim.py),
+[`followup_h7_h8_regime.py`](followup_h7_h8_regime.py), and
+[`followup_intraday_mae_proxy.py`](followup_intraday_mae_proxy.py).

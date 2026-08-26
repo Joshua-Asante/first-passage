@@ -153,6 +153,15 @@ structure:
 
 ## SESSION LOG
 
+- **2026-08-26b** — **Same-day follow-up materially revises the 2026-08-26 combined-book entry
+  below — do not cite its 1.51%/0.01% figures without also reading this.** A proper both-halves
+  regime-robustness bootstrap (not run originally) finds the **1yr flagship construct fails
+  outright** — second half alone bootstraps to 4.02% bust, masked by the pooled 0.01% full-window
+  figure; the 3yr construct clears both halves at its original basis but fails (4.34%) once a
+  tail-risk-consistent sizing ratio and a trade-level intraday-honest MAE proxy are applied
+  together. Full write-up:
+  [`lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/RESULTS.md`](../../lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/RESULTS.md)
+  §9. No cell verdict flipped, nothing armed, K/lifecycle/cap-seat state on this ledger unchanged.
 - **2026-08-26** — **ORB-MNQ-1 x Aegis-6J1 combined-book Tradeify passability sweep — ORB-MNQ-1
   solo confirms its own standing FAIL on the corrected full 6-year panel; a small-weight
   combination with Aegis-6J1 clears the eval ceiling in bootstrap.** Distinct pairing from the
