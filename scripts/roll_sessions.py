@@ -651,6 +651,39 @@ def archive_collisions(entries: list[Entry], archived: set[str]) -> list[str]:
     return problems
 
 
+def archive_internal_duplicate_labels(root: Path) -> list[str]:
+    """Flag a lettered label claimed by two DIFFERENT headings within the
+    archive itself -- distinct from a live-vs-archive collision
+    (``archive_collisions``) or a live-vs-live one (``duplicate_labels``).
+
+    ``archived_headings()`` returns a ``set``, which already collapses an
+    exact duplicate heading line -- this catches what set-collapsing hides:
+    the SAME label used by two headings with DIFFERENT titles, both already
+    archived (2026-08-26 finding: ``## 2026-08-23m`` used by two unrelated
+    entries in the same quarterly archive file). Both sides are already
+    archived, settled history, so this is NOTE-tier only -- there is no live
+    side to renumber, and append-only forbids rewriting either one; it is
+    also entangled with the same-day letter-scheme ceiling (some dates
+    already claim all 26 letters), so renumbering isn't available even in
+    principle without a scheme decision this function does not make.
+    """
+    by_label: dict[str, set[str]] = {}
+    for h in archived_headings(root):
+        label = lettered_label_of(h)
+        if label:
+            by_label.setdefault(label, set()).add(h)
+    notes: list[str] = []
+    for label, headings in sorted(by_label.items()):
+        if len(headings) > 1:
+            titles = [title_of(h) for h in sorted(headings)]
+            notes.append(
+                f"archive-internal duplicate label {label!r} "
+                f"({' / '.join(repr(t) for t in titles)}) -- both already "
+                "archived; no live side to renumber, left as-is"
+            )
+    return notes
+
+
 def grandfathered_duplicate_notes(
     entries: list[Entry], grandfathered: set[str],
 ) -> list[str]:
@@ -1185,6 +1218,11 @@ def main(argv: list[str] | None = None) -> int:
         # not something this gate can safely force via renumbering. Visible-
         # restraint, same posture as grandfathered_duplicate_notes above.
         for note in archive_collisions(entries, archived_labels(root)):
+            _safe_print(f"NOTE: {note}")
+        # Same visible-restraint posture: an archive-internal duplicate has no
+        # live side to renumber at all, and is equally entangled with the
+        # letter-scheme ceiling.
+        for note in archive_internal_duplicate_labels(root):
             _safe_print(f"NOTE: {note}")
         if not problems:
             _safe_print(

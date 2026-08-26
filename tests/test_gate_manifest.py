@@ -155,7 +155,7 @@ REACHABILITY_PROBES = {
     "sessions-order": "docs/SESSIONS.md",
     "sessions-append-only": "docs/SESSIONS.md",
     "sessions-queue-bind": "docs/SESSIONS.md",
-    "supersession-placement": "docs/adr/2026-01-01-example.md",
+    "supersession-placement": "lab/analysis/harvest/new_slug_2026-08/RESULTS.md",
     "closure-disposition": "docs/briefs/closures/Q-EXAMPLE-closure-falsified.md",
     "governance-prose-control-chars": "docs/rejected_candidates.md",
     "sync-liveness": "docs/briefs/INDEX.md",

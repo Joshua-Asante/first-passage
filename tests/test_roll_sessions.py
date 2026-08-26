@@ -579,6 +579,55 @@ def test_archived_letters_for_date_scoped_to_the_requested_day(tmp_path):
     assert rs.archived_letters_for_date(tmp_path, dt.date(2026, 8, 26)) == set()
 
 
+def test_archive_internal_duplicate_labels_flags_two_distinct_headings(tmp_path):
+    """The exact 2026-08-26 finding: the same label used by two DIFFERENT
+    headings within the archive itself (title differs, label collides) --
+    distinct from a live-vs-archive collision, and from an exact-duplicate
+    heading that ``archived_headings()``'s set would already collapse."""
+    _archive(tmp_path, "2026-Q3").parent.mkdir(parents=True, exist_ok=True)
+    _archive(tmp_path, "2026-Q3").write_text(
+        "## 2026-08-23m — First entry\n**Focus:** f.\n"
+        "## 2026-08-23m — Unrelated second entry\n**Focus:** f.\n",
+        encoding="utf-8")
+    notes = rs.archive_internal_duplicate_labels(tmp_path)
+    assert len(notes) == 1, notes
+    assert "2026-08-23m" in notes[0]
+    assert "First entry" in notes[0] and "Unrelated second entry" in notes[0]
+
+
+def test_archive_internal_duplicate_labels_clean_on_exact_duplicate_heading(tmp_path):
+    """An exact byte-identical duplicate heading (same title too) collapses
+    to one entry in the underlying set -- nothing to flag."""
+    _archive(tmp_path, "2026-Q3").parent.mkdir(parents=True, exist_ok=True)
+    _archive(tmp_path, "2026-Q3").write_text(
+        "## 2026-08-23m — Same entry\n**Focus:** f.\n"
+        "## 2026-08-23m — Same entry\n**Focus:** g.\n",
+        encoding="utf-8")
+    assert rs.archive_internal_duplicate_labels(tmp_path) == []
+
+
+def test_archive_internal_duplicate_labels_clean_with_no_collisions(tmp_path):
+    _archive(tmp_path, "2026-Q3").parent.mkdir(parents=True, exist_ok=True)
+    _archive(tmp_path, "2026-Q3").write_text(
+        "## 2026-08-23m — Entry\n**Focus:** f.\n"
+        "## 2026-08-23n — Different entry\n**Focus:** f.\n",
+        encoding="utf-8")
+    assert rs.archive_internal_duplicate_labels(tmp_path) == []
+
+
+def test_check_order_cli_notes_an_archive_internal_duplicate(tmp_path, capsys):
+    _write(tmp_path, _doc([("2026-08-24", "Live entry, unrelated")]))
+    _archive(tmp_path, "2026-Q3").parent.mkdir(parents=True, exist_ok=True)
+    _archive(tmp_path, "2026-Q3").write_text(
+        "## 2026-08-23m — First archived entry\n**Focus:** f.\n"
+        "## 2026-08-23m — Second archived entry\n**Focus:** f.\n",
+        encoding="utf-8")
+    rc = rs.main(["--check-order", "--root", str(tmp_path)])
+    out = capsys.readouterr().out
+    assert rc == 0, out
+    assert "NOTE:" in out and "2026-08-23m" in out and "archive-internal" in out
+
+
 def test_check_order_cli_notes_but_passes_an_archive_collision(tmp_path, capsys):
     """WARN-tier, not blocking, same posture as a grandfathered live-vs-live
     duplicate: fixing a live/archive collision may need a same-day letter the

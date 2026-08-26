@@ -91,10 +91,14 @@ gates:
       - python
       - scripts/check_status_consistency.py
 
+  # STATE.md is included so A7 (a forward-trigger bullet citing a superseded
+  # ADR without naming the successor) is reachable from a STATE.md-only edit,
+  # not just a docs/adr/ edit -- A7 checks STATE.md's own citations, and a
+  # STATE.md bullet can drift stale without any ADR file being touched.
   - id: adr-graph
     tier: path-conditional
     when:
-      staged_regex: '^docs/adr/'
+      staged_regex: '^(docs/adr/|STATE[.]md$)'
     cmd:
       - python
       - scripts/check_adr_graph.py
@@ -144,10 +148,14 @@ gates:
       - python
       - scripts/check_sessions_queue_bind.py
 
+  # Trigger must match check_supersession_placement.py's own in_scope() -- the
+  # checker never scans docs/adr/ (see its SCOPE docstring), so a docs/adr/
+  # trigger let this gate run on edits it could never find anything in, while
+  # never running on the two doc classes it actually inspects.
   - id: supersession-placement
     tier: path-conditional
     when:
-      staged_regex: '^docs/adr/'
+      staged_regex: '^(docs/notes/rail_build/[^/]*DESK_CARD[^/]*[.]md$|lab/analysis/.*/RESULTS[^/]*[.]md$)'
     cmd:
       - python
       - scripts/check_supersession_placement.py

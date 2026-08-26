@@ -25,7 +25,9 @@ STATUS_TOKENS = frozenset(
 COLD_TOKENS = frozenset({"Superseded", "Withdrawn", "Retired"})
 AGE_MONTHS = 6
 STUB_MAX_LINES = 40
-DEFAULT_ENABLED_CHECKS: frozenset[str] = frozenset({"A1", "A2", "A3", "A4", "A6"})
+DEFAULT_ENABLED_CHECKS: frozenset[str] = frozenset(
+    {"A1", "A2", "A3", "A4", "A5", "A6", "A7"}
+)
 VALID_CHECKS: frozenset[str] = frozenset({"A1", "A2", "A3", "A4", "A5", "A6", "A7"})
 
 HEADER_END_RE = re.compile(r"^(## |---\s*$)")
@@ -686,8 +688,9 @@ def _state_forward_bullets(text: str) -> list[tuple[int, str]]:
 def check_a7(headers: dict[str, AdrHeader], state_text: str, state_surface: str) -> list[Finding]:
     """A7 -- a STATE.md forward-trigger bullet cites an ADR the graph shows has
     been superseded (full or in part), without the bullet also naming at least
-    one of the superseding ADRs. NOT in DEFAULT_ENABLED_CHECKS -- opt-in only,
-    same posture as A5; run periodically via `--enable A7`, not per-commit.
+    one of the superseding ADRs. In DEFAULT_ENABLED_CHECKS as of 2026-08-26 --
+    the corpus was clean under both A5 and A7 at flip time (6 findings existed
+    and were fixed by hand first, PR #170); same posture as A5.
 
     Deliberately NOT the C4 join check_status_consistency.py tried and dropped.
     That attempt joined STATE.md's forward board against STATE.md's OWN pointer
