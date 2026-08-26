@@ -108,6 +108,9 @@ def test_hold_named_only_in_narrative_does_not_reopen_a_closed_study():
     Its verdict is RESOLVED; the one-liner merely recounts passing through
     AMBIGUOUS-HOLD. A blanket 'HOLD wins' rule would re-open every study whose
     history mentions a hold, so dominance is scoped to the verdict clause.
+    ``RESOLVED`` is not a CATALOG status token (stay-hot Active rows would
+    flip to archiveable CLOSED). This fixture still maps CLOSED via the
+    narrative ``AMBIGUOUS`` token — the historical path must not steal HOLD.
     """
     text = ("**Verdict: `RESOLVED`** (frozen pre-reg §D: ≥1 axis PASSES both "
             "clauses) — flipped 2026-07-15 after operator ratification. "
@@ -115,6 +118,51 @@ def test_hold_named_only_in_narrative_does_not_reopen_a_closed_study():
     d = ala.parse_disposition(text)
     assert d.status == "CLOSED"
     assert ala.is_archiveable(d.status) is True
+
+
+def test_bare_resolved_is_not_a_catalog_status_token():
+    """RESOLVED alone does not parse — house style leads with ACTIVE/HOLD."""
+    assert ala.parse_disposition(
+        "**Verdict:** `RESOLVED` (H-MONSURF-1 accepted)\n"
+    ) is None
+
+
+def test_lowercase_resolved_does_not_map_closed():
+    """Same NULL/CLOSED collision class — prose 'resolved' is not the token."""
+    text = "**Status:** ACTIVE — the question resolved on the honest clock\n"
+    d = ala.parse_disposition(text)
+    assert d is not None
+    assert d.status == "ACTIVE"
+
+
+def test_exploratory_and_measured_map_active():
+    d = ala.parse_disposition("**Status:** EXPLORATORY — not pre-registered\n")
+    assert d is not None
+    assert d.status == "ACTIVE"
+    assert ala.is_archiveable(d.status) is False
+    d = ala.parse_disposition(
+        "**Status:** MEASURED — WITH NAMED RESIDUAL (2026-08-23)\n"
+    )
+    assert d is not None
+    assert d.status == "ACTIVE"
+
+
+def test_exploratory_clause_dominates_closed_in_narrative():
+    text = "**Status:** EXPLORATORY — later CLOSED as a historical note\n"
+    d = ala.parse_disposition(text)
+    assert d is not None
+    assert d.status == "ACTIVE"
+
+
+def test_active_clause_dominates_resolved_in_narrative():
+    """House style: ACTIVE — … `RESOLVED` … must stay Active, not archiveable."""
+    text = (
+        "**Verdict:** ACTIVE — `Q-MONSURF-1` idle-clock — `RESOLVED` 2026-08-23\n"
+    )
+    d = ala.parse_disposition(text)
+    assert d is not None
+    assert d.status == "ACTIVE"
+    assert ala.is_archiveable(d.status) is False
 
 
 def test_dominance_is_uppercase_only_so_prose_cannot_hijack_a_closure():
@@ -1134,6 +1182,49 @@ def test_catalog_only_tolerates_unverifiable_one_liner(tmp_path: Path, capsys):
     err = capsys.readouterr().err
     assert "mid_campaign" in err
     assert "one-liner" in err
+
+
+def test_catalog_only_tolerates_120_char_truncation(tmp_path: Path):
+    """Hand-authored CATALOG one-liner longer than parse_disposition's 120-cap.
+
+    Scan emits the truncated form; disk keeps the full Status prose. Must not
+    hard-fail — same direction as the empty-scan soft-degrade, but silent
+    because the cap is mechanical.
+    """
+    study = tmp_path / "lab" / "analysis" / "long_line"
+    study.mkdir(parents=True)
+    full = (
+        "W1 pattern extended to all 7 Bulenox/BluSky trailing tiers "
+        "with a long residual clause that exceeds the one-liner cap "
+        "and then some extra measured residual so the 120-char cut fires"
+    )
+    assert len(full) > 120
+    (study / "RESULTS.md").write_text(
+        f"**Theme:** c1\n**Status:** ACTIVE — {full}\n",
+        encoding="utf-8",
+    )
+    scanned = ala.scan_lab(tmp_path)
+    assert scanned[0].one_liner.endswith("...")
+    assert len(scanned[0].one_liner) == 120
+    assert ala._scan_one_liner_is_truncation(scanned[0].one_liner, full)
+
+    committed = [
+        ala.CatalogRow(
+            slug=r.slug,
+            theme=r.theme,
+            status=r.status,
+            one_liner=full,
+            card=r.card,
+            body=r.body,
+            heavy=r.heavy,
+            closed=r.closed,
+        )
+        for r in scanned
+    ]
+    ala.write_catalog(tmp_path, ala.render_catalog(committed))
+    assert ala.check_lab(tmp_path, catalog_only=True) == []
+    rc = ala.main(["--root", str(tmp_path), "--check", "--catalog-only"])
+    assert rc == 0
 
 
 def test_catalog_only_still_fails_on_nonempty_one_liner_drift(tmp_path: Path):

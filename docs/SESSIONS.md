@@ -32,6 +32,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-26c — CATALOG `--catalog-only` false-positives: EXPLORATORY/MEASURED tokens + missing source cards
+
+**Focus:** Pre-commit `lab-catalog` (`archive_lab_analysis.py --check --catalog-only`) could not parse several live cards; primary checkout reported a hard block on any `lab/` commit.
+**Shipped:** [`PR #173`](https://github.com/Joshua-Asante/first-passage/pull/173) `04cf9f6` — `EXPLORATORY`/`MEASURED` → `ACTIVE`; `RESOLVED` left unrecognized (CLOSED mapping flips stay-hot Active rows); Status/Verdict lines lead with `ACTIVE`; thin README source cards; 120-char one-liner truncation tolerated. Did not `--regenerate-catalog`.
+**Decisions/defects:** `RESOLVED` is a Q-closure verdict, not a CATALOG status — house style stays `ACTIVE — … RESOLVED …`. CI on PR #172 was green because empty-scan vs committed prose is a WARN, not `CATALOG.md stale vs scan`.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: pre-commit CATALOG staleness blocks any lab/ commit`.
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-26b — 8 more high-confidence memory/gate fixes: ADR pair, 2 gate-trigger bugs, CATALOG status, A5/A7 default-on, test crash, docs/README gaps
 
 **Focus:** Follow-up to the memory-architecture audit's "additional findings" list — implement every item judged high-confidence (mechanical, well-understood, low blast radius), leave the rest (SESSIONS letter-scheme redesign, C1/C4 revival, broader doc-taxonomy reorg) explicitly alone per the simplification pass.

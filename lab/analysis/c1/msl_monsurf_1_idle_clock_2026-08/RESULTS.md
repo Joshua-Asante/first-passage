@@ -1,6 +1,7 @@
 # Q-MONSURF-1 M-B acceptance battery — RESULTS
 
-**Verdict:** `RESOLVED` (H-MONSURF-1 accepted)
+**Verdict:** ACTIVE — `Q-MONSURF-1` M-B idle-clock monitor — `RESOLVED` 2026-08-23: 0 missed / 0 spurious across all 312 real historical weeks, mutation-verified. Registration-ready (gated on F3 only). [closure](../../../docs/briefs/closures/Q-MONSURF-1-closure-resolved.md)
+`RESOLVED` (H-MONSURF-1 accepted)
 **Date:** 2026-08-23
 **Pre-registration:** [`Q-MONSURF-1-verdict-preregistration.md`](../../../../docs/briefs/pre-registration/Q-MONSURF-1-verdict-preregistration.md)
 **Cost:** $0 — no new data pulled, no K spent. Re-reads the same committed `daily_panel.csv`
