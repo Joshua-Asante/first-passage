@@ -121,6 +121,52 @@ def committed_headings(root: Path, ref: str = "HEAD") -> set[str]:
     return {ln for ln in doc.splitlines() if ln.startswith("## ")}
 
 
+def archived_headings(root: Path) -> set[str]:
+    """Heading lines (``## ...``) found in every quarterly archive file under
+    ``ARCHIVE_REL``.
+
+    Read from the working tree, not git history: ``docs/ltm/`` is excluded
+    from search-index tools (``.rgignore`` / ``.cursorindexingignore``) but
+    is still an ordinary tracked file on disk, so a plain read is the
+    reliable path here — the same reason the live SESSIONS.md itself is
+    read from disk rather than via git.
+
+    Before this existed, ``check_order``'s duplicate-label check only ever
+    scanned the live file, so a live heading could silently reuse a letter
+    already claimed by an already-archived one (2026-08-26 finding: 7 real
+    collisions, e.g. two unrelated ``## 2026-08-24g`` entries, invisible to
+    the gate because it never looked here).
+    """
+    archive_dir = root / ARCHIVE_REL
+    if not archive_dir.is_dir():
+        return set()
+    headings: set[str] = set()
+    for fp in sorted(archive_dir.glob("*.md")):
+        try:
+            text = fp.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        headings.update(ln for ln in text.splitlines() if ln.startswith("## "))
+    return headings
+
+
+def archived_labels(root: Path) -> set[str]:
+    """``YYYY-MM-DDx`` labels claimed by any already-archived heading."""
+    return {lettered_label_of(h) for h in archived_headings(root)} - {""}
+
+
+def archived_letters_for_date(root: Path, day: dt.date) -> set[str]:
+    """Letter slots already claimed for ``day`` by an archived heading."""
+    claimed: set[str] = set()
+    for h in archived_headings(root):
+        m = _DATE_SUFFIX_RE.match(h)
+        if not m or dt.date.fromisoformat(m.group(1)) != day:
+            continue
+        letter = m.group(2)
+        claimed.add(letter if letter else "a")
+    return claimed
+
+
 def intro_times(root: Path, wanted: set[str]) -> dict[str, dt.datetime]:
     """Map heading line -> author time of the commit that first added it."""
     if not wanted:
@@ -568,6 +614,29 @@ def duplicate_labels(
             f"duplicate session label {label!r}: claimed by {' and '.join(repr(t) for t in titles)}"
             f" — renumber the later one (letters are not reserved across sessions)"
         )
+    return problems
+
+
+def archive_collisions(entries: list[Entry], archived: set[str]) -> list[str]:
+    """Flag any live entry whose label already exists in an archived file.
+
+    Unlike a live-vs-live duplicate (``duplicate_labels``), there is no
+    grandfather exemption here: the archive side is always the older,
+    already-settled one, so the live side is always the one to renumber —
+    it can never be the archive's fault. ``docs/ltm/``'s search-index
+    exclusion let 7 such collisions land undetected before this existed
+    (2026-08-26 finding).
+    """
+    if not archived:
+        return []
+    problems: list[str] = []
+    for e in entries:
+        label = lettered_label_of(e.text.splitlines()[0])
+        if label and label in archived:
+            problems.append(
+                f"session label {label!r} already claimed in the archive "
+                f"(docs/ltm/notes/archive/sessions/) — rename the live entry"
+            )
     return problems
 
 
@@ -1035,9 +1104,10 @@ def main(argv: list[str] | None = None) -> int:
         doc = (root / SESSIONS_REL).read_text(encoding="utf-8")
         _, entries = parse(doc)
         reserved: set[str] = set()
+        reserved |= archived_letters_for_date(root, day)
         cdir = claim_dir_for(root)
         if not args.no_claim:
-            reserved = read_claimed_letters(cdir, day)
+            reserved = reserved | read_claimed_letters(cdir, day)
             in_file = claimed_letters_for_date(entries, day)
             only_reserved = sorted(reserved - in_file)
             if only_reserved:
@@ -1062,6 +1132,14 @@ def main(argv: list[str] | None = None) -> int:
         _, entries = parse(doc)
         grandfathered = committed_headings(root, ref=resolve_append_only_base(root))
         for note in grandfathered_duplicate_notes(entries, grandfathered):
+            _safe_print(f"NOTE: {note}")
+        # WARN-tier, not blocking: unlike a live-vs-live duplicate, fixing an
+        # archive collision may require a same-day letter this file's a-z
+        # scheme cannot supply (2026-08-26 finding: 2026-08-23's archive alone
+        # already claims all 26 letters) -- that is a label-scheme decision,
+        # not something this gate can safely force via renumbering. Visible-
+        # restraint, same posture as grandfathered_duplicate_notes above.
+        for note in archive_collisions(entries, archived_labels(root)):
             _safe_print(f"NOTE: {note}")
         if not problems:
             _safe_print(

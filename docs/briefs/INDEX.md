@@ -24,7 +24,7 @@ Ten of the eleven 2026-08-18 assumption-sweep Qs are now closed (Q-M1WIRE-1 `FAL
 
 | Q | Status | Home | Note |
 |---|---|---|---|
-| ~~**Q-FUNDPOL-1** — funded-phase policy inheritance~~ → **DORMANT 2026-08-04** (§6 gate retired — eval pass converting cannot occur; Select-Flex thresholds non-transferable). §8 pre-reg (`d0200a4`, **K frozen = 4**) + P1/P2 discharges **unspent**; §1–§5 analysis retained as worked method. **Do not build** §9-C1 / `PAYOUT_MIN → 0`. | measurement / method record | [`Q-FUNDPOL-1-funded-phase-policy-inheritance.md`](Q-FUNDPOL-1-funded-phase-policy-inheritance.md) · pre-reg [`Q-FUNDPOL-1-verdict-preregistration.md`](pre-registration/Q-FUNDPOL-1-verdict-preregistration.md) | Successor venue needs a **new derivation**, not this brief rescheduled. |
+| ~~**Q-FUNDPOL-1** — funded-phase policy inheritance~~ → **DORMANT 2026-08-04** (§6 gate retired — eval pass converting cannot occur; Select-Flex thresholds non-transferable). §8 pre-reg (`d0200a4`, **K frozen = 4**) + P1/P2 discharges **unspent**; §1–§5 analysis retained as worked method. **Do not build** §9-C1 / `PAYOUT_MIN → 0`. | measurement / method record | [`Q-FUNDPOL-1-funded-phase-policy-inheritance.md`](Q-FUNDPOL-1-funded-phase-policy-inheritance.md) · pre-reg [`Q-FUNDPOL-1-verdict-preregistration.md`](pre-registration/Q-FUNDPOL-1-verdict-preregistration.md) · [`docs/pursuits/b5-q-fundpol-1.md`](../pursuits/b5-q-fundpol-1.md) | **RENEWED 2026-08-16** — corrected wake condition (the F3-successor-venue clause is now unreachable per S1's no-migration ruling): re-enter when Q-POLFRONT-1 reads positive on funded-relevant cells OR a candidate reaches funded-phase modeling. New expiry **2027-02-08**. |
 
 ## Recently closed (cross-reference; not open)
 

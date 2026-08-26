@@ -491,6 +491,89 @@ def test_duplicate_labels_default_grandfathered_none_flags_everything():
     assert rs.duplicate_labels(entries) != []
 
 
+# ── archive-scan (2026-08-26 finding: docs/ltm/ is search-index-excluded, so
+# duplicate_labels()/check_order() never saw an already-archived label and 7
+# real live-vs-archive collisions landed undetected) ──────────────────────────
+
+def test_archived_headings_reads_every_quarterly_archive_file(tmp_path):
+    _archive(tmp_path, "2026-Q2").parent.mkdir(parents=True, exist_ok=True)
+    _archive(tmp_path, "2026-Q2").write_text(
+        "## 2026-06-01a — Old A\n**Focus:** f.\n", encoding="utf-8")
+    _archive(tmp_path, "2026-Q3").write_text(
+        "## 2026-07-01b — Old B\n**Focus:** f.\n", encoding="utf-8")
+    headings = rs.archived_headings(tmp_path)
+    assert "## 2026-06-01a — Old A" in headings
+    assert "## 2026-07-01b — Old B" in headings
+
+
+def test_archived_headings_empty_when_no_archive_dir(tmp_path):
+    assert rs.archived_headings(tmp_path) == set()
+
+
+def test_archived_labels_extracts_lettered_tokens(tmp_path):
+    _archive(tmp_path, "2026-Q3").parent.mkdir(parents=True, exist_ok=True)
+    _archive(tmp_path, "2026-Q3").write_text(
+        "## 2026-08-24g — Old G\n**Focus:** f.\n"
+        "## 2026-08-24\n**Focus:** bare, no letter — excluded.\n",
+        encoding="utf-8")
+    assert rs.archived_labels(tmp_path) == {"2026-08-24g"}
+
+
+def test_archive_collisions_flags_live_entry_matching_archived_label(tmp_path):
+    """The exact 2026-08-26 failure shape: a live heading reuses a letter an
+    archived heading already claimed for the same date."""
+    entries = [rs.Entry(dt.date(2026, 8, 24), "New work",
+                         "## 2026-08-24g — New work\n**Focus:** f.\n")]
+    problems = rs.archive_collisions(entries, {"2026-08-24g"})
+    assert problems, "gate went VACUOUS: a live/archive collision was not caught"
+    assert "2026-08-24g" in problems[0]
+
+
+def test_archive_collisions_clean_when_no_overlap(tmp_path):
+    entries = [rs.Entry(dt.date(2026, 8, 24), "New work",
+                         "## 2026-08-24z — New work\n**Focus:** f.\n")]
+    assert rs.archive_collisions(entries, {"2026-08-24g"}) == []
+
+
+def test_archive_collisions_noop_with_no_archived_labels():
+    entries = [rs.Entry(dt.date(2026, 8, 24), "New work",
+                         "## 2026-08-24g — New work\n**Focus:** f.\n")]
+    assert rs.archive_collisions(entries, set()) == []
+
+
+def test_archived_letters_for_date_scoped_to_the_requested_day(tmp_path):
+    _archive(tmp_path, "2026-Q3").parent.mkdir(parents=True, exist_ok=True)
+    _archive(tmp_path, "2026-Q3").write_text(
+        "## 2026-08-24g — Same day\n**Focus:** f.\n"
+        "## 2026-08-25a — Different day\n**Focus:** f.\n",
+        encoding="utf-8")
+    assert rs.archived_letters_for_date(tmp_path, dt.date(2026, 8, 24)) == {"g"}
+    assert rs.archived_letters_for_date(tmp_path, dt.date(2026, 8, 26)) == set()
+
+
+def test_check_order_cli_notes_but_passes_an_archive_collision(tmp_path, capsys):
+    """WARN-tier, not blocking, same posture as a grandfathered live-vs-live
+    duplicate: fixing a live/archive collision may need a same-day letter the
+    a-z scheme cannot supply (2026-08-26 finding), so this gate surfaces it
+    visibly rather than either hiding it or force-failing every commit until
+    a label-scheme decision is made."""
+    _write(tmp_path, _doc([("2026-08-24", "Live entry reusing an archived letter")]))
+    # _doc's single same-day entry is bare (claims 'a'-equivalent has no letter
+    # suffix); give it an explicit letter matching the archived one instead.
+    doc = _read(tmp_path).replace(
+        "## 2026-08-24 — Live entry reusing an archived letter",
+        "## 2026-08-24g — Live entry reusing an archived letter",
+    )
+    _write(tmp_path, doc)
+    _archive(tmp_path, "2026-Q3").parent.mkdir(parents=True, exist_ok=True)
+    _archive(tmp_path, "2026-Q3").write_text(
+        "## 2026-08-24g — Already-archived entry\n**Focus:** f.\n", encoding="utf-8")
+    rc = rs.main(["--check-order", "--root", str(tmp_path)])
+    out = capsys.readouterr().out
+    assert rc == 0, out
+    assert "NOTE:" in out and "2026-08-24g" in out and "archive" in out
+
+
 def test_grandfathered_duplicate_notes_reports_only_fully_grandfathered_collisions():
     old = rs.Entry(dt.date(2026, 8, 16), "S3", "## 2026-08-16h — S3\n**Focus:** f.\n")
     old2 = rs.Entry(dt.date(2026, 8, 16), "DL-1", "## 2026-08-16h — DL-1\n**Focus:** f.\n")

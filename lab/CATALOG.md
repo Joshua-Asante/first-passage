@@ -72,7 +72,7 @@ documents the camp boundary for humans/tools.
 | q_rail_1_2026-07 | c1 | ACTIVE | yes | c1 rail Phases 0–4 CLOSED RESOLVED; ceiling $700 operator-signed | lab/analysis/c1/q_rail_1_2026-07/ | — |
 | research-analyst-mnq-atomic-facts-2026-08-19 | c1 | ACTIVE | yes | Research Analyst inaugural session — MNQ atomic-fact decomposition draft (cross-campaign synthesis, not a new backtest); routing corrected same-day 2026-08-19 (DROP D5 -- already killed twice, ledger-contradicted first GRADUATE call / HOLD temporal-selectivity / DROP weekly-bias) | lab/analysis/c1/research-analyst-mnq-atomic-facts-2026-08-19/ | — |
 | shape_feasibility_map_2026-08 | c1 | ACTIVE | yes | 945-cell region published (Tradeify Select / MFFU / **Tradeify Growth**, the last added 2026-08-24); Select≡MFFU bit-... | lab/analysis/c1/shape_feasibility_map_2026-08/ | — |
-| tradeify_book_composition_2026-07-23 | c1 | ACTIVE | yes | eval-lock fix + §2 book-composition re-derivation | lab/analysis/c1/tradeify_book_composition_2026-07-23/ | inputs gitignored |
+| tradeify_book_composition_2026-07-23 | c1 | ACTIVE | yes | eval-lock fix + §2 book-composition re-derivation | lab/analysis/c1/tradeify_book_composition_2026-07-23/ | — |
 | tradeify_eval_lock_correction_2026-07-22 | c1 | ACTIVE | yes | Tradeify/MFFU eval drawdown-lock correction re-MC | lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/ | — |
 | tradeify_fade_stage0_2026-07-30 | c1 | ACTIVE | yes | Stage 0 instrumentation complete; Stage 1 region computed at 1x/2x/4x; no mechanism scored, K=0, $0 spend | lab/analysis/c1/tradeify_fade_stage0_2026-07-30/ | — |
 | tradeify_futures3_bustcut_2026-07-11 | c1 | ACTIVE | yes | Tradeify Select Flex 50K bust-cut Tests 1+2 | lab/analysis/c1/tradeify_futures3_bustcut_2026-07-11/ | — |
@@ -94,8 +94,8 @@ documents the camp boundary for humans/tools.
 |---|---|---|---|---|---|---|
 | d5_nq_intraday_mom_2026-07 | orb | ACTIVE | yes | Baltussen H1 on NQ IS — Stage-2/4 results | lab/analysis/orb/d5_nq_intraday_mom_2026-07/ | — |
 | eodadv_mnq_2026-08 | orb | FALSIFIED | yes | no pre-registered mechanism survives; 15:30 exit stays barred | lab/analysis/orb/eodadv_mnq_2026-08/ | — |
-| orb_mnq_2026-07 | orb | ACTIVE | yes | NAS100-ORB-30 on native MNQ; Stage-2 cost-law PASS then T2 payability FIRED | lab/analysis/orb/orb_mnq_2026-07/ | inputs gitignored |
-| orb_universe_2026-06-22 | orb | ACTIVE | yes | which FXIFY CFD best suits Opening Range Breakout | lab/analysis/orb/orb_universe_2026-06-22/ | pkl gitignored |
+| orb_mnq_2026-07 | orb | ACTIVE | yes | NAS100-ORB-30 on native MNQ; Stage-2 cost-law PASS then T2 payability FIRED | lab/analysis/orb/orb_mnq_2026-07/ | — |
+| orb_universe_2026-06-22 | orb | ACTIVE | yes | which FXIFY CFD best suits Opening Range Breakout | lab/analysis/orb/orb_universe_2026-06-22/ | — |
 | sessconf_mnq_2026-08 | orb | ACTIVE | yes | faithful close_tod session-truncation sweep (MNQ, Tradeify) | lab/analysis/orb/sessconf_mnq_2026-08/ | — |
 
 ### aegis
@@ -104,7 +104,7 @@ documents the camp boundary for humans/tools.
 |---|---|---|---|---|---|---|
 | aegis_6j_prop_reconstruction_2026-07 | aegis | ACTIVE | yes | Stage-1 FALSIFIED (operator accepted); Wave-1 sweep artifacts retained hot | lab/analysis/aegis/aegis_6j_prop_reconstruction_2026-07/ | — |
 | aegis_6j_trail_tradeify_2026-07-29 | aegis | ACTIVE | yes | J4 re-run at true Tradeify Select 100K geometry (Aegis→6J v0.3) | lab/analysis/aegis/aegis_6j_trail_tradeify_2026-07-29/ | — |
-| aegis_6j_transfer_2026-07-05 | aegis | ACTIVE | yes | Bulenox Option-2 trail-survival MC sequence (Aegis→6J v0.3) | lab/analysis/aegis/aegis_6j_transfer_2026-07-05/ | inputs gitignored |
+| aegis_6j_transfer_2026-07-05 | aegis | ACTIVE | yes | Bulenox Option-2 trail-survival MC sequence (Aegis→6J v0.3) | lab/analysis/aegis/aegis_6j_transfer_2026-07-05/ | — |
 
 ### regime
 
@@ -153,7 +153,6 @@ documents the camp boundary for humans/tools.
 | silver_be_off_2026-06-11 | legacy | ACTIVE | yes | Silver BE-off reconcile + remc gate harness | lab/analysis/legacy/silver_be_off_2026-06-11/ | — |
 | silver_counterbalance_2026-06-13 | legacy | ACTIVE | yes | Silver counterbalance equity curve & required-hedge envelope | lab/analysis/legacy/silver_counterbalance_2026-06-13/ | — |
 | silver_regime_2026-06-10 | legacy | ACTIVE | yes | Guardian Silver v1.0 allocation frontier + regime stress | lab/analysis/legacy/silver_regime_2026-06-10/ | — |
-| tom_spx | legacy | ACTIVE | yes | SPX500 turn-of-month Layer-A inference harness | lab/analysis/legacy/tom_spx/ | — |
 | us500_discovery_2026-06-22 | legacy | ACTIVE | yes | US500 widest-net edge discovery results | lab/analysis/legacy/us500_discovery_2026-06-22/ | — |
 | xauusd_cgb_2026-06-15 | legacy | HOLD | yes | AMBIGUOUS (brief §6) / operational HOLD — build NOT triggered | lab/analysis/legacy/xauusd_cgb_2026-06-15/ | — |
 
@@ -255,6 +254,7 @@ documents the camp boundary for humans/tools.
 | timeframe_5m_2026-06-25 | CLOSED | NO-GO — 5m conversion degrades all four strategies. Original: NO-GO. The 5m c... | lab/analysis/timeframe_5m_2026-06-25/CARD.md | lab/archive/timeframe_5m_2026-06-25/ | — | 2026-07-12 |
 | tnec_envelope_compile_2026-08 | NULL | H_B = 0, STOP / NULL per PREREG F7 · closure: docs/briefs/closures/Q-TNEC-ENV-1-closure.md | lab/analysis/tnec_envelope_compile_2026-08/CARD.md | lab/archive/tnec_envelope_compile_2026-08/ | — | 2026-08-13 |
 | todvol_1_2026-08-20 | FALSIFIED | D2 FAIL; mean signed gross +0.25pt vs 2.82pt bar (9% of required), n=975. See... | lab/analysis/todvol_1_2026-08-20/CARD.md | lab/archive/todvol_1_2026-08-20/ | — | 2026-08-21 |
+| tom_spx | FALSIFIED | SPX500 turn-of-month Layer-A inference harness (DEAD 2026-08-23; see closure ... | lab/analysis/tom_spx/CARD.md | lab/archive/tom_spx/ | — | 2026-08-26 |
 | tradeify_selectflex_remc_2026-07-10 | FALSIFIED | Tradeify Select Flex integer-micro re-MC gates fail under costs | lab/analysis/tradeify_selectflex_remc_2026-07-10/CARD.md | lab/archive/tradeify_selectflex_remc_2026-07-10/ | — | 2026-07-12 |
 | transfer_expression_grid_2026-08 | FALSIFIED | `CLOSED — FALSIFIED-at-walls` · operator elected **(A) CLOSE** on the H_A re-... | lab/analysis/transfer_expression_grid_2026-08/CARD.md | lab/archive/transfer_expression_grid_2026-08/ | — | 2026-08-13 |
 | usdcad_fade_2026-06-26 | FALSIFIED | the up-fade asymmetry is REAL but SUB-COST and REGIME-FRAGILE. | lab/analysis/usdcad_fade_2026-06-26/CARD.md | lab/archive/usdcad_fade_2026-06-26/ | — | 2026-07-11 |

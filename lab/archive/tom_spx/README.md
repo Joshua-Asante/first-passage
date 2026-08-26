@@ -1,5 +1,5 @@
 **Theme:** legacy
-**Status:** ACTIVE — SPX500 turn-of-month Layer-A inference harness
+**Status:** FALSIFIED — SPX500 turn-of-month Layer-A inference harness (DEAD 2026-08-23; see closure below)
 # Q-TOM-SPX-1 - SPX500 turn-of-month (Layer-A inference harness)
 
 Layer-A existence/persistence harness for **Q-TOM-SPX-1** (does a tradeable
@@ -88,7 +88,7 @@ python -m pytest lab/analysis/tom_spx/test_verdict.py -q
 - **Prior SPX500 state (collision note).** `CONCEPT-NOCT-SPX-001`
   (inventory-reversal-immediacy-premium) was **FALSIFIED 2026-06-07** on the
   same Dukascopy `USA500IDXUSD` feed -
-  [`lab/analysis/noct_spx/CARD.md`](../noct_spx/CARD.md),
+  [`lab/analysis/noct_spx/CARD.md`](lab/archive/noct_spx/CARD.md),
   [`docs/rejected_candidates.md`](../../../docs/rejected_candidates.md). NOCT
   predates the 2026-06-12 index-class ADR, so its Dukascopy-index use was
   pre-policy. TOM is a **different mechanism** (turn-of-month / dash-for-cash,

@@ -38,7 +38,7 @@ STATUS_BARE_RE = re.compile(
     r"^(?P<tok>[A-Za-z][\w/-]*)(?:\s*[—–-]\s*(?P<ann>.*)|\s+(?P<paren>\(.*)|$)"
 )
 ADR_FILE_RE = re.compile(
-    r"^`(?P<file>\d{4}-\d{2}-\d{2}-[^`]+?\.md)`"
+    r"^`(?P<file>\d{4}-\d{2}-\d{2}[a-z]?-[^`]+?\.md)`"
     r"(?:\s+(?P<scope>full|in part)(?:\s*[—–-]\s*(?P<clause>.*))?)?$"
 )
 EVENT_RE = re.compile(
@@ -56,7 +56,7 @@ EVENT_RE = re.compile(
 # drifted on the same fact. Normalize to the bare-backtick form and fall through
 # to the existing logic unchanged.
 MD_LINK_PREFIX_RE = re.compile(
-    r"^\[`(?P<file>\d{4}-\d{2}-\d{2}-[^`]+?\.md)`\]\([^)]*\)\s*(?P<rest>.*)$"
+    r"^\[`(?P<file>\d{4}-\d{2}-\d{2}[a-z]?-[^`]+?\.md)`\]\([^)]*\)\s*(?P<rest>.*)$"
 )
 DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})$")
 
@@ -175,7 +175,7 @@ def parse_edge_value(field: str, value: str, lineno: int) -> EdgeTarget | None:
     if not m:
         # bare filename without scope for Superseded-by / in-part-by + clause
         m2 = re.match(
-            r"^`(?P<file>\d{4}-\d{2}-\d{2}-[^`]+?\.md)`"
+            r"^`(?P<file>\d{4}-\d{2}-\d{2}[a-z]?-[^`]+?\.md)`"
             r"(?:\s*(?:[-\u2014]\s*(?P<clause>.*))?)?\s*$",
             value,
         )
