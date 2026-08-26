@@ -43,13 +43,22 @@ v1's §0 reads are 44 days old; re-checked rather than trusted:
   `docs/SESSIONS.md` / `lab/CATALOG.md`: `register_search` for the first live campaign has not
   opened. This is still a build-ahead-of-candidate freeze, same posture as v1, not a live-result
   re-derivation.
-- **The measured result motivating this reopening:**
+- **The measured result motivating this reopening — corrected 2026-08-26, pre-merge (the number
+  below moved after this section was first drafted; this is the current, verified figure, not the
+  one the operator's own §1 quote was made against):**
   [`lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/RESULTS.md`](../../../lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/RESULTS.md)
-  §9 — Aegis-6J1 + ORB-MNQ-1 combined-book, 3yr flagship, **4.34% bust** after tail-risk-consistent
-  sizing + intraday-honesty corrections compound. This is an **EXPLORATORY** study (not
+  §10.2 — Aegis-6J1 + ORB-MNQ-1 combined-book, 3yr flagship, tail-risk-consistent sizing +
+  timestamp-sequenced intraday-honest remeasure, split both-halves: **h1 3.29% / h2 5.37%**
+  (full-window pooled 5.03%). This supersedes the single pooled §9.3 figure (4.34%) this section
+  originally cited — that number was itself already superseded by the time this document was
+  authored (a proxy-based intraday remeasure, §9.3, not the timestamp-sequenced one in §10.1) and
+  was never split both-halves, which this repo's own regime-robustness convention (§7 item 7,
+  unchanged from v1) treats as required before trusting any ceiling result. Read both-halves, this
+  exact study does **not** clear even the raised 5.0% ceiling (h2 5.37% > 5.0%) — see §1 for what
+  this does and does not change about the ruling itself. This is an **EXPLORATORY** study (not
   pre-registered, not DISC-CAMP-0, not itself gated by this ceiling) — it does not admit anything
-  by clearing a lower bar; it is cited here only as the fact that prompted this reopening, per §8's
-  full disclosure.
+  by clearing (or failing to clear) any bar; it is cited here only as the fact that prompted this
+  reopening, per §8's full disclosure.
 
 ---
 
@@ -59,7 +68,17 @@ This is **not** a finding that v1's 3.0% ceiling was mis-set. v1's own §3 ratio
 $100K band's own barrier width... excludes falsified-book quality... while not being
 null-by-construction"* — is not disputed and is not re-argued here. What changed is the operator's
 own risk tolerance, stated directly: *"4.34% bust is acceptable, I am raising the minimum bar to
-5%. that is still much lower than what real traders experience."*
+5%. that is still much lower than what real traders experience."* **Quote preserved verbatim — do
+not edit what was said.** The 4.34% figure named in it was the correctly-cited current number at
+the moment the quote was made; it was independently revised twice more the same day by a different
+session (§9.3 proxy → §10.1 timestamp-sequenced → §10.2 both-halves split, landing at h1 3.29% /
+h2 5.37%, both-halves FAIL — see §0's corrected citation). **This does not reopen or restate the
+ruling itself** — §8 already frames the ceiling move as a general risk-tolerance dial, not a
+verdict on any one candidate, and that framing holds regardless of which number the study
+eventually settled on. What it does mean: the specific study that prompted the same-day reopening
+turned out, on the most rigorous test available, not to clear the raised bar either. Recorded here
+because omitting it would be exactly the kind of selective citation §8 already commits this
+document not to do.
 
 **This reopening is same-day as, and explicitly informed by, a result that failed the old
 ceiling.** That is ordinarily exactly the pattern Known Trap #12 exists to block, and it does not
@@ -170,9 +189,11 @@ brief (do NOT tighten in place — Trap #12, same rule this version itself was c
   reopening is disclosed as an operator override on stated grounds (§8), not as an established
   new norm that ceilings move whenever a candidate result is close. A future request to move this
   ceiling again needs its own independently-stated grounds — not "we did it once before."
-- **Reading `aegis_orbmnq_combined_book_2026-08-26`'s 4.34% figure as itself having cleared any
-  gate.** That study is EXPLORATORY, not pre-registered, not DISC-CAMP-0 — it is the trigger for
-  this reopening, not evidence admitted under it.
+- **Reading any bust figure from `aegis_orbmnq_combined_book_2026-08-26`'s campaign (4.34%, the
+  §10.2 both-halves 3.29%/5.37%, or any later revision) as itself having cleared any gate, at
+  either the 3.0% or 5.0% ceiling.** That study is EXPLORATORY, not pre-registered, not
+  DISC-CAMP-0 — it is the trigger for this reopening, not evidence admitted under it. On its own
+  most rigorous test to date (§10.2, both-halves) it does not clear 5.0% either (h2 5.37%).
 
 ---
 
@@ -331,8 +352,10 @@ closure pointer; `DEFAULT_PREREG` resolves to this file; loader returns `eval_bu
 git log -1 --format='%h %ci' -- core/firm_rules.py
 git log -1 --format='%h %ci' -- lab/discovery/prop_survivor_scoring.py
 
-# The measured result that motivated this reopening
-grep -n "4.34%" lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/RESULTS.md
+# The measured result that motivated this reopening -- current, corrected figures (§10.2
+# both-halves; supersedes the 4.34% pooled figure this section originally cited, itself
+# already stale by the time of authoring -- see §0's dated correction)
+grep -n "3.29%\|5.37%" lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/RESULTS.md
 
 # The declined-5%-dial fact in v1's own frozen text (confirms this isn't a fabricated citation)
 grep -n "declined the 2%/5% dials" docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md
