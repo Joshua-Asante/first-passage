@@ -61,3 +61,18 @@ tail-risk-consistent sizing ratio and a trade-level intraday-honest proxy are ap
 (4.34%). Net: this is still new payability evidence worth the re-entry-clause note above, but it
 is materially thinner evidence than the figures first quoted here suggested — closer to "a narrow,
 unconfirmed possibility" than "clears the ceiling with real margin."
+
+**Further local-session follow-up (§10 of the cited RESULTS.md) reverses the remaining survivor
+above — do not cite this addendum's headline figures at all without reading that section too.**
+§10 re-tested the 3yr construct's both-halves pass under its own already-identified corrections
+(tail-risk-consistent sizing + a genuine timestamp-sequenced intraday-honest remeasure,
+superseding §9's trade-level proxy) applied together, split by regime half: **both halves now
+fail** (3.29% / 5.37%, vs. the 3.0% ceiling) — the one cell this document's §9 note above still
+credited as passing both halves does not survive full compounding. As of §10, no tested
+configuration of this combined book, on either window, survives a full both-halves +
+tail-sizing + intraday-honesty gate. This addendum's own re-entry-clause reasoning above should be
+read as **superseded in strength, not withdrawn in kind**: the combined-book construct is still a
+distinct payability question from ORB-MNQ solo (which stays exactly as parked either way), but the
+specific evidence originally cited here no longer clears the eval ceiling under any tested
+correction. One item (a native TradingView re-export at exactly 4 Aegis contracts) remains
+genuinely open and could still move this picture; see that RESULTS.md §10.4.

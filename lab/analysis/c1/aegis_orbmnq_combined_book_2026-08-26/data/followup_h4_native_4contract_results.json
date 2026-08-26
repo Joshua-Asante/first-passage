@@ -1,0 +1,20 @@
+{
+  "source_file": "C:\\Users\\joshu\\Downloads\\Aegis_6J1_CME_6J1!_2026-08-26_c59e9.csv",
+  "n_trading_days_full_export": 154,
+  "n_trading_days_in_window": 90,
+  "window_start": "2022-09-07 00:00:00",
+  "window_end": "2025-08-20 00:00:00",
+  "n_weeks_available": 154,
+  "single_path": {
+    "outcome": "pass",
+    "day": 376,
+    "max_dd_pct": 0.9982968583833922
+  },
+  "native_4contract_bootstrap_bust_pct": 2.77,
+  "native_4contract_pass_rate_pct": 97.22,
+  "original_linear_rescale_bust_pct": 2.77,
+  "delta_pp_native_minus_linear": 0.0,
+  "ceiling_pct": 3.0,
+  "margin_pp_vs_ceiling": 0.23,
+  "clears_3pct_ceiling": true
+}

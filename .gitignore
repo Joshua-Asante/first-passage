@@ -91,6 +91,10 @@ core/data/external/*.csv
 # Vendor TV exports copied into research dirs under lab/ (Pepperstone TOS — local only).
 lab/analysis/**/inputs/*.csv
 lab/archive/**/inputs/*.csv
+# recover_6j_bars.py output — a full recovered 6J M15 bar panel (~9.5MB, 161k rows), regenerable
+# from the gitignored raw BAR_EXPORT harness export; not used by the final S10 remeasure (see
+# RESULTS.md §10.0 for why) and not decision evidence — kept out same as other vendor-derived bars.
+lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/data/6j_m15_recovered.csv
 # NAS100 Identify/Inquire loop (2026-06-20) — vendor-derived raw price series (Pepperstone TOS — local only).
 # Aggregate results (stats JSON, quarter table, results JSON) ARE committed; raw OHLC / per-leg prices are not.
 # Study archived 2026-07-12 — patterns kept under archive path.
