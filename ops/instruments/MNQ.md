@@ -153,6 +153,22 @@ structure:
 
 ## SESSION LOG
 
+- **2026-08-25 (later)** — **Combined MYM+MNQ book passability calculated on
+  `Tradeify_Select_100K`/`Growth_100K` — see `MYM.md` M9 (full numbers there, not restated
+  here).** Operator supplied a fresh TV-native export of the same-day DD-reduction
+  reconstruction (`ORB-MNQ-1_recon_v2_..._097d9.csv`, 1,164 trades, qty=2 constant, span
+  2022-01-03→2026-08-21, cumPnL reconciles to the cent) alongside a refreshed `ORB-MYM-1` v0.3
+  export; this MNQ export was parsed and Step-0-verified as the MNQ leg of that combined-book
+  calculation. Freshly-parsed standalone figures: net $80,982 / maxDD $9,284 (closed-trade) —
+  close to but not byte-identical to the earlier same-day reconstruction session's own reported
+  baseline ($81,036/$10,053); plausibly a slightly different export window, not independently
+  reconciled beyond noting the match is close. All five years individually positive (2022
+  +$17.2K … 2025 +$25.9K, 2026 +$1.0K) — a materially more stable year-shape than MYM's.
+  Standalone `Select_100K` rope walk (qty=1): 48.4% pass/48.9% bust — directionally better than
+  the pre-DD-reduction construct's ADR-recorded 67.67% at k=1, though not a like-for-like
+  re-test of the identical construct (different tuning pass, different clock/filter settings).
+  Does not touch `ORB-MNQ-1`'s T2/PARKED disposition, N11/N13, or `K_banked` — stays entirely
+  outside the repo pipeline (informal Downloads lane). $0/K=0, no manifest, no `core/` change.
 - **2026-08-25** — **Informal Downloads-lane DD-reduction tuning pass on the `ORB-MNQ-1` shape
   (`orb_mnq_6_reconstruction.pine`, untracked, NOT the repo-tracked `orb_mnq_v0_2.pine`
   CANDIDATE edition) — no new statistical test, no lifecycle/Cap/K change; recorded because it
