@@ -1,0 +1,205 @@
+//@version=6
+// D5 Baltussen H1 last-30m — NQ TV reconstruction (RESEARCH ONLY).
+//
+// Frozen H1 (RESULTS.md):
+//   Clock     America/New_York RTH 09:30–16:00
+//   Predictor r_rod  = ln(C_15:30 / O_09:30)
+//   Response  r_last = ln(C_16:00 / O_15:30)
+//   Trade     sign(r_rod) at O_15:30, exit 16:00, one RT/session
+//
+// Disposition: Stage-2 cost-law KILL on IS (2026-07-16) and OOS edge decay
+// (D5-RECOST-1, 2026-07-21). Re-proposal needs new mechanism evidence, not a
+// new window or cost model. This script does not reopen that kill.
+//
+// Chart: NQ1! (volume-continuous; see ops/instruments/NQ.md W1). Native TF is
+// 1m; 30m (and any TF that opens at 09:30 and closes a bar at 15:30 and 16:00)
+// is equivalent. Explicit ET clock — do not use session.ismarket.
+//
+// Owners:
+//   lab/analysis/orb/d5_nq_intraday_mom_2026-07/RESULTS.md
+//   docs/briefs/pre-registration/D5-NQ-intraday-momentum-preregistration.md
+
+strategy(
+     title="D5 Baltussen H1 last-30m NQ [cfg-h1-frozen]",
+     shorttitle="D5-H1-NQ",
+     overlay=true,
+     calc_on_every_tick=false,
+     process_orders_on_close=false,
+     pyramiding=0,
+     initial_capital=100000,
+     default_qty_type=strategy.fixed,
+     default_qty_value=1,
+     commission_type=strategy.commission.cash_per_contract,
+     commission_value=0.0,
+     slippage=0,
+     max_labels_count=50)
+
+// ============================================================================
+// CONSTANTS — frozen H1 split. Changing these is a new candidate (H2 was
+// dropped at Stage-0). Not inputs.
+// ============================================================================
+
+TZ = "America/New_York"
+OPEN_HOUR = 9
+OPEN_MINUTE = 30
+ROD_END_HOUR = 15
+ROD_END_MINUTE = 30
+EXIT_HOUR = 16
+EXIT_MINUTE = 0
+
+// ============================================================================
+// INPUTS
+// ============================================================================
+
+grpChart = "Chart / hygiene"
+showLevels = input.bool(true, "Show session-open + last-30m highlight", group=grpChart)
+showTable = input.bool(true, "Show H1 info table", group=grpChart)
+weekdaysOnly = input.bool(
+     true,
+     "Weekdays only (Mon–Fri ET)",
+     group=grpChart,
+     tooltip="RTH 09:30–16:00 is a weekday session. Holidays with no 15:30 bar are skipped automatically.")
+
+grpSize = "Sizing (research defaults — not a live book)"
+qtyContracts = input.int(1, "Contracts", minval=1, maxval=20, group=grpSize)
+
+// ============================================================================
+// CLOCK
+// ============================================================================
+
+etOpenH = hour(time, TZ)
+etOpenM = minute(time, TZ)
+etCloseH = hour(time_close, TZ)
+etCloseM = minute(time_close, TZ)
+etDow = dayofweek(time, TZ)
+thisDate = year(time, TZ) * 10000 + month(time, TZ) * 100 + dayofmonth(time, TZ)
+
+isRthOpenBar = etOpenH == OPEN_HOUR and etOpenM == OPEN_MINUTE
+isRodEndBar = etCloseH == ROD_END_HOUR and etCloseM == ROD_END_MINUTE
+isRthCloseBar = etCloseH == EXIT_HOUR and etCloseM == EXIT_MINUTE
+isWeekday = etDow >= dayofweek.monday and etDow <= dayofweek.friday
+dowOk = not weekdaysOnly or isWeekday
+
+// A bar can close at 15:30 only if the TF divides the 30-minute last window.
+tfSeconds = timeframe.in_seconds()
+tfResolvesSplit = not na(tfSeconds) and tfSeconds > 0 and tfSeconds <= 30 * 60 and (30 * 60) % tfSeconds == 0
+
+// ============================================================================
+// SESSION STATE
+// ============================================================================
+
+var float sessionOpen = na
+var int sessionDate = na
+var bool haveOpen = false
+var float lastRod = na
+var int lastRodSign = 0
+var int lastSignalDate = na
+
+if thisDate != sessionDate
+    if strategy.position_size != 0
+        strategy.close_all(comment="safety flat new date", immediately=true)
+    sessionOpen := na
+    haveOpen := false
+    sessionDate := thisDate
+
+if dowOk and isRthOpenBar
+    sessionOpen := open
+    haveOpen := true
+
+rRod = haveOpen and sessionOpen > 0 ? math.log(close / sessionOpen) : na
+rodSignUp = not na(rRod) and rRod > 0
+rodSignDown = not na(rRod) and rRod < 0
+rodSign = rodSignUp ? 1 : rodSignDown ? -1 : 0
+
+inLast30Window = haveOpen and
+     (etOpenH * 60 + etOpenM) >= (ROD_END_HOUR * 60 + ROD_END_MINUTE) and
+     (etOpenH * 60 + etOpenM) < (EXIT_HOUR * 60 + EXIT_MINUTE)
+
+// ============================================================================
+// CONDITIONS
+// ============================================================================
+
+readyForSignal = barstate.isconfirmed and dowOk and tfResolvesSplit and isRodEndBar and haveOpen and not na(rRod) and rodSign != 0
+alreadyFired = lastSignalDate == thisDate
+longSignal = readyForSignal and rodSign > 0 and not alreadyFired and strategy.position_size == 0
+shortSignal = readyForSignal and rodSign < 0 and not alreadyFired and strategy.position_size == 0
+exitNow = barstate.isconfirmed and isRthCloseBar and strategy.position_size != 0
+
+// ============================================================================
+// STRATEGY
+// ============================================================================
+
+if longSignal
+    lastRod := rRod
+    lastRodSign := 1
+    lastSignalDate := thisDate
+    strategy.entry("Long", strategy.long, qty=qtyContracts, comment="H1 +r_rod")
+
+if shortSignal
+    lastRod := rRod
+    lastRodSign := -1
+    lastSignalDate := thisDate
+    strategy.entry("Short", strategy.short, qty=qtyContracts, comment="H1 -r_rod")
+
+if exitNow
+    strategy.close_all(comment="H1 exit 16:00", immediately=true)
+
+// ============================================================================
+// PLOTS
+// ============================================================================
+
+openColor = color.new(color.blue, 0)
+last30Tint = color.new(color.orange, 88)
+longColor = color.new(color.teal, 0)
+shortColor = color.new(color.red, 0)
+
+plot(showLevels and haveOpen ? sessionOpen : na, "RTH open (O_09:30)", openColor, 1)
+bgcolor(showLevels and inLast30Window ? last30Tint : na, title="Last-30m window")
+
+plotshape(
+     longSignal,
+     title="H1 long",
+     style=shape.triangleup,
+     location=location.belowbar,
+     color=longColor,
+     size=size.tiny)
+plotshape(
+     shortSignal,
+     title="H1 short",
+     style=shape.triangledown,
+     location=location.abovebar,
+     color=shortColor,
+     size=size.tiny)
+
+// ============================================================================
+// INFO TABLE
+// ============================================================================
+
+var table info = table.new(position.top_right, 2, 7, bgcolor=color.new(color.black, 70), border_width=1)
+
+if showTable and barstate.islast
+    tfNote = tfResolvesSplit ? "TF OK" : "TF cannot hit 15:30/16:00 — use 1m or 30m"
+    signTxt = lastRodSign > 0 ? "+1 long" : lastRodSign < 0 ? "-1 short" : "none"
+    rodTxt = na(lastRod) ? "n/a" : str.tostring(lastRod * 10000.0, "#.##") + " bp"
+    table.cell(info, 0, 0, "D5 H1 (FALSIFIED)", text_color=color.white, text_halign=text.align_left)
+    table.cell(info, 1, 0, "research only", text_color=color.orange, text_halign=text.align_right)
+    table.cell(info, 0, 1, "Clock", text_color=color.gray, text_halign=text.align_left)
+    table.cell(info, 1, 1, "09:30→15:30→16:00 ET", text_color=color.white, text_halign=text.align_right)
+    table.cell(info, 0, 2, "O_09:30", text_color=color.gray, text_halign=text.align_left)
+    table.cell(info, 1, 2, haveOpen ? str.tostring(sessionOpen, format.mintick) : "missing", text_color=color.white, text_halign=text.align_right)
+    table.cell(info, 0, 3, "last r_rod", text_color=color.gray, text_halign=text.align_left)
+    table.cell(info, 1, 3, rodTxt, text_color=color.white, text_halign=text.align_right)
+    table.cell(info, 0, 4, "last sign", text_color=color.gray, text_halign=text.align_left)
+    table.cell(info, 1, 4, signTxt, text_color=color.white, text_halign=text.align_right)
+    table.cell(info, 0, 5, "TF", text_color=color.gray, text_halign=text.align_left)
+    table.cell(info, 1, 5, tfNote, text_color=tfResolvesSplit ? color.lime : color.red, text_halign=text.align_right)
+    table.cell(info, 0, 6, "Kill", text_color=color.gray, text_halign=text.align_left)
+    table.cell(info, 1, 6, "IS sub-cost / OOS decayed", text_color=color.orange, text_halign=text.align_right)
+
+// ============================================================================
+// ALERTS
+// ============================================================================
+
+alertcondition(longSignal, "D5 H1 long", "D5 Baltussen H1: long last-30m (research, FALSIFIED construct)")
+alertcondition(shortSignal, "D5 H1 short", "D5 Baltussen H1: short last-30m (research, FALSIFIED construct)")
+alertcondition(exitNow, "D5 H1 exit", "D5 Baltussen H1: exit 16:00 ET")

@@ -32,6 +32,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-26d — D5 Baltussen H1 last-30m NQ Pine reconstruction (research-only)
+
+**Focus:** Operator-directed TV reconstruction of the frozen D5 H1 construct on NQ.
+**Shipped:** tracked `lab/analysis/orb/d5_nq_intraday_mom_2026-07/d5_baltussen_h1_nq.pine` + [`PINE.md`](../lab/analysis/orb/d5_nq_intraday_mom_2026-07/PINE.md); `.gitignore` exception (no live edge). `pine_check` compile OK, 0 warnings.
+**Decisions/defects:** does not reopen the D5 kill ([`RESULTS`](../lab/analysis/orb/d5_nq_intraday_mom_2026-07/RESULTS.md) · [`NQ.md` N3](../ops/instruments/NQ.md)). Window stays a constant (H2 stays dropped).
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: operator-directed D5 H1 TV reconstruction (FALSIFIED seed; research draft only)`.
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-26c — CATALOG `--catalog-only` false-positives: EXPLORATORY/MEASURED tokens + missing source cards
 
 **Focus:** Pre-commit `lab-catalog` (`archive_lab_analysis.py --check --catalog-only`) could not parse several live cards; primary checkout reported a hard block on any `lab/` commit.

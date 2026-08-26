@@ -133,6 +133,11 @@ lab/archive/oanda_stage1/striker_stage1.py
 # instrument is durable, not just hash-pinned. Hash: lab/analysis/legacy/tom_spx/PINE_MANIFEST.sha256.
 !lab/analysis/legacy/tom_spx/tom_test_spx500.pine
 
+# Narrow exception (2026-08-26): D5 Baltussen H1 last-30m NQ reconstruction.
+# FALSIFIED (Stage-2 cost-law KILL + OOS decay) — no live edge. Tracked so the
+# TV reconstruction cannot be lost the way the first tom_test copy was.
+!lab/analysis/orb/d5_nq_intraday_mom_2026-07/d5_baltussen_h1_nq.pine
+
 # Narrow exception (2026-06-23): pine_check.py compile-gate fixtures — trivial
 # PUBLIC test .pine carrying NO live edge (a valid EMA-plot "good" + a
 # deliberately-broken "bad"). Tracked so scripts/pine_check_audit.* assertions
