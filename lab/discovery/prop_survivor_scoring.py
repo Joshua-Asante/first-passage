@@ -1,9 +1,12 @@
 """Prop survivor-scoring harness — G0–G8 scorecard over the four frozen $100K tiers.
 
 Faithful transcription of
-``docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md``
-into executable code. Ceiling numbers, tier names, seeds, and sim counts are
-**parsed from the pre-registration** (never hardcoded in gate logic).
+``docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md``
+(v2 — Part A eval ceiling 5.0%, operator risk-tolerance override, 2026-08-26;
+supersedes the 2026-07-13 v1 at 3.0%, closed not edited per Trap #12 — see v2
+§8 for the full disclosed rationale) into executable code. Ceiling numbers,
+tier names, seeds, and sim counts are **parsed from the pre-registration**
+(never hardcoded in gate logic).
 
 Build-ahead-of-candidate: no DISC-CAMP-0 survivor exists; callers feed synthetic
 or future-campaign ``candidate_daily_pnl`` arrays. This module does not switch
@@ -41,7 +44,7 @@ DEFAULT_PREREG = (
     / "docs"
     / "briefs"
     / "pre-registration"
-    / "2026-07-13-prop-survivor-scoring-prereg.md"
+    / "2026-08-26-prop-survivor-scoring-prereg-v2.md"
 )
 
 # Prior-art idiom (tradeify remc / pre-reg §7 item 6): dd_protection OFF for scoring.
