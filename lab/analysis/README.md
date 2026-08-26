@@ -36,10 +36,10 @@ card; Verdict stamped first so `--slug` could see it). Body:
 | `geofit_iid_sufficiency_power_2026-08-15`, `geofit_skewed_family_construction_2026-08-15` | stay-hot imports (C-P1-10) |
 | `aegis_6j_prop_reconstruction_2026-07` | Wave-1 artifacts retained hot |
 | `q_rail_1_2026-07` | rail evidence; many living cites |
-| `msl_s4_mgc_2026-08` | PARKED; no source card |
+| `msl_s4_mgc_2026-08` | PARKED; explore GO unpaid — [`README.md`](c1/msl_s4_mgc_2026-08/README.md) |
 | informal ORB probes (`orbmnq1_*_probe_2026-08-20`) | C-P1-10 left ACTIVE |
 | `rangestate_gc_2026-08` / `rangestate_corrected_2026-08` / `rangestate_mcl_2026-08` | family coupled; mixed SIGNAL-GENERIC |
 | `ict_mnq_2026-08` | mixed W/D confirm; `cheap_falsifiers` coupling |
 | `driftex_2026-08`, `eodadv_mnq_2026-08` | `**Verdict:** FALSIFIED` stamped 2026-08-23; stay-hot (frozen prereg + `rejected_candidates` + sentinel path pins); no `--slug` |
 | `tnec_l2_sourcing_2026-08-10` | SCREEN-FAIL is not archiveable |
-| NO_SOURCE slugs (`msl_s4_mgc`, `six_lead_cf`, `research-analyst-mnq-atomic-facts`, …) | no RESULTS/README for `--slug` |
+| NO_SOURCE slugs (`mnq_orb_level_proximity_tod_2026-08-06`, `mnq_sizediv_blind_2026-08`) | no RESULTS/README for `--slug` |

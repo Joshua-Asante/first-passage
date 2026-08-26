@@ -63,6 +63,16 @@ _TOKEN_STATUS = [
     (re.compile(r"\bAMBIGUOUS(?:-PARAMETERIZATION)?\b", re.I), "CLOSED"),
     (re.compile(r"\bHOLD\b", re.I), "HOLD"),
     (re.compile(r"\bACTIVE\b", re.I), "ACTIVE"),
+    # Non-terminal study-state words used as Status tokens. Uppercase-only
+    # and also listed in _NON_TERMINAL_DOMINANT so a clause EXPLORATORY /
+    # MEASURED is not stolen by a later CLOSED/FALSIFIED in the narrative.
+    # RESOLVED is deliberately absent: it is a Q-closure verdict, not a
+    # CATALOG status. Mapping it to CLOSED would flip stay-hot Active rows
+    # (house style is ``ACTIVE — … RESOLVED …``) and mark them archiveable.
+    # Hyphenated forms (RESOLVED-QUANTIFIED, RESOLVED-BY-RETIREMENT) would
+    # also collide. Same NULL/CLOSED prose-collision class.
+    (re.compile(r"\bEXPLORATORY\b"), "ACTIVE"),
+    (re.compile(r"\bMEASURED\b"), "ACTIVE"),
 ]
 
 _ARCHIVEABLE = frozenset({"CLOSED", "FALSIFIED", "RETIRED", "NULL"})
@@ -93,6 +103,8 @@ _VERDICT_CLAUSE_SPLIT = re.compile(r"\s+[—–]\s+|\s+--?\s+")
 _NON_TERMINAL_DOMINANT = [
     (re.compile(r"\bHOLD\b"), "HOLD"),
     (re.compile(r"\bACTIVE\b"), "ACTIVE"),
+    (re.compile(r"\bEXPLORATORY\b"), "ACTIVE"),
+    (re.compile(r"\bMEASURED\b"), "ACTIVE"),
 ]
 
 # Field line: Disposition|Status|Verdict (optional bold) then : then value
@@ -755,7 +767,10 @@ def _preserve_authored_one_liners(
         if (
             old
             and not _is_empty_one_liner(old)
-            and _is_empty_one_liner(row.one_liner)
+            and (
+                _is_empty_one_liner(row.one_liner)
+                or _scan_one_liner_is_truncation(row.one_liner, old)
+            )
             and not re.match(r"(?i)archive\s+owed\s*\(", old)
         ):
             out.append(replace(row, one_liner=old))
@@ -1077,6 +1092,25 @@ def _is_empty_one_liner(one_liner: str) -> bool:
     return (one_liner or "").strip() in _EMPTY_ONE_LINER_SENTINELS
 
 
+def _scan_one_liner_is_truncation(scan: str, disk: str) -> bool:
+    """True when ``scan`` is parse_disposition's 120-char truncation of ``disk``.
+
+    ``parse_disposition`` caps one-liners at 120 (``text[:117] + '...'``). Hand-
+    authored CATALOG cells often keep the untruncated prose. Treating that as
+    stale would hard-fail every long ACTIVE Status line; treating it as the
+    same class as an empty scan lets ``--check --catalog-only`` stay green
+    without ``--regenerate-catalog`` clobbering the committed cell.
+    """
+    if not scan or not disk:
+        return False
+    return (
+        len(scan) == 120
+        and scan.endswith("...")
+        and len(disk) > 117
+        and disk.startswith(scan[:117])
+    )
+
+
 def _inventory_class(status: str) -> str:
     if is_archiveable(status):
         return "archiveable"
@@ -1228,6 +1262,8 @@ def _compare_catalog(on_disk: str, expected: str) -> tuple[list[str], list[str]]
     ``choose_source_card`` found no RESULTS*/README/verdict/CLOSURE (committed
     hand-authored prose retained). Those rows warn, mirroring the sibling
     ``check_pine_manifest`` / ``check_data_manifests`` public-clone soft-degrade.
+    A scan one-liner that is ``parse_disposition``'s 120-char truncation of the
+    committed cell is also tolerated (silent — the cap is mechanical).
     Hand parenthetical Status annotations that normalize to the scanned token are
     also tolerated (M11/M45). Any other drift (new/removed/renamed slug,
     phantom Active beside Archived, same-section duplicate slug, status/body/
@@ -1286,6 +1322,10 @@ def _compare_catalog(on_disk: str, expected: str) -> tuple[list[str], list[str]]
                         f'{slug}: one-liner unverifiable from source card '
                         f'(committed prose retained; scan saw empty)'
                     )
+                    continue
+                # parse_disposition caps at 120 chars; committed CATALOG may
+                # keep the untruncated Status prose. Mechanical, not drift.
+                if _scan_one_liner_is_truncation(exp_cells[i], disk_cells[i]):
                     continue
                 return ([_CATALOG_STALE], warnings)
             return ([_CATALOG_STALE], warnings)

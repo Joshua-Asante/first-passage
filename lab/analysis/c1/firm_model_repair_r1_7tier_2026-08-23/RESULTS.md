@@ -1,7 +1,8 @@
 **Theme:** c1
 # R1 — 7-tier intraday-honest re-run (Bulenox / BluSky, W1 pattern extended) — RESULTS
 
-**Status:** `MEASURED — WITH NAMED RESIDUAL (2026-08-23 fix-pass correction)` — CLOCK re-run
+**Status:** ACTIVE — W1 pattern extended to all 7 Bulenox/BluSky `dd_type="trailing"` tiers (Q-FIRMEOD-1 successor); all 7 flip CLOCK on direct `simulate_path` diff; no verdict flips on the 2 tiers with a published figure on the live book but 1.00x deepens ~7.6x (Bulenox 3.51%→26.77%, BluSky 4.44%→32.26%); 0.50x WATCH-1 both 0.08%→0.59% (still PASS, 2.41pp headroom); BluSky_Premium_50K alone carries no published figure — the other 4 Bulenox tiers DO (closed/NO-GO'd archived book, §2/§4b; 2026-08-23 fix-pass corrected a false "5 tiers none" claim)
+`MEASURED — WITH NAMED RESIDUAL (2026-08-23 fix-pass correction)` — CLOCK re-run
 complete on the two tiers carrying a published figure on the **live candidate book** (Bulenox_100K,
 BluSky_Premium_100K, Class-S candidate #1). The original claim that "the other 5 tiers carry no
 published bust/pass figure" was **false for 4 of them** — a separate, CLOSED/NO-GO'd,
