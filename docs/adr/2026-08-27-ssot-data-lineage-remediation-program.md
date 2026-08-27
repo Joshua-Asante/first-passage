@@ -1,6 +1,6 @@
 # ADR 2026-08-27 — SSOT / data-lineage remediation program: Phase 0 ratification
 
-**Status:** `Proposed` — dispatched Phase 0 of `docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md`; awaiting operator GO. This session was explicitly told to stop after drafting and must not self-ratify.
+**Status:** `Accepted` — ratified by operator (Joshua) 2026-08-27, in-session ("ratify it, commit and open the pr"). Phase 1's four tasks (§2) are now authorized; Phases 2–4 remain named-but-not-yet-scoped follow-on work per §2/§7.
 **Decision date:** 2026-08-27
 **Supersedes:** none
 **Superseded-by:** none
@@ -453,3 +453,4 @@ python scripts/check_adr_graph.py
 |---|---|---|
 | 2026-08-27 | Initial authoring (Phase 0, Steps 1–6 of the originating brief); Status `Proposed`; Step 7 (operator ratification) deliberately not performed this session | Claude Code |
 | 2026-08-27 | §0 Step 1 correction: independent re-verification of `git show --stat 47cc3eb` found it touches repo-side `scripts/check_brief.py`, not "no check_brief.py path" as first drafted — corrected the causal narrative; the operative finding and Task 1 scope are unchanged | Claude Code |
+| 2026-08-27 | Operator `Accepted` (in-session GO: "ratify it, commit and open the pr"). Phase 1 (Tasks 1-4) authorized to begin. STATE.md operator-queue row #3 + decision-index entry added same commit | Joshua (in-session) + Claude Code |

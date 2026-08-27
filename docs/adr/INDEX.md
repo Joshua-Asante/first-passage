@@ -131,7 +131,7 @@
 | 2026-08-24-validation-battery-k-tiering-and-gate-retirement.md | Accepted | 2026-08-24 | none | ratified via operator in-session instruction to execute the |
 | 2026-08-24-venue-binding-axis-t1-disposition.md | Accepted | 2026-08-24 | `2026-08-05-strategy-venue-binding-axis.md` in part — §4 T1's disposition and prospective applicability window only. §2 (the three-level axis), §3, §5, §6, T2–T4, and the `Accepted` status token are untouched. | operator GO 2026-08-24 ("Ratify it — flip to Accepted and run Phase 1"), given after the pre-ratification adversarial panel's confirmed BLOCKERs were fixed in place (see Change History). §7 Phase 1 executed same day. |
 | 2026-08-26-striker-legmap-cap-release.md | Accepted | 2026-08-26 | none | operator ruling 2026-08-26 (chat directive, verbatim: *"I want to zero out |
-| 2026-08-27-ssot-data-lineage-remediation-program.md | Proposed | 2026-08-27 | none | dispatched Phase 0 of `docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md`; awaiting operator GO. This session was explicitly told to stop after drafting and must not self-ratify. |
+| 2026-08-27-ssot-data-lineage-remediation-program.md | Accepted | 2026-08-27 | none | ratified by operator (Joshua) 2026-08-27, in-session ("ratify it, commit and open the pr"). Phase 1's four tasks (§2) are now authorized; Phases 2–4 remain named-but-not-yet-scoped follow-on work per §2/§7. |
 
 ## Partially superseded
 
