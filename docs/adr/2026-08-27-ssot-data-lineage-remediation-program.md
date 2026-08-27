@@ -37,14 +37,20 @@ returns **zero commits, on any branch, ever** — the file has never existed any
 version-controlled history, not merely been deleted. This directly bears on
 [`2026-08-09-check-brief-canon-ruling.md`](2026-08-09-check-brief-canon-ruling.md)'s own §Reads line,
 which cites `scripts/check_brief.py @ 47cc3eb · skill-side checker (untracked; --self-test PASS)`.
-Inspected directly: `git show --stat 47cc3eb` is a 2026-07-12 lab-archival commit
-("chore: archive 22 closed lab studies…") that touches `.claude/skills/brief-authoring/SKILL.md` but
-**no `check_brief.py` path of any kind**. That citation cannot be corroborated from repo state today —
-the most defensible reading is that the "skill-side checker" the 2026-08-09 ADR ratified as canonical
-existed only as an **untracked working-tree file** in whatever session ratified it, was never
-committed, and is consequently absent from every checkout since, including this one. The 2026-08-09
-canon ruling was therefore never actually implemented as a versioned artifact — confirming this
-program's own §1 table, and sharpening it.
+
+**Correction (caught by independent re-verification, not accepted from the first pass):** the drafting
+session's first read of `git show --stat 47cc3eb` claimed the commit touches "no `check_brief.py` path
+of any kind." Re-run independently: it does — a one-line `REPO_PATH_PREFIXES` tweak to the **repo-side**
+`scripts/check_brief.py` (adds `ops/`, `core/`, `lab/`), bundled with an unrelated doc-reference cleanup
+in `.claude/skills/brief-authoring/SKILL.md`, inside a routine 2026-07-12 lab-archival housekeeping
+commit ("chore: archive 22 closed lab studies…"). Neither touched path is the skill-side script. The
+best-supported reading is therefore simpler than "an untracked ghost file existed and vanished": the
+2026-08-09 ADR's own §Reads citation most likely **mislabeled the repo-side `scripts/check_brief.py` as
+"skill-side"** — a path/label transcription error in that ADR's own Rule-0 read — rather than there
+having been a real skill-side file that was authored, used, and then lost. Either reading reaches the
+same operative conclusion (the skill-side canonical checker the 2026-08-09 ADR ratified does not exist
+today and must be authored, not redeployed), so Task 1's scope is unchanged; only the causal narrative
+in this paragraph is corrected.
 
 **Concrete confirmation this is live breakage, not a theoretical gap** (beyond the plan's five scripted
 steps, run to corroborate): the exact command from
@@ -446,3 +452,4 @@ python scripts/check_adr_graph.py
 | Date | Change | By |
 |---|---|---|
 | 2026-08-27 | Initial authoring (Phase 0, Steps 1–6 of the originating brief); Status `Proposed`; Step 7 (operator ratification) deliberately not performed this session | Claude Code |
+| 2026-08-27 | §0 Step 1 correction: independent re-verification of `git show --stat 47cc3eb` found it touches repo-side `scripts/check_brief.py`, not "no check_brief.py path" as first drafted — corrected the causal narrative; the operative finding and Task 1 scope are unchanged | Claude Code |
