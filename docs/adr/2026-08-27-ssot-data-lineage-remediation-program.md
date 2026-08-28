@@ -245,7 +245,9 @@ immediately-authorized scope** once this ADR's Status flips to `Accepted`:
    checker itself is not rewritten).
 4. **Task 4** — put `scripts/check_falsifier_reachability.py --stats` on the standing quarterly
    programme-audit cadence (`docs/operational_rules.md`), plus a WARN/informational `gates.yml` entry
-   so `make validate` surfaces the trend without blocking commits.
+   so `make check`/CI surfaces the trend without blocking commits (not `make validate`, a narrower
+   hardcoded 2-gate historical selector that cannot include a third gate without editing
+   `gate_manifest.py` itself — see Change history).
 
 **Phases 2–4 are named as follow-on work only** — this ADR does **not** authorize their
 implementation, and each has an explicit prerequisite the parent plan states must happen first:
@@ -348,8 +350,14 @@ ceremony-as-implemented.
   than at the last minute.
 
 **Negative consequences (real cost, not theatrical):**
-- Two new WARN-tier gates (`skill-deploy-sync`, `instrument-rejection-coverage`) add roster
-  maintenance and pre-commit/`make check` runtime.
+- Two new `gates.yml` entries (`skill-deploy-sync`, `instrument-rejection-coverage`) add roster
+  maintenance and pre-commit/`make check` runtime. **Only `instrument-rejection-coverage` is
+  WARN-tier** (`--exit-zero`, never blocks a commit regardless of findings). `skill-deploy-sync`
+  shipped as a genuine hard-fail (`tier: always`, no `--exit-zero`): it exits 1 when a deploy target
+  exists locally and a cited script is genuinely missing from it, and SKIPS — exits 0, explicitly not
+  a pass — only on a machine with no `~/.claude/skills/` deploy target at all, which is what every
+  GitHub Actions runner and fresh clone hits (narrow correction, reconciling this line with what
+  actually shipped — see Change history).
 - Task 1 requires authoring the skill-side `check_brief.py` close to from scratch (copy repo-side +
   patch against the canon ruling's decision text), not a one-line redeploy — more work, and carries
   re-implementation risk of diverging from the 2026-08-09 decision text again.
@@ -460,3 +468,5 @@ python scripts/check_adr_graph.py
 | 2026-08-27 | §0 Step 1 correction: independent re-verification of `git show --stat 47cc3eb` found it touches repo-side `scripts/check_brief.py`, not "no check_brief.py path" as first drafted — corrected the causal narrative; the operative finding and Task 1 scope are unchanged | Claude Code |
 | 2026-08-27 | Operator `Accepted` (in-session GO: "ratify it, commit and open the pr"). Phase 1 (Tasks 1-4) authorized to begin. STATE.md operator-queue row #3 + decision-index entry added same commit | Joshua (in-session) + Claude Code |
 | 2026-08-28 | Review fix: §10 Task 4 audit hook corrected — the built gate (`falsifier-reachability-census`, `tier: always` in `scripts/gates.yml`) surfaces under `make check`/CI, not `make validate` (a hardcoded 2-gate historical selector Task 4's file scope could not extend); narrow text correction only, no change to §2/§6 decision or rationale | Claude Code |
+| 2026-08-28 | Review fix: §2 Task 4's parenthetical corrected to match the §10/Rule 17 wording above — `make check`/CI, not `make validate`, was the already-fixed §10 correction never propagated up to the Decision section a future reader treats as authoritative; narrow text correction only | Claude Code |
+| 2026-08-28 | Review fix: §6 negative-consequences bullet reconciled with what actually shipped — `skill-deploy-sync` and `instrument-rejection-coverage` were both called "WARN-tier" here, but only `instrument-rejection-coverage` shipped `--exit-zero`; `skill-deploy-sync` shipped `tier: always` with no `--exit-zero` (a genuine hard-fail on real drift), which is the direct root cause of the Critical CI-breaking bug fixed the same session (`scripts/check_skill_deploy_sync.py` now SKIPS, not hard-fails, when no deploy target exists at all — see that script's own module docstring and `tests/scripts/test_check_skill_deploy_sync.py`). Text now describes the actual shipped behavior; no change to §2/§5 decision or scope | Claude Code |
