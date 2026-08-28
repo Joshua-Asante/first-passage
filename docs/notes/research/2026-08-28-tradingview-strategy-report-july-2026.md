@@ -25,7 +25,7 @@ Attestation (literal search, 2026-08-28):
 
 ## What this note is for
 
-A Pine strategy can keep drawing OR lines and `plotchar` markers after the **Strategy Report** last fill. That is **not automatically** a frozen opening-range, and not automatically a warehouse hole. Live OR plus a dated front month dying the same week leaves **session-edge adjacency** in play. Inventory the pane (period / symbol / Window table) before treating the CSV as “the strategy stopped.”
+A Testing period chip can move the last fill by months on the **same** Pine. Entire-history Deep on the original recon v2 fills through late August; Last-365d Deep last-exits April; Last-90d Deep is a zero-trade report. That is **not** “the strategy died.” Dated front month / session-edge adjacency is a **different** pin (`MNQU2026`). Inventory the period chip before rewriting entries.
 
 ---
 
@@ -139,8 +139,10 @@ ORB-MNQ-1 recon v6 and stripped diagnostics on **`MNQ1!`**, ETH, B-ADJ. Source o
 | Same gate after “reset” | 30m | **Available chart range** `2024-01-01 – 2026-08-27` | **40** | **2026-04-13 16:30** | Reset gray; `inWindow: yes`; Default detalization |
 | **Vanguard Gold Futures v0.4** on **`MGC1!`** | 15m | **Last 365d Deep**, Default detalization | 99 | **2026-08-25 16:45** | Report B&H continues through Aug; same Deep UI as the MNQ 15m Last-365d run that died 2026-04-30 |
 | **`v6-gate` on `MNQU2026`** | 30m | `2025-06-24 – 2026-08-27`, Default detalization | **14** | **2026-04-07 16:30** | Dated front month. Table: `Window: yes`, open 0. Legend OR near live print. Chart candles continue. |
+| **recon v2 original, entire-history Deep** | 15m | `Dec 31, 1799 – Aug 27, 2026` Deep, Default detalization | **2397** | **2026-08-27 16:45** | Same script/defaults as the Last-365d row. Hover is trade 2397. Overview numbers are **not** a verdict. |
+| **recon v2 original, Last 90d Deep** | 15m | Last 90d Deep, Default detalization | **0** | — | Empty-report copy: “This report requires trade data” — **not** the official “No data for the selected period” warehouse string. |
 
-A prior 6yr List-of-Trades of the MNQ construct **did** fill through **2026-08-21** ([`aegis_orbmnq_combined_book` RESULTS](../../../lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/RESULTS.md)). So the **symbol can have post-April trades**; this week’s `MNQ1!` tester pane did not.
+A prior 6yr List-of-Trades of the MNQ construct **did** fill through **2026-08-21** ([`aegis_orbmnq_combined_book` RESULTS](../../../lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/RESULTS.md)). Entire-history Deep on the **original** recon v2 now also last-exits **2026-08-27**. Last-N on that same script does not.
 
 ### Cross-symbol split (2026-08-28)
 
@@ -151,7 +153,7 @@ Same account, same Deep Last-365d, same 15m, Default detalization:
 | `MNQ1!` (ORB recon kitchen-sink) | 2026-04-30 16:45 | chart B&H continued; report series did not |
 | `MGC1!` (Vanguard Gold v0.4) | 2026-08-25 16:45 | yes — hover on trade 99 |
 
-That **falsifies** “Deep 2026 is broken,” “Last-365d Deep cannot see past April,” and “the July rewrite killed all `1!` recent warehouse bars.” Deep on this desk still prints August on COMEX micro gold. The April cliff on `MNQ1!` is **not a global Deep outage**. Dated front month later showed Pine adjacency can produce the same last-exit shape — do not stop at this subsection.
+That **falsifies** “Deep 2026 is broken” and “the July rewrite killed all `1!` recent warehouse bars.” Deep on this desk still prints August on COMEX micro gold. **Last-365d on `MNQ1!` still last-exits April** — that chip is not rehabilitated by gold. Dated front month later showed Pine adjacency can produce the same last-exit shape. Entire-history vs Last-N on the **same** original script is the next subsection — do not stop here.
 
 Do not read the gold Overview numbers as a strategy verdict. This pin is **last-fill date / period UI only**.
 
@@ -166,7 +168,23 @@ Two stacked stories, now separable:
 
 April 13 is **not** an MNQ roll (Mar / Jun / Sep / Dec).
 
-**Dated front month does not clear the Pine.** `v6-gate` on `MNQU2026` 30m last-exits **2026-04-07 16:30** with `Window: yes` and OR levels in the legend sitting on the live print, not an April freeze. The Performance-tab tooltip on the rightmost node is the **last trade**, not proof the report series ended (that chart is trade-indexed). Combined with `MGC1!` Deep still printing August, the remaining live suspect is **session / `orJustEnded` adjacency** on sparse MNQ 30m bars — not a global Deep outage and not a `1!`-only warehouse hole.
+**Dated front month does not clear the Pine.** `v6-gate` on `MNQU2026` 30m last-exits **2026-04-07 16:30** with `Window: yes` and OR levels in the legend sitting on the live print, not an April freeze. The Performance-tab tooltip on the rightmost node is the **last trade**, not proof the report series ended (that chart is trade-indexed). That pin stays. It does **not** explain Last-N emptiness on `MNQ1!` 15m — see the period-chip pin below.
+
+### Period chip on the original recon v2 (2026-08-28)
+
+Operator pin, same script (`ORB-MNQ-1 recon v2`), same defaults, `MNQ1!` 15m, Default detalization, Deep every time (any non-default period activates Deep):
+
+| Period chip | Closed | Last report fill | Empty-state copy |
+|---|---|---|---|
+| Entire history (`Dec 31, 1799 – Aug 27, 2026`) | 2397 | **2026-08-27 16:45** | — |
+| Last 365 days | 105 | **2026-04-30 16:45** | — |
+| Last 90 days | 0 | — | “This report requires trade data” (not official no-data-for-period) |
+
+Operator also said Last-N “doesn’t get past April 17.” Treat that as a different chip or earlier run; the Last-365d hover on this paste is **Apr 30**. Do not collapse the two dates.
+
+**Read:** the original Pine **can** fill late August on this symbol/TF. Last-N Deep is a **different request** than entire-history Deep. Official Deep-over-2M keeps the **most recent** bars — Last-365d dying in April while entire-history includes August is the opposite of that rule, so this is silent partial / Last-N-specific slice, not “the script stopped in April.” Last 90d from late August sits **after** that April last-exit; a zero-trade report there is what you get if that chip’s series has no placeable bars (or the script places nothing on that slice). Official empty-warehouse copy is a different string — pin the copy you see.
+
+Do **not** collapse this with the `MNQU2026` adjacency pin. Do **not** read 2397 / Overview % as a strategy verdict or an unpark. `v7-cal` remains the session-helper fix for gapped dated contracts; it is **not** required to obtain August fills on `MNQ1!` entire-history Deep.
 
 ### Pine logic (recon v6 / v6-gate / v6-mkt)
 
@@ -191,8 +209,9 @@ Not the date input (`Window: yes`). Not volume (off on gate/mkt). Not “OR froz
 3. **Script execution (1)** in the UI is often the **calc-event dropdown** (`On bar close`), not the unread warning log. Open the actual script-warning text.
 4. **Do not gate diagnostic tables on `barstate.islast`.** Compiler warns; the live last bar is unconfirmed; the table belongs on the **candlestick pane**, not Overview.
 5. **Order labels vanish** long before the emulator stops. `plotchar` / a `var table` of `strategy.closedtrades` is the count.
-6. **Custom dates / Last 90 / Last 365** → pink DEEP + detalization. Official leave-Deep: Reset to chart session — when it is enabled.
+6. **Custom dates / Last 90 / Last 365** → pink DEEP + detalization. Official leave-Deep: Reset to chart session — when it is enabled. Last-N and entire-history are **different Deep requests** on the same script — flip the chip before rewriting Pine.
 7. Kitchen-sink `strategy.exit` / flatten-every-overnight-bar **moves** the last fill (7 Apr → 16 Apr on 15m) and can hit order/trade memory; it does not by itself open a May–August warehouse hole.
+8. Empty-report **“This report requires trade data”** ≠ official **“No data for the selected period.”** Zero trades vs empty warehouse. Pin the copy.
 
 ---
 
@@ -205,19 +224,18 @@ Already ruled out on this construct, and the docs agree:
 - “Forgot to reset Deep” — Reset disabled because the period was already the advertised default.
 - v6 9,000-order **stop** — current regular mode **trims**; it does not freeze new trades. A May-empty Deep report with ~40–100 trades is not this cap.
 - **Platform-wide Deep 2026 hole** — `MGC1!` 15m Last-365d Deep last fill **2026-08-25 16:45** on this same desk.
+- **“Original Pine cannot fill May–August on `MNQ1!` 15m”** — entire-history Deep on recon v2 last-exits **2026-08-27 16:45**. Last-N emptiness is the chip, not a script death.
 
 ---
 
 ## What to run instead of arguing with `MNQ1!` Deep
 
-Dated front month is **done** and did **not** clear the Pine.
+**Period chip is the first lever on `MNQ1!` 15m.** Entire-history Deep on the original recon v2 already fills through late August. Last 365 / Last 90 are different Deep requests. Do not paste `v7-cal` to “fix” Last-N on this symbol.
 
-**Kitchen-sink regeneration** (operator ask 2026-08-28): paste **`v7-cal`**. Same inputs as `orb-mnq.v6_0394.pine` (stop breakout, SL/TP/trail/scale-in/volume defaults kept). Session helpers only: calendar-day OR + flatten only on `lastBarOfSession` + `strategy.exit` only in position. Source: session-local `uploads/orb-mnq.v7_cal.pine` (gitignored `*.pine` — not in git). Does **not** unpark ORB-MNQ-1.
-
-1. Paste **`v7-cal`** on **`MNQU2026` 30m** first, then `MNQ1!` 15m. Optional: set Entry style to `Market at OR end` if you need any-fill vs breakout. `v6-logic` remains the stripped diagnostic (market only, no kitchen-sink exits).
-2. Read the on-chart table / chars, not Overview nodes: aqua **P** = calendar place; red **✕** = place+leave collide; orange **●** = old adjacent `orJustEnded` with no place. If **P** prints in May–August and fills appear, the adjacency logic was the cliff. If **P** prints and the report still dies, that pane’s series is dead. If **P** never prints, `inOR` is not seeing the window on those bars.
-3. Export **List of trades**. Last exit date is the claim.
-4. Open the real script-warning text.
+1. Export **List of trades** from the entire-history Deep pane if you want a CSV of the August last-exit. Overview % is not a claim.
+2. `v7-cal` stays the kitchen-sink paste for **`MNQU2026` / gapped 30m** (session-edge). Source: session-local `uploads/orb-mnq.v7_cal.pine` (gitignored). `v6-logic` remains the stripped diagnostic.
+3. Open the real script-warning text.
+4. Do **not** unpark ORB-MNQ-1 off either pin.
 
 ---
 
@@ -234,7 +252,7 @@ Dated front month is **done** and did **not** clear the Pine.
 **Do not (unless it keeps biting):**
 
 - A methodology lesson — would dual-home the same traps. Promote later if a second session re-derives this.
-- A Q / lab slug — dated-contract cheap check already ran and did not clear the Pine; kitchen-sink paste is `v7-cal` (session-local). Not a Q.
+- A Q / lab slug — period-chip cheap check on the original script already ran (entire-history fills late August; Last-N does not). Not a Q. `v7-cal` stays the gapped-contract paste.
 - Fold into `d11` — that row is subscription KEEP, not UI doctrine.
 - Unpark ORB-MNQ-1 off this note.
 

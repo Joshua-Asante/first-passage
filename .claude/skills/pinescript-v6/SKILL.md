@@ -152,12 +152,12 @@ Read the note before rewriting entries because “trades stopped in April.” Sh
 
 1. Price pane ≠ Strategy Report. Chart arrows are always **regular** (chart-loaded bars). Any non-default **Testing period** activates **Deep**; those fills live in the report only.
 2. `Available chart range` / Last-N / custom dates can still be Deep-class. Reset gray means you are already on the advertised default — not “you left Deep.”
-3. `MNQ1!` / `NQ1!` / `ES1!` Deep is a spliced warehouse with extra depth rules. Partial data is **silent** (no error). Buy-and-hold on the **report** dying with the last fill *can* mean engine bars ended — confirm with a dated front month / on-chart Window table before treating it as warehouse (item 8).
+3. `MNQ1!` / `NQ1!` / `ES1!` Deep is a spliced warehouse with extra depth rules. Partial data is **silent** (no error). Last-N and entire-history are **different Deep requests**. Flip the period chip on the **same** script before rewriting entries. Buy-and-hold on the **report** dying with the last fill *can* mean engine bars ended — confirm with entire-history vs Last-N, then item 8.
 4. **Bar detalization** `High` pulls a lower TF (15m→2m / 28 ticks; 30m→5m / 24 ticks). `Default` is 4 OHLC ticks. The detalization menu being visible is not Magnifier-on.
 5. **Script execution** dropdown is calc events (`On bar close` always on). It is not the unread warning log.
 6. Do not gate diagnostic tables on `barstate.islast`. Put a `var table` of `strategy.closedtrades` on the **candlestick** pane.
 7. Regular mode now **trims at 9,000** trades (no error-and-stop). Deep keeps up to 1M. `500` is labels/lines, not a documented trade cap.
-8. A **different** `1!` that still prints on the same Deep Last-N pane rules out a global Deep hole. **Dated front month dying in the same week does not clear the Pine** — recon v6’s `orJustEnded` / `leftSession` are adjacent-bar edges and fail on gapped 30m (place+leave or `orArmedToday` stuck). Calendar-day kitchen-sink paste is in the note. Do not treat a Performance-tab rightmost node as “the series ended” (that chart is trade-indexed).
+8. A **different** `1!` that still prints on the same Deep Last-N pane rules out a global Deep hole. Entire-history Deep filling late August on the **original** script falsifies “this Pine cannot trade past April” on that symbol — Last-N emptiness is the chip. **Dated front month dying in the same week does not clear the Pine** — recon v6’s `orJustEnded` / `leftSession` are adjacent-bar edges and fail on gapped 30m. Do not collapse Last-N-on-`MNQ1!` with `MNQU` adjacency. Kitchen-sink paste is in the note. Do not treat a Performance-tab rightmost node as “the series ended” (that chart is trade-indexed).
 
 This does **not** unpark a FALSIFIED/PARK candidate.
 
