@@ -157,7 +157,7 @@ Read the note before rewriting entries because “trades stopped in April.” Sh
 5. **Script execution** dropdown is calc events (`On bar close` always on). It is not the unread warning log.
 6. Do not gate diagnostic tables on `barstate.islast`. Put a `var table` of `strategy.closedtrades` on the **candlestick** pane.
 7. Regular mode now **trims at 9,000** trades (no error-and-stop). Deep keeps up to 1M. `500` is labels/lines, not a documented trade cap.
-8. To split “Pine died” vs “`1!` warehouse died”: same script on the **dated front month**, then 1h/4h `1!`, then Last-90. Do not judge post-cliff logic on a `1!` pane whose report B&H already flatlined.
+8. To split “Pine died” vs “`1!` warehouse died”: same script on the **dated front month**, then 1h/4h `1!`, then Last-90. A **different** `1!` that still prints on the same Deep Last-N pane rules out a global Deep hole — it does not clear the dead symbol. Do not judge post-cliff logic on a `1!` pane whose report B&H already flatlined.
 
 This does **not** unpark a FALSIFIED/PARK candidate.
 
