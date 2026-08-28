@@ -252,3 +252,44 @@ gates:
     cmd:
       - python
       - scripts/check_skill_deploy_sync.py
+
+  # docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md Phase 1
+  # Task 3: wires the Q-M1WIRE-1 tree-skew checker
+  # (scripts/validate_c1_monitoring_acceptance.py, A5) into the gate roster —
+  # per Q-M1WIRE-1's closure (docs/briefs/closures/Q-M1WIRE-1-closure-
+  # falsified.md, confirmed FALSIFIED 2026-08-21) the checker was already
+  # correct in isolation, it was simply never called by any gate. Binding
+  # fix only; the checker itself is unmodified here.
+  #
+  # Report-only (`--check-tree-skew`, no `--require-tree-current`) —
+  # deliberately NOT the hard-fail form, for two independent reasons:
+  #  (1) `--require-tree-current`'s own --help text says it is "never a
+  #      commit gate" — pre-deploy/pre-arm use only — because
+  #      `fixture_hashes` pins the DEPLOYED build, and `main` legitimately
+  #      drifts ahead of a deployed pin between deploys; that drift is
+  #      normal, not a defect (see tree_skew()'s own docstring).
+  #  (2) gate_manifest.py's `--tier check` (the sole required CI status
+  #      check, `skills (3.12)`, per main-protection) runs `always`/
+  #      `path-conditional` gates unconditionally, ignoring staged_regex —
+  #      so a hard-fail form here would not merely fail *this* commit, it
+  #      would red every future PR from today onward, since a direct re-run
+  #      of the checker against this worktree already shows real, pre-
+  #      existing drift on all 6 of 6 pinned files (same finding the
+  #      Q-M1WIRE-1 closure recorded 2026-08-21). That is the same "known-
+  #      dirty baseline -> land WARN/report first" call this program's own
+  #      Task 2 (instrument-rejection-coverage, `--exit-zero`) already made
+  #      for an analogous situation, and the SSOT ADR §5 forbids promoting a
+  #      known-dirty-baseline checker straight to a hard/always gate.
+  # `always` (not path-conditional): report-only means it can never fail a
+  # commit, so there is no local-runtime cost to weigh against broader
+  # visibility — and the pinned-file set is data (fixture_hashes), not a
+  # fixed tree, so no staged_regex reliably captures every change that can
+  # cause drift (the same reasoning path-liveness/root-doc-liveness already
+  # record for why they stayed `always`).
+  - id: m1-tree-skew
+    tier: always
+    cmd:
+      - python
+      - scripts/validate_c1_monitoring_acceptance.py
+      - docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json
+      - --check-tree-skew

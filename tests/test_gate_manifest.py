@@ -26,6 +26,9 @@ EXPECTED_ALWAYS = {
     # no staged_regex correctly scopes "when this violation can occur".
     "path-liveness",
     "root-doc-liveness",
+    # Task 3 (docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md
+    # Phase 1) — Q-M1WIRE-1 tree-skew checker wiring; report-only, cheap.
+    "m1-tree-skew",
 }
 
 EXPECTED_PATH_CONDITIONAL = {
@@ -43,6 +46,13 @@ EXPECTED_PATH_CONDITIONAL = {
     "docs-runtime-inventory",
     "repo-map-layers",
     "lifecycle-consistency",
+    # Task 2 (same ADR) — D4 rejection-ledger-coverage instrument
+    # (commit 4472abb) landed this gate without adding it here, which left
+    # test_path_conditional_gates_are_reachable failing on this worktree
+    # before this Task 3 edit touched the same file; folded in alongside
+    # Task 3's own addition rather than leaving a known-red test in a file
+    # this commit already modifies.
+    "instrument-rejection-coverage",
 }
 
 
@@ -162,6 +172,7 @@ REACHABILITY_PROBES = {
     "docs-runtime-inventory": "ops/c1_rail/c1_rail_arm.py",
     "repo-map-layers": "scripts/check_boundaries.py",
     "lifecycle-consistency": "core/lifecycle.py",
+    "instrument-rejection-coverage": "docs/briefs/closures/Q-EXAMPLE-closure-falsified.md",
 }
 
 
