@@ -168,6 +168,29 @@ gates:
       - python
       - scripts/check_closure_disposition.py
 
+  # D4 enforcement instrument (docs/adr/2026-08-09-rejection-register-topology-
+  # and-bar-wiring.md, dispatched as a separate packet at ratification): does
+  # every terminal-negative closure naming one instrument have a DEAD row in
+  # that instrument's ops/instruments/<SYM>.md? WARN-tier initially, per the
+  # same M-22 lesson check_falsifier_reachability.py's own docstring cites (a
+  # hard gate would block commits on a real-corpus baseline that is not clean
+  # today -- see that script's own real-corpus run). This repo's gates.yml has
+  # no functioning "warn" tier (see the tiers note at the top of this file --
+  # `soft` is declared but never actually runs); `--exit-zero` is this gate's
+  # own way of staying WARN while still executing at path-conditional, same
+  # posture check_instrument_ledger_coverage.py's docstring names ("gate
+  # composition is owned by scripts/gates.yml, not decided [in the script]").
+  # Promote by dropping --exit-zero once the real-corpus run is clean or every
+  # remaining gap carries a dated, named exception.
+  - id: instrument-rejection-coverage
+    tier: path-conditional
+    when:
+      staged_regex: '^(docs/briefs/closures/|ops/instruments/)'
+    cmd:
+      - python
+      - scripts/check_instrument_rejection_coverage.py
+      - --exit-zero
+
   # Report-only INDEX/CATALOG liveness census (always exit 0). Phase 5b —
   # path-conditional so make check still runs it; INDEX moves stay judgment.
   # Not W5 leftover C-P5-04 / H6 (CI composition).
