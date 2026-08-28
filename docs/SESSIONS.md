@@ -32,6 +32,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-28d — blast-radius after MNQU pin: warehouse-only pointers repaired
+
+**Focus:** Operator asked for `blast-radius` on the MNQU / adjacency edits (Rule 7).
+**Shipped:** pointer repairs on [`note`](notes/research/2026-08-28-tradingview-strategy-report-july-2026.md), [`pinescript-v6`](../.claude/skills/pinescript-v6/SKILL.md) item 3, [`trade-csv-reconcile`](../.claude/skills/trade-csv-reconcile/SKILL.md) last-exit sub-rule. `28a`/`28b`/`28c` left (append-only).
+**Decisions/defects:** `BLAST-RADIUS: REPAIRED`. Owner remains the note. No ORB unpark. No Q.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: operator asked for blast-radius on the TV updates-note thread`.
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-28c — `MNQU2026` v6-gate also dies 7 Apr; Pine adjacency, not `1!` warehouse
 
 **Focus:** Operator dated-front-month pin: `v6-gate` on `MNQU2026` 30m, `Window: yes`, last exit 2026-04-07 16:30, OR legend on the live print.

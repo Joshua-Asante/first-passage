@@ -25,9 +25,7 @@ Attestation (literal search, 2026-08-28):
 
 ## What this note is for
 
-A Pine strategy on `MNQ1!` can keep drawing OR lines and `plotchar` markers through May–August while the **Strategy Report** last fill and buy-and-hold both die in mid-April. That is a **platform series split**, not a frozen opening-range.
-
-Use this note before treating a TV report, List-of-Trades export, or on-chart arrow drought as “the strategy stopped working.”
+A Pine strategy can keep drawing OR lines and `plotchar` markers after the **Strategy Report** last fill. That is **not automatically** a frozen opening-range, and not automatically a warehouse hole. Live OR plus a dated front month dying the same week leaves **session-edge adjacency** in play. Inventory the pane (period / symbol / Window table) before treating the CSV as “the strategy stopped.”
 
 ---
 
@@ -153,7 +151,7 @@ Same account, same Deep Last-365d, same 15m, Default detalization:
 | `MNQ1!` (ORB recon kitchen-sink) | 2026-04-30 16:45 | chart B&H continued; report series did not |
 | `MGC1!` (Vanguard Gold v0.4) | 2026-08-25 16:45 | yes — hover on trade 99 |
 
-That **falsifies** “Deep 2026 is broken,” “Last-365d Deep cannot see past April,” and “the July rewrite killed all `1!` recent warehouse bars.” Deep on this desk still prints August on COMEX micro gold. The April cliff is **`MNQ1!` (or that pane’s warehouse)**, not a global Deep outage.
+That **falsifies** “Deep 2026 is broken,” “Last-365d Deep cannot see past April,” and “the July rewrite killed all `1!` recent warehouse bars.” Deep on this desk still prints August on COMEX micro gold. The April cliff on `MNQ1!` is **not a global Deep outage**. Dated front month later showed Pine adjacency can produce the same last-exit shape — do not stop at this subsection.
 
 Do not read the gold Overview numbers as a strategy verdict. This pin is **last-fill date / period UI only**.
 
@@ -164,7 +162,7 @@ Do not read the gold Overview numbers as a strategy verdict. This pin is **last-
 Two stacked stories, now separable:
 
 1. **`MNQ1!` 15m Last-365d Deep dies ~30 Apr while `MGC1!` 15m Last-365d Deep lives to 25 Aug.** Same menu. That is a **symbol warehouse** hole (or an MNQ-only bar budget inside Last-365d), not a platform Deep kill-date.
-2. **`MNQ1!` 30m Available chart range `2024-01-01 – 2026-08-27` dies 13 Apr with report B&H.** A from-start 40k-bar walk can still be a *second* limiter on that longer chip. Official Deep-over-2M keeps the **most recent** bars — the opposite. Do not collapse (2) into (1).
+2. **`MNQ1!` 30m Available chart range `2024-01-01 – 2026-08-27` dies 13 Apr with report B&H.** A from-start 40k-bar walk can still be a *second* limiter on that longer chip. Official Deep-over-2M keeps the **most recent** bars — the opposite. Do not collapse (2) into (1). A later dated-front-month pin is below — do not stop at (1)–(2).
 
 April 13 is **not** an MNQ roll (Mar / Jun / Sep / Dec).
 
@@ -228,13 +226,13 @@ Dated front month is **done** and did **not** clear the Pine. Next:
 **Do (this commit):**
 
 - Keep **this note as owner**.
-- Add a short trap block to [`pinescript-v6`](../../../.claude/skills/pinescript-v6/SKILL.md) so any TV/Pine session hits the series-split before rewriting entries.
-- Add a CSV-provenance sub-rule to [`trade-csv-reconcile`](../../../.claude/skills/trade-csv-reconcile/SKILL.md): last exit << chart last bar on a `1!` export is a warehouse/period claim, not a silent “strategy died.”
+- Add a short trap block to [`pinescript-v6`](../../../.claude/skills/pinescript-v6/SKILL.md) so any TV/Pine session hits the pane/warehouse **and** session-edge checks before rewriting entries.
+- Point [`trade-csv-reconcile`](../../../.claude/skills/trade-csv-reconcile/SKILL.md) last-exit << chart last bar at this note: pane claim (warehouse/period **or** session-edge); dated front month dying does not prove warehouse.
 
 **Do not (unless it keeps biting):**
 
 - A methodology lesson — would dual-home the same traps. Promote later if a second session re-derives this.
-- A Q / lab slug — no cheap falsifier beyond “open MNQU6”; not a strategy question.
+- A Q / lab slug — dated-contract cheap check already ran and did not clear the Pine; next check is `v6-logic`, not a Q.
 - Fold into `d11` — that row is subscription KEEP, not UI doctrine.
 - Unpark ORB-MNQ-1 off this note.
 

@@ -152,7 +152,7 @@ Read the note before rewriting entries because “trades stopped in April.” Sh
 
 1. Price pane ≠ Strategy Report. Chart arrows are always **regular** (chart-loaded bars). Any non-default **Testing period** activates **Deep**; those fills live in the report only.
 2. `Available chart range` / Last-N / custom dates can still be Deep-class. Reset gray means you are already on the advertised default — not “you left Deep.”
-3. `MNQ1!` / `NQ1!` / `ES1!` Deep is a spliced warehouse with extra depth rules. Partial data is **silent** (no error). Buy-and-hold on the **report** dying with the last fill = engine bars ended, not “no setups.”
+3. `MNQ1!` / `NQ1!` / `ES1!` Deep is a spliced warehouse with extra depth rules. Partial data is **silent** (no error). Buy-and-hold on the **report** dying with the last fill *can* mean engine bars ended — confirm with a dated front month / on-chart Window table before treating it as warehouse (item 8).
 4. **Bar detalization** `High` pulls a lower TF (15m→2m / 28 ticks; 30m→5m / 24 ticks). `Default` is 4 OHLC ticks. The detalization menu being visible is not Magnifier-on.
 5. **Script execution** dropdown is calc events (`On bar close` always on). It is not the unread warning log.
 6. Do not gate diagnostic tables on `barstate.islast`. Put a `var table` of `strategy.closedtrades` on the **candlestick** pane.
