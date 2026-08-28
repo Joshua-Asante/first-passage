@@ -71,9 +71,11 @@ ledger-owed. That closure's own self-declared Registry line disagrees with
 the ADR and asks for `rejected_candidates.md` instead -- genuinely
 adjudication-requiring, so this script does not guess which of 3+ tickers is
 "the real one"; it excludes and lets a human read the GAP-adjacent domain
-bucket. Do not read "31 domain/cross-instrument, therefore correctly out of
-scope" as verified for every one of those 31 -- it is a conservative default,
-not an audit of each one.
+bucket. Do not read "e.g. ~30 domain/cross-instrument, therefore correctly
+out of scope" (illustrative only -- run this script for the current count,
+which drifts as the corpus grows; do not hand-maintain a point figure here)
+as verified for every one of them -- it is a conservative default, not an
+audit of each one.
 
 WHAT COUNTS AS "A CORRESPONDING DEAD ROW": the named instrument's
 `ops/instruments/<SYM>.md` must have a heading matching "Dead / Rejected" or
@@ -350,12 +352,17 @@ class Skipped:
 
 
 def scan_closures(closures_dir: Path, symbols: list[str]) -> tuple[
-    list[InScopeClosure], int, int
+    list[InScopeClosure], int, int, int, int
 ]:
-    """Return (in_scope, n_scanned, n_unclassified).
+    """Return (in_scope, n_scanned, n_unclassified, n_domain_or_cross,
+    n_positive_or_excluded).
 
-    n_domain_or_cross is derivable as n_scanned - n_unclassified -
-    len(non-negative) - len(in_scope); computed by the caller for the report.
+    2026-08-28 review fix: this docstring and the return annotation
+    previously described a 3-tuple (in_scope, n_scanned, n_unclassified) and
+    claimed n_domain_or_cross was "derivable by the caller" -- the function
+    has always computed and returned all five values itself (see main()'s
+    5-way unpack); the description had simply drifted out of sync with the
+    code.
     """
     in_scope: list[InScopeClosure] = []
     n_scanned = 0

@@ -18,16 +18,37 @@ a non-zero exit — `test_missing_deployed_file_fails` below does exactly that
 (a skill dir that exists but is missing the cited scripts/*.py file), not a
 vacuous always-pass check.
 
-Environment note: `test_clean_deploy_passes` invokes the real
-`scripts/sync_skills.py` (default target resolution) as its fixture step.
-`sync_skills.py` refuses to deploy FROM a `.claude/worktrees/` checkout
-without `--force` (by design — worktree branch state must not clobber the
-live bundle silently). This repo's own dev sessions commonly run inside such
-a worktree, so `--force` is passed unconditionally here: it is a no-op when
-NOT running from a worktree (the refusal branch is only reached when
-`is_under_worktrees()` is true), and required when it is.
+2026-08-28 review fix (Critical + Important #2): two defects fixed together.
+
+  1. (Critical) GitHub Actions runners have no ~/.claude/skills/ deploy
+     target at all — there is no deploy step in .github/workflows/, by
+     design. The prior version of check_skill_deploy_sync.py treated "no
+     deploy root" the same as "deploy root exists but script missing",
+     exiting 1 either way — hard-failing the sole required CI check on
+     every future PR, forever. `test_no_deploy_target_skips_not_passes`
+     below pins the fix: a HOME_SKILLS_DEPLOY_TARGET_OVERRIDE pointing at a
+     path that does not exist at all must SKIP (exit 0, says NOT CHECKED),
+     never silently pass and never hard-fail.
+
+  2. (Important #2) `test_clean_deploy_passes` used to invoke the real
+     `scripts/sync_skills.py --force` with DEFAULT target resolution, which
+     `resolve_targets()` fans out to BOTH the AppData cloud-synced primary
+     target AND ~/.claude/skills/ — the bundle every other Claude Code
+     session on this machine actually loads. `--force` was needed only to
+     bypass sync_skills.py's own worktree-source refusal (real guard:
+     uncommitted branch state must not clobber the live bundle), and that
+     bypass, combined with unredirected default targets, is exactly the
+     "deploy this unmerged branch over the live bundle" defect. The fix
+     below copies the in-repo `.claude/skills` source tree into a pytest
+     `tmp_path` that sits outside any `.claude/worktrees/` tree (so
+     `is_under_worktrees()` is false and `--force` is never needed at all),
+     and passes an explicit `--target` (per `resolve_targets()`'s own
+     docstring: "Explicit --target is the sole destination" — no home
+     add-on). Neither the AppData target nor ~/.claude/skills/ is ever
+     touched by this test.
 """
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -35,17 +56,52 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
-def test_clean_deploy_passes(tmp_path, monkeypatch):
-    # After a successful sync_skills.py run, the gate must exit 0.
+def test_clean_deploy_passes(tmp_path):
+    # After a successful sync_skills.py run to an ISOLATED target, the gate
+    # must exit 0. repo_skills_src is a copy of the real in-repo skills tree
+    # living under tmp_path (outside .claude/worktrees/, so the worktree-
+    # source refusal never triggers -- no --force needed), and deploy_target
+    # is an explicit --target (the sole destination -- see resolve_targets()).
+    # This never writes to the AppData cloud-synced target or
+    # ~/.claude/skills/ -- the two real bundle locations other sessions load.
+    repo_skills_src = tmp_path / "repo_skills_src"
+    shutil.copytree(REPO_ROOT / ".claude" / "skills", repo_skills_src)
+    deploy_target = tmp_path / "deploy_target"
+
     subprocess.run(
-        [sys.executable, "scripts/sync_skills.py", "--force"],
+        [
+            sys.executable, "scripts/sync_skills.py",
+            "--repo-skills", str(repo_skills_src),
+            "--target", str(deploy_target),
+        ],
         check=True, cwd=REPO_ROOT,
     )
     result = subprocess.run(
         [sys.executable, "scripts/check_skill_deploy_sync.py"],
         capture_output=True, text=True, cwd=REPO_ROOT,
+        env={**os.environ, "HOME_SKILLS_DEPLOY_TARGET_OVERRIDE": str(deploy_target)},
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_no_deploy_target_skips_not_passes(tmp_path):
+    """Critical fix regression: when the resolved deploy root does not exist
+    AT ALL (the exact GitHub Actions / fresh-clone condition — no
+    ~/.claude/skills/, no deploy step in .github/workflows/), the gate must
+    SKIP (exit 0) and say so explicitly — never silently claim OK (that would
+    hide a real future drift once a target exists) and never hard-fail (that
+    is the Critical bug: it red-lined the sole required CI check forever)."""
+    nonexistent = tmp_path / "does_not_exist_at_all"
+    assert not nonexistent.exists()
+    result = subprocess.run(
+        [sys.executable, "scripts/check_skill_deploy_sync.py"],
+        capture_output=True, text=True, cwd=REPO_ROOT,
+        env={**os.environ, "HOME_SKILLS_DEPLOY_TARGET_OVERRIDE": str(nonexistent)},
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    out = result.stdout
+    assert "SKIP" in out and "NOT CHECKED" in out
+    assert "OK:" not in out
 
 
 def test_missing_deployed_file_fails(monkeypatch, tmp_path):
@@ -65,20 +121,17 @@ def test_missing_deployed_file_fails(monkeypatch, tmp_path):
     assert "brief-authoring" in result.stdout
 
 
-def test_missing_deployed_file_names_every_missing_script(tmp_path):
-    """Adversarial: the fixture above only proves ONE known-missing file is
-    caught. Plant a second, distinct skill+script citation gap (synthesized
-    via a temp ADR dir) and confirm the finder does not stop at the first
-    hit — a checker that silently truncates its own findings list is a
-    different failure mode than one that finds nothing at all."""
-    import importlib.util
-
-    spec = importlib.util.spec_from_file_location(
-        "check_skill_deploy_sync", REPO_ROOT / "scripts" / "check_skill_deploy_sync.py"
-    )
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-
+def test_multiple_missing_scripts_are_all_reported(tmp_path):
+    """Adversarial: with 2 distinct missing skill+script citations, the gate
+    must report BOTH — a checker that silently truncates its own findings
+    list at the first hit is a different failure mode than one that finds
+    nothing at all. (Renamed 2026-08-28 review fix: the prior version of this
+    test, despite its name, only ever asserted the same single
+    brief-authoring gap the test above it already covers — it never actually
+    exercised 2+ missing scripts through the gate. This version drives the
+    real subprocess against a synthetic ADR_DIR_OVERRIDE so both planted
+    gaps are genuinely checked end-to-end, not just via the direct
+    find_cited_skill_scripts() call.)"""
     adr_dir = tmp_path / "adr"
     adr_dir.mkdir()
     (adr_dir / "fake-1.md").write_text(
@@ -89,29 +142,23 @@ def test_missing_deployed_file_names_every_missing_script(tmp_path):
         "Also `~/.claude/skills/beta/scripts/two.py` runs the gate.\n",
         encoding="utf-8",
     )
-    cited = mod.find_cited_skill_scripts(adr_dir)
-    assert cited == {("alpha", "one.py"), ("beta", "two.py")}
 
     home_skills = tmp_path / "home_skills"
-    (home_skills / "alpha" / "scripts").mkdir(parents=True)
-    (home_skills / "alpha" / "scripts" / "one.py").write_text("# present\n", encoding="utf-8")
-    (home_skills / "beta").mkdir()  # beta/scripts/two.py deliberately absent
+    (home_skills / "alpha" / "scripts").mkdir(parents=True)  # one.py absent
+    (home_skills / "beta" / "scripts").mkdir(parents=True)  # two.py absent
 
     result = subprocess.run(
         [sys.executable, "scripts/check_skill_deploy_sync.py"],
         capture_output=True, text=True, cwd=REPO_ROOT,
         env={
             **os.environ,
+            "ADR_DIR_OVERRIDE": str(adr_dir),
             "HOME_SKILLS_DEPLOY_TARGET_OVERRIDE": str(home_skills),
         },
     )
-    # This run still scans the REAL docs/adr/ (not the synthetic fixture
-    # above, which only exercises find_cited_skill_scripts() directly) — so
-    # it should report the real brief-authoring/check_brief.py gap against
-    # the synthetic empty-ish home_skills target, not "alpha"/"beta" (those
-    # are exercised via the direct function call above, not the subprocess).
     assert result.returncode != 0
-    assert "brief-authoring" in result.stdout
+    assert "alpha/scripts/one.py" in result.stdout
+    assert "beta/scripts/two.py" in result.stdout
 
 
 def test_no_citations_found_exits_0(tmp_path):

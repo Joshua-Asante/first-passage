@@ -247,6 +247,17 @@ gates:
   # ~/.claude/skills/brief-authoring/scripts/check_brief.py, per that ADR's
   # §0 Step 1/2). Cheap (grep + existence check, no deploy), so `always`
   # rather than path-conditional.
+  #
+  # 2026-08-28 review fix (Critical): on a machine with NO ~/.claude/skills/
+  # deploy target at all -- every GitHub Actions runner, any fresh clone;
+  # there is no skills-deploy step in .github/workflows/, by design -- the
+  # checker now SKIPS (prints "SKIP ... NOT CHECKED", exits 0) instead of
+  # hard-failing. The prior behavior red-lined the sole required CI check
+  # (`skills (3.12)`) on every future PR, forever, for a property of the
+  # local machine rather than the commit. It still exits 1 when a real
+  # deploy target exists locally and the cited script is genuinely missing
+  # from it -- see scripts/check_skill_deploy_sync.py's own docstring and
+  # tests/scripts/test_check_skill_deploy_sync.py.
   - id: skill-deploy-sync
     tier: always
     cmd:
@@ -303,14 +314,19 @@ gates:
   # one did; Rule 17 is that checklist's first entry, not an edit to a prior
   # one).
   #
-  # `tier: always` substitutes for the `warn` tier this file's own header
-  # comment declares but gate_manifest.py does not accept as a `--tier`
-  # value (same gap Task 2's `instrument-rejection-coverage` --exit-zero
-  # worked around at path-conditional). `always` is safe here specifically
-  # because `--stats` alone (no `--strict`) always exits 0 per the script's
-  # own docstring ("WARN-TIER BY DESIGN. Always exits 0 unless --strict") --
-  # confirmed by a direct run against this worktree (exit 0, 167 ADRs
-  # scanned, 30/129 anchored = 23%, 1 live WARN finding printed to stdout).
+  # `tier: always` here means "runs unconditionally, at every pre-commit /
+  # `make check` invocation" -- it is NOT a stand-in for the `warn` tier this
+  # file's own header comment declares but gate_manifest.py does not accept
+  # as a `--tier` value (same gap Task 2's `instrument-rejection-coverage`
+  # --exit-zero worked around at path-conditional). `tier` controls WHEN a
+  # gate runs, not WHETHER it can block a commit -- those are orthogonal
+  # (2026-08-28 review fix: reworded after this comment's original phrasing
+  # was read as claiming otherwise). This entry runs unconditionally and is
+  # non-blocking because the SCRIPT's own exit code is always 0: `--stats`
+  # alone (no `--strict`) always exits 0 per the script's own docstring
+  # ("WARN-TIER BY DESIGN. Always exits 0 unless --strict") -- confirmed by a
+  # direct run against this worktree (exit 0, 167 ADRs scanned, 30/129
+  # anchored = 23%, 1 live WARN finding printed to stdout).
   # Report-only; this entry cannot fail a commit, so there is no
   # local-runtime cost to weigh against always running (same reasoning
   # m1-tree-skew above and path-liveness/root-doc-liveness already record).
