@@ -692,6 +692,35 @@ Everything else is deleted under a snapshot tag and retrieved with `git show <ta
 
 Owner: [`ADR 2026-08-08-great-prune`](adr/2026-08-08-great-prune.md) (§2 test, §4a failure log).
 
+## 17. Quarterly programme-audit checklist — standing tooling census
+
+At each quarterly programme audit (`programme-audit` skill cadence; next **2026-11-08**), run:
+
+- `python scripts/check_falsifier_reachability.py --stats` and record the **coverage trend**, not
+  just the point figure. The script's own docstring shows coverage eroding as the ADR corpus grows
+  faster than anchored falsifiers (28% → 25% → 23% across three reads) — a single number carries no
+  information about direction. This is **not** a hard gate — the script's own docstring explains why
+  (M-22 lesson: a hard gate here would block commits on ADRs nobody is touching). `scripts/gates.yml`
+  id `falsifier-reachability-census` already runs it report-only on every `make check` invocation
+  (and the CI-required `skills (3.12)` job) — **not** `make validate`, which is a narrower historical
+  selector (data manifests + Pine only; verified against `gate_manifest.py`'s `select_gates()`) — so
+  the trend surfaces well before the quarterly cycle; this line is the standing human checkpoint that
+  actually reads the trend and decides whether it warrants action.
+
+This is the checklist's first entry — future standing per-cycle tooling runs are added here as
+additional bullets, not as new rules.
+
+**Origin:** 2026-08-27/28 SSOT/data-lineage remediation program
+([`ADR`](adr/2026-08-27-ssot-data-lineage-remediation-program.md) Phase 1 Task 4).
+`check_falsifier_reachability.py` already existed and already self-reported real eroding coverage,
+but ran on no schedule at all — it was never wired into `gates.yml` and had no standing checklist to
+belong to. **Note on scope:** the governing ADR's own §2 Scope line refers to "`docs/operational_rules.md`'s
+quarterly-checklist section" as though one already existed; Task 4's own Step 1 (grep this file for
+`quarterly`/`programme.audit`) found no section under that description — this rule is that
+checklist's first entry, not an edit to a prior one. Recorded here per Rule 0 (verify current file
+shapes before acting on a brief's assumption) rather than silently treating the ADR's premise as
+correct.
+
 ## Rule maintenance
 
 New operational rules are added here only after a specific failure or near-miss. Do not add preemptive rules based on what might go wrong. Rules earn their place by being paid for.
@@ -700,6 +729,17 @@ Edits to existing rules must be logged with a dated entry explaining what change
 
 ### Edit log
 
+- **2026-08-28 — Rule 17 added (quarterly programme-audit checklist, first entry).**
+  `check_falsifier_reachability.py` self-reports eroding falsifier-anchor coverage (28% → 25% → 23%
+  across three reads) but ran on no schedule and had no checklist to belong to — the near-miss this
+  rule is paid for by. Seeded with one item (`--stats` census); `scripts/gates.yml` id
+  `falsifier-reachability-census` (`tier: always`, report-only — `--stats` alone always exits 0) makes
+  the trend visible at `make check` / CI (not `make validate`, a narrower selector — verified) between
+  cycles. SSOT/data-lineage remediation program
+  ([`ADR`](adr/2026-08-27-ssot-data-lineage-remediation-program.md) Phase 1 Task 4). This is a **new**
+  rule, not an edit to an existing checklist — the governing ADR's §2 Scope assumed one already
+  existed in this file; Task 4's own Step 1 grep found none. No locked config, allocation,
+  `dd_protection`, Pine, or rail touched.
 - **2026-08-23 — P4 museum rules: Rule 1 origin HISTORICAL; Rule 7 lock paths → `_archive`.**
   Rule 1 principle unchanged (no per-trade skip; overlays only). Origin marked
   HISTORICAL — Guardian is cold-stored / venue-less (Phase B/C). Rule 7 lock-state

@@ -293,3 +293,39 @@ gates:
       - scripts/validate_c1_monitoring_acceptance.py
       - docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json
       - --check-tree-skew
+
+  # docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md Phase 1
+  # Task 4: puts check_falsifier_reachability.py's own coverage census on the
+  # standing quarterly-programme-audit cadence (docs/operational_rules.md
+  # Rule 17, newly added by this same task -- Step 1 of the task's own brief
+  # found no "quarterly programme-audit checklist" section existed under
+  # that description despite the governing ADR's own §2 Scope line assuming
+  # one did; Rule 17 is that checklist's first entry, not an edit to a prior
+  # one).
+  #
+  # `tier: always` substitutes for the `warn` tier this file's own header
+  # comment declares but gate_manifest.py does not accept as a `--tier`
+  # value (same gap Task 2's `instrument-rejection-coverage` --exit-zero
+  # worked around at path-conditional). `always` is safe here specifically
+  # because `--stats` alone (no `--strict`) always exits 0 per the script's
+  # own docstring ("WARN-TIER BY DESIGN. Always exits 0 unless --strict") --
+  # confirmed by a direct run against this worktree (exit 0, 167 ADRs
+  # scanned, 30/129 anchored = 23%, 1 live WARN finding printed to stdout).
+  # Report-only; this entry cannot fail a commit, so there is no
+  # local-runtime cost to weigh against always running (same reasoning
+  # m1-tree-skew above and path-liveness/root-doc-liveness already record).
+  #
+  # NOT the §5-forbidden move: the governing ADR's §5 bars "promoting ...
+  # check_falsifier_reachability.py straight to a hard/always gate before a
+  # clean real-corpus baseline exists" -- that clause is about the SCRIPT'S
+  # own --strict flag (which flips its exit code on findings), not this
+  # YAML schema's `tier: always` (== "run unconditionally, no staged-path
+  # gate" per this file's own tiers note above, unrelated naming). This
+  # entry never passes --strict, so it can never become the blocking gate
+  # §5 forbids.
+  - id: falsifier-reachability-census
+    tier: always
+    cmd:
+      - python
+      - scripts/check_falsifier_reachability.py
+      - --stats
