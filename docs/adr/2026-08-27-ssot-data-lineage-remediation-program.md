@@ -426,7 +426,12 @@ python scripts/gate_manifest.py --list | grep -i skew
 python scripts/check_falsifier_reachability.py --stats
 grep -n "check_falsifier_reachability" docs/operational_rules.md scripts/gates.yml
 # Expected: the coverage trend is recorded at each quarterly programme audit (not just the point
-# figure); a WARN/informational gates.yml entry exists so `make validate` surfaces it without blocking.
+# figure); a `gates.yml` entry (`falsifier-reachability-census`, `tier: always`) runs it report-only
+# on every `make check` invocation and the CI-required `skills (3.12)` job, always exiting 0 (--stats
+# alone, no --strict) -- NOT `make validate`, which is a narrower hardcoded historical selector
+# (data-manifests + pine-manifest only, per gate_manifest.py's select_gates()) that Task 4's file
+# scope could not extend without editing gate_manifest.py itself. This corrects this hook's original
+# "make validate" wording -- see Change history.
 ```
 
 ---
@@ -454,3 +459,4 @@ python scripts/check_adr_graph.py
 | 2026-08-27 | Initial authoring (Phase 0, Steps 1–6 of the originating brief); Status `Proposed`; Step 7 (operator ratification) deliberately not performed this session | Claude Code |
 | 2026-08-27 | §0 Step 1 correction: independent re-verification of `git show --stat 47cc3eb` found it touches repo-side `scripts/check_brief.py`, not "no check_brief.py path" as first drafted — corrected the causal narrative; the operative finding and Task 1 scope are unchanged | Claude Code |
 | 2026-08-27 | Operator `Accepted` (in-session GO: "ratify it, commit and open the pr"). Phase 1 (Tasks 1-4) authorized to begin. STATE.md operator-queue row #3 + decision-index entry added same commit | Joshua (in-session) + Claude Code |
+| 2026-08-28 | Review fix: §10 Task 4 audit hook corrected — the built gate (`falsifier-reachability-census`, `tier: always` in `scripts/gates.yml`) surfaces under `make check`/CI, not `make validate` (a hardcoded 2-gate historical selector Task 4's file scope could not extend); narrow text correction only, no change to §2/§6 decision or rationale | Claude Code |

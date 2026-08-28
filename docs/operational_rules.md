@@ -694,6 +694,12 @@ Owner: [`ADR 2026-08-08-great-prune`](adr/2026-08-08-great-prune.md) (§2 test, 
 
 ## 17. Quarterly programme-audit checklist — standing tooling census
 
+This checklist's first entry is the mechanical partial-check for *Rule 11*'s obligation (a
+falsifier whose input can no longer accrue is not "in force" regardless of unchanged threshold
+text) — see Rule 11 for the underlying duty; coverage here is a minority of falsifiers and blind
+to retirement (per the script's own docstring), so a clean run is never a substitute for a Rule 11
+sweep.
+
 At each quarterly programme audit (`programme-audit` skill cadence; next **2026-11-08**), run:
 
 - `python scripts/check_falsifier_reachability.py --stats` and record the **coverage trend**, not
