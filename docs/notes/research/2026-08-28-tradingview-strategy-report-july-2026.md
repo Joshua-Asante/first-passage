@@ -139,14 +139,33 @@ ORB-MNQ-1 recon v6 and stripped diagnostics on **`MNQ1!`**, ETH, B-ADJ. Source o
 | `v6-bare2` | 30m | Chart | **500 exactly** | 2026-04-07 16:30 | Plotchars through May |
 | `v6-gate` Jan 2026 start | 30m | Deep custom Jan–Aug | 40 | **2026-04-13 16:30** | B&H **and** equity die same day |
 | Same gate after “reset” | 30m | **Available chart range** `2024-01-01 – 2026-08-27` | **40** | **2026-04-13 16:30** | Reset gray; `inWindow: yes`; Default detalization |
+| **Vanguard Gold Futures v0.4** on **`MGC1!`** | 15m | **Last 365d Deep**, Default detalization | 99 | **2026-08-25 16:45** | Report B&H continues through Aug; same Deep UI as the MNQ 15m Last-365d run that died 2026-04-30 |
 
-A prior 6yr List-of-Trades of this construct **did** fill through **2026-08-21** ([`aegis_orbmnq_combined_book` RESULTS](../../../lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/RESULTS.md)). So the **symbol can have post-April trades**; this tester pane, on this week’s `MNQ1!` warehouse, did not.
+A prior 6yr List-of-Trades of the MNQ construct **did** fill through **2026-08-21** ([`aegis_orbmnq_combined_book` RESULTS](../../../lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/RESULTS.md)). So the **symbol can have post-April trades**; this week’s `MNQ1!` tester pane did not.
+
+### Cross-symbol split (2026-08-28)
+
+Same account, same Deep Last-365d, same 15m, Default detalization:
+
+| Symbol | Last report fill | Report B&H after April? |
+|---|---|---|
+| `MNQ1!` (ORB recon kitchen-sink) | 2026-04-30 16:45 | chart B&H continued; report series did not |
+| `MGC1!` (Vanguard Gold v0.4) | 2026-08-25 16:45 | yes — hover on trade 99 |
+
+That **falsifies** “Deep 2026 is broken,” “Last-365d Deep cannot see past April,” and “the July rewrite killed all `1!` recent warehouse bars.” Deep on this desk still prints August on COMEX micro gold. The April cliff is **`MNQ1!` (or that pane’s warehouse)**, not a global Deep outage.
+
+Do not read the gold Overview numbers as a strategy verdict. This pin is **last-fill date / period UI only**.
+
+`MGC1!` showed **Script execution (2)** — still open the real warning text; it did not stop that series.
 
 ### Hypothesis (not a TV-published formula)
 
-`Available chart range` showed `2024-01-01 – 2026-08-27`. Ultimate’s **40,000** intraday-bar cap, walked **forward** from 2024-01-01 at 48 × 30m bars per calendar day, lands on **2026-04-13**. Official Deep-over-2M behavior is the opposite (keep **most recent**). If this is a bar cap, the new period menu is applying it from the **range start**. Do not cite as doctrine until a dated-front-month or 1h `MNQ1!` rerun splits the cases.
+Two stacked stories, now separable:
 
-April 13 is **not** an MNQ roll (Mar / Jun / Sep / Dec).
+1. **`MNQ1!` 15m Last-365d Deep dies ~30 Apr while `MGC1!` 15m Last-365d Deep lives to 25 Aug.** Same menu. That is a **symbol warehouse** hole (or an MNQ-only bar budget inside Last-365d), not a platform Deep kill-date.
+2. **`MNQ1!` 30m Available chart range `2024-01-01 – 2026-08-27` dies 13 Apr with report B&H.** A from-start 40k-bar walk can still be a *second* limiter on that longer chip. Official Deep-over-2M keeps the **most recent** bars — the opposite. Do not collapse (2) into (1).
+
+April 13 is **not** an MNQ roll (Mar / Jun / Sep / Dec). Dated front month (`MNQU2026`) is still the clean split of “this Pine” vs “`MNQ1!` warehouse.”
 
 ---
 
@@ -170,6 +189,7 @@ Already ruled out on this construct, and the docs agree:
 - Volume filter — Deep empty with filter on **and** off.
 - “Forgot to reset Deep” — Reset disabled because the period was already the advertised default.
 - v6 9,000-order **stop** — current regular mode **trims**; it does not freeze new trades. A May-empty Deep report with ~40–100 trades is not this cap.
+- **Platform-wide Deep 2026 hole** — `MGC1!` 15m Last-365d Deep last fill **2026-08-25 16:45** on this same desk.
 
 ---
 
@@ -177,9 +197,9 @@ Already ruled out on this construct, and the docs agree:
 
 In order:
 
-1. **Dated front month** (`MNQU2026` / `MNQU6`) same TF and script. Single contract → `1!` Deep restrictions do not apply. If May–August fills appear, the Pine is fine and the continuous warehouse is the defect.
-2. **1h / 4h `MNQ1!`** — fewer bars, longer calendar, same continuous rules. Distinguishes “no recent warehouse” from “30m bar budget exhausted.”
-3. **Short recent window that still has chart bars** (Last 90 days) — if that is **also** empty while candles print, the recent `1!` warehouse is the hole, not a from-start bar cap.
+1. **Dated front month** (`MNQU2026` / `MNQU6`) same TF and script. Single contract → `1!` Deep restrictions do not apply. If May–August fills appear, the Pine is fine and the `MNQ1!` warehouse is the defect. (Cross-symbol Deep is already split: `MGC1!` Last-365d lives to 25 Aug.)
+2. **1h / 4h `MNQ1!`** — fewer bars, longer calendar, same continuous rules. Distinguishes “no recent MNQ warehouse” from “30m / 15m bar budget exhausted.”
+3. **`MNQ1!` Last 90 days Deep** — if that is **also** empty while candles print, the *recent* MNQ warehouse is the hole (the `MGC1!` Last-365d pin already shows Last-N Deep can see August on another `1!`).
 4. Export **List of trades** (not Overview screenshots). Last exit date is the claim.
 5. Open the real script-warning text.
 
