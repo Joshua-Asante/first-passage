@@ -90,9 +90,13 @@ grep "N-YYYY-MM-DD-slug" docs/briefs/Q-*.md
 ## Verification
 
 ```bash
-# Discipline checks (mechanical — notice type is unmodeled here)
+# Canonical skill-side checker (ADR 2026-08-09) — validates notice's real §0-§4,§10 contract
+$ python ~/.claude/skills/brief-authoring/scripts/check_brief.py <this-file>.md --type notice
+# Expected: RESULT: well-formed
+
+# Discipline checks (mechanical subset — repo-side declines notice, expected not a gap)
 $ python scripts/check_brief.py <this-file>.md --type notice
-# Expected: RESULT: NOT CHECKED — fill this template; that is not a pass
+# Expected: RESULT: NOT CHECKED — see the skill-side result above for the gate that counts
 ```
 
 Notices fail by being too ceremonial. If you find yourself writing five-section observations with falsifiers, you're authoring a Pre-Q, not a notice — promote it.
