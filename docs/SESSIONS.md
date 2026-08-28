@@ -32,6 +32,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-28b — `MGC1!` Last-365d Deep still prints 2026-08-25 (MNQ cliff is symbol-side)
+
+**Focus:** Operator counter-pin: Vanguard Gold v0.4 on `MGC1!` 15m Last-365d Deep, Default detalization, last fill 2026-08-25 16:45.
+**Shipped:** addendum on [`note`](notes/research/2026-08-28-tradingview-strategy-report-july-2026.md) (cross-symbol split). No skill edit.
+**Decisions/defects:** Falsifies platform-wide Deep-2026 hole. April cliff stays `MNQ1!` warehouse / that pane. Gold Overview numbers are not a strategy verdict here.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: operator asked for a TV updates note from the MNQ1! tester-diagnosis thread`.
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-28a — TradingView Strategy Report / Deep / `1!` warehouse note (July 2026)
 
 **Focus:** Operator chart-diagnosis of ORB-MNQ-1 recon v6 dying mid-April on `MNQ1!` while candles continued — write the platform-ops note, not a Q or unpark.
