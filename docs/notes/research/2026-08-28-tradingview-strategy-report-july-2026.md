@@ -163,8 +163,8 @@ Do not read the gold Overview numbers as a strategy verdict. This pin is **last-
 
 Two stacked stories, now separable:
 
-1. **`MNQ1!` 15m Last-365d Deep dies ~30 Apr while `MGC1!` 15m Last-365d Deep lives to 25 Aug.** Same menu. That is a **symbol warehouse** hole (or an MNQ-only bar budget inside Last-365d), not a platform Deep kill-date.
-2. **`MNQ1!` 30m Available chart range `2024-01-01 – 2026-08-27` dies 13 Apr with report B&H.** A from-start 40k-bar walk can still be a *second* limiter on that longer chip. Official Deep-over-2M keeps the **most recent** bars — the opposite. Do not collapse (2) into (1). A later dated-front-month pin is below — do not stop at (1)–(2).
+1. **`MNQ1!` 15m Last-365d Deep dies ~30 Apr while `MGC1!` 15m Last-365d Deep lives to 25 Aug.** Same menu. That is a **Last-N-on-MNQ** hole, not a platform Deep kill-date. Entire-history on the same original script later filled late August — do not read this row as “`MNQ1!` Deep has no August bars.”
+2. **`MNQ1!` 30m Available chart range `2024-01-01 – 2026-08-27` dies 13 Apr with report B&H.** A from-start 40k-bar walk can still be a *second* limiter on that longer chip. Official Deep-over-2M keeps the **most recent** bars — the opposite. Do not collapse (2) into (1). Period-chip pin on the original recon v2 is below — do not stop at (1)–(2).
 
 April 13 is **not** an MNQ roll (Mar / Jun / Sep / Dec).
 
@@ -247,7 +247,7 @@ Already ruled out on this construct, and the docs agree:
 
 - Keep **this note as owner**.
 - Add a short trap block to [`pinescript-v6`](../../../.claude/skills/pinescript-v6/SKILL.md) so any TV/Pine session hits the pane/warehouse **and** session-edge checks before rewriting entries.
-- Point [`trade-csv-reconcile`](../../../.claude/skills/trade-csv-reconcile/SKILL.md) last-exit << chart last bar at this note: pane claim (warehouse/period **or** session-edge); dated front month dying does not prove warehouse.
+- Point [`trade-csv-reconcile`](../../../.claude/skills/trade-csv-reconcile/SKILL.md) last-exit << chart last bar at this note: flip Last-N vs entire-history on the same script first; dated front month dying does not prove warehouse; Last-N emptiness on `MNQ1!` does not prove adjacency.
 
 **Do not (unless it keeps biting):**
 
