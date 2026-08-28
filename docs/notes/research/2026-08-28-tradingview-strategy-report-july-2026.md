@@ -140,6 +140,7 @@ ORB-MNQ-1 recon v6 and stripped diagnostics on **`MNQ1!`**, ETH, B-ADJ. Source o
 | `v6-gate` Jan 2026 start | 30m | Deep custom Jan–Aug | 40 | **2026-04-13 16:30** | B&H **and** equity die same day |
 | Same gate after “reset” | 30m | **Available chart range** `2024-01-01 – 2026-08-27` | **40** | **2026-04-13 16:30** | Reset gray; `inWindow: yes`; Default detalization |
 | **Vanguard Gold Futures v0.4** on **`MGC1!`** | 15m | **Last 365d Deep**, Default detalization | 99 | **2026-08-25 16:45** | Report B&H continues through Aug; same Deep UI as the MNQ 15m Last-365d run that died 2026-04-30 |
+| **`v6-gate` on `MNQU2026`** | 30m | `2025-06-24 – 2026-08-27`, Default detalization | **14** | **2026-04-07 16:30** | Dated front month. Table: `Window: yes`, open 0. Legend OR near live print. Chart candles continue. |
 
 A prior 6yr List-of-Trades of the MNQ construct **did** fill through **2026-08-21** ([`aegis_orbmnq_combined_book` RESULTS](../../../lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/RESULTS.md)). So the **symbol can have post-April trades**; this week’s `MNQ1!` tester pane did not.
 
@@ -165,7 +166,23 @@ Two stacked stories, now separable:
 1. **`MNQ1!` 15m Last-365d Deep dies ~30 Apr while `MGC1!` 15m Last-365d Deep lives to 25 Aug.** Same menu. That is a **symbol warehouse** hole (or an MNQ-only bar budget inside Last-365d), not a platform Deep kill-date.
 2. **`MNQ1!` 30m Available chart range `2024-01-01 – 2026-08-27` dies 13 Apr with report B&H.** A from-start 40k-bar walk can still be a *second* limiter on that longer chip. Official Deep-over-2M keeps the **most recent** bars — the opposite. Do not collapse (2) into (1).
 
-April 13 is **not** an MNQ roll (Mar / Jun / Sep / Dec). Dated front month (`MNQU2026`) is still the clean split of “this Pine” vs “`MNQ1!` warehouse.”
+April 13 is **not** an MNQ roll (Mar / Jun / Sep / Dec).
+
+**Dated front month does not clear the Pine.** `v6-gate` on `MNQU2026` 30m last-exits **2026-04-07 16:30** with `Window: yes` and OR levels in the legend sitting on the live print, not an April freeze. The Performance-tab tooltip on the rightmost node is the **last trade**, not proof the report series ended (that chart is trade-indexed). Combined with `MGC1!` Deep still printing August, the remaining live suspect is **session / `orJustEnded` adjacency** on sparse MNQ 30m bars — not a global Deep outage and not a `1!`-only warehouse hole.
+
+### Pine logic (recon v6 / v6-gate / v6-mkt)
+
+Owner reads: uploaded `orb-mnq.v6_0394.pine` (kitchen-sink), `orb-mnq.v6_ofix.pine`, `orb-mnq.v6_mkt.pine`. `v6-gate` is those plus a start-date input (table `Window: yes` on the last bar ⇒ the start gate is **not** excluding May–August).
+
+Two real defects, both in the session helpers:
+
+1. **Adjacent-bar OR edge** (`newOR = inOR and not inOR[1]`, `orJustEnded = not inOR and inOR[1]`). That only fires when the previous *existing* bar flips. On a thin dated contract (or any 30m series that skips the post-OR slot), yesterday’s last print can itself be an OR bar. Then today’s first OR bar has `inOR[1] == true` → **no `newOR`**, **no `orJustEnded`**. `orArmedToday` stays true (it only clears on `newOR`), so even a later `orJustEnded` is rejected by `not orArmedToday`. OR high/low can still move via `else if inOR` — which matches a live legend with no new fills.
+
+2. **Place and leave on the same bar.** Kitchen-sink flatten is `sessionEndBar = lastBarOfSession or not inSession` then `cancel` + `close_all` every overnight bar. ofix/mkt narrowed that to `lastBarOfSession or leftSession`, but on a gapped series `leftSession` is the first bar after yesterday’s last in-session print. If that bar is also the first bar after yesterday’s OR (`orJustEnded`), v6-mkt **cancels the market entry it just placed**. ofix even plots that collision as ✕.
+
+Neither defect needs a April calendar. They fire whenever the 30m (or gapped 15m) series stops putting a non-OR bar immediately after the OR window. Back-month `MNQU` is exactly that shape until it is front-month — and the last fill sitting on an EOD flatten (`16:30`) is consistent with “the last day that still had a post-OR bar.”
+
+Not the date input (`Window: yes`). Not volume (off on gate/mkt). Not “OR froze.”
 
 ---
 
@@ -195,15 +212,12 @@ Already ruled out on this construct, and the docs agree:
 
 ## What to run instead of arguing with `MNQ1!` Deep
 
-In order:
+Dated front month is **done** and did **not** clear the Pine. Next:
 
-1. **Dated front month** (`MNQU2026` / `MNQU6`) same TF and script. Single contract → `1!` Deep restrictions do not apply. If May–August fills appear, the Pine is fine and the `MNQ1!` warehouse is the defect. (Cross-symbol Deep is already split: `MGC1!` Last-365d lives to 25 Aug.)
-2. **1h / 4h `MNQ1!`** — fewer bars, longer calendar, same continuous rules. Distinguishes “no recent MNQ warehouse” from “30m / 15m bar budget exhausted.”
-3. **`MNQ1!` Last 90 days Deep** — if that is **also** empty while candles print, the *recent* MNQ warehouse is the hole (the `MGC1!` Last-365d pin already shows Last-N Deep can see August on another `1!`).
-4. Export **List of trades** (not Overview screenshots). Last exit date is the claim.
-5. Open the real script-warning text.
-
-Do not use this tester pane to judge post-April logic on `MNQ1!` until one of those splits the series.
+1. Paste **`v6-logic`** (calendar-day OR, market entry, flatten only on `lastBarOfSession`, never cancel on the place bar). Source: local `uploads/orb-mnq.v6_logic.pine` from this session. Run on **`MNQU2026` 30m** first, then `MNQ1!` 15m.
+2. Read the on-chart table / chars, not Overview nodes: aqua **P** = calendar place; red **✕** = place+leave collide; orange **●** = old adjacent `orJustEnded`. If **P** prints in May–August and fills appear, the adjacency logic was the cliff. If **P** prints and the report still dies, that pane’s series is dead. If **P** never prints, `inOR` is not seeing the window on those bars.
+3. Export **List of trades**. Last exit date is the claim.
+4. Open the real script-warning text.
 
 ---
 
