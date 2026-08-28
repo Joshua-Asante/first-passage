@@ -32,6 +32,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-28e — regenerate kitchen-sink as `v7-cal` (calendar-day session helpers)
+
+**Focus:** Operator asked to regenerate the original recon script from the session-edge defects.
+**Shipped:** session-local `uploads/orb-mnq.v7_cal.pine` (gitignored); pointer on [`note`](notes/research/2026-08-28-tradingview-strategy-report-july-2026.md) “What to run”. Source was `orb-mnq.v6_0394.pine`.
+**Decisions/defects:** Calendar-day OR + flatten only `lastBarOfSession` + exit-in-position. Stop-breakout defaults kept. Does not unpark ORB-MNQ-1.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: operator asked to regenerate the TV recon script from the diagnosis thread`.
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-28d — blast-radius after MNQU pin: warehouse-only pointers repaired
 
 **Focus:** Operator asked for `blast-radius` on the MNQU / adjacency edits (Rule 7).

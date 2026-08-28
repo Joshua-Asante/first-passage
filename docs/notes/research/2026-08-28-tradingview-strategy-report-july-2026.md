@@ -210,10 +210,12 @@ Already ruled out on this construct, and the docs agree:
 
 ## What to run instead of arguing with `MNQ1!` Deep
 
-Dated front month is **done** and did **not** clear the Pine. Next:
+Dated front month is **done** and did **not** clear the Pine.
 
-1. Paste **`v6-logic`** (calendar-day OR, market entry, flatten only on `lastBarOfSession`, never cancel on the place bar). Source: local `uploads/orb-mnq.v6_logic.pine` from this session. Run on **`MNQU2026` 30m** first, then `MNQ1!` 15m.
-2. Read the on-chart table / chars, not Overview nodes: aqua **P** = calendar place; red **✕** = place+leave collide; orange **●** = old adjacent `orJustEnded`. If **P** prints in May–August and fills appear, the adjacency logic was the cliff. If **P** prints and the report still dies, that pane’s series is dead. If **P** never prints, `inOR` is not seeing the window on those bars.
+**Kitchen-sink regeneration** (operator ask 2026-08-28): paste **`v7-cal`**. Same inputs as `orb-mnq.v6_0394.pine` (stop breakout, SL/TP/trail/scale-in/volume defaults kept). Session helpers only: calendar-day OR + flatten only on `lastBarOfSession` + `strategy.exit` only in position. Source: session-local `uploads/orb-mnq.v7_cal.pine` (gitignored `*.pine` — not in git). Does **not** unpark ORB-MNQ-1.
+
+1. Paste **`v7-cal`** on **`MNQU2026` 30m** first, then `MNQ1!` 15m. Optional: set Entry style to `Market at OR end` if you need any-fill vs breakout. `v6-logic` remains the stripped diagnostic (market only, no kitchen-sink exits).
+2. Read the on-chart table / chars, not Overview nodes: aqua **P** = calendar place; red **✕** = place+leave collide; orange **●** = old adjacent `orJustEnded` with no place. If **P** prints in May–August and fills appear, the adjacency logic was the cliff. If **P** prints and the report still dies, that pane’s series is dead. If **P** never prints, `inOR` is not seeing the window on those bars.
 3. Export **List of trades**. Last exit date is the claim.
 4. Open the real script-warning text.
 
@@ -232,7 +234,7 @@ Dated front month is **done** and did **not** clear the Pine. Next:
 **Do not (unless it keeps biting):**
 
 - A methodology lesson — would dual-home the same traps. Promote later if a second session re-derives this.
-- A Q / lab slug — dated-contract cheap check already ran and did not clear the Pine; next check is `v6-logic`, not a Q.
+- A Q / lab slug — dated-contract cheap check already ran and did not clear the Pine; kitchen-sink paste is `v7-cal` (session-local). Not a Q.
 - Fold into `d11` — that row is subscription KEEP, not UI doctrine.
 - Unpark ORB-MNQ-1 off this note.
 
