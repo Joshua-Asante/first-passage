@@ -216,3 +216,16 @@ gates:
     cmd:
       - python
       - scripts/check_governance_prose_control_chars.py
+
+  # docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md Phase 1
+  # Task 1: closes the class of defect sync_skills.py --check cannot see
+  # (a skill script an ADR Verification block cites that never existed on
+  # EITHER side of the repo->deployed sync boundary — concretely,
+  # ~/.claude/skills/brief-authoring/scripts/check_brief.py, per that ADR's
+  # §0 Step 1/2). Cheap (grep + existence check, no deploy), so `always`
+  # rather than path-conditional.
+  - id: skill-deploy-sync
+    tier: always
+    cmd:
+      - python
+      - scripts/check_skill_deploy_sync.py
