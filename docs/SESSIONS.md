@@ -15,7 +15,8 @@ not earn a full entry even if it produced a commit — that's already recoverabl
 rule; entry-class origin below is unchanged.)*
 
 **Entry classes (W5 direction):** Decision / Build / Measurement / Hygiene — prefer
-links; keep prose beyond the five fields ≤ **~40 words** where possible
+links over prose. ~40 words per field is a soft target, not an enforced cap — judgment-heavy
+entries (multi-decision sessions) routinely run longer, and that's fine
 ([`W5 ADR`](adr/2026-08-07-w5-governance-diet.md)).
 
 **Open / next is queue-led.** The lead line cites every live [`STATE.md`](../STATE.md)

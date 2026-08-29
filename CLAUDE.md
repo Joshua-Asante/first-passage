@@ -115,9 +115,9 @@ risk% and pyramid are mirrored above from `firm_rules.py`/Pine as the human-read
 lineage: [allocation refresh 2](docs/adr/2026-05-23-allocation-refresh-2.md).
 Historical MC calibration — **99.83% pass / 0.17% bust, p99 DD 4.37%** — is **historical record, not a
 live claim**; do not quote it as a current pass probability
-([`docs/mc_anchor_history.md`](docs/mc_anchor_history.md)). ⚠ These three literals are **read by
-`ops/recall/guard.py`** (regex, ~L100) to build the recall-sidecar denylist — reword them and the guard
-stops rejecting the anchor as authority. Change the phrasing only alongside that parser. Engine regression is vendor-free:
+([`docs/mc_anchor_history.md`](docs/mc_anchor_history.md)). ⚠ These three literals are machine-read
+(regex) by `ops/recall/guard.py` to build the recall-sidecar denylist — reword them only alongside
+that parser, or the guard stops rejecting the anchor as authority. Engine regression is vendor-free:
 `tests/core/test_mc_synthetic_engine.py`. Canonical feed = CME futures TV exports
 (`core/data/tv_exports/cme/`); OANDA and Pepperstone are retired.
 

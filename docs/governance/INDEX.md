@@ -56,14 +56,11 @@ Verdict: **CLEAN** (re-confirmed 2026-08-23). Phase 5b landed this GO.
 
 ## Named-not-opened (nav leftover)
 
-Not a sixth root doc. Pointers only.
+Not a sixth root doc, and not a STATE.md forward obligation — low-priority nav polish with no forcing
+date. `find-owner` and Phase 5b (`sync_liveness` wired into `gates.yml`) have landed and are dropped
+from this list; Phase 8 (unify `ops/` imports) was considered and correctly not done — the dual layout
+is intentional ([`REPO_MAP.md`](../../REPO_MAP.md) §2.2).
 
-| Item | Disposition |
-|---|---|
-| Phase 5b — wire `sync_liveness` into `gates.yml` | Landed. `path-conditional` on `docs/briefs/INDEX.md` + `lab/CATALOG.md`; report-only (exit 0). Not W5 leftover C-P5-04 / H6 (CI composition). |
-| Phase 7 — ADR topic view | Named. Needs a new `AdrHeader` field + `check_adr_graph.py --regenerate-index`. No miss evidence from P0–P4. |
-| Phase 8 — unify `ops/` imports | Named. Dual layout is intentional ([`REPO_MAP.md`](../../REPO_MAP.md) §2.2). Architecture ADR + Fly/deploy blast; out of nav scope. |
-| Phase 2b — further CATALOG stamps | This GO: `**Verdict:**` on `driftex_2026-08` + `eodadv_mnq_2026-08` (stay-hot; no `--slug`). Remaining leftovers on [`lab/analysis/README.md`](../../lab/analysis/README.md). Do not mass-stamp. `time_to_pass.py` stays C-P2-05. |
-| SESSIONS keep-20 | Named. `--dry-run` 2026-08-23: keep 20 / roll 155 → `2026-Q3`. Actual roll is a separate GO. STATE diet already landed 2026-08-22e. |
-| find-owner | Landed. [`../../scripts/find_owner.py`](../../scripts/find_owner.py) looks up Rule 7 + owner-surfaces. Not a sixth index. |
-| Non-nav leftovers | C-P1-06 DISC-CAMP-0 prereg body · W5 CI-from-`gates.yml` (H6 **landed** 2026-08-23) · Q-PUBTRANS-1 still `Proposed` · W6 lockfile discharged (PR #92). |
+- Phase 7 — ADR topic view (needs a new `AdrHeader` field + `check_adr_graph.py --regenerate-index`).
+- Phase 2b — remaining CATALOG `**Verdict:**` stamps; see [`lab/analysis/README.md`](../../lab/analysis/README.md). Do not mass-stamp.
+- SESSIONS keep-20 roll — `--dry-run` confirmed 2026-08-23 (keep 20 / roll 155 → `2026-Q3`); the actual roll is a separate GO.

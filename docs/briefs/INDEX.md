@@ -28,110 +28,20 @@ Ten of the eleven 2026-08-18 assumption-sweep Qs are now closed (Q-M1WIRE-1 `FAL
 
 ## Recently closed (cross-reference; not open)
 
-- **Q-TRADECAP-2** — which close is licensed for the confirmed unbounded per-trade realized loss on Tradeify_Select_100K —
-  **`RESOLVED` 2026-08-24** — operator elected frozen ID **2** (observe-only). No tripwire wire; threshold later. $0/K=0.
-  [`closure`](closures/Q-TRADECAP-2-closure-resolved.md) ·
-  [`brief`](Q-TRADECAP-2-per-trade-bound-election.md) ·
-  [`pre-reg`](pre-registration/Q-TRADECAP-2-verdict-preregistration.md) ·
-  [`elect-2`](../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md).
-- **Q-TOM-SPX-1** — SPX500 turn-of-month existence and capturability —
-  **`DEAD` 2026-08-23** — Layer-A `RESOLVED-ABSENT` on canonical Pepperstone
-  (2026-06-16); reserved native-Pine confirmation unpaid and not reserved.
-  $0/K=0. [`closure`](closures/Q-TOM-SPX-1-closure-dead.md) ·
-  [`brief`](Q-TOM-SPX-1.md) ·
-  [`census`](../notes/audits/2026-08-23-p10-open-roster-census.md).
-- **Q-MONSURF-1** — which monitoring surfaces are buildable venue-free now, and on what acceptance
-  evidence (M-A/M-B/M-C triage) — **`RESOLVED` 2026-08-23** — M-B (idle-clock monitor) acceptance
-  battery passes 0 missed / 0 spurious across all 312 real historical weeks, mutation-verified;
-  registration-ready, gated on F3 only (not first live fill, as previously recorded). M-C stays
-  fill-gated; M-A stays elective with its own build-gate scope ruling still owed. Triage written to
-  STATE.md's board. $0/K=0. [`closure`](closures/Q-MONSURF-1-closure-resolved.md) ·
-  [`brief`](Q-MONSURF-1-monitoring-surface-triage-scoping.md) ·
-  [`pre-reg`](pre-registration/Q-MONSURF-1-verdict-preregistration.md) ·
-  [`results`](../../lab/analysis/c1/msl_monsurf_1_idle_clock_2026-08/RESULTS.md).
-- **Q-TRADECAP-1** — is there any per-trade dollar-loss bound anywhere in the sizing/arming path on
-  the intraday-enforced Tradeify geometry (A6, orphaned `1r_estimation.md` Forward question) —
-  **`RESOLVED` 2026-08-23** —   confirmed absent on all four checked limbs (sizing law, arming
-  interlock, EM2, disaster-stop). Successor closed `RESOLVED` 2026-08-24:
-  [`Q-TRADECAP-2`](Q-TRADECAP-2-per-trade-bound-election.md). $0/K=0.
-  [`closure`](closures/Q-TRADECAP-1-closure-resolved.md) ·
-  [`brief`](Q-TRADECAP-1-per-trade-loss-bound.md) ·
-  [`pre-reg`](pre-registration/Q-TRADECAP-1-verdict-preregistration.md).
-- **Q-STATVALID-1** — has the repo's own DSR/multiplicity rigor ever been pointed at the MC
-  engine's resampling unit or the risk-control constants' own calibration search (B1+C1) —
-  **`FALSIFIED` 2026-08-23** — Limb C fires on both grids (DD-trigger grid: 3/5 losing-candidate
-  scores never retained; both grids: winner margin collapses to z≈0.8–1.2 vs the 2-sigma SE
-  noise floor at N=30,000 paths). Limb B independently AMBIGUOUS — locked Pepperstone 4-strategy
-  panel unrecoverable at $0 (retired 2026-08-03, no rollback copy). Successor named, not opened:
-  a DSR/PBO correction-pass packet on both grids; separate re-test trigger for Limb B on next
-  4-leg panel availability.
-  [`closure`](closures/Q-STATVALID-1-closure-falsified.md) ·
-  [`brief`](Q-STATVALID-1-mc-resampling-and-constant-multiplicity.md) ·
-  [`pre-reg`](pre-registration/Q-STATVALID-1-verdict-preregistration.md).
-- **Q-SIZECOMP-1** — does the live c1 sizing host's `r_eff` computation and the diagnostic
-  CLI's own production call chain compose lifecycle × `DD_SCALE` × Call-4 beta-death the way
-  `strategy_lifecycle.md` doctrine claims (A3+D4) — **`RESOLVED` 2026-08-23** — the rail never
-  composes beta-death at all (0 `ops/` hits; imports `TIER_MULTIPLIER` only); the CLI's own
-  triple-compound arithmetic checks out exactly against a hand computation; no 3-way test exists
-  in `tests/test_lifecycle.py`. No code change under this brief — test-coverage gap and rail
-  beta-wiring both named as an operator decision, not opened.
-  [`closure`](closures/Q-SIZECOMP-1-closure-resolved.md) ·
-  [`brief`](Q-SIZECOMP-1-sizing-composition.md) ·
-  [`pre-reg`](pre-registration/Q-SIZECOMP-1-verdict-preregistration.md).
-- **Q-S5CAP-1** — does S5's "capped concurrency" hold at the system level or only as a
-  per-packet self-report (B3) — **`RESOLVED` 2026-08-23** — both `validate_promotion_packet()`
-  and `refute_promotion_packet()` pass all 3 cloned synthetic packets sequentially (cumulative
-  `concurrency_slots`=3 > `max_concurrency`=2, zero rejections); code inspection confirms neither
-  function reads or writes state external to the single packet under evaluation. Mechanism gap,
-  not a realized incident (zero real S5 promotions on record). Successor `Q-S5CAP-2` (wire a
-  real counter, or decide not to) named, not opened, gated on M1 `RESOLVED`.
-  [`closure`](closures/Q-S5CAP-1-closure-resolved.md) ·
-  [`brief`](Q-S5CAP-1-capped-concurrency-invariant.md) ·
-  [`pre-reg`](pre-registration/Q-S5CAP-1-verdict-preregistration.md).
-- **Q-FIRMEOD-1** — does the Tradeify-proven EOD-vs-intraday breach-clock defect and
-  lock/no-lock branch misclassification also apply to the 7 Bulenox/BluSky trailing tiers (B4)
-  — **`FALSIFIED` 2026-08-23** — CLOCK fails: a CI-stable engine fixture parametrized to
-  `Bulenox_100K`'s own `firm_kwargs()` shows `bust_trailing` flips 0→1 between
-  `intraday_low=None` and populated. LOCK fails for Bulenox: its own Master Account primary
-  source carries lock-adjacent language never captured in `firm_rules.py`'s sourcing comment —
-  a new, separately-scoped finding. LOCK holds for BluSky (no lock language found on either
-  stage's primary page). No live surface touched (neither firm has a c1 book). Every
-  Bulenox/BluSky bust figure stays an EOD-clock lower bound until a successor re-runs the
-  W1-pattern intraday fix.
-  [`closure`](closures/Q-FIRMEOD-1-closure-falsified.md) ·
-  [`brief`](Q-FIRMEOD-1-eod-breach-clock-bulenox-blusky.md) ·
-  [`pre-reg`](pre-registration/Q-FIRMEOD-1-verdict-preregistration.md).
-- **Q-DATAFIDELITY-1** — do the stated data-integrity safety nets (TV price fidelity,
-  feed-equivalence pre-flight, manifest gate scope) cover what they're trusted to cover (C2+C3)
-  — **`FALSIFIED` 2026-08-23** — both limbs fire: Limb C2 (MGC, 9 sampled trade dates) shows
-  7/9 exact-match vs an independent Databento reference, 2/9 exceeding 1-tick tolerance on
-  High/Low (one at a confirmed continuous-contract roll, one on a Databento-flagged
-  degraded-quality date); Limb C3 confirms 0 documented manifest-gate scope caveat and 0
-  CME-era feed-equivalence successor.
-  [`closure`](closures/Q-DATAFIDELITY-1-closure-falsified.md) ·
-  [`brief`](Q-DATAFIDELITY-1-tv-price-fidelity-and-integrity-gate-scope.md) ·
-  [`pre-reg`](pre-registration/Q-DATAFIDELITY-1-verdict-preregistration.md).
-- **Q-INTAKEGOV-1** — does discovery-intake/rejected-registry governance tooling
-  (K_intrinsic self-report, dedup corpus, re-proposal cadence) cover what it's relied on to
-  cover (B2+D2+C4) — **`AMBIGUOUS-HOLD` 2026-08-23`** (split verdict, not averaged) — B2 holds
-  (no live `K_intrinsic` undercount found across 14 ledgered runs; 0 have any automated K
-  cross-check); D2 confirms a real gap (mechanism-level dedup query misses `MNQ-ANALOGUE-1`
-  entirely — returns noise, not the real hit — while `docs/adr/` sits outside the corpus); C4
-  confirms no scheduled/symmetric re-examination mechanism exists for a standing REJECTED
-  verdict. B2 re-tests at next discovery-run close; D2/C4 remediation named, not opened.
-  [`closure`](closures/Q-INTAKEGOV-1-closure-ambiguous-hold.md) ·
-  [`brief`](Q-INTAKEGOV-1-intake-registry-governance-coverage.md) ·
-  [`pre-reg`](pre-registration/Q-INTAKEGOV-1-verdict-preregistration.md).
-- **Q-CALLBOUND-1** — are the lifecycle Call-system's automation-authority boundaries
-  symmetric and complete (Call-1 no promote-back path; Call-5 zero-contract reachable via a
-  side door; D3+D6) — **`AMBIGUOUS-HOLD` 2026-08-23** — D3 (symmetry) CONFIRMED clean, no
-  reverse path beyond the two already-named exceptions; D6 (completeness) inconclusive — one
-  topically-adjacent, non-conclusive hit at `docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md`
-  (M1's own sign-off, not Call-5's). Dormant; re-test only if a leg floors to zero live or a
-  session needs the D3 reverse path.
-  [`closure`](closures/Q-CALLBOUND-1-closure-ambiguous-hold.md) ·
-  [`brief`](Q-CALLBOUND-1-automation-boundary-symmetry.md) ·
-  [`pre-reg`](pre-registration/Q-CALLBOUND-1-verdict-preregistration.md).
+One line per the file's own convention (see above) — verdict, date, one-clause finding, links out to
+the closure for detail. All are $0/K=0 unless noted.
+
+- **Q-TRADECAP-2** — per-trade loss bound election — **`RESOLVED` 2026-08-24**, frozen ID 2 (observe-only), no tripwire wired. [`closure`](closures/Q-TRADECAP-2-closure-resolved.md) · [`elect-2`](../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md)
+- **Q-TOM-SPX-1** — SPX500 turn-of-month existence — **`DEAD` 2026-08-23**, Layer-A `RESOLVED-ABSENT` on Pepperstone. [`closure`](closures/Q-TOM-SPX-1-closure-dead.md)
+- **Q-MONSURF-1** — venue-free monitoring-surface triage (M-A/M-B/M-C) — **`RESOLVED` 2026-08-23**, M-B registration-ready (gated on F3 only), M-C fill-gated, M-A elective. [`closure`](closures/Q-MONSURF-1-closure-resolved.md)
+- **Q-TRADECAP-1** — per-trade dollar-loss bound, predecessor — **`RESOLVED` 2026-08-23**, absent on all four checked limbs; successor [`Q-TRADECAP-2`](Q-TRADECAP-2-per-trade-bound-election.md). [`closure`](closures/Q-TRADECAP-1-closure-resolved.md)
+- **Q-STATVALID-1** — DSR/multiplicity rigor on the MC engine's own resampling + constant search — **`FALSIFIED` 2026-08-23**, Limb C fires both grids; Limb B AMBIGUOUS (panel unrecoverable). [`closure`](closures/Q-STATVALID-1-closure-falsified.md)
+- **Q-SIZECOMP-1** — does the live sizing host compose lifecycle × `DD_SCALE` × Call-4 beta-death as documented — **`RESOLVED` 2026-08-23**, it doesn't compose beta-death at all; test-coverage gap named. [`closure`](closures/Q-SIZECOMP-1-closure-resolved.md)
+- **Q-S5CAP-1** — does S5's capped concurrency hold system-wide or only per-packet — **`RESOLVED` 2026-08-23**, holds; mechanism gap only, zero real S5 promotions on record. [`closure`](closures/Q-S5CAP-1-closure-resolved.md)
+- **Q-FIRMEOD-1** — Tradeify EOD-clock defect applied to the 7 Bulenox/BluSky trailing tiers — **`FALSIFIED` 2026-08-23**, CLOCK fails on all 7; bust figures stay EOD-lower-bound pending a successor re-run. [`closure`](closures/Q-FIRMEOD-1-closure-falsified.md)
+- **Q-DATAFIDELITY-1** — do the stated data-integrity nets cover TV price fidelity + feed-equivalence + manifest scope — **`FALSIFIED` 2026-08-23**, both limbs fire (2/9 sampled dates exceed tolerance; 0 documented scope caveat). [`closure`](closures/Q-DATAFIDELITY-1-closure-falsified.md)
+- **Q-INTAKEGOV-1** — does discovery-intake/rejected-registry governance tooling cover what it's relied on for — **`AMBIGUOUS-HOLD` 2026-08-23**, split: dedup-corpus gap confirmed real, no re-examination mechanism for a standing REJECTED verdict. [`closure`](closures/Q-INTAKEGOV-1-closure-ambiguous-hold.md)
+- **Q-CALLBOUND-1** — lifecycle Call-system automation-boundary symmetry + completeness — **`AMBIGUOUS-HOLD` 2026-08-23**, symmetry clean, completeness inconclusive. [`closure`](closures/Q-CALLBOUND-1-closure-ambiguous-hold.md)
 - **Q-PUBTRANS-1** — did the 2026-08-14 public-visibility transition complete cleanly (ADR
   Status stale, residual-disclosure risk untested, sentinel queue orphaned; B5+D8+D9) —
   **`FALSIFIED` 2026-08-23** — H-PUBTRANS rejected outright: Limb D8 concretely fails —
@@ -147,186 +57,36 @@ Ten of the eleven 2026-08-18 assumption-sweep Qs are now closed (Q-M1WIRE-1 `FAL
   [`closure`](closures/Q-PUBTRANS-1-closure-falsified.md) ·
   [`brief`](Q-PUBTRANS-1-public-transition-completeness.md) ·
   [`pre-reg`](pre-registration/Q-PUBTRANS-1-verdict-preregistration.md).
-- **Q-M1WIRE-1** — does the M1 arming interlock verify everything its acceptance package claims — **`FALSIFIED` 2026-08-21** — A2 (no production confirmed-base write path) and A5 (fixture-hash drift not wired into arm/`gates.yml`) both confirmed; A4 untested and not required for the verdict. Rail stays disarmed; M1 stays not-`RESOLVED`. [`closure`](closures/Q-M1WIRE-1-closure-falsified.md).
-- **Q-GATESTACK-1** — does anything on GitHub actually require the gate stack to pass before `main`, and is CI-status doc current — **`FALSIFIED` 2026-08-19** — `main` unprotected (404/`[]`/`push:true`); Actions live + green since 2026-08-15. Branch-protection packet named-not-opened; doc-correction packet executed same turn. [`closure`](closures/Q-GATESTACK-1-closure-falsified.md).
-- **Q-NSURV-2** — can a magnitude-resampling second-uncertainty-layer be added to N-SURV
-  reporting as a pure, headline-preserving addition — **`RESOLVED` 2026-08-20** — a wrapper
-  reproduces both known candidates' (c1, ORB-MNQ-1) headline point estimates within 2.0pp,
-  zero `run_partition_mc`/`blocks_from_daily_pnl` internals touched (grep-audited). Successor:
-  light disclosure-only ADR drafted `Proposed`, ratification owed. $0/K=0.
-  [`closure`](closures/Q-NSURV-2-closure-resolved.md) ·
-  [`brief`](Q-NSURV-2-second-uncertainty-layer-design.md) ·
-  [`pre-reg`](pre-registration/Q-NSURV-2-verdict-preregistration.md) ·
-  [`ADR`](../adr/2026-08-20-nsurv-magnitude-resampling-disclosure.md).
-- **Q-ORBSURV-1** — does cushion-proportional sizing clear the frozen survivor-scoring gate
-  at the configurations the 08-20 informal probes never checked (full-panel k=2; post-break-only
-  k=1/k=2) — **`FALSIFIED` 2026-08-20** — full-panel k=2 misses the pass floor (41.51% < 50%,
-  bust still 0.00%); both post-break-only configurations clear comfortably (81.35%/64.11% pass).
-  Cushion sizing's gate-clear is k-dependent, not a robust mechanism property; the k=1 full-panel
-  clear measured earlier the same day held by only a 2.27pp margin. Does not license unpark. $0/K=0.
-  [`closure`](closures/Q-ORBSURV-1-closure-falsified.md) ·
-  [`brief`](Q-ORBSURV-1-cushion-sizing-gate-configurations.md) ·
-  [`pre-reg`](pre-registration/Q-ORBSURV-1-verdict-preregistration.md) ·
-  [`results`](../../lab/archive/orbmnq1_survivor_scoring_2026-08-20/full_k2_and_postbreak_results.json).
-- **Q-NSURV-1** — is the N-SURV single-history magnitude blindspot (parent Notice
-  `N-2026-08-15-nsurv-single-history-magnitude-blindspot`) general or idiosyncratic to c1 —
-  **`RESOLVED` 2026-08-20** — confirmed general on a second candidate (ORB-MNQ-1): both books show a
-  material single-history-vs-magnitude-resampled gap, but on *different* axes (bust for c1's flat
-  sizing, pass for ORB-MNQ-1's cushion-proportional sizing) — a nuance the parent Notice didn't
-  anticipate. No closed N-SURV verdict re-opened. Fix-design question explicitly deferred to a future
-  session (`STATE.md` queue #3). Parent Notice graduated HOLD→RESOLVED same day. $0/K=0.
-  [`closure`](closures/Q-NSURV-1-closure-resolved.md) ·
-  [`brief`](Q-NSURV-1-single-history-magnitude-blindspot.md) ·
-  [`parent Notice`](../notes/notice/N-2026-08-15-nsurv-single-history-magnitude-blindspot.md).
-- **Q-ORBCUSH-1** — does a trailing edge/cost-fraction classifier explain ORB-MNQ-1's 2021-09-28
-  cushion-proportional-sizing regime break — **`FALSIFIED` 2026-08-20** — trailing mean-R
-  date-correlation clears 0 of 3 pre-registered windows (lower-edge bucket's ≤40% ceiling missed
-  by 11–25pp at every window); direction stable but irrelevant once date-correlation fails. Second
-  classifier refuted under the same discipline that already refuted trailing volatility — the
-  2021-09-28 break stays real, triple-verified, and mechanistically unexplained
-  (`ops/instruments/MNQ.md` N17). Bust-elimination itself is unaffected (regime-agnostic,
-  independently verified). $0/K=0.
-  [`closure`](closures/Q-ORBCUSH-1-closure-falsified.md) ·
-  [`RESULTS`](../../lab/archive/q_orbcush_1_2026-08/RESULTS_meanr_regime_gate.md) ·
-  [`brief`](Q-ORBCUSH-1-regime-break-mechanism.md) ·
-  [`pre-reg`](pre-registration/Q-ORBCUSH-1-verdict-preregistration.md) ·
-  [`probe`](../../lab/analysis/c1/orbmnq1_cushion_sizing_probe_2026-08-20/).
-- **Q-XMEM-1** — cost of per-surface agent-memory invisibility; time-boxed Mem0 sidecar pilot —
-  **`CLOSED` / GRAND-tier `SUBTRACT` 2026-08-19** (GSUB-2 c1, pursuit-level; not a re-verdict of
-  the 2026-08-15 `ASSISTIVE-ONLY` Limb B measurement, which stands unchanged). Re-entry armor: a
-  genuine dated cross-surface-memory-invisibility incident, per GRAND ADR §2.3.
-  [`closure`](closures/Q-XMEM-1-closure-subtract.md) · [`pursuit c1`](../pursuits/c1-q-xmem-1.md) ·
-  [`GSUB-2`](GSUB-2-park-cohort-early-review.md).
-- **Q-TRAINKILL-3** — do Block F (FALSIFIED) and Block A (AMBIGUOUS) name the same
-  2:1 winner between NEG and DEP — **`AMBIGUOUS-HOLD` 2026-08-18** (F=`NEG`
-  9.83:1; A=`DEP` 4.06:1; split). Census STOP. No Q-TRAINKILL-4. No singleton
-  power finding. $0/K=0.
-  [`closure`](closures/Q-TRAINKILL-3-closure-ambiguous-hold.md) ·
-  [`RESULTS`](../../lab/analysis/_inbox/q_trainkill_3_2026-08/RESULTS.md) ·
-  [`brief`](Q-TRAINKILL-3-neg-vs-dep-discriminator.md) ·
-  [`pre-reg`](pre-registration/Q-TRAINKILL-3-verdict-preregistration.md).
-- **Q-TRAINKILL-2** — after recovery of committed mean-R CIs on the seven TK1-BOUNDED
-  rows, does {0, +0.10} resolve, or does a pre-declared −0.10R or Fréchet-hi-zero
-  DGP fit the scored core — **`AMBIGUOUS-HOLD` 2026-08-18** (MSL-S2A promoted;
-  Limb 1 extremes still disagree; both `NEG` and `DEP-ZERO` fit). No singleton
-  power finding. No gate number moves. $0/K=0.
-  [`closure`](closures/Q-TRAINKILL-2-closure-ambiguous-hold.md) ·
-  [`RESULTS`](../../lab/analysis/_inbox/q_trainkill_2_2026-08/RESULTS.md) ·
-  [`brief`](Q-TRAINKILL-2-bounded-recovery-alt-dgp.md) ·
-  [`pre-reg`](pre-registration/Q-TRAINKILL-2-verdict-preregistration.md).
-- **Q-TRAINKILL-1** — is the explore/train kill record consistent with zero edge, with
-  true +0.10R@$75 edges the designs are underpowered to pass, or with neither —
-  **`AMBIGUOUS-HOLD` 2026-08-18** (BOUNDED extremes disagree: `MISCALIBRATED` at ε vs
-  `KILLS-INFORMATIVE` at 1−ε; scored core n*=8 `MISCALIBRATED`, g(0)=0.024 < 0.05).
-  No named power finding. No gate number moves. $0/K=0.
-  [`closure`](closures/Q-TRAINKILL-1-closure-ambiguous-hold.md) ·
-  [`RESULTS`](../../lab/analysis/_inbox/q_trainkill_1_2026-08/RESULTS.md) ·
-  [`brief`](Q-TRAINKILL-1-train-gate-power.md) ·
-  [`pre-reg`](pre-registration/Q-TRAINKILL-1-verdict-preregistration.md).
-- **Q-EXPR-1** — what measurable property of the regularity→expression conversion accounts
-  for the orphaning — **`RESOLVED` 2026-08-18** (H1 horizon-mismatch 4/4; H2 1/5 misses;
-  H3 cannot fire — weekly+daily share 2026-06-19). Next slate admission screens claim
-  horizon vs the E1 flat-by-16:00 envelope. $0/K=0.
-  [`closure`](closures/Q-EXPR-1-closure-resolved.md) ·
-  [`RESULTS`](../../lab/archive/q_expr_1_2026-08/RESULTS.md) ·
-  [`brief`](Q-EXPR-1-regularity-expression-conversion.md) ·
-  [`pre-reg`](pre-registration/Q-EXPR-1-verdict-preregistration.md).
-- **Q-CONDVAL-1** — does the validated CL range-state lift buy anything in R terms —
-  **`FALSIFIED` 2026-08-18** — committed C−U 0.130 < frozen `L_star` 0.423 at the N-EDGE
-  cell (R=$75, RT=$4.12, slate-2 center); S1b conditioner-engineering branch parked; O2
-  discharged; SIGNAL-GENERIC stands. $0/K=0.
-  [`closure`](closures/Q-CONDVAL-1-closure-falsified.md) ·
-  [`RESULTS`](../../lab/archive/q_condval_1_2026-08/RESULTS.md) ·
-  [`brief`](Q-CONDVAL-1-range-state-r-terms.md) ·
-  [`pre-reg`](pre-registration/Q-CONDVAL-1-verdict-preregistration.md).
-- **Q-POLFRONT-1** — policy-augmented seed-target frontier — **`RESOLVED-QUANTIFIED` 2026-08-16**
-  (median R_max ratio policy/flat = **5.107×** ≥ 1.25× bar, 24/30 cells defined, min 1.526×, 2
-  newly-admitted cells, no reversal under quantization). ⚠ **Load-bearing caveat carried
-  forward, not a footnote:** the policy's bust rate is far more EOD-clock-fragile than flat
-  sizing (median stress delta +55.2pp vs +1.63pp) — feeds deep-lane GO-1 **with the caveat
-  named in the first campaign's prereg**. **Fork executed 2026-08-17 (operator GO, corrected
-  2026-08-20 — a stale copy of this row previously said the fork was still unopened):** the 5.1×
-  headline does NOT survive intraday-honest remeasurement — policy-arm median bust delta +98.1pp,
-  only 1/26 cells still clear 3.0%; `SAFE_WITH_CAVEATS` on independent adversarial re-verification.
-  [`closure`](closures/Q-POLFRONT-1-closure-resolved-quantified.md) ·
-  [`RESULTS`](../../lab/analysis/c1/q_polfront_1_2026-08/RESULTS.md) ·
-  [`brief`](Q-POLFRONT-1-policy-augmented-seed-frontier.md)
-- **Q-EVALSEQ-1** — within-eval front-load schedule (frozen K=4 family) — **`FALSIFIED` 2026-08-16**
-  (best lift −1.06pt vs +5pt bar; flat WATCH-1 stands; K=3 consumed). **Surviving finding:**
-  cushion-proportional sizing cut bust 20.18% → 0.00% (both halves) at 1.06pt of pass — routed to
-  Q-POLFRONT-1 (bust-axis reframe). No θ-retune of the family; no registry row (policy-lever, not
-  mechanism). [`closure`](closures/Q-EVALSEQ-1-closure-falsified.md) ·
-  [`RESULTS`](../../lab/archive/q_evalseq_1_2026-08/RESULTS.md) ·
-  [`pre-reg`](pre-registration/2026-07-24-2leg-eval-frontload-schedule-preregistration.md)
-
-- **Q-CAPBAND-1** — has `CAP = 1.0` ever excluded an axis that would otherwise have survived —
-  **`RESOLVED` 2026-08-15** — both band axes fail a non-Cap gate: **D6** venue-dead (EURUSD
-  `NOT TRADABLE`, CFD venue closed 2026-07-10) and **D2-low** bar-bound (ES/NQ/YM all return the
-  machine-wired `index-intraday-ohlcv-directional-timing-2026-07-21`). Cap cost nothing **on the
-  named axes**; 2026-08-03 audit §5.4 item 3 discharged. `CAP` byte-unedited. Gates 1–2 stayed
-  `unevaluable` — the verdict rests on gates 3–4 only. $0/K=0.
-  [`closure`](closures/Q-CAPBAND-1-closure-resolved.md) · [`brief`](Q-CAPBAND-1-cap-band-counterfactual.md) ·
-  [`pre-reg`](pre-registration/Q-CAPBAND-1-verdict-preregistration.md).
-- **Q-BUSTGATE-2** — does the 2026-08-13 external population data / updated Tradeify fee schedule
-  move the Part-A eval bust ceiling — **`RESOLVED` 2026-08-15** — sole regime-admissible rung (0.50×)
-  intraday-honest bust 0.72% ≤ 3.0%; ceiling reconfirmed byte-unedited; unconstrained-EV thread still
-  points looser (narrowed 31.2:1→23.4:1, not reversed) but is non-decision-governing; no third
-  re-derivation absent a structural-change ruling. $0/K=0.
-  [`closure`](closures/Q-BUSTGATE-2-closure-resolved.md) ·
-  [`brief`](Q-BUSTGATE-2-bust-gate-re-derivation-2026-08.md) ·
-  [`pre-reg`](pre-registration/Q-BUSTGATE-2-verdict-preregistration.md).
-- **Q-CAPFLOW-1** — OR-window net signed aggressor → ORB trade R (Cap-spend) —
-  **`FALSIFIED` 2026-08-14** — coverage 255/255; ρ +0.020012; CI95 includes 0;
-  Cap **held**; C11 stands. Reservation [`Q-CAPRES-2`](Q-CAPRES-2-mnq-cap-seat-reservation.md)
-  unpaid-score obligation discharged. [`closure`](closures/Q-CAPFLOW-1-closure-falsified.md) ·
-  [`RESULTS`](../../lab/archive/mnq_capflow_orb_r_2026-08/RESULTS.md).
-- **Q-TNEC-CON-5** — impulse→pullback→VWAP-reclaim (pullback stop; first/session) —
-  **`AMBIGUOUS-HOLD` → Branch A STOP 2026-08-12** — non-promotable; CONFIRM unread forever;
-  dense-1m OHLCV temporal-selectivity lane default **paused** pending new modality /
-  non-route-① thesis; lane FALSIFIED counter unchanged **1/3**. Cap unclaimed.
-  [`closure`](closures/Q-TNEC-CON-5-closure-ambiguous-hold.md) ·
-  [`RESULTS`](../../lab/analysis/c1/mnq_tnec_con5_impulse_pullback_vwap_2026-08/RESULTS.md).
-- **Q-TNEC-CON-4** — PDH/PDL RTH with-break — **`AMBIGUOUS-HOLD` 2026-08-11**; successor
-  CON-5 Branch A STOP paused the lane, so this row left Open. INDEX repair 2026-08-15
-  (liveness sweep). **U1 exception granted and spent same day, 2026-08-20** (operator
-  override [`ADR`](../adr/2026-08-20-dense1m-u1-operator-override-con4-reopen.md)) —
-  CONFIRM scored `AMBIGUOUS-HOLD` (short arm mean −0.0611R); cell **reverted to `U0`
-  (paused)**, same as CON-1/2/3/5. Cap unclaimed.
-  [`closure`](closures/Q-TNEC-CON-4-closure-ambiguous-hold.md) ·
-  [`EXPLORE RESULTS`](../../lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/RESULTS.md) ·
-  [`CONFIRM RESULTS`](../../lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/RESULTS_CONFIRM.md).
-- **Q-TNEC-CON-3** — HTF-native 5m compression→expansion break — **`AMBIGUOUS-HOLD`
-  2026-08-10**; successor CON-4/CON-5 lane paused (same repair). CONFIRM unread; Cap
-  unclaimed. [`closure`](closures/Q-TNEC-CON-3-closure-ambiguous-hold.md) ·
-  [`RESULTS`](../../lab/analysis/c1/mnq_tnec_con3_htf_native_break_2026-08/RESULTS.md).
-- **Q-TNEC-CON-2** — dense-1m compression→expansion with-break @ G=10 — **`AMBIGUOUS-HOLD`
-  non-promotable 2026-08-10** — gross +0.90/+0.97 pt eaten by RT 1.41; halves flip; CONFIRM
-  unread; Cap unclaimed. Successor = fresh G0 aimed at cost geometry (not θ-retune / not
-  sign-invert). Master-Pattern-shaped HTF-5m→LTF-1m directed with-break died at parent cheap
-  falsifier same day ($0 / **no Q-ID**) — [`falsifier LOG`](../../lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_htf_bias_break_2026-08-10_LOG.md).
-  [`closure`](closures/Q-TNEC-CON-2-closure-ambiguous-hold.md) ·
-  [`RESULTS_g2`](../../lab/analysis/c1/mnq_tnec_con2_compression_break_2026-08/RESULTS_g2.md).
-- **GSUB-1** — first GRAND-Subtract pass over the pursuit portfolio — **`RESOLVED-LOADBEARING`
-  2026-08-09** — 37-row inventory; **19 ratified dispositions** (8 PARK fielded to 2026-11-08 ·
-  9 SUBTRACT · 2 MERGE); 37 records at [`docs/pursuits/`](../pursuits/); GRAND ADR §4 satisfied
-  (tier load-bearing, sunset did not arm); $0 / K=0. [`closure`](closures/GSUB-1-closure-resolved-loadbearing.md) ·
-  [`inventory`](GSUB-1-inventory-and-dispositions.md) · [`spec`](GSUB-1-first-grand-subtract-pass.md).
-- **Q-TVCOV-1** — TV intraday bar-coverage census — verdicts landed **2026-07-13** (H FALSIFIED
-  for 6J + MNQ; MYM AMBIGUOUS on a one-day TV hole); roster row closed **2026-08-09** under GSUB-1
-  (bookkeeping only — no re-verdict). Residuals assigned: MYM AMBIGUOUS operator call → operator;
-  roll-rule pin (`.v.0` not `.c.0`) — ⚠️ **already discharged** at
-  `.claude/skills/databento-data/reference/schemas-and-symbology.md:37-44` since 2026-07-13; the
-  "open item" text above it was stale (see [`c4 record`](../pursuits/c4-q-tvcov-1.md)).
-  Closure: [`closures/Q-TVCOV-1-closure-falsified.md`](closures/Q-TVCOV-1-closure-falsified.md)
-  (records stub 2026-08-11; disposition from RESULTS + c4). [`RESULTS`](../../lab/analysis/c1/tvcov_2026-07/RESULTS.md) ·
-  [`brief`](Q-TVCOV-1-tv-bar-coverage-census.md) · [`pursuit record`](../pursuits/c4-q-tvcov-1.md)
-- **Q-OFCHAN-1** — flicker-filtered TBBO L1 imbalance → 60 s mid (RTH grid) — **Stage-G VOID-COVERAGE 2026-08-07** — coverage 7.36% (3,558/48,360); empty candidates; STOP this G0 catalogue; CONFIRM unread — [closure](closures/Q-OFCHAN-1-closure-void-coverage.md) · [RESULTS_g2](../../lab/analysis/c1/mnq_ofchan_routeb_2026-08/RESULTS_g2.md).
-- **Q-TXG-1** — transfer/expression lane — **CLOSED — FALSIFIED-at-walls 2026-08-12** (operator elected A on H_A re-argument) — re-proposal = different loss-side shape or different venue-class survival geometry — [packet](Q-TXG-1-ha-reargument.md) · [lane closure](closures/Q-TXG-1-closure-falsified-at-walls.md).
-- **Q-TXG-1 cell striker_nas100×MYM** — sibling-swap transfer cell — **DEAD(cost) 2026-08-12** — mean_net_r 0.0129 < required_net_r 0.06; N-SURV not reached — [closure](closures/2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md) · [PANEL_SCORE](../../lab/archive/transfer_expression_grid_2026-08/cells/striker_nas100_mym/PANEL_SCORE.json).
-- **Q-TXG-1 cell striker×MNQ** — sibling-swap transfer cell — **DEAD(N-SURV) 2026-08-12** — cost PASS; N-SURV FAIL ~98% bust all partitions — [closure](closures/2026-08-12-q-txg-1-striker-mnq-cell-dead-nsurv.md) · [PANEL_SCORE](../../lab/archive/transfer_expression_grid_2026-08/cells/striker_mnq/PANEL_SCORE.json).
-- **Q-MNQSEL-1** — selection-value ceiling on causal restart clocks (s=40) — **CLOSED-FALSIFIED 2026-08-07** — S3 long 0.3998 / short 0.3984 both &lt; 0.40; S1 ≈ −0.036 both arms; STOP this universe — [closure](closures/Q-MNQSEL-1-closure-falsified.md) · [RESULTS](../../lab/archive/mnq_selection_ceiling_2026-08/RESULTS.md).
-- **Q-R2VBUCK-1** — volume-bucket aggressor imbalance → 60 s mid — **Stage-G FALSIFIED 2026-08-08** — n 77,656 / coverage 100%; ρ −0.005478 · CI includes 0; empty candidates; CONFIRM unread — [closure](closures/Q-R2VBUCK-1-closure-falsified.md) · [RESULTS_g2](../../lab/archive/mnq_r2vbuck_routeb_2026-08/RESULTS_g2.md).
-- **Q-MNQDTL-CON-1** — EM construct on dense RTH 1m opens (G=10) — **CLOSED FALSIFIED 2026-08-09** — ES/NQ 5m divergence explore STOP; both arms CI entirely &lt; 0 — [closure](closures/Q-MNQDTL-CON-1-closure-falsified.md) · [RESULTS](../../lab/archive/mnq_con1_dense1m_stage0_2026-08/RESULTS.md).
+- **Q-M1WIRE-1** — does M1 arming interlock verify what its acceptance package claims — **`FALSIFIED` 2026-08-21**, two limbs confirmed missing; rail stays disarmed, M1 stays not-`RESOLVED`. [`closure`](closures/Q-M1WIRE-1-closure-falsified.md)
+- **Q-GATESTACK-1** — does anything on GitHub require the gate stack to pass before `main` — **`FALSIFIED` 2026-08-19**, `main` was unprotected; doc-correction executed same turn. [`closure`](closures/Q-GATESTACK-1-closure-falsified.md)
+- **Q-NSURV-2** — magnitude-resampling second-uncertainty-layer for N-SURV — **`RESOLVED` 2026-08-20**, wrapper reproduces both known candidates' headline estimates within 2pp. [`closure`](closures/Q-NSURV-2-closure-resolved.md) · [`ADR`](../adr/2026-08-20-nsurv-magnitude-resampling-disclosure.md)
+- **Q-ORBSURV-1** — cushion sizing vs the frozen survivor-scoring gate at untested configs — **`FALSIFIED` 2026-08-20**, gate-clear is k-dependent, not robust; does not license unpark. [`closure`](closures/Q-ORBSURV-1-closure-falsified.md)
+- **Q-NSURV-1** — is the N-SURV single-history magnitude blindspot general or idiosyncratic to c1 — **`RESOLVED` 2026-08-20**, confirmed general on a second candidate (different axis each). [`closure`](closures/Q-NSURV-1-closure-resolved.md)
+- **Q-ORBCUSH-1** — trailing edge/cost classifier for ORB-MNQ-1's 2021-09-28 regime break — **`FALSIFIED` 2026-08-20**, break stays real and mechanistically unexplained; bust-elimination unaffected. [`closure`](closures/Q-ORBCUSH-1-closure-falsified.md)
+- **Q-XMEM-1** — per-surface agent-memory invisibility; Mem0 sidecar pilot — **`CLOSED` / GRAND-tier `SUBTRACT` 2026-08-19**. [`closure`](closures/Q-XMEM-1-closure-subtract.md)
+- **Q-TRAINKILL-3** — Block F vs Block A winner between NEG and DEP — **`AMBIGUOUS-HOLD` 2026-08-18**, split; census STOP. [`closure`](closures/Q-TRAINKILL-3-closure-ambiguous-hold.md)
+- **Q-TRAINKILL-2** — bounded recovery / alt DGP fit — **`AMBIGUOUS-HOLD` 2026-08-18**, extremes still disagree. [`closure`](closures/Q-TRAINKILL-2-closure-ambiguous-hold.md)
+- **Q-TRAINKILL-1** — explore/train kill record vs zero edge — **`AMBIGUOUS-HOLD` 2026-08-18**, BOUNDED extremes disagree. [`closure`](closures/Q-TRAINKILL-1-closure-ambiguous-hold.md)
+- **Q-EXPR-1** — what explains the regularity→expression orphaning — **`RESOLVED` 2026-08-18**, horizon-mismatch (4/4). [`closure`](closures/Q-EXPR-1-closure-resolved.md)
+- **Q-CONDVAL-1** — does the CL range-state lift buy anything in R terms — **`FALSIFIED` 2026-08-18**, below the frozen threshold. [`closure`](closures/Q-CONDVAL-1-closure-falsified.md)
+- **Q-POLFRONT-1** — policy-augmented seed-target frontier — **`RESOLVED-QUANTIFIED` 2026-08-16**, 5.1× headline. ⚠ Does not survive intraday-honest remeasure (fork 2026-08-17/20) — see closure for the load-bearing caveat. [`closure`](closures/Q-POLFRONT-1-closure-resolved-quantified.md)
+- **Q-EVALSEQ-1** — within-eval front-load schedule — **`FALSIFIED` 2026-08-16**; surviving finding (cushion sizing cuts bust) routed to Q-POLFRONT-1. [`closure`](closures/Q-EVALSEQ-1-closure-falsified.md)
+- **Q-CAPBAND-1** — has `CAP = 1.0` ever excluded a surviving axis — **`RESOLVED` 2026-08-15**, both band axes fail on other gates; Cap cost nothing on named axes. [`closure`](closures/Q-CAPBAND-1-closure-resolved.md)
+- **Q-BUSTGATE-2** — does updated external data move the Part-A eval bust ceiling — **`RESOLVED` 2026-08-15**, ceiling reconfirmed byte-unedited. [`closure`](closures/Q-BUSTGATE-2-closure-resolved.md)
+- **Q-CAPFLOW-1** — OR-window aggressor flow → ORB trade R (Cap-spend) — **`FALSIFIED` 2026-08-14**, CI95 includes 0; Cap held. [`closure`](closures/Q-CAPFLOW-1-closure-falsified.md)
+- **Q-TNEC-CON-5** — impulse→pullback→VWAP-reclaim — **`AMBIGUOUS-HOLD` → Branch A STOP 2026-08-12**, dense-1m lane paused. [`closure`](closures/Q-TNEC-CON-5-closure-ambiguous-hold.md)
+- **Q-TNEC-CON-4** — PDH/PDL RTH with-break — **`AMBIGUOUS-HOLD` 2026-08-11**; U1 override re-test 2026-08-20 confirmed the same verdict, reverted to paused. [`closure`](closures/Q-TNEC-CON-4-closure-ambiguous-hold.md)
+- **Q-TNEC-CON-3** — HTF-native 5m compression→expansion break — **`AMBIGUOUS-HOLD` 2026-08-10**, lane paused. [`closure`](closures/Q-TNEC-CON-3-closure-ambiguous-hold.md)
+- **Q-TNEC-CON-2** — dense-1m compression→expansion with-break @ G=10 — **`AMBIGUOUS-HOLD` non-promotable 2026-08-10**, cost eats the gross edge. [`closure`](closures/Q-TNEC-CON-2-closure-ambiguous-hold.md)
+- **GSUB-1** — first GRAND-Subtract pass over the pursuit portfolio — **`RESOLVED-LOADBEARING` 2026-08-09**, 19 ratified dispositions of a 37-row inventory. [`closure`](closures/GSUB-1-closure-resolved-loadbearing.md)
+- **Q-TVCOV-1** — TV intraday bar-coverage census — **closed 2026-08-09** (verdicts landed 2026-07-13: FALSIFIED for 6J+MNQ, AMBIGUOUS MYM). [`closure`](closures/Q-TVCOV-1-closure-falsified.md)
+- **Q-OFCHAN-1** — flicker-filtered TBBO L1 imbalance → 60s mid — **Stage-G VOID-COVERAGE 2026-08-07**, 7.36% coverage; STOP this catalogue. [`closure`](closures/Q-OFCHAN-1-closure-void-coverage.md)
+- **Q-TXG-1** — transfer/expression lane — **CLOSED — FALSIFIED-at-walls 2026-08-12**. [`lane closure`](closures/Q-TXG-1-closure-falsified-at-walls.md)
+- **Q-TXG-1 cell striker_nas100×MYM** — **DEAD(cost) 2026-08-12**. [`closure`](closures/2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md)
+- **Q-TXG-1 cell striker×MNQ** — **DEAD(N-SURV) 2026-08-12**, cost PASS but ~98% bust all partitions. [`closure`](closures/2026-08-12-q-txg-1-striker-mnq-cell-dead-nsurv.md)
+- **Q-MNQSEL-1** — selection-value ceiling on causal restart clocks — **CLOSED-FALSIFIED 2026-08-07**. [`closure`](closures/Q-MNQSEL-1-closure-falsified.md)
+- **Q-R2VBUCK-1** — volume-bucket aggressor imbalance → 60s mid — **Stage-G FALSIFIED 2026-08-08**, CI includes 0. [`closure`](closures/Q-R2VBUCK-1-closure-falsified.md)
+- **Q-MNQDTL-CON-1** — EM construct on dense RTH 1m opens — **CLOSED FALSIFIED 2026-08-09**. [`closure`](closures/Q-MNQDTL-CON-1-closure-falsified.md)
 
 
 These had Notion tracker cards that are now retired. Hot closures live in `docs/briefs/closures/`. Older restored records are **not** on this public clone — retrieve via `git show` / private archive ([`docs/ltm/README.md`](../ltm/README.md)):

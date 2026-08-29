@@ -21,9 +21,9 @@ entry first).
 - Forward triggers: date/criterion + owner link only; detail stays with the owner.
 - Retention test for every row: *open or still owed, and no other home.* If either
   fails, it leaves.
-- **Entry classes + 40-word cap (W5 direction):** Decision / Build / Measurement /
-  Hygiene — see [`W5 ADR`](docs/adr/2026-08-07-w5-governance-diet.md); prefer links
-  over prose.
+- **Entry classes + ~40-word soft target (W5 direction, not an enforced cap):** Decision /
+  Build / Measurement / Hygiene — see [`W5 ADR`](docs/adr/2026-08-07-w5-governance-diet.md);
+  prefer links over prose.
 
 **Standing base case:** absent an N-clear candidate, the 2026-11-08 §4 falsifier
 (prop-portfolio program) reads **FALSIFIED** — the four-firms ADR's demotion clause is
