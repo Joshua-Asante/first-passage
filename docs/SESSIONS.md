@@ -33,6 +33,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-29j — MYM stale CONTINGENT-FORWARD cell verdicts
+
+**Focus:** two MYM PROFILE cells (`overnight-range-day-session-transfer`, `intraday-bar-volume-regime`) used `CONTINGENT-FORWARD` without a running frozen forward test.
+**Shipped:** `cursor/mym-stale-contingent-forward-1c34` — both flipped to `AMBIGUOUS-PARKED`; `MECHANISMS.md` class findings + generated `PROFILES.md`/`profiles.json` rebuilt.
+**Decisions/defects:** re-read both 2026-08-29 Notice-logs — GRADUATE / Pre-Q deferred; no `Q-*.md`, no frozen pre-reg, no operator GO. Same class as MNQ PR #201. Gap-magnitude + closing-location cells left `CONTINGENT-FORWARD` (HELD, out of scope).
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: operator-dispatched documentation-only registry correction; not a leftover Open/next name.`
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-29i — instrument_profiles Class-finding paragraph join
 
 **Focus:** `_finding_text` ran per physical line, so wrapped Class-finding bullets landed as a verdict-free first clause (`GC (parent…)` without NULL / DEAD).

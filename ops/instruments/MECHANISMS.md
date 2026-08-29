@@ -159,7 +159,9 @@ here) plus an owed $0 stage-1 cheap falsifier and an operator GO. Conditioner-ro
   Block-bootstrap on the minimum stratified lift: mean **+0.2186**, 95% CI **[+0.1042, +0.3216]**,
   p(lift≤0)=0.00025. **INCREMENT — decisive.** Un-pause precondition 2 is now CLEARED; conditions
   3 (joint-surrogate null design, adversarial-reviewed) and 4 (operator GO) remain outstanding
-  before any full battery. First instrument scored under this role. [MYM.md](MYM.md) ·
+  before any full battery. First instrument scored under this role; ledger cell
+  `AMBIGUOUS-PARKED` (GRADUATE-eligible, Pre-Q deferred — no frozen forward test executing).
+  [MYM.md](MYM.md) ·
   [`N-2026-08-29-mym-overnight-rth-range-transfer.md`](../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md)
 - **Superseded (disclosed, not the D5 stage-1 answer):** the first-pass **marginal**-comparison
   falsifier (overnight-conditioned obs 0.7604 vs day-history-conditioned obs 0.7306, diff +0.0297,
@@ -215,7 +217,8 @@ frozen battery.
   largest-magnitude correction in the 2026-08-29 MYM batch.** Cross-instrument corroboration: MNQ's
   own same-day candidate 3 (informally `bar-volume-regime`, no landed heading/cell yet) ran the
   correct stratified design from the start and found a similar shape (+20.6pp/+25.6pp), also
-  GRADUATEd. [MYM.md](MYM.md) ·
+  GRADUATEd. Ledger cell `AMBIGUOUS-PARKED` (GRADUATE-eligible, Pre-Q deferred — no frozen
+  forward test executing). [MYM.md](MYM.md) ·
   [`N-2026-08-29-mym-bar-volume-regime.md`](../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md)
 - **Superseded (disclosed, not the authoritative answer):** the first-pass **marginal** falsifier
   (volume-conditioned obs=0.6546 vs. own-range-conditioned obs=0.6596, diff −0.0049, 95% CI
