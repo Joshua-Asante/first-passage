@@ -107,9 +107,9 @@ lab-archive-check:
 	@python scripts/archive_lab_analysis.py --check
 
 # Rule 11 floor: do standing ADR falsifiers still name inputs that exist?
-# Deliberately NOT in `make check` and NOT in the pre-commit hook — WARN-tier only.
-# A hard gate would block commits on ADRs nobody is touching (the M-22 failure mode).
-# Covers ~28% of falsifier sections (the rest are prose); blind to retired-duty limbs.
+# Manual `--stats` wrapper. Same census already runs on `make check` / pre-commit
+# as report-only `--stats` (never `--strict`; see the script docstring).
+# A hard / `--strict` gate would block commits on ADRs nobody is touching (M-22).
 falsifier-reachability:
 	@python scripts/check_falsifier_reachability.py --stats
 
