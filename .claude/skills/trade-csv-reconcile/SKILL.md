@@ -25,6 +25,8 @@ A CSV at `data/tv_exports/pepperstone/aegis.csv` (retired) is not necessarily Pe
 
 **Sub-rule — TradingView <30-day backtests on JPY pairs are unreliable.** P&L inflation up to ~153× from JPY→USD conversion hook failing to initialize on short windows. Do not accept short-window TV exports for JPY-pair strategies; validate via Python recompute: `qty × (exit − entry) ÷ exit − 0.00006 × qty`.
 
+**Sub-rule — last exit << chart last bar is a pane claim, not automatically “the strategy died.”** Last-N Deep and entire-history Deep are different requests — flip that chip on the same script before treating the CSV as a full-window backtest. Can also be session-edge adjacency on gapped bars; dated front month dying in the same week does not by itself prove a warehouse hole, and Last-N emptiness on `MNQ1!` does not by itself prove adjacency. Inventory the testing period (Deep / Available chart range / Last-N vs entire-history), then read [`docs/notes/research/2026-08-28-tradingview-strategy-report-july-2026.md`](../../../docs/notes/research/2026-08-28-tradingview-strategy-report-july-2026.md) before computing PF/WR or reconciling a lock. A prior export of the same construct through a later date beats the short pane.
+
 **Sub-rule — DXTrade `contractValue` (HISTORICAL / DORMANT).** FXIFY/DXTrade execution is retired. If an old DXTrade CSV appears: XAUUSD=100, USDJPY=default(1), DJ30=10 (CRITICAL), NAS100=10. Not a live sizing check — see operational Rule 3.
 
 ---
