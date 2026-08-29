@@ -1,4 +1,4 @@
-"""Predicate for automatic Claude judgment-review requests."""
+"""Predicate for automatic Codex judgment-review requests."""
 from __future__ import annotations
 
 import importlib.util
@@ -7,9 +7,9 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-SCRIPT = REPO / "scripts" / "check_claude_judgment_review.py"
+SCRIPT = REPO / "scripts" / "check_codex_judgment_review.py"
 
-_SPEC = importlib.util.spec_from_file_location("check_claude_judgment_review", SCRIPT)
+_SPEC = importlib.util.spec_from_file_location("check_codex_judgment_review", SCRIPT)
 mod = importlib.util.module_from_spec(_SPEC)
 assert _SPEC.loader is not None
 sys.modules[_SPEC.name] = mod
@@ -73,7 +73,7 @@ def test_label_is_explicit_opt_in() -> None:
 def test_body_token_is_explicit_opt_in() -> None:
     decision = _decide(
         head_branch="feat/human",
-        body="Please look.\nClaude-Review: Judgment\n",
+        body="Please look.\nCodex-Review: Judgment\n",
         changed_files=["tests/test_example.py"],
     )
     assert decision == mod.Decision(True, "body_token")

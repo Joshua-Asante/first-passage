@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Predicate: should this PR auto-request a Claude judgment review?
+"""Predicate: should this PR auto-request a Codex judgment review?
 
 Owner: ``docs/adr/2026-07-14-cc-cursor-surface-allocation.md`` addendum
-2026-08-23 (automatic judgment review). Review-only — never merge.
+2026-08-23 (automatic judgment review), retargeted from Claude to Codex by
+the 2026-08-29 addendum. Review-only — never merge.
 
 Exit 0 on a valid decision (trigger is an output, not a failure).
 Exit 2 on usage / I/O errors.
@@ -18,9 +19,9 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-LABEL = "claude-review"
-BODY_TOKEN = "claude-review: judgment"
-MARKER = "<!-- claude-judgment-review -->"
+LABEL = "codex-review"
+BODY_TOKEN = "codex-review: judgment"
+MARKER = "<!-- codex-judgment-review -->"
 CURSOR_PREFIX = "cursor/"
 
 # Cursor-first PRs that touch any of these get an automatic review request.
@@ -178,7 +179,7 @@ def main(argv: list[str] | None = None) -> int:
             event_label=args.event_label,
         )
     except OSError as exc:
-        print(f"claude-judgment-review: FAIL — {exc}", file=sys.stderr)
+        print(f"codex-judgment-review: FAIL — {exc}", file=sys.stderr)
         return 2
     print(f"TRIGGER={decision.trigger_word}")
     print(f"REASON={decision.reason}")

@@ -1,0 +1,130 @@
+# Automatic Codex second-opinion review for judgment-heavy PRs.
+# Owner: docs/adr/2026-07-14-cc-cursor-surface-allocation.md addendum
+# 2026-08-23 (automatic judgment review), retargeted from Claude to Codex by
+# the addendum dated 2026-08-29.
+# Review-only. Does not merge.
+#
+# Unlike claude-judgment-review.yml's predecessor (which posted an `@claude`
+# mention picked up by claude-code-action's GitHub-App listener in
+# claude.yml), Codex has no such listener — there is nothing to mention.
+# This workflow runs `codex exec review` directly in the same job and posts
+# its output as the PR comment. That also sidesteps the reason the old
+# workflow needed a two-hop dance: anthropics/claude-code-action self-skips
+# on any PR that edits .github/workflows/, which does not apply here.
+#
+# Fires once per PR (HTML marker). Re-review is a fresh push after deleting
+# the marker comment, or an operator/cursor comment.
+# Drafts are silent; ready_for_review is the first look.
+# pull_request (not pull_request_target).
+
+name: Codex judgment review
+
+on:
+  pull_request:
+    types: [opened, ready_for_review, reopened, labeled]
+
+concurrency:
+  group: codex-judgment-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  codex-review:
+    if: >
+      github.event.pull_request.draft == false &&
+      (github.event.action != 'labeled' ||
+       github.event.label.name == 'codex-review')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Fetch base branch
+        run: git fetch --no-tags origin "${{ github.event.pull_request.base.ref }}"
+
+      - name: Collect PR context
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+          printf '%s' "${PR_BODY}" > /tmp/pr-body
+          gh api --paginate \
+            "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" \
+            --jq '.[].filename' > /tmp/changed-files
+          gh api --paginate \
+            "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
+            --jq '.[].body // empty' > /tmp/comments
+
+      - name: Decide
+        id: decide
+        env:
+          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+          EVENT_ACTION: ${{ github.event.action }}
+          EVENT_LABEL: ${{ github.event.label.name || '' }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          python3 scripts/check_codex_judgment_review.py \
+            --head-branch "$HEAD_BRANCH" \
+            --draft false \
+            --labels "$PR_LABELS" \
+            --body-file /tmp/pr-body \
+            --changed-files-file /tmp/changed-files \
+            --existing-comments-file /tmp/comments \
+            --event-action "$EVENT_ACTION" \
+            --event-label "$EVENT_LABEL"
+
+      - name: Install Codex CLI
+        if: steps.decide.outputs.trigger == 'yes'
+        run: npm install -g @openai/codex
+
+      # Draws from the ChatGPT/Codex subscription entitlement (a device-auth
+      # access token), mirroring how claude.yml draws from the Claude
+      # Max/Pro subscription rather than separate metered API billing.
+      # Generate the token locally with `codex login --device-auth`, then
+      # extract the access token codex stores under `$CODEX_HOME/auth.json`
+      # and save it as the CODEX_ACCESS_TOKEN repo secret (rotate as needed;
+      # unlike claude setup-token this is not a fixed-lifetime grant, follow
+      # whatever expiry Codex reports).
+      #
+      # To use metered API billing instead, swap this step's run line for:
+      #   printenv OPENAI_API_KEY | codex login --with-api-key
+      # and reference secrets.OPENAI_API_KEY instead.
+      - name: Authenticate Codex
+        if: steps.decide.outputs.trigger == 'yes'
+        env:
+          CODEX_ACCESS_TOKEN: ${{ secrets.CODEX_ACCESS_TOKEN }}
+        run: printenv CODEX_ACCESS_TOKEN | codex login --with-access-token
+
+      - name: Run Codex review
+        if: steps.decide.outputs.trigger == 'yes'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          codex exec review \
+            --base "origin/${{ github.event.pull_request.base.ref }}" \
+            --title "$PR_TITLE" \
+            --sandbox read-only \
+            --output-last-message /tmp/codex-review.md
+
+      - name: Post Codex review
+        if: steps.decide.outputs.trigger == 'yes'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REASON: ${{ steps.decide.outputs.reason }}
+        run: |
+          set -euo pipefail
+          {
+            echo "**Codex second-opinion review** — automated (\`codex exec review\`), review-only, not merge authority. Reason: \`$REASON\`. Owner: \`docs/adr/2026-07-14-cc-cursor-surface-allocation.md\` addendum 2026-08-29."
+            echo
+            cat /tmp/codex-review.md
+            echo
+            echo '<!-- codex-judgment-review -->'
+          } > /tmp/codex-review-comment.md
+          gh pr comment "$PR_NUMBER" --body-file /tmp/codex-review-comment.md

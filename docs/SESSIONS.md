@@ -33,6 +33,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-29j — Codex second-opinion PR review replaces Claude-judgment auto-request
+
+**Focus:** operator directive to move the Cursor-PR auto-review-request (2026-08-23 addendum) from Claude to Codex — an independently-trained second reviewer for the same blind-spot-catching purpose.
+**Shipped:** `docs/adr/2026-07-14-cc-cursor-surface-allocation.md` addendum 2026-08-29. `check_claude_judgment_review.py` → `check_codex_judgment_review.py` (predicate unchanged, identifiers renamed); `claude-judgment-review.yml` → `codex-judgment-review.yml` (runs `codex exec review` directly — no GitHub-App listener exists for Codex, so the old two-hop `@claude`-mention dance is dropped); `notify-cursor.yml` extended to match the Codex marker; `claude.yml` `allowed_bots` narrowed (dropped now-unused `github-actions`).
+**Decisions/defects:** opt-in predicate surface (label/body-token/`cursor/*`+judgment-path) is byte-identical, only renamed. Cost model is **not** $0 like Claude's subscription draw — flagged in the addendum; `CODEX_ACCESS_TOKEN`/`OPENAI_API_KEY` is not yet provisioned (operator action, cannot be done from a repo-editing session), so no live Codex review runs until that secret lands. Non-blocking: `gate-manifest` is the only required check.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: operator-directed PR-review tooling swap (Codex integration); not a leftover Open/next name.`
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-29i — instrument_profiles Class-finding paragraph join
 
 **Focus:** `_finding_text` ran per physical line, so wrapped Class-finding bullets landed as a verdict-free first clause (`GC (parent…)` without NULL / DEAD).

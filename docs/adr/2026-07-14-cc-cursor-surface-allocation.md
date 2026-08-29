@@ -190,6 +190,7 @@ git log -1 --format='%h %ci' -- docs/operational_rules.md .claude/skills/handoff
 | 2026-07-16 | Addendum RATIFIED — Step 0 + handoff-contract 5th item now binding; `cc_handoff.md` §0.75 marker flipped in the same commit | Joshua (chat directive: "Step-0 cloud-dispatch addendum: ratify") |
 | 2026-08-14 | Addendum RATIFIED — see below (narrows §2 return-contract + §5 forbidden-move on merge) | Joshua (explicit ruling, in-session) |
 | 2026-08-23 | Addendum RATIFIED — see below (automatic Claude judgment review on Cursor-first / opted-in PRs; review-only) | Joshua (chat: wire automatic Claude review on judgment-heavy PRs, especially Cursor-scoped) |
+| 2026-08-29 | Addendum RATIFIED — see below (2026-08-23 addendum's automatic judgment-review request retargeted from Claude to Codex; review-only, same predicate) | Joshua (chat: "I have been having Cursor prompt Claudebot for reviews on PRs, this can go to Codex instead") |
 
 ---
 
@@ -236,5 +237,36 @@ Events: `opened`, `ready_for_review`, `reopened`, `labeled` (label must be `clau
 - No STATE queue row. No sixth root doc. $0.
 
 **Forbidden:** treating a Claude review comment as merge authority; firing on every push; widening `allowed_bots` to `*`; using `pull_request_target`; auto-requesting on every `cursor/*` PR regardless of surface; invoking `claude-code-action` directly from the `pull_request` workflow (that path skips on workflow diffs).
+
+---
+
+<a id="addendum-2026-08-29-codex-judgment-review"></a>
+
+## Addendum (2026-08-29, RATIFIED same day — operator chat: "I have been having Cursor prompt Claudebot for reviews on PRs, this can go to Codex instead") — auto-request retargeted from Claude to Codex
+
+**Reads (before authoring):** this ADR `4f3ddc6` (2026-08-24, addendum above). `.github/workflows/claude-judgment-review.yml` (same anchor) — the two-hop `@claude`-mention dance and its stated cause (`claude-code-action` self-skips on `.github/workflows/` diffs). `scripts/check_claude_judgment_review.py` (same anchor) — the `JUDGMENT_*` opt-in predicate this addendum reuses unchanged. `.github/workflows/claude.yml` (same anchor) — `allowed_bots` and its `github-actions` rationale. `.github/workflows/notify-cursor.yml` (same anchor) — the `claude[bot]`-login match that pings `@cursor` once a review lands. `codex --help` / `codex exec review --help` / `codex login --help` run locally against the installed `@openai/codex` CLI (v0.151.0) — Codex has no GitHub-App mention listener analogous to `claude-code-action`; `codex exec review --base <branch>` is the non-interactive review primitive; auth is either a device-auth access token (`codex login --device-auth`, consumed via `--with-access-token`, drawing on a ChatGPT/Codex subscription) or an API key (`--with-api-key`, metered OpenAI API billing).
+
+**Trigger:** operator directive to redirect the existing Cursor-PR auto-review-request mechanism (2026-08-23 addendum above) from Claude to Codex — a second, independently-trained reviewer is more likely to catch a blind spot Claude's own review shares, which is the whole point of a "second look."
+
+**What changes:**
+
+1. `scripts/check_codex_judgment_review.py` (renamed from `check_claude_judgment_review.py`, `git mv`, predicate logic byte-identical) — `LABEL` → `codex-review`, `BODY_TOKEN` → `codex-review: judgment`, `MARKER` → `<!-- codex-judgment-review -->`. The `JUDGMENT_EXACT` / `JUDGMENT_PREFIXES` / `JUDGMENT_SUFFIXES` opt-in surface is **unchanged** — same PRs qualify, only the reviewer changes.
+2. `.github/workflows/codex-judgment-review.yml` (renamed from `claude-judgment-review.yml`) — same trigger events (`opened`, `ready_for_review`, `reopened`, `labeled` on label `codex-review`), same draft/marker/label/body-token gating. Where the old workflow **posted `@claude`** for `claude.yml` to pick up, this workflow installs the Codex CLI and runs `codex exec review --base origin/<base> --sandbox read-only` **directly in the same job**, then posts the last-message output as the PR comment (as `github-actions[bot]`, marker included for idempotency). The two-hop mention dance is dropped — it existed solely to work around `claude-code-action` self-skipping on `.github/workflows/` diffs, which does not apply to a plain CLI invocation.
+3. Auth: `CODEX_ACCESS_TOKEN` repo secret (device-auth access token, `codex login --with-access-token`), mirroring `CLAUDE_CODE_OAUTH_TOKEN`'s subscription-draw design intent. The workflow's inline comments document the `OPENAI_API_KEY` / `--with-api-key` metered-billing alternative for whichever the operator's account actually supports. **Neither secret exists yet** — provisioning is an operator action (generate locally via `codex login --device-auth`, extract the token, add as a GitHub Actions secret) that cannot be completed from a repo-editing session. Until it is, the job fails at the "Authenticate Codex" step; this is a non-required check (`gate-manifest`'s `skills (3.12)` job is the only required one), so it does not block merges — but it also means **no live Codex review actually runs** until the secret lands.
+4. `.github/workflows/notify-cursor.yml` — added an OR branch matching a `github-actions[bot]` comment containing the `<!-- codex-judgment-review -->` marker, so Cursor still gets pinged to address findings after a Codex review lands (it has no bot login to match the way `claude[bot]` does).
+5. `.github/workflows/claude.yml` — `allowed_bots` narrowed from `cursor,github-actions` to `cursor`. `github-actions`'s sole cited purpose was posting `@claude` for the now-retargeted flow; grep confirms no other caller. Dropped rather than left as unused standing scope.
+
+**Cost note (departs from the 2026-08-23 addendum's "$0"):** Claude's flow draws from the Claude Max/Pro subscription's included usage — genuinely $0 marginal. Codex's cost depends on which auth path the operator provisions: a device-auth access token draws on a ChatGPT/Codex subscription entitlement (the intended default here, matching "I have subscribed"); the documented `OPENAI_API_KEY` fallback is metered API billing, real dollars per review. Whichever is provisioned, this is **not** charted as $0 by default the way the Claude flow was — confirm the account's plan covers CI-volume `codex exec review` calls before relying on this at scale.
+
+**What does not change:**
+- The §2 routing test (which tasks are Cursor-eligible) is untouched.
+- The 2026-08-14 auto-merge gate is untouched.
+- The opt-in predicate surface (which PRs qualify) is untouched — only the reviewer and the transport.
+- `claude.yml`'s manual `@claude`-mention capability for human/cursor commenters is untouched — this addendum only removes the `github-actions`-originated automatic mention, not the general listener.
+- No STATE queue row. No sixth root doc. Not $0 (see above).
+
+**Forbidden:** treating a Codex review comment as merge authority; firing on every push; widening `allowed_bots` back to include an unused bot or to `*`; using `pull_request_target`; auto-requesting on every `cursor/*` PR regardless of surface; committing an API key or access token to the repo instead of a GitHub Actions secret; letting `codex exec review` run outside `--sandbox read-only` in this job.
+
+**Revert trigger:** either (1) `CODEX_ACCESS_TOKEN`/`OPENAI_API_KEY` remains unprovisioned past one full quarter (no live Codex review has ever run), or (2) a rolling 8-week window in which Codex's review comment is demonstrably lower-signal than Claude's on the same class of PR (operator-judged, logged in `SESSIONS.md`). Revert action: re-point `codex-judgment-review.yml`'s "Request review" step back to posting `@claude` (limb 1: no working alternative materialized) or restore `claude-judgment-review.yml` alongside it as a second, additive reviewer rather than a replacement (limb 2: Codex underperforms but is still worth keeping as a supplement).
 
 **Revert trigger:** either (1) a tests-only `cursor/*` PR receives an automatic request, or (2) a `cursor/*` PR that edits `docs/adr/**` (non-draft, first look) does not. Both are mechanically checkable from the predicate tests + one live workflow run.
