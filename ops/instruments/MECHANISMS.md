@@ -146,7 +146,7 @@ Both class findings below are OFFICIAL under it (2026-08-18, operator PROCEED).
   iter=500, byte-identically, with the escalation ladder's Schreiber end-matching trim finding
   no improving offset. **Not a fourth verdict alongside NULL/SIGNAL-GENERIC/SIGNAL-GENERIC —
   uncertified**, the exact failure mode the corrected battery exists to catch (a naive L1–L3-only
-  read would have called this SIGNAL). Ledger cell `CONTINGENT-FORWARD`, re-open trigger is
+  read would have called this SIGNAL). Ledger cell `AMBIGUOUS-PARKED`, re-open trigger is
   operator-scoped (panel extended to ≥7 full years, or a fresh surrogate-class design per the
   frozen spec's own O5 remedy) — not calendar-triggered. [MNQ.md](MNQ.md) ·
   [`N-2026-08-29-mnq-daily-range-persistence.md`](../../docs/notes/notice/N-2026-08-29-mnq-daily-range-persistence.md)
@@ -321,8 +321,11 @@ resolve on its own.
   consistent with MYM's (same sign, same order of magnitude) but not yet typed SIGNAL-EXCESS vs
   SIGNAL-GENERIC on this instrument. Same open question as MYM's: admission-route status under
   the single-instrument directional-timing raised bar is unresolved. Ledger cell
-  `CONTINGENT-FORWARD`, re-open trigger is the same scope ruling MYM's cell waits on, not a
-  separate one. [MNQ.md](MNQ.md) ·
+  `AMBIGUOUS-PARKED` (corrected from an initial `CONTINGENT-FORWARD` — no forward test is running
+  on this cell, see MNQ.md's own session-log correction note); re-open trigger is the same scope
+  ruling MYM's cell waits on, not a separate one. ⚠ MYM's own cell for this class (above) still
+  reads `CONTINGENT-FORWARD` as of this correction — same underlying misuse, pre-existing on
+  `main`, out of scope for this pass; flagged separately, not fixed here. [MNQ.md](MNQ.md) ·
   [`N-2026-08-29-mnq-clv-autocorrelation.md`](../../docs/notes/notice/N-2026-08-29-mnq-clv-autocorrelation.md)
 
 ## htf-compression-breakout-5m

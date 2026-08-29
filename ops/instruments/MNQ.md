@@ -43,19 +43,19 @@ cells:
     date: 2026-08-05
     source: "../../lab/archive/mnq_orderflow_probe_2026-08-04/RESULTS.md"
   - mechanism: overnight-range-transmission
-    verdict: CONTINGENT-FORWARD
+    verdict: AMBIGUOUS-PARKED
     date: 2026-08-29
     source: "../../docs/notes/notice/N-2026-08-29-mnq-overnight-rth-range-transfer.md"
   - mechanism: intraday-bar-volume-regime
-    verdict: CONTINGENT-FORWARD
+    verdict: AMBIGUOUS-PARKED
     date: 2026-08-29
     source: "../../docs/notes/notice/N-2026-08-29-mnq-bar-volume-regime.md"
   - mechanism: daily-range-state-persistence
-    verdict: CONTINGENT-FORWARD
+    verdict: AMBIGUOUS-PARKED
     date: 2026-08-29
     source: "../../docs/notes/notice/N-2026-08-29-mnq-daily-range-persistence.md"
   - mechanism: bar-closing-location-autocorrelation
-    verdict: CONTINGENT-FORWARD
+    verdict: AMBIGUOUS-PARKED
     date: 2026-08-29
     source: "../../docs/notes/notice/N-2026-08-29-mnq-clv-autocorrelation.md"
 structure:
@@ -220,10 +220,20 @@ structure:
   had no MNQ bullet despite MNQ having scored a fourth instrument under it; `bar-closing-location-
   autocorrelation` (MYM's id) had no MNQ bullet either, despite both instruments independently
   landing a real, same-signed result and sharing the identical open admission-route question.
-  Four new `cells:` rows added (all `CONTINGENT-FORWARD`, dated 2026-08-29 — this session's own
-  recorded date, not an invented shared date, per each row's own cited Notice-log source), plus a
-  standalone MNQ class-finding bullet under each of the three MYM-authored headings. **Deliberately
-  NOT done:** the `overnight-range-transmission` vs. `overnight-range-day-session-transfer` /
+  Four new `cells:` rows added, dated 2026-08-29 — this session's own recorded date, not an
+  invented shared date, per each row's own cited Notice-log source — plus a standalone MNQ
+  class-finding bullet under each of the three MYM-authored headings. **Correction (same PR,
+  post-review):** all four rows were first landed as `CONTINGENT-FORWARD`, which
+  `scripts/instrument_profiles.py cell`'s own `CONSULT_NOTE` defines as "a frozen forward test is
+  running on this cell" — true of none of the four (two are HOLD with no forward test proposed at
+  all; the other two GRADUATEd to a Pre-Q, and even `overnight-range-transmission`'s real, frozen
+  `Q-RANGEXFER-1` pre-registration has no operator GO yet, so no test is actually executing — see
+  the USDCAD `BPC-001` ledger note for why "frozen config" and "running forward test" are not the
+  same claim). Re-set all four to `AMBIGUOUS-PARKED`, the closed vocabulary's correct fallback for
+  "real, registered, not dead, not live, no forward test currently executing" — still `BLOCKING`,
+  so the collision-prevention purpose of adding these rows at all is unchanged. Caught by an
+  automated PR review, verified against the Notice-log §4 routing decisions before fixing, not
+  taken on the review's word alone. **Deliberately NOT done:** the `overnight-range-transmission` vs. `overnight-range-day-session-transfer` /
   `overnight-gap-magnitude-range-conditioning` taxonomy split stays as-is — MNQ's own combined id
   encodes a real analytical claim (gap magnitude is a nested, sign-unstable sub-question of
   overnight range, per `candidate24_joint_gate.py`) that MYM's own two ids have not yet been tested

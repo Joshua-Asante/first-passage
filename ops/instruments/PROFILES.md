@@ -10,10 +10,10 @@
 | Mechanism | 6J | BTCUSD | ES | EURGBP | EURUSD | GER40 | M2K | M6A | M6B | MCL | MES | MGC | MJY | MNQ | MYM | NAS100 | NG | NQ | SPX500 | USDCAD | USOIL | XAGUSD | XAUUSD | YM | ZB | ZF | ZN |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | band-pierce-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | F | . | . | . | . | . | . | . |
-| bar-closing-location-autocorrelation | . | . | . | . | . | . | . | . | . | . | . | . | . | F | F | . | . | . | . | . | . | . | . | . | . | . | . |
+| bar-closing-location-autocorrelation | . | . | . | . | . | . | . | . | . | . | . | . | . | A | F | . | . | . | . | . | . | . | . | . | . | . | . |
 | commodity-carry-term-structure | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . |
 | compression-gated-breakout | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . |
-| daily-range-state-persistence | . | . | . | . | . | . | . | . | . | A | . | D | . | F | A | . | . | . | . | . | . | . | . | . | . | . | . |
+| daily-range-state-persistence | . | . | . | . | . | . | . | . | . | A | . | D | . | A | A | . | . | . | . | . | . | . | . | . | . | . | . |
 | day-of-week-selection-gate | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . |
 | event-window-reversal | . | . | . | . | D | . | . | . | . | . | . | D | . | . | D | . | D | . | . | . | . | . | . | . | . | . | D |
 | expiry-oi-strike-convergence | . | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
@@ -21,7 +21,7 @@
 | ict-liquidity | . | . | . | . | . | . | . | . | . | . | . | . | . | D | D | . | . | . | D | . | . | . | . | . | . | . | . |
 | impulse-pullback-vwap-reclaim | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | index-dispersion | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . |
-| intraday-bar-volume-regime | . | . | . | . | . | . | . | . | . | . | . | . | . | F | F | . | . | . | . | . | . | . | . | . | . | . | . |
+| intraday-bar-volume-regime | . | . | . | . | . | . | . | . | . | . | . | . | . | A | F | . | . | . | . | . | . | . | . | . | . | . | . |
 | intraday-momentum | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | D | . | . | . | . | . | . | . | . | . |
 | london-range-failed-extension-fade | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | mean-reversion-fade | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | D | D | . | . | . | . | . | . |
@@ -33,7 +33,7 @@
 | overnight-gap-magnitude-range-conditioning | . | . | . | . | . | . | . | . | . | . | . | . | . | . | F | . | . | . | . | . | . | . | . | . | . | . | . |
 | overnight-range-day-session-transfer | . | . | . | . | . | . | . | . | . | . | . | . | . | . | F | . | . | . | . | . | . | . | . | . | . | . | . |
 | overnight-range-failed-extension-fade | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
-| overnight-range-transmission | . | . | . | . | . | . | . | . | . | . | . | . | . | F | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| overnight-range-transmission | . | . | . | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | pdh-pdl-breakout-rth | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | pdh-pdl-failed-break-reclaim | . | . | . | . | . | . | D | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . |
 | prior-session-breakout-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
@@ -65,11 +65,11 @@ Entering in the direction of a statistical band pierce (e.g. an NY-morning σ-th
 
 - **Class finding:** MYM (all M15 bars, RTH+overnight, 2020-07→2026-07, n_pairs=141,119): lag-1 Spearman rho(CLV_t, CLV_t+1) = **−0.0370**, 95% CI **[−0.0422, −0.0319]** (excludes 0, negative — anti-persistence/mean-reversion, not momentum), both halves and all 7 years same-signed (magnitude shrinking over the panel, −0.073 in 2020 → −0.02/−0.03 by 2024–2026). Attribution **EXCESS**: obs sits at the 0th percentile of its own zero-mechanism (linear-ACF-preserving) IAAFT surrogate band, p_two_sided=0.0050 — **SIGNAL-EXCESS**, the strongest result of the batch this class-family produced this session. **Not graduated** — admission-route status under the single-instrument directional-timing raised bar is unresolved (a negative/mean-reverting shape claim reads closer to `mean-reversion-fade` than to a neutral conditioner); ledger cell `CONTINGENT-FORWARD`, HELD pending a scope ruling. [MYM.md](MYM.md) · [`N-2026-08-29-mym-closing-location-autocorrelation.md`](../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md)
 
-- **Class finding:** (MNQ, 2026-08-29 — backfilled on reconciliation pass): MNQ (full continuous M15 bar sequence, RTH+overnight, n_pairs=141,540): lag-1 Spearman rho(CLV_t, CLV_t+1) = **−0.0301**, block-shuffle null (block=96≈1 day, 2000 permutations) band **[−0.0052, +0.0051]** — real, negative, both halves same-signed (H1 −0.0385, H2 −0.0219). **Not run through the IAAFT battery this session** (only the block-shuffle null, a weaker test than MYM's SIGNAL-EXCESS classification against the linear-ACF-preserving surrogate) — MNQ's result is directionally consistent with MYM's (same sign, same order of magnitude) but not yet typed SIGNAL-EXCESS vs SIGNAL-GENERIC on this instrument. Same open question as MYM's: admission-route status under the single-instrument directional-timing raised bar is unresolved. Ledger cell `CONTINGENT-FORWARD`, re-open trigger is the same scope ruling MYM's cell waits on, not a separate one. [MNQ.md](MNQ.md) · [`N-2026-08-29-mnq-clv-autocorrelation.md`](../../docs/notes/notice/N-2026-08-29-mnq-clv-autocorrelation.md)
+- **Class finding:** (MNQ, 2026-08-29 — backfilled on reconciliation pass): MNQ (full continuous M15 bar sequence, RTH+overnight, n_pairs=141,540): lag-1 Spearman rho(CLV_t, CLV_t+1) = **−0.0301**, block-shuffle null (block=96≈1 day, 2000 permutations) band **[−0.0052, +0.0051]** — real, negative, both halves same-signed (H1 −0.0385, H2 −0.0219). **Not run through the IAAFT battery this session** (only the block-shuffle null, a weaker test than MYM's SIGNAL-EXCESS classification against the linear-ACF-preserving surrogate) — MNQ's result is directionally consistent with MYM's (same sign, same order of magnitude) but not yet typed SIGNAL-EXCESS vs SIGNAL-GENERIC on this instrument. Same open question as MYM's: admission-route status under the single-instrument directional-timing raised bar is unresolved. Ledger cell `AMBIGUOUS-PARKED` (corrected from an initial `CONTINGENT-FORWARD` — no forward test is running on this cell, see MNQ.md's own session-log correction note); re-open trigger is the same scope ruling MYM's cell waits on, not a separate one. ⚠ MYM's own cell for this class (above) still reads `CONTINGENT-FORWARD` as of this correction — same underlying misuse, pre-existing on `main`, out of scope for this pass; flagged separately, not fixed here. [MNQ.md](MNQ.md) · [`N-2026-08-29-mnq-clv-autocorrelation.md`](../../docs/notes/notice/N-2026-08-29-mnq-clv-autocorrelation.md)
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| MNQ | CONTINGENT-FORWARD | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mnq-clv-autocorrelation.md |
+| MNQ | AMBIGUOUS-PARKED | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mnq-clv-autocorrelation.md |
 | MYM | CONTINGENT-FORWARD | 2026-11-08 | ../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md |
 
 
@@ -107,13 +107,13 @@ Gating a breakout entry on a prior volatility-compression phase resolving into e
 
 - **Class finding:** (lighter-weight reuse, M=200 not the frozen M=1,000 — disclosed): MYM (index-futures, full Globex-day session TR, 2020-07→2026-07) top-quintile TR → elevated next-session TR: **SIGNAL-GENERIC** — presence passes (n_cond=332; CI lb 0.6028; halves 0.6928/0.6627, both >0.50); attribution GENERIC (obs 0.6777 at the **22nd percentile** of its own linear-ACF surrogate band — below the band's own median, not a near-miss). Third instrument scored under the class, second SIGNAL-GENERIC of three (GC NULL, CL SIGNAL-GENERIC, MYM SIGNAL-GENERIC) — the modal outcome so far. **Not pursued as a conditioner** — the sibling CL SIGNAL-GENERIC already failed the downstream cost-effectiveness test (`Q-CONDVAL-1`, cited above); ledger cell `AMBIGUOUS-PARKED`, matching CL's own cell state for the identical verdict shape. [MYM.md](MYM.md) · [`N-2026-08-29-mym-rangestate-persistence.md`](../../docs/notes/notice/N-2026-08-29-mym-rangestate-persistence.md) · [`c1_results.json`](../../lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c1_results.json)
 
-- **Class finding:** (MNQ, 2026-08-29 — backfilled on reconciliation pass): MNQ's own same-day score of this class reused the frozen corrected battery verbatim as a new instrument leaf. Raw gateHit **0.6867** (n_cond=332) beats both prior instruments (GC 0.5299, CL 0.6282) on presence limbs L1–L3, but this instrument's own by-year floor (L4) is structurally **AMBIGUOUS** (only 6 of the required 7 full calendar years qualify at n_cond≥20) and the attribution limb (L5) **VOIDs** — the IAAFT diagnostic gate fails at both iter=100 and iter=500, byte-identically, with the escalation ladder's Schreiber end-matching trim finding no improving offset. **Not a fourth verdict alongside NULL/SIGNAL-GENERIC/SIGNAL-GENERIC — uncertified**, the exact failure mode the corrected battery exists to catch (a naive L1–L3-only read would have called this SIGNAL). Ledger cell `CONTINGENT-FORWARD`, re-open trigger is operator-scoped (panel extended to ≥7 full years, or a fresh surrogate-class design per the frozen spec's own O5 remedy) — not calendar-triggered. [MNQ.md](MNQ.md) · [`N-2026-08-29-mnq-daily-range-persistence.md`](../../docs/notes/notice/N-2026-08-29-mnq-daily-range-persistence.md)
+- **Class finding:** (MNQ, 2026-08-29 — backfilled on reconciliation pass): MNQ's own same-day score of this class reused the frozen corrected battery verbatim as a new instrument leaf. Raw gateHit **0.6867** (n_cond=332) beats both prior instruments (GC 0.5299, CL 0.6282) on presence limbs L1–L3, but this instrument's own by-year floor (L4) is structurally **AMBIGUOUS** (only 6 of the required 7 full calendar years qualify at n_cond≥20) and the attribution limb (L5) **VOIDs** — the IAAFT diagnostic gate fails at both iter=100 and iter=500, byte-identically, with the escalation ladder's Schreiber end-matching trim finding no improving offset. **Not a fourth verdict alongside NULL/SIGNAL-GENERIC/SIGNAL-GENERIC — uncertified**, the exact failure mode the corrected battery exists to catch (a naive L1–L3-only read would have called this SIGNAL). Ledger cell `AMBIGUOUS-PARKED`, re-open trigger is operator-scoped (panel extended to ≥7 full years, or a fresh surrogate-class design per the frozen spec's own O5 remedy) — not calendar-triggered. [MNQ.md](MNQ.md) · [`N-2026-08-29-mnq-daily-range-persistence.md`](../../docs/notes/notice/N-2026-08-29-mnq-daily-range-persistence.md)
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
 | MCL | AMBIGUOUS-PARKED | 2026-08-18 | ../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md |
 | MGC | DEAD | 2026-08-18 | ../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md |
-| MNQ | CONTINGENT-FORWARD | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mnq-daily-range-persistence.md |
+| MNQ | AMBIGUOUS-PARKED | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mnq-daily-range-persistence.md |
 | MYM | AMBIGUOUS-PARKED | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mym-rangestate-persistence.md |
 
 
@@ -212,7 +212,7 @@ Trading the spread between index-level and single-name volatility or correlation
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| MNQ | CONTINGENT-FORWARD | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mnq-bar-volume-regime.md |
+| MNQ | AMBIGUOUS-PARKED | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mnq-bar-volume-regime.md |
 | MYM | CONTINGENT-FORWARD | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md |
 
 
@@ -361,7 +361,7 @@ Entering in the direction of an opening-range break and holding the position for
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| MNQ | CONTINGENT-FORWARD | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mnq-overnight-rth-range-transfer.md |
+| MNQ | AMBIGUOUS-PARKED | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mnq-overnight-rth-range-transfer.md |
 
 
 ## pdh-pdl-breakout-rth
