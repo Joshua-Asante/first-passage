@@ -232,6 +232,7 @@ deleted (not struck).
 - **Regime-monitor successor §6 gate** — if no live fill by 11-08, gap is ≥3 months; re-raise as standing-unfalsifiable in that programme audit. [`decompound ADR`](docs/adr/2026-06-07-decompound-remc-hold.md)
 - **Blind-channel §4 reading** — sourced-vs-empty (`AMBIGUOUS-HOLD` if still unsourced); disclose pre-G0 count and whether N fired; analogue-modality ruling re-test (inert if no analogue manifest). Owner: [channel ADR](docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md) · [analogue ruling](docs/adr/2026-08-15-analogue-modality-route-ruling.md)
 - **Regime-candidate flag lane §4 two-strikes check** — any flag-lane follow-up closures since ratification + their confirm verdicts. [`ADR`](docs/adr/2026-07-26-regime-candidate-flag-lane.md)
+- **CLAUDE.md Live-execution posture size-hook exception** — `2026-07-16-root-doc-charter-dedup.md`'s own §10 hook expects that section at ≤25 lines; it's 54 today (Safety invariants block, Account-state paragraph, Eval-bust-figures warning all accreted post-2026-08-03, each individually safety-relevant). Operator call owed: accept as a bounded safety-content exception (revise the hook's ceiling) or trim back to pointer form with detail pushed to the owning ADRs/RUNBOOK. [`ADR`](docs/adr/2026-07-16-root-doc-charter-dedup.md) · [`adr-decay-audit`](docs/notes/audits/adr-corpus/2026-08-29-adr-decay-audit.md) §7
 
 ### 2027-02-08
 

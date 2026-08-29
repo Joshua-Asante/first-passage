@@ -164,3 +164,42 @@ git log -1 --format='%h %cs' -- STATE.md                    # expected 74ef32c 2
 **Decision:** Durable atoms that bind future work are owned by the ADR / methodology-lesson that already holds them. Claude-project `MEMORY.md` is assistive-only (outside the clone). A MEMORY paste is not a Rule 0 read and is not a sub-rule 8/10 attestation.
 
 **Boundary:** Do not copy the Claude project memory directory into this public tree (Approach C). Do not stand up `docs/memory_index.md` (Approach B — separate GO). Do not treat this addendum as a Q-XMEM-1 re-verdict (Mem0 sidecar stays SUBTRACT).
+
+## Addendum 2026-08-29 — `## OPERATOR QUEUE` is a third structural addition, uncross-referenced until now (adr-decay-audit discharge)
+
+**Does not amend** the 4→2 reduction, §2's decision, or the 2026-08-23 addendum above. This
+addendum discharges a `DECAYED_UNDOCUMENTED` finding against this ADR's own §10 hook 1, which
+expects `STATE.md` to carry exactly two `## `-level headers: `## Dormant cross-session threads` and
+`## Scheduled forward triggers`.
+
+**What actually changed.** `STATE.md` today carries **four** top-level sections, not two:
+`## OPERATOR QUEUE`, `## Executed operator decisions — decision index`, `## Dormant cross-session
+threads`, and `## Scheduled forward triggers`. The decision-index growth-back is already correctly
+tracked, with dates, in [`docs/operational_rules.md`](../operational_rules.md) Rule 7's changelog
+(see its 2026-08-22 / 2026-08-19 / 2026-08-07 / 2026-08-04 / 2026-08-03 / 2026-07-16 entries) — that
+half of the drift is not this addendum's subject and is unaffected by it.
+
+**The `## OPERATOR QUEUE` section has no cross-reference anywhere**, until this addendum. It was
+added 2026-08-09 by [`2026-08-09-survive-bound-is-the-queue-cap.md`](2026-08-09-survive-bound-is-the-queue-cap.md)
+(now recorded above as `Superseded-in-part-by`) — a load-bearing structural addition, not a passing
+mention: it is the concurrency-denominated GRAND-tier Survive bound (≤5 live items), cited across
+**31 files** per that ADR's own grounds. Neither this ADR's header nor Rule 7's owner table named
+it before now.
+
+**Why this is a third addition, not a second.** This ADR's original design was 4→2: delete
+`## Uncommitted working tree` and `## Canonical owners`, keep `## Dormant cross-session threads` and
+`## Scheduled forward triggers`. The decision-index section (`## Executed operator decisions`) grew
+back afterward and is Rule-7-tracked, as above. `## OPERATOR QUEUE` is a distinct, later, separately
+-motivated addition (the GRAND-tier binding's Survive-bound requirement, not a decision-narrative
+regrowth) — it is not a variant of either restored role this ADR deleted, and does not fit either of
+the two roles this ADR's §2 kept. It is new structure, cited nowhere against this ADR's own §10
+hook 1 until today.
+
+**What is unaffected.** §4's falsifier (working-tree state or an owner table `git`/SESSIONS/§7
+cannot serve) has not fired — `## OPERATOR QUEUE` is neither of those; it is a bounded operator
+-attention queue, a different kind of content than either deleted role. This addendum does not
+revert the 4→2 reduction, does not restore either deleted section, and does not relitigate whether
+`## OPERATOR QUEUE` or the decision index *should* exist — both are independently ratified
+elsewhere (the Survive-bound ADR; Rule 7's changelog). It only repairs the missing cross-reference
+so a reader of this ADR's header or its §10 hook 1 is not misled into thinking `STATE.md` still
+carries exactly two sections.

@@ -1,13 +1,13 @@
 # ADR: Re-lock DJ30 + NAS100 to TEST values
 
 **Date:** 2026-05-18
-**Status:** Accepted - **SUPERSEDED-BY-MERGE** — the lock action in this ADR is **not adopted**. The validator infrastructure landed alongside it remains in effect.
+**Status:** Accepted - **SUPERSEDED-BY-MERGE** — the lock action in this ADR is **not adopted**. The validator infrastructure landed alongside it was retired 2026-08-03 — see Addendum 2026-08-29.
 **Decision date:** 2026-05-18
 **Supersedes:** none
 **Retain-until:** none
-**Supersedes (same day):** [`2026-05-18-pine-input-float-defaults-realignment.md`](2026-05-18-pine-input-float-defaults-realignment.md) — the *direction* of that ADR (fix Pine to match lock); the validator/HARD-tier machinery from that ADR is preserved.
+**Supersedes (same day):** [`2026-05-18-pine-input-float-defaults-realignment.md`](2026-05-18-pine-input-float-defaults-realignment.md) — the *direction* of that ADR (fix Pine to match lock); the validator/HARD-tier machinery from that ADR was later retired 2026-08-03 (see that file's Addendum 2026-08-29).
 **Superseded-by:** [`2026-05-14-allocation-refresh.md`](2026-05-14-allocation-refresh.md) (already on main; the re-lock proposed here was authored against the pre-2026-05-14 baseline of 1.00% / 0.40% / 350 pyramid / 1.00 maxDD, which had already been superseded by main's 0.75% / 0.45% / 500 pyramid refresh four days earlier; the comparison MC therefore did not speak to main's actual canonical).
-**Superseded-in-part-by:** `event:merge-reality` - lock action not adopted; validator infrastructure landed alongside it remains in effect.
+**Superseded-in-part-by:** `event:merge-reality` - lock action not adopted. Also `2026-08-03-params-toml-gate-retirement.md` - the validator-infrastructure bullet (retired 2026-08-03; see Addendum 2026-08-29).
 **Superseded-in-part-by:** `2026-08-03-params-toml-gate-retirement.md` - the validator-infrastructure bullet only (see Addendum 2026-08-29).
 **Related:** `compare_dj30_nas100_configs.py` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/analysis/dj30_nas100_config_compare/compare_dj30_nas100_configs.py`; archived 2026-05-19 with this ADR's SUPERSEDED-BY-MERGE status; see `docs/audits/2026-05-19-branch-currency-drift.md`), [`tests/test_mc_anchors.py`](../../tests/test_mc_anchors.py), [`docs/adr/2026-05-08-dd-trigger-c2-relock.md`](2026-05-08-dd-trigger-c2-relock.md), [`docs/adr/2026-05-16-fxify-correct-timeout-semantic.md`](2026-05-16-fxify-correct-timeout-semantic.md)
 

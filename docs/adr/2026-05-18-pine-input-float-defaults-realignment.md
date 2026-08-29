@@ -1,13 +1,13 @@
 # ADR: Pine `input.float` default realignment + validator HARD-tier promotion
 
 **Date:** 2026-05-18
-**Status:** Accepted - **SUPERSEDED-BY-MERGE.** The 4 Pine fixes in this ADR are not adopted (the worktree was branched from a pre-2026-05-14 baseline; main's actual lock is 0.75% / 0.45% / 500% pyramid, not 1.00% / 0.40% / 350%). The validator and HARD-tier machinery from this ADR **remain in effect**.
+**Status:** Accepted - **SUPERSEDED-BY-MERGE.** The 4 Pine fixes in this ADR are not adopted (the worktree was branched from a pre-2026-05-14 baseline; main's actual lock is 0.75% / 0.45% / 500% pyramid, not 1.00% / 0.40% / 350%). The validator and HARD-tier machinery from this ADR were retired 2026-08-03 — see Addendum 2026-08-29.
 **Decision date:** 2026-05-18
 **Supersedes:** none
 **Retain-until:** none
 **Same-day successor (also superseded):** [`2026-05-18-relock-to-test-values.md`](2026-05-18-relock-to-test-values.md).
 **Superseded-by:** [`2026-05-14-allocation-refresh.md`](2026-05-14-allocation-refresh.md) (on main).
-**Superseded-in-part-by:** `event:merge-reality` - lock action (Pine 0.75%/0.45%/500 pyramid fixes) not adopted; validator + HARD-tier machinery from this ADR remains in effect. Also `2026-08-03-params-toml-gate-retirement.md` - the validator-infrastructure bullet only (scripts/validate_params.py and core/config/params.toml both retired 2026-08-03).
+**Superseded-in-part-by:** `event:merge-reality` - lock action (Pine 0.75%/0.45%/500 pyramid fixes) not adopted. Also `2026-08-03-params-toml-gate-retirement.md` - the validator + HARD-tier machinery bullet (scripts/validate_params.py and core/config/params.toml both retired 2026-08-03; see Addendum 2026-08-29).
 **Related:** [`scripts/validate_params.py`](../../scripts/validate_params.py), [`core/config/params.toml`](../../core/config/params.toml)
 
 > **Superseded-by-merge note (2026-05-18):** This ADR fixed 4 Pine
