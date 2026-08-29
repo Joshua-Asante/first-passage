@@ -26,6 +26,21 @@ EXPECTED_ALWAYS = {
     # no staged_regex correctly scopes "when this violation can occur".
     "path-liveness",
     "root-doc-liveness",
+    # Task 3 (docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md
+    # Phase 1) — Q-M1WIRE-1 tree-skew checker wiring; report-only, cheap.
+    "m1-tree-skew",
+    # Task 1 (same ADR) — ADR-cited skill-script deploy-drift check; cheap
+    # (grep + existence check), so `always` rather than path-conditional.
+    # 2026-08-28 review fix: this entry was missing here even though the
+    # gate had already landed in gates.yml (commit ef7df14 added
+    # m1-tree-skew to this set but not this one, landed the same window) —
+    # a membership-only test let the drift go unnoticed; see the
+    # set-equality assertion added to test_manifest_lists_all_always_gates
+    # below to guard against a repeat.
+    "skill-deploy-sync",
+    # Task 4 (same ADR) — falsifier-reachability coverage census, report-only
+    # (`--stats` alone always exits 0 per the script's own docstring).
+    "falsifier-reachability-census",
 }
 
 EXPECTED_PATH_CONDITIONAL = {
@@ -43,6 +58,13 @@ EXPECTED_PATH_CONDITIONAL = {
     "docs-runtime-inventory",
     "repo-map-layers",
     "lifecycle-consistency",
+    # Task 2 (same ADR) — D4 rejection-ledger-coverage instrument
+    # (commit 4472abb) landed this gate without adding it here, which left
+    # test_path_conditional_gates_are_reachable failing on this worktree
+    # before this Task 3 edit touched the same file; folded in alongside
+    # Task 3's own addition rather than leaving a known-red test in a file
+    # this commit already modifies.
+    "instrument-rejection-coverage",
 }
 
 
@@ -56,6 +78,20 @@ def test_manifest_lists_all_always_gates():
         assert gid in out, f"missing gate {gid}"
     assert "data-manifests" in out
     assert "path-conditional" in out
+
+    # 2026-08-28 review fix: set-equality, not just membership. Membership
+    # alone lets a NEW always-tier gate land in gates.yml without this list
+    # ever being updated — gates.yml grew from 8 to 10 always-tier gates
+    # (skill-deploy-sync, falsifier-reachability-census) while EXPECTED_ALWAYS
+    # silently stayed at 8. Mirrors the set-equality style
+    # test_path_conditional_gates_are_reachable already applies below to
+    # EXPECTED_PATH_CONDITIONAL.
+    data = gm.load_manifest(MANIFEST)
+    always_ids = {g["id"] for g in data["gates"] if g.get("tier") == "always"}
+    assert always_ids == EXPECTED_ALWAYS, (
+        "an always-tier gate was added/removed in gates.yml without updating "
+        "EXPECTED_ALWAYS in this test"
+    )
 
 
 def test_pre_commit_dry_run_includes_always_gates():
@@ -162,6 +198,7 @@ REACHABILITY_PROBES = {
     "docs-runtime-inventory": "ops/c1_rail/c1_rail_arm.py",
     "repo-map-layers": "scripts/check_boundaries.py",
     "lifecycle-consistency": "core/lifecycle.py",
+    "instrument-rejection-coverage": "docs/briefs/closures/Q-EXAMPLE-closure-falsified.md",
 }
 
 
@@ -231,3 +268,19 @@ def test_reindented_gate_fails_closed(tmp_path):
     assert bad.returncode != 0, "re-indented gate was silently dropped (fail-open)"
     combined = bad.stdout + bad.stderr
     assert "mismatch" in combined.lower(), combined
+
+
+def test_m1_tree_skew_stays_report_only():
+    """Pins the deliberate report-only design choice gates.yml's own comment
+    above `m1-tree-skew` documents: `--check-tree-skew`, never
+    `--require-tree-current` (whose own --help text says it is "never a
+    commit gate", because the pinned-fixture-vs-main drift it would flag is
+    normal, not a defect — this worktree shows real drift on 6/6 pinned files
+    today). An accidental future flip to the hard-fail flag would recreate
+    the exact class of Critical bug fixed alongside this test: a `tier:
+    always` gate that hard-fails every commit on a condition the running
+    environment cannot satisfy."""
+    data = gm.load_manifest(MANIFEST)
+    gate = next(g for g in data["gates"] if g["id"] == "m1-tree-skew")
+    assert "--check-tree-skew" in gate["cmd"]
+    assert "--require-tree-current" not in gate["cmd"]
