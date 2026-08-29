@@ -1,0 +1,84 @@
+{
+  "candidate2_overnight_range_STRATIFIED": {
+    "label": "candidate2_overnight_range_STRATIFIED",
+    "n_scored": 1307,
+    "strata": {
+      "0": 0.31782470002365293,
+      "1": 0.22065573770491798
+    },
+    "strata_counts": {
+      "0": {
+        "hi": [
+          0.6963350785340314,
+          191
+        ],
+        "lo": [
+          0.3785103785103785,
+          819
+        ]
+      },
+      "1": {
+        "hi": [
+          0.860655737704918,
+          122
+        ],
+        "lo": [
+          0.64,
+          175
+        ]
+      }
+    },
+    "min_lift_bootstrap": {
+      "ci": [
+        0.10420733347521129,
+        0.321564759671678
+      ],
+      "mean": 0.2186458816886106,
+      "n_valid": 4000,
+      "p_lift_le_0": 0.00025
+    },
+    "increment_exists_threshold_check": true,
+    "verdict": "INCREMENT"
+  },
+  "candidate4_gap_magnitude_STRATIFIED": {
+    "label": "candidate4_gap_magnitude_STRATIFIED",
+    "n_scored": 1307,
+    "strata": {
+      "0": 0.14043645699614898,
+      "1": 0.06723613876952095
+    },
+    "strata_counts": {
+      "0": {
+        "hi": [
+          0.5526315789473685,
+          190
+        ],
+        "lo": [
+          0.4121951219512195,
+          820
+        ]
+      },
+      "1": {
+        "hi": [
+          0.776595744680851,
+          94
+        ],
+        "lo": [
+          0.7093596059113301,
+          203
+        ]
+      }
+    },
+    "min_lift_bootstrap": {
+      "ci": [
+        -0.04190754604519623,
+        0.14766863476242686
+      ],
+      "mean": 0.05944593262238722,
+      "n_valid": 4000,
+      "p_lift_le_0": 0.12475
+    },
+    "increment_exists_threshold_check": true,
+    "verdict": "AMBIGUOUS (CI straddles 0)"
+  }
+}

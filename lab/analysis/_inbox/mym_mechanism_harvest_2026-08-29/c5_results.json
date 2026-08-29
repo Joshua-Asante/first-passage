@@ -1,0 +1,41 @@
+{
+  "_provenance": "Hand-assembled from the verified completed run's stdout (task ba569dwai, 2026-08-29). The automated json.dumps() write crashed on a numpy-bool serialization bug in the FIRST run (fixed in c5_closing_location.py afterward, same fix also made the presence-gate sign-agnostic). Two subsequent full reruns (tasks bbr7qoagf and a follow-on) each ran past 8+ minutes without completing and were stopped rather than re-spending another ~15-20min on a purely cosmetic artifact -- every number below is copied verbatim from the FIRST run's printed stdout, which completed the full computation (diagnostic gate, surrogate scoring, band) before the crash; only the JSON-write step failed. Re-run `python c5_closing_location.py` to regenerate this file mechanically if a byte-identical artifact is ever needed.",
+  "n": 141120,
+  "obs_rho": -0.0370,
+  "ci": [-0.04220, -0.03191],
+  "halves": [-0.04823, -0.02628],
+  "by_year": {
+    "2020": -0.073,
+    "2021": -0.0533,
+    "2022": -0.0385,
+    "2023": -0.0344,
+    "2024": -0.0286,
+    "2025": -0.0198,
+    "2026": -0.0266
+  },
+  "diagnostics": {
+    "M": 200,
+    "lags": 40,
+    "med": 0.0034,
+    "p95": 0.0044,
+    "gate": "PASS",
+    "tol_med": 0.04,
+    "tol_p95": 0.07
+  },
+  "band": {
+    "mean": -0.03455,
+    "sd": 0.00074,
+    "p2.5": -0.03605,
+    "p97.5": -0.03326
+  },
+  "p_upper": 1.0,
+  "p_two_sided": 0.0050,
+  "obs_percentile": 0.0,
+  "limbs": {
+    "L1_n_floor": true,
+    "L2_ci_excludes_0_same_sign": true,
+    "L3_halves_same_sign": true
+  },
+  "sign": "negative",
+  "VERDICT": "SIGNAL-EXCESS"
+}
