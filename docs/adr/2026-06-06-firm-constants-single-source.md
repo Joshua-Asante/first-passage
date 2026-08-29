@@ -2,7 +2,7 @@
 
 **Status:** `Accepted`
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** `2026-07-22-challenge-era-substrate-retirement.md` - the ACTIVE_FIRM-selector-mechanism clause only (Phase 4, merged 2026-07-30, PR #572: ACTIVE_FIRM/FIRM_RULES["FXIFY"]/BASELINE_BALANCE deleted outright, not renamed). The broader "one canonical firm_rules.py home for firm constants" principle this ADR established is still honored in spirit — core/dd_protection.py now derives challenge constants from core/historical_challenge.py instead.
 **Retain-until:** none
 **Decision date:** 2026-06-06
 **Authors:** Joshua + claude.ai (Tech Advisor)
@@ -172,3 +172,44 @@ $ sed -n '5,16p'  core/firm_rules.py     # FIRM_RULES["FXIFY"] canonical dict
 $ git grep -n 'STARTING_EQUITY = \(portfolio_mc\|dd_protection\)\.STARTING_EQUITY' -- lab/
 $ git grep -n 'STARTING_EQUITY == .*== 200_000' -- lab/   # the pre-existing consistency assert
 ```
+
+## Addendum 2026-08-29 — ACTIVE_FIRM deleted outright, not renamed; canon moved to historical_challenge.py
+
+The 2026-08-29 `adr-decay-audit` full-corpus sweep flagged this ADR `DECAYED_UNDOCUMENTED`: §2/§6
+assert `firm_rules.py` "gains an explicit `ACTIVE_FIRM = 'FXIFY'` selector" as live, current
+architecture. It no longer is. This addendum is that discharge; the §0 reads, §1 Context, §2
+Decision, and all other sections above stay byte-unedited as the historical record (Rule 14).
+
+**Root cause.** `docs/adr/2026-07-22-challenge-era-substrate-retirement.md` Phase 4 (merged
+2026-07-30, PR #572, `fc14682`) deleted `ACTIVE_FIRM`, `FIRM_RULES["FXIFY"]`, and `BASELINE_BALANCE`
+outright — this ADR is the decision that *instituted* `ACTIVE_FIRM` in the first place, yet it was
+absent from the substrate-retirement ADR's own `Supersedes` header block despite being the most
+directly affected predecessor of all five. Corrected in the same remediation batch as this
+addendum (see that ADR's header, now carrying a `2026-06-06-firm-constants-single-source.md` in-part
+line).
+
+**Current state, verified against production (`core/firm_rules.py`, read in full 2026-08-29):**
+
+- The module's own docstring (lines 4-9) records the deletion directly:
+
+  > FXIFY row + ``ACTIVE_FIRM`` + ``BASELINE_BALANCE`` **deleted** (Phase 4). Historical challenge
+  > semantics live in ``core/historical_challenge.py`` (opt-in fixture only). Live c1 uses the
+  > explicit tier key ``Tradeify_Select_100K`` (rail JSON / ``generate_constants(tier)``).
+
+- `core/firm_rules.py:25` imports `HISTORICAL_CHALLENGE_BASE_RISK` from `historical_challenge` —
+  there is no `ACTIVE_FIRM` selector and no `FIRM_RULES["FXIFY"]` row left to select.
+- The §2 derivation map (this ADR's core mechanism: `portfolio_mc`/`dd_protection` deriving ten
+  constants from `firm_rules.FIRM_RULES[ACTIVE_FIRM]`) no longer describes production code — the
+  selector it depended on is gone, not renamed or repointed.
+- Live firm selection today is always an explicit `FIRM_RULES` key (e.g. `Tradeify_Select_100K`),
+  never a module-level global selector. The broader §1 decision driver — one canonical
+  `firm_rules.py` home rather than triplicated literals — is still honored: challenge-era constants
+  now derive from `core/historical_challenge.py` instead of being re-declared per consumer, which is
+  the same "single source, consumers derive" shape this ADR argued for, just with the challenge
+  constants relocated to their own module rather than living in `firm_rules.FIRM_RULES["FXIFY"]`.
+
+This ADR's §10 audit hooks (e.g. hook 5, `git grep -nE '"FXIFY"' ...`) are accordingly stale as
+written — they assert absence of a *selector literal* whose surrounding mechanism (`ACTIVE_FIRM`
+itself) no longer exists to select anything. Not rewritten in place per Rule 14; a reader should
+consult `core/firm_rules.py`'s current docstring and
+`docs/adr/2026-07-22-challenge-era-substrate-retirement.md` §2E / Phase 4 for the current topology.

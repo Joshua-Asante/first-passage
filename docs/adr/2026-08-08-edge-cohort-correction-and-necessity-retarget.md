@@ -169,6 +169,7 @@ DATE / INITIALS: 2026-08-08 / JA
 |---|---|---|
 | 2026-08-08 | §8 Accepted; TNEC-1 RATIFIED atomic | JA |
 | 2026-08-12 | `Superseded-in-part-by` → MSL ratification ADR (L2 taxonomy addition only — MSL named) | Joshua (B1) + Cursor |
+| 2026-08-29 | Addendum: `Q-MNQDTL-CON-1` closed FALSIFIED 2026-08-09; §2-B item 3 / §10 hook 6 "stays OPEN/unpaid" now historical-only (adr-decay-audit discharge) | Claude Code |
 
 ---
 
@@ -229,3 +230,31 @@ for f in core/firm_rules.py ops/instruments/MNQ.md \
   git log -1 --format="%h %cs $f" -- "$f"; done
 # Expected: 45e3cea / af3b776 / 27c7943 / d93dafd / cad464f / d08537a / d08537a / 9b5ce43 / 91137fb / 5ebee58 / 275601e
 ```
+
+## Addendum 2026-08-29 — `Q-MNQDTL-CON-1` closed FALSIFIED; §2-B item 3 / §10 hook 6 now historical-only
+
+The `adr-decay-audit` sweep flagged §2-B item 3 (*"`Q-MNQDTL-CON-1` stays `OPEN`/unpaid exactly as
+filed"*) and §10 hook 6 (*"Expected: `OPEN`"*) as stale — §0/§1–§10 above stay byte-unedited as the
+historical record (Rule 14); this addendum is the discharge.
+
+**What changed.** [`Q-MNQDTL-CON-1`](../briefs/Q-MNQDTL-CON-1-dense-1m-em-construct-scoping.md)
+closed **`FALSIFIED`** 2026-08-09 — one day after this ADR ratified —
+([`closure`](../briefs/closures/Q-MNQDTL-CON-1-closure-falsified.md)): both the long and short arms
+came back negative mean R (−0.1065 / −0.1113) with the session-block 95% CI entirely below 0 on
+both. Spend/K: $0.00 · `K_intrinsic=1` · Cap **not claimed**. Live effect: none — N-SURV / confirm /
+deploy were never reached. Registry: `rejected_candidates.md` — MNQDTL-CON-1 ES-NQ 5m divergence
+relative-contrarian × MNQ, FALSIFIED (explore IS).
+
+**What this does and does not affect.** §2-B item 3's "stays OPEN/unpaid" clause and §10 hook 6's
+"Expected: OPEN" are now historical-only — accurate as of 2026-08-08, superseded-in-fact one day
+later. **No operative clause of this ADR depends on that construct's fate**: TNEC-1 adoption,
+MNQDTL-1's demotion from gate to recorded preference, the EM1 re-type, and the L1–L5 lane
+dispositions are all untouched — item 3's re-pointer (*"later GO … clears TNEC-1 N-EDGE/N-SIZE"*)
+was scoped to *if and when* that construct advanced, which it no longer will. §5's forbidden move
+(*"reading the re-pointer as an endorsement of that specific cell"*) is likewise now moot in
+practice — there is no live cell left to over-read as endorsed, since the cell is closed dead.
+
+**Not re-opened by this note.** This addendum records a status change already made by the closure;
+it authorizes no revival, no new GO, and no re-scoring. Any future MNQ dense-1m EM construct work
+is a fresh seed against TNEC-1, per the closure's own "STOP — re-proposal = new entry mechanism"
+disposition.

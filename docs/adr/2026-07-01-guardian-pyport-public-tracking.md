@@ -224,3 +224,23 @@ Never edit §2/§3/§4/§6 in place — this addendum records the partial supers
 | 2026-07-01 | Addendum: visibility premise corrected — repo gh-verified PRIVATE; port landed after 2026-06-06 privatization so exposure may never have occurred; decision unchanged, Forward question re-scoped contingent-on-re-publicization | Joshua + Claude Code (programme audit) |
 | 2026-08-14 | Addendum: partially superseded by `2026-08-14-repo-public-visibility-transition.md` — §2.6 Forward question resolved toward redaction; "stays private" premise superseded; §2 untracking decision unchanged | Joshua + claude.ai |
 | 2026-08-14 | Non-material: §1's "What the parity directory disclosed" paragraph had the literal parameter values it was quoting as evidence redacted (this ADR itself ships in the public tree; restating the values would re-disclose them). No change to the decision, findings, or reasoning — same redaction pass as the row above | claude.ai |
+
+## Addendum 2026-08-29 — `dc07898` no longer resolves; retrieval claim is historical-only
+
+`git cat-file -e dc07898` returns `fatal: Not a valid object name dc07898` on the current repo (verified
+2026-08-29). Commit `dc07898` — the anchor this ADR's §0 Rule-0 reads, §2.3/§3/§6's "bytes remain
+publicly retrievable" claim, and the Verification block's `git cat-file -e dc07898:...` hook all cite —
+does not exist in this repo's history as of the 2026-08-14 fresh-repo transplant
+([`2026-08-14-repo-public-visibility-transition.md`](2026-08-14-repo-public-visibility-transition.md)).
+
+The "bytes remain publicly retrievable via `git show dc07898:<path>`" claim in §2.3/§3/§6, and the
+Verification block's `git cat-file -e dc07898:...` hook, are both **historical-only now** — they
+describe the pre-transplant era, not the current repo. Retrieval of that commit now requires the
+private `first-passage-archive` repo (per CLAUDE.md's Public-clone posture).
+
+This does **not** reopen §2/§3/§4/§6 — the untracking + hash-pin decision and the no-purge rationale
+both stand, just for a different reason now: the transplant achieved the same
+amplification-limiting outcome (fresh clones/browsable HEAD no longer serve the port) by omission
+rather than by the deliberate accept-and-document choice §3 recorded at the time.
+
+Never edit §0-§10 or the two addenda above in place — this addendum records the anchor-resolution gap only.

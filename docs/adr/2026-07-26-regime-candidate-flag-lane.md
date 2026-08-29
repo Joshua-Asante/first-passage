@@ -268,3 +268,63 @@ left untouched per this repo's append-don't-rewrite convention for closed record
 |---|---|---|
 | 2026-07-26 | Drafted `Proposed` at operator direction, alongside ST-EH-1 Stage-0 (first campaign-local instance). Operator ratification pending. | Joshua (direction) + Claude Code (Fable 5) |
 | 2026-08-21 | Ratified `Accepted` (Addendum 2026-08-21). Template-row step blocked — target file absent from this tree. | Claude Code, per operator direction |
+| 2026-08-29 | Addendum: corrects two false claims in the 2026-08-21 addendum (STATE.md line never actually added; "0 hits" claim does not reproduce) — adr-decay-audit discharge | Claude Code |
+
+## Addendum 2026-08-29 — Two false claims in the 2026-08-21 addendum, corrected (adr-decay-audit discharge)
+
+**Does not touch** the 2026-08-21 addendum's text, or §2 / §4 / §5 above — Rule 14 (corrections
+land where the error is read, frozen bodies stay byte-unedited). Independent re-verification this
+session found two of the 2026-08-21 addendum's "Phase 1 discharge" claims do not hold up; this
+addendum is the correction.
+
+**Claim 1 — "`STATE.md` forward-board line for the §4 bootstrap trigger — added." False, never
+executed.** An exhaustive grep of `STATE.md` for any wording of this ADR's §4 two-strikes trigger —
+"flag lane," "flag-lane," "REGIME-CANDIDATE," "regime-candidate," this ADR's own filename, and a
+plain case-insensitive search for the substring "flag" anywhere in the file — returns **zero hits**,
+including inside the `### 2026-11-08` forward-trigger section where such a line would belong:
+
+```bash
+grep -ni "flag" STATE.md                                              # 0 hits, anywhere in the file
+grep -n "regime-candidate-flag-lane\|REGIME-CANDIDATE" STATE.md       # 0 hits
+```
+
+No line under any wording exists. The claimed addition was never actually made.
+
+**Claim 2 — "Phase 2 (hook 3) re-run this session → clean, 0 hits." False, does not reproduce
+today.** Re-running the identical §10 hook 3 command:
+
+```bash
+grep -rniE "flag.{0,40}promot" docs/briefs/pre-registration/ docs/adr/ | grep -vi "never promot"
+```
+
+returns **3 hits today**, not 0:
+
+1. `docs/briefs/pre-registration/2026-07-26-st-eh-1-preregistration.md:40` — a parenthetical noting
+   the campaign "is exactly that class ... it is characterization + flag-detection, and any
+   promotion clears the full inherited universe correction." Describes Track-1 promotion
+   correctly gated behind full correction; not a flag-window promotion.
+2. `docs/briefs/pre-registration/2026-07-26-st-eh-1-preregistration.md:183` — prose explaining
+   *why* a flag must not promote ("the flag window selected it; promotion on the selecting window
+   is the [error]"). States the forbidden move in order to forbid it, not to license it.
+3. `docs/adr/2026-07-26-regime-candidate-flag-lane.md:159` (this file, §6 Risks) — "mitigated by
+   the flag bar being the full promotion bar." Describes the flag *criteria* threshold, not a
+   flag-window promotion path; a self-match, since this file is itself inside the searched `docs/adr/`
+   tree.
+
+None of the three is a genuine promotion-path violation on inspection — each either correctly
+describes Track-1's gated promotion, argues against the forbidden move, or is this file's own
+unrelated use of "promotion bar" as a threshold name. The lane's §5 forbidden move ("promoting from
+the flag window") has not been violated. But the literal claim "0 hits" is false as stated — the
+hook's own pattern was never precise enough to exclude self-matches and explain-the-rule prose, and
+whoever ran it in 2026-08-21 either mis-ran it or mis-reported the count.
+
+**What is unaffected.** §2 (Decision), §4 (Falsifier), §5 (Forbidden moves), the 2026-08-21
+addendum's ratification (Status → `Accepted`) and its third claim (template row restored) are not
+in question here — only the two claims above. Nothing found here changes this ADR's `Accepted`
+status or reopens the flag lane's substantive falsifier, which still has no evidence in either
+direction (§4's two-strikes trigger has not fired; no flag-lane follow-up has closed).
+
+**Living-document fix landed alongside this addendum.** Per this repo's doctrine, `STATE.md` is a
+correctable-in-place living document (unlike this frozen ADR) — the actually-missing forward-board
+line named in Claim 1 above is added to `STATE.md`'s `### 2026-11-08` section in the same commit as
+this addendum, discharging what the 2026-08-21 addendum had only claimed to do.

@@ -2,7 +2,7 @@
 
 **Status:** Accepted (operator ratified 2026-07-14 — HARD gate chosen; proceed sequence 1→2→3)
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** `2026-07-16-harv-attestation-same-units-supersession.md` - the §2 attestation specification only.
 **Retain-until:** none
 **Decision date:** 2026-07-13
 **Authors:** Joshua (authority) + Cursor (assembly from Phase-0 sources) — parent triage: claude.ai advisor 2026-07-13
@@ -177,3 +177,4 @@ git log -1 --format='%h %ci' -- docs/briefs/DISC-CAMP-0-closure-falsified.md
 |---|---|---|
 | 2026-07-13/14 | Initial `Proposed` draft — assembled from Q-HARV-0 lane harvest + DISC-CAMP-0 defect log; HARD vs recommended left open for operator | Joshua (authority) + Cursor (assembly) |
 | 2026-07-14 | `Proposed`→`Accepted`; HARD gate chosen; recommended step ruled out; template + STATE downstream | Joshua (ratify) + Cursor (record) |
+| 2026-07-16 | §4 falsifier **FIRED** — both conjuncts confirmed against the H-OD-1 closure ([`lab/analysis/harvest/h_od_1_es_overnight_drift_2026-07/RESULTS.md`](../../lab/analysis/harvest/h_od_1_es_overnight_drift_2026-07/RESULTS.md); same defect retro-diagnosed in the D5 closure): RESOLVED was unreachable *before data arrived*, and the frozen §R reachability simulation failed to flag the clause. Per §4's own Revert action, this ADR is **superseded, not edited** — [`2026-07-16-harv-attestation-same-units-supersession.md`](2026-07-16-harv-attestation-same-units-supersession.md) strengthens the §2 attestation specification (same-units / per-gate / panel-basis) **in part**. The mechanism-first lane, the HARD gate, and the register wiring all **STAND**. (Header `Superseded-in-part-by` field added retroactively 2026-08-29 — adr-decay-audit `DECAYED_UNDOCUMENTED` finding; this row backfills the reciprocal pointer that should have landed same-day as the successor ADR, per this repo's own convention.) | Claude Code (adr-decay-audit remediation) |

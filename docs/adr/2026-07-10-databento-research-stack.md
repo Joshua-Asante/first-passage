@@ -2,7 +2,7 @@
 
 **Status:** `Accepted` — the strategic decision was made operator-side on 2026-07-10 (advisor session authored the deliverables; the CC handoff enacting it states "this handoff does not re-litigate it"). This ADR records the decision and lands with the integration commit.
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** `2026-08-07-loop-s1-environment-ratification.md`, `2026-08-07-loop-s2-signal-host-fork.md` - the §2 rail-verdict clause only (TradingView/NinjaTrader8/Rithmic/Bulenox chain). The §4 falsifier never fired; the rail changed via a different mechanism these two ADRs describe.
 **Retain-until:** none
 **Decision date:** 2026-07-10
 **Authors:** Joshua (decision) + claude.ai advisor (stack authoring + rail verdict) + Claude Code (integration + this record)
@@ -220,3 +220,40 @@ Planted-control DSR self-test: `tests/test_validation_selftest_dsr_gate.py`.
 | 2026-07-10 | Initial authoring, landed with the integration commit | Joshua + claude.ai (advisor) + Claude Code |
 | 2026-07-11 | Addendum: `register_search.py` ledger default anchored to `<repo-root>/discovery_manifests` (cwd-independent) | Claude Code |
 | 2026-07-11 | Addendum: Gen-2 script bodies relocate to `lab/`; skills become thin launchers | Cursor agent (lab-functions-eval worktree) |
+
+## Addendum 2026-08-29 — §2 rail-verdict clause superseded-in-fact by the S1/S2 loop ADRs (adr-decay-audit `DECAYED_UNDOCUMENTED` discharge)
+
+The `adr-decay-audit` sweep flagged §2's *"Live-rail verdict: KEEP TradingView → CrossTrade →
+NinjaTrader 8 → Bulenox via Rithmic"* sentence as stale: current reality has moved past it with no
+discharge recorded. This addendum is that discharge; §0–§10 above stay byte-unedited as the
+historical record (Rule 14).
+
+**What actually changed, and how.** §4's own **rail-verdict falsifier** — *"leaving the prop-firm
+model for a direct-API broker"* — never fired; the prop-firm model is still the model. The rail
+changed anyway, via an unrelated mechanism this ADR did not anticipate: the 2026-08-04 Tradeify
+de-scope withdrew both Striker legs, and the 2026-08-07 loop closed it out — S1
+([`2026-08-07-loop-s1-environment-ratification.md`](2026-08-07-loop-s1-environment-ratification.md))
+ratified the environment (incumbent `Tradeify_Select_100K` eval, not Bulenox) and S2
+([`2026-08-07-loop-s2-signal-host-fork.md`](2026-08-07-loop-s2-signal-host-fork.md)) ratified the
+signal origin (a Python daemon, not TradingView). Neither S1 nor S2 originally listed this ADR
+under their own `Supersedes:` field — this addendum plus the header field above is the missing
+reciprocal edge, and both ADRs' `Related:` fields now point back here in turn.
+
+**Current live rail, verified against production** (`ops/c1_rail/__init__.py`, docstring, this
+session):
+
+> *"c1 rail — ruled host → listener → CrossTrade → Tradovate (Tradeify Select 100K)."*
+
+I.e.: **ruled Python signal host → listener → CrossTrade → Tradovate, on venue
+`Tradeify_Select_100K`.** Every clause of the original §2 verdict has moved: TradingView → the
+ruled Python-daemon host (S2); NinjaTrader 8 → Tradovate; Bulenox via Rithmic → Tradeify via
+CrossTrade→Tradovate (S1). CrossTrade is the one leg that survived unchanged.
+
+**What is NOT stale — untouched by this addendum.** This ADR's actual research-stack decision
+(the component table: `databento-data` cost-gated GLBX.MDP3 access, `futures-anomaly-discovery`
+candidate generation, `strategy-validation` §8 universe-level correction, Nautilus **research-only**
+role, the isolated research-venv boundary) is unaffected — none of it depended on the §2 rail
+identity, and none of it has been superseded. Only §2's rail-verdict sentence and §4's rail
+falsifier (which never fired, and is now effectively moot — the rail already changed by the S1/S2
+route, not the direct-API-broker route it names) are stale. Reader encountering §2/§4 today: read
+the current rail from `ops/c1_rail/__init__.py` and the S1/S2 ADRs, not from this ADR's own text.

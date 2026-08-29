@@ -164,3 +164,43 @@ git log -1 --format='%h %ci' -- lab/analysis/regime/decompound_remc_2026-06-07/R
 |---|---|---|
 | 2026-07-15 | Initial authoring — T1 admitted, `Proposed`; promotes `Q-SFRISK-1`'s `RESOLVED` closure per its own §6/§9 | Joshua + Claude Code |
 | 2026-07-15 | Ratified — status `Proposed` → `Accepted` (operator: "Flip it to Accepted") | Joshua |
+
+## Addendum 2026-08-29 — §4 limb 2's cited machinery is SUSPENDED-ORPHANED (DECAYED_UNDOCUMENTED, adr-decay-audit)
+
+§4 revert-trigger limb 2 (above, byte-unedited) names *"the quarterly regime-check machinery
+(`docs/adr/2026-06-07-decompound-remc-hold.md` §4, next 2026-08-08)"* as one of this ADR's own
+revert paths. That machinery no longer exists in a reachable form, and the named check date has
+now passed unreachable. This addendum records both facts where limb 2 is read; the §4 prose itself
+stays byte-unedited (Rule 14).
+
+**What happened, in order:**
+
+1. `2026-08-02-pepperstone-feed-retirement.md` §2-D retired the Pepperstone CFD feed the venue
+   the decompound harness's gitignored CSV inputs depend on.
+2. `2026-06-07-decompound-remc-hold.md`'s own **2026-08-03 addendum** declared that ADR's §4 limb
+   2 (the quarterly trailing-6-month regime-check re-MC this SFRISK-1 ADR's limb 2 rides)
+   **`SUSPENDED-ORPHANED`** — back-propagated from the feed retirement. The harness and its script
+   were **not deleted**; the trailing-window call is permanently `NOT_EXECUTABLE` because the panel
+   it needs cannot be extended past 2026-06-02 (no future Pepperstone export can exist). Verified
+   there 2026-08-03: `regime_gate.py --regime-check --asof 2026-08-08` → `VERDICT: NOT_EXECUTABLE`.
+3. The quarterly schedule that decision machinery rode — **2026-08-08, 2026-11-08, 2027-02-08,
+   2027-05-08** — was struck outright by that same addendum, not deferred. The named 2026-08-08
+   check date this ADR's own §4 cites ("next 2026-08-08") is now **three weeks past**, and it
+   passed unreachable, not merely unrun.
+
+**Effect on this ADR's §4:** limb 2, as written, cannot fire — its cited check date will never
+produce a verdict, this quarter or any future quarter, absent a discharging successor (the
+venue-native regime monitor named in the decompound-HOLD ADR's own §Addendum 2026-08-03 §6 gate,
+not yet built as of this writing). **Limb 2 is therefore struck, not silently dormant** — a reader
+of this ADR's §4 should not expect it to ever contribute a revert signal under its current text.
+**Limbs 1 and 3 are unaffected**: limb 1 (data-provenance re-derivation of the clean-vintage panel)
+and limb 3 (a future F2/TUW amendment failing on either half) depend on neither the retired feed
+nor the struck quarterly schedule, and both stand exactly as recorded above.
+
+**Re-arm condition:** none for limb 2 as written. A future amendment naming the venue-native regime
+monitor (or an equivalent successor built on live CME-futures data) as limb 2's replacement would
+need its own dated supersession — this addendum records the gap, it does not close it.
+
+`STATE.md`:194 is updated in the same commit as this addendum to name this ADR as an affected
+dependent of the orphaned machinery (living document, corrected in place per Rule 14 — not
+addendum-gated there).

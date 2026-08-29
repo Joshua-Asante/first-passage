@@ -2,7 +2,8 @@
 
 **Status:** Accepted (operator executive decision 2026-07-15 — Day-0 of the quad-track plan; drafting had been authorized 2026-07-14)
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** `2026-07-22-challenge-era-substrate-retirement.md` - the "ACTIVE_FIRM stays FXIFY" clause only (ACTIVE_FIRM was deleted outright in Phase 4, merged 2026-07-30 PR #572 — not repointed; live firm selection is now always an explicit FIRM_RULES key).
+**Superseded-in-part-by:** `docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md` - the "survivor-scoring pre-registration... ceiling... untouched" clause only (Part A bust ceiling moved 3.0% → 5.0%, operator risk-tolerance override, 2026-08-26).
 **Retain-until:** none
 **Decision date:** 2026-07-14
 **Authors:** Joshua (direction) + Claude Code (Fable 5, recorder)

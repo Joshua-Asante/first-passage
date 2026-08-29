@@ -1,13 +1,13 @@
 # ADR: Pine `input.float` default realignment + validator HARD-tier promotion
 
 **Date:** 2026-05-18
-**Status:** Accepted - **SUPERSEDED-BY-MERGE.** The 4 Pine fixes in this ADR are not adopted (the worktree was branched from a pre-2026-05-14 baseline; main's actual lock is 0.75% / 0.45% / 500% pyramid, not 1.00% / 0.40% / 350%). The validator and HARD-tier machinery from this ADR **remain in effect**.
+**Status:** Accepted - **SUPERSEDED-BY-MERGE.** The 4 Pine fixes in this ADR are not adopted (the worktree was branched from a pre-2026-05-14 baseline; main's actual lock is 0.75% / 0.45% / 500% pyramid, not 1.00% / 0.40% / 350%). The validator and HARD-tier machinery from this ADR were retired 2026-08-03 — see Addendum 2026-08-29.
 **Decision date:** 2026-05-18
 **Supersedes:** none
 **Retain-until:** none
 **Same-day successor (also superseded):** [`2026-05-18-relock-to-test-values.md`](2026-05-18-relock-to-test-values.md).
 **Superseded-by:** [`2026-05-14-allocation-refresh.md`](2026-05-14-allocation-refresh.md) (on main).
-**Superseded-in-part-by:** `event:merge-reality` - lock action (Pine 0.75%/0.45%/500 pyramid fixes) not adopted; validator + HARD-tier machinery from this ADR remains in effect.
+**Superseded-in-part-by:** `event:merge-reality` - lock action (Pine 0.75%/0.45%/500 pyramid fixes) not adopted. Also `2026-08-03-params-toml-gate-retirement.md` - the validator + HARD-tier machinery bullet (scripts/validate_params.py and core/config/params.toml both retired 2026-08-03; see Addendum 2026-08-29).
 **Related:** [`scripts/validate_params.py`](../../scripts/validate_params.py), [`core/config/params.toml`](../../core/config/params.toml)
 
 > **Superseded-by-merge note (2026-05-18):** This ADR fixed 4 Pine
@@ -233,3 +233,52 @@ Self-test OK (good: 0 hard / 1 warn; bad: 2 hard / 1 warn)
 $ ls strategies/{guardian,striker,aegis,nas}/*.pine | wc -l
 8    # full canonical set per strategies/MANIFEST.sha256
 ```
+
+## Addendum 2026-08-29 — validator infrastructure retired (DECAYED_UNDOCUMENTED, adr-decay-audit)
+
+The full-corpus `adr-decay-audit` flagged this ADR's top blockquote — the "What does remain in
+effect" note added by the same-day supersession — as `DECAYED_UNDOCUMENTED`: it currently asserts
+as present-tense fact that the parameter validator and its infrastructure "remain in effect." This
+addendum is that discharge; the blockquote, Context, Decision, Trade-offs, Consequences,
+Verification, and all three Addendum (Round 1/2/3) sections above stay byte-unedited as the
+historical record (Rule 14).
+
+**Current state, verified on-disk this session:** `scripts/validate_params.py` and
+`core/config/params.toml` (the entire `core/config/` directory, in fact) were both retired
+(`git rm`) by [`docs/adr/2026-08-03-params-toml-gate-retirement.md`](2026-08-03-params-toml-gate-retirement.md)
+§2 ("Shape 1 — delete mirror + retire hub gates"). Confirmed:
+
+```
+$ ls scripts/validate_params.py core/config/params.toml
+ls: cannot access 'scripts/validate_params.py': No such file or directory
+ls: cannot access 'core/config/params.toml': No such file or directory
+$ ls core/config/
+ls: cannot access 'core/config/': No such file or directory
+```
+
+**Which of this ADR's "remains in effect" bullets are affected.** The blockquote lists four:
+
+1. "The parameter validator (`scripts/validate_params.py`) and its self-test, manifest,
+   pre-commit-hook integration." — **no longer current.** The script, its fixtures, and its tests
+   were retired outright (2026-08-03 ADR §2 row 2: "RETIRE").
+2. "The Pine-vs-manifest HARD-tier promotion..." — **also no longer current**, for the same
+   reason: HARD-tier was a status of `validate_params.py` itself, and that script no longer
+   exists. There is no successor HARD/WARN tier carrying this forward.
+3. "The 'check both strategy + indicator' extension." — **also no longer current**, same reason:
+   an extension to a script that is gone has nothing left to extend.
+4. "The methodology lessons captured in this ADR's text — particularly the cycle 'validator
+   surfaces drift → comparison MC → re-lock or accept-the-drift'..." — **unaffected.** This is a
+   narrative/process lesson, not a claim about a live script; it stands regardless of which tool
+   implements the cycle.
+
+In short: of the four "remains in effect" bullets, only the fourth (methodology lessons) is still
+accurate. The 2026-08-03 retirement ADR names the successors: Pine hashes are checked by
+`scripts/check_pine_manifest.py` against `core/strategies/MANIFEST.sha256`; live-sizing constants
+are canonical in `dd_protection.py` / `firm_rules.py` directly (no TOML mirror comparison). Neither
+successor reproduces this ADR's specific HARD-tier-promotion or check-both-files mechanics — those
+pieces of validator behavior have no living equivalent, not merely a renamed one.
+
+`docs/adr/INDEX.md`'s one-line summary for this ADR also currently restates the same stale
+"validator and HARD-tier machinery... remain in effect" claim — flagged for the central
+`check_adr_graph.py --regenerate-index` pass; regeneration alone may not fix a hand-authored prose
+summary line, so it likely needs a manual edit in that pass, not just a re-run.

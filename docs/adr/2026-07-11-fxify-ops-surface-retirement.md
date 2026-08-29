@@ -2,7 +2,7 @@
 
 **Status:** `Accepted` — **operator STRATEGIC-LoR ratification recorded 2026-07-11 (Joshua): FXIFY is retired whether or not Tradeify is locked — see the §2 disposition override.** **Executed 2026-07-11** on branch `claude/fxify-ops-retirement-90703d` (`git rm` of validator/TV-MT5/zero-fills + `accounts.py`/`cli.py` FXIFY-path excision). Retiring ops machinery coupled to the account model is a subsystem-tier Delete (three-loop binding ADR reserves it to STRATEGIC-LoR).
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** `2026-07-22-challenge-era-substrate-retirement.md` - accounts.py/cli.py KEEP row only (Phase 2, merged 2026-07-24, PR #485); `2026-07-11-ops-cfd-estate-retirement.md` - dxtrade_pdf_to_csv.py PARK row only.
 **Retain-until:** none
 **Decision date:** 2026-07-11
 **Authors:** Joshua (decision) + claude.ai advisor (drafting) + Claude Code (execution)
@@ -203,3 +203,23 @@ git history; restore requires a fresh decision, not a revert.
 | 2026-08-02 | **Addendum 2026-08-02b** — remaining 07-24 orphan one-shots pruned (Packet D GO) |
 | 2026-08-02 | **Addendum** — Copygram alert-validator estate (`symbol_inventory.toml` + `validate_alert_payloads.py` + test) retired; broader 2026-07-24 orphan slate still GO-gated | Cursor Cloud Agent (operator prune GO) |
 | 2026-08-03 | Pointer update: `issue_54_ulp_audit.*` relocated `ops/data/audits/` → `docs/notes/audits/`; annotate-never-delete still holds | Joshua + Cursor |
+
+## Addendum 2026-08-29 — §2 KEEP and PARK rows both superseded by later dispositions
+
+The §2 KEEP row (`ops/accounts.py` general machinery + `ops/cli.py` `add`/`update`/`status`/`lots`)
+was superseded by [`2026-07-22-challenge-era-substrate-retirement.md`](2026-07-22-challenge-era-substrate-retirement.md)
+Phase 2 (the "multiplier spine," merged 2026-07-24, PR #485) — both files' non-tearsheet surface is
+deleted; `ops/cli.py` now exposes only `tearsheet`. Verified on this repo as of 2026-08-29:
+`ops/accounts.py` and `ops/fxify_rule_validator.py` do not exist, and `ops/cli.py`'s only
+`add_parser` call is `tearsheet`.
+
+The §2 PARK row for `ops/live_journal/scripts/dxtrade_pdf_to_csv.py` was discharged by
+[`2026-07-11-ops-cfd-estate-retirement.md`](2026-07-11-ops-cfd-estate-retirement.md) (the
+reconcile-pipeline disposition this ADR deferred to per that ADR's own §2/§0 — see its explicit
+"DONE BY THE PARALLEL `fxify-ops-surface-retirement` ADR... this ADR does **not** touch
+`accounts.py`/`cli.py` at all" note), which retired the entire `ops/live_journal/` subtree.
+`dxtrade_pdf_to_csv.py` is confirmed absent from the current repo.
+
+Current authoritative pointer for the ops surface: [`REPO_MAP.md`](../../REPO_MAP.md).
+
+Never edit §0-§10 or the addendum above in place — this addendum records the two supersessions only.

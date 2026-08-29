@@ -1,13 +1,14 @@
 # ADR: Re-lock DJ30 + NAS100 to TEST values
 
 **Date:** 2026-05-18
-**Status:** Accepted - **SUPERSEDED-BY-MERGE** — the lock action in this ADR is **not adopted**. The validator infrastructure landed alongside it remains in effect.
+**Status:** Accepted - **SUPERSEDED-BY-MERGE** — the lock action in this ADR is **not adopted**. The validator infrastructure landed alongside it was retired 2026-08-03 — see Addendum 2026-08-29.
 **Decision date:** 2026-05-18
 **Supersedes:** none
 **Retain-until:** none
-**Supersedes (same day):** [`2026-05-18-pine-input-float-defaults-realignment.md`](2026-05-18-pine-input-float-defaults-realignment.md) — the *direction* of that ADR (fix Pine to match lock); the validator/HARD-tier machinery from that ADR is preserved.
+**Supersedes (same day):** [`2026-05-18-pine-input-float-defaults-realignment.md`](2026-05-18-pine-input-float-defaults-realignment.md) — the *direction* of that ADR (fix Pine to match lock); the validator/HARD-tier machinery from that ADR was later retired 2026-08-03 (see that file's Addendum 2026-08-29).
 **Superseded-by:** [`2026-05-14-allocation-refresh.md`](2026-05-14-allocation-refresh.md) (already on main; the re-lock proposed here was authored against the pre-2026-05-14 baseline of 1.00% / 0.40% / 350 pyramid / 1.00 maxDD, which had already been superseded by main's 0.75% / 0.45% / 500 pyramid refresh four days earlier; the comparison MC therefore did not speak to main's actual canonical).
-**Superseded-in-part-by:** `event:merge-reality` - lock action not adopted; validator infrastructure landed alongside it remains in effect.
+**Superseded-in-part-by:** `event:merge-reality` - lock action not adopted. Also `2026-08-03-params-toml-gate-retirement.md` - the validator-infrastructure bullet (retired 2026-08-03; see Addendum 2026-08-29).
+**Superseded-in-part-by:** `2026-08-03-params-toml-gate-retirement.md` - the validator-infrastructure bullet only (see Addendum 2026-08-29).
 **Related:** `compare_dj30_nas100_configs.py` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/analysis/dj30_nas100_config_compare/compare_dj30_nas100_configs.py`; archived 2026-05-19 with this ADR's SUPERSEDED-BY-MERGE status; see `docs/audits/2026-05-19-branch-currency-drift.md`), [`tests/test_mc_anchors.py`](../../tests/test_mc_anchors.py), [`docs/adr/2026-05-08-dd-trigger-c2-relock.md`](2026-05-08-dd-trigger-c2-relock.md), [`docs/adr/2026-05-16-fxify-correct-timeout-semantic.md`](2026-05-16-fxify-correct-timeout-semantic.md)
 
 > **Superseded-by-merge note (2026-05-18):** This ADR was authored in a
@@ -214,3 +215,36 @@ re-lock is contemplated. The new canonical pair is
   strategy) → Round 2 (4 strategies) → Round 3 (1 indicator) → comparison
   MC → re-lock. The "check both strategy + indicator" extension to the
   validator (Round 2) was load-bearing for full coverage.
+
+## Addendum 2026-08-29 — validator-infrastructure bullet superseded (DECAYED_UNDOCUMENTED, adr-decay-audit)
+
+The top blockquote's "What remains in effect from this work" list asserts, as currently true, that
+"the parameter validator (`scripts/validate_params.py`) and its self-test, manifest, and
+pre-commit-hook integration" remains in effect. **That bullet is stale.**
+[`2026-08-03-params-toml-gate-retirement.md`](2026-08-03-params-toml-gate-retirement.md) retired
+`scripts/validate_params.py` outright (`git rm`, shape 1: delete the derived `params.toml` mirror
+and retire the hub gates that only compared against it) — the file no longer exists on disk. The
+blockquote and the header above stay byte-unedited as the historical record (Rule 14); this
+addendum is the correction a reader needs.
+
+**Current state, verified against production:**
+
+- `scripts/validate_params.py` — **absent** (confirmed: no such file). Its self-test, manifest
+  comparison, and pre-commit-hook wiring are retired with it.
+- Successor for Pine integrity: `scripts/check_pine_manifest.py` + `core/strategies/MANIFEST.sha256`
+  (hash-pinned, not a live cross-source drift comparison).
+- Live-sizing constants remain canonical in `dd_protection.py` / `firm_rules.py`, **untouched** by
+  the 2026-08-03 retirement — this ADR's re-locked risk_pct values (0.70% / 0.37%) are not affected.
+- The other three "remains in effect" bullets in the same blockquote are **unaffected** by this
+  addendum: the methodology lesson (run a comparison MC before defaulting to "fix Pine to match the
+  lock"), the `dd_protection.py BASE_RISK` alignment fix landed in this branch, and the historical
+  record of how the day unfolded all still stand as recorded.
+- **Not separately re-verified here, flagged for the central regeneration pass:** the sibling
+  bullet "the 'check both strategy + indicator' extension (catches per-file drift that diverges
+  between the two)" was also validator-infrastructure (a `validate_params.py` behavior) — its
+  current-effect status was out of scope for this remediation and was not independently confirmed
+  against `check_pine_manifest.py`'s actual coverage.
+
+`docs/adr/INDEX.md`'s "Partially superseded" table (the row for this file, ~line 143) mirrors the
+same stale "validator infrastructure... remains in effect" claim and needs the same correction
+during the central `check_adr_graph.py --regenerate-index` pass — not corrected in this addendum.
