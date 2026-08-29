@@ -3,6 +3,7 @@
 > **Status:** authoritative path→layer partition for the monorepo-boundaries restructure (ADR `docs/adr/2026-06-05-monorepo-layer-boundaries.md`, ACCEPTED 2026-06-05). Human-readable map for operators. The scanner (`scripts/check_boundaries.py`) **never opens this file** — it hard-codes `APP_LAYER_PREFIX` / `GOVERNANCE_PREFIXES` / `SCRIPTS_LAYER`. Those three maps are mirrored in [`scripts/repo_map_layers.yml`](scripts/repo_map_layers.yml) and compared by [`scripts/check_repo_map_layers.py`](scripts/check_repo_map_layers.py) (P5). Edit the Python dicts and the YAML together. This file is **NOT** a deletion feed (the deletion instrument was retired on main, `a9d16d0`).
 > **Authored:** Phase C, Step C2 (before the move), so the partition is written-then-executed, not inferred.
 > **Coverage rule:** every `git ls-files` path resolves to exactly one layer via the rules below. Zero unmapped (verified — see §Coverage check).
+> **(pruned)** below = deleted at the 2026-08-08 Great Prune; retrieve with `git show pre-prune-2026-08-08:<path>` using the path cited just before the tag. **(public-seed omitted)** = present in the private archive, absent on this public clone; same retrieval command.
 
 ```yaml
 # MACHINE BLOCK POINTER (do not paste free prose here — edit scripts/repo_map_layers.yml)
@@ -45,7 +46,7 @@ core imports NOTHING internal.   lab ↔ ops : FORBIDDEN (the load-bearing invar
 | `core/lib/` | `lib/` |
 | ~~`core/config/`~~ | `config/` (data-only; imported by nothing) — **RETIRED 2026-08-03** with `params.toml` hub gates ([`docs/adr/2026-08-03-params-toml-gate-retirement.md`](docs/adr/2026-08-03-params-toml-gate-retirement.md)); retrieve via git history |
 | `core/strategies/` | `strategies/` **minus `codification/`** — hot tree = [`CATALOG.md`](core/strategies/CATALOG.md) + `*_CARD.md` stubs; Pine + full LOCK/CHANGELOG/CANDIDATE bodies under `_archive/<family>/`; `MANIFEST.sha256` / `PORT_MANIFEST.sha256` pin archive paths |
-| `core/data/tv_exports/` `core/data/bar_data/` `core/data/external/` | `data/tv_exports/` `data/bar_data/` `data/external/` (backtest panels — immutable shared inputs). Live trade-lists: `tv_exports/cme/`. `bar_data/` = **frozen CME micros only** (`6J`/`MNQ`/`MYM_M15`; producer dead since Pepperstone retirement). Dukascopy / OANDA deleted Phase 5 (`tombstone` (pruned; `git show pre-prune-2026-08-08:docs/ltm/notes/2026-07-30-oanda-dukascopy-data-tombstone.md`)); CFD-era `bar_data` + `tv_exports/candidates/` deleted 2026-08-03 ([ADR](docs/adr/2026-08-03-bar-data-cfd-and-candidates-retirement.md) · `tombstone` (pruned; `git show pre-prune-2026-08-08:docs/ltm/notes/2026-08-03-bar-data-cfd-candidates-tombstone.md`)) |
+| `core/data/tv_exports/` `core/data/bar_data/` `core/data/external/` | `data/tv_exports/` `data/bar_data/` `data/external/` (backtest panels — immutable shared inputs). Live trade-lists: `tv_exports/cme/`. `bar_data/` = **frozen CME micros only** (`6J`/`MNQ`/`MYM_M15`; producer dead since Pepperstone retirement). Dukascopy / OANDA deleted Phase 5 (`docs/ltm/notes/2026-07-30-oanda-dukascopy-data-tombstone.md`, pruned); CFD-era `bar_data` + `tv_exports/candidates/` deleted 2026-08-03 ([ADR](docs/adr/2026-08-03-bar-data-cfd-and-candidates-retirement.md), `docs/ltm/notes/2026-08-03-bar-data-cfd-candidates-tombstone.md` pruned) |
 
 ### `lab/` — free-churn research (imports core+governance). Tier P2/P3.
 
@@ -56,7 +57,7 @@ core imports NOTHING internal.   lab ↔ ops : FORBIDDEN (the load-bearing invar
 | `lab/CATALOG.md` | generated index — open first for lab decisions (`make lab-catalog` / `scripts/archive_lab_analysis.py --regenerate-catalog`; freshness gated by `make lab-catalog-check` / pre-commit `--check --catalog-only`) |
 | `lab/validation/` | `validation/` — **retired 2026-07-11**, see [`docs/adr/2026-07-11-gen1-pipeline-retirement.md`](docs/adr/2026-07-11-gen1-pipeline-retirement.md); row kept for move-provenance history |
 | `lab/validation_selftest.py` | extracted from `validation/controls.py` (Gen-1 self-test generators; DSR gate wired 2026-07-11 — `tests/test_validation_selftest_dsr_gate.py`; full §8 universe-gate `--self-test` wired 2026-07-12 — `research_utils/universe_gate.py`) |
-| `lab/research_utils/` | stable research primitives: permutation + Gen-2 DSR / step0 / selection / plateau (relocated from `.claude/skills/strategy-validation/scripts/` 2026-07-11; see ``docs/superpowers/specs/2026-07-11-lab-research-stack-relocation-design.md`` (public-seed omitted; `git show pre-prune-2026-08-08:docs/superpowers/specs/2026-07-11-lab-research-stack-relocation-design.md`)) + `universe_gate.py`. **W4 2026-08-07:** SPA/StepM/PBO **dormant** (named re-arm); plateau **archived**; breadth **tombstoned** as live producer — [`W4 ADR`](docs/adr/2026-08-07-w4-minimal-gate-set-dormancy.md) |
+| `lab/research_utils/` | stable research primitives: permutation + Gen-2 DSR / step0 / selection / plateau (relocated from `.claude/skills/strategy-validation/scripts/` 2026-07-11; design: `docs/superpowers/specs/2026-07-11-lab-research-stack-relocation-design.md`, public-seed omitted) + `universe_gate.py`. **W4 2026-08-07:** SPA/StepM/PBO **dormant** (named re-arm); plateau **archived**; breadth **tombstoned** as live producer — [`W4 ADR`](docs/adr/2026-08-07-w4-minimal-gate-set-dormancy.md) |
 | `lab/discovery/` | Gen-2 K-ledger (`register_search.py`); canonical home as of 2026-07-11 relocation |
 | `lab/databento_fetch/` | Gen-2 cost-gated Databento client (`db_fetch.py`); canonical home as of 2026-07-11 relocation |
 | `lab/codification/` | `strategies/codification/` — **RETIRED 2026-08-02** (operator ruling #3 / prune Packet D; was parked ADR 2026-07-11; retrieve via git history; future bridge = fresh build) |
@@ -68,7 +69,7 @@ core imports NOTHING internal.   lab ↔ ops : FORBIDDEN (the load-bearing invar
 | ~~`ops/accounts.py`~~ `ops/cli.py` | `accounts.py` retired substrate Phase 2 (multiplier spine); `cli.py` retained as **tearsheet-only** historical entry point. FXIFY-challenge path excised 2026-07-11 per [`docs/adr/2026-07-11-fxify-ops-surface-retirement.md`](docs/adr/2026-07-11-fxify-ops-surface-retirement.md); full spine delete [`docs/adr/2026-07-22-challenge-era-substrate-retirement.md`](docs/adr/2026-07-22-challenge-era-substrate-retirement.md) §2-D |
 | ~~`ops/fxify_rule_validator.py`~~ ~~`ops/parity_check.py`~~ ~~`ops/tv_mt5_pnl_reconciliation.py`~~ | root — `fxify_rule_validator.py` + `tv_mt5_pnl_reconciliation.py` **retired 2026-07-11** per [`docs/adr/2026-07-11-fxify-ops-surface-retirement.md`](docs/adr/2026-07-11-fxify-ops-surface-retirement.md); `parity_check.py` **retired 2026-07-11** per [`docs/adr/2026-07-11-ops-cfd-estate-retirement.md`](docs/adr/2026-07-11-ops-cfd-estate-retirement.md); rows kept for move-provenance |
 | `ops/live_journal/` — **retired in full 2026-07-11** per [`docs/adr/2026-07-11-ops-cfd-estate-retirement.md`](docs/adr/2026-07-11-ops-cfd-estate-retirement.md) (the reconcile-subsystem disposition the fxify-ops-surface ADR deferred/parked); `references/execution_lessons.md` relocated to `docs/methodology/lessons/` (not lost); row kept for move-provenance history | `live_journal/` (incl. canonical `journal_review.py`) |
-| `ops/weekly_review_feeder/` | `weekly_review_feeder/` — **retired 2026-07-06**, see ``docs/ltm/briefs/2026-07-06-weekly-review-feeder-retirement.md`` (pruned; `git show pre-prune-2026-08-08:docs/ltm/briefs/2026-07-06-weekly-review-feeder-retirement.md`); row kept for move-provenance history |
+| `ops/weekly_review_feeder/` | `weekly_review_feeder/` — **retired 2026-07-06**, see `docs/ltm/briefs/2026-07-06-weekly-review-feeder-retirement.md` (pruned); row kept for move-provenance history |
 | `ops/mc_runs/` — retired 2026-07-11 (empty orphan output dir; same ADR) | `mc_runs/` (transient MC state) |
 | ~~`ops/reports/`~~ — deleted 2026-08-03; sole survivor `regime_time_cost/RESULTS.md` relocated to `lab/analysis/regime/regime_time_cost_2026-06-09/` (Q-PERSIST-1 gating read); `ecr/` + `corpus_fdr/` already retired 2026-07-11 | `reports/` (ECR output dir) |
 | `ops/data/reconciles/` · ~~`ops/data/audits/`~~ — audits deleted 2026-08-03; `issue_54_ulp_audit.*` relocated to `docs/notes/audits/` | `data/audits/` `data/reconciles/` (former gitignored `accounts.json` retired with multiplier spine, substrate Phase 2) |
@@ -178,44 +179,8 @@ git ls-files | grep -vE '^(core|lab|ops|tests|scripts|docs|deploy|\.claude|\.git
 # (run post-move: scripts/ root-resident, the rest under the three layer roots)
 ```
 
-> **2026-08-21 audit (second pass):** the check was **failing as written** again
-> — two unmapped paths (`LICENSE`, `.markdownlint.json`), both landed 2026-08-17
-> with the public-transition config drop (PR #29) and never added to the
-> exemption regex. Both are root-resident governance (row added to §2); the
-> regex above is corrected. `REPO_MAP.md` sat outside the 2026-08-21 root-doc
-> coherence campaign's edited scope
-> ([campaign note](docs/notes/audits/2026-08-21-coherence-campaign.md)) — this
-> was a separate, direct verification pass against production bytes.
-
-> **2026-07-31 audit:** the check was **failing as written** — five unmapped
-> paths (`.dockerignore` + the four `deploy/c1_rail/` files), the c1 rail's
-> deployment tree having been added with no §2 row. Both are now classified in
-> §2 (`deploy/` → ops P1; `.dockerignore` → governance) and added to the regex.
-> The same pass retired three **dead exemption tokens** the regex still carried:
-> `ea` and `migration` (both trees deleted 2026-07-16 — §2 records the deletions
-> itself, so the exemptions outlived their targets) and `governance` (never a
-> directory — §1 states the layer is entirely root-resident, and
-> `check_boundaries.py`'s `APP_LAYER_PREFIX` has no such prefix). The stale
-> `governance` path token was also removed from `pyproject.toml`'s pytest
-> `pythonpath` and from §2.2 / §3, which had both propagated it.
->
-> **2026-07-15 audit:** seven more root-resident paths appeared since the prior
-> audit and were tripping the check: `PIPELINES.md` (a root doc, joins the
-> `CLAUDE|README|STATE` group), `discovery_manifests/` (Gen-2 K-ledger output,
-> §2), `requirements-ops.lock` + `requirements-research.txt` (per-env
-> lockfiles, §2), `.rgignore` + `.cursorindexingignore` + `.cursorignore`
-> (agent search/index-exclusion policy, §2), and `telemetry.jsonl` (orphan
-> artifact). Six remain classified in §2; `telemetry.jsonl` was investigated
-> the same day, confirmed orphan (Cursor user-rule leak, not repo tooling),
-> then `git rm`'d + gitignored — struck from this regex and marked removed in §2.
->
-> **2026-06-22 audit:** the first exempt group gained `.cursor|migration` — two
-> root-resident trees that appeared after the original Phase-C verification and
-> were tripping the check (`.cursor/rules/*.mdc`,
-> `migration/{REPORT.md,inventory.json}`); both are now classified in §2. A third
-> tripping path, `reports/regime_time_cost/RESULTS.md`, was **relocated** to the
-> then-canonical `ops/reports/regime_time_cost/` (covered by the `ops/` prefix), so
-> root `reports/` holds no tracked content and `reports` was dropped from this
-> regex — completing the `reports/`→`ops/reports/` move (§1). **2026-08-03:** that
-> RESULTS.md moved again to `lab/analysis/regime/regime_time_cost_2026-06-09/`; `ops/reports/`
-> deleted.
+> **Current state (2026-08-21):** the regex above passes clean — `LICENSE` and `.markdownlint.json`
+> were the last unmapped paths, added 2026-08-17 and closed the same day found. The exemption regex
+> has been repaired four times since Phase C as new root-resident paths and dead tokens appeared
+> (2026-06-22, 2026-07-15, 2026-07-31, 2026-08-21); each repair's detail is in `git log -p` on this
+> file, not restated here.

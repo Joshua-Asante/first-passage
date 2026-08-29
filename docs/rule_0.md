@@ -11,7 +11,7 @@ Order: production file → brief against ground truth → validate → lock → 
 - Suspect single-rule descriptions of multi-rule systems.
 - Data-source labels are NOT data-source verification.
 - Where prior docs and code disagree, code wins; flag the discrepancy.
-- Load-bearing claims without code-resident verification are unverified, regardless of how they're phrased in prose. Identity, contract, and cardinality assertions are the baseline; helpers in `lib/mvd.py`.
+- Load-bearing claims without code-resident verification are unverified, regardless of how they're phrased in prose. Identity, contract, and cardinality assertions are the baseline; helpers in `core/lib/mvd.py`.
 
 ## Triggering failures
 
@@ -20,10 +20,5 @@ Order: production file → brief against ground truth → validate → lock → 
 
 ## Scope
 
-Only methodology rule that survived the 2026-04-29 archive. Other rules
-(INQHIORI ⊕ The Algorithm framework, Pre-Q gates, Case B audits, backfill
-discipline, mandatory header ordering, MVD methodology framing) were retired
-with the strategy-research phase. New rules are written only against observed
-failures during execution phase, not hypothesized ones.
-
-See `archive/docs/methodology/archive/README.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/methodology/archive/README.md`) for the resurrection rule and 90-day review gate.
+New rules are written only against observed failures during execution phase, not hypothesized ones.
+Resurrection rule + 90-day review gate: `git show pre-prune-2026-06-05:archive/docs/methodology/archive/README.md`.

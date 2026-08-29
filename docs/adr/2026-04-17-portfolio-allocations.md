@@ -1,7 +1,12 @@
 # ADR: Portfolio allocations — G 0.30 / S 1.00 / A 1.50
 
+⚠ **The title's G 0.30 / S 1.00 / A 1.50 figures are SUPERSEDED — see Addendum 2026-08-29.** Live
+Striker allocation is **0.70%** (single DJ30 leg; NAS100 is a separate 0.37% line), and Aegis is
+**not live** at all (historical CFD book, no `_BASE_RISK` entry). Source of truth:
+`core/firm_rules.py` / `core/historical_challenge.py`.
+
 **Date:** 2026-04-17
-**Status:** Accepted - Striker 1.00% and Aegis 1.50% allocations remain in force from this ADR.
+**Status:** Accepted - allocations superseded by later refreshes; see Addendum 2026-08-29 for current figures.
 **Decision date:** 2026-04-17
 **Supersedes:** none
 **Superseded-by:** none
@@ -49,3 +54,30 @@ Risks:
 - Notion: [dd_protection retune to 1.5%/0.40× — 2026-04-17](https://www.notion.so/346dc0b53c118124811bee0d77c1b1e1) (captures allocation rationale)
 - Code: `firm_rules.py`
 - Related: ADR 2026-04-17-dd-trigger-calibration, ADR 2026-04-17-equity-tier-deletion
+
+## Addendum 2026-08-29 — discharge (DECAYED_UNDOCUMENTED, adr-decay-audit precursor run)
+
+The 2026-08-23 `adr-decay-audit` precursor run (`docs/adr/2026-08-23-adr-decay-audit-skill-ratification.md`
+§1) flagged this ADR's Status line as `DECAYED_UNDOCUMENTED` — current reality has moved on with no
+discharge recorded. This addendum is that discharge; the Context/Decision/Consequences above stay
+byte-unedited as the historical record (Rule 14).
+
+**Current state, verified against production (`core/firm_rules.py`, `core/historical_challenge.py`):**
+
+- `_LIVE_BASE_RISK_SLUGS = ("striker", "striker_nas100")` — only the two Striker legs are live.
+  Guardian and Aegis carry no entry in the live `_BASE_RISK` dict at all.
+- Live Striker (DJ30) allocation is **0.70%**, not the 1.00% this ADR names — moved via the
+  2026-05-14 allocation refresh this ADR's own §Cross-references already points at, then again via
+  a later refresh (see `CLAUDE.md` Strategy Reference table for the current figure and lock version).
+- Striker NAS100 (added 2026-05-07, after this ADR) is a separate **0.37%** line, not part of this
+  ADR's original scope at all.
+- Aegis (1.50% here) is **not live** — historical CFD book only
+  (`core/historical_challenge.HISTORICAL_CHALLENGE_BASE_RISK["aegis"] = 0.0150`, frozen record, no
+  live venue). See CLAUDE.md §Strategy Reference and Phase C
+  (`docs/adr/2026-08-23-strategy-coldstore-phase-c.md`).
+- Guardian (0.30% here) is likewise historical-only, since re-locked to 0.34% the same day by
+  `2026-04-23-guardian-risk-relock-0.34.md` (already correctly linked above as
+  Superseded-in-part-by) and now cold-stored under the same Phase C.
+
+`docs/adr/INDEX.md`'s mirror of this Status line is corrected in the same commit as this addendum
+(it is a living pointer document, corrected in place per Rule 14, not a frozen artifact).

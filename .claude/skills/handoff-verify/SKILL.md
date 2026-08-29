@@ -20,6 +20,12 @@ Any time the instructions to execute originated outside a fresh Rule-0 read in *
 
 If you wrote the plan yourself in this session after reading the files, skip — but still use `verify-source` for any borrowed number.
 
+**Size-triggered escalation.** For a long packet with many distinct claims (multiple paths, edits,
+statuses, and premises to check), run this same checklist as the `handoff-verify-panel` Workflow
+instead of inline — it fans the checks below out to independent parallel verifiers plus an
+adjudication pass, rather than one pass trying to hold every claim in context at once. Same
+checklist, same output shape; the workflow is the heavy edition for scale, not a different gate.
+
 ## Phase-0 checklist (all must pass or return `NEEDS_CONTEXT`)
 
 Run in order. On any hard fail: **stop**. Do not improvise repairs to the handoff; report the contradiction with paths/SHAs.
@@ -104,6 +110,7 @@ do-not: <what the handoff asked that you will not do>
 | `rule-0` / `docs/rule_0.md` | Read production source, not memory |
 | `verify-source` | Source STATE (currency, vintage, cohort) for a value/claim |
 | **handoff-verify** | Whole external instruction packet before acting |
+| `handoff-verify-panel` (workflow) | Same checklist, fanned out — for large/many-claim packets |
 | `fable-judge` | Completed-work claims after acting (post-execution mirror of this gate) |
 | `brief-authoring` | Authoring well-formed handoffs (producer side) |
 | `repo-hygiene` | Worktree/branch debris after the work lands |

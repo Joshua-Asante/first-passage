@@ -7,7 +7,7 @@
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Scope:** `firm_rules.py`, `dd_protection.py`, `portfolio_mc.py`, `CLAUDE.md`
-**Supersedes:** `2026-04-17-portfolio-allocations.md` in part - Guardian allocation only (Striker 1.00% / Aegis 1.50% unchanged).
+**Supersedes:** `2026-04-17-portfolio-allocations.md` in part - Guardian allocation only (Striker/Aegis unaffected by this ADR; see that ADR's Addendum 2026-08-29 for their current, since-changed figures).
 
 ## Context
 
