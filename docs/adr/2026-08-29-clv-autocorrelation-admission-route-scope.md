@@ -1,8 +1,8 @@
 # ADR 2026-08-29 — Bar closing-location-value (CLV) autocorrelation's admission-route scope under the 2026-07-21 directional-timing raised bar
 
-**Status:** `Proposed` — drafted by Claude Code at Joshua's request; pending operator ratification, ratification date TBD. Do not treat as binding until Status flips to `Accepted`.
+**Status:** `Accepted` — operator ratification 2026-08-29 (Joshua, "Flip it to accepted"), ruling the full §2 decision (2-A/2-B/2-C/2-D) as drafted, no amendments.
 **Decision date:** 2026-08-29
-**Authors:** Claude Code (Sonnet 5, drafter) — decision pending Joshua's ratification.
+**Authors:** Joshua (ratification) + Claude Code (Sonnet 5, drafter).
 **Supersedes:** none
 **Superseded-by:** none
 **Superseded-in-part-by:** none
@@ -99,7 +99,7 @@ Both MNQ and MYM independently found a real, well-powered, sign-stable lag-1 ser
 - **Treating "Route 1 doesn't fit the unconditional finding" as "Route 1 is closed to CLV forever."** A genuinely different, freshly-G0'd, time-conditioned CLV variant is a *different candidate* this ADR does not foreclose — see 2-D.
 - **Skipping the cost-law pre-screen and jumping straight to a full backtest or entry-rule authoring.** The entire point of the raised bar's design (and the standing MR/fade lesson) is cheapest-falsification-first; 2-C is a $0 gate, not a formality to route around.
 - **Treating a marginal pass of the generic cost hurdle (N6/#M6) as clearing Route 3.** Route 3's own text in the raised bar is explicit: "beats the incumbent ORB-MNQ net-of-cost, **not merely clears the cost floor**" — the bar is `ORB-MNQ-1`'s own +0.0626R / +0.890 annSR, not zero.
-- **Reading this ADR as a GO for any Pre-Q, campaign, or K spend.** It rules on scope only; `Status: Proposed` until an operator ratifies it, and ratification itself is not a GO for anything beyond running the named $0 pre-screen.
+- **Reading this ADR as a GO for any Pre-Q, campaign, or K spend.** It rules on scope only; ratification itself is not a GO for anything beyond running the named $0 pre-screen.
 
 ---
 
@@ -128,7 +128,7 @@ Both MNQ and MYM independently found a real, well-powered, sign-stable lag-1 ser
 - **Phase 0** — §0 reads re-verified at authoring time (all anchors above pulled live this session via `git log`, not recalled).
 - **Phase 1** — edit the three downstream artifacts listed in §6, same PR.
 - **Phase 2** — grep-sweep for other stale restatements of "admission-route status is unresolved" tied to CLV: `grep -rn "admission.route" docs/notes/notice/N-2026-08-29-m*-clv* docs/notes/notice/N-2026-08-29-m*-closing-location* ops/instruments/MECHANISMS.md` (pasted in §10). Supersedes no predecessor (`Supersedes: none`), so no accept+retire checklist applies.
-- **Phase 3** — verification block executes; Status stays `Proposed` until Joshua ratifies (this ADR does not flip its own status).
+- **Phase 3** — verification block executed; Status flipped to `Accepted` 2026-08-29 per Joshua's ratification.
 
 ---
 
@@ -172,7 +172,7 @@ $ python .claude/skills/brief-authoring/scripts/check_brief.py docs/adr/2026-08-
 # Expected: RESULT: well-formed
 
 $ python scripts/check_adr_graph.py
-# Expected: exit 0; A2 edge-reverse-match skipped while Status is Proposed
+# Expected: exit 0
 ```
 
 ---
@@ -182,3 +182,4 @@ $ python scripts/check_adr_graph.py
 | Date | Change | By |
 |---|---|---|
 | 2026-08-29 | Initial authoring (Proposed, pending ratification) | Claude Code, at Joshua's request |
+| 2026-08-29 | Ratified — Status `Proposed` → `Accepted`, no amendments to §2 | Joshua ("Flip it to accepted") |
