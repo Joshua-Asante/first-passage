@@ -195,21 +195,34 @@ reused not invented), predict the *next* bar's range above its own time-of-day-c
 trailing median? Cross-series (volume, range), 1-bar lag — carries the same shared-regime
 confound as `overnight-range-day-session-transfer` (just at bar-scale, not session-scale), scored
 the same way: a $0 increment test against the mundane same-series (range→range) comparator, not a
-full corrected battery. Distinct from `opening-pressure` (opening-window volume × directional
+full corrected battery — **stratified on that comparator, not a marginal-rate diff** (see the
+2026-08-29 correction below; a marginal-rate diff read the sign backwards). Distinct from
+`opening-pressure` (opening-window volume × directional
 efficiency, DEAD on MYM) — this is a magnitude-only, any-time-of-session claim. Null-validity
 grounding: mixture-of-distributions literature (Tauchen & Pitts 1983; Bollerslev & Jubinski
 1999), the volume-clustering analogue of the ARCH/GARCH canon `daily-range-state-persistence`
 cites for range — a citation-based grounding, disclosed as lighter-weight than the repo-native
 frozen battery.
 
-- **Class finding:** MYM $0 increment falsifier, n=139,605 bar-pairs (RTH+overnight, M15,
-  2020-07→2026-07): volume-conditioned obs=0.6546 (n_cond=68,509) vs. own-range-conditioned
-  obs=0.6596 (n_cond=68,113) — diff **−0.0049**, 95% CI **[−0.0085, −0.0012]**, p=0.0115. **Clean,
-  well-powered NO-INCREMENT** — statistically resolved (huge n) but economically negligible
-  either way; range's own 1-bar persistence already explains everything volume adds. Both
-  conditioning schemes sit far above the 0.4879 unconditional base rate (range clustering itself
-  is real and strong). First instrument scored under this id. [MYM.md](MYM.md) ·
+- **Class finding (corrected — stratified design, 2026-08-29, AUTHORITATIVE):** same design
+  correction as `overnight-range-day-session-transfer`/`overnight-gap-magnitude-range-conditioning`
+  (marginal comparison → stratify on `bias_hist`, measure lift within stratum), applied here
+  because same-bar volume and range are highly correlated (independently verified on MYM's own
+  data: Spearman = **0.8618**, n=141,467). Within `bias_hist=0` (own range not elevated,
+  n=71,492): lift **+0.1649** (0.4528 vs 0.2879). Within `bias_hist=1` (own range elevated,
+  n=68,113): lift **+0.2455** (0.7150 vs 0.4695). Block-bootstrap on the minimum stratified lift:
+  mean **+0.1648**, 95% CI **[+0.1537, +0.1761]**, p(lift≤0)≈0. **INCREMENT — decisive, the
+  largest-magnitude correction in the 2026-08-29 MYM batch.** Cross-instrument corroboration: MNQ's
+  own same-day candidate 3 (informally `bar-volume-regime`, no landed heading/cell yet) ran the
+  correct stratified design from the start and found a similar shape (+20.6pp/+25.6pp), also
+  GRADUATEd. [MYM.md](MYM.md) ·
   [`N-2026-08-29-mym-bar-volume-regime.md`](../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md)
+- **Superseded (disclosed, not the authoritative answer):** the first-pass **marginal** falsifier
+  (volume-conditioned obs=0.6546 vs. own-range-conditioned obs=0.6596, diff −0.0049, 95% CI
+  [−0.0085, −0.0012], p=0.0115) read as a clean, well-powered NO-INCREMENT. The stratified
+  correction reverses this entirely — the marginal "kill" was masking a real +16 to +25pp effect,
+  not the absence of one. Kept visible as a disclosed secondary measurement, not deleted; the
+  stratified finding governs.
 
 ## overnight-gap-magnitude-range-conditioning
 
