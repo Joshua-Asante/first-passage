@@ -60,7 +60,7 @@ cells:
     date: 2026-08-29
     source: "../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md"
   - mechanism: intraday-bar-volume-regime
-    verdict: DEAD
+    verdict: CONTINGENT-FORWARD
     date: 2026-08-29
     source: "../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md"
   - mechanism: overnight-gap-magnitude-range-conditioning
@@ -134,7 +134,9 @@ structure:
 - **[`overnight-range-day-session-transfer` GRADUATE-eligible, Pre-Q deferred](../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md) (2026-08-29, corrected same day).** ⚠ **Supersedes the original same-day HOLD-until-2027-03-01 line, struck below.** A design-flaw catch (marginal-rate comparison ≠ "matched conditioning") triggered a stratified re-run: within-stratum lift +31.8pp / +22.1pp, bootstrap CI [+10.4pp, +32.2pp] entirely positive, p=0.00025. D5 stage-1 precondition (2) decisively cleared. Conditions 3 (joint-surrogate null design, adversarial-reviewed) and 4 (operator GO) still outstanding; Pre-Q authoring deferred to the planned MNQ+MYM pooling session per the operator's own batch framing — not opened here. No raised-bar route needed (conditioner-role, same as candidate 1).
   ~~$0 cheap falsifier AMBIGUOUS (diff +0.0297, CI straddles 0); HELD until 2027-03-01~~ — struck 2026-08-29, same day, superseded by the stratified correction above (marginal comparison was the wrong statistic, not a wrong answer to the right one).
 - **[`overnight-gap-magnitude-range-conditioning` HELD until 2027-03-01](../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md) (2026-08-29, corrected same day).** Same stratified-design correction as the overnight-range sibling — the original marginal "clean kill" (diff −0.1039) inverted sign entirely: within-stratum lift +14.0pp / +6.7pp, bootstrap CI [−4.2pp, +14.8pp] straddling 0, p(lift≤0)=0.1247. Moved DEAD → CONTINGENT-FORWARD (was never a graduate-worthy pass, but no longer a kill either). Re-check on the grown panel.
-- **[`bar-closing-location-autocorrelation` HELD until 2026-11-08](../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md) (2026-08-29).** SIGNAL-EXCESS (obs −0.0370, CI entirely negative, p=0.005) — the strongest statistical result of the 2026-08-29 batch, but admission-route status under the directional-timing raised bar is unresolved; not GRADUATEd on this session's own authority.
+- **[`intraday-bar-volume-regime` GRADUATE-eligible, Pre-Q deferred](../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md) (2026-08-29, corrected same day).** ⚠ **Supersedes the original same-day DROP line, struck below.** Same marginal-vs-stratified design flaw as the overnight-range/gap-magnitude pair, caught separately because this construct doesn't cite the D5 spec so the first adversarial pass didn't scan it for the pattern. Stratified on the bar's own already-elevated range: within-stratum lift +16.5pp / +24.5pp, bootstrap CI [+15.4pp, +17.6pp] entirely positive, p≈0, n=139,605 — the largest-magnitude and most tightly-estimated correction in this batch. Cross-instrument-corroborated by MNQ's independently-run, independently-stratified same-day candidate 3 (+20.6pp/+25.6pp, also GRADUATEd). No raised-bar route needed (conditioner-role, same as candidates 1/2).
+  ~~$0 increment falsifier clean NO-INCREMENT (diff −0.0049, CI [−0.0085,−0.0012]); DROPPED~~ — struck 2026-08-29, same day, superseded by the stratified correction above (marginal comparison masked a real +16-25pp effect behind a same-bar volume/range correlation of 0.86).
+- **[`bar-closing-location-autocorrelation` HELD until 2026-11-08](../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md) (2026-08-29).** SIGNAL-EXCESS (obs −0.0370, CI entirely negative, p=0.005) — admission-route status under the directional-timing raised bar is unresolved; not GRADUATEd on this session's own authority. ⚠ No longer the batch's largest-magnitude finding by CI tightness/effect size — `intraday-bar-volume-regime`'s corrected +16.5pp/+24.5pp now exceeds it — but remains the only *unconditional shape-persistence* result and the only one with an open governance (not just design) question.
 
 ## RECORD — c1 leg (withdrawn)
 
@@ -146,6 +148,49 @@ structure:
 
 ## SESSION LOG
 
+- **2026-08-29 (correction #2, follow-up)** — **Same design-flaw class caught on candidate 3
+  (`intraday-bar-volume-regime`), missed by the first adversarial pass because this construct
+  doesn't cite the D5 magnitude-persistence spec** (it's a different mechanism family), so the
+  review that scanned candidates 2/4 for the marginal-vs-stratified pattern didn't scan this one.
+  `c3_volume_regime.py` diffed two MARGINAL conditional rates (volume-conditioned vs.
+  own-range-conditioned) — same flawed shape as the corrected `c2_c4_increment_falsifiers.py`.
+  Independently verified before rerunning: same-bar volume/range Spearman correlation on MYM's
+  own data = **0.8618** (not merely assumed by analogy to the cited MNQ figure of 0.88) —
+  exactly the regime where a marginal comparison is unreliable. Corrected script
+  (`c3_stratified_rerun.py`) stratifies on the bar's own already-elevated range: within-stratum
+  lift **+16.5pp / +24.5pp**, bootstrap CI **[+15.4pp, +17.6pp]** entirely positive, p≈0,
+  n=139,605 — **the largest-magnitude, most tightly-estimated reversal in the whole 2026-08-29
+  batch** (original marginal diff was −0.49pp, read as a clean DROP). **DROPPED→GRADUATE**,
+  Pre-Q authoring deferred to the same MNQ+MYM pooling session as candidate 2; no raised-bar
+  route needed (conditioner-role). Cross-instrument corroboration: MNQ's own same-day candidate
+  3 (informally `bar-volume-regime`, correctly stratified from the start, no landed
+  MECHANISMS.md heading of its own yet) found a similar shape (+20.6pp/+25.6pp) and reached the
+  same GRADUATE decision independently. `N-2026-08-29-mym-bar-volume-regime.md` rewritten in
+  place (§1 superseded, not appended-around); `MECHANISMS.md`'s `intraday-bar-volume-regime`
+  class finding updated the same way. **Scope-bounded:** candidates 1, 4, 5 untouched (candidate
+  4's own HOLD re-check isn't due until 2027-03-01, not reopened here). No `core/`, lock,
+  allocation, `dd_protection`, Pine, or rail change. $0 spent; no new K (re-measurement of an
+  already-registered/closed look under `mymdd_1_2026_08_29`, matching the RE-MEASUREMENT
+  convention). Scripts + JSON:
+  `lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c3_stratified_rerun.py` +
+  `c3_stratified_results.json`.
+- **2026-08-29 (merge)** — **Merged origin/main (PR #195 landed as `b2f940f`), reconciling
+  against the MNQ Phase-1 sibling batch (PR #194) and three `instrument_profiles.py`
+  multi-line-truncation fixes (PRs #196/#197/#198) that landed while this PR was open.** Only
+  real conflict: `lab/CATALOG.md` (both branches inserted a new `_inbox` row at the same
+  alphabetical slot; kept both, slug-sorted). `MECHANISMS.md`/`PROFILES.md`/`profiles.json`
+  auto-merged cleanly (non-overlapping heading positions), verified by reading the merged
+  heading list + rerunning `build`/`check` (27 ledgers, 64 cells, OK) + the full pytest suite
+  (79 passed). **Taxonomy reconciliation (not a mechanical merge artifact):** MNQ's landed
+  `overnight-range-transmission` heading (with a real Pre-Q, `Q-RANGEXFER-1`) covers the
+  identical D5 "S2" role this ledger's `overnight-range-day-session-transfer` /
+  `overnight-gap-magnitude-range-conditioning` pair covers — both authored the same day before
+  either session could see the other's work; MNQ combined both predictors under one id with a
+  real joint stratification (gap is a nested, sign-unstable sub-question of overnight range, not
+  co-equal); MYM split them into two ids without yet running that joint check. Kept as separate
+  ids (already cited across this ledger's Notice-log files); added explicit cross-reference notes
+  in both directions in `MECHANISMS.md` so the fork is documented, not silent. Reconciling the
+  two organizations is the deferred MNQ+MYM pooling session's job.
 - **2026-08-29 (correction, same day)** — **Design-flaw catch on candidates 2/4, from an
   adversarial review of the batch below: marginal conditional-rate comparison ≠ "matched
   day-session-history conditioning."** The batch entry immediately below scored both candidates
