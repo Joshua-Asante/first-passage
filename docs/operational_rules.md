@@ -105,41 +105,13 @@ and the post-relock MC anchors. The skew was caught when OANDA backtest
 filenames (`Guardian_Gold_v5.5_OANDA_XAUUSD_2026-04-25_9ae1f.csv`) forced a
 comparison and refreshed in commit `cfea4a2` on 2026-04-25.
 
-**Q8a audit result (per-decision verification, not asserted).** Every commit
-inside the 2-day skew window (2026-04-23 21:00 lock through 2026-04-25 11:39
-fix) audited against the four stale `Code:` pointers (`aegis_v4.1.pine`,
-`guardian_v5.1.pine`, `striker_v4.3.pine`, and `portfolio-allocations.md`'s
-`Status: Accepted` line). Each row records (i) which stale pointer the
-decision could plausibly have consulted, (ii) whether it did, and (iii) if it
-did, whether the deprecated code was logically equivalent at the relevant
-logic for that decision.
-
-| Commit  | Decision                                  | Stale pointer it could consult     | Consulted? | Equivalent at relevant logic? |
-|---------|-------------------------------------------|------------------------------------|------------|-------------------------------|
-| edd0f39 | MVD discipline (ADR + methodology + lib)  | All four ADR `Code:` lines         | No — explicitly wrote current versions ("Guardian Gold v5.5, Striker DJ30 v4.4, Aegis v4.3 ... grandfathered"; example references `strategies/aegis_v4_3.pine`) | n/a |
-| c9f6ab9 | Aegis v4.3 MVD helper dry-run             | `aegis_v4.1.pine` ADR pointer      | No — file name itself is "Aegis v4.3", panel is v4.3 | n/a |
-| 4312865 | MVD methodology Aegis path fix            | `aegis_v4.1.pine` ADR pointer      | No — fix moved path to match repo layout, version-agnostic | n/a |
-| a0a47bd | MVD meta-example + CHANGELOG scope        | None                               | No — methodology framing only | n/a |
-| 6844fd0 | MVD retrofit ADR                          | All four                           | No — explicitly wrote "Guardian v5.5, Striker v4.4, Aegis v4.3 still locked" | n/a |
-| b7211e4 | `portfolio_mc.py` MVD retrofit (code)     | None — consumes CSVs not Pine      | No — code change at the runtime model layer | n/a |
-| 2147b75 | `dd_protection.py` MVD retrofit (code)    | None — consumes CSVs not Pine      | No — code change at the runtime model layer | n/a |
-| cfcb3f0 | Notice phase bar-data drill-down          | All four ADR `Code:` lines         | No — analysis ran on raw 15-min bars (XAU/US30/USDJPY), did not load or reference any Pine file; `portfolio_mc.build_week_blocks` referenced by line, no version pointer involved | n/a |
-| a05e9f3 | 1R methodology update (Guardian v5.5)     | `guardian_v5.1.pine` ADR pointer   | No — this commit *was* the lagging-artefact update; it wrote v5.5 explicitly and dropped the prior v5.1 1.37% figure | n/a |
-| cb6fdbe | CSV-tracking policy + OANDA backtests     | None                               | No — admin policy + data ingestion | n/a |
-| d0e75de | Ignore `data/live/*.csv`                  | None                               | No — `.gitignore` change | n/a |
-
-The audit closes with **zero corrupted decisions**. The skew was
-`Code:`-pointer-only across four cross-reference lines and one ADR `Status`
-line; no decision in the window depended on what those lines pointed to.
-
-For completeness on the equivalence column: the parentheticals added in fix
-commit `cfea4a2` document what changed between the decision-era version and
-the current code (Aegis: session-selection unchanged through v4.3; Guardian:
-v5.5 adds hour filters only; Striker: v4.4 retains the 350% pyramid and
-tightens SL to 1.25 × ATR only). None of the decisions in the window touched
-hour filters, SL multipliers, or session-selection logic — so even
-counter-factually-if-followed, the stale pointer would have shown the same
-load-bearing logic for each decision's purpose.
+**Q8a audit result (per-decision verification, not asserted).** Every commit inside the 2-day skew
+window (2026-04-23 21:00 lock to 2026-04-25 11:39 fix) was checked against the four stale `Code:`
+pointers it left behind, for whether the decision consulted a stale pointer and, if so, whether the
+deprecated code was logically equivalent at the relevant logic. **Result: zero corrupted decisions**
+across the 10 commits in the window — each either explicitly cited the current version or touched
+code paths the stale pointers didn't cover. Full per-commit table and the fix-commit `cfea4a2`
+equivalence analysis: `git log -p` on this file (pre-2026-08 history) or `git show cfea4a2`.
 
 ---
 
@@ -180,8 +152,9 @@ Roles that must **not** restate canonical values:
   log). Closed/retired rows are deleted from STATE (not struck); detail stays
   with the owning ADR/closure.
 - **`docs/SESSIONS.md`** — narrates work; links the ADR/CHANGELOG/commit instead
-  of duplicating its values. Prefer W5 entry classes; keep prose beyond the
-  five fields short (~40 words) — [`W5 ADR`](adr/2026-08-07-w5-governance-diet.md).
+  of duplicating its values. Prefer W5 entry classes and links over prose; the
+  ~40-word-per-field figure is a soft target the ADR itself calls directional, not
+  an enforced cap — [`W5 ADR`](adr/2026-08-07-w5-governance-diet.md).
 - **`CLAUDE.md` §Live-execution posture** — a pointer block: the current
   scale-path picture plus one line + ADR link per standing decision. The
   multi-paragraph decision narrative lives in the owning ADRs; a new posture
@@ -735,189 +708,30 @@ Edits to existing rules must be logged with a dated entry explaining what change
 
 ### Edit log
 
-- **2026-08-28 — Rule 17 added (quarterly programme-audit checklist, first entry).**
-  `check_falsifier_reachability.py` self-reports eroding falsifier-anchor coverage (28% → 25% → 23%
-  across three reads) but ran on no schedule and had no checklist to belong to — the near-miss this
-  rule is paid for by. Seeded with one item (`--stats` census); `scripts/gates.yml` id
-  `falsifier-reachability-census` (`tier: always`, report-only — `--stats` alone always exits 0) makes
-  the trend visible at `make check` / CI (not `make validate`, a narrower selector — verified) between
-  cycles. SSOT/data-lineage remediation program
-  ([`ADR`](adr/2026-08-27-ssot-data-lineage-remediation-program.md) Phase 1 Task 4). This is a **new**
-  rule, not an edit to an existing checklist — the governing ADR's §2 Scope assumed one already
-  existed in this file; Task 4's own Step 1 grep found none. No locked config, allocation,
-  `dd_protection`, Pine, or rail touched.
-- **2026-08-23 — P4 museum rules: Rule 1 origin HISTORICAL; Rule 7 lock paths → `_archive`.**
-  Rule 1 principle unchanged (no per-trade skip; overlays only). Origin marked
-  HISTORICAL — Guardian is cold-stored / venue-less (Phase B/C). Rule 7 lock-state
-  and version-lineage rows retargeted to `core/strategies/_archive/<family>/`
-  + CARD stubs per [`core/strategies/CATALOG.md`](../core/strategies/CATALOG.md).
-  Does not touch Rule 5 or live sizing constants.
-- **2026-08-23 — Rule 7 durable-atoms owner demoted (P2 Approach A).**
-  D1 of the 2026-08-18 assumptions sweep: the prior owner path lives
-  outside the worktree (no retention test, no gate). Durable atoms that
-  bind future work live in owning ADRs / `docs/methodology/lessons/`.
-  Claude-project MEMORY stays as a private injection surface,
-  assistive-only. Does not copy the corpus in-tree. Does not touch
-  Rule 5, lock-state paths (P4), or live sizing constants.
-  [`state-md role-reduction addendum`](adr/2026-06-30-state-md-role-reduction.md#addendum-2026-08-23--memory-is-assistive-only-not-the-rule-7-owner).
-- **2026-08-21 — Reference-repair pass (Rule 9, Rule 10, Rule 14): retired script
-  + drifted gate-number pointers.** Rule 9's worktree-Pine example cited
-  `scripts/validate_params.py`'s cross-check as a live risk illustration; that
-  script was retired 2026-08-03 with the `params.toml` hub
-  ([ADR](adr/2026-08-03-params-toml-gate-retirement.md)) — dropped the stale
-  example from the rule body, kept it (with a retirement parenthetical) in the
-  historical Origin note. Rule 10 and Rule 14 each cited a fixed ordinal
-  position in the pre-commit gate list (`gate (11)`, `gate 13`); verified against
-  the current `scripts/gates.yml` (18 gates, insertion order), the intended
-  targets (`instrument-profiles`, `supersession-placement`) now sit at positions
-  13 and 16 — both ordinals had drifted off their target as later gates were
-  inserted ahead of them. Replaced both with the gate's stable `id:` field, which
-  cannot drift as new gates are inserted. No rule *behavior* changed; reference-only.
-- **2026-08-22 — Rule 7 STATE decision-index restored to one line + owner.**
-  Phase 6 diet collapsed the 105 remaining executed-decision bullets after
-  the 2026-08-19 concise relaxation had grown them back into multi-paragraph
-  restatements. Body of this §7 and `STATE.md`'s anti-accretion header match.
-  Additive; no locked config, allocation, `dd_protection`, Pine, or rail
-  touched.
-- **2026-08-19 — Rule 7 STATE decision-index cap relaxed from strict one-line
-  to concise.** Practice had already drifted (the persona-hierarchy panel's
-  own 08-19 decision-index entry ran ~6 lines/~100 words) without a matching
-  edit-log entry — the exact silent-drift failure this section exists to
-  prevent, caught by a COO executive-opinion review requested directly by the
-  operator (`docs/personas/coo-log.md`) as part of a broader governance-
-  friction audit (`docs/notes/audits/2026-08-19-governance-friction-persona-panel-audit.md`).
-  Operator ruled: relax the rule to match practice rather than re-enforce the
-  literal cap. "Concise" still bars multi-sentence narrative (the anti-
-  accretion intent is unchanged) — only the strict single-line mechanical
-  limit is dropped. Same text updated in `STATE.md`'s own header mirror.
-  Additive; no locked config, allocation, `dd_protection`, Pine, or rail
-  touched.
-- **2026-08-15 — Rule 8 sub-rules 9–10 added (registry feed + amendment-first).**
-  Sub-rule 9: new closures carry a `Registry:` line (`rejected_candidates.md`
-  heading or explicit `n/a`). Closes the 2026-08-03→08-11 feed-stop (gated
-  Iterate/Board write; registry was checklist-only). Sub-rule 10: amend the
-  existing owner before minting a sibling ADR/brief/notice/lab slug; paste
-  search output or state none exists. Addenda on
-  [`dedup-first`](adr/2026-08-13-dedup-first-before-new-work.md) and
-  [`ceremony-tiering`](adr/2026-08-08-adr-ceremony-tiering.md). Mechanical
-  limb in `check_closure_disposition.py` (forward-only grandfather). No
-  locked config, allocation, `dd_protection`, Pine, or rail touched.
-- **2026-08-13 — Rule 8 sub-rule 8 added (dedup-first before new work).** Before
-  opening any new `lab/analysis/<theme>/<slug>/` or scoping `core/`-adjacent
-  implementation, §0 must paste literal search output against `lab/CATALOG.md`
-  and `docs/briefs/INDEX.md` — an attestation without executed search output is
-  void. Generalizes the 2026-07-26 census binding procedure past harvest-only
-  scope; mirrors sub-rule 1 at the creation moment. Earned by two same-session
-  2026-08-13 incidents (Tradeify eval-battery near-miss; Magdon-Ismail closed-form
-  MDD duplicate). Mechanical wiring (hookify trigger + keyword-mode search tool +
-  catalog same-theme WARN) in the same ADR. Additive; no locked config,
-  allocation, `dd_protection`, Pine, or rail touched.
-  [`ADR 2026-08-13`](adr/2026-08-13-dedup-first-before-new-work.md).
-- **2026-08-08 — ADR ceremony stakes-tiering ratified (pointer, no rule text
-  changed).** Full §0–§7 only when a tier-test limb fires; otherwise a ≤300-word
-  light decision record. Rule 8's §0 read discipline binds at both tiers — only
-  the reporting format thins. Grounds: 118-ADR retrospective (≈19% light-eligible;
-  all fired-apparatus incidents in full tier).
-  [`ADR 2026-08-08`](adr/2026-08-08-adr-ceremony-tiering.md).
-- **2026-08-07 — Rule 15 added (always-on hosting / desktop=console-only).**
-  Doctrine had no owner surface (grep=0). Scoped to always-on processes so it
-  does not collide with cursor-fleet route-LOCAL. [`W6 ADR`](adr/2026-08-07-w6-rail-infra-closures.md).
-- **2026-08-07 — Rule 7 / SESSIONS·STATE diet direction (W5).** Tiered entry
-  classes + ~40-word prose cap directed by
-  [`W5 ADR`](adr/2026-08-07-w5-governance-diet.md); headers updated. Mechanical
-  enforcement optional later.
-- **2026-08-07 — Rule 7 owner table drops retired `params.toml` row.** The
-  derived mirror and hub validator were retired by
-  [`docs/adr/2026-08-03-params-toml-gate-retirement.md`](adr/2026-08-03-params-toml-gate-retirement.md);
-  the owner-table row had stayed as silent restatement. Pine +
-  `dd_protection`/`firm_rules` remain the sizing/parameter owners. S7 NOW
-  discharge ([alignment manifest](notes/2026-08-07-posture-a-alignment-manifest.md)).
-- **2026-08-04 — Rule 7 owner table gains a "Per-Q forward disposition" row.**
-  `docs/adr/2026-08-04-iterate-closure-exit-mandatory.md` (Accepted same day) makes
-  every closure's own `## Iterate` block the canonical owner of its forward
-  disposition (Next: INTEGRATE|ITERATE|STOP + entry packet + stop rule); a STATE
-  forward-board row or SESSIONS Open/next line that mirrors it is a labeled
-  pointer, never a second canonical value. Additive; no locked config,
-  allocation, `dd_protection`, Pine, or rail touched.
-- **2026-08-03 — Rule 7 STATE anti-accretion reaffirmed.** `STATE.md` had re-grown
-  past charter (~2129 lines: multi-paragraph pointer-log retellings, closed
-  discovery/dormant narrative, discharged forward-trigger rows). Rewrite restores
-  open-board only: thin operator queue, one-line decision index, open dormant
-  threads, live forward triggers. Unique “no other home” retirements salvaged to
-  [`docs/notes/2026-07-10-operator-retirements-record.md`](notes/2026-07-10-operator-retirements-record.md).
-  Standing accretion rules now live in the STATE header. Reaffirms
-  [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](adr/2026-07-16-root-doc-charter-dedup.md);
-  no locked config / allocation / `dd_protection` / Pine / rail touch.
-- **2026-08-02 — Rule 14 added (supersession placement) + gate 13.** Earned by two
-  same-session firings of one mechanism — corrections applied in writing order
-  (appended) while documents are consumed in reading order — plus four more
-  instances found by the new gate's first scan. Draws the frozen/living boundary
-  Trap #12 never drew: frozen bodies stay unedited **and** get an upstream
-  reader-intercept (book-composition §2 banner = canon); living docs are corrected
-  at the assertion site; same-session work is never frozen. Mechanical backstop
-  `scripts/check_supersession_placement.py` covers the addendum-shaped subset
-  only, per M-8. Additive; no locked config, allocation, `dd_protection`, Pine,
-  or pin touched.
-- **2026-08-02 — Rule 4 + Rule 8.5 mission-alignment prune (Packet B).** Rule 4: replace retired weekly-review logging with `docs/SESSIONS.md` / c1 telemetry owners. Rule 8.5: replace deleted `accounts` / `cli` lock checklist with `firm_rules` / `dd_protection` / `lifecycle` / c1 sizing host. Parent: `docs/briefs/2026-08-02-retired-surface-mission-alignment-prune.md`.
-- **2026-08-02 — Rule 13 added (venue-fact recording convention).** Earned by two
-  same-day 2026-07-31 incidents from one missing convention: automation
-  obligations narrowed from STANDING to payout-gated at a spec→note transcription
-  boundary, and the FTA-vs-help-centre precedence rule carried **inverted** in five
-  documents. Load-bearing half is the scope rule — when a source is silent on
-  scope but scopes its siblings explicitly, the silence reads **BROAD**, because
-  narrowing errors are silent and defer readiness while broadening errors only
-  cost preparation. Additive; no locked config, allocation, `dd_protection`, Pine,
-  or rail touched. Canonical example:
-  [`TRADEIFY_AUTOMATION_PAYOUT_COMPLIANCE.md`](notes/rail_build/TRADEIFY_AUTOMATION_PAYOUT_COMPLIANCE.md).
+Full incident narration for each entry lives in `git log -p` on this file and in the linked ADR; this
+log states what changed and why in one line. Unless noted, edits are additive — no locked config,
+allocation, `dd_protection`, Pine, or rail touched.
 
-- **2026-07-16 — Rule 7 role list extended (root-doc de-dup).** The
-  live-execution posture was told three times (`CLAUDE.md` §posture
-  multi-paragraph retelling, `STATE.md` dated decision sections, `PIPELINES.md`
-  dormancy preamble) and the public-clone posture twice (`README.md` +
-  `CLAUDE.md`) — the same drift class as this rule's 2026-06-03 origin
-  incident, at the narrative layer instead of the value layer. `CLAUDE.md`'s
-  posture section is demoted to a pointer block, `STATE.md`'s dated decision
-  sections to a one-line pointer log, `README.md`'s public-clone note to a
-  one-liner; `REPO_MAP.md` / `PIPELINES.md` left unchanged (operator-scoped —
-  the PIPELINES dormancy preamble is a labeled framing paragraph, not a
-  per-decision retelling). Canonical record + falsifier:
-  [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](adr/2026-07-16-root-doc-charter-dedup.md).
-- **2026-07-11 — Rule 3 posture annotation.** Preserved the `contractValue=10`
-  safety fact but marked its check dormant unless DXTrade is explicitly reactivated.
-- **2026-07-10 — Live-path skew repair.** Updated Rule 7 and Rule 9 path
-  examples from the pre-monorepo locations (`strategies/`, `config/`, and
-  root Python modules) to their current `core/` owners. Replaced Rule 1/5/6's
-  removed overlay-directory references with the exact git-retrieval command.
-  Doctrine and constants are unchanged; this is reference repair only.
-- **2026-07-02 — Rule 8 sub-rule 7 (shipped the queued check).** Built the
-  mechanical check the 2026-07-01 entry left "queued (R4)": the Sentinel Tier-1
-  `preregistration_scan` (`ops/sentinel/scan.py`, report-only, fail-open;
-  `make sentinel`), which flags any commit introducing a results/closure
-  artifact together with a corresponding pre-registration. Updated sub-rule 7's
-  closing note from "a mechanical check is queued" to point at the shipped check.
-  Scope honesty: the check covers the same-commit self-attested class; the
-  run-commit-edits-frozen-verdict-logic sub-case (`3935d2c`) is a documented
-  Forward gap. Report-only (a false positive is a nudge, not a block); no locked
-  config touched. Tests: `tests/test_sentinel.py`; design: sentinel spec addendum.
-- **2026-07-01 — Rules 11 + 12, Rule 8 sub-rule 7, §8 origin note (programme audit
-  remediation).** *Rule 11* (retirement events back-propagate to standing
-  falsifiers) and *Rule 12* (DRAFT/HOLD needs an explicit lift artifact) added —
-  each earned by a named 2026-07-01 audit finding (dormant-unacknowledged
-  falsifier limbs; DRAFT-HOLD merged on inferred approval). *Rule 8 sub-rule 7*
-  (pre-registration freeze is a separate, earlier commit than results) added —
-  five audit verifiers independently flagged same-commit self-attested freezes; a
-  mechanical check is queued (R4). *§8 origin* gained a dated visibility note (repo
-  now private, gh-verified). No locked config touched; all additive.
-- **2026-06-22 — Rule 10:** added the **Phase-0 cost-geometry pre-gate**
-  (`scripts/cost_geometry_pregate.py`) as an explicit, runnable sub-step of the
-  instrument-ledger Phase-0 validation. *Why:* the 5th-leg search keeps surfacing
-  tight-range mean-reversion candidates (EURGBP/EURCHF-class crosses) whose
-  edge-style fits the chop regime but whose cost geometry is the live risk — the
-  same failure mode that killed the USOIL spike-fader (~0.09R realized cost,
-  sub-ATR stop on a wide-spread instrument;
-  `docs/adr/2026-06-14-reject-usoil-rdm-spike-fader.md`) and that USDCAD durable
-  finding #1 already prescribed a pre-flight for. The change makes L-COST-GEOMETRY
-  a mechanical pre-flight (compute `median(spread)/median(ATR15m)`; require
-  realized `cost_R < 0.05R` before any backtest) instead of a post-hoc finding.
-  Additive — Rule 10's read/append obligation is unchanged; no locked config
-  touched. Canonical: `docs/adr/2026-06-22-cost-geometry-pregate.md`.
+- **2026-08-28** — Rule 17 added (quarterly programme-audit checklist; `check_falsifier_reachability.py --stats` census, wired `gates.yml`). [`ADR`](adr/2026-08-27-ssot-data-lineage-remediation-program.md)
+- **2026-08-23** — P4 museum rules: Rule 1 origin marked HISTORICAL (Guardian cold-stored); Rule 7 lock-state paths retargeted to `_archive/<family>/`.
+- **2026-08-23** — Rule 7 durable-atoms owner demoted to owning ADRs / `docs/methodology/lessons/`; Claude-project MEMORY is assistive-only, never a Rule 7 owner. [`addendum`](adr/2026-06-30-state-md-role-reduction.md#addendum-2026-08-23--memory-is-assistive-only-not-the-rule-7-owner)
+- **2026-08-22** — Rule 7 STATE decision-index restored to one line + owner (had grown back into multi-paragraph restatements after the 2026-08-19 relaxation below).
+- **2026-08-21** — Rule 9/10/14 reference repair: dropped a stale retired-script example, replaced drifted ordinal gate-number pointers with stable `id:` fields. No rule behavior changed.
+- **2026-08-19** — Rule 7 STATE decision-index cap relaxed from strict one-line to concise (practice had drifted; operator ruled relax-to-match). Still bars multi-sentence narrative.
+- **2026-08-15** — Rule 8 sub-rules 9–10 added: closures carry a `Registry:` line; amend the existing owner before minting a new ADR/brief/notice/lab slug. [`ADR`](adr/2026-08-13-dedup-first-before-new-work.md)
+- **2026-08-13** — Rule 8 sub-rule 8 added: paste literal dedup-search output (`lab/CATALOG.md` + `docs/briefs/INDEX.md`) before opening new work. [`ADR`](adr/2026-08-13-dedup-first-before-new-work.md)
+- **2026-08-08** — ADR ceremony stakes-tiering ratified (pointer only, no rule text changed): full §0–§7 only when a tier-test limb fires. [`ADR`](adr/2026-08-08-adr-ceremony-tiering.md)
+- **2026-08-07** — Rule 15 added (always-on hosting is not the desktop). [`ADR`](adr/2026-08-07-w6-rail-infra-closures.md)
+- **2026-08-07** — Rule 7 / SESSIONS·STATE entry-class direction (W5 — see the prose-target note above §7). [`ADR`](adr/2026-08-07-w5-governance-diet.md)
+- **2026-08-07** — Rule 7 owner table drops the retired `params.toml` row.
+- **2026-08-04** — Rule 7 owner table gains a "Per-Q forward disposition" row (each closure's own `## Iterate` block is canonical).
+- **2026-08-03** — Rule 7 STATE anti-accretion reaffirmed after STATE re-grew past charter (~2129 lines); rewritten to open-board only.
+- **2026-08-02** — Rule 14 added (corrections land where the error is read, not where it's convenient to write) + gate `check_supersession_placement.py`.
+- **2026-08-02** — Rule 4 + Rule 8 sub-rule 5 updated to point at current owners (retired weekly-review-feeder / accounts / cli surfaces).
+- **2026-08-02** — Rule 13 added (venue facts recorded as quote + source + date + explicit scope; silence reads BROAD).
+- **2026-07-16** — Rule 7 role list extended: CLAUDE.md posture, STATE.md decisions, README public-clone note all demoted to pointers (root-doc de-dup). [`ADR`](adr/2026-07-16-root-doc-charter-dedup.md)
+- **2026-07-11** — Rule 3 marked dormant unless DXTrade is explicitly reactivated.
+- **2026-07-10** — Live-path skew repair: Rule 7/9 examples updated to current `core/` paths.
+- **2026-07-02** — Rule 8 sub-rule 7: shipped the queued mechanical check (`ops/sentinel/scan.py` `preregistration_scan`).
+- **2026-07-01** — Rules 11 + 12 added (falsifier back-propagation on retirement; DRAFT/HOLD needs an explicit lift artifact); Rule 8 sub-rule 7 added (pre-registration freeze is a separate earlier commit) — programme-audit remediation.
+- **2026-06-22** — Rule 10 gained the Phase-0 cost-geometry pre-gate (`scripts/cost_geometry_pregate.py`). [`ADR`](adr/2026-06-22-cost-geometry-pregate.md)

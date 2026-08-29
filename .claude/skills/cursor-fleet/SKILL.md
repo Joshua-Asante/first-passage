@@ -32,7 +32,7 @@ Hard disqualifiers for any packet: touches ADR test-1 locked surfaces (core anch
 **4. Pre-dispatch gate, per packet, at dispatch time (not fleet-authoring time):**
    - `git fetch origin && git log --oneline origin/main --since="24 hours ago"` — re-verify the packet's Phase-0 premises against CURRENT main. Overtaken → mark OVERTAKEN in the manifest, do not dispatch. (Three artifacts were overtaken between authoring and dispatch on 2026-07-24 alone; the daily-repo-truth-sync task reports this each morning, but the dispatch-moment check is still mandatory.)
    - `gh pr list --state open` — no open PR already touches the packet's files.
-   - Test 0 per packet: vendor bytes / secrets → route that packet LOCAL (worktree on this machine), never cloud.
+   - Test 0 per packet: vendor bytes / secrets → route that packet LOCAL (worktree on this machine), never cloud. This is the `task-routing` skill's local-only checklist, re-applied per packet at dispatch time rather than once at fleet-authoring time — if that checklist changes, this step changes with it.
 
 **5. Dispatch mechanics (the honest constraints):**
    - CC cannot fire `cursor-agent` directly — the CLI dispatch is classifier-blocked without an explicit allow-rule or the committed wrapper (memory `reference_cursor_agent_cli_bridge`). Standing options: (a) the operator fires each worker (CC hands them the packet pointer), or (b) the committed wrapper + a `settings.json` allow-rule lets CC dispatch — **adding that allow-rule is an operator decision; ask once, record it, never work around the classifier.**

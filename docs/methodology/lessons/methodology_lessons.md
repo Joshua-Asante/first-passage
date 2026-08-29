@@ -34,80 +34,35 @@ registered lesson exist only as compact pointers; the lesson itself lives here.
 
 ## Format spec
 
-Each lesson is a self-contained section keyed `## M-N — short title`. Every
-lesson must carry these fields, in this order:
+**Lightened 2026-08-29** — this is a solo-operator error journal, not an org's audit trail; the
+8-field template + dollar-threshold promotion state machine below was sized for the latter. Existing
+entries (M-7 through the last one authored before this change) keep their original 8-field format
+unedited — this is not a retroactive rewrite. **New entries use this light format:**
 
-1. **Status** — one of `CANDIDATE` / `PROMOTED` / `DEMOTED` (rare). With date.
-2. **Anchor incident** — the specific dated event that surfaced the lesson.
-   Cite a brief, ADR, gate audit, finding, or commit; quote the line that
-   shows the failure.
-3. **Cost** — the load-bearing measure that earns this lesson its slot.
-   Choose ONE form:
-    - **Dollar cost** if a live-PnL or P&L-counterfactual figure isolates
-      cleanly to the methodology failure.
-    - **Audit-instance count** for production-vs-doc mismatches (e.g. the
-      Rule-0 catalyst was instance #3 of dd_protection misstatement).
-    - **Wrong-verdict count** for cases where applying the lesson would have
-      flipped a verdict (e.g. PROMOTE → HOLD).
-4. **Rule** — imperative, single sentence. "Always X." / "Never Y." / "Before
-   Z, do W."
-5. **Mechanism (why this fails)** — the underlying generator that the rule
-   guards against. Without this, the rule is a cargo-cult prescription.
-6. **Connection to standing doctrine** — cross-reference to Rule 0 sub-rules
-   (`docs/operational_rules.md` §8), observation routing, regime-robustness
-   gate, or another locked methodology document.
-7. **Watch-point** — where the lesson fires. For M-class lessons, this is
-   typically "during §0 of brief authoring", "during pre-Q gate construction",
-   or "before declaring a verdict CLOSED". Be specific.
-8. **Output trigger** — what to do when the watch-point fires. Reference the
-   lesson by name + cost; do not re-derive the rule each time.
+```
+## M-N — short title
 
-Optional fields (use when load-bearing for the lesson):
+**Date:** YYYY-MM-DD · **Anchor:** the dated brief/ADR/commit/finding that surfaced this
+**What broke:** the incident and its cost (dollar figure or audit-instance count), in 1-3 sentences.
+**Rule:** imperative, one sentence — "Always X." / "Never Y." / "Before Z, do W."
+**Mechanism (optional):** one line on why this fails, if not obvious from the rule alone.
+**Link:** the anchor artifact.
+```
 
-- **Forbidden moves** — explicit list of patterns the lesson rules out. Use
-  for lessons that name a tempting failure shape (e.g. silent relabeling,
-  goalpost-moving).
-- **Reproducer / worked example** — link to the gate audit, finding, or brief
-  that documents the failure being avoided.
-- **Sibling lessons** — other M-class or E-class lessons that interlock with
-  this one.
+A lesson is added when a real incident earns it — no promotion ceremony, no dollar threshold, no
+CANDIDATE→PROMOTED state machine to track separately. Once written, it's in force. A superseded
+lesson stays (history-preserving, never deleted), marked `[SUPERSEDED — see M-N]` at its own top.
 
-### Promotion criteria
-
-A pattern graduates from CANDIDATE to PROMOTED when EITHER:
-- (a) a single audit-instance with cost ≥ promotion threshold surfaces, OR
-- (b) the same pattern fires across three separate brief / decision windows.
-
-Promotion thresholds (per cost form):
-
-| Cost form | Threshold |
-|---|---|
-| Dollar cost | ≥ $3,000 (matches E-class) |
-| Audit-instance count | ≥ 3 instances of the same production-vs-doc class |
-| Wrong-verdict count | ≥ 1 verdict flip (a wrong-verdict is itself load-bearing) |
-
-### Demotion criteria
-
-A PROMOTED lesson demotes to DEMOTED if 6+ months pass without the
-watch-point firing AND the structural condition that produced the lesson no
-longer exists (e.g., methodology framework changed in a way that eliminates
-the failure shape). Demotion is rare; lessons mostly accumulate.
-
-DEMOTED lessons stay in this file (history-preserving) — they are not deleted.
-
-### Versioning & change-log
-
-Maintained at the bottom of this file. Each entry: date + lesson IDs added /
-promoted / demoted + one-line rationale. Mirrors execution_lessons.md
-versioning.
+**Legacy 8-field format** (M-7 onward, pre-2026-08-29): Status (`CANDIDATE`/`PROMOTED`/`DEMOTED`) ·
+Anchor incident · Cost (dollar / audit-instance / wrong-verdict count) · Rule · Mechanism ·
+Connection to standing doctrine · Watch-point · Output trigger, plus optional Forbidden moves /
+Reproducer / Sibling lessons — see any existing M-7+ entry below for the pattern; not restated here.
 
 ### File ownership and sync
 
-This file is the **durable canon** for M-class lessons. The `brief-authoring`
-skill bundle's SKILL.md may reference these lessons; the skill is downstream.
-New M-entry workflow: edit this file, propagate to skill bundle on next
-session install. Mirrors the [Rule 0 sub-rules sync clause](../../operational_rules.md)
-(`operational_rules.md` §8 ↔ brief-authoring SKILL.md) — repo wins.
+This file is the **durable canon** for M-class lessons. The `brief-authoring` skill bundle's
+SKILL.md may reference these lessons; the skill is downstream — edit this file first, propagate on
+next session install (same repo-wins convention as `operational_rules.md` §8's sync clause).
 
 ---
 
@@ -1339,8 +1294,99 @@ Promote from CANDIDATE → PROMOTED on the first of:
 
 ---
 
+## M-23 — A parent-process config patch does not cross a process pool: parallel workers re-import from disk and silently score the WRONG configuration
+
+**Incident (dated).** The 2026-07-24 band re-score rider
+(`lab/analysis/c1_band_rescore_2026-07-24/run_band_regime_rider.py:54`) applied the
+corrected eval geometry (`dd_lock_offset_usd → 1_000_000.0`) by mutating the
+**parent process's** `FIRM_RULES` dict. Its full-panel and half-panel arms ran
+in-parent and were correct. Its **bootstrap** arm fanned out through
+`Parallel(prefer="processes")` passing only a **firm-key string**; each worker
+re-imported `firm_rules` from disk, rebuilt config from the still-defective on-disk
+`dd_lock_offset_usd: 100`, and returned plausible numbers. Published boot-95th
+**4.54% / 4.49%** were therefore defective-geometry values. Re-measured under
+worker-local patching with per-panel attestation: **6.69%** (T-50K) and **17.79%**
+(100K @ 1.00×) — the error was ~1.5–7pp and **optimistic**. Detected 2026-07-28,
+four days later, only because a successor harness attested the value it actually used.
+Record: `lab/analysis/c1/c1_band_rescore_2026-07-24/RESULTS.md` §Addendum 2026-07-28;
+corrected run `lab/analysis/c1/eval_shape_diagnostics_2026-07-28/`.
+
+**Why it is invisible.** Nothing errors. The defective path produces well-formed,
+in-range, plausibly-ordered output; the *same script's* serial arms are correct, so
+partial reproduction of published pins (full/halves MATCH) reads as whole-harness
+validation. A reproduction control only catches this if the control itself runs
+**through the pool** — an in-parent control certifies nothing about worker state.
+
+**Enforcement (the general rule, not the joblib special case).** Any run whose
+correctness depends on a **mutated module-level constant** must (a) apply the
+mutation **inside the worker**, after its own re-import; (b) **read the value back
+from the object the engine will actually consume** and emit it into the report
+(`geometry_offset_used`, `..._attested`); and (c) assert the attested set is a
+singleton across every unit of work (`unique_offsets_observed == [expected]`).
+Configuration passed as a **key** rather than a **resolved value** is the smell —
+the key is re-resolved against whatever the worker's disk says. This is the
+process-boundary sibling of Rule 0 (read production, don't assume semantics): here
+the production value is read, then silently discarded at a process boundary.
+
+**Blast-radius rule.** When this is found, the defect invalidates only the arms that
+crossed the boundary — say which, re-measure what is load-bearing, and mark
+un-re-measured cells **impeached** rather than quietly leaving the old number in
+circulation (MFFU-50K's 4.49% remains impeached-not-re-measured at time of writing).
+Siblings: M-9 / M-12 / M-22 (gitignored-bytes-outside-git family — same shape:
+on-disk state diverging from what an artifact asserts).
+
+## M-24 — When a venue fact is corrected in config, sweep for INDEPENDENT re-encodings of it; a config fix does not reach a hard-coded reimplementation
+
+**The pattern (three dated encodings of one venue fact).** Tradeify evaluation accounts have
+**no drawdown locking** (article 10495897; locking is Sim-Funded-only). That single fact was
+encoded wrongly in three independent places, each found separately:
+
+1. **Config** — `core/firm_rules.py` eval rows carry `dd_lock_offset_usd: 100` (found
+   2026-07-22; cost +2.10pp bust at 1.00×, flipped Part A PASS→FAIL on both
+   `trailing_locking` tiers). **The fix is still unapplied** pending re-MC + amending ADR.
+2. **Config, re-resolved across a process boundary** — the 2026-07-24 rider's bootstrap
+   workers re-imported the defective config despite a parent-side patch (M-23; boot-95th
+   4.54% → 6.69%).
+3. **Hard-coded literals in a second harness** — `gap_stage2_capbound.eval_sim`
+   (`FLOOR_LOCK_BAL/FLOOR_LOCKED = 103_100/100_100`) applies the funded-only lock during the
+   eval, inherited by `c1_capalloc_2026-07-27` via a direct `G.eval_sim` call (found
+   2026-07-28; contaminates eval pass 63%, median 8.2 mo, and the `$339/acct-mo` chain rate).
+
+Encoding 3 **does not read the config at all**, so shipping the encoding-1 fix would have
+left it defective — and would have created the worse state where the config is right, the
+docs say "corrected," and a live decision input is still wrong.
+
+**Why the sweep gets skipped.** A corrected config feels like a corrected *fact*. The
+config's own consumer list is easy to enumerate (`grep dd_lock_offset_usd`) and reads as
+complete; an independent reimplementation shares **no identifier** with it, so it is
+invisible to every search anchored on the config's names.
+
+**Enforcement.** On correcting any venue fact, run a **mechanic sweep, not a symbol sweep**:
+search for the *numbers* and the *behavior* (`103_100`, `100_100`, "lock", "freeze",
+"floor"), not just the config key; enumerate every harness that simulates the affected
+phase, including ones importing another study's primitives; and check that each phase-scoped
+mechanic is scoped in code the way the venue scopes it (here: correct in `funded_sim`, wrong
+in `eval_sim`, in the same file). Record the result as an explicit list of *checked* surfaces
+— "config fixed" is not a blast-radius statement.
+
+**Corollary for scheduled re-runs.** A pending re-run specified as "re-run the harness
+unchanged" silently inherits every defect found after it was specified. When a defect lands
+on a harness with a queued re-run, **amend the re-run's specification in the same motion**
+(done here: STATE.md operator-queue item 4). Otherwise the fix and the re-run race, and the
+re-run usually wins. Siblings: M-23 (the process-boundary case), M-9 / M-12 / M-22
+(on-disk-state-vs-asserted-state family).
+
+---
+
 ## Versioning & change-log
 
+Relocated here 2026-08-29 (was drifting mid-file, above M-23/M-24, contrary to this section's own
+"maintained at the bottom" convention) — content unedited by the move.
+
+- **2026-08-29:** Format spec lightened for entries going forward: light 5-field format (Date /
+  Anchor / What broke / Rule / optional Mechanism / Link) replaces the 8-field template + dollar-
+  threshold CANDIDATE→PROMOTED state machine, sized for org memory rather than a solo journal.
+  M-7 through M-24 keep their original 8-field format unedited — not a retroactive rewrite.
 - **2026-05-08:** Registry seeded. Format spec authored. M-7 added as
   CANDIDATE on the 2026-05-07 Guardian late-fill anchor. M-1..M-6 remain in
   Notion / memory pending first-cite migration.
@@ -1493,85 +1539,7 @@ Promote from CANDIDATE → PROMOTED on the first of:
   family); M-13 (gate too lax when absent — M-22 is the too-strict counterpart).
   Design + fix: `docs/superpowers/specs/2026-07-24-lab-catalog-check-heavy-column-worktree-tolerance-design.md`;
   regression tests `tests/test_archive_lab_analysis.py`.
-
-## M-23 — A parent-process config patch does not cross a process pool: parallel workers re-import from disk and silently score the WRONG configuration
-
-**Incident (dated).** The 2026-07-24 band re-score rider
-(`lab/analysis/c1_band_rescore_2026-07-24/run_band_regime_rider.py:54`) applied the
-corrected eval geometry (`dd_lock_offset_usd → 1_000_000.0`) by mutating the
-**parent process's** `FIRM_RULES` dict. Its full-panel and half-panel arms ran
-in-parent and were correct. Its **bootstrap** arm fanned out through
-`Parallel(prefer="processes")` passing only a **firm-key string**; each worker
-re-imported `firm_rules` from disk, rebuilt config from the still-defective on-disk
-`dd_lock_offset_usd: 100`, and returned plausible numbers. Published boot-95th
-**4.54% / 4.49%** were therefore defective-geometry values. Re-measured under
-worker-local patching with per-panel attestation: **6.69%** (T-50K) and **17.79%**
-(100K @ 1.00×) — the error was ~1.5–7pp and **optimistic**. Detected 2026-07-28,
-four days later, only because a successor harness attested the value it actually used.
-Record: `lab/analysis/c1/c1_band_rescore_2026-07-24/RESULTS.md` §Addendum 2026-07-28;
-corrected run `lab/analysis/c1/eval_shape_diagnostics_2026-07-28/`.
-
-**Why it is invisible.** Nothing errors. The defective path produces well-formed,
-in-range, plausibly-ordered output; the *same script's* serial arms are correct, so
-partial reproduction of published pins (full/halves MATCH) reads as whole-harness
-validation. A reproduction control only catches this if the control itself runs
-**through the pool** — an in-parent control certifies nothing about worker state.
-
-**Enforcement (the general rule, not the joblib special case).** Any run whose
-correctness depends on a **mutated module-level constant** must (a) apply the
-mutation **inside the worker**, after its own re-import; (b) **read the value back
-from the object the engine will actually consume** and emit it into the report
-(`geometry_offset_used`, `..._attested`); and (c) assert the attested set is a
-singleton across every unit of work (`unique_offsets_observed == [expected]`).
-Configuration passed as a **key** rather than a **resolved value** is the smell —
-the key is re-resolved against whatever the worker's disk says. This is the
-process-boundary sibling of Rule 0 (read production, don't assume semantics): here
-the production value is read, then silently discarded at a process boundary.
-
-**Blast-radius rule.** When this is found, the defect invalidates only the arms that
-crossed the boundary — say which, re-measure what is load-bearing, and mark
-un-re-measured cells **impeached** rather than quietly leaving the old number in
-circulation (MFFU-50K's 4.49% remains impeached-not-re-measured at time of writing).
-Siblings: M-9 / M-12 / M-22 (gitignored-bytes-outside-git family — same shape:
-on-disk state diverging from what an artifact asserts).
-
-## M-24 — When a venue fact is corrected in config, sweep for INDEPENDENT re-encodings of it; a config fix does not reach a hard-coded reimplementation
-
-**The pattern (three dated encodings of one venue fact).** Tradeify evaluation accounts have
-**no drawdown locking** (article 10495897; locking is Sim-Funded-only). That single fact was
-encoded wrongly in three independent places, each found separately:
-
-1. **Config** — `core/firm_rules.py` eval rows carry `dd_lock_offset_usd: 100` (found
-   2026-07-22; cost +2.10pp bust at 1.00×, flipped Part A PASS→FAIL on both
-   `trailing_locking` tiers). **The fix is still unapplied** pending re-MC + amending ADR.
-2. **Config, re-resolved across a process boundary** — the 2026-07-24 rider's bootstrap
-   workers re-imported the defective config despite a parent-side patch (M-23; boot-95th
-   4.54% → 6.69%).
-3. **Hard-coded literals in a second harness** — `gap_stage2_capbound.eval_sim`
-   (`FLOOR_LOCK_BAL/FLOOR_LOCKED = 103_100/100_100`) applies the funded-only lock during the
-   eval, inherited by `c1_capalloc_2026-07-27` via a direct `G.eval_sim` call (found
-   2026-07-28; contaminates eval pass 63%, median 8.2 mo, and the `$339/acct-mo` chain rate).
-
-Encoding 3 **does not read the config at all**, so shipping the encoding-1 fix would have
-left it defective — and would have created the worse state where the config is right, the
-docs say "corrected," and a live decision input is still wrong.
-
-**Why the sweep gets skipped.** A corrected config feels like a corrected *fact*. The
-config's own consumer list is easy to enumerate (`grep dd_lock_offset_usd`) and reads as
-complete; an independent reimplementation shares **no identifier** with it, so it is
-invisible to every search anchored on the config's names.
-
-**Enforcement.** On correcting any venue fact, run a **mechanic sweep, not a symbol sweep**:
-search for the *numbers* and the *behavior* (`103_100`, `100_100`, "lock", "freeze",
-"floor"), not just the config key; enumerate every harness that simulates the affected
-phase, including ones importing another study's primitives; and check that each phase-scoped
-mechanic is scoped in code the way the venue scopes it (here: correct in `funded_sim`, wrong
-in `eval_sim`, in the same file). Record the result as an explicit list of *checked* surfaces
-— "config fixed" is not a blast-radius statement.
-
-**Corollary for scheduled re-runs.** A pending re-run specified as "re-run the harness
-unchanged" silently inherits every defect found after it was specified. When a defect lands
-on a harness with a queued re-run, **amend the re-run's specification in the same motion**
-(done here: STATE.md operator-queue item 4). Otherwise the fix and the re-run race, and the
-re-run usually wins. Siblings: M-23 (the process-boundary case), M-9 / M-12 / M-22
-(on-disk-state-vs-asserted-state family).
+- **2026-08-01 (approx.):** M-23 added — parent-process config patch does not cross a process
+  pool (2026-07-22 `dd_lock_offset_usd` boot-95th 4.54%→6.69% incident).
+- **2026-08-01 (approx.):** M-24 added — a config fix does not reach an independent hard-coded
+  reimplementation (`gap_stage2_capbound.eval_sim` 2026-07-28 incident).

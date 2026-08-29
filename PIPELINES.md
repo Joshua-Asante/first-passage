@@ -1,6 +1,8 @@
 # PIPELINES — data-flow map (what moves where, and why)
 
 > **Status:** runtime **data-flow** companion to [`REPO_MAP.md`](REPO_MAP.md). REPO_MAP is the *static* layer/import contract (`core / lab / ops / governance`); this file is the *dynamic* view — how bytes actually move. **Posture lives in [`CLAUDE.md`](CLAUDE.md) §Live-execution posture (canonical) and [`STATE.md`](STATE.md) (dated obligations).** This file may carry **at most a one-line disposition per pipeline row**, each stating its own disqualifier and its owning fork/ADR. Anything longer — arming gates, spend ceilings, rung numbers, fill history, park reasons — belongs in CLAUDE.md and is a defect here.
+>
+> *(pruned)* below = deleted at the 2026-08-08 Great Prune; retrieve with `git show pre-prune-2026-08-08:<path>` using the path cited just before the tag.
 
 ---
 
@@ -24,7 +26,7 @@ The essential function of the repo is not "research → deploy" but **"research 
 
 ## P1 — Discovery / research pipeline (Gen-2) — ACTIVE
 
-The one turning pipeline. A **campaign** is one bounded run of discovery→validation→admission against a pre-registered search universe on one instrument family. Stage numbering is canonical (``discovery-campaign-template.md`` (pruned; `git show pre-prune-2026-08-08:docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md`)); rules of evidence are operator-ratified ([`…discovery-campaign-defaults-ratified`](docs/adr/2026-07-11-discovery-campaign-defaults-ratified.md)).
+The one turning pipeline. A **campaign** is one bounded run of discovery→validation→admission against a pre-registered search universe on one instrument family. Stage numbering is canonical (`docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md`, pruned); rules of evidence are operator-ratified ([`…discovery-campaign-defaults-ratified`](docs/adr/2026-07-11-discovery-campaign-defaults-ratified.md)).
 
 ### Data flow
 
@@ -165,11 +167,11 @@ Rides every pipeline; this is the "without self-deception" layer, and it is demo
 | Store | Content | Pinned? |
 |---|---|---|
 | `core/data/tv_exports/cme/` | **The live canonical feed** — CME futures backtest trade-lists (the P3 inputs; 6J/MGC/MYM/MNQ) | per-dir `SHA256SUMS` |
-| `core/data/bar_data/` | Frozen CME micros only (`6J_M15`, `MNQ_M15`, `MYM_M15`). ⚠ **FROZEN — usable but not regenerable** (Pepperstone producer retired 2026-08-02). CFD-era panels + `tv_exports/candidates/` deleted 2026-08-03 ([ADR](docs/adr/2026-08-03-bar-data-cfd-and-candidates-retirement.md) · `tombstone` (pruned; `git show pre-prune-2026-08-08:docs/ltm/notes/2026-08-03-bar-data-cfd-candidates-tombstone.md`)). Micros restore path: same offline copy family as the `Pepperstone tombstone` (pruned; `git show pre-prune-2026-08-08:docs/ltm/notes/2026-08-02-pepperstone-data-tombstone.md`) + the 2026-08-03 CFD backup | `SHA256SUMS` |
+| `core/data/bar_data/` | Frozen CME micros only (`6J_M15`, `MNQ_M15`, `MYM_M15`). ⚠ **FROZEN — usable but not regenerable** (Pepperstone producer retired 2026-08-02). CFD-era panels + `tv_exports/candidates/` deleted 2026-08-03 ([ADR](docs/adr/2026-08-03-bar-data-cfd-and-candidates-retirement.md) · `docs/ltm/notes/2026-08-03-bar-data-cfd-candidates-tombstone.md`, pruned). Micros restore path: same offline copy family as `docs/ltm/notes/2026-08-02-pepperstone-data-tombstone.md` (pruned) + the 2026-08-03 CFD backup | `SHA256SUMS` |
 | `core/data/external/` | Exogenous series for mechanism/decay research (COT gold, COR3M, DSPX, S5FI, sector SPDR) | `SHA256SUMS` |
 | `core/strategies/` | Hot: `CATALOG.md` + `*_CARD.md` stubs; cold Pine + LOCK/CHANGELOG/CANDIDATE under `_archive/` | `MANIFEST.sha256` / `PORT_MANIFEST.sha256` (archive paths) |
 | **`discovery_manifests/`** | Gen-2 pre-registration manifests (`<run_id>.json`) — **committed** for auditability | committed = the pin |
 | `ops/data/` | `reconciles/` only (`audits/` deleted 2026-08-03; issue #54 relocated to `docs/notes/audits/`) | — |
 | DBN cache | Databento pulls, keyed by request params | **gitignored** (research venv) |
 
-**Retired feeds:** OANDA + Dukascopy left the active manifest contract in substrate Phase 5 (`tombstone` (pruned; `git show pre-prune-2026-08-08:docs/ltm/notes/2026-07-30-oanda-dukascopy-data-tombstone.md`)); **Pepperstone left it 2026-08-02 with the feed itself** ([ADR](docs/adr/2026-08-02-pepperstone-feed-retirement.md) · `tombstone` (pruned; `git show pre-prune-2026-08-08:docs/ltm/notes/2026-08-02-pepperstone-data-tombstone.md`)); **CFD-era `bar_data` panels + `tv_exports/candidates/` deleted 2026-08-03** ([ADR](docs/adr/2026-08-03-bar-data-cfd-and-candidates-retirement.md) · `tombstone` (pruned; `git show pre-prune-2026-08-08:docs/ltm/notes/2026-08-03-bar-data-cfd-candidates-tombstone.md`)). There is **no canonical CFD feed** — historical CFD-era numbers keep their provenance labels and gain no successor.
+**Retired feeds:** OANDA + Dukascopy left the active manifest contract in substrate Phase 5 (`docs/ltm/notes/2026-07-30-oanda-dukascopy-data-tombstone.md`, pruned); **Pepperstone left it 2026-08-02 with the feed itself** ([ADR](docs/adr/2026-08-02-pepperstone-feed-retirement.md), tombstone pruned as above); **CFD-era `bar_data` panels + `tv_exports/candidates/` deleted 2026-08-03** ([ADR](docs/adr/2026-08-03-bar-data-cfd-and-candidates-retirement.md), tombstone pruned as above). There is **no canonical CFD feed** — historical CFD-era numbers keep their provenance labels and gain no successor.
