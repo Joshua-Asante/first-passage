@@ -80,7 +80,7 @@ Gating a breakout entry on a prior volatility-compression phase resolving into e
 
 ## daily-range-state-persistence
 
-**NEW 2026-08-18.** Conditioner-role, not entry-role: does a day's True Range being in the
+**NEW 2026-08-18.** Conditioner-role, not entry-role: does a day's True Range being in the trailing top quintile predict elevated next-day True Range (vs its own trailing median)? Distinct from `compression-gated-breakout` / `htf-compression-breakout-5m` (both entry-role compression→expansion triggers on MNQ) — this class makes no entry claim, only a range-state-forecasting claim, and is scoped to the non-index triad ([Step-0 daily-geometry slate](../../docs/briefs/2026-08-18-step0-daily-geometry-mechanism-slate.md) §2 row S1). Grounding: evidence-robustness (volatility clustering — ARCH/GARCH canon), not a per-instrument WHO claim.
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
@@ -118,7 +118,7 @@ A directional bet keyed to a scheduled settlement, auction, or macro-release win
 
 ## expiry-oi-strike-convergence
 
-**NEW 2026-08-21 (MSL-S4).** Discharges the 2026-08-14 WHO-track E1 stop rule
+**NEW 2026-08-21 (MSL-S4).** Discharges the 2026-08-14 WHO-track E1 stop rule ([closure](../../docs/briefs/closures/MSL-S7-closure-resolved-e1-hold.md)) — first WHO named outside the 2026-08-10 INTAKE-DRY set and outside a transfer of C1/C2/C3/S2A/S2B. Near a published options expiry, price statistically converges toward the strike carrying the largest open interest more than on non-expiry control sessions; enter in the direction that closes the gap between current price and that strike when price is displaced from it by more than a threshold, inside a declared pre-expiry window. WHO: options market-makers who wrote the concentrated open interest at that strike, mechanically obligated to keep a delta-neutral book as time-to-expiry shrinks and near-the-money gamma rises (Γ ∝ 1/√T) — a hedging-requirements / expiry-mechanics constraint (ADR clause-1-admissible), not a preference. The trade direction is read directly off observable data (spot price vs. the published strike), never off an assumption about unobservable dealer gamma sign — the load-bearing distinction from the sibling construct below, which this class does **not** reopen.
 
 - **Class finding:** G0 frozen on operator B4 GO 2026-08-21; Explore-confirm (charter
 
@@ -264,7 +264,7 @@ Entering in the direction of an opening-range break and holding the position for
 
 ## order-flow-depth-imbalance
 
-**NEW 2026-08-05.** Resting displayed size, aggregated across book levels, used as a directional
+**NEW 2026-08-05.** Resting displayed size, aggregated across book levels, used as a directional predictor of near-term price. The first mechanism class in this estate sourced from **order-flow (MBP-10) data rather than OHLCV** — the "different modality" limb of the 2026-07-21 index-futures-intraday domain bar (route 2).
 
 - **Class finding:** 10-level size imbalance carries **no** directional information at the
 
@@ -307,7 +307,7 @@ _No instrument has a recorded verdict on this mechanism._
 
 ## prior-session-breakout-continuation
 
-**NEW 2026-08-22 (deep-lane DL-2).** A break of the immediately-prior *full trading session's*
+**NEW 2026-08-22 (deep-lane DL-2).** A break of the immediately-prior *full trading session's* high or low, confirmed by a subsequent session close beyond the level before entry; structural stop at the opposite prior extreme; target at a fixed multiple of that risk; first valid signal per session (k=1); session-flat. The full-session generalization of `pdh-pdl-breakout-rth`: that id's one prior use (MNQ) implicitly took an equity-cash "RTH" window as both the reference and entry window; this id's reference/entry window is the instrument's own full native trading session (e.g. the complete CME Globex day for a currency future), not an RTH-scoped sub-window. The distinction is deliberate, not cosmetic — swapping which hours count as "the session" changes the volatility regime and event population the level is drawn from, the same load-bearing reason `overnight-range-failed-extension-fade` was split from `pdh-pdl-failed-break-reclaim` rather than folded into it. First campaign under this id: [DL-2 prereg](../../docs/briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md) (M6A) — no class finding yet, this id is untested on every instrument at authoring time.
 
 _No instrument has a recorded verdict on this mechanism._
 
@@ -347,7 +347,7 @@ _No instrument has a recorded verdict on this mechanism._
 
 ## tod-baseline-range-trigger
 
-**NEW 2026-08-20 (`Q-TODVOL-1`).** Within-instrument temporal selectivity under
+**NEW 2026-08-20 (`Q-TODVOL-1`).** Within-instrument temporal selectivity under [`ADR 2026-08-10`](../../docs/adr/2026-08-10-temporal-selectivity-outside-mapped-levers.md) §2-B — first RTH bar, outside the opening-range window, whose range exceeds a frozen multiple of the **same time-of-day slot's own trailing median range** (causal, `.shift(1)`); enter in that bar's own close-vs-open direction; stop/target sized off the triggering bar's own range (not an independent point count); session-flat; first valid signal per session (k=1). Causal story: volatility clustering (ARCH/GARCH-class serial dependence in absolute returns) as a real-time, per-moment information-arrival signal — distinct from a fixed clock window (ORB) or a reference price level (PDH/PDL, VWAP). Runs on **native 15m RTH bars** — explicitly outside the paused dense-1m/G=10 lane ([`DENSE1M-UNPAUSE closure`](../../docs/briefs/closures/DENSE1M-UNPAUSE-closure-resolved-u0-keep.md), U0 KEEP stands) — so gated by the [`2026-08-16 CON-5-scope ADR`](../../docs/adr/2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md) §2 D2 pre-G0 cheap falsifier before route ① counts as open for it.
 
 - **Class finding:** MNQ D2 pre-G0 falsifier `FAIL` — mean signed gross **+0.2546 pt** vs the
 

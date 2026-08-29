@@ -561,6 +561,31 @@ def test_build_then_check_is_clean(tmp_path):
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_build_joins_wrapped_definition_into_profiles_json(tmp_path):
+    """profiles.json is the machine-read consult file — a wrapped paragraph
+    must land in full, not as the first physical line."""
+    repo = _fixture_repo(tmp_path)
+    mech = repo / "ops" / "instruments" / "MECHANISMS.md"
+    mech.write_text(
+        MECHANISMS_MD
+        + "\n## wrapped-extra\n\n"
+        "Does the Globex overnight range transmit\n"
+        "into the day session as a fade setup?\n\n"
+        "- **Class finding:** none yet. [src](../../docs/x.md)\n",
+        encoding="utf-8",
+    )
+    built = _run(repo, "build")
+    assert built.returncode == 0, built.stdout + built.stderr
+    payload = json.loads(
+        (repo / "ops" / "instruments" / "profiles.json").read_text(encoding="utf-8")
+    )
+    definition = payload["mechanisms"]["wrapped-extra"]["definition"]
+    assert "Does the Globex overnight range transmit into the day session" in definition
+    assert "fade setup?" in definition
+    checked = _run(repo, "check")
+    assert checked.returncode == 0, checked.stdout + checked.stderr
+
+
 def test_p3_fires_when_a_verdict_changes_without_regenerate(tmp_path):
     repo = _fixture_repo(tmp_path)
     _run(repo, "build")
@@ -926,6 +951,108 @@ def test_p1_flags_missing_k_bank_source(tmp_path):
     )
     _, findings = ip.load_profiles(d)
     assert any(f.code == "P1" and "k_bank_source" in f.message for f in findings)
+
+
+WRAPPED_DEFINITION_MD = """# MECHANISMS
+
+## wrapped-mech
+
+**NEW 2026-08-29.** Conditioner-role, not entry-role: does the Globex overnight
+range transmit into the day session as a fade setup, or does it only condition
+the open? Distinct from `overnight-range-failed-extension-fade`.
+
+**Measurement history:** later paragraph, not part of the definition.
+
+- **Class finding:** Dead on the cheap falsifier. [src](../../docs/x.md)
+
+## annotated-finding-stop
+
+First line of the definition
+continues on this physical line.
+- **Class finding (corrected battery, OFFICIAL):** Must not be joined into the
+  definition even without a blank line before it.
+
+## single-line-mech
+
+One physical line, matching the historical convention.
+
+- **Class finding:** Fine. [src](../../docs/y.md)
+"""
+
+
+def test_parse_mechanisms_joins_wrapped_definition_paragraph(tmp_path):
+    """Soft-wrapped prose is one paragraph, not the first physical line."""
+    p = tmp_path / "MECHANISMS.md"
+    p.write_text(WRAPPED_DEFINITION_MD, encoding="utf-8")
+    mechs = ip.parse_mechanisms(p)
+
+    wrapped = mechs["wrapped-mech"]
+    assert wrapped.definition.startswith("**NEW 2026-08-29.**")
+    assert "does the Globex overnight range transmit" in wrapped.definition
+    assert "only condition the open?" in wrapped.definition
+    assert "Distinct from" in wrapped.definition
+    # Second paragraph after a blank line is not the definition.
+    assert "Measurement history" not in wrapped.definition
+    assert len(wrapped.findings) == 1
+    assert "cheap falsifier" in wrapped.findings[0]
+
+
+def test_parse_mechanisms_stops_definition_at_annotated_class_finding(tmp_path):
+    """`- **Class finding (…):**` is finding-shaped and ends the paragraph."""
+    p = tmp_path / "MECHANISMS.md"
+    p.write_text(WRAPPED_DEFINITION_MD, encoding="utf-8")
+    mechs = ip.parse_mechanisms(p)
+
+    stopped = mechs["annotated-finding-stop"]
+    assert "First line of the definition continues on this physical line." == stopped.definition
+    assert "Must not be joined" not in stopped.definition
+
+
+def test_parse_mechanisms_single_line_definition_unchanged(tmp_path):
+    p = tmp_path / "MECHANISMS.md"
+    p.write_text(WRAPPED_DEFINITION_MD, encoding="utf-8")
+    mechs = ip.parse_mechanisms(p)
+    assert mechs["single-line-mech"].definition == (
+        "One physical line, matching the historical convention."
+    )
+
+
+def test_validate_silent_when_wrapped_definition_is_fully_joined(tmp_path):
+    inst = tmp_path / "ops" / "instruments"
+    inst.mkdir(parents=True)
+    (inst / "MECHANISMS.md").write_text(WRAPPED_DEFINITION_MD, encoding="utf-8")
+    mechs = ip.parse_mechanisms(inst / "MECHANISMS.md")
+    findings = ip.validate([], mechs, tmp_path)
+    assert not any("continues on the next line" in f.message for f in findings)
+    assert not any(f.code == "P1" and "no prose definition" in f.message for f in findings)
+
+
+def test_validate_flags_truncated_definition_leftover_prose(tmp_path):
+    """The first-physical-line footgun: captured definition stops mid-paragraph."""
+    inst = tmp_path / "ops" / "instruments"
+    inst.mkdir(parents=True)
+    body = (
+        "# MECHANISMS\n\n"
+        "## truncated-mech\n\n"
+        "First physical line of the definition\n"
+        "continues here without a blank separator.\n\n"
+        "- **Class finding:** x. [src](x.md)\n"
+    )
+    (inst / "MECHANISMS.md").write_text(body, encoding="utf-8")
+    # Simulate the old parser: first physical line only.
+    mechs = {
+        "truncated-mech": ip.Mechanism(
+            id="truncated-mech",
+            definition="First physical line of the definition",
+            lineno=3,
+            definition_end_lineno=5,
+        )
+    }
+    findings = ip.validate([], mechs, tmp_path)
+    hit = [f for f in findings if f.code == "P1" and "truncated-mech" in f.message]
+    assert len(hit) == 1
+    assert "continues here without a blank separator." in hit[0].message
+    assert hit[0].lineno == 6
 
 
 def test_parse_mechanisms_skips_finding_shaped_line_for_definition(tmp_path):

@@ -29,6 +29,9 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 _MECH_HEADER_RE = re.compile(r"^##\s+([a-z0-9-]+)\s*$")
 _FINDING_RE = re.compile(r"^-\s+\*\*Class finding:\*\*\s*(.+)$")
+# Broader than _FINDING_RE: stop a definition paragraph on any Class-finding
+# bullet, including annotated forms (`- **Class finding (corrected…):**`).
+_FINDING_PREFIX_RE = re.compile(r"^-\s+\*\*Class finding")
 
 
 @dataclass
@@ -37,32 +40,76 @@ class Mechanism:
     definition: str
     findings: list[str] = field(default_factory=list)
     lineno: int = 0
+    # 1-based line of the last physical line consumed into `definition`.
+    # 0 means no prose was captured. Used by the leftover-prose P1 check.
+    definition_end_lineno: int = 0
+
+
+def _is_definition_stop(line: str) -> bool:
+    """True when a definition paragraph must end (blank / header / finding)."""
+    if not line.strip():
+        return True
+    if _MECH_HEADER_RE.match(line):
+        return True
+    return bool(_FINDING_PREFIX_RE.match(line))
+
+
+def first_definition_paragraph(lines: list[str], header_lineno: int) -> list[tuple[int, str]]:
+    """Physical prose lines of the first definition paragraph after a header.
+
+    `header_lineno` is 1-based. Collection starts at the first non-blank,
+    non-finding line and continues through consecutive prose; it stops at a
+    blank line, the next `##` header, or a finding-shaped `- **Class finding`
+    line. Finding-before-prose is skipped so a later paragraph can still be
+    the definition. Returns `(lineno, stripped_text)` pairs.
+    """
+    out: list[tuple[int, str]] = []
+    for i, line in enumerate(lines[header_lineno:], start=header_lineno + 1):
+        if _MECH_HEADER_RE.match(line):
+            break
+        if _FINDING_PREFIX_RE.match(line):
+            if out:
+                break
+            continue
+        if not line.strip():
+            if out:
+                break
+            continue
+        out.append((i, line.strip()))
+    return out
 
 
 def parse_mechanisms(path: Path) -> dict[str, Mechanism]:
     """Parse MECHANISMS.md into {id: Mechanism}.
 
-    Definition = first non-blank *prose* line after the header. Finding-shaped
-    lines (`- **Class finding:** ...`) are never promoted to definition — if an
-    entry has only findings (or finding-before-prose with no later prose),
-    `definition` stays empty and validate() emits a P1.
+    Definition = the first prose *paragraph* after the header: every
+    consecutive non-blank, non-finding line, joined with a single space.
+    Collection stops at a blank line, the next `##` header, or a
+    finding-shaped (`- **Class finding:**` / `- **Class finding (…):**`)
+    line. Soft-wrapped multi-line paragraphs are captured in full.
+
+    Finding-shaped lines are never promoted to definition — if an entry has
+    only findings (or finding-before-prose with no later prose), `definition`
+    stays empty and validate() emits a P1.
     """
+    raw_lines = path.read_text(encoding="utf-8").splitlines()
     mechs: dict[str, Mechanism] = {}
     current: Mechanism | None = None
-    for i, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+    for i, line in enumerate(raw_lines, start=1):
         header = _MECH_HEADER_RE.match(line)
         if header:
             current = Mechanism(id=header.group(1), definition="", lineno=i)
             mechs[current.id] = current
+            paragraph = first_definition_paragraph(raw_lines, i)
+            if paragraph:
+                current.definition = " ".join(text for _, text in paragraph)
+                current.definition_end_lineno = paragraph[-1][0]
             continue
         if current is None:
             continue
         finding = _FINDING_RE.match(line)
         if finding:
             current.findings.append(finding.group(1).strip())
-            continue
-        if line.strip() and not current.definition:
-            current.definition = line.strip()
     return mechs
 
 
@@ -324,6 +371,46 @@ def _check_date_provenance(cell: Cell, prof: Profile, rel: str) -> list[Finding]
     return out
 
 
+def _check_definition_truncation(
+    mechanisms: dict[str, Mechanism], repo_root: Path
+) -> list[Finding]:
+    """P1 when a captured definition dropped an unseparated continuation line.
+
+    Signature of the first-physical-line footgun: the last consumed definition
+    line is immediately followed by another non-blank, non-finding, non-header
+    line, and that line's text is absent from `definition`. Cheap; would have
+    caught every wrapped MECHANISMS.md entry that the old parser truncated.
+    """
+    path = repo_root / "ops" / "instruments" / "MECHANISMS.md"
+    if not path.exists():
+        return []
+    lines = path.read_text(encoding="utf-8").splitlines()
+    rel = _rel(path)
+    out: list[Finding] = []
+    for mid, mech in mechanisms.items():
+        if not mech.definition.strip() or not mech.definition_end_lineno:
+            continue
+        nxt_idx = mech.definition_end_lineno  # 1-based end → 0-based next
+        if nxt_idx >= len(lines):
+            continue
+        nxt = lines[nxt_idx]
+        if _is_definition_stop(nxt):
+            continue
+        if nxt.strip() in mech.definition:
+            continue
+        out.append(
+            Finding(
+                rel,
+                mech.definition_end_lineno + 1,
+                "P1",
+                f"mechanism {mid!r} definition continues on the next line without a "
+                f"blank-line separator — parser dropped {nxt.strip()!r}; join the "
+                "full paragraph or insert a blank line before the next block",
+            )
+        )
+    return out
+
+
 def validate(
     profiles: list[Profile], mechanisms: dict[str, Mechanism], repo_root: Path
 ) -> list[Finding]:
@@ -339,6 +426,7 @@ def validate(
                     f"mechanism {mid!r} has no prose definition",
                 )
             )
+    findings.extend(_check_definition_truncation(mechanisms, repo_root))
     known = sorted(mechanisms)
     for prof in profiles:
         rel = _rel(prof.path)
