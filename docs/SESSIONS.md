@@ -33,6 +33,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-29c — SSOT Phase 3: cost-model closed-world partition
+
+**Focus:** pick up SSOT/data-lineage program Phase 3; confirm whether the 2026-07/08 closed-world citations still needed a packet.
+**Shipped:** [`plan`](superpowers/plans/2026-08-29-ssot-phase-3-cost-model-closed-world.md) · [ADR addendum](adr/2026-08-27-ssot-data-lineage-remediation-program.md#addendum-2026-08-29--phase-3-authorized-cost-model-closed-world-partition) · `check_cost_model_closed_world.py` (path-conditional). No operator-queue row.
+**Decisions/defects:** recon (a)(b)(c) — bars class stays review-discipline; live hole is SPECS drifting off the named commission sets; ledger join and harvest gate-2 rewrite declined. D4 21.4% and M1 report-only stay on their owners.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: operator GO on the attached SSOT Phase 3 plan; not a leftover Open/next name.`
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-29b — harvest-first framing hedge in session-facing discovery docs
 
 **Focus:** documentation-accuracy fix — session-facing harvest/discovery prose stated an unresolved ADR claim as settled fact.

@@ -85,6 +85,7 @@ SCRIPTS_LAYER = {
     "event_study_read": "lab",
     "pine_lint": "lab",
     "cost_geometry_pregate": "lab",
+    "check_cost_model_closed_world": "lab",
     "parse_econ_export": "lab",
     "diff_econ_calendar": "lab",
     # ops — live-ops tooling (run_ecr / preprocess_pine_ecr_logs retired 2026-07-11)

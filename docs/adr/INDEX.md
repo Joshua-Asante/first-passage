@@ -131,7 +131,7 @@
 | 2026-08-24-validation-battery-k-tiering-and-gate-retirement.md | Accepted | 2026-08-24 | none | ratified via operator in-session instruction to execute the |
 | 2026-08-24-venue-binding-axis-t1-disposition.md | Accepted | 2026-08-24 | `2026-08-05-strategy-venue-binding-axis.md` in part — §4 T1's disposition and prospective applicability window only. §2 (the three-level axis), §3, §5, §6, T2–T4, and the `Accepted` status token are untouched. | operator GO 2026-08-24 ("Ratify it — flip to Accepted and run Phase 1"), given after the pre-ratification adversarial panel's confirmed BLOCKERs were fixed in place (see Change History). §7 Phase 1 executed same day. |
 | 2026-08-26-striker-legmap-cap-release.md | Accepted | 2026-08-26 | none | operator ruling 2026-08-26 (chat directive, verbatim: *"I want to zero out |
-| 2026-08-27-ssot-data-lineage-remediation-program.md | Accepted | 2026-08-27 | none | ratified by operator (Joshua) 2026-08-27, in-session ("ratify it, commit and open the pr"). Phase 1's four tasks (§2) authorized 2026-08-27; Phase 2 (A8) authorized 2026-08-29 per the addendum below. Phases 3–4 remain named-but-not-yet-scoped. |
+| 2026-08-27-ssot-data-lineage-remediation-program.md | Accepted | 2026-08-27 | none | ratified by operator (Joshua) 2026-08-27, in-session ("ratify it, commit and open the pr"). Phase 1's four tasks (§2) authorized 2026-08-27; Phase 2 (A8) authorized 2026-08-29 per the first addendum; Phase 3 (cost-model partition) authorized 2026-08-29 per the later addendum. Phase 4 remains named-not-scoped. |
 
 ## Partially superseded
 

@@ -2,6 +2,10 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Fourth roll, 2026-08-29** (one entry, pushed off by the SSOT Phase 3 authorization):
+
+- **2026-08-23** — P3 docs-runtime inventory landed (report-only); queue row 3 opened and closed same session (succession: no auto-replace). [`inventory`](../../../../../docs/notes/audits/docs-runtime-inventory.md) · [`P3 plan`](../../../../../docs/superpowers/plans/2026-08-23-p3-docs-runtime-inventory-implementation.md)
+
 **Third roll, 2026-08-29** (one entry, pushed off by the SSOT Phase 2 A8 authorization):
 
 - **2026-08-23** — P2 Approach A: Rule 7 durable-atoms owner demoted; Claude-project MEMORY assistive-only. Queue row 3 opened and closed same session (succession: no auto-replace). [`state-md addendum`](../../../../../docs/adr/2026-06-30-state-md-role-reduction.md#addendum-2026-08-23--memory-is-assistive-only-not-the-rule-7-owner)

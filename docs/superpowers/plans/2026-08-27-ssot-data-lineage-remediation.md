@@ -475,11 +475,22 @@ schema is **not** cheaper than three prose conventions; a STATE-mirror join is t
 check (STATE deletes closed rows by design). Authorized design is A8 — intra-ADR
 table-vs-line / deep-lane-abandoned-vs-cited-preregs consistency.
 
-## Phase 3 — Instrument-profile / cost-model closed-world completeness audit (scoped, not yet detailed)
+## Phase 3 — Instrument-profile / cost-model closed-world completeness audit
 
-**Why:** `docs/adr/2026-07-25-instrument-profile-index.md` and `docs/briefs/closures/Q-CAPBAND-1-closure-resolved.md` both named closed-world gaps (a missing `bars` entry silently under-reports rather than erroring; `cost_model.resolve_commission` raises for everything outside `{MES, MNQ, MYM, M2K}` so any future band axis outside the index micros can only ever return `unevaluable`, never fail). Neither citation has been re-verified this session — this is 2026-07/08 evidence, five to seven weeks old by the time Phase 3 would start.
+**Status:** scoped 2026-08-29. Recon (a)(b)(c) answered. Bite-sized steps live in
+[`2026-08-29-ssot-phase-3-cost-model-closed-world.md`](2026-08-29-ssot-phase-3-cost-model-closed-world.md).
+Do not re-derive them here.
 
-**What must happen first:** re-read both files fresh (Rule 0), confirm the gaps still exist as described (the repo's pace of self-correction demonstrated in this very plan's Phase 0 findings means assuming they're still open would repeat this program's own founding mistake), then scope a proper plan.
+**Why (unchanged):** the 2026-07-25 profile ADR and Q-CAPBAND-1 both named
+closed-world gaps. Recon (this phase's plan) confirmed the bars *class* is still
+ungated (instance already fixed; no prose parser) and the cost-model named-set
+drift is the live SSOT hole.
+
+**Recon answers (2026-08-29, `d276076`):** (a) bars class still open, still
+review-discipline; commission raise still live and SPECS outgrew the named
+no-row set. (b) no fourth hole that is this packet — ledger⋈SPECS is the wrong
+join. (c) cheapest check is the intra-`cost_model` partition, not a harvest
+rewrite and not a bars parser.
 
 ## Phase 4 — Extend the coherence-campaign cadence to explicitly include a lineage/SSOT pass (scoped, not yet detailed)
 
@@ -491,9 +502,9 @@ table-vs-line / deep-lane-abandoned-vs-cited-preregs consistency.
 
 ## Self-Review
 
-**Spec coverage:** every SSOT/lineage gap this session verified as currently open (skill-deploy drift, D4 enforcement, Q-M1WIRE-1 wiring, falsifier-reachability cadence) has a Phase 1 task. The two gaps carried over from the earlier report but not re-verified this session (instrument-profile/cost-model completeness, the running-count-line pattern's full extent) are explicitly scoped as "confirm before detailing" phases rather than given fabricated bite-sized steps — this is intentional, not a gap in this plan.
+**Spec coverage:** every SSOT/lineage gap this session verified as currently open (skill-deploy drift, D4 enforcement, Q-M1WIRE-1 wiring, falsifier-reachability cadence) has a Phase 1 task. The two gaps that were "confirm before detailing" at authoring (running-count pattern; instrument-profile/cost-model completeness) now have scoped 2026-08-29 plan files (Phases 2 and 3). Phase 4 remains the unpaid confirm-before-detailing follow-on.
 
-**Placeholder scan:** Phase 2 now has its own plan file (2026-08-29). Phases 3/4 still deliberately do not contain complete code — each names exactly what to read first. These remain Rule-0 gates, not vague hand-waves.
+**Placeholder scan:** Phases 2 and 3 now have their own plan files (2026-08-29). Phase 4 still deliberately does not contain complete code — it names exactly what to read first. That remains a Rule-0 gate, not a vague hand-wave.
 
 **Type consistency:** `check_skill_deploy_sync.py`'s `main(argv)` and `check_instrument_rejection_coverage.py`'s CLI shape both follow the exit-code convention already used by every other `scripts/check_*.py` gate in this repo (0 = clean, non-zero = findings), confirmed against `gate_manifest.py --list`'s existing roster.
 
@@ -505,3 +516,4 @@ table-vs-line / deep-lane-abandoned-vs-cited-preregs consistency.
 |---|---|---|
 | 2026-08-27 | Initial plan, scoped from the "Recurrence Ledger" mining pass + a fresh Rule-0 re-verification of every cited defect's current state | Claude Code |
 | 2026-08-29 | Phase 2 scoped — recon (a)(b)(c) answered; pointer at `2026-08-29-ssot-phase-2-running-count-mirror.md` (A8 intra-ADR consistency; no HTML-comment schema; no STATE join) | Cursor Cloud Agent |
+| 2026-08-29 | Phase 3 scoped — recon (a)(b)(c) answered; pointer at `2026-08-29-ssot-phase-3-cost-model-closed-world.md` (cost-model partition; bars checker voided; no ledger join) | Cursor Cloud Agent |
