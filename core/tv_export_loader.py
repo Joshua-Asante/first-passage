@@ -72,6 +72,15 @@ PRICE_COL_BY_INSTRUMENT = {
     # for MSL-C3-K2 explore). USD-quoted price column only — NEVER a source of $/pt;
     # M2K economics live in firm_rules / ops/instruments/M2K.md.
     "M2K": "Price USD",
+    # CME Micro AUD/USD (M6A1! BAR EXPORT v0.2, operator-supplied 2026-08-28,
+    # 5 year-pages 2022-2026, for the Aegis-6J1 companion-leg discovery search).
+    # USD-quoted price column only — NEVER a source of $/pt; M6A economics live
+    # in firm_rules / ops/instruments/M6A.md.
+    "M6A": "Price USD",
+    # COMEX Copper (HG1! BAR EXPORT v0.2, operator-supplied 2026-08-28, 5
+    # year-pages 2022-2026) — cross-asset conditioning candidate for the M6A
+    # companion-leg discovery search, not a firm-tradable instrument itself.
+    "HG": "Price USD",
 }
 
 
