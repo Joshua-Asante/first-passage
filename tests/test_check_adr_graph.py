@@ -451,6 +451,52 @@ def test_render_index_sections_and_a6_drift(tmp_path: Path):
     assert cag.check_a6(headers, idx + "\n") == []
 
 
+def test_index_notes_passthrough_at_or_under_cap():
+    short = "operator GO 2026-08-03 (shape 1)."
+    assert cag._index_notes(short) == short
+    exact = " ".join(f"w{i}" for i in range(cag.INDEX_NOTES_MAX_WORDS))
+    assert cag._index_notes(exact) == exact
+    assert cag._index_notes("") == ""
+    assert cag._index_notes("   ") == ""
+
+
+def test_index_notes_clips_over_cap_and_drops_broken_link():
+    words = [f"w{i}" for i in range(cag.INDEX_NOTES_MAX_WORDS + 5)]
+    clipped = cag._index_notes(" ".join(words))
+    assert clipped.endswith(cag.INDEX_NOTES_ELLIPSIS)
+    assert clipped.split()[: cag.INDEX_NOTES_MAX_WORDS] == words[: cag.INDEX_NOTES_MAX_WORDS]
+    assert "w40" not in clipped
+    prefix = " ".join(f"w{i}" for i in range(cag.INDEX_NOTES_MAX_WORDS - 2))
+    broken = cag._index_notes(
+        f"{prefix} see [full note](2026-07-22-challenge-era-substrate-retirement.md) leftover words here extra extra"
+    )
+    assert "[full note](" not in broken
+    assert broken.endswith(cag.INDEX_NOTES_ELLIPSIS)
+
+
+def test_render_index_clips_long_status_annotation(tmp_path: Path):
+    essay = " ".join(f"phase{i}" for i in range(80))
+    _write_adr(tmp_path, "2026-01-01-a.md", f"""# a
+**Status:** `Accepted` — {essay}
+**Decision date:** 2026-01-01
+**Supersedes:** none
+**Superseded-by:** none
+**Superseded-in-part-by:** none
+**Retain-until:** none
+
+## b
+""")
+    headers = cag.load_adr_headers(tmp_path)
+    assert headers["2026-01-01-a.md"].status_annotation == essay
+    idx = cag.render_index(headers)
+    assert essay not in idx
+    assert "phase0" in idx
+    assert "phase39" in idx
+    assert "phase40" not in idx
+    assert cag.INDEX_NOTES_ELLIPSIS.strip() in idx
+    assert "40 words" in idx
+
+
 def test_a3_public_seed_missing_ltm_dir_is_silent(tmp_path: Path):
     """docs/ltm/** is excluded from the public seed; missing dir is not A3."""
     adr = tmp_path / "adr"
