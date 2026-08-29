@@ -1,6 +1,6 @@
 # ADR 2026-08-27 — SSOT / data-lineage remediation program: Phase 0 ratification
 
-**Status:** `Accepted` — ratified by operator (Joshua) 2026-08-27, in-session ("ratify it, commit and open the pr"). Phase 1's four tasks (§2) are now authorized; Phases 2–4 remain named-but-not-yet-scoped follow-on work per §2/§7.
+**Status:** `Accepted` — ratified by operator (Joshua) 2026-08-27, in-session ("ratify it, commit and open the pr"). Phase 1's four tasks (§2) authorized 2026-08-27; Phase 2 (A8) authorized 2026-08-29 per the addendum below. Phases 3–4 remain named-but-not-yet-scoped.
 **Decision date:** 2026-08-27
 **Supersedes:** none
 **Superseded-by:** none
@@ -440,6 +440,14 @@ grep -n "check_falsifier_reachability" docs/operational_rules.md scripts/gates.y
 # (data-manifests + pine-manifest only, per gate_manifest.py's select_gates()) that Task 4's file
 # scope could not extend without editing gate_manifest.py itself. This corrects this hook's original
 # "make validate" wording -- see Change history.
+
+# Phase 2 — A8 running-count intra-ADR consistency (authorized 2026-08-29 addendum)
+python scripts/check_adr_graph.py --enable A8
+# Expected once A8 lands: OK, 0 findings on the three live counting-machinery ADRs
+# (harvest 0/2, blind 2/3, deep-lane abandoned=2). A mismatch between a canonical
+# n/N line and its own increment table (or a deep-lane abandoned count and the
+# *deep-lane* preregs cited in that paragraph) is a HARD finding. Do not join
+# STATE.md or ops/instruments/MNQ.md — closed-row deletion is legal.
 ```
 
 ---
@@ -470,3 +478,76 @@ python scripts/check_adr_graph.py
 | 2026-08-28 | Review fix: §10 Task 4 audit hook corrected — the built gate (`falsifier-reachability-census`, `tier: always` in `scripts/gates.yml`) surfaces under `make check`/CI, not `make validate` (a hardcoded 2-gate historical selector Task 4's file scope could not extend); narrow text correction only, no change to §2/§6 decision or rationale | Claude Code |
 | 2026-08-28 | Review fix: §2 Task 4's parenthetical corrected to match the §10/Rule 17 wording above — `make check`/CI, not `make validate`, was the already-fixed §10 correction never propagated up to the Decision section a future reader treats as authoritative; narrow text correction only | Claude Code |
 | 2026-08-28 | Review fix: §6 negative-consequences bullet reconciled with what actually shipped — `skill-deploy-sync` and `instrument-rejection-coverage` were both called "WARN-tier" here, but only `instrument-rejection-coverage` shipped `--exit-zero`; `skill-deploy-sync` shipped `tier: always` with no `--exit-zero` (a genuine hard-fail on real drift), which is the direct root cause of the Critical CI-breaking bug fixed the same session (`scripts/check_skill_deploy_sync.py` now SKIPS, not hard-fails, when no deploy target exists at all — see that script's own module docstring and `tests/scripts/test_check_skill_deploy_sync.py`). Text now describes the actual shipped behavior; no change to §2/§5 decision or scope | Claude Code |
+| 2026-08-29 | Addendum: Phase 2 scoped and authorized (A8 intra-ADR running-count consistency). Recon (a)(b)(c) answered. STATE-join and HTML-comment schema declined. Phases 3–4 remain named-not-scoped. §2 Phase 1 text left in place (Trap #12) | Cursor Cloud Agent |
+
+---
+
+## Addendum 2026-08-29 — Phase 2 authorized: A8 intra-ADR running-count consistency
+
+**Does not amend** Phase 1's four tasks, §4's 2026-11-08 falsifier, or §5's CATALOG / D1–D3 / Pine /
+allocation bars. **Does not authorize** Phase 3 or Phase 4. **$0 / K=0.** Limb 4 (new default-on
+gate convention). Amendment-first: this file is the owner.
+
+**Rule 0 (this addendum, 2026-08-29, worktree at `87afe00`):**
+
+| Source | Anchor | Supplies |
+|---|---|---|
+| This ADR §2 Phase 2 clause | `b792a01` | Phase 2 named-not-scoped; three recon questions required before bite-sized steps |
+| [`scripts/check_adr_graph.py`](../../scripts/check_adr_graph.py) | `021a8c5` | `DEFAULT_ENABLED_CHECKS = {A1..A7}`; no running-count parser |
+| Harvest intake ADR L150 / L158 | `87afe00` | `(a) Authoritative surface` + `Running count (canonical): 0 / 2` + increment table |
+| Blind-channel ADR L312 / L320 | `87afe00` | same (a) sentence + `2 / 3` + increment table; 8-day lag disclosed 2026-08-23 |
+| Deep-lane charter L114 / L119 | `87afe00` | same (a) sentence + multi-field prose; no increment table; two `*deep-lane*` preregs cited |
+| Parent program plan Phase 2 | this session | stub replaced by pointer at [`2026-08-29-ssot-phase-2-running-count-mirror.md`](../superpowers/plans/2026-08-29-ssot-phase-2-running-count-mirror.md) |
+
+```
+$ rg -l "Authoritative surface|STATE.md is a mirror only" docs/adr/
+docs/adr/2026-07-15-external-mechanism-harvest-intake.md
+docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md
+docs/adr/2026-08-16-deep-iteration-lane-charter.md
+```
+
+Three files. No fourth. `rg` against `lab/CATALOG.md`, `docs/briefs/INDEX.md`,
+`docs/rejected_candidates.md` for `running-count|check_adr_graph A8|ssot-phase-2` — empty.
+
+**Recon answers (the three questions §2 required):**
+
+- **(a)** `check_adr_graph.py` does **not** check running-count freshness. A1–A7 cover Status,
+  edges, stubs, INDEX, age prune, and STATE bullets that cite a superseded ADR without naming
+  the successor.
+- **(b)** No fourth instance of the (a)-sentence convention.
+- **(c)** A shared HTML-comment schema is **not** cheaper than three prose conventions (N=3,
+  heterogeneous shapes). A STATE.md / `ops/instruments/MNQ.md` equality check is the **wrong**
+  check: all three ADRs say STATE rows are deleted when items close. The 8-day incident was
+  the canonical line lagging its own increment evidence, not mirrors lagging the canonical line.
+
+**Decision (binding):** authorize Phase 2 as specified in
+[`2026-08-29-ssot-phase-2-running-count-mirror.md`](../superpowers/plans/2026-08-29-ssot-phase-2-running-count-mirror.md).
+Build **A8** — intra-ADR count consistency — as a new `check_adr_graph.py` check:
+
+1. Discover ADRs by the existing `(a) Authoritative surface` / `running-count line` sentence.
+2. Table-backed (harvest, blind): `N` on the first `Running … count (canonical): N / D` line
+   must equal the count of increment-table rows whose `Increments?` cell starts with `yes`.
+3. Deep-lane (no table): parse `campaigns abandoned **A**` from the
+   `Running counts (canonical, this ADR):` paragraph and cross-check `A` against `*deep-lane*`
+   prereg paths cited in that same paragraph. Parse `campaigns completed` and
+   `survivors falsified` so an unparseable line fails closed. No fifth-field parser for
+   "active campaign" in v1.
+4. Flip A8 into `DEFAULT_ENABLED_CHECKS` only after a clean live-corpus run (0 findings on
+   the three real ADRs). Same posture as A5/A7 (PR #170).
+
+§2's Phase 1 decision text is left byte-unedited (Trap #12). This addendum is the Phase 2
+authorization; §2 remains the Phase 0/1 ratification.
+
+**Gate:** RESOLVED when `python scripts/check_adr_graph.py --enable A8` exits 0 against the
+live corpus and the 8-day mutation (table two `yes` rows, line still `1 / 3`) produces a
+HARD finding. **FALSIFIED** if A8 is default-on and a fourth (a)-sentence ADR appears whose
+shape A8 cannot parse and the finding is silenced rather than extended. Phases 3–4 stay
+named-not-scoped until the operator promotes one.
+
+**Boundary:** Do **not** join STATE.md or `ops/instruments/MNQ.md` (legal mirrors; STATE
+deletes). Do **not** rewrite the three canonical count lines into an HTML-comment schema.
+Do **not** fold D4 21.4% coverage or M1 report-only skew into this packet. Do **not**
+auto-open Phase 3 when Phase 2 ships — delete STATE row 3 (succession).
+
+**§10 hook (runnable):** `python scripts/check_adr_graph.py --enable A8` — expected OK
+once landed; see the Phase 2 block appended to §10 above.
