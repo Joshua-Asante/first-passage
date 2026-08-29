@@ -33,6 +33,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-29i — instrument_profiles Class-finding paragraph join
+
+**Focus:** `_finding_text` ran per physical line, so wrapped Class-finding bullets landed as a verdict-free first clause (`GC (parent…)` without NULL / DEAD).
+**Shipped:** `cursor/fix-multiline-class-finding-a965` — `finding_paragraph()` joins wraps until blank / `##` / next list item; rebuild (GC NULL + CL SIGNAL-GENERIC both complete).
+**Decisions/defects:** third of the #196/#197 family. Stop at any column-0 `- ` item so Sibling/Scope are not absorbed. `Explore-confirm result` bullets still uncaptured (not Class-finding-shaped).
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: commissioned Cloud Agent parser footgun (finding wraps); not a leftover Open/next name.`
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-29h — instrument_profiles annotated Class-finding extraction
 
 **Focus:** `_FINDING_RE` required exact `- **Class finding:**`, so annotated bullets (`(corrected…)`, `— CORRECTED`) vanished from `profiles.json` and `cell`.

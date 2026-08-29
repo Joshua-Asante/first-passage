@@ -78,6 +78,41 @@ def _is_definition_stop(line: str) -> bool:
     return bool(_FINDING_PREFIX_RE.match(line))
 
 
+def _is_finding_continuation_stop(line: str) -> bool:
+    """True when a Class-finding wrap must end.
+
+    Same stops as a definition paragraph (blank / `##` header), plus any new
+    markdown list item at column 0. Consecutive Class-finding bullets in
+    MECHANISMS.md have no blank separator — the next `- **Class finding`
+    (or a Sibling/Scope `- **…` bullet) is the split. Indented wraps are
+    continuation and do not match.
+    """
+    if not line.strip():
+        return True
+    if _MECH_HEADER_RE.match(line):
+        return True
+    return bool(re.match(r"^-\s+", line))
+
+
+def finding_paragraph(lines: list[str], start_lineno: int) -> list[tuple[int, str]]:
+    """Physical lines of one Class-finding bullet, including wrapped continuations.
+
+    `start_lineno` is 1-based and must be a finding-shaped bullet. The first
+    pair is `_finding_text` of that bullet (annotation kept); later pairs are
+    stripped continuation lines. Stops at a blank line, the next `##` header,
+    or a new list item (the next Class-finding bullet, or Sibling/Scope).
+    """
+    first = _finding_text(lines[start_lineno - 1])
+    if first is None:
+        return []
+    out: list[tuple[int, str]] = [(start_lineno, first)]
+    for i, line in enumerate(lines[start_lineno:], start=start_lineno + 1):
+        if _is_finding_continuation_stop(line):
+            break
+        out.append((i, line.strip()))
+    return out
+
+
 def first_definition_paragraph(lines: list[str], header_lineno: int) -> list[tuple[int, str]]:
     """Physical prose lines of the first definition paragraph after a header.
 
@@ -115,6 +150,11 @@ def parse_mechanisms(path: Path) -> dict[str, Mechanism]:
     Finding-shaped lines are never promoted to definition — if an entry has
     only findings (or finding-before-prose with no later prose), `definition`
     stays empty and validate() emits a P1.
+
+    Each Class-finding bullet is itself a paragraph: the opening line plus
+    every consecutive wrap, joined with a single space. Collection stops at
+    a blank line, the next `##` header, or a new list item (the next
+    `- **Class finding` bullet has no blank separator in this file).
     """
     raw_lines = path.read_text(encoding="utf-8").splitlines()
     mechs: dict[str, Mechanism] = {}
@@ -131,9 +171,9 @@ def parse_mechanisms(path: Path) -> dict[str, Mechanism]:
             continue
         if current is None:
             continue
-        finding = _finding_text(line)
-        if finding is not None:
-            current.findings.append(finding)
+        if _finding_text(line) is not None:
+            paragraph = finding_paragraph(raw_lines, i)
+            current.findings.append(" ".join(text for _, text in paragraph))
     return mechs
 
 
