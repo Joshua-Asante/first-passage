@@ -32,6 +32,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-29a — harvest-first framing hedge in session-facing discovery docs
+
+**Focus:** documentation-accuracy fix — session-facing harvest/discovery prose stated an unresolved ADR claim as settled fact.
+**Shipped:** [`PR #183`](https://github.com/Joshua-Asante/first-passage/pull/183) — hedges in [`futures-anomaly-discovery`](../.claude/skills/futures-anomaly-discovery/SKILL.md) and [`strategy_harvest.md`](methodology/strategy_harvest.md); no code, no ADR edit.
+**Decisions/defects:** framing only. Harvest-intake ADR §4 left unedited (live falsifier stays on the owner). Lane argparse default unchanged.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)) · #3 SSOT/data-lineage remediation, Phase 1 ([`ADR`](adr/2026-08-27-ssot-data-lineage-remediation-program.md) · [`plan`](superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md)). `queue-exception: commissioned Cloud Agent documentation-accuracy packet (harvest-first framing); not a leftover Open/next name.`
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-28g — SSOT/data-lineage remediation program: ratified + Phase 1 landed (4 tasks)
 
 **Focus:** close the data-lineage/single-source-of-truth gaps a cross-repo mining pass found in post-pivot research (gate reachability, unverified-claim propagation, missing SSOT axes) — scoped against this repo's own proven generator-script and coherence-campaign patterns, not new machinery.
