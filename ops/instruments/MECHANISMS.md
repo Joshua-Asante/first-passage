@@ -310,11 +310,15 @@ session granularity. Distinct from every level/breakout/continuation construct i
 instrument's DEAD table (those are directional-entry constructs keyed to a reference level or
 window; this is an unconditional shape-persistence statistic, no level or window involved).
 **Admission-route status under the 2026-07-21 single-instrument index-futures directional-timing
-raised bar (`docs/rejected_candidates.md`) is UNRESOLVED** — a positive finding here carries an
-inherent directional-momentum flavor (bars that close strong tend to be followed by bars that
-close strong) close to `intraday-momentum`, and whether pursuing it as an entry-role candidate
-would need to clear Route 1/2/3 of that bar is an open governance question this class does not
-resolve on its own.
+raised bar (`docs/rejected_candidates.md`) is resolved by
+[`docs/adr/2026-08-29-clv-autocorrelation-admission-route-scope.md`](../../docs/adr/2026-08-29-clv-autocorrelation-admission-route-scope.md)
+(Proposed, pending operator ratification).** The ruling: an unconditional bar-shape statistic
+with no entry rule attached does not trigger the raised bar's admission gate at all — that gate
+fires at Pre-Q admission for an actual directional-timing candidate, which neither instrument's
+finding is yet. If either is later converted into an entry construct, Route 1 does not naturally
+fit (no session-window conditioning) and Route 2 does not apply (same OHLCV modality) — Route 3
+(beat `ORB-MNQ-1` net-of-cost) is the only route structurally open, gated behind a named $0
+cost-law pre-screen before any Pre-Q.
 
 - **Class finding:** MYM (all M15 bars, RTH+overnight, 2020-07→2026-07, n_pairs=141,119):
   lag-1 Spearman rho(CLV_t, CLV_t+1) = **−0.0370**, 95% CI **[−0.0422, −0.0319]** (excludes
@@ -323,12 +327,11 @@ resolve on its own.
   2024–2026). Attribution **EXCESS**: obs sits at the 0th percentile of its own
   zero-mechanism (linear-ACF-preserving) IAAFT surrogate band, p_two_sided=0.0050 —
   **SIGNAL-EXCESS**, the strongest result of the batch this class-family produced this
-  session. **Not graduated** — admission-route status under the single-instrument
-  directional-timing raised bar is unresolved (a negative/mean-reverting shape claim
-  reads closer to `mean-reversion-fade` than to a neutral conditioner); ledger cell
-  `AMBIGUOUS-PARKED` (corrected from an initial `CONTINGENT-FORWARD` — no forward test is
-  running on this cell, see `MYM.md`'s own session-log correction note), HELD pending a
-  scope ruling. [MYM.md](MYM.md) ·
+  session. **Not graduated** — admission-route status is now resolved (see the heading note
+  above): Route 3 is the only structurally open route, gated behind a $0 cost-law pre-screen
+  not yet run; ledger cell `AMBIGUOUS-PARKED` (corrected from an initial `CONTINGENT-FORWARD` —
+  no forward test is running on this cell, see `MYM.md`'s own session-log correction note),
+  HELD pending that pre-screen. [MYM.md](MYM.md) ·
   [`N-2026-08-29-mym-closing-location-autocorrelation.md`](../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md)
 - **Class finding (MNQ, 2026-08-29 — backfilled on reconciliation pass):** MNQ (full continuous
   M15 bar sequence, RTH+overnight, n_pairs=141,540): lag-1 Spearman rho(CLV_t, CLV_t+1) =
@@ -337,11 +340,12 @@ resolve on its own.
   IAAFT battery this session** (only the block-shuffle null, a weaker test than MYM's SIGNAL-EXCESS
   classification against the linear-ACF-preserving surrogate) — MNQ's result is directionally
   consistent with MYM's (same sign, same order of magnitude) but not yet typed SIGNAL-EXCESS vs
-  SIGNAL-GENERIC on this instrument. Same open question as MYM's: admission-route status under
-  the single-instrument directional-timing raised bar is unresolved. Ledger cell
+  SIGNAL-GENERIC on this instrument. Same resolved question as MYM's — see the heading note
+  above: admission-route status is resolved, Route 3 is the only one structurally open, a $0
+  cost-law pre-screen is owed before any Pre-Q. Ledger cell
   `AMBIGUOUS-PARKED` (corrected from an initial `CONTINGENT-FORWARD` — no forward test is running
-  on this cell, see MNQ.md's own session-log correction note); re-open trigger is the same scope
-  ruling MYM's cell waits on, not a separate one. MYM's own cell for this class (above) carried
+  on this cell, see MNQ.md's own session-log correction note); re-open trigger is the same
+  pre-screen MYM's cell waits on, not a separate one. MYM's own cell for this class (above) carried
   the identical misuse and is now corrected too (`AMBIGUOUS-PARKED`, flagged separately from this
   MNQ correction, landed once the gap was noticed). [MNQ.md](MNQ.md) ·
   [`N-2026-08-29-mnq-clv-autocorrelation.md`](../../docs/notes/notice/N-2026-08-29-mnq-clv-autocorrelation.md)

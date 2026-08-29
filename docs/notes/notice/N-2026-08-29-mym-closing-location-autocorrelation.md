@@ -4,7 +4,7 @@
 **Observed:** 2026-08-29
 **Author:** Joshua | claude.ai
 **Source:** backtest CSV (bar panel) — atheoretical mechanism harvest, MYM Phase 2
-**Status:** `HELD until 2026-11-08`
+**Status:** `HELD until $0 cost-law pre-screen runs` (outer-bound re-check `2026-11-08` — see §5; raised-bar admission-route scope separately resolved — see §4)
 **Lives in:** `docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md`
 
 ---
@@ -82,40 +82,32 @@ were in verdict bookkeeping and the record step, not the computation itself.
 
 ## §4 — Routing decision
 
-**HOLD until 2026-11-08.**
+**HOLD until $0 cost-law pre-screen runs.**
 
 Reason: the underlying statistic is real and worth taking seriously (not a DROP-worthy
-non-finding, unlike candidates 2–4), but — **exactly as flagged before this candidate was
-run** — its admission-route status under the 2026-07-21 single-instrument index-futures
-directional-timing raised bar (`docs/rejected_candidates.md`) is genuinely unresolved,
-not something this session is positioned to rule on its own authority. The finding is a
-bar-SHAPE statistic (distinct from every level/breakout/continuation construct in the
-raised bar's own mapped-lever taxonomy), but a NEGATIVE, sign-stable persistence
-("bars that close strong tend to be followed by bars that close weak, relatively")
-carries an inherent mean-reversion/fade flavor adjacent to the existing
-`mean-reversion-fade` class, not a neutral conditioner the way candidate 1's magnitude
-claim was. Neither GRADUATE (presuming an admission route I am not authorized to assume
-clears) nor DROP (discarding the strongest statistical result in the batch) is the
-honest call — this needs a scope ruling first, the same kind of ruling the 2026-08-10
-ADR gave "within-instrument temporal selectivity."
+non-finding, unlike candidates 2–4), but neither GRADUATE nor DROP is the honest call
+until the cheap pre-screen this notice's own §3 already named has actually run.
+
+**Admission-route status — resolved by [`docs/adr/2026-08-29-clv-autocorrelation-admission-route-scope.md`](../../adr/2026-08-29-clv-autocorrelation-admission-route-scope.md) (Proposed, pending operator ratification).** Of the three readings §5 originally sketched, the ruling lands closest to (b): a bar-shape statistic with no entry rule attached does not trigger the raised bar's admission gate — that gate fires at Pre-Q admission for an actual directional-timing *candidate*, which this is not yet, so no route decision is owed to keep recording it in a Notice-log. The ADR goes further than "outside scope" alone, though: it also pre-rules the routes for *if* this becomes a candidate. Reading (a) (Route 1) is correctly identified in this notice's own §5 as weak — confirmed and made definite by the ADR: Route 1 does not fit an unconditional, no-session-window finding at all, full stop, not merely "arguable." Route 2 does not apply (same OHLCV modality). **Route 3 (beat `ORB-MNQ-1` net-of-cost, not merely clear the cost floor) is the only route structurally open** if this is ever converted into an entry construct. The mean-reversion/fade flavor this notice flagged is exactly why the ADR leans on the standing `lesson_cost_law_pre_screen_mr_fade` discipline for the concrete next step — see the updated §5 below.
 
 ---
 
 ## §5 — If HOLD: re-check trigger
 
-- **Re-check date:** 2026-11-08 (rides the standing §4 falsifier hard-date already on
-  the calendar for other programme items, per `CLAUDE.md`'s prop-portfolio §4 line — not
-  a new date invented for this notice).
-- **Trigger condition:** an operator or governance-layer ruling on whether this
-  construct's admission route is (a) Route 1 (a-priori-named within-instrument
-  selectivity — arguable, since it's unconditional on any window, not clearly a
-  "selectivity" claim at all), (b) outside the raised bar's scope entirely (a pure
-  shape/microstructure statistic, not a "directional intraday timing" construct in the
-  bar's own sense), or (c) requires Route 2/3 like any other directional candidate. Once
-  ruled, either GRADUATE to a Pre-Q (if a route clears) or DROP (if none does, or if a
-  quick cost-law pre-screen — see §3 — kills it first at $0).
-- **Drop trigger:** a $0 cost-law pre-screen (mean |gross edge implied by ρ≈−0.037| vs.
-  the MYM cost hurdle, `MYM.md` #M6) run before the re-check date and failing cleanly.
+- **Re-check date:** 2026-11-08 as an outer bound (rides the standing §4 falsifier
+  hard-date already on the calendar for other programme items, per `CLAUDE.md`'s
+  prop-portfolio §4 line — not a new date invented for this notice); the pre-screen
+  below is the preferred, earlier trigger and does not need to wait for that date.
+- **Trigger condition:** the admission-route question itself is resolved (see §4 above)
+  — the remaining gate is the $0 cost-law pre-screen: convert ρ≈−0.037 into a
+  decile-conditioned expected-value read and check it against **both** MYM's own cost
+  hurdle (`MYM.md` #M6, ≈6.57 bp/event, pending F3 re-pricing) **and** `ORB-MNQ-1`'s own
+  net-of-cost edge (+0.0626R/trade — Route 3's actual bar per the admission-route ADR,
+  not merely clearing the generic floor). Clearing both would let this graduate to a
+  proper Pre-Q under Route 3.
+- **Drop trigger:** the $0 cost-law pre-screen (mean |gross edge implied by ρ≈−0.037| vs.
+  the MYM cost hurdle, `MYM.md` #M6, and separately vs. `ORB-MNQ-1`'s net-of-cost edge)
+  run before the re-check date and failing either check cleanly.
 - **Calendar entry:** none set; operator to set if desired.
 
 ---
