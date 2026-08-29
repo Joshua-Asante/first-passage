@@ -125,6 +125,24 @@ python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c2_c4_increment_fals
 
 ---
 
+## Addendum — joint gate vs. candidate 2 (2026-08-29, append-only, does not change §1-§5 above)
+
+A follow-up joint test
+([`N-2026-08-29-mym-overnight-gap-joint-gate.md`](N-2026-08-29-mym-overnight-gap-joint-gate.md))
+ran this candidate against candidate 2 (overnight range) directly, mirroring MNQ's
+Q-RANGEXFER-1 joint stratification. Result: this candidate's (gap's) own lift within
+overnight-range strata is +8.5pp (overnight calm, borderline p=0.037) and −7.2pp
+(overnight hot, clearly not positive, p=0.945) — a nested, sign-unstable pattern
+closely replicating MNQ's own finding on the identical construct (+10.5pp/−8.1pp).
+This does not change this candidate's own 2027-03-01 HOLD re-check above (that
+re-check tests this candidate alone against the day-history comparator; the joint
+result is a different, additional question about this candidate's relationship to
+candidate 2). The joint notice recommends, but does not execute, merging this id
+with `overnight-range-day-session-transfer` into MNQ's `overnight-range-transmission`
+id — see that notice for the full comparison and reasoning.
+
+---
+
 ## Verification
 
 ```bash
