@@ -14,8 +14,11 @@ bullet (plain or annotated). Do not rely on a single physical line; `check` fail
 captured definition drops an unseparated continuation line.
 
 **Class findings:** `- **Class finding:**`, `- **Class finding (…):**`, and
-`- **Class finding — ….**` all land in `profiles.json`. Annotated forms are the
-corrected/superseding reads — they must not silently vanish from a `cell` consult.
+`- **Class finding — ….**` all land in `profiles.json`. Soft-wrapped multi-line
+bullets are joined in full (same paragraph rule as the definition; the next
+`- **Class finding` bullet is the split when there is no blank line). Annotated
+forms are the corrected/superseding reads — they must not silently vanish from
+a `cell` consult.
 
 ## opening-range-continuation
 

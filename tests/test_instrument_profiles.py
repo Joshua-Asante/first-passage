@@ -767,6 +767,33 @@ def test_cell_prints_annotated_class_finding(tmp_path):
     assert "OFFICIAL" in result.stdout
 
 
+def test_cell_prints_wrapped_class_finding_verdict(tmp_path):
+    """A wrapped Class-finding bullet must reach cell with its verdict, not just the opener."""
+    repo = _fixture_repo(tmp_path)
+    mech = repo / "ops" / "instruments" / "MECHANISMS.md"
+    mech.write_text(
+        MECHANISMS_MD
+        + "\n## wrapped-extra\n\n"
+        "A one-line definition.\n\n"
+        "- **Class finding (corrected battery, OFFICIAL):** GC (parent, train era 2010–2019)\n"
+        "  top-quintile TR → elevated next-day TR: **NULL (driving L2 + L4)**.\n"
+        "  Ledger cell `DEAD`. [src](../../docs/x.md)\n",
+        encoding="utf-8",
+    )
+    built = _run(repo, "build")
+    assert built.returncode == 0, built.stdout + built.stderr
+    payload = json.loads(
+        (repo / "ops" / "instruments" / "profiles.json").read_text(encoding="utf-8")
+    )
+    finding = payload["mechanisms"]["wrapped-extra"]["findings"][0]
+    assert "NULL" in finding
+    assert "DEAD" in finding
+    result = _run(repo, "cell", "TST", "wrapped-extra")
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "NULL" in result.stdout
+    assert "DEAD" in result.stdout
+
+
 def test_cell_missing_json_exits_two_and_names_build(tmp_path):
     """cell reads profiles.json only -- it never re-parses the ledgers. A
     missing profiles.json is a usage error telling the caller to run build,
@@ -1037,6 +1064,7 @@ def test_parse_mechanisms_stops_definition_at_annotated_class_finding(tmp_path):
     assert len(stopped.findings) == 1
     assert "Must not be joined" in stopped.findings[0]
     assert "corrected battery, OFFICIAL" in stopped.findings[0]
+    assert "definition even without a blank line before it." in stopped.findings[0]
 
 
 def test_parse_mechanisms_captures_annotated_class_findings(tmp_path):
@@ -1077,6 +1105,82 @@ A one-line definition.
 
     plain = mechs["plain-finding"].findings
     assert plain == ["Session-aware continuation failed."]
+
+
+WRAPPED_FINDINGS_MD = """# MECHANISMS
+
+## wrapped-findings
+
+A one-line definition.
+
+- **Class finding (corrected battery, OFFICIAL):** GC (parent, train era 2010–2019)
+  top-quintile TR → elevated next-day TR: **NULL (driving L2 + L4)** — obs 0.5299.
+  Ledger cell `DEAD`. [MGC.md G4](MGC.md)
+- **Class finding (corrected battery, OFFICIAL):** CL (parent, train era 2010–2019)
+  top-quintile TR → elevated next-day TR: **SIGNAL-GENERIC** — presence passes.
+  Finding stands. [MCL.md C4](MCL.md)
+
+## single-line-finding
+
+A one-line definition.
+
+- **Class finding:** Session-aware continuation failed.
+
+## sibling-after-finding
+
+A one-line definition.
+
+- **Class finding:** MNQ PDH/PDL with-break explore.
+- **Sibling id split (2026-08-22):** not part of the finding.
+"""
+
+
+def test_parse_mechanisms_joins_wrapped_class_finding(tmp_path):
+    """A multi-line Class-finding bullet is one finding, not the first physical line."""
+    p = tmp_path / "MECHANISMS.md"
+    p.write_text(WRAPPED_FINDINGS_MD, encoding="utf-8")
+    mechs = ip.parse_mechanisms(p)
+
+    findings = mechs["wrapped-findings"].findings
+    assert len(findings) == 2
+    gc = findings[0]
+    assert "corrected battery, OFFICIAL" in gc
+    assert "NULL" in gc
+    assert "DEAD" in gc
+    assert "[MGC.md G4]" in gc
+    assert "SIGNAL-GENERIC" not in gc
+
+
+def test_parse_mechanisms_splits_consecutive_wrapped_class_findings(tmp_path):
+    """Two consecutive wrapped bullets split at the next Class-finding line."""
+    p = tmp_path / "MECHANISMS.md"
+    p.write_text(WRAPPED_FINDINGS_MD, encoding="utf-8")
+    mechs = ip.parse_mechanisms(p)
+
+    gc, cl = mechs["wrapped-findings"].findings
+    assert "NULL" in gc and "SIGNAL-GENERIC" not in gc
+    assert "SIGNAL-GENERIC" in cl and "NULL" not in cl
+    assert "[MCL.md C4]" in cl
+    assert "DEAD" not in cl
+
+
+def test_parse_mechanisms_single_line_class_finding_unchanged(tmp_path):
+    p = tmp_path / "MECHANISMS.md"
+    p.write_text(WRAPPED_FINDINGS_MD, encoding="utf-8")
+    mechs = ip.parse_mechanisms(p)
+    assert mechs["single-line-finding"].findings == [
+        "Session-aware continuation failed."
+    ]
+
+
+def test_parse_mechanisms_does_not_absorb_sibling_list_item(tmp_path):
+    """A column-0 `- **` bullet after a finding is not continuation."""
+    p = tmp_path / "MECHANISMS.md"
+    p.write_text(WRAPPED_FINDINGS_MD, encoding="utf-8")
+    mechs = ip.parse_mechanisms(p)
+    findings = mechs["sibling-after-finding"].findings
+    assert findings == ["MNQ PDH/PDL with-break explore."]
+    assert "not part of the finding" not in findings[0]
 
 
 def test_parse_mechanisms_single_line_definition_unchanged(tmp_path):
