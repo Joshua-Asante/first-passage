@@ -9,13 +9,9 @@ This skill applies the Lakatos research-programmes diagnostic to Joshua's method
 
 **Source-of-truth hierarchy:** this SKILL.md body (discipline rules) → ADR-NNN-programme-audit-protocol.md when locked (canonical framework definition) → audit artifacts in `docs/notes/audits/programme-audit/` (lineage). When this skill disagrees with a more recent audit that demonstrably worked, the audit wins and the skill needs updating — flag this.
 
-**Boundary with sibling skills:**
-
-- `inqhiori` — investigates specific falsifiable Hs. The audit may spawn INQHIORI loops as follow-ups; the audit itself does not run them.
-- `ooda-loop` — tactical/tempo decisions. Not relevant to programme audits except as a methodology being audited.
-- `brief-authoring` — provides the audit-note template. This skill specifies *what* the audit examines; brief-authoring specifies *how* the artifact is structured.
-- `prop-firm-challenge` — provides live-ops facts (PF, DD, edge-captured ratio, dd_protection state) that the portfolio-layer audit consumes. Audit does not modify live ops.
-- `pinescript-v6` — strategy code is the object of portfolio-layer audits, never modified by the audit itself.
+**Boundary with sibling skills** (beyond the frontmatter hand-offs): `ooda-loop` is not relevant
+to programme audits except as a methodology being audited; `pinescript-v6`-owned strategy code is
+the *object* of portfolio-layer audits, never modified by the audit itself.
 
 ---
 

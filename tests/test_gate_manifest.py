@@ -65,6 +65,8 @@ EXPECTED_PATH_CONDITIONAL = {
     # Task 3's own addition rather than leaving a known-red test in a file
     # this commit already modifies.
     "instrument-rejection-coverage",
+    # SSOT Phase 3 — cost-model closed-world partition
+    "cost-model-closed-world",
 }
 
 
@@ -199,6 +201,7 @@ REACHABILITY_PROBES = {
     "repo-map-layers": "scripts/check_boundaries.py",
     "lifecycle-consistency": "core/lifecycle.py",
     "instrument-rejection-coverage": "docs/briefs/closures/Q-EXAMPLE-closure-falsified.md",
+    "cost-model-closed-world": "lab/discovery/cost_model.py",
 }
 
 

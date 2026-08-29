@@ -182,6 +182,25 @@ edge-protection bullets.
 
 ---
 
+## Addendum 2026-08-29 — cross-reference discharge (adr-decay-audit precursor finding)
+
+The 2026-08-23 `adr-decay-audit` precursor run flagged that this ADR and
+[`2026-08-07-loop-s2-signal-host-fork.md`](2026-08-07-loop-s2-signal-host-fork.md) (S2) carried zero
+cross-references in either direction despite touching the same protected asset (the authenticated
+TradingView account). This addendum discharges that gap; body above stays unedited.
+
+**What changed, factually:** S2 (2026-08-07) makes the live signal host for *new* strategies a
+Python-native daemon posting directly to the c1 rail listener — Pine/TradingView becomes the
+**research/export surface** for that path, not the live signal origin. This ADR's 2026-07-27
+addendum already established that the account-protection rationale survives venue changes because
+TV remains load-bearing somewhere in the chain (there, as alert-egress; per S2, as research/export).
+**Not resolved here:** whether S2's shift changes the risk calculus enough to warrant revisiting
+this ADR's forbidden-automation scope (§5) is a substantive question this addendum does not answer
+— it is exactly the kind of "does a retirement/redefinition back-propagate to a standing policy"
+question `docs/operational_rules.md` Rule 11 exists for, and belongs to a real audit pass (or
+operator ruling), not a cross-reference fix. Both ADRs now link to each other so a future reader
+finds this open question instead of missing the connection entirely.
+
 ## Change history
 
 | Date | Change | By |
