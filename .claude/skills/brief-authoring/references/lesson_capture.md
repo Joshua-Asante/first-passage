@@ -97,10 +97,14 @@ grep -rn "E-[N]" docs/ /mnt/skills/user/ 2>/dev/null
 ## Verification
 
 ```bash
+$ python ~/.claude/skills/brief-authoring/scripts/check_brief.py <this-file>.md --type lesson
+# Expected: RESULT: well-formed (canonical skill-side checker — ADR 2026-08-09;
+# validates the named-heading contract: Pattern, Anchor incidents, Repair, Audit hooks)
+# Candidate lessons pass with empty Promotion record if status is explicitly Candidate
+
 $ python scripts/check_brief.py <this-file>.md --type lesson
-# Expected: RESULT: NOT CHECKED (lesson is an unmodeled contract type)
-# Pattern, anchor incident(s), repair rule, enforcement point all present in the template
-# Candidate lessons pass with empty repair-enforcement if status is explicitly Candidate
+# Expected: RESULT: NOT CHECKED (repo-side declines lesson — expected, not a gap;
+# the skill-side result above is the one that counts)
 ```
 
 Lessons fail by being abstract. The check: can you write a grep command in §Audit hooks that mechanically detects the failure mode next time? If no, the lesson is still a hypothesis — keep as Candidate.

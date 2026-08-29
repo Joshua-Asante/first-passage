@@ -57,7 +57,7 @@ These six are the authoring-side stack. They are **type-scoped** — see the app
 
 ### Type × check applicability
 
-`M` = mechanical (`scripts/check_brief.py` or `scripts/check_closure_disposition.py`). `J` = judgment. `—` = not owed. Repo `check_brief.py` prints `NOT CHECKED` (not a pass) for light ADRs and for `{lock, notice, lesson, audit}`.
+`M` = mechanical. `J` = judgment. `—` = not owed. Two checkers exist ([ADR 2026-08-09](../../../docs/adr/2026-08-09-check-brief-canon-ruling.md)): repo-side `scripts/check_brief.py` is a narrower mechanical subset that **declines** — prints `NOT CHECKED`, not a pass — for light ADRs and `{lock, notice, lesson, audit}` because it doesn't model their section contracts; the **canonical** skill-side `~/.claude/skills/brief-authoring/scripts/check_brief.py` validates all of those against their own real section contracts instead of declining. `scripts/check_closure_disposition.py` remains the sole closure gate for both.
 
 | Type | 1 §0 | 2 H | 3 forbidden | 4 gate | 5 Q-shape | 6 hooks | amend-first | 7–10 spawn | Iterate |
 |---|---|---|---|---|---|---|---|---|---|
@@ -121,7 +121,7 @@ If a CC handoff brief passes its applicable 1–6 checks but fails 7–10, the s
 
 **When the type is unclear:** if the artifact will gate a future investigation → Inquire brief. If it locks a decision → ADR. If it captures past learning → lesson capture or audit note. When in doubt, default to ADR — the structure forces falsifier and forbidden moves, which catch most ceremony.
 
-**ADR ceremony is stakes-tiered** ([ADR 2026-08-08](../../../docs/adr/2026-08-08-adr-ceremony-tiering.md), ratified): full §0–§7 apparatus only when a limb fires (spends K/money · live-risk surface · LOCKED/frozen surface or non-regenerable deletion · creates/amends doctrine). Otherwise a **light decision record** — standard header field block + `**Tier:** light` + ≤300-word body in the minimal-spec style. Ambiguous tier → full; escalation = supersede, never pad. Rule 0 reads are tier-independent (the read always happens; only the §0 table is dropped). `scripts/check_brief.py` detects `**Tier:** light` and prints `NOT CHECKED` — that is the ratified shape, not a skip of the Reads line. Header fields still go through `scripts/check_adr_graph.py`.
+**ADR ceremony is stakes-tiered** ([ADR 2026-08-08](../../../docs/adr/2026-08-08-adr-ceremony-tiering.md), ratified): full §0–§7 apparatus only when a limb fires (spends K/money · live-risk surface · LOCKED/frozen surface or non-regenerable deletion · creates/amends doctrine). Otherwise a **light decision record** — standard header field block + `**Tier:** light` + ≤300-word body in the minimal-spec style. Ambiguous tier → full; escalation = supersede, never pad. Rule 0 reads are tier-independent (the read always happens; only the §0 table is dropped). Repo-side `scripts/check_brief.py` detects `**Tier:** light` and prints `NOT CHECKED` — expected, not a gap (it's the narrower mechanical subset declining a contract it doesn't model), not a skip of the Reads line. The canonical skill-side checker (`~/.claude/skills/brief-authoring/scripts/check_brief.py`) applies the real Decision/Grounds/Reads/Gate/Boundary contract to light records instead of declining them. Header fields still go through `scripts/check_adr_graph.py`.
 
 **When NOT to author a brief:**
 - Casual conversation / quick decisions with low reversibility cost — OODA loop, no artifact.
@@ -157,13 +157,20 @@ Every authored brief ends with a verification block that the author runs before 
 ```
 ## Verification
 
-# Modeled types (inquire / full ADR / handoff)
+# Repo-side mechanical subset (inquire / full ADR / handoff — modeled types)
 $ python scripts/check_brief.py <brief.md> --type inquire|adr|cc_handoff
 # Expected: RESULT: well-formed  (applicable mechanical checks for this type)
 
-# Light ADR / notice / lesson / audit (unmodeled here)
+# Canonical skill-side checker — light ADR / notice / lesson / audit (ADR 2026-08-09)
+$ python ~/.claude/skills/brief-authoring/scripts/check_brief.py <file.md> --type notice|lesson|audit|adr
+# Expected: RESULT: well-formed — real section contract applied (light-tier
+# auto-detected from **Tier:** light regardless of --type). This is the gate
+# that counts for these types.
+
+# Repo-side on the same file — expected, not a gap (declines what it doesn't model)
 $ python scripts/check_brief.py <file.md> --type notice
-# Expected: RESULT: NOT CHECKED — fill the type template; this is not a pass
+# Expected: RESULT: NOT CHECKED — repo-side is a subset; the skill-side
+# result above is authoritative, not this one
 
 # Closure
 $ python scripts/check_closure_disposition.py <closure.md>
@@ -215,7 +222,7 @@ Failure modes that recur, ranked by frequency:
 ```
 [ ] Amendment-first: existing owner named or search output showing none (every new file)
 [ ] Applicable checks for this type (matrix above) — do not run the inquire/ADR six on a notice
-[ ] Verification block executed; the command that applies to this type passed (or printed NOT CHECKED)
+[ ] Verification block executed; the skill-side command that applies to this type passed as well-formed (repo-side printing NOT CHECKED for a declined type is expected, not the gate)
 
 If inquire / full ADR:
 [ ] §0 Rule 0 reads populated with file paths + verification anchors
@@ -228,7 +235,7 @@ If inquire / full ADR:
 If light ADR:
 [ ] Reads line populated (the read happened; no §0 table)
 [ ] Decision / Grounds / Gate / Boundary filled (Boundary and Gate may be `none`)
-[ ] `check_brief.py` printed NOT CHECKED; `check_adr_graph.py` still applies to headers
+[ ] skill-side `check_brief.py` printed well-formed (repo-side printing NOT CHECKED here is expected, not the gate); `check_adr_graph.py` still applies to headers
 
 If the artifact is a closure record, also:
 [ ] Typed `## Iterate` block present (Next: INTEGRATE | ITERATE | STOP)
@@ -249,11 +256,13 @@ If brief is a CC handoff, also:
 
 ## Reference files
 
-- `scripts/check_brief.py` — mechanical subset for modeled types. Run as:
+- `scripts/check_brief.py` — **repo-side**, a narrower mechanical subset that only models some types. Run as:
   ```
   python scripts/check_brief.py <brief.md> [--type inquire|adr|cc_handoff|notice|lesson|audit|lock|closure]
   ```
-  Modeled: inquire / adr / cc_handoff → well-formed or MALFORMED. Unmodeled notice / lesson / audit / lock / light ADR → `NOT CHECKED`. `--type closure` delegates to `scripts/check_closure_disposition.py` (prints the command; exit 0). `--type lock` is a back-compat alias, not a live authoring type.
+  Modeled: inquire / adr / cc_handoff → well-formed or MALFORMED. Unmodeled notice / lesson / audit / lock / light ADR → `NOT CHECKED` — expected, not a gap; it declines what it doesn't model rather than misapplying a generic contract. `--type closure` delegates to `scripts/check_closure_disposition.py` (prints the command; exit 0). `--type lock` is a back-compat alias, not a live authoring type.
+
+- `~/.claude/skills/brief-authoring/scripts/check_brief.py` — **canonical** ([ADR 2026-08-09](../../../docs/adr/2026-08-09-check-brief-canon-ruling.md)). Same CLI shape as above; unlike repo-side it does NOT decline light ADR / `{lock, notice, lesson, audit}` — it applies each type's own real section contract (numbered §N for inquire/adr/cc_handoff/notice/audit, named headings for lesson/light-tier). `--list-checks` prints the per-type contract summary; `--self-test` regression-checks it against the seven canonical templates below.
 
 - `references/inquire_brief.md` — Pre-Q template (§0–§10 structure)
 - `references/adr.md` — ADR template
