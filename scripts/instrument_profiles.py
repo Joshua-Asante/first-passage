@@ -28,10 +28,34 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 _MECH_HEADER_RE = re.compile(r"^##\s+([a-z0-9-]+)\s*$")
-_FINDING_RE = re.compile(r"^-\s+\*\*Class finding:\*\*\s*(.+)$")
-# Broader than _FINDING_RE: stop a definition paragraph on any Class-finding
-# bullet, including annotated forms (`- **Class finding (corrected…):**`).
-_FINDING_PREFIX_RE = re.compile(r"^-\s+\*\*Class finding")
+# Shared prefix so definition-stop and finding-extraction cannot drift:
+# any `- **Class finding` bullet, annotated or not.
+_FINDING_PREFIX = r"^-\s+\*\*Class finding"
+_FINDING_PREFIX_RE = re.compile(_FINDING_PREFIX)
+# Annotation (parenthetical, em-dash suffix, or nothing) lives inside the
+# bold span; the span closes at the first `**`. Plain
+# `- **Class finding:** body` has annotation ":" which _finding_text strips
+# so stored text stays body-only (backward compatible).
+# Also matches `- **Class finding (corrected…):**` and
+# `- **Class finding — CORRECTED ….** body` (bold may close without a colon).
+_FINDING_RE = re.compile(_FINDING_PREFIX + r"\b(.*?)\*\*\s*(.+)$")
+
+
+def _finding_text(line: str) -> str | None:
+    """Return the stored finding body, or None if `line` is not a Class-finding bullet.
+
+    Annotated labels stay attached so a consult still sees CORRECTED / OFFICIAL /
+    supersedes — the reason the annotation exists. Plain `- **Class finding:**`
+    bullets store the body only, matching the pre-#196 payload shape.
+    """
+    match = _FINDING_RE.match(line)
+    if not match:
+        return None
+    annotation = match.group(1).strip()
+    body = match.group(2).strip()
+    if annotation in ("", ":"):
+        return body
+    return f"{annotation} {body}"
 
 
 @dataclass
@@ -107,9 +131,9 @@ def parse_mechanisms(path: Path) -> dict[str, Mechanism]:
             continue
         if current is None:
             continue
-        finding = _FINDING_RE.match(line)
-        if finding:
-            current.findings.append(finding.group(1).strip())
+        finding = _finding_text(line)
+        if finding is not None:
+            current.findings.append(finding)
     return mechs
 
 

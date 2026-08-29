@@ -739,6 +739,34 @@ def test_cell_unknown_mechanism_exits_two(tmp_path):
     assert "FATAL" in result.stdout
 
 
+def test_cell_prints_annotated_class_finding(tmp_path):
+    """cmd_cell must surface annotated Class-finding bullets, not skip them."""
+    repo = _fixture_repo(tmp_path)
+    mech = repo / "ops" / "instruments" / "MECHANISMS.md"
+    mech.write_text(
+        MECHANISMS_MD
+        + "\n## annotated-extra\n\n"
+        "A one-line definition.\n\n"
+        "- **Class finding (corrected battery, OFFICIAL):** GC limb is NULL. "
+        "[src](../../docs/x.md)\n",
+        encoding="utf-8",
+    )
+    built = _run(repo, "build")
+    assert built.returncode == 0, built.stdout + built.stderr
+    payload = json.loads(
+        (repo / "ops" / "instruments" / "profiles.json").read_text(encoding="utf-8")
+    )
+    findings = payload["mechanisms"]["annotated-extra"]["findings"]
+    assert findings, "annotated Class-finding bullet vanished from profiles.json"
+    assert "corrected battery, OFFICIAL" in findings[0]
+    assert "GC limb is NULL" in findings[0]
+    result = _run(repo, "cell", "TST", "annotated-extra")
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "class finding" in result.stdout
+    assert "GC limb is NULL" in result.stdout
+    assert "OFFICIAL" in result.stdout
+
+
 def test_cell_missing_json_exits_two_and_names_build(tmp_path):
     """cell reads profiles.json only -- it never re-parses the ledgers. A
     missing profiles.json is a usage error telling the caller to run build,
@@ -1006,6 +1034,49 @@ def test_parse_mechanisms_stops_definition_at_annotated_class_finding(tmp_path):
     stopped = mechs["annotated-finding-stop"]
     assert "First line of the definition continues on this physical line." == stopped.definition
     assert "Must not be joined" not in stopped.definition
+    assert len(stopped.findings) == 1
+    assert "Must not be joined" in stopped.findings[0]
+    assert "corrected battery, OFFICIAL" in stopped.findings[0]
+
+
+def test_parse_mechanisms_captures_annotated_class_findings(tmp_path):
+    """Parenthetical and em-dash Class-finding labels are real findings, not dropped."""
+    body = """# MECHANISMS
+
+## annotated-paren
+
+A one-line definition.
+
+- **Class finding (corrected battery, OFFICIAL):** GC (parent, train era 2010–2019) top-quintile TR is NULL.
+
+## annotated-emdash
+
+A one-line definition.
+
+- **Class finding — CORRECTED 2026-08-04; supersedes the former clause.** The archived closure attributed 0/247 to a price law.
+
+## plain-finding
+
+A one-line definition.
+
+- **Class finding:** Session-aware continuation failed.
+"""
+    p = tmp_path / "MECHANISMS.md"
+    p.write_text(body, encoding="utf-8")
+    mechs = ip.parse_mechanisms(p)
+
+    paren = mechs["annotated-paren"].findings
+    assert len(paren) == 1
+    assert "corrected battery, OFFICIAL" in paren[0]
+    assert "top-quintile TR is NULL" in paren[0]
+
+    emdash = mechs["annotated-emdash"].findings
+    assert len(emdash) == 1
+    assert "CORRECTED 2026-08-04" in emdash[0]
+    assert "0/247" in emdash[0]
+
+    plain = mechs["plain-finding"].findings
+    assert plain == ["Session-aware continuation failed."]
 
 
 def test_parse_mechanisms_single_line_definition_unchanged(tmp_path):
