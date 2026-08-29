@@ -1,5 +1,13 @@
 # ADR 2026-07-31 — ORB-MNQ-1 unparked to active research, with a payable-Tradeify-leg target
 
+⚠ **Addendum 2026-07-31b's K_eff/floor-0.98/"AT the Cap" math for a new MNQ seed is SUPERSEDED —
+see [`docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md`](2026-08-04-family-k-bank-disclosure-not-gate.md).**
+Under current doctrine, `K_eff = K_intrinsic` only (`K_banked` is disclosure-only, not gating); a
+new `K_intrinsic=1` MNQ seed screens at floor **0.65**, not 0.98/AT-the-Cap. The unpark decision and
+trigger-table supersession recorded in this file's header are unaffected by this note — see
+Addendum 2026-08-29 below for full detail, including why the raw MNQ bank count named below (2) is
+itself doubly stale as a current figure.
+
 **Status:** `Accepted` — operator GO in chat 2026-07-31 ("Sibling candidate and Unpark / reopen ORB-MNQ as active research"); the two Addendum-2026-07-31b adjudications ruled same day; §7 Phase-2 downstream sync complete; **§7 Phase 3 DONE and §4 T1 discharged `PASS`** same day (Addendum 2026-07-31c); **§4 T2 MEASURED 2026-08-02 — disposition OWED, no trigger declared and no k policy moved** (Addendum 2026-08-02). **⚠ SUPERSEDED IN PART 2026-08-03 — the T2 disposition was ruled, T2 FIRED on the Part A bust reading, ORB-MNQ-1 is re-`PARKED`, and the payable-Tradeify-leg target is recorded FALSIFIED.** §2's unpark decision and §4's trigger table below are **no longer in force** — see [`2026-08-03-orb-mnq-repark-payability-falsified.md`](2026-08-03-orb-mnq-repark-payability-falsified.md). Everything else here — §3 evidence, Addendum 31b's two rulings, Addendum 31c's T1 `PASS`, and Addendum 2026-08-02's measurement — **stands as `Accepted` record and is not retracted.**
 **Decision date:** 2026-07-31
 **Supersedes:** [`2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md`](2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md) in part — the 2026-07-24 Addendum's `TERMINAL` clause **only as it applies to Candidate B (ORB-MNQ)**. Candidate A (MYM ORC) stays CLOSED, R5/P2 stay FALSIFIED, and the standing c1-execution-quality research interest is unaffected.
@@ -483,3 +491,60 @@ standing board.
 | 2026-07-31 | Addendum 2026-07-31c — 16:00 re-export scored; **§4 T1 discharged PASS**; Phase 3 ✅ DONE; RF<1 / negative-2026 recorded as adverse input to 08-08, not as a trigger | Joshua (re-export) + Cursor (measurement) |
 | 2026-08-02 | Addendum 2026-08-02 — `intraday_low=` limb fed for the first time; **§4 T2 MEASURED**, disposition **owed** (its two readings disagree; the intraday correction decides neither); limb-(b)-vs-Part-A gap surfaced for the same ruling. No trigger declared, no k policy moved | Claude Code (measurement) |
 | 2026-08-03 | **Superseded in part.** Operator ruled the owed T2 disposition: T2 **FIRED** on the Part A bust reading, disposition escalated past T2's own (inert) cap-at-k=1 remedy, and H limb (b) keeps its literal wording. §2 + §4 are no longer in force; ORB-MNQ-1 re-`PARKED`, payability target **FALSIFIED** — [`2026-08-03-orb-mnq-repark-payability-falsified.md`](2026-08-03-orb-mnq-repark-payability-falsified.md). **Header + this row only; no decision text edited** | Joshua (rulings) + Claude Code (recorder) |
+| 2026-08-29 | Reader-intercept banner + Addendum 2026-08-29: Addendum 2026-07-31b's K_eff/floor-0.98/AT-the-Cap math for a new MNQ seed is superseded by the 2026-08-04 K-bank disclosure-not-gate ADR (adr-decay-audit discharge) | Claude Code |
+
+## Addendum 2026-08-29 — Addendum 2026-07-31b's K-bank math is superseded (adr-decay-audit discharge)
+
+**Does not amend** §2, §3, §4's trigger table, or any existing addendum's text (Rule 14 — frozen
+bodies stay byte-unedited; corrections land as a reader-intercept banner at the top of this file
+plus this dated addendum). This addendum is the discharge for a `DECAYED_UNDOCUMENTED` finding: the
+frozen Addendum 2026-07-31b asserts, as then-current doctrine, *"MNQ family K bank remains 2 → new
+MNQ seed at `K_intrinsic=1` is therefore `K_eff = 3`, DSR floor 0.98 — open, but AT the Cap"* — math
+that a later ADR has since changed the inputs to.
+
+**What changed and when.** [`2026-08-04-family-k-bank-disclosure-not-gate.md`](2026-08-04-family-k-bank-disclosure-not-gate.md)
+(`Accepted` 2026-08-04, four days after this ADR's Addendum 2026-07-31b) redefined `K_eff` from
+`K_intrinsic + K_banked(family)` to **`K_eff = K_intrinsic` only** — `K_banked(family)` is retained
+and still computed, but demoted from a gating term to a mandatory *disclosure*, and can no longer
+fail a seed. Confirmed live in current doctrine:
+[`docs/methodology/strategy_harvest.md`](../methodology/strategy_harvest.md) §1 Requirement 3 —
+*"Family K-bank — MANDATORY DISCLOSURE, not a gate"* — and its Clause-K description, *"under the
+amended rule a `K_intrinsic=1` seed screens at floor **0.65** on *every* family."* Under that rule, a
+new `K_intrinsic=1` MNQ seed today screens at floor **0.65**, not the 0.98/"AT the Cap" figure this
+ADR's Addendum 2026-07-31b names — a materially easier bar, not a harder one.
+
+**Why the tooling missed it.** The 2026-08-04 ADR's own §7 Phase-3 repair sweep runs
+`rg --no-ignore "K_intrinsic \+ K_banked|K_eff = K_intrinsic \+"` across `docs/` and `lab/` to find
+and reader-intercept every restatement of the old formula. That regex is a literal-string match; it
+does not fire on this file, because Addendum 2026-07-31b never spells out the formula symbolically —
+it states the same rule in paraphrased prose ("MNQ family K bank remains 2 → ... `K_eff = 3`, DSR
+floor 0.98"). Verified this session:
+
+```bash
+rg -n "K_intrinsic \+ K_banked|K_eff = K_intrinsic \+" docs/adr/2026-07-31-orb-mnq-unpark-payability-target.md
+# 0 hits — confirms the repair-sweep regex does not, and did not, catch this file
+```
+
+This is a **tooling note, not a defect to fix in the 2026-08-04 ADR itself** (that ADR's own body is
+equally frozen under the same Rule-14 convention) — flagged here so a future repair-sweep pass knows
+to broaden the pattern to catch paraphrased restatements of the same arithmetic, not just the
+symbolic form.
+
+**The raw MNQ bank count is separately, doubly stale.** Even setting the K_eff formula question
+aside, the "2" bank figure Addendum 2026-07-31b names (D5 closed 1 + ST-EH-1's MNQ half 1) is itself
+outdated as a current count. Per the 2026-08-04 ADR's own **2026-08-18 amendment-log entry** (Notice-phase
+closed manifests + a Cap-seat K-bank spend both ruled to bank against the family tally), the current
+MNQ figure is **21** (6 + 14 + 1 — see that ADR's amendment log for the full breakdown). Under the
+current disclosure-only rule this no longer gates anything, but a reader relying on Addendum
+2026-07-31b's "2" as a current count — for any purpose, including simple situational awareness — is
+reading a doubly-superseded number: superseded once by the formula change (2026-08-04), and again by
+the bank's own growth since (2026-08-18).
+
+**What is unaffected.** This addendum touches only the K-bank arithmetic quoted in Addendum
+2026-07-31b's Ruling 1. It does not reopen, reword, or re-rule §2's unpark decision, §4's trigger
+table (already correctly superseded-in-part by
+[`2026-08-03-orb-mnq-repark-payability-falsified.md`](2026-08-03-orb-mnq-repark-payability-falsified.md)
+for T1/T2/T3/T4, per this file's own header field), Addendum 2026-07-31b's Ruling 2 (sibling
+residual routing), or Addendum 2026-07-31c / 2026-08-02's T1/T2 measurements — none of which turned
+on the K-bank figure. Those addenda "stand as `Accepted` record," per this file's own header, exactly
+as before.

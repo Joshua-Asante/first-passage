@@ -3,7 +3,7 @@
 **Status:** ACCEPTED — decision made 2026-06-30 by owner authorization (in-session, named). Executed same session via Claude Code (STATE.md restructure + `operational_rules.md` §7 amendment landed in this commit).
 **Supersedes:** none
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** `2026-08-09-survive-bound-is-the-queue-cap.md` - the "only 2 headers" hook, re: the OPERATOR QUEUE section it introduced.
 **Retain-until:** none
 **Decision date:** 2026-06-30
 **Authors:** Joshua (authorizing) + Claude (Claude Code)
