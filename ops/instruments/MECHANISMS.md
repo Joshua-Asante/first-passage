@@ -16,9 +16,12 @@ captured definition drops an unseparated continuation line.
 **Class findings:** `- **Class finding:**`, `- **Class finding (…):**`, and
 `- **Class finding — ….**` all land in `profiles.json`. Soft-wrapped multi-line
 bullets are joined in full (same paragraph rule as the definition; the next
-`- **Class finding` bullet is the split when there is no blank line). Annotated
-forms are the corrected/superseding reads — they must not silently vanish from
-a `cell` consult.
+`- **Class finding` bullet is the split when there is no blank line). The
+annotation itself — text between "Class finding" and the closing `**` — may
+also soft-wrap; `check` fails if that bold span never closes before a stop
+(blank / `##` / next list item), because the bullet would otherwise vanish
+entirely. Annotated forms are the corrected/superseding reads — they must not
+silently vanish from a `cell` consult.
 
 ## opening-range-continuation
 

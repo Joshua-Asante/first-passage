@@ -41,14 +41,16 @@ _FINDING_PREFIX_RE = re.compile(_FINDING_PREFIX)
 _FINDING_RE = re.compile(_FINDING_PREFIX + r"\b(.*?)\*\*\s*(.+)$")
 
 
-def _finding_text(line: str) -> str | None:
-    """Return the stored finding body, or None if `line` is not a Class-finding bullet.
+def _finding_text(text: str) -> str | None:
+    """Return the stored finding body, or None if `text` is not a Class-finding bullet.
 
-    Annotated labels stay attached so a consult still sees CORRECTED / OFFICIAL /
-    supersedes — the reason the annotation exists. Plain `- **Class finding:**`
-    bullets store the body only, matching the pre-#196 payload shape.
+    `text` may be a single physical line or a space-joined opener span (annotation
+    wrap resolved). Annotated labels stay attached so a consult still sees
+    CORRECTED / OFFICIAL / supersedes — the reason the annotation exists. Plain
+    `- **Class finding:**` bullets store the body only, matching the pre-#196
+    payload shape.
     """
-    match = _FINDING_RE.match(line)
+    match = _FINDING_RE.match(text)
     if not match:
         return None
     annotation = match.group(1).strip()
@@ -56,6 +58,41 @@ def _finding_text(line: str) -> str | None:
     if annotation in ("", ":"):
         return body
     return f"{annotation} {body}"
+
+
+def _class_finding_opener(
+    lines: list[str], start_lineno: int
+) -> tuple[str, int] | None:
+    """Join from a Class-finding prefix through the closing `**` of its bold span.
+
+    Returns `(joined_opener_text, 1-based end_lineno)` when `_FINDING_RE` matches
+    the joined text, or None if this is not a Class-finding bullet / the bold
+    span never closes before a stop (blank / `##` / new list item).
+
+    Distinct from body wraps (#198): here the annotation itself — the text
+    between "Class finding" and the closing `**` — may soft-wrap across
+    physical lines. A single-line `_FINDING_RE.match` on the opener alone then
+    fails and the whole bullet vanishes from `Mechanism.findings`.
+    """
+    idx = start_lineno - 1
+    if idx < 0 or idx >= len(lines):
+        return None
+    if not _FINDING_PREFIX_RE.match(lines[idx]):
+        return None
+    parts = [lines[idx].rstrip()]
+    end = start_lineno
+    joined = parts[0]
+    if _FINDING_RE.match(joined):
+        return joined, end
+    for i, line in enumerate(lines[start_lineno:], start=start_lineno + 1):
+        if _is_finding_continuation_stop(line):
+            return None
+        parts.append(line.strip())
+        end = i
+        joined = " ".join(parts)
+        if _FINDING_RE.match(joined):
+            return joined, end
+    return None
 
 
 @dataclass
@@ -97,16 +134,22 @@ def _is_finding_continuation_stop(line: str) -> bool:
 def finding_paragraph(lines: list[str], start_lineno: int) -> list[tuple[int, str]]:
     """Physical lines of one Class-finding bullet, including wrapped continuations.
 
-    `start_lineno` is 1-based and must be a finding-shaped bullet. The first
-    pair is `_finding_text` of that bullet (annotation kept); later pairs are
+    `start_lineno` is 1-based and must be a finding-shaped bullet. Resolves the
+    annotation bold span across physical lines first (`_class_finding_opener`),
+    then appends body wraps after that span closes. The first pair is
+    `_finding_text` of the joined opener (annotation kept); later pairs are
     stripped continuation lines. Stops at a blank line, the next `##` header,
     or a new list item (the next Class-finding bullet, or Sibling/Scope).
     """
-    first = _finding_text(lines[start_lineno - 1])
+    opener = _class_finding_opener(lines, start_lineno)
+    if opener is None:
+        return []
+    joined, end_lineno = opener
+    first = _finding_text(joined)
     if first is None:
         return []
     out: list[tuple[int, str]] = [(start_lineno, first)]
-    for i, line in enumerate(lines[start_lineno:], start=start_lineno + 1):
+    for i, line in enumerate(lines[end_lineno:], start=end_lineno + 1):
         if _is_finding_continuation_stop(line):
             break
         out.append((i, line.strip()))
@@ -151,10 +194,12 @@ def parse_mechanisms(path: Path) -> dict[str, Mechanism]:
     only findings (or finding-before-prose with no later prose), `definition`
     stays empty and validate() emits a P1.
 
-    Each Class-finding bullet is itself a paragraph: the opening line plus
-    every consecutive wrap, joined with a single space. Collection stops at
-    a blank line, the next `##` header, or a new list item (the next
-    `- **Class finding` bullet has no blank separator in this file).
+    Each Class-finding bullet is itself a paragraph: the annotation bold
+    span (which may soft-wrap) plus every consecutive body wrap, joined with
+    a single space. Collection stops at a blank line, the next `##` header,
+    or a new list item (the next `- **Class finding` bullet has no blank
+    separator in this file). A prefix line whose bold span never closes is
+    not recorded (validate() emits a P1).
     """
     raw_lines = path.read_text(encoding="utf-8").splitlines()
     mechs: dict[str, Mechanism] = {}
@@ -171,9 +216,11 @@ def parse_mechanisms(path: Path) -> dict[str, Mechanism]:
             continue
         if current is None:
             continue
-        if _finding_text(line) is not None:
+        # Prefix alone — annotation may wrap before the closing `**`.
+        if _FINDING_PREFIX_RE.match(line):
             paragraph = finding_paragraph(raw_lines, i)
-            current.findings.append(" ".join(text for _, text in paragraph))
+            if paragraph:
+                current.findings.append(" ".join(text for _, text in paragraph))
     return mechs
 
 
@@ -475,6 +522,52 @@ def _check_definition_truncation(
     return out
 
 
+def _check_finding_annotation_truncation(
+    mechanisms: dict[str, Mechanism], repo_root: Path
+) -> list[Finding]:
+    """P1 when a Class-finding bullet's bold annotation never closes.
+
+    Signature of the annotation-wrap footgun: a `- **Class finding` line whose
+    closing `**` is absent before the next stop (blank / `##` / new list item).
+    The bullet then vanishes from `Mechanism.findings` entirely — worse than
+    truncation, which at least leaves a partial sentence. Cheap; reuses
+    `_class_finding_opener` so the detector cannot drift from the parser.
+    """
+    path = repo_root / "ops" / "instruments" / "MECHANISMS.md"
+    if not path.exists():
+        return []
+    lines = path.read_text(encoding="utf-8").splitlines()
+    rel = _rel(path)
+    mid_at = {mech.lineno: mid for mid, mech in mechanisms.items()}
+    header_lines = sorted(mid_at)
+    out: list[Finding] = []
+    active_mid = ""
+    hi = 0
+    for i, line in enumerate(lines, start=1):
+        while hi < len(header_lines) and header_lines[hi] <= i:
+            active_mid = mid_at[header_lines[hi]]
+            hi += 1
+        if not _FINDING_PREFIX_RE.match(line):
+            continue
+        if _class_finding_opener(lines, i) is not None:
+            continue
+        star_count = line.count("**")
+        msg_mid = f"mechanism {active_mid!r} " if active_mid else ""
+        out.append(
+            Finding(
+                rel,
+                i,
+                "P1",
+                f"{msg_mid}Class-finding annotation never closes its bold span "
+                f"(opener has {star_count} `**` marker(s); no closing `**` before "
+                f"the next blank line, `##` header, or list item) — the bullet is "
+                f"invisible to the parser; close the annotation on the same line "
+                f"or keep the wrap contiguous until `**` appears",
+            )
+        )
+    return out
+
+
 def validate(
     profiles: list[Profile], mechanisms: dict[str, Mechanism], repo_root: Path
 ) -> list[Finding]:
@@ -491,6 +584,7 @@ def validate(
                 )
             )
     findings.extend(_check_definition_truncation(mechanisms, repo_root))
+    findings.extend(_check_finding_annotation_truncation(mechanisms, repo_root))
     known = sorted(mechanisms)
     for prof in profiles:
         rel = _rel(prof.path)
