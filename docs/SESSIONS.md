@@ -33,6 +33,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-29m — null-calibrated bootstrap retrofit (three merged 2026-08-29 scripts)
+
+**Focus:** Codex review of PR #205 was right that `block_bootstrap_p` is a percentile-CI tail, not a Type-I test. Retrofit the same `circular_shift_null_p` already merged there into the three remaining 2026-08-29 scripts that still used the old convention.
+**Shipped:** `cursor/null-calibrated-bootstrap-fafe` — `c2_c4_stratified_rerun.py`, `c3_stratified_rerun.py`, MNQ `candidate24_joint_gate.py`; both p-values in script output + results JSON; `MECHANISMS.md` / Notice-logs / `Q-RANGEXFER-1` disclose both figures. No new K.
+**Decisions/defects:** no cited INCREMENT/GRADUATE flipped. MYM `overnight-gap-magnitude-range-conditioning` null-calibrated min-lift p=0.0117 would clear 0.05 while the original bootstrap CI still straddles 0 — **AMBIGUOUS held here**; follow-up notice addendum owed, not a silent flip. c3 null p uncomputed (no vendor bars / no scored-frame cache); INCREMENT cannot flip (CI [+0.154, +0.176], n=139,605).
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: operator-dispatched statistics-correctness follow-up on Phase B mechanism-catalog citations (PR #205 remainder); not a leftover Open/next name.`
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-29l — MYM stale CONTINGENT-FORWARD cell verdicts
 
 **Focus:** two MYM PROFILE cells (`overnight-range-day-session-transfer`, `intraday-bar-volume-regime`) used `CONTINGENT-FORWARD` without a running frozen forward test.

@@ -31,13 +31,16 @@ from pathlib import Path
 
 import numpy as np
 
-from load_sessions import load_bars, session_ohlc, rth_ohlc, overnight_ohlc
+from load_sessions import PANEL, load_bars, session_ohlc, rth_ohlc, overnight_ohlc
 import iaaft_battery as B
 
 HERE = Path(__file__).resolve().parent
 WINDOW, Q_BIAS, Q_REF = 60, 0.80, 0.50
 CI_BLOCK, CI_DRAWS, BOOT_SEED = 60, 4000, 20260829
+NULL_SEED = BOOT_SEED + 1000  # distinct from the original bootstrap seed
 MIN_LIFT_FLOOR = 0.02  # 2pp -- same "well above noise floor" threshold MNQ's script used
+C24_FRAME = HERE / "c24_joint_frame.csv"
+RESULTS_JSON = HERE / "c2_c4_stratified_results.json"
 
 
 def build_frame():
@@ -133,7 +136,14 @@ def block_bootstrap_min_lift(b: np.ndarray, bp: np.ndarray, yy: np.ndarray,
                               n_boot: int, block: int, seed: int):
     """Circular day-block bootstrap on the minimum stratified lift, same block scheme
     as MYM's original paired_diff_bootstrap (block-of-60-days, resampled as contiguous
-    blocks so day-to-day autocorrelation in the underlying series is preserved)."""
+    blocks so day-to-day autocorrelation in the underlying series is preserved).
+
+    NOT a null-calibrated p-value (flagged on review, PR #205 / this retrofit):
+    this resamples the OBSERVED (b, bp, y) jointly, so the bootstrap distribution
+    stays centered on the observed min-lift. `p_lift_le_0` is a percentile-CI-style
+    tail probability, not a Type-I probability under a true zero-association null.
+    Kept for continuity (disclose, don't erase). Report `circular_shift_null_min_lift`
+    as the significance figure."""
     rng = np.random.default_rng(seed)
     N = len(yy)
     block = min(block, max(1, N // 2))
@@ -152,45 +162,195 @@ def block_bootstrap_min_lift(b: np.ndarray, bp: np.ndarray, yy: np.ndarray,
     return float(lo), float(hi), float(draws.mean()), int(len(draws)), p_lift_le_0
 
 
-def run_one(label: str, bias_source: np.ndarray, frame: dict):
-    rth_range = frame["rth_range"]
-    bias, bprime, y = make_bias_biasprime_y(bias_source, rth_range)
-    lifts, counts, scored, b, bp, yy = stratified_lifts(bias, bprime, y)
+def circular_shift_null_p(y, fixed_mask, other_label, draws=4000, seed=44):
+    """Null-calibrated one-sided p-value: does `other_label` carry information
+    about y within `fixed_mask`, beyond what a decorrelated version of the same
+    two series would produce by chance?
 
-    lo, hi, mean_boot, n_valid, p_le0 = block_bootstrap_min_lift(
-        b, bp, yy, CI_DRAWS, CI_BLOCK, BOOT_SEED)
+    Circularly shifts `other_label`'s FULL series (not just the `fixed_mask`
+    subset) by a random offset each draw, so `other_label`'s own autocorrelation
+    /persistence structure is exactly preserved (a rotation, not an i.i.d.
+    reshuffle) while its pairing with (y, fixed_mask) is destroyed -- the same
+    circular-shift/surrogate logic this codebase already uses for block-shuffle
+    and IAAFT nulls elsewhere (see `iaaft_battery.py`), applied here to a
+    cross-series lift statistic instead of an autocorrelation statistic. Reports
+    the fraction of null draws whose within-stratum lift is >= the observed lift
+    (one-sided, Type-I-controlled under H0: no association).
 
-    populated_lifts = [l for l in lifts.values() if l is not None]
-    increment_exists = len(populated_lifts) > 0 and all(l > MIN_LIFT_FLOOR for l in populated_lifts)
-    verdict = "INCREMENT" if (lo > 0 and increment_exists) else (
-        "NO-INCREMENT" if hi < 0 else "AMBIGUOUS (CI straddles 0)")
+    Copied from the reviewed MYM sibling `c24_joint_gate.py` (PR #205, commit
+    f9db9ec).
+    """
+    rng = np.random.default_rng(seed)
+    N = len(y)
+    hi0 = fixed_mask & (other_label == 1)
+    lo0 = fixed_mask & (other_label == 0)
+    if not (hi0.any() and lo0.any()):
+        return np.array([]), float("nan"), float("nan")
+    observed = float(y[hi0].mean() - y[lo0].mean())
+    draws_out = []
+    for _ in range(draws):
+        shift = rng.integers(1, N)
+        shifted = np.roll(other_label, shift)
+        hi = fixed_mask & (shifted == 1)
+        lo = fixed_mask & (shifted == 0)
+        if hi.any() and lo.any():
+            draws_out.append(float(y[hi].mean() - y[lo].mean()))
+    draws_out = np.array(draws_out)
+    p_ge_obs = (1 + int((draws_out >= observed).sum())) / (len(draws_out) + 1)
+    return draws_out, p_ge_obs, observed
+
+
+def circular_shift_null_min_lift(b: np.ndarray, bp: np.ndarray, yy: np.ndarray,
+                                 draws: int, seed: int):
+    """Null-calibrated one-sided p on the SAME statistic `block_bootstrap_min_lift`
+    reports: min over populated strata of the within-stratum lift.
+
+    Circularly shifts the NEW predictor `b` (preserving its own autocorrelation)
+    while holding `(bp, y)` fixed -- destroying the pairing under test, same
+    surrogate-shift logic as `circular_shift_null_p`. Reports the fraction of
+    null min-lifts >= the observed min-lift.
+    """
+    rng = np.random.default_rng(seed)
+    N = len(yy)
+    observed = min_stratified_lift(b, bp, yy)
+    if not np.isfinite(observed):
+        return np.array([]), float("nan"), float("nan")
+    draws_out = []
+    for _ in range(draws):
+        shift = rng.integers(1, N)
+        shifted = np.roll(b, shift)
+        v = min_stratified_lift(shifted, bp, yy)
+        if np.isfinite(v):
+            draws_out.append(v)
+    draws_out = np.array(draws_out)
+    p_ge_obs = (1 + int((draws_out >= observed).sum())) / (len(draws_out) + 1)
+    return draws_out, p_ge_obs, observed
+
+
+def scored_from_c24_cache(bias_col: str):
+    """Fallback when vendor bars are absent: the sibling joint-gate script
+    cached the same per-day (bias_overnight, bias_gap, bias_dayhist, y) series.
+    That frame requires ALL three biases non-nan, so n is 3 days shorter than
+    this script's original per-candidate scored set (1304 vs 1307). Disclosed
+    at the call site; do not silently overwrite the original bootstrap numbers
+    computed on n=1307."""
+    if not C24_FRAME.exists():
+        return None
+    import csv
+    with C24_FRAME.open(newline="") as fh:
+        rows = list(csv.DictReader(fh))
+    b = np.array([int(r[bias_col]) for r in rows], dtype=int)
+    bp = np.array([int(r["bias_dayhist"]) for r in rows], dtype=int)
+    yy = np.array([int(r["y"]) for r in rows], dtype=int)
+    return b, bp, yy, len(rows), f"{C24_FRAME.name} (n={len(rows)}; orig scored n=1307)"
+
+
+def run_one(label: str, b: np.ndarray, bp: np.ndarray, yy: np.ndarray,
+            n_scored: int, frame_source: str, prior: dict | None = None):
+    lifts, counts = {}, {}
+
+    def rate(mask):
+        return (float(yy[mask].mean()), int(mask.sum())) if mask.any() else (float("nan"), 0)
+
+    for s in (0, 1):
+        s_mask = bp == s
+        hi = rate(s_mask & (b == 1))
+        lo = rate(s_mask & (b == 0))
+        lift = (hi[0] - lo[0]) if (hi[1] > 0 and lo[1] > 0) else None
+        lifts[s] = lift
+        counts[s] = dict(hi=hi, lo=lo)
+
+    strata_null_p = {}
+    for s in (0, 1):
+        if lifts[s] is not None:
+            _, p_null, _obs = circular_shift_null_p(yy, bp == s, b, draws=CI_DRAWS, seed=300 + s)
+            strata_null_p[s] = p_null
+
+    _, p_null_min, obs_min = circular_shift_null_min_lift(b, bp, yy, CI_DRAWS, NULL_SEED)
+
+    # Preserve the original n=1307 bootstrap figures when we fell back to the
+    # sibling joint-gate cache (n=1304). Recompute only when we have the
+    # original scored series from vendor bars.
+    if prior is not None and prior.get("min_lift_bootstrap"):
+        boot = prior["min_lift_bootstrap"]
+        lo, hi = boot["ci"]
+        mean_boot, n_valid, p_le0 = boot["mean"], boot["n_valid"], boot["p_lift_le_0"]
+        verdict = prior["verdict"]
+        increment_exists = prior["increment_exists_threshold_check"]
+        # Keep the AUTHORITATIVE stratum lifts/counts from the original run
+        # (n=1307) when we only have the 1304-day cache for the null p.
+        lifts = {int(k): v for k, v in prior["strata"].items()}
+        counts = {int(k): v for k, v in prior["strata_counts"].items()}
+        n_scored_out = prior["n_scored"]
+        boot_source = "preserved from original n=1307 run (cache fallback)"
+    else:
+        lo, hi, mean_boot, n_valid, p_le0 = block_bootstrap_min_lift(
+            b, bp, yy, CI_DRAWS, CI_BLOCK, BOOT_SEED)
+        populated_lifts = [l for l in lifts.values() if l is not None]
+        increment_exists = len(populated_lifts) > 0 and all(l > MIN_LIFT_FLOOR for l in populated_lifts)
+        verdict = "INCREMENT" if (lo > 0 and increment_exists) else (
+            "NO-INCREMENT" if hi < 0 else "AMBIGUOUS (CI straddles 0)")
+        n_scored_out = n_scored
+        boot_source = frame_source
 
     result = dict(
-        label=label, n_scored=int(scored.sum()),
+        label=label, n_scored=int(n_scored_out),
         strata=lifts,
         strata_counts={str(s): counts[s] for s in counts},
-        min_lift_bootstrap=dict(ci=[lo, hi], mean=mean_boot, n_valid=n_valid, p_lift_le_0=p_le0),
+        min_lift_bootstrap=dict(ci=[lo, hi], mean=mean_boot, n_valid=n_valid, p_lift_le_0=p_le0,
+                                source=boot_source),
+        min_lift_null_calibrated=dict(
+            p_ge_obs=p_null_min, observed=obs_min, n_draws=CI_DRAWS, seed=NULL_SEED,
+            frame_source=frame_source, n_scored_null=int(n_scored),
+        ),
+        strata_null_calibrated_p={str(s): strata_null_p.get(s) for s in (0, 1)},
         increment_exists_threshold_check=bool(increment_exists),
         verdict=verdict,
     )
-    print(f"\n[{label}] n_scored={result['n_scored']}")
+    print(f"\n[{label}] n_scored={result['n_scored']}  null-frame={frame_source}")
     for s in (0, 1):
         c = counts[s]
         print(f"  stratum bprime={s}: P(y=1|bias=1)={c['hi'][0]:.4f}(n={c['hi'][1]})  "
               f"P(y=1|bias=0)={c['lo'][0]:.4f}(n={c['lo'][1]})  lift={lifts[s]}")
+        if s in strata_null_p:
+            print(f"    circular-shift null p(null_lift>=observed) [null-calibrated] = {strata_null_p[s]:.5f}")
     print(f"  min-stratified-lift bootstrap: mean={mean_boot:.4f}  CI=[{lo:+.4f},{hi:+.4f}]  "
-          f"p(lift<=0)={p_le0:.4f}  VERDICT={verdict}")
+          f"p(lift<=0)={p_le0:.4f} [NOT null-calibrated]  VERDICT={verdict}")
+    print(f"  min-stratified-lift circular-shift null p(null>=obs) [null-calibrated] = {p_null_min:.5f}  "
+          f"(obs={obs_min:.4f}, n_null={n_scored})")
     return result
 
 
 def main():
-    frame = build_frame()
+    prior = {}
+    if RESULTS_JSON.exists():
+        prior = json.loads(RESULTS_JSON.read_text())
+
+    from_bars = PANEL.exists()
     out = {}
-    out["candidate2_overnight_range_STRATIFIED"] = run_one(
-        "candidate2_overnight_range_STRATIFIED", frame["on_range"], frame)
-    out["candidate4_gap_magnitude_STRATIFIED"] = run_one(
-        "candidate4_gap_magnitude_STRATIFIED", frame["abs_gap"], frame)
-    (HERE / "c2_c4_stratified_results.json").write_text(json.dumps(out, indent=2, default=str))
+    specs = (
+        ("candidate2_overnight_range_STRATIFIED", "on_range", "bias_overnight"),
+        ("candidate4_gap_magnitude_STRATIFIED", "abs_gap", "bias_gap"),
+    )
+    if from_bars:
+        frame = build_frame()
+        print(f"built frame from {PANEL} (vendor bars present)")
+        for label, source_key, _bias_col in specs:
+            bias, bprime, y = make_bias_biasprime_y(frame[source_key], frame["rth_range"])
+            _lifts, _counts, scored, b, bp, yy = stratified_lifts(bias, bprime, y)
+            out[label] = run_one(label, b, bp, yy, int(scored.sum()), f"{PANEL.name} (n={int(scored.sum())})")
+    else:
+        print(f"vendor bars absent ({PANEL}); falling back to {C24_FRAME.name}")
+        for label, _source_key, bias_col in specs:
+            cached = scored_from_c24_cache(bias_col)
+            if cached is None:
+                raise FileNotFoundError(
+                    f"neither {PANEL} nor {C24_FRAME} present; cannot compute null p for {label}"
+                )
+            b, bp, yy, n, src = cached
+            out[label] = run_one(label, b, bp, yy, n, src, prior=prior.get(label))
+
+    RESULTS_JSON.write_text(json.dumps(out, indent=2, default=str))
     print("\nWrote c2_c4_stratified_results.json")
     print("Compare against c2_c4_results.json (the original marginal-comparison run) --")
     print("do NOT overwrite it; both should be cited in the corrected Notice-log entries.")

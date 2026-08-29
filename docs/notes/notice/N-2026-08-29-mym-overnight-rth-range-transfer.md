@@ -59,8 +59,10 @@ P(y=1|bias_new=1)=0.8607 (n=122) vs. P(y=1|bias_new=0)=0.6400 (n=175) — **lift
 real incremental information, not the absence of it. Block-bootstrap (circular,
 60-session blocks, seed 20260829, n=4,000) on the **minimum** stratified lift (the
 conservative read across both day-history states): mean **+0.2186**, 95% CI **[+0.1042,
-+0.3216]**, entirely positive, **p(lift ≤ 0) = 0.00025**. **VERDICT: INCREMENT** —
-decisive, not a near-miss.
++0.3216]**, entirely positive, **p(lift ≤ 0) = 0.00025** / **null-calibrated
+p(null≥obs) = 0.00025** (circular-shift of the overnight predictor; n_null=1304
+from the sibling joint-gate cache vs original n=1307). **VERDICT: INCREMENT** —
+decisive, not a near-miss. Recalibration does not change the verdict.
 
 ## §2 — Why it stands out (the N signal)
 
@@ -94,7 +96,7 @@ decisive, not a near-miss.
 **GRADUATE — to a Pre-Q, authoring deliberately deferred.**
 
 Reason: the D5 stage-1 $0 precondition is now decisively cleared (CI entirely positive,
-p=0.00025, both strata consistent) — per the frozen spec's own un-pause logic this is
+p=0.00025 / null-calibrated p=0.00025, both strata consistent) — per the frozen spec's own un-pause logic this is
 exactly the signal that licenses moving past "does S2 die for $0" into scoping the real
 investigation. Not opened as a Pre-Q in this session: the operator's own task framing
 for this batch explicitly named a follow-up session that pools MNQ's and MYM's GRADUATE
@@ -111,8 +113,8 @@ scope) — and condition (4), a separate operator GO. Both belong to the deferre
 not this notice.
 
 Decision: GRADUATE
-Reason: D5 stage-1 $0 precondition decisively cleared (CI entirely positive, p=0.00025,
-both strata consistent); Pre-Q authoring deferred to the planned MNQ+MYM pooling
+Reason: D5 stage-1 $0 precondition decisively cleared (CI entirely positive, p=0.00025 /
+null-calibrated p=0.00025, both strata consistent); Pre-Q authoring deferred to the planned MNQ+MYM pooling
 session per the operator's own batch framing, not opened here.
 
 ---
@@ -132,7 +134,8 @@ so a future reader does not rediscover the old HOLD date and treat it as live.
 ```bash
 python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c2_c4_stratified_rerun.py
 # Expected: [candidate2_overnight_range_STRATIFIED] min-stratified-lift bootstrap:
-#   mean=0.2186  CI=[+0.1042,+0.3216]  p(lift<=0)=0.0003  VERDICT=INCREMENT
+#   mean=0.2186  CI=[+0.1042,+0.3216]  p(lift<=0)=0.00025 / null-calibrated p=0.00025
+#   VERDICT=INCREMENT (unchanged)
 
 # Superseded secondary measurement (disclosed, not the D5 stage-1 answer):
 python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c2_c4_increment_falsifiers.py

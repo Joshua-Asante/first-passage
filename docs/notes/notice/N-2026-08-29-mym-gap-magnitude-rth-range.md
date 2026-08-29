@@ -51,7 +51,13 @@ negative — the original marginal "decisive kill" was itself a compositional ar
 (the same Simpson's-paradox-shaped effect candidate 2 showed, here strong enough to
 flip the sign, not just mask the magnitude). Block-bootstrap on the minimum
 stratified lift: mean **+0.0594**, 95% CI **[−0.0419, +0.1477]**, straddles 0,
-**p(lift ≤ 0) = 0.1247**. **VERDICT: AMBIGUOUS** — no longer a kill, not yet a pass.
+**p(lift ≤ 0) = 0.1247** / **null-calibrated p(null≥obs) = 0.0117**
+(circular-shift of the gap predictor; n_null=1304 from the sibling joint-gate
+cache vs original n=1307; 3-day difference disclosed). **VERDICT: AMBIGUOUS** —
+no longer a kill, not yet a pass. The original decision rule is the bootstrap
+CI, which still straddles 0. The corrected p-value would clear a conventional
+0.05 bar; whether that flips this cell to INCREMENT is an operator ruling,
+filed as a follow-up notice addendum, not silently applied here.
 
 ## §2 — Why it stands out (the N signal)
 
@@ -113,7 +119,8 @@ resolve the sign with more data before any heavier design work is warranted.
 ```bash
 python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c2_c4_stratified_rerun.py
 # Expected: [candidate4_gap_magnitude_STRATIFIED] min-stratified-lift bootstrap:
-#   mean=0.0594  CI=[-0.0419,+0.1477]  p(lift<=0)=0.1247  VERDICT=AMBIGUOUS
+#   mean=0.0594  CI=[-0.0419,+0.1477]  p(lift<=0)=0.1247 / null-calibrated p=0.0117
+#   VERDICT=AMBIGUOUS (unchanged; CI still straddles 0)
 
 # Superseded secondary measurement (disclosed, sign-flipped by the correction — do not
 # cite as the D5 stage-1 answer):

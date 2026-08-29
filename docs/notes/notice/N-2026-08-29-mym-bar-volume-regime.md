@@ -59,8 +59,10 @@ elevated, n=68,113): P(y=1|volume=1)=0.7150 (n=52,737) vs. P(y=1|volume=0)=0.469
 (n=15,376) — **lift +0.2455**. Block-bootstrap (circular, 96-bar blocks ≈1 session,
 seed 20260829, n=4,000) on the minimum stratified lift: mean **+0.1648**, 95% CI
 **[+0.1537, +0.1761]**, entirely positive, **p(lift ≤ 0) ≈ 0** (n=139,605 scored
-pairs — the CI is 2.2pp wide on a huge sample). **VERDICT: INCREMENT** — the largest,
-tightest-estimated effect of any correction run in this batch.
+pairs — the CI is 2.2pp wide on a huge sample) / **null-calibrated p uncomputed
+this session** (no scored-frame cache; vendor bars absent). **VERDICT: INCREMENT** —
+the largest, tightest-estimated effect of any correction run in this batch.
+Recalibration cannot flip this verdict: the CI is entirely positive on n=139,605.
 
 ## §2 — Why it stands out (the N signal)
 
@@ -132,7 +134,9 @@ GRADUATEd notice.
 ```bash
 python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c3_stratified_rerun.py
 # Expected: min-stratified-lift bootstrap: mean=0.1648  CI=[+0.1537,+0.1761]
-#   p(lift<=0)=0.0000  VERDICT=INCREMENT
+#   p(lift<=0)=0.0000 [NOT null-calibrated]  VERDICT=INCREMENT
+#   null-calibrated p: UNCOMPUTED this session unless MYM_M15.csv or
+#   c3_stratified_frame.csv is present; INCREMENT cannot flip (CI entirely +).
 
 # Superseded secondary measurement (disclosed, not the authoritative answer):
 python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c3_volume_regime.py
