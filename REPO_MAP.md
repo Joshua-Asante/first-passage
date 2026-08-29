@@ -108,11 +108,84 @@ These cannot relocate without breaking the harness, the build, GitHub, or `REPO_
 
 ### §2.1 — `scripts/` per-file layer (root-resident; recorded for the scanner)
 
-`scripts/` stays at root but its files are classified. `check_boundaries.py` hard-codes the equivalent mapping in its own `SCRIPTS_LAYER` dict — it does **not** load this table, and nothing gates the two against each other, so a change here must be mirrored there by hand. ⚠ **This list is incomplete:** `git ls-files 'scripts/*.py'` returns 48 files (was 35 — 2026-08-21 re-count; a run of gate-script landings between 2026-08-17 and 2026-08-21 widened the gap, see below) and 18 are unlisted (`archive_strategy`, `check_adr_graph`, `check_advisor_dedup`, `check_instrument_ledger_coverage`, `check_personas`, `check_push_collision`, `check_status_consistency`, `gate_fire_log`, `import_skill_from_cache`, `instrument_profiles`, `layer_bootstrap`, `m1_item5_capture`, ~~`migrate_adr_headers_m1`~~ (retired 2026-08-02), `repo_hygiene`, `repo_retrieve`, `retire_adr`, `session_divergence_hook`, `sync_skills_hook`, `validate_c1_monitoring_acceptance`). All 18 active entries are stdlib-only today (a couple import sibling `scripts/` modules, e.g. `repo_retrieve` → `gate_fire_log` — same root-resident file, not a layer-crossing import), so `check_boundaries.py` stays green and the gap is latent — but any of them gaining a first-party `core/lab/ops` import would be classified `governance` by the fallback and could be flagged an illegal edge.
+`scripts/` stays at root but its files are classified. Layer comes from
+`check_boundaries.py`'s `SCRIPTS_LAYER`; anything not in that dict falls back
+to **governance** via `layer_of_file()`. The scanner does **not** load this
+table. The P5 gate ([`check_repo_map_layers.py`](scripts/check_repo_map_layers.py))
+compares `SCRIPTS_LAYER` to [`repo_map_layers.yml`](scripts/repo_map_layers.yml),
+not this table. Gate composition is owned by [`gates.yml`](scripts/gates.yml)
+and is not changed by regenerating this section.
 
-- **governance** (discipline/gates): `check_brief.py`, `check_boundaries.py`, `check_data_manifests.py`, `check_pine_manifest.py`, `check_path_liveness.py`, `check_root_doc_liveness.py` (markdown-link liveness over the five root orientation docs, 2026-07-15 — sibling of `check_path_liveness.py`; wired into pre-commit + `make check`), `check_lab_path_relocation.py` (WARN — `docs/**/*.md` cites of relocated `lab/…` paths; `make lab-path-relocation`; not in `gates.yml`), `check_md_relative_links.py` (WARN — file-relative link liveness under `docs/`/`ops/`/`lab/`, sibling of `check_path_liveness.py`/`check_root_doc_liveness.py`; `make md-relative-links`; manual forensic tool, not in `gates.yml`), `check_falsifier_reachability.py` (WARN — do standing ADR falsifiers still have inputs that can accrue, operational_rules.md Rule 11; quarterly-checklist cadence Rule 17; `make falsifier-reachability`; wired `gates.yml` id `falsifier-reachability-census`, tier: always, `--stats` report-only), `sync_liveness_indexes.py` (WARN — INDEX Open vs closures + CATALOG ACTIVE archive-owed; `make sync-liveness`; wired `gates.yml` path-conditional on `docs/briefs/INDEX.md` + `lab/CATALOG.md`; `--apply-index` unused), `check_skill_refs.py`, `check_skills_no_constants.py` (methodology-skill no-constants; extracted 2026-08-03 from retired `validate_params`), `check_closure_disposition.py` (every new closure carries a typed Iterate block — ADR `2026-08-04-iterate-closure-exit-mandatory`; wired `gates.yml` path-conditional on `docs/briefs/closures/`, `docs/briefs/INDEX.md`, `lab/CATALOG.md`), `check_supersession_placement.py` (a withdrawing addendum needs an upstream warning — `operational_rules.md` Rule 14; wired `gates.yml` path-conditional on `docs/adr/`), `check_governance_prose_control_chars.py` (rejects stray C0 controls in high-traffic governance prose — 2026-08-11 SESSIONS incident; wired `gates.yml` path-conditional on `SESSIONS.md`/`rejected_candidates.md`/`mc_anchor_history.md`), `check_pursuit_records.py` (GRAND-tier pursuit-record limbs — ADR `2026-08-09-grand-tier-quintessentials-binding`; WARN/report-only; **retired from `gates.yml` 2026-08-24** — Rule 16 R5, the underlying check always exits 0 as invoked and could never fail regardless of tier — [`retirement ADR`](docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md); script retained on disk, runnable manually, no longer gate-wired), `gate_manifest.py` (single owner for pre-commit/`make` gate composition, reads `gates.yml` — [W5 ADR](docs/adr/2026-08-07-w5-governance-diet.md); the `make check`/`validate`/`pre-commit`/`--list` entry point cited above), ~~`validate_params.py`~~ (**retired 2026-08-03** — derived `params.toml` hub; [`docs/adr/2026-08-03-params-toml-gate-retirement.md`](docs/adr/2026-08-03-params-toml-gate-retirement.md)), ~~`validate_alert_payloads.py`~~ (**retired 2026-08-02** — Copygram→FXIFY estate; see [`docs/adr/2026-07-11-fxify-ops-surface-retirement.md`](docs/adr/2026-07-11-fxify-ops-surface-retirement.md) Addendum 2026-08-02), `verify_lock_anchors.py`, `sync_pine_to_worktree.py`, `sync_skills.py`, `roll_sessions.py` (SESSIONS.md roll-off — ADR/spec `docs/spec/2026-06-27-session-log-rolloff-design.md`; stdlib-only), `find_owner.py` (Rule 7 lookup; not a sixth index; stdlib-only), `parse_bar_export.py` (vendor-bar parse; imports `core/bar_export_loader` → core-only, governance-legal), `pine_check.py` (+ `pine_check_audit.sh`/`.ps1` — zero-auth Pine compile pre-flight, validated 2026-06-23; LOCAL/manual, not CI), `archive_lab_analysis.py` (lab STM/LTM archive — design ``docs/superpowers/specs/2026-07-11-lab-analysis-stm-ltm-archive-design.md`` (public-seed omitted; `git show pre-prune-2026-08-08:docs/superpowers/specs/2026-07-11-lab-analysis-stm-ltm-archive-design.md`); `--check --catalog-only` wired into pre-commit + `make check` / CI; stdlib-only), `githooks/`, `install_hooks.sh`, `install_hooks.bat` (`check_brief_evidence_coverage.py` retired 2026-06-08 — ADR `2026-05-16-fixture-test-requirement` Amendment)
-- **lab** (research): `mc_user_guardian.py`, `pine_lint.py`, `cost_geometry_pregate.py` (instrument-ledger Phase-0 cost-geometry pre-gate — ADR `2026-06-22-cost-geometry-pregate.md`); `parse_econ_export.py`, `diff_econ_calendar.py` (ECON EXPORT v0.1 — owner [`docs/spec/2026-08-18-econ-export-v01.md`](docs/spec/2026-08-18-econ-export-v01.md)); ~~`validate_candidate.py`~~, ~~`run_corpus_fdr.py`~~, ~~`wfo/`~~ — **retired 2026-07-11** per [`docs/adr/2026-07-11-gen1-pipeline-retirement.md`](docs/adr/2026-07-11-gen1-pipeline-retirement.md)
-- **ops** (live-ops tooling): `lock_event_hook.py`, ~~`inactivity_simulator.py`~~ (**retired 2026-08-02** — Q-MCTO-1 shadow; production `bust_inactivity` in `core/mc/simulation.py`) (`run_ecr.py` + `preprocess_pine_ecr_logs.py` **retired 2026-07-11** with the ECR estate, ADR [`2026-07-11-ops-cfd-estate-retirement`](docs/adr/2026-07-11-ops-cfd-estate-retirement.md))
+Regenerate: `python scripts/check_repo_map_scripts_table.py --write`.
+`--check` exits 1 on drift; it is **not** wired into `gates.yml`.
+
+<!-- BEGIN generated: scripts-table -->
+_61 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+
+| Script | Layer | Gate id (tier) | Notes |
+|---|---|---|---|
+| `scripts/_build_lessons_index.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/archive_lab_analysis.py` | governance | `lab-catalog` (path-conditional) | — |
+| `scripts/archive_strategy.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/beta_cohesion_read.py` | lab | — | manual/local only, not in gates.yml |
+| `scripts/check_adr_graph.py` | governance | `adr-graph` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_advisor_dedup.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_boundaries.py` | governance | `boundaries` (always) | — |
+| `scripts/check_brief.py` | governance | — | manual/local only, not in gates.yml |
+| `scripts/check_claude_judgment_review.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_closure_disposition.py` | governance | `closure-disposition` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_cost_model_closed_world.py` | lab | `cost-model-closed-world` (path-conditional) | — |
+| `scripts/check_data_manifests.py` | governance | `data-manifests` (data-conditional) | — |
+| `scripts/check_docs_runtime_inventory.py` | governance | `docs-runtime-inventory` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_falsifier_reachability.py` | governance | `falsifier-reachability-census` (always) | --stats (report-only); layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_governance_prose_control_chars.py` | governance | `governance-prose-control-chars` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_instrument_ledger_coverage.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_instrument_rejection_coverage.py` | governance | `instrument-rejection-coverage` (path-conditional) | WARN, --exit-zero; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_lab_path_relocation.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_lifecycle_consistency.py` | governance | `lifecycle-consistency` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_md_relative_links.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_path_liveness.py` | governance | `path-liveness` (always) | — |
+| `scripts/check_personas.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_pine_manifest.py` | governance | `pine-manifest` (always); `pine-pin-provenance` (always) | — |
+| `scripts/check_pursuit_records.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_push_collision.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_repo_map_layers.py` | governance | `repo-map-layers` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_repo_map_scripts_table.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_root_doc_liveness.py` | governance | `root-doc-liveness` (always) | layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_sessions_queue_bind.py` | governance | `sessions-queue-bind` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_skill_deploy_sync.py` | governance | `skill-deploy-sync` (always) | layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_skill_refs.py` | governance | `skill-refs` (always) | — |
+| `scripts/check_skills_no_constants.py` | governance | `skills-no-constants` (always) | — |
+| `scripts/check_status_consistency.py` | governance | `status-consistency` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_supersession_placement.py` | governance | `supersession-placement` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/cost_geometry_pregate.py` | lab | — | manual/local only, not in gates.yml |
+| `scripts/diff_econ_calendar.py` | lab | — | manual/local only, not in gates.yml |
+| `scripts/event_study_read.py` | lab | — | manual/local only, not in gates.yml |
+| `scripts/find_owner.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/gate_fire_log.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/gate_manifest.py` | governance | — | gate runner (reads gates.yml); not itself a gated id; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/import_skill_from_cache.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/instrument_profiles.py` | governance | `instrument-profiles` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/layer_bootstrap.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/lock_event_hook.py` | ops | — | manual/local only, not in gates.yml |
+| `scripts/m1_item5_capture.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/mc_user_guardian.py` | lab | — | manual/local only, not in gates.yml |
+| `scripts/parse_bar_export.py` | governance | — | manual/local only, not in gates.yml |
+| `scripts/parse_econ_export.py` | lab | — | manual/local only, not in gates.yml |
+| `scripts/pine_check.py` | governance | — | manual/local only, not in gates.yml |
+| `scripts/pine_lint.py` | lab | — | manual/local only, not in gates.yml |
+| `scripts/repo_hygiene.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/repo_retrieve.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/retire_adr.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/roll_sessions.py` | governance | `sessions-order` (path-conditional); `sessions-append-only` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/session_divergence_hook.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/sync_liveness_indexes.py` | governance | `sync-liveness` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/sync_pine_to_worktree.py` | governance | — | manual/local only, not in gates.yml |
+| `scripts/sync_skills.py` | governance | — | manual/local only, not in gates.yml |
+| `scripts/sync_skills_hook.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/validate_c1_monitoring_acceptance.py` | governance | `m1-tree-skew` (always) | --check-tree-skew (report-only); layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/verify_lock_anchors.py` | governance | — | manual/local only, not in gates.yml |
+<!-- END generated: scripts-table -->
 
 ---
 
