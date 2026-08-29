@@ -165,6 +165,7 @@ documents the camp boundary for humans/tools.
 | ict_1mexec_1_2026-08 | _inbox | FALSIFIED | yes | **RESOLVED (FALSIFIED at Stage 2, F1).** The frozen construct's gross edge does not | lab/analysis/_inbox/ict_1mexec_1_2026-08/ | — |
 | ict_mnq_2026-08 | _inbox | ACTIVE | yes | ICT cascade on NQ/MNQ at $0/K=0: W and D confirm, pools falsified a 3rd time; no layer licenses a deployable edge | lab/analysis/_inbox/ict_mnq_2026-08/ | — |
 | mnq_dailygeom_notice_2026-08-29 | _inbox | ACTIVE | yes | — | lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/ | — |
+| mym_mechanism_harvest_2026-08-29 | _inbox | ACTIVE | yes | — | lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/ | — |
 | q_trainkill_1_2026-08 | _inbox | HOLD | yes | AMBIGUOUS-HOLD — BOUNDED extremes disagree (MISCALIBRATED at ε vs KILLS-INFORMATIVE at 1−ε); scored core (n*=8) is MISCALIBRATED | lab/analysis/_inbox/q_trainkill_1_2026-08/ | — |
 | q_trainkill_2_2026-08 | _inbox | HOLD | yes | `AMBIGUOUS-HOLD`. Limb 1 did not fire (1 promotion; extremes still disagree). Limb 2: both `NEG` and `DEP-ZERO` fit. | lab/analysis/_inbox/q_trainkill_2_2026-08/ | — |
 | q_trainkill_3_2026-08 | _inbox | HOLD | yes | `AMBIGUOUS-HOLD`. Block F winner `NEG` (ratio 9.83). Block A winner `DEP` (ratio 0.246 = DEP at 4.06:1). Split. | lab/analysis/_inbox/q_trainkill_3_2026-08/ | — |

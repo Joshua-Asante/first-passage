@@ -10,9 +10,10 @@
 | Mechanism | 6J | BTCUSD | ES | EURGBP | EURUSD | GER40 | M2K | M6A | M6B | MCL | MES | MGC | MJY | MNQ | MYM | NAS100 | NG | NQ | SPX500 | USDCAD | USOIL | XAGUSD | XAUUSD | YM | ZB | ZF | ZN |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | band-pierce-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | F | . | . | . | . | . | . | . |
+| bar-closing-location-autocorrelation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | F | . | . | . | . | . | . | . | . | . | . | . | . |
 | commodity-carry-term-structure | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . |
 | compression-gated-breakout | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . |
-| daily-range-state-persistence | . | . | . | . | . | . | . | . | . | A | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| daily-range-state-persistence | . | . | . | . | . | . | . | . | . | A | . | D | . | . | A | . | . | . | . | . | . | . | . | . | . | . | . |
 | day-of-week-selection-gate | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . |
 | event-window-reversal | . | . | . | . | D | . | . | . | . | . | . | D | . | . | D | . | D | . | . | . | . | . | . | . | . | . | D |
 | expiry-oi-strike-convergence | . | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
@@ -20,6 +21,7 @@
 | ict-liquidity | . | . | . | . | . | . | . | . | . | . | . | . | . | D | D | . | . | . | D | . | . | . | . | . | . | . | . |
 | impulse-pullback-vwap-reclaim | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | index-dispersion | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . |
+| intraday-bar-volume-regime | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . |
 | intraday-momentum | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | D | . | . | . | . | . | . | . | . | . |
 | london-range-failed-extension-fade | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | mean-reversion-fade | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | D | D | . | . | . | . | . | . |
@@ -28,6 +30,8 @@
 | opening-range-breakout | . | . | . | . | . | A | . | . | . | . | . | . | . | A | . | A | . | A | D | D | . | . | . | . | D | D | . |
 | opening-range-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . |
 | order-flow-depth-imbalance | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| overnight-gap-magnitude-range-conditioning | . | . | . | . | . | . | . | . | . | . | . | . | . | . | F | . | . | . | . | . | . | . | . | . | . | . | . |
+| overnight-range-day-session-transfer | . | . | . | . | . | . | . | . | . | . | . | . | . | . | F | . | . | . | . | . | . | . | . | . | . | . | . |
 | overnight-range-failed-extension-fade | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | overnight-range-transmission | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | pdh-pdl-breakout-rth | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
@@ -53,6 +57,17 @@ Entering in the direction of a statistical band pierce (e.g. an NY-morning σ-th
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
 | USDCAD | CONTINGENT-FORWARD | 2026-06-16 | ../../docs/ltm/briefs/pre-registration/FWD-PREREG-BPC-USDCAD-TUE-2026-06-11.md |
+
+
+## bar-closing-location-autocorrelation
+
+**NEW 2026-08-29.** Is a bar's closing-location-value (CLV = (close−low)/(high−low), where within its own H–L range the bar closed) serially correlated bar-to-bar, unconditional on level, session anchor, or volatility regime? Same-series, next-bar (CLV_t → CLV_t+1) — the independent-series IAAFT battery is the right tool here (unlike the three cross-series ids above), reused directly from `daily-range-state-persistence`'s S1 machinery at bar rather than session granularity. Distinct from every level/breakout/continuation construct in any instrument's DEAD table (those are directional-entry constructs keyed to a reference level or window; this is an unconditional shape-persistence statistic, no level or window involved). **Admission-route status under the 2026-07-21 single-instrument index-futures directional-timing raised bar (`docs/rejected_candidates.md`) is UNRESOLVED** — a positive finding here carries an inherent directional-momentum flavor (bars that close strong tend to be followed by bars that close strong) close to `intraday-momentum`, and whether pursuing it as an entry-role candidate would need to clear Route 1/2/3 of that bar is an open governance question this class does not resolve on its own.
+
+- **Class finding:** MYM (all M15 bars, RTH+overnight, 2020-07→2026-07, n_pairs=141,119): lag-1 Spearman rho(CLV_t, CLV_t+1) = **−0.0370**, 95% CI **[−0.0422, −0.0319]** (excludes 0, negative — anti-persistence/mean-reversion, not momentum), both halves and all 7 years same-signed (magnitude shrinking over the panel, −0.073 in 2020 → −0.02/−0.03 by 2024–2026). Attribution **EXCESS**: obs sits at the 0th percentile of its own zero-mechanism (linear-ACF-preserving) IAAFT surrogate band, p_two_sided=0.0050 — **SIGNAL-EXCESS**, the strongest result of the batch this class-family produced this session. **Not graduated** — admission-route status under the single-instrument directional-timing raised bar is unresolved (a negative/mean-reverting shape claim reads closer to `mean-reversion-fade` than to a neutral conditioner); ledger cell `CONTINGENT-FORWARD`, HELD pending a scope ruling. [MYM.md](MYM.md) · [`N-2026-08-29-mym-closing-location-autocorrelation.md`](../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md)
+
+| Instrument | Verdict | Date | Source |
+|---|---|---|---|
+| MYM | CONTINGENT-FORWARD | 2026-11-08 | ../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md |
 
 
 ## commodity-carry-term-structure
@@ -81,16 +96,19 @@ Gating a breakout entry on a prior volatility-compression phase resolving into e
 
 ## daily-range-state-persistence
 
-**NEW 2026-08-18.** Conditioner-role, not entry-role: does a day's True Range being in the trailing top quintile predict elevated next-day True Range (vs its own trailing median)? Distinct from `compression-gated-breakout` / `htf-compression-breakout-5m` (both entry-role compression→expansion triggers on MNQ) — this class makes no entry claim, only a range-state-forecasting claim, and is scoped to the non-index triad ([Step-0 daily-geometry slate](../../docs/briefs/2026-08-18-step0-daily-geometry-mechanism-slate.md) §2 row S1). Grounding: evidence-robustness (volatility clustering — ARCH/GARCH canon), not a per-instrument WHO claim.
+**NEW 2026-08-18.** Conditioner-role, not entry-role: does a day's True Range being in the trailing top quintile predict elevated next-day True Range (vs its own trailing median)? Distinct from `compression-gated-breakout` / `htf-compression-breakout-5m` (both entry-role compression→expansion triggers on MNQ) — this class makes no entry claim, only a range-state-forecasting claim, and was originally scoped to the non-index triad ([Step-0 daily-geometry slate](../../docs/briefs/2026-08-18-step0-daily-geometry-mechanism-slate.md) §2 row S1) — **widened 2026-08-29** to a single index-futures instrument (MYM), disclosed as a scope departure rather than assumed silently; the S1 (same-series, next-session) role this class tests is instrument-agnostic, only the original slate's naming was non-index-scoped. Grounding: evidence-robustness (volatility clustering — ARCH/GARCH canon), not a per-instrument WHO claim.
 
 - **Class finding:** (corrected battery, OFFICIAL): GC (parent, train era 2010–2019) top-quintile TR → elevated next-day TR: **NULL (driving L2 + L4)** — obs 0.5299 at the **8.4th percentile** of GC's own linear-ACF surrogate band (the earlier "near-miss" framing is retracted: the rate sat below the zero-mechanism benchmark's center); by-year 5/9 > 0.50 vs required 7. Ledger cell `DEAD` (re-proposal bar: the corrected battery + a different construction or longer panel). [MGC.md G4](MGC.md) · [`RESULTS_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md) §6
 
 - **Class finding:** (corrected battery, OFFICIAL): CL (parent, train era 2010–2019) top-quintile TR → elevated next-day TR: **SIGNAL-GENERIC** — presence passes (CI lb 0.5651; halves; L4 boundary-exact 6/8 under the rule's own n_cond<20 exclusion, a disclosed prediction-miss adjudicated rules-govern); attribution GENERIC (obs at the 69th percentile of its own linear-ACF band, p_upper 0.3107) — **canon-attributed volatility clustering, SURVIVAL-ONLY durability. NOT a mechanism; does NOT discharge MCL's mechanism-owed status; NOT a conditioner license** (ADDENDUM-1 A6 rails travel with any quote; the crisis>calm per-year ordering and drop-cluster diagnostic are mandatory co-quotes). **Conditioner-engineering branch PARKED** — [`Q-CONDVAL-1`](../../docs/briefs/closures/Q-CONDVAL-1-closure-falsified.md) `FALSIFIED` 2026-08-18 (committed C−U 0.130 < frozen `L_star` 0.423 at the N-EDGE cell; O2 discharged). Finding stands. [MCL.md C4/C5/C6](MCL.md) · [`RESULTS_S1B.md`](../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md) §5
 
+- **Class finding:** (lighter-weight reuse, M=200 not the frozen M=1,000 — disclosed): MYM (index-futures, full Globex-day session TR, 2020-07→2026-07) top-quintile TR → elevated next-session TR: **SIGNAL-GENERIC** — presence passes (n_cond=332; CI lb 0.6028; halves 0.6928/0.6627, both >0.50); attribution GENERIC (obs 0.6777 at the **22nd percentile** of its own linear-ACF surrogate band — below the band's own median, not a near-miss). Third instrument scored under the class, second SIGNAL-GENERIC of three (GC NULL, CL SIGNAL-GENERIC, MYM SIGNAL-GENERIC) — the modal outcome so far. **Not pursued as a conditioner** — the sibling CL SIGNAL-GENERIC already failed the downstream cost-effectiveness test (`Q-CONDVAL-1`, cited above); ledger cell `AMBIGUOUS-PARKED`, matching CL's own cell state for the identical verdict shape. [MYM.md](MYM.md) · [`N-2026-08-29-mym-rangestate-persistence.md`](../../docs/notes/notice/N-2026-08-29-mym-rangestate-persistence.md) · [`c1_results.json`](../../lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c1_results.json)
+
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
 | MCL | AMBIGUOUS-PARKED | 2026-08-18 | ../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md |
 | MGC | DEAD | 2026-08-18 | ../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md |
+| MYM | AMBIGUOUS-PARKED | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mym-rangestate-persistence.md |
 
 
 ## day-of-week-selection-gate
@@ -176,6 +194,17 @@ Trading the spread between index-level and single-name volatility or correlation
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
 | SPX500 | DEAD | 2026-06-30 | #D4 |
+
+
+## intraday-bar-volume-regime
+
+**NEW 2026-08-29.** Does an M15 bar's volume, above its own time-of-day slot's trailing median (20 prior same-slot occurrences — the `tod-baseline-range-trigger` deseasonalization convention, reused not invented), predict the *next* bar's range above its own time-of-day-conditioned trailing median? Cross-series (volume, range), 1-bar lag — carries the same shared-regime confound as `overnight-range-day-session-transfer` (just at bar-scale, not session-scale), scored the same way: a $0 increment test against the mundane same-series (range→range) comparator, not a full corrected battery. Distinct from `opening-pressure` (opening-window volume × directional efficiency, DEAD on MYM) — this is a magnitude-only, any-time-of-session claim. Null-validity grounding: mixture-of-distributions literature (Tauchen & Pitts 1983; Bollerslev & Jubinski 1999), the volume-clustering analogue of the ARCH/GARCH canon `daily-range-state-persistence` cites for range — a citation-based grounding, disclosed as lighter-weight than the repo-native frozen battery.
+
+- **Class finding:** MYM $0 increment falsifier, n=139,605 bar-pairs (RTH+overnight, M15, 2020-07→2026-07): volume-conditioned obs=0.6546 (n_cond=68,509) vs. own-range-conditioned obs=0.6596 (n_cond=68,113) — diff **−0.0049**, 95% CI **[−0.0085, −0.0012]**, p=0.0115. **Clean, well-powered NO-INCREMENT** — statistically resolved (huge n) but economically negligible either way; range's own 1-bar persistence already explains everything volume adds. Both conditioning schemes sit far above the 0.4879 unconditional base rate (range clustering itself is real and strong). First instrument scored under this id. [MYM.md](MYM.md) · [`N-2026-08-29-mym-bar-volume-regime.md`](../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md)
+
+| Instrument | Verdict | Date | Source |
+|---|---|---|---|
+| MYM | DEAD | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md |
 
 
 ## intraday-momentum
@@ -280,6 +309,28 @@ Entering in the direction of an opening-range break and holding the position for
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
 | MNQ | DEAD | 2026-08-05 | ../../lab/archive/mnq_orderflow_probe_2026-08-04/RESULTS.md |
+
+
+## overnight-gap-magnitude-range-conditioning
+
+**NEW 2026-08-29.** Does the overnight gap's **magnitude** (today's RTH open − yesterday's RTH close, sign discarded) predict the same day's RTH-session range? Cross-series, same-session — the same S2-shaped shared-regime confound as `overnight-range-day-session-transfer`, scored identically (a $0 increment test vs. the day-session-history comparator, not a full battery). Distinct from any fill/fade **direction** claim (e.g. Mesfin 2026, MNQ-only, external corroboration that does not exist for MYM on either magnitude or direction).
+
+- **Class finding:** (corrected — stratified design, 2026-08-29, AUTHORITATIVE): same design correction as `overnight-range-day-session-transfer` (marginal comparison → stratify on `bias_hist`, measure lift within stratum). Within `bprime=0` (n=1,010): lift **+0.1404** (0.5526 vs 0.4122). Within `bprime=1` (n=297): lift **+0.0672** (0.7766 vs 0.7094) — **the sign itself flips positive** in both strata. Block-bootstrap on the minimum stratified lift: mean **+0.0594**, 95% CI **[−0.0419, +0.1477]**, p(lift≤0)=0.1247. **AMBIGUOUS** — not a kill, not yet a pass; a meaningfully weaker signal than the sibling overnight-range candidate's +0.2186. First instrument scored under this id. [MYM.md](MYM.md) · [`N-2026-08-29-mym-gap-magnitude-rth-range.md`](../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md)
+
+| Instrument | Verdict | Date | Source |
+|---|---|---|---|
+| MYM | CONTINGENT-FORWARD | 2027-03-01 | ../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md |
+
+
+## overnight-range-day-session-transfer
+
+**NEW 2026-08-29.** The frozen magnitude-persistence spec's own "S2" role (`docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md` §4 D5): does the Globex **overnight** (pre-RTH) session's realized range predict the **same trading day's** RTH-session range? Cross-series (overnight range, RTH range are different series), same-session — the spec explicitly marks this role PAUSED pending a joint-surrogate null design (independent-series IAAFT, `daily-range-state-persistence`'s legitimate S1 tool, does NOT delete the shared-regime confound here) plus an owed $0 stage-1 cheap falsifier and an operator GO. Conditioner-role, not entry-role — makes no directional claim.
+
+- **Class finding:** (corrected — stratified design, 2026-08-29, AUTHORITATIVE): MYM $0 cheap falsifier for spec un-pause precondition 2 ("does overnight-state conditioning beat matched day-session-history conditioning?"), run properly as a **stratify-on-`bias_hist`, measure-lift- within-stratum** design after adversarial review caught that a marginal-rate comparison does not test "matched conditioning" — two correlated predictors can show near-identical marginal rates while one still carries large incremental information. Within `bprime=0` (n=1,010): lift **+0.3178** (0.6963 vs 0.3785). Within `bprime=1` (n=297): lift **+0.2207** (0.8607 vs 0.6400). Block-bootstrap on the minimum stratified lift: mean **+0.2186**, 95% CI **[+0.1042, +0.3216]**, p(lift≤0)=0.00025. **INCREMENT — decisive.** Un-pause precondition 2 is now CLEARED; conditions 3 (joint-surrogate null design, adversarial-reviewed) and 4 (operator GO) remain outstanding before any full battery. First instrument scored under this role. [MYM.md](MYM.md) · [`N-2026-08-29-mym-overnight-rth-range-transfer.md`](../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md)
+
+| Instrument | Verdict | Date | Source |
+|---|---|---|---|
+| MYM | CONTINGENT-FORWARD | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md |
 
 
 ## overnight-range-failed-extension-fade

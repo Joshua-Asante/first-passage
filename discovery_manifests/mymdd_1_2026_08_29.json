@@ -1,0 +1,77 @@
+{
+  "run_id": "mymdd_1_2026_08_29",
+  "status": "closed",
+  "opened_at": "2026-08-29T17:00:35Z",
+  "tool": "custom_persistence_battery",
+  "K": 5,
+  "alpha": 0.05,
+  "data_window": "2020-07-01:2026-07-03",
+  "hypothesis": "MYM Phase-2 atheoretical bar-mechanism Notice-phase batch, mirrors MNQ Phase-1 (5 candidates): (1) session TR top-quintile-state predicts elevated next-session TR (daily-range-state-persistence, conditioner-role, corrected IAAFT battery reused verbatim from GC/CL); (2) overnight-session range predicts following RTH-session range (S2 overnight-to-RTH transfer, gated by its own un-pause cheap-falsifier); (3) above-median M15 bar volume predicts next-bar range/directional continuation (bar-volume-regime, own null-validity citation owed, distinct from opening-pressure DEAD cell); (4) overnight gap MAGNITUDE (sign-agnostic) predicts RTH-session range (fully open ground on MYM, no external corroboration); (5) bar closing-location-in-range serial autocorrelation, unconditional shape-persistence, admission-route status unresolved",
+  "params": "",
+  "closed_at": "2026-08-29T17:46:09Z",
+  "results": {
+    "n_submitted": 5,
+    "naive_alpha": 0.05,
+    "n_pass_naive_alpha": 3,
+    "bonferroni_threshold": 0.01,
+    "n_pass_bonferroni": 2,
+    "n_multiplicity_killed": 1,
+    "bh_rows": [
+      {
+        "rank": 1,
+        "pvalue": 0.0015,
+        "bh_threshold": 0.01,
+        "bh_reject": true
+      },
+      {
+        "rank": 2,
+        "pvalue": 0.005,
+        "bh_threshold": 0.02,
+        "bh_reject": true
+      },
+      {
+        "rank": 3,
+        "pvalue": 0.0115,
+        "bh_threshold": 0.03,
+        "bh_reject": true
+      },
+      {
+        "rank": 4,
+        "pvalue": 0.372,
+        "bh_threshold": 0.04,
+        "bh_reject": false
+      },
+      {
+        "rank": 5,
+        "pvalue": 0.7811,
+        "bh_threshold": 0.05,
+        "bh_reject": false
+      }
+    ],
+    "n_pass_bh": 3,
+    "expected_false_positives_global_null": 0.25,
+    "candidates": [
+      {
+        "id": null,
+        "pvalue": 0.7811
+      },
+      {
+        "id": null,
+        "pvalue": 0.372
+      },
+      {
+        "id": null,
+        "pvalue": 0.0115
+      },
+      {
+        "id": null,
+        "pvalue": 0.0015
+      },
+      {
+        "id": null,
+        "pvalue": 0.005
+      }
+    ]
+  },
+  "verdict": "FIRST-PASS ONLY. Candidates clearing the crude multiplicity floor are listed above. This is NOT a promotion. Hand the full candidate set (all K returns) to strategy-validation for universe-level correction (White RC / Hansen SPA / Romano-Wolf) and the native-micro OOS gate before any candidate is trusted."
+}

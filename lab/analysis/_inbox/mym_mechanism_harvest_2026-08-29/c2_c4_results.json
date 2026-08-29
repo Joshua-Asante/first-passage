@@ -1,0 +1,36 @@
+{
+  "candidate2_overnight_range": {
+    "label": "candidate2_overnight_range",
+    "n_common": 1307,
+    "n_cond_new": 313,
+    "n_cond_hist": 297,
+    "obs_new": 0.7603833865814696,
+    "obs_hist": 0.7306397306397306,
+    "diff": 0.029743655941739,
+    "diff_ci": [
+      -0.03245670887927145,
+      0.09880459170891465
+    ],
+    "diff_mean_boot": 0.03028967111578587,
+    "n_valid_boot": 4000,
+    "p_two_sided": 0.372,
+    "verdict": "AMBIGUOUS (CI straddles 0)"
+  },
+  "candidate4_gap_magnitude": {
+    "label": "candidate4_gap_magnitude",
+    "n_common": 1307,
+    "n_cond_new": 284,
+    "n_cond_hist": 297,
+    "obs_new": 0.6267605633802817,
+    "obs_hist": 0.7306397306397306,
+    "diff": -0.1038791672594489,
+    "diff_ci": [
+      -0.1635581214583019,
+      -0.04036868235832908
+    ],
+    "diff_mean_boot": -0.10287417093378871,
+    "n_valid_boot": 4000,
+    "p_two_sided": 0.0015,
+    "verdict": "NO-INCREMENT"
+  }
+}
