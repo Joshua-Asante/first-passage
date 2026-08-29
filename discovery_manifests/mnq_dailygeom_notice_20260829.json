@@ -1,0 +1,77 @@
+{
+  "run_id": "mnq_dailygeom_notice_20260829",
+  "status": "closed",
+  "opened_at": "2026-08-29T16:56:12Z",
+  "tool": "manual_causal_screen",
+  "K": 5,
+  "alpha": 0.05,
+  "data_window": "2020-07-01:2026-07-03",
+  "hypothesis": "MNQ Notice-phase 5-candidate bars-only geometry screen (magnitude-persistence family + closing-location autocorrelation), pre-specified before any result examined: (1) daily-range-state-persistence [reuse frozen IAAFT battery, conditioner-role]; (2) overnight-range->RTH-range same-day transfer [D5 S2-shaped, stage-1 cheap falsifier before battery]; (3) bar-volume regime -> next-bar range/direction [fresh null-validity, ToD-seasonality confound]; (4) unsigned gap magnitude -> RTH-range conditioning [S2-shaped cross-series, same D5 treatment as #2]; (5) bar closing-location (CLV) lag-1 autocorrelation, unconditional [fresh null, raised-bar route unresolved]",
+  "params": "{\"candidates\":[\"daily-range-state-persistence:MNQ\",\"overnight-range-to-rth-transfer:MNQ\",\"bar-volume-regime-conditioning:MNQ\",\"gap-magnitude-to-rth-range:MNQ\",\"closing-location-autocorrelation:MNQ\"],\"K_primary\":5,\"panel\":\"core/data/bar_data/MNQ_M15.csv (BAR EXPORT v0.2, CME_MINI:MNQ1!, n=141541 bars, 1559 trading days)\",\"not_mechanism_first\":true,\"model\":\"MNQSR-1 (mnqsr1_structure_20260806) Notice-phase closed-manifest precedent\"}",
+  "closed_at": "2026-08-29T17:08:24Z",
+  "results": {
+    "n_submitted": 5,
+    "naive_alpha": 0.05,
+    "n_pass_naive_alpha": 4,
+    "bonferroni_threshold": 0.01,
+    "n_pass_bonferroni": 4,
+    "n_multiplicity_killed": 0,
+    "bh_rows": [
+      {
+        "rank": 1,
+        "pvalue": 0.00025,
+        "bh_threshold": 0.01,
+        "bh_reject": true
+      },
+      {
+        "rank": 2,
+        "pvalue": 0.0005,
+        "bh_threshold": 0.02,
+        "bh_reject": true
+      },
+      {
+        "rank": 3,
+        "pvalue": 0.0005,
+        "bh_threshold": 0.03,
+        "bh_reject": true
+      },
+      {
+        "rank": 4,
+        "pvalue": 0.00225,
+        "bh_threshold": 0.04,
+        "bh_reject": true
+      },
+      {
+        "rank": 5,
+        "pvalue": 1.0,
+        "bh_threshold": 0.05,
+        "bh_reject": false
+      }
+    ],
+    "n_pass_bh": 4,
+    "expected_false_positives_global_null": 0.25,
+    "candidates": [
+      {
+        "id": "daily-range-state-persistence",
+        "pvalue": 1.0
+      },
+      {
+        "id": "overnight-range-to-rth-transfer",
+        "pvalue": 0.00025
+      },
+      {
+        "id": "bar-volume-regime-conditioning",
+        "pvalue": 0.0005
+      },
+      {
+        "id": "gap-magnitude-to-rth-range",
+        "pvalue": 0.00225
+      },
+      {
+        "id": "closing-location-autocorrelation",
+        "pvalue": 0.0005
+      }
+    ]
+  },
+  "verdict": "FIRST-PASS ONLY. Candidates clearing the crude multiplicity floor are listed above. This is NOT a promotion. Hand the full candidate set (all K returns) to strategy-validation for universe-level correction (White RC / Hansen SPA / Romano-Wolf) and the native-micro OOS gate before any candidate is trusted."
+}
