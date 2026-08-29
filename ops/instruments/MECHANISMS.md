@@ -326,7 +326,9 @@ resolve on its own.
   session. **Not graduated** — admission-route status under the single-instrument
   directional-timing raised bar is unresolved (a negative/mean-reverting shape claim
   reads closer to `mean-reversion-fade` than to a neutral conditioner); ledger cell
-  `CONTINGENT-FORWARD`, HELD pending a scope ruling. [MYM.md](MYM.md) ·
+  `AMBIGUOUS-PARKED` (corrected from an initial `CONTINGENT-FORWARD` — no forward test is
+  running on this cell, see `MYM.md`'s own session-log correction note), HELD pending a
+  scope ruling. [MYM.md](MYM.md) ·
   [`N-2026-08-29-mym-closing-location-autocorrelation.md`](../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md)
 - **Class finding (MNQ, 2026-08-29 — backfilled on reconciliation pass):** MNQ (full continuous
   M15 bar sequence, RTH+overnight, n_pairs=141,540): lag-1 Spearman rho(CLV_t, CLV_t+1) =
@@ -339,9 +341,9 @@ resolve on its own.
   the single-instrument directional-timing raised bar is unresolved. Ledger cell
   `AMBIGUOUS-PARKED` (corrected from an initial `CONTINGENT-FORWARD` — no forward test is running
   on this cell, see MNQ.md's own session-log correction note); re-open trigger is the same scope
-  ruling MYM's cell waits on, not a separate one. ⚠ MYM's own cell for this class (above) still
-  reads `CONTINGENT-FORWARD` as of this correction — same underlying misuse, pre-existing on
-  `main`, out of scope for this pass; flagged separately, not fixed here. [MNQ.md](MNQ.md) ·
+  ruling MYM's cell waits on, not a separate one. MYM's own cell for this class (above) carried
+  the identical misuse and is now corrected too (`AMBIGUOUS-PARKED`, flagged separately from this
+  MNQ correction, landed once the gap was noticed). [MNQ.md](MNQ.md) ·
   [`N-2026-08-29-mnq-clv-autocorrelation.md`](../../docs/notes/notice/N-2026-08-29-mnq-clv-autocorrelation.md)
 
 ## htf-compression-breakout-5m
