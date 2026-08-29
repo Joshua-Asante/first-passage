@@ -44,48 +44,73 @@ variable from day-history to each candidate's own bias, and test the other
 candidate's incremental lift within strata of it — neither candidate privileged as
 "base" a priori.
 
+**Two p-values are reported per cell (corrected after review, see the note
+below the table): the original `block_bootstrap_p` figure is a percentile-bootstrap
+tail probability, not a null-calibrated significance level — it resamples the
+observed data (with the actual effect baked in), so it measures how much of that
+distribution sits at/below zero, not how often a lift this large would arise under
+a true zero-association null. `circular_shift_null_p` is the null-calibrated
+figure: it circularly shifts the other predictor's full series (preserving its own
+autocorrelation, destroying its pairing with y) to build an actual zero-association
+null, then reports how often that null produces a lift ≥ the observed one.**
+
 **Result — does GAP add lift within OVERNIGHT-range strata?**
 - overnight=0 (calm, n=991): lift **+0.0848** (0.5000 vs 0.4152), bootstrap
-  p(lift≤0)=**0.0370** — positive, but only marginally significant at conventional
-  0.05, not decisively.
+  p(lift≤0)=**0.0370**; null-calibrated p(null≥obs)=**0.0198** (seed-stable at
+  0.017-0.022 across reruns) — positive and, under the correct null, *more*
+  decisive than the original bootstrap figure suggested, though still the
+  smallest effect of the four.
 - overnight=1 (hot, n=313): lift **−0.0724** (0.7250 vs 0.7974), bootstrap
-  p(lift≤0)=**0.9453** — clearly *not* positive; if anything mildly negative.
+  p(lift≤0)=**0.9453**; null-calibrated p(null≥obs)=**0.8880** — clearly *not*
+  positive under either test; if anything mildly negative.
 
 **Result — does OVERNIGHT add lift within GAP strata?**
-- gap=0 (n=1,020): lift **+0.3822** (0.7974 vs 0.4152), p(lift≤0)=**0.00025**.
-- gap=1 (n=284): lift **+0.2250** (0.7250 vs 0.5000), p(lift≤0)=**0.00025**.
+- gap=0 (n=1,020): lift **+0.3822** (0.7974 vs 0.4152), bootstrap
+  p(lift≤0)=**0.00025**; null-calibrated p(null≥obs)=**0.00025**.
+- gap=1 (n=284): lift **+0.2250** (0.7250 vs 0.5000), bootstrap
+  p(lift≤0)=**0.00025**; null-calibrated p(null≥obs)=**0.00125**.
 
-Overnight range adds large, highly significant positive lift in *both* gap strata;
-gap adds a small, only-borderline-significant positive lift when overnight is calm
-and *no* positive lift (possibly negative) when overnight is already hot — the
-identical qualitative shape MNQ found: overnight range dominant and robust, gap a
-nested, sign-unstable sub-question.
+Overnight range adds large, highly significant positive lift in *both* gap strata
+under either test; gap adds a small positive lift when overnight is calm (borderline
+under the original bootstrap, more decisive at p=0.02 under the corrected
+null-calibrated test) and *no* positive lift (possibly negative) when overnight is
+already hot, under both tests — the identical qualitative shape MNQ found: overnight
+range dominant and robust, gap a nested, sign-unstable sub-question. **Recalibration
+does not overturn the finding; if anything it strengthens the one borderline cell.**
 
 **Direct comparison against MNQ's own committed `candidate24_joint_results.json`:**
 
 | Quantity | MNQ | MYM |
 |---|---|---|
-| gap lift, overnight=0 (calm) | +0.1053 | **+0.0848** |
-| gap lift, overnight=1 (hot) | −0.0810 | **−0.0724** |
-| overnight lift, gap=0 | +0.5936 | **+0.3822** |
-| overnight lift, gap=1 | +0.4073 | **+0.2250** |
+| gap lift, overnight=0 (calm) | +0.1053 | **+0.0848** (−19.5%) |
+| gap lift, overnight=1 (hot) | −0.0810 | **−0.0724** (−10.6%) |
+| overnight lift, gap=0 | +0.5936 | **+0.3822** (−35.6%) |
+| overnight lift, gap=1 | +0.4073 | **+0.2250** (−44.8%) |
 | 2×2: on=1,gap=0 vs on=1,gap=1 | 0.963 > 0.882 | **0.797 > 0.725** |
 | three-way: sign pattern (on=0 both +, on=1 both −) | + / + / − / − | **+ / + / − / −** (matches) |
+| Spearman(overnight, gap) | 0.4711 | **0.5263** (+11.7%, larger not smaller) |
 
-Every comparison lands the same sign, the same relative ordering, and a broadly
-comparable (MYM systematically ~25-40% smaller in absolute magnitude, but never
-sign-flipped) effect size. The three-way check (holding overnight AND day-history
-both fixed) reproduces the same sign pattern in all four cells on both instruments.
+Every comparison lands the same sign and the same relative ordering — **but the
+magnitude gap is not a single uniform percentage.** The four lift comparisons range
+from 10.6% to 44.8% smaller on MYM (not "~25-40%" as an earlier draft of this notice
+claimed — corrected after review); the Spearman correlation between the two
+predictors is actually *larger* on MYM, not smaller. No sign flips anywhere, but
+"broadly comparable magnitude" overstated how tight the match is — report the actual
+spread, not a compressed range. The three-way check (holding overnight AND
+day-history both fixed) reproduces the same sign pattern in all four cells on both
+instruments.
 
 ## §2 — Why it stands out (the N signal)
 
 - **Baseline:** the null hypothesis this test was designed to distinguish — either
   MYM's gap/overnight predictors carry independent information (two ids correctly
   separate), or MYM shows the same nesting MNQ found (two ids encode one construct).
-- **Delta:** the data lands unambiguously on the nesting side for every comparison
-  except statistical decisiveness in the single calm-stratum cell (MYM p=0.037 vs
-  MNQ's reported p=0.0078 for the equivalent limb — same sign, weaker power, smaller
-  effective cell size).
+- **Delta:** the data lands unambiguously on the nesting side for every comparison.
+  The calm-stratum cell is the least decisive of the four under the original
+  bootstrap (MYM p=0.037 vs MNQ's reported p=0.0078), but the corrected
+  null-calibrated test (see §1) puts MYM at p=0.020 for that same cell — same
+  sign either way, and closer to MNQ's decisiveness than the bootstrap figure
+  suggested, not further from it.
 - **Frequency check:** first joint (as opposed to each-vs-day-history) test of these
   two MYM constructs against each other.
 
@@ -112,10 +137,33 @@ conditioning` into MNQ's `overnight-range-transmission` id**, treating overnight
 range as the primary claim and gap magnitude as a nested, calm-regime-scoped
 sub-question on MYM too — the same parent/sub-question structure Q-RANGEXFER-1
 already uses for MNQ. Caveat attached to the recommendation, not withheld: the
-calm-stratum gap effect is real-but-weaker on MYM (p=0.037, not MNQ's p=0.0078) —
+calm-stratum gap effect is weaker on MYM than on MNQ under either test (bootstrap
+p=0.037 vs MNQ's p=0.0078; null-calibrated p=0.020) —
 worth naming explicitly if/when a Pre-Q incorporates both instruments, not grounds to
 reject the merge outright given every other comparison in §1 matches in sign and
 relative magnitude.
+
+**K-accounting correction (added after review): this is a new, unregistered look,
+not a $0 re-measurement.** An earlier draft of this notice claimed "no new K
+(re-measurement/joint-test of two already-registered/closed looks under
+`mymdd_1_2026_08_29`)." That is wrong on inspection of the manifest itself —
+`discovery_manifests/mymdd_1_2026_08_29.json`'s own `hypothesis` field lists exactly
+the five original candidates; the joint overnight-vs-gap question is not among them.
+It was formed only after seeing candidates 2 and 4's individual results (and after
+seeing MNQ's own joint-gate finding) — the textbook shape of a post-hoc look, not a
+re-measurement of an already-declared hypothesis. `register_search.py`'s own design
+refuses to accept a K declaration after results are already known ("you cannot
+re-declare K after seeing results"), so this look **cannot be retroactively folded
+into the closed K=5 manifest, and does not get a fresh `open` now either** — either
+path would launder a post-hoc look as pre-registered. The honest disclosure is
+instead to name it plainly: this is a sixth, unregistered examination of this data
+batch. Consequence for the calm-stratum result (bootstrap p=0.037, null-calibrated
+p=0.020): **read either figure as exploratory, not multiplicity-corrected** — it
+has not cleared any pre-registered significance bar and should not be cited as if
+it had. If the merge recommendation above is
+acted on and a Pre-Q is opened to formalize it (for MYM, mirroring `Q-RANGEXFER-1`),
+that Pre-Q should carry its own fresh K declaration rather than inherit this
+notice's number.
 
 **Explicitly not done here, per instruction:** no edit to `MECHANISMS.md` headings'
 structure, no id rename, no `MYM.md` PROFILE cell change beyond citing this notice.
@@ -152,12 +200,29 @@ rather than self-executed.
 
 ```bash
 python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c24_joint_gate.py
-# Expected: gap lift overnight=0 +0.0848 (p=0.037); overnight=1 -0.0724 (p=0.945)
-#           overnight lift gap=0 +0.3822 (p=0.00025); gap=1 +0.2250 (p=0.00025)
+# Expected: gap lift overnight=0 +0.0848 (bootstrap p=0.037, null-calibrated p=0.020)
+#           gap lift overnight=1 -0.0724 (bootstrap p=0.945, null-calibrated p=0.888)
+#           overnight lift gap=0 +0.3822 (bootstrap p=0.00025, null-calibrated p=0.00025)
+#           overnight lift gap=1 +0.2250 (bootstrap p=0.00025, null-calibrated p=0.00125)
+# Null-calibrated p is circular_shift_null_p; bootstrap p is block_bootstrap_p, which
+# is NOT null-calibrated (see both docstrings) -- report the null-calibrated figure
+# as the significance claim.
 
-diff <(python -c "import json;print(json.load(open('lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c24_joint_results.json'))['gap_lifts_within_overnight_strata'])") \
-     <(python -c "import json;print(json.load(open('lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate24_joint_results.json'))['gap_lifts_within_overnight_strata'])")
-# Expected: same signs, MYM magnitudes ~20-25% smaller than MNQ's
+python3 -c "
+import json, sys
+mym = json.load(open('lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c24_joint_results.json'))['gap_lifts_within_overnight_strata']
+mnq = json.load(open('lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate24_joint_results.json'))['gap_lifts_within_overnight_strata']
+mismatches = [k for k in mym if (mym[k] > 0) != (mnq[k] > 0)]
+sys.exit(1 if mismatches else 0)
+"
+# Explicit sign comparison, not a raw diff of two dicts with different numbers --
+# the original 'diff <(...) <(...)' always exits 1 because the values differ, even
+# when the signs (the actual invariant under test) agree. Exits 0 iff every stratum's
+# sign matches between MYM and MNQ; exits 1 and prints nothing on the sign(s) that
+# disagree if the invariant breaks (add printing of `mismatches` there if debugging).
+# Expected: exit 0. Magnitudes themselves are NOT ~20-25% uniformly smaller -- see
+# the corrected comparison table in §1 (range is 10.6%-44.8% across the four lifts,
+# and the Spearman correlation runs the other way, larger on MYM).
 ```
 
 ---

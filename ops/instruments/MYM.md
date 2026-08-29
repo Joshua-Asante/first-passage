@@ -155,12 +155,19 @@ structure:
   `bias_gap`/`bias_dayhist`/`y` definitions traced by hand against `c2_c4_stratified_rerun.py`'s
   own already-verified formulas — algebraically identical. **Result: MYM closely replicates
   MNQ's nested-gap pattern.** Gap's own lift within overnight-range strata: **+8.5pp (calm,
-  p=0.037, borderline) / −7.2pp (hot, p=0.945, clearly not positive)** — vs. MNQ's own committed
-  `candidate24_joint_results.json`: +10.5pp/−8.1pp on the identical test. Overnight range's own
-  lift within gap strata: **+38.2pp / +22.5pp (both p=0.00025)** vs. MNQ's +59.4pp/+40.7pp — same
-  sign, same ordering, MYM systematically ~25-40% smaller in magnitude but never sign-flipped,
-  across every one of five compared quantities (correlations, both lift directions, 2×2 cells,
-  three-way breakdown). **Recommendation (not executed): merge
+  bootstrap p=0.037 / null-calibrated p=0.020) / −7.2pp (hot, bootstrap p=0.945 / null-calibrated
+  p=0.888, clearly not positive)** — vs. MNQ's own committed `candidate24_joint_results.json`:
+  +10.5pp/−8.1pp on the identical test. **Bootstrap-vs-null-calibrated correction (after review):**
+  the original `block_bootstrap_p` resamples the observed data and is not a null-calibrated
+  significance level; `circular_shift_null_p` (added to the script) is — see the Notice's §1 for
+  the full explanation. Recalibration does not overturn anything; the calm-stratum cell is if
+  anything *more* decisive under the correct null (p=0.020 vs the original 0.037). Overnight
+  range's own lift within gap strata: **+38.2pp (bootstrap p=0.00025 / null-calibrated p=0.00025)
+  / +22.5pp (bootstrap p=0.00025 / null-calibrated p=0.00125)** vs. MNQ's +59.4pp/+40.7pp — same
+  sign, same ordering, never sign-flipped, but magnitude is not uniformly ~25-40% smaller
+  (corrected after review): the four lift comparisons range 10.6%-44.8% smaller on MYM, and the
+  overnight-gap Spearman correlation is actually *larger* on MYM (0.526 vs MNQ's 0.471) — see the
+  full corrected comparison table in the Notice's §1. **Recommendation (not executed): merge
   `overnight-range-day-session-transfer` and `overnight-gap-magnitude-range-conditioning` into
   MNQ's `overnight-range-transmission` id**, per explicit instruction that the merge itself needs
   its own review — landed as a new Notice
@@ -168,9 +175,17 @@ structure:
   plus append-only addenda on both existing candidate 2/4 notices and cross-reference updates on
   all three affected `MECHANISMS.md` taxonomy notes. **No PROFILE cell, id, or routing-decision
   change on candidates 2 or 4 themselves** — both stand as GRADUATE / HOLD-until-2027-03-01,
-  unchanged. No `core/`, lock, allocation, `dd_protection`, Pine, or rail change. $0 spent; no
-  new K (re-measurement/joint-test of two already-registered/closed looks under
-  `mymdd_1_2026_08_29`). Scripts + JSON:
+  unchanged. No `core/`, lock, allocation, `dd_protection`, Pine, or rail change. $0 spent.
+  **K-accounting correction (after review): this IS a new, unregistered look, not a $0
+  re-measurement.** `discovery_manifests/mymdd_1_2026_08_29.json`'s own hypothesis field lists
+  exactly the five original candidates — this joint test isn't among them, and it was formed only
+  after seeing candidates 2/4's individual results (and MNQ's). `register_search.py` refuses a
+  post-hoc K declaration by design, so it is neither folded into the closed K=5 manifest nor
+  freshly registered now — either would launder a post-hoc look as pre-registered. Disclosed
+  plainly instead: a sixth, unregistered look: the calm-stratum result (bootstrap p=0.037,
+  null-calibrated p=0.020) is exploratory, not multiplicity-corrected, and should not be cited
+  as clearing a significance bar. See the
+  Notice's §4 for the full disclosure. Scripts + JSON:
   `lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c24_joint_gate.py` +
   `c24_joint_results.json` + `c24_joint_frame.csv`.
 - **2026-08-29 (correction #2, follow-up)** — **Same design-flaw class caught on candidate 3

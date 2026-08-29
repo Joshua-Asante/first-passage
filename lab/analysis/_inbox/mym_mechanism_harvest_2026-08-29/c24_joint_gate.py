@@ -100,9 +100,21 @@ def rate(y, mask):
 
 
 def block_bootstrap_p(y, mask_a, mask_b, block=20, draws=4000, seed=44):
-    """One-sided bootstrap p that rate(mask_a) - rate(mask_b) <= 0, resampling
-    contiguous day-blocks jointly across y/mask_a/mask_b to preserve pairing.
-    Same scheme, same default block/draws as MNQ's sibling script."""
+    """Percentile-bootstrap tail probability that rate(mask_a) - rate(mask_b) <= 0,
+    resampling contiguous day-blocks WITH REPLACEMENT jointly across y/mask_a/mask_b
+    to preserve pairing. Same scheme, same default block/draws as MNQ's sibling
+    script.
+
+    NOT a null-calibrated p-value (flagged on review, PR #205): this resamples the
+    OBSERVED data, so the bootstrap distribution stays centered on the observed
+    lift. `p_le0` measures "how much of this bootstrap distribution's mass sits at
+    or below 0" -- a percentile-CI-style tail probability -- not "how often would a
+    lift this large arise under a true zero-lift null" (the Type-I-controlled
+    quantity a hypothesis test needs). Kept for continuity with the rest of this
+    2026-08-29 batch's scripts (c2_c4_stratified_rerun.py, c3_stratified_rerun.py,
+    and MNQ's own candidate2/candidate24 scripts all use this exact convention) and
+    because it is still an honest, useful CI-style summary -- but report
+    `circular_shift_null_p` below as the significance figure, not this one."""
     rng = np.random.default_rng(seed)
     N = len(y)
     nblocks = int(np.ceil(N / block))
@@ -117,6 +129,45 @@ def block_bootstrap_p(y, mask_a, mask_b, block=20, draws=4000, seed=44):
     diffs = np.array(diffs)
     p_le0 = (1 + int((diffs <= 0).sum())) / (len(diffs) + 1)
     return diffs, p_le0
+
+
+def circular_shift_null_p(y, fixed_mask, other_label, draws=4000, seed=44):
+    """Null-calibrated one-sided p-value: does `other_label` carry information
+    about y within `fixed_mask`, beyond what a decorrelated version of the same
+    two series would produce by chance?
+
+    Circularly shifts `other_label`'s FULL series (not just the `fixed_mask`
+    subset) by a random offset each draw, so `other_label`'s own autocorrelation
+    /persistence structure is exactly preserved (a rotation, not an i.i.d.
+    reshuffle) while its pairing with (y, fixed_mask) is destroyed -- the same
+    circular-shift/surrogate logic this codebase already uses for block-shuffle
+    and IAAFT nulls elsewhere (see `iaaft_battery.py`), applied here to a
+    cross-series lift statistic instead of an autocorrelation statistic. Reports
+    the fraction of null draws whose within-stratum lift is >= the observed lift
+    (one-sided, Type-I-controlled under H0: no association).
+
+    This is the test `block_bootstrap_p` above is NOT: that one resamples the
+    observed data and is centered on the observed effect (a CI-style tail
+    probability); this one resamples under an explicit zero-association null.
+    """
+    rng = np.random.default_rng(seed)
+    N = len(y)
+    hi0 = fixed_mask & (other_label == 1)
+    lo0 = fixed_mask & (other_label == 0)
+    if not (hi0.any() and lo0.any()):
+        return np.array([]), float("nan"), float("nan")
+    observed = float(y[hi0].mean() - y[lo0].mean())
+    draws_out = []
+    for _ in range(draws):
+        shift = rng.integers(1, N)
+        shifted = np.roll(other_label, shift)
+        hi = fixed_mask & (shifted == 1)
+        lo = fixed_mask & (shifted == 0)
+        if hi.any() and lo.any():
+            draws_out.append(float(y[hi].mean() - y[lo].mean()))
+    draws_out = np.array(draws_out)
+    p_ge_obs = (1 + int((draws_out >= observed).sum())) / (len(draws_out) + 1)
+    return draws_out, p_ge_obs, observed
 
 
 def main():
@@ -134,6 +185,7 @@ def main():
 
     print("\n--- Does GAP add lift within OVERNIGHT-range strata? ---")
     gap_lifts = {}
+    gap_null_p = {}
     for s in (0, 1):
         m = bo == s
         hi, lo = rate(y, m & (bg == 1)), rate(y, m & (bg == 0))
@@ -142,10 +194,14 @@ def main():
         print(f"overnight-stratum={s}: P(y=1|gap=1)={hi[0]:.4f}(n={hi[1]})  P(y=1|gap=0)={lo[0]:.4f}(n={lo[1]})  lift={lift}")
         if hi[1] and lo[1]:
             _, p = block_bootstrap_p(y, m & (bg == 1), m & (bg == 0), seed=100 + s)
-            print(f"  bootstrap p(lift<=0) = {p:.5f}")
+            print(f"  bootstrap p(lift<=0) [NOT null-calibrated -- see docstring] = {p:.5f}")
+            _, p_null, obs = circular_shift_null_p(y, m, bg, seed=300 + s)
+            gap_null_p[s] = p_null
+            print(f"  circular-shift null p(null_lift>=observed) [null-calibrated]  = {p_null:.5f}")
 
     print("\n--- Does OVERNIGHT add lift within GAP strata? ---")
     on_lifts = {}
+    on_null_p = {}
     for s in (0, 1):
         m = bg == s
         hi, lo = rate(y, m & (bo == 1)), rate(y, m & (bo == 0))
@@ -154,7 +210,10 @@ def main():
         print(f"gap-stratum={s}: P(y=1|overnight=1)={hi[0]:.4f}(n={hi[1]})  P(y=1|overnight=0)={lo[0]:.4f}(n={lo[1]})  lift={lift}")
         if hi[1] and lo[1]:
             _, p = block_bootstrap_p(y, m & (bo == 1), m & (bo == 0), seed=200 + s)
-            print(f"  bootstrap p(lift<=0) = {p:.5f}")
+            print(f"  bootstrap p(lift<=0) [NOT null-calibrated -- see docstring] = {p:.5f}")
+            _, p_null, obs = circular_shift_null_p(y, m, bo, seed=400 + s)
+            on_null_p[s] = p_null
+            print(f"  circular-shift null p(null_lift>=observed) [null-calibrated]  = {p_null:.5f}")
 
     print("\n--- Full 2x2 cell breakdown (overnight x gap) ---")
     cells = {}
@@ -181,7 +240,9 @@ def main():
                spearman_gap_rth=float(spearmanr(f["gap"], f["rth_range"]).statistic),
                gap_lifts_within_overnight_strata=gap_lifts,
                overnight_lifts_within_gap_strata=on_lifts,
-               cells_2x2=cells, three_way_gap_check=three_way)
+               cells_2x2=cells, three_way_gap_check=three_way,
+               gap_lift_null_calibrated_p=gap_null_p,
+               overnight_lift_null_calibrated_p=on_null_p)
     (HERE / "c24_joint_results.json").write_text(json.dumps(out, indent=1, default=str))
 
     # Accelerate: cache the merged per-day frame so a future stage-2 design

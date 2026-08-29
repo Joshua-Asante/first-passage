@@ -182,10 +182,14 @@ Neither session could see the other's work at authoring time. **Update:** the jo
 stratification this note originally deferred has now run —
 [`N-2026-08-29-mym-overnight-gap-joint-gate.md`](../../docs/notes/notice/N-2026-08-29-mym-overnight-gap-joint-gate.md)
 — and closely replicates MNQ's own finding: gap magnitude adds lift only when overnight range
-is itself calm (+8.5pp, p=0.037) and no positive lift when overnight is already hot (−7.2pp,
-p=0.945), against MNQ's own +10.5pp/−8.1pp on the same test — same sign, same relative
-ordering, comparable magnitude, in every one of five compared quantities (see that notice §1).
-**That notice recommends merging this id and its gap sibling into `overnight-range-transmission`
+is itself calm (+8.5pp, bootstrap p=0.037 / null-calibrated p=0.020 — the notice's original
+bootstrap figure was not null-calibrated, corrected after review) and no positive lift when
+overnight is already hot (−7.2pp, bootstrap p=0.945 / null-calibrated p=0.888), against MNQ's
+own +10.5pp/−8.1pp on the same test — same sign, same relative
+ordering throughout, but magnitude is *not* uniformly comparable across all five compared
+quantities: the four lift comparisons run 10.6%-44.8% smaller on MYM, and the overnight-gap
+Spearman correlation is actually larger on MYM (corrected after review — see that notice §1
+for the full table). **That notice recommends merging this id and its gap sibling into `overnight-range-transmission`
 — explicitly not executed here or there**, per the reviewing instruction that the merge itself
 needs its own review, not a self-executed side effect of the test that motivated it. This id
 therefore still stands distinct pending that review or the deferred MNQ+MYM pooling session.
