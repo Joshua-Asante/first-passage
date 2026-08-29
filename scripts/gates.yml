@@ -113,6 +113,16 @@ gates:
       - --check
       - --catalog-only
 
+  # SSOT Phase 3 — intra-cost_model commission-set partition. Bind only after
+  # a clean live run (2026-08-29). Does not join ops/instruments ledgers.
+  - id: cost-model-closed-world
+    tier: path-conditional
+    when:
+      staged_regex: '^(lab/discovery/cost_model[.]py|tests/test_cost_model[.]py|scripts/check_cost_model_closed_world[.]py)$'
+    cmd:
+      - python
+      - scripts/check_cost_model_closed_world.py
+
   - id: instrument-profiles
     tier: path-conditional
     when:

@@ -89,6 +89,7 @@ STOCK_SKILLS_EXEMPT = frozenset({
     "pdf",
     "pptx",
     "schedule",
+    "session-start-hook",
     "setup-cowork",
     "skill-creator",
     "xlsx",

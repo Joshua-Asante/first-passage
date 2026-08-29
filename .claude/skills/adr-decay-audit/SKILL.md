@@ -27,18 +27,13 @@ origin) found this exact pattern twice in one pass out of roughly 150 Accepted A
 were a later ADR changing a number/architecture claim without any cross-reference added to the
 earlier ADR that still asserted the old value as current.
 
-**Boundary with sibling skills:**
-
-- `skew-audit` — narrower and cheaper; keep using it at every version lock. This skill does not
-  replace it.
-- `programme-audit` — a Degenerating/Progressive verdict on a *programme* is a different question
-  from "is ADR X's factual claim still true." Do not conflate a clean per-ADR sweep with a healthy
-  programme, or vice versa — an ADR corpus can be 95% still-applicable while the programme it
-  belongs to is Degenerating, and the reverse.
-- `blast-radius` — run it immediately after any edit that touches an ADR's subject matter. Run
-  *this* skill on a cadence or before a high-stakes moment, independent of whether anything was
-  just edited.
-- `brief-authoring` — provides the audit-note artifact template this skill's output should follow.
+**Boundary with sibling skills** (scope distinctions beyond the frontmatter): don't conflate a
+clean per-ADR sweep with a healthy programme, or vice versa — an ADR corpus can be 95%
+still-applicable while the programme it belongs to is Degenerating, and the reverse
+(`programme-audit`). Run `blast-radius` immediately after any edit touching an ADR's subject
+matter; run *this* skill on a cadence or before a high-stakes moment, independent of whether
+anything was just edited. `brief-authoring` provides the audit-note artifact template this
+skill's output should follow.
 
 ---
 

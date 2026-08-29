@@ -45,3 +45,9 @@ Action: launching local | waiting for cloud GO
 - No project ADR / Test-0 coupling
 - No scripts
 - Does not decide whether a Task should exist — only `environment` once Task is chosen
+
+## Related
+
+`cursor-fleet`'s per-packet dispatch gate re-applies this same local-only checklist (its own "Test 0
+per packet" step) at dispatch time for each Cursor-fleet packet — this skill is the canonical home
+for that checklist; a change here should be checked against that step too.

@@ -326,7 +326,13 @@ def parse_disposition(text: str) -> Disposition | None:
             hint = hm.group(1)
         one = _clean_one_liner(value, status) or value
         if len(one) > 120:
-            one = one[:117] + "..."
+            # Word-boundary-safe cut: a raw one[:117] can sever mid-identifier
+            # (e.g. "se_bust" -> "se_b..."), inventing a truncated token that
+            # never existed. Cut at the last space at-or-before 117; fall back
+            # to the raw cut only if no space exists that early (very long
+            # first "word", e.g. a long inline code span with no spaces).
+            cut = one.rfind(" ", 0, 118)
+            one = (one[:cut] if cut > 0 else one[:117]).rstrip() + "..."
         raw = _raw_token_for_status(value, status)
         hit = Disposition(
             raw_token=raw, status=status, one_liner=one, decisive_hint=hint
