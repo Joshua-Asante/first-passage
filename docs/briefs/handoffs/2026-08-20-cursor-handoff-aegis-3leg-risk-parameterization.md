@@ -1,6 +1,6 @@
 # Claude Code / Cursor handoff — parameterize the Aegis→6J 3-leg composed engine's risk allocation (engineering-only, no new measurement)
 
-**Status:** ready to dispatch
+**Status:** EXECUTED — see VALIDATION.md (all required figures reproduced); commit `834c90b`
 **Authority:** operator direction 2026-08-20 ("hand off the engineering fix... to Cursor"), scoped by operator election ("Engineering-only, no new number") after a J14 conflict was surfaced and flagged before any spec was written.
 **Layer:** `lab/analysis/` research engineering only. **No `core/`, Pine, allocation, `dd_protection`, rail, K ledger, or live-risk surface touched. $0. Nothing armed.**
 

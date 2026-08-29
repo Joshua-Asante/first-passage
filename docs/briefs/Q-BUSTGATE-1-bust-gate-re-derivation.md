@@ -1,6 +1,7 @@
 # Q-BUSTGATE-1 — On what basis is the Part-A eval bust ceiling set, and does eval-fee-vs-funded-upside economics yield the same number?
 
 **Status:** `CLOSED-FALSIFIED 2026-07-23` — derivation landed **`FALSIFIED`** (H-BUSTGATE's "economics ratifies 3.0%" claim rejected: the EV-optimal admissible rung busts 4.37% > 3.0%); operator **elected fork B** (2026-07-23). Closure: [`closures/Q-BUSTGATE-1-closure-falsified.md`](closures/Q-BUSTGATE-1-closure-falsified.md); fork-B artifact: [`../adr/2026-07-23-c1-rung-selection-ev-objective.md`](adr/2026-07-23-c1-rung-selection-ev-objective.md) (`Proposed`).
+⚠ Status-tag correction 2026-08-29: the fork-B artifact `../adr/2026-07-23-c1-rung-selection-ev-objective.md` was tagged (Proposed) above as of first authoring; it was ratified Accepted the same day (2026-07-23) and has stood Accepted since — see the ADR's own Status line / Change-history.
 **Authored:** 2026-07-23
 **Closed:** 2026-07-23 (`FALSIFIED`; fork B elected — c1 rung-selection objective → EV/dollar-day; live rung unchanged, A0b-gated)
 **Authors:** Joshua (operator directive) + Claude Code (Opus 4.8, authoring)

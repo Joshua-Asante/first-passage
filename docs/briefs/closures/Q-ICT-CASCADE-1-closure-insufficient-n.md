@@ -82,6 +82,12 @@ Already filed as candidates in the 1M closure (§7): TV 1m history cannot falsif
 - **Board write:** none — STOP, nothing owed (CATALOG archived row + CARD already stamp CLOSED;
   INDEX does not list this Q in Recently closed; no STATE residual named).
 
+> **Currency note (2026-08-29).** The "INDEX does not list this Q in Recently closed" clause above
+> was accurate only as of authoring (2026-08-11). `docs/briefs/INDEX.md` §Recently closed now
+> carries a correctly matching row (CLOSED 2026-06-19 (INSUFFICIENT-N)), present since at least the
+> repo's first public commit. No Open-table leakage; the "nothing owed" disposition is unaffected
+> and stands.
+
 ## §10 audit-hook discharge
 
 ```bash
@@ -102,3 +108,4 @@ rg -n 'Q-ICT-CASCADE-1' lab/CATALOG.md lab/analysis/ict_cascade_2026-06-18/CARD.
 |---|---|---|
 | 2026-06-19 | Layer closures authored in campaign body | campaign session |
 | 2026-08-11 | Joinable roster stub authored (records-completeness; no re-verdict) | Cursor Cloud Agent |
+| 2026-08-29 | Currency note added under Iterate — "INDEX does not list this Q" clause was stale (INDEX now correctly lists it under Recently closed); no verdict/disposition changed | Claude Code (Sonnet 5) |

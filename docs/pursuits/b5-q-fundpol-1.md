@@ -22,3 +22,16 @@ the missing re-entry+expiry fields
 > derivation this record already mandates — the renewal keeps the worked method and the frozen
 > A2 state-dependent arm warm, nothing more. **New expiry: 2027-02-08** (converts to SUBTRACT
 > absent explicit operator renewal, ADR §2.3 unchanged).
+
+> **Note 2026-08-29 (brief-decay-audit) — wake condition's first disjunct has no literal
+> referent.** Verified against source:
+> [`Q-POLFRONT-1`](../briefs/Q-POLFRONT-1-policy-augmented-seed-frontier.md) §6's frozen grid
+> scores synthetic constant-R edge geometry against the **eval-phase** gate only (bust ≤3.0% /
+> pass ≥50%) — zero funded-phase dimension. The brief's sole "funded" occurrence is its own §7,
+> which names funded-phase policy inheritance as a fork explicitly **not** opened there and
+> points back to this pursuit; [its closure](../briefs/closures/Q-POLFRONT-1-closure-resolved-quantified.md)
+> carries zero "funded" mentions at all. So the first disjunct above — "Q-POLFRONT-1 reads
+> positive on funded-relevant cells" — cannot fire as written; there is no funded-relevant cell
+> for it to read. **Read the wake condition going forward as governed solely by the second,
+> well-formed disjunct** — "a candidate reaches funded-phase modeling" — which has not fired.
+> **This does not reopen b5: PARK stands, expiry 2027-02-08 unchanged.**

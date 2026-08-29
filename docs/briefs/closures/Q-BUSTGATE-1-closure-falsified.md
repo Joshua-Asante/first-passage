@@ -7,6 +7,8 @@
 **Directive:** 08-08 packet §0.5 directive (1) / §3 P0 (operator, 2026-07-23)
 **Execution invariants held:** zero `core/` edits; zero live-sizing / rail / lifecycle change; the incumbent 3.0% survivor-scoring pre-reg (`be6dda6`) byte-unedited (Trap #12); K = 0 (locational read of closed artifacts, no new run).
 
+> ⚠ **Correction 2026-08-29:** the three `Proposed` tags on the Fork-B ADR below (header, Operator-fork-election §, §10 audit-hook line) are stale — the ADR was ratified Accepted the same day (2026-07-23; see its Status line and Change history). Correct status: Accepted, as already stated in Dispositions below. Body text is left byte-unedited per Trap #12.
+
 > ⚠ **Figure caveat 2026-08-06 (claim-alignment LAB-1):** bust cells sourced from
 > `lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/RESULTS.md` were computed under
 > defective `dd_lock_offset_usd: 100`. Corrected pins: full-panel **0.11%**, H1 **0.22%**,
@@ -50,4 +52,5 @@ Presented with the two-option fork the `FALSIFIED` verdict routes, the operator 
 - Locational numbers (4.37% / 10.37% / 3.0%) quoted verbatim from `b56c5b3` / `be6dda6`, not re-derived ✔
 - Incumbent 3.0% pre-reg (`be6dda6`) byte-unedited ✔
 - `check_brief.py --type inquire` on the parent brief: 6/6 PASS ✔
+- ⚠ 2026-08-29: the "Fork-B ADR `Proposed`" read below was a same-session snapshot taken before ratification, not a verified current-state check — see the correction banner near the top of this file.
 - Fork-B ADR `Proposed`, live rung unchanged (WATCH-1 0.50× / disarmed) ✔

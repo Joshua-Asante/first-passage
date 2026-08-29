@@ -1,5 +1,22 @@
 # Q-SESSCONF-1 — MNQ session-confluence longer-hold: is there headroom over the incumbent?
 
+> ⚠ **CLOSED — FALSIFIED (2026-08-02).** This Stage-0 screen resolved: `max_h annSR_h − annSR_close
+> = +0.091` (13:45 cell, admissible ladder) against the pre-registered `Δ* = +0.124` — the
+> hold-window axis does not clear the K-price ceiling; the externally-carved-out 60-75 min class
+> measured adverse (+0.501/+0.490 vs incumbent +0.842). The MNQ Cap seat remains unspent ($0/K=0),
+> discharging the 2026-07-21 domain audit's 'untested' preservation. Full disposition:
+> [`lab/analysis/orb/sessconf_mnq_2026-08/RESULTS.md`](../../../lab/analysis/orb/sessconf_mnq_2026-08/RESULTS.md);
+> ledger entry: [`ops/instruments/MNQ.md`](../../../ops/instruments/MNQ.md) 2026-08-02; bar
+> discharge: [`docs/rejected_candidates.md`](../../rejected_candidates.md) 2026-08-02 status
+> update. The `Status: OPEN` / `Closed: N/A` line below is the original pre-registration state,
+> retained byte-intact per Rule 14 — it is superseded, not current.
+>
+> Since `RESULTS.md` already contains every element §9 requires of a closure record (verdict,
+> `max_h annSR_h` vs `annSR_close` vs Δ\*, the panel SHA256, what §4 predicted vs what happened,
+> and confirmation the Cap seat remains unspent), it stands in place of the never-produced §9
+> closure artifact — no separate `docs/briefs/closures/Q-SESSCONF-1-closure-falsified.md` was
+> authored, or is owed.
+
 **Status:** `OPEN` — Stage-0 scoping, **K=0 / $0 / no manifest / seat unspent**
 **Authored:** 2026-08-01
 **Closed:** N/A

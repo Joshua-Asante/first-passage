@@ -1,6 +1,8 @@
 # `Q-ICTEXP-1` — ICT raid→FVG chain gross-expectancy ceiling probe (scoping)
 
 **Status:** `SCOPED — not run, not pre-registered, no K bound, no manifest, $0 committed.`
+> **⚠ SUPERSEDED 2026-08-29** — this probe ran 2026-08-04 (see Amendment log below); verdict **AMBIGUOUS** (X3), NO-GO on `Q-ICT-1MEXEC-1` stands. See [`RESULTS_EXP.md`](../../../lab/analysis/_inbox/ict_mnq_2026-08/RESULTS_EXP.md) and [`ops/instruments/MNQ.md`](../../../ops/instruments/MNQ.md) L139/290-291.
+
 **Class:** **order-free, zero-run, zero-K** measurement — the same class as
 [`ORB-MNQ-1`'s excursion-bounded exit kill tests](../../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_tv_export_realism.md)
 (*"Class: zero-run, zero-K measurements (strategy-validation §3 excursion-bounded
@@ -256,3 +258,14 @@ grep -nE "FAIL-AS-WRITTEN|0\.980|Cap" docs/briefs/pre-registration/2026-08-04-ic
   they only ever trim the population, which is the direction this probe's design already commits
   to. Net effect: the conclusive limb no longer depends on any unreconstructable constant, so it
   is **stronger** than as scoped, not weaker.
+- **2026-08-29 — decay-audit correction (not a re-run; append-only).** `PREREG_EXP.md` was frozen
+  and `RESULTS_EXP.md` was published 2026-08-04 — the same day as amendment 2026-08-04c above, but
+  the freeze/publish event itself was never logged as its own amendment line here. Restated for the
+  record: the frozen-geometry tier **T2** landed on gate row **X3** → canonical verdict
+  **`AMBIGUOUS`** — T2 mean **−1.039 pt**, block-CI **[−3.589, +1.444]**, n=**32,355** filled events
+  at the **Tradeify $0.91/side** basis. Consequence per this file's own §6: **NO-GO on
+  `Q-ICT-1MEXEC-1` stands.** **$0 spent, K=0, MNQ bank held at 2 at close.** Also for §10's audit
+  hook: the `ls discovery_manifests/ | grep -iE "ict|exp"` line no longer returns rc=1 as
+  annotated — it now matches `ict-1mexec-1.json` (opened 2026-08-24 by a separate, K-bound
+  campaign, `Q-ICT-1MEXEC-1` itself, closed 2026-08-25). That comment is dated to 2026-08-04 and
+  should be read as such, not as a standing invariant.

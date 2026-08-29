@@ -218,5 +218,5 @@ python scripts/check_path_liveness.py
 - [x] §5 forbidden moves genuinely tempting — two were actually committed this session
 - [x] §6 gates binary; limb A is an enumerated operator choice, not "decide later"
 - [x] §10 audit hooks runnable
-- [ ] Operator ratification (Phase 0) — **blocking**
-- [ ] Limb A pre-registration committed before Phase A2
+- [x] Operator ratification (Phase 0) — 2026-07-27, chat directive "ratify the NO-GO" (see header and [closure](closures/2026-07-27-hermes-agent-adoption-closure-resolved.md))
+- [x] Limb A pre-registration committed before Phase A2 — committed 2026-07-27 as [`pre-registration/2026-07-27-fts5-delete-falsifier-prereg.md`](pre-registration/2026-07-27-fts5-delete-falsifier-prereg.md); Phase A2 sidecar built (`ops/recall/`) per closure

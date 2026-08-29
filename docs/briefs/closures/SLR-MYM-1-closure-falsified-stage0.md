@@ -138,6 +138,15 @@ That, not the dollar figure, is the material saving.
 >
 > ⚠ **Operator flag:** the S7 screen that killed ORB-MNQ's cadence role descends from F1 —
 > **do not silently reopen ORB**; its payability target is independently FALSIFIED (2026-08-03).
+>
+> ⚠ Extended 2026-08-23 (registry-line backfill, commit 6c0b14a): the "Not appended … deliberately"
+> decision below is superseded, not wrong-when-written — REGISTRY_DEBT_2026_08
+> (`scripts/check_closure_disposition.py`) classified this closure as owing a real
+> `rejected_candidates.md` row under the later-ratified mandatory Registry-line gate
+> (`docs/operational_rules.md` Rule 8 sub-rule 9, ADR `2026-08-13-dedup-first-before-new-work.md`,
+> landed 2026-08-15). The debt was discharged via the `Registry:` line below and a narrowly-scoped
+> `rejected_candidates.md` entry that itself states no claim is made about the mechanism's edge —
+> consistent with, not contradicting, this section's substance.
 
 **The mechanism was never tested.** No edge estimate exists, in either direction. Specifically:
 

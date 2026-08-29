@@ -145,7 +145,7 @@ At expiry, PARK → SUBTRACT absent explicit renewal (ADR §2.3).
 | b7 ICT line | **PARK**(re-entry: operator affirms Q-ICTEXP-1 §9 K-freeness → run the $0 one-way falsifier; expiry 2026-11-08 → converts SUBTRACT) — ⚠ *superseded 2026-08-20: the named re-entry step had already fired 2026-08-04 (5 days before this ratification), returning `AMBIGUOUS`/NO-GO, and a second zero-K falsifier (`Q-ICTSTOP-1`) closed `NOT-KILLED` 2026-08-06 — ratified **SUBTRACT** this session (operator direct instruction), correcting the gap. See [`b7 record`](../pursuits/b7-ict-line.md).* | Bounded, dated, $0 re-entry — see attestation above |
 | c1 Q-XMEM-1 | **PARK**(re-entry: a dated cross-surface-memory failure incident; expiry 2026-11-08) — ⚠ *superseded 2026-08-19: ratified **SUBTRACT** via [`GSUB-2`](GSUB-2-park-cohort-early-review.md) (same test re-applied on updated evidence — 34 idle days, T0 still unstarted, zero incidents). See [`c1 record`](../pursuits/c1-q-xmem-1.md).* | Outside current Survive bounds (hours): frozen 3+ weeks with T0 unstarted |
 | c2 Q-SIGID-1 | **KEEP** (review 2026-11-08) | Serves A3; its stranding is actively resolving via the S2b build |
-| c3 Q-TOM-SPX-1 | **PARK**(re-entry: the brief-reserved native-Pine confirmation run; expiry 2026-11-08 → formal DEAD close) | Half-closed 8 weeks; §5-1 forbids dropping the reserved step, so the step **is** the re-entry |
+| c3 Q-TOM-SPX-1 | **PARK**(re-entry: the brief-reserved native-Pine confirmation run; expiry 2026-11-08 → formal DEAD close) — ⚠ *superseded 2026-08-23: the reserved native-Pine confirmation run was never executed; operator closed the row early (P10) as SUBTRACT, converting directly to formal DEAD ahead of the 2026-11-08 PARK expiry it would otherwise have hit. See [`docs/pursuits/c3-q-tom-spx-1.md`](../pursuits/c3-q-tom-spx-1.md) and [`docs/briefs/closures/Q-TOM-SPX-1-closure-dead.md`](closures/Q-TOM-SPX-1-closure-dead.md); confirmed at [`docs/briefs/INDEX.md`](INDEX.md) "Q-TOM-SPX-1 — DEAD 2026-08-23".* | Half-closed 8 weeks; §5-1 forbids dropping the reserved step, so the step **is** the re-entry |
 | c4 Q-TVCOV-1 | **SUBTRACT-complete** (close roster row) with residuals assigned: MYM-AMBIGUOUS call → **operator**; ~~roll-rule pin → `databento-data` skill edit~~ **(post-ratification correction 2026-08-09: already discharged since 2026-07-13 — the inventory transcribed a stale roster "open item" without checking the target surface; see [`c4 record`](../pursuits/c4-q-tvcov-1.md))** | ADR §2.3 Residuals rule — verdicts already landed; only residual ownership was missing |
 | c5 Q-MSCHAN-1 | **SUBTRACT** | **Duplicated by a higher-fidelity pursuit already retained** (Route B lane); successor armor already recorded (fresh Q-ID + G0 freeze + two GOs) |
 | c6 Notion estate | **SUBTRACT-complete**: operator rules Phase-3 **cold archival**, closing the retirement ADR's own pending step | ADR §2.3 Residuals rule — the Phase-3 decision is an unowned residual, two audits overdue; its own §4 H held |
@@ -198,7 +198,10 @@ recommended"* — bulk ratification of the full table above (Phase 3 explicitly 
 
 **Deliberately NOT executed at GSUB-1 close (named follow-ups, outside §5-3/§5-6 scope):**
 lab-archival of `usoil_regime_capture` (since executed — see CATALOG / SESSIONS 2026-08-11g);
-the Notion cold-archival account action; a formal Q-TVCOV-1 closure brief (**authored 2026-08-11**
+the Notion cold-archival account action (since executed 2026-08-10 — one day ahead of the other two
+items here; see [`docs/pursuits/c6-notion-estate.md`](../pursuits/c6-notion-estate.md) and Addendum
+2026-08-10 on [`docs/adr/2026-06-12-notion-surface-retirement.md`](../adr/2026-06-12-notion-surface-retirement.md));
+a formal Q-TVCOV-1 closure brief (**authored 2026-08-11**
 as [`closures/Q-TVCOV-1-closure-falsified.md`](closures/Q-TVCOV-1-closure-falsified.md), not under
 `docs/ltm/briefs/`).
 

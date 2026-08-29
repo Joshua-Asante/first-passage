@@ -90,3 +90,25 @@ grep -n "Clause-N FAIL\|P1 pinned" docs/briefs/rnd-pipeline/H-TSMOM-1-ES-tsmom-s
 # append-only; this correction is a doc-layer annotation, not a harness re-run)
 grep -n "H-TSMOM" lab/analysis/harvest/q_kbudget_harvest_1_2026-07/phase3_screen_manifest.json
 ```
+
+---
+
+## §5 — Second post-ratification correction (2026-08-29)
+
+**Does not edit §4 above in place** — the "not re-run" claim there is superseded, not erased, per the same no-in-place-edit convention §4 itself invokes.
+
+The "not re-run" claim above (§4) is now stale. `floor_scan.py` was corrected 2026-08-15 (commit `aa2e4be`, executing R4 of [`docs/notes/audits/programme-audit/2026-08-03-gate-stack-audit.md`](../notes/audits/programme-audit/2026-08-03-gate-stack-audit.md)); it now prints H-TSMOM-1 as `FAIL (N, Default-#1 OOS): power=0.34 at N=86 ... supersedes harvest-addendum N=192 / power=0.638 PASS` — matching this addendum's §4 corrected verdict, not the original PASS. `phase3_screen_manifest.json` (cited in §3/§4's audit hooks) was never present in the tracked working tree or git history and that hook is dead; should be dropped from the audit-hook block or replaced with a live path (`PHASE3_RESULTS.md`).
+
+No further action needed on the substantive verdict — H2 FAILs Clause N and the ratified fundable set (H1+H2+D5) still has zero survivors, unchanged since 2026-07-16.
+
+```bash
+# floor_scan.py now prints the corrected H2 verdict directly
+grep -n "power=0.34\|Default-#1 OOS\|supersedes harvest-addendum" lab/archive/q_kbudget_1_2026-07/floor_scan.py
+
+# The correcting commit
+git log --format='%h %ci %s' aa2e4be -1
+
+# phase3_screen_manifest.json is not tracked / does not exist
+git log --follow --all -- '**/phase3_screen_manifest.json' | head -5 || echo "no history"
+find . -name 'phase3_screen_manifest.json' 2>/dev/null || echo "not present in working tree"
+```

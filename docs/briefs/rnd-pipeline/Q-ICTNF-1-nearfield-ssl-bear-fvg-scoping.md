@@ -238,3 +238,18 @@ rg -n "AMBIGUOUS|−1.039|-1.039" lab/analysis/_inbox/ict_mnq_2026-08/RESULTS_EX
 1. **Operator:** affirm **F1 STOP** (recommended) or elect **F2–F5** with a dated note.
 2. If F1: append a one-line disposition on [`ops/instruments/MNQ.md`](../../../ops/instruments/MNQ.md) pointing at this brief (optional hygiene; DEAD cell already carries the parent kills).
 3. Do **not** scaffold a harness unless a fork other than F1 is elected and a fresh Pre-Q is authored under that fork's constraints.
+
+---
+
+**Addendum — 2026-08-29 (decay audit).** (1) Fork F3 (route-2 order-flow, survivor-tied) was
+elected same-day 2026-08-06 and executed as
+[`Q-FVGFLOW-1`](Q-FVGFLOW-1-fvg-edge-book-signature-scoping.md); it closed AMBIGUOUS-HOLD —
+VOID-POWER at $0 ([closure](closures/Q-FVGFLOW-1-closure-ambiguous.md)) — independent
+object-level enumeration found n=21 touch events, below both the n>=30 and n>=50 power floors, so
+Phase 0 Step 2 (Avenue A admissibility) was never reached; re-test horizon is ~3+ years of
+additional native history. §10's "elect F2-F5" framing is stale as to F3 specifically — F1/F2/F4/F5
+remain unelected. (2) §0's "Machine pin" row and §9's first audit hook cite
+`lab/archive/mnq_fvg_draw_probe_2026-08-04/RESULTS.json`, which is not present on disk (directory
+holds only PREREG.md/RESULTS.md). The pinned figures (g_pt_median 291, p25 141, p75 519, verdict
+AMBIGUOUS-UNDERPOWERED) are independently re-confirmed current by reading RESULTS.md directly —
+cite RESULTS.md as the machine-pin source, not RESULTS.json.

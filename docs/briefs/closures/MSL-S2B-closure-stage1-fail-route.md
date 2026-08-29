@@ -40,7 +40,7 @@ Instrument MYM and MSL channel stand. Occupancy B8 stands. Stage-1 deaths counte
 - **Stop rule / re-proposal bar:** see §3
 - **Board write:** plan §6 P3.5 → STAGE-1 FAIL (route) · Stage-1 deaths **2/3**
 
-- **Registry:** rejected_candidates.md — ### MSL-S2B sweep-failure-filtered-continuation × MYM — SCREEN-FAIL (D2 route-B cheap falsifier)
+- **Registry:** rejected_candidates.md — ### MSL-S2B sweep-failure-filtered continuation × MYM — STAGE-1 FAIL (route; pre-G0)
 
 ## Change history
 
@@ -48,3 +48,4 @@ Instrument MYM and MSL channel stand. Occupancy B8 stands. Stage-1 deaths counte
 |---|---|---|
 | 2026-08-14 | Stage-0/1 authored; route FAIL; pre-G0 kill | Cursor (plan-elected adjudicate-then-kill) |
 | 2026-08-16 | Addendum: [`ADR`](../../adr/2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md) clarifies the CON-5 citation in Candidate B's row was read more broadly than the pause's own text supports (dense-1m/G=10-scoped, not timeframe-general) — but reliance on that reading requires a fresh $0 cheap-falsifier gate, not a free pass. Verdict above unedited: no falsifier was run before this closure. Re-proposal bar (§3) unchanged; a successor card may now invoke the ADR's D2 falsifier. | Joshua (operator election) + Claude Code |
+| 2026-08-29 | Correction: the §Registry line was mis-drafted during a 2026-08-23 mechanical backfill — it cited the wrong, later, topically-adjacent `rejected_candidates.md` entry ("SCREEN-FAIL (D2 route-B cheap falsifier)", closed 2026-08-17). Corrected to cite the entry that actually documents this closure ("STAGE-1 FAIL (route; pre-G0)", closed 2026-08-14, whose Authoritative-artifact link points directly at this file). Verdict/§1/Iterate language above unedited. | Claude Code (Tier-2 decay-audit remediation) |

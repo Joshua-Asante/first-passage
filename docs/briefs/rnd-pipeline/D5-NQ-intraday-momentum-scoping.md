@@ -69,3 +69,5 @@ falsification clause** (disjoint-session, no conditioning overlap — consumes n
 This is the "drop before freeze rather than ship an unreachable bundle" call from §1.
 
 **08-08 packet:** D5 = Stage-2 cost-law **KILL** (gross footprint present, not tradeable at 4× MNQ RT); not a cleared survivor. Harvest PASSes H-OD-1 / H-TSMOM-1 remain the live scoped axes.
+
+**Correction (dated, post-audit):** the note above is stale. Both H-OD-1 and H-TSMOM-1 closed the same day as D5 (2026-07-16): H-OD-1 CLOSED (Stage-2 cost-law KILL) and H-TSMOM-1 CLOSED (Clause-N FAIL, P1=(c)). Per H-TSMOM-1's own §4: "Net effect on the harvest's 3-axis fundable-PASS set (D5 / H-OD-1 / H-TSMOM-1): zero survivors." Neither sibling axis was live as of the 2026-08-08 checkpoint. See [H-OD-1-ES-overnight-drift-scoping.md](H-OD-1-ES-overnight-drift-scoping.md) and [H-TSMOM-1-ES-tsmom-scoping.md](H-TSMOM-1-ES-tsmom-scoping.md) for the closure record.

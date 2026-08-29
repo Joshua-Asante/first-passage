@@ -10,6 +10,11 @@ MNQ/MYM micros; dual-track grid per
 **Stop:** operator, 2026-07-26 — "I have stopped the pulls. Supertrend is closed."
 Long-panel pull halted ~100/570 chunks; **Phases 3–6 never ran.**
 
+> ⚠ **Status note (2026-08-29):** the ADR cited below as (Proposed) is now Accepted (ratified by
+> operator 2026-08-21) — that tag reflects status as of this closure's 2026-07-26 freeze, not
+> current status. Table row left byte-unedited per Rule 14 Trap #12; this is the required
+> reader-intercept, not a correction to the verdict.
+
 ---
 
 ## What this closure is and is not

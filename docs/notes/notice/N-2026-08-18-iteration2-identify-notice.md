@@ -6,7 +6,8 @@
 the quality of the questions") + Claude Code
 **Source:** committed record only — SESSIONS/STATE/CATALOG window 2026-08-08→08-18, the
 2026-08-16 bottleneck-solutions arc (S1–S4), and the PR #37 mechanism-program arc
-**Status:** `OPEN` — GRADUATE packets all closed; Action/Forward rows remain.
+**Status:** `OPEN` — GRADUATE packets all closed; E(i)/E(ii)/E(iii) discharged 2026-08-20
+(`3c6745a`, PR #69 — see §4); E(iv) + Forward rows remain.
 **Q-CONDVAL-1 GO'd and `FALSIFIED` 2026-08-18**
 ([closure](../../briefs/closures/Q-CONDVAL-1-closure-falsified.md)) — S1b
 conditioner-engineering branch parked; O2 discharged. **Q-EXPR-1 GO'd and `RESOLVED` (H1)
@@ -138,9 +139,9 @@ envelope (in which case the branch closes cleanly, cheap).
 | B1 — admissibility-side supply ($0) | **FORWARD, no dependency** | OpenAlex sourcing continuation + Req-1a admissibility screening of the six Koijen screen-leads proceeds IN PARALLEL with the two questions — admissibility deaths are orthogonal to both outputs by observation B's own decomposition; making them wait would re-run the one-bottleneck conflation this notice dissolves |
 | B2 — priced spends (Databento extension on harvest survivors; lane campaign #2 prereg freeze) | **FORWARD, unblocked** | Q-EXPR-1's horizon screen is in: weekly/daily-native claims are not priced until a session-horizon expression is named. Q-TRAINKILL-1/2/3 all closed `AMBIGUOUS-HOLD` — census STOP; no singleton power finding to consume for campaign #2 n/panel. Elects on existing evidence + the H1 screen, holds disclosed. Re-proposal is a new panel or an operator election, not Q-TRAINKILL-4 |
 | S2 stage-1 cheap falsifier · S3 matched-day redesign | **FORWARD** | Standing chartered obligations carried for completeness (slate/spec-resident, not corpus observations); unchanged by this notice |
-| E(i) valence-blind null-validity | **ACTION** | Extend the null-fitness rule: every screen prereg §0 must cite the null-validity clause for its claim family, verdict-valence-blind (closes the fresh-battery/false-NULL hole the reuse-only clause leaves) |
-| E(ii) design-time doctrine read | **ACTION** | Same edit as E(i) — the §0 citation IS the design-time read, made mechanical |
-| E(iii) belt pruning | **ACTION** | Attach a retention-review date (2026-11-08, riding the standing slate) to the corrected-battery spec: if no third magnitude-persistence screen has consumed it by then, it gets a retention test at the quarterly audit |
+| E(i) valence-blind null-validity | **CLOSED** | Discharged 2026-08-20 (`3c6745a`, PR #69, dispatched via [`2026-08-20-cursor-handoff-notice-e1-e3-action-rows.md`](../../briefs/handoffs/2026-08-20-cursor-handoff-notice-e1-e3-action-rows.md)) — `.claude/skills/futures-anomaly-discovery/SKILL.md` now carries the valence-blind null-fitness bullet (~line 270) |
+| E(ii) design-time doctrine read | **CLOSED** | Same edit as E(i), same commit — the §0 citation IS the design-time read, made mechanical |
+| E(iii) belt pruning | **CLOSED** | Discharged 2026-08-20 (`3c6745a`, PR #69) — `docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md` now carries the Retention-review 2026-11-08 line (~line 15) |
 | E(iv) W5 drift · lane charter §7 steps 2–4 owed · base-case line to STATE | **ACTION** | Hygiene; the base-case line lands on the STATE board where next-session reads begin |
 | Two-eights disambiguation · CATALOG closed-date caveat · POLFRONT 5.1× superseded | **CLOSED** | Two-eights: the charter's "8 consecutive zero-yield closes" (the Q-R2VBUCK-1…Q-TNEC-CON-5 chain, STATE.md decision index) and the MSL methodology audit's "8 consecutive null/dead" (C2·C3·C3-K2·C1·S2A·S2B·slate-3·WHO-track, [2026-08-14 audit](../audits/programme-audit/2026-08-14-msl-methodology-audit.md)) are two DIFFERENT lists — never conflate them when quoting either. Closed-date caveat and 5.1× supersession are the gate's D(ii)/D(i) records. No further act |
 

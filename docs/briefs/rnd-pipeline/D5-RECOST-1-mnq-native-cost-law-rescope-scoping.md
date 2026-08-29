@@ -94,11 +94,11 @@ This connects to standing doctrine: the HARV lane's Requirement 5 cost-law-at-ad
 
 | # | Action | Owner | Status |
 |---|---|---|---|
-| 1 | **Operator ruling: does this re-derivation consume fresh K, or reuse the original D5 K_eff=1 binding (same construct, same candidate, previously-designated confirm window never scored)?** | Operator | **OPEN — blocks `register_search open`** |
-| 2 | **Operator ruling: declare the frozen sub-window for the joint edge+hurdle re-measurement** (candidates: full OOS 2019-05-06→2026-07-16; or ≥2023-01-01 to reduce regime-mixing with the COVID-era 2020-21 window already flagged degraded-quality in `PULL_LOG.md`) | Operator | **OPEN** |
-| 3 | Author full Stage-0 pre-registration (mirrors [`D5-NQ-intraday-momentum-preregistration.md`](../pre-registration/D5-NQ-intraday-momentum-preregistration.md) structure) with the declared window frozen, §R reachability attestation, and the dual-firm-key (Bulenox + MFFU) hurdle report as a pre-committed output, not a discretionary add | CC (on operator GO) | Not started |
-| 4 | On Stage-0 freeze + operator GO: recompute Stage-2 jointly on the declared window (reuses `cost_mnq.hurdle_from_price` + a fresh `session_edges` run over `cached_mnq_continuous_1m()` — **zero new pull**, both already cached at $0.00) | Lab | Not started |
-| 5 | If PASS: continue into the original pre-reg's Stage 5-8 (block size, DSR, temporal battery, placebo, realism, breadth) — those gates are already frozen and do not need re-authoring | Lab | Contingent on #4 |
+| 1 | **Operator ruling: does this re-derivation consume fresh K, or reuse the original D5 K_eff=1 binding (same construct, same candidate, previously-designated confirm window never scored)?** | Operator | **RESOLVED 2026-07-21 — see pre-registration §1 Decision 1** |
+| 2 | **Operator ruling: declare the frozen sub-window for the joint edge+hurdle re-measurement** (candidates: full OOS 2019-05-06→2026-07-16; or ≥2023-01-01 to reduce regime-mixing with the COVID-era 2020-21 window already flagged degraded-quality in `PULL_LOG.md`) | Operator | **RESOLVED 2026-07-21 — see pre-registration §1 Decision 2** |
+| 3 | Author full Stage-0 pre-registration (mirrors [`D5-NQ-intraday-momentum-preregistration.md`](../pre-registration/D5-NQ-intraday-momentum-preregistration.md) structure) with the declared window frozen, §R reachability attestation, and the dual-firm-key (Bulenox + MFFU) hurdle report as a pre-committed output, not a discretionary add | CC (on operator GO) | **DONE 2026-07-21** — [`docs/briefs/pre-registration/D5-RECOST-1-verdict-preregistration.md`](../pre-registration/D5-RECOST-1-verdict-preregistration.md) |
+| 4 | On Stage-0 freeze + operator GO: recompute Stage-2 jointly on the declared window (reuses `cost_mnq.hurdle_from_price` + a fresh `session_edges` run over `cached_mnq_continuous_1m()` — **zero new pull**, both already cached at $0.00) | Lab | **DONE 2026-07-21** — [`lab/archive/d5_recost_2026-07/RESULTS.md`](../../../lab/archive/d5_recost_2026-07/RESULTS.md) |
+| 5 | If PASS: continue into the original pre-reg's Stage 5-8 (block size, DSR, temporal battery, placebo, realism, breadth) — those gates are already frozen and do not need re-authoring | Lab | **DONE 2026-07-21** — see [`lab/archive/d5_recost_2026-07/RESULTS.md`](../../../lab/archive/d5_recost_2026-07/RESULTS.md) |
 
 ---
 
@@ -147,3 +147,4 @@ git log -1 --format='%h %ci' -- docs/briefs/pre-registration/D5-NQ-intraday-mome
 | Date | Change | By |
 |---|---|---|
 | 2026-07-21 | Scoping drafted — pre-flight repricing computed against production `cost_mnq.py` + the cached MNQ OOS panel (zero new pulls). Margin narrows from 7.6× short (IS era) to ~1.0–1.2× short at current prices, using the frozen IS edge — motivating, not sufficient. Two operator decisions (§7 #1–2) block Stage-0 freeze. | Claude Code (Sonnet 5), operator-directed |
+| 2026-07-21 | Stage-0 froze same session (both §7 operator decisions resolved); Stage-2 run executed against the declared OOS-native window; campaign closed **FALSIFIED** — OOS-native edge decayed to −0.33 bp against the repriced hurdle. See [`lab/archive/d5_recost_2026-07/RESULTS.md`](../../../lab/archive/d5_recost_2026-07/RESULTS.md). | Claude Code (Sonnet 5), operator-directed |

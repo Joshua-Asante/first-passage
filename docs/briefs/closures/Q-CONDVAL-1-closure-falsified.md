@@ -11,6 +11,8 @@
 
 ---
 
+**⚠ 2026-08-29 path-migration note (Rule 14; verdict body below unedited):** This campaign was archived 2026-08-21 (`f2cbb7b`), after this closure was authored (2026-08-18). The header RESULTS link and both §10 commands cite the pre-archival `lab/analysis/_inbox/q_condval_1_2026-08/` path, which no longer exists. Current location per `lab/CATALOG.md`: stub `lab/analysis/q_condval_1_2026-08/CARD.md`, body `lab/archive/q_condval_1_2026-08/{RESULTS.md,run_condval.py}`. Substitute that path to re-run or re-verify; the §10 block's recorded output (L 0.129694 / L_star 0.422564 / FALSIFIED) is unaffected.
+
 ## 1. Verdict (§6 asserted against actual numbers)
 
 | §6 route | Trigger | Actual | Fired? |
@@ -74,3 +76,4 @@ python lab/analysis/_inbox/q_condval_1_2026-08/run_condval.py
 | Date | Change | By |
 |---|---|---|
 | 2026-08-18 | Closure authored | Cursor (this session) |
+| 2026-08-29 | Path-migration note added above §1: header RESULTS link and §10 commands cite the pre-archival `lab/analysis/_inbox/q_condval_1_2026-08/` path (campaign archived 2026-08-21, `f2cbb7b`); current location is stub `lab/analysis/q_condval_1_2026-08/CARD.md` / body `lab/archive/q_condval_1_2026-08/`. Verdict/§1-§10 content unedited. | Claude Code (Tier-2 decay-audit remediation) |
