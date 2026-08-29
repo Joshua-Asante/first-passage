@@ -51,7 +51,15 @@ negative — the original marginal "decisive kill" was itself a compositional ar
 (the same Simpson's-paradox-shaped effect candidate 2 showed, here strong enough to
 flip the sign, not just mask the magnitude). Block-bootstrap on the minimum
 stratified lift: mean **+0.0594**, 95% CI **[−0.0419, +0.1477]**, straddles 0,
-**p(lift ≤ 0) = 0.1247**. **VERDICT: AMBIGUOUS** — no longer a kill, not yet a pass.
+**p(lift ≤ 0) = 0.1247** / **null-calibrated p(null≥obs) = 0.00860**
+(within-stratum circular-shift of the gap predictor, distinct rotations
+enumerated, identity included; n_null=1304 from the sibling joint-gate cache vs
+original n=1307; 3-day difference disclosed; per-stratum 0.00099 / 0.152).
+**VERDICT: AMBIGUOUS** —
+no longer a kill, not yet a pass. The original decision rule is the bootstrap
+CI, which still straddles 0. The corrected p-value would clear a conventional
+0.05 bar; whether that flips this cell to INCREMENT is an operator ruling,
+filed as a follow-up notice addendum, not silently applied here.
 
 ## §2 — Why it stands out (the N signal)
 
@@ -113,7 +121,8 @@ resolve the sign with more data before any heavier design work is warranted.
 ```bash
 python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c2_c4_stratified_rerun.py
 # Expected: [candidate4_gap_magnitude_STRATIFIED] min-stratified-lift bootstrap:
-#   mean=0.0594  CI=[-0.0419,+0.1477]  p(lift<=0)=0.1247  VERDICT=AMBIGUOUS
+#   mean=0.0594  CI=[-0.0419,+0.1477]  p(lift<=0)=0.1247 / null-calibrated p=0.00860
+#   VERDICT=AMBIGUOUS (unchanged; CI still straddles 0; within-stratum enumerated null)
 
 # Superseded secondary measurement (disclosed, sign-flipped by the correction — do not
 # cite as the D5 stage-1 answer):
@@ -140,6 +149,35 @@ result is a different, additional question about this candidate's relationship t
 candidate 2). The joint notice recommends, but does not execute, merging this id
 with `overnight-range-day-session-transfer` into MNQ's `overnight-range-transmission`
 id — see that notice for the full comparison and reasoning.
+
+---
+
+## Addendum — null-calibrated p vs. bootstrap CI (2026-08-29, append-only, does not change §1–§5)
+
+The original §1 / §4 AMBIGUOUS + HOLD-until-2027-03-01 routing used
+`block_bootstrap_min_lift`'s percentile CI (still **[−0.0419, +0.1477]**,
+p(lift≤0)=0.1247). That statistic resamples the observed series and is **not**
+a Type-I test under a true zero-association null — the same defect Codex
+flagged on PR #205 and that PR #207 retrofits into this script.
+
+Recomputed against the sibling joint-gate cached frame
+(`c24_joint_frame.csv`, n=1304 vs this notice's original n=1307; 3-day
+difference disclosed): circular-shift null p on the **minimum** stratified
+lift is **0.0117** (observed min-lift +0.0637). Per-stratum: bprime=0
+p=0.00025; bprime=1 p=0.1467.
+
+**This addendum does not change the HOLD.** Two different decision rules now
+disagree:
+
+- **CI rule (original, still the §4 owner):** lower bound < 0 → AMBIGUOUS / HOLD until 2027-03-01.
+- **Null-p rule (0.05 bar, the test `block_bootstrap_min_lift` is not):** p=0.0117 → would read INCREMENT.
+
+Whether the cell flips is an **operator ruling**, not a silent correction.
+Vendor bars were absent this session, so the null p is on the 1304-day
+joint-gate cache, not a byte-identical rerun of the original 1307-day
+scored set. Script + JSON: PR #207
+(`lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c2_c4_stratified_rerun.py`
+/ `c2_c4_stratified_results.json` key `candidate4_gap_magnitude_STRATIFIED`).
 
 ---
 
