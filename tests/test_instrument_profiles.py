@@ -1183,6 +1183,108 @@ def test_parse_mechanisms_does_not_absorb_sibling_list_item(tmp_path):
     assert "not part of the finding" not in findings[0]
 
 
+WRAPPED_ANNOTATION_MD = """# MECHANISMS
+
+## wrapped-annotation
+
+A one-line definition.
+
+- **Class finding (cross-instrument corroboration, MNQ, 2026-08-29 — backfilled on reconciliation
+  pass):** MNQ's own same-day bar-volume-regime candidate is DEAD on cost geometry.
+  Ledger cell confirms. [MNQ.md](MNQ.md)
+- **Class finding (cross-instrument, MYM, 2026-08-29):** Sibling keeps a one-line annotation.
+"""
+
+
+def test_parse_mechanisms_joins_wrapped_class_finding_annotation(tmp_path):
+    """Annotation text between 'Class finding' and closing `**` may soft-wrap.
+
+    Pre-fix: `_FINDING_RE.match` on the first physical line alone found no
+    closing `**`, returned None, and the whole bullet vanished from
+    `Mechanism.findings` — not truncated, invisible.
+    """
+    p = tmp_path / "MECHANISMS.md"
+    p.write_text(WRAPPED_ANNOTATION_MD, encoding="utf-8")
+    mechs = ip.parse_mechanisms(p)
+
+    findings = mechs["wrapped-annotation"].findings
+    assert len(findings) == 2
+    wrapped = findings[0]
+    assert "cross-instrument corroboration, MNQ, 2026-08-29" in wrapped
+    assert "backfilled on reconciliation pass" in wrapped
+    assert "same-day bar-volume-regime candidate is DEAD" in wrapped
+    assert "Ledger cell confirms" in wrapped
+    assert "Sibling keeps" not in wrapped
+
+    sibling = findings[1]
+    assert "cross-instrument, MYM, 2026-08-29" in sibling
+    assert "Sibling keeps a one-line annotation" in sibling
+
+
+def test_parse_mechanisms_wrapped_annotation_plus_body_wrap_end_to_end(tmp_path):
+    """build → profiles.json keeps both the wrapped annotation and body wraps."""
+    repo = _fixture_repo(tmp_path)
+    mech = repo / "ops" / "instruments" / "MECHANISMS.md"
+    mech.write_text(
+        MECHANISMS_MD
+        + "\n## annotation-wrap-extra\n\n"
+        "A one-line definition.\n\n"
+        "- **Class finding (cross-instrument corroboration, MNQ, 2026-08-29 — backfilled on reconciliation\n"
+        "  pass):** MNQ's own same-day bar-volume-regime candidate is DEAD.\n"
+        "  [src](../../docs/x.md)\n",
+        encoding="utf-8",
+    )
+    built = _run(repo, "build")
+    assert built.returncode == 0, built.stdout + built.stderr
+    payload = json.loads(
+        (repo / "ops" / "instruments" / "profiles.json").read_text(encoding="utf-8")
+    )
+    findings = payload["mechanisms"]["annotation-wrap-extra"]["findings"]
+    assert len(findings) == 1
+    assert "backfilled on reconciliation pass" in findings[0]
+    assert "bar-volume-regime candidate is DEAD" in findings[0]
+    result = _run(repo, "cell", "TST", "annotation-wrap-extra")
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "reconciliation pass" in result.stdout
+    assert "DEAD" in result.stdout
+
+
+def test_validate_silent_when_wrapped_annotation_closes(tmp_path):
+    """A soft-wrapped annotation that does close must not trip the P1."""
+    inst = tmp_path / "ops" / "instruments"
+    inst.mkdir(parents=True)
+    (inst / "MECHANISMS.md").write_text(WRAPPED_ANNOTATION_MD, encoding="utf-8")
+    mechs = ip.parse_mechanisms(inst / "MECHANISMS.md")
+    findings = ip.validate([], mechs, tmp_path)
+    assert not any("never closes its bold span" in f.message for f in findings)
+    assert len(mechs["wrapped-annotation"].findings) == 2
+
+
+def test_validate_flags_unclosed_class_finding_annotation(tmp_path):
+    """Unmatched `**` on a Class-finding opener → P1 (bullet would be invisible)."""
+    inst = tmp_path / "ops" / "instruments"
+    inst.mkdir(parents=True)
+    body = (
+        "# MECHANISMS\n\n"
+        "## unclosed-mech\n\n"
+        "A one-line definition.\n\n"
+        "- **Class finding (cross-instrument corroboration, MNQ, 2026-08-29 — backfilled on reconciliation\n"
+        "\n"
+        "## next-mech\n\n"
+        "Other definition.\n\n"
+        "- **Class finding:** Fine. [src](x.md)\n"
+    )
+    (inst / "MECHANISMS.md").write_text(body, encoding="utf-8")
+    mechs = ip.parse_mechanisms(inst / "MECHANISMS.md")
+    # Parser drops the unclosed bullet — findings empty for that mechanism.
+    assert mechs["unclosed-mech"].findings == []
+    findings = ip.validate([], mechs, tmp_path)
+    hit = [f for f in findings if f.code == "P1" and "never closes its bold span" in f.message]
+    assert len(hit) == 1
+    assert "unclosed-mech" in hit[0].message
+    assert hit[0].lineno == 7
+
+
 def test_parse_mechanisms_single_line_definition_unchanged(tmp_path):
     p = tmp_path / "MECHANISMS.md"
     p.write_text(WRAPPED_DEFINITION_MD, encoding="utf-8")

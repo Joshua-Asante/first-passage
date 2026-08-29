@@ -33,6 +33,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-29k — instrument_profiles Class-finding annotation wrap
+
+**Focus:** Annotation text between "Class finding" and closing `**` soft-wrapping across physical lines made `_FINDING_RE.match` miss and the whole bullet vanish from `Mechanism.findings`.
+**Shipped:** `cursor/fix-class-finding-annotation-wrap-5b46` — `_class_finding_opener` joins until bold closes; `validate` P1 on unclosed annotation; regression tests. Rebased onto `main` after #201 (SESSIONS label collision `29j` → `29k`).
+**Decisions/defects:** fourth of the #196/#197/#198 family (definition join → annotated capture → body wrap → annotation wrap).
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([overview](../docs/superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [Phase B](../docs/superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md)) · #2 B7-REFIRE Stage 1 + M1 ([M1 addendum](../docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)). queue-exception: commissioned Cloud Agent parser fix on PR implement request; not a live STATE row.
+**Live-ops state:** unchanged (c1 warm/disarmed).
+
+---
+
 ## 2026-08-29j — Codex second look lands as its native GitHub integration; dead claude-judgment-review.yml removed
 
 **Focus:** operator directive to move the Cursor-PR auto-review-request (2026-08-23 addendum) from Claude to Codex. Built a repo-workflow CLI-based design first; corrected within the same session after the operator asked Codex directly about the required secret and got pointed at Codex's own native, secret-free GitHub review integration instead — verified independently via `WebSearch` before acting on it. Then live-tested the full loop: dispatched a real well-scoped bug (issue #202, `@cursor` mention) → Cursor opened PR #203 in ~7 minutes → confirmed via Actions run history that the *existing* `claude-judgment-review.yml` mechanism (unrelated to today's Codex work, present since PR #178) has never actually fired — `GITHUB_TOKEN`-authored comments don't trigger new workflow runs, a GitHub Actions loop-prevention safeguard, not a today-only bug. Operator: remove it outright rather than repair or retarget again.
