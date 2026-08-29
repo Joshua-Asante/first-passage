@@ -295,7 +295,9 @@ Entering in the direction of an opening-range break and holding the position for
 
 ## overnight-range-transmission
 
-**NEW 2026-08-29 (Q-RANGEXFER-1).** Conditioner-role, not entry-role: does the Globex overnight
+**NEW 2026-08-29 (Q-RANGEXFER-1).** Conditioner-role, not entry-role: does the Globex overnight (pre-RTH) session's own realized range, and/or the unsigned RTH-open gap magnitude, predict the *same trading day's* RTH-session realized range being elevated (vs its own trailing median, causal `.shift(1)`)? Cross-series claim — bias and outcome are two *different* magnitude series on the *same* day, not one series lagged against itself. Distinct from `daily-range-state-persistence` (single-series, next-*day* self-lag) and from `overnight-range-failed-extension-fade` (entry-role fade-the-level construct keyed to a broken overnight extreme, not a conditioner on realized range magnitude). Grounding: same ARCH/GARCH-canon volatility-clustering evidence-robustness as `daily-range-state-persistence`, extended to the cross-series/same-day case — the frozen corrected-null-battery spec's own §4 (D5) names this shape **"S2"** and holds its S1 (single- series) null does NOT port to it (independent surrogation of the two series deletes the shared same-day-regime confound the test needs to preserve; O1: `UNRESOLVED-NEEDS-DESIGN`).
+
+- **Class finding:** (D5 stage-1 $0 cheap falsifier, MNQ, OFFICIAL): overnight range clears D5's
 
 _No instrument has a recorded verdict on this mechanism._
 
