@@ -120,7 +120,7 @@ Regenerate: `python scripts/check_repo_map_scripts_table.py --write`.
 `--check` exits 1 on drift; it is **not** wired into `gates.yml`.
 
 <!-- BEGIN generated: scripts-table -->
-_61 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_60 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 | Script | Layer | Gate id (tier) | Notes |
 |---|---|---|---|
@@ -133,7 +133,6 @@ _61 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/check_boundaries.py` | governance | `boundaries` (always) | — |
 | `scripts/check_brief.py` | governance | — | manual/local only, not in gates.yml |
 | `scripts/check_closure_disposition.py` | governance | `closure-disposition` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
-| `scripts/check_codex_judgment_review.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_cost_model_closed_world.py` | lab | `cost-model-closed-world` (path-conditional) | — |
 | `scripts/check_data_manifests.py` | governance | `data-manifests` (data-conditional) | — |
 | `scripts/check_docs_runtime_inventory.py` | governance | `docs-runtime-inventory` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |

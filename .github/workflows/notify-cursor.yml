@@ -1,4 +1,4 @@
-name: Notify Cursor of Claude/Codex Review
+name: Notify Cursor of Claude Review
 
 on:
   issue_comment:
@@ -13,17 +13,9 @@ jobs:
     # PR/issue to kick off an agent) — picks it up without a human relaying it.
     # Deliberately unscoped to "was this review cursor-requested": pinging @cursor on
     # a PR it didn't open is a harmless no-op for it, not worth an extra API call to avoid.
-    #
-    # Also fires on the Codex second-opinion review posted by
-    # codex-judgment-review.yml. Codex has no GitHub-App bot identity here —
-    # it posts as github-actions[bot] via `gh pr comment` — so that comment
-    # is matched by its `<!-- codex-judgment-review -->` marker instead of a
-    # bot login (docs/adr/2026-07-14-cc-cursor-surface-allocation.md
-    # addendum 2026-08-29).
     if: |
       (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.user.login == 'claude[bot]' && !contains(github.event.comment.body, 'Claude Code review — in progress')) ||
-      (github.event_name == 'pull_request_review' && github.event.review.user.login == 'claude[bot]') ||
-      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.user.login == 'github-actions[bot]' && contains(github.event.comment.body, '<!-- codex-judgment-review -->'))
+      (github.event_name == 'pull_request_review' && github.event.review.user.login == 'claude[bot]')
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
