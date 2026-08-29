@@ -29,9 +29,40 @@
 
 ```
 $ python scripts/check_advisor_dedup.py --keywords "gate calibration false negative mechanism admission" --top 8
-# nearest: conventions delete-phase-gap audit; SLR-MYM-1 scoping; Q-INTAKEGOV-1;
-# gate-reachability audit; gate-stack audit (K-banking, unrelated finding).
-# None owns "measure the mechanism gate's FN rate by re-testing sampled rejects."
+check_advisor_dedup: keywords: 'gate calibration false negative mechanism admission'
+  slugs found:    (none)
+  keywords found: 6 significant terms
+
+POSSIBLE PRIOR ART — review before treating the keywords as new work (top 8 of 222 candidate(s)):
+
+  [  6] docs/notes/audits/2026-08-08-conventions-delete-phase-gap-audit.md — Conventions friction — Delete-phase gap audit — 2026-08-08
+        shared terms: ['admission', 'calibration', 'false', 'gate', 'mechanism', 'negative']
+
+  [  6] docs/briefs/rnd-pipeline/SLR-MYM-1-liquidity-sweep-reclaim-scoping.md — SLR-MYM-1 — sweep-liquidity-reclaim at the open, MYM third leg (scoping)
+        shared terms: ['admission', 'calibration', 'false', 'gate', 'mechanism', 'negative']
+
+  [  5] docs/briefs/closures/Q-INTAKEGOV-1-closure-ambiguous-hold.md — Q-INTAKEGOV-1 — CLOSURE: `AMBIGUOUS-HOLD` (limbs split — B2 holds, D2 confirms, C4 confirms)
+        shared terms: ['admission', 'false', 'gate', 'mechanism', 'negative']
+
+  [  5] docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md — SLR-MYM-1 — CLOSURE: `FALSIFIED (as scoped)` at Stage 0
+        shared terms: ['admission', 'false', 'gate', 'mechanism', 'negative']
+
+  [  5] docs/notes/audits/2026-07-12-disccamp0-gate-reachability-audit.md — Audit Note — DISC-CAMP-0 pre-freeze gate-reachability audit (Q-HARV-0 obligation)
+        shared terms: ['admission', 'calibration', 'gate', 'mechanism', 'negative']
+
+  [  5] docs/notes/audits/programme-audit/2026-07-21-index-futures-intraday-ohlcv-domain-audit.md — Programme audit (object layer) — "single-instrument index-futures intraday OHLCV directional timing" discovery domain
+        shared terms: ['admission', 'calibration', 'gate', 'mechanism', 'negative']
+
+  [  5] docs/notes/audits/programme-audit/2026-08-03-gate-stack-audit.md — Programme audit — strategy-candidate admission/validation gate stack (meta layer)
+        shared terms: ['admission', 'false', 'gate', 'mechanism', 'negative']
+
+  [  5] docs/notes/audits/programme-audit/2026-08-05-claim-alignment/01-diagnostics.md — §3 — The seven diagnostic questions
+        shared terms: ['admission', 'false', 'gate', 'mechanism', 'negative']
+
+None of the above owns "measure the mechanism gate's FN rate by re-testing sampled rejects
+against downstream statistical gates" — nearest neighbors are an unrelated delete-phase-gap
+audit, unrelated scoping/closure docs, a gate-*reachability* audit (different question), and the
+2026-08-03 gate-stack programme audit (a different meta-layer diagnostic, not this measurement).
 
 $ grep -ril "GATECAL" .   # empty
 $ grep -in "gate.calibration" docs/briefs/INDEX.md lab/CATALOG.md   # empty
@@ -60,6 +91,15 @@ own kill-class tags, and run only against the validation-stage gates the notice'
 leaves untouched (cost-law, DSR, decay) — never the discovery/mining pipeline that boundary
 explicitly withholds authorization for.
 
+**Scope note (disclosed, not silently narrowed):** ox-alpha's claim and 2-A specifically concern
+zero-data, ex-ante admission clauses (WHO/WHEN/WHY/HOW-dies). A1's own cell-demonstrated taxonomy
+is broader — it also includes computed, already-backtested kill classes such as CADENCE (e.g.
+"0.511 trades/wk < 1"), which a candidate can only reach *after* surviving 2-A. This brief's
+question (§3) is deliberately posed at that broader "mechanism/evidence-grounding stage" level,
+not narrowed to 2-A alone, so its DIRECTION and SIZE strata measure 2-A directly while its
+CADENCE stratum measures a different, downstream early-kill screen. §6's RESOLVED disposition
+routes each accordingly.
+
 ---
 
 ## §2 — Prior art / lineage
@@ -73,8 +113,9 @@ explicitly withholds authorization for.
   REGISTRY / POWER / VENUE / SPREAD / EVIDENCE / OTHER`). It tested a different question — would
   two citation-based admission-wording amendments revive a cell — not whether a candidate's
   original construction clears cost-law/DSR/decay. Its own scope explicitly could not touch
-  DIRECTION kills (WHY/delete-flip stays "byte-untouched" by both amendments); this probe's
-  DIRECTION stratum is the first actual re-test of that class.
+  DIRECTION kills (WHY/delete-flip stays untouched by both amendments — Task A3's own phrasing,
+  "byte-untouched," confirmed empirically by A1's empty revival list); this probe's DIRECTION
+  stratum is the first actual re-test of that class.
 - **MSL wall-scope audit** (2026-08-15) — 13/14 walls legitimately scoped, dryness attributed to
   generation-input, not over-tight evaluation. Cited by N-2026-08-25 as the refutation this brief
   does not re-litigate; this probe measures a rate, not whether the gate's *wording* is too strict.
@@ -106,8 +147,8 @@ otherwise (0/8 clear all three) the gate is measured clean on this sample.
 **Accept H-GATECAL-1 if:** ≥1/8 sampled candidates clears all three gates. (Report raw count and
 rate — e.g. "2/8 = 25%" — as a sample statistic, not a population estimate.)
 **Ambiguous-hold if:** after one pre-declared substitution attempt per irrecoverable slot (§7
-Phase 3), fewer than 6 of the 8 drawn slots produce a verdict (i.e. ≥2 slots remain UNTESTABLE for
-lack of reconstructable logic + data).
+Phase 3), ≥2 of the 8 drawn slots remain UNTESTABLE for lack of reconstructable logic + data
+(i.e. fewer than 7 of 8 produce a verdict).
 
 ---
 
@@ -123,9 +164,11 @@ lack of reconstructable logic + data).
   reconstruction** — ruled out because N-2026-08-25 §3 explicitly withholds authorization for
   running rejected candidates through the discovery pipeline. This probe runs validation-stage
   gates only (cost-law, DSR, decay); it never re-mines or extends a sampled candidate.
-- **Treating a nonzero finding (≥1/8) as authorizing a change to the mechanism admission clauses
-  (2-A)** — ruled out; this probe measures a rate. Any structural response is a separate,
-  freshly-scoped ADR decision (§6 RESOLVED disposition).
+- **Treating a nonzero finding (≥1/8) as authorizing a change to any screening step** — 2-A
+  admission clauses (relevant only if a DIRECTION/SIZE candidate clears) or the CADENCE
+  activity-floor screen (relevant only if the CADENCE candidate clears) — ruled out; this probe
+  measures a rate. Any structural response is a separate, freshly-scoped ADR decision (§6 RESOLVED
+  disposition).
 - **Re-interpreting "clears" after seeing results** (e.g., loosening cost_R < 0.05 or DSR ≥ 0.95
   because a near-miss looks compelling) — ruled out per Known Trap #12; thresholds are frozen in
   §8 before any candidate is touched.
@@ -139,9 +182,9 @@ lack of reconstructable logic + data).
 
 | Verdict | Trigger condition | Disposition |
 |---|---|---|
-| `RESOLVED` | ≥1/8 sampled candidates clears cost-law AND DSR AND decay | `ITERATE — hand the finding (raw count/rate + per-candidate detail) to a fresh, separately-scoped ADR deciding whether/how the 2-A admission clauses warrant recalibration. This brief authorizes no change to 2-A itself. Entry packet: this closure's per-candidate table. Re-test window: none required.` |
+| `RESOLVED` | ≥1/8 sampled candidates clears cost-law AND DSR AND decay | `ITERATE — hand the finding (raw count/rate + per-candidate detail) to a fresh, separately-scoped ADR deciding whether/how the relevant screen warrants recalibration: 2-A admission clauses if the clearing candidate is DIRECTION/SIZE, the CADENCE activity-floor screen if it is CADENCE. This brief authorizes no change to either screen itself. Entry packet: this closure's per-candidate table. Re-test window: none required.` |
 | `FALSIFIED` | 0/8 sampled candidates clears all three gates | `STOP — mechanism gate measured clean on this K=8 blind-lane sample. Re-proposal bar: a fresh probe needs its own newly registered, larger K — not a re-draw of this sample.` |
-| `AMBIGUOUS-HOLD` | ≥2 of 8 slots UNTESTABLE after one substitution attempt each (fewer than 6/8 produce a verdict) | `ITERATE — return target: resolve the reconstruction/data-budget blocker (larger Databento pull budget, or a fresh amendment relaxing the cell-demonstrated-only frame). Re-test window: next session with the blocker resolved.` |
+| `AMBIGUOUS-HOLD` | ≥2 of 8 slots UNTESTABLE after one substitution attempt each (i.e. fewer than 7/8 produce a verdict) | `ITERATE — return target: resolve the reconstruction/data-budget blocker (larger Databento pull budget, or a fresh amendment relaxing the cell-demonstrated-only frame). Re-test window: next session with the blocker resolved.` |
 
 ---
 
@@ -151,7 +194,8 @@ Self-executing in a Claude Code session with repo + Databento access (this sessi
 
 - **Phase 0 — Rule-0 reads.** Done (§0).
 - **Phase 1 — Build the sampling frame.** Pull A1's four-table census verbatim
-  (`docs/notes/audits/2026-08-23-kill-register-attribution-audit.md` §3–§6); restrict to
+  (`docs/notes/audits/2026-08-23-kill-register-attribution-audit.md` §2 Table 2, §3 Table 1, §4
+  Table 3, §5 Table 4); restrict to
   cell-demonstrated rows (drop category-inherited); keep A1's own per-row tags. Output: a flat
   list, one row per candidate, tagged `DIRECTION | SIZE | CADENCE` (compound-tagged rows assigned
   to their first-listed tag).
@@ -162,8 +206,16 @@ Self-executing in a Claude Code session with repo + Databento access (this sessi
     --data-window "2015-01-01:2026-08-01" --lane blind \
     --run-id gatecal_1_2026 --hypothesis "<H-GATECAL-1 text>"
   ```
-  before drawing anything. Then draw 4 DIRECTION / 2 SIZE / 2 CADENCE using a disclosed seeded
-  random draw (seed stated in the closure record) from the Phase-1 frame.
+  before drawing anything. Then draw **5 DIRECTION / 1 SIZE / 2 CADENCE** using a disclosed seeded
+  random draw (seed stated in the closure record) from the Phase-1 frame. **SIZE stratum note
+  (disclosed, not a mid-probe adjustment):** A1's cell-demonstrated census carries exactly two
+  SIZE-tagged candidates (§3.4 USDA prints × ZC/ZS/ZW, §3.5 Bund auction × FGBL). §3.5/FGBL is
+  Eurex-listed and excluded from the eligible frame — this repo's only data pipeline is CME-only
+  (`databento-data` skill, GLBX.MDP3), so FGBL is not sourceable by any channel this repo has.
+  That leaves §3.4 as the sole eligible SIZE candidate: population = draw = 1, so the SIZE slot
+  has zero substitution capacity — if §3.4 turns out irrecoverable in Phase 3, it goes straight to
+  UNTESTABLE (§4/§6 AMBIGUOUS-HOLD), no redraw is possible. DIRECTION absorbs the freed slot
+  (population 8, healthy spare margin).
 - **Phase 3 — Reconstruct each drawn candidate.** Follow the registry's pointer to its
   `PREREG_G0.md` / `STAGE1.md` / harness / closure. If logic is prose-only (irrecoverable exact
   construction), redraw once within the same stratum; if the redraw also fails, mark UNTESTABLE.
@@ -255,6 +307,37 @@ do not handwave.
 
 ---
 
+## Adversarial review record
+
+`pre-ratification-adversarial-panel` run against this brief 2026-08-29 (6-lens review → 2-skeptic
+verify → adjudication, 42 agents). Verdict: **BLOCKED**, 4 confirmed BLOCKERs. All 4 repaired in
+this revision:
+
+1. SIZE stratum was a deterministic full-inclusion of an unsourceable FGBL/Eurex candidate — fixed
+   by restricting SIZE to its true 1-candidate sourceable population, rebalancing to 5/1/2 (§7).
+2. CADENCE is a downstream computed kill, not a 2-A zero-data admission kill — fixed by broadening
+   §1/§6's stated scope and disclosing which strata implicate 2-A vs. the CADENCE screen.
+3. (Same root cause as #1, combinatorics framing.) Fixed alongside #1.
+4. Pre-registration's gate table was mislabeled "verbatim" while actually paraphrased — fixed;
+   now byte-for-byte identical to §6 (verified by diff).
+
+Three items the panel explicitly left as **operator judgment, not resolved here**:
+
+- **D1:** whether opening this brief (per `notice_log.md`'s GRADUATE convention: "Open `Q-X-
+  [slug].md`" — no further ADR/operator step named) is itself sufficient graduation of
+  N-2026-08-25 row 3f's "future-consideration pointer only" framing, or whether Phase 1 (the K=8
+  register_search open + draw) additionally needs an explicit operator GO before it runs.
+- **D2:** whether the brief adequately distinguishes this probe's question from A1's (revival
+  eligibility) for every stratum — the DIRECTION distinction is clean (A1 left it byte-untouched);
+  the SIZE distinction is narrower now that only §3.4 is eligible, but A1's own empty-revival
+  finding on §3.4 is still directly adjacent and worth the operator's own read before Phase 1.
+- **D3:** whether the 27-file `ops/instruments/*.md` DEAD-table coverage gap (§5) needs a
+  dedicated forward-pointer beyond its current home in Forbidden Moves.
+
+**Phase 1 (register_search open + draw) is held pending explicit operator sign-off on D1.**
+
+---
+
 ## Pre-Lock Checklist (DRAFT briefs only)
 
 Remove this section once the brief is locked.
@@ -264,7 +347,9 @@ Remove this section once the brief is locked.
 - [x] §4 hypothesis is genuinely falsifiable (binary triggers in §6)
 - [x] §5 forbidden moves are genuinely tempting, not strawmen
 - [x] §6 gates have specific numerical triggers
-- [ ] §8 pre-registration committed BEFORE Phase 1 runs — pre-registration file authored this
-      session; commit ordering to be confirmed once both files land in the same push
+- [x] §8 pre-registration committed BEFORE Phase 1 runs — both files committed in the same push,
+      before Phase 1 (no `register_search open` has run for this probe)
 - [x] §10 audit hooks are runnable commands
-- [ ] Verification block executed and passing — pending `check_brief.py` run + adversarial pass
+- [x] Verification block executed and passing — both `check_brief.py` checkers green; adversarial
+      panel run, 4 confirmed BLOCKERs repaired (see Adversarial review record above)
+- [ ] Operator sign-off on D1 (self-execution authorization) obtained before Phase 1 runs
