@@ -148,6 +148,46 @@ structure:
 
 ## SESSION LOG
 
+- **2026-08-29 (joint gate, follow-up #3)** — **Direct port of MNQ's `candidate24_joint_gate.py`
+  run on MYM, testing candidates 2 (overnight range) and 4 (gap magnitude) against EACH OTHER
+  rather than each vs. the day-history comparator — the joint stratification the 2026-08-29
+  merge's taxonomy note had deferred, not yet run.** Verified before running: `bias_overnight`/
+  `bias_gap`/`bias_dayhist`/`y` definitions traced by hand against `c2_c4_stratified_rerun.py`'s
+  own already-verified formulas — algebraically identical. **Result: MYM closely replicates
+  MNQ's nested-gap pattern.** Gap's own lift within overnight-range strata: **+8.5pp (calm,
+  bootstrap p=0.037 / null-calibrated p=0.020) / −7.2pp (hot, bootstrap p=0.945 / null-calibrated
+  p=0.888, clearly not positive)** — vs. MNQ's own committed `candidate24_joint_results.json`:
+  +10.5pp/−8.1pp on the identical test. **Bootstrap-vs-null-calibrated correction (after review):**
+  the original `block_bootstrap_p` resamples the observed data and is not a null-calibrated
+  significance level; `circular_shift_null_p` (added to the script) is — see the Notice's §1 for
+  the full explanation. Recalibration does not overturn anything; the calm-stratum cell is if
+  anything *more* decisive under the correct null (p=0.020 vs the original 0.037). Overnight
+  range's own lift within gap strata: **+38.2pp (bootstrap p=0.00025 / null-calibrated p=0.00025)
+  / +22.5pp (bootstrap p=0.00025 / null-calibrated p=0.00125)** vs. MNQ's +59.4pp/+40.7pp — same
+  sign, same ordering, never sign-flipped, but magnitude is not uniformly ~25-40% smaller
+  (corrected after review): the four lift comparisons range 10.6%-44.8% smaller on MYM, and the
+  overnight-gap Spearman correlation is actually *larger* on MYM (0.526 vs MNQ's 0.471) — see the
+  full corrected comparison table in the Notice's §1. **Recommendation (not executed): merge
+  `overnight-range-day-session-transfer` and `overnight-gap-magnitude-range-conditioning` into
+  MNQ's `overnight-range-transmission` id**, per explicit instruction that the merge itself needs
+  its own review — landed as a new Notice
+  ([`N-2026-08-29-mym-overnight-gap-joint-gate.md`](../../docs/notes/notice/N-2026-08-29-mym-overnight-gap-joint-gate.md))
+  plus append-only addenda on both existing candidate 2/4 notices and cross-reference updates on
+  all three affected `MECHANISMS.md` taxonomy notes. **No PROFILE cell, id, or routing-decision
+  change on candidates 2 or 4 themselves** — both stand as GRADUATE / HOLD-until-2027-03-01,
+  unchanged. No `core/`, lock, allocation, `dd_protection`, Pine, or rail change. $0 spent.
+  **K-accounting correction (after review): this IS a new, unregistered look, not a $0
+  re-measurement.** `discovery_manifests/mymdd_1_2026_08_29.json`'s own hypothesis field lists
+  exactly the five original candidates — this joint test isn't among them, and it was formed only
+  after seeing candidates 2/4's individual results (and MNQ's). `register_search.py` refuses a
+  post-hoc K declaration by design, so it is neither folded into the closed K=5 manifest nor
+  freshly registered now — either would launder a post-hoc look as pre-registered. Disclosed
+  plainly instead: a sixth, unregistered look: the calm-stratum result (bootstrap p=0.037,
+  null-calibrated p=0.020) is exploratory, not multiplicity-corrected, and should not be cited
+  as clearing a significance bar. See the
+  Notice's §4 for the full disclosure. Scripts + JSON:
+  `lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c24_joint_gate.py` +
+  `c24_joint_results.json` + `c24_joint_frame.csv`.
 - **2026-08-29 (cell-verdict correction)** — **Stale `CONTINGENT-FORWARD` on two GRADUATE-eligible cells flipped to `AMBIGUOUS-PARKED`.** Re-read both Notice-logs: [`N-…overnight-rth-range-transfer`](../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md) and [`N-…bar-volume-regime`](../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md) still route GRADUATE with Pre-Q authoring deferred; neither has a `docs/briefs/Q-*.md` Pre-Q, a frozen verdict pre-registration, or an operator GO. `scripts/instrument_profiles.py` `CONSULT_NOTE` defines `CONTINGENT-FORWARD` as "a frozen forward test is running on this cell" — that bar is not met. Closed-vocabulary fallback is `AMBIGUOUS-PARKED` (still BLOCKING; anti-collision preserved). Same class as the MNQ analogue correction (PR #201). **Not a silent flip** — USDCAD BPC-001's 2026-07-28 lesson is that changing this token changes what `instrument_profiles.py cell` forecloses; this session is the operator-dispatched adjudication, not hygiene. **Out of scope, left as-is:** `overnight-gap-magnitude-range-conditioning` and `bar-closing-location-autocorrelation` remain `CONTINGENT-FORWARD` (both HELD, different routing). No `core/`, Pine, allocation, `dd_protection`, lifecycle, or rail change.
 - **2026-08-29 (cell-verdict correction #2, closing the gap the prior entry deliberately left open)** — **The two cells the prior correction called "different routing" and left as `CONTINGENT-FORWARD` fail the exact same test.** Re-read both: [`N-…gap-magnitude-rth-range`](../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md) §4 routes **HOLD until 2027-03-01** (not a kill, not a demonstrated increment — CI straddles 0); [`N-…closing-location-autocorrelation`](../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md) §4 routes **HOLD until 2026-11-08** (real, well-powered finding, admission-route status unresolved). Neither has a frozen forward test running — HOLD is not GRADUATE, and both are further from a running test than the two cells corrected above. `CONTINGENT-FORWARD` was wrong for these two on the same grounds as the prior entry and as MNQ's PR #201 correction; flipped both to `AMBIGUOUS-PARKED`, matching the two HOLD-routed cells (`daily-range-state-persistence` here, and both HOLD cells on MNQ) that already carried the correct verdict. **`date:` fields left as `2027-03-01`/`2026-11-08` — checked, not assumed.** A review comment argued these should be `2026-08-29` (when the parking decision was actually made), and an attempt to change them was made and then reverted after `python scripts/instrument_profiles.py build` refused it: `_check_date_provenance`'s P4 gate requires `cell.date` to match the ONE labelled verdict date in the cited source, and both MYM notices' own `**Status:**` line declares the calendar date (`HELD until 2026-11-08` / `HELD until 2027-03-01`) — that IS the source's one labelled date, full stop. Contrast MNQ's two HOLD notices (`N-2026-08-29-mnq-daily-range-persistence.md`, `N-2026-08-29-mnq-clv-autocorrelation.md`), whose `**Status:**` lines deliberately carry no calendar date ("HELD until operator scope call") — that's why MNQ's equivalent cells could correctly use `2026-08-29` (P5-WEAK NOTE, not P4). MYM's notices weren't written that way, so their cell dates must be the source's own declared date, not the adjudication date. Editing the notices' own frozen `Status:` lines to dodge the gate was not considered — that would be altering a Notice-log artifact's own text to fit a later decision, not fixing a registry cell. No `core/`, Pine, allocation, `dd_protection`, lifecycle, or rail change.
 - **2026-08-29 (correction #2, follow-up)** — **Same design-flaw class caught on candidate 3
