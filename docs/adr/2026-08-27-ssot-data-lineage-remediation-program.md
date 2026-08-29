@@ -252,10 +252,12 @@ immediately-authorized scope** once this ADR's Status flips to `Accepted`:
 **Phases 2–4 are named as follow-on work only** — this ADR does **not** authorize their
 implementation, and each has an explicit prerequisite the parent plan states must happen first:
 
-- **Phase 2** (consolidate the repeated hand-rolled canonical/mirror running-count pattern) — needs a
-  fresh recon pass (does `check_adr_graph.py` already check running-count freshness; is there a fourth
-  instance beyond the three named; is a shared mechanism actually cheaper than three independent
-  prose conventions at n=3) before it can be scoped into bite-sized steps.
+⚠ **Phase 2 authorization moved (2026-08-29 addendum).** The sentence above is the 2026-08-27
+Phase 0/1 ratification. Phase 2 GO lives on the addendum; Phases 3–4 stay named-not-scoped.
+
+- **Phase 2** (consolidate the repeated hand-rolled canonical/mirror running-count pattern) — recon
+  prerequisite **discharged 2026-08-29**; scoped plan + authorization on the addendum. Do not read
+  this bullet as still unpaid.
 - **Phase 3** (instrument-profile / cost-model closed-world completeness audit) — needs a fresh Rule-0
   re-read of `docs/adr/2026-07-25-instrument-profile-index.md` and
   `docs/briefs/closures/Q-CAPBAND-1-closure-resolved.md` (5–7 weeks stale) before assuming the cited
@@ -479,6 +481,7 @@ python scripts/check_adr_graph.py
 | 2026-08-28 | Review fix: §2 Task 4's parenthetical corrected to match the §10/Rule 17 wording above — `make check`/CI, not `make validate`, was the already-fixed §10 correction never propagated up to the Decision section a future reader treats as authoritative; narrow text correction only | Claude Code |
 | 2026-08-28 | Review fix: §6 negative-consequences bullet reconciled with what actually shipped — `skill-deploy-sync` and `instrument-rejection-coverage` were both called "WARN-tier" here, but only `instrument-rejection-coverage` shipped `--exit-zero`; `skill-deploy-sync` shipped `tier: always` with no `--exit-zero` (a genuine hard-fail on real drift), which is the direct root cause of the Critical CI-breaking bug fixed the same session (`scripts/check_skill_deploy_sync.py` now SKIPS, not hard-fails, when no deploy target exists at all — see that script's own module docstring and `tests/scripts/test_check_skill_deploy_sync.py`). Text now describes the actual shipped behavior; no change to §2/§5 decision or scope | Claude Code |
 | 2026-08-29 | Addendum: Phase 2 scoped and authorized (A8 intra-ADR running-count consistency). Recon (a)(b)(c) answered. STATE-join and HTML-comment schema declined. Phases 3–4 remain named-not-scoped. §2 Phase 1 text left in place (Trap #12) | Cursor Cloud Agent |
+| 2026-08-29 | Blast-radius: §2 Phase 2–4 lead sentence was still reading as the live GO ("does not authorize"). Pointer only — authorization stays on the addendum; Phase 2 bullet marked discharged. No change to §2 Phase 1 tasks or §4/§5 | Cursor Cloud Agent |
 
 ---
 
