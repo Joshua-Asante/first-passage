@@ -144,6 +144,21 @@ grep "N-2026-08-29-mym-overnight-rth-range-transfer" docs/briefs/Q-*.md
 
 ---
 
+## Addendum — joint gate vs. candidate 4 (2026-08-29, append-only, does not change §1-§5 above)
+
+A follow-up joint test
+([`N-2026-08-29-mym-overnight-gap-joint-gate.md`](N-2026-08-29-mym-overnight-gap-joint-gate.md))
+ran this candidate against candidate 4 (gap magnitude) directly, mirroring MNQ's
+Q-RANGEXFER-1 joint stratification. Result: overnight range adds large, highly
+significant lift (+38.2pp / +22.5pp, p≈0.00025) within *both* strata of gap's own
+state — the dominant, robust predictor of the pair, replicating MNQ's finding that
+overnight range (not gap) is the primary claim. That notice recommends, but does not
+execute, merging this id with `overnight-gap-magnitude-range-conditioning` into
+MNQ's `overnight-range-transmission` id — see that notice for the full comparison
+and the reasoning. Nothing in this candidate's own GRADUATE routing above changes.
+
+---
+
 ## Verification
 
 ```bash
