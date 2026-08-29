@@ -1,10 +1,10 @@
-# Notice — MNQ M15 closing-location is weakly mean-reverting bar-to-bar (real but small; raised-bar route unresolved)
+# Notice — MNQ M15 closing-location is weakly mean-reverting bar-to-bar (real but small; scope ruled, cost-law pre-screen owed)
 
 **Notice ID:** N-2026-08-29-mnq-clv-autocorrelation
 **Observed:** 2026-08-29
 **Author:** Claude Code
 **Source:** own statistical computation this session, candidate 5 of a pre-specified 5-candidate MNQ Notice-phase batch
-**Status:** `HELD until operator/D-S-A scope call` (no calendar date — see §5)
+**Status:** `HELD until $0 cost-law pre-screen runs` (raised-bar admission-route scope resolved 2026-08-29 — see §4; no calendar date — see §5)
 **Lives in:** `docs/notes/notice/N-2026-08-29-mnq-clv-autocorrelation.md`
 
 ---
@@ -40,19 +40,21 @@ Close-location value CLV_t = (close_t − low_t)/(high_t − low_t) ∈ [0,1] sh
 
 ## §4 — Routing decision
 
-**HOLD.** Reason: the finding is real and well-powered, but two things are unresolved and both matter more for this candidate than for the other four: (1) **the raised bar's admission-route status is genuinely unclear** — this is a bar-to-bar autocorrelation claim, not obviously within-instrument temporal *selectivity* (Route 1's opened lever, which is about choosing WHEN within a session to act, not about a claim that holds at every bar), not obviously a different modality (Route 2), and not yet measured against ORB-MNQ-1 net-of-cost (Route 3) — deciding which route (if any) covers it is explicitly a call for whoever freezes a G0 on it, not a call this session is positioned to make; and (2) **the magnitude is small enough that its practical/tradeable relevance is unproven** — rho≈−0.03 has not been converted into an economically meaningful statistic (e.g., an expected-R read conditioned on extreme CLV deciles) that would tell a future session whether authoring a full falsifiable H is worth the investigation cost. GRADUATE would commit to that cost before either question is answered; DROP would discard a statistically real, well-powered, directionally stable effect for no principled reason.
+**HOLD.** Reason: the finding is real and well-powered, but the magnitude is small enough that its practical/tradeable relevance is unproven — rho≈−0.03 has not been converted into an economically meaningful statistic that would tell a future session whether authoring a full falsifiable H is worth the investigation cost. GRADUATE would commit to that cost before that question is answered; DROP would discard a statistically real, well-powered, directionally stable effect for no principled reason.
+
+**Admission-route status — resolved by [`docs/adr/2026-08-29-clv-autocorrelation-admission-route-scope.md`](../../adr/2026-08-29-clv-autocorrelation-admission-route-scope.md) (`Proposed`, pending re-ratification after a same-day correction — see that ADR's Change history), superseding the "genuinely unclear" framing this notice originally used.** The ruling: a bar-shape statistic with no entry rule attached does not trigger the raised bar's admission gate at all — that gate fires at Pre-Q admission for an actual directional-timing *candidate*, which this is not yet. If/when converted into an entry construct: **Route 1 is plausibly open** — CLV's mechanism (bar-shape mean-reversion) sits outside the raised bar's three specifically-mapped cost-re-derivation axes (price / instrument-selection / hold-time), not merely outside the 2026-08-10 ADR's one temporal-selectivity worked example, and this openness is independent of and in addition to Route 3; **Route 2 does not apply** (same OHLCV modality); **Route 3 (beat `ORB-MNQ-1` net-of-cost, not merely clear the cost floor) remains separately available.** Route 1 eligibility still requires full G0 discipline (adversarial review, `K_intrinsic`, the F2 guard) — it is a scope reading, not a clearance. The cheap $0 cost-law pre-screen named in §5(b) below is the concrete next step before any Pre-Q either way, per that ADR's 2-C.
 
 ---
 
 ## §5 — If HOLD: re-check trigger
 
 - **Re-check date:** none — operator/D-S-A-triggered, not calendar-triggered.
-- **Trigger condition:** either (a) an operator or the next session's D-S-A gate rules on which raised-bar route (if any) this claim needs to clear, or (b) a cheap follow-up converts rho≈−0.03 into a decile-conditioned expected-value read (e.g., P(next-bar CLV in bottom tercile | this-bar CLV in top decile) vs base rate) large enough to justify the investigation cost regardless of route — either would let this graduate to a proper Pre-Q.
-- **Drop trigger:** if the decile-conditioned follow-up in (b) shows the effect is economically negligible even at the extremes (e.g., <2-3pp lift on any conditional read), this notice should close DROP as a real-but-immaterial microstructure artifact.
+- **Trigger condition:** a cheap follow-up (b) converts rho≈−0.03 into a decile-conditioned expected-value read (e.g., P(next-bar CLV in bottom tercile | this-bar CLV in top decile) vs base rate, or an implied gross edge in bp/event) and checks it against MNQ's own cost hurdle (N6, ≈3.01 bp/session) — a necessary-condition-only floor check, per the admission-route ADR's corrected 2-C. Clearing it does **not** by itself graduate this to a Pre-Q: the full Route 3 comparison against `ORB-MNQ-1`'s own net-of-cost edge (+0.0626R/trade) needs an actual entry/exit construct to compute a comparable R-figure, which does not exist yet — that comparison is deferred to whenever such a construct is built. The route question itself no longer blocks graduation (resolved above; Route 1 is also plausibly open, independent of Route 3).
+- **Drop trigger:** if the decile-conditioned follow-up in (b) shows the effect is economically negligible even at the extremes (e.g., <2-3pp lift on any conditional read), or fails either cost check, this notice should close DROP as a real-but-immaterial microstructure artifact.
 - **Calendar entry:** none.
 
 **Forbidden moves, this notice:**
-- Assuming Route 1 (or any specific route) covers this construct without an explicit ruling — the handoff itself flagged this as unresolved, and nothing measured this session resolves it.
+- Treating a marginal pass of MNQ's own N6 cost hurdle as sufficient — per the admission-route ADR, Route 3 requires beating `ORB-MNQ-1`'s own net-of-cost edge, not merely clearing the generic floor.
 - Treating rho=−0.03 as if it were candidate 2's or candidate 4's effect size — it is roughly an order of magnitude smaller in practical terms even though all three cleared their respective statistical bars.
 
 ---
