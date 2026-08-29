@@ -11,6 +11,8 @@ futures strategies at automation-friendly prop firms
 pass the retention test in [`docs/operational_rules.md`](docs/operational_rules.md) §Retention.
 Anything else is deleted, retrievable via
 `git show pre-prune-2026-08-08:<path>` — [`Great Prune ADR`](docs/adr/2026-08-08-great-prune.md).
+⚠ That tag exists only in the **private** archive, not this public clone — here, use
+`git log --follow -- <path>` or [`docs/ltm/README.md`](docs/ltm/README.md).
 
 **ADRs are canonical for every decision.** This file carries **pointers only** — never a retelling.
 Forward obligations live in [`STATE.md`](STATE.md); session narrative in

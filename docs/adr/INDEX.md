@@ -11,7 +11,7 @@
 | 2026-04-17-equity-tier-deletion.md | Accepted | 2026-04-17 | none | Accepted |
 | 2026-04-17-guardian-v5.1-architecture.md | Accepted | 2026-04-17 | none | Accepted |
 | 2026-04-17-striker-v4.3-pyramid.md | Accepted | 2026-04-17 | none | Accepted |
-| 2026-04-23-guardian-risk-relock-0.34.md | Accepted | 2026-04-23 | `2026-04-17-portfolio-allocations.md` in part — Guardian allocation only (Striker 1.00% / Aegis 1.50% unchanged). | Accepted |
+| 2026-04-23-guardian-risk-relock-0.34.md | Accepted | 2026-04-23 | `2026-04-17-portfolio-allocations.md` in part — Guardian allocation only (Striker/Aegis unaffected by this ADR; see that ADR's Addendum 2026-08-29 for their current, since-changed figures). | Accepted |
 | 2026-04-24-mvd-discipline.md | Accepted | 2026-04-24 | none | generalizes and supersedes the standing Rule 0 (2026-04-17, audit-first for risk-control decisions). **AMENDED 2026-08-14:** code-level self-checks remain live; the doc-audit-table and MVD-attest one-liner are not enforced (Addendum 2026-08-14). |
 | 2026-04-25-mvd-retrofit.md | Accepted | 2026-04-25 | none | implements the retrofit pass scoped in the MVD discipline ADR (2026-04-24); sanity gate passed (PR #2, all 9 helpers exercised, all 5 reference numbers reproduced). |
 | 2026-05-03-sentinel-gate-decision.md | Accepted | 2026-05-03 | none | Accepted |
@@ -138,7 +138,7 @@
 | file | status | decision date | supersedes | notes |
 |---|---|---|---|---|
 | 2026-04-17-dd-trigger-calibration.md | Accepted | 2026-04-17 | none | Accepted |
-| 2026-04-17-portfolio-allocations.md | Accepted | 2026-04-17 | none | Striker 1.00% and Aegis 1.50% allocations remain in force from this ADR. |
+| 2026-04-17-portfolio-allocations.md | Accepted | 2026-04-17 | none | allocations superseded by later refreshes; see Addendum 2026-08-29 for current figures. |
 | 2026-05-18-pine-input-float-defaults-realignment.md | Accepted | 2026-05-18 | none | **SUPERSEDED-BY-MERGE.** The 4 Pine fixes in this ADR are not adopted (the worktree was branched from a pre-2026-05-14 baseline; main's actual lock is 0.75% / 0.45% / 500% pyramid, not 1.00% / 0.40% / 350%). The validator and HARD-tier machinery from this ADR **remain in effect**. |
 | 2026-05-18-relock-to-test-values.md | Accepted | 2026-05-18 | none | **SUPERSEDED-BY-MERGE** — the lock action in this ADR is **not adopted**. The validator infrastructure landed alongside it remains in effect. |
 | 2026-06-12-tv-csv-canonical-feed-policy.md | Accepted | 2026-06-12 | none | (operator executive decision, recorded) — **§2.3 + §4 Forbidden-move #3 (tooling retained / don't-delete) SUPERSEDED 2026-06-17 by `docs/adr/2026-06-17-dukascopy-retirement.md`** (Dukascopy retired entirely; the rest of this ADR — TV exports canonical — stands) |

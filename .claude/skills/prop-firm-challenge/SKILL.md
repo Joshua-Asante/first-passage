@@ -212,8 +212,8 @@ All sessions are morning NY time by design (fits before Joshua's day-job hours).
 
 When Joshua uploads a broker CSV export (DXTrade, Tradovate/Bulenox, or any other execution broker):
 
-1. Parse trade history (entry/exit pairs by Trade #)
-2. Calculate: WR, PF, avg win/loss, max DD, daily P&L, cumulative equity
+1. Parse trade history (entry/exit pairs by Trade #) — this step is the `trade-csv-reconcile` skill's pipeline; hand off to it rather than re-parsing here.
+2. Calculate: WR, PF, avg win/loss, max DD, daily P&L, cumulative equity — also `trade-csv-reconcile`'s output.
 3. Compare against per-strategy backtest baselines (`references/strategy_reference.md` → `trade-csv-reconcile/references/baselines.md`)
 4. Flag deviations: WR, PF, or DD outside expected ranges
 5. Project days remaining to the active firm's profit target at current pace (`profit_target_pct` from `core/firm_rules.py`)
