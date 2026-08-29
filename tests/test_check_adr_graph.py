@@ -803,6 +803,11 @@ def test_a8_mutation_eight_day_lag_two_yes_line_still_one(tmp_path: Path):
     assert "1" in findings[0].message and "2" in findings[0].message
 
 
+def test_a8_is_default_on():
+    assert "A8" in cag.DEFAULT_ENABLED_CHECKS
+    assert "A8" in cag.VALID_CHECKS
+
+
 def test_a8_ignores_adr_without_authoritative_surface_sentence(tmp_path: Path):
     """A 0/2 line without the (a) sentence is invisible to A8."""
     _write_adr(tmp_path, "2026-08-01-other.md", A8_HEADER + """

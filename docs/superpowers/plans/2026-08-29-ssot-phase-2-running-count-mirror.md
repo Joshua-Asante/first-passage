@@ -122,14 +122,14 @@ git commit -m "docs(plan): scope SSOT Phase 2 running-count A8 check"
 - Modify: `docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md`
 - Modify: `STATE.md` (row 3 text only; do not add a fourth row)
 
-- [ ] **Step 1:** Addendum authorizing A8. Record recon (a)(b)(c). Forbid
+- [x] **Step 1:** Addendum authorizing A8. Record recon (a)(b)(c). Forbid
   STATE-join and HTML-comment schema. §10 hook:
   `python scripts/check_adr_graph.py --enable A8`.
-- [ ] **Step 2:** Retarget STATE row 3 from "Phase 1" to "Phase 2" pointing at
+- [x] **Step 2:** Retarget STATE row 3 from "Phase 1" to "Phase 2" pointing at
   this plan + the addendum. Decision-index: one new line, keep-15 roll if needed.
-- [ ] **Step 3:** `python scripts/check_brief.py docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md --type adr`
+- [x] **Step 3:** `python scripts/check_brief.py docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md --type adr`
   and `python scripts/check_adr_graph.py`. Do not hand-edit INDEX.
-- [ ] **Step 4:** Commit.
+- [x] **Step 4:** Commit.
 
 ```bash
 git add docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md STATE.md
@@ -150,7 +150,7 @@ git commit -m "docs(adr): authorize SSOT Phase 2 A8 running-count check"
 - `collect_findings` calls it when `"A8" in enabled`.
 - `VALID_CHECKS` gains `A8`. Leave `DEFAULT_ENABLED_CHECKS` unchanged until Task 4.
 
-- [ ] **Step 1: Failing tests first** (fixtures, not live files):
+- [x] **Step 1: Failing tests first** (fixtures, not live files):
 
   - (a)-sentence + `2 / 3` line + one `yes` table row → finding
   - matching `0 / 2` + zero yes-rows → clean
@@ -159,15 +159,15 @@ git commit -m "docs(adr): authorize SSOT Phase 2 A8 running-count check"
   - mutation of the 8-day defect: table has two `yes` rows, line still `1 / 3` → finding
   - ADR without the (a) sentence is invisible to A8 even if it says `0 / 2`
 
-- [ ] **Step 2:** Implement `check_a8`. Confirm tests green.
-- [ ] **Step 3:** Live-corpus run **before** flipping default-on:
+- [x] **Step 2:** Implement `check_a8`. Confirm tests green.
+- [x] **Step 3:** Live-corpus run **before** flipping default-on:
 
 ```bash
 python scripts/check_adr_graph.py --enable A8
 # Expected: OK, 0 findings on the three real ADRs
 ```
 
-- [ ] **Step 4:** Commit.
+- [x] **Step 4:** Commit.
 
 ```bash
 git add scripts/check_adr_graph.py tests/test_check_adr_graph.py
@@ -182,17 +182,17 @@ Opt-in via --enable A8 until the live corpus is confirmed clean."
 
 ## Task 4: Default-on + hygiene
 
-- [ ] **Step 1:** Add `A8` to `DEFAULT_ENABLED_CHECKS`. Re-run
+- [x] **Step 1:** Add `A8` to `DEFAULT_ENABLED_CHECKS`. Re-run
   `python scripts/check_adr_graph.py` (no `--enable`) — OK.
-- [ ] **Step 2:** `python -m pytest tests/test_check_adr_graph.py -q`
-- [ ] **Step 3:** Delete STATE row 3 (Phase 2 shipped; succession: no auto-replace
+- [x] **Step 2:** `python -m pytest tests/test_check_adr_graph.py -q`
+- [x] **Step 3:** Delete STATE row 3 (Phase 2 shipped; succession: no auto-replace
   Phase 3). Blast-radius: `rg` for tokens that still claim Phase 1 is the live
   queue packet (`SSOT/data-lineage remediation, Phase 1`, "Phases 2-4 remain
   scoped-not-detailed"). Repair silent restatements owed by this turn. Leave
   historical SESSIONS entries untouched (append-only).
-- [ ] **Step 4:** `python scripts/roll_sessions.py --next-label 2026-08-29` then
+- [x] **Step 4:** `python scripts/roll_sessions.py --next-label 2026-08-29` then
   append a wrap-up citing every **remaining** live queue row (#1 · #2).
-- [ ] **Step 5:** Commit.
+- [x] **Step 5:** Commit.
 
 ```bash
 git add scripts/check_adr_graph.py STATE.md docs/SESSIONS.md

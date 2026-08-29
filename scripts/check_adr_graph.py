@@ -27,7 +27,7 @@ COLD_TOKENS = frozenset({"Superseded", "Withdrawn", "Retired"})
 AGE_MONTHS = 6
 STUB_MAX_LINES = 40
 DEFAULT_ENABLED_CHECKS: frozenset[str] = frozenset(
-    {"A1", "A2", "A3", "A4", "A5", "A6", "A7"}
+    {"A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8"}
 )
 VALID_CHECKS: frozenset[str] = frozenset({"A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8"})
 
