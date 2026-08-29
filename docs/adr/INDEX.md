@@ -125,7 +125,7 @@
 | 2026-08-24-venue-binding-axis-t1-disposition.md | Accepted | 2026-08-24 | `2026-08-05-strategy-venue-binding-axis.md` in part — §4 T1's disposition and prospective applicability window only. §2 (the three-level axis), §3, §5, §6, T2–T4, and the `Accepted` status token are untouched. | operator GO 2026-08-24 ("Ratify it — flip to Accepted and run Phase 1"), given after the pre-ratification adversarial panel's confirmed BLOCKERs were fixed in place (see Change History). §7 Phase 1 executed same day. |
 | 2026-08-26-striker-legmap-cap-release.md | Accepted | 2026-08-26 | none | operator ruling 2026-08-26 (chat directive, verbatim: *"I want to zero out |
 | 2026-08-27-ssot-data-lineage-remediation-program.md | Accepted | 2026-08-27 | none | ratified by operator (Joshua) 2026-08-27, in-session ("ratify it, commit and open the pr"). Phase 1's four tasks (§2) authorized 2026-08-27; Phase 2 (A8) authorized 2026-08-29 per the first addendum; Phase 3 (cost-model partition) authorized 2026-08-29 per the later addendum. Phase … |
-| 2026-08-29-clv-autocorrelation-admission-route-scope.md | Accepted | 2026-08-29 | none | operator ratification 2026-08-29 (Joshua, "Flip it to accepted"), ruling the full §2 decision (2-A/2-B/2-C/2-D) as drafted, no amendments. |
+| 2026-08-29-clv-autocorrelation-admission-route-scope.md | Proposed | 2026-08-29 | none | ratified `Accepted` 2026-08-29, then **withdrawn same day** ("I take back my ratification. Update the original ADR I ratified.") after a post-ratification review surfaced a real error in 2-B's Route 1 analysis (see Change history). Corrected below; pending re-ratification. |
 
 ## Partially superseded
 

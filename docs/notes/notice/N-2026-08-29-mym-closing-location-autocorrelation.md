@@ -88,7 +88,7 @@ Reason: the underlying statistic is real and worth taking seriously (not a DROP-
 non-finding, unlike candidates 2–4), but neither GRADUATE nor DROP is the honest call
 until the cheap pre-screen this notice's own §3 already named has actually run.
 
-**Admission-route status — resolved by [`docs/adr/2026-08-29-clv-autocorrelation-admission-route-scope.md`](../../adr/2026-08-29-clv-autocorrelation-admission-route-scope.md) (Accepted 2026-08-29).** Of the three readings §5 originally sketched, the ruling lands closest to (b): a bar-shape statistic with no entry rule attached does not trigger the raised bar's admission gate — that gate fires at Pre-Q admission for an actual directional-timing *candidate*, which this is not yet, so no route decision is owed to keep recording it in a Notice-log. The ADR goes further than "outside scope" alone, though: it also pre-rules the routes for *if* this becomes a candidate. Reading (a) (Route 1) is correctly identified in this notice's own §5 as weak — confirmed and made definite by the ADR: Route 1 does not fit an unconditional, no-session-window finding at all, full stop, not merely "arguable." Route 2 does not apply (same OHLCV modality). **Route 3 (beat `ORB-MNQ-1` net-of-cost, not merely clear the cost floor) is the only route structurally open** if this is ever converted into an entry construct. The mean-reversion/fade flavor this notice flagged is exactly why the ADR leans on the standing `lesson_cost_law_pre_screen_mr_fade` discipline for the concrete next step — see the updated §5 below.
+**Admission-route status — resolved by [`docs/adr/2026-08-29-clv-autocorrelation-admission-route-scope.md`](../../adr/2026-08-29-clv-autocorrelation-admission-route-scope.md) (`Proposed`, pending re-ratification after a same-day correction — see that ADR's Change history).** Of the three readings §5 originally sketched, the ruling lands closest to (b): a bar-shape statistic with no entry rule attached does not trigger the raised bar's admission gate — that gate fires at Pre-Q admission for an actual directional-timing *candidate*, which this is not yet, so no route decision is owed to keep recording it in a Notice-log. The ADR goes further than "outside scope" alone, though: it also pre-rules the routes for *if* this becomes a candidate. Reading (a) (Route 1) is **plausibly open, corrected from this notice's own original "weak" read**: CLV's mechanism (bar-shape mean-reversion) sits outside the raised bar's three specifically-mapped cost-re-derivation axes (price / instrument-selection / hold-time), independent of and in addition to Route 3 — the ADR's own initial draft made the same "weak" mistake this notice did, by testing only against the 2026-08-10 ADR's one temporal-selectivity worked example rather than the mapped-lever definition itself, and was corrected after ratification was withdrawn. Route 2 does not apply (same OHLCV modality). **Route 3 (beat `ORB-MNQ-1` net-of-cost, not merely clear the cost floor) remains separately available** if this is ever converted into an entry construct. Route 1 eligibility still requires full G0 discipline (adversarial review, `K_intrinsic`, the F2 guard) — it is a scope reading, not a clearance. The mean-reversion/fade flavor this notice flagged is exactly why the ADR leans on the standing `lesson_cost_law_pre_screen_mr_fade` discipline for the concrete next step — see the updated §5 below.
 
 ---
 
@@ -98,16 +98,20 @@ until the cheap pre-screen this notice's own §3 already named has actually run.
   hard-date already on the calendar for other programme items, per `CLAUDE.md`'s
   prop-portfolio §4 line — not a new date invented for this notice); the pre-screen
   below is the preferred, earlier trigger and does not need to wait for that date.
-- **Trigger condition:** the admission-route question itself is resolved (see §4 above)
-  — the remaining gate is the $0 cost-law pre-screen: convert ρ≈−0.037 into a
-  decile-conditioned expected-value read and check it against **both** MYM's own cost
-  hurdle (`MYM.md` #M6, ≈6.57 bp/event, pending F3 re-pricing) **and** `ORB-MNQ-1`'s own
-  net-of-cost edge (+0.0626R/trade — Route 3's actual bar per the admission-route ADR,
-  not merely clearing the generic floor). Clearing both would let this graduate to a
-  proper Pre-Q under Route 3.
+- **Trigger condition:** the admission-route question itself is resolved (see §4 above;
+  Route 1 is also plausibly open, independent of Route 3) — the remaining gate is the $0
+  cost-law pre-screen: convert ρ≈−0.037 into a decile-conditioned expected-value read and
+  check it against MYM's own cost hurdle (`MYM.md` #M6, ≈6.57 bp/event — **provisional
+  only**, pending F3 re-pricing since Tradeify was de-scoped; a pass/fail here is against
+  the last-known basis, not a final MYM verdict). This is a necessary-condition-only floor
+  check, per the admission-route ADR's corrected 2-C — it does **not** by itself graduate
+  this to a Pre-Q. The full Route 3 comparison against `ORB-MNQ-1`'s own net-of-cost edge
+  (+0.0626R/trade) needs an actual entry/exit construct to compute a comparable R-figure
+  (bp/event and R-per-trade are not the same unit), which does not exist yet for CLV —
+  that comparison is deferred until such a construct is built.
 - **Drop trigger:** the $0 cost-law pre-screen (mean |gross edge implied by ρ≈−0.037| vs.
-  the MYM cost hurdle, `MYM.md` #M6, and separately vs. `ORB-MNQ-1`'s net-of-cost edge)
-  run before the re-check date and failing either check cleanly.
+  the MYM cost hurdle, `MYM.md` #M6, read as provisional per above) run before the
+  re-check date and failing cleanly.
 - **Calendar entry:** none set; operator to set if desired.
 
 ---
