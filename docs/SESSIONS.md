@@ -33,6 +33,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-29k — instrument_profiles Class-finding annotation wrap
+
+**Focus:** Annotation text between "Class finding" and closing `**` soft-wrapping across physical lines made `_FINDING_RE.match` miss and the whole bullet vanish from `Mechanism.findings`.
+**Shipped:** `cursor/fix-class-finding-annotation-wrap-5b46` — `_class_finding_opener` joins until bold closes; `validate` P1 on unclosed annotation; regression tests. Rebased onto `main` after #201 (SESSIONS label collision `29j` → `29k`).
+**Decisions/defects:** fourth of the #196/#197/#198 family (definition join → annotated capture → body wrap → annotation wrap).
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([overview](../docs/superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [Phase B](../docs/superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md)) · #2 B7-REFIRE Stage 1 + M1 ([M1 addendum](../docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)). queue-exception: commissioned Cloud Agent parser fix on PR implement request; not a live STATE row.
+**Live-ops state:** unchanged (c1 warm/disarmed).
+
+---
+
 ## 2026-08-29j — Codex second look lands as its native GitHub integration; dead claude-judgment-review.yml removed
 
 **Focus:** operator directive to move the Cursor-PR auto-review-request (2026-08-23 addendum) from Claude to Codex. Built a repo-workflow CLI-based design first; corrected within the same session after the operator asked Codex directly about the required secret and got pointed at Codex's own native, secret-free GitHub review integration instead — verified independently via `WebSearch` before acting on it. Then live-tested the full loop: dispatched a real well-scoped bug (issue #202, `@cursor` mention) → Cursor opened PR #203 in ~7 minutes → confirmed via Actions run history that the *existing* `claude-judgment-review.yml` mechanism (unrelated to today's Codex work, present since PR #178) has never actually fired — `GITHUB_TOKEN`-authored comments don't trigger new workflow runs, a GitHub Actions loop-prevention safeguard, not a today-only bug. Operator: remove it outright rather than repair or retarget again.
@@ -40,13 +50,6 @@ any entry, full or stub (a-first; bare claims `a`).
 **Decisions/defects:** the first Codex design assumed no GitHub-App listener exists at all (wrong) and needed a `CODEX_ACCESS_TOKEN` never going to be provisioned — caught before merge. Adversarial fable-judge mode dropped: no per-PR custom-prompt equivalent in the native integration. Write-access ruling stands: this repo's tree grants Codex no push credential; `@codex fix it` is the operator's own account-level tool, a different trust boundary. Separately, `claude-judgment-review.yml`'s request comment (posted via the default `GITHUB_TOKEN`) could never wake `claude.yml`'s listener — confirmed against 91 `claude.yml` runs, all `skipped`, with no run at all for the specific comment posted on PR #203. True since at least PR #178: every `cursor_judgment_surface` auto-request across that window was a comment that could never work. Operator asked whether a memory update would make this automatic going forward — no memory-write tool or file exists in this remote session (checked directly), so recorded as a second same-day ADR addendum instead: `AskUserQuestion` fork (dispatch mechanics only vs. full proactive routing) **ruled full proactive routing** — §2 test 3 ("Above threshold and spec-frozen → Cursor") now read as an act, not just a label; a lightweight GitHub-issue + `@cursor` handoff format (validated live this session via #202→#203) is codified alongside the existing `cc_handoff.md` brief for small precedented fixes. Tests 1–3 and the return contract (no merge without the operator) are unchanged.
 **Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: operator-directed PR-review tooling swap (Codex integration); not a leftover Open/next name.`
 **Live-ops state:** unchanged (`dry_run=true`; no arm).
-## 2026-08-29j — instrument_profiles Class-finding annotation wrap
-
-**Focus:** Annotation text between "Class finding" and closing `**` soft-wrapping across physical lines made `_FINDING_RE.match` miss and the whole bullet vanish from `Mechanism.findings`.
-**Shipped:** `cursor/fix-class-finding-annotation-wrap-5b46` — `_class_finding_opener` joins until bold closes; `validate` P1 on unclosed annotation; regression tests.
-**Decisions/defects:** fourth of the #196/#197/#198 family (definition join → annotated capture → body wrap → annotation wrap).
-**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([overview](../docs/superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [Phase B](../docs/superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md)) · #2 B7-REFIRE Stage 1 + M1 ([M1 addendum](../docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)). queue-exception: commissioned Cloud Agent parser fix on PR implement request; not a live STATE row.
-**Live-ops state:** unchanged (c1 warm/disarmed).
 
 ---
 
