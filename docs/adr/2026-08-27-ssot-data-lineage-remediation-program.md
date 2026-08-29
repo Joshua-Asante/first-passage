@@ -1,6 +1,6 @@
 # ADR 2026-08-27 — SSOT / data-lineage remediation program: Phase 0 ratification
 
-**Status:** `Accepted` — ratified by operator (Joshua) 2026-08-27, in-session ("ratify it, commit and open the pr"). Phase 1's four tasks (§2) authorized 2026-08-27; Phase 2 (A8) authorized 2026-08-29 per the addendum below. Phases 3–4 remain named-but-not-yet-scoped.
+**Status:** `Accepted` — ratified by operator (Joshua) 2026-08-27, in-session ("ratify it, commit and open the pr"). Phase 1's four tasks (§2) authorized 2026-08-27; Phase 2 (A8) authorized 2026-08-29 per the first addendum; Phase 3 (cost-model partition) authorized 2026-08-29 per the later addendum. Phase 4 remains named-not-scoped.
 **Decision date:** 2026-08-27
 **Supersedes:** none
 **Superseded-by:** none
