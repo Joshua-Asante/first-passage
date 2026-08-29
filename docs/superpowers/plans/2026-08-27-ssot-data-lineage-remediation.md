@@ -459,11 +459,21 @@ decay-audit for the ADR corpus; give it one."
 
 ---
 
-## Phase 2 — Consolidate the repeated hand-rolled canonical/mirror micro-pattern (scoped, not yet detailed)
+## Phase 2 — Consolidate the repeated hand-rolled canonical/mirror micro-pattern
 
-**Why:** at least three ADRs (`2026-07-15-external-mechanism-harvest-intake.md`, `2026-08-15-no-counterparty-statistical-sourcing-channel.md`, `2026-08-16-deep-iteration-lane-charter.md`) each independently invented the same tiny pattern — "this ADR's own running-count line is canonical, STATE.md/other surfaces are a mirror only" — enforced by nothing but a sentence. One of the three has already been caught lagging its mirrors by 8 days. `check_adr_graph.py` is already wired to both `docs/adr/` and `STATE.md` (per `gate_manifest.py`'s path-conditional trigger), meaning there may already be a binding point to extend rather than a new gate to invent.
+**Status:** scoped 2026-08-29. Recon (a)(b)(c) answered. Bite-sized steps live in
+[`2026-08-29-ssot-phase-2-running-count-mirror.md`](2026-08-29-ssot-phase-2-running-count-mirror.md).
+Do not re-derive them here.
 
-**What Phase 0/1 must confirm before this phase can be fully scoped:** (a) does `check_adr_graph.py` already check running-count-line freshness at all, or only header/edge-reciprocity/stub-shape as its docstring in the D3-topology ADR's §0 read suggests; (b) is a fourth instance of the pattern findable via `grep -rl "running-count line" docs/adr/` beyond the three already found; (c) is a single shared mechanism (e.g., a structured HTML-comment counter `check_adr_graph.py` can parse and cross-check, similar to the `concept-intake-entry` comment schema `docs/rejected_candidates.md` already uses) actually cheaper than three independent prose conventions, or does the low instance count (3) not yet justify the generalization cost. Scope this phase's own plan file only after that's answered — don't pre-write bite-sized steps against a design that recon might invalidate.
+**Why (unchanged):** three ADRs each independently invented "this ADR's own running-count
+line is canonical, STATE.md is a mirror only," enforced by nothing but a sentence. One
+already lagged its mirrors by 8 days.
+
+**Recon answers (2026-08-29, `87afe00`):** (a) `check_adr_graph.py` does **not** check
+running-count freshness (A1–A7 only). (b) no fourth instance. (c) a shared HTML-comment
+schema is **not** cheaper than three prose conventions; a STATE-mirror join is the wrong
+check (STATE deletes closed rows by design). Authorized design is A8 — intra-ADR
+table-vs-line / deep-lane-abandoned-vs-cited-preregs consistency.
 
 ## Phase 3 — Instrument-profile / cost-model closed-world completeness audit (scoped, not yet detailed)
 
@@ -483,7 +493,7 @@ decay-audit for the ADR corpus; give it one."
 
 **Spec coverage:** every SSOT/lineage gap this session verified as currently open (skill-deploy drift, D4 enforcement, Q-M1WIRE-1 wiring, falsifier-reachability cadence) has a Phase 1 task. The two gaps carried over from the earlier report but not re-verified this session (instrument-profile/cost-model completeness, the running-count-line pattern's full extent) are explicitly scoped as "confirm before detailing" phases rather than given fabricated bite-sized steps — this is intentional, not a gap in this plan.
 
-**Placeholder scan:** Task 2 Step 4 and Phase 2/3/4 deliberately do not contain complete code, because the schema/scope they depend on was not read this session. Each such spot names exactly what to read first and why, rather than saying "implement appropriately" — these are Rule-0 gates, not vague hand-waves.
+**Placeholder scan:** Phase 2 now has its own plan file (2026-08-29). Phases 3/4 still deliberately do not contain complete code — each names exactly what to read first. These remain Rule-0 gates, not vague hand-waves.
 
 **Type consistency:** `check_skill_deploy_sync.py`'s `main(argv)` and `check_instrument_rejection_coverage.py`'s CLI shape both follow the exit-code convention already used by every other `scripts/check_*.py` gate in this repo (0 = clean, non-zero = findings), confirmed against `gate_manifest.py --list`'s existing roster.
 
@@ -494,3 +504,4 @@ decay-audit for the ADR corpus; give it one."
 | Date | Change | By |
 |---|---|---|
 | 2026-08-27 | Initial plan, scoped from the "Recurrence Ledger" mining pass + a fresh Rule-0 re-verification of every cited defect's current state | Claude Code |
+| 2026-08-29 | Phase 2 scoped — recon (a)(b)(c) answered; pointer at `2026-08-29-ssot-phase-2-running-count-mirror.md` (A8 intra-ADR consistency; no HTML-comment schema; no STATE join) | Cursor Cloud Agent |
