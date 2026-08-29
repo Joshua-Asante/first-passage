@@ -5,9 +5,15 @@ figure from that campaign's own declared primitives, with no per-campaign branch
 """
 from __future__ import annotations
 
+import subprocess
+import sys
+from pathlib import Path
+
 import pytest
 
 from discovery import cost_model
+
+REPO = Path(__file__).resolve().parents[1]
 
 
 # --------------------------------------------------------------------------
@@ -156,7 +162,10 @@ def test_invalid_slip_convention_raises():
         )
 
 
-@pytest.mark.parametrize("instrument", ["ZN", "ZB", "ZF", "CL", "NG", "6E"])
+@pytest.mark.parametrize(
+    "instrument",
+    ["ZN", "ZB", "ZF", "CL", "NG", "6E", "MGC", "ES", "NQ", "YM", "RTY", "GC", "MNG"],
+)
 def test_no_commission_row_instruments_raise_naming_gap(instrument):
     with pytest.raises(ValueError, match=instrument):
         cost_model.resolve_commission("Bulenox_100K", instrument)
@@ -249,3 +258,53 @@ def test_tick_value_invariant_holds_for_every_spec(symbol):
     assert spec.tick_value == pytest.approx(
         spec.multiplier * spec.tick_size, rel=1e-12
     ), f"{symbol}: tick_value {spec.tick_value} != {spec.multiplier} * {spec.tick_size}"
+
+
+# --------------------------------------------------------------------------
+# SSOT Phase 3 — closed-world partition (intra-module; no ledger join)
+# --------------------------------------------------------------------------
+
+
+def test_closed_world_live_partition_is_clean():
+    assert cost_model.closed_world_findings() == []
+
+
+def test_closed_world_unclassified_specs_key_is_a_finding(monkeypatch):
+    """Mutation of the Q-CAPBAND drift: SPECS grew, named no-row set did not."""
+    specs = dict(cost_model.INSTRUMENT_SPECS)
+    specs["FAKE"] = cost_model.InstrumentSpec("FAKE", 1.0, 1.0, 1.0)
+    monkeypatch.setattr(cost_model, "INSTRUMENT_SPECS", specs)
+    findings = cost_model.closed_world_findings()
+    assert findings
+    assert any("FAKE" in f for f in findings)
+
+
+def test_closed_world_index_micro_missing_from_specs_is_a_finding(monkeypatch):
+    specs = {k: v for k, v in cost_model.INSTRUMENT_SPECS.items() if k != "MNQ"}
+    monkeypatch.setattr(cost_model, "INSTRUMENT_SPECS", specs)
+    findings = cost_model.closed_world_findings()
+    assert findings
+    assert any("MNQ" in f for f in findings)
+
+
+def test_closed_world_index_micro_no_commission_overlap_is_a_finding(monkeypatch):
+    monkeypatch.setattr(
+        cost_model,
+        "NO_COMMISSION_ROW_INSTRUMENTS",
+        cost_model.NO_COMMISSION_ROW_INSTRUMENTS | {"MNQ"},
+    )
+    findings = cost_model.closed_world_findings()
+    assert findings
+    assert any("MNQ" in f for f in findings)
+
+
+def test_closed_world_cli_exits_zero_on_live_module():
+    result = subprocess.run(
+        [sys.executable, str(REPO / "scripts" / "check_cost_model_closed_world.py")],
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "OK" in result.stdout
