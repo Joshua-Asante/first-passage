@@ -2,8 +2,9 @@
 """check_adr_graph.py — ADR lifecycle graph gate (governance tier).
 
 Enforces header Status vocabulary, supersession edge integrity (Accepted
-successors only), cold-store stub shape, derived INDEX sync, and (when
-enabled) age+graph prune. CI verifies only — never mutates ADR bodies.
+successors only), cold-store stub shape, derived INDEX sync, (when
+enabled) age+graph prune, and A8 intra-ADR running-count consistency.
+CI verifies only — never mutates ADR bodies.
 
 Design: docs/superpowers/specs/2026-07-17-adr-lifecycle-graph-design.md
 """
@@ -26,9 +27,9 @@ COLD_TOKENS = frozenset({"Superseded", "Withdrawn", "Retired"})
 AGE_MONTHS = 6
 STUB_MAX_LINES = 40
 DEFAULT_ENABLED_CHECKS: frozenset[str] = frozenset(
-    {"A1", "A2", "A3", "A4", "A5", "A6", "A7"}
+    {"A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8"}
 )
-VALID_CHECKS: frozenset[str] = frozenset({"A1", "A2", "A3", "A4", "A5", "A6", "A7"})
+VALID_CHECKS: frozenset[str] = frozenset({"A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8"})
 
 HEADER_END_RE = re.compile(r"^(## |---\s*$)")
 FIELD_RE = re.compile(r"^\*\*(Status|Decision date|Supersedes|Superseded-by|"
@@ -754,6 +755,163 @@ def check_a7(headers: dict[str, AdrHeader], state_text: str, state_surface: str)
     return findings
 
 
+# A8 — intra-ADR running-count consistency. Discovers ADRs by the counting-
+# machinery "(a) Authoritative surface" sentence. Does NOT join STATE.md or
+# ops/instruments/*.md (closed-row deletion is legal). Owner:
+# docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md 2026-08-29 addendum.
+AUTHORITATIVE_SURFACE_RE = re.compile(
+    r"\(a\)\s+Authoritative surface\.\s*.{0,240}running-count line",
+    re.IGNORECASE | re.DOTALL,
+)
+TABLE_CANONICAL_RE = re.compile(
+    r"\*\*Running(?:\s+consecutive\s+[^*]+)?\s+count\s+\(canonical\):"
+    r"(?:\*\*)?\s*(\d+)\s*/\s*(\d+)",
+    re.IGNORECASE,
+)
+DEEP_LANE_HEAD_RE = re.compile(
+    r"\*\*Running counts \(canonical, this ADR\):\*\*",
+    re.IGNORECASE,
+)
+DEEP_LANE_FIELDS_RE = re.compile(
+    r"campaigns completed \*\*(\d+)\*\*"
+    r".*?survivors falsified \*\*(\d+)\s*/\s*(\d+)\*\*"
+    r".*?campaigns abandoned \*\*(\d+)\*\*",
+    re.IGNORECASE | re.DOTALL,
+)
+DEEP_LANE_PREREG_RE = re.compile(
+    r"(?:[\w./-]+/)?[\w.-]*deep-lane[\w.-]*prereg[\w.-]*\.md",
+    re.IGNORECASE,
+)
+_SKIP_ADR_NAMES = frozenset({"INDEX.MD", "TOMBSTONES.MD", "README.MD"})
+
+
+def _cell_plain(cell: str) -> str:
+    s = cell.strip()
+    while s.startswith("*"):
+        s = s[1:]
+    return s.strip().lower()
+
+
+def _yes_increment_count(text: str) -> int | None:
+    """Count increment-table rows whose Increments? cell starts with 'yes'.
+
+    Returns None if no such table exists.
+    """
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        if "Increments?" not in line or not line.lstrip().startswith("|"):
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        try:
+            idx = next(j for j, c in enumerate(cells) if "Increments?" in c)
+        except StopIteration:
+            continue
+        yes = 0
+        for row in lines[i + 1:]:
+            stripped = row.strip()
+            if not stripped.startswith("|"):
+                break
+            body = stripped.strip("|")
+            if set(body.replace("|", "").replace(":", "").replace("-", "").strip()) == set():
+                continue
+            rcells = [c.strip() for c in body.split("|")]
+            if idx >= len(rcells):
+                continue
+            if _cell_plain(rcells[idx]).startswith("yes"):
+                yes += 1
+        return yes
+    return None
+
+
+def _deep_lane_paragraph(text: str) -> tuple[str, int] | None:
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        if DEEP_LANE_HEAD_RE.search(line):
+            buf = [line]
+            for nxt in lines[i + 1:]:
+                if nxt.strip() == "" or nxt.startswith("##"):
+                    break
+                buf.append(nxt)
+            return "\n".join(buf), i + 1
+    return None
+
+
+def _deep_lane_prereg_names(paragraph: str) -> frozenset[str]:
+    return frozenset(
+        Path(p).name.lower() for p in DEEP_LANE_PREREG_RE.findall(paragraph)
+    )
+
+
+def check_a8(adr_dir: Path) -> list[Finding]:
+    """A8 -- a counting-machinery ADR's canonical n disagrees with its own
+    increment evidence (table yes-rows, or deep-lane *deep-lane* prereg cites).
+
+    Discovers files by the existing '(a) Authoritative surface' sentence.
+    Table-backed ADRs compare N on 'Running … count (canonical): N / D' to
+    the Increments? yes-count. Deep-lane (no table) compares
+    'campaigns abandoned **A**' to unique *deep-lane*.md paths in that
+    paragraph. STATE.md / instrument-profile mirrors are deliberately
+    not joined — those ADRs authorize deleting closed STATE rows.
+    """
+    findings: list[Finding] = []
+    if not adr_dir.is_dir():
+        return findings
+    for fp in sorted(adr_dir.glob("*.md")):
+        if fp.name.upper() in _SKIP_ADR_NAMES:
+            continue
+        text = fp.read_text(encoding="utf-8", errors="replace")
+        if not AUTHORITATIVE_SURFACE_RE.search(text):
+            continue
+        surface = f"docs/adr/{fp.name}"
+        table_m = TABLE_CANONICAL_RE.search(text)
+        deep = _deep_lane_paragraph(text)
+        if table_m:
+            declared_n = int(table_m.group(1))
+            yes_n = _yes_increment_count(text)
+            lineno = text[: table_m.start()].count("\n") + 1
+            if yes_n is None:
+                findings.append(Finding(
+                    "HARD", "A8", surface, lineno,
+                    "canonical running-count line has no Increments? table",
+                ))
+                continue
+            if declared_n != yes_n:
+                findings.append(Finding(
+                    "HARD", "A8", surface, lineno,
+                    f"canonical running-count N={declared_n} disagrees with "
+                    f"Increments? yes-count {yes_n}",
+                ))
+            continue
+        if deep:
+            paragraph, lineno = deep
+            fields = DEEP_LANE_FIELDS_RE.search(paragraph)
+            if fields is None:
+                findings.append(Finding(
+                    "HARD", "A8", surface, lineno,
+                    "Running counts (canonical, this ADR) line is unparseable "
+                    "(need campaigns completed / survivors falsified / "
+                    "campaigns abandoned)",
+                ))
+                continue
+            abandoned = int(fields.group(4))
+            cited = _deep_lane_prereg_names(paragraph)
+            if abandoned != len(cited):
+                findings.append(Finding(
+                    "HARD", "A8", surface, lineno,
+                    f"campaigns abandoned **{abandoned}** disagrees with "
+                    f"{len(cited)} *deep-lane* prereg path(s) cited in the "
+                    "same paragraph",
+                ))
+            continue
+        findings.append(Finding(
+            "HARD", "A8", surface, 1,
+            "has (a) Authoritative surface counting machinery but no "
+            "parseable Running count (canonical) line or Running counts "
+            "(canonical, this ADR) paragraph",
+        ))
+    return findings
+
+
 def collect_findings(
     repo_root: Path,
     enabled: frozenset[str],
@@ -782,6 +940,8 @@ def collect_findings(
         if state_path.is_file():
             findings += check_a7(
                 headers, state_path.read_text(encoding="utf-8"), "STATE.md")
+    if "A8" in enabled:
+        findings += check_a8(adr_dir)
     return findings
 
 
