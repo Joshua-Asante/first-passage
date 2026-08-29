@@ -20,7 +20,7 @@ REQUIRED_GIT_READ_TOOLS = (
 
 def test_claude_yml_allows_quoted_git_read_tools() -> None:
     assert "--allowedTools" in CLAUDE_YML
-    assert 'allowed_bots: "cursor,github-actions"' in CLAUDE_YML
+    assert 'allowed_bots: "cursor"' in CLAUDE_YML
     assert "allowed_bots: \"*\"" not in CLAUDE_YML
     assert "allowed_bots: '*'" not in CLAUDE_YML
     quoted = next(

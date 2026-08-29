@@ -56,11 +56,11 @@ cells:
     date: 2026-08-29
     source: "../../docs/notes/notice/N-2026-08-29-mym-rangestate-persistence.md"
   - mechanism: overnight-range-day-session-transfer
-    verdict: CONTINGENT-FORWARD
+    verdict: AMBIGUOUS-PARKED
     date: 2026-08-29
     source: "../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md"
   - mechanism: intraday-bar-volume-regime
-    verdict: CONTINGENT-FORWARD
+    verdict: AMBIGUOUS-PARKED
     date: 2026-08-29
     source: "../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md"
   - mechanism: overnight-gap-magnitude-range-conditioning
@@ -188,6 +188,7 @@ structure:
   Notice's §4 for the full disclosure. Scripts + JSON:
   `lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c24_joint_gate.py` +
   `c24_joint_results.json` + `c24_joint_frame.csv`.
+- **2026-08-29 (cell-verdict correction)** — **Stale `CONTINGENT-FORWARD` on two GRADUATE-eligible cells flipped to `AMBIGUOUS-PARKED`.** Re-read both Notice-logs: [`N-…overnight-rth-range-transfer`](../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md) and [`N-…bar-volume-regime`](../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md) still route GRADUATE with Pre-Q authoring deferred; neither has a `docs/briefs/Q-*.md` Pre-Q, a frozen verdict pre-registration, or an operator GO. `scripts/instrument_profiles.py` `CONSULT_NOTE` defines `CONTINGENT-FORWARD` as "a frozen forward test is running on this cell" — that bar is not met. Closed-vocabulary fallback is `AMBIGUOUS-PARKED` (still BLOCKING; anti-collision preserved). Same class as the MNQ analogue correction (PR #201). **Not a silent flip** — USDCAD BPC-001's 2026-07-28 lesson is that changing this token changes what `instrument_profiles.py cell` forecloses; this session is the operator-dispatched adjudication, not hygiene. **Out of scope, left as-is:** `overnight-gap-magnitude-range-conditioning` and `bar-closing-location-autocorrelation` remain `CONTINGENT-FORWARD` (both HELD, different routing). No `core/`, Pine, allocation, `dd_protection`, lifecycle, or rail change.
 - **2026-08-29 (correction #2, follow-up)** — **Same design-flaw class caught on candidate 3
   (`intraday-bar-volume-regime`), missed by the first adversarial pass because this construct
   doesn't cite the D5 magnitude-persistence spec** (it's a different mechanism family), so the

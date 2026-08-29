@@ -42,11 +42,20 @@ jobs:
           # Cursor's PR/review comments come from the cursor[bot] GitHub App, which
           # claude-code-action otherwise refuses as a non-human actor (fails fast,
           # after the ack reaction, with no Claude run ever starting).
-          # github-actions is the commenter for automatic judgment-review
-          # requests (claude-judgment-review.yml posts `@claude` + a marker).
           # Do not use '*'. The mention workflow on the default branch is what
           # actually runs Claude, so a PR that edits workflows still gets a look.
-          allowed_bots: "cursor,github-actions"
+          #
+          # github-actions was previously also allow-listed: it was the
+          # commenter for automatic judgment-review requests
+          # (claude-judgment-review.yml posted `@claude` + a marker). That
+          # flow was retargeted to Codex by the 2026-08-29 addendum to
+          # docs/adr/2026-07-14-cc-cursor-surface-allocation.md —
+          # codex-judgment-review.yml runs `codex exec review` directly and
+          # never mentions `@claude`, so github-actions has no remaining
+          # caller here. Dropped rather than left as unused standing scope;
+          # re-add if a future github-actions-originated `@claude` mention is
+          # introduced.
+          allowed_bots: "cursor"
 
           # Optional: Customize the trigger phrase (default: @claude)
           # trigger_phrase: "/claude"
