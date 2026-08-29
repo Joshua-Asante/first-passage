@@ -74,5 +74,24 @@
    ],
    "lift": -0.07407407407407407
   }
- }
+ },
+ "gap_lift_bootstrap_p": {
+  "0": 0.007748062984253936,
+  "1": 0.9982504373906523
+ },
+ "overnight_lift_bootstrap_p": {
+  "0": 0.00024993751562109475,
+  "1": 0.00024993751562109475
+ },
+ "gap_lift_null_calibrated_p": {
+  "0": 0.008710801393728223,
+  "1": 0.9970501474926253
+ },
+ "overnight_lift_null_calibrated_p": {
+  "0": 0.0008620689655172414,
+  "1": 0.0030581039755351682
+ },
+ "null_construction": "within_stratum_circular_shift",
+ "null_includes_identity": true,
+ "frame_source": "candidate24_joint_frame.csv"
 }
