@@ -29,6 +29,7 @@
 | opening-range-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . |
 | order-flow-depth-imbalance | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | overnight-range-failed-extension-fade | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| overnight-range-transmission | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | pdh-pdl-breakout-rth | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | pdh-pdl-failed-break-reclaim | . | . | . | . | . | . | D | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . |
 | prior-session-breakout-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
@@ -282,6 +283,13 @@ Entering in the direction of an opening-range break and holding the position for
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
 | M2K | DEAD | 2026-08-13 | ../../docs/briefs/closures/MSL-C3-K2-closure-falsified.md |
+
+
+## overnight-range-transmission
+
+**NEW 2026-08-29 (Q-RANGEXFER-1).** Conditioner-role, not entry-role: does the Globex overnight
+
+_No instrument has a recorded verdict on this mechanism._
 
 
 ## pdh-pdl-breakout-rth

@@ -395,3 +395,34 @@ Rejected nearest classes (one-line):
 - `regime-overlay` (XAUUSD KER/TSMOM sizing gate; NAS100 dealer-gamma-regime-gate) — a
   sizing/deploy gate on inferred regime state; this construct is an entry-role trigger, not a
   conditioning overlay.
+
+## overnight-range-transmission
+
+**NEW 2026-08-29 (Q-RANGEXFER-1).** Conditioner-role, not entry-role: does the Globex overnight
+(pre-RTH) session's own realized range, and/or the unsigned RTH-open gap magnitude, predict the
+*same trading day's* RTH-session realized range being elevated (vs its own trailing median,
+causal `.shift(1)`)? Cross-series claim — bias and outcome are two *different* magnitude series
+on the *same* day, not one series lagged against itself. Distinct from `daily-range-state-persistence`
+(single-series, next-*day* self-lag) and from `overnight-range-failed-extension-fade` (entry-role
+fade-the-level construct keyed to a broken overnight extreme, not a conditioner on realized range
+magnitude). Grounding: same ARCH/GARCH-canon volatility-clustering evidence-robustness as
+`daily-range-state-persistence`, extended to the cross-series/same-day case — the frozen
+corrected-null-battery spec's own §4 (D5) names this shape **"S2"** and holds its S1 (single-
+series) null does NOT port to it (independent surrogation of the two series deletes the shared
+same-day-regime confound the test needs to preserve; O1: `UNRESOLVED-NEEDS-DESIGN`).
+
+- **Class finding (D5 stage-1 $0 cheap falsifier, MNQ, OFFICIAL):** overnight range clears D5's
+  un-pause condition (2) decisively — incremental lift over matched day-history conditioning
+  +57.7pp / +38.7pp across both day-history strata (block-bootstrap p<0.00025, n=1487 scored
+  days). Gap magnitude also clears it on its own (+17.0pp / +15.5pp vs day-history, p≈0.00225)
+  but a same-session joint check (holding overnight-range state fixed) found gap's own increment
+  is **conditional and sign-unstable**: +10.5pp when overnight range is itself NOT elevated
+  (p=0.0078) but −8.1pp (not significant, p=0.998 for the positive direction) when overnight
+  range is already elevated — gap does not add information once overnight range is known to be
+  hot. Parent-Q convention: overnight range is the primary falsifiable claim; gap magnitude is a
+  forked, nested sub-question scoped to the overnight-calm regime only, not a co-equal claim.
+  Stage 2 (joint-surrogation null design solving D5's O1 item, adversarial review, operator GO)
+  is **owed, not yet run** — this class finding is a stage-1 result only, not a certified verdict
+  under the corrected battery. [MNQ.md](MNQ.md) ·
+  [`Q-RANGEXFER-1`](../../docs/briefs/Q-RANGEXFER-1-overnight-range-gap-magnitude-transfer.md) ·
+  [`joint gate script`](../../lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate24_joint_gate.py)
