@@ -169,6 +169,7 @@ DATE / INITIALS: 2026-08-08 / JA
 |---|---|---|
 | 2026-08-08 | §8 Accepted; TNEC-1 RATIFIED atomic | JA |
 | 2026-08-12 | `Superseded-in-part-by` → MSL ratification ADR (L2 taxonomy addition only — MSL named) | Joshua (B1) + Cursor |
+| 2026-08-29 | Addendum: `Q-MNQDTL-CON-1` closed FALSIFIED 2026-08-09; §2-B item 3 / §10 hook 6 "stays OPEN/unpaid" now historical-only (adr-decay-audit discharge) | Claude Code |
 
 ---
 

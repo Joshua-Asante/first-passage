@@ -7,7 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-**Related:** [SPEC S1](../spec/2026-08-07-loop-s1-environment-ratification-spec.md) · [loop index](../spec/2026-08-07-loop-spec-index.md) · [Q-VENUEGEO-1](../briefs/Q-VENUEGEO-1-f3-successor-venue-geometry-scoping.md) · [MNQDTL-1](../spec/2026-08-06-mnq-daily-cadence-tight-daily-loss-target-spec.md)
+**Related:** [SPEC S1](../spec/2026-08-07-loop-s1-environment-ratification-spec.md) · [loop index](../spec/2026-08-07-loop-spec-index.md) · [Q-VENUEGEO-1](../briefs/Q-VENUEGEO-1-f3-successor-venue-geometry-scoping.md) · [MNQDTL-1](../spec/2026-08-06-mnq-daily-cadence-tight-daily-loss-target-spec.md) · [`2026-07-10-databento-research-stack.md`](2026-07-10-databento-research-stack.md) (added 2026-08-29, adr-decay-audit discharge — superseded in part by this ADR: its §2 rail-verdict clause, KEEP TradingView→NinjaTrader8→Bulenox, is stale; this ADR's F2/F3 ruling is part of what actually moved the rail. See that ADR's 2026-08-29 addendum)
 **Layer:** environment / rail-disposition only. **$0 / K=0** — authorizes nothing, arms nothing, redeploys no Striker leg, places no trade.
 
 ---

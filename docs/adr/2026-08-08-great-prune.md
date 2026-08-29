@@ -167,3 +167,20 @@ ls docs/adr/*.md | wc -l                                                        
 git tag -l pre-prune-2026-08-08                                                                             # resolvable
 python scripts/gate_manifest.py --tier pre-commit                                                           # green
 ```
+
+## Addendum 2026-08-29 — `pre-prune-2026-08-08` tag not carried into the public clone; §1/§6/§10 retrieval guarantee no longer holds here
+
+The `pre-prune-2026-08-08` tag was **not carried into the public clone** created by
+[`2026-08-14-repo-public-visibility-transition.md`](2026-08-14-repo-public-visibility-transition.md)
+(fresh "Initial public release" history, not an in-place flip). Verified on this clone as of
+2026-08-29: `git tag -l` and `git ls-remote --tags origin` are both **empty**.
+
+Consequence: §1's "Every deleted byte is retrievable: `git show pre-prune-2026-08-08:<path>`" claim,
+and the §6/§10 tag-resolvability gate (`git tag -l pre-prune-2026-08-08` expected "resolvable"), **no
+longer hold on the public tree**. §6's `RESOLVED` status is retrospective to the pre-transition
+environment in which it was evaluated and is **not reopened** by this note. Retrieval of pruned bytes
+now requires the private archive (per [`docs/adr/TOMBSTONES.md`](TOMBSTONES.md)'s header) or, for
+file history predating 2026-08-14, `git log --follow -- <path>` as a partial fallback — it does not
+recover files already deleted before the transition's squash.
+
+Never edit the two addenda above in place — this addendum records the tag-carry gap only.
