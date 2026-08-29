@@ -166,3 +166,40 @@ test -f docs/ltm/briefs/Q-DDTRIG-1-finding1-daily-loss-denominator-closure.md &&
 | Date | Change | By |
 |---|---|---|
 | 2026-07-06 | Initial authoring + acceptance (implementation, re-run, and downstream sweep completed same session) | Joshua + Claude Code |
+
+## Addendum 2026-08-29 — hoist relocated to `core/mc/simulation.py` (DECAYED_UNDOCUMENTED, adr-decay-audit)
+
+The full-corpus `adr-decay-audit` flagged this ADR's §10 audit hook —
+`grep -n "bust-day-maxdd-inclusion" core/portfolio_mc.py` — as `DECAYED_UNDOCUMENTED`:
+`core/portfolio_mc.py` is no longer where the hoist lives. This addendum is that discharge; the
+§0–§7 and §10 above stay byte-unedited as the historical record (Rule 14).
+
+**Current state, verified by direct code read (this session):** `core/portfolio_mc.py` is now a
+50-line compatibility facade — it re-exports `core/mc/modes.py` and forwards `_run_seeds`; it
+contains no `_simulate_path`/`simulate_path` body at all. The fix this ADR describes now lives in
+`core/mc/simulation.py::simulate_path`. Reading that function confirms the fix's substance still
+holds exactly as decided here: the underwater update —
+
+```python
+dd_new = (peak - equity_new) / peak if peak > 0 else 0.0
+if dd_new > max_dd:
+    max_dd = dd_new
+```
+
+(`core/mc/simulation.py` lines 124–126) — executes before every bust-path return
+(`bust_daily` line 140, `bust_static` line 169, `bust_inactivity` line 178), matching this ADR's
+§2 decision that the breach day's drawdown is folded into `max_dd` before the bust check, not
+after. The split of `core/portfolio_mc.py` into the `core/mc/` package was never itself captured
+by any ADR — it is a refactor this addendum notes in passing, not a decision this addendum makes.
+
+**Regression test still exists and passes.** `tests/core/test_mc_bustday_maxdd.py` (the ADR's
+§7 Phase 1/§10 regression suite) is present and green, re-verified this session:
+
+```
+$ python -m pytest tests/core/test_mc_bustday_maxdd.py -q
+....                                                                     [100%]
+4 passed in 0.02s
+```
+
+No decision reversal — this is a code-location correction only. A future reader following this
+ADR's §10 hook against `core/portfolio_mc.py` should instead grep `core/mc/simulation.py`.

@@ -3,7 +3,7 @@
 **Status:** Accepted (2026-06-14) — taxonomy, dedup-axis separation, add-back gate, and the additive schema extension are all adopted; the §7 downstream sweep landed (SCHEMA.md note + registry pointer + `feedback.py` field extension with a round-trip test, 19/19 intake tests green).
 **Supersedes:** none
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** `2026-07-11-gen1-pipeline-retirement.md` - dedup.py/feedback.py mechanism only; `2026-08-09-rejection-register-topology-and-bar-wiring.md` - registry topology only.
 **Retain-until:** none
 **Decision date:** 2026-06-14
 **Authors:** Joshua + claude.ai (advisor, web session) → reconciled against repo by Claude Code
@@ -206,3 +206,7 @@ grep -n "_KV_RE" lab/validation/concept_intake/dedup.py
 | 2026-06-14 | Initial authoring (web session) — proposed schema *replacement*, confabulated `docs/registry/` + `scripts/registry/` paths | Joshua + claude.ai |
 | 2026-06-14 | Reconciled to repo: schema *extension* (not replacement), paths corrected, `dedup.py` forward-compat verified, alternatives added | Claude Code |
 | 2026-06-14 | §7 downstream landed (SCHEMA.md note, registry pointer, `feedback.py` extension + 3 tests); first §D entry written (`mean-reversion-spike-fade × USOIL`); status → `Accepted` | Claude Code |
+
+## Addendum 2026-08-29 — dedup.py/feedback.py mechanism deleted 2026-07-11; registry topology moved on
+
+`lab/validation/concept_intake/dedup.py` and `lab/validation/concept_intake/feedback.py` — the "live parser" and the `build_registry_entry()` machinery this ADR's §0/§7/§10 describe as the current mechanism — were deleted 2026-07-11 (`docs/adr/2026-07-11-gen1-pipeline-retirement.md` §7 Phase 2). The dedup and negative-rediscovery registry content was confirmed fully mirrored into `docs/rejected_candidates.md` before deletion. §7/§D/§10's references to `dedup.py`/`feedback.py` describe the pre-retirement mechanism for historical/provenance purposes only — they are not a live parser today. Live registry topology is now governed by `docs/adr/2026-08-09-rejection-register-topology-and-bar-wiring.md`; see `docs/rejected_candidates.md`'s DEAD SECTION note for the cross-reference this ADR never carried in-line. Never edit §1-§10 above in place — this addendum records the deletion and re-pointer only.

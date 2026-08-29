@@ -9,6 +9,8 @@
 **Supersedes:** `2026-07-12-prop-portfolio-four-friendly-firms.md` in part — `ACTIVE_FIRM="FXIFY"` retention/prohibition only
 **Supersedes:** `2026-07-13-dd-protection-concept-not-constant.md` in part — FXIFY-C2 seed-row and `ACTIVE_FIRM` retention only
 **Supersedes:** `2026-07-17-c1-rail-build-account-registration-go.md` in part — `ACTIVE_FIRM` retention prohibition only
+**Supersedes:** `2026-05-10-mc-c2-anchor-ratification.md` in part — Pepperstone C2 anchor pins and audit hooks
+**Supersedes:** `2026-06-06-firm-constants-single-source.md` in part — the ACTIVE_FIRM-selector-mechanism clause
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none

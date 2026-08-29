@@ -3,7 +3,7 @@
 **Status:** ACCEPTED
 **Decision date:** 2026-05-10
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** `2026-07-22-challenge-era-substrate-retirement.md` - Pepperstone C2 anchor pins and executable audit hooks only (Phase 3, merged 2026-07-24); the import-topology finding (DD_TRIGGER/DD_SCALE imported as constants only, never calculate_protection) remains structurally true but relocated to core/mc/modes.py and core/mc/simulation.py.
 **Retain-until:** none
 **Date:** 2026-05-10
 **Supersedes:** none
@@ -88,3 +88,41 @@ grep -E "approx\((0\.9809|0\.0036|0\.0473|0\.9623|0\.0069|0\.0491)" tests/test_m
 
 
 If any audit hook fails on quarterly review, the ratification's premise has shifted and the ADR needs re-evaluation.
+
+## Addendum 2026-08-29 — Pepperstone anchor deleted; import-topology finding relocated
+
+The 2026-08-29 `adr-decay-audit` full-corpus sweep flagged this ADR `DECAYED_UNDOCUMENTED`: its
+§Audit hooks assert `tests/test_mc_anchors.py` exists and that `portfolio_mc.py` imports
+`DD_TRIGGER`/`DD_SCALE` and never `calculate_protection`. Neither holds against the current tree —
+`tests/test_mc_anchors.py` is deleted and `core/portfolio_mc.py` is now a 50-line compatibility
+facade, not the module the hooks were written against. This addendum is that discharge; the
+Context/Decision/Consequences above stay byte-unedited as the historical record (Rule 14).
+
+**Root cause.** `docs/adr/2026-07-22-challenge-era-substrate-retirement.md` Phase 3 (merged
+2026-07-24, PR #488) deleted the Pepperstone C2 anchor bytes, the `[mc_anchor_pepperstone]` pins,
+and `tests/core/test_mc_anchors.py` (per `docs/mc_anchor_history.md`) — the exact artifacts this
+ADR ratified — but that ADR's own `Supersedes` header block did not originally list this ADR among
+its partial-supersession predecessors. Corrected in the same remediation batch as this addendum
+(see that ADR's header, now carrying a `2026-05-10-mc-c2-anchor-ratification.md` in-part line).
+
+**Current state, verified against production:**
+
+- `tests/test_mc_anchors.py` / `tests/core/test_mc_anchors.py` — both deleted. The six numeric pins
+  this ADR's audit hooks grep for (`0.9809`, `0.0036`, `0.0473`, `0.9623`, `0.0069`, `0.0491`) no
+  longer exist anywhere in the tree.
+- `core/portfolio_mc.py` (50 lines, verified 2026-08-29) is now a compatibility facade that
+  re-exports `core/mc/modes.py` and forwards `_run_seeds` — it no longer contains the constants
+  block or inline threshold comparisons the audit hooks grep against.
+- The import-topology finding itself — `DD_TRIGGER`/`DD_SCALE` imported as bare constants,
+  `calculate_protection` never called from the MC path — remains structurally true today, but the
+  code that embodies it has moved: `core/mc/modes.py:28,46` does
+  `from ..dd_protection import DD_TRIGGER, DD_SCALE` (and the absolute-import fallback), with no
+  `calculate_protection` import anywhere in `core/mc/`; the ULP-rounded inline comparison now lives
+  at `core/mc/simulation.py:118-119` (`round(dd_from_peak, 6) <= -dd_trigger`).
+- Pepperstone/FXIFY is a retired venue — see
+  `docs/adr/2026-07-22-challenge-era-substrate-retirement.md` §2C and `docs/mc_anchor_history.md`
+  for the historical-record disposition of the anchor this ADR ratified.
+
+The §Audit hooks block above is inapplicable as written (wrong file path, deleted test) and is not
+rewritten in place per Rule 14. A reader landing on this ADR should treat those hooks as historical
+and consult `core/mc/modes.py` / `core/mc/simulation.py` for the current import topology.

@@ -121,3 +121,32 @@ These ratifications close the §0-NOTES PO actions and pin the execution-time de
 2. **No-constants guard is a CARVE-OUT, not blanket.** It guards the four *methodology* skills only — `{inqhiori, ooda-loop, programme-audit, brief-authoring}` — where restated operational constants are pure drift. The three *operational-reference* skills — `{fxify-challenge, live-execution-journal, code-defect-debugging}` — legitimately cite live ops state and are EXEMPT from the guard; they are migrated verbatim. (`pinescript-v6` carries no operational constants and is migrated verbatim outside the guard.) Stale constants found in the EXEMPT skills during migration are reported as follow-up recommendations, not silently edited.
 
 3. **§0 table re-confirmed on-disk at HEAD `17ab0ad` by CC** during execution; the table held. The ADR file itself was the uncommitted artifact called out in §1 — it is now landed at `docs/adr/2026-06-04-methodology-skills-under-vc.md`.
+
+## Addendum 2026-08-29 — three-skill migration premise falsified (DECAYED_UNDOCUMENTED, adr-decay-audit)
+
+The full-corpus `adr-decay-audit` flagged §2.1's ratification note ("Decisions ratified 2026-06-04",
+item 2) as `DECAYED_UNDOCUMENTED`: its premise that `fxify-challenge`, `live-execution-journal`,
+and `notion-mcp-api-patterns` would be "migrated verbatim" into `.claude/skills/` as tracked,
+gated, in-repo source no longer holds. This addendum is that discharge; the §0–§6, §10, and
+"Decisions ratified" sections above stay byte-unedited as the historical record (Rule 14).
+
+**What GSUB-1 found (2026-08-09).** GSUB-1 Phase 3 inventoried the deployed skill set and found:
+
+- `fxify-challenge` and `live-execution-journal` are **platform-bundled `anthropic-skills:`
+  plugins** — they have no file-level existence in this repo (or any repo) to "migrate verbatim";
+  the migration premise assumed a tracked-source artifact that was never there. See
+  `docs/pursuits/d7-fxify-challenge-plugin.md` and `docs/pursuits/d8-live-execution-journal-plugin.md`.
+- `notion-mcp-api-patterns` was **archived, not migrated** — disposed of outright rather than
+  landed under `.claude/skills/`. See `docs/pursuits/d6-notion-mcp-api-patterns-user-skill.md`.
+
+**This does not falsify the ADR's core decision.** §2.1's canonical-home principle, §2.4's gating
+machinery, and §2.5's brief-validator landing are unaffected and remain live and load-bearing —
+`scripts/sync_skills.py` and `scripts/check_skill_refs.py` still cite this ADR's home/gate design
+in production today. Only the narrow three-skill "migrated verbatim" disposition inside the
+EXEMPT-carve-out ratification (item 2) is stale: it is superseded-in-effect by GSUB-1's actual
+dispositions (two plugin-bundled, one archived), not by a reversal of the ADR's own reasoning.
+
+**Disposition:** the three-skill migration plan named in this ADR's ratification note is
+executed-as-superseded — overtaken by GSUB-1's per-skill findings rather than carried out as
+originally planned. See `docs/briefs/GSUB-1-inventory-and-dispositions.md` for the full disposition
+ledger.
