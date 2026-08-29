@@ -253,15 +253,18 @@ immediately-authorized scope** once this ADR's Status flips to `Accepted`:
 implementation, and each has an explicit prerequisite the parent plan states must happen first:
 
 ⚠ **Phase 2 authorization moved (2026-08-29 addendum).** The sentence above is the 2026-08-27
-Phase 0/1 ratification. Phase 2 GO lives on the addendum; Phases 3–4 stay named-not-scoped.
+Phase 0/1 ratification. Phase 2 GO lives on the addendum.
+
+⚠ **Phase 3 authorization moved (2026-08-29 addendum).** The Phase 3 bullet below is the
+2026-08-27 named-not-scoped clause. Phase 3 GO lives on the later addendum; Phase 4 stays
+named-not-scoped.
 
 - **Phase 2** (consolidate the repeated hand-rolled canonical/mirror running-count pattern) — recon
   prerequisite **discharged 2026-08-29**; scoped plan + authorization on the addendum. Do not read
   this bullet as still unpaid.
-- **Phase 3** (instrument-profile / cost-model closed-world completeness audit) — needs a fresh Rule-0
-  re-read of `docs/adr/2026-07-25-instrument-profile-index.md` and
-  `docs/briefs/closures/Q-CAPBAND-1-closure-resolved.md` (5–7 weeks stale) before assuming the cited
-  gaps still exist as described.
+- **Phase 3** (instrument-profile / cost-model closed-world completeness audit) — recon
+  prerequisite **discharged 2026-08-29**; scoped plan + authorization on the later addendum.
+  Do not read the 2026-08-27 "needs a fresh Rule-0 re-read" clause as still unpaid.
 - **Phase 4** (extend the coherence-campaign cadence to explicitly include lineage/SSOT) — needs
   Phases 0–1 to actually land and clear their own falsifier-review cycle first; writing its detail now
   would presume the outcome of work this ADR has not yet authorized.
@@ -450,6 +453,11 @@ python scripts/check_adr_graph.py --enable A8
 # n/N line and its own increment table (or a deep-lane abandoned count and the
 # *deep-lane* preregs cited in that paragraph) is a HARD finding. Do not join
 # STATE.md or ops/instruments/MNQ.md — closed-row deletion is legal.
+
+# Phase 3 — cost-model closed-world partition (authorized 2026-08-29 addendum)
+python scripts/check_cost_model_closed_world.py
+# Expected once landed: exit 0. A SPECS key in neither INDEX_MICRO nor
+# NO_COMMISSION is a HARD finding. Do not join ops/instruments ledgers.
 ```
 
 ---
@@ -482,6 +490,7 @@ python scripts/check_adr_graph.py
 | 2026-08-28 | Review fix: §6 negative-consequences bullet reconciled with what actually shipped — `skill-deploy-sync` and `instrument-rejection-coverage` were both called "WARN-tier" here, but only `instrument-rejection-coverage` shipped `--exit-zero`; `skill-deploy-sync` shipped `tier: always` with no `--exit-zero` (a genuine hard-fail on real drift), which is the direct root cause of the Critical CI-breaking bug fixed the same session (`scripts/check_skill_deploy_sync.py` now SKIPS, not hard-fails, when no deploy target exists at all — see that script's own module docstring and `tests/scripts/test_check_skill_deploy_sync.py`). Text now describes the actual shipped behavior; no change to §2/§5 decision or scope | Claude Code |
 | 2026-08-29 | Addendum: Phase 2 scoped and authorized (A8 intra-ADR running-count consistency). Recon (a)(b)(c) answered. STATE-join and HTML-comment schema declined. Phases 3–4 remain named-not-scoped. §2 Phase 1 text left in place (Trap #12) | Cursor Cloud Agent |
 | 2026-08-29 | Blast-radius: §2 Phase 2–4 lead sentence was still reading as the live GO ("does not authorize"). Pointer only — authorization stays on the addendum; Phase 2 bullet marked discharged. No change to §2 Phase 1 tasks or §4/§5 | Cursor Cloud Agent |
+| 2026-08-29 | Addendum: Phase 3 scoped and authorized (cost-model closed-world partition). Bars checker voided. Ledger join, firm_rules dollars, and harvest gate-2 rewrite declined. No STATE queue row. §2 Phase 1 text left in place (Trap #12) | Cursor Cloud Agent |
 
 ---
 
@@ -554,3 +563,71 @@ auto-open Phase 3 when Phase 2 ships — delete STATE row 3 (succession).
 
 **§10 hook (runnable):** `python scripts/check_adr_graph.py --enable A8` — expected OK
 once landed; see the Phase 2 block appended to §10 above.
+
+---
+
+## Addendum 2026-08-29 — Phase 3 authorized: cost-model closed-world partition
+
+**Does not amend** Phase 1's four tasks, Phase 2's A8, §4's 2026-11-08 falsifier, or §5's
+CATALOG / D1–D3 / Pine / allocation bars. **Does not authorize** Phase 4. **$0 / K=0.**
+Limb 4 (new path-conditional gate). Amendment-first: this file is the owner.
+`queue-exception: operator GO on the attached Phase 3 plan` — live queue stays #1 / #2;
+do not open a STATE row.
+
+**Rule 0 (this addendum, 2026-08-29, worktree at `d276076`):**
+
+| Source | Anchor | Supplies |
+|---|---|---|
+| This ADR §2 Phase 3 clause | `33f2a82` | Phase 3 named-not-scoped; Rule-0 re-read required before bite-sized steps |
+| [`lab/discovery/cost_model.py`](../../lab/discovery/cost_model.py) | `027a729` | `resolve_commission` resolves index-micros only; SPECS is a larger table; `NO_COMMISSION_ROW_INSTRUMENTS` names a subset of the raise set |
+| [`2026-07-25-instrument-profile-index.md`](2026-07-25-instrument-profile-index.md) | `027a729` | missing-`bars` class still named in §Risks; P1–P3 catch malformed, not omitted |
+| Q-CAPBAND-1 closure §4.2 | `ab303d0` | gate 2 unevaluable-by-construction outside the index-micro commission row |
+| Parent program plan Phase 3 | this session | stub replaced by pointer at [`2026-08-29-ssot-phase-3-cost-model-closed-world.md`](../superpowers/plans/2026-08-29-ssot-phase-3-cost-model-closed-world.md) |
+
+```
+$ rg -l "closed-world|ssot-phase-3|check_cost_model" lab/CATALOG.md docs/rejected_candidates.md
+# empty
+$ rg -n "Q-CAPBAND-1" docs/briefs/INDEX.md
+# closed Cap counterfactual — not a second SSOT packet
+```
+
+**Recon answers (the three questions §2 required):**
+
+- **(a)** The bars *class* is still ungated (the Treasury instance is already fixed; empty
+  `bars` remains legal). The commission raise is still live; SPECS has outgrown the named
+  no-row set (the live SSOT hole).
+- **(b)** No fourth hole that belongs in this packet. Ledger-symbol ⋈ SPECS is the wrong
+  join (many ledgers are unpriced by design). Q-TNEC-ENV-1 / D4 / M1 stay on their owners.
+- **(c)** A bars prose-parser is not cheaper (Approach C / C1 already rejected). Adding
+  commission rows touches `firm_rules.py`. Making harvest gate 2 FAIL on “no row” is
+  policy, not SSOT. Authorized design is the intra-module partition.
+
+**Decision (binding):** authorize Phase 3 as specified in
+[`2026-08-29-ssot-phase-3-cost-model-closed-world.md`](../superpowers/plans/2026-08-29-ssot-phase-3-cost-model-closed-world.md).
+
+1. Void a bars completeness checker in this packet. The class stays on the 2026-07-25 ADR
+   Risks line.
+2. Classify every `INSTRUMENT_SPECS` key that already raises via the catch-all into
+   `NO_COMMISSION_ROW_INSTRUMENTS` (behavior unchanged).
+3. Gate `INDEX_MICRO ⊆ SPECS`, `SPECS ⊆ INDEX_MICRO ∪ NO_COMMISSION`, and
+   `INDEX_MICRO ∩ NO_COMMISSION = ∅`. Bind path-conditional on
+   `lab/discovery/cost_model.py` only after a clean live run + mutation.
+4. Do not add MCL / 6J / 6E / M6E to SPECS unless a campaign already scores those
+   notionals (`_spec` KeyError is already fail-closed).
+
+§2's Phase 1 decision text is left byte-unedited (Trap #12). This addendum is the Phase 3
+authorization; §2 remains the Phase 0/1 ratification. The Phase 2 addendum's
+"Does not authorize Phase 3" sentence is historical of that addendum and is not rewritten.
+
+**Gate:** RESOLVED when `python scripts/check_cost_model_closed_world.py` exits 0 against
+the live module and a planted SPECS key in neither set produces a HARD finding.
+**FALSIFIED** if the gate is bound and a new SPECS row can land unclassified (finding
+silenced). Phase 4 stays named-not-scoped until the operator promotes it.
+
+**Boundary:** Do **not** join `ops/instruments/*.md`. Do **not** parse ledger prose into
+`bars`. Do **not** edit `firm_rules.py` commission dollars. Do **not** rewrite harvest
+gate-2 FAIL policy. Do **not** fold D4 21.4% or M1 report-only. Do **not** auto-open a
+STATE operator-queue row.
+
+**§10 hook (runnable):** `python scripts/check_cost_model_closed_world.py` — expected OK
+once landed; see the Phase 3 block appended to §10 above.
