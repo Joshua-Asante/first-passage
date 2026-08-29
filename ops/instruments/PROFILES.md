@@ -81,7 +81,11 @@ Gating a breakout entry on a prior volatility-compression phase resolving into e
 
 ## daily-range-state-persistence
 
-**NEW 2026-08-18.** Conditioner-role, not entry-role: does a day's True Range being in the
+**NEW 2026-08-18.** Conditioner-role, not entry-role: does a day's True Range being in the trailing top quintile predict elevated next-day True Range (vs its own trailing median)? Distinct from `compression-gated-breakout` / `htf-compression-breakout-5m` (both entry-role compression→expansion triggers on MNQ) — this class makes no entry claim, only a range-state-forecasting claim, and is scoped to the non-index triad ([Step-0 daily-geometry slate](../../docs/briefs/2026-08-18-step0-daily-geometry-mechanism-slate.md) §2 row S1). Grounding: evidence-robustness (volatility clustering — ARCH/GARCH canon), not a per-instrument WHO claim.
+
+- **Class finding:** (corrected battery, OFFICIAL): GC (parent, train era 2010–2019)
+
+- **Class finding:** (corrected battery, OFFICIAL): CL (parent, train era 2010–2019)
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
@@ -119,7 +123,7 @@ A directional bet keyed to a scheduled settlement, auction, or macro-release win
 
 ## expiry-oi-strike-convergence
 
-**NEW 2026-08-21 (MSL-S4).** Discharges the 2026-08-14 WHO-track E1 stop rule
+**NEW 2026-08-21 (MSL-S4).** Discharges the 2026-08-14 WHO-track E1 stop rule ([closure](../../docs/briefs/closures/MSL-S7-closure-resolved-e1-hold.md)) — first WHO named outside the 2026-08-10 INTAKE-DRY set and outside a transfer of C1/C2/C3/S2A/S2B. Near a published options expiry, price statistically converges toward the strike carrying the largest open interest more than on non-expiry control sessions; enter in the direction that closes the gap between current price and that strike when price is displaced from it by more than a threshold, inside a declared pre-expiry window. WHO: options market-makers who wrote the concentrated open interest at that strike, mechanically obligated to keep a delta-neutral book as time-to-expiry shrinks and near-the-money gamma rises (Γ ∝ 1/√T) — a hedging-requirements / expiry-mechanics constraint (ADR clause-1-admissible), not a preference. The trade direction is read directly off observable data (spot price vs. the published strike), never off an assumption about unobservable dealer gamma sign — the load-bearing distinction from the sibling construct below, which this class does **not** reopen.
 
 - **Class finding:** G0 frozen on operator B4 GO 2026-08-21; Explore-confirm (charter
 
@@ -142,6 +146,8 @@ _No instrument has a recorded verdict on this mechanism._
 ICT-style liquidity-sweep / fair-value-gap geometry (sweep → FVG → opposing-pool draw) used as an entry signal.
 
 - **Class finding:** Sweep→same-direction-FVG→opposing-pool-draw direction is real on SPX500 (block-permutation p=0.0144) but fails robustness (drop-top-3 = −0.152R, 95% block-CI straddles 0). [SPX500.md D2](SPX500.md)
+
+- **Class finding:** — CORRECTED 2026-08-04; supersedes the former "the 1M 0%-fill wall is feed-general" clause, which is REFUTED. The archived closure attributed US500's **0 fills in 247 attempts** to an instrument-general *price law* — "displacement FVGs continue rather than retrace within 6 bars" — and predicted recurrence on "NAS100 or any fast 1m index". **That law is false on native micro data.** MNQ retraces to FVG mid within the frozen `retraceK=6` **59.06%** of the time (n=128,089; 58–60% in *every* year 2019–2026, including the 2020 crash and 2022 bear), and ES **59.88%** (n=124,748). Every escape route is refuted at 45×+ the ≤1.2% rate that 0-of-247 requires: raid-conditioning leaves it at **59.01%**, the arm-delay curve is nearly flat (**55.91%** even armed 8 bars late — mid-touches recur, they are not one-shot), and ES retraced **62.33%** in the *exact* 2026-06-24→26 window that produced the 0/247. **0/247 was platform-side by elimination** — the deployed (now lost) script, TV's strategy-tester fill handling, or the retired Pepperstone US500 CFD feed; not further separable, and recorded as a residual, never as "bug X". **Consequence for this class:** do **not** cite "1m FVGs don't retrace" against an execution layer on any instrument; **do** require any such design to demonstrate fills on native data rather than trusting TV-tester fill behavior. [MNQ.md W3](MNQ.md) · [`RESULTS_1M_DIAG.md`](../../lab/analysis/_inbox/ict_mnq_2026-08/RESULTS_1M_DIAG.md)
 
 - **Class finding:** **Liquidity pools are anti-attractors**, replicated on three independent instruments — old highs/lows are swept far *less* often than a radius-matched MC null, on every side measured (US500 0.55/0.34 vs base 0.76/0.61; NQ 0.5401/0.3128 vs 0.7756/0.6014; MNQ 0.5303/0.3397 vs 0.8020/0.6502). Any construct keying on "price is drawn to old highs/lows" argues against three panels. The companion **bear-FVG draw** is the real positive of this class (NQ 0.8630 vs base 0.7494, RESOLVED). [MNQ.md N9](MNQ.md) · [`RESULTS.md`](../../lab/analysis/_inbox/ict_mnq_2026-08/RESULTS.md) §3
 
@@ -265,9 +271,11 @@ Entering in the direction of an opening-range break and holding the position for
 
 ## order-flow-depth-imbalance
 
-**NEW 2026-08-05.** Resting displayed size, aggregated across book levels, used as a directional
+**NEW 2026-08-05.** Resting displayed size, aggregated across book levels, used as a directional predictor of near-term price. The first mechanism class in this estate sourced from **order-flow (MBP-10) data rather than OHLCV** — the "different modality" limb of the 2026-07-21 index-futures-intraday domain bar (route 2).
 
 - **Class finding:** 10-level size imbalance carries **no** directional information at the
+
+- **Class finding:** — the depth census is the reusable constraint. NQ front-month displays a
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
@@ -315,7 +323,7 @@ _No instrument has a recorded verdict on this mechanism._
 
 ## prior-session-breakout-continuation
 
-**NEW 2026-08-22 (deep-lane DL-2).** A break of the immediately-prior *full trading session's*
+**NEW 2026-08-22 (deep-lane DL-2).** A break of the immediately-prior *full trading session's* high or low, confirmed by a subsequent session close beyond the level before entry; structural stop at the opposite prior extreme; target at a fixed multiple of that risk; first valid signal per session (k=1); session-flat. The full-session generalization of `pdh-pdl-breakout-rth`: that id's one prior use (MNQ) implicitly took an equity-cash "RTH" window as both the reference and entry window; this id's reference/entry window is the instrument's own full native trading session (e.g. the complete CME Globex day for a currency future), not an RTH-scoped sub-window. The distinction is deliberate, not cosmetic — swapping which hours count as "the session" changes the volatility regime and event population the level is drawn from, the same load-bearing reason `overnight-range-failed-extension-fade` was split from `pdh-pdl-failed-break-reclaim` rather than folded into it. First campaign under this id: [DL-2 prereg](../../docs/briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md) (M6A) — no class finding yet, this id is untested on every instrument at authoring time.
 
 _No instrument has a recorded verdict on this mechanism._
 
@@ -355,7 +363,7 @@ _No instrument has a recorded verdict on this mechanism._
 
 ## tod-baseline-range-trigger
 
-**NEW 2026-08-20 (`Q-TODVOL-1`).** Within-instrument temporal selectivity under
+**NEW 2026-08-20 (`Q-TODVOL-1`).** Within-instrument temporal selectivity under [`ADR 2026-08-10`](../../docs/adr/2026-08-10-temporal-selectivity-outside-mapped-levers.md) §2-B — first RTH bar, outside the opening-range window, whose range exceeds a frozen multiple of the **same time-of-day slot's own trailing median range** (causal, `.shift(1)`); enter in that bar's own close-vs-open direction; stop/target sized off the triggering bar's own range (not an independent point count); session-flat; first valid signal per session (k=1). Causal story: volatility clustering (ARCH/GARCH-class serial dependence in absolute returns) as a real-time, per-moment information-arrival signal — distinct from a fixed clock window (ORB) or a reference price level (PDH/PDL, VWAP). Runs on **native 15m RTH bars** — explicitly outside the paused dense-1m/G=10 lane ([`DENSE1M-UNPAUSE closure`](../../docs/briefs/closures/DENSE1M-UNPAUSE-closure-resolved-u0-keep.md), U0 KEEP stands) — so gated by the [`2026-08-16 CON-5-scope ADR`](../../docs/adr/2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md) §2 D2 pre-G0 cheap falsifier before route ① counts as open for it.
 
 - **Class finding:** MNQ D2 pre-G0 falsifier `FAIL` — mean signed gross **+0.2546 pt** vs the
 

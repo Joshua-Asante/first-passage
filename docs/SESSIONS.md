@@ -33,6 +33,26 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-29h — instrument_profiles annotated Class-finding extraction
+
+**Focus:** `_FINDING_RE` required exact `- **Class finding:**`, so annotated bullets (`(corrected…)`, `— CORRECTED`) vanished from `profiles.json` and `cell`.
+**Shipped:** `cursor/fix-annotated-class-finding-a965` — shared prefix regex + `_finding_text`; rebuild (35/35 bullets; `daily-range-state-persistence` findings no longer empty).
+**Decisions/defects:** distinct from #196 definition-join. Finding *wrap* still first-line-only (GC/CL first line only). #194/#195 rebase+rebuild picks up their annotated bullets.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: commissioned Cloud Agent parser footgun (annotated findings); not a leftover Open/next name.`
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
+## 2026-08-29g — instrument_profiles definition-paragraph join
+
+**Focus:** `parse_mechanisms()` kept only the first physical line of a MECHANISMS.md definition; wrapped paragraphs silently truncated in `profiles.json`.
+**Shipped:** `cursor/fix-mechanism-definition-truncation-a965` — join until blank / `##` / Class-finding; leftover-prose P1; rebuild of five already-truncated main entries.
+**Decisions/defects:** both join and the leftover-prose check; finding-line wrap remains first-line-only (out of scope). #194/#195 pick this up on rebase+rebuild.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: commissioned Cloud Agent parser footgun; not a leftover Open/next name.`
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-29f — ADR INDEX notes cells capped at 40 words
 
 **Focus:** keep [`docs/adr/INDEX.md`](adr/INDEX.md) a pointer table; stop copying essay-length Status annotations into the notes cell.

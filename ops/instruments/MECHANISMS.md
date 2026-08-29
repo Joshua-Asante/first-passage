@@ -7,6 +7,16 @@ plus the CLASS-level findings that belong to a mechanism rather than to any one 
 `NEW` is permitted — it lands here in the SAME COMMIT as the pre-registration that introduced it.
 An id that never reaches this file fails the P2 gate with a nearest-match suggestion.
 
+**Definition paragraph:** the first prose paragraph after the `## id` header. Soft-wrapped
+multi-line paragraphs are captured in full by `scripts/instrument_profiles.py` — every
+consecutive non-blank line up to the next blank line, `##` header, or `- **Class finding`
+bullet (plain or annotated). Do not rely on a single physical line; `check` fails if a
+captured definition drops an unseparated continuation line.
+
+**Class findings:** `- **Class finding:**`, `- **Class finding (…):**`, and
+`- **Class finding — ….**` all land in `profiles.json`. Annotated forms are the
+corrected/superseding reads — they must not silently vanish from a `cell` consult.
+
 ## opening-range-continuation
 
 Entering in the direction of an opening-range break and holding the position for continuation past the initial move.
