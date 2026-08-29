@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-08-27
+**Last curated:** 2026-08-29
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
@@ -56,7 +56,6 @@ BEHIND this list.** Items leave when done; it stays ≤5 so it cannot decay into
 |---|---|---|---|
 | 1 | **Acceptable strategy on the ruled host** — viable-strategy sequence; Phase A (A1+A2) executed 2026-08-23 (revival list empty, A3 voided; feasibility region published, FEASIBLE ≥~65-70% win rate). Phase B (mechanism supply) is now the next doable packet (GO unpaid). Queue placement is not a phase GO | [`overview`](docs/superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](docs/superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md) | production book (not M1 item 5) |
 | 2 | **B7-REFIRE Stage 1 + M1** — item 5 dated 2026-08-24; test strategy licensed. Does not wait on #1. No arm | [`M1 addendum`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy) · [`S2`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) | live-signal / arming path |
-| 3 | **SSOT/data-lineage remediation, Phase 1** — 4 gate/tooling tasks (skill-deploy-sync gate + author skill-side `check_brief.py`; D4 rejection-ledger-coverage instrument; M1 skew-checker `gates.yml` wiring; falsifier-reachability quarterly cadence). Ratified 2026-08-27; execution dispatched | [`ADR`](docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md) · [`plan`](docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md) | none — governance/tooling, independent of #1/#2 |
 
 Off-queue leftovers stay on their owner artifacts. Re-entry is promote to a numbered queue row and drop something else (cap ≤5). When a doable row leaves, do not auto-open a replacement — cite remaining rows until the operator promotes one.
 
@@ -69,8 +68,9 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence + owner. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
-Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md) (P8 keep-15 roll, 2026-08-23; rolled again 2026-08-27).
+Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md) (P8 keep-15 roll, 2026-08-23; rolled 2026-08-27 and 2026-08-29).
 
+- **2026-08-29** — SSOT Phase 2 authorized (A8 intra-ADR running-count consistency). Recon (a)(b)(c) answered: no fourth instance; STATE-join and HTML-comment schema declined. No code/risk-constant/allocation touched. $0/K=0. [`ADR addendum`](docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md#addendum-2026-08-29--phase-2-authorized-a8-intra-adr-running-count-consistency) · [`plan`](docs/superpowers/plans/2026-08-29-ssot-phase-2-running-count-mirror.md)
 - **2026-08-27** — SSOT/data-lineage remediation program ratified (operator GO); Phase 1 (4 gate/tooling tasks) authorized and dispatched. No code/risk-constant/allocation touched. $0/K=0. [`ADR`](docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md) · [`plan`](docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md)
 - **2026-08-24** — Regime-gate scope ratified + F1 discharged; validation-battery K-tiering, cost-law split, `pursuit-records` retired. Worked non-example lands on the Class-S candidate-1 rider chain, not ORB-MNQ-1 as originally proposed (verified against production). No code/risk-constant/allocation touched. $0/K=0. [`ADR-A`](docs/adr/2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md) · [`ADR-B`](docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md) · [`PR #163`](https://github.com/Joshua-Asante/first-passage/pull/163)
 - **2026-08-24** — A2 disclosed-N reduction accepted (consistency-plan Packet 0). Published region is the screen. Not a Phase B GO. [`A2 RESULTS §4`](lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md) [`plan`](docs/superpowers/plans/2026-08-24-viable-strategy-surface-consistency.md)
@@ -85,7 +85,6 @@ Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state
 - **2026-08-23** — Keep-20 SESSIONS roll + W5 CI-from-`gates.yml` (H6 HOLD lifted). Queue row 3 opened and closed same session (succession: no auto-replace). [`W5 addendum`](docs/adr/2026-08-07-w5-governance-diet.md#addendum-2026-08-23--h6-hold-lifted-ci-composition-from-gatesyml) · [`gate-manifest.yml`](.github/workflows/gate-manifest.yml) · [`roll_sessions.py`](scripts/roll_sessions.py)
 - **2026-08-23** — P4 museum rules + P5 REPO_MAP layer compare-gate landed; pain-point buildable packets P0–P5 closed (parked items stay parked). [`P4 plan`](docs/superpowers/plans/2026-08-23-p4-museum-rules-implementation.md) · [`P5 plan`](docs/superpowers/plans/2026-08-23-p5-repo-map-layers-implementation.md)
 - **2026-08-23** — P3 docs-runtime inventory landed (report-only); queue row 3 opened and closed same session (succession: no auto-replace). [`inventory`](docs/notes/audits/docs-runtime-inventory.md) · [`P3 plan`](docs/superpowers/plans/2026-08-23-p3-docs-runtime-inventory-implementation.md)
-- **2026-08-23** — P2 Approach A: Rule 7 durable-atoms owner demoted; Claude-project MEMORY assistive-only. Queue row 3 opened and closed same session (succession: no auto-replace). [`state-md addendum`](docs/adr/2026-06-30-state-md-role-reduction.md#addendum-2026-08-23--memory-is-assistive-only-not-the-rule-7-owner)
 > ⚠ **Truncated to the newest 15 at the 2026-08-08 Great Prune.** Older executed decisions are
 > owned by their ADRs (`docs/adr/`, tombstoned rows in [`TOMBSTONES.md`](docs/adr/TOMBSTONES.md));
 > full prior index: `git show pre-prune-2026-08-08:STATE.md`.

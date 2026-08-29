@@ -2,6 +2,10 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Third roll, 2026-08-29** (one entry, pushed off by the SSOT Phase 2 A8 authorization):
+
+- **2026-08-23** — P2 Approach A: Rule 7 durable-atoms owner demoted; Claude-project MEMORY assistive-only. Queue row 3 opened and closed same session (succession: no auto-replace). [`state-md addendum`](../../../../../docs/adr/2026-06-30-state-md-role-reduction.md#addendum-2026-08-23--memory-is-assistive-only-not-the-rule-7-owner)
+
 **Second roll, 2026-08-27** (one entry, pushed off by the SSOT/data-lineage remediation ratification):
 
 - **2026-08-23** — Blind channel: scoped decline of the reopened 6A/M6A and GC/MGC entry-geometry / dense-1m cell; last pre-G0 slot unspent; count unchanged. Queue row 3 deleted (succession: no auto-replace). [`channel ADR addendum`](../../../../../docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md#addendum-2026-08-23--scoped-decline-of-the-reopened-6am6a-and-gcmgc-entry-geometry--dense-1m-cell)

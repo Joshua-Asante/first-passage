@@ -722,3 +722,100 @@ def test_a7_ignores_bullets_outside_forward_triggers_section(tmp_path: Path):
 """
     assert cag.check_a7(headers, state, "STATE.md") == []
 
+
+A8_HEADER = """# t
+**Status:** `Accepted`
+**Decision date:** 2026-08-01
+**Supersedes:** none
+**Superseded-by:** none
+**Superseded-in-part-by:** none
+**Retain-until:** none
+
+---
+
+"""
+
+A8_AUTHORITATIVE = (
+    "**(a) Authoritative surface.** The running-count line in this addendum "
+    "is canonical. `STATE.md` is a mirror only.\n"
+)
+
+
+def test_a8_table_n_mismatch_one_yes_vs_two(tmp_path: Path):
+    """Canonical 2/3 with only one yes-row is a HARD finding."""
+    _write_adr(tmp_path, "2026-08-01-count.md", A8_HEADER + A8_AUTHORITATIVE + """
+**Running consecutive pre-G0 kill count (canonical):** 2 / 3
+
+| # | Construct | Date | Increments? |
+|---|---|---|---|
+| 1 | ALPHA | 2026-08-15 | yes — executed pre-G0 screen |
+""")
+    findings = cag.check_a8(tmp_path)
+    assert len(findings) == 1
+    assert findings[0].code == "A8"
+    assert findings[0].severity == "HARD"
+    assert "2" in findings[0].message and "1" in findings[0].message
+
+
+def test_a8_table_zero_yes_matches_zero_over_two(tmp_path: Path):
+    """Harvest shape: 0 / 2 and zero yes-rows is clean."""
+    _write_adr(tmp_path, "2026-08-01-count.md", A8_HEADER + A8_AUTHORITATIVE + """
+**Running count (canonical): 0 / 2.** Not fired.
+
+| Construct | Date | Class | Increments? |
+|---|---|---|---|
+| D5 | 2026-07-16 | Stage-2 cost-law KILL | no — already-closed at this mark |
+| P1-CF | 2026-08-17 | Pre-admission | **no — never reached intake-class status** |
+""")
+    assert cag.check_a8(tmp_path) == []
+
+
+def test_a8_deep_lane_abandoned_matches_two_citations(tmp_path: Path):
+    _write_adr(tmp_path, "2026-08-01-count.md", A8_HEADER + A8_AUTHORITATIVE + """
+**Running counts (canonical, this ADR):** campaigns completed **0** · survivors falsified **0 / 2** · campaigns abandoned **2** (consecutive **2 / 2**) · preregs refused **0** · **active campaign: none**. DL-2 — [`docs/briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md`](../briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md). Prior: DL-1 — [`docs/briefs/pre-registration/2026-08-16-deep-lane-dl1-mgc-orc-prereg.md`](../briefs/pre-registration/2026-08-16-deep-lane-dl1-mgc-orc-prereg.md).
+""")
+    assert cag.check_a8(tmp_path) == []
+
+
+def test_a8_deep_lane_abandoned_one_vs_two_citations(tmp_path: Path):
+    _write_adr(tmp_path, "2026-08-01-count.md", A8_HEADER + A8_AUTHORITATIVE + """
+**Running counts (canonical, this ADR):** campaigns completed **0** · survivors falsified **0 / 2** · campaigns abandoned **1** · preregs refused **0**. DL-2 — [`docs/briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md`](../briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md). Prior: DL-1 — [`docs/briefs/pre-registration/2026-08-16-deep-lane-dl1-mgc-orc-prereg.md`](../briefs/pre-registration/2026-08-16-deep-lane-dl1-mgc-orc-prereg.md).
+""")
+    findings = cag.check_a8(tmp_path)
+    assert len(findings) == 1
+    assert findings[0].code == "A8"
+    assert "1" in findings[0].message and "2" in findings[0].message
+
+
+def test_a8_mutation_eight_day_lag_two_yes_line_still_one(tmp_path: Path):
+    """The 2026-08-15→08-23 defect: table has two yes rows, line still 1/3."""
+    _write_adr(tmp_path, "2026-08-01-count.md", A8_HEADER + A8_AUTHORITATIVE + """
+**Running consecutive pre-G0 kill count (canonical):** 1 / 3
+
+| # | Construct | Date | Increments? |
+|---|---|---|---|
+| 1 | MNQ-ANALOGUE-1 | 2026-08-15 | yes — executed pre-G0 information screen |
+| 2 | MNQ-SIZEDIV-1 | 2026-08-15 | yes — executed pre-G0 Stage-2 falsifier |
+""")
+    findings = cag.check_a8(tmp_path)
+    assert len(findings) == 1
+    assert findings[0].code == "A8"
+    assert "1" in findings[0].message and "2" in findings[0].message
+
+
+def test_a8_is_default_on():
+    assert "A8" in cag.DEFAULT_ENABLED_CHECKS
+    assert "A8" in cag.VALID_CHECKS
+
+
+def test_a8_ignores_adr_without_authoritative_surface_sentence(tmp_path: Path):
+    """A 0/2 line without the (a) sentence is invisible to A8."""
+    _write_adr(tmp_path, "2026-08-01-other.md", A8_HEADER + """
+**Running count (canonical): 0 / 2.**
+
+| Construct | Date | Increments? |
+|---|---|---|
+| X | 2026-08-01 | yes — should not count; no (a) sentence |
+""")
+    assert cag.check_a8(tmp_path) == []
+
