@@ -70,3 +70,51 @@ def test_circular_shift_null_p_independent_is_not_tiny(path):
     _draws, p, _obs = mod.circular_shift_null_p(y, fixed, other, draws=400, seed=2)
     # Under a true null the one-sided p should not concentrate near 0.
     assert p > 0.05
+
+
+# The three 207-retrofit scripts (not the already-merged MYM c24 reference)
+# implement Codex P1/P2: within-stratum roll + enumerate distinct rotations.
+RETROFIT_TARGETS = tuple(p for p in TARGETS if p.stem != "c24_joint_gate")
+
+
+@pytest.mark.parametrize("path", RETROFIT_TARGETS, ids=lambda p: p.stem)
+def test_within_stratum_roll_preserves_class_balance_and_complement(path):
+    mod = _load(path)
+    assert hasattr(mod, "roll_other_within_stratum")
+    n = 200
+    fixed = np.zeros(n, dtype=bool)
+    fixed[:100] = True
+    other = np.zeros(n, dtype=int)
+    other[:80] = 1          # 80/100 ones inside the stratum
+    other[100:120] = 1      # 20/100 ones outside — correlated with the mask
+    rolled = mod.roll_other_within_stratum(other, fixed, k=17)
+    assert int(rolled[fixed].sum()) == int(other[fixed].sum())
+    assert np.array_equal(rolled[~fixed], other[~fixed])
+
+
+def test_candidate24_prefers_vendor_bars_over_committed_cache():
+    src = (
+        REPO / "lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate24_joint_gate.py"
+    ).read_text()
+    main = src[src.index("def main():"):]
+    assert "CSV.exists()" in main
+    assert main.index("from_bars = CSV.exists()") < main.index("load_cached_frame()")
+    assert "if from_bars:" in main
+
+
+@pytest.mark.parametrize("path", RETROFIT_TARGETS, ids=lambda p: p.stem)
+def test_enumerated_p_respects_rotation_floor(path):
+    """n=80 stratum → at most 80 distinct rotations; p cannot be 1/4001."""
+    mod = _load(path)
+    rng = np.random.default_rng(3)
+    n = 80
+    other = rng.integers(0, 2, size=n)
+    y = other.copy()
+    fixed = np.ones(n, dtype=bool)
+    draws, p, _obs = mod.circular_shift_null_p(y, fixed, other, draws=4000, seed=4)
+    n_valid = len(draws)
+    assert n_valid <= n
+    assert n_valid > 0
+    # Identity is included: minimum attainable p is 1/n_valid, never 1/4001.
+    assert p >= 1.0 / n_valid - 1e-12
+    assert abs(p * n_valid - round(p * n_valid)) < 1e-9

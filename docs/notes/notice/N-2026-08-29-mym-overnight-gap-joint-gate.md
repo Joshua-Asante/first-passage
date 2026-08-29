@@ -111,7 +111,7 @@ instruments.
   null-calibrated test (see §1) puts MYM at p=0.020 for that same cell — same
   sign either way, and closer to MNQ's decisiveness than the bootstrap figure
   suggested, not further from it. MNQ's own joint-gate script now reports the
-  matching null-calibrated figure: p=0.0060 (calm) / p=0.983 (hot) — also
+  matching null-calibrated figure: p=0.00871 (calm) / p=0.997 (hot) — also
   unchanged in sign, slightly more decisive on the calm cell.
 - **Frequency check:** first joint (as opposed to each-vs-day-history) test of these
   two MYM constructs against each other.
@@ -140,7 +140,7 @@ range as the primary claim and gap magnitude as a nested, calm-regime-scoped
 sub-question on MYM too — the same parent/sub-question structure Q-RANGEXFER-1
 already uses for MNQ. Caveat attached to the recommendation, not withheld: the
 calm-stratum gap effect is weaker on MYM than on MNQ under either test (bootstrap
-p=0.037 vs MNQ's bootstrap p=0.0078 / null-calibrated p=0.0060; MYM null-calibrated p=0.020) —
+p=0.037 vs MNQ's bootstrap p=0.0078 / null-calibrated p=0.00871; MYM null-calibrated p=0.020) —
 worth naming explicitly if/when a Pre-Q incorporates both instruments, not grounds to
 reject the merge outright given every other comparison in §1 matches in sign and
 relative magnitude.

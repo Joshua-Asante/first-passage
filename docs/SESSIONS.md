@@ -33,6 +33,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-29n — Codex #207: within-stratum null + c3 UNRESOLVED
+
+**Focus:** Operator ruling to take Codex Review on PR #207 — four findings (within-stratum surrogate, vendor-first MNQ cache, c3 not INCREMENT while null uncomputed, enumerate distinct rotations).
+**Shipped:** `cursor/null-calibrated-bootstrap-fafe` follow-up — within-stratum enumerated circular-shift in the three retrofit scripts; MNQ `candidate24` prefers `MNQ_M15.csv` when present; c3 verdict `UNRESOLVED`. No new K.
+**Decisions/defects:** c2 INCREMENT held (min-lift null now 3.4×10⁻⁶). c4 AMBIGUOUS / HOLD held (min-lift null 0.00860). MNQ nested-gap finding held (calm 0.00871 / hot 0.997). c3 INCREMENT withdrawn until the null runs. Full-series-roll p-values from 29m superseded as miscalibrated.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: operator-dispatched Codex #207 address-all on the 29m retrofit; not a leftover Open/next name.`
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-29m — null-calibrated bootstrap retrofit (three merged 2026-08-29 scripts)
 
 **Focus:** Codex review of PR #205 was right that `block_bootstrap_p` is a percentile-CI tail, not a Type-I test. Retrofit the same `circular_shift_null_p` already merged there into the three remaining 2026-08-29 scripts that still used the old convention.

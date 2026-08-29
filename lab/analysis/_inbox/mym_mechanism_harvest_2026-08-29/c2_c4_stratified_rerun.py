@@ -162,40 +162,83 @@ def block_bootstrap_min_lift(b: np.ndarray, bp: np.ndarray, yy: np.ndarray,
     return float(lo), float(hi), float(draws.mean()), int(len(draws)), p_lift_le_0
 
 
-def circular_shift_null_p(y, fixed_mask, other_label, draws=4000, seed=44):
-    """Null-calibrated one-sided p-value: does `other_label` carry information
-    about y within `fixed_mask`, beyond what a decorrelated version of the same
-    two series would produce by chance?
+# Within-stratum circular-shift null (Codex PR #207 P1/P2).
+# Enumerate every distinct rotation when the stratum is small enough that
+# Monte-Carlo-with-replacement would invent precision beyond the rotation set.
+_MAX_ENUMERATE_N = 2500
 
-    Circularly shifts `other_label`'s FULL series (not just the `fixed_mask`
-    subset) by a random offset each draw, so `other_label`'s own autocorrelation
-    /persistence structure is exactly preserved (a rotation, not an i.i.d.
-    reshuffle) while its pairing with (y, fixed_mask) is destroyed -- the same
-    circular-shift/surrogate logic this codebase already uses for block-shuffle
-    and IAAFT nulls elsewhere (see `iaaft_battery.py`), applied here to a
-    cross-series lift statistic instead of an autocorrelation statistic. Reports
-    the fraction of null draws whose within-stratum lift is >= the observed lift
-    (one-sided, Type-I-controlled under H0: no association).
 
-    Copied from the reviewed MYM sibling `c24_joint_gate.py` (PR #205, commit
-    f9db9ec).
+def roll_other_within_stratum(other_label, fixed_mask, k):
+    """Rotate `other_label` only among `fixed_mask` rows, in time order.
+
+    Preserves P(other | stratum) and leaves the complementary stratum untouched
+    — the conditional null Codex required. Full-series roll then mask is wrong
+    when the predictor is correlated with the conditioner.
     """
-    rng = np.random.default_rng(seed)
-    N = len(y)
-    hi0 = fixed_mask & (other_label == 1)
-    lo0 = fixed_mask & (other_label == 0)
-    if not (hi0.any() and lo0.any()):
+    out = np.asarray(other_label).copy()
+    idx = np.flatnonzero(np.asarray(fixed_mask, dtype=bool))
+    if idx.size:
+        out[idx] = np.roll(out[idx], int(k))
+    return out
+
+
+def _stratum_circular_lifts(y_s, other_s):
+    """Lift under every distinct circular rotation of `other_s`, identity included."""
+    n = len(other_s)
+    lifts = np.full(n, np.nan)
+    for k in range(n):
+        rolled = np.roll(other_s, k)
+        hi = rolled == 1
+        n_hi = int(hi.sum())
+        if 0 < n_hi < n:
+            lifts[k] = float(y_s[hi].mean() - y_s[~hi].mean())
+    return lifts
+
+
+def circular_shift_null_p(y, fixed_mask, other_label, draws=4000, seed=44):
+    """Null-calibrated one-sided p: does `other_label` carry information about y
+    *within* `fixed_mask` under a conditional zero-association null?
+
+    Surrogate is a circular shift of `other_label` **inside the stratum only**
+    (Codex P1). That keeps within-stratum class balance and the predictor's
+    within-stratum autocorrelation, and does not import labels from the other
+    conditioner state. Pairing with y inside the stratum is destroyed.
+
+    When the stratum length is <= `_MAX_ENUMERATE_N`, every distinct rotation
+    including the identity is enumerated and p = count(stat >= obs) / n_valid
+    (Codex P2 — no with-replacement Monte Carlo on a smaller rotation set).
+    Larger strata draw k uniformly from {0, …, n-1} (identity included) and
+    use the +1 convention.
+    """
+    y = np.asarray(y)
+    fixed = np.asarray(fixed_mask, dtype=bool)
+    other = np.asarray(other_label)
+    y_s = y[fixed]
+    o_s = other[fixed]
+    n = len(o_s)
+    hi0 = o_s == 1
+    lo0 = o_s == 0
+    if n < 2 or not (hi0.any() and lo0.any()):
         return np.array([]), float("nan"), float("nan")
-    observed = float(y[hi0].mean() - y[lo0].mean())
+    observed = float(y_s[hi0].mean() - y_s[lo0].mean())
+
+    if n <= _MAX_ENUMERATE_N:
+        lifts = _stratum_circular_lifts(y_s, o_s)
+        valid = lifts[np.isfinite(lifts)]
+        if valid.size == 0:
+            return np.array([]), float("nan"), observed
+        p_ge_obs = float((valid >= observed).sum()) / float(valid.size)
+        return valid, p_ge_obs, observed
+
+    rng = np.random.default_rng(seed)
     draws_out = []
     for _ in range(draws):
-        shift = rng.integers(1, N)
-        shifted = np.roll(other_label, shift)
-        hi = fixed_mask & (shifted == 1)
-        lo = fixed_mask & (shifted == 0)
+        rolled = np.roll(o_s, int(rng.integers(0, n)))
+        hi = rolled == 1
+        lo = rolled == 0
         if hi.any() and lo.any():
-            draws_out.append(float(y[hi].mean() - y[lo].mean()))
-    draws_out = np.array(draws_out)
+            draws_out.append(float(y_s[hi].mean() - y_s[lo].mean()))
+    draws_out = np.asarray(draws_out)
     p_ge_obs = (1 + int((draws_out >= observed).sum())) / (len(draws_out) + 1)
     return draws_out, p_ge_obs, observed
 
@@ -205,24 +248,58 @@ def circular_shift_null_min_lift(b: np.ndarray, bp: np.ndarray, yy: np.ndarray,
     """Null-calibrated one-sided p on the SAME statistic `block_bootstrap_min_lift`
     reports: min over populated strata of the within-stratum lift.
 
-    Circularly shifts the NEW predictor `b` (preserving its own autocorrelation)
-    while holding `(bp, y)` fixed -- destroying the pairing under test, same
-    surrogate-shift logic as `circular_shift_null_p`. Reports the fraction of
-    null min-lifts >= the observed min-lift.
+    Independent within-stratum circular shifts of `b` (Codex P1). Because
+    min(L0, L1) >= obs iff both stratum lifts are >= obs, the enumerated
+    pair-null p is the product of the two one-stratum tail counts — no need
+    to materialize n0*n1 draws. Identity included in each stratum.
     """
-    rng = np.random.default_rng(seed)
-    N = len(yy)
     observed = min_stratified_lift(b, bp, yy)
     if not np.isfinite(observed):
         return np.array([]), float("nan"), float("nan")
+
+    tails = []
+    n_valid = 1
+    all_small = True
+    for s in (0, 1):
+        m = bp == s
+        y_s, b_s = yy[m], b[m]
+        n_s = len(b_s)
+        if n_s < 2:
+            return np.array([]), float("nan"), observed
+        if n_s > _MAX_ENUMERATE_N:
+            all_small = False
+            break
+        lifts = _stratum_circular_lifts(y_s, b_s)
+        valid = lifts[np.isfinite(lifts)]
+        if valid.size == 0:
+            return np.array([]), float("nan"), observed
+        tails.append(int((valid >= observed).sum()))
+        n_valid *= int(valid.size)
+
+    if all_small and len(tails) == 2:
+        p_ge_obs = float(tails[0] * tails[1]) / float(n_valid)
+        return np.array([]), p_ge_obs, observed
+
+    rng = np.random.default_rng(seed)
+    parts = []
+    for s in (0, 1):
+        m = bp == s
+        parts.append((yy[m], b[m]))
     draws_out = []
     for _ in range(draws):
-        shift = rng.integers(1, N)
-        shifted = np.roll(b, shift)
-        v = min_stratified_lift(shifted, bp, yy)
-        if np.isfinite(v):
-            draws_out.append(v)
-    draws_out = np.array(draws_out)
+        vals = []
+        ok = True
+        for y_s, b_s in parts:
+            n_s = len(b_s)
+            rolled = np.roll(b_s, int(rng.integers(0, n_s)))
+            hi, lo = rolled == 1, rolled == 0
+            if not (hi.any() and lo.any()):
+                ok = False
+                break
+            vals.append(float(y_s[hi].mean() - y_s[lo].mean()))
+        if ok:
+            draws_out.append(min(vals))
+    draws_out = np.asarray(draws_out)
     p_ge_obs = (1 + int((draws_out >= observed).sum())) / (len(draws_out) + 1)
     return draws_out, p_ge_obs, observed
 
@@ -302,6 +379,8 @@ def run_one(label: str, b: np.ndarray, bp: np.ndarray, yy: np.ndarray,
         min_lift_null_calibrated=dict(
             p_ge_obs=p_null_min, observed=obs_min, n_draws=CI_DRAWS, seed=NULL_SEED,
             frame_source=frame_source, n_scored_null=int(n_scored),
+            construction="within_stratum_circular_shift",
+            includes_identity=True,
         ),
         strata_null_calibrated_p={str(s): strata_null_p.get(s) for s in (0, 1)},
         increment_exists_threshold_check=bool(increment_exists),
@@ -313,10 +392,10 @@ def run_one(label: str, b: np.ndarray, bp: np.ndarray, yy: np.ndarray,
         print(f"  stratum bprime={s}: P(y=1|bias=1)={c['hi'][0]:.4f}(n={c['hi'][1]})  "
               f"P(y=1|bias=0)={c['lo'][0]:.4f}(n={c['lo'][1]})  lift={lifts[s]}")
         if s in strata_null_p:
-            print(f"    circular-shift null p(null_lift>=observed) [null-calibrated] = {strata_null_p[s]:.5f}")
+            print(f"    circular-shift null p(null_lift>=observed) [null-calibrated] = {strata_null_p[s]:.6g}")
     print(f"  min-stratified-lift bootstrap: mean={mean_boot:.4f}  CI=[{lo:+.4f},{hi:+.4f}]  "
           f"p(lift<=0)={p_le0:.4f} [NOT null-calibrated]  VERDICT={verdict}")
-    print(f"  min-stratified-lift circular-shift null p(null>=obs) [null-calibrated] = {p_null_min:.5f}  "
+    print(f"  min-stratified-lift circular-shift null p(null>=obs) [null-calibrated] = {p_null_min:.6g}  "
           f"(obs={obs_min:.4f}, n_null={n_scored})")
     return result
 

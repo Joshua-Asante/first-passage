@@ -173,9 +173,10 @@ here) plus an owed $0 stage-1 cheap falsifier and an operator GO. Conditioner-ro
   while one still carries large incremental information. Within `bprime=0` (n=1,010): lift
   **+0.3178** (0.6963 vs 0.3785). Within `bprime=1` (n=297): lift **+0.2207** (0.8607 vs 0.6400).
   Block-bootstrap on the minimum stratified lift: mean **+0.2186**, 95% CI **[+0.1042, +0.3216]**,
-  p(lift≤0)=0.00025 / null-calibrated p(null≥obs)=0.00025 (circular-shift of the overnight
-  predictor; n_null=1304 from the sibling joint-gate cache vs original n=1307). **INCREMENT —
-  decisive; verdict unchanged under the corrected null.** Un-pause precondition 2 is now CLEARED; conditions
+  p(lift≤0)=0.00025 / null-calibrated p(null≥obs)=3.4×10⁻⁶ (within-stratum circular-shift
+  of the overnight predictor, distinct rotations enumerated, identity included; n_null=1304
+  from the sibling joint-gate cache vs original n=1307). Per-stratum null p=0.00099 / 0.00338.
+  **INCREMENT — decisive; verdict unchanged under the corrected null.** Un-pause precondition 2 is now CLEARED; conditions
   3 (joint-surrogate null design, adversarial-reviewed) and 4 (operator GO) remain outstanding
   before any full battery. First instrument scored under this role; ledger cell
   `AMBIGUOUS-PARKED` (GRADUATE-eligible, Pre-Q deferred — no frozen forward test executing).
@@ -239,13 +240,15 @@ frozen battery.
   n=71,492): lift **+0.1649** (0.4528 vs 0.2879). Within `bias_hist=1` (own range elevated,
   n=68,113): lift **+0.2455** (0.7150 vs 0.4695). Block-bootstrap on the minimum stratified lift:
   mean **+0.1648**, 95% CI **[+0.1537, +0.1761]**, p(lift≤0)≈0 / null-calibrated p uncomputed
-  this session (no scored-frame cache; vendor bars absent). **INCREMENT — decisive, verdict
-  cannot flip** (CI entirely positive, 2.2pp wide, n=139,605) — the largest-magnitude
-  correction in the 2026-08-29 MYM batch. Cross-instrument corroboration: MNQ's
-  own same-day candidate 3 (now registered under this same id — MNQ class finding below) ran the
-  correct stratified design from the start and found a similar shape (+20.6pp/+25.6pp), also
-  GRADUATEd. Ledger cell `AMBIGUOUS-PARKED` (GRADUATE-eligible, Pre-Q deferred — no frozen
-  forward test executing). [MYM.md](MYM.md) ·
+  this session (no scored-frame cache; vendor bars absent). **UNRESOLVED — not routed
+  INCREMENT.** The observed-series bootstrap CI excluding 0 is the same non-null
+  statistic this retrofit corrects; Codex review (PR #207) + operator ruling: leave
+  the cell unresolved until the within-stratum null actually runs. Cross-instrument
+  corroboration: MNQ's own same-day candidate 3 (now registered under this same id —
+  MNQ class finding below) ran the correct stratified design from the start and found
+  a similar shape (+20.6pp/+25.6pp), also GRADUATEd — that MNQ finding is independent
+  of this MYM Type-I gap. Ledger cell `AMBIGUOUS-PARKED` (UNRESOLVED pending null;
+  no frozen forward test executing). [MYM.md](MYM.md) ·
   [`N-2026-08-29-mym-bar-volume-regime.md`](../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md)
 - **Superseded (disclosed, not the authoritative answer):** the first-pass **marginal** falsifier
   (volume-conditioned obs=0.6546 vs. own-range-conditioned obs=0.6596, diff −0.0049, 95% CI
@@ -280,13 +283,14 @@ corroboration that does not exist for MYM on either magnitude or direction).
   `bias_hist`, measure lift within stratum). Within `bprime=0` (n=1,010): lift **+0.1404** (0.5526
   vs 0.4122). Within `bprime=1` (n=297): lift **+0.0672** (0.7766 vs 0.7094) — **the sign itself
   flips positive** in both strata. Block-bootstrap on the minimum stratified lift: mean **+0.0594**,
-  95% CI **[−0.0419, +0.1477]**, p(lift≤0)=0.1247 / null-calibrated p(null≥obs)=0.0117
-  (circular-shift of the gap predictor; n_null=1304 from the sibling joint-gate cache vs
-  original n=1307; 3-day difference disclosed). **AMBIGUOUS — verdict UNCHANGED in this
-  retrofit.** The original decision rule is the bootstrap CI, which still straddles 0. The
-  corrected p-value would clear a conventional 0.05 bar; whether that flips the cell to
-  INCREMENT is an operator ruling, filed as a follow-up notice addendum, not silently
-  applied here. A meaningfully weaker signal than the sibling overnight-range candidate's
+  95% CI **[−0.0419, +0.1477]**, p(lift≤0)=0.1247 / null-calibrated p(null≥obs)=0.00860
+  (within-stratum circular-shift of the gap predictor, distinct rotations enumerated,
+  identity included; n_null=1304 from the sibling joint-gate cache vs original n=1307;
+  3-day difference disclosed; per-stratum null p=0.00099 / 0.152). **AMBIGUOUS — verdict
+  UNCHANGED in this retrofit.** The original decision rule is the bootstrap CI, which
+  still straddles 0. The corrected min-lift p would clear a conventional 0.05 bar;
+  whether that flips the cell to INCREMENT is an operator ruling, filed as a follow-up
+  notice addendum, not silently applied here. A meaningfully weaker signal than the sibling overnight-range candidate's
   +0.2186. First instrument
   scored under this id. [MYM.md](MYM.md) ·
   [`N-2026-08-29-mym-gap-magnitude-rth-range.md`](../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md)
@@ -671,8 +675,8 @@ same-day-regime confound the test needs to preserve; O1: `UNRESOLVED-NEEDS-DESIG
   days). Gap magnitude also clears it on its own (+17.0pp / +15.5pp vs day-history, p≈0.00225)
   but a same-session joint check (holding overnight-range state fixed) found gap's own increment
   is **conditional and sign-unstable**: +10.5pp when overnight range is itself NOT elevated
-  (bootstrap p=0.0078 / null-calibrated p=0.0060) but −8.1pp (not significant, bootstrap
-  p=0.998 / null-calibrated p=0.983 for the positive direction) when overnight
+  (bootstrap p=0.0078 / null-calibrated p=0.00871) but −8.1pp (not significant, bootstrap
+  p=0.998 / null-calibrated p=0.997 for the positive direction) when overnight
   range is already elevated — gap does not add information once overnight range is known to be
   hot. Recalibration does not overturn the nested-gap finding. Parent-Q convention: overnight range is the primary falsifiable claim; gap magnitude is a
   forked, nested sub-question scoped to the overnight-calm regime only, not a co-equal claim.
