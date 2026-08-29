@@ -32,13 +32,73 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
-## 2026-08-28a — SSOT/data-lineage remediation program: ratified + Phase 1 landed (4 tasks)
+## 2026-08-28g — SSOT/data-lineage remediation program: ratified + Phase 1 landed (4 tasks)
 
 **Focus:** close the data-lineage/single-source-of-truth gaps a cross-repo mining pass found in post-pivot research (gate reachability, unverified-claim propagation, missing SSOT axes) — scoped against this repo's own proven generator-script and coherence-campaign patterns, not new machinery.
 **Shipped:** [`PR #178`](https://github.com/Joshua-Asante/first-passage/pull/178) — ADR ratified (`149c132`); Task 1 skill-side `check_brief.py` authored for the first time + deploy-sync gate (`5bc3821`); SKILL.md canon-ruling contradiction fixed (`c553965`); Task 2 D4 rejection-ledger-coverage instrument (`4472abb`); Task 3 M1 tree-skew checker wired report-only (`ef7df14`); Task 4 falsifier-reachability quarterly cadence (`d3194d1`).
 **Decisions/defects:** skill-side `check_brief.py` never existed in git history despite the 2026-08-09 canon ruling naming it canonical — every ADR's Verification block citing it had been failing silently. D4 real-corpus coverage measured 21.4% (far below the ADR's 100%/2026-11-08 bar) — genuine finding, not a defect. M1 skew checker wired report-only (not hard-fail) since real drift already exists on 6/6 pinned files; hard-fail would red every future PR. No "quarterly programme-audit checklist" existed in `docs/operational_rules.md` — authored new Rule 17 rather than guess-fitting into an existing one.
 **Live-ops state:** unchanged (`dry_run=true`; no arm).
 **Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)) · #3 SSOT/data-lineage remediation, Phase 1 ([`ADR`](adr/2026-08-27-ssot-data-lineage-remediation-program.md) · [`plan`](superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md)) — Phase 1 tasks all landed this entry; Phases 2-4 remain scoped-not-detailed per the plan.
+
+---
+
+## 2026-08-28f — original recon v2: entire-history Deep fills late August; Last-N does not
+
+**Focus:** Operator period-chip pin on the original pasted script (`ORB-MNQ-1 recon v2`), same defaults, `MNQ1!` 15m Deep.
+**Shipped:** addendum on [`note`](notes/research/2026-08-28-tradingview-strategy-report-july-2026.md); `pinescript-v6` items 3/8 and `trade-csv-reconcile` last-exit sub-rule refreshed (Last-N ≠ entire-history).
+**Decisions/defects:** Last-N emptiness is the chip, not “the Pine died in April.” Do not collapse with `MNQU` adjacency. `v7-cal` not required for `MNQ1!` entire-history fills. No ORB unpark. Overview numbers are not a verdict.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: operator asked for a TV updates note from the MNQ1! tester-diagnosis thread`.
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
+## 2026-08-28e — regenerate kitchen-sink as `v7-cal` (calendar-day session helpers)
+
+**Focus:** Operator asked to regenerate the original recon script from the session-edge defects.
+**Shipped:** session-local `uploads/orb-mnq.v7_cal.pine` (gitignored); pointer on [`note`](notes/research/2026-08-28-tradingview-strategy-report-july-2026.md) “What to run”. Source was `orb-mnq.v6_0394.pine`.
+**Decisions/defects:** Calendar-day OR + flatten only `lastBarOfSession` + exit-in-position. Stop-breakout defaults kept. Does not unpark ORB-MNQ-1.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: operator asked to regenerate the TV recon script from the diagnosis thread`.
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
+## 2026-08-28d — blast-radius after MNQU pin: warehouse-only pointers repaired
+
+**Focus:** Operator asked for `blast-radius` on the MNQU / adjacency edits (Rule 7).
+**Shipped:** pointer repairs on [`note`](notes/research/2026-08-28-tradingview-strategy-report-july-2026.md), [`pinescript-v6`](../.claude/skills/pinescript-v6/SKILL.md) item 3, [`trade-csv-reconcile`](../.claude/skills/trade-csv-reconcile/SKILL.md) last-exit sub-rule. `28a`/`28b`/`28c` left (append-only).
+**Decisions/defects:** `BLAST-RADIUS: REPAIRED`. Owner remains the note. No ORB unpark. No Q.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: operator asked for blast-radius on the TV updates-note thread`.
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
+## 2026-08-28c — `MNQU2026` v6-gate also dies 7 Apr; Pine adjacency, not `1!` warehouse
+
+**Focus:** Operator dated-front-month pin: `v6-gate` on `MNQU2026` 30m, `Window: yes`, last exit 2026-04-07 16:30, OR legend on the live print.
+**Shipped:** addendum on [`note`](notes/research/2026-08-28-tradingview-strategy-report-july-2026.md) (adjacent-bar `orJustEnded` / `leftSession`); `pinescript-v6` item 8 corrected (front month does not clear Pine). Diagnostic paste is session-local `uploads/orb-mnq.v6_logic.pine` (gitignored).
+**Decisions/defects:** Dated front month failing in the same week falsifies warehouse-only. Remaining suspect is session-edge adjacency on gapped 30m. No ORB unpark.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: operator asked for a TV updates note from the MNQ1! tester-diagnosis thread`.
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
+## 2026-08-28b — `MGC1!` Last-365d Deep still prints 2026-08-25 (MNQ cliff is symbol-side)
+
+**Focus:** Operator counter-pin: Vanguard Gold v0.4 on `MGC1!` 15m Last-365d Deep, Default detalization, last fill 2026-08-25 16:45.
+**Shipped:** addendum on [`note`](notes/research/2026-08-28-tradingview-strategy-report-july-2026.md) (cross-symbol split). No skill edit.
+**Decisions/defects:** Falsifies platform-wide Deep-2026 hole. April cliff stays `MNQ1!` warehouse / that pane. Gold Overview numbers are not a strategy verdict here.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: operator asked for a TV updates note from the MNQ1! tester-diagnosis thread`.
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
+## 2026-08-28a — TradingView Strategy Report / Deep / `1!` warehouse note (July 2026)
+
+**Focus:** Operator chart-diagnosis of ORB-MNQ-1 recon v6 dying mid-April on `MNQ1!` while candles continued — write the platform-ops note, not a Q or unpark.
+**Shipped:** [`note`](notes/research/2026-08-28-tradingview-strategy-report-july-2026.md) · pointers in [`pinescript-v6`](../.claude/skills/pinescript-v6/SKILL.md) and [`trade-csv-reconcile`](../.claude/skills/trade-csv-reconcile/SKILL.md). No new skill.
+**Decisions/defects:** Note is the owner. July 2026 tester rewrite + silent `1!` Deep partial data; do not treat report B&H death as “strategy stopped.” No ORB unpark.
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: operator asked for a TV updates note from the MNQ1! tester-diagnosis thread`.
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
 
 ---
 
