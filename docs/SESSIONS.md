@@ -32,6 +32,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-29d — ADR INDEX notes cells capped at 40 words
+
+**Focus:** keep [`docs/adr/INDEX.md`](adr/INDEX.md) a pointer table; stop copying essay-length Status annotations into the notes cell.
+**Shipped:** [`check_adr_graph.py`](../scripts/check_adr_graph.py) `_index_notes` + regenerate. ADR bodies untouched. Display-only (A1/A2 still parse the full header).
+**Decisions/defects:** 40-word cap matches W5 / STATE. Supersedes clauses stay full (graph edges, not notes).
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: commissioned Cloud Agent documentation-accuracy packet (ADR INDEX notes cap); not a leftover Open/next name.`
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-29b — harvest-first framing hedge in session-facing discovery docs
 
 **Focus:** documentation-accuracy fix — session-facing harvest/discovery prose stated an unresolved ADR claim as settled fact.
