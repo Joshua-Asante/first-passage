@@ -207,7 +207,8 @@ structure:
   route needed (conditioner-role). Cross-instrument corroboration: MNQ's own same-day candidate
   3 (informally `bar-volume-regime`, correctly stratified from the start, no landed
   MECHANISMS.md heading of its own yet) found a similar shape (+20.6pp/+25.6pp) and reached the
-  same GRADUATE decision independently. `N-2026-08-29-mym-bar-volume-regime.md` rewritten in
+  same GRADUATE decision independently (MYM routing later UNRESOLVED — current owner:
+  notice §4 / ledger bullet above). `N-2026-08-29-mym-bar-volume-regime.md` rewritten in
   place (§1 superseded, not appended-around); `MECHANISMS.md`'s `intraday-bar-volume-regime`
   class finding updated the same way. **Scope-bounded:** candidates 1, 4, 5 untouched (candidate
   4's own HOLD re-check isn't due until 2027-03-01, not reopened here). No `core/`, lock,

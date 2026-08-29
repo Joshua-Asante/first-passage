@@ -1,4 +1,4 @@
-# Notice — MYM M15 bar-volume regime → next-bar range (ToD-deseasonalized, stratified — GRADUATE)
+# Notice — MYM M15 bar-volume regime → next-bar range (ToD-deseasonalized, stratified — UNRESOLVED)
 
 **Notice ID:** N-2026-08-29-mym-bar-volume-regime
 **Observed:** 2026-08-29 (marginal-comparison run); **corrected 2026-08-29** (stratified re-run, same-shape correction as candidates 2/4)
@@ -80,9 +80,9 @@ INCREMENT / GRADUATE until the within-stratum circular-shift null is actually ru
   heading or PROFILE cell registered for it yet — its own Pre-Q is also not yet
   opened) ran the correctly-stratified design from the start and found a strikingly
   similar shape: +20.6pp / +25.6pp incremental lift across its own two range-matched
-  strata, and routed the same construct to **GRADUATE**. Two independent instruments,
-  independently authored the same day, landing on the same effect size and the same
-  routing decision is a meaningfully stronger basis than either instrument alone.
+  strata, and routed the same construct to **GRADUATE**. The shape corroboration
+  still stands; MYM's own routing is UNRESOLVED pending the corrected null (§1 / §4)
+  and is no longer the same decision as MNQ's.
 - **Frequency check:** first instance under the corrected design on MYM.
 
 ## §3 — Candidate mechanisms (informal)
