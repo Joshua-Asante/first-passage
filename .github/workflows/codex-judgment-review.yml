@@ -16,6 +16,13 @@
 # the marker comment, or an operator/cursor comment.
 # Drafts are silent; ready_for_review is the first look.
 # pull_request (not pull_request_target).
+#
+# Adversarial mode (2026-08-29 addendum follow-up): label `adversarial-review`
+# or body token `codex-review: adversarial` hands Codex the fable-judge
+# skill as its review prompt instead of the default pass, for a high-stakes
+# PR where the extra scrutiny is worth it. Still review-only, still
+# read-only sandbox — findings route to Cursor via notify-cursor.yml to
+# implement, per operator ruling (Codex does not get write access here).
 
 name: Codex judgment review
 
@@ -32,7 +39,8 @@ jobs:
     if: >
       github.event.pull_request.draft == false &&
       (github.event.action != 'labeled' ||
-       github.event.label.name == 'codex-review')
+       github.event.label.name == 'codex-review' ||
+       github.event.label.name == 'adversarial-review')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -101,16 +109,36 @@ jobs:
           CODEX_ACCESS_TOKEN: ${{ secrets.CODEX_ACCESS_TOKEN }}
         run: printenv CODEX_ACCESS_TOKEN | codex login --with-access-token
 
+      # Adversarial mode swaps in the fable-judge skill as a custom review
+      # prompt (piped over stdin — `codex exec review -`). Standard mode
+      # passes no prompt at all and gets Codex's own default review pass.
       - name: Run Codex review
         if: steps.decide.outputs.trigger == 'yes'
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
+          ADVERSARIAL: ${{ steps.decide.outputs.adversarial }}
         run: |
-          codex exec review \
-            --base "origin/${{ github.event.pull_request.base.ref }}" \
-            --title "$PR_TITLE" \
-            --sandbox read-only \
-            --output-last-message /tmp/codex-review.md
+          set -euo pipefail
+          BASE="origin/${{ github.event.pull_request.base.ref }}"
+          if [ "$ADVERSARIAL" = "yes" ]; then
+            {
+              echo "You are Codex, performing a second-opinion adversarial review of this PR's diff — standing in for the fable-judge skill below (docs/adr/2026-07-14-cc-cursor-surface-allocation.md addendum 2026-08-29). Judging changes nothing: report findings only, do not edit any files."
+              echo
+              sed -n '/^# fable-judge/,$p' .claude/skills/fable-judge/SKILL.md
+            } > /tmp/codex-review-prompt.md
+            codex exec review - \
+              --base "$BASE" \
+              --title "$PR_TITLE" \
+              --sandbox read-only \
+              --output-last-message /tmp/codex-review.md \
+              < /tmp/codex-review-prompt.md
+          else
+            codex exec review \
+              --base "$BASE" \
+              --title "$PR_TITLE" \
+              --sandbox read-only \
+              --output-last-message /tmp/codex-review.md
+          fi
 
       - name: Post Codex review
         if: steps.decide.outputs.trigger == 'yes'
@@ -118,10 +146,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REASON: ${{ steps.decide.outputs.reason }}
+          ADVERSARIAL: ${{ steps.decide.outputs.adversarial }}
         run: |
           set -euo pipefail
+          if [ "$ADVERSARIAL" = "yes" ]; then
+            KIND="adversarial second-opinion review (fable-judge mode)"
+          else
+            KIND="second-opinion review"
+          fi
           {
-            echo "**Codex second-opinion review** — automated (\`codex exec review\`), review-only, not merge authority. Reason: \`$REASON\`. Owner: \`docs/adr/2026-07-14-cc-cursor-surface-allocation.md\` addendum 2026-08-29."
+            echo "**Codex $KIND** — automated (\`codex exec review\`), review-only, not merge authority. Reason: \`$REASON\`. Owner: \`docs/adr/2026-07-14-cc-cursor-surface-allocation.md\` addendum 2026-08-29."
             echo
             cat /tmp/codex-review.md
             echo

@@ -8,8 +8,18 @@ the 2026-08-29 addendum. Review-only — never merge.
 Exit 0 on a valid decision (trigger is an output, not a failure).
 Exit 2 on usage / I/O errors.
 
-Prints ``TRIGGER=yes|no`` and ``REASON=<token>``. When ``GITHUB_OUTPUT`` is
-set, also writes ``trigger`` and ``reason`` for workflow consumption.
+Prints ``TRIGGER=yes|no``, ``REASON=<token>``, and ``ADVERSARIAL=yes|no``.
+When ``GITHUB_OUTPUT`` is set, also writes ``trigger``, ``reason``, and
+``adversarial`` for workflow consumption.
+
+``ADVERSARIAL=yes`` (label ``adversarial-review`` or body token
+``codex-review: adversarial``, 2026-08-29 addendum follow-up) asks the
+workflow to hand Codex the fable-judge skill as its review prompt instead
+of the default judgment-review pass — for a high-stakes PR where an
+adversarial second look is worth the extra scrutiny. Same review-only,
+read-only-sandbox contract either way; fable-judge's own rule applies
+("judging changes nothing" — findings route to Cursor via notify-cursor.yml
+to implement, Codex never gets write access here, per operator ruling).
 """
 from __future__ import annotations
 
@@ -21,6 +31,8 @@ from pathlib import Path
 
 LABEL = "codex-review"
 BODY_TOKEN = "codex-review: judgment"
+ADVERSARIAL_LABEL = "adversarial-review"
+ADVERSARIAL_BODY_TOKEN = "codex-review: adversarial"
 MARKER = "<!-- codex-judgment-review -->"
 CURSOR_PREFIX = "cursor/"
 
@@ -69,10 +81,15 @@ JUDGMENT_SUFFIXES = (".pine",)
 class Decision:
     trigger: bool
     reason: str
+    adversarial: bool = False
 
     @property
     def trigger_word(self) -> str:
         return "yes" if self.trigger else "no"
+
+    @property
+    def adversarial_word(self) -> str:
+        return "yes" if self.adversarial else "no"
 
 
 def normalize_path(path: str) -> str:
@@ -114,11 +131,16 @@ def should_request_review(
         return Decision(False, "draft")
     if MARKER in existing_comments:
         return Decision(False, "already_requested")
-    if event_action == "labeled" and event_label != LABEL:
+    if event_action == "labeled" and event_label not in {LABEL, ADVERSARIAL_LABEL}:
         return Decision(False, "labeled_other")
+    if ADVERSARIAL_LABEL in labels:
+        return Decision(True, "adversarial_label", adversarial=True)
     if LABEL in labels:
         return Decision(True, "label")
-    if BODY_TOKEN in body.lower():
+    lowered_body = body.lower()
+    if ADVERSARIAL_BODY_TOKEN in lowered_body:
+        return Decision(True, "adversarial_body_token", adversarial=True)
+    if BODY_TOKEN in lowered_body:
         return Decision(True, "body_token")
     if head_branch.startswith(CURSOR_PREFIX) and any(
         is_judgment_path(path) for path in changed_files
@@ -150,6 +172,7 @@ def _write_github_output(decision: Decision) -> None:
     with open(dest, "a", encoding="utf-8") as handle:
         handle.write(f"trigger={decision.trigger_word}\n")
         handle.write(f"reason={decision.reason}\n")
+        handle.write(f"adversarial={decision.adversarial_word}\n")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -183,6 +206,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     print(f"TRIGGER={decision.trigger_word}")
     print(f"REASON={decision.reason}")
+    print(f"ADVERSARIAL={decision.adversarial_word}")
     _write_github_output(decision)
     return 0
 

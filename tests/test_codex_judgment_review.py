@@ -79,6 +79,44 @@ def test_body_token_is_explicit_opt_in() -> None:
     assert decision == mod.Decision(True, "body_token")
 
 
+def test_adversarial_label_is_explicit_opt_in() -> None:
+    decision = _decide(
+        head_branch="feat/human",
+        labels={mod.ADVERSARIAL_LABEL},
+        changed_files=["tests/test_example.py"],
+    )
+    assert decision == mod.Decision(True, "adversarial_label", adversarial=True)
+
+
+def test_adversarial_body_token_is_explicit_opt_in() -> None:
+    decision = _decide(
+        head_branch="feat/human",
+        body="Please look hard.\nCodex-Review: Adversarial\n",
+        changed_files=["tests/test_example.py"],
+    )
+    assert decision == mod.Decision(True, "adversarial_body_token", adversarial=True)
+
+
+def test_adversarial_labeled_event_is_not_filtered_as_other() -> None:
+    decision = _decide(
+        head_branch="feat/human",
+        labels={mod.ADVERSARIAL_LABEL},
+        changed_files=["tests/test_example.py"],
+        event_action="labeled",
+        event_label=mod.ADVERSARIAL_LABEL,
+    )
+    assert decision == mod.Decision(True, "adversarial_label", adversarial=True)
+
+
+def test_standard_label_is_not_adversarial() -> None:
+    decision = _decide(
+        head_branch="feat/human",
+        labels={mod.LABEL},
+        changed_files=["tests/test_example.py"],
+    )
+    assert decision.adversarial is False
+
+
 def test_cursor_plus_judgment_surface() -> None:
     decision = _decide(changed_files=["docs/adr/x.md", "tests/test_x.py"])
     assert decision == mod.Decision(True, "cursor_judgment_surface")
@@ -128,3 +166,4 @@ def test_cli_writes_trigger_and_reason(tmp_path: Path) -> None:
     assert result.returncode == 0
     assert "TRIGGER=yes" in result.stdout
     assert "REASON=cursor_judgment_surface" in result.stdout
+    assert "ADVERSARIAL=no" in result.stdout
