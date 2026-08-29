@@ -154,7 +154,7 @@
       "bar-closing-location-autocorrelation": {
         "date": "2026-11-08",
         "source": "../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md",
-        "verdict": "CONTINGENT-FORWARD"
+        "verdict": "AMBIGUOUS-PARKED"
       },
       "daily-range-state-persistence": {
         "date": "2026-08-29",
@@ -189,7 +189,7 @@
       "overnight-gap-magnitude-range-conditioning": {
         "date": "2027-03-01",
         "source": "../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md",
-        "verdict": "CONTINGENT-FORWARD"
+        "verdict": "AMBIGUOUS-PARKED"
       },
       "overnight-range-day-session-transfer": {
         "date": "2026-08-29",

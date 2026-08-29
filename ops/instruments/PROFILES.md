@@ -10,7 +10,7 @@
 | Mechanism | 6J | BTCUSD | ES | EURGBP | EURUSD | GER40 | M2K | M6A | M6B | MCL | MES | MGC | MJY | MNQ | MYM | NAS100 | NG | NQ | SPX500 | USDCAD | USOIL | XAGUSD | XAUUSD | YM | ZB | ZF | ZN |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | band-pierce-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | F | . | . | . | . | . | . | . |
-| bar-closing-location-autocorrelation | . | . | . | . | . | . | . | . | . | . | . | . | . | A | F | . | . | . | . | . | . | . | . | . | . | . | . |
+| bar-closing-location-autocorrelation | . | . | . | . | . | . | . | . | . | . | . | . | . | A | A | . | . | . | . | . | . | . | . | . | . | . | . |
 | commodity-carry-term-structure | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . |
 | compression-gated-breakout | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . |
 | daily-range-state-persistence | . | . | . | . | . | . | . | . | . | A | . | D | . | A | A | . | . | . | . | . | . | . | . | . | . | . | . |
@@ -30,7 +30,7 @@
 | opening-range-breakout | . | . | . | . | . | A | . | . | . | . | . | . | . | A | . | A | . | A | D | D | . | . | . | . | D | D | . |
 | opening-range-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . |
 | order-flow-depth-imbalance | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . |
-| overnight-gap-magnitude-range-conditioning | . | . | . | . | . | . | . | . | . | . | . | . | . | . | F | . | . | . | . | . | . | . | . | . | . | . | . |
+| overnight-gap-magnitude-range-conditioning | . | . | . | . | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . | . | . | . | . | . | . | . | . |
 | overnight-range-day-session-transfer | . | . | . | . | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . | . | . | . | . | . | . | . | . |
 | overnight-range-failed-extension-fade | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | overnight-range-transmission | . | . | . | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . | . | . | . | . | . | . | . | . | . |
@@ -70,7 +70,7 @@ Entering in the direction of a statistical band pierce (e.g. an NY-morning σ-th
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
 | MNQ | AMBIGUOUS-PARKED | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mnq-clv-autocorrelation.md |
-| MYM | CONTINGENT-FORWARD | 2026-11-08 | ../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md |
+| MYM | AMBIGUOUS-PARKED | 2026-11-08 | ../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md |
 
 
 ## commodity-carry-term-structure
@@ -328,7 +328,7 @@ Entering in the direction of an opening-range break and holding the position for
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| MYM | CONTINGENT-FORWARD | 2027-03-01 | ../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md |
+| MYM | AMBIGUOUS-PARKED | 2027-03-01 | ../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md |
 
 
 ## overnight-range-day-session-transfer

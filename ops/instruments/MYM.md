@@ -64,11 +64,11 @@ cells:
     date: 2026-08-29
     source: "../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md"
   - mechanism: overnight-gap-magnitude-range-conditioning
-    verdict: CONTINGENT-FORWARD
+    verdict: AMBIGUOUS-PARKED
     date: 2027-03-01
     source: "../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md"
   - mechanism: bar-closing-location-autocorrelation
-    verdict: CONTINGENT-FORWARD
+    verdict: AMBIGUOUS-PARKED
     date: 2026-11-08
     source: "../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md"
 bars:
@@ -149,6 +149,7 @@ structure:
 ## SESSION LOG
 
 - **2026-08-29 (cell-verdict correction)** — **Stale `CONTINGENT-FORWARD` on two GRADUATE-eligible cells flipped to `AMBIGUOUS-PARKED`.** Re-read both Notice-logs: [`N-…overnight-rth-range-transfer`](../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md) and [`N-…bar-volume-regime`](../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md) still route GRADUATE with Pre-Q authoring deferred; neither has a `docs/briefs/Q-*.md` Pre-Q, a frozen verdict pre-registration, or an operator GO. `scripts/instrument_profiles.py` `CONSULT_NOTE` defines `CONTINGENT-FORWARD` as "a frozen forward test is running on this cell" — that bar is not met. Closed-vocabulary fallback is `AMBIGUOUS-PARKED` (still BLOCKING; anti-collision preserved). Same class as the MNQ analogue correction (PR #201). **Not a silent flip** — USDCAD BPC-001's 2026-07-28 lesson is that changing this token changes what `instrument_profiles.py cell` forecloses; this session is the operator-dispatched adjudication, not hygiene. **Out of scope, left as-is:** `overnight-gap-magnitude-range-conditioning` and `bar-closing-location-autocorrelation` remain `CONTINGENT-FORWARD` (both HELD, different routing). No `core/`, Pine, allocation, `dd_protection`, lifecycle, or rail change.
+- **2026-08-29 (cell-verdict correction #2, closing the gap the prior entry deliberately left open)** — **The two cells the prior correction called "different routing" and left as `CONTINGENT-FORWARD` fail the exact same test.** Re-read both: [`N-…gap-magnitude-rth-range`](../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md) §4 routes **HOLD until 2027-03-01** (not a kill, not a demonstrated increment — CI straddles 0); [`N-…closing-location-autocorrelation`](../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md) §4 routes **HOLD until 2026-11-08** (real, well-powered finding, admission-route status unresolved). Neither has a frozen forward test running — HOLD is not GRADUATE, and both are further from a running test than the two cells corrected above. `CONTINGENT-FORWARD` was wrong for these two on the same grounds as the prior entry and as MNQ's PR #201 correction; flipped both to `AMBIGUOUS-PARKED`, matching the two HOLD-routed cells (`daily-range-state-persistence` here, and both HOLD cells on MNQ) that already carried the correct verdict. The `date:` fields (`2027-03-01`, `2026-11-08` — each candidate's own re-check-trigger date, not this session's date) are left untouched; only the verdict token changed. No `core/`, Pine, allocation, `dd_protection`, lifecycle, or rail change.
 - **2026-08-29 (correction #2, follow-up)** — **Same design-flaw class caught on candidate 3
   (`intraday-bar-volume-regime`), missed by the first adversarial pass because this construct
   doesn't cite the D5 magnitude-persistence spec** (it's a different mechanism family), so the
