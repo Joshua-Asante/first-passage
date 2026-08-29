@@ -137,6 +137,19 @@ Both class findings below are OFFICIAL under it (2026-08-18, operator PROCEED).
   the identical verdict shape. [MYM.md](MYM.md) ·
   [`N-2026-08-29-mym-rangestate-persistence.md`](../../docs/notes/notice/N-2026-08-29-mym-rangestate-persistence.md) ·
   [`c1_results.json`](../../lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c1_results.json)
+- **Class finding (MNQ, 2026-08-29 — backfilled on reconciliation pass):** MNQ's own same-day
+  score of this class reused the frozen corrected battery verbatim as a new instrument leaf.
+  Raw gateHit **0.6867** (n_cond=332) beats both prior instruments (GC 0.5299, CL 0.6282) on
+  presence limbs L1–L3, but this instrument's own by-year floor (L4) is structurally
+  **AMBIGUOUS** (only 6 of the required 7 full calendar years qualify at n_cond≥20) and the
+  attribution limb (L5) **VOIDs** — the IAAFT diagnostic gate fails at both iter=100 and
+  iter=500, byte-identically, with the escalation ladder's Schreiber end-matching trim finding
+  no improving offset. **Not a fourth verdict alongside NULL/SIGNAL-GENERIC/SIGNAL-GENERIC —
+  uncertified**, the exact failure mode the corrected battery exists to catch (a naive L1–L3-only
+  read would have called this SIGNAL). Ledger cell `AMBIGUOUS-PARKED`, re-open trigger is
+  operator-scoped (panel extended to ≥7 full years, or a fresh surrogate-class design per the
+  frozen spec's own O5 remedy) — not calendar-triggered. [MNQ.md](MNQ.md) ·
+  [`N-2026-08-29-mnq-daily-range-persistence.md`](../../docs/notes/notice/N-2026-08-29-mnq-daily-range-persistence.md)
 
 ## overnight-range-day-session-transfer
 
@@ -223,6 +236,18 @@ frozen battery.
   correction reverses this entirely — the marginal "kill" was masking a real +16 to +25pp effect,
   not the absence of one. Kept visible as a disclosed secondary measurement, not deleted; the
   stratified finding governs.
+- **Class finding (cross-instrument, MNQ, 2026-08-29):** backfilled on reconciliation pass —
+  MNQ's own same-day bar-volume-regime candidate, independently run, correctly stratified from
+  the start (not a correction), found a near-identical shape: within-stratum
+  lift **+20.6pp** (low-range stratum, n=12,430/54,167) / **+25.6pp** (high-range stratum,
+  n=58,115/11,308), same-bar volume/range Spearman correlation **0.88** (vs MYM's own 0.8618,
+  independently measured — not assumed by analogy). **GRADUATE**, reached independently before
+  either session saw the other's work. Direction limb (does volume predict next-bar directional
+  continuation, not just range) is a clean null on MNQ; untested on MYM this session. Registered
+  here under MYM's id (`intraday-bar-volume-regime`) rather than a separate MNQ-named one —
+  unlike the overnight-range/gap-magnitude split, this construct carries no unresolved
+  nested-hypothesis structure blocking a straightforward merge. [MNQ.md](MNQ.md) ·
+  [`N-2026-08-29-mnq-bar-volume-regime.md`](../../docs/notes/notice/N-2026-08-29-mnq-bar-volume-regime.md)
 
 ## overnight-gap-magnitude-range-conditioning
 
@@ -287,6 +312,21 @@ resolve on its own.
   reads closer to `mean-reversion-fade` than to a neutral conditioner); ledger cell
   `CONTINGENT-FORWARD`, HELD pending a scope ruling. [MYM.md](MYM.md) ·
   [`N-2026-08-29-mym-closing-location-autocorrelation.md`](../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md)
+- **Class finding (MNQ, 2026-08-29 — backfilled on reconciliation pass):** MNQ (full continuous
+  M15 bar sequence, RTH+overnight, n_pairs=141,540): lag-1 Spearman rho(CLV_t, CLV_t+1) =
+  **−0.0301**, block-shuffle null (block=96≈1 day, 2000 permutations) band **[−0.0052, +0.0051]**
+  — real, negative, both halves same-signed (H1 −0.0385, H2 −0.0219). **Not run through the
+  IAAFT battery this session** (only the block-shuffle null, a weaker test than MYM's SIGNAL-EXCESS
+  classification against the linear-ACF-preserving surrogate) — MNQ's result is directionally
+  consistent with MYM's (same sign, same order of magnitude) but not yet typed SIGNAL-EXCESS vs
+  SIGNAL-GENERIC on this instrument. Same open question as MYM's: admission-route status under
+  the single-instrument directional-timing raised bar is unresolved. Ledger cell
+  `AMBIGUOUS-PARKED` (corrected from an initial `CONTINGENT-FORWARD` — no forward test is running
+  on this cell, see MNQ.md's own session-log correction note); re-open trigger is the same scope
+  ruling MYM's cell waits on, not a separate one. ⚠ MYM's own cell for this class (above) still
+  reads `CONTINGENT-FORWARD` as of this correction — same underlying misuse, pre-existing on
+  `main`, out of scope for this pass; flagged separately, not fixed here. [MNQ.md](MNQ.md) ·
+  [`N-2026-08-29-mnq-clv-autocorrelation.md`](../../docs/notes/notice/N-2026-08-29-mnq-clv-autocorrelation.md)
 
 ## htf-compression-breakout-5m
 

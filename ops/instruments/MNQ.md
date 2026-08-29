@@ -42,6 +42,22 @@ cells:
     verdict: DEAD
     date: 2026-08-05
     source: "../../lab/archive/mnq_orderflow_probe_2026-08-04/RESULTS.md"
+  - mechanism: overnight-range-transmission
+    verdict: AMBIGUOUS-PARKED
+    date: 2026-08-29
+    source: "../../docs/notes/notice/N-2026-08-29-mnq-overnight-rth-range-transfer.md"
+  - mechanism: intraday-bar-volume-regime
+    verdict: AMBIGUOUS-PARKED
+    date: 2026-08-29
+    source: "../../docs/notes/notice/N-2026-08-29-mnq-bar-volume-regime.md"
+  - mechanism: daily-range-state-persistence
+    verdict: AMBIGUOUS-PARKED
+    date: 2026-08-29
+    source: "../../docs/notes/notice/N-2026-08-29-mnq-daily-range-persistence.md"
+  - mechanism: bar-closing-location-autocorrelation
+    verdict: AMBIGUOUS-PARKED
+    date: 2026-08-29
+    source: "../../docs/notes/notice/N-2026-08-29-mnq-clv-autocorrelation.md"
 structure:
   - claim: "ORB-MNQ-1's fills are known-good - the cost fragility is a commission sensitivity, not a fill-mechanics defect (median intrabar penetration 81 ticks entries / 64 ticks stops, 0.7% shallow-touch, zero non-traded levels)."
     source: "#N2"
@@ -192,6 +208,40 @@ structure:
   `scripts/instrument_profiles.py cell`. No `core/`, Pine, allocation, `dd_protection`, lifecycle, or
   rail change; nothing armed. TBBO/MBP-10 order-flow candidates explicitly deferred, not run, no
   Databento spend this session ($0 total).
+- **2026-08-29 (registry reconciliation, cross-session)** — **Backfilled this ledger's own
+  `cells:` block and added standalone MECHANISMS.md class-finding bullets for all four Notice-phase
+  candidates above that never got either — a real registry-completeness gap, not a mechanical
+  oversight to wave off.** Discovered while pooling this ledger's findings against the MYM
+  sibling batch (`MYM.md`): `overnight-range-transmission` had a full class finding and a real
+  Pre-Q (`Q-RANGEXFER-1`) but no `cells:` row here; `intraday-bar-volume-regime` (MYM's id — this
+  ledger's own `bar-volume-regime` GRADUATE was cross-instrument-corroborating evidence sitting
+  only in this ledger's own prose, invisible to `python scripts/instrument_profiles.py cell MNQ
+  intraday-bar-volume-regime`); `daily-range-state-persistence`'s existing shared heading (GC/CL/MYM)
+  had no MNQ bullet despite MNQ having scored a fourth instrument under it; `bar-closing-location-
+  autocorrelation` (MYM's id) had no MNQ bullet either, despite both instruments independently
+  landing a real, same-signed result and sharing the identical open admission-route question.
+  Four new `cells:` rows added, dated 2026-08-29 — this session's own recorded date, not an
+  invented shared date, per each row's own cited Notice-log source — plus a standalone MNQ
+  class-finding bullet under each of the three MYM-authored headings. **Correction (same PR,
+  post-review):** all four rows were first landed as `CONTINGENT-FORWARD`, which
+  `scripts/instrument_profiles.py cell`'s own `CONSULT_NOTE` defines as "a frozen forward test is
+  running on this cell" — true of none of the four (two are HOLD with no forward test proposed at
+  all; the other two GRADUATEd to a Pre-Q, and even `overnight-range-transmission`'s real, frozen
+  `Q-RANGEXFER-1` pre-registration has no operator GO yet, so no test is actually executing — see
+  the USDCAD `BPC-001` ledger note for why "frozen config" and "running forward test" are not the
+  same claim). Re-set all four to `AMBIGUOUS-PARKED`, the closed vocabulary's correct fallback for
+  "real, registered, not dead, not live, no forward test currently executing" — still `BLOCKING`,
+  so the collision-prevention purpose of adding these rows at all is unchanged. Caught by an
+  automated PR review, verified against the Notice-log §4 routing decisions before fixing, not
+  taken on the review's word alone. **Deliberately NOT done:** the `overnight-range-transmission` vs. `overnight-range-day-session-transfer` /
+  `overnight-gap-magnitude-range-conditioning` taxonomy split stays as-is — MNQ's own combined id
+  encodes a real analytical claim (gap magnitude is a nested, sign-unstable sub-question of
+  overnight range, per `candidate24_joint_gate.py`) that MYM's own two ids have not yet been tested
+  against on MYM's own data; forcing a merge now would paper over that untested step rather than
+  resolve it. That joint check on MYM's data — and the resulting taxonomy call — stays the deferred
+  MNQ+MYM pooling session's job, exactly as both ledgers' own prior notes already say. No `core/`,
+  Pine, allocation, `dd_protection`, lifecycle, or rail change; $0 spent, no new K (registry
+  bookkeeping only, no new measurement).
 - **2026-08-26b** — **Same-day follow-up materially revises the 2026-08-26 combined-book entry
   below — do not cite its 1.51%/0.01% figures without also reading this.** A proper both-halves
   regime-robustness bootstrap (not run originally) finds the **1yr flagship construct fails
