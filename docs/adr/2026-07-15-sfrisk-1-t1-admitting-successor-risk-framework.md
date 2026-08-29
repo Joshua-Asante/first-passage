@@ -178,8 +178,8 @@ stays byte-unedited (Rule 14).
 1. `2026-08-02-pepperstone-feed-retirement.md` §2-D retired the Pepperstone CFD feed the venue
    the decompound harness's gitignored CSV inputs depend on.
 2. `2026-06-07-decompound-remc-hold.md`'s own **2026-08-03 addendum** declared that ADR's §4 limb
-   2 (the quarterly trailing-6-month regime-check re-MC this SFRISK-1 ADR's limb 2 rides) **
-   `SUSPENDED-ORPHANED`** — back-propagated from the feed retirement. The harness and its script
+   2 (the quarterly trailing-6-month regime-check re-MC this SFRISK-1 ADR's limb 2 rides)
+   **`SUSPENDED-ORPHANED`** — back-propagated from the feed retirement. The harness and its script
    were **not deleted**; the trailing-window call is permanently `NOT_EXECUTABLE` because the panel
    it needs cannot be extended past 2026-06-02 (no future Pepperstone export can exist). Verified
    there 2026-08-03: `regime_gate.py --regime-check --asof 2026-08-08` → `VERDICT: NOT_EXECUTABLE`.
