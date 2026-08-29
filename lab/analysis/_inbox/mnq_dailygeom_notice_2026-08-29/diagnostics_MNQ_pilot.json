@@ -1,0 +1,17 @@
+{
+ "M": 200,
+ "iterations": 100,
+ "domain": "normal-scores",
+ "seed_policy": "default_rng([20260818, 3, 990000+i])",
+ "spearman_acf_mismatch": {
+  "med": 0.05111394457573293,
+  "p95": 0.07072383043631639,
+  "max": 0.10437911282054445
+ },
+ "tolerance": {
+  "med_limit": 0.04,
+  "p95_limit": 0.07,
+  "gating_domain": "spearman-rank-acf"
+ },
+ "gate": "FAIL"
+}

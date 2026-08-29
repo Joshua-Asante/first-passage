@@ -4,7 +4,7 @@
 **Status (2026-08-04):** ⚠ **NO LONGER A LIVE c1 LEG — withdrawn from deployment.** The Tradeify venue is de-scoped as a deployment target for the locked Striker book, evaluation included ([`ADR 2026-08-04`](../../docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md); ⚠ **narrowed same day, Addendum 2026-08-04** — the bar is on redeploying this leg, not on Tradeify-shaped base-construct research, e.g. `MNQBASE-1`'s harvest-intake pass below); this leg never took a strategy-signal-originated fill and now has no venue. **Lifecycle unchanged: `Striker NAS100` stays `AUTHORIZED · MECHANISM @ 1.00×`** (canonical: [`strategy_lifecycle.md`](../../docs/methodology/strategy_lifecycle.md)) — no `core/lifecycle.py` write, no demotion; venue-fit is not decay. Pine, parameters and `LEG_MAP` untouched. Prior status line preserved below as record.
 
 **Status (prior, through 2026-08-03):** **LIVE c1 leg (disarmed).** Hosts the Striker NAS100 v1 **venue edition** (`striker_nas100_v1_mnq.pine`) as one of the two c1 legs on the Tradeify Select 100K eval — `dry_run=true`, WATCH-1 0.50×, **no strategy-signal-originated fill yet** (rail has canned B4 fills: B6 dry-fire 2026-07-20 + 2026-07-27 SIM; account not pristine — see [`CLAUDE.md`](../../CLAUDE.md) live-execution posture). Also the venue of the only lifecycle-admitted reconstruction candidate (`ORB-MNQ-1`, **PARKED** 2026-07-23).
-**Last updated:** 2026-08-26
+**Last updated:** 2026-08-29
 
 **Purpose:** single source of instrument-level truth (operational rule 10, [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](../../docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md)). Any session deriving/testing/adjudicating on MNQ MUST read this at session start and append a dated disposition. **Created 2026-07-25** — every 2026-07 MNQ study closed with no ledger home, so the foreclosure record existed only inside scattered closures. **The DEAD list is the point:** falsified entries are the highest-value content here and must stay as prominent as any survivor.
 
@@ -153,6 +153,45 @@ structure:
 
 ## SESSION LOG
 
+- **2026-08-29** — **Notice-phase 5-candidate bars-only geometry screen (MNQ M15) — 2 GRADUATE, 1
+  split GRADUATE/DROP, 1 HOLD (real, VOIDs under the frozen battery), 1 HOLD (real, route
+  unresolved). Zero new DEAD-list rows.** `--lane blind` registration (Rule 1: K declared before
+  any result), K=5, closed same session —
+  [`discovery_manifests/mnq_dailygeom_notice_20260829.json`](../../discovery_manifests/mnq_dailygeom_notice_20260829.json)
+  (not yet reconciled into the K_BANKED table below; re-read at next admission per that table's own
+  disclosure note). Panel: `core/data/bar_data/MNQ_M15.csv`, full 141,541-bar span. Five Notice-log
+  entries, `docs/notes/notice/N-2026-08-29-mnq-*.md`:
+  1. **`daily-range-state-persistence`** (reuses the frozen corrected-null battery,
+     `docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md`, verbatim as a new
+     instrument leaf, X_code=3): raw gateHit **0.6867** (n_cond=332) beats both prior instruments
+     (GC 0.5299, CL 0.6282) on presence limbs L1–L3, but L4 is structurally AMBIGUOUS (panel too
+     short — only 6 of the needed 7 full calendar years) and L5 **VOIDs** (IAAFT diagnostic gate
+     FAILs at iter=100 and iter=500, byte-identically; Schreiber end-matching trim search finds no
+     improving offset). **HOLD** — real effect, currently uncertifiable, not a null result.
+  2. **`overnight-range-to-rth-transfer`** (NEW — no prior MECHANISMS.md entry): re-scoped mid-session
+     from the handoff's assumed single-series framing to the corrected-battery spec's own §4 (D5)
+     "S2" cross-series shape once that section was read — the S1 null does not port to it. Ran D5's
+     required stage-1 $0 cheap falsifier instead of the IAAFT battery: overnight range beats matched
+     day-history conditioning by **+58pp / +39pp** across both day-history strata (bootstrap p<0.00025).
+     **GRADUATE** — clears D5's un-pause condition 2 decisively; stage-2 (joint-surrogation null +
+     adversarial review + operator GO) owed to the next session.
+  3. **`bar-volume-regime`** (NEW): direction limb clean NULL; range limb real (ToD-matched lift
+     +18.1pp, CI [0.673,0.695], n=136,020) and incrementally informative beyond the trigger bar's
+     own range (+21-26pp within range-matched strata, despite same-bar volume/range correlation
+     0.88). **GRADUATE** (range) / **DROP** (direction).
+  4. **`gap-magnitude-to-rth-range`**: same D5 cross-series re-scoping as #2. Naive marginals look
+     unremarkable; the D5 stratified design surfaces a real **+17pp/+16pp** incremental lift the
+     naive comparison masked (bootstrap p≈0.00225). **GRADUATE**, smaller effect than #2, plausibly
+     overlapping with it (untested this session).
+  5. **`closing-location-autocorrelation`** (NEW): CLV lag-1 Spearman rho=**−0.0301** on the full
+     141,540-pair bar sequence, clears a block-shuffle null by a wide margin (p_lower=0.0005, both
+     halves same sign) but is small in magnitude and this candidate's raised-bar admission-route is
+     explicitly unresolved. **HOLD** pending a route ruling and an economic-magnitude follow-up.
+  All five profile-consulted before scoring; `daily-range-state-persistence` and `opening-pressure`/
+  `order-flow-depth-imbalance` (checked as #3's nearest DEAD neighbors) all confirmed via
+  `scripts/instrument_profiles.py cell`. No `core/`, Pine, allocation, `dd_protection`, lifecycle, or
+  rail change; nothing armed. TBBO/MBP-10 order-flow candidates explicitly deferred, not run, no
+  Databento spend this session ($0 total).
 - **2026-08-26b** — **Same-day follow-up materially revises the 2026-08-26 combined-book entry
   below — do not cite its 1.51%/0.01% figures without also reading this.** A proper both-halves
   regime-robustness bootstrap (not run originally) finds the **1yr flagship construct fails
