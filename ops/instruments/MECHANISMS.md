@@ -136,14 +136,23 @@ explicitly marks this role PAUSED pending a joint-surrogate null design (indepen
 here) plus an owed $0 stage-1 cheap falsifier and an operator GO. Conditioner-role, not entry-role
 — makes no directional claim.
 
-- **Class finding:** MYM $0 cheap falsifier (spec un-pause precondition 2 — "does overnight-state
-  conditioning beat matched day-session-history conditioning?") returns **AMBIGUOUS, not a clean
-  kill**: overnight-conditioned obs 0.7604 (n=313) vs. day-history-conditioned obs 0.7306 (n=297)
-  on 1,307 matched sessions — diff +0.0297, 95% CI **[−0.0325, +0.0988]** (straddles 0), p≈0.372.
-  Per the spec's own rule only a clean negative kills S2 for $0; this result is neither a pass nor
-  a kill. First instrument scored under this role on any instrument. Full battery NOT run — no
-  full corrected-battery verdict exists yet for this role, on any instrument. [MYM.md](MYM.md) ·
+- **Class finding (corrected — stratified design, 2026-08-29, AUTHORITATIVE):** MYM $0 cheap
+  falsifier for spec un-pause precondition 2 ("does overnight-state conditioning beat matched
+  day-session-history conditioning?"), run properly as a **stratify-on-`bias_hist`, measure-lift-
+  within-stratum** design after adversarial review caught that a marginal-rate comparison does not
+  test "matched conditioning" — two correlated predictors can show near-identical marginal rates
+  while one still carries large incremental information. Within `bprime=0` (n=1,010): lift
+  **+0.3178** (0.6963 vs 0.3785). Within `bprime=1` (n=297): lift **+0.2207** (0.8607 vs 0.6400).
+  Block-bootstrap on the minimum stratified lift: mean **+0.2186**, 95% CI **[+0.1042, +0.3216]**,
+  p(lift≤0)=0.00025. **INCREMENT — decisive.** Un-pause precondition 2 is now CLEARED; conditions
+  3 (joint-surrogate null design, adversarial-reviewed) and 4 (operator GO) remain outstanding
+  before any full battery. First instrument scored under this role. [MYM.md](MYM.md) ·
   [`N-2026-08-29-mym-overnight-rth-range-transfer.md`](../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md)
+- **Superseded (disclosed, not the D5 stage-1 answer):** the first-pass **marginal**-comparison
+  falsifier (overnight-conditioned obs 0.7604 vs day-history-conditioned obs 0.7306, diff +0.0297,
+  95% CI [−0.0325, +0.0988], p≈0.372) read AMBIGUOUS — an artifact of comparing two correlated
+  predictors' own unconditional rates rather than isolating `bias_new`'s incremental effect. Kept
+  visible as a disclosed secondary measurement, not deleted; the stratified finding above governs.
 
 Rejected nearest classes (one-line):
 - `daily-range-state-persistence` — sibling S1 role, same battery family, same-series
@@ -183,12 +192,20 @@ identically (a $0 increment test vs. the day-session-history comparator, not a f
 Distinct from any fill/fade **direction** claim (e.g. Mesfin 2026, MNQ-only, external
 corroboration that does not exist for MYM on either magnitude or direction).
 
-- **Class finding:** MYM $0 increment falsifier, n_common=1,307 matched sessions: gap-conditioned
-  obs=0.6268 (n_cond=284) vs. day-history-conditioned obs=0.7306 (n_cond=297) — diff **−0.1039**,
-  95% CI **[−0.1636, −0.0404]**, p=0.0015. **Clean NO-INCREMENT, decisively negative** — gap
-  magnitude is actively *worse* than the mundane same-series comparator, not merely
-  uninformative. First instrument scored under this id. [MYM.md](MYM.md) ·
+- **Class finding (corrected — stratified design, 2026-08-29, AUTHORITATIVE):** same design
+  correction as `overnight-range-day-session-transfer` (marginal comparison → stratify on
+  `bias_hist`, measure lift within stratum). Within `bprime=0` (n=1,010): lift **+0.1404** (0.5526
+  vs 0.4122). Within `bprime=1` (n=297): lift **+0.0672** (0.7766 vs 0.7094) — **the sign itself
+  flips positive** in both strata. Block-bootstrap on the minimum stratified lift: mean **+0.0594**,
+  95% CI **[−0.0419, +0.1477]**, p(lift≤0)=0.1247. **AMBIGUOUS** — not a kill, not yet a pass; a
+  meaningfully weaker signal than the sibling overnight-range candidate's +0.2186. First instrument
+  scored under this id. [MYM.md](MYM.md) ·
   [`N-2026-08-29-mym-gap-magnitude-rth-range.md`](../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md)
+- **Superseded (disclosed, not the D5 stage-1 answer):** the first-pass **marginal** falsifier
+  (gap-conditioned obs=0.6268 vs day-history-conditioned obs=0.7306, diff −0.1039, 95% CI
+  [−0.1636, −0.0404], p=0.0015) read as a clean, decisive kill. The stratified correction reverses
+  the sign entirely — the marginal "kill" was a compositional artifact, not the absence of signal.
+  Kept visible as a disclosed secondary measurement, not deleted; the stratified finding governs.
 
 ## bar-closing-location-autocorrelation
 

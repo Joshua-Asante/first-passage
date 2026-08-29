@@ -30,7 +30,7 @@
 | opening-range-breakout | . | . | . | . | . | A | . | . | . | . | . | . | . | A | . | A | . | A | D | D | . | . | . | . | D | D | . |
 | opening-range-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . |
 | order-flow-depth-imbalance | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . |
-| overnight-gap-magnitude-range-conditioning | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . |
+| overnight-gap-magnitude-range-conditioning | . | . | . | . | . | . | . | . | . | . | . | . | . | . | F | . | . | . | . | . | . | . | . | . | . | . | . |
 | overnight-range-day-session-transfer | . | . | . | . | . | . | . | . | . | . | . | . | . | . | F | . | . | . | . | . | . | . | . | . | . | . | . |
 | overnight-range-failed-extension-fade | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | pdh-pdl-breakout-rth | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
@@ -304,22 +304,18 @@ Entering in the direction of an opening-range break and holding the position for
 
 **NEW 2026-08-29.** Does the overnight gap's **magnitude** (today's RTH open − yesterday's RTH
 
-- **Class finding:** MYM $0 increment falsifier, n_common=1,307 matched sessions: gap-conditioned
-
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| MYM | DEAD | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md |
+| MYM | CONTINGENT-FORWARD | 2027-03-01 | ../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md |
 
 
 ## overnight-range-day-session-transfer
 
 **NEW 2026-08-29.** The frozen magnitude-persistence spec's own "S2" role
 
-- **Class finding:** MYM $0 cheap falsifier (spec un-pause precondition 2 — "does overnight-state
-
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| MYM | CONTINGENT-FORWARD | 2027-03-01 | ../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md |
+| MYM | CONTINGENT-FORWARD | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md |
 
 
 ## overnight-range-failed-extension-fade

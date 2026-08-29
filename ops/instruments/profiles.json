@@ -167,12 +167,12 @@
         "verdict": "DEAD"
       },
       "overnight-gap-magnitude-range-conditioning": {
-        "date": "2026-08-29",
+        "date": "2027-03-01",
         "source": "../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md",
-        "verdict": "DEAD"
+        "verdict": "CONTINGENT-FORWARD"
       },
       "overnight-range-day-session-transfer": {
-        "date": "2027-03-01",
+        "date": "2026-08-29",
         "source": "../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md",
         "verdict": "CONTINGENT-FORWARD"
       },
@@ -1148,15 +1148,11 @@
     },
     "overnight-gap-magnitude-range-conditioning": {
       "definition": "**NEW 2026-08-29.** Does the overnight gap's **magnitude** (today's RTH open \u2212 yesterday's RTH",
-      "findings": [
-        "MYM $0 increment falsifier, n_common=1,307 matched sessions: gap-conditioned"
-      ]
+      "findings": []
     },
     "overnight-range-day-session-transfer": {
       "definition": "**NEW 2026-08-29.** The frozen magnitude-persistence spec's own \"S2\" role",
-      "findings": [
-        "MYM $0 cheap falsifier (spec un-pause precondition 2 \u2014 \"does overnight-state"
-      ]
+      "findings": []
     },
     "overnight-range-failed-extension-fade": {
       "definition": "**NEW 2026-08-13 (MSL-C3 K2 revive).** Fade a **failed** extension of the Globex **overnight** high/low into the RTH probe window: reclaim after a break that does not follow through; structural stop beyond the swept overnight extreme; truncated-loss exit; session-flat by 16:00 ET; k=1 first valid signal per session. Mean-reversion-at-a-level (route \u2460) \u2014 **not** PDH/PDL RTH prior-day, **not** London/COMEX (C2), **not** WSTRUCT weekly.",

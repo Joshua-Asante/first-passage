@@ -57,15 +57,15 @@ cells:
     source: "../../docs/notes/notice/N-2026-08-29-mym-rangestate-persistence.md"
   - mechanism: overnight-range-day-session-transfer
     verdict: CONTINGENT-FORWARD
-    date: 2027-03-01
+    date: 2026-08-29
     source: "../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md"
   - mechanism: intraday-bar-volume-regime
     verdict: DEAD
     date: 2026-08-29
     source: "../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md"
   - mechanism: overnight-gap-magnitude-range-conditioning
-    verdict: DEAD
-    date: 2026-08-29
+    verdict: CONTINGENT-FORWARD
+    date: 2027-03-01
     source: "../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md"
   - mechanism: bar-closing-location-autocorrelation
     verdict: CONTINGENT-FORWARD
@@ -131,7 +131,9 @@ structure:
   `K_intrinsic`-declared seed — it is bookkeeping, not a brake. Source: `st_eh_supertrend_grid.json` banks executed `K=2` spanning **two** families — the split is 1 MNQ + 1 MYM per its `executed_looks`; do **not** add 2 to either. ⚠ **The floor arithmetic below is superseded:** under [ADR 2026-08-04](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md) (`Accepted`) **`K_eff = K_intrinsic`**, so a `K_intrinsic=1` seed screens at **`K_eff` 1 → floor 0.650** (headroom 0.350), not `K_eff=2` → 0.85. The bank is still read and still **must be disclosed**; it no longer gates. **Consequence for the "widest remaining runway" framing: it is void** — every family now screens at the same floor for the same `K_intrinsic`, so MYM has no comparative K advantage over MNQ, M2K, or any other instrument, and "spend it wisely because it is scarce" is no longer the right reason to be careful. Be careful instead because `K_intrinsic` is now the **only** brake on selection inflation. Governing rules: [ADR 2026-07-26 §2-C](../../docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md) (what banks) + [ADR 2026-08-04](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md) (what a bank does).
   - ⚠ **Unreconciled, and as of 2026-08-04 no longer consequential:** this ledger's own DEAD table records `K` = **2** for `S-MYM-ORC-02`, which lives outside `discovery_manifests/`. The codified convention (harvest Req 3) banks from **closed manifests only**, so the bank is 1. The original worry — *"if those trials are ever ruled bankable the family goes to 3 ⇒ `K_eff` 4 ⇒ floor 1.06 > Cap, closing MYM to new seeds"* — is **void** under [ADR 2026-08-04](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md): banks do not enter `K_eff` and cannot close a family. Reconciling the count is now a **bookkeeping** question (the disclosure should be accurate) rather than a live threat to MYM's availability.
 - **S3 — order-symbol occupancy (new standing constraint, 2026-07-29).** Any *second* strategy on this instrument in the **same account** shares the `MYM1!` order symbol with the incumbent leg, and the venue holds **one net position per symbol per account**. A second MYM strategy therefore cannot hold an independent position on any day the incumbent can fire (**Tue, Fri**) — **regardless of contract-cap allocation**. This is orthogonal to, and stricter than, the third-leg spec's cap-based Slot framing. Source: [`SLR-MYM-1 closure`](../../docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md) F1.
-- **[`overnight-range-day-session-transfer` HELD until 2027-03-01](../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md) (2026-08-29).** $0 cheap falsifier AMBIGUOUS (diff +0.0297, CI straddles 0); neither un-pauses nor kills the frozen spec's "S2" role. Re-check on the grown panel or on operator GO for the joint-surrogate design.
+- **[`overnight-range-day-session-transfer` GRADUATE-eligible, Pre-Q deferred](../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md) (2026-08-29, corrected same day).** ⚠ **Supersedes the original same-day HOLD-until-2027-03-01 line, struck below.** A design-flaw catch (marginal-rate comparison ≠ "matched conditioning") triggered a stratified re-run: within-stratum lift +31.8pp / +22.1pp, bootstrap CI [+10.4pp, +32.2pp] entirely positive, p=0.00025. D5 stage-1 precondition (2) decisively cleared. Conditions 3 (joint-surrogate null design, adversarial-reviewed) and 4 (operator GO) still outstanding; Pre-Q authoring deferred to the planned MNQ+MYM pooling session per the operator's own batch framing — not opened here. No raised-bar route needed (conditioner-role, same as candidate 1).
+  ~~$0 cheap falsifier AMBIGUOUS (diff +0.0297, CI straddles 0); HELD until 2027-03-01~~ — struck 2026-08-29, same day, superseded by the stratified correction above (marginal comparison was the wrong statistic, not a wrong answer to the right one).
+- **[`overnight-gap-magnitude-range-conditioning` HELD until 2027-03-01](../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md) (2026-08-29, corrected same day).** Same stratified-design correction as the overnight-range sibling — the original marginal "clean kill" (diff −0.1039) inverted sign entirely: within-stratum lift +14.0pp / +6.7pp, bootstrap CI [−4.2pp, +14.8pp] straddling 0, p(lift≤0)=0.1247. Moved DEAD → CONTINGENT-FORWARD (was never a graduate-worthy pass, but no longer a kill either). Re-check on the grown panel.
 - **[`bar-closing-location-autocorrelation` HELD until 2026-11-08](../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md) (2026-08-29).** SIGNAL-EXCESS (obs −0.0370, CI entirely negative, p=0.005) — the strongest statistical result of the 2026-08-29 batch, but admission-route status under the directional-timing raised bar is unresolved; not GRADUATEd on this session's own authority.
 
 ## RECORD — c1 leg (withdrawn)
@@ -144,6 +146,37 @@ structure:
 
 ## SESSION LOG
 
+- **2026-08-29 (correction, same day)** — **Design-flaw catch on candidates 2/4, from an
+  adversarial review of the batch below: marginal conditional-rate comparison ≠ "matched
+  day-session-history conditioning."** The batch entry immediately below scored both candidates
+  with `c2_c4_increment_falsifiers.py`, which diffed two MARGINAL conditional rates — P(y=1|bias_new=1)
+  vs. P(y=1|bias_hist=1) — rather than stratifying on `bias_hist` and measuring `bias_new`'s lift
+  within each stratum held fixed, the design the D5 spec's own "matched ... conditioning" language
+  actually calls for. Verified independently before rerunning: the underlying `bias`/`bias_hist`/`y`
+  definitions in the corrected script (`c2_c4_stratified_rerun.py`) are algebraically identical to
+  the original — only the aggregation step changed. **Both candidates flipped or strengthened:**
+  #2 overnight-range went from AMBIGUOUS (marginal diff +0.0297, CI straddling 0) to a **decisive
+  INCREMENT** (within-stratum lift +31.8pp / +22.1pp, bootstrap CI [+10.4pp,+32.2pp] entirely
+  positive, p=0.00025) — **DROPPED→HOLD→GRADUATE** (Pre-Q authoring deferred to the planned MNQ+MYM
+  pooling session, per the operator's own batch framing; no raised-bar route needed, conditioner-role
+  same as candidate 1). #4 gap-magnitude went from a clean, decisive NO-INCREMENT (marginal diff
+  −0.1039, CI [−0.164,−0.040]) to **sign-flipped AMBIGUOUS** (within-stratum lift +14.0pp / +6.7pp,
+  bootstrap CI [−4.2pp,+14.8pp] straddling 0) — **DROPPED→HOLD until 2027-03-01**. Both original
+  marginal results are retained as disclosed secondary measurements (not deleted; not the D5
+  stage-1 answer) alongside the stratified results.
+  `N-2026-08-29-mym-overnight-rth-range-transfer.md` and `N-2026-08-29-mym-gap-magnitude-rth-range.md`
+  rewritten in place (§1 superseded, not appended-around); `MECHANISMS.md` class findings for both
+  ids updated the same way. **Scope-bounded:** candidates 1, 3, and 5 were explicitly out of scope
+  for this correction and are untouched. Separately noted, not acted on: `instrument_profiles.py`'s
+  definition parser reportedly truncates multi-line `##` heading prose (affects all 4 of this
+  session's new `MECHANISMS.md` headings) — a tooling fix is in flight elsewhere; re-run
+  `python scripts/instrument_profiles.py build` once it lands rather than hand-patching the
+  truncated entries here. Scripts + JSON:
+  `lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c2_c4_stratified_rerun.py` +
+  `c2_c4_stratified_results.json`. No `core/`, lock, allocation, `dd_protection`, Pine, or rail
+  change. $0 spent; no new K (re-measurement of the same two already-registered/closed looks under
+  `mymdd_1_2026_08_29`, not a new search — the closed discovery manifest is left untouched, matching
+  the repo's own RE-MEASUREMENT convention for the GC/CL corrected-battery precedent).
 - **2026-08-29** — **Atheoretical bar-mechanism Notice-phase batch, MYM Phase 2 (mirrors an
   MNQ Phase-1 batch run separately) — 5 candidates, 5 real Notice-log entries, K=5 registered
   (`mymdd_1_2026_08_29`, `--lane blind`).** Rule-0 read this ledger + `MECHANISMS.md` +

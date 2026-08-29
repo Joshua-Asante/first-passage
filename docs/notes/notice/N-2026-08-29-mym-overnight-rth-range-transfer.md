@@ -1,10 +1,10 @@
-# Notice — MYM overnight-session range → RTH-range transfer (S2 cheap-falsifier only)
+# Notice — MYM overnight-session range → RTH-range transfer (S2 stage-1, stratified — GRADUATE)
 
 **Notice ID:** N-2026-08-29-mym-overnight-rth-range-transfer
-**Observed:** 2026-08-29
+**Observed:** 2026-08-29 (marginal-comparison run); **corrected 2026-08-29** (stratified re-run, same day, adversarial-review catch)
 **Author:** Joshua | claude.ai
 **Source:** backtest CSV (bar panel) — atheoretical mechanism harvest, MYM Phase 2
-**Status:** `HELD until 2027-03-01`
+**Status:** `OPEN` — GRADUATE-eligible; Pre-Q authoring deliberately deferred to the planned MNQ+MYM pooling session (not opened here)
 **Lives in:** `docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md`
 
 ---
@@ -17,98 +17,129 @@
   sub-sessions using the session-boundary convention already pinned on this exact panel
   by `lab/archive/msl_c1_mym_2026-08/construct_lib.py`
   (`RTH_OPEN_MIN`/`RTH_CLOSE_MIN`/`OVERNIGHT_CLOSE_MIN`), not invented here — four MSL
-  campaigns (C1, C2, C3, S2B) already use this convention on MYM. Script:
-  `lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c2_c4_increment_falsifiers.py`.
-  Results: `.../c2_c4_results.json` key `candidate2_overnight_range`.
-- **Observed at:** 2026-08-29 (this session).
+  campaigns (C1, C2, C3, S2B) already use this convention on MYM.
+  **Authoritative script (this correction):**
+  `lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c2_c4_stratified_rerun.py`.
+  **Authoritative results:** `.../c2_c4_stratified_results.json` key
+  `candidate2_overnight_range_STRATIFIED`. Superseded (secondary, disclosed) script/results:
+  `c2_c4_increment_falsifiers.py` / `c2_c4_results.json` key `candidate2_overnight_range`.
+- **Observed at:** 2026-08-29 (this session, both runs).
 
 ---
 
 ## §1 — The observation
 
-**Constraint-audit catch, before running anything (load-bearing to this notice):** the
-originating brief framed this candidate as reusable "verbatim" from the corrected
-magnitude-persistence battery, the way candidate 1 (session-TR self-persistence) is. On
-reading the battery's own frozen spec
+**Constraint-audit catch #1 (same-day, load-bearing to §0):** the originating brief
+framed this candidate as reusable "verbatim" from the corrected magnitude-persistence
+battery. On reading the battery's own frozen spec
 (`docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md` §4 D5), this
-candidate is actually the **PAUSED "S2" construct**, not the un-paused "S1" one:
-overnight range and RTH range are *different series measured the same day*, sharing a
-slow common volatility-regime state — independent-series IAAFT surrogation (candidate
-1's legitimate tool, same series next-period) does **not** delete that confound; only
-joint surrogation would, and the spec marks the joint-surrogate design
-"UNRESOLVED-NEEDS-DESIGN" (O1). Building that design is out of scope for a Notice-phase
-screen, so no full battery was run.
+candidate is the **PAUSED "S2" construct**, not the un-paused "S1" one — overnight range
+and RTH range are different series sharing a slow common volatility-regime state, and
+independent-series IAAFT surrogation does not delete that confound. No full battery was
+run; per the spec's own un-pause precondition (2), a $0 cheap falsifier was run instead
+— *"does overnight-state conditioning beat matched day-session-history conditioning?"*
 
-Instead, per the spec's own un-pause precondition (2) — *"S2 reframed INCREMENTAL with a
-stage-1 $0 cheap falsifier first — does overnight-state conditioning beat matched
-day-session-history conditioning (`bias' = 1{DS_{d-1} ≥ P80 trailing}`) on the same
-days? No increment → S2 dies for $0"* — a real-data-only head-to-head was run: does
-today's own overnight-range state (top-quintile, strict-prior 60 sessions) predict an
-elevated RTH range *better than* yesterday's own RTH-range state already does (the
-mundane same-series autocorrelation baseline)? Result: overnight-conditioned
-0.7604 (n=313) vs. day-history-conditioned 0.7306 (n=297) on n_common=1,307 matched
-sessions — diff **+0.0297**, 95% block-bootstrap CI **[−0.0325, +0.0988]**, p≈0.372.
+**Constraint-audit catch #2 (same-day, this correction — SUPERSEDES the original §1
+below):** the first falsifier design (`c2_c4_increment_falsifiers.py`) computed two
+**marginal** conditional rates — P(y=1|bias_new=1) = 0.7604 (n=313) vs.
+P(y=1|bias_hist=1) = 0.7306 (n=297) — and diffed them: **+0.0297, 95% CI [−0.0325,
++0.0988], AMBIGUOUS.** An adversarial review caught that this does not test what "matched
+... conditioning" means: two correlated predictors (both plausible vol-regime proxies)
+can show near-identical marginal rates while one still carries large incremental
+information the marginal comparison cannot see. The corrected design **stratifies on
+`bias_hist` and measures `bias_new`'s lift within each stratum held fixed** — verified
+independently before running (the underlying `bias`/`bias_hist`/`y` definitions are
+algebraically identical between the two scripts; only the aggregation step changed).
+
+**Corrected (authoritative) result:** within stratum `bprime=0` (day-history NOT
+elevated, n=1,010): P(y=1|bias_new=1)=0.6963 (n=191) vs. P(y=1|bias_new=0)=0.3785
+(n=819) — **lift +0.3178**. Within stratum `bprime=1` (day-history elevated, n=297):
+P(y=1|bias_new=1)=0.8607 (n=122) vs. P(y=1|bias_new=0)=0.6400 (n=175) — **lift
++0.2207**. Both strata show a large, positive lift — the marginal near-tie was masking
+real incremental information, not the absence of it. Block-bootstrap (circular,
+60-session blocks, seed 20260829, n=4,000) on the **minimum** stratified lift (the
+conservative read across both day-history states): mean **+0.2186**, 95% CI **[+0.1042,
++0.3216]**, entirely positive, **p(lift ≤ 0) = 0.00025**. **VERDICT: INCREMENT** —
+decisive, not a near-miss.
 
 ## §2 — Why it stands out (the N signal)
 
-- **Baseline:** the spec's own precommitted decision rule — no increment beyond the
-  mundane comparator kills S2 for $0.
-- **Delta:** the observed increment is positive but the CI straddles zero — neither a
-  clean pass nor a clean kill under that rule.
-- **Frequency check:** first instance; MYM has never been scored on this construct
-  (nor has any instrument, per the class's PAUSED status — this is the first time the
-  precondition-2 falsifier itself has been run on any instrument for this class).
+- **Baseline:** the spec's own precommitted decision rule for the un-pause
+  precondition — a clean increment un-pauses the "S2 reframed INCREMENTAL" path.
+- **Delta:** the corrected design didn't just resolve the original AMBIGUOUS in one
+  direction — it revealed the marginal comparison was the wrong question. Both
+  strata's lifts (+31.8pp, +22.1pp) are an order of magnitude larger than the marginal
+  diff (+3.0pp) that motivated the original HOLD.
+- **Frequency check:** first instance under the corrected design on any instrument in
+  this repo (a structurally analogous stratified design was reportedly used on the MNQ
+  sibling campaign with a qualitatively similar reversal — cited as reported context
+  from the reviewing session, not independently verified here; MYM's own numbers above
+  are what this notice stands on).
 
 ## §3 — Candidate mechanisms (informal)
 
-- Genuine overnight→RTH information transfer (news/positioning carried into the open)
-  distinct from ordinary day-to-day vol persistence — would require the CI to clear 0
-  with more data or a tighter design.
-- Pure noise around a null increment — equally consistent with the current CI.
-- Could also be confounded by the same common-regime state the cheap falsifier is
-  specifically designed to screen for, even in this simplified form (the day-history
-  comparator only controls for ONE lag of same-series persistence, not the full
-  common-state structure a joint surrogate would).
+- Genuine overnight→RTH information transfer (news/positioning/liquidity carried
+  through the Globex overnight session into the RTH open) beyond what yesterday's own
+  RTH-range state already predicts — the large, both-strata-consistent lift is
+  suggestive of a real transmission mechanism, not the mundane same-series persistence
+  candidate 1 already characterized as canon-generic.
+- Could still be partially confounded by a common-regime state that the two-predictor
+  stratification only partially screens (it controls for ONE lag of same-series
+  history, not the fuller joint structure a proper joint-surrogate null would model)
+  — this is exactly why the spec's condition (3) still requires that design before a
+  full battery-grade verdict, not just a stage-1 falsifier pass.
 
 ## §4 — Routing decision
 
-**HOLD until 2027-03-01.**
+**GRADUATE — to a Pre-Q, authoring deliberately deferred.**
 
-Reason: not a clean kill (per §1's precommitted rule, "no increment" is the only
-condition that dies at $0 — an AMBIGUOUS CI is a weaker read than that) but also not a
-demonstrated increment worth building the heavier joint-surrogate design for today.
-Escalating past this point needs a design (spec condition 3: a joint-surrogate null
-passing its own adversarial review) that a Notice-phase screen has no license to
-originate, **plus the slate's own operator GO** (condition 4) — neither of which this
-session can self-issue. Re-checking after the panel grows narrows the CI's width without
-any new design work.
+Reason: the D5 stage-1 $0 precondition is now decisively cleared (CI entirely positive,
+p=0.00025, both strata consistent) — per the frozen spec's own un-pause logic this is
+exactly the signal that licenses moving past "does S2 die for $0" into scoping the real
+investigation. Not opened as a Pre-Q in this session: the operator's own task framing
+for this batch explicitly named a follow-up session that pools MNQ's and MYM's GRADUATE
+sets together before authoring any Pre-Q — opening one here would pre-empt that
+batching decision. **Raised-bar route: none needed.** This is a conditioner-role
+magnitude/range-transfer claim (same role class as candidate 1's
+`daily-range-state-persistence`, no directional entry proposed) — the single-instrument
+index-futures directional-timing raised bar scopes *directional intraday timing*
+constructs; a magnitude-transfer conditioner claim sits structurally outside it, the
+same reasoning that let candidate 1 skip Route 1/2/3 entirely. **Still outstanding
+before a full battery or a build:** spec condition (3) — a joint-surrogate null design
+passing its own adversarial review (still unbuilt, still out of a Notice-phase screen's
+scope) — and condition (4), a separate operator GO. Both belong to the deferred Pre-Q,
+not this notice.
+
+Decision: GRADUATE
+Reason: D5 stage-1 $0 precondition decisively cleared (CI entirely positive, p=0.00025,
+both strata consistent); Pre-Q authoring deferred to the planned MNQ+MYM pooling
+session per the operator's own batch framing, not opened here.
 
 ---
 
 ## §5 — If HOLD: re-check trigger
 
-- **Re-check date:** 2027-03-01 (~6 months / ~125 more sessions of panel growth).
-- **Trigger condition:** re-run the identical $0 cheap falsifier on the grown panel; if
-  the CI clears 0 (lower bound > 0), candidate 2 GRADUATEs to a Pre-Q scoping the joint-
-  surrogate design (condition 3) and routes to the operator for condition-4 GO. Also
-  graduates immediately, without waiting for the date, if the operator elects to
-  authorize the joint-surrogate design directly (independent of this falsifier's
-  outcome).
-- **Drop trigger:** CI on the grown panel still straddles 0, or flips to a clean
-  NO-INCREMENT (upper bound < 0) — the latter closes S2 on MYM for $0 per the spec's own
-  rule.
-- **Calendar entry:** none set (no Todoist/Calendar integration invoked this session);
-  operator to set if desired.
+Skip this section unless §4 = HOLD. **N/A here — superseded, not skipped-because-HOLD.**
+The original 2026-08-29 marginal-comparison run's routing decision (`HOLD until
+2027-03-01`) is superseded by this correction and no longer stands; no re-check trigger
+applies to a GRADUATEd notice. Retained as an explicit dead-end pointer, not deleted,
+so a future reader does not rediscover the old HOLD date and treat it as live.
 
 ---
 
 ## §10 — Audit hooks
 
 ```bash
+python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c2_c4_stratified_rerun.py
+# Expected: [candidate2_overnight_range_STRATIFIED] min-stratified-lift bootstrap:
+#   mean=0.2186  CI=[+0.1042,+0.3216]  p(lift<=0)=0.0003  VERDICT=INCREMENT
+
+# Superseded secondary measurement (disclosed, not the D5 stage-1 answer):
 python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c2_c4_increment_falsifiers.py
 # Expected: [candidate2_overnight_range] diff=+0.0297  95% CI=[-0.0325,+0.0988]  VERDICT=AMBIGUOUS
 
-# Re-check due: 2027-03-01 -- verify in Calendar / Todoist if the operator sets one
+grep "N-2026-08-29-mym-overnight-rth-range-transfer" docs/briefs/Q-*.md
+# Expected: no matches yet (Pre-Q authoring deferred to the MNQ+MYM pooling session)
 ```
 
 ---
