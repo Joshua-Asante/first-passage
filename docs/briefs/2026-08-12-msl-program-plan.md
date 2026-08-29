@@ -56,6 +56,16 @@ Phase 4  P5       survivor → TNEC-1 intake → operator GO chain (outside MSL)
 Standing B7       weekly review · 2026-11-08 clock · SESSIONS/STATE discipline
 ```
 
+**Addendum 2026-08-29:** the Phase 3.9 / Phase 4 lines above are stale as of 2026-08-21 same-day.
+MSL-S4's Explore-confirm (5a) was in fact executed later that session and returned
+`AMBIGUOUS-HOLD` (real_stat −5.5213 = net divergence, not convergence; p_upper=0.5724; FLIP: FAIL)
+— see
+[`lab/analysis/c1/msl_s4_mgc_2026-08/_explore_confirm_2026-08-21_LOG.md`](../../lab/analysis/c1/msl_s4_mgc_2026-08/_explore_confirm_2026-08-21_LOG.md).
+The operator `PARKED` the candidate the same day — see
+[`core/strategies/candidates/candidates_CARD.md`](../../core/strategies/candidates/candidates_CARD.md)
+and the 2026-08-21 [`docs/SESSIONS.md`](../SESSIONS.md) entries. No TV backtest is owed; do
+not follow the RUNBOOK's superseded next step.
+
 ## §5 Report-back protocol (what "report back when each step lands" means)
 
 Each manager chat ends by handing the Board chat one line: `MSL <session-id> <DONE|DONE_WITH_CONCERNS|NEEDS_CONTEXT|BLOCKED> — <PR#> — <one-clause outcome>`. **Transport:** the line is the first line of the session's PR description; the operator pastes it to the Board chat; the orchestrator additionally polls open `msl`-titled PRs at each B7 walk (no session writes another session's files). The orchestrator updates §6 and, where a verdict landed, quotes the TNEC verdict string verbatim (never a summary word — the failing limb must survive transmission).
@@ -77,7 +87,7 @@ Each manager chat ends by handing the Board chat one line: `MSL <session-id> <DO
 | P3.6 slate-3 (MCL fade WHO) | this session | **BLOCKED** (mechanism-dry) | #819 | [notice](../notes/notice/N-2026-08-14-msl-slate-3-constraints.md) — no WHO outside INTAKE-DRY; camp **not** scaffolded |
 | P3.7 §7 slate-generation review | this session | **RESOLVED (E1 HOLD)** | #821 | [packet](2026-08-14-msl-slate-generation-review.md) · [closure](closures/MSL-S7-closure-resolved-e1-hold.md) — Phase 3 HOLD; no slate-4 until NEW WHO; yield **not** fired; charter RATIFIED |
 | P3.8 WHO-track (estate-wide) | this session | **STILL DRY** | #822 | [notice](../notes/notice/N-2026-08-14-msl-who-track.md) — every Tradeify product group + census backlog walked; no WHO outside INTAKE-DRY / C1–S2B; no camp; E1 stop rule stands |
-| P3.9 MSL-S4 (MGC) | orchestrating session, 2026-08-21 | **G0 FROZEN**, Pine authored CC-solo | pending | New WHO `expiry-oi-strike-convergence` — first to discharge E1, sourced by a dedicated cross-lane search (databento lane blocked on data access; literature + manual gap-hunt lanes converged on the same door with a resolved disagreement over a dead directional sibling). Explore-confirm deferred by operator override (no data access this session) — not scored. [`STAGE1`](../../lab/analysis/c1/msl_s4_mgc_2026-08/STAGE1.md) · [`PREREG_G0`](../../lab/analysis/c1/msl_s4_mgc_2026-08/PREREG_G0.md) · [`RUNBOOK`](../../lab/analysis/c1/msl_s4_mgc_2026-08/RUNBOOK.md) |
+| P3.9 MSL-S4 (MGC) | orchestrating session, 2026-08-21 | **G0 FROZEN**, Pine authored CC-solo → see addendum below — PARKED 2026-08-21 | pending | New WHO `expiry-oi-strike-convergence` — first to discharge E1, sourced by a dedicated cross-lane search (databento lane blocked on data access; literature + manual gap-hunt lanes converged on the same door with a resolved disagreement over a dead directional sibling). Explore-confirm deferred by operator override (no data access this session) — not scored. [`STAGE1`](../../lab/analysis/c1/msl_s4_mgc_2026-08/STAGE1.md) · [`PREREG_G0`](../../lab/analysis/c1/msl_s4_mgc_2026-08/PREREG_G0.md) · [`RUNBOOK`](../../lab/analysis/c1/msl_s4_mgc_2026-08/RUNBOOK.md) — **Addendum 2026-08-29:** stale same-day; see the §4 addendum above — Explore-confirm ran later 2026-08-21, `AMBIGUOUS-HOLD`, operator `PARKED` same day; RUNBOOK's TV-backtest next step is superseded. |
 | **Stage-1 deaths counter** | orchestrator | **2/3** (functional **3/3**) | — | C3 + S2B counted; slate-3 not a card; E1 HOLD — no increment |
 | **G0-to-Pine conversion counter** | orchestrator | **4 G0 freezes / 0 reached step 6 (Pine)** | — | C2 · C1 · S2A · C3-K2 counted (each *card*, not each G0 event — C3→C3-K2 revive counts once); WATCH rung trips at 6, hard FALSIFIED at 10-G0s-zero-survivor or 8-cal-weeks-w/-≥4-G0s-zero-survivor ([survival-limb ADR](../adr/2026-08-14-msl-yield-falsifier-survival-limb.md), added 2026-08-14) |
 

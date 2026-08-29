@@ -106,6 +106,8 @@ Report per §6. Closure report MUST include: counts moved per batch, the Phase-2
 
 **2026-08-03 — this H's named falsifying condition FIRED** ("SESSIONS already rolled to 20" — see §0-REFRESH). Per the brief's own rule this would bounce `NEEDS_CONTEXT` wholesale; instead of bouncing, the brief was rescoped in place (§0-REFRESH) since most of the remaining scope (2.2, 2.3-remainder, 2.4) was unaffected by that specific condition. **Rescoped H:** the remaining backlog — 2 archived mojibake entries, an unmeasured briefs/spec/notes zero-inbound census, and 19 CATALOG-owed archives (up from 14) plus 2 unchanged verdict-line targets — holds as of 2026-08-03. Falsified under the same rule if a fresh Phase-0 at next dispatch finds any of these already zero or already fixed.
 
+**Correction (2026-08-29):** Step 2.4's "remains open" framing above is stale. `lab/CATALOG.md` now shows 0 archive-owed rows; all 19 named slugs are CLOSED/FALSIFIED with `lab/archive/` paths dated 2026-08-03 or later. Steps 2.2/2.3 (the two other §0.5(D) items) still appear genuinely unfinished as described.
+
 ---
 
 ## §5 — Forbidden moves

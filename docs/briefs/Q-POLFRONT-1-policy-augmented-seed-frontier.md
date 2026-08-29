@@ -1,10 +1,14 @@
 # Q-POLFRONT-1 — policy-augmented seed-target frontier (bust-axis)
 
-**Status:** `OPEN — DRAFT` (commissioned by the [P2 mark](closures/STATE-POLICY-closure-resolved-p2.md); run gated on operator GO)
+**Status:** `CLOSED — RESOLVED-QUANTIFIED 2026-08-16, superseded by 2026-08-17 intraday-honest remeasure (headline does not survive)`. Closure: [`closures/Q-POLFRONT-1-closure-resolved-quantified.md`](closures/Q-POLFRONT-1-closure-resolved-quantified.md).
 **Authored:** 2026-08-16 · Claude Code (JA commission)
 **Type:** Inquire-phase measurement brief — $0 · K=0 · no manifest · no candidate · no deployment surface
 **Parent findings:** [Q-EVALSEQ-1 closure §3](closures/Q-EVALSEQ-1-closure-falsified.md) (cushion-proportional sizing: bust 20.18%→0.00% both halves at 1.06pt of pass, on the book instrument) · [seed-target frontier](../lab/analysis/c1/tradeify_seed_target_spec_2026-08-04/RESULTS.md) (constant-R admissibility cells)
 **Feeds:** deep-iteration lane **GO-1** ([charter](../adr/2026-08-16-deep-iteration-lane-charter.md)) — the first lane prereg freezes only after this measurement lands.
+
+---
+
+**Addendum (2026-08-29, decay-audit correction):** §0–§10 below are the as-drafted pre-lock body and stay byte-unedited; this block is the reader-intercept. This brief closed 2026-08-16 as `RESOLVED-QUANTIFIED` (median R_max ratio 5.107×, min 1.526×, no cell reversal, ≥ the frozen 1.25× bar) — see [`closures/Q-POLFRONT-1-closure-resolved-quantified.md`](closures/Q-POLFRONT-1-closure-resolved-quantified.md). That result was consumed by deep-iteration lane GO-1 as "fully discharged" ([`docs/adr/2026-08-16-deep-iteration-lane-charter.md:247`](../adr/2026-08-16-deep-iteration-lane-charter.md)). **Materially:** the closure's own named §7 fork ("Fork named (not opened)") was subsequently executed 2026-08-17 and found the headline effect does **not** survive an intraday-honest remeasure — median policy-arm bust delta +98.1pp, only 1/26 cells still clear the 3.0% ceiling (see the closure's own "Addendum 2026-08-17" section). **The 5.1× figure should not be read as a usable sizing multiplier.**
 
 ---
 

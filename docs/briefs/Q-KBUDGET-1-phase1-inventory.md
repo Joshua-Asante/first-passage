@@ -55,11 +55,15 @@ Declarations per pre-reg §C. Floors from the reproduced table (§0). **No axis 
 
 Book expressions of already-validated legs, targeted directly at the frozen survivor-scoring gate (Part A: bust ≤ 3.0% + P(pass) ≥ 50%, Run-2, $100K tiers, ≥2 firms incl. ≥1 `trailing_locking`). Families MYM/MNQ/6J all bank K=0. **Honest K disclosure:** ~7 book-composition variants have already been examined (selectflex %-equity + integer arm; futures3 3-leg; bustcut T1/T2/2b/2c) — under a literal Clause-K reading, K_intrinsic ≈ 8 → floor 1.22 → FAIL; see the §5 routing ask.
 
+> ⚠ **SUPERSEDED — see Addendum 2026-08-29** (end of file). The 3.0% ceiling this table benchmarks S1/S2/S3 against is no longer the live Part A ceiling.
+
 | # | Book axis | Prior looks (all Tradeify Select, geometry-only) | Coarse Clause-N-analogue read | Blockers before any scored run |
 |---|---|---|---|---|
 | S1 | 3-leg MYM+MNQ+6J, Aegis at reduced weight (~0.75%-class) | 50K: bust **2.02%** (2b, ae744) / **1.28%** (2c size-adj), pass ≈ 98%, med ≈ 152d | vs 3.0% at the harsher 100K geometry: the full-Aegis book deteriorated 10.33→17.70% from 50K→100K; a ~1.7× factor puts 2b at ≈3.4% — **genuinely uncertain, the G4 run adjudicates**; MFFU (2nd `trailing_locking`) untested | Aegis panel-of-record defect (BEPAD-TEST CSV; ae744↔5274c material delta; 1R pin-fallback trap); four-firms ADR amendment (§4 below); candidate pre-registration with prior-look disclosure |
 | S2 | 2-leg MYM+MNQ (drop Aegis) — incl. the **integer-micro sizing variant at verified $1.82 RT, whose re-run was operator-stopped 2026-07-10 (bracket 0.80%↔4.59%, UNRESOLVED)** | 50K: bust **0.76%**, pass 99.24%, med 222d (pass-floor form: P(pass) ≥ 50% + finite median — met) | strongest prior of the three; 100K untested; p99 3.86% has headroom | R5/P2 tension strongest here (both legs are falsified *CFD-transfers*; native MYM abs PF ~2 — the candidate claim must be re-framed as native-book bust-geometry, never edge-transfer); ADR amendment; pre-registration with prior-look disclosure |
 | S3 | Aegis→6J solo book | none on `trailing_locking`; J4 Bulenox `trailing` 11–12% full / 5–8% ramped (fails 3.0% on Bulenox geometry) | weakest prior; Aegis drove 70%+ of 3-leg bust attr at full weight, and 0.5× helped dramatically — solo-at-reduced-weight on Tradeify/MFFU is an open cell | governance-cleanest leg (6J transfer VALIDATED, J1; never P2-falsified) but still a locked-book leg → amendment; same panel-of-record defect |
+
+> ⚠ **SUPERSEDED — see Addendum 2026-08-29** (end of file). Guardian→MGC (R7) is no longer data-blocked/re-armable — it was data-procured, scored, and killed.
 
 **Below-the-line (Class S):** Guardian→MGC (R7) — data-blocked (no GC1!/MGC1! bar export), transfer unvalidated, GC/MGC family bank poisons any Clause-K reading, operator-parked. Re-arm = data procurement + R7 unpark; not ratifiable now.
 
@@ -137,4 +141,27 @@ git log -1 --format='%h %ci' -- lab/analysis/c1/tradeify_futures3_bustcut_2026-0
 git log -1 --format='%h %ci' -- ops/instruments/6J.md                                                     # expect fad8984
 
 # Floor table reproduces (pre-reg §F hook #3 command; expect 1→0.65 · 3→0.98 · 8→1.22 · 450→1.835 · 3178→2.05)
+```
+
+---
+
+## Addendum — 2026-08-29 (decay-audit correction)
+
+**Does not edit §3 or §7 above in place** — this file is a ratified G2 body (§ Status line, RATIFIED 2026-07-14) and stays byte-unedited per the standing no-in-place-edit convention for frozen/ratified artifacts. Two live-state claims below the line in §3 have decayed; both are flagged upstream (⚠ SUPERSEDED banners above the §3 Class-S table and above the §3 Guardian→MGC below-the-line line) and corrected here.
+
+**(1) Guardian→MGC (R7) is no longer data-blocked/re-armable.** §3's below-the-line entry and §7's pointer row both describe R7 as data-blocked (no GC1!/MGC1! bar export) and operator-parked, pending re-arm via data procurement. That is stale: R7 was subsequently data-procured, scored, and killed by [`docs/briefs/closures/2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md`](closures/2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md) — verdict `DEAD(N-SURV)`, bust ceiling missed on every partition (Full 42.2%, H1 72.4%, H2 16.5% vs the then-3.0% ceiling). Pursuit [`b8`](../../pursuits/b8-guardian-mgc-transfer-lane.md) flipped `PARK → SUBTRACT` as a result. Current canonical status is confirmed at [`docs/adr/2026-08-19-cme-broker-panel-admission-for-breadth-revival.md:97`](../adr/2026-08-19-cme-broker-panel-admission-for-breadth-revival.md) ("Guardian (MGC) is `SUBTRACT`/DEAD"). Re-proposal of this axis now requires new *mechanism* evidence per the closure's own stop rule — not a data-procurement re-arm.
+
+**(2) The Part A eval ceiling §3's table benchmarks against (3.0%) is no longer the live ceiling.** It was superseded 2026-08-26 by [`docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md`](pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md), which raises the Part A eval ceiling from 3.0% to 5.0%. Under the current 5.0% ceiling, all three §3 rows clear the bar: S1 (~3.4% projected at the 100K geometry, 2.02%/1.28% priors at 50K) and S2 (0.76%). §3's "genuinely uncertain" / marginal framing for S1 and its 3.0%-denominated readings for S2/S3 no longer reflect the live ceiling.
+
+**Unaffected:** the D1–D7 Class-D inventory, the S1–S3 classification structure itself, the §4 governance flags, the §5 asks, and the 2026-07-14 §6 ratification record are all unaffected by this correction and remain historical record as ratified. Only the two live-state claims above are corrected.
+
+```bash
+# The superseding closure and its verdict figures
+grep -n "DEAD(N-SURV)\|42.2\|72.4\|16.5" docs/briefs/closures/2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md
+
+# Current canonical Guardian(MGC) status
+grep -n "Guardian (MGC) is" docs/adr/2026-08-19-cme-broker-panel-admission-for-breadth-revival.md
+
+# The superseding ceiling change
+grep -n "3.0% → 5.0%\|bust ≤ 5.0%" docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md
 ```

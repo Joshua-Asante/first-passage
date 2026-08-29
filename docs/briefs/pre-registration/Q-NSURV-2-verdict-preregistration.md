@@ -73,7 +73,7 @@ The wrapper MUST NOT:
 # The wrapper script must not import run_partition_mc, blocks_from_daily_pnl, or simulate_path
 # with call signatures differing from production's own existing call sites.
 grep -n "run_partition_mc\|blocks_from_daily_pnl\|simulate_path" \
-  lab/analysis/c1/nsurv_layer_design_2026-08-20/run_wrapper_reproduction_check.py
+  lab/archive/nsurv_layer_design_2026-08-20/run_wrapper_reproduction_check.py
 # Expected: either no matches (pure JSON-artifact consumption), or matches with args identical
 # to the production call sites already in lab/discovery/prop_survivor_scoring.py /
 # lab/analysis/c1/orbmnq1_cushion_sizing_probe_2026-08-20/run_evalseq_orb_intraday.py

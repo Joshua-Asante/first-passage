@@ -1,5 +1,7 @@
 # Q-NSURV-2 — Can a magnitude-resampling second-uncertainty-layer be added to N-SURV reporting without touching any closed verdict's headline number?
 
+**Addendum (2026-08-29, decay-audit correction):** This brief RESOLVED same-day, 2026-08-20 — see `docs/briefs/closures/Q-NSURV-2-closure-resolved.md` and `docs/adr/2026-08-20-nsurv-magnitude-resampling-disclosure.md` (Accepted, ratified 2026-08-20). The Status/Closed lines and Pre-Lock Checklist below are the as-drafted pre-lock snapshot and are frozen as historical record, not current state. Separately, §7/§10's planned path `lab/analysis/c1/nsurv_layer_design_2026-08-20/` was never used; the actual Phase-1 artifacts landed and remain at `lab/archive/nsurv_layer_design_2026-08-20/` (stub: `lab/analysis/nsurv_layer_design_2026-08-20/CARD.md`; registry: `lab/CATALOG.md`).
+
 **Status:** `OPEN — DRAFT (pre-lock)`
 **Authored:** 2026-08-20
 **Closed:** N/A

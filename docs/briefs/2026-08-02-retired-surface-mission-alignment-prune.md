@@ -60,7 +60,7 @@ Slice 1 (dead FXIFY/NT8 surfaces) was operator-authorized and shipped in PR #612
 | P1-7 | OODA + prop-firm FIRE/DXTrade playbooks | HIGH | **Packet A** below |
 | P1-8 | c1-rail skill still cites `ACTIVE_FIRM` | LOW–MED | **Packet A** (same skill pass) |
 | P1-9 | SESSIONS / STATE / CLAUDE Open-next triple-carry | HIGH | **Defer** — living-board prune already owed on Open/next |
-| P1-10 / P1-18 | Decompound A5 + vacuous Call-4 on 08-08 | HIGH | **Defer** — operator-hour competitor; needs separate ruling, not silent demote |
+| P1-10 / P1-18 | Decompound A5 + vacuous Call-4 on 08-08 | HIGH | **Defer** — operator-hour competitor; needs separate ruling, not silent demote — ⚠ *see Addendum 2026-08-29 above §6's "Remaining packets" table: A5 discharged same-day by operator ruling, not deferred* |
 | P1-13 | Sentinel PREREG ~2/3 false positives | MED | **Keep** — already named in Rule 8.7; fail-open |
 
 Already correctly rejected (do not re-propose): status-grammar gate (`docs/methodology/rejected_signals.md`); dual central `profiles.yaml`.
@@ -119,7 +119,7 @@ Already correctly rejected (do not re-propose): status-grammar gate (`docs/metho
 - **Silent delete of the full 2026-07-24 orphan slate** under cover of Slice 1. That handoff's GO line still gates `inactivity_simulator`, `migrate_adr_headers_m1`, `mc-anchors`, GBPUSD RUNBOOKs, `lab/codification/`, and the notion skill. Slice 1 discharged **only** the Copygram validator estate.
 - **Weakening M1 / arming / `armed_until` / disarm rules** while “simplifying” the RUNBOOK. Option C / disarmed-default language must preserve the 07-31 self-brick lesson and the monitoring ADR gate.
 - **Editing locked Pine, `dd_protection` literals, firm-tier risk %, or c1 sizing law** as part of a prune. Out of scope.
-- **Demoting Decompound-HOLD A5 or Call-4 by drive-by edit** without an operator ruling. Those compete with B7 for attention, but they are dated falsifier limbs — Rule 11 applies (back-propagate with re-arm conditions), not silent deletion.
+- **Demoting Decompound-HOLD A5 or Call-4 by drive-by edit** without an operator ruling. Those compete with B7 for attention, but they are dated falsifier limbs — Rule 11 applies (back-propagate with re-arm conditions), not silent deletion. ⚠ *See Addendum 2026-08-29 above §6's "Remaining packets" table — A5 itself was struck outright by a same-day operator ruling on a different ADR; this forbidden-move clause is unaffected (it was never the vehicle that struck it) but reads stale on its own if taken to mean A5 is still pending.*
 - **Path-staging all pre-commit gates in the same PR as skill rewrites** without measuring which gates actually bite. Accretion is real; so is the incident history that earned M-9 / boundary / status-consistency.
 - **Re-proposing the rejected status-grammar state machine** (`rejected_signals.md` 2026-07-29).
 - **Treating this brief as permission to skip session-log / Rule 7** while pruning living boards — prune by deleting discharged lines, not by inventing a second owner table.
@@ -134,6 +134,19 @@ Already correctly rejected (do not re-propose): status-grammar gate (`docs/metho
 | `PARTIAL` (current) | Slice 1 shipped; ≥1 packet still OPEN | Keep this brief hot; next prune PR links here |
 | `FALSIFIED` | Any §4 falsifier limb fires | Revert or repair the offending prune; do not continue packets until H is re-established |
 | `AMBIGUOUS` | Operator holds a packet without ship/decline and without a review date | Escalate — AMBIGUOUS without a date becomes living-board noise |
+
+> ⚠ **SUPERSEDED 2026-08-02** (same day this brief's Pass-1 table was authored): **Decompound A5
+> was not deferred pending "Call-4 vs B7 sequencing"** — it was **struck outright by operator
+> ruling**, per [`docs/adr/2026-08-02-pepperstone-feed-retirement.md`](../adr/2026-08-02-pepperstone-feed-retirement.md)
+> §2-B/§2-D. Discharge corroborated at
+> [`docs/briefs/2026-07-17-0808-packet-delta-and-sequence.md`](2026-07-17-0808-packet-delta-and-sequence.md)
+> §0. **The actual live open question is a build-gate-scope ruling for A5's venue-native successor
+> monitor**, tracked at `STATE.md`'s "Forward regime monitor / decompound limb-2 successor —
+> Q-MONSURF-1 M-A" line. **Packet F's Call-4 limb is unaffected** and continues under its own
+> track ([`docs/superpowers/plans/2026-08-23-call4-beta-cohesion-implementation.md`](../superpowers/plans/2026-08-23-call4-beta-cohesion-implementation.md),
+> landed 2026-08-23). Packet F's disposition cell below carries a matching one-clause note; the
+> Pass-1/Pass-2 tables and §5 above are otherwise unedited (Rule 14) — see Change history
+> 2026-08-29.
 
 ### Remaining packets (A–E SHIPPED this branch; F still GO-gated / separate ruling)
 
@@ -156,7 +169,7 @@ Already correctly rejected (do not re-propose): status-grammar gate (`docs/metho
 | C | **SHIPPED** | post-merge sync-skills optional; tests.yml C2→C0 comment retired |
 | D | **SHIPPED** | 07-24 GO line filled; orphans + codification + repo notion skill deleted; ADR addenda |
 | E | **SHIPPED** | SESSIONS Open/next + brief status; discharged prune lines removed from carry |
-| F | **DEFERRED** | Call-4 / Decompound A5 vs B7 sequencing — separate operator ruling (not this PR) |
+| F | **DEFERRED** | Call-4 / Decompound A5 vs B7 sequencing — separate operator ruling (not this PR). ⚠ *A5 limb discharged by the Addendum 2026-08-29 above (struck outright same-day, not deferred); Call-4 limb unaffected, continues under its own track.* |
 
 Standing keep (not packets):** M1 item 5 / B7 Stage 1 desk card; Rule 13 venue-fact convention; surface-allocation handoff gate for locked surfaces; Pine/data manifest gates; instrument-ledger collision Rule 10 (cost-geometry Pepperstone assumption may get a futures note under Packet A/B if touched — do not gut the collision rule).
 
@@ -204,3 +217,4 @@ python scripts/check_brief.py docs/briefs/2026-08-02-retired-surface-mission-ali
 | Date | Change | By |
 |---|---|---|
 | 2026-08-02 | Brief authored; Slice 1 recorded CODE_LANDED (`cd8b617f` / PR #612); packets A–F opened | Cursor Cloud Agent |
+| 2026-08-29 | **Addendum (Rule 14 correction, no rewrite).** Decompound A5 was struck outright the same day this brief's Pass-1 table was authored (`docs/adr/2026-08-02-pepperstone-feed-retirement.md` §2-B/§2-D), not "deferred pending Call-4 vs B7 sequencing" as §2's P1-10/P1-18 row, §5's A5 forbidden-move clause, and §6's Packet F disposition still read. Reader-intercept added above §6's "Remaining packets" table plus one-line pointers at both stale sites; Packet F disposition cell gained a matching clause. The live open question is now a build-gate-scope ruling for A5's venue-native successor monitor (`STATE.md` "Forward regime monitor / decompound limb-2 successor — Q-MONSURF-1 M-A"); Call-4 continues unaffected under its own landed track. Pass-1/Pass-2 tables and §5 body left byte-identical otherwise. | Claude Code (brief-corpus decay audit remediation) |

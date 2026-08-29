@@ -204,6 +204,15 @@ Next action recommended: <one sentence>
 Branch: `cursor/notice-e1-e3-action-rows`. PR with the two-file diff. **No commit/merge
 without operator go.**
 
+**Completion (2026-08-29):** landed. Cursor returned `DONE_WITH_CONCERNS` (one non-blocking
+casing nit in this brief's own audit-hook grep, not a defect in the insertion); merged as PR #69
+(`17ebc46`), integrated in `3c6745a` ("docs(notice): discharge E(i)/E(ii)/E(iii) action rows --
+valence-blind null-validity + retention-review date") — confirmed landed in
+`.claude/skills/futures-anomaly-discovery/SKILL.md` (valence-blind bullet, ~line 270) and
+`docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md` (Retention-review line,
+~line 15). The consuming notice, `docs/notes/notice/N-2026-08-18-iteration2-identify-notice.md`,
+was not updated by that commit and needs its own correction (see that file).
+
 ---
 
 ## §10 — Audit hooks (runnable)

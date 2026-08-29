@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-13 issued (local continue) · scored same day  
 **Branch:** `cursor/msl-c2-explore-prep-292d` · PR #780  
-**Campaign:** [`lab/archive/msl_c2_mgc_2026-08/`](../../lab/archive/msl_c2_mgc_2026-08/)
+**Campaign:** [`lab/archive/msl_c2_mgc_2026-08/`](../../../lab/archive/msl_c2_mgc_2026-08/)
 
 ---
 
@@ -12,7 +12,7 @@
 |---|---|
 | Explore GO | **ISSUED 2026-08-13** (gitignored `EXPLORE_GO.md`) |
 | `MGC_M15.csv` | **Restored** — sha256 `88da9f15…caf3f3` MATCH |
-| Explore score | **`FALSIFIED`** — [`RESULTS_g2`](../../lab/archive/msl_c2_mgc_2026-08/RESULTS_g2.md) |
+| Explore score | **`FALSIFIED`** — [`RESULTS_g2`](../../../lab/archive/msl_c2_mgc_2026-08/RESULTS_g2.md) |
 | Closure / registry | [`MSL-C2-closure-falsified`](../closures/MSL-C2-closure-falsified.md) · [`rejected_candidates`](../../rejected_candidates.md) |
 | Cap / Pine / B5 / CONFIRM | **Not authorized** — CONFIRM unread |
 

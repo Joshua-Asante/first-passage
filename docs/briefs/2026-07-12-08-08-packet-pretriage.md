@@ -181,3 +181,50 @@ grep -n "AMBIGUOUS\|vacuous\|re-confirm 2026-11-08" docs/SESSIONS.md   # the 08-
 #    The 08-08 SESSIONS entry must cite this brief by path.
 grep -n "2026-07-12-08-08-packet-pretriage" docs/SESSIONS.md
 ```
+
+---
+
+## Addendum 2026-08-29 — A1/A5 pairing DECAYED (brief-decay-audit)
+
+Per Rule 14, this addendum lands where the A1/A5 pairing is read (§2 Class A table above, §3
+disposition, §10 hook #4). The table, §3, and §10 above are byte-unedited; this is the
+correction.
+
+1. **A5 (decompound-HOLD §4 limb-2 regime re-MC) was struck from Class A.**
+   [`docs/adr/2026-08-02-pepperstone-feed-retirement.md`](../adr/2026-08-02-pepperstone-feed-retirement.md)
+   §2-B/§2-D struck it outright (Pepperstone feed + CFD venue both retired — the panel A5 read
+   is gone). It is now **SUSPENDED-ORPHANED / permanently `NOT_EXECUTABLE`**, per
+   [`docs/adr/2026-06-07-decompound-remc-hold.md`](../adr/2026-06-07-decompound-remc-hold.md)'s
+   own 2026-08-03 addendum — and the **quarterly schedule itself is struck**, not deferred: no
+   future 08-08/11-08/02-08/05-08 date carries a live A5 obligation. §2's Class A row and §10
+   hook #4 (`grep -n "regime_gate|decompound-HOLD.*§4|limb-2|55%" STATE.md`) can no longer be
+   satisfied by a run — only by the ADR's own successor design landing.
+
+2. **A1 (accept-beta fork) is consequently not decided.** With A5 gone, A1 cannot be resolved on
+   the Pepperstone-shaped input the pairing assumed, and it is not decided by default either — it
+   carries forward as an **open fork**, per the retirement ADR §2-C, no longer paired with a live
+   A5 reading. Any future A1 decision must state which venue-native evidence it rests on instead
+   (§2-C names candidates: Q-COMPOSE-1 breadth, fork-program exhaustion, ORB-ZB falsification,
+   the ORB-MNQ correct-clock scorecard).
+
+3. **The self-declared successor was never linked forward from here, and is itself stale.**
+   [`docs/briefs/2026-07-17-0808-packet-delta-and-sequence.md`](2026-07-17-0808-packet-delta-and-sequence.md)
+   records the A5 strike and the A1 re-scope in more detail than this brief ever did — but this
+   file carries no pointer to it, and that successor brief carries its own 2026-08-06 reader
+   intercept flagging that it predates the 2026-08-04 Tradeify venue de-scope and must not be
+   treated as a live execution slate without re-walking the board at the gate.
+
+4. **The literal 2026-08-08 date passed, but not via anything this brief adjudicated.** The
+   session that actually landed on 2026-08-08 was the 47-ADR-rider Great Prune sweep
+   ([`docs/notes/audits/programme-audit/2026-08-08-quarterly-audit.md`](../notes/audits/programme-audit/2026-08-08-quarterly-audit.md)) —
+   a rider-discharge audit that never names this brief, A1, A5, or D2 by row. It touches the
+   decompound-HOLD limb-2 orphaning only in passing (as one of three gates whose
+   unfalsifiability it propagated to, §"Unfalsifiable census"). **Class A/B/C as classified in §2
+   above remain formally undischarged under their own terms** — no session ever worked this
+   slate as §3 instructed.
+
+**Pointers:** decompound-HOLD ADR addendum —
+[`docs/adr/2026-06-07-decompound-remc-hold.md`](../adr/2026-06-07-decompound-remc-hold.md)
+(§4 banner + §Addendum 2026-08-03); Pepperstone retirement ADR —
+[`docs/adr/2026-08-02-pepperstone-feed-retirement.md`](../adr/2026-08-02-pepperstone-feed-retirement.md)
+§2-B/§2-C/§2-D.

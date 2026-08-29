@@ -1,6 +1,6 @@
 # Q-STATVALID-1 — Has the same statistical rigor the repo applies to strategy-candidate discovery ever been applied to the risk-control layer's own constants?
 
-**Status:** `OPEN — DRAFT (pre-lock)` — execution requires a separate operator GO (parent-Q convention: naming is not opening)
+**Status:** `CLOSED-FALSIFIED 2026-08-23` — Limb C fires on both grids (winner-margin z≈0.8-1.2 vs the 2-sigma bar; 3 of 5 DD-trigger-grid losing scores unrecoverable); Limb B independently `AMBIGUOUS` (Pepperstone 4-strategy panel retired 2026-08-03, unrecoverable at $0). Closure: [`closures/Q-STATVALID-1-closure-falsified.md`](closures/Q-STATVALID-1-closure-falsified.md).
 **Authored:** 2026-08-18
 **Closed:** N/A
 **Authors:** Joshua + Claude Code
@@ -173,4 +173,4 @@ If any verification command fails, the brief is not complete. Re-author the sect
 - [ ] Section 6 triggers specific
 - [ ] Section 8 pre-registration owed at operator GO
 - [ ] Section 10 hooks runnable
-- [ ] Operator GO owed before Phase 1 — this brief is named, not opened
+- [ ] Operator GO given; Phase 1 ran 2026-08-23 per the closure's pre-registration record — see [`Q-STATVALID-1-closure-falsified.md`](closures/Q-STATVALID-1-closure-falsified.md). No discrete pre-Phase-1 tick of this checklist is on record (the other boxes above were never individually checked before Phase 1 executed) — that gap is recorded here rather than retroactively checked off.

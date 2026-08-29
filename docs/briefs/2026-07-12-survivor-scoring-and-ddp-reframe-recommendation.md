@@ -183,3 +183,34 @@ git log -1 --format='%h %ci' -- ops/prop_envelope_default.md # expect 802ee60
 # Ceiling calibration source
 grep -n "17.70\|17.7" lab/analysis/c1/tradeify_futures3_remc_2026-07-11/RESULTS.md
 ```
+
+---
+
+## Addendum 2026-08-29 — H-REFRAME gate-set correction (brief-decay-audit)
+
+**H-REFRAME gate-set correction:** as of 2026-08-29, 2 of the 5 named gates (§4) no longer exist
+as files and cannot be evaluated — `scripts/validate_params.py` was retired 2026-08-03
+([`docs/adr/2026-08-03-params-toml-gate-retirement.md`](../adr/2026-08-03-params-toml-gate-retirement.md),
+Shape 1) and `tests/core/test_mc_anchors.py` was deleted (confirmed absent — no file at that path
+anywhere in the tree). The remaining three gates — the MVD import self-check,
+`scripts/verify_lock_anchors.py`, `scripts/check_boundaries.py` — were independently re-run
+2026-08-29 and **all pass**:
+
+```
+$ python -c "import sys; sys.path.insert(0,'core'); import dd_protection; print('MVD OK')"
+MVD OK
+$ python scripts/verify_lock_anchors.py
+ROUTING: Closed
+$ python scripts/check_boundaries.py
+check_boundaries: OK — 24 first-party modules, no illegal edges, no name collisions
+```
+
+Per the retirement ADR's own §Addendum-2026-08-08(d), the surviving substitute coverage for the
+retired `validate_params` limb is `git diff --stat HEAD -- core/ ops/c1_rail/c1_sizing_host_reference.py`;
+the byte-identical-anchor claim's successor pin is `tests/core/test_mc_synthetic_engine.py` +
+`docs/mc_anchor_history.md`. The §3.3 `POLICY_REGISTRY`/FXIFY-C2-seed point remains separately
+and adequately discharged elsewhere — no further action needed there.
+
+H-REFRAME itself is **not** judged `FALSIFIED` by this correction (no gate went red; two ceased
+to exist under a separately-ratified, unrelated governance-diet decision), but the falsifier's
+own text (§4) is now only mechanically checkable against 3 of its 5 named gates.

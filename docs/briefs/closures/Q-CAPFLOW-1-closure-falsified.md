@@ -11,6 +11,8 @@
 
 ---
 
+**⚠ 2026-08-29 path correction:** the PREREG/RESULTS/RESULTS.json links above point to `lab/analysis/c1/mnq_capflow_orb_r_2026-08/`, which no longer exists — the campaign was archived 2026-08-21 (see `lab/CATALOG.md`). Current location: stub `lab/analysis/mnq_capflow_orb_r_2026-08/CARD.md`, full body `lab/archive/mnq_capflow_orb_r_2026-08/`. Verdict/numbers below are unaffected and unedited.
+
 ## 1. Verdict (§6 asserted against actual numbers)
 
 | §6 route | Trigger | Actual | Fired? |
@@ -61,7 +63,7 @@ Below the two-incident bar — watch: CapFLOW camp path math vs theme-nest prune
 ```text
 # Parent reservation hooks (Q-CAPRES-2 §10)
 PRESENT docs/briefs/Q-CAPRES-2-mnq-cap-seat-reservation.md
-PRESENT lab/analysis/c1/mnq_capflow_orb_r_2026-08/PREREG.md
+PRESENT lab/archive/mnq_capflow_orb_r_2026-08/PREREG.md  # 2026-08-29: repointed post-2026-08-21 archival (was lab/analysis/c1/mnq_capflow_orb_r_2026-08/PREREG.md)
 rg C11|Cap-reservation → hits in Q-CAPRES-2 (C11 bar stands)
 
 # CapFLOW score

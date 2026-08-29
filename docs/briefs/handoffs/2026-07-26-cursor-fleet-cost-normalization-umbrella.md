@@ -100,8 +100,8 @@ MYM-3FPS-1 has a ceiling above 1.0 and it fails power independently by ~4-8x).
 
 | Packet | Branch | File footprint (DISJOINT) | Status |
 |---|---|---|---|
-| A — normalized cost model | `cursor/cost-normalization-pA` | `lab/discovery/cost_model.py` (new) · `tests/test_cost_model.py` (new) | DISPATCHED |
-| B — attestation completeness gate | `cursor/cost-normalization-pB` | `lab/discovery/register_search.py` · `tests/test_discovery_register_search.py` | DISPATCHED |
+| A — normalized cost model | `cursor/cost-normalization-pA` | `lab/discovery/cost_model.py` (new) · `tests/test_cost_model.py` (new) | **MERGED** — both files present on disk (pre-transition history squashed into `027a729`; no discrete PR/sha survives the public-clone history) |
+| B — attestation completeness gate | `cursor/cost-normalization-pB` | `lab/discovery/register_search.py` · `tests/test_discovery_register_search.py` | **MERGED** — `register_search.py` carries the `{value, units, basis, source}` clause-completeness gate (`_CLAUSE_FIELDS`, `_require_attestation_clause_completeness`, ~lines 164–233); `tests/test_discovery_register_search.py` present (pre-transition history squashed into `027a729`; no discrete PR/sha survives the public-clone history) |
 
 **Reserved to the orchestrator — no worker writes these:** `docs/SESSIONS.md`, `STATE.md`,
 `lab/CATALOG.md`, `docs/briefs/INDEX.md`, `docs/adr/**`, `ops/instruments/**`, this brief.

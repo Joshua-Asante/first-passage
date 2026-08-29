@@ -89,3 +89,37 @@ grep -n "accept-beta\|A5\|regime re-MC" docs/SESSIONS.md
 ```
 
 **Cite at 08-08:** cost **~11.7%** median common-mode max DD (bust-before-signal); probability **+0.46pp** bust understatement (decompounded; bounded-small on the locked anchor); default **HOLD**; de-risk = **k≈0.55** (regime-fragile). Decision gated on **A5** breach/clean.
+
+---
+
+## Addendum 2026-08-29 — §5 pairing mechanism SUSPENDED-ORPHANED (DECAYED_UNDOCUMENTED, brief-decay-audit)
+
+Per Rule 14, this correction lands here because §5 above ("Pairing with A5") and §6 ("Decision
+framing + default") are the sections a reader consults to run this fork — both stay
+byte-unedited; this addendum is the reader-intercept + record.
+
+1. **§5's A5 (decompound-HOLD §4 limb-2 regime re-MC) cannot run.** It was declared
+   **SUSPENDED-ORPHANED / permanently `NOT_EXECUTABLE`** by
+   [`docs/adr/2026-06-07-decompound-remc-hold.md`](../adr/2026-06-07-decompound-remc-hold.md)'s
+   own 2026-08-03 addendum, following the 2026-08-02 Pepperstone feed retirement — it can never
+   run at 08-08 or any future quarterly date (the schedule itself is struck, not deferred). 08-08
+   has now passed with **no A5 result recorded anywhere**: `docs/SESSIONS.md` carries no such
+   entry, confirmed by direct check of this brief's own §10 hook.
+
+2. **The standing re-scope of record is the successor packet.**
+   [`docs/briefs/2026-07-17-0808-packet-delta-and-sequence.md`](2026-07-17-0808-packet-delta-and-sequence.md)
+   already recorded, 2026-08-02: *"A5 + P1 struck with the Pepperstone feed retirement… A1
+   re-scoped not decided"* — cite that packet, not this one, for the current disposition of the
+   A5 input.
+
+3. **§6's accept-beta decision was never actually made, under either framing.** It is not a
+   silent re-park to HOLD-by-default — it is **still open**, gated on an input (A5) that no
+   longer exists. The re-scoping brief that carries the current framing is itself stale: it
+   carries its own 2026-08-06 reader intercept warning that it predates the 2026-08-04 Tradeify
+   venue de-scope and must not be read as the live slate without re-walking the board at the
+   gate.
+
+4. **If the operator wants A1 decided, it needs a fresh dated packet** reading current
+   post-de-scope, post-Great-Prune state — not a re-read of this pre-assembly (which still frames
+   the decision around a now-unrunnable A5) and not a silent adoption of the 07-17/08-06 packet's
+   framing without re-verifying it against today's board.

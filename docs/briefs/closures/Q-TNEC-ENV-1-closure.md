@@ -26,6 +26,11 @@ MC, and the regime gate are untouched and unweakened
 
 (a) The MGC entry ([`mgc-benchmark-fix-window-r8-rescore`](../../../lab/archive/tnec_envelope_compile_2026-08/entries/mgc-benchmark-fix-window-r8-rescore.json)) re-scores the one-day-old, independently-closed R8 SCREEN-FAIL (2026-08-10) — labeled calibration/known-answer in the entry itself (RESULTS.md §6.4.2: "a known-answer anchor for the `--entry` path"). The operator may rule this row **dropped** if it reads as re-litigation of an already-closed finding rather than an independent cross-check. H_B is 0 either way — the row scored `FAIL`, not `SEED-GRADE`.
 (b) The MCL re-open ([`mcl-tas-settlement-window-replication`](../../../lab/archive/tnec_envelope_compile_2026-08/entries/mcl-tas-settlement-window-replication.json)) rests on an inference from the 2026-08-10 L2 scope ruling that the ≥2-independent-events/day law which killed BE3/SFX-1 is a **fade-program** screening law, not a TNEC limb — quoted verbatim in [`N-2026-08-11-daily-auction-settlement-MCL.md`](../../notes/notice/N-2026-08-11-daily-auction-settlement-MCL.md) ("*No ≥N-trades/day floor — that law was fade-scoped; TNEC N-ACT is weekly*"). The operator confirms or vacates that re-open basis; the entry scored `UNSCREENABLE`, not `SEED-GRADE`, regardless.
+   > ⚠ this notice was dropped by the 2026-08-14 public-transition seed-cut's `docs/notes/**`
+   > exclusion (`docs/adr/2026-08-14-repo-public-visibility-transition.md` §6) and was not among
+   > the files restored by 1f3a2bb; not retrievable in this public clone — the quoted line cannot
+   > be verified on-disk. See sibling item 4's caveat for the retrieval pattern (private archive
+   > only).
 
 > **RULED 2026-08-11 / JA — both items, post-closure light record (recommendation adopted):**
 > **(a) KEEP.** The row reads as calibration/known-answer, not re-litigation: it kills the same candidate
@@ -144,3 +149,4 @@ no loosening of Req 1-5 / EM0 / regime gate under cover of necessity     OK  (§
 | Date | Change | By |
 |---|---|---|
 | 2026-08-11 | Closure authored | Claude Code (Task 9) |
+| 2026-08-29 | Inline caveat added after item (b)'s citation — `N-2026-08-11-daily-auction-settlement-MCL.md` was dropped by the 2026-08-14 public-transition seed-cut, not retrievable in this public clone; RULED block and verdict left byte-unedited | Claude Code (Sonnet 5) |

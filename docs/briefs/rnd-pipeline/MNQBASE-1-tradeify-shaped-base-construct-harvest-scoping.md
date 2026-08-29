@@ -1,8 +1,9 @@
 # `MNQBASE-1` — Tradeify-shaped base construct: harvest intake (scoping)
 
-**Status:** `SCOPED` — intake filter only. **No candidate admitted, no manifest opened, no K bound,
-$0 committed.** Screening a candidate against §2 consumes nothing; each *admitted* candidate pays
-its own `K_intrinsic` at its own pre-registration.
+**Status:** `CLOSED — FALSIFIED (intake dry) 2026-08-04` — L2, disposition STOP; see Amendment log +
+[closure](../closures/MNQBASE-1-closure-intake-dry.md). **No candidate admitted, no manifest opened,
+no K bound, $0 committed.** Screening a candidate against §2 consumes nothing; each *admitted*
+candidate pays its own `K_intrinsic` at its own pre-registration.
 **Live target:** **Tradeify Select 100K evaluation — ACTIVE** (operator clarification 2026-08-04; see §1 ⚠).
 **Deadline pressure:** operator intends a deployable construct **within the week**, so §7 is ordered
 by information-per-hour, not by completeness.
@@ -289,3 +290,5 @@ grep -n "no further work is authorized" docs/adr/2026-08-04-tradeify-venue-desco
   and **P1–P6 contain no frequency limb**, so Step 2 could not screen on T2 at all. Per Trap #12 the
   frozen text above is unedited; a successor must resolve both before re-deriving T2.
   [`closure`](../closures/MNQBASE-1-closure-intake-dry.md)
+- **2026-08-29 — Header Status line corrected from stale `SCOPED` to `CLOSED — FALSIFIED (intake dry)`
+  per Rule 14; no change to the 2026-08-04 §0-§7 body or verdict, which stand unedited.**

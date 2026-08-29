@@ -1,9 +1,9 @@
 # [Q-XMEM-1] — Cross-surface agent-memory sidecar pilot
 
-**Status:** `OPEN`
+**Status:** `CLOSED — SUBTRACT 2026-08-19` — GRAND-tier pursuit-layer SUBTRACT (GSUB-2 Phase 3); architecture retained as a ready-to-run design, not deleted; re-entry requires a genuine dated cross-surface-memory-invisibility incident. Closure: [`closures/Q-XMEM-1-closure-subtract.md`](closures/Q-XMEM-1-closure-subtract.md).
 **Authored:** 2026-07-16
 **Amended:** 2026-07-16 (v1.1, pre-T0) — critical review (`claude/q-xmem-1-briefs-review`): ledger-skip gate hole closed (=1 was verdict-less); locked strategy parameters added to denylist; contamination audit upgraded from token-grep to full-export read (Trap M-AHF); hosting limb restated around the extraction-LLM boundary + explicit-add-only frozen; benefit limb tightened to operator-confirmed; Phase-3/§6 verdict-date conflict fixed. **No T0, no install, no memories existed at amendment time — this is a pre-registration revision, not Known Trap #12.** **Amended again:** 2026-08-15 (v1.2, still pre-T0) — Limb B repo-local FTS addendum below. §4 / §6 / Mem0 Phase 0–4 unchanged. Still no memories. **Amended again (later same day):** Limb B re-measured `ASSISTIVE-ONLY` under a fresh frozen pre-registration after a governance-belt audit found the original "Landed" claim didn't match measured recall — see the second 2026-08-15 addendum below.
-**Closed:** `N/A`
+**Closed:** 2026-08-19 (GSUB-2 Phase 3; PARKED 2026-08-09 GSUB-1 Phase 3 preceded it).
 **Authors:** Joshua (authority) + Cursor (structure; prior fit canvas)
 **Parent question:** `N/A`
 **Sub-questions opened:** none

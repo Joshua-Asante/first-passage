@@ -1,6 +1,6 @@
 # Q-S5CAP-1 — Does S5's capped concurrency hold at the system level, or only per-packet?
 
-**Status:** `OPEN — DRAFT (pre-lock)` — execution requires a separate operator GO (parent-Q convention: naming is not opening)
+**Status:** `CLOSED-RESOLVED 2026-08-23` — validate_promotion_packet() and refute_promotion_packet() both Pass all 3 synthetic packets sequentially (cumulative concurrency_slots=3 > max_concurrency=2, zero rejections) — capped concurrency is a per-packet self-report, not a system invariant; successor Q-S5CAP-2 named (not opened). Closure: [`closures/Q-S5CAP-1-closure-resolved.md`](closures/Q-S5CAP-1-closure-resolved.md).
 **Authored:** 2026-08-18
 **Closed:** N/A
 **Authors:** Joshua + Claude Code
@@ -156,6 +156,19 @@ grep -n "capped concurrency\|not RESOLVED\|append wiring" docs/adr/2026-08-07-lo
 
 ---
 
+## Addendum 2026-08-29 — §0 anchor-provenance correction
+
+**Does not amend §0–§10.** §0 states "All six paths below share anchor `027a729` (2026-08-14)."
+Per the closure's own §4 table
+([`Q-S5CAP-1-closure-resolved.md`](closures/Q-S5CAP-1-closure-resolved.md) §4), re-verified
+per-path at Phase 1 execution (2026-08-23): 2 of the 6 cited paths —
+`lab/discovery/promotion_packet.py` and `tests/test_promotion_packet.py` — had moved to commit
+`1eb1237` (2026-08-19, an unrelated `discovery_run_id`/K-ledger-backing change; zero new
+concurrency coverage). The other 4 cited paths remain at `027a729`. This does not affect the
+`RESOLVED` finding — it corrects only the Section 0 provenance claim.
+
+---
+
 ## Pre-Lock Checklist (DRAFT briefs only)
 
 - [x] Section 0 paths read with anchors
@@ -165,4 +178,4 @@ grep -n "capped concurrency\|not RESOLVED\|append wiring" docs/adr/2026-08-07-lo
 - [x] Section 6 triggers specific
 - [ ] Section 8 pre-registration owed at operator GO
 - [x] Section 10 hooks runnable
-- [ ] Operator GO owed before Phase 1 — this brief is named, not opened
+- [x] Operator GO given; Phase 1 ran 2026-08-23 — see [`Q-S5CAP-1-closure-resolved.md`](closures/Q-S5CAP-1-closure-resolved.md)

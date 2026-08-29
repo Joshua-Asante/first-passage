@@ -86,6 +86,8 @@ If a bundled clause cannot carry a reachability attestation, **drop it before fr
 
 **08-08 packet:** H-OD-1 appears as **CLOSED (Stage-2 cost-law KILL, gate-geometry defect — mechanism CONFIRMED-IS)** alongside D5 (same closure class); **H-TSMOM-1 is the sole remaining fundable axis** (K_eff=3, floor 0.98), to be scoped under the corrected same-units attestation (amending ADR `Proposed`).
 
+> **Correction (dated, added 2026-08-29):** the line above predates H-TSMOM-1's own same-day scoping. H-TSMOM-1 was scoped and CLOSED 2026-07-16 (Clause-N FAIL, P1 pinned to reading (c): N≈86, power=0.34, below the 0.50 threshold) — see [`H-TSMOM-1-ES-tsmom-scoping.md`](H-TSMOM-1-ES-tsmom-scoping.md). The harvest's ratified 3-axis fundable set (D5 / H-OD-1 / H-TSMOM-1) closed with zero survivors, not with H-TSMOM-1 pending. (The same-units attestation ADR cited here as Proposed was also Accepted the same day, 2026-07-16.)
+
 ---
 
 ## §5 — Audit hooks (runnable)

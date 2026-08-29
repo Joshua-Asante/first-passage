@@ -4,7 +4,7 @@
 **Closed:** 2026-08-20
 **Lane:** `UNASSIGNED`
 **Pre-registration:** [`Q-NSURV-2-verdict-preregistration.md`](../pre-registration/Q-NSURV-2-verdict-preregistration.md) — frozen at `97f301f`, corrected pre-Phase-1 (see pre-reg's own Correction note)
-**Successor:** [`docs/adr/2026-08-20-nsurv-magnitude-resampling-disclosure.md`](../../adr/2026-08-20-nsurv-magnitude-resampling-disclosure.md) (`Proposed`, ratification owed)
+**Successor:** [`docs/adr/2026-08-20-nsurv-magnitude-resampling-disclosure.md`](../../adr/2026-08-20-nsurv-magnitude-resampling-disclosure.md) (`Proposed`, ratification owed — *⚠ ratified to Accepted later the same day, 2026-08-20 (commit 9087597); see the ADR's own Status line for current state.*)
 **Spend / K:** $0.00 · K consumed: 0 (design/reproduction check on already-committed artifacts, not a strategy-candidate proposal)
 **Live effect:** none — no `dd_protection`/allocation/Pine/rail surface touched; no closed N-SURV verdict re-scored
 **Artifacts:** [`run_wrapper_reproduction_check.py`](../../../lab/analysis/c1/nsurv_layer_design_2026-08-20/run_wrapper_reproduction_check.py) · [`wrapper_reproduction_results.json`](../../../lab/analysis/c1/nsurv_layer_design_2026-08-20/wrapper_reproduction_results.json)
@@ -76,6 +76,7 @@ $ git log -1 --format='%h' -- docs/briefs/pre-registration/Q-NSURV-2-verdict-pre
 | Date | Change | By |
 |---|---|---|
 | 2026-08-20 | Closure authored. Phase 1 executed same day as pre-registration (with a pre-Phase-1 correction to the pre-registration itself), under operator GO ("execute them now"). `RESOLVED` recorded. | Claude Code (Sonnet 5), operator GO |
+| 2026-08-29 | Reader-intercept note added inline on the Successor line — ADR ratified to Accepted 2026-08-20 (commit 9087597), same day as this closure; header text left otherwise byte-unedited | Claude Code (Sonnet 5) |
 
 ---
 

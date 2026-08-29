@@ -1,14 +1,16 @@
 # Q-FUNNEL-1 — contract-funnel EV analysis
 
-**Status:** `OPEN — DRAFT (pre-lock)`
+**Status:** `CLOSED — RESOLVED 2026-07-22` — see [`docs/briefs/closures/Q-FUNNEL-1-closure-resolved.md`](../closures/Q-FUNNEL-1-closure-resolved.md)
 **Authored:** 2026-07-21
-**Closed:** N/A
+**Closed:** 2026-07-22
 **Authors:** Joshua + claude.ai (advisor)
 **Parent question:** N/A — forked from a design doc, not a prior Q
 **Sub-questions opened:** N/A
 **Loop:** Inquire-phase Pre-Q — gates whether the deferred cushion-proportional policy layer (design doc §7) gets built
 **Artifact path:** `docs/briefs/rnd-pipeline/Q-FUNNEL-1-contract-funnel-ev-scoping.md`
 **Design doc:** [`docs/superpowers/specs/2026-07-21-q-funnel-1-contract-ev-design.md`](../../superpowers/specs/2026-07-21-q-funnel-1-contract-ev-design.md) — approved (brainstorming), this brief is its landing-sequence step 2
+**Results:** [`lab/archive/q_funnel_1_2026-07/RESULTS.md`](../../../lab/archive/q_funnel_1_2026-07/RESULTS.md) · [`docs/briefs/closures/Q-FUNNEL-1-closure-resolved.md`](../closures/Q-FUNNEL-1-closure-resolved.md) — funnel EV materially prefers the 1.00× rung over the ratified WATCH-1 0.50× at 4 of 6 (edge, retry-policy) grid points, all favoring 1.00×; but the closure's own caveat flags half that evidence (`edge_half_panel`) as horizon-fragile — it reverses sign in H1 at a 126-day funded horizon, vs the delivered 252-day default. Only `edge_panel_historical` is horizon-robust across {126,252,504}.
+**Operator disposition:** [`docs/adr/2026-07-23-c1-rung-selection-ev-objective.md`](../../adr/2026-07-23-c1-rung-selection-ev-objective.md) — operator elected fork B (EV objective) but, once the both-halves regime gate is enforced, 1.00× is regime-inadmissible, so EV and the bust-floor converge on keeping 0.50×; live rung stayed WATCH-1 0.50× despite this brief's EV finding. Per current `CLAUDE.md` live-execution posture, there is no live c1 book as of 2026-08-04 (both Striker legs withdrawn) — this rung-selection question is now moot for the withdrawn book and would need re-measurement for any successor venue.
 
 ---
 
@@ -165,14 +167,3 @@ git log -1 -- docs/briefs/2026-07-12-survivor-scoring-and-ddp-reframe-recommenda
 ```
 
 If any verification command fails, the brief is not complete. Re-author the section that broke; do not handwave.
-
-## Pre-Lock Checklist (DRAFT — remove once locked)
-
-- [x] All §0 paths read and anchored with commit hash
-- [x] §3 question passes the symptom-only rephrase test
-- [x] §4 hypothesis is genuinely falsifiable (binary triggers in §6)
-- [x] §5 forbidden moves are genuinely tempting, not strawmen (sizing-behavior change and regime-resizing re-opening were both live temptations during this brainstorm)
-- [x] §6 gates have specific numerical triggers
-- [x] §8 pre-registration committed BEFORE Phase 1 runs — pre-flight resolved 2026-07-21 (Select Flex, $3,000 DD, confirmed); pre-registration at `docs/briefs/pre-registration/Q-FUNNEL-1-verdict-preregistration.md`
-- [x] §10 audit hooks are runnable commands
-- [x] Verification block executed and passing
