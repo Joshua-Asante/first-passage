@@ -41,7 +41,23 @@ INDEX_MICRO_COMMISSION_INSTRUMENTS: frozenset[str] = frozenset(
     {"MES", "MNQ", "MYM", "M2K"}
 )
 NO_COMMISSION_ROW_INSTRUMENTS: frozenset[str] = frozenset(
-    {"ZN", "ZB", "ZF", "CL", "NG", "6E"}
+    {
+        "ZN",
+        "ZB",
+        "ZF",
+        "CL",
+        "NG",
+        "6E",
+        # SPECS keys that already raise via the catch-all — named so the
+        # closed-world partition cannot drift again (SSOT Phase 3).
+        "MGC",
+        "ES",
+        "NQ",
+        "YM",
+        "RTY",
+        "GC",
+        "MNG",
+    }
 )
 
 
@@ -119,6 +135,37 @@ def _require_slip_convention(slip_convention: str) -> SlipConvention:
             f"got {slip_convention!r}"
         )
     return slip_convention  # type: ignore[return-value]
+
+
+def closed_world_findings() -> list[str]:
+    """Intra-module partition: every SPECS key is classified; every priced
+    index-micro has a spec; the two commission sets are disjoint.
+
+    Does not join ``ops/instruments`` ledgers (many are unpriced by design).
+    """
+    specs = set(INSTRUMENT_SPECS)
+    index_micro = set(INDEX_MICRO_COMMISSION_INSTRUMENTS)
+    no_row = set(NO_COMMISSION_ROW_INSTRUMENTS)
+    findings: list[str] = []
+    missing_specs = sorted(index_micro - specs)
+    if missing_specs:
+        findings.append(
+            "INDEX_MICRO_COMMISSION_INSTRUMENTS notsubseteq INSTRUMENT_SPECS: "
+            + ", ".join(missing_specs)
+        )
+    unclassified = sorted(specs - index_micro - no_row)
+    if unclassified:
+        findings.append(
+            "INSTRUMENT_SPECS key(s) in neither INDEX_MICRO nor "
+            "NO_COMMISSION: " + ", ".join(unclassified)
+        )
+    overlap = sorted(index_micro & no_row)
+    if overlap:
+        findings.append(
+            "INDEX_MICRO intersect NO_COMMISSION nonempty: "
+            + ", ".join(overlap)
+        )
+    return findings
 
 
 def resolve_commission(firm_key: str, instrument: str) -> float:

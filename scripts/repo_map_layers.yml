@@ -32,6 +32,7 @@ scripts_layer:
   event_study_read: lab
   pine_lint: lab
   cost_geometry_pregate: lab
+  check_cost_model_closed_world: lab
   parse_econ_export: lab
   diff_econ_calendar: lab
   lock_event_hook: ops

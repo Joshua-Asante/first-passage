@@ -326,7 +326,13 @@ def parse_disposition(text: str) -> Disposition | None:
             hint = hm.group(1)
         one = _clean_one_liner(value, status) or value
         if len(one) > 120:
-            one = one[:117] + "..."
+            # Word-boundary-safe cut: a raw one[:117] can sever mid-identifier
+            # (e.g. "se_bust" -> "se_b..."), inventing a truncated token that
+            # never existed. Cut at the last space at-or-before 117; fall back
+            # to the raw cut only if no space exists that early (very long
+            # first "word", e.g. a long inline code span with no spaces).
+            cut = one.rfind(" ", 0, 118)
+            one = (one[:cut] if cut > 0 else one[:117]).rstrip() + "..."
         raw = _raw_token_for_status(value, status)
         hit = Disposition(
             raw_token=raw, status=status, one_liner=one, decisive_hint=hint
@@ -1096,12 +1102,13 @@ def _scan_one_liner_is_truncation(scan: str, disk: str) -> bool:
     """True when ``scan`` is a mechanical truncation, so ``disk`` may keep
     untruncated Status prose *or* a complete hand-authored summary.
 
-    ``parse_disposition`` caps one-liners at 120 (``text[:117] + '...'``).
-    Stub CARD dispositions use ``_truncate_one_liner`` (default 80). Either
-    cap is a fallback: treating a complete committed cell as stale would
-    hard-fail every long Status line and fight hand-authored catalog
-    summaries. ``--check --catalog-only`` stays green without
-    ``--regenerate-catalog`` clobbering the committed cell.
+    ``parse_disposition`` caps one-liners at 120 with a word-boundary cut
+    (at-or-before 117, then ``'...'``). Stub CARD dispositions use
+    ``_truncate_one_liner`` (default 80). Either cap is a fallback:
+    treating a complete committed cell as stale would hard-fail every long
+    Status line and fight hand-authored catalog summaries.
+    ``--check --catalog-only`` stays green without ``--regenerate-catalog``
+    clobbering the committed cell.
 
     The 117-char cap itself is left in place. Raising it would make more
     Status lines fit entirely, after which a concise rewrite would look like

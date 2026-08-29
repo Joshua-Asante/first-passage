@@ -1205,7 +1205,7 @@ def test_catalog_only_tolerates_120_char_truncation(tmp_path: Path):
     )
     scanned = ala.scan_lab(tmp_path)
     assert scanned[0].one_liner.endswith("...")
-    assert len(scanned[0].one_liner) == 120
+    assert len(scanned[0].one_liner) <= 120
     assert ala._scan_one_liner_is_truncation(scanned[0].one_liner, full)
 
     committed = [
@@ -1251,7 +1251,7 @@ def test_catalog_only_tolerates_hand_authored_summary_vs_truncation(tmp_path: Pa
     )
     scanned = ala.scan_lab(tmp_path)
     assert scanned[0].one_liner.endswith("...")
-    assert len(scanned[0].one_liner) == 120
+    assert len(scanned[0].one_liner) <= 120
     assert ala._scan_one_liner_is_truncation(scanned[0].one_liner, summary)
 
     committed = [
