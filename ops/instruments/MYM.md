@@ -4,7 +4,7 @@
 **Status (2026-08-04):** ⚠ **NO LONGER A LIVE c1 LEG — withdrawn from deployment.** The Tradeify venue is de-scoped as a deployment target for the locked Striker book, evaluation included ([`ADR 2026-08-04`](../../docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md); ⚠ **narrowed same day, Addendum 2026-08-04** — the bar is on redeploying this leg, not on Tradeify-shaped base-construct research); this leg never took a strategy-signal-originated fill and now has no venue. **Lifecycle unchanged: `Striker` stays `AUTHORIZED · MECHANISM @ 1.00×`** (canonical: [`strategy_lifecycle.md`](../../docs/methodology/strategy_lifecycle.md)) — no `core/lifecycle.py` write, no demotion; venue-fit is not decay. Pine, parameters and `LEG_MAP` untouched. Prior status line preserved below as record.
 
 **Status (prior, through 2026-08-03):** **LIVE c1 leg (disarmed).** Hosts the Striker DJ30 v4.5 **venue edition** (`striker_dj30_v4.5_mym.pine`) as one of the two c1 legs on the Tradeify Select 100K eval — `dry_run=true`, WATCH-1 0.50×, **no strategy-signal-originated fill yet** (rail has canned B4 fills: B6 dry-fire 2026-07-20 + 2026-07-27 SIM; account not pristine — see [`CLAUDE.md`](../../CLAUDE.md) live-execution posture). The **reconstruction** track on this instrument (opening-range *continuation*) is **TERMINAL**.
-**Last updated:** 2026-08-25
+**Last updated:** 2026-08-29
 
 **Purpose:** single source of instrument-level truth (operational rule 10, [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](../../docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md)). Any session deriving/testing/adjudicating on MYM MUST read this at session start and append a dated disposition. **Created 2026-07-25.** Sibling parent ledger: [`YM.md`](YM.md) (W1/W2 + the DJ30→MYM transfer falsification Y3). **The DEAD list is the point** — this instrument's highest-value content is what has been ruled out on it.
 
@@ -51,6 +51,26 @@ cells:
     verdict: DEAD
     date: 2026-08-13
     source: "../../docs/briefs/closures/MSL-C1-closure-falsified.md"
+  - mechanism: daily-range-state-persistence
+    verdict: AMBIGUOUS-PARKED
+    date: 2026-08-29
+    source: "../../docs/notes/notice/N-2026-08-29-mym-rangestate-persistence.md"
+  - mechanism: overnight-range-day-session-transfer
+    verdict: CONTINGENT-FORWARD
+    date: 2027-03-01
+    source: "../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md"
+  - mechanism: intraday-bar-volume-regime
+    verdict: DEAD
+    date: 2026-08-29
+    source: "../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md"
+  - mechanism: overnight-gap-magnitude-range-conditioning
+    verdict: DEAD
+    date: 2026-08-29
+    source: "../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md"
+  - mechanism: bar-closing-location-autocorrelation
+    verdict: CONTINGENT-FORWARD
+    date: 2026-11-08
+    source: "../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md"
 bars:
   - id: index-intraday-ohlcv-directional-timing-2026-07-21
     source: "../../docs/rejected_candidates.md"
@@ -101,9 +121,18 @@ structure:
 
 - **[`MSL-S2B` STAGE-1 FAIL (route)](../../lab/analysis/c1/msl_s2b_mym_2026-08/STAGE1.md) (2026-08-14).** `sweep-failure-filtered-continuation` × MYM — pre-G0 kill; [closure](../../docs/briefs/closures/MSL-S2B-closure-stage1-fail-route.md). G0 never frozen; CONFIRM unread.
 - **[`MSL-C1` FALSIFIED](../../lab/archive/msl_c1_mym_2026-08/RESULTS_g2.md) (2026-08-13).** `pdh-pdl-failed-break-reclaim` × MYM explore IS — [closure](../../docs/briefs/closures/MSL-C1-closure-falsified.md). G0 was frozen; CONFIRM unread.
-- **MYM family K bank = 1 — now a DISCLOSURE, not a gate** (bank corrected 2026-07-29; gating status amended 2026-08-04). Source: `st_eh_supertrend_grid.json` banks executed `K=2` spanning **two** families — the split is 1 MNQ + 1 MYM per its `executed_looks`; do **not** add 2 to either. ⚠ **The floor arithmetic below is superseded:** under [ADR 2026-08-04](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md) (`Accepted`) **`K_eff = K_intrinsic`**, so a `K_intrinsic=1` seed screens at **`K_eff` 1 → floor 0.650** (headroom 0.350), not `K_eff=2` → 0.85. The bank is still read and still **must be disclosed**; it no longer gates. **Consequence for the "widest remaining runway" framing: it is void** — every family now screens at the same floor for the same `K_intrinsic`, so MYM has no comparative K advantage over MNQ, M2K, or any other instrument, and "spend it wisely because it is scarce" is no longer the right reason to be careful. Be careful instead because `K_intrinsic` is now the **only** brake on selection inflation. Governing rules: [ADR 2026-07-26 §2-C](../../docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md) (what banks) + [ADR 2026-08-04](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md) (what a bank does).
+- **MYM family K bank = 1 → 6 as of 2026-08-29 — still a DISCLOSURE, not a gate** (bank
+  corrected 2026-07-29; gating status amended 2026-08-04). ⚠ **New this session:** the
+  2026-08-29 batch's closed manifest (`discovery_manifests/mymdd_1_2026_08_29.json`, `--lane
+  blind`, K=5) banks into the family count per the same 2026-08-18 operator ruling that banked
+  `MNQSR-1` ("Notice-phase closed manifests bank") — 1 + 5 = **6**. Since `K_eff = K_intrinsic`
+  under [ADR 2026-08-04](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md), this
+  bank increment does not itself change the screening floor for any *individual* future
+  `K_intrinsic`-declared seed — it is bookkeeping, not a brake. Source: `st_eh_supertrend_grid.json` banks executed `K=2` spanning **two** families — the split is 1 MNQ + 1 MYM per its `executed_looks`; do **not** add 2 to either. ⚠ **The floor arithmetic below is superseded:** under [ADR 2026-08-04](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md) (`Accepted`) **`K_eff = K_intrinsic`**, so a `K_intrinsic=1` seed screens at **`K_eff` 1 → floor 0.650** (headroom 0.350), not `K_eff=2` → 0.85. The bank is still read and still **must be disclosed**; it no longer gates. **Consequence for the "widest remaining runway" framing: it is void** — every family now screens at the same floor for the same `K_intrinsic`, so MYM has no comparative K advantage over MNQ, M2K, or any other instrument, and "spend it wisely because it is scarce" is no longer the right reason to be careful. Be careful instead because `K_intrinsic` is now the **only** brake on selection inflation. Governing rules: [ADR 2026-07-26 §2-C](../../docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md) (what banks) + [ADR 2026-08-04](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md) (what a bank does).
   - ⚠ **Unreconciled, and as of 2026-08-04 no longer consequential:** this ledger's own DEAD table records `K` = **2** for `S-MYM-ORC-02`, which lives outside `discovery_manifests/`. The codified convention (harvest Req 3) banks from **closed manifests only**, so the bank is 1. The original worry — *"if those trials are ever ruled bankable the family goes to 3 ⇒ `K_eff` 4 ⇒ floor 1.06 > Cap, closing MYM to new seeds"* — is **void** under [ADR 2026-08-04](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md): banks do not enter `K_eff` and cannot close a family. Reconciling the count is now a **bookkeeping** question (the disclosure should be accurate) rather than a live threat to MYM's availability.
 - **S3 — order-symbol occupancy (new standing constraint, 2026-07-29).** Any *second* strategy on this instrument in the **same account** shares the `MYM1!` order symbol with the incumbent leg, and the venue holds **one net position per symbol per account**. A second MYM strategy therefore cannot hold an independent position on any day the incumbent can fire (**Tue, Fri**) — **regardless of contract-cap allocation**. This is orthogonal to, and stricter than, the third-leg spec's cap-based Slot framing. Source: [`SLR-MYM-1 closure`](../../docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md) F1.
+- **[`overnight-range-day-session-transfer` HELD until 2027-03-01](../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md) (2026-08-29).** $0 cheap falsifier AMBIGUOUS (diff +0.0297, CI straddles 0); neither un-pauses nor kills the frozen spec's "S2" role. Re-check on the grown panel or on operator GO for the joint-surrogate design.
+- **[`bar-closing-location-autocorrelation` HELD until 2026-11-08](../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md) (2026-08-29).** SIGNAL-EXCESS (obs −0.0370, CI entirely negative, p=0.005) — the strongest statistical result of the 2026-08-29 batch, but admission-route status under the directional-timing raised bar is unresolved; not GRADUATEd on this session's own authority.
 
 ## RECORD — c1 leg (withdrawn)
 
@@ -115,6 +144,39 @@ structure:
 
 ## SESSION LOG
 
+- **2026-08-29** — **Atheoretical bar-mechanism Notice-phase batch, MYM Phase 2 (mirrors an
+  MNQ Phase-1 batch run separately) — 5 candidates, 5 real Notice-log entries, K=5 registered
+  (`mymdd_1_2026_08_29`, `--lane blind`).** Rule-0 read this ledger + `MECHANISMS.md` +
+  the two governing raised bars in `docs/rejected_candidates.md` first. **Two constraint-audit
+  catches, mid-session, before running anything on the affected candidates:** (a) the "overnight
+  range → RTH range" and "gap magnitude → RTH range" candidates are the frozen magnitude-
+  persistence spec's own PAUSED "S2" role (cross-series, same-session, common-regime-confounded)
+  — reread against `docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md` §4 D5
+  before running, not assumed reusable "verbatim" as originally framed; both instead ran only the
+  spec's own owed $0 cheap falsifier. (b) The bar-volume-regime candidate carries the identical
+  cross-series confound one bar-lag down; scored the same way. **Results:** #1
+  `daily-range-state-persistence` × MYM (session TR, full Globex day) → **SIGNAL-GENERIC**
+  (obs 0.6777, presence real, attribution canon-generic — 3rd instrument scored, 2nd
+  SIGNAL-GENERIC of 3) → **DROPPED**, not pursued as a conditioner (the identical verdict shape
+  already failed cost-effectiveness on the sibling CL instrument, `Q-CONDVAL-1`). #2
+  `overnight-range-day-session-transfer` (NEW id) → $0 falsifier **AMBIGUOUS** (diff +0.0297, CI
+  straddles 0) → **HELD until 2027-03-01**. #3 `intraday-bar-volume-regime` (NEW id) → $0
+  falsifier **clean NO-INCREMENT** (n=139,605 bar-pairs, diff −0.0049, CI entirely <0 but
+  economically negligible) → **DROPPED**. #4 `overnight-gap-magnitude-range-conditioning` (NEW
+  id) → $0 falsifier **clean, decisive NO-INCREMENT** (diff −0.1039, CI [−0.164,−0.040]) →
+  **DROPPED**. #5 `bar-closing-location-autocorrelation` (NEW id) → **SIGNAL-EXCESS** (lag-1
+  CLV serial correlation −0.0370, CI entirely negative, p=0.005, sign-stable across 7 years and
+  both halves — the strongest statistical result of the batch) → **HELD until 2026-11-08**,
+  admission-route status under the single-instrument directional-timing raised bar left
+  unresolved on purpose (flagged, not assumed cleared). 4 `MECHANISMS.md` headings added (one
+  extended). No `core/`, lock, allocation, `dd_protection`, Pine, or rail change. $0 spent /
+  K=5 registered (all disclosure-only screens, no Pre-Q opened). Scripts + JSON results:
+  `lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/`. Notices:
+  [`N-...rangestate-persistence`](../../docs/notes/notice/N-2026-08-29-mym-rangestate-persistence.md) ·
+  [`N-...overnight-rth-range-transfer`](../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md) ·
+  [`N-...bar-volume-regime`](../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md) ·
+  [`N-...gap-magnitude-rth-range`](../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md) ·
+  [`N-...closing-location-autocorrelation`](../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md).
 - **2026-08-25** — **New non-Striker candidate sourced, tuned on TV through v0.1→v0.3, sizing
   lever found — see M8.** Third of the MNQ/MYM/MGC/6J diversification branches, after the
   same-day `ORB-MNQ-1` DD-reduction session. Offline survey NULL (8 families / ~85 cells);

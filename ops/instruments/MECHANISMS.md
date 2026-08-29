@@ -69,10 +69,21 @@ Gating a breakout entry on a prior volatility-compression phase resolving into e
 trailing top quintile predict elevated next-day True Range (vs its own trailing median)?
 Distinct from `compression-gated-breakout` / `htf-compression-breakout-5m` (both entry-role
 compression→expansion triggers on MNQ) — this class makes no entry claim, only a
-range-state-forecasting claim, and is scoped to the non-index triad
+range-state-forecasting claim, and was originally scoped to the non-index triad
 ([Step-0 daily-geometry slate](../../docs/briefs/2026-08-18-step0-daily-geometry-mechanism-slate.md)
-§2 row S1). Grounding: evidence-robustness (volatility clustering — ARCH/GARCH canon), not a
-per-instrument WHO claim.
+§2 row S1) — **widened 2026-08-29** to a single index-futures instrument (MYM), disclosed as a
+scope departure rather than assumed silently; the S1 (same-series, next-session) role this class
+tests is instrument-agnostic, only the original slate's naming was non-index-scoped. Grounding:
+evidence-robustness (volatility clustering — ARCH/GARCH canon), not a per-instrument WHO claim.
+
+**Sibling ids for the frozen spec's OTHER named roles (S2/S3), not folded into this heading:**
+the governing spec (`docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md` §4 D5)
+names three roles under one battery family — S1 (this heading: same-series, next-period,
+independent-series IAAFT-valid), S2 (cross-series, same-period, common-regime-confounded —
+`overnight-range-day-session-transfer` below), S3 (EIA-day concentration, decoupled from IAAFT
+entirely, unscoped here). Kept as separate mechanism ids rather than sub-cells of this one because
+`instrument_profiles.py`'s P1 rule is one verdict per (instrument, mechanism) — S1/S2 can and did
+land different verdicts on the same instrument (MYM) the same session.
 
 **Measurement history:** the class's first battery (block-shuffle placebo) was invalidated
 2026-08-18 — it did not control True-Range autocorrelation
@@ -101,6 +112,113 @@ Both class findings below are OFFICIAL under it (2026-08-18, operator PROCEED).
   `FALSIFIED` 2026-08-18 (committed C−U 0.130 < frozen `L_star` 0.423 at the N-EDGE cell; O2
   discharged). Finding stands. [MCL.md C4/C5/C6](MCL.md) ·
   [`RESULTS_S1B.md`](../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md) §5
+- **Class finding (lighter-weight reuse, M=200 not the frozen M=1,000 — disclosed):** MYM
+  (index-futures, full Globex-day session TR, 2020-07→2026-07) top-quintile TR → elevated
+  next-session TR: **SIGNAL-GENERIC** — presence passes (n_cond=332; CI lb 0.6028; halves
+  0.6928/0.6627, both >0.50); attribution GENERIC (obs 0.6777 at the **22nd percentile** of its
+  own linear-ACF surrogate band — below the band's own median, not a near-miss). Third instrument
+  scored under the class, second SIGNAL-GENERIC of three (GC NULL, CL SIGNAL-GENERIC, MYM
+  SIGNAL-GENERIC) — the modal outcome so far. **Not pursued as a conditioner** — the sibling CL
+  SIGNAL-GENERIC already failed the downstream cost-effectiveness test
+  (`Q-CONDVAL-1`, cited above); ledger cell `AMBIGUOUS-PARKED`, matching CL's own cell state for
+  the identical verdict shape. [MYM.md](MYM.md) ·
+  [`N-2026-08-29-mym-rangestate-persistence.md`](../../docs/notes/notice/N-2026-08-29-mym-rangestate-persistence.md) ·
+  [`c1_results.json`](../../lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c1_results.json)
+
+## overnight-range-day-session-transfer
+
+**NEW 2026-08-29.** The frozen magnitude-persistence spec's own "S2" role
+(`docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md` §4 D5): does the Globex
+**overnight** (pre-RTH) session's realized range predict the **same trading day's** RTH-session
+range? Cross-series (overnight range, RTH range are different series), same-session — the spec
+explicitly marks this role PAUSED pending a joint-surrogate null design (independent-series IAAFT,
+`daily-range-state-persistence`'s legitimate S1 tool, does NOT delete the shared-regime confound
+here) plus an owed $0 stage-1 cheap falsifier and an operator GO. Conditioner-role, not entry-role
+— makes no directional claim.
+
+- **Class finding:** MYM $0 cheap falsifier (spec un-pause precondition 2 — "does overnight-state
+  conditioning beat matched day-session-history conditioning?") returns **AMBIGUOUS, not a clean
+  kill**: overnight-conditioned obs 0.7604 (n=313) vs. day-history-conditioned obs 0.7306 (n=297)
+  on 1,307 matched sessions — diff +0.0297, 95% CI **[−0.0325, +0.0988]** (straddles 0), p≈0.372.
+  Per the spec's own rule only a clean negative kills S2 for $0; this result is neither a pass nor
+  a kill. First instrument scored under this role on any instrument. Full battery NOT run — no
+  full corrected-battery verdict exists yet for this role, on any instrument. [MYM.md](MYM.md) ·
+  [`N-2026-08-29-mym-overnight-rth-range-transfer.md`](../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md)
+
+Rejected nearest classes (one-line):
+- `daily-range-state-persistence` — sibling S1 role, same battery family, same-series
+  next-period (independent-series IAAFT-valid); this id is the cross-series same-period role the
+  spec pauses separately.
+
+## intraday-bar-volume-regime
+
+**NEW 2026-08-29.** Does an M15 bar's volume, above its own time-of-day slot's trailing median
+(20 prior same-slot occurrences — the `tod-baseline-range-trigger` deseasonalization convention,
+reused not invented), predict the *next* bar's range above its own time-of-day-conditioned
+trailing median? Cross-series (volume, range), 1-bar lag — carries the same shared-regime
+confound as `overnight-range-day-session-transfer` (just at bar-scale, not session-scale), scored
+the same way: a $0 increment test against the mundane same-series (range→range) comparator, not a
+full corrected battery. Distinct from `opening-pressure` (opening-window volume × directional
+efficiency, DEAD on MYM) — this is a magnitude-only, any-time-of-session claim. Null-validity
+grounding: mixture-of-distributions literature (Tauchen & Pitts 1983; Bollerslev & Jubinski
+1999), the volume-clustering analogue of the ARCH/GARCH canon `daily-range-state-persistence`
+cites for range — a citation-based grounding, disclosed as lighter-weight than the repo-native
+frozen battery.
+
+- **Class finding:** MYM $0 increment falsifier, n=139,605 bar-pairs (RTH+overnight, M15,
+  2020-07→2026-07): volume-conditioned obs=0.6546 (n_cond=68,509) vs. own-range-conditioned
+  obs=0.6596 (n_cond=68,113) — diff **−0.0049**, 95% CI **[−0.0085, −0.0012]**, p=0.0115. **Clean,
+  well-powered NO-INCREMENT** — statistically resolved (huge n) but economically negligible
+  either way; range's own 1-bar persistence already explains everything volume adds. Both
+  conditioning schemes sit far above the 0.4879 unconditional base rate (range clustering itself
+  is real and strong). First instrument scored under this id. [MYM.md](MYM.md) ·
+  [`N-2026-08-29-mym-bar-volume-regime.md`](../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md)
+
+## overnight-gap-magnitude-range-conditioning
+
+**NEW 2026-08-29.** Does the overnight gap's **magnitude** (today's RTH open − yesterday's RTH
+close, sign discarded) predict the same day's RTH-session range? Cross-series, same-session — the
+same S2-shaped shared-regime confound as `overnight-range-day-session-transfer`, scored
+identically (a $0 increment test vs. the day-session-history comparator, not a full battery).
+Distinct from any fill/fade **direction** claim (e.g. Mesfin 2026, MNQ-only, external
+corroboration that does not exist for MYM on either magnitude or direction).
+
+- **Class finding:** MYM $0 increment falsifier, n_common=1,307 matched sessions: gap-conditioned
+  obs=0.6268 (n_cond=284) vs. day-history-conditioned obs=0.7306 (n_cond=297) — diff **−0.1039**,
+  95% CI **[−0.1636, −0.0404]**, p=0.0015. **Clean NO-INCREMENT, decisively negative** — gap
+  magnitude is actively *worse* than the mundane same-series comparator, not merely
+  uninformative. First instrument scored under this id. [MYM.md](MYM.md) ·
+  [`N-2026-08-29-mym-gap-magnitude-rth-range.md`](../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md)
+
+## bar-closing-location-autocorrelation
+
+**NEW 2026-08-29.** Is a bar's closing-location-value (CLV = (close−low)/(high−low), where
+within its own H–L range the bar closed) serially correlated bar-to-bar, unconditional on level,
+session anchor, or volatility regime? Same-series, next-bar (CLV_t → CLV_t+1) — the
+independent-series IAAFT battery is the right tool here (unlike the three cross-series ids
+above), reused directly from `daily-range-state-persistence`'s S1 machinery at bar rather than
+session granularity. Distinct from every level/breakout/continuation construct in any
+instrument's DEAD table (those are directional-entry constructs keyed to a reference level or
+window; this is an unconditional shape-persistence statistic, no level or window involved).
+**Admission-route status under the 2026-07-21 single-instrument index-futures directional-timing
+raised bar (`docs/rejected_candidates.md`) is UNRESOLVED** — a positive finding here carries an
+inherent directional-momentum flavor (bars that close strong tend to be followed by bars that
+close strong) close to `intraday-momentum`, and whether pursuing it as an entry-role candidate
+would need to clear Route 1/2/3 of that bar is an open governance question this class does not
+resolve on its own.
+
+- **Class finding:** MYM (all M15 bars, RTH+overnight, 2020-07→2026-07, n_pairs=141,119):
+  lag-1 Spearman rho(CLV_t, CLV_t+1) = **−0.0370**, 95% CI **[−0.0422, −0.0319]** (excludes
+  0, negative — anti-persistence/mean-reversion, not momentum), both halves and all 7
+  years same-signed (magnitude shrinking over the panel, −0.073 in 2020 → −0.02/−0.03 by
+  2024–2026). Attribution **EXCESS**: obs sits at the 0th percentile of its own
+  zero-mechanism (linear-ACF-preserving) IAAFT surrogate band, p_two_sided=0.0050 —
+  **SIGNAL-EXCESS**, the strongest result of the batch this class-family produced this
+  session. **Not graduated** — admission-route status under the single-instrument
+  directional-timing raised bar is unresolved (a negative/mean-reverting shape claim
+  reads closer to `mean-reversion-fade` than to a neutral conditioner); ledger cell
+  `CONTINGENT-FORWARD`, HELD pending a scope ruling. [MYM.md](MYM.md) ·
+  [`N-2026-08-29-mym-closing-location-autocorrelation.md`](../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md)
 
 ## htf-compression-breakout-5m
 

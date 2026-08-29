@@ -10,9 +10,10 @@
 | Mechanism | 6J | BTCUSD | ES | EURGBP | EURUSD | GER40 | M2K | M6A | M6B | MCL | MES | MGC | MJY | MNQ | MYM | NAS100 | NG | NQ | SPX500 | USDCAD | USOIL | XAGUSD | XAUUSD | YM | ZB | ZF | ZN |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | band-pierce-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | F | . | . | . | . | . | . | . |
+| bar-closing-location-autocorrelation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | F | . | . | . | . | . | . | . | . | . | . | . | . |
 | commodity-carry-term-structure | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . |
 | compression-gated-breakout | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . |
-| daily-range-state-persistence | . | . | . | . | . | . | . | . | . | A | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| daily-range-state-persistence | . | . | . | . | . | . | . | . | . | A | . | D | . | . | A | . | . | . | . | . | . | . | . | . | . | . | . |
 | day-of-week-selection-gate | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . |
 | event-window-reversal | . | . | . | . | D | . | . | . | . | . | . | D | . | . | D | . | D | . | . | . | . | . | . | . | . | . | D |
 | expiry-oi-strike-convergence | . | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
@@ -20,6 +21,7 @@
 | ict-liquidity | . | . | . | . | . | . | . | . | . | . | . | . | . | D | D | . | . | . | D | . | . | . | . | . | . | . | . |
 | impulse-pullback-vwap-reclaim | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | index-dispersion | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . |
+| intraday-bar-volume-regime | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . |
 | intraday-momentum | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | D | . | . | . | . | . | . | . | . | . |
 | london-range-failed-extension-fade | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | mean-reversion-fade | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | D | D | . | . | . | . | . | . |
@@ -28,6 +30,8 @@
 | opening-range-breakout | . | . | . | . | . | A | . | . | . | . | . | . | . | A | . | A | . | A | D | D | . | . | . | . | D | D | . |
 | opening-range-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . |
 | order-flow-depth-imbalance | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| overnight-gap-magnitude-range-conditioning | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . |
+| overnight-range-day-session-transfer | . | . | . | . | . | . | . | . | . | . | . | . | . | . | F | . | . | . | . | . | . | . | . | . | . | . | . |
 | overnight-range-failed-extension-fade | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | pdh-pdl-breakout-rth | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | pdh-pdl-failed-break-reclaim | . | . | . | . | . | . | D | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . |
@@ -52,6 +56,17 @@ Entering in the direction of a statistical band pierce (e.g. an NY-morning σ-th
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
 | USDCAD | CONTINGENT-FORWARD | 2026-06-16 | ../../docs/ltm/briefs/pre-registration/FWD-PREREG-BPC-USDCAD-TUE-2026-06-11.md |
+
+
+## bar-closing-location-autocorrelation
+
+**NEW 2026-08-29.** Is a bar's closing-location-value (CLV = (close−low)/(high−low), where
+
+- **Class finding:** MYM (all M15 bars, RTH+overnight, 2020-07→2026-07, n_pairs=141,119):
+
+| Instrument | Verdict | Date | Source |
+|---|---|---|---|
+| MYM | CONTINGENT-FORWARD | 2026-11-08 | ../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md |
 
 
 ## commodity-carry-term-structure
@@ -86,6 +101,7 @@ Gating a breakout entry on a prior volatility-compression phase resolving into e
 |---|---|---|---|
 | MCL | AMBIGUOUS-PARKED | 2026-08-18 | ../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md |
 | MGC | DEAD | 2026-08-18 | ../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md |
+| MYM | AMBIGUOUS-PARKED | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mym-rangestate-persistence.md |
 
 
 ## day-of-week-selection-gate
@@ -169,6 +185,17 @@ Trading the spread between index-level and single-name volatility or correlation
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
 | SPX500 | DEAD | 2026-06-30 | #D4 |
+
+
+## intraday-bar-volume-regime
+
+**NEW 2026-08-29.** Does an M15 bar's volume, above its own time-of-day slot's trailing median
+
+- **Class finding:** MYM $0 increment falsifier, n=139,605 bar-pairs (RTH+overnight, M15,
+
+| Instrument | Verdict | Date | Source |
+|---|---|---|---|
+| MYM | DEAD | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md |
 
 
 ## intraday-momentum
@@ -271,6 +298,28 @@ Entering in the direction of an opening-range break and holding the position for
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
 | MNQ | DEAD | 2026-08-05 | ../../lab/archive/mnq_orderflow_probe_2026-08-04/RESULTS.md |
+
+
+## overnight-gap-magnitude-range-conditioning
+
+**NEW 2026-08-29.** Does the overnight gap's **magnitude** (today's RTH open − yesterday's RTH
+
+- **Class finding:** MYM $0 increment falsifier, n_common=1,307 matched sessions: gap-conditioned
+
+| Instrument | Verdict | Date | Source |
+|---|---|---|---|
+| MYM | DEAD | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md |
+
+
+## overnight-range-day-session-transfer
+
+**NEW 2026-08-29.** The frozen magnitude-persistence spec's own "S2" role
+
+- **Class finding:** MYM $0 cheap falsifier (spec un-pause precondition 2 — "does overnight-state
+
+| Instrument | Verdict | Date | Source |
+|---|---|---|---|
+| MYM | CONTINGENT-FORWARD | 2027-03-01 | ../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md |
 
 
 ## overnight-range-failed-extension-fade

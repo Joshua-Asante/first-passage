@@ -131,6 +131,16 @@
       }
     },
     "MYM": {
+      "bar-closing-location-autocorrelation": {
+        "date": "2026-11-08",
+        "source": "../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md",
+        "verdict": "CONTINGENT-FORWARD"
+      },
+      "daily-range-state-persistence": {
+        "date": "2026-08-29",
+        "source": "../../docs/notes/notice/N-2026-08-29-mym-rangestate-persistence.md",
+        "verdict": "AMBIGUOUS-PARKED"
+      },
       "event-window-reversal": {
         "date": "2026-07-21",
         "source": "../../docs/briefs/closures/MYM-3FPS-1-closure-falsified.md",
@@ -139,6 +149,11 @@
       "ict-liquidity": {
         "date": "2026-07-29",
         "source": "../../docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md",
+        "verdict": "DEAD"
+      },
+      "intraday-bar-volume-regime": {
+        "date": "2026-08-29",
+        "source": "../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md",
         "verdict": "DEAD"
       },
       "opening-pressure": {
@@ -150,6 +165,16 @@
         "date": "2026-07-16",
         "source": "../../docs/briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md",
         "verdict": "DEAD"
+      },
+      "overnight-gap-magnitude-range-conditioning": {
+        "date": "2026-08-29",
+        "source": "../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md",
+        "verdict": "DEAD"
+      },
+      "overnight-range-day-session-transfer": {
+        "date": "2027-03-01",
+        "source": "../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md",
+        "verdict": "CONTINGENT-FORWARD"
       },
       "pdh-pdl-failed-break-reclaim": {
         "date": "2026-08-13",
@@ -1000,6 +1025,12 @@
         "Raw band pierces carry no directional edge \u2014 post-pierce excursions are symmetric at 1.9\u03c3 lower-band NY-morning pierces on USDCAD; only the impulse-confirmed cohort (~27%) follows through, which is what BPC-001 conditions on. [USDCAD.md](USDCAD.md)"
       ]
     },
+    "bar-closing-location-autocorrelation": {
+      "definition": "**NEW 2026-08-29.** Is a bar's closing-location-value (CLV = (close\u2212low)/(high\u2212low), where",
+      "findings": [
+        "MYM (all M15 bars, RTH+overnight, 2020-07\u21922026-07, n_pairs=141,119):"
+      ]
+    },
     "commodity-carry-term-structure": {
       "definition": "A directional bet keyed to commodity futures curve state (contango / backwardation) or roll-yield / carry rather than to spot price action.",
       "findings": [
@@ -1061,6 +1092,12 @@
         "Index dispersion / correlation-risk-premium as a 5th book leg was killed pre-build at the venue falsifier \u2014 futures-prop firms are options-free and Cboe DSPX has no listed tradable derivative. [SPX500.md D4](SPX500.md)"
       ]
     },
+    "intraday-bar-volume-regime": {
+      "definition": "**NEW 2026-08-29.** Does an M15 bar's volume, above its own time-of-day slot's trailing median",
+      "findings": [
+        "MYM $0 increment falsifier, n=139,605 bar-pairs (RTH+overnight, M15,"
+      ]
+    },
     "intraday-momentum": {
       "definition": "A next-bar or intraday continuation signal keyed to the prior bar's or prior session's directional momentum (Baltussen-class).",
       "findings": [
@@ -1107,6 +1144,18 @@
       "definition": "**NEW 2026-08-05.** Resting displayed size, aggregated across book levels, used as a directional",
       "findings": [
         "10-level size imbalance carries **no** directional information at the"
+      ]
+    },
+    "overnight-gap-magnitude-range-conditioning": {
+      "definition": "**NEW 2026-08-29.** Does the overnight gap's **magnitude** (today's RTH open \u2212 yesterday's RTH",
+      "findings": [
+        "MYM $0 increment falsifier, n_common=1,307 matched sessions: gap-conditioned"
+      ]
+    },
+    "overnight-range-day-session-transfer": {
+      "definition": "**NEW 2026-08-29.** The frozen magnitude-persistence spec's own \"S2\" role",
+      "findings": [
+        "MYM $0 cheap falsifier (spec un-pause precondition 2 \u2014 \"does overnight-state"
       ]
     },
     "overnight-range-failed-extension-fade": {
