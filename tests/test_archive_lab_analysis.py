@@ -1227,6 +1227,52 @@ def test_catalog_only_tolerates_120_char_truncation(tmp_path: Path):
     assert rc == 0
 
 
+def test_catalog_only_tolerates_hand_authored_summary_vs_truncation(tmp_path: Path):
+    """A concise catalog summary must win over parse_disposition's 120-cap.
+
+    Scan still emits the truncated Status fragment; disk keeps a complete
+    hand-authored one-liner that is *not* a prefix-extension of that fragment.
+    Must not hard-fail — same class as keeping the untruncated Status prose.
+    """
+    study = tmp_path / "lab" / "analysis" / "long_line"
+    study.mkdir(parents=True)
+    full = (
+        "W1 pattern extended to all 7 Bulenox/BluSky trailing tiers "
+        "with a long residual clause that exceeds the one-liner cap "
+        "and then some extra measured residual so the 120-char cut fires"
+    )
+    summary = "W1 extends to all 7 trailing tiers; residual stays unpublished"
+    assert len(full) > 120
+    assert not summary.endswith("...")
+    assert not full.startswith(summary)
+    (study / "RESULTS.md").write_text(
+        f"**Theme:** c1\n**Status:** ACTIVE — {full}\n",
+        encoding="utf-8",
+    )
+    scanned = ala.scan_lab(tmp_path)
+    assert scanned[0].one_liner.endswith("...")
+    assert len(scanned[0].one_liner) == 120
+    assert ala._scan_one_liner_is_truncation(scanned[0].one_liner, summary)
+
+    committed = [
+        ala.CatalogRow(
+            slug=r.slug,
+            theme=r.theme,
+            status=r.status,
+            one_liner=summary,
+            card=r.card,
+            body=r.body,
+            heavy=r.heavy,
+            closed=r.closed,
+        )
+        for r in scanned
+    ]
+    ala.write_catalog(tmp_path, ala.render_catalog(committed))
+    assert ala.check_lab(tmp_path, catalog_only=True) == []
+    rc = ala.main(["--root", str(tmp_path), "--check", "--catalog-only"])
+    assert rc == 0
+
+
 def test_catalog_only_still_fails_on_nonempty_one_liner_drift(tmp_path: Path):
     """Soft-degrade must not mask real one-liner drift when both sides are prose."""
     study = tmp_path / "lab" / "analysis" / "live_study"

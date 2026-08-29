@@ -1093,22 +1093,32 @@ def _is_empty_one_liner(one_liner: str) -> bool:
 
 
 def _scan_one_liner_is_truncation(scan: str, disk: str) -> bool:
-    """True when ``scan`` is parse_disposition's 120-char truncation of ``disk``.
+    """True when ``scan`` is a mechanical truncation, so ``disk`` may keep
+    untruncated Status prose *or* a complete hand-authored summary.
 
-    ``parse_disposition`` caps one-liners at 120 (``text[:117] + '...'``). Hand-
-    authored CATALOG cells often keep the untruncated prose. Treating that as
-    stale would hard-fail every long ACTIVE Status line; treating it as the
-    same class as an empty scan lets ``--check --catalog-only`` stay green
-    without ``--regenerate-catalog`` clobbering the committed cell.
+    ``parse_disposition`` caps one-liners at 120 (``text[:117] + '...'``).
+    Stub CARD dispositions use ``_truncate_one_liner`` (default 80). Either
+    cap is a fallback: treating a complete committed cell as stale would
+    hard-fail every long Status line and fight hand-authored catalog
+    summaries. ``--check --catalog-only`` stays green without
+    ``--regenerate-catalog`` clobbering the committed cell.
+
+    The 117-char cap itself is left in place. Raising it would make more
+    Status lines fit entirely, after which a concise rewrite would look like
+    ordinary one-liner drift and get fought. Complete authored cells that
+    themselves still end in ``...`` are *not* tolerated — those are a second
+    dangling cut, not a summary.
     """
     if not scan or not disk:
         return False
-    return (
-        len(scan) == 120
-        and scan.endswith("...")
-        and len(disk) > 117
-        and disk.startswith(scan[:117])
-    )
+    if not scan.endswith("..."):
+        return False
+    # Untruncated Status prose (disk is a prefix-extension of the scan).
+    prefix = scan[:-3]
+    if prefix and len(disk) > len(prefix) and disk.startswith(prefix):
+        return True
+    # Complete hand-authored summary (not itself a dangling truncation).
+    return not disk.rstrip().endswith("...") and not _is_empty_one_liner(disk)
 
 
 def _inventory_class(status: str) -> str:
@@ -1262,8 +1272,10 @@ def _compare_catalog(on_disk: str, expected: str) -> tuple[list[str], list[str]]
     ``choose_source_card`` found no RESULTS*/README/verdict/CLOSURE (committed
     hand-authored prose retained). Those rows warn, mirroring the sibling
     ``check_pine_manifest`` / ``check_data_manifests`` public-clone soft-degrade.
-    A scan one-liner that is ``parse_disposition``'s 120-char truncation of the
-    committed cell is also tolerated (silent — the cap is mechanical).
+    A scan one-liner that is a mechanical truncation (``parse_disposition``'s
+    120-char cap, or a stub ``_truncate_one_liner`` cut) of the committed cell
+    — or that the committed cell replaced with a complete hand-authored
+    summary — is also tolerated (silent — the cap is mechanical).
     Hand parenthetical Status annotations that normalize to the scanned token are
     also tolerated (M11/M45). Any other drift (new/removed/renamed slug,
     phantom Active beside Archived, same-section duplicate slug, status/body/
@@ -1323,8 +1335,8 @@ def _compare_catalog(on_disk: str, expected: str) -> tuple[list[str], list[str]]
                         f'(committed prose retained; scan saw empty)'
                     )
                     continue
-                # parse_disposition caps at 120 chars; committed CATALOG may
-                # keep the untruncated Status prose. Mechanical, not drift.
+                # Mechanical cap: committed CATALOG may keep the untruncated
+                # Status prose or a complete hand-authored summary.
                 if _scan_one_liner_is_truncation(exp_cells[i], disk_cells[i]):
                     continue
                 return ([_CATALOG_STALE], warnings)
