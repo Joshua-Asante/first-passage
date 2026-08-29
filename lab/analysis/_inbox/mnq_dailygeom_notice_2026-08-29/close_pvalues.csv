@@ -1,0 +1,5 @@
+daily-range-state-persistence,1.0
+overnight-range-to-rth-transfer,0.00025
+bar-volume-regime-conditioning,0.0005
+gap-magnitude-to-rth-range,0.00225
+closing-location-autocorrelation,0.0005
