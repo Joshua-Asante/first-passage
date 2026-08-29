@@ -82,6 +82,10 @@ Gating a breakout entry on a prior volatility-compression phase resolving into e
 
 **NEW 2026-08-18.** Conditioner-role, not entry-role: does a day's True Range being in the trailing top quintile predict elevated next-day True Range (vs its own trailing median)? Distinct from `compression-gated-breakout` / `htf-compression-breakout-5m` (both entry-role compression→expansion triggers on MNQ) — this class makes no entry claim, only a range-state-forecasting claim, and is scoped to the non-index triad ([Step-0 daily-geometry slate](../../docs/briefs/2026-08-18-step0-daily-geometry-mechanism-slate.md) §2 row S1). Grounding: evidence-robustness (volatility clustering — ARCH/GARCH canon), not a per-instrument WHO claim.
 
+- **Class finding:** (corrected battery, OFFICIAL): GC (parent, train era 2010–2019)
+
+- **Class finding:** (corrected battery, OFFICIAL): CL (parent, train era 2010–2019)
+
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
 | MCL | AMBIGUOUS-PARKED | 2026-08-18 | ../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md |
@@ -141,6 +145,8 @@ _No instrument has a recorded verdict on this mechanism._
 ICT-style liquidity-sweep / fair-value-gap geometry (sweep → FVG → opposing-pool draw) used as an entry signal.
 
 - **Class finding:** Sweep→same-direction-FVG→opposing-pool-draw direction is real on SPX500 (block-permutation p=0.0144) but fails robustness (drop-top-3 = −0.152R, 95% block-CI straddles 0). [SPX500.md D2](SPX500.md)
+
+- **Class finding:** — CORRECTED 2026-08-04; supersedes the former "the 1M 0%-fill wall is feed-general" clause, which is REFUTED. The archived closure attributed US500's **0 fills in 247 attempts** to an instrument-general *price law* — "displacement FVGs continue rather than retrace within 6 bars" — and predicted recurrence on "NAS100 or any fast 1m index". **That law is false on native micro data.** MNQ retraces to FVG mid within the frozen `retraceK=6` **59.06%** of the time (n=128,089; 58–60% in *every* year 2019–2026, including the 2020 crash and 2022 bear), and ES **59.88%** (n=124,748). Every escape route is refuted at 45×+ the ≤1.2% rate that 0-of-247 requires: raid-conditioning leaves it at **59.01%**, the arm-delay curve is nearly flat (**55.91%** even armed 8 bars late — mid-touches recur, they are not one-shot), and ES retraced **62.33%** in the *exact* 2026-06-24→26 window that produced the 0/247. **0/247 was platform-side by elimination** — the deployed (now lost) script, TV's strategy-tester fill handling, or the retired Pepperstone US500 CFD feed; not further separable, and recorded as a residual, never as "bug X". **Consequence for this class:** do **not** cite "1m FVGs don't retrace" against an execution layer on any instrument; **do** require any such design to demonstrate fills on native data rather than trusting TV-tester fill behavior. [MNQ.md W3](MNQ.md) · [`RESULTS_1M_DIAG.md`](../../lab/analysis/_inbox/ict_mnq_2026-08/RESULTS_1M_DIAG.md)
 
 - **Class finding:** **Liquidity pools are anti-attractors**, replicated on three independent instruments — old highs/lows are swept far *less* often than a radius-matched MC null, on every side measured (US500 0.55/0.34 vs base 0.76/0.61; NQ 0.5401/0.3128 vs 0.7756/0.6014; MNQ 0.5303/0.3397 vs 0.8020/0.6502). Any construct keying on "price is drawn to old highs/lows" argues against three panels. The companion **bear-FVG draw** is the real positive of this class (NQ 0.8630 vs base 0.7494, RESOLVED). [MNQ.md N9](MNQ.md) · [`RESULTS.md`](../../lab/analysis/_inbox/ict_mnq_2026-08/RESULTS.md) §3
 
@@ -267,6 +273,8 @@ Entering in the direction of an opening-range break and holding the position for
 **NEW 2026-08-05.** Resting displayed size, aggregated across book levels, used as a directional predictor of near-term price. The first mechanism class in this estate sourced from **order-flow (MBP-10) data rather than OHLCV** — the "different modality" limb of the 2026-07-21 index-futures-intraday domain bar (route 2).
 
 - **Class finding:** 10-level size imbalance carries **no** directional information at the
+
+- **Class finding:** — the depth census is the reusable constraint. NQ front-month displays a
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
