@@ -165,9 +165,13 @@ grep -rn "AUDIT-YYYY-MM-DD-slug" references/*lessons.md
 ## Verification
 
 ```bash
-# Discipline checks (mechanical)
+# Canonical skill-side checker (ADR 2026-08-09) — validates audit's real §0-§11 contract
+$ python ~/.claude/skills/brief-authoring/scripts/check_brief.py <this-file>.md --type audit
+# Expected: RESULT: well-formed
+
+# Repo-side (mechanical subset — audit is a declined type here, expected not a gap)
 $ python scripts/check_brief.py <this-file>.md --type audit
-# Expected: RESULT: NOT CHECKED (audit is an unmodeled contract type)
+# Expected: RESULT: NOT CHECKED — see the skill-side result above for the gate that counts
 
 # Confirm §5 structural repair list is actually executed
 $ <grep / git log commands confirming each structural-repair line shipped>

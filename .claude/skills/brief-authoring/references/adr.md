@@ -37,8 +37,13 @@ Ambiguous tier → FULL. Escalation = supersede with a full ADR
 
 If light: fill the header fields, add `**Tier:** light`, write the five-line
 body above, stop — do not fill §0–§7. Repo `scripts/check_brief.py` will
-print `NOT CHECKED` on a light record; that is the ratified shape, not a
-skip of the Reads line. Header fields still go through `check_adr_graph.py`.
+print `NOT CHECKED` on a light record — expected, not a gap, not a skip of
+the Reads line: it's the narrower mechanical subset declining a contract it
+doesn't model. Run the canonical skill-side checker
+(`~/.claude/skills/brief-authoring/scripts/check_brief.py`) for the real
+Decision/Grounds/Reads/Gate/Boundary validation
+([ADR 2026-08-09](../../../../docs/adr/2026-08-09-check-brief-canon-ruling.md)).
+Header fields still go through `check_adr_graph.py`.
 
 ---
 
@@ -355,7 +360,14 @@ diff <(grep -rl "<superseded value>" docs/) /dev/null
 ```bash
 # Discipline checks (mechanical) — inquire / full ADR
 $ python scripts/check_brief.py <this-file>.md --type adr
-# Expected: RESULT: well-formed  (applicable mechanical checks). Light records print NOT CHECKED.
+# Expected: RESULT: well-formed  (applicable mechanical checks). Repo-side
+# prints NOT CHECKED on a light record — expected, not a gap; run the
+# canonical skill-side checker below for light records instead.
+
+# Light records only — canonical skill-side checker (ADR 2026-08-09)
+$ python ~/.claude/skills/brief-authoring/scripts/check_brief.py <this-file>.md --type adr
+# Expected: RESULT: well-formed (Decision/Grounds/Reads/Gate/Boundary contract
+# applied; light-tier auto-detected from **Tier:** light)
 
 # ADR lifecycle graph — header fields, edges, cold-store shape, INDEX sync
 $ python scripts/check_adr_graph.py

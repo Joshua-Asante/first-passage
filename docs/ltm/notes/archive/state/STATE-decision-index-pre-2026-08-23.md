@@ -2,6 +2,12 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Second roll, 2026-08-27** (one entry, pushed off by the SSOT/data-lineage remediation ratification):
+
+- **2026-08-23** — Blind channel: scoped decline of the reopened 6A/M6A and GC/MGC entry-geometry / dense-1m cell; last pre-G0 slot unspent; count unchanged. Queue row 3 deleted (succession: no auto-replace). [`channel ADR addendum`](../../../../../docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md#addendum-2026-08-23--scoped-decline-of-the-reopened-6am6a-and-gcmgc-entry-geometry--dense-1m-cell)
+
+**First roll, 2026-08-23:**
+
 - **2026-08-23** — Operator-queue bind: Open/next is queue-led; row 3 = blind channel (name or decline next 6A/M6A or GC/MGC construct). [`Survive-bound addendum`](../../../../../docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-23--out-of-order-serving-is-the-live-defect) [`W5 addendum`](../../../../../docs/adr/2026-08-07-w5-governance-diet.md#addendum-2026-08-23--opennext-lead-is-the-state-queue)
 - **2026-08-23** — `Q-MONSURF-1` closed `RESOLVED` — monitoring obligations corrected from one stranded "first live fill" class to three true gate depths; M-B (idle-clock monitor) acceptance battery passes 0 missed / 0 spurious across all 312 real historical weeks, mutation-verified, registration-ready (gated on F3 only). Board triage rewritten. [`closure`](../../../../../docs/briefs/closures/Q-MONSURF-1-closure-resolved.md)
 - **2026-08-23** — `Q-TRADECAP-1` closed `RESOLVED` — no per-trade dollar-loss bound exists anywhere in the live sizing/arming path (sizing law, M1 arming interlock, EM2, disaster-stop all checked, all confirmed absent) on Tradeify's intraday-enforced geometry. Successor decision packet queued (row 2). [`closure`](../../../../../docs/briefs/closures/Q-TRADECAP-1-closure-resolved.md)
