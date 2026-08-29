@@ -152,6 +152,35 @@ id — see that notice for the full comparison and reasoning.
 
 ---
 
+## Addendum — null-calibrated p vs. bootstrap CI (2026-08-29, append-only, does not change §1–§5)
+
+The original §1 / §4 AMBIGUOUS + HOLD-until-2027-03-01 routing used
+`block_bootstrap_min_lift`'s percentile CI (still **[−0.0419, +0.1477]**,
+p(lift≤0)=0.1247). That statistic resamples the observed series and is **not**
+a Type-I test under a true zero-association null — the same defect Codex
+flagged on PR #205 and that PR #207 retrofits into this script.
+
+Recomputed against the sibling joint-gate cached frame
+(`c24_joint_frame.csv`, n=1304 vs this notice's original n=1307; 3-day
+difference disclosed): circular-shift null p on the **minimum** stratified
+lift is **0.0117** (observed min-lift +0.0637). Per-stratum: bprime=0
+p=0.00025; bprime=1 p=0.1467.
+
+**This addendum does not change the HOLD.** Two different decision rules now
+disagree:
+
+- **CI rule (original, still the §4 owner):** lower bound < 0 → AMBIGUOUS / HOLD until 2027-03-01.
+- **Null-p rule (0.05 bar, the test `block_bootstrap_min_lift` is not):** p=0.0117 → would read INCREMENT.
+
+Whether the cell flips is an **operator ruling**, not a silent correction.
+Vendor bars were absent this session, so the null p is on the 1304-day
+joint-gate cache, not a byte-identical rerun of the original 1307-day
+scored set. Script + JSON: PR #207
+(`lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c2_c4_stratified_rerun.py`
+/ `c2_c4_stratified_results.json` key `candidate4_gap_magnitude_STRATIFIED`).
+
+---
+
 ## Verification
 
 ```bash
