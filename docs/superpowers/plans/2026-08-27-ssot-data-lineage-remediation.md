@@ -502,7 +502,7 @@ rewrite and not a bars parser.
 
 ## Self-Review
 
-**Spec coverage:** every SSOT/lineage gap this session verified as currently open (skill-deploy drift, D4 enforcement, Q-M1WIRE-1 wiring, falsifier-reachability cadence) has a Phase 1 task. The two gaps carried over from the earlier report but not re-verified this session (instrument-profile/cost-model completeness, the running-count-line pattern's full extent) are explicitly scoped as "confirm before detailing" phases rather than given fabricated bite-sized steps — this is intentional, not a gap in this plan.
+**Spec coverage:** every SSOT/lineage gap this session verified as currently open (skill-deploy drift, D4 enforcement, Q-M1WIRE-1 wiring, falsifier-reachability cadence) has a Phase 1 task. The two gaps that were "confirm before detailing" at authoring (running-count pattern; instrument-profile/cost-model completeness) now have scoped 2026-08-29 plan files (Phases 2 and 3). Phase 4 remains the unpaid confirm-before-detailing follow-on.
 
 **Placeholder scan:** Phases 2 and 3 now have their own plan files (2026-08-29). Phase 4 still deliberately does not contain complete code — it names exactly what to read first. That remains a Rule-0 gate, not a vague hand-wave.
 

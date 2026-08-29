@@ -111,7 +111,7 @@ of `docs/adr/INDEX.md` or `lab/CATALOG.md`. Retention test on any new artifact.
 - [x] **Step 1:** Write this file with recon (a)(b)(c) pasted from live reads.
 - [x] **Step 2:** Replace the parent plan's "scoped, not yet detailed" Phase 3
   stub with a pointer at this file. Do not delete the Phase 4 stub.
-- [ ] **Step 3:** Commit.
+- [x] **Step 3:** Commit.
 
 ```bash
 git add docs/superpowers/plans/2026-08-29-ssot-phase-3-cost-model-closed-world.md \
@@ -127,15 +127,15 @@ git commit -m "docs(plan): scope SSOT Phase 3 cost-model closed-world check"
 - Modify: `docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md`
 - Modify: `STATE.md` (decision-index one-liner + keep-15 roll only)
 
-- [ ] **Step 1:** Addendum authorizing the partition check. Record recon
+- [x] **Step 1:** Addendum authorizing the partition check. Record recon
   (a)(b)(c). Void the bars checker. Forbid ledger join, `firm_rules` dollars,
   and harvest gate-2 rewrite. §10 hook:
   `python scripts/check_cost_model_closed_world.py`.
-- [ ] **Step 2:** Decision-index line; keep-15 roll if needed. Do **not** add
+- [x] **Step 2:** Decision-index line; keep-15 roll if needed. Do **not** add
   an operator-queue row.
-- [ ] **Step 3:** `python scripts/check_brief.py docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md --type adr`
+- [x] **Step 3:** `python scripts/check_brief.py docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md --type adr`
   and `python scripts/check_adr_graph.py`. Do not hand-edit INDEX.
-- [ ] **Step 4:** Commit.
+- [x] **Step 4:** Commit.
 
 ---
 
@@ -147,37 +147,37 @@ git commit -m "docs(plan): scope SSOT Phase 3 cost-model closed-world check"
 - Create: `scripts/check_cost_model_closed_world.py`
 - Modify: `scripts/check_boundaries.py` + `scripts/repo_map_layers.yml` (lab classification)
 
-- [ ] **Step 1: Failing tests first**
+- [x] **Step 1: Failing tests first**
   - live partition after classification → clean
   - mutation: SPECS key in neither set → finding
   - mutation: INDEX_MICRO key missing from SPECS → finding
   - mutation: INDEX_MICRO ∩ NO_COMMISSION nonempty → finding
-- [ ] **Step 2:** Classify undeclared SPECS keys; implement
+- [x] **Step 2:** Classify undeclared SPECS keys; implement
   `closed_world_findings()` + thin CLI. Confirm tests green.
-- [ ] **Step 3:** Live run **before** `gates.yml` bind:
+- [x] **Step 3:** Live run **before** `gates.yml` bind:
 
 ```bash
 python scripts/check_cost_model_closed_world.py
 # Expected: exit 0
 ```
 
-- [ ] **Step 4:** Commit.
+- [x] **Step 4:** Commit.
 
 ---
 
 ## Task 4: gates.yml bind + hygiene
 
-- [ ] **Step 1:** Path-conditional `gates.yml` entry on
+- [x] **Step 1:** Path-conditional `gates.yml` entry on
   `lab/discovery/cost_model.py`. Update `tests/test_gate_manifest.py`
   (`EXPECTED_PATH_CONDITIONAL` + `REACHABILITY_PROBES`).
-- [ ] **Step 2:** `python -m pytest tests/test_cost_model.py tests/test_gate_manifest.py -q`
-- [ ] **Step 3:** Blast-radius on “Phase 3 … not yet detailed” / “does not
+- [x] **Step 2:** `python -m pytest tests/test_cost_model.py tests/test_gate_manifest.py -q`
+- [x] **Step 3:** Blast-radius on “Phase 3 … not yet detailed” / “does not
   authorize Phase 3” tokens. Leave historical SESSIONS / Phase 2 addendum
   “Does not authorize Phase 3” (Trap #12; new addendum is the GO).
-- [ ] **Step 4:** `python scripts/roll_sessions.py --next-label 2026-08-29`
+- [x] **Step 4:** `python scripts/roll_sessions.py --next-label 2026-08-29`
   then append a wrap-up citing remaining live queue rows (#1 · #2) plus
   `queue-exception`.
-- [ ] **Step 5:** Commit.
+- [x] **Step 5:** Commit.
 
 ---
 
