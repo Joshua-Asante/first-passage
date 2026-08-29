@@ -88,7 +88,7 @@ Both are symptom-shaped (what is true about the data), not solution-shaped (what
 **Accept H-RANGEXFER-1 if:** all presence limbs pass AND the joint-surrogation attribution limb clears at p_upper ≤ 0.05.
 **Ambiguous-hold if:** presence limbs pass but the by-year floor is structurally unresolvable (N_valid < 7 given panel length) — the same AMBIGUOUS shape candidate 1 hit, re-test window tied to a longer panel becoming available, not a calendar date.
 
-**H-RANGEXFER-1.a:** If, restricted to the overnight-calm stratum, gap magnitude's incremental lift over day-history (already measured: +10.5pp, block-bootstrap p=0.0078, n=175/973 within that stratum) survives the same joint-surrogation discipline applied to the (gap, RTH-range) pair, then gap magnitude is a certified conditioner *in that stratum only*; otherwise it is a stratum-specific artifact.
+**H-RANGEXFER-1.a:** If, restricted to the overnight-calm stratum, gap magnitude's incremental lift over day-history (already measured: +10.5pp, block-bootstrap p=0.0078 / null-calibrated p=0.00871, n=175/973 within that stratum) survives the same joint-surrogation discipline applied to the (gap, RTH-range) pair, then gap magnitude is a certified conditioner *in that stratum only*; otherwise it is a stratum-specific artifact.
 
 **Reject H-RANGEXFER-1.a if:** the same limb structure fails, OR the overnight-elevated-stratum's negative point estimate (−8.1pp, not significant) is found to generalize under the joint-surrogation null (which would mean gap actively hurts when overnight is hot, a materially different and more actionable finding than "adds nothing").
 **Accept H-RANGEXFER-1.a if:** presence limbs pass in the overnight-calm stratum AND attribution clears at p_upper ≤ 0.05, restricted to that stratum.
@@ -100,7 +100,7 @@ Both are symptom-shaped (what is true about the data), not solution-shaped (what
 
 - **Treating the stage-1 $0 falsifier's result (p<0.00025) as sufficient to call H-RANGEXFER-1 RESOLVED without running the stage-2 joint-surrogation null.** Ruled out because the stage-1 test controls for *yesterday's* regime bleeding into today (day-history) — a genuinely different confound than *today's* own shared overnight/RTH regime, which is exactly what independent-vs-joint surrogation differs on (D5 O1). Stage-1 clearing is necessary, not sufficient, per D5's own three-condition structure.
 - **Retuning WINDOW=60 / Q_BIAS=0.80 if the stage-2 result comes back weaker than stage-1.** Ruled out as an outcome-conditional retune — the same forbidden move that would have rescued candidate 1's diagnostic-gate VOID by loosening the IAAFT tolerance after seeing it fail.
-- **Silently dropping Q-RANGEXFER-1.a because the parent effect is larger and more robust.** Ruled out per "S preserves N" — the overnight-calm-stratum gap increment (p=0.0078, both the two-way and three-way checks agree) is a real, disclosed anomaly and must be tested on its own falsifiable terms, not quietly folded into or abandoned alongside the parent.
+- **Silently dropping Q-RANGEXFER-1.a because the parent effect is larger and more robust.** Ruled out per "S preserves N" — the overnight-calm-stratum gap increment (bootstrap p=0.0078 / null-calibrated p=0.00871, both the two-way and three-way checks agree) is a real, disclosed anomaly and must be tested on its own falsifiable terms, not quietly folded into or abandoned alongside the parent.
 - **Building any entry/sizing construct on either conditioner before this brief resolves AND before a separate raised-bar Route argument is made.** Both parent Notices already flagged conditioner-role framing as not needing the raised bar (`index-intraday-ohlcv-directional-timing-2026-07-21`) to clear itself — that exemption does not extend to a future entry construct built on top of it, which would need its own Route 1/2/3 argument at that time.
 - **Substituting the already-run day-history stage-1 result for D5 condition (3)'s "stage-2 joint-surrogation null design."** These test different confounds (day-history = yesterday's regime; joint-surrogation = today's own two-series shared regime); conflating them would silently skip the harder, unresolved half of D5's requirement.
 - **Designing the Phase 1 joint-surrogation null and executing it in the same motion, without the adversarial review D5 condition (3) names.** The design proposed in §7 Phase 1 is a starting sketch, not a frozen gate — running it unreviewed would be the same "declared a test after seeing what it needs to conclude" failure the corrected-battery incident (2026-08-18 audit note) already cost this repo once.
@@ -154,8 +154,11 @@ python lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate4_gap_magnit
 
 # Reproduce this brief's own joint gate (the D-S-A Simplify step)
 python lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate24_joint_gate.py
-# Expected: gap lift +0.105 (overnight-stratum=0, p=0.008) / -0.081 (overnight-stratum=1, p=0.998);
-# overnight lift +0.594 (gap-stratum=0, p<0.001) / +0.407 (gap-stratum=1, p<0.001)
+# Expected: gap lift +0.105 (overnight-stratum=0, bootstrap p=0.0078 / null-calibrated p=0.00871)
+#           / -0.081 (overnight-stratum=1, bootstrap p=0.998 / null-calibrated p=0.997);
+# overnight lift +0.594 (gap-stratum=0, bootstrap p=0.00025 / null p=0.00086)
+#           / +0.407 (gap-stratum=1, bootstrap p=0.00025 / null p=0.00306)
+# Null-calibrated p is circular_shift_null_p; bootstrap p is block_bootstrap_p (not a Type-I test).
 
 # Confirm the governing D5 text and its O1 unresolved-design item
 grep -n "S2 (overnight\|O1:" docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md

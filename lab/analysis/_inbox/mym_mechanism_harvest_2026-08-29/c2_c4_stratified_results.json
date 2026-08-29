@@ -35,7 +35,22 @@
       ],
       "mean": 0.2186458816886106,
       "n_valid": 4000,
-      "p_lift_le_0": 0.00025
+      "p_lift_le_0": 0.00025,
+      "source": "preserved from original n=1307 run (cache fallback)"
+    },
+    "min_lift_null_calibrated": {
+      "p_ge_obs": 3.3515658515658516e-06,
+      "observed": 0.21697757678537777,
+      "n_draws": 4000,
+      "seed": 20261829,
+      "frame_source": "c24_joint_frame.csv (n=1304; orig scored n=1307)",
+      "n_scored_null": 1304,
+      "construction": "within_stratum_circular_shift",
+      "includes_identity": true
+    },
+    "strata_null_calibrated_p": {
+      "0": 0.000992063492063492,
+      "1": 0.0033783783783783786
     },
     "increment_exists_threshold_check": true,
     "verdict": "INCREMENT"
@@ -76,7 +91,22 @@
       ],
       "mean": 0.05944593262238722,
       "n_valid": 4000,
-      "p_lift_le_0": 0.12475
+      "p_lift_le_0": 0.12475,
+      "source": "preserved from original n=1307 run (cache fallback)"
+    },
+    "min_lift_null_calibrated": {
+      "p_ge_obs": 0.00859676640926641,
+      "observed": 0.06372445755213818,
+      "n_draws": 4000,
+      "seed": 20261829,
+      "frame_source": "c24_joint_frame.csv (n=1304; orig scored n=1307)",
+      "n_scored_null": 1304,
+      "construction": "within_stratum_circular_shift",
+      "includes_identity": true
+    },
+    "strata_null_calibrated_p": {
+      "0": 0.000992063492063492,
+      "1": 0.15202702702702703
     },
     "increment_exists_threshold_check": true,
     "verdict": "AMBIGUOUS (CI straddles 0)"

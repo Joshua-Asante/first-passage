@@ -1,10 +1,10 @@
-# Notice — MYM M15 bar-volume regime → next-bar range (ToD-deseasonalized, stratified — GRADUATE)
+# Notice — MYM M15 bar-volume regime → next-bar range (ToD-deseasonalized, stratified — UNRESOLVED)
 
 **Notice ID:** N-2026-08-29-mym-bar-volume-regime
 **Observed:** 2026-08-29 (marginal-comparison run); **corrected 2026-08-29** (stratified re-run, same-shape correction as candidates 2/4)
 **Author:** Joshua | claude.ai
 **Source:** backtest CSV (bar panel) — atheoretical mechanism harvest, MYM Phase 2
-**Status:** `OPEN` — GRADUATE-eligible; Pre-Q authoring deliberately deferred to the planned MNQ+MYM pooling session (not opened here)
+**Status:** `OPEN` — UNRESOLVED pending a within-stratum null-calibrated p (vendor bars / scored-frame cache absent); not routed INCREMENT or GRADUATE on the observed-series bootstrap CI
 **Lives in:** `docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md`
 
 ---
@@ -59,8 +59,11 @@ elevated, n=68,113): P(y=1|volume=1)=0.7150 (n=52,737) vs. P(y=1|volume=0)=0.469
 (n=15,376) — **lift +0.2455**. Block-bootstrap (circular, 96-bar blocks ≈1 session,
 seed 20260829, n=4,000) on the minimum stratified lift: mean **+0.1648**, 95% CI
 **[+0.1537, +0.1761]**, entirely positive, **p(lift ≤ 0) ≈ 0** (n=139,605 scored
-pairs — the CI is 2.2pp wide on a huge sample). **VERDICT: INCREMENT** — the largest,
-tightest-estimated effect of any correction run in this batch.
+pairs — the CI is 2.2pp wide on a huge sample) / **null-calibrated p uncomputed
+this session** (no scored-frame cache; vendor bars absent). **VERDICT: UNRESOLVED** —
+the observed-series bootstrap CI excluding 0 is the same non-null statistic this
+retrofit corrects. Codex review (PR #207) + operator ruling: do not route
+INCREMENT / GRADUATE until the within-stratum circular-shift null is actually run.
 
 ## §2 — Why it stands out (the N signal)
 
@@ -77,9 +80,9 @@ tightest-estimated effect of any correction run in this batch.
   heading or PROFILE cell registered for it yet — its own Pre-Q is also not yet
   opened) ran the correctly-stratified design from the start and found a strikingly
   similar shape: +20.6pp / +25.6pp incremental lift across its own two range-matched
-  strata, and routed the same construct to **GRADUATE**. Two independent instruments,
-  independently authored the same day, landing on the same effect size and the same
-  routing decision is a meaningfully stronger basis than either instrument alone.
+  strata, and routed the same construct to **GRADUATE**. The shape corroboration
+  still stands; MYM's own routing is UNRESOLVED pending the corrected null (§1 / §4)
+  and is no longer the same decision as MNQ's.
 - **Frequency check:** first instance under the corrected design on MYM.
 
 ## §3 — Candidate mechanisms (informal)
@@ -101,29 +104,28 @@ tightest-estimated effect of any correction run in this batch.
 
 ## §4 — Routing decision
 
-**GRADUATE — to a Pre-Q, authoring deliberately deferred.**
+**UNRESOLVED — HOLD the INCREMENT / GRADUATE routing until the corrected null runs.**
 
-Reason: a decisively powered ($0, n=139,605, CI width 2.2pp, p≈0), economically large
-(+16 to +25pp, an order of magnitude bigger than candidates 2/4's corrected effects)
-incremental-information finding, cross-instrument-corroborated by MNQ's independently
-stratified, independently GRADUATEd same-day result. Not opened as a Pre-Q here, for
-the same reason candidate 2 wasn't: the operator's own batch framing named a follow-up
-session that pools MNQ's and MYM's GRADUATE sets together before authoring any Pre-Q.
-**Raised-bar route: none needed.** This is a conditioner-role magnitude/range claim
-(predicts elevated range, not direction — the direction limb was scoped out of this
-MYM batch entirely, matching MNQ's own clean-null direction result) — the
-single-instrument index-futures directional-timing raised bar does not apply, the same
-reasoning that exempted candidates 1 and 2. **Still outstanding:** whether this
-incremental effect is a distinct WHO from candidate 1's daily-TR persistence (mechanism
-question above) — a question for the Pre-Q, not resolved here.
+Reason: the stratified lifts (+16.5pp / +24.5pp) and the observed-series bootstrap
+CI remain as measured, and MNQ's independently stratified same-day result still
+corroborates the *shape*. What this session cannot claim is a Type-I-controlled
+INCREMENT: the CI-excludes-0 rule is the defect under repair, and the
+within-stratum null was not computed (no `MYM_M15.csv`, no `c3_stratified_frame.csv`).
+**Raised-bar route: none needed if/when the null clears** — conditioner-role, same
+as candidates 1 and 2. **Still outstanding:** (1) run the within-stratum null;
+(2) whether the incremental effect is a distinct WHO from candidate 1's daily-TR
+persistence — a question for any later Pre-Q, not resolved here.
 
 ---
 
-## §5 — If HOLD: re-check trigger — N/A, superseded.
+## §5 — If HOLD: re-check trigger
 
-The original 2026-08-29 marginal-comparison run's routing decision (`DROP`) is
-superseded by this correction and does not stand; no re-check trigger applies to a
-GRADUATEd notice.
+- **Trigger:** `MYM_M15.csv` or `c3_stratified_frame.csv` present; re-run
+  `c3_stratified_rerun.py` so the within-stratum circular-shift null is computed.
+- **Then:** route INCREMENT / GRADUATE only from that null (and the existing
+  lift-floor rule), not from the observed-series bootstrap CI.
+- The original 2026-08-29 marginal-comparison `DROP` remains superseded and is
+  not revived by this UNRESOLVED.
 
 ---
 
@@ -132,7 +134,10 @@ GRADUATEd notice.
 ```bash
 python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c3_stratified_rerun.py
 # Expected: min-stratified-lift bootstrap: mean=0.1648  CI=[+0.1537,+0.1761]
-#   p(lift<=0)=0.0000  VERDICT=INCREMENT
+#   p(lift<=0)=0.0000 [NOT null-calibrated]
+#   VERDICT=UNRESOLVED (null-calibrated p uncomputed)
+#   null-calibrated p: UNCOMPUTED this session unless MYM_M15.csv or
+#   c3_stratified_frame.csv is present; do not retain INCREMENT on the CI.
 
 # Superseded secondary measurement (disclosed, not the authoritative answer):
 python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c3_volume_regime.py
