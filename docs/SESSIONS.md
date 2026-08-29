@@ -33,6 +33,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-29e — CATALOG one-liner mid-sentence truncation repair
+
+**Focus:** replace dangling `...` fragments in [`lab/CATALOG.md`](../lab/CATALOG.md) one-liners with concise campaign summaries.
+**Shipped:** `cursor/catalog-oneliner-truncation-f91a` — 55 hand-authored one-liners; `_scan_one_liner_is_truncation` now accepts a complete authored summary vs the mechanical cap.
+**Decisions/defects:** 117-char `parse_disposition` cap left as fallback (raising it would make concise rewrites look like drift).
+**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). `queue-exception: operator-assigned catalog one-liner hygiene packet; not a leftover Open/next name.`
+**Live-ops state:** unchanged (`dry_run=true`; no arm).
+
+---
+
 ## 2026-08-29d — REPO_MAP §2.1 scripts table generated from live sources
 
 **Focus:** replace §2.1's stale hand-written script-status prose with a generated table covering every `scripts/*.py`.
