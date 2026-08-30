@@ -1,4 +1,4 @@
-# Q-RANGEXFER-1 — Verdict pre-registration (H-RANGEXFER-1 / H-RANGEXFER-1.a / H-RANGEXFER-1-MYM / H-RANGEXFER-1.a-MYM)
+# Q-RANGEXFER-1 — Verdict pre-registration (H-RANGEXFER-1 / H-RANGEXFER-1.a / H-RANGEXFER-1-MYM / H-RANGEXFER-1.a-MYM / H-RANGEXFER-1.b-MYM)
 
 **Frozen:** 2026-08-29, before Phase 1 (the joint-surrogation null design) has been written,
 reviewed, or run. Parent brief:
@@ -10,6 +10,10 @@ tuned to its own result.
 **Amended 2026-08-30:** §A-E below (MNQ) are unchanged by this amendment. §F below freezes the
 same class of constants for MYM's own panel, added when the parent brief's scope broadened to
 cover MYM — frozen before MYM's own Phase 1 has been written, reviewed, or run, same discipline.
+**Amended again same day:** §G freezes a further hypothesis, `H-RANGEXFER-1.b-MYM`, added after
+a composite-null defect (Codex review, PR #211) showed the day-history-level gap-magnitude claim
+is properly scoped to MYM's own `bprime=0` stratum only, not the whole cell — same freeze
+discipline, before that hypothesis's own Phase 1 execution.
 
 A verdict computed after moving any threshold below, the window/quantile constants, or the
 by-year N_valid floor is void.
@@ -145,6 +149,50 @@ already the weakest, least-decisive cell in the whole 2026-08-29 batch across bo
 exploratory/unregistered per §0 of the parent brief) — a by-year split of an already-marginal
 cell is a harder bar to clear than MNQ's own p=0.0087 starting point, independent of either
 panel's raw size.
+
+Substituting real Phase-1 numbers to confirm or refute this prediction is the compute step, not
+this freeze.
+
+---
+
+## §G — H-RANGEXFER-1.b-MYM freeze (added 2026-08-30, same discipline: before this
+hypothesis's own Phase 1 execution)
+
+**Context:** the parent brief's original day-history-level ruling on candidate 4's gap-magnitude
+cell was found (Codex review, PR #211) to rest on a defective composite-null construction
+(`circular_shift_null_min_lift`'s product-of-tails, which tests the wrong — sharp joint, not
+disjunctive — null for a "both strata" claim). The corrected, stratum-specific claim that
+survives is scoped to MYM's own `bprime=0` stratum alone; this freezes its verdict thresholds
+before Phase 1 runs against it, same discipline as §F.
+
+### §G.1 — Frozen constants
+
+- Reuses §F.1's constants verbatim (`WINDOW`, `Q_BIAS`, `Q_REF`, `alpha`, `N_FLOOR_POP`,
+  `N_FLOOR_COND`, `YEAR_MIN_NCOND`, `N_valid >= 7` floor, block-bootstrap `block=20, draws=4000,
+  seed=42`) — this is the same MYM panel and the same construct definition, restricted to a
+  different stratum than H-RANGEXFER-1.a-MYM, not a redesigned test.
+- Restriction: MYM's own `bprime=0` subpanel, n=1,010 (per `c2_c4_stratified_rerun.py`'s cached
+  scored set) — already exceeds `N_FLOOR_POP`/`N_FLOOR_COND` on its own.
+- Already-measured stage-1 figures on record for this stratum (not re-derived at verdict time):
+  lift +0.1404 (0.5526 vs 0.4122), within-stratum circular-shift null-calibrated p=0.00099.
+
+### §G.2 — Presence limbs and verdict map
+
+Identical structure to §F.2/§F.3 (L1–L4 presence, L5 attribution, same verdict map as §D),
+scored against the `bprime=0` subpanel specifically. L1 is already known to pass (n=1,010 clears
+both floors); L2–L4 and the L5 attribution limb await Phase 1 execution, same as every other
+hypothesis under this brief — this freeze pins thresholds, it does not pre-compute the result.
+
+### §G.3 — Pinned ex-ante expectation
+
+**Predicted: presence limbs (L1–L3) PASS** — the `bprime=0` stratum's own stage-1 evidence
+(p=0.00099) is the most decisive per-stratum figure in this entire gap-magnitude batch on
+either instrument, meaningfully stronger than H-RANGEXFER-1.a-MYM's own calm-stratum figure
+(p=0.0495). **L4 (by-year floor) prediction mirrors §F.4's parent-panel prediction** — the same
+~6-calendar-year structural wall applies to a subpanel of the same date range, so AMBIGUOUS on
+power grounds is the base case, not a comment on effect reality. **L5 (attribution) is
+unpredicted** — no basis exists yet for guessing how a joint-surrogation null behaves on this
+stratum specifically; Phase 1 must run before that limb has any expectation attached.
 
 Substituting real Phase-1 numbers to confirm or refute this prediction is the compute step, not
 this freeze.
