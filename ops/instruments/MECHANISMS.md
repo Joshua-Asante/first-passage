@@ -305,15 +305,27 @@ corroboration that does not exist for MYM on either magnitude or direction).
   `bias_hist`, measure lift within stratum). Within `bprime=0` (n=1,010): lift **+0.1404** (0.5526
   vs 0.4122). Within `bprime=1` (n=297): lift **+0.0672** (0.7766 vs 0.7094) — **the sign itself
   flips positive** in both strata. Block-bootstrap on the minimum stratified lift: mean **+0.0594**,
-  95% CI **[−0.0419, +0.1477]**, p(lift≤0)=0.1247 / null-calibrated p(null≥obs)=0.00860
+  95% CI **[−0.0419, +0.1477]**, p(lift≤0)=0.1247 / null-calibrated p(null≥obs)=0.0086
   (within-stratum circular-shift of the gap predictor, distinct rotations enumerated,
   identity included; n_null=1304 from the sibling joint-gate cache vs original n=1307;
-  3-day difference disclosed; per-stratum null p=0.00099 / 0.152). **AMBIGUOUS — verdict
-  UNCHANGED in this retrofit.** The original decision rule is the bootstrap CI, which
-  still straddles 0. The corrected min-lift p would clear a conventional 0.05 bar;
-  whether that flips the cell to INCREMENT is an operator ruling, filed as a follow-up
-  notice addendum, not silently applied here. A meaningfully weaker signal than the sibling overnight-range candidate's
-  +0.2186. First instrument
+  3-day difference disclosed; per-stratum null p=0.00099 / 0.152). **First operator
+  ruling, 2026-08-30** ("go with INCREMENT, ... the null-calibrated test is the more
+  reliable one") read this as a blanket INCREMENT off the blended p=0.0086 figure.
+  **That figure was itself defective (Codex review, PR #211):**
+  `circular_shift_null_min_lift` computes p=0.0086 as the *product* of the two
+  per-stratum tail probabilities, which tests the sharp joint null that both strata
+  are simultaneously zero — not the disjunctive composite null a "both strata"
+  claim needs to reject. The correct test is an intersection-union test (the
+  **max** of the per-stratum p's): max(0.00099, 0.152) = 0.152, not significant.
+  **Corrected disposition — split by stratum:** `bprime=0` (day-history NOT
+  elevated): **INCREMENT** — the within-stratum p=0.00099 is properly scoped and
+  decisive, the same operator principle (null-calibrated over bootstrap CI)
+  correctly applied. `bprime=1` (day-history elevated): **not established** —
+  p=0.152 does not reject. A meaningfully weaker signal than the sibling
+  overnight-range candidate's +0.2186 even in its decisive stratum. The `bprime=0`
+  result is nested under `Q-RANGEXFER-1` as the new (2026-08-30) hypothesis clause
+  `H-RANGEXFER-1.b-MYM`, distinct from `H-RANGEXFER-1.a-MYM`'s overnight-calm-restricted
+  claim (a different estimand). First instrument
   scored under this id. [MYM.md](MYM.md) ·
   [`N-2026-08-29-mym-gap-magnitude-rth-range.md`](../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md)
 - **Superseded (disclosed, not the D5 stage-1 answer):** the first-pass **marginal** falsifier
@@ -351,7 +363,7 @@ window; this is an unconditional shape-persistence statistic, no level or window
 **Admission-route status under the 2026-07-21 single-instrument index-futures directional-timing
 raised bar (`docs/rejected_candidates.md`) is resolved by
 [`docs/adr/2026-08-29-clv-autocorrelation-admission-route-scope.md`](../../docs/adr/2026-08-29-clv-autocorrelation-admission-route-scope.md)
-(`Proposed`, pending re-ratification after a correction the same day — see that ADR's Change
+(`Accepted`, ratified 2026-08-29, corrected and re-ratified 2026-08-30 — see that ADR's Change
 history).** The ruling: an unconditional bar-shape statistic
 with no entry rule attached does not trigger the raised bar's admission gate at all — that gate
 fires at Pre-Q admission for an actual directional-timing candidate, which neither instrument's
