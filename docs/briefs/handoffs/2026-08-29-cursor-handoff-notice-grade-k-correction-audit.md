@@ -1,6 +1,6 @@
 # Claude Code / Cursor handoff — report-only Notice-log GRADUATE K-correction auditor
 
-**Status:** ready to dispatch
+**Status:** **IMPLEMENTED — PR [#217](https://github.com/Joshua-Asante/first-passage/pull/217)** (`cursor/notice-grade-k-correction-audit`, merged 2026-08-30). Cursor returned **DONE_WITH_CONCERNS**; both concerns adjudicated by Claude Code before merge (`check_boundaries`/`repo_map_layers.yml` classification fixed; the `GRADUATE`-substring over-count in the informational scan-count line disclosed, not fixed — does not affect which rows are flagged). Real-corpus run confirmed exactly the 3 expected MNQ notices flagged. **DO NOT RE-DISPATCH.**
 **Authority:** root-cause finding from this session's generate/evaluate multiplicity-accounting
 work (commit `b7705895df1b21598fcb58ca2d908b6398977e34`, this branch). `promotion_packet.py` now
 requires a K-conditional DSR-floor attestation before S5 promotion, but that gate sits downstream

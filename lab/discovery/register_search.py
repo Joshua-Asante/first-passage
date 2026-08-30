@@ -856,6 +856,22 @@ def _resolve_search_log(args):
             entry_count = len(parsed)
     except json.JSONDecodeError:
         pass
+    if entry_count == 0:
+        # A [] search log passes the non-whitespace check above (the text
+        # "[]" is not blank) but claims zero executed trials -- incoherent
+        # for any closure that itself records executed work. The one
+        # coherent case is --operator-stopped with --executed-k 0 (stopped
+        # before any read happened, so an empty trace is the honest one).
+        executed_k = getattr(args, "executed_k", None)
+        stopped_before_any_read = bool(getattr(args, "operator_stopped", False)) and not executed_k
+        if not stopped_before_any_read:
+            sys.exit(
+                f"ABORT: --search-log {path} parses as an empty JSON list "
+                "([]), but this closure records executed work -- a real "
+                "search-trace log cannot be empty when at least one look "
+                "happened. (The only closure shape where an empty log is "
+                "coherent is --operator-stopped with --executed-k 0.)"
+            )
     return {"path": repo_relative, "entry_count": entry_count}
 
 
