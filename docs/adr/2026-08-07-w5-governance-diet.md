@@ -146,3 +146,17 @@ Lead line: `STATE queue: #1 … · #2 … · #3 …` (titles + owner links). Def
 
 Owner plan: [`docs/superpowers/plans/2026-08-23-w5-ci-from-gates-yml-implementation.md`](../superpowers/plans/2026-08-23-w5-ci-from-gates-yml-implementation.md). Coherence leftover C-P5-04 / H6 discharged.
 
+## Addendum 2026-08-29 — same-day SESSIONS label collisions are designed, not a defect
+
+**Does not amend §2's class table or any prior addendum.** Elevated same-day agent count
+(2026-08-29: ~40 commits / ~30 PRs across Claude sessions, Cursor cloud agents, and Codex review)
+produced two same-day-letter collisions on label `29j`, claimed independently by two un-synced
+clones and renumbered in each to `29k` and `29l` (self-documented inline in both entries).
+`roll_sessions.py --next-label`'s own collision guard is explicitly scoped to "a second concurrent
+`--next-label` in **this clone**" — cross-clone prevention is architecturally out of scope without a
+network round-trip the tool deliberately avoids ("No network"). `check_push_collision.py`
+independently confirms this is by design: two branches each *adding* a new top heading is "the
+designed `merge=union` merge, not a contradiction," exempted from its collision check. Renumber-
+on-detect at the point of merge is the intended steady state as same-day agent concurrency rises —
+no new procedure is owed.
+

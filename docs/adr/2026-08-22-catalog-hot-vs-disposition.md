@@ -196,6 +196,35 @@ git diff origin/main --name-only -- scripts/ lab/CATALOG.md
 
 ---
 
+## Addendum — 2026-08-29
+
+**Does not amend §2's two-axis decision, the parser/C2 retarget, or `--slug` eligibility (item 5).**
+
+**Worktree-isolated single-row hand-insert is a sanctioned exception to §2 item 6** ("Regenerator
+stays the sole CATALOG writer... This ADR does not authorize hand-editing a `status` or `hot`
+cell."). Item 6 is under repeated real tension with lived practice, distinct from C-P1-10's own
+already-repaired defect (misclassified *existing* rows, closed 2026-08-21 via `--slug` archive):
+
+- A [2026-08-20 Cursor handoff](../briefs/handoffs/2026-08-20-cursor-handoff-aegis-3leg-risk-parameterization.md)
+  §2 step 6 explicitly instructed adding one new `lab/CATALOG.md` row by hand rather than running
+  `--regenerate-catalog`, "known to clobber unrelated hand-curated rows from a worktree; hand-insert
+  only."
+- The 2026-08-29 `db91a21` commit did the identical thing — one slug-sorted row for
+  `lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/` — each instance verified via
+  `git diff --stat` showing `+1` line only.
+
+The tension in both cases is a **brand-new row under active worktree concurrency**, where a full
+regen would clobber a concurrent worktree's uncommitted heavy-artifact-column values — a different
+failure mode than C-P1-10's stale-classification defect.
+
+**The sanctioned exception, narrowly scoped:** a single new row, appended in slug-sorted position
+and verified by `git diff --stat` to add exactly that one line — no existing `status`/`hot`/other
+cell touched — is the sanctioned path when `--regenerate-catalog` would clobber concurrent worktree
+state. This is **not** a general hand-edit license: any edit to an existing row's cells still
+requires the regenerator per item 6, unchanged.
+
+---
+
 ## Change history
 
 | Date | Change | By |
@@ -203,3 +232,4 @@ git diff origin/main --name-only -- scripts/ lab/CATALOG.md
 | 2026-08-22 | Initial authoring (`Proposed`) | Cursor Cloud Agent (commission) + Claude Code (draft) |
 | 2026-08-22 | Operator `Accepted` + Phase 1 GO (parser / C2 / `hot` column) | Joshua (in-session) + Cursor Cloud Agent |
 | 2026-08-22 | Blast-radius parentheticals: Phase 1 landed (this GO); §0/§1 left as defect record | Cursor Cloud Agent |
+| 2026-08-29 | Addendum: worktree-isolated single-new-row hand-insert sanctioned as a narrow exception to §2 item 6, distinct from C-P1-10's repaired defect. | Claude Code |
