@@ -1,6 +1,6 @@
 # TRADEABLE-REACHABLE — one pre-explore economic orchestrator delegating to existing cost/latency/geometry/shape authorities, never forking a new one — `tradeable-reachable-gate`
 
-**Status:** `Proposed`
+**Status:** `Accepted` — ratified by operator (Joshua) 2026-08-30; see Ratification note.
 **Decision date:** 2026-08-30
 **Supersedes:** none
 **Superseded-by:** none
@@ -28,6 +28,14 @@ Files read **before** authoring this ADR, this session (2026-08-30):
 - `docs/adr/2026-08-05-strategy-venue-binding-axis.md` — anchor `e2d21b9` (2026-08-24). Confirms venue-edition state is a distinct axis from candidate-lifecycle evidence — relevant to how this ADR's pre-explore failures must be classified (§2) without conflating a contract-level kill with a later venue-placement kill (that distinction is `2026-08-30-terminal-taxonomy.md`'s decision, not this one).
 - `docs/adr/2026-06-14-rejected-candidate-patterns.md` — anchor `0395f56` (2026-08-29). §A's venue/cost-constraint class and its add-back condition; this ADR's pre-explore failures route into that class, but the routing rule itself belongs to the terminal-taxonomy ADR, cited not re-decided here.
 - `docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md` — anchor `e11fd39`. §2 item 5: "Cost-law reachability (Req 5's ≥4× round-trip inequality), with the candidate's own confirm-partition measured effect substituted for cohort δ — the schema already permits this (`delta_citation: null`)." Found via this ADR's own Phase-2 sweep (§7), not in the first draft: for this channel specifically, Requirement 5's cost input is, by the channel's own already-ratified design, the confirm partition's own measured result — structurally unavailable before Confirm, not merely uncalculated. A universal pre-Explore cost limb cannot be applied to this channel without either inventing a prior this channel's design deliberately declines to require, or reading confirm data early. Ruled on in §2 below as a named, cited exception — not a gap.
+
+**Amendment-first / dedup (Rule 8 sub-rule 10), run at ratification:**
+
+```
+$ python scripts/check_advisor_dedup.py --keywords "TRADEABLE-REACHABLE pre-explore economic gate orchestrator cost latency geometry payoff shape delegating"
+```
+
+218 candidates surfaced, all keyword-overlap noise from instrument ledgers/mechanism vocabularies and unrelated audit notes — none proposes a single delegating pre-Explore economic orchestrator. No existing ADR or brief performs this ADR's decision.
 
 ---
 
@@ -269,9 +277,9 @@ Requirement 5's / `cost_geometry_pregate.py`'s own ownership).
   retires. Mitigated by flagging the stale spec text as a downstream
   artifact below — not itself a new risk this ADR introduces.
 
-**Downstream artifacts that need updating:**
-- `2026-08-30-candidate-contract.md` — Amends-in-part (this ADR's header):
-  payoff-shape-prior fields, CONFIRM-window reservation, pinned
+**Downstream artifacts:**
+- `2026-08-30-candidate-contract.md` — **landed at ratification** (this
+  commit): payoff-shape-prior fields, CONFIRM-window reservation, pinned
   cost-authority identifier added to the founding-freeze field list.
 - `docs/spec/2026-08-05-eval-mechanism-shape-screen.md` §3a — owed a
   pointer-note correction now (found by this ADR's Phase-2 sweep, §7/§10):
@@ -296,8 +304,8 @@ Requirement 5's / `cost_geometry_pregate.py`'s own ownership).
   drafting, not at apply-time; this phase only guards against a further
   change after that.
 - **Phase 1** — this ADR's own body is the complete policy deliverable;
-  the `Amends-in-part` edge to `2026-08-30-candidate-contract.md` lands on
-  ratification, not before (per that ADR's own §2 amendment mechanism).
+  the `Amends-in-part` edge to `2026-08-30-candidate-contract.md` **landed
+  at ratification** (this commit), as a new §2 subsection on that ADR.
 - **Phase 2** — grep-sweep (Known Trap #7), executed at authoring time:
   **(i)** no predecessor to check (`Supersedes: none`); **(ii)** `grep -rl
   "cost_geometry_pregate\|Requirement 5\|payoff.shape" docs/adr/ docs/spec/
@@ -388,8 +396,27 @@ $ grep -n "tradeable-reachable-gate" docs/adr/2026-08-30-candidate-contract.md
 
 ---
 
+## Ratification note
+
+**Ratified by:** Joshua, direct instruction ("ratify the six ADRs," 2026-08-30), following a
+self-conducted adversarial re-read (the full 6-lens Workflow panel was declined for cost) that added
+the missing amendment-first/dedup attestation (§0).
+
+**§6-class preconditions at ratification:** mechanical checks clean (`check_brief.py` 0 HARD,
+`check_adr_graph.py` OK) ✓ · amendment-first dedup run, no genuine prior art ✓ · the Codex review
+round's finding on this file (the no-counterparty-statistical channel's structural cost-limb
+conflict) verified already fixed via the named exception (§2) ✓ · the `Amends-in-part` edge to
+`candidate-contract.md` confirmed landed (§10 hook) ✓.
+
+**Not licensed by this ratification:** building the `TRADEABLE-REACHABLE` orchestrator's actual
+delegating code (§7, separate implementation handoff) · resolving the pre-freeze shape-extraction
+probe's tooling · any edit to `core/`, `ops/`, `dd_protection`, or allocations.
+
+---
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-08-30 | Initial authoring | Joshua + Claude Code |
+| 2026-08-30 | Ratified — status → `Accepted`; `Amends-in-part` edge to candidate-contract.md landed | Joshua (operator ratification) |

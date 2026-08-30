@@ -1,6 +1,6 @@
 # Evaluation order — one canonical ordered pipeline; role and composition screens gate fit, never lifecycle admission — `evaluation-order`
 
-**Status:** `Proposed`
+**Status:** `Accepted` — ratified by operator (Joshua) 2026-08-30; see Ratification note.
 **Decision date:** 2026-08-30
 **Supersedes:** none
 **Superseded-by:** none
@@ -79,6 +79,14 @@ Files read **before** authoring this ADR, this session (2026-08-30):
   forward-cited as `2026-08-30-candidate-contract.md`'s evaluate-phase role re-check**, a citation
   error caught by this ADR's own Phase-2 sweep (§7) — the role re-check is this ADR's decision, not
   ADR-1's; corrected in that ADR as a follow-up (§6 below).
+
+**Amendment-first / dedup (Rule 8 sub-rule 10), run at ratification:**
+
+```
+$ python scripts/check_advisor_dedup.py --keywords "evaluation order canonical pipeline sequence role composition screen fit lifecycle admission selection freeze"
+```
+
+186 candidates surfaced, all keyword-overlap noise from instrument ledgers and unrelated claim-alignment audit findings — none proposes a single canonical ordered pipeline. No existing ADR or brief performs this ADR's decision.
 
 ---
 
@@ -280,8 +288,8 @@ found. Never silently edit this ADR's decision text.
   practice — a build-time risk for the separate implementation handoff (§7), not a defect in this
   ADR's own ordering logic.
 
-**Downstream artifacts that need updating:**
-- `2026-08-30-candidate-contract.md` — Amends-in-part (this ADR's header): scoped account/book
+**Downstream artifacts:**
+- `2026-08-30-candidate-contract.md` — **landed at ratification** (this commit): scoped account/book
   identifier + compliance-state snapshot, ROLE-BLOCKED succession-rule declaration, and the
   selection-freeze commit added to the contract schema.
 - `2026-08-30-terminal-taxonomy.md` — its `ROLE-BLOCKED` bullet currently cites
@@ -298,7 +306,8 @@ found. Never silently edit this ADR's decision text.
 
 - **Phase 0** — re-confirm §0 anchors current at apply-time.
 - **Phase 1** — this ADR's own body is the complete policy deliverable; the `Amends-in-part` edge to
-  `2026-08-30-candidate-contract.md` lands on ratification, not before.
+  `2026-08-30-candidate-contract.md` **landed at ratification** (this commit), as a new §2 subsection
+  on that ADR.
 - **Phase 2** — grep-sweep (Known Trap #7): **(i)** no predecessor to check (`Supersedes: none`);
   **(ii)** `grep -rl "selection freeze\|state-drift\|contract.integrity\|ROLE-BLOCKED" docs/adr/
   docs/spec/ docs/methodology/` — executed at authoring time: exactly 3 hits, all under `docs/adr/`
@@ -366,8 +375,27 @@ $ grep -n "evaluation-order" docs/adr/2026-08-30-candidate-contract.md
 
 ---
 
+## Ratification note
+
+**Ratified by:** Joshua, direct instruction ("ratify the six ADRs," 2026-08-30), following a
+self-conducted adversarial re-read (the full 6-lens Workflow panel was declined for cost) that added
+the missing amendment-first/dedup attestation (§0).
+
+**§6-class preconditions at ratification:** mechanical checks clean (`check_brief.py` 0 HARD,
+`check_adr_graph.py` OK) ✓ · amendment-first dedup run, no genuine prior art ✓ · the Codex review
+round's 2 findings on this file (the K-ledger bind ordering vs. step-6 Explore; the mechanical-
+succession/integrity-check gap) verified already fixed in this file's current text ✓ · the
+`Amends-in-part` edge to `candidate-contract.md` confirmed landed (§10 hook) ✓.
+
+**Not licensed by this ratification:** building the selection-freeze hash-pinning tool or the
+state-drift re-check script (§7, separate implementation handoff) · any edit to `core/`, `ops/`,
+`dd_protection`, or allocations.
+
+---
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-08-30 | Initial authoring | Joshua + Claude Code |
+| 2026-08-30 | Ratified — status → `Accepted`; `Amends-in-part` edge to candidate-contract.md landed | Joshua (operator ratification) |

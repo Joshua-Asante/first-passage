@@ -1,17 +1,19 @@
 # Terminal taxonomy — `EXPRESSION-FAIL` as a fifth WHY-rejected class, confirm-phase verdict vocabulary, and the `N_expr` expression ladder — `terminal-taxonomy`
 
-**Status:** `Proposed`
+**Status:** `Accepted` — ratified by operator (Joshua) 2026-08-30; see Ratification note.
 **Decision date:** 2026-08-30
 **Supersedes:** none
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Authors:** Joshua (direction) + Claude Code (drafter)
-**Amends-in-part:** `2026-06-14-rejected-candidate-patterns.md` — adds a fifth §A row
+**Amends-in-part:** `2026-06-14-rejected-candidate-patterns.md` — adds a fifth §A class
 (`expression-failure`) with its own add-back condition, alongside the existing four, **and** widens
-the existing `venue / cost-constraint` row's add-back condition to explicitly cover a payoff-shape
-kill alongside its existing cost-law/lower-cost-venue wording (§2 below) — a real edit to that row's
-text, not merely a routing reading, corrected into this header by a review pass (§7). `2026-08-30-
+the existing `venue / cost-constraint` class's add-back condition to explicitly cover a payoff-shape
+kill alongside its existing cost-law/lower-cost-venue wording (§2 below) — a real amendment, not
+merely a routing reading, corrected into this header by a review pass (§7). Lands as a **dated
+addendum overlay** on that ADR, never an in-place table edit — its own 2026-08-29 addendum forbids
+rewriting §1-§10 in place. `2026-08-30-
 candidate-contract.md` — freezes the mechanism-level discriminator's complete adjudication rule
 (statistic, null, direction, threshold, coverage/power) as a founding-freeze field, discharging that
 ADR's own §3 deferral of "the mechanism-level discriminator's adjudication rule" — also added by a
@@ -83,6 +85,14 @@ Files read **before** authoring this ADR, this session (2026-08-30):
   any of this series' six ADRs (§7): this ADR now amends it in via the header `Amends-in-part` edge,
   since the discriminator concept is native to this ADR's own `MARKET-NULL`/`EXPRESSION-FAIL`
   distinction.
+
+**Amendment-first / dedup (Rule 8 sub-rule 10), run at ratification:**
+
+```
+$ python scripts/check_advisor_dedup.py --keywords "terminal taxonomy expression-failure fifth WHY-rejected class confirm verdict vocabulary N_expr ladder"
+```
+
+272 candidates surfaced; the highest-scoring hit (`docs/notes/audits/programme-audit/2026-08-05-claim-alignment/03-agent-facing.md`, score 10, matching "expression/fifth/ladder") was read in full and confirmed a false positive — its "expression" is a Python expression in an M1 desk-card script, its "fifth" refers to an unrelated send-vs-arm cluster member, and its "ladder" refers to a funded-scaling contract-size ladder, not this ADR's expression-attempt ladder. No genuine prior art; no existing ADR or brief performs this ADR's decision.
 
 ---
 
@@ -304,14 +314,15 @@ exclusion list's enforcement. Never silently edit this ADR's decision text.
   if it proves too tight or too loose in practice, that is a parameter-calibration question for a
   future amending ADR, not evidence against the ladder mechanism itself.
 
-**Downstream artifacts that need updating:**
-- `docs/rejected_candidates.md` and `ops/instruments/<SYM>.md` schemas — additive fields for
-  `class="expression-failure"`, the `N_expr` ordinal, and the cited failure history, per 2026-06-14
-  §D's existing extension pattern.
-- `2026-06-14-rejected-candidate-patterns.md` §A — Amends-in-part (this ADR's header): the
-  `venue / cost-constraint` row's add-back text widened to explicitly admit a shape/geometry that
-  clears the failed limb, alongside its existing cost-law/lower-cost-venue wording.
-- `2026-08-30-candidate-contract.md` — Amends-in-part (this ADR's header): the mechanism-level
+**Downstream artifacts:**
+- `docs/rejected_candidates.md` and `ops/instruments/<SYM>.md` schemas — still owed: additive
+  fields for `class="expression-failure"`, the `N_expr` ordinal, and the cited failure history, per
+  2026-06-14 §D's existing extension pattern (mechanical implementation, §7).
+- `2026-06-14-rejected-candidate-patterns.md` — **landed at ratification** as a dated addendum
+  overlay (its own 2026-08-29 addendum forbids in-place §A edits): the fifth class plus the
+  `venue / cost-constraint` row's widened add-back, both layered on top of the byte-stable original
+  table, never rewriting it.
+- `2026-08-30-candidate-contract.md` — **landed at ratification**: the mechanism-level
   discriminator's complete adjudication rule added as a founding-freeze field, discharging that
   ADR's own §3 deferral.
 - `2026-08-30-tradeable-reachable-gate.md` §6 — its own forward citation to this ADR is now
@@ -324,8 +335,10 @@ exclusion list's enforcement. Never silently edit this ADR's decision text.
 ## §7 — Implementation plan
 
 - **Phase 0** — re-confirm §0 anchors current at apply-time.
-- **Phase 1** — this ADR's own body is the complete policy deliverable; the `Amends-in-part` edge to
-  `2026-06-14-rejected-candidate-patterns.md` lands on ratification, not before.
+- **Phase 1** — this ADR's own body is the complete policy deliverable; the `Amends-in-part` edges to
+  `2026-06-14-rejected-candidate-patterns.md` and `2026-08-30-candidate-contract.md` **landed at
+  ratification** (this commit) — the former as a dated addendum overlay (its own 2026-08-29 addendum
+  forbids in-place §A edits), the latter as a new §2 subsection.
 - **Phase 2** — grep-sweep (Known Trap #7): **(i)** no predecessor to check (`Supersedes: none`);
   **(ii)** `grep -rl "EXPRESSION-FAIL\|EVIDENCE-VOID\|ROLE-BLOCKED\|CHANNEL-FAIL\|MARKET-NULL\|N_expr"
   docs/ lab/` — already executed at authoring time (§0 methodology): zero hits outside the source
@@ -360,10 +373,11 @@ now; code may lag, per the HARV-lane precedent (`2026-08-30-candidate-contract.m
 grep -rn "EXPRESSION-FAIL\|EVIDENCE-VOID\|ROLE-BLOCKED\|CHANNEL-FAIL\|MARKET-NULL" docs/ lab/ 2>/dev/null \
   | grep -v "2026-08-30-generate-evaluate-tensions.md\|2026-08-30-terminal-taxonomy.md"
 
-# §A row count: expect 4 today (unamended); 5 once the Amends-in-part edit lands on ratification.
-# (Scoped to the §A..§B range -- an unscoped grep false-positives on a §3 alternatives-table row
-# that also happens to start "| **".)
+# §A's original table stays byte-stable forever (that ADR's own 2026-08-29 addendum forbids
+# in-place edits) -- expect 4 in the scoped range always, both before and after ratification.
+# The fifth class lands as a dated addendum overlay, not a table row -- check for that instead.
 sed -n '/^### §A/,/^### §B/p' docs/adr/2026-06-14-rejected-candidate-patterns.md | grep -c "^| \*\*"
+grep -n "Addendum 2026-08-30" docs/adr/2026-06-14-rejected-candidate-patterns.md
 
 # TRADEABLE-REACHABLE's forward citation is discharged (no edit expected to that ADR's text).
 grep -n "terminal-taxonomy" docs/adr/2026-08-30-tradeable-reachable-gate.md
@@ -399,8 +413,31 @@ $ grep -n "expression-failure" docs/adr/2026-06-14-rejected-candidate-patterns.m
 
 ---
 
+## Ratification note
+
+**Ratified by:** Joshua, direct instruction ("ratify the six ADRs," 2026-08-30), following a
+self-conducted adversarial re-read (the full 6-lens Workflow panel was declined for cost) that added
+the missing amendment-first/dedup attestation (§0), and executed both `Amends-in-part` edges
+(`2026-06-14-rejected-candidate-patterns.md` as a dated addendum overlay — not an in-place table
+edit, per that ADR's own 2026-08-29 addendum forbidding one; `2026-08-30-candidate-contract.md` as a
+new §2 subsection) at this same ratification.
+
+**§6-class preconditions at ratification:** mechanical checks clean (`check_brief.py` 0 HARD,
+`check_adr_graph.py` OK) ✓ · amendment-first dedup run, one high-scoring hit read in full and
+confirmed a false positive, no genuine prior art ✓ · the Codex review round's 3 findings on this
+file (unfrozen discriminator field, un-amended existing taxonomy row, the undefined
+discriminator-fail/payoff-pass verdict combination) verified already fixed in this file's current
+text ✓ · both `Amends-in-part` edges confirmed landed (§10 hooks) ✓.
+
+**Not licensed by this ratification:** building the `N_expr` ordinal integrity check or the registry
+schema-field additions (§7, separate implementation handoff) · any edit to `core/`, `ops/`,
+`dd_protection`, or allocations.
+
+---
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-08-30 | Initial authoring | Joshua + Claude Code |
+| 2026-08-30 | Ratified — status → `Accepted`; both `Amends-in-part` edges landed | Joshua (operator ratification) |

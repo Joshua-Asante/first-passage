@@ -1,6 +1,6 @@
 # One candidate contract per generated candidate — hash-pinned, append-only, replacing duplicate seed-manifest/G0/preregistration restatement — `candidate-contract`
 
-**Status:** `Proposed`
+**Status:** `Accepted` — ratified by operator (Joshua) 2026-08-30; see Ratification note.
 **Decision date:** 2026-08-30
 **Supersedes:** none
 **Superseded-by:** none
@@ -30,6 +30,14 @@ Files read **before** authoring this ADR, this session (2026-08-30):
 - `discovery_manifests/README.md` — anchor `e11fd39`. "The rigorous universe-level correction... happens downstream... this ledger just makes K an auditable, timestamped fact." Confirms the ledger's role is narrower than a full candidate record — it is the K accounting layer, not the candidate's full field set.
 - `docs/rejected_candidates.md` — anchor `0c305d7` (2026-08-24). Confirms candidates that never reach a tradeable object today still consume registry/dedup bandwidth as free-text entries; a required entry/exit object at admission reduces this class going forward.
 - `docs/adr/2026-06-14-rejected-candidate-patterns.md` — anchor `0395f56` (2026-08-29). §A's 4-class WHY-rejected taxonomy and its add-back conditions; this ADR's contract must not disturb any add-back condition (§5).
+
+**Amendment-first / dedup (Rule 8 sub-rule 10), run at ratification:**
+
+```
+$ python scripts/check_advisor_dedup.py --keywords "candidate contract hash-pinned append-only generation admission seed manifest G0 preregistration"
+```
+
+175 candidates surfaced, all keyword-overlap noise from unrelated audit notes and instrument ledgers — none proposes a single consolidated candidate-contract artifact. No existing ADR or brief performs this ADR's decision.
 
 ---
 
@@ -143,6 +151,42 @@ added by a separate ADR that amends this one **in part** (per the
 `docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md`'s
 header, §0), naming exactly which field(s) it adds and at which freeze
 point.
+
+**Amended fields (landed on ratification of the four amending ADRs below —
+each remains the canonical owner of its own field's definition; this is the
+landed pointer list, not a restatement):**
+
+- From `2026-08-30-tradeable-reachable-gate.md` §2 (`Amends-in-part`):
+  **payoff-shape-prior fields** (prior win-rate/mean-win/mean-loss
+  estimates, or a completed pre-freeze extraction probe's result), the
+  **CONFIRM-window early-reservation commit** (an append-only reservation
+  on the draft contract, made before any pre-freeze probe reads data), and
+  the **pinned cost-authority identifier** (which cost authority + revision
+  was pinned at freeze — currently `strategy_harvest.md` Requirement 5).
+  All three attach at the founding freeze, before `TRADEABLE-REACHABLE`
+  runs.
+- From `2026-08-30-evaluation-order.md` §2 (`Amends-in-part`): the
+  **scoped account/book identifier + compliance-state snapshot**
+  (occupancy map, cap state, frozen at generation-open), the
+  **`ROLE-BLOCKED` succession-rule declaration** (forfeit-by-default, or
+  pre-declared mechanical succession from the frozen exploration ordering
+  — attaches at the founding freeze, exercised only later at the role
+  state-drift re-check), and the **append-only selection-freeze commit**
+  (the full scored ranking and the selected candidates, hash-pinned before
+  any holdout access — attaches at Explore's close, not at founding
+  freeze).
+- From `2026-08-30-terminal-taxonomy.md` §2 (`Amends-in-part`): the
+  **mechanism-level discriminator's complete adjudication rule** (statistic,
+  null hypothesis, direction, threshold, and coverage/power requirement,
+  measured independently of the specific entry/exit implementation's
+  payoff). Attaches at the founding freeze — the confirm phase's
+  `MARKET-NULL`/`EXPRESSION-FAIL` distinction is meaningless against a
+  rule chosen or interpreted after the holdout is read.
+- From `2026-08-30-operator-approvals-campaign-envelope.md` §2
+  (`Amends-in-part`): the **multiplicity-configuration field** — `α`, the
+  confirm count `M`, and the named Bonferroni-or-Holm procedure identity.
+  Attaches at the founding freeze, frozen for the life of the campaign
+  envelope, never revised mid-campaign.
 
 **Effective:** immediately upon acceptance, for any candidate whose
 generation-open freeze occurs after this date.
@@ -327,6 +371,9 @@ policy-first, code/migration-may-lag shape as
 ## §10 — Audit hooks (runnable)
 
 ```bash
+# All four Amends-in-part edges landed at ratification? Expect 4 hits.
+grep -c "^- From \`2026-08-30-" docs/adr/2026-08-30-candidate-contract.md
+
 # Which channel owning artifacts still lack a candidate-contract migration addendum?
 # Expected at ratification: all print (none has the addendum yet) -- five
 # channels, seven owning files (HARV and MSL each have two).
@@ -375,8 +422,30 @@ $ grep -rln "candidate-contract" docs/adr/ docs/spec/
 
 ---
 
+## Ratification note
+
+**Ratified by:** Joshua, direct instruction ("ratify the six ADRs," 2026-08-30), following a
+self-conducted adversarial re-read (the full 6-lens Workflow panel was declined for cost) that added
+the missing amendment-first/dedup attestation (§0), and executed all four incoming `Amends-in-part`
+edges (from `tradeable-reachable-gate.md`, `evaluation-order.md`, `terminal-taxonomy.md`,
+`operator-approvals-campaign-envelope.md`) as a new §2 subsection, landing at this same ratification.
+
+**§6-class preconditions at ratification:** mechanical checks clean (`check_brief.py` 0 HARD,
+`check_adr_graph.py` OK) ✓ · amendment-first dedup run, no genuine prior art ✓ · the Codex review
+round's 2 findings on this file (six-vs-five channel miscount; the unstated `M`-candidate
+cardinality) verified already fixed in this file's current text ✓ · all four `Amends-in-part` edges
+confirmed non-conflicting (four distinct field sets, §10 hook) and landed ✓.
+
+**Not licensed by this ratification:** authoring any of the five channels' owed migration addenda
+(each channel's own owning artifact, separately, per §5) · retroactively rewriting any already-open
+candidate's existing manifest/prereg documents (§5, forbidden) · any edit to `core/`, `ops/`,
+`dd_protection`, or allocations.
+
+---
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-08-30 | Initial authoring | Joshua + Claude Code |
+| 2026-08-30 | Ratified — status → `Accepted`; four incoming `Amends-in-part` edges landed | Joshua (operator ratification) |

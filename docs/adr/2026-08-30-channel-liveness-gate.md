@@ -1,6 +1,6 @@
 # Channel-liveness gate — every sourcing channel declares a reachable attempt/session ceiling at open — `channel-liveness-gate`
 
-**Status:** `Proposed`
+**Status:** `Accepted` — ratified by operator (Joshua) 2026-08-30; see Ratification note.
 **Decision date:** 2026-08-30
 **Supersedes:** none
 **Superseded-by:** none
@@ -32,6 +32,14 @@ Files read **before** authoring this ADR, this session (2026-08-30):
 - `discovery_manifests/README.md` + `discovery_manifests/*.json` — anchor `e11fd39` / read this session. 20 manifests total; channel attribution today is by directory-naming convention and free-text `hypothesis`/`params` fields only, not a queryable field — small enough for a manual periodic audit hook.
 - `.claude/workflows/gate-reachability-audit.js` — anchor `e11fd39`. Existing workflow audits "every gate in a prereg/G0/lane-spec for reachability AND bindingness before freeze," already scoped to accept a "lane-spec/charter doc" as its target — the natural check for a channel's liveness-ceiling clause once one is written.
 - `docs/notes/2026-08-30-generate-evaluate-tensions.md` — anchor `419433a` (2026-08-30). The interpretive note this ADR formalizes (tension 8 and the "Add one channel-liveness gate" row); per its own header, the note "changes no gate, threshold, lifecycle state, venue binding, or deployment authority" — this ADR is what gives its recommendation binding effect.
+
+**Amendment-first / dedup (Rule 8 sub-rule 10), run at ratification:**
+
+```
+$ python scripts/check_advisor_dedup.py --keywords "channel liveness ceiling reachable attempt bound sourcing channel retirement redesign"
+```
+
+105 candidates surfaced, all keyword-overlap noise from unrelated audit notes and instrument ledgers (`ops/instruments/MNQ.md`, programme-audit diagnostics) — none is a competing decision artifact. No existing ADR or brief performs this ADR's channel-liveness-ceiling requirement.
 
 ---
 
@@ -360,8 +368,28 @@ $ grep -n "channel-liveness-gate" docs/methodology/strategy_harvest.md STATE.md
 
 ---
 
+## Ratification note
+
+**Ratified by:** Joshua, direct instruction ("ratify the six ADRs," 2026-08-30), following a
+self-conducted adversarial re-read (the full 6-lens Workflow panel was declined for cost) that added
+the missing amendment-first/dedup attestation (§0) and confirmed no other correction was owed.
+
+**§6-class preconditions at ratification:** mechanical checks clean (`check_brief.py` 0 HARD,
+`check_adr_graph.py` OK) ✓ · amendment-first dedup run, no genuine prior art ✓ · the Codex review
+round's 3 findings on this file (false "no channel has a ceiling" premise, the "automatic retirement"
+self-execution contradiction, the workflow-invocation syntax) verified already fixed in this file's
+current text ✓.
+
+**Not licensed by this ratification:** authoring any of the five channels' owed reconciliation
+addenda (each channel's own owning artifact, separately, per §2/§5) · building the mechanical
+`register_search.py --channel` guard (§7, optional, separate handoff) · any edit to `core/`, `ops/`,
+`dd_protection`, or allocations.
+
+---
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-08-30 | Initial authoring | Joshua + Claude Code |
+| 2026-08-30 | Ratified — status → `Accepted` | Joshua (operator ratification) |
