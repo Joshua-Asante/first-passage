@@ -198,7 +198,10 @@ git diff origin/main --name-only -- scripts/ lab/CATALOG.md
 
 ## Addendum — 2026-08-29
 
-**Does not amend §2's two-axis decision, the parser/C2 retarget, or `--slug` eligibility (item 5).**
+**Operator-ratified** (Joshua, in-session GO on the drafted content of this addendum, 2026-08-29 —
+same ratification pattern as §2's own "accepted. GO"; recorded here per this ADR's own
+Change-history convention rather than left implicit). **Does not amend §2's two-axis decision, the
+parser/C2 retarget, or `--slug` eligibility (item 5).**
 
 **Worktree-isolated single-row hand-insert is a sanctioned exception to §2 item 6** ("Regenerator
 stays the sole CATALOG writer... This ADR does not authorize hand-editing a `status` or `hot`
@@ -232,4 +235,4 @@ requires the regenerator per item 6, unchanged.
 | 2026-08-22 | Initial authoring (`Proposed`) | Cursor Cloud Agent (commission) + Claude Code (draft) |
 | 2026-08-22 | Operator `Accepted` + Phase 1 GO (parser / C2 / `hot` column) | Joshua (in-session) + Cursor Cloud Agent |
 | 2026-08-22 | Blast-radius parentheticals: Phase 1 landed (this GO); §0/§1 left as defect record | Cursor Cloud Agent |
-| 2026-08-29 | Addendum: worktree-isolated single-new-row hand-insert sanctioned as a narrow exception to §2 item 6, distinct from C-P1-10's repaired defect. | Claude Code |
+| 2026-08-29 | Addendum: worktree-isolated single-new-row hand-insert sanctioned as a narrow exception to §2 item 6, distinct from C-P1-10's repaired defect. | Joshua (operator GO, in-session) + Claude Code |
