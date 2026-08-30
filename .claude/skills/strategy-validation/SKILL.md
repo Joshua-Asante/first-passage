@@ -57,6 +57,8 @@ Convert governance objections into measurements — they get stronger when quant
 
 Rationale + the surrogate/bar-permutation designs this doesn't cover: `docs/methodology/references/statistics-of-tradable-anomalies.md` Domains 1, 3.
 
+**Pre-registration completeness (two-implementer test).** Before freezing a spec's prose, ask: would two independent implementers compute identical numbers from it alone? Ambiguous conditioning/aggregation language ("matched day-session-history conditioning") can admit both a marginal and a within-stratum reading — it did, producing divergent verdicts (one sign-flipped) across three scripts before adversarial review caught it (2026-08-29, MYM candidates 2–4; `docs/adr/2026-07-11-tradable-anomalies-statistics-adoption.md` Addendum 2026-08-29). If the prose doesn't pass that test, ship reference code or a worked numeric example on synthetic data alongside the freeze — prose alone is not sufficient. Applies to every `docs/spec/` FROZEN battery and every `docs/briefs/pre-registration/` file.
+
 ## 6. Pre-registration template (forward tests)
 
 Required sections, all fixed before the first forward trade: frozen-config table; **power disclosure** (per-trade σ in R, SE at each checkpoint n — at typical 1.1R σ and n=25, SE≈±0.23R: decision rules are expectation-based stops, not significance tests, and the doc must say so); checkpoints with kill/extend/escalate rules; trade-rate clause (signal frequency is part of the hypothesis); forbidden moves; append-only audit hook ("was any criterion moved after data arrived? any yes voids the checkpoint").
