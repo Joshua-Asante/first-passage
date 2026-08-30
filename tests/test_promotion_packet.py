@@ -109,3 +109,63 @@ def test_discovery_run_id_empty_string_fails():
     result = validate_promotion_packet(packet, repo_root=REPO_ROOT)
     assert result.decision == "Fail"
     assert "discovery_run_id_empty" in result.reasons
+
+
+def _backed_packet_at_k(tmp_path, monkeypatch, k: int) -> dict:
+    monkeypatch.setenv("DISCOVERY_LEDGER", str(tmp_path))
+    run_id = f"backing_run_k{k}"
+    (tmp_path / f"{run_id}.json").write_text(
+        json.dumps({"run_id": run_id, "status": "closed", "K": k,
+                    "results": {"n_submitted": 1}}),
+        encoding="utf-8",
+    )
+    packet = json.loads(CLEAN.read_text(encoding="utf-8"))
+    packet["discovery_run_id"] = run_id
+    return packet
+
+
+def test_k_within_reachable_band_needs_no_dsr_floor_attestation(tmp_path, monkeypatch):
+    """K=2 -> floor_at_k(2) <= CAP; unchanged status quo, no new requirement."""
+    packet = _backed_packet_at_k(tmp_path, monkeypatch, k=2)
+    result = validate_promotion_packet(packet, repo_root=REPO_ROOT)
+    assert result.ok, result.reasons
+
+
+def test_k_above_reachable_band_without_dsr_floor_attestation_fails(tmp_path, monkeypatch):
+    """K=5 -> floor_at_k(5) > CAP; no dsr_floor attestation at all -> refuse."""
+    packet = _backed_packet_at_k(tmp_path, monkeypatch, k=5)
+    result = validate_promotion_packet(packet, repo_root=REPO_ROOT)
+    assert result.decision == "Fail"
+    assert any(r.startswith("discovery_run_id_k_conditional_floor_missing:") for r in result.reasons)
+
+
+def test_k_above_reachable_band_with_understated_hurdle_fails(tmp_path, monkeypatch):
+    """A dsr_floor attestation is present but its hurdle is a stale/lower-K value."""
+    packet = _backed_packet_at_k(tmp_path, monkeypatch, k=5)
+    packet["gate_attestations"].append({
+        "gate_id": "dsr_floor",
+        "units": "annualized_sharpe",
+        "measured_value": 1.10,
+        "hurdle_value": 0.95,  # stale K<=3-era hurdle, not floor_at_k(5)
+        "basis": "is_panel",
+        "artifact_path": "tests/fixtures/promotion/artifacts/gate_stage2.json",
+    })
+    result = validate_promotion_packet(packet, repo_root=REPO_ROOT)
+    assert result.decision == "Fail"
+    assert any(r.startswith("discovery_run_id_k_conditional_floor_understated:") for r in result.reasons)
+
+
+def test_k_above_reachable_band_with_correct_dsr_floor_attestation_passes(tmp_path, monkeypatch):
+    from research_utils.axis_screen import floor_at_k
+
+    packet = _backed_packet_at_k(tmp_path, monkeypatch, k=5)
+    packet["gate_attestations"].append({
+        "gate_id": "dsr_floor",
+        "units": "annualized_sharpe",
+        "measured_value": floor_at_k(5) + 0.05,
+        "hurdle_value": floor_at_k(5),
+        "basis": "is_panel",
+        "artifact_path": "tests/fixtures/promotion/artifacts/gate_stage2.json",
+    })
+    result = validate_promotion_packet(packet, repo_root=REPO_ROOT)
+    assert result.ok, result.reasons

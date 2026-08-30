@@ -60,6 +60,7 @@ from discovery.burned_segments import (
 from discovery.cost_model import bp_hurdle
 from discovery.deep_lane_admission import DeepLaneAdmission, evaluate_deep_admission
 from discovery.grammar import GrammarDriftError, GrammarValidationError, load_grammar_with_hash_check
+from discovery.k_count import DEFAULT_WINDOWS, compute_k_bracket
 from research_utils.repo_root import repo_root
 
 # Committed home for manifests: <repo-root>/discovery_manifests, cwd-independent.
@@ -637,6 +638,60 @@ def _require_cost_law(args):
     }
 
 
+def _require_stumpy_k_check(args, params: str):
+    """Optional STUMPY/matrix-profile K cross-check (root-cause finding 2026-08-29).
+
+    Mirrors the K_mismatch pattern already enforced elsewhere in this function:
+    mechanism-first refuses on ``catalogue_k != registered_k`` (admission_schema),
+    deep lane refuses on ``search_space_size != grammar.generation_budget``. Both
+    exist because *some* declared K has a derivable ground truth to check against.
+    STUMPY/matrix-profile searches are the same shape -- ``discovery.k_count``
+    already computes K_DSR = 22 + 1 + sum(T // m for m in windows) from the IS bar
+    count and the frozen window set -- but nothing called it here, leaving
+    --search-space-size a hand-typed integer even for this one closed-form case.
+
+    Opt-in, not a new required flag: fires only when --tool stumpy and the parsed
+    --params/--params-file JSON carries a "T" (IS bar count) field. A no-op for
+    every other tool, and for stumpy campaigns that haven't adopted the field yet
+    -- same graduate-after-use posture as the cost-law pre-flight (ADR 2026-07-16).
+    Making this mandatory on every --tool stumpy open needs its own ADR.
+
+    Returns the computed KBracket dict on a matching cross-check, or None when
+    the check did not apply.
+    """
+    if getattr(args, "tool", None) != "stumpy":
+        return None
+    try:
+        parsed = json.loads(params) if params else {}
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(parsed, dict) or "T" not in parsed:
+        return None
+    try:
+        t_bars = int(parsed["T"])
+    except (TypeError, ValueError):
+        sys.exit("ABORT: params.T must be an integer IS bar count for the stumpy K cross-check.")
+    windows_raw = parsed.get("windows", DEFAULT_WINDOWS)
+    try:
+        windows = tuple(int(w) for w in windows_raw)
+    except (TypeError, ValueError):
+        sys.exit("ABORT: params.windows must be a list of integer window lengths.")
+    try:
+        bracket = compute_k_bracket(t_bars, windows)
+    except ValueError as exc:
+        sys.exit(f"ABORT: stumpy K cross-check could not compute K_DSR: {exc}")
+    if args.search_space_size != bracket.k_dsr:
+        sys.exit(
+            f"ABORT: --search-space-size {args.search_space_size} does not match "
+            f"the closed-form K_DSR={bracket.k_dsr} computed from params.T={t_bars}, "
+            f"windows={windows} (discovery.k_count). K has a derivable ground "
+            "truth here, the same as mechanism-first's catalogue_k and deep "
+            "lane's grammar.generation_budget -- fix --search-space-size or "
+            "correct params.T / params.windows."
+        )
+    return bracket.as_dict()
+
+
 def open_run(args):
     run_id = args.run_id or f"disc_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     if _path(run_id).exists():
@@ -667,6 +722,7 @@ def open_run(args):
     # opt-in on either lane, before any manifest write.
     cost_law_summary = _require_cost_law(args)
     params = _resolve_params(args)
+    stumpy_k_check = _require_stumpy_k_check(args, params)
     manifest = {
         "run_id": run_id,
         "status": "open",
@@ -707,6 +763,8 @@ def open_run(args):
         manifest["prereg"] = prereg_rel
     if cost_law_summary is not None:
         manifest["cost_law_preflight"] = cost_law_summary
+    if stumpy_k_check is not None:
+        manifest["stumpy_k_check"] = stumpy_k_check
     _save(manifest)
     print(f"[open]   registered '{run_id}'")
     print(f"[open]   tool={args.tool}  K={args.search_space_size:,}  alpha={args.alpha}")
@@ -728,6 +786,44 @@ def _bh(pvals, K, alpha):
     return rows, max_reject
 
 
+def _resolve_search_log(args):
+    """Optional actual-search-trace artifact (root-cause finding 2026-08-29).
+
+    For tools whose K has no closed form (pysr, gplearn, tsfresh, ...), nothing
+    can verify a declared K was truthful -- there is no ground truth to
+    cross-check against, unlike stumpy's window/T formula or deep lane's
+    grammar.generation_budget. The honest fallback per this skill's own §6.2
+    ("audit on regret") is not a verifier that doesn't exist; it is making
+    sure a regret-audit has something to open. When supplied, --search-log
+    must point to a non-empty file (e.g. a restart/seed/init log); its path
+    (and entry count, when it parses as a JSON list) is recorded on the
+    manifest at close time so a later audit can compare the declared K
+    against what the file actually shows was run.
+
+    Opt-in: omitting --search-log changes nothing (today's status quo).
+    Presence-only check, same posture as the reachability attestation -- this
+    cannot verify the log is complete or truthful, only that a citable trace
+    exists to audit against.
+    """
+    path = getattr(args, "search_log", None)
+    if path is None:
+        return None
+    p = Path(path)
+    if not p.exists() or not p.is_file():
+        sys.exit(f"ABORT: --search-log {path}: file not found.")
+    text = p.read_text(encoding="utf-8")
+    if not text.strip():
+        sys.exit(f"ABORT: --search-log {path}: file is empty.")
+    entry_count = None
+    try:
+        parsed = json.loads(text)
+        if isinstance(parsed, list):
+            entry_count = len(parsed)
+    except json.JSONDecodeError:
+        pass
+    return {"path": str(path), "entry_count": entry_count}
+
+
 def close_run(args):
     manifest = _load(args.run_id)
     if manifest["status"] != "open":
@@ -735,6 +831,7 @@ def close_run(args):
 
     # Optional; validated before any close write when the flag is present.
     rule_provenance = _resolve_rule_provenance(args)
+    search_log = _resolve_search_log(args)
 
     # Operator-stopped closure (ADR 2026-07-26 clause 2-C): a campaign halted by
     # operator direction BEFORE its declared reads executed banks the EXECUTED
@@ -772,6 +869,8 @@ def close_run(args):
         manifest["closure_mode"] = "operator-stopped"
         manifest["stop_reason"] = args.stop_reason
         manifest["executed_looks"] = args.executed_looks
+        if search_log is not None:
+            manifest["search_log"] = search_log
         manifest["results"] = {
             "n_submitted": 0,
             "executed_k": args.executed_k,
@@ -826,6 +925,8 @@ def close_run(args):
 
     manifest["status"] = "closed"
     manifest["closed_at"] = _now()
+    if search_log is not None:
+        manifest["search_log"] = search_log
     manifest["results"] = {
         "n_submitted": len(pvals),
         "naive_alpha": alpha,
@@ -991,6 +1092,13 @@ def build_parser():
                         "provenance path. When supplied, matching close candidates "
                         "gain a rule_provenance_path field (additive; omit for "
                         "byte-identical legacy manifests).")
+    c.add_argument("--search-log", default=None,
+                   help="Optional path to a non-empty actual-search-trace artifact "
+                        "(restart/seed/init log) for tools whose K has no closed "
+                        "form (pysr, gplearn, ...). Presence-only check; recorded "
+                        "on the manifest as `search_log` so a later regret-audit "
+                        "has a citable trace to check declared K against. Omit for "
+                        "byte-identical legacy manifests.")
     c.set_defaults(func=close_run)
 
     s = sub.add_parser("status", help="Print one manifest, or list all.")

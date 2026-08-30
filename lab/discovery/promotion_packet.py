@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Literal, TypedDict
 
 from discovery.k_ledger_check import verify_manifest_backing
+from research_utils.axis_screen import CAP, floor_at_k
 
 Decision = Literal["Pass", "Fail"]
 
@@ -184,7 +185,18 @@ def validate_promotion_packet(
     # required-keys list above -- omitting it keeps today's status quo for
     # packets that predate this check or aren't backed by lab/discovery mining
     # (schema_version is unchanged; this is additive, not a new required field).
+    #
+    # K-conditional floor cross-check (root-cause finding 2026-08-29): backing
+    # confirms a manifest exists and is closed, but says nothing about whether
+    # the DSR floor implied by ITS K was ever cleared -- floor_at_k(K) rises
+    # fast enough that a backed-but-uncorrected candidate at K above the
+    # reachable band (floor_at_k(K) > CAP) can otherwise ride the same
+    # unaudited-self-report gap admission_schema.py closes at open time. When
+    # that's the case, require a `dsr_floor` gate_attestation whose
+    # `hurdle_value` is at least that K's floor -- reusing the attestation slot
+    # promotion_packet already validates below, not a new field.
     run_id = raw.get("discovery_run_id")
+    required_dsr_floor: float | None = None
     if run_id is not None:
         if not isinstance(run_id, str) or not run_id.strip():
             reasons.append("discovery_run_id_empty")
@@ -192,6 +204,11 @@ def validate_promotion_packet(
             ledger_result = verify_manifest_backing(run_id)
             if not ledger_result.ok:
                 reasons.append(f"discovery_run_id_unbacked:{','.join(ledger_result.reasons)}")
+            else:
+                k = ledger_result.manifest["K"]
+                floor = floor_at_k(int(k))
+                if floor > CAP:
+                    required_dsr_floor = floor
 
     claims = raw["claims"]
     if not isinstance(claims, list) or not claims:
@@ -206,6 +223,9 @@ def validate_promotion_packet(
     else:
         for i, att in enumerate(attestations):
             reasons.extend(_check_attestation(att, i))
+
+    if required_dsr_floor is not None and isinstance(attestations, list):
+        reasons.extend(_check_k_conditional_floor(attestations, required_dsr_floor))
 
     reasons.extend(_check_self_tests(raw["self_tests"]))
 
@@ -331,6 +351,32 @@ def _check_attestation(att: Any, index: int) -> list[str]:
         reasons.append(f"{prefix}:measured_value_not_numeric")
     if "hurdle_value" in att and not isinstance(att["hurdle_value"], (int, float)):
         reasons.append(f"{prefix}:hurdle_value_not_numeric")
+    return reasons
+
+
+def _check_k_conditional_floor(attestations: list[Any], required_floor: float) -> list[str]:
+    """Require a `dsr_floor` attestation at or above the backing manifest's
+    K-conditional floor when that floor exceeds CAP (root-cause finding
+    2026-08-29). A missing attestation means the DSR-conditional correction
+    this K requires was never even claimed; a present-but-understated one
+    means the claim used a stale or wrong-K hurdle -- both are refuse reasons,
+    same as any other wrong-units/wrong-basis §R defect this module catches.
+    """
+    dsr_attestations = [
+        att
+        for att in attestations
+        if isinstance(att, dict) and att.get("gate_id") == "dsr_floor"
+    ]
+    if not dsr_attestations:
+        return [f"discovery_run_id_k_conditional_floor_missing:{required_floor:.4f}"]
+    reasons: list[str] = []
+    for att in dsr_attestations:
+        hurdle = att.get("hurdle_value")
+        if not isinstance(hurdle, (int, float)) or hurdle < required_floor - 1e-9:
+            reasons.append(
+                f"discovery_run_id_k_conditional_floor_understated:"
+                f"{hurdle!r}:{required_floor:.4f}"
+            )
     return reasons
 
 
