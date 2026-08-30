@@ -205,6 +205,68 @@ def test_k_above_reachable_band_with_inf_hurdle_fails(tmp_path, monkeypatch):
     assert any(r.startswith("discovery_run_id_k_conditional_floor_understated:") for r in result.reasons)
 
 
+def test_k_above_reachable_band_with_huge_int_measured_value_passes_not_crashes(
+    tmp_path, monkeypatch
+):
+    """math.isfinite(10**1000) raises OverflowError -- a JSON-supplied
+    astronomically large but technically-finite int must be handled without
+    crashing the validator (Codex review, PR #221). An int is exact and
+    never NaN/inf by construction, so this is a legitimate (if odd-looking)
+    finite value -- this check only cares whether hurdle clears the floor,
+    which it does here, so the correct outcome is a clean Pass, not a crash."""
+    packet = _backed_packet_at_k(tmp_path, monkeypatch, k=5)
+    packet["gate_attestations"].append({
+        "gate_id": "dsr_floor",
+        "units": "annualized_sharpe",
+        "measured_value": 10**1000,
+        "hurdle_value": 1.79,
+        "basis": "is_panel",
+        "artifact_path": "tests/fixtures/promotion/artifacts/gate_stage2.json",
+    })
+    result = validate_promotion_packet(packet, repo_root=REPO_ROOT)
+    assert result.ok, result.reasons
+
+
+def test_k_above_reachable_band_with_huge_int_hurdle_passes_not_crashes(tmp_path, monkeypatch):
+    """A huge int hurdle is technically finite and trivially clears any
+    required floor -- not a bypass (a too-LOW hurdle would be), just an
+    odd-looking value. The point of this test is no crash, not a refusal."""
+    packet = _backed_packet_at_k(tmp_path, monkeypatch, k=5)
+    packet["gate_attestations"].append({
+        "gate_id": "dsr_floor",
+        "units": "annualized_sharpe",
+        "measured_value": 1.79,
+        "hurdle_value": 10**1000,
+        "basis": "is_panel",
+        "artifact_path": "tests/fixtures/promotion/artifacts/gate_stage2.json",
+    })
+    result = validate_promotion_packet(packet, repo_root=REPO_ROOT)
+    assert result.ok, result.reasons
+
+
+def test_refuter_handles_huge_int_measured_value_not_crashes(tmp_path):
+    """float(10**1000) also raises OverflowError -- the refuter's pre-cast
+    must not crash on the same adversarial input (Codex review, PR #221).
+    stage2_cost_law is a "bigger is better" gate, so an astronomically large
+    measured_value legitimately clears its hurdle -- the correct outcome
+    here is a clean Pass, not a crash."""
+    packet = json.loads(CLEAN.read_text(encoding="utf-8"))
+    packet["gate_attestations"][0]["measured_value"] = 10**1000
+    result = refute_promotion_packet(packet, repo_root=REPO_ROOT)
+    assert result.ok, result.reasons
+
+
+def test_refuter_rejects_huge_int_measured_value_against_ceiling_gate(tmp_path):
+    """survivor_bust is a ceiling gate (lower measured is better); an
+    astronomically large measured_value must fail that comparison cleanly,
+    not crash."""
+    packet = json.loads(CLEAN.read_text(encoding="utf-8"))
+    packet["gate_attestations"][1]["measured_value"] = 10**1000
+    result = refute_promotion_packet(packet, repo_root=REPO_ROOT)
+    assert result.decision == "Fail"
+    assert any(r.startswith("refuter:gate_fail:") for r in result.reasons)
+
+
 def _backed_packet_deep_lane(tmp_path, monkeypatch, k: int, confirm_years: float) -> dict:
     from research_utils.axis_screen import floor_at_k
 

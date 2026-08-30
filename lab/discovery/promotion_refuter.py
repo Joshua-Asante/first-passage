@@ -7,12 +7,12 @@ absence, and ceiling re-read drift between validate and promote.
 from __future__ import annotations
 
 import json
-import math
 from pathlib import Path
 from typing import Any
 
 from discovery.promotion_packet import (
     ValidationResult,
+    _is_finite_real,
     load_ceilings,
     validate_promotion_packet,
 )
@@ -79,14 +79,19 @@ def refute_promotion_packet(
         if not (root / ap).is_file():
             reasons.append(f"refuter:artifact_missing:{ap}")
         # Same-units numeric clearance — no unit conversion allowed here.
-        measured = float(att["measured_value"])
-        hurdle = float(att["hurdle_value"])
+        # No explicit float() cast: it raises OverflowError on a JSON-supplied
+        # magnitude beyond a C double's range (e.g. 10**1000), which would
+        # crash the refuter on an adversarial packet instead of failing it
+        # cleanly (Codex review, PR #221). int/float compare exactly without
+        # casting (CPython), so the raw values are used as-is below.
+        measured = att["measured_value"]
+        hurdle = att["hurdle_value"]
         gate_id = att["gate_id"]
         # Any comparison against NaN is False, so a NaN/inf measured or
         # hurdle would otherwise sail through both the > and < branches below
         # unrejected (Codex review, PR #218) -- reject non-finite values
         # outright rather than let a bad comparison read as "clears the gate".
-        if not (math.isfinite(measured) and math.isfinite(hurdle)):
+        if not (_is_finite_real(measured) and _is_finite_real(hurdle)):
             reasons.append(f"refuter:gate_non_finite:{gate_id}")
         elif gate_id in _CEILING_GATES:
             if measured > hurdle:

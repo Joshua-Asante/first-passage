@@ -366,6 +366,27 @@ def _check_attestation(att: Any, index: int) -> list[str]:
     return reasons
 
 
+def _is_finite_real(x: Any) -> bool:
+    """True for a value usable as a floor/measured comparand.
+
+    Python ints are exact and never NaN/inf by construction -- do not call
+    math.isfinite on one, which raises OverflowError for a magnitude beyond
+    a C double's range (e.g. a JSON-supplied 10**1000): an adversarial
+    packet would otherwise crash the validator with an unhandled exception
+    instead of receiving a normal Fail (Codex review, PR #221). Only float
+    values can actually be NaN/inf, so isfinite is reserved for those; the
+    later `<`/`>` comparisons work correctly on arbitrary-precision ints
+    without any explicit float() cast (CPython compares int/float exactly).
+    """
+    if isinstance(x, bool):
+        return False
+    if isinstance(x, int):
+        return True
+    if isinstance(x, float):
+        return math.isfinite(x)
+    return False
+
+
 def _check_k_conditional_floor(attestations: list[Any], required_floor: float) -> list[str]:
     """Require a `dsr_floor` attestation at or above the backing manifest's
     K-conditional floor when that floor exceeds CAP (root-cause finding
@@ -391,13 +412,11 @@ def _check_k_conditional_floor(attestations: list[Any], required_floor: float) -
         # paired with a NaN measured value satisfies "hurdle >= floor" while
         # never declaring a real measured Sharpe (Codex review, PR #218,
         # second pass -- _check_attestation and promotion_refuter's own
-        # measured<hurdle comparison are equally NaN-blind). math.isfinite
-        # rejects NaN, +inf, and -inf alike on both fields.
+        # measured<hurdle comparison are equally NaN-blind). _is_finite_real
+        # rejects NaN/+inf/-inf on both fields without crashing on a huge int.
         if (
-            not isinstance(hurdle, (int, float))
-            or not math.isfinite(hurdle)
-            or not isinstance(measured, (int, float))
-            or not math.isfinite(measured)
+            not _is_finite_real(hurdle)
+            or not _is_finite_real(measured)
             or hurdle < required_floor - 1e-9
         ):
             reasons.append(
