@@ -21,6 +21,7 @@
   **Authoritative results:** `.../c3_stratified_results.json`. Superseded (secondary,
   disclosed) script/results: `c3_volume_regime.py` / `c3_results.json`.
 - **Observed at:** 2026-08-29 (original run and this same-day correction).
+- **K:** [`discovery_manifests/mymdd_1_2026_08_29.json`](../../../discovery_manifests/mymdd_1_2026_08_29.json), K=5, this cell's own naive marginal `p_two_sided=0.0115` (candidate 3, per `c3_results.json`) matches the closed manifest's own rank-3 BH row exactly (`bh_threshold=0.03`, `bh_reject: true`) — this candidate passed both naive alpha and BH in the original K=5 screen. Added 2026-08-30 (Codex review, PR #223) — this notice's own `INCREMENT` Status routes it the same way `GRADUATE` does, and it shares the identical `floor_at_k(5)=1.1150 > CAP=1.0` violation as this batch's other two promoted MYM notices; `scripts/audit_notice_grade_k_correction.py` is widened in the same PR to scan `INCREMENT`-labeled Status lines too, not just `GRADUATE`. Disclosed, not yet resolved (see `Q-RANGEXFER-1` §11).
 
 ---
 

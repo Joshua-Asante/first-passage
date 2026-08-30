@@ -49,7 +49,7 @@ def test_graduate_high_k_flagged(tmp_path, capsys):
     assert "N-2026-01-01-high.md" in out
     assert "discovery_manifests/high.json" in out
     assert "K=5" in out
-    assert "[audit] 1 flagged / 1 GRADUATE notices scanned / 1 total notices" in out
+    assert "[audit] 1 flagged / 1 GRADUATE/INCREMENT notices scanned / 1 total notices" in out
     assert err == ""
 
 
@@ -63,7 +63,7 @@ def test_graduate_in_band_k_not_flagged(tmp_path, capsys):
     code, out, err = _run(tmp_path, capsys)
     assert code == 0
     assert "N-2026-01-01-low.md" not in out.split("[audit]")[0]
-    assert "[audit] 0 flagged / 1 GRADUATE notices scanned / 1 total notices" in out
+    assert "[audit] 0 flagged / 1 GRADUATE/INCREMENT notices scanned / 1 total notices" in out
     assert err == ""
 
 
@@ -77,7 +77,7 @@ def test_held_high_k_not_flagged(tmp_path, capsys):
     )
     code, out, err = _run(tmp_path, capsys)
     assert code == 0
-    assert "[audit] 0 flagged / 0 GRADUATE notices scanned / 1 total notices" in out
+    assert "[audit] 0 flagged / 0 GRADUATE/INCREMENT notices scanned / 1 total notices" in out
     assert err == ""
 
 
@@ -92,7 +92,7 @@ def test_held_table_cell_body_graduate_not_flagged(tmp_path, capsys):
     )
     code, out, err = _run(tmp_path, capsys)
     assert code == 0
-    assert "[audit] 0 flagged / 0 GRADUATE notices scanned / 1 total notices" in out
+    assert "[audit] 0 flagged / 0 GRADUATE/INCREMENT notices scanned / 1 total notices" in out
     assert "historical.json" not in out.split("[audit]")[0]
     assert err == ""
 
@@ -106,7 +106,7 @@ def test_missing_manifest_skip_exit_zero(tmp_path, capsys):
     code, out, err = _run(tmp_path, capsys)
     assert code == 0
     assert "[skip] manifest not found: discovery_manifests/absent.json" in err
-    assert "[audit] 0 flagged / 1 GRADUATE notices scanned / 1 total notices" in out
+    assert "[audit] 0 flagged / 1 GRADUATE/INCREMENT notices scanned / 1 total notices" in out
 
 
 def test_two_distinct_manifests_checked_independently(tmp_path, capsys):
@@ -124,7 +124,26 @@ def test_two_distinct_manifests_checked_independently(tmp_path, capsys):
     body = out.split("[audit]")[0]
     assert "discovery_manifests/high.json" in body
     assert "discovery_manifests/low.json" not in body
-    assert "[audit] 1 flagged / 1 GRADUATE notices scanned / 1 total notices" in out
+    assert "[audit] 1 flagged / 1 GRADUATE/INCREMENT notices scanned / 1 total notices" in out
+
+
+def test_increment_high_k_flagged(tmp_path, capsys):
+    """Added 2026-08-30 (Codex review, PR #223): a Status line reading
+    INCREMENT rather than GRADUATE routes into a Q-brief the same way and
+    must not be silently skipped just because it uses the other word."""
+    _write_manifest(tmp_path, "high.json", 5)
+    _write_notice(
+        tmp_path,
+        "N-2026-01-01-increment.md",
+        "**Status:** `OPEN` — **INCREMENT** (both strata decisive)\n\n"
+        "discovery_manifests/high.json\n",
+    )
+    code, out, err = _run(tmp_path, capsys)
+    assert code == 0
+    assert "N-2026-01-01-increment.md" in out
+    assert "K=5" in out
+    assert "[audit] 1 flagged / 1 GRADUATE/INCREMENT notices scanned / 1 total notices" in out
+    assert err == ""
 
 
 def test_two_graduate_notices_same_manifest_two_rows(tmp_path, capsys):
@@ -147,4 +166,4 @@ def test_two_graduate_notices_same_manifest_two_rows(tmp_path, capsys):
     assert rows[0].startswith("N-2026-01-01-a.md")
     assert rows[1].startswith("N-2026-01-01-b.md")
     assert all("discovery_manifests/shared.json" in ln for ln in rows)
-    assert "[audit] 2 flagged / 2 GRADUATE notices scanned / 2 total notices" in out
+    assert "[audit] 2 flagged / 2 GRADUATE/INCREMENT notices scanned / 2 total notices" in out

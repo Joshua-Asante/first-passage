@@ -23,6 +23,7 @@
   `candidate4_gap_magnitude_STRATIFIED`. Superseded (secondary, disclosed) script/results:
   `c2_c4_increment_falsifiers.py` / `c2_c4_results.json` key `candidate4_gap_magnitude`.
 - **Observed at:** 2026-08-29 (this session, both runs).
+- **K:** [`discovery_manifests/mymdd_1_2026_08_29.json`](../../../discovery_manifests/mymdd_1_2026_08_29.json), K=5, this cell's own naive marginal `p=0.0015` (candidate 4, per §1 above and `c2_c4_results.json`'s `candidate4_gap_magnitude` key) matches the closed manifest's own unique rank-1 BH row exactly (`bh_threshold=0.01`, `bh_reject: true` — corrected 2026-08-30, Codex review, PR #223: an earlier draft of this bullet claimed the mapping wasn't independently verifiable; it is, since 0.0015 is unique among the manifest's five p-values) — this candidate passed both naive alpha and BH in the original K=5 screen. Added retroactively 2026-08-30 for parity with MNQ's sibling notices' own `**K:**` bullet convention — this cell's `floor_at_k(5)=1.1150 > CAP=1.0` (the DSR-reachable band), same as MNQ's three K-correction-audit-flagged notices; disclosed, not yet resolved (see `Q-RANGEXFER-1` §11).
 
 ---
 
