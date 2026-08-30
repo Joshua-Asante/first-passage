@@ -95,6 +95,15 @@ lab/archive/**/inputs/*.csv
 # from the gitignored raw BAR_EXPORT harness export; not used by the final S10 remeasure (see
 # RESULTS.md §10.0 for why) and not decision evidence — kept out same as other vendor-derived bars.
 lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/data/6j_m15_recovered.csv
+# MYM bar-volume-regime scored-frame cache (2026-08-30) — a full bar-level (bias_volume,
+# bias_own_range, y) scored cache, 139,605 rows, written by c3_stratified_rerun.py so a
+# vendor-bar-absent session can re-run the within-stratum null without MYM_M15.csv. Regenerable
+# from the gitignored vendor bars (now known to be a cheap `cp` from the main checkout, not a
+# genuine local/remote gate — see 2026-08-30 session finding); the decision-relevant numbers it
+# produced are already committed in c3_stratified_results.json. Same regenerable-not-evidence
+# class as 6j_m15_recovered.csv below.
+lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c3_stratified_frame.csv
+
 # NAS100 Identify/Inquire loop (2026-06-20) — vendor-derived raw price series (Pepperstone TOS — local only).
 # Aggregate results (stats JSON, quarter table, results JSON) ARE committed; raw OHLC / per-leg prices are not.
 # Study archived 2026-07-12 — patterns kept under archive path.

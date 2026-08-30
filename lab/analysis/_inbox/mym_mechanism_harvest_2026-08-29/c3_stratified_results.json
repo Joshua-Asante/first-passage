@@ -35,20 +35,20 @@
     "n_valid": 4000,
     "p_lift_le_0": 0.0
   },
-  "increment_exists_threshold_check": true,
-  "verdict": "UNRESOLVED (null-calibrated p uncomputed)",
   "min_lift_null_calibrated": {
-    "p_ge_obs": null,
-    "observed": null,
+    "p_ge_obs": 0.00024993751562109475,
+    "observed": 0.1648880976018821,
     "n_draws": 4000,
     "seed": 20261829,
-    "frame_source": "UNCOMPUTED \u2014 no vendor bars, no scored-frame cache",
-    "n_scored_null": null,
+    "frame_source": "MYM_M15.csv (n=139605)",
+    "n_scored_null": 139605,
     "construction": "within_stratum_circular_shift",
     "includes_identity": true
   },
   "strata_null_calibrated_p": {
-    "0": null,
-    "1": null
-  }
+    "0": 0.00024993751562109475,
+    "1": 0.00024993751562109475
+  },
+  "increment_exists_threshold_check": true,
+  "verdict": "INCREMENT"
 }
