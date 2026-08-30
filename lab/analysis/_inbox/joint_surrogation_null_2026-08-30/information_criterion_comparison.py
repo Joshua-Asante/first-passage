@@ -132,6 +132,27 @@ penalty term that is unaffected by this fix makes that pre-existing
 advantage COUNT FOR MORE, not less -- so this fix was expected to widen
 ARFIMA's BIC margin, not overturn the verdict, and the re-run below
 confirms that expectation rather than being run blind to it.
+
+SECOND-PASS CORRECTIONS (Codex review, PR #225, second review round on the
+first round's own fixes -- both independently re-verified before fixing):
+
+- **Ljung-Box degrees of freedom.** `acorr_ljungbox` was called with its
+  default `model_df=0`, but ARFIMA's own residuals come from a model with 2
+  fitted dynamic parameters (phi, d) -- the default overstates the
+  p-value. Verified directly before fixing: at `model_df=2`, `rth_range`'s
+  own lag-30 p drops from 0.0734 to 0.0446, flipping it from PASS to FAIL.
+  Fixed for both the ARFIMA residual check (`model_df=2`) and the
+  competitor AR(p) residual check (`model_df=p`, that competitor's own
+  fitted coefficient count) -- both were previously using the wrong (too
+  generous) default.
+- **The residual-machinery validation and multi-lag robustness table were
+  never actually committed anywhere** -- the same class of defect finding
+  #3 already found and fixed once in this file, recurring in a NEW check
+  added mid-correction. Fixed by implementing `residual_diagnostic_self_
+  test` (validates the Ljung-Box/residual machinery against known-true
+  parameters, per channel) and `residual_multilag_table` (the 5/10/15/20/
+  25/30-lag table) as real functions, called from `main()` and persisted
+  in this file's own JSON output alongside the real-data result.
 """
 from __future__ import annotations
 
@@ -339,6 +360,45 @@ def ar_p_residuals(x_demeaned: np.ndarray, phis: np.ndarray) -> np.ndarray:
     return y - X @ phis
 
 
+def residual_diagnostic_self_test(phi: float, d: float, n: int = 1189, n_reps: int = 10,
+                                   seed: int = 999) -> dict:
+    """PERSISTED validation of the residual/Ljung-Box machinery (Codex
+    review, PR #225 second pass -- this had previously only been run as an
+    uncommitted ad hoc check, the same class of defect as finding #3):
+    at TRUE (phi,d), the Ljung-Box test on `arfima_ar_inf_residuals` should
+    reject at close to its own nominal ~5-10% rate (a correctly-specified
+    model's own residuals should look like white noise), not confirm
+    spurious structure. Run once per channel, using THAT channel's own
+    fitted (phi,d) as the "true" parameter for the check (directly relevant
+    to whether the machinery is trustworthy on the exact real-data regime
+    being tested, not a generic unrelated parameter set)."""
+    burn = 800
+    psi = ar1_fracdiff_weights(phi, d, burn)
+    rng = np.random.default_rng(seed)
+    p_values = []
+    for _ in range(n_reps):
+        e = rng.standard_normal(n + burn)
+        x = _causal_filter(e, psi)[burn: burn + n]
+        x = x - x.mean()
+        resid = arfima_ar_inf_residuals(x, phi, d, RESID_J)
+        lb = acorr_ljungbox(resid, lags=[LJUNG_BOX_LAG], model_df=2, return_df=True)
+        p_values.append(float(lb["lb_pvalue"].iloc[0]))
+    reject_rate = sum(p <= 0.05 for p in p_values) / n_reps
+    return dict(phi=phi, d=d, n=n, n_reps=n_reps, p_values=p_values, reject_rate=reject_rate,
+                note="machinery-validation check: a correctly-specified model's own residuals "
+                     "should reject at roughly this test's own nominal rate, not systematically more")
+
+
+def residual_multilag_table(x_demeaned: np.ndarray, phi: float, d: float, J: int,
+                             lags=(5, 10, 15, 20, 25, 30), model_df: int = 2) -> dict:
+    """PERSISTED multi-lag robustness table for the real-data residual
+    check (Codex review, PR #225 second pass): confirms a single-lag
+    Ljung-Box result is not an artifact of the one lag chosen."""
+    resid = arfima_ar_inf_residuals(x_demeaned, phi, d, J)
+    lb = acorr_ljungbox(resid, lags=list(lags), model_df=model_df, return_df=True)
+    return {int(lag): float(p) for lag, p in zip(lags, lb["lb_pvalue"])}
+
+
 def main():
     st = self_test()
     if not st["both_pass"]:
@@ -420,26 +480,46 @@ def main():
         x = train - train.mean()
         row = results[name]
         arfima_resid = arfima_ar_inf_residuals(x, row["arfima"]["phi"], row["arfima"]["d"], RESID_J)
-        lb_arfima = acorr_ljungbox(arfima_resid, lags=[LJUNG_BOX_LAG], return_df=True)
+        # Codex review, PR #225 second pass: `acorr_ljungbox` defaults to
+        # model_df=0, but these residuals come from a model with 2 fitted
+        # dynamic parameters (phi, d) -- the default overstates the
+        # p-value (too generous). Verified directly before fixing: at
+        # model_df=2, rth_range's own lag-30 p drops from 0.0734 to
+        # 0.0446, flipping it from PASS to FAIL. Fixed here.
+        lb_arfima = acorr_ljungbox(arfima_resid, lags=[LJUNG_BOX_LAG], model_df=2, return_df=True)
         p_arfima = float(lb_arfima["lb_pvalue"].iloc[0])
 
         # Closest AR(p) competitor (disclosed, not gating) -- confirms this
         # check has real discriminating power, not that it passes everything.
+        # Its own residuals come from a model with `p` fitted coefficients.
         competitor = min((k for k in row if k != "arfima"), key=lambda k: row[k]["bic"])
-        p_key = int(competitor.replace("ar", ""))
+        comp_p = int(competitor.replace("ar", ""))
         comp_phis = np.array(row[competitor]["phis"])
         comp_resid = ar_p_residuals(x, comp_phis)
-        lb_comp = acorr_ljungbox(comp_resid, lags=[LJUNG_BOX_LAG], return_df=True)
+        lb_comp = acorr_ljungbox(comp_resid, lags=[LJUNG_BOX_LAG], model_df=comp_p, return_df=True)
         p_comp = float(lb_comp["lb_pvalue"].iloc[0])
+
+        # PERSISTED (Codex review, PR #225 second pass finding): the
+        # residual-machinery sanity check and the multi-lag robustness
+        # table had previously only been run as uncommitted ad hoc checks
+        # during authoring -- the same class of defect as finding #3.
+        # Both are now computed and saved as part of this script's own run.
+        machinery_check = residual_diagnostic_self_test(row["arfima"]["phi"], row["arfima"]["d"],
+                                                          n=len(x), seed=999 if name == "on_range" else 998)
+        multilag = residual_multilag_table(x, row["arfima"]["phi"], row["arfima"]["d"], RESID_J)
 
         resid_clears[name] = bool(p_arfima > 0.05)
         resid_detail[name] = dict(arfima_ljungbox_p=p_arfima, n_resid_arfima=len(arfima_resid),
                                    competitor=competitor, competitor_ljungbox_p=p_comp,
-                                   n_resid_competitor=len(comp_resid))
+                                   n_resid_competitor=len(comp_resid),
+                                   machinery_validation=machinery_check, multilag_robustness=multilag)
         print(f"  [{name}] ARFIMA residual Ljung-Box p={p_arfima:.4f} "
               f"({'PASS -- consistent with white noise' if resid_clears[name] else 'FAIL -- residual structure remains'}) | "
               f"{competitor} (closest competitor) residual Ljung-Box p={p_comp:.4f} "
               f"({'also white' if p_comp > 0.05 else 'still shows structure -- confirms discriminating power'})")
+        print(f"    machinery validation (10 reps @ true params): reject_rate={machinery_check['reject_rate']:.2f} "
+              f"(expect close to nominal ~0.05-0.10 if machinery is trustworthy)")
+        print(f"    multi-lag robustness: {multilag}")
 
     clears = {name: bool(bic_clears[name] and resid_clears[name]) for name in channels}
     for name in channels:

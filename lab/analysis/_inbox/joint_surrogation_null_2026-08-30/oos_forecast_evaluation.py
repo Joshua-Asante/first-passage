@@ -121,8 +121,7 @@ import pandas as pd
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 from joint_iaaft import fit_var  # noqa: E402 -- reused verbatim, generic bivariate VAR(p) OLS fit
-from longmemory_copula import acf, estimate_phi_d_simulated  # noqa: E402 -- reused verbatim
-from scipy.stats import rankdata  # noqa: E402 -- ranks TRAIN-ONLY data (no leakage, see fit note below)
+from longmemory_copula import acf, ar1_fracdiff_weights, _causal_filter  # noqa: E402
 
 CSV = HERE.parent / "mnq_dailygeom_notice_2026-08-29" / "candidate24_joint_frame.csv"
 TRAIN_FRAC = 0.80
@@ -167,6 +166,66 @@ def ar_inf_pi_weights(phi: float, d: float, J: int) -> np.ndarray:
     pi[0] = b[0]
     pi[1:] = b[1:] - phi * b[:-1]
     return pi
+
+
+def estimate_phi_d_simulated_pearson(real_acf: np.ndarray, n: int, J: int, burn: int,
+                                      n_reps: int, seed: int,
+                                      phi_grid: np.ndarray, d_grid: np.ndarray) -> tuple[float, float, dict]:
+    """PEARSON-ACF simulated-method-of-moments calibration -- a LOCAL variant
+    of `longmemory_copula.estimate_phi_d_simulated`, used ONLY in this file.
+
+    Codex review (PR #225, second pass, finding on oos_forecast_evaluation.py
+    line 351): the shared `estimate_phi_d_simulated` ALWAYS scores candidate
+    (phi,d) against `acf(rankdata(y), ...)` of its simulated draws -- i.e. it
+    calibrates in RANK/Spearman space, unconditionally. The earlier fix for
+    finding #4 (see this file's own CORRECTIONS section above) made the FIT
+    TARGET consistent with that (ranking train-only data before computing
+    the target ACF) -- but this file's OWN forecasting step (`forecast_
+    arinf_path`) applies the resulting (phi,d)'s linear AR(inf) filter
+    directly to RAW (unranked) log-range values and scores raw-scale MSE.
+    A monotonic rank transform preserves Spearman correlation but NOT
+    Pearson autocovariances or conditional means -- so a (phi,d) pair
+    calibrated to match rank-ACF is not, in general, the correct linear
+    filter for raw-scale one-step-ahead conditional expectations. Fitting
+    the fit target correctly (finding #4) exposed this SECOND, deeper
+    inconsistency between the (now rank-consistent) fit and the (always
+    raw-scale) forecast.
+
+    FIXED here by decoupling entirely from the shared rank-based helper:
+    this function fits (phi,d) via the IDENTICAL grid-search/SMM structure,
+    but its own internal simulated-draw comparison uses PEARSON ACF
+    (`acf(y, max_lag)`, no rankdata) of RAW simulated values -- matching the
+    Pearson-ACF `real_acf` target this file's caller now passes (raw
+    log-range, not ranked). Fitting, the AR(inf) forecast filter, and MSE
+    scoring are now ALL consistently Pearson/raw-scale throughout this
+    file. This is a disclosed, deliberate departure from the rank-based
+    convention the REST of this directory uses (chosen because THIS
+    remedy specifically forecasts and scores on the raw log-range scale,
+    unlike every other module here, which only ever needs rank-preserving
+    generative surrogates) -- `longmemory_copula.estimate_phi_d_simulated`
+    itself is left untouched, so Round 2/3's own reproducibility is
+    unaffected."""
+    rng = np.random.default_rng(seed)
+    max_lag = len(real_acf)
+    best = (None, None, np.inf)
+    for phi in phi_grid:
+        for d in d_grid:
+            psi = ar1_fracdiff_weights(phi, d, J)
+            acc = np.zeros(max_lag)
+            for _ in range(n_reps):
+                e = rng.standard_normal(n + burn)
+                y = _causal_filter(e, psi)[burn: burn + n]
+                acc += acf(y, max_lag)   # PEARSON ACF -- the fix (no rankdata)
+            mean_acf = acc / n_reps
+            sse = float(np.sum((mean_acf - real_acf) ** 2))
+            if sse < best[2]:
+                best = (phi, d, sse)
+    phi_best, d_best, sse_best = best
+    info = dict(best_sse=sse_best, n_reps=n_reps, J=J, burn=burn,
+                phi_grid_lo=float(phi_grid[0]), phi_grid_hi=float(phi_grid[-1]), n_phi=len(phi_grid),
+                d_grid_lo=float(d_grid[0]), d_grid_hi=float(d_grid[-1]), n_d=len(d_grid),
+                method="simulation_calibrated_pearson")
+    return float(phi_best), float(d_best), info
 
 
 def forecast_arinf_path(pi: np.ndarray, hist: np.ndarray, h: int) -> np.ndarray:
@@ -274,37 +333,37 @@ def main():
     channels = dict(on_range=log_on, rth_range=log_rth)
 
     # ---------------- Fit all models on TRAIN ONLY ----------------
-    # Codex review (PR #225) finding #1: `estimate_phi_d_simulated`'s own SMM
-    # grid search ALWAYS scores candidate (phi,d) against `acf(rankdata(y), ...)`
-    # of its simulated draws (see longmemory_copula.py) -- i.e. it fits the
-    # RANK/Spearman ACF, regardless of what target array is passed in. Passing
-    # the Pearson ACF of raw (unranked) log-range train data as the fit target,
-    # as an earlier version of this file did, therefore minimized mismatched
-    # moments (verified directly: max |Pearson-ACF - rank-ACF| = 0.030 for
-    # on_range, 0.045 for rth_range on this exact train split) rather than
-    # either a genuine rank-ACF fit or a genuine log-Pearson fit. FIXED: rank
-    # the TRAIN-ONLY data before computing the target, matching what the
-    # estimator actually measures on the simulated side. This ranks ONLY the
-    # train portion (never touches test), so it does not reopen the
-    # leakage concern the log-space design was built to avoid -- that concern
-    # was specifically about ranking train+test JOINTLY (as normal_scores()
-    # does elsewhere in this directory), not about ranking train-only data to
-    # build a training-time fit target.
+    # Codex review (PR #225, first pass) finding #2: `hash(name)` is salted
+    # per Python process by default (PYTHONHASHSEED), making the seed --
+    # and therefore the fitted (phi,d) and the whole downstream forecast
+    # comparison -- NON-deterministic across runs/environments (confirmed
+    # materially outcome-relevant). FIXED: fixed integer seeds per channel,
+    # matching `_fit_real_params.py`'s own convention (101/102).
     #
-    # Codex finding #2: `hash(name)` is salted per Python process by default
-    # (PYTHONHASHSEED), making the seed -- and therefore the fitted (phi,d)
-    # and the whole downstream forecast comparison -- NON-deterministic across
-    # runs/environments (confirmed materially outcome-relevant: a different
-    # hash seed flips whether on_range clears at h=20). FIXED: fixed integer
-    # seeds per channel, matching `_fit_real_params.py`'s own convention
-    # (seed=101 for channel 1, seed=102 for channel 2).
+    # Codex review (PR #225, first AND second pass -- a two-part defect):
+    # first pass found the fit TARGET was Pearson-ACF while the shared
+    # `estimate_phi_d_simulated` helper always scores its simulated draws
+    # via rank-ACF -- a target/metric mismatch (quantified: 0.030/0.045
+    # max diff). Fixing that alone (ranking the train-only target) created
+    # a SECOND inconsistency the second review pass caught: this file's own
+    # forecast step (`forecast_arinf_path`) applies the fitted filter
+    # directly to RAW log-range values and scores raw-scale MSE, but a
+    # (phi,d) calibrated to rank-ACF does not, in general, describe the
+    # RAW series' own linear (Pearson) dynamics -- a monotonic transform
+    # preserves rank correlation, not Pearson autocovariance. FIXED
+    # properly this time by decoupling from the shared rank-based helper
+    # entirely: `estimate_phi_d_simulated_pearson` (this file, above) fits
+    # (phi,d) via an internal PEARSON-ACF simulated comparison, matched to
+    # a Pearson-ACF target computed on RAW (unranked) train data -- fit,
+    # forecast filter, and MSE scoring are now all consistently Pearson/
+    # raw-scale throughout this file.
     fits = {}
     channel_seeds = dict(on_range=101, rth_range=102)
     for name, x in channels.items():
         train = x[:n_train]
         lags = min(30, n_train // 3)
-        real_acf = acf(rankdata(train), lags)
-        phi, d, info = estimate_phi_d_simulated(
+        real_acf = acf(train - train.mean(), lags)
+        phi, d, info = estimate_phi_d_simulated_pearson(
             real_acf, n_train, J=800, burn=800, n_reps=4,
             phi_grid=np.linspace(-0.6, 0.9, 21), d_grid=np.linspace(0.01, 0.499, 25),
             seed=channel_seeds[name],

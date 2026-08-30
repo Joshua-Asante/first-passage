@@ -11,8 +11,11 @@ fixing) found this wrong on both counts.** Corrected: (1) the IC comparison's ow
 was relative-only (BIC-best among 5 candidates, which cannot detect "all 5 are inadequate");
 adding the absolute residual-whiteness check Codex's review demanded finds `on_range`'s fitted
 ARFIMA(1,d,0) — despite remaining BIC-best — still leaves real, robust, multi-lag-confirmed
-residual autocorrelation (Ljung-Box p=0.023 at lag 30). **Model adequacy does NOT clear on
-`on_range`**, so remedy 2 does not clear overall (it clears `rth_range` alone). (2) The
+residual autocorrelation (Ljung-Box p=0.013 at lag 30, corrected for fitted-parameter degrees of
+freedom per a SECOND Codex review pass — see "Round 4, second correction pass" below). **Model
+adequacy does NOT clear on EITHER channel** — a second review round caught that the same
+degrees-of-freedom correction also flips `rth_range` from PASS (p=0.073) to FAIL (p=0.045), so
+remedy 2 clears neither channel, not "`rth_range` alone" as the first correction pass stated. (2) The
 size/power re-certification's synthetic "ground truth" data was generated with a filter truncated
 at J=300 while the fitting/testing side used J=1200 — a confirmed, quantified (~0.058 ACF
 mismatch) truncation confound. Once corrected (matched truncation throughout), the true
@@ -849,14 +852,77 @@ python oos_forecast_evaluation.py
 # OVERALL VERDICT: MODEL ADEQUACY DOES NOT CLEAR via remedy 1 (byte-identical across re-runs)
 
 # Reproduce the corrected IC/BIC comparison (Remedy 2) -- now includes 2 self-tests + absolute
-# residual-whiteness check, ~15s
+# residual-whiteness check, ~15s (numbers below are POST second-pass correction, see below)
 python information_criterion_comparison.py
-# Expected: both self-tests PASS; ARFIMA BIC-best on both channels (wider margins than before);
-# on_range Ljung-Box p=0.023 (FAILS absolute check); rth_range p=0.073 (passes);
-# OVERALL VERDICT: MODEL ADEQUACY DOES NOT CLEAR via remedy 2 either
+# Expected: both self-tests PASS; ARFIMA BIC-best on both channels; on_range Ljung-Box p=0.013,
+# rth_range p=0.045 -- BOTH FAIL the absolute check; OVERALL VERDICT: MODEL ADEQUACY DOES NOT
+# CLEAR via remedy 2 either
 
 # Reproduce the corrected production-grade size/power re-certification -- ~7 min
 python _refit_per_replicate_positive_control_v2.py
 # Expected: null_rate=0.240 (Wilson CI [0.143,0.374]), alt_rate=0.380, binom_p_vs_nominal≈0.0000,
 # size_controlled=False, power_adequate=False, VERDICT: SIZE/POWER GATE DOES NOT CLEAR
+```
+
+## Round 4, second correction pass — Codex review (PR #225, second round): 3 more findings on
+the first correction pass's own new code, 2 fixed in-place; disposition unchanged but confirmed
+more decisively
+
+A second Codex review pass, on the commit carrying the first correction pass above, found 3
+further issues — all on code the first correction pass itself introduced. Each independently
+re-verified before fixing, same discipline as every prior round.
+
+**Finding A (P2) — the OOS-forecast remedy's fix for the earlier target mismatch created a NEW,
+deeper inconsistency.** The first correction pass fixed the (phi,d) fit target to match what
+`estimate_phi_d_simulated`'s own simulated comparison measures (rank-ACF) — but
+`oos_forecast_evaluation.py`'s forecasting step applies the resulting filter directly to RAW
+(unranked) log-range values and scores raw-scale MSE. A monotonic rank transform preserves
+Spearman correlation, not Pearson autocovariance or conditional means — so a (phi,d) calibrated to
+rank-ACF is not, in general, the correct linear filter for raw-scale forecasts. **Fixed** by
+decoupling entirely from the shared rank-based helper: a new local
+`estimate_phi_d_simulated_pearson` fits (phi,d) via an internal Pearson-ACF (not rank-ACF)
+simulated comparison, matched to a Pearson-ACF target on raw train data — fit, AR(∞) forecast
+filter, and MSE scoring are now all consistently Pearson/raw-scale throughout the file.
+`longmemory_copula.estimate_phi_d_simulated` itself is untouched (Round 2/3's own reproducibility
+unaffected). **Re-run**: the near-miss conclusion is unchanged (each channel still clears at a
+different horizon, never simultaneously); fitted (phi,d) shift modestly (on_range phi -0.15→-0.225).
+
+**Finding B (P2) — Ljung-Box was scored with the wrong degrees of freedom.** `acorr_ljungbox`
+defaults to `model_df=0`, but ARFIMA's own residuals come from a model with 2 fitted dynamic
+parameters (phi, d) — the default overstates the p-value. **Verified directly**: at
+`model_df=2`, `rth_range`'s own lag-30 p drops from 0.0734 to **0.0446**, flipping it from PASS to
+FAIL. **Fixed** for both the ARFIMA check (`model_df=2`) and the competitor AR(p) check
+(`model_df=p`, that competitor's own coefficient count — also previously wrong). **Re-run: `on_range`
+now scores p=0.0127 (was 0.0232) and `rth_range` now scores p=0.0446 (was 0.0734) — BOTH channels
+FAIL the absolute residual-whiteness check, not just `on_range`.** The multi-lag table (below)
+shows the two channels fail in different, disclosed shapes: `on_range` fails 5 of 6 tested lags
+decisively (p=0.010/0.060/0.006/0.008/0.024/0.013 at lags 5/10/15/20/25/30), while `rth_range`'s
+failure is concentrated at the longest lags only (p=0.242/0.289/0.187/0.082/0.063/0.045) — a real,
+if more marginal, failure, not a coin-flip miss at one arbitrary lag choice.
+
+**Finding C (P2) — the residual-machinery validation and multi-lag table were themselves never
+committed anywhere** (the identical class of defect finding #3 already fixed once, recurring in
+NEW code the first correction pass added). **Fixed**: `residual_diagnostic_self_test` (validates
+the Ljung-Box/residual machinery against each channel's own fitted parameters as ground truth —
+`on_range`: 10 reps, 1/10 reject at p≤0.05, close to nominal; `rth_range`: 0/10 reject, plausible
+at this small N) and `residual_multilag_table` are now real functions, called from `main()`, and
+persisted in the script's own JSON output.
+
+**Net effect on disposition: unchanged in DIRECTION (neither gate clears), strengthened in
+DEGREE.** Remedy 2 previously (first correction pass) cleared `rth_range` alone; with the
+degrees-of-freedom fix, it clears **neither** channel — a more thorough, more decisive
+confirmation that model adequacy does not clear via this remedy, not a reversal of the prior
+correction's own direction. The overall Round 4 disposition (neither gate clears; hard stop fires;
+§6 gate-table gap disclosed and raised to the operator) is unchanged.
+
+```bash
+# Reproduce the fully-corrected OOS forecast evaluation (Remedy 1) -- now Pearson-consistent
+python oos_forecast_evaluation.py
+# Expected: on_range clears at h=20 only, rth_range clears at h=40 only -- unchanged qualitatively
+
+# Reproduce the fully-corrected IC/BIC comparison (Remedy 2) -- model_df-corrected Ljung-Box,
+# persisted machinery validation + multi-lag table
+python information_criterion_comparison.py
+# Expected: on_range Ljung-Box p=0.0127, rth_range p=0.0446 -- BOTH FAIL the absolute check
+# (neither channel clears); machinery validation reject_rate ~0.00-0.10 at true params (sane)
 ```

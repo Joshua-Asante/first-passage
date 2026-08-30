@@ -214,23 +214,79 @@
   },
   "residual_whiteness": {
     "on_range": {
-      "arfima_ljungbox_p": 0.023223241117257876,
+      "arfima_ljungbox_p": 0.012713030518624779,
       "n_resid_arfima": 690,
       "competitor": "ar5",
-      "competitor_ljungbox_p": 0.04444754088829178,
-      "n_resid_competitor": 1184
+      "competitor_ljungbox_p": 0.009943024942323938,
+      "n_resid_competitor": 1184,
+      "machinery_validation": {
+        "phi": -0.14999999999999997,
+        "d": 0.3663898305084746,
+        "n": 1189,
+        "n_reps": 10,
+        "p_values": [
+          0.38439719302417324,
+          0.9720971216866314,
+          0.09657392524472387,
+          0.18328184847275775,
+          0.17896815508998015,
+          0.10953147583772754,
+          0.6926143914690445,
+          0.034394362696765296,
+          0.6872085179621005,
+          0.4345048799468671
+        ],
+        "reject_rate": 0.1,
+        "note": "machinery-validation check: a correctly-specified model's own residuals should reject at roughly this test's own nominal rate, not systematically more"
+      },
+      "multilag_robustness": {
+        "5": 0.010365001471926946,
+        "10": 0.059848547686900226,
+        "15": 0.0055718102077269615,
+        "20": 0.008220040854992224,
+        "25": 0.0239087790377638,
+        "30": 0.012713030518624779
+      }
     },
     "rth_range": {
-      "arfima_ljungbox_p": 0.07340769407669032,
+      "arfima_ljungbox_p": 0.04458341068856999,
       "n_resid_arfima": 690,
       "competitor": "ar5",
-      "competitor_ljungbox_p": 0.03619777089036982,
-      "n_resid_competitor": 1184
+      "competitor_ljungbox_p": 0.007729908699396333,
+      "n_resid_competitor": 1184,
+      "machinery_validation": {
+        "phi": -0.17499999999999993,
+        "d": 0.39125423728813563,
+        "n": 1189,
+        "n_reps": 10,
+        "p_values": [
+          0.41868372291691913,
+          0.839254340565522,
+          0.772460947655965,
+          0.2587228209607204,
+          0.6401358138525035,
+          0.3178248216891097,
+          0.07542838440905902,
+          0.9587086253330371,
+          0.22519116530556813,
+          0.69593896532535
+        ],
+        "reject_rate": 0.0,
+        "note": "machinery-validation check: a correctly-specified model's own residuals should reject at roughly this test's own nominal rate, not systematically more"
+      },
+      "multilag_robustness": {
+        "5": 0.24227212388843666,
+        "10": 0.2890719332668774,
+        "15": 0.18646741424236335,
+        "20": 0.08171242020695332,
+        "25": 0.06259830668275704,
+        "30": 0.04458341068856999
+      }
     }
   },
   "clears_per_channel": {
     "on_range": false,
-    "rth_range": true
+    "rth_range": false
   },
   "overall_clears": false,
   "verdict": "MODEL ADEQUACY DOES NOT CLEAR via remedy 2 either -- both candidate remedies exhausted",
