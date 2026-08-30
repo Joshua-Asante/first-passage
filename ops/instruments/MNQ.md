@@ -194,15 +194,23 @@ structure:
   3. **`bar-volume-regime`** (NEW): direction limb clean NULL; range limb real (ToD-matched lift
      +18.1pp, CI [0.673,0.695], n=136,020) and incrementally informative beyond the trigger bar's
      own range (+21-26pp within range-matched strata, despite same-bar volume/range correlation
-     0.88). **GRADUATE** (range) / **DROP** (direction).
+     0.88). **GRADUATE** (range) / **DROP** (direction). **Pre-Q opened 2026-08-30:**
+     [`Q-VOLREGIME-1`](../../docs/briefs/Q-VOLREGIME-1-intraday-bar-volume-regime.md), jointly
+     with MYM's own independently-corroborated same-day finding, scored per instrument.
   4. **`gap-magnitude-to-rth-range`**: same D5 cross-series re-scoping as #2. Naive marginals look
      unremarkable; the D5 stratified design surfaces a real **+17pp/+16pp** incremental lift the
      naive comparison masked (bootstrap p≈0.00225). **GRADUATE**, smaller effect than #2, plausibly
      overlapping with it (untested this session).
   5. **`closing-location-autocorrelation`** (NEW): CLV lag-1 Spearman rho=**−0.0301** on the full
      141,540-pair bar sequence, clears a block-shuffle null by a wide margin (p_lower=0.0005, both
-     halves same sign) but is small in magnitude and this candidate's raised-bar admission-route is
-     explicitly unresolved. **HOLD** pending a route ruling and an economic-magnitude follow-up.
+     halves same sign) but is small in magnitude and this candidate's raised-bar admission-route was
+     unresolved at the time. **HOLD** pending a route ruling and an economic-magnitude follow-up.
+     ⚠ **Route resolved same day** by [`2026-08-29 CLV admission-route ADR`](../../docs/adr/2026-08-29-clv-autocorrelation-admission-route-scope.md)
+     (`Accepted`, ratified 2026-08-29, corrected and re-ratified 2026-08-30 — see that ADR's Change history): a
+     bar-shape statistic with no entry rule does not itself trigger the raised bar's gate, and if
+     converted into a construct, Route 1 is plausibly open (independent of Route 3) with Route 2
+     inapplicable — the $0 cost-law pre-screen against MNQ's own N6 hurdle remains the concrete next
+     step, still HOLD pending that pre-screen.
   All five profile-consulted before scoring; `daily-range-state-persistence` and `opening-pressure`/
   `order-flow-depth-imbalance` (checked as #3's nearest DEAD neighbors) all confirmed via
   `scripts/instrument_profiles.py cell`. No `core/`, Pine, allocation, `dd_protection`, lifecycle, or
