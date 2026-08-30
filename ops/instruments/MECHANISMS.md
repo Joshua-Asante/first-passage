@@ -243,22 +243,17 @@ frozen battery.
   data: Spearman = **0.8618**, n=141,467). Within `bias_hist=0` (own range not elevated,
   n=71,492): lift **+0.1649** (0.4528 vs 0.2879). Within `bias_hist=1` (own range elevated,
   n=68,113): lift **+0.2455** (0.7150 vs 0.4695). Block-bootstrap on the minimum stratified lift:
-  mean **+0.1648**, 95% CI **[+0.1537, +0.1761]**, p(lift≤0)≈0 / null-calibrated p uncomputed
-  this session (no scored-frame cache; vendor bars absent). **UNRESOLVED — not routed
-  INCREMENT.** The observed-series bootstrap CI excluding 0 is the same non-null
-  statistic this retrofit corrects; Codex review (PR #207) + operator ruling: leave
-  the cell unresolved until the within-stratum null actually runs. Cross-instrument
-  corroboration: MNQ's own same-day candidate 3 (now registered under this same id —
-  MNQ class finding below) found a similar shape (+20.6pp/+25.6pp), also GRADUATEd —
-  that MNQ finding is independent of this MYM Type-I gap, but **carries an unrelated
-  confirmed code bug of its own** (see the MNQ class finding below) and is not itself
-  "certified" either. Ledger cell `AMBIGUOUS-PARKED` (UNRESOLVED pending null;
-  no frozen forward test executing). **Pre-Q opened 2026-08-30 despite the UNRESOLVED
-  status:** [`Q-VOLREGIME-1`](../../docs/briefs/Q-VOLREGIME-1-intraday-bar-volume-regime.md)
-  treats neither instrument as certified — it requires the within-stratum null as a
-  named precondition on both MNQ and MYM before either verdict is scored (`PRECONDITION-UNMET`
-  / `PRECONDITION-CLEARED-NULL` dispositions, its own §6) — see that brief's own §4/§7.
-  [MYM.md](MYM.md) ·
+  mean **+0.1648**, 95% CI **[+0.1537, +0.1761]**, p(lift≤0)≈0. **Within-stratum
+  null-calibrated p COMPUTED 2026-08-30** (precondition cleared, vendor bars present
+  this session): **p=0.00025 both strata.** **VERDICT: INCREMENT** (was UNRESOLVED).
+  Cross-instrument corroboration: MNQ's own same-day candidate 3 (now registered under
+  this same id — MNQ class finding below) found a similar shape, re-verified and
+  equally decisive (p=0.00025 both strata) on the same 2026-08-30 pass. Ledger cell
+  still `AMBIGUOUS-PARKED` — INCREMENT on the within-stratum precondition is not yet
+  a certified conditioner (Phase 1's own joint-surrogation null, a different confound,
+  is still owed per `Q-VOLREGIME-1`'s §5). **`Q-VOLREGIME-1`'s own Phase 0.5 precondition
+  is now CLEARED on both instruments** (was `PRECONDITION-UNMET`/pending) — see that
+  brief's own §4/§7. [MYM.md](MYM.md) ·
   [`N-2026-08-29-mym-bar-volume-regime.md`](../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md)
 - **Superseded (disclosed, not the authoritative answer):** the first-pass **marginal** falsifier
   (volume-conditioned obs=0.6546 vs. own-range-conditioned obs=0.6596, diff −0.0049, 95% CI
@@ -266,23 +261,29 @@ frozen battery.
   correction reverses this entirely — the marginal "kill" was masking a real +16 to +25pp effect,
   not the absence of one. Kept visible as a disclosed secondary measurement, not deleted; the
   stratified finding governs.
-- **Class finding (cross-instrument, MNQ, 2026-08-29; ⚠ figures below UNVERIFIED as of
-  2026-08-30, see next paragraph):** backfilled on reconciliation pass —
-  MNQ's own same-day bar-volume-regime candidate, independently run, correctly stratified
-  on the trigger-bar side (not a marginal-vs-stratified correction like MYM's), found a
-  near-identical shape: within-stratum
-  lift **+20.6pp** (low-range stratum, n=12,430/54,167) / **+25.6pp** (high-range stratum,
-  n=58,115/11,308), same-bar volume/range Spearman correlation **0.88** (vs MYM's own 0.8618,
-  independently measured — not assumed by analogy). **GRADUATE**, reached independently before
-  either session saw the other's work. Direction limb (does volume predict next-bar directional
+- **Class finding (cross-instrument, MNQ, 2026-08-29; re-verified 2026-08-30 against live
+  vendor bars — figures below CONFIRMED, not the original unverified numbers):** backfilled
+  on reconciliation pass — MNQ's own same-day bar-volume-regime candidate, independently
+  run, correctly stratified on the trigger-bar side (not a marginal-vs-stratified
+  correction like MYM's), found a near-identical shape: within-stratum
+  lift **+22.3pp** (own-range-not-elevated stratum, n=67,417) / **+27.4pp**
+  (own-range-elevated stratum, n=68,603), **within-stratum null-calibrated p=0.00025
+  both strata** (new script `candidate3_stratified_rerun.py`, same-bar volume/range
+  Spearman correlation **0.88** (vs MYM's own 0.8618, independently measured — not
+  assumed by analogy). **GRADUATE, precondition CLEARED** — reached independently
+  before either session saw the other's work, now backed by a Type-I-controlled test
+  on both sides. Direction limb (does volume predict next-bar directional
   continuation, not just range) is a clean null on MNQ; untested on MYM this session.
-  **Confirmed code bug, 2026-08-30 (Codex review, PR #210):** `candidate3_volume_regime.py`'s
-  ToD-matched range-outcome variable compared the next bar's range against the *trigger* bar's
-  own time-of-day threshold instead of the next bar's own — reintroducing the exact seasonality
-  confound the ToD-matching exists to remove. Fixed in the same commit; **not re-run** (no
-  vendor bar data in this environment) — the +20.6pp/+25.6pp figures above and the range limb's
-  own GRADUATE routing are disclosed as unverified pending a fresh run, not withdrawn. See
-  `N-2026-08-29-mnq-bar-volume-regime.md`'s own correction note for the full detail. Registered
+  **Code bug (Codex review, PR #210) fixed AND re-verified, 2026-08-30:**
+  `candidate3_volume_regime.py`'s ToD-matched range-outcome variable compared the next
+  bar's range against the *trigger* bar's own time-of-day threshold instead of the next
+  bar's own — reintroducing the exact seasonality confound the ToD-matching exists to
+  remove. Fixed in PR #210's commit; **re-run 2026-08-30 against live `MNQ_M15.csv`** —
+  the marginal ToD-matched range lift shifts up (+18.1pp → **+19.1pp**, CI
+  [0.684, 0.707]) and the incremental-stratified figures shift up similarly
+  (+20.6pp/+25.6pp → +22.3pp/+27.4pp) — the fix strengthens the finding, it does not
+  dissolve it. See `N-2026-08-29-mnq-bar-volume-regime.md`'s own 2026-08-30 update for
+  the full detail. Registered
   here under MYM's id (`intraday-bar-volume-regime`) rather than a separate MNQ-named one —
   unlike the overnight-range/gap-magnitude split, this construct carries no unresolved
   nested-hypothesis structure blocking a straightforward merge, so (unlike
@@ -381,12 +382,13 @@ Pre-Q, and Route 1 eligibility still requires full G0 discipline — see the ADR
   2024–2026). Attribution **EXCESS**: obs sits at the 0th percentile of its own
   zero-mechanism (linear-ACF-preserving) IAAFT surrogate band, p_two_sided=0.0050 —
   **SIGNAL-EXCESS**, the strongest result of the batch this class-family produced this
-  session. **Not graduated** — admission-route status is now resolved (see the heading note
-  above): Route 1 is plausibly open (independent of Route 3), Route 2 does not apply, both
-  gated behind a $0 cost-law pre-screen not yet run; ledger cell `AMBIGUOUS-PARKED` (corrected
-  from an initial `CONTINGENT-FORWARD` —
-  no forward test is running on this cell, see `MYM.md`'s own session-log correction note),
-  HELD pending that pre-screen. [MYM.md](MYM.md) ·
+  session. **DROP (2026-08-30)** — the $0 cost-law pre-screen named above has now run
+  ([`c5_clv_cost_screen.py`](../../lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c5_clv_cost_screen.py)):
+  decile-conditioned forward-return implied gross edge **+0.3609 bp/event**, 95% CI
+  **[+0.2328, +0.4835]** — real but ~18× below MYM's own #M6 hurdle (6.57 bp/event,
+  provisional). Fires ADR §4 D2 (fails cleanly): ledger cell **`DROP`** (was
+  `AMBIGUOUS-PARKED`, itself corrected from an initial `CONTINGENT-FORWARD`), no Pre-Q
+  authored. [MYM.md](MYM.md) ·
   [`N-2026-08-29-mym-closing-location-autocorrelation.md`](../../docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md)
 - **Class finding (MNQ, 2026-08-29 — backfilled on reconciliation pass):** MNQ (full continuous
   M15 bar sequence, RTH+overnight, n_pairs=141,540): lag-1 Spearman rho(CLV_t, CLV_t+1) =
@@ -395,14 +397,15 @@ Pre-Q, and Route 1 eligibility still requires full G0 discipline — see the ADR
   IAAFT battery this session** (only the block-shuffle null, a weaker test than MYM's SIGNAL-EXCESS
   classification against the linear-ACF-preserving surrogate) — MNQ's result is directionally
   consistent with MYM's (same sign, same order of magnitude) but not yet typed SIGNAL-EXCESS vs
-  SIGNAL-GENERIC on this instrument. Same resolved question as MYM's — see the heading note
-  above: admission-route status is resolved, Route 1 is plausibly open (independent of Route 3),
-  a $0 cost-law pre-screen is owed before any Pre-Q either way. Ledger cell
-  `AMBIGUOUS-PARKED` (corrected from an initial `CONTINGENT-FORWARD` — no forward test is running
-  on this cell, see MNQ.md's own session-log correction note); re-open trigger is the same
-  pre-screen MYM's cell waits on, not a separate one. MYM's own cell for this class (above) carried
-  the identical misuse and is now corrected too (`AMBIGUOUS-PARKED`, flagged separately from this
-  MNQ correction, landed once the gap was noticed). [MNQ.md](MNQ.md) ·
+  SIGNAL-GENERIC on this instrument. **DROP (2026-08-30)** — the $0 cost-law pre-screen has
+  now run ([`candidate5_clv_cost_screen.py`](../../lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate5_clv_cost_screen.py)):
+  decile-conditioned forward-return implied gross edge **+0.1402 bp/event**, 95% CI
+  **[−0.0358, +0.3154]** (straddles 0) — ~20× below MNQ's own N6 hurdle (3.01 bp/event,
+  already a 4×-round-trip-cost figure, unit-comparable directly despite the "/session"
+  label — see the script's own docstring). Fires ADR §4 D2 (fails cleanly): ledger cell
+  **`DROP`** (was `AMBIGUOUS-PARKED`, itself corrected from an initial `CONTINGENT-FORWARD`).
+  MYM's own cell (above) DROPs on the same pre-screen result, its own instrument-specific
+  number. [MNQ.md](MNQ.md) ·
   [`N-2026-08-29-mnq-clv-autocorrelation.md`](../../docs/notes/notice/N-2026-08-29-mnq-clv-autocorrelation.md)
 
 ## htf-compression-breakout-5m

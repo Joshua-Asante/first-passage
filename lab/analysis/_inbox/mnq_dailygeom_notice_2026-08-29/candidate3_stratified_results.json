@@ -1,0 +1,55 @@
+{
+  "n_scored": 136020,
+  "strata": {
+    "0": 0.22324931372966222,
+    "1": 0.27401410235193635
+  },
+  "strata_counts": {
+    "0": {
+      "hi": [
+        0.4877460515054851,
+        12853
+      ],
+      "lo": [
+        0.2644967377758229,
+        54564
+      ]
+    },
+    "1": {
+      "hi": [
+        0.7415239547944256,
+        57692
+      ],
+      "lo": [
+        0.4675098524424892,
+        10911
+      ]
+    }
+  },
+  "min_lift_bootstrap": {
+    "ci": [
+      0.21114624969625698,
+      0.23539629835728168
+    ],
+    "mean": 0.22326006655408157,
+    "n_valid": 4000,
+    "p_lift_le_0": 0.0,
+    "verdict": "INCREMENT"
+  },
+  "min_lift_null_calibrated_product_sharp_joint": {
+    "p_ge_obs": 0.00024993751562109475,
+    "observed": 0.22324931372966222,
+    "n_draws": 4000,
+    "seed": 20261830,
+    "caveat": "product-of-tails tests the SHARP joint null (both strata simultaneously zero), not the disjunctive composite claim -- see docstring / PR #211"
+  },
+  "strata_null_calibrated_p": {
+    "0": 0.00024993751562109475,
+    "1": 0.00024993751562109475
+  },
+  "composite_disjunctive_null_p_max_of_strata": 0.00024993751562109475,
+  "increment_exists_threshold_check": true,
+  "frame_source": "MNQ_M15.csv (live vendor bars, this run)",
+  "construction": "within_stratum_circular_shift",
+  "includes_identity": true
+}

@@ -1,0 +1,32 @@
+{
+  "n_scored": 141466,
+  "p10": 0.09090909090909091,
+  "p90": 0.918918918918919,
+  "mu_base": 0.05697574952001263,
+  "mu_top": -0.2675324015270762,
+  "mu_bot": 0.45379036816433893,
+  "n_top": 14220,
+  "n_bot": 14448,
+  "lift_top_bp": -0.3245081510470888,
+  "lift_bot_bp": 0.3968146186443263,
+  "fade_rule": {
+    "top_dir": -1.0,
+    "bot_dir": 1.0
+  },
+  "implied_gross_edge_bp_per_event": {
+    "mean": 0.3609489157968058,
+    "ci": [
+      0.23275527025711737,
+      0.48351505315235516
+    ],
+    "n_events": 28668,
+    "event_freq": 0.20264939985579575,
+    "block": 96,
+    "draws": 4000,
+    "seed": 20260830
+  },
+  "m6_hurdle_bp": 6.57,
+  "m6_provisional": true,
+  "clears_m6_floor": false,
+  "note": "necessary-condition cost-FLOOR check only, per ADR 2-C -- does not by itself license a Pre-Q; full Route 3 comparison needs an actual entry/exit construct's own R; M6 basis is provisional (Tradeify de-scoped) per that ADR"
+}

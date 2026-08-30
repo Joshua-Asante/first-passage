@@ -1,10 +1,10 @@
-# Notice — MYM M15 bar-volume regime → next-bar range (ToD-deseasonalized, stratified — UNRESOLVED)
+# Notice — MYM M15 bar-volume regime → next-bar range (ToD-deseasonalized, stratified — INCREMENT, decisive)
 
 **Notice ID:** N-2026-08-29-mym-bar-volume-regime
-**Observed:** 2026-08-29 (marginal-comparison run); **corrected 2026-08-29** (stratified re-run, same-shape correction as candidates 2/4)
+**Observed:** 2026-08-29 (marginal-comparison run); **corrected 2026-08-29** (stratified re-run, same-shape correction as candidates 2/4); **within-stratum null computed 2026-08-30** against live `MYM_M15.csv`
 **Author:** Joshua | claude.ai
 **Source:** backtest CSV (bar panel) — atheoretical mechanism harvest, MYM Phase 2
-**Status:** `OPEN` — UNRESOLVED pending a within-stratum null-calibrated p (vendor bars / scored-frame cache absent); not routed INCREMENT or GRADUATE on the observed-series bootstrap CI.
+**Status:** `OPEN` — **INCREMENT** (2026-08-30, both strata decisive, p=0.00025 each), superseding the prior UNRESOLVED — Q-VOLREGIME-1's own Phase 0.5 precondition for MYM now clears.
 
 **Pre-Q:** [`Q-VOLREGIME-1`](../../briefs/Q-VOLREGIME-1-intraday-bar-volume-regime.md) (opened 2026-08-30, jointly with MNQ) states this UNRESOLVED status as a named precondition on its own MYM-side hypothesis rather than treating this notice's observed-series CI as decisive evidence — see that brief's own §4/§7.
 **Lives in:** `docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md`
@@ -67,6 +67,19 @@ the observed-series bootstrap CI excluding 0 is the same non-null statistic this
 retrofit corrects. Codex review (PR #207) + operator ruling: do not route
 INCREMENT / GRADUATE until the within-stratum circular-shift null is actually run.
 
+**Update, 2026-08-30 — within-stratum null computed against live `MYM_M15.csv`
+(precondition cleared, decisively).** Re-ran `c3_stratified_rerun.py` now that
+vendor bars are present in-session: `bias_hist=0` stratum, circular-shift
+null-calibrated **p=0.00025** (n=139,605 total scored, lift +0.1649 unchanged
+from the observed-series figure above); `bias_hist=1` stratum, null-calibrated
+**p=0.00025**. Both strata individually clear a conventional 0.05 bar
+decisively — max(0.00025, 0.00025) = 0.00025, so the composite/sharp-joint-null
+distinction that mattered for MYM's own gap-magnitude cell (PR #211) does not
+change anything here: either reading of "both strata" is decisive. **VERDICT
+revised: INCREMENT** (was UNRESOLVED). This clears `Q-VOLREGIME-1`'s own Phase
+0.5 precondition for the MYM leg — the one thing H-VOLREGIME-MYM was explicitly
+gated on before Phase 1 (that brief's §4).
+
 ## §2 — Why it stands out (the N signal)
 
 - **Baseline:** the mundane own-range persistence comparator, and the spec-agnostic
@@ -106,28 +119,38 @@ INCREMENT / GRADUATE until the within-stratum circular-shift null is actually ru
 
 ## §4 — Routing decision
 
-**UNRESOLVED — HOLD the INCREMENT / GRADUATE routing until the corrected null runs.**
+**INCREMENT (2026-08-30, superseding the original UNRESOLVED below — the
+within-stratum null this notice's own §5 named has now run against live
+`MYM_M15.csv`).** Both strata clear a conventional 0.05 bar decisively
+(p=0.00025 each) — a Type-I-controlled INCREMENT, not merely a CI-excludes-0
+observed-series read. **Raised-bar route: none needed** — conditioner-role,
+same as candidates 1 and 2. **Still outstanding (unaffected by this update):**
+whether the incremental effect is a distinct WHO from candidate 1's daily-TR
+persistence — a question for `Q-VOLREGIME-1`'s own Phase 1 design (the
+distinct-WHO three-way check named in that brief's §4), not resolved here.
+
+~~**UNRESOLVED — HOLD the INCREMENT / GRADUATE routing until the corrected null
+runs.** (original, struck 2026-08-30 by the update above)
 
 Reason: the stratified lifts (+16.5pp / +24.5pp) and the observed-series bootstrap
 CI remain as measured, and MNQ's independently stratified same-day result still
 corroborates the *shape*. What this session cannot claim is a Type-I-controlled
 INCREMENT: the CI-excludes-0 rule is the defect under repair, and the
-within-stratum null was not computed (no `MYM_M15.csv`, no `c3_stratified_frame.csv`).
-**Raised-bar route: none needed if/when the null clears** — conditioner-role, same
-as candidates 1 and 2. **Still outstanding:** (1) run the within-stratum null;
-(2) whether the incremental effect is a distinct WHO from candidate 1's daily-TR
-persistence — a question for any later Pre-Q, not resolved here.
+within-stratum null was not computed (no `MYM_M15.csv`, no `c3_stratified_frame.csv`).~~
 
 ---
 
-## §5 — If HOLD: re-check trigger
+## §5 — INCREMENT disposition (was: "If HOLD: re-check trigger")
 
-- **Trigger:** `MYM_M15.csv` or `c3_stratified_frame.csv` present; re-run
+**N/A — superseded 2026-08-30.** The trigger below fired.
+
+~~- **Trigger:** `MYM_M15.csv` or `c3_stratified_frame.csv` present; re-run
   `c3_stratified_rerun.py` so the within-stratum circular-shift null is computed.
 - **Then:** route INCREMENT / GRADUATE only from that null (and the existing
-  lift-floor rule), not from the observed-series bootstrap CI.
+  lift-floor rule), not from the observed-series bootstrap CI.~~ — **fired**:
+  `MYM_M15.csv` present this session; re-run gave p=0.00025 both strata.
 - The original 2026-08-29 marginal-comparison `DROP` remains superseded and is
-  not revived by this UNRESOLVED.
+  not revived by this update.
 
 ---
 
@@ -135,11 +158,10 @@ persistence — a question for any later Pre-Q, not resolved here.
 
 ```bash
 python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c3_stratified_rerun.py
-# Expected: min-stratified-lift bootstrap: mean=0.1648  CI=[+0.1537,+0.1761]
-#   p(lift<=0)=0.0000 [NOT null-calibrated]
-#   VERDICT=UNRESOLVED (null-calibrated p uncomputed)
-#   null-calibrated p: UNCOMPUTED this session unless MYM_M15.csv or
-#   c3_stratified_frame.csv is present; do not retain INCREMENT on the CI.
+# Expected (2026-08-30, live MYM_M15.csv): min-stratified-lift bootstrap: mean=0.1648
+#   CI=[+0.1537,+0.1761]  p(lift<=0)=0.0000 [NOT null-calibrated]
+#   per-stratum circular-shift null-calibrated p: bprime=0 -> 0.00025 / bprime=1 -> 0.00025
+#   VERDICT=INCREMENT
 
 # Superseded secondary measurement (disclosed, not the authoritative answer):
 python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c3_volume_regime.py
