@@ -193,14 +193,14 @@ Rejected nearest classes (one-line):
   next-period (independent-series IAAFT-valid); this id is the cross-series same-period role the
   spec pauses separately.
 
-⚠ **Parallel-authoring taxonomy note (2026-08-29, discovered on merge; joint gate run 2026-08-29,
-RECOMMENDS MERGE, not yet executed).**
+⚠ **Parallel-authoring taxonomy note — merge executed 2026-08-30 (was: discovered on merge
+2026-08-29, joint gate run 2026-08-29, RECOMMENDS MERGE, not yet executed).**
 `overnight-range-transmission` (below, MNQ, same day) covers the identical D5 "S2" role —
 overnight range AND gap magnitude both predicting same-day RTH range — under ONE combined
 heading, authored independently and in parallel with this id and its
 `overnight-gap-magnitude-range-conditioning` sibling, which split the same role into two ids.
-Neither session could see the other's work at authoring time. **Update:** the joint
-stratification this note originally deferred has now run —
+Neither session could see the other's work at authoring time. The joint
+stratification this note originally deferred ran —
 [`N-2026-08-29-mym-overnight-gap-joint-gate.md`](../../docs/notes/notice/N-2026-08-29-mym-overnight-gap-joint-gate.md)
 — and closely replicates MNQ's own finding: gap magnitude adds lift only when overnight range
 is itself calm (+8.5pp, bootstrap p=0.037 / null-calibrated p=0.020 — the notice's original
@@ -210,10 +210,14 @@ own +10.5pp/−8.1pp on the same test — same sign, same relative
 ordering throughout, but magnitude is *not* uniformly comparable across all five compared
 quantities: the four lift comparisons run 10.6%-44.8% smaller on MYM, and the overnight-gap
 Spearman correlation is actually larger on MYM (corrected after review — see that notice §1
-for the full table). **That notice recommends merging this id and its gap sibling into `overnight-range-transmission`
-— explicitly not executed here or there**, per the reviewing instruction that the merge itself
-needs its own review, not a self-executed side effect of the test that motivated it. This id
-therefore still stands distinct pending that review or the deferred MNQ+MYM pooling session.
+for the full table). **That notice recommended merging this id and its gap sibling into
+`overnight-range-transmission` and explicitly declined to execute the fold itself**, naming PR
+review as the correct venue — the reviewing instruction that the merge itself needs its own
+review, not a self-executed side effect of the test that motivated it. **That review is now done:**
+[`Q-RANGEXFER-1`'s 2026-08-30 amendment](../../docs/briefs/Q-RANGEXFER-1-overnight-range-gap-magnitude-transfer.md)
+folds this id and its gap sibling under `overnight-range-transmission`'s own Q-brief, scored per
+instrument (Q-RANGEXFER-1 §6) — this id's own PROFILE cell and Notice-log entry are unchanged and
+remain the MYM-side evidence trail; only the governing question is now shared with MNQ's.
 
 ## intraday-bar-volume-regime
 
@@ -245,10 +249,16 @@ frozen battery.
   statistic this retrofit corrects; Codex review (PR #207) + operator ruling: leave
   the cell unresolved until the within-stratum null actually runs. Cross-instrument
   corroboration: MNQ's own same-day candidate 3 (now registered under this same id —
-  MNQ class finding below) ran the correct stratified design from the start and found
-  a similar shape (+20.6pp/+25.6pp), also GRADUATEd — that MNQ finding is independent
-  of this MYM Type-I gap. Ledger cell `AMBIGUOUS-PARKED` (UNRESOLVED pending null;
-  no frozen forward test executing). [MYM.md](MYM.md) ·
+  MNQ class finding below) found a similar shape (+20.6pp/+25.6pp), also GRADUATEd —
+  that MNQ finding is independent of this MYM Type-I gap, but **carries an unrelated
+  confirmed code bug of its own** (see the MNQ class finding below) and is not itself
+  "certified" either. Ledger cell `AMBIGUOUS-PARKED` (UNRESOLVED pending null;
+  no frozen forward test executing). **Pre-Q opened 2026-08-30 despite the UNRESOLVED
+  status:** [`Q-VOLREGIME-1`](../../docs/briefs/Q-VOLREGIME-1-intraday-bar-volume-regime.md)
+  treats neither instrument as certified — it requires the within-stratum null as a
+  named precondition on both MNQ and MYM before either verdict is scored (`PRECONDITION-UNMET`
+  / `PRECONDITION-CLEARED-NULL` dispositions, its own §6) — see that brief's own §4/§7.
+  [MYM.md](MYM.md) ·
   [`N-2026-08-29-mym-bar-volume-regime.md`](../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md)
 - **Superseded (disclosed, not the authoritative answer):** the first-pass **marginal** falsifier
   (volume-conditioned obs=0.6546 vs. own-range-conditioned obs=0.6596, diff −0.0049, 95% CI
@@ -256,17 +266,29 @@ frozen battery.
   correction reverses this entirely — the marginal "kill" was masking a real +16 to +25pp effect,
   not the absence of one. Kept visible as a disclosed secondary measurement, not deleted; the
   stratified finding governs.
-- **Class finding (cross-instrument, MNQ, 2026-08-29):** backfilled on reconciliation pass —
-  MNQ's own same-day bar-volume-regime candidate, independently run, correctly stratified from
-  the start (not a correction), found a near-identical shape: within-stratum
+- **Class finding (cross-instrument, MNQ, 2026-08-29; ⚠ figures below UNVERIFIED as of
+  2026-08-30, see next paragraph):** backfilled on reconciliation pass —
+  MNQ's own same-day bar-volume-regime candidate, independently run, correctly stratified
+  on the trigger-bar side (not a marginal-vs-stratified correction like MYM's), found a
+  near-identical shape: within-stratum
   lift **+20.6pp** (low-range stratum, n=12,430/54,167) / **+25.6pp** (high-range stratum,
   n=58,115/11,308), same-bar volume/range Spearman correlation **0.88** (vs MYM's own 0.8618,
   independently measured — not assumed by analogy). **GRADUATE**, reached independently before
   either session saw the other's work. Direction limb (does volume predict next-bar directional
-  continuation, not just range) is a clean null on MNQ; untested on MYM this session. Registered
+  continuation, not just range) is a clean null on MNQ; untested on MYM this session.
+  **Confirmed code bug, 2026-08-30 (Codex review, PR #210):** `candidate3_volume_regime.py`'s
+  ToD-matched range-outcome variable compared the next bar's range against the *trigger* bar's
+  own time-of-day threshold instead of the next bar's own — reintroducing the exact seasonality
+  confound the ToD-matching exists to remove. Fixed in the same commit; **not re-run** (no
+  vendor bar data in this environment) — the +20.6pp/+25.6pp figures above and the range limb's
+  own GRADUATE routing are disclosed as unverified pending a fresh run, not withdrawn. See
+  `N-2026-08-29-mnq-bar-volume-regime.md`'s own correction note for the full detail. Registered
   here under MYM's id (`intraday-bar-volume-regime`) rather than a separate MNQ-named one —
   unlike the overnight-range/gap-magnitude split, this construct carries no unresolved
-  nested-hypothesis structure blocking a straightforward merge. [MNQ.md](MNQ.md) ·
+  nested-hypothesis structure blocking a straightforward merge, so (unlike
+  `overnight-range-transmission`) no taxonomy-merge review was owed before authoring a shared
+  Pre-Q. **Pre-Q opened 2026-08-30:** [`Q-VOLREGIME-1`](../../docs/briefs/Q-VOLREGIME-1-intraday-bar-volume-regime.md),
+  scoring both instruments' own H independently (its own §6). [MNQ.md](MNQ.md) ·
   [`N-2026-08-29-mnq-bar-volume-regime.md`](../../docs/notes/notice/N-2026-08-29-mnq-bar-volume-regime.md)
 
 ## overnight-gap-magnitude-range-conditioning
@@ -300,18 +322,21 @@ corroboration that does not exist for MYM on either magnitude or direction).
   the sign entirely — the marginal "kill" was a compositional artifact, not the absence of signal.
   Kept visible as a disclosed secondary measurement, not deleted; the stratified finding governs.
 
-⚠ **Parallel-authoring taxonomy note (2026-08-29) — see the fuller version on
+⚠ **Parallel-authoring taxonomy note — merge executed 2026-08-30, see the fuller version on
 `overnight-range-day-session-transfer` above; same situation, not repeated in full.** MNQ's
 combined `overnight-range-transmission` id (Q-RANGEXFER-1) found gap magnitude's own increment
 is real but small and *conditional* — sign-unstable once overnight range is already elevated,
-only clean in the overnight-calm regime. **Now verified on MYM, not merely speculative:** the
+only clean in the overnight-calm regime. **Verified on MYM, not merely speculative:** the
 joint gap-vs-overnight-range stratification
 ([`N-2026-08-29-mym-overnight-gap-joint-gate.md`](../../docs/notes/notice/N-2026-08-29-mym-overnight-gap-joint-gate.md))
 confirms this id's own weaker, AMBIGUOUS pooled result (+5.9pp vs. overnight-range's +21.9pp) is
 exactly the same nesting pattern, not merely consistent with it: this id's own gap lift is
 +8.5pp when overnight range is calm and −7.2pp (not positive) when overnight range is already
-hot — closely matching MNQ's +10.5pp/−8.1pp on the identical test. That notice recommends
-merging this id into `overnight-range-transmission`; not executed here.
+hot — closely matching MNQ's +10.5pp/−8.1pp on the identical test. That notice recommended
+merging this id into `overnight-range-transmission` and declined to execute it itself; **the
+review it named is now done** — see `overnight-range-day-session-transfer`'s own note above for
+the executed fold via `Q-RANGEXFER-1`'s 2026-08-30 amendment. This id's own PROFILE cell and
+Notice-log entry are unchanged.
 
 ## bar-closing-location-autocorrelation
 
@@ -664,7 +689,7 @@ Rejected nearest classes (one-line):
 
 ## overnight-range-transmission
 
-**NEW 2026-08-29 (Q-RANGEXFER-1).** Conditioner-role, not entry-role: does the Globex overnight
+**NEW 2026-08-29 (Q-RANGEXFER-1); scope broadened to cover MYM 2026-08-30 (Q-RANGEXFER-1 amendment).** Conditioner-role, not entry-role: does the Globex overnight
 (pre-RTH) session's own realized range, and/or the unsigned RTH-open gap magnitude, predict the
 *same trading day's* RTH-session realized range being elevated (vs its own trailing median,
 causal `.shift(1)`)? Cross-series claim — bias and outcome are two *different* magnitude series
@@ -689,21 +714,32 @@ same-day-regime confound the test needs to preserve; O1: `UNRESOLVED-NEEDS-DESIG
   hot. Recalibration does not overturn the nested-gap finding. Parent-Q convention: overnight range is the primary falsifiable claim; gap magnitude is a
   forked, nested sub-question scoped to the overnight-calm regime only, not a co-equal claim.
   Stage 2 (joint-surrogation null design solving D5's O1 item, adversarial review, operator GO)
-  is **owed, not yet run** — this class finding is a stage-1 result only, not a certified verdict
-  under the corrected battery. [MNQ.md](MNQ.md) ·
+  is **owed, not yet run, on either instrument** — this class finding is a stage-1 result only, not
+  a certified verdict under the corrected battery. [MNQ.md](MNQ.md) ·
   [`Q-RANGEXFER-1`](../../docs/briefs/Q-RANGEXFER-1-overnight-range-gap-magnitude-transfer.md) ·
   [`joint gate script`](../../lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate24_joint_gate.py)
+- **Class finding (D5 stage-1 $0 cheap falsifier, MYM, amended in 2026-08-30 under this same
+  Q-brief — see below):** overnight range's own min-stratified lift +21.9pp (block-bootstrap
+  p=0.00025, n=1,307 scored days across two day-history strata), gap magnitude's own +5.9pp
+  pooled (AMBIGUOUS, p=0.1247) — same qualitative relationship to its own sibling as MNQ's pair.
+  Joint gate (`c24_joint_gate.py`, direct port of MNQ's script) replicates the nested structure:
+  gap lift +8.5pp (calm, null-calibrated p=0.020) / −7.2pp (hot, p=0.888) vs. this heading's own
+  MNQ +10.5pp/−8.1pp — same sign, same relative ordering, 10.6%-44.8% smaller in magnitude
+  (not a uniform ratio). Scored independently of MNQ's own verdict (Q-RANGEXFER-1 §6); stage 2
+  equally owed and not yet run. [MYM.md](MYM.md) ·
+  [`N-2026-08-29-mym-overnight-gap-joint-gate.md`](../../docs/notes/notice/N-2026-08-29-mym-overnight-gap-joint-gate.md)
 
-⚠ **Parallel-authoring taxonomy note (2026-08-29, discovered on merge; joint gate run 2026-08-29
-on MYM's side, RECOMMENDS MERGE, not yet executed).** MYM's own same-day screen of this exact
-D5 "S2" role split into two sibling ids — `overnight-range-day-session-transfer` and
-`overnight-gap-magnitude-range-conditioning` (both above) — authored independently, before
-either session could see the other's work. MYM's overnight-range stage-1 result (+21.9pp
-min-stratified lift, p=0.00025) is directionally consistent with this heading's MNQ finding.
-**Update:** a MYM-side port of this heading's own `candidate24_joint_gate.py` has now run
-([`N-2026-08-29-mym-overnight-gap-joint-gate.md`](../../docs/notes/notice/N-2026-08-29-mym-overnight-gap-joint-gate.md)),
-and closely replicates this heading's own MNQ finding across every compared quantity — gap
-lift +8.5pp/−7.2pp (calm/hot) vs. this heading's own +10.5pp/−8.1pp, same sign/ordering in the
-2×2 and three-way breakdowns too. That notice recommends folding MYM's two ids into this one;
-**not executed here** — still two separate ids on the MYM side pending that review, or the
-deferred MNQ+MYM pooling session.
+**Taxonomy merge — executed 2026-08-30 (was: parallel-authoring note, 2026-08-29, RECOMMENDS
+MERGE, not yet executed).** MYM's own same-day screen of this exact D5 "S2" role had split into
+two sibling ids — `overnight-range-day-session-transfer` and `overnight-gap-magnitude-range-
+conditioning` (both above) — authored independently, before either session could see the other's
+work. The joint-gate replication (class finding above) confirmed the same nested structure on
+MYM's own data, and `N-2026-08-29-mym-overnight-gap-joint-gate.md` §4 recommended folding MYM's
+two ids into this heading's question while explicitly declining to execute the fold itself,
+naming PR review as the correct venue. That review is `Q-RANGEXFER-1`'s own 2026-08-30 amendment
+(§11 of that brief) — the fold is at the **question** layer: MYM's two ids now share this
+heading's Q-brief and are scored under its own per-instrument gate criteria (§6), rather than
+either being renamed. MYM's own `overnight-range-day-session-transfer` /
+`overnight-gap-magnitude-range-conditioning` PROFILE cells and Notice-log files are unchanged —
+they remain the evidence trail; only the governing question is now shared. See those two headings
+above for the un-renamed record.

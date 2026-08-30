@@ -38,11 +38,39 @@ from pathlib import Path
 import numpy as np
 from scipy.stats import spearmanr
 
-from load_sessions import load_bars, session_ohlc, rth_ohlc, overnight_ohlc
+from load_sessions import load_bars, session_ohlc, rth_ohlc, overnight_ohlc, PANEL
 import iaaft_battery as B
 
 HERE = Path(__file__).resolve().parent
+CACHED_FRAME = HERE / "c24_joint_frame.csv"
 WINDOW, Q_BIAS, Q_REF = 60, 0.80, 0.50
+
+
+def load_cached_frame():
+    """Reload the committed per-day frame so a follow-up (null-calibrated p,
+    stage-2 design) does not need vendor bars. Same columns `build_joint_frame`
+    writes. Returns None if the cache is absent. Ported verbatim from the MNQ
+    sibling script's own `load_cached_frame` (Codex review, PR #207/#210)."""
+    if not CACHED_FRAME.exists():
+        return None
+    with CACHED_FRAME.open(newline="") as fh:
+        rows = list(csv.DictReader(fh))
+    if not rows:
+        return None
+
+    def col(name, typ=float):
+        return np.array([typ(r[name]) for r in rows])
+
+    return dict(
+        trading_day=[r["trading_day"] for r in rows],
+        bias_overnight=col("bias_overnight", int),
+        bias_gap=col("bias_gap", int),
+        bias_dayhist=col("bias_dayhist", int),
+        y=col("y", int),
+        on_range=col("on_range"),
+        gap=col("gap"),
+        rth_range=col("rth_range"),
+    )
 
 
 def build_joint_frame():
@@ -131,47 +159,91 @@ def block_bootstrap_p(y, mask_a, mask_b, block=20, draws=4000, seed=44):
     return diffs, p_le0
 
 
-def circular_shift_null_p(y, fixed_mask, other_label, draws=4000, seed=44):
-    """Null-calibrated one-sided p-value: does `other_label` carry information
-    about y within `fixed_mask`, beyond what a decorrelated version of the same
-    two series would produce by chance?
+_MAX_ENUMERATE_N = 2500
 
-    Circularly shifts `other_label`'s FULL series (not just the `fixed_mask`
-    subset) by a random offset each draw, so `other_label`'s own autocorrelation
-    /persistence structure is exactly preserved (a rotation, not an i.i.d.
-    reshuffle) while its pairing with (y, fixed_mask) is destroyed -- the same
-    circular-shift/surrogate logic this codebase already uses for block-shuffle
-    and IAAFT nulls elsewhere (see `iaaft_battery.py`), applied here to a
-    cross-series lift statistic instead of an autocorrelation statistic. Reports
-    the fraction of null draws whose within-stratum lift is >= the observed lift
-    (one-sided, Type-I-controlled under H0: no association).
+
+def _stratum_circular_lifts(y_s, other_s):
+    n = len(other_s)
+    lifts = np.full(n, np.nan)
+    for k in range(n):
+        rolled = np.roll(other_s, k)
+        hi = rolled == 1
+        n_hi = int(hi.sum())
+        if 0 < n_hi < n:
+            lifts[k] = float(y_s[hi].mean() - y_s[~hi].mean())
+    return lifts
+
+
+def circular_shift_null_p(y, fixed_mask, other_label, draws=4000, seed=44):
+    """Null-calibrated one-sided p-value under a *within-stratum* circular-shift
+    null: does `other_label` carry information about y within `fixed_mask`,
+    beyond what a decorrelated version of the same two series would produce by
+    chance?
+
+    Corrected 2026-08-30 (Codex review, PR #210) to match the MNQ sibling
+    script's own Codex-reviewed (PR #207) construction, which this function
+    previously diverged from in two ways that made the two instruments'
+    null-calibrated p-values not directly comparable:
+
+    1. Rotate `other_label` ONLY inside `fixed_mask` (`o_s = other_label[fixed]`,
+       then roll `o_s`), not the full series before masking. Rotating the full
+       series first and masking afterward can import label values from OUTSIDE
+       the fixed stratum into the rotated in-stratum groups -- exactly the
+       cross-stratum leakage the "within-stratum" name is supposed to rule out.
+    2. Enumerate every distinct rotation k in {0, ..., n-1} -- INCLUDING the
+       identity rotation (k=0) -- when n is small enough to do so exhaustively,
+       rather than drawing `draws` random shifts from {1, ..., N-1} (which both
+       excludes identity and re-uses uniform sampling where exhaustive
+       enumeration is cheap and exact).
 
     This is the test `block_bootstrap_p` above is NOT: that one resamples the
     observed data and is centered on the observed effect (a CI-style tail
     probability); this one resamples under an explicit zero-association null.
     """
-    rng = np.random.default_rng(seed)
-    N = len(y)
-    hi0 = fixed_mask & (other_label == 1)
-    lo0 = fixed_mask & (other_label == 0)
-    if not (hi0.any() and lo0.any()):
+    fixed = np.asarray(fixed_mask, dtype=bool)
+    other = np.asarray(other_label)
+    y_s = np.asarray(y)[fixed]
+    o_s = other[fixed]
+    n = len(o_s)
+    hi0 = o_s == 1
+    lo0 = o_s == 0
+    if n < 2 or not (hi0.any() and lo0.any()):
         return np.array([]), float("nan"), float("nan")
-    observed = float(y[hi0].mean() - y[lo0].mean())
+    observed = float(y_s[hi0].mean() - y_s[lo0].mean())
+
+    if n <= _MAX_ENUMERATE_N:
+        lifts = _stratum_circular_lifts(y_s, o_s)
+        valid = lifts[np.isfinite(lifts)]
+        if valid.size == 0:
+            return np.array([]), float("nan"), observed
+        p_ge_obs = float((valid >= observed).sum()) / float(valid.size)
+        return valid, p_ge_obs, observed
+
+    rng = np.random.default_rng(seed)
     draws_out = []
     for _ in range(draws):
-        shift = rng.integers(1, N)
-        shifted = np.roll(other_label, shift)
-        hi = fixed_mask & (shifted == 1)
-        lo = fixed_mask & (shifted == 0)
+        rolled = np.roll(o_s, int(rng.integers(0, n)))
+        hi = rolled == 1
+        lo = rolled == 0
         if hi.any() and lo.any():
-            draws_out.append(float(y[hi].mean() - y[lo].mean()))
-    draws_out = np.array(draws_out)
+            draws_out.append(float(y_s[hi].mean() - y_s[lo].mean()))
+    draws_out = np.asarray(draws_out)
     p_ge_obs = (1 + int((draws_out >= observed).sum())) / (len(draws_out) + 1)
     return draws_out, p_ge_obs, observed
 
 
 def main():
-    f = build_joint_frame()
+    from_bars = PANEL.exists()
+    if from_bars:
+        f = build_joint_frame()
+        print(f"built frame from {PANEL.name} (vendor bars present)")
+    else:
+        f = load_cached_frame()
+        if f is None:
+            raise FileNotFoundError(
+                f"neither {PANEL} nor {CACHED_FRAME} present; cannot run joint gate"
+            )
+        print(f"vendor bars absent ({PANEL}); loaded {CACHED_FRAME.name}")
     y = f["y"]
     bo, bg, bd = f["bias_overnight"], f["bias_gap"], f["bias_dayhist"]
     n = len(y)
@@ -242,17 +314,26 @@ def main():
                overnight_lifts_within_gap_strata=on_lifts,
                cells_2x2=cells, three_way_gap_check=three_way,
                gap_lift_null_calibrated_p=gap_null_p,
-               overnight_lift_null_calibrated_p=on_null_p)
+               overnight_lift_null_calibrated_p=on_null_p,
+               null_construction="within_stratum_circular_shift",
+               null_includes_identity=True,
+               frame_source=("vendor bars " + PANEL.name) if from_bars else CACHED_FRAME.name)
     (HERE / "c24_joint_results.json").write_text(json.dumps(out, indent=1, default=str))
 
     # Accelerate: cache the merged per-day frame so a future stage-2 design
     # (joint-surrogation null) doesn't need to re-derive sessions from raw bars.
-    with open(HERE / "c24_joint_frame.csv", "w", newline="") as fh:
-        w = csv.writer(fh)
-        w.writerow(["trading_day", "bias_overnight", "bias_gap", "bias_dayhist", "y", "on_range", "gap", "rth_range"])
-        for i in range(n):
-            w.writerow([f["trading_day"][i], bo[i], bg[i], bd[i], y[i], f["on_range"][i], f["gap"][i], f["rth_range"][i]])
-    print(f"\nwrote c24_joint_results.json + c24_joint_frame.csv (n={n} rows)")
+    # Refresh the committed cache only when we rebuilt from vendor bars; when
+    # bars are absent, keep the cache byte-identical (matches the MNQ sibling
+    # script's own convention).
+    if from_bars:
+        with open(CACHED_FRAME, "w", newline="") as fh:
+            w = csv.writer(fh)
+            w.writerow(["trading_day", "bias_overnight", "bias_gap", "bias_dayhist", "y", "on_range", "gap", "rth_range"])
+            for i in range(n):
+                w.writerow([f["trading_day"][i], bo[i], bg[i], bd[i], y[i], f["on_range"][i], f["gap"][i], f["rth_range"][i]])
+        print(f"\nwrote c24_joint_results.json + refreshed {CACHED_FRAME.name} (n={n} rows)")
+    else:
+        print(f"\nwrote c24_joint_results.json (n={n}; frame cache left untouched)")
 
 
 if __name__ == "__main__":
