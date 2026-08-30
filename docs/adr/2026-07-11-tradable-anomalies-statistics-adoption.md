@@ -196,8 +196,43 @@ python scripts/validate_params.py
 
 ---
 
+## Addendum — 2026-08-29
+
+**Does not amend §2's REFERENCE (not canonical/gating) status, the four recorded non-adoptions, or
+§5's forbidden moves.**
+
+**(a) — Tranche-2 doctrine: pre-registration completeness rule.** The D5 magnitude-persistence
+spec's "matched day-session-history conditioning" prose
+(`docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md` §4) was frozen, then
+independently implemented as a **marginal** comparison in three scripts across two sessions (MYM
+candidates 2, 3, 4) before adversarial review caught the divergence and corrected each to the
+**within-stratum** reading the spec intended (`db91a21`, `aa3584b`) — the prose permitted two
+mutually-exclusive readings, and both were tried before either author noticed.
+
+| Addition | Where | Gap it closes |
+|---|---|---|
+| Pre-registration completeness — a frozen spec's prose passes completeness only if two independent implementers would compute identical numbers from it alone; if not, the freeze ships reference code or a worked numeric example on synthetic data | `strategy-validation` SKILL §5 (beside Null hygiene); mirrored at `.claude/skills/brief-authoring/references/inquire_brief.md` §8 | A spec frozen in prose alone can still admit divergent implementations — nothing previously required a determinism check before freezing |
+
+Applies forward to every `docs/spec/` FROZEN battery and `docs/briefs/pre-registration/` file; does
+**not** retroactively fault D5 or reopen its landed verdicts.
+
+**(b) — T2 extends to frozen null-construction primitives; promote out of per-campaign
+duplication.** `circular_shift_null_p`, `roll_other_within_stratum`,
+`block_bootstrap_min_lift`/`block_bootstrap_p`, and `stratified_lifts`/`min_stratified_lift` were
+each hand-written, near-identically, inside `c2_c4_stratified_rerun.py`, `c3_stratified_rerun.py`,
+and `candidate24_joint_gate.py` (`ab34aa6`, retrofitting a null-calibrated circular-shift p into
+three 2026-08-29 scripts) — no shared implementation existed, only the prose doctrine above (Null
+hygiene). `lab/research_utils/` already is the retained, W4-protected home for exactly this class of
+primitive (`permutation.py`, `deflated_sharpe.py`, `selection_tests.py`, each with its own
+adversarial-test file) — this reopens T2 ("promote one-off tooling into committed tools," executed
+2026-08-23 for its originally-scoped items) to direct these four functions into it, tested the same
+way, rather than leaving T2 read as fully closed.
+
+---
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-07-11 | Initial authoring + acceptance (adopt reference; Tranche-1 doctrine; non-adoptions) | Joshua + Claude Code |
+| 2026-08-29 | Addendum: (a) Tranche-2 pre-registration completeness rule; (b) T2 reopened to promote duplicated null-construction primitives into `lab/research_utils/`. | Claude Code |

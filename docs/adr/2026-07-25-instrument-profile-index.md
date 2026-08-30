@@ -252,8 +252,46 @@ grep -q "instrument-profile-index" docs/adr/INDEX.md \
 
 ---
 
+## Addendum — 2026-08-29
+
+**Does not amend §2a's closed verdict vocabulary, the value-carrying rule, P1–P5, or §5's forbidden moves.**
+
+**(a) — verdict-label-to-precondition binding (P6/P7).** Two same-day incidents showed a cell's
+verdict label can be asserted past what its own cited source actually demonstrates: two MYM cells
+and both MNQ reconciliation cells sat `CONTINGENT-FORWARD` with no forward test actually running
+(fixed `80585fd`/`0240ad9`); a MECHANISMS.md `INCREMENT` class finding stood on an uncomputed
+within-stratum null-p until Codex review #207 caught it and forced `UNRESOLVED` (`bb97c9d`). This
+extends the same provenance discipline the 2026-07-26 amendment applied to the `date` field
+(§Execution notes item 1) to the verdict/class-finding label itself:
+
+- **`P6` (HARD):** a `CONTINGENT-FORWARD` cell's cited `source` must resolve to a live/running
+  forward-test registration — not a Pre-Q, a GRADUATE note, or a deferred pre-registration.
+- **`P7` (HARD):** an `INCREMENT`-labeled class finding must cite a results artifact carrying a
+  computed null-p field — a bootstrap CI alone does not satisfy this.
+
+Both are directed at `scripts/instrument_profiles.py check`; **not implemented by this addendum** —
+record + direction now, mechanization later, the same sequencing P4/P5 followed.
+
+**(b) — parser fragility record; structured-authoring floated as a future phase, not authorized
+here.** Since ratification, the prose-extraction path (`MECHANISMS.md` definitions, `Class finding`
+bullets) broke on four distinct soft-line-wrap shapes, each fixed same-day (2026-08-29):
+definition-paragraph wrap (#196), annotated-bullet capture (#197), multi-bullet body wrap (#198),
+bold-annotation-span wrap (#203). Each hardened the regex; none changed the underlying design —
+prose is hand-authored, `PROFILES.md`/`profiles.json` are recovered from it by pattern-matching.
+The same day, `REPO_MAP.md` §2.1 converted from hand-maintained prose to a live-source generator
+(`f32d8cc`), eliminating that defect class structurally rather than patching it. **Considered as a
+future phase, not authorized here:** inverting §2a's authoring direction — verdict/status/citation/
+finding-text fields authored as structured front-matter, prose rendered from it — sequenced the way
+the SSOT remediation program phases its own work, not attempted as one rewrite. Authorizing the
+inversion itself needs a fresh admitting ADR (schema-replacement scope: the PROFILE-block contract,
+the value-carrying rule, and the vocabulary-growth rule would all need re-authoring, then content
+re-authored across 21+ ledgers and MECHANISMS.md), not a further amendment to this one.
+
+---
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-07-25 | Initial authoring; ratifies Tasks 1-9's shipped design (schema, value-carrying rule, vocabulary growth rule, intake consult, generated-view invariant), records the scoped §5 override for the 21-ledger seeding pass, copies the design doc §9 falsifier verbatim (incl. thin-sample clause), and records three execution findings (date provenance, missing-bar under-report, two unvocabularied mechanism classes). | Joshua + Claude Code |
+| 2026-08-29 | Addendum: (a) P6/P7 verdict-label-to-precondition binding, directed not yet implemented; (b) parser-fragility record (4 same-day soft-wrap fixes) + structured-authoring floated as a future phase, not authorized here. | Claude Code |

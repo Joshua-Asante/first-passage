@@ -110,6 +110,13 @@ If this brief is self-executing (small, mechanical, single session), enumerate t
 
 A separate file at `docs/briefs/pre-registration/Q-X-verdict-preregistration.md` containing the §6 table above plus the exact threshold numbers, written and committed BEFORE any analysis script runs. The closure record in §9 references this file by commit hash.
 
+**Completeness check (two-implementer test):** before committing this file, ask — would two
+independent implementers compute identical numbers from the §6 table + threshold prose alone? If
+not (an ambiguous conditioning/aggregation phrase, a statistic with more than one defensible
+reading), the pre-registration must also ship reference code or a worked numeric example on
+synthetic data; prose alone does not satisfy this section. Standing doctrine:
+`docs/adr/2026-07-11-tradable-anomalies-statistics-adoption.md` Addendum 2026-08-29.
+
 Pre-registration commit hash: `<populated at pre-registration commit time>`
 Pre-registration date: YYYY-MM-DD
 
