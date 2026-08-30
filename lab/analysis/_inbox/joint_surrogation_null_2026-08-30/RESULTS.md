@@ -19,13 +19,22 @@ remedy 2 clears neither channel, not "`rth_range` alone" as the first correction
 size/power re-certification's synthetic "ground truth" data was generated with a filter truncated
 at J=300 while the fitting/testing side used J=1200 — a confirmed, quantified (~0.058 ACF
 mismatch) truncation confound. Once corrected (matched truncation throughout), the true
-production-grade null false-positive rate is **24%** (95% CI [14.3%,37.4%], one-sided binomial
+production-grade null false-positive rate is **26%** (95% CI [15.9%,39.6%], one-sided binomial
 p≈0.0000 vs nominal 5% — clearly, not marginally, significant) — closely matching, not refuting,
-Round 3's original coarse-grid 25% estimate. **Neither gate clears, decisively, under the
+Round 3's original coarse-grid 25% estimate, and stable across a THIRD independent
+re-implementation (a second Codex-caught bug — frozen calibration-noise seeds shared across all
+50 replicates within a scenario — moved this figure only from 24% to 26%, not materially, unlike
+the first fix which moved it from 10% to 24%). **Neither gate clears, decisively, under the
 corrected analysis** — a cleaner and more negative finding than the original submission's "one
-gate cleared" claim. Hard stop fires, more emphatically than first reported. See "Round 4" (the
-original submission, retained verbatim below for provenance) and "Round 4 correction" (the
-authoritative, current account) for the full record.
+gate cleared" claim. **A third review round also found a more fundamental, disclosed (not
+"fixed") scope limitation: neither remedy tests the PRODUCTION rank-based ARFIMA+copula+remap
+construction — both test a related but distinct log-Pearson ARFIMA(1,d,0) model, since building a
+rank-scale version of either check would be a forbidden third remedy.** This does not soften the
+disposition — it is an independent reason the hard stop holds regardless of how the log-Pearson
+results are read. Hard stop fires, more emphatically and on a more carefully-scoped evidentiary
+basis than first reported. See "Round 4" (the original submission, retained verbatim below for
+provenance), "Round 4 correction," "Round 4, second correction pass," and "Round 4, third
+correction pass" for the full record.
 
 **Status (superseded by Round 4 correction above; original Round 4 submission and Round 1-3 text
 retained verbatim below for provenance):** NOT RESOLVED to a certifiable standard, and materially further
@@ -925,4 +934,85 @@ python oos_forecast_evaluation.py
 python information_criterion_comparison.py
 # Expected: on_range Ljung-Box p=0.0127, rth_range p=0.0446 -- BOTH FAIL the absolute check
 # (neither channel clears); machinery validation reject_rate ~0.00-0.10 at true params (sane)
+```
+
+## Round 4, third correction pass — Codex review (PR #225, third round): 3 more findings on the
+second correction pass's own new code, all addressed (2 fixed, 1 disclosed rather than
+"fixed" — building a third remedy would violate the ratified bound); disposition direction
+unchanged, evidentiary basis narrowed and made more honest
+
+A third Codex review pass, on the commit carrying the second correction pass above, found 3
+further issues. Each independently re-verified before fixing or disclosing.
+
+**Finding X (P2) — the residual-machinery validation self-test used the wrong degrees of
+freedom, in the OPPOSITE direction from finding B.** `residual_diagnostic_self_test` feeds KNOWN
+true (phi,d) directly into the residual filter — no parameters are estimated from each synthetic
+replicate in this specific loop, unlike the real-data usage which fits (phi,d) first. Using
+`model_df=2` here (copied mechanically from the real-data usage) understates the correct χ²
+degrees of freedom (χ²(28) instead of χ²(30)), artificially lowering the validation p-values.
+**Verified directly**: `on_range`'s persisted run showed 1/10 rejections at `model_df=2`; at the
+correct `model_df=0`, it is 0/10 — both close to the test's own 5% nominal rate, but only the
+corrected value is the right comparison. **Fixed**: `model_df=0` for this specific
+known-parameter control. Does not change the real-data verdict (that Ljung-Box call already
+correctly used `model_df=2`, since real (phi,d) genuinely are estimated there) — only the
+self-test's own persisted reject-rate figures move (both now 0.00, still sane).
+
+**Finding Y (P2) — the size/power positive control's own SMM calibration reused a FIXED,
+between-scenario-different Monte Carlo noise realization across all 50 replicates.**
+`refit_and_score`'s two `estimate_phi_d_simulated` calls were seeded with `seed_base+1`/
+`seed_base+2`, where `seed_base` is `run_scenario`'s own outer constant (not varied by
+`code`/`rep`) — every NULL replicate therefore shared ONE fixed calibration-noise draw, and every
+ALTERNATIVE replicate shared a DIFFERENT fixed draw (since the two scenarios pass different outer
+seeds). Since the estimator is materially seed-sensitive (this same round's own finding #2
+established exactly that, on a different script), the reported 38%/24% power gap could partly
+reflect two different frozen Monte Carlo objective surfaces rather than only the injected boost.
+**Fixed** by folding `code` (the replicate index) into the calibration seed, using the IDENTICAL
+scheme in both scenarios — each of the 50 replicates now gets its own independent
+calibration-noise draw, verified directly (two replicates on the SAME synthetic data now produce
+genuinely different fitted (phi,d), confirming the fix is live). **Re-run in full** (production
+grid, N=50 per scenario, ~7.1 min wall-clock): the corrected null false-positive rate is **26%
+(13/50), 95% Wilson CI [15.9%,39.6%]** (alt rate 42%, 21/50, CI [29.4%,55.8%]) — closely matching
+(not materially different from) the pre-fix 24% and Round 3's original coarse-grid 25%. **This
+convergence across three independently-implemented versions of the same check (Round 3's coarse
+grid, this round's first production-grid run, and this now-doubly-corrected production-grid run)
+is itself informative**: the true estimation-aware Type-I inflation for this null design appears
+to be robustly in the 24-26% range regardless of the specific implementation bug being fixed at
+each stage — i.e. finding Y's fix (real, worth making for correctness) did not turn out to be
+hiding a materially different true answer, unlike finding #1's fix in the first correction pass,
+which DID move the number substantially (10%→24%). One-sided binomial test vs nominal 5%:
+p≈0.0000, clearly significant. `size_controlled` and `power_adequate` both still False —
+disposition unchanged.
+
+**Finding Z (P2) — a more fundamental scope limitation: neither remedy tests the PRODUCTION
+model construction.** Both remedies fit and score an ARFIMA(1,d,0) model DIRECTLY on log-range
+Pearson dynamics, with no rank-remap step. The production construction this Phase 1 design would
+actually deploy (`_fit_real_params.py`, `longmemory_copula.py`) calibrates against RANK/Spearman
+ACF and rank-remaps its latent draws onto the real raw marginal (`_remap_to_raw`, exact
+order-statistic matching) — a genuinely different model, not merely a different estimation
+method (a monotone log transform preserves ranks, not Pearson autocorrelation or residual
+whiteness). **This is disclosed, not "fixed" with a third remedy** — the ratified bounded-round
+mandate caps model-adequacy work at 2 attempts, both already spent, and building a rank-scale
+version of either check now would be exactly the "just try one more thing" escalation the
+hard-stop discipline exists to prevent. **Honest reading**: neither remedy speaks precisely to the
+production rank-based construction's own adequacy either way — and both nonetheless failed on the
+closely-related log-Pearson model they DID test. This does not soften the round's disposition; it
+is an independent reason the hard stop holds regardless of how the log-Pearson results are read.
+
+**Net effect on disposition: unchanged in direction. The round's hard stop is now overdetermined**
+— it holds whether one reads Round 4's numbers charitably (as evidence about the production
+construction, via the log-Pearson proxy: model adequacy still does not clear) or strictly (as
+evidence only about a different, untested model construction: the production construction's own
+adequacy was simply never established either way, an even weaker basis for treating Phase 1 as
+resolved). Either reading disclosed and raised to the operator alongside the §6 gate-table gap.
+
+```bash
+# Reproduce the corrected residual-machinery self-test (model_df=0, known-parameter control)
+python information_criterion_comparison.py
+# Expected: machinery validation reject_rate=0.00 for both channels (was 0.10/0.00 with the
+# finding-X bug); real-data verdict unchanged -- BOTH channels still FAIL the absolute check
+
+# Reproduce the corrected size/power re-certification (per-replicate calibration seeding)
+python _refit_per_replicate_positive_control_v2.py
+# Expected: null_rate=0.260 (Wilson CI [0.159,0.396]), alt_rate=0.420, binom_p_vs_nominal≈0.0000,
+# size_controlled=False, power_adequate=False -- VERDICT: SIZE/POWER GATE DOES NOT CLEAR
 ```

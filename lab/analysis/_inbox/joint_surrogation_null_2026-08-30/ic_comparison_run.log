@@ -37,7 +37,7 @@ rth_range        ar1   2    -2663.45    -2659.45    -2649.29
 ==========================================================================================
 ABSOLUTE ADEQUACY CHECK: Ljung-Box on residuals at lag=30 (MNQ)
   [on_range] ARFIMA residual Ljung-Box p=0.0127 (FAIL -- residual structure remains) | ar5 (closest competitor) residual Ljung-Box p=0.0099 (still shows structure -- confirms discriminating power)
-    machinery validation (10 reps @ true params): reject_rate=0.10 (expect close to nominal ~0.05-0.10 if machinery is trustworthy)
+    machinery validation (10 reps @ true params): reject_rate=0.00 (expect close to nominal ~0.05-0.10 if machinery is trustworthy)
     multi-lag robustness: {5: 0.010365001471926946, 10: 0.059848547686900226, 15: 0.0055718102077269615, 20: 0.008220040854992224, 25: 0.0239087790377638, 30: 0.012713030518624779}
   [rth_range] ARFIMA residual Ljung-Box p=0.0446 (FAIL -- residual structure remains) | ar5 (closest competitor) residual Ljung-Box p=0.0077 (still shows structure -- confirms discriminating power)
     machinery validation (10 reps @ true params): reject_rate=0.00 (expect close to nominal ~0.05-0.10 if machinery is trustworthy)

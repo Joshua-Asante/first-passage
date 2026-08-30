@@ -122,7 +122,26 @@ def gen_synthetic_matched(n, phi1, d1, phi2, d2, rho_innov, seed, boost=0.0):
 
 def refit_and_score(x1, x2, seed_base, code):
     """Identical structure to the coarse script's own function of the same
-    name, with the calibration grid swapped to production scale."""
+    name, with the calibration grid swapped to production scale.
+
+    CORRECTED (Codex review, PR #225 third pass): the two `estimate_phi_d_
+    simulated` calibration calls previously seeded with `seed_base+1`/
+    `seed_base+2` -- `seed_base` here is CONSTANT across all N_REPS
+    replicates within one scenario (it is `run_scenario`'s own outer
+    `seed_base+5000`, not varied by `code`/`rep`), so every NULL replicate
+    shared one fixed SMM-calibration-noise realization and every
+    ALTERNATIVE replicate shared a DIFFERENT fixed realization (since the
+    two scenarios pass different outer seed_base values). The estimator is
+    materially seed-sensitive (documented directly by this same round's own
+    OOS-forecast correction), so the reported power gap could partly
+    reflect two different frozen Monte Carlo objective surfaces rather than
+    only the injected boost. FIXED by folding `code` (the replicate index)
+    into the calibration seed, using the IDENTICAL scheme in both
+    scenarios -- each of the 50 replicates (in either scenario) now gets
+    its own independent calibration-noise draw, so any within-scenario
+    calibration-noise variance averages out across replicates exactly the
+    way the surrogate-generation loop below already does, and no
+    systematic between-scenario difference in calibration noise remains."""
     n = len(x1)
     lags = min(30, n // 3)
     r1, r2 = rankdata(x1), rankdata(x2)
@@ -131,10 +150,10 @@ def refit_and_score(x1, x2, seed_base, code):
     target_pearson = 2 * np.sin(np.pi * real_crosscorr0 / 6)
 
     phi1, d1, _ = estimate_phi_d_simulated(real1_acf, n, PROD_J, PROD_BURN,
-                                            n_reps=PROD_NREPS, seed=seed_base + 1,
+                                            n_reps=PROD_NREPS, seed=[seed_base, code, 1],
                                             phi_grid=PROD_PHI_GRID, d_grid=PROD_D_GRID)
     phi2, d2, _ = estimate_phi_d_simulated(real2_acf, n, PROD_J, PROD_BURN,
-                                            n_reps=PROD_NREPS, seed=seed_base + 2,
+                                            n_reps=PROD_NREPS, seed=[seed_base, code, 2],
                                             phi_grid=PROD_PHI_GRID, d_grid=PROD_D_GRID)
     psi1 = ar1_fracdiff_weights(phi1, d1, PROD_J)
     psi2 = ar1_fracdiff_weights(phi2, d2, PROD_J)

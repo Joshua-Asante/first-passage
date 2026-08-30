@@ -72,6 +72,38 @@ design on MYM at Phase 3 -- it does NOT itself certify MYM's own model
 adequacy, which would need its own instance of this same check before that
 instrument's Phase 3 result could be trusted with the same confidence.
 
+SECOND, MORE FUNDAMENTAL SCOPE LIMITATION (Codex review, PR #225 third
+pass -- disclosed, NOT fixed with new code; see "why not fixed" below):
+this remedy (and remedy 1, oos_forecast_evaluation.py) fits and tests an
+ARFIMA(1,d,0) model DIRECTLY on log-range Pearson dynamics, with NO
+rank-remap step. The PRODUCTION construction this Phase 1 design would
+actually deploy (`_fit_real_params.py`, `longmemory_copula.py`) is
+different in kind, not just in estimation method: it calibrates (phi,d)
+against the RANK/Spearman ACF (`acf(rankdata(x))`), and its surrogate
+generator subsequently RANK-REMAPS the fitted latent Gaussian process onto
+the real raw marginal distribution (`_remap_to_raw`, exact order-statistic
+matching). A monotone log transform preserves ranks but NOT Pearson
+autocorrelation or residual whiteness -- so THIS remedy's pass/fail result
+characterizes a related but DISTINCT log-Pearson model, not the production
+rank-based ARFIMA+copula+remap construction. Failure here does not, by
+itself, prove the production construction is ALSO inadequate; success here
+would not, by itself, have proven the production construction adequate
+either.
+
+WHY THIS IS DISCLOSED RATHER THAN FIXED WITH A THIRD REMEDY: the ratified
+bounded-round mandate caps model-adequacy work at 2 candidate remedies,
+already spent (remedy 1: OOS forecast; remedy 2: this file). Building a
+rank-scale version of this exact check would be a THIRD attempt, which the
+hard-stop discipline this round is built around explicitly forbids
+regardless of how well-motivated it is. The honest, disclosed conclusion
+given this gap: model adequacy has NOT been established for the
+production construction by either remedy -- if anything, the case for
+proceeding is WEAKER than "two remedies actively falsified the production
+model," it is "neither of the two attempted remedies say anything precise
+about it either way, and both nonetheless failed on the closely-related
+model they DID test." This does not soften the Round 4 hard-stop
+disposition; it is an additional reason the disposition holds.
+
 TWO-PART PASS CRITERION (fixed here, before any number below the FIXES
 described next was computed -- Codex review, PR #225 finding #6, corrected
 the original one-part criterion described below):
@@ -366,12 +398,23 @@ def residual_diagnostic_self_test(phi: float, d: float, n: int = 1189, n_reps: i
     review, PR #225 second pass -- this had previously only been run as an
     uncommitted ad hoc check, the same class of defect as finding #3):
     at TRUE (phi,d), the Ljung-Box test on `arfima_ar_inf_residuals` should
-    reject at close to its own nominal ~5-10% rate (a correctly-specified
+    reject at close to its own nominal ~5% rate (a correctly-specified
     model's own residuals should look like white noise), not confirm
     spurious structure. Run once per channel, using THAT channel's own
     fitted (phi,d) as the "true" parameter for the check (directly relevant
     to whether the machinery is trustworthy on the exact real-data regime
-    being tested, not a generic unrelated parameter set)."""
+    being tested, not a generic unrelated parameter set).
+
+    CORRECTED (Codex review, PR #225 third pass): this control feeds the
+    KNOWN true (phi,d) directly into the residual filter -- no parameters
+    are estimated from each synthetic replicate here (unlike the real-data
+    usage, which fits phi,d first). `model_df` must reflect degrees of
+    freedom actually CONSUMED by estimation in the specific test being run,
+    not the real-data usage's own count. Verified directly before fixing:
+    at model_df=2 (wrong here), `on_range`'s persisted run showed 1/10
+    rejections; at model_df=0 (correct -- zero parameters estimated in
+    this loop), it is 0/10, both close to the test's own 5% nominal rate.
+    Fixed to model_df=0."""
     burn = 800
     psi = ar1_fracdiff_weights(phi, d, burn)
     rng = np.random.default_rng(seed)
@@ -381,7 +424,7 @@ def residual_diagnostic_self_test(phi: float, d: float, n: int = 1189, n_reps: i
         x = _causal_filter(e, psi)[burn: burn + n]
         x = x - x.mean()
         resid = arfima_ar_inf_residuals(x, phi, d, RESID_J)
-        lb = acorr_ljungbox(resid, lags=[LJUNG_BOX_LAG], model_df=2, return_df=True)
+        lb = acorr_ljungbox(resid, lags=[LJUNG_BOX_LAG], model_df=0, return_df=True)
         p_values.append(float(lb["lb_pvalue"].iloc[0]))
     reject_rate = sum(p <= 0.05 for p in p_values) / n_reps
     return dict(phi=phi, d=d, n=n, n_reps=n_reps, p_values=p_values, reject_rate=reject_rate,

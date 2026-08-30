@@ -108,6 +108,39 @@ concern is specifically about ranking train+test JOINTLY, as
 for a training-time fit target touches no test-period information). Both
 fixes require re-running this file; the table in RESULTS.md's own Round 4
 section is the corrected, re-run output, not the pre-correction numbers.
+
+SECOND-PASS CORRECTION (Codex review, PR #225, second review round): fixing
+(2) above created a NEW inconsistency this file's own forecasting step
+never accounted for -- (phi,d) was now calibrated to RANK-ACF, but
+`forecast_arinf_path` applies the resulting linear filter directly to RAW
+log-range values and scores raw-scale MSE. A monotone rank transform
+preserves Spearman correlation, not Pearson autocovariance, so a
+rank-calibrated (phi,d) is not, in general, the correct filter for
+raw-scale conditional-mean forecasts. FIXED by decoupling from the shared
+rank-based helper entirely: `estimate_phi_d_simulated_pearson` (below)
+fits (phi,d) via an internal PEARSON-ACF (not rank-ACF) simulated
+comparison, matched to a Pearson-ACF target on RAW train data -- fit,
+AR(inf) filter, and MSE scoring are now consistently Pearson/raw-scale
+throughout this file. `longmemory_copula.estimate_phi_d_simulated` itself
+is untouched (Round 2/3's own reproducibility unaffected).
+
+SCOPE LIMITATION, DISCLOSED (Codex review, PR #225, third review round --
+NOT fixed with a third remedy; the ratified bounded round caps
+model-adequacy work at 2 attempts, both already spent): this remedy fits
+and tests an ARFIMA(1,d,0) model DIRECTLY on log-range Pearson dynamics,
+with no rank-remap step. The PRODUCTION construction this Phase 1 design
+would actually deploy (`_fit_real_params.py`, `longmemory_copula.py`)
+calibrates against RANK-ACF and rank-remaps its latent draws onto the real
+raw marginal via `_remap_to_raw` -- a genuinely different model, not just a
+different estimation method (log preserves ranks, not Pearson
+autocovariance). This remedy's near-miss result therefore characterizes a
+related but distinct log-Pearson construction, not the production
+rank-based one -- disclosed here and in `information_criterion_
+comparison.py`'s own identical scope note, and in RESULTS.md /
+`Q-RANGEXFER-1`'s own §11. This does not soften the round's own hard-stop
+disposition; it is an additional, independent reason it holds (neither
+remedy speaks precisely to the production construction's own adequacy
+either way, and both nonetheless failed on the model they DID test).
 """
 from __future__ import annotations
 
