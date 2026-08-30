@@ -384,13 +384,20 @@ def _check_k_conditional_floor(attestations: list[Any], required_floor: float) -
     reasons: list[str] = []
     for att in dsr_attestations:
         hurdle = att.get("hurdle_value")
-        # NaN/inf pass `isinstance(hurdle, (int, float))` and `hurdle < x` is
-        # always False for NaN -- both would otherwise sail through this check
-        # unrejected, satisfying the mandatory floor without declaring a real
-        # hurdle. math.isfinite rejects NaN, +inf, and -inf alike.
+        measured = att.get("measured_value")
+        # NaN/inf pass `isinstance(x, (int, float))` and any comparison against
+        # NaN is False -- both a NaN/inf hurdle AND a NaN/inf measured_value
+        # would otherwise sail through unrejected: a finite-but-fake hurdle
+        # paired with a NaN measured value satisfies "hurdle >= floor" while
+        # never declaring a real measured Sharpe (Codex review, PR #218,
+        # second pass -- _check_attestation and promotion_refuter's own
+        # measured<hurdle comparison are equally NaN-blind). math.isfinite
+        # rejects NaN, +inf, and -inf alike on both fields.
         if (
             not isinstance(hurdle, (int, float))
             or not math.isfinite(hurdle)
+            or not isinstance(measured, (int, float))
+            or not math.isfinite(measured)
             or hurdle < required_floor - 1e-9
         ):
             reasons.append(

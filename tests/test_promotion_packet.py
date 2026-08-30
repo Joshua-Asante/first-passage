@@ -253,6 +253,38 @@ def test_deep_lane_short_confirm_horizon_hurdle_between_default_and_true_floor_f
     )
 
 
+def test_k_above_reachable_band_with_nan_measured_value_fails(tmp_path, monkeypatch):
+    """A correctly-set hurdle paired with a NaN measured_value must still
+    fail -- otherwise the floor requirement is satisfied without ever
+    declaring a real measured Sharpe (Codex review, PR #218, second pass)."""
+    from research_utils.axis_screen import floor_at_k
+
+    packet = _backed_packet_at_k(tmp_path, monkeypatch, k=5)
+    packet["gate_attestations"].append({
+        "gate_id": "dsr_floor",
+        "units": "annualized_sharpe",
+        "measured_value": float("nan"),
+        "hurdle_value": floor_at_k(5),  # correct hurdle -- only measured_value is bad
+        "basis": "is_panel",
+        "artifact_path": "tests/fixtures/promotion/artifacts/gate_stage2.json",
+    })
+    result = validate_promotion_packet(packet, repo_root=REPO_ROOT)
+    assert result.decision == "Fail"
+    assert any(r.startswith("discovery_run_id_k_conditional_floor_understated:") for r in result.reasons)
+
+
+def test_refuter_rejects_nan_measured_value_on_any_gate(tmp_path):
+    """promotion_refuter's generic measured<hurdle / measured>hurdle
+    comparisons are NaN-blind (any comparison against NaN is False) --
+    a NaN measured_value on ANY gate, not just dsr_floor, would otherwise
+    clear both branches unrejected (Codex review, PR #218, second pass)."""
+    packet = json.loads(CLEAN.read_text(encoding="utf-8"))
+    packet["gate_attestations"][0]["measured_value"] = float("nan")
+    result = refute_promotion_packet(packet, repo_root=REPO_ROOT)
+    assert result.decision == "Fail"
+    assert any(r.startswith("refuter:gate_non_finite:") for r in result.reasons)
+
+
 def test_deep_lane_hurdle_meeting_true_confirm_years_floor_passes(tmp_path, monkeypatch):
     from research_utils.axis_screen import floor_at_k
 

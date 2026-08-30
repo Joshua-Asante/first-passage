@@ -158,6 +158,65 @@ def test_search_log_outside_repo_root_aborts_without_write(ledger, tmp_path):
     assert (ledger / "test_run.json").read_text(encoding="utf-8") == before
 
 
+def test_search_log_empty_list_aborts_on_normal_closure(ledger, tmp_path):
+    """[] parses as non-empty text but claims zero executed trials -- a
+    normal p-value closure always implies at least one look happened
+    (Codex review, PR #218, second pass)."""
+    _open_blind(ledger)
+    before = (ledger / "test_run.json").read_text(encoding="utf-8")
+    pv = tmp_path / "pvals.csv"
+    pv.write_text("cand_a,0.001\n", encoding="utf-8")
+    empty_list = tmp_path / "empty_list.json"
+    empty_list.write_text("[]", encoding="utf-8")
+
+    with pytest.raises(SystemExit) as exc:
+        rs.close_run(_close_args(pvalues_file=str(pv), search_log=str(empty_list)))
+    assert "empty JSON list" in str(exc.value)
+    assert (ledger / "test_run.json").read_text(encoding="utf-8") == before
+
+
+def test_search_log_empty_list_aborts_on_operator_stopped_with_positive_executed_k(
+    ledger, tmp_path
+):
+    _open_blind(ledger)
+    empty_list = tmp_path / "empty_list.json"
+    empty_list.write_text("[]", encoding="utf-8")
+
+    with pytest.raises(SystemExit) as exc:
+        rs.close_run(
+            _close_args(
+                operator_stopped=True,
+                executed_k=1,
+                stop_reason="ran out of budget",
+                executed_looks="1 look, examiner: operator",
+                search_log=str(empty_list),
+            )
+        )
+    assert "empty JSON list" in str(exc.value)
+
+
+def test_search_log_empty_list_accepted_on_operator_stopped_before_any_read(
+    ledger, tmp_path
+):
+    """The one coherent case: stopped before any look happened, so an empty
+    trace is the honest one, not an incoherent claim."""
+    _open_blind(ledger)
+    empty_list = tmp_path / "empty_list.json"
+    empty_list.write_text("[]", encoding="utf-8")
+
+    rs.close_run(
+        _close_args(
+            operator_stopped=True,
+            executed_k=0,
+            stop_reason="stopped before any read",
+            executed_looks="0 looks",
+            search_log=str(empty_list),
+        )
+    )
+    manifest = json.loads((ledger / "test_run.json").read_text(encoding="utf-8"))
+    assert manifest["search_log"]["entry_count"] == 0
+
+
 def test_search_log_recorded_on_operator_stopped_closure(ledger, tmp_path):
     _open_blind(ledger)
     log = tmp_path / "restarts.json"

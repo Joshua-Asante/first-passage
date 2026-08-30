@@ -7,6 +7,7 @@ absence, and ceiling re-read drift between validate and promote.
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -81,7 +82,13 @@ def refute_promotion_packet(
         measured = float(att["measured_value"])
         hurdle = float(att["hurdle_value"])
         gate_id = att["gate_id"]
-        if gate_id in _CEILING_GATES:
+        # Any comparison against NaN is False, so a NaN/inf measured or
+        # hurdle would otherwise sail through both the > and < branches below
+        # unrejected (Codex review, PR #218) -- reject non-finite values
+        # outright rather than let a bad comparison read as "clears the gate".
+        if not (math.isfinite(measured) and math.isfinite(hurdle)):
+            reasons.append(f"refuter:gate_non_finite:{gate_id}")
+        elif gate_id in _CEILING_GATES:
             if measured > hurdle:
                 reasons.append(f"refuter:gate_fail:{gate_id}")
         elif measured < hurdle:
