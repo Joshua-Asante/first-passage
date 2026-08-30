@@ -1,6 +1,6 @@
 # Operator approvals — one campaign envelope up front, and the frozen multiplicity configuration that keeps confirm attempts from becoming a spend backdoor — `operator-approvals-campaign-envelope`
 
-**Status:** `Proposed`
+**Status:** `Accepted` — ratified by operator (Joshua) 2026-08-30; see Ratification note.
 **Decision date:** 2026-08-30
 **Supersedes:** none
 **Superseded-by:** none
@@ -72,6 +72,14 @@ Files read **before** authoring this ADR, this session (2026-08-30):
   ratified exception to down-only automation — cited by this ADR's "another GO... to cross into
   sandbox/capital" clause (§2) as the destination that clause points at; this ADR does not redefine
   S5's own bounds.
+
+**Amendment-first / dedup (Rule 8 sub-rule 10), run at ratification:**
+
+```
+$ python scripts/check_advisor_dedup.py --keywords "operator approvals campaign envelope multiplicity configuration Bonferroni Holm confirm attempt"
+```
+
+161 candidates surfaced, all keyword-overlap noise from instrument ledgers and unrelated audit notes — none proposes a single up-front campaign-envelope approval unit. No existing ADR or brief performs this ADR's decision.
 
 ---
 
@@ -259,13 +267,13 @@ ADR's decision text.
   could under-report despite this ADR's rule — a build-time risk for the separate implementation
   handoff (§7), not a defect in the rule itself.
 
-**Downstream artifacts that need updating:**
-- `2026-08-30-candidate-contract.md` — Amends-in-part (this ADR's header): the multiplicity-
+**Downstream artifacts:**
+- `2026-08-30-candidate-contract.md` — **landed at ratification** (this commit): the multiplicity-
   configuration field (`α`/`M`/procedure) added to the founding-freeze field list, discharging that
   ADR's own §3 deferral.
 - `2026-08-30-evaluation-order.md` §2 step 7 — its forward citation to this ADR's filename is now
-  discharged; no edit needed to that ADR's text (Trap #12 — decisions stay byte-stable once landed,
-  and that ADR is not yet `Accepted` in any case).
+  discharged; no edit needed to that ADR's text (Trap #12 — decisions stay byte-stable once landed).
+  Both ADRs ratify together in this same pass.
 - `STATE.md` — new forward-board row: campaign-envelope + multiplicity-configuration mechanical
   enforcement owed as a separate handoff (§7).
 
@@ -275,7 +283,8 @@ ADR's decision text.
 
 - **Phase 0** — re-confirm §0 anchors current at apply-time.
 - **Phase 1** — this ADR's own body is the complete policy deliverable; the `Amends-in-part` edge to
-  `2026-08-30-candidate-contract.md` lands on ratification, not before.
+  `2026-08-30-candidate-contract.md` **landed at ratification** (this commit), as a new §2 subsection
+  on that ADR.
 - **Phase 2** — grep-sweep (Known Trap #7): **(i)** no predecessor to check (`Supersedes: none`);
   **(ii)** `grep -rl "campaign envelope\|multiplicity configuration\|Bonferroni\|Holm step-down"
   docs/adr/ docs/spec/ docs/methodology/` — executed at authoring time: 10 hits, each disposed:
@@ -341,8 +350,26 @@ $ grep -n "operator-approvals-campaign-envelope" docs/adr/2026-08-30-candidate-c
 
 ---
 
+## Ratification note
+
+**Ratified by:** Joshua, direct instruction ("ratify the six ADRs," 2026-08-30), following a
+self-conducted adversarial re-read (the full 6-lens Workflow panel was declined for cost) that added
+the missing amendment-first/dedup attestation (§0).
+
+**§6-class preconditions at ratification:** mechanical checks clean (`check_brief.py` 0 HARD,
+`check_adr_graph.py` OK) ✓ · amendment-first dedup run, no genuine prior art ✓ · the `Amends-in-part`
+edge to `candidate-contract.md` confirmed landed (§10 hook) ✓ · this ADR drew no direct Codex review
+findings in the prior round (its own file was not among the 11).
+
+**Not licensed by this ratification:** building the contract-integrity check refusing a mismatched
+`α`/`M`/procedure declaration, or the probe-tranche citation bookkeeping (§7, separate implementation
+handoff) · any edit to `core/`, `ops/`, `dd_protection`, or allocations.
+
+---
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-08-30 | Initial authoring | Joshua + Claude Code |
+| 2026-08-30 | Ratified — status → `Accepted`; `Amends-in-part` edge to candidate-contract.md landed | Joshua (operator ratification) |
