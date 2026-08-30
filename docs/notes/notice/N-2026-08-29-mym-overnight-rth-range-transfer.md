@@ -24,6 +24,7 @@
   `candidate2_overnight_range_STRATIFIED`. Superseded (secondary, disclosed) script/results:
   `c2_c4_increment_falsifiers.py` / `c2_c4_results.json` key `candidate2_overnight_range`.
 - **Observed at:** 2026-08-29 (this session, both runs).
+- **K:** [`discovery_manifests/mymdd_1_2026_08_29.json`](../../../discovery_manifests/mymdd_1_2026_08_29.json), K=5 (this cell's own naive marginal test above is CI-based, not a standalone p; the manifest's own `candidates` array does not label rows by id, unlike MNQ's sibling manifest, so an independent BH-rank cross-check isn't verifiable here). Added retroactively 2026-08-30 for parity with MNQ's sibling notices' own `**K:**` bullet convention — this cell's `floor_at_k(5)=1.1150 > CAP=1.0` (the DSR-reachable band), same as MNQ's three K-correction-audit-flagged notices; disclosed, not yet resolved (see `Q-RANGEXFER-1` §11).
 
 ---
 
