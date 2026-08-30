@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
-"""Report-only: Notice GRADUATE verdicts whose cited K is above the DSR-reachable band.
+"""Report-only: Notice GRADUATE/INCREMENT verdicts whose cited K is above the
+DSR-reachable band.
 
 Writes nothing. Exit code is always 0. Not a gate.
+
+Widened 2026-08-30 (Codex review, PR #223) from GRADUATE-only: a Status line
+reading e.g. "OPEN -- INCREMENT" routes into a Q-brief the same way GRADUATE
+does (both mean "this candidate cleared its stage-1 bar and is being carried
+forward"), and was silently skipped before this fix even when it cited the
+same over-floor manifest as its GRADUATE siblings.
 """
 from __future__ import annotations
 
@@ -34,7 +41,8 @@ def run_audit(
     total = len(notices)
     flagged: list[tuple[str, str, int, float]] = []
     skips: list[str] = []
-    graduate_scanned = 0
+    promoted_scanned = 0
+    ROUTED_TOKENS = ("GRADUATE", "INCREMENT")
 
     for path in notices:
         text = path.read_text(encoding="utf-8")
@@ -42,9 +50,9 @@ def run_audit(
             (line for line in text.splitlines() if STATUS_RE.match(line)),
             None,
         )
-        if status_line is None or "GRADUATE" not in status_line:
+        if status_line is None or not any(tok in status_line for tok in ROUTED_TOKENS):
             continue
-        graduate_scanned += 1
+        promoted_scanned += 1
         seen: list[str] = []
         for match in MANIFEST_RE.findall(text):
             if match not in seen:
@@ -68,17 +76,17 @@ def run_audit(
                 flagged.append((path.name, match, k, floor))
 
     flagged.sort(key=lambda row: row[0])
-    return flagged, skips, graduate_scanned, total
+    return flagged, skips, promoted_scanned, total
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Report-only Notice GRADUATE K vs DSR-reachable band",
+        description="Report-only Notice GRADUATE/INCREMENT K vs DSR-reachable band",
     )
     parser.add_argument("--repo-root", type=Path, default=None)
     args = parser.parse_args(argv)
     root = args.repo_root.resolve() if args.repo_root is not None else REPO
-    flagged, skips, graduate_scanned, total = run_audit(root)
+    flagged, skips, promoted_scanned, total = run_audit(root)
     for msg in skips:
         print(msg, file=sys.stderr)
     for notice_file, manifest_path, k, floor in flagged:
@@ -87,8 +95,8 @@ def main(argv: list[str] | None = None) -> int:
             f"floor_at_k(K)={floor:.4f}\tCAP={CAP}"
         )
     print(
-        f"[audit] {len(flagged)} flagged / {graduate_scanned} "
-        f"GRADUATE notices scanned / {total} total notices"
+        f"[audit] {len(flagged)} flagged / {promoted_scanned} "
+        f"GRADUATE/INCREMENT notices scanned / {total} total notices"
     )
     return 0
 
