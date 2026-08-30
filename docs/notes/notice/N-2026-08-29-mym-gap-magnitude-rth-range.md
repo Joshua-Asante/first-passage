@@ -1,10 +1,12 @@
-# Notice — MYM overnight gap magnitude → RTH-range conditioning (S2 stage-1, stratified — HOLD)
+# Notice — MYM overnight gap magnitude → RTH-range conditioning (S2 stage-1, stratified — INCREMENT)
 
 **Notice ID:** N-2026-08-29-mym-gap-magnitude-rth-range
 **Observed:** 2026-08-29 (marginal-comparison run); **corrected 2026-08-29** (stratified re-run, same day, adversarial-review catch)
 **Author:** Joshua | claude.ai
 **Source:** backtest CSV (bar panel) — atheoretical mechanism harvest, MYM Phase 2
-**Status:** `HELD until 2027-03-01`
+**Status:** `OPEN` — GRADUATE-eligible.
+
+**Pre-Q:** already nested under [`Q-RANGEXFER-1`](../../briefs/Q-RANGEXFER-1-overnight-range-gap-magnitude-transfer.md) as `H-RANGEXFER-1.a-MYM`.
 **Lives in:** `docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md`
 
 ---
@@ -55,11 +57,13 @@ stratified lift: mean **+0.0594**, 95% CI **[−0.0419, +0.1477]**, straddles 0,
 (within-stratum circular-shift of the gap predictor, distinct rotations
 enumerated, identity included; n_null=1304 from the sibling joint-gate cache vs
 original n=1307; 3-day difference disclosed; per-stratum 0.00099 / 0.152).
-**VERDICT: AMBIGUOUS** —
-no longer a kill, not yet a pass. The original decision rule is the bootstrap
-CI, which still straddles 0. The corrected p-value would clear a conventional
-0.05 bar; whether that flips this cell to INCREMENT is an operator ruling,
-filed as a follow-up notice addendum, not silently applied here.
+**VERDICT: INCREMENT** (operator ruling, 2026-08-30 — see the Addendum below).
+The original decision rule (bootstrap CI, which still straddles 0) and the
+null-calibrated rule (p=0.0086, decisively clears a conventional 0.05 bar)
+disagreed; the operator ruled the null-calibrated test governs, since it is
+the Type-I-controlled statistic — the bootstrap CI is a percentile resample of
+the observed data, not a test against a true zero-association null (the same
+class of defect Codex flagged and PR #207/#210 fixed elsewhere in this batch).
 
 ## §2 — Why it stands out (the N signal)
 
@@ -91,28 +95,29 @@ filed as a follow-up notice addendum, not silently applied here.
 
 ## §4 — Routing decision
 
-**HOLD until 2027-03-01.**
+**GRADUATE — superseding the original HOLD-until-2027-03-01 line, struck below.**
 
-Reason: no longer a clean kill (the original DROP does not survive the correction —
-the sign itself was wrong), but also not a demonstrated increment on the scale
-candidate 2 showed. The CI straddles 0 with a positive-leaning point estimate half
-candidate 2's size. Re-checking on a grown panel (same ~6-month / ~125-session horizon
-already used for candidate 2's now-superseded HOLD, reused here for consistency) can
-resolve the sign with more data before any heavier design work is warranted.
+Reason (as originally read, HOLD): no longer a clean kill (the original DROP does not
+survive the correction — the sign itself was wrong), but also not a demonstrated
+increment on the scale candidate 2 showed by the bootstrap CI rule. **Superseded
+2026-08-30 by operator ruling** (see the Addendum below): the null-calibrated test
+(p=0.0086) is the Type-I-controlled statistic and clears a conventional 0.05 bar
+decisively; the bootstrap CI's own straddle-0 reading is not evidence against an
+increment, only a limitation of a statistic that was never testing the right null.
+Already nested under `Q-RANGEXFER-1` as `H-RANGEXFER-1.a-MYM`, so no separate Pre-Q
+opening is owed — see that brief's own §6 for how this candidate's eventual verdict
+(RESOLVED/FALSIFIED/AMBIGUOUS-HOLD) gets scored.
+
+~~HOLD until 2027-03-01, re-check trigger: re-run the stratified falsifier on the
+grown panel; if the min-stratified-lift CI clears 0 (lower bound > 0), GRADUATE
+alongside candidate 2; if it flips to a clean negative, DROP cleanly~~ — struck
+2026-08-30, superseded by the operator ruling above; no panel-growth wait needed.
 
 ---
 
 ## §5 — If HOLD: re-check trigger
 
-- **Re-check date:** 2027-03-01 (~6 months / ~125 more sessions of panel growth).
-- **Trigger condition:** re-run the stratified falsifier on the grown panel; if the
-  min-stratified-lift CI clears 0 (lower bound > 0), candidate 4 GRADUATEs alongside
-  candidate 2 (same S2 role, same outstanding conditions 3/4). If it flips to a clean
-  negative (upper bound < 0), it DROPs cleanly this time — a corrected kill, not the
-  first one.
-- **Drop trigger:** CI on the grown panel still straddles 0 with no meaningful
-  narrowing, or flips clean negative.
-- **Calendar entry:** none set; operator to set if desired.
+N/A — superseded 2026-08-30, routed GRADUATE by operator ruling (see the Addendum below), not HOLD.
 
 ---
 
@@ -122,14 +127,17 @@ resolve the sign with more data before any heavier design work is warranted.
 python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c2_c4_stratified_rerun.py
 # Expected: [candidate4_gap_magnitude_STRATIFIED] min-stratified-lift bootstrap:
 #   mean=0.0594  CI=[-0.0419,+0.1477]  p(lift<=0)=0.1247 / null-calibrated p=0.00860
-#   VERDICT=AMBIGUOUS (unchanged; CI still straddles 0; within-stratum enumerated null)
+#   (script's own internal "verdict" field still prints AMBIGUOUS -- CI straddles 0;
+#   this notice's own §4 GRADUATE routing is the operator-ruled disposition on top of
+#   that, not a claim the script itself now says something different)
 
 # Superseded secondary measurement (disclosed, sign-flipped by the correction — do not
 # cite as the D5 stage-1 answer):
 python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c2_c4_increment_falsifiers.py
 # Expected: [candidate4_gap_magnitude] diff=-0.1039  95% CI=[-0.1636,-0.0404]  VERDICT=NO-INCREMENT (marginal, superseded)
 
-# Re-check due: 2027-03-01 -- verify in Calendar / Todoist if the operator sets one
+# Confirm the ruling is reflected downstream
+grep -n "H-RANGEXFER-1.a-MYM" docs/briefs/Q-RANGEXFER-1-overnight-range-gap-magnitude-transfer.md
 ```
 
 ---
@@ -143,12 +151,15 @@ Q-RANGEXFER-1 joint stratification. Result: this candidate's (gap's) own lift wi
 overnight-range strata is +8.5pp (overnight calm, borderline p=0.037) and −7.2pp
 (overnight hot, clearly not positive, p=0.945) — a nested, sign-unstable pattern
 closely replicating MNQ's own finding on the identical construct (+10.5pp/−8.1pp).
-This does not change this candidate's own 2027-03-01 HOLD re-check above (that
-re-check tests this candidate alone against the day-history comparator; the joint
+This does not change this candidate's own day-history-level verdict above (that
+verdict tests this candidate alone against the day-history comparator; the joint
 result is a different, additional question about this candidate's relationship to
-candidate 2). The joint notice recommends, but does not execute, merging this id
-with `overnight-range-day-session-transfer` into MNQ's `overnight-range-transmission`
-id — see that notice for the full comparison and reasoning.
+candidate 2, and is disclosed as exploratory/unregistered per that notice's own
+K-accounting correction — not cited as evidence for the day-history-level verdict
+above). The joint notice recommends, and `Q-RANGEXFER-1`'s own 2026-08-30 amendment
+executes, folding this id and `overnight-range-day-session-transfer` under MNQ's
+`overnight-range-transmission` Q-brief (as `H-RANGEXFER-1.a-MYM`) — see that notice
+and that brief for the full comparison and reasoning.
 
 ---
 
@@ -163,21 +174,41 @@ flagged on PR #205 and that PR #207 retrofits into this script.
 Recomputed against the sibling joint-gate cached frame
 (`c24_joint_frame.csv`, n=1304 vs this notice's original n=1307; 3-day
 difference disclosed): circular-shift null p on the **minimum** stratified
-lift is **0.0117** (observed min-lift +0.0637). Per-stratum: bprime=0
-p=0.00025; bprime=1 p=0.1467.
+lift is **p_ge_obs=0.0086** (observed min-lift +0.0637), per-stratum
+0.00099 (bprime=0) / 0.1520 (bprime=1) — **correcting this addendum's own
+original figures (0.0117 / 0.00025 / 0.1467), which do not match the
+authoritative `c2_c4_stratified_results.json` (`min_lift_null_calibrated`
+key, re-checked 2026-08-30) and were themselves stale; §1 above already
+carried the correct figures.** The two readings do not change which rule
+wins (both clear a conventional 0.05 bar), only the exact margin.
 
-**This addendum does not change the HOLD.** Two different decision rules now
-disagree:
+Two different decision rules disagreed:
 
-- **CI rule (original, still the §4 owner):** lower bound < 0 → AMBIGUOUS / HOLD until 2027-03-01.
-- **Null-p rule (0.05 bar, the test `block_bootstrap_min_lift` is not):** p=0.0117 → would read INCREMENT.
+- **CI rule (original, this notice's own §4 owner until 2026-08-30):** lower bound < 0 → AMBIGUOUS / HOLD until 2027-03-01.
+- **Null-p rule (0.05 bar, the test `block_bootstrap_min_lift` is not):** p=0.0086 → reads INCREMENT.
 
-Whether the cell flips is an **operator ruling**, not a silent correction.
 Vendor bars were absent this session, so the null p is on the 1304-day
 joint-gate cache, not a byte-identical rerun of the original 1307-day
 scored set. Script + JSON: PR #207
 (`lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c2_c4_stratified_rerun.py`
 / `c2_c4_stratified_results.json` key `candidate4_gap_magnitude_STRATIFIED`).
+
+---
+
+## Addendum — operator ruling (2026-08-30)
+
+**Ruling: the null-calibrated test governs. This cell flips to INCREMENT** (§1/§4
+updated above). Verbatim: *"I will go with INCREMENT, it seems the null-calibrated
+test is the more reliable one."* This resolves the disagreement the preceding
+addendum named — the CI rule's own straddle-0 reading is a limitation of a
+percentile-bootstrap statistic that was never a Type-I-controlled test, not
+evidence against an increment. No new computation was run to produce this ruling;
+it is a disposition call on the numbers already on record above (and corrected in
+the preceding addendum). Already nested under `Q-RANGEXFER-1` as `H-RANGEXFER-1.a-MYM`
+(per `Q-RANGEXFER-1`'s own 2026-08-30 amendment) — this ruling settles the
+day-history-level verdict this notice itself owns; it does not by itself settle
+`H-RANGEXFER-1.a-MYM`'s own (overnight-calm-restricted) hypothesis, which is a
+separate statistic scored under that brief's own §6.
 
 ---
 

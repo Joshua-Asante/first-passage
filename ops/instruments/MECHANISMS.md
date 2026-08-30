@@ -305,15 +305,17 @@ corroboration that does not exist for MYM on either magnitude or direction).
   `bias_hist`, measure lift within stratum). Within `bprime=0` (n=1,010): lift **+0.1404** (0.5526
   vs 0.4122). Within `bprime=1` (n=297): lift **+0.0672** (0.7766 vs 0.7094) — **the sign itself
   flips positive** in both strata. Block-bootstrap on the minimum stratified lift: mean **+0.0594**,
-  95% CI **[−0.0419, +0.1477]**, p(lift≤0)=0.1247 / null-calibrated p(null≥obs)=0.00860
+  95% CI **[−0.0419, +0.1477]**, p(lift≤0)=0.1247 / null-calibrated p(null≥obs)=0.0086
   (within-stratum circular-shift of the gap predictor, distinct rotations enumerated,
   identity included; n_null=1304 from the sibling joint-gate cache vs original n=1307;
-  3-day difference disclosed; per-stratum null p=0.00099 / 0.152). **AMBIGUOUS — verdict
-  UNCHANGED in this retrofit.** The original decision rule is the bootstrap CI, which
-  still straddles 0. The corrected min-lift p would clear a conventional 0.05 bar;
-  whether that flips the cell to INCREMENT is an operator ruling, filed as a follow-up
-  notice addendum, not silently applied here. A meaningfully weaker signal than the sibling overnight-range candidate's
-  +0.2186. First instrument
+  3-day difference disclosed; per-stratum null p=0.00099 / 0.152). **INCREMENT — operator
+  ruling, 2026-08-30** ("go with INCREMENT, ... the null-calibrated test is the more
+  reliable one"): the null-calibrated statistic is Type-I-controlled and clears a
+  conventional 0.05 bar decisively; the bootstrap CI's own straddle-0 reading reflects a
+  limitation of that percentile statistic, not evidence against an increment. A
+  meaningfully weaker signal than the sibling overnight-range candidate's
+  +0.2186, and now nested under `Q-RANGEXFER-1` as `H-RANGEXFER-1.a-MYM` rather than
+  scored as a standalone id. First instrument
   scored under this id. [MYM.md](MYM.md) ·
   [`N-2026-08-29-mym-gap-magnitude-rth-range.md`](../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md)
 - **Superseded (disclosed, not the D5 stage-1 answer):** the first-pass **marginal** falsifier
