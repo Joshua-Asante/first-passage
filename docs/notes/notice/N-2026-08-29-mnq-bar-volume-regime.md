@@ -4,7 +4,9 @@
 **Observed:** 2026-08-29
 **Author:** Claude Code
 **Source:** own statistical computation this session, candidate 3 of a pre-specified 5-candidate MNQ Notice-phase batch
-**Status:** `OPEN` — routing decision below is GRADUATE (range limb only); direction limb is DROP
+**Status:** `OPEN` — routing decision below is GRADUATE (range limb only); direction limb is DROP.
+
+**Pre-Q:** [`Q-VOLREGIME-1`](../../briefs/Q-VOLREGIME-1-intraday-bar-volume-regime.md) (opened separately — see that brief's own Authored field), jointly with MYM's own independently-run same-day candidate.
 **Lives in:** `docs/notes/notice/N-2026-08-29-mnq-bar-volume-regime.md`
 
 ---
@@ -73,6 +75,7 @@ python scripts/instrument_profiles.py cell MNQ order-flow-depth-imbalance
 
 # If GRADUATED: confirm the Pre-Q references this notice
 grep -rn "N-2026-08-29-mnq-bar-volume-regime" docs/briefs/Q-*.md
+# Expected: Q-VOLREGIME-1-intraday-bar-volume-regime.md (opened 2026-08-30)
 ```
 
 ---

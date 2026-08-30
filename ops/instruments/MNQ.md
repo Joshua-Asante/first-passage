@@ -194,7 +194,9 @@ structure:
   3. **`bar-volume-regime`** (NEW): direction limb clean NULL; range limb real (ToD-matched lift
      +18.1pp, CI [0.673,0.695], n=136,020) and incrementally informative beyond the trigger bar's
      own range (+21-26pp within range-matched strata, despite same-bar volume/range correlation
-     0.88). **GRADUATE** (range) / **DROP** (direction).
+     0.88). **GRADUATE** (range) / **DROP** (direction). **Pre-Q opened 2026-08-30:**
+     [`Q-VOLREGIME-1`](../../docs/briefs/Q-VOLREGIME-1-intraday-bar-volume-regime.md), jointly
+     with MYM's own independently-corroborated same-day finding, scored per instrument.
   4. **`gap-magnitude-to-rth-range`**: same D5 cross-series re-scoping as #2. Naive marginals look
      unremarkable; the D5 stratified design surfaces a real **+17pp/+16pp** incremental lift the
      naive comparison masked (bootstrap p≈0.00225). **GRADUATE**, smaller effect than #2, plausibly

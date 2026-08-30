@@ -4,7 +4,7 @@
 **Observed:** 2026-08-29
 **Author:** Joshua | claude.ai
 **Source:** own statistical computation this session — direct port of MNQ's D-S-A pre-Q joint gate
-**Status:** `HELD` — recommendation below, no action taken; flagged for operator/review decision
+**Status:** `HELD` — recommendation below; **actioned 2026-08-30** via `Q-RANGEXFER-1`'s amendment (§4/§5 below), which is the PR review this notice named as the correct venue
 **Lives in:** `docs/notes/notice/N-2026-08-29-mym-overnight-gap-joint-gate.md`
 
 ---
@@ -172,29 +172,46 @@ structure, no id rename, no `MYM.md` PROFILE cell change beyond citing this noti
 This lands as a PR for review; the merge/no-merge call and its execution belong to
 that review, or to the deferred MNQ+MYM pooling session.
 
-Decision: HOLD (not GRADUATE/DROP — this notice's own action is a recommendation
-pending human review, closest to the template's HOLD semantics: re-check trigger is
-"reviewer/operator decides," not a calendar date)
-Reason: data supports merging the two ids, but the merge itself is explicitly out of
-this notice's own authority per instruction; recorded as a flagged recommendation
-rather than self-executed.
+**Actioned 2026-08-30:** the recommendation was approved and executed as
+[`Q-RANGEXFER-1`'s own amendment](../../briefs/Q-RANGEXFER-1-overnight-range-gap-magnitude-transfer.md)
+(§11 Amendment log there) — at the **question** layer only, exactly as this notice's
+own §4/§5 scoped: `overnight-range-day-session-transfer` and
+`overnight-gap-magnitude-range-conditioning` now share `overnight-range-transmission`'s
+Q-brief (as `H-RANGEXFER-1-MYM` / `H-RANGEXFER-1.a-MYM`), scored independently of
+MNQ's own verdict per that brief's §6. No `MECHANISMS.md` heading was deleted, no
+PROFILE cell was renamed, and no id merge happened on the MYM ledger side —
+consistent with this notice's own "not done here" list above, still accurate; only
+the amended Q-brief changed. The calm-stratum caveat this notice raised (weaker
+effect on MYM, p=0.037/0.020 vs MNQ's p=0.0078) is carried into that amendment's own
+`H-RANGEXFER-1.a-MYM`, disclosed as exploratory per the K-accounting correction
+above, not as pre-registered evidence.
+
+Decision: HOLD → **actioned** (not GRADUATE/DROP — this notice's own action was
+always a recommendation pending human review, closest to the template's HOLD
+semantics; the review happened and approved the recommendation, recorded here
+rather than restated as still-pending)
+Reason: data supports merging the two ids at the question layer; the merge itself
+was out of this notice's own authority per instruction and is now executed by the
+brief that instruction named.
 
 ---
 
 ## §5 — If HOLD: re-check trigger
 
 - **Re-check date:** N/A — event-triggered, not date-triggered.
-- **Trigger condition:** operator/reviewer reads this notice (via PR review or the
-  deferred MNQ+MYM pooling session) and either (a) approves the merge — fold
+- **Trigger condition — fired 2026-08-30, option (a) below:** operator/reviewer reads
+  this notice (via PR review) and either (a) approves the merge — fold
   `overnight-range-day-session-transfer` and `overnight-gap-magnitude-range-
-  conditioning`'s content into `overnight-range-transmission`, updating both
-  MYM.md PROFILE cells and both existing Notice-log files' cross-reference notes to
-  point at the merged id — or (b) declines, in which case the two ids stand as a
-  documented, evidence-examined cross-instrument taxonomy difference (not merely an
-  unexamined naming collision) and this notice's recommendation is recorded as
-  declined, with reasoning.
-- **Drop trigger:** none — this is a standing recommendation, not a claim that decays.
-- **Calendar entry:** none; this is a review-gated, not calendar-gated, item.
+  conditioning`'s content into `overnight-range-transmission`'s **question** (not a
+  PROFILE-cell rename — see the Actioned note above for what "fold" turned out to
+  mean in practice, narrower than this trigger's original phrasing implied) — or (b)
+  declines, in which case the two ids stand as a documented, evidence-examined
+  cross-instrument taxonomy difference. **(a) fired:** `Q-RANGEXFER-1`'s 2026-08-30
+  amendment folds both ids' questions into its own Q-brief, scored per instrument;
+  both MYM.md PROFILE cells and both Notice-log files' cross-reference notes are
+  updated to point at that Q-brief, not at a merged mechanism id (none was created).
+- **Drop trigger:** none — this is a standing recommendation, not a claim that decays. N/A, fired.
+- **Calendar entry:** none; this was a review-gated, not calendar-gated, item.
 
 ---
 
