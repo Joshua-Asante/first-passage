@@ -41,6 +41,11 @@ EXPECTED_ALWAYS = {
     # Task 4 (same ADR) — falsifier-reachability coverage census, report-only
     # (`--stats` alone always exits 0 per the script's own docstring).
     "falsifier-reachability-census",
+    # PR #223 (K-correction audit findings) — Notice-log GRADUATE/INCREMENT
+    # K-vs-DSR-floor auditor; report-only (script's own exit code is always
+    # 0 per its docstring), same reasoning as skill-deploy-sync and
+    # falsifier-reachability-census above.
+    "notice-grade-k-correction",
 }
 
 EXPECTED_PATH_CONDITIONAL = {
