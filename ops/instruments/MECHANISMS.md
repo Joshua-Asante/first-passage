@@ -353,7 +353,7 @@ window; this is an unconditional shape-persistence statistic, no level or window
 **Admission-route status under the 2026-07-21 single-instrument index-futures directional-timing
 raised bar (`docs/rejected_candidates.md`) is resolved by
 [`docs/adr/2026-08-29-clv-autocorrelation-admission-route-scope.md`](../../docs/adr/2026-08-29-clv-autocorrelation-admission-route-scope.md)
-(`Proposed`, pending re-ratification after a correction the same day — see that ADR's Change
+(`Accepted`, ratified 2026-08-29, corrected and re-ratified 2026-08-30 — see that ADR's Change
 history).** The ruling: an unconditional bar-shape statistic
 with no entry rule attached does not trigger the raised bar's admission gate at all — that gate
 fires at Pre-Q admission for an actual directional-timing candidate, which neither instrument's
