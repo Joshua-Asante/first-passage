@@ -33,6 +33,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-30b — Rule 11 dormancy addendum: ORB-MNQ R1 / `run_t2_intraday_bust.py`
+
+**Focus:** Operator-directed PR fix — Rule 11 dormancy + re-arm addendum for §4 R1 after Great Prune class-2 removed the harness (`queue-exception: Joshua @cursor on Rule-11 dormancy PR`).
+**Shipped:** `cursor/rule-11-orb-mnq-r1-dormancy-3869` — addendum on [`2026-08-03-orb-mnq-repark-payability-falsified.md`](adr/2026-08-03-orb-mnq-repark-payability-falsified.md); §4/§5 text untouched.
+**Decisions/defects:** Rule 11 (a)(b)(c)(d) recorded; R1 DORMANT until `git show` retrieval; R2+R3 survive. Reachability census: findings 1→0 (dormancy-recorded exemption).
+**Open / next:** STATE queue: #1 [Acceptable strategy on the ruled host](../STATE.md) · #2 [B7-REFIRE Stage 1 + M1](../STATE.md)
+**Live-ops state:** unchanged (rail warm/disarmed; no arm).
+
+---
+
 ## 2026-08-29n — Codex #207: within-stratum null + c3 UNRESOLVED
 
 **Focus:** Operator ruling to take Codex Review on PR #207 — four findings (within-stratum surrogate, vendor-first MNQ cache, c3 not INCREMENT while null uncomputed, enumerate distinct rotations).

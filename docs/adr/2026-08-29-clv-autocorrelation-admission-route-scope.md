@@ -1,8 +1,8 @@
 # ADR 2026-08-29 — Bar closing-location-value (CLV) autocorrelation's admission-route scope under the 2026-07-21 directional-timing raised bar
 
-**Status:** `Proposed` — ratified `Accepted` 2026-08-29, then **withdrawn same day** ("I take back my ratification. Update the original ADR I ratified.") after a post-ratification review surfaced a real error in 2-B's Route 1 analysis (see Change history). Corrected below; pending re-ratification.
+**Status:** `Accepted` — ratified 2026-08-29, withdrawn same day after a post-ratification review surfaced a real error in 2-B's Route 1 analysis, corrected 2026-08-30 (PR #209), **re-ratified 2026-08-30** ("I'll go ahead and re-ratify the md file"). See Change history for the full sequence.
 **Decision date:** 2026-08-29
-**Authors:** Claude Code (Sonnet 5, drafter) — decision pending Joshua's (re-)ratification.
+**Authors:** Claude Code (Sonnet 5, drafter) + Joshua (ratification, withdrawal, and re-ratification).
 **Supersedes:** none
 **Superseded-by:** none
 **Superseded-in-part-by:** none
@@ -228,3 +228,4 @@ $ python scripts/check_adr_graph.py
 | 2026-08-29 | Initial authoring (Proposed, pending ratification) | Claude Code, at Joshua's request |
 | 2026-08-29 | Ratified — Status `Proposed` → `Accepted`, no amendments to §2 | Joshua ("Flip it to accepted") |
 | 2026-08-29 | Ratification withdrawn; 2-B corrected — original text tested CLV only against the 2026-08-10 ADR's one temporal-selectivity worked example and wrongly concluded Route 1 was closed. Corrected reading: Route 1 is plausibly open on its own terms (mechanism outside the mapped price/instrument-selection/hold-time re-derivation axes), independent of Route 3. Correction verified against `D5-RECOST-1`'s scoping doc and `rejected_candidates.md` line 996 (§0). 2-C, 2-D, §3, §4, §5, §6, §7, §10 updated to match; Status reverted `Accepted` → `Proposed` pending re-ratification. | Joshua (withdrawal: "I take back my ratification. Update the original ADR I ratified.") + Claude Code (correction, crediting Codex's PR #209 review for the initial catch) |
+| 2026-08-30 | Re-ratified — Status `Proposed` → `Accepted`, the corrected §2 (2-A/2-B/2-C/2-D) as landed in PR #209, no further amendments made at ratification time. | Joshua ("I'll go ahead and re-ratify the md file") |
