@@ -172,7 +172,7 @@ the generate/evaluate boundary smaller and more concrete.
 | **(Already enforced)** Route B excluded as a reusable template | The route is retired; a naive read of this note could imply exclusion from templates is still-open work | No new action: `docs/adr/2026-08-24-sourcing-phase-channel-retirement.md` §5 already forbids reopening the route informally or reviving its G/C structure by renaming, and `docs/methodology/avenue_a_generate_confirm.md` already carries a withdrawal banner excluding it from active use | Historical integrity and the lessons from four failed campaigns — already protected, not a pending recommendation |
 | **Merge** generation charter and admission manifest | G0, seed manifests, and later preregistrations can restate instrument, K, windows, costs, and feature definitions | Create one immutable candidate contract at generation open; later stages append results and hashes rather than copying fields | Pre-registration, auditability, and selection accounting |
 | **Merge** early economic gates | Cost reachability, payoff-shape pre-check, latency, and basic firm geometry can be separate stops over the same arithmetic | Compute a `TRADEABLE-REACHABLE` verdict from the candidate contract by delegating each limb to its existing named authority rather than deriving new arithmetic. Cost delegates to whichever authority the eval-mechanism-shape screen's EM1 currently points at (`docs/methodology/strategy_harvest.md` Requirement 5, per `docs/spec/2026-08-05-eval-mechanism-shape-screen.md` §3a) — `scripts/cost_geometry_pregate.py`'s Phase-0 role stays additive alongside it (`docs/adr/2026-06-22-cost-geometry-pregate.md` §2, different quantity, not a competing one); `TRADEABLE-REACHABLE` re-points if the open G3 board item re-points EM1, but must never fork a competing cost formula. The shape limb sources prior win-rate/mean-win/mean-loss inputs the contract must freeze explicitly; a candidate with no citable shape priors routes to a **pre-freeze shape-extraction probe** (the same pattern as harvest Requirement 2's δ-extraction probe: declared on the draft contract, its data spend and K accounted, never touching the reserved CONFIRM window) and freezes only after the limb is scored — there is no deferred-until-after-freeze branch | Every underlying threshold remains sourced from its current owner; `TRADEABLE-REACHABLE` is a pure orchestrator, never a third cost authority; no candidate is scored on a guessed payoff shape, and no contract freezes with an unscored kill gate |
-| **Simplify** operator approvals | Separate permission points can make the operator the throughput scheduler rather than the risk owner | Approve one campaign envelope up front: maximum spend, schemas, windows, and K. Confirm attempts are not a spendable envelope item — they stay bound to the frozen multi-candidate confirm count `M`, Bonferroni/Holm-adjusted and set at contract freeze, and any `VOID-*` result exhausts that attempt and requires a fresh campaign with a fresh holdout, never a retry inside the same envelope. Require another GO only to exceed the envelope or cross into sandbox/capital | No unbudgeted spend, no autonomous risk addition, and no silent multiplicity inflation from repeatedly consulting confirm data within one approved envelope |
+| **Simplify** operator approvals | Separate permission points can make the operator the throughput scheduler rather than the risk owner | Approve one campaign envelope up front: maximum spend, schemas, windows, and K. Confirm attempts are not a spendable envelope item — they stay bound to the frozen multiplicity configuration (`α`, the confirm count `M`, and the named Bonferroni or Holm step-down procedure) set at contract freeze, and any `VOID-*` result exhausts that attempt and requires a fresh campaign with a fresh holdout, never a retry inside the same envelope. Require another GO only to exceed the envelope or cross into sandbox/capital | No unbudgeted spend, no autonomous risk addition, and no silent multiplicity inflation from repeatedly consulting confirm data within one approved envelope |
 | **Simplify** evaluation order | Expensive robustness work can be scheduled before a candidate is economically viable | Run one ordered battery: class-level shape/role screen (EM0-EM5 on the draft catalogue, pre-K, pre-pull) → shape priors or pre-freeze extraction probe → all-clause reachability attestation, same-units/per-gate (pre-freeze, HARV-lane candidates) → contract freeze → `TRADEABLE-REACHABLE` (pre-explore, delegates to each limb's existing authority) → explore → contract integrity → role state-drift re-check (zero-K) → untouched confirm (including temporal robustness, one atomic verdict) → portfolio/venue fit post-confirm | Later gates remain unchanged but run only for candidates capable of reaching them |
 | **Defer** portfolio composition | A candidate may be rejected early for book coordinates before it has an independently confirmed edge | The class-level role limbs (Product-Group/sign, session, S7 order-symbol occupancy, instrument-class) run **before Explore**, inside the EM0-EM5 screen on the draft catalogue — `docs/spec/2026-08-05-eval-mechanism-shape-screen.md` §2.0a requires the screen before any data is examined and prices late application to a scored list as a K charge. The pre-confirm evaluate step is then only a zero-K **state-drift re-check** of the selected candidates against the current compliance snapshot (occupancy and cap state move between scoping and confirm), plus variance dominance/risk-N_eff-delta where a book context exists — every limb scored as fit for the *currently scoped* account/book, never candidate-lifecycle admission (`docs/methodology/objective_composition_map.md:42-50`, `docs/spec/2026-07-27-third-leg-target-spec.md` §7.1, `docs/adr/2026-07-20-stage8-variance-dominance-risk-neff-gate.md` §2). Defer only the scoring that needs a known edge size — activity, drawdown, remaining sizing — to after confirm | Class-level screening happens where §2.0a puts it (pre-catalogue, at zero evidentiary cost); the late re-check cannot act as a free selection filter because its only consequence is the frozen `ROLE-BLOCKED` + succession semantics; a role rejection never becomes a candidate-lifecycle rejection; edge-sized scoring stays post-confirm |
 | **Add one** channel-liveness gate | Candidate tests can be rigorous while the channel never produces a confirm | At channel open, freeze a maximum number of generation attempts or elapsed research sessions without a confirm; reaching it retires or redesigns the channel | Prevents indefinite honest-but-unproductive research |
@@ -190,15 +190,25 @@ the generate/evaluate boundary smaller and more concrete.
    the raw signal's pre-specified association test against the target
    series, scored on the same holdout). The rule is fixed now; it is never
    chosen or interpreted after the holdout is read.
-2. **Run the class-level shape/role screen on the draft catalogue.** Where
-   the candidate class is subject to the eval-mechanism-shape screen, apply
-   EM0-EM5 — which imports Product-Group/sign, session law, and S7
-   order-symbol occupancy by reference — to the class/catalogue here, before
-   any data is examined, per that spec's own §2.0a placement rule. Pruning
-   shape-dead or role-impossible cells at this stage removes them from the
-   catalogue **before** `K_intrinsic` is set, at zero evidentiary cost;
-   §2.0a prices the same screen applied to a scored list after Explore as a
-   K charge, which is why it can never run only late.
+2. **Run the structural limbs of the class-level shape/role screen on the
+   draft catalogue.** Where the candidate class is subject to the
+   eval-mechanism-shape screen, apply its *structural* limbs — EM0
+   (catalogue), EM3 (independence arithmetic), EM4 (activity by
+   construction), and EM5/N-SHAPE (which imports Product-Group/sign,
+   session law, and S7 order-symbol occupancy by reference) — to the
+   class/catalogue here, before any data is examined, per that spec's own
+   §2.0a placement rule. Pruning shape-dead or role-impossible cells at
+   this stage removes them from the catalogue **before** `K_intrinsic` is
+   set, at zero evidentiary cost; §2.0a prices the same screen applied to a
+   scored list after Explore as a K charge, which is why it can never run
+   only late. The *measured, edge-indexed* limbs — N-EDGE (net expectancy,
+   CI, DSR) and N-SIZE/the EM2 frontier, per
+   `docs/spec/2026-08-08-tradeify-necessary-conditions-target-spec.md` —
+   cannot score before their inputs exist and are deliberately not claimed
+   here: they are simulated for reachability at step 4 from the step-3
+   priors, and scored for real only once their declared data source exists.
+   A candidate on the extraction-probe route therefore advances past this
+   step on structural limbs alone, without a falsely recorded full EM pass.
 3. **Supply payoff-shape priors, or run a pre-freeze shape-extraction
    probe.** A HARV-lane candidate must carry cohort-derived
    win-rate/mean-win/mean-loss estimates at admission, under the same
@@ -227,9 +237,14 @@ the generate/evaluate boundary smaller and more concrete.
    Failures here stop before freeze and before any exploration pull.
 5. **Freeze one candidate contract.** Record instrument, feature catalogue,
    entry/exit object, the mechanism-level discriminator's adjudication rule
-   from step 1, exploration and confirm windows, K, the multi-candidate
-   confirm count `M` with its Bonferroni/Holm adjustment, the succession
-   rule for a role-blocked confirm slot (forfeit by default, or mechanical
+   from step 1, exploration and confirm windows, K, the multiplicity
+   configuration — `α`, the multi-candidate confirm count `M`, and the
+   named procedure: either Bonferroni, whose fixed per-candidate bar `α/M`
+   is frozen here, or Holm step-down, where what freezes is the algorithm
+   identity, since Holm's per-candidate thresholds `α/(M−i+1)` attach only
+   after the observed confirm p-values are ordered and cannot be
+   pre-assigned by candidate — the succession rule for a role-blocked
+   confirm slot (forfeit by default, or mechanical
    next-ranked succession — the choice is made here, never after
    exploration results are visible; see the lean evaluate phase, step 2),
    costs, schema ladder, the scored payoff-shape inputs from step 3, the
@@ -241,7 +256,14 @@ the generate/evaluate boundary smaller and more concrete.
    the payoff-shape limb from the contract's frozen inputs. Every limb is
    scorable by construction — step 3 guarantees the inputs exist — so this
    gate has no deferral branch. A failure on any limb stops before the
-   exploration pull.
+   exploration pull — and is not silent: the typed verdict (which limb
+   fired, at what value) is appended to the already-frozen contract and
+   routed through the terminal taxonomy like any candidate-level rejection
+   (a cost/latency/geometry limb is venue/cost-constraint-classed), so a
+   pre-explore kill leaves an auditable disposition and cannot be
+   rediscovered as if never tried. The evaluate-phase disposition step
+   covers selected candidates; this append covers the contract that never
+   reached selection.
 7. **Explore within the envelope.** Score every declared cell and select at most
    the frozen confirm count `M`. No separate seed document is produced.
 8. **Apply the channel-liveness bound.** Too many empty generations retires the
@@ -254,18 +276,29 @@ ceremonies inside an already approved budget, and channels without an exit.
 ### Proposed lean evaluate phase
 
 1. **Contract-integrity check, first:** confirm that code/data hashes, K, the
-   frozen confirm count `M` and its Bonferroni/Holm-adjusted per-candidate
-   bar, selected cell, and holdout match the frozen candidate contract
-   before any other check runs. A mismatch voids or stops the attempt on
-   its own — it must not be recorded as a structural or evidentiary
-   rejection.
+   frozen multiplicity configuration — `α`, the confirm count `M`, and the
+   named procedure (the fixed `α/M` per-candidate bar under Bonferroni; the
+   step-down algorithm identity under Holm, whose per-candidate thresholds
+   exist only after the observed p-values are ordered and so cannot be
+   integrity-checked as pre-assigned numbers) — the selected cell, and the
+   holdout all match the frozen candidate contract before any other check
+   runs. A mismatch voids or stops the attempt on its own — it must not be
+   recorded as a structural or evidentiary rejection.
 2. **Role state-drift re-check, zero-K:** before any holdout is consumed,
    re-validate each selected candidate against the *current* compliance
    snapshot versus the one frozen in the contract — Product-Group/sign, cap,
    session, and S7 order-symbol occupancy
    (`docs/methodology/objective_composition_map.md:42-50`,
-   `docs/spec/2026-07-27-third-leg-target-spec.md` §7.1 S1-S7), plus variance
-   dominance / risk-N_eff-delta where a book context exists
+   `docs/spec/2026-07-27-third-leg-target-spec.md` §7.1 S1-S7). Variance
+   dominance / risk-N_eff-delta joins this list **only while its producer
+   is live**: `docs/adr/2026-08-07-w4-minimal-gate-set-dormancy.md`
+   tombstones `breadth.py` as the sole producer and makes the risk-breadth
+   coordinates report-optional until a re-arm ADR restores one — and its
+   own §4 falsifier fires if a campaign is rejected solely on a dormant
+   gate. So while dormant, the variance-dominance limb is **report-only**
+   here (disclosed, never `ROLE-BLOCKED`-emitting); it becomes blocking
+   again only under a re-arm ADR or a campaign prereg that explicitly
+   re-arms it with operator GO
    (`docs/adr/2026-07-20-stage8-variance-dominance-risk-neff-gate.md` §2).
    The class-level application of these limbs already ran pre-Explore
    (generate-phase step 2), so an instance failing here means the *state*
@@ -300,9 +333,13 @@ ceremonies inside an already approved budget, and channels without an exit.
    and the minimum frozen temporal-consistency battery together (per the
    canonical Stage 6 definition, no new feature choice) and emit a single,
    separately keyed verdict only once both clear — `CONFIRMED`,
-   `MARKET-NULL`, `EXPRESSION-FAIL`, or `EVIDENCE-VOID`. Do not run
-   alternative expressions on the holdout, and do not emit `CONFIRMED` from
-   the untouched run alone before temporal robustness has cleared.
+   `MARKET-NULL`, `EXPRESSION-FAIL`, or `EVIDENCE-VOID`. Under Holm, the
+   step-down adjudication necessarily runs jointly across all `M` observed
+   confirm p-values after the runs complete — verdicts are still emitted
+   per candidate, but no candidate's threshold is knowable until every run
+   is in. Do not run alternative expressions on the holdout, and do not
+   emit `CONFIRMED` from the untouched run alone before temporal
+   robustness has cleared.
    `EXPRESSION-FAIL` applies only when the frozen discriminator's complete
    adjudication rule (generate-phase step 1 — statistic, null, direction,
    threshold, coverage/power) returns a clean pass while the specific
@@ -347,13 +384,23 @@ ceremonies inside an already approved budget, and channels without an exit.
    already treats a venue-failed expression. And the ladder terminates: the
    contract freezes an expression-attempt bound `N_expr` (default 2) per
    mechanism — once `N_expr` independent expression classes have each
-   produced `EXPRESSION-FAIL` while the discriminator kept passing, the
-   mechanism entry migrates to the ratified **venue/cost-constraint** class
-   and its existing add-back (a geometry clearing the cost-law pre-flight
-   with margin, or a materially lower-cost venue): a real effect that no
-   declared expression captures net of this venue's costs is, for this
-   estate's purposes, uncapturable — not an invitation to a third
-   expression.
+   produced `EXPRESSION-FAIL` while the discriminator kept passing, no
+   further expression attempt is available under the standard add-back.
+   Where the terminal state lands then depends on what the recorded
+   failures actually establish. If the recorded failure reasons include a
+   cost or execution-geometry limb, the mechanism entry migrates to the
+   ratified **venue/cost-constraint** class and its existing add-back (a
+   geometry clearing the cost-law pre-flight with margin, or a materially
+   lower-cost venue) — that class is defined as an edge made uncapturable
+   *specifically by execution geometry/cost*
+   (`docs/adr/2026-06-14-rejected-candidate-patterns.md` §A), so the
+   migration is legitimate only when cost evidence actually fired. If the
+   failures fired on non-cost limbs (temporal instability, say), no cost
+   claim may be fabricated: the mechanism entry stays in the
+   **expression-failure** class with the ladder closed — its exhausted
+   add-back is a new expression class structurally distinct from *every*
+   failed one, admitted only by operator ratification citing the full
+   failure history, never by routine re-admission.
 
 This retains the untouched holdout, multiplicity accounting, cost realism,
 robustness, and prop-firm rules. It deletes repeated restatement and avoids
@@ -372,8 +419,10 @@ spending evaluation effort on an object that was never tradeable.
 - Do not turn an `EXPRESSION-FAIL` into permission to retune the failed
   expression: the add-back demands a materially new expression class under a
   new contract with fresh K and a fresh holdout, and the `N_expr` bound
-  terminates the ladder into venue/cost-constraint — an alive discriminator
-  is never a standing license to keep buying expression attempts.
+  closes the ladder — into venue/cost-constraint when cost/geometry limbs
+  actually fired, or into an operator-gated expression-failure bar when they
+  did not. An alive discriminator is never a standing license to keep buying
+  expression attempts.
 
 ## Practical review questions
 
