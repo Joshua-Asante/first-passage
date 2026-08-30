@@ -129,6 +129,7 @@
 | 2026-08-30-candidate-contract.md | Proposed | 2026-08-30 | none | Proposed |
 | 2026-08-30-channel-liveness-gate.md | Proposed | 2026-08-30 | none | Proposed |
 | 2026-08-30-evaluation-order.md | Proposed | 2026-08-30 | none | Proposed |
+| 2026-08-30-operator-approvals-campaign-envelope.md | Proposed | 2026-08-30 | none | Proposed |
 | 2026-08-30-terminal-taxonomy.md | Proposed | 2026-08-30 | none | Proposed |
 | 2026-08-30-tradeable-reachable-gate.md | Proposed | 2026-08-30 | none | Proposed |
 
