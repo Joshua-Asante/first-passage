@@ -209,8 +209,9 @@ the generate/evaluate boundary smaller and more concrete.
    from step 1, exploration and confirm windows, K, the multi-candidate
    confirm count `M` with its Bonferroni/Holm adjustment, costs, schema
    ladder, prior payoff-shape inputs (win-rate/mean-win/mean-loss estimate,
-   or an explicit flag deferring the shape limb until measured), and the
-   campaign envelope once.
+   or an explicit flag deferring the shape limb until measured), the scoped
+   account/book identifier the role pre-screen (evaluate-phase step 2) will
+   run against, and the campaign envelope once.
 4. **Run the `TRADEABLE-REACHABLE` pre-gate.** Covers cost/latency/firm
    geometry, delegating each limb to its existing named authority, scoring
    the payoff-shape limb from the contract's frozen prior inputs. If the
@@ -231,10 +232,12 @@ ceremonies inside an already approved budget, and channels without an exit.
 
 ### Proposed lean evaluate phase
 
-1. **Contract-integrity check, first:** confirm that code/data hashes, K,
-   selected cell, and holdout match the frozen candidate contract before any
-   other check runs. A mismatch voids or stops the attempt on its own — it
-   must not be recorded as a structural or evidentiary rejection.
+1. **Contract-integrity check, first:** confirm that code/data hashes, K, the
+   frozen confirm count `M` and its Bonferroni/Holm-adjusted per-candidate
+   bar, selected cell, and holdout match the frozen candidate contract
+   before any other check runs. A mismatch voids or stops the attempt on
+   its own — it must not be recorded as a structural or evidentiary
+   rejection.
 2. **Book/account-role pre-screen, zero-K:** before any holdout is consumed,
    score the candidate's fit for the account/book currently in scope —
    Product-Group/sign, cap, session, and S7 order-symbol occupancy
@@ -243,10 +246,15 @@ ceremonies inside an already approved budget, and channels without an exit.
    dominance / risk-N_eff-delta where a book context exists
    (`docs/adr/2026-07-20-stage8-variance-dominance-risk-neff-gate.md` §2).
    None of these are candidate-lifecycle absolute — every one gates only the
-   candidate's proposed role in *that* account/book: a rejection here means
-   the candidate is unfit for the currently scoped account, not falsified;
-   it may still be standalone-valid, fit a different account, or clear once
-   occupancy changes. This runs cheaply, at zero K, before confirmation.
+   candidate's proposed role, never the candidate outright. Cap, session,
+   and S7 occupancy are scoped to the single account/book currently in
+   scope: a rejection there may still clear on a different, non-affiliated
+   account. Product-Group/sign is scoped wider — absolute, no exceptions,
+   across *any* account under the same control, not just the current one
+   (`ops/prop_envelope_default.md` §4a) — so a Product-Group/sign rejection
+   clears only outside that whole controlled-account group, never merely by
+   picking a different account under the same operator. This runs cheaply,
+   at zero K, before confirmation.
 3. **One untouched confirm run per selected candidate, including temporal
    robustness, as one atomic step:** for each of the `M` candidates in the
    frozen, multiplicity-adjusted confirm budget, run the confirm statistic
@@ -258,18 +266,27 @@ ceremonies inside an already approved budget, and channels without an exit.
    the untouched run alone before temporal robustness has cleared.
    `EXPRESSION-FAIL` applies only when the frozen discriminator's complete
    adjudication rule (generate-phase step 1 — statistic, null, direction,
-   threshold, coverage/power) returns a pass while the specific entry/exit
-   implementation is rejected; otherwise a rejected holdout is `MARKET-NULL`.
-   The rule was fixed before the holdout was read, never chosen after.
-   `EVIDENCE-VOID` (coverage/power/holdout-integrity) exhausts this confirm
-   attempt but is not evidence against the candidate.
+   threshold, coverage/power) returns a clean pass while the specific
+   entry/exit implementation is rejected. If the discriminator itself
+   cannot adjudicate — its own frozen coverage or power requirement is
+   unmet — that takes precedence over any payoff verdict and the candidate
+   is `EVIDENCE-VOID`, never `MARKET-NULL`: an underpowered discriminator is
+   not evidence against the mechanism. Only a discriminator that cleanly
+   fails (a powered, adjudicated no) lets a rejected implementation default
+   to `MARKET-NULL`. The rule was fixed before the holdout was read, never
+   chosen after. `EVIDENCE-VOID` also covers ordinary coverage/power/
+   holdout-integrity failure of the confirm run itself — either way it
+   exhausts this confirm attempt but is not evidence against the candidate.
 4. **Portfolio and venue evaluation last:** for a `CONFIRMED` candidate,
-   re-run step 2's book/account-role screen only if the deployment target
-   has changed since scoping, then score remaining composition, firm-level
-   aggregate constraints, activity, drawdown, and sizing — only after an
-   edge exists. A role or composition failure here rejects that book-leg
-   placement, not the candidate's standalone confirmed status; a
-   `VENUE-FAIL` here is not evidence that the market effect is false.
+   re-run step 2's book/account-role screen if the deployment target has
+   changed since scoping, and always re-check S7 order-symbol occupancy
+   specifically regardless of target — occupancy is dynamic and can change
+   independently of the deployment target between scoping and placement.
+   Then score remaining composition, firm-level aggregate constraints,
+   activity, drawdown, and sizing — only after an edge exists. A role or
+   composition failure here rejects that book-leg placement, not the
+   candidate's standalone confirmed status; a `VENUE-FAIL` here is not
+   evidence that the market effect is false.
 5. **Per-candidate append-only disposition:** for each selected candidate,
    append its own separately keyed terminal class and detailed reason to the
    candidate contract. `CONFIRMED`, `MARKET-NULL`, `EXPRESSION-FAIL`, and
