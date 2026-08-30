@@ -1,23 +1,31 @@
 # RESULTS — Phase 1 joint-surrogation null design exploration (Q-RANGEXFER-1 / Q-VOLREGIME-1)
 
-**Status (updated, Round 4 below — the ratified bounded round): STILL NOT RESOLVED, but for a
-narrower and different reason than Round 3 left it.** Round 4 ran the operator-ratified bounded
-round (2 candidate model-adequacy remedies + 1 production-grade size/power re-certification, hard
-stop regardless of outcome). **Model adequacy now CLEARS** for the first time in 4 rounds (a
-formal information-criterion/Whittle-likelihood comparison decisively picks ARFIMA(1,d,0) over
-every short-memory competitor on both channels, validated by two positive-control sanity checks).
-**Estimation-aware size/power still does NOT clear**: a production-grade (full calibration grid,
-N=50 replicates, ~7.3min) re-run of the refit-per-replicate check finds the null false-positive
-rate at 10% (95% CI [4.3%,21.4%]) against a nominal 5% — smaller than Round 3's alarming
-coarse-grid 25% (confirming Round 3's own prediction that the coarse grid overstated it), but
-still a real, non-trivial, unresolved-with-confidence inflation. Per the ratified mandate, both
-gates must clear together; they did not. **Hard stop fires as designed** — see Round 4 below for
-the full account and the disclosed §6 gate-table gap this raises for the operator. Prior-round
-status text (through Round 3) is retained below unedited, per this repo's own no-retroactive-edit
-discipline; only this header is updated to point at the current state.
+**Status (updated, Round 4 CORRECTION below — the ratified bounded round, adversarially reviewed):
+STILL NOT RESOLVED — and materially further from resolved than Round 4's own original PR
+submission claimed.** Round 4 ran the operator-ratified bounded round (2 candidate model-adequacy
+remedies + 1 production-grade size/power re-certification, hard stop regardless of outcome). The
+version first pushed to PR #225 claimed model adequacy CLEARED (via an information-criterion
+comparison) and that size/power's inflation had shrunk to a borderline, inconclusive 10%. **A
+Codex review pass (8 findings, all independently re-verified against the actual code/math before
+fixing) found this wrong on both counts.** Corrected: (1) the IC comparison's own pass criterion
+was relative-only (BIC-best among 5 candidates, which cannot detect "all 5 are inadequate");
+adding the absolute residual-whiteness check Codex's review demanded finds `on_range`'s fitted
+ARFIMA(1,d,0) — despite remaining BIC-best — still leaves real, robust, multi-lag-confirmed
+residual autocorrelation (Ljung-Box p=0.023 at lag 30). **Model adequacy does NOT clear on
+`on_range`**, so remedy 2 does not clear overall (it clears `rth_range` alone). (2) The
+size/power re-certification's synthetic "ground truth" data was generated with a filter truncated
+at J=300 while the fitting/testing side used J=1200 — a confirmed, quantified (~0.058 ACF
+mismatch) truncation confound. Once corrected (matched truncation throughout), the true
+production-grade null false-positive rate is **24%** (95% CI [14.3%,37.4%], one-sided binomial
+p≈0.0000 vs nominal 5% — clearly, not marginally, significant) — closely matching, not refuting,
+Round 3's original coarse-grid 25% estimate. **Neither gate clears, decisively, under the
+corrected analysis** — a cleaner and more negative finding than the original submission's "one
+gate cleared" claim. Hard stop fires, more emphatically than first reported. See "Round 4" (the
+original submission, retained verbatim below for provenance) and "Round 4 correction" (the
+authoritative, current account) for the full record.
 
-**Status (superseded by Round 4 above; Round 3 text retained verbatim below for provenance):**
-NOT RESOLVED to a certifiable standard, and materially further
+**Status (superseded by Round 4 correction above; original Round 4 submission and Round 1-3 text
+retained verbatim below for provenance):** NOT RESOLVED to a certifiable standard, and materially further
 from resolved than Round 2's own headline claimed. Seven total joint-surrogation constructions
 have now been tried across three rounds (Round 1: linked-residual IAAFT, VAR(p), shared-start
 IAAFT; Round 2: CCC-GARCH/MEM, DCC-GARCH/MEM, ARFIMA long-memory+copula, nonparametric
@@ -471,6 +479,14 @@ python ../mnq_dailygeom_notice_2026-08-29/candidate3_stratified_rerun.py
 # Expected: strata lifts 0.2234/0.2739, both null-calibrated p=0.00025
 ```
 
+## Round 4 (ORIGINAL PR #225 SUBMISSION — SUPERSEDED by "Round 4 correction" below; retained
+verbatim, per this file's own no-retroactive-edit discipline, NOT because its conclusions stand)
+
+**⚠ This section's headline claims (model adequacy CLEARS via remedy 2; size/power inflation
+shrinks to a borderline 10%) were found WRONG by Codex's PR #225 review and are corrected in the
+"Round 4 correction" section below. Read that section for the current, authoritative account —
+this section is provenance for what was originally computed and claimed, not a standing result.**
+
 ## Round 4 — the ratified bounded round (2026-08-30 operator ratification: "I ratify the Phase
 1 approach"): 2 candidate model-adequacy remedies + 1 production-grade size/power
 re-certification. Model adequacy CLEARS for the first time in 4 rounds; size/power still does
@@ -658,4 +674,189 @@ python information_criterion_comparison.py
 python _refit_per_replicate_positive_control_v2.py
 # Expected: null_rate=0.100 (Wilson CI [0.043,0.214]), alt_rate=0.460,
 # size_controlled=False, power_adequate=True, VERDICT: SIZE/POWER GATE DOES NOT CLEAR
+```
+
+## Round 4 correction — Codex review (PR #225): 8 findings, all independently re-verified, 7
+fixed in-place; the corrected result is materially WORSE than the original submission claimed
+
+An external (Codex) review pass on PR #225 (the branch carrying Round 4 above) found 8 issues, all
+on the newly-authored Round 4 scripts. Each was independently re-verified against the actual code
+or by hand-deriving the underlying math — not taken on faith — before fixing, per this repo's own
+standing discipline (see Round 3's identical practice above). All 8 were confirmed real, with
+quantified impact matching Codex's own claims exactly where a claim was checkable. Two of the
+eight (findings #1 and #6) are load-bearing: fixing them **changes the substantive conclusion**,
+not just a presentation detail. Finding #8 is a legitimate statistical-rigor correction to this
+file's own prose, independent of any code change.
+
+### Finding #1 (P1, severity: HIGH) — positive-control truncation mismatch confounded the
+estimation-aware size/power result
+
+`_refit_per_replicate_positive_control_v2.py` reused `_refit_per_replicate_positive_control.py`'s
+own `gen_synthetic` VERBATIM for the "ground truth" generative process — but that function
+hardcodes a `burn=300` (i.e. J=300) truncation of the fractional-differencing filter, while
+`refit_and_score` (the fitting/testing side) used PROD_J=PROD_BURN=1200. **Verified directly**:
+at the cached real-data `d2=0.45825`, the theoretical ACF of a J=300-truncated filter differs from
+a J=1200-truncated filter by **up to 0.058 over 30 lags** — a real, material mismatch between what
+the synthetic data actually IS and what the fitting machinery assumes, confounding truncation
+misspecification with the pure estimation-noise question this check exists to isolate.
+
+**Fixed**: a new `gen_synthetic_matched` function, built with the SAME PROD_J/PROD_BURN=1200
+truncation used everywhere else in the file. **Re-run in full** (production grid, N=50 replicates
+per scenario, ~7.1 min): the corrected null false-positive rate is **24% (12/50), 95% Wilson CI
+[14.3%,37.4%]** — dramatically higher than the (buggy) 10% originally reported, and a one-sided
+exact binomial test against nominal 5% is now clearly significant (p≈0.0000, not the borderline
+p=0.104 the buggy run's 10% produced). Power (boost=0.4 alternative) is 38% (19/50) — the
+size/power gap (38%-24%=14pp) no longer clears the pre-registered ≥25pp margin either.
+
+**This closely matches, and does not refute, Round 3's original coarse-grid estimate of 25%.**
+The original Round 4 submission's headline claim — "the coarse grid overstated the true
+production-grade inflation, confirming Round 3's own prediction" — is **itself wrong**, and is
+corrected here: once truncation is properly matched, a genuine production-grade re-run finds
+essentially the SAME severe inflation Round 3's coarse check found, not a smaller one. The
+earlier belief that finer calibration would materially improve size control does not survive
+contact with a correctly-matched re-run.
+
+### Finding #6 (P1, severity: HIGH) — relative BIC-best is not an absolute adequacy test
+
+`information_criterion_comparison.py`'s original criterion declared model adequacy CLEARED
+whenever ARFIMA(1,d,0) achieved the lowest BIC among the 5 supplied candidates. Codex's point is
+correct and was not previously considered: an information criterion is a **relative**
+model-selection tool — if every candidate misrepresents the real dynamics, one of them still
+necessarily "wins," and the two positive-control self-tests cannot detect this failure mode
+because their own ground truths are, by construction, members of the candidate set. Relative
+BIC-best alone does not discharge "does the fitted model represent the real data well enough to
+trust."
+
+**Fixed**: added an ABSOLUTE complement — a Ljung-Box test (lag=30) on ARFIMA's own in-sample
+residuals, computed via the truncated AR(∞) filter (`ar_inf_pi_weights`, reused from
+`oos_forecast_evaluation.py`). The residual-computation machinery was itself sanity-checked before
+trusting its output on real data: at TRUE known parameters on 10 independent synthetic replicates,
+the Ljung-Box test rejects 1/10 (10%), consistent with (if a touch above) the expected ~5-10% rate
+for a correctly-specified model — confirming the residual/Ljung-Box wiring is not itself injecting
+spurious rejections.
+
+**Result on the real MNQ panel: `on_range` FAILS the absolute check.** ARFIMA(1,d,0) remains
+BIC-best on `on_range` (relative test still passes, and by a WIDER margin after the finding-#5
+scaling fix below), but its own residuals show real, non-spurious leftover autocorrelation:
+Ljung-Box p=0.023 at lag 30, and this is not an artifact of the specific lag chosen — a
+multi-lag table (5/10/15/20/25/30) shows p=0.046/0.133/0.014/0.018/0.044/0.023, i.e. rejecting at
+4 of 6 tested lags, not a single unlucky choice. `rth_range` PASSES (p=0.073, consistent with
+white noise). Since the pre-registered criterion requires BOTH channels to clear BOTH parts,
+**remedy 2 does NOT clear overall** — the original submission's "clean, decisive pass, both
+channels" claim is corrected to "clears `rth_range` alone; `on_range` still leaves real, modest,
+multi-lag-confirmed residual structure ARFIMA(1,d,0) does not fully capture."
+
+### Finding #5 (P2) — Whittle -2logL scaling bug (does not flip the relative-BIC verdict, but
+needed fixing for correctness)
+
+`whittle_neg2loglik` computed the concentrated Whittle NEGATIVE LOG-LIKELIHOOD (-logL, derived
+from the standard asymptotic result that independent periodogram ordinates are Exponentially
+distributed with mean f(ω_j)) but the function and its callers treated that value as -2logL,
+applying the standard `2k`/`k·log(n)` penalties on top of it — effectively halving the fit term's
+weight relative to the penalty. **Re-derived by hand from scratch** before fixing (re-confirmed
+the asymptotic Exponential-periodogram identity, not assumed). **Fixed** by multiplying by 2 at
+the single source of truth. **Re-derived whether this could flip the winner BEFORE re-running**:
+ARFIMA's raw fit-term advantage over its closest competitor (AR5) was already favorable pre-fix
+(ARFIMA's own -logL was lower than AR5's despite AR5 having more parameters); doubling the fit
+term relative to an unchanged penalty term makes that pre-existing advantage count for MORE, not
+less. **Re-run confirms this**: ARFIMA's BIC margin over AR5 widens from the original (buggy)
+27.8/27.9 points to a corrected **34.4/34.5 points** on `on_range`/`rth_range` respectively —
+the relative-BIC verdict (ARFIMA wins) is unchanged and strengthened by this specific fix; it is
+finding #6's absolute check, not this scaling fix, that changes the overall remedy-2 verdict.
+
+### Finding #2 (P2) — non-deterministic seeds in the forecast remedy
+
+`oos_forecast_evaluation.py` used `hash(name) % 100000` to seed each channel's SMM calibration.
+Python salts string hashes per-process by default (`PYTHONHASHSEED`), so this seed — and the
+fitted (phi,d), and the whole downstream forecast comparison — was **not reproducible** across
+runs. Codex confirmed this is materially outcome-relevant (a different hash seed flips whether
+`on_range` clears at h=20). **Fixed** with fixed per-channel integer seeds (101/102, matching
+`_fit_real_params.py`'s own convention). **Verified reproducible post-fix**: two independent
+process runs produce byte-identical output.
+
+### Finding #4 (P2) — forecast-remedy ACF fit target mismatched what the estimator actually fits
+
+The (phi,d) fit target passed to `estimate_phi_d_simulated` was the Pearson ACF of raw (unranked)
+log-range TRAIN data, but that estimator's own simulated side ALWAYS scores candidates against
+`acf(rankdata(y), ...)` — the rank/Spearman ACF, regardless of what target is supplied. **Verified
+directly**: max|Pearson-ACF − rank-ACF| = 0.030 (`on_range`) / 0.045 (`rth_range`) on this exact
+train split — the fit was minimizing mismatched moments, not a genuine fit to either convention.
+**Fixed** by ranking the TRAIN-ONLY data before computing the target (this does not reopen the
+leakage concern the log-space design exists to avoid — that concern is specifically about ranking
+train+test JOINTLY, as `normal_scores()` does elsewhere in this directory; ranking train-only data
+for a training-time target touches no test-period information). **Re-run**: the qualitative
+near-miss conclusion is unchanged (each channel still clears at a different horizon, never
+simultaneously), with modestly different fitted (phi,d) and p-values — see the corrected table
+below.
+
+### Finding #3 (P2) — the claimed IC positive-control self-tests were never committed anywhere
+
+The documented reproduction command claimed `information_criterion_comparison.py` runs two
+positive-control self-tests before the real-data analysis, but they had only ever been run as
+throwaway, uncommitted ad hoc shell commands during authoring — the load-bearing claim that this
+machinery "discriminates in both directions" was not actually reproducible from the repo. **Fixed**
+by implementing `self_test()` inside the file itself, run and asserted at the start of `main()`
+(aborting with a clear error if either check fails), with results persisted in the output JSON.
+
+### Finding #7 (P2) — scope precision: this remedy's evidence is MNQ-only
+
+Both remedies (and the size/power re-certification) are fit and scored exclusively against MNQ's
+own cached joint frame; none of this round's evidence evaluates whether ARFIMA(1,d,0) represents
+MYM's own panel or MYM's separately-restricted `bprime=0` subpanel, both of which this
+construct's eventual Phase 3 execution also needs. **Fixed**: added explicit "MNQ-only" scope
+language to `information_criterion_comparison.py`'s own docstring and to this section — per the
+"one design run twice" framing this brief's own §7 already establishes, an MNQ clearance would
+license ATTEMPTING the same design on MYM at Phase 3, not certify MYM's own adequacy in advance.
+Moot in practice this round since MNQ's own clearance does not hold either (finding #6).
+
+### Finding #8 (P2) — the original size/power write-up overstated statistical confidence
+
+Independent of any code fix: the ORIGINAL (pre-finding-#1-fix) submission described the 10%
+(5/50) null rate as "a real, meaningful 2× inflation... confirmed... not a rounding artifact."
+**Verified directly** (`scipy.stats.binomtest(5, 50, 0.05, alternative="greater")`): the exact
+one-sided binomial p-value against nominal 5% was **0.104** — not significant at conventional
+levels, and the Wilson CI included 0.05. That specific overclaim is moot now that finding #1's
+fix supersedes the 10% figure entirely (the corrected 24% clears the same binomial test at
+p≈0.0000, so the CORRECTED result genuinely is a confirmed, highly significant inflation) — but
+the underlying methodological point stands and is now baked into the script itself: `_refit_per_
+replicate_positive_control_v2.py` computes and reports `binom_p_vs_nominal` explicitly, and its
+own verdict string no longer asserts "confirmed" language the point estimate and CI alone cannot
+support, deferring instead to whatever the actual exact test says.
+
+### Corrected results table (supersedes the equivalent table/claims above)
+
+| | Original (buggy) submission | Corrected (post-review) |
+|---|---|---|
+| Remedy 1 (OOS forecast) | Near-miss, does not clear | Near-miss, does not clear (unchanged qualitatively; numbers shift modestly from findings #2/#4) |
+| Remedy 2 (IC/BIC) | "CLEARS, both channels, ~28pt margin" | **Does NOT clear** — BIC-best margin widens to ~34pt (finding #5), but `on_range` fails the now-mandatory absolute residual-whiteness check (finding #6); `rth_range` alone clears |
+| Size/power re-certification | null=10% [4.3%,21.4%], "does not clear" (borderline/inconclusive per finding #8) | **null=24% [14.3%,37.4%], binomial p≈0.0000 (clearly significant)** — a confirmed, severe inflation, not a coarse-grid artifact (finding #1) |
+| Model adequacy | CLEARS (both channels) | **Does NOT clear** (only `rth_range`, not both) |
+| Overall Phase 1 disposition | "One gate cleared, one did not" | **Neither gate clears** — a cleaner, more decisively negative "not resolved" than first reported |
+
+**The hard stop still fires, and the action is unchanged** (disclose the Q-RANGEXFER-1 §6
+gate-table gap, raise to the operator for a fresh gate amendment) — but the finding it is firing
+on is now honestly "no design has cleared either gate after the full ratified 2-remedy budget,"
+not "one gate cleared and one did not." No third remedy was attempted post-correction (remedy 2's
+own correction happened within the SAME remedy, per Codex's finding — it is not a new, third
+attempt); the positive control was re-run once to fix a confirmed code defect (finding #1), not to
+chase a better number, and its corrected result is worse, not better, closing off any temptation
+to keep iterating.
+
+```bash
+# Reproduce the corrected OOS forecast evaluation (Remedy 1) -- near-miss, ~5s, now reproducible
+python oos_forecast_evaluation.py
+# Expected: on_range clears at h=20 only, rth_range clears at h=40 only -- no shared horizon,
+# OVERALL VERDICT: MODEL ADEQUACY DOES NOT CLEAR via remedy 1 (byte-identical across re-runs)
+
+# Reproduce the corrected IC/BIC comparison (Remedy 2) -- now includes 2 self-tests + absolute
+# residual-whiteness check, ~15s
+python information_criterion_comparison.py
+# Expected: both self-tests PASS; ARFIMA BIC-best on both channels (wider margins than before);
+# on_range Ljung-Box p=0.023 (FAILS absolute check); rth_range p=0.073 (passes);
+# OVERALL VERDICT: MODEL ADEQUACY DOES NOT CLEAR via remedy 2 either
+
+# Reproduce the corrected production-grade size/power re-certification -- ~7 min
+python _refit_per_replicate_positive_control_v2.py
+# Expected: null_rate=0.240 (Wilson CI [0.143,0.374]), alt_rate=0.380, binom_p_vs_nominal≈0.0000,
+# size_controlled=False, power_adequate=False, VERDICT: SIZE/POWER GATE DOES NOT CLEAR
 ```

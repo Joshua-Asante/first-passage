@@ -1,34 +1,46 @@
+SELF-TEST 1 (true AR(1), phi=0.6): best_bic=ar1 d_hat=0.0010 -> PASS
+SELF-TEST 2 (true ARFIMA(1,-0.3,0.42)): best_bic=arfima margin=21.91 -> PASS
+
+Both self-tests PASS -- machinery discriminates correctly in both directions.
+
 n=1487 n_train=1189 (IDENTICAL train split to oos_forecast_evaluation.py)
 
 [on_range] n_train=1189 m_freqs=594
-  ARFIMA(1,d,0): phi=-0.150 d=0.366 -2logL=-1306.94 AIC=-1300.94 BIC=-1285.70
-  AR(1): -2logL=-1227.76 AIC=-1223.76 BIC=-1213.60
-  AR(5): -2logL=-1300.38 AIC=-1288.38 BIC=-1257.90
-  AR(10): -2logL=-1307.22 AIC=-1285.22 BIC=-1229.33
-  AR(20): -2logL=-1319.19 AIC=-1277.19 BIC=-1170.49
+  ARFIMA(1,d,0): phi=-0.150 d=0.366 -2logL=-2613.89 AIC=-2607.89 BIC=-2592.64
+  AR(1): -2logL=-2455.52 AIC=-2451.52 BIC=-2441.35
+  AR(5): -2logL=-2600.77 AIC=-2588.77 BIC=-2558.28
+  AR(10): -2logL=-2614.43 AIC=-2592.43 BIC=-2536.54
+  AR(20): -2logL=-2638.37 AIC=-2596.37 BIC=-2489.67
 
 [rth_range] n_train=1189 m_freqs=594
-  ARFIMA(1,d,0): phi=-0.175 d=0.391 -2logL=-1416.84 AIC=-1410.84 BIC=-1395.60
-  AR(1): -2logL=-1331.72 AIC=-1327.72 BIC=-1317.56
-  AR(5): -2logL=-1410.19 AIC=-1398.19 BIC=-1367.70
-  AR(10): -2logL=-1415.87 AIC=-1393.87 BIC=-1337.98
-  AR(20): -2logL=-1424.30 AIC=-1382.30 BIC=-1275.60
+  ARFIMA(1,d,0): phi=-0.175 d=0.391 -2logL=-2833.69 AIC=-2827.69 BIC=-2812.45
+  AR(1): -2logL=-2663.45 AIC=-2659.45 BIC=-2649.29
+  AR(5): -2logL=-2820.38 AIC=-2808.38 BIC=-2777.89
+  AR(10): -2logL=-2831.73 AIC=-2809.73 BIC=-2753.84
+  AR(20): -2logL=-2848.59 AIC=-2806.59 BIC=-2699.89
 
 ==========================================================================================
 channel        model   k      -2logL         AIC         BIC   best_BIC?
-on_range      arfima   3    -1306.94    -1300.94    -1285.70    <-- BEST
-on_range         ar5   6    -1300.38    -1288.38    -1257.90            
-on_range        ar10  11    -1307.22    -1285.22    -1229.33            
-on_range         ar1   2    -1227.76    -1223.76    -1213.60            
-on_range        ar20  21    -1319.19    -1277.19    -1170.49            
-  [on_range] BIC-best model: arfima  (ARFIMA achieves lowest BIC: True)
-rth_range     arfima   3    -1416.84    -1410.84    -1395.60    <-- BEST
-rth_range        ar5   6    -1410.19    -1398.19    -1367.70            
-rth_range       ar10  11    -1415.87    -1393.87    -1337.98            
-rth_range        ar1   2    -1331.72    -1327.72    -1317.56            
-rth_range       ar20  21    -1424.30    -1382.30    -1275.60            
-  [rth_range] BIC-best model: arfima  (ARFIMA achieves lowest BIC: True)
+on_range      arfima   3    -2613.89    -2607.89    -2592.64    <-- BEST
+on_range         ar5   6    -2600.77    -2588.77    -2558.28            
+on_range        ar10  11    -2614.43    -2592.43    -2536.54            
+on_range        ar20  21    -2638.37    -2596.37    -2489.67            
+on_range         ar1   2    -2455.52    -2451.52    -2441.35            
+  [on_range] BIC-best model: arfima  (relative BIC test -- ARFIMA lowest: True)
+rth_range     arfima   3    -2833.69    -2827.69    -2812.45    <-- BEST
+rth_range        ar5   6    -2820.38    -2808.38    -2777.89            
+rth_range       ar10  11    -2831.73    -2809.73    -2753.84            
+rth_range       ar20  21    -2848.59    -2806.59    -2699.89            
+rth_range        ar1   2    -2663.45    -2659.45    -2649.29            
+  [rth_range] BIC-best model: arfima  (relative BIC test -- ARFIMA lowest: True)
 
-OVERALL VERDICT: MODEL ADEQUACY CLEARS (remedy 2: information-criterion comparison)
+==========================================================================================
+ABSOLUTE ADEQUACY CHECK: Ljung-Box on residuals at lag=30 (MNQ)
+  [on_range] ARFIMA residual Ljung-Box p=0.0232 (FAIL -- residual structure remains) | ar5 (closest competitor) residual Ljung-Box p=0.0444 (still shows structure -- confirms discriminating power)
+  [rth_range] ARFIMA residual Ljung-Box p=0.0734 (PASS -- consistent with white noise) | ar5 (closest competitor) residual Ljung-Box p=0.0362 (still shows structure -- confirms discriminating power)
+  [on_range] CLEARS (relative BIC-best AND absolute residual-whiteness): False
+  [rth_range] CLEARS (relative BIC-best AND absolute residual-whiteness): True
+
+OVERALL VERDICT: MODEL ADEQUACY DOES NOT CLEAR via remedy 2 either -- both candidate remedies exhausted
 
 Wrote information_criterion_comparison_results.json

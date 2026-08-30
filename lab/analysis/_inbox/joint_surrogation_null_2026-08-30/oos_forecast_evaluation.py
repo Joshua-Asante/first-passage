@@ -86,6 +86,28 @@ this text was written):
   the FIRST of at most 2 candidate remedies the ratified bounded round
   allows; a fail here does not itself trigger the hard stop, only a fail
   on 2 remedies plus the mandatory positive-control recertification does.
+
+CORRECTIONS (Codex review, PR #225 -- each independently re-verified against
+the actual code/math before fixing, per this repo's own standing discipline):
+2 real bugs confirmed and fixed. (1) `hash(name)` for the per-channel SMM
+seed is salted per Python process by default (PYTHONHASHSEED), making the
+fitted (phi,d) and the whole comparison table non-reproducible across runs
+-- confirmed materially outcome-relevant (a different hash seed flips
+whether on_range clears at h=20). Fixed with per-channel fixed integer
+seeds (101/102, matching `_fit_real_params.py`'s own convention). (2) the
+fit TARGET passed to `estimate_phi_d_simulated` was the PEARSON ACF of raw
+log-range train data, but that estimator's own simulated side ALWAYS scores
+candidates against `acf(rankdata(y), ...)` (rank/Spearman ACF) --
+quantified directly: max|Pearson-ACF - rank-ACF| = 0.030 (on_range) / 0.045
+(rth_range) on this exact train split, meaning the fit minimized mismatched
+moments rather than either a genuine rank-ACF or log-Pearson fit. Fixed by
+ranking the TRAIN-ONLY data before computing the target -- this does NOT
+reopen the leakage concern the log-space design exists to avoid (that
+concern is specifically about ranking train+test JOINTLY, as
+`normal_scores()` does elsewhere in this directory; ranking train-only data
+for a training-time fit target touches no test-period information). Both
+fixes require re-running this file; the table in RESULTS.md's own Round 4
+section is the corrected, re-run output, not the pre-correction numbers.
 """
 from __future__ import annotations
 
@@ -99,7 +121,8 @@ import pandas as pd
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 from joint_iaaft import fit_var  # noqa: E402 -- reused verbatim, generic bivariate VAR(p) OLS fit
-from longmemory_copula import acf, estimate_phi_d_simulated  # noqa: E402 -- reused verbatim (Pearson ACF here, not rank-ACF -- see module docstring)
+from longmemory_copula import acf, estimate_phi_d_simulated  # noqa: E402 -- reused verbatim
+from scipy.stats import rankdata  # noqa: E402 -- ranks TRAIN-ONLY data (no leakage, see fit note below)
 
 CSV = HERE.parent / "mnq_dailygeom_notice_2026-08-29" / "candidate24_joint_frame.csv"
 TRAIN_FRAC = 0.80
@@ -251,15 +274,40 @@ def main():
     channels = dict(on_range=log_on, rth_range=log_rth)
 
     # ---------------- Fit all models on TRAIN ONLY ----------------
+    # Codex review (PR #225) finding #1: `estimate_phi_d_simulated`'s own SMM
+    # grid search ALWAYS scores candidate (phi,d) against `acf(rankdata(y), ...)`
+    # of its simulated draws (see longmemory_copula.py) -- i.e. it fits the
+    # RANK/Spearman ACF, regardless of what target array is passed in. Passing
+    # the Pearson ACF of raw (unranked) log-range train data as the fit target,
+    # as an earlier version of this file did, therefore minimized mismatched
+    # moments (verified directly: max |Pearson-ACF - rank-ACF| = 0.030 for
+    # on_range, 0.045 for rth_range on this exact train split) rather than
+    # either a genuine rank-ACF fit or a genuine log-Pearson fit. FIXED: rank
+    # the TRAIN-ONLY data before computing the target, matching what the
+    # estimator actually measures on the simulated side. This ranks ONLY the
+    # train portion (never touches test), so it does not reopen the
+    # leakage concern the log-space design was built to avoid -- that concern
+    # was specifically about ranking train+test JOINTLY (as normal_scores()
+    # does elsewhere in this directory), not about ranking train-only data to
+    # build a training-time fit target.
+    #
+    # Codex finding #2: `hash(name)` is salted per Python process by default
+    # (PYTHONHASHSEED), making the seed -- and therefore the fitted (phi,d)
+    # and the whole downstream forecast comparison -- NON-deterministic across
+    # runs/environments (confirmed materially outcome-relevant: a different
+    # hash seed flips whether on_range clears at h=20). FIXED: fixed integer
+    # seeds per channel, matching `_fit_real_params.py`'s own convention
+    # (seed=101 for channel 1, seed=102 for channel 2).
     fits = {}
+    channel_seeds = dict(on_range=101, rth_range=102)
     for name, x in channels.items():
         train = x[:n_train]
         lags = min(30, n_train // 3)
-        real_acf = acf(train - train.mean(), lags)
+        real_acf = acf(rankdata(train), lags)
         phi, d, info = estimate_phi_d_simulated(
             real_acf, n_train, J=800, burn=800, n_reps=4,
             phi_grid=np.linspace(-0.6, 0.9, 21), d_grid=np.linspace(0.01, 0.499, 25),
-            seed=hash(name) % 100000,
+            seed=channel_seeds[name],
         )
         c1, phi1_ar = fit_ar1(train)
         fits[name] = dict(arfima=dict(phi=phi, d=d, sse=info["best_sse"]), ar1=dict(c=c1, phi=phi1_ar))

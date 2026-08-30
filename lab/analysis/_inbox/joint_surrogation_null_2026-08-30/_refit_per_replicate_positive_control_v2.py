@@ -37,10 +37,26 @@ scenarios is a ~7-minute run -- well within budget, and no longer a
 compute-forced simplification the way the original N=8/coarse-grid choice
 explicitly was.
 
-Everything else (generative model `gen_synthetic`, the boost=0.4 alternative
-effect definition, the statistic under test) is REUSED VERBATIM from
-`_refit_per_replicate_positive_control.py` -- this script changes only the
-calibration-grid and replicate-count knobs, not the design itself.
+The boost=0.4 alternative-effect definition and the statistic under test
+(`score_min_stratified_lift`) are REUSED VERBATIM from
+`_refit_per_replicate_positive_control.py`.
+
+CORRECTION (Codex review, PR #225 finding #1 -- P1, the most severe finding
+on this PR, re-verified numerically before fixing): the imported
+`gen_synthetic` was ALSO reused verbatim for the generative ("ground truth")
+process -- but it hardcodes `burn = 300` (a J=300 truncation of the
+fractional-differencing filter) for building the synthetic replicates,
+while `refit_and_score` fits AND generates its own null surrogates at
+PROD_J=PROD_BURN=1200. Verified directly: at the cached real-data
+`d2=0.45825`, the theoretical ACF of a J=300-truncated filter differs from
+a J=1200-truncated filter by up to 0.058 over 30 lags -- a real, material
+model mismatch between the "true" data-generating process and the fitting
+target, which CONFOUNDS truncation misspecification with the
+parameter-estimation error this check exists to isolate. FIXED: this file
+now defines its own `gen_synthetic_matched`, generating replicates with the
+SAME PROD_J/PROD_BURN=1200 truncation the fitting/surrogate side uses
+everywhere else in this file -- the "ground truth" and the "thing being
+estimated against" are now built from the identical filter length.
 """
 from __future__ import annotations
 
@@ -55,9 +71,11 @@ import sys
 sys.path.insert(0, str(HERE))
 from longmemory_copula import (  # noqa: E402
     acf, rankdata, estimate_phi_d_simulated, ar1_fracdiff_weights,
-    _solve_rho_innov, _pair_innovation_link,
+    _solve_rho_innov, _pair_innovation_link, _causal_filter,
 )
-from _refit_per_replicate_positive_control import gen_synthetic, score_min_stratified_lift  # noqa: E402
+from _refit_per_replicate_positive_control import score_min_stratified_lift  # noqa: E402
+from positive_control import rolling_pct_strict_prior  # noqa: E402
+from _refit_per_replicate_positive_control import WINDOW, Q_BIAS  # noqa: E402
 
 N_REPS = 50            # vs the original coarse check's 8
 M_SURR = 100           # vs the original coarse check's 60
@@ -68,6 +86,38 @@ ALPHA = 0.05
 PROD_J, PROD_BURN, PROD_NREPS = 1200, 1200, 5
 PROD_PHI_GRID = np.linspace(-0.6, 0.9, 21)
 PROD_D_GRID = np.linspace(0.01, 0.499, 25)
+
+
+def gen_synthetic_matched(n, phi1, d1, phi2, d2, rho_innov, seed, boost=0.0):
+    """Generative ("ground truth") process for one synthetic replicate --
+    SAME structure as `_refit_per_replicate_positive_control.gen_synthetic`
+    (correlated-innovation ARFIMA(1,d,0) pair, exp-transform to positive
+    range-like values, same boost>0 same-day-transmission alternative), but
+    built at PROD_J/PROD_BURN=1200 truncation instead of that function's
+    hardcoded 300 -- matching the truncation `refit_and_score` fits and
+    generates surrogates at (Codex review, PR #225 finding #1). The
+    generating filter and the filter being fit against are now identical in
+    length; only the ESTIMATED (phi,d) differs from the true (phi,d), which
+    is the estimation-aware size/power question this script exists to
+    answer."""
+    rng = np.random.default_rng(seed)
+    burn = PROD_J
+    psi1 = ar1_fracdiff_weights(phi1, d1, burn)
+    psi2 = ar1_fracdiff_weights(phi2, d2, burn)
+    e1 = rng.standard_normal(n + burn)
+    e_common = rng.standard_normal(n + burn)
+    e2 = rho_innov * e1 + np.sqrt(max(0.0, 1 - rho_innov ** 2)) * e_common
+    z1 = _causal_filter(e1, psi1)[burn: burn + n]
+    z2 = _causal_filter(e2, psi2)[burn: burn + n]
+    x1 = np.exp(z1 * 0.3)
+    x2 = np.exp(z2 * 0.3)
+    if boost > 0:
+        thresh = rolling_pct_strict_prior(x1, WINDOW, Q_BIAS)
+        flagged = np.zeros(n, dtype=bool)
+        flagged[WINDOW:] = x1[WINDOW:] >= thresh[WINDOW:]
+        x2 = x2.copy()
+        x2[flagged] *= (1.0 + boost)
+    return x1, x2
 
 
 def refit_and_score(x1, x2, seed_base, code):
@@ -120,7 +170,7 @@ def run_scenario(name, boost, seed_base, true_params):
     rejects, p_uppers, fits = 0, [], []
     for rep in range(N_REPS):
         t0 = time.time()
-        x1, x2 = gen_synthetic(1487, true_params["phi1"], true_params["d1"],
+        x1, x2 = gen_synthetic_matched(1487, true_params["phi1"], true_params["d1"],
                                 true_params["phi2"], true_params["d2"],
                                 true_params["rho_innov"], seed=[seed_base, rep], boost=boost)
         obs, p_upper, fit = refit_and_score(x1, x2, seed_base=seed_base + 5000, code=rep)
@@ -174,12 +224,34 @@ def main():
     #    stay comfortably under the coarse check's alarming 0.25?
     #  - power_adequate: alt_rate exceeds null_rate by a wide, unambiguous
     #    margin (>=0.25), consistent with every prior round's power reads.
+    #
+    # CORRECTION (Codex review, PR #225 finding #8, verified numerically
+    # before fixing -- scipy.stats.binomtest(5, 50, 0.05, alternative=
+    # "greater") gives p=0.1036): 5/50 rejections does NOT statistically
+    # confirm inflation above the nominal 5% rate at conventional
+    # significance -- the exact one-sided binomial test against p0=0.05 is
+    # not significant, and the Wilson CI includes 0.05. The PRE-REGISTERED
+    # DECISION RULE below (a bounded stopping criterion requiring both a
+    # low point estimate AND a tight CI, not a significance test) still
+    # legitimately does not clear -- but the verdict text no longer asserts
+    # a "confirmed" inflation, only that the criterion (which specifically
+    # demands certifiable precision, not just a plausible point estimate)
+    # was not met. This is an "insufficient precision to certify" outcome,
+    # not a "confirmed effect" one.
+    from scipy.stats import binomtest
+    null_k = int(round(null_rate * N_REPS))
+    binom_p_vs_nominal = float(binomtest(null_k, N_REPS, 0.05, alternative="greater").pvalue)
+
     size_controlled = null_rate <= 0.10 and null_ci[1] <= 0.20
     power_adequate = (alt_rate - null_rate) >= 0.25
     verdict = "SIZE/POWER GATE CLEARS" if (size_controlled and power_adequate) else \
-        "SIZE/POWER GATE DOES NOT CLEAR -- inflation confirmed at production grid/N, not a coarse-grid artifact"
+        ("SIZE/POWER GATE DOES NOT CLEAR -- pre-registered CI-width criterion not met "
+         "(insufficient precision to certify size control at this N; the point estimate "
+         "is NOT statistically distinguishable from nominal, see binom_p_vs_nominal)")
     print(f"\nsize_controlled (null_rate<=0.10 AND CI_hi<=0.20): {size_controlled}")
     print(f"power_adequate (alt_rate - null_rate >= 0.25): {power_adequate}")
+    print(f"One-sided exact binomial test, null_rate vs nominal 0.05: p={binom_p_vs_nominal:.4f} "
+          f"({'NOT significant at conventional levels' if binom_p_vs_nominal > 0.05 else 'significant'})")
     print(f"VERDICT: {verdict}")
     print(f"\nTotal wall-clock: {time.time()-t_start:.1f}s")
 
@@ -188,7 +260,7 @@ def main():
         production_grid=dict(J=PROD_J, burn=PROD_BURN, n_reps_calib=PROD_NREPS,
                               phi_grid_n=len(PROD_PHI_GRID), d_grid_n=len(PROD_D_GRID)),
         null_rate=null_rate, null_ci_wilson=list(null_ci), null_p_uppers=null_ps,
-        null_fits=null_fits,
+        null_fits=null_fits, binom_p_vs_nominal=binom_p_vs_nominal,
         alt_rate=alt_rate, alt_ci_wilson=list(alt_ci), alt_p_uppers=alt_ps,
         alt_fits=alt_fits,
         size_controlled=size_controlled, power_adequate=power_adequate, verdict=verdict,

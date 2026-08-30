@@ -1,49 +1,49 @@
 n=1487 n_train=1189 n_test=298 h_max=40 n_origins=258
-[on_range] ARFIMA(1,d,0) fit on TRAIN: phi=-0.3000 d=0.4175 sse=0.02390
+[on_range] ARFIMA(1,d,0) fit on TRAIN: phi=-0.3750 d=0.4175 sse=0.03286
 [on_range] AR(1) fit on TRAIN: c=3.2224 phi=0.3999
-[rth_range] ARFIMA(1,d,0) fit on TRAIN: phi=-0.3000 d=0.4379 sse=0.03890
+[rth_range] ARFIMA(1,d,0) fit on TRAIN: phi=-0.1500 d=0.3971 sse=0.01606
 [rth_range] AR(1) fit on TRAIN: c=3.1151 phi=0.4188
 VAR(20) fit on TRAIN (raw log-range): resid max|ACF| lag1-5 = 0.0084 (whitening check, informational)
 
 ====================================================================================================
 channel       h     model         MSE   R2_vs_naive   DM_vs_ar1     p1s   DM_vs_var     p1s
-on_range      1    arfima     0.24507        0.1917      -2.731   0.003      -1.199   0.115
+on_range      1    arfima     0.25124        0.1713      -2.163   0.015      -0.463   0.322
 on_range      1       ar1     0.29031        0.0425
 on_range      1     var20     0.25562        0.1569
 on_range      1     naive     0.30319        0.0000
-on_range      5    arfima     0.28613        0.1089      -3.053   0.001      -1.607   0.054
+on_range      5    arfima     0.28633        0.1083      -3.058   0.001      -1.579   0.057
 on_range      5       ar1     0.38583       -0.2016
 on_range      5     var20     0.30358        0.0546
 on_range      5     naive     0.32110        0.0000
-on_range     10    arfima     0.29077        0.1100      -2.930   0.002      -1.575   0.058
+on_range     10    arfima     0.29057        0.1106      -2.943   0.002      -1.592   0.056
 on_range     10       ar1     0.39928       -0.2222
 on_range     10     var20     0.31083        0.0486
 on_range     10     naive     0.32670        0.0000
-on_range     20    arfima     0.30628        0.1160      -2.260   0.012      -1.413   0.079
+on_range     20    arfima     0.30627        0.1160      -2.260   0.012      -1.413   0.079
 on_range     20       ar1     0.39968       -0.1536
 on_range     20     var20     0.32268        0.0686
 on_range     20     naive     0.34647        0.0000
-on_range     40    arfima     0.36738        0.0095      -2.023   0.022      -1.710   0.044
+on_range     40    arfima     0.36732        0.0097      -2.023   0.022      -1.712   0.043
 on_range     40       ar1     0.49441       -0.3329
 on_range     40     var20     0.42502       -0.1458
 on_range     40     naive     0.37092        0.0000
-rth_range     1    arfima     0.19377        0.2179      -1.971   0.024       1.513   0.935
+rth_range     1    arfima     0.19044        0.2314      -2.664   0.004       0.811   0.791
 rth_range     1       ar1     0.22252        0.1019
 rth_range     1     var20     0.18647        0.2474
 rth_range     1     naive     0.24777        0.0000
-rth_range     5    arfima     0.22397        0.1444      -2.595   0.005      -0.020   0.492
+rth_range     5    arfima     0.22317        0.1474      -2.771   0.003      -0.164   0.435
 rth_range     5       ar1     0.28966       -0.1066
 rth_range     5     var20     0.22407        0.1440
 rth_range     5     naive     0.26177        0.0000
-rth_range    10    arfima     0.22382        0.1540      -3.107   0.001      -0.308   0.379
+rth_range    10    arfima     0.22470        0.1506      -3.198   0.001      -0.174   0.431
 rth_range    10       ar1     0.29960       -0.1325
 rth_range    10     var20     0.22575        0.1467
 rth_range    10     naive     0.26455        0.0000
-rth_range    20    arfima     0.23650        0.1604      -2.212   0.013      -0.527   0.299
+rth_range    20    arfima     0.23762        0.1564      -2.283   0.011      -0.430   0.334
 rth_range    20       ar1     0.30137       -0.0699
 rth_range    20     var20     0.24132        0.1433
 rth_range    20     naive     0.28168        0.0000
-rth_range    40    arfima     0.30184        0.0757      -2.041   0.021      -1.640   0.051
+rth_range    40    arfima     0.30495        0.0662      -2.088   0.018      -1.678   0.047
 rth_range    40       ar1     0.38957       -0.1929
 rth_range    40     var20     0.33789       -0.0347
 rth_range    40     naive     0.32656        0.0000
@@ -51,9 +51,9 @@ rth_range    40     naive     0.32656        0.0000
 ====================================================================================================
 PRE-COMMITTED MODEL-ADEQUACY CRITERION EVALUATION (h in {20,40}, both channels)
   [on_range] h=20: R2_vs_naive=0.1160 (need >0.03: True) | beats AR(1) p=0.012 (True) | beats VAR20 p=0.079 (True) -> CLEARS=True
-  [on_range] h=40: R2_vs_naive=0.0095 (need >0.03: False) | beats AR(1) p=0.022 (True) | beats VAR20 p=0.044 (True) -> CLEARS=False
-  [rth_range] h=20: R2_vs_naive=0.1604 (need >0.03: True) | beats AR(1) p=0.013 (True) | beats VAR20 p=0.299 (False) -> CLEARS=False
-  [rth_range] h=40: R2_vs_naive=0.0757 (need >0.03: True) | beats AR(1) p=0.021 (True) | beats VAR20 p=0.051 (True) -> CLEARS=True
+  [on_range] h=40: R2_vs_naive=0.0097 (need >0.03: False) | beats AR(1) p=0.022 (True) | beats VAR20 p=0.043 (True) -> CLEARS=False
+  [rth_range] h=20: R2_vs_naive=0.1564 (need >0.03: True) | beats AR(1) p=0.011 (True) | beats VAR20 p=0.334 (False) -> CLEARS=False
+  [rth_range] h=40: R2_vs_naive=0.0662 (need >0.03: True) | beats AR(1) p=0.018 (True) | beats VAR20 p=0.047 (True) -> CLEARS=True
 
 OVERALL VERDICT: MODEL ADEQUACY DOES NOT CLEAR via remedy 1 (OOS forecast evaluation) -- proceed to remedy 2 or disclose
 
