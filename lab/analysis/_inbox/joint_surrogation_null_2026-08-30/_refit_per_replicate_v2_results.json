@@ -836,7 +836,7 @@
   ],
   "size_controlled": false,
   "power_adequate": false,
-  "verdict": "SIZE/POWER GATE DOES NOT CLEAR -- pre-registered CI-width criterion not met (insufficient precision to certify size control at this N; the point estimate is NOT statistically distinguishable from nominal, see binom_p_vs_nominal)",
+  "verdict": "SIZE/POWER GATE DOES NOT CLEAR -- POINT-ESTIMATE FAILURE -- null_rate=0.260 is significantly above nominal 5% (one-sided exact binomial p=7.52e-07), not merely a wide-CI/insufficient-precision outcome; power_adequate also False (alt-null gap 0.160 < 0.25)",
   "comparison": {
     "fixed_params_original": {
       "null": 0.05,

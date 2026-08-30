@@ -359,7 +359,13 @@ def main():
     n_train = int(n * TRAIN_FRAC)
     n_test = n - n_train
     h_max = max(HORIZONS)
-    n_origins = n_test - h_max   # last scorable origin must leave room for the longest horizon
+    # CORRECTED (Codex review, PR #225 fourth pass): an origin at relative
+    # test-window offset k needs target index origin+h_max-1 <= n-1, i.e.
+    # k <= n_test-h_max -- so k=0..n_test-h_max (inclusive) are ALL
+    # scorable, giving n_test-h_max+1 valid origins, not n_test-h_max. The
+    # prior `n_test - h_max` silently dropped the single longest-available
+    # origin (verified: 298-40=258 vs the correct 259). Fixed with +1.
+    n_origins = n_test - h_max + 1   # last scorable origin must leave room for the longest horizon
     print(f"n={n} n_train={n_train} n_test={n_test} h_max={h_max} n_origins={n_origins}")
     assert n_origins > 50, "test window too short for the longest horizon"
 

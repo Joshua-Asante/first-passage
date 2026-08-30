@@ -263,10 +263,33 @@ def main():
 
     size_controlled = null_rate <= 0.10 and null_ci[1] <= 0.20
     power_adequate = (alt_rate - null_rate) >= 0.25
-    verdict = "SIZE/POWER GATE CLEARS" if (size_controlled and power_adequate) else \
-        ("SIZE/POWER GATE DOES NOT CLEAR -- pre-registered CI-width criterion not met "
-         "(insufficient precision to certify size control at this N; the point estimate "
-         "is NOT statistically distinguishable from nominal, see binom_p_vs_nominal)")
+    # CORRECTED (Codex review, PR #225 fourth pass): this message previously
+    # hardcoded "the point estimate is NOT statistically distinguishable
+    # from nominal" unconditionally in the failure branch -- true when this
+    # comment was first written (5/50, p=0.104), but the truncation-mismatch
+    # fix (finding #1) moved the point estimate to 13/50, where
+    # binom_p_vs_nominal is highly significant (~7.5e-7) -- the committed
+    # log/JSON was asserting the OPPOSITE of what binom_p_vs_nominal itself
+    # says on the same run, a genuine self-contradiction. FIXED: the
+    # message is now constructed FROM binom_p_vs_nominal and distinguishes
+    # a point-estimate failure (the rate itself is significantly above
+    # nominal) from a pure CI-width failure (the rate is plausible but the
+    # interval is too wide to certify) -- these are different findings and
+    # must not share one static sentence.
+    if not (size_controlled and power_adequate):
+        if binom_p_vs_nominal <= 0.05:
+            reason = (f"POINT-ESTIMATE FAILURE -- null_rate={null_rate:.3f} is significantly above "
+                      f"nominal 5% (one-sided exact binomial p={binom_p_vs_nominal:.2e}), not merely "
+                      f"a wide-CI/insufficient-precision outcome")
+        else:
+            reason = (f"CI-WIDTH FAILURE -- null_rate={null_rate:.3f} is not itself significantly "
+                      f"above nominal (binomial p={binom_p_vs_nominal:.4f}), but the CI is too wide "
+                      f"to certify size control at this N")
+        if not power_adequate:
+            reason += f"; power_adequate also False (alt-null gap {alt_rate - null_rate:.3f} < 0.25)"
+        verdict = f"SIZE/POWER GATE DOES NOT CLEAR -- {reason}"
+    else:
+        verdict = "SIZE/POWER GATE CLEARS"
     print(f"\nsize_controlled (null_rate<=0.10 AND CI_hi<=0.20): {size_controlled}")
     print(f"power_adequate (alt_rate - null_rate >= 0.25): {power_adequate}")
     print(f"One-sided exact binomial test, null_rate vs nominal 0.05: p={binom_p_vs_nominal:.4f} "

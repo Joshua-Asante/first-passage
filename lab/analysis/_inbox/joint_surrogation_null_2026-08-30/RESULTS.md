@@ -1016,3 +1016,45 @@ python _refit_per_replicate_positive_control_v2.py
 # Expected: null_rate=0.260 (Wilson CI [0.159,0.396]), alt_rate=0.420, binom_p_vs_nominal≈0.0000,
 # size_controlled=False, power_adequate=False -- VERDICT: SIZE/POWER GATE DOES NOT CLEAR
 ```
+
+## Round 4, fourth correction pass — Codex review (PR #225, fourth round): 2 minor findings,
+both fixed; numbers unchanged, disposition unchanged
+
+A fourth Codex review pass, on the commit carrying the third correction pass above, found 2
+lower-severity issues in code the third pass touched. Both verified and fixed; neither changes
+any reported number or the round's disposition.
+
+**Finding P (P2) — the size/power script's failure-branch verdict message was stale and
+self-contradicting.** The message hardcoded "the point estimate is NOT statistically
+distinguishable from nominal" unconditionally whenever the gate failed — true when first written
+(5/50, p=0.104), but finding #1's truncation fix had since moved the point estimate to 13/50,
+where `binom_p_vs_nominal` (computed and printed correctly elsewhere in the same run) is highly
+significant (~7.5×10⁻⁷). The committed log/JSON was asserting the opposite of what its own
+`binom_p_vs_nominal` field said. **Fixed**: the verdict string is now constructed FROM
+`binom_p_vs_nominal` and explicitly distinguishes a POINT-ESTIMATE failure (the rate itself is
+significantly above nominal) from a CI-WIDTH failure (the rate is plausible but the interval is
+too wide to certify) — the current run correctly reads "POINT-ESTIMATE FAILURE... p=7.52e-07."
+
+**Finding Q (P3) — an off-by-one silently dropped the single longest-available forecast
+origin.** `oos_forecast_evaluation.py` computed `n_origins = n_test - h_max`, but an origin at
+relative offset k is scorable whenever `k <= n_test - h_max` (inclusive) — giving
+`n_test - h_max + 1` valid origins (259 for this panel), not 258. **Fixed** with `+1`; re-run
+confirms the near-miss conclusion is unchanged (both channels still clear at a different horizon
+only, never simultaneously).
+
+**Net effect: no numbers or disposition changed** — the size/power re-run reproduces byte-identical
+null=26%/alt=42% (seeds are deterministic; only the verdict TEXT was wrong, not the underlying
+computation), and the OOS forecast's one additional origin does not move any qualitative
+conclusion. Included for completeness and artifact integrity, not because either finding was
+load-bearing.
+
+```bash
+# Reproduce the corrected verdict message (numbers identical to the third-pass run)
+python _refit_per_replicate_positive_control_v2.py
+# Expected: VERDICT text now reads "POINT-ESTIMATE FAILURE... p=7.52e-07", consistent with the
+# printed binom_p_vs_nominal (previously self-contradictory)
+
+# Reproduce the corrected origin count
+python oos_forecast_evaluation.py
+# Expected: n_origins=259 (was 258); near-miss conclusion unchanged
+```
