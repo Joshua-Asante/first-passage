@@ -638,6 +638,26 @@ def _require_cost_law(args):
     }
 
 
+def _require_int_field(value, label: str) -> int:
+    """Reject a fractional numeric field instead of silently truncating it.
+
+    ``int(10000.5)`` == ``10000`` with no error -- a fractional params.T or
+    window length would otherwise be silently coerced, leaving the manifest's
+    own recorded params.T mismatched against the truncated value the K
+    cross-check actually validated (root-cause finding 2026-08-29: the
+    cross-check exists precisely to make K a derivable ground truth, which a
+    silent coercion undermines the same way an unverified self-report would).
+    """
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        sys.exit(f"ABORT: {label} must be an integer for the stumpy K cross-check.")
+    if isinstance(value, float) and not value.is_integer():
+        sys.exit(
+            f"ABORT: {label} must be an integer for the stumpy K cross-check "
+            f"(got {value!r}, not truncating)."
+        )
+    return int(value)
+
+
 def _require_stumpy_k_check(args, params: str):
     """Optional STUMPY/matrix-profile K cross-check (root-cause finding 2026-08-29).
 
@@ -667,14 +687,11 @@ def _require_stumpy_k_check(args, params: str):
         return None
     if not isinstance(parsed, dict) or "T" not in parsed:
         return None
-    try:
-        t_bars = int(parsed["T"])
-    except (TypeError, ValueError):
-        sys.exit("ABORT: params.T must be an integer IS bar count for the stumpy K cross-check.")
+    t_bars = _require_int_field(parsed["T"], "params.T")
     windows_raw = parsed.get("windows", DEFAULT_WINDOWS)
     try:
-        windows = tuple(int(w) for w in windows_raw)
-    except (TypeError, ValueError):
+        windows = tuple(_require_int_field(w, "params.windows entry") for w in windows_raw)
+    except TypeError:
         sys.exit("ABORT: params.windows must be a list of integer window lengths.")
     try:
         bracket = compute_k_bracket(t_bars, windows)
@@ -804,6 +821,13 @@ def _resolve_search_log(args):
     Presence-only check, same posture as the reachability attestation -- this
     cannot verify the log is complete or truthful, only that a citable trace
     exists to audit against.
+
+    The recorded path is normalized to repo-relative (cwd-independent, same
+    convention as the manifest's own location) -- a raw caller-supplied path
+    (relative to some other cwd, or an external absolute path like
+    /tmp/restarts.json) would leave a regret-audit run from the repo root or
+    a fresh clone unable to open the very artifact this feature exists to
+    preserve. --search-log must therefore name a file already inside the repo.
     """
     path = getattr(args, "search_log", None)
     if path is None:
@@ -811,6 +835,17 @@ def _resolve_search_log(args):
     p = Path(path)
     if not p.exists() or not p.is_file():
         sys.exit(f"ABORT: --search-log {path}: file not found.")
+    resolved = p.resolve()
+    try:
+        repo_relative = resolved.relative_to(_REPO_ROOT).as_posix()
+    except ValueError:
+        sys.exit(
+            f"ABORT: --search-log {path} resolves to {resolved}, outside the "
+            f"repo root {_REPO_ROOT}. A search-log artifact must live inside "
+            "the repo so a later regret-audit (from the repo root or a fresh "
+            "clone) can still open it -- an external or transient path "
+            "(e.g. /tmp/restarts.json) is not portable enough to record."
+        )
     text = p.read_text(encoding="utf-8")
     if not text.strip():
         sys.exit(f"ABORT: --search-log {path}: file is empty.")
@@ -821,7 +856,7 @@ def _resolve_search_log(args):
             entry_count = len(parsed)
     except json.JSONDecodeError:
         pass
-    return {"path": str(path), "entry_count": entry_count}
+    return {"path": repo_relative, "entry_count": entry_count}
 
 
 def close_run(args):

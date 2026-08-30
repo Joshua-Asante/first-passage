@@ -10,6 +10,7 @@ do not force ``dry_run=false``; ledger append lands when M1 is ``RESOLVED``.
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal, TypedDict
@@ -206,7 +207,18 @@ def validate_promotion_packet(
                 reasons.append(f"discovery_run_id_unbacked:{','.join(ledger_result.reasons)}")
             else:
                 k = ledger_result.manifest["K"]
-                floor = floor_at_k(int(k))
+                # Deep-lane manifests carry their own confirm_years-conditioned
+                # floor in deep_admission (register_search's own charter §2.2
+                # computation) -- floor_at_k's default 6.5-year assumption
+                # understates the true hurdle for a shorter confirm horizon
+                # (e.g. K=10 at confirm_years=3.25 -> floor 1.79, not the
+                # default-years 1.265). Reuse the manifest's own recorded
+                # value rather than recomputing with the wrong horizon.
+                deep_admission = ledger_result.manifest.get("deep_admission")
+                if isinstance(deep_admission, dict) and "floor_at_k" in deep_admission:
+                    floor = deep_admission["floor_at_k"]
+                else:
+                    floor = floor_at_k(int(k))
                 if floor > CAP:
                     required_dsr_floor = floor
 
@@ -372,7 +384,15 @@ def _check_k_conditional_floor(attestations: list[Any], required_floor: float) -
     reasons: list[str] = []
     for att in dsr_attestations:
         hurdle = att.get("hurdle_value")
-        if not isinstance(hurdle, (int, float)) or hurdle < required_floor - 1e-9:
+        # NaN/inf pass `isinstance(hurdle, (int, float))` and `hurdle < x` is
+        # always False for NaN -- both would otherwise sail through this check
+        # unrejected, satisfying the mandatory floor without declaring a real
+        # hurdle. math.isfinite rejects NaN, +inf, and -inf alike.
+        if (
+            not isinstance(hurdle, (int, float))
+            or not math.isfinite(hurdle)
+            or hurdle < required_floor - 1e-9
+        ):
             reasons.append(
                 f"discovery_run_id_k_conditional_floor_understated:"
                 f"{hurdle!r}:{required_floor:.4f}"

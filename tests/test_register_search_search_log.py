@@ -18,6 +18,9 @@ from discovery import register_search as rs
 def ledger(tmp_path, monkeypatch):
     d = tmp_path / "discovery_manifests"
     monkeypatch.setattr(rs, "LEDGER", d)
+    # --search-log now requires a repo-contained path (portability fix); treat
+    # tmp_path as "the repo" for these fixtures so they stay outside the real one.
+    monkeypatch.setattr(rs, "_REPO_ROOT", tmp_path)
     return d
 
 
@@ -118,7 +121,8 @@ def test_search_log_json_list_records_path_and_entry_count(ledger, tmp_path):
     rs.close_run(_close_args(pvalues_file=str(pv), search_log=str(log)))
 
     manifest = json.loads((ledger / "test_run.json").read_text(encoding="utf-8"))
-    assert manifest["search_log"]["path"] == str(log)
+    # Stored repo-relative (portability fix), not the raw caller-supplied path.
+    assert manifest["search_log"]["path"] == "restarts.json"
     assert manifest["search_log"]["entry_count"] == 3
 
 
@@ -132,8 +136,26 @@ def test_search_log_non_json_prose_records_path_with_no_entry_count(ledger, tmp_
     rs.close_run(_close_args(pvalues_file=str(pv), search_log=str(log)))
 
     manifest = json.loads((ledger / "test_run.json").read_text(encoding="utf-8"))
-    assert manifest["search_log"]["path"] == str(log)
+    assert manifest["search_log"]["path"] == "restarts.txt"
     assert manifest["search_log"]["entry_count"] is None
+
+
+def test_search_log_outside_repo_root_aborts_without_write(ledger, tmp_path):
+    """A real, non-empty file that resolves outside the repo root is refused
+    -- an external/transient path (e.g. /tmp/restarts.json) would leave a
+    later regret-audit run from the repo root or a fresh clone unable to
+    open the artifact this feature exists to preserve."""
+    _open_blind(ledger)
+    before = (ledger / "test_run.json").read_text(encoding="utf-8")
+    pv = tmp_path / "pvals.csv"
+    pv.write_text("cand_a,0.001\n", encoding="utf-8")
+    outside = tmp_path.parent / f"{tmp_path.name}-outside-search-log.json"
+    outside.write_text(json.dumps([{"seed": 1}]), encoding="utf-8")
+
+    with pytest.raises(SystemExit) as exc:
+        rs.close_run(_close_args(pvalues_file=str(pv), search_log=str(outside)))
+    assert "outside the repo root" in str(exc.value)
+    assert (ledger / "test_run.json").read_text(encoding="utf-8") == before
 
 
 def test_search_log_recorded_on_operator_stopped_closure(ledger, tmp_path):

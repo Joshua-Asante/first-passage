@@ -140,6 +140,38 @@ def test_stumpy_mismatched_k_aborts():
     assert str(_EXPECTED_K) in str(exc.value)
 
 
+def test_stumpy_fractional_t_rejected_not_truncated():
+    """int(10000.5) == 10000 silently -- params.T=10000.5 must abort, not
+    silently validate K against the truncated 10000 (Codex review, PR #218)."""
+    with pytest.raises(SystemExit) as exc:
+        register_search._require_stumpy_k_check(
+            _open_args(tool="stumpy", search_space_size=_EXPECTED_K),
+            json.dumps({"T": _T + 0.5}),
+        )
+    assert "must be an integer" in str(exc.value)
+    assert "not truncating" in str(exc.value)
+
+
+def test_stumpy_fractional_window_rejected_not_truncated():
+    with pytest.raises(SystemExit) as exc:
+        register_search._require_stumpy_k_check(
+            _open_args(tool="stumpy", search_space_size=_EXPECTED_K),
+            json.dumps({"T": _T, "windows": [30.5, 60, 90]}),
+        )
+    assert "must be an integer" in str(exc.value)
+    assert "not truncating" in str(exc.value)
+
+
+def test_stumpy_integer_valued_float_t_accepted():
+    """10000.0 is integer-valued -- not fractional -- so it's still accepted."""
+    result = register_search._require_stumpy_k_check(
+        _open_args(tool="stumpy", search_space_size=_EXPECTED_K),
+        json.dumps({"T": float(_T)}),
+    )
+    assert result is not None
+    assert result["k_dsr"] == _EXPECTED_K
+
+
 def test_stumpy_custom_windows_respected():
     windows = (15, 45)
     expected = compute_k_bracket(_T, windows).k_dsr
