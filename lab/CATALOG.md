@@ -173,6 +173,7 @@ documents the camp boundary for humans/tools.
 | rangestate_corrected_2026-08 | _inbox | ACTIVE | yes | Official corrected-null re-score: S1a (GC) NULL (L2, L4); S1b (CL) SIGNAL-GENERIC at the 69th pct of its linear-ACF band | lab/analysis/_inbox/rangestate_corrected_2026-08/ | — |
 | rangestate_gc_2026-08 | _inbox | NULL | yes | `NULL`** (per the frozen §3 gate — limb `ci_lb` failed; | lab/analysis/_inbox/rangestate_gc_2026-08/ | — |
 | rangestate_mcl_2026-08 | _inbox | ACTIVE | yes | SIGNAL-GENERIC under the corrected battery: canon-attributed vol clustering (69th pct); not a mechanism and no conditioner license | lab/analysis/_inbox/rangestate_mcl_2026-08/ | — |
+| rangexfer_byyear_l4_2026-08-30 | _inbox | ACTIVE | yes | Q-RANGEXFER-1's L4 (by-year) presence limb, all 5 hypotheses: N_valid<7 on all five (AMBIGUOUS), confirming the pre-registration's own ex-ante prediction — even a fully certified Phase 1 design cannot yield RESOLVED for any of them, only AMBIGUOUS-HOLD, at this panel length | lab/analysis/_inbox/rangexfer_byyear_l4_2026-08-30/ | — |
 
 ## Archived
 
