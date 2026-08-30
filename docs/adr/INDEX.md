@@ -128,6 +128,7 @@
 | 2026-08-29-clv-autocorrelation-admission-route-scope.md | Accepted | 2026-08-29 | none | ratified 2026-08-29, withdrawn same day after a post-ratification review surfaced a real error in 2-B's Route 1 analysis, corrected 2026-08-30 (PR #209), **re-ratified 2026-08-30** ("I'll go ahead and re-ratify the md file"). See Change history for the full sequence. |
 | 2026-08-30-candidate-contract.md | Proposed | 2026-08-30 | none | Proposed |
 | 2026-08-30-channel-liveness-gate.md | Proposed | 2026-08-30 | none | Proposed |
+| 2026-08-30-evaluation-order.md | Proposed | 2026-08-30 | none | Proposed |
 | 2026-08-30-terminal-taxonomy.md | Proposed | 2026-08-30 | none | Proposed |
 | 2026-08-30-tradeable-reachable-gate.md | Proposed | 2026-08-30 | none | Proposed |
 

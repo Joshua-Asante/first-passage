@@ -170,9 +170,9 @@ establish:
   citing the full failure history — never by routine re-admission.
 
 **Nonterminal dispositions (never registry entries, recorded on the contract only):**
-- `ROLE-BLOCKED` — a role/compliance state-drift failure (2026-08-30-candidate-contract.md's
-  evaluate-phase role re-check); re-screenable when the scoped account/book or its occupancy
-  changes.
+- `ROLE-BLOCKED` — a role/compliance state-drift failure
+  (`2026-08-30-evaluation-order.md`'s role state-drift re-check); re-screenable when the scoped
+  account/book or its occupancy changes.
 - `EVIDENCE-VOID` — contract-integrity mismatch, or ordinary coverage/power/holdout-integrity
   failure of the confirm run itself; exhausts the attempt, eligible for a fresh campaign with a
   fresh holdout, never a terminal registry destination.
