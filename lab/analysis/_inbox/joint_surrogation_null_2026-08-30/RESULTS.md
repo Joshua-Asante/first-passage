@@ -1,7 +1,24 @@
 # RESULTS — Phase 1 joint-surrogation null design exploration (Q-RANGEXFER-1 / Q-VOLREGIME-1)
 
-**Status (updated, Round 3 below): NOT RESOLVED to a certifiable standard, and materially further
-from resolved than Round 2's own headline claimed.** Seven total joint-surrogation constructions
+**Status (updated, Round 4 below — the ratified bounded round): STILL NOT RESOLVED, but for a
+narrower and different reason than Round 3 left it.** Round 4 ran the operator-ratified bounded
+round (2 candidate model-adequacy remedies + 1 production-grade size/power re-certification, hard
+stop regardless of outcome). **Model adequacy now CLEARS** for the first time in 4 rounds (a
+formal information-criterion/Whittle-likelihood comparison decisively picks ARFIMA(1,d,0) over
+every short-memory competitor on both channels, validated by two positive-control sanity checks).
+**Estimation-aware size/power still does NOT clear**: a production-grade (full calibration grid,
+N=50 replicates, ~7.3min) re-run of the refit-per-replicate check finds the null false-positive
+rate at 10% (95% CI [4.3%,21.4%]) against a nominal 5% — smaller than Round 3's alarming
+coarse-grid 25% (confirming Round 3's own prediction that the coarse grid overstated it), but
+still a real, non-trivial, unresolved-with-confidence inflation. Per the ratified mandate, both
+gates must clear together; they did not. **Hard stop fires as designed** — see Round 4 below for
+the full account and the disclosed §6 gate-table gap this raises for the operator. Prior-round
+status text (through Round 3) is retained below unedited, per this repo's own no-retroactive-edit
+discipline; only this header is updated to point at the current state.
+
+**Status (superseded by Round 4 above; Round 3 text retained verbatim below for provenance):**
+NOT RESOLVED to a certifiable standard, and materially further
+from resolved than Round 2's own headline claimed. Seven total joint-surrogation constructions
 have now been tried across three rounds (Round 1: linked-residual IAAFT, VAR(p), shared-start
 IAAFT; Round 2: CCC-GARCH/MEM, DCC-GARCH/MEM, ARFIMA long-memory+copula, nonparametric
 regime-block-bootstrap; Round 3: a Codex review pass that found and fixed 4 real code bugs and
@@ -452,4 +469,193 @@ python ../mnq_dailygeom_notice_2026-08-29/candidate3_volume_regime.py
 # Expected: ToD-matched range lift ~0.1911 (n_scored=135958, down slightly from 136020 pre-fix)
 python ../mnq_dailygeom_notice_2026-08-29/candidate3_stratified_rerun.py
 # Expected: strata lifts 0.2234/0.2739, both null-calibrated p=0.00025
+```
+
+## Round 4 — the ratified bounded round (2026-08-30 operator ratification: "I ratify the Phase
+1 approach"): 2 candidate model-adequacy remedies + 1 production-grade size/power
+re-certification. Model adequacy CLEARS for the first time in 4 rounds; size/power still does
+not. Hard stop fires as designed.
+
+Executed exactly the bounded scope the operator ratified (see `Q-RANGEXFER-1`'s own §11, the
+two rows immediately before this round): **reject** Round 2's "Live option A" (accept the
+ARFIMA-copula construction on theoretical grounds and check cross-model robustness instead of
+certifying adequacy); **pursue** "Live option B" — at most 2 candidate model-adequacy remedies,
+plus a mandatory, separately-owed, properly-powered/finer-grid/larger-N refit-per-replicate
+size/power re-certification (Round 3's own N=8/coarse-grid check was explicitly disclosed as a
+compute-limited stand-in, not a certified result) — hard stop regardless of outcome once both
+are attempted. All three pieces below ran to completion; no third remedy was attempted after
+remedy 2 cleared, and the positive control was not re-scaled further after its own run
+completed, per the hard-stop discipline itself (see "Why no further iteration" at the end of
+this section).
+
+### Remedy 1 — out-of-sample multi-horizon forecast evaluation (`oos_forecast_evaluation.py`)
+
+RESULTS.md's own prior recommendation named this as the first live option: "does the fitted
+model predict held-out range values better than a naive benchmark?" Built as a genuinely
+LEAKAGE-FREE, TRAIN/TEST-SPLIT check — the first design this session built that does not reuse
+the rank/normal-score transform every other module in this directory uses (that transform ranks
+the WHOLE array, train+test jointly, which would leak test-period information into training-
+period fitted values). Works instead in **log-range space** (log(on_range), log(rth_range)):
+strictly monotonic, per-observation, zero-leakage, and — verified directly, not assumed —
+Spearman/rank-based ACF is invariant to any monotonic transform, so log-range carries the
+identical own-series persistence SHAPE the rest of this directory's rank-ACF diagnostics measure.
+
+Design: fit ARFIMA(1,d,0) (via the existing SMM/`estimate_phi_d_simulated` machinery, re-run on
+TRAIN-ONLY data, J/burn=800, n_reps=4, 21×25 grid), AR(1) (OLS), VAR(20) (reusing
+`joint_iaaft.fit_var` verbatim — the SAME construction RESULTS.md's own Round 1 established as
+own-ACF-inadequate, used here as a built-in discriminating negative control, mirroring the
+"does the gate also pass VAR(20)?" smoking-gun test that falsified the Round 2 ensemble-percentile
+gate), and a naive trailing-60-day mean, all on the first 80% of the panel (n_train=1189,
+n_test=298). Forecast h in {1,5,10,20,40} trading days ahead via each model's own iterated
+linear recursion (a new ARFIMA AR(∞) truncated-filter forecast derivation, `ar_inf_pi_weights` —
+the standard Hosking-1981 fractional-differencing-operator recursion, hand-verified against the
+first two terms of the binomial expansion before use), fixed-parameter (no per-origin refitting —
+a disclosed simplification, not required for the question this remedy answers), scored via
+Diebold-Mariano tests (Newey-West/Bartlett HAC, lag=h-1) against each competitor.
+
+**Pre-committed criterion** (frozen in the script's own docstring before any number was
+computed): CLEARS if, at h∈{20,40}, on BOTH channels, ARFIMA's forecast R² vs naive exceeds
++0.03 AND a DM test shows ARFIMA beating BOTH AR(1) and VAR(20) at one-sided p<0.10.
+
+**Result — a real, informative, HONEST NEAR-MISS, not a clean pass:**
+
+| channel | h | R² vs naive | beats AR(1) (p) | beats VAR(20) (p) | clears? |
+|---|---|---|---|---|---|
+| on_range | 20 | 0.116 | yes (0.012) | yes (0.079) | **YES** |
+| on_range | 40 | 0.010 (fails >0.03) | yes (0.022) | yes (0.044) | no |
+| rth_range | 20 | 0.160 | yes (0.013) | no (0.299) | no |
+| rth_range | 40 | 0.076 | yes (0.021) | yes (0.051) | **YES** |
+
+ARFIMA(1,d,0) robustly and significantly out-forecasts AR(1) at **every** horizon on **both**
+channels (p≤0.024 throughout, h=1 through h=40) — strong, unambiguous evidence the long-memory
+structure captures real, exploitable persistence a short-memory alternative does not. Against
+VAR(20) specifically the picture is genuinely mixed and horizon-dependent: each channel clears
+the strict criterion at a DIFFERENT horizon (on_range at h=20, rth_range at h=40), never
+simultaneously at the SAME horizon, which is what the pre-registered criterion (as literally
+coded, before any result existed) actually required. **No threshold was loosened after seeing
+this** — the near-miss is reported exactly as the frozen criterion evaluates it: NOT CLEARED.
+Full table (all channels × all horizons × all models) in
+`oos_forecast_evaluation_results.json`.
+
+### Remedy 2 — formal information-criterion (AIC/BIC) comparison via Whittle likelihood
+(`information_criterion_comparison.py`)
+
+Built and run only because remedy 1 did not clear its own criterion — the second and, per the
+ratified bound, last permitted model-adequacy attempt this round. Verifies directly (Rule 0: "an
+absolute ACF-percentile check... cannot discriminate at this n" was Round 2's own claim about
+ACF-percentile checks specifically, not IC checks — untested territory, checked here rather than
+assumed to inherit the same defect) whether a genuinely different adequacy test — penalized
+in-sample fit quality via AIC/BIC, not an out-of-sample or ACF-shape check — discriminates.
+
+Design: Whittle (1953) frequency-domain approximate likelihood, computed UNIFORMLY for every
+candidate model (ARFIMA(1,d,0) via a genuine 2-D Whittle-MLE grid search over (phi,d), profiling
+out the innovation variance in closed form; AR(1)/AR(5)/AR(10)/AR(20) via fast OLS-fitted
+coefficients evaluated under the identical Whittle machinery) on the SAME TRAIN-only log-range
+series remedy 1 used. Univariate, per channel — the property in dispute (does a finite-order
+linear model reproduce the real series' own long-memory ACF shape) is an own-dynamics question,
+not a cross-channel one.
+
+**Machinery validated with two positive-control sanity checks BEFORE trusting the real-data
+run** (per Rule 0 / this repo's own standing discipline that a diagnostic must be shown
+discriminating, not just plausible): on true simulated AR(1) data (phi=0.6), the method correctly
+recovers AR(1) as BIC-best (BIC=-507.15) over AR(5)/(10)/(20) (correctly penalized for unneeded
+parameters) AND over ARFIMA (correctly estimates d̂≈0.001, no spurious long memory detected,
+BIC=-500.02, worse than the true model). On true simulated ARFIMA(1,-0.3,0.42) data, the method
+correctly recovers ARFIMA as BIC-best (BIC=-472.69) by a decisive ~21-point margin over the best
+AR competitor. **This machinery discriminates in both directions — exactly the property Round
+2's ACF-percentile gate lacked** (it passed the already-rejected VAR(20) construction).
+
+**Result on the real MNQ panel — CLEAN, DECISIVE PASS, both channels:**
+
+| channel | ARFIMA BIC | best AR(p) BIC (which p) | margin |
+|---|---|---|---|
+| on_range | **-1285.70** | -1257.90 (AR5) | 27.8 |
+| rth_range | **-1395.60** | -1367.70 (AR5) | 27.9 |
+
+ARFIMA(1,d,0) achieves the lowest BIC among all 5 candidates on BOTH channels, by a wide and
+consistent margin (AIC agrees: -1300.94/-1410.84 vs next-best -1288.38/-1398.19). **Model
+adequacy CLEARS via this remedy** — the pre-committed criterion (lowest BIC on both channels) is
+met cleanly, not marginally. Full table in `information_criterion_comparison_results.json`.
+
+### Mandatory size/power re-certification (`_refit_per_replicate_positive_control_v2.py`)
+
+Owed regardless of remedy 1/2's outcome, per the ratified mandate: Round 3's own
+refit-per-replicate check (null rate 25%, 2/8 replicates) was explicitly disclosed as a
+compute-limited, coarse-grid/small-N stand-in, not a certified result. This re-runs the
+IDENTICAL design (same generative model, same `score_min_stratified_lift` statistic, same
+`gen_synthetic` boost=0.4 alternative) at the **full production calibration grid** — J=1200,
+burn=1200, n_reps_calib=5, phi_grid 21pts, d_grid 25pts, IDENTICAL to `_fit_real_params.py`'s own
+real-data fit, not a new intermediate stand-in — and **N_REPS=50** per scenario (vs the original
+8), M_SURR=100 surrogates per replicate (vs 60). Timed empirically before committing to this
+scale (one replicate ≈4.3s on this machine, confirmed not compute-forced): total wall-clock
+438.2s (~7.3 min).
+
+**Result:**
+
+| | null rate | 95% Wilson CI | alt rate (boost=0.4) |
+|---|---|---|---|
+| Fixed-params original (N=20, known-true) | 0.050 | — | 0.500 |
+| Coarse refit-per-replicate (Round 3, N=8) | 0.250 | wide (small N) | 0.500 |
+| **Production refit-per-replicate (this, N=50)** | **0.100** | **[0.043, 0.214]** | **0.460 [0.330,0.596]** |
+
+Round 3's own prediction — "the coarse grid likely overstates the true production-grade
+inflation... a finer grid should estimate (phi,d) more precisely, reducing estimation noise" —
+is **confirmed**: the point estimate drops from an alarming 25% to 10%, less than half. But
+**10% is still a real, meaningful 2× inflation over the nominal 5%** (not a rounding artifact —
+a hypothesis test that actually has a 10% chance of a false positive at a nominal 5% level is
+not fit to certify a real finding on), and the 95% CI's upper bound (21.4%) still cannot rule out
+inflation as severe as Round 3's own coarse estimate. Power remains clearly adequate (46% vs 10%
+null, comfortably clearing the ≥25-point-margin bar every round has used). **The pre-committed
+criterion (null_rate≤0.10 AND CI-upper≤0.20) does NOT clear** — the point estimate lands exactly
+on its own boundary and the CI-width condition fails outright. This is a doubly-grounded
+non-clearance: real by the point estimate alone (2× nominal), and unresolved-with-confidence by
+the interval.
+
+### Overall disposition — HARD STOP, exactly as the ratified mandate specified in advance
+
+**Model adequacy: CLEARS** (remedy 2, decisively — the first time any of 4 rounds has certified
+this). **Estimation-aware size/power: DOES NOT CLEAR** (production-grade re-certification, a real
+~2× Type-I inflation that a wider CI cannot rule out being worse). Per the ratified mandate,
+**both gates must clear for this round to count as "cleared"; passing one and not the other is
+not a partial win** — it is the same "not resolved" status Rounds 1-3 already recorded, though
+this round narrows WHERE the remaining problem lives: it is now isolated to the estimation step
+specifically (fitting (phi,d) from finite, previously-unseen data inflates the null's own
+rejection rate), not to whether ARFIMA(1,d,0) is the right model class (now independently
+validated by a genuinely discriminating IC test).
+
+**Why no further iteration (both the "at most 2 remedies" and the "don't rescale the positive
+control" boundaries were treated as real, not advisory):** remedy 2 already cleared model
+adequacy cleanly — a third remedy would not change that gate's status and was not attempted.
+Scaling the positive control further (e.g. N=200+ to narrow the CI) was considered and
+explicitly NOT done: the failure is already doubly-grounded (a 2× point-estimate inflation, not
+merely CI width), and chasing a larger N specifically because the first properly-powered attempt
+did not clear is indistinguishable from the "keep iterating hoping for a passing number"
+behavior the hard-stop discipline (and this repo's own outcome-conditional-retune prohibition)
+exists to prevent.
+
+**This is the ratified, bounded outcome as designed, not a failure of this session.** Per Codex's
+own PR #223 correction to the prior round's proposal (quoted in `Q-RANGEXFER-1`'s own §11):
+`AMBIGUOUS-HOLD` is defined only for "presence limbs pass, by-year floor unresolvable because
+N_valid<7" — this outcome (a design that clears one gate and not the other, having exhausted its
+bounded remedy budget) is neither that nor a clean `FALSIFIED` (no design has run through
+Phase 3's escalation ladder to VOID). Per the ratified Hard Stop: this is disclosed here and in
+`Q-RANGEXFER-1`'s own §11 as a genuine gap in that brief's frozen §6 gate table, raised to the
+operator for a fresh gate amendment — not force-fit into an existing verdict label the frozen
+table does not define for this situation.
+
+```bash
+# Reproduce the OOS forecast evaluation (Remedy 1) -- near-miss, ~5s
+python oos_forecast_evaluation.py
+# Expected: on_range clears at h=20 only, rth_range clears at h=40 only -- no shared horizon,
+# OVERALL VERDICT: MODEL ADEQUACY DOES NOT CLEAR via remedy 1
+
+# Reproduce the IC/BIC comparison (Remedy 2) -- clean pass, ~10s
+python information_criterion_comparison.py
+# Expected: ARFIMA BIC-best on both channels (on_range -1285.70, rth_range -1395.60),
+# OVERALL VERDICT: MODEL ADEQUACY CLEARS
+
+# Reproduce the production-grade size/power re-certification -- ~7 min
+python _refit_per_replicate_positive_control_v2.py
+# Expected: null_rate=0.100 (Wilson CI [0.043,0.214]), alt_rate=0.460,
+# size_controlled=False, power_adequate=True, VERDICT: SIZE/POWER GATE DOES NOT CLEAR
 ```

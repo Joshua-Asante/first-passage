@@ -1,0 +1,34 @@
+n=1487 n_train=1189 (IDENTICAL train split to oos_forecast_evaluation.py)
+
+[on_range] n_train=1189 m_freqs=594
+  ARFIMA(1,d,0): phi=-0.150 d=0.366 -2logL=-1306.94 AIC=-1300.94 BIC=-1285.70
+  AR(1): -2logL=-1227.76 AIC=-1223.76 BIC=-1213.60
+  AR(5): -2logL=-1300.38 AIC=-1288.38 BIC=-1257.90
+  AR(10): -2logL=-1307.22 AIC=-1285.22 BIC=-1229.33
+  AR(20): -2logL=-1319.19 AIC=-1277.19 BIC=-1170.49
+
+[rth_range] n_train=1189 m_freqs=594
+  ARFIMA(1,d,0): phi=-0.175 d=0.391 -2logL=-1416.84 AIC=-1410.84 BIC=-1395.60
+  AR(1): -2logL=-1331.72 AIC=-1327.72 BIC=-1317.56
+  AR(5): -2logL=-1410.19 AIC=-1398.19 BIC=-1367.70
+  AR(10): -2logL=-1415.87 AIC=-1393.87 BIC=-1337.98
+  AR(20): -2logL=-1424.30 AIC=-1382.30 BIC=-1275.60
+
+==========================================================================================
+channel        model   k      -2logL         AIC         BIC   best_BIC?
+on_range      arfima   3    -1306.94    -1300.94    -1285.70    <-- BEST
+on_range         ar5   6    -1300.38    -1288.38    -1257.90            
+on_range        ar10  11    -1307.22    -1285.22    -1229.33            
+on_range         ar1   2    -1227.76    -1223.76    -1213.60            
+on_range        ar20  21    -1319.19    -1277.19    -1170.49            
+  [on_range] BIC-best model: arfima  (ARFIMA achieves lowest BIC: True)
+rth_range     arfima   3    -1416.84    -1410.84    -1395.60    <-- BEST
+rth_range        ar5   6    -1410.19    -1398.19    -1367.70            
+rth_range       ar10  11    -1415.87    -1393.87    -1337.98            
+rth_range        ar1   2    -1331.72    -1327.72    -1317.56            
+rth_range       ar20  21    -1424.30    -1382.30    -1275.60            
+  [rth_range] BIC-best model: arfima  (ARFIMA achieves lowest BIC: True)
+
+OVERALL VERDICT: MODEL ADEQUACY CLEARS (remedy 2: information-criterion comparison)
+
+Wrote information_criterion_comparison_results.json
