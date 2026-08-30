@@ -17,9 +17,13 @@ honest yet unable to produce anything evaluable.
 
 The Route B history is the clearest observed instance: its generate/confirm
 firewall was statistically careful, but none of four campaigns reached the
-confirm stage. The route was ultimately retired because its promotion design
-did not target a tradeable object and its own empirical falsifier therefore
-could not become reachable.
+confirm stage. The operator retired the route on its 0-for-4 lifetime record
+and a citation-drift incident it had already caused, "regardless of the
+un-tripped falsifier" (`docs/adr/2026-08-24-sourcing-phase-channel-retirement.md`
+§1) — not because the falsifier fired. In retrospect, the promotion design
+never targeted a tradeable object, so that falsifier could not have become
+reachable even had the route continued; that is a design lesson the
+retirement surfaced, not the retirement's stated cause.
 
 ## The tensions
 
@@ -74,8 +78,12 @@ map to such an object.
 
 This was not hypothetical in Route B. The four campaigns used a promotion floor
 around a correlation target whose implied move was much smaller than the
-round-trip cost and the required per-trade move. They returned
-`SHAPE-UNSCREENABLE`; no confirm stages ran. The later diagnosis required any
+round-trip cost and the required per-trade move. Their G0 EM1/EM2 attestations
+were `SHAPE-UNSCREENABLE` — a correlation-on-mid-return target is not itself a
+tradeable stop/target object — but that is a pre-registration attestation, not
+each campaign's disposition: the four closures actually recorded
+`VOID-COVERAGE`, `FALSIFIED`, `FALSIFIED`, and `AMBIGUOUS-HOLD`. No confirm
+stages ran in any of them. The later diagnosis required any
 future catalogue to start from a tradeable first-passage/stop-target object and
 derive its promotion floor from cost arithmetic. In other words, evaluation
 requirements must partially constrain generation up front, or the interface is
@@ -161,14 +169,14 @@ the generate/evaluate boundary smaller and more concrete.
 | Action | Current friction | Recommended change | What remains protected |
 |---|---|---|---|
 | **Delete** proxy-only promotion | A correlation or response statistic can win generation without defining a trade | Do not admit a generated candidate unless it already specifies signal, entry clock, stop, exit/target, holding horizon, and costed payoff unit | Exploratory proxy work may continue as diagnostics, but cannot consume a confirm holdout or claim candidate status |
-| **Delete** Route B as a reusable template | The route is retired, but its historical checklist can still look like a pattern to copy | Keep the dated record for provenance; exclude it from active templates and do not revive its G/C structure by renaming it | Historical integrity and the lessons from four failed campaigns |
+| **(Already enforced)** Route B excluded as a reusable template | The route is retired; a naive read of this note could imply exclusion from templates is still-open work | No new action: `docs/adr/2026-08-24-sourcing-phase-channel-retirement.md` §5 already forbids reopening the route informally or reviving its G/C structure by renaming, and `docs/methodology/avenue_a_generate_confirm.md` already carries a withdrawal banner excluding it from active use | Historical integrity and the lessons from four failed campaigns — already protected, not a pending recommendation |
 | **Merge** generation charter and admission manifest | G0, seed manifests, and later preregistrations can restate instrument, K, windows, costs, and feature definitions | Create one immutable candidate contract at generation open; later stages append results and hashes rather than copying fields | Pre-registration, auditability, and selection accounting |
-| **Merge** early economic gates | Cost reachability, payoff-shape pre-check, latency, and basic firm geometry can be separate stops over the same arithmetic | Use one `TRADEABLE-REACHABLE` pre-gate that computes all four from the candidate contract and returns typed failure reasons | Every underlying threshold remains sourced from its current owner |
-| **Simplify** operator approvals | Separate permission points can make the operator the throughput scheduler rather than the risk owner | Approve one campaign envelope up front: maximum spend, schemas, windows, K, and confirm attempts; require another GO only to exceed the envelope or cross into sandbox/capital | No unbudgeted spend and no autonomous risk addition |
-| **Simplify** evaluation order | Expensive robustness work can be scheduled before a candidate is economically viable | Run a minimum ordered battery: contract integrity → tradeable reachability → untouched confirm → temporal robustness → portfolio/venue fit | Later gates remain unchanged but run only for candidates capable of reaching them |
-| **Defer** portfolio composition | A candidate may be rejected early for book coordinates before it has an independently confirmed edge | Compute composition only after confirm, except for a cheap structural dominance pre-kill that is provably independent of edge | Variance dominance and firm-level aggregate constraints |
+| **Merge** early economic gates | Cost reachability, payoff-shape pre-check, latency, and basic firm geometry can be separate stops over the same arithmetic, and cost itself is already split between two unreconciled authorities (`strategy_harvest.md` Requirement 5 and `scripts/cost_geometry_pregate.py`) | Reconcile the cost-authority fork into one ruling first; only then compute a `TRADEABLE-REACHABLE` verdict from the candidate contract, sourcing the shape limb from prior win-rate/mean-win/mean-loss inputs the contract must freeze explicitly (or defer that limb, typed as unscored, until those inputs are measured) | Every underlying threshold remains sourced from its current owner once reconciled; no candidate is scored on a guessed payoff shape |
+| **Simplify** operator approvals | Separate permission points can make the operator the throughput scheduler rather than the risk owner | Approve one campaign envelope up front: maximum spend, schemas, windows, and K. Confirm attempts are not a spendable envelope item — they stay bound to the frozen, Bonferroni/Holm-adjusted multi-candidate confirm count set at G0, and any `VOID-*` result exhausts that attempt and requires a fresh campaign with a fresh holdout, never a retry inside the same envelope. Require another GO only to exceed the envelope or cross into sandbox/capital | No unbudgeted spend, no autonomous risk addition, and no silent multiplicity inflation from repeatedly consulting confirm data within one approved envelope |
+| **Simplify** evaluation order | Expensive robustness work can be scheduled before a candidate is economically viable | Run a minimum ordered battery: hard structural/compliance + variance-dominance pre-kill → contract integrity → tradeable reachability → untouched confirm (including temporal robustness) → remaining portfolio/venue fit | Later gates remain unchanged but run only for candidates capable of reaching them |
+| **Defer** portfolio composition | A candidate may be rejected early for book coordinates before it has an independently confirmed edge | Compute full composition scoring only after confirm, except for the edge-independent pre-kills that can close a candidate absolutely before confirm: variance dominance plus the hard structural/compliance screens (Product-Group/sign, cap, session, instrument-class — `docs/methodology/objective_composition_map.md:42-50` already requires these to run first) | Variance dominance, firm-level aggregate constraints, and all hard structural/compliance pre-kills — none deferred past confirm |
 | **Add one** channel-liveness gate | Candidate tests can be rigorous while the channel never produces a confirm | At channel open, freeze a maximum number of generation attempts or elapsed research sessions without a confirm; reaching it retires or redesigns the channel | Prevents indefinite honest-but-unproductive research |
-| **Use one** terminal taxonomy | `FALSIFIED`, `STOP`, `VOID`, shape failures, and venue failures can blur what was actually rejected | Emit one primary terminal class: `MARKET-NULL`, `EXPRESSION-FAIL`, `EVIDENCE-VOID`, `VENUE-FAIL`, or `CHANNEL-FAIL`, with existing detailed reason codes beneath it | No failed candidate is revived; the classification only improves routing |
+| **Use one** terminal taxonomy | `FALSIFIED`, `STOP`, `VOID`, shape failures, and venue failures can blur what was actually rejected | Before adopting new labels: map `MARKET-NULL`/`EXPRESSION-FAIL`/`EVIDENCE-VOID`/`VENUE-FAIL`/`CHANNEL-FAIL` losslessly onto the ratified 4-class WHY-rejected taxonomy (`docs/adr/2026-06-14-rejected-candidate-patterns.md`: edge-failure/portfolio-fit-tail/venue-cost-constraint/non-rediscovery) and the 3-register topology ruling (`docs/adr/2026-08-09-rejection-register-topology-and-bar-wiring.md` §D3); this is an amendment to both ADRs, not a routing-only relabeling, since the primary class controls add-back conditions and register ownership | No failed candidate is revived, and no candidate's add-back condition or owning register changes silently — the mapping is explicit and ADR-ratified before use |
 
 ### Proposed lean generate phase
 
@@ -177,9 +185,18 @@ the generate/evaluate boundary smaller and more concrete.
    predictive feature alone.
 2. **Freeze one candidate contract.** Record instrument, feature catalogue,
    entry/exit object, exploration and confirm windows, K, costs, schema ladder,
-   and the campaign envelope once.
-3. **Run the combined `TRADEABLE-REACHABLE` pre-gate.** Failures stop before a
-   data pull. Passing only licenses generation.
+   prior payoff-shape inputs (win-rate/mean-win/mean-loss estimate, or an
+   explicit flag deferring the shape limb until measured), and the campaign
+   envelope once.
+3. **Run the combined `TRADEABLE-REACHABLE` pre-gate, plus the existing
+   all-clause reachability attestation.** `TRADEABLE-REACHABLE` covers
+   cost/latency/shape/firm geometry once the cost-authority fork is
+   reconciled; it does not replace the HARV-lane/Stage-0 requirement that
+   every bundled confirm clause (power, placebo, and any other clause the
+   contract commits to) be simulated as reachable under a plausible-true
+   world before freeze — checking the economic gate alone missed exactly
+   this in Q-HARV-0's unreachable placebo clause. Failures in either gate
+   stop before a data pull. Passing both only licenses generation.
 4. **Explore within the envelope.** Score every declared cell and select at most
    the frozen confirm budget. No separate seed document is produced.
 5. **Apply the channel-liveness bound.** Too many empty generations retires the
@@ -191,17 +208,33 @@ ceremonies inside an already approved budget, and channels without an exit.
 
 ### Proposed lean evaluate phase
 
-1. **Contract-integrity check:** confirm that code/data hashes, K, selected cell,
+1. **Hard structural/compliance pre-kill:** before any holdout is consumed,
+   reject immediately a candidate that fails Product-Group/sign, cap, session,
+   or instrument-class rules, or that fails the cheap variance-dominance check
+   (`docs/methodology/objective_composition_map.md:42-50`,
+   `docs/adr/2026-07-20-stage8-variance-dominance-risk-neff-gate.md`). These are
+   edge-independent and decided before confirmation, not after.
+2. **Contract-integrity check:** confirm that code/data hashes, K, selected cell,
    and holdout match the frozen candidate contract.
-2. **One untouched confirm run:** produce `CONFIRMED`, `MARKET-NULL`, or
-   `EVIDENCE-VOID`; do not run alternative expressions on the holdout.
-3. **Temporal robustness only for confirmed candidates:** run the minimum frozen
-   temporal battery, with no new feature choice.
-4. **Portfolio and venue evaluation last:** score composition, activity,
-   drawdown, session/slot legality, and sizing only after an edge exists. A
+3. **One untouched confirm run per selected candidate:** for each candidate in
+   the frozen, multiplicity-adjusted confirm budget, produce a separately keyed
+   `CONFIRMED`, `MARKET-NULL`, `EXPRESSION-FAIL`, or `EVIDENCE-VOID`; do not run
+   alternative expressions on the holdout. `EXPRESSION-FAIL` applies when the
+   holdout rejects the specific entry/exit implementation without falsifying
+   the underlying mechanism; `MARKET-NULL` is reserved for the mechanism itself
+   failing.
+4. **Temporal robustness inside confirmation:** run the minimum frozen temporal
+   battery as part of the same confirm stage, per the canonical Stage 6
+   definition, with no new feature choice — not after a `CONFIRMED` verdict has
+   already been emitted. A candidate that fails temporal stability does not
+   carry a `CONFIRMED` status.
+5. **Portfolio and venue evaluation last:** score remaining composition,
+   activity, drawdown, and sizing — hard structural/compliance and session/slot
+   legality are already screened in step 1 — only after an edge exists. A
    failure here is `VENUE-FAIL`, not evidence that the market effect is false.
-5. **Single append-only disposition:** update the candidate contract with the
-   terminal class and detailed reason, then route once to reject, cold-store, or
+6. **Per-candidate append-only disposition:** for each selected candidate,
+   append its own separately keyed terminal class and detailed reason to the
+   candidate contract, then route it once to reject, cold-store, or
    productionization.
 
 This retains the untouched holdout, multiplicity accounting, cost realism,
