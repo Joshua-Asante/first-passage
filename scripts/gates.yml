@@ -355,3 +355,21 @@ gates:
       - python
       - scripts/check_falsifier_reachability.py
       - --stats
+
+  # Added 2026-08-30 (PR #223, K-correction audit findings): this checker
+  # sat unlooked-at for the entire time since PR #217 first implemented it
+  # (no STATE.md/SESSIONS.md follow-up, confirmed by direct grep) -- and a
+  # dedicated full-repo status sweep still undercounted its own live output
+  # by one row on the first pass (an INCREMENT-labeled notice the checker's
+  # then-GRADUATE-only detection couldn't see, fixed same PR). A report-only
+  # tool nobody is prompted to run reliably goes stale; wiring it here fixes
+  # that structurally rather than relying on someone remembering.
+  # `tier: always`, non-blocking: same reasoning as m1-tree-skew and
+  # falsifier-reachability-census above -- the script's own docstring states
+  # "Writes nothing. Exit code is always 0. Not a gate," confirmed by a
+  # direct run against this worktree (exit 0, 6 flagged / 10 scanned).
+  - id: notice-grade-k-correction
+    tier: always
+    cmd:
+      - python
+      - scripts/audit_notice_grade_k_correction.py
