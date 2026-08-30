@@ -1,10 +1,10 @@
-# Notice — MNQ M15 closing-location is weakly mean-reverting bar-to-bar (real but small; scope ruled, cost-law pre-screen owed)
+# Notice — MNQ M15 closing-location is weakly mean-reverting bar-to-bar (real but small; scope ruled, cost-law pre-screen run — DROP)
 
 **Notice ID:** N-2026-08-29-mnq-clv-autocorrelation
-**Observed:** 2026-08-29
+**Observed:** 2026-08-29; **cost-law pre-screen run 2026-08-30**
 **Author:** Claude Code
 **Source:** own statistical computation this session, candidate 5 of a pre-specified 5-candidate MNQ Notice-phase batch
-**Status:** `HELD until $0 cost-law pre-screen runs` (raised-bar admission-route scope resolved 2026-08-29 — see §4; no calendar date — see §5)
+**Status:** `DROP` (2026-08-30 — $0 cost-law pre-screen fails the floor cleanly; see §4/§5)
 **Lives in:** `docs/notes/notice/N-2026-08-29-mnq-clv-autocorrelation.md`
 
 ---
@@ -40,17 +40,21 @@ Close-location value CLV_t = (close_t − low_t)/(high_t − low_t) ∈ [0,1] sh
 
 ## §4 — Routing decision
 
-**HOLD.** Reason: the finding is real and well-powered, but the magnitude is small enough that its practical/tradeable relevance is unproven — rho≈−0.03 has not been converted into an economically meaningful statistic that would tell a future session whether authoring a full falsifiable H is worth the investigation cost. GRADUATE would commit to that cost before that question is answered; DROP would discard a statistically real, well-powered, directionally stable effect for no principled reason.
+**DROP (2026-08-30, superseding the original HOLD below — the $0 cost-law pre-screen this notice's own §5 named has now run).** Script: [`candidate5_clv_cost_screen.py`](../../../lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate5_clv_cost_screen.py). Design: unconditional whole-sample CLV_t deciles (P10=0.1134, P90=0.9091); forward 1-bar real return close_t→close_{t+1} in bp (not a CLV-to-CLV proxy); fade direction set by the data's own sign, not assumed. Result: top-decile lift −0.1470bp, bottom-decile lift +0.1333bp, combined implied gross edge **+0.1402 bp/event**, 95% block-bootstrap CI **[−0.0381, +0.3244]** (n_events=28,477, straddles 0) — against MNQ's own N6 hurdle (**3.01 bp**, already a 4× round-trip-cost figure, unit-comparable to a per-event round-trip directly — see the script's own docstring for why "bp/session" is a labeling artifact of the original momentum construct's 1×/day frequency, not a required frequency rescaling here). The implied edge is roughly 20× below the hurdle and its CI includes 0. **This clears ADR §4 D2** (pre-screen fails cleanly): DROP per that ADR, no Pre-Q authored.
+
+~~**HOLD** (original, struck 2026-08-30 by the pre-screen result above). Reason: the finding is real and well-powered, but the magnitude is small enough that its practical/tradeable relevance is unproven — rho≈−0.03 has not been converted into an economically meaningful statistic that would tell a future session whether authoring a full falsifiable H is worth the investigation cost. GRADUATE would commit to that cost before that question is answered; DROP would discard a statistically real, well-powered, directionally stable effect for no principled reason.~~
 
 **Admission-route status — resolved by [`docs/adr/2026-08-29-clv-autocorrelation-admission-route-scope.md`](../../adr/2026-08-29-clv-autocorrelation-admission-route-scope.md) (`Proposed`, pending re-ratification after a same-day correction — see that ADR's Change history), superseding the "genuinely unclear" framing this notice originally used.** The ruling: a bar-shape statistic with no entry rule attached does not trigger the raised bar's admission gate at all — that gate fires at Pre-Q admission for an actual directional-timing *candidate*, which this is not yet. If/when converted into an entry construct: **Route 1 is plausibly open** — CLV's mechanism (bar-shape mean-reversion) sits outside the raised bar's three specifically-mapped cost-re-derivation axes (price / instrument-selection / hold-time), not merely outside the 2026-08-10 ADR's one temporal-selectivity worked example, and this openness is independent of and in addition to Route 3; **Route 2 does not apply** (same OHLCV modality); **Route 3 (beat `ORB-MNQ-1` net-of-cost, not merely clear the cost floor) remains separately available.** Route 1 eligibility still requires full G0 discipline (adversarial review, `K_intrinsic`, the F2 guard) — it is a scope reading, not a clearance. The cheap $0 cost-law pre-screen named in §5(b) below is the concrete next step before any Pre-Q either way, per that ADR's 2-C.
 
 ---
 
-## §5 — If HOLD: re-check trigger
+## §5 — DROP disposition (was: "If HOLD: re-check trigger")
 
-- **Re-check date:** none — operator/D-S-A-triggered, not calendar-triggered.
+**N/A — superseded 2026-08-30.** The drop trigger below fired; there is no re-check.
+
+~~- **Re-check date:** none — operator/D-S-A-triggered, not calendar-triggered.
 - **Trigger condition:** a cheap follow-up (b) converts rho≈−0.03 into a decile-conditioned expected-value read (e.g., P(next-bar CLV in bottom tercile | this-bar CLV in top decile) vs base rate, or an implied gross edge in bp/event) and checks it against MNQ's own cost hurdle (N6, ≈3.01 bp/session) — a necessary-condition-only floor check, per the admission-route ADR's corrected 2-C. Clearing it does **not** by itself graduate this to a Pre-Q: the full Route 3 comparison against `ORB-MNQ-1`'s own net-of-cost edge (+0.0626R/trade) needs an actual entry/exit construct to compute a comparable R-figure, which does not exist yet — that comparison is deferred to whenever such a construct is built. The route question itself no longer blocks graduation (resolved above; Route 1 is also plausibly open, independent of Route 3).
-- **Drop trigger:** if the decile-conditioned follow-up in (b) shows the effect is economically negligible even at the extremes (e.g., <2-3pp lift on any conditional read), or fails either cost check, this notice should close DROP as a real-but-immaterial microstructure artifact.
+- **Drop trigger:** if the decile-conditioned follow-up in (b) shows the effect is economically negligible even at the extremes (e.g., <2-3pp lift on any conditional read), or fails either cost check, this notice should close DROP as a real-but-immaterial microstructure artifact.~~ — **fired**: the pre-screen's implied edge (+0.14 bp/event, CI straddles 0) is economically negligible against N6 (3.01bp).
 - **Calendar entry:** none.
 
 **Forbidden moves, this notice:**
@@ -70,8 +74,16 @@ python lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate5_clv_autoco
 python lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/data_lib.py 2>&1 | grep "degenerate"
 # Expected: 0 / 141541
 
-# If GRADUATED: confirm the Pre-Q references this notice
-grep -rn "N-2026-08-29-mnq-clv-autocorrelation" docs/briefs/Q-*.md
+# Reproduce the $0 cost-law pre-screen (2026-08-30 DROP disposition)
+python lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate5_clv_cost_screen.py
+# Expected: implied gross edge +0.1402 bp/event, CI=[-0.0381,+0.3244], vs N6 hurdle 3.01bp -- CLEARS=False
+# (CI corrected 2026-08-30, Codex review PR #219: the fade-rule series is now built in
+# chronological event order before block-bootstrapping, not concatenated-by-decile-then-
+# bootstrapped -- mean edge is unchanged, only the CI's precision shifted slightly)
+
+# Confirm no Pre-Q was opened for this DROP (per ADR §4 D2)
+grep -rln "N-2026-08-29-mnq-clv-autocorrelation" docs/briefs/Q-*.md
+# Expected: empty
 ```
 
 ---
