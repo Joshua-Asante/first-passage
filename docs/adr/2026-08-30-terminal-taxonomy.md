@@ -1,0 +1,350 @@
+# Terminal taxonomy — `EXPRESSION-FAIL` as a fifth WHY-rejected class, confirm-phase verdict vocabulary, and the `N_expr` expression ladder — `terminal-taxonomy`
+
+**Status:** `Proposed`
+**Decision date:** 2026-08-30
+**Supersedes:** none
+**Superseded-by:** none
+**Superseded-in-part-by:** none
+**Retain-until:** none
+**Authors:** Joshua (direction) + Claude Code (drafter)
+**Amends-in-part:** `2026-06-14-rejected-candidate-patterns.md` — adds a fifth §A row
+(`expression-failure`) with its own add-back condition, alongside the existing four; no existing
+row's definition or add-back condition is edited.
+**Layer:** methodology (confirm-phase disposition vocabulary and registry-routing rules only). No
+`dd_protection`, allocation, lifecycle, Pine, or rail config touched; nothing armed; no venue
+action; no spend.
+**Tier:** full — Limb 4 fires (creates standing verdict vocabulary and amends the ratified
+WHY-rejected taxonomy).
+
+---
+
+## §0 — Rule 0 reads (production-source verification)
+
+Files read **before** authoring this ADR, this session (2026-08-30):
+
+- `docs/notes/2026-08-30-generate-evaluate-tensions.md` — anchor `419433a` (2026-08-30). "Use one
+  terminal taxonomy" row: `MARKET-NULL` → edge-failure and a pre-explore reachability kill →
+  venue/cost-constraint or portfolio-fit/tail losslessly map onto the existing four classes;
+  `EXPRESSION-FAIL` maps onto none of them and needs a fifth class with its own binary add-back;
+  `EVIDENCE-VOID` and `ROLE-BLOCKED` are nonterminal and excluded from every register; `CHANNEL-FAIL`
+  is a channel-level process disposition, not evidence against any candidate. Evaluate-phase step 3
+  (verdict emission on the untouched confirm run) and step 5 (two-axis append-only disposition, the
+  `N_expr` expression-attempt ladder, migration to venue/cost-constraint when cost/geometry limbs
+  fired) supply this ADR's operative mechanics.
+- `docs/adr/2026-06-14-rejected-candidate-patterns.md` — anchor `0395f56` (2026-08-29). §A: the four
+  ratified classes (`edge-failure`, `portfolio-fit / tail`, `venue / cost-constraint`,
+  `non-rediscovery / role-duplicate`), each with its own binary add-back condition — "the class
+  records **why** a candidate was rejected... that is the whole point of not conflating them." §C:
+  the add-back gate — "re-tuning an edge-failure is not an add-back, it is the degeneration move."
+  §D: schema-extension precedent — new attributes are **added** to the existing
+  `<!-- concept-intake-entry … -->` comment schema, never a replacement, because `dedup.py`'s
+  `_KV_RE` ignores unknown keys. This ADR's `N_expr`/expression-history fields reuse that exact
+  additive pattern (§7 below), not a new registry file.
+- `docs/adr/2026-08-09-rejection-register-topology-and-bar-wiring.md` — anchor `e11fd39`
+  (2026-08-24). §2 D3: register topology is scope-routed, not class-routed —
+  per-direction/instrument-scoped mechanism rejections go to the instrument ledger
+  (`ops/instruments/<SYM>.md` + `profiles.json`, machine-consulted); domain-level/cross-instrument
+  bars go to `docs/rejected_candidates.md`; meta-layer methodology signals go to
+  `docs/methodology/rejected_signals.md`. "The WHY class alone cannot select an owning register" —
+  this ADR's own §2 below inherits that rule unedited; the `N_expr` ledger field attaches to
+  whichever row D3 already routes a mechanism's kill history to, never a new fourth register.
+- `docs/adr/2026-08-05-strategy-venue-binding-axis.md` — anchor `e2d21b9` (2026-08-24), as amended
+  by `2026-08-24-venue-binding-axis-t1-disposition.md` (same anchor; §2/§4/§5/§6/§7 untouched by
+  that amendment). §2: book evidence (candidate confirmation) and venue-edition state (placement at
+  a specific firm) are **orthogonal axes** — a venue-placement failure does not overwrite a
+  standalone confirmed status. This ADR's two-axis disposition (§2 below) is an **application** of
+  that already-ratified split, not a new axis decision.
+- `docs/adr/2026-08-24-sourcing-phase-channel-retirement.md` — anchor `340722c` (2026-08-24). Route
+  B's four campaigns closed `VOID-COVERAGE`, `FALSIFIED`, `FALSIFIED`, `AMBIGUOUS-HOLD` — none
+  reached confirm, so none of this ADR's confirm-phase verdict classes were ever actually exercised
+  by that channel; the retirement decision fired on channel-level liveness (§4 of
+  `2026-08-30-channel-liveness-gate.md`), a `CHANNEL-FAIL`-shaped event under this ADR's vocabulary,
+  independent of any single candidate's WHY-rejected class.
+- `docs/methodology/strategy_harvest.md` — anchor `936eb0f` (2026-08-29). Requirement 2's
+  discriminator/observable framing (the mechanism-level test that must adjudicate cleanly, distinct
+  from the payoff-object test) — the same separation this ADR's `EXPRESSION-FAIL` definition below
+  depends on: a discriminator pass plus a payoff-object rejection is what makes the failure about
+  the expression, not the mechanism.
+- `docs/adr/2026-08-30-tradeable-reachable-gate.md` — anchor `a682b74` (2026-08-30, this branch).
+  §2: "Which terminal class that typed verdict routes into is `2026-08-30-terminal-taxonomy.md`'s
+  decision, cited here, not re-decided" — this ADR is that forward-cited decision; §2 below rules on
+  it directly (the pre-explore-kill routing rule).
+- `docs/adr/2026-08-30-candidate-contract.md` — anchor `7669664` (2026-08-30, this branch). §2's
+  founding-freeze fields (instrument, feature catalogue, entry/exit object) are the object this
+  ADR's dispositions append against; no field of that ADR is edited here.
+
+---
+
+## §1 — Context
+
+The estate has one ratified rejection taxonomy (`2026-06-14-rejected-candidate-patterns.md` §A, four
+classes) and one ratified register-routing rule (`2026-08-09-...` §D3, scope-based, not class-based).
+Neither anticipated a confirm-phase failure where the *mechanism* (the causal observable) passes its
+own discriminator test while the *expression* (the specific entry/exit implementation built on it)
+is rejected — a distinction the ratified taxonomy has no class for and would misclassify either way:
+forcing it into `edge-failure` would apply that class's "genuinely new mechanism" add-back to a
+mechanism that was never actually falsified, while leaving it unclassified would mean a confirm-phase
+rejection with no registry-eligible disposition at all.
+
+Two more gaps compound this. First, the confirm-phase run itself (per the note's lean evaluate phase)
+needs a small, closed verdict vocabulary — today `FALSIFIED`, `STOP`, `VOID`, and ad hoc shape/venue
+failure language are used inconsistently across closures, without a declared mapping onto the
+ratified WHY-rejected classes. Second, a pre-explore `TRADEABLE-REACHABLE` kill
+(`2026-08-30-tradeable-reachable-gate.md`) produces a typed verdict with nowhere ruled to route: that
+ADR explicitly defers the routing decision here.
+
+**Decision driver (one sentence):** the estate has a ratified four-class rejection taxonomy and a
+ratified scope-based register router, but no ruling on where a mechanism-survives/expression-fails
+confirm result belongs, no closed confirm-phase verdict vocabulary, and no routing rule for a
+pre-explore economic-gate kill — each currently only exists as unratified language in an interpretive
+note.
+
+---
+
+## §2 — Decision
+
+**Decision:** Ratify a closed confirm-phase verdict vocabulary, add `expression-failure` as a fifth
+WHY-rejected class with its own add-back and `N_expr`-bounded re-entry ladder, and rule the routing
+of every terminal and nonterminal disposition this vocabulary produces.
+
+**Confirm-phase verdicts (evidence axis, per candidate, per confirm attempt).** Exactly four:
+`CONFIRMED`, `MARKET-NULL`, `EXPRESSION-FAIL`, `EVIDENCE-VOID`. `EXPRESSION-FAIL` applies only when
+the frozen discriminator's complete adjudication rule (candidate-contract-frozen: statistic, null,
+direction, threshold, coverage/power — Requirement 2's discriminator/observable separation, §0)
+returns a clean pass while the specific entry/exit implementation is rejected. If the discriminator
+itself cannot adjudicate (its own frozen coverage or power requirement unmet), that takes precedence
+over any payoff verdict and the candidate is `EVIDENCE-VOID`, never `MARKET-NULL` — an underpowered
+discriminator is not evidence against the mechanism. Only a discriminator that cleanly fails (a
+powered, adjudicated no) lets a rejected implementation default to `MARKET-NULL`.
+
+**Edition axis (post-confirm, `CONFIRMED` candidates only).** Placement-clear or `VENUE-FAIL`, per
+the already-ratified venue-binding axis (§0) — orthogonal to the evidence axis. `CONFIRMED ·
+VENUE-FAIL(edition)` is a valid, standing disposition: neither fact overwrites the other.
+
+**WHY-rejected class mapping (registry routing, evidence axis only):**
+- `MARKET-NULL` → `edge-failure` (2026-06-14 §A). Lossless: the existing add-back ("a genuinely new
+  entry mechanism") carries over unchanged.
+- A pre-explore `TRADEABLE-REACHABLE` kill (cost, latency, geometry, **or** payoff-shape limb) →
+  `venue / cost-constraint` (2026-06-14 §A), only as a **candidate-level** kill (before Explore).
+  The registry entry records "priors-derived, no mechanism test run" so a shape-limb kill is never
+  misread as mechanism evidence — no placebo-controlled test ran, so `edge-failure` is unavailable;
+  no discriminator adjudicated, so `expression-failure` is too. The class's existing add-back
+  ("clears the cost-law pre-flight with margin, or a materially lower-cost venue") is read to also
+  cover the shape case: a shape/geometry that clears the failed limb with margin, or a venue whose
+  rules remove the constraint.
+- A post-confirm edition-axis `VENUE-FAIL` against a `CONFIRMED` candidate is **not** a candidate
+  rejection and enters **no** WHY-rejected register — the candidate's confirmed status stands; only
+  the placement failed.
+- `EXPRESSION-FAIL` maps onto **none** of the four existing classes — see the new fifth class below.
+- `EVIDENCE-VOID` and `ROLE-BLOCKED` are excluded from the mapping entirely: both are nonterminal
+  for the candidate (an exhausted attempt or a re-screenable role fit, never a rejection), consistent
+  with §D3's own exclusion of power-voids and non-rejections from every register.
+- `CHANNEL-FAIL` (a channel hitting its liveness ceiling, `2026-08-30-channel-liveness-gate.md`) is
+  excluded too: a channel-level process disposition, never evidence against any specific candidate.
+
+**§A amendment — fifth class, `expression-failure`:**
+
+| Class | Definition | Add-back condition (binary) |
+|---|---|---|
+| **expression-failure** | The mechanism-level discriminator adjudicates cleanly (a powered, pre-specified pass) while the specific entry/exit expression built on it is rejected on confirm. | A materially new expression class of the same mechanism, differing on a declared structural axis (stop logic, exit family, or holding-horizon class — never a parameter re-tune), admitted as a new candidate contract with fresh K and a fresh holdout, citing the failed entry and its ordinal in the mechanism's expression history. |
+
+**The `N_expr` expression ladder.** The expression-attempt bound (`N_expr`, default 2) and the
+running attempt history are keyed to the **mechanism**, not the contract — persisted on the same
+D3-routed row that already owns the mechanism's rejection entries (instrument ledger or
+`rejected_candidates.md`, per scope; §0), using the additive schema-extension pattern 2026-06-14 §D
+already established. Every new expression contract must cite that history and declare its ordinal
+(attempt `k` of `N_expr`, naming each prior failed expression class); a contract that omits or
+contradicts the ledger's count is integrity-invalid at the evaluate phase's contract-integrity check
+(the note's lean evaluate phase, step 1) — a later attempt cannot present itself as attempt one.
+
+**Ladder termination.** Once `N_expr` independent expression classes have each produced
+`EXPRESSION-FAIL` while the discriminator kept passing, no further expression attempt is available
+under the standard add-back. The terminal state then depends on what the recorded failures actually
+establish:
+- If any recorded failure fired on a cost or execution-geometry limb, the mechanism entry migrates
+  to `venue / cost-constraint` and adopts its existing add-back — legitimate only because cost
+  evidence actually fired, never fabricated to close the ladder early.
+- If every failure fired on non-cost limbs (temporal instability, say), the mechanism entry stays in
+  `expression-failure` with the ladder closed: its exhausted add-back becomes a **new expression
+  class structurally distinct from every failed one**, admissible only by operator ratification
+  citing the full failure history — never by routine re-admission.
+
+**Nonterminal dispositions (never registry entries, recorded on the contract only):**
+- `ROLE-BLOCKED` — a role/compliance state-drift failure (2026-08-30-candidate-contract.md's
+  evaluate-phase role re-check); re-screenable when the scoped account/book or its occupancy
+  changes.
+- `EVIDENCE-VOID` — contract-integrity mismatch, or ordinary coverage/power/holdout-integrity
+  failure of the confirm run itself; exhausts the attempt, eligible for a fresh campaign with a
+  fresh holdout, never a terminal registry destination.
+- `CHANNEL-FAIL` — the channel-liveness ceiling firing (`2026-08-30-channel-liveness-gate.md`);
+  recorded at the channel level, never attributed to any one candidate's disposition.
+
+**Effective:** immediately upon acceptance, for any confirm-phase verdict emitted, or `TRADEABLE-
+REACHABLE` pre-explore kill recorded, after this date.
+**Scope:** confirm-phase verdict vocabulary, WHY-rejected class routing, and the expression-failure
+ladder, across all six live channels. Does not alter 2026-06-14's four existing classes, 2026-08-09's
+§D3 routing rule, or 2026-08-05's axis split — it amends the first additively and applies the other
+two unedited.
+
+---
+
+## §3 — Alternatives considered
+
+| Alternative | Why ruled out |
+|---|---|
+| Force `EXPRESSION-FAIL` into the existing `edge-failure` class | Applies "genuinely new mechanism" as the add-back to a mechanism that was never falsified — the discriminator passed. Wrong in the direction that matters most: it would bar re-trying a still-live mechanism under a fresh expression, or license a full mechanism re-litigation when only the expression needed to change. |
+| Leave `EXPRESSION-FAIL` unclassified, routed to neither a register nor a ladder | Reproduces exactly the defect this ADR exists to close: a confirm-phase rejection with no auditable disposition and no bounded re-entry rule, inviting unbounded expression-retrying under an alive discriminator. |
+| Let the WHY class alone select the owning register, bypassing §D3's scope-based routing | Directly reopens a question 2026-08-09 §D3 already ruled, and for good reason ("the WHY class alone cannot select an owning register") — a class-based router would misfile per-direction/instrument-scoped kills into the domain-level registry or vice versa. |
+| Uncap `N_expr` (no ladder termination) | Reproduces the "re-tuning is the degeneration move" failure 2026-06-14 §C already names for edge-failure, one level up — an alive discriminator would become a standing license to keep buying expression attempts indefinitely. |
+| Route every pre-explore `TRADEABLE-REACHABLE` kill to `edge-failure`, since it is an early "no" | Misrepresents an arithmetic, pre-data kill as mechanism evidence — no placebo-controlled test ran. `venue / cost-constraint` is the correct existing class; this ADR maps to it rather than inventing a new one for what is structurally the same failure family as an existing cost-law kill. |
+
+---
+
+## §4 — Falsifier (revert trigger)
+
+**H (hypothesis):** a fifth `expression-failure` class, a closed four-verdict confirm vocabulary,
+and a mechanism-keyed `N_expr` ladder correctly separate "the mechanism survived, the expression
+didn't" from every other rejection shape, without creating a new unbounded re-entry path or
+misrouting registry entries.
+
+**Revert trigger:** if, by the next scheduled quarterly programme audit after this ADR's acceptance,
+either (a) an `EXPRESSION-FAIL` disposition is found routed to a register other than the one §D3
+would assign by scope, (b) a mechanism is found to have exceeded `N_expr` expression attempts without
+either migrating to `venue / cost-constraint` on genuine cost/geometry grounds or securing an
+operator ratification citing the full failure history, or (c) an `EVIDENCE-VOID` or `ROLE-BLOCKED`
+disposition is found written into a WHY-rejected register — this ADR is revoked.
+
+**Revert action:** author a superseding ADR that either re-specifies the ladder-termination rule more
+strictly (e.g. a mechanical integrity check refusing a contract whose declared ordinal exceeds the
+ledger's recorded count, closing gap (b) in code rather than by audit) or narrows the nonterminal
+exclusion list's enforcement. Never silently edit this ADR's decision text.
+
+**Trigger check schedule:** every quarterly programme audit (next: 2026-11-08).
+
+---
+
+## §5 — Forbidden moves (under this ADR)
+
+- **Applying `edge-failure`'s "genuinely new mechanism" add-back to an `EXPRESSION-FAIL` entry.**
+  Ruled out in §2/§3 — the discriminator passed; only the expression is barred, and the new class's
+  own add-back (a structurally distinct expression, not a new mechanism) governs.
+- **Fabricating a cost-limb failure to migrate an exhausted expression-failure ladder into `venue /
+  cost-constraint` early.** Ruled out in §2 — migration is legitimate only when cost/geometry
+  evidence actually fired in the recorded failure history; otherwise the ladder stays closed under
+  `expression-failure` pending operator ratification.
+- **Routing by WHY class instead of by §D3's scope rule**, to make register placement "follow the
+  taxonomy." Ruled out in §3 — a class-based router would relitigate 2026-08-09's already-ratified
+  scope-based topology.
+- **Writing `EVIDENCE-VOID`, `ROLE-BLOCKED`, or `CHANNEL-FAIL` into any WHY-rejected register**, to
+  give a nonterminal or channel-level event an audit trail. Ruled out in §2 — all three stay on the
+  contract or the channel record only; a register entry implies a terminal, candidate-level
+  rejection, which none of the three are.
+- **Uncapping or silently raising `N_expr` per-mechanism** without a superseding decision. Each
+  mechanism's bound is the same `N_expr` default (2) unless a future ADR rules otherwise generally —
+  not something an individual campaign or operator note may adjust ad hoc.
+
+---
+
+## §6 — Consequences
+
+**Positive consequences:**
+- Closes the exact classification gap the note's tension #4/#8 analysis diagnosed: a confirm-phase
+  rejection now always has a correctly-shaped disposition, never forced into the wrong existing class
+  or left unclassified.
+- Bounds expression-retrying under an alive discriminator with the same anti-degeneration discipline
+  2026-06-14 §C already applies to edge-failure re-tuning — closing an asymmetric loophole the
+  four-class taxonomy left open (unbounded re-tries were barred for a falsified mechanism but
+  unaddressed for a surviving one).
+- Gives `TRADEABLE-REACHABLE`'s pre-explore kill (2026-08-30-tradeable-reachable-gate.md) a ruled
+  destination, discharging that ADR's own forward citation.
+- Nonterminal states (`EVIDENCE-VOID`, `ROLE-BLOCKED`, `CHANNEL-FAIL`) stay off the permanent
+  rejection record, keeping the registries a record of actual candidate-level kills only.
+
+**Negative consequences (real cost, not theatrical):**
+- A mechanism that keeps producing well-powered, cleanly-failing expressions now has a hard ceiling
+  (`N_expr`, default 2) before it needs an operator ratification to continue — real friction versus
+  today's unbounded (if informally discouraged) re-try practice.
+- Every future confirm closure must now correctly classify itself across five classes and four
+  verdicts instead of ad hoc `FALSIFIED`/`STOP`/`VOID` language — a real authoring-discipline cost,
+  not free ceremony.
+
+**Risks (probabilistic, distinct from costs):**
+- `N_expr`'s default (2) is asserted here, not re-derived from cost/K data specific to this estate;
+  if it proves too tight or too loose in practice, that is a parameter-calibration question for a
+  future amending ADR, not evidence against the ladder mechanism itself.
+
+**Downstream artifacts that need updating:**
+- `docs/rejected_candidates.md` and `ops/instruments/<SYM>.md` schemas — additive fields for
+  `class="expression-failure"`, the `N_expr` ordinal, and the cited failure history, per 2026-06-14
+  §D's existing extension pattern.
+- `2026-08-30-tradeable-reachable-gate.md` §6 — its own forward citation to this ADR is now
+  discharged; no edit needed to that ADR's text (Trap #12 — decisions stay byte-stable once landed).
+- `STATE.md` — new forward-board row: schema-extension implementation (registry fields) owed as a
+  separate handoff (§7).
+
+---
+
+## §7 — Implementation plan
+
+- **Phase 0** — re-confirm §0 anchors current at apply-time.
+- **Phase 1** — this ADR's own body is the complete policy deliverable; the `Amends-in-part` edge to
+  `2026-06-14-rejected-candidate-patterns.md` lands on ratification, not before.
+- **Phase 2** — grep-sweep (Known Trap #7): **(i)** no predecessor to check (`Supersedes: none`);
+  **(ii)** `grep -rl "EXPRESSION-FAIL\|EVIDENCE-VOID\|ROLE-BLOCKED\|CHANNEL-FAIL\|MARKET-NULL\|N_expr"
+  docs/ lab/` — already executed at authoring time (§0 methodology): zero hits outside the source
+  note itself, confirming these are genuinely novel vocabulary this ADR is the first to ratify, not
+  a restatement of an existing convention. Re-run at implementation time to confirm no other
+  in-flight branch introduced conflicting usage in the interim.
+- **Phase 3** — verification block executes; status → `Accepted`.
+
+Mechanical enforcement (the integrity check refusing a contract with a wrong `N_expr` ordinal, and
+the schema-field additions themselves) is a **separate implementation handoff** — doctrine binds
+now; code may lag, per the HARV-lane precedent (`2026-08-30-candidate-contract.md` §0).
+
+---
+
+## §10 — Audit hooks (runnable)
+
+```bash
+# Vocabulary genuinely novel at authoring time (re-run to catch drift since).
+grep -rn "EXPRESSION-FAIL\|EVIDENCE-VOID\|ROLE-BLOCKED\|CHANNEL-FAIL\|MARKET-NULL" docs/ lab/ 2>/dev/null \
+  | grep -v "2026-08-30-generate-evaluate-tensions.md\|2026-08-30-terminal-taxonomy.md"
+
+# §A row count: expect 4 today (unamended); 5 once the Amends-in-part edit lands on ratification.
+# (Scoped to the §A..§B range -- an unscoped grep false-positives on a §3 alternatives-table row
+# that also happens to start "| **".)
+sed -n '/^### §A/,/^### §B/p' docs/adr/2026-06-14-rejected-candidate-patterns.md | grep -c "^| \*\*"
+
+# TRADEABLE-REACHABLE's forward citation is discharged (no edit expected to that ADR's text).
+grep -n "terminal-taxonomy" docs/adr/2026-08-30-tradeable-reachable-gate.md
+
+# Calendar trigger reminder
+# Quarterly programme audit due: 2026-11-08
+```
+
+---
+
+## Verification
+
+```bash
+# Discipline checks (mechanical)
+$ python scripts/check_brief.py docs/adr/2026-08-30-terminal-taxonomy.md --type adr
+
+# ADR lifecycle graph
+$ python scripts/check_adr_graph.py
+
+# Production-source verification (Rule 0 confirmation)
+$ git log -1 --format="%h %ci" -- docs/adr/2026-06-14-rejected-candidate-patterns.md
+$ git log -1 --format="%h %ci" -- docs/adr/2026-08-09-rejection-register-topology-and-bar-wiring.md
+
+# Downstream artifact update verification (post Amends-in-part landing)
+$ grep -n "expression-failure" docs/adr/2026-06-14-rejected-candidate-patterns.md
+```
+
+---
+
+## Change history
+
+| Date | Change | By |
+|---|---|---|
+| 2026-08-30 | Initial authoring | Joshua + Claude Code |
