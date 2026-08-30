@@ -249,14 +249,15 @@ frozen battery.
   statistic this retrofit corrects; Codex review (PR #207) + operator ruling: leave
   the cell unresolved until the within-stratum null actually runs. Cross-instrument
   corroboration: MNQ's own same-day candidate 3 (now registered under this same id —
-  MNQ class finding below) ran the correct stratified design from the start and found
-  a similar shape (+20.6pp/+25.6pp), also GRADUATEd — that MNQ finding is independent
-  of this MYM Type-I gap. Ledger cell `AMBIGUOUS-PARKED` (UNRESOLVED pending null;
+  MNQ class finding below) found a similar shape (+20.6pp/+25.6pp), also GRADUATEd —
+  that MNQ finding is independent of this MYM Type-I gap, but **carries an unrelated
+  confirmed code bug of its own** (see the MNQ class finding below) and is not itself
+  "certified" either. Ledger cell `AMBIGUOUS-PARKED` (UNRESOLVED pending null;
   no frozen forward test executing). **Pre-Q opened 2026-08-30 despite the UNRESOLVED
   status:** [`Q-VOLREGIME-1`](../../docs/briefs/Q-VOLREGIME-1-intraday-bar-volume-regime.md)
-  covers MNQ's own (unaffected) certified stage-1 result and reframes MYM's own H
-  to require the within-stratum null as a named precondition, not a fresh look at an
-  already-decisive result — see that brief's own §4/§7 for the corrected MYM framing.
+  treats neither instrument as certified — it requires the within-stratum null as a
+  named precondition on both MNQ and MYM before either verdict is scored (`PRECONDITION-UNMET`
+  / `PRECONDITION-CLEARED-NULL` dispositions, its own §6) — see that brief's own §4/§7.
   [MYM.md](MYM.md) ·
   [`N-2026-08-29-mym-bar-volume-regime.md`](../../docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md)
 - **Superseded (disclosed, not the authoritative answer):** the first-pass **marginal** falsifier
@@ -265,14 +266,23 @@ frozen battery.
   correction reverses this entirely — the marginal "kill" was masking a real +16 to +25pp effect,
   not the absence of one. Kept visible as a disclosed secondary measurement, not deleted; the
   stratified finding governs.
-- **Class finding (cross-instrument, MNQ, 2026-08-29):** backfilled on reconciliation pass —
-  MNQ's own same-day bar-volume-regime candidate, independently run, correctly stratified from
-  the start (not a correction), found a near-identical shape: within-stratum
+- **Class finding (cross-instrument, MNQ, 2026-08-29; ⚠ figures below UNVERIFIED as of
+  2026-08-30, see next paragraph):** backfilled on reconciliation pass —
+  MNQ's own same-day bar-volume-regime candidate, independently run, correctly stratified
+  on the trigger-bar side (not a marginal-vs-stratified correction like MYM's), found a
+  near-identical shape: within-stratum
   lift **+20.6pp** (low-range stratum, n=12,430/54,167) / **+25.6pp** (high-range stratum,
   n=58,115/11,308), same-bar volume/range Spearman correlation **0.88** (vs MYM's own 0.8618,
   independently measured — not assumed by analogy). **GRADUATE**, reached independently before
   either session saw the other's work. Direction limb (does volume predict next-bar directional
-  continuation, not just range) is a clean null on MNQ; untested on MYM this session. Registered
+  continuation, not just range) is a clean null on MNQ; untested on MYM this session.
+  **Confirmed code bug, 2026-08-30 (Codex review, PR #210):** `candidate3_volume_regime.py`'s
+  ToD-matched range-outcome variable compared the next bar's range against the *trigger* bar's
+  own time-of-day threshold instead of the next bar's own — reintroducing the exact seasonality
+  confound the ToD-matching exists to remove. Fixed in the same commit; **not re-run** (no
+  vendor bar data in this environment) — the +20.6pp/+25.6pp figures above and the range limb's
+  own GRADUATE routing are disclosed as unverified pending a fresh run, not withdrawn. See
+  `N-2026-08-29-mnq-bar-volume-regime.md`'s own correction note for the full detail. Registered
   here under MYM's id (`intraday-bar-volume-regime`) rather than a separate MNQ-named one —
   unlike the overnight-range/gap-magnitude split, this construct carries no unresolved
   nested-hypothesis structure blocking a straightforward merge, so (unlike

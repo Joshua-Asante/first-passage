@@ -136,12 +136,15 @@ power grounds** — MYM's total panel (n=1,307) is smaller than MNQ's (n=1,487),
 by-year distribution has not been computed this session; if it lands at N_valid < 7 (matching
 MNQ's own wall) the result is AMBIGUOUS-HOLD, same as predicted for MNQ. **Predicted for
 H-RANGEXFER-1.a-MYM: FALSIFIED or AMBIGUOUS on power grounds, more likely than MNQ's own
-sub-question** — MYM's overnight-calm-restricted sub-panel (n=991) is smaller than MNQ's (973 —
-comparable in absolute terms, but MYM's own calm-stratum gap effect is already the weakest,
-least-decisive cell in the whole 2026-08-29 batch across both instruments (bootstrap p=0.037,
-null-calibrated p=0.020, disclosed as exploratory/unregistered per §0 of the parent brief) — a
-by-year split of an already-marginal cell is a harder bar to clear than MNQ's own p=0.0078
-starting point.
+sub-question — but NOT for a sample-size reason** (corrected 2026-08-30, Codex review: an
+earlier draft of this line claimed MYM's overnight-calm sub-panel, n=991, was smaller than
+MNQ's, n=973 — it is not; 991 > 973, so this prediction cannot rest on a power deficit from
+subpanel size). The actual basis is the effect itself: MYM's own calm-stratum gap effect is
+already the weakest, least-decisive cell in the whole 2026-08-29 batch across both instruments
+(bootstrap p=0.037, corrected null-calibrated p=0.0495, barely clearing 0.05, disclosed as
+exploratory/unregistered per §0 of the parent brief) — a by-year split of an already-marginal
+cell is a harder bar to clear than MNQ's own p=0.0087 starting point, independent of either
+panel's raw size.
 
 Substituting real Phase-1 numbers to confirm or refute this prediction is the compute step, not
 this freeze.

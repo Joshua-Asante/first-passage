@@ -140,7 +140,19 @@ def main():
 
     rng_thresh_tod = rolling_pct_strict_prior_by_group(rng_bar, et_minute, TRAIL_N, Q_REF)
     outcome_range_tod = np.full(n, np.nan)
-    outcome_range_tod[:-1] = (rng_bar[1:] > rng_thresh_tod[:-1]).astype(float)
+    # Fixed 2026-08-30 (Codex review, PR #210): this compared the NEXT bar's range
+    # against the TRIGGER bar's own ToD-conditioned threshold (rng_thresh_tod[:-1]),
+    # not the next bar's own slot's threshold -- reintroducing exactly the ToD
+    # seasonality confound this design exists to remove, since consecutive M15
+    # bars are almost always in different ToD slots. Corrected to compare each
+    # next bar against ITS OWN slot's threshold (rng_thresh_tod[1:]), matching
+    # this module's own docstring ("elevated vs ITS OWN ToD-matched trailing
+    # median") and the MYM sibling script's already-correct `rng_ratio[1:]`
+    # design. NOT re-run in this environment (no MNQ_M15.csv) -- the corrected
+    # code is committed; the headline +18.1pp/[0.673,0.695] range-lift figure in
+    # this repo's Notice-log and downstream artifacts needs re-verification
+    # against a fresh run before being treated as confirmed.
+    outcome_range_tod[:-1] = (rng_bar[1:] > rng_thresh_tod[1:]).astype(float)
     outcome_range_tod[-1] = np.nan
 
     outcome_dir_tod = outcome_dir_pooled  # direction-continuation def is ToD-independent already

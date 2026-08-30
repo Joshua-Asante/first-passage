@@ -29,9 +29,15 @@ short-circuits the rest of this file's own limb tables until cleared.
 table, `docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md`, to the cross-series,
 1-bar-lag case; not re-derived, not re-tuned)
 
-- `TOD_WINDOW = 20` (trailing same-time-of-day-slot occurrence count for the volume baseline —
-  carried verbatim from the already-cached `candidate3_volume_regime.py` / `c3_stratified_rerun.py`
-  scripts, not re-chosen here)
+- `TRAIL_N = 60` (trailing same-time-of-day-slot occurrence count for the volume baseline —
+  carried verbatim from `candidate3_volume_regime.py`'s own `TRAIL_N` constant, not re-chosen
+  here. **Corrected 2026-08-30 (Codex review, PR #210):** an earlier draft of this freeze wrote
+  `TOD_WINDOW = 20` for MNQ, copying MYM's own `c3_stratified_rerun.py` constant (`TOD_WINDOW`)
+  without checking MNQ's own script, which uses a differently-named, differently-valued
+  constant (`TRAIL_N = 60`). Freezing 20 for MNQ would have meant Phase 1 tests a baseline
+  window MNQ's own cited +20.6pp/+25.6pp stage-1 result never actually used — this instrument's
+  own window is now correctly frozen at its own value. See §F.1 for MYM's own, separately-named
+  and separately-valued `TOD_WINDOW = 20`.)
 - `Q_VOLUME = 0.50` (above-own-slot-median threshold, i.e. `ratio > 1` — matches both scripts'
   own already-run design; **not** a top-quintile threshold like `Q-RANGEXFER-1`'s `Q_BIAS=0.80`,
   since candidate 3's own stage-1 design used a median split, disclosed here rather than silently
@@ -76,9 +82,10 @@ pre-Phase-1 form)
 
 | Verdict | Trigger | Applies to |
 |---|---|---|
-| `PRECONDITION-UNMET` | The within-stratum `circular_shift_null_p` precondition cannot be computed (no vendor bars, no cached scored frame) | H-VOLREGIME-MNQ — **current disposition pending Phase 0.5** |
-| `RESOLVED` | Precondition clears AND L1–L4 all pass AND L5 clears (p_upper ≤ 0.05) | H-VOLREGIME-MNQ |
-| `FALSIFIED` | Precondition clears, then any of L1–L3 fails outright, OR L4 fails outright (N_valid ≥ 7 but fewer than N_valid−2 years clear), OR L5's diagnostic gate VOIDs after the full escalation ladder | H-VOLREGIME-MNQ |
+| `PRECONDITION-UNMET` | The within-stratum `circular_shift_null_p` precondition (Phase 0.5) cannot be *computed at all* — no vendor bars, no cached scored frame | H-VOLREGIME-MNQ — **current disposition pending Phase 0.5** |
+| `PRECONDITION-CLEARED-NULL` (added 2026-08-30, Codex review — distinct from PRECONDITION-UNMET) | Phase 0.5's within-stratum `circular_shift_null_p` **is computed** but does not clear `alpha` (p > 0.05) — the construct fails at the cheap gate, before Phase 1's expensive joint-surrogation design is ever built | H-VOLREGIME-MNQ — `STOP`: DROP this instrument's own H at the $0 gate; do not proceed to Phase 1 on it. Re-proposal bar: a different within-stratum design, not a retune of this one. |
+| `RESOLVED` | Precondition clears (p ≤ alpha) AND L1–L4 all pass AND L5 is valid (not VOID) AND clears (p_upper ≤ 0.05) | H-VOLREGIME-MNQ |
+| `FALSIFIED` | Precondition clears, then any of L1–L3 fails outright, OR L4 fails outright (N_valid ≥ 7 but fewer than N_valid−2 years clear), OR L5's diagnostic gate VOIDs after the full escalation ladder, **OR L5 is valid (not VOID) but does not clear (p_upper > 0.05)** (added 2026-08-30, Codex review — an earlier draft of this table had no disposition for an ordinary, non-VOID non-significant L5 outcome, which would have let the verdict be chosen after seeing results rather than pre-registered) | H-VOLREGIME-MNQ |
 | `AMBIGUOUS-HOLD` | Precondition clears, L1–L3 pass but L4 cannot resolve (N_valid < 7) | H-VOLREGIME-MNQ |
 
 ## §E — Pinned ex-ante expectation, MNQ
@@ -108,8 +115,11 @@ audit hook).
 
 ### §F.1 — Frozen constants (MYM panel: `core/data/bar_data/MYM_M15.csv`, 2020-07→2026-07)
 
-- Same `TOD_WINDOW`, `Q_VOLUME`, `alpha` as §A — carried verbatim from
-  `c3_stratified_rerun.py`'s own already-run design.
+- `TOD_WINDOW = 20` (MYM's own constant name and value in `c3_stratified_rerun.py` — **not**
+  the same numeral as MNQ's own `TRAIL_N = 60` per §A; the two instruments' trailing-window
+  lengths are genuinely different in the already-run scripts and are frozen separately here,
+  each carried verbatim from its own script, not reconciled to a shared number). Same
+  `Q_VOLUME`, `alpha` as §A.
 - `N_FLOOR_POP = 400`, `N_FLOOR_COND = 100` — unchanged.
 - `YEAR_MIN_NCOND = 20`, `N_valid >= 7` else AMBIGUOUS — same disclosed, genuinely uncertain
   prediction as §E, not assumed to replicate MNQ's own eventual result.

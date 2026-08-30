@@ -155,15 +155,21 @@ structure:
   `bias_gap`/`bias_dayhist`/`y` definitions traced by hand against `c2_c4_stratified_rerun.py`'s
   own already-verified formulas — algebraically identical. **Result: MYM closely replicates
   MNQ's nested-gap pattern.** Gap's own lift within overnight-range strata: **+8.5pp (calm,
-  bootstrap p=0.037 / null-calibrated p=0.020) / −7.2pp (hot, bootstrap p=0.945 / null-calibrated
-  p=0.888, clearly not positive)** — vs. MNQ's own committed `candidate24_joint_results.json`:
+  bootstrap p=0.037 / null-calibrated p=0.0495 — corrected 2026-08-30, see below) / −7.2pp (hot,
+  bootstrap p=0.945 / null-calibrated
+  p=0.9489, clearly not positive)** — vs. MNQ's own committed `candidate24_joint_results.json`:
   +10.5pp/−8.1pp on the identical test. **Bootstrap-vs-null-calibrated correction (after review):**
   the original `block_bootstrap_p` resamples the observed data and is not a null-calibrated
   significance level; `circular_shift_null_p` (added to the script) is — see the Notice's §1 for
-  the full explanation. Recalibration does not overturn anything; the calm-stratum cell is if
-  anything *more* decisive under the correct null (p=0.020 vs the original 0.037). Overnight
-  range's own lift within gap strata: **+38.2pp (bootstrap p=0.00025 / null-calibrated p=0.00025)
-  / +22.5pp (bootstrap p=0.00025 / null-calibrated p=0.00125)** vs. MNQ's +59.4pp/+40.7pp — same
+  the full explanation. **Second correction, 2026-08-30 (Codex review, PR #210):** the script's own
+  `circular_shift_null_p` was itself a different, less rigorous construction than MNQ's
+  Codex-reviewed version (rotated the full predictor series before masking to the stratum,
+  excluded the identity rotation) — fixed to match MNQ's within-stratum, identity-inclusive
+  construction and re-run against the committed cache. The calm-stratum cell's null-p moved from
+  0.020 to **0.0495** — barely clears 0.05, and is now *less* decisive than MNQ's own p=0.0087,
+  the opposite of what the pre-correction text claimed. Overnight
+  range's own lift within gap strata: **+38.2pp (bootstrap p=0.00025 / corrected null-calibrated p=0.00098)
+  / +22.5pp (bootstrap p=0.00025 / corrected null-calibrated p=0.00352)** vs. MNQ's +59.4pp/+40.7pp — same
   sign, same ordering, never sign-flipped, but magnitude is not uniformly ~25-40% smaller
   (corrected after review): the four lift comparisons range 10.6%-44.8% smaller on MYM, and the
   overnight-gap Spearman correlation is actually *larger* on MYM (0.526 vs MNQ's 0.471) — see the
@@ -183,8 +189,8 @@ structure:
   post-hoc K declaration by design, so it is neither folded into the closed K=5 manifest nor
   freshly registered now — either would launder a post-hoc look as pre-registered. Disclosed
   plainly instead: a sixth, unregistered look: the calm-stratum result (bootstrap p=0.037,
-  null-calibrated p=0.020) is exploratory, not multiplicity-corrected, and should not be cited
-  as clearing a significance bar. See the
+  corrected null-calibrated p=0.0495) is exploratory, not multiplicity-corrected, and should not
+  be cited as clearing a significance bar. See the
   Notice's §4 for the full disclosure. Scripts + JSON:
   `lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c24_joint_gate.py` +
   `c24_joint_results.json` + `c24_joint_frame.csv`.

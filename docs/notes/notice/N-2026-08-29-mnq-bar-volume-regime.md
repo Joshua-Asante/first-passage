@@ -11,6 +11,29 @@
 
 ---
 
+**⚠ Correction, 2026-08-30 (Codex review, PR #210) — the ToD-matched range-outcome
+labeling in `candidate3_volume_regime.py` had an indexing bug; the headline
++18.1pp / CI [0.673, 0.695] range-lift figure below is UNVERIFIED pending a
+re-run.** The script's `outcome_range_tod` compared the *next* bar's realized
+range against the *trigger* bar's own time-of-day-conditioned threshold
+(`rng_thresh_tod[:-1]`) instead of the next bar's own slot's threshold
+(`rng_thresh_tod[1:]`) — since consecutive M15 bars are almost always in
+different ToD slots with very different typical range levels, this reintroduces
+exactly the deterministic intraday seasonality confound the ToD-matched design
+exists to remove (see §2's own null-validity argument, which this bug silently
+undermined). The code fix is committed in the same commit as this correction;
+it was **not** re-run in this session's environment (no `MNQ_M15.csv` — see
+`Q-VOLREGIME-1`'s own Phase 0.5, a vendor-data-dependent task). Until a fresh
+run confirms whether the corrected labeling reproduces, matches direction but
+differs in magnitude, or dissolves entirely, **this notice's GRADUATE routing
+(§4) and every downstream citation of the +18.1pp/CI figure (MECHANISMS.md,
+`Q-VOLREGIME-1`, MNQ.md) should be read as "pending re-verification," not
+"confirmed."** The incremental-over-own-range stratification (+20.6pp/+25.6pp)
+uses the SAME buggy `outcome_range_tod` variable and is equally unverified. The
+direction-limb null (+0.01pp) does not use this variable and is unaffected.
+
+---
+
 ## §0 — Source anchor
 
 - **Source:** [`lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate3_volume_regime.py`](../../../lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate3_volume_regime.py) → `candidate3_results.json`; consolidated in [`RESULTS.md`](../../../lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/RESULTS.md) §Candidate 3.
@@ -49,7 +72,7 @@ A follow-up check not in the original framing, run because same-bar Spearman(vol
 
 ## §4 — Routing decision
 
-**Split decision by outcome.** Range limb: **GRADUATE to Pre-Q.** Reason: real, well-powered (n>130k), CI clearly excludes the base rate, survives both the ToD-seasonality control and the incremental-over-own-range stratification — a construct worth a proper falsifiable H, distinct enough from candidate 1 (finer grain, incremental over range) to justify its own line even though mechanism A above is a live possibility the Pre-Q should confront directly. Direction limb: **DROP.** Reason: clean null both naive and ToD-matched, no plausible mechanism surviving, nothing to carry forward.
+**Split decision by outcome.** Range limb: **GRADUATE to Pre-Q — pending re-verification, 2026-08-30.** Reason (as originally read): real, well-powered (n>130k), CI clearly excludes the base rate, survives both the ToD-seasonality control and the incremental-over-own-range stratification — a construct worth a proper falsifiable H, distinct enough from candidate 1 (finer grain, incremental over range) to justify its own line even though mechanism A above is a live possibility the Pre-Q should confront directly. **This routing rests on the buggy `outcome_range_tod` labeling disclosed above and is not withdrawn, but should not be treated as confirmed until the fixed script is re-run against real bars.** Direction limb: **DROP** (unaffected by the bug — uses a different, unaffected variable). Reason: clean null both naive and ToD-matched, no plausible mechanism surviving, nothing to carry forward.
 
 **Route flag for the range limb (raised bar, `index-intraday-ohlcv-directional-timing-2026-07-21`):** conditioner-role, not entry-role (same framing as candidates 1/2) — does not by itself need to clear the raised bar; an entry construct built on it later would.
 
@@ -64,9 +87,19 @@ N/A — routed GRADUATE (range) / DROP (direction), not HOLD.
 ## §10 — Audit hooks
 
 ```bash
-# Reproduce both outcomes, naive and ToD-matched (~1-2 min, Python loop over ToD groups)
+# Reproduce both outcomes, naive and ToD-matched (~1-2 min, Python loop over ToD groups).
+# Requires MNQ_M15.csv (vendor bars, absent in this public-clone environment) --
+# a local-session task, not runnable here.
 python lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate3_volume_regime.py
-# Expected: dir lift ~0.0001 (ToD-matched); range lift ~0.181 (ToD-matched), CI [0.673, 0.695]
+# Expected (PRE-2026-08-30-fix numbers, cited for continuity, NOT confirmed against
+# the corrected code): dir lift ~0.0001 (ToD-matched); range lift ~0.181 (ToD-matched),
+# CI [0.673, 0.695]. The fixed `outcome_range_tod` (see the correction above) may
+# reproduce these numbers, differ in magnitude, or dissolve the effect entirely --
+# re-run and update this notice with whatever the corrected code actually finds.
+
+# Confirm the indexing fix landed (Codex review, PR #210)
+grep -n "rng_bar\[1:\] > rng_thresh_tod\[1:\]" lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate3_volume_regime.py
+# Expected: one match (was rng_thresh_tod[:-1] before the fix)
 
 # Confirm the DEAD-cell distinctness claims this notice rests on
 python scripts/instrument_profiles.py cell MNQ opening-pressure

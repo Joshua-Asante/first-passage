@@ -76,11 +76,14 @@
   }
  },
  "gap_lift_null_calibrated_p": {
-  "0": 0.019745063734066485,
-  "1": 0.8880279930017496
+  "0": 0.04944500504540868,
+  "1": 0.9488817891373802
  },
  "overnight_lift_null_calibrated_p": {
-  "0": 0.00024993751562109475,
-  "1": 0.0012496875781054736
- }
+  "0": 0.000980392156862745,
+  "1": 0.0035211267605633804
+ },
+ "null_construction": "within_stratum_circular_shift",
+ "null_includes_identity": true,
+ "frame_source": "c24_joint_frame.csv"
 }
