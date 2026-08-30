@@ -4,7 +4,9 @@
 **Observed:** 2026-08-29 (marginal-comparison run); **corrected 2026-08-29** (stratified re-run, same-shape correction as candidates 2/4)
 **Author:** Joshua | claude.ai
 **Source:** backtest CSV (bar panel) — atheoretical mechanism harvest, MYM Phase 2
-**Status:** `OPEN` — UNRESOLVED pending a within-stratum null-calibrated p (vendor bars / scored-frame cache absent); not routed INCREMENT or GRADUATE on the observed-series bootstrap CI
+**Status:** `OPEN` — UNRESOLVED pending a within-stratum null-calibrated p (vendor bars / scored-frame cache absent); not routed INCREMENT or GRADUATE on the observed-series bootstrap CI.
+
+**Pre-Q:** [`Q-VOLREGIME-1`](../../briefs/Q-VOLREGIME-1-intraday-bar-volume-regime.md) (opened 2026-08-30, jointly with MNQ) states this UNRESOLVED status as a named precondition on its own MYM-side hypothesis rather than treating this notice's observed-series CI as decisive evidence — see that brief's own §4/§7.
 **Lives in:** `docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md`
 
 ---
@@ -144,7 +146,7 @@ python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c3_volume_regime.py
 # Expected: diff=-0.0049  95% CI=[-0.0085,-0.0012]  VERDICT=NO-INCREMENT (marginal, superseded)
 
 grep "N-2026-08-29-mym-bar-volume-regime" docs/briefs/Q-*.md
-# Expected: no matches yet (Pre-Q authoring deferred to the MNQ+MYM pooling session)
+# Expected: Q-VOLREGIME-1-intraday-bar-volume-regime.md (opened 2026-08-30, jointly with MNQ)
 ```
 
 ---
