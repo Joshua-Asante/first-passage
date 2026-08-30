@@ -4,7 +4,7 @@
 **Observed:** 2026-08-29
 **Author:** Claude Code
 **Source:** own statistical computation this session, candidate 3 of a pre-specified 5-candidate MNQ Notice-phase batch
-**Status:** `OPEN` — routing decision below is GRADUATE (range limb only); direction limb is DROP.
+**Status:** `OPEN` — routing decision below is GRADUATE (range limb only); direction limb is DROP. **Re-verified 2026-08-30** against live `MNQ_M15.csv` — the ToD-indexing fix holds (figures shift up slightly, do not dissolve) and the within-stratum null-calibrated p is now computed (decisive, p=0.00025 both strata) — see the update below, superseding the "pending re-verification" caveat.
 
 **Pre-Q:** [`Q-VOLREGIME-1`](../../briefs/Q-VOLREGIME-1-intraday-bar-volume-regime.md) (opened separately — see that brief's own Authored field), jointly with MYM's own independently-run same-day candidate.
 **Lives in:** `docs/notes/notice/N-2026-08-29-mnq-bar-volume-regime.md`
@@ -31,6 +31,44 @@ differs in magnitude, or dissolves entirely, **this notice's GRADUATE routing
 "confirmed."** The incremental-over-own-range stratification (+20.6pp/+25.6pp)
 uses the SAME buggy `outcome_range_tod` variable and is equally unverified. The
 direction-limb null (+0.01pp) does not use this variable and is unaffected.
+
+---
+
+## Update, 2026-08-30 — re-verified against live vendor bars; within-stratum null computed
+
+Both open items this notice's own correction named are now resolved:
+
+**Re-run of `candidate3_volume_regime.py` (post-fix) against `MNQ_M15.csv`:** the
+corrected ToD-matched range-lift figure **shifts up, does not dissolve**: obs
+0.695 vs base 0.504, lift **+19.1pp** (was the unverified +18.1pp), CI
+**[0.684, 0.707]** (n_cond=70,545/n_scored=136,020). Direction limb unchanged
+(+0.01pp, still null, as expected — it never used the buggy variable).
+
+**New script** [`candidate3_stratified_rerun.py`](../../../lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate3_stratified_rerun.py)
+ports `circular_shift_null_p` (same within-stratum circular-shift construction
+already used in `candidate24_joint_gate.py` and MYM's own `c3_stratified_rerun.py`,
+Codex PR #207 P1/P2) onto MNQ's own bias_hist (trigger bar's own ToD-matched
+range state) stratification. Results, on real bars:
+
+- Stratum `bias_hist=0` (own range NOT elevated, n=12,853+54,564=67,417):
+  P(y=1|volume=1)=0.4877 vs P(y=1|volume=0)=0.2645 — lift **+22.3pp**,
+  circular-shift null-calibrated **p=0.00025**.
+- Stratum `bias_hist=1` (own range elevated, n=57,692+10,911=68,603):
+  P(y=1|volume=1)=0.7415 vs P(y=1|volume=0)=0.4675 — lift **+27.4pp**,
+  circular-shift null-calibrated **p=0.00025**.
+- Both figures shift up from the previously-unverified +20.6pp/+25.6pp (same
+  direction as the marginal range-lift shift above) — the ToD-indexing fix
+  strengthens this finding, it does not weaken or dissolve it.
+- Composite (disjunctive, "either stratum") null p = max(per-stratum p's) =
+  **0.00025** — both strata individually decisive, so (unlike MYM's gap-magnitude
+  analogue, PR #211) the sharp-joint-null-vs-composite-null distinction does not
+  change the verdict here: either statistic reads decisive.
+
+**This clears `Q-VOLREGIME-1`'s own Phase 0.5 precondition for MNQ** — the
+within-stratum null was the one thing MNQ's own H-VOLREGIME-MNQ was explicitly
+gated on (that brief's §4). The range-limb GRADUATE routing below is now
+**confirmed, not pending** — struck caveat left visible in the correction above
+for the record, but superseded by this update.
 
 ---
 
@@ -87,19 +125,18 @@ N/A — routed GRADUATE (range) / DROP (direction), not HOLD.
 ## §10 — Audit hooks
 
 ```bash
-# Reproduce both outcomes, naive and ToD-matched (~1-2 min, Python loop over ToD groups).
-# Requires MNQ_M15.csv (vendor bars, absent in this public-clone environment) --
-# a local-session task, not runnable here.
+# Reproduce both outcomes, naive and ToD-matched, against live MNQ_M15.csv (2026-08-30 re-verification)
 python lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate3_volume_regime.py
-# Expected (PRE-2026-08-30-fix numbers, cited for continuity, NOT confirmed against
-# the corrected code): dir lift ~0.0001 (ToD-matched); range lift ~0.181 (ToD-matched),
-# CI [0.673, 0.695]. The fixed `outcome_range_tod` (see the correction above) may
-# reproduce these numbers, differ in magnitude, or dissolve the effect entirely --
-# re-run and update this notice with whatever the corrected code actually finds.
+# Expected (CONFIRMED against the corrected code, live bars): dir lift ~0.0001 (ToD-matched);
+# range lift ~0.191 (ToD-matched), CI [0.684, 0.707].
 
 # Confirm the indexing fix landed (Codex review, PR #210)
 grep -n "rng_bar\[1:\] > rng_thresh_tod\[1:\]" lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate3_volume_regime.py
 # Expected: one match (was rng_thresh_tod[:-1] before the fix)
+
+# Reproduce the within-stratum null-calibrated p (2026-08-30, clears Q-VOLREGIME-1 Phase 0.5)
+python lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate3_stratified_rerun.py
+# Expected: both strata lift +22.3pp/+27.4pp, circular-shift null p=0.00025 each
 
 # Confirm the DEAD-cell distinctness claims this notice rests on
 python scripts/instrument_profiles.py cell MNQ opening-pressure

@@ -48,15 +48,15 @@ cells:
     source: "../../docs/notes/notice/N-2026-08-29-mnq-overnight-rth-range-transfer.md"
   - mechanism: intraday-bar-volume-regime
     verdict: AMBIGUOUS-PARKED
-    date: 2026-08-29
+    date: 2026-08-30
     source: "../../docs/notes/notice/N-2026-08-29-mnq-bar-volume-regime.md"
   - mechanism: daily-range-state-persistence
     verdict: AMBIGUOUS-PARKED
     date: 2026-08-29
     source: "../../docs/notes/notice/N-2026-08-29-mnq-daily-range-persistence.md"
   - mechanism: bar-closing-location-autocorrelation
-    verdict: AMBIGUOUS-PARKED
-    date: 2026-08-29
+    verdict: DEAD
+    date: 2026-08-30
     source: "../../docs/notes/notice/N-2026-08-29-mnq-clv-autocorrelation.md"
 structure:
   - claim: "ORB-MNQ-1's fills are known-good - the cost fragility is a commission sensitivity, not a fill-mechanics defect (median intrabar penetration 81 ticks entries / 64 ticks stops, 0.7% shallow-touch, zero non-traded levels)."
@@ -209,8 +209,10 @@ structure:
      (`Accepted`, ratified 2026-08-29, corrected and re-ratified 2026-08-30 — see that ADR's Change history): a
      bar-shape statistic with no entry rule does not itself trigger the raised bar's gate, and if
      converted into a construct, Route 1 is plausibly open (independent of Route 3) with Route 2
-     inapplicable — the $0 cost-law pre-screen against MNQ's own N6 hurdle remains the concrete next
-     step, still HOLD pending that pre-screen.
+     inapplicable. **DROP (2026-08-30)** — the $0 cost-law pre-screen ran
+     ([`candidate5_clv_cost_screen.py`](../../lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate5_clv_cost_screen.py)):
+     implied gross edge **+0.14 bp/event**, 95% CI **[−0.04, +0.32]** (straddles 0), ~20× below
+     N6's 3.01bp hurdle. Fires ADR §4 D2; no Pre-Q authored.
   All five profile-consulted before scoring; `daily-range-state-persistence` and `opening-pressure`/
   `order-flow-depth-imbalance` (checked as #3's nearest DEAD neighbors) all confirmed via
   `scripts/instrument_profiles.py cell`. No `core/`, Pine, allocation, `dd_protection`, lifecycle, or

@@ -1,0 +1,31 @@
+{
+  "n_scored": 141540,
+  "p10": 0.1134020618556701,
+  "p90": 0.9090909090909091,
+  "mu_base": 0.08556373659876104,
+  "mu_top": -0.06146517353931682,
+  "mu_bot": 0.21884296839879452,
+  "n_top": 14318,
+  "n_bot": 14159,
+  "lift_top_bp": -0.14702891013807787,
+  "lift_bot_bp": 0.13327923180003348,
+  "fade_rule": {
+    "top_dir": -1.0,
+    "bot_dir": 1.0
+  },
+  "implied_gross_edge_bp_per_event": {
+    "mean": 0.14019245631259167,
+    "ci": [
+      -0.03808104568557325,
+      0.3244071866321599
+    ],
+    "n_events": 28477,
+    "event_freq": 0.20119400876077434,
+    "block": 96,
+    "draws": 4000,
+    "seed": 20260830
+  },
+  "n6_hurdle_bp": 3.01,
+  "clears_n6_floor": false,
+  "note": "necessary-condition cost-FLOOR check only, per ADR 2-C -- does not by itself license a Pre-Q; full Route 3 comparison needs an actual entry/exit construct's own R"
+}

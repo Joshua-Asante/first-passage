@@ -164,6 +164,7 @@ documents the camp boundary for humans/tools.
 | b2_london_fix_wake_2026-08-24 | _inbox | CLOSED | yes | B2.2 battery: 6E and 6B both DEAD via orthogonality (\|t\|<2/wrong-signed); placebo leg decisive only for 6B (rank 4.9) | lab/analysis/_inbox/b2_london_fix_wake_2026-08-24/ | — |
 | ict_1mexec_1_2026-08 | _inbox | FALSIFIED | yes | **RESOLVED (FALSIFIED at Stage 2, F1).** The frozen construct's gross edge does not | lab/analysis/_inbox/ict_1mexec_1_2026-08/ | — |
 | ict_mnq_2026-08 | _inbox | ACTIVE | yes | ICT cascade on NQ/MNQ at $0/K=0: W and D confirm, pools falsified a 3rd time; no layer licenses a deployable edge | lab/analysis/_inbox/ict_mnq_2026-08/ | — |
+| joint_surrogation_null_2026-08-30 | _inbox | ACTIVE | yes | — | lab/analysis/_inbox/joint_surrogation_null_2026-08-30/ | — |
 | mnq_dailygeom_notice_2026-08-29 | _inbox | ACTIVE | yes | — | lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/ | — |
 | mym_mechanism_harvest_2026-08-29 | _inbox | ACTIVE | yes | — | lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/ | — |
 | q_trainkill_1_2026-08 | _inbox | HOLD | yes | AMBIGUOUS-HOLD — BOUNDED extremes disagree (MISCALIBRATED at ε vs KILLS-INFORMATIVE at 1−ε); scored core (n*=8) is MISCALIBRATED | lab/analysis/_inbox/q_trainkill_1_2026-08/ | — |

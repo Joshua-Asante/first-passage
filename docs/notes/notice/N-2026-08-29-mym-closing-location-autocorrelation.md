@@ -1,10 +1,10 @@
-# Notice — MYM M15 bar closing-location autocorrelation (unconditional, SIGNAL-EXCESS)
+# Notice — MYM M15 bar closing-location autocorrelation (unconditional, SIGNAL-EXCESS; cost-law pre-screen run — DROP)
 
 **Notice ID:** N-2026-08-29-mym-closing-location-autocorrelation
-**Observed:** 2026-08-29
+**Observed:** 2026-08-29; **cost-law pre-screen run 2026-08-30**
 **Author:** Joshua | claude.ai
 **Source:** backtest CSV (bar panel) — atheoretical mechanism harvest, MYM Phase 2
-**Status:** `HELD until $0 cost-law pre-screen runs` (outer-bound re-check `2026-11-08` — see §5; raised-bar admission-route scope separately resolved — see §4)
+**Status:** `DROP` (2026-08-30 — $0 cost-law pre-screen fails the floor cleanly against a provisional basis; see §4/§5)
 **Lives in:** `docs/notes/notice/N-2026-08-29-mym-closing-location-autocorrelation.md`
 
 ---
@@ -82,19 +82,23 @@ were in verdict bookkeeping and the record step, not the computation itself.
 
 ## §4 — Routing decision
 
-**HOLD until $0 cost-law pre-screen runs.**
+**DROP (2026-08-30, superseding the original HOLD below — the $0 cost-law pre-screen this notice's own §3/§5 named has now run).** Script: [`c5_clv_cost_screen.py`](../../../lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c5_clv_cost_screen.py). Same design as MNQ's sibling screen: unconditional whole-sample CLV_t deciles (P10=0.0909, P90=0.9189); forward 1-bar real return close_t→close_{t+1} in bp; fade direction set by the data's own sign. Result: top-decile lift −0.3245bp, bottom-decile lift +0.3968bp, combined implied gross edge **+0.3609 bp/event**, 95% block-bootstrap CI **[+0.2436, +0.4822]** (n_events=28,668) — real and statistically distinguishable from 0 (unlike MNQ's sibling result), but still roughly **18× below** MYM's own #M6 hurdle (**6.57 bp/event, provisional** — Tradeify de-scoped, pending F3 re-pricing). Even reading the hurdle at its last-known, pre-de-scope basis, the implied edge does not come close. **This clears ADR §4 D2** (pre-screen fails cleanly on both instruments): DROP per that ADR, no Pre-Q authored. If a future re-priced #M6 hurdle ever falls below ~0.4bp (implausible for any live venue), this specific disposition would need revisiting — flagged, not expected.
+
+~~**HOLD until $0 cost-law pre-screen runs.** (original, struck 2026-08-30 by the pre-screen result above)
 
 Reason: the underlying statistic is real and worth taking seriously (not a DROP-worthy
 non-finding, unlike candidates 2–4), but neither GRADUATE nor DROP is the honest call
-until the cheap pre-screen this notice's own §3 already named has actually run.
+until the cheap pre-screen this notice's own §3 already named has actually run.~~
 
 **Admission-route status — resolved by [`docs/adr/2026-08-29-clv-autocorrelation-admission-route-scope.md`](../../adr/2026-08-29-clv-autocorrelation-admission-route-scope.md) (`Proposed`, pending re-ratification after a same-day correction — see that ADR's Change history).** Of the three readings §5 originally sketched, the ruling lands closest to (b): a bar-shape statistic with no entry rule attached does not trigger the raised bar's admission gate — that gate fires at Pre-Q admission for an actual directional-timing *candidate*, which this is not yet, so no route decision is owed to keep recording it in a Notice-log. The ADR goes further than "outside scope" alone, though: it also pre-rules the routes for *if* this becomes a candidate. Reading (a) (Route 1) is **plausibly open, corrected from this notice's own original "weak" read**: CLV's mechanism (bar-shape mean-reversion) sits outside the raised bar's three specifically-mapped cost-re-derivation axes (price / instrument-selection / hold-time), independent of and in addition to Route 3 — the ADR's own initial draft made the same "weak" mistake this notice did, by testing only against the 2026-08-10 ADR's one temporal-selectivity worked example rather than the mapped-lever definition itself, and was corrected after ratification was withdrawn. Route 2 does not apply (same OHLCV modality). **Route 3 (beat `ORB-MNQ-1` net-of-cost, not merely clear the cost floor) remains separately available** if this is ever converted into an entry construct. Route 1 eligibility still requires full G0 discipline (adversarial review, `K_intrinsic`, the F2 guard) — it is a scope reading, not a clearance. The mean-reversion/fade flavor this notice flagged is exactly why the ADR leans on the standing `lesson_cost_law_pre_screen_mr_fade` discipline for the concrete next step — see the updated §5 below.
 
 ---
 
-## §5 — If HOLD: re-check trigger
+## §5 — DROP disposition (was: "If HOLD: re-check trigger")
 
-- **Re-check date:** 2026-11-08 as an outer bound (rides the standing §4 falsifier
+**N/A — superseded 2026-08-30, ahead of the 2026-11-08 outer bound.** The drop trigger below fired; there is no re-check.
+
+~~- **Re-check date:** 2026-11-08 as an outer bound (rides the standing §4 falsifier
   hard-date already on the calendar for other programme items, per `CLAUDE.md`'s
   prop-portfolio §4 line — not a new date invented for this notice); the pre-screen
   below is the preferred, earlier trigger and does not need to wait for that date.
@@ -111,7 +115,8 @@ until the cheap pre-screen this notice's own §3 already named has actually run.
   that comparison is deferred until such a construct is built.
 - **Drop trigger:** the $0 cost-law pre-screen (mean |gross edge implied by ρ≈−0.037| vs.
   the MYM cost hurdle, `MYM.md` #M6, read as provisional per above) run before the
-  re-check date and failing cleanly.
+  re-check date and failing cleanly.~~ — **fired**: +0.36 bp/event vs a 6.57bp hurdle,
+  ~18× short even at the provisional (possibly overstated) basis.
 - **Calendar entry:** none set; operator to set if desired.
 
 ---
@@ -122,7 +127,16 @@ until the cheap pre-screen this notice's own §3 already named has actually run.
 python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c5_closing_location.py
 # Expected: observed lag-1 Spearman rho = -0.0370, CI=[-0.0422,-0.0319], VERDICT: SIGNAL-EXCESS
 
-# Re-check due: 2026-11-08 -- verify in Calendar / Todoist if the operator sets one
+# Reproduce the $0 cost-law pre-screen (2026-08-30 DROP disposition)
+python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c5_clv_cost_screen.py
+# Expected: implied gross edge +0.3609 bp/event, CI=[+0.2436,+0.4822], vs M6 hurdle 6.57bp -- CLEARS=False
+# (CI corrected 2026-08-30, Codex review PR #219: the fade-rule series is now built in
+# chronological event order before block-bootstrapping, not concatenated-by-decile-then-
+# bootstrapped -- mean edge is unchanged, only the CI's precision shifted slightly)
+
+# Confirm no Pre-Q was opened for this DROP (per ADR §4 D2)
+grep -rln "N-2026-08-29-mym-closing-location-autocorrelation" docs/briefs/Q-*.md
+# Expected: empty
 ```
 
 ---
