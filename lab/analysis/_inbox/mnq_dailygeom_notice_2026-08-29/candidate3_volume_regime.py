@@ -152,7 +152,17 @@ def main():
     # code is committed; the headline +18.1pp/[0.673,0.695] range-lift figure in
     # this repo's Notice-log and downstream artifacts needs re-verification
     # against a fresh run before being treated as confirmed.
-    outcome_range_tod[:-1] = (rng_bar[1:] > rng_thresh_tod[1:]).astype(float)
+    # Fixed 2026-08-30 (Codex review, PR #219): a NaN next-slot threshold
+    # (early-panel bars whose ToD slot hasn't yet reached TRAIL_N=60 prior
+    # occurrences) made `rng_bar[1:] > rng_thresh_tod[1:]` evaluate to False
+    # (numpy: any comparison against NaN is False), which `.astype(float)`
+    # then silently turned into a wrongly-scored 0.0 instead of NaN -- those
+    # rows passed the `scored` mask with a fabricated "not elevated" outcome
+    # instead of being excluded. `np.where` on the NaN-mask forces the correct
+    # NaN through regardless of what the underlying (nan-poisoned) comparison
+    # computes, matching the MYM sibling script's own `np.where` guard.
+    outcome_range_tod[:-1] = np.where(~np.isnan(rng_thresh_tod[1:]),
+                                       (rng_bar[1:] > rng_thresh_tod[1:]).astype(float), np.nan)
     outcome_range_tod[-1] = np.nan
 
     outcome_dir_tod = outcome_dir_pooled  # direction-continuation def is ToD-independent already

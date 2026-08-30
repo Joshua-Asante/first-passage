@@ -112,13 +112,25 @@ DEFAULT_VAR_ORDER = 20                 # ~1/3 of ACF_LAGS -- Phase 2 review item
 
 
 def normal_scores(x: np.ndarray) -> np.ndarray:
-    """Verbatim from iaaft_battery.py (mym_mechanism_harvest_2026-08-29/), duplicated
-    here with attribution rather than cross-directory-imported, matching this
-    session's own precedent (candidate3_stratified_rerun.py duplicating
-    circular_shift_null_p rather than importing across candidate directories)."""
+    """Rank-to-normal-quantile transform, using AVERAGE-rank tie-breaking
+    (`rankdata`'s default 'average' method) so ties get a shared rank rather
+    than an arbitrary ordinal one. Corrected 2026-08-30 (Codex review, PR #219):
+    the original version (still in `iaaft_battery.py`, out of scope for this
+    fix -- see below) used `np.argsort(..., kind="stable")`, which assigns
+    DISTINCT sequential ranks to exactly-tied values in original-array (i.e.
+    temporal) order -- inventing a spurious within-tie time ordering before
+    any downstream ACF/VAR fit ever sees the data. This matters here
+    specifically because the real on_range/rth_range panel is materially
+    discrete (455/495 duplicate rows respectively, per the review) and every
+    diagnostic in this module already uses `rankdata`'s average-tie
+    convention (`acf(rankdata(x), ...)`) -- the mismatch between the
+    transform's own tie handling and the diagnostic's could bias the fitted
+    autocorrelation/cross-lag dynamics. NOT applied to `iaaft_battery.py`
+    itself (pre-existing, used unchanged by already-reviewed scripts from
+    prior PRs -- candidate1/candidate5's own IAAFT battery -- changing it
+    would re-open settled findings outside this fix's scope)."""
     n = len(x)
-    ranks = np.empty(n, dtype=float)
-    ranks[np.argsort(x, kind="stable")] = np.arange(1, n + 1)
+    ranks = rankdata(x, method="average")
     return norm.ppf(ranks / (n + 1))
 
 

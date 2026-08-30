@@ -87,9 +87,17 @@ def main():
 
     top_dir = -1.0 if lift_top < 0 else 1.0
     bot_dir = 1.0 if lift_bot > 0 else -1.0
-    top_trade_bp = top_dir * (r[top_mask] - mu_base)
-    bot_trade_bp = bot_dir * (r[bot_mask] - mu_base)
-    combined = np.concatenate([top_trade_bp, bot_trade_bp])
+    # Fixed 2026-08-30 (Codex review, PR #219) -- same defect as the MNQ
+    # sibling script: concatenating all top-decile events then all
+    # bottom-decile events destroyed chronological order before block-
+    # bootstrapping. See that script's own comment for the full rationale
+    # and the disclosed block-size semantic shift (96 consecutive EVENTS,
+    # not 96 consecutive bars).
+    event_mask = top_mask | bot_mask
+    signed_dir = np.zeros(n, dtype=float)
+    signed_dir[top_mask] = top_dir
+    signed_dir[bot_mask] = bot_dir
+    combined = signed_dir[event_mask] * (r[event_mask] - mu_base)
     n_events = len(combined)
     freq = n_events / n
     mean_edge = float(combined.mean())

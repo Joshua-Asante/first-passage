@@ -116,9 +116,24 @@ def main():
     # is positive -- i.e., trade the sign that would have made money.
     top_dir = -1.0 if lift_top < 0 else 1.0
     bot_dir = 1.0 if lift_bot > 0 else -1.0
-    top_trade_bp = top_dir * (r[top_mask] - mu_base)
-    bot_trade_bp = bot_dir * (r[bot_mask] - mu_base)
-    combined = np.concatenate([top_trade_bp, bot_trade_bp])
+    # Fixed 2026-08-30 (Codex review, PR #219): concatenating all top-decile
+    # events followed by all bottom-decile events destroyed their original
+    # chronological order before block-bootstrapping -- for serially
+    # dependent M15 bars, a block=96 window drawn from either half no longer
+    # approximates any real time span (most of a block shares one signal
+    # type; neighboring elements can be years apart). Building one
+    # chronologically-ordered signed-event series (boolean masking preserves
+    # original array order) instead means block=96 now spans 96 consecutive
+    # QUALIFYING EVENTS in their real occurrence order, not 96 consecutive
+    # bars -- a real semantic shift, disclosed here rather than silently
+    # kept: at ~20% event frequency, 96 events span roughly 480 real bars
+    # (~5 sessions), not the ~1-session span the block size was originally
+    # chosen to approximate on a full bar-indexed series.
+    event_mask = top_mask | bot_mask
+    signed_dir = np.zeros(n, dtype=float)
+    signed_dir[top_mask] = top_dir
+    signed_dir[bot_mask] = bot_dir
+    combined = signed_dir[event_mask] * (r[event_mask] - mu_base)
     n_events = len(combined)
     freq = n_events / n
     mean_edge = float(combined.mean())

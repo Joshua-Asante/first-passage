@@ -1,19 +1,22 @@
 # RESULTS — Phase 1 joint-surrogation null design exploration (Q-RANGEXFER-1 / Q-VOLREGIME-1)
 
-**Status (updated, Round 2 below): NOT RESOLVED to a certifiable standard, but no longer a flat
-negative either.** Seven total joint-surrogation constructions have now been tried across two
-rounds (Round 1: linked-residual IAAFT, VAR(p), shared-start IAAFT; Round 2: CCC-GARCH/MEM,
-DCC-GARCH/MEM, ARFIMA long-memory+copula, nonparametric regime-block-bootstrap), plus one attempt
-to fix the DIAGNOSTIC GATE itself. The headline result, independently adversarially verified: **the
-underlying surrogate-testing MACHINERY (generate surrogates → compute the real min-stratified-lift
-statistic → get p_upper) is sound and gives correct Type-I control and real power** — confirmed by
-re-running it with 4× the replicates and fresh seeds. What remains genuinely unresolved is **model
-adequacy**: no diagnostic tried so far can reliably tell whether the specific fitted joint model
-(ARFIMA long-memory + Gaussian copula, the best-performing construction) is a good enough
-representation of the real MNQ range series to trust its p-values, because the ACF-percentile gate
-built to check this was shown to be too weak to distinguish that model from one already known to be
-inadequate. See "Round 2" below for the full account, and the final synthesized status this
-supersedes-in-part (not silently — Round 1's own three findings stand unchanged).
+**Status (updated, Round 3 below): NOT RESOLVED to a certifiable standard, and materially further
+from resolved than Round 2's own headline claimed.** Seven total joint-surrogation constructions
+have now been tried across three rounds (Round 1: linked-residual IAAFT, VAR(p), shared-start
+IAAFT; Round 2: CCC-GARCH/MEM, DCC-GARCH/MEM, ARFIMA long-memory+copula, nonparametric
+regime-block-bootstrap; Round 3: a Codex review pass that found and fixed 4 real code bugs and
+ran the refit-per-replicate check Round 2's own positive control had skipped). **Round 2's own
+headline claim — "the surrogate-testing machinery is sound, confirmed by an independent
+80-replicate re-run" — is corrected here: that re-run, like the original, validated the machinery
+only under KNOWN-TRUE model parameters. When parameters are instead RE-ESTIMATED per replicate
+(the only way the procedure could ever actually run on real, previously-unseen data), the null
+false-positive rate empirically jumps from the nominal 5% to 25% (2/8 replicates, admittedly a
+coarse/small-N check — see Round 3) — a real, non-trivial inflation, not a theoretical concern.**
+What remains genuinely unresolved is now BOTH model adequacy (Round 2's own finding: no diagnostic
+tried can reliably tell whether the fitted ARFIMA-copula model represents the real data well
+enough to trust) AND, newly, whether the estimation step itself preserves Type-I control at all.
+See "Round 2" and "Round 3" below for the full account. Nothing in Round 1 or Round 2's own
+empirical numbers is deleted — only the CONCLUSION drawn from them is corrected.
 
 ## Round 1 (superseded in part by Round 2, not deleted)
 
@@ -209,11 +212,12 @@ stochastic generative model. A follow-up build-and-verify pass tested this direc
   distributions are clearly separated (means ≈0.58–0.60 vs ≈0.10–0.15), ruling out a degenerate
   null that never rejects in either scenario.
 
-**Net result: the surrogate-generation-and-testing MACHINERY (Step 2, the positive control) is
-independently verified sound. The MODEL-ADEQUACY diagnostic (Step 1, the ACF gate — in either its
-original fixed-tolerance or its redesigned ensemble-percentile form) is independently verified
-inadequate at this sample size for this process class.** These are different claims, and Phase 1
-needs both to certify a design — it currently has one, not both.
+**Net result at Round 2 (CORRECTED by Round 3 below — do not stop reading here): the
+surrogate-generation-and-testing MACHINERY (Step 2, the positive control) is independently
+verified sound UNDER KNOWN-TRUE MODEL PARAMETERS. The MODEL-ADEQUACY diagnostic (Step 1, the ACF
+gate — in either its original fixed-tolerance or its redesigned ensemble-percentile form) is
+independently verified inadequate at this sample size for this process class.** Round 3 found
+that the "known-true parameters" caveat is load-bearing, not incidental — see below.
 
 ### A suggestive, EXPLORATORY-ONLY, NOT-CERTIFIED finding worth an operator's attention
 
@@ -257,10 +261,14 @@ verdict — the model behind it has not cleared model-adequacy per the section a
 ## What this means for Q-RANGEXFER-1 / Q-VOLREGIME-1's own Phase 1/2/3 sequencing
 
 Phase 1 (design) is **not complete to a certifiable standard** — the surrogate-testing machinery is
-now validated, but model adequacy is not, and Phase 1 needs both. Phase 2 (adversarial review) has
-been informally discharged for the machinery (independently confirmed sound) but not for model
-adequacy (independently confirmed the proposed fix does not work) — a future session still owes a
-from-scratch model-adequacy strategy per the recommendations above before Phase 3 can proceed.
+validated only under known-true parameters (Round 3 found real, meaningful Type-I inflation once
+parameters are estimated, the only way the procedure could ever actually run), and model adequacy
+is separately not established either. Phase 2 (adversarial review) has been informally discharged
+for the machinery's mechanics (the generate → score → p_upper pipeline is bug-free and correctly
+implements its own stated design) but NOT for the machinery's actual operating characteristics
+under estimation (Round 3) or for model adequacy (Round 2) — a future session owes both a
+from-scratch model-adequacy strategy AND an estimation-aware size/power re-certification per the
+recommendations above before Phase 3 can proceed.
 Phase 3 (K declaration + operator GO + execution) cannot proceed on either brief's
 H-RANGEXFER-1-class or H-VOLREGIME-class hypotheses until model adequacy is certified. This does
 **not** affect Q-VOLREGIME-1's own Phase 0.5 precondition (already cleared, separately, earlier this
@@ -315,4 +323,133 @@ python ensemble_gate_and_positive_control.py
 python _adversarial_rerun.py
 # Expected: null false-positive rate close to 1-3% (mildly conservative), power ~31-45% depending
 # on injected effect size, KS-uniformity check on null p-values does not show gross miscalibration
+```
+
+## Round 3 — Codex review (PR #219): 4 real code bugs found and fixed, 1 major conclusion corrected
+
+An external (Codex) review pass on the PR carrying this file's Round 1/2 work found 6 substantive
+issues. Each was independently re-verified against the actual code (not taken on faith) before
+fixing. Four were confirmed real bugs with quantified impact; one was a confirmed but
+already-partially-disclosed methodological gap that this round closed with an actual empirical
+check rather than more disclosure text; one was a confirmed doc-staleness issue (fixed, see the
+brief/notice/ledger updates in this PR, not detailed further here).
+
+**1. Positive control validates machinery only under known-true parameters (the big one).**
+Round 2's own positive control (`ensemble_gate_and_positive_control.py`, and its own independent
+80-rep re-verification, `_adversarial_rerun.py`) passed the SAME cached real-panel-fitted
+`(phi,d,rho_innov)` into every synthetic replicate as both ground truth AND surrogate-generation
+parameters. This validates the generate→score→p_upper PIPELINE's mechanics, but not the actual
+procedure that would run on real, previously-unseen data, which must ESTIMATE `(phi,d)` first.
+Built `_refit_per_replicate_positive_control.py`: for each replicate, `(phi,d,rho_innov)` is
+RE-ESTIMATED from that replicate's own synthetic data (not read from cache) via the same
+simulated-method-of-moments approach `longmemory_copula.py` already implements, at a deliberately
+coarse grid (phi_grid 7pts × d_grid 8pts × n_reps_calib=2 × J/burn=300, vs the production
+21-31pts × 25-50pts × 5-6 × J/burn=1200-2000 — a disclosed compute-budget simplification, N=8
+replicates per scenario vs the original 20/80). **Result: null false-positive rate 2/8 = 25% (vs
+the fixed-parameter run's 5%) — a real, meaningful Type-I inflation, not a rounding artifact.**
+Power held roughly steady (4/8 = 50% vs the fixed-parameter run's 50%). The coarse grid likely
+overstates the true production-grade inflation (a finer grid should estimate `(phi,d)` more
+precisely, reducing estimation noise) — but the QUALITATIVE finding, that fixed-parameter
+validation materially understates the real false-positive rate, is now empirically demonstrated,
+not merely a theoretical possibility. **This corrects Round 2's own "machinery CONFIRMED SOUND"
+headline** — see the corrected "Net result" line above. The exploratory real-data p_upper=0.785
+finding itself used the production-grade (not coarse) SMM fit from `_fit_real_params.py`, run once
+directly on the real data — it is not undermined by this finding in the same way the SYNTHETIC
+positive control's own size/power claim is, but its own single-fit `(phi,d)` estimate now carries
+a disclosed extra layer of estimation uncertainty (per this section's own finding, plausible
+alternative fits within the same uncertainty band could shift the exact 0.785 figure, though a
+modest shift is very unlikely to flip a result this far from the 0.05 boundary into significance).
+
+**2. CLV cost-screen block-bootstrap destroyed event chronology (both MNQ and MYM).**
+`candidate5_clv_cost_screen.py` / `c5_clv_cost_screen.py` built their block-bootstrap input by
+`np.concatenate([top_trade_bp, bot_trade_bp])` — ALL top-decile events (in their own time order)
+followed by ALL bottom-decile events (in their own time order). For serially dependent M15 range
+data, a block=96 window drawn from either half no longer approximates any real time span (most of
+a block shares one signal type; at ~20% event frequency, neighboring elements in a decile-only
+sub-array can be years apart in real time). **Fixed:** build one chronologically-ordered signed
+event series via a single combined boolean mask (`event_mask = top_mask | bot_mask`; boolean
+masking preserves original array order), then block-bootstrap that. This is a real semantic shift,
+disclosed rather than silently kept: block=96 now means "96 consecutive QUALIFYING EVENTS in their
+real occurrence order" (≈480 real bars, ≈5 sessions at this event frequency), not "~1 session of
+raw bars." **Re-run, both instruments: the mean edge is UNCHANGED (concatenation vs. chronological
+ordering doesn't change the mean of the same set of values), only the CI shifts slightly** — MNQ
+[−0.0358,+0.3154] → [−0.0381,+0.3244] (same qualitative FAIL, straddles 0 either way); MYM
+[+0.2328,+0.4835] → [+0.2436,+0.4822] (same qualitative FAIL against the 6.57bp hurdle, though the
+rounded 2-decimal lower bound moves from 0.23 to 0.24 — both notices/`MECHANISMS.md`/`MYM.md`
+updated to the corrected figures). **No disposition changed** (both CLV notices' DROP stands).
+
+**3. MNQ bar-volume-regime outcome silently converted a missing threshold to a false "not
+elevated" reading.** `candidate3_volume_regime.py` (pre-existing, not authored this session) and
+this session's own `candidate3_stratified_rerun.py` both built `y[:-1] = (rng_bar[1:] >
+rng_thresh_tod[1:]).astype(float)`. When a next bar's own ToD-slot threshold is NaN (early-panel
+bars whose slot hasn't yet reached `TRAIL_N=60` prior occurrences), `rng_bar[1:] > NaN` evaluates
+to `False` (numpy: any comparison against NaN is False) and `.astype(float)` silently produced
+`0.0` instead of `NaN` — those rows passed the `scored` mask with a FABRICATED "not elevated"
+outcome instead of being excluded, exactly the class of defect the MYM sibling script's own
+`np.where` guard already prevented. **Fixed in both files** with the same `np.where(~np.isnan(...),
+..., np.nan)` guard MYM already used. **Re-run, both scripts: numbers move negligibly** (the
+affected fraction is a small, early-panel slice) — marginal ToD-matched range lift +19.1pp → +19.1pp
+(0.69557 vs 0.69529, same to the precision already cited); stratified lift +22.3pp/+27.4pp →
++22.3pp/+27.4pp (0.2234/0.2739 vs 0.2232/0.2740), both strata still p=0.00025. **No disposition
+changed.**
+
+**4. `longmemory_copula.py` hardcoded the author's absolute Windows worktree path** in its
+`__main__` block instead of resolving `candidate24_joint_frame.csv` relative to the module's own
+location — would raise `FileNotFoundError` on any other checkout even though the CSV is tracked in
+the adjacent analysis directory. **Fixed** with `Path(__file__).resolve().parent.parent / ...`,
+matching the convention `_fit_real_params.py` and `ensemble_gate_and_positive_control.py` already
+used.
+
+**5. Ordinal (not average-rank) tie-breaking in `normal_scores`.** `joint_iaaft.py`,
+`ccc_garch.py`, and `longmemory_copula.py` all defined `normal_scores` using
+`np.argsort(x, kind="stable")`, which assigns DISTINCT sequential ranks to exactly-tied values in
+original (temporal) array order — inventing a spurious within-tie time ordering before any
+downstream fit sees the data. The real `on_range`/`rth_range` panel is materially discrete (455 /
+495 duplicate rows respectively, per the review), and every diagnostic in these modules already
+uses `rankdata`'s average-tie convention, creating a real internal inconsistency. **Fixed** in all
+three files to use `rankdata(x, method="average")`. **Checked impact directly** (not assumed
+negligible): `ccc_garch.py` and `longmemory_copula.py` define this function but never actually
+CALL it anywhere in their real generation pipelines (confirmed by exhaustive grep for call sites,
+not just the definition) — the fix there is correct hygiene with zero numeric impact on any
+reported figure. `joint_iaaft.py`'s VAR(p) construction DOES call it; re-ran its own audit hook
+post-fix: channel1/channel2 ACF mismatch and cross-correlation mismatch move by <0.001 at the
+4th decimal place, no qualitative change to the FAIL verdict or the smoking-gun comparator result
+Round 2's own gate-legitimacy review relied on.
+
+**6. Stale precondition-status restatements after Q-VOLREGIME-1's precondition cleared.** Three
+locations still stated or implied "neither instrument's within-stratum significance is
+null-calibrated" / "UNRESOLVED, vendor-blocked" after the actual precondition-clearing work (this
+same session, prior commit) had already updated the brief's own §4/§7: `Q-VOLREGIME-1`'s own §3
+Sub-questions text, `N-2026-08-29-mym-bar-volume-regime.md`'s Pre-Q summary line, and — the most
+stale of the three — `ops/instruments/MYM.md`'s entire `intraday-bar-volume-regime` bullet, which
+had never been touched by the precondition-clearing edit at all and still read the ORIGINAL
+UNRESOLVED disposition in full. **Fixed all three** to state the current (cleared) status,
+consistent with the ledger cell, `MECHANISMS.md`, and the notice's own Status header, which were
+already correct.
+
+**Net effect of Round 3 on prior conclusions:** items 2, 3, 5, and the doc-staleness item are
+confirmed real defects with negligible-to-no numeric impact on any disposition already recorded —
+DROP/INCREMENT verdicts for CLV and bar-volume-regime are UNCHANGED, only exact CI/precision
+figures were corrected where they moved. Item 1 is the substantive one: it downgrades Round 2's
+own claim that the joint-surrogation null's testing machinery is "confirmed sound" to "confirmed
+sound only under an assumption (known-true parameters) that does not hold for the actual use case,
+and relaxing that assumption produces a real, measured Type-I inflation." Phase 1 is further from
+resolved than Round 2's own headline stated, not closer.
+
+```bash
+# Reproduce the refit-per-replicate Type-I inflation finding
+python _refit_per_replicate_positive_control.py
+# Expected: null reject rate 2/8=0.25 (vs the fixed-parameter run's 0.05), alt reject rate 4/8=0.50
+
+# Reproduce the corrected CLV cost-screen CIs (mean edge unchanged)
+python ../mnq_dailygeom_notice_2026-08-29/candidate5_clv_cost_screen.py
+# Expected: mean=+0.1402 bp/event, CI=[-0.0381,+0.3244]
+python ../mym_mechanism_harvest_2026-08-29/c5_clv_cost_screen.py
+# Expected: mean=+0.3609 bp/event, CI=[+0.2436,+0.4822]
+
+# Reproduce the corrected MNQ bar-volume-regime figures (NaN-handling fix)
+python ../mnq_dailygeom_notice_2026-08-29/candidate3_volume_regime.py
+# Expected: ToD-matched range lift ~0.1911 (n_scored=135958, down slightly from 136020 pre-fix)
+python ../mnq_dailygeom_notice_2026-08-29/candidate3_stratified_rerun.py
+# Expected: strata lifts 0.2234/0.2739, both null-calibrated p=0.00025
 ```

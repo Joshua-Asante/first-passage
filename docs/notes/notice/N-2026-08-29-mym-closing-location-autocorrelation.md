@@ -82,7 +82,7 @@ were in verdict bookkeeping and the record step, not the computation itself.
 
 ## §4 — Routing decision
 
-**DROP (2026-08-30, superseding the original HOLD below — the $0 cost-law pre-screen this notice's own §3/§5 named has now run).** Script: [`c5_clv_cost_screen.py`](../../../lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c5_clv_cost_screen.py). Same design as MNQ's sibling screen: unconditional whole-sample CLV_t deciles (P10=0.0909, P90=0.9189); forward 1-bar real return close_t→close_{t+1} in bp; fade direction set by the data's own sign. Result: top-decile lift −0.3245bp, bottom-decile lift +0.3968bp, combined implied gross edge **+0.3609 bp/event**, 95% block-bootstrap CI **[+0.2328, +0.4835]** (n_events=28,668) — real and statistically distinguishable from 0 (unlike MNQ's sibling result), but still roughly **18× below** MYM's own #M6 hurdle (**6.57 bp/event, provisional** — Tradeify de-scoped, pending F3 re-pricing). Even reading the hurdle at its last-known, pre-de-scope basis, the implied edge does not come close. **This clears ADR §4 D2** (pre-screen fails cleanly on both instruments): DROP per that ADR, no Pre-Q authored. If a future re-priced #M6 hurdle ever falls below ~0.4bp (implausible for any live venue), this specific disposition would need revisiting — flagged, not expected.
+**DROP (2026-08-30, superseding the original HOLD below — the $0 cost-law pre-screen this notice's own §3/§5 named has now run).** Script: [`c5_clv_cost_screen.py`](../../../lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c5_clv_cost_screen.py). Same design as MNQ's sibling screen: unconditional whole-sample CLV_t deciles (P10=0.0909, P90=0.9189); forward 1-bar real return close_t→close_{t+1} in bp; fade direction set by the data's own sign. Result: top-decile lift −0.3245bp, bottom-decile lift +0.3968bp, combined implied gross edge **+0.3609 bp/event**, 95% block-bootstrap CI **[+0.2436, +0.4822]** (n_events=28,668) — real and statistically distinguishable from 0 (unlike MNQ's sibling result), but still roughly **18× below** MYM's own #M6 hurdle (**6.57 bp/event, provisional** — Tradeify de-scoped, pending F3 re-pricing). Even reading the hurdle at its last-known, pre-de-scope basis, the implied edge does not come close. **This clears ADR §4 D2** (pre-screen fails cleanly on both instruments): DROP per that ADR, no Pre-Q authored. If a future re-priced #M6 hurdle ever falls below ~0.4bp (implausible for any live venue), this specific disposition would need revisiting — flagged, not expected.
 
 ~~**HOLD until $0 cost-law pre-screen runs.** (original, struck 2026-08-30 by the pre-screen result above)
 
@@ -129,7 +129,10 @@ python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c5_closing_location.
 
 # Reproduce the $0 cost-law pre-screen (2026-08-30 DROP disposition)
 python lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c5_clv_cost_screen.py
-# Expected: implied gross edge +0.3609 bp/event, CI=[+0.2328,+0.4835], vs M6 hurdle 6.57bp -- CLEARS=False
+# Expected: implied gross edge +0.3609 bp/event, CI=[+0.2436,+0.4822], vs M6 hurdle 6.57bp -- CLEARS=False
+# (CI corrected 2026-08-30, Codex review PR #219: the fade-rule series is now built in
+# chronological event order before block-bootstrapping, not concatenated-by-decile-then-
+# bootstrapped -- mean edge is unchanged, only the CI's precision shifted slightly)
 
 # Confirm no Pre-Q was opened for this DROP (per ADR §4 D2)
 grep -rln "N-2026-08-29-mym-closing-location-autocorrelation" docs/briefs/Q-*.md

@@ -216,7 +216,13 @@ def main():
 
     rng_thresh_tod = rolling_pct_strict_prior_by_group(rng_bar, et_minute, TRAIL_N, 0.50)
     y = np.full(n, np.nan)
-    y[:-1] = (rng_bar[1:] > rng_thresh_tod[1:]).astype(float)
+    # Fixed 2026-08-30 (Codex review, PR #219) -- same defect as
+    # candidate3_volume_regime.py's outcome_range_tod: a NaN next-slot
+    # threshold silently became a 0.0 "not elevated" outcome instead of being
+    # excluded. np.where forces NaN through regardless of the underlying
+    # nan-poisoned comparison, matching MYM's own guard.
+    y[:-1] = np.where(~np.isnan(rng_thresh_tod[1:]),
+                       (rng_bar[1:] > rng_thresh_tod[1:]).astype(float), np.nan)
     y[-1] = np.nan
 
     # NEW: bias_hist[t] = the TRIGGER bar's own range already elevated vs its own

@@ -385,7 +385,7 @@ Pre-Q, and Route 1 eligibility still requires full G0 discipline — see the ADR
   session. **DROP (2026-08-30)** — the $0 cost-law pre-screen named above has now run
   ([`c5_clv_cost_screen.py`](../../lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c5_clv_cost_screen.py)):
   decile-conditioned forward-return implied gross edge **+0.3609 bp/event**, 95% CI
-  **[+0.2328, +0.4835]** — real but ~18× below MYM's own #M6 hurdle (6.57 bp/event,
+  **[+0.2436, +0.4822]** — real but ~18× below MYM's own #M6 hurdle (6.57 bp/event,
   provisional). Fires ADR §4 D2 (fails cleanly): ledger cell **`DROP`** (was
   `AMBIGUOUS-PARKED`, itself corrected from an initial `CONTINGENT-FORWARD`), no Pre-Q
   authored. [MYM.md](MYM.md) ·
@@ -400,7 +400,7 @@ Pre-Q, and Route 1 eligibility still requires full G0 discipline — see the ADR
   SIGNAL-GENERIC on this instrument. **DROP (2026-08-30)** — the $0 cost-law pre-screen has
   now run ([`candidate5_clv_cost_screen.py`](../../lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate5_clv_cost_screen.py)):
   decile-conditioned forward-return implied gross edge **+0.1402 bp/event**, 95% CI
-  **[−0.0358, +0.3154]** (straddles 0) — ~20× below MNQ's own N6 hurdle (3.01 bp/event,
+  **[−0.0381, +0.3244]** (straddles 0) — ~20× below MNQ's own N6 hurdle (3.01 bp/event,
   already a 4×-round-trip-cost figure, unit-comparable directly despite the "/session"
   label — see the script's own docstring). Fires ADR §4 D2 (fails cleanly): ledger cell
   **`DROP`** (was `AMBIGUOUS-PARKED`, itself corrected from an initial `CONTINGENT-FORWARD`).

@@ -109,10 +109,12 @@ TOL_CROSSCORR = 0.05              # SAME as joint_iaaft.py -- not re-derived her
 
 
 def normal_scores(x: np.ndarray) -> np.ndarray:
-    """Verbatim from joint_iaaft.py / iaaft_battery.py, duplicated with attribution."""
+    """Average-rank tie-breaking (Codex review, PR #219) -- see joint_iaaft.py's
+    own normal_scores docstring for the full rationale (ordinal ties invent a
+    spurious time ordering; this module's own diagnostics already use
+    rankdata's average-tie convention)."""
     n = len(x)
-    ranks = np.empty(n, dtype=float)
-    ranks[np.argsort(x, kind="stable")] = np.arange(1, n + 1)
+    ranks = rankdata(x, method="average")
     return norm.ppf(ranks / (n + 1))
 
 
@@ -487,11 +489,14 @@ def generate_joint_surrogates(x1: np.ndarray, x2: np.ndarray, M: int, seed_base:
 if __name__ == "__main__":
     import pandas as pd
     import json
+    from pathlib import Path
 
-    df = pd.read_csv(
-        r"C:\Users\joshu\multi_firm_operations\.claude\worktrees\openrouter-ox-alpha-test-fff246"
-        r"\lab\analysis\_inbox\mnq_dailygeom_notice_2026-08-29\candidate24_joint_frame.csv"
-    )
+    # Repository-relative path (Codex review, PR #219 -- the original hardcoded
+    # the author's own absolute Windows worktree path, breaking on any other
+    # checkout even though the CSV is tracked in the adjacent analysis dir).
+    DATA_CSV = (Path(__file__).resolve().parent.parent
+                / "mnq_dailygeom_notice_2026-08-29" / "candidate24_joint_frame.csv")
+    df = pd.read_csv(DATA_CSV)
     x1 = df["on_range"].to_numpy()
     x2 = df["rth_range"].to_numpy()
     print(f"n={len(x1)}")

@@ -155,10 +155,12 @@ N_CALIB_DRAWS = 12                     # draws per rho_u trial during copula-cor
 
 
 def normal_scores(x: np.ndarray) -> np.ndarray:
-    """Verbatim from joint_iaaft.py / iaaft_battery.py, duplicated with attribution."""
+    """Average-rank tie-breaking (Codex review, PR #219) -- see joint_iaaft.py's
+    own normal_scores docstring for the full rationale (ordinal ties invent a
+    spurious time ordering; this module's own diagnostics already use
+    rankdata's average-tie convention)."""
     n = len(x)
-    ranks = np.empty(n, dtype=float)
-    ranks[np.argsort(x, kind="stable")] = np.arange(1, n + 1)
+    ranks = rankdata(x, method="average")
     return norm.ppf(ranks / (n + 1))
 
 

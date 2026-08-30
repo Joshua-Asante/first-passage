@@ -40,7 +40,7 @@ Close-location value CLV_t = (close_t − low_t)/(high_t − low_t) ∈ [0,1] sh
 
 ## §4 — Routing decision
 
-**DROP (2026-08-30, superseding the original HOLD below — the $0 cost-law pre-screen this notice's own §5 named has now run).** Script: [`candidate5_clv_cost_screen.py`](../../../lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate5_clv_cost_screen.py). Design: unconditional whole-sample CLV_t deciles (P10=0.1134, P90=0.9091); forward 1-bar real return close_t→close_{t+1} in bp (not a CLV-to-CLV proxy); fade direction set by the data's own sign, not assumed. Result: top-decile lift −0.1470bp, bottom-decile lift +0.1333bp, combined implied gross edge **+0.1402 bp/event**, 95% block-bootstrap CI **[−0.0358, +0.3154]** (n_events=28,477, straddles 0) — against MNQ's own N6 hurdle (**3.01 bp**, already a 4× round-trip-cost figure, unit-comparable to a per-event round-trip directly — see the script's own docstring for why "bp/session" is a labeling artifact of the original momentum construct's 1×/day frequency, not a required frequency rescaling here). The implied edge is roughly 20× below the hurdle and its CI includes 0. **This clears ADR §4 D2** (pre-screen fails cleanly): DROP per that ADR, no Pre-Q authored.
+**DROP (2026-08-30, superseding the original HOLD below — the $0 cost-law pre-screen this notice's own §5 named has now run).** Script: [`candidate5_clv_cost_screen.py`](../../../lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate5_clv_cost_screen.py). Design: unconditional whole-sample CLV_t deciles (P10=0.1134, P90=0.9091); forward 1-bar real return close_t→close_{t+1} in bp (not a CLV-to-CLV proxy); fade direction set by the data's own sign, not assumed. Result: top-decile lift −0.1470bp, bottom-decile lift +0.1333bp, combined implied gross edge **+0.1402 bp/event**, 95% block-bootstrap CI **[−0.0381, +0.3244]** (n_events=28,477, straddles 0) — against MNQ's own N6 hurdle (**3.01 bp**, already a 4× round-trip-cost figure, unit-comparable to a per-event round-trip directly — see the script's own docstring for why "bp/session" is a labeling artifact of the original momentum construct's 1×/day frequency, not a required frequency rescaling here). The implied edge is roughly 20× below the hurdle and its CI includes 0. **This clears ADR §4 D2** (pre-screen fails cleanly): DROP per that ADR, no Pre-Q authored.
 
 ~~**HOLD** (original, struck 2026-08-30 by the pre-screen result above). Reason: the finding is real and well-powered, but the magnitude is small enough that its practical/tradeable relevance is unproven — rho≈−0.03 has not been converted into an economically meaningful statistic that would tell a future session whether authoring a full falsifiable H is worth the investigation cost. GRADUATE would commit to that cost before that question is answered; DROP would discard a statistically real, well-powered, directionally stable effect for no principled reason.~~
 
@@ -76,7 +76,10 @@ python lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/data_lib.py 2>&1 | gr
 
 # Reproduce the $0 cost-law pre-screen (2026-08-30 DROP disposition)
 python lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate5_clv_cost_screen.py
-# Expected: implied gross edge +0.1402 bp/event, CI=[-0.0358,+0.3154], vs N6 hurdle 3.01bp -- CLEARS=False
+# Expected: implied gross edge +0.1402 bp/event, CI=[-0.0381,+0.3244], vs N6 hurdle 3.01bp -- CLEARS=False
+# (CI corrected 2026-08-30, Codex review PR #219: the fade-rule series is now built in
+# chronological event order before block-bootstrapping, not concatenated-by-decile-then-
+# bootstrapped -- mean edge is unchanged, only the CI's precision shifted slightly)
 
 # Confirm no Pre-Q was opened for this DROP (per ADR §4 D2)
 grep -rln "N-2026-08-29-mnq-clv-autocorrelation" docs/briefs/Q-*.md
