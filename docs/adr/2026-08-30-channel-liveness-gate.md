@@ -18,12 +18,13 @@ Files read **before** authoring this ADR, this session (2026-08-30):
 
 - `docs/adr/2026-08-24-sourcing-phase-channel-retirement.md` — anchor `340722c` (verified `git log -1` 2026-08-30). Retires Route B in full: "4 campaigns opened at G0... and 0/4 ever reached the confirm stage." §0/§1: the operator's retirement decision was "0-for-4... sufficient regardless of the un-tripped falsifier" — the governing ADR's own §4 falsifier required "two completed Route B confirm campaigns that printed RESOLVED on CONFIRM," a state that, with zero campaigns ever reaching Confirm, could structurally never fire.
 - `docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md` — anchor `340722c`. Clause 2-B (§2, verbatim): ratified structural-flow-census as a sourcing channel; its Addendum 2026-08-24 records: "zero seeds passed the §3 intake screen across all 4–5 census passes (2026-07-26 → 2026-08-01), satisfying 2-B's own falsifier — the operator elected to act on this now rather than wait for the formal second-quarterly-audit check date (2027-02-08)." This is the one channel in the estate that already carried a working, reachable liveness bound, and it fired as designed.
-- `docs/methodology/strategy_harvest.md` — anchor `936eb0f` (2026-08-29). §2.3 ranked channel portfolio (ranks 1–6, the retired 1-tie census row) carries no standing requirement that any rank declare an attempt/session ceiling at open; only the retired row ever had one, and it arrived as a one-off clause on that channel's own ratifying ADR, not as a portfolio-wide rule.
-- `docs/adr/2026-07-15-external-mechanism-harvest-intake.md` — anchor `e11fd39` (2026-08-24). §6 precedent for policy-binds-now/code-may-lag ADRs: "Optional later: mechanical `register_search open` guard (separate implementation handoff — doctrine binds now; code may lag)."
-- `docs/spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md` — anchor `e11fd39`. Dense-1m/TNEC lane charter; no liveness ceiling declared.
-- `docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md` — anchor `e11fd39`. MSL charter; no liveness ceiling declared.
-- `docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md` — anchor `e11fd39`. No-counterparty statistical/geometric sourcing channel; no liveness ceiling declared.
-- `docs/adr/2026-08-16-deep-iteration-lane-charter.md` — anchor `e11fd39`. Deep-iteration lane charter (the `--lane deep` path in `register_search.py`); no liveness ceiling declared.
+- `docs/methodology/strategy_harvest.md` — anchor `936eb0f` (2026-08-29). §2.3 ranked channel portfolio (ranks 1–6, the retired 1-tie census row) carries no standing *requirement* that any rank declare an attempt/session ceiling at open in a uniform shape — but as the five reads below establish, every live channel already has *some* consecutive-failure or calendar-bound clause, independently invented in its own ratifying ADR, in five different shapes and vocabularies.
+- `docs/adr/2026-07-15-external-mechanism-harvest-intake.md` — anchor `e11fd39` (2026-08-24). §6 precedent for policy-binds-now/code-may-lag ADRs: "Optional later: mechanical `register_search open` guard (separate implementation handoff — doctrine binds now; code may lag)." **Also carries its own dated ceiling**, missed in this ADR's first draft: §4's verdict vocabulary is `RESOLVED` (≥1 of the first two intake-class closures confirms OOS), `FALSIFIED` (per its own revert trigger), or **`AMBIGUOUS` if no intake-class campaign closes by 2026-11-08** — a reachable, calendar-denominated ceiling, never run through `gate-reachability-audit`.
+- `docs/spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md` — anchor `e11fd39`. **Already carries a ceiling**, missed in this ADR's first draft: step 6, "Lane stop-rule (amended 2026-08-16): 3 consecutive FALSIFIED-or-zero-yield mechanisms on this universe → a lane-review packet to the operator (SNAG discipline), never a 4th campaign by default. A close resets the streak only if it yields an admitted candidate." A reachable, yield-unit-denominated ceiling — but its named consequence ("a lane-review packet") is neither of this ADR's two options (automatic retirement / mandatory redesign) as stated, and it has never been run through `gate-reachability-audit`.
+- `docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md` — anchor `e11fd39`. **Already carries a ceiling**, missed in this ADR's first draft: per `2026-08-14-msl-yield-falsifier-survival-limb.md`'s own header (next bullet), the base charter's `FALSIFIED(process)`/`FALSIFIED(yield)` clauses (6 consecutive pre-G0 deaths across ≥2 families / 12 calendar weeks zero G0) predate this ADR entirely.
+- `docs/adr/2026-08-14-msl-yield-falsifier-survival-limb.md` — anchor `103b084` (2026-08-14), found via this ADR's own Phase-2 sweep (§7), not cited in the first draft. Amends the MSL charter's existing falsifier (above) with a two-rung ladder: Rung A (soft) at 6 consecutive G0-freezes-without-Pine → mandatory Board review (not a close); Rung B (hard) at 10 consecutive freezes with zero TNEC-1 survivors, or 8 calendar weeks from 2026-08-12 (≈2026-10-07) with ≥4 freezes and zero survivors. Reachable, dual-yield-unit, but Rung A's consequence ("Board review of the explore-stage screen calibration") is again neither of this ADR's two named options, and neither rung has been run through `gate-reachability-audit`.
+- `docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md` — anchor `e11fd39`. **Already carries two ceilings**, missed in this ADR's first draft: the channel's own §4 (`AMBIGUOUS-HOLD`, re-test 2027-02-08, if zero sourced candidates by 2026-11-08) and its 2026-08-15 addendum — "N = 3 consecutive countable pre-G0 kills ⇒ the channel reports generation-dry at the next quarterly programme audit" (D-K1's declared-K-ceiling, K ≤ 3, is a per-search cap, a different mechanism from a liveness ceiling, and not conflated here). Neither the pre-G0 N=3 clause nor §4's date has been run through `gate-reachability-audit`, and "reports generation-dry" is, again, neither of this ADR's two named consequences.
+- `docs/adr/2026-08-16-deep-iteration-lane-charter.md` — anchor `e11fd39`. **Already carries the most complete existing ceiling of the five**, missed in this ADR's first draft: an Inertness limb (no lane-campaign prereg frozen within 6 weeks of acceptance, or by 2026-11-08 → demote to `Superseded` absent a re-election) and a Yield limb (2 consecutive completed campaigns whose survivor fails confirm/N-SURV ⇒ `FALSIFIED`, supersede) — the Yield limb's consequence (supersession) is the closest existing match to this ADR's "mandatory redesign" option, but it too has never cleared `gate-reachability-audit`.
 - `docs/adr/2026-08-22-grow-lane-build-authorization.md` — anchor `e11fd39`. GROW-lane build authorization, titled "deep-iteration-lane tooling packet" — tooling within the deep-iteration lane, not a separately-chartered channel; not double-counted in this ADR's channel list.
 - `docs/adr/2026-06-16-rule-2-budget-before-acting.md` — anchor `e11fd39`. Rule 2 (budget-before-acting) binds per-task iteration budgets at a finer granularity than channel-open; confirmed no conflict — this ADR operates one level up (channel, not task).
 - `docs/methodology/avenue_a_generate_confirm.md` — anchor `340722c`. Route B's own withdrawn G0/C0 checklist; confirms the Stage-6 Confirm definition this ADR's discussion of yield bars refers to.
@@ -48,21 +49,34 @@ operator override ("0-for-4... regardless of the un-tripped falsifier"),
 not the designed gate firing — the exact failure mode a *reachable*
 process-level falsifier exists to prevent.
 
-The estate already has one clean counterexample. Clause 2-B (structural
-flow census) declared a bound measured in the channel's own meaningful
-yield unit — zero seeds clearing the §3 intake screen by the second
-quarterly audit — and it fired correctly: the operator retired the channel
-on the clause's own terms, ahead of its calendar deadline, with no override
-needed. That is the one existing precedent for what this ADR generalizes;
-it currently binds one retired channel via a one-off ADR clause, not the
-five live channels this ADR's own Phase-2 sweep (§7, §10) derives — HARV,
-dense-1m/TNEC, MSL, no-counterparty-statistical/geometric, and
-deep-iteration (GROW-lane tooling is inside the deep-iteration lane, not a
-sixth channel) — or any future one.
+Clause 2-B (structural flow census) is the cleanest worked example: it
+declared a bound measured in the channel's own meaningful yield unit — zero
+seeds clearing the §3 intake screen by the second quarterly audit — and it
+fired correctly, the operator retiring the channel on the clause's own
+terms, ahead of its calendar deadline, with no override needed. **This
+ADR's first draft read that as the sole existing precedent, against five
+live channels carrying no ceiling at all — a premise this ADR's own
+Phase-2 sweep (§7) found false.** Every one of the five live channels
+(HARV, dense-1m/TNEC, MSL, no-counterparty-statistical/geometric, and
+deep-iteration — GROW-lane tooling is inside deep-iteration, not a sixth
+channel) already carries at least one consecutive-failure or calendar-bound
+clause, in its own ratifying ADR or charter (§0). The actual gap is
+narrower than "no ceiling exists," and three-fold instead: **(1)**
+inconsistent named consequences — a lane-review packet, a mandatory Board
+review, a generation-dry report, a supersession, an `AMBIGUOUS-HOLD` — none
+of which map cleanly onto a single two-option taxonomy (retirement or
+redesign) a reader could audit uniformly across channels; **(2)** none of
+the five existing clauses has ever been run through the
+`gate-reachability-audit` UNREACHABLE/UNBINDING check this ADR requires;
+and **(3)** nothing requires a *future* channel to carry one at all — each
+of the five existing clauses was independently invented by its own
+authoring session, not derived from a portfolio-wide rule.
 
-**Decision driver (one sentence):** the repository has one worked example of
-a liveness gate catching exactly the failure mode Route B exhibited, and no
-standing rule requiring any other channel to carry one.
+**Decision driver (one sentence):** every live channel already has some
+shape of consecutive-failure or calendar-bound clause, invented
+independently in five different forms and never checked against a common
+reachability/bindingness standard or a closed consequence taxonomy — and
+nothing requires a future channel to carry one at all.
 
 ---
 
@@ -77,25 +91,49 @@ seeds clearing intake screen, campaigns reaching Stage-6 Confirm, or an
 equivalent), and/or a bounded elapsed-time horizon (e.g., N quarterly
 programme-audit cycles). Reaching the ceiling without a qualifying yield
 event triggers exactly one of two consequences, named at declaration time
-alongside the ceiling itself: **(a) automatic retirement** — no further
-campaign opens under the channel absent a fresh ratifying ADR — or **(b)
-mandatory redesign** — a superseding ADR must state what changed in the
-design before a new campaign opens. The ceiling is itself subject to the
+alongside the ceiling itself: **(a) retirement** — no further campaign
+opens under the channel absent a fresh ratifying ADR — or **(b) mandatory
+redesign** — a superseding ADR must state what changed in the design before
+a new campaign opens. **Neither consequence is self-executing** (§5):
+reaching the ceiling makes the pre-declared consequence *due*, not
+automatically enacted — enactment still runs through the same operator
+GO/ratifying-ADR mechanism as any other channel-level decision. "Retirement"
+in option (a) names *which* consequence was pre-declared, foreclosing
+re-litigation of that choice at fire time; it does not mean the ceiling
+enacts itself in code. The ceiling is itself subject to the
 gate-reachability-audit's UNREACHABLE/UNBINDING taxonomy before the
 channel's charter may be marked ratified: a ceiling that cannot fire within
 the channel's realistic operating envelope, or one that fires but the
 campaign choreography never consults, fails this ADR's requirement the same
 way either failure mode fails a candidate-level gate.
 
+**Reconciliation of the five existing clauses (§0/§1).** Each of the five
+live channels already carries a consecutive-failure or calendar-bound
+clause, but none was authored against this standard. Each is owed a dated
+reconciliation addendum on its own owning artifact (never a rewrite here,
+per amendment-first discipline, §5) that: **(i)** runs the existing clause
+through `gate-reachability-audit`; **(ii)** maps its existing named
+consequence onto exactly one of this ADR's two options — a mapping, not a
+new invention, since four of the five already have a real-world consequence
+to classify (dense-1m/TNEC's lane-review packet and MSL's Rung-A Board
+review are closest to "mandatory redesign" in effect — a forced look before
+any new campaign proceeds unchanged; deep-iteration's Yield-limb supersession
+and no-counterparty-statistical's generation-dry report are closest to
+"retirement" in effect for their own channel) or, where no existing
+consequence fits either option cleanly, states that explicitly and adds one;
+**(iii)** does not change the existing clause's own numeric bound or yield
+unit — this ADR reconciles form, never re-derives a calibrated number
+(§5). No existing clause is edited by this ADR itself.
+
 **Effective:** immediately upon acceptance, for any channel charter authored
-or amended after this date.
+or amended after this date, and for the reconciliation addenda above.
 **Scope:** channel-level sourcing doctrine only — the five live channels
 named in §1 (HARV, dense-1m/TNEC, MSL, no-counterparty-statistical/
 geometric, deep-iteration) and any future channel — never campaign-level
-K/multiplicity accounting,
-which stays governed by each campaign's own pre-registration. Does **not**
-retroactively assign a specific ceiling to any currently-open channel; see
-§5.
+K/multiplicity accounting, which stays governed by each campaign's own
+pre-registration. Does **not** retroactively invent a ceiling number for
+any currently-open channel (each already has one, §0) and does **not**
+itself edit any of the five existing clauses; see §5.
 
 ---
 
@@ -103,9 +141,9 @@ retroactively assign a specific ceiling to any currently-open channel; see
 
 | Alternative | Why ruled out |
 |---|---|
-| Status quo — leave a liveness bound to per-channel discretion | Route B is the negative case: no bound existed, and its own designed falsifier structurally could not fire. `strategy_harvest.md` §2.3 confirms no other live channel carries one either. |
-| Mandate one universal ceiling number/unit for every channel | Channels operate at incompatible granularities — structural-flow-census consumed zero K per pass and could run cheaply and often; a mechanism-first HARV campaign spends real data/K per attempt. A single number is toothless for cheap channels or prematurely fatal for expensive ones. Per-channel-declared (this ADR) preserves calibration while still requiring one to exist. |
-| Retroactively assign a default ceiling to the five live channels (§1) inside this ADR | Would bind them to numbers never checked against their real operating envelopes — risking exactly the UNREACHABLE or UNBINDING failure this ADR exists to prevent, and doing it by fiat rather than by the gate-reachability-audit method this ADR itself invokes. Each channel is owed a reviewed, dated addendum instead (§5). |
+| Status quo — leave each channel's existing clause exactly as authored, in its own shape | Route B is the negative case that had none at all, and its own designed falsifier structurally could not fire. The five live channels are a different failure mode from Route B's: each already has a clause, but in five inconsistent shapes/vocabularies, none audited for reachability/bindingness — status quo leaves that inconsistency and the missing audit pass uncorrected. |
+| Mandate one universal ceiling number/unit for every channel | Channels operate at incompatible granularities — structural-flow-census consumed zero K per pass and could run cheaply and often; a mechanism-first HARV campaign spends real data/K per attempt. A single number is toothless for cheap channels or prematurely fatal for expensive ones. Per-channel-declared (this ADR) preserves calibration while still requiring a common consequence taxonomy and an audit pass. |
+| Rewrite the five existing clauses' own numeric bounds/yield units inside this ADR | Would re-derive calibrated numbers a prior authoring session already set against that channel's real operating envelope, without this ADR having done the review work those sessions did — risking exactly the UNREACHABLE or UNBINDING failure this ADR exists to prevent, and doing it by fiat. Each channel's own owning artifact gets a reconciliation addendum instead (§2/§5) that maps and audits, never re-derives. |
 | Mandate "reaches Stage-6 Confirm" as the universal yield unit | The cleanest bar, and the one Route B itself used — but a zero-K screening channel (structural-flow-census) never reaches a K-bearing campaign at all until *after* its own intake screen; a Confirm-only yield bar would make such a channel's ceiling structurally unreachable by construction, reproducing this ADR's own target defect. The charter names its own meaningful yield unit instead. |
 | Build the mechanical `register_search.py --channel` guard now, as a precondition for accepting this ADR | `open_run()`'s manifest schema has no channel field today (§0); adding one is a real schema change. `docs/adr/2026-07-15-external-mechanism-harvest-intake.md` §6 sets the estate's own precedent for this exact shape of decision — doctrine binds immediately, code is optional and separate. |
 
@@ -141,13 +179,22 @@ edit this ADR's decision text.
 
 ## §5 — Forbidden moves (under this ADR)
 
-- **Inventing a default ceiling number for any of the five live channels
-  (§1) inside this ADR, to make the doctrine look immediately complete.** Ruled
-  out in §3: a ceiling picked without reviewing the channel's real
-  operating envelope risks landing UNREACHABLE or UNBINDING, which is worse
-  than an acknowledged gap — it manufactures a false sense that the gap is
-  closed. Each channel's own dated addendum, reviewed for reachability,
-  does this instead (tracked as an owed STATE.md row, §6).
+- **Rewriting any of the five live channels' (§1) existing numeric bound or
+  yield unit inside this ADR, or inside its own dated addendum, to make the
+  doctrine look immediately complete.** Ruled out in §2/§3: a number picked
+  or edited without redoing the real-operating-envelope review a prior
+  authoring session already did risks landing UNREACHABLE or UNBINDING,
+  which is worse than an acknowledged gap — it manufactures a false sense
+  that the gap is closed. Reconciliation maps and audits the existing
+  number; it does not re-derive one (tracked as an owed STATE.md row, §6).
+- **Treating an existing channel's consecutive-failure or calendar-bound
+  clause as automatically satisfying this ADR without running it through
+  `gate-reachability-audit` or mapping its consequence onto one of the two
+  named options.** Ruled out in §2 — existence of *some* clause is not the
+  same as reachability, bindingness, or a closed consequence taxonomy; the
+  reconciliation addendum is required precisely because a nominal-looking
+  ceiling can still be UNREACHABLE, UNBINDING, or resolve to a consequence
+  outside this ADR's two-option taxonomy.
 - **Mandating "reaches Stage-6 Confirm" as the sole permitted yield unit.**
   Tempting because it is the rigorous bar Route B itself used — ruled out
   because it would make a zero-K screening channel's ceiling structurally
@@ -173,19 +220,24 @@ edit this ADR's decision text.
 **Positive consequences:**
 - Closes the specific gap Route B's retirement diagnosed: a channel whose
   own success falsifier depends on a state the channel may never reach.
-- Generalizes a pattern (clause 2-B) already proven to work once, rather
-  than inventing new machinery.
+- Generalizes a pattern (clause 2-B, and the five already-independently-
+  invented clauses this ADR's own sweep surfaced) into one closed
+  consequence taxonomy and one mandatory audit pass, rather than leaving
+  five inconsistent shapes uncompared.
 - Requires no K or data spend to satisfy — structural-flow-census's own
-  precedent shows a working liveness bound can be zero-K.
+  precedent, and the five existing clauses' own history, show a working
+  liveness bound can be zero-K.
 - Gives `gate-reachability-audit` a new standing class of gate (channel
-  ceilings, not only campaign-level pre-registration clauses) to check.
+  ceilings, not only campaign-level pre-registration clauses) to check —
+  and a concrete backlog of five to run it against immediately.
 
 **Negative consequences (real cost, not theatrical):**
 - Every future channel-opening ADR or spec now carries additional authoring
   work: picking a yield unit, a bound, and a named consequence, and
   defending both against the reachability/bindingness audit before
   ratification.
-- The five currently-open channels carry an acknowledged, unaddressed gap
+- The five currently-open channels' existing clauses now carry an
+  acknowledged reconciliation debt (mapping + audit, not fresh authoring)
   until their addenda land — named explicitly here rather than hidden by a
   retrofit (§5).
 
@@ -201,8 +253,10 @@ edit this ADR's decision text.
   ranked-channel table stating the requirement and pointing to this ADR;
   no per-row edits (§5).
 - `STATE.md` — new forward-board row: HARV / dense-1m-TNEC / MSL /
-  no-counterparty-statistical-geometric / deep-iteration owed dated
-  liveness-ceiling addenda to their own charters.
+  no-counterparty-statistical-geometric / deep-iteration each owed a dated
+  reconciliation addendum on their own owning artifact (gate-reachability-
+  audit pass + consequence-taxonomy mapping) — not a fresh ceiling, each
+  already has one (§0).
 - `.claude/workflows/gate-reachability-audit.js` — no code change required
   (already scoped to lane-spec/charter targets, §0); exercise it against
   each channel's addendum once written.
@@ -223,7 +277,7 @@ edit this ADR's decision text.
   channel-opening vocabulary — `grep -rl "register_search open\|sourcing
   channel\|channel portfolio\|lane charter" docs/adr/ docs/spec/
   docs/methodology/`, run this session, confirmed the full list of
-  channel-shaped artifacts owed an addendum: HARV
+  channel-shaped artifacts owed a reconciliation addendum: HARV
   (`2026-07-15-external-mechanism-harvest-intake.md`), dense-1m/TNEC
   (`2026-08-09-dense1m-entry-mechanism-lane-spec.md`), MSL
   (`2026-08-12-msl-manual-sourcing-loop-charter.md` +
@@ -235,7 +289,13 @@ edit this ADR's decision text.
   generation spec, the ambiguous-hold null-run-threshold ADR, this ADR
   itself, `docs/adr/INDEX.md`) is dispositioned as *not* a channel charter —
   each is either a scoping rule inside an existing channel, cross-lane
-  infrastructure, or the graph index — and needs no addendum.
+  infrastructure, or the graph index — and needs no addendum. **A closer
+  read of each of the five owning artifacts (not just the grep hit list)
+  found this ADR's first draft had wrongly asserted all five carry no
+  ceiling at all — every one already has a consecutive-failure or
+  calendar-bound clause (§0/§1). Corrected throughout before finalizing;
+  the reconciliation-addendum framing (§2) replaces the original
+  fresh-authoring framing.**
 - **Phase 3** — add the STATE.md forward-board row (§6); verification block
   executes; status → `Accepted`.
 
@@ -248,13 +308,16 @@ the HARV-lane precedent (§0).
 ## §10 — Audit hooks (runnable)
 
 ```bash
-# Which channel charters still lack the liveness-ceiling addendum?
-# Expected at ratification: all five print (none has the addendum yet) --
-# each is a STATE.md-tracked owed item, not a gap in this ADR.
-grep -L "channel-liveness-gate\|liveness ceiling" \
+# Which channel charters still lack a RECONCILIATION addendum citing this
+# ADR? Each of the five already has its own pre-existing ceiling clause
+# (§0) -- this checks for the mapping/audit addendum, not a fresh ceiling.
+# Expected at ratification: all five print (none reconciled yet) -- each
+# is a STATE.md-tracked owed item, not a gap in this ADR.
+grep -L "channel-liveness-gate" \
   docs/adr/2026-07-15-external-mechanism-harvest-intake.md \
   docs/spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md \
   docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md \
+  docs/adr/2026-08-14-msl-yield-falsifier-survival-limb.md \
   docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md \
   docs/adr/2026-08-16-deep-iteration-lane-charter.md
 
@@ -265,8 +328,10 @@ grep -n "channel-liveness-gate" docs/methodology/strategy_harvest.md
 ls discovery_manifests/*.json | wc -l
 
 # §4 trigger check -- re-run at each quarterly programme audit against any
-# channel whose ceiling fired since the last audit:
-#   python -m .claude.workflows.gate-reachability-audit --targetPath <channel charter>
+# channel whose ceiling fired since the last audit. Invoked as a Workflow
+# call (gate-reachability-audit.js is a workflow script, not a Python
+# module -- there is no `python -m` form):
+#   Workflow({ name: "gate-reachability-audit", args: { targetPath: "<channel charter>" } })
 
 # Calendar trigger reminder
 # Quarterly programme audit due: 2026-11-08

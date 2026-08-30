@@ -24,7 +24,7 @@ Files read **before** authoring this ADR, this session (2026-08-30):
 - `docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md` — anchor `e11fd39`. MSL freeze-chain: slate card (step 1) → G0 preregistration freeze (step 5), same two-document restatement pattern.
 - `docs/adr/2026-08-12-msl-sourcing-channel-ratification.md` — anchor `e11fd39`. MSL's ratifying ADR; confirms the charter's freeze-chain shape is itself ratified doctrine, not informal practice.
 - `docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md` — anchor `e11fd39`. A fifth live channel with its own admission/freeze mechanics, confirmed in scope for this ADR's forward-looking requirement.
-- `docs/adr/2026-08-16-deep-iteration-lane-charter.md` — anchor `e11fd39`. A sixth live channel (the `--lane deep` path), its own grammar/K freeze mechanics, confirmed in scope.
+- `docs/adr/2026-08-16-deep-iteration-lane-charter.md` — anchor `e11fd39`. The fifth live channel (the `--lane deep` path), its own grammar/K freeze mechanics, confirmed in scope. GROW-lane tooling is inside deep-iteration, not a sixth channel — matching `2026-08-30-channel-liveness-gate.md` §1's own derivation, missed in this ADR's first-draft channel count (corrected throughout, caught by review).
 - `docs/methodology/avenue_a_generate_confirm.md` — anchor `340722c` (2026-08-24). Withdrawn Route B checklist; its C0 step required the confirmatory preregistration to "copy the feature byte-faithfully from G2" *specifically* so the explore-stage (G0) and confirm-stage (C0) commits stayed separate artifacts — an anti-laundering boundary that stops the confirm run from being scored with knowledge of which explore candidate "won." This is the property a single mutable "contract" file must not silently destroy.
 - `lab/discovery/register_search.py` — anchor `e11fd39`. `open_run()` (lines 640–714) is the one place K is machine-enforced today, writing to `discovery_manifests/*.json`. This ADR does not replace that ledger; see §2 K-ledger ruling.
 - `discovery_manifests/README.md` — anchor `e11fd39`. "The rigorous universe-level correction... happens downstream... this ledger just makes K an auditable, timestamped fact." Confirms the ledger's role is narrower than a full candidate record — it is the K accounting layer, not the candidate's full field set.
@@ -53,7 +53,7 @@ tension 4) found this gap let a generated statistic (a correlation target)
 win generation and consume a reserved confirm window years before anyone
 checked whether it described an executable trade.
 
-**Decision driver (one sentence):** six live channels each restate the same
+**Decision driver (one sentence):** five live channels each restate the same
 candidate facts across separate documents with no consistency check between
 them, and none requires a tradeable object before admission.
 
@@ -84,6 +84,29 @@ record, at minimum:
 - **Exploration and confirm windows**, **K**, **costs**, and **schema
   ladder**.
 - The **campaign envelope** it opens under.
+
+**Cardinality — one contract per campaign, not per selected cell.** The
+contract's "feature catalogue" field (above) already declares a *search
+space*: one fixed entry/exit object template (signal, entry clock, stop,
+exit/target, holding horizon, costed payoff unit), explored across
+whichever feature/parameter cells the catalogue enumerates. "One candidate
+contract" means one contract per such generation-open campaign, opened
+once, before Explore runs. `2026-08-30-evaluation-order.md`'s Explore step
+selects **up to `M`** winning cells from that one catalogue — each a
+parameterization of the *same* template, not a separately-defined trade
+object — and each selected cell is tracked as its own hash-pinned
+sub-entry **within** the single contract (the selection freeze, ranking,
+and `2026-08-30-operator-approvals-campaign-envelope.md`'s multiplicity
+configuration all live at the contract's own top level, governing every
+cell the catalogue produces, never duplicated per cell). `M > 1` never
+means `M` candidates sharing one contract improperly, nor `M` separate
+contracts with no artifact owning the family: it means one contract whose
+Explore step is licensed to advance up to `M` of its own catalogue's cells.
+A genuinely distinct entry/exit **template** — a different signal, stop
+family, or holding-horizon class, not a different parameterization of the
+same one — requires its own, separately-opened contract; it is never a
+second cell inside an existing one. (This paragraph resolves a cardinality
+ambiguity a review pass caught in the first draft — see §7.)
 
 No separate seed-manifest, slate-card, G0, or Stage-0 preregistration
 document may restate these fields going forward. Each channel's existing
@@ -123,7 +146,7 @@ point.
 
 **Effective:** immediately upon acceptance, for any candidate whose
 generation-open freeze occurs after this date.
-**Scope:** candidate-level generation/admission doctrine across all six
+**Scope:** candidate-level generation/admission doctrine across all five
 live channels (HARV, dense-1m/TNEC, MSL, no-counterparty-statistical/
 geometric, deep-iteration) and any future channel. Does **not** retroactively
 rewrite any already-frozen candidate's existing manifest/prereg documents;
@@ -190,7 +213,7 @@ separate documents. Never silently edit this ADR's decision text.
   this ADR names the requirement; each channel's owning artifact adopts it
   on its own ratified addendum (tracked as an owed STATE.md row, §6),
   mirroring `2026-08-30-channel-liveness-gate.md`'s identical pattern for
-  the same six channels.
+  the same five channels.
 - **Folding `discovery_manifests/*.json` into the contract**, or treating
   the contract's own `K` field as authoritative over the ledger. Ruled out
   in §2/§3 — the ledger stays the sole K authority; the contract's K field
@@ -253,9 +276,9 @@ separate documents. Never silently edit this ADR's decision text.
 - `docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md` —
   owed the same.
 - `docs/adr/2026-08-16-deep-iteration-lane-charter.md` — owed the same.
-- `STATE.md` — new forward-board row: all six channels owed a dated
+- `STATE.md` — new forward-board row: all five channels owed a dated
   candidate-contract migration addendum (may share the row already added
-  by `2026-08-30-channel-liveness-gate.md` if convenient — same six
+  by `2026-08-30-channel-liveness-gate.md` if convenient — same five
   channels, same owed-addendum shape).
 
 ---
@@ -265,13 +288,20 @@ separate documents. Never silently edit this ADR's decision text.
 - **Phase 0** — re-confirm §0 anchors current at apply-time.
 - **Phase 1** — no direct edits to any per-lane owning artifact (§5
   forbids it inside this ADR); this ADR's own body is the complete Phase-1
-  deliverable.
+  deliverable. A review pass on the drafted series caught two defects
+  fixed before finalizing: the channel count was wrongly stated as six
+  throughout (five, matching `2026-08-30-channel-liveness-gate.md`'s own
+  derivation — GROW is tooling inside deep-iteration, not a sixth
+  channel), and the contract's cardinality relative to
+  `2026-08-30-evaluation-order.md`'s `M`-candidate confirm selection was
+  unstated — both corrected in §0/§1/§2/§6/§10 above.
 - **Phase 2** — grep-sweep, two limbs (Known Trap #7): **(i)** no
   predecessor to check (`Supersedes: none`); **(ii)** consumers of
   seed-manifest/G0/preregistration vocabulary — `grep -rl "seed manifest\|
   slate card\|Stage-0 preregistration\|PREREG_G0" docs/adr/ docs/spec/
-  docs/methodology/`, run this session. Raw hit list beyond the six
-  channel-owning artifacts already named in §0/§1: `2026-08-08-edge-
+  docs/methodology/`, run this session. Raw hit list beyond the seven
+  channel-owning artifacts already named in §0/§1 (five channels; HARV and
+  MSL each have two owning files): `2026-08-08-edge-
   cohort-correction-and-necessity-retarget.md`, `2026-08-10-temporal-
   selectivity-outside-mapped-levers.md`, `2026-08-13-msl-c3-k2-dual-axis-
   revive.md`, `2026-08-14-msl-explore-stage-5a.md`, `2026-08-16-con5-
@@ -283,7 +313,7 @@ separate documents. Never silently edit this ADR's decision text.
   an already-named channel (dense-1m/TNEC or MSL), not a channel-owning
   artifact with its own freeze chain — none defines a new channel, and
   none is owed a separate migration addendum; each inherits its parent
-  channel's addendum once written. No hit surfaced a seventh channel.
+  channel's addendum once written. No hit surfaced a sixth channel.
 - **Phase 3** — add the STATE.md forward-board row (§6); verification
   block executes; status → `Accepted`.
 
@@ -298,7 +328,8 @@ policy-first, code/migration-may-lag shape as
 
 ```bash
 # Which channel owning artifacts still lack a candidate-contract migration addendum?
-# Expected at ratification: all six print (none has the addendum yet).
+# Expected at ratification: all print (none has the addendum yet) -- five
+# channels, seven owning files (HARV and MSL each have two).
 grep -L "candidate-contract" \
   docs/adr/2026-07-15-external-mechanism-harvest-intake.md \
   docs/adr/2026-07-13-harv-discovery-lane-ratification.md \

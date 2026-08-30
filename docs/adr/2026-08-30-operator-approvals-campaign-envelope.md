@@ -172,8 +172,10 @@ conflict: a campaign can be well inside its envelope while blowing its iteration
 signal on the effort axis alone), or vice versa. Neither this ADR nor Rule 2 is amended by the other.
 
 **Effective:** immediately upon acceptance, for any candidate contract frozen after this date.
-**Scope:** operator-approval ceremony and multiplicity-configuration freeze, across all six live
-channels. Does not alter Rule 2's tripwire mechanics, S5's own bounds, or any cited ADR's own
+**Scope:** operator-approval ceremony and multiplicity-configuration freeze, across all five live
+channels (GROW is tooling inside deep-iteration, not a sixth channel — matching
+`2026-08-30-channel-liveness-gate.md`'s own derivation). Does not alter Rule 2's tripwire mechanics,
+S5's own bounds, or any cited ADR's own
 thresholds — it rules the campaign envelope's approval unit and the multiplicity fields
 `2026-08-30-candidate-contract.md` deferred here.
 

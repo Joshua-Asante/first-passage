@@ -27,6 +27,7 @@ Files read **before** authoring this ADR, this session (2026-08-30):
 - `docs/adr/2026-07-16-harv-attestation-same-units-supersession.md` — anchor `e11fd39` (2026-08-24). §2: strengthens the attestation to "simulate every gate the campaign can die at... in that gate's own units," with the mandatory cost-law inequality (`cohort δ ≥ 4 × RT_frac` at the adjudication-panel basis, commissions included) — the D5/H-OD-1 failure class this ADR's own attestation enumeration must not reproduce for latency/geometry/shape.
 - `docs/adr/2026-08-05-strategy-venue-binding-axis.md` — anchor `e2d21b9` (2026-08-24). Confirms venue-edition state is a distinct axis from candidate-lifecycle evidence — relevant to how this ADR's pre-explore failures must be classified (§2) without conflating a contract-level kill with a later venue-placement kill (that distinction is `2026-08-30-terminal-taxonomy.md`'s decision, not this one).
 - `docs/adr/2026-06-14-rejected-candidate-patterns.md` — anchor `0395f56` (2026-08-29). §A's venue/cost-constraint class and its add-back condition; this ADR's pre-explore failures route into that class, but the routing rule itself belongs to the terminal-taxonomy ADR, cited not re-decided here.
+- `docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md` — anchor `e11fd39`. §2 item 5: "Cost-law reachability (Req 5's ≥4× round-trip inequality), with the candidate's own confirm-partition measured effect substituted for cohort δ — the schema already permits this (`delta_citation: null`)." Found via this ADR's own Phase-2 sweep (§7), not in the first draft: for this channel specifically, Requirement 5's cost input is, by the channel's own already-ratified design, the confirm partition's own measured result — structurally unavailable before Confirm, not merely uncalculated. A universal pre-Explore cost limb cannot be applied to this channel without either inventing a prior this channel's design deliberately declines to require, or reading confirm data early. Ruled on in §2 below as a named, cited exception — not a gap.
 
 ---
 
@@ -77,6 +78,22 @@ authority and derives no arithmetic of its own.
   under the new authority rather than silently re-scored under a formula
   its attestation never simulated. `TRADEABLE-REACHABLE` must never fork a
   third cost formula.
+  **Named exception — the no-counterparty-statistical/geometric channel
+  (§0).** That channel's own already-ratified design substitutes the
+  candidate's own confirm-partition measured effect for cohort δ, making
+  Requirement 5's cost input structurally unavailable before Confirm for
+  that channel — not a gap this ADR can close without either inventing a
+  prior the channel's own design deliberately declines to require, or
+  reading confirm data early (breaking the holdout this whole series
+  protects). For candidates on this channel only, `TRADEABLE-REACHABLE`'s
+  cost limb is satisfied by citing the channel's own already-ratified
+  deferred order rather than blocked or forced to invent a number; that
+  channel's existing post-confirm cost-law check (unedited by this ADR)
+  remains the operative cost-reachability discipline for that limb. Every
+  other channel's cost limb runs pre-Explore as described above; this
+  exception does not generalize without its own citing exception, named at
+  declaration for any future channel that shares the same structural
+  shape.
 - **Latency and firm-geometry** delegate to their existing owning checks
   (whichever the candidate's channel/venue binding names); this ADR adds
   no new latency or geometry arithmetic.
@@ -120,7 +137,10 @@ authority and derives no arithmetic of its own.
   above does not enumerate them as pre-freeze-simulable.
 - **Auditable pre-explore failure.** Because the contract has already
   frozen by the time `TRADEABLE-REACHABLE` runs, every limb is scorable by
-  construction. A failure on any limb stops before Explore and appends a
+  construction — except the named cost-limb exception above, which is
+  satisfied by citation rather than scored, for the one channel whose own
+  design makes a pre-Explore cost score structurally unavailable. A
+  failure on any limb stops before Explore and appends a
   typed verdict (which limb, at what value) to the already-frozen
   contract — never silent, never leaving a candidate with no recorded
   disposition. Which terminal class that typed verdict routes into is
@@ -129,7 +149,11 @@ authority and derives no arithmetic of its own.
 **Effective:** immediately upon acceptance, for any candidate contract
 frozen after this date.
 **Scope:** every candidate contract's pre-explore economic gate, across
-all six live channels. Does not alter Requirement 5, `cost_geometry_
+all five live channels (§0; GROW is tooling inside deep-iteration, not a
+sixth channel — matching `2026-08-30-channel-liveness-gate.md`'s own
+derivation), with the one deferred-cost-limb exception the no-counterparty-
+statistical/geometric channel's own already-ratified design requires
+(above). Does not alter Requirement 5, `cost_geometry_
 pregate.py`, EM0–EM5, E1–E7, or S1–S7's own thresholds or ownership — it
 orchestrates them, per §7's spec.
 
@@ -184,6 +208,14 @@ Requirement 5's / `cost_geometry_pregate.py`'s own ownership).
   temptation ("does not become the third entry in an already-fractured
   stack"). If a limb's existing authority is inconvenient to call, that is
   a reason to fix the calling convention, never to re-derive the limb.
+- **Silently extending the no-counterparty-statistical/geometric channel's
+  deferred-cost-limb exception (§2) to any other channel**, or inventing a
+  pre-Explore cost prior for that channel to avoid naming the exception.
+  Ruled out in §2 — the exception is cited, narrow, and channel-specific;
+  a future channel sharing the same structural shape (cost input
+  substituted from the confirm partition itself) needs its own named,
+  cited exception at declaration, never an inferred extension of this
+  one.
 - **Re-adjudicating the Requirement-5/`cost_geometry_pregate.py` split
   inside this ADR**, or silently treating it as still-open. Ruled out in
   §3 — it is already resolved by a separate Accepted ADR (2026-08-24);
@@ -289,7 +321,21 @@ Requirement 5's / `cost_geometry_pregate.py`'s own ownership).
     LESSONS_INDEX.jsonl`'s M-20 entry is an index pointer only, no formula
     content. Neither conflicts.
   No document claims to be "the" combined economic gate; the only
-  substantive finding is the already-folded G3 resolution above.
+  substantive finding beyond the G3 resolution is the already-folded G3
+  finding above.
+
+  **Post-review correction (found by a Codex review pass on this PR, not
+  by the sweep above):** the sweep's pattern used "Requirement 5" literally
+  and missed `docs/adr/2026-08-15-no-counterparty-statistical-sourcing-
+  channel.md`, whose own §2 item 5 abbreviates it "Req 5's" — a real
+  near-miss from abbreviation variance, not a sweep-execution failure. That
+  file's own text substitutes the candidate's confirm-partition measured
+  effect for cohort δ, making the cost limb structurally post-confirm for
+  that one channel — a genuine gap in this ADR's original universal
+  pre-Explore cost requirement, not just a missed citation. Fixed by the
+  named, cited exception added to §0/§2/§5 above, rather than by silently
+  forcing that channel to invent a pre-Explore prior its own design
+  deliberately declines to require.
 - **Phase 3** — verification block executes; status → `Accepted`.
 
 Mechanical `TRADEABLE-REACHABLE` orchestrator code (the actual delegating

@@ -8,8 +8,15 @@
 **Retain-until:** none
 **Authors:** Joshua (direction) + Claude Code (drafter)
 **Amends-in-part:** `2026-06-14-rejected-candidate-patterns.md` — adds a fifth §A row
-(`expression-failure`) with its own add-back condition, alongside the existing four; no existing
-row's definition or add-back condition is edited.
+(`expression-failure`) with its own add-back condition, alongside the existing four, **and** widens
+the existing `venue / cost-constraint` row's add-back condition to explicitly cover a payoff-shape
+kill alongside its existing cost-law/lower-cost-venue wording (§2 below) — a real edit to that row's
+text, not merely a routing reading, corrected into this header by a review pass (§7). `2026-08-30-
+candidate-contract.md` — freezes the mechanism-level discriminator's complete adjudication rule
+(statistic, null, direction, threshold, coverage/power) as a founding-freeze field, discharging that
+ADR's own §3 deferral of "the mechanism-level discriminator's adjudication rule" — also added by a
+review pass (§7): this ADR's `MARKET-NULL`/`EXPRESSION-FAIL` distinction is meaningless unless that
+rule is frozen before the holdout is read, and no ADR in this series had actually added the field.
 **Layer:** methodology (confirm-phase disposition vocabulary and registry-routing rules only). No
 `dd_protection`, allocation, lifecycle, Pine, or rail config touched; nothing armed; no venue
 action; no spend.
@@ -71,7 +78,11 @@ Files read **before** authoring this ADR, this session (2026-08-30):
   it directly (the pre-explore-kill routing rule).
 - `docs/adr/2026-08-30-candidate-contract.md` — anchor `7669664` (2026-08-30, this branch). §2's
   founding-freeze fields (instrument, feature catalogue, entry/exit object) are the object this
-  ADR's dispositions append against; no field of that ADR is edited here.
+  ADR's dispositions append against. §3 explicitly names "the mechanism-level discriminator's
+  adjudication rule" as deferred to a separate amending ADR — a gap a review pass caught unfilled by
+  any of this series' six ADRs (§7): this ADR now amends it in via the header `Amends-in-part` edge,
+  since the discriminator concept is native to this ADR's own `MARKET-NULL`/`EXPRESSION-FAIL`
+  distinction.
 
 ---
 
@@ -107,15 +118,31 @@ note.
 WHY-rejected class with its own add-back and `N_expr`-bounded re-entry ladder, and rule the routing
 of every terminal and nonterminal disposition this vocabulary produces.
 
+**The discriminator is a candidate-contract field, frozen before the holdout is read.** This
+vocabulary is only meaningful if "the discriminator adjudicated cleanly" is a pre-committed fact, not
+a post-hoc reading — so this ADR amends `2026-08-30-candidate-contract.md` (header) to freeze the
+mechanism-level discriminator's complete adjudication rule (statistic, null hypothesis, direction,
+threshold, and coverage/power requirement, measured independently of the specific entry/exit
+implementation's payoff) as a founding-freeze field, discharging that ADR's own §3 deferral. No
+confirm run may adjudicate `MARKET-NULL` vs. `EXPRESSION-FAIL` against a discriminator rule chosen or
+interpreted after Explore or after the holdout is read.
+
 **Confirm-phase verdicts (evidence axis, per candidate, per confirm attempt).** Exactly four:
 `CONFIRMED`, `MARKET-NULL`, `EXPRESSION-FAIL`, `EVIDENCE-VOID`. `EXPRESSION-FAIL` applies only when
-the frozen discriminator's complete adjudication rule (candidate-contract-frozen: statistic, null,
-direction, threshold, coverage/power — Requirement 2's discriminator/observable separation, §0)
-returns a clean pass while the specific entry/exit implementation is rejected. If the discriminator
-itself cannot adjudicate (its own frozen coverage or power requirement unmet), that takes precedence
-over any payoff verdict and the candidate is `EVIDENCE-VOID`, never `MARKET-NULL` — an underpowered
-discriminator is not evidence against the mechanism. Only a discriminator that cleanly fails (a
-powered, adjudicated no) lets a rejected implementation default to `MARKET-NULL`.
+the frozen discriminator's complete adjudication rule (candidate-contract-frozen, above — Requirement
+2's discriminator/observable separation, §0) returns a clean pass while the specific entry/exit
+implementation is rejected. If the discriminator itself cannot adjudicate (its own frozen coverage or
+power requirement unmet), that takes precedence over any payoff verdict and the candidate is
+`EVIDENCE-VOID`, never `MARKET-NULL` — an underpowered discriminator is not evidence against the
+mechanism. A discriminator that cleanly fails (a powered, adjudicated no) routes the candidate to
+`MARKET-NULL` **regardless of the payoff/temporal implementation's own read** — including the case
+where the implementation's own confirm statistic happens to pass despite the discriminator's clean
+no. A payoff pass without a validated mechanism association is not confirmable evidence: it is the
+exact spurious-selection shape this discipline exists to prevent, and treating it as `CONFIRMED`
+would let a discriminator-failed mechanism through on a possibly-overfit implementation alone.
+`CONFIRMED` therefore requires **both** the discriminator and the payoff/temporal implementation test
+to clear; any other combination routes to `MARKET-NULL`, `EXPRESSION-FAIL`, or `EVIDENCE-VOID` per
+the rules above — no fifth combination is left undefined.
 
 **Edition axis (post-confirm, `CONFIRMED` candidates only).** Placement-clear or `VENUE-FAIL`, per
 the already-ratified venue-binding axis (§0) — orthogonal to the evidence axis. `CONFIRMED ·
@@ -128,10 +155,13 @@ VENUE-FAIL(edition)` is a valid, standing disposition: neither fact overwrites t
   `venue / cost-constraint` (2026-06-14 §A), only as a **candidate-level** kill (before Explore).
   The registry entry records "priors-derived, no mechanism test run" so a shape-limb kill is never
   misread as mechanism evidence — no placebo-controlled test ran, so `edge-failure` is unavailable;
-  no discriminator adjudicated, so `expression-failure` is too. The class's existing add-back
-  ("clears the cost-law pre-flight with margin, or a materially lower-cost venue") is read to also
-  cover the shape case: a shape/geometry that clears the failed limb with margin, or a venue whose
-  rules remove the constraint.
+  no discriminator adjudicated, so `expression-failure` is too. **This ADR formally amends** (header,
+  `Amends-in-part`) that row's own add-back text — a real edit, not merely a reading — from "a
+  geometry that clears the cost-law pre-flight with margin... OR a materially lower-cost venue" to
+  additionally admit: a shape/geometry that clears the failed limb with margin, or a venue whose
+  rules remove the constraint. Latency and firm-geometry kills already fit the row's unedited
+  cost/geometry language; the payoff-shape case is the only genuinely new admission this amendment
+  adds.
 - A post-confirm edition-axis `VENUE-FAIL` against a `CONFIRMED` candidate is **not** a candidate
   rejection and enters **no** WHY-rejected register — the candidate's confirmed status stands; only
   the placement failed.
@@ -182,7 +212,8 @@ establish:
 **Effective:** immediately upon acceptance, for any confirm-phase verdict emitted, or `TRADEABLE-
 REACHABLE` pre-explore kill recorded, after this date.
 **Scope:** confirm-phase verdict vocabulary, WHY-rejected class routing, and the expression-failure
-ladder, across all six live channels. Does not alter 2026-06-14's four existing classes, 2026-08-09's
+ladder, across all five live channels (GROW is tooling inside deep-iteration, not a sixth channel —
+matching `2026-08-30-channel-liveness-gate.md`'s own derivation). Does not alter 2026-06-14's four existing classes, 2026-08-09's
 §D3 routing rule, or 2026-08-05's axis split — it amends the first additively and applies the other
 two unedited.
 
@@ -277,10 +308,16 @@ exclusion list's enforcement. Never silently edit this ADR's decision text.
 - `docs/rejected_candidates.md` and `ops/instruments/<SYM>.md` schemas — additive fields for
   `class="expression-failure"`, the `N_expr` ordinal, and the cited failure history, per 2026-06-14
   §D's existing extension pattern.
+- `2026-06-14-rejected-candidate-patterns.md` §A — Amends-in-part (this ADR's header): the
+  `venue / cost-constraint` row's add-back text widened to explicitly admit a shape/geometry that
+  clears the failed limb, alongside its existing cost-law/lower-cost-venue wording.
+- `2026-08-30-candidate-contract.md` — Amends-in-part (this ADR's header): the mechanism-level
+  discriminator's complete adjudication rule added as a founding-freeze field, discharging that
+  ADR's own §3 deferral.
 - `2026-08-30-tradeable-reachable-gate.md` §6 — its own forward citation to this ADR is now
   discharged; no edit needed to that ADR's text (Trap #12 — decisions stay byte-stable once landed).
-- `STATE.md` — new forward-board row: schema-extension implementation (registry fields) owed as a
-  separate handoff (§7).
+- `STATE.md` — new forward-board row: schema-extension implementation (registry fields, discriminator
+  field) owed as a separate handoff (§7).
 
 ---
 
@@ -295,6 +332,19 @@ exclusion list's enforcement. Never silently edit this ADR's decision text.
   note itself, confirming these are genuinely novel vocabulary this ADR is the first to ratify, not
   a restatement of an existing convention. Re-run at implementation time to confirm no other
   in-flight branch introduced conflicting usage in the interim.
+
+  **Post-review corrections (found by a Codex review pass on this PR, not by the sweep above):**
+  three gaps in the first draft, all fixed in §2/header above. **(a)** The discriminator's
+  adjudication rule, which the `MARKET-NULL`/`EXPRESSION-FAIL` distinction depends on entirely, was
+  never actually frozen into the candidate contract by any of this series' six ADRs — `2026-06-14`'s
+  own §3 named it as deferred, and no ADR had claimed it. Fixed by amending
+  `2026-08-30-candidate-contract.md` in via this ADR's header. **(b)** Reading the `venue /
+  cost-constraint` row's existing add-back as covering a shape-limb kill, without formally amending
+  that row's text, left registry consumers reading the unedited row and the un-widened add-back —
+  fixed by adding that row to this ADR's `Amends-in-part` scope. **(c)** The four-verdict vocabulary
+  left the case "discriminator cleanly fails, payoff/temporal implementation passes" undefined —
+  fixed by ruling it routes to `MARKET-NULL` (the discriminator's clean fail takes precedence over
+  any payoff read, mirroring the already-stated `EVIDENCE-VOID` precedence rule).
 - **Phase 3** — verification block executes; status → `Accepted`.
 
 Mechanical enforcement (the integrity check refusing a contract with a wrong `N_expr` ordinal, and
@@ -317,6 +367,12 @@ sed -n '/^### §A/,/^### §B/p' docs/adr/2026-06-14-rejected-candidate-patterns.
 
 # TRADEABLE-REACHABLE's forward citation is discharged (no edit expected to that ADR's text).
 grep -n "terminal-taxonomy" docs/adr/2026-08-30-tradeable-reachable-gate.md
+
+# Discriminator field landed in the candidate contract's founding freeze?
+grep -n "terminal-taxonomy\|discriminator" docs/adr/2026-08-30-candidate-contract.md
+
+# venue/cost-constraint row's add-back widened to admit a shape-limb clear?
+grep -n "shape/geometry that clears" docs/adr/2026-06-14-rejected-candidate-patterns.md
 
 # Calendar trigger reminder
 # Quarterly programme audit due: 2026-11-08

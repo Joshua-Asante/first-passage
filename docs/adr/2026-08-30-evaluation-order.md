@@ -59,6 +59,12 @@ Files read **before** authoring this ADR, this session (2026-08-30):
   precedence: absolute, no exceptions, across **any account under the same control** — wider scope
   than the account/book-scoped cap/session/S7-occupancy limbs. This ADR's role re-check inherits
   this scope distinction unedited (§2 below).
+- `docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md` §2 item 1 — anchor `e11fd39`.
+  "`register_search open --lane blind` before results are seen" — the estate's own standing
+  convention that a manifest binds K before any exploration data is read, not merely checked
+  afterward. Found via a review pass on this ADR's first draft (§7): step 6 (Explore) originally
+  read as permitting the catalogue to be scored before step 7's K check ever ran, letting real trials
+  proceed unbound — this citation grounds the fix (K-ledger bind moved to the start of step 6, §2).
 - `docs/adr/2026-08-30-candidate-contract.md` — anchor `7669664` (2026-08-30, this branch). §2's own
   text names "evaluation order" as the owner of deferred fields including the multiplicity
   configuration and, implicitly, the fields this ADR's Amends-in-part adds; §3 explicitly rules that
@@ -123,19 +129,34 @@ step is ever read outside its own scope.
    three fields this ADR's Amends-in-part adds (below).
 5. **`TRADEABLE-REACHABLE` (pre-Explore).** Per `2026-08-30-tradeable-reachable-gate.md` §2 — cited,
    not re-decided.
-6. **Explore, closed by an append-only selection freeze.** Score every declared cell in the frozen
-   catalogue and select at most the frozen confirm count. Explore closes with an **append-only
-   selection freeze**: the full scored ranking and the selected candidates are committed to the
-   contract, hash-pinned, before any holdout access. Without this commit, "the selected set matches
-   the frozen contract" is unverifiable, since selection necessarily post-dates step 4's freeze —
-   this is this ADR's own new mechanic, not a restatement of an existing one.
+6. **K-ledger bind, then Explore, closed by an append-only selection freeze.** Before any cell is
+   scored — before any exploration data is read — the campaign's `register_search open` manifest
+   binds K/α/window against the frozen contract's declared values, per the K-ledger ruling
+   (`2026-08-30-candidate-contract.md` §2) and the estate's own standing convention that a manifest
+   opens "before results are seen" (§0: `2026-08-15-no-counterparty-statistical-sourcing-channel.md`
+   §2 item 1). Binding K only at step 7, after Explore's reads already happened, would let real
+   trials run with no live-tracked ledger entry — a later integrity check cannot retroactively
+   restore accounting for reads that already occurred unbound. Only once the manifest is open does
+   Explore score every declared cell in the frozen catalogue and select at most the frozen confirm
+   count. Explore closes with an **append-only selection freeze**: the full scored ranking (not only
+   the selected subset) and the selected candidates are committed to the contract, hash-pinned,
+   before any holdout access. Without this commit, "the selected set matches the frozen contract" is
+   unverifiable, since selection necessarily post-dates step 4's freeze — this is this ADR's own new
+   mechanic, not a restatement of an existing one. (Corrected in review — see §7 for the finding this
+   fixes.)
 7. **Contract-integrity check (evaluate phase, first, integrity-only).** Before any other evaluate-
-   phase check runs: confirm that code/data hashes, K, the frozen multiplicity configuration (owned
-   by `2026-08-30-operator-approvals-campaign-envelope.md`, cited not re-decided here), the selected
-   candidates against step 6's hash-pinned selection freeze, and the holdout against step 2's
-   reservation, all match the frozen contract. A mismatch voids or stops the attempt on its own — it
-   is never recorded as a structural or evidentiary rejection (consistent with
-   `2026-08-30-terminal-taxonomy.md`'s `EVIDENCE-VOID` class, §0).
+   phase check runs: confirm that code/data hashes, the register_search manifest's `K` against the
+   contract's declared `K` (bound at step 6, re-checked here, not bound for the first time here), the
+   frozen multiplicity configuration (owned by `2026-08-30-operator-approvals-campaign-envelope.md`,
+   cited not re-decided here), the candidate under evaluation against step 6's hash-pinned commit —
+   **either as a member of the originally selected set, or, for a succession substitute entering
+   under step 8's pre-declared mechanical-succession rule, at its own frozen rank position in step
+   6's full scored ranking** (not only the originally-selected subset — a substitute is never
+   already a member of that subset by definition, so checking against the subset alone would reject
+   every legitimate succession) — and the holdout against step 2's reservation, all match the frozen
+   contract. A mismatch voids or stops the attempt on its own — it is never recorded as a structural
+   or evidentiary rejection (consistent with `2026-08-30-terminal-taxonomy.md`'s `EVIDENCE-VOID`
+   class, §0).
 8. **Role state-drift re-check (zero-K, fit-for-scope, never lifecycle).** Before any holdout is
    consumed, re-validate each selected candidate against the *current* compliance snapshot versus the
    one frozen in the contract: Product-Group/sign, cap, session, and S7 order-symbol occupancy
@@ -175,8 +196,10 @@ survivor-scoring Part-A admission gate (outside this ADR's scope entirely — pe
 §0) is **lifecycle-admission**. No step in this pipeline gates candidate lifecycle by itself.
 
 **Effective:** immediately upon acceptance, for any candidate contract frozen after this date.
-**Scope:** the ordered pipeline and role/composition-screen scope, across all six live channels.
-Does not alter any cited gate's own thresholds, ownership, or mechanics — it sequences them.
+**Scope:** the ordered pipeline and role/composition-screen scope, across all five live channels
+(GROW is tooling inside deep-iteration, not a sixth channel — matching
+`2026-08-30-channel-liveness-gate.md`'s own derivation). Does not alter any cited gate's own
+thresholds, ownership, or mechanics — it sequences them.
 
 ---
 
@@ -285,6 +308,19 @@ found. Never silently edit this ADR's decision text.
   is outside this sweep's searched paths by construction, same convention ADR-1/ADR-2 used). The
   `2026-08-30-terminal-taxonomy.md` hit is the citation-error bullet corrected in that file as part
   of this same change (§6 above).
+
+  **Post-review corrections (found by a Codex review pass on this PR):** two ordering defects in the
+  first draft's step sequence, both fixed in §2 above. **(a)** Step 6 (Explore) permitted scoring the
+  full catalogue before step 7's K-integrity check ever ran, letting real trials proceed with no
+  live-tracked ledger entry — a later check cannot retroactively restore accounting for reads that
+  already happened unbound. Fixed by moving the `register_search open` K-ledger bind to the start of
+  step 6, before any cell is scored, per the estate's own "before results are seen" convention (§0).
+  **(b)** Step 8's mechanical-succession substitute (drawn from step 6's full ranking, not the
+  originally-selected subset) had no path to pass step 7's integrity check as originally worded,
+  since that check validated only against "the selected candidates" — a substitute is, by
+  definition, never a member of that subset. Fixed by stating explicitly that step 7 validates a
+  candidate either as an original selectee or, for a succession substitute, at its own frozen rank
+  position in the full scored ranking.
 - **Phase 3** — verification block executes; status → `Accepted`.
 
 Mechanical enforcement (the selection-freeze hash-pinning tool, the state-drift re-check script) is
