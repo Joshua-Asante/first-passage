@@ -206,7 +206,7 @@ structure:
      halves same sign) but is small in magnitude and this candidate's raised-bar admission-route was
      unresolved at the time. **HOLD** pending a route ruling and an economic-magnitude follow-up.
      ⚠ **Route resolved same day** by [`2026-08-29 CLV admission-route ADR`](../../docs/adr/2026-08-29-clv-autocorrelation-admission-route-scope.md)
-     (`Proposed`, pending re-ratification after a correction — see that ADR's Change history): a
+     (`Accepted`, ratified 2026-08-29, corrected and re-ratified 2026-08-30 — see that ADR's Change history): a
      bar-shape statistic with no entry rule does not itself trigger the raised bar's gate, and if
      converted into a construct, Route 1 is plausibly open (independent of Route 3) with Route 2
      inapplicable — the $0 cost-law pre-screen against MNQ's own N6 hurdle remains the concrete next

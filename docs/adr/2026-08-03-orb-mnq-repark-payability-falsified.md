@@ -212,8 +212,60 @@ rg -n "MNQ 2|K_banked" docs/methodology/strategy_harvest.md
 
 ---
 
+## Addendum 2026-08-30 — §4 R1 dormancy (Rule 11; Great Prune class-2)
+
+**Does not amend §4** (threshold text, ±1.0pp band, Controls A/B/G, or Halt action
+unchanged). **Does not amend §5** (forbidden-moves list untouched — including
+"Loosening any §4 trigger above without a superseding ADR"). **Does not amend §2**
+(PARKED + Tradeify-target FALSIFIED stands). This is a **reachability / dormancy
+record**, not a threshold change and not a re-disposition. **$0 / K=0.**
+
+Per operational-rules [Rule 11](../operational_rules.md#11-retirement-events-back-propagate-to-standing-falsifiers)
+(retirement events back-propagate to standing falsifiers): a falsifier whose input
+can no longer accrue is not "in force" regardless of unchanged threshold text.
+`check_falsifier_reachability.py --stats` reports this ADR's R1 as the live WARN
+(`missing: run_t2_intraday_bust.py`). Rule 11 requires a dated re-arm addendum —
+never an in-place edit of the falsifier.
+
+**(a) Limb + retiring event.** Limb **R1** (§4) — *"The measurement this ADR rests
+on fails to reproduce"* — depends on `run_t2_intraday_bust.py`. Retiring event: the
+2026-08-08 Great Prune class-2 policy
+([`2026-08-08-great-prune.md`](2026-08-08-great-prune.md); commit `283d1de`
+`prune(class 2): drop closed-campaign harnesses/panels from lab/analysis; keep
+RESULTS*/PREREG*/CARD`) deleted
+`lab/analysis/orb/orb_mnq_2026-07/run_t2_intraday_bust.py`. This ADR's own §2
+decision closed the ORB-MNQ-1 Tradeify-leg campaign that harness measured, which
+made the harness eligible for the same prune — retention policy working as designed,
+not data loss.
+
+**(b) Why the input can no longer accrue.** The script does not exist at HEAD. It is
+retrievable only via
+`git show pre-prune-2026-08-08:lab/analysis/orb/orb_mnq_2026-07/run_t2_intraday_bust.py`
+(or equivalent history lookup). Until retrieved, R1 cannot be exercised; a reader of
+§4 who treats R1 as live coverage is reading coverage that does not exist.
+
+**(c) Re-arm condition.** R1 re-arms the moment the harness is retrieved from that
+pre-prune tag (one-command `git show` — no rebuild) and re-run. The ±1.0pp threshold
+on k=1/k=2 bust (67.67%/77.01%) and the Controls A/B/G requirement are **unchanged**
+by this addendum. This is a dormancy record, not a loosened trigger. §4's table text
+is not edited; §5 already forbids loosening any §4 trigger without a superseding ADR.
+
+**(d) Surviving limbs.** Spot-checked against §4:
+
+| Limb | Depends on `run_t2_intraday_bust.py`? | Status after this addendum |
+|---|---|---|
+| **R2** — Tradeify venue geometry materially loosens at the $100K band | **No** — fires on a tier/trail/mechanism change under which k=1 clears both frozen survivor-scoring limbs | **Unaffected; still in force** |
+| **R3** — A non-Tradeify target is proposed | **No** — fires on any proposal to run this construct at another firm; requires the 07-24 standing bar + survivor-scoring pass before unpark | **Unaffected; still in force** |
+
+R2 and R3 continue to cover the decision's live edges (venue-geometry reopen;
+other-venue re-proposal). R1's reproduction gate is dormant until re-armed per (c);
+the FALSIFIED disposition and PARKED status do not depend on R1 firing continuously.
+
+---
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-08-03 | Initial authoring. Three operator rulings recorded (T2 fired on the Part A reading; disposition escalated past T2's inert remedy; H limb (b) keeps its literal wording). In-part supersession of the 07-31 ADR's §2/§4. Falsifier-construction defect recorded candidate-status | Joshua (rulings) + Claude Code (recorder) |
+| 2026-08-30 | Addendum: §4 R1 flagged DORMANT under Rule 11 after Great Prune class-2 removed `run_t2_intraday_bust.py`; re-arms on `git show` retrieval + re-run; ±1.0pp / Controls A/B/G unchanged; R2+R3 unaffected. §4/§5 text not edited | Joshua (PR directive) + Cursor Cloud Agent |
