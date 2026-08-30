@@ -84,25 +84,38 @@ def l4_single_stratum(df: pd.DataFrame, predictor: str, outcome: str = "y") -> d
 
 def l4_min_stratified(df: pd.DataFrame, predictor: str, stratify_by: str,
                        outcome: str = "y") -> dict:
-    """For the two parent (min-across-day-history-strata) hypotheses. Qualifying
-    year = count of predictor==1 rows that year (across both strata pooled) >=
-    YEAR_MIN_NCOND, matching candidate 1's own convention on the same predictor
-    that gates scoring; per-year "pass" = min-across-populated-strata lift > 0."""
+    """For the two parent (min-across-day-history-strata) hypotheses. The
+    per-year statistic is the MIN across two stratum-specific lift estimates,
+    so a year only "qualifies" if EVERY populated stratum independently clears
+    YEAR_MIN_NCOND on predictor==1 count -- gating on the POOLED count (as an
+    earlier version of this function did) lets a stratum with a handful of
+    conditional observations silently drive the year's min-lift while still
+    being counted as qualifying (Codex review, PR #224: MNQ 2023/2024/2026 and
+    MYM's own analogous years had one stratum as low as 7-19 conditional
+    observations under the pooled gate). Per-year "pass" = min-across-populated-
+    strata lift > 0."""
     years = _year_of(df["trading_day"])
     by_year: dict[int, dict] = {}
     for yr in sorted(years.unique()):
         sub = df[years == yr]
         n_cond = int((sub[predictor] == 1).sum())
         lifts = {}
+        stratum_n_cond = {}
         for s in sorted(sub[stratify_by].unique()):
             ss = sub[sub[stratify_by] == s]
+            stratum_n_cond[int(s)] = int((ss[predictor] == 1).sum())
             hi = ss.loc[ss[predictor] == 1, outcome]
             lo = ss.loc[ss[predictor] == 0, outcome]
             if len(hi) and len(lo):
                 lifts[int(s)] = float(hi.mean() - lo.mean())
         min_lift = min(lifts.values()) if lifts else None
-        by_year[int(yr)] = dict(n_cond=n_cond, populated_strata=lifts, min_lift=min_lift)
-    valid = {yr: v for yr, v in by_year.items() if v["n_cond"] >= YEAR_MIN_NCOND}
+        qualifies = bool(stratum_n_cond) and all(
+            v >= YEAR_MIN_NCOND for v in stratum_n_cond.values()
+        )
+        by_year[int(yr)] = dict(n_cond=n_cond, stratum_n_cond=stratum_n_cond,
+                                 populated_strata=lifts, min_lift=min_lift,
+                                 qualifies=qualifies)
+    valid = {yr: v for yr, v in by_year.items() if v["qualifies"]}
     n_valid = len(valid)
     n_pass = sum(1 for v in valid.values() if v["min_lift"] is not None and v["min_lift"] > 0)
     if n_valid < 7:
