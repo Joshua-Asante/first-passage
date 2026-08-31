@@ -27,6 +27,15 @@ Corpus searched (the surfaces this repo already treats as closure-of-record):
   docs/rejected_candidates.md      one chunk per "### " entry
   ops/instruments/*.md             one chunk per file
   docs/briefs/rnd-pipeline/*.md    one chunk per file
+  docs/adr/*.md                    one chunk per file (excl. INDEX/README/TOMBSTONES)
+
+Third motivating incident (2026-08-31, ADR corpus audit): docs/adr/ was absent
+from every surface above -- the tool that answers "does an ADR on this already
+exist?" could not see a single ADR. Two same-shaped F1 discharges landed nine
+days apart (2026-08-15, 2026-08-24) with no dedup hit between them, and a
+persona-hierarchy ADR pasted this tool's "slugs found: (none)" as its own §0
+dedup evidence -- a guaranteed false negative displayed as proof. Closed the
+same way the second incident was: add the missing corpus surface.
 
 Second motivating incident (2026-08-19): a Research Analyst inaugural-session
 draft recommended GRADUATE on the D5 Baltussen intraday-momentum-footprint
@@ -202,6 +211,21 @@ def load_corpus(repo_root: Path) -> list[Chunk]:
             surface = md.relative_to(repo_root).as_posix()
             chunks.append(Chunk(surface, _title_of(text, md.stem), text))
 
+    # ADRs are closures-of-record for governance/doctrine decisions the same
+    # way docs/briefs/closures/ is for research campaigns -- omitted until
+    # 2026-08-31 (found in the ADR corpus audit: two ADRs, 08-15 and 08-24,
+    # discharged the same F1 nine days apart with no dedup hit between them).
+    # INDEX.md/README.md/TOMBSTONES.md are corpus scaffolding, not decisions.
+    adr_dir = repo_root / "docs" / "adr"
+    if adr_dir.is_dir():
+        skip = {"INDEX.md", "README.md", "TOMBSTONES.md"}
+        for md in sorted(adr_dir.glob("*.md")):
+            if md.name in skip:
+                continue
+            text = md.read_text(encoding="utf-8", errors="replace")
+            surface = md.relative_to(repo_root).as_posix()
+            chunks.append(Chunk(surface, _title_of(text, md.stem), text))
+
     return chunks
 
 
@@ -274,7 +298,7 @@ def main(argv: list[str] | None = None) -> int:
     if not corpus:
         print("check_advisor_dedup: no corpus found under docs/briefs/closures, "
               "docs/notes/audits, docs/SESSIONS.md, lab/CATALOG.md, "
-              "docs/rejected_candidates.md, ops/instruments, "
+              "docs/rejected_candidates.md, ops/instruments, docs/adr, "
               "docs/briefs/rnd-pipeline — nothing to compare against.")
         return 0
 
