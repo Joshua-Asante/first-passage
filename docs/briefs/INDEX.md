@@ -32,6 +32,8 @@ Ten of the eleven 2026-08-18 assumption-sweep Qs are now closed (Q-M1WIRE-1 `FAL
 One line per the file's own convention (see above) — verdict, date, one-clause finding, links out to
 the closure for detail. All are $0/K=0 unless noted.
 
+- **Q-RANGECOND-1** — overnight-range-conditioned ORB-MNQ-1 payoff shape — **`FALSIFIED` 2026-08-31** (corrects a retracted 2026-08-30 `RESOLVED` verdict — a look-ahead defect in a shared upstream dependency inflated the original result; corrected, conditioned/unconditioned WR and mean-win are statistically indistinguishable). Addendum on [`b3-orb-mnq-payability-line.md`](../pursuits/b3-orb-mnq-payability-line.md) retracted same day; `ORB-MNQ-1` stays `PARKED`, no new evidence. [`closure`](closures/Q-RANGECOND-1-closure-falsified.md) · [`retracted closure`](closures/Q-RANGECOND-1-closure-resolved.md) · [`defect audit`](../notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md)
+
 - **Q-RANGEXFER-1** — overnight-range / gap-magnitude cross-series shared-regime confound (D5 "S2"), MNQ+MYM — **`MIXED` 2026-08-30**, 4× `AMBIGUOUS-DESIGN` (joint-surrogation null hard-stopped, measured 26% Type-I vs nominal 5%), 1× `FALSIFIED` (`H-RANGEXFER-1.a-MYM`, presence L2 fails). [`closure`](closures/Q-RANGEXFER-1-closure-ambiguous-design.md)
 - **Q-TRADECAP-2** — per-trade loss bound election — **`RESOLVED` 2026-08-24**, frozen ID 2 (observe-only), no tripwire wired. [`closure`](closures/Q-TRADECAP-2-closure-resolved.md) · [`elect-2`](../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md)
 - **Q-TOM-SPX-1** — SPX500 turn-of-month existence — **`DEAD` 2026-08-23**, Layer-A `RESOLVED-ABSENT` on Pepperstone. [`closure`](closures/Q-TOM-SPX-1-closure-dead.md)
