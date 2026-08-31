@@ -131,3 +131,22 @@ re-entry clause.** `ORB-MNQ-1` stays `PARKED`, standing unchanged — read the a
 historical record of a since-corrected claim, not as live evidence. No full re-MC is named or
 owed from this thread; the re-MC this addendum previously named as a next step is withdrawn along
 with the finding that motivated it.
+
+## Addendum 2026-08-31 — recon-v3 DD-reduction candidate measured: FAILS the live gate, supplies no re-entry evidence
+
+`core/strategies/candidates/orb_mnq_recon_v3.pine` — a chart-only DD-reduction research
+reconstruction (v1→v7 tuning lineage, parameters diverge from `ORB-MNQ-1`'s own frozen construct;
+not the file this document's own body concerns) — got its first account-level bust/pass
+measurement: [`lab/analysis/orb/orb_mnq_recon_v3_2026-08-31/RESULTS.md`](../../lab/analysis/orb/orb_mnq_recon_v3_2026-08-31/RESULTS.md).
+Result: **FAILS** the live gate (bust ≤5.0% ∧ P(pass) ≥50%,
+[prereg v2](../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3) at every
+tested k ∈ {1,2,3} — k=1 intraday-honest bust **20.78%**, 4.2× over; k=2 **53.70%**; k=3
+**64.11%**. A real ~3.25× improvement over the frozen construct's own 67.67% (T2 ADR, 2026-08-03)
+but not close to clearing the ceiling.
+
+**This is not new payability/cost-geometry evidence for this pursuit's own re-entry clause** — it
+is a negative result on a distinct, divergent-parameter candidate, not evidence about `ORB-MNQ-1`
+itself. `ORB-MNQ-1` stays `PARKED`, standing unchanged. `core/strategies/orb/orb_mnq_CARD.md` now
+carries a pointer to `orb_mnq_recon_v3.pine` as the current reference research candidate in this
+lineage — explicitly not authorized, not promoted, not cleared for capital. No re-MC, no ADR, no
+lifecycle change owed from this thread.
