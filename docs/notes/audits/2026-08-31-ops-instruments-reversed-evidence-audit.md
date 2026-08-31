@@ -142,9 +142,12 @@ Codex's automated review on the companion PR caught 6 real findings, all verifie
 same PR before merge:
 
 1. **This note's cross-branch link** to `2026-08-31-reversed-evidence-docs-audit.md` genuinely
-   doesn't resolve inside this branch alone (the file lands via the companion PR). Left as-is —
-   the dependency is disclosed in the PR description, and the link is correct once both PRs are on
-   `main`; see that PR's body for the reasoning. Not a content error, so not re-litigated here.
+   didn't resolve inside this branch alone at review time (the file landed via the companion PR).
+   Left as-is then — the dependency was disclosed in the PR description, and the link would
+   resolve once both PRs were on `main`. **Update 2026-08-31 (later same day):** PR #230 merged;
+   this branch subsequently merged `main` (picking up the companion file for real), so the link
+   now resolves inside this branch too, ahead of #232 merging. Not a content error, so not
+   re-litigated further here.
 2. **§1's "37/37" verify-pass count was wrong** — the true count is 47 (38 confirmed + 9 refuted),
    matching §6's own discipline-check line, which already had it right. Fixed in §1 above; this was
    a transcription slip, not a methodology gap.
