@@ -1,0 +1,152 @@
+{
+  "run2_consistency_040": {
+    "label": "Run-2 (consistency=0.40, deployable expression)",
+    "consistency": 0.4,
+    "k_results": {
+      "k=1": {
+        "n_days_realized_panel": 1215,
+        "realized_path": {
+          "eod_clock": {
+            "outcome": "pass",
+            "day": 149,
+            "max_dd_pct": 1.715
+          },
+          "intraday_honest": {
+            "outcome": "pass",
+            "day": 149,
+            "max_dd_pct": 1.715
+          }
+        },
+        "bootstrap_bust_pct": {
+          "eod_clock": 17.69,
+          "intraday_honest": 20.783
+        },
+        "bootstrap_pass_pct": {
+          "eod_clock": 82.31,
+          "intraday_honest": 79.217
+        }
+      },
+      "k=2": {
+        "n_days_realized_panel": 1215,
+        "realized_path": {
+          "eod_clock": {
+            "outcome": "pass",
+            "day": 105,
+            "max_dd_pct": 2.793
+          },
+          "intraday_honest": {
+            "outcome": "bust_trailing",
+            "day": 77,
+            "max_dd_pct": 2.793
+          }
+        },
+        "bootstrap_bust_pct": {
+          "eod_clock": 44.213,
+          "intraday_honest": 53.7
+        },
+        "bootstrap_pass_pct": {
+          "eod_clock": 55.787,
+          "intraday_honest": 46.3
+        }
+      },
+      "k=3": {
+        "n_days_realized_panel": 1215,
+        "realized_path": {
+          "eod_clock": {
+            "outcome": "bust_trailing",
+            "day": 15,
+            "max_dd_pct": 3.011
+          },
+          "intraday_honest": {
+            "outcome": "bust_trailing",
+            "day": 15,
+            "max_dd_pct": 3.011
+          }
+        },
+        "bootstrap_bust_pct": {
+          "eod_clock": 56.54,
+          "intraday_honest": 64.107
+        },
+        "bootstrap_pass_pct": {
+          "eod_clock": 43.46,
+          "intraday_honest": 35.893
+        }
+      }
+    }
+  },
+  "run1_consistency_off": {
+    "label": "Run-1 (consistency off, historical continuity)",
+    "consistency": null,
+    "k_results": {
+      "k=1": {
+        "n_days_realized_panel": 1215,
+        "realized_path": {
+          "eod_clock": {
+            "outcome": "pass",
+            "day": 149,
+            "max_dd_pct": 1.715
+          },
+          "intraday_honest": {
+            "outcome": "pass",
+            "day": 149,
+            "max_dd_pct": 1.715
+          }
+        },
+        "bootstrap_bust_pct": {
+          "eod_clock": 17.69,
+          "intraday_honest": 20.783
+        },
+        "bootstrap_pass_pct": {
+          "eod_clock": 82.31,
+          "intraday_honest": 79.217
+        }
+      },
+      "k=2": {
+        "n_days_realized_panel": 1215,
+        "realized_path": {
+          "eod_clock": {
+            "outcome": "pass",
+            "day": 105,
+            "max_dd_pct": 2.793
+          },
+          "intraday_honest": {
+            "outcome": "bust_trailing",
+            "day": 77,
+            "max_dd_pct": 2.793
+          }
+        },
+        "bootstrap_bust_pct": {
+          "eod_clock": 43.553,
+          "intraday_honest": 52.68
+        },
+        "bootstrap_pass_pct": {
+          "eod_clock": 56.447,
+          "intraday_honest": 47.32
+        }
+      },
+      "k=3": {
+        "n_days_realized_panel": 1215,
+        "realized_path": {
+          "eod_clock": {
+            "outcome": "bust_trailing",
+            "day": 15,
+            "max_dd_pct": 3.011
+          },
+          "intraday_honest": {
+            "outcome": "bust_trailing",
+            "day": 15,
+            "max_dd_pct": 3.011
+          }
+        },
+        "bootstrap_bust_pct": {
+          "eod_clock": 54.257,
+          "intraday_honest": 62.023
+        },
+        "bootstrap_pass_pct": {
+          "eod_clock": 45.743,
+          "intraday_honest": 37.977
+        }
+      }
+    }
+  }
+}
