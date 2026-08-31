@@ -1,6 +1,6 @@
 # Q-RANGECOND-1 — Does the presence-verified overnight-range conditioner change ORB-MNQ-1's realized payoff shape enough to matter for Tradeify payability?
 
-**Status:** `OPEN — PHASE 1 GATED ON OPERATOR RULING` (§0's ⚠ raised-bar bullet: the 2026-08-10 temporal-selectivity ADR's Route ① and `Q-RANGEXFER-1`'s own closure §3 "No entry, sizing, or timing construct on any surviving conditioner" are in direct, undischarged conflict on this exact construct; Rule-0 reads, dedup search, and the discipline checks are otherwise complete)
+**Status:** `OPEN — PHASE 1 GO'D` (§0's ⚠ raised-bar bullet: operator ruled Route ① satisfied 2026-08-30 — "I rule Route ① satisfied, proceed with Phase 1" — the conflict with `Q-RANGEXFER-1`'s own closure §3 is resolved by that ruling, not argued past by this brief; see §0's own ruling record)
 **Authored:** 2026-08-30
 **Closed:** N/A
 **Authors:** Claude Code (D-S-A gate + Rule-0 reads; adversarially reviewed pre-commit — a 5-lens workflow found and this draft corrects: a load-bearing raised-bar citation error, 8 self-violations of the brief's own "never call it certified" rule, a §6/pre-reg §C gate-table gap, a missed same-mechanism prior finding on NAS100, an uncited exploratory p_upper=0.785 signal, a regime-concept conflation, and a power-estimate error — see corrections marked inline); operator-directed continuation of the closed Q-RANGEXFER-1 thread ("Continue with solution shaped hypothesis you suggested, authored as a fresh Q")
@@ -127,12 +127,18 @@ A: The trade log this Q needs is producible at $0 by reusing `orb_lib.orb_backte
     not tradeable findings."** A day-selection gate on `ORB-MNQ-1`'s entries is, in plain
     language, a timing construct built on this exact surviving conditioner. This is a direct
     textual conflict between two governing documents — one of them authored the same day, in this
-    same session, by the same author now proposing to read past it. **This brief does not resolve
+    same session, by the same author now proposing to read past it. This brief did not resolve
     that conflict by argument; the argument above (the 2026-08-10 ADR's own conditions plausibly
-    being satisfied) is offered as a candidate Route ① case, not a self-certified clearance.**
-    Per §5, Phase 1 does not execute until either (a) the operator rules this a satisfying Route ①
-    case reconciled with `Q-RANGEXFER-1` §3, or (b) a different resolution is reached. This is the
-    single item in this brief genuinely gated on operator judgment, not on Phase 1 data.
+    being satisfied) was offered as a candidate Route ① case, not a self-certified clearance,
+    pending an explicit operator ruling.
+  - **⚖ RULED, 2026-08-30:** "I rule Route ① satisfied, proceed with Phase 1." Route ① is open on
+    this brief's own facts (conditioner frozen 2026-08-18, well before this pairing existed;
+    `K_intrinsic=1` declared at §8; §5's forbidden moves keep nothing downstream weakened),
+    reconciled with `Q-RANGEXFER-1` §3 by operator ruling rather than by this brief's own
+    self-certification. Phase 1 is GO'd. This does not retroactively license a future construct
+    on this conditioner without its own ruling — the ruling is scoped to this brief's own
+    day-selection-gate construct on `ORB-MNQ-1`, not a general reading that all conditioner-based
+    timing constructs on the `Q-RANGEXFER-1` family are now open.
 - `core/firm_rules.py` — anchor `5829e5e` (verified `git log -1`, 2026-08-24). Tradeify
   `cost_per_side_usd: 0.91` (line 350, index micros MNQ/MYM/MES), matching the `rt_pt=1.41`
   round-trip basis cited throughout `MNQ.md`.
@@ -333,14 +339,10 @@ new bars, not a re-test date), or a design that pools across a coarser condition
   separate, operator-gated steps (mirrors `b3-orb-mnq-payability-line.md`'s own language for the
   Aegis-6J1 overlay evidence: "on point for this document's own re-entry clause... but ...
   re-entry / re-scoping this pursuit... is an operator call, not made here").
-- **Treating the raised-bar question as self-certified rather than operator-gated.** This is the
-  one forbidden move this brief cannot rule out by its own argument — see §0's ⚠ bullet. The
-  mechanical consult confirms the bar binds; the 2026-08-10 ADR's own three conditions are
-  plausibly satisfiable on this brief's own facts, but `Q-RANGEXFER-1`'s own closure §3 ("No
-  entry, sizing, or timing construct on any surviving conditioner") reads as a direct prohibition
-  the author who wrote it cannot self-certify past. Phase 1 does not execute until this is
-  resolved by explicit operator ruling or a Route ① argument that squarely reconciles both texts
-  — not by this brief asserting its own reading is correct.
+- **Treating the raised-bar question as self-certified rather than operator-gated.** Resolved —
+  see §0's ⚠/⚖ bullet. The mechanical consult confirmed the bar binds; the brief itself declined
+  to self-certify past the conflict with `Q-RANGEXFER-1`'s own closure §3, and the operator ruled
+  Route ① satisfied 2026-08-30. Recorded here as discharged, not as a still-open forbidden move.
 - **Reproducing `ORB-MNQ-1`'s scoring pipeline from memory or by guessing its parameters,
   rather than reading the actual production code.** `orb_lib.py`'s shared `INSTRUMENTS` dict has
   no MNQ entry — `ORB-MNQ-1`'s own run script (`run_orb_mnq_bulenox_blusky.py`) constructs an
