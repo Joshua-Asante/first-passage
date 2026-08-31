@@ -10,3 +10,25 @@ f5a567b59ac2e08ca79497a59d0b82613a09e48be7b4fb2b28a5e4776857258d  core/strategie
 716f8b4375ecf6f92de19c83ae6af12180aaa5dceb7dd8a54ed4535f6d561783  core/strategies/_archive/striker/striker_dj30_v4.5.pine
 49057afc424b99bc53d384956c05db375035ee800b41eafbeaa44ce81a04463b  core/strategies/_archive/striker/striker_dj30_v4.5_indicator.pine
 cfd8c7fb29626d192b994a99ab0f9b7acecdf20b26acf32dcc8a92dba272c056  core/strategies/candidates/expiry_oi_strike_convergence_mgc_v0_1.pine
+
+# orb_mnq_recon_v3.pine provenance:
+#   Chart-only DD-reduction research reconstruction of the ORB-MNQ-1 construct,
+#   tuned across a single multi-session lineage (Downloads-local
+#   orb_mnq_1..7_reconstruction.pine, this is the 7th/latest, self-titled
+#   "recon-v3 2026-08-27" in its own header). NOT the frozen/rail-connected
+#   ORB-MNQ-1 CANDIDATE body (core/strategies/_archive/orb/orb_mnq_v0_2.pine,
+#   pinned in PORT_MANIFEST.sha256, B1 JSON alert contract) — parameters
+#   diverge from that LOCKED construct (SL 2.5x->1.4x, Wed trading off, volume
+#   filter mult 0.65->0.4/lookback 20->15, scale-in step 0.1->0.08, plus new
+#   date-range/day-filter/scale-in-qty%/max-hold/stall/breakeven modules).
+#   No broker/webhook wiring. Never bust/pass rope-walked against
+#   Tradeify_Select_100K's trailing-DD rule — the only bust figures on file
+#   (67.67-80.18% at k=1-3 for the frozen construct; 48.9% at k=1 for the
+#   less-tuned recon-v2) both already fail the pre-registered 3.0% ceiling by
+#   a wide margin, per the 2026-08-03-orb-mnq-repark-payability-falsified.md
+#   ADR (Accepted, un-superseded — ORB-MNQ-1 stays FALSIFIED_PARKED at the
+#   Tradeify target). Selection/overfitting risk from the tuning lineage is
+#   uncorrected (no pre-registration, no K accounting, no DSR/permutation/PBO
+#   pass). Pinned here as a backup record only — not promoted, not validated,
+#   not superseding any lifecycle or ADR disposition.
+be800cb44e9d14cf0ae89ea8cf6bebef55391e763b613d66bc34c45568089a28  core/strategies/candidates/orb_mnq_recon_v3.pine
