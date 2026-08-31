@@ -1,7 +1,7 @@
 # INSTRUMENT LEDGER — XAGUSD
 
 **Symbol:** XAGUSD (Silver spot) · **Tradable:** FXIFY / DXTrade (historical research surface) · **Asset class:** precious metal
-**Canonical feed:** TV CSV export — Pepperstone (TV-CSV policy). Staging feeds TV-verified before they gate anything.
+**Canonical feed:** TV CSV export — Pepperstone (TV-CSV policy). Staging feeds TV-verified before they gate anything. ⚠ **Correction 2026-08-31:** Pepperstone retired as a feed 2026-08-02 ([ADR](../../docs/adr/2026-08-02-pepperstone-feed-retirement.md)); no canonical CFD feed exists today, and XAGUSD has no CME futures venue edition, so no successor feed applies to this instrument. F1/F3 below keep their historical Pepperstone provenance labels as record only.
 **Status:** **NO LIVE STRATEGY.** Guardian-family direction REJECTED (Q-CORR-1). Guardian Silver v1.0 override attempt **CLOSED NOT ADMITTED 2026-07-01**. Not in living `firm_rules.py` `_BASE_RISK` — living slugs are owned by [`docs/adr/2026-08-23-strategy-coldstore-phase-c.md`](../../docs/adr/2026-08-23-strategy-coldstore-phase-c.md); this card is not a living-key roster.
 **Last updated:** 2026-08-23
 
