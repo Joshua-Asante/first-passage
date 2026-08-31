@@ -196,3 +196,44 @@ stratum specifically; Phase 1 must run before that limb has any expectation atta
 
 Substituting real Phase-1 numbers to confirm or refute this prediction is the compute step, not
 this freeze.
+
+---
+
+## §H — L5 semantics ruling + `AMBIGUOUS-DESIGN` verdict row (operator-ratified 2026-08-30)
+
+**Not a threshold move on an existing result.** The prohibition above ("no threshold moves after
+Phase 1 results exist") guards against tuning a freeze to a known outcome. This addendum is filed
+at the one moment that concern cannot apply: the joint-surrogation design's hard stop fired
+([`joint_surrogation_null_2026-08-30/RESULTS.md`](../../../lab/analysis/_inbox/joint_surrogation_null_2026-08-30/RESULTS.md)
+Round 4) with **no certified L5 result on record and none producible** — there is nothing here to
+have tuned toward.
+
+**§C correction.** §C above states L5 "NEVER GATES on its own — TYPES the verdict." This
+contradicted the brief's own §4 text ("otherwise the incremental lift is an artifact of the shared
+same-day regime" — a materially different framing) and the sibling `Q-VOLREGIME-1`'s own §6
+(Codex-corrected, PR #210), which routes "L5 valid but p_upper > 0.05" to `FALSIFIED`. Operator
+ruling: **Option A — a certified, valid, non-significant L5 falsifies H.** §C's "NEVER GATES" line
+is corrected: a VALID (not VOID) L5 that does not clear `p_upper ≤ 0.05` now falls under §D's
+`FALSIFIED` row, on the same footing as an outright VOID. Precedence, also frozen now: **when both
+`FALSIFIED` (via L5 or an outright presence failure) and `AMBIGUOUS-HOLD`/`AMBIGUOUS-DESIGN` (via
+L4/no-certifiable-design) would otherwise fire on the same hypothesis, `FALSIFIED` governs.** This
+mirrors `Q-VOLREGIME-1`'s own frozen §6 and closes the dual-fire ambiguity both briefs shared.
+
+**§D extension — `AMBIGUOUS-DESIGN` row.** §D's verdict map covered only `RESOLVED` /
+`FALSIFIED` / `AMBIGUOUS-HOLD` (an L4-specific hold). It did not name the failure mode Round 4
+actually produced: presence limbs (L1-L3) pass, L4 is AMBIGUOUS, and **no certifiable
+joint-surrogation attribution design exists at all** — a design-search dead end, distinct from
+"the design exists and a longer panel would let L4 resolve." Per the PR #223 correction already on
+record in the parent brief's §11 ("disclose this as a gap in §6's own gate table and raise it to
+the operator for a fresh gate amendment, rather than force-fitting AMBIGUOUS-HOLD"), a new row is
+ratified:
+
+| Verdict | Trigger | Applies to |
+|---|---|---|
+| `AMBIGUOUS-DESIGN` | L1–L3 pass; L4 cannot resolve (N_valid < 7); no certified joint-surrogation attribution design exists at current panel length (design-search exhausted, hard stop fired) | Per hypothesis, independently — a presence failure on one hypothesis routes to `FALSIFIED` under the existing row and is never overwritten by this row on another |
+
+**Ratified 2026-08-30** ("I ratify Option A and ratify the per-hypothesis AMBIGUOUS-DESIGN row.").
+Full closure-path reasoning, re-open triggers, and the counter-stratum-limb disclosure:
+[`joint_surrogation_null_2026-08-30/BOUNDED_ROUND_PLAN.md`](../../../lab/analysis/_inbox/joint_surrogation_null_2026-08-30/BOUNDED_ROUND_PLAN.md)
+§4. Presence-battery execution (the computation this ruling makes verdict-determining):
+[`rangexfer_presence_battery_2026-08-30/RESULTS.md`](../../../lab/analysis/_inbox/rangexfer_presence_battery_2026-08-30/RESULTS.md).

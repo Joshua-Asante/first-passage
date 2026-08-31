@@ -1,18 +1,27 @@
 # Joint-surrogation thread — closure-path plan (post-hard-stop)
 
-**Status: PROPOSED — pending Codex review + operator ratification of the ⚖ items below.
-REVISED 2026-08-30, twice in one pass:** (a) merged with `main` after **PR #225 executed the
-ratified bounded round in parallel with this doc's authoring** — a disclosed parallel-authoring
+**Status: RATIFIED + EXECUTED, 2026-08-30 — `Q-RANGEXFER-1` closed.** Operator ratified both ⚖
+items ("I ratify Option A and ratify the per-hypothesis AMBIGUOUS-DESIGN row. run the presence
+battery here"). The presence battery (§2 P1) was then run, adversarially verified
+(`TRUSTWORTHY_AS_IS`), and scored: 4/5 hypotheses `AMBIGUOUS-DESIGN`, `H-RANGEXFER-1.a-MYM`
+`FALSIFIED`. Closure: [`Q-RANGEXFER-1-closure-ambiguous-design.md`](../../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md).
+Full presence-battery record:
+[`rangexfer_presence_battery_2026-08-30/RESULTS.md`](../rangexfer_presence_battery_2026-08-30/RESULTS.md).
+This document's own §3 certification requirements remain live as the re-open bar for any future
+design attempt — nothing below is retired by the closure.
+
+**REVISED 2026-08-30, twice before ratification:** (a) merged with `main` after **PR #225 executed
+the ratified bounded round in parallel with this doc's authoring** — a disclosed parallel-authoring
 collision: this doc's original §3 proposed remedy slots for a round that PR #225 ran the same day
 (Round 4, four Codex correction passes: **neither model adequacy nor estimation-aware size/power
 clears; hard stop fired as ratified**); (b) revised for Codex's PR #226 review of this doc itself
 (9 findings — every one accepted or accepted-as-clarified, dispositions in §7). The original
-remedy content is superseded as *execution* guidance and survives only as re-open design
+remedy content was superseded as *execution* guidance and survives only as re-open design
 requirements (§3).
 
-What this doc now is: **the concrete proposal for the §6 gate-table gap the fired hard stop
-raised to the operator** — the closure path for `Q-RANGEXFER-1`, and the independence case for
-`Q-VOLREGIME-1`.
+What this doc was: **the concrete proposal for the §6 gate-table gap the fired hard stop
+raised to the operator** — the closure path for `Q-RANGEXFER-1` (now executed), and the
+independence case for `Q-VOLREGIME-1` (still live).
 
 Owner brief: [`Q-RANGEXFER-1`](../../../docs/briefs/Q-RANGEXFER-1-overnight-range-gap-magnitude-transfer.md) §7/§11.
 Execution record this plan closes against: [`RESULTS.md`](RESULTS.md) (Rounds 1–4 + four Round-4 correction passes).

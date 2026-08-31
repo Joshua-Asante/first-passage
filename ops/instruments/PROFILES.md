@@ -31,6 +31,7 @@
 | opening-range-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . |
 | order-flow-depth-imbalance | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | overnight-gap-magnitude-range-conditioning | . | . | . | . | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . | . | . | . | . | . | . | . | . |
+| overnight-gap-magnitude-range-conditioning-overnight-calm | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . |
 | overnight-range-day-session-transfer | . | . | . | . | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . | . | . | . | . | . | . | . | . |
 | overnight-range-failed-extension-fade | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | overnight-range-transmission | . | . | . | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . | . | . | . | . | . | . | . | . | . |
@@ -328,7 +329,18 @@ Entering in the direction of an opening-range break and holding the position for
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| MYM | AMBIGUOUS-PARKED | 2026-08-30 | ../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md |
+| MYM | AMBIGUOUS-PARKED | 2026-08-30 | ../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md |
+
+
+## overnight-gap-magnitude-range-conditioning-overnight-calm
+
+**Split off from `overnight-gap-magnitude-range-conditioning` above, 2026-08-30 (Q-RANGEXFER-1 closure) — same cross-series shared-regime confound, distinct restriction.** Does unsigned RTH-open gap magnitude predict same-day RTH range specifically *within the overnight-range-calm stratum* (today's own overnight range below its own trailing P80) — the ⚠ note above's own `gap_lifts_within_overnight_strata` two-way statistic, not the `bprime`(day-history)-restricted statistic the sibling heading owns. This is `H-RANGEXFER-1.a-MYM`.
+
+- **Class finding:** (`FALSIFIED`, MYM, 2026-08-30): stage-1 lift +8.5pp (bootstrap p=0.037, null-calibrated p=0.0495 — barely clears 0.05, already the weakest, least-decisive cell in the whole batch) failed the presence battery's own L2 limb: block-bootstrap CI (frozen `block=20, draws=4000, seed=42`) on the restricted lift is `[-0.008, +0.180]` — the lower bound crosses zero. L1 and L3 both pass; the failure is L2 alone. Adversarially verified before being trusted (4-lens workflow, `TRUSTWORTHY_AS_IS`): the decisive CI independently reproduced by five separate methods (bit-exact from-scratch bootstrap, 12 alternate seed/RNG-engine trials, naive i.i.d. bootstrap, normal-approximation SE). Genuinely borderline, disclosed not hidden: 1 of 5 tested seeds under a different-but-defensible non-circular bootstrap variant flips the sign barely positive. Full record: [`rangexfer_presence_battery_2026-08-30/RESULTS.md`](../../lab/analysis/_inbox/rangexfer_presence_battery_2026-08-30/RESULTS.md). [MYM.md](MYM.md) · [`Q-RANGEXFER-1-closure-ambiguous-design.md`](../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md)
+
+| Instrument | Verdict | Date | Source |
+|---|---|---|---|
+| MYM | DEAD | 2026-08-30 | ../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md |
 
 
 ## overnight-range-day-session-transfer
@@ -339,7 +351,7 @@ Entering in the direction of an opening-range break and holding the position for
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| MYM | AMBIGUOUS-PARKED | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md |
+| MYM | AMBIGUOUS-PARKED | 2026-08-30 | ../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md |
 
 
 ## overnight-range-failed-extension-fade
@@ -363,7 +375,7 @@ Entering in the direction of an opening-range break and holding the position for
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| MNQ | AMBIGUOUS-PARKED | 2026-08-29 | ../../docs/notes/notice/N-2026-08-29-mnq-overnight-rth-range-transfer.md |
+| MNQ | AMBIGUOUS-PARKED | 2026-08-30 | ../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md |
 
 
 ## pdh-pdl-breakout-rth

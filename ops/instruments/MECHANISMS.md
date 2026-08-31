@@ -219,6 +219,16 @@ folds this id and its gap sibling under `overnight-range-transmission`'s own Q-b
 instrument (Q-RANGEXFER-1 §6) — this id's own PROFILE cell and Notice-log entry are unchanged and
 remain the MYM-side evidence trail; only the governing question is now shared with MNQ's.
 
+**Q-RANGEXFER-1 CLOSED 2026-08-30 — H-RANGEXFER-1-MYM (this id's own hypothesis) `AMBIGUOUS-DESIGN`.**
+Presence battery (L1-L3) PASSED (bootstrap CI on the min-stratified lift [+0.110, +0.310],
+adversarially verified — [`rangexfer_presence_battery_2026-08-30/RESULTS.md`](../../lab/analysis/_inbox/rangexfer_presence_battery_2026-08-30/RESULTS.md));
+the stage-2 joint-surrogation null it was waiting on never certified (hard stop, see
+`overnight-range-transmission`'s own closure note above — same design, shared across both
+instruments). L4 by-year floor also independently fails (N_valid=3). Closure:
+[`Q-RANGEXFER-1-closure-ambiguous-design.md`](../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md).
+Ledger cell unchanged (`AMBIGUOUS-PARKED` remains correct — presence-passing, design-blocked, not
+falsified).
+
 ## intraday-bar-volume-regime
 
 **NEW 2026-08-29.** Does an M15 bar's volume, above its own time-of-day slot's trailing median
@@ -350,6 +360,44 @@ merging this id into `overnight-range-transmission` and declined to execute it i
 review it named is now done** — see `overnight-range-day-session-transfer`'s own note above for
 the executed fold via `Q-RANGEXFER-1`'s 2026-08-30 amendment. This id's own PROFILE cell and
 Notice-log entry are unchanged.
+
+**Q-RANGEXFER-1 CLOSED 2026-08-30 — SPLIT VERDICT on this id's own two nested sub-claims (do not
+collapse to one reading).** This id conflates two genuinely different estimands, now
+independently scored: `H-RANGEXFER-1.b-MYM` (this heading's own `bprime=0`-restricted finding
+above, day-history NOT elevated) presence-battery PASSED (CI [+0.057, +0.219], adversarially
+verified) and lands `AMBIGUOUS-DESIGN` — same design-blocked reason as its sibling ids, ledger
+cell unchanged. `H-RANGEXFER-1.a-MYM` (the ⚠ note's own overnight-calm-restricted claim,
++8.5pp/−7.2pp above) **FAILED presence outright and is registered below as its own heading**
+(`overnight-gap-magnitude-range-conditioning-overnight-calm`) since the two sub-claims now
+diverge and the ledger enforces one verdict per (instrument, mechanism).
+Closure: [`Q-RANGEXFER-1-closure-ambiguous-design.md`](../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md).
+
+## overnight-gap-magnitude-range-conditioning-overnight-calm
+
+**Split off from `overnight-gap-magnitude-range-conditioning` above, 2026-08-30 (Q-RANGEXFER-1
+closure) — same cross-series shared-regime confound, distinct restriction.** Does unsigned RTH-open
+gap magnitude predict same-day RTH range specifically *within the overnight-range-calm stratum*
+(today's own overnight range below its own trailing P80) — the ⚠ note above's own
+`gap_lifts_within_overnight_strata` two-way statistic, not the `bprime`(day-history)-restricted
+statistic the sibling heading owns. This is `H-RANGEXFER-1.a-MYM`.
+
+- **Class finding (`FALSIFIED`, MYM, 2026-08-30):** stage-1 lift +8.5pp (bootstrap p=0.037,
+  null-calibrated p=0.0495 — barely clears 0.05, already the weakest, least-decisive cell in the
+  whole batch) failed the presence battery's own L2 limb: block-bootstrap CI (frozen
+  `block=20, draws=4000, seed=42`) on the restricted lift is `[-0.008, +0.180]` — the lower bound
+  crosses zero. L1 and L3 both pass; the failure is L2 alone. Adversarially verified before being
+  trusted (4-lens workflow, `TRUSTWORTHY_AS_IS`): the decisive CI independently reproduced by five
+  separate methods (bit-exact from-scratch bootstrap, 12 alternate seed/RNG-engine trials, naive
+  i.i.d. bootstrap, normal-approximation SE). Genuinely borderline, disclosed not hidden: 1 of 5
+  tested seeds under a different-but-defensible non-circular bootstrap variant flips the sign
+  barely positive. Full record:
+  [`rangexfer_presence_battery_2026-08-30/RESULTS.md`](../../lab/analysis/_inbox/rangexfer_presence_battery_2026-08-30/RESULTS.md).
+  [MYM.md](MYM.md) · [`Q-RANGEXFER-1-closure-ambiguous-design.md`](../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md)
+
+**Re-proposal bar:** new mechanism evidence — a materially different construct or a longer panel,
+not a retuned bootstrap block length, seed, or significance threshold on this exact statistic. The
+FAIL was already stress-tested against 12 alternate seed/RNG-engine trials under the frozen
+procedure and held.
 
 ## bar-closing-location-autocorrelation
 
@@ -758,3 +806,18 @@ either being renamed. MYM's own `overnight-range-day-session-transfer` /
 `overnight-gap-magnitude-range-conditioning` PROFILE cells and Notice-log files are unchanged —
 they remain the evidence trail; only the governing question is now shared. See those two headings
 above for the un-renamed record.
+
+**Q-RANGEXFER-1 CLOSED 2026-08-30 — `AMBIGUOUS-DESIGN` on both instruments' parent claims
+(overnight range) and on MNQ's own gap-magnitude sub-claim.** The stage-2 joint-surrogation null
+named as owed above never certified: 4 rounds, 9 constructions, hard-stopped (measured null
+Type-I rate 26% vs nominal 5% on the one design that looked viable —
+[`joint_surrogation_null_2026-08-30/RESULTS.md`](../../lab/analysis/_inbox/joint_surrogation_null_2026-08-30/RESULTS.md)
+Round 4). Separately, the presence battery (L1-L3, the day-history-vs-day-history-conditioning
+statistics cited above) PASSED on H-RANGEXFER-1 (MNQ), H-RANGEXFER-1.a (MNQ gap), and
+H-RANGEXFER-1-MYM (overnight range) — the stage-1 findings above stand, adversarially verified,
+just not certifiable to a full stage-2 RESOLVED/FALSIFIED verdict at this panel length (L4's own
+by-year floor also fails independently, N_valid=3 on both parents). Closure:
+[`Q-RANGEXFER-1-closure-ambiguous-design.md`](../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md).
+Re-open: panel growth to ≥7 qualifying years, or a design meeting
+[`BOUNDED_ROUND_PLAN.md`](../../lab/analysis/_inbox/joint_surrogation_null_2026-08-30/BOUNDED_ROUND_PLAN.md)
+§3's certification requirements. No entry/sizing construct licensed; no ledger cell renamed.

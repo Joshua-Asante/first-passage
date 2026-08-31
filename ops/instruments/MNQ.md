@@ -44,8 +44,8 @@ cells:
     source: "../../lab/archive/mnq_orderflow_probe_2026-08-04/RESULTS.md"
   - mechanism: overnight-range-transmission
     verdict: AMBIGUOUS-PARKED
-    date: 2026-08-29
-    source: "../../docs/notes/notice/N-2026-08-29-mnq-overnight-rth-range-transfer.md"
+    date: 2026-08-30
+    source: "../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md"
   - mechanism: intraday-bar-volume-regime
     verdict: AMBIGUOUS-PARKED
     date: 2026-08-30
