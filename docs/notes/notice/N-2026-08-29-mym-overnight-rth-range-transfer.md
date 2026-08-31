@@ -7,6 +7,17 @@
 **Status:** `OPEN` — GRADUATE-eligible; Pre-Q authoring deliberately deferred to the planned MNQ+MYM pooling session (not opened here)
 **Lives in:** `docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md`
 
+> ⚠ **Numbers below are stale, corrected 2026-08-31.** The `[00:00, 09:29]` ET overnight-window
+> scope this notice's own §0 names as authoritative (borrowed from
+> `lab/archive/msl_c1_mym_2026-08/construct_lib.py`) turned out to be a known-bad placeholder —
+> that source file's own docstring flags the identical construct `"DELETE sham"` — which silently
+> excluded the prior evening's 18:00–23:59 ET Globex reopen from every "overnight range" figure in
+> this notice. Found via a follow-up Codex PR #227 review pass, independently re-verified same day.
+> Corrected within-stratum lift **+30.6pp / +22.7pp** (was +31.8pp / +22.1pp); `INCREMENT` verdict
+> and D5 precondition (2) clearance unchanged. Not edited in place per Trap #12 — original text
+> preserved below. Full account:
+> [`docs/notes/audits/2026-08-31-mym-overnight-window-scope-gap-defect.md`](../../../docs/notes/audits/2026-08-31-mym-overnight-window-scope-gap-defect.md).
+
 ---
 
 ## §0 — Source anchor

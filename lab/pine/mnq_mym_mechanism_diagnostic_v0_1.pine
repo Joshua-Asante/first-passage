@@ -1,0 +1,273 @@
+//@version=6
+indicator(title="MNQ/MYM Mechanism Diagnostic v0.1", shorttitle="MMD v0.1",
+     overlay=true)
+
+// Diagnostic only: no orders, position sizing, or profitability claim. The script
+// implements causal feature clocks for the two MNQ/MYM conditioner observations.
+
+// ============================================================================
+// INPUTS
+// ============================================================================
+
+string GROUP_SESSION = "Sessions"
+string GROUP_RANGE = "Overnight / RTH range"
+string GROUP_VOLUME = "M15 volume regime"
+string GROUP_DISPLAY = "Display"
+
+string timezoneInput = input.string("America/New_York", "Research timezone",
+     group=GROUP_SESSION)
+int overnightLookback = input.int(60, "Prior sessions", minval=20, maxval=200,
+     group=GROUP_RANGE,
+     tooltip="Strictly-prior sessions used for P80/P50 references.")
+float hotPercentile = input.float(80.0, "Hot-state percentile", minval=50.0,
+     maxval=99.0, step=1.0, group=GROUP_RANGE)
+int slotLookback = input.int(60, "Prior same-slot bars", minval=20, maxval=100,
+     group=GROUP_VOLUME,
+     tooltip="Strictly-prior observations from the same ET time slot.")
+bool enforceM15 = input.bool(true, "Require a 15-minute chart",
+     group=GROUP_VOLUME)
+bool showBackground = input.bool(true, "Shade active states",
+     group=GROUP_DISPLAY)
+bool showTable = input.bool(true, "Show diagnostic table", group=GROUP_DISPLAY)
+
+// ============================================================================
+// HELPERS
+// ============================================================================
+
+f_percentile(array<float> values, float pct) =>
+    float result = na
+    int count = array.size(values)
+    if count > 0
+        array<float> sorted = array.copy(values)
+        array.sort(sorted)
+        float rank = (pct / 100.0) * (count - 1)
+        int lower = int(math.floor(rank))
+        int upper = int(math.ceil(rank))
+        float weight = rank - lower
+        result := array.get(sorted, lower) * (1.0 - weight) +
+             array.get(sorted, upper) * weight
+    result
+
+f_push_bounded(array<float> values, float value, int limit) =>
+    array.push(values, value)
+    if array.size(values) > limit
+        array.shift(values)
+    0
+
+f_rate(int hits, int observations) =>
+    observations > 0 ? float(hits) / observations : na
+
+f_fmt(float value) =>
+    na(value) ? "warming" : str.tostring(value, "#.000")
+
+// ============================================================================
+// CLOCKS AND SESSION STATE
+// ============================================================================
+
+int minuteOfDay = hour(time, timezoneInput) * 60 + minute(time, timezoneInput)
+bool isM15 = timeframe.isminutes and timeframe.multiplier == 15
+bool timeframeOkay = not enforceM15 or isM15
+bool inRth = minuteOfDay >= 570 and minuteOfDay < 960
+bool inOvernight = minuteOfDay >= 1080 or minuteOfDay < 570
+bool overnightStarts = inOvernight and not inOvernight[1]
+bool rthStarts = inRth and not inRth[1]
+bool rthEnds = not inRth and inRth[1]
+
+var float overnightHigh = na
+var float overnightLow = na
+var float activeOvernightRange = na
+var float activeOvernightP80 = na
+var bool activeOvernightHot = false
+var float rthHigh = na
+var float rthLow = na
+var float previousRthClose = na
+var array<float> overnightHistory = array.new_float()
+var array<float> rthRangeHistory = array.new_float()
+
+if overnightStarts
+    overnightHigh := high
+    overnightLow := low
+else if inOvernight
+    overnightHigh := na(overnightHigh) ? high : math.max(overnightHigh, high)
+    overnightLow := na(overnightLow) ? low : math.min(overnightLow, low)
+
+if rthStarts
+    activeOvernightRange := overnightHigh - overnightLow
+    activeOvernightP80 := na
+    if array.size(overnightHistory) >= overnightLookback
+        activeOvernightP80 := f_percentile(overnightHistory, hotPercentile)
+    activeOvernightHot := not na(activeOvernightP80) and
+         activeOvernightRange >= activeOvernightP80
+    if not na(activeOvernightRange)
+        f_push_bounded(overnightHistory, activeOvernightRange, overnightLookback)
+    rthHigh := high
+    rthLow := low
+else if inRth
+    rthHigh := na(rthHigh) ? high : math.max(rthHigh, high)
+    rthLow := na(rthLow) ? low : math.min(rthLow, low)
+
+if rthEnds
+    float completedRthRange = rthHigh - rthLow
+    if not na(completedRthRange)
+        f_push_bounded(rthRangeHistory, completedRthRange, overnightLookback)
+    previousRthClose := close[1]
+
+float activeGap = na
+if rthStarts and not na(previousRthClose)
+    activeGap := math.abs(open - previousRthClose)
+float rthP50 = na
+if array.size(rthRangeHistory) >= overnightLookback
+    rthP50 := f_percentile(rthRangeHistory, 50.0)
+float developingRthRange = inRth ? rthHigh - rthLow : na
+
+// ============================================================================
+// SAME-TIME-OF-DAY VOLUME/RANGE DIAGNOSTIC
+// ============================================================================
+
+int SLOT_COUNT = 96
+var matrix<float> volumeSlots = matrix.new<float>(SLOT_COUNT, 100, na)
+var matrix<float> rangeSlots = matrix.new<float>(SLOT_COUNT, 100, na)
+var array<int> slotCounts = array.new_int(SLOT_COUNT, 0)
+var array<int> slotPointers = array.new_int(SLOT_COUNT, 0)
+
+int slot = int(math.floor(minuteOfDay / 15))
+int priorCount = array.get(slotCounts, slot)
+array<float> priorVolumes = array.new_float()
+array<float> priorRanges = array.new_float()
+
+if timeframeOkay and priorCount > 0
+    for column = 0 to priorCount - 1
+        array.push(priorVolumes, matrix.get(volumeSlots, slot, column))
+        array.push(priorRanges, matrix.get(rangeSlots, slot, column))
+
+float volumeMedian = na
+float rangeMedian = na
+if timeframeOkay and priorCount >= slotLookback
+    volumeMedian := f_percentile(priorVolumes, 50.0)
+    rangeMedian := f_percentile(priorRanges, 50.0)
+bool volumeHot = barstate.isconfirmed and not na(volumeMedian) and
+     volume >= volumeMedian
+float barRange = high - low
+bool rangeHot = barstate.isconfirmed and not na(rangeMedian) and
+     barRange >= rangeMedian
+
+var bool previousVolumeReady = false
+var bool previousVolumeHot = false
+var bool previousRangeHot = false
+var int lowRangeLowVolumeN = 0
+var int lowRangeLowVolumeHits = 0
+var int lowRangeHighVolumeN = 0
+var int lowRangeHighVolumeHits = 0
+var int highRangeLowVolumeN = 0
+var int highRangeLowVolumeHits = 0
+var int highRangeHighVolumeN = 0
+var int highRangeHighVolumeHits = 0
+
+bool currentOutcomeReady = barstate.isconfirmed and not na(rangeMedian)
+bool currentRangeElevated = currentOutcomeReady and barRange > rangeMedian
+
+if previousVolumeReady and currentOutcomeReady
+    if not previousRangeHot and not previousVolumeHot
+        lowRangeLowVolumeN += 1
+        lowRangeLowVolumeHits += currentRangeElevated ? 1 : 0
+    else if not previousRangeHot and previousVolumeHot
+        lowRangeHighVolumeN += 1
+        lowRangeHighVolumeHits += currentRangeElevated ? 1 : 0
+    else if previousRangeHot and not previousVolumeHot
+        highRangeLowVolumeN += 1
+        highRangeLowVolumeHits += currentRangeElevated ? 1 : 0
+    else
+        highRangeHighVolumeN += 1
+        highRangeHighVolumeHits += currentRangeElevated ? 1 : 0
+
+previousVolumeReady := barstate.isconfirmed and not na(volumeMedian) and
+     not na(rangeMedian)
+previousVolumeHot := volumeHot
+previousRangeHot := rangeHot
+
+if timeframeOkay and barstate.isconfirmed
+    int pointer = array.get(slotPointers, slot)
+    matrix.set(volumeSlots, slot, pointer, volume)
+    matrix.set(rangeSlots, slot, pointer, barRange)
+    int nextPointer = (pointer + 1) % slotLookback
+    array.set(slotPointers, slot, nextPointer)
+    array.set(slotCounts, slot, math.min(priorCount + 1, slotLookback))
+
+float lowRangeLowVolumeRate = f_rate(lowRangeLowVolumeHits, lowRangeLowVolumeN)
+float lowRangeHighVolumeRate = f_rate(lowRangeHighVolumeHits,
+     lowRangeHighVolumeN)
+float highRangeLowVolumeRate = f_rate(highRangeLowVolumeHits,
+     highRangeLowVolumeN)
+float highRangeHighVolumeRate = f_rate(highRangeHighVolumeHits,
+     highRangeHighVolumeN)
+
+// ============================================================================
+// PLOTS AND TABLE
+// ============================================================================
+
+color stateBackground = na
+if showBackground
+    if volumeHot
+        stateBackground := color.new(color.purple, 86)
+    else if activeOvernightHot and inRth
+        stateBackground := color.new(color.orange, 88)
+bgcolor(stateBackground, title="Mechanism state")
+
+plot(activeOvernightRange, "Overnight range", color=color.orange,
+     display=display.data_window)
+plot(activeOvernightP80, "Overnight P80", color=color.yellow,
+     display=display.data_window)
+plot(activeGap, "RTH-open unsigned gap", color=color.blue,
+     display=display.data_window)
+plot(developingRthRange, "Developing RTH range", color=color.teal,
+     display=display.data_window)
+plot(rthP50, "Prior RTH-range P50", color=color.gray,
+     display=display.data_window)
+plot(volumeMedian, "Same-slot volume P50", color=color.purple,
+     display=display.data_window)
+plot(rangeMedian, "Same-slot bar-range P50", color=color.fuchsia,
+     display=display.data_window)
+
+var table dashboard = table.new(position.top_right, 4, 9,
+     border_width=1)
+if barstate.islast and showTable
+    table.cell(dashboard, 0, 0, "Diagnostic", bgcolor=color.gray,
+         text_color=color.white)
+    table.cell(dashboard, 1, 0, "State / rate", bgcolor=color.gray,
+         text_color=color.white)
+    table.cell(dashboard, 2, 0, "N", bgcolor=color.gray,
+         text_color=color.white)
+    table.cell(dashboard, 3, 0, "Delta", bgcolor=color.gray,
+         text_color=color.white)
+    table.cell(dashboard, 0, 1, "Chart")
+    table.cell(dashboard, 1, 1, timeframeOkay ? "M15 ready" : "USE M15")
+    table.cell(dashboard, 0, 2, "Overnight hot")
+    table.cell(dashboard, 1, 2, activeOvernightHot ? "true" : "false")
+    table.cell(dashboard, 2, 2, str.tostring(array.size(overnightHistory)))
+    table.cell(dashboard, 0, 3, "Volume hot")
+    table.cell(dashboard, 1, 3, volumeHot ? "true" : "false")
+    table.cell(dashboard, 2, 3, str.tostring(priorCount))
+    table.cell(dashboard, 0, 4, "Low range / low vol")
+    table.cell(dashboard, 1, 4, f_fmt(lowRangeLowVolumeRate))
+    table.cell(dashboard, 2, 4, str.tostring(lowRangeLowVolumeN))
+    table.cell(dashboard, 0, 5, "Low range / high vol")
+    table.cell(dashboard, 1, 5, f_fmt(lowRangeHighVolumeRate))
+    table.cell(dashboard, 2, 5, str.tostring(lowRangeHighVolumeN))
+    table.cell(dashboard, 3, 5,
+         f_fmt(lowRangeHighVolumeRate - lowRangeLowVolumeRate))
+    table.cell(dashboard, 0, 6, "High range / low vol")
+    table.cell(dashboard, 1, 6, f_fmt(highRangeLowVolumeRate))
+    table.cell(dashboard, 2, 6, str.tostring(highRangeLowVolumeN))
+    table.cell(dashboard, 0, 7, "High range / high vol")
+    table.cell(dashboard, 1, 7, f_fmt(highRangeHighVolumeRate))
+    table.cell(dashboard, 2, 7, str.tostring(highRangeHighVolumeN))
+    table.cell(dashboard, 3, 7,
+         f_fmt(highRangeHighVolumeRate - highRangeLowVolumeRate))
+    table.cell(dashboard, 0, 8, "Scope")
+    table.cell(dashboard, 1, 8, "DIAGNOSTIC ONLY")
+
+alertcondition(rthStarts and activeOvernightHot,
+     title="Elevated overnight range",
+     message="The completed overnight range is above its causal P80 reference.")
+alertcondition(volumeHot, title="Elevated same-slot volume",
+     message="This confirmed M15 bar volume is above its causal same-slot median.")
