@@ -79,11 +79,16 @@ bar-native design at
 - The primary statistic is mean out-of-fold Brier-score improvement (baseline vs.
   volume-augmented, purged/embargoed rolling folds — design §4.1), tested against a stratified
   block-permutation null on the residualized volume component with full re-estimation of every
-  fitted component inside every replicate (design §4.3–§4.4). Its two-sided p_upper against the
-  observed improvement is the L5 analogue. `p_upper ≤ 0.05` → attribution clears; same
-  never-re-roll discipline as the frozen spec's §2 and `Q-RANGEXFER-1`'s own §C. The acceptance
-  threshold and never-re-roll discipline are unchanged from the original freeze — only the
-  statistic and null construction producing p_upper changed.
+  fitted component inside every replicate, applied to every scored row including test rows
+  (design §4.3–§4.4). Its **one-sided, upper-tail** p_upper against the observed improvement —
+  `p_upper = P(replicate_improvement ≥ observed_improvement | null)`, design §4.1 — is the L5
+  analogue (**corrected 2026-08-31, Codex review, B5: this line originally read "two-sided
+  p_upper," inconsistent with both this repo's existing one-sided `p_upper` convention and this
+  design's own declared favorable direction — no result computed under the prior wording**).
+  `p_upper ≤ 0.05` → attribution clears; same never-re-roll discipline as the frozen spec's §2 and
+  `Q-RANGEXFER-1`'s own §C. The acceptance threshold and never-re-roll discipline are unchanged
+  from the original freeze — only the statistic, null construction, and tail definition producing
+  p_upper changed.
 - The distinct-WHO three-way check (§4 of the parent brief) is **disclosed alongside** L5, not
   folded into it — it types the mechanism-attribution question, it does not gate RESOLVED/FALSIFIED.
   Formalized in the design as Comparison 2 (design §3.1, §5): the same primary-statistic

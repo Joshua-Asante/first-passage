@@ -79,24 +79,35 @@ statements are only consistent if there are two comparisons sharing one skeleton
 document resolves that reading explicitly (flagged for B5's own scrutiny, not silently assumed):
 
 **Comparison 1 — PRIMARY (gates RESOLVED/FALSIFIED):**
-- `baseline_1`: time-of-day slot, trigger-bar own-range-elevated indicator (`bias_range`, already
-  computed), a fixed set of recent range lags, fixed calendar/session controls.
+- `baseline_1`: time-of-day slot, **trigger-bar realized range as a continuous value** (raw
+  `high − low`, already computed in `byyear_l4.py::prepare` as `bar_range`) **and** the trigger
+  bar's own-range-elevated indicator (`bias_range`, already computed), a fixed set of recent range
+  lags, fixed calendar/session controls. **Both** the continuous value and the binary indicator are
+  included — not the binary alone (corrected 2026-08-31, Codex review, B5: an earlier draft of
+  this design carried only `bias_range`; since same-bar volume/range correlation is ρ≈0.86–0.88,
+  volume can proxy for the continuous range variation a 2-level indicator discards, so an
+  augmented-beats-baseline result against a binary-only baseline would not establish attribution
+  beyond the trigger bar's own range regime — it could just mean volume measures range better than
+  a coarse flag does).
 - `augmented_1`: `baseline_1` + trigger-bar time-of-day-normalized volume state (`bias_volume`,
   already computed) + only those volume lags declared in §3.3.
 - This is the primary test of "does volume add incremental forward information beyond intraday
   seasonality and the trigger bar's own range state" — the question H-VOLREGIME-{MNQ,MYM} actually
-  asks.
+  asks. Matches the plan doc's own B2 baseline bullet ("trigger-bar realized range and
+  own-range-elevated indicator") verbatim; the correction above brings this section back into
+  conformance with that spec rather than introducing a new requirement.
 
 **Comparison 2 — DISTINCT-WHO (disclosed, never gates):**
-- `baseline_2`: `baseline_1` + prior trading day's own realized-range state, using
-  `daily-range-state-persistence`'s own definition verbatim (prior day's True Range in its own
-  trailing top quintile vs. its own trailing median — [`ops/instruments/MECHANISMS.md`](../../../../ops/instruments/MECHANISMS.md)
+- `baseline_2`: `baseline_1` (continuous range + binary indicator, per the correction above) +
+  prior trading day's own realized-range state, using `daily-range-state-persistence`'s own
+  definition verbatim (prior day's True Range in its own trailing top quintile vs. its own trailing
+  median — [`ops/instruments/MECHANISMS.md`](../../../../ops/instruments/MECHANISMS.md)
   `daily-range-state-persistence` heading), not a re-derived threshold.
 - `augmented_2`: `baseline_2` + the same volume terms as `augmented_1`.
 - Tests whether volume's own increment survives once the sibling single-series mechanism's own
-  conditioning variable is also held fixed. Collapse → evidence for "same phenomenon, finer
-  grain" (mechanism A); survival → evidence for a genuinely distinct information source
-  (mechanism B). Neither outcome changes the Comparison-1 verdict.
+  conditioning variable is also held fixed. See §5 for the frozen quantitative rule mapping this
+  comparison's own outcome to mechanism A ("same phenomenon, finer grain") vs. mechanism B
+  (genuinely distinct information source). Neither outcome changes the Comparison-1 verdict.
 
 Reusing `daily-range-state-persistence`'s own quintile/median convention (rather than inventing a
 parallel one) keeps the distinct-WHO check honest about testing *that* mechanism, not a
@@ -120,16 +131,29 @@ training folds only — never selected against OOS performance.
 - Time-of-day slot: the same `slots = hour*60 + minute` construction `byyear_l4.py` already uses,
   encoded as sine/cosine pair (not raw integer or one-hot, to avoid a coefficient-per-slot blowup
   at 96 slots/day) — a design choice, disclosed for B5 review.
+- **Trigger-bar realized range, continuous:** raw `bar_range = high − low` (already computed in
+  `byyear_l4.py::prepare`), standardized using training-fold-only mean/SD (never fit on test data —
+  see §3.4's purge/embargo). Added 2026-08-31 (Codex review, B5) alongside the existing binary
+  `bias_range` indicator — see §3.1's corrected `baseline_1`.
 - Recent range lags: **lag-1 through lag-4** raw `bias_range` indicators (already binary; no new
   computation). Declared now, not tuned after seeing results, per D2's own "do not invent a new
-  threshold after seeing results" discipline extended here to lag count.
+  threshold after seeing results" discipline extended here to lag count. (Only the trigger bar's
+  own range, lag-0, is included in continuous form per the bullet above — the plan doc's own B2
+  language names continuous range for the trigger bar specifically, not for the lag structure.)
 - Volume lags for `augmented_1`/`augmented_2`: **lag-0 (trigger bar) only.** No additional volume
   lags are added — B2's "only those volume lags declared before the pilot" is satisfied by
   declaring zero beyond lag-0, since the parent brief's own H-VOLREGIME hypothesis is about the
   trigger bar's own volume state, not a volume-lag structure nobody has hypothesized. Any future
   volume-lag extension is a new design, not a retune of this one.
-- Calendar/session controls: day-of-week (categorical) and RTH-vs-overnight session flag (binary,
-  reusing whatever session boundary `byyear_l4.py`'s own trading-day construction already implies).
+- **Calendar/session controls:** day-of-week (categorical) and an explicit RTH-vs-overnight session
+  flag, **RTH = [09:30, 16:00) America/New_York**, the same equity-index-futures RTH window already
+  used throughout this repo's own session-role constructs (e.g. `ops/instruments/MECHANISMS.md`'s
+  `close@09:59 vs open@09:30` and `session-flat by 16:00 ET` conventions). **Corrected 2026-08-31
+  (Codex review, B5):** an earlier draft pointed this at `byyear_l4.py`'s own trading-day-rollover
+  rule (`slots >= 18*60` — the ~18:00 ET Globex-day-boundary convention used to assign a bar to its
+  trading *day*), which answers a different question (which calendar day does this bar belong to)
+  and does not define an RTH-vs-overnight split at all; there was no existing convention to reuse
+  for this specific feature, so this freezes one directly instead.
 - No feature is added or removed based on a training-fold coefficient, a validation-fold score, or
   any other data-dependent selection — the feature set above is complete and frozen.
 
@@ -149,22 +173,52 @@ though this is a walk-forward, not combinatorial, split:
   ordered (no CPCV-style path shuffling — the forward-prediction claim is inherently
   chronological, and combinatorial path generation would relitigate an already-settled
   chronological-order question this construct's own L3 already froze).
-- **Purge:** drop training rows whose own trailing-lookback window (the longest of the
-  predictable-component window, §4.2, and the range-lag window, §3.3) overlaps the test block's
-  span, so no training row's own features were computed using any test-block bar.
+- **Purge — feature side:** drop training rows whose own trailing-lookback window (the longest of
+  the predictable-component window, §4.2, and the range-lag window, §3.3) overlaps the test
+  block's span, so no training row's own *features* were computed using any test-block bar.
+- **Purge — label side (added 2026-08-31, Codex review, B5: closes a real look-ahead gap the
+  feature-side purge alone leaves open).** The outcome label is the *next* bar's range state
+  (§4.1's own encoding), so a training row's label horizon extends one bar past the row itself.
+  The feature-side purge above only checks backward-looking feature windows and does not by
+  itself drop the training row immediately preceding a test block, whose own label is computed
+  from that test block's first bar — an expanding-window split cannot see this because the purge
+  window, as originally specified, only looks backward. **Fix:** additionally drop every training
+  row whose label bar index falls at or after the test block's own start index — mechanically,
+  the single training row immediately preceding each test block, given a strictly 1-bar-ahead
+  label. Applied per fold, before any model is fit on that fold's training data.
 - **Embargo:** drop training rows in a fixed window immediately following each test block, sized
   to at least the longest lag/window in the design (so serial dependence across the boundary
   doesn't let a test-adjacent training row leak test-period signal back into the next fold's
   training set).
-- **Warm-up:** the first `window` bars per instrument (matching L1–L4's own trailing-lookback
-  requirement — 60 same-slot occurrences for MNQ, 20 for MYM, already the frozen values in
-  `docs/briefs/pre-registration/Q-VOLREGIME-1-verdict-preregistration.md` §A/§F.1) produce no
-  scored rows in any fold, exactly as L1–L4 already exclude them.
-- **Fold count and test-block length** are declared open parameters, to be frozen in Packet C1
-  before any real OOS score is computed — not tuned against real performance once seen. A
-  reasonable a-priori range (5–10 folds, test-block length on the order of one quarter to one
-  half-year, given ~6 years of data per instrument) is noted for Packet C1's own freeze, not
-  adopted here as the frozen value.
+- **Warm-up.** **Corrected 2026-08-31 (Codex review, B5):** an earlier draft of this bullet said
+  "the first `window` bars," which would warm up almost immediately (~96 slots/day means a flat
+  60-bar cutoff clears in under a trading day) and does not match what `tod_threshold` actually
+  requires. The frozen rule: a bar is eligible for scoring only once *its own time-of-day slot*
+  has independently accumulated `window` **prior occurrences of that same slot** (60 for MNQ, 20
+  for MYM, per `docs/briefs/pre-registration/Q-VOLREGIME-1-verdict-preregistration.md` §A/§F.1 —
+  unchanged values, corrected description) — exactly `tod_threshold`'s own per-slot history
+  requirement, not a flat leading-row-count cutoff. Different slots individually clear this floor
+  at different calendar points, since each slot advances once per trading day; the population this
+  produces matches L1–L4's own scored-frame construction exactly, by reusing the identical
+  function (§4.2) rather than a re-derived cutoff.
+- **Fold layout — frozen exactly, not a range (corrected 2026-08-31, Codex review, B5: an earlier
+  draft left a 5–10-fold, quarter-to-half-year range open for Packet C1 to pick within, which is
+  not actually frozen — different permissible picks change both which periods are scored and their
+  weighting).** Test-block length is **exactly 6 calendar months** (two fiscal quarters), a fixed
+  calendar unit, not a tunable count. Blocks walk forward, non-overlapping, starting from the first
+  bar that is scoreable under the warm-up rule above (per instrument — MNQ and MYM start on
+  different calendar dates since their own warm-up floors clear independently). **Fold count is
+  therefore a mechanical consequence of each instrument's own scoreable span, not a separately
+  chosen parameter:** `n_folds = floor(scoreable_span_months / 6)`. Any leftover partial period
+  shorter than 6 months at the end of the panel is **dropped entirely**, never padded or resized —
+  the same "mechanical cap, disclosed, never silently absorbed into the last fold" discipline this
+  repo's own truncation conventions already use elsewhere. Given each instrument's own scored-frame
+  span (`scored_frame_span_utc` in
+  [`volregime_l3_2026-08-31/l3_results.json`](../volregime_l3_2026-08-31/l3_results.json): MNQ
+  ≈70 months, MYM ≈71 months, before this design's own warm-up rule narrows it further), this
+  produces on the order of 11–12 folds per instrument — a consequence of the frozen 6-month unit
+  applied to each instrument's own real span, not a number chosen to hit a target fold count. The
+  exact count is Packet C1's own arithmetic, not a free choice.
 
 ---
 
@@ -180,6 +234,16 @@ does not blow up on a near-certain wrong prediction the way log loss can on a ra
 calibrated tail bar — a property that matters more here than log loss's sharper penalty on
 confident errors, given this design has not separately validated calibration robustness in the
 tails. `improvement > 0` favors the augmented (volume-including) model.
+
+**`p_upper` tail definition (added 2026-08-31, Codex review, B5 — resolves an inherited
+inconsistency).** The pre-registration's own §C originally described this design's attribution
+p-value as "two-sided p_upper," which is self-contradictory: this repo's existing `p_upper`
+implementations (e.g. the L1–L4 within-stratum `circular_shift_null_p`) are one-sided, upper-tail
+tests, and this design already declares a favorable direction (`improvement > 0`). Frozen here,
+one-sided: `p_upper = P(replicate_improvement ≥ observed_improvement | null)`, the fraction of null
+replicates (§4.4) whose own Brier-score improvement is at least as large as the real, observed
+improvement. `p_upper ≤ 0.05` clears; no two-sided or absolute-value variant is computed or
+consulted. The pre-registration's own §C is corrected to match, same date.
 
 **Companion (unchanged, already computed):** the existing minimum within-own-range-stratum lift
 from L1–L3, reported alongside, not recomputed.
@@ -204,27 +268,60 @@ null-hygiene guidance surfaced during this design's own authoring: a naive bar-b
 would understate significance by destroying real serial dependence in the residual itself, the
 same failure mode the block-shuffle discipline names for any autocorrelated continuous series.
 
-**Block length is a frozen METHOD, not a frozen number, at this stage:** an automatic,
-data-driven block-length selector (Politis–White optimal block length, or an equivalent
-ACF-decay-threshold rule — the specific selector is Packet C1's own choice, disclosed there, not
-here) applied to each instrument's own residual series independently, computed once as the first
-act of Packet C1 and then held fixed through the rest of the pilot and any eventual Packet D
-execution. Freezing the *method* now and the *number* at first real contact with the data (rather
-than guessing a number now) avoids both under-blocking (naive small blocks that overstate
-significance) and picking a number that happens to flatter or hurt the eventual result, since no
-real residual series has been measured yet.
+**Block length is a frozen METHOD, not a frozen number, at this stage — one specific algorithm, not
+a menu (corrected 2026-08-31, Codex review, B5: an earlier draft named Politis–White "or an
+equivalent ACF-decay-threshold rule," which is two different selectors that can produce materially
+different block lengths and different null p-values; leaving the choice between them open is the
+same un-frozen-parameter problem as the fold-layout fix above, just one level down).** Frozen
+algorithm: the **Politis–White (2004) automatic/optimal block-length selector**, with the
+Patton–Politis–White (2009) correction, as implemented in
+`arch.bootstrap.optimal_block_length` — verified present in this environment (`arch` 8.0.0) rather
+than assumed. Use its `b_sb` (stationary-bootstrap) column, matching §4.3's own stationary block
+permutation, not `b_cb` (circular). Same package the `strategy-validation` skill's own §8a/§8d
+already cite for block-size selection — no second implementation is authored here. Applied to each
+instrument's own residual series independently
+(§4.2's output, computed on that instrument's full training-eligible panel, not per-fold), producing
+a block length in bars; converted to whole trading days by ceiling-dividing by that instrument's own
+average bars-per-session count, so the resulting block spans a whole number of sessions rather than
+splitting one mid-day. Computed once as the first act of Packet C1 and held fixed through the rest
+of the pilot and any eventual Packet D execution. Freezing the algorithm now and its numeric output
+at first real contact with the data (rather than guessing a number now) avoids both under-blocking
+(a naive small block that overstates significance) and picking a number that happens to flatter or
+hurt the eventual result, since no real residual series has been measured yet.
 
 ### 4.4 Re-estimation discipline (the load-bearing fix vs. the day-level design's failure)
 
-Every null replicate re-runs, end to end, on that replicate's own block-permuted training data:
+**Corrected 2026-08-31 (Codex review, B5) — the null must cover every scored row, not training
+only.** An earlier draft of this section permuted volume in the training data, then scored the
+resulting model against the real, unpermuted test-fold volume. That is not a coherent draw from the
+null world: the replicate would train under a fake volume/outcome relationship but evaluate under
+the real one, so its Brier-improvement statistic would not be exchangeable with the observed
+statistic, and the resulting `p_upper` would not carry the claimed Type-I calibration. The fix
+below applies the same replicate's permutation to every scored row — train and test alike — so
+training and scoring both happen inside one consistent null draw; only the outcome label is left
+real throughout (permuting volume, not outcome, is what makes this a test of volume's own
+information content rather than a generic label-shuffle test).
 
-1. Re-fit the `tod_threshold` predictable-volume-component estimator (§4.2).
-2. Recompute the residual and its block permutation for that replicate.
+Every null replicate re-runs, end to end, over that replicate's own single, internally-consistent
+null draw of the full scored population for the fold being tested:
+
+1. Re-fit the `tod_threshold` predictable-volume-component estimator (§4.2) on the fold's real,
+   unpermuted training-fold data (the predictable-component estimator is not itself part of the
+   null being tested — only the *residual*'s pairing with outcome is).
+2. Compute the residual for **every scored row in the fold — training and test rows alike** —
+   against that estimator, then draw **one** stratified block permutation (§4.3) over that entire
+   pool, reassigning which row gets which residual. Training rows and test rows are permuted
+   together, from the same draw, not independently.
 3. Re-fit both `baseline_1`/`augmented_1` logistic models (and, for the distinct-WHO run,
-   `baseline_2`/`augmented_2`) on the replicate's training folds.
-4. Re-score OOS on the replicate's test folds, recompute the Brier improvement.
+   `baseline_2`/`augmented_2`) on the replicate's training rows, using **that replicate's permuted
+   residual** (recombined with the real `tod_threshold` estimate) as the volume feature — never the
+   real observed volume.
+4. Score OOS on the replicate's test rows, using those same test rows' **permuted** volume feature
+   (from step 2) against their **real, unpermuted** outcome labels. Recompute the Brier
+   improvement from this null-world scoring, not from a mix of null-trained-model-on-real-data.
 
-No step in this chain uses a value fit once on the observed data and reused across replicates.
+No step in this chain uses a value fit once on the observed data and reused across replicates, and
+no step scores a null-trained model against real (non-null) volume features.
 This is the direct answer to `Q-RANGEXFER-1`'s own failure: that design's positive control only
 validated known-true-parameter behavior, and re-estimating per replicate (the only way the
 procedure could run on real data) inflated Type-I from 5% to 25%. §3.2's cheap model family is
@@ -251,6 +348,24 @@ labeled `distinct_who`, and never substituted for or averaged with Comparison 1'
 parent brief's own verdict map (§6) is unchanged by this design and is not consulted for the
 distinct-WHO result — there is no verdict for it, only a disclosure.
 
+**Quantitative decision rule (added 2026-08-31, Codex review, B5).** The parent brief's own §4
+language — "collapse" implies mechanism A, "survival" implies mechanism B — is qualitative and,
+left as-is, would let the mechanism label be chosen after seeing the actual numbers (a smaller-but-
+still-significant improvement, a similar point estimate with reduced power, or opposite-signed
+results across instruments would all be judgment calls under the original wording). Frozen here,
+reusing the same `alpha=0.05` threshold already frozen for Comparison 1 rather than introducing a
+new number:
+
+| Comparison 1 (primary) | Comparison 2 (`distinct_who`) | Disclosure |
+|---|---|---|
+| `p_upper ≤ 0.05` (clears) | `p_upper > 0.05` (does not clear) | Mechanism A — "same phenomenon, finer grain": volume's own increment does not survive once daily-range-state is also held fixed. |
+| `p_upper ≤ 0.05` (clears) | `p_upper ≤ 0.05` (also clears) | Mechanism B — genuinely distinct information source: volume's own increment survives daily-range-state conditioning. |
+| `p_upper > 0.05` (does not clear) | — (not evaluated) | Moot — Comparison 1 itself did not clear; the mechanism-attribution question does not apply, per the parent brief's own verdict map (§6), which already stops at a non-clearing L5 outcome before any distinct-WHO framing is relevant. |
+
+No other configuration is possible under this table by construction (Comparison 2 is evaluated only
+when Comparison 1 clears), so this rule is total over the reachable outcome space, not merely the
+common cases.
+
 ---
 
 ## 6. B5 — Adversarial design review (required questions, pre-answered)
@@ -270,8 +385,11 @@ C1, per the plan doc's own B5 instruction.
    session-level stratification would preserve dependence better at the cost of statistical power
    — a genuine trade-off, not resolved by assertion here.
 2. **Can information cross a rolling-fold boundary through normalization, residualization, or
-   hyperparameter fitting?** Purge (§3.4) removes training rows whose own trailing window touches
-   a test block; embargo removes training rows immediately after a test block. Every
+   hyperparameter fitting?** Purge (§3.4) removes training rows whose own trailing *feature* window
+   touches a test block **and** rows whose own *label* horizon reaches into the test block (added
+   2026-08-31, Codex review, B5 — the original draft only purged on the feature side, which misses
+   the one training row per fold whose 1-bar-ahead label is computed from the test block's own
+   first bar); embargo removes training rows immediately after a test block. Every
    normalization/residualization statistic (§4.2's `tod_threshold`, any feature scaling for the
    logistic fit) is refit per fold using only that fold's own purged-and-embargoed training data,
    never fit once on the full panel and reused across folds.
@@ -290,9 +408,21 @@ C1, per the plan doc's own B5 instruction.
    explicit check against that construct's own code before Packet C1, not assumed clean here.
 6. **Are session blocks long enough for the dependence visible in both panels?** Not yet
    knowable without measuring each instrument's own residual ACF — which is exactly why block
-   length (§4.3) is frozen as a method now and a number only after Packet C1 measures it on real
-   data, per instrument, rather than guessed here and potentially wrong in a way that only an
-   ACF-blind reviewer could miss.
+   length (§4.3) is frozen as **one specific algorithm** (Politis–White, via `arch.bootstrap` —
+   narrowed from an earlier draft's two-selector menu, 2026-08-31, Codex review, B5) applied per
+   instrument, with the resulting number produced only after Packet C1 measures it on real data,
+   rather than guessed here and potentially wrong in a way that only an ACF-blind reviewer could
+   miss.
+
+**Review status (2026-08-31):** Codex's own review of this design (via this PR) returned 9
+findings — 4 load-bearing (baseline missing continuous range; null not applied to test-fold
+volume; feature-side-only purge missing the label-horizon leak; an internally inconsistent
+"two-sided p_upper" carried over from the pre-registration) and 5 lower-severity (fold layout left
+as a range rather than frozen exactly; RTH boundary pointed at the wrong existing convention;
+block-length selector left as a two-option menu; warm-up worded as a flat bar count instead of
+per-slot occurrences; distinct-WHO mechanism labels left qualitative). All 9 are addressed inline
+above, each marked with its own dated correction note, rather than summarized only here — this
+section records that the review happened and was resolved, not what changed.
 
 ---
 
@@ -311,3 +441,4 @@ frozen choices is not applied silently.
 | Date | Change | By |
 |---|---|---|
 | 2026-08-31 | Initial design draft (B2–B5), submitted for adversarial review. No code written or executed. | Claude Code |
+| 2026-08-31 | **Codex review (PR #241) — 9 findings, all addressed.** 4 load-bearing: (1) baseline was missing the continuous trigger-bar range B2 itself specifies, admitting a volume-as-range-proxy confound the within-stratum null wouldn't catch — added; (2) the attribution null only permuted training-fold volume, scoring against real test-fold volume, breaking the replicate statistic's exchangeability with the observed one — fixed to permute one consistent draw across train and test rows together; (3) purge only covered feature-side lookback, missing that a 1-bar-ahead label leaks the test block's first bar into the preceding training row — added label-horizon purging; (4) the pre-registration's "two-sided p_upper" was internally inconsistent with this repo's one-sided convention and the design's own declared direction — resolved to a precise one-sided upper-tail definition in both this file and the pre-registration. 5 lower-severity: fold layout frozen exactly (6-month blocks, mechanically-derived count) rather than left as a 5-10-fold range; RTH boundary given an explicit, correctly-sourced definition rather than pointing at `byyear_l4.py`'s unrelated trading-day-rollover rule; block-length selector narrowed to one algorithm (Politis-White via `arch.bootstrap`) rather than a two-option menu; warm-up corrected to per-slot occurrence counts rather than a flat bar count; distinct-WHO mechanism-A/B labels given a quantitative decision table reusing the existing `alpha=0.05` threshold. No result computed under any of the corrected wording — all 9 were caught before any pilot code existed. | Claude Code, responding to Codex's PR #241 review |
