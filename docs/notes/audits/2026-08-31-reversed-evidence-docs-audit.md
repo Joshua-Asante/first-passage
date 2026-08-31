@@ -134,7 +134,10 @@ This was a targeted 39-file pass, not a full-corpus sweep. Left unswept for this
   live/dead state that changes often.
 - `docs/pursuits/*.md` — only 5 of 41 files checked (the ones tied to known Striker/Tradeify/ORB-MNQ
   reversals). The other 36 (subscriptions, user-skill trackers, most `b*`/`c*`/`d*` rows) were not swept.
-- `docs/personas/*.md` (22 files) — not touched.
+- `docs/personas/*.md` (22 files) — not touched. *(Note 2026-08-31: this directory was deleted in
+  full later the same day — see
+  [persona-hierarchy full retirement](../../adr/2026-08-31-persona-hierarchy-full-retirement.md) —
+  so it is no longer a live candidate for a future reversed-evidence pass.)*
 - `.claude/skills/*/SKILL.md` — only `c1-rail` and `prop-firm-challenge` checked (the two most
   fact-dense operational skills); the other 21 skills were not swept.
 - `core/strategies/**/*.md` — only 6 of ~26 card/lock/changelog files checked (the ones on the

@@ -39,9 +39,11 @@ owned by scripts/gates.yml via gate_manifest.py, not decided here. Exit 2
 only on CLI misuse (missing/unreadable target file).
 
 SCOPE: any single markdown file passed as a CLI argument. Typical callers:
-a new lab/analysis/<theme>/<slug>/ body, a new docs/briefs/ entry, or a
-persona-authored draft -- per operational_rules.md §8's own scope ("opening
-any new lab/analysis/<theme>/<slug>/ directory or scoping new core/-adjacent
+a new lab/analysis/<theme>/<slug>/ body, a new docs/briefs/ entry, or
+(historically) a persona-authored draft (persona system retired 2026-08-31 --
+see docs/adr/2026-08-31-persona-hierarchy-full-retirement.md) -- per
+operational_rules.md §8's own scope ("opening any new
+lab/analysis/<theme>/<slug>/ directory or scoping new core/-adjacent
 implementation work").
 
 Usage:

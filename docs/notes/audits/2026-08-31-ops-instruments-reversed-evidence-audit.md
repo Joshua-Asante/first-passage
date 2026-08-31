@@ -114,7 +114,11 @@ This audit covered `ops/instruments/*.md` completely (32/32 files) — no furthe
 this specific directory. It does not extend to the other unswept surfaces already logged in the
 companion audit's §4 (`docs/pursuits/*.md` beyond the 5 already checked, `docs/personas/*.md`, most
 `.claude/skills/*/SKILL.md`, most `core/strategies/**/*.md` card mirrors) — those remain open forward
-obligations on `STATE.md`, unchanged by this pass.
+obligations on `STATE.md`, unchanged by this pass. **Update 2026-08-31 (later same day):**
+`docs/personas/*.md` no longer names an open surface — the persona-hierarchy system was fully
+retired and every file under `docs/personas/` deleted the same day, see
+[`docs/adr/2026-08-31-persona-hierarchy-full-retirement.md`](../../adr/2026-08-31-persona-hierarchy-full-retirement.md).
+The remaining unswept surfaces named above are unaffected.
 
 ---
 

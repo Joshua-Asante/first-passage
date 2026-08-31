@@ -57,7 +57,7 @@ strategy-signal fill has ever occurred.
 | CFD estate + manual trading retired | [CFD estate](docs/adr/2026-07-11-ops-cfd-estate-retirement.md) |
 | GRAND tier bound above STRATEGIC (Quintessentials; pursuit domain + intake rule) | [GRAND](docs/adr/2026-08-09-grand-tier-quintessentials-binding.md) |
 | MYM1!/MNQ1! occupancy released for new non-Striker research (Striker legs stay barred) | [occupancy](docs/adr/2026-08-12-msl-mym-occupancy-release.md) |
-| Persona-hierarchy review panel (Front-Office-only spawnable roster + CEO apex/CFO cross-office; Middle/Back-office functions run as mechanical gates, not personas) over GRAND ratifications + strict-D2 STRATEGIC-tier Deletes; advisory only, safety-invariant hard-block is a standalone deterministic code check | [persona hierarchy](docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md) · [Front-Office-only narrowing](docs/adr/2026-08-21-persona-hierarchy-front-office-only.md) |
+| Persona-hierarchy review panel **fully retired 2026-08-31** — no persona is spawnable; `docs/personas/` deleted from the live tree. The generic (non-persona) 6-lens pre-ratification adversarial panel remains live and unaffected | [full retirement](docs/adr/2026-08-31-persona-hierarchy-full-retirement.md) · [persona hierarchy](docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md) (historical) · [Front-Office-only narrowing](docs/adr/2026-08-21-persona-hierarchy-front-office-only.md) (historical) |
 
 ⚠ **Eval bust figures remain EOD-clock lower bounds unless they cite an intraday-honest RESULTS
 path.** Scope: Tradeify/MFFU (Class-S candidate) **and Bulenox/BluSky** — confirmed CLOCK-affected
