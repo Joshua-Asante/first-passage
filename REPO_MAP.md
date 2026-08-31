@@ -120,13 +120,14 @@ Regenerate: `python scripts/check_repo_map_scripts_table.py --write`.
 `--check` exits 1 on drift; it is **not** wired into `gates.yml`.
 
 <!-- BEGIN generated: scripts-table -->
-_60 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_61 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 | Script | Layer | Gate id (tier) | Notes |
 |---|---|---|---|
 | `scripts/_build_lessons_index.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/archive_lab_analysis.py` | governance | `lab-catalog` (path-conditional) | — |
 | `scripts/archive_strategy.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/audit_notice_grade_k_correction.py` | lab | `notice-grade-k-correction` (always) | — |
 | `scripts/beta_cohesion_read.py` | lab | — | manual/local only, not in gates.yml |
 | `scripts/check_adr_graph.py` | governance | `adr-graph` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_advisor_dedup.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
@@ -246,13 +247,15 @@ Illegal-edge set: `core→{≠core}`, `governance→{lab,ops}`, `lab→ops`, `op
 ```bash
 # every tracked path matches a layer rule (moved-prefix OR root-resident OR tests)
 git ls-files | grep -vE '^(core|lab|ops|tests|scripts|docs|deploy|\.claude|\.github|\.cursor|discovery_manifests)/' \
-  | grep -vE '^(CLAUDE|README|STATE|PIPELINES)\.md$|^(pyproject\.toml|Makefile|REPO_MAP\.md|LICENSE|\.markdownlint\.json|\.gitattributes|\.gitignore|\.dockerignore|\.rgignore|\.cursorignore|\.cursorindexingignore|requirements-ops\.lock|requirements-research\.txt)$' \
+  | grep -vE '^(CLAUDE|README|STATE|PIPELINES)\.md$|^(pyproject\.toml|Makefile|REPO_MAP\.md|LICENSE|\.markdownlint\.json|\.gitattributes|\.gitignore|\.dockerignore|\.rgignore|\.cursorignore|\.cursorindexingignore|requirements-ops\.lock|requirements-research\.txt|requirements-research\.lock)$' \
   && echo "UNMAPPED PATHS ABOVE" || echo "zero unmapped OK"
 # (run post-move: scripts/ root-resident, the rest under the three layer roots)
 ```
 
-> **Current state (2026-08-21):** the regex above passes clean — `LICENSE` and `.markdownlint.json`
-> were the last unmapped paths, added 2026-08-17 and closed the same day found. The exemption regex
-> has been repaired four times since Phase C as new root-resident paths and dead tokens appeared
-> (2026-06-22, 2026-07-15, 2026-07-31, 2026-08-21); each repair's detail is in `git log -p` on this
-> file, not restated here.
+> **Current state (2026-08-31):** the regex above passes clean. `requirements-research.lock` (added
+> 2026-08-24, PR #166 — the hash-locked companion to `requirements-research.txt`, §2 row above) was
+> the most recent gap, found and closed this pass. Before that, `LICENSE` and `.markdownlint.json`
+> were the last unmapped paths (added 2026-08-17, closed the same day found). The exemption regex
+> has been repaired five times since Phase C as new root-resident paths and dead tokens appeared
+> (2026-06-22, 2026-07-15, 2026-07-31, 2026-08-21, 2026-08-31); each repair's detail is in `git log -p`
+> on this file, not restated here.

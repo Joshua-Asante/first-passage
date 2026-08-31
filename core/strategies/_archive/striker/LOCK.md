@@ -10,11 +10,11 @@
 
 These are git's `hash-object` blob SHA1s — the authoritative content hashes
 for files tracked under `core.autocrlf=true`. Raw `sha1sum` will diverge by
-EOL bytes; trust the values below. Cross-check against `strategies/MANIFEST.sha256`
+EOL bytes; trust the values below. Cross-check against `core/strategies/MANIFEST.sha256`
 (SHA256 of the same blobs).
 
-- Strategy:     `1ed736cf82e848cdce8854757aa321f47c1c0007` — strategies/striker/striker_dj30_v4.5.pine
-- Indicator:    `3704f026092db5b043dd4f03b9805a13fa23b551` — strategies/striker/striker_dj30_v4.5_indicator.pine
+- Strategy:     `1ed736cf82e848cdce8854757aa321f47c1c0007` — core/strategies/striker/striker_dj30_v4.5.pine
+- Indicator:    `3704f026092db5b043dd4f03b9805a13fa23b551` — core/strategies/striker/striker_dj30_v4.5_indicator.pine
 
 ## Reference backtest
 
