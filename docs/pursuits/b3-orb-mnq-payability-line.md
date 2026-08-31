@@ -67,7 +67,11 @@ above — do not cite this addendum's headline figures at all without reading th
 §10 re-tested the 3yr construct's both-halves pass under its own already-identified corrections
 (tail-risk-consistent sizing + a genuine timestamp-sequenced intraday-honest remeasure,
 superseding §9's trade-level proxy) applied together, split by regime half: **both halves now
-fail** (3.29% / 5.37%, vs. the 3.0% ceiling) — the one cell this document's §9 note above still
+fail** (3.29% / 5.37%, vs. the 3.0% ceiling — the Part A eval bust ceiling in force at measurement
+time; ⚠ Correction 2026-08-26: raised to 5.0% ~1hr later the same day by the operator
+risk-tolerance override, [prereg v2](../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md)
+§3, still the live ceiling — under 5.0%, h1 (3.29%) clears alone but h2 (5.37%) still does not, so
+this paragraph's both-halves-fail conclusion is unchanged) — the one cell this document's §9 note above still
 credited as passing both halves does not survive full compounding. As of §10, no tested
 configuration of this combined book, on either window, survives a full both-halves +
 tail-sizing + intraday-honesty gate. This addendum's own re-entry-clause reasoning above should be

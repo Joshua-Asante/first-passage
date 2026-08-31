@@ -79,7 +79,13 @@ Q-DECAY-1 lesson: ECR is execution-fidelity, not a decay detector.)
 
 - **Applies now to:** the **Aegis→M6J** go-live underwriting (the sole active scale
   lane; go-live is a separate gated decision) and any discovery-campaign survivor
-  exiting Stage-8 into `strategies-never-locked` admission. The parent→micro proxy
+  exiting Stage-8 into `strategies-never-locked` admission. ⚠ Correction 2026-08-31:
+  Aegis→M6J is **not** an active scale lane — it was PARKED 2026-07-16
+  ([ADR](../adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md))
+  and Aegis was subsequently retired from living `BASE_RISK` entirely
+  ([Phase C](../adr/2026-08-23-strategy-coldstore-phase-c.md)); the discovery-campaign
+  Stage-8 survivor path is the only currently active underwriting target (see
+  `CLAUDE.md` §Live-execution posture for the live roster). The parent→micro proxy
   discipline already reserves the native-micro era as OOS; this convention is the
   *sizing* counterpart — even a micro-OOS-validated edge is underwritten below its
   backtest point estimate.

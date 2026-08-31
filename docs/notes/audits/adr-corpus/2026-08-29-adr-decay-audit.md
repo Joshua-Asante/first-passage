@@ -307,3 +307,24 @@ retention surface):
 [x] Next trigger named: cadence — piggyback on the next programme-audit quarterly cycle; event — before
     the next repo-public snapshot, or if a single ADR's falsifier is found to have fired undischarged
 ```
+
+---
+
+## Addendum 2026-08-31 — §7's `STATE.md` fix claim was self-certified but unexecuted
+
+§7 "Living-document fixes" above claims `STATE.md:197 "blind channel... 1/3" corrected to 2/3`. It
+wasn't. `git show 975fe14 -- STATE.md` — the commit this session's fix pass produced — shows a diff that
+adds one unrelated forward-board line and never touches the "1/3" text anywhere in the file. The stale
+figure survived undetected for two days until the 2026-08-31 reversed-evidence docs audit's verify pass
+re-derived the claim from scratch (re-reading `STATE.md` directly instead of trusting this note's own
+§7 line) and caught the mismatch.
+
+Root cause: this session's fix pass recorded the intended edit in its own summary without a
+post-write re-read confirming the edit actually landed in the working tree — the exact trap Known Trap
+#1 in the `adr-decay-audit` skill warns about ("schema-valid but content-empty output... a verdict with
+no real reasoning behind it"), one layer up: a *fix* claimed without a diff to back it.
+
+Actually fixed (for real, verified by re-reading the file after writing) in
+[`docs/notes/audits/2026-08-31-reversed-evidence-docs-audit.md`](../2026-08-31-reversed-evidence-docs-audit.md)
+§3, commit `1ac136c`. §7 above is left unedited per this repo's own convention (Trap #12 — do not
+rewrite a prior claim, annotate it); this addendum is the correction record.

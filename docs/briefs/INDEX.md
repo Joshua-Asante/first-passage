@@ -52,8 +52,15 @@ the closure for detail. All are $0/K=0 unless noted.
   Guardian Gold's ATR multiplier (1.55×), grace-stop multiplier (2.0×), and grace-bar window
   are stated in cleartext at `docs/methodology/1r_estimation.md:77,379`, a file absent from the
   admitting ADR's own downstream-artifact inventory and missed by the 2026-08-14 sweep — a live
-  leak of Pine-only-locked strategy detail on the now-public repo, still present. ⚠ **Not
-  remediated by this closure — flagged for immediate operator attention, see chat.** Limb B5
+  leak of Pine-only-locked strategy detail on the now-public repo, present at closure time. ⚠ **Not
+  remediated by this closure — flagged for immediate operator attention, see chat.** **Update
+  2026-08-24 (partial):** the ATR multiplier and grace-bar window are redacted at the source — see
+  [`docs/methodology/1r_estimation.md`](../methodology/1r_estimation.md), which now points those two
+  figures to the private operational archive per the 2026-08-14 public-visibility-transition policy
+  ([ADR](../adr/2026-08-14-repo-public-visibility-transition.md)). **The grace-stop multiplier itself
+  is still disclosed in cleartext** at that file's line 77 ("max 0.6806% = **2.000× designed,
+  exactly**" / "trades that exit during the grace window realize 2× the normal stop loss") — this
+  specific figure remains an open leak, not remediated. Limb B5
   (withheld literal account/$ grep) and Limb D9 (pre-transition sentinel-queue disposition —
   corrected count 12, not 11) remain individually open pending operator input; D9's own premise
   that it "needs private-archive access" is shown to be wrong (the archive is an already-fetched
@@ -102,7 +109,7 @@ These had Notion tracker cards that are now retired. Hot closures live in `docs/
 - **Q-RAIL-1** — c1 execution-path scoping (F1–F5, GO/NO-GO) — **RESOLVED 2026-07-17**, Tradeify Select recommended, §8 ceiling $700 signed. ⚠ §1's discharge claim WITHDRAWN 2026-07-22 — see [`ADR`](../adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md). [`closure`](closures/Q-RAIL-1-closure-resolved.md)
 - **Q-PYRPARITY-1** — WATCH-1 pyramid-proportionality on TV — **FALSIFIED-NONPROPORTIONAL 2026-07-17**. [`closure`](closures/Q-PYRPARITY-1-closure-falsified-nonproportional.md)
 - **Q-INVENTORY-1** — fundable-inventory zero — **FALSIFIED 2026-07-17**, 0 admissible seeds. [`closure`](closures/Q-INVENTORY-1-closure-falsified.md)
-- **Q-BUSTGATE-1** — Part-A eval bust ceiling basis — **FALSIFIED 2026-07-23**; live rung stays WATCH-1 0.50×. [`closure`](closures/Q-BUSTGATE-1-closure-falsified.md)
+- **Q-BUSTGATE-1** — Part-A eval bust ceiling basis — **FALSIFIED 2026-07-23**; live rung stayed WATCH-1 0.50× at closure. ⚠ That live-rung sentence is now historical — Striker withdrawn 2026-08-04, no live c1 book (see [tradeify de-scope ADR](../adr/2026-08-04-tradeify-venue-descope-eval-included.md); CLAUDE.md Live-execution posture). [`closure`](closures/Q-BUSTGATE-1-closure-falsified.md)
 - **Q-KBUDGET-HARVEST-1** — bounded Tier-1/Tier-2 literature harvest — **RESOLVED 2026-07-16**. [`closure`](closures/Q-KBUDGET-HARVEST-1-bounded-axis-literature-sweep.md)
 - **Q-GEOFIT-1** — trailing-DD funding-envelope map — **AMBIGUOUS-PARAMETERIZATION 2026-07-25**. [`closure`](closures/Q-GEOFIT-1-closure-ambiguous-parameterization.md)
 - **Q-JOINT-TAIL-1** — cross-strategy daily co-failure — **BLOCKED-RETIRED 2026-05-27** (temporally diversified at day-of-week level). Succeeded by Q-JOINT-TAIL-WEEKLY. Closure absent here — retrieve `git show pre-prune-2026-08-08:docs/ltm/briefs/Q-JOINT-TAIL-1-closure.md` (private archive only, see §CLAUDE.md caveat).

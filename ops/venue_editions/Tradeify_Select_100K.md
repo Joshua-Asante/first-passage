@@ -12,6 +12,6 @@ Markdown, hand-maintained (same convention as `ops/instruments/*.md`). T2 (stale
 
 | strategy | edition | state | cap_alloc | symbol | screen verdict + date | deployment |
 |---|---|---|---|---|---|---|
-| Striker | `Striker@Tradeify_Select_100K` | `WITHDRAWN` | 69 | MYM1! | venue de-scoped 2026-08-04 ([ADR](../../docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md)) | `leg_id=dj30_mym` RETIRED (rail retained, `dry_run=true`, F2 keep-warm) |
-| Striker NAS100 | `Striker NAS100@Tradeify_Select_100K` | `WITHDRAWN` | 11 | MNQ1! | venue de-scoped 2026-08-04 ([ADR](../../docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md)) | `leg_id=nas100_mnq` RETIRED (rail retained, `dry_run=true`, F2 keep-warm) |
+| Striker | `Striker@Tradeify_Select_100K` | `WITHDRAWN` | 0 (was 69 — released 2026-08-26, [ADR](../../docs/adr/2026-08-26-striker-legmap-cap-release.md)) | MYM1! | venue de-scoped 2026-08-04 ([ADR](../../docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md)) | `leg_id=dj30_mym` RETIRED (rail retained, `dry_run=true`, F2 keep-warm) |
+| Striker NAS100 | `Striker NAS100@Tradeify_Select_100K` | `WITHDRAWN` | 0 (was 11 — released 2026-08-26, [ADR](../../docs/adr/2026-08-26-striker-legmap-cap-release.md)) | MNQ1! | venue de-scoped 2026-08-04 ([ADR](../../docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md)) | `leg_id=nas100_mnq` RETIRED (rail retained, `dry_run=true`, F2 keep-warm) |
 | ORB-MNQ-1 | `ORB-MNQ-1@Tradeify_Select_100K` | `SCREEN-DEAD` | — | MNQ1! | S7 occupancy SCREEN-DEAD 2026-08-04. Book-level payability remains FALSIFIED ([repark ADR](../../docs/adr/2026-08-03-orb-mnq-repark-payability-falsified.md)) — do not read SCREEN-DEAD as the book death | none — never deployed |

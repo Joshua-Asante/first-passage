@@ -4,7 +4,7 @@
 **Established:** 2026-07-10.
 **Decision record:** [`docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md`](../adr/2026-07-10-strategies-never-locked-lifecycle-governance.md) (`Accepted`, ratified 2026-07-10). The ADR carries the *reasoning*; this file carries the *values* and is what downstream (CLAUDE.md, code, STATE.md) points at.
 **Supersedes-in-part (Call 5 up-asymmetry):** [`S5 ADR`](../adr/2026-08-07-loop-s5-bounded-promotion-lane.md) (`Accepted` 2026-08-07) — bounded sandbox-up exception only; see Call 5.
-**Forward triggers:** registered on the [`STATE.md`](../../STATE.md) forward-trigger board (first eval **2026-08-08**).
+**Forward triggers:** registered on the [`STATE.md`](../../STATE.md) forward-trigger board (first eval **2026-08-08** — ⚠ overdue/undischarged as of 2026-08-31; STATE.md's board currently carries no Call-4 row, see Call 4).
 **Stage-map pointer:** this file is the capital-authorization mechanism that stage 5 of [`docs/governance/systematic-trading-lifecycle.md`](../governance/systematic-trading-lifecycle.md) feeds. Call-5 WATCH-tier demotions are reversible OUTER acts (rules-mandated; no STRATEGIC sign-off). Only `RETIRED` and full beta shutdown are instrument-tier Deletes and therefore STRATEGIC-LoR per [`three-loop binding` D2](../adr/2026-06-12-three-loop-methodology-binding.md).
 
 ---
@@ -75,7 +75,7 @@ Dropping the explanation requirement moves the invoice from the "mechanism" line
 | **Review cadence** | quarterly regime-check dates | **2×** (quarterly regime check **+** one interim) |
 | **Call-1 trigger tightness** | 2 consecutive windows | **1** window |
 
-**Portfolio nuance (load-bearing):** all four *current* legs are one mechanism-adjacent shared beta (Q-MECH-1), so at portfolio level the durability question is about *the beta*, not each leg. The per-leg `SURVIVAL-ONLY` regime therefore bites hardest on **new** additions — residual-program lanes (R5 DJ30/MYM, Aegis→6J, Guardian-MGC/R7) and any unexplained signal from the discovery stack (STUMPY/PySR/matrix-profile). Those enter `SURVIVAL-ONLY` by default. (This is why the per-leg tier machinery can be *built* after the beta monitor — see Implementation status.)
+**Portfolio nuance (load-bearing):** all four *current* legs are one mechanism-adjacent shared beta (Q-MECH-1), so at portfolio level the durability question is about *the beta*, not each leg. The per-leg `SURVIVAL-ONLY` regime therefore bites hardest on **new** additions — residual-program lanes (named at 2026-07-10 ratification: R5 DJ30/MYM, Aegis→6J, Guardian-MGC/R7; current per-lane disposition tracked in [`docs/pursuits/`](../pursuits/README.md), not here — e.g. Guardian-MGC/R7 is `DEAD` and Striker-MYM/R5 is `SUBTRACT` as of 2026-08-19/21 (both terminal, not re-entry-eligible without new mechanism evidence), leaving Aegis→6J as the only one of the three still in a re-entry-eligible state — it is itself `PARK`, not active, per [`b1`](../pursuits/b1-aegis-6j-transfer-lane.md)) and any unexplained signal from the discovery stack (STUMPY/PySR/matrix-profile). Those enter `SURVIVAL-ONLY` by default. (This is why the per-leg tier machinery can be *built* after the beta monitor — see Implementation status.)
 
 ### Call 4 — The beta-level trigger (the portfolio killer) — SEQUENCE FIRST
 
@@ -83,7 +83,7 @@ Because the four legs are one beta, decay can arrive **portfolio-wide at once**;
 
 - **Soft flag (ratified):** **2 of 4** legs simultaneously in `WATCH` within one regime-check window → pull the next review forward; run the transfer-entropy / lead-lag **beta-cohesion** check across the four legs + parents.
 - **Beta-death trigger (ratified):** **3 of 4** legs simultaneously in `WATCH` within one regime-check window → **portfolio-wide de-risk to 0.50×** (a beta-level lifecycle multiplier across all legs) **AND** raise a **mandatory operator GO/NO-GO** on full shared-beta shutdown. Autonomous action stops at 0.5×; going to zero is operator-confirmed (Call 5).
-- **First evaluation: 2026-08-08**, reusing `time_to_pass.py --regime-check` + a new beta-cohesion read.
+- **First evaluation: scheduled 2026-08-08, not conducted.** The beta-cohesion diagnostic it depends on did not land until 2026-08-24 ([implementation plan](../superpowers/plans/2026-08-23-call4-beta-cohesion-implementation.md): "First-eval date 2026-08-08 is historical; this plan does not back-date a missed review"); the 2026-08-08 quarterly audit contains no Call-4/beta-death mentions. No rescheduled date is registered anywhere.
 
 ### Call 5 — The automation boundary (reversibility)
 
@@ -122,7 +122,7 @@ These are locked *tighter* than any parameter, so "living authorization" cannot 
 - **2026-08-23 — Phase B catalog dispositions:** authorization-axis action is **none** for every Phase A class. Striker stays `AUTHORIZED · MECHANISM @ 1.00×`. No `lifecycle_state.json`. Owner: [`2026-08-23-strategy-coldstore-phase-b.md`](../adr/2026-08-23-strategy-coldstore-phase-b.md).
 - **Pending — data-dependent Phase 2 code:** (a) **Call-1 live σ-source + state writer** — synthetic OC landed ([T4 RESULTS](../notes/research/2026-08-23-call1-oc-synthetic.md)); `lifecycle_state.json` writer still fill-gated (separate GO); (b) the **beta-cohesion diagnostic** (lagged-correlation lead-lag on historical panels; informs the soft-flag interim review) — landed at [`lab/research_utils/beta_cohesion.py`](../../lab/research_utils/beta_cohesion.py) + [`scripts/beta_cohesion_read.py`](../../scripts/beta_cohesion_read.py). Report-only; does not write `lifecycle_state.json`.
 - **DONE, THEN RETIRED — `ops/cli.py lots` read-only auth surface** (built 2026-07-10; retired 2026-07-24, `ff3510d`): loaded `get_lifecycle_multipliers` and printed a de-auth caution when any leg sat below AUTHORIZED; deliberately did **not** apply the haircut. Retired with the continuous-lot spine. **No successor read-only auth surface exists** — the de-auth caution is currently unrendered anywhere. Recorded as a gap, not repaired here.
-- **Sequencing:** build **Call 4 (beta-death monitor) first** — it defends the shared-beta exposure. The transfer-entropy/lead-lag beta-cohesion read is the concrete first artifact, first eval 2026-08-08.
+- **Sequencing:** build **Call 4 (beta-death monitor) first** — it defends the shared-beta exposure. The transfer-entropy/lead-lag beta-cohesion read is the concrete first artifact; the 2026-08-08 first-eval date was **never conducted** and is undischarged (see Call 4 above) — do not read this line as a completed eval.
 - **Scope note (Delete-until-needed):** the four current legs are one beta, so the per-leg tier machinery is largely inert today — Call 4 is what bites. The per-strategy tier state-machine can be built when the first `SURVIVAL-ONLY` addition needs it; do not gold-plate a four-leg one-beta book.
 
 ## Audit hooks
@@ -136,6 +136,6 @@ grep -nE "1\.00×|0\.50×|0\.25×|0\.00×|risk_pct layer|2 of 4|3 of 4|SURVIVAL-
 grep -n "Strategy Authorization Lifecycle\|durability tag\|risk_pct-layer" CLAUDE.md
 # No locked constant edited by the lifecycle work (pre-code-phase).
 git diff --stat HEAD -- core/dd_protection.py core/firm_rules.py core/config/params.toml
-# Forward triggers registered; next eval 2026-08-08.
+# Call-1 forward trigger registered; Call-4's 2026-08-08 first eval was never run (see Call 4).
 grep -n "decay review\|beta-death\|strategy_lifecycle" STATE.md
 ```

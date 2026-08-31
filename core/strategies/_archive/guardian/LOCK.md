@@ -10,10 +10,11 @@
 
 These are git's `hash-object` blob SHA1s — the authoritative content hashes
 for files tracked under `core.autocrlf=true`. Raw `sha1sum` will diverge by
-EOL bytes; trust the values below.
+EOL bytes; trust the values below. Cross-check against `core/strategies/MANIFEST.sha256`
+(SHA256 of the same blobs).
 
-- Strategy:     `de54ef3b6d9abcdd83ae45d8bb2ead6a5c281ce0` — strategies/guardian/guardian_gold_v5.5.pine
-- Indicator:    `e2db94052e07e49f45d281b11f19f1b50c772bf4` — strategies/guardian/guardian_gold_v5.5_indicator.pine
+- Strategy:     `de54ef3b6d9abcdd83ae45d8bb2ead6a5c281ce0` — core/strategies/_archive/guardian/guardian_gold_v5.5.pine
+- Indicator:    `e2db94052e07e49f45d281b11f19f1b50c772bf4` — core/strategies/_archive/guardian/guardian_gold_v5.5_indicator.pine
                   (combined: emits both FIRE-class `longSignal` and anticipation-class
                    `strictApproach`/`approachZone` alertconditions plus matching
                    `alert()` push calls — see indicator file's 2026-05-07 patch header)
