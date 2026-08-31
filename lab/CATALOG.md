@@ -96,6 +96,7 @@ documents the camp boundary for humans/tools.
 | d5_nq_intraday_mom_2026-07 | orb | ACTIVE | yes | Baltussen H1 on NQ IS — Stage-2/4 results | lab/analysis/orb/d5_nq_intraday_mom_2026-07/ | — |
 | eodadv_mnq_2026-08 | orb | FALSIFIED | yes | no pre-registered mechanism survives; 15:30 exit stays barred | lab/analysis/orb/eodadv_mnq_2026-08/ | — |
 | orb_mnq_2026-07 | orb | ACTIVE | yes | NAS100-ORB-30 on native MNQ; Stage-2 cost-law PASS then T2 payability FIRED | lab/analysis/orb/orb_mnq_2026-07/ | — |
+| orb_mnq_recon_v3_2026-08-31 | orb | ACTIVE | yes | Bust/pass rope walk on the recon-v3 DD-tuning candidate (core/strategies/candidates/orb_mnq_recon_v3.pine) — FAILS the live Tradeify gate (bust<=5.0%) at every k=1-3; k=1 20.78% intraday-honest bust, 4.2x over — real ~3.25x improvement vs frozen construct's 67.67% (T2 ADR) but not close to clearing | lab/analysis/orb/orb_mnq_recon_v3_2026-08-31/ | — |
 | orb_universe_2026-06-22 | orb | ACTIVE | yes | which FXIFY CFD best suits Opening Range Breakout | lab/analysis/orb/orb_universe_2026-06-22/ | — |
 | sessconf_mnq_2026-08 | orb | ACTIVE | yes | faithful close_tod session-truncation sweep (MNQ, Tradeify) | lab/analysis/orb/sessconf_mnq_2026-08/ | — |
 

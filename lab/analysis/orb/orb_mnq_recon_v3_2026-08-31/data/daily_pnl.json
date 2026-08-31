@@ -1,0 +1,2658 @@
+[
+  {
+    "date": "2022-01-03",
+    "pnl_per_contract": 16.68
+  },
+  {
+    "date": "2022-01-06",
+    "pnl_per_contract": -118.32
+  },
+  {
+    "date": "2022-01-10",
+    "pnl_per_contract": 388.18
+  },
+  {
+    "date": "2022-01-11",
+    "pnl_per_contract": 446.68
+  },
+  {
+    "date": "2022-01-14",
+    "pnl_per_contract": 75.18
+  },
+  {
+    "date": "2022-01-18",
+    "pnl_per_contract": -287.82
+  },
+  {
+    "date": "2022-01-20",
+    "pnl_per_contract": -313.82
+  },
+  {
+    "date": "2022-01-21",
+    "pnl_per_contract": -426.32
+  },
+  {
+    "date": "2022-01-24",
+    "pnl_per_contract": 498.68
+  },
+  {
+    "date": "2022-01-25",
+    "pnl_per_contract": -341.32
+  },
+  {
+    "date": "2022-01-27",
+    "pnl_per_contract": -348.32
+  },
+  {
+    "date": "2022-01-28",
+    "pnl_per_contract": 656.68
+  },
+  {
+    "date": "2022-01-31",
+    "pnl_per_contract": 550.18
+  },
+  {
+    "date": "2022-02-01",
+    "pnl_per_contract": 317.68
+  },
+  {
+    "date": "2022-02-03",
+    "pnl_per_contract": -344.82
+  },
+  {
+    "date": "2022-02-04",
+    "pnl_per_contract": 462.68
+  },
+  {
+    "date": "2022-02-07",
+    "pnl_per_contract": -316.82
+  },
+  {
+    "date": "2022-02-08",
+    "pnl_per_contract": 329.68
+  },
+  {
+    "date": "2022-02-10",
+    "pnl_per_contract": -468.82
+  },
+  {
+    "date": "2022-02-14",
+    "pnl_per_contract": -299.82
+  },
+  {
+    "date": "2022-02-15",
+    "pnl_per_contract": 116.18
+  },
+  {
+    "date": "2022-02-22",
+    "pnl_per_contract": -423.82
+  },
+  {
+    "date": "2022-02-24",
+    "pnl_per_contract": 900.18
+  },
+  {
+    "date": "2022-02-25",
+    "pnl_per_contract": 345.68
+  },
+  {
+    "date": "2022-02-28",
+    "pnl_per_contract": 284.68
+  },
+  {
+    "date": "2022-03-01",
+    "pnl_per_contract": -282.82
+  },
+  {
+    "date": "2022-03-08",
+    "pnl_per_contract": 473.18
+  },
+  {
+    "date": "2022-03-10",
+    "pnl_per_contract": -259.82
+  },
+  {
+    "date": "2022-03-15",
+    "pnl_per_contract": 378.18
+  },
+  {
+    "date": "2022-03-17",
+    "pnl_per_contract": 244.18
+  },
+  {
+    "date": "2022-03-18",
+    "pnl_per_contract": 309.68
+  },
+  {
+    "date": "2022-03-22",
+    "pnl_per_contract": 330.68
+  },
+  {
+    "date": "2022-03-24",
+    "pnl_per_contract": -225.82
+  },
+  {
+    "date": "2022-03-25",
+    "pnl_per_contract": -229.82
+  },
+  {
+    "date": "2022-03-28",
+    "pnl_per_contract": 184.68
+  },
+  {
+    "date": "2022-03-29",
+    "pnl_per_contract": 2.68
+  },
+  {
+    "date": "2022-04-04",
+    "pnl_per_contract": 220.18
+  },
+  {
+    "date": "2022-04-07",
+    "pnl_per_contract": -355.82
+  },
+  {
+    "date": "2022-04-08",
+    "pnl_per_contract": -200.82
+  },
+  {
+    "date": "2022-04-11",
+    "pnl_per_contract": -222.82
+  },
+  {
+    "date": "2022-04-12",
+    "pnl_per_contract": -386.32
+  },
+  {
+    "date": "2022-04-18",
+    "pnl_per_contract": -263.32
+  },
+  {
+    "date": "2022-04-19",
+    "pnl_per_contract": 298.68
+  },
+  {
+    "date": "2022-04-25",
+    "pnl_per_contract": 341.68
+  },
+  {
+    "date": "2022-04-28",
+    "pnl_per_contract": 504.18
+  },
+  {
+    "date": "2022-04-29",
+    "pnl_per_contract": -516.82
+  },
+  {
+    "date": "2022-05-02",
+    "pnl_per_contract": 363.36
+  },
+  {
+    "date": "2022-05-03",
+    "pnl_per_contract": 81.86
+  },
+  {
+    "date": "2022-05-06",
+    "pnl_per_contract": -365.14
+  },
+  {
+    "date": "2022-05-12",
+    "pnl_per_contract": -123.64
+  },
+  {
+    "date": "2022-05-13",
+    "pnl_per_contract": 402.86
+  },
+  {
+    "date": "2022-05-16",
+    "pnl_per_contract": -505.64
+  },
+  {
+    "date": "2022-05-17",
+    "pnl_per_contract": -222.32
+  },
+  {
+    "date": "2022-05-19",
+    "pnl_per_contract": -185.14
+  },
+  {
+    "date": "2022-05-23",
+    "pnl_per_contract": 583.36
+  },
+  {
+    "date": "2022-05-26",
+    "pnl_per_contract": 475.86
+  },
+  {
+    "date": "2022-05-27",
+    "pnl_per_contract": 727.36
+  },
+  {
+    "date": "2022-05-31",
+    "pnl_per_contract": -187.14
+  },
+  {
+    "date": "2022-06-02",
+    "pnl_per_contract": 697.86
+  },
+  {
+    "date": "2022-06-03",
+    "pnl_per_contract": -458.14
+  },
+  {
+    "date": "2022-06-06",
+    "pnl_per_contract": -534.14
+  },
+  {
+    "date": "2022-06-07",
+    "pnl_per_contract": 709.86
+  },
+  {
+    "date": "2022-06-09",
+    "pnl_per_contract": -704.64
+  },
+  {
+    "date": "2022-06-14",
+    "pnl_per_contract": -410.32
+  },
+  {
+    "date": "2022-06-17",
+    "pnl_per_contract": -133.14
+  },
+  {
+    "date": "2022-06-21",
+    "pnl_per_contract": -223.14
+  },
+  {
+    "date": "2022-06-23",
+    "pnl_per_contract": -26.64
+  },
+  {
+    "date": "2022-06-24",
+    "pnl_per_contract": 519.36
+  },
+  {
+    "date": "2022-06-30",
+    "pnl_per_contract": -364.64
+  },
+  {
+    "date": "2022-07-01",
+    "pnl_per_contract": 380.86
+  },
+  {
+    "date": "2022-07-05",
+    "pnl_per_contract": 539.86
+  },
+  {
+    "date": "2022-07-07",
+    "pnl_per_contract": 352.86
+  },
+  {
+    "date": "2022-07-08",
+    "pnl_per_contract": 223.36
+  },
+  {
+    "date": "2022-07-14",
+    "pnl_per_contract": 462.86
+  },
+  {
+    "date": "2022-07-15",
+    "pnl_per_contract": 156.36
+  },
+  {
+    "date": "2022-07-18",
+    "pnl_per_contract": -329.14
+  },
+  {
+    "date": "2022-07-19",
+    "pnl_per_contract": 476.86
+  },
+  {
+    "date": "2022-07-21",
+    "pnl_per_contract": 460.36
+  },
+  {
+    "date": "2022-07-28",
+    "pnl_per_contract": 1118.86
+  },
+  {
+    "date": "2022-07-29",
+    "pnl_per_contract": 389.36
+  },
+  {
+    "date": "2022-08-01",
+    "pnl_per_contract": -181.14
+  },
+  {
+    "date": "2022-08-02",
+    "pnl_per_contract": 164.86
+  },
+  {
+    "date": "2022-08-04",
+    "pnl_per_contract": -236.82
+  },
+  {
+    "date": "2022-08-05",
+    "pnl_per_contract": -128.14
+  },
+  {
+    "date": "2022-08-08",
+    "pnl_per_contract": -855.64
+  },
+  {
+    "date": "2022-08-11",
+    "pnl_per_contract": -405.14
+  },
+  {
+    "date": "2022-08-12",
+    "pnl_per_contract": 432.86
+  },
+  {
+    "date": "2022-08-15",
+    "pnl_per_contract": 201.86
+  },
+  {
+    "date": "2022-08-16",
+    "pnl_per_contract": -21.64
+  },
+  {
+    "date": "2022-08-18",
+    "pnl_per_contract": 100.86
+  },
+  {
+    "date": "2022-08-23",
+    "pnl_per_contract": -372.64
+  },
+  {
+    "date": "2022-08-25",
+    "pnl_per_contract": 433.86
+  },
+  {
+    "date": "2022-08-29",
+    "pnl_per_contract": -45.32
+  },
+  {
+    "date": "2022-09-01",
+    "pnl_per_contract": 228.86
+  },
+  {
+    "date": "2022-09-02",
+    "pnl_per_contract": -779.64
+  },
+  {
+    "date": "2022-09-08",
+    "pnl_per_contract": 382.86
+  },
+  {
+    "date": "2022-09-09",
+    "pnl_per_contract": 315.36
+  },
+  {
+    "date": "2022-09-12",
+    "pnl_per_contract": 151.36
+  },
+  {
+    "date": "2022-09-15",
+    "pnl_per_contract": -488.14
+  },
+  {
+    "date": "2022-09-16",
+    "pnl_per_contract": 345.86
+  },
+  {
+    "date": "2022-09-19",
+    "pnl_per_contract": 579.36
+  },
+  {
+    "date": "2022-09-20",
+    "pnl_per_contract": -367.14
+  },
+  {
+    "date": "2022-09-26",
+    "pnl_per_contract": -799.14
+  },
+  {
+    "date": "2022-09-30",
+    "pnl_per_contract": -546.14
+  },
+  {
+    "date": "2022-10-03",
+    "pnl_per_contract": 570.36
+  },
+  {
+    "date": "2022-10-04",
+    "pnl_per_contract": 30.36
+  },
+  {
+    "date": "2022-10-11",
+    "pnl_per_contract": -540.64
+  },
+  {
+    "date": "2022-10-13",
+    "pnl_per_contract": 564.36
+  },
+  {
+    "date": "2022-10-17",
+    "pnl_per_contract": 51.86
+  },
+  {
+    "date": "2022-10-20",
+    "pnl_per_contract": -663.46
+  },
+  {
+    "date": "2022-10-21",
+    "pnl_per_contract": 650.36
+  },
+  {
+    "date": "2022-10-24",
+    "pnl_per_contract": 200.36
+  },
+  {
+    "date": "2022-10-25",
+    "pnl_per_contract": -247.14
+  },
+  {
+    "date": "2022-10-28",
+    "pnl_per_contract": 1010.86
+  },
+  {
+    "date": "2022-11-03",
+    "pnl_per_contract": -408.64
+  },
+  {
+    "date": "2022-11-04",
+    "pnl_per_contract": -230.32
+  },
+  {
+    "date": "2022-11-07",
+    "pnl_per_contract": 123.36
+  },
+  {
+    "date": "2022-11-08",
+    "pnl_per_contract": 534.36
+  },
+  {
+    "date": "2022-11-10",
+    "pnl_per_contract": 803.36
+  },
+  {
+    "date": "2022-11-11",
+    "pnl_per_contract": 545.36
+  },
+  {
+    "date": "2022-11-14",
+    "pnl_per_contract": 401.86
+  },
+  {
+    "date": "2022-11-17",
+    "pnl_per_contract": 444.36
+  },
+  {
+    "date": "2022-11-22",
+    "pnl_per_contract": 388.36
+  },
+  {
+    "date": "2022-11-27",
+    "pnl_per_contract": -317.64
+  },
+  {
+    "date": "2022-12-01",
+    "pnl_per_contract": -226.32
+  },
+  {
+    "date": "2022-12-02",
+    "pnl_per_contract": 195.86
+  },
+  {
+    "date": "2022-12-08",
+    "pnl_per_contract": 67.36
+  },
+  {
+    "date": "2022-12-09",
+    "pnl_per_contract": -351.64
+  },
+  {
+    "date": "2022-12-12",
+    "pnl_per_contract": 361.86
+  },
+  {
+    "date": "2022-12-20",
+    "pnl_per_contract": 71.86
+  },
+  {
+    "date": "2022-12-23",
+    "pnl_per_contract": 14.86
+  },
+  {
+    "date": "2022-12-29",
+    "pnl_per_contract": 201.36
+  },
+  {
+    "date": "2022-12-30",
+    "pnl_per_contract": 407.86
+  },
+  {
+    "date": "2023-01-05",
+    "pnl_per_contract": -141.82
+  },
+  {
+    "date": "2023-01-06",
+    "pnl_per_contract": 652.86
+  },
+  {
+    "date": "2023-01-09",
+    "pnl_per_contract": -469.14
+  },
+  {
+    "date": "2023-01-10",
+    "pnl_per_contract": 113.36
+  },
+  {
+    "date": "2023-01-12",
+    "pnl_per_contract": -33.64
+  },
+  {
+    "date": "2023-01-13",
+    "pnl_per_contract": 382.36
+  },
+  {
+    "date": "2023-01-17",
+    "pnl_per_contract": -83.64
+  },
+  {
+    "date": "2023-01-19",
+    "pnl_per_contract": -178.14
+  },
+  {
+    "date": "2023-01-20",
+    "pnl_per_contract": 384.36
+  },
+  {
+    "date": "2023-01-23",
+    "pnl_per_contract": 528.36
+  },
+  {
+    "date": "2023-01-24",
+    "pnl_per_contract": 409.36
+  },
+  {
+    "date": "2023-01-26",
+    "pnl_per_contract": -73.64
+  },
+  {
+    "date": "2023-01-27",
+    "pnl_per_contract": 422.86
+  },
+  {
+    "date": "2023-01-30",
+    "pnl_per_contract": -307.64
+  },
+  {
+    "date": "2023-01-31",
+    "pnl_per_contract": 345.36
+  },
+  {
+    "date": "2023-02-02",
+    "pnl_per_contract": 624.86
+  },
+  {
+    "date": "2023-02-03",
+    "pnl_per_contract": -498.14
+  },
+  {
+    "date": "2023-02-06",
+    "pnl_per_contract": -401.14
+  },
+  {
+    "date": "2023-02-07",
+    "pnl_per_contract": 603.86
+  },
+  {
+    "date": "2023-02-10",
+    "pnl_per_contract": -449.64
+  },
+  {
+    "date": "2023-02-13",
+    "pnl_per_contract": 394.86
+  },
+  {
+    "date": "2023-02-14",
+    "pnl_per_contract": -4.14
+  },
+  {
+    "date": "2023-02-16",
+    "pnl_per_contract": 458.86
+  },
+  {
+    "date": "2023-02-27",
+    "pnl_per_contract": -253.64
+  },
+  {
+    "date": "2023-02-28",
+    "pnl_per_contract": -226.64
+  },
+  {
+    "date": "2023-03-02",
+    "pnl_per_contract": 295.86
+  },
+  {
+    "date": "2023-03-03",
+    "pnl_per_contract": 289.36
+  },
+  {
+    "date": "2023-03-06",
+    "pnl_per_contract": 292.36
+  },
+  {
+    "date": "2023-03-09",
+    "pnl_per_contract": -478.14
+  },
+  {
+    "date": "2023-03-10",
+    "pnl_per_contract": -808.64
+  },
+  {
+    "date": "2023-03-13",
+    "pnl_per_contract": 228.86
+  },
+  {
+    "date": "2023-03-14",
+    "pnl_per_contract": 161.36
+  },
+  {
+    "date": "2023-03-16",
+    "pnl_per_contract": 493.36
+  },
+  {
+    "date": "2023-03-17",
+    "pnl_per_contract": -396.14
+  },
+  {
+    "date": "2023-03-20",
+    "pnl_per_contract": 180.36
+  },
+  {
+    "date": "2023-03-21",
+    "pnl_per_contract": -190.64
+  },
+  {
+    "date": "2023-03-23",
+    "pnl_per_contract": 421.36
+  },
+  {
+    "date": "2023-03-24",
+    "pnl_per_contract": 435.86
+  },
+  {
+    "date": "2023-03-27",
+    "pnl_per_contract": -290.14
+  },
+  {
+    "date": "2023-03-30",
+    "pnl_per_contract": -152.96
+  },
+  {
+    "date": "2023-03-31",
+    "pnl_per_contract": 376.86
+  },
+  {
+    "date": "2023-04-03",
+    "pnl_per_contract": -262.14
+  },
+  {
+    "date": "2023-04-04",
+    "pnl_per_contract": -405.14
+  },
+  {
+    "date": "2023-04-06",
+    "pnl_per_contract": 395.36
+  },
+  {
+    "date": "2023-04-10",
+    "pnl_per_contract": 401.36
+  },
+  {
+    "date": "2023-04-13",
+    "pnl_per_contract": 346.36
+  },
+  {
+    "date": "2023-04-14",
+    "pnl_per_contract": -513.64
+  },
+  {
+    "date": "2023-04-20",
+    "pnl_per_contract": -165.64
+  },
+  {
+    "date": "2023-04-21",
+    "pnl_per_contract": -192.64
+  },
+  {
+    "date": "2023-04-27",
+    "pnl_per_contract": 255.36
+  },
+  {
+    "date": "2023-04-28",
+    "pnl_per_contract": 282.36
+  },
+  {
+    "date": "2023-05-01",
+    "pnl_per_contract": -189.14
+  },
+  {
+    "date": "2023-05-04",
+    "pnl_per_contract": -194.64
+  },
+  {
+    "date": "2023-05-05",
+    "pnl_per_contract": 301.86
+  },
+  {
+    "date": "2023-05-08",
+    "pnl_per_contract": 75.86
+  },
+  {
+    "date": "2023-05-09",
+    "pnl_per_contract": -152.14
+  },
+  {
+    "date": "2023-05-11",
+    "pnl_per_contract": 31.86
+  },
+  {
+    "date": "2023-05-15",
+    "pnl_per_contract": 130.36
+  },
+  {
+    "date": "2023-05-16",
+    "pnl_per_contract": 4.36
+  },
+  {
+    "date": "2023-05-18",
+    "pnl_per_contract": 417.36
+  },
+  {
+    "date": "2023-05-22",
+    "pnl_per_contract": -8.14
+  },
+  {
+    "date": "2023-05-23",
+    "pnl_per_contract": -244.14
+  },
+  {
+    "date": "2023-05-25",
+    "pnl_per_contract": 31.86
+  },
+  {
+    "date": "2023-05-26",
+    "pnl_per_contract": 489.36
+  },
+  {
+    "date": "2023-06-01",
+    "pnl_per_contract": 462.36
+  },
+  {
+    "date": "2023-06-05",
+    "pnl_per_contract": -306.64
+  },
+  {
+    "date": "2023-06-06",
+    "pnl_per_contract": 20.36
+  },
+  {
+    "date": "2023-06-08",
+    "pnl_per_contract": 434.36
+  },
+  {
+    "date": "2023-06-09",
+    "pnl_per_contract": -573.14
+  },
+  {
+    "date": "2023-06-12",
+    "pnl_per_contract": 217.36
+  },
+  {
+    "date": "2023-06-15",
+    "pnl_per_contract": 464.86
+  },
+  {
+    "date": "2023-06-22",
+    "pnl_per_contract": 456.86
+  },
+  {
+    "date": "2023-06-23",
+    "pnl_per_contract": -181.64
+  },
+  {
+    "date": "2023-06-26",
+    "pnl_per_contract": -570.14
+  },
+  {
+    "date": "2023-06-27",
+    "pnl_per_contract": 429.86
+  },
+  {
+    "date": "2023-06-30",
+    "pnl_per_contract": -44.64
+  },
+  {
+    "date": "2023-07-03",
+    "pnl_per_contract": -187.64
+  },
+  {
+    "date": "2023-07-06",
+    "pnl_per_contract": 25.36
+  },
+  {
+    "date": "2023-07-07",
+    "pnl_per_contract": 16.36
+  },
+  {
+    "date": "2023-07-10",
+    "pnl_per_contract": -76.64
+  },
+  {
+    "date": "2023-07-11",
+    "pnl_per_contract": 121.86
+  },
+  {
+    "date": "2023-07-13",
+    "pnl_per_contract": 372.86
+  },
+  {
+    "date": "2023-07-14",
+    "pnl_per_contract": -638.64
+  },
+  {
+    "date": "2023-07-17",
+    "pnl_per_contract": 142.86
+  },
+  {
+    "date": "2023-07-18",
+    "pnl_per_contract": 425.86
+  },
+  {
+    "date": "2023-07-25",
+    "pnl_per_contract": 279.86
+  },
+  {
+    "date": "2023-07-28",
+    "pnl_per_contract": 170.86
+  },
+  {
+    "date": "2023-08-01",
+    "pnl_per_contract": -134.64
+  },
+  {
+    "date": "2023-08-03",
+    "pnl_per_contract": 422.36
+  },
+  {
+    "date": "2023-08-04",
+    "pnl_per_contract": -522.14
+  },
+  {
+    "date": "2023-08-07",
+    "pnl_per_contract": 36.36
+  },
+  {
+    "date": "2023-08-10",
+    "pnl_per_contract": -714.14
+  },
+  {
+    "date": "2023-08-11",
+    "pnl_per_contract": -89.14
+  },
+  {
+    "date": "2023-08-14",
+    "pnl_per_contract": 474.36
+  },
+  {
+    "date": "2023-08-18",
+    "pnl_per_contract": 363.36
+  },
+  {
+    "date": "2023-08-21",
+    "pnl_per_contract": 267.86
+  },
+  {
+    "date": "2023-08-25",
+    "pnl_per_contract": -511.14
+  },
+  {
+    "date": "2023-08-29",
+    "pnl_per_contract": 775.04
+  },
+  {
+    "date": "2023-08-31",
+    "pnl_per_contract": -157.64
+  },
+  {
+    "date": "2023-09-05",
+    "pnl_per_contract": 195.36
+  },
+  {
+    "date": "2023-09-07",
+    "pnl_per_contract": 112.86
+  },
+  {
+    "date": "2023-09-08",
+    "pnl_per_contract": -190.14
+  },
+  {
+    "date": "2023-09-11",
+    "pnl_per_contract": 92.86
+  },
+  {
+    "date": "2023-09-12",
+    "pnl_per_contract": -184.82
+  },
+  {
+    "date": "2023-09-14",
+    "pnl_per_contract": 100.36
+  },
+  {
+    "date": "2023-09-18",
+    "pnl_per_contract": -58.14
+  },
+  {
+    "date": "2023-09-19",
+    "pnl_per_contract": 33.86
+  },
+  {
+    "date": "2023-09-22",
+    "pnl_per_contract": -473.14
+  },
+  {
+    "date": "2023-09-25",
+    "pnl_per_contract": 321.86
+  },
+  {
+    "date": "2023-09-28",
+    "pnl_per_contract": 409.86
+  },
+  {
+    "date": "2023-09-29",
+    "pnl_per_contract": -289.64
+  },
+  {
+    "date": "2023-10-02",
+    "pnl_per_contract": 187.86
+  },
+  {
+    "date": "2023-10-03",
+    "pnl_per_contract": -252.32
+  },
+  {
+    "date": "2023-10-06",
+    "pnl_per_contract": 626.86
+  },
+  {
+    "date": "2023-10-09",
+    "pnl_per_contract": 559.36
+  },
+  {
+    "date": "2023-10-10",
+    "pnl_per_contract": 307.86
+  },
+  {
+    "date": "2023-10-12",
+    "pnl_per_contract": -352.64
+  },
+  {
+    "date": "2023-10-16",
+    "pnl_per_contract": 179.86
+  },
+  {
+    "date": "2023-10-17",
+    "pnl_per_contract": 409.36
+  },
+  {
+    "date": "2023-10-19",
+    "pnl_per_contract": -368.64
+  },
+  {
+    "date": "2023-10-23",
+    "pnl_per_contract": 801.36
+  },
+  {
+    "date": "2023-10-24",
+    "pnl_per_contract": -446.14
+  },
+  {
+    "date": "2023-10-27",
+    "pnl_per_contract": -277.64
+  },
+  {
+    "date": "2023-10-30",
+    "pnl_per_contract": -80.64
+  },
+  {
+    "date": "2023-10-31",
+    "pnl_per_contract": 89.86
+  },
+  {
+    "date": "2023-11-02",
+    "pnl_per_contract": 51.36
+  },
+  {
+    "date": "2023-11-03",
+    "pnl_per_contract": 391.36
+  },
+  {
+    "date": "2023-11-07",
+    "pnl_per_contract": 380.36
+  },
+  {
+    "date": "2023-11-09",
+    "pnl_per_contract": -238.64
+  },
+  {
+    "date": "2023-11-10",
+    "pnl_per_contract": 541.36
+  },
+  {
+    "date": "2023-11-13",
+    "pnl_per_contract": 73.36
+  },
+  {
+    "date": "2023-11-14",
+    "pnl_per_contract": 114.86
+  },
+  {
+    "date": "2023-11-16",
+    "pnl_per_contract": -306.64
+  },
+  {
+    "date": "2023-11-17",
+    "pnl_per_contract": -71.64
+  },
+  {
+    "date": "2023-11-20",
+    "pnl_per_contract": 351.86
+  },
+  {
+    "date": "2023-11-27",
+    "pnl_per_contract": -125.14
+  },
+  {
+    "date": "2023-11-28",
+    "pnl_per_contract": 101.36
+  },
+  {
+    "date": "2023-12-01",
+    "pnl_per_contract": 383.86
+  },
+  {
+    "date": "2023-12-04",
+    "pnl_per_contract": -78.14
+  },
+  {
+    "date": "2023-12-05",
+    "pnl_per_contract": 87.36
+  },
+  {
+    "date": "2023-12-07",
+    "pnl_per_contract": 110.36
+  },
+  {
+    "date": "2023-12-08",
+    "pnl_per_contract": 151.36
+  },
+  {
+    "date": "2023-12-11",
+    "pnl_per_contract": 319.36
+  },
+  {
+    "date": "2023-12-12",
+    "pnl_per_contract": 410.86
+  },
+  {
+    "date": "2023-12-15",
+    "pnl_per_contract": -156.14
+  },
+  {
+    "date": "2023-12-18",
+    "pnl_per_contract": 273.86
+  },
+  {
+    "date": "2023-12-19",
+    "pnl_per_contract": 157.86
+  },
+  {
+    "date": "2023-12-21",
+    "pnl_per_contract": -23.64
+  },
+  {
+    "date": "2023-12-22",
+    "pnl_per_contract": -131.32
+  },
+  {
+    "date": "2023-12-26",
+    "pnl_per_contract": 163.36
+  },
+  {
+    "date": "2023-12-29",
+    "pnl_per_contract": -153.64
+  },
+  {
+    "date": "2024-01-04",
+    "pnl_per_contract": -248.64
+  },
+  {
+    "date": "2024-01-05",
+    "pnl_per_contract": -212.14
+  },
+  {
+    "date": "2024-01-08",
+    "pnl_per_contract": 504.86
+  },
+  {
+    "date": "2024-01-09",
+    "pnl_per_contract": 448.86
+  },
+  {
+    "date": "2024-01-16",
+    "pnl_per_contract": 32.86
+  },
+  {
+    "date": "2024-01-18",
+    "pnl_per_contract": -400.64
+  },
+  {
+    "date": "2024-01-19",
+    "pnl_per_contract": 375.36
+  },
+  {
+    "date": "2024-01-23",
+    "pnl_per_contract": 113.18
+  },
+  {
+    "date": "2024-01-25",
+    "pnl_per_contract": -152.32
+  },
+  {
+    "date": "2024-01-26",
+    "pnl_per_contract": -124.82
+  },
+  {
+    "date": "2024-01-29",
+    "pnl_per_contract": 184.68
+  },
+  {
+    "date": "2024-02-01",
+    "pnl_per_contract": -269.64
+  },
+  {
+    "date": "2024-02-02",
+    "pnl_per_contract": 333.68
+  },
+  {
+    "date": "2024-02-05",
+    "pnl_per_contract": -71.82
+  },
+  {
+    "date": "2024-02-08",
+    "pnl_per_contract": 14.18
+  },
+  {
+    "date": "2024-02-09",
+    "pnl_per_contract": 180.18
+  },
+  {
+    "date": "2024-02-12",
+    "pnl_per_contract": 133.68
+  },
+  {
+    "date": "2024-02-13",
+    "pnl_per_contract": -241.32
+  },
+  {
+    "date": "2024-02-15",
+    "pnl_per_contract": 99.68
+  },
+  {
+    "date": "2024-02-22",
+    "pnl_per_contract": 197.68
+  },
+  {
+    "date": "2024-02-26",
+    "pnl_per_contract": -170.82
+  },
+  {
+    "date": "2024-02-27",
+    "pnl_per_contract": -20.32
+  },
+  {
+    "date": "2024-02-29",
+    "pnl_per_contract": -6.32
+  },
+  {
+    "date": "2024-03-01",
+    "pnl_per_contract": 172.68
+  },
+  {
+    "date": "2024-03-04",
+    "pnl_per_contract": -139.32
+  },
+  {
+    "date": "2024-03-07",
+    "pnl_per_contract": 229.18
+  },
+  {
+    "date": "2024-03-08",
+    "pnl_per_contract": -253.32
+  },
+  {
+    "date": "2024-03-11",
+    "pnl_per_contract": -2.32
+  },
+  {
+    "date": "2024-03-12",
+    "pnl_per_contract": 262.18
+  },
+  {
+    "date": "2024-03-18",
+    "pnl_per_contract": -218.82
+  },
+  {
+    "date": "2024-03-19",
+    "pnl_per_contract": 238.68
+  },
+  {
+    "date": "2024-03-22",
+    "pnl_per_contract": 150.18
+  },
+  {
+    "date": "2024-03-25",
+    "pnl_per_contract": 100.68
+  },
+  {
+    "date": "2024-03-26",
+    "pnl_per_contract": -128.32
+  },
+  {
+    "date": "2024-03-28",
+    "pnl_per_contract": -97.82
+  },
+  {
+    "date": "2024-04-02",
+    "pnl_per_contract": 94.18
+  },
+  {
+    "date": "2024-04-05",
+    "pnl_per_contract": 244.68
+  },
+  {
+    "date": "2024-04-08",
+    "pnl_per_contract": -106.32
+  },
+  {
+    "date": "2024-04-09",
+    "pnl_per_contract": -26.32
+  },
+  {
+    "date": "2024-04-11",
+    "pnl_per_contract": 227.18
+  },
+  {
+    "date": "2024-04-12",
+    "pnl_per_contract": -172.82
+  },
+  {
+    "date": "2024-04-16",
+    "pnl_per_contract": -6.82
+  },
+  {
+    "date": "2024-04-18",
+    "pnl_per_contract": -328.32
+  },
+  {
+    "date": "2024-04-22",
+    "pnl_per_contract": -173.64
+  },
+  {
+    "date": "2024-04-23",
+    "pnl_per_contract": 187.18
+  },
+  {
+    "date": "2024-04-25",
+    "pnl_per_contract": 458.86
+  },
+  {
+    "date": "2024-04-26",
+    "pnl_per_contract": 103.18
+  },
+  {
+    "date": "2024-04-30",
+    "pnl_per_contract": -177.82
+  },
+  {
+    "date": "2024-05-02",
+    "pnl_per_contract": 294.18
+  },
+  {
+    "date": "2024-05-03",
+    "pnl_per_contract": -209.32
+  },
+  {
+    "date": "2024-05-06",
+    "pnl_per_contract": 175.18
+  },
+  {
+    "date": "2024-05-07",
+    "pnl_per_contract": -133.32
+  },
+  {
+    "date": "2024-05-09",
+    "pnl_per_contract": 30.18
+  },
+  {
+    "date": "2024-05-14",
+    "pnl_per_contract": 187.18
+  },
+  {
+    "date": "2024-05-16",
+    "pnl_per_contract": 99.18
+  },
+  {
+    "date": "2024-05-20",
+    "pnl_per_contract": -10.82
+  },
+  {
+    "date": "2024-05-21",
+    "pnl_per_contract": 109.68
+  },
+  {
+    "date": "2024-05-24",
+    "pnl_per_contract": 171.18
+  },
+  {
+    "date": "2024-05-28",
+    "pnl_per_contract": -191.82
+  },
+  {
+    "date": "2024-06-04",
+    "pnl_per_contract": 108.18
+  },
+  {
+    "date": "2024-06-07",
+    "pnl_per_contract": 155.68
+  },
+  {
+    "date": "2024-06-10",
+    "pnl_per_contract": 151.68
+  },
+  {
+    "date": "2024-06-11",
+    "pnl_per_contract": 150.68
+  },
+  {
+    "date": "2024-06-14",
+    "pnl_per_contract": 111.68
+  },
+  {
+    "date": "2024-06-17",
+    "pnl_per_contract": 228.68
+  },
+  {
+    "date": "2024-06-18",
+    "pnl_per_contract": -113.82
+  },
+  {
+    "date": "2024-06-21",
+    "pnl_per_contract": -76.32
+  },
+  {
+    "date": "2024-06-24",
+    "pnl_per_contract": -222.82
+  },
+  {
+    "date": "2024-06-25",
+    "pnl_per_contract": 187.18
+  },
+  {
+    "date": "2024-06-27",
+    "pnl_per_contract": -70.82
+  },
+  {
+    "date": "2024-06-28",
+    "pnl_per_contract": 240.68
+  },
+  {
+    "date": "2024-07-01",
+    "pnl_per_contract": 110.68
+  },
+  {
+    "date": "2024-07-02",
+    "pnl_per_contract": 338.68
+  },
+  {
+    "date": "2024-07-05",
+    "pnl_per_contract": 238.68
+  },
+  {
+    "date": "2024-07-08",
+    "pnl_per_contract": 76.68
+  },
+  {
+    "date": "2024-07-09",
+    "pnl_per_contract": -133.32
+  },
+  {
+    "date": "2024-07-12",
+    "pnl_per_contract": 188.18
+  },
+  {
+    "date": "2024-07-15",
+    "pnl_per_contract": 252.18
+  },
+  {
+    "date": "2024-07-22",
+    "pnl_per_contract": -274.82
+  },
+  {
+    "date": "2024-07-23",
+    "pnl_per_contract": -180.82
+  },
+  {
+    "date": "2024-07-25",
+    "pnl_per_contract": -387.82
+  },
+  {
+    "date": "2024-07-26",
+    "pnl_per_contract": -19.32
+  },
+  {
+    "date": "2024-07-29",
+    "pnl_per_contract": -370.82
+  },
+  {
+    "date": "2024-08-01",
+    "pnl_per_contract": -379.32
+  },
+  {
+    "date": "2024-08-05",
+    "pnl_per_contract": 513.68
+  },
+  {
+    "date": "2024-08-06",
+    "pnl_per_contract": 588.18
+  },
+  {
+    "date": "2024-08-08",
+    "pnl_per_contract": 416.68
+  },
+  {
+    "date": "2024-08-09",
+    "pnl_per_contract": 145.18
+  },
+  {
+    "date": "2024-08-12",
+    "pnl_per_contract": -101.32
+  },
+  {
+    "date": "2024-08-13",
+    "pnl_per_contract": 362.68
+  },
+  {
+    "date": "2024-08-15",
+    "pnl_per_contract": 253.18
+  },
+  {
+    "date": "2024-08-16",
+    "pnl_per_contract": 245.68
+  },
+  {
+    "date": "2024-08-19",
+    "pnl_per_contract": 283.18
+  },
+  {
+    "date": "2024-08-20",
+    "pnl_per_contract": -270.82
+  },
+  {
+    "date": "2024-08-23",
+    "pnl_per_contract": 225.68
+  },
+  {
+    "date": "2024-08-27",
+    "pnl_per_contract": 251.68
+  },
+  {
+    "date": "2024-08-29",
+    "pnl_per_contract": -468.82
+  },
+  {
+    "date": "2024-08-30",
+    "pnl_per_contract": -210.32
+  },
+  {
+    "date": "2024-09-05",
+    "pnl_per_contract": -257.32
+  },
+  {
+    "date": "2024-09-09",
+    "pnl_per_contract": -260.32
+  },
+  {
+    "date": "2024-09-10",
+    "pnl_per_contract": 29.18
+  },
+  {
+    "date": "2024-09-12",
+    "pnl_per_contract": 247.18
+  },
+  {
+    "date": "2024-09-13",
+    "pnl_per_contract": -0.82
+  },
+  {
+    "date": "2024-09-16",
+    "pnl_per_contract": -48.32
+  },
+  {
+    "date": "2024-09-17",
+    "pnl_per_contract": -205.32
+  },
+  {
+    "date": "2024-09-19",
+    "pnl_per_contract": 211.68
+  },
+  {
+    "date": "2024-09-20",
+    "pnl_per_contract": -29.82
+  },
+  {
+    "date": "2024-09-23",
+    "pnl_per_contract": -49.32
+  },
+  {
+    "date": "2024-09-24",
+    "pnl_per_contract": 60.18
+  },
+  {
+    "date": "2024-09-30",
+    "pnl_per_contract": -55.82
+  },
+  {
+    "date": "2024-10-03",
+    "pnl_per_contract": -133.32
+  },
+  {
+    "date": "2024-10-07",
+    "pnl_per_contract": -161.32
+  },
+  {
+    "date": "2024-10-08",
+    "pnl_per_contract": 193.68
+  },
+  {
+    "date": "2024-10-10",
+    "pnl_per_contract": 166.68
+  },
+  {
+    "date": "2024-10-11",
+    "pnl_per_contract": 206.18
+  },
+  {
+    "date": "2024-10-14",
+    "pnl_per_contract": -69.32
+  },
+  {
+    "date": "2024-10-18",
+    "pnl_per_contract": -53.82
+  },
+  {
+    "date": "2024-10-21",
+    "pnl_per_contract": -226.32
+  },
+  {
+    "date": "2024-10-22",
+    "pnl_per_contract": 269.18
+  },
+  {
+    "date": "2024-10-24",
+    "pnl_per_contract": -44.82
+  },
+  {
+    "date": "2024-10-25",
+    "pnl_per_contract": -344.82
+  },
+  {
+    "date": "2024-10-29",
+    "pnl_per_contract": 306.18
+  },
+  {
+    "date": "2024-11-01",
+    "pnl_per_contract": 0.68
+  },
+  {
+    "date": "2024-11-04",
+    "pnl_per_contract": -56.82
+  },
+  {
+    "date": "2024-11-05",
+    "pnl_per_contract": 148.68
+  },
+  {
+    "date": "2024-11-07",
+    "pnl_per_contract": 228.18
+  },
+  {
+    "date": "2024-11-08",
+    "pnl_per_contract": -12.32
+  },
+  {
+    "date": "2024-11-12",
+    "pnl_per_contract": -170.32
+  },
+  {
+    "date": "2024-11-18",
+    "pnl_per_contract": 207.68
+  },
+  {
+    "date": "2024-11-19",
+    "pnl_per_contract": 397.18
+  },
+  {
+    "date": "2024-11-22",
+    "pnl_per_contract": -250.82
+  },
+  {
+    "date": "2024-11-26",
+    "pnl_per_contract": -29.82
+  },
+  {
+    "date": "2024-12-01",
+    "pnl_per_contract": 122.18
+  },
+  {
+    "date": "2024-12-02",
+    "pnl_per_contract": 119.18
+  },
+  {
+    "date": "2024-12-03",
+    "pnl_per_contract": 207.18
+  },
+  {
+    "date": "2024-12-05",
+    "pnl_per_contract": -96.82
+  },
+  {
+    "date": "2024-12-06",
+    "pnl_per_contract": 49.68
+  },
+  {
+    "date": "2024-12-10",
+    "pnl_per_contract": -202.32
+  },
+  {
+    "date": "2024-12-12",
+    "pnl_per_contract": -122.82
+  },
+  {
+    "date": "2024-12-16",
+    "pnl_per_contract": 217.68
+  },
+  {
+    "date": "2024-12-17",
+    "pnl_per_contract": -127.32
+  },
+  {
+    "date": "2024-12-20",
+    "pnl_per_contract": 445.68
+  },
+  {
+    "date": "2024-12-23",
+    "pnl_per_contract": 123.68
+  },
+  {
+    "date": "2024-12-24",
+    "pnl_per_contract": 252.18
+  },
+  {
+    "date": "2024-12-26",
+    "pnl_per_contract": -51.82
+  },
+  {
+    "date": "2024-12-30",
+    "pnl_per_contract": -58.82
+  },
+  {
+    "date": "2025-01-02",
+    "pnl_per_contract": -643.32
+  },
+  {
+    "date": "2025-01-03",
+    "pnl_per_contract": 114.68
+  },
+  {
+    "date": "2025-01-06",
+    "pnl_per_contract": -98.32
+  },
+  {
+    "date": "2025-01-13",
+    "pnl_per_contract": 313.68
+  },
+  {
+    "date": "2025-01-21",
+    "pnl_per_contract": 88.68
+  },
+  {
+    "date": "2025-01-23",
+    "pnl_per_contract": 263.18
+  },
+  {
+    "date": "2025-01-24",
+    "pnl_per_contract": -159.82
+  },
+  {
+    "date": "2025-01-27",
+    "pnl_per_contract": -57.32
+  },
+  {
+    "date": "2025-01-28",
+    "pnl_per_contract": 469.68
+  },
+  {
+    "date": "2025-01-30",
+    "pnl_per_contract": -210.82
+  },
+  {
+    "date": "2025-01-31",
+    "pnl_per_contract": -309.32
+  },
+  {
+    "date": "2025-02-03",
+    "pnl_per_contract": 500.68
+  },
+  {
+    "date": "2025-02-04",
+    "pnl_per_contract": 47.68
+  },
+  {
+    "date": "2025-02-06",
+    "pnl_per_contract": -148.82
+  },
+  {
+    "date": "2025-02-10",
+    "pnl_per_contract": 65.18
+  },
+  {
+    "date": "2025-02-11",
+    "pnl_per_contract": -12.32
+  },
+  {
+    "date": "2025-02-13",
+    "pnl_per_contract": 243.68
+  },
+  {
+    "date": "2025-02-14",
+    "pnl_per_contract": 164.18
+  },
+  {
+    "date": "2025-02-28",
+    "pnl_per_contract": 577.68
+  },
+  {
+    "date": "2025-03-04",
+    "pnl_per_contract": 586.18
+  },
+  {
+    "date": "2025-03-06",
+    "pnl_per_contract": -373.32
+  },
+  {
+    "date": "2025-03-07",
+    "pnl_per_contract": -469.32
+  },
+  {
+    "date": "2025-03-11",
+    "pnl_per_contract": -469.32
+  },
+  {
+    "date": "2025-03-14",
+    "pnl_per_contract": 129.68
+  },
+  {
+    "date": "2025-03-17",
+    "pnl_per_contract": -37.82
+  },
+  {
+    "date": "2025-03-20",
+    "pnl_per_contract": -82.32
+  },
+  {
+    "date": "2025-03-21",
+    "pnl_per_contract": 340.68
+  },
+  {
+    "date": "2025-03-24",
+    "pnl_per_contract": 79.68
+  },
+  {
+    "date": "2025-03-25",
+    "pnl_per_contract": 167.68
+  },
+  {
+    "date": "2025-03-27",
+    "pnl_per_contract": -161.82
+  },
+  {
+    "date": "2025-03-31",
+    "pnl_per_contract": 397.68
+  },
+  {
+    "date": "2025-04-01",
+    "pnl_per_contract": 329.68
+  },
+  {
+    "date": "2025-04-07",
+    "pnl_per_contract": 1648.18
+  },
+  {
+    "date": "2025-04-08",
+    "pnl_per_contract": -1066.14
+  },
+  {
+    "date": "2025-04-11",
+    "pnl_per_contract": 1157.86
+  },
+  {
+    "date": "2025-04-15",
+    "pnl_per_contract": -789.14
+  },
+  {
+    "date": "2025-04-22",
+    "pnl_per_contract": 785.36
+  },
+  {
+    "date": "2025-04-24",
+    "pnl_per_contract": 800.86
+  },
+  {
+    "date": "2025-04-25",
+    "pnl_per_contract": 682.36
+  },
+  {
+    "date": "2025-04-29",
+    "pnl_per_contract": 397.36
+  },
+  {
+    "date": "2025-05-01",
+    "pnl_per_contract": -293.32
+  },
+  {
+    "date": "2025-05-02",
+    "pnl_per_contract": 134.68
+  },
+  {
+    "date": "2025-05-05",
+    "pnl_per_contract": 216.18
+  },
+  {
+    "date": "2025-05-06",
+    "pnl_per_contract": 203.36
+  },
+  {
+    "date": "2025-05-08",
+    "pnl_per_contract": 254.18
+  },
+  {
+    "date": "2025-05-12",
+    "pnl_per_contract": -73.32
+  },
+  {
+    "date": "2025-05-13",
+    "pnl_per_contract": 322.68
+  },
+  {
+    "date": "2025-05-15",
+    "pnl_per_contract": 204.68
+  },
+  {
+    "date": "2025-05-16",
+    "pnl_per_contract": -18.82
+  },
+  {
+    "date": "2025-05-19",
+    "pnl_per_contract": 319.68
+  },
+  {
+    "date": "2025-05-20",
+    "pnl_per_contract": -191.82
+  },
+  {
+    "date": "2025-05-22",
+    "pnl_per_contract": -147.32
+  },
+  {
+    "date": "2025-05-23",
+    "pnl_per_contract": -3.32
+  },
+  {
+    "date": "2025-05-27",
+    "pnl_per_contract": 320.18
+  },
+  {
+    "date": "2025-05-30",
+    "pnl_per_contract": -270.32
+  },
+  {
+    "date": "2025-06-02",
+    "pnl_per_contract": 190.68
+  },
+  {
+    "date": "2025-06-03",
+    "pnl_per_contract": 288.68
+  },
+  {
+    "date": "2025-06-05",
+    "pnl_per_contract": -296.82
+  },
+  {
+    "date": "2025-06-06",
+    "pnl_per_contract": -238.82
+  },
+  {
+    "date": "2025-06-09",
+    "pnl_per_contract": 10.18
+  },
+  {
+    "date": "2025-06-10",
+    "pnl_per_contract": -194.82
+  },
+  {
+    "date": "2025-06-12",
+    "pnl_per_contract": 44.18
+  },
+  {
+    "date": "2025-06-13",
+    "pnl_per_contract": -271.32
+  },
+  {
+    "date": "2025-06-16",
+    "pnl_per_contract": 20.68
+  },
+  {
+    "date": "2025-06-17",
+    "pnl_per_contract": -229.82
+  },
+  {
+    "date": "2025-06-23",
+    "pnl_per_contract": 290.68
+  },
+  {
+    "date": "2025-06-24",
+    "pnl_per_contract": 198.18
+  },
+  {
+    "date": "2025-06-26",
+    "pnl_per_contract": 214.18
+  },
+  {
+    "date": "2025-06-27",
+    "pnl_per_contract": -216.82
+  },
+  {
+    "date": "2025-06-30",
+    "pnl_per_contract": -28.32
+  },
+  {
+    "date": "2025-07-01",
+    "pnl_per_contract": -119.32
+  },
+  {
+    "date": "2025-07-03",
+    "pnl_per_contract": 83.18
+  },
+  {
+    "date": "2025-07-08",
+    "pnl_per_contract": -97.82
+  },
+  {
+    "date": "2025-07-11",
+    "pnl_per_contract": -56.32
+  },
+  {
+    "date": "2025-07-14",
+    "pnl_per_contract": 111.68
+  },
+  {
+    "date": "2025-07-17",
+    "pnl_per_contract": 222.18
+  },
+  {
+    "date": "2025-07-21",
+    "pnl_per_contract": -60.32
+  },
+  {
+    "date": "2025-07-24",
+    "pnl_per_contract": -11.82
+  },
+  {
+    "date": "2025-07-25",
+    "pnl_per_contract": 155.18
+  },
+  {
+    "date": "2025-07-28",
+    "pnl_per_contract": -151.82
+  },
+  {
+    "date": "2025-08-04",
+    "pnl_per_contract": 207.18
+  },
+  {
+    "date": "2025-08-05",
+    "pnl_per_contract": -204.32
+  },
+  {
+    "date": "2025-08-07",
+    "pnl_per_contract": -198.82
+  },
+  {
+    "date": "2025-08-08",
+    "pnl_per_contract": 244.18
+  },
+  {
+    "date": "2025-08-11",
+    "pnl_per_contract": -176.82
+  },
+  {
+    "date": "2025-08-12",
+    "pnl_per_contract": 277.68
+  },
+  {
+    "date": "2025-08-14",
+    "pnl_per_contract": -93.82
+  },
+  {
+    "date": "2025-08-18",
+    "pnl_per_contract": -165.32
+  },
+  {
+    "date": "2025-08-21",
+    "pnl_per_contract": -257.82
+  },
+  {
+    "date": "2025-08-22",
+    "pnl_per_contract": 527.18
+  },
+  {
+    "date": "2025-08-25",
+    "pnl_per_contract": -37.32
+  },
+  {
+    "date": "2025-08-26",
+    "pnl_per_contract": 176.68
+  },
+  {
+    "date": "2025-08-28",
+    "pnl_per_contract": 33.18
+  },
+  {
+    "date": "2025-09-02",
+    "pnl_per_contract": 289.18
+  },
+  {
+    "date": "2025-09-04",
+    "pnl_per_contract": 288.68
+  },
+  {
+    "date": "2025-09-08",
+    "pnl_per_contract": -99.32
+  },
+  {
+    "date": "2025-09-09",
+    "pnl_per_contract": -5.32
+  },
+  {
+    "date": "2025-09-11",
+    "pnl_per_contract": 14.68
+  },
+  {
+    "date": "2025-09-12",
+    "pnl_per_contract": 182.18
+  },
+  {
+    "date": "2025-09-15",
+    "pnl_per_contract": 67.18
+  },
+  {
+    "date": "2025-09-18",
+    "pnl_per_contract": -2.32
+  },
+  {
+    "date": "2025-09-19",
+    "pnl_per_contract": -147.32
+  },
+  {
+    "date": "2025-09-22",
+    "pnl_per_contract": 196.68
+  },
+  {
+    "date": "2025-09-25",
+    "pnl_per_contract": 93.68
+  },
+  {
+    "date": "2025-09-26",
+    "pnl_per_contract": -327.32
+  },
+  {
+    "date": "2025-09-29",
+    "pnl_per_contract": -250.32
+  },
+  {
+    "date": "2025-09-30",
+    "pnl_per_contract": 12.68
+  },
+  {
+    "date": "2025-10-06",
+    "pnl_per_contract": -78.32
+  },
+  {
+    "date": "2025-10-13",
+    "pnl_per_contract": 30.68
+  },
+  {
+    "date": "2025-10-14",
+    "pnl_per_contract": 214.18
+  },
+  {
+    "date": "2025-10-16",
+    "pnl_per_contract": -198.82
+  },
+  {
+    "date": "2025-10-17",
+    "pnl_per_contract": 446.18
+  },
+  {
+    "date": "2025-10-20",
+    "pnl_per_contract": 200.18
+  },
+  {
+    "date": "2025-10-21",
+    "pnl_per_contract": -81.82
+  },
+  {
+    "date": "2025-10-23",
+    "pnl_per_contract": 230.68
+  },
+  {
+    "date": "2025-10-24",
+    "pnl_per_contract": -43.82
+  },
+  {
+    "date": "2025-10-27",
+    "pnl_per_contract": 234.18
+  },
+  {
+    "date": "2025-10-28",
+    "pnl_per_contract": 178.68
+  },
+  {
+    "date": "2025-10-30",
+    "pnl_per_contract": -523.82
+  },
+  {
+    "date": "2025-11-04",
+    "pnl_per_contract": -521.82
+  },
+  {
+    "date": "2025-11-07",
+    "pnl_per_contract": -30.82
+  },
+  {
+    "date": "2025-11-10",
+    "pnl_per_contract": -334.32
+  },
+  {
+    "date": "2025-11-11",
+    "pnl_per_contract": 23.68
+  },
+  {
+    "date": "2025-11-14",
+    "pnl_per_contract": 655.68
+  },
+  {
+    "date": "2025-11-17",
+    "pnl_per_contract": -687.32
+  },
+  {
+    "date": "2025-11-20",
+    "pnl_per_contract": -338.32
+  },
+  {
+    "date": "2025-11-21",
+    "pnl_per_contract": 540.68
+  },
+  {
+    "date": "2025-11-24",
+    "pnl_per_contract": 477.68
+  },
+  {
+    "date": "2025-11-25",
+    "pnl_per_contract": 488.18
+  },
+  {
+    "date": "2025-12-01",
+    "pnl_per_contract": 76.68
+  },
+  {
+    "date": "2025-12-02",
+    "pnl_per_contract": -399.82
+  },
+  {
+    "date": "2025-12-05",
+    "pnl_per_contract": -114.82
+  },
+  {
+    "date": "2025-12-09",
+    "pnl_per_contract": 43.68
+  },
+  {
+    "date": "2025-12-11",
+    "pnl_per_contract": 305.68
+  },
+  {
+    "date": "2025-12-16",
+    "pnl_per_contract": -148.82
+  },
+  {
+    "date": "2025-12-18",
+    "pnl_per_contract": -223.82
+  },
+  {
+    "date": "2025-12-19",
+    "pnl_per_contract": 78.18
+  },
+  {
+    "date": "2025-12-23",
+    "pnl_per_contract": 145.18
+  },
+  {
+    "date": "2025-12-30",
+    "pnl_per_contract": -163.32
+  },
+  {
+    "date": "2026-01-02",
+    "pnl_per_contract": -270.82
+  },
+  {
+    "date": "2026-01-05",
+    "pnl_per_contract": -192.32
+  },
+  {
+    "date": "2026-01-06",
+    "pnl_per_contract": 153.68
+  },
+  {
+    "date": "2026-01-09",
+    "pnl_per_contract": 278.18
+  },
+  {
+    "date": "2026-01-12",
+    "pnl_per_contract": 79.68
+  },
+  {
+    "date": "2026-01-19",
+    "pnl_per_contract": 114.18
+  },
+  {
+    "date": "2026-01-20",
+    "pnl_per_contract": -439.82
+  },
+  {
+    "date": "2026-01-23",
+    "pnl_per_contract": 344.68
+  },
+  {
+    "date": "2026-01-26",
+    "pnl_per_contract": 44.68
+  },
+  {
+    "date": "2026-01-27",
+    "pnl_per_contract": 110.68
+  },
+  {
+    "date": "2026-02-02",
+    "pnl_per_contract": 237.68
+  },
+  {
+    "date": "2026-02-06",
+    "pnl_per_contract": 357.68
+  },
+  {
+    "date": "2026-02-09",
+    "pnl_per_contract": 415.18
+  },
+  {
+    "date": "2026-02-10",
+    "pnl_per_contract": -408.82
+  },
+  {
+    "date": "2026-02-13",
+    "pnl_per_contract": -57.32
+  },
+  {
+    "date": "2026-02-17",
+    "pnl_per_contract": -93.32
+  },
+  {
+    "date": "2026-02-19",
+    "pnl_per_contract": -96.82
+  },
+  {
+    "date": "2026-02-20",
+    "pnl_per_contract": 256.68
+  },
+  {
+    "date": "2026-02-24",
+    "pnl_per_contract": 206.68
+  },
+  {
+    "date": "2026-02-27",
+    "pnl_per_contract": 82.18
+  },
+  {
+    "date": "2026-03-02",
+    "pnl_per_contract": 221.68
+  },
+  {
+    "date": "2026-03-03",
+    "pnl_per_contract": 98.18
+  },
+  {
+    "date": "2026-03-05",
+    "pnl_per_contract": -580.32
+  },
+  {
+    "date": "2026-03-06",
+    "pnl_per_contract": 351.68
+  },
+  {
+    "date": "2026-03-09",
+    "pnl_per_contract": 848.18
+  },
+  {
+    "date": "2026-03-10",
+    "pnl_per_contract": -147.32
+  },
+  {
+    "date": "2026-03-17",
+    "pnl_per_contract": -179.32
+  },
+  {
+    "date": "2026-03-19",
+    "pnl_per_contract": 214.68
+  },
+  {
+    "date": "2026-03-23",
+    "pnl_per_contract": -446.82
+  },
+  {
+    "date": "2026-03-24",
+    "pnl_per_contract": 170.18
+  },
+  {
+    "date": "2026-03-26",
+    "pnl_per_contract": -377.32
+  },
+  {
+    "date": "2026-03-31",
+    "pnl_per_contract": 552.68
+  },
+  {
+    "date": "2026-04-02",
+    "pnl_per_contract": 723.18
+  },
+  {
+    "date": "2026-04-06",
+    "pnl_per_contract": -139.32
+  },
+  {
+    "date": "2026-04-07",
+    "pnl_per_contract": 186.18
+  },
+  {
+    "date": "2026-04-09",
+    "pnl_per_contract": 291.18
+  },
+  {
+    "date": "2026-04-10",
+    "pnl_per_contract": -232.82
+  },
+  {
+    "date": "2026-04-13",
+    "pnl_per_contract": 222.68
+  },
+  {
+    "date": "2026-04-14",
+    "pnl_per_contract": 341.68
+  },
+  {
+    "date": "2026-04-16",
+    "pnl_per_contract": 19.68
+  },
+  {
+    "date": "2026-04-17",
+    "pnl_per_contract": 66.68
+  },
+  {
+    "date": "2026-04-21",
+    "pnl_per_contract": -317.82
+  },
+  {
+    "date": "2026-04-23",
+    "pnl_per_contract": -293.32
+  },
+  {
+    "date": "2026-04-24",
+    "pnl_per_contract": 290.68
+  },
+  {
+    "date": "2026-04-27",
+    "pnl_per_contract": -25.82
+  },
+  {
+    "date": "2026-04-30",
+    "pnl_per_contract": 163.18
+  },
+  {
+    "date": "2026-05-01",
+    "pnl_per_contract": -179.82
+  },
+  {
+    "date": "2026-05-04",
+    "pnl_per_contract": -242.82
+  },
+  {
+    "date": "2026-05-05",
+    "pnl_per_contract": 239.18
+  },
+  {
+    "date": "2026-05-07",
+    "pnl_per_contract": 221.18
+  },
+  {
+    "date": "2026-05-08",
+    "pnl_per_contract": 394.18
+  },
+  {
+    "date": "2026-05-11",
+    "pnl_per_contract": -79.82
+  },
+  {
+    "date": "2026-05-14",
+    "pnl_per_contract": 115.68
+  },
+  {
+    "date": "2026-05-15",
+    "pnl_per_contract": -240.82
+  },
+  {
+    "date": "2026-05-19",
+    "pnl_per_contract": -340.82
+  },
+  {
+    "date": "2026-05-21",
+    "pnl_per_contract": -310.82
+  },
+  {
+    "date": "2026-05-22",
+    "pnl_per_contract": -399.32
+  },
+  {
+    "date": "2026-05-26",
+    "pnl_per_contract": 71.68
+  },
+  {
+    "date": "2026-05-28",
+    "pnl_per_contract": 399.18
+  },
+  {
+    "date": "2026-05-29",
+    "pnl_per_contract": -469.82
+  },
+  {
+    "date": "2026-06-01",
+    "pnl_per_contract": 120.68
+  },
+  {
+    "date": "2026-06-02",
+    "pnl_per_contract": 275.18
+  },
+  {
+    "date": "2026-06-04",
+    "pnl_per_contract": 449.68
+  },
+  {
+    "date": "2026-06-08",
+    "pnl_per_contract": -337.82
+  },
+  {
+    "date": "2026-06-11",
+    "pnl_per_contract": -618.32
+  },
+  {
+    "date": "2026-06-12",
+    "pnl_per_contract": 346.18
+  },
+  {
+    "date": "2026-06-15",
+    "pnl_per_contract": 188.68
+  },
+  {
+    "date": "2026-06-18",
+    "pnl_per_contract": 220.18
+  },
+  {
+    "date": "2026-06-22",
+    "pnl_per_contract": -499.32
+  },
+  {
+    "date": "2026-06-23",
+    "pnl_per_contract": -354.32
+  },
+  {
+    "date": "2026-06-26",
+    "pnl_per_contract": -308.82
+  },
+  {
+    "date": "2026-06-29",
+    "pnl_per_contract": 398.18
+  },
+  {
+    "date": "2026-06-30",
+    "pnl_per_contract": 275.18
+  },
+  {
+    "date": "2026-07-02",
+    "pnl_per_contract": -649.32
+  },
+  {
+    "date": "2026-07-06",
+    "pnl_per_contract": 15.68
+  },
+  {
+    "date": "2026-07-09",
+    "pnl_per_contract": 36.18
+  },
+  {
+    "date": "2026-07-10",
+    "pnl_per_contract": -396.32
+  },
+  {
+    "date": "2026-07-13",
+    "pnl_per_contract": -521.82
+  },
+  {
+    "date": "2026-07-14",
+    "pnl_per_contract": -77.32
+  },
+  {
+    "date": "2026-07-17",
+    "pnl_per_contract": 163.68
+  },
+  {
+    "date": "2026-07-21",
+    "pnl_per_contract": 83.68
+  },
+  {
+    "date": "2026-07-24",
+    "pnl_per_contract": -462.82
+  },
+  {
+    "date": "2026-07-28",
+    "pnl_per_contract": -140.32
+  },
+  {
+    "date": "2026-07-30",
+    "pnl_per_contract": 361.68
+  },
+  {
+    "date": "2026-08-03",
+    "pnl_per_contract": 597.18
+  },
+  {
+    "date": "2026-08-04",
+    "pnl_per_contract": 831.18
+  },
+  {
+    "date": "2026-08-06",
+    "pnl_per_contract": -49.82
+  },
+  {
+    "date": "2026-08-07",
+    "pnl_per_contract": 53.18
+  },
+  {
+    "date": "2026-08-10",
+    "pnl_per_contract": -157.82
+  },
+  {
+    "date": "2026-08-13",
+    "pnl_per_contract": 78.18
+  },
+  {
+    "date": "2026-08-14",
+    "pnl_per_contract": -281.82
+  },
+  {
+    "date": "2026-08-17",
+    "pnl_per_contract": -284.32
+  },
+  {
+    "date": "2026-08-21",
+    "pnl_per_contract": -196.32
+  },
+  {
+    "date": "2026-08-27",
+    "pnl_per_contract": 88.68
+  },
+  {
+    "date": "2026-08-28",
+    "pnl_per_contract": -391.32
+  }
+]
