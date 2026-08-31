@@ -176,8 +176,8 @@ documents the camp boundary for humans/tools.
 | rangestate_mcl_2026-08 | _inbox | ACTIVE | yes | SIGNAL-GENERIC under the corrected battery: canon-attributed vol clustering (69th pct); not a mechanism and no conditioner license | lab/analysis/_inbox/rangestate_mcl_2026-08/ | — |
 | rangexfer_byyear_l4_2026-08-30 | _inbox | ACTIVE | yes | Q-RANGEXFER-1's L4 (by-year) presence limb, all 5 hypotheses: N_valid<7 on all five (AMBIGUOUS), confirming the pre-registration's own ex-ante prediction; corrected three times (PR #224 Codex review — qualifying-year gate fix; 2026-08-31 MNQ look-ahead fix; 2026-08-31 MYM scope-gap fix — n_valid counts shift, AMBIGUOUS routing unchanged on all five). Consumed into the presence-battery closure (`rangexfer_presence_battery_2026-08-30`) — Q-RANGEXFER-1 closed 2026-08-30 | lab/analysis/_inbox/rangexfer_byyear_l4_2026-08-30/ | — |
 | rangexfer_presence_battery_2026-08-30 | _inbox | FALSIFIED | yes | MIXED — 4/5 hypotheses AMBIGUOUS-DESIGN, H-RANGEXFER-1.a-MYM FALSIFIED (presence L2 fails). | lab/analysis/_inbox/rangexfer_presence_battery_2026-08-30/ | — |
-| volregime_byyear_l4_2026-08-31 | _inbox | ACTIVE | yes | L4 PASS independently on MNQ and MYM; L3 (halves-stability) and L5 (attribution) remain open. | lab/analysis/_inbox/volregime_byyear_l4_2026-08-31/ | — |
-| volregime_l3_2026-08-31 | _inbox | ACTIVE | yes | `ACTIVE` — L3 PASS independently on MNQ and MYM; the presence | lab/analysis/_inbox/volregime_l3_2026-08-31/ | — |
+| volregime_byyear_l4_2026-08-31 | _inbox | ACTIVE | yes | L4 PASS independently on MNQ and MYM; L3 subsequently PASS on both, leaving L5 attribution open. | lab/analysis/_inbox/volregime_byyear_l4_2026-08-31/ | — |
+| volregime_l3_2026-08-31 | _inbox | ACTIVE | yes | L3 PASS independently on MNQ and MYM; the presence battery is complete on both instruments and L5 attribution remains open. | lab/analysis/_inbox/volregime_l3_2026-08-31/ | — |
 
 ## Archived
 

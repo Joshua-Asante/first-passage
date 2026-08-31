@@ -1,6 +1,15 @@
 {
   "method": "Q-VOLREGIME-1 L3 chronological-halves presence limb",
   "script_sha256": "ae3e77d795098c7f7d3c1bd222d7943e3fd88ed6ebdd294f209f962aaf7ed106",
+  "execution_code": {
+    "source_commit": "cf450ccd01a3183c8b50fa296c89355acca1ba33",
+    "l3_wrapper_worktree_sha256": "ae3e77d795098c7f7d3c1bd222d7943e3fd88ed6ebdd294f209f962aaf7ed106",
+    "l3_wrapper_git_blob_sha256": "5d698664c80594efddcca08ba5df99e2e3566b7c907d4fbf2818b7809d5d4906",
+    "scored_frame_builder_worktree_sha256": "1c42e92da78a8fa22bd0f7399693679456745186b04f2a29a6d15cff5ecb4119",
+    "scored_frame_builder_git_blob_sha256": "ffb211c5d9404cac9254471a8cadb3bd14f37fbf9e78526cfe61d2f6cf5cd093",
+    "line_endings_note": "Worktree hashes cover CRLF execution bytes; Git blob hashes cover the logically identical LF-normalized committed sources.",
+    "post_execution_note": "Review hardening landed after the frozen one-shot run; observed statistics were not recomputed."
+  },
   "instruments": {
     "MNQ": {
       "input": {
@@ -14,6 +23,10 @@
         ]
       },
       "split_rule": "observation midpoint after frozen scored-frame exclusions",
+      "scored_frame_span_utc": [
+        "2020-09-23T23:00:00+00:00",
+        "2026-07-02T23:45:00+00:00"
+      ],
       "split_index_zero_based_second_half_start": 67979,
       "split_boundary_utc": "2023-08-15T08:00:00+00:00",
       "halves": {
@@ -85,6 +98,10 @@
         ]
       },
       "split_rule": "observation midpoint after frozen scored-frame exclusions",
+      "scored_frame_span_utc": [
+        "2020-07-29T23:00:00+00:00",
+        "2026-07-02T20:30:00+00:00"
+      ],
       "split_index_zero_based_second_half_start": 69802,
       "split_boundary_utc": "2023-07-18T08:45:00+00:00",
       "halves": {

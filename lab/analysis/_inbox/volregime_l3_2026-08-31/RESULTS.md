@@ -14,6 +14,13 @@ halves on both instruments. Full conditional/reference counts and rates,
 scored-frame spans, midpoint indices, panel hashes, and the executed script hash
 are recorded in `l3_results.json`.
 
+The execution-code manifest records both the CRLF worktree-byte hashes used at
+runtime and the logically identical LF-normalized Git-blob hashes for the L3
+wrapper and imported L4 scored-frame builder. Review hardening added complete
+two-panel preflight, invalid-row filtering, empty-stratum-safe printing, and an
+archive-visible dependency path after execution; the frozen observed statistic
+was not rerun.
+
 The run used the hash-pinned vendor panels:
 
 | Instrument | Relative path | SHA-256 |

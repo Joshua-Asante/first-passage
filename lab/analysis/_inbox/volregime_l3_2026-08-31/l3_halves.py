@@ -16,17 +16,12 @@ import pandas as pd
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[3]
-L4_SCRIPT = (
-    REPO
-    / "lab"
-    / "analysis"
-    / "_inbox"
-    / "volregime_byyear_l4_2026-08-31"
-    / "byyear_l4.py"
-)
+L4_SCRIPT = REPO / "lab/analysis/_inbox/volregime_byyear_l4_2026-08-31/byyear_l4.py"
 
 
 def _load_l4_module():
+    if not L4_SCRIPT.is_file():
+        raise RuntimeError(f"cannot load scored-frame builder: {L4_SCRIPT}")
     spec = importlib.util.spec_from_file_location("volregime_byyear_l4", L4_SCRIPT)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"cannot load scored-frame builder: {L4_SCRIPT}")
@@ -45,6 +40,11 @@ def file_sha256(path: Path) -> str:
 
 def _iso(value: object) -> str:
     return pd.Timestamp(value).isoformat()
+
+
+def format_lift(value: float | None) -> str:
+    """Format a lift for console output without crashing on an empty stratum."""
+    return "None" if value is None else f"{value:+.6f}"
 
 
 def score_half(frame: pd.DataFrame) -> dict:
@@ -83,13 +83,22 @@ def score_l3(frame: pd.DataFrame) -> dict:
     if len(frame) < 2:
         raise ValueError("at least two scored rows are required")
 
-    ordered = frame.sort_values("time_utc", kind="stable").reset_index(drop=True)
+    valid = frame["time_utc"].notna()
+    for column in ("bias_volume", "bias_range", "outcome"):
+        valid &= frame[column].isin((0, 1))
+    ordered = frame.loc[valid].sort_values("time_utc", kind="stable").reset_index(drop=True)
+    if len(ordered) < 2:
+        raise ValueError("at least two valid scored rows are required")
     midpoint = len(ordered) // 2
     first = ordered.iloc[:midpoint].copy()
     second = ordered.iloc[midpoint:].copy()
     halves = {"first": score_half(first), "second": score_half(second)}
     return {
         "split_rule": "observation midpoint after frozen scored-frame exclusions",
+        "scored_frame_span_utc": [
+            _iso(ordered["time_utc"].iloc[0]),
+            _iso(ordered["time_utc"].iloc[-1]),
+        ],
         "split_index_zero_based_second_half_start": midpoint,
         "split_boundary_utc": _iso(second["time_utc"].iloc[0]),
         "halves": halves,
@@ -100,23 +109,38 @@ def score_l3(frame: pd.DataFrame) -> dict:
     }
 
 
+def collect_results(l4, symbols: tuple[str, ...]) -> dict:
+    """Preflight every panel before computing any instrument's L3 statistic."""
+    for symbol in symbols:
+        path = l4.DATA / f"{symbol}_M15.csv"
+        if not path.is_file():
+            raise RuntimeError(f"{symbol} vendor panel absent: {path}")
+        actual_hash = l4.sha256(path)
+        if actual_hash != l4.EXPECTED[symbol]:
+            raise RuntimeError(f"{symbol} hash mismatch: {actual_hash}")
+
+    instruments = {}
+    for symbol in symbols:
+        frame, metadata = l4.prepare(symbol)
+        result = {"input": metadata, **score_l3(frame)}
+        instruments[symbol] = result
+        print(
+            f"{symbol}: split={result['split_boundary_utc']} "
+            f"first_min={format_lift(result['halves']['first']['minimum_stratum_lift'])} "
+            f"second_min={format_lift(result['halves']['second']['minimum_stratum_lift'])} "
+            f"L3={result['l3']['verdict']}"
+        )
+    return instruments
+
+
 def main() -> None:
     l4 = _load_l4_module()
     results = {
         "method": "Q-VOLREGIME-1 L3 chronological-halves presence limb",
         "script_sha256": file_sha256(Path(__file__)),
-        "instruments": {},
+        "scored_frame_builder_sha256": file_sha256(L4_SCRIPT),
+        "instruments": collect_results(l4, ("MNQ", "MYM")),
     }
-    for symbol in ("MNQ", "MYM"):
-        frame, metadata = l4.prepare(symbol)
-        result = {"input": metadata, **score_l3(frame)}
-        results["instruments"][symbol] = result
-        print(
-            f"{symbol}: split={result['split_boundary_utc']} "
-            f"first_min={result['halves']['first']['minimum_stratum_lift']:+.6f} "
-            f"second_min={result['halves']['second']['minimum_stratum_lift']:+.6f} "
-            f"L3={result['l3']['verdict']}"
-        )
 
     output = HERE / "l3_results.json"
     output.write_text(json.dumps(results, indent=2), encoding="utf-8")
