@@ -21,9 +21,14 @@ gloss updated in the same pass.
 **Residuals:** Phase-2 migration artifacts and
 [`docs/governance/notion-redirect-map.md`](../governance/notion-redirect-map.md) stand; LTM
 Notion export bodies recover via `pre-prune-2026-08-08`. ⚠ Correction 2026-08-31: that tag is
-**private-archive-only** — not resolvable on this public clone; use `git log --follow -- <path>`
-or the private archive per [`docs/ltm/README.md`](../ltm/README.md). Behavioral-archive CSV native
-export remains `DONE_WITH_CONCERNS` (accepted on the 2026-08-10 GO).
+**private-archive-only** — not resolvable on this public clone. `git log --follow -- <path>` only
+helps for content that exists somewhere in this clone's own tracked history (a file the public
+"Initial public release" commit carried and later modified/renamed); per
+[`docs/ltm/README.md`](../ltm/README.md), "most pre-prune LTM ... is **not** on this clone," and
+these Notion export bodies are not present here (confirmed: no `docs/ltm/notes/archive/notion/`
+directory exists on this tree) — for this specific residual, the private archive is the only
+working recovery path, not an alternative among several. Behavioral-archive CSV native export
+remains `DONE_WITH_CONCERNS` (accepted on the 2026-08-10 GO).
 
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3) · **Follow-up recorded:** 2026-08-10
 **Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row c6

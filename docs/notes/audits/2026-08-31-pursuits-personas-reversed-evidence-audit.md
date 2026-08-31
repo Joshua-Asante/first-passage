@@ -44,14 +44,17 @@ companion audits, not a blind full-corpus scan.
 | Verified `CONFIRMED_STALE` | 16 |
 | Verified `FALSE_POSITIVE` | 4 |
 | Verified `UNCERTAIN` | 0 |
-| Files fixed | 15 (16 confirmed findings + 1 self-verified collateral + 1 same-drift bonus fix outside scope) |
+| Total findings fixed | 17 (16 confirmed via verify + 1 self-verified collateral, `cro-log.md`) |
+| Files fixed | 15 — the 17 findings span 14 distinct files (`d1-repo-belt-19-skills.md` carries 2, `ownership-map.md` carries 3), plus 1 more file (`docs/briefs/GSUB-1-inventory-and-dispositions.md`) that received the identical fix already counted under `d2`'s finding, not a separate one |
 
 ## §2 — Findings by theme
 
 **Campaign progress frozen at ratification-day snapshot (2 findings).** `a6-cursor-fleet-worker-
-capability.md` named "three frozen packets pending dispatch" as of 2026-08-09 with no update —
-all three have since run to a closure or ADR-acceptance (dense-1m CON-2 through CON-5, the W1
-intraday-honest-engine ADR Accepted 2026-08-22, the MCL/MES/MGC instrument lane). `head-of-research-
+capability.md` named "three frozen packets pending dispatch" as of 2026-08-09 with no update since
+— all three have since seen dispatch and real progress (dense-1m CON-2 through CON-5 closed; the
+W1 ADR Accepted with one of its four decisions measured; two individual mechanism tests closed in
+the instrument lane), but — per a Codex review round, §7 — none of the three is actually fully
+closed, so the fix was corrected to say so precisely rather than imply completion. `head-of-research-
 log.md`'s final entry said Q-ORBCUSH-1 was "named, not opened" — it opened and closed the same day
 (2026-08-20, verdict FALSIFIED).
 
@@ -93,7 +96,8 @@ the outcome.
 "capital-allocation rulings (F1)" with no indication F1 was ruled 2026-08-23 — the file has never
 reflected the ruling since it entered the repo one day *after* that ruling.
 
-**An ownership table with three stale Standing cells (1 finding, 3 rows).** `ownership-map.md`'s
+**An ownership table with three stale Standing cells (3 findings, 3 rows in one file).**
+`ownership-map.md`'s
 Layer 2 pursuit table shows `b2`, `c1`, and `b7` all as `PARK` — each pursuit record's own Standing
 field (and the closures that ratified them) already show `SUBTRACT`. All three flips happened on or
 around the table's own "done 2026-08-19" snapshot date and were never backported.
@@ -149,6 +153,52 @@ Per this repo's no-silent-caps convention: this was a targeted pass, not a blind
 Still unswept for this failure class, per `STATE.md`'s forward-obligation row: 21 of 23
 `.claude/skills/*/SKILL.md`, and most `core/strategies/**/*.md` card mirrors.
 
+## §7 — Codex review round (post-push corrections)
+
+Codex's automated review on this PR caught 6 real findings, all verified and fixed before merge:
+
+1. **`a6-cursor-fleet-worker-capability.md`'s status update overstated the instrument lane as
+   "closed."** Two individual mechanism tests closed (MCL DEAD via MSL-S2A; a separate
+   AMBIGUOUS-PARKED via Q-CONDVAL-1), but the GSUB-1 inventory's own addendum leaves the
+   instrument-lane *election* itself pending operator decision, and `MCL.md`/`MES.md`/`MGC.md`
+   are still OPEN/RE-ENTERED, not closed. Fixed: reworded to distinguish the two closed mechanism
+   tests from the still-open lane-level election.
+2. **The same file overstated the W1 packet as having "run."** The W1 ADR's own §6 gate lists 4
+   decisions of record — only 1 (Class-S 0.50×) is measured; the other 3 plus a `firm_rules`
+   caveat update are explicitly "owed." Fixed: added the owed-count explicitly rather than
+   implying the packet as a whole is done.
+3. **`ownership-map.md`'s "~96 days early" figure was chronologically inconsistent** — it named
+   the 2026-08-20 ratification date alongside a ~96-day figure that's actually the interval from
+   the 2026-08-04 falsifier-firing date (2026-08-20→2026-11-08 is ~80 days). This mirrors `b7`'s
+   own wording (which correctly ties "~96 days" to the falsifier date), but I'd conflated the two
+   dates in transcription. Fixed: disambiguated both figures against their correct anchor dates.
+4. **`cio-log.md`/`coo-log.md`/`cro-log.md` violated their own stated append-only convention** —
+   my original fix spliced a correction line into the middle of the frozen 2026-08-19 GSUB-2
+   entry (`coo-log.md`/`cro-log.md`) or before a later entry in the file, rather than appending a
+   wholly new, self-contained entry after everything already in the file (the pattern
+   `head-of-research-log.md`'s fix already used correctly). Fixed: moved all three corrections to
+   proper new `## 2026-08-19 — Addendum` entries at each file's end, each carrying the full
+   required-field set (`check_personas.py` still passes).
+5. **`c6-notion-estate.md` oversold `git log --follow` as a working recovery path.** For content
+   genuinely evicted from this public clone's history (as the Notion export bodies are — no
+   `docs/ltm/notes/archive/notion/` directory exists here, and a direct `git log --follow` test
+   against a plausible path returns nothing), `docs/ltm/README.md`'s own wording already warns
+   "most pre-prune LTM ... is not on this clone." Fixed: clarified the private archive is the only
+   working path for this specific residual, not one of two interchangeable options.
+6. **This note's own confirmed-finding count didn't reconcile.** §1's headline said "16 confirmed"
+   while the old §4 parenthetical (`16+1+1`) implied 18, and §2's `ownership-map.md` theme was
+   mislabeled "(1 finding, 3 rows)" instead of "(3 findings, 3 rows)" — undercounting the §2 theme
+   total by 2 against the true 16-confirmed + 1-collateral = 17 findings. Fixed: relabeled the
+   ownership-map theme, and rewrote §1's "Files fixed" row to show the reconciliation explicitly
+   (17 findings across 14 files, +1 more file receiving a duplicate-location fix for an
+   already-counted finding, not an 18th finding).
+
+All 6 were genuine gaps, not false alarms — three of them (items 1, 2, 4) in the exact failure
+class this audit exists to catch (overstated current-state claims), just introduced by this
+audit's own fix pass rather than caught in the original scan. Recorded here rather than silently
+folded into §2/§4 above, consistent with this repo's "an audit that always comes back clean risks
+going ceremonial" caution (`adr-decay-audit` skill, Known Trap #7).
+
 ## §6 — Discipline check
 
 ```
@@ -159,8 +209,9 @@ Still unswept for this failure class, per `STATE.md`'s forward-obligation row: 2
 [x] False positives explained, not just counted (§3) — same-pattern, same-root-cause across all 4
 [x] A collateral finding outside the scan's own flags (cro-log.md) self-verified before fixing, not assumed
 [x] One fix landed one file outside the two named directories — logged as identical-drift, not scope creep
-[x] Persona-log append-only convention respected in every log fix — no frozen entry edited in place
+[x] Persona-log append-only convention respected in every log fix — no frozen entry edited in place (violated by the initial push, caught by Codex, fixed — see §7 item 4)
 [x] Generated-mirror discipline: no generated file in this scope (docs/pursuits has no derived INDEX; docs/personas/INDEX.md was itself never touched, since none of its own claims were found stale)
 [x] STATE.md forward-obligation row updated to reflect this sweep + the already-merged ops/instruments sweep it had not yet recorded
 [x] Full gate suite run before commit
+[x] Codex review round: 6 findings, all genuine, all fixed — see §7 (not folded silently into §2/§4)
 ```

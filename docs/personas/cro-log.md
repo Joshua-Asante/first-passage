@@ -33,11 +33,6 @@ This is a GRAND-tier pursuit-disposition housekeeping pass, entirely outside thi
 clean with no findings is the honest verdict, consistent with my own GSUB-1 rehearsal precedent.
 **Confirmed findings:** none
 **Ratified as recommended:** Pending -- operator has not yet ratified
-**2026-08-19 addendum:** Ratified as recommended -- Yes. Operator ratified both SUBTRACT
-nominations (b2, c1) in-session same day, matching the panel recommendation with zero
-divergence -- see
-[`docs/briefs/closures/GSUB-2-closure-resolved-loadbearing.md`](../briefs/closures/GSUB-2-closure-resolved-loadbearing.md)
-§1 (Phase 3).
 **Rehearsal:** no -- first real (non-rehearsal) review; first data point toward the
 persona-hierarchy ADR's own §4 falsifier
 **CRO hard block fired:** no
@@ -92,3 +87,17 @@ category §13 established, not the panel's real-vs-rehearsal axis). Discharges �
 1-2-use design; not intended to recur as a standing check.
 
 **CRO hard block fired:** N/A — self-consistency side-experiment, not a wired panel invocation.
+
+## 2026-08-19 — Addendum: GSUB-2 ratification outcome
+
+**Verdict:** the 2026-08-19 GSUB-2 entry's "Ratified as recommended: Pending" line above has
+resolved -- operator ratified both SUBTRACT nominations (b2, c1) in-session, same day, matching
+the panel recommendation with zero divergence. See
+[`docs/briefs/closures/GSUB-2-closure-resolved-loadbearing.md`](../briefs/closures/GSUB-2-closure-resolved-loadbearing.md)
+§1 (Phase 3).
+**Confirmed findings:** none beyond the closure's own record -- this addendum records an outcome,
+not a new review.
+**Ratified as recommended:** Yes.
+**Rehearsal:** no -- addendum to the same real review above, not a new one; does not count
+separately toward the design spec §10 falsifier.
+**CRO hard block fired:** no

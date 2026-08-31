@@ -179,12 +179,14 @@ one office even when it has one clear first-line owner.
 
 **Corrected 2026-08-31**: b2 and c1 flipped PARK→SUBTRACT 2026-08-19 per the GSUB-2 closure
 ([`docs/briefs/closures/GSUB-2-closure-resolved-loadbearing.md`](../briefs/closures/GSUB-2-closure-resolved-loadbearing.md));
-b7 flipped PARK→SUBTRACT 2026-08-20 per [`docs/pursuits/b7-ict-line.md`](../pursuits/b7-ict-line.md)
-(correcting the 2026-08-09 GSUB-1 Phase 3 PARK after `Q-ICTEXP-1`'s negative-drift verdict) — none
-of the three flips were reflected when this Layer 2 snapshot was taken (dated 2026-08-19, same day
-as or before both closures). b7's Secondary cell's note on the "2026-11-08 auto-convert-to-SUBTRACT
-deadline" is now moot: the conversion already happened ~96 days early, 2026-08-20, via the
-falsifier firing — not via calendar expiry.
+b7 flipped PARK→SUBTRACT via operator ratification on 2026-08-20 per
+[`docs/pursuits/b7-ict-line.md`](../pursuits/b7-ict-line.md) (correcting the 2026-08-09 GSUB-1
+Phase 3 PARK) — none of the three flips were reflected when this Layer 2 snapshot was taken (dated
+2026-08-19, same day as or before both closures). b7's Secondary cell's note on the "2026-11-08
+auto-convert-to-SUBTRACT deadline" is now moot: per b7's own wording, the substantive trigger was
+`Q-ICTEXP-1`'s falsifier firing on 2026-08-04 — ~96 days before the 2026-11-08 deadline — with
+formal ratification following on 2026-08-20 (~80 days early by the ratification date); either way,
+the conversion happened well ahead of calendar expiry, not via it.
 
 **One correction made on review**: the classification run initially assigned e1 ("the Aim itself") to
 Head of Governance — the nearest spawnable AI custodian, since CEO is never spawned. But the roster's
