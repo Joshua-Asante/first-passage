@@ -201,17 +201,21 @@ fold boundaries, missing-data behavior, learner/hyperparameters, and any
 regularization without looking at real augmented-minus-baseline performance.
 
 - [x] **B3 — Freeze the primary statistic and dependence treatment.** Done
-  2026-08-31 — [`DESIGN.md`](../../../lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md)
-  §4.1, §4.5.
+  2026-08-31, reworked same date after a second Codex review round —
+  [`DESIGN.md`](../../../lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md)
+  §4.1 (statistic), §4.3 (day-level dependence blocking, carried by the circular-shift
+  construction itself rather than a separate section).
 
 Primary: augmented-minus-baseline improvement in a proper out-of-sample loss
 (Brier or log loss; elect one before code runs). Companion: the existing minimum
 within-own-range-stratum lift. Inference must be blocked at trading-day/session
 level; treating M15 bars as IID is forbidden.
 
-- [x] **B4 — Freeze the attribution null.** Done 2026-08-31 —
+- [x] **B4 — Freeze the attribution null.** Done 2026-08-31, reworked same date
+  after a second Codex review round found the first draft's null did not actually
+  preserve the confound it claimed to —
   [`DESIGN.md`](../../../lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md)
-  §4.2–§4.4, §5.
+  §4.2–§4.6, §5.
 
 Fit the predictable component of trigger-bar volume using training data only.
 Randomize the residual component in blocks within predeclared time-of-day and
