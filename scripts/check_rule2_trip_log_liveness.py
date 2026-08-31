@@ -31,6 +31,15 @@ not speculate about whether an earlier note "counts" either.
 
 SCOPE AND ITS LIMITS:
 
+  * ONE NAMED CHECKPOINT, NOT A RECURRING CADENCE TRACKER. `any(n[2] for n in gate_notes)` means
+    a single compliant note anywhere in [2026-11-08, today] satisfies this check permanently --
+    including a later programme audit, well past 2026-11-08, that itself skips the item (found by
+    PR #233 review round 4). This is deliberate, not an oversight: watching every subsequent
+    quarterly cycle would require knowing where cycle boundaries fall, which is exactly the
+    audit-cadence-counting convention the operator declined to ratify (see above). This script
+    only ever encodes the one date the record actually names. Extending it past 2026-11-08 needs
+    that convention authored first, not a second hardcoded date guessed at here.
+
   * Date source is each programme-audit file's own `YYYY-MM-DD` filename prefix, and the trip-log's
     own table rows' `Date` column — no git history is read, matching this script's siblings
     (`check_spec_provenance.py`, `check_falsifier_reachability.py`) in avoiding a git dependency.
