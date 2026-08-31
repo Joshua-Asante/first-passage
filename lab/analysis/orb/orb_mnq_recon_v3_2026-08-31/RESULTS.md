@@ -1,14 +1,6 @@
 # orb_mnq_recon_v3 — bust/pass rope walk at Tradeify_Select_100K
 
-**Status:** EXPLORATORY. Not pre-registered, not a Rule-0 discovery campaign. First
-account-level bust/pass measurement ever run against `orb_mnq_recon_v3.pine`
-(`core/strategies/candidates/orb_mnq_recon_v3.pine`, `MANIFEST.sha256`
-`be800cb4…`) — a chart-only DD-reduction research reconstruction that diverges
-from the LOCKED `ORB-MNQ-1` construct (see that file's MANIFEST provenance
-note). Answers "does this specific config clear the live survivor-scoring
-gate" — it does not touch the frozen construct's own `PARKED` disposition
-([`2026-08-03-orb-mnq-repark-payability-falsified.md`](../../../docs/adr/2026-08-03-orb-mnq-repark-payability-falsified.md)),
-and does not by itself authorize anything.
+**Status:** EXPLORATORY — FAILS the live Tradeify survivor-scoring gate (bust≤5.0%) at every tested k=1-3; k=1 20.78% intraday-honest bust, 4.2× over, a real improvement vs the frozen construct's 67.67% (T2 ADR) but not close to clearing, and not on a common panel (§3). First account-level bust/pass measurement ever run against `orb_mnq_recon_v3.pine` (`core/strategies/candidates/orb_mnq_recon_v3.pine`, `MANIFEST.sha256` `be800cb4…`) — a chart-only DD-reduction research reconstruction that diverges from the LOCKED `ORB-MNQ-1` construct (see that file's MANIFEST provenance note). Does not touch the frozen construct's own `PARKED` disposition ([`2026-08-03-orb-mnq-repark-payability-falsified.md`](../../../docs/adr/2026-08-03-orb-mnq-repark-payability-falsified.md)) and does not by itself authorize anything. Not pre-registered, not a Rule-0 discovery campaign.
 
 ## 0 — Source, panel integrity, reduction
 
