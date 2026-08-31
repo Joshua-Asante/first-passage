@@ -27,9 +27,19 @@ SCOPE AND ITS LIMITS:
     and never names a canon-owner file is invisible here.
 
   * ADR citations are counted as links matching `docs/adr/<file>.md` or a relative
-    `../adr/<file>.md` / `../../adr/<file>.md` form. A citation by ADR TITLE alone, with
+    `../adr/<file>.md` / `../../adr/<file>.md` form, AND the cited `<file>.md` must
+    actually exist under `docs/adr/` — a syntactically well-formed but nonexistent or
+    misspelled path does not count as provenance. A citation by ADR TITLE alone, with
     no path, is invisible here (measured false-negative risk — cheap to add if it proves
     common; not observed in the corpus at introduction time).
+
+  * SCOPED TO `docs/spec/` ONLY. A structurally similar canon-adjacent artifact filed
+    under `docs/notes/` or elsewhere is invisible here (raised in PR #233 review,
+    2026-08-31) — not extended without a corpus census first: `docs/notes/` is far more
+    heterogeneous than `docs/spec/` (audits, research notes, notice logs, interpretive
+    commentary that explicitly disclaims changing any gate), and applying this
+    heuristic there unstudied risks false-positive noise the way it would not for the
+    uniformly decision/build-shaped `docs/spec/` corpus.
 
   * WARN-TIER BY DESIGN. Always exits 0 unless --strict. No clean-baseline run has ever
     been done against this heuristic before today, so promoting straight to a hard gate
@@ -61,12 +71,30 @@ CANON_OWNER_RE = re.compile(
     re.IGNORECASE,
 )
 ADR_CITE_RE = re.compile(
-    r"(?:docs/adr/|(?:\.\./)+adr/)(\d{4}-\d{2}-\d{2}[a-z]?-[\w-]+)\.md"
+    # Slug allows dots: real ADR filenames carry version numbers, e.g.
+    # 2026-04-17-guardian-v5.1-architecture.md, 2026-04-23-guardian-risk-relock-0.34.md
+    # (found by PR #233 review). Greedy [\w.-]+ backtracks to let the trailing
+    # literal \.md match, so this does not swallow the extension itself.
+    r"(?:docs/adr/|(?:\.\./)+adr/)(\d{4}-\d{2}-\d{2}[a-z]?-[\w.-]+)\.md"
 )
+
+
+def has_live_adr_citation(text: str, adr_dir: Path) -> bool:
+    """True iff at least one cited ADR path resolves to a real file under adr_dir.
+
+    A syntactically well-formed but nonexistent or misspelled path (e.g. a typo, or
+    a citation to a not-yet-written ADR) does not count as provenance — found by
+    PR #233 review: the prior version treated a regex match alone as sufficient.
+    """
+    for slug in ADR_CITE_RE.findall(text):
+        if (adr_dir / f"{slug}.md").exists():
+            return True
+    return False
 
 
 def scan(spec_dir: Path) -> tuple[list[str], list[str], list[str]]:
     """Returns (all_scanned, canon_amending, zero_citation_findings), each a list of paths."""
+    adr_dir = spec_dir.parent / "adr"
     scanned: list[str] = []
     amending: list[str] = []
     findings: list[str] = []
@@ -78,7 +106,7 @@ def scan(spec_dir: Path) -> tuple[list[str], list[str], list[str]]:
         if not is_amending:
             continue
         amending.append(rel)
-        if not ADR_CITE_RE.search(text):
+        if not has_live_adr_citation(text, adr_dir):
             findings.append(rel)
     return scanned, amending, findings
 
@@ -120,10 +148,12 @@ def main(argv: list[str] | None = None) -> int:
     print(
         f"\n  {len(findings)} finding(s). A docs/spec/ file proposing to amend canon "
         "(a header naming ratification/canon edits/amendments, or a reference to a named "
-        "canon-owner file) should cite the ADR(s) it reconciles against, or state "
-        "explicitly that none exist yet. docs/spec/README.md: \"ADRs own the decision; "
-        "specs here commission or describe a build.\" Consider landing decision-shaped "
-        "content as an ADR instead, so check_adr_graph.py's coverage applies."
+        "canon-owner file) should cite the ADR(s) it reconciles against — this script "
+        "checks for a citation resolving to a real file under docs/adr/, nothing more; "
+        "it cannot judge whether no relevant ADR in fact exists yet. docs/spec/README.md: "
+        "\"ADRs own the decision; specs here commission or describe a build.\" Consider "
+        "landing decision-shaped content as an ADR instead, so check_adr_graph.py's "
+        "coverage applies."
     )
     return 1 if args.strict else 0
 
