@@ -73,9 +73,21 @@ CANON_OWNER_RE = re.compile(
 ADR_CITE_RE = re.compile(
     # Slug allows dots: real ADR filenames carry version numbers, e.g.
     # 2026-04-17-guardian-v5.1-architecture.md, 2026-04-23-guardian-risk-relock-0.34.md
-    # (found by PR #233 review). Greedy [\w.-]+ backtracks to let the trailing
+    # (found by PR #233 review round 1). Greedy [\w.-]+ backtracks to let the trailing
     # literal \.md match, so this does not swallow the extension itself.
-    r"(?:docs/adr/|(?:\.\./)+adr/)(\d{4}-\d{2}-\d{2}[a-z]?-[\w.-]+)\.md"
+    #
+    # Exactly one `../` (not `(?:\.\./)+`): scan() below only visits docs/spec/*.md
+    # direct children, so the correct relative path up to docs/adr/ is always exactly
+    # one level. `has_live_adr_citation` below checks only the cited basename's
+    # existence, not the literal number of `../` segments written -- allowing two or
+    # more would let a citation like `../../adr/<real-file>.md` (which actually
+    # resolves outside docs/, to a nonexistent path) count as live provenance just
+    # because a same-named file happens to exist under docs/adr/ (found by PR #233
+    # review round 6). The negative lookbehind is required, not cosmetic: without it
+    # `\.\./adr/` still matches the embedded substring starting one `../` in, so
+    # `../../adr/x.md` would match at offset 3 even with the `+` removed -- confirmed
+    # by direct regex testing before adding the lookbehind.
+    r"(?<!\.\./)(?:docs/adr/|\.\./adr/)(\d{4}-\d{2}-\d{2}[a-z]?-[\w.-]+)\.md"
 )
 
 

@@ -116,7 +116,14 @@ def scan_audit_notes(audit_dir: Path) -> tuple[list[tuple[str, date, bool]], lis
     """Returns ((relpath, filename_date, mentions_rule2) per valid note, malformed filenames).
 
     A "note" is either a `YYYY-MM-DD-slug.md` file or a `YYYY-MM-DD-slug/` directory
-    of section files -- both are real corpus shapes (see `_note_text`)."""
+    of section files -- both are real corpus shapes (see `_note_text`).
+
+    A missing audit_dir returns an empty census rather than raising -- `iterdir()` on a
+    deleted/renamed directory would otherwise crash this WARN-tier, always-on gate before
+    it reaches its --strict decision, same failure class as the malformed-date crash fixed
+    in review round 2 (found by PR #233 review round 6)."""
+    if not audit_dir.is_dir():
+        return [], []
     out: list[tuple[str, date, bool]] = []
     bad: list[str] = []
     for path in sorted(audit_dir.iterdir()):
