@@ -145,8 +145,8 @@
         "verdict": "DEAD"
       },
       "overnight-range-transmission": {
-        "date": "2026-08-29",
-        "source": "../../docs/notes/notice/N-2026-08-29-mnq-overnight-rth-range-transfer.md",
+        "date": "2026-08-30",
+        "source": "../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md",
         "verdict": "AMBIGUOUS-PARKED"
       }
     },
@@ -188,12 +188,17 @@
       },
       "overnight-gap-magnitude-range-conditioning": {
         "date": "2026-08-30",
-        "source": "../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md",
+        "source": "../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md",
         "verdict": "AMBIGUOUS-PARKED"
       },
+      "overnight-gap-magnitude-range-conditioning-overnight-calm": {
+        "date": "2026-08-30",
+        "source": "../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md",
+        "verdict": "DEAD"
+      },
       "overnight-range-day-session-transfer": {
-        "date": "2026-08-29",
-        "source": "../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md",
+        "date": "2026-08-30",
+        "source": "../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md",
         "verdict": "AMBIGUOUS-PARKED"
       },
       "pdh-pdl-failed-break-reclaim": {
@@ -1179,6 +1184,12 @@
       "definition": "**NEW 2026-08-29.** Does the overnight gap's **magnitude** (today's RTH open \u2212 yesterday's RTH close, sign discarded) predict the same day's RTH-session range? Cross-series, same-session \u2014 the same S2-shaped shared-regime confound as `overnight-range-day-session-transfer`, scored identically (a $0 increment test vs. the day-session-history comparator, not a full battery). Distinct from any fill/fade **direction** claim (e.g. Mesfin 2026, MNQ-only, external corroboration that does not exist for MYM on either magnitude or direction).",
       "findings": [
         "(corrected \u2014 stratified design, 2026-08-29, AUTHORITATIVE): same design correction as `overnight-range-day-session-transfer` (marginal comparison \u2192 stratify on `bias_hist`, measure lift within stratum). Within `bprime=0` (n=1,010): lift **+0.1404** (0.5526 vs 0.4122). Within `bprime=1` (n=297): lift **+0.0672** (0.7766 vs 0.7094) \u2014 **the sign itself flips positive** in both strata. Block-bootstrap on the minimum stratified lift: mean **+0.0594**, 95% CI **[\u22120.0419, +0.1477]**, p(lift\u22640)=0.1247 / null-calibrated p(null\u2265obs)=0.0086 (within-stratum circular-shift of the gap predictor, distinct rotations enumerated, identity included; n_null=1304 from the sibling joint-gate cache vs original n=1307; 3-day difference disclosed; per-stratum null p=0.00099 / 0.152). **First operator ruling, 2026-08-30** (\"go with INCREMENT, ... the null-calibrated test is the more reliable one\") read this as a blanket INCREMENT off the blended p=0.0086 figure. **That figure was itself defective (Codex review, PR #211):** `circular_shift_null_min_lift` computes p=0.0086 as the *product* of the two per-stratum tail probabilities, which tests the sharp joint null that both strata are simultaneously zero \u2014 not the disjunctive composite null a \"both strata\" claim needs to reject. The correct test is an intersection-union test (the **max** of the per-stratum p's): max(0.00099, 0.152) = 0.152, not significant. **Corrected disposition \u2014 split by stratum:** `bprime=0` (day-history NOT elevated): **INCREMENT** \u2014 the within-stratum p=0.00099 is properly scoped and decisive, the same operator principle (null-calibrated over bootstrap CI) correctly applied. `bprime=1` (day-history elevated): **not established** \u2014 p=0.152 does not reject. A meaningfully weaker signal than the sibling overnight-range candidate's +0.2186 even in its decisive stratum. The `bprime=0` result is nested under `Q-RANGEXFER-1` as the new (2026-08-30) hypothesis clause `H-RANGEXFER-1.b-MYM`, distinct from `H-RANGEXFER-1.a-MYM`'s overnight-calm-restricted claim (a different estimand). First instrument scored under this id. [MYM.md](MYM.md) \u00b7 [`N-2026-08-29-mym-gap-magnitude-rth-range.md`](../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md)"
+      ]
+    },
+    "overnight-gap-magnitude-range-conditioning-overnight-calm": {
+      "definition": "**Split off from `overnight-gap-magnitude-range-conditioning` above, 2026-08-30 (Q-RANGEXFER-1 closure) \u2014 same cross-series shared-regime confound, distinct restriction.** Does unsigned RTH-open gap magnitude predict same-day RTH range specifically *within the overnight-range-calm stratum* (today's own overnight range below its own trailing P80) \u2014 the \u26a0 note above's own `gap_lifts_within_overnight_strata` two-way statistic, not the `bprime`(day-history)-restricted statistic the sibling heading owns. This is `H-RANGEXFER-1.a-MYM`.",
+      "findings": [
+        "(`FALSIFIED`, MYM, 2026-08-30): stage-1 lift +8.5pp (bootstrap p=0.037, null-calibrated p=0.0495 \u2014 barely clears 0.05, already the weakest, least-decisive cell in the whole batch) failed the presence battery's own L2 limb: block-bootstrap CI (frozen `block=20, draws=4000, seed=42`) on the restricted lift is `[-0.008, +0.180]` \u2014 the lower bound crosses zero. L1 and L3 both pass; the failure is L2 alone. Adversarially verified before being trusted (4-lens workflow, `TRUSTWORTHY_AS_IS`): the decisive CI independently reproduced by five separate methods (bit-exact from-scratch bootstrap, 12 alternate seed/RNG-engine trials, naive i.i.d. bootstrap, normal-approximation SE). Genuinely borderline, disclosed not hidden: 1 of 5 tested seeds under a different-but-defensible non-circular bootstrap variant flips the sign barely positive. Full record: [`rangexfer_presence_battery_2026-08-30/RESULTS.md`](../../lab/analysis/_inbox/rangexfer_presence_battery_2026-08-30/RESULTS.md). [MYM.md](MYM.md) \u00b7 [`Q-RANGEXFER-1-closure-ambiguous-design.md`](../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md)"
       ]
     },
     "overnight-range-day-session-transfer": {

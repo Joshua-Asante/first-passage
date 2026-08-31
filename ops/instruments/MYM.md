@@ -57,8 +57,8 @@ cells:
     source: "../../docs/notes/notice/N-2026-08-29-mym-rangestate-persistence.md"
   - mechanism: overnight-range-day-session-transfer
     verdict: AMBIGUOUS-PARKED
-    date: 2026-08-29
-    source: "../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md"
+    date: 2026-08-30
+    source: "../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md"
   - mechanism: intraday-bar-volume-regime
     verdict: AMBIGUOUS-PARKED
     date: 2026-08-30
@@ -66,7 +66,11 @@ cells:
   - mechanism: overnight-gap-magnitude-range-conditioning
     verdict: AMBIGUOUS-PARKED
     date: 2026-08-30
-    source: "../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md"
+    source: "../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md"
+  - mechanism: overnight-gap-magnitude-range-conditioning-overnight-calm
+    verdict: DEAD
+    date: 2026-08-30
+    source: "../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md"
   - mechanism: bar-closing-location-autocorrelation
     verdict: DEAD
     date: 2026-08-30

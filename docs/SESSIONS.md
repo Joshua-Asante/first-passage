@@ -33,6 +33,40 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-30c — Q-RANGEXFER-1 closed: L5 semantics ratified, presence battery scored
+
+**Focus:** Reviewed an external (Codex) advisor report on the MNQ/MYM joint-surrogation thread at
+the operator's request; found and disclosed a load-bearing frozen-text inconsistency (does a
+valid-but-non-significant attribution limb falsify, or only type, the verdict?) the report missed.
+Filed a closure-path plan (PR #226), which collided in parallel with `Q-RANGEXFER-1`'s own Round 4
+bounded-round execution (PR #225) firing the ratified hard stop. Operator ratified both open items;
+this session ran, adversarially verified, and scored the resulting presence battery, then closed
+the Q.
+**Shipped:** `claude/mnq-mym-mechanism-review-124957` (PR #226) — pre-registration §H (L5 semantics
++ `AMBIGUOUS-DESIGN` verdict row); [`rangexfer_presence_battery_2026-08-30/presence_l1_l3.py`](../lab/analysis/_inbox/rangexfer_presence_battery_2026-08-30/presence_l1_l3.py)
++ its own `RESULTS.md` (4-lens adversarial-verification workflow, `TRUSTWORTHY_AS_IS`); closure
+[`Q-RANGEXFER-1-closure-ambiguous-design.md`](briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md);
+`MECHANISMS.md` three-heading update (incl. a new split-off heading,
+`overnight-gap-magnitude-range-conditioning-overnight-calm`, `DEAD`); `MNQ.md`/`MYM.md` ledger
+source refresh + new `DEAD` cell.
+**Decisions/defects:** Operator ratified Option A (certified valid non-significant L5 →
+`FALSIFIED`, matching the sibling `Q-VOLREGIME-1`'s own frozen §6 rather than the brief's own
+pre-registration §C, which had said the opposite) and the per-hypothesis `AMBIGUOUS-DESIGN` row.
+Presence battery: 4/5 hypotheses PASS (`H-RANGEXFER-1`, `H-RANGEXFER-1.a`, `H-RANGEXFER-1-MYM`,
+`H-RANGEXFER-1.b-MYM`) → `AMBIGUOUS-DESIGN`; `H-RANGEXFER-1.a-MYM` FAILS L2 alone (bootstrap CI
+`[-0.008,+0.180]`, crosses zero on an already-marginal effect) → `FALSIFIED`, registered at the
+instrument-ledger level per `ADR 2026-08-09` D3 (not `rejected_candidates.md` — that file's own
+governing text explicitly redirects instrument-scoped single-direction rejections elsewhere; a
+stale-registry-target trap avoided, not walked into). `docs/rejected_candidates.md` correctly
+left untouched. `Q-VOLREGIME-1` explicitly not closed by inheritance — its own bar-level panel
+(~135k–140k bars vs ~1.5k days) is structurally weaker on both of this closure's binding failure
+mechanisms and gets its own independent assessment; its own by-year L4 count is named as the next
+cheap step. No `core/`/Pine/allocation/`dd_protection`/rail change; $0/K=0 (re-derives already-
+scored panels).
+**Open / next:** STATE queue: #1 [Acceptable strategy on the ruled host](../STATE.md) · #2 [B7-REFIRE Stage 1 + M1](../STATE.md) — both unchanged by this session. `queue-exception: operator-directed presence-battery run + closure of an already-ratified thread; not a leftover Open/next name.` `Q-VOLREGIME-1`'s own bar-level by-year L4 count (no vendor-bar precondition issue — `MNQ_M15.csv`/`MYM_M15.csv` present and hash-verified this session) is the next cheap, informative step on the sibling thread, not queued.
+
+---
+
 ## 2026-08-30b — Rule 11 dormancy addendum: ORB-MNQ R1 / `run_t2_intraday_bust.py`
 
 **Focus:** Operator-directed PR fix — Rule 11 dormancy + re-arm addendum for §4 R1 after Great Prune class-2 removed the harness (`queue-exception: Joshua @cursor on Rule-11 dormancy PR`).
@@ -322,190 +356,6 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
-## 2026-08-25n — Plan: viable-strategy surface consistency
-
-**Focus:** Hygiene plan for five contradictions on the viable-strategy owners (queue `#1`), plus two same-class banner lags. `queue-exception: operator asked to plan the inconsistency repair on #1's owner artifacts`.
-**Shipped:** [`plan`](superpowers/plans/2026-08-24-viable-strategy-surface-consistency.md) (`AWAITING GO`). Elections: propagate A2 N-reduction residual (do not invent sign-off) · B3 KILL in situ + registry row · s4/Phase A banners match body · Phase D trigger = TNEC-1 · Q-FIRMEOD-1 citation → count-stable hook.
-**Decisions/defects:** plan E1–E6. Not a Phase B GO. Not an A2 `sims_per_seed` ratification.
-**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)). Residue (`queue-exception: operator asked to plan the inconsistency repair on #1's owner artifacts`): [`consistency plan`](superpowers/plans/2026-08-24-viable-strategy-surface-consistency.md) GO unpaid.
-**Live-ops state:** unchanged (`dry_run=true`; no arm).
-
----
-
-## 2026-08-25l — Merge #147 into M1-date branch
-
-**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)).
-
----
-
-## 2026-08-25i — M1 dated 08-24; test strategy licensed
-
-**Focus:** Decision. Operator: date M1 for 08-24; a test strategy can resolve item 5.
-
-**Shipped:** [`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`Survive-bound addendum`](adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--m1-item-5-no-longer-waits-on-queue-1). STATE `#2` no longer waits on `#1`. No emit. No arm.
-
-**Decisions/defects:** evaluate-hook test strategy qualifies; canned hand-POST still does not.
-
-**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase A`](superpowers/plans/2026-08-23-viable-strategy-phase-a-target-derivation.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)).
-
-**Live-ops state:** unchanged — rail disarmed; no book; M1 still `CODE_LANDED`.
-
----
-
-## 2026-08-25m — Claude review: allow git-read tools
-
-**Focus:** Build. `queue-exception: operator asked to proceed with the workflow fix`. Not a queue row.
-
-**Shipped:** `.github/workflows/claude.yml` `--allowedTools` for `git diff`/`git log`/`git status` (quoted). `notify-cursor.yml` skips the in-progress ack.
-
-**Decisions/defects:** do not widen `allowed_bots` to `*`. Takes effect after merge to `main`. Owner remains [`07-14 addendum`](adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-08-23-judgment-review).
-
-**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase A`](superpowers/plans/2026-08-23-viable-strategy-phase-a-target-derivation.md)) · #2 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)). Residue (same exception): workflow allowlist; do not promote leftovers.
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
-## 2026-08-25k — Queue: mechanism supply precedes B7/M1
-
-**Focus:** Decision. Operator: the blocker of #1 belongs on the queue ahead of it.
-
-**Shipped:** [`Survive-bound addendum`](adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--the-blocker-of-b7m1-is-queue-1). STATE `#1` = acceptable strategy (existing sequence; GO unpaid). `#2` = B7/M1. Standing-lead paragraph deleted (now the row). No phase GO. No rail wire.
-
-**Decisions/defects:** 2026-08-23 “#1/#2 cannot be executed” is not the live repair.
-
-**Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase A`](superpowers/plans/2026-08-23-viable-strategy-phase-a-target-derivation.md)) · #2 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)).
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
-## 2026-08-25j — Q-TRADECAP-2 ratified (ID 2 Accepted)
-
-**Focus:** Decision. Queue row 2: operator ratified the elect-2 light ADR.
-
-**Shipped:** [`elect-2`](adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) `Accepted`. [`closure`](briefs/closures/Q-TRADECAP-2-closure-resolved.md) `RESOLVED`. STATE row 2 deleted (no auto-replace). No rail wire.
-
-**Decisions/defects:** licensed close is observe-only ID **2**. Threshold later. Consult `RESOLVED`.
-
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)).
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
-## 2026-08-25h — Q-TRADECAP-2 elects 2 (Proposed light ADR)
-
-**Focus:** Decision. Queue row 2: operator asked for the light ADR after the consult recommendation.
-
-**Shipped:** [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) `Proposed`. No rail wire. Q stays `OPEN` until `Accepted`. Blast-radius: phase-D D4, consult HOLD, brief Phase 1, and `1r_estimation.md` retargeted at the Proposed ADR.
-
-**Decisions/defects:** ID **2** observe-only. Surviving consult rows on the notice. Claude judgment review requested.
-
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`elect-2`](adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) · [`Q-TRADECAP-2`](briefs/Q-TRADECAP-2-per-trade-bound-election.md)).
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
-## 2026-08-25g — ox-alpha consult on Q-TRADECAP-2 (sanitized)
-
-**Focus:** Decision. Queue row 2 consult. Crux sent under the ox-alpha §2 lens; no close elected; no rail wire.
-
-**Shipped:** [`N-2026-08-24-ox-alpha-per-trade-bound-election.md`](notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md) · Use-N pointer on [`ox-alpha ADR`](adr/2026-08-22-ox-alpha-adversarial-lens-scope.md). Blast-radius: STATE/INDEX gained the consult link; this entry slimmed to links.
-
-**Decisions/defects:** Surviving rows on the notice; they do not elect. Frozen set unchanged.
-
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-2`](briefs/Q-TRADECAP-2-per-trade-bound-election.md) · [`consult`](notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md)).
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
-## 2026-08-25e — Q-TRADECAP-2 opened (per-trade bound election)
-
-**Focus:** Decision. Queue row 2 started. Successor packet opened; no close elected; no rail wire.
-
-**Shipped:** [`Q-TRADECAP-2`](briefs/Q-TRADECAP-2-per-trade-bound-election.md) · [pre-reg](briefs/pre-registration/Q-TRADECAP-2-verdict-preregistration.md). Phase 0 on the brief. Blast-radius: phase-D D4 + `1r_estimation.md` retargeted; STATE/INDEX/SESSIONS slimmed to links.
-
-**Decisions/defects:** Option 1-as-staged not startable; election unpaid. Frozen set and forbidden moves on the brief / pre-reg.
-
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-2`](briefs/Q-TRADECAP-2-per-trade-bound-election.md) · [`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md)).
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
-## 2026-08-25f — P6–P10 one commit per packet
-
-**Focus:** Decision + Hygiene. `queue-exception: operator asked to start working on the P6–P10 plans`. Follow-up: commit after each plan is implemented (rewrite the batched land into five commits).
-
-**Shipped:** `cursor/pain-point-p6-p10-6bd4` — P6 README lead; P7 identifier table; P8 keep-15 + LTM archive; P9 withdrawn-book tense; P10 Q-TOM-SPX-1 formal DEAD (this commit).
-
-**Decisions/defects:** [impl plan](superpowers/plans/2026-08-23-p6-p10-residuals-implementation.md) · [Q-TOM-SPX-1 DEAD](briefs/closures/Q-TOM-SPX-1-closure-dead.md) · [turn-of-month-premium × SPX500](rejected_candidates.md).
-
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)). Residue (same exception): P6–P10 land complete; do not promote leftovers.
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
-## 2026-08-25d — Repoint pruned forced-flow-census citations
-
-**Focus:** Hygiene + Decision. `queue-exception: operator-assigned GitHub issue — dangling N-2026-07-26-forced-flow-census citations`. Retention-test read; do not restore the Notice.
-
-**Shipped:** 13 live citing surfaces + Phase-A plan repointed to `git show pre-prune-2026-08-08:docs/notes/notice/N-2026-07-26-forced-flow-census.md`. File stays pruned.
-
-**Decisions/defects:** Fails R1–R5 as a working-tree file (verdicts already in ledgers/closures; `rejected_candidates.md` does not cite it). Restore also blocked: tag is private-archive-only ([`docs/ltm/README.md`](ltm/README.md)). Channel §2-B stays live on the ADR.
-
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
-## 2026-08-25c — Automatic Claude judgment review on Cursor-first PRs
-
-**Focus:** Decision. Operator asked to auto-request a Claude review on judgment-heavy PRs, especially when scoped on Cursor first. `queue-exception: operator asked to wire automatic Claude review for judgment-heavy PRs`.
-
-**Shipped:** predicate + `@claude` request workflow + 2026-07-14 addendum (review-only; not merge; not a queue row). Direct action invocation dropped after run `32672069340` self-skipped on the workflow diff. `head.ref` passed via `env:` after the first adjudication named the interpolation footgun.
-
-**Decisions/defects:** [`07-14 addendum`](adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-08-23-judgment-review). Drafts silent; re-review stays `@claude`.
-
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
-## 2026-08-25b — First-look residuals split into P6–P10 plans
-
-**Focus:** Decision. Operator asked to separate first-look problems and write targeted plans. Second-wave packets named; none GO’d.
-
-**Shipped:** [`pain-point charter`](superpowers/plans/2026-08-23-repo-pain-point-packets.md) P6–P10 (front-door lead · identifier table · STATE diet · withdrawn-book tense · open-roster hygiene). `queue-exception: operator asked for targeted plans on first-look residuals`.
-
-**Decisions/defects:** Object-layer dryness stays on the viable-strategy sequence, not a new pain-point. Personas / Limb-A / S3–S7 stay parked.
-
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
-## 2026-08-25a — Reject Proposed NeMo ADR; tear down standing analog surface
-
-**Focus:** Decision. Operator rejected the Proposed NeMo pin ADR; borrow principles as needed. Ox-alpha consulted on pin-versus-inspiration.
-
-**Shipped:** teardown of `docs/agent_rails/` · `check_agent_rails.py` · `fetch_nemo_guardrails.py` · Proposed ADR. Refuse-trail: [`N-2026-08-23-nemo-guardrails-reconciliation.md`](notes/notice/N-2026-08-23-nemo-guardrails-reconciliation.md). Consult: [`N-2026-08-23-ox-alpha-analog-pin-vs-inspiration.md`](notes/notice/N-2026-08-23-ox-alpha-analog-pin-vs-inspiration.md).
-
-**Decisions/defects:** Standing analog surface rejected (no successor ADR). Mapping-guardrails consolidation and the instance-4 GO record stay.
-
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
 ## 2026-08-24c — Regime-gate scope precedent + K-tiering + `pursuit-records` retirement (PR #163)
 
 **Focus:** Decision. `queue-exception: executing a validation-phase-cuts plan carried forward from a prior conversation`. Not a queue row.
@@ -534,20 +384,6 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
-## 2026-08-24y — NeMo Guardrails pinned and mapped; not adopted as a runtime
-
-**Focus:** Decision. Operator GO for a constrained 4th mapping instance: download NeMo and reconcile with existing rails.
-
-**Shipped:** [`rails.yml`](agent_rails/rails.yml) · [`check_agent_rails.py`](../scripts/check_agent_rails.py) · [`fetch_nemo_guardrails.py`](../scripts/fetch_nemo_guardrails.py) · [`N-2026-08-23`](notes/notice/N-2026-08-23-nemo-guardrails-reconciliation.md) · [`external_mapping_guardrails.md`](methodology/external_mapping_guardrails.md).
-
-**Decisions/defects:** Pin `v0.23.0` @ `dc046e4`; no pip/runtime. Light ADR [`2026-08-23-nemo-guardrails-pin-not-runtime.md`](adr/2026-08-23-nemo-guardrails-pin-not-runtime.md) `Proposed`. Belt consolidated (audit action 4).
-
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
 ## 2026-08-24i — keep-20 SESSIONS roll + W5 CI-from-gates (H6 lift)
 
 **Focus:** Decision + Build. Operator GO for parked keep-20 roll and W5 CI-from-`gates.yml` (H6 HOLD). `queue-exception: operator GO for parked keep-20 + H6`.
@@ -571,92 +407,6 @@ any entry, full or stub (a-first; bare claims `a`).
 **Decisions/defects:** The Use-3 SPAN+COT cascade thread was **conceded dead by its own proposer** at Use 4 ("nothing converts WHETHER into WHERE — demote to filter") — removed from the candidate lanes. Ox-alpha's "scoped overnight" relaxation recorded as mostly foreclosed by venue fact (flat-16:45 is a firm rule), not adopted. All plans `AWAITING GO` — per-phase gates; two operator bar-readings named inside Phase B (F1 re-proposal terms for the MOC lane; F3 "not a different fix" for the fix-wake lane).
 
 **Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)). Behind the queue: Phase A GO (A1 audit + A2 shape map, $0) and the parallel firm-repair Q GO are the sequence's next operator decisions.
-
----
-
-## 2026-08-24x — P4 museum rules + P5 REPO_MAP layer gate (pain-point close-out)
-
-**Focus:** Decision + Build. Operator closed remaining buildable pain-point packets (P4 + P5). Parked rows stay parked.
-
-**Shipped:** [`operational_rules.md`](operational_rules.md) Rule 1 HISTORICAL origin + Rule 7 `_archive` lock paths · [`repo_map_layers.yml`](../scripts/repo_map_layers.yml) · [`check_repo_map_layers.py`](../scripts/check_repo_map_layers.py) · `repo-map-layers` in [`gates.yml`](../scripts/gates.yml). Plans: [`P4`](superpowers/plans/2026-08-23-p4-museum-rules-implementation.md) · [`P5`](superpowers/plans/2026-08-23-p5-repo-map-layers-implementation.md). P3 commit [`2c89694`](https://github.com/Joshua-Asante/first-passage/commit/2c89694).
-
-**Decisions/defects:** P0–P5 buildable set closed. W5 CI-from-gates / keep-20 / mass-CATALOG remain parked on their owners.
-
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
-## 2026-08-24w — P3 docs-runtime inventory (report-only)
-
-**Focus:** Decision + Build. Operator promoted P3 as queue #3. Index only; not a prune.
-
-**Shipped:** [`check_docs_runtime_inventory.py`](../scripts/check_docs_runtime_inventory.py) · [`inventory`](notes/audits/docs-runtime-inventory.md) · [`P3 plan`](superpowers/plans/2026-08-23-p3-docs-runtime-inventory-implementation.md) · `docs-runtime-inventory` in [`gates.yml`](../scripts/gates.yml) (exit 0). P2 commit [`9ea8d81`](https://github.com/Joshua-Asante/first-passage/commit/9ea8d81).
-
-**Decisions/defects:** Quoted-path + pathlib-join (backslash continuations). Known reads present (guard.py CLAUDE.md; c1_rail_arm M1 artifact; register_search docs/). Row 3 closed on land. P4/P5 not auto-opened.
-
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
-## 2026-08-24v — P2 Approach A: MEMORY demoted to assistive-only
-
-**Focus:** Decision. Operator promoted P2 as queue #3 and picked Approach A.
-
-**Shipped:** [`state-md addendum`](adr/2026-06-30-state-md-role-reduction.md#addendum-2026-08-23--memory-is-assistive-only-not-the-rule-7-owner) · [`Rule 7`](operational_rules.md) owner-table row · [`plan`](superpowers/plans/2026-08-23-p2-memory-demote-implementation.md). Reconciled `origin/main` first (F1 already ruled; live queue is B7/M1 + Q-TRADECAP-1).
-
-**Decisions/defects:** Durable atoms live in ADRs / lessons. Claude-project MEMORY is assistive-only, never §0. Not Approach B/C. Row 3 closed on land (succession: no auto-replace).
-
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
-## 2026-08-24s — blind-channel scoped decline of the reopened 6A/GC cell
-
-**Focus:** Decision. Operator accepted the scoped decline: do not name on the reopened 6A/M6A or GC/MGC entry-geometry / dense-1m doors. Last pre-G0 slot unspent.
-
-**Shipped:** [`channel ADR addendum`](adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md#addendum-2026-08-23--scoped-decline-of-the-reopened-6am6a-and-gcmgc-entry-geometry--dense-1m-cell) · [`STATE.md`](../STATE.md) row 3 deleted (succession: no auto-replace).
-
-**Decisions/defects:** Door stays legally open; construct refused (sibling-contaminated cell, not an 08-15 empty walk). Count stays 2/3. Not generation-dry. S1/S2 still unruled. Later spend of the last slot needs a fresh GO.
-
-**Open / next:** STATE queue: #1 F1 — how §4 reads a Tradeify-resting discharge ([`descope §7`](adr/2026-08-04-tradeify-venue-descope-eval-included.md)) · #2 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)).
-
----
-
-## 2026-08-24r — merge origin/main into PR #128 (conflict fix)
-
-**Focus:** Resolve PR #128 conflicts after #127. Same-day `2026-08-24o` is taken by the registry-snapshot entry on `main`.
-
-**Shipped:** merge `origin/main` into `claude/tradeify-strategy-review-6fe189`. Union-merge splice (missing `---` after `24p`) fixed. Colliding PR-side `2026-08-24o` (F1 ruled) remapped to `2026-08-24q`. Main's `24o` registry heading left byte-identical. F1 / Q-TRADECAP-1 / Q-MONSURF-1 bytes unchanged.
-
-**Decisions/defects:** none new.
-
-**Open / next:** Phase 5 (wire M-B at F3) — not before. M-A build-gate scope ruling owed. MSL needs a fresh WHO. Successor per-trade loss-bound election on STATE row 2. Q-FIRMEOD-1 / Q-PUBTRANS-1 deferred. **STATE queue:** #1 B7-REFIRE + M1 · #2 per-trade loss-bound election.
-
-**Live-ops state:** unchanged — rail disarmed; no book.
-
----
-
-## 2026-08-24t — P1 README status glossary (queue-exception)
-
-**Open / next:** STATE queue: #1 F1 — how §4 reads a Tradeify-resting discharge ([`descope §7`](adr/2026-08-04-tradeify-venue-descope-eval-included.md)) · #2 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #3 Blind — name or decline the next construct on 6A/M6A or GC/MGC entry-geometry / dense-1m doors ([`channel ADR`](adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md)). queue-exception: operator directed the pain-point sequence after bind land; P1 README glossary is on this branch (charter start-when). Bind commit [`02c5f5e`](https://github.com/Joshua-Asante/first-passage/commit/02c5f5e).
-
----
-
-## 2026-08-24u — Lane A GO + operator-queue bind land
-
-**Focus:** Decision + Build. Operator named bind row 3 = Lane A (blind / no-counterparty channel). Landed queue-led Open/next, carry-forward rewrite, and the SESSIONS-only bind gate.
-
-**Shipped:** [`Survive-bound addendum`](adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-23--out-of-order-serving-is-the-live-defect) · [`W5 addendum`](adr/2026-08-07-w5-governance-diet.md#addendum-2026-08-23--opennext-lead-is-the-state-queue) · [`STATE.md`](../STATE.md) row 3 · [`check_sessions_queue_bind.py`](../scripts/check_sessions_queue_bind.py) · `sessions-queue-bind` in [`gates.yml`](../scripts/gates.yml). Branch `docs/queue-bind-and-pain-point-plans`. Claude hookify files are `.local.md` / gitignored; Cursor always-apply is the tracked refuse surface.
-
-**Decisions/defects:** Lane A GO — next concrete step is name or decline a construct on the reopened 6A/M6A or GC/MGC doors; do not spend the last pre-G0 slot unnamed. Succession: when row 3 leaves, do not auto-open a replacement. P1–P5 stay on the [pain-point charter](superpowers/plans/2026-08-23-repo-pain-point-packets.md).
-
-**Open / next:** STATE queue: #1 F1 — how §4 reads a Tradeify-resting discharge ([`descope §7`](adr/2026-08-04-tradeify-venue-descope-eval-included.md)) · #2 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #3 Blind — name or decline the next construct on 6A/M6A or GC/MGC entry-geometry / dense-1m doors ([`channel ADR`](adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md)).
 
 ---
 
@@ -729,6 +479,20 @@ Older entries rolled to `docs/ltm/notes/archive/sessions/` (newest first).
 
 | Date | Session | Archive |
 |---|---|---|
+| 2026-08-25 | Plan: viable-strategy surface consistency | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-25 | Merge #147 into M1-date branch | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-25 | M1 dated 08-24; test strategy licensed | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-25 | Claude review: allow git-read tools | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-25 | Queue: mechanism supply precedes B7/M1 | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-25 | Q-TRADECAP-2 ratified (ID 2 Accepted) | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-25 | Q-TRADECAP-2 elects 2 (Proposed light ADR) | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-25 | ox-alpha consult on Q-TRADECAP-2 (sanitized) | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-25 | Q-TRADECAP-2 opened (per-trade bound election) | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-25 | P6–P10 one commit per packet | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-25 | Repoint pruned forced-flow-census citations | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-25 | Automatic Claude judgment review on Cursor-first PRs | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-25 | First-look residuals split into P6–P10 plans | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-25 | Reject Proposed NeMo ADR; tear down standing analog surface | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
 | 2026-08-24 | Blind channel: canonical kill-count corrected (2/3); door re-walk against cac... | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
 | 2026-08-24 | `MNQFLOW-1-DEPTH` closed out for now: operator disposition `HOLD` | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
 | 2026-08-24 | `MNQFLOW-1-DEPTH` S2 redraw ALSO blocked at P0 ($154.73) — structural finding... | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
@@ -746,6 +510,14 @@ Older entries rolled to `docs/ltm/notes/archive/sessions/` (newest first).
 | 2026-08-24 | Nav leftovers: P5b wire, P2b stamps, find-owner | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
 | 2026-08-24 | SESSIONS entry-class tightened to a judgment-call gate | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
 | 2026-08-24 | merge origin/main into PR #119 (conflict fix) | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-24 | NeMo Guardrails pinned and mapped; not adopted as a runtime | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-24 | P4 museum rules + P5 REPO_MAP layer gate (pain-point close-out) | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-24 | P3 docs-runtime inventory (report-only) | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-24 | P2 Approach A: MEMORY demoted to assistive-only | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-24 | blind-channel scoped decline of the reopened 6A/GC cell | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-24 | merge origin/main into PR #128 (conflict fix) | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-24 | P1 README status glossary (queue-exception) | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
+| 2026-08-24 | Lane A GO + operator-queue bind land | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
 | 2026-08-23 | SESSIONS entry-class tightened to a judgment-call gate | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
 | 2026-08-23 | merge origin/main into PR #117 (conflict fix) | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |
 | 2026-08-23 | merge origin/main into PR #116 (conflict fix) | [2026-Q3](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) |

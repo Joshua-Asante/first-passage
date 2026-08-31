@@ -73,7 +73,7 @@ documents the camp boundary for humans/tools.
 | q_rail_1_2026-07 | c1 | ACTIVE | yes | c1 rail Phases 0–4 CLOSED RESOLVED; ceiling $700 operator-signed | lab/analysis/c1/q_rail_1_2026-07/ | — |
 | research-analyst-mnq-atomic-facts-2026-08-19 | c1 | ACTIVE | yes | Research Analyst inaugural session — MNQ atomic-fact decomposition draft (cross-campaign synthesis, not a new backtest); routing corrected same-day 2026-08-19 (DROP D5 -- already killed twice, ledger-contradicted first GRADUATE call / HOLD temporal-selectivity / DROP weekly-bias) | lab/analysis/c1/research-analyst-mnq-atomic-facts-2026-08-19/ | — |
 | shape_feasibility_map_2026-08 | c1 | ACTIVE | yes | 945-cell region published (Select/MFFU/Growth); Select≡MFFU; §4 sims_per_seed reduction accepted; screens shape, not mechanisms | lab/analysis/c1/shape_feasibility_map_2026-08/ | — |
-| tradeify_book_composition_2026-07-23 | c1 | ACTIVE | yes | eval-lock fix + §2 book-composition re-derivation | lab/analysis/c1/tradeify_book_composition_2026-07-23/ | inputs gitignored |
+| tradeify_book_composition_2026-07-23 | c1 | ACTIVE | yes | eval-lock fix + §2 book-composition re-derivation | lab/analysis/c1/tradeify_book_composition_2026-07-23/ | — |
 | tradeify_eval_lock_correction_2026-07-22 | c1 | ACTIVE | yes | Tradeify/MFFU eval drawdown-lock correction re-MC | lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/ | — |
 | tradeify_fade_stage0_2026-07-30 | c1 | ACTIVE | yes | Stage 0 instrumentation complete; Stage 1 region computed at 1x/2x/4x; no mechanism scored, K=0, $0 spend | lab/analysis/c1/tradeify_fade_stage0_2026-07-30/ | — |
 | tradeify_futures3_bustcut_2026-07-11 | c1 | ACTIVE | yes | Tradeify Select Flex 50K bust-cut Tests 1+2 | lab/analysis/c1/tradeify_futures3_bustcut_2026-07-11/ | — |
@@ -95,8 +95,8 @@ documents the camp boundary for humans/tools.
 |---|---|---|---|---|---|---|
 | d5_nq_intraday_mom_2026-07 | orb | ACTIVE | yes | Baltussen H1 on NQ IS — Stage-2/4 results | lab/analysis/orb/d5_nq_intraday_mom_2026-07/ | — |
 | eodadv_mnq_2026-08 | orb | FALSIFIED | yes | no pre-registered mechanism survives; 15:30 exit stays barred | lab/analysis/orb/eodadv_mnq_2026-08/ | — |
-| orb_mnq_2026-07 | orb | ACTIVE | yes | NAS100-ORB-30 on native MNQ; Stage-2 cost-law PASS then T2 payability FIRED | lab/analysis/orb/orb_mnq_2026-07/ | inputs gitignored |
-| orb_universe_2026-06-22 | orb | ACTIVE | yes | which FXIFY CFD best suits Opening Range Breakout | lab/analysis/orb/orb_universe_2026-06-22/ | pkl gitignored |
+| orb_mnq_2026-07 | orb | ACTIVE | yes | NAS100-ORB-30 on native MNQ; Stage-2 cost-law PASS then T2 payability FIRED | lab/analysis/orb/orb_mnq_2026-07/ | — |
+| orb_universe_2026-06-22 | orb | ACTIVE | yes | which FXIFY CFD best suits Opening Range Breakout | lab/analysis/orb/orb_universe_2026-06-22/ | — |
 | sessconf_mnq_2026-08 | orb | ACTIVE | yes | faithful close_tod session-truncation sweep (MNQ, Tradeify) | lab/analysis/orb/sessconf_mnq_2026-08/ | — |
 
 ### aegis
@@ -105,7 +105,7 @@ documents the camp boundary for humans/tools.
 |---|---|---|---|---|---|---|
 | aegis_6j_prop_reconstruction_2026-07 | aegis | ACTIVE | yes | Stage-1 FALSIFIED (operator accepted); Wave-1 sweep artifacts retained hot | lab/analysis/aegis/aegis_6j_prop_reconstruction_2026-07/ | — |
 | aegis_6j_trail_tradeify_2026-07-29 | aegis | ACTIVE | yes | J4 re-run at true Tradeify Select 100K geometry (Aegis→6J v0.3) | lab/analysis/aegis/aegis_6j_trail_tradeify_2026-07-29/ | — |
-| aegis_6j_transfer_2026-07-05 | aegis | ACTIVE | yes | Bulenox Option-2 trail-survival MC sequence (Aegis→6J v0.3) | lab/analysis/aegis/aegis_6j_transfer_2026-07-05/ | inputs gitignored |
+| aegis_6j_transfer_2026-07-05 | aegis | ACTIVE | yes | Bulenox Option-2 trail-survival MC sequence (Aegis→6J v0.3) | lab/analysis/aegis/aegis_6j_transfer_2026-07-05/ | — |
 
 ### regime
 
@@ -164,7 +164,7 @@ documents the camp boundary for humans/tools.
 | b2_london_fix_wake_2026-08-24 | _inbox | CLOSED | yes | B2.2 battery: 6E and 6B both DEAD via orthogonality (\|t\|<2/wrong-signed); placebo leg decisive only for 6B (rank 4.9) | lab/analysis/_inbox/b2_london_fix_wake_2026-08-24/ | — |
 | ict_1mexec_1_2026-08 | _inbox | FALSIFIED | yes | **RESOLVED (FALSIFIED at Stage 2, F1).** The frozen construct's gross edge does not | lab/analysis/_inbox/ict_1mexec_1_2026-08/ | — |
 | ict_mnq_2026-08 | _inbox | ACTIVE | yes | ICT cascade on NQ/MNQ at $0/K=0: W and D confirm, pools falsified a 3rd time; no layer licenses a deployable edge | lab/analysis/_inbox/ict_mnq_2026-08/ | — |
-| joint_surrogation_null_2026-08-30 | _inbox | ACTIVE | yes | Q-RANGEXFER-1/Q-VOLREGIME-1's joint-surrogation null design (D5 O1): 4 rounds (7 constructions + 1 gate-redesign attempt + 2 adversarial positive-control re-verification passes + Round 4's 2 model-adequacy remedies + 1 production-grade size/power re-certification, Codex-corrected same day — 8 findings), NOT RESOLVED — neither model adequacy (IC/Whittle comparison fails an absolute residual-whiteness check on both channels, post degrees-of-freedom correction; also scope-limited to a log-Pearson model, not the production rank-based construction) nor size/power (26% empirical Type-I at production grid/N=50 vs nominal 5%, binomial p≈0.0000, stable across 3 independent implementations) clears; hard stop fired, §6 gate-table gap raised to operator | lab/analysis/_inbox/joint_surrogation_null_2026-08-30/ | — |
+| joint_surrogation_null_2026-08-30 | _inbox | ACTIVE | yes | Q-RANGEXFER-1/Q-VOLREGIME-1's joint-surrogation null design (D5 O1): 4 rounds, NOT RESOLVED — neither model adequacy nor size/power clears (26% empirical Type-I vs nominal 5%); hard stop fired. Closure-path plan authored (`BOUNDED_ROUND_PLAN.md`); operator ratified L5-gates-`FALSIFIED` + per-hypothesis `AMBIGUOUS-DESIGN`; Q-RANGEXFER-1 closed 2026-08-30 (see `rangexfer_presence_battery_2026-08-30`) — Q-VOLREGIME-1 remains independently assessed, not closed by inheritance | lab/analysis/_inbox/joint_surrogation_null_2026-08-30/ | — |
 | mnq_dailygeom_notice_2026-08-29 | _inbox | ACTIVE | yes | MNQ 5-candidate Notice-phase geometry screen (K=5): overnight-range/gap-magnitude/volume-regime all GRADUATE at stage-1, now nested under Q-RANGEXFER-1/Q-VOLREGIME-1 pending Phase 1 | lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/ | — |
 | mym_mechanism_harvest_2026-08-29 | _inbox | ACTIVE | yes | MYM 5-candidate Notice-phase Phase-2 batch (K=5), replicates MNQ's shape: overnight-range GRADUATE, gap-magnitude split by day-history stratum (bprime=0 INCREMENT / bprime=1 not established), volume-regime INCREMENT, CLV DROPPED | lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/ | — |
 | q_trainkill_1_2026-08 | _inbox | HOLD | yes | AMBIGUOUS-HOLD — BOUNDED extremes disagree (MISCALIBRATED at ε vs KILLS-INFORMATIVE at 1−ε); scored core (n*=8) is MISCALIBRATED | lab/analysis/_inbox/q_trainkill_1_2026-08/ | — |
@@ -173,7 +173,8 @@ documents the camp boundary for humans/tools.
 | rangestate_corrected_2026-08 | _inbox | ACTIVE | yes | Official corrected-null re-score: S1a (GC) NULL (L2, L4); S1b (CL) SIGNAL-GENERIC at the 69th pct of its linear-ACF band | lab/analysis/_inbox/rangestate_corrected_2026-08/ | — |
 | rangestate_gc_2026-08 | _inbox | NULL | yes | `NULL`** (per the frozen §3 gate — limb `ci_lb` failed; | lab/analysis/_inbox/rangestate_gc_2026-08/ | — |
 | rangestate_mcl_2026-08 | _inbox | ACTIVE | yes | SIGNAL-GENERIC under the corrected battery: canon-attributed vol clustering (69th pct); not a mechanism and no conditioner license | lab/analysis/_inbox/rangestate_mcl_2026-08/ | — |
-| rangexfer_byyear_l4_2026-08-30 | _inbox | ACTIVE | yes | Q-RANGEXFER-1's L4 (by-year) presence limb, all 5 hypotheses: N_valid<7 on all five (AMBIGUOUS), confirming the pre-registration's own ex-ante prediction — RESOLVED is unreachable for any of them at this panel length, AMBIGUOUS-HOLD is the best reachable (not guaranteed) outcome; corrected once (PR #224 Codex review — parent-hypothesis qualifying-year gate fix moved N_valid 6→3) | lab/analysis/_inbox/rangexfer_byyear_l4_2026-08-30/ | — |
+| rangexfer_byyear_l4_2026-08-30 | _inbox | ACTIVE | yes | Q-RANGEXFER-1's L4 (by-year) presence limb, all 5 hypotheses: N_valid<7 on all five (AMBIGUOUS), confirming the pre-registration's own ex-ante prediction; corrected once (PR #224 Codex review — parent-hypothesis qualifying-year gate fix moved N_valid 6→3). Consumed into the presence-battery closure (`rangexfer_presence_battery_2026-08-30`) — Q-RANGEXFER-1 closed 2026-08-30 | lab/analysis/_inbox/rangexfer_byyear_l4_2026-08-30/ | — |
+| rangexfer_presence_battery_2026-08-30 | _inbox | FALSIFIED | yes | MIXED — 4/5 hypotheses AMBIGUOUS-DESIGN, H-RANGEXFER-1.a-MYM FALSIFIED (presence L2 fails). | lab/analysis/_inbox/rangexfer_presence_battery_2026-08-30/ | — |
 
 ## Archived
 
