@@ -33,12 +33,18 @@ def sha256(path: Path) -> str:
 
 
 def tod_threshold(values: np.ndarray, slots: np.ndarray, window: int) -> np.ndarray:
+    """Trailing same-slot median (strict prior). Guards `med > 0`, matching the
+    reference construction's div-by-zero guard (c3_volume_regime.py::tod_ratio)
+    -- a degenerate all-zero window leaves the threshold NaN (excluded) rather
+    than silently gating on 0."""
     out = np.full(len(values), np.nan)
     history: dict[int, list[float]] = {}
     for i, (value, slot) in enumerate(zip(values, slots)):
         hist = history.setdefault(int(slot), [])
         if len(hist) >= window:
-            out[i] = float(np.median(hist[-window:]))
+            med = float(np.median(hist[-window:]))
+            if med > 0:
+                out[i] = med
         hist.append(float(value))
     return out
 
@@ -92,7 +98,7 @@ def prepare(symbol: str) -> tuple[pd.DataFrame, dict]:
         }
     )
     return frame, {
-        "csv": str(path.relative_to(REPO)),
+        "csv": path.relative_to(REPO).as_posix(),
         "sha256": actual_hash,
         "window_same_slot_prior_observations": window,
         "n_scored": int(len(frame)),

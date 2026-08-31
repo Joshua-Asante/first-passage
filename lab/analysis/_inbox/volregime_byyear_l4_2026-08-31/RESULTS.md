@@ -1,6 +1,6 @@
 # Q-VOLREGIME-1 bar-level by-year L4 — 2026-08-31
 
-**Status:** ACTIVE — L4 PASS independently on MNQ and MYM; L5 attribution remains open.
+**Status:** ACTIVE — L4 PASS independently on MNQ and MYM; L3 (halves-stability) and L5 (attribution) remain open.
 
 ## Result
 
@@ -36,10 +36,13 @@ and lifts are in `byyear_l4_results.json`.
 
 ## Interpretation boundary
 
-This closes the only unresolved presence limb and removes panel length as a
-forced `AMBIGUOUS-HOLD` route. It does **not** resolve Q-VOLREGIME-1. The frozen
-L5 joint-surrogation attribution limb remains uncomputed and must independently
-clear before either instrument can reach `RESOLVED`.
+This closes L4 specifically and removes panel length as a forced
+`AMBIGUOUS-HOLD` route. It does **not** discharge the full presence battery
+and does **not** resolve Q-VOLREGIME-1: **L3 (both chronological halves of the
+conditional cases show lift > 0) has not been computed for this construct and
+remains open**, alongside the frozen L5 joint-surrogation attribution limb.
+Neither instrument can reach `RESOLVED` until L3 is scored and L5
+independently clears.
 
 No fresh K is charged: this is the already-owed, K-free presence diagnostic on
 already-scored vendor panels.

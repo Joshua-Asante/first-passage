@@ -3,7 +3,7 @@
   "instruments": {
     "MNQ": {
       "input": {
-        "csv": "core\\data\\bar_data\\MNQ_M15.csv",
+        "csv": "core/data/bar_data/MNQ_M15.csv",
         "sha256": "6c86f41a17b7dfce05baa205a4147b7504f3ce1eb14a3b03b994aa090fa7e00a",
         "window_same_slot_prior_observations": 60,
         "n_scored": 135958,
@@ -171,7 +171,7 @@
     },
     "MYM": {
       "input": {
-        "csv": "core\\data\\bar_data\\MYM_M15.csv",
+        "csv": "core/data/bar_data/MYM_M15.csv",
         "sha256": "24e169528f7ea6693b75c71c3195edf6a04f3a26c6b6dff0f2e9c623fd597a58",
         "window_same_slot_prior_observations": 20,
         "n_scored": 139605,

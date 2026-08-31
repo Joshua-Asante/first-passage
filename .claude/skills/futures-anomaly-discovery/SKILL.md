@@ -46,18 +46,23 @@ here). From there, `strategy-validation` + `inqhiori` take over.
 
 The current working position — evidence-contingent, owned by
 [`docs/adr/2026-07-15-external-mechanism-harvest-intake.md`](../../../docs/adr/2026-07-15-external-mechanism-harvest-intake.md)
-§4, which is still live and unresolved — is that wide mining is unfundable
-**on a family whose banked K already sits above the DSR floor** (Q-GATECART-1
-M-19: DSR floor 2.05 at K=3,177 > best in-house edge 1.83). Those numbers are
-**GC/MGC-specific**. Check the target instrument/family's own `K_banked`
-before assuming this ceiling applies — most families are unburned (K≤2 or
-K=0); see the per-family disclosure in
+§4, which is still live and unresolved — is that wide mining's cost is its
+own `K_intrinsic` (the trial count of the search itself), which for a genuine
+wide sweep drives its own DSR floor high (Q-GATECART-1 M-19 measured a floor
+2.05 at GC/MGC's then-banked K=3,177 > best in-house edge 1.83, **under the
+pre-2026-08-04 rule**). `K_banked(family)` no longer enters that arithmetic —
+[ADR 2026-08-04](../../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md)
+retired the family term as a gate, so that 2.05 figure is now a **historical
+measurement**, not a live ceiling: a pre-registered single-hypothesis seed
+screens at floor 0.65 on *every* family, GC/MGC included. See the current
+per-family disclosure (still mandatory, no longer gating) in
 [`strategy_harvest.md`](../../../docs/methodology/strategy_harvest.md) §1
 Requirement 3.
 
-A published mechanism inverts the cost on a burned family — the original
-author paid the mining cost; you pay only the confirmation cost — entering
-at K_intrinsic ≤ 3, a beatable floor. Harvest is one chartered, K-accounted
+A published mechanism inverts the cost of a wide search: the original
+author already paid their own search cost, so confirming their mechanism on
+our data enters at K_intrinsic ≤ 3, a beatable floor, versus an in-house wide
+search's own large `K_intrinsic`. Harvest is one chartered, K-accounted
 discovery route, not a settled primary replacement for mining. D5 (Baltussen
 et al. 2021 *JFE* intraday momentum) remains the only axis to PASS the
 Q-KBUDGET screen; it and the next two intake-class seeds (H-OD-1, H-TSMOM-1)
