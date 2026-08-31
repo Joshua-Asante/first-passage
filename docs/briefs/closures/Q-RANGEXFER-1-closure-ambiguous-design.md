@@ -21,20 +21,27 @@ L4 (by-year, `N_valid<7` on all five) and the joint-surrogation design's hard st
 L5 exists) are common to all five and established before this closure; only L1–L3 (the presence
 battery) and the corrected §6/§H routing table were newly computed to reach these verdicts.
 
-> **⚠ Corrected 2026-08-31.** The two MNQ rows' L2/L4 figures below were recomputed after fixing a
-> look-ahead defect in `data_lib.py::overnight_ohlc` (Codex PR #227 review) — the frozen
-> `bias_overnight` predictor partly incorporated bars from after the outcome it was meant to lead.
-> The MYM rows are unaffected (MYM's own conditioner never had this defect). **Every §6 route
-> below is unchanged** — full account:
-> [`docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md`](../../notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md).
+> **⚠ Corrected 2026-08-31 (two separate defects, both found via Codex PR #227 review, both fixed
+> same day).** First: the two MNQ rows' L2/L4 figures were recomputed after fixing a look-ahead
+> defect in `data_lib.py::overnight_ohlc` — the frozen `bias_overnight` predictor partly
+> incorporated bars from after the outcome it was meant to lead. Second: the three MYM rows' L1/L2/L4
+> figures were recomputed after fixing a separate scope-gap defect in `load_sessions.py::overnight_ohlc`
+> — that function only ever captured the 00:00–09:29 ET early-morning tail, never the 18:00–23:59 ET
+> evening reopen (an inherited "DELETE sham" placeholder from a different campaign, not a look-ahead
+> issue — nothing future leaked in, but roughly 9 of the ~15.5-hour overnight session was silently
+> excluded). **Every §6 route below is unchanged** — full account:
+> [`docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md`](../../notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md)
+> (MNQ) and
+> [`docs/notes/audits/2026-08-31-mym-overnight-window-scope-gap-defect.md`](../../notes/audits/2026-08-31-mym-overnight-window-scope-gap-defect.md)
+> (MYM).
 
 | Hypothesis | L1 | L2 | L3 | L4 | L5 | §6 route fired |
 |---|---|---|---|---|---|---|
 | H-RANGEXFER-1 (MNQ parent) | PASS | PASS CI[+0.164,+0.307] (corrected; was [+0.300,+0.473]) | PASS | AMBIGUOUS (N_valid=4; corrected; was 3) | no certified design exists | **`AMBIGUOUS-DESIGN`** |
 | H-RANGEXFER-1.a (MNQ gap, overnight-calm) | PASS | PASS CI[+0.074,+0.261] (corrected; was [+0.024,+0.187]) | PASS | AMBIGUOUS (N_valid=3; corrected; was 5) | no certified design exists | **`AMBIGUOUS-DESIGN`** |
-| H-RANGEXFER-1-MYM (MYM parent) | PASS | PASS CI[+0.110,+0.310] | PASS | AMBIGUOUS (N_valid=3) | no certified design exists | **`AMBIGUOUS-DESIGN`** |
-| H-RANGEXFER-1.a-MYM (MYM gap, overnight-calm) | PASS | **FAIL** CI[-0.008,+0.180] | PASS | AMBIGUOUS (N_valid=4) | not reached | **`FALSIFIED`** (presence limb fails outright — L4/L5 moot) |
-| H-RANGEXFER-1.b-MYM (MYM gap, bprime=0) | PASS | PASS CI[+0.057,+0.219] | PASS | AMBIGUOUS (N_valid=6) | no certified design exists | **`AMBIGUOUS-DESIGN`** |
+| H-RANGEXFER-1-MYM (MYM parent) | PASS | PASS CI[+0.121,+0.307] (corrected; was [+0.110,+0.310]) | PASS | AMBIGUOUS (N_valid=3; unchanged) | no certified design exists | **`AMBIGUOUS-DESIGN`** |
+| H-RANGEXFER-1.a-MYM (MYM gap, overnight-calm) | **FAIL** (n_cond=96; corrected; was PASS at n_cond=124) | **FAIL** CI[-0.093,+0.115] (corrected; was [-0.008,+0.180]) | **FAIL** (half2 lift negative; corrected; was PASS both halves) | AMBIGUOUS (N_valid=3; corrected; was 4) | not reached | **`FALSIFIED`** (presence limb fails outright — L4/L5 moot; failure widened, verdict unchanged) |
+| H-RANGEXFER-1.b-MYM (MYM gap, bprime=0) | PASS | PASS CI[+0.057,+0.219] (unaffected — predictor/restriction do not touch `on_range`) | PASS | AMBIGUOUS (N_valid=6; unaffected) | no certified design exists | **`AMBIGUOUS-DESIGN`** |
 
 Every other §6 route (`RESOLVED`, plain `AMBIGUOUS-HOLD` with L1–L3 passing and only L4 blocking)
 was checked and did not fire: `RESOLVED` requires L4 to pass, which it cannot at this panel length
@@ -218,6 +225,7 @@ addendum, not a rewrite.                                                        
 | Date | Change | By |
 |---|---|---|
 | 2026-08-30 | Closure authored — presence battery scored (adversarially verified, `TRUSTWORTHY_AS_IS`), §H ratification applied, five-way verdict routed | Claude Code |
+| 2026-08-31 | Corrected — MNQ look-ahead defect (`data_lib.py`) then MYM scope-gap defect (`load_sessions.py`), both found via Codex PR #227 review, both re-derived same day. All five §6 routes unchanged; `H-RANGEXFER-1.a-MYM`'s FALSIFIED now fails L1 too (not just L2/L3) under the corrected window | Claude Code |
 
 ---
 

@@ -7,6 +7,14 @@
 **Scope:** brief family (`Q-RANGEXFER-1`, `Q-RANGECOND-1`) — MNQ-side hypotheses only
 **Lives in:** `docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md`
 
+> ⚠ **Superseded claim, 2026-08-31 (later same day):** this audit's own scope table below states
+> the MYM-side hypotheses are unaffected because MYM's implementation lacked this specific
+> look-ahead bug. That is still true, but MYM turned out to have a *different* defect (a scope-gap,
+> not a look-ahead) found in a follow-up Codex review pass — see
+> [`2026-08-31-mym-overnight-window-scope-gap-defect.md`](2026-08-31-mym-overnight-window-scope-gap-defect.md).
+> Not edited in place per Trap #12 — this note accurately described what was known when it was
+> written; the companion audit carries the fuller picture.
+
 ---
 
 ## §0 — Source anchors

@@ -182,6 +182,13 @@ here) plus an owed $0 stage-1 cheap falsifier and an operator GO. Conditioner-ro
   `AMBIGUOUS-PARKED` (GRADUATE-eligible, Pre-Q deferred — no frozen forward test executing).
   [MYM.md](MYM.md) ·
   [`N-2026-08-29-mym-overnight-rth-range-transfer.md`](../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md)
+- **⚠ Numbers above are stale, corrected 2026-08-31.** `load_sessions.py::overnight_ohlc` had a
+  scope-gap defect (found via a follow-up Codex PR #227 review pass) — it only ever captured the
+  00:00–09:29 ET early-morning tail, never the 18:00–23:59 ET evening reopen. Corrected:
+  `bprime=0` lift **+0.3059** (was +0.3178); `bprime=1` lift **+0.2271** (was +0.2207); min-lift
+  CI **[+0.1330,+0.3128]** (was [+0.1042,+0.3216]); null-calibrated p **3.3×10⁻⁶** (was 3.4×10⁻⁶).
+  **`INCREMENT` verdict unchanged — still decisive on both strata.** Full account:
+  [`docs/notes/audits/2026-08-31-mym-overnight-window-scope-gap-defect.md`](../../docs/notes/audits/2026-08-31-mym-overnight-window-scope-gap-defect.md).
 - **Superseded (disclosed, not the D5 stage-1 answer):** the first-pass **marginal**-comparison
   falsifier (overnight-conditioned obs 0.7604 vs day-history-conditioned obs 0.7306, diff +0.0297,
   95% CI [−0.0325, +0.0988], p≈0.372) read AMBIGUOUS — an artifact of comparing two correlated
@@ -825,7 +832,11 @@ Re-open: panel growth to ≥7 qualifying years, or a design meeting
 **⚠ Numbers above this note are stale, corrected 2026-08-31.** The MNQ-side stage-1 figures cited
 above (+57.7pp/+38.7pp for the parent; +10.5pp/−8.1pp for the calm-stratum gap) were computed
 against a look-ahead-defective `overnight_ohlc` (Codex PR #227 review) — corrected values are
-+26.3pp/+26.8pp and +16.9pp/−9.5pp respectively. MYM's own figures are unaffected. **This
-closure's own routing (`AMBIGUOUS-DESIGN` on all affected hypotheses) does not change** — see
++26.3pp/+26.8pp and +16.9pp/−9.5pp respectively. **MYM's own figures were also affected, by a
+separate scope-gap defect found in a follow-up review pass** — see the correction note on the
+class-finding paragraph above (§ "overnight-range-day-session-transfer") and
+[`docs/notes/audits/2026-08-31-mym-overnight-window-scope-gap-defect.md`](../../docs/notes/audits/2026-08-31-mym-overnight-window-scope-gap-defect.md).
+**This closure's own routing (`AMBIGUOUS-DESIGN` on all affected hypotheses) does not change** —
+see
 [`docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md`](../../docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md)
 for the full account.

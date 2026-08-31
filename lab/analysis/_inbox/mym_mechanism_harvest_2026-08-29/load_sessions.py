@@ -27,6 +27,7 @@ PANEL = REPO / "core" / "data" / "bar_data" / "MYM_M15.csv"
 RTH_OPEN_MIN = 9 * 60 + 30
 RTH_CLOSE_MIN = 15 * 60 + 59
 OVERNIGHT_CLOSE_MIN = 9 * 60 + 29
+EVENING_REOPEN_MIN = 18 * 60  # 18:00 -- start of the prior evening's Globex reopen segment
 
 
 def load_bars() -> pd.DataFrame:
@@ -84,7 +85,28 @@ def rth_ohlc(bars: pd.DataFrame) -> pd.DataFrame:
 
 
 def overnight_ohlc(bars: pd.DataFrame) -> pd.DataFrame:
-    m = bars["minute"] <= OVERNIGHT_CLOSE_MIN
+    """Full pre-RTH overnight segment of `session` -- both the early-morning
+    tail (minute < RTH_OPEN_MIN, same calendar date) AND the prior evening's
+    Globex reopen (minute >= EVENING_REOPEN_MIN, already bucketed into this
+    session by `load_bars`' hour>=18 rule).
+
+    CORRECTED 2026-08-31 (Codex PR #227 review, second pass after the sibling
+    MNQ fix; independently re-verified same day). The original filter,
+    `minute <= OVERNIGHT_CLOSE_MIN`, used a raw ET-clock minute-of-day that
+    can never be >=1080 for the 18:00-23:59 ET evening-reopen bars regardless
+    of which `session` they were bucketed into -- so this function only ever
+    captured the 00:00-09:29 ET early-morning tail, silently dropping the
+    prior evening's ~6 hours entirely. That constant and filter pattern were
+    copied from `lab/archive/msl_c1_mym_2026-08/construct_lib.py`, whose own
+    docstring flags the identical construct as 'DELETE sham -- same Globex-day
+    overnight clock window [00:00, 09:29] ET' -- a known-bad placeholder
+    that was carried over here, not a deliberate scope choice for this
+    module's own hypotheses. This module's docstring already described the
+    intended scope correctly ("same trading-day's bars strictly before 09:30
+    ET"), which for a session spanning [D-1 18:00, D 17:00) ET necessarily
+    includes the D-1 evening segment -- the code just never implemented that.
+    Full account: docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md."""
+    m = (bars["minute"] < RTH_OPEN_MIN) | (bars["minute"] >= EVENING_REOPEN_MIN)
     g = bars[m].groupby("session", sort=True)
     rec = g.agg(
         open=("open", "first"), high=("high", "max"), low=("low", "min"),

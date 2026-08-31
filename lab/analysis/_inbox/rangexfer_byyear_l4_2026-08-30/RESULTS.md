@@ -1,10 +1,18 @@
 # By-year presence limb (L4) for Q-RANGEXFER-1's five hypotheses — 2026-08-30
 
-> **⚠ Corrected 2026-08-31.** The two MNQ hypotheses' `n_valid` counts below were recomputed
-> after fixing a look-ahead defect in `data_lib.py::overnight_ohlc` (Codex PR #227 review):
-> `H-RANGEXFER-1` 3→**4**, `H-RANGEXFER-1.a` 5→**3**. MYM rows are unaffected. **The
-> `L4=AMBIGUOUS` routing is unchanged on all five** (still `N_valid<7` everywhere). Full account:
+> **⚠ Corrected 2026-08-31 (two separate defects, both same day).** The two MNQ hypotheses'
+> `n_valid` counts were recomputed after fixing a look-ahead defect in
+> `data_lib.py::overnight_ohlc` (Codex PR #227 review): `H-RANGEXFER-1` 3→**4**, `H-RANGEXFER-1.a`
+> 5→**3**. Full account:
 > [`docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md`](../../../../docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md).
+> **The three MYM rows were also recomputed**, after a follow-up Codex review pass found a
+> separate scope-gap defect in `load_sessions.py::overnight_ohlc`: `H-RANGEXFER-1-MYM` n_valid
+> unchanged at **3** (same three qualifying years, magnitudes shift slightly);
+> `H-RANGEXFER-1.a-MYM` 4→**3** (n_pass 3→**2** — 2024 flips from "essentially zero" to clearly
+> negative); `H-RANGEXFER-1.b-MYM` byte-identical (its predictor/restriction never touch
+> `on_range`). Full account:
+> [`docs/notes/audits/2026-08-31-mym-overnight-window-scope-gap-defect.md`](../../../../docs/notes/audits/2026-08-31-mym-overnight-window-scope-gap-defect.md).
+> **The `L4=AMBIGUOUS` routing is unchanged on all five** (still `N_valid<7` everywhere).
 
 **Run in parallel to the ratified bounded Phase 1 round, not part of it.** L4 is a
 presence limb computed directly from observed data — it needs no surrogate-null
@@ -80,17 +88,25 @@ further-stratified ones).
   two-way): `n_valid=5` (2020, 2026 excluded), **5/5 positive** (0.01–0.21).
   Unanimous, two years short of 7.
 - **H-RANGEXFER-1-MYM** (MYM overnight-range, parent): `n_valid=3` (2021, 2022,
-  2024 — same per-stratum-floor correction as MNQ's own), **3/3 positive**
-  (0.03–0.22). Same clean, now-thinner pattern as its MNQ sibling.
+  2024 — same per-stratum-floor correction as MNQ's own; **unchanged by the
+  2026-08-31 MYM overnight-window fix — same three qualifying years, same 3/3
+  unanimous pass, magnitudes shift slightly (min-stratified-lift now 0.10–0.22,
+  was 0.03–0.22)**). Same clean, now-thinner pattern as its MNQ sibling.
 - **H-RANGEXFER-1.a-MYM** (MYM gap-magnitude, overnight-calm-restricted, pooled
-  two-way): `n_valid=4` (2020, 2026 excluded), **only 3/4 positive** — 2024
-  shows essentially zero (−0.0059). The one hypothesis where the by-year
-  picture is not unanimous, independently corroborating the brief's own
+  two-way): **corrected 2026-08-31 (MYM overnight-window scope-gap fix):
+  `n_valid=4→3`, `n_pass=3→2`.** Qualifying years are now 2021 (+0.047), 2023
+  (+0.215), 2024 (−0.071) — 2020/2022/2026 no longer clear the n≥20 floor.
+  2024 no longer reads as "essentially zero": under the corrected window it is
+  a clear negative (−0.0707), not the −0.0059 near-null the pre-correction run
+  showed. Still the one hypothesis where the by-year picture is not unanimous —
+  now more clearly so — independently corroborating the brief's own
   characterization of this cell as "the weakest, least-decisive cell in the
-  whole batch" (p=0.0495, barely clears 0.05). **MYM-specific caveat (finding 2
-  below): computed on the disclosed 1304-day cache, not the frozen 1307-day
-  panel — no year here sits exactly at the n=20 boundary the way
-  H-RANGEXFER-1.b-MYM's 2026 does, but treat as provisional pending a
+  whole batch," and consistent with this same hypothesis's presence battery
+  verdict widening from a single-limb FAIL (L2 only) to a three-limb FAIL
+  (L1+L2+L3) under the same correction
+  ([`rangexfer_presence_battery_2026-08-30/RESULTS.md`](../rangexfer_presence_battery_2026-08-30/RESULTS.md)).
+  **MYM-specific caveat (finding 2 below): computed on the disclosed 1304-day
+  cache, not the frozen 1307-day panel — treat as provisional pending a
   vendor-data re-run, same as every other MYM figure in this diagnostic.**
 - **H-RANGEXFER-1.b-MYM** (MYM gap-magnitude, `bprime=0`-restricted, pooled
   two-way): `n_valid=6` (2020 excluded), **only 4/6 positive** — 2022 (−0.013)

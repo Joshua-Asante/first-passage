@@ -13,18 +13,24 @@ Round 4), L1-L3 alone decide every reachable verdict.
 
 ## Headline
 
-> **⚠ Corrected 2026-08-31.** The two MNQ rows' L2 CIs below were recomputed after fixing a
-> look-ahead defect in `data_lib.py::overnight_ohlc` (Codex PR #227 review) — full account:
+> **⚠ Corrected 2026-08-31 (two separate defects, both same day).** The two MNQ rows' L2 CIs were
+> recomputed after fixing a look-ahead defect in `data_lib.py::overnight_ohlc` (Codex PR #227
+> review) — full account:
 > [`docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md`](../../../../docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md).
-> The MYM rows are unaffected. **Every PASS/FAIL verdict below is unchanged.**
+> **The three MYM rows were also recomputed**, after a follow-up Codex review pass found a separate
+> scope-gap defect in `load_sessions.py::overnight_ohlc` (it only ever captured the 00:00–09:29 ET
+> early-morning tail, never the 18:00–23:59 ET evening reopen) — full account:
+> [`docs/notes/audits/2026-08-31-mym-overnight-window-scope-gap-defect.md`](../../../../docs/notes/audits/2026-08-31-mym-overnight-window-scope-gap-defect.md).
+> **Every PASS/FAIL verdict below is unchanged** — `H-RANGEXFER-1.a-MYM` was already the sole FAIL
+> and remains so, now failing all three limbs instead of just L2.
 
 | Hypothesis | L1 (n-floor) | L2 (bootstrap CI lower bound > 0) | L3 (both chrono halves lift > 0) | Presence |
 |---|---|---|---|---|
 | H-RANGEXFER-1 (MNQ parent) | PASS | PASS — CI [+0.164, +0.307] (corrected; was [+0.300, +0.473]) | PASS | **PASS** |
 | H-RANGEXFER-1.a (MNQ gap, overnight-calm) | PASS | PASS — CI [+0.074, +0.261] (corrected; was [+0.024, +0.187]) | PASS | **PASS** |
-| H-RANGEXFER-1-MYM (MYM parent) | PASS | PASS — CI [+0.110, +0.310] | PASS | **PASS** |
-| H-RANGEXFER-1.a-MYM (MYM gap, overnight-calm) | PASS | **FAIL** — CI [-0.008, +0.180] | PASS | **FAIL** |
-| H-RANGEXFER-1.b-MYM (MYM gap, bprime=0) | PASS | PASS — CI [+0.057, +0.219] | PASS | **PASS** |
+| H-RANGEXFER-1-MYM (MYM parent) | PASS | PASS — CI [+0.121, +0.307] (corrected; was [+0.110, +0.310]) | PASS | **PASS** |
+| H-RANGEXFER-1.a-MYM (MYM gap, overnight-calm) | **FAIL** (n_cond=96; corrected; was PASS at n_cond=124) | **FAIL** — CI [-0.093, +0.115] (corrected; was [-0.008, +0.180]) | **FAIL** (half2=-0.038; corrected; was PASS both halves) | **FAIL** |
+| H-RANGEXFER-1.b-MYM (MYM gap, bprime=0) | PASS | PASS — CI [+0.057, +0.219] (byte-identical — predictor/restriction don't touch `on_range`) | PASS | **PASS** |
 
 **Disposition:** H-RANGEXFER-1.a-MYM fails presence outright — routes to `FALSIFIED` under the
 brief's existing frozen §6 row with no null needed. The other four pass presence; with L4
@@ -136,5 +142,6 @@ d = json.load(open('lab/analysis/_inbox/rangexfer_presence_battery_2026-08-30/pr
 r = d['H-RANGEXFER-1.a-MYM']
 print(r['L2']['ci'], r['presence_pass'])
 "
-# Expected: [-0.008144..., 0.180413...] False
+# Expected (post-2026-08-31 correction): [-0.092948..., 0.114652...] False
+# (pre-correction value was [-0.008144..., 0.180413...] -- see the headline correction banner)
 ```

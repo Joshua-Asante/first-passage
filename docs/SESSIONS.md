@@ -33,6 +33,49 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-31b — Second overnight-window defect found on MYM (scope-gap, not look-ahead); Q-RANGEXFER-1 numbers corrected
+
+**Focus:** Follow-up to 2026-08-31a. After landing the MNQ look-ahead fix and posting it to Codex on
+PR #227, a fresh `@codex review` pass found the Pine indicator's window predicate — now an exact
+match for the corrected MNQ definition — still could not achieve parity with MYM's own frozen
+`load_sessions.py::overnight_ohlc`. Direct read confirmed a second, distinct defect: MYM's function
+filters `minute <= 569` (a raw ET-clock value), which can never select the 18:00-23:59 ET
+evening-reopen segment for any session — it only ever captured the 00:00-09:29 ET early-morning
+tail. Traced the origin: the constant/filter pattern was copied from
+`lab/archive/msl_c1_mym_2026-08/construct_lib.py`, whose own docstring flags the identical construct
+`"DELETE sham -- same Globex-day overnight clock window [00:00, 09:29] ET"` — a known-bad placeholder
+that was never actually deleted before being reused.
+**Shipped:** root-cause fix to `load_sessions.py` (`EVENING_REOPEN_MIN` added); re-derived
+`H-RANGEXFER-1-MYM`, `H-RANGEXFER-1.a-MYM`, `H-RANGEXFER-1.b-MYM` (presence battery + by-year L4);
+new audit note
+[`2026-08-31-mym-overnight-window-scope-gap-defect.md`](notes/audits/2026-08-31-mym-overnight-window-scope-gap-defect.md);
+also re-ran the MYM Notice-phase stage-1 script (`c2_c4_stratified_rerun.py`) that
+`ops/instruments/MYM.md`/`MECHANISMS.md`/`PROFILES.md`/`profiles.json` cite directly — corrected
+figures propagated to all four (via `instrument_profiles.py build` for the two generated files,
+hand-edited pointer notes for the two hand-authored ones per Trap #12); correction banner added to
+the originating Notice-log doc
+[`N-2026-08-29-mym-overnight-rth-range-transfer.md`](notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md);
+dated amendment rows added to `Q-RANGEXFER-1`'s own brief §11 and its closure's §1 table.
+**Decisions/defects:** `H-RANGEXFER-1-MYM` lift +0.2170→+0.2234 (CI still excludes 0, `PASS`
+unchanged); `H-RANGEXFER-1.a-MYM` lift +0.0848→+0.0110 (now fails L1 too, not just L2/L3 — still
+`FALSIFIED`, wider margin, effect nearly vanishes); `H-RANGEXFER-1.b-MYM` byte-identical (its
+predictor/restriction never touch `on_range` — confirmed structurally). **`Q-RANGEXFER-1`'s `MIXED`
+closure verdict (4× `AMBIGUOUS-DESIGN`, 1× `FALSIFIED`) does not change.** This is the second
+independent firing of the same structural gap named in 2026-08-31a's own audit (no check in this
+research line cross-derives a predictor against a second, independently-sourced sibling
+implementation before certifying it) — promoted from Candidate to a standing verification norm in
+the new audit's §6, rather than left at one-incident status. No in-chat Workflow adversarial
+verification run on this correction, per the operator's standing instruction this session — lands
+directly, Codex's PR review is the verification gate. No `core/`/Pine/allocation/`dd_protection`/rail
+change; no live spend; $0/K=0.
+**Open / next:** STATE queue: `#1` [Acceptable strategy on the ruled host](../STATE.md) · `#2`
+[B7-REFIRE Stage 1 + M1](../STATE.md) — both formally unchanged. `queue-exception: same
+defect-correction thread as 2026-08-31a, continued same day; not a leftover Open/next name.` Next
+concrete step: reply to Codex's PR #227 follow-up finding confirming the MYM fix, then land this on
+PR #228 alongside the earlier MNQ correction.
+
+---
+
 ## 2026-08-31a — Look-ahead defect found in overnight-range conditioner; Q-RANGECOND-1 retracted to FALSIFIED
 
 **Focus:** Reviewing Codex's PR #227 (the Pine indicator port of the `Q-RANGEXFER-1`/`Q-RANGECOND-1`
