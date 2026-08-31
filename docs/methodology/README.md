@@ -3,6 +3,7 @@
 | File | Job |
 |---|---|
 | [`inqhiori-canon.md`](inqhiori-canon.md) | Three loops + Rule 2 entry |
+| [`../spec/2026-08-31-inqhiori-mechanism-to-trade-bridge.md`](../spec/2026-08-31-inqhiori-mechanism-to-trade-bridge.md) | Proposed trading-only Notice bridge, paired mechanism/expression Questions, weighted phase budgets, and Python→TradingView evidence flow |
 | [`strategy_lifecycle.md`](strategy_lifecycle.md) | Parameter lock vs capital authorization |
 | [`strategy_harvest.md`](strategy_harvest.md) | External-mechanism intake |
 | [`regime_robustness_gate.md`](regime_robustness_gate.md) | Both-halves gate |
