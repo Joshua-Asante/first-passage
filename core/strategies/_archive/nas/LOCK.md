@@ -13,8 +13,8 @@ for files tracked under `core.autocrlf=true`. Raw `sha1sum` will diverge by
 EOL bytes; trust the values below. Cross-check against `core/strategies/MANIFEST.sha256`
 (SHA256 of the same blobs).
 
-- Strategy:     `2ad68d10aec0b4df346ae06bc880b747f94ca398` — core/strategies/nas/striker_nas100_v1.pine
-- Indicator:    `ab17c31832702831da7a1b5d020cc6761b2edc8c` — core/strategies/nas/striker_nas100_v1_indicator.pine
+- Strategy:     `2ad68d10aec0b4df346ae06bc880b747f94ca398` — core/strategies/_archive/nas/striker_nas100_v1.pine
+- Indicator:    `ab17c31832702831da7a1b5d020cc6761b2edc8c` — core/strategies/_archive/nas/striker_nas100_v1_indicator.pine
 
 ## Reference backtest
 

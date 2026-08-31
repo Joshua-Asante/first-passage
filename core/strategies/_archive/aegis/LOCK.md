@@ -13,8 +13,8 @@ for files tracked under `core.autocrlf=true`. Raw `sha1sum` will diverge by
 EOL bytes; trust the values below. Cross-check against `core/strategies/MANIFEST.sha256`
 (SHA256 of the same blobs).
 
-- Strategy:     `081f1da7bc1c5379010c1cc459276944ffc838b3` — core/strategies/aegis/aegis_usdjpy_v4.3.pine
-- Indicator:    `ffb004749e858b4f4cf4344eb3fa63326650fee2` — core/strategies/aegis/aegis_usdjpy_v4.3_indicator.pine
+- Strategy:     `081f1da7bc1c5379010c1cc459276944ffc838b3` — core/strategies/_archive/aegis/aegis_usdjpy_v4.3.pine
+- Indicator:    `ffb004749e858b4f4cf4344eb3fa63326650fee2` — core/strategies/_archive/aegis/aegis_usdjpy_v4.3_indicator.pine
 
 ## Reference backtest
 

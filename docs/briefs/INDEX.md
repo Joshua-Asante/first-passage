@@ -52,10 +52,13 @@ the closure for detail. All are $0/K=0 unless noted.
   admitting ADR's own downstream-artifact inventory and missed by the 2026-08-14 sweep — a live
   leak of Pine-only-locked strategy detail on the now-public repo, present at closure time. ⚠ **Not
   remediated by this closure — flagged for immediate operator attention, see chat.** **Update
-  2026-08-24:** redacted at the source — see
-  [`docs/methodology/1r_estimation.md`](../methodology/1r_estimation.md), which now points each
-  figure to the private operational archive per the 2026-08-14 public-visibility-transition policy
-  ([ADR](../adr/2026-08-14-repo-public-visibility-transition.md)). Limb B5
+  2026-08-24 (partial):** the ATR multiplier and grace-bar window are redacted at the source — see
+  [`docs/methodology/1r_estimation.md`](../methodology/1r_estimation.md), which now points those two
+  figures to the private operational archive per the 2026-08-14 public-visibility-transition policy
+  ([ADR](../adr/2026-08-14-repo-public-visibility-transition.md)). **The grace-stop multiplier itself
+  is still disclosed in cleartext** at that file's line 77 ("max 0.6806% = **2.000× designed,
+  exactly**" / "trades that exit during the grace window realize 2× the normal stop loss") — this
+  specific figure remains an open leak, not remediated. Limb B5
   (withheld literal account/$ grep) and Limb D9 (pre-transition sentinel-queue disposition —
   corrected count 12, not 11) remain individually open pending operator input; D9's own premise
   that it "needs private-archive access" is shown to be wrong (the archive is an already-fetched
