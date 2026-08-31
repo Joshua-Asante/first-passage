@@ -26,6 +26,7 @@ const extraContext = Array.isArray(cfg.extraContext) ? cfg.extraContext : []
 const extraContextLine = extraContext.length
   ? `\n\nThe operator has additionally flagged these cited documents as required full reads for this review: ${extraContext.join(', ')}.`
   : ''
+const tier = cfg.tier
 
 // ---- schemas ----------------------------------------------------------
 
@@ -199,12 +200,52 @@ async function verifyLensFindings(reviewResult, lens) {
   }
 }
 
+// ---- safety-invariant hard block (design spec §6.3, re-targeted per
+// docs/adr/2026-08-21-persona-hierarchy-front-office-only.md §2 D3, carried forward unchanged by
+// docs/adr/2026-08-31-persona-hierarchy-full-retirement.md §2 item 4/§5) -------------------------
+// Deterministic, not LLM-judgment-dependent -- mirrors this repo's own pattern of enforcing
+// non-negotiable safety invariants in code, not in a prompt (see validate_c1_monitoring_acceptance
+// .validate in ops/c1_rail/, a Python function, not an instruction). One of the 8 mechanical gates
+// the 2026-08-21 ADR established as the CRO seat's replacement; runs unconditionally on every
+// GRAND-tier call, independent of persona mode (which no longer exists at all as of the 2026-08-31
+// retirement) -- no persona spawn, no dependency on any reviewer happening to surface the citation.
+// Runs only on GRAND-tier calls, matching the prior mandatory-CRO-on-GRAND scope exactly (a
+// STRATEGIC-tier call still gets no automated safety-invariant hard block -- by design, unchanged).
+// Deliberately biased toward over-triggering: a false positive costs an operator one glance at an
+// unnecessary hard block, a false negative lets an actual safety-invariant citation through
+// undetected. A fixed-width proximity regex (an earlier version of this check) missed realistic
+// multi-clause LLM prose where the two related terms are >80 chars apart -- these check for
+// co-occurrence anywhere in the field instead of requiring tight adjacency.
+function citesSafetyInvariant(text) {
+  if (!text) return false
+  if (/dry_run/i.test(text)) return true
+  if (/armed_until/i.test(text)) return true
+  if (/\bM1\b/i.test(text) && /\bRESOLVED\b/i.test(text)) return true
+  if (/\barm(ing)?\b/i.test(text) && /\bnot\b/i.test(text) && /\bsend\b/i.test(text)) return true
+  return false
+}
+
+async function safetyInvariantHardBlockFires(path, tierArg) {
+  if (tierArg !== 'GRAND') return { fires: false, scanFailed: false }
+  const raw = await agent(
+    `Run \`git show HEAD:${path}\` in the First Passage repo and return the raw file contents ` +
+      `verbatim, nothing else -- no summary, no commentary, no truncation.`,
+    { label: 'safety-invariant-scan', phase: 'Form Check', effort: 'low' }
+  )
+  if (!raw) {
+    // Fail CLOSED, not open: this deterministic backstop must not silently degrade to "not
+    // blocked" precisely when its own input (the raw target text) never arrived.
+    return { fires: true, scanFailed: true }
+  }
+  return { fires: citesSafetyInvariant(raw), scanFailed: false }
+}
+
 // ---- run ----------------------------------------------------------------
 
 phase('Form Check')
 log(`Pre-ratification adversarial panel starting on ${targetPath}`)
 
-const formCheckResult = await agent(
+const formCheckPromise = agent(
   `Run the mechanical brief checker against ${targetPath} in the First Passage repo (a futures prop-trading ` +
     `research/ops monorepo) and report its raw output verbatim, prefixed by the exact command you ran. Try: ` +
     `\`python scripts/check_brief.py ${targetPath}\`. If that errors because the file isn't a checkable brief type, ` +
@@ -213,6 +254,7 @@ const formCheckResult = await agent(
     `the output.`,
   { label: 'form-check', phase: 'Form Check', effort: 'low' }
 )
+const hardBlockPromise = safetyInvariantHardBlockFires(targetPath, tier)
 
 phase('Review')
 const lensResults = await pipeline(
@@ -220,6 +262,22 @@ const lensResults = await pipeline(
   (lens) => agent(lens.build(), { label: `review:${lens.key}`, phase: 'Review', schema: LENS_FINDINGS_SCHEMA }),
   (reviewResult, lens) => verifyLensFindings(reviewResult, lens)
 )
+
+const formCheckResult = await formCheckPromise
+const hardBlock = await hardBlockPromise
+const hardBlockLine = hardBlock.scanFailed
+  ? `\n\nSAFETY-INVARIANT HARD BLOCK (FAIL-CLOSED): the deterministic safety-invariant scan of ${targetPath} ` +
+    `for this GRAND-tier review did not complete (agent failure or no result). Per ` +
+    `docs/adr/2026-08-21-persona-hierarchy-front-office-only.md §2 D3, this backstop must fail closed, not ` +
+    `open, when its own input is missing -- state "Overall disposition: BLOCKED" at the top of your memo and ` +
+    `note that this is a coverage failure requiring a re-run, not a substantive finding.`
+  : hardBlock.fires
+    ? `\n\nSAFETY-INVARIANT HARD BLOCK: ${targetPath}'s own committed text cites a CLAUDE.md non-negotiable ` +
+      `safety invariant (dry_run/armed_until/M1-RESOLVED/arm-not-send). Per ` +
+      `docs/adr/2026-08-21-persona-hierarchy-front-office-only.md §2 D3, this is a HARD BLOCK on synthesis -- ` +
+      `state "Overall disposition: BLOCKED" at the top of your memo regardless of what any lens found, and ` +
+      `do not let any other finding soften this.`
+    : ''
 
 const confirmedCount = lensResults.reduce((n, r) => n + (r ? r.confirmed.length : 0), 0)
 const disputedCount = lensResults.reduce((n, r) => n + (r ? r.disputed.length : 0), 0)
@@ -250,7 +308,7 @@ const synthesis = await agent(
     `- Findings discarded on independent re-read, with why.\n` +
     `- Any NITs, listed briefly without much discussion.\n` +
     `- One closing line noting what the mechanical check_brief.py pass covers (FORM only) vs what this panel ` +
-    `additionally covers.`,
+    `additionally covers.${hardBlockLine}`,
   { label: 'synthesis', phase: 'Synthesize', effort: 'high' }
 )
 
@@ -261,4 +319,7 @@ return {
   formCheckResult,
   lensResults,
   synthesis,
+  tier,
+  safetyInvariantHardBlock: hardBlock.fires,
+  safetyInvariantScanFailed: hardBlock.scanFailed,
 }

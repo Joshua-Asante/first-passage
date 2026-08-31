@@ -227,7 +227,7 @@ see [`docs/adr/2026-08-31-persona-hierarchy-full-retirement.md`](../../adr/2026-
 - **All `docs/personas/*.md` findings (9 of the 17: `cio-log.md`, `coo-log.md`, `cro-log.md`,
   `cfo.md`, `head-of-research-log.md`, `ownership-map.md` ×3, `research-analyst.md`) are moot** —
   the files they corrected no longer exist. Not reapplied, not reapplicable.
-- **All `docs/pursuits/*.md` findings (7 of the 17: `a6-cursor-fleet-worker-capability.md`,
+- **All `docs/pursuits/*.md` findings (8 of the 17: `a6-cursor-fleet-worker-capability.md`,
   `b4-q-usoil-1.md`, `b8-guardian-mgc-transfer-lane.md`, `d10-plugin-duplicate-set.md`,
   `d1-repo-belt-19-skills.md` ×2, `c6-notion-estate.md`, `d2-brief-authoring-user-skill.md`) plus
   the one bonus fix outside scope (`docs/briefs/GSUB-1-inventory-and-dispositions.md`) are real,
@@ -235,9 +235,11 @@ see [`docs/adr/2026-08-31-persona-hierarchy-full-retirement.md`](../../adr/2026-
   and still carries every stale claim this audit found. Recorded as a forward obligation in
   `STATE.md`'s reversed-evidence-sweep row rather than silently dropped. The exact fixes (with full
   primary-source verification chains) are preserved in this note's §2/§4 above and in commit
-  `db733d9` on the now-abandoned `claude/reversed-evidence-docs-kcoc2t` branch history (recoverable
-  via `git show db733d9:docs/pursuits/<file>` even though that commit never merged) — a future pass
-  can reapply them directly rather than re-deriving from scratch.
+  `db733d9` on the now-closed PR #235's history (its source branch was reset, so the commit is no
+  longer on any live branch, but it stays reachable from `refs/pull/235/head`, which GitHub retains
+  for the life of the PR) — a fresh clone needs `git fetch origin refs/pull/235/head` first (verified
+  against a clean bare clone 2026-08-31), then `git show db733d9:docs/pursuits/<file>` resolves; a
+  future pass can reapply the fixes directly rather than re-deriving from scratch.
 
 This note itself is kept as historical record of the audit work performed, per this repo's own
 retention convention (a decision's later reversal doesn't erase the record of the analysis that

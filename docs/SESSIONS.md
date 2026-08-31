@@ -33,6 +33,45 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-31c — Persona-hierarchy system fully retired per operator instruction
+
+**Focus:** Operator changed direction mid-sweep on the pursuits/personas reversed-evidence audit
+(PR #235): "I have changed my mind on the personas, I want them deleted completely." Scoped via
+`AskUserQuestion`: delete everything including cross-references, via this repo's formal-retirement
+convention (never delete an ADR, supersede it), close #235 unmerged.
+**Shipped:** PR #237 — new retirement ADR
+[`2026-08-31-persona-hierarchy-full-retirement.md`](adr/2026-08-31-persona-hierarchy-full-retirement.md);
+deleted all 34 `docs/personas/*.md` files, the design spec + 4 supporting plans, and
+`scripts/check_personas.py`; stripped persona-mode from
+`.claude/workflows/pre-ratification-adversarial-panel.js` while keeping its generic 6-lens pipeline
+and (after a Codex review round caught the regression) its GRAND-tier safety-invariant hard block,
+now unconditional rather than persona-mode-gated; the two prior ratifying ADRs marked
+`Superseded-by` with a top-of-file addendum, body text unedited; a 15-agent cross-reference sweep
+fixed ~11 files' live claims about the system while leaving historical narration untouched;
+`docs/adr/INDEX.md`, `REPO_MAP.md`, `docs/notes/audits/docs-runtime-inventory.md` regenerated via
+their own scripts. PR #235 closed unmerged — its `docs/personas` diff is moot, its `docs/pursuits`
+findings preserved as a forward obligation
+([`audit note`](notes/audits/2026-08-31-pursuits-personas-reversed-evidence-audit.md) §8,
+`STATE.md`'s forward-obligation row).
+**Decisions/defects:** Codex's PR review caught 6 real findings, all fixed before merge: the
+safety-invariant hard block above (P1 — a non-persona mechanical gate the retirement ADR itself
+promised stayed unchanged, accidentally dropped because it had been implemented gated behind
+persona-mode rather than independently); the form-check agent call needlessly serialized ahead of
+the lens pipeline instead of running concurrently; the generated runtime-inventory mirror left
+stale after a later script edit; the retirement ADR's own §4 falsifier (2026-11-08 quarterly gate
+or 3rd qualifying gap) had no `STATE.md` forward-trigger row; the audit note's recovery instructions
+for the unlanded pursuits fixes (`git show db733d9:...`) assumed the commit was already present
+locally, which fails on a fresh clone — fixed to fetch the closed PR's ref first
+(`git fetch origin refs/pull/235/head`, confirmed working against a fresh bare clone); the audit
+note's own §8 addendum miscounted its pursuits-finding total (7 vs the correct 8). No `core/`/Pine/
+allocation/`dd_protection`/rail change; no live spend; $0/K=0.
+**Open / next:** STATE queue: `#1` [Acceptable strategy on the ruled host](../STATE.md) · `#2`
+[B7-REFIRE Stage 1 + M1](../STATE.md) — both formally unchanged by this session. Forward obligation:
+`docs/pursuits/*.md`'s 8 verified-but-unlanded fixes remain findable via the audit note above,
+on-demand cadence, no forced date.
+
+---
+
 ## 2026-08-31b — Second overnight-window defect found on MYM (scope-gap, not look-ahead); Q-RANGEXFER-1 numbers corrected
 
 **Focus:** Follow-up to 2026-08-31a. After landing the MNQ look-ahead fix and posting it to Codex on
