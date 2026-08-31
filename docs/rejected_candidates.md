@@ -387,7 +387,10 @@ survivors to rank); Stage-2 H-SOLO not authorized.
 v0.3 mechanism finding cited in this pre-reg's own Rule-0 reads (`ops/instruments/6J.md`
 J1: PF 2.318 / EOD-flat 60.0% of net) — untouched, not itself re-tested by this sizing
 sweep; the Class-S venue/sizing-reconstruction candidate class generally (candidate #1
-MYM+MNQ Part A DISCHARGED separately, Tradeify 2.65% / MFFU 2.64%); locked CFD Aegis v4.3;
+MYM+MNQ Part A DISCHARGED separately, Tradeify 2.65% / MFFU 2.64%) — ⚠ that discharge was
+**WITHDRAWN 2026-07-22** under corrected eval-lock geometry; do not cite these figures as
+current, see [S4 discharge-withdrawal ADR](adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md);
+locked CFD Aegis v4.3;
 Stage-0 ENVELOPE-YES baseline (`68f0e`, N=130 full-span) as measurement.
 **Re-proposal bar:** a **fresh** pre-registration (this one stays closed per Known Trap
 #12) that either sources a materially longer/deeper 6J export to raise the realized
@@ -426,11 +429,13 @@ could not and did not bias the verdict.
 **Surviving finding (NOT rejected):** locked Aegis v4.3 on USDJPY (parameter axis untouched);
 6J the instrument (venue-legal; occupancy released 2026-08-12 for non-Striker research); the
 Class-S venue/sizing-reconstruction candidate route itself (ADR 2026-07-14 — Class-S candidate
-#1 MYM+MNQ separately DISCHARGED Part A with its own regime-fragile caveat); the Stage-1-v2
+#1 MYM+MNQ separately DISCHARGED Part A with its own regime-fragile caveat, **since WITHDRAWN
+2026-07-22**); the Stage-1-v2
 window-realignment fix (reachability defect correctly repaired, N≥80 retained not lowered,
-12/12 cells honestly cleared); four-firms ADR §4 discharge (carried by candidate #1,
-independent of this result); self-funded Aegis→M6J scale-path (PARKED separately the same day,
-not by this Part A result).
+12/12 cells honestly cleared); four-firms ADR §4 discharge — ⚠ **WITHDRAWN 2026-07-22**; current
+state is zero Part A clearers at any frozen tier, see
+[S4 discharge-withdrawal ADR](adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md); self-funded
+Aegis→M6J scale-path (PARKED separately the same day, not by this Part A result).
 **Re-proposal bar:** new mechanism evidence — a demonstrably different **trailing-DD
 loss-side shape** on a genuinely **native** (non-rescaled) Aegis-6J book, or a venue class
 whose trailing-survival geometry differs from Tradeify/MFFU's EOD-trailing rule. **NOT**
@@ -852,8 +857,11 @@ against the unchanged $3,000 trailing barrier: the added leg is variance-dominan
 breadth without risk-weight balance did not shrink the dollar-denominated trailing-DD tail.
 **Surviving finding (NOT rejected):** MYM-Striker/MNQ-Striker instrument and 2-leg c1 book
 standing — the sizing lever passed its own sibling haircut re-MC (WATCH-1 0.50× clears all four
-partitions × both discharge tiers) and is the c1 book's sole deployable path (2026-07-17 G8
-ratification), independent of this fork. ORB-MNQ-1 standalone lifecycle standing is unchanged —
+partitions × both discharge tiers) and **was** the c1 book's sole deployable path at the time
+(2026-07-17 G8 ratification), independent of this fork. ⚠ Both Striker legs were **WITHDRAWN
+2026-08-04** and stay barred from redeploy — there is no live c1 book today; see CLAUDE.md
+Live-execution posture. This finding is historical, not a current deployment path. ORB-MNQ-1
+standalone lifecycle standing is unchanged —
 remains `CANDIDATE @ 1.00×` with its own ADMISSION.md caveats; this closure kills only its role
 as a book leg at the tested weight/geometry, it does not demote the candidate. The dependence-vs-risk-N_eff
 decomposition itself (check PR(cov), not just PR(corr), before composing) is a portfolio-construction

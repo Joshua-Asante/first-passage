@@ -37,7 +37,7 @@
 | overnight-range-transmission | . | . | . | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | pdh-pdl-breakout-rth | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | pdh-pdl-failed-break-reclaim | . | . | . | . | . | . | D | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . |
-| prior-session-breakout-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| prior-session-breakout-continuation | . | . | . | . | . | . | . | A | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | pullback-failure-resumption | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | regime-overlay | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | D | . | . | . | D | . | . | . | . |
 | sweep-failure-filtered-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
@@ -403,7 +403,11 @@ _No instrument has a recorded verdict on this mechanism._
 
 **NEW 2026-08-22 (deep-lane DL-2).** A break of the immediately-prior *full trading session's* high or low, confirmed by a subsequent session close beyond the level before entry; structural stop at the opposite prior extreme; target at a fixed multiple of that risk; first valid signal per session (k=1); session-flat. The full-session generalization of `pdh-pdl-breakout-rth`: that id's one prior use (MNQ) implicitly took an equity-cash "RTH" window as both the reference and entry window; this id's reference/entry window is the instrument's own full native trading session (e.g. the complete CME Globex day for a currency future), not an RTH-scoped sub-window. The distinction is deliberate, not cosmetic — swapping which hours count as "the session" changes the volatility regime and event population the level is drawn from, the same load-bearing reason `overnight-range-failed-extension-fade` was split from `pdh-pdl-failed-break-reclaim` rather than folded into it. First campaign under this id: [DL-2 prereg](../../docs/briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md) (M6A) — no class finding yet, this id is untested on every instrument at authoring time.
 
-_No instrument has a recorded verdict on this mechanism._
+- **Class finding:** (M6A, 2026-08-22 — same day as minting): DL-2's TRAIN scoring closed AMBIGUOUS/ABANDONMENT the same day this id was minted — nominee V9 fails 3 of 4 nomination gates; a same-day geometric-feasibility diagnostic found the construction structurally infeasible on M6A and retired it for that instrument, with a stop-rule/re-proposal bar binding any successor. [`RESULTS.md`](../../lab/archive/dl2_m6a_pdhpdl_2026-08-22/RESULTS.md).
+
+| Instrument | Verdict | Date | Source |
+|---|---|---|---|
+| M6A | AMBIGUOUS-PARKED | 2026-08-22 | ../../lab/archive/dl2_m6a_pdhpdl_2026-08-22/RESULTS.md |
 
 
 ## pullback-failure-resumption

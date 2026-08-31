@@ -59,7 +59,13 @@
         "verdict": "DEAD"
       }
     },
-    "M6A": {},
+    "M6A": {
+      "prior-session-breakout-continuation": {
+        "date": "2026-08-22",
+        "source": "../../lab/archive/dl2_m6a_pdhpdl_2026-08-22/RESULTS.md",
+        "verdict": "AMBIGUOUS-PARKED"
+      }
+    },
     "M6B": {},
     "MCL": {
       "daily-range-state-persistence": {
@@ -438,7 +444,7 @@
           "source": "#durable-7"
         }
       ],
-      "venue_note": "No automatable venue for a multi-day BTC trend design \u2014 FXIFY crypto is a separate program/account (not the CFD/challenge venue, no shared equity), and researched US futures-prop firms force-flatten intraday with no weekend carry (durable #7).",
+      "venue_note": "No automatable venue for a multi-day BTC trend design \u2014 FXIFY crypto is a separate program/account (not the CFD/challenge venue, no shared equity; that CFD challenge was itself later closed 2026-07-10 and the CFD estate retired 2026-07-11, see docs/adr/2026-07-11-ops-cfd-estate-retirement.md \u2014 no live CFD venue exists today), and researched US futures-prop firms force-flatten intraday with no weekend carry (durable #7).",
       "venue_tradable": false
     },
     "ES": {
@@ -532,7 +538,7 @@
         }
       ],
       "cost_hurdle": {
-        "basis": "panel-era median 1,897.20 => 11.89 bp/RT (recomputed 2026-07-28; supersedes illustrative index-2300 figure and withdrawn 10-30x margin claim). WARN Multiplier basis PENDING \u2014 4x hurdle was Tradeify; venue de-scoped 2026-08-04; F3 open; friendly-firm per-side $0.50-$0.95; re-price against elected venue before this row gates anything.",
+        "basis": "panel-era median 1,897.20 => 11.89 bp/RT (recomputed 2026-07-28; supersedes illustrative index-2300 figure and withdrawn 10-30x margin claim). WARN Multiplier basis PENDING \u2014 4x hurdle was Tradeify; venue de-scoped 2026-08-04; F3 ruled 2026-08-07 (no successor venue; Tradeify_Select_100K remains the environment for new strategies \u2014 docs/adr/2026-08-07-loop-s1-environment-ratification.md); friendly-firm per-side $0.50-$0.95; re-price against elected venue before this row gates anything if a future deployment lands outside Tradeify.",
         "source": "#M2",
         "units": "bp/round-trip",
         "value": 11.89
@@ -551,14 +557,14 @@
           "source": "#M4"
         }
       ],
-      "venue_note": "Tradeify Equity Index Product Group ($1.82 all-in -> $0.91/side). Withdrawn MYM+MNQ legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred; LEG_MAP code untouched.",
+      "venue_note": "Tradeify Equity Index Product Group ($1.82 all-in -> $0.91/side). Withdrawn MYM+MNQ legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred; LEG_MAP code untouched as of that release. \u26a0 Correction 2026-08-26: LEG_MAP's cap_alloc since released 0/0 (was 69/11) \u2014 see docs/adr/2026-08-26-striker-legmap-cap-release.md.",
       "venue_tradable": true
     },
     "M6A": {
       "asset_class": "fx-futures",
       "bars": [],
       "cost_hurdle": {
-        "basis": "Stage-1 third-leg map Inputs: commission $0.91/side; RT 1t $2.82 / 2t $3.82; cost-tax 1t r=1 = 0.0902 (FLAG-COSTBIND vs own-panel floor 0.0891)",
+        "basis": "Stage-1 third-leg map Inputs: commission $0.91/side; RT 1t $2.82 / 2t $3.82; cost-tax 1t r=1 = 0.0902 (FLAG-COSTBIND vs own-panel floor 0.0891). Commission input disputed \u2014 core/firm_rules.py places M6A in the cheaper M6E/M6A $1.60-RT group, not the $1.82-RT index-micros group this figure derives from; correction disclosed but not yet applied, see docs/briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md \u00a70.",
         "source": "#A1",
         "units": "USD/round-trip (1-tick slip)",
         "value": 2.82
@@ -577,7 +583,7 @@
           "source": "#A4"
         }
       ],
-      "venue_note": "Tradeify Currencies Product Group lists 6E/M6E/6B/6J/6A/M6A/6C/6S (see MJY.md venue_note). Withdrawn Striker legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred; LEG_MAP code untouched.",
+      "venue_note": "Tradeify Currencies Product Group lists 6E/M6E/6B/6J/6A/M6A/6C/6S (see MJY.md venue_note). Withdrawn Striker legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred; LEG_MAP cap_alloc dimension separately released 2026-08-26 (0/0, was 69/11) \u2014 see docs/adr/2026-08-26-striker-legmap-cap-release.md.",
       "venue_tradable": true
     },
     "M6B": {
@@ -626,7 +632,7 @@
           "source": "#C2"
         }
       ],
-      "venue_note": "Tradeify Energy Product Group (CL/QM/MCL/NG/QG). Withdrawn Striker legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred; LEG_MAP code untouched.",
+      "venue_note": "Tradeify Energy Product Group (CL/QM/MCL/NG/QG). Withdrawn Striker legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred. \u26a0 Correction 2026-08-26: LEG_MAP cap_alloc released \u2014 see docs/adr/2026-08-26-striker-legmap-cap-release.md for current value, not restated here.",
       "venue_tradable": true
     },
     "MES": {
@@ -660,7 +666,7 @@
           "source": "#S1"
         }
       ],
-      "venue_note": "Tradeify Equity Index Product Group. Withdrawn MNQ/MYM legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred; LEG_MAP code untouched.",
+      "venue_note": "Tradeify Equity Index Product Group. Withdrawn MNQ/MYM legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred. Correction 2026-08-26: LEG_MAP cap_alloc code WAS edited (both Striker legs' cap_alloc zeroed) \u2014 see [Striker LEG_MAP cap-release ADR](../../docs/adr/2026-08-26-striker-legmap-cap-release.md) for current cap_alloc state, not this note.",
       "venue_tradable": true
     },
     "MGC": {
@@ -1225,7 +1231,9 @@
     },
     "prior-session-breakout-continuation": {
       "definition": "**NEW 2026-08-22 (deep-lane DL-2).** A break of the immediately-prior *full trading session's* high or low, confirmed by a subsequent session close beyond the level before entry; structural stop at the opposite prior extreme; target at a fixed multiple of that risk; first valid signal per session (k=1); session-flat. The full-session generalization of `pdh-pdl-breakout-rth`: that id's one prior use (MNQ) implicitly took an equity-cash \"RTH\" window as both the reference and entry window; this id's reference/entry window is the instrument's own full native trading session (e.g. the complete CME Globex day for a currency future), not an RTH-scoped sub-window. The distinction is deliberate, not cosmetic \u2014 swapping which hours count as \"the session\" changes the volatility regime and event population the level is drawn from, the same load-bearing reason `overnight-range-failed-extension-fade` was split from `pdh-pdl-failed-break-reclaim` rather than folded into it. First campaign under this id: [DL-2 prereg](../../docs/briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md) (M6A) \u2014 no class finding yet, this id is untested on every instrument at authoring time.",
-      "findings": []
+      "findings": [
+        "(M6A, 2026-08-22 \u2014 same day as minting): DL-2's TRAIN scoring closed AMBIGUOUS/ABANDONMENT the same day this id was minted \u2014 nominee V9 fails 3 of 4 nomination gates; a same-day geometric-feasibility diagnostic found the construction structurally infeasible on M6A and retired it for that instrument, with a stop-rule/re-proposal bar binding any successor. [`RESULTS.md`](../../lab/archive/dl2_m6a_pdhpdl_2026-08-22/RESULTS.md)."
+      ]
     },
     "pullback-failure-resumption": {
       "definition": "**NEW 2026-08-13 (MSL-S2A).** Join an established **intraday** directional move after a pullback fails to reverse it \u2014 continuation entry on the resumption bar; hard stop beyond the pullback extreme; target at `rr` \u2208 [2, 3] of that stop; session-flat; k=1 first valid signal per session. One trigger class: *pullback-failure resumption*. Not breakout-from-range, not compression-expansion, not MR-at-level.",

@@ -182,6 +182,13 @@ here) plus an owed $0 stage-1 cheap falsifier and an operator GO. Conditioner-ro
   `AMBIGUOUS-PARKED` (GRADUATE-eligible, Pre-Q deferred — no frozen forward test executing).
   [MYM.md](MYM.md) ·
   [`N-2026-08-29-mym-overnight-rth-range-transfer.md`](../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md)
+- **⚠ Numbers above are stale, corrected 2026-08-31.** `load_sessions.py::overnight_ohlc` had a
+  scope-gap defect (found via a follow-up Codex PR #227 review pass) — it only ever captured the
+  00:00–09:29 ET early-morning tail, never the 18:00–23:59 ET evening reopen. Corrected:
+  `bprime=0` lift **+0.3059** (was +0.3178); `bprime=1` lift **+0.2271** (was +0.2207); min-lift
+  CI **[+0.1330,+0.3128]** (was [+0.1042,+0.3216]); null-calibrated p **3.3×10⁻⁶** (was 3.4×10⁻⁶).
+  **`INCREMENT` verdict unchanged — still decisive on both strata.** Full account:
+  [`docs/notes/audits/2026-08-31-mym-overnight-window-scope-gap-defect.md`](../../docs/notes/audits/2026-08-31-mym-overnight-window-scope-gap-defect.md).
 - **Superseded (disclosed, not the D5 stage-1 answer):** the first-pass **marginal**-comparison
   falsifier (overnight-conditioned obs 0.7604 vs day-history-conditioned obs 0.7306, diff +0.0297,
   95% CI [−0.0325, +0.0988], p≈0.372) read AMBIGUOUS — an artifact of comparing two correlated
@@ -491,6 +498,13 @@ the volatility regime and event population the level is drawn from, the same loa
 folded into it. First campaign under this id: [DL-2 prereg](../../docs/briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md)
 (M6A) — no class finding yet, this id is untested on every instrument at authoring time.
 
+- **Class finding (M6A, 2026-08-22 — same day as minting):** DL-2's TRAIN scoring closed
+  AMBIGUOUS/ABANDONMENT the same day this id was minted — nominee V9 fails 3 of 4 nomination
+  gates; a same-day geometric-feasibility diagnostic found the construction structurally
+  infeasible on M6A and retired it for that instrument, with a stop-rule/re-proposal bar binding
+  any successor.
+  [`RESULTS.md`](../../lab/archive/dl2_m6a_pdhpdl_2026-08-22/RESULTS.md).
+
 Rejected nearest classes (one-line):
 - `pdh-pdl-breakout-rth` — same trigger/stop/target logic, but its reference and entry window is
   an equity-cash RTH subset (its one score, MNQ, never tested a full-session window); this id is
@@ -728,6 +742,8 @@ below, which this class does **not** reopen.
   pre-registered test. Not formally `FALSIFIED` under the frozen gate's literal `p_upper>0.95`
   line, but substantively close to it (wrong sign + FLIP-FAIL).
   [`Explore-confirm LOG`](../../lab/analysis/c1/msl_s4_mgc_2026-08/_explore_confirm_2026-08-21_LOG.md).
+  Ledger cell `AMBIGUOUS-PARKED` — operator PARKED the candidate the same day on this result (not
+  a further class-level test); disposition owned by [MGC.md](MGC.md).
 
 Rejected nearest classes (one-line):
 - **Directional dealer-gamma-sign forecast** (informal sibling construct, never declared an id —
@@ -821,3 +837,15 @@ by-year floor also fails independently, N_valid=3 on both parents). Closure:
 Re-open: panel growth to ≥7 qualifying years, or a design meeting
 [`BOUNDED_ROUND_PLAN.md`](../../lab/analysis/_inbox/joint_surrogation_null_2026-08-30/BOUNDED_ROUND_PLAN.md)
 §3's certification requirements. No entry/sizing construct licensed; no ledger cell renamed.
+
+**⚠ Numbers above this note are stale, corrected 2026-08-31.** The MNQ-side stage-1 figures cited
+above (+57.7pp/+38.7pp for the parent; +10.5pp/−8.1pp for the calm-stratum gap) were computed
+against a look-ahead-defective `overnight_ohlc` (Codex PR #227 review) — corrected values are
++26.3pp/+26.8pp and +16.9pp/−9.5pp respectively. **MYM's own figures were also affected, by a
+separate scope-gap defect found in a follow-up review pass** — see the correction note on the
+class-finding paragraph above (§ "overnight-range-day-session-transfer") and
+[`docs/notes/audits/2026-08-31-mym-overnight-window-scope-gap-defect.md`](../../docs/notes/audits/2026-08-31-mym-overnight-window-scope-gap-defect.md).
+**This closure's own routing (`AMBIGUOUS-DESIGN` on all affected hypotheses) does not change** —
+see
+[`docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md`](../../docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md)
+for the full account.

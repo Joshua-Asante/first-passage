@@ -3,54 +3,54 @@
     "label": "candidate2_overnight_range_STRATIFIED",
     "n_scored": 1307,
     "strata": {
-      "0": 0.31782470002365293,
-      "1": 0.22065573770491798
+      "0": 0.3058904896126945,
+      "1": 0.22706507551743427
     },
     "strata_counts": {
       "0": {
         "hi": [
-          0.6963350785340314,
-          191
+          0.6881720430107527,
+          186
         ],
         "lo": [
-          0.3785103785103785,
-          819
+          0.38228155339805825,
+          824
         ]
       },
       "1": {
         "hi": [
-          0.860655737704918,
-          122
+          0.8629032258064516,
+          124
         ],
         "lo": [
-          0.64,
-          175
+          0.6358381502890174,
+          173
         ]
       }
     },
     "min_lift_bootstrap": {
       "ci": [
-        0.10420733347521129,
-        0.321564759671678
+        0.132998858723169,
+        0.31277359393697646
       ],
-      "mean": 0.2186458816886106,
+      "mean": 0.22420325548284029,
       "n_valid": 4000,
-      "p_lift_le_0": 0.00025,
-      "source": "preserved from original n=1307 run (cache fallback)"
+      "p_lift_le_0": 0.0,
+      "source": "MYM_M15.csv (n=1307)"
     },
     "min_lift_null_calibrated": {
-      "p_ge_obs": 3.3515658515658516e-06,
-      "observed": 0.21697757678537777,
+      "p_ge_obs": 3.3336667000033338e-06,
+      "observed": 0.22706507551743427,
       "n_draws": 4000,
       "seed": 20261829,
-      "frame_source": "c24_joint_frame.csv (n=1304; orig scored n=1307)",
-      "n_scored_null": 1304,
+      "frame_source": "MYM_M15.csv (n=1307)",
+      "n_scored_null": 1307,
       "construction": "within_stratum_circular_shift",
       "includes_identity": true
     },
     "strata_null_calibrated_p": {
-      "0": 0.000992063492063492,
-      "1": 0.0033783783783783786
+      "0": 0.0009900990099009901,
+      "1": 0.003367003367003367
     },
     "increment_exists_threshold_check": true,
     "verdict": "INCREMENT"
@@ -92,21 +92,21 @@
       "mean": 0.05944593262238722,
       "n_valid": 4000,
       "p_lift_le_0": 0.12475,
-      "source": "preserved from original n=1307 run (cache fallback)"
+      "source": "MYM_M15.csv (n=1307)"
     },
     "min_lift_null_calibrated": {
-      "p_ge_obs": 0.00859676640926641,
-      "observed": 0.06372445755213818,
+      "p_ge_obs": 0.008587525419208588,
+      "observed": 0.06723613876952095,
       "n_draws": 4000,
       "seed": 20261829,
-      "frame_source": "c24_joint_frame.csv (n=1304; orig scored n=1307)",
-      "n_scored_null": 1304,
+      "frame_source": "MYM_M15.csv (n=1307)",
+      "n_scored_null": 1307,
       "construction": "within_stratum_circular_shift",
       "includes_identity": true
     },
     "strata_null_calibrated_p": {
-      "0": 0.000992063492063492,
-      "1": 0.15202702702702703
+      "0": 0.0019801980198019802,
+      "1": 0.15488215488215487
     },
     "increment_exists_threshold_check": true,
     "verdict": "AMBIGUOUS (CI straddles 0)"

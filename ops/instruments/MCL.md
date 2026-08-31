@@ -13,7 +13,7 @@ symbol: MCL
 asset_class: energy-futures
 family: []
 venue_tradable: true
-venue_note: "Tradeify Energy Product Group (CL/QM/MCL/NG/QG). Withdrawn Striker legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred; LEG_MAP code untouched."
+venue_note: "Tradeify Energy Product Group (CL/QM/MCL/NG/QG). Withdrawn Striker legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred. ⚠ Correction 2026-08-26: LEG_MAP cap_alloc released — see docs/adr/2026-08-26-striker-legmap-cap-release.md for current value, not restated here."
 k_bank_source: "../../discovery_manifests/"
 cost_hurdle:
   value: 5.3423

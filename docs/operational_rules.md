@@ -341,6 +341,12 @@ added 2026-07-01; sub-rule 8 added 2026-08-13; sub-rules 9–10 added
 `isPrivate: true`); the "repo is public" rationale above is historical. claude.ai
 reaches the repo via its GitHub connector, which supports private repos, so the
 migration rationale is unaffected. See CLAUDE.md §Public-clone posture.**]**
+⚠ **Superseded 2026-08-14:** the repo went public again
+([transition ADR](adr/2026-08-14-repo-public-visibility-transition.md)); current
+visibility is owned by CLAUDE.md §Public-clone posture, not this 2026-07-01
+footnote. Either way claude.ai reaches the repo (directly when public, via the
+GitHub connector when private), so the migration rationale this note defends
+was never at risk.
 
 ---
 
