@@ -8,13 +8,20 @@
 **Class:** (b) parked lane · **Standing:** SUBTRACT
 **Test applied:** N-SURV FAIL at frozen 2026-07-13 floors via `nsurv_channel.py` on the
 v0.3 native MGC1! panel against `Tradeify_Select_100K` — bust **42.2%** full /
-**72.4%** H1 / **16.5%** H2 vs ≤3.0% ceiling (5.5×–24× over on every partition).
+**72.4%** H1 / **16.5%** H2 vs ≤3.0% ceiling (5.5×–24× over on every partition) — the
+Part A eval bust ceiling in force at measurement time; ⚠ Superseded 2026-08-26: raised
+to 5.0% by [prereg v2](../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md)
+§3, still the live ceiling — verdict unaffected, bust 16.5%–72.4% still fails 5.0% by
+3.3×–14.5×.
 **Re-entry armor:** requires **new mechanism evidence** plus an attached falsifier,
 recorded through a governance channel (ADR or equivalent) — ADR §2.3 / rejected_candidates
 bar. **Not** a locked-parameter retune, **not** a re-read of the AE-approximated score,
 **not** firm-shopping. A genuine bar-derived `intraday_low` re-run that cleared ≤3.0% on
 full + both halves would be the only instrumentation path that could challenge the
-verdict; given the margin it is not an open rescue ticket.
+verdict; given the margin it is not an open rescue ticket. ⚠ Note 2026-08-31: the ≤3.0%
+bar above is this cell's own frozen floor at measurement time (2026-07-13), not a live
+re-derivation target — any future re-entry evaluation should check the then-current Part
+A ceiling (currently 5.0%, per prereg v2 §3 above), not re-litigate 3.0%.
 **Aim served (if re-entered under armor):** A1
 **Residuals:** `guardian_gold_futures_mgc_v0_{1,2,3}_prototype.pine` + CARDs (F1–F5
 execution-mechanics port; locked v5.5 parameters byte-identical) — retained hot as

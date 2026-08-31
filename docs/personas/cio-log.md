@@ -30,6 +30,11 @@ consistent with surfacing the scope question rather than compounding a possible 
 **Confirmed findings:** none (my own BLOCKER was raised and refuted; the panel's one confirmed
 CONCERN was raised by the COO lens, not mine)
 **Ratified as recommended:** Pending -- operator has not yet ratified
+**2026-08-19 addendum:** Ratified as recommended -- Yes. Operator ratified both SUBTRACT
+nominations (b2, c1) in-session same day, matching the panel's recommendation with zero
+divergence -- see
+[`docs/briefs/closures/GSUB-2-closure-resolved-loadbearing.md`](../briefs/closures/GSUB-2-closure-resolved-loadbearing.md)
+§1 (Phase 3).
 **Rehearsal:** no -- first real (non-rehearsal) review; first data point toward the
 persona-hierarchy ADR's own §4 falsifier
 **CRO hard block fired:** no

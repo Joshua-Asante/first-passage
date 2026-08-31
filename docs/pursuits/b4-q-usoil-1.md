@@ -15,6 +15,13 @@ governance channel (ADR or equivalent) — ADR §2.3.
 (campaign-internal lab housekeeping is outside GSUB-1's jurisdiction per §5 forbidden moves 3/6).
 Named as a follow-up for the lab-archival convention (`scripts/archive_lab_analysis.py`), not
 executed here.
+**Update (2026-08-11):** the `usoil_regime_capture` lab body named above as an un-executed
+follow-up has since been archived — body now at `lab/archive/usoil_regime_capture/`, stub at
+`lab/analysis/usoil_regime_capture/CARD.md` ("Archived: 2026-08-09"), CATALOG row updated to
+CLOSED (see [`lab/CATALOG.md`](../../lab/CATALOG.md) and
+[`Q-USOIL-1 closure`](../briefs/closures/Q-USOIL-1-closure-subtract.md)). The path named above is
+also corrected here: the residual body lived at `lab/analysis/usoil_regime_capture/`, not
+`lab/analysis/legacy/usoil_regime_capture/` — the latter never existed (zero git history).
 
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3)
 **Tracking update:** [`operator-retirements-record`](../notes/2026-07-10-operator-retirements-record.md)

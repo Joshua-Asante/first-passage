@@ -108,3 +108,25 @@ recorded as an addendum per this log's append-only convention, not an edit to th
 
 **Ratified as recommended:** Pending — `Q-ORBCUSH-1` is named, not opened; Phase 1 needs a fresh
 operator GO.
+
+---
+
+## 2026-08-20 — Addendum: Q-ORBCUSH-1 ran to closure same day — verdict FALSIFIED
+
+`Q-ORBCUSH-1` did not stay in the named-not-opened state recorded above — it received its operator
+GO and ran to closure the same day.
+
+**Verdict:** FALSIFIED — date-correlation clears 0 of 3 pre-registered windows. See
+[`docs/briefs/closures/Q-ORBCUSH-1-closure-falsified.md`](../briefs/closures/Q-ORBCUSH-1-closure-falsified.md).
+
+**Confirmed findings:** none beyond the closure's own verdict — Phase 1 ran mechanically per the
+pre-registration, no new finding surfaced by this addendum itself.
+
+**Next:** STOP, no successor named.
+
+**Deviation-from-Precedent:** corrects the "Ratified as recommended: Pending" line of this log's
+own prior entry (same day) — recorded as an addendum per this log's append-only convention, not an
+edit to the original entry.
+
+**Ratified as recommended:** n/a — this addendum records a closure outcome, not a new proposal
+requiring ratification.

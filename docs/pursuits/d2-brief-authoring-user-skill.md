@@ -10,8 +10,13 @@ mechanical subset only; this is the authoritative discipline gate)
 
 **Open residual (not GSUB-1's to resolve):** the checker-canon split (repo-side vs
 `~/.claude/skills/brief-authoring/` as the authoritative source) is flagged UNRULED in
-[`reference_check_brief_two_tools`](../../MEMORY.md) — a one-line operator ruling is owed, but
+`reference_check_brief_two_tools` — a one-line operator ruling is owed, but
 it's a documentation-boundary question, not a pursuit-standing question, so it stays out of this
 run's disposition.
+
+⚠ Correction 2026-08-31: this residual was ruled the same day (2026-08-09) via
+[ADR: check_brief canon](../adr/2026-08-09-check-brief-canon-ruling.md) — skill-side
+`check_brief.py` is canonical, repo-side declines types it can't model rather than false-failing
+them; Gate: RESOLVED.
 
 **Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row d2

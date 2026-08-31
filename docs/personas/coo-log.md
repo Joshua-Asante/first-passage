@@ -38,6 +38,11 @@ same commit as this log entry)
 persona-hierarchy ADR's own §4 falsifier
 **CRO hard block fired:** no
 
+⚠ Correction 2026-08-31: **Ratified as recommended** above is stale. Per
+[`docs/briefs/closures/GSUB-2-closure-resolved-loadbearing.md`](../briefs/closures/GSUB-2-closure-resolved-loadbearing.md),
+Phase 3 operator ratification occurred 2026-08-19 in-session with zero divergence from the panel's
+review.
+
 ## 2026-08-19 — Standing executive opinion: ADR/preregistration/gate culture (operator-requested, not a ratification review)
 
 **Verdict:** PROPORTIONATE-WITH-ONE-CORRECTED-EXCESS-AND-ONE-OPEN-GAP -- the standing controls

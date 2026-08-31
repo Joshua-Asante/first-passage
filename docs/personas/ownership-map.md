@@ -144,14 +144,14 @@ one office even when it has one clear first-line owner.
 | **a5** | R&D tooling lane (T2/T3/T4 gated adoption · sentinel promotion) | KEEP | Back | Head of Engineering | Head of Governance, Head of Validation |
 | **a6** | Cursor-fleet worker capability | KEEP | Back | Head of Engineering | Head of Research |
 | **b1** | Aegis→6J transfer lane | PARK | Front | Head of Research | Head of Execution |
-| **b2** | Striker MYM reconstruction (S-MYM-ORC-02, TERMINAL lane) | PARK | Front | Head of Research | Head of Execution, Head of Governance |
+| **b2** | Striker MYM reconstruction (S-MYM-ORC-02, TERMINAL lane) | SUBTRACT | Front | Head of Research | Head of Execution, Head of Governance |
 | **b3** | ORB-MNQ payability line (orb_mnq · eodadv) | PARK | Front | Head of Research | Head of Execution |
 | **b4** | Q-USOIL-1 (+ `usoil_regime_capture` legacy harness) | SUBTRACT | Front → **Back** | Head of Governance | Head of Research |
 | **b5** | Q-FUNDPOL-1 funded-phase policy inheritance | PARK | Front → **Middle** | Head of Risk & Sizing | Head of Validation, Head of Execution |
 | **b6** | Q-NAS-ECR-1 NAS100 live edge-captured ratio | PARK | Back → **Front** | Head of Execution | Head of Research, Head of Governance |
-| **b7** | ICT line (PREREG-1M / Q-ICTEXP-1) | PARK | Front | Head of Research | Falsifier/Pre-Registration Analyst (executes the Q-ICTEXP-1 §9 zero-K falsifier), Head of Governance (tracks the 2026-11-08 auto-convert-to-SUBTRACT deadline) |
+| **b7** | ICT line (PREREG-1M / Q-ICTEXP-1) | SUBTRACT | Front | Head of Research | Falsifier/Pre-Registration Analyst (executes the Q-ICTEXP-1 §9 zero-K falsifier), Head of Governance (tracked the 2026-11-08 auto-convert-to-SUBTRACT deadline — moot, see correction note below) |
 | **b8** | Guardian→MGC transfer lane (R7) | SUBTRACT | Front | Head of Governance | Head of Research |
-| **c1** | Q-XMEM-1 cross-surface memory sidecar pilot | PARK | Front → **Back** | Head of Engineering | Head of Governance |
+| **c1** | Q-XMEM-1 cross-surface memory sidecar pilot | SUBTRACT | Front → **Back** | Head of Engineering | Head of Governance |
 | **c2** | Q-SIGID-1 signal-identity gap | KEEP | Front → **Cross-office** | Head of Execution | Head of Validation, Head of Research |
 | **c3** | Q-TOM-SPX-1 SPX500 turn-of-month | SUBTRACT | Back → **Front** | Head of Research | Head of Governance |
 | **c4** | Q-TVCOV-1 TV intraday bar-coverage census — SUBTRACT-complete | SUBTRACT | Back | Head of Governance | — |
@@ -176,6 +176,15 @@ one office even when it has one clear first-line owner.
 | **d17** | Claude Max subscription (added 2026-08-21, after this table's own 2026-08-19 pass) | KEEP | Cross-office | CFO | **Operator** (no persona backstop — Head of Engineering, the nearest analogue to d16's secondary, is retired per the 2026-08-21 narrowing; see that ADR's D2 mapping) |
 | **e1** | First Passage program (the Aim itself) | KEEP | Back → **Cross-office** | **CEO** | Head of Governance (record custodian), CRO, CIO |
 | **e2** | Already-terminal register (CFD estate, manual trading, challenge-era substrate, retired feeds, Hermes NO-GO, Bulenox/futures-prop R6) | no action | Back | Head of Governance | — |
+
+**Corrected 2026-08-31**: b2 and c1 flipped PARK→SUBTRACT 2026-08-19 per the GSUB-2 closure
+([`docs/briefs/closures/GSUB-2-closure-resolved-loadbearing.md`](../briefs/closures/GSUB-2-closure-resolved-loadbearing.md));
+b7 flipped PARK→SUBTRACT 2026-08-20 per [`docs/pursuits/b7-ict-line.md`](../pursuits/b7-ict-line.md)
+(correcting the 2026-08-09 GSUB-1 Phase 3 PARK after `Q-ICTEXP-1`'s negative-drift verdict) — none
+of the three flips were reflected when this Layer 2 snapshot was taken (dated 2026-08-19, same day
+as or before both closures). b7's Secondary cell's note on the "2026-11-08 auto-convert-to-SUBTRACT
+deadline" is now moot: the conversion already happened ~96 days early, 2026-08-20, via the
+falsifier firing — not via calendar expiry.
 
 **One correction made on review**: the classification run initially assigned e1 ("the Aim itself") to
 Head of Governance — the nearest spawnable AI custodian, since CEO is never spawned. But the roster's

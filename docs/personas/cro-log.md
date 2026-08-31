@@ -33,6 +33,11 @@ This is a GRAND-tier pursuit-disposition housekeeping pass, entirely outside thi
 clean with no findings is the honest verdict, consistent with my own GSUB-1 rehearsal precedent.
 **Confirmed findings:** none
 **Ratified as recommended:** Pending -- operator has not yet ratified
+**2026-08-19 addendum:** Ratified as recommended -- Yes. Operator ratified both SUBTRACT
+nominations (b2, c1) in-session same day, matching the panel recommendation with zero
+divergence -- see
+[`docs/briefs/closures/GSUB-2-closure-resolved-loadbearing.md`](../briefs/closures/GSUB-2-closure-resolved-loadbearing.md)
+§1 (Phase 3).
 **Rehearsal:** no -- first real (non-rehearsal) review; first data point toward the
 persona-hierarchy ADR's own §4 falsifier
 **CRO hard block fired:** no
