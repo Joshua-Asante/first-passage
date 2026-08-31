@@ -406,10 +406,15 @@ gates:
   # silently once -- the 2026-08-08 quarterly audit skipped it, undetected
   # until an unrelated sweep caught it the next day (trip-log's own
   # 2026-08-09 correction block). This does not adjudicate audit-cycle
-  # counting (that convention was proposed 2026-08-22 and the operator
-  # declined to ratify it) -- it only watches the one checkpoint the
-  # withdrawn addendum's own text already named as the next live gate
-  # (2026-11-08) and escalation condition (a second consecutive skip).
+  # counting or characterize what a repeat skip would mean (that convention
+  # was proposed 2026-08-22 and the operator declined to ratify it, and the
+  # governing ADR says any convention here must be authored fresh, not
+  # revived) -- it only reports, as plain fact from 2026-11-08 (the
+  # trip-log's own named next quarterly gate) onward, whether a
+  # programme-audit note mentions Rule 2/the trip-log. 2026-08-31 PR #233
+  # review round 2 caught this comment and the script's own messaging both
+  # over-characterizing that fact using the withdrawn addendum's own
+  # escalation language -- fixed same commit.
   # `tier: always`, non-blocking: same reasoning as spec-provenance and
   # falsifier-reachability-census above -- the script's own docstring states
   # "WARN-TIER BY DESIGN. Always exits 0 unless --strict," confirmed by a

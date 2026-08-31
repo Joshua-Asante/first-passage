@@ -18,13 +18,16 @@ restraint: it reports which programme-audit notes exist and whether they mention
 trip-log, as raw fact, and leaves classifying "which one is the real quarterly cycle" to a human,
 exactly as the withdrawal preserved.
 
-The one thing it DOES check mechanically, because the withdrawn addendum's own text already
-settled what should happen here without needing further ratification: **on or after 2026-11-08**
-(the trip-log's own named next quarterly gate, and the addendum's own named escalation checkpoint
-— "a second consecutive skip is no longer a single-cycle miss... escalates to a process-compliance
-defect in its own right"), if no programme-audit note dated on/after that day mentions Rule 2 or
-the trip-log, this is a live finding. Before that date, the script only reports stats — it does
-not speculate about whether an earlier note "counts."
+The one thing it DOES check mechanically is narrower than the withdrawn addendum's own proposal,
+deliberately: **on or after 2026-11-08** (the trip-log's own named next quarterly gate — the one
+date the withdrawal itself points to, "author any needed convention fresh at the 2026-11-08 gate"),
+if no programme-audit note dated on/after that day mentions Rule 2 or the trip-log, this script
+reports that as a plain fact — the checklist item has no visible record of having run. It does
+NOT characterize what that fact means or what should follow from it; the addendum that once
+proposed a consequence for exactly this situation was withdrawn, and its governing ADR says any
+convention here must be authored fresh, not revived. This script surfaces the fact so a human can
+do that authoring, and stops there. Before 2026-11-08, the script only reports stats — it does
+not speculate about whether an earlier note "counts" either.
 
 SCOPE AND ITS LIMITS:
 
@@ -65,22 +68,44 @@ TRIP_ROW_DATE_RE = re.compile(r"^\|\s*(\d{4}-\d{2}-\d{2})\s*\|", re.MULTILINE)
 FILE_DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})")
 
 
-def last_trip_log_row_date(text: str) -> date | None:
-    dates = [date.fromisoformat(m.group(1)) for m in TRIP_ROW_DATE_RE.finditer(text)]
-    return max(dates) if dates else None
+def _safe_date(raw: str) -> date | None:
+    """Parses a YYYY-MM-DD string, returning None (not raising) on a date-shaped typo
+    like '2026-02-30'. This script is WARN-tier and must never crash a pre-commit run
+    over a malformed date in one file -- found by PR #233 review."""
+    try:
+        return date.fromisoformat(raw)
+    except ValueError:
+        return None
 
 
-def scan_audit_notes(audit_dir: Path) -> list[tuple[str, date, bool]]:
-    """Returns (relpath, filename_date, mentions_rule2) for every programme-audit note."""
+def last_trip_log_row_date(text: str) -> tuple[date | None, list[str]]:
+    """Returns (most recent valid row date, list of malformed date strings found)."""
+    bad: list[str] = []
+    dates: list[date] = []
+    for m in TRIP_ROW_DATE_RE.finditer(text):
+        d = _safe_date(m.group(1))
+        if d is None:
+            bad.append(m.group(1))
+        else:
+            dates.append(d)
+    return (max(dates) if dates else None), bad
+
+
+def scan_audit_notes(audit_dir: Path) -> tuple[list[tuple[str, date, bool]], list[str]]:
+    """Returns ((relpath, filename_date, mentions_rule2) per valid note, malformed filenames)."""
     out: list[tuple[str, date, bool]] = []
+    bad: list[str] = []
     for path in sorted(audit_dir.glob("*.md")):
         m = FILE_DATE_RE.match(path.name)
         if not m:
             continue
-        d = date.fromisoformat(m.group(1))
+        d = _safe_date(m.group(1))
+        if d is None:
+            bad.append(path.name)
+            continue
         text = path.read_text(errors="replace")
         out.append((str(path.relative_to(REPO_ROOT)), d, bool(MENTION_RE.search(text))))
-    return out
+    return out, bad
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -101,8 +126,8 @@ def main(argv: list[str] | None = None) -> int:
         return 1 if args.strict else 0
 
     trip_text = TRIP_LOG.read_text(errors="replace")
-    last_row = last_trip_log_row_date(trip_text)
-    notes = scan_audit_notes(AUDIT_DIR)
+    last_row, bad_rows = last_trip_log_row_date(trip_text)
+    notes, bad_filenames = scan_audit_notes(AUDIT_DIR)
 
     notes_since_last_row = (
         [n for n in notes if last_row is not None and n[1] > last_row] if last_row else notes
@@ -118,6 +143,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"    silent on it              : {len(silent_since)}")
         print(f"next named quarterly gate     : {NEXT_QUARTERLY_GATE.isoformat()}")
         print(f"today                         : {today.isoformat()}")
+        if bad_rows or bad_filenames:
+            print(f"unparseable dates (skipped)   : {len(bad_rows) + len(bad_filenames)} "
+                  f"({bad_rows + bad_filenames})")
         print()
 
     findings: list[str] = []
@@ -126,18 +154,25 @@ def main(argv: list[str] | None = None) -> int:
         if not gate_notes:
             findings.append(
                 f"No programme-audit note dated on/after {NEXT_QUARTERLY_GATE.isoformat()} "
-                "exists yet -- the next quarterly Rule-2 checklist item (parent ADR Sec7) "
-                "cannot have executed."
+                "exists yet -- the next quarterly Rule-2 checklist item (parent ADR Sec7) has "
+                "no visible record of having run. This script does not characterize what that "
+                "means (the addendum that once proposed a consequence for this was withdrawn; "
+                "docs/adr/2026-06-16-rule-2-budget-before-acting.md says author any needed "
+                "convention fresh at this gate, not by reviving that text) -- it only reports "
+                "the fact."
             )
         elif not any(n[2] for n in gate_notes):
             names = ", ".join(n[0] for n in gate_notes)
             findings.append(
                 f"Programme-audit note(s) dated on/after {NEXT_QUARTERLY_GATE.isoformat()} "
-                f"exist ({names}) but none mention Rule 2 / the trip-log. Per the parent ADR's "
-                "own Sec7 checklist item and the 2026-08-22 addendum's (withdrawn, but "
-                "undisputed) escalation clause: a second consecutive skip is no longer a "
-                "single-cycle miss -- read docs/notes/audits/rule-2-trip-log.md and either log "
-                "a disposition or record why none applies."
+                f"exist ({names}) but none mention Rule 2 / the trip-log -- the parent ADR's "
+                "own Sec7 checklist item has no visible record of having run at this gate. "
+                "This script does not characterize what that means or what should follow "
+                "(the addendum that once proposed a consequence for this exact situation was "
+                "WITHDRAWN, and its governing ADR instructs authoring any needed convention "
+                "fresh at this gate, not reviving that text -- "
+                "docs/adr/2026-06-16-rule-2-budget-before-acting.md, Addendum 2026-08-22/"
+                "2026-08-23). Read docs/notes/audits/rule-2-trip-log.md and rule on it directly."
             )
 
     if not findings:
