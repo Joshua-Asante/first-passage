@@ -2,6 +2,10 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Fifth roll, 2026-08-30** (one entry, pushed off by the Q-RANGEXFER-1 closure):
+
+- **2026-08-23** — P4 museum rules + P5 REPO_MAP layer compare-gate landed; pain-point buildable packets P0–P5 closed (parked items stay parked). [`P4 plan`](../../../../../docs/superpowers/plans/2026-08-23-p4-museum-rules-implementation.md) · [`P5 plan`](../../../../../docs/superpowers/plans/2026-08-23-p5-repo-map-layers-implementation.md)
+
 **Fourth roll, 2026-08-29** (one entry, pushed off by the SSOT Phase 3 authorization):
 
 - **2026-08-23** — P3 docs-runtime inventory landed (report-only); queue row 3 opened and closed same session (succession: no auto-replace). [`inventory`](../../../../../docs/notes/audits/docs-runtime-inventory.md) · [`P3 plan`](../../../../../docs/superpowers/plans/2026-08-23-p3-docs-runtime-inventory-implementation.md)

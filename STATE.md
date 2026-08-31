@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-08-29
+**Last curated:** 2026-08-30
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
@@ -68,8 +68,9 @@ Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-ro
 One line per executed decision, newest first — consequence + owner. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
-Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md) (P8 keep-15 roll, 2026-08-23; rolled 2026-08-27 and 2026-08-29).
+Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md) (P8 keep-15 roll, 2026-08-23; rolled 2026-08-27, 2026-08-29, and 2026-08-30).
 
+- **2026-08-30** — `Q-RANGEXFER-1` closed `MIXED` (4× `AMBIGUOUS-DESIGN`, 1× `FALSIFIED` on `H-RANGEXFER-1.a-MYM`). Operator ratified L5-gates-`FALSIFIED` (Option A) + a per-hypothesis `AMBIGUOUS-DESIGN` closure row; the joint-surrogation null's hard stop (measured 26% Type-I vs nominal 5%, Round 4) made this the correct route rather than force-fitting `AMBIGUOUS-HOLD`. Presence battery (L1–L3) adversarially verified before scoring. No entry construct licensed; `Q-VOLREGIME-1` independently assessed, not closed by inheritance. $0/K=0. [`closure`](docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md) · [`pre-reg §H`](docs/briefs/pre-registration/Q-RANGEXFER-1-verdict-preregistration.md)
 - **2026-08-29** — SSOT Phase 3 authorized (cost-model closed-world partition). Bars checker voided; ledger join and firm_rules dollars declined. No queue row. $0/K=0. [`ADR addendum`](docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md#addendum-2026-08-29--phase-3-authorized-cost-model-closed-world-partition) · [`plan`](docs/superpowers/plans/2026-08-29-ssot-phase-3-cost-model-closed-world.md)
 - **2026-08-29** — SSOT Phase 2 authorized (A8 intra-ADR running-count consistency). Recon (a)(b)(c) answered: no fourth instance; STATE-join and HTML-comment schema declined. No code/risk-constant/allocation touched. $0/K=0. [`ADR addendum`](docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md#addendum-2026-08-29--phase-2-authorized-a8-intra-adr-running-count-consistency) · [`plan`](docs/superpowers/plans/2026-08-29-ssot-phase-2-running-count-mirror.md)
 - **2026-08-27** — SSOT/data-lineage remediation program ratified (operator GO); Phase 1 (4 gate/tooling tasks) authorized and dispatched. No code/risk-constant/allocation touched. $0/K=0. [`ADR`](docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md) · [`plan`](docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md)
