@@ -81,10 +81,11 @@ def test_split_by_h3_groups_rejected_candidates_entries():
     assert "Custodian" in parts[1]
 
 
-def test_load_corpus_reads_all_seven_surfaces(tmp_path: Path):
+def test_load_corpus_reads_all_eight_surfaces(tmp_path: Path):
     (tmp_path / "docs" / "briefs" / "closures").mkdir(parents=True)
     (tmp_path / "docs" / "notes" / "audits").mkdir(parents=True)
     (tmp_path / "docs" / "briefs" / "rnd-pipeline").mkdir(parents=True)
+    (tmp_path / "docs" / "adr").mkdir(parents=True)
     (tmp_path / "docs").mkdir(exist_ok=True)
     (tmp_path / "lab").mkdir(exist_ok=True)
     (tmp_path / "ops" / "instruments").mkdir(parents=True)
@@ -108,6 +109,16 @@ def test_load_corpus_reads_all_seven_surfaces(tmp_path: Path):
         "# INSTRUMENT LEDGER -- ZZZ\n\nQ-X-1 finding lives here too.\n", encoding="utf-8")
     (tmp_path / "docs" / "briefs" / "rnd-pipeline" / "Q-X-1-rescope.md").write_text(
         "# Campaign scoping -- Q-X-1 rescope\n\nQ-X-1 rescope detail.\n", encoding="utf-8")
+    (tmp_path / "docs" / "adr" / "2026-01-01-q-x-1-ruling.md").write_text(
+        "# ADR: Q-X-1 ruling\n\nQ-X-1 decided here.\n", encoding="utf-8")
+    (tmp_path / "docs" / "adr" / "INDEX.md").write_text(
+        "# ADR index (derived)\n\nQ-X-1 must not surface from this scaffolding file.\n",
+        encoding="utf-8")
+    (tmp_path / "docs" / "adr" / "README.md").write_text(
+        "# docs/adr/\n\nQ-X-1 must not surface from this scaffolding file.\n", encoding="utf-8")
+    (tmp_path / "docs" / "adr" / "TOMBSTONES.md").write_text(
+        "# ADR Tombstone Index\n\nQ-X-1 must not surface from this scaffolding file.\n",
+        encoding="utf-8")
 
     chunks = cad.load_corpus(tmp_path)
     surfaces = {c.surface for c in chunks}
@@ -118,6 +129,36 @@ def test_load_corpus_reads_all_seven_surfaces(tmp_path: Path):
     assert any(c.surface == "docs/rejected_candidates.md" and "Q-X-1 rejected" in c.label for c in chunks)
     assert any(c.surface == "ops/instruments/ZZZ.md" and "ZZZ" in c.label for c in chunks)
     assert any(c.surface == "docs/briefs/rnd-pipeline/Q-X-1-rescope.md" for c in chunks)
+    assert any(c.surface == "docs/adr/2026-01-01-q-x-1-ruling.md" for c in chunks)
+    assert "docs/adr/INDEX.md" not in surfaces
+    assert "docs/adr/README.md" not in surfaces
+    assert "docs/adr/TOMBSTONES.md" not in surfaces
+
+
+def test_load_corpus_follows_retired_adr_body_pointer(tmp_path: Path):
+    """A retired ADR's card-shape stub carries only a `**Body:**` pointer --
+    the substantive text lives in docs/ltm/adr/. Indexing the stub's own short
+    text would score real prior art near zero (see the module docstring's
+    third motivating incident)."""
+    (tmp_path / "docs" / "adr").mkdir(parents=True)
+    (tmp_path / "docs" / "ltm" / "adr").mkdir(parents=True)
+    (tmp_path / "docs" / "adr" / "2026-01-01-q-x-1-retired.md").write_text(
+        "# ADR: Q-X-1 retired\n\n"
+        "**Status:** `Retired`\n"
+        "**Decision date:** 2026-01-01\n"
+        "**Body:** `docs/ltm/adr/2026-01-01-q-x-1-retired.md`\n"
+        "**Disposition:** Retired on 2026-08-31.\n",
+        encoding="utf-8")
+    (tmp_path / "docs" / "ltm" / "adr" / "2026-01-01-q-x-1-retired.md").write_text(
+        "# ADR: Q-X-1 retired\n\nQ-X-1 substantive body detail lives only here, "
+        "not in the stub.\n", encoding="utf-8")
+
+    chunks = cad.load_corpus(tmp_path)
+    stub_chunks = [c for c in chunks if c.surface == "docs/adr/2026-01-01-q-x-1-retired.md"]
+    assert len(stub_chunks) == 1, "the body must replace the stub, not duplicate it"
+    assert "substantive body detail" in stub_chunks[0].text
+    assert not any(c.surface.startswith("docs/ltm/") for c in chunks), \
+        "the ltm body should surface under the stub's path, not as its own chunk"
 
 
 def test_score_prioritizes_slug_match_over_keyword_volume():

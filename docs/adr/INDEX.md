@@ -8,7 +8,6 @@
 
 | file | status | decision date | supersedes | notes |
 |---|---|---|---|---|
-| 2026-03-01-aegis-session-selection.md | Accepted | 2026-03-01 | none | Accepted |
 | 2026-04-17-equity-tier-deletion.md | Accepted | 2026-04-17 | none | Accepted |
 | 2026-04-17-guardian-v5.1-architecture.md | Accepted | 2026-04-17 | none | Accepted |
 | 2026-04-17-striker-v4.3-pyramid.md | Accepted | 2026-04-17 | none | Accepted |
@@ -187,6 +186,7 @@
 
 | file | status | decision date | supersedes | notes |
 |---|---|---|---|---|
+| 2026-03-01-aegis-session-selection.md | Retired | 2026-03-01 | none | Retired |
 | 2026-08-03-lifecycle-ladder-intermediate-rung.md | Withdrawn | 2026-08-03 | none | operator reject 2026-08-22. Own §4 admissibility limb fired: W1 honest-clock both-halves returned 0.50× GATE PASS. No rung landed. |
 | 2026-08-05-avenue-a-generate-confirm-route.md | Superseded | 2026-08-05 | none | Superseded |
 | 2026-08-10-implied-sr-plausibility-gate.md | Superseded | 2026-08-10 | none | Superseded |

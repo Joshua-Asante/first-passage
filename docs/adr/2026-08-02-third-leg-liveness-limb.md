@@ -26,26 +26,18 @@
 
 ## §1 — Context
 
-The screen has seven hard structural limbs, a risk-geometry pre-screen, statistical thresholds and
-mechanism requirements. **None of them scores how often a candidate would trade** — verified absent
-2026-08-02 (`rg` over §7 and the prop envelope returns nothing on frequency, cadence, or the
-activity rule). That was tolerable while the idle rule read as *"soft-edged"*. It is not tolerable
-now: enforcement is **irreversible account deletion** after an email warning, with no paused state.
+**Dated finding (2026-08-02):** none of the screen's existing limbs score how often a candidate
+would trade — verified absent (`rg` over §7 and the prop envelope returns nothing on frequency,
+cadence, or the activity rule). That was tolerable while the idle rule read as *"soft-edged"*; it
+is not, now that enforcement is **irreversible account deletion** after an email warning, with no
+paused state.
 
-The measurement that motivates this ([`c1_liveness_diversification_2026-08-02`](../../lab/analysis/c1/c1_liveness_diversification_2026-08-02/RESULTS.md)):
-
-- The c1 book is **zero-trade in 82 of 312 Mon–Fri weeks (26.3%)**, longest run **4 weeks**.
-- **The second leg was worth a lot on this axis, and it is measured, not modeled** — the two legs
-  are each other's natural experiment. MYM alone: 150 dead weeks, longest run 9. MNQ alone: 151,
-  run 10. Together: **82, run 4.** A ~45% cut in dead weeks and more than half the worst run.
-- **And it is not a P&L effect.** On the 52 days both legs trade, corr(daily P&L) = **−0.13**.
-  **Legs can diversify liveness without diversifying returns** — a property the screen has no
-  vocabulary for.
-- The obvious objection — *quiet weeks are quiet for everyone, so a third leg would be quiet too* —
-  was tested and is **bounded at 1.13×** (P(MNQ dead) 0.484 vs P(MNQ dead | MYM dead) 0.547;
-  permutation p = 0.022, n = 20,000). Real, detectable, small.
-- **Wed and Thu are 622 of 1,556 business days (~40%) and the book has never traded one** — zero
-  off-claim trades in six years, which also realized-confirms S7's occupancy pin.
+The measured numbers this finding rests on (dead weeks, corr, permutation bound) are the
+canonical property of
+[`c1_liveness_diversification_2026-08-02/RESULTS.md`](../../lab/analysis/c1/c1_liveness_diversification_2026-08-02/RESULTS.md)
+— cited in §0 above. The full narrative case for the limb is restated at
+[`docs/spec/2026-07-27-third-leg-target-spec.md`](../spec/2026-07-27-third-leg-target-spec.md)
+§7.6 **"Why the limb exists"** (added by this ADR — §7).
 
 **Decision driver (one sentence):** the screen can currently rank two otherwise-identical candidates
 with no way to see that one of them would halve the book's dead weeks and the other would add
