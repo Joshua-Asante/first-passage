@@ -135,6 +135,32 @@ def test_load_corpus_reads_all_eight_surfaces(tmp_path: Path):
     assert "docs/adr/TOMBSTONES.md" not in surfaces
 
 
+def test_load_corpus_follows_retired_adr_body_pointer(tmp_path: Path):
+    """A retired ADR's card-shape stub carries only a `**Body:**` pointer --
+    the substantive text lives in docs/ltm/adr/. Indexing the stub's own short
+    text would score real prior art near zero (see the module docstring's
+    third motivating incident)."""
+    (tmp_path / "docs" / "adr").mkdir(parents=True)
+    (tmp_path / "docs" / "ltm" / "adr").mkdir(parents=True)
+    (tmp_path / "docs" / "adr" / "2026-01-01-q-x-1-retired.md").write_text(
+        "# ADR: Q-X-1 retired\n\n"
+        "**Status:** `Retired`\n"
+        "**Decision date:** 2026-01-01\n"
+        "**Body:** `docs/ltm/adr/2026-01-01-q-x-1-retired.md`\n"
+        "**Disposition:** Retired on 2026-08-31.\n",
+        encoding="utf-8")
+    (tmp_path / "docs" / "ltm" / "adr" / "2026-01-01-q-x-1-retired.md").write_text(
+        "# ADR: Q-X-1 retired\n\nQ-X-1 substantive body detail lives only here, "
+        "not in the stub.\n", encoding="utf-8")
+
+    chunks = cad.load_corpus(tmp_path)
+    stub_chunks = [c for c in chunks if c.surface == "docs/adr/2026-01-01-q-x-1-retired.md"]
+    assert len(stub_chunks) == 1, "the body must replace the stub, not duplicate it"
+    assert "substantive body detail" in stub_chunks[0].text
+    assert not any(c.surface.startswith("docs/ltm/") for c in chunks), \
+        "the ltm body should surface under the stub's path, not as its own chunk"
+
+
 def test_score_prioritizes_slug_match_over_keyword_volume():
     """A chunk sharing the exact slug but few keywords must outrank a chunk
     sharing many keywords but no slug -- the whole point of the slug/keyword

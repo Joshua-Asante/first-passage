@@ -165,38 +165,44 @@ verification commands: `git log --follow -- docs/adr/2026-05-16-fxify-correct-ti
 
 ## Audit hooks
 
-Runnable checks to verify this ADR still holds in future review.
+HOOK WIDENED 2026-08-31: the six hooks below queried root-level `portfolio_mc.py` /
+`dd_protection.py` / `firm_rules.py` and `tests/test_mc_anchors.py`, none of which
+exist at those paths after the substrate move to `core/`. Separately, FXIFY itself
+(row + `ACTIVE_FIRM` + `BASELINE_BALANCE`) was later **deleted** from `firm_rules.py`
+(challenge-era substrate retirement, Phase 4) — the `inactivity_max_idle_days: 60`
+check below is now **moot, not failing**: there is no live FXIFY firm config left to
+carry that value. This ADR's own pinned anchor (99.88/0.12/4.21) was itself
+superseded by the 2026-05-23 allocation-refresh-2 anchor and is historical record,
+not the current canonical figure (`docs/mc_anchor_history.md` owns that). Replaced
+per the sanctioned repoint pattern (see
+`2026-08-04-tradeify-venue-descope-eval-included.md` §10 "HOOK WIDENED") with checks
+against what's actually live and checkable today.
 
-```
-# Verify the FXIFY-correct constants are in production code
-$ grep -nE "INACTIVITY_LIMIT\s*=\s*60|HORIZON_CAP\s*=\s*1500" portfolio_mc.py
-# Expected: 2 matches; HORIZON_DAYS = 150 NOT present
-
-# Verify the canonical anchor pin
-$ grep -E "0\.9988|0\.0012|0\.0421" tests/test_mc_anchors.py
-# Expected: all three values present in test_pepperstone_anchor body
+```bash
+# Verify the mechanism (bust_inactivity/horizon_cap outcome split) is still live
+$ grep -nE "INACTIVITY_LIMIT\s*=|HORIZON_CAP\s*=" core/mc/modes.py
+# Expected: both constants present (values may have moved since this ADR's own pin --
+# see docs/mc_anchor_history.md for the current canonical anchor, not 99.88/0.12/4.21)
 
 # Verify dd_protection constants unchanged (this ADR doesn't touch them)
-$ grep -E "DD_TRIGGER\s*=\s*0\.015|DD_SCALE\s*=\s*0\.40" dd_protection.py
+$ grep -E "DD_TRIGGER\s*=\s*0\.015|DD_SCALE\s*=\s*0\.40" core/dd_protection.py
 # Expected: both lines present
 
-# Verify the FXIFY rule citation is current
-$ grep -E "inactivity_max_idle_days:\s*60" firm_rules.py
-# Expected: 1 match
-
-# Verify Q-MCTO-1 is CLOSED-RESOLVED with back-link
-$ grep -E "CLOSED-RESOLVED|2026-05-16-fxify-correct-timeout-semantic" archive/docs/briefs/Q-MCTO-1-portfolio-mc-timeout-semantics.md
-# Expected: both phrases present
-
-# Verify the falsifier hasn't fired (live-PnL inactivity check)
-$ python analysis/time_to_pass.py --regime-check
-# Expected (next four quarterly reviews 2026-08-08 → 2027-05-08): rolling 6mo pass-rate ≥ 95%
-# Expected (live-PnL): zero ≥3-day consecutive idle windows in any rolling 6mo
+# FXIFY inactivity_max_idle_days=60 check is MOOT (see banner above), confirm why:
+$ grep -n "FXIFY" core/firm_rules.py
+# Expected: only historical/comment references -- no live FXIFY firm config
 
 # Verify no superseding ADR has shipped without back-link
 $ grep -l "Supersedes:.*2026-05-16-fxify-correct-timeout-semantic" docs/adr/
 # Expected: empty (or, if shipped, this ADR's status updated to SUPERSEDED-BY-NNN)
 ```
+
+Historical retrieval for the two dead checks above (Q-MCTO-1 closure text, the live-PnL
+regime-check schedule against `analysis/time_to_pass.py`'s pre-substrate-move path): the
+one-time commands are recoverable via
+`git log --follow -- docs/adr/2026-05-16-fxify-correct-timeout-semantic.md`; `analysis/time_to_pass.py`
+itself now lives at [`lab/analysis/time_to_pass.py`](../../lab/analysis/time_to_pass.py)
+and still supports `--regime-check`.
 
 ---
 

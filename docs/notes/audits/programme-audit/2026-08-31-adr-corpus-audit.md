@@ -82,14 +82,25 @@ genuinely load-bearing) but **fewer scaffolding words and a tighter live-obligat
    implicit.
 
    This is also the exact file `check_adr_graph.py`'s **A5 age-prune check** (enabled by default,
-   HARD severity) fires on starting **2026-09-01** — confirmed directly:
+   HARD severity) fired on, measured *before this note existed in the tree* — confirmed directly,
+   on the pre-audit-note commit:
    ```
    $ python scripts/check_adr_graph.py --today 2026-09-01
    HARD: docs/adr/2026-03-01-aegis-session-selection.md:4: A5 Accepted ADR older than 6 months with no inbound refs
    ```
-   The `adr-graph` gate is path-conditional on `docs/adr/`/`STATE.md`, so the next ADR edit or
-   STATE touch would have been blocked at pre-commit had this not been done today. Forward fire
-   dates for awareness (not owed today): 2026-10-17 (`2026-04-17-guardian-v5.1-architecture.md`,
+   **Caveat, disclosed rather than glossed over:** A5 scans every non-`docs/ltm/` markdown file
+   for a backticked mention of the ADR's filename, and this note itself now mentions
+   `2026-03-01-aegis-session-selection.md` several times — which means committing this note
+   alone would have supplied an inbound reference and stopped A5 from firing on 2026-09-01,
+   independent of whether the retirement happened. The counterfactual "the next edit would have
+   been blocked" is therefore **not clean once this note co-lands with the retirement** — it was
+   true at measurement time, on the tree as it stood before this file existed, not as a standing
+   property of the current tree. The retirement itself remains correct on grounds that don't
+   depend on this note's own text (§3 above: zero real inbound refs, both dated obligations dead);
+   this A5 finding is the
+   trigger that surfaced it, not independent evidence the gate stays meaningfully armed on this
+   file going forward now that this note exists. Forward fire dates for awareness (not owed
+   today): 2026-10-17 (`2026-04-17-guardian-v5.1-architecture.md`,
    `2026-04-17-striker-v4.3-pyramid.md` — **redact before touching**, see §7), 2026-11-03
    (`2026-05-03-sentinel-gate-decision.md`), 2027-01-15 (`2026-07-15-repo-rename-first-passage.md`),
    2027-02-20 (`2026-08-20-rule0-anchor-verification-and-triage-discipline.md`).

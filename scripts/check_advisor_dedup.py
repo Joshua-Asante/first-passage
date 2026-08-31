@@ -86,6 +86,12 @@ def _has_digit(token: str) -> bool:
     return any(c.isdigit() for c in token)
 MD_LINK_RE = re.compile(r"\[([^\]]*)\]\([^)]*\)")
 MD_SYNTAX_RE = re.compile(r"[`*_#\[\]()]")
+# A retired/superseded/withdrawn ADR's substantive body moves to docs/ltm/adr/
+# (scripts/retire_adr.py); only a short card-shape stub with this field remains
+# at docs/adr/<file>. Indexing the stub alone misses the body's actual content --
+# for the newly retired Aegis ADR, body-specific vocabulary scores the stub 1 and
+# the archived body 8, silently missing this class of historical prior art.
+ADR_BODY_FIELD_RE = re.compile(r"^\*\*Body:\*\*\s*`([^`]+)`", re.M)
 
 STOPWORDS = frozenset("""
 this that with from into over under about their there where when what which
@@ -224,6 +230,15 @@ def load_corpus(repo_root: Path) -> list[Chunk]:
                 continue
             text = md.read_text(encoding="utf-8", errors="replace")
             surface = md.relative_to(repo_root).as_posix()
+            body_match = ADR_BODY_FIELD_RE.search(text)
+            if body_match:
+                body_path = repo_root / body_match.group(1)
+                if body_path.is_file():
+                    # Index the retired body's full text under the stub's surface
+                    # path (that's what INDEX.md and a reader open first) so the
+                    # searchable content is complete without double-counting the
+                    # short stub as a second, near-empty hit.
+                    text = body_path.read_text(encoding="utf-8", errors="replace")
             chunks.append(Chunk(surface, _title_of(text, md.stem), text))
 
     return chunks

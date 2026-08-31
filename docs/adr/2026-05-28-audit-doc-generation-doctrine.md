@@ -109,10 +109,17 @@ Per strategy: Joshua opens a fresh claude.ai session, pastes the indicator + str
 ## §10 — Audit hooks (runnable)
 
 HOOK WIDENED 2026-08-31: the six hooks below queried `docs/audits/*.md` and the
-Q-PARITY-1 brief, both removed by the 2026-08-08 Great Prune before any of this ADR's
-three audit docs landed — pruned deliverables, not a passing state to re-check. Replaced
-per the sanctioned repoint pattern (see `2026-08-04-tradeify-venue-descope-eval-included.md`
-§10 "HOOK WIDENED") with checks against what's actually live today.
+Q-PARITY-1 brief. All three audit docs (Aegis, Guardian, Striker DJ30+NAS100) landed
+2026-05-28 as this ADR's §7 prescribed — completed deliverables, per commits `d98e727`,
+`d6ddbb6`, `dda4fd8` (see the worked example in
+[`methodology_lessons.md`](../methodology/lessons/methodology_lessons.md)) — and were
+later removed by the 2026-08-08 Great Prune, over two months after landing, as part of
+its cold-mass `docs/audits/` deletion. Pruned deliverables, not a never-executed plan.
+Replaced per the sanctioned repoint pattern (see
+`2026-08-04-tradeify-venue-descope-eval-included.md` §10 "HOOK WIDENED") with checks
+against what's actually live today; historical retrieval for the docs themselves is
+`git show pre-prune-2026-08-08:docs/audits/<file>` (private archive) or
+`git log --follow -- docs/audits/` on this public clone.
 
 ```bash
 # Deliverables pruned 2026-08-08 (Great Prune) — docs/audits/ no longer exists in this
