@@ -4,12 +4,13 @@
 > `superpowers:executing-plans`. Steps use checkbox (`- [ ]`) syntax. Execute one
 > packet at a time and stop at every named gate.
 >
-> **Status:** Packet A COMPLETE — the earlier 2026-08-31 `BLOCKED-AT-INPUT`
-> state was cleared when both exact hash-pinned panels were restored from the
-> primary checkout. MNQ and MYM independently PASS frozen L3. The presence
-> battery is complete on both instruments; Q-VOLREGIME-1 remains OPEN because
-> L5 attribution is still unresolved. Next gate: Packet B / L5 design amendment
-> under separate authorization. Packets B-D were not started in this session.
+> **Status:** Packet A COMPLETE (both instruments PASS frozen L3, PR #240,
+> merged). **Packet B B1–B4 drafted 2026-08-31** — the day-level
+> joint-surrogation adaptation is retired for this construct; replaced with a
+> bar-native nested forward-prediction design at
+> [`volregime_l5_design_2026-08-31/DESIGN.md`](../../../lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md).
+> No real L5 statistic was inspected before drafting. **B5 (adversarial
+> review) not yet run.** Packets C-D were not started.
 >
 > **Queue:** serves STATE queue `#1` (mechanism supply), but queue placement is
 > not a phase GO. It does not block independent queue `#2` (B7-REFIRE/M1).
@@ -164,14 +165,20 @@ that a passing L3 alone certifies the conditioner.
 required:** operator acceptance of the amended design route before code is
 executed against the real hypothesis.
 
-- [ ] **B1 — Amend the parent brief and pre-registration prospectively.**
+- [x] **B1 — Amend the parent brief and pre-registration prospectively.** Done
+  2026-08-31 — parent brief §7/§11, pre-registration §C. Both preserve the
+  hypothesis, per-instrument scoring, L1–L4 results, `alpha=0.05`,
+  distinct-WHO disclosure, and the verdict map; only the day-level-surrogate
+  instruction was replaced.
 
 Preserve the hypothesis, per-instrument scoring, L1–L4 results, `alpha=0.05`,
 distinct-WHO disclosure, and the existing verdict map. Replace only the
 unvalidated instruction to adapt the day-level surrogate. Date the amendment
 and state explicitly that no real L5 statistic was inspected before it landed.
 
-- [ ] **B2 — Freeze a nested forward-prediction comparison.**
+- [x] **B2 — Freeze a nested forward-prediction comparison.** Done 2026-08-31
+  — [`DESIGN.md`](../../../lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md)
+  §3.
 
 For each surviving instrument, specify the same model family and rolling folds:
 
@@ -193,14 +200,18 @@ Use strictly past training data for every test fold. Freeze the warm-up period,
 fold boundaries, missing-data behavior, learner/hyperparameters, and any
 regularization without looking at real augmented-minus-baseline performance.
 
-- [ ] **B3 — Freeze the primary statistic and dependence treatment.**
+- [x] **B3 — Freeze the primary statistic and dependence treatment.** Done
+  2026-08-31 — [`DESIGN.md`](../../../lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md)
+  §4.1, §4.5.
 
 Primary: augmented-minus-baseline improvement in a proper out-of-sample loss
 (Brier or log loss; elect one before code runs). Companion: the existing minimum
 within-own-range-stratum lift. Inference must be blocked at trading-day/session
 level; treating M15 bars as IID is forbidden.
 
-- [ ] **B4 — Freeze the attribution null.**
+- [x] **B4 — Freeze the attribution null.** Done 2026-08-31 —
+  [`DESIGN.md`](../../../lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md)
+  §4.2–§4.4, §5.
 
 Fit the predictable component of trigger-bar volume using training data only.
 Randomize the residual component in blocks within predeclared time-of-day and
@@ -212,7 +223,12 @@ The design must separately report the distinct-WHO check after adding prior-day
 range state. Whether the lift survives that addition types attribution but does
 not silently change the frozen verdict criterion.
 
-- [ ] **B5 — Adversarial design review before pilot execution.**
+- [ ] **B5 — Adversarial design review before pilot execution.** Design's own
+  §6 pre-answers all six questions below (self-review, not a substitute).
+  Routed through this design's own PR review (Codex) rather than an
+  in-session panel — operator decision, 2026-08-31; not yet run —
+  [`DESIGN.md`](../../../lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md)
+  §6–§7.
 
 Required review questions:
 

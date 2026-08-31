@@ -71,11 +71,27 @@ computes them — no re-derivation at verdict time)
 ## §C — Attribution limb (L5 analogue, MNQ; NEVER GATES on its own — TYPES the verdict between
 RESOLVED-strength and a weaker survival-only reading)
 
-- Whatever joint-surrogation design Phase 1 produces (post-review), its two-sided p_upper against
-  the observed minimum stratified lift is the L5 analogue. `p_upper ≤ 0.05` → attribution clears;
-  same never-re-roll discipline as the frozen spec's §2 and `Q-RANGEXFER-1`'s own §C.
+**Amended 2026-08-31 (Packet B, B1) — the day-level joint-surrogation adaptation this section
+originally deferred to is retired; see the parent brief's §11 same-day entry.** L5 is now the
+bar-native design at
+[`lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md`](../../../lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md):
+
+- The primary statistic is mean out-of-fold Brier-score improvement (baseline vs.
+  volume-augmented, purged/embargoed rolling folds — design §4.1), tested against a stratified
+  block-permutation null on the residualized volume component with full re-estimation of every
+  fitted component inside every replicate (design §4.3–§4.4). Its two-sided p_upper against the
+  observed improvement is the L5 analogue. `p_upper ≤ 0.05` → attribution clears; same
+  never-re-roll discipline as the frozen spec's §2 and `Q-RANGEXFER-1`'s own §C. The acceptance
+  threshold and never-re-roll discipline are unchanged from the original freeze — only the
+  statistic and null construction producing p_upper changed.
 - The distinct-WHO three-way check (§4 of the parent brief) is **disclosed alongside** L5, not
   folded into it — it types the mechanism-attribution question, it does not gate RESOLVED/FALSIFIED.
+  Formalized in the design as Comparison 2 (design §3.1, §5): the same primary-statistic
+  construction, substituting a baseline that also holds `daily-range-state-persistence`'s own
+  conditioning variable fixed.
+- No real L5 statistic, on either instrument, was inspected before this amendment landed — the
+  design specifies a block-length-selection method (design §4.3), not a number, precisely so nothing
+  here required touching real data.
 
 ## §D — Verdict map (mirrors the parent brief's §6 table exactly; restated here as the frozen,
 pre-Phase-1 form)
