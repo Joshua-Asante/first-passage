@@ -48,7 +48,7 @@ declared scope, with a FAIL treated as a real falsifier, not pre-negotiated to n
 
 ### Part A — Block bootstrap on the locked panel
 
-1. Take the locked panel (e.g. 52-month Pepperstone). Treat as a daily DataFrame with one row per business day.
+1. Take the locked panel (e.g. 52-month Pepperstone — ⚠ retired 2026-08-02, bytes deleted, kept below only as the worked-example panel; there is no canonical CFD feed and the live feed is CME futures, see [pepperstone-feed-retirement ADR](../adr/2026-08-02-pepperstone-feed-retirement.md); check `core/mc/modes.py::PANELS_BY_BROKER` for the panel currently registered). Treat as a daily DataFrame with one row per business day.
 2. Define **6-month contiguous blocks** over the panel timeline. With a 52-month panel, this yields ~9 candidate blocks; bootstrap variance scales accordingly.
 3. **Resample with replacement** to construct 100 alternate-history panels of the same total length as the original.
 4. For each alternate panel, rebuild the inner MC week-blocks (the existing harness's 5-day resampling unit) and run the full MC sweep at the candidate config — same seed count as the parent brief (e.g. 30K paths × 3 seeds).
@@ -58,7 +58,7 @@ declared scope, with a FAIL treated as a real falsifier, not pre-negotiated to n
 ### Part B — Half-panel time split
 
 1. Split the locked panel at its temporal midpoint:
-   - For 52mo Pepperstone (2022-01 → 2026-04): H1 = 2022-01 → 2024-04, H2 = 2024-05 → 2026-04.
+   - (Historical figures from the retired Pepperstone panel, kept for the worked example below — not a live split point; see the retirement ADR above.) For 52mo Pepperstone (2022-01 → 2026-04): H1 = 2022-01 → 2024-04, H2 = 2024-05 → 2026-04.
    - Unequal-length halves are acceptable; document the split point.
 2. Run full MC at the candidate config on each half independently — same seed count as the parent brief.
 3. Record per-(config, half) tuple: `pass_rate, bust_rate, p99_dd`.

@@ -36,8 +36,9 @@ both Striker legs**, so there is no deployed strategy and nothing to arm).
   [`W1 ADR`](../../../docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md).
 - Self-funded scale CLOSED/parked —
   [`2026-07-16`](../../../docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md);
-  manual CFD + FXIFY closed; historical MC pins `FIRM_RULES["FXIFY"]` **by name**
-  ([`substrate`](../../../docs/adr/2026-07-22-challenge-era-substrate-retirement.md)).
+  manual CFD + FXIFY closed; historical MC now pins via `core/historical_challenge.py`'s
+  `HISTORICAL_CHALLENGE_FIRM_KWARGS` — `FIRM_RULES["FXIFY"]` itself was **deleted** at Phase 4
+  ([`substrate`](../../../docs/adr/2026-07-22-challenge-era-substrate-retirement.md) §2-E / §7 Phase 4).
 - **Arming / fills / disarm → `c1-rail` skill + RUNBOOK §B7.** Live sizing path:
   `BASE_RISK × DD_SCALE × lifecycle` with integer-qty flooring in
   `ops/c1_rail/c1_sizing_host_reference.py` (continuous-lot spine deleted).
@@ -61,7 +62,7 @@ Two corollaries specific to this operational domain:
 
 ## Firms & challenge rules
 
-`core/firm_rules.py`'s `FIRM_RULES` dict is canonical for every firm's challenge parameters. There is **no** live `ACTIVE_FIRM` switch (deleted Phase 4); c1 uses the explicit tier key `Tradeify_Select_100K`. **Read the file directly for exact values — the table below is a mirror, not a source; if it looks stale, trust the file.**
+`core/firm_rules.py`'s `FIRM_RULES` dict is canonical for every firm's challenge parameters — **except FXIFY**, deleted from `FIRM_RULES` at Phase 4 and now frozen in `core/historical_challenge.py` instead (see Snapshot row below). There is **no** live `ACTIVE_FIRM` switch (deleted Phase 4); c1 uses the explicit tier key `Tradeify_Select_100K`. **Read the file directly for exact values — the table below is a mirror, not a source; if it looks stale, trust the file.**
 
 **Fields, generically:**
 
@@ -81,7 +82,7 @@ Two corollaries specific to this operational domain:
 
 | Firm / tier | `dd_type` | `max_dd_pct` | Target | Daily loss | Min days | Micro cap |
 |---|---|---|---|---|---|---|
-| FXIFY (HISTORICAL fixture; pin by name) | static | 5.0% | 5.0% | 5.0% | 5 | — |
+| FXIFY (HISTORICAL fixture — `core/historical_challenge.py`, not a `FIRM_RULES` key since Phase 4) | static | 5.0% | 5.0% | 5.0% | 5 | — |
 | Bulenox_25K | trailing | 6.0% | 6.0% | none | 0 | 30 |
 | Bulenox_50K | trailing | 5.0% | 6.0% | none | 0 | 70 |
 | Bulenox_100K | trailing | 3.0% | 6.0% | none | 0 | 120 |
@@ -112,6 +113,8 @@ No funded-phase ramp, no active overlays — challenge and funded phase run iden
 
 For known binary volatility events (central-bank decisions, major scheduled geopolitical releases), Aegis is paused for the session — mean-reversion edge inverts on binary regime breaks. Not a general news filter; applies only to pre-scheduled binary-outcome events. Generic FOMC/NFP/CPI days are NOT binary-event pauses — those are handled by each strategy's existing session/hour filters. Guardian and Striker continue normal operation unless independently flagged.
 
+⚠ **Correction:** Aegis has no live instrument on any venue today — CFD execution (including USDJPY) is retired ([2026-06-30 no-manual-trading/CFD retirement](../../../docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md); [2026-07-11 ops CFD estate retirement](../../../docs/adr/2026-07-11-ops-cfd-estate-retirement.md)), Aegis holds no living `BASE_RISK` key after Phase C ([2026-08-23 coldstore Phase C](../../../docs/adr/2026-08-23-strategy-coldstore-phase-c.md)), and the self-funded Aegis→M6J futures scale path is CLOSED/parked, not active ([2026-07-16 lane close](../../../docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md)). The paragraph below is durable pause-rule mechanic for a possible future re-open only; see [`CLAUDE.md`](../../../CLAUDE.md) §Strategy Reference for current state.
+
 Aegis's live instrument is venue-dependent: USDJPY on CFD venues (locked v4.3); a CME 6J synthetic-spot-inversion prototype exists for futures venues but is **non-canonical** (see `project_aegis_6j_transfer_state` project memory) — do not treat it as a drop-in replacement without re-checking that record.
 
 ---
@@ -131,6 +134,11 @@ Single-tier internal drawdown overlay, independent of whichever firm's own DD ru
 - Any firm/venue switch (new explicit tier key) or new firm onboarded
 
 ### Revert triggers for a second protection tier
+
+⚠ Per [`CLAUDE.md` §Protection](../../../CLAUDE.md): the original equity tier's revert triggers are
+**LOST** — reintroducing a second tier needs fresh pre-registration, not a lookup. The candidate
+signals below (drawn from the equity-tier-deletion ADR's unratified notes, never elevated to a
+pre-registered gate) should prompt *starting* that fresh pre-registration, not substitute for it.
 
 Reintroduce only if: (1) single-tier DD-only fails to hold bust below the programme's live bust bar at any future portfolio mix change; (2) a specific tail failure emerges that DD-protection mechanically cannot catch (slow sustained bleed where peak tracks equity down); (3) allocation shifts push a high-risk leg above its locked band or add a fourth strategy with correlated tail. If any fire, the new tier must be MC-validated against **live code semantics** (not assumed semantics) from day one.
 
