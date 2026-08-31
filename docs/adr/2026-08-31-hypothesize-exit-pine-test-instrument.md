@@ -1,12 +1,12 @@
 # Hypothesize-exit frozen Pine test instrument for trading investigations, plus manual-TradingView-look K accounting — `hypothesize-exit-pine-test-instrument`
 
-**Status:** `Proposed` — drafted by Claude Code, ratification is an operator decision. Date below is the draft date, not a ratification date — see §6.
+**Status:** `Proposed` — drafted by Claude Code, ratification is an operator decision. Date below is the draft date, not a ratification date — see §9.
 **Decision date:** 2026-08-31
 **Supersedes:** none
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-**Amends-in-part:** `2026-08-30-candidate-contract.md` §2 (on ratification) — adds the Pine execution-semantic field set (bar resolution, signal timing, next-bar-vs-same-bar execution, pyramiding, stop/target ordering, commissions, slippage, position sizing, date windows, exposed inputs) at the Hypothesize-exit freeze point; see §2.1 and §6.
+**Amends-in-part:** `2026-08-30-candidate-contract.md` §2 (on ratification) — adds the Pine execution-semantic field set genuinely not already frozen there (timezone/session, bar resolution, signal timing, next-bar-vs-same-bar execution, pyramiding, stop/target ordering, position-sizing methodology, exposed inputs — NOT date windows or costs, both already owned by candidate-contract.md §2, corrected in review round 5) at the Hypothesize-exit freeze point; see §2.1 and §9.
 **Authors:** Claude Code (drafter, independent review of PR #229)
 **Layer:** methodology (INQHIORI Hypothesize-phase exit contract for trading investigations only; the general-purpose loop is unchanged). No `dd_protection`, allocation, lifecycle, or rail config touched; nothing armed; no venue action; no spend.
 **Tier:** full — creates a standing exit requirement on the H phase for every future trading investigation.
@@ -21,10 +21,10 @@ Files read in full before drafting this ADR:
 - `docs/methodology/inqhiori-canon.md` (all 16 sections) — canon's own phase diagram (§1: `I → N → [D→S→A] → Q → H → I → O → R → I`) confirms Hypothesize (H) is a real, named phase; canon defines no exit contract for it today (only Notice's exit, and the closure-resident Iterate exit added by §16, 2026-08-04). This ADR is the first to define an H-exit contract, scoped to trading investigations.
 - `docs/adr/2026-08-30-candidate-contract.md` — the founding-freeze admission gate (declared fields: signal, entry clock, stop, exit/target, holding horizon, costed payoff unit). Confirmed via full-text grep: contains no Pine/TradingView/`strategy()` content. Does not conflict with a Hypothesize-exit Pine requirement — candidate-contract freezes *declared fields*, this ADR freezes *executable test code* built from those fields, one phase later.
 - `docs/adr/2026-08-30-terminal-taxonomy.md` — confirm-phase verdict vocabulary (`CONFIRMED`/`MARKET-NULL`/`EXPRESSION-FAIL`/`EVIDENCE-VOID`, orthogonal `VENUE-FAIL` edition axis). Not touched by this ADR; the Pine test instrument is an *input* to a future confirm read, not a new verdict class.
-- `docs/adr/2026-08-30-evaluation-order.md` — step 6 ("Explore," K-ledger-bound, closed by an append-only selection freeze) and step 9 (one atomic untouched confirm run, multiplicity-adjusted). Confirmed via full-text grep: no Pine/TradingView content. This ADR does not redefine "Explore" or "confirm" — see §4 (deferred items) for why PR #229's §6 is *not* ratified here.
+- `docs/adr/2026-08-30-evaluation-order.md` — step 6 ("Explore," K-ledger-bound, closed by an append-only selection freeze) and step 9 (one atomic untouched confirm run, multiplicity-adjusted). Confirmed via full-text grep: no Pine/TradingView content. This ADR does not redefine "Explore" or "confirm" — see §7 (deferred items) for why PR #229's §6 is *not* ratified here.
 - `docs/adr/2026-08-30-operator-approvals-campaign-envelope.md` — the multiplicity/K-spend envelope, explicitly orthogonal to Rule 2's iteration budget (§2, lines 176–180: "Neither this ADR nor Rule 2 is amended by the other"). The manual-TradingView-look accounting this ADR ratifies (§2 below) is wired into this envelope's multiplicity configuration by citation, not reinvented.
-- `docs/adr/2026-06-16-rule-2-budget-before-acting.md` + canon §15 — Rule 2's OUTER-8 iteration budget. Checked independently this session (`docs/notes/audits/rule-2-trip-log.md`): **zero scripts anywhere in the repo enforce this budget** (`grep -rl "rule.2\|rule_2\|OUTER.*8" scripts/*.py` returns no hits); the trip-log itself is hand-appended prose with 3 rows total since codification (2026-06-16); its own audit trail documents a missed 2026-08-08 quarterly check that was never recorded as having not run until a later, unrelated sweep caught it. PR #229's §4 (weighted LIGHT/STANDARD/HEAVY phase budgets) proposes to amend this ADR specifically — not the six 2026-08-30 ADRs — and is not ratified here; see §4 below.
-- `ops/instruments/MECHANISMS.md` — confirms the conditioner-role vocabulary is already live practice, tagged "Conditioner-role, not entry-role" since 2026-08-18 (13 days before PR #229 proposed the same concept as a new CONDITIONER-BRIDGED tier). Not touched by this ADR — see §4.
+- `docs/adr/2026-06-16-rule-2-budget-before-acting.md` + canon §15 — Rule 2's OUTER-8 iteration budget. Checked independently this session (`docs/notes/audits/rule-2-trip-log.md`): **zero scripts anywhere in the repo enforce this budget** (`grep -rl "rule.2\|rule_2\|OUTER.*8" scripts/*.py` returns no hits); the trip-log itself is hand-appended prose with 3 rows total since codification (2026-06-16); its own audit trail documents a missed 2026-08-08 quarterly check that was never recorded as having not run until a later, unrelated sweep caught it. PR #229's §4 (weighted LIGHT/STANDARD/HEAVY phase budgets) proposes to amend this ADR specifically — not the six 2026-08-30 ADRs — and is not ratified here; see §7 below.
+- `ops/instruments/MECHANISMS.md` — confirms the conditioner-role vocabulary is already live practice, tagged "Conditioner-role, not entry-role" since 2026-08-18 (13 days before PR #229 proposed the same concept as a new CONDITIONER-BRIDGED tier). Not touched by this ADR — see §7.
 - `lab/pine/README.md` (added by PR #227, merged 2026-08-31) — an existing, informal, non-ratified Pine `indicator()` used for Python/TradingView parity checking on the MNQ/MYM mechanism-diagnostic work. Confirms light prior *practice* for the pattern this ADR formalizes as a *requirement*, though it predates and does not itself define an exit contract.
 - `CLAUDE.md` — public-clone posture: `**/*.pine` is gitignored, hash-pinned in `core/strategies/MANIFEST.sha256`; executable Python ports are hash-pinned in `PORT_MANIFEST.sha256`. A frozen *test* Pine instrument (not a production strategy) has no existing manifest convention — flagged as an open implementation detail in §2, not resolved here.
 
@@ -48,7 +48,7 @@ An independent adversarial review of PR #229 found that most of its proposed "me
 
 ### 2.1 — Hypothesize exits with a frozen Pine `strategy()` once a tradeable contract exists
 
-For a trading investigation whose candidate has cleared, or is actively seeking, `candidate-contract.md`'s admission — i.e. a complete tradeable entry/exit object exists or is the immediate goal — the Hypothesize (H) phase does not exit until it produces, alongside its ranked hypotheses, an executable, versioned Pine Script **`strategy()` test instrument** for the paired confirm-phase read. Two field sets feed it: the tradeable-object fields `candidate-contract.md` §2 already freezes (signal, entry clock, stop, exit/target, holding horizon, instrument) drive the strategy's core logic; symbol, timezone/session, bar resolution, signal timing, next-bar-vs-same-bar execution, pyramiding, stop/target ordering, commissions, slippage, position sizing, date windows, and every exposed input are execution semantics candidate-contract.md does not itself own (confirmed via full-text grep — that ADR's own text says field extension beyond its baseline list "is by amendment, not by this ADR alone"). This ADR is that amendment (`Amends-in-part`, header) — these execution-semantic fields are frozen for the first time at Hypothesize exit, not re-derived from an earlier freeze. A Python/Pine parity contract (fixture dates or event rows, expected signal counts, tolerated numeric differences, known irreducible differences declared before either result is read) travels with it.
+For a trading investigation whose candidate has cleared, or is actively seeking, `candidate-contract.md`'s admission — i.e. a complete tradeable entry/exit object exists or is the immediate goal — the Hypothesize (H) phase does not exit until it produces, alongside its ranked hypotheses, an executable, versioned Pine Script **`strategy()` test instrument** for the paired confirm-phase read. Two field sets feed it. **Already frozen by `candidate-contract.md` §2** (re-derived here, not re-decided): instrument, signal, entry clock, stop, exit/target, holding horizon, costed payoff unit, exploration/confirm date windows, and costs. **Genuinely new execution semantics that ADR does not itself own** (confirmed via full-text grep, corrected in review — round 4 of this PR's review incorrectly re-listed some of the above, already-owned fields as new; round 5 caught it): timezone/session, bar resolution, signal timing (the intra-bar mechanical detection point, distinct from the discriminator signal itself), next-bar-vs-same-bar execution, pyramiding, stop/target ordering (execution sequencing, distinct from the stop/target values), position-sizing methodology, and every exposed input. That ADR's own text says field extension beyond its baseline list "is by amendment, not by this ADR alone" — this ADR is that amendment (`Amends-in-part`, header) for the genuinely-new field set only; the already-frozen fields are reused as-is, not re-frozen. A Python/Pine parity contract (fixture dates or event rows, expected signal counts, tolerated numeric differences, known irreducible differences declared before either result is read) travels with it.
 
 If a faithful `strategy()` cannot be written from those frozen fields, Hypothesize does not exit for this candidate. The routes are: revise the expression (return to Question), or the candidate-routing STOP already owned by canon §16's closure-resident Iterate/closure contract — Iterate with budget zero, recording the re-proposal bar (`docs/adr/2026-08-04-iterate-closure-exit-mandatory.md`) — not Rule 2's own STOP, which is a budget-tripwire action that can lead to re-audit or an owner-authorized extension and does not apply to a candidate that simply cannot be encoded in Pine. No new terminal state is created either way.
 
@@ -58,7 +58,7 @@ Writing the Pine instrument is test design, explicitly not Integrate — it must
 
 ### 2.2 — TradingView exploration is Explore before the confirm holdout is read; after it is read, it voids the attempt
 
-`evaluation-order.md` step 6 already requires the campaign's K-ledger (`register_search.py open_run()`) to bind K/α/window against the frozen contract *before any exploration data is read*; step 9 requires the confirm run to be "one untouched confirm run... as one atomic step." Neither that ADR nor `register_search.py` distinguishes which *tool* ran an Explore-phase look — a manual TradingView Strategy Tester parameter change is the same kind of event as a Python-side one. This ADR states that explicitly, closing the one gap none of the six 2026-08-30 ADRs cover (TradingView is out of scope for all of them; confirmed by full-text grep, §0 above): **a manual TradingView configuration tried before the confirm holdout is read is Explore activity and must be pre-declared in the same `open_run()` K-ledger bind as any Python-side look** — not a separate, uncounted channel.
+`evaluation-order.md` step 6 already requires the campaign's K-ledger (`register_search.py open_run()`) to bind K/α/window against the frozen contract *before any exploration data is read*, and Explore to score only "every declared cell in the frozen catalogue," closed by an append-only selection freeze before any holdout access; step 9 requires the confirm run to be "one untouched confirm run... as one atomic step." Neither that ADR nor `register_search.py` distinguishes which *tool* ran an Explore-phase look — a manual TradingView Strategy Tester parameter change is the same kind of event as a Python-side one. This ADR states that explicitly, closing the one gap none of the six 2026-08-30 ADRs cover (TradingView is out of scope for all of them; confirmed by full-text grep, §0 above): **a manual TradingView configuration tried before the confirm holdout is read is Explore activity, and is legitimate only when it is a cell already declared in the frozen catalogue at the K-ledger bind** — counting it toward K does not, on its own, license inventing an off-catalogue configuration mid-Explore (round 5 of this PR's review caught that the prior text could be read that way). A cell not in the frozen catalogue is an integrity mismatch, routed the same way `evaluation-order.md` step 7 routes any other: voided, never scored as a structural or evidentiary finding — not salvaged by being counted after the fact.
 
 **A manual TradingView configuration tried *after* the confirm holdout has been read is not a look to count — it voids the current confirm attempt.** Codex's review caught that the original text here claimed such a look could be retroactively added to the same campaign's K record; that is not mechanically possible and, more importantly, not the right rule. `register_search.py`'s `open_run()` is pre-registration-only and refuses re-declaration once a run is open (`lab/discovery/register_search.py:712-716`: "Pre-registration is immutable; pick a new run-id rather than re-declaring K after results"), and `close_run()` computes thresholds only from the K frozen at open (the narrow `--operator-stopped` path may only *reduce* a not-yet-executed run's banked K, never add to an executed one). Consistent with `evaluation-order.md` step 7's own handling of any post-freeze mismatch ("never recorded as a structural or evidentiary rejection") and `terminal-taxonomy.md`'s `EVIDENCE-VOID` class (§0): post-read TradingView exploration voids the current confirm attempt, full stop, and requires a fresh campaign against a fresh, uncontaminated holdout — never a K-adjustment layered onto the run that was already read. The best-performing configuration found this way is never substituted for the frozen confirm-phase configuration; it may motivate a fresh, separately-budgeted Iterate cycle, but confers nothing on the current campaign's verdict.
 
@@ -75,7 +75,103 @@ PR #229's remaining clauses are not adopted here because each is already owned:
 | §7 (Observe minimum-observation packet) | `evaluation-order.md` steps 7 and 9 (contract-integrity check, minimum frozen temporal-consistency battery) + the terminal-taxonomy split, repackaged | Not ratified; derivative of already-ratified integrity/robustness requirements |
 | §8 (Reflect/terminal routing: ITERATE/INTEGRATE/STOP) | canon §16 (`Accepted` 2026-08-04) — live in the `Q-RANGEXFER-1` and `Q-RANGECOND-1` closures verbatim (`## Iterate` block: Verdict used / Model update / Next / routing / entry packet / stop rule / board write) | Not ratified; PR #229's §9 already (correctly) acknowledges this contract "remains intact" |
 
-## §4 — Deliberately deferred, not resolved by this ADR
+## §4 — Falsifier (revert trigger)
+
+**H (hypothesis):** requiring a frozen, executable Pine `strategy()` test instrument at the
+Hypothesize-exit boundary (§2.1), and counting a manual TradingView Strategy Tester look toward
+K only when it is a pre-declared frozen-catalogue cell (§2.2), closes the two real gaps an
+independent review found (Python/Pine execution-semantic drift; a discovery channel invisible to
+every 2026-08-30 ADR's K accounting) without creating a new loophole, and without blocking
+legitimate diagnostic-tier work that has no contract to derive `strategy()` fields from.
+
+**Revert trigger:** if, by the next scheduled quarterly programme audit after the first trading
+investigation reaches a Hypothesize-exit bound by this ADR (i.e. after the first post-ratification
+`candidate-contract.md` admission), either (a) a confirm-phase read is found to have proceeded for
+a candidate that had cleared or was seeking contract admission without an executable, versioned
+Pine `strategy()` test instrument satisfying §2.1 — i.e. the H-exit gate did not actually block a
+candidate it should have — or (b) a manual TradingView configuration is found to have been counted
+toward K, or excused from voiding, without being a cell already declared in the frozen catalogue at
+the K-ledger bind — i.e. the catalogue-membership boundary §2.2 draws did not hold in practice —
+this ADR is revoked.
+
+**Revert action:** author a superseding ADR that either (a) tightens §2.1's gate (e.g. requiring
+the parity contract itself, not just the `strategy()` file, to be checked at Hypothesize-exit), or
+(b) narrows or removes §2.2's catalogue-membership carve-out if it proves unenforceable in
+practice. Never silently edit this ADR's decision text (§2) to patch a found gap.
+
+**Trigger check schedule:** every quarterly programme audit (next: 2026-11-08).
+
+## §5 — Forbidden moves (under this ADR)
+
+- **Reading §2.2's K-counting rule as license to invent an off-catalogue TradingView configuration
+  mid-Explore.** Ruled out in §2.2 (round 5 of this PR's review caught the prior text could be
+  misread this way): counting toward K requires catalogue membership first; an off-catalogue cell
+  is voided per `evaluation-order.md` step 7, never salvaged by being counted after the fact.
+- **Retroactively adding a post-confirm-holdout-read TradingView look to the same campaign's K
+  record.** Ruled out in §2.2 (round 2 finding: not mechanically possible — `open_run()` is
+  pre-registration-immutable — and not the right rule regardless): a post-read look voids the
+  current confirm attempt outright; it never becomes a K adjustment on the run already read.
+- **Citing §2.1's STOP as Rule 2's own budget-tripwire STOP.** It is not — it is canon §16's
+  closure-owned candidate-routing STOP (`2026-08-04-iterate-closure-exit-mandatory.md`), for a
+  candidate that structurally cannot be encoded in Pine, not for an iteration-budget overrun
+  (round 4 finding, an internal inconsistency this ADR's own §3 table had already avoided
+  elsewhere).
+- **Applying §2.1's `strategy()` requirement to a diagnostic-tier investigation that has not opened
+  a contract.** Ruled out in §2.1: a diagnostic has no frozen candidate-contract fields to derive
+  `strategy()` from by construction, and no confirm-phase read for a test instrument to pair with
+  (round-1 Codex finding on the original draft).
+  A diagnostic building its own supporting Pine `indicator()` is a tool choice, not this gate.
+- **Treating §2.1's "genuinely new execution semantics" field list as re-freezing fields
+  `candidate-contract.md` §2 already owns** (date windows, costs, instrument, signal, entry clock,
+  stop, exit/target, holding horizon, costed payoff unit). Ruled out in §2.1 (round 5 caught this
+  ADR's own round-4 fix had re-listed some already-owned fields as new) — this ADR's
+  `Amends-in-part` scope is the genuinely-new set only.
+- **Building the frozen Pine test instrument as, or later repurposing it into, a production
+  strategy edition.** §2.1 is explicit: writing it is test design, not Integrate, and confers no
+  trading authorization. The manifest-entry format for a test-only instrument remains an open
+  implementation detail (§0), not license to skip the `**/*.pine` gitignore/hash-pin posture
+  entirely.
+- **Treating this ADR as ratifying any part of PR #229 beyond §2.1/§2.2.** §3 and §8 are explicit
+  that everything else in PR #229 is either already owned elsewhere or explicitly deferred (§7) —
+  citing this ADR as authority for PR #229's §2/§3/§4/§6/§7/§8 as a whole is a misreading.
+
+## §6 — Consequences
+
+**Positive consequences:**
+- Closes the one execution-semantic gap none of the six 2026-08-30 ADRs cover: nothing today
+  requires a candidate's Python-side frozen fields to ever be faithfully re-expressed as
+  executable Pine before a confirm-phase read, so Python/Pine drift was invisible until this ADR.
+- Closes the one discovery-channel gap none of the six 2026-08-30 ADRs cover: `evaluation-order.md`
+  and `register_search.py` are both tool-agnostic in principle but TradingView-blind in practice
+  (confirmed by full-text grep, §0) — this ADR states explicitly that a manual TradingView look is
+  the same kind of Explore event as a Python-side one, closing the gap without redefining Explore.
+- Narrows PR #229's own §6.3 (which implied a post-hoc TradingView look could be safely retained by
+  counting it) to the boundary that is actually sound, before any live campaign could rely on the
+  unsound version.
+- Gives `candidate-contract.md` a precise, minimal `Amends-in-part` edge — the genuinely-new
+  execution-semantic field set only, not PR #229's broader unratified table.
+
+**Negative consequences (real cost, not theatrical):**
+- Adds a standing authoring requirement to every future trading investigation that opens or seeks
+  a contract: an executable, versioned Pine `strategy()` plus a Python/Pine parity contract, at the
+  Hypothesize-exit boundary. No exemption beyond the diagnostic carve-out (§2.1).
+- The test-instrument manifest-entry format is left unresolved (§0, §5) — the first investigation
+  to build one under this ADR inherits that open decision, not a ready answer.
+
+**Risks (probabilistic, distinct from costs):**
+- If the "already frozen vs. genuinely new" execution-semantic field split (§2.1) proves wrong in
+  either direction — a field claimed already-frozen turns out unowned by `candidate-contract.md`,
+  or vice versa — before the first real trading investigation reaches Hypothesize-exit under this
+  ADR, the split needs correcting by amendment, not quiet drift in practice. §4's falsifier targets
+  the gate's operative behavior (did it block, did the catalogue boundary hold), not this narrower
+  field-accounting risk directly — flagged here so a reviewer catches it before first real use.
+
+**Downstream artifacts that need updating (on ratification, per §9):**
+- `docs/methodology/inqhiori-canon.md` — owed the Hypothesize-phase pointer (§9).
+- `docs/adr/2026-08-30-candidate-contract.md` §2 "Amended fields" list — owed this ADR's entry
+  (§9).
+
+## §7 — Deliberately deferred, not resolved by this ADR
 
 Two items an independent review surfaced are real, but are operator decisions, not something this ADR should resolve unilaterally:
 
@@ -85,10 +181,42 @@ Two items an independent review surfaced are real, but are operator decisions, n
 
 3. **PR #229's §6 (Python-Explore/TradingView-confirmation split) reuses "Explore" and "confirmation" as tool-defined sub-activities of Investigate without stating their relationship to `evaluation-order.md`'s already-ratified steps of the same names** (step 6: K-ledger-bound Explore closed by an append-only selection freeze; step 9: one atomic multiplicity-adjusted confirm run). If §6's Explore/confirm are meant as the same steps, §6 as drafted omits the K-ledger-bind and selection-freeze discipline that makes them binding; if meant as a different activity layered on top, the shared name is misleading. §2.2 above ratifies the one clean, additive piece of §6 (manual-look K accounting) without adopting the vocabulary collision that surrounds it.
 
-## §5 — Recommendation on PR #229 itself
+## §8 — Recommendation on PR #229 itself
 
-Given §3 and §4, PR #229 should be closed as superseded rather than merged: its ratifiable content is captured narrowly by this ADR (§2), its remaining content either restates already-Accepted decisions under new vocabulary (§3) or contains open questions this ADR does not resolve (§4). A comment to that effect, linking this ADR, is the appropriate close reason — not a silent close.
+Given §3 and §7, PR #229 should be closed as superseded rather than merged: its ratifiable content is captured narrowly by this ADR (§2), its remaining content either restates already-Accepted decisions under new vocabulary (§3) or contains open questions this ADR does not resolve (§7). A comment to that effect, linking this ADR, is the appropriate close reason — not a silent close.
 
-## §6 — Ratification note
+## §9 — Ratification note
 
 Not yet ratified. On operator GO: set Status to `Accepted`, set Decision date, and — as separate, later edits, not bundled into this ADR's own ratification — (1) add the corresponding canon-side pointer under canon's Hypothesize-phase treatment (matching the §16 pattern: "Canonical source: this ADR... if it and the ADR ever disagree, the ADR wins"), canon.md being the single most load-bearing methodology file in the estate; and (2) add this ADR's pointer to `candidate-contract.md`'s own "Amended fields" list (§2, matching the format its existing four amending-ADR entries already use), naming the execution-semantic field set §2.1 above adds and their Hypothesize-exit freeze point — that list's own text says it is "landed on ratification of the amending ADRs," so it stays unedited (and this ADR's `Amends-in-part` header field stays the operative record) until this ADR is actually `Accepted`.
+
+---
+
+## §10 — Audit hooks (runnable)
+
+```bash
+# Discipline checks (mechanical)
+python scripts/check_brief.py docs/adr/2026-08-31-hypothesize-exit-pine-test-instrument.md --type adr
+python scripts/check_adr_graph.py
+
+# Pre-ratification: the two owed pointer-edits (§9) must NOT have landed yet --
+# this ADR is still `Proposed`. Expect no hits until Status -> Accepted.
+grep -n "hypothesize-exit-pine-test-instrument" docs/methodology/inqhiori-canon.md
+grep -n "hypothesize-exit-pine-test-instrument" docs/adr/2026-08-30-candidate-contract.md
+
+# Rule 0 production-source verification -- confirm the cited files this ADR was
+# read against haven't drifted since drafting
+git log -1 --format="%h %ci" -- docs/adr/2026-08-30-candidate-contract.md
+git log -1 --format="%h %ci" -- docs/adr/2026-08-30-evaluation-order.md
+git log -1 --format="%h %ci" -- lab/discovery/register_search.py
+
+# Sibling WARN-tier gates this ADR's own review produced (docs/spec/ provenance,
+# Rule 2 trip-log liveness) -- both report-only, both scanned here for context
+python scripts/check_spec_provenance.py --stats
+python scripts/check_rule2_trip_log_liveness.py --stats
+
+# K-ledger immutability this ADR's §2.2 depends on -- still true?
+grep -n "Pre-registration is immutable" lab/discovery/register_search.py
+
+# Calendar trigger reminder
+# Quarterly programme audit due: 2026-11-08 (also §4's falsifier check window)
+```

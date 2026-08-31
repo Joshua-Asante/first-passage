@@ -100,11 +100,28 @@ def last_trip_log_row_date(text: str) -> tuple[date | None, list[str]]:
     return (max(dates) if dates else None), bad
 
 
+def _note_text(path: Path) -> str:
+    """Concatenates all markdown content for one audit note. A note may be a single
+    `.md` file, or a dated directory of section files -- a supported corpus shape
+    (e.g. `docs/notes/audits/programme-audit/2026-08-05-claim-alignment/`) found by
+    PR #233 review round 5. A non-recursive glob would silently scan only a
+    directory-shaped note's top-level pointer stub, if one exists, and never see the
+    substantive section files at all."""
+    if path.is_dir():
+        return "\n".join(p.read_text(errors="replace") for p in sorted(path.rglob("*.md")))
+    return path.read_text(errors="replace")
+
+
 def scan_audit_notes(audit_dir: Path) -> tuple[list[tuple[str, date, bool]], list[str]]:
-    """Returns ((relpath, filename_date, mentions_rule2) per valid note, malformed filenames)."""
+    """Returns ((relpath, filename_date, mentions_rule2) per valid note, malformed filenames).
+
+    A "note" is either a `YYYY-MM-DD-slug.md` file or a `YYYY-MM-DD-slug/` directory
+    of section files -- both are real corpus shapes (see `_note_text`)."""
     out: list[tuple[str, date, bool]] = []
     bad: list[str] = []
-    for path in sorted(audit_dir.glob("*.md")):
+    for path in sorted(audit_dir.iterdir()):
+        if path.is_file() and path.suffix != ".md":
+            continue
         m = FILE_DATE_RE.match(path.name)
         if not m:
             continue
@@ -112,7 +129,7 @@ def scan_audit_notes(audit_dir: Path) -> tuple[list[tuple[str, date, bool]], lis
         if d is None:
             bad.append(path.name)
             continue
-        text = path.read_text(errors="replace")
+        text = _note_text(path)
         out.append((str(path.relative_to(REPO_ROOT)), d, bool(MENTION_RE.search(text))))
     return out, bad
 
