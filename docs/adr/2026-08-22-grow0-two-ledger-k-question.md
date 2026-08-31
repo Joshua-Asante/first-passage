@@ -82,86 +82,39 @@ v1's original D2:
    *shared, finite* historical window used as CONFIRM by more than one campaign over time
    accumulates a distinct kind of multiplicity, currently **unpriced**.
 
-These are not the same quantity. This ADR's first draft resolved claim 1 by reading GROW-0's
-headline number (`nominal_p0=0.00059070` at K=10, "≈84.6× smaller than the naive `1−DSR_MIN=0.05`")
-as direct evidence the claim was **contradicted**. A refute-first adversarial panel (6 lenses,
-2-skeptic verification per finding) found that inference invalid, and this session's own
-re-derivation (§0, last row) confirms the panel's finding directly: `floor_at_k(k)` is
-monotonically increasing in `k` by construction, so measuring a tiny clear rate *at K=10's own,
-much higher floor* says nothing about whether a K=1-scaled floor would itself be miscalibrated.
-Measured directly this session: a single unselected null draw clears `floor_at_k(1)=0.650` at
-**4.83%** (500,000 trials), and the actual *selected* winner of a real 10-way argmax-on-TRAIN
-competition clears the *same, lower* floor at **4.72%** (20,000 panels of the real harness code)
-— statistically indistinguishable from each other and from the naive 5% figure the first draft
-called disproven. **TRAIN-side selection over K candidates does not, under GROW-0's own idealized
-independence design, inflate the selected candidate's independent CONFIRM-clear rate against a
-fixed threshold.** This is real, verified, and worth stating honestly rather than either hiding it
-or over-reacting to it.
+These are not the same quantity. This ADR went through three drafts the same session before
+settling on the ground below. **Round 1** rejected claim 1 by reading GROW-0's headline number as
+direct empirical proof — a 6-lens adversarial panel found that inference invalid: `floor_at_k(k)`
+is monotonically increasing in `k` by construction, so a tiny clear rate measured *at K=10's own,
+much higher floor* says nothing about whether a K=1-scaled floor is itself miscalibrated (this
+session's own re-derivation, §0 last row, confirms it directly — a single unselected null draw and
+the actual selected winner of a real 10-way argmax-on-TRAIN competition both clear
+`floor_at_k(1)=0.650` at statistically indistinguishable rates, ≈4.7–4.8%). **Round 2**'s
+replacement argument — that `floor_at_k`'s CONFIRM-side use is independently justified by (a) a
+TRAIN-side DSR purpose GROW-0's finding leaves untouched, and (b) a real-market non-independence
+concern attributed to the blind-channel ADR — was itself found invalid by a second adversarial
+round: (a) no cited owner applies `floor_at_k` on the TRAIN side (this repo's one real TRAIN-side
+DSR mechanism, `universe_gate.py`, uses `deflated_sharpe`/`expected_max_sharpe` directly and is
+dormant under W4); (b) the blind-channel ADR's actual L208 text makes a combinatorial
+data-partition claim, not a serial-dependence one — the framing attributed to it does not appear
+there. **Round 3** caught a third error: the dual-panel review's own B3 finding names **four**
+owners, not five — the charter's inclusion rests on this ADR's own direct §0 read, not on B3 (§0,
+§5). **Alternatives considered and rejected across the three drafts — the empirical-proof
+argument, and the TRAIN-side-purpose/non-independence argument — see Change History below for the
+round-by-round detail.**
 
-**Why claim 1 is still rejected — after two rounds of adversarial correction to this ADR's own
-reasoning, stated as narrowly as the verified evidence supports.** This ADR's first draft rejected
-claim 1 by reading GROW-0's headline number as direct empirical proof — a first adversarial round
-found that inference invalid (above). This ADR's *replacement* argument — that `floor_at_k`'s
-CONFIRM-side use is nonetheless justified by (a) an independent TRAIN-side DSR purpose GROW-0's
-finding leaves untouched, and (b) a real-market train/confirm non-independence concern attributed
-to the blind-channel ADR — was itself found invalid by a **second** adversarial round, and
-independently re-verified this session before being accepted:
+Claim 1 is rejected on the ground that survives all three rounds: `K_intrinsic` is a **ratified
+definition** — the examined catalogue/search width — shared, independently verified this session,
+across all five owners (§0); it is not a consultation-read count. Redefining a term five
+independently-ratified texts share requires a superseding ADR with new evidence about the
+*definition itself* — not a repurposing of GROW-0, whose own prereg scope ("engine/harness
+validation... not a lane campaign") was never a test of what `K_intrinsic` should mean.
 
-- **(a) is false as a description of this codebase.** `floor_at_k(K)` is applied *exclusively* as
-  a threshold on the CONFIRM/OOS statistic in every one of the five cited owners — verified
-  directly: charter L64 ("the survivor must itself clear `floor_at_k(K, confirm_years)` on data
-  the search never touched"), TNEC-1's N-EDGE row (`DSR ≥ floor_at_k(K_intrinsic)`, a
-  book-admission necessity), `admission_schema.py`'s `n_edge_dsr < floor` check, and — most
-  directly — `lab/discovery/grow0_scoring.py`'s own `run_panel` function, whose only comparison
-  involving `floor` is `clears = confirm_stat >= floor`; it never once compares `floor` to a TRAIN
-  statistic. This repo's one genuine TRAIN-side (in-sample) DSR mechanism,
-  `lab/research_utils/universe_gate.py`'s `run_dsr_gate`, calls `deflated_sharpe`/
-  `expected_max_sharpe` directly — not `floor_at_k` — and is dormant under the W4 re-arm
-  condition; it is not one of the five owners this ADR cites. There is no live TRAIN-side
-  application of `floor_at_k` for GROW-0's CONFIRM-side finding to leave "untouched."
-- **(b) misattributed a claim to the blind-channel ADR that its actual text does not make.**
-  Re-read verbatim this session: L208's own point ("Halving T moves the STUMPY-class floor only
-  2.120 → 2.050, because K enters the floor logarithmically. Splitting is a bias control, not a K
-  control") is a **combinatorial** claim about why re-partitioning TRAIN/CONFIRM data cannot
-  shrink a search's effective K — it says nothing about serial dependence or regime persistence
-  across time. A repo-wide search for the "regime-specific quirk... persists into an adjacent
-  confirm window" framing this ADR's prior draft attributed to L208 returns no hit in any cited
-  source. That framing is withdrawn.
-
-**Given two constructed first-principles arguments have now both failed scrutiny, this ADR does
-not attempt a third.** Claim 1 is rejected on the narrowest ground that survives: `K_intrinsic` is
-a **ratified definition** — "the examined catalogue/search width" — shared, verbatim or in
-substance, across all five owners (§0, each independently Rule-0-verified this session with its
-own commit hash — not inherited from a single prior source); it is not a consultation-read count.
-**Precision on provenance, corrected this round after a third citation error was caught by
-adversarial review:** the dual-panel review's own **B3** finding (`docs/notes/audits/2026-08-22-
-grow-lane-dual-panel-review.md`, read verbatim this session) names **four** owners GROW-lane v1's
-identical substitution would silently contradict — TNEC-1 N-EDGE, EM screen §8 change control,
-S6/`admission_schema.py`, and the blind-channel ADR L208 — and says nothing about a fifth, and
-nothing about the charter (the charter appears only in B3's sibling finding B2, about a different
-problem, undisclosed collision, not about `K_intrinsic`'s definition). **The fifth owner — the
-charter — and the "five owners" framing this ADR otherwise uses come from GROW spec v2's own Part
-B text, which is explicitly marked "named only; not proposed here" and never itself went through
-B3's adversarial panel.** This ADR does not inherit the charter's inclusion from B3; it establishes
-the charter's own status directly, in §0, by reading `2026-08-16-deep-iteration-lane-charter.md`
-live this session and confirming its §2.2 conjuncts key on `declared_k` (full search width), the
-same way the other four owners were independently verified. B3 supplies genuine, already-reviewed
-precedent for four of the five; the charter's inclusion rests on this ADR's own direct read, not
-on B3. Redefining a term five independently-verified texts share requires a superseding ADR that
-supplies new evidence the *definition itself* is wrong — not a repurposing of GROW-0, whose own
-explicit scope (its prereg's own words: "engine/harness validation... not a lane campaign") was
-never a test of what `K_intrinsic` should mean, and not a mechanism story this ADR would have to
-originate and defend a third time.
-
-**This session's own verified finding — that TRAIN-side selection does not inflate the
-CONFIRM-clear rate under GROW-0's idealized independence — is reported plainly and named as an
-open theoretical question this ADR does not resolve.** After two failed attempts to explain, from
-first principles, why `floor_at_k(K_intrinsic)` is nonetheless the right CONFIRM-side threshold
-for real campaigns, this ADR declines a third attempt — that explanation, if one is needed, is
-separable from the governance question this ADR actually decides (whether GROW-0 licenses
-redefining `K_intrinsic`), and is out of scope here. If the question is worth pursuing, the
-correct path is a fresh, pre-registered, adversarially-reviewed investigation against real market
-data — named, not opened.
+This session's own verified finding — that TRAIN-side selection does not inflate the CONFIRM-clear
+rate under GROW-0's idealized independence — is reported honestly but named as an open theoretical
+question this ADR does not resolve, separable from the governance question this ADR actually
+decides. If worth pursuing, the correct path is a fresh, pre-registered, adversarially-reviewed
+investigation against real market data — named, not opened.
 
 **Decision driver (one sentence):** claim 1 is rejected on the narrowest available ground —
 `K_intrinsic`'s ratified definition, independently verified this session across all five owners

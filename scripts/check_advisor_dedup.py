@@ -27,6 +27,15 @@ Corpus searched (the surfaces this repo already treats as closure-of-record):
   docs/rejected_candidates.md      one chunk per "### " entry
   ops/instruments/*.md             one chunk per file
   docs/briefs/rnd-pipeline/*.md    one chunk per file
+  docs/adr/*.md                    one chunk per file (excl. INDEX/README/TOMBSTONES)
+
+Third motivating incident (2026-08-31, ADR corpus audit): docs/adr/ was absent
+from every surface above -- the tool that answers "does an ADR on this already
+exist?" could not see a single ADR. Two same-shaped F1 discharges landed nine
+days apart (2026-08-15, 2026-08-24) with no dedup hit between them, and a
+persona-hierarchy ADR pasted this tool's "slugs found: (none)" as its own §0
+dedup evidence -- a guaranteed false negative displayed as proof. Closed the
+same way the second incident was: add the missing corpus surface.
 
 Second motivating incident (2026-08-19): a Research Analyst inaugural-session
 draft recommended GRADUATE on the D5 Baltussen intraday-momentum-footprint
@@ -77,6 +86,12 @@ def _has_digit(token: str) -> bool:
     return any(c.isdigit() for c in token)
 MD_LINK_RE = re.compile(r"\[([^\]]*)\]\([^)]*\)")
 MD_SYNTAX_RE = re.compile(r"[`*_#\[\]()]")
+# A retired/superseded/withdrawn ADR's substantive body moves to docs/ltm/adr/
+# (scripts/retire_adr.py); only a short card-shape stub with this field remains
+# at docs/adr/<file>. Indexing the stub alone misses the body's actual content --
+# for the newly retired Aegis ADR, body-specific vocabulary scores the stub 1 and
+# the archived body 8, silently missing this class of historical prior art.
+ADR_BODY_FIELD_RE = re.compile(r"^\*\*Body:\*\*\s*`([^`]+)`", re.M)
 
 STOPWORDS = frozenset("""
 this that with from into over under about their there where when what which
@@ -202,6 +217,30 @@ def load_corpus(repo_root: Path) -> list[Chunk]:
             surface = md.relative_to(repo_root).as_posix()
             chunks.append(Chunk(surface, _title_of(text, md.stem), text))
 
+    # ADRs are closures-of-record for governance/doctrine decisions the same
+    # way docs/briefs/closures/ is for research campaigns -- omitted until
+    # 2026-08-31 (found in the ADR corpus audit: two ADRs, 08-15 and 08-24,
+    # discharged the same F1 nine days apart with no dedup hit between them).
+    # INDEX.md/README.md/TOMBSTONES.md are corpus scaffolding, not decisions.
+    adr_dir = repo_root / "docs" / "adr"
+    if adr_dir.is_dir():
+        skip = {"INDEX.md", "README.md", "TOMBSTONES.md"}
+        for md in sorted(adr_dir.glob("*.md")):
+            if md.name in skip:
+                continue
+            text = md.read_text(encoding="utf-8", errors="replace")
+            surface = md.relative_to(repo_root).as_posix()
+            body_match = ADR_BODY_FIELD_RE.search(text)
+            if body_match:
+                body_path = repo_root / body_match.group(1)
+                if body_path.is_file():
+                    # Index the retired body's full text under the stub's surface
+                    # path (that's what INDEX.md and a reader open first) so the
+                    # searchable content is complete without double-counting the
+                    # short stub as a second, near-empty hit.
+                    text = body_path.read_text(encoding="utf-8", errors="replace")
+            chunks.append(Chunk(surface, _title_of(text, md.stem), text))
+
     return chunks
 
 
@@ -274,7 +313,7 @@ def main(argv: list[str] | None = None) -> int:
     if not corpus:
         print("check_advisor_dedup: no corpus found under docs/briefs/closures, "
               "docs/notes/audits, docs/SESSIONS.md, lab/CATALOG.md, "
-              "docs/rejected_candidates.md, ops/instruments, "
+              "docs/rejected_candidates.md, ops/instruments, docs/adr, "
               "docs/briefs/rnd-pipeline — nothing to compare against.")
         return 0
 
