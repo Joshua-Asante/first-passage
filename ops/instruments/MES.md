@@ -13,7 +13,7 @@ symbol: MES
 asset_class: equity-index-futures
 family: [ES]
 venue_tradable: true
-venue_note: "Tradeify Equity Index Product Group. Withdrawn MNQ/MYM legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred; LEG_MAP code untouched."
+venue_note: "Tradeify Equity Index Product Group. Withdrawn MNQ/MYM legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred. Correction 2026-08-26: LEG_MAP cap_alloc code WAS edited (both Striker legs' cap_alloc zeroed) — see [Striker LEG_MAP cap-release ADR](../../docs/adr/2026-08-26-striker-legmap-cap-release.md) for current cap_alloc state, not this note."
 k_bank_source: "../../discovery_manifests/"
 cost_hurdle:
   value: 6.84
