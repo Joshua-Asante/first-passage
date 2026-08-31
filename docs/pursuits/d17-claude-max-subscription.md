@@ -15,6 +15,7 @@ Cursor (A2/A4, fleet workers) than to a single-Aim data/feed subscription, and p
 Claude Max as untracked and out-of-scope-list; operator elected "track it" as a new record over
 "leave out of scope" and "flag and revisit")
 
-**Source:** [`cfo-log.md` 2026-08-21 entry](../personas/cfo-log.md) (C-1 closure review that surfaced
-the gap) · not part of the original GSUB-1 inventory (d11-d16 were; this row is a same-class
-addition made after that inventory closed)
+**Source:** `cfo-log.md` 2026-08-21 entry (docs/personas/, deleted 2026-08-31 in the persona-hierarchy
+retirement — see [`docs/adr/2026-08-31-persona-hierarchy-full-retirement.md`](../adr/2026-08-31-persona-hierarchy-full-retirement.md))
+(C-1 closure review that surfaced the gap) · not part of the original GSUB-1 inventory (d11-d16 were;
+this row is a same-class addition made after that inventory closed)

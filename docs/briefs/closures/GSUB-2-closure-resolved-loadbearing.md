@@ -17,7 +17,7 @@ touches `dry_run`, `armed_until`, M1 status, any locked strategy's authorization
 [`b2 pursuit record`](../../pursuits/b2-striker-mym-reconstruction.md) ·
 [`c1 pursuit record`](../../pursuits/c1-q-xmem-1.md) ·
 [`Q-XMEM-1 closure`](Q-XMEM-1-closure-subtract.md) ·
-[`persona logs`](../../personas/) (`cio-log.md`, `coo-log.md`, `cro-log.md`, 2026-08-19 entries)
+persona logs (`cio-log.md`, `coo-log.md`, `cro-log.md`, 2026-08-19 entries — docs/personas/ deleted 2026-08-31, see [retirement ADR](../../adr/2026-08-31-persona-hierarchy-full-retirement.md))
 
 ---
 

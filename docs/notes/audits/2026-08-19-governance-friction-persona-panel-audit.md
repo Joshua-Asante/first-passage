@@ -208,3 +208,6 @@ automated-pass cap (Head of Governance's own flag, still unchecked); (2) Risk An
 Model Validation Analyst, and Robustness Analyst should be re-tested against a naturally-occurring
 artifact in their actual domain (a `dd_protection` change, a backtest/DSR claim, a regime-robustness
 gate application) rather than forced against one that doesn't fit — not urgent, opportunistic.
+**(Retired 2026-08-31 — persona system fully retired, see
+`docs/adr/2026-08-31-persona-hierarchy-full-retirement.md`; this follow-up is no longer
+actionable.)**

@@ -33,7 +33,7 @@
 | Hop-table / vocabulary tax | **P1** (same packet; no new glossary root file) |
 | W5 CI-from-`gates.yml` | **Landed 2026-08-23** (H6 HOLD lifted) |
 | SESSIONS keep-20 roll | **Landed 2026-08-23** |
-| Personas, dual venvs/skills, folder name vs `first-passage` | Parked — operating-model, not a defect to “fix” in-tree |
+| Personas, dual venvs/skills, folder name vs `first-passage` | Parked — operating-model, not a defect to “fix” in-tree. ⚠ **Stale (corrected 2026-08-31).** The persona hierarchy itself is fully retired, not merely parked — [persona-hierarchy-full-retirement ADR](../../adr/2026-08-31-persona-hierarchy-full-retirement.md); dual venvs/skills and the folder-name item are unaffected and stay parked |
 | Pine gitignored; LTM search exclude | Parked — correct scars; P1 teaches them |
 | README lead still sells “deploy at four firms” | **P6** — front-door lead sentence |
 | Identifier collision (P/S/F/B/M/G/Q series) | **P7** — identifier table (not a sixth root file) |
@@ -42,7 +42,7 @@
 | INDEX Open rows that are not open | **P10** — roster hygiene |
 | No admitted candidate / four-firm §4 | **Not a packet.** [`viable-strategy sequence`](2026-08-23-viable-strategy-sequence-overview.md) (`AWAITING GO`) |
 | CI green ≠ merge gate / no branch protection | ⚠ **Stale as written (corrected 2026-08-24).** Limb-A does **not** stand: the `main-protection` ruleset landed 2026-08-19 (PR required, `skills (3.12)` required, no bypass) — [`Q-GATESTACK-1`](../../briefs/closures/Q-GATESTACK-1-closure-falsified.md) closure addendum. Only the *other* checks remain advisory |
-| Personas / dual agent surfaces | Parked — operating model (unchanged) |
+| Personas / dual agent surfaces | Parked — operating model (unchanged). ⚠ **Stale (corrected 2026-08-31).** Personas are fully retired, not "unchanged" — [persona-hierarchy-full-retirement ADR](../../adr/2026-08-31-persona-hierarchy-full-retirement.md); dual agent surfaces are unaffected |
 | S3/S7 still `PROPOSED`; session lettering | Parked — leave; do not reopen S7 |
 
 ```mermaid
@@ -313,7 +313,7 @@ Attestation (this session, before authoring): `lab/CATALOG.md` and `docs/briefs/
 | SESSIONS keep-20 roll | **Landed 2026-08-23** | [`scripts/roll_sessions.py`](../../../scripts/roll_sessions.py) · archive `docs/ltm/notes/archive/sessions/` |
 | Generation dryness | bind row 3 closed; object-layer sequence already authored | [channel ADR addendum](../../adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md#addendum-2026-08-23--scoped-decline-of-the-reopened-6am6a-and-gcmgc-entry-geometry--dense-1m-cell) · [`viable-strategy sequence`](2026-08-23-viable-strategy-sequence-overview.md) |
 | Mass CATALOG Verdict / `--slug` | catalog ADR forbids without its own GO | [`2026-08-22-catalog-hot-vs-disposition.md`](../../adr/2026-08-22-catalog-hot-vs-disposition.md) |
-| Personas / dual skill homes / two venvs | operating model | leave |
+| Personas / dual skill homes / two venvs | operating model. ⚠ **Stale (corrected 2026-08-31).** Persona hierarchy fully retired — [persona-hierarchy-full-retirement ADR](../../adr/2026-08-31-persona-hierarchy-full-retirement.md); dual skill homes/venvs unaffected | leave |
 | CI green ≠ merge precondition / no branch protection | ⚠ **Stale (corrected 2026-08-24)** — ruleset landed 2026-08-19; `skills (3.12)` IS required | [`Q-GATESTACK-1`](../../briefs/closures/Q-GATESTACK-1-closure-falsified.md) closure addendum |
 | S3/S7 `PROPOSED`; session lettering | leave; do not reopen S7 | [`loop-spec index`](../../spec/2026-08-07-loop-spec-index.md) · [`roll_sessions.py`](../../../scripts/roll_sessions.py) |
 | Folder `multi_firm_operations` vs GitHub `first-passage` | cosmetic identity | operator-only |

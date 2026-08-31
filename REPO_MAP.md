@@ -120,7 +120,7 @@ Regenerate: `python scripts/check_repo_map_scripts_table.py --write`.
 `--check` exits 1 on drift; it is **not** wired into `gates.yml`.
 
 <!-- BEGIN generated: scripts-table -->
-_61 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_62 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 | Script | Layer | Gate id (tier) | Notes |
 |---|---|---|---|
@@ -145,17 +145,18 @@ _61 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/check_lifecycle_consistency.py` | governance | `lifecycle-consistency` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_md_relative_links.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_path_liveness.py` | governance | `path-liveness` (always) | — |
-| `scripts/check_personas.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_pine_manifest.py` | governance | `pine-manifest` (always); `pine-pin-provenance` (always) | — |
 | `scripts/check_pursuit_records.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_push_collision.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_repo_map_layers.py` | governance | `repo-map-layers` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_repo_map_scripts_table.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_root_doc_liveness.py` | governance | `root-doc-liveness` (always) | layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_rule2_trip_log_liveness.py` | governance | `rule2-trip-log-liveness` (always) | --stats (report-only); layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_sessions_queue_bind.py` | governance | `sessions-queue-bind` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_skill_deploy_sync.py` | governance | `skill-deploy-sync` (always) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_skill_refs.py` | governance | `skill-refs` (always) | — |
 | `scripts/check_skills_no_constants.py` | governance | `skills-no-constants` (always) | — |
+| `scripts/check_spec_provenance.py` | governance | `spec-provenance` (always) | --stats (report-only); layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_status_consistency.py` | governance | `status-consistency` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_supersession_placement.py` | governance | `supersession-placement` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/cost_geometry_pregate.py` | lab | — | manual/local only, not in gates.yml |

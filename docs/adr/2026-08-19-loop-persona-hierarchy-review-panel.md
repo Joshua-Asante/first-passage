@@ -1,17 +1,27 @@
 # ADR 2026-08-19 — Persona hierarchy: a front/middle/back-office review panel over the GRAND/STRATEGIC loop tiers
 
+> ⚠ **Fully superseded 2026-08-31.** The entire persona-hierarchy system this ADR stood up —
+> including the Front-Office-only roster the 2026-08-21 partial-supersession below preserved — is
+> retired. `docs/personas/` is deleted from the live tree; no persona is spawnable. See
+> [`2026-08-31-persona-hierarchy-full-retirement.md`](2026-08-31-persona-hierarchy-full-retirement.md)
+> for the decision and rationale. This ADR's text below is left unedited as the historical record
+> of what was ratified 2026-08-19 — read it as history, not as a current description of anything
+> live.
+
 **Status:** `Accepted` — ratified by operator (Joshua) 2026-08-19, in-session direct instruction
 ("ratify the ADR"); see Ratification note
 **Decision date:** 2026-08-19
 **Authors:** Joshua + Claude Code (design collaboration, 2026-08-18–19)
 **Supersedes:** none
-**Superseded-by:** none
+**Superseded-by:** `2026-08-31-persona-hierarchy-full-retirement.md` — in full (this ADR's entire
+remaining decision, including the 2026-08-21 partial supersession below, is retired)
 **Superseded-in-part-by:** `2026-08-21-persona-hierarchy-front-office-only.md` — D1's spawnable
 roster (narrowed to Front Office + CEO apex + cross-office CFO; the six Middle/Back-office
 C-suite/Senior-Manager seats and their two Back-office Staff retired to mechanical gates) and D3's
 *implementation* of the CRO safety-invariant hard-block (now a standalone deterministic scan, not
 conditional on a spawned CRO persona). D2, D4's delegation mechanism, D5, and the GRAND/STRATEGIC
-trigger scope are untouched — see the addendum below.
+trigger scope are untouched — see the addendum below. Historical record only as of 2026-08-31 (see
+the full-supersession notice above).
 **Retain-until:** none
 **Related:** [three-loop binding](2026-06-12-three-loop-methodology-binding.md) (`Accepted` — extended one
 tier of *scope*, not amended; same pattern the GRAND ADR itself used; also the ADR whose own D2 defines
