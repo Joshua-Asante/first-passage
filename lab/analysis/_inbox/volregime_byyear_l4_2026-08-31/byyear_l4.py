@@ -51,6 +51,10 @@ def tod_threshold(values: np.ndarray, slots: np.ndarray, window: int) -> np.ndar
 
 def prepare(symbol: str) -> tuple[pd.DataFrame, dict]:
     path = DATA / f"{symbol}_M15.csv"
+    if not path.is_file():
+        raise RuntimeError(
+            f"{symbol} vendor panel absent: {path}; restore the hash-pinned file before scoring"
+        )
     actual_hash = sha256(path)
     if actual_hash != EXPECTED[symbol]:
         raise RuntimeError(f"{symbol} hash mismatch: {actual_hash}")
@@ -91,6 +95,8 @@ def prepare(symbol: str) -> tuple[pd.DataFrame, dict]:
     scored = (~np.isnan(bias_volume)) & (~np.isnan(bias_range)) & (~np.isnan(outcome))
     frame = pd.DataFrame(
         {
+            "time_utc": raw.loc[scored, "time"].reset_index(drop=True),
+            "trading_day": trading_day.loc[scored].reset_index(drop=True),
             "year": trading_day.dt.year.to_numpy()[scored].astype(int),
             "bias_volume": bias_volume[scored].astype(int),
             "bias_range": bias_range[scored].astype(int),

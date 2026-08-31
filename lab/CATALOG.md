@@ -73,7 +73,7 @@ documents the camp boundary for humans/tools.
 | q_rail_1_2026-07 | c1 | ACTIVE | yes | c1 rail Phases 0–4 CLOSED RESOLVED; ceiling $700 operator-signed | lab/analysis/c1/q_rail_1_2026-07/ | — |
 | research-analyst-mnq-atomic-facts-2026-08-19 | c1 | ACTIVE | yes | Research Analyst inaugural session — MNQ atomic-fact decomposition draft (cross-campaign synthesis, not a new backtest); routing corrected same-day 2026-08-19 (DROP D5 -- already killed twice, ledger-contradicted first GRADUATE call / HOLD temporal-selectivity / DROP weekly-bias) | lab/analysis/c1/research-analyst-mnq-atomic-facts-2026-08-19/ | — |
 | shape_feasibility_map_2026-08 | c1 | ACTIVE | yes | 945-cell region published (Select/MFFU/Growth); Select≡MFFU; §4 sims_per_seed reduction accepted; screens shape, not mechanisms | lab/analysis/c1/shape_feasibility_map_2026-08/ | — |
-| tradeify_book_composition_2026-07-23 | c1 | ACTIVE | yes | eval-lock fix + §2 book-composition re-derivation | lab/analysis/c1/tradeify_book_composition_2026-07-23/ | inputs gitignored |
+| tradeify_book_composition_2026-07-23 | c1 | ACTIVE | yes | eval-lock fix + §2 book-composition re-derivation | lab/analysis/c1/tradeify_book_composition_2026-07-23/ | — |
 | tradeify_eval_lock_correction_2026-07-22 | c1 | ACTIVE | yes | Tradeify/MFFU eval drawdown-lock correction re-MC | lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/ | — |
 | tradeify_fade_stage0_2026-07-30 | c1 | ACTIVE | yes | Stage 0 instrumentation complete; Stage 1 region computed at 1x/2x/4x; no mechanism scored, K=0, $0 spend | lab/analysis/c1/tradeify_fade_stage0_2026-07-30/ | — |
 | tradeify_futures3_bustcut_2026-07-11 | c1 | ACTIVE | yes | Tradeify Select Flex 50K bust-cut Tests 1+2 | lab/analysis/c1/tradeify_futures3_bustcut_2026-07-11/ | — |
@@ -95,8 +95,8 @@ documents the camp boundary for humans/tools.
 |---|---|---|---|---|---|---|
 | d5_nq_intraday_mom_2026-07 | orb | ACTIVE | yes | Baltussen H1 on NQ IS — Stage-2/4 results | lab/analysis/orb/d5_nq_intraday_mom_2026-07/ | — |
 | eodadv_mnq_2026-08 | orb | FALSIFIED | yes | no pre-registered mechanism survives; 15:30 exit stays barred | lab/analysis/orb/eodadv_mnq_2026-08/ | — |
-| orb_mnq_2026-07 | orb | ACTIVE | yes | NAS100-ORB-30 on native MNQ; Stage-2 cost-law PASS then T2 payability FIRED | lab/analysis/orb/orb_mnq_2026-07/ | inputs gitignored |
-| orb_universe_2026-06-22 | orb | ACTIVE | yes | which FXIFY CFD best suits Opening Range Breakout | lab/analysis/orb/orb_universe_2026-06-22/ | pkl gitignored |
+| orb_mnq_2026-07 | orb | ACTIVE | yes | NAS100-ORB-30 on native MNQ; Stage-2 cost-law PASS then T2 payability FIRED | lab/analysis/orb/orb_mnq_2026-07/ | — |
+| orb_universe_2026-06-22 | orb | ACTIVE | yes | which FXIFY CFD best suits Opening Range Breakout | lab/analysis/orb/orb_universe_2026-06-22/ | — |
 | sessconf_mnq_2026-08 | orb | ACTIVE | yes | faithful close_tod session-truncation sweep (MNQ, Tradeify) | lab/analysis/orb/sessconf_mnq_2026-08/ | — |
 
 ### aegis
@@ -105,7 +105,7 @@ documents the camp boundary for humans/tools.
 |---|---|---|---|---|---|---|
 | aegis_6j_prop_reconstruction_2026-07 | aegis | ACTIVE | yes | Stage-1 FALSIFIED (operator accepted); Wave-1 sweep artifacts retained hot | lab/analysis/aegis/aegis_6j_prop_reconstruction_2026-07/ | — |
 | aegis_6j_trail_tradeify_2026-07-29 | aegis | ACTIVE | yes | J4 re-run at true Tradeify Select 100K geometry (Aegis→6J v0.3) | lab/analysis/aegis/aegis_6j_trail_tradeify_2026-07-29/ | — |
-| aegis_6j_transfer_2026-07-05 | aegis | ACTIVE | yes | Bulenox Option-2 trail-survival MC sequence (Aegis→6J v0.3) | lab/analysis/aegis/aegis_6j_transfer_2026-07-05/ | inputs gitignored |
+| aegis_6j_transfer_2026-07-05 | aegis | ACTIVE | yes | Bulenox Option-2 trail-survival MC sequence (Aegis→6J v0.3) | lab/analysis/aegis/aegis_6j_transfer_2026-07-05/ | — |
 
 ### regime
 
@@ -177,6 +177,7 @@ documents the camp boundary for humans/tools.
 | rangexfer_byyear_l4_2026-08-30 | _inbox | ACTIVE | yes | Q-RANGEXFER-1's L4 (by-year) presence limb, all 5 hypotheses: N_valid<7 on all five (AMBIGUOUS), confirming the pre-registration's own ex-ante prediction; corrected three times (PR #224 Codex review — qualifying-year gate fix; 2026-08-31 MNQ look-ahead fix; 2026-08-31 MYM scope-gap fix — n_valid counts shift, AMBIGUOUS routing unchanged on all five). Consumed into the presence-battery closure (`rangexfer_presence_battery_2026-08-30`) — Q-RANGEXFER-1 closed 2026-08-30 | lab/analysis/_inbox/rangexfer_byyear_l4_2026-08-30/ | — |
 | rangexfer_presence_battery_2026-08-30 | _inbox | FALSIFIED | yes | MIXED — 4/5 hypotheses AMBIGUOUS-DESIGN, H-RANGEXFER-1.a-MYM FALSIFIED (presence L2 fails). | lab/analysis/_inbox/rangexfer_presence_battery_2026-08-30/ | — |
 | volregime_byyear_l4_2026-08-31 | _inbox | ACTIVE | yes | L4 PASS independently on MNQ and MYM; L3 (halves-stability) and L5 (attribution) remain open. | lab/analysis/_inbox/volregime_byyear_l4_2026-08-31/ | — |
+| volregime_l3_2026-08-31 | _inbox | ACTIVE | yes | `ACTIVE` — BLOCKED-AT-INPUT: deterministic L3 scorer complete; both | lab/analysis/_inbox/volregime_l3_2026-08-31/ | — |
 
 ## Archived
 
