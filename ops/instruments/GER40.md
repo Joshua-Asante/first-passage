@@ -1,7 +1,7 @@
 # INSTRUMENT LEDGER — GER40
 
 **Symbol:** GER40 (DAX 40 index CFD; aka GER30 / DE40 / DAX) · **Tradable:** FXIFY / DXTrade · **Asset class:** equity index (EUR-denominated)
-**Canonical feed:** TV CSV export — **Pepperstone / GER40** (operator-supplied panel `BAR_EXPORT_v0.1_PEPPERSTONE_GER40_2026-06-22_37fa8.csv`, 131,504 15m bars 2020-2026, Step-0 PASS; EUR-denominated → `Price EUR` column; epoch UTC → convert to **Europe/Berlin** for the 09:00 CET cash open).
+**Canonical feed:** (historical — Pepperstone retired 2026-08-02; see [feed retirement ADR](../../docs/adr/2026-08-02-pepperstone-feed-retirement.md)) TV CSV export — **Pepperstone / GER40** (operator-supplied panel `BAR_EXPORT_v0.1_PEPPERSTONE_GER40_2026-06-22_37fa8.csv`, 131,504 15m bars 2020-2026, Step-0 PASS; EUR-denominated → `Price EUR` column; epoch UTC → convert to **Europe/Berlin** for the 09:00 CET cash open; bytes deleted from checkout, offline-copy-only per the ADR).
 **DXTrade contractValue:** **UNVERIFIED** (EUR/index-point) — broker-verify before any sizing (the DJ30 default-1 = ~7%-risk class of bug). Not in `firm_rules.py`.
 **Status:** **Research / concept-stage — not allocated, no live strategy.** First R&D = the 2026-06-22 ORB study.
 **Last updated:** 2026-06-22

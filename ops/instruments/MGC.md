@@ -100,7 +100,7 @@ structure:
   new mechanism evidence, not a θ-retune or a re-read of this same result. See
   `lab/analysis/c1/msl_s4_mgc_2026-08/`.
 - Instrument-lane re-screen complete 2026-08-09. Election out of scope.
-- Self-funded Guardian→MGC lane remains PARKED/CLOSED (program posture); this ledger does not reopen it.
+- Self-funded Guardian→MGC lane remains PARKED/CLOSED (program posture); this ledger does not reopen it. ⚠ **Correction 2026-08-31:** the underlying R7 transfer cell moved past "PARKED" on 2026-08-11 — verdict `DEAD(N-SURV)`, Standing flipped `PARK → SUBTRACT` same day. The PARKED reading above is superseded; do not cite it as current. Canonical: [STATE.md](../../STATE.md) forward obligations · [b8 pursuit](../../docs/pursuits/b8-guardian-mgc-transfer-lane.md) · [closure](../../docs/briefs/closures/2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md). Broader self-funded-lane program authorization stays CLOSED per the 2026-07-16 ADR — that half of this bullet is unaffected.
 
 ## SESSION LOG
 
