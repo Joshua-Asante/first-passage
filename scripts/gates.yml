@@ -373,3 +373,56 @@ gates:
     cmd:
       - python
       - scripts/audit_notice_grade_k_correction.py
+
+  # Added 2026-08-31 (PR #229 review): `docs/spec/` carried zero gate coverage
+  # before this entry (confirmed: `grep -c docs/spec scripts/gates.yml` on the
+  # prior revision returns 0) -- the one class of file this repo treats as
+  # "commissions a build, not the decision" (docs/spec/README.md) is also the
+  # one class nothing here mechanically checks, which is how a PROPOSED spec
+  # citing zero ADRs while proposing to amend the INQHIORI canon landed as a
+  # PR uncontested by anything but a line-level Codex review. This gate does
+  # not adjudicate ratification-worthiness -- it only asks whether a
+  # canon-amending docs/spec/ file cites at least one ADR by path. See the
+  # script's own docstring for what it cannot see (citation-by-title,
+  # semantic dedup quality).
+  # `tier: always`, non-blocking: same reasoning as falsifier-reachability-census
+  # and notice-grade-k-correction above -- the script's own docstring states
+  # "WARN-TIER BY DESIGN. Always exits 0 unless --strict," confirmed by a
+  # direct run against this worktree (exit 0, 54 specs scanned, 12
+  # canon-amending, 5 zero-citation findings printed to stdout). No clean
+  # baseline exists yet for this heuristic -- promoting straight to --strict
+  # would repeat the exact mistake the falsifier-reachability-census entry's
+  # own comment above documents avoiding.
+  - id: spec-provenance
+    tier: always
+    cmd:
+      - python
+      - scripts/check_spec_provenance.py
+      - --stats
+
+  # Added 2026-08-31 (PR #229 review follow-up, task 4): Rule 2's own §7
+  # programme-audit checklist item (read the trip-log, confirm >=1 entry per
+  # active loop class) has zero mechanical enforcement and already failed
+  # silently once -- the 2026-08-08 quarterly audit skipped it, undetected
+  # until an unrelated sweep caught it the next day (trip-log's own
+  # 2026-08-09 correction block). This does not adjudicate audit-cycle
+  # counting or characterize what a repeat skip would mean (that convention
+  # was proposed 2026-08-22 and the operator declined to ratify it, and the
+  # governing ADR says any convention here must be authored fresh, not
+  # revived) -- it only reports, as plain fact from 2026-11-08 (the
+  # trip-log's own named next quarterly gate) onward, whether a
+  # programme-audit note mentions Rule 2/the trip-log. 2026-08-31 PR #233
+  # review round 2 caught this comment and the script's own messaging both
+  # over-characterizing that fact using the withdrawn addendum's own
+  # escalation language -- fixed same commit.
+  # `tier: always`, non-blocking: same reasoning as spec-provenance and
+  # falsifier-reachability-census above -- the script's own docstring states
+  # "WARN-TIER BY DESIGN. Always exits 0 unless --strict," confirmed by a
+  # direct run against this worktree (exit 0, 16 programme-audit notes
+  # scanned, 0 findings -- today is 2026-08-31, before the 2026-11-08 gate).
+  - id: rule2-trip-log-liveness
+    tier: always
+    cmd:
+      - python
+      - scripts/check_rule2_trip_log_liveness.py
+      - --stats
