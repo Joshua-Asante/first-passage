@@ -1,6 +1,6 @@
 # Q-VOLREGIME-1 bar-level by-year L4 — 2026-08-31
 
-**Status:** ACTIVE — L4 PASS independently on MNQ and MYM; L3 (halves-stability) and L5 (attribution) remain open.
+**Status:** ACTIVE — L4 PASS independently on MNQ and MYM; L3 subsequently PASS on both, leaving L5 attribution open.
 
 ## Result
 

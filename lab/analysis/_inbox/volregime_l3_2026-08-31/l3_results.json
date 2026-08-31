@@ -1,0 +1,165 @@
+{
+  "method": "Q-VOLREGIME-1 L3 chronological-halves presence limb",
+  "script_sha256": "ae3e77d795098c7f7d3c1bd222d7943e3fd88ed6ebdd294f209f962aaf7ed106",
+  "execution_code": {
+    "source_commit": "cf450ccd01a3183c8b50fa296c89355acca1ba33",
+    "l3_wrapper_worktree_sha256": "ae3e77d795098c7f7d3c1bd222d7943e3fd88ed6ebdd294f209f962aaf7ed106",
+    "l3_wrapper_git_blob_sha256": "5d698664c80594efddcca08ba5df99e2e3566b7c907d4fbf2818b7809d5d4906",
+    "scored_frame_builder_worktree_sha256": "1c42e92da78a8fa22bd0f7399693679456745186b04f2a29a6d15cff5ecb4119",
+    "scored_frame_builder_git_blob_sha256": "ffb211c5d9404cac9254471a8cadb3bd14f37fbf9e78526cfe61d2f6cf5cd093",
+    "line_endings_note": "Worktree hashes cover CRLF execution bytes; Git blob hashes cover the logically identical LF-normalized committed sources.",
+    "post_execution_note": "Review hardening landed after the frozen one-shot run; observed statistics were not recomputed."
+  },
+  "instruments": {
+    "MNQ": {
+      "input": {
+        "csv": "core/data/bar_data/MNQ_M15.csv",
+        "sha256": "6c86f41a17b7dfce05baa205a4147b7504f3ce1eb14a3b03b994aa090fa7e00a",
+        "window_same_slot_prior_observations": 60,
+        "n_scored": 135958,
+        "span_utc": [
+          "2020-07-01 23:00:00+00:00",
+          "2026-07-03 00:00:00+00:00"
+        ]
+      },
+      "split_rule": "observation midpoint after frozen scored-frame exclusions",
+      "scored_frame_span_utc": [
+        "2020-09-23T23:00:00+00:00",
+        "2026-07-02T23:45:00+00:00"
+      ],
+      "split_index_zero_based_second_half_start": 67979,
+      "split_boundary_utc": "2023-08-15T08:00:00+00:00",
+      "halves": {
+        "first": {
+          "n_scored": 67979,
+          "span_utc": [
+            "2020-09-23T23:00:00+00:00",
+            "2023-08-15T07:45:00+00:00"
+          ],
+          "strata": {
+            "0": {
+              "n_cond": 6688,
+              "n_ref": 28500,
+              "rate_cond": 0.47383373205741625,
+              "rate_ref": 0.25642105263157894,
+              "lift": 0.2174126794258373
+            },
+            "1": {
+              "n_cond": 27124,
+              "n_ref": 5667,
+              "rate_cond": 0.7294278130069312,
+              "rate_ref": 0.4475030880536439,
+              "lift": 0.28192472495328724
+            }
+          },
+          "minimum_stratum_lift": 0.2174126794258373,
+          "passes": true
+        },
+        "second": {
+          "n_scored": 67979,
+          "span_utc": [
+            "2023-08-15T08:00:00+00:00",
+            "2026-07-02T23:45:00+00:00"
+          ],
+          "strata": {
+            "0": {
+              "n_cond": 6157,
+              "n_ref": 26038,
+              "rate_cond": 0.5034919603703102,
+              "rate_ref": 0.27360012289730395,
+              "lift": 0.22989183747300623
+            },
+            "1": {
+              "n_cond": 30548,
+              "n_ref": 5236,
+              "rate_cond": 0.752749770852429,
+              "rate_ref": 0.48987776928953397,
+              "lift": 0.26287200156289503
+            }
+          },
+          "minimum_stratum_lift": 0.22989183747300623,
+          "passes": true
+        }
+      },
+      "l3": {
+        "verdict": "PASS",
+        "rule": "minimum within-own-range-stratum lift > 0 in both chronological halves"
+      }
+    },
+    "MYM": {
+      "input": {
+        "csv": "core/data/bar_data/MYM_M15.csv",
+        "sha256": "24e169528f7ea6693b75c71c3195edf6a04f3a26c6b6dff0f2e9c623fd597a58",
+        "window_same_slot_prior_observations": 20,
+        "n_scored": 139605,
+        "span_utc": [
+          "2020-07-01 23:00:00+00:00",
+          "2026-07-02 20:45:00+00:00"
+        ]
+      },
+      "split_rule": "observation midpoint after frozen scored-frame exclusions",
+      "scored_frame_span_utc": [
+        "2020-07-29T23:00:00+00:00",
+        "2026-07-02T20:30:00+00:00"
+      ],
+      "split_index_zero_based_second_half_start": 69802,
+      "split_boundary_utc": "2023-07-18T08:45:00+00:00",
+      "halves": {
+        "first": {
+          "n_scored": 69802,
+          "span_utc": [
+            "2020-07-29T23:00:00+00:00",
+            "2023-07-18T08:30:00+00:00"
+          ],
+          "strata": {
+            "0": {
+              "n_cond": 7567,
+              "n_ref": 28894,
+              "rate_cond": 0.4421831637372803,
+              "rate_ref": 0.27742783968990103,
+              "lift": 0.16475532404737925
+            },
+            "1": {
+              "n_cond": 25899,
+              "n_ref": 7442,
+              "rate_cond": 0.7154330283022511,
+              "rate_ref": 0.4634506852996506,
+              "lift": 0.2519823430026005
+            }
+          },
+          "minimum_stratum_lift": 0.16475532404737925,
+          "passes": true
+        },
+        "second": {
+          "n_scored": 69803,
+          "span_utc": [
+            "2023-07-18T08:45:00+00:00",
+            "2026-07-02T20:30:00+00:00"
+          ],
+          "strata": {
+            "0": {
+              "n_cond": 8205,
+              "n_ref": 26826,
+              "rate_cond": 0.46264472882388785,
+              "rate_ref": 0.2992619100872288,
+              "lift": 0.16338281873665905
+            },
+            "1": {
+              "n_cond": 26838,
+              "n_ref": 7934,
+              "rate_cond": 0.7145465384902004,
+              "rate_ref": 0.4751701537685909,
+              "lift": 0.23937638472160955
+            }
+          },
+          "minimum_stratum_lift": 0.16338281873665905,
+          "passes": true
+        }
+      },
+      "l3": {
+        "verdict": "PASS",
+        "rule": "minimum within-own-range-stratum lift > 0 in both chronological halves"
+      }
+    }
+  }
+}
