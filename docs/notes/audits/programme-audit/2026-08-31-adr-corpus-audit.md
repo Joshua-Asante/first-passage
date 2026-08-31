@@ -138,25 +138,58 @@ restraint is deliberate, not an oversight):
   35 inbound references (more than its own parent ADR's 28). Repoint cost exceeds the 1,626-word
   saving.
 
-## §5 — Simplification: the actual money (NOT yet adversarially verified — see §7 disposition)
+## §5 — Simplification: verified and executed (updated same day, post-verification)
 
-27 ADRs, 102,181 words today, ranked by proposed savings (not yet executed — see §7 for what
-happens next):
+The 27 classification-pass proposals below went through their own adversarial (default-refute)
+round before anything was edited, same posture as §1. **19 of 27 (70%) were refuted outright —
+consistent with the ~76% verified-round refutation rate this note originally flagged as the
+expected base rate.** 8 survived, in every case narrower than proposed; all 8 were then edited,
+each re-verified post-edit for header-field and Decision/Falsifier/Gate/Forbidden-moves integrity.
+**Net: 2,967 words cut across 8 files — not the 48,091-word headline the unverified pass
+projected.** The gap between those two numbers is the point of running verification before
+editing a decision corpus, not after.
 
-| # | ADR | Now | Proposed after | Saved |
-|---|---|---:|---:|---:|
-| 1 | `2026-07-31-orb-mnq-unpark-payability-target.md` | 7,088 | 1,800 | 5,288 |
-| 2 | `2026-08-22-grow0-two-ledger-k-question.md` | 6,599 | 2,000 | 4,599 |
-| 3 | `2026-07-10-strategies-never-locked-lifecycle-governance.md` | 6,748 | 3,000 | 3,748 |
-| 4 | `2026-06-05-monorepo-layer-boundaries.md` | 4,830 | 1,800 | 3,030 |
-| 5 | `2026-07-15-external-mechanism-harvest-intake.md` | 6,982 | 4,800 | 2,182 |
-| 6 | `2026-05-22-reality-check-harness.md` | 3,252 | 1,100 | 2,152 |
-| 7 | `2026-08-19-loop-persona-hierarchy-review-panel.md` | 4,746 | 2,600 | 2,146 |
-| 8 | `2026-07-22-challenge-era-substrate-retirement.md` | 4,625 | 2,600 | 2,025 |
-| 9 | `2026-05-16-fxify-correct-timeout-semantic.md` | 3,521 | 1,750 | 1,771 |
-| 10 | `2026-08-24-sourcing-phase-channel-retirement.md` | 4,911 | 3,200 | 1,711 |
-| 11–27 | (17 more files) | 40,999 | 29,440 | 11,559 |
-| | **Total** | **102,181** | **54,090** | **48,091 (11% of corpus)** |
+Original ranked table, annotated with actual disposition:
+
+| ADR | Words before | Words after | Disposition |
+|---|---:|---:|---|
+| `2026-07-31-orb-mnq-unpark-payability-target.md` | 7,088 | 6,718 | **APPLIED**, saved 370 |
+| `2026-08-22-grow0-two-ledger-k-question.md` | 6,599 | 6,021 | **APPLIED**, saved 578 |
+| `2026-07-10-strategies-never-locked-lifecycle-governance.md` | 6,748 | 6,748 | Refused — the proposal targeted the ADR's own §2 Decision section by name, a standing off-limits section; the "restated" text is this ADR's sole owner of the reasoning, not a duplicate |
+| `2026-06-05-monorepo-layer-boundaries.md` | 4,830 | 4,743 | **APPLIED**, saved 87 |
+| `2026-07-15-external-mechanism-harvest-intake.md` | 6,982 | 6,982 | Refused — the three "duplicate" §0 tables are independently anchor-cited reads for three different ratification events on three different dates; the falsifier blocks are the evidentiary chain for a §4 limb this pass may not touch |
+| `2026-05-22-reality-check-harness.md` | 3,252 | 3,118 | **APPLIED**, saved 134 |
+| `2026-08-19-loop-persona-hierarchy-review-panel.md` | 4,746 | 4,746 | Refused — 2 of the 4 "roster-churn" addenda are substantively unrelated governance rulings with no headcount content; the premise mischaracterized the file |
+| `2026-07-22-challenge-era-substrate-retirement.md` | 4,625 | 4,625 | Refused — Read the full file (632 lines) and verified both named bloat sections against the repo |
+| `2026-05-16-fxify-correct-timeout-semantic.md` | 3,521 | 2,757 | **APPLIED**, saved 764 |
+| `2026-08-24-sourcing-phase-channel-retirement.md` | 4,911 | 4,911 | Refused — §10 alone is 781 words (largest section); the retirement rationale differs materially per channel, not a repeated boilerplate |
+| `2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md` | 2,990 | 2,990 | Refused — the worked-example narrative is the only concrete illustration of the rule; no duplicate exists |
+| `2026-05-28-audit-doc-generation-doctrine.md` | 2,522 | 1,886 | **APPLIED**, saved 636 |
+| `2026-06-16-rule-2-budget-before-acting.md` | 4,958 | 4,958 | Refused — the narrative is the ratification rationale itself, not a restatement of the addendum |
+| `2026-08-23-adr-decay-audit-skill-ratification.md` | 2,854 | 2,854 | Refused — the worked example is unique per section, not a repeated walkthrough |
+| `2026-08-27-ssot-data-lineage-remediation-program.md` | 5,766 | 5,766 | Refused — the phase narrative is each addendum's own completion record, not duplicated elsewhere |
+| `2026-08-22-ox-alpha-adversarial-lens-scope.md` | 4,994 | 4,994 | Refused — the 'Use N' addenda are each a dated, distinct measurement event, not repetitions of one caveat |
+| `2026-08-21-persona-hierarchy-front-office-only.md` | 3,692 | 3,692 | Refused — the parent-rationale restatement is what makes this narrowing self-contained without a second read |
+| `2026-08-15-notice-log-is-the-live-observation-routing-convention.md` | 2,589 | 2,589 | Refused — the proposal targets a section that does not exist in the file |
+| `2026-06-30-state-md-role-reduction.md` | 2,403 | 2,403 | Refused — no before/after full-text STATE.md reproduction exists in this file to cut |
+| `2026-08-29-clv-autocorrelation-admission-route-scope.md` | 4,492 | 4,492 | Refused — the named bloat section does not exist in this file |
+| `2026-08-02-third-leg-liveness-limb.md` | 2,266 | 2,109 | **APPLIED**, saved 157 |
+| `2026-08-03-orb-mnq-repark-payability-falsified.md` | 3,641 | 3,641 | Refused — the RESULTS numbers are the falsified verdict's own evidentiary support, not a restatement |
+| `2026-08-21-cfo-subscription-ledger-consolidation.md` | 2,595 | 2,595 | Refused — the proposed bloat section does not exist in this file as described |
+| `2026-08-09-survive-bound-is-the-queue-cap.md` | 901 | 901 | Refused — each addendum resolves a distinct queue-ordering event on a different date, not a repeated point |
+| `2026-05-10-manifest-integrity-gate.md` | 982 | 741 | **APPLIED**, saved 241 |
+| `2026-04-17-striker-v4.3-pyramid.md` | 635 | 635 | Refused — cited by `core/strategies/_archive/striker/striker_CHANGELOG.md`; flagged separately for a public-redaction question this pass does not decide (§7) |
+| `2026-08-14-msl-explore-stage-5a.md` | 599 | 599 | Refused — the file is already light-tier (599 words); the proposed cut has no safe room to take from without touching Decision/Gate |
+| | **102,181** | **99,214** | **8 applied (2,967 words saved) · 19 refused** |
+
+Post-edit checks, all passing: `check_adr_graph.py` OK; header fields (`Status`/`Decision
+date`/`Supersedes`/`Superseded-by`/`Superseded-in-part-by`/`Retain-until`/`Tier`) byte-identical
+on all 8 edited files (grepped diffs directly, zero touched); no Decision/Falsifier/Gate/Forbidden-
+moves heading removed on any file; `check_brief.py` shows the same MALFORMED verdicts pre- and
+post-edit on the 3 files that carry them (`manifest-integrity-gate`, `fxify-correct-timeout-
+semantic`, `reality-check-harness`) — confirmed against `git show HEAD:<path>` before editing:
+these are pre-existing section-naming-convention gaps in older ADRs, not regressions from this
+pass.
 
 Common bloat patterns, in priority order of recoverable words:
 
@@ -194,16 +227,20 @@ Common bloat patterns, in priority order of recoverable words:
 
 **Executed today (§3):** the retirement, the dedup-tool fix (+ tests), this note.
 
-**Not executed today, explicitly deferred pending adversarial verification:** the §5 simplify
-list and the §6 status-hygiene table. Both were produced by the classification pass only — they
-did not go through the refute-by-default adversarial round that killed 76% of the verified
-proposals in §1. Executing 27 subtractive edits to governance/decision records on a single
-classification pass, on a corpus where the last two unverified passes were wrong 96–100% of the
-time, is not a defensible standard even under an operator "go ahead" — the verification step is
-what makes "go ahead" safe to act on rather than a blind batch apply. Planned: adversarial
-verification per file (does the cut ADR still carry Decision/Falsifier/Gate/Forbidden-moves
-intact; does Rule 14 permit a subtractive edit here; does anything else cite the section being
-cut), execute only what survives, and report per-file outcome (fixed / skipped / no-change-needed).
+**Executed today, same session (§5):** the 27 simplify proposals went through their own
+refute-by-default adversarial round before any edit — the same standard applied to §1's
+DELETE/CONSOLIDATE/STATUS_FIX proposals, not a lighter one just because "simplify" sounds safer.
+**19 of 27 (70%) refused**, consistent with §1's ~76% verified-round refutation rate; the 8
+that survived were narrowed by verification (none applied as originally proposed) and edited,
+each re-checked post-edit for header-field and Decision/Falsifier/Gate/Forbidden-moves integrity.
+Net: 2,967 words cut, not the 48,091-word unverified projection. This is the intended outcome of
+running verification before editing, not a shortfall — see §5 for the full per-file table and
+§9 for why that gap is the finding, not a failure.
+
+**Not executed today:** the §6 status-hygiene table (11 items) — none were subtractive edits to
+ratified ADR bodies, so the risk profile differs from §5, but they were not run through the same
+adversarial pass this session and should not be treated as pre-verified. Same standard applies
+before executing any of them.
 
 **Separately flagged, not actioned by this note:** `2026-03-01-aegis-session-selection.md`'s
 retired body (now `docs/ltm/adr/`) still publishes locked-book backtest figures (Net ~$62K, PF
@@ -256,7 +293,9 @@ a doc-budget gate (operator already declined one on 2026-08-14; the A5 age-clock
 evidence-based instrument and nothing here changes that); retro-converting any full ADR to light
 (named forbidden move in the ceremony-tiering ADR, and would game its own falsifier by shrinking
 the denominator); redacting the aegis-session backtest figures without an operator ruling on scope
-(§7); executing the §5/§6 lists as an unverified batch.
+(§7); executing the §5/§6 lists as an unverified batch (§5 was verified before execution — 19 of
+27 proposals were withdrawn at that step rather than applied on the strength of the classification
+pass alone; §6 stays unverified and unexecuted for the same reason).
 
 ## Verification
 

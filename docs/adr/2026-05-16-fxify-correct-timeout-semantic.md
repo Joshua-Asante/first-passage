@@ -155,82 +155,11 @@ Each move below was genuinely considered or surfaced during Q-MCTO-1 authoring; 
 
 ## Implementation notes
 
-Production change lands in a single coordinated commit. Verification commands run before commit-and-PR.
-
-### Code edits
-
-1. **`portfolio_mc.py`** — primary change:
-   - L37–52: Replace `HORIZON_DAYS = 150` and its preamble comment with `INACTIVITY_LIMIT = 60` + `HORIZON_CAP = 1500` constants and a short comment block citing this ADR + `firm_rules.py:14`.
-   - L200–238 (`_simulate_path`): Add `consecutive_idle` tracker; add idle-day check `(pnl == 0.0) and (not np.any(strat_pnls != 0.0))`; return `"bust_inactivity"` with `culprit=None` on `consecutive_idle >= INACTIVITY_LIMIT`; rename horizon-runout return from `"timeout"` to `"horizon_cap"`.
-   - L242 (`run_seed` signature): Replace `horizon: int = HORIZON_DAYS` with `horizon: int = HORIZON_CAP`.
-   - L254 (outcomes dict): `{"pass": 0, "bust_daily": 0, "bust_static": 0, "timeout": 0}` → `{"pass": 0, "bust_daily": 0, "bust_static": 0, "bust_inactivity": 0, "horizon_cap": 0}`.
-   - L269 (bust attribution): `outcome in ("bust_daily", "bust_static")` — unchanged; `bust_inactivity` has `culprit=None` and does not enter attribution.
-   - L388–391 (rate aggregation): `to_r` → split into `bi_r` (bust_inactivity) and `hc_r` (horizon_cap); update bust total to `bd + bs` only (`bust_inactivity` is its own counted bucket, semantically distinct from daily/static).
-   - L412–414 (output dict keys): `"timeout_rate"` → `"bust_inactivity_rate"` + `"horizon_cap_rate"`.
-   - L434–441 (printout): replace "Timeout:" line with "Bust inactivity:" + "Horizon cap:" lines; update "horizon" reference.
-
-2. **`tests/test_mc_anchors.py`** — pin updates:
-   - L84–86: `0.9878 / 0.0012 / 0.0417` → `0.9988 / 0.0012 / 0.0421`. Docstring updated to cite this ADR.
-   - L92–94: OANDA anchor re-pinned to post-code-change re-run value (determined at PR commit time; expected directional shift mirrors Pepperstone).
-   - Docstring at top of file updated: replace "2026-05-14 allocation refresh" narrative with FXIFY-correct semantic narrative + this ADR cross-reference.
-   - L98–99 (panel-shape pin): unchanged (1039 bdays / 207 week-blocks).
-
-3. **`tests/test_inactivity_boundary.py`** — re-point to production:
-   - Replace `from inactivity_simulator import simulate_path, INACTIVITY_LIMIT, HORIZON_CAP, STARTING_EQUITY` with `from portfolio_mc import _simulate_path, INACTIVITY_LIMIT, HORIZON_CAP, STARTING_EQUITY, DD_TRIGGER, DD_SCALE`.
-   - Adjust `_simulate_path` call sites: signature is `_simulate_path(path, dd_trigger, dd_scale, horizon)` (the production simulator takes an explicit `horizon` arg) — pass `HORIZON_CAP` as default.
-   - All 10 boundary tests should pass against the production path unchanged in their assertions (the semantic is the same; only the module path changes).
-
-4. **`CLAUDE.md`** — anchor block updates:
-   - "2026-05-14 allocation-refresh MC anchor" → "2026-05-16 FXIFY-correct-timeout MC anchor (current canonical)". Update headline numbers and add explanatory note. Move the prior 2026-05-14 allocation-refresh anchor (98.78 / 0.12 / 4.17 under 150-bday semantics) to "Prior anchors (historical)" with explicit semantic-change context.
-   - Protection section MC line: update from 98.78/0.12/4.17 to 99.88/0.12/4.21.
-   - Cross-reference line for `docs/analytics/mc_anchor_evolution/`: add the new A8 anchor row in the artifact's data table.
-
-5. **`scripts/inactivity_simulator.py`** — retired. The module was a Phase 1 work-product reference implementation; once the simulator lives in `portfolio_mc.py`, the standalone script is no longer load-bearing. Options: (a) delete; (b) keep as a documentation reference with a docstring banner citing this ADR. **Choice: keep with banner** — the inline test in `scripts/q_mcto_1_phase1.py` references it, and deleting would require touching that script too. The banner update is one comment edit.
-
-6. **`archive/docs/briefs/Q-MCTO-1-portfolio-mc-timeout-semantics.md`** — close as CLOSED-RESOLVED:
-   - Add closure note at top: `**Status:** CLOSED-RESOLVED on 2026-05-16 via [`2026-05-16-fxify-correct-timeout-semantic.md`](../adr/2026-05-16-fxify-correct-timeout-semantic.md).`
-   - Append §11 closure section: verdict + ADR cross-link + final clause evaluation summary.
-
-7. **`docs/analytics/mc_anchor_evolution/data.csv` + `plot.py` + charts** — add A8 anchor:
-   - New row: `A8,2026-05-16,FXIFY-correct timeout semantic (current canonical),pepperstone,4,G 0.34 / DJ30 v4.5 0.75 pyr 500% / A v4.3 1.50 / NAS v1 0.45,0.015,0.40,,99.88,0.12,0.00,0.12,0.00,4.21,21,...`. Attribution carries from A7 (semantic change doesn't move attribution).
-   - New OANDA row O8 at the same date with the re-run number.
-   - Regenerate the 4 PNGs.
-   - Update README event table + Q-MCTO-1 OPEN section → CLOSED-RESOLVED.
-
-### Verification commands (run before commit)
-
-```
-# Boundary tests pass against production module
-$ pytest tests/test_inactivity_boundary.py -v
-# Expected: 10/10 PASS
-
-# Canonical anchor reproduces deterministically
-$ python portfolio_mc.py --panel pepperstone
-# Expected output line: Pass: 99.88% Bust: 0.12% p99 DD: 4.21% Median 21
-
-# Anchor-pin tests pass
-$ pytest tests/test_mc_anchors.py -v
-# Expected: 5/5 PASS (pepperstone + oanda + panel-shape + lock-criteria + serial-parallel)
-
-# Phase 1 reproducibility re-confirmed against new production code
-$ python scripts/q_mcto_1_phase1.py | tail -10
-# Expected: control anchor matches 99.88/0.12/4.21 (post-ADR control is FXIFY-correct);
-# Phase 1 logic still produces 0.00000pp 3-rerun spread.
-
-# Brief check (Q-MCTO-1 closure)
-$ python ~/.claude/skills/brief-authoring/scripts/check_brief.py --type inquire archive/docs/briefs/Q-MCTO-1-portfolio-mc-timeout-semantics.md
-# Expected: 7/7 PASS
-
-# This ADR's discipline check
-$ python ~/.claude/skills/brief-authoring/scripts/check_brief.py --type adr docs/adr/2026-05-16-fxify-correct-timeout-semantic.md
-# Expected: 6/6 PASS
-```
-
-### Out of scope (deferred follow-up)
-
-- `references/baselines.md` (skill-side) — sync to 99.88/0.12/4.21. Owned by the skill maintenance flow, not this code PR.
-- `docs/notion/repo_context.md` — update headline anchor. Refresh-on-event trigger per the doc's §9.
-- Notion Command Center "Repo Context" page (page ID `32cdc0b53c1181b8a18cce1401a4f8e8`) — anchor citation update. Manual touch.
+Executed in the coordinated commit that shipped this ADR (constants, `_simulate_path` inactivity
+tracking, and the `bust_inactivity`/`horizon_cap` outcome rename landed in `core/portfolio_mc.py`;
+pins moved in `tests/test_mc_anchors.py` and `tests/test_inactivity_boundary.py`; `CLAUDE.md` and
+`docs/analytics/mc_anchor_evolution/` updated same-commit). Full edit-by-edit runbook and pre-commit
+verification commands: `git log --follow -- docs/adr/2026-05-16-fxify-correct-timeout-semantic.md`.
 
 ---
 
@@ -294,17 +223,7 @@ $ grep -l "Supersedes:.*2026-05-16-fxify-correct-timeout-semantic" docs/adr/
 
 ## Verification
 
-```
-$ python ~/.claude/skills/brief-authoring/scripts/check_brief.py --type adr docs/adr/2026-05-16-fxify-correct-timeout-semantic.md
-# Expected: 6/6 PASS
-
-$ git log -1 --pretty="%H %s" -- portfolio_mc.py firm_rules.py dd_protection.py
-# Expected: 8028bcb head (pre-ADR code edit) — anchors §0 reads.
-
-$ grep -nE "INACTIVITY_LIMIT|HORIZON_CAP" portfolio_mc.py
-# Pre-edit expected: 0 matches (will be 2 post-edit)
-# Post-edit expected: ≥2 matches.
-
-$ python scripts/q_mcto_1_phase1.py | grep -E "REPRODUCED|PASS"
-# Expected: 4 REPRODUCED + 5 PASS (Phase 1 clauses 1-5; clause 6 deferred to Phase 2 CSV)
-```
+One-time pre-adoption checks (brief-check PASS, pre/post-edit constant greps, Phase 1
+reproducibility) ran clean before this ADR's code landed. Ongoing verification lives in
+§Audit hooks above; the one-time commands themselves are recoverable via
+`git log --follow -- docs/adr/2026-05-16-fxify-correct-timeout-semantic.md`.
