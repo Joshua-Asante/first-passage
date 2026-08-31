@@ -44,25 +44,34 @@ here). From there, `strategy-validation` + `inqhiori` take over.
 
 ## Harvest intake — sourcing candidates from published literature (ADR 2026-07-15)
 
-The harvest-intake ADR currently treats harvest (sourcing published mechanisms)
-as the standing fundable discovery route, on the argument that wide mining is
-structurally unfundable at banked K. That is an evidence-contingent,
-falsifiable position — not settled estate-wide fact. Read the ADR's own live
-§4 (revert trigger + 2026-11-08 idle guard) rather than treating the argument
-as permanent:
+The current working position — evidence-contingent, owned by
 [`docs/adr/2026-07-15-external-mechanism-harvest-intake.md`](../../../docs/adr/2026-07-15-external-mechanism-harvest-intake.md)
-§4. The numbers that underwrite it (Q-GATECART-1 M-19: DSR floor 2.05 at
-K=3,177 > best in-house edge 1.83) are **GC/MGC-specific**. Check the target
-instrument/family's own `K_banked` figure before assuming this ceiling applies
-— most families are unburned (K≤2 or K=0). Where that ceiling does bind, a
-published mechanism inverts the cost — the original author paid the mining
-cost; you pay only the confirmation cost — entering at K_intrinsic ≤ 3, a
-beatable floor. Worked proof of the screen path: D5, Baltussen et al. 2021
-*JFE* intraday momentum, the only axis to PASS the Q-KBUDGET screen (D5 plus
-H-OD-1 and H-TSMOM-1 all closed 2026-07-16; see the ADR addendum for how those
-deaths sit against §4). Mechanism-gate false-negative rate has never been
-measured — see
-[`N-2026-08-25-ox-alpha-mechanism-gate-overcorrection.md`](../../../docs/notes/notice/N-2026-08-25-ox-alpha-mechanism-gate-overcorrection.md).
+§4, which is still live and unresolved — is that wide mining's cost is its
+own `K_intrinsic` (the trial count of the search itself), which for a genuine
+wide sweep drives its own DSR floor high (Q-GATECART-1 M-19 measured a floor
+2.05 at GC/MGC's then-banked K=3,177 > best in-house edge 1.83, **under the
+pre-2026-08-04 rule**). `K_banked(family)` no longer enters that arithmetic —
+[ADR 2026-08-04](../../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md)
+retired the family term as a gate, so that 2.05 figure is now a **historical
+measurement**, not a live ceiling: a pre-registered single-hypothesis seed
+screens at floor 0.65 on *every* family, GC/MGC included. See the current
+per-family disclosure (still mandatory, no longer gating) in
+[`strategy_harvest.md`](../../../docs/methodology/strategy_harvest.md) §1
+Requirement 3.
+
+A published mechanism inverts the cost of a wide search: the original
+author already paid their own search cost, so confirming their mechanism on
+our data enters at K_intrinsic ≤ 3, a beatable floor, versus an in-house wide
+search's own large `K_intrinsic`. Harvest is one chartered, K-accounted
+discovery route, not a settled primary replacement for mining. D5 (Baltussen
+et al. 2021 *JFE* intraday momentum) remains the only axis to PASS the
+Q-KBUDGET screen; it and the next two intake-class seeds (H-OD-1, H-TSMOM-1)
+all closed 2026-07-16 without a successor. The ADR's idle guard sits on the
+2026-11-08 board if no screen-PASS seed is admitted beyond D5. Cross-read
+[`N-2026-08-25-ox-alpha-mechanism-gate-overcorrection.md`](../../../docs/notes/notice/N-2026-08-25-ox-alpha-mechanism-gate-overcorrection.md)
+— the mechanism gate's false-negative rate has never been measured (named
+ gap); the stronger "therefore the gate is over-correcting" inference does
+ not survive.
 
 Externally-published mechanisms enter **only** via the five admission
 requirements in [`docs/methodology/strategy_harvest.md`](../../../docs/methodology/strategy_harvest.md)
@@ -124,8 +133,7 @@ exists, `.md`, non-empty, inside the repo — and the path is recorded
 repo-relative. It does **not** parse the body or judge its freeze status.
 
 ```
-# Chartered lane — mechanism-first (omit --lane or pass --lane mechanism-first;
-# argparse default in register_search.py — a flag choice, not a preference ranking):
+# Mechanism-first lane (chartered; SPEC S6 + TNEC-1; --lane mechanism-first):
 PYTHONPATH=lab python -m discovery.register_search open \
     --run-id harv_d5_confirm_mnq --tool catch22 \
     --search-space-size 2 --alpha 0.05 \
@@ -154,8 +162,7 @@ PYTHONPATH=lab python -m discovery.register_search open \
 # power when confirm-power < 0.50; N-EDGE when supplied net/CI/DSR limbs fail;
 # EM2–EM5 as scored. EM1 + D1/D2 are disclosure-only (never refuse reasons).
 
-# Chartered lane — blind (pass --lane blind; same K-accounting, own schema
-# — a chartered alternative, not a deprecated pair):
+# Blind / wide-mine lane (chartered; pass --lane blind):
 PYTHONPATH=lab python -m discovery.register_search open \
     --lane blind \
     --run-id qmech_matrix_es_2010_26 --tool stumpy \
