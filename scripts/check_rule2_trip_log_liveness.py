@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""check_rule2_trip_log_liveness.py — WARN-tier: is Rule 2's own audit-checklist item executing?
+r"""check_rule2_trip_log_liveness.py — WARN-tier: is Rule 2's own audit-checklist item executing?
 
 `docs/adr/2026-06-16-rule-2-budget-before-acting.md` §7 makes one thing a standing programme-audit
 checklist item: read `docs/notes/audits/rule-2-trip-log.md`, confirm at least one entry per active
@@ -150,7 +150,12 @@ def main(argv: list[str] | None = None) -> int:
 
     findings: list[str] = []
     if today >= NEXT_QUARTERLY_GATE:
-        gate_notes = [n for n in notes if n[1] >= NEXT_QUARTERLY_GATE]
+        # Upper-bounded at `today`: an unbounded `>= NEXT_QUARTERLY_GATE` filter would let a
+        # note dated in the future (e.g. drafted ahead, or checked in with a typo'd year) that
+        # happens to mention Rule 2 silently satisfy a gate that hasn't actually happened yet --
+        # the same forward-record/phantom-discharge shape this script exists to catch, not
+        # commit (found by PR #233 review round 3).
+        gate_notes = [n for n in notes if NEXT_QUARTERLY_GATE <= n[1] <= today]
         if not gate_notes:
             findings.append(
                 f"No programme-audit note dated on/after {NEXT_QUARTERLY_GATE.isoformat()} "
