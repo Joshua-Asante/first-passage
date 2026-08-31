@@ -1,0 +1,43 @@
+{
+  "n_trades_total": 1541,
+  "n_session_days": 1548,
+  "entry_rate": 0.9954780361757106,
+  "summ_all": {
+    "n": 1541,
+    "mean_R": 0.08133949357041134,
+    "t": 2.654996782829581,
+    "wr": 0.47047371836469826,
+    "pf": 1.1862040632147628,
+    "sumR": 125.34415959200388,
+    "h1": 0.06288357539074595,
+    "h2": 0.09977147411300843,
+    "by_year": {},
+    "all_years_pos": false
+  },
+  "n_scored": 1481,
+  "n_dropped": 60,
+  "n_conditioned": 340,
+  "n_unconditioned": 1141,
+  "wr_conditioned": 0.6647058823529411,
+  "wr_unconditioned": 0.4171779141104294,
+  "mean_win_conditioned": 1.5713576909283038,
+  "mean_win_unconditioned": 0.8603163139257447,
+  "wr_diff_ci": [
+    0.18300295974114006,
+    0.31308396374548636
+  ],
+  "wr_diff_mean": 0.24832676983161253,
+  "wr_diff_n_valid": 4000,
+  "mw_diff_ci": [
+    0.5429763170697453,
+    0.8867572627836617
+  ],
+  "mw_diff_mean": 0.7102882111934055,
+  "mw_diff_n_valid": 4000,
+  "L1_n_floor": true,
+  "L2_wr_ci": true,
+  "L3_mw_ci": true,
+  "L4_wr_floor": true,
+  "verdict": "RESOLVED",
+  "rt_cost_pt": 1.4100000000000001
+}

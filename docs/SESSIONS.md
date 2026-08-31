@@ -33,6 +33,49 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-30d — Q-RANGECOND-1 authored, ruled, and closed RESOLVED: ORB-MNQ-1 x range conditioner
+
+**Focus:** Operator directive to continue the closed `Q-RANGEXFER-1` thread as a fresh Q testing
+whether the presence-verified overnight-range conditioner changes `ORB-MNQ-1`'s own realized
+payoff shape enough to matter for Tradeify payability — `ORB-MNQ-1` is the estate's only
+lifecycle-admitted MNQ candidate with a real edge, parked purely on payability. Authored,
+adversarially reviewed pre-commit, ruled by the operator on a genuine raised-bar/closure conflict,
+then executed and closed same day.
+**Shipped:** `claude/mnq-mym-mechanism-review-124957` (PR #228) — `Q-RANGECOND-1` brief + pre-reg
+(authored, then corrected on adversarial review: a load-bearing raised-bar citation error, 8
+self-violations of its own "never call it certified" rule, a §6/pre-reg gate-table gap, a missed
+same-mechanism prior finding on sibling NAS100, an uncited exploratory `p_upper=0.785` signal, a
+regime-concept conflation, a power-estimate error); operator ruling recorded ("I rule Route ①
+satisfied, proceed with Phase 1"); Phase 1-3 executed
+([`rangecond_1_2026-08-30/RESULTS.md`](../lab/analysis/_inbox/rangecond_1_2026-08-30/RESULTS.md));
+closure [`Q-RANGECOND-1-closure-resolved.md`](briefs/closures/Q-RANGECOND-1-closure-resolved.md);
+addendum filed on [`b3-orb-mnq-payability-line.md`](pursuits/b3-orb-mnq-payability-line.md).
+**Decisions/defects:** The raised-bar question was genuinely blocking, not cosmetic — my own
+citation (MSL-S2B) supported the opposite of what I used it for, and I'd quoted
+`Q-RANGEXFER-1`'s own closure §3 ("No entry, sizing, or timing construct on any surviving
+conditioner") elsewhere in the same brief without engaging it. Disclosed rather than
+self-certified; operator ruled Route ① satisfied. Phase 1 execution hit one real bug (a
+pandas-2.x `datetime64[us]`-vs-`[ns]` epoch trap already documented once in this repo at
+Q-ICTEXP-1 — caught, fixed, disclosed) and one real, disclosed panel-vintage mismatch (current
+`MNQ_M15.csv`, 2020-07→2026-07, is ~300 days shorter than `ORB-MNQ-1`'s own original G8 admission
+panel, 2019-05→present) — carried into the closure and addendum as an explicit caveat, not
+smoothed over. Result: conditioned-subset win rate 66.47% vs. unconditioned 41.72% (+24.75pp, CI
+excludes 0), mean win +0.711R lift (CI excludes 0), n_conditioned=340. `RESOLVED` per all four
+pre-registered limbs. A full Tradeify re-MC on the conditioned population is named (not
+authorized) as the next step. No `core/`/Pine/allocation/`dd_protection`/rail change; no live
+spend; `K_intrinsic=1` disclosure only. Per operator instruction this session, in-chat
+Workflow-based adversarial verification was used for the brief draft but skipped for the Phase 1
+execution and closure — Codex's own PR review is now the adversarial-review step going forward,
+not a chat-side pre-check.
+**Open / next:** STATE queue: `#1` [Acceptable strategy on the ruled host](../STATE.md) · `#2`
+[B7-REFIRE Stage 1 + M1](../STATE.md) — both formally unchanged, but `#1`'s own owner artifacts
+now include this closure and addendum as live evidence. `queue-exception: operator-directed
+continuation of an already-open research thread; not a leftover Open/next name.` The named-not-
+authorized full Tradeify re-MC on the conditioned population is the next concrete step for `#1`,
+awaiting its own operator GO, fresh K, and an explicit panel-vintage standardization decision.
+
+---
+
 ## 2026-08-30c — Q-RANGEXFER-1 closed: L5 semantics ratified, presence battery scored
 
 **Focus:** Reviewed an external (Codex) advisor report on the MNQ/MYM joint-surrogation thread at

@@ -1,8 +1,8 @@
 # Q-RANGECOND-1 — Does the presence-verified overnight-range conditioner change ORB-MNQ-1's realized payoff shape enough to matter for Tradeify payability?
 
-**Status:** `OPEN — PHASE 1 GO'D` (§0's ⚠ raised-bar bullet: operator ruled Route ① satisfied 2026-08-30 — "I rule Route ① satisfied, proceed with Phase 1" — the conflict with `Q-RANGEXFER-1`'s own closure §3 is resolved by that ruling, not argued past by this brief; see §0's own ruling record)
+**Status:** `CLOSED — RESOLVED` 2026-08-30 (with a disclosed panel-vintage caveat — see §11; operator ruled Route ① satisfied same day, "I rule Route ① satisfied, proceed with Phase 1," then Phase 1-3 executed and cleared all four pre-registered limbs)
 **Authored:** 2026-08-30
-**Closed:** N/A
+**Closed:** 2026-08-30
 **Authors:** Claude Code (D-S-A gate + Rule-0 reads; adversarially reviewed pre-commit — a 5-lens workflow found and this draft corrects: a load-bearing raised-bar citation error, 8 self-violations of the brief's own "never call it certified" rule, a §6/pre-reg §C gate-table gap, a missed same-mechanism prior finding on NAS100, an uncited exploratory p_upper=0.785 signal, a regime-concept conflation, and a power-estimate error — see corrections marked inline); operator-directed continuation of the closed Q-RANGEXFER-1 thread ("Continue with solution shaped hypothesis you suggested, authored as a fresh Q")
 **Parent question:** N/A — forks off the closed `Q-RANGEXFER-1` thread's own presence-verified finding, but is scored as an independent construct-level question, not a sub-question of it
 **Sub-questions opened:** none yet
@@ -471,3 +471,32 @@ $ git log -1 -- docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md
 $ git log --oneline docs/briefs/pre-registration/Q-RANGECOND-1-verdict-preregistration.md
 # Expected: pre-registration commit == this brief's own commit (both filed together, before Phase 1)
 ```
+
+---
+
+## §11 — Phase 1-3 execution record
+
+**2026-08-30 — Phase 1-3 executed same day as the Route ① ruling. Verdict: `RESOLVED`, with one
+disclosed panel-vintage caveat.** Full record:
+[`rangecond_1_2026-08-30/RESULTS.md`](../../lab/analysis/_inbox/rangecond_1_2026-08-30/RESULTS.md).
+Reused `orb_lib.orb_backtest`/`session_panel` and the exact `ORB-MNQ-1` `Instrument` construction
+verbatim, and the frozen `bias_overnight` conditioner verbatim, joined on `trading_day`/`day` (no
+adjustment needed — `orb_lib`'s own plain ET calendar date and `data_lib.py`'s own Globex-cutover
+`trading_day` are equivalent for RTH-scoped sessions, since the cutover only affects overnight
+bars `session_panel` already discards). One real bug found and fixed during the run (a known
+pandas-2.x `datetime64[us]`-vs-`[ns]` trap, already documented once in this repo at Q-ICTEXP-1) —
+disclosed in `RESULTS.md`, not silently patched. **Headline:** conditioned-subset win rate
+66.47% vs unconditioned 41.72% (+24.75pp, CI `[+18.30pp,+31.31pp]`); mean win (winners only)
++1.571R vs +0.860R (+0.711R, CI `[+0.543R,+0.887R]`). n_conditioned=340 (≫ the 30-trade floor).
+All four pre-registered limbs (L1-L4) clear → `RESOLVED` per pre-reg §C. **Caveat, disclosed not
+hidden:** this run's own unconditioned-population summary stats are computed on `MNQ_M15.csv`
+(2020-07→2026-07, 1,548 RTH sessions) — a ~300-day-shorter, more-recent-starting panel than
+`ORB-MNQ-1`'s own original G8 admission pipeline used (`RESULTS.md`'s own cited "2019-05-06→
+present," 1,857 sessions). This does not affect the conditioned-vs-unconditioned comparison
+itself (both measured on the identical panel, differing only in the conditioner split), but means
+the absolute headline figures are a fresh measurement on the current canonical panel, not an
+exact reproduction of the original admission numbers — any future full re-MC should standardize
+explicitly on one panel vintage rather than blend them. Closure filed per §9:
+[`Q-RANGECOND-1-closure-resolved.md`](closures/Q-RANGECOND-1-closure-resolved.md). No `core/`,
+Pine, allocation, `dd_protection`, or rail change; no live spend; `K_intrinsic=1` per §8.
+— Claude Code, executing Phase 1-3 under the operator's Route ① ruling

@@ -76,3 +76,35 @@ distinct payability question from ORB-MNQ solo (which stays exactly as parked ei
 specific evidence originally cited here no longer clears the eval ceiling under any tested
 correction. One item (a native TradingView re-export at exactly 4 Aegis contracts) remains
 genuinely open and could still move this picture; see that RESULTS.md §10.4.
+
+## Addendum 2026-08-30 — overnight-range-conditioned ORB-MNQ-1: new payability evidence, standalone leg, on point for this document's own re-entry clause
+
+`Q-RANGECOND-1` ([`closure`](../briefs/closures/Q-RANGECOND-1-closure-resolved.md)) tested whether
+`Q-RANGEXFER-1`'s own presence-verified overnight-range conditioner (a day-selection filter,
+independently derived, never touching this instrument's own trade log — see that closure's own
+F2-GUARD distinction) changes `ORB-MNQ-1`'s own realized win-rate/mean-win shape enough to matter
+for Tradeify payability, operator-ruled Route ① satisfied same day. Result: **conditioned-subset
+win rate 66.47% vs. unconditioned 41.72% (+24.75pp, CI `[+18.30pp,+31.31pp]`); mean win (winners
+only) +1.571R vs +0.860R (+0.711R, CI `[+0.543R,+0.887R]`)**, n_conditioned=340 (≫ the 30-trade
+floor). Both clear the pre-registered gate; `RESOLVED`. This is new payability/cost-geometry
+evidence at an admissible venue (Tradeify), on `ORB-MNQ-1` **as a standalone leg** (not an overlay
+inside a combined book, the class of evidence the Aegis-6J1 addenda above concerned) — on point
+for this document's own re-entry clause.
+
+**Disclosed caveat, must be read before acting on the headline figures above:** this run's own
+unconditioned-population summary stats are computed on `MNQ_M15.csv` (2020-07→2026-07, 1,548 RTH
+sessions), a ~300-day-shorter, more-recent-starting panel than this pursuit's own original G8
+admission pipeline used (`orb_mnq_2026-07/RESULTS.md`'s own cited "2019-05-06→present," 1,857
+sessions) — a newly-disclosed panel-vintage drift, not previously flagged anywhere in this
+document. The conditioned-vs-unconditioned comparison itself is unaffected (both legs measured on
+the identical panel); the absolute figures are a fresh measurement, not a byte-for-byte
+reproduction of this pursuit's own originally-published numbers. Full account:
+[`rangecond_1_2026-08-30/RESULTS.md`](../../lab/analysis/_inbox/rangecond_1_2026-08-30/RESULTS.md).
+
+**Re-entry / re-scoping this pursuit around a conditioned-entry framing, if warranted, is an
+operator call, not made here** — same discipline this document's own prior addenda apply. This
+closure's own INTEGRATE routing names (does not authorize) a full Tradeify re-MC on the
+conditioned trade population as the natural next step, needing its own operator GO, fresh K
+declaration, and an explicit panel-vintage standardization decision (the observed-sample split
+above used the current canonical panel; a re-MC should not silently blend panel vintages). $0
+spend, `K_intrinsic=1` disclosure only, nothing armed.
