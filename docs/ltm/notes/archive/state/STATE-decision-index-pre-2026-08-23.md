@@ -2,6 +2,10 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Seventh roll, 2026-08-31** (one entry, pushed off by the Q-RANGECOND-1 correction):
+
+- **2026-08-23** — ox-alpha Uses 3–4 (WHO-methodology critique; freshly-authorized mechanism-supply generation) reconciled; viable-strategy sequence authored as six `AWAITING GO` phase plans. Cascade thread conceded dead by its own proposer; MOC-imbalance wake converges with the estate's named free supply route. [`Use-4 notice`](../../../../../docs/notes/notice/N-2026-08-23-ox-alpha-mechanism-supply-candidates.md) [`overview`](../../../../../docs/superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md)
+
 **Sixth roll, 2026-08-30** (one entry, pushed off by the Q-RANGECOND-1 closure):
 
 - **2026-08-23** — Keep-20 SESSIONS roll + W5 CI-from-`gates.yml` (H6 HOLD lifted). Queue row 3 opened and closed same session (succession: no auto-replace). [`W5 addendum`](../../../../../docs/adr/2026-08-07-w5-governance-diet.md#addendum-2026-08-23--h6-hold-lifted-ci-composition-from-gatesyml) · [`gate-manifest.yml`](../../../../../.github/workflows/gate-manifest.yml) · [`roll_sessions.py`](../../../../../scripts/roll_sessions.py)

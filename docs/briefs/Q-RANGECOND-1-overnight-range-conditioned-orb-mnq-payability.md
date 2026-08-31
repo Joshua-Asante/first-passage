@@ -1,8 +1,8 @@
 # Q-RANGECOND-1 — Does the presence-verified overnight-range conditioner change ORB-MNQ-1's realized payoff shape enough to matter for Tradeify payability?
 
-**Status:** `CLOSED — RESOLVED` 2026-08-30 (with a disclosed panel-vintage caveat — see §11; operator ruled Route ① satisfied same day, "I rule Route ① satisfied, proceed with Phase 1," then Phase 1-3 executed and cleared all four pre-registered limbs)
+**Status:** `CLOSED — FALSIFIED` 2026-08-31 (corrects the retracted 2026-08-30 `RESOLVED` verdict — a look-ahead defect in the shared `data_lib.py::overnight_ohlc` dependency, caught by Codex's PR #227 review, inflated the original result; see §12)
 **Authored:** 2026-08-30
-**Closed:** 2026-08-30
+**Closed:** 2026-08-31 (corrected from the retracted 2026-08-30 `RESOLVED` verdict)
 **Authors:** Claude Code (D-S-A gate + Rule-0 reads; adversarially reviewed pre-commit — a 5-lens workflow found and this draft corrects: a load-bearing raised-bar citation error, 8 self-violations of the brief's own "never call it certified" rule, a §6/pre-reg §C gate-table gap, a missed same-mechanism prior finding on NAS100, an uncited exploratory p_upper=0.785 signal, a regime-concept conflation, and a power-estimate error — see corrections marked inline); operator-directed continuation of the closed Q-RANGEXFER-1 thread ("Continue with solution shaped hypothesis you suggested, authored as a fresh Q")
 **Parent question:** N/A — forks off the closed `Q-RANGEXFER-1` thread's own presence-verified finding, but is scored as an independent construct-level question, not a sub-question of it
 **Sub-questions opened:** none yet
@@ -500,3 +500,39 @@ explicitly on one panel vintage rather than blend them. Closure filed per §9:
 [`Q-RANGECOND-1-closure-resolved.md`](closures/Q-RANGECOND-1-closure-resolved.md). No `core/`,
 Pine, allocation, `dd_protection`, or rail change; no live spend; `K_intrinsic=1` per §8.
 — Claude Code, executing Phase 1-3 under the operator's Route ① ruling
+
+---
+
+## §12 — Correction: `RESOLVED` retracted, corrected to `FALSIFIED`
+
+**2026-08-31.** §11's own `RESOLVED` verdict is **retracted**. Codex's review of
+[PR #227](https://github.com/Joshua-Asante/first-passage/pull/227) (a Pine parity check on the
+overnight-range conditioner) found that `data_lib.py::overnight_ohlc` — the shared function this
+brief's own Phase 2 reused verbatim to compute `bias_overnight` — had a look-ahead defect:
+it silently included bars from the [16:00,18:00) ET post-RTH-close window on the *same* trading
+day, i.e. bars occurring strictly after that day's own RTH session had already closed, two hours
+after the very outcome (`RTH_range_d`) the conditioner was meant to lead. Independently
+re-verified and quantified same day (not taken on Codex's word alone): the gap window has bars on
+1,495/1,559 trading days, changes `on_range` on 1,096/1,559 days (mean inflation 90.7 pt), and
+flips the derived `bias_overnight` flag on 312/1,499 scored days (20.81%). Full account:
+[`docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md`](../../docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md).
+
+`data_lib.py::overnight_ohlc` was corrected at its own root (restricted to genuinely pre-RTH-open
+bars, matching the convention MYM's own `load_sessions.py` already used correctly). Phase 1-3 was
+re-run against the corrected conditioner, unmodified otherwise (same script, same frozen
+pre-registration gate, same hash-verified panel). **Result: the entire effect vanishes.** WR diff
++24.75pp → **+0.75pp** (CI now includes 0); mean-win diff +0.711R → **-0.058R** (sign-flipped, CI
+includes 0). L2, L3, and L4 all fail under the corrected data. Per pre-reg §C: `FALSIFIED`. Full
+corrected numbers: [`rangecond_1_2026-08-30/RESULTS.md`](../../lab/analysis/_inbox/rangecond_1_2026-08-30/RESULTS.md)'s
+own "CORRECTED RESULTS" section. New closure filed:
+[`Q-RANGECOND-1-closure-falsified.md`](closures/Q-RANGECOND-1-closure-falsified.md) (supersedes,
+does not replace, `Q-RANGECOND-1-closure-resolved.md`, which is retracted at its own top and
+preserved as frozen historical record per Trap #12).
+
+**The addendum this brief's §9 filed on `b3-orb-mnq-payability-line.md` is itself retracted
+there, same day.** `ORB-MNQ-1` stays `PARKED`; no new payability evidence survives this thread.
+No `core/`/Pine/allocation/`dd_protection`/rail change; no spend beyond the already-declared
+`K_intrinsic=1`.
+
+— Claude Code, correcting §11 after Codex's PR #227 review, each finding independently
+re-verified against the underlying data before acting

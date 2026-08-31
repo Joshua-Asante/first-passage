@@ -108,3 +108,22 @@ conditioned trade population as the natural next step, needing its own operator 
 declaration, and an explicit panel-vintage standardization decision (the observed-sample split
 above used the current canonical panel; a re-MC should not silently blend panel vintages). $0
 spend, `K_intrinsic=1` disclosure only, nothing armed.
+
+---
+
+## ⚠ Addendum RETRACTED 2026-08-31 — the payability evidence above does not hold
+
+The `RESOLVED` finding this addendum reported (conditioned WR 66.47% vs. unconditioned 41.72%,
++24.75pp) was computed against a look-ahead-defective overnight-range conditioner
+(`data_lib.py::overnight_ohlc` silently included bars from *after* the outcome it was meant to
+predict — found in Codex's [PR #227](https://github.com/Joshua-Asante/first-passage/pull/227)
+review, independently re-verified and quantified 2026-08-31). Corrected, the effect vanishes
+entirely: WR diff +0.75pp (CI now includes 0), mean-win diff -0.058R (sign-flipped, CI includes
+0). Corrected closure: [`Q-RANGECOND-1-closure-falsified.md`](../briefs/closures/Q-RANGECOND-1-closure-falsified.md).
+Full account: [`2026-08-31-mnq-overnight-window-lookahead-defect.md`](../notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md).
+
+**This addendum supplies NO new payability/cost-geometry evidence for this pursuit's own
+re-entry clause.** `ORB-MNQ-1` stays `PARKED`, standing unchanged — read the addendum above as
+historical record of a since-corrected claim, not as live evidence. No full re-MC is named or
+owed from this thread; the re-MC this addendum previously named as a next step is withdrawn along
+with the finding that motivated it.

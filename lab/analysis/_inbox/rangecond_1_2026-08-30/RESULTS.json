@@ -16,28 +16,28 @@
   },
   "n_scored": 1481,
   "n_dropped": 60,
-  "n_conditioned": 340,
-  "n_unconditioned": 1141,
-  "wr_conditioned": 0.6647058823529411,
-  "wr_unconditioned": 0.4171779141104294,
-  "mean_win_conditioned": 1.5713576909283038,
-  "mean_win_unconditioned": 0.8603163139257447,
+  "n_conditioned": 346,
+  "n_unconditioned": 1135,
+  "wr_conditioned": 0.4797687861271676,
+  "wr_unconditioned": 0.4722466960352423,
+  "mean_win_conditioned": 1.0446552469334482,
+  "mean_win_unconditioned": 1.1030310309468259,
   "wr_diff_ci": [
-    0.18300295974114006,
-    0.31308396374548636
+    -0.05908101278853221,
+    0.07176018133202734
   ],
-  "wr_diff_mean": 0.24832676983161253,
+  "wr_diff_mean": 0.007360222701385153,
   "wr_diff_n_valid": 4000,
   "mw_diff_ci": [
-    0.5429763170697453,
-    0.8867572627836617
+    -0.2997041223986161,
+    0.20442815281690666
   ],
-  "mw_diff_mean": 0.7102882111934055,
+  "mw_diff_mean": -0.059756968317758494,
   "mw_diff_n_valid": 4000,
   "L1_n_floor": true,
-  "L2_wr_ci": true,
-  "L3_mw_ci": true,
-  "L4_wr_floor": true,
-  "verdict": "RESOLVED",
+  "L2_wr_ci": false,
+  "L3_mw_ci": false,
+  "L4_wr_floor": false,
+  "verdict": "FALSIFIED",
   "rt_cost_pt": 1.4100000000000001
 }

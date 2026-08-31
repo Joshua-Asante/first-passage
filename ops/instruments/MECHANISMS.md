@@ -821,3 +821,11 @@ by-year floor also fails independently, N_valid=3 on both parents). Closure:
 Re-open: panel growth to ≥7 qualifying years, or a design meeting
 [`BOUNDED_ROUND_PLAN.md`](../../lab/analysis/_inbox/joint_surrogation_null_2026-08-30/BOUNDED_ROUND_PLAN.md)
 §3's certification requirements. No entry/sizing construct licensed; no ledger cell renamed.
+
+**⚠ Numbers above this note are stale, corrected 2026-08-31.** The MNQ-side stage-1 figures cited
+above (+57.7pp/+38.7pp for the parent; +10.5pp/−8.1pp for the calm-stratum gap) were computed
+against a look-ahead-defective `overnight_ohlc` (Codex PR #227 review) — corrected values are
++26.3pp/+26.8pp and +16.9pp/−9.5pp respectively. MYM's own figures are unaffected. **This
+closure's own routing (`AMBIGUOUS-DESIGN` on all affected hypotheses) does not change** — see
+[`docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md`](../../docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md)
+for the full account.

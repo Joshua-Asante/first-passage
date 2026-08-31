@@ -1,5 +1,11 @@
 # By-year presence limb (L4) for Q-RANGEXFER-1's five hypotheses — 2026-08-30
 
+> **⚠ Corrected 2026-08-31.** The two MNQ hypotheses' `n_valid` counts below were recomputed
+> after fixing a look-ahead defect in `data_lib.py::overnight_ohlc` (Codex PR #227 review):
+> `H-RANGEXFER-1` 3→**4**, `H-RANGEXFER-1.a` 5→**3**. MYM rows are unaffected. **The
+> `L4=AMBIGUOUS` routing is unchanged on all five** (still `N_valid<7` everywhere). Full account:
+> [`docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md`](../../../../docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md).
+
 **Run in parallel to the ratified bounded Phase 1 round, not part of it.** L4 is a
 presence limb computed directly from observed data — it needs no surrogate-null
 model, so it is fully independent of whatever Phase 1's joint-surrogation design

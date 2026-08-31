@@ -1,5 +1,19 @@
 # RESULTS — Q-RANGECOND-1 Phase 1-3: overnight-range-conditioned ORB-MNQ-1 payoff shape
 
+> ## ⚠ CORRECTED 2026-08-31 — the `RESOLVED` verdict below is RETRACTED
+>
+> `data_lib.py::overnight_ohlc` had a look-ahead defect (Codex PR #227 review) that inflated the
+> effect reported below. Under the corrected conditioner the effect vanishes (WR diff +24.75pp →
+> +0.75pp, CI now includes 0; mean-win diff +0.711R → -0.058R, sign-flipped, CI includes 0) and
+> the verdict flips to `FALSIFIED`. **See the "CORRECTED RESULTS (2026-08-31)" section at the
+> bottom of this file — that section is authoritative.** Everything below this banner is the
+> original, now-superseded run, preserved unedited as the record of what the defect actually
+> produced. Full account:
+> [`docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md`](../../../../docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md).
+> Closure: [`Q-RANGECOND-1-closure-falsified.md`](../../../../docs/briefs/closures/Q-RANGECOND-1-closure-falsified.md).
+
+**Verdict:** `FALSIFIED` — corrected 2026-08-31: WR diff +24.75pp to +0.75pp (CI now includes 0), mean-win diff +0.711R to -0.058R (sign-flipped); the `RESOLVED` line below is the original, now-superseded run, preserved unedited.
+
 **Verdict: `RESOLVED`** (per pre-registration §C, all four limbs clear) — **with one disclosed
 panel-vintage caveat that must be read before this verdict is treated as final** (see "Caveat"
 below). Computed 2026-08-30, per Route ① operator ruling ("I rule Route ① satisfied, proceed with
@@ -84,4 +98,47 @@ grep -n "2020-07-01" core/data/bar_data/MNQ_M15.csv | head -1
 # Confirm the Tradeify cost basis reproduces MNQ.md's own cited figure
 python -c "print(2.0*(0.91+0.50)/2.0)"
 # Expected: 1.41
+```
+
+---
+
+## CORRECTED RESULTS (2026-08-31) — authoritative
+
+**Verdict: `FALSIFIED`.** Re-run after fixing `data_lib.py::overnight_ohlc`'s look-ahead defect
+(full account: the audit note linked in the banner above). No script logic changed beyond the
+upstream `data_lib.py` fix — same `phase1_2_3_conditioned_orb.py`, same frozen pre-registration
+gate, same hash-verified `MNQ_M15.csv`.
+
+### Corrected headline
+
+| Quantity | Original (retracted) | Corrected | Diff | CI (block=20/draws=4000/seed=42) |
+|---|---|---|---|---|
+| n conditioned | 340 | 346 | — | — |
+| n unconditioned | 1,141 | 1,135 | — | — |
+| Win rate, conditioned | 66.47% | **47.98%** | — | — |
+| Win rate, unconditioned | 41.72% | **47.22%** | — | — |
+| WR diff | +24.75pp | **+0.75pp** | **-24.00pp** | `[-5.91pp, +7.18pp]` (**includes 0**) |
+| Mean win, conditioned | +1.571R | **+1.045R** | — | — |
+| Mean win, unconditioned | +0.860R | **+1.103R** | — | — |
+| Mean-win diff | +0.711R | **-0.058R** | **-0.769R, sign-flipped** | `[-0.300R, +0.204R]` (**includes 0**) |
+
+**Gate:** L1 (n≥30) PASS — 346 ≫ 30. L2 (WR-diff CI excludes 0) **FAIL** — CI includes 0. L3
+(mean-win-diff CI excludes 0) **FAIL** — CI includes 0, and the point estimate is negative. L4
+(conditioned WR ≥ 0.55) **FAIL** — 47.98% is below both the floor and the unconditioned baseline.
+Per pre-reg §C: L1 passes but L2/L3 fail → `FALSIFIED`.
+
+**Not a borderline result.** The corrected conditioned and unconditioned populations are
+statistically indistinguishable on both win rate and mean win — the original +24.75pp/+0.711R
+effect was entirely an artifact of the look-ahead-contaminated `bias_overnight` series.
+
+### Audit hooks (corrected)
+
+```bash
+python lab/analysis/_inbox/rangecond_1_2026-08-30/phase1_2_3_conditioned_orb.py
+# Expected (deterministic, seed=42, post data_lib.py fix): n_trades=1541, n_conditioned=346,
+# WR conditioned=0.4798 / unconditioned=0.4722, mean-win conditioned=+1.0447 / unconditioned=+1.1030,
+# WR-diff CI=[-0.0591,+0.0718], mean-win-diff CI=[-0.2997,+0.2044], VERDICT=FALSIFIED
+
+# Confirm the upstream fix this correction depends on
+grep -n "et_minute < RTH_OPEN_MIN" lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/data_lib.py
 ```

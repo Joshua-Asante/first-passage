@@ -1,5 +1,21 @@
 # Q-RANGECOND-1 — CLOSURE: `RESOLVED` (with a disclosed panel-vintage caveat)
 
+> ## ⚠ RETRACTED 2026-08-31 — DO NOT CITE THIS VERDICT
+>
+> The `RESOLVED` verdict below rests on `data_lib.py::overnight_ohlc`'s own look-ahead defect
+> (Codex PR #227 review, independently re-verified and quantified same day) — the frozen
+> `bias_overnight` conditioner partly incorporated bars from *after* the outcome it was meant to
+> predict. Under the corrected conditioner, the entire effect vanishes: WR diff +24.75pp → +0.75pp
+> (CI now includes 0), mean-win diff +0.711R → -0.058R (CI now includes 0, sign-flipped). The
+> corrected verdict is `FALSIFIED` —
+> [`Q-RANGECOND-1-closure-falsified.md`](Q-RANGECOND-1-closure-falsified.md) is now authoritative.
+> The addendum this closure's own routing filed on
+> [`b3-orb-mnq-payability-line.md`](../../pursuits/b3-orb-mnq-payability-line.md) is itself
+> retracted there. Full account:
+> [`2026-08-31-mnq-overnight-window-lookahead-defect.md`](../../notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md).
+> This file is preserved below, unedited, as frozen historical record (Trap #12) — not as a
+> live verdict.
+
 **Verdict:** `RESOLVED`
 **Closed:** 2026-08-30
 **Lane:** UNASSIGNED

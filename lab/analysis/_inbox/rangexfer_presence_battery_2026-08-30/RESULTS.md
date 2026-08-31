@@ -13,10 +13,15 @@ Round 4), L1-L3 alone decide every reachable verdict.
 
 ## Headline
 
+> **⚠ Corrected 2026-08-31.** The two MNQ rows' L2 CIs below were recomputed after fixing a
+> look-ahead defect in `data_lib.py::overnight_ohlc` (Codex PR #227 review) — full account:
+> [`docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md`](../../../../docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md).
+> The MYM rows are unaffected. **Every PASS/FAIL verdict below is unchanged.**
+
 | Hypothesis | L1 (n-floor) | L2 (bootstrap CI lower bound > 0) | L3 (both chrono halves lift > 0) | Presence |
 |---|---|---|---|---|
-| H-RANGEXFER-1 (MNQ parent) | PASS | PASS — CI [+0.300, +0.473] | PASS | **PASS** |
-| H-RANGEXFER-1.a (MNQ gap, overnight-calm) | PASS | PASS — CI [+0.024, +0.187] | PASS | **PASS** |
+| H-RANGEXFER-1 (MNQ parent) | PASS | PASS — CI [+0.164, +0.307] (corrected; was [+0.300, +0.473]) | PASS | **PASS** |
+| H-RANGEXFER-1.a (MNQ gap, overnight-calm) | PASS | PASS — CI [+0.074, +0.261] (corrected; was [+0.024, +0.187]) | PASS | **PASS** |
 | H-RANGEXFER-1-MYM (MYM parent) | PASS | PASS — CI [+0.110, +0.310] | PASS | **PASS** |
 | H-RANGEXFER-1.a-MYM (MYM gap, overnight-calm) | PASS | **FAIL** — CI [-0.008, +0.180] | PASS | **FAIL** |
 | H-RANGEXFER-1.b-MYM (MYM gap, bprime=0) | PASS | PASS — CI [+0.057, +0.219] | PASS | **PASS** |
