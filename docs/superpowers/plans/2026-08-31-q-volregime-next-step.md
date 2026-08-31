@@ -4,13 +4,12 @@
 > `superpowers:executing-plans`. Steps use checkbox (`- [ ]`) syntax. Execute one
 > packet at a time and stop at every named gate.
 >
-> **Status:** `BLOCKED-AT-INPUT` — full-plan GO received 2026-08-31. Packet A1
-> executed and hard-stopped because neither hash-pinned vendor panel exists in
-> this checkout or elsewhere on the available filesystem. The deterministic L3
-> scorer and tests were completed without inspecting a result; see
-> [`RESULTS.md`](../../../lab/analysis/_inbox/volregime_l3_2026-08-31/RESULTS.md).
-> No L3 statistic was computed, K was not declared, neither verdict changed, and
-> Packets B–D remain behind their explicit real-panel L3-survivor entry gate.
+> **Status:** Packet A COMPLETE — the earlier 2026-08-31 `BLOCKED-AT-INPUT`
+> state was cleared when both exact hash-pinned panels were restored from the
+> primary checkout. MNQ and MYM independently PASS frozen L3. The presence
+> battery is complete on both instruments; Q-VOLREGIME-1 remains OPEN because
+> L5 attribution is still unresolved. Next gate: Packet B / L5 design amendment
+> under separate authorization. Packets B-D were not started in this session.
 >
 > **Queue:** serves STATE queue `#1` (mechanism supply), but queue placement is
 > not a phase GO. It does not block independent queue `#2` (B7-REFIRE/M1).
@@ -39,8 +38,8 @@ The surviving evidence is coherent but incomplete:
 - L4 passes independently on both instruments: 7/7 qualifying years positive,
   versus 5 required. Panel length therefore no longer forces
   `AMBIGUOUS-HOLD`.
-- L3 has not been computed. The L4 results explicitly name chronological-halves
-  stability and L5 attribution as the two open limbs.
+- L3 now passes independently on both instruments. Chronological-halves
+  stability is complete; L5 attribution remains the only open limb.
 - The parent brief's planned L5 route was to adapt `Q-RANGEXFER-1`'s day-level
   joint-surrogation design. That parent did not clear either absolute model
   adequacy or estimation-aware size control. Its false-positive rate inflated
@@ -134,13 +133,13 @@ Do not search alternate split dates. Do not pool the instruments. Add focused
 tests for boundary assignment, invalid-row exclusion, and a fixture with one
 negative stratum that must fail the half.
 
-- [ ] **A3 — Freeze code and expected schema, then execute once.**
+- [x] **A3 — Freeze code and expected schema, then execute once.**
 
 The result artifact must include the script hash, panel hashes, split boundary,
 all four per-instrument stratum lifts, both half minima, counts, and the frozen
 PASS/FAIL calculation. Confidence intervals may be reported but do not gate L3.
 
-- [ ] **A4 — Apply the stop rule independently.**
+- [x] **A4 — Apply the stop rule independently.**
 
 | Outcome | Action |
 |---|---|
@@ -148,7 +147,7 @@ PASS/FAIL calculation. Confidence intervals may be reported but do not gate L3.
 | One passes, one fails | Close the failing instrument; carry only the survivor into Packet B. |
 | Both pass | Carry both independently into Packet B. |
 
-- [ ] **A5 — Update owners without overstating the result.**
+- [x] **A5 — Update owners without overstating the result.**
 
 Record that L3 is complete and whether each instrument passes. A pass means
 `presence battery complete, L5 still open`; it is not `RESOLVED`, `CERTIFIED`,

@@ -1,44 +1,40 @@
 # Q-VOLREGIME-1 L3 chronological halves — 2026-08-31
 
-**Status:** `ACTIVE` — BLOCKED-AT-INPUT: deterministic L3 scorer complete; both
-hash-pinned vendor panels are absent from this checkout.
+**Status:** `ACTIVE` — L3 PASS independently on MNQ and MYM; the presence battery is complete on both instruments and L5 attribution remains open.
 
-The scorer and its boundary tests
-are complete, but neither hash-pinned vendor panel is present in this checkout.
-No L3 statistic was computed and no instrument verdict changed.
+## Result
 
-## Hard stop
+| Instrument | Scored `n` | Second-half start (UTC) | First-half minimum lift | Second-half minimum lift | L3 |
+|---|---:|---|---:|---:|---|
+| MNQ | 135,958 | 2023-08-15 08:00 | +21.7413 pp | +22.9892 pp | **PASS** |
+| MYM | 139,605 | 2023-07-18 08:45 | +16.4755 pp | +16.3383 pp | **PASS** |
 
-Packet A1 of the authorized plan requires `MNQ_M15.csv` and `MYM_M15.csv` to
-match their tracked hashes before scoring. This checkout contains only
-`core/data/bar_data/README.md` and `SHA256SUMS`; a full-filesystem search found
-no copy of either CSV, and no Databento or TradingView credential is available
-in the environment. The plan explicitly makes absent or mismatched bytes a hard
-stop, so substituting a public proxy, reconstructing aggregates, or proceeding
-to L5 would violate the freeze.
+All four within-own-range-stratum lifts are positive in both chronological
+halves on both instruments. Full conditional/reference counts and rates,
+scored-frame spans, midpoint indices, panel hashes, and the executed script hash
+are recorded in `l3_results.json`.
 
-Expected inputs:
+The run used the hash-pinned vendor panels:
 
-| Instrument | Relative path | Required SHA-256 |
+| Instrument | Relative path | SHA-256 |
 |---|---|---|
 | MNQ | `core/data/bar_data/MNQ_M15.csv` | `6c86f41a17b7dfce05baa205a4147b7504f3ce1eb14a3b03b994aa090fa7e00a` |
 | MYM | `core/data/bar_data/MYM_M15.csv` | `24e169528f7ea6693b75c71c3195edf6a04f3a26c6b6dff0f2e9c623fd597a58` |
 
-## Prepared execution
+No fresh K is charged: L3 is the already-owed presence diagnostic on
+already-scored panels from already-closed, K-declared discovery manifests.
 
-`l3_halves.py` reuses the frozen L4 scored-frame builder, sorts valid pairs by
-UTC timestamp, fixes the split at the observation midpoint, and scores each
-half using the minimum lift across the two own-range strata. L3 passes only if
-that minimum is strictly positive in both halves. The script writes the panel
-hashes, exact split boundary, counts, rates, four per-instrument stratum lifts,
-half minima, and verdict to `l3_results.json`.
+## Prior blocked state
 
-Run once the exact vendor bytes are restored:
+Earlier on 2026-08-31 this packet was `BLOCKED-AT-INPUT` because the private
+vendor CSVs were absent from that checkout. The exact hash-pinned files were
+later restored from the primary checkout into this isolated worktree and
+verified before execution. The prior block was an environment state, not an
+empirical result, and is retained here rather than erased from the history.
 
-```bash
-python lab/analysis/_inbox/volregime_l3_2026-08-31/l3_halves.py
-```
+## Disposition
 
-Packet B–D remain intentionally unexecuted: their entry gate is at least one
-real-panel L3 PASS. This is an input block, not an empirical failure of either
-volume-regime hypothesis.
+Both instruments carry forward independently to the future Packet B / L5
+design-amendment route. Q-VOLREGIME-1 remains `OPEN`: an L3 PASS completes the
+presence battery but is neither `RESOLVED` nor `CERTIFIED`. Packets B-D were not
+started in this execution session.
