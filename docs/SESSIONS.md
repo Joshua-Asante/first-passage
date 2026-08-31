@@ -33,6 +33,134 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-08-31b — Second overnight-window defect found on MYM (scope-gap, not look-ahead); Q-RANGEXFER-1 numbers corrected
+
+**Focus:** Follow-up to 2026-08-31a. After landing the MNQ look-ahead fix and posting it to Codex on
+PR #227, a fresh `@codex review` pass found the Pine indicator's window predicate — now an exact
+match for the corrected MNQ definition — still could not achieve parity with MYM's own frozen
+`load_sessions.py::overnight_ohlc`. Direct read confirmed a second, distinct defect: MYM's function
+filters `minute <= 569` (a raw ET-clock value), which can never select the 18:00-23:59 ET
+evening-reopen segment for any session — it only ever captured the 00:00-09:29 ET early-morning
+tail. Traced the origin: the constant/filter pattern was copied from
+`lab/archive/msl_c1_mym_2026-08/construct_lib.py`, whose own docstring flags the identical construct
+`"DELETE sham -- same Globex-day overnight clock window [00:00, 09:29] ET"` — a known-bad placeholder
+that was never actually deleted before being reused.
+**Shipped:** root-cause fix to `load_sessions.py` (`EVENING_REOPEN_MIN` added); re-derived
+`H-RANGEXFER-1-MYM`, `H-RANGEXFER-1.a-MYM`, `H-RANGEXFER-1.b-MYM` (presence battery + by-year L4);
+new audit note
+[`2026-08-31-mym-overnight-window-scope-gap-defect.md`](notes/audits/2026-08-31-mym-overnight-window-scope-gap-defect.md);
+also re-ran the MYM Notice-phase stage-1 script (`c2_c4_stratified_rerun.py`) that
+`ops/instruments/MYM.md`/`MECHANISMS.md`/`PROFILES.md`/`profiles.json` cite directly — corrected
+figures propagated to all four (via `instrument_profiles.py build` for the two generated files,
+hand-edited pointer notes for the two hand-authored ones per Trap #12); correction banner added to
+the originating Notice-log doc
+[`N-2026-08-29-mym-overnight-rth-range-transfer.md`](notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md);
+dated amendment rows added to `Q-RANGEXFER-1`'s own brief §11 and its closure's §1 table.
+**Decisions/defects:** `H-RANGEXFER-1-MYM` lift +0.2170→+0.2234 (CI still excludes 0, `PASS`
+unchanged); `H-RANGEXFER-1.a-MYM` lift +0.0848→+0.0110 (now fails L1 too, not just L2/L3 — still
+`FALSIFIED`, wider margin, effect nearly vanishes); `H-RANGEXFER-1.b-MYM` byte-identical (its
+predictor/restriction never touch `on_range` — confirmed structurally). **`Q-RANGEXFER-1`'s `MIXED`
+closure verdict (4× `AMBIGUOUS-DESIGN`, 1× `FALSIFIED`) does not change.** This is the second
+independent firing of the same structural gap named in 2026-08-31a's own audit (no check in this
+research line cross-derives a predictor against a second, independently-sourced sibling
+implementation before certifying it) — promoted from Candidate to a standing verification norm in
+the new audit's §6, rather than left at one-incident status. No in-chat Workflow adversarial
+verification run on this correction, per the operator's standing instruction this session — lands
+directly, Codex's PR review is the verification gate. No `core/`/Pine/allocation/`dd_protection`/rail
+change; no live spend; $0/K=0.
+**Open / next:** STATE queue: `#1` [Acceptable strategy on the ruled host](../STATE.md) · `#2`
+[B7-REFIRE Stage 1 + M1](../STATE.md) — both formally unchanged. `queue-exception: same
+defect-correction thread as 2026-08-31a, continued same day; not a leftover Open/next name.` Next
+concrete step: reply to Codex's PR #227 follow-up finding confirming the MYM fix, then land this on
+PR #228 alongside the earlier MNQ correction.
+
+---
+
+## 2026-08-31a — Look-ahead defect found in overnight-range conditioner; Q-RANGECOND-1 retracted to FALSIFIED
+
+**Focus:** Reviewing Codex's PR #227 (the Pine indicator port of the `Q-RANGEXFER-1`/`Q-RANGECOND-1`
+overnight-range conditioner) for parity against the tested Python construct. Found and independently
+re-verified that the parity gap was not cosmetic: `data_lib.py::overnight_ohlc` (MNQ-side only) used
+`~is_rth` as its overnight mask, silently including the same trading day's own `[16:00,18:00)` ET
+post-RTH-close window — bars from *after* the outcome the conditioner predicts. MYM's own
+`load_sessions.py::overnight_ohlc` never had this bug (independent implementation, `minute <= 569`).
+Operator: "Yes, re-derive both under the corrected window."
+**Shipped:** `claude/mnq-mym-mechanism-review-124957` (PR #228) — root-cause fix to `data_lib.py`;
+full audit note
+[`2026-08-31-mnq-overnight-window-lookahead-defect.md`](notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md);
+re-derived `H-RANGEXFER-1`/`H-RANGEXFER-1.a` (presence battery + by-year L4, routing unchanged,
+magnitudes/`n_valid` corrected) and `Q-RANGECOND-1` (verdict flipped RESOLVED→FALSIFIED); new
+closure [`Q-RANGECOND-1-closure-falsified.md`](briefs/closures/Q-RANGECOND-1-closure-falsified.md)
+supersedes the retracted
+[`Q-RANGECOND-1-closure-resolved.md`](briefs/closures/Q-RANGECOND-1-closure-resolved.md) (banner
+added, original preserved per Trap #12); correction banners/rows on both Q briefs, both `RESULTS.md`
+files, `ops/instruments/MECHANISMS.md`, `docs/briefs/INDEX.md`, `lab/CATALOG.md`; retraction addendum
+on [`b3-orb-mnq-payability-line.md`](pursuits/b3-orb-mnq-payability-line.md) (the operationally
+urgent one — it had cited the now-false result as payability evidence).
+**Decisions/defects:** Scope was MNQ-only by construction (traced every consuming script's import),
+so `Q-RANGEXFER-1`'s own closure verdict survives — presence battery and L4 both still route the
+same way, only magnitudes and `n_valid` shift (e.g. `H-RANGEXFER-1` L4 `n_valid` 3→4,
+`H-RANGEXFER-1.a` 5→3), handled as a dated amendment, not a re-open. `Q-RANGECOND-1` does not
+survive: WR diff +24.75pp (CI excluded 0) → +0.75pp (CI now `[-0.0591,+0.0718]`, includes 0);
+mean-win diff +0.711R → **-0.058R** (sign-flipped, CI `[-0.2997,+0.2044]`). `ORB-MNQ-1` stays
+`PARKED`, unchanged, no new evidence; the named-not-authorized Tradeify re-MC is withdrawn. Per the
+operator's standing instruction this session ("we will get adversarial verification when we open the
+PR... Codex will take care of the adversarial review, we no longer have to conduct it in chat"), no
+in-chat Workflow verification pass was run on this correction — it lands directly and Codex's PR
+review on #228 is the verification gate. No `core/`/Pine/allocation/`dd_protection`/rail change; no
+live spend; $0/K=0 (defect fix + governance correction, not new research spend).
+**Open / next:** STATE queue: `#1` [Acceptable strategy on the ruled host](../STATE.md) · `#2`
+[B7-REFIRE Stage 1 + M1](../STATE.md) — both formally unchanged; `#1`'s evidence base is now the
+corrected (weaker) figures, and the standalone-payability question the addendum had opened is back
+to unresolved. `queue-exception: defect-correction session on an already-open research thread; not a
+leftover Open/next name.` Next concrete step is replying to Codex's PR #227 finding confirming
+independent verification and the corrective action, then landing this correction on PR #228.
+
+---
+
+## 2026-08-30d — Q-RANGECOND-1 authored, ruled, and closed RESOLVED: ORB-MNQ-1 x range conditioner
+
+**Focus:** Operator directive to continue the closed `Q-RANGEXFER-1` thread as a fresh Q testing
+whether the presence-verified overnight-range conditioner changes `ORB-MNQ-1`'s own realized
+payoff shape enough to matter for Tradeify payability — `ORB-MNQ-1` is the estate's only
+lifecycle-admitted MNQ candidate with a real edge, parked purely on payability. Authored,
+adversarially reviewed pre-commit, ruled by the operator on a genuine raised-bar/closure conflict,
+then executed and closed same day.
+**Shipped:** `claude/mnq-mym-mechanism-review-124957` (PR #228) — `Q-RANGECOND-1` brief + pre-reg
+(authored, then corrected on adversarial review: a load-bearing raised-bar citation error, 8
+self-violations of its own "never call it certified" rule, a §6/pre-reg gate-table gap, a missed
+same-mechanism prior finding on sibling NAS100, an uncited exploratory `p_upper=0.785` signal, a
+regime-concept conflation, a power-estimate error); operator ruling recorded ("I rule Route ①
+satisfied, proceed with Phase 1"); Phase 1-3 executed
+([`rangecond_1_2026-08-30/RESULTS.md`](../lab/analysis/_inbox/rangecond_1_2026-08-30/RESULTS.md));
+closure [`Q-RANGECOND-1-closure-resolved.md`](briefs/closures/Q-RANGECOND-1-closure-resolved.md);
+addendum filed on [`b3-orb-mnq-payability-line.md`](pursuits/b3-orb-mnq-payability-line.md).
+**Decisions/defects:** The raised-bar question was genuinely blocking, not cosmetic — my own
+citation (MSL-S2B) supported the opposite of what I used it for, and I'd quoted
+`Q-RANGEXFER-1`'s own closure §3 ("No entry, sizing, or timing construct on any surviving
+conditioner") elsewhere in the same brief without engaging it. Disclosed rather than
+self-certified; operator ruled Route ① satisfied. Phase 1 execution hit one real bug (a
+pandas-2.x `datetime64[us]`-vs-`[ns]` epoch trap already documented once in this repo at
+Q-ICTEXP-1 — caught, fixed, disclosed) and one real, disclosed panel-vintage mismatch (current
+`MNQ_M15.csv`, 2020-07→2026-07, is ~300 days shorter than `ORB-MNQ-1`'s own original G8 admission
+panel, 2019-05→present) — carried into the closure and addendum as an explicit caveat, not
+smoothed over. Result: conditioned-subset win rate 66.47% vs. unconditioned 41.72% (+24.75pp, CI
+excludes 0), mean win +0.711R lift (CI excludes 0), n_conditioned=340. `RESOLVED` per all four
+pre-registered limbs. A full Tradeify re-MC on the conditioned population is named (not
+authorized) as the next step. No `core/`/Pine/allocation/`dd_protection`/rail change; no live
+spend; `K_intrinsic=1` disclosure only. Per operator instruction this session, in-chat
+Workflow-based adversarial verification was used for the brief draft but skipped for the Phase 1
+execution and closure — Codex's own PR review is now the adversarial-review step going forward,
+not a chat-side pre-check.
+**Open / next:** STATE queue: `#1` [Acceptable strategy on the ruled host](../STATE.md) · `#2`
+[B7-REFIRE Stage 1 + M1](../STATE.md) — both formally unchanged, but `#1`'s own owner artifacts
+now include this closure and addendum as live evidence. `queue-exception: operator-directed
+continuation of an already-open research thread; not a leftover Open/next name.` The named-not-
+authorized full Tradeify re-MC on the conditioned population is the next concrete step for `#1`,
+awaiting its own operator GO, fresh K, and an explicit panel-vintage standardization decision.
+
+---
+
 ## 2026-08-30c — Q-RANGEXFER-1 closed: L5 semantics ratified, presence battery scored
 
 **Focus:** Reviewed an external (Codex) advisor report on the MNQ/MYM joint-surrogation thread at

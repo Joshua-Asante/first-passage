@@ -67,7 +67,11 @@ above — do not cite this addendum's headline figures at all without reading th
 §10 re-tested the 3yr construct's both-halves pass under its own already-identified corrections
 (tail-risk-consistent sizing + a genuine timestamp-sequenced intraday-honest remeasure,
 superseding §9's trade-level proxy) applied together, split by regime half: **both halves now
-fail** (3.29% / 5.37%, vs. the 3.0% ceiling) — the one cell this document's §9 note above still
+fail** (3.29% / 5.37%, vs. the 3.0% ceiling — the Part A eval bust ceiling in force at measurement
+time; ⚠ Correction 2026-08-26: raised to 5.0% ~1hr later the same day by the operator
+risk-tolerance override, [prereg v2](../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md)
+§3, still the live ceiling — under 5.0%, h1 (3.29%) clears alone but h2 (5.37%) still does not, so
+this paragraph's both-halves-fail conclusion is unchanged) — the one cell this document's §9 note above still
 credited as passing both halves does not survive full compounding. As of §10, no tested
 configuration of this combined book, on either window, survives a full both-halves +
 tail-sizing + intraday-honesty gate. This addendum's own re-entry-clause reasoning above should be
@@ -76,3 +80,54 @@ distinct payability question from ORB-MNQ solo (which stays exactly as parked ei
 specific evidence originally cited here no longer clears the eval ceiling under any tested
 correction. One item (a native TradingView re-export at exactly 4 Aegis contracts) remains
 genuinely open and could still move this picture; see that RESULTS.md §10.4.
+
+## Addendum 2026-08-30 — overnight-range-conditioned ORB-MNQ-1: new payability evidence, standalone leg, on point for this document's own re-entry clause
+
+`Q-RANGECOND-1` ([`closure`](../briefs/closures/Q-RANGECOND-1-closure-resolved.md)) tested whether
+`Q-RANGEXFER-1`'s own presence-verified overnight-range conditioner (a day-selection filter,
+independently derived, never touching this instrument's own trade log — see that closure's own
+F2-GUARD distinction) changes `ORB-MNQ-1`'s own realized win-rate/mean-win shape enough to matter
+for Tradeify payability, operator-ruled Route ① satisfied same day. Result: **conditioned-subset
+win rate 66.47% vs. unconditioned 41.72% (+24.75pp, CI `[+18.30pp,+31.31pp]`); mean win (winners
+only) +1.571R vs +0.860R (+0.711R, CI `[+0.543R,+0.887R]`)**, n_conditioned=340 (≫ the 30-trade
+floor). Both clear the pre-registered gate; `RESOLVED`. This is new payability/cost-geometry
+evidence at an admissible venue (Tradeify), on `ORB-MNQ-1` **as a standalone leg** (not an overlay
+inside a combined book, the class of evidence the Aegis-6J1 addenda above concerned) — on point
+for this document's own re-entry clause.
+
+**Disclosed caveat, must be read before acting on the headline figures above:** this run's own
+unconditioned-population summary stats are computed on `MNQ_M15.csv` (2020-07→2026-07, 1,548 RTH
+sessions), a ~300-day-shorter, more-recent-starting panel than this pursuit's own original G8
+admission pipeline used (`orb_mnq_2026-07/RESULTS.md`'s own cited "2019-05-06→present," 1,857
+sessions) — a newly-disclosed panel-vintage drift, not previously flagged anywhere in this
+document. The conditioned-vs-unconditioned comparison itself is unaffected (both legs measured on
+the identical panel); the absolute figures are a fresh measurement, not a byte-for-byte
+reproduction of this pursuit's own originally-published numbers. Full account:
+[`rangecond_1_2026-08-30/RESULTS.md`](../../lab/analysis/_inbox/rangecond_1_2026-08-30/RESULTS.md).
+
+**Re-entry / re-scoping this pursuit around a conditioned-entry framing, if warranted, is an
+operator call, not made here** — same discipline this document's own prior addenda apply. This
+closure's own INTEGRATE routing names (does not authorize) a full Tradeify re-MC on the
+conditioned trade population as the natural next step, needing its own operator GO, fresh K
+declaration, and an explicit panel-vintage standardization decision (the observed-sample split
+above used the current canonical panel; a re-MC should not silently blend panel vintages). $0
+spend, `K_intrinsic=1` disclosure only, nothing armed.
+
+---
+
+## ⚠ Addendum RETRACTED 2026-08-31 — the payability evidence above does not hold
+
+The `RESOLVED` finding this addendum reported (conditioned WR 66.47% vs. unconditioned 41.72%,
++24.75pp) was computed against a look-ahead-defective overnight-range conditioner
+(`data_lib.py::overnight_ohlc` silently included bars from *after* the outcome it was meant to
+predict — found in Codex's [PR #227](https://github.com/Joshua-Asante/first-passage/pull/227)
+review, independently re-verified and quantified 2026-08-31). Corrected, the effect vanishes
+entirely: WR diff +0.75pp (CI now includes 0), mean-win diff -0.058R (sign-flipped, CI includes
+0). Corrected closure: [`Q-RANGECOND-1-closure-falsified.md`](../briefs/closures/Q-RANGECOND-1-closure-falsified.md).
+Full account: [`2026-08-31-mnq-overnight-window-lookahead-defect.md`](../notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md).
+
+**This addendum supplies NO new payability/cost-geometry evidence for this pursuit's own
+re-entry clause.** `ORB-MNQ-1` stays `PARKED`, standing unchanged — read the addendum above as
+historical record of a since-corrected claim, not as live evidence. No full re-MC is named or
+owed from this thread; the re-MC this addendum previously named as a next step is withdrawn along
+with the finding that motivated it.

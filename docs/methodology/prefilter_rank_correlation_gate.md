@@ -26,6 +26,11 @@ Apply the same falsifier to the **`vectorbt` (triage) ↔ `Nautilus` (fill-reali
 
 - Gen-1 source: `lab/validation/sweep/__init__.py` @ `6bf0dff` (retired 2026-07-11).
 - Superseding admission path: `strategy-validation` SKILL §8 + `docs/adr/2026-07-10-databento-research-stack.md`.
+  ⚠ Correction 2026-08-31: §8a (SPA/StepM) and §8c (PBO/CPCV) went **dormant**
+  (code retained, not the default path) per
+  `docs/adr/2026-08-07-w4-minimal-gate-set-dormancy.md`; only §8b (DSR) remains live by
+  default. Current live admission floor is prop survivor-scoring **G0–G5+G8** — see that ADR,
+  not this bullet, for the current default path.
 
 ## Falsifier
 
