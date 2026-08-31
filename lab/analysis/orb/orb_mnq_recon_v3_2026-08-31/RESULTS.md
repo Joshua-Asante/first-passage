@@ -56,8 +56,8 @@ daily PnL only — a lower bound, cannot see an intraday breach that recovers
 by the close) and **intraday-honest** (adds the MAE-proxy `intraday_low`).
 Two consistency readings: **Run-2** (`consistency=0.40`, Tradeify's actual
 rule — the deployable expression the live pre-registration scores) and
-**Run-1** (consistency off, for continuity — byte-identical to Run-2 here
-since bust is decided before the consistency check ever matters).
+**Run-1** (consistency off, for continuity). These are **not** interchangeable
+at k=2/k=3 — see §2.
 
 **Ceiling:** live gate is bust ≤ **5.0%** ∧ P(pass) ≥ **50%**
 ([prereg v2](../../../docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md)
@@ -71,10 +71,16 @@ since bust is decided before the consistency check ever matters).
 | 2 | pass / bust_trailing day 77 (max DD 2.79%) | 44.21% | **53.70%** | 46.30% | **FAIL, 10.7×** | FAIL, 17.9× |
 | 3 | bust_trailing day 15 (both clocks) | 56.54% | **64.11%** | 35.89% | **FAIL, 12.8×** | FAIL, 21.4× |
 
-Run-1 (consistency off) is numerically identical at k=1 and differs only in
-the third decimal at k=2/k=3 (bust is decided on the barrier alone; the
-consistency check only ever matters for trades that already pass) — see
-`data/bust_pass_sim_results.json` for both readings in full.
+Run-1 (consistency off) is byte-identical to Run-2 at k=1 (20.783% both),
+but **materially lower** at k=2 (52.68% vs 53.70%, +1.02pp under Run-2) and
+k=3 (62.02% vs 64.11%, +2.08pp under Run-2) — not noise, not a third-decimal
+difference. The consistency check can block an otherwise-"pass" path from
+terminating (Tradeify's real rule requires no single day dominate total
+profit, so a path that reached the raw profit target still has to keep
+trading if it isn't consistent yet), which extends its exposure to further
+days it can still bust on. Enabling the real rule (Run-2) therefore
+**increases** measured bust risk at k=2/k=3 relative to the consistency-off
+reading — see `data/bust_pass_sim_results.json` for both readings in full.
 
 **Verdict: FAILS at every tested k, both clock readings, both consistency
 readings.** k=1 does not bust on the single realized historical path at
@@ -83,18 +89,27 @@ bootstrap, which resamples the same trade-blocks in different 5-day-block
 orders, busts 1 path in 5 (intraday-honest). The realized ordering was not
 representative of the construct's own risk.
 
-## 3 — Comparison to the frozen construct
+## 3 — Comparison to the frozen construct (⚠ not a common-panel comparison)
 
-| | k=1 bust (intraday-honest) | vs 5.0% ceiling |
-|---|---:|---|
-| Frozen `ORB-MNQ-1` (2026-08-03 ADR) | 67.67% | FAIL, 13.5× |
-| `orb_mnq_recon_v3` (this measurement) | 20.78% | FAIL, 4.2× |
+| | k=1 bust (intraday-honest) | vs 5.0% ceiling | panel window |
+|---|---:|---|---|
+| Frozen `ORB-MNQ-1` (2026-08-03 ADR) | 67.67% | FAIL, 13.5× | ~2019-05-06→2026-08 (1,878 realized days, includes the March 2020 crash — the ADR's own realized-panel bust day) |
+| `orb_mnq_recon_v3` (this measurement) | 20.78% | FAIL, 4.2× | 2022-01-03→2026-08-28 (1,215 bdays; excludes 2019-2021 entirely, no COVID-crash regime) |
 
-The DD-reduction tuning lineage (v1→v7, see `MANIFEST.sha256` provenance)
-measurably worked — k=1 bust dropped from 67.67% to 20.78%, a real ~3.25×
-improvement, not noise. It is not close to enough: even the best cell here
-is more than 4× over the current (already-raised) ceiling. This is a single
-data point on a single construct, not a re-run of the frozen ADR's own
+**These two figures are not on a common panel — do not read the gap as an
+isolated tuning effect.** The frozen construct's bust figure was measured
+over a window that includes 2019-2021 and the March 2020 crash; this
+measurement's source export starts 2022-01-03 and never sees that regime.
+The ~3.25× improvement (67.67%→20.78%) therefore confounds two things: (a)
+whatever the tuning lineage (v1→v7, see `MANIFEST.sha256` provenance)
+actually changed in the construct, and (b) removal of the single most
+adverse regime in either panel's history. Resolving that confound needs
+either the frozen construct re-measured on recon-v3's own 2022+ window, or
+recon-v3 measured back through 2019+ (an unexported TV window — not run
+here) — neither is done in this measurement. What both readings agree on
+regardless of the panel question: **both fail the live gate, and by a wide
+margin** (13.5× and 4.2× over, respectively). This is a single data point on
+a single construct either way, not a re-run of the frozen ADR's own
 falsifier (R1) — see that ADR's 2026-08-30 dormancy addendum for why R1
 itself is currently unexercised.
 

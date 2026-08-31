@@ -141,8 +141,11 @@ measurement: [`lab/analysis/orb/orb_mnq_recon_v3_2026-08-31/RESULTS.md`](../../l
 Result: **FAILS** the live gate (bust ≤5.0% ∧ P(pass) ≥50%,
 [prereg v2](../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3) at every
 tested k ∈ {1,2,3} — k=1 intraday-honest bust **20.78%**, 4.2× over; k=2 **53.70%**; k=3
-**64.11%**. A real ~3.25× improvement over the frozen construct's own 67.67% (T2 ADR, 2026-08-03)
-but not close to clearing the ceiling.
+**64.11%**. Both readings clear neither ceiling by a wide margin (4.2× and 13.5× over,
+respectively, vs the frozen construct's own 67.67% k=1 bust — T2 ADR, 2026-08-03); the two figures
+are **not measured on a common panel** (frozen: ~2019-05→2026-08, includes the March 2020 crash;
+recon-v3: 2022-01→2026-08, does not), so the gap between them should not be read as an isolated
+tuning effect — see that RESULTS.md §3.
 
 **This is not new payability/cost-geometry evidence for this pursuit's own re-entry clause** — it
 is a negative result on a distinct, divergent-parameter candidate, not evidence about `ORB-MNQ-1`

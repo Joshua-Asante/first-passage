@@ -82,7 +82,7 @@ def main() -> None:
 
     total_net = sum(v for v in pnl_by_day.values())
     print(f"trade-days: {len(pnl_by_day)}  total exit rows: {len(exits)}  "
-          f"sum(NetPnL)={total_net * qty:.2f}  (qty-normalized total={total_net:.2f})")
+          f"sum(NetPnL)={total_net:.2f}  (qty-normalized total={total_net / qty:.2f})")
     print(f"wrote {OUT_PNL} ({len(pnl_records)} days), {OUT_MAE} ({len(mae_records)} days)")
 
 
