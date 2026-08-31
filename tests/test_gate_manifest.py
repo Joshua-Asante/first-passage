@@ -46,6 +46,19 @@ EXPECTED_ALWAYS = {
     # 0 per its docstring), same reasoning as skill-deploy-sync and
     # falsifier-reachability-census above.
     "notice-grade-k-correction",
+    # PR #229 review (2026-08-31) — docs/spec/ carried zero gate coverage
+    # before this entry; canon-amending-with-zero-ADR-citation census,
+    # report-only (script's own exit code is always 0 unless --strict, per
+    # its docstring), same reasoning as falsifier-reachability-census and
+    # notice-grade-k-correction above.
+    "spec-provenance",
+    # PR #229 review follow-up, task 4 (2026-08-31) — Rule 2's own §7
+    # audit-checklist item had zero mechanical enforcement and already
+    # failed silently once (2026-08-08); watches the 2026-11-08 checkpoint
+    # the withdrawn 2026-08-22 addendum already named, report-only (script's
+    # own exit code is always 0 unless --strict, per its docstring), same
+    # reasoning as spec-provenance above.
+    "rule2-trip-log-liveness",
 }
 
 EXPECTED_PATH_CONDITIONAL = {

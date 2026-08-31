@@ -498,6 +498,13 @@ the volatility regime and event population the level is drawn from, the same loa
 folded into it. First campaign under this id: [DL-2 prereg](../../docs/briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md)
 (M6A) — no class finding yet, this id is untested on every instrument at authoring time.
 
+- **Class finding (M6A, 2026-08-22 — same day as minting):** DL-2's TRAIN scoring closed
+  AMBIGUOUS/ABANDONMENT the same day this id was minted — nominee V9 fails 3 of 4 nomination
+  gates; a same-day geometric-feasibility diagnostic found the construction structurally
+  infeasible on M6A and retired it for that instrument, with a stop-rule/re-proposal bar binding
+  any successor.
+  [`RESULTS.md`](../../lab/archive/dl2_m6a_pdhpdl_2026-08-22/RESULTS.md).
+
 Rejected nearest classes (one-line):
 - `pdh-pdl-breakout-rth` — same trigger/stop/target logic, but its reference and entry window is
   an equity-cash RTH subset (its one score, MNQ, never tested a full-session window); this id is
@@ -735,6 +742,8 @@ below, which this class does **not** reopen.
   pre-registered test. Not formally `FALSIFIED` under the frozen gate's literal `p_upper>0.95`
   line, but substantively close to it (wrong sign + FLIP-FAIL).
   [`Explore-confirm LOG`](../../lab/analysis/c1/msl_s4_mgc_2026-08/_explore_confirm_2026-08-21_LOG.md).
+  Ledger cell `AMBIGUOUS-PARKED` — operator PARKED the candidate the same day on this result (not
+  a further class-level test); disposition owned by [MGC.md](MGC.md).
 
 Rejected nearest classes (one-line):
 - **Directional dealer-gamma-sign forecast** (informal sibling construct, never declared an id —

@@ -1,8 +1,8 @@
 # INSTRUMENT LEDGER — EURUSD
 
 **Symbol:** EURUSD · **Tradable:** FXIFY / DXTrade (historical research surface) · **Asset class:** FX major
-**Canonical feed:** TV CSV export — Pepperstone (TV-CSV policy). Staging feeds TV-verified before they gate anything.
-**Status:** **NO LIVE STRATEGY.** Two registry directions closed/shelved; one active pattern-enumeration harness (Phases 1–3 LOCKED; Phase 4+ not started). Not in the live book.
+**Canonical feed:** TV CSV export — Pepperstone (TV-CSV policy). Staging feeds TV-verified before they gate anything. ⚠ Correction 2026-08-08: Pepperstone was retired outright 2026-08-02 — [Pepperstone feed retirement ADR](../../docs/adr/2026-08-02-pepperstone-feed-retirement.md); no live venue/canonical feed for EURUSD today (see `venue_note` below). Current policy: [TV-CSV canonical feed policy](../../docs/adr/2026-06-12-tv-csv-canonical-feed-policy.md) (2026-08-08 addendum).
+**Status:** **NO LIVE STRATEGY.** Two registry directions closed/shelved; one active pattern-enumeration harness (Phases 1–3 LOCKED; Phase 4+ not started ⚠ Correction 2026-08-24: Phase 4 enumeration CLOSED DONE_WITH_CONCERNS — see [logs/phase4_closure.md](../../lab/analysis/legacy/eurusd_pattern_enum/logs/phase4_closure.md); Phase 5+ not started). Not in the live book.
 **Last updated:** 2026-07-16
 
 **Purpose:** Single source of instrument-level truth (operational rule 10, [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](../../docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md)). **Created 2026-07-16** under a scoped ADR §5 override (operator GO after coverage inventory — see ADR Addendum 2026-07-16). Seeded from registry + lab cards. Canonical path: `ops/instruments/EURUSD.md`.
@@ -38,7 +38,7 @@ structure:
 
 - **W1 — Cost law binds retail FX on this instrument.** Fix-reversal cost pre-screen (D2) and USDCAD precedent both say thin mean-reversion edges die at FXIFY all-in spreads. Re-tunes of hold/stop grids do not clear venue/cost kills.
 - **W2 — Custodian probe never completed formal falsifier.** D1 is SHELVED (soft) — manual TV underperformed; Dukascopy fetch hung. Re-proposal needs a **completed** mechanism probe or new mechanism evidence.
-- **W3 — Pattern enum is harness infrastructure, not an edge claim.** Phases 1–3 lock the reality-check apparatus; enumeration / MTC / OOS / verdict are not started.
+- **W3 — Pattern enum is harness infrastructure, not an edge claim.** Phases 1–3 lock the reality-check apparatus; enumeration is CLOSED (2026-08-24, DONE_WITH_CONCERNS — see [logs/phase4_closure.md](../../lab/analysis/legacy/eurusd_pattern_enum/logs/phase4_closure.md)); MTC / OOS / verdict (Phases 5–7) are not started.
 
 ---
 
@@ -47,8 +47,8 @@ structure:
 | # | Finding | Evidence | Confidence |
 |---|---|---|---|
 | **F1** | **London 16:00 WM/Reuters fix fade has a real gross post-fix reversal (~2 bps class) but is untradeable at retail cost.** Best-of-grid break-even ≈ **0.277 pip ≪ FXIFY ~0.8 pip all-in**; net R &lt; 0 in every (hold × stop) cell at ≥0.4 pip; robust to spread (gross ≤0.055R even at zero cost). | [`lab/archive/fixrev_costscreen_2026-06-22/`](../../lab/archive/fixrev_costscreen_2026-06-22/); CARD FAIL-COST | **HIGH** (n=1550 fix-days, canonical Pepperstone 5m) |
-| **F2** | **Codification boundary (surviving, not a EURUSD edge):** `compose_from_hint` only covers intraday-technical / single-instrument / long-only archetypes — calendar-flow / cross-instrument / two-sided concepts need primitive-library extension. Surfaced by custodian intake. | Registry custodian entry; `custodian_eurusd` probe | **HIGH** (capability finding) |
-| **F3** | **Reality-check harness Phases 1–3 LOCKED** for EURUSD pattern enumeration (`avg_block_length=21`, feature_space + K=450). Phase 4 enumeration not started. | [`lab/analysis/legacy/eurusd_pattern_enum/README.md`](../../lab/analysis/legacy/eurusd_pattern_enum/README.md); ADR 2026-05-22 reality-check harness | **HIGH** (infra lock) |
+| **F2** | **Codification boundary (surviving, not a EURUSD edge):** `compose_from_hint` only covers intraday-technical / single-instrument / long-only archetypes — calendar-flow / cross-instrument / two-sided concepts need primitive-library extension. Surfaced by custodian intake. (historical — the `lab/codification/` pipeline housing `compose_from_hint` was RETIRED 2026-08-02; see [REPO_MAP.md](../../REPO_MAP.md) and the [Gen-1 pipeline retirement ADR](../../docs/adr/2026-07-11-gen1-pipeline-retirement.md) — any future Python→Pine bridge is a fresh build, not an extension of this pipeline) | Registry custodian entry; `custodian_eurusd` probe | **HIGH** (capability finding) |
+| **F3** | **Reality-check harness Phases 1–3 LOCKED** for EURUSD pattern enumeration (`avg_block_length=21`, feature_space + K=450). Phase 4 enumeration not started. ⚠ Correction 2026-08-24: Phase 4 enumeration is CLOSED (DONE_WITH_CONCERNS, 450/450 patterns, zero cleared the locked prefilter floor) — see [logs/phase4_closure.md](../../lab/analysis/legacy/eurusd_pattern_enum/logs/phase4_closure.md); Phase 5+ not started. | [`lab/analysis/legacy/eurusd_pattern_enum/README.md`](../../lab/analysis/legacy/eurusd_pattern_enum/README.md); ADR 2026-05-22 reality-check harness | **HIGH** (infra lock) |
 
 ---
 
@@ -56,7 +56,7 @@ structure:
 
 | Concept | id / path | Status | Notes |
 |---|---|---|---|
-| Mechanical pattern enumeration | `lab/analysis/legacy/eurusd_pattern_enum/` | **ACTIVE — harness Phases 1–3 LOCKED; Phase 4+ not started** | Not an admitted edge. Resume only under locked harness phases. |
+| Mechanical pattern enumeration | `lab/analysis/legacy/eurusd_pattern_enum/` | **ACTIVE — harness Phases 1–3 LOCKED; Phase 4+ not started** ⚠ Correction 2026-08-24: Phase 4 CLOSED DONE_WITH_CONCERNS — see [logs/phase4_closure.md](../../lab/analysis/legacy/eurusd_pattern_enum/logs/phase4_closure.md); Phase 5+ not started | Not an admitted edge. Resume only under locked harness phases. |
 
 ---
 

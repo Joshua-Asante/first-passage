@@ -13,7 +13,7 @@ symbol: M2K
 asset_class: equity-index-futures
 family: []
 venue_tradable: true
-venue_note: "Tradeify Equity Index Product Group ($1.82 all-in -> $0.91/side). Withdrawn MYM+MNQ legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred; LEG_MAP code untouched."
+venue_note: "Tradeify Equity Index Product Group ($1.82 all-in -> $0.91/side). Withdrawn MYM+MNQ legs no longer reserve cap headroom for new non-Striker research (MSL B8 occupancy release 2026-08-12); Striker redeploy still barred; LEG_MAP code untouched as of that release. ⚠ Correction 2026-08-26: LEG_MAP's cap_alloc since released 0/0 (was 69/11) — see docs/adr/2026-08-26-striker-legmap-cap-release.md."
 k_bank_source: "../../discovery_manifests/"
 cells:
   - mechanism: overnight-range-failed-extension-fade
@@ -27,7 +27,7 @@ cells:
 cost_hurdle:
   value: 11.89
   units: "bp/round-trip"
-  basis: "panel-era median 1,897.20 => 11.89 bp/RT (recomputed 2026-07-28; supersedes illustrative index-2300 figure and withdrawn 10-30x margin claim). WARN Multiplier basis PENDING — 4x hurdle was Tradeify; venue de-scoped 2026-08-04; F3 open; friendly-firm per-side $0.50-$0.95; re-price against elected venue before this row gates anything."
+  basis: "panel-era median 1,897.20 => 11.89 bp/RT (recomputed 2026-07-28; supersedes illustrative index-2300 figure and withdrawn 10-30x margin claim). WARN Multiplier basis PENDING — 4x hurdle was Tradeify; venue de-scoped 2026-08-04; F3 ruled 2026-08-07 (no successor venue; Tradeify_Select_100K remains the environment for new strategies — docs/adr/2026-08-07-loop-s1-environment-ratification.md); friendly-firm per-side $0.50-$0.95; re-price against elected venue before this row gates anything if a future deployment lands outside Tradeify."
   source: "#M2"
 bars:
   - id: index-intraday-ohlcv-directional-timing-2026-07-21
