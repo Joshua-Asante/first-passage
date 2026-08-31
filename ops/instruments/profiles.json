@@ -59,7 +59,13 @@
         "verdict": "DEAD"
       }
     },
-    "M6A": {},
+    "M6A": {
+      "prior-session-breakout-continuation": {
+        "date": "2026-08-22",
+        "source": "../../lab/archive/dl2_m6a_pdhpdl_2026-08-22/RESULTS.md",
+        "verdict": "AMBIGUOUS-PARKED"
+      }
+    },
     "M6B": {},
     "MCL": {
       "daily-range-state-persistence": {

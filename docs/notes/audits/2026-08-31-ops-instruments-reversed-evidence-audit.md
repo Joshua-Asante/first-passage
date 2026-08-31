@@ -17,7 +17,7 @@ companion audit, not a blind full-corpus scan.
 2. Ran one scan agent per file (32/32), each checked against the reference sheet and free to surface any
    other verifiable reversal, with explicit attention to occupancy/leg-live-dead status, `cap_alloc`
    figures, campaign dispositions, and cross-references between sibling instrument files.
-3. Ran an independent, refute-first adversarial verify pass on every flag (37/37) — each verifier
+3. Ran an independent, refute-first adversarial verify pass on every flag (47/47) — each verifier
    re-derived the claim and the reversal from primary source rather than trusting the scan pass, and for
    any numeric claim independently re-checked the exact figure before proposing a fix.
 4. Applied minimal, pointer-based fixes across the 19 files with confirmed findings, one agent per file.
@@ -57,10 +57,13 @@ successor venue)** — not yet reflected in: `ES.md` (both forks stated as still
 F2/F3 as pending gates rather than settled).
 
 **Pepperstone feed retirement (2026-08-02)** — not yet reflected in: `EURUSD.md`, `GER40.md`,
-`NAS100.md`, `SPX500.md` (×3 sites), `USOIL.md` header (already correctly hedged, not flagged),
-`XAGUSD.md`, `XAUUSD.md` (×4 sites, including a compounding Dukascopy-retirement claim). Each still
-named Pepperstone as "canonical feed" in present tense; several of these instruments have no live
-venue at all, so "canonical feed" should read as historical provenance, not current designation.
+`NAS100.md`, `SPX500.md` (×3 sites), `USOIL.md` (×3 sites — header, `Dual role`/FEED&BROKER
+prose, and an impossible-to-satisfy "reproduce on Pepperstone" instruction; missed by the original
+scan pass, caught and fixed by Codex's review, see §7), `XAGUSD.md`, `XAUUSD.md` (×5 sites,
+including a compounding Dukascopy-retirement claim and a second impossible-to-satisfy Pepperstone
+reproduction instruction in W2, also caught by Codex's review). Each still named Pepperstone as
+"canonical feed" in present tense; several of these instruments have no live venue at all, so
+"canonical feed" should read as historical provenance, not current designation.
 
 **Other, single-instance findings:**
 
@@ -133,6 +136,44 @@ source edits imply — no hand-editing of either generated file occurred.
 
 ---
 
+## §7 — Codex review round (post-push corrections)
+
+Codex's automated review on the companion PR caught 6 real findings, all verified and fixed in the
+same PR before merge:
+
+1. **This note's cross-branch link** to `2026-08-31-reversed-evidence-docs-audit.md` genuinely
+   doesn't resolve inside this branch alone (the file lands via the companion PR). Left as-is —
+   the dependency is disclosed in the PR description, and the link is correct once both PRs are on
+   `main`; see that PR's body for the reasoning. Not a content error, so not re-litigated here.
+2. **§1's "37/37" verify-pass count was wrong** — the true count is 47 (38 confirmed + 9 refuted),
+   matching §6's own discipline-check line, which already had it right. Fixed in §1 above; this was
+   a transcription slip, not a methodology gap.
+3. **`USOIL.md` had three more stale sites the original scan pass missed**, all in the same feed/
+   status class already fixed elsewhere in the file: the header's own "Canonical feed" sentence,
+   the `Dual role` line's "RGC still revisitable at 08-08," the "only live USOIL direction" line,
+   and the FEED & BROKER/OPS NOTES section's Pepperstone staging instructions — all still read as
+   current despite the file's own Status line already carrying the 2026-08-31 correction. Fixed.
+4. **`XAUUSD.md` W2 retained an unexecutable instruction** — "reproduce on Pepperstone TV before
+   any disposition," left standing after marking Pepperstone retired earlier in the same warning.
+   Fixed: the non-transfer *rule* stands, but the reproduction *step* is flagged as currently
+   blocked pending a successor feed, not silently impossible.
+5. **`M6A.md`'s PROFILE `cells:` block never registered the DL-2 finding** — the prose fix (§2 above)
+   recorded the retirement narratively, but `python scripts/instrument_profiles.py cell M6A
+   prior-session-breakout-continuation` still returned "untested — no prior" because no structured
+   cell entry existed. Fixed: added an `AMBIGUOUS-PARKED` cell (date 2026-08-22, sourced to the
+   DL-2 RESULTS.md), matching the vocabulary `MGC.md` already uses for the analogous MSL-S4 case.
+   Rebuilt `PROFILES.md`/`profiles.json` afterward (70 cells now, was 69) — `instrument_profiles.py
+   check` confirms `view current`.
+
+None of these were false alarms — all 6 were genuine gaps, three of them (USOIL's remaining sites,
+XAUUSD's W2 instruction, M6A's missing cell) in the exact failure class this whole audit exists to
+catch, just not caught by the first pass. Recorded here rather than silently folded into §2/§3 above
+so the corpus shows both what the automated pass found and what a second independent review caught
+that it missed — consistent with this repo's own "an audit that always comes back clean risks going
+ceremonial" caution (`adr-decay-audit` skill, Known Trap #7).
+
+---
+
 ## §6 — Discipline check
 
 ```
@@ -140,6 +181,7 @@ source edits imply — no hand-editing of either generated file occurred.
 [x] Every file got one independent scan agent (32/32)
 [x] Every flag ran an independent refute-first verify pass (47/47) — 9 refuted, reasoning recorded
 [x] Every CONFIRMED_STALE finding fixed this session, not left as an unowned forward obligation (38/38)
+[x] Codex review round: 6 findings, all genuine, all fixed — see §7 (not folded silently into §2/§3)
 [x] Fixes are pointer-based, never rewrite history or duplicate the current value inline (Rule 7)
 [x] False positives reported, not silently dropped (§2)
 [x] One disputed-but-not-this-audit's-to-resolve figure (M6A commission) flagged, not silently "fixed"

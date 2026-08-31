@@ -37,7 +37,7 @@
 | overnight-range-transmission | . | . | . | . | . | . | . | . | . | . | . | . | . | A | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | pdh-pdl-breakout-rth | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | pdh-pdl-failed-break-reclaim | . | . | . | . | . | . | D | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . |
-| prior-session-breakout-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
+| prior-session-breakout-continuation | . | . | . | . | . | . | . | A | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | pullback-failure-resumption | . | . | . | . | . | . | . | . | . | D | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
 | regime-overlay | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | D | . | . | D | . | . | . | D | . | . | . | . |
 | sweep-failure-filtered-continuation | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . | . |
@@ -405,7 +405,9 @@ _No instrument has a recorded verdict on this mechanism._
 
 - **Class finding:** (M6A, 2026-08-22 — same day as minting): DL-2's TRAIN scoring closed AMBIGUOUS/ABANDONMENT the same day this id was minted — nominee V9 fails 3 of 4 nomination gates; a same-day geometric-feasibility diagnostic found the construction structurally infeasible on M6A and retired it for that instrument, with a stop-rule/re-proposal bar binding any successor. [`RESULTS.md`](../../lab/archive/dl2_m6a_pdhpdl_2026-08-22/RESULTS.md).
 
-_No instrument has a recorded verdict on this mechanism._
+| Instrument | Verdict | Date | Source |
+|---|---|---|---|
+| M6A | AMBIGUOUS-PARKED | 2026-08-22 | ../../lab/archive/dl2_m6a_pdhpdl_2026-08-22/RESULTS.md |
 
 
 ## pullback-failure-resumption

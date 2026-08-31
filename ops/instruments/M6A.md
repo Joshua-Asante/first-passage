@@ -21,6 +21,11 @@ cost_hurdle:
   units: "USD/round-trip (1-tick slip)"
   basis: "Stage-1 third-leg map Inputs: commission $0.91/side; RT 1t $2.82 / 2t $3.82; cost-tax 1t r=1 = 0.0902 (FLAG-COSTBIND vs own-panel floor 0.0891). Commission input disputed — core/firm_rules.py places M6A in the cheaper M6E/M6A $1.60-RT group, not the $1.82-RT index-micros group this figure derives from; correction disclosed but not yet applied, see docs/briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md §0."
   source: "#A1"
+cells:
+  - mechanism: prior-session-breakout-continuation
+    verdict: AMBIGUOUS-PARKED
+    date: 2026-08-22
+    source: "../../lab/archive/dl2_m6a_pdhpdl_2026-08-22/RESULTS.md"
 structure:
   - claim: "Stage-1 Currencies SURVIVOR under FLAG-COSTBIND — cost-tax binds before the own-panel Clause-N floor on the pooled panel; Stage-2 ex-FOMC flips the binding constraint COST->POWER."
     source: "#A1"
