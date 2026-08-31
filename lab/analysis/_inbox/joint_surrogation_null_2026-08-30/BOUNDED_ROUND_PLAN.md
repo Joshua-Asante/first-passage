@@ -1,231 +1,234 @@
-# Bounded Phase 1 round — frozen plan (PROPOSED)
+# Joint-surrogation thread — closure-path plan (post-hard-stop)
 
-**Status: PROPOSED — pending Codex review + operator ratification of the two ⚖ items below.**
-Authored 2026-08-30, as the concrete instantiation of the operator-ratified Phase 1 path
-("I ratify the Phase 1 approach", `Q-RANGEXFER-1` §11: one further round, at most 2 candidate
-remedies, hard stop; on failure, disclose a §6 gate-table gap for a fresh operator amendment
-rather than force-fitting `AMBIGUOUS-HOLD`; scoped to `Q-RANGEXFER-1`, not `Q-VOLREGIME-1`).
-Drafted while reviewing the external (Codex) "MNQ / MYM Mechanism Review" report, whose
-critical-path diagnosis (the joint long-memory surrogate null under parameter estimation is the
-single blocker for both mechanism families) this plan adopts — with the corrections in §6 below.
+**Status: PROPOSED — pending Codex review + operator ratification of the ⚖ items below.
+REVISED 2026-08-30, twice in one pass:** (a) merged with `main` after **PR #225 executed the
+ratified bounded round in parallel with this doc's authoring** — a disclosed parallel-authoring
+collision: this doc's original §3 proposed remedy slots for a round that PR #225 ran the same day
+(Round 4, four Codex correction passes: **neither model adequacy nor estimation-aware size/power
+clears; hard stop fired as ratified**); (b) revised for Codex's PR #226 review of this doc itself
+(9 findings — every one accepted or accepted-as-clarified, dispositions in §7). The original
+remedy content is superseded as *execution* guidance and survives only as re-open design
+requirements (§3).
 
-Owner brief: [`Q-RANGEXFER-1`](../../../docs/briefs/Q-RANGEXFER-1-overnight-range-gap-magnitude-transfer.md) §7 Phase 1.
-Design-exploration record this plan continues: [`RESULTS.md`](RESULTS.md) (Rounds 1–3).
+What this doc now is: **the concrete proposal for the §6 gate-table gap the fired hard stop
+raised to the operator** — the closure path for `Q-RANGEXFER-1`, and the independence case for
+`Q-VOLREGIME-1`.
 
----
-
-## §1 — What this round can and cannot change (decision context)
-
-Three facts, all already on record, jointly determine the round's actual payload:
-
-1. **L4 has already fired on all five hypotheses** ([`rangexfer_byyear_l4_2026-08-30/RESULTS.md`](../rangexfer_byyear_l4_2026-08-30/RESULTS.md),
-   Codex-corrected: parents `n_valid=3`, others 4–6, all `< 7`). `RESOLVED` is unreachable for
-   every H under this brief at this panel length, regardless of Phase 1's outcome.
-2. **Under the currently frozen verdict map, a valid but non-significant attribution limb gates
-   nothing.** Pre-registration §C freezes L5 as "NEVER GATES on its own — TYPES the verdict";
-   §D's `FALSIFIED` row fires only on outright L1–L3/L4 failure or L5 *VOID*. So with L4 already
-   AMBIGUOUS, every reachable verdict (`FALSIFIED` via presence, `AMBIGUOUS-HOLD` via L4) is
-   decided by the presence limbs alone — **the certified null, run under the current map, is
-   verdict-inert for this brief** (except the degenerate L5-VOID path). It changes only the
-   `{MECHANISM | SURVIVAL-ONLY}` typing of whatever the presence limbs establish.
-3. **The frozen texts contradict each other on exactly this point.** The brief's own §4 states
-   "otherwise the incremental lift is an artifact of the shared same-day regime" — attribution
-   failure IS the hypothesis's own falsification branch as written — and the sibling
-   `Q-VOLREGIME-1` §6 (Codex-corrected, PR #210) explicitly routes "L5 valid but p_upper > 0.05"
-   to `FALSIFIED`. Pre-reg §C says the opposite. This is a documented internal inconsistency
-   between two frozen artifacts, not a new design choice.
-
-Consequence: **the round's expected value hinges on an operator ruling (§2 P2) that must land
-before the remedies run**, and the presence limbs L1–L3 — cheap, surrogate-independent,
-computable today — determine most of the verdict surface either way.
+Owner brief: [`Q-RANGEXFER-1`](../../../docs/briefs/Q-RANGEXFER-1-overnight-range-gap-magnitude-transfer.md) §7/§11.
+Execution record this plan closes against: [`RESULTS.md`](RESULTS.md) (Rounds 1–4 + four Round-4 correction passes).
 
 ---
 
-## §2 — Pre-round steps (before any remedy work)
+## §1 — Decision context (all facts already on record)
 
-**P1 — Complete the presence battery (L1–L3) for all five hypotheses.** Same class of work as
-the L4 diagnostic (PR #224): frozen limb definitions (pre-reg §B/§F.2/§G.2), computed from the
-cached joint frames (`candidate24_joint_frame.csv`, `c24_joint_frame.csv`, the `bprime=0`
-scored subset), K-free re-derivation of already-scored panels. Vendor bars are present in this
-worktree (hash-verify against `SHA256SUMS` before use), so the two owed MYM re-runs (frozen
-1307-day panel; the `H-RANGEXFER-1.b-MYM` 2026 boundary case) are runnable in the same pass.
-Ex-ante consequences, stated now: any outright L1–L3 failure routes that hypothesis to
-`FALSIFIED` under the frozen map with no null needed; if all five pass L1–L3, then under the
-current map all five verdicts are already determined (`AMBIGUOUS-HOLD`) and only P2 can make the
-remedy work verdict-bearing.
-
-**P2 — ⚖ Operator ruling: does a certified, valid, non-significant L5 falsify H, or only type
-it?** Two coherent options; the frozen corpus supports both readings, so this is an operator
-call, requested with full disclosure that the exploratory (uncertified) `p_upper=0.785` lead is
-already on record pointing at this exact cell:
-
-- **Option A — L5 gates (recommended):** amend `Q-RANGEXFER-1` §6 + pre-reg §D to add "L5 valid
-  (not VOID) but does not clear (p_upper > 0.05)" to the `FALSIFIED` trigger, mirroring the
-  PR #210 fix on `Q-VOLREGIME-1`; amend pre-reg §C's "NEVER GATES" line to match; freeze the
-  precedence rule **FALSIFIED > AMBIGUOUS-HOLD when both fire** (attribution failure is
-  dispositive regardless of panel length) on both briefs (the same dual-fire ambiguity exists on
-  `Q-VOLREGIME-1`). Rationale: §3's Question is attribution-shaped ("beyond what a null
-  preserving shared-regime structure would produce"); §4's own "otherwise… artifact" text says
-  the same; the sibling brief already rules this way; and Option B leaves a
-  known-failed-attribution mechanism parked as re-openable `AMBIGUOUS-HOLD` — standing
-  zombie-thread risk. Under Option A the bounded round is verdict-bearing: a certified null +
-  the 0.785-class result would close the thread `FALSIFIED`, terminally and cleanly.
-- **Option B — L5 types only:** keep pre-reg §C as frozen. Then every reachable verdict at this
-  panel is presence-determined; the day-level certification buys only the
-  `{MECHANISM | SURVIVAL-ONLY}` annotation on an `AMBIGUOUS-HOLD`, and the certification
-  effort's real customer becomes `Q-VOLREGIME-1` (§5 below), with the day-level frame kept only
-  as the cheaper certification testbed.
-
-Ruling this before the remedies run is what keeps it honest: after a certified L5 result exists,
-choosing between A and B would be choosing the verdict.
-
-**P3 — `Q-VOLREGIME-1` by-year L4 count (cheap, parallel, informative for §5).** Bar-level
-panels span 7 distinct calendar years (2020-07→2026-07) with enormous per-year n — unlike the
-day-level frames, `N_valid ≥ 7` may actually PASS at bar level, making `RESOLVED`/`FALSIFIED`
-reachable there. Compute the qualifying-year count from the vendor bars (mirroring the PR #224
-convention, including its per-stratum floor correction) before assuming the day-level wall
-transfers. No K (presence-limb re-derivation of an already-scored construct).
+1. **The hard stop has fired.** Round 4 (PR #225, the ratified bounded round) ran two
+   model-adequacy remedies plus the production-grade size re-certification; after four Codex
+   correction passes: corrected null false-positive rate **26%** (95% CI [15.9%, 39.6%], p≈0 vs
+   nominal 5%), model adequacy failing **both** channels on the df-corrected absolute
+   residual-whiteness check, and a disclosed scope limitation (neither remedy tested the
+   production rank-based construction). Per the ratified mandate: no further design rounds; the
+   §6 gate-table gap is disclosed and raised to the operator. The corpus-insufficiency
+   conclusion is now **measured, not hypothesized**.
+2. **L4 already fired on all five hypotheses** ([`rangexfer_byyear_l4_2026-08-30/RESULTS.md`](../rangexfer_byyear_l4_2026-08-30/RESULTS.md),
+   Codex-corrected: parents `n_valid=3`, others 4–6, all `< 7`). `RESOLVED` was unreachable at
+   this panel length even before the hard stop.
+3. **Under the frozen map, a valid but non-significant attribution limb gates nothing.**
+   Pre-registration §C freezes L5 as "NEVER GATES on its own — TYPES the verdict"; §D's
+   `FALSIFIED` fires only on outright L1–L3/L4 failure or L5 *VOID*. So the presence limbs alone
+   decide every reachable verdict: `FALSIFIED` on outright presence failure, `AMBIGUOUS-HOLD`
+   (or the new row proposed in §4) otherwise.
+4. **The frozen texts contradict each other on L5 semantics.** The brief's own §4 ("otherwise
+   the incremental lift is an artifact of the shared same-day regime") and sibling
+   `Q-VOLREGIME-1`'s §6 (Codex-corrected, PR #210) treat valid-but-non-significant attribution
+   as the falsification branch; pre-reg §C says the opposite. A documented internal
+   inconsistency between frozen artifacts, not a new design choice.
 
 ---
 
-## §3 — The two remedy slots (frozen; hard stop after both)
+## §2 — The three live steps
 
-Both remedies keep the frozen statistic (min stratified incremental lift), frozen `alpha=0.05`,
-and the existing generate → score → p_upper machinery (verified bug-free, RESULTS.md Round 2).
-What changes per remedy is the null generator and how estimation uncertainty is handled. No
-third remedy; no tolerance/band retunes after results exist; failure of both ⇒ §4 fail branch.
+**P1 — Complete the presence battery (L1–L3) for all five hypotheses.** Same class as the L4
+diagnostic (PR #224): frozen limb definitions (pre-reg §B/§F.2/§G.2), computed from the cached
+joint frames, K-free re-derivation of already-scored panels. **This is now the
+verdict-determining computation**: with L4 AMBIGUOUS everywhere and no certifiable L5 in
+existence, an outright L1–L3 failure routes that hypothesis to `FALSIFIED`; a full L1–L3 pass
+routes it to the §4 closure row. Per-hypothesis outcomes are recorded separately and never
+overwritten by the design-level closure (§4).
+*Environment precondition (Codex #226 finding 4):* the two exact-panel MYM re-runs owed from
+PR #224 (frozen 1,307-day panel; the `H-RANGEXFER-1.b-MYM` 2026 boundary case, exactly 20
+conditional cases) require hash-verified vendor bars in the executing environment — gitignored
+bytes travel with no checkout, so runnability is environment-relative. In the authoring worktree
+both CSVs are present and were hash-verified against the tracked `SHA256SUMS` this session
+(`MNQ_M15.csv` → `6c86f41a…`, `MYM_M15.csv` → `24e16952…`, both match). Any other executing
+environment must re-verify or declare the re-runs blocked pending vendor data.
 
-**R1 — HAR-family generator (new model class; primary).** Per channel, fit a HAR(1,5,22)
-cascade on log-range by OLS (the literature-standard quasi-long-memory model for realized
-range/volatility — a restricted AR(22) whose daily/weekly/monthly cascade is the standard
-parsimonious approximation to exactly the "fast decay then plateau" ACF shape Round 2
-diagnosed); couple channels via correlated Gaussian innovations, correlation
-bisection-calibrated to the real lag-0 cross-correlation (machinery exists); rank-remap onto
-each channel's real marginals. Why it attacks the actual root cause: the 25% Type-I inflation
-comes from surrogates generated at a noisy point estimate (SMM-fitted `d` near the 0.5 boundary
-at n=1487 has large sampling error); HAR's OLS parameters at n=1487 are tight, and refits are
-essentially free — so the refit-per-replicate calibration study can run at full production
-grade, N=200+, at laptop cost.
+**P2 — ⚖ Operator ruling: L5 semantics, frozen at closure time.** Does a certified, valid,
+non-significant L5 falsify H (Option A — matches §4's own text and the sibling brief; recommended)
+or only type it (Option B — pre-reg §C as frozen)? The hard stop makes this ruling *cheaper*, not
+moot: no certified L5 exists or can exist now, so freezing the semantics today fixes the
+**re-open contract** (what a future certified design's result would do) at the one moment nobody
+can be choosing a verdict by choosing the rule. Disclosed in the ruling record: the exploratory,
+uncertified p_upper=0.785 lead already points at this cell. Under Option A, also freeze
+precedence — **FALSIFIED > AMBIGUOUS-HOLD when both fire** — on both briefs (the sibling's §6
+carries the same dual-fire ambiguity).
 
-**R2 — ARFIMA kept, estimation made honest and propagated (secondary).** Keep
-`longmemory_copula.py`'s ARFIMA(1,d,0)+copula generator, but (a) replace the SMM grid with a
-fast two-step estimator (local-Whittle `d̂` + CSS/profile AR term) so per-replicate refits are
-cheap enough for a real calibration study, and (b) propagate parameter uncertainty into the
-null: estimate the estimator's own sampling distribution by parametric bootstrap (simulate at
-`θ̂`, refit R times), then draw `θ*` per surrogate from that distribution instead of generating
-every surrogate at the plug-in point estimate. Plug-in composite-null bootstraps are
-anti-conservative in exactly the way Round 3 measured; parameter-uncertainty propagation is the
-standard corrective and errs conservative.
-
-**Preference rule, frozen now:** if both certify, R1 is the deployable design and R2 becomes a
-disclosed robustness annex — decided before either result exists, so there is no pick-the-winner
-degree of freedom.
-
-### Certification gates (both remedies, all three required)
-
-1. **Model adequacy — mechanism-independent, criterion validated before use.** Replace the
-   failed ACF-percentile gate with a multi-horizon out-of-sample predictive comparison
-   (rolling-origin log-score or QLIKE at h=1, 5, 22 per channel): the candidate must beat the
-   naive benchmark and must separate from VAR(20) — the known-inadequate comparator that the
-   ensemble gate failed to reject — at the long horizon, where short-memory models' forecasts
-   revert too fast. **Meta-requirement:** before touching real data, the criterion itself is
-   validated on synthetic panels (where adequacy is known by construction): it must reject
-   VAR(20) and accept the true generator with frozen thresholds set there. If no criterion in
-   this family can discriminate at n=1487, adequacy is undecidable at this panel length — that
-   counts as remedy failure and feeds §4's fail branch as a corpus-insufficiency finding.
-   Cross-model verdict agreement may be reported as a disclosed annex but can NEVER substitute
-   for size control (option (a) is operator-rejected; the Codex report's "cross-model
-   robustness" adequacy option is admitted only in this annex role).
-2. **Estimation-aware size.** Refit-per-replicate positive control at production-grade
-   estimation, N=200 replicates: empirical size at nominal α=0.05 must land in **[0.01, 0.08]**
-   (binomial 95% acceptance around 0.05 at N=200, floor kept above zero so a degenerate
-   never-rejects null cannot pass). Full battery at the MNQ-fitted parameters; N=100 spot-check
-   at the MYM-fitted parameters; both must pass. No known-true-parameter shortcut counts.
-3. **Power floor.** At the same frozen injected alternative the existing positive controls
-   already implement: power ≥ **0.50**. If size certifies but power fails the floor, the test
-   cannot support a falsifiable attribution verdict at this panel length — remedy failure,
-   corpus-insufficiency finding, §4 fail branch.
+**P3 — `Q-VOLREGIME-1` by-year L4 qualifying-year count.** Cheap, parallel, K-free, from vendor
+bars (same environment precondition as P1). Bar-level panels span 7 calendar years with enormous
+per-year n — `N_valid ≥ 7` may PASS, making `RESOLVED`/`FALSIFIED` genuinely reachable there,
+which would materially change the value of any future certification attempt (§5).
 
 ---
 
-## §4 — Outcome fork
+## §3 — Original remedy slots: SUPERSEDED as execution, retained as re-open requirements
 
-**A remedy clears all three gates →** Phase 2: fresh independent adversarial review of the
-certified design (`pre-ratification-adversarial-panel` class — checking it against the
-retired-block-shuffle failure mode: does it pass regardless of whether a real effect exists?),
-including whether one design soundly serves both instruments. Then Phase 3: formally register
-the already-declared K (`H-RANGEXFER-1.a-MYM` K_fresh=2, `H-RANGEXFER-1.b-MYM` K_fresh=2, +1
-for re-scoring the statistic the exploratory 0.785 look already touched; non-stacking per the
-2026-08-30 ratification), obtain execution GO, run per instrument per hypothesis, Phase 4 score
-under the P2-ruled map. Expected terminal states at this panel length: `FALSIFIED` (Option A +
-a 0.785-class certified result, or any presence failure from P1) or `AMBIGUOUS-HOLD` — never
-`RESOLVED`. Only after the day-level design is certified: adapt (not port) to bar level for
-`Q-VOLREGIME-1` — transfer re-certification at bar-level n plus its distinct-WHO three-way
-check, per that brief's §7.
+This doc's original R1 (HAR(1,5,22) cascade generator) and R2 (ARFIMA with fast estimation +
+parameter-uncertainty handling) were authored without visibility into PR #225's same-day
+execution of the ratified round. They are **not** licensed as additional rounds — that would be
+the forbidden third remedy under the fired hard stop. They stand only as candidate design
+classes for re-open trigger (b) of the §4 closure row, and any future candidate must now meet
+the following **certification requirements**, consolidated from Codex's #226 review (findings
+1–3, 5–7) and Round 4's own corrections — recorded now so a future session inherits the full
+bar, not a diluted memory of it:
 
-**Neither remedy clears (or adequacy undecidable / power floor unmet) →** the ratified fail
-branch: no more design rounds. File the §6 gate-table gap disclosure and propose the fresh
-verdict row for operator ratification — draft text: **`AMBIGUOUS-DESIGN`** — *"no certifiable
-joint-surrogation attribution design exists at current panel length (three rounds + one bounded
-remedy round, 9 constructions, all failed certification — see RESULTS.md); presence-level
-evidence stands as typed by stage-1; ITERATE with re-open triggers: (a) panel reaches ≥7
-qualifying years under the corrected per-stratum L4 gate, (b) a genuinely different design
-class arrives with its own certification evidence, (c) an externally validated method for
-joint long-memory surrogation under estimation becomes available. No calendar-dated re-test."*
-Close `Q-RANGEXFER-1` under the amended gate. `Q-VOLREGIME-1` is then assessed independently,
-NOT closed by inheritance — both day-level failure mechanisms (estimation noise in `d` at
-n≈1.5k; the 6-year L4 wall) are materially weaker at bar level (n≈135k–140k; possibly 7
-qualifying years per P3), so the same verdict does not automatically transfer.
-
----
-
-## §5 — Where the certification effort's value actually lands
-
-Under Option B (P2), and even partially under Option A, the largest expected payoff of a
-certified joint long-memory null is **not** `Q-RANGEXFER-1` (whose ceiling is `AMBIGUOUS-HOLD`
-/ `FALSIFIED` regardless) but: (1) `Q-VOLREGIME-1`, where L5-gating semantics are already
-frozen, per-year n is enormous, and `RESOLVED` may be genuinely reachable if P3 finds ≥7
-qualifying years; and (2) every future S2-shaped cross-series question — the D5/O1
-"UNRESOLVED-NEEDS-DESIGN" debt is a standing instrument gap the MECHANISMS program keeps
-hitting, and a certified design retires it once for the whole class. This is why the bounded
-round is worth running even though it cannot produce a `RESOLVED` on the brief that chartered it.
+1. **Adequacy = relative AND absolute.** A relative gate (beat naive benchmark, separate from a
+   known-inadequate comparator) cannot detect "every candidate is inadequate"; require in
+   addition an absolute real-data check — df-corrected residual-whiteness (the check that killed
+   Round 4's remedy 2) and/or direct post-generation dependence checks. Synthetic criterion
+   validation does not substitute: it tests panels where the candidate is true by construction.
+2. **Certify the deployed construction, not a proxy.** Adequacy and size/power must be scored on
+   the final post-coupling, post-rank-remap surrogate pairs — the transformations can change
+   exactly the dependence the null must preserve. (Round 4's third correction pass hit the same
+   wall from the other side: both its remedies tested a log-Pearson proxy, not the production
+   rank-based construction.)
+3. **Per-N integer acceptance cutoffs, or one N everywhere.** The original shared `[0.01, 0.08]`
+   band was not a valid binomial region across replicate counts (N=200: accept counts 4–16,
+   coverage 96.7%; N=100: accept 1–10, coverage 98.3% — computed exactly this session). Freeze
+   integer cutoffs per N at freeze time, or use the same N for every battery.
+4. **Certify every (instrument × predictor-pair × panel-restriction) actually scored.** The
+   parent hypotheses use (overnight range, RTH range); the `.a`/`.b` hypotheses use (gap
+   magnitude, RTH range) on restricted panels with different marginals and dynamics — a
+   certification at one pair licenses nothing about another.
+5. **Zero-safe frozen transforms.** `c24_joint_frame.csv` contains `gap == 0` rows (5 obs), so
+   any log-space fit on gap channels is invalid as written; the transform (offset, `log1p`, or a
+   rank/normal-scores formulation) must be frozen before fitting, per channel, not improvised
+   after a fit fails.
+6. **No naive parameter-bootstrap null.** Drawing surrogate parameters from the bootstrap
+   distribution of estimates reproduces the estimator's bias (acute for `d̂` near the 0.5
+   boundary) and is not conservative, contrary to this doc's original claim — corrected. A
+   future size fix must use a calibrated confidence-distribution construction or a full nested
+   parametric bootstrap (simulate → refit → recompute the complete procedure per replicate).
 
 ---
 
-## §6 — Corrections to the external Codex report (adopted with these adjustments)
+## §4 — Closure mechanics (the §6 gap proposal, per-hypothesis)
 
-The report's critical-path diagnosis and its Priorities 1/3/5 are adopted. Corrections:
+Scored **per hypothesis**, on P1's outcomes — a P1 falsification is never overwritten by the
+design-level closure (Codex #226 finding 9):
 
-1. Its claim "attribution failure produces FALSIFIED" (report §2.E) is **wrong for
-   `Q-RANGEXFER-1` as frozen** — only L5 *VOID* falsifies; valid-but-non-significant gates
-   nothing (pre-reg §C/§D). True for `Q-VOLREGIME-1` only. This is the P2 ruling.
-2. Its §5.A ("the repo can still perform the other limbs and determine whether the by-year wall
-   actually fires… may prevent final certification later") is **stale**: the wall already fired
-   on all five hypotheses (PR #224), with corrected `n_valid=3` (not ~6) for both parents —
-   `RESOLVED` is already unreachable, which inverts the round's cost-benefit rather than merely
-   qualifying it.
-3. Its recommended fallback ("close the thread AMBIGUOUS") must route through the ratified
-   mechanism — §6 gap disclosure + fresh operator gate amendment (§4 above) — not through the
-   existing `AMBIGUOUS-HOLD` row, whose trigger is L4-specific (already ruled, PR #223).
-4. Its K section is partially stale: the amounts are already declared and corrected
-   (K_fresh=2/2, +1 for the reused real-data look; batch K=5 non-stacking, operator-ratified);
-   what remains owed is formal registration at Phase 3, not fresh derivation.
-5. Its "volume transitively blocked" framing is right for sequencing but wrong as a verdict
-   coupling — the day-level design's two failure mechanisms are both n-dependent and materially
-   weaker at bar level (§4/§5), so `Q-VOLREGIME-1` must be assessed on its own panel either way.
+- **Any outright L1–L3 failure → `FALSIFIED`** for that hypothesis under the existing frozen
+  row, no null needed. Mixed outcomes file per the brief's own §9 convention.
+- **All presence limbs pass (L4 AMBIGUOUS) → the new row, proposed for operator ratification:**
+
+  **`AMBIGUOUS-DESIGN`** — *"presence limbs pass but no certifiable joint-surrogation
+  attribution design exists at current panel length (4 rounds + 4 correction passes, 9
+  constructions, 2 ratified remedies — all failed certification; RESULTS.md is the evidence
+  record). Presence-level evidence stands as typed by stage-1; every L5-class limb — including
+  the two frozen counter-stratum rejection branches (H-RANGEXFER-1.a's overnight-hot
+  generalization check, H-RANGEXFER-1.b-MYM's `bprime=1` reversal check) — is design-blocked
+  and explicitly not evaluated (Codex #226 finding 8). ITERATE with re-open triggers: (a) the
+  panel reaches ≥7 qualifying years under the corrected per-stratum L4 gate, (b) a genuinely
+  different design class arrives meeting every §3 requirement, (c) an externally validated
+  method for joint long-memory surrogation under estimation becomes available. On re-open, a
+  certified valid non-significant L5 disposes per the ⚖ P2 ruling. No calendar-dated re-test."*
+
+`Q-VOLREGIME-1` is **not** closed by inheritance — assessed independently per §5, consistent
+with the ratification's scoped-to-`Q-RANGEXFER-1`-only clause.
+
+---
+
+## §5 — Where a future certification's value actually lands
+
+The largest expected payoff of a certified joint long-memory null was never `Q-RANGEXFER-1`
+(ceiling `AMBIGUOUS-HOLD`/`FALSIFIED` regardless) but: (1) `Q-VOLREGIME-1`, where L5-gating
+semantics are already frozen, both day-level failure mechanisms are materially weaker at
+n≈135k–140k bars (estimation noise in `d` shrinks; the L4 wall may not exist per P3), and
+`RESOLVED` may be genuinely reachable; and (2) every future S2-shaped cross-series question —
+the D5/O1 "UNRESOLVED-NEEDS-DESIGN" debt is a standing instrument gap. The hard stop closes this
+*attempt*, not the instrument gap: §3's requirements are the inherited spec for whoever next
+picks it up, at bar-level n first (where certification is most likely to succeed and most
+valuable), not day-level.
+
+---
+
+## §6 — Corrections to the external Codex mechanism-review report (adopted with adjustments)
+
+The report's critical-path diagnosis and Priorities 1/3/5 were adopted; Round 4 has since
+executed the substance of Priorities 1–3. Standing corrections:
+
+1. "Attribution failure produces FALSIFIED" is wrong for `Q-RANGEXFER-1` as frozen — only L5
+   *VOID* falsifies; valid-but-non-significant gates nothing (pre-reg §C/§D). True for
+   `Q-VOLREGIME-1` only. This is the ⚖ P2 ruling.
+2. Its §5.A panel-length section was stale: the L4 wall already fired on all five hypotheses
+   (PR #224), corrected parents' `n_valid=3` — `RESOLVED` already unreachable.
+3. Its "close the thread AMBIGUOUS" fallback must route through the ratified mechanism — §6 gap
+   disclosure + fresh operator gate amendment (§4 above) — not the existing L4-specific
+   `AMBIGUOUS-HOLD` row (already ruled, PR #223).
+4. Its K section was partially stale: amounts already declared and corrected (K_fresh=2/2, +1
+   for the reused real-data look; batch K=5 non-stacking, operator-ratified); what remains owed
+   is formal registration at any future Phase-3 execution.
+5. "Volume transitively blocked" is right for sequencing but wrong as a verdict coupling —
+   `Q-VOLREGIME-1` is assessed on its own panel (§5).
+
+---
+
+## §7 — Codex review of this doc (PR #226): 9 findings, dispositions
+
+| # | Finding | Disposition |
+|---|---|---|
+| 1 (P1) | Relative-only adequacy gate can pass when all models are inadequate; synthetic validation doesn't close it | **Accepted — and empirically vindicated the same day:** Round 4's correction added exactly this absolute check (df-corrected Ljung-Box residual whiteness) and it flipped the adequacy verdict to FAIL on both channels. Folded into §3 req 1. |
+| 2 (P1) | Adequacy must be scored on the final post-coupling, post-remap surrogates, not per-channel fits | **Accepted** — §3 req 2; independently mirrored by Round 4's third-pass scope disclosure (both its remedies tested a log-Pearson proxy, not the production construction). |
+| 3 (P2) | Shared [0.01,0.08] band is not a valid binomial region for both N=200 and N=100 | **Accepted** — exact per-N integer regions computed (N=200 → [4,16]; N=100 → [1,10]); §3 req 3 freezes per-N cutoffs or one N everywhere. |
+| 4 (P2) | Vendor bars absent from the reviewed tree; MYM cache is 1,304 not 1,307 days — "runnable" overstated | **Accepted as clarified** — runnability is environment-relative (gitignored bytes travel with no checkout). Both CSVs are present in the authoring worktree and were hash-verified against `SHA256SUMS` this session; §2 P1 now states the precondition explicitly and the blocked-pending-vendor-data fallback. |
+| 5 (P1) | One battery at MNQ-fitted overnight-pair parameters does not certify the gap-magnitude pairs | **Accepted** — §3 req 4: certification per (instrument × predictor-pair × panel-restriction) actually scored. |
+| 6 (P1) | log-space HAR fit is invalid on gap channels (`gap==0` rows exist in the committed frame) | **Accepted** — §3 req 5: zero-safe transform frozen per channel before fitting. |
+| 7 (P1) | Drawing θ* from the bootstrap distribution of estimates reproduces estimator bias; "errs conservative" was wrong | **Accepted — original claim retracted.** §3 req 6 replaces it with calibrated confidence-distribution or full nested parametric bootstrap. |
+| 8 (P1) | The two frozen counter-stratum rejection branches (§4 of the brief) were never scheduled | **Accepted** — they are L5-class limbs, so under the hard stop they are design-blocked like the primary attribution limbs; the §4 closure row now names them explicitly as not-evaluated rather than silently omitted. On any re-open they enter the mandatory execution set. |
+| 9 (P1) | The unconditional fail branch would overwrite P1 falsifications with `AMBIGUOUS-DESIGN` | **Accepted** — §4 is now per-hypothesis: `AMBIGUOUS-DESIGN` applies only to presence-passers; P1 `FALSIFIED` outcomes stand; mixed outcomes file per the brief's §9. |
+
+Findings 1–3 and 5–7 targeted the remedy sections that PR #225's parallel execution has since
+superseded — they are dispositioned as **re-open design requirements** (§3), not as changes to
+work that will still run under this thread.
 
 ## Audit hooks
 
 ```bash
-# The three facts §1 rests on
+# The facts §1 rests on
 grep -n "NEVER GATES" docs/briefs/pre-registration/Q-RANGEXFER-1-verdict-preregistration.md
 grep -n "n_valid" lab/analysis/_inbox/rangexfer_byyear_l4_2026-08-30/RESULTS.md
 grep -n "p_upper > 0.05" docs/briefs/Q-VOLREGIME-1-intraday-bar-volume-regime.md
+grep -n "hard stop fires\|26%" lab/analysis/_inbox/joint_surrogation_null_2026-08-30/RESULTS.md
 
-# The ratified bound this plan instantiates
-grep -n "I ratify the Phase 1 approach" docs/briefs/Q-RANGEXFER-1-overnight-range-gap-magnitude-transfer.md
+# The corrected production-grade size figure (Round 4, third correction pass)
+python lab/analysis/_inbox/joint_surrogation_null_2026-08-30/_refit_per_replicate_positive_control_v2.py
+# Expected: null false-positive 13/50 = 26% (95% CI [15.9%,39.6%]) vs nominal 5%
 
-# The measured Type-I inflation both remedies must clear
-python lab/analysis/_inbox/joint_surrogation_null_2026-08-30/_refit_per_replicate_positive_control.py
-# Expected: null reject rate 2/8=0.25 (coarse) vs nominal 0.05
+# Vendor-bar precondition check (any executing environment, before P1/P3)
+python - <<'PY'
+import hashlib
+for f in ("MNQ_M15.csv", "MYM_M15.csv"):
+    h = hashlib.sha256(open("core/data/bar_data/" + f, "rb").read()).hexdigest()
+    print(f, h[:16])
+PY
+# Expected: 6c86f41a17b7dfce / 24e169528f7ea669 (match SHA256SUMS), else P1/P3 are blocked
+
+# Per-N binomial acceptance regions (§3 req 3)
+python -c "
+from math import comb
+def cdf(n,p,k): return sum(comb(n,i)*p**i*(1-p)**(n-i) for i in range(k+1))
+for n in (200,100):
+    lo = next(k for k in range(n) if cdf(n,0.05,k) > 0.025)
+    hi = next(k for k in range(n) if cdf(n,0.05,k) >= 0.975)
+    print(n, lo, hi)
+"
+# Expected: 200 4 16 / 100 1 10
 ```
