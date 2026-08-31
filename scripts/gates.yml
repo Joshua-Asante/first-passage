@@ -373,3 +373,29 @@ gates:
     cmd:
       - python
       - scripts/audit_notice_grade_k_correction.py
+
+  # Added 2026-08-31 (PR #229 review): `docs/spec/` carried zero gate coverage
+  # before this entry (confirmed: `grep -c docs/spec scripts/gates.yml` on the
+  # prior revision returns 0) -- the one class of file this repo treats as
+  # "commissions a build, not the decision" (docs/spec/README.md) is also the
+  # one class nothing here mechanically checks, which is how a PROPOSED spec
+  # citing zero ADRs while proposing to amend the INQHIORI canon landed as a
+  # PR uncontested by anything but a line-level Codex review. This gate does
+  # not adjudicate ratification-worthiness -- it only asks whether a
+  # canon-amending docs/spec/ file cites at least one ADR by path. See the
+  # script's own docstring for what it cannot see (citation-by-title,
+  # semantic dedup quality).
+  # `tier: always`, non-blocking: same reasoning as falsifier-reachability-census
+  # and notice-grade-k-correction above -- the script's own docstring states
+  # "WARN-TIER BY DESIGN. Always exits 0 unless --strict," confirmed by a
+  # direct run against this worktree (exit 0, 54 specs scanned, 12
+  # canon-amending, 5 zero-citation findings printed to stdout). No clean
+  # baseline exists yet for this heuristic -- promoting straight to --strict
+  # would repeat the exact mistake the falsifier-reachability-census entry's
+  # own comment above documents avoiding.
+  - id: spec-provenance
+    tier: always
+    cmd:
+      - python
+      - scripts/check_spec_provenance.py
+      - --stats

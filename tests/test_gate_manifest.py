@@ -46,6 +46,12 @@ EXPECTED_ALWAYS = {
     # 0 per its docstring), same reasoning as skill-deploy-sync and
     # falsifier-reachability-census above.
     "notice-grade-k-correction",
+    # PR #229 review (2026-08-31) — docs/spec/ carried zero gate coverage
+    # before this entry; canon-amending-with-zero-ADR-citation census,
+    # report-only (script's own exit code is always 0 unless --strict, per
+    # its docstring), same reasoning as falsifier-reachability-census and
+    # notice-grade-k-correction above.
+    "spec-provenance",
 }
 
 EXPECTED_PATH_CONDITIONAL = {
