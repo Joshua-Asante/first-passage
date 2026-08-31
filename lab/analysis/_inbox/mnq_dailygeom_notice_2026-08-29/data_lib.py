@@ -82,9 +82,30 @@ def rth_ohlc(df: pd.DataFrame) -> pd.DataFrame:
 
 def overnight_ohlc(df: pd.DataFrame) -> pd.DataFrame:
     """One row per trading_day: the pre-RTH (Globex overnight) segment of that
-    SAME trading day -- i.e. all bars with is_rth==False belonging to trading_day
-    d (which spans 18:00 ET d-1 through 09:30 ET d)."""
-    o = df[~df["is_rth"]]
+    SAME trading day -- bars belonging to trading_day d with et_minute either
+    < RTH_OPEN_MIN (the early-morning tail, 00:00-09:30 ET date d) or >=
+    TRADING_DAY_CUTOVER_MIN (the evening reopen, 18:00-24:00 ET date d-1,
+    already bumped into trading_day d) -- which spans 18:00 ET d-1 through
+    09:30 ET d.
+
+    CORRECTED 2026-08-31 (Codex PR #227 review, independently re-verified same
+    day). The original implementation used `~is_rth` as the overnight mask,
+    which also silently swept in the [16:00,18:00) ET post-RTH-close window on
+    the SAME calendar date d -- bars that occur strictly AFTER trading_day d's
+    own RTH session has already closed, not before it. Since RTH_range_d is
+    fully determined by 16:00 ET, including bars through 18:00 ET meant
+    on_range_d was not actually knowable until 2 hours after the very outcome
+    it was used to "predict" -- a look-ahead defect, not a cosmetic scope
+    difference. Quantified before this fix: the gap window has bars on
+    1,495/1,559 trading days, changes on_range on 1,096/1,559 days (mean
+    inflation 90.7 pt, ~= the entire median overnight range), and flips the
+    derived bias_overnight flag on 312/1,499 scored days (20.81%). MYM's own
+    sibling loader (mym_mechanism_harvest_2026-08-29/load_sessions.py) never
+    had this defect -- it always restricted to `minute <= OVERNIGHT_CLOSE_MIN`,
+    the same genuinely-pre-RTH-only convention this fix now matches. Full
+    account: docs/notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md."""
+    m = (df["et_minute"] < RTH_OPEN_MIN) | (df["et_minute"] >= TRADING_DAY_CUTOVER_MIN)
+    o = df[m]
     g = o.groupby("trading_day", sort=True)
     out = pd.DataFrame({
         "open": g["open"].first(),
