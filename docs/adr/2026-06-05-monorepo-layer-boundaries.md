@@ -244,21 +244,6 @@ grep -rl "check_boundaries\|REPO_MAP" docs/adr/ 2>/dev/null | grep "2026-0[7-9]\
 
 ## Verification (run before ACCEPT)
 
-```bash
-# Discipline checks (mechanical)
-python scripts/check_brief.py docs/adr/2026-06-05-monorepo-layer-boundaries.md --type adr
-# Expected: well-formed (0 HARD)
-
-# §0 confirmation (Rule 0 on-disk anchors)
-git log -1 --oneline origin/main                                  # base = 0ec6e11 (PR#136) or later
-grep -rn "import archive\|from archive" --include=*.py . | grep -v '^./archive/'  # expect empty
-sed -n '54p' validation/sweep/engine.py                          # the legal lab->core edge
-sed -n '222p' parity_check.py                                    # the ops->lab edge resolved by §8 Q-d
-sed -n '28p' analysis/oanda_stage1/tv_export_loader.py           # loader depends only on lib.mvd (=core)
-# (scripts/deletion_candidate_report.py was retired on main — a9d16d0 — no longer an anchor)
-
-# AST-aware lab<->ops probe (replaces the rev.-1/2 grep that missed parity_check.py:222)
-grep -rnE "(from|import)[[:space:]]+(analysis|validation)([.[:space:]]|$)" \
-  accounts.py cli.py parity_check.py fxify_rule_validator.py tv_mt5_pnl_reconciliation.py \
-  live_journal/ weekly_review_feeder/                            # expect ONLY parity_check.py:222
-```
+This pre-ACCEPT checklist targeted pre-move flat paths (`parity_check.py`, `accounts.py`,
+`validation/sweep/engine.py`) that no longer exist in the post-move tree — see §0 for the
+Rule-0 anchor table and §10 for the current runnable audit hooks.

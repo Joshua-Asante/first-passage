@@ -51,7 +51,7 @@ directory to infer what is live.
 | Open / dormant questions | [`docs/briefs/INDEX.md`](docs/briefs/INDEX.md) |
 | Decision status | [`docs/adr/INDEX.md`](docs/adr/INDEX.md) (derived; do not hand-edit) |
 | Kill / re-proposal bar | [`docs/rejected_candidates.md`](docs/rejected_candidates.md) |
-| GRAND-tier pursuits | [`docs/pursuits/`](docs/pursuits/) · [`docs/personas/INDEX.md`](docs/personas/INDEX.md) |
+| GRAND-tier pursuits | [`docs/pursuits/`](docs/pursuits/) (persona-hierarchy review routing retired 2026-08-31 — see [retirement ADR](docs/adr/2026-08-31-persona-hierarchy-full-retirement.md)) |
 | Gates / `make` targets | [`scripts/gates.yml`](scripts/gates.yml) · `python scripts/gate_manifest.py --list` |
 | Closed-loop specs S1–S7 | [`docs/spec/2026-08-07-loop-spec-index.md`](docs/spec/2026-08-07-loop-spec-index.md) |
 

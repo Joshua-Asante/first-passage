@@ -1,5 +1,14 @@
 # ADR 2026-08-21 — Persona hierarchy narrowed to Front Office; Middle/Back-office functions run as mechanical gates
 
+> ⚠ **Fully superseded 2026-08-31.** The entire persona-hierarchy system — including the
+> Front-Office-only roster this ADR narrowed to — is retired. `docs/personas/` is deleted from the
+> live tree; no persona is spawnable. This ADR's own D2 mechanical-gate mapping (the 8
+> Middle/Back-office retirements) is unaffected and continues to stand — see
+> [`2026-08-31-persona-hierarchy-full-retirement.md`](2026-08-31-persona-hierarchy-full-retirement.md)
+> §2 item 5 for why nothing about D2's gates changes. This ADR's text below is left unedited as the
+> historical record of what was ratified 2026-08-21 — read it as history, not as a current
+> description of anything live.
+
 **Status:** `Accepted` — ratified by operator (Joshua) 2026-08-21, in-session direct instruction ("What
 i realized is [First Passage] is primarily a research entity, with deployment as a means of validating
 this research... First Passage doesn't really need a dedicated Middle and Back Office, they just need
@@ -16,7 +25,8 @@ spawned CRO persona). D3's underlying claim — the hard-block enforces an exist
 grants no new AI authority — is unchanged and **not** superseded. D2 (extend the existing panel
 workflow, not replace), D4's ownership-map delegation *mechanism* (reassigned, not abolished — see
 §7), D5 (Joshua decides, always), and the GRAND/STRATEGIC panel trigger scope are all untouched.
-**Superseded-by:** none
+Historical record only as of 2026-08-31 (see the full-supersession notice above).
+**Superseded-by:** `2026-08-31-persona-hierarchy-full-retirement.md` — in full
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Related:** [persona hierarchy](2026-08-19-loop-persona-hierarchy-review-panel.md) (`Accepted`,

@@ -13,8 +13,9 @@
 — the ADR that kept the CFO seat live specifically because spend-disposition judgment doesn't reduce
 to a mechanical gate the way retired seats did; this ADR is that seat exercising exactly that
 judgment) · [ceremony tiering](2026-08-08-adr-ceremony-tiering.md) (limb 4 fires — see §0) ·
-[`docs/personas/cfo-log.md`](../personas/cfo-log.md) 2026-08-21 entries (the C-1 closure that
-surfaced this gap, and this decision's own source recommendations)
+`docs/personas/cfo-log.md` 2026-08-21 entries (the C-1 closure that surfaced this gap, and this
+decision's own source recommendations; file deleted in the 2026-08-31 persona-hierarchy full
+retirement — see [`docs/adr/2026-08-31-persona-hierarchy-full-retirement.md`](2026-08-31-persona-hierarchy-full-retirement.md))
 **Layer:** meta-process (a gate/convention over the pursuit-registry and persona-charter surfaces).
 **$0 / K=0.**
 **Loop-of-Record:** STRATEGIC — creating a standing gate and amending a persona charter both bind

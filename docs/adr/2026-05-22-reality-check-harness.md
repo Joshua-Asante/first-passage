@@ -232,22 +232,9 @@ The five open questions are closed as of 2026-05-21. Rationale is retained verba
 
 ## §5b — Lock readiness summary
 
-| Field | Status | Populated at |
-|---|---|---|
-| `instrument` | ✅ EURUSD | now |
-| `timeframe` | ✅ 4H | now |
-| `feature_space` | ⏳ scope defined; exact enumeration pending | Phase 3 |
-| `K_total` | ⏳ bound [50, 500]; exact value pending | Phase 3 |
-| `evaluation_metrics` | ✅ [PF, N, MaxDD, Sharpe, DSR] | now |
-| `gate_thresholds` | ✅ {PF:1.3, N:50, DD_ratio:1.5, p:0.05} | now |
-| `multiple_testing_method` | ✅ bonferroni | now |
-| `sanity_metrics` | ✅ [DSR] | now |
-| `bootstrap_method` | ✅ stationary_block_bootstrap | now |
-| `avg_block_length` | ⏳ pending ACF analysis (renamed from `block_length` post-Phase-1) | Phase 2 |
-| `n_permutations` | ✅ 1000 | now |
-| `tx_cost_model` | ✅ {spread:1.0, slippage:0.2, commission:0} | now |
-| `position_sizing` | ✅ {fixed_fractional, 0.01} | now |
-| `lock_hash`, `lock_timestamp` | ⏳ commit-time | Phase 3 |
+Current lock status: see `lab/analysis/legacy/eurusd_pattern_enum/README.md` §Lock file (all
+fields populated as of Phase 3, 2026-05-23; `lock_hash`
+`cdee8aad294a45b13b987be777196e87615d9caf4b1ce9a790e716bed2e6b4ce`).
 
 ---
 

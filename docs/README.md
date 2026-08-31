@@ -13,7 +13,8 @@ Facts stay with their owners
 | Methodology | [`methodology/`](methodology/) |
 | Closed-loop specs | [`spec/2026-08-07-loop-spec-index.md`](spec/2026-08-07-loop-spec-index.md) |
 | Kill / re-proposal bar | [`rejected_candidates.md`](rejected_candidates.md) |
-| Pursuits / personas | [`pursuits/`](pursuits/) · [`personas/INDEX.md`](personas/INDEX.md) |
+| Pursuits | [`pursuits/`](pursuits/) |
+| Persona hierarchy (retired 2026-08-31 — `docs/personas/` deleted) | [`adr/2026-08-31-persona-hierarchy-full-retirement.md`](adr/2026-08-31-persona-hierarchy-full-retirement.md) |
 | Workflow entry | [`governance/INDEX.md`](governance/INDEX.md) |
 | LTM cold store | [`ltm/README.md`](ltm/README.md) |
 | Notices / audits | [`notes/`](notes/) |

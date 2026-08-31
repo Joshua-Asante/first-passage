@@ -27,9 +27,7 @@ Reads completed before authoring; anchors verifiable post-hoc.
 
 ## §1 — Context
 
-Q-PARITY-1 Phase 0 (2026-05-28) returned DONE_WITH_CONCERNS with three Tier-3-only strategies (Aegis v4.3, DJ30 v4.5, NAS100 v1) showing BRIEF-ONLY classification for all load-bearing booleans + anticipation predicates. The strategy CHANGELOGs corroborate filter *behavior* (sessions, day restrictions, hour blocks, ATR floors) but do not enumerate filter *boolean variable names* — the May 19 brief is the only on-disk source naming `filters_pass`, `filtersOK`, `anticip_pass`, `anticipOK`, `approachZone`, `strictApproach`, etc. Guardian alone has a Tier 1 audit doc (the 2026-05-08 indicator-vs-strategy diff) providing nominal grounding.
-
-Two paths to unblock Q-PARITY-1 Phase 1 were surfaced and explicitly considered on 2026-05-28: Path A (accept BRIEF-ONLY on Joshua's personal Pine knowledge; Phase 1 schema locks against brief variable names) or Path B (defer Phase 1 until Tier 1 audit docs land for the three Tier-3-only strategies; closes the underlying repo gap). Joshua chose Path B. Same-day, the alternative-efficiency-unlock question (could `.gitignore` be relaxed to make Pine readable) was decided as: repo stays public, Pine stays gitignored. That decision frames this ADR — the audit-doc path is the structural fix that respects the public-repo posture.
+Q-PARITY-1 Phase 0 (2026-05-28) returned DONE_WITH_CONCERNS: three Tier-3-only strategies (Aegis v4.3, DJ30 v4.5, NAS100 v1) had only BRIEF-ONLY grounding for their load-bearing booleans and anticipation predicates, while Guardian alone had a Tier 1 audit doc. Of the two paths considered — accept BRIEF-ONLY grounding, or land Tier 1 audit docs for the other three (closing the repo gap) — Joshua chose the latter. Same-day, repo stays public / Pine stays gitignored was reaffirmed, framing the audit-doc path as the fix that respects that posture. (Full Phase 0 detail: Q-PARITY-1 brief cited in §0 — pruned from this public tree per the Great Prune, retrievable per [`docs/adr/2026-08-08-great-prune.md`](2026-08-08-great-prune.md).)
 
 **Decision driver (one sentence):** Q-PARITY-1 Phase 1 cannot be authored until Aegis/DJ30/NAS100 state-var inventories convert from BRIEF-ONLY to CONFIRMED, and the chat-paste-per-handoff alternative doesn't compound across Q-PARITY-N or future briefs touching these strategies.
 
@@ -54,12 +52,12 @@ Three Tier 1 audit docs land — one each for Aegis v4.3, Striker DJ30 v4.5, Str
 
 | Alternative | Why ruled out |
 |---|---|
-| **Path A — accept BRIEF-ONLY on Joshua's personal Pine knowledge** | Lower friction but creates audit-trail asymmetry (3 of 4 strategies lack reproducible grounding). Each future brief touching these strategies re-introduces Phase 0 Concern §C1; the discipline cost compounds. Joshua leaned Path B explicitly per 2026-05-28 Q-PARITY-1 §Verification status. |
-| **Chat-paste-during-handoff per session** | Same per-session authoring effort, no compounding. Each future CC handoff against these strategies needs a fresh Pine paste. Audit-doc workstream front-loads cost once; benefit accrues across Q-PARITY-N for n>1 plus any future brief touching these strategies. |
-| **`.local/` gitignored Pine cache + SHA manifest** | Workable but creates reproducibility problem (Pine source at session-time isn't tracked); SHA manifest mitigation adds infrastructure without compounding benefit beyond the immediate session. Audit doc IS the durable artifact and matches the Guardian pattern already in use. |
-| **Make repo private + remove Pine from gitignore** | Explicitly rejected on 2026-05-28 (`gh repo view` confirms `isPrivate: false`, user chose "stay public, find different efficiency unlock"). Public-clone posture stays. |
-| **Bundle three audit docs into one CC handoff** | Each strategy needs Joshua-side Pine reads + judgment on what counts as a state-var. CC cannot read Pine (gitignored); the authoring must be Joshua-led. Bundling defeats per-strategy quality. Three separate sessions. |
-| **Status quo — do nothing** | Q-PARITY-1 Phase 1 stays blocked indefinitely. Per-strategy audit-doc asymmetry remains a permanent repo gap. Future briefs continue hitting Concern §C1. |
+| **Path A — accept BRIEF-ONLY grounding** | Compounding audit-trail asymmetry; every future brief on these strategies re-hits Phase 0 Concern §C1. Joshua leaned Path B explicitly. |
+| **Chat-paste-during-handoff per session** | Same per-session effort, no compounding — every future CC handoff needs a fresh Pine paste. Audit-doc workstream front-loads the cost once instead. |
+| **`.local/` gitignored Pine cache + SHA manifest** | Reproducibility gap (session-time Pine isn't tracked); adds infrastructure without compounding benefit. |
+| **Make repo private + remove Pine from gitignore** | Explicitly rejected 2026-05-28 (`gh repo view`: `isPrivate: false`) — stay public, find a different efficiency unlock. |
+| **Bundle three audit docs into one CC handoff** | CC cannot read Pine (gitignored); authoring must be Joshua-led per strategy. Bundling defeats per-strategy quality. |
+| **Status quo — do nothing** | Q-PARITY-1 Phase 1 stays blocked indefinitely; the asymmetry becomes a permanent repo gap. |
 
 ---
 
@@ -90,75 +88,49 @@ This ADR assumes the indicator-vs-strategy diff is non-trivial for each of the t
 
 ## §6 — Consequences
 
-**Positive consequences:**
-- Q-PARITY-1 Phase 1 unblocks immediately once the three audit docs land (Phase 1 handoff authors once §0 Layer 2 re-grounds Aegis/DJ30/NAS100 from Tier 3-only to full Tier 1/2/3).
-- Future briefs touching Aegis/DJ30/NAS100 inherit Tier 1 grounding — compounding benefit across Q-PARITY-N for n>1 and any non-parity brief (e.g., a future cap-family or DDP investigation on one of these strategies).
-- Per-strategy audit-doc asymmetry repo gap closes (parent Q-PARITY-1 §1 observation #2 resolved).
-- Pattern reusable: when a fifth strategy is admitted, the audit doc lands as part of lock-completion (parallel to "operational tooling integrated" sub-rule in lock procedures, per SKILL.md §0).
+**Positive:** Unblocks Q-PARITY-1 Phase 1 once the three audit docs land; future briefs touching Aegis/DJ30/NAS100 inherit Tier 1 grounding (compounding across Q-PARITY-N and any non-parity brief); closes the per-strategy audit-doc asymmetry; pattern reuses at a fifth strategy's lock-completion.
 
-**Negative consequences (real cost):**
-- ~3 hours front-loaded authoring across 3 sessions (estimate: ~45–60 min per strategy at Guardian-template parity).
-- Each audit doc adds ~150–250 lines to the repo (modest).
-- Audit docs need maintenance when Pine changes — manual sync, no automated drift detector. Mitigation: lock-decision brief checklist gets an "audit doc updated" item on future strategy version locks.
-- Bounded Pine leak surface in audit doc excerpts. Wider than current state (no excerpts) but narrower than full Pine commit. Joshua accepted this trade-off implicitly by choosing audit-doc path over `.local/` cache; the §5 forbidden move on excerpt scope bounds the leak.
+**Negative:** ~3 hours front-loaded authoring across 3 sessions (~45–60 min/strategy); ~150–250 lines added per doc; needs manual sync when Pine changes (no automated drift detector — mitigation: a lock-checklist "audit doc updated" item); widens the bounded Pine-leak surface in doc excerpts (accepted trade-off; §5 bounds the scope).
 
-**Risks (probabilistic):**
-- **Audit doc drift when Pine updates.** If a v4.3.2 / v4.5.2 / v1.1 patch lands without updating the audit doc, downstream briefs citing Tier 1 from the audit doc would be silently grounded against stale Pine. Mitigation: audit doc carries explicit version-pin (`audits vX.Y LOCKED YYYY-MM-DD`); pre-commit or pre-lock check that audit doc version matches CLAUDE.md Strategy Reference table.
-- **Trivial-diff strategies degrade the doctrine.** If 2 of 3 fall back to annex pattern, the ADR is over-scoped — should have been "audit doc OR annex, evaluate per-strategy" from the start. §4 revert handles this per-strategy; aggregate ADR re-evaluation if ≥2 of 3 trigger.
+**Risks:** audit-doc drift if a Pine patch lands without an update (mitigated by each doc's version-pin header, cross-checked against CLAUDE.md's Strategy Reference table); doctrine over-scoped if ≥2 of 3 strategies fall back to the §4 annex pattern (re-evaluate the ADR if so).
 
-**Downstream artifacts that need updating:**
-- [`docs/ltm/briefs/Q-PARITY-1-indicator-backtest-state-parity.md`](../ltm/briefs/Q-PARITY-1-indicator-backtest-state-parity.md) §0 Layer 2 (Aegis/DJ30/NAS100 rows): re-ground from Tier 3-only to full Tier 1/2/3 chain after each audit doc lands. §Verification block updates when all three landed.
-- `CLAUDE.md` Methodology references list: optional addition of "audit-doc generation doctrine" pointer to this ADR. Defer unless a third brief cites the pattern.
-- Lock-decision brief template (future addition): "Tier 1 audit doc present" checklist item. Defer to next lock-decision authoring.
+**Downstream artifacts:** Q-PARITY-1 brief §0 Layer 2 re-grounds per strategy as each doc lands; optional `CLAUDE.md` methodology pointer; a lock-decision brief template checklist item. (Q-PARITY-1 brief itself pruned from this public tree — see §0 anchor and [`docs/adr/2026-08-08-great-prune.md`](2026-08-08-great-prune.md).)
 
 ---
 
 ## §7 — Implementation plan
 
-- **Phase 0** — Joshua opens a fresh claude.ai session per strategy. Pastes the indicator Pine + strategy Pine source for that strategy. Confirms current locked version against ADR 2026-05-23-allocation-refresh-2 (Aegis v4.3, DJ30 v4.5, NAS100 v1).
-- **Phase 1** — Claude.ai authors the audit doc following the 2026-05-08 Guardian template: §0 Rule 0 reads, §1 indicator-vs-strategy diff, §2 state-var enumeration with name + type + definition, §3 numeric constants tabulated, §4 anticipation predicates classified, §5 hypothesis verdicts (if applicable to the strategy's design intent — Aegis is mean-reversion so hypothesis verdicts may be light; breakout strategies may have more substantive verdicts).
-- **Phase 2** — Joshua reviews audit doc against actual Pine source for accuracy; corrections applied. §4 falsifier check: substantive-diff line count ≥50? If yes, proceed; if no, switch to annex pattern per §4 revert.
-- **Phase 3** — Audit doc commits to `docs/audits/`. Q-PARITY-1 §0 Layer 2 row for that strategy updates: Tier 3-only contingency replaced with full Tier 1/2/3 chain (mirror Guardian row structure).
-- **Phase 4 (after all three landed)** — Q-PARITY-1 §Verification block updates: "Phase 0 status" advances to "all 4 strategies Tier 1 grounded; Path B execution complete." Phase 1 handoff for Q-PARITY-1 becomes authorable.
+Per strategy: Joshua opens a fresh claude.ai session, pastes the indicator + strategy Pine, and confirms the locked version against ADR 2026-05-23-allocation-refresh-2. Claude.ai authors the audit doc to the Guardian template (§0 reads, indicator-vs-strategy diff, state-var enumeration, numeric constants, anticipation predicates, hypothesis verdicts where applicable). Joshua reviews against source, applies the §4 falsifier check (substantive-diff ≥50 lines, else switch to the annex pattern), and commits the doc to `docs/audits/`; the Q-PARITY-1 §0 Layer 2 row for that strategy updates from Tier 3-only to full Tier 1/2/3. After all three land, Q-PARITY-1's Verification block advances to "Path B execution complete."
 
-Authoring order: **Aegis first** (smallest expected diff — Aegis is the simplest of the three by §1 of the May 19 brief's grep-sweep table; tests the §4 falsifier first). **DJ30 second.** **NAS100 third** (largest expected complexity due to pyramid-anticipation predicates per Phase 0 Concern §C3).
+**Authoring order:** Aegis first (smallest expected diff), DJ30 second, NAS100 third (largest expected complexity — pyramid-anticipation predicates).
 
 ---
 
 ## §10 — Audit hooks (runnable)
 
+HOOK WIDENED 2026-08-31: the six hooks below queried `docs/audits/*.md` and the
+Q-PARITY-1 brief. All three audit docs (Aegis, Guardian, Striker DJ30+NAS100) landed
+2026-05-28 as this ADR's §7 prescribed — completed deliverables, per commits `d98e727`,
+`d6ddbb6`, `dda4fd8` (see the worked example in
+[`methodology_lessons.md`](../methodology/lessons/methodology_lessons.md)) — and were
+later removed by the 2026-08-08 Great Prune, over two months after landing, as part of
+its cold-mass `docs/audits/` deletion. Pruned deliverables, not a never-executed plan.
+Replaced per the sanctioned repoint pattern (see
+`2026-08-04-tradeify-venue-descope-eval-included.md` §10 "HOOK WIDENED") with checks
+against what's actually live today; historical retrieval for the docs themselves is
+`git show pre-prune-2026-08-08:docs/audits/<file>` (private archive) or
+`git log --follow -- docs/audits/` on this public clone.
+
 ```bash
-# Confirm audit docs exist for all 4 locked strategies
-$ ls docs/audits/*-indicator-strategy-diff.md 2>&1
-# Expected after Phase 3 of each: 4 files (Guardian + 3 new)
+# Deliverables pruned 2026-08-08 (Great Prune) — docs/audits/ no longer exists in this
+# public clone. Pattern still governs future locks (§2 Scope); this is expected, not a defect.
+$ test -d docs/audits && echo "docs/audits present" || echo "docs/audits absent (expected post-prune)"
 
-# Per audit doc, confirm version-pin matches current locked version
-$ for f in docs/audits/*-indicator-strategy-diff.md; do
-    echo "=== $f ==="
-    grep -E "audits v[0-9.]+ LOCKED" "$f" | head -1
-  done
-# Expected: each line matches the locked version per ADR 2026-05-23-allocation-refresh-2
-#   Guardian → audits v5.5 LOCKED 2026-04-23
-#   Aegis    → audits v4.3 LOCKED 2026-04-23
-#   DJ30     → audits v4.5 LOCKED 2026-05-05
-#   NAS100   → audits v1   LOCKED 2026-05-05
+# Confirm this ADR is still on disk — pattern survives even though deliverables didn't
+$ test -f docs/adr/2026-05-28-audit-doc-generation-doctrine.md && echo "ADR present"
 
-# Confirm Q-PARITY-1 §0 Layer 2 re-grounded for each strategy
-$ grep -B1 -A3 "Aegis v4.3 \|DJ30 v4.5 \|NAS100 v1 " docs/ltm/briefs/Q-PARITY-1-indicator-backtest-state-parity.md | head -20
-# Expected after Phase 3 of each: Tier 1 row populated (not "Tier 3-only contingency")
-
-# Confirm no Pine source landed in repo (gitignore intact per 2026-05-28 posture decision)
-$ find . -name "*.pine" -not -path "./.git/*" 2>&1
-# Expected: empty
-
-# Audit-doc-drift check (manual; runs at next lock-decision authoring)
-$ for strat in guardian aegis striker-dj30 striker-nas100; do
-    audit=$(ls docs/audits/*-${strat}-*-indicator-strategy-diff.md 2>/dev/null | tail -1)
-    [ -z "$audit" ] && echo "MISSING audit for $strat" && continue
-    audit_version=$(grep -E "audits v[0-9.]+ LOCKED" "$audit" | head -1)
-    echo "$strat: $audit_version"
-  done
-# Cross-check against CLAUDE.md Strategy Reference table
+# Confirm Pine still gitignored (repo-posture decision this ADR operates under)
+$ grep -nE "\*\.pine" .gitignore
 ```
 
 ---
@@ -169,24 +141,16 @@ $ for strat in guardian aegis striker-dj30 striker-nas100; do
 # Discipline check on this ADR
 $ PYTHONIOENCODING=utf-8 python ~/.claude/skills/brief-authoring/scripts/check_brief.py docs/adr/2026-05-28-audit-doc-generation-doctrine.md --type adr
 
-# §0 anchor verification
-$ git log -1 --format='%h %ci' -- docs/audits/2026-05-08-guardian-v55-indicator-strategy-diff.md
-$ git log -1 --format='%h %ci' -- docs/ltm/briefs/Q-PARITY-1-indicator-backtest-state-parity.md
-$ git log -1 --format='%h %ci' -- docs/ltm/briefs/handoffs/2026-05-28-cc-handoff-Q-PARITY-1-phase-0.md
-$ git log -1 --format='%h %ci' -- strategies/guardian/LOCK.md
-$ grep -nE "\*\.pine" .gitignore
-$ gh repo view --json isPrivate
-
-# Cross-references resolve
-$ test -f docs/audits/2026-05-08-guardian-v55-indicator-strategy-diff.md && echo "template exists"
-$ test -f docs/ltm/briefs/Q-PARITY-1-indicator-backtest-state-parity.md && echo "parent Pre-Q exists"
-$ test -f docs/ltm/briefs/handoffs/2026-05-28-cc-handoff-Q-PARITY-1-phase-0.md && echo "Phase 0 handoff exists"
-$ test -f strategies/guardian/LOCK.md && echo "Guardian LOCK.md exists"
-
 # Status assertion
 $ grep -E "^\*\*Status:\*\*" docs/adr/2026-05-28-audit-doc-generation-doctrine.md
 # Expected: Status: Accepted
 ```
+
+§0's anchors predate the 2026-08-14 public-repo reset (this file's own git history starts
+at "Initial public release"); the commit hashes and the `docs/audits/` /
+`docs/ltm/briefs/Q-PARITY-1-*` paths they cite are pre-transition and unreachable in this
+clone's history. See `docs/adr/2026-08-08-great-prune.md` for the retrieval path — not
+re-verified here.
 
 ---
 

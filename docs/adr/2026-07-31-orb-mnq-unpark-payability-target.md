@@ -268,40 +268,30 @@ chart-override class it pins shut is closed in practice and not only in source.
 
 ### T1: **PASS** — direction and magnitude both as predicted
 
-| | Predicted (native harness) | Observed (TV re-export) |
-|---|---|---|
-| Direction | down | **down** |
-| Per-day Δ, full-session cohort | −$3.17/day (band [−$31.70, −$0.32]) | **−$5.03/day** |
-| Total Δ at k=1 | −$5,832 = −25% of net (full window) | **−$2,488 = −29.3% of net** (2y window) |
-| Share of days moved | 61.2% (full window) | **57.8%** (286 of 495) |
-| Worst / best single-day Δ | −$388 / +$418 | **−$352 / +$307** |
-
-Measured **both** ways and identical to the cent: per-common-day pairing against the surviving
-pre-D5 export, and the published-totals fallback. **The early-close control cohort is byte-stable**
-— all 18 rows unchanged — so the delta is *attributable* to the session clock rather than merely
-coincident with it. That control is what makes this a measurement rather than a comparison.
+Full predicted-vs-observed comparison (direction, per-day Δ, total Δ at k=1, share of days moved,
+worst/best single-day Δ) — table moved to
+[`RESULTS_v02_clock_kgrid.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_v02_clock_kgrid.md),
+the canonical owner. Measured **both** ways and identical to the cent: per-common-day pairing
+against the surviving pre-D5 export, and the published-totals fallback. **The early-close control
+cohort is byte-stable** — all 18 rows unchanged — so the delta is *attributable* to the session
+clock rather than merely coincident with it. That control is what makes this a measurement rather
+than a comparison.
 
 T1 therefore does **not** fire. §4's hypothesis H remains **open**; nothing here resolves or
 falsifies it, and no k policy is frozen.
 
 ### Adverse finding this surfaces (no trigger fires, and it is not read as one)
 
-The corrected panel is worse than §3's percentage prediction implied, and two figures degrade
-past the headline:
-
-| Tradeify k=1, 2y window | 15:30 (published) | 16:00 (correct) |
-|---|---:|---:|
-| Net | $8,478 | **$5,990** |
-| PF | 1.158 | 1.107 |
-| Max DD (trade-close) | −$5,568 | **−$6,465** |
-| **RF** | 1.52 | **0.93** |
-| Days ≥$200 (k=1) | 22.2% | 21.1% |
-| 2026 YTD net (n=147) | −$672 | **−$2,431** |
-
-- **RF falls below 1** — max drawdown now exceeds net profit over the window, with net down *and*
-  drawdown up.
-- **2026 is a material loser, not roughly flat.** This is the regime that would have to supply the
-  cadence the payability target needs, so it is adverse evidence against H specifically.
+The corrected panel is worse than §3's percentage prediction implied. Full net/PF/maxDD/RF/days≥$200/
+2026-YTD comparison (15:30 published vs 16:00 correct) — see
+[`RESULTS_v02_clock_kgrid.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_v02_clock_kgrid.md),
+the canonical owner. Two figures from that table are cited elsewhere in this repo as owned by this
+ADR (e.g. [`Q-SESSCONF-1`](../briefs/rnd-pipeline/Q-SESSCONF-1-mnq-session-confluence-longer-hold-scoping.md)):
+corrected-clock **RF 0.93** (was 1.52 published) and **2026 YTD net −$2,431**, n=147 (was −$672
+published). **RF falls below 1** — max drawdown now exceeds net profit over the window, with net
+down *and* drawdown up. **2026 is a material loser, not roughly flat** — this is the regime that
+would have to supply the cadence the payability target needs, so it is adverse evidence against H
+specifically.
 
 **Recorded, not acted on.** No §4 trigger covers profitability decay on the deployed rung: T1 is
 discharged, T2 waits on the `intraday_low=` limb, T3 is the 2026-11-08 hard date, T4 is sibling
@@ -349,12 +339,10 @@ traded extreme within it; only the *timestamp* of a crossing is lost, and nothin
 ### T2's threshold welds two different units, and they disagree
 
 *"k=2 single-day bust exceeds the frozen 3.0% ceiling"* joins a **single-day** quantity to a
-**Monte-Carlo rate** ceiling. Measured, both readings:
-
-| Reading | Measurement | Against threshold |
-|---|---|---|
-| **Literal — single-day bust** | 0 days reach the $3,000 trail at any k ∈ {1,2,3}; worst intraday day is **exactly** the worst EOD day (−$783.82 × k); k=2 keeps **$1,432** headroom | **NOT met** |
-| **Ceiling — Part A bust MC** | k=2 intraday-honest **77.01%** vs 3.0% — **26× over** | **Met** |
+**Monte-Carlo rate** ceiling. Both readings, measured — the literal single-day-bust reading is
+**NOT met** (0 days reach the $3,000 trail at any k ∈ {1,2,3}; k=2 keeps $1,432 headroom), the
+Part-A-bust-MC ceiling reading **IS met** (k=2 intraday-honest 77.01% vs 3.0% — 26× over) — full
+table moved to [`RESULTS_t2_intraday_bust.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_t2_intraday_bust.md).
 
 ### The intraday correction is not what fires it
 
@@ -363,11 +351,9 @@ bust ≤ 3.0% ∧ P(pass) ≥ 50%, Run-2 (consistency 40%), `Tradeify_Select_100
 42/123/2026, **10,000 sims/seed**, inactivity off, `dd_protection` off; 375 Mon-anchored blocks over
 1,878 business days. Headline bust via `preflight.summarize_outcomes` (daily+static+**trailing**).
 
-| k | EOD arm | intraday-honest | delta | P(pass) intraday |
-|---:|---:|---:|---:|---:|
-| 1 | 65.23% | **67.67%** | +2.44pp | 32.33% |
-| **2** | **74.00%** | **77.01%** | **+3.01pp** | **22.99%** |
-| 3 | 76.17% | **80.18%** | +4.01pp | 19.82% |
+Full k=1/2/3 EOD-arm vs intraday-honest vs P(pass) table — moved to
+[`RESULTS_t2_intraday_bust.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_t2_intraday_bust.md),
+the canonical owner (headline cell: k=2 intraday-honest **77.01%**, P(pass) **22.99%**).
 
 **The ceiling was not crossed *by* intraday honesty; it was already crossed by 71pp.** And **T2's
 prescribed action does not restore Part A** — capping at k=1 gives 67.67%, still 23× the ceiling,
@@ -396,18 +382,13 @@ never approaches the trail on any single day. Trail-binding day is a stopped day
 ### Controls
 
 `run_seed_paired` is a local re-implementation, so without a reproduction control the delta would
-measure the re-implementation rather than the barrier clock. **Control A:** intraday limb off
-reproduces production `run_seed` bucket-for-bucket (outcomes, `days_to_pass`, `max_dds`).
-**Control B:** the day-loop mirror reproduces `orb_lib.orb_backtest` elementwise on all five emitted
-arrays, n=1,846. **Control G:** every published correct-clock anchor reproduces exactly — meanR
-**+0.0626**, net **$17,780**, WR **46.37%**, stopped **38.0%**, maxDD **−$6,527**. Plus non-vacuity
-(a planted deep excursion must bust a path the close survives) and adversarial tests that the
-invariant checker itself fails on three planted defects.
-
-**A defect the controls caught, recorded not glossed:** on early-close days whose entry is the last
-bar carrying data, the post-entry window is present-but-all-NaN and the ≤ 0 clamp silently converted
-that `NaN` into a spurious **0.00** excursion — the most forgiving possible value. Reachable only
-under the `exclude` sensitivity convention; fixed at source; the headline arm was never affected.
+measure the re-implementation rather than the barrier clock. Full control battery (A: intraday-off
+reproduction of production `run_seed`; B: day-loop mirror of `orb_lib.orb_backtest`; G: correct-clock
+anchor reproduction; non-vacuity; adversarial planted-defect tests) plus the one defect the controls
+caught and fixed (a NaN→0.00 excursion clamp on certain early-close days, never affecting the
+headline arm) — see [`RESULTS_t2_intraday_bust.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_t2_intraday_bust.md)
+and [`test_t2_intraday_bust.py`](../../lab/analysis/orb_mnq_2026-07/test_t2_intraday_bust.py) (7
+passed), the canonical owners.
 
 ### Two riders on the level
 
@@ -421,12 +402,13 @@ under the `exclude` sensitivity convention; fixed at source; the headline arm wa
   correction. The as-published lock is **+8.06pp more forgiving** at k=2 (68.95%), so running the
   shipped constant would have understated the bust *on top of* the EOD understatement.
 
-  Both venue facts this measurement rests on, in [Rule 13](../operational_rules.md) form:
-
-  | Quote (verbatim) | Source | Date read | Scope |
-  |---|---|---|---|
-  | *"Q: Does drawdown lock on Evaluation accounts? A: No. Drawdown only locks on Sim Funded accounts. Evaluation accounts do not have drawdown locking."* | help.tradeify.co art. **10495897** | **2026-07-22** (via the eval-lock correction) | **EVALUATION-ONLY** — the source scopes it *itself*; locking is `SIM-FUNDED`-only. No silence to resolve |
-  | *"ENFORCED in real-time … your account fails immediately — even if you might have recovered by end of day"* | help.tradeify.co art. **10495897** | **2026-07-30** (read in-browser; `WebFetch` 403s) | **STANDING (BROAD)** — the source carries **no** phase qualifier here while scoping its sibling (locking) to Sim Funded explicitly, so Rule 13's scope rule reads the silence BROAD: it binds the eval too. This is also the direction already run, so the reading costs nothing and a narrow one would have understated bust |
+  Both venue facts this measurement rests on are recorded in [Rule 13](../operational_rules.md) form
+  (verbatim quote, source, date read, scope) in
+  [`RESULTS_t2_intraday_bust.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_t2_intraday_bust.md),
+  the canonical owner: eval accounts carry no drawdown *lock* (help.tradeify.co art. 10495897,
+  read 2026-07-22, scoped EVALUATION-ONLY by the source itself), and the real-time breach
+  *enforcement* clause carries no phase qualifier, read BROAD per Rule 13's scope rule (same
+  source, read 2026-07-30).
 - **Sensitivity:** the entry-bar convention (`exclude`, 2,000 sims/seed) gives k=2 **76.62%** —
   ~0.4pp against a 74pp margin. Every verdict identical.
 - **Sizing basis:** T2 names `k`, a contract count, while `SIZING-BASIS-BOTH-2026-07-31` records the
@@ -470,14 +452,10 @@ standing board.
 > **T3 is moot** (the target is already falsified). Still genuinely owed and untouched: the **fade
 > program's open rulings**. The prose above is left as written — it was accurate on 2026-08-02 and
 > is retained as dated record, not rewritten.
-- **Downstream synced 2026-08-02 (operator-directed):** [`2026-07-17-0808-packet-delta-and-sequence.md`](../briefs/2026-07-17-0808-packet-delta-and-sequence.md)
-  carried **three** stale clauses, not two — *"T2 waits on `intraday_low=` limb"* (§0),
-  *"T2 waits on `intraday_low=`"* (§1 row 6), and *"T2/`intraday_low=` off-slate until that limb
-  lands"* (new/revised rows). All corrected, marked `VERIFIED 2026-08-02`, and the T2 row is
-  **record-only at the gate** on the Q-CAPALLOC-2 precedent (*"disposition is operator-owned, not a
-  §2 step"*). No directive invented, no trigger adjudicated, nothing struck from the slate; the
-  packet's own `DRAFT (operator review owed)` status is unchanged. Its `C3 T2/T3/T4` row is a
-  **different** T2 (C-class harness item) and was deliberately left alone.
+- **Downstream synced 2026-08-02 (operator-directed):** three stale T2-related clauses corrected,
+  marked `VERIFIED 2026-08-02` — see
+  [`2026-07-17-0808-packet-delta-and-sequence.md`](../briefs/2026-07-17-0808-packet-delta-and-sequence.md),
+  the canonical owner of those clauses and its own correction record.
 
 ---
 

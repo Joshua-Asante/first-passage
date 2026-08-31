@@ -26,53 +26,7 @@ const extraContext = Array.isArray(cfg.extraContext) ? cfg.extraContext : []
 const extraContextLine = extraContext.length
   ? `\n\nThe operator has additionally flagged these cited documents as required full reads for this review: ${extraContext.join(', ')}.`
   : ''
-
-// ---- persona mode (design spec §6, narrowed to Front Office per
-// docs/adr/2026-08-21-persona-hierarchy-front-office-only.md) ---------------
-// Structural registry only -- slug/role/tier/office. The full mandate/independence-rule
-// prose stays canonical in docs/personas/*.md; each spawned agent reads its own file.
-// Middle/Back-office seats (cro, coo, head-of-risk-sizing, head-of-validation,
-// head-of-engineering, head-of-governance) are retired from this registry as of 2026-08-21 --
-// their functions run as mechanical gates (see that ADR's §2 D2 mapping table), not spawns.
-const PERSONA_REGISTRY = {
-  cio: { role: 'CIO', tier: 'GRAND', office: 'Front' },
-  cfo: { role: 'CFO', tier: 'GRAND', office: 'Cross-office' },
-  'head-of-research': { role: 'Head of Research', tier: 'STRATEGIC', office: 'Front' },
-  'head-of-execution': { role: 'Head of Execution', tier: 'STRATEGIC', office: 'Front' },
-}
-
-const personaMode = Boolean(cfg.tier || (Array.isArray(cfg.personas) && cfg.personas.length))
-let personaSlugs = []
-
-if (personaMode) {
-  if (cfg.tier !== 'GRAND' && cfg.tier !== 'STRATEGIC') {
-    throw new Error(
-      `pre-ratification-adversarial-panel persona mode requires args.tier of 'GRAND' or 'STRATEGIC', got '${cfg.tier}'. ` +
-        'Omit both args.tier and args.personas entirely to use the original generic-lens mode.'
-    )
-  }
-  if (!Array.isArray(cfg.personas) || cfg.personas.length === 0) {
-    throw new Error(
-      'pre-ratification-adversarial-panel persona mode requires args.personas: a non-empty array of persona ' +
-        'slugs from docs/personas/INDEX.md, e.g. args: { targetPath: "...", tier: "GRAND", personas: ["cio"] }'
-    )
-  }
-  for (const slug of cfg.personas) {
-    if (!PERSONA_REGISTRY[slug]) {
-      throw new Error(
-        `Unknown persona slug '${slug}' -- not in PERSONA_REGISTRY. Valid slugs: ${Object.keys(PERSONA_REGISTRY).join(', ')}. ` +
-          'Check docs/personas/INDEX.md. If this is a retired Middle/Back-office slug (cro, coo, ' +
-          'head-of-risk-sizing, head-of-validation, head-of-engineering, head-of-governance), see ' +
-          'docs/adr/2026-08-21-persona-hierarchy-front-office-only.md -- its function now runs as a ' +
-          'mechanical gate, not a panel spawn.'
-      )
-    }
-  }
-  // No mandatory-CRO auto-add: CRO is retired from this registry (2026-08-21 ADR). The
-  // safety-invariant hard-block below runs unconditionally on every GRAND-tier call instead,
-  // independent of which personas are requested.
-  personaSlugs = [...cfg.personas]
-}
+const tier = cfg.tier
 
 // ---- schemas ----------------------------------------------------------
 
@@ -107,16 +61,6 @@ const VERIFY_SCHEMA = {
     rationale: { type: 'string' },
   },
   required: ['refuted', 'rationale'],
-}
-
-const PRECONDITION_SCHEMA = {
-  type: 'object',
-  properties: {
-    uncommittedChanges: { type: 'boolean', description: 'true if `git status --porcelain` shows any output for this path' },
-    hasCommitHistory: { type: 'boolean', description: 'true if `git log -1` for this path returns at least one commit' },
-    rawOutput: { type: 'string', description: 'the verbatim output of both commands' },
-  },
-  required: ['uncommittedChanges', 'hasCommitHistory', 'rawOutput'],
 }
 
 // ---- the six adversarial lenses ----------------------------------------
@@ -204,32 +148,6 @@ const LENSES = [
   },
 ]
 
-// ---- persona-mode lenses (design spec §6.2) --------------------------------
-// Each persona is spawned exactly like a LENSES entry -- independent agent() call via
-// pipeline(), no shared context with any other persona. This is what makes the SR-11-7 /
-// 18f-4 independence property (reviewer never sees the proposer's live reasoning, or any
-// other reviewer's draft opinion) already true here, not something new to build.
-const PERSONAS = personaMode
-  ? personaSlugs.map((slug) => ({
-      key: slug,
-      build: () =>
-        `You are the ${PERSONA_REGISTRY[slug].role} persona (${PERSONA_REGISTRY[slug].office} office, ` +
-        `${PERSONA_REGISTRY[slug].tier} tier) reviewing ${targetPath} in the First Passage repo ` +
-        `(a futures prop-trading research/ops monorepo). First, read your own persona definition in full: ` +
-        `docs/personas/${slug}.md -- this states your Domain (what you are accountable for) and your ` +
-        `Independence rule. Then check whether docs/personas/${slug}-log.md exists; if it does, read it for ` +
-        `your own prior review history. If it does not exist, this is your first review -- say so explicitly ` +
-        `rather than fabricating history.\n\n` +
-        `Now read the ENTIRE target file at ${targetPath}. Review it strictly from your persona's Domain and ` +
-        `mandate -- do not opine outside it. If this decision falls entirely outside your Domain, say so ` +
-        `explicitly (clean:true, notes explaining why) rather than manufacturing a finding to seem useful.\n\n` +
-        `Flag every disagreement explicitly and specifically -- do not soften toward consensus. You cannot see ` +
-        `any other reviewer's input; this is deliberate, matching how a real risk/validation reviewer must form ` +
-        `an independent view before seeing the proposer's or any other reviewer's framing. Return findings via ` +
-        `the schema, each classified BLOCKER / CONCERN / NIT.${extraContextLine}`,
-    }))
-  : []
-
 // ---- verify stage: independent skeptics try to refute every non-NIT finding ----
 
 async function verifyLensFindings(reviewResult, lens) {
@@ -281,19 +199,20 @@ async function verifyLensFindings(reviewResult, lens) {
     notes: reviewResult.notes,
   }
 }
+
 // ---- safety-invariant hard block (design spec §6.3, re-targeted per
-// docs/adr/2026-08-21-persona-hierarchy-front-office-only.md §2 D3) ---------------------------
-// Deterministic, not LLM-judgment-dependent -- mirrors this repo's own pattern of
-// enforcing non-negotiable safety invariants in code, not in a prompt (see
-// validate_c1_monitoring_acceptance.validate in ops/c1_rail/, a Python function, not an
-// instruction). Previously ran on a spawned CRO persona's own structured findings; CRO is
-// retired from PERSONA_REGISTRY as of 2026-08-21, so this now scans the target artifact's own
-// committed text directly, unconditionally, on every GRAND-tier call -- no persona spawn, no
-// dependency on any reviewer happening to surface the citation. Runs only on GRAND-tier calls,
-// matching the prior mandatory-CRO-on-GRAND scope exactly (a STRATEGIC-tier call still gets no
-// automated safety-invariant hard block -- by design, not an oversight, unchanged from before).
-// Deliberately biased toward over-triggering: a false positive costs an operator one glance at
-// an unnecessary hard block, a false negative lets an actual safety-invariant citation through
+// docs/adr/2026-08-21-persona-hierarchy-front-office-only.md §2 D3, carried forward unchanged by
+// docs/adr/2026-08-31-persona-hierarchy-full-retirement.md §2 item 4/§5) -------------------------
+// Deterministic, not LLM-judgment-dependent -- mirrors this repo's own pattern of enforcing
+// non-negotiable safety invariants in code, not in a prompt (see validate_c1_monitoring_acceptance
+// .validate in ops/c1_rail/, a Python function, not an instruction). One of the 8 mechanical gates
+// the 2026-08-21 ADR established as the CRO seat's replacement; runs unconditionally on every
+// GRAND-tier call, independent of persona mode (which no longer exists at all as of the 2026-08-31
+// retirement) -- no persona spawn, no dependency on any reviewer happening to surface the citation.
+// Runs only on GRAND-tier calls, matching the prior mandatory-CRO-on-GRAND scope exactly (a
+// STRATEGIC-tier call still gets no automated safety-invariant hard block -- by design, unchanged).
+// Deliberately biased toward over-triggering: a false positive costs an operator one glance at an
+// unnecessary hard block, a false negative lets an actual safety-invariant citation through
 // undetected. A fixed-width proximity regex (an earlier version of this check) missed realistic
 // multi-clause LLM prose where the two related terms are >80 chars apart -- these check for
 // co-occurrence anywhere in the field instead of requiring tight adjacency.
@@ -306,17 +225,16 @@ function citesSafetyInvariant(text) {
   return false
 }
 
-async function safetyInvariantHardBlockFires(targetPath, tier) {
-  if (tier !== 'GRAND') return { fires: false, scanFailed: false }
+async function safetyInvariantHardBlockFires(path, tierArg) {
+  if (tierArg !== 'GRAND') return { fires: false, scanFailed: false }
   const raw = await agent(
-    `Run \`git show HEAD:${targetPath}\` in the First Passage repo and return the raw file contents ` +
+    `Run \`git show HEAD:${path}\` in the First Passage repo and return the raw file contents ` +
       `verbatim, nothing else -- no summary, no commentary, no truncation.`,
     { label: 'safety-invariant-scan', phase: 'Form Check', effort: 'low' }
   )
   if (!raw) {
     // Fail CLOSED, not open: this deterministic backstop must not silently degrade to "not
-    // blocked" precisely when its own input (the raw target text) never arrived -- the same
-    // principle the prior CRO-review-missing branch encoded, now applied to the scan itself.
+    // blocked" precisely when its own input (the raw target text) never arrived.
     return { fires: true, scanFailed: true }
   }
   return { fires: citesSafetyInvariant(raw), scanFailed: false }
@@ -336,53 +254,17 @@ const formCheckPromise = agent(
     `the output.`,
   { label: 'form-check', phase: 'Form Check', effort: 'low' }
 )
-
-// Note (known, accepted limitation): this check confirms the artifact is frozen/committed at
-// this instant, but each persona later does its own live read of targetPath (see PERSONAS
-// above) rather than pinning to the commit sha validated here -- a TOCTOU gap if the file is
-// modified mid-run. Accepted for now given a review's short wall-clock and low collision odds;
-// revisit (e.g. read via `git show <sha>:targetPath`) if this ever proves load-bearing.
-if (personaMode) {
-  const precondition = await agent(
-    `Run exactly these two commands against the First Passage repo and report the results, nothing else: ` +
-      `(1) \`git status --porcelain -- ${targetPath}\` (2) \`git log -1 --oneline -- ${targetPath}\`. ` +
-      `Report whether command (1) produced any output (uncommittedChanges) and whether command (2) produced ` +
-      `at least one line (hasCommitHistory), plus the verbatim combined output.`,
-    { label: 'precondition-check', phase: 'Form Check', effort: 'low', schema: PRECONDITION_SCHEMA }
-  )
-  if (!precondition) {
-    throw new Error(
-      `pre-ratification-adversarial-panel persona mode: the precondition-check agent for ${targetPath} returned ` +
-        `no result -- cannot verify the artifact is frozen/committed (design spec §6.1). Re-run.`
-    )
-  }
-  if (precondition.uncommittedChanges || !precondition.hasCommitHistory) {
-    throw new Error(
-      `pre-ratification-adversarial-panel persona mode requires ${targetPath} to be a frozen, committed ` +
-        `artifact (design spec §6.1) -- ${precondition.uncommittedChanges ? 'it has uncommitted changes' : 'it has no commit history'}. ` +
-        `Raw check output: ${precondition.rawOutput}. Commit the artifact first, then re-run.`
-    )
-  }
-}
+const hardBlockPromise = safetyInvariantHardBlockFires(targetPath, tier)
 
 phase('Review')
-const activeLenses = personaMode ? PERSONAS : LENSES
 const lensResults = await pipeline(
-  activeLenses,
+  LENSES,
   (lens) => agent(lens.build(), { label: `review:${lens.key}`, phase: 'Review', schema: LENS_FINDINGS_SCHEMA }),
   (reviewResult, lens) => verifyLensFindings(reviewResult, lens)
 )
 
 const formCheckResult = await formCheckPromise
-
-const confirmedCount = lensResults.reduce((n, r) => n + (r ? r.confirmed.length : 0), 0)
-const disputedCount = lensResults.reduce((n, r) => n + (r ? r.disputed.length : 0), 0)
-log(`Review+verify done: ${confirmedCount} confirmed, ${disputedCount} disputed findings across ${activeLenses.length} lenses`)
-
-
-const hardBlock = personaMode
-  ? await safetyInvariantHardBlockFires(targetPath, cfg.tier)
-  : { fires: false, scanFailed: false }
+const hardBlock = await hardBlockPromise
 const hardBlockLine = hardBlock.scanFailed
   ? `\n\nSAFETY-INVARIANT HARD BLOCK (FAIL-CLOSED): the deterministic safety-invariant scan of ${targetPath} ` +
     `for this GRAND-tier review did not complete (agent failure or no result). Per ` +
@@ -393,9 +275,13 @@ const hardBlockLine = hardBlock.scanFailed
     ? `\n\nSAFETY-INVARIANT HARD BLOCK: ${targetPath}'s own committed text cites a CLAUDE.md non-negotiable ` +
       `safety invariant (dry_run/armed_until/M1-RESOLVED/arm-not-send). Per ` +
       `docs/adr/2026-08-21-persona-hierarchy-front-office-only.md §2 D3, this is a HARD BLOCK on synthesis -- ` +
-      `state "Overall disposition: BLOCKED" at the top of your memo regardless of what any persona found, and ` +
+      `state "Overall disposition: BLOCKED" at the top of your memo regardless of what any lens found, and ` +
       `do not let any other finding soften this.`
     : ''
+
+const confirmedCount = lensResults.reduce((n, r) => n + (r ? r.confirmed.length : 0), 0)
+const disputedCount = lensResults.reduce((n, r) => n + (r ? r.disputed.length : 0), 0)
+log(`Review+verify done: ${confirmedCount} confirmed, ${disputedCount} disputed findings across ${LENSES.length} lenses`)
 
 phase('Synthesize')
 const synthesis = await agent(
@@ -433,8 +319,7 @@ return {
   formCheckResult,
   lensResults,
   synthesis,
-  personaMode,
-  personaSlugs: personaMode ? personaSlugs : undefined,
-  safetyInvariantHardBlock: personaMode ? hardBlock.fires : undefined,
-  safetyInvariantScanFailed: personaMode ? hardBlock.scanFailed : undefined,
+  tier,
+  safetyInvariantHardBlock: hardBlock.fires,
+  safetyInvariantScanFailed: hardBlock.scanFailed,
 }
