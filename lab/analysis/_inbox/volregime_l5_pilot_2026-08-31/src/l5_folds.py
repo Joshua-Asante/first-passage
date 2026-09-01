@@ -54,13 +54,6 @@ def build_folds(scored: pd.DataFrame) -> tuple[list[Fold], pd.Timestamp]:
             block_start = block_end
             continue
 
-        # embargo: trading days in [block_end, block_end + 4 trading days)
-        days_from_block_end = unique_days[unique_days >= trading_days.iloc[test_idx[-1]]]
-        # unique_days includes the test block's own days; walk forward from the
-        # first day at/after block_end to find the embargo window's own days
-        post_days = unique_days[unique_days >= block_end.normalize()]
-        embargo_days = set(post_days[:EMBARGO_TRADING_DAYS].tolist())
-
         train_mask = times < block_start
         train_idx_all = np.flatnonzero(train_mask.to_numpy())
 
@@ -103,13 +96,26 @@ def build_folds(scored: pd.DataFrame) -> tuple[list[Fold], pd.Timestamp]:
         block_start = block_end
 
     # Apply embargo across folds: for fold k, drop training rows whose own
-    # trading_day falls within EMBARGO_TRADING_DAYS trading days after any
-    # EARLIER fold's own test block end.
-    all_test_ends = [f.test_end for f in folds]
+    # trading_day falls within the first EMBARGO_TRADING_DAYS trading days
+    # STRICTLY AFTER any EARLIER fold's own last test trading day.
+    #
+    # Anchoring on the last test ROW's own trading_day (not `test_end`, a UTC
+    # block boundary) matters here: `trading_day` is ET-session-anchored (the
+    # 18:00 ET overnight cutover bumps late bars to the next session), while
+    # `test_end` inherits the *panel's own start timestamp's* UTC time-of-day
+    # component (via repeated pd.DateOffset(months=...) arithmetic) -- on
+    # these panels that's 23:00 UTC, which falls inside the ET trading day
+    # that starts at 18:00 ET the evening before. Normalizing that UTC
+    # boundary to UTC midnight (as an earlier version of this code did) does
+    # not land on the ET trading-day boundary the embargo actually needs:
+    # it could admit a trading day that still contains test-block bars,
+    # consuming part of the 4-day embargo on a day that isn't embargo
+    # territory at all (Codex PR #243 review).
+    last_test_days = [trading_days.iloc[f.test_idx[-1]] for f in folds]
     for i, f in enumerate(folds):
         embargo_exclude = np.zeros(f.train_idx.shape[0], dtype=bool)
-        for end in all_test_ends[:i]:
-            post_days = unique_days[unique_days >= end.normalize()]
+        for last_day in last_test_days[:i]:
+            post_days = unique_days[unique_days > last_day]
             embargo_window_days = set(post_days[:EMBARGO_TRADING_DAYS].tolist())
             if embargo_window_days:
                 td = trading_days.iloc[f.train_idx].to_numpy()

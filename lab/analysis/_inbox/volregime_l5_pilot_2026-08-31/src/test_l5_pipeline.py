@@ -27,15 +27,8 @@ import l5_prepare  # noqa: E402
 
 
 def build_identity_rotation(day_groups: pd.DataFrame) -> dict:
-    donor_of = {}
-    excluded_days = set()
-    for (_regime, _mask), group in day_groups.groupby(["regime", "slot_mask"], sort=False):
-        days = group["trading_day"].tolist()
-        if len(days) < 2:
-            excluded_days.update(days)
-            continue
-        for day in days:
-            donor_of[day] = day  # k=0
+    eligible_groups, excluded_days = l5_null.precompute_rotation_groups(day_groups)
+    donor_of = {day: day for days in eligible_groups for day in days}  # k=0
     return {"donor_of": donor_of, "excluded_days": excluded_days}
 
 
@@ -98,10 +91,14 @@ def run_checks(symbol: str) -> None:
         print(f"  MISMATCH count: {len(mism)} / {non_excluded.sum()}, first few idx: {mism[:10]}")
     assert match, "IDENTITY ROTATION DOES NOT REPRODUCE REAL DATA -- load-bearing failure"
 
-    # time a NON-identity (real random) rotation for cost estimation
+    # time a NON-identity (real random) rotation for cost estimation, and
+    # sanity-check the without-replacement draw scheme (S4.3 step 5) over a
+    # short run: no repeated joint-assignment fingerprint, no exhaustion.
     rng = np.random.default_rng(20260831)
+    eligible_groups, excluded_days_pre = l5_null.precompute_rotation_groups(day_groups)
+    seen: set = set()
     t0 = time.time()
-    rotation = l5_null.draw_rotation(day_groups, rng)
+    rotation = l5_null.draw_rotation(eligible_groups, excluded_days_pre, rng, seen=seen)
     pseudo_volume_full2, pseudo_bias_volume2, excluded_mask2 = l5_null.reconstruct_pseudo_volume(
         frame, fitted, residual, scored_row_idx, day_groups, rotation, plan, symbol
     )
@@ -113,6 +110,16 @@ def run_checks(symbol: str) -> None:
         f"one random-rotation replicate: {dt_replicate:.3f}s "
         f"(fraction of bias_volume flipped vs real: {frac_flipped:.3f})"
     )
+    n_probe = 50
+    n_exhausted = 0
+    for _ in range(n_probe):
+        r = l5_null.draw_rotation(eligible_groups, excluded_days_pre, rng, seen=seen)
+        n_exhausted += r["exhausted"]
+    print(
+        f"without-replacement probe: {len(seen)} unique joint assignments after "
+        f"{1 + n_probe} draws, {n_exhausted} exhausted-fallback repeat(s)"
+    )
+    assert len(seen) == 1 + n_probe - n_exhausted, "seen-set bookkeeping inconsistent"
     return dt_replicate
 
 

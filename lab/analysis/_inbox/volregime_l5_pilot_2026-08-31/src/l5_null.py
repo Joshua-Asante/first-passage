@@ -110,11 +110,17 @@ def classify_day_regime(
     replicate. day_true_range must be indexed by trading_day, sorted ascending.
     Mirrors byyear_l4.tod_threshold's own guard/window discipline at the day
     granularity: trailing `window_days` prior days' own True Range, P80
-    quantile, strictly causal (excludes the day itself).
+    quantile, strictly causal (excludes the day itself). Comparator is
+    inclusive (`>=`), matching `daily-range-state-persistence`'s own canonical
+    definition (`bias_d = 1{TR_d >= P80(TR_{d-60..d-1})}`,
+    lab/analysis/_inbox/rangestate_gc_2026-08/run_s1a.py:176-177) -- futures
+    ranges are tick-discrete, so exact ties at the percentile are not rare,
+    and strict `>` would misclassify a tied day into the low regime (Codex PR
+    #243 review).
     """
     trailing = day_true_range.rolling(window=window_days, min_periods=window_days).quantile(0.80)
     threshold = trailing.shift(1)
-    regime = (day_true_range > threshold).astype("float")
+    regime = (day_true_range >= threshold).astype("float")
     regime[threshold.isna()] = np.nan
     return regime
 
@@ -124,7 +130,18 @@ def build_day_groups(
 ) -> pd.DataFrame:
     """One row per scoreable trading day: regime bucket, slot mask (as a
     sorted tuple, hashable for grouping), and the day's own positional row
-    indices into `scored` (sorted by slot)."""
+    indices into `scored` (sorted by slot).
+
+    `row_idx` is guaranteed to be 0-based POSITIONS into `scored`'s own row
+    order, regardless of what pandas index `scored` carries on entry: a
+    caller that passes `frame.loc[frame["scored"]]` directly (without first
+    resetting its index) would otherwise get sparse full-frame index LABELS
+    here instead of positions, silently misaligning every downstream
+    `raw_residual[donor_positions]`-style lookup, since fitted_log_volume/
+    raw_residual are plain numpy arrays aligned to `scored`'s row order, not
+    its index labels (Codex PR #243 review).
+    """
+    scored = scored.reset_index(drop=True)
     rows = []
     for day, day_frame in scored.groupby("trading_day", sort=True):
         regime = day_regime.get(day, np.nan)
@@ -143,26 +160,77 @@ def build_day_groups(
     return pd.DataFrame(rows)
 
 
-def draw_rotation(day_groups: pd.DataFrame, rng: np.random.Generator) -> dict:
-    """DESIGN.md S4.3 steps 3-5. Groups by (regime, slot_mask); within each
-    group with >=2 days, draws one circular shift k (identity included);
-    groups with <2 days are excluded entirely (from scoring, not just the
-    rotation pool -- handled by the caller via `excluded_days`).
-
-    Returns {"donor_of": {trading_day: donor_trading_day}, "excluded_days": set}.
-    """
-    donor_of: dict = {}
+def precompute_rotation_groups(day_groups: pd.DataFrame) -> tuple[list[list], set]:
+    """Precompute the (regime, slot_mask) grouping once. `day_groups` never
+    changes across replicates, so re-running pandas' own .groupby() on every
+    one of B=4000 replicate draws is repeated, avoidable overhead. Returns
+    (eligible_groups, excluded_days): eligible_groups is a list of day-lists,
+    each with >=2 members (DESIGN.md S4.3 step 3); excluded_days is the fixed
+    set of singleton-group days, both replicate-invariant."""
+    eligible_groups: list[list] = []
     excluded_days: set = set()
     for (_regime, _mask), group in day_groups.groupby(["regime", "slot_mask"], sort=False):
         days = group["trading_day"].tolist()
-        n = len(days)
-        if n < 2:
+        if len(days) < 2:
             excluded_days.update(days)
-            continue
-        k = int(rng.integers(0, n))  # identity (k=0) included
-        for i, day in enumerate(days):
-            donor_of[day] = days[(i - k) % n]
-    return {"donor_of": donor_of, "excluded_days": excluded_days}
+        else:
+            eligible_groups.append(days)
+    return eligible_groups, excluded_days
+
+
+def draw_rotation(
+    eligible_groups: list[list],
+    excluded_days: set,
+    rng: np.random.Generator,
+    seen: set | None = None,
+    max_attempts: int = 200,
+) -> dict:
+    """DESIGN.md S4.3 steps 3-5. `eligible_groups`/`excluded_days` come from
+    `precompute_rotation_groups` (called once, outside the B-replicate loop).
+    Within each eligible group, draws one circular shift k (identity
+    included); `excluded_days` days are excluded entirely (from scoring, not
+    just the rotation pool -- handled by the caller).
+
+    DESIGN.md S4.3 step 5: "Draw ONE joint rotation assignment -- one k per
+    group -- for the WHOLE PANEL, once per replicate j ... Where B=4000
+    exceeds the number of distinct enumerable joint combinations for a given
+    instrument's own day count, sample without replacement until exhausted,
+    then resample with replacement, disclosed as such -- not silently
+    padded." When `seen` is a set the caller persists across the whole
+    B-replicate loop, this draws without replacement against every
+    previously returned joint assignment (identified by the per-group k
+    tuple) until `max_attempts` consecutive collisions, at which point the
+    joint combination space is treated as exhausted and a repeat is allowed
+    -- disclosed via the returned "exhausted" flag (the caller should log/
+    count this, never silently ignore it). Pass seen=None for callers that
+    don't need the without-replacement guarantee (e.g. a single ad hoc draw,
+    this module's own identity-rotation smoke test).
+
+    Returns {"donor_of": {...}, "excluded_days": set, "exhausted": bool}.
+    """
+    attempts = max_attempts if seen is not None else 1
+    donor_of: dict = {}
+    fingerprint: tuple = ()
+    for _ in range(attempts):
+        donor_of = {}
+        ks = []
+        for days in eligible_groups:
+            n = len(days)
+            k = int(rng.integers(0, n))  # identity (k=0) included
+            ks.append(k)
+            for i, day in enumerate(days):
+                donor_of[day] = days[(i - k) % n]
+        fingerprint = tuple(ks)
+        if seen is None or fingerprint not in seen:
+            if seen is not None:
+                seen.add(fingerprint)
+            return {"donor_of": donor_of, "excluded_days": excluded_days, "exhausted": False}
+    # max_attempts consecutive collisions: the joint combination space is
+    # exhausted (or small enough that avoiding a repeat is no longer cheap);
+    # allow this repeat, disclosed via "exhausted" rather than silently
+    # padding the replicate count with an undisclosed duplicate.
+    seen.add(fingerprint)
+    return {"donor_of": donor_of, "excluded_days": excluded_days, "exhausted": True}
 
 
 def reconstruct_pseudo_volume(

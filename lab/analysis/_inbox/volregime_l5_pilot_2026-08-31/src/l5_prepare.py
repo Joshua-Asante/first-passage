@@ -168,9 +168,34 @@ def prepare_l5(symbol: str) -> tuple[pd.DataFrame, dict]:
     frame["scored"] = frame["scored"] & lag_ok
 
     # Day-level True Range for S4.3 step 1 / S3.1 baseline_2's own P80
-    # conditioning flag: max(bar_range) within each trading day, real data
-    # only, never permuted.
-    day_true_range = frame.groupby("trading_day")["bar_range"].max().sort_index()
+    # conditioning flag: the classic Wilder's True Range on daily OHLC (gap-
+    # aware -- max of high-low, |high-prev_close|, |low-prev_close|), NOT
+    # max(bar_range) across a day's own M15 bars, which drops the overnight
+    # gap term entirely and is a different, smaller-magnitude statistic than
+    # the `daily-range-state-persistence` construct this reuses (Codex PR
+    # #243 review). daily_high/daily_low use ALL bars (RTH+overnight, per
+    # that construct's own `daily_ohlc()` convention); daily_close is the
+    # session's own last bar close -- pulled from `raw` (`frame` only carries
+    # the derived `bar_range`, not high/low/close), which shares `frame`'s
+    # exact row order/count (both built from the same, possibly MYM-
+    # truncated, `raw`). No roll-day exclusion is performed here, matching
+    # this exact panel's own sibling convention
+    # (mnq_dailygeom_notice_2026-08-29/data_lib.py: "TV continuous front-
+    # month '1!' splice ... no per-bar roll marker to key it on") -- real
+    # data only, never permuted.
+    daily_high = raw.groupby(trading_day)["high"].max().sort_index()
+    daily_low = raw.groupby(trading_day)["low"].min().sort_index()
+    daily_close = raw.groupby(trading_day)["close"].last().sort_index()
+    prev_close = daily_close.shift(1)
+    day_true_range = np.maximum.reduce(
+        [
+            (daily_high - daily_low).to_numpy(),
+            (daily_high - prev_close).abs().to_numpy(),
+            (daily_low - prev_close).abs().to_numpy(),
+        ]
+    )
+    day_true_range = pd.Series(day_true_range, index=daily_high.index, name="day_true_range")
+    day_true_range.iloc[0] = np.nan  # no prior close
 
     metadata = {
         "csv": path.relative_to(REPO).as_posix(),
