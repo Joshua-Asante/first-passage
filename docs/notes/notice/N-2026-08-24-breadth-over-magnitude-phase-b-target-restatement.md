@@ -183,6 +183,10 @@ already-admitted set*. Phase B's live lanes are B1 (MOC-imbalance wake, MES) and
 FX futures) — which, notably, **are** two different families, so the current lane set is well shaped
 for this target even though it was not chosen for it.
 
+> **Status correction 2026-09-01:** this paragraph is historical. B2 was falsified; the operator
+> closed B1 strategy `DROP` and its source-liveness pursuit `STOP` for failing the confidently-high-
+> positive-expectancy intake bar. Phase B has no live lane and handed forward no candidate.
+
 **The honest risk in the restated target:** it is a supply-*diversity* requirement, not a supply-
 *volume* one, and diversity is the harder axis. Sourcing five more opening-range-breakout variants
 would be comparatively easy and would fail §3.2 — the estate's own registry already carries the

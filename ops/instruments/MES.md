@@ -2,7 +2,7 @@
 
 **Symbol:** CME Micro E-mini S&P 500 futures (MES; Globex, Databento `GLBX.MDP3`) · **Parent:** [`ES.md`](ES.md) ($50/pt) · **Asset class:** equity index futures
 **Status:** **RE-ENTERED — K-void cleared; class-attested; not elected.** Research/discovery only. Third-leg `E-KCAP` elimination voided by [K-bank ADR](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md); standing non-K grounds remain. No live leg, no allocation, no K spend.
-**Last updated:** 2026-08-09
+**Last updated:** 2026-09-01
 
 **Purpose:** single source of instrument-level truth (operational rule 10, [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](../../docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md)). Created **2026-08-09** as the live touching session for [`instrument-lane SPEC`](../../docs/spec/2026-08-09-instrument-lane-mcl-mes-mgc-spec.md) — ADR [`2026-07-25`](../../docs/adr/2026-07-25-instrument-profile-index.md) §5. Thin ledger; inherit index class bar from parent ES / sibling [`M2K.md`](M2K.md) M1.
 
@@ -68,6 +68,7 @@ structure:
 | Rejection | Discriminator | Source |
 |---|---|---|
 | ~~`E-KCAP` (third-leg)~~ | **VOID as gate** — K-bank ADR; do not inherit | RESULTS banner 2026-08-04+ |
+| `closing-auction-moc-wake` | **DROP** — no citable δ, measured expectancy/win rate, or complete expression; B1 source check `STOP`, never started | [`B1 intake closure`](../../docs/notes/2026-09-01-next-vet-intake-decision.md) |
 
 ## ACTIVE / OPEN
 
@@ -76,4 +77,7 @@ structure:
 
 ## SESSION LOG
 
+- **2026-09-01** — Operator closed both B1 MOC-wake pursuits: strategy `DROP`, source-liveness
+  `STOP` before any row. No card/contract/pull/K. Re-proposal bar: independently credible high
+  positive net expectancy plus a complete expression; source availability alone does not qualify.
 - **2026-08-09** — **Ledger created + K-void re-screen** under [`instrument-lane SPEC`](../../docs/spec/2026-08-09-instrument-lane-mcl-mes-mgc-spec.md). Voided `E-KCAP` vs standing Equity Index / S4 / S7 / class-bar grounds named. Disposition `RE-ENTERED — K-void cleared; class-attested; not elected`. No pull, no K, no election, no `core/` change.

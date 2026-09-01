@@ -192,10 +192,9 @@ campaign directory.
 pre-check) for either symbol — B2.3 does not fire, mirroring how Lane B3's B3.1/B3.2 did not fire
 after B3.0's arithmetic kill. No card was opened, is being opened, or will be opened for this
 lane. The plan's own Phase-B-wide exit criteria (≥1 lane hands a surviving candidate to Phase C,
-or all lanes record honest kills/parks) is **not** evaluated here — Lane B1 is still open
-(B1.5's forward paper-log is in progress, spans real calendar time) and Lane B4 depends on Phase
-A1's revival list; a whole-phase disposition is the controller's call once every lane has reported,
-not this task's.
+or all lanes record honest kills/parks) was **not** evaluated by this B2 run. **Later disposition
+2026-09-01:** B4 was void; the operator closed B1 strategy `DROP` and its never-started source
+check `STOP`. The Phase-B controller now records zero candidates handed forward.
 
 ---
 

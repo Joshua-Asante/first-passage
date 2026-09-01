@@ -2,6 +2,10 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Tenth roll, 2026-09-01** (one entry, pushed off by the B1-pursuits closure):
+
+- **2026-08-23** — Phase A GO executed (A1 kill-register audit: revival list empty, A3 voided; A2 payoff-shape feasibility map published) alongside the firm-model-repair Q. [`SESSIONS 2026-08-23h`](../../../../../docs/SESSIONS.md) [`A1 audit`](../../../../../docs/notes/audits/2026-08-23-kill-register-attribution-audit.md) [`R1 RESULTS`](../../../../../lab/analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md)
+
 **Ninth roll, 2026-09-01** (one entry, pushed off by the F1-reversal decision):
 
 - **2026-08-23** — Pain-point residuals P6–P10 landed (README lead · identifier table · STATE keep-15 · withdrawn-book tense · Q-TOM-SPX-1 DEAD). [`impl plan`](../../../../../docs/superpowers/plans/2026-08-23-p6-p10-residuals-implementation.md)

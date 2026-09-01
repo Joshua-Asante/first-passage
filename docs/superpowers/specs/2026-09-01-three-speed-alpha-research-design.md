@@ -223,6 +223,31 @@ artifact; on `VET-PASS` its content seeds the contract's founding freeze **witho
 schema** — where the ratified contract schema defines a field, the contract's definition governs
 and the card simply carries the draft value forward.
 
+### 2.7 Before Vet — source and assemble proposals (boundary clarified)
+
+The promoting path begins at `PROPOSAL`, but a proposal does not appear automatically. Two
+upstream activities feed Vet and are **not a fourth evidence speed**:
+
+1. **Source** observations through the still-live channel owners (for example the harvest radar,
+   bounded mechanism-supply lanes, forward paper logs, and mechanism-library findings). Each
+   channel retains its own liveness ceiling, admission rules, spend authority, and terminal state.
+2. **Assemble** a complete proposal from one source observation: name the decision bridge and
+   draft trade expression, run a corpus-wide prior-art/re-proposal-bar consult, identify the venue
+   shape and cost authorities, and declare the prospective search and evidence partition. Assembly
+   may conclude `NO PROPOSAL`; it must not inspect fresh outcome data while claiming `K=0`.
+
+This boundary prevents two category errors. **Sourcing is not Generate:** Generate is the
+post-contract bounded search in §4, whereas sourcing creates the object Vet may inspect.
+**Assembly is not Vet:** it supplies a complete proposal; Vet independently scores that object
+against the six gates. A forward paper log that measures candidate outcomes is a channel-owned
+generation activity with its own prospective protocol and K treatment, not informal Vet arithmetic.
+
+The first prospective card exposed a practical completeness requirement for Assembly's prior-art
+consult: sweep the owning instrument/mechanism ledgers, rejected registries, closure and
+pre-registration surfaces, relevant `lab/analysis` family, and ADR forbidden-moves/re-proposal
+bars. An empty search over a hand-selected subset is not a novelty clearance. Phase A must test
+this consult as part of the Vet input, not merely test the six final labels.
+
 ---
 
 ## 3. Speed 1 — Vet
@@ -579,6 +604,13 @@ findings such as Q-VOLREGIME-1. Measure whether Vet would have killed known impo
 earlier, preserved the known survivor, routed scientific-but-nontradeable findings out of the
 alpha queue, and exposed ambiguous mechanism-gate cases rather than silently dropping them. This
 is process validation, not a re-verdict of any historical candidate.
+
+**Accepted calibration case (operator decision, 2026-09-01):** `GAPCOND-ORB-1` enters the frozen
+sample as one paired sequence: the original informal false-`PASS` and the corrected `DROP` in
+[`2026-09-01-gapcond-orb-1-vet-card.md`](../../notes/2026-09-01-gapcond-orb-1-vet-card.md). Score
+the pair as one case so the review-time correction is not misreported as two independent Vet
+decisions. Its inclusion accepts the `DROP` and Phase-A sample membership only; it does not ratify
+this specification or reopen the candidate.
 
 ### Phase B — gate false-negative read
 
