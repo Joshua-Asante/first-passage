@@ -11,7 +11,22 @@
 
 This is the **first prospective use** of the Vet speed on a new candidate, run at the operator's request. It is **not** the design's own Phase A (retrospective shadow-routing on a frozen sample of *closed* candidates) — that step, named in the spec's §10 as the prerequisite before any live use, has not been run. This card is therefore informal evidence about whether Vet is useful, not a validated instance of it. Treat the `PASS` label accordingly: it means "six gates read clear on inspection," not "a ratified process certified this."
 
-**Unreconciled prior art, disclosed:** [`docs/notes/2026-08-30-generate-evaluate-tensions.md`](2026-08-30-generate-evaluate-tensions.md) — an interpretive note filed one day before the three-speed spec — diagnoses the identical Route B failure (0/4 campaigns, promotion floor never tied to a tradeable object) and proposes a *different* architecture (a single append-only "candidate contract" plus a `TRADEABLE-REACHABLE` pre-gate) to fix it. The three-speed spec's own "Related" list does not cite this note, and the two are not reconciled. Nothing here depends on that reconciliation, but the operator should not read this card as evidence that Vet is *the* settled answer — a same-week alternative design targeting the same defect exists and is unread against this one.
+**Prior-art correction (2026-09-01, same day):** this card originally flagged
+[`2026-08-30-generate-evaluate-tensions.md`](2026-08-30-generate-evaluate-tensions.md) as an
+*unreconciled alternative* design. That was wrong in an important direction: the note's
+recommendations had already been **ratified 2026-08-30 as six Accepted ADRs**
+([`candidate-contract`](../adr/2026-08-30-candidate-contract.md) ·
+[`terminal-taxonomy`](../adr/2026-08-30-terminal-taxonomy.md) ·
+[`evaluation-order`](../adr/2026-08-30-evaluation-order.md) ·
+[`tradeable-reachable-gate`](../adr/2026-08-30-tradeable-reachable-gate.md) ·
+[`operator-approvals-campaign-envelope`](../adr/2026-08-30-operator-approvals-campaign-envelope.md) ·
+[`channel-liveness-gate`](../adr/2026-08-30-channel-liveness-gate.md)) — standing doctrine, not a
+competing proposal. This card's six-gate read is unaffected (it consumed only closed campaign
+artifacts and venue facts), but any next step runs under those ADRs: a proceed decision opens a
+**candidate contract** per `candidate-contract` §2 — with the `TRADEABLE-REACHABLE` pre-gate,
+CONFIRM-reservation-before-probe ordering, campaign envelope, and the four-verdict confirm
+vocabulary — not a freestanding "Generate charter." The three-speed spec (PR #250, v3) is now a
+thin wrapper over those owners.
 
 ---
 
@@ -61,4 +76,10 @@ This is the **first prospective use** of the Vet speed on a new candidate, run a
 
 ## 4. If the operator wants to proceed
 
-The next artifact is a Generate charter (`§4.2` of the three-speed spec): freeze the exploration/Confirm partition (the panel-vintage question above must be ruled first), the promotion statistic (reuse `Q-RANGECOND-1`'s four gates), and the output schema — then an operator GO for the $0 exploration pull. Nothing above authorizes that pull on its own.
+The next artifact is a **candidate contract** per
+[`2026-08-30-candidate-contract.md`](../adr/2026-08-30-candidate-contract.md) §2, opened under the
+ratified [`evaluation-order`](../adr/2026-08-30-evaluation-order.md) pipeline: reserve the Confirm
+window on the draft contract first (the panel-vintage question above must be ruled at that step),
+freeze the promotion statistic (reuse `Q-RANGECOND-1`'s four gates) and the mechanism
+discriminator's adjudication rule, then one operator GO on the campaign envelope covers the $0
+exploration run. Nothing above authorizes that run on its own.
