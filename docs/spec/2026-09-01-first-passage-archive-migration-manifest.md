@@ -11,14 +11,30 @@ file reads across `core/ ops/ lab/ tests/ scripts/`), `.claude/skills/**/*.md` r
 `lab/CATALOG.md` status — via 21 parallel agents, 490 tool calls, verified 2026-09-01
 (Workflow `wf_ce66f55a-f3a`; full per-item evidence in that run's `journal.jsonl`).
 
-**Result: of 650 items checked, 233 (36%) are confirmed safe.** The rest split: 145 have live code
-dependencies, 135 have live doc citations that survived closer scrutiny, 99 are blocked because
-`lab/CATALOG.md` itself still marks them `ACTIVE`/`HOLD` (not closed at all), 38 need operator
-judgment (genuine ambiguity, not yet resolved either way).
+**Result: of 650 items checked, 228 (35%) are confirmed safe — 487 tracked files.** The rest split:
+150 have live code dependencies, 135 have live doc citations that survived closer scrutiny, 99 are
+blocked because `lab/CATALOG.md` itself still marks them `ACTIVE`/`HOLD` (not closed at all), 38 need
+operator judgment (genuine ambiguity, not yet resolved either way).
+
+**Round-3 correction (Codex PR #252, third review):** 5 items from the round-2 SAFE lists — 3
+`lab/archive/` slugs (`orb_zb_recon_2026-07`, `striker_dj30_mym_prototype_2026-07`,
+`usdcad_fade_2026-06-26`) and both `lab/analysis/_inbox/` items — were cited via a machine-checked
+`source:` YAML field in `ops/instruments/*.md`, resolved at runtime by `scripts/instrument_profiles.py`'s
+`_resolve()` (a literal filesystem `.exists()` check that HARD-fails the P1 profile gate if it doesn't
+resolve) or a `discovery_manifests/*.json` path field. The 21-agent pass checked `ops/instruments/*.md`
+inconsistently — it caught this exact pattern correctly in `docs/notes/notice/` and elsewhere, but
+missed it here. **A follow-up sweep of all 51 then-safe `lab/archive/`+`_inbox` items against every
+`ops/instruments/*.md` and `discovery_manifests/*.json` file found 25 with SOME mention — but only
+these 5 hit the actual machine-checked `source:` field**; the other 20 are ordinary prose/markdown-link
+citations in a DEAD-list section, the same "expected historical citation trail" pattern that
+legitimately cleared 26 other `lab/archive/` items. Moved to their respective exclusion sets below.
+`lab/analysis/_inbox/` is now entirely excluded (0 safe of 11).
 
 **How to use this file:** the SAFE lists below are the current migration scope. Before opening a
 deletion PR for any cluster, re-run a spot-check grep on that cluster's paths — this data is a
-snapshot, not a standing guarantee; the repo keeps changing.
+snapshot, not a standing guarantee; the repo keeps changing. Specifically for `ops/instruments/*.md`:
+a hit only blocks migration if it's a `source: "..."` YAML field (machine-checked); a prose/markdown
+citation in a DEAD/CLOSED-verdict section does not.
 
 ---
 
@@ -36,35 +52,43 @@ individual files won't fix it without first changing the underlying tooling or p
 | `docs/briefs/rnd-pipeline/` | 30 | 0 | `scripts/check_advisor_dedup.py:213-218` globs the entire directory as one of its 8 mandatory dedup-corpus surfaces. Not vestigial — `docs/operational_rules.md` §8 sub-rule 8 and the `brief-authoring` skill mandate running it before any new campaign; its own docstring records two real incidents this exact gap already caused. |
 | `docs/analytics/`, `docs/lessons/`, `docs/methodology/archive/`, `docs/external/` | 14 | 0 | `docs/analytics/mc_anchor_evolution/{plot.py,data.csv}` is a live import in `tests/test_mc_anchor_chart.py` (the original Codex catch). The other three carry live doc citations (canonical methodology docs, dedicated ADRs, `CLAUDE.md`-linked `mc_anchor_history.md`). |
 | `docs/notes/notice/` | 36 | 1 | Ratified ([`ADR`](2026-08-15-notice-log-is-the-live-observation-routing-convention.md)) as "the estate's continuous, sole practice for recording observations" — by design, almost everything in it is a permanent provenance anchor cited from ADRs, briefs, `ops/instruments/*.md`, or `STATE.md`. 6 files are cited via a literal `source:` field in `ops/instruments/*.md`/`profiles.json` that `scripts/instrument_profiles.py` hard-fails on if unresolved. |
+| `lab/analysis/_inbox/` | 11 | 0 | Round-3 correction: both round-2 "safe" items (`ict_1mexec_1_2026-08`, `rangexfer_presence_battery_2026-08-30`) are cited by machine-readable path fields — `discovery_manifests/ict-1mexec-1.json`'s `reachability_attestation`/`profile_consult` fields, and `ops/instruments/MECHANISMS.md:231,401` — plus `ops/instruments/MNQ.md:136` treats the first's RESULTS.md as current verdict evidence. Combined with the other 9 (6 `CATALOG` `ACTIVE`/`HOLD`, 1 live code dep, 1 doc citation, 1 operator judgment — see the round-2 detail preserved in the workflow journal), this cluster is now 0 of 11. |
 
-**None of these seven clusters should be batch-migrated.** If any individual file within them is
+**None of these eight clusters should be batch-migrated.** If any individual file within them is
 migrated later, treat it as its own judgment call with its own citation sweep, not a batch action.
 
 ---
 
 ## Partially-safe clusters — explicit SAFE lists
 
-### `lab/archive/` — 49 of 90 safe
+### `lab/archive/` — 46 of 90 safe
 
 `approach_scoreboard_2026-08` · `c1_capalloc_2026-07-27` · `futures_prop_hold_compat_2026-06-30` ·
 `gbpusd_rank_cert` · `identify_nas100_2026-06-20` · `msl_c2_mgc_2026-08` · `msl_c3_m2k_2026-08` ·
 `mym_3fps_recon_2026-07` · `noct_spx` · `nsurv_layer_design_2026-08-20` · `oanda_stage1` ·
-`oil_carry` · `opening_pressure_map_2026-07` · `orb_zb_recon_2026-07` ·
+`oil_carry` · `opening_pressure_map_2026-07` ·
 `orbmnq1_survivor_scoring_2026-08-20` · `p2_replay_2026-07` · `pharos_us500_sweepfvg` ·
 `q_bookfit_1_2026-07` · `q_compose_1_2026-07` · `q_condval_1_2026-08` · `q_decay_1_2026-07-10` ·
 `q_evalseq_1_2026-08` · `q_expr_1_2026-08` · `q_fbeia_1_2026-07` · `q_fccarry_1_2026-07` ·
 `q_funnel_1_2026-07` · `q_inventory_1_2026-07` · `q_joint_tail_weekly_2026-07` ·
 `q_nas_4_2026-06-20` · `q_pyrparity_1_2026-07` · `q_znauc_1_2026-07` · `regime_aegis_2026-06-16` ·
 `regime_ratevol_2026-06-16` · `regime_remc_2026-06-22` · `regime_signal_research_2026-06-25` ·
-`slr_mym_phase05_2026-07-29` · `spx500_f09_gate_2026-06-20` · `striker_dj30_mym_prototype_2026-07` ·
+`slr_mym_phase05_2026-07-29` · `spx500_f09_gate_2026-06-20` ·
 `timeframe_5m_2026-06-25` · `tnec_envelope_compile_2026-08` · `todvol_1_2026-08-20` · `tom_spx` ·
-`tradeify_selectflex_remc_2026-07-10` · `usdcad_fade_2026-06-26` · `usdcad_ratemap_verify_2026-06-15` ·
+`tradeify_selectflex_remc_2026-07-10` · `usdcad_ratemap_verify_2026-06-15` ·
 `usdcad_rdm` · `usoil_rdm` · `usoil_regime_capture` · `xindex_rv_recon_2026-07`
 
-Excluded (41): 25 fail on live doc citation (`ops/instruments/*.md`, `docs/rejected_candidates.md`,
-or an `ACTIVE`-campaign's own RESULTS.md citing them as "named residual, not re-run"), 9 fail on
-confirmed live code dependency (`sys.path`/`importlib`/direct read from an `ACTIVE` sibling or a live
-script — e.g. `q_kbudget_1_2026-07` read by `tests/test_floor_scan_htsmom_pin.py` via `importlib`;
+305 tracked files across these 46 slugs (`git ls-files lab/archive/<slug>/` per slug, summed).
+
+Excluded (44): 3 moved from SAFE in the round-3 correction — `orb_zb_recon_2026-07`
+(`ops/instruments/ZB.md:22` `source:` field), `striker_dj30_mym_prototype_2026-07`
+(`ops/instruments/MYM.md:45` + `YM.md:21`), `usdcad_fade_2026-06-26` (`ops/instruments/USDCAD.md:37`)
+— all three resolve to real files today, so `scripts/instrument_profiles.py`'s P1 gate would HARD-fail
+the instant the source directory is deleted. 25 fail on live doc citation
+(`ops/instruments/*.md` prose, `docs/rejected_candidates.md`, or an `ACTIVE`-campaign's own RESULTS.md
+citing them as "named residual, not re-run"), 9 fail on confirmed live code dependency
+(`sys.path`/`importlib`/direct read from an `ACTIVE` sibling or a live script — e.g.
+`q_kbudget_1_2026-07` read by `tests/test_floor_scan_htsmom_pin.py` via `importlib`;
 `rates_ev_zf_recon_2026-07` dynamically imported by `scripts/diff_econ_calendar.py`), 7 flagged
 `NEEDS_OPERATOR_JUDGMENT` (stale/likely-dead references that a skeptical-by-default pass didn't
 self-clear — see journal for `custodian_eurusd`, `external_sourcing_2026-06-30`,
@@ -202,16 +226,6 @@ Accepted ADRs/live SESSIONS entries with operator-owed language), 10 need operat
 `docs/historical/` is fully clean — zero citations anywhere, its own README already says "not live
 doctrine."
 
-### `lab/analysis/_inbox/` — 2 of 11 safe
-
-`ict_1mexec_1_2026-08`, `rangexfer_presence_battery_2026-08-30`.
-
-Excluded (9): 6 fail on `CATALOG` `ACTIVE`/`HOLD` (5 outright, 1 — `rangestate_gc_2026-08` — clears
-the `CATALOG` test but fails on a live `ops/instruments/MGC.md`/`profiles.json` `source:` field
-citation instead), 1 fails on live code (`ict_mnq_2026-08` — a `sys.path`-style directory pointer
-from two other scripts), 1 fails on doc citation, 1 needs operator judgment
-(`rangecond_1_2026-08-30`).
-
 ### `docs/notes/notice/` — 1 of 36 safe
 
 `N-2026-08-24-breadth-over-magnitude-phase-b-target-restatement.md` — the only file in this
@@ -220,26 +234,32 @@ Everything else stays (see the exclusion table above).
 
 ---
 
-## Corrected total: 233 of 650 checked (36%)
+## Corrected total: 228 of 650 checked (35%) — 487 tracked files
 
-| Bucket | Items | Notes |
-|---|---:|---|
-| `lab/archive/` | 49 / 90 | |
-| `lab/analysis/c1/` | 0 / 59 | entire cluster excluded |
-| `lab/analysis/legacy/` | 0 / 9 | entire cluster excluded |
-| `lab/analysis/harvest/` | 0 / 13 campaigns | entire cluster excluded |
-| `lab/analysis/_inbox/` | 2 / 11 | |
-| `docs/briefs/closures/` | 0 / 84 | entire cluster excluded |
-| `docs/briefs/*.md` (root) | 60 / 64 | |
-| `docs/briefs/rnd-pipeline/` | 0 / 30 | entire cluster excluded |
-| `docs/briefs/pre-registration/` | 45 / 88 | |
-| `docs/briefs/handoffs/` + `docs/historical/` | 16 / 40 | |
-| `docs/spec/` | 13 / 21 | |
-| `docs/notes/audits/` + `research/` | 33 / 66 | |
-| `docs/notes/notice/` | 1 / 36 | |
-| `docs/superpowers/plans/` | 14 / 24 | |
-| `docs/analytics/` + `lessons/` + `methodology/archive/` + `external/` | 0 / 14 | entire cluster excluded |
-| `docs/governance/notion-redirect-map.md` | 0 / 1 | cited by 3 live skills |
+| Bucket | Items | Files | Notes |
+|---|---:|---:|---|
+| `lab/archive/` | 46 / 90 | 305 | |
+| `lab/analysis/c1/` | 0 / 59 | 0 | entire cluster excluded |
+| `lab/analysis/legacy/` | 0 / 9 | 0 | entire cluster excluded |
+| `lab/analysis/harvest/` | 0 / 13 campaigns | 0 | entire cluster excluded |
+| `lab/analysis/_inbox/` | 0 / 11 | 0 | entire cluster excluded (round-3 correction) |
+| `docs/briefs/closures/` | 0 / 84 | 0 | entire cluster excluded |
+| `docs/briefs/*.md` (root) | 60 / 64 | 60 | |
+| `docs/briefs/rnd-pipeline/` | 0 / 30 | 0 | entire cluster excluded |
+| `docs/briefs/pre-registration/` | 45 / 88 | 45 | |
+| `docs/briefs/handoffs/` + `docs/historical/` | 16 / 40 | 16 | |
+| `docs/spec/` | 13 / 21 | 13 | |
+| `docs/notes/audits/` + `research/` | 33 / 66 | 33 | |
+| `docs/notes/notice/` | 1 / 36 | 1 | |
+| `docs/superpowers/plans/` | 14 / 24 | 14 | |
+| `docs/analytics/` + `lessons/` + `methodology/archive/` + `external/` | 0 / 14 | 0 | entire cluster excluded |
+| `docs/governance/notion-redirect-map.md` | 0 / 1 | 0 | cited by 3 live skills |
+| **Total** | **228 / 650** | **487** | |
+
+"Items" and "files" differ only for `lab/archive/` (46 directory-slugs expand to 305 files); every
+other row is already file-granular (1 item = 1 file). The `Gate` in the main spec is defined against
+the **487-file** total, not the 228-item count — an item count alone can't verify a byte-identical
+deletion.
 
 38 items across the above clusters are `NEEDS_OPERATOR_JUDGMENT` (genuine ambiguity — a stale-looking
 but not-quite-dead reference, a self-contradicting status field, a bundle-coherence coupling) and are
@@ -254,3 +274,7 @@ items.
 `archive-migration-survey-redo-v2`), 490 tool calls, ~3.5M tokens. Full per-item evidence (exact
 `grep`/`git log` output backing every verdict) is in that run's `journal.jsonl`, not reproduced here.
 Triggered by Codex's PR #252 review catching two live-dependency misses in the doc-only v1 manifest.
+**Round-3 correction** (same PR, third review): a targeted sweep of the 51 then-safe `lab/archive/`+
+`_inbox` items against `ops/instruments/*.md` `source:` fields and `discovery_manifests/*.json` found
+5 more misses, moved to their exclusion sets; verified directly against the cited files and
+`scripts/instrument_profiles.py`'s `_resolve()` function, not taken on faith.
