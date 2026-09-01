@@ -68,11 +68,27 @@ def fit_residual_regression(
     squares (no iterative solver needed -- exact, fast, deterministic).
 
     Returns (fitted_log_volume, raw_residual) aligned to `scored`'s own row
-    order. range_z is the trigger bar's own continuous range, standardized by
+    order -- FULL LENGTH (n == len(scored)), not just the rows the fit itself
+    used. range_z is the trigger bar's own continuous range, standardized by
     scored's own mean/SD (S3.3) -- for this regression fit, using the *whole
     scoreable panel's* own mean/SD is appropriate (the regression itself is a
     global-per-replicate nuisance object, per S4.2/S4.3's own note), distinct
     from baseline_1's own per-fold standardization used later in scoring.
+
+    Rows with a NaN in any input column (baseline feature or extra_cols) are
+    excluded from the OLS fit itself and get NaN in both returned arrays --
+    e.g. Comparison 2's own `prior_day_regime` (S4.5) is undefined during
+    classify_day_regime's own 60-trading-day warm-up, and an unfiltered NaN
+    there made np.linalg.lstsq raise LinAlgError, so Comparison 2 could not
+    run at all (Codex PR #243 second-pass review). Preserving full-length,
+    positionally-aligned output (NaN rather than a shorter array) keeps every
+    downstream consumer's positional-indexing assumption intact (day_groups'
+    own `row_idx`, reconstruct_pseudo_volume's own indexing) -- callers that
+    build a day-grouping/exclusion set from a NaN-carrying extra_cols column
+    (a future Comparison 2 driver) must additionally exclude any day whose
+    own residual came back NaN here, the same way S4.3 step 3 already
+    excludes singleton-group days; that exclusion does not yet exist as code
+    for Comparison 2, since Comparison 2's own driver has not been built yet.
     """
     n = len(scored)
     range_z = (scored["bar_range"] - scored["bar_range"].mean()) / scored["bar_range"].std()
@@ -94,11 +110,15 @@ def fit_residual_regression(
     if extra_cols:
         for c in extra_cols:
             cols[c] = scored[c].to_numpy()
-    X = np.column_stack(list(cols.values())).astype(float)
-    y = np.log(scored["volume"].to_numpy(float))
-    beta, *_ = np.linalg.lstsq(X, y, rcond=None)
-    fitted = X @ beta
-    residual = y - fitted
+    X_full = np.column_stack(list(cols.values())).astype(float)
+    y_full = np.log(scored["volume"].to_numpy(float))
+
+    valid = np.isfinite(X_full).all(axis=1) & np.isfinite(y_full)
+    fitted = np.full(n, np.nan)
+    residual = np.full(n, np.nan)
+    beta, *_ = np.linalg.lstsq(X_full[valid], y_full[valid], rcond=None)
+    fitted[valid] = X_full[valid] @ beta
+    residual[valid] = y_full[valid] - fitted[valid]
     return fitted, residual
 
 
@@ -178,12 +198,27 @@ def precompute_rotation_groups(day_groups: pd.DataFrame) -> tuple[list[list], se
     return eligible_groups, excluded_days
 
 
+def total_joint_combinations(eligible_groups: list[list]) -> int:
+    """Exact size of the joint rotation-assignment space: the product of
+    each eligible group's own day count (each group independently
+    contributes one of its own `n` circular shifts). Arbitrary-precision
+    (plain Python int), since this is astronomically large in every
+    realistic case at this panel's own group-size distribution -- e.g. even
+    20 groups averaging 5 days each already gives 5**20 ~= 9.5e13, far past
+    any int64 range, let alone B=4000."""
+    total = 1
+    for days in eligible_groups:
+        total *= len(days)
+    return total
+
+
 def draw_rotation(
     eligible_groups: list[list],
     excluded_days: set,
     rng: np.random.Generator,
     seen: set | None = None,
-    max_attempts: int = 200,
+    total_combinations: int | None = None,
+    safety_valve_attempts: int = 10_000_000,
 ) -> dict:
     """DESIGN.md S4.3 steps 3-5. `eligible_groups`/`excluded_days` come from
     `precompute_rotation_groups` (called once, outside the B-replicate loop).
@@ -199,19 +234,32 @@ def draw_rotation(
     padded." When `seen` is a set the caller persists across the whole
     B-replicate loop, this draws without replacement against every
     previously returned joint assignment (identified by the per-group k
-    tuple) until `max_attempts` consecutive collisions, at which point the
-    joint combination space is treated as exhausted and a repeat is allowed
-    -- disclosed via the returned "exhausted" flag (the caller should log/
-    count this, never silently ignore it). Pass seen=None for callers that
-    don't need the without-replacement guarantee (e.g. a single ad hoc draw,
-    this module's own identity-rotation smoke test).
+    tuple), retrying on a collision until either a fresh assignment is
+    found or `len(seen)` has reached the EXACT total combination count
+    (proven exhaustion, not approximated). An earlier version of this
+    function declared exhaustion after a fixed small retry-count budget,
+    which can be wrong with meaningful probability while unseen
+    combinations still remain -- e.g. ~37% at 201/202 combinations drawn
+    under a 200-attempt budget (Codex PR #243 second-pass review). At this
+    panel's own group-size distribution, total_combinations is
+    astronomically larger than B in every realistic case, so this loop is
+    expected to exit on its first or second attempt; `safety_valve_attempts`
+    exists only to fail loudly (raise, not hang or silently misreport) in a
+    pathological scenario (e.g. a broken RNG), not because exhaustion is
+    expected to occur at this pilot's own scale. Pass seen=None for callers
+    that don't need the without-replacement guarantee (e.g. a single ad hoc
+    draw, this module's own identity-rotation smoke test).
 
     Returns {"donor_of": {...}, "excluded_days": set, "exhausted": bool}.
     """
-    attempts = max_attempts if seen is not None else 1
+    if total_combinations is None:
+        total_combinations = total_joint_combinations(eligible_groups)
+
     donor_of: dict = {}
     fingerprint: tuple = ()
-    for _ in range(attempts):
+    attempts = 0
+    while True:
+        attempts += 1
         donor_of = {}
         ks = []
         for days in eligible_groups:
@@ -221,16 +269,26 @@ def draw_rotation(
             for i, day in enumerate(days):
                 donor_of[day] = days[(i - k) % n]
         fingerprint = tuple(ks)
-        if seen is None or fingerprint not in seen:
-            if seen is not None:
-                seen.add(fingerprint)
+        if seen is None:
             return {"donor_of": donor_of, "excluded_days": excluded_days, "exhausted": False}
-    # max_attempts consecutive collisions: the joint combination space is
-    # exhausted (or small enough that avoiding a repeat is no longer cheap);
-    # allow this repeat, disclosed via "exhausted" rather than silently
-    # padding the replicate count with an undisclosed duplicate.
-    seen.add(fingerprint)
-    return {"donor_of": donor_of, "excluded_days": excluded_days, "exhausted": True}
+        if fingerprint not in seen:
+            seen.add(fingerprint)
+            return {"donor_of": donor_of, "excluded_days": excluded_days, "exhausted": False}
+        if len(seen) >= total_combinations:
+            # every joint combination has actually been drawn -- a repeat is
+            # unavoidable and this IS the frozen spec's own "then resample
+            # with replacement" fallback, disclosed via "exhausted" rather
+            # than silently padding the replicate count with a duplicate.
+            return {"donor_of": donor_of, "excluded_days": excluded_days, "exhausted": True}
+        if attempts >= safety_valve_attempts:
+            raise RuntimeError(
+                f"draw_rotation: {attempts} consecutive collisions with "
+                f"{len(seen)}/{total_combinations} combinations seen -- "
+                "not exhausted by the exact count, so this should be "
+                "combinatorially near-impossible; treat as an RNG or "
+                "fingerprinting bug, not genuine exhaustion."
+            )
+        # collision, but provably not exhausted yet -- redraw.
 
 
 def reconstruct_pseudo_volume(
