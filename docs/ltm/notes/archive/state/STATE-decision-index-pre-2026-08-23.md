@@ -2,6 +2,10 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Ninth roll, 2026-09-01** (one entry, pushed off by the F1-reversal decision):
+
+- **2026-08-23** — Pain-point residuals P6–P10 landed (README lead · identifier table · STATE keep-15 · withdrawn-book tense · Q-TOM-SPX-1 DEAD). [`impl plan`](../../../../../docs/superpowers/plans/2026-08-23-p6-p10-residuals-implementation.md)
+
 **Eighth roll, 2026-08-31** (one entry, pushed off by the ADR-corpus-audit decision):
 
 - **2026-08-23** — Automatic Claude judgment review on non-draft Cursor-first (or opted-in) PRs that touch a governed surface; review-only, not merge. [`07-14 addendum`](../../../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-08-23-judgment-review)

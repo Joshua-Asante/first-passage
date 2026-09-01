@@ -557,8 +557,11 @@ combined-book sweep
 campaign** (dated follow-ups 2026-08-26b/c/d, same file, same day as the Part A bust ceiling's
 3.0%→5.0% reopen): a required both-halves regime-robustness bootstrap found the 1yr cell's pooled
 0.01% masked a **4.02%** second-half bust, and once a tail-consistent sizing ratio and an
-intraday-honest (not end-of-day-only) remeasure were compounded onto the 3yr cell, it also failed
-both halves (**3.29%/5.37%**). Per that file's own top banner: **"No tested combined-book
+intraday-honest (not end-of-day-only) remeasure were compounded onto the 3yr cell, its second half
+failed outright — **h1 3.29% clears, h2 5.37% breaches even the raised 5.0% ceiling** (exact
+phrasing per the governing [v2 pre-registration](../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md)
+§8: "does not clear even the raised 5.0% ceiling (h2 5.37% > 5.0%)") — failing the required
+both-halves gate, which needs both halves to clear, not just one. Per that file's own top banner: **"No tested combined-book
 configuration in this entire campaign, on either window, survives a full both-halves + tail-sizing +
 intraday-honesty gate."** **This addendum does not treat it as a clearance** — there is none to
 treat, formal or exploratory — **and does not admit, license, or pre-judge it or any other
