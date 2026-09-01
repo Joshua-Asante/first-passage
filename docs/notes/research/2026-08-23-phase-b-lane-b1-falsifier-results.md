@@ -98,7 +98,22 @@ Confirmed against §6.2's `bounded_clustered` (risk=$275) table directly: cadenc
 
 **RESOLVED — B1.3 ruled `ADMIT`, operator, 2026-08-24, real-time GO.** The corrected (weaker) B1.2 evidence still counts as "a free sign source" for the plan's PARK-conjunction purposes, and F1's §6 condition-3 reversal clause does **not** trip — the operator's reading is that an unofficial third-party republication is not the same as "the data becoming freely available" in the sense F1 meant (F1 anticipated the licensed feed itself going free, not a lossy, unverified, unofficial proxy for it). The lane does not self-clear to PARK and is not ruled dead by the reversal clause either — it stays open, per the task's own "on admit" branch (Task B1.5).
 
+> **Operator closure 2026-09-01:** supersedes the live consequence, not the historical B1.3
+> record. B1 strategy pursuit = `DROP`; B1.5 source pursuit = `STOP`. Neither confidently clears
+> Vet's high-positive-expectancy intake bar, and source liveness cannot supply expectancy. No row,
+> MES outcome, candidate card, contract, or K spend occurred. Re-proposal requires independently
+> credible high positive net expectancy plus a complete expression.
+
 **Next step (not executed by this note or session — spans real calendar time):** Task B1.5's "historical test if B1.1 found data" branch does not apply (B1.1 found no citable δ). The licensed path is the **20-session forward paper-log** — a genuinely real-time observation task (record Financial Juice's daily signed imbalance figure each session at ~15:50 ET, then check MES's post-close/next-session price action against the B1.4 target: win_rate ≥65% clean at cadence 2, or ≥65% clean / 60% MARGINAL at cadence 3, risk=$275) — that cannot be fabricated or compressed into a single working session. See the follow-up scaffolding note for how this is being tracked.
+
+> **Correction 2026-09-01 — next step withdrawn before any row:** the 20-session effect log was
+> not powered to adjudicate its 65% win-rate target and had no variance basis for mean capture. B1
+> also lacks a complete stop/exit/sizing expression, so a source observation could not make it a
+> Vet proposal. A replacement five-session source-liveness instrument was designed, then `STOP`ped
+> by the operator before any row; even `SOURCE-LIVE` could not promote a candidate. Current
+> B1 expectancy remains unknown: no δ, no cohort, no measurement. See the tracker and the
+> 2026-09-01 next-Vet intake decision. The historical paragraph above is preserved as the prior
+> decision record, not a live instruction.
 
 <details><summary>Original (pre-ruling) disposition text, superseded above — kept for the audit trail, not deleted</summary>
 

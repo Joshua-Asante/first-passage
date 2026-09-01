@@ -3,18 +3,22 @@
 > **For agentic workers:** REQUIRED SUB-SKILL: superpowers:subagent-driven-development or
 > superpowers:executing-plans. Checkbox (`- [ ]`) syntax for tracking.
 
-**AUTHORIZATION:** `AWAITING GO` — per-lane. Two lanes additionally carry named operator
-bar-readings that must be ruled before their candidate can become a card (B1, B2). Nothing here
-opens a card by itself; E1's stop rule stands until a candidate clears the full admission bar.
+**AUTHORIZATION:** `CLOSED` — B1 strategy `DROP` + B1.5 source `STOP` on 2026-09-01; B2/B3 killed;
+B4 void. No lane produced a Vet candidate.
 **Cost:** $0 through every falsifier task below. Any data spend needs its own Rule-2 dry-run +
 operator GO and is out of this plan's scope.
 **Parent:** [`sequence overview`](2026-08-23-viable-strategy-sequence-overview.md) ·
 **Inputs:** Phase A2's feasible-shape region (pre-check; disclosed-N accepted — [`RESULTS §4`](../../../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)), Phase A1's revival list (B4 lane — voided, empty list).
-**Provenance:** candidate lanes B1–B2 live; B3 KILL (A1). Lanes originate from the reconciled
+**Provenance:** historical candidate lanes B1–B2; B3 KILL (A1). Lanes originate from the reconciled
 ox-alpha Use-4 output
 ([notice](../../notes/notice/N-2026-08-23-ox-alpha-mechanism-supply-candidates.md)) — zero
 authority; every lane's admission depends only on repo-verified evidence produced by its own
 falsifier tasks.
+
+**Operator closure 2026-09-01:** B1 strategy pursuit = `DROP`; B1.5 source pursuit = `STOP`. Vet is
+for candidates with a confidently high positive-expectancy prior. B1 has no citable δ, measured
+expectancy/win rate, or complete stop/exit/sizing expression; source availability cannot repair
+that deficit. B2/B3 are killed and B4 is void. Phase B closes with zero Vet candidates.
 
 **Standing guard (all lanes):** the MSL yield falsifier counts 6 consecutive pre-G0 deaths across
 ≥2 families as channel-closing. Lanes below run their $0 falsifiers **before** any card is
@@ -23,14 +27,13 @@ in the registry/notice layer, not as an MSL pre-G0 death.
 
 ---
 
-## Lane B1 — MOC-imbalance wake (MES) — strongest lane
+## Lane B1 — MOC-imbalance wake (MES) — CLOSED
 
 **Mechanism (one line):** NYSE-published closing-imbalance sign (public, non-price registry) →
 post-close dealer/arb inventory normalization → fade the imbalance sign in MES inside
-16:01–16:45 ET (fits the verified 16:45 flat deadline; window fragments around the CME equity
-pause — task 0 verifies hours).
+16:01–16:45 ET (fits the verified 16:45 flat deadline; continuous except for the month-end halt).
 
-**Why this lane leads:** the prior kill ([F1 ruling
+**Why this lane originally led:** the prior kill ([F1 ruling
 2026-07-27](../../briefs/programs/2026-07-27-f1-moc-imbalance-mym-ruling.md)) was **reject-at-bar at the
 paid-data procurement gate** — the WHO clauses were judged clean, and the a4 scope note
 explicitly spares "a published, signed imbalance number." The estate's own deep-lane supply audit
@@ -63,16 +66,18 @@ sources converge on this door.
 - [x] **B1.4 — shape pre-check:** score the lane's predicted payoff profile (bounded window,
   clustered wins, ~2–4 events/week) against the A2 region before any card is drafted. Target:
   win_rate ≥65% clean (cadence 2) or ≥65% clean / 60% MARGINAL (cadence 3), risk=$275. B1 has
-  zero measured win-rate evidence yet — this is the bar the paper-log will be read against.
-- [ ] **B1.5 — on admit:** 20-session forward paper-log ($0, zero capital, calendar time only) or
-  historical test if B1.1 found data — then hand to Phase C as a card candidate. **Licensed by
-  the B1.3 admit above; not started — B1.1 found no historical data, so this is the real-time
-  forward path only, which spans ~4 calendar weeks and cannot be executed in one session.**
-  Tracking scaffolding (protocol + empty log) is ready:
+  zero measured win-rate evidence yet — this is the bar a future calibrated shape probe must be
+  read against; the B1.5 source check does not score it.
+- [x] **B1.5 — STOP, never started:** the five-session source-liveness check has no consumer after
+  B1's `DROP`. No MES outcomes and no source rows were logged. Historical scaffolding:
   [`paper-log tracker`](../../notes/research/2026-08-24-phase-b-lane-b1-paper-log-tracker.md).
+  **Pre-row-1 correction 2026-09-01:** the 20-session effect log was not powered to adjudicate its
+  65% win-rate or mean-capture targets and was withdrawn with zero rows. The replacement answers
+  only whether the admitted free source is recurrent and timely enough to retain the source lead.
 
-**Kill criteria (frozen now):** no free sign source AND no citable δ → PARK. Paper-log mean net
-capture below the recomputed hurdle at 20 sessions → dead, registry row, no card ever authored.
+**B1 terminal disposition:** strategy `DROP`; source check `STOP`; $0/K=0. Re-proposal requires
+independently credible, high positive net expectancy plus a complete expression—not source
+availability, a longer log, another aggregator, another index micro, or threshold tuning.
 
 ---
 
@@ -173,15 +178,14 @@ Use-4 notice; run only on explicit operator election — the proposer's own prio
 
 ## Supply routes of last resort (unchanged, deliberately after the free lanes)
 
-- Published MOC-imbalance cohort δ **is** lane B1.1 (the free route, already first-class here).
+- A future published MOC-imbalance cohort δ is governed by B1's 2026-09-01 re-proposal bar; the
+  former B1.1 route is closed, not a first-class live route.
 - `MNQFLOW-1-DEPTH` (~$150 vs the $125 ceiling, operator HOLD): stays HOLD; revisiting it is an
   operator election, naturally at 2026-11-08 or earlier at operator initiative.
 - The blind channel's last pre-G0 slot: not spent by anything in this plan.
 
-## Exit criteria (Phase B whole)
+## Exit criteria (Phase B whole) — FIRED
 
-≥1 lane hands a falsifier-surviving, shape-prechecked, bar-cleared candidate to Phase C — or all
-lanes record honest kills/parks at $0, in which case the channel falsifiers govern and the
-programme's designed terminal state is in play. Board: registry/notice rows per kill; SESSIONS
-per session; the two operator bar-readings (B1.3, B2.1) surface as explicit decision asks, never
-buried in execution.
+All lanes recorded honest terminal dispositions at $0 or their recorded campaign spend; none hands
+a candidate to Phase C. The programme's designed terminal state is in play. Do not reopen a lane
+to avoid the zero-candidate result.

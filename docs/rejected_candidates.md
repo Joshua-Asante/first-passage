@@ -24,7 +24,8 @@ compelled-absence families, not a sleeve riding beside an independent daily mech
 bp/session). Cadence survived with disclosure (token-trade covers clustered gaps). No card
 authored; $0/K=0. Fold-in ran so this idea never consumed an MSL card slot.
 **Surviving finding (NOT rejected):** the Phase C sleeve *rule* (a sleeve must name a daily
-partner); MNQ instrument standing; B1/B2 live Phase B lanes.
+partner); MNQ instrument standing. *(Status correction 2026-09-01: B2 later died; B1 strategy
+`DROP` and source pursuit `STOP`; neither lane is live.)*
 **Re-proposal bar:** a materially different magnitude argument than F5's three failed instances
 — **not** a cadence re-litigation, not a sleeve-only card, not a parameter retune.
 
@@ -1791,6 +1792,30 @@ sample-length-driven).
   UNSCREENABLE Req-2, 2026-08-16) shares the same Wang-2003 sign defect; `Q-ORBPOS-1` (FALSIFIED
   2026-08-23, MNQ diagnostic, no registry row per its own convention) independently reinforces. Artifact
   [`docs/notes/research/2026-08-24-cot-positioning-reversal-harvest-sourcing.md`](notes/research/2026-08-24-cot-positioning-reversal-harvest-sourcing.md).
+### Closing-auction MOC wake on MES — DROP (high-expectancy intake bar)
+
+**Rejection scope:** B1's proposed fade of the signed S&P 500 closing-auction imbalance in MES,
+approximately 16:01–16:45 ET, plus its dedicated source-liveness pursuit. This does not reject all
+auction-imbalance research or MES as an instrument.
+**Closure date:** 2026-09-01 (operator decision).
+**Class:** intake/economic-prior failure; source pursuit stopped as no-consumer work. Not
+`MARKET-NULL`: no outcome test ran.
+**Authoritative artifact:** [`next Vet intake decision`](notes/2026-09-01-next-vet-intake-decision.md).
+**Closure basis:** Vet is reserved for candidates with a confidently high positive-expectancy
+prior. B1 has no citable index-futures δ, cohort, measured expectancy/win rate/payoff ratio, verified
+live source, or complete stop/exit/sizing expression. Its attached 3.46-point cost hurdle and ~65%
+venue-shape win-rate are requirements, not forecasts. The five-session source check's best outcome
+would establish only data availability, so it was stopped before any row; $0/K=0.
+**Re-proposal bar:** independently credible evidence of large positive net expectancy for a signed
+closing-imbalance fade in index futures, sufficient to clear the MES cost and venue-shape bars,
+plus a complete frozen signal/entry/stop/exit/sizing expression. A live source, longer paper log,
+new aggregator, different index micro, or threshold retune is insufficient.
+
+<!-- concept-intake-entry mechanism_family="closing-auction-moc-wake" instrument="MES" rejection_reason="DROP at high-positive-expectancy Vet intake: no citable index-futures delta/cohort, no measured expectancy/win rate/payoff ratio, no complete stop/exit/sizing expression. 3.46 MES points and ~65% WR are required bars, not forecasts. Companion five-session source-liveness pursuit STOP before any row because source availability cannot supply expectancy; $0/K=0; not MARKET-NULL." harness_disposition_ref="operator closure docs/notes/2026-09-01-next-vet-intake-decision.md" date="2026-09-01" class="intake-economic-prior-failure" role_tested="entry+source-liveness" falsifier_failed="no confidently high positive-expectancy prior and no complete expression; source check has no decision-changing consumer" addback_condition="independently credible large positive NET expectancy for signed closing-imbalance fade in index futures sufficient for MES cost+venue shape, plus complete frozen signal/entry/stop/exit/sizing expression -- NOT live source, longer log, aggregator, different micro, or threshold retune" -->
+- **closing-auction-moc-wake on MES** — rejected 2026-09-01 (intake/economic-prior `DROP`;
+  companion source-liveness `STOP`; no outcome run, $0/K=0); artifact
+  [`docs/notes/2026-09-01-next-vet-intake-decision.md`](notes/2026-09-01-next-vet-intake-decision.md).
+
 ### London-fix wake (dealer-inventory-normalization fade) on 6E/6B — FALSIFIED (placebo/orthogonality battery)
 
 **Rejection scope:** the direction (fade the 10:58–11:04 ET benchmark-fix impulse sign in the 11:10–13:00 ET wake window, on full-size 6E and 6B futures) is rejected as an **entry mechanism**, on **edge-failure** grounds (not cost — B2.0 already confirmed 6E/6B clear the 4× cost floor at full size; this is a signal-does-not-exist finding on top of a cost-feasible venue expression). Adjacent to, but a distinct mechanism family from, the *FX intraday fixing-reversal (session mean-reversion) on EURUSD* entry above (F3): that entry scored the fix **print** itself (event-time, cash EURUSD, cost-killed); this lane scored a later dealer-normalization **wake** window (11:10–13:00 ET, full-size futures) that an operator ruling (B2.1, 2026-08-24) admitted as new mechanism evidence clearing F3's "not a different fix" re-proposal bar — the wake-WHO was tested on its own merits here, not dismissed by F3's cost-law wall.

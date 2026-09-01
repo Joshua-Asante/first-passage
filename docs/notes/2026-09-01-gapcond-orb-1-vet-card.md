@@ -9,6 +9,9 @@ Novelty missed a registered dead cell and a standing pre-reg prohibition), and t
 scored Clear on unmeasured or miscalibrated inputs. This card is a Vet-speed read under
 [`docs/superpowers/specs/2026-09-01-three-speed-alpha-research-design.md`](../superpowers/specs/2026-09-01-three-speed-alpha-research-design.md)
 (`Proposed`); it authorizes nothing and never did.
+**Operator decision:** `DROP` accepted 2026-09-01. The original false-`PASS` and this corrected
+`DROP` are one named Phase-A calibration case; this accepts the candidate disposition and sample
+membership only, not the proposed three-speed design as standing doctrine.
 **Spend / K:** $0.00 · K=0 — every figure quoted from already-closed artifacts; no fresh
 outcome-bearing comparison was computed for either the original read or this re-verdict.
 
@@ -21,7 +24,7 @@ request — ahead of the spec's own Phase A (retrospective shadow-routing on clo
 and disclosed as such from the start. The re-verdict makes it a better demonstration, not a
 worse one: the point of a cheap front door is to kill candidates like this **before** a campaign
 spends anything, and the kill arrived at $0/K=0, at review time, before any contract opened.
-Both the original miss and the correction should enter the Phase-A shadow-routing sample.
+The accepted Phase-A pairing is recorded once in §4; it does not reopen this candidate.
 
 **Root cause of the original miss (recorded for Phase A):** the Novelty consult searched
 `docs/briefs/closures/`, `docs/rejected_candidates.md`, and the pursuit/ADR surfaces — and
@@ -116,5 +119,7 @@ channels-dry/bottleneck diagnostics. That is a valid Vet outcome, not a failure 
 
 - The kill cost $0 and K=0, landed at review time, before any contract, pull, or campaign — the
   funnel's front door plus the standing Codex-review workflow doing exactly their job.
-- Both card versions should enter the spec's Phase-A shadow-routing sample: v1 as a measured
-  false-`PASS` (with its root cause recorded above), v2 as the corrected routing.
+- Both card versions are in the spec's Phase-A shadow-routing sample as one named calibration
+  case: v1 as a measured false-`PASS` (with its root cause recorded above), v2 as the corrected
+  `DROP` routing. This sample entry changes neither version's historical evidence nor the proposed
+  spec's ratification status.

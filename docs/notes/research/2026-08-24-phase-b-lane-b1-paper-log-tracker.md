@@ -1,81 +1,84 @@
-# Phase B Lane B1 — 20-session forward paper-log tracker
+# Phase B Lane B1 — CLOSED source-liveness check
 
-**Purpose:** the real-time observation instrument licensed by B1.3's `ADMIT` ruling
-(2026-08-24). Task B1.5's "on admit" branch — B1.1 found no historical δ, so the historical-test
-alternative does not apply; this is the forward-only path.
+**Purpose:** the real-time source check licensed by B1.3's `ADMIT` ruling (2026-08-24).
 **Plan owner:** [`Phase B mechanism supply`](../../superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md)
 §Lane B1, Task B1.5.
 **Falsifier findings owner:** [`B1.0-B1.4 results`](2026-08-23-phase-b-lane-b1-falsifier-results.md).
+**Status 2026-09-01:** `STOP — operator closed source pursuit`. No row or price outcome was ever
+logged; K=0. The parent strategy pursuit is `DROP` because it lacks a credible high-positive-
+expectancy prior and complete expression. Source liveness has no decision-changing consumer.
 
-**This file is scaffolding, not data.** No session has been logged yet — it was created
-2026-08-24 to have the tracking structure ready the moment the first real session lands, not to
-imply any observation has already happened. Every row below is filled in only from a real,
-same-day (or next available session) observation — never backfilled from memory, never
-estimated, never fabricated to fill a gap.
+## Why the 20-session wait was withdrawn
 
----
+The old protocol tried to use 20 sessions to decide both a 65% win-rate shape requirement and a
+mean-capture hurdle. It could do neither reliably:
 
-## Protocol (frozen before any row is logged)
+- 13 wins in 20 is exactly 65%, but its one-sided binomial tail under p=0.50 is ≈0.132 and its
+  two-sided 95% Wilson interval is approximately [43.3%, 81.9%];
+- the first conventional one-sided 5% rejection point is 15/20 wins, a 75% observed rate, and
+  that rule has only ≈24.5% power when the true win rate is the target 65%; and
+- no variance prior was frozen for mean capture, so 20 observations had no calibrated power for
+  the cost limb either.
 
-1. **Each trading session, ~15:50–15:55 ET:** check Financial Juice
-   (financialjuice.com/News/.../MOC-Imbalance.aspx, or its public X/Telegram mirror) for a
-   same-day signed imbalance figure (S&P 500 / Nasdaq 100 / Dow 30 / Mag 7). Record whichever
-   index figure is present; if none is posted that day, log the session as
-   `NO-SOURCE-THAT-DAY` — this is itself a data point (measures the source's actual coverage
-   rate, one of the open caveats B1.2 named) and must not be silently skipped.
-2. **Sign convention:** a positive (buy-side) imbalance is faded short in MES for the
-   16:01–16:45 ET wake window (per the plan's mechanism line); a negative (sell-side) imbalance
-   is faded long. Record the raw signed figure, not just the direction, so the log can later be
-   cut by magnitude if a threshold effect appears.
-3. **Outcome measurement:** MES price action across the 16:01–16:45 ET wake window (real CME
-   hours — see the B1.0 correction: this window is continuous on every session except the
-   last trading day of the month, which still carries the narrower 16:15–16:30 ET pause).
-   Record entry-equivalent price, exit-equivalent price (or a fixed hold-to-close proxy if no
-   real position is taken — this is a **paper** log, zero capital, per the plan's own framing),
-   and the realized move in the faded direction.
-4. **Win/loss tag:** win = price moved in the faded direction by the session's end of the wake
-   window; loss = it did not. Record the raw move too — a near-miss and a clean loss both count
-   as losses for the win-rate tally, but the raw numbers matter for later cost-hurdle scoring
-   (this lane's own B1.0 recompute: ≈3.46 MES/ES points needed net of the 4x cost-law hurdle).
-5. **No mid-log changes to the protocol.** If a flaw in this protocol is found mid-run, log the
-   finding and keep going under the frozen rule (or stop and re-freeze explicitly, dated) — do
-   not silently adjust the sign convention, window, or source partway through the 20 sessions.
+Waiting four weeks could therefore produce an attractive point estimate, not a defensible Vet
+input. The expected positive outcome was only proof that the proposed free source recurs in time
+to trade. That operational question can be answered without reading MES outcomes and without
+waiting 20 sessions.
 
-## Target the log is read against (from B1.4, already scored — not re-derived here)
+## Withdrawn replacement protocol — do not execute
 
-Per [`shape_feasibility_map_2026-08/RESULTS.md`](../../../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)
-§6.2 (`bounded_clustered`, risk=$275): cadence 2/week needs **win_rate ≥65%** (clean `FEASIBLE`);
-cadence 3/week needs **≥65%** clean or **60%** (`MARGINAL`, not a pass). B1's mechanism is
-predicted at ~2-4 events/week — the log should track actual weekly event count alongside the
-win-rate tally, since a lower realized cadence than predicted changes which target column
-applies.
+The following five-session design is retained only to show what was stopped; do not execute it:
 
-## Kill criterion (frozen, from the plan — verbatim)
+1. At 15:50–15:55 ET, check the admitted Financial Juice surface or the already-named public
+   mirror for a same-day, timestamped, signed S&P 500 imbalance usable before the proposed 16:01
+   entry. Do not substitute a Nasdaq, Dow, or Mag-7 number for the MES proposal.
+2. Record only source facts: date, observation time, source status, index, signed value as printed,
+   publication timestamp, and whether it was available by 15:55 ET.
+3. Do **not** read or record MES entry, exit, return, win/loss, or post-close direction. This is a
+   structural source-liveness check, not an effect probe; it remains $0/K=0.
+4. Do not backfill the unlogged 2026-08-24→2026-09-01 interval. The first row must be a real-time
+   observation made under this replacement protocol.
 
-> "Paper-log mean net capture below the recomputed hurdle at 20 sessions → dead, registry row,
-> no card ever authored."
+### Frozen disposition
 
-At 20 logged sessions (not 20 calendar days — a `NO-SOURCE-THAT-DAY` session still counts toward
-the 20, since source coverage is part of what's being measured), compute mean net capture (raw
-move minus the ≈3.46-point cost hurdle from B1.0) and compare against both the hurdle itself and
-the B1.4 win-rate target. If it fails either, the lane is dead and this file's own final entry
-should record that disposition with a `docs/rejected_candidates.md` row, per this task's own
-self-clearing kill-criterion license (no operator judgment needed for a numeric threshold miss).
+- **SOURCE-LIVE:** at least 2 of 5 sessions contain a same-day signed S&P 500 figure available by
+  15:55 ET. Two is the lower edge of B1's already-declared 2–4 event/week cadence, used here only
+  to test whether the claimed route operationally exists.
+- **PARK-SOURCE:** fewer than 2 of 5 qualify. Wake only on a verified recurring free source or an
+  independently authorized licensed source; do not extend the check until it passes.
+- **VOID:** any MES outcome is read or recorded before the five-session disposition. Restart only
+  with a prospectively clean source check.
 
----
+`SOURCE-LIVE` would not be evidence of alpha, cost reachability, win rate, or payoff shape. With the
+parent strategy pursuit closed, neither `SOURCE-LIVE` nor `PARK-SOURCE` is live; the terminal
+disposition is `STOP`.
 
-## Log
+## Source log
 
-| # | Date | Source status | Signed imbalance | Fade direction | MES realized move | Win/loss | Notes |
-|---|---|---|---|---|---|---|---|
-| — | — | — | — | — | — | — | *(no sessions logged yet — first row lands on the first real trading session after this file's creation)* |
+| # | Date | Checked at ET | Source status | Index | Signed value as printed | Publication time | Available by 15:55? | Notes |
+|---|---|---|---|---|---|---|---|---|
+| — | — | — | — | — | — | — | — | *(no sessions logged)* |
 
----
+## Running tally
 
-## Running tally (updated as rows are added)
+- Eligible sessions checked: 0 / 5
+- Qualifying same-day S&P 500 figures: 0
+- MES outcomes read: no
+- Disposition: **STOP — never started; no rows permitted**
 
-- Sessions logged: 0 / 20
-- `NO-SOURCE-THAT-DAY` count: 0
-- Win rate so far: n/a
-- Mean net capture so far: n/a
-- Disposition: **not yet evaluable** (needs ≥1 logged session)
+## Audit calculation
+
+```bash
+python - <<'PY'
+from math import comb, sqrt
+n, p, z = 20, 13 / 20, 1.96
+for k in (13, 15):
+    null_tail = sum(comb(n, i) * 0.5**n for i in range(k, n + 1))
+    power_at_065 = sum(comb(n, i) * 0.65**i * 0.35**(n-i) for i in range(k, n + 1))
+    print(k, null_tail, power_at_065)
+den = 1 + z*z/n
+centre = (p + z*z/(2*n)) / den
+half = z * sqrt(p*(1-p)/n + z*z/(4*n*n)) / den
+print(centre-half, centre+half)
+PY
+```
