@@ -9,12 +9,9 @@ scope on `validation/sweep/` — as **historical**. The *doctrine* survives and 
 **Python never gates deployment; pre-filter and confirm use the same feed** — still cited as the
 two-tier [`2026-06-23-tv-backtest-egress-automation.md`](2026-06-23-tv-backtest-egress-automation.md)
 builds on ("the Python-prefilter/native-confirm two-tier this builds on").
-⚠ **Graph edge OWED, not landed:** the `Superseded-by` field below still reads `none` while the retirement
-ADR carries this only as `Related`. Adding the forward edge requires the reverse edge plus an `INDEX.md`
-regeneration in the same commit (retirement-ADR convention), so it is left for a scoped change.
 **Supersedes:** none
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** [`2026-07-11-gen1-pipeline-retirement.md`](2026-07-11-gen1-pipeline-retirement.md) (machinery only — the doctrine survives per the Machinery-status line above)
 **Retain-until:** none
 **Decision date:** 2026-06-05
 **Authors:** Joshua (CEO, decider) + Claude (Tech Advisor)

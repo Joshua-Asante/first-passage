@@ -13,7 +13,6 @@
 | 2026-04-17-striker-v4.3-pyramid.md | Accepted | 2026-04-17 | none | Accepted |
 | 2026-04-23-guardian-risk-relock-0.34.md | Accepted | 2026-04-23 | `2026-04-17-portfolio-allocations.md` in part — Guardian allocation only (Striker/Aegis unaffected by this ADR; see that ADR's Addendum 2026-08-29 for their current, since-changed figures). | Accepted |
 | 2026-04-24-mvd-discipline.md | Accepted | 2026-04-24 | none | generalizes and supersedes the standing Rule 0 (2026-04-17, audit-first for risk-control decisions). **AMENDED 2026-08-14:** code-level self-checks remain live; the doc-audit-table and MVD-attest one-liner are not enforced (Addendum 2026-08-14). |
-| 2026-04-25-mvd-retrofit.md | Accepted | 2026-04-25 | none | implements the retrofit pass scoped in the MVD discipline ADR (2026-04-24); sanity gate passed (PR #2, all 9 helpers exercised, all 5 reference numbers reproduced). |
 | 2026-05-03-sentinel-gate-decision.md | Accepted | 2026-05-03 | none | Accepted |
 | 2026-05-08-dd-trigger-c2-relock.md | Accepted | 2026-05-08 | `2026-04-17-dd-trigger-calibration.md` in part — DD_TRIGGER only; DD_SCALE = 0.40 unchanged. | (with documented dissent) |
 | 2026-05-10-dd-protection-ulp-rounding.md | Accepted | 2026-05-10 | none | (with documented downstream cascade) |
@@ -22,7 +21,6 @@
 | 2026-05-16-fxify-correct-timeout-semantic.md | Accepted | 2026-05-16 | none | ACCEPTED |
 | 2026-05-22-reality-check-harness.md | Accepted | 2026-05-22 | none | LOCKED 2026-05-22 — companion to Pre-Q EURUSD Pattern Enumeration; five open decisions baked 2026-05-21; Component E stationary-input + Davison-Hinkley sub-contracts added post-Phase-1; `block_length` → `avg_block_length` field rename 2026-05-22. **AMENDED 2026-08-14:** Component A (OANDA data loader) is **dormant**; Components B–H methodology … |
 | 2026-05-23-allocation-refresh-2.md | Accepted | 2026-05-23 | `2026-05-14-allocation-refresh.md` full | (with documented regime-robustness-gate override) |
-| 2026-05-23-relocate-ecr-to-live-journal.md | Accepted | 2026-05-23 | none | ECR pipeline relocated to live_journal/; companion CC handoff returned DONE with all sections RESOLVED. |
 | 2026-05-28-audit-doc-generation-doctrine.md | Accepted | 2026-05-28 | none | Accepted |
 | 2026-06-04-lean-portfolio-meta-layer.md | Accepted | 2026-06-04 | none | ratified 2026-06-04 by PO (Joshua); Rule-0 anchors confirmed on-disk (see blockquote header below for the full ratification note). |
 | 2026-06-04-methodology-skills-under-vc.md | Accepted | 2026-06-04 | none | ratified 2026-06-04; Rule-0 anchors confirmed on-disk during authoring (see blockquote header below for the full provenance note). |
@@ -107,7 +105,6 @@
 | 2026-08-20-nsurv-magnitude-resampling-disclosure.md | Accepted | 2026-08-20 | none | ratified by operator (Joshua) 2026-08-20, in-session direct instruction ("I ratify the N-SURV disclosure ADR, Rule 0 anchor-check + triage-discipline ADR") |
 | 2026-08-20-rule0-anchor-verification-and-triage-discipline.md | Accepted | 2026-08-20 | none | ratified by operator (Joshua) 2026-08-20, in-session direct instruction ("I ratify the N-SURV disclosure ADR, Rule 0 anchor-check + triage-discipline ADR") |
 | 2026-08-21-cfo-subscription-ledger-consolidation.md | Accepted | 2026-08-21 | none | ratified by operator (Joshua) 2026-08-21, in-session direct instruction |
-| 2026-08-21-persona-hierarchy-front-office-only.md | Accepted | 2026-08-21 | `2026-08-19-loop-persona-hierarchy-review-panel.md` in part — D1's spawnable roster | ratified by operator (Joshua) 2026-08-21, in-session direct instruction ("What |
 | 2026-08-21-stage2-stage3-progression-criteria.md | Accepted | 2026-08-21 | none | ratified 2026-08-21 by operator (Joshua) |
 | 2026-08-22-catalog-hot-vs-disposition.md | Accepted | 2026-08-22 | none | ratified by operator (Joshua) 2026-08-22, in-session ("accepted. GO"); Phase 1 (parser + C2 + `hot` column) lands in the same GO. |
 | 2026-08-22-grow-lane-build-authorization.md | Accepted | 2026-08-22 | none | operator GO (JA) 2026-08-22 ("ratify, accept, and begin the build"), |
@@ -132,7 +129,7 @@
 | 2026-08-30-terminal-taxonomy.md | Accepted | 2026-08-30 | none | ratified by operator (Joshua) 2026-08-30; see Ratification note. |
 | 2026-08-30-tradeable-reachable-gate.md | Accepted | 2026-08-30 | none | ratified by operator (Joshua) 2026-08-30; see Ratification note. |
 | 2026-08-31-hypothesize-exit-pine-test-instrument.md | Proposed | 2026-08-31 | none | drafted by Claude Code, ratification is an operator decision. Date below is the draft date, not a ratification date — see §9. |
-| 2026-08-31-persona-hierarchy-full-retirement.md | Accepted | 2026-08-31 | none | ratified by operator (Joshua) 2026-08-31, in-session direct instruction ("I |
+| 2026-08-31-persona-hierarchy-full-retirement.md | Accepted | 2026-08-31 | `2026-08-19-loop-persona-hierarchy-review-panel.md` full; `2026-08-21-persona-hierarchy-front-office-only.md` full | ratified by operator (Joshua) 2026-08-31, in-session direct instruction ("I |
 
 ## Partially superseded
 
@@ -181,14 +178,17 @@
 | 2026-08-08-edge-cohort-correction-and-necessity-retarget.md | Accepted | 2026-08-08 | none | §8 ratified by JA 2026-08-08; TNEC-1 `PROPOSED → RATIFIED` atomic in the same commit. **TNEC-1 supersedes MNQDTL-1 as the intake gate** (MNQDTL remains `RATIFIED` historical target; §3.1 doors C1–C11 stand). SPECs are outside the ADR graph — in-part supersession of … |
 | 2026-08-15-regime-gate-scope-ratification.md | Accepted | 2026-08-15 | none | ratified by operator (JA) 2026-08-15, in-session instruction ("address F1 ... as a Cursor task" → routed to CC per the cursor-fleet skill's own locked-surface disqualifier; operator's dispatch instruction stands as the ratification) |
 | 2026-08-16-deep-iteration-lane-charter.md | Accepted | 2026-08-16 | none | operator GO (JA) 2026-08-16 ("P2 + GO", electing the recommendation as given), **an explicit overriding election against this charter's own HOLD default**, on the independent-grounds argument in §1. The GO carries the two recommended sequencing conditions as binding: **(GO-1)** the … |
-| 2026-08-19-loop-persona-hierarchy-review-panel.md | Accepted | 2026-08-19 | none | ratified by operator (Joshua) 2026-08-19, in-session direct instruction |
 
 ## Cold
 
 | file | status | decision date | supersedes | notes |
 |---|---|---|---|---|
 | 2026-03-01-aegis-session-selection.md | Retired | 2026-03-01 | none | Retired |
+| 2026-04-25-mvd-retrofit.md | Retired | 2026-04-25 | none | Retired |
+| 2026-05-23-relocate-ecr-to-live-journal.md | Retired | 2026-05-23 | none | Retired |
 | 2026-08-03-lifecycle-ladder-intermediate-rung.md | Withdrawn | 2026-08-03 | none | operator reject 2026-08-22. Own §4 admissibility limb fired: W1 honest-clock both-halves returned 0.50× GATE PASS. No rung landed. |
 | 2026-08-05-avenue-a-generate-confirm-route.md | Superseded | 2026-08-05 | none | Superseded |
 | 2026-08-10-implied-sr-plausibility-gate.md | Superseded | 2026-08-10 | none | Superseded |
 | 2026-08-12-msl-implied-sr-disclosure-not-kill.md | Superseded | 2026-08-12 | none | Superseded |
+| 2026-08-19-loop-persona-hierarchy-review-panel.md | Superseded | 2026-08-19 | none | Superseded |
+| 2026-08-21-persona-hierarchy-front-office-only.md | Superseded | 2026-08-21 | none | Superseded |
