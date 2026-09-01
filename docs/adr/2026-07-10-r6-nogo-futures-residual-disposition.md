@@ -186,3 +186,15 @@ ls ops/ | grep -i "bulenox\|crosstrade\|rithmic" && echo "UNEXPECTED: rail artif
 **What does not change:** §2, §4, §5, and the rest of §10 stay byte-unedited (Trap #12). This ADR's R6 = NO-GO decision on the futures-prop fan-out of the locked book is untouched — the later-authorized c1 rail targets the incumbent Tradeify eval under the S1 environment ratification, not a revival of the Bulenox fan-out this ADR closed.
 
 **Disposition source:** `docs/notes/audits/programme-audit/2026-08-31-adr-corpus-audit.md` §6 ("Strike the hook; don't redirect it") — re-verified against the current tree 2026-09-01, not re-derived. RATIFIED 2026-09-01 under the operator-directed ADR-corpus reconciliation sweep (this session).
+
+---
+
+## Addendum 2026-09-01 (cont.) — §0/§10's `core/config/params.toml` citations are stale; the file was deleted upstream of this ADR
+
+**Trigger:** this session's residual-scale-chain cluster review. §0's Rule-0 read row citing `core/config/params.toml` (anchor `784a9ab`) and §10's hook `grep -n "99.83\|0.17\|4.37" core/config/params.toml` both target a file that no longer exists — `docs/adr/2026-08-03-params-toml-gate-retirement.md` Shape 1 `git rm`'d it 2026-08-03 as part of retiring the params.toml governance hub. Re-run verbatim 2026-09-01: the hook now errors `No such file or directory` (a loud failure, not a silent pass) rather than validating anything. That retirement ADR's own Addendum 2026-08-08 ('Rule 11 dormancy record') enumerates five *other* frozen bodies it darkened by the same deletion; this R6 ADR was not among them, so the gap survived until now.
+
+**What changes:** the §10 hook line `grep -n "99.83\|0.17\|4.37" core/config/params.toml` and the corresponding `git log -1 ... core/config/params.toml` line under Verification are **struck** — retired from this ADR's audit-hooks battery, not repaired into a re-pointed hook, for the same reason the crosstrade hook above was struck rather than redirected: the premise they tested (a live params.toml mirror worth cross-checking) was itself retired by a later ADR this one does not control. The §10 line `python scripts/verify_lock_anchors.py   # Expected: ROUTING: Closed` needs no change — re-run 2026-09-01, still prints `ROUTING: Closed`, now via the params.toml-free slimmed script.
+
+**What does not change:** §2, §4, §5, and the rest of §10 stay byte-unedited (Trap #12). This ADR's R6 = NO-GO decision is untouched — no locked constant (`dd_protection.py`, `firm_rules.py`, Pine) was ever touched by this ADR, and that remains independently verifiable without params.toml.
+
+**Disposition source:** this session's residual-scale-chain cluster review, cross-checked against `docs/adr/2026-08-03-params-toml-gate-retirement.md` Addendum 2026-08-08's own dormancy-record convention (same fix shape). RATIFIED status — mechanical fact, no operator judgment call involved.

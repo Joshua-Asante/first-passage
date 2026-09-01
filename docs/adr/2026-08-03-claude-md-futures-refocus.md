@@ -174,9 +174,24 @@ This is direct evidence for the charter's §1 premise: narrative restatements dr
 
 ---
 
+## Addendum 2026-09-01 — §10 audit-hook staleness (diagnostic only, no disposition)
+
+Re-checked 2026-09-01 during the coldstore-pair ADR cluster audit (commands run against the current tree):
+
+1. **Hook #1** (`python scripts/validate_params.py` — "expect: exit 0") — the script no longer exists. A same-day **sibling** ADR, [`2026-08-03-params-toml-gate-retirement.md`](2026-08-03-params-toml-gate-retirement.md) (not this ADR, and does not supersede it), retired the whole `params.toml` hub gate and deleted `scripts/validate_params.py`. Running the hook now fails on "file not found," not the documented "exit 0." That ADR's own §10 names the live replacement: `python scripts/check_pine_manifest.py`.
+2. **Hook #2** (posture-block size, `awk '/^## Live-execution posture/,/^## Architecture/' CLAUDE.md | wc -l` — "expect: <= 25") — now measures 54 lines. Part of the growth is the "Standing decision" pointer table added after this ADR (one row per decision — the compact discipline this ADR itself calls for), not necessarily the narrative regrowth §5 warned against — but the hook's literal threshold no longer holds, and it does not distinguish the two shapes of growth.
+3. **Hook #3a** (`grep -c 'CFD / challenge era CLOSED' CLAUDE.md` — "expect: 1") — now returns 0; the aggregated era-closure line's exact wording has since changed under later posture edits.
+
+Hooks #3b and #4 still pass as documented. Hook #5 (`grep -c '"Guardian"' core/dd_protection.py` expect `>=1` "until the gated ADR lands") now returns 0 — already accounted for by this ADR's own header `Superseded-in-part-by` pointer to Phase C, which executed exactly that retirement.
+
+**Not decided here — operator call:** whether to repair hooks #1–#3a to match current CLAUDE.md phrasing/tooling, mark them historical-only (this ADR's live audit surface has largely been superseded by later ADRs' own hooks), or leave them as a dated record of what this ADR checked at authoring time. No disposition is made in this addendum.
+
+**Falsifier read:** this is audit-hook staleness from normal subsequent doc/tooling evolution, not evidence that this ADR's own §4 H was falsified — no incident is attributed to lost load-bearing content, so §4 remains unfired.
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-08-03 | Initial authoring + same-session execution | Joshua + Claude Code |
 | 2026-08-03 | Addendum 2026-08-03a — scope extended to PIPELINES.md per operator direction; three stale facts corrected | Joshua + Claude Code |
+| 2026-09-01 | Addendum: §10 audit-hook staleness (3 of 5 hooks now fail on normal subsequent doc/tooling evolution); diagnostic only, operator call on repair | Claude Code (ADR-corpus reconciliation sweep) |

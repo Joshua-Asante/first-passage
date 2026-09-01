@@ -239,9 +239,105 @@ recorded above. This addendum takes option (ii) as the status quo pending an ope
 `BASE_RISK`, `core/dd_geometry.py`, `core/mc/*`, Pine, `params.toml`, every test pin, and
 the §4 falsifier text itself.
 
+## Addendum — 2026-09-01 — Limb C dormancy (`scripts/validate_params.py` retired) + second §10 hook repair
+
+Per operational-rules Rule 11 (retirement events back-propagate to standing falsifiers), this
+addendum records that a **third** §4 gate-set member — and a load-bearing piece of the 2026-08-02
+addendum's own "corrected" §10 block — has itself gone dormant, one day after that addendum asserted
+it green. The §4 text is **not edited**; the 2026-08-02 addendum text is **not edited** either
+(append-only) — this section only adds newer facts on top.
+
+**Surfaced by:** the 2026-09-01 cfd-retirement-pair-b file audit.
+
+### Limb C — `scripts/validate_params.py`
+
+Named in the original five-member §4 gate set and re-affirmed GREEN in the 2026-08-02 addendum's
+"Surviving §4 coverage" table. The file was retired **2026-08-03** — one day after that addendum's
+green check — under [`2026-08-03-params-toml-gate-retirement.md`](2026-08-03-params-toml-gate-retirement.md)
+(the `params.toml` hub-validator shape was retired; `scripts/validate_params.py` + its
+fixtures/tests removed). Verified 2026-09-01:
+
+```
+$ python scripts/validate_params.py
+python: can't open file '...\scripts\validate_params.py': [Errno 2] No such file or directory
+```
+
+It cannot go red or green: it does not exist. That retirement ADR's §RESOLVED criteria describe
+`verify_lock_anchors.py` / `check_pine_manifest` / path-liveness / the recall denylist as absorbing
+the retired hub's *other* cross-source comparisons — but this ADR's §4 named `validate_params.py`
+itself as a gate-set member, not a proxy for "whatever the hub covered," so that absorption does not
+automatically re-arm this limb.
+
+### Compounding defect: the 2026-08-02 "corrected" §10 block is now broken the same way it repaired
+
+That block chains:
+```bash
+python scripts/validate_params.py && python scripts/verify_lock_anchors.py && python scripts/check_boundaries.py
+```
+Reproduced 2026-09-01: `validate_params.py` is absent, the shell reports "No such file or directory"
+(exit 2), and by `&&` short-circuit **`verify_lock_anchors.py` and `check_boundaries.py` never run**
+— the identical failure shape hook 4 had before the 2026-08-02 repair (a dead/missing path silently
+disabling the live gates chained after it).
+
+### Surviving §4 coverage, corrected
+
+Of the original five named limbs, only **three now run and were verified green 2026-09-01** (each
+run standalone, not chained):
+
+| Limb | Status 2026-09-01 |
+|---|---|
+| `dd_protection` MVD import self-check | GREEN — `pytest tests/core/test_dd_geometry.py tests/core/test_dd_protection.py` |
+| `scripts/verify_lock_anchors.py` | GREEN — exit 0 (run standalone) |
+| `scripts/check_boundaries.py` | GREEN — exit 0 (run standalone) |
+
+`tests/core/test_mc_anchors.py` (Limb A, dead since 2026-07-24) and `scripts/validate_params.py`
+(Limb C, dead since 2026-08-03) are both gone; the panel-bearing-anchor-reproduction limb (Limb B)
+remains dark per the 2026-08-02 addendum. **Three of the original six revert-trigger inputs now
+survive** (down from four as of 2026-08-02).
+
+The decision this ADR records — that `core/dd_geometry.py` may exist without disturbing the anchor
+path — **remains covered**: the one-way-edge guard and the literal-rebinding guard are the two
+failure modes §4 actually protects against, and both are still exercised by the surviving MVD
+self-check plus `verify_lock_anchors.py`.
+
+### Corrected §10 block (supersedes the 2026-08-02 corrected block for execution purposes; run each command standalone — do not chain with `&&` after a possibly-retired script)
+
+```bash
+# Literals never rebound
+grep -n "^DD_TRIGGER = 0.015\|^DD_SCALE = 0.40" core/dd_protection.py
+
+# One-way edge holds
+grep -n "import dd_geometry" core/dd_protection.py && echo "REVERSE EDGE — FALSIFIED" || echo "clean"
+
+# Registry still empty by design (Phase 1)
+python -c "import sys; sys.path.insert(0,'core'); import dd_geometry; print(sorted(dd_geometry.POLICY_REGISTRY))"
+
+# The two live process gates -- run standalone, NOT chained with && after
+# scripts/validate_params.py (retired 2026-08-03; chaining after a missing
+# script silently skips everything that follows, per this addendum)
+python scripts/verify_lock_anchors.py
+python scripts/check_boundaries.py
+
+# theta*=0.30 never promoted without the caveat
+grep -rn "0\.30" docs/adr/2026-07-13-dd-protection-concept-not-constant.md | grep -vi "provenance\|seed\|failed\|caveat" && echo "CHECK PROMOTION" || echo "clean"
+```
+
+### Open item — operator ratification required (unresolved, same shape as the 2026-08-02 open item)
+
+Whether to formally amend the §4 gate set (dropping `test_mc_anchors.py` and `validate_params.py`,
+and naming explicit successors) is a falsifier amendment and is **not decided here**. Options: (i)
+supersede this ADR with an amended, narrower gate set; (ii) leave §4's text at five named limbs and
+accept the further-narrowed evidence base (now three of six original inputs live) as recorded above.
+This addendum, like its predecessor, takes option (ii) as the status quo pending an operator call.
+
+**NOT changed by this addendum:** `DD_TRIGGER`/`DD_SCALE` literals, the MVD self-check, `BASE_RISK`,
+`core/dd_geometry.py`, `core/mc/*`, Pine, `params.toml` (already gone), every test pin, the §4
+falsifier text itself, and the 2026-08-02 addendum text itself (append-only).
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-07-13 | Initial acceptance + safe-now module landed | Joshua + Claude Code |
 | 2026-08-02 | Addendum: §4 limbs A (`test_mc_anchors.py`, deleted `bd92d8e`) and B (panel-bearing anchor reproduction) flagged DORMANT under substrate Phase 3; four surviving limbs verified green; §10 hooks 3-4 (KeyError / abort-before-run) corrected in-addendum; §5 `ACTIVE_FIRM` clause recorded moot post-Phase-4. No threshold, constant, or §4 gate-set membership change. | Joshua + Claude Code (falsifier reachability census) |
+| 2026-09-01 | Addendum: Limb C (`validate_params.py`) also retired 2026-08-03; the 2026-08-02 addendum's own "corrected" §10 chain silently broken the same way; three of six original revert-trigger inputs now survive; corrected standalone §10 block supplied | Claude Code (ADR-corpus reconciliation sweep) |

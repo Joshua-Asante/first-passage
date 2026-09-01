@@ -168,8 +168,38 @@ grep -n "Extends" docs/adr/2026-06-24-oanda-retirement.md
 
 ---
 
+## Addendum 2026-09-01 -- gold_gate_shadow.py mitigation target deleted (diagnostic only)
+
+§0 and §6 of this ADR name `ops/regime_gate/gold_gate_shadow.py` as the one live consumer of an
+OANDA-sourced cached feed (`core/data/bar_data/XAUUSD.csv`) and record the mitigation that it
+"re-sources from `scripts/parse_bar_export.py --symbol XAUUSD`" going forward. That file (plus its
+README and `ops/data/gold_gate_shadow_log.csv`) no longer exists: the shadow gate itself was
+independently falsified and discontinued 2026-07-01 (gold KER/TSMOM signal inverted out-of-sample
+twice -- Q-REGIME-OOS-1, Q-REGIME-POSTCOVID-1; unrelated to OANDA or this ADR), then formally
+`git rm`'d 2026-07-11 by `docs/adr/2026-07-11-ops-cfd-estate-retirement.md`, which folded the
+OOS-falsification finding into `docs/rejected_candidates.md`. That ADR does not cite or supersede
+this one -- the deletion is incidental to this ADR's subject, not a reversal of the OANDA-retirement
+decision.
+
+This ADR's core decision (OANDA retired entirely; the single-canonical-feed posture, itself later
+partially superseded 2026-08-02 to CME futures -- already correctly flagged via the existing
+`Superseded-in-part-by` field) is unaffected and was re-verified 2026-09-01: no live
+`lib.oanda`/`--panel oanda`/`mc_anchor_oanda` references outside frozen `lab/archive/oanda_stage1/`;
+`verify_lock_anchors.py` still routes Closed; `oandapyV20` is absent from `pyproject.toml`.
+`core/portfolio_mc.py`'s panel set is now `['cme']` rather than the `['pepperstone']` the §10
+audit-hook comment still names as "Expected" -- that shift is the already-documented
+pepperstone-retirement partial supersession, not new drift; only the hook's literal comment text is
+cosmetically stale.
+
+**Operator call (not resolved here):** whether the gold-gate deletion is worth a formal header edge
+at all -- it is a downstream mitigation detail going stale for a reason wholly unrelated to this
+ADR's subject (feed retirement) rather than a partial reversal of the decision, so the case for a
+graph edge is weaker than the paired Dukascopy ADR's feed_loader.py finding. Default: leave as a
+diagnostic addendum only.
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-06-24 | Initial authoring + acceptance (operator executive decision) | Joshua + Claude Code |
+| 2026-09-01 | Addendum: gold_gate_shadow.py mitigation target deleted (diagnostic only, unrelated retirement) | Claude Code (ADR-corpus reconciliation sweep) |
