@@ -180,6 +180,7 @@ documents the camp boundary for humans/tools.
 | volregime_byyear_l4_2026-08-31 | _inbox | ACTIVE | yes | L4 PASS independently on MNQ and MYM; L3 subsequently PASS on both, leaving L5 attribution open. | lab/analysis/_inbox/volregime_byyear_l4_2026-08-31/ | — |
 | volregime_l3_2026-08-31 | _inbox | ACTIVE | yes | L3 PASS independently on MNQ and MYM; the presence battery is complete on both instruments and L5 attribution remains open. | lab/analysis/_inbox/volregime_l3_2026-08-31/ | — |
 | volregime_l5_design_2026-08-31 | _inbox | ACTIVE | yes | L5 attribution design frozen (Packet B, B1-B5 complete): bar-native nested forward-prediction comparison replacing the retired day-level joint-surrogation adaptation; B5 ran 5 Codex review rounds, closed clean; no code executed, no real L5 statistic inspected; Packet C1 pilot GO is the next gate | lab/analysis/_inbox/volregime_l5_design_2026-08-31/ | — |
+| volregime_l5_pilot_2026-08-31 | _inbox | ACTIVE | yes | Packet C1 acceptance bands frozen (replicate counts/seeds, Type-I band, power target, calibration thresholds, bounded-escalation rule) per operator GO; no simulation run, no real L5 statistic inspected; C2-C4 execution and Packet D each need further separate authorization | lab/analysis/_inbox/volregime_l5_pilot_2026-08-31/ | — |
 
 ## Archived
 

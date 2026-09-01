@@ -11,9 +11,12 @@
 > [`volregime_l5_design_2026-08-31/DESIGN.md`](../../../lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md).
 > No real L5 statistic was inspected at any point in drafting or review. **B5
 > (adversarial review) ran five rounds via Codex on PR #241 and closed
-> clean** (9, 8, 12, 9, then 0 findings). Packets C-D were not started —
-> Packet C1 needs its own separate operator GO, distinct from B5's own
-> completion.
+> clean** (9, 8, 12, 9, then 0 findings). **Packet C1 GO received 2026-08-31
+> — acceptance bands frozen** at
+> [`volregime_l5_pilot_2026-08-31/ACCEPTANCE_BANDS.md`](../../../lab/analysis/_inbox/volregime_l5_pilot_2026-08-31/ACCEPTANCE_BANDS.md).
+> No simulation run, no real L5 statistic inspected. C2-C4 (the pilot studies
+> themselves) and Packet D each still need their own further authorization
+> before any code executes against real data.
 >
 > **Queue:** serves STATE queue `#1` (mechanism supply), but queue placement is
 > not a phase GO. It does not block independent queue `#2` (B7-REFIRE/M1).
@@ -271,7 +274,13 @@ before the pilot. Review is not permission to inspect the real L5 statistic.
 **Entry gate:** Packet B design committed and reviewed. **Authorization
 required:** pilot GO. Do not run the observed L5 statistic in this packet.
 
-- [ ] **C1 — Freeze pilot acceptance bands before simulation.**
+**Packet C1 operator GO received 2026-08-31.** This GO authorizes freezing C1's
+own acceptance bands only — it does not authorize running C2/C3/C4 (those each
+still need execution against real data, a further step) or Packet D.
+
+- [x] **C1 — Freeze pilot acceptance bands before simulation.** Done
+  2026-08-31 — [`ACCEPTANCE_BANDS.md`](../../../lab/analysis/_inbox/volregime_l5_pilot_2026-08-31/ACCEPTANCE_BANDS.md).
+  No simulation run; no real L5 statistic inspected.
 
 Declare, before results:
 
