@@ -10,6 +10,10 @@
 owners so queue `#1` can be read without contradiction. Still **not** a Phase B
 GO and **not** an R3 / arming GO.
 
+**Post-plan status 2026-09-01:** historical B1/B2-live statements below are superseded. B2 was
+falsified; operator closed B1 strategy `DROP` and B1 source pursuit `STOP`. Phase B is closed with
+zero Vet candidates.
+
 **Goal:** make the six named surfaces agree about what is settled, residual,
 killed, or still awaiting GO — without inventing any of those statuses.
 
