@@ -5,16 +5,22 @@
 ratified methodology; it changes no gate, threshold, lifecycle state, venue
 binding, or deployment authority.
 
-> **Reconciled 2026-09-01.** The "Recommended deletions and simplifications" table and the two
-> "Proposed lean … phase" step lists below are **absorbed into**
+> **Ratified same-day; reader-intercept added 2026-09-01.** The "Recommended deletions and
+> simplifications" table and the two "Proposed lean … phase" step lists below were **ratified on
+> 2026-08-30 as six Accepted ADRs**, which are the standing owners — implement from them, never
+> from this note's tables:
+> [`candidate-contract`](../adr/2026-08-30-candidate-contract.md) ·
+> [`terminal-taxonomy`](../adr/2026-08-30-terminal-taxonomy.md) ·
+> [`evaluation-order`](../adr/2026-08-30-evaluation-order.md) ·
+> [`tradeable-reachable-gate`](../adr/2026-08-30-tradeable-reachable-gate.md) ·
+> [`operator-approvals-campaign-envelope`](../adr/2026-08-30-operator-approvals-campaign-envelope.md) ·
+> [`channel-liveness-gate`](../adr/2026-08-30-channel-liveness-gate.md). Where an ADR refined a
+> row during ratification review (contract cardinality, probe-tranche accounting, the
+> discriminator truth table's fail+pass branch), the ADR's text governs over the draft below.
+> The three-speed funnel wrapper over these owners is
 > [`docs/superpowers/specs/2026-09-01-three-speed-alpha-research-design.md`](../superpowers/specs/2026-09-01-three-speed-alpha-research-design.md)
-> (v2, `Proposed`), which merges this note's architecture (single append-only candidate
-> contract, pinned-authority delegation, two-axis verdicts, multiplicity mechanics, channel
-> liveness) with the three-speed funnel's speeds, gates, calibration requirement, and adoption
-> plan. That spec's Review block records each resolution. Do not implement from the tables below
-> — they are this note's *input* to the reconciliation, kept unedited for the record. The
-> tensions analysis (§1–§8) and the eight review questions remain live reference, unabsorbed
-> and standing on their own.
+> (`Proposed`). The tensions analysis (§1–§8) and the eight review questions remain live
+> reference, standing on their own.
 
 ## Executive finding
 
