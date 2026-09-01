@@ -45,3 +45,28 @@ methodology ruling.
 This artifact is an Inquire-phase measurement harness. It does not certify the
 conditioners, provide direction, define a tradeable candidate, or authorize
 entry, sizing, or parameter optimization.
+
+## Q-VOLREGIME-1 focused harness (v0.2)
+
+`mnq_mym_volume_regime_diagnostic_v0_2.pine` is the preferred TradingView
+harness for the current volume-regime loop. Unlike the broader v0.1 mechanism
+dashboard, it reproduces the frozen instrument-specific presence definitions:
+
+- MNQ uses 60 strictly-prior same-slot observations and classifies volume with
+  `>=` the median.
+- MYM uses 20 strictly-prior same-slot observations and classifies volume with
+  `>` the median.
+- Both instruments classify range with `>` the median, and score the next bar
+  against the next bar's own same-slot threshold.
+
+Use separate 15-minute `MNQ1!` and `MYM1!` charts. Leave **Instrument
+semantics** on `Auto` only when TradingView's ticker contains `MNQ` or `MYM`;
+otherwise select the instrument explicitly. The table reports the same 2x2
+presence diagnostic used by L1-L4 and provides confirmed-bar alerts suitable
+for prospective observation.
+
+The v0.2 script deliberately does **not** reproduce Packet B's L5 nested
+logistic comparison, null generation, calibration, or verdict. Those require
+the hash-pinned panels and full replicate-level re-estimation outside
+TradingView. The indicator can check feed parity and collect prospective
+examples, but cannot certify attribution or serve as a strategy.
