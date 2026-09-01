@@ -3,7 +3,7 @@
 **Status:** `Accepted` — operator GO 2026-08-03 (keep-set A: retain frozen MYM/MNQ/6J; delete CFD bars + uncertified GBPUSD candidate tree).
 **Decision date:** 2026-08-03
 
-**Supersedes:** `2026-08-02-pepperstone-feed-retirement.md` in part — §2-F only: that KEEP covered *all* of `core/data/bar_data/`; this ADR narrows KEEP to the three CME micros (`6J_M15`, `MNQ_M15`, `MYM_M15`) and **DELETE**-s CFD / CFD-era panels from the checkout and the active `bar_data/SHA256SUMS`.
+**Supersedes:** [`2026-08-02-pepperstone-feed-retirement.md`](2026-08-02-pepperstone-feed-retirement.md) in part — §2-F only: that KEEP covered *all* of `core/data/bar_data/`; this ADR narrows KEEP to the three CME micros (`6J_M15`, `MNQ_M15`, `MYM_M15`) and **DELETE**-s CFD / CFD-era panels from the checkout and the active `bar_data/SHA256SUMS`.
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
