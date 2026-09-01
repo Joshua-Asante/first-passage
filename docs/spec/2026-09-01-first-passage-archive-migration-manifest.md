@@ -23,12 +23,36 @@ operator judgment (genuine ambiguity, not yet resolved either way).
 `_resolve()` (a literal filesystem `.exists()` check that HARD-fails the P1 profile gate if it doesn't
 resolve) or a `discovery_manifests/*.json` path field. The 21-agent pass checked `ops/instruments/*.md`
 inconsistently — it caught this exact pattern correctly in `docs/notes/notice/` and elsewhere, but
-missed it here. **A follow-up sweep of all 51 then-safe `lab/archive/`+`_inbox` items against every
+missed it here. A follow-up sweep of all 51 then-safe `lab/archive/`+`_inbox` items against every
 `ops/instruments/*.md` and `discovery_manifests/*.json` file found 25 with SOME mention — but only
-these 5 hit the actual machine-checked `source:` field**; the other 20 are ordinary prose/markdown-link
-citations in a DEAD-list section, the same "expected historical citation trail" pattern that
-legitimately cleared 26 other `lab/archive/` items. Moved to their respective exclusion sets below.
-`lab/analysis/_inbox/` is now entirely excluded (0 safe of 11).
+these 5 hit the actual machine-checked `source:` field; the other 20 are ordinary prose/markdown-link
+citations in a DEAD-list section. `lab/analysis/_inbox/` is now entirely excluded (0 safe of 11).
+
+**Round-4 correction (fourth review):** Codex found 6 more, all confirmed, and this time an exhaustive
+(not targeted) sweep was run across every remaining SAFE item against every citation pattern found so
+far — because the round-3 "targeted sweep" logic (only re-check items Codex already named) had itself
+just proven insufficient. Result was much larger than the 6 named findings:
+- **`docs/rejected_candidates.md`'s "Authoritative artifact" pattern was checked incompletely by the
+  original 21-agent pass.** An exhaustive full-text scan of every remaining `lab/archive/` SAFE slug
+  against the file found **13** (not the 2 Codex named) whose "Authoritative artifact" or
+  `harness_disposition_ref` citation resolves to a path *inside* `lab/archive/<slug>/` specifically
+  (the body that moves) — distinguished from 2 slugs (`noct_spx`, `oil_carry`) whose citations resolve
+  only to the `CARD.md` stub in `lab/analysis/<slug>/`, which stays put regardless of migration and so
+  remain genuinely safe.
+- **`discovery_manifests/*.json` carries more field names than the round-3 fix checked** (`prereg` was
+  fixed for one file; `reachability_attestation` was already covered) — an exhaustive scan of all 20
+  manifest files against every remaining SAFE doc found 2 more `docs/briefs/pre-registration/` files
+  (the two `Q-TXG-1` cell preregs) cited by the `prereg` field of manifests belonging to *other*,
+  already-excluded campaigns.
+- **ADR `Related:` fields citing `docs/spec/` files**: both OANDA retirement specs (design + plan) and
+  both Dukascopy retirement specs (design + plan) are named directly by their owning, still-Accepted
+  ADRs — 4 files, not the 3 Codex's two examples implied.
+- Plus the 3 git-mechanics bugs in step 5's procedure (wrong branch name, wrong remote name, missing
+  merge-method requirement) — fixed in the spec and **empirically tested end-to-end in disposable local
+  repos** this round (orphan commit → push → fresh clone → `git merge --allow-unrelated-histories` →
+  push), not just reasoned about in prose this time.
+
+Verified total after round 4: **208 items / 400 tracked files.**
 
 **How to use this file:** the SAFE lists below are the current migration scope. Before opening a
 deletion PR for any cluster, re-run a spot-check grep on that cluster's paths — this data is a
@@ -61,39 +85,42 @@ migrated later, treat it as its own judgment call with its own citation sweep, n
 
 ## Partially-safe clusters — explicit SAFE lists
 
-### `lab/archive/` — 46 of 90 safe
+### `lab/archive/` — 33 of 90 safe
 
 `approach_scoreboard_2026-08` · `c1_capalloc_2026-07-27` · `futures_prop_hold_compat_2026-06-30` ·
-`gbpusd_rank_cert` · `identify_nas100_2026-06-20` · `msl_c2_mgc_2026-08` · `msl_c3_m2k_2026-08` ·
-`mym_3fps_recon_2026-07` · `noct_spx` · `nsurv_layer_design_2026-08-20` · `oanda_stage1` ·
-`oil_carry` · `opening_pressure_map_2026-07` ·
-`orbmnq1_survivor_scoring_2026-08-20` · `p2_replay_2026-07` · `pharos_us500_sweepfvg` ·
-`q_bookfit_1_2026-07` · `q_compose_1_2026-07` · `q_condval_1_2026-08` · `q_decay_1_2026-07-10` ·
-`q_evalseq_1_2026-08` · `q_expr_1_2026-08` · `q_fbeia_1_2026-07` · `q_fccarry_1_2026-07` ·
-`q_funnel_1_2026-07` · `q_inventory_1_2026-07` · `q_joint_tail_weekly_2026-07` ·
-`q_nas_4_2026-06-20` · `q_pyrparity_1_2026-07` · `q_znauc_1_2026-07` · `regime_aegis_2026-06-16` ·
-`regime_ratevol_2026-06-16` · `regime_remc_2026-06-22` · `regime_signal_research_2026-06-25` ·
-`slr_mym_phase05_2026-07-29` · `spx500_f09_gate_2026-06-20` ·
+`gbpusd_rank_cert` · `identify_nas100_2026-06-20` · `noct_spx` · `nsurv_layer_design_2026-08-20` ·
+`oanda_stage1` · `oil_carry` · `orbmnq1_survivor_scoring_2026-08-20` · `p2_replay_2026-07` ·
+`pharos_us500_sweepfvg` · `q_bookfit_1_2026-07` · `q_condval_1_2026-08` · `q_decay_1_2026-07-10` ·
+`q_evalseq_1_2026-08` · `q_expr_1_2026-08` · `q_funnel_1_2026-07` · `q_joint_tail_weekly_2026-07` ·
+`q_nas_4_2026-06-20` · `regime_aegis_2026-06-16` · `regime_ratevol_2026-06-16` ·
+`regime_remc_2026-06-22` · `regime_signal_research_2026-06-25` · `spx500_f09_gate_2026-06-20` ·
 `timeframe_5m_2026-06-25` · `tnec_envelope_compile_2026-08` · `todvol_1_2026-08-20` · `tom_spx` ·
-`tradeify_selectflex_remc_2026-07-10` · `usdcad_ratemap_verify_2026-06-15` ·
-`usdcad_rdm` · `usoil_rdm` · `usoil_regime_capture` · `xindex_rv_recon_2026-07`
+`tradeify_selectflex_remc_2026-07-10` · `usdcad_ratemap_verify_2026-06-15` · `usdcad_rdm` ·
+`usoil_regime_capture`
 
-305 tracked files across these 46 slugs (`git ls-files lab/archive/<slug>/` per slug, summed).
+225 tracked files across these 33 slugs (`git ls-files lab/archive/<slug>/` per slug, summed).
 
-Excluded (44): 3 moved from SAFE in the round-3 correction — `orb_zb_recon_2026-07`
-(`ops/instruments/ZB.md:22` `source:` field), `striker_dj30_mym_prototype_2026-07`
-(`ops/instruments/MYM.md:45` + `YM.md:21`), `usdcad_fade_2026-06-26` (`ops/instruments/USDCAD.md:37`)
-— all three resolve to real files today, so `scripts/instrument_profiles.py`'s P1 gate would HARD-fail
-the instant the source directory is deleted. 25 fail on live doc citation
-(`ops/instruments/*.md` prose, `docs/rejected_candidates.md`, or an `ACTIVE`-campaign's own RESULTS.md
-citing them as "named residual, not re-run"), 9 fail on confirmed live code dependency
-(`sys.path`/`importlib`/direct read from an `ACTIVE` sibling or a live script — e.g.
-`q_kbudget_1_2026-07` read by `tests/test_floor_scan_htsmom_pin.py` via `importlib`;
-`rates_ev_zf_recon_2026-07` dynamically imported by `scripts/diff_econ_calendar.py`), 7 flagged
-`NEEDS_OPERATOR_JUDGMENT` (stale/likely-dead references that a skeptical-by-default pass didn't
-self-clear — see journal for `custodian_eurusd`, `external_sourcing_2026-06-30`,
-`feed_divergence_2026-06`, `guardian_decay_gate_2026-06-25`, `q_geofit_1_2026-07`,
-`regime_cond_2026-06-30`, `usdcad_reverse_2026-06-14`).
+Excluded (57): **13 moved from SAFE in the round-4 correction** — `msl_c2_mgc_2026-08`,
+`msl_c3_m2k_2026-08`, `mym_3fps_recon_2026-07`, `opening_pressure_map_2026-07`, `q_compose_1_2026-07`,
+`q_fbeia_1_2026-07`, `q_fccarry_1_2026-07`, `q_inventory_1_2026-07`, `q_pyrparity_1_2026-07`,
+`q_znauc_1_2026-07`, `slr_mym_phase05_2026-07-29`, `usoil_rdm`, `xindex_rv_recon_2026-07` — each has a
+`docs/rejected_candidates.md` "Authoritative artifact" or `harness_disposition_ref` citation resolving
+to a file path *inside* `lab/archive/<slug>/` (verified individually, e.g.
+`lab/archive/msl_c3_m2k_2026-08/RESULTS_g2.md`), which R3 of the retention test protects. `noct_spx`
+and `oil_carry` were checked against the identical pattern and cleared — their citations
+(`harness_disposition_ref="...lab/analysis/noct_spx/CARD.md"`) resolve only to the `CARD.md` stub that
+stays in `lab/analysis/` regardless of migration, not to anything inside the moving body. 3 moved in
+round 3 — `orb_zb_recon_2026-07` (`ops/instruments/ZB.md:22` `source:` field),
+`striker_dj30_mym_prototype_2026-07` (`ops/instruments/MYM.md:45` + `YM.md:21`),
+`usdcad_fade_2026-06-26` (`ops/instruments/USDCAD.md:37`). 25 fail on other live doc citation
+(`ops/instruments/*.md` prose, or an `ACTIVE`-campaign's own RESULTS.md citing them as "named residual,
+not re-run"), 9 fail on confirmed live code dependency (`sys.path`/`importlib`/direct read from an
+`ACTIVE` sibling or a live script — e.g. `q_kbudget_1_2026-07` read by
+`tests/test_floor_scan_htsmom_pin.py` via `importlib`; `rates_ev_zf_recon_2026-07` dynamically imported
+by `scripts/diff_econ_calendar.py`), 7 flagged `NEEDS_OPERATOR_JUDGMENT` (stale/likely-dead references
+that a skeptical-by-default pass didn't self-clear — see journal for `custodian_eurusd`,
+`external_sourcing_2026-06-30`, `feed_divergence_2026-06`, `guardian_decay_gate_2026-06-25`,
+`q_geofit_1_2026-07`, `regime_cond_2026-06-30`, `usdcad_reverse_2026-06-14`).
 
 **Pre-rename paths recovered** (needed for the `filter-repo` extraction per the main spec's step 4):
 the MSL campaigns + `nsurv_layer_design_2026-08-20` + `orbmnq1_survivor_scoring_2026-08-20`
@@ -123,11 +150,10 @@ number); Q-MSCHAN-1 is `NEEDS_OPERATOR_JUDGMENT` — self-declared `DRAFTED — 
 actually closed despite sitting in the "closed" cluster, and a 2026-08-24 Accepted ADR ratified a
 live text-intercept edit into it.
 
-### `docs/briefs/pre-registration/` — 45 of 88 safe
+### `docs/briefs/pre-registration/` — 42 of 88 safe
 
 2026-07-16-striker-mym-reconstruction-candidate-2-prereg, 2026-08-01-drift-exhaustion-mechanism-preregistration,
-2026-08-04-ict-1m-execution-mnq-preregistration, 2026-08-11-guardian-mgc-transfer-cell-prereg,
-2026-08-12-q-txg-1-striker-mnq-cell-prereg, 2026-08-12-q-txg-1-striker-nas100-mym-cell-prereg,
+2026-08-11-guardian-mgc-transfer-cell-prereg,
 2026-08-16-deep-lane-dl1-mgc-orc-prereg, 2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg,
 2026-08-24-grow-0-limb-c-marginal-effect-RESULTS, D5-RECOST-1, MYM-3FPS-1, OPENPRESS-1,
 Q-6JCOMPOSE-1, Q-6JCOMPOSE-2, Q-BOOKFIT-1, Q-BUSTGATE-1, Q-BUSTGATE-2, Q-C1PANEL-1, Q-CALLBOUND-1,
@@ -137,15 +163,20 @@ Q-INVENTORY-1, Q-NSURV-2, Q-OBJCOHERE-1, Q-ORBSURV-1, Q-PUBTRANS-1, Q-PYRPARITY-
 Q-S5CAP-1, Q-SIZECOMP-1, Q-STATVALID-1, Q-TRADECAP-1, Q-TRADECAP-2 (all `-verdict-preregistration.md`
 unless noted; exact suffix per `git ls-files`).
 
-Excluded (43): 24 fail on `CATALOG` `ACTIVE`/`HOLD` (the entire `aegis-6j-prop-reconstruction`
-family, `class-s-c1-lifecycle-haircut-regime-remc`, `c1-band-rescore-corrected-geometry`,
-`Q-TRAINKILL-1/2/3`, and 18 more — see journal), 10 have confirmed live code dependencies (most
-seriously: `prop-survivor-scoring` v2 is the canonical `GATE_PREREG` path embedded in the live
-production module `lab/discovery/prop_survivor_scoring.py`, imported by 20+ scripts; `Q-RAIL-1`'s
-pre-reg backs `ops/c1_rail/c1_sizing_host_reference.py` — the live c1 rail sizing oracle), 2 fail on
-doc citation, 7 need operator judgment. Also excluded per the original spec: the 5 pre-regs for the
-still-OPEN/DORMANT Qs (Q-SIGID-1, Q-FILLTAX-1, Q-VOLREGIME-1, Q-FUNDPOL-1, Q-GATECAL-1) — reconfirmed
-genuinely live, not reclassified.
+Excluded (46): **3 moved in the round-4 correction** — `2026-08-04-ict-1m-execution-mnq-preregistration`
+(named directly in round 3 already), `2026-08-12-q-txg-1-striker-mnq-cell-prereg`, and
+`2026-08-12-q-txg-1-striker-nas100-mym-cell-prereg` — each is stored in the `prereg` field of a
+`discovery_manifests/*.json` file (`ict-1mexec-1.json`, `q_txg1_striker_mnq_20260812.json`,
+`q_txg1_striker_nas100_mym_20260812.json`), which `docs/operational_rules.md` §16 names R1
+pipeline-consumed as a class. 24 fail on `CATALOG` `ACTIVE`/`HOLD` (the entire
+`aegis-6j-prop-reconstruction` family, `class-s-c1-lifecycle-haircut-regime-remc`,
+`c1-band-rescore-corrected-geometry`, `Q-TRAINKILL-1/2/3`, and 18 more — see journal), 10 have
+confirmed live code dependencies (most seriously: `prop-survivor-scoring` v2 is the canonical
+`GATE_PREREG` path embedded in the live production module `lab/discovery/prop_survivor_scoring.py`,
+imported by 20+ scripts; `Q-RAIL-1`'s pre-reg backs `ops/c1_rail/c1_sizing_host_reference.py` — the
+live c1 rail sizing oracle), 2 fail on doc citation, 7 need operator judgment. Also excluded per the
+original spec: the 5 pre-regs for the still-OPEN/DORMANT Qs (Q-SIGID-1, Q-FILLTAX-1, Q-VOLREGIME-1,
+Q-FUNDPOL-1, Q-GATECAL-1) — reconfirmed genuinely live, not reclassified.
 
 ### `docs/notes/audits/` + `docs/notes/research/` — 33 of 66 safe
 
@@ -192,20 +223,23 @@ is a `"parent_plan"` string literal inside `lab/analysis/c1/firm_model_repair_r1
 (`futures-anomaly-discovery-skill-skew-implementation` — owning Notice's Status field literally
 reads `OPEN`).
 
-### `docs/spec/` closed retirement + build specs — 13 of 21 safe
+### `docs/spec/` closed retirement + build specs — 9 of 21 safe
 
 2026-05-23-trade-capture-skill-design, 2026-06-13-codifier-breakout-longshort-trailing-extension,
-2026-06-17-dukascopy-retirement-design, 2026-06-17-dukascopy-retirement-plan,
 2026-06-24-nas100-orb-filters-design, 2026-06-24-nas100-orb-filters-plan,
-2026-06-24-oanda-retirement-design, 2026-06-24-oanda-retirement-plan,
 2026-08-02-tradeify-activity-rule-disposition-spec, 2026-08-06-mnqprox-2-tod-matched-level-proximity-spec,
 CC-HANDOFF-monorepo-boundaries, issue_54_survey_brief, pine_baseline_csv_format.
 
-Excluded (8): 4 fail on live code/doc dependency, including 2 caught only by the code-grep step
-(`session-log-rolloff-design`, `wfo-runner-v0`) that a doc-only pass would have missed —
-reproducing the exact failure mode Codex flagged; `PREREG-NAS-ECR-1` is additionally on an explicit
-operator "do NOT move" keep-list in a prior handoff; 3 more are `NEEDS_OPERATOR_JUDGMENT` for
-bundle-coherence reasons (tightly cross-linked to an unsafe sibling, not independently blocked).
+Excluded (12): **4 moved in the round-4 correction** — `2026-06-17-dukascopy-retirement-design`,
+`2026-06-17-dukascopy-retirement-plan`, `2026-06-24-oanda-retirement-design`,
+`2026-06-24-oanda-retirement-plan` — each is named directly in its owning, still-Accepted ADR's
+`Related:` field (`docs/adr/2026-06-17-dukascopy-retirement.md:11,108`,
+`docs/adr/2026-06-24-oanda-retirement.md:11`) as the design/executed-implementation-plan record. 4
+more fail on live code/doc dependency, including 2 caught only by the code-grep step
+(`session-log-rolloff-design`, `wfo-runner-v0`) that a doc-only pass would have missed;
+`PREREG-NAS-ECR-1` is additionally on an explicit operator "do NOT move" keep-list in a prior
+handoff; 3 more are `NEEDS_OPERATOR_JUDGMENT` for bundle-coherence reasons (tightly cross-linked to
+an unsafe sibling, not independently blocked).
 
 ### `docs/briefs/handoffs/` + `docs/historical/` — 16 of 40 safe
 
@@ -234,11 +268,11 @@ Everything else stays (see the exclusion table above).
 
 ---
 
-## Corrected total: 228 of 650 checked (35%) — 487 tracked files
+## Corrected total: 208 of 650 checked (32%) — 400 tracked files
 
 | Bucket | Items | Files | Notes |
 |---|---:|---:|---|
-| `lab/archive/` | 46 / 90 | 305 | |
+| `lab/archive/` | 33 / 90 | 225 | |
 | `lab/analysis/c1/` | 0 / 59 | 0 | entire cluster excluded |
 | `lab/analysis/legacy/` | 0 / 9 | 0 | entire cluster excluded |
 | `lab/analysis/harvest/` | 0 / 13 campaigns | 0 | entire cluster excluded |
@@ -246,19 +280,19 @@ Everything else stays (see the exclusion table above).
 | `docs/briefs/closures/` | 0 / 84 | 0 | entire cluster excluded |
 | `docs/briefs/*.md` (root) | 60 / 64 | 60 | |
 | `docs/briefs/rnd-pipeline/` | 0 / 30 | 0 | entire cluster excluded |
-| `docs/briefs/pre-registration/` | 45 / 88 | 45 | |
+| `docs/briefs/pre-registration/` | 42 / 88 | 42 | |
 | `docs/briefs/handoffs/` + `docs/historical/` | 16 / 40 | 16 | |
-| `docs/spec/` | 13 / 21 | 13 | |
+| `docs/spec/` | 9 / 21 | 9 | |
 | `docs/notes/audits/` + `research/` | 33 / 66 | 33 | |
 | `docs/notes/notice/` | 1 / 36 | 1 | |
 | `docs/superpowers/plans/` | 14 / 24 | 14 | |
 | `docs/analytics/` + `lessons/` + `methodology/archive/` + `external/` | 0 / 14 | 0 | entire cluster excluded |
 | `docs/governance/notion-redirect-map.md` | 0 / 1 | 0 | cited by 3 live skills |
-| **Total** | **228 / 650** | **487** | |
+| **Total** | **208 / 650** | **400** | |
 
-"Items" and "files" differ only for `lab/archive/` (46 directory-slugs expand to 305 files); every
+"Items" and "files" differ only for `lab/archive/` (33 directory-slugs expand to 225 files); every
 other row is already file-granular (1 item = 1 file). The `Gate` in the main spec is defined against
-the **487-file** total, not the 228-item count — an item count alone can't verify a byte-identical
+the **400-file** total, not the 208-item count — an item count alone can't verify a byte-identical
 deletion.
 
 38 items across the above clusters are `NEEDS_OPERATOR_JUDGMENT` (genuine ambiguity — a stale-looking
@@ -278,3 +312,9 @@ Triggered by Codex's PR #252 review catching two live-dependency misses in the d
 `_inbox` items against `ops/instruments/*.md` `source:` fields and `discovery_manifests/*.json` found
 5 more misses, moved to their exclusion sets; verified directly against the cited files and
 `scripts/instrument_profiles.py`'s `_resolve()` function, not taken on faith.
+**Round-4 correction** (fourth review): an *exhaustive* (not targeted) sweep of every remaining SAFE
+item against `docs/rejected_candidates.md` (full text, not the 2 items Codex named), every
+`discovery_manifests/*.json` field, and every ADR `Related:` field found 19 more misses (13
+`lab/archive/`, 3 `docs/briefs/pre-registration/`, 4 `docs/spec/` — note 1 slug overlaps the round-3
+count). Verified total: **208 items / 400 files**. The git-mechanics fixes in the main spec (step 5)
+were tested end-to-end in disposable local repos this round, not just written as prose.
