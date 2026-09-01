@@ -3,12 +3,10 @@
 **Status:** `Accepted` — operator GO 2026-08-03 (keep-set A: retain frozen MYM/MNQ/6J; delete CFD bars + uncertified GBPUSD candidate tree).
 **Decision date:** 2026-08-03
 
-**Supersedes:** none
+**Supersedes:** [`2026-08-02-pepperstone-feed-retirement.md`](2026-08-02-pepperstone-feed-retirement.md) in part — §2-F: that KEEP covered *all* of `core/data/bar_data/`; this ADR narrows KEEP to the three CME micros (`6J_M15`, `MNQ_M15`, `MYM_M15`) and **DELETE**-s CFD / CFD-era panels from the checkout and the active `bar_data/SHA256SUMS`.
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-
-**Supersedes-in-part:** [`docs/adr/2026-08-02-pepperstone-feed-retirement.md`](2026-08-02-pepperstone-feed-retirement.md) §2-F — that KEEP covered *all* of `core/data/bar_data/`; this ADR narrows KEEP to the three CME micros (`6J_M15`, `MNQ_M15`, `MYM_M15`) and **DELETE**-s CFD / CFD-era panels from the checkout and the active `bar_data/SHA256SUMS`.
 
 **Related:** Pepperstone data tombstone [`docs/ltm/notes/2026-08-02-pepperstone-data-tombstone.md`](../ltm/notes/2026-08-02-pepperstone-data-tombstone.md); this retirement's hash record [`docs/ltm/notes/2026-08-03-bar-data-cfd-candidates-tombstone.md`](../ltm/notes/2026-08-03-bar-data-cfd-candidates-tombstone.md); futures-first charter [`docs/adr/2026-08-03-claude-md-futures-refocus.md`](2026-08-03-claude-md-futures-refocus.md).
 

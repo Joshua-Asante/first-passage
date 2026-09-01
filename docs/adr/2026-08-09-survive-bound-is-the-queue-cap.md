@@ -2,7 +2,7 @@
 
 **Status:** `Accepted` — ratified by operator (JA) 2026-08-09, in-session instruction ("make your best calls on … The Survive bound")
 **Decision date:** 2026-08-09
-**Supersedes:** none
+**Supersedes:** `2026-06-30-state-md-role-reduction.md` in part — the "only 2 headers" §10 hook, re: the STATE.md OPERATOR QUEUE section
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none

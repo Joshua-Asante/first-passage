@@ -1,10 +1,9 @@
 # ADR 2026-07-27 — Agent browser access to TradingView
 
 **Status:** `Accepted`
-**Supersedes:** none
+**Supersedes:** `2026-06-23-tv-backtest-egress-automation.md` in part — the agent-access prohibition only, as applied to page-level browser reads. The layered egress strategy (§2), the allowlist-circumvention bullet, the second-account bullet and the private-Pine bullet are **retained**.
 **Superseded-by:** none
 **Superseded-in-part-by:** none
-**Supersedes-in-part:** `2026-06-23-tv-backtest-egress-automation.md` in part — the agent-access prohibition only, as applied to page-level browser reads. The layered egress strategy (§2), the allowlist-circumvention bullet, the second-account bullet and the private-Pine bullet are **retained**.
 **Retain-until:** none
 **Decision date:** 2026-07-27
 **Authors:** Joshua (operator directive) + Claude Code (Opus 5)
