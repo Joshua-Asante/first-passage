@@ -1,4 +1,4 @@
-# Design — three-speed alpha research: Triage → Generate → Confirm
+# Design — three-speed alpha research: Vet → Generate → Confirm
 
 **Status:** `Proposed` — design specification only; no standing methodology, gate, K rule,
 candidate status, or execution authority changes until a separate ratification decision.
@@ -18,7 +18,7 @@ questions continue to use ordinary INQHIORI without being forced through this fu
 
 Adopt a three-speed research funnel named exactly:
 
-1. **Triage** — establish that the proposal is economically reachable, testable, and capable of
+1. **Vet** — establish that the proposal is economically reachable, testable, and capable of
    changing a named trading decision.
 2. **Generate** — run a bounded, selection-accounted exploration on an exploration panel and freeze
    one exact candidate expression.
@@ -46,7 +46,7 @@ throughput. Two facts motivate a redesign rather than a relaxation:
 - the mechanism-first gate's false-negative rate is explicitly unmeasured (`Q-GATECAL-1`), so the
   programme cannot yet claim that its low candidate supply is an optimal rejection frontier.
 
-The answer is not to weaken Confirm. It is to make Triage cheaper and more economic, make Generate
+The answer is not to weaken Confirm. It is to make Vet cheaper and more economic, make Generate
 productive but selection-honest, and reserve maximum rigor for the few candidates that earn it.
 
 ---
@@ -59,7 +59,7 @@ productive but selection-honest, and reserve maximum rigor for the few candidate
 
 ```text
 PROPOSAL
-  → TRIAGE-PASS
+  → VET-PASS
   → GENERATED
   → CONFIRMED
   → normal lifecycle / composition / deployment governance
@@ -92,7 +92,7 @@ Any change to the following creates a new candidate at `PROPOSAL`:
 
 A mechanical defect repair may resume at the affected speed only when the repair restores the
 already-frozen intended expression and the contaminated result is discarded. A semantic or economic
-change restarts at Triage.
+change restarts at Vet.
 
 ### 2.3 Evidence-isolation invariant
 
@@ -100,13 +100,13 @@ The three speeds use distinct evidence scopes:
 
 | Speed | Permitted evidence | Forbidden evidence |
 |---|---|---|
-| Triage | prior literature, prior closed campaigns, instrument/venue facts, coarse non-outcome arithmetic | ranking fresh candidate P&L, reading the reserved Confirm panel |
+| Vet | prior literature, prior closed campaigns, instrument/venue facts, coarse non-outcome arithmetic | ranking fresh candidate P&L, reading the reserved Confirm panel |
 | Generate | the frozen exploration panel and declared catalogue only | any Confirm observation, aggregate, timestamp-derived score, or post-result catalogue growth |
 | Confirm | the frozen untouched Confirm panel, once | retuning, alternate windows, sibling rescue, threshold movement, second one-shot |
 
 ### 2.4 K and search accounting
 
-- Triage uses `K=0` only while it performs no fresh outcome-bearing comparison. A return, P&L,
+- Vet uses `K=0` only while it performs no fresh outcome-bearing comparison. A return, P&L,
   direction, or predictive-score look opens K before the look.
 - Generate declares `K_intrinsic` as every expression that could be selected from the frozen
   catalogue. Skipped-but-available expressions still count.
@@ -130,19 +130,19 @@ the alpha funnel.
 
 ---
 
-## 3. Speed 1 — Triage
+## 3. Speed 1 — Vet
 
 ### 3.1 Purpose
 
-Triage answers one question:
+Vet answers one question:
 
 > **Is this proposal sufficiently reachable, decision-relevant, and testable to deserve an
 > outcome-bearing Generate campaign?**
 
-Triage is intentionally cheap. It rejects impossibilities and category errors before statistical
+Vet is intentionally cheap. It rejects impossibilities and category errors before statistical
 craftsmanship is spent on them.
 
-### 3.2 Required Triage card
+### 3.2 Required Vet card
 
 One compact artifact records the following fields:
 
@@ -161,9 +161,9 @@ One compact artifact records the following fields:
 | Economic prior | WHO/WHEN/WHY-survives/HOW-dies when known; otherwise explicitly `UNATTRIBUTED` |
 | Prior-art consult | instrument cell, rejected registry, manifests, and adjacent candidates |
 | Search declaration | proposed Generate catalogue, `K_intrinsic`, exploration window, Confirm reserve |
-| Kill conditions | exact Triage failures and re-proposal bar |
+| Kill conditions | exact Vet failures and re-proposal bar |
 
-### 3.3 Triage gates
+### 3.3 Vet gates
 
 All six must clear:
 
@@ -181,25 +181,25 @@ All six must clear:
 6. **Novelty gate** — the candidate is not a relabeled dead cell. A prior kill requires its recorded
    re-proposal bar to be satisfied by new evidence.
 
-Economic attribution is disclosed at Triage but is not an absolute alpha-admission gate in this
+Economic attribution is disclosed at Vet but is not an absolute alpha-admission gate in this
 proposed design. An `UNATTRIBUTED` candidate may pass only when it has a precise decision bridge and
 accepts the stricter Confirm posture in §5.4. This is the design's deliberate relief valve pending
 `Q-GATECAL-1`; it does not amend standing doctrine unless this design is separately ratified.
 
-### 3.4 Triage outputs
+### 3.4 Vet outputs
 
 | Output | Meaning | Next action |
 |---|---|---|
-| `TRIAGE-PASS` | all six gates clear | freeze and commit Generate charter |
+| `VET-PASS` | all six gates clear | freeze and commit Generate charter |
 | `DROP` | a permanent or currently binding impossibility | registry/ledger entry with re-proposal bar |
 | `PARK` | one named missing input could change the answer | wake only when that input exists |
 | `MECHANISM-ONLY` | observation is credible but has no decision bridge | retain finding; no alpha campaign |
-| `VOID` | Triage consumed forbidden outcome evidence | rebuild with a fresh panel or stop |
+| `VOID` | Vet consumed forbidden outcome evidence | rebuild with a fresh panel or stop |
 
 ### 3.5 Effort ceiling
 
-Default Triage effort is **no more than 10% of the candidate's expected total research effort** and
-normally one artifact. If Triage requires a bespoke model, extensive simulation, or multi-round
+Default Vet effort is **no more than 10% of the candidate's expected total research effort** and
+normally one artifact. If Vet requires a bespoke model, extensive simulation, or multi-round
 method-design review, the proposal has not yet shown that it belongs in the alpha funnel.
 
 ---
@@ -219,7 +219,7 @@ Generate is allowed to search. It is not allowed to disguise searching as confir
 
 The charter freezes:
 
-- candidate family and Triage-card hash;
+- candidate family and Vet-card hash;
 - exploration and Confirm windows, non-overlapping and immutable;
 - full expression catalogue with stable IDs;
 - `K_intrinsic` and Confirm budget `M`;
@@ -341,7 +341,7 @@ story.
 | Output | Meaning | Next action |
 |---|---|---|
 | `CONFIRMED` | all frozen gates clear | lifecycle candidate intake; composition/deployment still separate |
-| `FALSIFIED` | a valid gate fails | close exact expression; new expression restarts at Triage |
+| `FALSIFIED` | a valid gate fails | close exact expression; new expression restarts at Vet |
 | `AMBIGUOUS-HOLD` | valid test lands in a predeclared uncertainty state | wake only on named information trigger |
 | `VOID-*` | integrity, power, method, or execution failure prevents scoring | repair instrument; never call market negative |
 | `CONFIRMED-NONDEPLOYABLE` | edge is real but venue/composition cannot use it | retain finding; no risk authorization |
@@ -358,18 +358,18 @@ and native-platform parity belong.
 
 ## 6. Gate handoffs
 
-### 6.1 Triage → Generate handoff packet
+### 6.1 Vet → Generate handoff packet
 
 Minimum contents:
 
-- Triage card;
+- Vet card;
 - exact six-gate verdict table;
 - proposed catalogue and K;
 - frozen exploration/Confirm window proposal;
 - data cost estimate;
 - named operator decision if spend is nonzero.
 
-Generate may not silently repair an incomplete Triage card.
+Generate may not silently repair an incomplete Vet card.
 
 ### 6.2 Generate → Confirm handoff packet
 
@@ -405,15 +405,15 @@ their own standing authority. The three-speed funnel does not collapse those lay
 The three speeds preserve the loop while preventing every observation from receiving maximum-cost
 investigation immediately:
 
-| INQHIORI work | Triage | Generate | Confirm |
+| INQHIORI work | Vet | Generate | Confirm |
 |---|---|---|---|
 | Identify / Notice | source observation and decision context | exploration-only data | frozen candidate + untouched panel |
-| D-S-A | delete impossible expressions; compress to Triage card | freeze/index catalogue | freeze executable packet and audit hooks |
+| D-S-A | delete impossible expressions; compress to Vet card | freeze/index catalogue | freeze executable packet and audit hooks |
 | Question | is this reachable and decision-relevant? | which bounded expression earns Confirm? | does the frozen expression survive? |
 | Hypothesis | economic reachability hypothesis | promotion hypothesis | final executable hypothesis |
 | Investigate | arithmetic and source verification | bounded exploration | one-shot full battery |
 | Observe / Reflect | PASS/DROP/PARK | GENERATED/STOP/VOID | CONFIRMED/FALSIFIED/HOLD/VOID |
-| Iterate | new evidence only | new campaign; fresh K/window | new expression restarts at Triage |
+| Iterate | new evidence only | new campaign; fresh K/window | new expression restarts at Vet |
 
 The canon's bounded-acceleration rule applies at every speed: tooling must be cheaper than the future
 queries it enables. A reusable method may justify more investment than a one-off candidate, but its
@@ -425,7 +425,7 @@ reuse class and expected consumers must be named before construction.
 
 This example is diagnostic and does not change that Q's standing authorization.
 
-### Triage read
+### Vet read
 
 The finding has strong presence evidence: elevated same-slot M15 volume predicts elevated next-bar
 range within both trigger-range strata on MNQ and MYM. Its current role is `conditioner`; it does not
@@ -435,7 +435,7 @@ Under this design it would therefore route:
 
 ```text
 credible observation
-  → Triage Decision gate asks for a precise trade bridge
+  → Vet Decision gate asks for a precise trade bridge
   → absent bridge: MECHANISM-ONLY (retain; no alpha Generate)
 ```
 
@@ -445,7 +445,7 @@ Possible future bridges must be separate proposals, for example:
 - one execution choice whose realized cost changes under the state;
 - one venue-legal volatility expression.
 
-Each bridge starts at Triage with fresh K/window accounting. L5 attribution may still proceed as a
+Each bridge starts at Vet with fresh K/window accounting. L5 attribution may still proceed as a
 methodology investment if it names a reusable consumer class, but it is not represented as the
 fastest path to tradeable alpha merely because L1–L4 are strong.
 
@@ -457,9 +457,9 @@ The funnel is not successful merely because each artifact is internally correct.
 
 | Metric | Purpose |
 |---|---|
-| Proposals entering Triage | observation supply |
-| Triage PASS/DROP/PARK/MECHANISM-ONLY counts | front-door selectivity |
-| Median time and research cost to Triage disposition | cheap-kill performance |
+| Proposals entering Vet | observation supply |
+| Vet PASS/DROP/PARK/MECHANISM-ONLY counts | front-door selectivity |
+| Median time and research cost to Vet disposition | cheap-kill performance |
 | Generate campaigns and catalogue K | search breadth actually paid |
 | Fraction producing `GENERATED` | promotion calibration |
 | Confirm attempts and pass rate | exploration quality |
@@ -482,7 +482,7 @@ This design must not become standing doctrine from prose approval alone.
 
 ### Phase A — historical shadow routing (`K=0`)
 
-Apply Triage retrospectively to a frozen sample of closed candidates without changing their recorded
+Apply Vet retrospectively to a frozen sample of closed candidates without changing their recorded
 verdicts. The sample must include:
 
 - cost-law kills;
@@ -492,7 +492,7 @@ verdicts. The sample must include:
 - at least one later-discovered implementation defect;
 - conditioner-only findings such as Q-VOLREGIME-1.
 
-Measure whether Triage would have:
+Measure whether Vet would have:
 
 - killed known impossibilities earlier;
 - preserved the known survivor;
@@ -524,10 +524,10 @@ amendment follows; no silent extension.
 
 ## 11. Forbidden moves
 
-- **Weakening Confirm to improve throughput.** Throughput is repaired in Triage/Generate; Confirm
+- **Weakening Confirm to improve throughput.** Throughput is repaired in Vet/Generate; Confirm
   remains untouched and one-shot.
-- **Calling Triage PASS evidence of alpha.** It means only that testing is worth its cost.
-- **Running outcome-bearing “Triage arithmetic” at K=0.** Any fresh return/predictive look opens K.
+- **Calling Vet PASS evidence of alpha.** It means only that testing is worth its cost.
+- **Running outcome-bearing “Vet arithmetic” at K=0.** Any fresh return/predictive look opens K.
 - **Treating a mechanism story as a substitute for net expectancy.** WHO/WHY improves a prior; it
   does not pay spread or commission.
 - **Treating net expectancy as proof of attribution.** Predictive evidence and causal attribution
@@ -537,7 +537,7 @@ amendment follows; no silent extension.
 - **Moving a promotion floor after 0 candidates.** Calibrate before the campaign; a dead campaign
   closes.
 - **Rescuing a failed Confirm with a sibling, filter, alternate exit, or new instrument.** Every such
-  expression restarts at Triage.
+  expression restarts at Vet.
 - **Building production Pine or rail code during Generate.** Productionization is earned only after
   Confirm and remains separately governed.
 - **Using low correlation as composition admission.** Risk breadth, variance dominance, and joint
@@ -551,10 +551,10 @@ amendment follows; no silent extension.
 
 ## 12. Open decisions before ratification
 
-1. Which existing artifact format becomes the Triage card owner: a new compact template or a
+1. Which existing artifact format becomes the Vet card owner: a new compact template or a
    shortened Pre-Q subtype?
 2. What frozen historical sample sizes the Phase-A shadow route?
-3. Does `Q-GATECAL-1` execute unchanged or require a successor aligned to this funnel's Triage gate?
+3. Does `Q-GATECAL-1` execute unchanged or require a successor aligned to this funnel's Vet gate?
 4. Which Generate promotion-statistic families receive synthetic calibration first?
 5. What candidate-count and wall-clock budget bind the Phase-D pilot?
 6. Which single index owns funnel state without creating a second candidate registry?
