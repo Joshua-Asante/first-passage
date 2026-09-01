@@ -162,6 +162,8 @@ hook line is left unedited so the audit trail of what was originally asserted st
 staleness in the **frozen** scoring gate's §10 hook 7 is recorded (and deliberately not edited) in
 [`docs/notes/2026-07-24-class-s-scoring-chain-coupling-and-stale-hooks.md`](../notes/2026-07-24-class-s-scoring-chain-coupling-and-stale-hooks.md) §1.
 
+**Hook staleness note (2026-09-01, addendum).** The note above is itself stale: `ACTIVE_FIRM` was not merely repointed to `Tradeify_Select_100K` -- it was **deleted outright** in substrate-retirement Phase 4 (`PR #572`, merged 2026-07-30), per `core/firm_rules.py`'s own provenance docstring ("FXIFY row + `ACTIVE_FIRM` + `BASELINE_BALANCE` **deleted** (Phase 4)") and confirmed absent from the module today (no `ACTIVE_FIRM =` assignment anywhere in the file). §10 hook 3 (`assert firm_rules.ACTIVE_FIRM == 'FXIFY'`) now raises `AttributeError`, not the `AssertionError` the 2026-07-24 note anticipated. The authoritative record of this fact is [`2026-07-14-prop-portfolio-existing-strategy-candidates.md`](2026-07-14-prop-portfolio-existing-strategy-candidates.md)'s own `Superseded-in-part-by` header field, which already states the deletion correctly. The 2026-07-24 note is left unedited per this file's own stated convention (audit trail of what was originally asserted stays legible).
+
 ---
 
 ## Addendum 2026-08-22 — §4's success/revert dichotomy does not cover an exactly-one-tier clear (PROPOSED)
@@ -196,6 +198,8 @@ is unaffected**: it was deferred on its own merits (§4's own evidentiary-floor 
 of F1's disposition), not solely by analogy to F1, and stays `Proposed` pending trigger time as
 written above. Flagged so a future reader does not mistake the stale analogy for a reason to
 reopen this addendum's status.
+
+⚠ **Second superseding note (2026-09-01, live-fire audit pass).** F1 has been revised again since the note above. The 2026-08-23 ruling that note describes was itself reversed by [`Addendum 2026-09-01`](2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-09-01--f1-reversed-a-tradeify-resting-discharge-now-counts-toward-4) to the 2026-08-04 de-scope ADR: a Tradeify-resting discharge now counts toward §4's "≥2 of four" requirement again -- the four-firm set (Bulenox/Tradeify/MFFU/BluSky) is restored, and per that reversal's own text this ADR's §4 H/revert-trigger wording was never edited through any of it. Two statements further down in this addendum are stale as a result: the Forbidden-moves bullet "F1 is a different question... and stays a separate, still-open queue item (STATE.md row 1)" -- F1 is not open; it has now been ruled twice (2026-08-23, reversed 2026-09-01) and STATE.md carries it only as a closed decision-index log line. And Implementation step 2's "alongside the existing F1 queue row" -- no F1 queue row currently exists in STATE.md to sit alongside. Neither correction changes this addendum's own ruling (which is about a partial-clear count, orthogonal to which specific firm clears) or its `Proposed`, deferred-to-trigger-time status; both bullets are left unedited per this same convention.
 
 ### §0 — Rule 0 reads for this addendum (production-source verification, 2026-08-22)
 

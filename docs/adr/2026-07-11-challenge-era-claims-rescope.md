@@ -259,6 +259,49 @@ stands on its stated grounds; only the owed sweep is completed.
 
 ---
 
+## Addendum — 2026-09-01: §2.3 multi-firm-tooling retention clause is stale; no supersession edge records it
+
+**Diagnostic finding, not a disposition.** §2.3 states: "the multi-firm prop
+multiplier tooling (`accounts.py`, `cli.py lots/challenge`,
+`fxify_rule_validator.py`) is **dormant-historical, retained**." As of this
+session, none of that is true of the live tree: `ops/accounts.py` and
+`ops/fxify_rule_validator.py` do not exist, and `ops/cli.py` exposes only the
+`tearsheet` subcommand (confirmed via `git ls-files` and `grep -n
+"add_parser" ops/cli.py` on this worktree, 2026-09-01). `ops/live_journal/`
+is likewise gone.
+
+That retirement happened via two later, ratified decisions: the
+PARK→RETIRE operator override in
+[`2026-07-11-fxify-ops-surface-retirement.md`](2026-07-11-fxify-ops-surface-retirement.md)
+§2 (same day as this ADR — excised `fxify_rule_validator.py` and
+`accounts.py`'s FXIFY path), and
+[`2026-07-22-challenge-era-substrate-retirement.md`](2026-07-22-challenge-era-substrate-retirement.md)
+Phase 2 (merged 2026-07-24, PR #485 — deleted `accounts.py`'s remaining
+general machinery and every `cli.py` subcommand except `tearsheet`).
+
+**The gap:** this ADR's own `**Superseded-in-part-by:**` field names only
+three clauses superseded by the 2026-07-22 ADR — "Pepperstone-anchor,
+FXIFY-fixture, and challenge-diagnostic retention clauses" — none of which is
+the §2.3 multi-firm-tooling-retention clause quoted above, and no field on
+this ADR names 2026-07-11-fxify-ops-surface-retirement.md at all. The drift
+is real and has stood unrecorded since at least 2026-07-24; it was not caught
+by `check_adr_graph.py` because that gate only validates edges that are
+*declared* — an undeclared partial supersession is invisible to it by
+construction, the same blind spot this session's persona-hierarchy
+investigation found elsewhere in the corpus.
+
+**Operator call, not made here:** whether to add a formal
+`**Superseded-in-part-by:**` line (naming
+`2026-07-11-fxify-ops-surface-retirement.md`, `2026-07-22-challenge-era-substrate-retirement.md`,
+or both, for this specific clause) is left to the operator. This addendum
+records the diagnostic fact only.
+
+No `§2`/`§4` edit; no `core/` or `ops/` change. Every other clause this ADR's
+`Superseded-in-part-by` field already names (Pepperstone-anchor, FXIFY-fixture,
+challenge-diagnostic) remains accurately scoped as written.
+
+---
+
 ## Change history
 
 | Date | Change | By |
@@ -267,3 +310,4 @@ stands on its stated grounds; only the owed sweep is completed.
 | 2026-07-15 | Addendum: §4 D1 completion falsifier discharged — Q-SFRISK-1 RESOLVED, admitting ADR drafted (`Proposed`). No §2/§4 edit; no core/ change. | Joshua + Claude Code |
 | 2026-07-15 | Audit §5.4 DONE — gate-denominated closure annotation sweep (6 closures + rejection-registry standfast). No §2/§4 edit; no core/ change. | Cursor Cloud Agent |
 | 2026-07-22 | Addendum: §D2 resolved by **retirement** — Pepperstone panel released from successor-diagnostic duty; quarterly C2→C0 revert check retired (challenge-denominated criterion, closed venue). `DD_TRIGGER`/`DD_SCALE` untouched; change-control falls back to the concept-not-constant pre-reg → re-MC → both-halves gate → ADR chain. Satisfies substrate-retirement §4 condition 3. | Joshua (decision) + Claude Code (recording) |
+| 2026-09-01 | Addendum: diagnostic-only — §2.3's multi-firm-tooling retention clause (`accounts.py`/`cli.py lots,challenge`/`fxify_rule_validator.py`) is stale and unrecorded by this ADR's `Superseded-in-part-by` field; disposition left to the operator. No §2/§4 edit. | Claude Code (cfd-retirement-pair-a cluster audit) |

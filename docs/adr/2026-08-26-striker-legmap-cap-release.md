@@ -3,9 +3,7 @@
 **Status:** `Accepted` — operator ruling 2026-08-26 (chat directive, verbatim: *"I want to zero out
 Striker's 69+11 share and free that headroom for a new leg"*)
 **Decision date:** 2026-08-26
-**Supersedes:** [`2026-08-08-edge-cohort-correction-and-necessity-retarget.md`](2026-08-08-edge-cohort-correction-and-necessity-retarget.md)
-in part — its §L4 row's "Named ruling owed before any deployment: `LEG_MAP`'s 69/11 allocation is
-retained-not-released under S1" clause only; the rest of L4 (book-shape admission) stands.
+**Supersedes:** `2026-08-08-edge-cohort-correction-and-necessity-retarget.md` in part — its §L4 row's "Named ruling owed before any deployment: `LEG_MAP`'s 69/11 allocation is retained-not-released under S1" clause only; the rest of L4 (book-shape admission) stands.
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none

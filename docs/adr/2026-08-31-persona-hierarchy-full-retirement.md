@@ -6,12 +6,12 @@ have changed my mind on the personas, I want them deleted completely"); scope co
 convention over a silent hard delete; companion PR #235 closed unmerged rather than landed first).
 **Decision date:** 2026-08-31
 **Authors:** Joshua + Claude Code
-**Supersedes:** `2026-08-19-loop-persona-hierarchy-review-panel.md` in full;
-`2026-08-21-persona-hierarchy-front-office-only.md` in full. Both ADRs' underlying decisions —
-that a review-panel mechanism should exist, and that it should be narrowed to Front Office — are
-fully reversed by this ADR, not merely extended. Their text is left as-is (historical record of
-what was ratified and when); this ADR is the current-state pointer per this repo's own
-Trap-#12/change-history discipline.
+**Supersedes:** `2026-08-19-loop-persona-hierarchy-review-panel.md` full
+**Supersedes:** `2026-08-21-persona-hierarchy-front-office-only.md` full
+Both ADRs' underlying decisions — that a review-panel mechanism should exist, and that it should be
+narrowed to Front Office — are fully reversed by this ADR, not merely extended. Their text is left
+as-is (historical record of what was ratified and when); this ADR is the current-state pointer per
+this repo's own Trap-#12/change-history discipline.
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
@@ -275,3 +275,12 @@ grep -l "Superseded-by.*2026-08-31-persona-hierarchy-full-retirement" \
 # Full gate suite
 python scripts/gate_manifest.py --tier check
 ```
+
+---
+
+## Change history
+
+| Date | Change | By |
+|---|---|---|
+| 2026-08-31 | Initial authoring + acceptance (operator: "I have changed my mind on the personas, I want them deleted completely") | Joshua + Claude Code |
+| 2026-09-01 | `Supersedes` header field split into one parseable edge per line, scope word normalized "in full" → "full" — the original single-line multi-target form was invisible to `check_adr_graph.py` (FIELD_RE takes only the first filename per field line; scope vocabulary is `full`/`in part` — the exact §8 parser limitation the 2026-08-31 corpus audit flagged), so A2 never saw either edge and neither prior ADR could pass `retire_adr.py`'s supersede precondition. No semantic change: same two targets, same full scope the ratified prose above already declares. §2 item 6's marking executed the same day via `scripts/retire_adr.py` on both prior ADRs (stubs + `docs/ltm/adr/` bodies). | Claude Code (ADR-corpus reconciliation sweep) |
