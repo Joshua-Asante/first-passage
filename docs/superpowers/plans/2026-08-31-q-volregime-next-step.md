@@ -5,12 +5,15 @@
 > packet at a time and stop at every named gate.
 >
 > **Status:** Packet A COMPLETE (both instruments PASS frozen L3, PR #240,
-> merged). **Packet B B1–B4 drafted 2026-08-31** — the day-level
+> merged). **Packet B COMPLETE 2026-08-31 (B1–B5 all done)** — the day-level
 > joint-surrogation adaptation is retired for this construct; replaced with a
 > bar-native nested forward-prediction design at
 > [`volregime_l5_design_2026-08-31/DESIGN.md`](../../../lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md).
-> No real L5 statistic was inspected before drafting. **B5 (adversarial
-> review) not yet run.** Packets C-D were not started.
+> No real L5 statistic was inspected at any point in drafting or review. **B5
+> (adversarial review) ran five rounds via Codex on PR #241 and closed
+> clean** (9, 8, 12, 9, then 0 findings). Packets C-D were not started —
+> Packet C1 needs its own separate operator GO, distinct from B5's own
+> completion.
 >
 > **Queue:** serves STATE queue `#1` (mechanism supply), but queue placement is
 > not a phase GO. It does not block independent queue `#2` (B7-REFIRE/M1).
@@ -239,10 +242,10 @@ The design must separately report the distinct-WHO check after adding prior-day
 range state. Whether the lift survives that addition types attribution but does
 not silently change the frozen verdict criterion.
 
-- [ ] **B5 — Adversarial design review before pilot execution.** Design's own
-  §6 pre-answers all six questions below (self-review, not a substitute).
-  Routed through this design's own PR review (Codex) rather than an
-  in-session panel — operator decision, 2026-08-31; not yet run —
+- [x] **B5 — Adversarial design review before pilot execution.** Done
+  2026-08-31 — routed through this design's own PR review (Codex) rather
+  than an in-session panel, per operator decision. Ran five rounds (9, 8,
+  12, 9, then 0 findings); the fifth returned clean —
   [`DESIGN.md`](../../../lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md)
   §6–§7.
 

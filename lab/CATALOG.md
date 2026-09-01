@@ -179,7 +179,7 @@ documents the camp boundary for humans/tools.
 | rangexfer_presence_battery_2026-08-30 | _inbox | FALSIFIED | yes | MIXED — 4/5 hypotheses AMBIGUOUS-DESIGN, H-RANGEXFER-1.a-MYM FALSIFIED (presence L2 fails). | lab/analysis/_inbox/rangexfer_presence_battery_2026-08-30/ | — |
 | volregime_byyear_l4_2026-08-31 | _inbox | ACTIVE | yes | L4 PASS independently on MNQ and MYM; L3 subsequently PASS on both, leaving L5 attribution open. | lab/analysis/_inbox/volregime_byyear_l4_2026-08-31/ | — |
 | volregime_l3_2026-08-31 | _inbox | ACTIVE | yes | L3 PASS independently on MNQ and MYM; the presence battery is complete on both instruments and L5 attribution remains open. | lab/analysis/_inbox/volregime_l3_2026-08-31/ | — |
-| volregime_l5_design_2026-08-31 | _inbox | ACTIVE | yes | L5 attribution design drafted (Packet B, B1-B4): bar-native nested forward-prediction comparison replacing the retired day-level joint-surrogation adaptation; no code executed, no real L5 statistic inspected; B5 adversarial review pending | lab/analysis/_inbox/volregime_l5_design_2026-08-31/ | — |
+| volregime_l5_design_2026-08-31 | _inbox | ACTIVE | yes | L5 attribution design frozen (Packet B, B1-B5 complete): bar-native nested forward-prediction comparison replacing the retired day-level joint-surrogation adaptation; B5 ran 5 Codex review rounds, closed clean; no code executed, no real L5 statistic inspected; Packet C1 pilot GO is the next gate | lab/analysis/_inbox/volregime_l5_design_2026-08-31/ | — |
 
 ## Archived
 

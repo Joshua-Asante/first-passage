@@ -1,11 +1,12 @@
 # Q-VOLREGIME-1 — L5 attribution design (Packet B)
 
-**Status:** `DESIGN-DRAFT` — no code has been written or executed against this design. No real
-L5 statistic, on either instrument, has been inspected before or during authoring. This document
-freezes B2–B4 of
-[`docs/superpowers/plans/2026-08-31-q-volregime-next-step.md`](../../../../docs/superpowers/plans/2026-08-31-q-volregime-next-step.md)
-and pre-answers B5's six required review questions; it is submitted for adversarial review (B5)
-before any pilot code is written.
+**Status:** `DESIGN-FROZEN` — B5's adversarial review is complete (updated 2026-08-31; see §6's
+review-status entries: five Codex review rounds on PR #241, the fifth returning no findings). No
+code has been written or executed against this design. No real L5 statistic, on either instrument,
+has been inspected before or during authoring or review. This document freezes B2–B5 of
+[`docs/superpowers/plans/2026-08-31-q-volregime-next-step.md`](../../../../docs/superpowers/plans/2026-08-31-q-volregime-next-step.md).
+The next gate is Packet C1's own pilot GO — a separate operator decision, not implied by this
+status (see §7).
 
 **Entry gate satisfied:** both MNQ and MYM independently passed Packet A (L3 chronological-halves,
 PASS/PASS — [`volregime_l3_2026-08-31/RESULTS.md`](../volregime_l3_2026-08-31/RESULTS.md)). Both
@@ -788,15 +789,41 @@ P1 rather than P0 is not a signal to treat it as isolated — Findings 1, 7, and
 of one design gap, and fixing them separately would have left the seams between the fixes exactly
 where the next review would have found them.
 
+**Review status, round 5 (2026-08-31) — clean. B5 is complete.** A fifth Codex review, triggered
+explicitly after the round-4 push (`74693d7`), returned **no findings** — no inline comments, and
+the review's own completion state matches Codex's documented "reacts with 👍 once all reviews
+finish with no findings" convention for a clean pass. Four consecutive rounds each surfaced real,
+independently-verified defects (9, 8, 12, and 9 findings respectively — 3 P0 total, concentrated in
+rounds 2 and 3); round 4's fix (one global, causally-consistent replicate construction, resolving
+three separately-numbered findings that traced to the same gap) held up under this fifth pass with
+nothing further surfaced. That is the convergence signal this process was watching for, not merely
+the absence of a sixth round: **B5's adversarial design review is satisfied as of this entry.** No
+pilot code has been written or executed under any version of this design, and no real L5 statistic
+has been inspected at any point across all five rounds.
+
 ---
 
 ## 7. Next step
 
-B5's adversarial design review is routed through this PR's own Codex review pass rather than an
-in-session panel — operator decision, 2026-08-31. §6's pre-answers stand as the design's own
-opening position for that review, not a substitute for it. Any load-bearing finding is addressed
-by a dated amendment to this file (§8) before Packet C1 begins; a finding that changes §3–§5's
-frozen choices is not applied silently.
+**B5 complete (2026-08-31).** B5's adversarial design review was routed through this PR's own Codex
+review pass rather than an in-session panel — operator decision, 2026-08-31 — and ran five rounds
+(§6's own review-status entries), the fifth returning no findings after four rounds of real,
+addressed defects. §6's pre-answers stood as the design's own opening position for that review, not
+a substitute for it; the actual review is what closed it out.
+
+**Next gate: Packet C1 — pilot validation of the machinery, not the hypothesis.** This design
+document does not authorize Packet C1 by itself; per the plan doc's own gate table, Packet C needs
+its own separate operator GO, distinct from this design being frozen. Packet C1 must not run the
+observed L5 statistic — its job is to freeze pilot acceptance bands, then run the null-size study
+(C2), the planted-effect power study (C3), and the absolute model-adequacy checks (C4) this design
+specifies, including §4.6's own mandatory adequacy-diagnostic gate. Only if Packet C passes does
+Packet D (one-shot real execution) become reachable, and Packet D needs its own separate GO plus a
+K declaration on top of that.
+
+Any load-bearing finding discovered during Packet C1 itself still returns here as a dated amendment
+to this file (§8) before proceeding further; freezing B5 closes the design-review gate, it does not
+retroactively immunize §3–§5's choices from correction if the pilot's own empirical checks
+disagree with them.
 
 ---
 
