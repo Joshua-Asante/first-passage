@@ -146,6 +146,8 @@ Lead line: `STATE queue: #1 … · #2 … · #3 …` (titles + owner links). Def
 
 Owner plan: [`docs/superpowers/plans/2026-08-23-w5-ci-from-gates-yml-implementation.md`](../superpowers/plans/2026-08-23-w5-ci-from-gates-yml-implementation.md). Coherence leftover C-P5-04 / H6 discharged.
 
+**Stale forward-pointers (2026-08-31 ADR-corpus audit, confirmed 2026-09-01):** the front-matter `**Layer:**` line and §2's "Explicitly owed" list and §6's Gate line all predate this addendum and still read "CI re-enable ... owed" / "separately owed" — for the CI-re-enable item specifically, that phrase is **discharged by this addendum**, not still open. Live confirmation: `.github/workflows/gate-manifest.yml:45` runs `python scripts/gate_manifest.py --tier check`. The `check_brief.py` collapse named in the same §2 bullet is unaffected by this note — `scripts/check_brief.py` and `~/.claude/skills/brief-authoring/scripts/check_brief.py` remain two separate tools and stay genuinely owed.
+
 ## Addendum 2026-08-29 — same-day SESSIONS label collisions are designed, not a defect (bounded)
 
 **Does not amend §2's class table or any prior addendum, and does not close, supersede, or resolve
