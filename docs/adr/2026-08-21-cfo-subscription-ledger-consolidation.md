@@ -9,10 +9,10 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-**Related:** [persona hierarchy narrowing](2026-08-21-persona-hierarchy-front-office-only.md) (`Accepted`
-— the ADR that kept the CFO seat live specifically because spend-disposition judgment doesn't reduce
-to a mechanical gate the way retired seats did; this ADR is that seat exercising exactly that
-judgment) · [ceremony tiering](2026-08-08-adr-ceremony-tiering.md) (limb 4 fires — see §0) ·
+**Related:** [persona hierarchy narrowing](2026-08-21-persona-hierarchy-front-office-only.md) (`Superseded`
+2026-08-31 — was `Accepted` at this ADR's authoring: the ADR that kept the CFO seat live specifically
+because spend-disposition judgment doesn't reduce to a mechanical gate the way retired seats did; this
+ADR was that seat exercising exactly that judgment, before the 2026-08-31 full persona retirement) · [ceremony tiering](2026-08-08-adr-ceremony-tiering.md) (limb 4 fires — see §0) ·
 `docs/personas/cfo-log.md` 2026-08-21 entries (the C-1 closure that surfaced this gap, and this
 decision's own source recommendations; file deleted in the 2026-08-31 persona-hierarchy full
 retirement — see [`docs/adr/2026-08-31-persona-hierarchy-full-retirement.md`](2026-08-31-persona-hierarchy-full-retirement.md))

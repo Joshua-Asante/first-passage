@@ -2,7 +2,8 @@
 
 **Status:** `Accepted` — **operator STRATEGIC-LoR ratification recorded 2026-07-11 (Joshua): FXIFY is retired whether or not Tradeify is locked — see the §2 disposition override.** **Executed 2026-07-11** on branch `claude/fxify-ops-retirement-90703d` (`git rm` of validator/TV-MT5/zero-fills + `accounts.py`/`cli.py` FXIFY-path excision). Retiring ops machinery coupled to the account model is a subsystem-tier Delete (three-loop binding ADR reserves it to STRATEGIC-LoR).
 **Superseded-by:** none
-**Superseded-in-part-by:** `2026-07-22-challenge-era-substrate-retirement.md` - accounts.py/cli.py KEEP row only (Phase 2, merged 2026-07-24, PR #485); `2026-07-11-ops-cfd-estate-retirement.md` - dxtrade_pdf_to_csv.py PARK row only.
+**Superseded-in-part-by:** `2026-07-22-challenge-era-substrate-retirement.md` - accounts.py/cli.py KEEP row only (Phase 2, merged 2026-07-24, PR #485)
+**Superseded-in-part-by:** `2026-07-11-ops-cfd-estate-retirement.md` - dxtrade_pdf_to_csv.py PARK row only.
 **Retain-until:** none
 **Decision date:** 2026-07-11
 **Authors:** Joshua (decision) + claude.ai advisor (drafting) + Claude Code (execution)

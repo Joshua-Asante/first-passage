@@ -1,8 +1,13 @@
 """BAR EXPORT v0.1/v0.2 producer — TradingView/Pepperstone broker-feed bars.
 
-Canonical producer of ``core/data/bar_data/<SYMBOL>_M15.csv`` (the schema consumed by
-``validation.sweep.feed_loader.load_bar_feed``). Replaces the retired Dukascopy adapter
-(``docs/adr/2026-06-17-dukascopy-retirement.md``).
+Canonical producer of ``core/data/bar_data/<SYMBOL>_M15.csv`` from raw TradingView
+List-of-Trades exports. ``validation.sweep.feed_loader``, formerly the downstream
+schema-contract owner, was retired 2026-07-11 (``docs/adr/2026-07-11-gen1-pipeline-retirement.md``).
+Current callers of ``parse_bar_export`` include ``lab/research_utils/beta_cohesion.py``,
+which invokes it only when its input CSV is still a raw, undecoded ``Signal``-column
+export -- a CSV that already has a ``close`` column (i.e. an already-produced
+``bar_data/*.csv``) is read directly, with no producer call. Replaces the retired
+Dukascopy adapter (``docs/adr/2026-06-17-dukascopy-retirement.md``).
 
 Mechanism (BAR EXPORT v0.1): a Pine strategy places one reversal order per confirmed M15
 bar, encoding the bar's OHLCV in the order Signal field as
@@ -18,8 +23,9 @@ canonical CSV output are unchanged; the metadata is surfaced via ``decode_bar_me
 ``parse_bar_export_with_meta`` and persisted to a ``<SYMBOL>_M15.meta.json`` sidecar by
 ``write_bar_meta``. The appended fields are shape-validated (drift detector extends to them).
 
-Output schema is ``feed_loader.REQUIRED_COLUMNS``-compliant by construction: columns
-``time,open,high,low,close,volume`` with ``time`` ISO-8601 UTC ``Z``, float OHLC, int volume.
+Output schema: columns ``time,open,high,low,close,volume`` with ``time`` ISO-8601 UTC ``Z``,
+float OHLC, int volume -- the schema every direct ``bar_data/*.csv`` reader expects; there
+is no longer a separate schema-contract module to point at.
 """
 from __future__ import annotations
 

@@ -390,3 +390,19 @@ Reads: de-scope addendum “any qualifying strategy” @ `acc4f41` · M1 addendu
 | 2026-07-28 | Addendum: the declared separable long pole **measured and CLEARS** — corrected 0.50× bootstrap-95th **1.20%** vs the 3.0% ceiling (pass-5th 95.5%); every partition of the deployed rung now measured + passing; same pass found corrected 1.00× boot-95th 17.79% | Claude Code (Opus 5) — adjudication of PR #541 |
 | 2026-08-21 | Addendum: §7 B6 **PENDING** cell is the 2026-07 build-order snapshot; this-build B6 status is the header PASSED record | Joshua (H3 GO) + Cursor |
 | 2026-08-24 | Addendum: test strategy is a qualifying strategy for M1 item 5 / B7 Stage 1; dated 08-24; Stage 2 / arm unchanged | Joshua (ruling) + Cursor |
+| 2026-09-01 | Addendum: reader-intercept -- Addendum 2026-07-22's 69/11 cap-alloc split was released to 0/0 by a later ADR (2026-08-26); this addendum was never updated to reflect it | Claude Code (ADR-corpus reconciliation sweep) |
+
+---
+
+## Addendum 2026-09-01 -- Reader-intercept: Addendum 2026-07-22's 69/11 cap-alloc split has been RELEASED to 0/0
+
+**Does not amend §2 Decision, §4 Falsifier, or §5 Forbidden moves.** The Addendum 2026-07-22 "Fix (operator-approved)" section above describes a static MYM 69 / MNQ 11 account-aggregate cap allocation as the live sizing-host state. That allocation was **released to 0/0** by operator ruling 2026-08-26 ([`2026-08-26-striker-legmap-cap-release.md`](2026-08-26-striker-legmap-cap-release.md)) -- `LEG_MAP["dj30_mym"]["cap_alloc"]` and `LEG_MAP["nas100_mnq"]["cap_alloc"]` in `ops/c1_rail/c1_sizing_host_reference.py` now read `0`, freeing the full 80-micro account cap for a future leg's own allocation. Grounds (from that ADR, verified this session): both Striker legs have sent zero signals since the 2026-08-04 withdrawal, the rail stays disarmed, and the sizing host's existing fail-safe halts a zeroed leg to `qty_out=0` rather than falling back to the pre-2026-07-22 permissive per-leg cap (the 1.91x over-cap defect this addendum's split was built to prevent does not return).
+
+Recorded here per Rule 14 (corrections land where the error is read, `docs/operational_rules.md`) -- a reader landing on the 2026-07-22 addendum without independently finding the 2026-08-26 ADR would believe 69/11 is still the live split. The 2026-07-22 addendum's engineering reasoning (account-aggregate cap math, the defect it fixed, the 68+11=79≤80 arithmetic) remains an accurate historical record of 2026-07-22→2026-08-26 behavior and stays byte-unedited (Trap #12); only its "this is live today" reading is corrected. No candidate is admitted, sized, or authorized by this addendum -- the freed headroom is a separate future admission decision under the third-leg target spec's own screens, per the release ADR's own §Boundary.
+
+**Verification:**
+```bash
+grep -n '"cap_alloc": 0' ops/c1_rail/c1_sizing_host_reference.py
+grep -n "RELEASED 2026-08-26" ops/c1_rail/c1_sizing_host_reference.py
+grep -n "Status" docs/adr/2026-08-26-striker-legmap-cap-release.md | head -1
+```

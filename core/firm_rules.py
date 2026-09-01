@@ -333,7 +333,7 @@ FIRM_RULES = {
     #   2026-07-30-tradeify-native-fade-program-design.md section 3.2a) --
     #   every bust figure below remains a LOWER BOUND against the real venue.
     #   See the ADR section 6 for why that fix is scoped separately.
-    #   2026-08-07 W1 (Proposed): intraday-honest re-measure of the four
+    #   2026-08-07 W1 (Accepted 2026-08-22): intraday-honest re-measure of the four
     #   decisions of record is AUTHORIZED at $0 — do not invent new bust %
     #   here; see docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md.
     "Tradeify_Select_25K": {

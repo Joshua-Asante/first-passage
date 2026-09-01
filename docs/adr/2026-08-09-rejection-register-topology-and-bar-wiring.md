@@ -3,7 +3,7 @@
 **Status:** `Accepted` — ratified by operator (JA) 2026-08-09, in-session direct instruction ("make your best calls on The SNAG register…"); D2 channel (c), explicit owner adjudication
 **Decision date:** 2026-08-09
 **Authors:** Joshua (direction) + Claude Code (measurement + draft)
-**Supersedes:** none
+**Supersedes:** `2026-06-14-rejected-candidate-patterns.md` in part - registry topology only.
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none

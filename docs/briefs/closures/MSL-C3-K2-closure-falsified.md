@@ -3,10 +3,10 @@
 **Verdict:** `FALSIFIED` — Axis A and Axis B each fail both fade arms (session-block 95% CI entirely below 0); promotion → STOP
 **Closed:** 2026-08-13
 **Lane:** MSL · card MSL-C3-K2 revive · mechanisms `pdh-pdl-failed-break-reclaim` + `overnight-range-failed-extension-fade` × **M2K** · `K_intrinsic=2`
-**Pre-registration:** [`PREREG_G0.md`](../../../lab/analysis/c1/msl_c3_m2k_2026-08/PREREG_G0.md) (FROZEN 2026-08-13) · explore GO paid 2026-08-13 (gitignored `EXPLORE_GO.md`) · [ADR](../../adr/2026-08-13-msl-c3-k2-dual-axis-revive.md)
+**Pre-registration:** [`PREREG_G0.md`](../../../lab/archive/msl_c3_m2k_2026-08/PREREG_G0.md) (FROZEN 2026-08-13) · explore GO paid 2026-08-13 (gitignored `EXPLORE_GO.md`) · [ADR](../../adr/2026-08-13-msl-c3-k2-dual-axis-revive.md)
 **Spend / K:** $0.00 · `K_intrinsic=2` disclosure · Cap **not claimed** · DSR floor 0.850 disclosure
 **Live effect:** none — CONFIRM reserved **unread**; no Pine / TV / arming
-**Artifacts:** [`RESULTS_g2.md`](../../../lab/analysis/c1/msl_c3_m2k_2026-08/RESULTS_g2.md) · [`RESULTS.json`](../../../lab/analysis/c1/msl_c3_m2k_2026-08/RESULTS.json)
+**Artifacts:** [`RESULTS_g2.md`](../../../lab/archive/msl_c3_m2k_2026-08/RESULTS_g2.md) · [`RESULTS.json`](../../../lab/archive/msl_c3_m2k_2026-08/RESULTS.json)
 **Panel:** `core/data/bar_data/M2K_M15.csv` sha256 `8192257081f7f4796910a554caa395088c32e5e79146cdd1ddc8d2b04b912349` (TV BAR EXPORT `…_14faf`; span → 2026-07-02 UTC; IS cut 2025-08-31)
 
 ---

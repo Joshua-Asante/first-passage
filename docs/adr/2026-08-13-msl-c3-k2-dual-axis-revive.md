@@ -8,7 +8,7 @@
 **Retain-until:** none
 **Tier:** light
 **Authors:** Joshua (election: fresh Stage-1 licensing `K_intrinsic=2`, both stories as scored axes) + Cursor (recorder)
-**Related:** [C3 OPERATOR-KILL](../briefs/closures/MSL-C3-closure-operator-kill.md) · [`STAGE1_K2`](../../lab/analysis/c1/msl_c3_m2k_2026-08/STAGE1_K2.md) · [STAGE0](../../lab/analysis/c1/msl_c3_m2k_2026-08/STAGE0.md) · [K-bank ADR](2026-08-04-family-k-bank-disclosure-not-gate.md) · [second slate](../briefs/programs/2026-08-13-msl-second-slate.md) · [program plan](../briefs/programs/2026-08-12-msl-program-plan.md)
+**Related:** [C3 OPERATOR-KILL](../briefs/closures/MSL-C3-closure-operator-kill.md) · [`STAGE1_K2`](../../lab/archive/msl_c3_m2k_2026-08/STAGE1_K2.md) · [STAGE0](../../lab/archive/msl_c3_m2k_2026-08/STAGE0.md) · [K-bank ADR](2026-08-04-family-k-bank-disclosure-not-gate.md) · [second slate](../briefs/programs/2026-08-13-msl-second-slate.md) · [program plan](../briefs/programs/2026-08-12-msl-program-plan.md)
 **Layer:** MSL card-local Stage-1 election only. **$0 / K spent = 0** (disclosure of intended `K_intrinsic=2` at next G0). No arming, no Pine, no panel pull, no `core/`, no estate-wide gate change.
 
 ## Decision
@@ -21,7 +21,7 @@ Operator 2026-08-13: elect fresh Stage-1 at `K_intrinsic=2` with both stories sc
 
 ## Reads
 
-[C3 STAGE1](../../lab/analysis/c1/msl_c3_m2k_2026-08/STAGE1.md) @ HEAD · [C3 closure](../briefs/closures/MSL-C3-closure-operator-kill.md) · [rejected_candidates C3](../rejected_candidates.md) · [C1 MYM FALSIFIED](../briefs/closures/MSL-C1-closure-falsified.md) (adjacency) · [axis_screen `floor_at_k`](../../lab/research_utils/axis_screen.py) → `[0.65, 0.85, 0.98, 1.06]` · [STAGE0](../../lab/analysis/c1/msl_c3_m2k_2026-08/STAGE0.md) · [`PREREG_G0`](../../lab/analysis/c1/msl_c3_m2k_2026-08/PREREG_G0.md) explore FALSIFIED · [closure](../briefs/closures/MSL-C3-K2-closure-falsified.md) · [SESSIONS](../SESSIONS.md).
+[C3 STAGE1](../../lab/archive/msl_c3_m2k_2026-08/STAGE1.md) @ HEAD · [C3 closure](../briefs/closures/MSL-C3-closure-operator-kill.md) · [rejected_candidates C3](../rejected_candidates.md) · [C1 MYM FALSIFIED](../briefs/closures/MSL-C1-closure-falsified.md) (adjacency) · [axis_screen `floor_at_k`](../../lab/research_utils/axis_screen.py) → `[0.65, 0.85, 0.98, 1.06]` · [STAGE0](../../lab/archive/msl_c3_m2k_2026-08/STAGE0.md) · [`PREREG_G0`](../../lab/archive/msl_c3_m2k_2026-08/PREREG_G0.md) explore FALSIFIED · [closure](../briefs/closures/MSL-C3-K2-closure-falsified.md) · [SESSIONS](../SESSIONS.md).
 
 ## Gate
 
