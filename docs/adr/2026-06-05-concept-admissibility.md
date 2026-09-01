@@ -10,7 +10,7 @@ an economic-mechanism requirement before any data is mined, and dedup against `d
 Its enforcement is now **discipline, not code** — the dedup attestation must be **executed** and its output
 pasted (see that registry's own corrected §Queryable index, 2026-08-08).
 **Superseded-by:** none
-**Superseded-in-part-by:** [`2026-07-11-gen1-pipeline-retirement.md`](2026-07-11-gen1-pipeline-retirement.md) (machinery only — the doctrine survives per the Machinery-status line above)
+**Superseded-in-part-by:** `2026-07-11-gen1-pipeline-retirement.md` - machinery only, the doctrine survives per the Machinery-status line above.
 **Retain-until:** none
 **Decision date:** 2026-06-05
 **Authors:** Joshua + claude.ai (advisor)

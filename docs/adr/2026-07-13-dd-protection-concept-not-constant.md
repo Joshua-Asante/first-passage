@@ -357,10 +357,14 @@ remains genuinely open and is **not** resolved by this narrowing).
 
 **Effective statement of §4's revert trigger from this date forward:** Reject (FALSIFIED) if
 `core/dd_geometry.py`'s presence makes ANY of {the `dd_protection` MVD import self-check,
-`verify_lock_anchors.py`, `check_boundaries.py`} go red, OR the anchor stops reproducing
-99.83/0.17/4.37 byte-identically on a panel-bearing checkout → then revert the module and re-design;
+`verify_lock_anchors.py`, `check_boundaries.py`} go red → then revert the module and re-design;
 never repair by weakening a gate. Accept (holds) if this narrower gate set stays green with the
-module present.
+module present. **The anchor-reproduction limb (99.83/0.17/4.37 byte-identical reproduction) is
+dropped, not retained as an unevaluable fourth condition** — it stays dark on a checkout without
+the retired Pepperstone panel registration (per the 2026-08-02 addendum above), and a narrowing
+whose own trigger text still names a limb that can't be evaluated isn't actually the three-limb
+gate it claims to be. It re-enters this trigger only if a panel-bearing checkout becomes available
+again — that is a fresh re-arm question, not something this ruling decides.
 
 **What does not change:** the original §4 text above stays byte-unedited as the historical record
 (Rule 14/Trap #12) — this addendum is the operative amendment, not a rewrite. `DD_TRIGGER`/`DD_SCALE`
