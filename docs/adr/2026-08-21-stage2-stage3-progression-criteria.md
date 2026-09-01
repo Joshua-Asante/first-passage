@@ -177,3 +177,15 @@ git log -1 -- docs/adr/2026-08-06-candidate-call1-action-on-breach.md
 |---|---|---|
 | 2026-08-21 | Initial authoring (mobile advisory session, `Proposed` in the working draft, no live repo access) | Joshua + claude.ai advisor |
 | 2026-08-21 | Landed and `Accepted` in one motion per direct operator instruction ("log this in the error log for real, and accept the ADR"): Rule-0 re-verified live, error log created + seeded, downstream sweep run, drafting-note artifacts resolved and removed | Joshua + Claude Code |
+
+---
+
+## Addendum 2026-09-01 — Phase 1 logging is dormant
+
+**Diagnostic fact, re-verified via this ADR's own §10 hook:** `docs/notes/autonomy_staging/error_log.md` has received exactly **one** commit in its entire history — `451f56f`, 2026-08-22, the commit that seeded rows 1–3. Zero rows have been logged since. Ten days on, `wc -l` on the file is unchanged (18 lines) and `tail -n 10` still shows only the three 2026-08-21 seed rows and the original "Consecutive-clean streak: 0" tally.
+
+In that same window the autonomous CC/Cursor lane this ADR governs kept producing PR merges across both the `cursor/*` and `claude/*` branch families. §4's falsifiable hypothesis depends on a running consecutive-clean-session count that only the log can supply; with the log static, that count cannot advance in either direction, and §6's Phase 1 → 2 gate cannot be evaluated from current data. §5 already forbids "skipping the log entry for a clean session" — as written, that forbidden move is what appears to be happening across effectively every session since seeding.
+
+**This addendum states the fact only.** Per the audit that surfaced it (`docs/notes/audits/programme-audit/2026-08-31-adr-corpus-audit.md` §6), the disposition — re-arm the logging discipline, narrow the log's scope, or withdraw the Phase-1 measurement gate — is an operator ruling not made here. `demote_writer.py` stays dormant and the forbidden-surface list stays frozen regardless of which way this ruling goes (§3, §5).
+
+**Operator ruling:** _pending — re-arm / narrow / withdraw (fill in when ratified)._

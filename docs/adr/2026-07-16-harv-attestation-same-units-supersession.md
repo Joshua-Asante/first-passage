@@ -1,16 +1,11 @@
 # ADR 2026-07-16 — HARV §R attestation: same-units, per-gate, panel-basis reachability (supersession after two firings)
 
-**Status:** Accepted (operator, 2026-07-16 — same-day as drafting; the two campaign closures
+**Status:** `Accepted` — operator, 2026-07-16 (same-day as drafting; the two campaign closures it cites were already final)
 **Decision date:** 2026-07-16
-**Supersedes:** none
+**Supersedes:** `2026-07-13-harv-discovery-lane-ratification.md` in part — the §2 attestation *specification* only. The mechanism-first lane itself, the HARD gate (attestation blocks `register_search open`), and the register wiring all STAND.
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-it cites were already final)
-**Date:** 2026-07-16
-**Supersedes (in part):** [`2026-07-13-harv-discovery-lane-ratification.md`](2026-07-13-harv-discovery-lane-ratification.md)
-— the §2 attestation *specification* only. The mechanism-first lane itself, the HARD gate
-(attestation blocks `register_search open`), and the register wiring all STAND.
 **Trigger:** the parent ADR's own §4 falsifier **FIRED** on the H-OD-1 closure (2026-07-16),
 with the same defect retro-diagnosed in the D5 closure (2026-07-16) — per its §Revert action
 ("superseding ADR citing the dated campaign closure; do not edit §2 in place").
