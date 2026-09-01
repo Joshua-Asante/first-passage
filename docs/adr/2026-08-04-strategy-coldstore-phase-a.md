@@ -227,3 +227,26 @@ Operator GO recorded 2026-08-23. This ADR remains Phase A only. Authority:
 - Phase C living-key retirement: [`2026-08-23-strategy-coldstore-phase-c.md`](2026-08-23-strategy-coldstore-phase-c.md)
 
 Design spec body still unrestored. Approach 2 (already elected here) used. Approach 3 not invented.
+
+## Addendum 2026-09-01 — §10 audit-hook staleness (diagnostic only, no disposition)
+
+Re-checked 2026-09-01 during the coldstore-pair ADR cluster audit:
+
+1. **Hooks #3/#4** (literal `"Guardian"` / `"Striker"` text in `core/dd_protection.py`) — both now return 0 / False, not the documented "≥1 until Phase C" / "present." Phase C ([`2026-08-23-strategy-coldstore-phase-c.md`](2026-08-23-strategy-coldstore-phase-c.md), already recorded in this ADR's own `Superseded-in-part-by` field) refactored `dd_protection.BASE_RISK` to be **derived** at import time from `core/firm_rules.py::_BASE_RISK` / `historical_challenge.HISTORICAL_CHALLENGE_BASE_RISK` via `base_risk_display()`, rather than holding `"Guardian"`/`"Striker"` as literal dict-key strings inside `dd_protection.py`'s own source. The Guardian-removal half is already covered by the header pointer to Phase C. The **Striker literal-string relocation** is new information not previously recorded anywhere: Striker / Striker NAS100 remain live sizing keys in substance — now surfaced via `core/firm_rules.py::_BASE_RISK_DISPLAY_KEYS`, still consumed unchanged by `ops/c1_rail/c1_sizing_host_reference.py::LEG_MAP` (verified) — but the specific mechanism this ADR's hooks checked (literal text in `dd_protection.py`) no longer exists.
+2. **Hook #2 / T4** (no hot `.pine` under the six watched family dirs, incl. `candidates/`) — now finds **2** hot files: `core/strategies/candidates/expiry_oi_strike_convergence_mgc_v0_1.pine` and `core/strategies/candidates/orb_mnq_recon_v3.pine`. These are new candidate-research files created after Phase A completed — not un-migrated leftovers of the frozen inventory this ADR archived. T4 as literally worded ("Any `.pine` under `core/strategies/{...,candidates}/` (non-`_archive`) after Phase A merge claims complete") does not distinguish "the original frozen-inventory files were left behind" from "new candidate research pine was authored later in an acknowledged-active directory" — read literally, ordinary ongoing research in `candidates/` now perpetually reads as T4-triggering.
+
+**Ruling (direct operator instruction, 2026-09-01): hooks #3/#4 are marked historical-only.** They
+are not repaired to check the derived-source location (`firm_rules._BASE_RISK` / `LEG_MAP`) and are
+not expected to pass on a future run — the literal `dd_protection.py`-text check they perform was
+made obsolete by Phase C's refactor, and the Guardian-removal half is already covered by this ADR's
+own `Superseded-in-part-by` pointer to Phase C. §10 above stays byte-unedited (Rule 14); this ruling
+is the disposition for #3/#4.
+
+**Not resolved by this ruling — still an open operator call:** (b) whether T4's hot-pine scope should
+be narrowed to the original frozen-inventory filenames, or `candidates/` excluded from the T4 watch
+as an acknowledged-active directory, versus left exactly as worded. Unlike #3/#4 (a stale check on a
+retired mechanism), T4 is a live falsifier reading real, current state (2 hot pine files present
+today) — marking it "historical" would misrepresent an active scope-definition gap as settled. This
+stays open.
+
+**Falsifier read:** T4 as literally worded currently reads as fired (2 hot pine files present), but the underlying H (frozen-inventory files stay migrated; sizing/lifecycle/`LEG_MAP` untouched) is not falsified — verified above that neither `BASE_RISK` semantics nor `LEG_MAP` moved outside their governing ADRs. This is a scope-definition gap in T4's wording, not evidence of incomplete Phase A delivery. Flagged for the operator to resolve (tighten T4's wording, or accept `candidates/` as inherently live) rather than adjudicated here.

@@ -53,3 +53,26 @@ The operator's executive decision removes that per-case argument: **one canonica
 2. Re-running a failed TV-based verdict on a bar feed to shop for a pass.
 3. Deleting the staging tooling as "dead under policy" — it is demoted, not dead; the M-9 manifest gate still applies to its pinned artifacts.
 4. Extending this ADR to the firm-onboarding feed-equivalence question — that stays governed by the LOCKED spec.
+
+---
+
+## Addendum 2026-09-01 — bar_data/ panel count stale (three -> six CME micros)
+
+This session's ADR-corpus sweep checked the 2026-08-08 addendum's claim that `core/data/bar_data/`
+is "RETAINED but FROZEN (three CME micros, producer pipeline dead)" against current production
+state. That count is stale.
+
+**Current state, verified 2026-09-01** (`core/data/bar_data/SHA256SUMS` + `README.md`, read in
+full): six CME micro panels are tracked -- `6J_M15`, `MNQ_M15`, `MYM_M15` (the original three,
+frozen since the Pepperstone producer died 2026-08-02) plus `MCL_M15`, `M2K_M15`, `MGC_M15` (landed
+2026-08-12/2026-08-13 via explicit operator-supplied CME BAR EXPORT `--in`, per
+`docs/adr/2026-08-03-bar-data-cfd-and-candidates-retirement.md` and the directory README) -- not
+simply "frozen since the pipeline died." The automated Pepperstone-fed producer
+(`scripts/parse_bar_export.py`'s default path) is still dead; the three newer panels arrived through
+a separate, still-live manual-supply path, not a revived pipeline.
+
+This does not touch this ADR's load-bearing clause -- TV CSV exports remain canonical for analysis,
+and the canonical feed family (CME futures TV exports; Pepperstone/OANDA retired) is unchanged. Only
+the `bar_data/` parenthetical count in the 2026-08-08 addendum is corrected here. Not rewritten in
+place per Rule 14; this addendum stands alongside it. No operator disposition is needed here -- this
+is a factual count correction, not a decision.
