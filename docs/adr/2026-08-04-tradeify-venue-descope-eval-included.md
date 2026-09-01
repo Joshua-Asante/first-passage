@@ -1,6 +1,6 @@
 # ADR 2026-08-04 — The Tradeify venue is de-scoped as a program target, **evaluation included**
 
-**Status:** `Accepted` — operator ruling recorded 2026-08-04 in session, against an options card that named every consequence listed in §6 below; the ruling was made with those consequences in front of it. **§6 downstream sweep COMPLETE 2026-08-04 at its six enumerated sites only** (§7 Phase 3 / §6 Downstream list): 08-02 ADR withdrawn to LTM · CLAUDE.md posture + suspended research interest · STATE.md queue reset, forward board, decision index · `ops/instruments/{MYM,MNQ}.md` status + dated dispositions · INDEX regenerated · SESSIONS entry. ⚠ **Bound reading (Addendum 2026-08-06 / claim-alignment M8):** `COMPLETE` certifies those six sites — **not** a repo-wide live-target sweep. Wider-pass residue named in that addendum. **AMENDED 2026-08-04, operator-ratified (Addendum 2026-08-04): §2 clause 3 is narrowed to work whose sole justification is redeploying the locked Striker book at this venue — Tradeify-shaped base-construct *research* is not barred.** The de-scope itself (both phases, both legs, both forks F2/F3, the §4 falsifier) is unchanged. **Addendum 2026-08-22 (`Proposed` — pending operator ratification): pre-commits an evidence canon + mandatory disclosure rule for how fork F1 gets adjudicated *when it triggers* (first qualifying clearance, or 2026-11-08). Does not rule F1, does not pre-empt §4 — see the dated addendum below.** **Addendum 2026-08-23 (`Accepted`): rules fork F1 — a Tradeify-resting discharge does not satisfy §4; see the dated addendum below.**
+**Status:** `Accepted` — operator ruling recorded 2026-08-04 in session, against an options card that named every consequence listed in §6 below; the ruling was made with those consequences in front of it. **§6 downstream sweep COMPLETE 2026-08-04 at its six enumerated sites only** (§7 Phase 3 / §6 Downstream list): 08-02 ADR withdrawn to LTM · CLAUDE.md posture + suspended research interest · STATE.md queue reset, forward board, decision index · `ops/instruments/{MYM,MNQ}.md` status + dated dispositions · INDEX regenerated · SESSIONS entry. ⚠ **Bound reading (Addendum 2026-08-06 / claim-alignment M8):** `COMPLETE` certifies those six sites — **not** a repo-wide live-target sweep. Wider-pass residue named in that addendum. **AMENDED 2026-08-04, operator-ratified (Addendum 2026-08-04): §2 clause 3 is narrowed to work whose sole justification is redeploying the locked Striker book at this venue — Tradeify-shaped base-construct *research* is not barred.** The de-scope itself (both phases, both legs, both forks F2/F3, the §4 falsifier) is unchanged. **Addendum 2026-08-22 (`Proposed` — pending operator ratification): pre-commits an evidence canon + mandatory disclosure rule for how fork F1 gets adjudicated *when it triggers* (first qualifying clearance, or 2026-11-08). Does not rule F1, does not pre-empt §4 — see the dated addendum below.** **Addendum 2026-08-23 (`Accepted`): rules fork F1 — a Tradeify-resting discharge does not satisfy §4; see the dated addendum below.** **Addendum 2026-09-01 (`Accepted`): reverses Addendum 2026-08-23 — a Tradeify-resting discharge now counts toward §4's "≥2 of four" requirement; see the dated addendum below.**
 **Decision date:** 2026-08-04
 **Supersedes:** `2026-07-17-c1-rail-build-account-registration-go.md` in part — the **deployment limb only**: Tradeify ceases to be a deployment target for the locked Striker book, evaluation included, and both legs are withdrawn from the c1 eval deployment. That ADR's rail build, account registration, attended-only posture, $700 spend ceiling and arm gate are **untouched and stand**; the rail is retained and disarmed pending fork F2.
 **Supersedes:** `2026-07-23-c1-rung-selection-ev-objective.md` in part — the **live-rung / deployment-premise limb only**: every "live c1 rung stays WATCH-1 0.50× / disarmed" sentence becomes historical; carrying 0.50× to a different venue geometry is not authorized by that ADR. Its EV objective and both-halves gate for rungs *above* 0.50× **stand**.
@@ -507,10 +507,115 @@ ruling record; a reader reaching the fork table should follow the pointer in the
 ("item leaves the queue or closes → delete the STATE row"); a decision-index line is added pointing
 here.
 
+## Addendum 2026-09-01 — F1 reversed: a Tradeify-resting discharge now counts toward §4
+
+**Status of this addendum: `Accepted` — direct operator ruling, recorded 2026-09-01** (chat
+directive, scoped via `AskUserQuestion`: full reversal of Addendum 2026-08-23, on operator-election
+grounds — not a venue-fact finding under the pending evidence-canon's point 2). This addendum
+reverses fork **F1**'s prior ruling (Addendum 2026-08-23, same file).
+
+**Reads for this ruling (verified 2026-09-01):**
+
+| Source | Anchor | Supplies |
+|---|---|---|
+| This ADR, Addendum 2026-08-23 | `afa0d56` 2026-08-23 (file's HEAD — no commit has touched this file since) | The ruling being reversed, quoted below |
+| This ADR, Addendum 2026-08-22 (evidence canon, still `Proposed`) | same | Canon point 2's bar on citing the de-scope alone — not the route this reversal uses; canon stays `Proposed`, unratified, unused by either ruling |
+| [`2026-07-12-prop-portfolio-four-friendly-firms.md`](2026-07-12-prop-portfolio-four-friendly-firms.md) §4 | `53e35eb` 2026-08-26 | H / revert-trigger text — **unedited** by this reversal |
+| [`lab/discovery/prop_survivor_scoring.py`](../../lab/discovery/prop_survivor_scoring.py) `discharges_falsifier` | `53e35eb` 2026-08-26 | Confirms the exclusion was never encoded in the scoring function itself — simulation only, no venue-count flag. The Tradeify exclusion lived entirely at this ADR's governance-reading layer, so reversing it needs no code change. |
+| [`2026-07-22-prop-portfolio-s4-discharge-withdrawal.md`](2026-07-22-prop-portfolio-s4-discharge-withdrawal.md) | `0723587` 2026-08-22 | Historical measured state cited by the 08-23 ruling ("zero Part A clearers") — see the disclosure below for what has and hasn't changed since |
+| [`Aegis-6J1 × ORB-MNQ-1 combined-book RESULTS`](../../lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/RESULTS.md) | `719a73e` 2026-08-26 (full campaign incl. self-superseding follow-ups §9–§11) | Disclosed below per the transparency norm the pending evidence-canon's point 3 established (canon itself stays unratified; its disclosure discipline is followed on its merits regardless). The file's own later sections revise its initial headline — read in full, not by headline alone. |
+
+**The ruling.** Addendum 2026-08-23 held that "a discharge of the four-firms §4 falsifier that
+rests on a clearance at the `Tradeify_Select_100K` tier ... **does not count** toward §4's "≥2 of
+the four `FRIENDLY` firm tiers" requirement." **That ruling is reversed.** A pre-registered
+candidate clearing Part A at the `Tradeify_Select_100K` tier now counts toward §4's "≥2 of four"
+requirement on the same footing as Bulenox, MyFundedFutures, and BluSky.
+
+**Practical effect.** For §4 purposes, the four-firm set is restored in full: **Bulenox, Tradeify,
+MyFundedFutures, BluSky**. A pre-registered candidate must clear Part A on **≥2 of those four** for
+H to fire — reverting the "functions as a three-firm set" reading back to the four-firms ADR's
+original, unedited text.
+
+**Grounds.** A direct, freestanding operator election — the same basis the 08-23 ruling itself used
+("made on the operator's stated confidence," not a venue-fact finding). This reversal does not
+proceed through the pending evidence-canon's point-2 data-validity bar (§0 above); nothing about
+Tradeify's own rules changed. Per that canon's own falsifier clause (itself unratified, but the same
+logic applies here by the 08-23 ruling's own precedent): a ruling that doesn't use a pending canon is
+not a failure of the canon — it's evidence the canon doesn't govern this kind of reversal, not that
+the reversal is improperly grounded.
+
+**Disclosure (mandatory, mirroring the transparency norm the 08-22 evidence-canon's point 3
+established — that canon stays `Proposed`/unratified; its disclosure practice is followed on its
+merits regardless).** As of this addendum, no pre-registered candidate has been formally scored as
+clearing Part A (bust **and** pass-rate) at any of the four frozen $100K tiers — the "zero Part A
+clearers" state the 08-23 ruling cited is unchanged on the *formal* scoreboard. On the *exploratory*
+side, the closest attempt already failed on its own record: an unregistered, non-pre-registered
+combined-book sweep
+([`Aegis-6J1 × ORB-MNQ-1 RESULTS`](../../lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/RESULTS.md),
+`719a73e` 2026-08-26) initially reported a 1.51%/0.01% (3yr/1yr) bust rate against
+`Tradeify_Select_100K`'s ceiling — but that headline is itself superseded **within the same
+campaign** (dated follow-ups 2026-08-26b/c/d, same file, same day as the Part A bust ceiling's
+3.0%→5.0% reopen): a required both-halves regime-robustness bootstrap found the 1yr cell's pooled
+0.01% masked a **4.02%** second-half bust, and once a tail-consistent sizing ratio and an
+intraday-honest (not end-of-day-only) remeasure were compounded onto the 3yr cell, its second half
+failed outright — **h1 3.29% clears, h2 5.37% breaches even the raised 5.0% ceiling** (exact
+phrasing per the governing [v2 pre-registration](../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md)
+§8: "does not clear even the raised 5.0% ceiling (h2 5.37% > 5.0%)") — failing the required
+both-halves gate, which needs both halves to clear, not just one. Per that file's own top banner: **"No tested combined-book
+configuration in this entire campaign, on either window, survives a full both-halves + tail-sizing +
+intraday-honesty gate."** **This addendum does not treat it as a clearance** — there is none to
+treat, formal or exploratory — **and does not admit, license, or pre-judge it or any other
+candidate.** It is named here so a future reader does not mistake this reversal for a response to
+any result, live or dead: the fullest current account is that the closest attempt failed.
+
+**What this does NOT do:**
+
+- **Does not itself discharge or admit any candidate under §4.** Pre-registration, full Part A
+  scoring (bust *and* pass-rate), and G8 admission remain owed per standing process — this addendum
+  changes what counts, not what has counted.
+- **Does not touch the 08-04 de-scope decision itself** (§2 clauses 1–2, byte-unchanged). Tradeify
+  is still not a deployment target for the two withdrawn Striker legs; this reversal is scoped to
+  the §4 counting question only, exactly as the ruling it reverses was scoped.
+- **Does not rule on, ratify, or ratify-by-implication either pending `Proposed` addendum** — this
+  ADR's own evidence canon (2026-08-22) or the four-firms ADR's `PARTIAL`-disposition addendum
+  (2026-08-22). Both stay `Proposed`, pending their own separate operator ratification.
+- **Does not widen or narrow anything about the other three firms**, and does not reopen any
+  question this ADR's §5 forbids.
+
+**Downstream consequence on the 08-23 addendum's own text (noted, not edited — Known Trap #12).**
+The 08-23 addendum's "Interaction with the pending `PARTIAL`-disposition addendum" paragraph
+reasoned that "a Tradeify-only clearance reads as **zero** real tiers for §4 purposes, not one."
+Under this reversal, a Tradeify-only clearance now reads as **one** real tier — if the four-firms
+ADR's `PARTIAL` addendum is later ratified, its exactly-one-tier-clear carve-out **would** apply to
+a Tradeify-only clearance. The 08-23 text is left as-filed per this file's own convention (old text
+stays legible); this paragraph is the correction pointer a future reader needs.
+
+**Forbidden moves (this addendum only, additive to §5):**
+
+- **Reading this reversal as itself a §4 discharge**, or as validating the Aegis-6J1 × ORB-MNQ-1
+  sweep or any other candidate. Both still need pre-registration and full Part A scoring.
+- **Reading this as a finding that the 08-23 ruling was wrong.** It was a valid ruling on its own
+  stated grounds. This is a new election superseding it, not a correction — the same "adopt anyway,
+  on stated grounds, prior finding preserved as dissent" shape the 08-26 bust-ceiling reopen used
+  (`regime_robustness_gate.md` 2026-05-08 postscript-override precedent).
+- **Citing this reversal to also loosen §4's frozen ceiling, tiers, pass-rate floor, or 2026-11-08
+  hard date.** None of those move here — only the Tradeify-counting question.
+- **Treating the exploratory sweep's bust number as a pass-rate or as a Part A clearance.** Disclosed
+  for transparency only (see above); it is one criterion of two, unscored on the second, and
+  unregistered.
+
+**STATE.md.** A decision-index line is added pointing here (no operator-queue row existed to close —
+the 08-23 ruling's own row-1 closure already stood).
+
+**Fork table.** §7's fork table row for F1 is left as-filed, matching this ADR's established
+precedent (F1/F2/F3 are ruled by dated addenda, not by editing the table); a reader reaching the
+fork table should follow the Status-line gloss to the latest ruling.
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
+| 2026-09-01 | **Addendum 2026-09-01 — `Accepted`.** Fork F1's 08-23 ruling reversed: a Tradeify-resting discharge now counts toward §4's "≥2 of four" requirement (four-firm set restored — Bulenox/Tradeify/MFFU/BluSky). Direct operator election, not a venue-fact finding; does not itself discharge or admit any candidate. Discloses the closest exploratory (non-pre-registered) Tradeify-tier attempt (Aegis-6J1×ORB-MNQ-1, 2026-08-26) — its initial headline was itself superseded within the same campaign; fully tested (both-halves regime-robustness + tail-sizing + intraday-honesty), no combined-book configuration on either window survives. Named for transparency, confirming no live clearance exists. Does not ratify either pending `Proposed` addendum. 08-23 text left as-filed with a correction pointer (Known Trap #12). | Joshua (ruling) + Claude Code (Sonnet 5, recorder) |
 | 2026-08-23 | **Addendum 2026-08-23 — `Accepted`.** Fork F1 ruled: a discharge resting on a Tradeify clearance does not satisfy §4's "≥2 of four" requirement (functionally a three-firm set — Bulenox/MFFU/BluSky — for §4 purposes). Made against a zero-clearer scoreboard, ahead of the designed trigger-time reservation, by explicit operator election. Does not ratify either pending `Proposed` addendum (this ADR's evidence canon; the four-firms ADR's `PARTIAL`-disposition rule) and does not proceed through the canon's point-2 data-validity bar — a direct, freestanding ruling instead. STATE.md queue row 1 closed. | Joshua (ruling) + Claude Code (Sonnet 5, recorder) |
 | 2026-08-22 | **Addendum 2026-08-22 authored — `Proposed`, pending operator ratification.** Pre-commits an F1 evidence canon (frozen-set arithmetic unamended by the de-scope; exclusion only via a dated data-validity finding, never by the de-scope alone; mandatory disclosure on any §4 success claim resting on Tradeify while F1 is open) and closes a gap left by this ADR: nothing previously specified what happens *at* F1's trigger moment. Does not rule F1, does not touch §2/§4, does not move F1's decision timing. Motivated by an external, sanitized, zero-authority second-opinion lens's independent convergence on the same procedural-not-substantive shape; reconciled against this ADR's own real text before being logged as candidate input, per [`2026-08-22-ox-alpha-adversarial-lens-scope.md`](2026-08-22-ox-alpha-adversarial-lens-scope.md) §2/§5. | Claude Code (draft, informed by external second-opinion lens) — pending Joshua (ratify) |
 | 2026-08-04 | **Addendum 2026-08-04 RATIFIED** — operator ruling *"draft the addendum, then open the pr,"* given after being shown the exact narrow scope (clause 3 + title reading only). **§2 clause 3 narrowed**: "no further work is authorized whose sole justification is reaching, holding, or passing a Tradeify account" → "…**to deploy those two legs**" — old text quoted verbatim in the addendum. Title left as-filed (stable cross-link identifier); its reading corrected via the Status-line gloss instead, per this repo's addendum convention (07-31b precedent). Grounds: `MNQBASE-1` §1.1 recorded the same-session divergence between clause 1 (Striker-scoped, matches the operator's clarification) and clause 3 (read literally, venue-wide) rather than resolving it silently, and had already run two $0/K=0 research steps under the corrected reading before this addendum existed. Propagated to 6 normative sites same commit: this ADR (§2 + Status), CLAUDE.md (posture paragraph + bullet), STATE.md (new decision-index row), `ops/instruments/{MYM,MNQ}.md` (status headers). Does **not** touch clauses 1–2, §4's falsifier/frozen set, or forks F1/F2/F3; does **not** widen to the other three friendly firms; does **not** license deployment of anything a future construct might find — that still needs its own Stage-0 pre-registration and operator GO. | Joshua (ruling) + Claude Code (draft + apply) |
