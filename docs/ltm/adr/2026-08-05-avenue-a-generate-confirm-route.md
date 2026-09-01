@@ -9,7 +9,7 @@
 **Superseded-by:** `2026-08-24-sourcing-phase-channel-retirement.md`
 **Superseded-in-part-by:** none
 **Retain-until:** none
-**Amends-in-part:** [`docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md`](../../briefs/2026-07-24-avenue-a-microstructure-scoping.md) §6 condition 3 — amended on Accept (2026-08-05) by **adding** Route B alongside survivor-tie, not replacing it. Avenue A is a brief, not an ADR, so the amendment lands as an addendum block on that brief with its frozen §6 text preserved.
+**Amends-in-part:** [`docs/briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md`](../../briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md) §6 condition 3 — amended on Accept (2026-08-05) by **adding** Route B alongside survivor-tie, not replacing it. Avenue A is a brief, not an ADR, so the amendment lands as an addendum block on that brief with its frozen §6 text preserved.
 **Related:** [`2026-08-05 order-flow admissibility ruling`](../../notes/2026-08-05-order-flow-probe-governance-question.md) · [`Q-MSCHAN-1` (not opened)](../../briefs/Q-MSCHAN-1-microstructure-sourcing-channel-scoping.md) salvage list · [`discovery-campaign-template` Default #1](../../ltm/briefs/rnd-pipeline/discovery-campaign-template.md) · [`2026-07-26-regime-candidate-flag-lane.md`](../../adr/2026-07-26-regime-candidate-flag-lane.md) · [`2026-08-04-family-k-bank-disclosure-not-gate.md`](../../adr/2026-08-04-family-k-bank-disclosure-not-gate.md) · runnable checklist [`docs/methodology/avenue_a_generate_confirm.md`](../../methodology/avenue_a_generate_confirm.md)
 **Layer:** methodology (research rules of evidence only). No strategy parameter, allocation, `dd_protection`, lifecycle, Pine, or rail config is touched.
 
@@ -19,7 +19,7 @@
 
 | Source | Anchor | What it pins |
 |---|---|---|
-| [`docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md`](../../briefs/2026-07-24-avenue-a-microstructure-scoping.md) §6 | `a7dde66` | Qualifying triple; condition 3 = survivor-tied, **not blind discovery** |
+| [`docs/briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md`](../../briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md) §6 | `a7dde66` | Qualifying triple; condition 3 = survivor-tied, **not blind discovery** |
 | [`docs/notes/2026-08-05-order-flow-probe-governance-question.md`](../../notes/2026-08-05-order-flow-probe-governance-question.md) §7 | `a7dde66` | Blind probe INADMISSIBLE; $0 entitlement does not rewrite the *shape* limb; Avenue A unmodified; re-aim (survivor-tie) is the cheap live path |
 | [`docs/briefs/Q-MSCHAN-1-microstructure-sourcing-channel-scoping.md`](../../briefs/Q-MSCHAN-1-microstructure-sourcing-channel-scoping.md) | `38006ae` | Entry condition (a) = this class of ADR; salvage: two-stage licensing, ≥5 s horizon, flicker filter, no ES→MNQ lead-lag |
 | [`docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md`](../../ltm/briefs/rnd-pipeline/discovery-campaign-template.md) Default #1–4 | `a7dde66` | Temporal IS/OOS axis, K binding before p-values, universe correction, temporal-consistency battery |
@@ -122,7 +122,7 @@ Route A's "not blind discovery" clause remains the default reading when Route B'
 ## §7 — Implementation (executed on Accept, 2026-08-05)
 
 1. ~~Flip this ADR Status → `Accepted`.~~ **DONE** — operator Accept recorded in the Status line.
-2. ~~Amend Avenue A §6 condition 3 with the §2 wording (addendum block on that brief; frozen historical text preserved).~~ **DONE** — addendum block on [`2026-07-24-avenue-a-microstructure-scoping.md`](../../briefs/2026-07-24-avenue-a-microstructure-scoping.md); §6's frozen text untouched.
+2. ~~Amend Avenue A §6 condition 3 with the §2 wording (addendum block on that brief; frozen historical text preserved).~~ **DONE** — addendum block on [`2026-07-24-avenue-a-microstructure-scoping.md`](../../briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md); §6's frozen text untouched.
 3. ~~Point `Q-MSCHAN-1` supersession note's entry condition (a) at this ADR as discharged *as a reopen path*.~~ **DONE** — entry condition (a) now names this ADR; **does not auto-open a campaign** (that brief stays `DRAFTED — NOT OPENED`, and a successor still needs a fresh Q-ID).
 4. **OWED** — first campaign: operator picks instrument + schema ladder + windows via a fresh Q-ID / prereg pair under the checklist — **not** this ADR.
 
@@ -139,8 +139,8 @@ Route A's "not blind discovery" clause remains the default reading when Route B'
 grep -n "Status" docs/adr/2026-08-05-avenue-a-generate-confirm-route.md | head -3
 
 # Avenue A §6: frozen condition-3 text preserved AND the Route B addendum present
-grep -n "Survivor-tied\|not blind discovery" docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md
-grep -n "Route B\|generate→confirm" docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md
+grep -n "Survivor-tied\|not blind discovery" docs/briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md
+grep -n "Route B\|generate→confirm" docs/briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md
 # expect: BOTH — the addendum adds a route, it does not rewrite the frozen triple
 
 # Checklist exists and names both stages

@@ -112,10 +112,10 @@ Regenerate: `python scripts/check_docs_runtime_inventory.py --write`
 | `docs/api/webhook-trading` | quoted | `ops/c1_rail/crosstrade_payload.py:9` |
 | `docs/briefs` | pathlib,quoted | `scripts/check_governance_prose_control_chars.py:144`, `scripts/repo_retrieve.py:156`, `tests/test_roll_sessions.py:269` |
 | `docs/briefs/` | quoted | `ops/sentinel/scan.py:640`, `scripts/_build_lessons_index.py:121`, `scripts/_build_lessons_index.py:222`, `scripts/_build_lessons_index.py:254`, `scripts/_build_lessons_index.py:270`, `scripts/_build_lessons_index.py:278`, `scripts/_build_lessons_index.py:286`, `scripts/_build_lessons_index.py:296`, `scripts/_build_lessons_index.py:303`, `scripts/_build_lessons_index.py:330`, `scripts/check_advisor_dedup.py:38`, `scripts/check_governance_prose_control_chars.py:26`, `scripts/check_instrument_ledger_coverage.py:42`, `scripts/check_skill_refs.py:21`, `scripts/repo_retrieve.py:161`, `scripts/repo_retrieve.py:25`, `scripts/repo_retrieve.py:56`, `tests/test_register_search_params_file.py:3` |
-| `docs/briefs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md` | quoted | `core/dd_geometry.py:7`, `core/mc/preflight.py:13`, `tests/core/test_dd_geometry.py:5`, `tests/core/test_mc_preflight.py:8` |
-| `docs/briefs/2026-08-17-six-lead-pursuit-plan.md` | quoted | `lab/analysis/harvest/six_lead_cf_2026-08-17/run_cf.py:3` |
-| `docs/briefs/GSUB-1-first-grand-subtract-pass.md` | quoted | `tests/test_check_brief.py:429` |
-| `docs/briefs/GSUB-2-park-cohort-early-review.md` | quoted | `tests/test_check_brief.py:354`, `tests/test_check_brief.py:436` |
+| `docs/briefs/programs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md` | quoted | `core/dd_geometry.py:7`, `core/mc/preflight.py:13`, `tests/core/test_dd_geometry.py:5`, `tests/core/test_mc_preflight.py:8` |
+| `docs/briefs/programs/2026-08-17-six-lead-pursuit-plan.md` | quoted | `lab/analysis/harvest/six_lead_cf_2026-08-17/run_cf.py:3` |
+| `docs/briefs/programs/GSUB-1-first-grand-subtract-pass.md` | quoted | `tests/test_check_brief.py:429` |
+| `docs/briefs/programs/GSUB-2-park-cohort-early-review.md` | quoted | `tests/test_check_brief.py:354`, `tests/test_check_brief.py:436` |
 | `docs/briefs/INDEX.md` | pathlib,quoted | `scripts/check_closure_disposition.py:700`, `scripts/check_closure_disposition.py:76`, `scripts/repo_retrieve.py:114`, `scripts/repo_retrieve.py:116`, `scripts/repo_retrieve.py:55`, `scripts/sync_liveness_indexes.py:25`, `tests/scripts/test_check_closure_disposition.py:407`, `tests/test_gate_manifest.py:143`, `tests/test_gate_manifest.py:217`, `tests/test_governance_class.py:60`, `tests/test_repo_retrieve.py:100`, `tests/test_repo_retrieve.py:35` |
 | `docs/briefs/Q-DDP-1/` | quoted | `core/dd_protection.py:7` |
 | `docs/briefs/Q-DDP-1/_run_regime_robustness.py` | quoted | `core/mc/modes.py:864` |

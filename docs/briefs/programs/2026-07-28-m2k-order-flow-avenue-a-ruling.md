@@ -13,12 +13,12 @@ modality is closed, and buying one is gated.
 
 ## §0 — Rule-0 reads (verified this session, 2026-07-28)
 
-Governing artifact read in full before authoring: `docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md`.
+Governing artifact read in full before authoring: `docs/briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md`.
 
 | Path | Anchor | What it grounds |
 |---|---|---|
-| `docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md` | §6 read verbatim | The **frozen qualifying triple** and the standing disposition *"Avenue A stays scoped-not-procured"* |
-| `docs/briefs/2026-07-27-f1-moc-imbalance-mym-ruling.md` | `:15` | Names Avenue-A **"the governing artifact for any paid order-flow procurement"** — the scope limb this ruling turns on |
+| `docs/briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md` | §6 read verbatim | The **frozen qualifying triple** and the standing disposition *"Avenue A stays scoped-not-procured"* |
+| `docs/briefs/programs/2026-07-27-f1-moc-imbalance-mym-ruling.md` | `:15` | Names Avenue-A **"the governing artifact for any paid order-flow procurement"** — the scope limb this ruling turns on |
 | `ops/instruments/M2K.md` | **M1**, **M4** | M1 = binding class bar `index-intraday-ohlcv-directional-timing-2026-07-21`; M4 = K bank **0**, `floor_at_k(1)` **0.650** |
 | `STATE.md` | `:286-293` | The **$19.91 `mbp-10` escalation was DECLINED 2026-07-24 on "no lever exists"** — add = `floor(base × 7.5)`, pyramid **750% LOCKED**; even WATCH-2 0.25× ⇒ ~52 lots vs median depth **5** |
 | `lab/analysis/c1/wstruct_cost_geometry_2026-07-28/RESULTS.md` | §6, §7 | Asymmetric frontier **OPEN** (R ≥ 2.09 at p=0.40, 50bp stop, 1 RT); harvest **0 seeds**; modality is the wall |
@@ -98,7 +98,7 @@ toward RESOLVED, never AMBIGUOUS"*).
   schema that does is barred by skill Rule 2 pre-survivor and costs $638.62 on M2K.
 - **Declaring M1 cleared by asserting "order flow is a new modality."** M1 is the domain raised bar
   `index-intraday-ohlcv-directional-timing-2026-07-21` — canonical three-route test in
-  [`docs/rejected_candidates.md`](../rejected_candidates.md) §RAISED BAR 2026-07-21 (route 2 is
+  [`docs/rejected_candidates.md`](../../rejected_candidates.md) §RAISED BAR 2026-07-21 (route 2 is
   *different modality / venue*, and the registry parenthesises order-flow as untouched until a
   survivor justifies buying it). A modality claim with no cohort-cited Russell δ supplies neither a
   screenable seed (harvest Req 2) nor Avenue-A limb 3. "New modality" is a claim about the data, not
@@ -168,11 +168,11 @@ than an oversight in it.
 ```bash
 # The frozen gate this ruling is judged against must still say what it says
 grep -n "qualifying triple\|scoped — not procured\|scoped-not-procured" \
-  docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md
+  docs/briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md
 
 # Avenue-A's scope must still be "any paid order-flow procurement" (if this narrows, re-read §6 limb 1)
 grep -n "governing artifact for any paid order-flow procurement" \
-  docs/briefs/2026-07-27-f1-moc-imbalance-mym-ruling.md
+  docs/briefs/programs/2026-07-27-f1-moc-imbalance-mym-ruling.md
 
 # Limb 3 turns on M2K having NO admitted mechanism. Expect an empty dict.
 python -c "import json;print('M2K cells:', json.load(open('ops/instruments/profiles.json'))['cells'].get('M2K'))"
@@ -198,11 +198,11 @@ find ~/.databento_cache -name '*.dbn' | wc -l  # expect 481 (no growth from this
 
 ```bash
 python .claude/skills/brief-authoring/scripts/check_brief.py \
-  docs/briefs/2026-07-28-m2k-order-flow-avenue-a-ruling.md --type inquire
+  docs/briefs/programs/2026-07-28-m2k-order-flow-avenue-a-ruling.md --type inquire
 
 # §0 anchors resolve
-for f in docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md \
-         docs/briefs/2026-07-27-f1-moc-imbalance-mym-ruling.md \
+for f in docs/briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md \
+         docs/briefs/programs/2026-07-27-f1-moc-imbalance-mym-ruling.md \
          ops/instruments/M2K.md \
          lab/analysis/c1/wstruct_cost_geometry_2026-07-28/RESULTS.md; do
   git log -1 --format="%h %ci $f" -- "$f"; done

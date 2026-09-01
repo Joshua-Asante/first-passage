@@ -2,7 +2,7 @@
 
 **Status:** `CLOSED-RESOLVED` (2026-07-15)
 **Authored:** 2026-07-14 (scaffold → question freeze same session)
-**Closed:** `2026-07-15` — [`docs/briefs/Q-SFRISK-1-closure-resolved.md`](Q-SFRISK-1-closure-resolved.md); admitting ADR [`docs/adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md`](../adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md) (`Accepted`, ratified 2026-07-15)
+**Closed:** `2026-07-15` — [`docs/briefs/closures/Q-SFRISK-1-closure-resolved.md`](Q-SFRISK-1-closure-resolved.md); admitting ADR [`docs/adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md`](../adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md) (`Accepted`, ratified 2026-07-15)
 **Authors:** Joshua (authority) + Cursor (structure + question architecture) — parent triage: claude.ai advisor 2026-07-13
 **Parent question:** `N/A` (spawned by audit §5.2 / D1 under [`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](../adr/2026-07-11-challenge-era-claims-rescope.md))
 **Sub-questions opened:** none yet (D2 / D3 may now fork from this closed Pre-Q — §6 has fired)
@@ -115,7 +115,7 @@ Standing doctrine: rescope ADR §5 forbids running successor-semantics MC number
 1. **DONE** — freeze §3/§4 architecture + commit architecture §8 (2026-07-14).
 2. **DONE** — Phase 0: §8 amended with T1 (F1/F3/F4), operator-confirmed "confirm T1" (2026-07-14).
 3. **DONE** — Phase 1: `lab/analysis/regime/decompound_remc_2026-06-07/run_sfrisk_t1_phase1.py`, merged `936a9e0`, independently cross-validated (2026-07-15).
-4. **DONE** — Phase 2: §6 asserted `RESOLVED`; [`docs/briefs/Q-SFRISK-1-closure-resolved.md`](Q-SFRISK-1-closure-resolved.md) (2026-07-15).
+4. **DONE** — Phase 2: §6 asserted `RESOLVED`; [`docs/briefs/closures/Q-SFRISK-1-closure-resolved.md`](Q-SFRISK-1-closure-resolved.md) (2026-07-15).
 5. **DONE** — Phase 3: admitting ADR drafted and ratified, [`docs/adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md`](../adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md) (`Accepted`, 2026-07-15). D2/D3 may now fork.
 
 ---
@@ -125,13 +125,13 @@ Standing doctrine: rescope ADR §5 forbids running successor-semantics MC number
 **Architecture freeze:** [`docs/briefs/pre-registration/Q-SFRISK-1-verdict-preregistration.md`](pre-registration/Q-SFRISK-1-verdict-preregistration.md)
 
 Pre-registration commit hash: `9b219ab` (numeric Phase-0 freeze)
-Pre-registration date: 2026-07-14 (architecture); numeric Phase-0 amendment: **FROZEN 2026-07-14** — single triple T1 (F1 max-DD ≤10%/half + F3 ADOPT decompound withdrawal model + F4 impracticality >252bd; F2 TUW explicitly deferred, out of scope for this freeze). All halves of the rescope ADR §4 completion falsifier now discharged (existence, numeric, analysis, and verdict) — see [`docs/briefs/Q-SFRISK-1-closure-resolved.md`](Q-SFRISK-1-closure-resolved.md).
+Pre-registration date: 2026-07-14 (architecture); numeric Phase-0 amendment: **FROZEN 2026-07-14** — single triple T1 (F1 max-DD ≤10%/half + F3 ADOPT decompound withdrawal model + F4 impracticality >252bd; F2 TUW explicitly deferred, out of scope for this freeze). All halves of the rescope ADR §4 completion falsifier now discharged (existence, numeric, analysis, and verdict) — see [`docs/briefs/closures/Q-SFRISK-1-closure-resolved.md`](Q-SFRISK-1-closure-resolved.md).
 
 ---
 
 ## §9 — Closure record format
 
-- **If RESOLVED:** `docs/briefs/Q-SFRISK-1-closure-resolved.md` + admitting ADR / recommendation — **DONE 2026-07-15**: [`docs/briefs/Q-SFRISK-1-closure-resolved.md`](Q-SFRISK-1-closure-resolved.md) + [`docs/adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md`](../adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md)
+- **If RESOLVED:** `docs/briefs/closures/Q-SFRISK-1-closure-resolved.md` + admitting ADR / recommendation — **DONE 2026-07-15**: [`docs/briefs/closures/Q-SFRISK-1-closure-resolved.md`](Q-SFRISK-1-closure-resolved.md) + [`docs/adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md`](../adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md)
 - **If FALSIFIED:** `docs/briefs/Q-SFRISK-1-closure-falsified.md`
 - **If AMBIGUOUS-HOLD:** `docs/briefs/Q-SFRISK-1-closure-ambiguous.md` with explicit re-test trigger and date
 
@@ -145,7 +145,7 @@ grep -n "^\*\*Status:\*\*" docs/briefs/Q-SFRISK-1-successor-self-funded-risk-fra
 # Expected: CLOSED-RESOLVED
 
 # Closure + admitting ADR both present
-test -f docs/briefs/Q-SFRISK-1-closure-resolved.md
+test -f docs/briefs/closures/Q-SFRISK-1-closure-resolved.md
 test -f docs/adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md
 
 # Rescope §10-style hook — successor / self-funded Pre-Q present

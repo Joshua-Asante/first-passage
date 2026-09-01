@@ -25,7 +25,7 @@ cells:
   - mechanism: opening-range-breakout
     verdict: AMBIGUOUS-PARKED
     date: 2026-07-23
-    source: "../../docs/briefs/2026-07-17-0808-packet-delta-and-sequence.md"
+    source: "../../docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md"
   - mechanism: intraday-momentum
     verdict: DEAD
     date: 2026-07-21

@@ -1,13 +1,13 @@
 # 2026-07-27 — Hermes Agent adoption ruling (third agent surface) + two design-salvage dispositions
 
 **Status:** `CLOSED — RESOLVED-NO-GO` 2026-07-27 (ratified by the operator, chat directive "ratify the NO-GO")
-**Canonical decision record:** [`docs/adr/2026-07-27-hermes-agent-adoption-nogo.md`](../adr/2026-07-27-hermes-agent-adoption-nogo.md) (`Accepted`) · [closure](closures/2026-07-27-hermes-agent-adoption-closure-resolved.md)
+**Canonical decision record:** [`docs/adr/2026-07-27-hermes-agent-adoption-nogo.md`](../../adr/2026-07-27-hermes-agent-adoption-nogo.md) (`Accepted`) · [closure](../closures/2026-07-27-hermes-agent-adoption-closure-resolved.md)
 **Authored:** 2026-07-27
 **Closed:** 2026-07-27
 **Authors:** Joshua (operator) + CC (evaluation + authoring)
 **Parent question:** `N/A` — this **is** the parent. Two salvage limbs (A, B) are dispositions under one ruling, not independent Pre-Qs (Known Trap #11: the limbs share a single decision — whether a third agent surface earns a place — and neither is separately gate-able without it).
 **Loop:** Ruling — closure gates on the operator accepting or rejecting the NO-GO and dispositioning limbs A and B.
-**Artifact path:** `docs/briefs/2026-07-27-hermes-agent-adoption-ruling.md`
+**Artifact path:** `docs/briefs/programs/2026-07-27-hermes-agent-adoption-ruling.md`
 
 ---
 
@@ -199,7 +199,7 @@ rg -n "alert" scripts/check_pine_manifest.py | rg -i "shadow|informational" || e
 
 ```bash
 # Discipline checks (mechanical)
-python scripts/check_brief.py docs/briefs/2026-07-27-hermes-agent-adoption-ruling.md --type brief
+python scripts/check_brief.py docs/briefs/programs/2026-07-27-hermes-agent-adoption-ruling.md --type brief
 # Expected: exit 0, no HARD violations
 
 # Repo gates (this brief adds a docs/ file only; no code, data, or Pine surface touched)
@@ -218,5 +218,5 @@ python scripts/check_path_liveness.py
 - [x] §5 forbidden moves genuinely tempting — two were actually committed this session
 - [x] §6 gates binary; limb A is an enumerated operator choice, not "decide later"
 - [x] §10 audit hooks runnable
-- [x] Operator ratification (Phase 0) — 2026-07-27, chat directive "ratify the NO-GO" (see header and [closure](closures/2026-07-27-hermes-agent-adoption-closure-resolved.md))
+- [x] Operator ratification (Phase 0) — 2026-07-27, chat directive "ratify the NO-GO" (see header and [closure](../closures/2026-07-27-hermes-agent-adoption-closure-resolved.md))
 - [x] Limb A pre-registration committed before Phase A2 — committed 2026-07-27 as [`pre-registration/2026-07-27-fts5-delete-falsifier-prereg.md`](pre-registration/2026-07-27-fts5-delete-falsifier-prereg.md); Phase A2 sidecar built (`ops/recall/`) per closure

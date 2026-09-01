@@ -5,10 +5,10 @@
 **Closed:** 2026-08-15
 **Mark:** U0 KEEP — operator 2026-08-15. §6 table frozen (Trap #12). Pause stands.
 **Authors:** Cursor (recorder) — operator marked U0
-**Parent:** [CON-5 closure](closures/Q-TNEC-CON-5-closure-ambiguous-hold.md) Branch A · [lane spec](../spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md)
+**Parent:** [CON-5 closure](../closures/Q-TNEC-CON-5-closure-ambiguous-hold.md) Branch A · [lane spec](../../spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md)
 **Loop:** Inquire-light Board packet — U0 recorded. $0 · K=0 · no camp · no CON-6 · pause stands.
-**Closure:** [DENSE1M-UNPAUSE-closure-resolved-u0-keep](closures/DENSE1M-UNPAUSE-closure-resolved-u0-keep.md)
-**Artifact path:** `docs/briefs/2026-08-15-dense1m-lane-unpause-review.md`
+**Closure:** [DENSE1M-UNPAUSE-closure-resolved-u0-keep](../closures/DENSE1M-UNPAUSE-closure-resolved-u0-keep.md)
+**Artifact path:** `docs/briefs/programs/2026-08-15-dense1m-lane-unpause-review.md`
 
 ---
 
@@ -16,12 +16,12 @@
 
 | Path | Anchor |
 |---|---|
-| [CON-5 closure](closures/Q-TNEC-CON-5-closure-ambiguous-hold.md) | `027a7295` 2026-08-14 |
-| [temporal-selectivity ADR](../adr/2026-08-10-temporal-selectivity-outside-mapped-levers.md) | `027a7295` 2026-08-14 |
-| [lane spec](../spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md) | `027a7295` 2026-08-14 |
-| [analogue-modality ADR](../adr/2026-08-15-analogue-modality-route-ruling.md) | `ab303d07` 2026-08-15 |
-| [MSL-S7](closures/MSL-S7-closure-resolved-e1-hold.md) | `027a7295` 2026-08-14 |
-| [ceremony-tiering](../adr/2026-08-08-adr-ceremony-tiering.md) | `91e6caad` 2026-08-15 |
+| [CON-5 closure](../closures/Q-TNEC-CON-5-closure-ambiguous-hold.md) | `027a7295` 2026-08-14 |
+| [temporal-selectivity ADR](../../adr/2026-08-10-temporal-selectivity-outside-mapped-levers.md) | `027a7295` 2026-08-14 |
+| [lane spec](../../spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md) | `027a7295` 2026-08-14 |
+| [analogue-modality ADR](../../adr/2026-08-15-analogue-modality-route-ruling.md) | `ab303d07` 2026-08-15 |
+| [MSL-S7](../closures/MSL-S7-closure-resolved-e1-hold.md) | `027a7295` 2026-08-14 |
+| [ceremony-tiering](../../adr/2026-08-08-adr-ceremony-tiering.md) | `91e6caad` 2026-08-15 |
 
 **Amendment-first (sub-rule 10).** Pause owner is the CON-5 closure (Branch A elected 2026-08-12). A new packet is the exception: Trap #12 forbids amending a closed brief's §6; [MSL-S7](2026-08-14-msl-slate-generation-review.md) is the election-vehicle precedent. If the operator marks U1 or U2, a **full** ADR (ceremony limb 4 — doctrine) supersedes Branch A. This file does not flip the pause.
 
@@ -61,7 +61,7 @@ CON-5 Branch A paused the dense-1m **OHLCV temporal-selectivity / entry-geometry
 
 The 08-10 ADR already opened route ① for within-instrument temporal selectivity and named **one** unauthored successor: a causally-named, K-charged, once-per-session-class cell aimed at trade-count cost geometry. CON-3 / CON-4 / CON-5 then used first/session as a *cap on entry geometry* and still died on cost (gross/(4×RT) ≈ 0.73× / 0.27× / 0.11×). First/session alone is spent as a distinction.
 
-[Analogue-modality](../adr/2026-08-15-analogue-modality-route-ruling.md) already lifted the pause **for no-named-entry-geometry analogues only**. `MNQ-ANALOGUE-1` died pre-G0 the same day. That ruling explicitly does **not** unpause θ-parameterised entry-geometry.
+[Analogue-modality](../../adr/2026-08-15-analogue-modality-route-ruling.md) already lifted the pause **for no-named-entry-geometry analogues only**. `MNQ-ANALOGUE-1` died pre-G0 the same day. That ruling explicitly does **not** unpause θ-parameterised entry-geometry.
 
 MSL E1 HOLD is untouched: no slate-4, no S2B revive. This packet is TNEC L4 only.
 
@@ -69,10 +69,10 @@ MSL E1 HOLD is untouched: no slate-4, no S2B revive. This packet is TNEC L4 only
 
 ## §2 — Prior art / lineage
 
-- [CON-1](closures/Q-MNQDTL-CON-1-closure-falsified.md) FALSIFIED · [CON-2](closures/Q-TNEC-CON-2-closure-ambiguous-hold.md) AMBIGUOUS (gross ~0.65× of 4×RT) · [CON-3](closures/Q-TNEC-CON-3-closure-ambiguous-hold.md) / [CON-4](closures/Q-TNEC-CON-4-closure-ambiguous-hold.md) / [CON-5](closures/Q-TNEC-CON-5-closure-ambiguous-hold.md) AMBIGUOUS; CON-3→4 and CON-4→5 were Branch B continues; CON-5 elected A.
-- [ADR 2026-08-10](../adr/2026-08-10-temporal-selectivity-outside-mapped-levers.md) §2-B / §6 — route ① open under a priori + K-per-axis; intended successor unauthored *as a temporal-criterion-as-mechanism cell*, not as another geometry+first/session cap.
+- [CON-1](../closures/Q-MNQDTL-CON-1-closure-falsified.md) FALSIFIED · [CON-2](../closures/Q-TNEC-CON-2-closure-ambiguous-hold.md) AMBIGUOUS (gross ~0.65× of 4×RT) · [CON-3](../closures/Q-TNEC-CON-3-closure-ambiguous-hold.md) / [CON-4](../closures/Q-TNEC-CON-4-closure-ambiguous-hold.md) / [CON-5](../closures/Q-TNEC-CON-5-closure-ambiguous-hold.md) AMBIGUOUS; CON-3→4 and CON-4→5 were Branch B continues; CON-5 elected A.
+- [ADR 2026-08-10](../../adr/2026-08-10-temporal-selectivity-outside-mapped-levers.md) §2-B / §6 — route ① open under a priori + K-per-axis; intended successor unauthored *as a temporal-criterion-as-mechanism cell*, not as another geometry+first/session cap.
 - [08-10 cost-geometry falsifier](../../lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_cost_geometry_2026-08-10_LOG.md) — stop width cannot rescue (0.02–0.10× the 4× bar); surviving lever is trade count (once/session needs ~3.3% of the ~170 pt oracle vs ~20% at CON-2's ~6/day).
-- [MSL-S7](closures/MSL-S7-closure-resolved-e1-hold.md) — un-pause listed as something E1 does not license; S2B route still needs Board un-pause *or* a non-route-① thesis. This packet does not grant that for MSL.
+- [MSL-S7](../closures/MSL-S7-closure-resolved-e1-hold.md) — un-pause listed as something E1 does not license; S2B route still needs Board un-pause *or* a non-route-① thesis. This packet does not grant that for MSL.
 - Eight consecutive zero-yield closes 2026-08-08→08-12 (CON-5 election record) vs SNAG 3.
 
 ---
@@ -99,7 +99,7 @@ MSL E1 HOLD is untouched: no slate-4, no S2B revive. This packet is TNEC L4 only
 - **Author CON-6 / scaffold `mnq_tnec_con6_*` / freeze a G0** — the packet licenses a *procedure*, not a mechanism.
 - **Treat first/session as the cost-geometry distinction** — CON-3/4/5 already used it; gross stayed below 4×RT.
 - **Re-open hold-time or stop-width** under “cost geometry” — mapped and re-killed 2026-08-10.
-- **Relabel a geometry cell as analogue** — [analogue ADR](../adr/2026-08-15-analogue-modality-route-ruling.md) test is *absence* of named entry geometry.
+- **Relabel a geometry cell as analogue** — [analogue ADR](../../adr/2026-08-15-analogue-modality-route-ruling.md) test is *absence* of named entry geometry.
 - **Use the unpause to revive S2B or author slate-4** — E1 and the S2B re-proposal bar stand.
 - **Cite FALSIFIED(yield) or the 3-FALSIFIED lane stop** — neither has fired (lane counter 1/3).
 - **Cap / Pine / arming / CONFIRM peek on CON-5.**
@@ -124,7 +124,7 @@ A CON-6 brief may proceed only if **all** hold:
 
 1. **New family** — distinct from CON-1 ES−NQ divergence, CON-2 compression-break, CON-3 HTF-native compression, CON-4 PDH/PDL through-break, CON-5 impulse-pullback-VWAP-reclaim, and every C1–C11 / MNQ DEAD row.
 2. **Cost-geometry distinction stated in writing** that is **not** first/session-only, **not** stop-width, **not** a θ-retune of CON-1–5. The 08-10 intended shape (temporal criterion *is* the mechanism; once-per-session; aimed at trade-count) is admissible only if the brief argues why it is not CON-3/4/5's geometry+cap.
-3. **Route ①** answered via [ADR 2026-08-10](../adr/2026-08-10-temporal-selectivity-outside-mapped-levers.md) §2-B: criterion causally named a priori, every axis charges `K_intrinsic`, F2 guard live. Executed `instrument_profiles.py cell` paste; every `BINDING BAR` answered.
+3. **Route ①** answered via [ADR 2026-08-10](../../adr/2026-08-10-temporal-selectivity-outside-mapped-levers.md) §2-B: criterion causally named a priori, every axis charges `K_intrinsic`, F2 guard live. Executed `instrument_profiles.py cell` paste; every `BINDING BAR` answered.
 4. **Parent cheap falsifier** on `_mnq_1m.parquet` **before** G0. Fail ⇒ $0 kill, no Q-ID, pause remains default.
 5. **Lane counter** stays 1/3 until a FALSIFIED; a third FALSIFIED still fires the lane-review packet (spec step 6).
 
@@ -158,7 +158,7 @@ No separate pre-reg file. §6 table frozen at this packet’s commit (MSL-S7 pre
 
 ```bash
 test ! -d lab/analysis/c1/mnq_tnec_con6_2026-08
-rg -n "OWED-election" docs/briefs/2026-08-15-dense1m-lane-unpause-review.md
+rg -n "OWED-election" docs/briefs/programs/2026-08-15-dense1m-lane-unpause-review.md
 rg -n "OHLCV temporal-selectivity lane default \\*\\*paused\\*\\*" docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md
 # Expected until U1/U2 ADR: pause text still present; this packet still OWED-election
 rg -n "Q-TNEC-CON-6" docs/briefs/INDEX.md lab/CATALOG.md || echo "no CON-6 yet"
@@ -169,7 +169,7 @@ rg -n "Q-TNEC-CON-6" docs/briefs/INDEX.md lab/CATALOG.md || echo "no CON-6 yet"
 ## Verification
 
 ```bash
-python3 scripts/check_brief.py docs/briefs/2026-08-15-dense1m-lane-unpause-review.md --type inquire
+python3 scripts/check_brief.py docs/briefs/programs/2026-08-15-dense1m-lane-unpause-review.md --type inquire
 git log -1 --format='%h %cs' -- docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md
 rg -n "1/3" docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md
 ```

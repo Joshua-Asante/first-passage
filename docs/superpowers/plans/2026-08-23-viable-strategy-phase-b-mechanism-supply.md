@@ -31,7 +31,7 @@ post-close dealer/arb inventory normalization → fade the imbalance sign in MES
 pause — task 0 verifies hours).
 
 **Why this lane leads:** the prior kill ([F1 ruling
-2026-07-27](../../briefs/2026-07-27-f1-moc-imbalance-mym-ruling.md)) was **reject-at-bar at the
+2026-07-27](../../briefs/programs/2026-07-27-f1-moc-imbalance-mym-ruling.md)) was **reject-at-bar at the
 paid-data procurement gate** — the WHO clauses were judged clean, and the a4 scope note
 explicitly spares "a published, signed imbalance number." The estate's own deep-lane supply audit
 independently names *"a published MOC-imbalance cohort δ"* as a live free route. Two independent

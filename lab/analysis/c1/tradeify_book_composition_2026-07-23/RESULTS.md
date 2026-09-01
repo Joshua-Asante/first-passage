@@ -5,7 +5,7 @@
 **Defect (diagnosed, not re-litigated):** `eval_sim` applied the Funded-Flex floor
 lock (`peak ≥ $103,100 → floor = $100,100`) during the **evaluation** phase.
 Tradeify article 10495897: evaluations do not lock. Record:
-[`docs/briefs/2026-07-23-tradeify-book-composition.md`](../../../docs/briefs/2026-07-23-tradeify-book-composition.md)
+[`docs/briefs/programs/2026-07-23-tradeify-book-composition.md`](../../../docs/briefs/programs/2026-07-23-tradeify-book-composition.md)
 §Addendum 2026-07-28 (diagnosis) + §Addendum 2026-07-28b (this fix).
 
 **Fix:** in every `eval_sim` / `esim` in this harness, `floor = peak - DD`

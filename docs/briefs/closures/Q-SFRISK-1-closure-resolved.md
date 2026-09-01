@@ -2,7 +2,7 @@
 
 **Closed:** 2026-07-15
 **Closing verdict:** `RESOLVED`
-**Parent brief:** [`docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md`](Q-SFRISK-1-successor-self-funded-risk-framework.md) (§6 gate criteria, §9 closure format)
+**Parent brief:** [`docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md`](../Q-SFRISK-1-successor-self-funded-risk-framework.md) (§6 gate criteria, §9 closure format)
 **Pre-registration:** [`docs/briefs/pre-registration/Q-SFRISK-1-verdict-preregistration.md`](pre-registration/Q-SFRISK-1-verdict-preregistration.md) (`9b219ab`, `NUMERIC FROZEN` 2026-07-14 — single triple T1, operator-confirmed via "confirm T1")
 **Phase-1 numeric report:** [`lab/analysis/regime/decompound_remc_2026-06-07/RESULTS_sfrisk_t1_phase1_2026-07-15.md`](../../lab/analysis/regime/decompound_remc_2026-06-07/RESULTS_sfrisk_t1_phase1_2026-07-15.md) (merged `936a9e0`; independently cross-validated by a second local run this session — byte-identical numbers)
 **Admitting artifact:** [`docs/adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md`](../adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md) (`Accepted`, ratified 2026-07-15)
@@ -65,7 +65,7 @@ Two independent Phase-1 runs (one merged to main via `936a9e0`, one run locally 
 
 ```bash
 # Verdict recorded
-grep -n "Verdict: \`RESOLVED\`" docs/briefs/Q-SFRISK-1-closure-resolved.md
+grep -n "Verdict: \`RESOLVED\`" docs/briefs/closures/Q-SFRISK-1-closure-resolved.md
 
 # Parent brief flipped closed
 grep -n "^\*\*Status:\*\*" docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md
@@ -88,11 +88,23 @@ python scripts/verify_lock_anchors.py
 
 ---
 
+
+## Iterate — loop exit
+
+- **Verdict used:** `RESOLVED` — T1 clears all three frozen clauses on both regime halves; admitting ADR ratified 2026-07-15.
+- **Model update:** A falsifiable successor to the retired challenge-era P(pass) claim exists at the governance layer; it does not authorize go-live or touch locked MC anchor / risk constants.
+- **Next:** INTEGRATE
+- **Routing:** INTEGRATE — [`docs/adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md`](../adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md) is the owning artifact; rescope ADR §4 D1 completion falsifier discharged.
+- **Entry packet:** n/a
+- **Stop rule / re-proposal bar:** n/a — integrated at close; F2/TUW deferred by explicit operator scope, not reopened by this disposition.
+- **Board write:** none — STOP, nothing owed (STATE/SESSIONS updated 2026-07-15 at original close).
+- **Registry:** n/a — RESOLVED successor risk-framework admission; not a strategy-grounds kill.
+
 ## Verification
 
 ```bash
 python C:/Users/joshu/.claude/skills/brief-authoring/scripts/check_brief.py \
-  docs/briefs/Q-SFRISK-1-closure-resolved.md --type closure
+  docs/briefs/closures/Q-SFRISK-1-closure-resolved.md --type closure
 
 git log -1 --format='%h %ci' -- lab/analysis/regime/decompound_remc_2026-06-07/RESULTS_sfrisk_t1_phase1_2026-07-15.md
 # Expect the merge commit that landed 936a9e0's content

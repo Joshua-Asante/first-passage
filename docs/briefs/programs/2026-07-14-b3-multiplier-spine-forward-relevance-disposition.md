@@ -4,13 +4,13 @@
 > delete `calc_multiplier`) was overtaken by challenge-era substrate Phase 2, which
 > **retired** the continuous-lot multiplier spine (`ops/accounts.py` `calc_multiplier`
 > / `ops/cli.py lots`) outright — see
-> [`docs/adr/2026-07-22-challenge-era-substrate-retirement.md`](../adr/2026-07-22-challenge-era-substrate-retirement.md)
+> [`docs/adr/2026-07-22-challenge-era-substrate-retirement.md`](../../adr/2026-07-22-challenge-era-substrate-retirement.md)
 > §2-D. Body left as written (historical record of the KEEP-dormant reasoning); do not
 > cite this disposition as current status.
 
 **Status:** **CLOSED — DORMANT-RETAIN** (forward-relevance = NONE for either surviving scale path; do not delete, do not extend). Discharges the last open 08-08 Class-B item.
 **Date:** 2026-07-14
-**Owned by:** [`docs/adr/2026-07-11-ops-cfd-estate-retirement.md`](../adr/2026-07-11-ops-cfd-estate-retirement.md) §4 Trigger-B · 08-08 pre-triage [`2026-07-12-08-08-packet-pretriage.md`](2026-07-12-08-08-packet-pretriage.md) B3
+**Owned by:** [`docs/adr/2026-07-11-ops-cfd-estate-retirement.md`](../../adr/2026-07-11-ops-cfd-estate-retirement.md) §4 Trigger-B · 08-08 pre-triage [`2026-07-12-08-08-packet-pretriage.md`](2026-07-12-08-08-packet-pretriage.md) B3
 **Related:** [`ops/accounts.py`](../../ops/accounts.py) `calc_multiplier` · [`ops/instruments/6J.md`](../../ops/instruments/6J.md) J5 · R6 ADR §4 (firm-config retention)
 
 ---
@@ -63,7 +63,7 @@ grep -rn "calc_multiplier\|get_multipliers" lab/discovery/ core/mc/ core/lifecyc
 
 # STATE + pre-triage B3 should be marked CLOSED on merge (deferred to avoid a cross-branch STATE conflict with b6e604a)
 grep -n "Multiplier-spine forward-relevance" STATE.md
-grep -n "B3" docs/briefs/2026-07-12-08-08-packet-pretriage.md
+grep -n "B3" docs/briefs/programs/2026-07-12-08-08-packet-pretriage.md
 ```
 
 **On merge:** mark the STATE forward-board "Multiplier-spine forward-relevance flag — 2026-08-08" line **CLOSED (DORMANT-RETAIN, 2026-07-14)** and the pre-triage B3 row discharged. (Left un-edited here to avoid colliding with the operator's concurrent STATE edit on `b6e604a`.)

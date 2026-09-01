@@ -5,8 +5,8 @@
 **Authors:** Joshua (operator GO on Slice 1) + Cursor Cloud Agent (two-pass audit + Slice 1 execution + this brief)
 **Parent question:** N/A — this **is** the parent disposition. It is not a Pre-Q into markets; it is a Delete/Simplify ruling on requirements that no longer fit the live mission.
 **Loop:** Ruling / disposition — closure when every packet in §6 is dispositioned (ship / decline / defer-with-date).
-**Artifact path:** `docs/briefs/2026-08-02-retired-surface-mission-alignment-prune.md`
-**Related:** [`docs/adr/2026-07-11-fxify-ops-surface-retirement.md`](../adr/2026-07-11-fxify-ops-surface-retirement.md) Addendum 2026-08-02 · [`docs/briefs/handoffs/2026-07-24-cursor-handoff-dead-surface-retirements.md`](handoffs/2026-07-24-cursor-handoff-dead-surface-retirements.md) (broader orphan slate still GO-gated) · monorepo ADR H3 ("a gate that never bites decays to ceremony") [`docs/adr/2026-06-05-monorepo-layer-boundaries.md`](../adr/2026-06-05-monorepo-layer-boundaries.md) §4
+**Artifact path:** `docs/briefs/programs/2026-08-02-retired-surface-mission-alignment-prune.md`
+**Related:** [`docs/adr/2026-07-11-fxify-ops-surface-retirement.md`](../../adr/2026-07-11-fxify-ops-surface-retirement.md) Addendum 2026-08-02 · [`docs/briefs/handoffs/2026-07-24-cursor-handoff-dead-surface-retirements.md`](handoffs/2026-07-24-cursor-handoff-dead-surface-retirements.md) (broader orphan slate still GO-gated) · monorepo ADR H3 ("a gate that never bites decays to ceremony") [`docs/adr/2026-06-05-monorepo-layer-boundaries.md`](../../adr/2026-06-05-monorepo-layer-boundaries.md) §4
 
 ---
 
@@ -137,9 +137,9 @@ Already correctly rejected (do not re-propose): status-grammar gate (`docs/metho
 
 > ⚠ **SUPERSEDED 2026-08-02** (same day this brief's Pass-1 table was authored): **Decompound A5
 > was not deferred pending "Call-4 vs B7 sequencing"** — it was **struck outright by operator
-> ruling**, per [`docs/adr/2026-08-02-pepperstone-feed-retirement.md`](../adr/2026-08-02-pepperstone-feed-retirement.md)
+> ruling**, per [`docs/adr/2026-08-02-pepperstone-feed-retirement.md`](../../adr/2026-08-02-pepperstone-feed-retirement.md)
 > §2-B/§2-D. Discharge corroborated at
-> [`docs/briefs/2026-07-17-0808-packet-delta-and-sequence.md`](2026-07-17-0808-packet-delta-and-sequence.md)
+> [`docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md`](2026-07-17-0808-packet-delta-and-sequence.md)
 > §0. **The actual live open question is a build-gate-scope ruling for A5's venue-native successor
 > monitor**, tracked at `STATE.md`'s "Forward regime monitor / decompound limb-2 successor —
 > Q-MONSURF-1 M-A" line. **Packet F's Call-4 limb is unaffected** and continues under its own
@@ -207,7 +207,7 @@ test -f .claude/commands/mc-anchors.md && echo ORPHAN_MC_ANCHORS
 # Gates (regression)
 python scripts/check_boundaries.py
 python scripts/check_skill_refs.py --all
-python scripts/check_brief.py docs/briefs/2026-08-02-retired-surface-mission-alignment-prune.md --type brief
+python scripts/check_brief.py docs/briefs/programs/2026-08-02-retired-surface-mission-alignment-prune.md --type brief
 ```
 
 ---

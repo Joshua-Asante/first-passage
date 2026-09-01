@@ -205,4 +205,4 @@ Four items moved after the round-1 artifact was written. They are **committed**,
 
 ---
 
-**Predecessor.** The round-1 artifact at [`../2026-08-05-post-descope-claim-alignment-audit.md`](../2026-08-05-post-descope-claim-alignment-audit.md) is a stub pointing here; its content is preserved and extended in this directory (see §6 for the one named exception). Its full original text is retrievable at `git show 06caf3a:docs/notes/audits/programme-audit/2026-08-05-post-descope-claim-alignment-audit.md`.
+**Predecessor.** The round-1 artifact at [`../2026-08-05-post-descope-claim-alignment-audit.md`](../programs/2026-08-05-post-descope-claim-alignment-audit.md) is a stub pointing here; its content is preserved and extended in this directory (see §6 for the one named exception). Its full original text is retrievable at `git show 06caf3a:docs/notes/audits/programme-audit/2026-08-05-post-descope-claim-alignment-audit.md`.

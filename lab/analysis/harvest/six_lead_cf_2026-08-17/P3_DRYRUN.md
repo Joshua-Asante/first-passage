@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-17
 **Authority:** operator un-HOLD → GO on P3 (this session) under
-[`docs/briefs/2026-08-17-six-lead-pursuit-plan.md`](../../../../docs/briefs/2026-08-17-six-lead-pursuit-plan.md)
+[`docs/briefs/programs/2026-08-17-six-lead-pursuit-plan.md`](../../../../docs/briefs/programs/2026-08-17-six-lead-pursuit-plan.md)
 §4 / §13. Licenses the plan's own Phase-1 item only: paper read, USOIL-carry
 dedup, Databento `estimate` (no pull).
 **Cost / K:** $0.00 billed · K=0 — metadata endpoints only; no
@@ -184,5 +184,5 @@ PYTHONPATH=lab .venv-research/Scripts/python.exe -m databento_fetch.db_fetch est
 # expect: cost $0.0000
 
 rg -n "calendar spread" lab/analysis/c1/tradeify_fade_stage0_2026-07-30/CARD.md
-rg -n "P3 \\(L5\\).*GO" docs/briefs/2026-08-17-six-lead-pursuit-plan.md
+rg -n "P3 \\(L5\\).*GO" docs/briefs/programs/2026-08-17-six-lead-pursuit-plan.md
 ```

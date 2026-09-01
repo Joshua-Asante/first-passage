@@ -11,7 +11,7 @@ roll-rule pin (`.v.0` not `.c.0`) already discharged in `databento-data` skill r
 2026-07-13
 **Artifacts:** [`RESULTS.md`](../../../lab/analysis/c1/tvcov_2026-07/RESULTS.md) ·
 [`pursuit c4`](../../pursuits/c4-q-tvcov-1.md) ·
-[`GSUB-1 inventory` row c4](../GSUB-1-inventory-and-dispositions.md)
+[`GSUB-1 inventory` row c4](../programs/GSUB-1-inventory-and-dispositions.md)
 
 > **Records-completeness note (2026-08-11).** INDEX Recently closed and the GSUB-1 pursuit record
 > both state a formal closure brief was never authored. This file reconstructs the disposition

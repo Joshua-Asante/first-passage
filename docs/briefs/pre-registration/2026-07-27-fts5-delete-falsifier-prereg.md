@@ -1,7 +1,7 @@
 # Verdict pre-registration — FTS5-as-Delete falsifier (limb A of the Hermes adoption ruling)
 
 **Status:** `FROZEN` — 2026-07-27, **BEFORE any index is built or any recall number is computed**
-**Parent brief:** [`docs/briefs/2026-07-27-hermes-agent-adoption-ruling.md`](../2026-07-27-hermes-agent-adoption-ruling.md) §6 limb A
+**Parent brief:** [`docs/briefs/programs/2026-07-27-hermes-agent-adoption-ruling.md`](../programs/2026-07-27-hermes-agent-adoption-ruling.md) §6 limb A
 **Operator ruling:** limb A resolved `A3` (Delete) on 2026-07-27
 **Bears on:** [`Q-XMEM-1`](../Q-XMEM-1-cross-surface-memory-sidecar-pilot.md) — whose own architecture stays frozen and untouched
 

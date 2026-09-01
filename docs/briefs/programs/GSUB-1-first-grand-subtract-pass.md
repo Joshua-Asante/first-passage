@@ -1,10 +1,10 @@
 # GSUB-1 — First GRAND-Subtract pass over the First Passage pursuit portfolio
 
 **Status:** `OPEN` — accepted 2026-08-09 alongside the
-[`GRAND-tier ADR`](../adr/2026-08-09-grand-tier-quintessentials-binding.md) (ratification note
+[`GRAND-tier ADR`](../../adr/2026-08-09-grand-tier-quintessentials-binding.md) (ratification note
 there); **CLOSED `RESOLVED-LOADBEARING` 2026-08-09** — all four phases executed same day →
 [`inventory + dispositions`](GSUB-1-inventory-and-dispositions.md) (37 rows, 19 differences) ·
-[`closure`](closures/GSUB-1-closure-resolved-loadbearing.md) · records at [`docs/pursuits/`](../pursuits/)
+[`closure`](../closures/GSUB-1-closure-resolved-loadbearing.md) · records at [`docs/pursuits/`](../../pursuits/)
 **Authored:** 2026-08-09
 **Closed:** N/A
 **Authors:** Joshua + claude.ai (advisor; repo-state-agnostic draft) + Claude Code (instantiation 2026-08-09)
@@ -16,7 +16,7 @@ Phase-3 dispositions are STRATEGIC-tier Deletes routed through the three-loop AD
 **D-S-A domain:** data (pre-Q gate on the inventory corpus) **+ pursuit** (dispositions, per ADR
 §2.4). Cascade: the pursuit-domain dispositions authorize *no* corpus-, system-, or
 meta-process-level D beyond what §7 states.
-**Artifact path:** `docs/briefs/GSUB-1-first-grand-subtract-pass.md`
+**Artifact path:** `docs/briefs/programs/GSUB-1-first-grand-subtract-pass.md`
 
 > **Authoring provenance + instantiation deltas.** Drafted repo-state-agnostic by design: repo
 > state has moved past advisor memory, so **this spec carries no pursuit inventory and no named
@@ -74,10 +74,10 @@ pursuit-level closes have no equivalent armor.
 
 ## §2 — Prior art / lineage
 
-- [`GRAND-tier ADR`](../adr/2026-08-09-grand-tier-quintessentials-binding.md) (`Proposed`) —
+- [`GRAND-tier ADR`](../../adr/2026-08-09-grand-tier-quintessentials-binding.md) (`Proposed`) —
   creates the tier, the pursuit domain, the lifecycle states, and the intake rule this run
   executes; its §4 falsifier is armed by this run's outcome.
-- [`Three-loop binding ADR`](../adr/2026-06-12-three-loop-methodology-binding.md) (`Accepted`) —
+- [`Three-loop binding ADR`](../../adr/2026-06-12-three-loop-methodology-binding.md) (`Accepted`) —
   D2 channel (c) is the pre-existing authority route for the Phase-3 dispositions.
 - No prior GSUB run exists (verified at instantiation: `GRAND|Quintessential|GSUB` grep over the
   repo returns only unrelated "grandfathered" tooling hits) — the question is genuinely novel at
@@ -131,7 +131,7 @@ execution.
 ## §6 — Gate criteria (closure verdict) and return taxonomy
 
 Closure is binary per §4; dispositions typed per
-[`iterate-closure-exit`](../adr/2026-08-04-iterate-closure-exit-mandatory.md):
+[`iterate-closure-exit`](../../adr/2026-08-04-iterate-closure-exit-mandatory.md):
 
 | Verdict | Trigger condition | Disposition (typed) |
 |---|---|---|
@@ -262,12 +262,12 @@ grep -rln "SUBTRACT" docs/pursuits/ --include="*.md"
 
 ```bash
 # Discipline checks — repo-side mechanical subset, then skill-side (canonical)
-python scripts/check_brief.py docs/briefs/GSUB-1-first-grand-subtract-pass.md --type inquire
-python ~/.claude/skills/brief-authoring/scripts/check_brief.py docs/briefs/GSUB-1-first-grand-subtract-pass.md --type inquire
+python scripts/check_brief.py docs/briefs/programs/GSUB-1-first-grand-subtract-pass.md --type inquire
+python ~/.claude/skills/brief-authoring/scripts/check_brief.py docs/briefs/programs/GSUB-1-first-grand-subtract-pass.md --type inquire
 # Expected: RESULT: well-formed / PASS
 
 # when spawned as a CC handoff:
-python scripts/check_brief.py docs/briefs/GSUB-1-first-grand-subtract-pass.md --type cc_handoff
+python scripts/check_brief.py docs/briefs/programs/GSUB-1-first-grand-subtract-pass.md --type cc_handoff
 
 # Rule-0 confirmation at run time (executing session):
 # git log -1 anchors for every §0 surface read in Phase 1

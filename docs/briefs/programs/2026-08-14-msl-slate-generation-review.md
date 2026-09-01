@@ -5,10 +5,10 @@
 **Closed:** 2026-08-14
 **Mark:** E1 HOLD — operator confirmation of plan `record_e1_hold` 2026-08-14. §6 table frozen (Trap #12).
 **Authors:** Cursor (recorder) — operator marked E1
-**Parent:** [MSL program plan](2026-08-12-msl-program-plan.md) §7 · [notice](../notes/notice/N-2026-08-14-msl-slate-3-constraints.md)
+**Parent:** [MSL program plan](2026-08-12-msl-program-plan.md) §7 · [notice](../../notes/notice/N-2026-08-14-msl-slate-3-constraints.md)
 **Loop:** Inquire-light Board packet — E1 recorded. $0 · K=0 · no camp · no card.
-**Closure:** [MSL-S7-closure-resolved-e1-hold](closures/MSL-S7-closure-resolved-e1-hold.md)
-**Artifact path:** `docs/briefs/2026-08-14-msl-slate-generation-review.md`
+**Closure:** [MSL-S7-closure-resolved-e1-hold](../closures/MSL-S7-closure-resolved-e1-hold.md)
+**Artifact path:** `docs/briefs/programs/2026-08-14-msl-slate-generation-review.md`
 
 ---
 
@@ -17,12 +17,12 @@
 | Path | Anchor |
 |---|---|
 | [plan](2026-08-12-msl-program-plan.md) §4–§7 | `4c86f8ea` 2026-08-14 |
-| [notice](../notes/notice/N-2026-08-14-msl-slate-3-constraints.md) | `c4dc069d` 2026-08-14 |
-| [charter](../spec/2026-08-12-msl-manual-sourcing-loop-charter.md) Gate | `8290b895` 2026-08-13 |
-| [ratification](../adr/2026-08-12-msl-sourcing-channel-ratification.md) | `c0d20bd0` 2026-08-12 |
-| [implied-SR reopen](../adr/2026-08-13-implied-sr-report-only-fade-reopen.md) | `cc26ba3e` |
-| [S2B closure](closures/MSL-S2B-closure-stage1-fail-route.md) | `8a75ab43` 2026-08-14 |
-| [C3 kill](closures/MSL-C3-closure-operator-kill.md) | `47db4d31` 2026-08-13 |
+| [notice](../../notes/notice/N-2026-08-14-msl-slate-3-constraints.md) | `c4dc069d` 2026-08-14 |
+| [charter](../../spec/2026-08-12-msl-manual-sourcing-loop-charter.md) Gate | `8290b895` 2026-08-13 |
+| [ratification](../../adr/2026-08-12-msl-sourcing-channel-ratification.md) | `c0d20bd0` 2026-08-12 |
+| [implied-SR reopen](../../adr/2026-08-13-implied-sr-report-only-fade-reopen.md) | `cc26ba3e` |
+| [S2B closure](../closures/MSL-S2B-closure-stage1-fail-route.md) | `8a75ab43` 2026-08-14 |
+| [C3 kill](../closures/MSL-C3-closure-operator-kill.md) | `47db4d31` 2026-08-13 |
 
 **Cheap falsifier (parent-side, this session):**
 
@@ -54,8 +54,8 @@ Plan §7 fires a Board review of **how slates are generated** after three Stage-
 
 ## §2 — Prior art / lineage
 
-- [first slate](2026-08-12-msl-first-slate.md) · [second slate](2026-08-13-msl-second-slate.md) · [notice](../notes/notice/N-2026-08-14-msl-slate-3-constraints.md) (constraints already frozen).
-- [MNQBASE-1](closures/MNQBASE-1-closure-intake-dry.md) bar: *not another pass over the same classes*.
+- [first slate](2026-08-12-msl-first-slate.md) · [second slate](2026-08-13-msl-second-slate.md) · [notice](../../notes/notice/N-2026-08-14-msl-slate-3-constraints.md) (constraints already frozen).
+- [MNQBASE-1](../closures/MNQBASE-1-closure-intake-dry.md) bar: *not another pass over the same classes*.
 - Charter FALSIFIED(yield) / FALSIFIED(process): unread as triggers here.
 
 ---
@@ -102,13 +102,13 @@ Plan §7 fires a Board review of **how slates are generated** after three Stage-
 
 | Card | Limb | Owner |
 |---|---|---|
-| C2 MGC | explore FALSIFIED | [closure](closures/MSL-C2-closure-falsified.md) |
-| C3 M2K | OPERATOR-KILL (Stage-1 PASS; no G0) — death **1/3** | [closure](closures/MSL-C3-closure-operator-kill.md) |
-| C3-K2 | explore FALSIFIED (both axes) | [closure](closures/MSL-C3-K2-closure-falsified.md) |
-| C1 MYM | explore FALSIFIED | [closure](closures/MSL-C1-closure-falsified.md) |
-| S2A MCL | explore FALSIFIED (N-ACT) | [closure](closures/MSL-S2A-closure-falsified.md) |
-| S2B MYM | STAGE-1 FAIL (route) — death **2/3** | [closure](closures/MSL-S2B-closure-stage1-fail-route.md) |
-| slate-3 | BLOCKED mechanism-dry — functional 3/3; counter stays 2/3 | [notice](../notes/notice/N-2026-08-14-msl-slate-3-constraints.md) |
+| C2 MGC | explore FALSIFIED | [closure](../closures/MSL-C2-closure-falsified.md) |
+| C3 M2K | OPERATOR-KILL (Stage-1 PASS; no G0) — death **1/3** | [closure](../closures/MSL-C3-closure-operator-kill.md) |
+| C3-K2 | explore FALSIFIED (both axes) | [closure](../closures/MSL-C3-K2-closure-falsified.md) |
+| C1 MYM | explore FALSIFIED | [closure](../closures/MSL-C1-closure-falsified.md) |
+| S2A MCL | explore FALSIFIED (N-ACT) | [closure](../closures/MSL-S2A-closure-falsified.md) |
+| S2B MYM | STAGE-1 FAIL (route) — death **2/3** | [closure](../closures/MSL-S2B-closure-stage1-fail-route.md) |
+| slate-3 | BLOCKED mechanism-dry — functional 3/3; counter stays 2/3 | [notice](../../notes/notice/N-2026-08-14-msl-slate-3-constraints.md) |
 
 ---
 
@@ -116,10 +116,10 @@ Plan §7 fires a Board review of **how slates are generated** after three Stage-
 
 ```bash
 test ! -d lab/analysis/c1/msl_s3a_mcl_2026-08
-rg -n "OWED-election" docs/briefs/2026-08-14-msl-slate-generation-review.md docs/briefs/2026-08-12-msl-program-plan.md
+rg -n "OWED-election" docs/briefs/programs/2026-08-14-msl-slate-generation-review.md docs/briefs/programs/2026-08-12-msl-program-plan.md
 rg -n "Status:.*RATIFIED" docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md
 # Expected until E2 ADR: charter still RATIFIED; this packet still OWED-election
-rg -n "FALSIFIED\\(yield\\)" docs/briefs/2026-08-14-msl-slate-generation-review.md
+rg -n "FALSIFIED\\(yield\\)" docs/briefs/programs/2026-08-14-msl-slate-generation-review.md
 # Expected: only the reject-H / forbidden-move lines, not a claimed fire
 ```
 
@@ -128,7 +128,7 @@ rg -n "FALSIFIED\\(yield\\)" docs/briefs/2026-08-14-msl-slate-generation-review.
 ## Verification
 
 ```bash
-python3 scripts/check_brief.py docs/briefs/2026-08-14-msl-slate-generation-review.md --type inquire
-git log -1 --format='%h %cs' -- docs/briefs/2026-08-12-msl-program-plan.md
-rg -n "2/3" docs/briefs/2026-08-12-msl-program-plan.md
+python3 scripts/check_brief.py docs/briefs/programs/2026-08-14-msl-slate-generation-review.md --type inquire
+git log -1 --format='%h %cs' -- docs/briefs/programs/2026-08-12-msl-program-plan.md
+rg -n "2/3" docs/briefs/programs/2026-08-12-msl-program-plan.md
 ```

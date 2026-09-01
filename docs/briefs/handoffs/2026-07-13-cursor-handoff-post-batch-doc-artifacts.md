@@ -36,7 +36,7 @@ Cursor: read each item and post a read-report in your first response **before** 
 - `docs/briefs/closures/Q-HARV-0-month-end-rebalance-ES.md` — report **the whole file**, especially the section **"Lane observations (for deferred HARV ADR — appendix harvest)"** and **"What a fresh brief would need"**. This is the primary source; the ADR harvests it.
 - `docs/adr/2026-07-11-discovery-campaign-defaults-ratified.md` and `docs/adr/2026-07-11-tradable-anomalies-statistics-adoption.md` — report §Decision + the forward-board/§7 sections. These are the standing discovery-campaign governance chain the HARV lane ADR sits **within** (it ratifies a lane, it does not supersede these).
 - `docs/adr/2026-07-12-dsr-k-rule-and-variance-floor-supersession.md` — report §Decision (K-floor + V=1/n pin) — the third governance-chain piece.
-- `docs/briefs/DISC-CAMP-0-closure-falsified.md` — report the process-defect log (PD-1…PD-8) + the §verdict. DISC-CAMP-0 (mechanism-blind shakedown) is the **second evidence point** for the lane ADR; Q-HARV-0 (mechanism-first) is the first.
+- `docs/briefs/closures/DISC-CAMP-0-closure-falsified.md` — report the process-defect log (PD-1…PD-8) + the §verdict. DISC-CAMP-0 (mechanism-blind shakedown) is the **second evidence point** for the lane ADR; Q-HARV-0 (mechanism-first) is the first.
 - `git ls-tree origin/main docs/adr/ | grep -i harv` — report the result (expect **empty**; if a HARV ADR exists, `NEEDS_CONTEXT`).
 
 **For (c) — the D1 successor-risk Pre-Q scaffold:**

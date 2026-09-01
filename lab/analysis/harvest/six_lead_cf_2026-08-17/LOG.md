@@ -1,7 +1,7 @@
 # P1-CF / P2-CF — six-lead pursuit plan cheap falsifiers — LOG
 
 **Date:** 2026-08-17
-**Authority:** [`docs/briefs/2026-08-17-six-lead-pursuit-plan.md`](../../../../docs/briefs/2026-08-17-six-lead-pursuit-plan.md)
+**Authority:** [`docs/briefs/programs/2026-08-17-six-lead-pursuit-plan.md`](../../../../docs/briefs/programs/2026-08-17-six-lead-pursuit-plan.md)
 §4 (asymmetric-by-declaration) + §Phase-0-findings §4-design-freeze; operator GO on P1/P2 recorded
 same day.
 **Runner:** [`run_cf.py`](run_cf.py). **Trades:** `trades_{P1,P2}_{MGC,6J}.csv`. **Summary:** `SUMMARY.csv`.

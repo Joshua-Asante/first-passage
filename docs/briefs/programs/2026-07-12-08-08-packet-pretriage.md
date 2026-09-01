@@ -11,7 +11,7 @@
 **Loop of record:** STRATEGIC
 **D-S-A domain:** meta-process (Delete against the review slate/calendar — explicit **no-cascade**: this brief authorizes no data-corpus deletion and no finding disposition; items pruned are rescheduled or reclassified, never adjudicated by omission)
 **Authored:** 2026-07-12 · **Must land before:** 2026-08-01 (one full session ahead of the gate)
-**Related:** `STATE.md` forward-trigger board; `docs/methodology/strategy_lifecycle.md`; [`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](../adr/2026-07-11-challenge-era-claims-rescope.md); [`docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md`](../adr/2026-07-12-prop-portfolio-four-friendly-firms.md); [`ops/prop_envelope_default.md`](../../ops/prop_envelope_default.md); [`docs/adr/2026-06-07-decompound-remc-hold.md`](../adr/2026-06-07-decompound-remc-hold.md); [`docs/notes/notice/N-2026-07-11-terminal-standing-displaces-portfolio-action.md`](../notes/notice/N-2026-07-11-terminal-standing-displaces-portfolio-action.md)
+**Related:** `STATE.md` forward-trigger board; `docs/methodology/strategy_lifecycle.md`; [`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](../../adr/2026-07-11-challenge-era-claims-rescope.md); [`docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md`](../../adr/2026-07-12-prop-portfolio-four-friendly-firms.md); [`ops/prop_envelope_default.md`](../../ops/prop_envelope_default.md); [`docs/adr/2026-06-07-decompound-remc-hold.md`](../../adr/2026-06-07-decompound-remc-hold.md); [`docs/notes/notice/N-2026-07-11-terminal-standing-displaces-portfolio-action.md`](../../notes/notice/N-2026-07-11-terminal-standing-displaces-portfolio-action.md)
 **Verification:** classification checked by an adversarially-verified 10-agent workflow (2026-07-12) — 4 owed reads, 3 new-artifact confirmations, 1 bidirectional STATE↔class audit, 2 adversarial passes. Corrections applied are logged in §2.5.
 
 ---
@@ -19,9 +19,9 @@
 **Read earlier this session (parent):** `STATE.md` (full); `docs/SESSIONS.md` (top 8 entries); `docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md`; `docs/methodology/strategy_lifecycle.md` (Calls 1–5); the rescope ADR (§4/§5); `PIPELINES.md` (full); `docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md` (full, git `0e26a7b`, **merged to main**); `ops/prop_envelope_default.md` (full, git `802ee60`); `ops/instruments/6J.md` (full — B2 substantiation + the stale rail line); `core/firm_rules.py` (registry — `AUTOMATION_FRIENDLY_PROP_FIRMS` confirmed landed); `tests/core/test_automation_friendly_prop_firms.py`.
 
 **Owed reads — now DISCHARGED (were flagged, not skipped; §3 was gated on these):**
-- **[`docs/adr/2026-05-11-objective-map-section-4-tighten-falsifier.md`](../adr/2026-05-11-objective-map-section-4-tighten-falsifier.md)** (git `31110f5`, 2026-05-13). ✅ Confirms the **Q7-close audit hook is dated 2026-07-19** and is a one-shot precursor, **OFF the 08-08 slate** (not silently folded). **Two caveats now carried (§2 Off-slate row):** the ADR Status is still `Proposed` (never flipped to Accepted), and the hook counts metrics in the **Notion Objective-Map Registry, which was retired 2026-06-12** — so whether the 2026-07-19 hook can fire against a live Registry is itself an open question. Q7 is ~1 week out (nearer than the slate).
-- **[`docs/notes/notice/N-2026-07-11-terminal-standing-displaces-portfolio-action.md`](../notes/notice/N-2026-07-11-terminal-standing-displaces-portfolio-action.md)** (git `c7f8990`, 2026-07-11). ✅ §10 hook text + graduation criteria extracted. **Result contradicts the draft's A5 placement → reclassified A→C** (§2.5 correction #1). Verbatim §5: *"Re-check date: 2026-08-08 (rides the existing quarterly regime check and its `accept-beta` fork — the same review Q-DECAY-1 feeds)."* The date is **inherited, not load-bearing**; fire log is empty; neither terminal branch (graduate on ≥1 fire / drop after 2 quiet windows) can fire at the first window.
-- **[`docs/adr/2026-07-03-hardcore-p3-compounding-ceiling-amendment.md`](../adr/2026-07-03-hardcore-p3-compounding-ceiling-amendment.md)** (git `a5de124`) and **[`…-p4-tail-survival-gate.md`](../adr/2026-07-03-hardcore-p4-tail-survival-gate.md)** (git `f2be990`). ✅ **P3 "Kill-D" = Class C confirmed** (standing documentary check; 08-08 explicitly non-load-bearing; existence bar dormant under R6). **P4 = Class C confirmed but rationale CORRECTED** — P4 is **not** a historical-semantics diagnostic like C1; it is a *dependent reading of the KEPT, still-live bust/p99-DD regime falsifier* (the 06-07 HOLD §4 limb-2), and its substance is delegated to A2/D2 (§2.5 correction #4).
+- **[`docs/adr/2026-05-11-objective-map-section-4-tighten-falsifier.md`](../../adr/2026-05-11-objective-map-section-4-tighten-falsifier.md)** (git `31110f5`, 2026-05-13). ✅ Confirms the **Q7-close audit hook is dated 2026-07-19** and is a one-shot precursor, **OFF the 08-08 slate** (not silently folded). **Two caveats now carried (§2 Off-slate row):** the ADR Status is still `Proposed` (never flipped to Accepted), and the hook counts metrics in the **Notion Objective-Map Registry, which was retired 2026-06-12** — so whether the 2026-07-19 hook can fire against a live Registry is itself an open question. Q7 is ~1 week out (nearer than the slate).
+- **[`docs/notes/notice/N-2026-07-11-terminal-standing-displaces-portfolio-action.md`](../../notes/notice/N-2026-07-11-terminal-standing-displaces-portfolio-action.md)** (git `c7f8990`, 2026-07-11). ✅ §10 hook text + graduation criteria extracted. **Result contradicts the draft's A5 placement → reclassified A→C** (§2.5 correction #1). Verbatim §5: *"Re-check date: 2026-08-08 (rides the existing quarterly regime check and its `accept-beta` fork — the same review Q-DECAY-1 feeds)."* The date is **inherited, not load-bearing**; fire log is empty; neither terminal branch (graduate on ≥1 fire / drop after 2 quiet windows) can fire at the first window.
+- **[`docs/adr/2026-07-03-hardcore-p3-compounding-ceiling-amendment.md`](../../adr/2026-07-03-hardcore-p3-compounding-ceiling-amendment.md)** (git `a5de124`) and **[`…-p4-tail-survival-gate.md`](../../adr/2026-07-03-hardcore-p4-tail-survival-gate.md)** (git `f2be990`). ✅ **P3 "Kill-D" = Class C confirmed** (standing documentary check; 08-08 explicitly non-load-bearing; existence bar dormant under R6). **P4 = Class C confirmed but rationale CORRECTED** — P4 is **not** a historical-semantics diagnostic like C1; it is a *dependent reading of the KEPT, still-live bust/p99-DD regime falsifier* (the 06-07 HOLD §4 limb-2), and its substance is delegated to A2/D2 (§2.5 correction #4).
 
 **§3 is now unblocked** — all three owed reads landed and their findings are folded into §2.
 
@@ -31,7 +31,7 @@
 
 ### What changed today (2026-07-12), verified
 Two artifacts landed **on main** and reshape this packet:
-1. **[`docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md`](../adr/2026-07-12-prop-portfolio-four-friendly-firms.md)** (`Accepted`, git `0e26a7b`) reopens futures-prop — **not** by reversing R6 (the locked book's fan-out stays NO-GO; DJ30→MYM and NAS100 falsifiers stand), but by authorizing a **new, greenfield discover → productionalize → execute program** at four attended-automation firms (Bulenox, Tradeify, MyFundedFutures, BluSky), fed by the same Gen-2 pipeline DISC-CAMP-0 sits inside. Rail build + account registration **remain gated**; `ACTIVE_FIRM` stays FXIFY. *(Body historical as of 2026-07-12; `ACTIVE_FIRM` live default is now `Tradeify_Select_100K` — substrate Phase 1 2026-07-22; see living-board supersessions banner above.)*
+1. **[`docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md`](../../adr/2026-07-12-prop-portfolio-four-friendly-firms.md)** (`Accepted`, git `0e26a7b`) reopens futures-prop — **not** by reversing R6 (the locked book's fan-out stays NO-GO; DJ30→MYM and NAS100 falsifiers stand), but by authorizing a **new, greenfield discover → productionalize → execute program** at four attended-automation firms (Bulenox, Tradeify, MyFundedFutures, BluSky), fed by the same Gen-2 pipeline DISC-CAMP-0 sits inside. Rail build + account registration **remain gated**; `ACTIVE_FIRM` stays FXIFY. *(Body historical as of 2026-07-12; `ACTIVE_FIRM` live default is now `Tradeify_Select_100K` — substrate Phase 1 2026-07-22; see living-board supersessions banner above.)*
 2. Its constraint set, **[`ops/prop_envelope_default.md`](../../ops/prop_envelope_default.md)** (git `802ee60`), is seeded and already the scoring target for candidates (verified: Q-HARV-0 was scored against it) but remains **PROVISIONAL v0.1** — its §5 lists five open items (E1 deadline print, E2 checkpoint semantics, E7 default-vs-overlay, ETF policy, the ratifying ADR).
 
 ### The load-bearing finding: a resource collision at 2026-11-08 (CONFIRMED)
@@ -107,7 +107,7 @@ Owed follow-through (this session): SESSIONS.md entries for the four-firms ADR +
 
 **S · STATE.md forward-board skew fixed same session:** the obligations that showed as "phantoms" *because STATE never registered them* — the prop-portfolio 08-08 check + 11-08 hard falsifier (C7 / the collision's second half), prop_envelope v1.0 ratification (B1), multiplier-spine forward-relevance (B3), and the decompound §4 regime re-MC (A5) — were added to STATE's forward board on 2026-07-12, plus a dated section for the four-firms program. This is doc-skew repair, not a slate change (no-cascade holds).
 
-**Addendum (2026-07-13) — proposed input to A1 (accept-beta fork), NOT a slate change:** the ratified Stage-8 exposure-companion ADR ([`2026-07-13-stage8-mechanistic-exposure-companion`](../adr/2026-07-13-stage8-mechanistic-exposure-companion.md) §2c) hands the packet owner a proposed **shock-conditional MC module** for the program-level MC pricing the accept-beta decision: impose an adverse NY-morning gap over a pre-registered grid (e.g. −1% to −5%) on a max-concurrency day, all in-market legs at entry-time sizing, evaluated against per-account rule sets — because stream resampling cannot generate the common-mode event (zero occurrences in the 7-yr panels). Packet owner accepts/rejects at packet assembly; the ADR's own §4 falsifier (first run owed with the 08-08 packet work, hard check 2026-11-08) prices whether the module is material (≥1pp bust-delta anywhere on the grid) or demotes to annotation-only.
+**Addendum (2026-07-13) — proposed input to A1 (accept-beta fork), NOT a slate change:** the ratified Stage-8 exposure-companion ADR ([`2026-07-13-stage8-mechanistic-exposure-companion`](../../adr/2026-07-13-stage8-mechanistic-exposure-companion.md) §2c) hands the packet owner a proposed **shock-conditional MC module** for the program-level MC pricing the accept-beta decision: impose an adverse NY-morning gap over a pre-registered grid (e.g. −1% to −5%) on a max-concurrency day, all in-market legs at entry-time sizing, evaluated against per-account rule sets — because stream resampling cannot generate the common-mode event (zero occurrences in the 7-yr panels). Packet owner accepts/rejects at packet assembly; the ADR's own §4 falsifier (first run owed with the 08-08 packet work, hard check 2026-11-08) prices whether the module is material (≥1pp bust-delta anywhere on the grid) or demotes to annotation-only.
 
 ---
 ## §3 — Recommended disposition
@@ -129,7 +129,7 @@ Owed follow-through (this session): SESSIONS.md entries for the four-firms ADR +
 ```bash
 # Forward leg (STATE -> class): every STATE.md forward-trigger dated 2026-08-08 maps to exactly one class.
 grep -n "2026-08-08\|08-08" STATE.md
-grep -n "Class A\|Class B\|Class C\|Off-slate" docs/briefs/2026-07-12-08-08-packet-pretriage.md
+grep -n "Class A\|Class B\|Class C\|Off-slate" docs/briefs/programs/2026-07-12-08-08-packet-pretriage.md
 
 # Reverse leg (class -> STATE): every Class A/B/C item is EITHER a STATE 08-08 trigger OR has a named
 # canonical home (ledger / ADR / SESSIONS). Any item that is neither is a phantom -> challenge it.
@@ -139,7 +139,7 @@ grep -n "Class A\|Class B\|Class C\|Off-slate" docs/briefs/2026-07-12-08-08-pack
 
 # Compound-bullet decomposition: STATE L179 (Q-HARV-0) carries TWO 08-08 items -
 #   (a) buy-positioning-data fork = A4 ; (b) successor pre-Q = C4. Both must be present.
-grep -n "buy-positioning\|successor pre-Q\|fork" STATE.md docs/briefs/2026-07-12-08-08-packet-pretriage.md
+grep -n "buy-positioning\|successor pre-Q\|fork" STATE.md docs/briefs/programs/2026-07-12-08-08-packet-pretriage.md
 
 # Collision witness: STATE must now register BOTH 11-08 hard dates (D1 successor Pre-Q + prop falsifier).
 grep -n "2026-11-08" STATE.md
@@ -149,7 +149,7 @@ grep -n "2026-11-08" STATE.md
 ## §6 — Verification
 ```bash
 # Discipline checks (mechanical)
-python ~/.claude/skills/brief-authoring/scripts/check_brief.py docs/briefs/2026-07-12-08-08-packet-pretriage.md
+python ~/.claude/skills/brief-authoring/scripts/check_brief.py docs/briefs/programs/2026-07-12-08-08-packet-pretriage.md
 # §0 anchors
 git log -1 --format='%h %ci' -- docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md   # expect 0e26a7b
 git log -1 --format='%h %ci' -- docs/notes/notice/N-2026-07-11-terminal-standing-displaces-portfolio-action.md
@@ -191,10 +191,10 @@ disposition, §10 hook #4). The table, §3, and §10 above are byte-unedited; th
 correction.
 
 1. **A5 (decompound-HOLD §4 limb-2 regime re-MC) was struck from Class A.**
-   [`docs/adr/2026-08-02-pepperstone-feed-retirement.md`](../adr/2026-08-02-pepperstone-feed-retirement.md)
+   [`docs/adr/2026-08-02-pepperstone-feed-retirement.md`](../../adr/2026-08-02-pepperstone-feed-retirement.md)
    §2-B/§2-D struck it outright (Pepperstone feed + CFD venue both retired — the panel A5 read
    is gone). It is now **SUSPENDED-ORPHANED / permanently `NOT_EXECUTABLE`**, per
-   [`docs/adr/2026-06-07-decompound-remc-hold.md`](../adr/2026-06-07-decompound-remc-hold.md)'s
+   [`docs/adr/2026-06-07-decompound-remc-hold.md`](../../adr/2026-06-07-decompound-remc-hold.md)'s
    own 2026-08-03 addendum — and the **quarterly schedule itself is struck**, not deferred: no
    future 08-08/11-08/02-08/05-08 date carries a live A5 obligation. §2's Class A row and §10
    hook #4 (`grep -n "regime_gate|decompound-HOLD.*§4|limb-2|55%" STATE.md`) can no longer be
@@ -208,7 +208,7 @@ correction.
    the ORB-MNQ correct-clock scorecard).
 
 3. **The self-declared successor was never linked forward from here, and is itself stale.**
-   [`docs/briefs/2026-07-17-0808-packet-delta-and-sequence.md`](2026-07-17-0808-packet-delta-and-sequence.md)
+   [`docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md`](2026-07-17-0808-packet-delta-and-sequence.md)
    records the A5 strike and the A1 re-scope in more detail than this brief ever did — but this
    file carries no pointer to it, and that successor brief carries its own 2026-08-06 reader
    intercept flagging that it predates the 2026-08-04 Tradeify venue de-scope and must not be
@@ -216,7 +216,7 @@ correction.
 
 4. **The literal 2026-08-08 date passed, but not via anything this brief adjudicated.** The
    session that actually landed on 2026-08-08 was the 47-ADR-rider Great Prune sweep
-   ([`docs/notes/audits/programme-audit/2026-08-08-quarterly-audit.md`](../notes/audits/programme-audit/2026-08-08-quarterly-audit.md)) —
+   ([`docs/notes/audits/programme-audit/2026-08-08-quarterly-audit.md`](../../notes/audits/programme-audit/2026-08-08-quarterly-audit.md)) —
    a rider-discharge audit that never names this brief, A1, A5, or D2 by row. It touches the
    decompound-HOLD limb-2 orphaning only in passing (as one of three gates whose
    unfalsifiability it propagated to, §"Unfalsifiable census"). **Class A/B/C as classified in §2
@@ -224,7 +224,7 @@ correction.
    slate as §3 instructed.
 
 **Pointers:** decompound-HOLD ADR addendum —
-[`docs/adr/2026-06-07-decompound-remc-hold.md`](../adr/2026-06-07-decompound-remc-hold.md)
+[`docs/adr/2026-06-07-decompound-remc-hold.md`](../../adr/2026-06-07-decompound-remc-hold.md)
 (§4 banner + §Addendum 2026-08-03); Pepperstone retirement ADR —
-[`docs/adr/2026-08-02-pepperstone-feed-retirement.md`](../adr/2026-08-02-pepperstone-feed-retirement.md)
+[`docs/adr/2026-08-02-pepperstone-feed-retirement.md`](../../adr/2026-08-02-pepperstone-feed-retirement.md)
 §2-B/§2-C/§2-D.

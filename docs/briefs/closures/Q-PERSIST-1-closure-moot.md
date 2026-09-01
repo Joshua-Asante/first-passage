@@ -54,3 +54,13 @@ No MC re-pin, no production block-length change, no resampler adoption. **Did no
 
 ## Anchors
 `portfolio_mc.py`@`83e589f` · Q-REGIME-TIME-1 `RESULTS.md`@`7196893` / analysis `6d843ac` / handoff@`66d25ce` · decompound panel basis `lab/analysis/regime/decompound_remc_2026-06-07/`@`0d6465c`.
+## Iterate — loop exit
+
+- **Verdict used:** `MOOT / ALREADY-ANSWERED` — Q-REGIME-TIME-1 already measured the iid-weekly vs persistence-preserving block comparison (+0.46pp bust on the decompounded panel).
+- **Model update:** Production one-week MC resampling understates bust probability directionally; magnitude on the locked 2022–26 anchor is bounded-small and feasibility-unmeasured (panel absent in-worktree).
+- **Next:** STOP
+- **Routing:** STOP — no fresh computation owed; paired with Q-DECAY-1 as the accept-beta probability input.
+- **Entry packet:** n/a
+- **Stop rule / re-proposal bar:** Locked-panel re-measurement needs the panel restored locally (Rule 9); bounded above by +0.46pp — not a re-pin.
+- **Board write:** none — STOP, nothing owed; re-check hook consumed by the 2026-08-08 accept-beta fork ([`2026-07-14-a1-accept-beta-preassembly.md`](../programs/2026-07-14-a1-accept-beta-preassembly.md)).
+- **Registry:** n/a — MOOT / already-answered MC persistence analysis; not a strategy-grounds kill.

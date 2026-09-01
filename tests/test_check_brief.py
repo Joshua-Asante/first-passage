@@ -351,7 +351,7 @@ def test_infer_adr_from_filename(tmp_path):
 # four-state spawn taxonomy. Pre-fix, `"0.5" in split_sections` classified
 # this as handoff and HARD-failed the missing DONE/DONE_WITH_CONCERNS/…
 # tokens — the Form Check false-positive on
-# docs/briefs/GSUB-2-park-cohort-early-review.md (2026-08-19 panel).
+# docs/briefs/programs/GSUB-2-park-cohort-early-review.md (2026-08-19 panel).
 INQUIRE_WITH_SECTION_05 = WELL_FORMED.replace(
     "# ADR — sample decision",
     "# GSUB-2 — park-cohort early review\n\n"
@@ -426,14 +426,14 @@ def test_infer_handoff_from_brief_type_header(tmp_path):
 
 
 def test_infer_real_gsub1_is_brief_not_handoff():
-    path = REPO_ROOT / "docs/briefs/GSUB-1-first-grand-subtract-pass.md"
+    path = REPO_ROOT / "docs/briefs/programs/GSUB-1-first-grand-subtract-pass.md"
     assert path.exists(), "GSUB-1 is the live Inquire-style + §0.5 fixture"
     text = path.read_text(encoding="utf-8")
     assert cb.infer_type(path, text) == "brief"
 
 
 def test_infer_real_gsub2_is_brief_not_handoff():
-    path = REPO_ROOT / "docs/briefs/GSUB-2-park-cohort-early-review.md"
+    path = REPO_ROOT / "docs/briefs/programs/GSUB-2-park-cohort-early-review.md"
     if not path.exists():
         return  # not on this checkout; INQUIRE_WITH_SECTION_05 covers the shape
     text = path.read_text(encoding="utf-8")

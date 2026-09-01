@@ -33,6 +33,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-01b — `docs/briefs/` root leftovers filed (queue-exception: briefs-root leftovers)
+
+**Focus:** Off-queue hygiene — file dated program/slate/plan/ruling leftovers and stray closures out of `docs/briefs/` root per leftovers-only plan; retain `Q-*.md` bodies at root.
+**Shipped:** `docs/briefs-root-leftovers` — `git mv` 25 files → [`docs/briefs/programs/`](briefs/programs/); 4 stray closures → [`docs/briefs/closures/`](briefs/closures/); inbound path sweep; [`docs/briefs/README.md`](briefs/README.md) convention table; [`scripts/repo_retrieve.py`](../scripts/repo_retrieve.py) `programs/` corpus widen.
+**Decisions/defects:** none — W5 hygiene only; no ADR.
+**Open / next:** STATE queue: #1 [Acceptable strategy on the ruled host](../docs/superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · #2 [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+**Live-ops state:** unchanged — c1 rail disarmed; no arm.
+
+---
+
 ## 2026-09-01a — F1 reversed: Tradeify now counts toward the prop-portfolio §4 firm-count
 
 **Focus:** Operator asked to change the 08-23 F1 ruling (a Tradeify-resting §4 discharge doesn't

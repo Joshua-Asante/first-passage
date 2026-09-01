@@ -2,7 +2,7 @@
 
 **Status:** `STAGE-0 PASS` · **PROCEED 2026-08-14** · **$0 · K=0**
 **Card:** MSL-S2B · instrument **MYM** · mechanism **`sweep-failure-filtered-continuation`** (NEW; declared here, frozen at Stage-1)
-**Parent:** [MSL charter](../../../docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md) step 1 pins · [second slate §MSL-S2B](../../../docs/briefs/2026-08-13-msl-second-slate.md) · [design-box ADR](../../../docs/adr/2026-08-13-msl-slate-2-design-box.md) · [B8 occupancy](../../../docs/adr/2026-08-12-msl-mym-occupancy-release.md)
+**Parent:** [MSL charter](../../../docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md) step 1 pins · [second slate §MSL-S2B](../../../docs/briefs/programs/2026-08-13-msl-second-slate.md) · [design-box ADR](../../../docs/adr/2026-08-13-msl-slate-2-design-box.md) · [B8 occupancy](../../../docs/adr/2026-08-12-msl-mym-occupancy-release.md)
 
 This record discharges Stage-0 hygiene for S2B: Rule-8 dedup paste, panel/CONFIRM pins, mechanism-id draft, occupancy cite. It is **not** Stage-1. **No SNAG registration** — MYM already carries `index-intraday-ohlcv-directional-timing-2026-07-21`.
 
@@ -12,7 +12,7 @@ This record discharges Stage-0 hygiene for S2B: Rule-8 dedup paste, panel/CONFIR
 
 | Source | Anchor (`git log -1`) | What it grounds |
 |---|---|---|
-| [second slate §S2B](../../../docs/briefs/2026-08-13-msl-second-slate.md) | `0a206373` | Card text; route kill limb #1; filter≠entry; kill list |
+| [second slate §S2B](../../../docs/briefs/programs/2026-08-13-msl-second-slate.md) | `0a206373` | Card text; route kill limb #1; filter≠entry; kill list |
 | [MSL charter](../../../docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md) steps 1–4 | `8290b895` | Pre-G0 steps; G0 needs B4 |
 | [C1 closure](../../../docs/briefs/closures/MSL-C1-closure-falsified.md) · [`RESULTS_g2`](../../archive/msl_c1_mym_2026-08/RESULTS_g2.md) | `0a206373` | DELETE PASS both arms (filter asset); entry FALSIFIED |
 | [B8 occupancy ADR](../../../docs/adr/2026-08-12-msl-mym-occupancy-release.md) | `c0d20bd0` | `MYM1!` released for non-Striker MSL/G0 |

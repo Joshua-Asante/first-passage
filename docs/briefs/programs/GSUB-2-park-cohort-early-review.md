@@ -2,8 +2,8 @@
 
 **Status:** `CLOSED` `RESOLVED-LOADBEARING` 2026-08-19 — all phases executed same day → both
 nominations (b2, c1) ratified by Joshua →
-[`closure`](closures/GSUB-2-closure-resolved-loadbearing.md) · records at
-[`b2`](../pursuits/b2-striker-mym-reconstruction.md) / [`c1`](../pursuits/c1-q-xmem-1.md)
+[`closure`](../closures/GSUB-2-closure-resolved-loadbearing.md) · records at
+[`b2`](../../pursuits/b2-striker-mym-reconstruction.md) / [`c1`](../../pursuits/c1-q-xmem-1.md)
 **Authored:** 2026-08-19
 **Closed:** N/A
 **Authors:** Claude Code (proposing office)
@@ -11,9 +11,9 @@ nominations (b2, c1) ratified by Joshua →
 **Loop:** Inquire-style brief, GRAND-tier — closure gated on §4 (disposition-difference count),
 same shape as GSUB-1
 **Loop-of-Record:** GRAND — pursuit-domain dispositions, per
-[GRAND-tier ADR](../adr/2026-08-09-grand-tier-quintessentials-binding.md) §2.4.
+[GRAND-tier ADR](../../adr/2026-08-09-grand-tier-quintessentials-binding.md) §2.4.
 **D-S-A domain:** pursuit (dispositions only; no corpus-, system-, or meta-process-level D).
-**Artifact path:** `docs/briefs/GSUB-2-park-cohort-early-review.md`
+**Artifact path:** `docs/briefs/programs/GSUB-2-park-cohort-early-review.md`
 
 ---
 
@@ -31,7 +31,7 @@ same shape as GSUB-1
 - `docs/personas/ownership-map.md` (Layer 2 pursuit classification) — anchor `90fbc52` 2026-08-19.
 - `docs/adr/2026-08-09-grand-tier-quintessentials-binding.md` (§2.3 lifecycle states, §2.3 permitted
   test discipline via GSUB-1 §7 Phase 2) — anchor `57d355e` 2026-08-19.
-- `docs/briefs/GSUB-1-inventory-and-dispositions.md` (original PARK dispositions + tests applied) —
+- `docs/briefs/programs/GSUB-1-inventory-and-dispositions.md` (original PARK dispositions + tests applied) —
   anchor `bd283dd` 2026-08-16.
 - `docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md` (just ratified this session — the
   review mechanism this brief's Phase 2.5 invokes) — anchor `66410ed` 2026-08-19.
@@ -64,7 +64,7 @@ pass does **not** exist because that mechanism is broken; it exists for two inde
    design spec's own §13 rehearsal record explicitly could not count toward the panel's §4
    falsifier because it ran against an already-closed, already-ratified inventory (GSUB-1). A
    genuine pre-ratification GRAND review is the only thing that can produce that first data point,
-   per the [persona-hierarchy ADR](../adr/2026-08-19-loop-persona-hierarchy-review-panel.md) §4 and
+   per the [persona-hierarchy ADR](../../adr/2026-08-19-loop-persona-hierarchy-review-panel.md) §4 and
    the design spec's own §10.
 2. **Some PARKs in the cohort show zero new evidence and a widening idle window**, which is exactly
    the accretion symptom the GRAND tier exists to catch (GRAND ADR §1.4) — waiting mechanically
@@ -79,9 +79,9 @@ pass does **not** exist because that mechanism is broken; it exists for two inde
 - [GSUB-1 inventory + dispositions](GSUB-1-inventory-and-dispositions.md) — the eight PARK rows this
   pass re-examines, and the permitted/forbidden subtract-test list (§7 Phase 2) this pass inherits
   verbatim.
-- [GRAND-tier ADR](../adr/2026-08-09-grand-tier-quintessentials-binding.md) — pursuit lifecycle
+- [GRAND-tier ADR](../../adr/2026-08-09-grand-tier-quintessentials-binding.md) — pursuit lifecycle
   states (§2.3), cadence (§2.6: binds to the quarterly gate, but does not bar an off-cycle review).
-- [Persona-hierarchy ADR](../adr/2026-08-19-loop-persona-hierarchy-review-panel.md), ratified this
+- [Persona-hierarchy ADR](../../adr/2026-08-19-loop-persona-hierarchy-review-panel.md), ratified this
   session — the panel mechanism this brief's Phase 2.5 invokes for the first real time.
 - No prior early-PARK-review pass exists (verified: `GSUB-2|early.*review|park.*cohort` grep over
   `docs/briefs/` and `STATE.md` returns only this brief).
@@ -195,7 +195,7 @@ proposals for the panel (Phase 2.5) and Joshua (Phase 3) to accept, reject, or a
 ### Phase 2.5 — Persona-hierarchy panel review (first real, non-rehearsal use)
 
 Convened via `Workflow({ name: "pre-ratification-adversarial-panel", args: { targetPath:
-"docs/briefs/GSUB-2-park-cohort-early-review.md", tier: "GRAND", personas: ["cio", "coo"] } })`
+"docs/briefs/programs/GSUB-2-park-cohort-early-review.md", tier: "GRAND", personas: ["cio", "coo"] } })`
 (`cro` auto-added per the mandatory-GRAND-CRO rule). CIO covers b1/b2/b3/b6/b7/c3 (Front office, Head
 of Research/Execution domains — per `docs/personas/ownership-map.md` Layer 2, all six rows are
 Office=Front); COO covers c1 (Back office, Head of Engineering domain); CRO reviews every row
@@ -220,7 +220,7 @@ brief, never as a substitute for it.
 
 If either nomination is ratified: the corresponding `docs/pursuits/` record is updated in place
 (Standing: PARK → SUBTRACT, re-entry armor clause added per GRAND ADR §2.3), and
-`docs/briefs/GSUB-1-inventory-and-dispositions.md` gains a superseding note at the affected row
+`docs/briefs/programs/GSUB-1-inventory-and-dispositions.md` gains a superseding note at the affected row
 (never silently edited). If neither is ratified: no record changes; this brief is itself the audit
 trail.
 
@@ -247,13 +247,13 @@ block. The persona-hierarchy ADR's own falsifier tracker is updated separately, 
 
 ```bash
 # Confirm this brief was frozen before the panel ran (design spec §6.1 precondition)
-git log -1 --oneline -- docs/briefs/GSUB-2-park-cohort-early-review.md
+git log -1 --oneline -- docs/briefs/programs/GSUB-2-park-cohort-early-review.md
 
 # Confirm no other GSUB-2-shaped pass exists (dedup)
 grep -rln "GSUB-2" docs/briefs/ docs/pursuits/ STATE.md 2>/dev/null
 
 # Persona logs actually got the panel's verdict appended (design spec §12), once Phase 2.5 runs
-grep -A3 "docs/briefs/GSUB-2" docs/personas/cio-log.md docs/personas/coo-log.md docs/personas/cro-log.md 2>/dev/null
+grep -A3 "docs/briefs/programs/GSUB-2" docs/personas/cio-log.md docs/personas/coo-log.md docs/personas/cro-log.md 2>/dev/null
 
 # If b2 or c1 SUBTRACT is ratified: re-entry armor clause present on the updated pursuit record
 grep -A2 "out-of-frame evidence" docs/pursuits/b2-striker-mym-reconstruction.md docs/pursuits/c1-q-xmem-1.md 2>/dev/null
@@ -264,7 +264,7 @@ grep -A2 "out-of-frame evidence" docs/pursuits/b2-striker-mym-reconstruction.md 
 ## Verification
 
 ```bash
-python scripts/check_brief.py docs/briefs/GSUB-2-park-cohort-early-review.md --type inquire
+python scripts/check_brief.py docs/briefs/programs/GSUB-2-park-cohort-early-review.md --type inquire
 # Expected: RESULT: well-formed
 
 # Rule-0 anchor spot-check (matches §0 above)

@@ -220,7 +220,7 @@ ls "C:/Users/joshu/backups/first-passage-pepperstone-preretirement-2026-08-02/IN
 rg -c "copy=OK" "C:/Users/joshu/backups/first-passage-pepperstone-preretirement-2026-08-02/INVENTORY.txt"   # expect 35
 
 # A5 / P1 are struck, not merely deferred
-rg -n "A5|P1 " docs/briefs/2026-07-17-0808-packet-delta-and-sequence.md | rg -i "retired|struck"
+rg -n "A5|P1 " docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md | rg -i "retired|struck"
 
 # bar_data is still in scope (§2-F) — this retirement must not have taken it
 ls core/data/bar_data >/dev/null && echo "bar_data retained (expected)"

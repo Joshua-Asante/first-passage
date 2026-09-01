@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-20
 **Authority:** operator un-HOLD ("1 and 2" — this session) on
-[`docs/briefs/2026-08-17-six-lead-pursuit-plan.md`](../../../../docs/briefs/2026-08-17-six-lead-pursuit-plan.md)
+[`docs/briefs/programs/2026-08-17-six-lead-pursuit-plan.md`](../../../../docs/briefs/programs/2026-08-17-six-lead-pursuit-plan.md)
 §2 P4. Licenses the plan's own Phase-1 item only: **route memo, not a scored
 construct** — the plan itself scoped P4 as "route memo only."
 **Cost / K:** $0.00 · K=0 — no data pull, no `register_search open`, no Cap claim.

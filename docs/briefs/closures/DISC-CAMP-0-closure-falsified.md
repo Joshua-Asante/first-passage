@@ -112,6 +112,18 @@ PYTHONPATH=lab python -m databento_fetch.db_fetch pull --symbols MGC.FUT --stype
 
 ---
 
+
+## Iterate — loop exit
+
+- **Verdict used:** `FALSIFIED` — pipeline shakedown SUCCESS; candidate hypothesis NULL (0/6 survivors).
+- **Model update:** The discovery pipeline traverses Stages 0–7 cleanly on real data with a genuinely empty candidate set; the shakedown's value is wiring proof, not a live mechanism kill.
+- **Next:** STOP
+- **Routing:** STOP — campaign closed; no successor Q opened. Future discovery campaigns inherit [`discovery-campaign-template`](../../ltm/briefs/rnd-pipeline/discovery-campaign-template.md) defaults, not a re-open of DISC-CAMP-0.
+- **Entry packet:** n/a
+- **Stop rule / re-proposal bar:** Re-open only with a fresh pre-registered discovery campaign under the standing chain — not a lookup of this closure.
+- **Board write:** none — STOP, nothing owed (2026-07-13 closure; INDEX/STATE already updated at close).
+- **Registry:** n/a — pipeline shakedown / discovery-campaign null result; not a strategy-mechanism kill row.
+
 ## Verification
 
 ```bash

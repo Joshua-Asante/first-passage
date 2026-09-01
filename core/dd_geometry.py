@@ -4,7 +4,7 @@ DD-protection geometry — dd_protection as a CONCEPT, not a constant.
 ====================================================================
 Registry of per-(portfolio, firm-tier) protection *instances* of the one
 invariant mechanism (operator directive 2026-07-12; ratified recommendation
-docs/briefs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md §3;
+docs/briefs/programs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md §3;
 decision record docs/adr/2026-07-13-dd-protection-concept-not-constant.md).
 
 The INVARIANT (never varies across firms/portfolios): when the portfolio's

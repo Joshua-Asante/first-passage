@@ -150,7 +150,7 @@ It is recorded here as **candidate-status**, not promoted to `methodology_lesson
 - [`STATE.md`](../../STATE.md) — pointer-log entry.
 - [`RESULTS_t2_intraday_bust.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_t2_intraday_bust.md) — disposition banner (its §0 says the call is owed; it no longer is).
 - [`docs/rejected_candidates.md`](../rejected_candidates.md) — target-scoped entry + re-proposal bar.
-- [`docs/briefs/2026-07-17-0808-packet-delta-and-sequence.md`](../briefs/2026-07-17-0808-packet-delta-and-sequence.md) — three rows carrying "disposition owed / record-only".
+- [`docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md`](../briefs/2026-07-17-0808-packet-delta-and-sequence.md) — three rows carrying "disposition owed / record-only".
 - [`docs/adr/INDEX.md`](INDEX.md) — regenerate.
 - [`docs/SESSIONS.md`](../SESSIONS.md) — session entry.
 

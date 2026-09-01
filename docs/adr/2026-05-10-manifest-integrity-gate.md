@@ -8,7 +8,7 @@
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Issue:** [GH #62](https://github.com/Joshua-Asante/multi_firm_operations/issues/62)  
-**Phase A anchor:** `2026-05-10-pr59-manifest-drift-rca.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/2026-05-10-pr59-manifest-drift-rca.md`)
+**Phase A anchor:** `2026-05-10-pr59-manifest-drift-rca.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/programs/2026-05-10-pr59-manifest-drift-rca.md`)
 
 ## Context
 

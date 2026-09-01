@@ -26,11 +26,11 @@ Verified before this plan was drafted, not reconstructed after:
 | Claim in the plan | Verified against | Result |
 |---|---|---|
 | Rates sleeve venue-dead | [`core/firm_rules.py`](../../core/firm_rules.py) ~L259 | "US TREASURIES (ZB/ZN/ZF/ZT/UB) ARE NOT TRADABLE HERE" (article 10468222); sole rates products are EUREX bonds |
-| 2026-06-30 Micro10Y/2YY MR rejection | [`docs/rejected_candidates.md`](../rejected_candidates.md) L428 | Confirmed — chop-native 5th-leg sweep, era/tail-wall kill |
-| OHLCV raised bar | [`docs/rejected_candidates.md`](../rejected_candidates.md) L24 | `index-intraday-ohlcv-directional-timing-2026-07-21`, tier=always |
+| 2026-06-30 Micro10Y/2YY MR rejection | [`docs/rejected_candidates.md`](../../rejected_candidates.md) L428 | Confirmed — chop-native 5th-leg sweep, era/tail-wall kill |
+| OHLCV raised bar | [`docs/rejected_candidates.md`](../../rejected_candidates.md) L24 | `index-intraday-ohlcv-directional-timing-2026-07-21`, tier=always |
 | §4a hedging sign-constraint | [`core/firm_rules.py`](../../core/firm_rules.py) comment block | Equity Index Product Group = ES/MES/NQ/MNQ/YM/MYM/RTY/M2K/EMD/NKD + EUREX index; opposing directions prohibited within-group, one account or across |
-| TNEC N-SHAPE definition | [`docs/spec/2026-08-08-tradeify-necessary-conditions-target-spec.md`](../spec/2026-08-08-tradeify-necessary-conditions-target-spec.md) L11 | EM3 independence + hard-stop integrity + EM5 session/slot legality (flat-16:00-ET-inside-16:45-print · micro-expressible · §4a sign constraint · S7 occupancy) |
-| MSL slate-2 design box (why it can't fit these leads) | [`docs/adr/2026-08-13-msl-slate-2-design-box.md`](../adr/2026-08-13-msl-slate-2-design-box.md) | `rr`∈[2,3], WR 0.30–0.42, R at bust≤3.0% diffusion frontier, hard-stop mandatory, k=1, no pyramiding — a daily hold-to-close reversal shape does not fit this box |
+| TNEC N-SHAPE definition | [`docs/spec/2026-08-08-tradeify-necessary-conditions-target-spec.md`](../../spec/2026-08-08-tradeify-necessary-conditions-target-spec.md) L11 | EM3 independence + hard-stop integrity + EM5 session/slot legality (flat-16:00-ET-inside-16:45-print · micro-expressible · §4a sign constraint · S7 occupancy) |
+| MSL slate-2 design box (why it can't fit these leads) | [`docs/adr/2026-08-13-msl-slate-2-design-box.md`](../../adr/2026-08-13-msl-slate-2-design-box.md) | `rr`∈[2,3], WR 0.30–0.42, R at bust≤3.0% diffusion frontier, hard-stop mandatory, k=1, no pyramiding — a daily hold-to-close reversal shape does not fit this box |
 | M6A `FLAG-COSTBIND` | [`ops/instruments/M6A.md`](../../ops/instruments/M6A.md) | Confirmed: Stage-1 Currencies SURVIVOR under FLAG-COSTBIND; cost-tax 0.0902 binds before the 0.0891 pooled-panel floor; Stage-2 ex-FOMC flips COST→POWER |
 | MGC instrument state | [`ops/instruments/MGC.md`](../../ops/instruments/MGC.md) | RE-ENTERED, class-attested, not elected; one dated cell (`event-window-reversal` DEAD, unrelated mechanism); no binding bar against a hold-to-close reversal shape |
 | `scripts/instrument_profiles.py cell <SYM> <mechanism-id>` | read in full | Data-independent — reads only `ops/instruments/*.md` + committed `MECHANISMS.md`; safe to run in this worktree without vendor panels |
@@ -211,7 +211,7 @@ NS-curve-fitting harness for L5) dispatch to Cursor, directly via the dispatch s
 | P3 GO + dry-run | operator un-HOLD (this session) | **DONE — sleeve CLOSED (venue)** | pending | [`P3_DRYRUN`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/P3_DRYRUN.md) — bars $0; S-strategy calendar-spread SCREEN-FAIL; USOIL-carry DISTINGUISHABLE |
 | STATE.md correction line | this session | **DONE** | #32 merged | New dated decision-index line, not a retro-edit of the 2026-08-17 historical line |
 | P1-CF/P2-CF execution | this session | **DONE — FAIL all four legs** | #32 merged | [`CF LOG`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/LOG.md) |
-| Limb-2 counter ruling | operator direction + this session (draft) | **DONE — does not increment** | pending | [`harvest intake ADR` ruling block](../adr/2026-07-15-external-mechanism-harvest-intake.md#ruling-2026-08-17--p1-cfp2-cf-does-not-increment-limb-2) |
+| Limb-2 counter ruling | operator direction + this session (draft) | **DONE — does not increment** | pending | [`harvest intake ADR` ruling block](../../adr/2026-07-15-external-mechanism-harvest-intake.md#ruling-2026-08-17--p1-cfp2-cf-does-not-increment-limb-2) |
 
 ## §11 Program-level stop rules (pre-committed)
 
@@ -270,7 +270,7 @@ ruling)?
 **Ruled** (operator direction, Claude Code draft) on the P1-CF/P2-CF FAIL result: **does not
 increment.** Two independent grounds — landed on the counter's own canonical surface, not restated
 here:
-[`docs/adr/2026-07-15-external-mechanism-harvest-intake.md`](../adr/2026-07-15-external-mechanism-harvest-intake.md)
+[`docs/adr/2026-07-15-external-mechanism-harvest-intake.md`](../../adr/2026-07-15-external-mechanism-harvest-intake.md)
 counting-machinery table + "Ruling 2026-08-17" block. (1) Neither lead was ever **admitted**
 through this intake — no declaration manifest, no `register_search open`, no ratified inventory
 row — and §4's falsifier is scoped to mechanisms "admitted through this intake," so an
@@ -283,7 +283,7 @@ machinery. Running count stays **0/2**.
 
 The 2026-08-16 fork election (admit an OpenAlex-based substitute traversal when S2 has no record
 of a seed paper) has no corresponding line in
-[`docs/adr/2026-07-15-external-mechanism-harvest-intake.md`](../adr/2026-07-15-external-mechanism-harvest-intake.md)
+[`docs/adr/2026-07-15-external-mechanism-harvest-intake.md`](../../adr/2026-07-15-external-mechanism-harvest-intake.md)
 — checked this session, zero `OpenAlex` mentions in that ADR. Recommended addendum text for that
 ADR (operator ratifies or edits before landing):
 

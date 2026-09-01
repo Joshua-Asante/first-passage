@@ -1,6 +1,6 @@
 # PREREG — `H-RANGESTATE-GC-1` (S1a): daily range-state persistence, GC train era
 
-**Class:** Tier-1 mechanism screen, per [Step-0 slate](../../../../docs/briefs/2026-08-18-step0-daily-geometry-mechanism-slate.md)
+**Class:** Tier-1 mechanism screen, per [Step-0 slate](../../../../docs/briefs/programs/2026-08-18-step0-daily-geometry-mechanism-slate.md)
 §2 row S1a. Measurement only — no candidate is produced by any outcome.
 **Date frozen:** 2026-08-18, committed **before** the runner reads a single real bar.
 **Operator context:** GO'd this session ("GO S1a") off the Step-0 slate queue (§3: S1a first).

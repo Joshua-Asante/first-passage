@@ -2,7 +2,7 @@
 
 **Status:** `Accepted` — operator election 2026-08-14
 **Decision date:** 2026-08-14
-**Supersedes:** none — addition only. Amends [`docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md`](../spec/2026-08-12-msl-manual-sourcing-loop-charter.md) Gate line and [`docs/briefs/2026-08-12-msl-program-plan.md`](../briefs/2026-08-12-msl-program-plan.md) §7 by **addition only**; the existing `FALSIFIED(process)` and `FALSIFIED(yield)` clauses (6 consecutive pre-G0 deaths across ≥2 families / 12 calendar weeks zero G0) are unchanged and continue to apply independently. The charter/plan edit lands in the same commit as this acceptance.
+**Supersedes:** none — addition only. Amends [`docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md`](../spec/2026-08-12-msl-manual-sourcing-loop-charter.md) Gate line and [`docs/briefs/programs/2026-08-12-msl-program-plan.md`](../briefs/2026-08-12-msl-program-plan.md) §7 by **addition only**; the existing `FALSIFIED(process)` and `FALSIFIED(yield)` clauses (6 consecutive pre-G0 deaths across ≥2 families / 12 calendar weeks zero G0) are unchanged and continue to apply independently. The charter/plan edit lands in the same commit as this acceptance.
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
@@ -73,7 +73,7 @@ The `≥4 G0 freezes` guard on clause (ii) is deliberate: it prevents the calend
 
 ## §7 — Implementation (owed on acceptance, not executed by this ADR)
 
-Phase 0 — this ADR drafted and left `Proposed` (this session). Phase 1 (owed, on operator acceptance): edit `docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md` Gate line to add the `FALSIFIED(yield-conversion)` clause quoted in §2; edit `docs/briefs/2026-08-12-msl-program-plan.md` §7 to add the Rung A/B stop rules alongside the existing bullets, and add a "G0-to-Pine conversion" tracking row to §6's claim manifest next to the existing Stage-1-deaths-counter row; regenerate `docs/adr/INDEX.md`; add a `docs/SESSIONS.md` entry. Phase 2 — grep sweep for any place that currently states or implies "MSL's yield falsifier only tracks pre-G0 deaths and calendar weeks" (this audit note is one such place, and should be updated to note the amendment landed, once it does).
+Phase 0 — this ADR drafted and left `Proposed` (this session). Phase 1 (owed, on operator acceptance): edit `docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md` Gate line to add the `FALSIFIED(yield-conversion)` clause quoted in §2; edit `docs/briefs/programs/2026-08-12-msl-program-plan.md` §7 to add the Rung A/B stop rules alongside the existing bullets, and add a "G0-to-Pine conversion" tracking row to §6's claim manifest next to the existing Stage-1-deaths-counter row; regenerate `docs/adr/INDEX.md`; add a `docs/SESSIONS.md` entry. Phase 2 — grep sweep for any place that currently states or implies "MSL's yield falsifier only tracks pre-G0 deaths and calendar weeks" (this audit note is one such place, and should be updated to note the amendment landed, once it does).
 
 ## §10 — Audit hooks (runnable)
 
@@ -94,11 +94,11 @@ date -d 2026-10-07 +%s 2>/dev/null || echo "manual date check: has 2026-10-07 pa
 
 # §4 threshold-softening check: has any session narrowed "6 consecutive G0 freezes"
 # to a sub-scope (e.g. "same instrument family") without a superseding ADR?
-grep -rn "consecutive G0" docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md docs/briefs/2026-08-12-msl-program-plan.md 2>/dev/null
+grep -rn "consecutive G0" docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md docs/briefs/programs/2026-08-12-msl-program-plan.md 2>/dev/null
 
 # §4 double-count check: does a revived card (C3->C3-K2 pattern) count once or twice
 # toward the Rung A/B tallies in the plan's §6 claim manifest?
-grep -n "Stage-1 deaths\|G0-to-Pine\|G0 freeze" docs/briefs/2026-08-12-msl-program-plan.md
+grep -n "Stage-1 deaths\|G0-to-Pine\|G0 freeze" docs/briefs/programs/2026-08-12-msl-program-plan.md
 ```
 
 ---

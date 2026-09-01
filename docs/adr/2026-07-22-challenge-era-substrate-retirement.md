@@ -59,7 +59,7 @@ had no newer commits touching the target paths.
   engine/panel regression fixture while removing their live-claim status.
 - `docs/adr/2026-07-11-ops-cfd-estate-retirement.md` — anchor `ba943a1`
   (2026-07-17), plus the B3 disposition at
-  `docs/briefs/2026-07-14-b3-multiplier-spine-forward-relevance-disposition.md`
+  `docs/briefs/programs/2026-07-14-b3-multiplier-spine-forward-relevance-disposition.md`
   anchor `d9d764b`. B3 found no forward consumer but chose DORMANT-RETAIN.
 - `docs/spec/c1_watch_realization_multiplier_layer.md` — accepted 2026-07-17.
   Its “multiplier layer” is the active rail-side `r_eff` quantity law, not

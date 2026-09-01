@@ -175,7 +175,7 @@ grep -rn "0.30" docs/adr/*ddp* docs/adr/*dd-protection* 2>/dev/null | grep -vi "
 ## Verification
 
 ```bash
-python ~/.claude/skills/brief-authoring/scripts/check_brief.py docs/briefs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md
+python ~/.claude/skills/brief-authoring/scripts/check_brief.py docs/briefs/programs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md
 # §0 anchors
 git log -1 --format='%h %ci' -- core/dd_protection.py       # expect 99b7854
 git log -1 --format='%h %ci' -- core/firm_rules.py           # expect 0e26a7b
@@ -190,7 +190,7 @@ grep -n "17.70\|17.7" lab/analysis/c1/tradeify_futures3_remc_2026-07-11/RESULTS.
 
 **H-REFRAME gate-set correction:** as of 2026-08-29, 2 of the 5 named gates (§4) no longer exist
 as files and cannot be evaluated — `scripts/validate_params.py` was retired 2026-08-03
-([`docs/adr/2026-08-03-params-toml-gate-retirement.md`](../adr/2026-08-03-params-toml-gate-retirement.md),
+([`docs/adr/2026-08-03-params-toml-gate-retirement.md`](../../adr/2026-08-03-params-toml-gate-retirement.md),
 Shape 1) and `tests/core/test_mc_anchors.py` was deleted (confirmed absent — no file at that path
 anywhere in the tree). The remaining three gates — the MVD import self-check,
 `scripts/verify_lock_anchors.py`, `scripts/check_boundaries.py` — were independently re-run

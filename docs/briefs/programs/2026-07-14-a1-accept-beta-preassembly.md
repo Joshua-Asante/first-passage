@@ -2,16 +2,16 @@
 
 **Status:** **PRE-ASSEMBLED** for the 2026-08-08 Class-A **A1** decision. This packet assembles the two *closed* analyses into one page so 08-08 is a decision, not a re-read. **It is not the decision** — the accept-beta call is operator GO/NO-GO at the gate, taken together with A5's live regime re-MC.
 **Date:** 2026-07-14
-**Owned by:** [`docs/adr/2026-06-07-decompound-remc-hold.md`](../adr/2026-06-07-decompound-remc-hold.md) §4 (regime trigger + accept-beta fork) · 08-08 pre-triage [`2026-07-12-08-08-packet-pretriage.md`](2026-07-12-08-08-packet-pretriage.md) A1
+**Owned by:** [`docs/adr/2026-06-07-decompound-remc-hold.md`](../../adr/2026-06-07-decompound-remc-hold.md) §4 (regime trigger + accept-beta fork) · 08-08 pre-triage [`2026-07-12-08-08-packet-pretriage.md`](2026-07-12-08-08-packet-pretriage.md) A1
 **Pairs with:** **A5** (decompound-HOLD §4 limb-2 live regime re-MC — the current-regime input this fork reads)
 
 ---
 
 ## §0 — Reads (source-verified 2026-07-14)
 
-- [`docs/briefs/Q-DECAY-1-closure-scope-split.md`](Q-DECAY-1-closure-scope-split.md) — the **cost** input (bust-before-signal; common-mode uncovered).
-- [`docs/briefs/Q-PERSIST-1-closure-moot.md`](Q-PERSIST-1-closure-moot.md) — the **probability** input (MC understates the tail).
-- [`docs/adr/2026-06-07-decompound-remc-hold.md`](../adr/2026-06-07-decompound-remc-hold.md) §4 — the standing HOLD + the k≈0.55 interim mitigation + the regime trigger.
+- [`docs/briefs/closures/Q-DECAY-1-closure-scope-split.md`](../closures/Q-DECAY-1-closure-scope-split.md) — the **cost** input (bust-before-signal; common-mode uncovered).
+- [`docs/briefs/closures/Q-PERSIST-1-closure-moot.md`](../closures/Q-PERSIST-1-closure-moot.md) — the **probability** input (MC understates the tail).
+- [`docs/adr/2026-06-07-decompound-remc-hold.md`](../../adr/2026-06-07-decompound-remc-hold.md) §4 — the standing HOLD + the k≈0.55 interim mitigation + the regime trigger.
 - `CLAUDE.md` §Regime caveat — no static de-risk is regime-robust without breaking the (now-retired) challenge; both candidates fail the regime-robustness gate on the 2020-23 half.
 - Family basis: `project_q_mech_1_family_synthesis` (0/4 external mechanism ⇒ one shared beta) + `project_strategy_lifecycle_governance` (4 legs `AUTHORIZED @ 1.00×`, off all live venues).
 
@@ -75,11 +75,11 @@ A1 is the **standing structural** characterization; **A5 is the live reading**. 
 
 ```bash
 # Both closures still present + carry their §Re-check hooks
-grep -n "accept-beta\|Re-check hook" docs/briefs/Q-DECAY-1-closure-scope-split.md docs/briefs/Q-PERSIST-1-closure-moot.md
+grep -n "accept-beta\|Re-check hook" docs/briefs/closures/Q-DECAY-1-closure-scope-split.md docs/briefs/closures/Q-PERSIST-1-closure-moot.md
 
 # The load-bearing figures (cite verbatim at 08-08)
-grep -n "11.7%\|4.7%" docs/briefs/Q-DECAY-1-closure-scope-split.md       # cost: ~11.7% common-mode; ~4.7% Guardian-late
-grep -n "0.46pp\|2.96%\|3.43%" docs/briefs/Q-PERSIST-1-closure-moot.md    # probability: +0.46pp (decompounded), bounded-small on anchor
+grep -n "11.7%\|4.7%" docs/briefs/closures/Q-DECAY-1-closure-scope-split.md       # cost: ~11.7% common-mode; ~4.7% Guardian-late
+grep -n "0.46pp\|2.96%\|3.43%" docs/briefs/closures/Q-PERSIST-1-closure-moot.md    # probability: +0.46pp (decompounded), bounded-small on anchor
 
 # A5 pairing — the live falsifier that decides accept vs de-risk
 grep -n "p99 DD ≥ 5% OR bust ≥ 1%\|k≈0.55\|55%" docs/adr/2026-06-07-decompound-remc-hold.md
@@ -100,14 +100,14 @@ byte-unedited; this addendum is the reader-intercept + record.
 
 1. **§5's A5 (decompound-HOLD §4 limb-2 regime re-MC) cannot run.** It was declared
    **SUSPENDED-ORPHANED / permanently `NOT_EXECUTABLE`** by
-   [`docs/adr/2026-06-07-decompound-remc-hold.md`](../adr/2026-06-07-decompound-remc-hold.md)'s
+   [`docs/adr/2026-06-07-decompound-remc-hold.md`](../../adr/2026-06-07-decompound-remc-hold.md)'s
    own 2026-08-03 addendum, following the 2026-08-02 Pepperstone feed retirement — it can never
    run at 08-08 or any future quarterly date (the schedule itself is struck, not deferred). 08-08
    has now passed with **no A5 result recorded anywhere**: `docs/SESSIONS.md` carries no such
    entry, confirmed by direct check of this brief's own §10 hook.
 
 2. **The standing re-scope of record is the successor packet.**
-   [`docs/briefs/2026-07-17-0808-packet-delta-and-sequence.md`](2026-07-17-0808-packet-delta-and-sequence.md)
+   [`docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md`](2026-07-17-0808-packet-delta-and-sequence.md)
    already recorded, 2026-08-02: *"A5 + P1 struck with the Pepperstone feed retirement… A1
    re-scoped not decided"* — cite that packet, not this one, for the current disposition of the
    A5 input.
