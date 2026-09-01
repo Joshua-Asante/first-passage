@@ -5,9 +5,10 @@
 **Decision date:** 2026-05-18
 **Supersedes:** none
 **Retain-until:** none
-**Same-day successor (also superseded):** [`2026-05-18-relock-to-test-values.md`](2026-05-18-relock-to-test-values.md).
-**Superseded-by:** [`2026-05-14-allocation-refresh.md`](2026-05-14-allocation-refresh.md) (on main).
-**Superseded-in-part-by:** `event:merge-reality` - lock action (Pine 0.75%/0.45%/500 pyramid fixes) not adopted. Also `2026-08-03-params-toml-gate-retirement.md` - the validator + HARD-tier machinery bullet (scripts/validate_params.py and core/config/params.toml both retired 2026-08-03; see Addendum 2026-08-29).
+**Superseded-in-part-by:** `2026-05-18-relock-to-test-values.md` - the *direction* of this ADR (fix Pine to match lock) was reversed same-day by the re-lock ADR.
+**Superseded-by:** `2026-05-14-allocation-refresh.md` - already on main (this ADR's worktree branched before that refresh landed).
+**Superseded-in-part-by:** `event:merge-reality` - lock action (Pine 0.75%/0.45%/500 pyramid fixes) not adopted.
+**Superseded-in-part-by:** `2026-08-03-params-toml-gate-retirement.md` - the validator + HARD-tier machinery bullet (scripts/validate_params.py and core/config/params.toml both retired 2026-08-03; see Addendum 2026-08-29).
 **Related:** [`scripts/validate_params.py`](../../scripts/validate_params.py), [`core/config/params.toml`](../../core/config/params.toml)
 
 > **Superseded-by-merge note (2026-05-18):** This ADR fixed 4 Pine

@@ -9,11 +9,8 @@ ratified (`validation/concept_intake/` → later `lab/validation/concept_intake/
 an economic-mechanism requirement before any data is mined, and dedup against `docs/rejected_candidates.md`.
 Its enforcement is now **discipline, not code** — the dedup attestation must be **executed** and its output
 pasted (see that registry's own corrected §Queryable index, 2026-08-08).
-⚠ **Graph edge OWED, not landed:** the `Superseded-by` field below still reads `none` while the retirement
-ADR carries this only as `Related`. Adding the forward edge requires the reverse edge plus an `INDEX.md`
-regeneration in the same commit (retirement-ADR convention), so it is left for a scoped change.
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** `2026-07-11-gen1-pipeline-retirement.md` - machinery only, the doctrine survives per the Machinery-status line above.
 **Retain-until:** none
 **Decision date:** 2026-06-05
 **Authors:** Joshua + claude.ai (advisor)

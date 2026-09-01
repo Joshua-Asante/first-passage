@@ -2,7 +2,8 @@
 
 **Status:** `Accepted` — the strategic decision was made operator-side on 2026-07-10 (advisor session authored the deliverables; the CC handoff enacting it states "this handoff does not re-litigate it"). This ADR records the decision and lands with the integration commit.
 **Superseded-by:** none
-**Superseded-in-part-by:** `2026-08-07-loop-s1-environment-ratification.md`, `2026-08-07-loop-s2-signal-host-fork.md` - the §2 rail-verdict clause only (TradingView/NinjaTrader8/Rithmic/Bulenox chain). The §4 falsifier never fired; the rail changed via a different mechanism these two ADRs describe.
+**Superseded-in-part-by:** `2026-08-07-loop-s1-environment-ratification.md` - the §2 rail-verdict clause only (TradingView/NinjaTrader8/Rithmic/Bulenox chain). The §4 falsifier never fired; the rail changed via a different mechanism these two ADRs describe.
+**Superseded-in-part-by:** `2026-08-07-loop-s2-signal-host-fork.md` - the §2 rail-verdict clause only (TradingView/NinjaTrader8/Rithmic/Bulenox chain). The §4 falsifier never fired; the rail changed via a different mechanism these two ADRs describe.
 **Retain-until:** none
 **Decision date:** 2026-07-10
 **Authors:** Joshua (decision) + claude.ai advisor (stack authoring + rail verdict) + Claude Code (integration + this record)

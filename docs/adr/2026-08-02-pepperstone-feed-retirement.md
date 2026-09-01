@@ -236,9 +236,28 @@ python scripts/check_brief.py docs/adr/2026-08-02-pepperstone-feed-retirement.md
 python scripts/check_data_manifests.py
 ```
 
+## Addendum 2026-09-01 -- §10's "registry stays empty" audit-hook comment is now stale
+
+§10's audit hook (`rg -n "^PANELS_BY_BROKER" -A 1 core/mc/modes.py`) carries the comment *"The
+registry stays empty -- nothing re-admitted a panel without an ADR."* That line is no longer
+literally true: a later, separately-ratified ADR --
+[`2026-08-19-cme-broker-panel-admission-for-breadth-revival.md`](2026-08-19-cme-broker-panel-admission-for-breadth-revival.md)
+-- admitted a `"cme"` key to `PANELS_BY_BROKER` (verified in `core/mc/modes.py`, 2026-09-01),
+reviving `breadth.py` on canonical CME data. **This is not a violation of this ADR.** The registry
+was always a deliberately-empty extension point whose own governing comment required exactly one
+thing -- an admitting ADR before registration -- and the 2026-08-19 admission followed that gate.
+Everything else this ADR decided is unchanged and reverified 2026-09-01: Pepperstone bytes remain
+absent from the checkout, `check_data_manifests.py` still excludes both Pepperstone dirs, `bar_data/`
+is still retained per §2-F, and the offline rollback copy still verifies 35/35. A reader who runs
+the §10 hook today will see a non-empty `PANELS_BY_BROKER` and should read that against the
+2026-08-19 ADR, not as a defect in this one.
+
+Body above stays unedited per Rule 14 / Trap #12 -- this is a dated addendum, not a rewrite.
+
 ## Change history
 
 | Date | Change |
 |---|---|
+| 2026-09-01 | Addendum: §10's "registry stays empty" hook comment is stale -- 2026-08-19's CME panel admission is a legitimate, ADR-gated registration, not a violation | Claude Code (ADR-corpus reconciliation sweep) |
 | 2026-08-03 | **Independent parallel retirement reconciled at merge (PR #619).** An upstream session, without knowledge of this ADR, executed the same data retirement on a second operator ruling (*"all pepperstone has been retired in light of the futures pivot"*): same SHA256SUMS deletions, own tombstone (2026-08-03), PIPELINES.md sync, and the `tests/test_check_data_manifests.py` fix this branch had missed. Reconciliation: this ADR + the 2026-08-02 tombstone are canonical (they carry the decision, the A5/P1/A1 dispositions, and the **verified offline copy** the 08-03 record did not know existed — its *"no offline rollback copy"* claim is **corrected in place** per Rule 14); the 08-03 tombstone is retained as the independent record with a correction banner; PIPELINES' *"no live restore path"* narrowed to *"no live regeneration path."* Two operator rulings, same direction, four days apart — the retirement is doubly confirmed |
 | 2026-08-02 | Initial ADR. Retires Pepperstone as a feed (Tier 1) and its data + manifest dirs (Tier 2) in one motion, per operator ruling. Strikes A5 and P1; re-scopes A1 without deciding it; re-points the owed forward regime monitor venue-native. Offline copy taken and hash-verified 35/35 **before** deletion; `bar_data/` explicitly out of scope |

@@ -109,9 +109,22 @@ python scripts/check_brief.py docs/adr/2026-07-13-prop-account-book-segregation.
 
 ---
 
+## Addendum 2026-09-01 — §4's 2026-08-08 check: pointer only, disposition remains an operator call
+
+**Status: informational pointer only — adds no verdict, moves no gate, edits no §1–§10 text above.**
+
+§4 set a check date of 2026-08-08. An arithmetic reading against §4's 25% trigger was produced in [`docs/briefs/2026-07-17-0808-packet-delta-and-sequence.md`](../briefs/2026-07-17-0808-packet-delta-and-sequence.md) §1 (row "Segregation ADR §4 revert check"): per-account frictions $81.07/mo ÷ modeled expectancy $299.80/acct-mo = **27.04% at N=1**, above §4's 25% trigger. That brief's own §11-B says this reading is **"operator-owned"** and **"not accepted by signing this packet."** The packet's own Status line reads `DRAFT — SUPERSEDED BY EVENTS`, and its 2026-08-29 addendum records that the event which actually ran on 2026-08-08 was a disjoint programme-audit/prune, not this packet's own §2/§11 gate walk — which never executed.
+
+No later artifact in the corpus disposes of this check. The reading's supporting provenance (the CrossTrade-subscription + eval-fee spend tally and the idle-rule-disposition design spec) is not present in this tree as of 2026-09-01, so the 27.04% figure can currently be read only as recorded in that brief, not independently re-derived here.
+
+**This addendum takes no verdict.** Stamping one of §4's own three dispositions (`RESOLVED` / `FALSIFIED` / `AMBIGUOUS`) for the 2026-08-08 date is an operator call, not this addendum's to make.
+
+---
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-07-13 | Drafted, Status Proposed | claude.ai Tech Advisor |
 | 2026-07-13 | Ratified — Status `Accepted` | Joshua |
+| 2026-09-01 | Addendum: §4's 2026-08-08 check — verdict-free pointer to the arithmetic reading (27.04% @ N=1) recorded in a now-superseded brief; disposition remains an operator call | Claude Code (ADR-corpus reconciliation sweep) |

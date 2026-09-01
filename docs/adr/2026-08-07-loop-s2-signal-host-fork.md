@@ -4,6 +4,7 @@
 **Decision date:** 2026-08-07
 **Authors:** Joshua (plan GO) + Cursor (drafter)
 **Supersedes:** `2026-07-22-c1-venue-native-monitoring-maturity.md` in part — §4 item 5 **signal-origin definition only** (TradingView-only → ruled host). Item 5 itself (real strategy signal, expected sizing, `dry_run` Stage-1 shape), the decline of deletion (Addendum 2026-07-31), and the bar on **silent** redefinition **stand**; this ADR is the **express** supersession that Addendum required.
+**Supersedes:** `2026-07-10-databento-research-stack.md` in part - the §2 rail-verdict clause only (TradingView/NinjaTrader8/Rithmic/Bulenox chain); that ADR's §4 falsifier never fired, the rail changed via this ADR's mechanism instead.
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
