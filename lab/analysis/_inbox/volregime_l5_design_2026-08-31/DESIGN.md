@@ -342,26 +342,26 @@ directly comparable scale to the precondition's own p-values.
 **Companion (unchanged, already computed):** the existing minimum within-own-range-stratum lift
 from L1–L3, reported alongside, not recomputed.
 
-### 4.2 Predictable-volume-component estimator — reworked: joint, not ToD-only
+### 4.2 Predictable-volume-component estimator — global per replicate, raw (not standardized)
 
-**Corrected 2026-08-31 (Codex second-pass review, Finding 1 — the load-bearing fix).** An earlier
-draft residualized volume against time-of-day alone (`byyear_l4.py::tod_threshold`), then permuted
-that residual within coarse `(slot, bias_range∈{0,1})` cells, on the claim that binary-stratifying
-by `bias_range` "preserves same-bar volume/range correlation." That claim does not hold: same-bar
-volume/range correlation is continuous and strong (ρ≈0.86–0.88, both instruments), and ToD-only
-residualization leaves nearly all of that continuous relationship inside the "residual." Permuting
-that residual — even within a binary bucket — reassigns volume values that still carry most of
-their originating bar's own range level to a *different* bar's real range, destroying a real,
-strong within-cell dependence the null was supposed to hold fixed. Worse: because real (unpermuted)
-volume and continuous range are then highly collinear regressors in the fitted model, a regularized
-fit can split shared range-signal between them in a way that has nothing to do with volume carrying
-independent information — an artifact the coarse-cell null, having stripped out the collinearity
-entirely, would never reproduce. That gap could manufacture an apparently significant result out of
-a regularization artifact, not a real effect — the opposite of what the null needs to guard against.
+**Corrected 2026-08-31 (Codex second-pass review, Finding 1 — the load-bearing fix; corrected again
+same date, Codex fourth-pass review, Finding 5 — a units bug in what this section feeds §4.4).** An
+earlier draft residualized volume against time-of-day alone (`byyear_l4.py::tod_threshold`), then
+permuted that residual within coarse `(slot, bias_range∈{0,1})` cells, on the claim that
+binary-stratifying by `bias_range` "preserves same-bar volume/range correlation." That claim does
+not hold: same-bar volume/range correlation is continuous and strong (ρ≈0.86–0.88, both
+instruments), and ToD-only residualization leaves nearly all of that continuous relationship inside
+the "residual." Permuting that residual — even within a binary bucket — reassigns volume values
+that still carry most of their originating bar's own range level to a *different* bar's real range,
+destroying a real, strong within-cell dependence the null was supposed to hold fixed. Worse: because
+real (unpermuted) volume and continuous range are then highly collinear regressors in the fitted
+model, a regularized fit can split shared range-signal between them in a way that has nothing to do
+with volume carrying independent information — an artifact the coarse-cell null, having stripped
+out the collinearity entirely, would never reproduce.
 
 **Fix: residualize volume against the full `baseline_1` feature set jointly, in log space, before
-any permutation.** Fit, on that fold's real training-fold data only (refit every null replicate —
-see §4.4):
+any permutation — fit once per replicate, over the whole scoreable panel, not per fold (see §4.3's
+own note on why this is global).**
 
 ```
 log(volume_t) ~ β0 + f_ToD(slot_t) + β1·range_t + β2·bias_range_t + Σ β_{i+2}·range_lag_i,t + γ·calendar_t
@@ -369,162 +369,150 @@ log(volume_t) ~ β0 + f_ToD(slot_t) + β1·range_t + β2·bias_range_t + Σ β_{
 
 where `f_ToD` is the same sine/cosine time-of-day encoding as `baseline_1` (§3.3), `range_t` is the
 trigger bar's own continuous realized range (§3.1's correction), `bias_range_t` is the trigger bar's
-own **binary** own-range-elevated indicator (added 2026-08-31, Codex third-pass review, Finding 1 —
-see below), `range_lag_i` are the four lagged binary range indicators (§3.3), and `calendar_t` is the
+own **binary** own-range-elevated indicator (added round 3, Finding 1's own continuation — OLS
+orthogonality to *continuous* `range_t` does not imply orthogonality to `bias_range_t`, since the
+threshold defining it is itself a trailing, drifting quantity, not a linear transform of `range_t`),
+`range_lag_i` are the four lagged binary range indicators (§3.3), and `calendar_t` is the
 day-of-week/RTH control vector (§3.3) — the exact same regressors `baseline_1` already uses, no new
-feature set invented. Ordinary least squares on log-volume (log space chosen for two reasons: volume
-is strictly positive and right-skewed, so a levels-space residual risks reconstructing a negative
-pseudo-volume under permutation, discussed in §4.4; and it directly answers the second-pass review's
-own question about reconstruction space). `residual_t = log(volume_t) − fitted_value_t`.
+feature set invented. Ordinary least squares on log-volume (log space: volume is strictly positive
+and right-skewed, so a levels-space residual risks reconstructing a negative pseudo-volume under
+permutation). `residual_t = log(volume_t) − fitted_value_t` — kept **raw, never standardized**
+(corrected round 4, Finding 5: an earlier draft standardized this residual by its own training mean/
+SD for use as a direct model feature; round 3 already retired that use — `augmented_1`'s own feature
+is the *binary* `pseudo_bias_volume`, not the residual itself, per Finding 9 — so nothing consumes a
+standardized value anymore, and §4.4's reconstruction formula adds this residual directly to a
+log-volume-scale fitted value, which is only unit-consistent if it is *not* rescaled first. Dropping
+standardization removes the bug and a step nothing needed).
 
-**Why `bias_range_t` had to be added explicitly (Codex third-pass review, Finding 1 — the round-2
-fix was necessary but not sufficient).** OLS orthogonality to *continuous* `range_t` does not imply
-orthogonality to `bias_range_t`: the threshold that defines `bias_range_t` is itself a trailing,
-drifting quantity (`tod_threshold`'s own trailing median, which moves as the market's own volatility
-regime moves), so `bias_range_t` encodes information about a bar's range *relative to its own local,
-time-varying baseline* — genuinely different information than a single global linear coefficient on
-`range_t` can fully absorb across an entire training fold. Without `bias_range_t` in the regression,
-residual volume could still correlate with it, and since `bias_range_t` is one of `baseline_1`'s own
-regressors, permuting a residual that still carries that correlation reopens the exact same
-collinearity-artifact risk Finding 1's original fix (round 2) was meant to close — just through a
-nonlinear-threshold channel instead of a continuous-range channel. Including it directly closes that
-channel the same way including `range_t` closed the continuous one.
+By ordinary-least-squares construction, this residual is linearly orthogonal, *within the panel it
+was fit on*, to every one of `baseline_1`'s own regressors — there is materially little range-driven
+(continuous or threshold-based), ToD-driven, or calendar-driven signal left in it to preserve or
+destroy, which is what makes the circular-shift construction in §4.3 safe regardless of its own
+granularity. This raw residual feeds §4.3–§4.4's own pseudo-volume reconstruction, from which
+`augmented_1`'s actual feature (`bias_volume`, binary) is recomputed under both real and
+null-replicate data.
 
-By ordinary-least-squares construction, this residual is linearly orthogonal, *within the training
-fold it was fit on*, to every one of `baseline_1`'s own regressors — there is materially little
-range-driven (continuous or threshold-based), ToD-driven, or calendar-driven signal left in it to
-preserve or destroy, which is what makes the circular-shift construction in §4.3 safe regardless of
-its own granularity. This residual — standardized (training-fold mean/SD) — feeds §4.4's own
-pseudo-volume reconstruction, from which `augmented_1`'s actual feature (`bias_volume`, binary — see
-§3.1's Finding-9 correction) is recomputed under both real and null-replicate data, per §4.4.
+### 4.3 Null construction — reworked again: one global replicate, not one per fold
 
-### 4.3 Null construction — reworked: day-level, regime-stratified circular shift
+**Corrected 2026-08-31 (Codex fourth-pass review, Finding 9 — a structural gap, not a wording
+issue) — folded together with Findings 1 and 7 from the same round, since all three are the same
+underlying problem at different points in the pipeline.** An earlier draft drew a rotation
+**independently per fold** ("draw one rotation per group... over that entire fold's population").
+Because folds expand — a calendar day appears as a test row in exactly one fold and as a training
+row in every later fold — an independent per-fold draw means the *same* day can receive a
+*different* donor day's residual depending on which fold happens to be computing it. "Replicate `j`"
+was therefore not one well-defined alternate version of the observed panel; it was a patchwork of
+different per-fold worlds stitched together and pooled (§4.1) as if they were one. That is a
+mechanism for miscalibrating the pooled null's own variance, not merely a conceptual untidiness —
+the real, observed statistic has exactly one fixed value per day, and the null construction owes it
+the same property.
 
-**Corrected 2026-08-31 (Codex second-pass review, Finding 3 — the permutation unit was
-underspecified).** An earlier draft permuted individual bar-level residuals "in contiguous blocks"
-within `(slot, bias_range)` cells. Within one exact time-of-day slot, successive same-cell
-occurrences are normally a trading day apart, not adjacent bars — a "contiguous block" in
-cell-occurrence order is not contiguous in market time, and that construction would have smeared
-cross-slot structure (overnight/RTH transitions, intraday runs) the design needs to leave intact.
+Two more round-4 findings turned out to be the same defect surfacing elsewhere in the pipeline:
+**Finding 1** (the threshold used to reconstruct `pseudo_bias_volume` was frozen at a fold's real-
+data fit rather than recomputed causally along each replicate's own reconstructed path) and
+**Finding 7** (the day-level regime bucket was classified once at a fold boundary, which goes stale
+across a 6-month test block whose own trailing window would, causally, reach into earlier test
+days). All three are resolved together by making the null a **single, global, causally-consistent
+construction per replicate**, computed once over the whole panel, with only the *scored* predictive
+models (`baseline_1`/`augmented_1` themselves) remaining fold-local:
 
-**Fix: reuse this repo's own already-reviewed `circular_shift_null_p` construction (PR #207,
-already governing this construct's own Phase 0.5 precondition — see the parent brief's §0/§4),
-applied to whole trading-day residual vectors, stratified by day-level range regime.**
-
-1. Group the fold's own residuals (§4.2's output, training and test rows together — see §4.4) into
-   one vector per trading day, ordered by slot within the day. A day's own vector has as many
-   entries as that day has scoreable bars (some slots may be excluded by the warm-up rule, §3.4 —
-   the vector is exactly as long as that day's own scored population, not padded). Record each
-   day's own **slot mask** (the exact set of slots present) alongside its vector.
-2. Classify each day into a day-level regime bucket using `daily-range-state-persistence`'s own
-   **P80 (top-quintile) conditioning threshold specifically** — that day's own True Range against
-   its own trailing top quintile, a single binary flag — applied here to classify *the day the
-   residual-vector belongs to* (§3.1's `baseline_2` applies the identical P80 rule to a different
-   day, the one *before* the trigger bar; both reuse the same threshold, not two competing
-   definitions), computed from that fold's own training-only trailing history. **Corrected
-   2026-08-31 (Codex third-pass review, Finding 5) — see §3.1's own correction for why "vs. its
-   own trailing median" is dropped here: that phrase names a *different*, P50 threshold that
-   construct uses only to measure its own next-day outcome, not to classify a day's own state, and
-   using it here would leave the bucket definition genuinely ambiguous between two different
-   splits.**
-3. **Stratify by regime bucket AND slot mask jointly (added 2026-08-31, Codex third-pass review,
-   Finding 3) — a day's own vector may only be reassigned to another day with an *identical* slot
-   mask.** Reassigning a whole vector onto a day with a different set of scoreable slots has no
-   well-defined mapping (padding, truncation, or cross-slot misassignment all conflict with "a
-   day's own vector moves as one unit, no within-day scrambling"), so eligibility requires an exact
-   slot-mask match, not merely the same regime bucket. In practice this binds almost nowhere in the
-   scored region: §3.4's own 12-month setup period ends well after every slot has individually
-   cleared its own warm-up floor, so essentially every day inside a scored fold shares the full,
-   identical slot mask — the requirement is named here for correctness (a rare missing-data day),
-   not because it is expected to meaningfully shrink the rotation pool. A (regime bucket, slot
-   mask) combination with fewer than 2 member days is excluded from the rotation pool entirely,
-   disclosed as such, not silently ignored.
-4. Within each (regime bucket, slot mask) group independently, enumerate circular shifts of the
-   group's own day-index sequence — **including the identity rotation** (corrected 2026-08-31,
-   Codex third-pass review, Finding 6: an earlier draft excluded identity within every group, which
-   is a materially more restrictive null space than L1–L4's own `circular_shift_null_p` convention,
-   which explicitly includes identity — "distinct rotations enumerated, identity included," per the
-   parent brief's own §7 citation of that construction. Only the single *global* combination where
-   every group simultaneously draws identity reproduces the literal observed data; that one joint
-   combination is handled by the same add-one correction §4.1 already applies to `p_upper`, not by
-   excluding identity group-by-group, which would silently narrow the null space Finding 6 flagged
-   was never intended to narrow). A shift of *k* reassigns day *i*'s real position (its real
-   features, its real outcome labels) to receive day *(i−k) mod n_group*'s own residual vector,
-   wrapping within the group. **A day's own internal slot-ordered vector moves as one unit** — no
-   within-day scrambling — so intraday cross-slot dependence is carried intact by construction, not
-   merely hoped to survive.
-5. Each null replicate = one such rotation (one specific *k* per group, drawn independently and
-   jointly across every (regime bucket, slot mask) group — including the possibility that any given
-   group draws its own identity in a particular replicate, per step 4's correction). Where `B=4000`
-   (§4.1) exceeds the number of distinct enumerable joint combinations for a given instrument's own
-   day count, sample without replacement until exhausted, then resample with replacement, disclosed
-   as such in the results artifact — not silently padded.
+1. **Day-level regime classification — global, real-data-only, shared across every replicate
+   (Finding 7's fix).** Day-level True Range is never permuted in this design — only volume is — so
+   the P80 conditioning threshold (§3.1, §4.3's own prior definition) can be computed **once**, via
+   a single causal pass over each day's own real trailing history across the *entire* scoreable
+   panel (not frozen at any fold boundary, not restricted to any one fold's training-only slice).
+   This one classification is reused identically by the real/observed scoring, by every null
+   replicate, and by both Comparison 1 and Comparison 2 — it does not depend on the null draw at
+   all, so there is nothing to recompute per replicate here.
+2. Group the panel's own residuals (§4.2's global fit) into one vector per trading day, ordered by
+   slot within the day, across the **entire scoreable panel** — not per fold. Record each day's own
+   slot mask alongside its vector, exactly as before.
+3. **Stratify by (regime bucket, slot mask) exactly as before** — a day's own vector may only be
+   reassigned to another day with an identical slot mask (round 3, Finding 3's fix, unchanged in
+   substance, now applied globally rather than per fold). A group with fewer than 2 member days is
+   excluded from the rotation pool. **Corrected 2026-08-31 (Codex fourth-pass review, Finding 6) —
+   an earlier draft excluded such a group from the *rotation pool* without saying what happens to
+   its own days' rows in scoring.** Days belonging to an excluded (singleton) group are **excluded
+   from both real/observed and every null-replicate's own scoring entirely** — not silently scored
+   with their real, unpermuted pairing surviving in every replicate (which would let any signal
+   concentrated in those specific rows go un-nulled, biasing the pooled statistic toward the real
+   result). This is expected to be a rare, near-empty exclusion in practice, given the setup
+   period's own slot-mask-completing effect (§3.4), but is now handled consistently rather than
+   left to default silently to the wrong behavior.
+4. Within each (regime bucket, slot mask) group, enumerate circular shifts of the group's own
+   day-index sequence — **including the identity rotation** (round 3, Finding 6's fix, unchanged),
+   matching L1–L4's own `circular_shift_null_p` convention.
+5. **Draw ONE joint rotation assignment — one `k` per group — for the WHOLE PANEL, once per
+   replicate `j` (the Finding-9 fix itself).** This single global assignment is what "replicate `j`"
+   *means*: for every day in the entire scoreable panel, a fixed, single donor-day mapping, used
+   identically no matter which fold's own training or test set that day later falls into. Where
+   `B=4000` (§4.1) exceeds the number of distinct enumerable joint combinations for a given
+   instrument's own day count, sample without replacement until exhausted, then resample with
+   replacement, disclosed as such — not silently padded.
 
 This retires the earlier draft's separate block-length-selection machinery
 (`arch.bootstrap.optimal_block_length` / Politis–White, frozen in the first Codex review round)
 entirely: a circular shift needs no block-length parameter, since it moves whole, already-observed
-day-vectors rather than synthesizing new blocks of a chosen length. That earlier fix is superseded,
-not silently dropped — see §8's amendment log.
+day-vectors rather than synthesizing new blocks of a chosen length.
 
-### 4.4 Re-estimation discipline and pseudo-volume reconstruction
+### 4.4 Reconstruction (one causal pass over the whole panel) and fold-local scoring
 
-**Corrected 2026-08-31 (Codex second-pass review, Finding 4 — the reconstruction step was never
-made explicit) and (Codex first-pass review, B5 — the null must cover every scored row, not
-training only, folded into the same rewrite).** Every null replicate re-runs, end to end, over that
-replicate's own single, internally-consistent null draw of the full scored population (training and
-test rows together) for the fold being tested:
+**Reworked 2026-08-31 (Codex fourth-pass review, Findings 1, 2, 9) to reflect §4.3's global
+construction, and to fix a real-vs-real comparator mismatch (Finding 2).** For a given replicate —
+including the real/observed case, treated as the identity assignment for every group, so this
+recipe is one procedure, not two:
 
-1. Re-fit §4.2's joint log-volume regression **and** the original, ToD-only `tod_threshold`
-   estimator (`byyear_l4.py::tod_threshold` — the L1–L4-defining threshold, a *different* fitted
-   object from §4.2's regression; see the note below) on the fold's real, unpermuted training-fold
-   data only (neither's own coefficients are part of the null being tested — only the §4.2
-   residual's pairing with the day it originated from is).
-2. Compute `residual_t` for **every scored row in the fold — training and test rows alike** —
-   against the §4.2 fit, group into day-vectors and slot masks, classify each day's own (regime
-   bucket, slot mask) group (§4.3 steps 1–3), then draw **one** rotation per group (§4.3 step 4)
-   over that entire fold's population. Training rows and test rows are permuted together, from the
-   same draw — never independently, which is exactly what would have broken the replicate
-   statistic's exchangeability with the observed one (the first-pass review's own Finding 2).
-3. **Reconstruct pseudo-volume, then recompute the binary feature from it — both explicit.**
-   `pseudo_log_volume_t = fitted_value_t (step 1's §4.2 fit, always that row's own real baseline
-   features) + permuted_residual_t (step 2, from the day the rotation assigned)`;
-   `pseudo_volume_t = exp(pseudo_log_volume_t)` — strictly positive by construction. Then
-   `pseudo_bias_volume_t = 1[pseudo_volume_t > tod_threshold_t]`, using step 1's own real,
-   training-fold-fit `tod_threshold` — **the exact same comparison L1–L4's own real `bias_volume`
-   uses, applied here to the reconstructed pseudo-volume instead of real volume.** This is the
-   direct answer to Finding 9's reversion (§3.1): `augmented_1`/`augmented_2`'s own feature is
-   `bias_volume` under real data, `pseudo_bias_volume` under a null replicate — both computed by
-   the identical rule, never a continuous stand-in. `pseudo_volume_t` itself is also retained for
-   §4.6's own adequacy diagnostics, which compare against real volume in its own natural units.
-4. Re-fit `baseline_1`/`augmented_1` on the replicate's training rows, using that replicate's
-   `pseudo_bias_volume` (step 3) as the volume feature — never the real observed value. The
-   distinct-WHO run (`baseline_2`/`augmented_2`) uses its **own**, separately-residualized
-   reconstruction — see §4.5's correction — not this one reused.
-5. Score OOS on the replicate's test rows, using those same test rows' **permuted** `pseudo_bias_volume`
-   (step 3) against their **real, unpermuted** outcome labels — never a mix of null-trained-model
-   against real volume. Recompute the pooled Brier improvement (§4.1) from this null-world scoring.
+1. Fit §4.2's joint log-volume regression once, globally, on the panel's real training-eligible
+   data (this fit is a nuisance step in constructing the null — it is not itself scored for OOS
+   accuracy — so a global fit does not reopen any leakage concern; what remains strictly fold-local,
+   below, is the actual *scored* model). Compute the raw residual (§4.2) for every scored row in the
+   panel; apply §4.3's own global rotation assignment to reassign residuals by day.
+2. **Reconstruct pseudo-volume via one continuous causal pass over the whole panel, in chronological
+   order (Finding 1's fix — replaces a single frozen threshold).** For each bar, in time order:
+   `pseudo_log_volume_t = fitted_value_t (step 1's global fit, always that row's own real baseline
+   features) + permuted_residual_t (§4.3's assignment)`; `pseudo_volume_t = exp(pseudo_log_volume_t)`
+   — strictly positive by construction. The trailing same-slot threshold used in the next step is
+   **recomputed causally from this same pass's own already-reconstructed `pseudo_volume` values**
+   (transitioning from real historical volume in the pre-scoreable warm-up region, where nothing has
+   been reconstructed yet, to reconstructed `pseudo_volume` once the scoreable region begins) — not
+   a single value frozen at any fold's own real-data fit. This is what makes `pseudo_bias_volume`
+   (next step) a self-consistent object: its own generative process now mirrors exactly how the real
+   `bias_volume` is defined — a continuously causally-updating rolling comparison — rather than a
+   comparison against a threshold that never updates through the null world it is supposed to
+   describe.
+3. **`pseudo_bias_volume_t`, using each instrument's own real comparator (Finding 2's fix — an
+   earlier draft used strict `>` uniformly).** `byyear_l4.py::prepare` defines MNQ's real feature
+   with `volume >= volume_threshold` (inclusive) and MYM's with strict `>` — carried verbatim here:
+   `pseudo_bias_volume_t = 1[pseudo_volume_t >= pseudo_tod_threshold_t]` for MNQ,
+   `1[pseudo_volume_t > pseudo_tod_threshold_t]` for MYM. Volume is discrete and ties against a
+   rolling median are not rare; using the wrong comparator meant even the identity rotation (which
+   must exactly reproduce the observed data) would not reproduce MNQ's own real `bias_volume` on
+   tied rows — this is why the mismatch is load-bearing, not cosmetic. `pseudo_volume_t` itself is
+   retained for §4.6's own adequacy diagnostics, which compare against real volume in its own
+   natural units.
+4. **Fold-local scoring — unchanged discipline, now consuming one globally-consistent input.** For
+   each fold independently: fit `baseline_1`/`augmented_1` on that fold's own purged/embargoed
+   training rows, using each row's `pseudo_bias_volume` (or real `bias_volume`, for the observed
+   case) from steps 2–3 — the *same* value regardless of whether this fold sees that row as training
+   or (in its own fold) as test data, since step 2's reconstruction was global. Score OOS on that
+   fold's own test rows the same way. Pool every fold's own OOS predictions for this one replicate
+   into the primary statistic (§4.1) — now genuinely one coherent transformation of the whole panel,
+   not a patchwork.
 
-**Nuisance parameters computed once, not per replicate — named, defended, and now explicitly
-scoped to avoid leakage.** One value is fit from real data once (before any replicate runs) and
-then held fixed across all replicates and Packet D: the logistic regularization strength `C`
-(§3.2). **Corrected 2026-08-31 (Codex third-pass review, Finding 11) — an earlier draft said only
-"nested cross-validation on real training folds," without saying which fold's training data.**
-Under this design's own expanding-window construction, later folds' own training sets are strict
-supersets of earlier folds' test blocks — so nested CV pooled across multiple folds' own training
-data (or run on any fold beyond the first) would tune `C` partly against labels that later become
-an *earlier* fold's own "out-of-sample" test outcomes, breaking that fold's own OOF purity. **Fix:
-`C` is selected by nested CV using only §3.4's own 12-month setup-period data** — the reserved
-period that itself scores no fold and, by construction, contains no bar from any fold's own test
-block, in either direction. This is the setup period's second purpose (§3.4 already names it).
-`C` calibrates model complexity; it is not itself part of the volume→outcome relationship under
-test, and a single value selected from data outside every fold's own test set is a materially
-narrower fixed value than the day-level design's own known-true-*model-structure* shortcut that
-inflated its Type-I rate. **This is not asserted as harmless — it is a hypothesis Packet C1's own
-null-size study (its own C2 gate) must empirically confirm**, exactly the discipline the
-second-pass review asked for: no fixed value substitutes for re-estimation without the pilot
-showing the substitution doesn't matter. Every other fitted object — §4.2's regression, the
-`tod_threshold` estimator, the baseline/augmented model coefficients themselves, the OOS scoring —
-is refit fresh inside every replicate on that replicate's own fold-local data, with no exception.
+**Nuisance parameters computed once, not per replicate — named, defended, and scoped to avoid
+leakage.** One value is fit from real data once (before any replicate runs) and held fixed across
+all replicates and Packet D: the logistic regularization strength `C` (§3.2), selected by nested CV
+using **only** §3.4's own 12-month setup-period data — the reserved period that itself scores no
+fold and, by construction, contains no bar from any fold's own test block, in either direction
+(round 3, Finding 11's fix, unchanged by this round's rework). `C` calibrates model complexity; it
+is not itself part of the volume→outcome relationship under test. **This is not asserted as
+harmless — it is a hypothesis Packet C1's own null-size study (its own C2 gate) must empirically
+confirm.** The day-level regime classification (§4.3 step 1) is also computed once and shared
+across replicates, but for a different, non-discretionary reason: it depends only on real,
+never-permuted range data, so there is nothing for it to be re-estimated *against* per replicate.
+Every other object — §4.2's regression, the causal `pseudo_tod_threshold` reconstruction, the
+baseline/augmented model coefficients themselves, the OOS scoring — is refit fresh for every
+replicate, with no further exception.
 
 This is the direct, corrected answer to `Q-RANGEXFER-1`'s own failure: that design's positive
 control only validated known-true-parameter behavior, and re-estimating per replicate (the only way
@@ -539,13 +527,11 @@ would then have to disclose and hope survives calibration.
 Comparison 2 needs no second residualization was wrong.** Reusing Comparison 1's own residual
 (orthogonal to `baseline_1` only) for Comparison 2 leaves it non-orthogonal to `baseline_2`'s own
 *added* regressor (prior-day range-state) — real, unpermuted volume can still be collinear with
-that control in the observed fit, while the day-level circular shift's own regime stratification
-(§4.3 step 2, keyed to *that day's* own regime) has no reason to preserve *prior-day's* regime
-association. That reopens Finding 1's exact collinearity-artifact mechanism, specifically for
-Comparison 2's own added control.
+that control in the observed fit. That reopens Finding 1's exact collinearity-artifact mechanism,
+specifically for Comparison 2's own added control.
 
 **Fix: a second joint log-volume regression, adding the one control `baseline_2` adds on top of
-`baseline_1`:**
+`baseline_1`, fit globally per replicate exactly as §4.2 now is:**
 
 ```
 log(volume_t) ~ β0 + f_ToD(slot_t) + β1·range_t + β2·bias_range_t + Σ β_{i+2}·range_lag_i,t
@@ -553,22 +539,18 @@ log(volume_t) ~ β0 + f_ToD(slot_t) + β1·range_t + β2·bias_range_t + Σ β_{
 ```
 
 — identical to §4.2's formula plus `prior_day_regime_t` (the prior trading day's own P80
-conditioning flag, §3.1's `baseline_2`). Fit on the same training-fold data as §4.2's regression,
-refit every replicate, producing `residual_2_t`, standardized the same way. §4.4's steps 1–5 apply
-verbatim to Comparison 2, substituting this regression and its own `pseudo_bias_volume_2` for
-§4.2's and step 3's.
+conditioning flag, §3.1's `baseline_2`), raw, never standardized (§4.2's own correction applies
+here too). §4.3's global rotation-assignment and §4.4's reconstruction steps 1–4 apply verbatim to
+Comparison 2, substituting this regression and its own `pseudo_bias_volume_2`.
 
 **What is separate vs. shared between the two comparisons (disambiguated for §5's own paired
-test).** Separate: the regression/residual itself (`residual_2` is orthogonalized against a
-different feature set than `residual_1`, so it is a genuinely different object — reusing
-Comparison 1's own residual, as an earlier draft did, was the Finding-4 defect this section fixes).
-**Shared, for replicate index *j* specifically: the (regime-bucket, slot-mask, rotation-*k*)
-draw itself.** Replicate *j* applies the identical sequence of day-index rotations to *both*
-comparisons' own residual vectors — same which-day-swaps-with-which-day arrangement, different
-residual values being swapped. This is what makes "replicate *j* of Comparison 1" and "replicate
-*j* of Comparison 2" a genuine matched pair (§5) rather than an arbitrary same-index coincidence
-between two independently-randomized processes — pairing on a shared rotation draw is what lets a
-paired-difference test cancel common sampling noise, which is the entire reason to pair at all.
+test).** Separate: the regression/residual itself. **Shared, for replicate index *j* specifically:
+the global (regime-bucket, slot-mask, rotation-*k*) draw itself (§4.3 step 5)** — replicate *j*
+applies the identical panel-wide day-index rotation to *both* comparisons' own residual vectors,
+same which-day-swaps-with-which-day arrangement, different residual values being swapped. This is
+what makes "replicate *j* of Comparison 1" and "replicate *j* of Comparison 2" a genuine matched
+pair (§5) rather than an arbitrary same-index coincidence between two independently-randomized
+processes.
 
 ### 4.6 Null-adequacy diagnostics — frozen as a mandatory Packet C1 gate
 
@@ -607,49 +589,67 @@ routes to a dated amendment of §4.2–§4.5, not a tolerance widening, and not 
 C2/C3 regardless.** This gate is named here so it cannot be quietly skipped, or quietly weakened to
 a pooled check, when Packet C1 is actually executed.
 
+**Per-diagnostic pass criterion — a frozen method, not a number chosen after seeing the data
+(corrected 2026-08-31, Codex fourth-pass review, Finding 3) — an earlier draft froze the 95%
+passing *fraction* but never said what "individually clear" *means* per diagnostic, which would
+have let Packet C1 pick tolerance bands after already seeing the real-vs-null values.** Frozen now,
+uniformly across every diagnostic listed above, following this design's own established pattern of
+freezing a *method* where the *number* can only come from real data (§4.3's block-length precedent
+in the retired round-2 draft, now generalized): a sampled replicate **passes** a given diagnostic
+if that diagnostic's own real-data value falls inside a **90% day-blocked bootstrap confidence
+interval**, computed from the real (observed) panel alone via day-level block resampling (matching
+this design's own trading-day dependence-blocking convention, §4.5's own inference-blocking
+discipline) — not an arbitrary manually-chosen numeric band, and not refit per replicate (the CI is
+a property of the real data, computed once). This converts "does this replicate look adequate" into
+a single, reproducible, pre-specified statistical test per diagnostic per replicate, closing the
+degree of freedom Finding 3 named.
+
 ---
 
 ## 5. B4 (continued) — Distinct-WHO reporting
 
 Comparison 2 (§3.1) is run through the same fold structure and re-estimation discipline as
-Comparison 1, with its **own** null draw (§4.5's own separate residualization and circular shift —
-corrected 2026-08-31, not a shared draw with Comparison 1). Its own Brier improvement and
-attribution p-value are reported in the same results artifact as Comparison 1's, explicitly
-labeled `distinct_who`, and never substituted for or averaged with Comparison 1's own figures. The
-parent brief's own verdict map (§6) is unchanged by this design and is not consulted for the
-distinct-WHO result — there is no verdict for it, only a disclosure.
+Comparison 1, with its **own, separately-orthogonalized residualization** (§4.5) but the **same
+global rotation draw** for a given replicate index (§4.3 step 5, §4.5's own disambiguation of what
+is separate vs. shared between the two comparisons). Its own Brier improvement and attribution
+p-value are reported in the same results artifact as Comparison 1's, explicitly labeled
+`distinct_who`, and never substituted for or averaged with Comparison 1's own figures. The parent
+brief's own verdict map (§6) is unchanged by this design and is not consulted for the distinct-WHO
+result — there is no verdict for it, only a disclosure.
 
-**Quantitative decision rule — reworked as a direct paired-difference test, not two compared
-significance decisions (corrected 2026-08-31, Codex third-pass review, Finding 12).** The
-original fix here (round 1) mapped "Comparison 1 clears, Comparison 2 doesn't" to mechanism A. That
-commits the difference-in-significance fallacy: whether two separate p-values individually cross
-0.05 is not itself a test of whether the two underlying effects differ — a real, unchanged effect
-whose Comparison-2 estimate merely picks up more uncertainty from the added control (or drifts from
-0.049 to 0.051 by chance) would be mislabeled "collapsed" under the old table, without the effect
-having meaningfully shrunk at all.
+**Quantitative decision rule — round 3's own fix was itself flawed; reworked once more as a
+bootstrap-CI attenuation test, not a permutation test against a joint-zero-effect null (corrected
+2026-08-31, Codex fourth-pass review, Finding 4).** Round 1's original mapping ("Comparison 1
+clears, Comparison 2 doesn't" → mechanism A) committed the difference-in-significance fallacy.
+Round 3's own fix (a paired permutation test on `diff_j = improvement_1_j − improvement_2_j` over
+null replicates) does not actually repair this: every null replicate independently nulls out
+*both* comparisons' own volume associations to zero, so `diff_j`'s own reference distribution
+describes "what the difference between two noise statistics looks like when neither effect is
+real" — not the question actually being asked, which presupposes Comparison 1's effect **is**
+real (it already cleared) and asks only whether adding the extra control *attenuates* that
+already-established, nonzero effect. A test built from a joint-zero-effect null cannot answer a
+question that starts from "the effect is real."
 
-**Fix: test the difference in improvement directly, using paired null replicates.** Comparison 1
-and Comparison 2 are each run over their own `B=4000` replicates (§4.5); replicate *j* of
-Comparison 1 and replicate *j* of Comparison 2 are **paired by replicate index**, both drawn under
-the same experimental design (same fold structure, same day-index rotation scheme applied to each
-comparison's own residual — the pairing is a matched design, not an incidental coincidence, and
-cancels shared sampling noise the way any paired test does). Define, per paired replicate:
-`diff_j = comparison1_replicate_improvement_j − comparison2_replicate_improvement_j`, and the
-observed `diff_obs = comparison1_observed_improvement − comparison2_observed_improvement`.
-`p_upper_diff = (1 + #{j: diff_j ≥ diff_obs}) / (B+1)` — the same one-sided, add-one-corrected
-construction as §4.1's own `p_upper`, applied to the difference statistic instead of a single
-comparison's own improvement.
+**Fix: a day-blocked bootstrap confidence interval on the observed difference itself, not a
+permutation test against any null.** This sidesteps the wrong-null problem entirely — it asks
+directly what the real data's own sampling variability says about `diff_obs =
+comparison1_observed_improvement − comparison2_observed_improvement`, without needing to specify
+what "the null world" should look like for a quantity that is not being tested against zero-effect
+in the first place. Resample trading days with replacement (day-blocked, matching §4.5's own
+inference-blocking convention — never bar-level IID resampling), recompute both comparisons'
+observed improvements and their difference on each resample, and form a two-sided 90%
+percentile confidence interval for `diff_obs` (matching `alpha=0.05` per tail, the same threshold
+already frozen for Comparison 1, not a second number).
 
 | Comparison 1 (primary) | Result | Disclosure |
 |---|---|---|
-| `p_upper ≤ 0.05` (clears) | `p_upper_diff ≤ 0.05` — the drop from Comparison 1 to Comparison 2 is itself real | Mechanism A — "same phenomenon, finer grain": volume's own increment is significantly reduced once daily-range-state is also held fixed. |
-| `p_upper ≤ 0.05` (clears) | `p_upper_diff > 0.05` — no significant drop | Mechanism B — genuinely distinct information source: volume's own increment survives daily-range-state conditioning, not merely fails to be individually disproven twice. |
-| `p_upper > 0.05` (does not clear) | — (`p_upper_diff` not evaluated) | Moot — Comparison 1 itself did not clear; the mechanism-attribution question does not apply, per the parent brief's own verdict map (§6), which already stops at a non-clearing L5 outcome before any distinct-WHO framing is relevant. |
+| `p_upper ≤ 0.05` (clears) | 90% CI for `diff_obs` excludes 0, lower bound `> 0` — Comparison 2's own improvement is confidently smaller | Mechanism A — "same phenomenon, finer grain": volume's own increment is confidently reduced once daily-range-state is also held fixed. |
+| `p_upper ≤ 0.05` (clears) | 90% CI for `diff_obs` includes 0 — no confident reduction | Mechanism B — genuinely distinct information source: volume's own increment survives daily-range-state conditioning with no confidently-detected shrinkage. |
+| `p_upper > 0.05` (does not clear) | — (CI not evaluated) | Moot — Comparison 1 itself did not clear; the mechanism-attribution question does not apply, per the parent brief's own verdict map (§6), which already stops at a non-clearing L5 outcome before any distinct-WHO framing is relevant. |
 
-No other configuration is possible under this table by construction (Comparison 2 and the
-difference test are evaluated only when Comparison 1 clears), so this rule is total over the
-reachable outcome space, not merely the common cases. Reusing `alpha=0.05` for `p_upper_diff`
-matches the threshold already frozen for Comparison 1 rather than introducing a second number.
+No other configuration is possible under this table by construction (Comparison 2 and the CI are
+evaluated only when Comparison 1 clears), so this rule is total over the reachable outcome space,
+not merely the common cases.
 
 ---
 
@@ -675,19 +675,24 @@ C1, per the plan doc's own B5 instruction.
    drifting trailing threshold, not a linear transform of `range_t`) — §4.2's formula now includes
    `bias_range_t` explicitly. §4.6 freezes a mandatory Packet C1 adequacy gate (same-bar Spearman,
    conditional-volume-by-range-quantile, ACF, cross-correlation, ToD distribution — checked **per
-   replicate**, not pooled, round 3) precisely so this claim is checked empirically before Packet
-   C2/C3, not trusted on the strength of the analytical argument alone.
+   replicate against a frozen bootstrap-CI pass criterion**, round 4, not pooled, round 3, and not
+   left to an unspecified tolerance, round 4's own Finding 3) precisely so this claim is checked
+   empirically before Packet C2/C3, not trusted on the strength of the analytical argument alone.
 2. **Can information cross a rolling-fold boundary through normalization, residualization, or
    hyperparameter fitting?** Purge (§3.4) removes training rows whose own trailing *feature* window
    touches a test block **and** rows whose own *label* horizon reaches into the test block (added
    2026-08-31, Codex review, B5 — the original draft only purged on the feature side, which misses
    the one training row per fold whose 1-bar-ahead label is computed from the test block's own
    first bar); embargo removes training rows immediately after a test block, per §3.4's own
-   information-interval statement. Every normalization/residualization statistic (§4.2's joint
-   log-volume regression, any feature scaling for the logistic fit) is refit per fold using only
-   that fold's own purged-and-embargoed training data, never fit once on the full panel and reused
-   across folds — with the one named, defended exception in §4.4 (regularization strength `C`,
-   fixed once from real data and held constant, not per-replicate).
+   information-interval statement. **Corrected 2026-08-31 (Codex fourth-pass review, Finding 9) —
+   what's fold-local vs. global changed.** §4.2's residualization is now fit *globally* per
+   replicate (§4.3's own note on why — it is a nuisance step in constructing the null, not itself
+   scored, so a global fit carries no leakage risk), which is what makes a single replicate one
+   coherent transformation of the whole panel rather than a per-fold patchwork. What remains
+   strictly fold-local, purged, and embargoed is the *scored* object: `baseline_1`/`augmented_1`
+   themselves, refit fresh per fold per replicate on only that fold's own training rows — this is
+   where OOS purity actually needs to live, and it is unchanged. `C` remains the one named, defended
+   exception (fixed once from the setup period alone, never per-replicate).
 3. **Is every fitted component re-estimated in each replicate?** Yes, with one narrowly-scoped and
    defended exception — §4.4 lists all five steps explicitly re-run per replicate, and separately
    names `C` as the sole value fixed once (from the setup period alone, round 3's own Finding 11
@@ -757,6 +762,32 @@ circular shift reusing `circular_shift_null_p`) held up under a third pass; what
 real implementation-completeness gaps, one of which (the binary-vs-continuous feature drift) was
 serious enough to warrant reverting a round-2 decision rather than patching around it.
 
+**Review status, round 4 (2026-08-31) — one structural finding, folded together with two others
+from the same round into a single architectural fix.** A fourth Codex review, triggered explicitly
+after the round-3 push, found 9 more findings — 5 P1 and 4 P2, no formal P0 label, though Finding 9
+was treated with P0-level seriousness. **Finding 9:** null replicates were drawn *independently per
+fold*; since expanding folds overlap (a day is a test row in one fold and a training row in every
+later one), independent per-fold draws meant a single "replicate `j`" was not one coherent
+transformation of the observed panel, undermining the pooled statistic's own calibration. **Finding
+1** (the reconstruction threshold was frozen at a fold's real-data fit rather than recomputed
+causally) and **Finding 7** (the day-level regime bucket was classified once at a fold boundary,
+going stale across a 6-month test block) turned out to be the same underlying problem surfacing
+elsewhere — all three resolved together by making the null a single global, causally-consistent
+construction per replicate, computed once over the whole panel, with only the *scored* predictive
+models remaining fold-local. Also fixed: `pseudo_bias_volume`'s comparator didn't match MNQ's own
+inclusive `>=` convention (Finding 2); the residual was standardized before being added to a
+log-volume-scale fitted value, a units bug left over from a feature no longer used that way (Finding
+5); the adequacy gate's 95%-passing-fraction rule had no frozen per-diagnostic pass criterion
+(Finding 3); Comparison 2's own singleton-group exclusion wasn't propagated to scoring (Finding 6);
+the plan doc's own original B4 task description still read as the retired block-permutation
+instruction (Finding 8); and round 3's own paired-difference fix for the distinct-WHO table tested
+against the wrong null (a joint-zero-effect world, when Comparison 1 has already established a
+nonzero effect) — replaced with a day-blocked bootstrap CI on the observed difference directly
+(Finding 4). **All addressed** — see §8's own entry. This round's central lesson: a finding rated
+P1 rather than P0 is not a signal to treat it as isolated — Findings 1, 7, and 9 were three symptoms
+of one design gap, and fixing them separately would have left the seams between the fixes exactly
+where the next review would have found them.
+
 ---
 
 ## 7. Next step
@@ -777,3 +808,4 @@ frozen choices is not applied silently.
 | 2026-08-31 | **Codex review round 1 (PR #241) — 9 findings, all addressed.** 4 load-bearing: (1) baseline was missing the continuous trigger-bar range B2 itself specifies, admitting a volume-as-range-proxy confound the within-stratum null wouldn't catch — added; (2) the attribution null only permuted training-fold volume, scoring against real test-fold volume, breaking the replicate statistic's exchangeability with the observed one — fixed to permute one consistent draw across train and test rows together; (3) purge only covered feature-side lookback, missing that a 1-bar-ahead label leaks the test block's first bar into the preceding training row — added label-horizon purging; (4) the pre-registration's "two-sided p_upper" was internally inconsistent with this repo's one-sided convention and the design's own declared direction — resolved to a precise one-sided upper-tail definition in both this file and the pre-registration. 5 lower-severity: fold layout frozen exactly (6-month blocks, mechanically-derived count) rather than left as a 5-10-fold range; RTH boundary given an explicit, correctly-sourced definition rather than pointing at `byyear_l4.py`'s unrelated trading-day-rollover rule; block-length selector narrowed to one algorithm (Politis-White via `arch.bootstrap`) rather than a two-option menu; warm-up corrected to per-slot occurrence counts rather than a flat bar count; distinct-WHO mechanism-A/B labels given a quantitative decision table reusing the existing `alpha=0.05` threshold. No result computed under any of the corrected wording — all 9 were caught before any pilot code existed. | Claude Code, responding to Codex's PR #241 review |
 | 2026-08-31 | **Codex review round 2 — 8 findings, all addressed; §4 reworked in full.** Round 1's fixes were real but did not reach the central defect: the attribution null claimed binary `(slot, bias_range)` stratification "preserved" the continuous ρ≈0.86–0.88 same-bar volume/range correlation it needed to hold fixed; it didn't, and permuting a residual that still carried most of that continuous signal, within a coarse binary bucket, risked crediting volume for a regularization/collinearity artifact the null itself would never reproduce (P0, Finding 1). **Fix, §4.2:** volume is now residualized, in log space, against the full `baseline_1` feature set jointly (continuous range included, not just its binary indicator) — orthogonal to those regressors by OLS construction, leaving little confound-relevant signal for any permutation to mishandle. **Fix, §4.3:** the permutation unit itself was underspecified (Finding 3 — a "contiguous block" in same-cell-occurrence order is not contiguous in market time); replaced bar-level block-permutation with a day-level circular shift of whole residual vectors, stratified by `daily-range-state-persistence`'s own day-level regime split, reusing this repo's own already-reviewed `circular_shift_null_p` mechanism (PR #207) rather than inventing a new one — this also retires the earlier round-1 block-length-selector fix (`arch.bootstrap.optimal_block_length`) as superseded, not silently dropped. **Fix, §4.4:** made the pseudo-volume reconstruction explicit end to end (Finding 4) — `pseudo_log_volume = real fitted value + permuted residual`, exponentiated for strict positivity — and switched `augmented_1`/`augmented_2`'s own volume feature from the binary `bias_volume` indicator to the continuous standardized residual directly, which also eliminates the separate "how does the binary threshold get recomputed under a null" question Finding 4 raised, since there is no threshold to recompute. **Fix, §4.4:** named and defended the one nuisance parameter (logistic `C`) fixed once from real data rather than re-estimated per replicate, and tied that exception's validity to Packet C1's own null-size study rather than asserting it's harmless (part of Finding 6). **Fix, §4.1:** switched the primary estimand from equal-fold-weighted to pooled out-of-fold Brier improvement (Finding 8), with equal-fold reported as a secondary diagnostic; froze the replicate count at `B=4000` (matching this construct's own `c3_stratified_rerun.py` precedent) and added the standard add-one finite-replicate correction to `p_upper`. **Fix, §3.4:** added a precise, interval-based purge/embargo statement (Finding 7) alongside the existing bullets rather than replacing them, since they were not substantively wrong, only insufficiently rigorous. **Fix, pre-registration §C (P0, Finding 2):** the section heading read "NEVER GATES... TYPES the verdict," directly contradicting §D's own verdict map (which already routed a valid-non-clearing L5 to `FALSIFIED`) — a defect that predated Packet B and was inherited, not introduced, by this amendment; corrected the heading to state plainly that L5 gates, matching what §D and this design's own `baseline_1`/Comparison-1 language already implemented. **Added, §4.6:** a mandatory Packet C1 null-adequacy diagnostic gate (same-bar Spearman, conditional-volume-by-range-quantile, ACF, cross-correlation, ToD distribution, real vs. null-replicate-pooled) — Finding 1's own required correction, so the analytical fix above is empirically checked before Packet C2/C3, not merely asserted. No pilot code exists and no real L5 statistic was inspected under any version of this design. | Claude Code, responding to a second Codex review round on PR #241 |
 | 2026-08-31 | **Codex review round 3 — 12 findings, all addressed; no P0s, round 2's architecture holds.** **Fix, §3.1/§3.3/§4.4 (P1, Finding 9 — a course-correction, not a patch):** L5's own feature had drifted, in round 2, from H-VOLREGIME's and L1–L4's frozen *binary* `bias_volume` claim onto a continuous residual stand-in — a different, more general test than the hypothesis actually makes. Reverted to `bias_volume`; §4.4 now reconstructs it under a null replicate by applying the same real `tod_threshold` rule to reconstructed pseudo-volume, closing the exact gap the round-2 switch was trying to avoid, this time with the machinery to do it properly. **Fix, §4.2 (P1, Finding 1, continued):** the joint regression was still missing `bias_range_t` — orthogonality to continuous range does not imply orthogonality to its own nonlinear, drifting-threshold binary indicator; added explicitly. **Fix, §3.4 (P1, Finding 2):** fold 1 had zero training rows by construction (test blocks started at the first scoreable bar); added a 12-month training-only setup period, reserved before fold 1 begins. **Fix, §4.3 (P1, Finding 3):** day-vectors could have mismatched scoreable-slot sets with no defined swap rule; added slot-mask matching as a second stratification dimension alongside the day-level regime bucket. **Fix, §3.1/§4.3 (P1, Finding 5):** `daily-range-state-persistence` defines two different thresholds (P80 trigger, P50 outcome), and this design's "top quintile vs. trailing median" phrasing conflated them; pinned to the P80 conditioning threshold alone throughout. **Fix, §4.4 (P1, Finding 11):** `C`-selection via nested CV, if pooled across expanding folds, leaks later folds' test labels into earlier folds' own "OOS" scoring; scoped `C`-selection to the 12-month setup period alone, which by construction touches no fold's own test block. **Fix, §4.5 (P2, Finding 4):** Comparison 2 had been reusing Comparison 1's own residual, leaving it non-orthogonal to `baseline_2`'s own added prior-day-regime control — the same collinearity-artifact mechanism Finding 1 fixed for Comparison 1, reopened for Comparison 2; added a second, separate residualization including that control, sharing only the rotation *draw* (not the residual) with Comparison 1, for a valid paired design. **Fix, §4.3 (P2, Finding 6):** excluding identity within every rotation group was more restrictive than `circular_shift_null_p`'s own established "identity included" convention; corrected to include it, handling only the single global all-identity combination via the existing add-one correction. **Fix, §4.6 (P2, Finding 7):** adequacy diagnostics gated on a pooled average across replicates, which can hide individual replicates that fail in opposite directions and average out; switched to a per-replicate passing-fraction gate (≥95%). **Fix, parent brief §7/§11 (P2, Finding 8):** the brief's own summary text still described the retired block-permutation/`tod_threshold`-only null; synchronized with the current design. **Fix, §3.4 (P2, Finding 10):** embargo was "at least the longest lag/window," not an exact number; frozen at 4 trading days, tied to the already-frozen lag-4 range-lag depth. **Fix, §5 (P2, Finding 12):** the distinct-WHO table compared two separate significance decisions (a difference-in-significance fallacy); replaced with a direct paired-difference test (`p_upper_diff`) over the same, now-paired replicate draws. No pilot code exists and no real L5 statistic was inspected under any version of this design. | Claude Code, responding to a third Codex review round on PR #241 |
+| 2026-08-31 | **Codex review round 4 — 9 findings, all addressed; §4.2–§4.5 reworked again around one architectural fix.** Findings 1, 7, and 9 turned out to be the same underlying gap: null replicates were drawn *independently per fold* — since expanding folds overlap (a day is a test row in exactly one fold and a training row in every later one), independent per-fold draws meant "replicate `j`" was not one coherent transformation of the observed panel (Finding 9), the reconstruction threshold was frozen at a fold's real-data fit rather than recomputed causally (Finding 1), and the day-level regime bucket was classified once at a fold boundary, going stale across a 6-month test block (Finding 7). **Fix, §4.2–§4.4:** the null is now a single, global, causally-consistent construction per replicate — one global rotation draw (§4.3 step 5), one causal reconstruction pass over the whole panel in chronological order (§4.4 step 2), one global day-level regime classification shared across all replicates (§4.3 step 1, since it depends only on never-permuted real range data). Only the *scored* predictive models (`baseline_1`/`augmented_1` themselves) remain fold-local, purged, and embargoed — that is where OOS purity actually needs to live. **Fix, §4.4 (Finding 2):** `pseudo_bias_volume`'s comparator now matches each instrument's own real convention (`>=` for MNQ, `>` for MYM) rather than a uniform strict `>` — the earlier mismatch meant even the identity rotation wouldn't reproduce MNQ's own real feature on tied rows. **Fix, §4.2 (Finding 5):** dropped residual standardization entirely — a leftover from when the residual was directly the model's own feature (retired in round 3); adding a standardized (unitless) residual to a log-volume-scale fitted value was a real units bug. **Fix, §4.6 (Finding 3):** froze a per-diagnostic pass criterion (real value falls inside a 90% day-blocked bootstrap CI) rather than leaving Packet C1 free to pick tolerance bands after seeing the data. **Fix, §4.3 (Finding 6):** singleton (regime, slot-mask) groups are now excluded from scoring entirely, not merely from the rotation pool while silently retaining their real pairing in every replicate. **Fix, plan doc B4 (Finding 8):** the original task-description text still read as the retired block-permutation instruction; marked explicitly superseded, pointing at `DESIGN.md` as the controlling spec. **Fix, §5 (Finding 4):** round 3's own paired-difference fix tested against a joint-zero-effect null, which cannot answer an attenuation question once Comparison 1 has already established a nonzero effect; replaced with a day-blocked bootstrap CI on the observed difference directly. No pilot code exists and no real L5 statistic was inspected under any version of this design. | Claude Code, responding to a fourth Codex review round on PR #241 |

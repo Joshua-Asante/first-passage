@@ -223,6 +223,18 @@ range-state cells, preserving the predictable component and declared controls
 while breaking candidate incremental information. The full residualization,
 model fit, and score process is repeated inside every replicate.
 
+> **Superseded 2026-08-31 (Codex fourth-pass review, Finding 8) — this paragraph is
+> this task's original prescriptive instruction, predating any implementation
+> round, and was never updated as the design evolved.** The actually-frozen
+> construction is a day-level, regime-and-slot-mask-stratified circular shift of
+> whole residual vectors (reusing `circular_shift_null_p`), drawn once globally
+> per replicate and applied consistently across every fold — not a bar-level
+> block permutation within `(time-of-day, range-state)` cells. Following this
+> paragraph literally would rebuild the superseded, defective null. Read
+> [`DESIGN.md`](../../../lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md)
+> §4.2–§4.4 directly; this checklist item is a task description, not the
+> controlling spec.
+
 The design must separately report the distinct-WHO check after adding prior-day
 range state. Whether the lift survives that addition types attribution but does
 not silently change the frozen verdict criterion.
