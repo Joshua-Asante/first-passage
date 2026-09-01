@@ -193,6 +193,11 @@ gate (§2 item 1, risk-N_eff-delta floor) and the ρ pre-flight (§2 item 2) are
 panel feeds them -- they gate on `n_eff_risk_delta`/ρ regardless of data source, and
 `n_eff_risk_delta` is still emitted (confirmed, `lab/research_utils/breadth.py`).
 
+> ⚠ **2026-09-01 reader-intercept:** the "not decided here" framing below is superseded by direct
+> operator ruling the same day — see "Addendum 2026-09-01 (operator ruling)" below. The 2026-08-19
+> revival is **not** treated as W4's re-arm event; envelope §2 item 6 stays report-optional. This
+> paragraph is left unedited as the record of what this addendum originally proposed.
+
 **Not resolved by this note -- an operator call.** Whether the 2026-08-19 revival is the "re-arm ADR
 [that] restores a producer" W4 §2's dormancy table names as the condition for lifting "report-optional
 / no sole producer" back to a binding sole-producer status is not decided here. The revival ADR
@@ -203,6 +208,37 @@ operator disposition this addendum does not make.
 
 **Not re-opened by this note.** No new GO, gate change, or threshold re-election is authorized here.
 
+## Addendum 2026-09-01 (operator ruling) — 2026-08-19 revival is not W4's re-arm event
+
+**Ruling (direct operator instruction, 2026-09-01):** the 2026-08-19 CME-panel admission does **not**
+count as the re-arm event W4 §2's dormancy table names. Envelope §2 item 6 (risk-breadth coordinates)
+**stays report-optional / doctrine-retained**, not mandatory, until a session actually evaluating a
+new book-leg admission decision explicitly rules on re-arming it.
+
+**Grounds, all three independently supporting this reading:**
+1. The revival ADR carries zero formal graph edges (`Supersedes: none`, `Superseded-by: none`,
+   `Superseded-in-part-by: none`) — it does not touch W4's or this ADR's position in the supersession
+   graph at all.
+2. It never uses the word "re-arm" anywhere in its text.
+3. Its own §0 explicitly disclaims altering the Stage-8 gate: *"This ADR's panel feeds that existing,
+   unchanged mechanism; it does not alter the Stage-8 gate itself."* The authors had both W4 and this
+   ADR open (both are read in full in its §0) and chose not to claim re-arm status — a deliberate
+   scoping choice, not an oversight.
+
+**Rationale for deferring rather than ruling the other way:** whether item 6 is mandatory is a real
+decision with consequences — it determines whether a future candidate's risk-N_eff/dependence-N_eff
+coordinates are a *required* clearance, not just optional context. That's better decided by whoever is
+actually looking at a live admission decision than pre-emptively now, with no candidate pending
+(Striker disarmed, no active third-leg candidate at this stage). `breadth.py` producing real numbers
+again is necessary but not sufficient for re-arm; a session with an actual admission in front of it
+should make that call explicitly, citing this addendum, rather than inheriting an implicit default
+either way.
+
+**What does not change:** §0-§10 above and the 2026-08-19 revival ADR's own text both stay
+byte-unedited (Rule 14/Trap #12). The revival's factual content (panel registered, `breadth.py` runs
+on real CME data, self-test anchors measured) is unaffected — only the mandatory/optional status of
+envelope §2 item 6 is ruled on here, and it stays optional.
+
 ## Change history
 
 | Date | Change | By |
@@ -210,3 +246,4 @@ operator disposition this addendum does not make.
 | 2026-07-20 | Initial authoring (Status `Proposed`) — promotes Q-COMPOSE-1 lesson candidates #1/#2 to a Stage-8 gate | Claude Code (draft) · Joshua (ratification owed) |
 | 2026-07-20 | Ratified — Status `Accepted`; §6 downstream applied (template Stage-8 row, envelope §2 item 6, lesson M-21, STATE pointer) | Joshua (decision) · Claude Code (apply) |
 | 2026-09-01 | Addendum: breadth.py's risk-N_eff producer revived 2026-08-19 on canonical CME data; "producer dormant" clause stale; operator call on whether this counts as W4's re-arm condition | Claude Code (ADR-corpus reconciliation sweep) |
+| 2026-09-01 | Ruling: 2026-08-19 revival is not treated as the re-arm event; envelope §2 item 6 stays report-optional pending a session with an actual admission decision in front of it | Claude Code (ADR-corpus reconciliation sweep, operator ruling) |
