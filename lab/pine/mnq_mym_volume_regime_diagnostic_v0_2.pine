@@ -1,0 +1,169 @@
+//@version=6
+indicator(title="MNQ/MYM Volume-Regime Diagnostic v0.2",
+     shorttitle="VOLREGIME v0.2", overlay=true)
+
+// Research harness only. This reproduces the causal L1-L4 state definitions
+// on TradingView data; it does not implement L5, issue orders, or imply edge.
+
+string GROUP_METHOD = "Frozen research method"
+string GROUP_DISPLAY = "Display"
+string instrumentInput = input.string("Auto", "Instrument semantics",
+     options=["Auto", "MNQ", "MYM"], group=GROUP_METHOD,
+     tooltip="Auto recognizes tickers containing MNQ or MYM. MNQ uses 60 prior same-slot observations and >= for volume; MYM uses 20 and >.")
+string timezoneInput = input.string("America/New_York", "Research timezone",
+     group=GROUP_METHOD)
+bool requireM15 = input.bool(true, "Require 15-minute chart",
+     group=GROUP_METHOD)
+bool showBackground = input.bool(true, "Shade elevated-volume bars",
+     group=GROUP_DISPLAY)
+bool showMarkers = input.bool(true, "Mark realized next-bar outcomes",
+     group=GROUP_DISPLAY)
+bool showTable = input.bool(true, "Show diagnostic table",
+     group=GROUP_DISPLAY)
+
+f_median(array<float> values) =>
+    float result = na
+    int count = array.size(values)
+    if count > 0
+        array<float> sorted = array.copy(values)
+        array.sort(sorted)
+        int middle = int(math.floor(count / 2))
+        result := count % 2 == 1 ? array.get(sorted, middle) : (array.get(sorted, middle - 1) + array.get(sorted, middle)) / 2.0
+    result
+
+f_rate(int hits, int observations) =>
+    observations > 0 ? float(hits) / observations : na
+
+f_percent(float value) =>
+    na(value) ? "warming" : str.tostring(value * 100.0, "#.00") + "%"
+
+bool tickerIsMnq = str.contains(str.upper(syminfo.ticker), "MNQ")
+bool tickerIsMym = str.contains(str.upper(syminfo.ticker), "MYM")
+string selectedInstrument = instrumentInput == "Auto" ? (tickerIsMnq ? "MNQ" : (tickerIsMym ? "MYM" : "UNKNOWN")) : instrumentInput
+bool instrumentOkay = selectedInstrument == "MNQ" or selectedInstrument == "MYM"
+int sameSlotWindow = selectedInstrument == "MYM" ? 20 : 60
+bool mnqSemantics = selectedInstrument == "MNQ"
+bool timeframeOkay = timeframe.isminutes and timeframe.multiplier == 15
+bool executionOkay = instrumentOkay and (not requireM15 or timeframeOkay)
+
+int minuteOfDay = hour(time, timezoneInput) * 60 + minute(time, timezoneInput)
+int slot = int(math.floor(minuteOfDay / 15))
+int SLOT_COUNT = 96
+int MAX_WINDOW = 60
+var matrix<float> volumeSlots = matrix.new<float>(SLOT_COUNT, MAX_WINDOW, na)
+var matrix<float> rangeSlots = matrix.new<float>(SLOT_COUNT, MAX_WINDOW, na)
+var array<int> slotCounts = array.new_int(SLOT_COUNT, 0)
+var array<int> slotPointers = array.new_int(SLOT_COUNT, 0)
+
+int priorCount = array.get(slotCounts, slot)
+array<float> priorVolumes = array.new_float()
+array<float> priorRanges = array.new_float()
+if executionOkay and priorCount > 0
+    for column = 0 to priorCount - 1
+        array.push(priorVolumes, matrix.get(volumeSlots, slot, column))
+        array.push(priorRanges, matrix.get(rangeSlots, slot, column))
+
+float volumeMedian = priorCount >= sameSlotWindow ? f_median(priorVolumes) : na
+float rangeMedian = priorCount >= sameSlotWindow ? f_median(priorRanges) : na
+float barRange = high - low
+bool stateReady = executionOkay and barstate.isconfirmed and
+     not na(volumeMedian) and volumeMedian > 0 and not na(rangeMedian) and
+     rangeMedian > 0
+bool volumeElevated = stateReady and (mnqSemantics ? volume >= volumeMedian : volume > volumeMedian)
+bool rangeElevated = stateReady and barRange > rangeMedian
+
+// The current bar is the outcome for the preceding confirmed trigger bar. Its
+// threshold is its own same-slot threshold, matching the corrected Python index.
+var bool priorTriggerReady = false
+var bool priorVolumeElevated = false
+var bool priorRangeElevated = false
+var int lowRangeLowVolumeN = 0
+var int lowRangeLowVolumeHits = 0
+var int lowRangeHighVolumeN = 0
+var int lowRangeHighVolumeHits = 0
+var int highRangeLowVolumeN = 0
+var int highRangeLowVolumeHits = 0
+var int highRangeHighVolumeN = 0
+var int highRangeHighVolumeHits = 0
+
+bool outcomeObserved = priorTriggerReady and stateReady
+if outcomeObserved
+    if not priorRangeElevated and not priorVolumeElevated
+        lowRangeLowVolumeN += 1
+        lowRangeLowVolumeHits += rangeElevated ? 1 : 0
+    else if not priorRangeElevated and priorVolumeElevated
+        lowRangeHighVolumeN += 1
+        lowRangeHighVolumeHits += rangeElevated ? 1 : 0
+    else if priorRangeElevated and not priorVolumeElevated
+        highRangeLowVolumeN += 1
+        highRangeLowVolumeHits += rangeElevated ? 1 : 0
+    else
+        highRangeHighVolumeN += 1
+        highRangeHighVolumeHits += rangeElevated ? 1 : 0
+
+priorTriggerReady := stateReady
+priorVolumeElevated := volumeElevated
+priorRangeElevated := rangeElevated
+
+if executionOkay and barstate.isconfirmed
+    int pointer = array.get(slotPointers, slot)
+    matrix.set(volumeSlots, slot, pointer, volume)
+    matrix.set(rangeSlots, slot, pointer, barRange)
+    int nextPointer = (pointer + 1) % sameSlotWindow
+    array.set(slotPointers, slot, nextPointer)
+    array.set(slotCounts, slot, math.min(priorCount + 1, sameSlotWindow))
+
+float lowRangeLowVolumeRate = f_rate(lowRangeLowVolumeHits, lowRangeLowVolumeN)
+float lowRangeHighVolumeRate = f_rate(lowRangeHighVolumeHits, lowRangeHighVolumeN)
+float highRangeLowVolumeRate = f_rate(highRangeLowVolumeHits, highRangeLowVolumeN)
+float highRangeHighVolumeRate = f_rate(highRangeHighVolumeHits, highRangeHighVolumeN)
+float lowRangeLift = lowRangeHighVolumeRate - lowRangeLowVolumeRate
+float highRangeLift = highRangeHighVolumeRate - highRangeLowVolumeRate
+
+bgcolor(showBackground and volumeElevated ? color.new(color.purple, 86) : na,
+     title="Elevated same-slot volume")
+plot(volumeMedian, "Strict-prior same-slot volume median",
+     color=color.purple, display=display.data_window)
+plot(rangeMedian, "Strict-prior same-slot range median",
+     color=color.fuchsia, display=display.data_window)
+plotshape(showMarkers and outcomeObserved and rangeElevated,
+     title="Next bar range elevated", style=shape.circle,
+     location=location.abovebar, color=color.teal, size=size.tiny)
+
+var table dashboard = table.new(position.top_right, 4, 9, border_width=1)
+if barstate.islast and showTable
+    string readiness = executionOkay ? "READY" : (instrumentOkay ? "USE M15" : "SELECT MNQ/MYM")
+    table.cell(dashboard, 0, 0, "VOLREGIME", bgcolor=color.gray, text_color=color.white)
+    table.cell(dashboard, 1, 0, "Rate", bgcolor=color.gray, text_color=color.white)
+    table.cell(dashboard, 2, 0, "N", bgcolor=color.gray, text_color=color.white)
+    table.cell(dashboard, 3, 0, "Lift", bgcolor=color.gray, text_color=color.white)
+    table.cell(dashboard, 0, 1, selectedInstrument + " / " + str.tostring(sameSlotWindow))
+    table.cell(dashboard, 1, 1, readiness)
+    table.cell(dashboard, 2, 1, str.tostring(priorCount))
+    table.cell(dashboard, 0, 2, "Current volume")
+    table.cell(dashboard, 1, 2, volumeElevated ? "ELEVATED" : (stateReady ? "normal" : "warming"))
+    table.cell(dashboard, 0, 3, "Low range / low vol")
+    table.cell(dashboard, 1, 3, f_percent(lowRangeLowVolumeRate))
+    table.cell(dashboard, 2, 3, str.tostring(lowRangeLowVolumeN))
+    table.cell(dashboard, 0, 4, "Low range / high vol")
+    table.cell(dashboard, 1, 4, f_percent(lowRangeHighVolumeRate))
+    table.cell(dashboard, 2, 4, str.tostring(lowRangeHighVolumeN))
+    table.cell(dashboard, 3, 4, f_percent(lowRangeLift))
+    table.cell(dashboard, 0, 5, "High range / low vol")
+    table.cell(dashboard, 1, 5, f_percent(highRangeLowVolumeRate))
+    table.cell(dashboard, 2, 5, str.tostring(highRangeLowVolumeN))
+    table.cell(dashboard, 0, 6, "High range / high vol")
+    table.cell(dashboard, 1, 6, f_percent(highRangeHighVolumeRate))
+    table.cell(dashboard, 2, 6, str.tostring(highRangeHighVolumeN))
+    table.cell(dashboard, 3, 6, f_percent(highRangeLift))
+    table.cell(dashboard, 0, 7, "Trigger state")
+    table.cell(dashboard, 1, 7, stateReady ? (rangeElevated ? "high range" : "low range") : "warming")
+    table.cell(dashboard, 2, 7, stateReady ? (volumeElevated ? "high vol" : "low vol") : "")
+    table.cell(dashboard, 0, 8, "Scope")
+    table.cell(dashboard, 1, 8, "PRESENCE DIAGNOSTIC")
+
+alertcondition(volumeElevated, title="Elevated same-slot volume",
+     message="Confirmed M15 volume is above the instrument-specific causal same-slot median.")
+alertcondition(outcomeObserved and rangeElevated,
+     title="Elevated next-bar range realized",
+     message="The bar after a scored trigger closed with elevated same-slot range.")

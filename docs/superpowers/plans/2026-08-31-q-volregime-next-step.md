@@ -4,12 +4,19 @@
 > `superpowers:executing-plans`. Steps use checkbox (`- [ ]`) syntax. Execute one
 > packet at a time and stop at every named gate.
 >
-> **Status:** Packet A COMPLETE — the earlier 2026-08-31 `BLOCKED-AT-INPUT`
-> state was cleared when both exact hash-pinned panels were restored from the
-> primary checkout. MNQ and MYM independently PASS frozen L3. The presence
-> battery is complete on both instruments; Q-VOLREGIME-1 remains OPEN because
-> L5 attribution is still unresolved. Next gate: Packet B / L5 design amendment
-> under separate authorization. Packets B-D were not started in this session.
+> **Status:** Packet A COMPLETE (both instruments PASS frozen L3, PR #240,
+> merged). **Packet B COMPLETE 2026-08-31 (B1–B5 all done)** — the day-level
+> joint-surrogation adaptation is retired for this construct; replaced with a
+> bar-native nested forward-prediction design at
+> [`volregime_l5_design_2026-08-31/DESIGN.md`](../../../lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md).
+> No real L5 statistic was inspected at any point in drafting or review. **B5
+> (adversarial review) ran five rounds via Codex on PR #241 and closed
+> clean** (9, 8, 12, 9, then 0 findings). **Packet C1 GO received 2026-08-31
+> — acceptance bands frozen** at
+> [`volregime_l5_pilot_2026-08-31/ACCEPTANCE_BANDS.md`](../../../lab/analysis/_inbox/volregime_l5_pilot_2026-08-31/ACCEPTANCE_BANDS.md).
+> No simulation run, no real L5 statistic inspected. C2-C4 (the pilot studies
+> themselves) and Packet D each still need their own further authorization
+> before any code executes against real data.
 >
 > **Queue:** serves STATE queue `#1` (mechanism supply), but queue placement is
 > not a phase GO. It does not block independent queue `#2` (B7-REFIRE/M1).
@@ -164,14 +171,20 @@ that a passing L3 alone certifies the conditioner.
 required:** operator acceptance of the amended design route before code is
 executed against the real hypothesis.
 
-- [ ] **B1 — Amend the parent brief and pre-registration prospectively.**
+- [x] **B1 — Amend the parent brief and pre-registration prospectively.** Done
+  2026-08-31 — parent brief §7/§11, pre-registration §C. Both preserve the
+  hypothesis, per-instrument scoring, L1–L4 results, `alpha=0.05`,
+  distinct-WHO disclosure, and the verdict map; only the day-level-surrogate
+  instruction was replaced.
 
 Preserve the hypothesis, per-instrument scoring, L1–L4 results, `alpha=0.05`,
 distinct-WHO disclosure, and the existing verdict map. Replace only the
 unvalidated instruction to adapt the day-level surrogate. Date the amendment
 and state explicitly that no real L5 statistic was inspected before it landed.
 
-- [ ] **B2 — Freeze a nested forward-prediction comparison.**
+- [x] **B2 — Freeze a nested forward-prediction comparison.** Done 2026-08-31
+  — [`DESIGN.md`](../../../lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md)
+  §3.
 
 For each surviving instrument, specify the same model family and rolling folds:
 
@@ -193,14 +206,22 @@ Use strictly past training data for every test fold. Freeze the warm-up period,
 fold boundaries, missing-data behavior, learner/hyperparameters, and any
 regularization without looking at real augmented-minus-baseline performance.
 
-- [ ] **B3 — Freeze the primary statistic and dependence treatment.**
+- [x] **B3 — Freeze the primary statistic and dependence treatment.** Done
+  2026-08-31, reworked same date after a second Codex review round —
+  [`DESIGN.md`](../../../lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md)
+  §4.1 (statistic), §4.3 (day-level dependence blocking, carried by the circular-shift
+  construction itself rather than a separate section).
 
 Primary: augmented-minus-baseline improvement in a proper out-of-sample loss
 (Brier or log loss; elect one before code runs). Companion: the existing minimum
 within-own-range-stratum lift. Inference must be blocked at trading-day/session
 level; treating M15 bars as IID is forbidden.
 
-- [ ] **B4 — Freeze the attribution null.**
+- [x] **B4 — Freeze the attribution null.** Done 2026-08-31, reworked same date
+  after a second Codex review round found the first draft's null did not actually
+  preserve the confound it claimed to —
+  [`DESIGN.md`](../../../lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md)
+  §4.2–§4.6, §5.
 
 Fit the predictable component of trigger-bar volume using training data only.
 Randomize the residual component in blocks within predeclared time-of-day and
@@ -208,11 +229,28 @@ range-state cells, preserving the predictable component and declared controls
 while breaking candidate incremental information. The full residualization,
 model fit, and score process is repeated inside every replicate.
 
+> **Superseded 2026-08-31 (Codex fourth-pass review, Finding 8) — this paragraph is
+> this task's original prescriptive instruction, predating any implementation
+> round, and was never updated as the design evolved.** The actually-frozen
+> construction is a day-level, regime-and-slot-mask-stratified circular shift of
+> whole residual vectors (reusing `circular_shift_null_p`), drawn once globally
+> per replicate and applied consistently across every fold — not a bar-level
+> block permutation within `(time-of-day, range-state)` cells. Following this
+> paragraph literally would rebuild the superseded, defective null. Read
+> [`DESIGN.md`](../../../lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md)
+> §4.2–§4.4 directly; this checklist item is a task description, not the
+> controlling spec.
+
 The design must separately report the distinct-WHO check after adding prior-day
 range state. Whether the lift survives that addition types attribution but does
 not silently change the frozen verdict criterion.
 
-- [ ] **B5 — Adversarial design review before pilot execution.**
+- [x] **B5 — Adversarial design review before pilot execution.** Done
+  2026-08-31 — routed through this design's own PR review (Codex) rather
+  than an in-session panel, per operator decision. Ran five rounds (9, 8,
+  12, 9, then 0 findings); the fifth returned clean —
+  [`DESIGN.md`](../../../lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md)
+  §6–§7.
 
 Required review questions:
 
@@ -236,7 +274,13 @@ before the pilot. Review is not permission to inspect the real L5 statistic.
 **Entry gate:** Packet B design committed and reviewed. **Authorization
 required:** pilot GO. Do not run the observed L5 statistic in this packet.
 
-- [ ] **C1 — Freeze pilot acceptance bands before simulation.**
+**Packet C1 operator GO received 2026-08-31.** This GO authorizes freezing C1's
+own acceptance bands only — it does not authorize running C2/C3/C4 (those each
+still need execution against real data, a further step) or Packet D.
+
+- [x] **C1 — Freeze pilot acceptance bands before simulation.** Done
+  2026-08-31 — [`ACCEPTANCE_BANDS.md`](../../../lab/analysis/_inbox/volregime_l5_pilot_2026-08-31/ACCEPTANCE_BANDS.md).
+  No simulation run; no real L5 statistic inspected.
 
 Declare, before results:
 
