@@ -1,7 +1,7 @@
 # M2K aggressor-signed order flow: Avenue-A procurement ruling (admit-or-reject)
 
 **Type:** paid-data-procurement-gate ruling (zero-run, zero-K, zero-$ — estimates only). **Authored:** 2026-07-28.
-**Source:** the modality wall named in [`wstruct_cost_geometry_2026-07-28`](../../lab/analysis/c1/wstruct_cost_geometry_2026-07-28/RESULTS.md) §7 —
+**Source:** the modality wall named in [`wstruct_cost_geometry_2026-07-28`](../../../lab/analysis/c1/wstruct_cost_geometry_2026-07-28/RESULTS.md) §7 —
 harvest returned **0 screenable seeds** for an asymmetric-payoff M2K mechanism because every non-OHLCV
 modality is closed, and buying one is gated.
 **Verdict (this brief):** **FALSIFIED (as scoped) — `scoped — not procured`**, blocked at

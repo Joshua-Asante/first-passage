@@ -13,4 +13,4 @@ repo copies for all First Passage work.
 this project; no file touched (none exists to touch).
 
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3)
-**Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row d10
+**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row d10

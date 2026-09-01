@@ -12,7 +12,7 @@ to any successor — a fresh derivation starts its own K accounting
 the missing re-entry+expiry fields
 
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3)
-**Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row b5
+**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row b5
 
 > **RENEWED 2026-08-16 (once)** — elected with the state-policy packet's P2 mark (the packet's
 > §7 conditional; [closure §2.4](../briefs/closures/STATE-POLICY-closure-resolved-p2.md)).

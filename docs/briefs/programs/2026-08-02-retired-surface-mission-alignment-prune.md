@@ -38,7 +38,7 @@ Cheap falsifier (pre-authoring): `test ! -f scripts/validate_alert_payloads.py &
 
 ## §1 — Context & motivation
 
-Mission (canonical posture in [`CLAUDE.md`](../../CLAUDE.md)): **c1 Tradeify Select 100K rail** (Option C: TV→listener→CrossTrade→Tradovate), currently **disarmed**; research = prop-portfolio + ORB-MNQ; locked Pine untouched; self-funded parked; MYM ORC terminal; FXIFY/manual CFD retired. [`STATE.md`](../../STATE.md) names **operator-hours** as the binding resource.
+Mission (canonical posture in [`CLAUDE.md`](../../../CLAUDE.md)): **c1 Tradeify Select 100K rail** (Option C: TV→listener→CrossTrade→Tradovate), currently **disarmed**; research = prop-portfolio + ORB-MNQ; locked Pine untouched; self-funded parked; MYM ORC terminal; FXIFY/manual CFD retired. [`STATE.md`](../../../STATE.md) names **operator-hours** as the binding resource.
 
 A two-pass repo-wide search (2026-08-02) looked for requirements that (a) no longer align with that mission or (b) overcomplicate it relative to operator-hour scarcity. Pattern that emerged: **process gates and agent playbooks accreted around a live CFD desk that no longer exists**, while the live path is a disarmed Tradovate rail.
 

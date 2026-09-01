@@ -6,12 +6,12 @@
 > - **C1 · C2→C0 regime check** — **RETIRED** with D2; do not run as an 08-08 obligation.
 > - **`ACTIVE_FIRM` stays FXIFY** (§1) — **superseded** Phase 1 → live default `Tradeify_Select_100K`; historical MC pins `FIRM_RULES["FXIFY"]` by name.
 > - **D1 critical-path claim** (§1 caveat linking D2→11-08) — **moot**: D1/Q-SFRISK-1 closed 2026-07-15; D2 retired 2026-07-22.
-> Canonical forward board: [`STATE.md`](../../STATE.md) (last curated 2026-07-23).
+> Canonical forward board: [`STATE.md`](../../../STATE.md) (last curated 2026-07-23).
 
 **Loop of record:** STRATEGIC
 **D-S-A domain:** meta-process (Delete against the review slate/calendar — explicit **no-cascade**: this brief authorizes no data-corpus deletion and no finding disposition; items pruned are rescheduled or reclassified, never adjudicated by omission)
 **Authored:** 2026-07-12 · **Must land before:** 2026-08-01 (one full session ahead of the gate)
-**Related:** `STATE.md` forward-trigger board; `docs/methodology/strategy_lifecycle.md`; [`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](../../adr/2026-07-11-challenge-era-claims-rescope.md); [`docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md`](../../adr/2026-07-12-prop-portfolio-four-friendly-firms.md); [`ops/prop_envelope_default.md`](../../ops/prop_envelope_default.md); [`docs/adr/2026-06-07-decompound-remc-hold.md`](../../adr/2026-06-07-decompound-remc-hold.md); [`docs/notes/notice/N-2026-07-11-terminal-standing-displaces-portfolio-action.md`](../../notes/notice/N-2026-07-11-terminal-standing-displaces-portfolio-action.md)
+**Related:** `STATE.md` forward-trigger board; `docs/methodology/strategy_lifecycle.md`; [`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](../../adr/2026-07-11-challenge-era-claims-rescope.md); [`docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md`](../../adr/2026-07-12-prop-portfolio-four-friendly-firms.md); [`ops/prop_envelope_default.md`](../../../ops/prop_envelope_default.md); [`docs/adr/2026-06-07-decompound-remc-hold.md`](../../adr/2026-06-07-decompound-remc-hold.md); [`docs/notes/notice/N-2026-07-11-terminal-standing-displaces-portfolio-action.md`](../../notes/notice/N-2026-07-11-terminal-standing-displaces-portfolio-action.md)
 **Verification:** classification checked by an adversarially-verified 10-agent workflow (2026-07-12) — 4 owed reads, 3 new-artifact confirmations, 1 bidirectional STATE↔class audit, 2 adversarial passes. Corrections applied are logged in §2.5.
 
 ---
@@ -32,7 +32,7 @@
 ### What changed today (2026-07-12), verified
 Two artifacts landed **on main** and reshape this packet:
 1. **[`docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md`](../../adr/2026-07-12-prop-portfolio-four-friendly-firms.md)** (`Accepted`, git `0e26a7b`) reopens futures-prop — **not** by reversing R6 (the locked book's fan-out stays NO-GO; DJ30→MYM and NAS100 falsifiers stand), but by authorizing a **new, greenfield discover → productionalize → execute program** at four attended-automation firms (Bulenox, Tradeify, MyFundedFutures, BluSky), fed by the same Gen-2 pipeline DISC-CAMP-0 sits inside. Rail build + account registration **remain gated**; `ACTIVE_FIRM` stays FXIFY. *(Body historical as of 2026-07-12; `ACTIVE_FIRM` live default is now `Tradeify_Select_100K` — substrate Phase 1 2026-07-22; see living-board supersessions banner above.)*
-2. Its constraint set, **[`ops/prop_envelope_default.md`](../../ops/prop_envelope_default.md)** (git `802ee60`), is seeded and already the scoring target for candidates (verified: Q-HARV-0 was scored against it) but remains **PROVISIONAL v0.1** — its §5 lists five open items (E1 deadline print, E2 checkpoint semantics, E7 default-vs-overlay, ETF policy, the ratifying ADR).
+2. Its constraint set, **[`ops/prop_envelope_default.md`](../../../ops/prop_envelope_default.md)** (git `802ee60`), is seeded and already the scoring target for candidates (verified: Q-HARV-0 was scored against it) but remains **PROVISIONAL v0.1** — its §5 lists five open items (E1 deadline print, E2 checkpoint semantics, E7 default-vs-overlay, ETF policy, the ratifying ADR).
 
 ### The load-bearing finding: a resource collision at 2026-11-08 (CONFIRMED)
 | Obligation | Owner | Miss consequence |

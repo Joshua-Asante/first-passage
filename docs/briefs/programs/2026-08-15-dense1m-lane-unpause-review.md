@@ -71,7 +71,7 @@ MSL E1 HOLD is untouched: no slate-4, no S2B revive. This packet is TNEC L4 only
 
 - [CON-1](../closures/Q-MNQDTL-CON-1-closure-falsified.md) FALSIFIED · [CON-2](../closures/Q-TNEC-CON-2-closure-ambiguous-hold.md) AMBIGUOUS (gross ~0.65× of 4×RT) · [CON-3](../closures/Q-TNEC-CON-3-closure-ambiguous-hold.md) / [CON-4](../closures/Q-TNEC-CON-4-closure-ambiguous-hold.md) / [CON-5](../closures/Q-TNEC-CON-5-closure-ambiguous-hold.md) AMBIGUOUS; CON-3→4 and CON-4→5 were Branch B continues; CON-5 elected A.
 - [ADR 2026-08-10](../../adr/2026-08-10-temporal-selectivity-outside-mapped-levers.md) §2-B / §6 — route ① open under a priori + K-per-axis; intended successor unauthored *as a temporal-criterion-as-mechanism cell*, not as another geometry+first/session cap.
-- [08-10 cost-geometry falsifier](../../lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_cost_geometry_2026-08-10_LOG.md) — stop width cannot rescue (0.02–0.10× the 4× bar); surviving lever is trade count (once/session needs ~3.3% of the ~170 pt oracle vs ~20% at CON-2's ~6/day).
+- [08-10 cost-geometry falsifier](../../../lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_cost_geometry_2026-08-10_LOG.md) — stop width cannot rescue (0.02–0.10× the 4× bar); surviving lever is trade count (once/session needs ~3.3% of the ~170 pt oracle vs ~20% at CON-2's ~6/day).
 - [MSL-S7](../closures/MSL-S7-closure-resolved-e1-hold.md) — un-pause listed as something E1 does not license; S2B route still needs Board un-pause *or* a non-route-① thesis. This packet does not grant that for MSL.
 - Eight consecutive zero-yield closes 2026-08-08→08-12 (CON-5 election record) vs SNAG 3.
 

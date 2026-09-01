@@ -454,7 +454,7 @@ standing board.
 > is retained as dated record, not rewritten.
 - **Downstream synced 2026-08-02 (operator-directed):** three stale T2-related clauses corrected,
   marked `VERIFIED 2026-08-02` — see
-  [`2026-07-17-0808-packet-delta-and-sequence.md`](../briefs/2026-07-17-0808-packet-delta-and-sequence.md),
+  [`2026-07-17-0808-packet-delta-and-sequence.md`](../briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md),
   the canonical owner of those clauses and its own correction record.
 
 ---

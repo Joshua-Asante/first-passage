@@ -9,7 +9,7 @@ trade-count construction, not a kill) · P5 un-HOLD'd 2026-08-20 → access prob
 only writer. Title still says "six" pending a forward correction (L3=L6 same paper; five
 distinct programs).
 **Objective:** carry the — **five, corrected from six this session, see §13** —
-[Koijen axis-2 OpenAlex-substitute](../../lab/analysis/harvest/koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md)
+[Koijen axis-2 OpenAlex-substitute](../../../lab/analysis/harvest/koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md)
 leads from screen-level survivors to either a priced Databento extension decision or a registry
 kill, through harvest intake, against the **2026-11-08** clock (four-firms §4 + harvest limb-1
 idle guard + limb-2 exposure).
@@ -25,18 +25,18 @@ Verified before this plan was drafted, not reconstructed after:
 
 | Claim in the plan | Verified against | Result |
 |---|---|---|
-| Rates sleeve venue-dead | [`core/firm_rules.py`](../../core/firm_rules.py) ~L259 | "US TREASURIES (ZB/ZN/ZF/ZT/UB) ARE NOT TRADABLE HERE" (article 10468222); sole rates products are EUREX bonds |
+| Rates sleeve venue-dead | [`core/firm_rules.py`](../../../core/firm_rules.py) ~L259 | "US TREASURIES (ZB/ZN/ZF/ZT/UB) ARE NOT TRADABLE HERE" (article 10468222); sole rates products are EUREX bonds |
 | 2026-06-30 Micro10Y/2YY MR rejection | [`docs/rejected_candidates.md`](../../rejected_candidates.md) L428 | Confirmed — chop-native 5th-leg sweep, era/tail-wall kill |
 | OHLCV raised bar | [`docs/rejected_candidates.md`](../../rejected_candidates.md) L24 | `index-intraday-ohlcv-directional-timing-2026-07-21`, tier=always |
-| §4a hedging sign-constraint | [`core/firm_rules.py`](../../core/firm_rules.py) comment block | Equity Index Product Group = ES/MES/NQ/MNQ/YM/MYM/RTY/M2K/EMD/NKD + EUREX index; opposing directions prohibited within-group, one account or across |
+| §4a hedging sign-constraint | [`core/firm_rules.py`](../../../core/firm_rules.py) comment block | Equity Index Product Group = ES/MES/NQ/MNQ/YM/MYM/RTY/M2K/EMD/NKD + EUREX index; opposing directions prohibited within-group, one account or across |
 | TNEC N-SHAPE definition | [`docs/spec/2026-08-08-tradeify-necessary-conditions-target-spec.md`](../../spec/2026-08-08-tradeify-necessary-conditions-target-spec.md) L11 | EM3 independence + hard-stop integrity + EM5 session/slot legality (flat-16:00-ET-inside-16:45-print · micro-expressible · §4a sign constraint · S7 occupancy) |
 | MSL slate-2 design box (why it can't fit these leads) | [`docs/adr/2026-08-13-msl-slate-2-design-box.md`](../../adr/2026-08-13-msl-slate-2-design-box.md) | `rr`∈[2,3], WR 0.30–0.42, R at bust≤3.0% diffusion frontier, hard-stop mandatory, k=1, no pyramiding — a daily hold-to-close reversal shape does not fit this box |
-| M6A `FLAG-COSTBIND` | [`ops/instruments/M6A.md`](../../ops/instruments/M6A.md) | Confirmed: Stage-1 Currencies SURVIVOR under FLAG-COSTBIND; cost-tax 0.0902 binds before the 0.0891 pooled-panel floor; Stage-2 ex-FOMC flips COST→POWER |
-| MGC instrument state | [`ops/instruments/MGC.md`](../../ops/instruments/MGC.md) | RE-ENTERED, class-attested, not elected; one dated cell (`event-window-reversal` DEAD, unrelated mechanism); no binding bar against a hold-to-close reversal shape |
+| M6A `FLAG-COSTBIND` | [`ops/instruments/M6A.md`](../../../ops/instruments/M6A.md) | Confirmed: Stage-1 Currencies SURVIVOR under FLAG-COSTBIND; cost-tax 0.0902 binds before the 0.0891 pooled-panel floor; Stage-2 ex-FOMC flips COST→POWER |
+| MGC instrument state | [`ops/instruments/MGC.md`](../../../ops/instruments/MGC.md) | RE-ENTERED, class-attested, not elected; one dated cell (`event-window-reversal` DEAD, unrelated mechanism); no binding bar against a hold-to-close reversal shape |
 | `scripts/instrument_profiles.py cell <SYM> <mechanism-id>` | read in full | Data-independent — reads only `ops/instruments/*.md` + committed `MECHANISMS.md`; safe to run in this worktree without vendor panels |
 | On-hand CME panels in **this worktree** | `ls core/data/tv_exports/cme/` | **Only `SHA256SUMS` present — no panel bytes in this worktree.** Matches the plan's own Phase-3 note ("worktrees lack gitignored vendor data, even locally"). Dedup/venue/cost-screen work (data-independent) can proceed here; any actual CSV read (Phase 1 cheap falsifiers) needs `-Copy`/`FP_DATA_ROOT` staging from the primary checkout or a fresh pull |
 | GC.FUT deep-history cache | `lab/analysis/deep_lane/dl1_mgc_orc_2026-08-16/` | Confirmed real: `CAMPAIGN_ID = "DL1-MGC-ORC"`, `GC.FUT` parent TRAIN 2010-06-06→2019-01-01 (2,168 CME sessions), `MGC.FUT` reserved as CONFIRM/OOS. This is the deep-lane cache the plan proposes reusing for L1/L3's gold cell — same bytes, second consumer, no re-pull |
-| 2026-08-17 Koijen axis-2 STATE decision line | [`STATE.md`](../../STATE.md) L64–73 | Matches SOURCES_LOG exactly: 296→234→230→17→7/6 funnel, $0/K=0, no candidate admitted |
+| 2026-08-17 Koijen axis-2 STATE decision line | [`STATE.md`](../../../STATE.md) L64–73 | Matches SOURCES_LOG exactly: 296→234→230→17→7/6 funnel, $0/K=0, no candidate admitted |
 
 ---
 
@@ -52,14 +52,14 @@ construct with a hard-stop overlay satisfies by construction.
 
 | # | Lead | Why this rank | What the venue/cost pass changed |
 |---|---|---|---|
-| P1 | **L3=L6** overnight-reversal — **RESOLVED SAME PAPER** (not "merged pending overlap"): SOURCES_LOG rows 3 & 6 are the 2015 and 2022 drafts of one Della Corte/Kosowski(+Liu)/Wang paper, same SSRN abstract `2730304` — see [SOURCES_LOG addendum](../../lab/analysis/harvest/koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md#addendum-2026-08-17--3-and-6-are-the-same-paper-not-two-independent-leads-count-corrects-65). Carry the 2022 draft (4 authors, richer robustness) forward as the authoritative version | Concrete WHO, testable today at $0 on panels the primary checkout holds | Effective universe shrank hard: rates sleeve venue-dead (§0); index sleeve blocked by the OHLCV raised bar + §4a sign-constraint; MCL pre-killed by arithmetic — **verified this session**: MCL's own measured cost_bp 5.3423 (Stage-0 2023 median, `ops/instruments/MCL.md` C1) × 2 (generous bar) = 10.68bp ≈ the "10.7bp" figure, vs the paper's commodities leg 0.04%/day (t=6.76) = 4bp/day → pre-killed; M6A marginal (`FLAG-COSTBIND`, §0). Informative cells ≈ MGC (+6J as FX signal panel) — both on hand at the primary checkout; 6J carries no cost_hurdle on its ledger yet (needs fresh measurement) |
+| P1 | **L3=L6** overnight-reversal — **RESOLVED SAME PAPER** (not "merged pending overlap"): SOURCES_LOG rows 3 & 6 are the 2015 and 2022 drafts of one Della Corte/Kosowski(+Liu)/Wang paper, same SSRN abstract `2730304` — see [SOURCES_LOG addendum](../../../lab/analysis/harvest/koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md#addendum-2026-08-17--3-and-6-are-the-same-paper-not-two-independent-leads-count-corrects-65). Carry the 2022 draft (4 authors, richer robustness) forward as the authoritative version | Concrete WHO, testable today at $0 on panels the primary checkout holds | Effective universe shrank hard: rates sleeve venue-dead (§0); index sleeve blocked by the OHLCV raised bar + §4a sign-constraint; MCL pre-killed by arithmetic — **verified this session**: MCL's own measured cost_bp 5.3423 (Stage-0 2023 median, `ops/instruments/MCL.md` C1) × 2 (generous bar) = 10.68bp ≈ the "10.7bp" figure, vs the paper's commodities leg 0.04%/day (t=6.76) = 4bp/day → pre-killed; M6A marginal (`FLAG-COSTBIND`, §0). Informative cells ≈ MGC (+6J as FX signal panel) — both on hand at the primary checkout; 6J carries no cost_hurdle on its ledger yet (needs fresh measurement) |
 | P2 | **L1** index-flow daily reversal — row 1, Da/Tang/Tao/Yang | Same $0 panels, commodity-native | Must test the venue-expressible slice (18:00–reopen/open → close next day, paying the decomposed RT count), not raw close-to-close autocorrelation — raw existence can pass while the expressible component nets negative |
-| P3 | **L5** curve-slope momentum — row 5, Bianchi/Fan/Miffre/Zhang | Real reported edge, weakest WHO | **GO executed 2026-08-17 — sleeve CLOSED (venue SCREEN-FAIL).** Dry-run $0 on bars; paper S-strategy is a calendar spread, already illegal at this firm. Dedup vs USOIL-carry: DISTINGUISHABLE, not ADMIT. See [`P3_DRYRUN`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/P3_DRYRUN.md) |
+| P3 | **L5** curve-slope momentum — row 5, Bianchi/Fan/Miffre/Zhang | Real reported edge, weakest WHO | **GO executed 2026-08-17 — sleeve CLOSED (venue SCREEN-FAIL).** Dry-run $0 on bars; paper S-strategy is a calendar spread, already illegal at this firm. Dedup vs USOIL-carry: DISTINGUISHABLE, not ADMIT. See [`P3_DRYRUN`](../../../lab/analysis/harvest/six_lead_cf_2026-08-17/P3_DRYRUN.md) |
 | P4 | **L2** dealer-gamma EOD transplant — row 2, delta-hedging demand | Real mechanism, uncertain data route | Governed by the Q-ORB-GEX-1 rejection (2026-06-25, edge collapsed to a realized-vol proxy) + exogenous-conditioning orthogonality priors, not the OHLCV bar. Phase 1 = route memo only |
 | P5 | **L4** mutual-fund overweight — row 4, Chen/Chen/Cohen | Expected cheap kill | Access probe on the holdings-data real-time lag (13F/N-Q, ~45-day disclosure lag per SOURCES_LOG); likely UNSCREENABLE |
 
 **L-number ↔ SOURCES_LOG row map** (for future readers — this table is new index, not a
-retelling of the evidence in [`SOURCES_LOG.md`](../../lab/analysis/harvest/koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md)):
+retelling of the evidence in [`SOURCES_LOG.md`](../../../lab/analysis/harvest/koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md)):
 L1=row 1 · L2=row 2 · L3=L6=row 3/row 6 (**same paper, confirmed this session — see §Phase 0
 findings below**) · L4=row 4 · L5=row 5. **Five distinct research programs, not six** — the
 2026-08-17 STATE.md decision line and this plan's own title still say "six leads" pending a
@@ -76,7 +76,7 @@ its contents are recommendations for operator sign-off, not yet operator-marked.
 | # | Item | Status | Note |
 |---|---|---|---|
 | 0.1 | Fetch origin + verify merged SOURCES_LOG content (verify-content-not-path) | **DONE** | `git fetch origin` clean, HEAD `5d8bf59` = merge of PR #31; SOURCES_LOG read in full, matches STATE.md decision line |
-| 0.2 | L3/L6 overlap resolution — read both PDFs | **DONE — RESOLVED SAME PAPER** | Not "one research program," the literal same paper across a 2015→2022 redraft (same SSRN abstract `2730304`, explicit self-citation of the title change, additive author list). Full evidence: [SOURCES_LOG addendum](../../lab/analysis/harvest/koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md#addendum-2026-08-17--3-and-6-are-the-same-paper-not-two-independent-leads-count-corrects-65). **Six leads corrects to five.** CICF-hosted PDF route (`cicfconf.org/sites/default/files/paper_357.pdf`) worked for the 2015 draft as the prior chat noted; SSRN itself 403'd in-session as expected |
+| 0.2 | L3/L6 overlap resolution — read both PDFs | **DONE — RESOLVED SAME PAPER** | Not "one research program," the literal same paper across a 2015→2022 redraft (same SSRN abstract `2730304`, explicit self-citation of the title change, additive author list). Full evidence: [SOURCES_LOG addendum](../../../lab/analysis/harvest/koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md#addendum-2026-08-17--3-and-6-are-the-same-paper-not-two-independent-leads-count-corrects-65). **Six leads corrects to five.** CICF-hosted PDF route (`cicfconf.org/sites/default/files/paper_357.pdf`) worked for the 2015 draft as the prior chat noted; SSRN itself 403'd in-session as expected |
 | 0.3 | Machine profile consults — `scripts/instrument_profiles.py cell <SYM> <mechanism-id>` | **DONE (bounded)** | `MECHANISMS.md` read in full: no existing id matches any of the five shapes (growth rule forbids registering `NEW` outside a same-commit pre-registration — Phase 0 cannot invent ids). Ran consults against the *nearest existing* ids for adjacency signal: `MNQ × intraday-momentum` → `DEAD` 2026-07-21 (Baltussen-class decayed on modern MNQ, OHLCV bar attached — relevant to L2's adjacency); `USOIL × commodity-carry-term-structure` → `DEAD` 2026-06-06 (disguised trend trade — relevant to L5's adjacency, but L5 trades curve-slope *change*, distinguishable per §2 P3); `MCL`/`MGC × commodity-carry-term-structure` → untested, no cell, but both carry the `free-data-5th-leg-snag-closed-2026-07-01` BINDING BAR; `6J × event-window-reversal` → untested, no binding bar. **Open sub-item, not yet resolved:** the SNAG-closed bar on MCL/MGC appears (per `docs/rejected_candidates.md` context, "5th-leg target spec 0/24; chop-native 0/9") to scope to the **5th-portfolio-leg self-funded addition programme**, a different channel from harvest intake — but the ledgers' `bars:` YAML doesn't encode that channel scope explicitly the way the M2K OHLCV bar's class-level framing does. Flagged for the door-check at G0, not resolved here |
 | 0.4 | Venue screen — E1 envelope, §4a hedging sign-constraint, per-instrument cost bars | **DONE** | Cost bars now on file for every relevant instrument: MCL 5.3423 bp/RT (2023 median); M2K 11.89 bp/RT (confirms index sleeve is the most expensive — already blocked by the OHLCV bar independently); M6A cost-tax 0.0902 (`FLAG-COSTBIND`); MGC cites the same third-leg-map 0.0902 figure; **6J has no `cost_hurdle` registered on its ledger** — the Aegis→6J work never needed one (self-funded panel-economics questions, not a cost-bp screen) — a fresh Req-5 cost measurement is owed before 6J stages past Phase 0 |
 | 0.5 | Cost/power pre-screen | **DONE (bounded)** | Directly enabled by 0.4's bars. MCL/MGC clear expressibility at the geometry level (per their own ledgers' `SIGMA-NATIVE`/class-attestation entries — geometry ≠ edge, unchanged). No power/N figure computed yet for any of the five shapes specifically — that's a Phase-1 CF output (trade count under the frozen construct), not a Phase-0 input |
@@ -95,7 +95,7 @@ data local-only).
   forking-paths freedom that undermines its own kill authority. Hard-stop overlay priced in.
 - **P2-CF:** venue-expressible next-day-reversal slice (18:00–reopen/open → close next day, paying
   the decomposed RT count), same panels — not raw close-to-close autocorrelation.
-- **P3:** Databento curve-data cost dry-run only. **EXECUTED 2026-08-17** — bars $0; sleeve CLOSED on standing calendar-spread SCREEN-FAIL ([`P3_DRYRUN`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/P3_DRYRUN.md)).
+- **P3:** Databento curve-data cost dry-run only. **EXECUTED 2026-08-17** — bars $0; sleeve CLOSED on standing calendar-spread SCREEN-FAIL ([`P3_DRYRUN`](../../../lab/analysis/harvest/six_lead_cf_2026-08-17/P3_DRYRUN.md)).
 - **P4/P5:** route/access memos only.
 
 **Asymmetric by declaration:** FAIL kills a sleeve; PASS licenses only a priced data-extension
@@ -112,18 +112,18 @@ risk.
 **Instruments:** `MGC` + `6J` (P1-CF), same pair (P2-CF). MCL excluded from both — pre-killed by
 arithmetic (§2 P1, §0). Panel: TV `1!` volume-lead continuous (`MGC.v.0` / `6J.v.0` equivalent) —
 the repo's own standing admissible convention (`.c.0` calendar-roll is inadmissible for P&L per
-[`M2K.md` W1](../../ops/instruments/M2K.md)); no fixed-calendar roll-exclusion band is invented
+[`M2K.md` W1](../../../ops/instruments/M2K.md)); no fixed-calendar roll-exclusion band is invented
 here, since volume-lead panels already carry the correct front-month by construction.
 
 **Roll handling:** exclude any session where the panel's front-month designation changes intraday
 (the DL-1 stitch convention — "front month = per-day volume leader; a roll day = the day the
-leader changes," [`stitch.py`](../../lab/analysis/deep_lane/dl1_mgc_orc_2026-08-16/stitch.py)) —
+leader changes," [`stitch.py`](../../../lab/analysis/deep_lane/dl1_mgc_orc_2026-08-16/stitch.py)) —
 this is a **fresh application of a standing repo convention to a new instrument pair, not a
 re-derivation of the frozen `ROLL-EXCLUDE-2026-07-31` ruling**, which governs MCL/M2K/MYM only and
 is out of scope here by its own text's terms.
 
 **Session boundary:** flat by **16:00 ET** (E1 default print, confirmed —
-[`prop_envelope_default.md`](../../ops/prop_envelope_default.md) L87: "all four FRIENDLY deadlines
+[`prop_envelope_default.md`](../../../ops/prop_envelope_default.md) L87: "all four FRIENDLY deadlines
 primary-verified; binding minimum MFFU 16:10 ET"). Holiday-short handling: flat by **12:59 ET** on
 CME early-close days, per the original plan text — **not yet cross-checked against a current CME
 holiday calendar this session**; do that check before the CF runs for real, not after (matches the
@@ -150,9 +150,9 @@ bars) were already on hand there — an operator-supplied fresh MGC export
 the fourth (P1×6J) gross-positive but t=0.64 (not significant) and 0.73× the 4× cost hurdle (below
 it). Stop-trigger rate 3.3–4.7% across all legs rules out the hard-stop as the driver; the
 long/short split shows each instrument's own trend swamping the fade, not a construction defect.
-Full writeup: [`six_lead_cf_2026-08-17/LOG.md`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/LOG.md).
+Full writeup: [`six_lead_cf_2026-08-17/LOG.md`](../../../lab/analysis/harvest/six_lead_cf_2026-08-17/LOG.md).
 Landed on 3 of the plan's 4 required surfaces: dated LOG ✓ ·
-[CANDIDATE_ROWS addendum](../../lab/analysis/harvest/radar_tier_a_burst_2026-07/CANDIDATE_ROWS.md#addendum-2026-08-17b--l3l6-resolved-same-paper-not-two-leads-p1p2-cheap-falsifiers-fail-all-four-legs) ✓
+[CANDIDATE_ROWS addendum](../../../lab/analysis/harvest/radar_tier_a_burst_2026-07/CANDIDATE_ROWS.md#addendum-2026-08-17b--l3l6-resolved-same-paper-not-two-leads-p1p2-cheap-falsifiers-fail-all-four-legs) ✓
 · STATE line (pending, this commit) · registry row — **not added**, pre-G0 CF kills don't get a
 `rejected_candidates.md` row per the 2026-08-15 pre-G0-kills-are-not-§4-strikes precedent (matches
 `MNQ-ANALOGUE-1`/`MNQ-SIZEDIV-1`'s own pattern).
@@ -206,11 +206,11 @@ NS-curve-fitting harness for L5) dispatch to Cursor, directly via the dispatch s
 |---|---|---|---|---|
 | Plan drafted (this document) | this session | **DRAFTED** | [#32](https://github.com/Joshua-Asante/first-passage/pull/32) merged | Full plan recorded, then executed, on `claude/six-lead-pursuit-phase1-execution` (superset of `-stage-0-a2c299`) |
 | Phase 0 items 0.1–0.7 | this session | **DONE** | #32 merged | See §3 execution ledger; headline finding is the L3/L6 same-paper correction (§13) |
-| SOURCES_LOG addendum (L3=L6) | this session | **DONE** | #32 merged | [`SOURCES_LOG.md` addendum](../../lab/analysis/harvest/koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md) |
+| SOURCES_LOG addendum (L3=L6) | this session | **DONE** | #32 merged | [`SOURCES_LOG.md` addendum](../../../lab/analysis/harvest/koijen_axis2_openalex_2026-08-17/SOURCES_LOG.md) |
 | Phase 0 item 0.8 (operator marks packet) | operator | **MARKED** | #32 merged (marks); OpenAlex addendum landed 17d | §13 — per-lead GO/HOLD marked 2026-08-17; limb-2 counter **RULED** (does not increment); OpenAlex channel addendum **landed** (17d) |
-| P3 GO + dry-run | operator un-HOLD (this session) | **DONE — sleeve CLOSED (venue)** | pending | [`P3_DRYRUN`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/P3_DRYRUN.md) — bars $0; S-strategy calendar-spread SCREEN-FAIL; USOIL-carry DISTINGUISHABLE |
+| P3 GO + dry-run | operator un-HOLD (this session) | **DONE — sleeve CLOSED (venue)** | pending | [`P3_DRYRUN`](../../../lab/analysis/harvest/six_lead_cf_2026-08-17/P3_DRYRUN.md) — bars $0; S-strategy calendar-spread SCREEN-FAIL; USOIL-carry DISTINGUISHABLE |
 | STATE.md correction line | this session | **DONE** | #32 merged | New dated decision-index line, not a retro-edit of the 2026-08-17 historical line |
-| P1-CF/P2-CF execution | this session | **DONE — FAIL all four legs** | #32 merged | [`CF LOG`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/LOG.md) |
+| P1-CF/P2-CF execution | this session | **DONE — FAIL all four legs** | #32 merged | [`CF LOG`](../../../lab/analysis/harvest/six_lead_cf_2026-08-17/LOG.md) |
 | Limb-2 counter ruling | operator direction + this session (draft) | **DONE — does not increment** | pending | [`harvest intake ADR` ruling block](../../adr/2026-07-15-external-mechanism-harvest-intake.md#ruling-2026-08-17--p1-cfp2-cf-does-not-increment-limb-2) |
 
 ## §11 Program-level stop rules (pre-committed)
@@ -252,9 +252,9 @@ fact itself); the marks below are about what to *do* with the now-five-lead coho
 |---|---|---|
 | **P1 (L3=L6)** overnight-reversal | **GO** — operator, 2026-08-17 | Overlap resolved; MGC+6J panels on hand at the primary checkout; MCL pre-kill confirmed by arithmetic so excluded from the CF's instrument set; 6J needs a fresh cost-bp measurement before its own CF leg, not before MGC's |
 | **P2 (L1)** index-flow reversal | **GO** — operator, 2026-08-17 | Same $0 panels; venue-expressible-slice discipline already specified in the plan (§4) |
-| **P3 (L5)** curve-slope momentum | **GO** — operator un-HOLD, 2026-08-17 (this session); prior HOLD same day discharged | Dry-run + paper read + USOIL-carry dedup executed. Sleeve **CLOSED** on standing calendar-spread SCREEN-FAIL (paper S-strategy = long front / short fourth). Bars $0; `tbbo` CL-parent $1,543.90 (contrast only). Dedup: DISTINGUISHABLE from static USOIL carry, not ADMIT. [`P3_DRYRUN`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/P3_DRYRUN.md) |
-| **P4 (L2)** dealer-gamma EOD | **HOLD** — operator, 2026-08-17; un-HOLD'd 2026-08-20 → route memo run, disposition HOLD (unchanged verdict, sharper reason); **dry-run + concentration check run same day, disposition still HOLD, evidence updated against** | H-OD-1 dedup (§3 item 0.6) strengthens the existing Q-ORB-GEX-1 + intraday-momentum-decay caution. Route memo found L2 is mechanism-distinct from `Q-ORB-GEX-1` (momentum-continuation vs. regime-gate) but shares the same exogenous flow series and the same orthogonality risk that killed it. Databento `estimate` on `NQ.OPT`: full-history cost trivial (~$5.34, tbbo), but complex-wide trade density is 367× thinner than `NQ.FUT`. Concentration check (definition+trades pull, $0.00): the near-the-money/near-dated slice a real construction would use is **thinner relative to the underlying (~1,423×), not richer** — narrowing to the plausible-construction region widens the density gap instead of closing it. Trade-size/notional-weighted signal strength untested; not a kill, but the open data-sourcing question is now evidenced against a bare trade-count construction. [`P4_ROUTEMEMO`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/P4_ROUTEMEMO.md) · [`P4_DRYRUN`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/P4_DRYRUN.md) · [`concentration RESULTS`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/p4_concentration_2026-08-20/RESULTS.md) |
-| **P5 (L4)** mutual-fund overweight | **HOLD** — operator, 2026-08-17; **un-HOLD'd 2026-08-20 → access probe run, disposition `UNSCREENABLE`, CLOSED** | 13F/N-Q ~45-day disclosure lag is a hard real-time-reconstructibility wall on its face. Confirmed by web verification 2026-08-20: 13F = 45-day lag, Form N-PORT = 60-day lag, 2026 SEC proposal narrows rather than accelerates disclosure; no systematic near-real-time substitute exists. [`P5_ACCESSPROBE`](../../lab/analysis/harvest/six_lead_cf_2026-08-17/P5_ACCESSPROBE.md) |
+| **P3 (L5)** curve-slope momentum | **GO** — operator un-HOLD, 2026-08-17 (this session); prior HOLD same day discharged | Dry-run + paper read + USOIL-carry dedup executed. Sleeve **CLOSED** on standing calendar-spread SCREEN-FAIL (paper S-strategy = long front / short fourth). Bars $0; `tbbo` CL-parent $1,543.90 (contrast only). Dedup: DISTINGUISHABLE from static USOIL carry, not ADMIT. [`P3_DRYRUN`](../../../lab/analysis/harvest/six_lead_cf_2026-08-17/P3_DRYRUN.md) |
+| **P4 (L2)** dealer-gamma EOD | **HOLD** — operator, 2026-08-17; un-HOLD'd 2026-08-20 → route memo run, disposition HOLD (unchanged verdict, sharper reason); **dry-run + concentration check run same day, disposition still HOLD, evidence updated against** | H-OD-1 dedup (§3 item 0.6) strengthens the existing Q-ORB-GEX-1 + intraday-momentum-decay caution. Route memo found L2 is mechanism-distinct from `Q-ORB-GEX-1` (momentum-continuation vs. regime-gate) but shares the same exogenous flow series and the same orthogonality risk that killed it. Databento `estimate` on `NQ.OPT`: full-history cost trivial (~$5.34, tbbo), but complex-wide trade density is 367× thinner than `NQ.FUT`. Concentration check (definition+trades pull, $0.00): the near-the-money/near-dated slice a real construction would use is **thinner relative to the underlying (~1,423×), not richer** — narrowing to the plausible-construction region widens the density gap instead of closing it. Trade-size/notional-weighted signal strength untested; not a kill, but the open data-sourcing question is now evidenced against a bare trade-count construction. [`P4_ROUTEMEMO`](../../../lab/analysis/harvest/six_lead_cf_2026-08-17/P4_ROUTEMEMO.md) · [`P4_DRYRUN`](../../../lab/analysis/harvest/six_lead_cf_2026-08-17/P4_DRYRUN.md) · [`concentration RESULTS`](../../../lab/analysis/harvest/six_lead_cf_2026-08-17/p4_concentration_2026-08-20/RESULTS.md) |
+| **P5 (L4)** mutual-fund overweight | **HOLD** — operator, 2026-08-17; **un-HOLD'd 2026-08-20 → access probe run, disposition `UNSCREENABLE`, CLOSED** | 13F/N-Q ~45-day disclosure lag is a hard real-time-reconstructibility wall on its face. Confirmed by web verification 2026-08-20: 13F = 45-day lag, Form N-PORT = 60-day lag, 2026 SEC proposal narrows rather than accelerates disclosure; no systematic near-real-time substitute exists. [`P5_ACCESSPROBE`](../../../lab/analysis/harvest/six_lead_cf_2026-08-17/P5_ACCESSPROBE.md) |
 
 **Still unmarked** (not addressed by the P1/P2 GO): the limb-2 counter ruling and the
 channel-scope amend-in-place note, both below. The GO licenses *attempting* P1-CF/P2-CF — it does

@@ -7,7 +7,7 @@
 **Retain-until:** none
 **Decision date:** 2026-07-13
 **Authors:** claude.ai Tech Advisor (draft) · Joshua (decision)
-**Related:** [`docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md`](../ltm/briefs/rnd-pipeline/discovery-campaign-template.md) (Stage-8 row + §Campaign-defaults change control); [`docs/adr/2026-07-12-dsr-k-rule-and-variance-floor-supersession.md`](2026-07-12-dsr-k-rule-and-variance-floor-supersession.md) (precedent: pre-freeze gate-reachability amendment via ADR); [`ops/prop_envelope_default.md`](../../ops/prop_envelope_default.md) §2; [`docs/adr/2026-07-13-prop-account-book-segregation.md`](2026-07-13-prop-account-book-segregation.md) (consumer of §2c); [`docs/briefs/programs/2026-07-12-08-08-packet-pretriage.md`](../briefs/2026-07-12-08-08-packet-pretriage.md) (Class A consumer — proposed input only).
+**Related:** [`docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md`](../ltm/briefs/rnd-pipeline/discovery-campaign-template.md) (Stage-8 row + §Campaign-defaults change control); [`docs/adr/2026-07-12-dsr-k-rule-and-variance-floor-supersession.md`](2026-07-12-dsr-k-rule-and-variance-floor-supersession.md) (precedent: pre-freeze gate-reachability amendment via ADR); [`ops/prop_envelope_default.md`](../../ops/prop_envelope_default.md) §2; [`docs/adr/2026-07-13-prop-account-book-segregation.md`](2026-07-13-prop-account-book-segregation.md) (consumer of §2c); [`docs/briefs/programs/2026-07-12-08-08-packet-pretriage.md`](../briefs/programs/2026-07-12-08-08-packet-pretriage.md) (Class A consumer — proposed input only).
 **Layer:** methodology / discovery-pipeline gate design — not locked-parameter; Campaign-defaults frozen values untouched.
 
 ---

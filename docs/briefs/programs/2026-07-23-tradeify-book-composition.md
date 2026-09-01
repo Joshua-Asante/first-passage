@@ -5,7 +5,7 @@
 **Amended:** 2026-07-23 (posture reconcile + compose-objective split vs Q-COMPOSE-1 / Q-FUNNEL-1);
 2026-07-23 later same day (operator: ORB PARKED; bust-gate re-derive + c1 1.00× aim → 08-08 packet)
 **Status:** `MEASUREMENT RECORD ONLY` — dispositions §6 are not live gate work; ORB operationally PARKED (operator)
-**Harness:** [`lab/analysis/c1/tradeify_book_composition_2026-07-23/`](../../lab/analysis/c1/tradeify_book_composition_2026-07-23/)
+**Harness:** [`lab/analysis/c1/tradeify_book_composition_2026-07-23/`](../../../lab/analysis/c1/tradeify_book_composition_2026-07-23/)
 **Packet home:** [`2026-07-17-0808-packet-delta-and-sequence.md`](2026-07-17-0808-packet-delta-and-sequence.md) (§0.5 operator posture 2026-07-23)
 
 ---
@@ -45,7 +45,7 @@ scripts live under the harness path above (`out/daily_panel.csv`, `out/book_pane
 `gap_stage1..4.py`).
 
 **Live-ops posture (repo, 2026-07-23 reconcile @ `main`):**
-[`STATE.md`](../../STATE.md) · [`docs/notes/rail_build/RUNBOOK.md`](../../notes/rail_build/RUNBOOK.md) ·
+[`STATE.md`](../../../STATE.md) · [`docs/notes/rail_build/RUNBOOK.md`](../../notes/rail_build/RUNBOOK.md) ·
 GO ADR [`docs/adr/2026-07-17-c1-rail-build-account-registration-go.md`](../../adr/2026-07-17-c1-rail-build-account-registration-go.md)
 — Tradeify Select **100K Evaluation** registered; B6 dry-fire **PASSED 2026-07-20**; rail
 **disarmed** (`dry_run=true`); **B7 / first armed session is a separate operator GO** (not taken).
@@ -322,7 +322,7 @@ bust≤3% — keep both on the board; do not merge labels.
     change, and belongs to the operator (Trap #12) — I have not converted it.**
     **Conditions 2 and 3 re-checked against the instrument ledger — and this brief was wrong
     about both:**
-    - **Condition 3 is SATISFIED.** [`ops/instruments/6J.md`](../../ops/instruments/6J.md) **J1**
+    - **Condition 3 is SATISFIED.** [`ops/instruments/6J.md`](../../../ops/instruments/6J.md) **J1**
       (panel of record, HIGH confidence, P&L-identity-checked 129/129, 0 off-grid fills) records
       1R **$1,385.74 = full-stop mean, n=10** — clearing the n≥5 floor. This brief's §2
       "**1R cohort n=1**" scores the **n=143 export**, which §0.5(2) itself flags as an
@@ -336,7 +336,7 @@ bust≤3% — keep both on the board; do not merge labels.
 
     **PARKED stands anyway — on survival geometry, which is the real blocker and was never the
     one being cited. RE-RUN EXECUTED 2026-07-29 at the registered `Tradeify_Select_100K` tier**
-    ([`RESULTS`](../../lab/analysis/aegis/aegis_6j_trail_tradeify_2026-07-29/RESULTS.md); ledger **J4b**;
+    ([`RESULTS`](../../../lab/analysis/aegis/aegis_6j_trail_tradeify_2026-07-29/RESULTS.md); ledger **J4b**;
     reproduction control **12/12 PASS**, both anchors to the cent):
     - **The PROVISIONAL-basis worry is closed, and it was never load-bearing.** Bulenox Option-2
       and Tradeify Select 100K are **numerically identical** on every parameter the sim uses
@@ -363,7 +363,7 @@ bust≤3% — keep both on the board; do not merge labels.
       *book*, and composition adds variance, so a standalone fail is a fail **a fortiori** (no
       composition run owed).
     - **⚠ SUPERSEDED SAME DAY — the FAIL above is a wrong-configuration artifact** (ledger **J8**;
-      [`RESULTS_GAP`](../../lab/analysis/aegis/aegis_6j_trail_tradeify_2026-07-29/RESULTS_GAP.md)).
+      [`RESULTS_GAP`](../../../lab/analysis/aegis/aegis_6j_trail_tradeify_2026-07-29/RESULTS_GAP.md)).
       J4's arm (b) is **"0.5× until freeze, then FULL size"** — a Bulenox *ramp-up tactic* that
       re-sizes to full once the floor locks at start+$100, and its post-freeze full-size
       drawdowns are what breach. **No c1 leg runs that**; every deployed leg runs a **constant**
@@ -379,7 +379,7 @@ bust≤3% — keep both on the board; do not merge labels.
       constant 0.50×, adversarially reviewed.
 
     **On the ratified third-leg screen — R1 MEASURED 2026-07-29 and it PASSES** (ledger **J7**;
-    [`RESULTS_R1`](../../lab/analysis/aegis/aegis_6j_trail_tradeify_2026-07-29/RESULTS_R1.md)). 6J's
+    [`RESULTS_R1`](../../../lab/analysis/aegis/aegis_6j_trail_tradeify_2026-07-29/RESULTS_R1.md)). 6J's
     per-contract daily-$ std is **0.138× (all-days) / 0.402× (trade-days) of ORB**, and ORB sits
     at 1.5× the ceiling ⇒ 6J at **0.21× / 0.61× — PASS under both conventions**, with **1.6–4.8
     contracts** fitting the budget ORB needed 0.66 of. **The granularity-lockout expectation is
@@ -447,7 +447,7 @@ rg -n "disarmed|dry_run|B7" STATE.md docs/notes/rail_build/RUNBOOK.md | head -20
 
 ## Addendum 2026-07-28 — `eval_sim` applies the FUNDED-only floor lock; §2 eval + chain-rate numbers are optimistic
 
-**Defect.** [`gap_stage2_capbound.py:179-197`](../../lab/analysis/c1/tradeify_book_composition_2026-07-23/gap_stage2_capbound.py)
+**Defect.** [`gap_stage2_capbound.py:179-197`](../../../lab/analysis/c1/tradeify_book_composition_2026-07-23/gap_stage2_capbound.py)
 (`eval_sim`) computes the drawdown floor as
 
 ```python
@@ -467,7 +467,7 @@ eval target is $106,000, so **every path that passes must cross the lock region*
 target, the modeled floor is $100,100 where the true floor is $103,000 — a **$2,900 gap,
 ≈97% of the entire $3,000 drawdown allowance**, handed back precisely in the final stretch
 where a trailing floor is tightest. Same shape and direction as the
-[2026-07-22 firm-rules eval-lock defect](../../lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/RESULTS.md).
+[2026-07-22 firm-rules eval-lock defect](../../../lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/RESULTS.md).
 
 **Not reachable by the pending config fix.** These are **hard-coded literals**, not reads
 of `FIRM_RULES[...]["dd_lock_offset_usd"]`. Applying the still-unapplied `firm_rules`
@@ -484,7 +484,7 @@ that "the venue's economics reward churn — cheap immortal evals + fast extract
 **Not contaminated:** the §1 venue-fact table; `funded_sim` mechanics; the cap/quantization
 findings that do not route through `eval_sim`.
 
-**Inherited by Q-CAPALLOC-1.** [`run_capalloc.py:179`](../../lab/archive/c1_capalloc_2026-07-27/run_capalloc.py)
+**Inherited by Q-CAPALLOC-1.** [`run_capalloc.py:179`](../../../lab/archive/c1_capalloc_2026-07-27/run_capalloc.py)
 calls `G.eval_sim` directly, so its `AMBIGUOUS (d)` closure and the `48/32` dominating-split
 finding carry the same defect. **Its owed re-run must fix the lock first** — re-running the
 harness unchanged would reproduce the defect and bank it as a decision.
@@ -510,10 +510,10 @@ frozen-MC regime gate, not on this harness; and the eval-fee-vs-funded-upside as
 ## Addendum 2026-07-28b — eval-lock FIXED; §2 re-derived; H1 retargeted to $318/acct-mo
 
 **Fix landed.** Every `eval_sim` / `esim` in
-[`lab/analysis/c1/tradeify_book_composition_2026-07-23/`](../../lab/analysis/c1/tradeify_book_composition_2026-07-23/)
+[`lab/analysis/c1/tradeify_book_composition_2026-07-23/`](../../../lab/analysis/c1/tradeify_book_composition_2026-07-23/)
 now uses `floor = peak - DD` unconditionally (Tradeify article 10495897).
 `funded_sim` / `fsim` unchanged. Full record + M-24 sweep:
-[`RESULTS.md`](../../lab/analysis/c1/tradeify_book_composition_2026-07-23/RESULTS.md).
+[`RESULTS.md`](../../../lab/analysis/c1/tradeify_book_composition_2026-07-23/RESULTS.md).
 
 **Reproduction control (SHA `602b692`, unmodified):** stage4 matched published
 2-leg 63% / 8.2 mo / $339, ORB@1 59% / 6.2 / $556, ORB@6 27% / 1.2 / $941
@@ -581,7 +581,7 @@ Addendum 2026-07-28b is superseded.
 
 Funded mortality is the larger finding: nearly **half** of funded accounts die within a year at the
 verified rules. Evidence + attribution (three arms, super-additive corrections):
-[`tradeify_book_composition_2026-07-23/RESULTS.md`](../../lab/analysis/c1/tradeify_book_composition_2026-07-23/RESULTS.md)
+[`tradeify_book_composition_2026-07-23/RESULTS.md`](../../../lab/analysis/c1/tradeify_book_composition_2026-07-23/RESULTS.md)
 §Addendum 2026-07-29.
 
 ---

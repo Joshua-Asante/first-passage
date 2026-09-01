@@ -8,4 +8,4 @@
 **Review date:** none fixed — tied to a6
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3)
 
-**Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row d16
+**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row d16

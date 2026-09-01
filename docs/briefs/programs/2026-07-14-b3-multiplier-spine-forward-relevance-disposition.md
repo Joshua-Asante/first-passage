@@ -11,14 +11,14 @@
 **Status:** **CLOSED — DORMANT-RETAIN** (forward-relevance = NONE for either surviving scale path; do not delete, do not extend). Discharges the last open 08-08 Class-B item.
 **Date:** 2026-07-14
 **Owned by:** [`docs/adr/2026-07-11-ops-cfd-estate-retirement.md`](../../adr/2026-07-11-ops-cfd-estate-retirement.md) §4 Trigger-B · 08-08 pre-triage [`2026-07-12-08-08-packet-pretriage.md`](2026-07-12-08-08-packet-pretriage.md) B3
-**Related:** [`ops/accounts.py`](../../ops/accounts.py) `calc_multiplier` · [`ops/instruments/6J.md`](../../ops/instruments/6J.md) J5 · R6 ADR §4 (firm-config retention)
+**Related:** [`ops/accounts.py`](../../../ops/accounts.py) `calc_multiplier` · [`ops/instruments/6J.md`](../../../ops/instruments/6J.md) J5 · R6 ADR §4 (firm-config retention)
 
 ---
 
 ## §0 — Reads (2026-07-14)
 
-- [`ops/accounts.py`](../../ops/accounts.py):166 — `calc_multiplier(balance, phase, strategy)` = `floor((balance·tier_risk) / (200_000·baseline_risk) · 100)/100`; consumed by `get_multipliers` (4 legs) + `ops/cli.py lots`.
-- [`ops/instruments/6J.md`](../../ops/instruments/6J.md) J5 (venue-throttle finding) + ACTIVE/OPEN (M6J not offered at any FRIENDLY firm, 2026-07-13).
+- [`ops/accounts.py`](../../../ops/accounts.py):166 — `calc_multiplier(balance, phase, strategy)` = `floor((balance·tier_risk) / (200_000·baseline_risk) · 100)/100`; consumed by `get_multipliers` (4 legs) + `ops/cli.py lots`.
+- [`ops/instruments/6J.md`](../../../ops/instruments/6J.md) J5 (venue-throttle finding) + ACTIVE/OPEN (M6J not offered at any FRIENDLY firm, 2026-07-13).
 - `CLAUDE.md` §CLI Usage / §Multiplier System — the account/multiplier commands are **dormant-historical (2026-07-11)**; zero prop accounts exist.
 - Retention basis: R6 ADR §4 (firm configs + multiplier tooling retained for provenance + a possible future firm re-open, not deleted).
 

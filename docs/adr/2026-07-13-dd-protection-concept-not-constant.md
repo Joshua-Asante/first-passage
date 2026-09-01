@@ -7,7 +7,7 @@
 **Retain-until:** none
 **Decision date:** 2026-07-13
 **Authors:** Joshua (decision) + Claude Code Opus 4.8 (recorder/implementer)
-**Ratified recommendation (the §0 reads, engine findings, and verification record live there):** [`docs/briefs/programs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md`](../briefs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md) (§3 + §7)
+**Ratified recommendation (the §0 reads, engine findings, and verification record live there):** [`docs/briefs/programs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md`](../briefs/programs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md) (§3 + §7)
 **Related:** [`2026-05-08-dd-trigger-c2-relock.md`](2026-05-08-dd-trigger-c2-relock.md) (the FXIFY-C2 instance); [`2026-07-11-challenge-era-claims-rescope.md`](2026-07-11-challenge-era-claims-rescope.md) (audit item **D2** — this ADR is its frame); [`2026-07-12-prop-portfolio-four-friendly-firms.md`](2026-07-12-prop-portfolio-four-friendly-firms.md) (the program whose per-firm geometry made the reframe necessary); [`2026-07-10-strategies-never-locked-lifecycle-governance.md`](2026-07-10-strategies-never-locked-lifecycle-governance.md) (the sibling axis-separation precedent)
 **Layer:** risk-control governance + one additive `core/` module — **zero change to any locked constant, allocation, Pine source, MC anchor, or executable line of `dd_protection.py`**.
 

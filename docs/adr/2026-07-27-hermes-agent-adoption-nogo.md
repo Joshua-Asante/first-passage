@@ -25,7 +25,7 @@
 
 ## §2 — Grounds
 
-Evaluation: 19 candidate applications, generated across four lenses and scored by a three-judge panel (doctrine / feasibility / value-vs-status-quo) against a 30-claim product ledger independently verified against primary sources. Every candidate placing Hermes inside the perimeter was killed or conditioned. Full record: [`docs/briefs/programs/2026-07-27-hermes-agent-adoption-ruling.md`](../briefs/2026-07-27-hermes-agent-adoption-ruling.md) and its [closure](../briefs/closures/2026-07-27-hermes-agent-adoption-closure-resolved.md).
+Evaluation: 19 candidate applications, generated across four lenses and scored by a three-judge panel (doctrine / feasibility / value-vs-status-quo) against a 30-claim product ledger independently verified against primary sources. Every candidate placing Hermes inside the perimeter was killed or conditioned. Full record: [`docs/briefs/programs/2026-07-27-hermes-agent-adoption-ruling.md`](../briefs/programs/2026-07-27-hermes-agent-adoption-ruling.md) and its [closure](../briefs/closures/2026-07-27-hermes-agent-adoption-closure-resolved.md).
 
 **Two premise corrections did most of the work, and both narrow the case for adoption.** Each is recorded here as a *finding*; neither changes the ADR that owns the fact (Rule 7):
 

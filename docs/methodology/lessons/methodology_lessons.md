@@ -255,7 +255,7 @@ Phase B — manifest drift between PR #59 and sync 93865f8; NAS100USD missing-on
 caught by manifest vs reality mismatch).
 
 **Anchor incident:** Phase A RCA
-`2026-05-10-pr59-manifest-drift-rca.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/programs/2026-05-10-pr59-manifest-drift-rca.md`)
+`2026-05-10-pr59-manifest-drift-rca.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/2026-05-10-pr59-manifest-drift-rca.md`)
 §3 verdict **H2** — *"Manifest correct at b71e4a4 11:12 EDT; on-disk CSVs were
 modified between 11:12 EDT and the spawn pre-flight ~12:10 EDT (or the sync at
 12:21 EDT)."* (quoted from §1 H2 hypothesis as adopted in the aggregate verdict.)
@@ -295,7 +295,7 @@ lesson + [`docs/adr/2026-05-10-manifest-integrity-gate.md`](../../adr/2026-05-10
   exceptional bypass with explicit rationale.
 
 **Reproducer / worked example:** Phase A drift table and NAS100USD timeline in
-`2026-05-10-pr59-manifest-drift-rca.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/programs/2026-05-10-pr59-manifest-drift-rca.md`)
+`2026-05-10-pr59-manifest-drift-rca.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/2026-05-10-pr59-manifest-drift-rca.md`)
 §2–§3.
 
 **Sibling lessons:** None yet at M-class.
@@ -365,7 +365,7 @@ thresholds need a qualitative override channel, PROMOTED 2026-05-10).
 12:18, exit 12:45 BE-stop, realized −$2,299.50; counterfactual at
 signal-correct fill ≈ +$300; single-trade ECR delta ≈ −$2,600). Pattern
 documented in
-`2026-05-19-cc-handoff-anticipation-gating-refactor.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/programs/2026-05-19-cc-handoff-anticipation-gating-refactor.md`)
+`2026-05-19-cc-handoff-anticipation-gating-refactor.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/2026-05-19-cc-handoff-anticipation-gating-refactor.md`)
 Appendix B. Failure shape: the 2026-04-27 and 2026-05-07 `alert()` patches
 added anticipation alerts on top of `strictApproach`/`approachZone`
 predicates that were originally PLOT conditions correctly gated on
@@ -446,7 +446,7 @@ mode appears in a future patch unrelated to alerts (e.g., an ADR whose
 gating inherits from a prior-ADR's gating with mismatched original intent).
 
 **Reproducer / worked example:**
-`2026-05-19-cc-handoff-anticipation-gating-refactor.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/programs/2026-05-19-cc-handoff-anticipation-gating-refactor.md`)
+`2026-05-19-cc-handoff-anticipation-gating-refactor.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/2026-05-19-cc-handoff-anticipation-gating-refactor.md`)
 §1 mechanism analysis and Appendix B pattern statement.
 
 **Sibling lessons:** M-7 (direct prior; same alert infrastructure, prior
@@ -473,7 +473,7 @@ during Q-PARITY-1 Phase 0 audit-doc authoring surfaced it). Cost: $0
 (no silent-zone trade fired during the 9-day no-patch window — Poisson
 coincidence on infrequently-firing strategies, not patch success).
 
-**Anchor incident:** The 2026-05-19 anticipation-gating refactor CC handoff (`2026-05-19-cc-handoff-anticipation-gating-refactor.md`, evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/programs/2026-05-19-cc-handoff-anticipation-gating-refactor.md`)
+**Anchor incident:** The 2026-05-19 anticipation-gating refactor CC handoff (`2026-05-19-cc-handoff-anticipation-gating-refactor.md`, evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/2026-05-19-cc-handoff-anticipation-gating-refactor.md`)
 (landed retroactively 2026-05-28 at commit `30215a1`) specified Pine-level
 patches to all 4 locked indicators (Aegis v4.3, Guardian v5.5, Striker
 DJ30 v4.5, Striker NAS100 v1) to separate the anticipation gate from the
@@ -1442,7 +1442,7 @@ Relocated here 2026-08-29 (was drifting mid-file, above M-23/M-24, contrary to t
   OR fourth corroborating investigation OR first invocation in brief practice.
 - **2026-05-28:** M-11 added as CANDIDATE on retroactive landing of the
   2026-05-19 anticipation-gating refactor CC handoff
-  (`2026-05-19-cc-handoff-anticipation-gating-refactor.md`, evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/programs/2026-05-19-cc-handoff-anticipation-gating-refactor.md`).
+  (`2026-05-19-cc-handoff-anticipation-gating-refactor.md`, evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/2026-05-19-cc-handoff-anticipation-gating-refactor.md`).
   Pattern: when patching infrastructure that inherits structural conditions
   from existing code, the patch's pre-registered §4 falsifier must include a
   test of the *interaction* between new behavior and the inherited gating —

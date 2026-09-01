@@ -18,7 +18,7 @@ Read before ruling (concrete repo paths):
 - [`docs/rejected_candidates.md`](../../rejected_candidates.md) § "index-dispersion-correlation-premium
   on SPX500" — the entry-format template used in §6 (heading block + `concept-intake-entry` comment
   + bullet).
-- [`core/firm_rules.py`](../../core/firm_rules.py) `Tradeify_Select_100K` — venue constraint:
+- [`core/firm_rules.py`](../../../core/firm_rules.py) `Tradeify_Select_100K` — venue constraint:
   `weekend_holds`/overnight = false, EOD flat; the tradable expression is intraday ES/NQ futures.
 - [`docs/briefs/programs/2026-07-14-a4-flow-data-fork-scoping.md`](2026-07-14-a4-flow-data-fork-scoping.md) —
   the adjacent flow-data ruling (net-imbalance-only / never-procure) establishing that EOD-flow

@@ -21,7 +21,7 @@ Read before scoping (concrete repo paths):
 - [`docs/rejected_candidates.md`](../../rejected_candidates.md) § "Single-instrument index-futures
   intraday OHLCV directional timing — RAISED BAR" — modality #2 (order-flow/microstructure,
   "untouched") is sanctioned re-entry; but the domain is at tail-exhaustion (STABLE/saturating).
-- [`lab/analysis/orb/orb_mnq_2026-07/RESULTS_tv_export_realism.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_tv_export_realism.md)
+- [`lab/analysis/orb/orb_mnq_2026-07/RESULTS_tv_export_realism.md`](../../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_tv_export_realism.md)
   — the survivor's fills are **already known-good**: median 81 ticks through the trigger, 0.7% land
   ≤1 tick, **zero** bars where the level never traded. Execution-microstructure has low marginal value.
 - [`.claude/skills/databento-data/SKILL.md`](../../.claude/skills/databento-data/SKILL.md) — mandatory

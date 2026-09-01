@@ -9,4 +9,4 @@ skill introduced is not orphaned — it's already owned by pursuit b6 (Q-NAS-ECR
 **Disposition executed:** marker only — superseded, do not invoke. No file touched.
 
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3)
-**Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row d8
+**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row d8

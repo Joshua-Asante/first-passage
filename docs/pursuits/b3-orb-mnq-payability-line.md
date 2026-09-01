@@ -8,7 +8,7 @@
 **Test applied:** expired-park-shaped (T2 payability FIRED 2026-08-03, 15:30 exit barred; the prior repo park lacked both re-entry and expiry fields — this record supplies them for the first time per ADR §2.3)
 
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3)
-**Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row b3
+**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row b3
 
 ---
 

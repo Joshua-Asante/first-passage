@@ -22,7 +22,7 @@
 
 **Panel (landed 2026-08-13, this session):** `core/data/bar_data/MCL_M15.csv`, sha256 `5aa50456…bbd23`, 106,261 bars, **2022-01-02T23:00Z → 2026-07-02T00:00Z**. Operator-supplied CME BAR EXPORT v0.2 `MCL1!`; integrity battery clean (monotonic, no dupes, no OHLC violations, gap profile correct for a ~23h contract). ⚠ **The panel ends 2026-07-02, ~6 weeks before its export date — the CONFIRM window must end at the panel, not at "today."** Proposed split: **IS < 2025-07-01**, **CONFIRM 2025-07-01 → 2026-07-02** reserved unread.
 
-**Standing instrument warnings that are Stage-1 obligations, not footnotes** (from [`MCL.md`](../../ops/instruments/MCL.md)):
+**Standing instrument warnings that are Stage-1 obligations, not footnotes** (from [`MCL.md`](../../../ops/instruments/MCL.md)):
 - **W1 — monthly roll.** MCL rolls monthly; fade Stage-0 measured **~14% session exclusion** under the published roll-exclude rule, ~3× MYM's quarterly figure. The card is intraday/flat-by-close so roll exposure is confined to roll days, but the exclusion rule must be declared at G0 and applied identically to IS and CONFIRM.
 - **W3 — session window is not equity RTH.** MCL trades ~23h. "Flat by 16:00 ET" is an *equity* convention; which window governs an Energy construct is an open design choice, and an equity-RTH integrity PASS certifies an arbitrary slice, not a venue session. **Stage 1 must name and justify the session window before any read.**
 - **W4 — FOMC exclusion thins τ_max** (180→120 min at 09:30 for the frozen fade config). Any hold-horizon assumption must survive that exclusion.
@@ -57,6 +57,6 @@
 
 ## Sequencing
 
-**S2A first, serialized — explore `FALSIFIED` (N-ACT).** [closure](../closures/MSL-S2A-closure-falsified.md) · [`RESULTS_g2`](../../lab/archive/msl_s2a_mcl_2026-08/RESULTS_g2.md). CONFIRM unread; Pine unpaid. **Board 2026-08-13:** C3-K2 revive inserted ahead of S2B ([ADR](../../adr/2026-08-13-msl-c3-k2-dual-axis-revive.md)); explore later FALSIFIED. **S2B 2026-08-14:** Stage-0/1 authored; **route FAIL** — [closure](../closures/MSL-S2B-closure-stage1-fail-route.md) · [`STAGE1`](../../lab/analysis/c1/msl_s2b_mym_2026-08/STAGE1.md). G0 never frozen.
+**S2A first, serialized — explore `FALSIFIED` (N-ACT).** [closure](../closures/MSL-S2A-closure-falsified.md) · [`RESULTS_g2`](../../../lab/archive/msl_s2a_mcl_2026-08/RESULTS_g2.md). CONFIRM unread; Pine unpaid. **Board 2026-08-13:** C3-K2 revive inserted ahead of S2B ([ADR](../../adr/2026-08-13-msl-c3-k2-dual-axis-revive.md)); explore later FALSIFIED. **S2B 2026-08-14:** Stage-0/1 authored; **route FAIL** — [closure](../closures/MSL-S2B-closure-stage1-fail-route.md) · [`STAGE1`](../../../lab/analysis/c1/msl_s2b_mym_2026-08/STAGE1.md). G0 never frozen.
 
 **Counter state:** Stage-1 deaths **2/3** (C3 + S2B). Slate-3 **BLOCKED** without incrementing the counter ([notice](../../notes/notice/N-2026-08-14-msl-slate-3-constraints.md)). [§7](2026-08-14-msl-slate-generation-review.md) **E1 HOLD** (functional 3/3). Charter yield falsifier (6 pre-G0 deaths / 12 weeks zero G0s) not fired.
