@@ -5,6 +5,17 @@
 ratified methodology; it changes no gate, threshold, lifecycle state, venue
 binding, or deployment authority.
 
+> **Reconciled 2026-09-01.** The "Recommended deletions and simplifications" table and the two
+> "Proposed lean … phase" step lists below are **absorbed into**
+> [`docs/superpowers/specs/2026-09-01-three-speed-alpha-research-design.md`](../superpowers/specs/2026-09-01-three-speed-alpha-research-design.md)
+> (v2, `Proposed`), which merges this note's architecture (single append-only candidate
+> contract, pinned-authority delegation, two-axis verdicts, multiplicity mechanics, channel
+> liveness) with the three-speed funnel's speeds, gates, calibration requirement, and adoption
+> plan. That spec's Review block records each resolution. Do not implement from the tables below
+> — they are this note's *input* to the reconciliation, kept unedited for the record. The
+> tensions analysis (§1–§8) and the eight review questions remain live reference, unabsorbed
+> and standing on their own.
+
 ## Executive finding
 
 The repository does not have one simple disagreement between "generate" and
