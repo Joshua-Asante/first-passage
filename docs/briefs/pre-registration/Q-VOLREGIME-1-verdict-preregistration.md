@@ -68,14 +68,57 @@ computes them — no re-derivation at verdict time)
 | L3 | Both halves (chronological split) of the conditional cases show lift > 0 | GATES |
 | L4 | By-year floor: incremental lift > 0 in ≥ N_valid−2 of N_valid qualifying years (n≥20/year); AMBIGUOUS if N_valid < 7 | GATES |
 
-## §C — Attribution limb (L5 analogue, MNQ; NEVER GATES on its own — TYPES the verdict between
-RESOLVED-strength and a weaker survival-only reading)
+## §C — Attribution limb (L5 analogue, MNQ; GATES RESOLVED/FALSIFIED — see correction below)
 
-- Whatever joint-surrogation design Phase 1 produces (post-review), its two-sided p_upper against
-  the observed minimum stratified lift is the L5 analogue. `p_upper ≤ 0.05` → attribution clears;
-  same never-re-roll discipline as the frozen spec's §2 and `Q-RANGEXFER-1`'s own §C.
+**Corrected 2026-08-31 (Codex second-pass review, B5) — this heading contradicted §D's own verdict
+map, and predates Packet B.** The heading originally read "NEVER GATES on its own — TYPES the
+verdict between RESOLVED-strength and a weaker survival-only reading." §D's verdict map, in the
+same file, already routed a valid-but-non-clearing L5 to `FALSIFIED` (added 2026-08-30, an earlier
+Codex review round) — meaning L5 already gated in practice, and had since before this section's own
+Packet B amendment. The two statements were never reconcilable, and neither Packet B's original
+amendment nor this section's own body ever asserted the "types, doesn't gate" reading — only the
+stale heading did. Corrected: **L5 gates.** L1–L4 establish presence; on their own they are
+insufficient for `RESOLVED` under this Q's own §D. A valid, non-clearing L5 routes to `FALSIFIED`,
+exactly as §D already specified; an unvalidatable design (VOID after the full escalation ladder)
+routes per §D's own separate disposition for that case. This does not change §D itself, which
+already reflected this policy — it corrects the heading and this section's framing to match the
+verdict map that was already governing, rather than the reverse. What genuinely does not gate is
+the **distinct-WHO check** (§4 of the parent brief; Comparison 2 of the design below) — that
+disclosure is separate from L5's own primary clearing test and was never conflated with it in the
+verdict map; only this heading's wording conflated the two.
+
+**Amended 2026-08-31 (Packet B, B1) — the day-level joint-surrogation adaptation this section
+originally deferred to is retired; see the parent brief's §11 same-day entry.** L5 is now the
+bar-native design at
+[`lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md`](../../../lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md):
+
+- The primary statistic is **pooled** out-of-fold Brier-score improvement (baseline vs.
+  volume-augmented, purged/embargoed rolling folds — design §4.1; **corrected 2026-08-31, Codex
+  second-pass review, B5: "mean" per-fold weighting is now a secondary diagnostic, not the primary
+  estimand — design §4.1's own note**), tested against a day-level, regime-stratified circular-shift
+  null on volume jointly residualized against the full baseline feature set (**corrected same date,
+  same review: an earlier "stratified block-permutation on ToD-only-residualized volume" null did
+  not actually preserve the same-bar volume/range confound it claimed to — design §4.2–§4.3**), with
+  full re-estimation of every fitted component inside every replicate (one named exception,
+  regularization strength, disclosed and pilot-validated — design §4.4), applied to every scored row
+  including test rows. Its **one-sided, upper-tail** p_upper against the observed improvement —
+  `p_upper = (1 + #{null_improvement ≥ observed_improvement}) / (B+1)`, `B=4000`, design §4.1 — is
+  the L5 analogue (**corrected 2026-08-31, Codex first-pass review, B5: this line originally read
+  "two-sided p_upper," inconsistent with both this repo's existing one-sided `p_upper` convention
+  and this design's own declared favorable direction — no result computed under the prior
+  wording**).
+  `p_upper ≤ 0.05` → attribution clears; same never-re-roll discipline as the frozen spec's §2 and
+  `Q-RANGEXFER-1`'s own §C. The acceptance threshold and never-re-roll discipline are unchanged
+  from the original freeze — only the statistic, null construction, and tail definition producing
+  p_upper changed.
 - The distinct-WHO three-way check (§4 of the parent brief) is **disclosed alongside** L5, not
   folded into it — it types the mechanism-attribution question, it does not gate RESOLVED/FALSIFIED.
+  Formalized in the design as Comparison 2 (design §3.1, §5): the same primary-statistic
+  construction, substituting a baseline that also holds `daily-range-state-persistence`'s own
+  conditioning variable fixed.
+- No real L5 statistic, on either instrument, was inspected before this amendment landed — the
+  design specifies a block-length-selection method (design §4.3), not a number, precisely so nothing
+  here required touching real data.
 
 ## §D — Verdict map (mirrors the parent brief's §6 table exactly; restated here as the frozen,
 pre-Phase-1 form)
