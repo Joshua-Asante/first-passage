@@ -84,15 +84,18 @@ needing explicit sign-off rather than implementer self-authorization.
 
 ## Task R3 — Survivor §4 scoring (blocks on R1; consumes a Phase-C survivor)
 
-- [ ] Score the survivor on `Bulenox_100K` / `MFFU_Rapid_100K` / `BluSky_Premium_100K` honest-clock
-  models under the frozen survivor-scoring prereg (2026-07-13, unedited: bust ≤3.0% ∧ P(pass)
-  ≥50%, frozen $100K cross-section — the 50K band stays diagnostic-only).
-- [ ] **F1-ruling discipline:** Tradeify's own clearance, if any, is reported with the mandatory
-  disclosure (F1 ruled: counts zero toward §4) — the count that matters is over the three firms.
-- [ ] **Disposition table (pre-stated):** ≥2 of 3 clear → §4 H fires; discharge per the four-firms
-  ADR. Exactly 1 clears → the `PARTIAL` addendum is still `Proposed`/deferred-to-trigger-time —
+- [ ] Score the survivor on `Bulenox_100K` / `Tradeify_Select_100K` / `MFFU_Rapid_100K` /
+  `BluSky_Premium_100K` honest-clock models under the governing survivor-scoring prereg
+  ([v2, 2026-08-26](../../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md):
+  bust ≤5.0% ∧ P(pass) ≥50%, frozen $100K cross-section — the 50K band stays diagnostic-only).
+- [ ] **F1-ruling discipline:** F1 was **reversed 2026-09-01**
+  ([addendum](../../adr/2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-09-01--f1-reversed-a-tradeify-resting-discharge-now-counts-toward-4)) —
+  Tradeify's own clearance, if any, now counts toward §4 on the same footing as the other three
+  firms. The count that matters is over all **four** firms.
+- [ ] **Disposition table (pre-stated):** ≥2 of 4 clear → §4 H fires; discharge per the four-firms
+  ADR. Exactly 1 of 4 clears → the `PARTIAL` addendum is still `Proposed`/deferred-to-trigger-time —
   surface it to the operator **at that moment** with the scoreboard in hand; do not pre-ratify
-  it here. 0 clear → the revert trigger's designed path (research-only demotion) governs at
+  it here. 0 of 4 clear → the revert trigger's designed path (research-only demotion) governs at
   2026-11-08, per the standing base case.
 
 ## Sequencing note

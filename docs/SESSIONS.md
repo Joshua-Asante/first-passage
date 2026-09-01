@@ -33,6 +33,25 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-01a — F1 reversed: Tradeify now counts toward the prop-portfolio §4 firm-count
+
+**Focus:** Operator asked to change the 08-23 F1 ruling (a Tradeify-resting §4 discharge doesn't
+count toward the "≥2 of four" requirement). Scoped via `AskUserQuestion`: full reversal, on direct
+operator-election grounds (not a venue-fact finding).
+**Shipped:** New dated addendum on
+[`2026-08-04-tradeify-venue-descope-eval-included.md`](adr/2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-09-01--f1-reversed-a-tradeify-resting-discharge-now-counts-toward-4) —
+four-firm set restored for §4 purposes; 08-23 text left as-filed with a correction pointer (Known
+Trap #12). Disclosed the closest exploratory Tradeify-tier attempt (Aegis-6J1×ORB-MNQ-1, 2026-08-26) — its
+initial headline was itself superseded within the same campaign; fully tested, no combined-book
+configuration survives on either window. Named for transparency, confirming no live clearance
+exists. CLAUDE.md posture line + STATE.md decision-index updated same commit.
+**Decisions/defects:** None found; no `core/`/Pine/allocation/`dd_protection`/rail change; no
+candidate admitted or scored. $0/K=0.
+**Open / next:** STATE queue: `#1` [Acceptable strategy on the ruled host](../STATE.md) · `#2`
+[B7-REFIRE Stage 1 + M1](../STATE.md) — both formally unchanged by this session.
+
+---
+
 ## 2026-08-31c — Persona-hierarchy system fully retired per operator instruction
 
 **Focus:** Operator changed direction mid-sweep on the pursuits/personas reversed-evidence audit
