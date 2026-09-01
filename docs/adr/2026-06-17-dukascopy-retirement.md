@@ -163,8 +163,47 @@ grep -n "Status:" docs/adr/2026-06-12-rnd-feed-instrument-class-split.md   # Wit
 
 ---
 
+## Addendum 2026-09-01 -- feed_loader.py consumer citation stale (diagnostic only)
+
+§0 and §2 of this ADR name `lab/validation/sweep/feed_loader.py` (`load_bar_feed`) as "the
+feed-agnostic consumer that STAYS" and state the retirement is "consumed unchanged by" it. That
+module was deleted 2026-07-11 by `docs/adr/2026-07-11-gen1-pipeline-retirement.md` (§2 decision
+table: `lab/validation/sweep/**` -> RETIRE, replaced by Gen-2 vectorbt/Nautilus under the K-ledger)
+-- an unrelated decision about the sweep-engine's own retirement, not a reversal of this ADR. That
+ADR lists this ADR only under "Related" (pattern precedent), not as a Supersedes target, so no graph
+edge records the effect. `core/bar_export_loader.py`'s own module docstring (line 4, live production
+code) still names the now-deleted path as the consumer of its output schema.
+
+This ADR's core decision -- Dukascopy retired, `core/bar_export_loader.py` is the canonical bar
+producer -- is unaffected and remains accurate; re-verified 2026-09-01: `core/lib/dukascopy.py` stays
+deleted, `core/bar_export_loader.py` is live and imported by current code. Only the specific named
+downstream consumer is stale. Current live consumers of `core/data/bar_data/*.csv` instead call
+`bar_export_loader.parse_bar_export` directly (e.g. `lab/research_utils/beta_cohesion.py`) -- no
+single successor module plays `feed_loader.py`'s former "feed-agnostic consumer" role.
+
+Separately: the §10 audit hooks' banner-file expectations (5 named paths under `lab/analysis/...`) no
+longer reproduce verbatim -- the underlying investigations were closed and their harnesses relocated
+to `lab/archive/...` or reduced to RESULTS-only per this repo's standing lab-retention doctrine
+(CLAUDE.md §Lab layout). Expected entropy, not a defect in this ADR's decision.
+
+**Operator call (not resolved here):** whether to (a) add a reciprocal `Supersedes:
+`2026-07-11-gen1-pipeline-retirement.md` in part` / `Superseded-in-part-by` header-field pair scoped
+to just the consumer-citation clause, or (b) leave this as a diagnostic-only addendum and instead fix
+the dangling reference at its source (`core/bar_export_loader.py`'s docstring, a live production file
+-- not this ADR's frozen §2 prose, which Rule 14/Trap 12 protect from rewrite).
+
+**Ruling (direct operator instruction, 2026-09-01): elect option (b), no graph edge.** No
+`Supersedes`/`Superseded-in-part-by` header-field pair is added -- this ADR's decision (Dukascopy
+retired) was never touched by the gen1-pipeline retirement, so a formal supersession edge would
+misrepresent the relationship as more load-bearing than a stale downstream citation. The dangling
+reference is instead fixed at its source: `core/bar_export_loader.py`'s module docstring no longer
+names the deleted `validation.sweep.feed_loader.load_bar_feed` path, and now points at
+`parse_bar_export` plus the retiring ADR (2026-09-01, this session). This ADR's own §0/§2 text stays
+byte-unedited per Rule 14/Trap #12.
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-06-17 | Initial authoring + acceptance (operator executive decision) | Joshua + Claude Code |
+| 2026-09-01 | Addendum: feed_loader.py consumer citation stale (diagnostic only); operator call on formal edge vs. source-file fix | Claude Code (ADR-corpus reconciliation sweep) |

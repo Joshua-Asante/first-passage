@@ -21,6 +21,8 @@
 | Survivor-scoring prereg Trap #12 | frozen body | G6/G7/tier changes only via close+reopen |
 | Gate-stack audit R3/R5/R6 | 2026-08-03 | Sentinel pairing · `var_trials=1/n` · `DEFAULT_FIRM_KEY` |
 
+> ⚠ **2026-08-15 reader-intercept:** the `universe_gate.py` row above ("`var_trials` default still empirical") is stale — the module default flipped to `1/n` at `universe_gate.py:363-365` (see Addendum below). Table text unedited per Trap #12.
+
 ---
 
 ## §1 — Context
@@ -65,6 +67,8 @@ Posture-A collapses the research gate surface to a **minimal live set** and puts
 
 ### `var_trials` / audit R5
 
+> ⚠ **2026-08-15 reader-intercept:** the paragraph below is stale — the module default flipped to `1/n` at `universe_gate.py:363-365`; self-tests were rewritten against it (see Addendum below). Frozen text unedited per Trap #12.
+
 `universe_gate.py` still defaults to the empirical `Var(col_sr)` estimator (self-tests depend on it). **Do not flip the module default in this PR.** Campaigns should continue to **pass `var_trials=1/n`** (or pin V) until a separate change lands with green self-tests. Audit R5 schedule **2026-09-01** stands unless absorbed by that later change.
 
 ### Audit board absorption (pointers)
@@ -74,6 +78,8 @@ Posture-A collapses the research gate surface to a **minimal live set** and puts
 | **R3** (`sentinel` prereg↔RESULTS pairing) | Absorbed-or-redated by two-tier / closed-loop PREREG discipline; sentinel repair remains its own owner if still red — dated pointer, not silent drop |
 | **R5** (`var_trials=1/n` default) | Absorbed as **standing caveat** (pass V explicitly); schedule 09-01 left standing for the code default flip |
 | **R6** (`DEFAULT_FIRM_KEY` in `cost_mnq.py`) | Schedule 09-01 left standing — not discharged by dormancy alone |
+
+> ⚠ **2026-08-15 reader-intercept:** the R5 row above is stale — R5 was fully discharged (not merely held as a caveat) by the 2026-08-15 gate-stack repair pass, ahead of the 09-01 schedule date it names (see Addendum below). Table text unedited per Trap #12.
 
 ### Envelope §2 item 6
 

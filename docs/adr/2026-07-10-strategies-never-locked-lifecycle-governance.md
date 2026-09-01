@@ -325,3 +325,47 @@ grep -n "dd_protection" ops/cli.py || echo "none (expected — the two layers ne
 | 2026-07-17 | **Pine pyramid-parity CONFIRMED-FALLBACK.** [`Q-PYRPARITY-1`](../briefs/closures/Q-PYRPARITY-1-closure-falsified-nonproportional.md) `FALSIFIED-NONPROPORTIONAL` (MYM TV qty ceiling 17/127); WATCH haircuts on pyramided legs realize at account-multiplier layer. Call-1 harness already landed 2026-07-14. Pending remains beta-cohesion diagnostic only. | Cursor (Phase 3 close) |
 | 2026-08-23 | **Beta-cohesion diagnostic landed** (lagged-correlation lead-lag; CLI skip-if-missing). Report-only. No `lifecycle_state.json` write. No Call-1 σ-source claim. | Cursor Cloud Agent |
 | 2026-08-07 | **Call 5 superseded in part** by S5 ADR (bounded sandbox-up exception). Header `Superseded-in-part-by` + Call 5 addendum; historical body frozen; demotion/retirement/re-entry/re-opt bars stand. | Cursor (drafter) · Joshua (plan GO) |
+| 2026-09-01 | Addendum: STATE.md forward-board entries this ADR's own §6/§10 require (decay review, beta-death review) are missing -- diagnostic only, operator call on remediation | Claude Code (ADR-corpus reconciliation sweep) |
+
+---
+
+## Addendum 2026-09-01 -- STATE.md forward-board entries missing (verdict-free diagnostic)
+
+**Status:** diagnostic only -- no disposition chosen here; see operator-call note below.
+
+This ADR's §6 gate item 3 ("The STATE.md forward-trigger board gains two entries -- per-strategy
+decay review and the beta-death review (Call 4) -- each pointing at strategy_lifecycle.md as owner,
+first evaluation 2026-08-08") and its §10 audit hook #6 (`grep -n "decay review\|beta-death\|strategy_lifecycle" STATE.md`)
+both currently fail against the working tree: none of those three terms appear anywhere in STATE.md
+as of 2026-09-01, including the dated 2026-11-08 section where this ADR's own §6 AMBIGUOUS clause
+promises a recorded re-confirm ("re-confirmed at 2026-11-08 (recorded, not silently amended)").
+
+The 2026-08-08 evaluation itself DID occur and IS accurately recorded off-ADR:
+docs/notes/audits/programme-audit/2026-08-08-quarterly-audit.md row 7 flags the lifecycle Call-1
+sigma-source as dark/reachability-blocked, and STATE.md's own "No fixed date / gated" block (the
+"lifecycle Call-1" bullet) corroborates the AMBIGUOUS-on-thin-data reading this ADR's own §6
+anticipated. What's missing is only the standing STATE.md forward-board *bullet(s)* this ADR's own
+gate/hook require -- they appear to have been folded into the deleted ~90-line rider blockquote at
+the 2026-08-08 discharge (STATE.md's own note: "the former ~90-line rider blockquote is deleted per
+the retention test -- it restated obligations the audit note now owns"), with no successor row
+created for the 2026-11-08 re-confirm.
+
+**Operator call owed (not decided here):** whether to (a) add a STATE.md 2026-11-08 forward-board
+row pointing at strategy_lifecycle.md / this ADR for the Call-1 re-confirm, mirroring the pattern
+already used by the mechanism-boundaries, sourcing-phase-retirement, and GRAND-tier ADRs' own
+2026-11-08 rows, or (b) treat the quarterly-audit-note pointer as the standing mechanism going
+forward and retire this ADR's §6/§10 STATE.md-bullet requirement as superseded by that convention.
+Either resolution should land as its own dated addendum (or a supersession, per §4 trigger 1's own
+revert-action rule) -- this addendum only names the gap.
+
+**Ruling (direct operator instruction, 2026-09-01): elect option (b).** This ADR's §6 gate item 3
+and §10 audit hook #6 (the requirement that STATE.md's forward-trigger board carry standing
+"decay review"/"beta-death review" bullets) is **retired**, superseded by the quarterly-audit-note
+convention already in live use (docs/notes/audits/programme-audit/) — the 2026-08-08 review already
+happened and is correctly recorded there, and that convention is adopted as the standing mechanism
+for future quarterly re-confirms of the lifecycle Call-1 sigma-source question, not a second
+STATE.md-bullet system running in parallel. §6 gate item 3's own text and §10 hook #6 stay
+byte-unedited above (Rule 14/Trap #12) as the historical record of what this ADR originally required;
+this ruling is the discharge. No STATE.md row is added by this ruling. This does not touch §2's five
+ratified Calls, §4's revert triggers, or any risk-control code — it retires a documentation-bookkeeping
+requirement only.
