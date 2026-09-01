@@ -13,6 +13,7 @@ Other families (not a roster — open the named file):
 | TNEC / Tradeify intake | [`2026-08-08-tradeify-necessary-conditions-target-spec.md`](2026-08-08-tradeify-necessary-conditions-target-spec.md) |
 | Econ export | [`2026-08-18-econ-export-v01.md`](2026-08-18-econ-export-v01.md) |
 | Eval lock-geometry attestation | [`2026-08-22-eval-lock-geometry-attestation-library-spec.md`](2026-08-22-eval-lock-geometry-attestation-library-spec.md) |
+| first-passage-archive migration | [`2026-09-01-first-passage-archive-migration-spec.md`](2026-09-01-first-passage-archive-migration-spec.md) |
 | Superpower specs | [`../superpowers/specs/`](../superpowers/specs/) |
 
 ADRs own the *decision*; specs here commission or describe a build.
