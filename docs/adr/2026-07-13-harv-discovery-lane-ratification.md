@@ -165,7 +165,7 @@ python scripts/check_brief.py docs/adr/2026-07-13-harv-discovery-lane-ratificati
 git log -1 --format='%h %ci' -- docs/briefs/closures/Q-HARV-0-month-end-rebalance-ES.md
 # Expected: fd17280 …
 
-git log -1 --format='%h %ci' -- docs/briefs/closures/DISC-CAMP-0-closure-falsified.md
+git log -1 --format='%h %ci' 250c25e -- docs/briefs/DISC-CAMP-0-closure-falsified.md
 # Expected: 250c25e …
 ```
 

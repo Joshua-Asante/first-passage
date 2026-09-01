@@ -108,7 +108,7 @@ Each of these was genuinely tempting in this session; several were actually comm
 
 **A-limb falsifier (binds under A1 and A3):** FTS5 keyword retrieval under-recalls paraphrase relative to embeddings. Pre-register a recall spot-check against known `lab/CATALOG.md` cross-references **before** building the writer; if recall on that fixture set is materially worse than the incumbent, the deterministic route fails on its merits and the extraction-sidecar question returns intact.
 
-> **Threshold defect corrected at pre-registration (2026-07-27).** As first drafted this falsifier read "materially worse than the operator's own manual-search baseline" — unmeasurable, and a Known-Trap-#5 vague gate in a brief that flags Trap #5. The comparator is now the **incumbent retrieval that exists today (ripgrep literal search)**, which is the thing a Delete must actually beat, with binary thresholds frozen in [`docs/briefs/pre-registration/2026-07-27-fts5-delete-falsifier-prereg.md`](pre-registration/2026-07-27-fts5-delete-falsifier-prereg.md).
+> **Threshold defect corrected at pre-registration (2026-07-27).** As first drafted this falsifier read "materially worse than the operator's own manual-search baseline" — unmeasurable, and a Known-Trap-#5 vague gate in a brief that flags Trap #5. The comparator is now the **incumbent retrieval that exists today (ripgrep literal search)**, which is the thing a Delete must actually beat, with binary thresholds frozen in [`docs/briefs/pre-registration/2026-07-27-fts5-delete-falsifier-prereg.md`](../pre-registration/2026-07-27-fts5-delete-falsifier-prereg.md).
 
 **OPERATOR RULING 2026-07-27 — limb A resolved as `A3` (Delete).** FTS5 verbatim retrieval is treated as a *Delete* move against `Q-XMEM-1`, not as a substitute instrument inside its frozen architecture. Consequences, binding:
 
@@ -219,4 +219,4 @@ python scripts/check_path_liveness.py
 - [x] §6 gates binary; limb A is an enumerated operator choice, not "decide later"
 - [x] §10 audit hooks runnable
 - [x] Operator ratification (Phase 0) — 2026-07-27, chat directive "ratify the NO-GO" (see header and [closure](../closures/2026-07-27-hermes-agent-adoption-closure-resolved.md))
-- [x] Limb A pre-registration committed before Phase A2 — committed 2026-07-27 as [`pre-registration/2026-07-27-fts5-delete-falsifier-prereg.md`](pre-registration/2026-07-27-fts5-delete-falsifier-prereg.md); Phase A2 sidecar built (`ops/recall/`) per closure
+- [x] Limb A pre-registration committed before Phase A2 — committed 2026-07-27 as [`pre-registration/2026-07-27-fts5-delete-falsifier-prereg.md`](../pre-registration/2026-07-27-fts5-delete-falsifier-prereg.md); Phase A2 sidecar built (`ops/recall/`) per closure

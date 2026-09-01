@@ -272,7 +272,7 @@ python ~/.claude/skills/brief-authoring/scripts/check_brief.py \
 # §0 anchors
 git log -1 --format='%h %ci' -- core/firm_rules.py                                      # expect 6a0c801
 git log -1 --format='%h %ci' -- ops/prop_envelope_default.md                            # v1.0 RATIFIED
-git log -1 --format='%h %ci' -- docs/briefs/programs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md  # 263c07c
+git log -1 --format='%h %ci' 263c07c -- docs/briefs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md  # 263c07c
 
 # Ceiling calibration source (falsified-book quality it must exclude)
 grep -n "17.70\|17.7" lab/analysis/c1/tradeify_futures3_remc_2026-07-11/RESULTS.md

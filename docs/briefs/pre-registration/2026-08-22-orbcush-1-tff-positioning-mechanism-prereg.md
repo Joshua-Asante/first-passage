@@ -461,7 +461,7 @@ git log -1 --format='%h' -- docs/briefs/pre-registration/Q-ORBCUSH-1-verdict-pre
 git log -1 --format='%h' -- ops/instruments/MNQ.md                                        # expect 1e40b11 or later
 git log -1 --format='%h' -- docs/adr/2026-08-03-orb-mnq-repark-payability-falsified.md     # expect 027a729
 git log -1 --format='%h' -- lab/analysis/c1/orbmnq1_cushion_sizing_probe_2026-08-20/run_evalseq_orb_intraday.py  # expect b84544a
-git log -1 --format='%h' -- docs/briefs/programs/2026-07-14-a4-flow-data-fork-scoping.md            # expect 027a729
+git log -1 --format='%h' 027a729 -- docs/briefs/2026-07-14-a4-flow-data-fork-scoping.md            # expect 027a729
 git log -1 --format='%h' -- docs/methodology/strategy_harvest.md                          # expect fd0e6ee or later
 
 # Freeze-before-run: this pre-registration predates any result artifact

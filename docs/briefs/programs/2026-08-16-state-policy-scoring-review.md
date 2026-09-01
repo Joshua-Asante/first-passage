@@ -6,7 +6,7 @@
 **Mark:** P2 — operator (JA) 2026-08-16 ("P2 + GO"). §6 table frozen (Trap #12). The conditional §7 b5 recommendation was elected with the mark: renew once with corrected wake conditions.
 **Closure:** [STATE-POLICY-closure-resolved-p2](../closures/STATE-POLICY-closure-resolved-p2.md)
 **Authors:** Claude Code (recorder) — operator marked P2
-**Parent:** [Q-EVALSEQ-1 pre-registration](pre-registration/2026-07-24-2leg-eval-frontload-schedule-preregistration.md) (frozen 2026-07-24; DORMANT 2026-08-04) · [S1 environment ratification](../../adr/2026-08-07-loop-s1-environment-ratification.md)
+**Parent:** [Q-EVALSEQ-1 pre-registration](../pre-registration/2026-07-24-2leg-eval-frontload-schedule-preregistration.md) (frozen 2026-07-24; DORMANT 2026-08-04) · [S1 environment ratification](../../adr/2026-08-07-loop-s1-environment-ratification.md)
 **Loop:** Inquire-light Board packet — presents elections only. $0 · K=0 · nothing runs here · no arming · no deployment implication.
 **Artifact path:** `docs/briefs/programs/2026-08-16-state-policy-scoring-review.md`
 
@@ -16,13 +16,13 @@
 
 | Path | Anchor | Supplies |
 |---|---|---|
-| [Q-EVALSEQ-1 prereg](pre-registration/2026-07-24-2leg-eval-frontload-schedule-preregistration.md) | `027a729` 2026-08-14 (public-release squash — freeze/stamp dates carried in the file header; pre-squash lineage in the frozen archive) | Frozen K=4 policy family (a) flat 0.50× control (b) linear decay 0.75×→0.25× (c) floor-distance-proportional, capped 0.75× (d) step-down-at-cushion; §6 binary gate; header: "DORMANT 2026-08-04 — not on the 08-08 slate (venue de-scoped; 'within-eval' has no eval)"; "re-usable at an F3 venue"; frozen body byte-unedited |
+| [Q-EVALSEQ-1 prereg](../pre-registration/2026-07-24-2leg-eval-frontload-schedule-preregistration.md) | `027a729` 2026-08-14 (public-release squash — freeze/stamp dates carried in the file header; pre-squash lineage in the frozen archive) | Frozen K=4 policy family (a) flat 0.50× control (b) linear decay 0.75×→0.25× (c) floor-distance-proportional, capped 0.75× (d) step-down-at-cushion; §6 binary gate; header: "DORMANT 2026-08-04 — not on the 08-08 slate (venue de-scoped; 'within-eval' has no eval)"; "re-usable at an F3 venue"; frozen body byte-unedited |
 | [`core/dd_protection.py`](../../../core/dd_protection.py) | line 198, read this session | lifecycle factor "MULTIPLIES against BASE_RISK/DD_SCALE — it never edits them" — a schedule is a fourth multiplicative risk_pct-layer factor, not a constant edit |
 | [`lab/discovery/prop_survivor_scoring.py`](../../../lab/discovery/prop_survivor_scoring.py) | lines 47–50, read this session | "dd_protection OFF for scoring"; `NO_PROTECTION_TRIGGER = 10.0` — every survivor-scoring run to date is constant-policy |
 | [`lab/research_utils/nsurv_channel.py`](../../../lab/research_utils/nsurv_channel.py) | line 24, read this session | N-SURV consumes a series "already at the sizing under test" — no policy layer exists in the channel |
 | [`STATE.md`](../../../STATE.md) | `fd251e3` correction | Queue row 2: "Eval live; no book deployed"; the five stranded threads re-framed as gated on "an acceptable strategy, not a missing venue" |
 | [b5 PARK record](../../pursuits/b5-q-fundpol-1.md) | read this session | Q-FUNDPOL-1 (the §7 funded-phase fork) expires to SUBTRACT 2026-11-08 absent renewal — **not marked here**, see §7 |
-| [book-comp campaign dir](../../../lab/analysis/c1/tradeify_book_composition_2026-07-23/README.md) | `ls` this session + `git ls-tree pre-prune-2026-08-08` | ⚠ Reachability changed since the prereg's attestation: `gap_stage*.py` and `out/` absent from both working trees (README layout rows stale); `inputs/` (4 CSVs) present in the main checkout; the full harness (`gap_stage1.py`–`gap_stage4.py`) is retrievable in-repo at tag `pre-prune-2026-08-08` (verified this session) and `out/daily_panel.csv` must be regenerated from it — panel span 2020-08-04 → 2026-07-21 per [Q-FUNDPOL-1 verdict prereg](pre-registration/Q-FUNDPOL-1-verdict-preregistration.md) panel-provenance block |
+| [book-comp campaign dir](../../../lab/analysis/c1/tradeify_book_composition_2026-07-23/README.md) | `ls` this session + `git ls-tree pre-prune-2026-08-08` | ⚠ Reachability changed since the prereg's attestation: `gap_stage*.py` and `out/` absent from both working trees (README layout rows stale); `inputs/` (4 CSVs) present in the main checkout; the full harness (`gap_stage1.py`–`gap_stage4.py`) is retrievable in-repo at tag `pre-prune-2026-08-08` (verified this session) and `out/daily_panel.csv` must be regenerated from it — panel span 2020-08-04 → 2026-07-21 per [Q-FUNDPOL-1 verdict prereg](../pre-registration/Q-FUNDPOL-1-verdict-preregistration.md) panel-provenance block |
 | [population note §6.5](../../notes/notice/N-2026-08-13-external-eval-population-data.md) | present on this tree | Tradeify FTA "consistent trading sizes" flagged "Not a safe harbour" — binds live deployment of size variation, not scoring |
 
 **Amendment-first (sub-rule 10).** Dormancy owner is the prereg's own header stamp (2026-08-04), whose authoring ruling is [claim-alignment M31](../../notes/audits/programme-audit/2026-08-05-claim-alignment/04-misleading.md) — the header-stamp amendment vehicle P1 reuses. No sibling un-dorm packet exists. Executed dedup:
@@ -65,7 +65,7 @@ The stamped ground no longer holds for the eval-as-environment: S1 (2026-08-07) 
 
 ## §2 — Prior art / lineage
 
-- [Q-EVALSEQ-1 prereg](pre-registration/2026-07-24-2leg-eval-frontload-schedule-preregistration.md) — the subject; frozen 2026-07-24, DORMANT 2026-08-04.
+- [Q-EVALSEQ-1 prereg](../pre-registration/2026-07-24-2leg-eval-frontload-schedule-preregistration.md) — the subject; frozen 2026-07-24, DORMANT 2026-08-04.
 - [Q-FUNNEL-1 closure](../closures/Q-FUNNEL-1-closure-resolved.md) — *attempt-level* policies scored (no_retry vs retry_to_cap), CLOSED-RESOLVED 2026-07-22; its §7 cushion-proportional day-policy layer explicitly "not opened."
 - FXIFY-era C2 sweep ([`core/dd_protection.py`](../../../core/dd_protection.py) header) — the DD_TRIGGER→0.40× rule adopted by MC on *static-DD* geometry; not the trailing-DD eval.
 - [Q-FUNDPOL-1](Q-FUNDPOL-1-funded-phase-policy-inheritance.md) — the funded-phase §7 fork; frozen, never run, PARKed (b5).
