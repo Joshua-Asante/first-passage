@@ -192,6 +192,15 @@ to just the consumer-citation clause, or (b) leave this as a diagnostic-only add
 the dangling reference at its source (`core/bar_export_loader.py`'s docstring, a live production file
 -- not this ADR's frozen §2 prose, which Rule 14/Trap 12 protect from rewrite).
 
+**Ruling (direct operator instruction, 2026-09-01): elect option (b), no graph edge.** No
+`Supersedes`/`Superseded-in-part-by` header-field pair is added -- this ADR's decision (Dukascopy
+retired) was never touched by the gen1-pipeline retirement, so a formal supersession edge would
+misrepresent the relationship as more load-bearing than a stale downstream citation. The dangling
+reference is instead fixed at its source: `core/bar_export_loader.py`'s module docstring no longer
+names the deleted `validation.sweep.feed_loader.load_bar_feed` path, and now points at
+`parse_bar_export` plus the retiring ADR (2026-09-01, this session). This ADR's own §0/§2 text stays
+byte-unedited per Rule 14/Trap #12.
+
 ## Change history
 
 | Date | Change | By |

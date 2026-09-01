@@ -197,6 +197,10 @@ ADR's subject (feed retirement) rather than a partial reversal of the decision, 
 graph edge is weaker than the paired Dukascopy ADR's feed_loader.py finding. Default: leave as a
 diagnostic addendum only.
 
+**Ruling (direct operator instruction, 2026-09-01): confirmed, no formal graph edge.** This matches
+the addendum's own default -- the gold-gate deletion is an unrelated downstream mitigation detail,
+not a partial reversal of this ADR's decision. No further action needed.
+
 ## Change history
 
 | Date | Change | By |

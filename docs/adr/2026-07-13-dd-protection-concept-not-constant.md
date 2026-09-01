@@ -322,6 +322,11 @@ python scripts/check_boundaries.py
 grep -rn "0\.30" docs/adr/2026-07-13-dd-protection-concept-not-constant.md | grep -vi "provenance\|seed\|failed\|caveat" && echo "CHECK PROMOTION" || echo "clean"
 ```
 
+> ⚠ **2026-09-01 reader-intercept:** the "not decided here" / option-(ii)-status-quo framing below is
+> superseded by direct operator ruling the same day — see "Addendum 2026-09-01 (operator ruling)"
+> below. Option (i) was elected: the §4 gate set is narrowed to the three surviving limbs. This
+> paragraph is left unedited as the record of what this addendum originally proposed.
+
 ### Open item — operator ratification required (unresolved, same shape as the 2026-08-02 open item)
 
 Whether to formally amend the §4 gate set (dropping `test_mc_anchors.py` and `validate_params.py`,
@@ -333,6 +338,35 @@ This addendum, like its predecessor, takes option (ii) as the status quo pending
 **NOT changed by this addendum:** `DD_TRIGGER`/`DD_SCALE` literals, the MVD self-check, `BASE_RISK`,
 `core/dd_geometry.py`, `core/mc/*`, Pine, `params.toml` (already gone), every test pin, the §4
 falsifier text itself, and the 2026-08-02 addendum text itself (append-only).
+
+## Addendum 2026-09-01 (operator ruling) — §4 gate set narrowed to three limbs
+
+**Ruling (direct operator instruction, 2026-09-01): elect option (i) above.** The §4 revert-trigger
+gate set is narrowed, going forward, to the three limbs confirmed live in the addendum above:
+
+- `dd_protection` MVD import self-check
+- `scripts/verify_lock_anchors.py`
+- `scripts/check_boundaries.py`
+
+`tests/core/test_mc_anchors.py` and `scripts/validate_params.py` are **dropped as gate-set members**
+— both are deleted files that cannot go red or green, and their continued presence in the §4 text
+made the falsifier partially unevaluable rather than partially failing. No successor test is named
+in their place by this ruling — that is a separate question (the 2026-08-02 addendum's own open item,
+whether `test_mc_synthetic_engine.py` + `test_planted_defects.py` are admitted into the gate set,
+remains genuinely open and is **not** resolved by this narrowing).
+
+**Effective statement of §4's revert trigger from this date forward:** Reject (FALSIFIED) if
+`core/dd_geometry.py`'s presence makes ANY of {the `dd_protection` MVD import self-check,
+`verify_lock_anchors.py`, `check_boundaries.py`} go red, OR the anchor stops reproducing
+99.83/0.17/4.37 byte-identically on a panel-bearing checkout → then revert the module and re-design;
+never repair by weakening a gate. Accept (holds) if this narrower gate set stays green with the
+module present.
+
+**What does not change:** the original §4 text above stays byte-unedited as the historical record
+(Rule 14/Trap #12) — this addendum is the operative amendment, not a rewrite. `DD_TRIGGER`/`DD_SCALE`
+literals, the MVD self-check's own logic, `BASE_RISK`, `core/dd_geometry.py`'s design, `core/mc/*`,
+Pine, and every surviving test pin are untouched. §5 Forbidden moves is unaffected. The 2026-08-02
+addendum's own separate open item (admitting new tests) stays open, unresolved by this ruling.
 
 ## Change history
 

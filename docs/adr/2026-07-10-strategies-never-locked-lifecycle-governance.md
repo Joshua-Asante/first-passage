@@ -357,3 +357,15 @@ already used by the mechanism-boundaries, sourcing-phase-retirement, and GRAND-t
 forward and retire this ADR's §6/§10 STATE.md-bullet requirement as superseded by that convention.
 Either resolution should land as its own dated addendum (or a supersession, per §4 trigger 1's own
 revert-action rule) -- this addendum only names the gap.
+
+**Ruling (direct operator instruction, 2026-09-01): elect option (b).** This ADR's §6 gate item 3
+and §10 audit hook #6 (the requirement that STATE.md's forward-trigger board carry standing
+"decay review"/"beta-death review" bullets) is **retired**, superseded by the quarterly-audit-note
+convention already in live use (docs/notes/audits/programme-audit/) — the 2026-08-08 review already
+happened and is correctly recorded there, and that convention is adopted as the standing mechanism
+for future quarterly re-confirms of the lifecycle Call-1 sigma-source question, not a second
+STATE.md-bullet system running in parallel. §6 gate item 3's own text and §10 hook #6 stay
+byte-unedited above (Rule 14/Trap #12) as the historical record of what this ADR originally required;
+this ruling is the discharge. No STATE.md row is added by this ruling. This does not touch §2's five
+ratified Calls, §4's revert triggers, or any risk-control code — it retires a documentation-bookkeeping
+requirement only.

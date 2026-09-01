@@ -1,8 +1,9 @@
 """BAR EXPORT v0.1/v0.2 producer — TradingView/Pepperstone broker-feed bars.
 
-Canonical producer of ``core/data/bar_data/<SYMBOL>_M15.csv`` (the schema consumed by
-``validation.sweep.feed_loader.load_bar_feed``). Replaces the retired Dukascopy adapter
-(``docs/adr/2026-06-17-dukascopy-retirement.md``).
+Canonical producer of ``core/data/bar_data/<SYMBOL>_M15.csv``. ``validation.sweep.feed_loader``
+was retired 2026-07-11 (``docs/adr/2026-07-11-gen1-pipeline-retirement.md``); current consumers
+call ``parse_bar_export`` directly (e.g. ``lab/research_utils/beta_cohesion.py``). Replaces the
+retired Dukascopy adapter (``docs/adr/2026-06-17-dukascopy-retirement.md``).
 
 Mechanism (BAR EXPORT v0.1): a Pine strategy places one reversal order per confirmed M15
 bar, encoding the bar's OHLCV in the order Signal field as
