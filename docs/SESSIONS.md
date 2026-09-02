@@ -33,7 +33,7 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
-## 2026-09-02a — Portable-edge cultivation campaign opened and review boundaries reconciled
+## 2026-09-02b — Portable-edge cultivation campaign opened and review boundaries reconciled
 
 **Focus:** Operator elected portable genuine edge first (Tradeify Select preferred), accepted
 manual weekly preservation and edition-independent edge retention, and opened a bounded 2–3 day
@@ -52,6 +52,35 @@ ineligible under this campaign absent a separate legacy-intake ruling. No candid
 Confirm attempt, spend, capital, Pine, allocation, `dd_protection`, or rail change.
 **Open / next:** STATE queue: #1 [Portable-edge cultivation campaign](superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md) · #2 [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
 **Live-ops state:** unchanged — c1 rail disarmed; no arm.
+
+---
+
+## 2026-09-02a — three-leg book grid, the third-leg shape spec, and the MOC-fade replay
+
+**Focus:** Operator asked, in sequence: combine the latest ORB-MNQ recon + ORB-MYM + Aegis-6J1 at
+different sizes and find a clear winner; then what shape a third leg would need; then whether the
+one real candidate matching that shape has an edge, drafted as Pine and backtested.
+**Shipped:** [`tradeify_book_composition_2026-09`](../lab/analysis/c1/tradeify_book_composition_2026-09/) —
+88-cell integer-size grid + 6 finalists at 30k paths on Select+Growth, shuffled-Aegis and
+excluded-regime controls, an exact-edge third-leg shape grid, and a bar-level MES MOC-fade replay
+($0.0000 Databento `MES.v.0` 1m pull); [`RESULTS.md`](../lab/analysis/c1/tradeify_book_composition_2026-09/RESULTS.md) ·
+[`THIRD_LEG_MINIMUM.md`](../lab/analysis/c1/tradeify_book_composition_2026-09/THIRD_LEG_MINIMUM.md) ·
+[`MOC_FADE_REPLAY.md`](../lab/analysis/c1/tradeify_book_composition_2026-09/MOC_FADE_REPLAY.md);
+[`tests/lab/test_moc_imbalance_sign_parse.py`](../tests/lab/test_moc_imbalance_sign_parse.py) (8 cases).
+**Decisions/defects:** **No clear winner** — real bust-vs-speed frontier; any leg at qty 2 busts
+40–66%; Growth's rope beats every composition change; MYM v0.4 hurts every book it joins; Aegis×2
+ballast gains are **drift, not diversification** (shuffled control matches it) and it passes 0.03%
+on its excluded 2020–22 window. Third-leg fit needs positive net edge (non-negotiable) and
+WR ≥ ~85% − 2pp per 0.01R at a $200 stop. MOC fade = **underpowered non-result that fails the 4×
+cost-law screen** (+0.075R gross, CI spans 0, no scaling with imbalance size). **Defect found and
+corrected:** my own "bare ⇒ buy-side" MOC sign inference was **falsified** by the X original for
+2025-04-30 (red = sell-side, identical digits) — the Telegram mirror renders the colour marker as
+`❗`, so 107 of 342 scraped days have an unusable sign; they are excluded from the table and every
+figure. Exploratory throughout: no pre-registration, no K ledger entry, no candidate contract, no
+`core/`/Pine/allocation/`dd_protection`/rail/lifecycle change; instrument-ledger and `MECHANISMS.md`
+routing deliberately **not** taken — operator call. $0 spend.
+**Open / next:** STATE queue: #1 [Find a viable trading strategy](../STATE.md) · #2 [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+**Live-ops state:** unchanged — c1 rail disarmed; no arm; MOC-fade Pine is a Downloads-lane draft, gitignored.
 
 ---
 
