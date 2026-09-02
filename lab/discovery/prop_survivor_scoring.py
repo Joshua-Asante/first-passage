@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import re
+import warnings
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Literal, Sequence
@@ -47,6 +48,17 @@ DEFAULT_PREREG = (
     / "2026-08-26-prop-survivor-scoring-prereg-v2.md"
 )
 
+
+class StaleGateWarning(UserWarning):
+    """Gate numbers were parsed from a CLOSED / superseded pre-registration.
+
+    A pre-registration is immutable and is never deleted when superseded — it is the
+    audit record proving a ceiling change was an open, dated override rather than a
+    quiet edit. That permanence means a superseded file stays parseable forever, so an
+    explicit ``path=`` can hand back a dead gate silently. This warns instead.
+    """
+
+
 # Prior-art idiom (tradeify remc / pre-reg §7 item 6): dd_protection OFF for scoring.
 # Named here as the mechanism constant, not a ceiling — ceiling numbers live in
 # ScoringThresholds loaded from the pre-reg. DD_SCALE imported from dd_protection.
@@ -69,6 +81,17 @@ class ScoringThresholds:
     horizon: int
     cost_law_multiple: float
     source_path: str
+    #: Non-None when the parsed pre-registration's own Status line says it is CLOSED
+    #: or superseded — i.e. these numbers are a historical record, not the live gate.
+    #: Carries the Status text verbatim so a caller can print it. See
+    #: ``load_scoring_thresholds``; anchor incident 2026-09-02 (a retrieved harness
+    #: silently scored against the superseded 3.0% ceiling a week after it was raised).
+    superseded_note: str | None = None
+
+    @property
+    def is_superseded(self) -> bool:
+        """True when these numbers came from a closed/superseded pre-registration."""
+        return self.superseded_note is not None
 
     @property
     def trailing_locking_tiers(self) -> frozenset[str]:
@@ -262,6 +285,30 @@ def load_scoring_thresholds(
         if key not in FIRM_RULES:
             raise ValueError(f"frozen tier {key!r} not present in FIRM_RULES.")
 
+    # Staleness guard. A pre-registration is deliberately immutable and is never
+    # deleted when superseded (it is the audit record that a ceiling change was an
+    # open, dated override rather than a quiet edit). That makes a superseded file
+    # permanently parseable, so an explicit `path=` can silently return a DEAD gate.
+    # WARN, never raise: reproducing a historical run against its own frozen ceiling
+    # is a legitimate and necessary use (control arms, reproduction checks).
+    # Anchor: 2026-09-02 — a retrieved harness hard-coded the v1 path and scored the
+    # W1 bootstrap partition against 3.0% a week after the live ceiling became 5.0%.
+    superseded_note = None
+    status_m = re.search(r"^\*\*Status:\*\*\s*(.+)$", text, re.MULTILINE)
+    if status_m:
+        status_text = status_m.group(1).strip().strip("`").strip()
+        if re.search(r"\b(CLOSED|SUPERSEDED)\b", status_text, re.IGNORECASE):
+            superseded_note = status_text
+            warnings.warn(
+                f"scoring thresholds parsed from a SUPERSEDED pre-registration: "
+                f"{prereg.name} — Status: {status_text}. "
+                f"eval_bust_ceiling={eval_bust:.1f}% is a HISTORICAL number, not the "
+                f"live gate (live default: {DEFAULT_PREREG.name}). Intentional only "
+                f"for reproducing a historical run against its own frozen ceiling.",
+                StaleGateWarning,
+                stacklevel=2,
+            )
+
     return ScoringThresholds(
         eval_bust_ceiling=eval_bust / 100.0,
         funded_bust_ceiling=funded_bust / 100.0,
@@ -272,6 +319,7 @@ def load_scoring_thresholds(
         horizon=horizon,
         cost_law_multiple=cost_law_multiple,
         source_path=str(prereg),
+        superseded_note=superseded_note,
     )
 
 
