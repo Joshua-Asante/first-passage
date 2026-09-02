@@ -473,7 +473,7 @@ def create_data_audit(bars: pd.DataFrame, metadata: dict[str, Any], sessions: li
             "limitations": [
                 "Continuous MYM1! is an unadjusted front-contract series and can contain roll gaps.",
                 "OHLC bars do not reveal intrabar path; target/stop ties are resolved stop-first.",
-                "The export ends 2026-07-31 although its filename is dated 2026-09-01.",
+                f"The supplied export ends {bars['time'].iloc[-1].date().isoformat()}.",
                 "RTH study excludes overnight information and incomplete/holiday sessions.",
                 "Commission is repository-authoritative for Tradeify Select; spread/slippage is a declared conservative model, not tick-level measurement.",
             ],

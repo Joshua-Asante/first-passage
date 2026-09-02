@@ -10,6 +10,7 @@ from lab.analysis.mym_breakout_entry_2026_09.run_research import (
     assign_period,
     bootstrap_expectancy_ci,
     build_sessions,
+    create_data_audit,
     evaluate_position,
     simulate_session,
     summarize_trades,
@@ -208,6 +209,21 @@ class MetricsAndValidationTests(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertLessEqual(first[0], 0.0)
         self.assertGreaterEqual(first[1], 0.0)
+
+    def test_data_audit_derives_export_end_from_supplied_bars(self) -> None:
+        bars = pd.DataFrame(
+            {
+                "time": pd.to_datetime(["2027-03-04T15:00:00Z"]), "open": [1000],
+                "high": [1010], "low": [990], "close": [1000], "volume": [1],
+            }
+        )
+
+        audit = create_data_audit(bars, self.valid_metadata(), [], {})
+        limitations = " ".join(audit["limitations"])
+
+        self.assertIn("2027-03-04", limitations)
+        self.assertNotIn("2026-07-31", limitations)
+        self.assertNotIn("2026-09-01", limitations)
 
 
 class EntryTimingTests(unittest.TestCase):
