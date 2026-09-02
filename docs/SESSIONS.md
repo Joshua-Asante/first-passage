@@ -33,6 +33,52 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-02c — W1's 4th partition run on the honest clock (INTERIM 48/100); superseded-prereg guard
+
+**Focus:** Operator asked what the research methods that made real progress have in common, then
+where to point the resulting filter at a deployable `Tradeify_Select_100K` leg. The filter landed on
+one unrun cell: the frozen gate scores **eight** cells and the 2026-08-09 W1 packet landed six (all
+PASS), dropping the **bootstrap-95th on the honest clock** for its executor's wall-clock — never
+picked up in 24 days. Ran it.
+**Shipped:** [PR #266](https://github.com/Joshua-Asante/first-passage/pull/266) (4 commits, open).
+New campaign [`class_s_w1_bootstrap_honest_2026-09-02`](../lab/analysis/c1/class_s_w1_bootstrap_honest_2026-09-02/):
+harnesses vendored **byte-identical** from `283d1de^` (Great Prune removed them; sha256 recorded),
+`_boot_paired.py` scoring each resampled panel on **both clocks off one shared draw**, and
+[`READING.md`](../lab/analysis/c1/class_s_w1_bootstrap_honest_2026-09-02/READING.md) fixing all three
+verdict readings **before any full-scale number was visible**. Also a staleness guard in
+[`prop_survivor_scoring.py`](../lab/discovery/prop_survivor_scoring.py) (`StaleGateWarning` +
+`ScoringThresholds.superseded_note`), 2 tests.
+**Decisions/defects:** Measured, 48/100 panels tier 1 of 2: the honest clock costs **+2.658pp** on the
+bootstrap-95th, **adverse on 48/48 panels**. Operator stopped the run; **no gate verdict taken**. Two
+operator corrections, both **pre-dating this run**: the live Part A ceiling is **5.0%** (frozen 08-26,
+[prereg v2](briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md)) and the weekly
+manual idle trade is agreed standing practice (ruled 08-16) — re-scored, the interim **PASSES** with
+1.14pp headroom on the conservative anchor. **My own reading withdrawn:** I called the EOD control gap
+a systematic divergence; the reproduction check then reproduced **all six** full/H1/H2 cells exactly
+(Δ ≤ 0.0033pp = rounding), so the engine is faithful and the argument was wrong — nested prefixes
+share nearly all their data, so flatness across them is weak evidence and I treated it as strong. The
+corrected figure moves **against** the run (3.86%, not 3.33%). **Declined** to delete the superseded
+v1 pre-registration (operator request): 120 files cite it, ~20 test modules and one research util read
+it, and it is the audit record proving the ceiling change was an open dated override — deleting it
+leaves only the account written by the party who made the change. Fixed the actual defect instead
+(silent parse); the guard immediately surfaced **4 test modules still parsing the dead 3.0% ceiling**.
+Separately, a 67-agent sweep enumerated **14 routes** to a Select leg and **refuted every one**. Two
+flagged, not resolved — T1's cadence limb is a **measurement** with a two-clock subtlety (venue = 1
+trade/Mon–Fri week; engine = 5 **consecutive** idle bdays, so once a week does not satisfy it), and the
+[2026-07-22 §4-withdrawal ADR](adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md) §5 bars
+"moving the 3.0% ceiling … to re-admit candidate #1" while the 08-26 change never cites it. No
+`core/`/Pine/allocation/`dd_protection`/rail change. $0/K=0.
+**Open / next:** STATE queue: `#1` [Find a viable trading strategy — portable-edge cultivation
+campaign](superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md) · `#2` [B7-REFIRE Stage 1
++ M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— both formally unchanged by this session (row #1 was re-scoped upstream in `2026-09-02a` and again by
+the cultivation-campaign entry `2026-09-02b`, both merged in here). Owed on this campaign: panels 48→100 tier 1 then 0→100 tier 2 (resumes from checkpoint); T1
+inactivity-ON re-MC with the trade modelled at ≤4 idle bdays; a one-line ruling on the
+ceiling/withdrawal-ADR collision; repoint the 4 stale test modules.
+**Live-ops state:** unchanged — c1 rail disarmed, `dry_run=true`, M1 not `RESOLVED`, no arm.
+
+---
+
 ## 2026-09-02b — Portable-edge cultivation campaign opened and review boundaries reconciled
 
 **Focus:** Operator elected portable genuine edge first (Tradeify Select preferred), accepted
