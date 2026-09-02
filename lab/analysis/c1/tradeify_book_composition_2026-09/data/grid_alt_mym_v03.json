@@ -1,0 +1,1076 @@
+{
+ "stage": "alt",
+ "n_sims": 1000,
+ "seeds": [
+  42,
+  123,
+  2026
+ ],
+ "elapsed_s": 116.4,
+ "results": [
+  {
+   "sizing": {
+    "mnq": 0,
+    "mym_v03": 1,
+    "aegis": 0
+   },
+   "tier": "Tradeify_Select_100K",
+   "window": [
+    "2022-01-03",
+    "2026-07-01"
+   ],
+   "active_legs": [
+    "mym_v03"
+   ],
+   "n_days": 1173,
+   "geometry_attest": {
+    "dd_lock_offset_usd": 1000000.0,
+    "trailing_dd_pct": -0.03,
+    "consistency_frac": 0.4
+   },
+   "micro_eq": 1,
+   "weekly_coverage": 1.0,
+   "realized_full": {
+    "eod": {
+     "outcome": "pass",
+     "day": 215,
+     "max_dd_pct": 1.316
+    },
+    "intraday": {
+     "outcome": "pass",
+     "day": 215,
+     "max_dd_pct": 1.316
+    }
+   },
+   "rolling": {
+    "eod": {
+     "pass_pct": 22.08,
+     "bust_pct": 0.0,
+     "unresolved_pct": 77.92,
+     "median_days_to_pass": 643.0,
+     "n_starts": 1173
+    },
+    "intraday": {
+     "pass_pct": 22.08,
+     "bust_pct": 0.0,
+     "unresolved_pct": 77.92,
+     "median_days_to_pass": 643.0,
+     "n_starts": 1173
+    }
+   },
+   "boot_intraday": {
+    "bust_pct": 42.467,
+    "pass_pct": 57.5,
+    "unresolved_pct": 0.033,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 408.0,
+    "p75_days_to_pass": 574.0,
+    "se_bust_pp": 0.902,
+    "se_pass_pp": 0.903,
+    "n_paths": 3000,
+    "n_weeks": 234,
+    "bust_attribution": {
+     "mym_v03": 1274
+    }
+   },
+   "halves": {
+    "split_date": "2024-04-02",
+    "h1": {
+     "bust_pct": 30.433,
+     "pass_pct": 69.567,
+     "unresolved_pct": 0.0,
+     "inactivity_pct": 0.0,
+     "median_days_to_pass": 354.0,
+     "p75_days_to_pass": 490.0,
+     "se_bust_pp": 0.84,
+     "se_pass_pp": 0.84,
+     "n_paths": 3000,
+     "n_weeks": 117,
+     "bust_attribution": {
+      "mym_v03": 913
+     }
+    },
+    "h2": {
+     "bust_pct": 57.467,
+     "pass_pct": 42.4,
+     "unresolved_pct": 0.133,
+     "inactivity_pct": 0.0,
+     "median_days_to_pass": 462.0,
+     "p75_days_to_pass": 637.25,
+     "se_bust_pp": 0.903,
+     "se_pass_pp": 0.902,
+     "n_paths": 3000,
+     "n_weeks": 117,
+     "bust_attribution": {
+      "mym_v03": 1724
+     }
+    }
+   },
+   "fee": {
+    "p_pass_resolved": 0.5752,
+    "expected_fee_to_first_pass": 390.0,
+    "p_at_least_one_pass_in_2": 0.8195
+   }
+  },
+  {
+   "sizing": {
+    "mnq": 0,
+    "mym_v03": 1,
+    "aegis": 0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "window": [
+    "2022-01-03",
+    "2026-07-01"
+   ],
+   "active_legs": [
+    "mym_v03"
+   ],
+   "n_days": 1173,
+   "geometry_attest": {
+    "dd_lock_offset_usd": 1000000.0,
+    "trailing_dd_pct": -0.035,
+    "consistency_frac": null
+   },
+   "micro_eq": 1,
+   "weekly_coverage": 1.0,
+   "realized_full": {
+    "eod": {
+     "outcome": "pass",
+     "day": 215,
+     "max_dd_pct": 1.316
+    },
+    "intraday": {
+     "outcome": "pass",
+     "day": 215,
+     "max_dd_pct": 1.316
+    }
+   },
+   "rolling": {
+    "eod": {
+     "pass_pct": 52.77,
+     "bust_pct": 0.0,
+     "unresolved_pct": 47.23,
+     "median_days_to_pass": 641.0,
+     "n_starts": 1173
+    },
+    "intraday": {
+     "pass_pct": 52.77,
+     "bust_pct": 0.0,
+     "unresolved_pct": 47.23,
+     "median_days_to_pass": 641.0,
+     "n_starts": 1173
+    }
+   },
+   "boot_intraday": {
+    "bust_pct": 30.1,
+    "pass_pct": 69.767,
+    "unresolved_pct": 0.133,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 413.0,
+    "p75_days_to_pass": 605.0,
+    "se_bust_pp": 0.837,
+    "se_pass_pp": 0.839,
+    "n_paths": 3000,
+    "n_weeks": 234,
+    "bust_attribution": {
+     "mym_v03": 903
+    }
+   },
+   "halves": {
+    "split_date": "2024-04-02",
+    "h1": {
+     "bust_pct": 20.333,
+     "pass_pct": 79.6,
+     "unresolved_pct": 0.067,
+     "inactivity_pct": 0.0,
+     "median_days_to_pass": 380.0,
+     "p75_days_to_pass": 538.0,
+     "se_bust_pp": 0.735,
+     "se_pass_pp": 0.736,
+     "n_paths": 3000,
+     "n_weeks": 117,
+     "bust_attribution": {
+      "mym_v03": 610
+     }
+    },
+    "h2": {
+     "bust_pct": 42.367,
+     "pass_pct": 57.167,
+     "unresolved_pct": 0.467,
+     "inactivity_pct": 0.0,
+     "median_days_to_pass": 464.0,
+     "p75_days_to_pass": 663.0,
+     "se_bust_pp": 0.902,
+     "se_pass_pp": 0.903,
+     "n_paths": 3000,
+     "n_weeks": 117,
+     "bust_attribution": {
+      "mym_v03": 1271
+     }
+    }
+   },
+   "fee": {
+    "p_pass_resolved": 0.6986,
+    "expected_fee_to_first_pass": 338.0,
+    "p_at_least_one_pass_in_2": 0.9092
+   }
+  },
+  {
+   "sizing": {
+    "mnq": 1,
+    "mym_v03": 1,
+    "aegis": 0
+   },
+   "tier": "Tradeify_Select_100K",
+   "window": [
+    "2022-01-03",
+    "2026-07-01"
+   ],
+   "active_legs": [
+    "mnq",
+    "mym_v03"
+   ],
+   "n_days": 1173,
+   "geometry_attest": {
+    "dd_lock_offset_usd": 1000000.0,
+    "trailing_dd_pct": -0.03,
+    "consistency_frac": 0.4
+   },
+   "micro_eq": 2,
+   "weekly_coverage": 1.0,
+   "realized_full": {
+    "eod": {
+     "outcome": "pass",
+     "day": 139,
+     "max_dd_pct": 2.162
+    },
+    "intraday": {
+     "outcome": "pass",
+     "day": 139,
+     "max_dd_pct": 2.162
+    }
+   },
+   "rolling": {
+    "eod": {
+     "pass_pct": 84.83,
+     "bust_pct": 0.0,
+     "unresolved_pct": 15.17,
+     "median_days_to_pass": 144.0,
+     "n_starts": 1173
+    },
+    "intraday": {
+     "pass_pct": 84.83,
+     "bust_pct": 0.0,
+     "unresolved_pct": 15.17,
+     "median_days_to_pass": 144.0,
+     "n_starts": 1173
+    }
+   },
+   "boot_intraday": {
+    "bust_pct": 43.5,
+    "pass_pct": 56.5,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 99.0,
+    "p75_days_to_pass": 136.0,
+    "se_bust_pp": 0.905,
+    "se_pass_pp": 0.905,
+    "n_paths": 3000,
+    "n_weeks": 234,
+    "bust_attribution": {
+     "mnq": 774,
+     "mym_v03": 531
+    }
+   },
+   "halves": {
+    "split_date": "2024-04-02",
+    "h1": {
+     "bust_pct": 40.867,
+     "pass_pct": 59.133,
+     "unresolved_pct": 0.0,
+     "inactivity_pct": 0.0,
+     "median_days_to_pass": 82.0,
+     "p75_days_to_pass": 110.0,
+     "se_bust_pp": 0.898,
+     "se_pass_pp": 0.898,
+     "n_paths": 3000,
+     "n_weeks": 117,
+     "bust_attribution": {
+      "mnq": 741,
+      "mym_v03": 485
+     }
+    },
+    "h2": {
+     "bust_pct": 48.633,
+     "pass_pct": 51.367,
+     "unresolved_pct": 0.0,
+     "inactivity_pct": 0.0,
+     "median_days_to_pass": 121.0,
+     "p75_days_to_pass": 161.0,
+     "se_bust_pp": 0.913,
+     "se_pass_pp": 0.913,
+     "n_paths": 3000,
+     "n_weeks": 117,
+     "bust_attribution": {
+      "mnq": 778,
+      "mym_v03": 681
+     }
+    }
+   },
+   "fee": {
+    "p_pass_resolved": 0.565,
+    "expected_fee_to_first_pass": 395.0,
+    "p_at_least_one_pass_in_2": 0.8108
+   }
+  },
+  {
+   "sizing": {
+    "mnq": 1,
+    "mym_v03": 1,
+    "aegis": 0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "window": [
+    "2022-01-03",
+    "2026-07-01"
+   ],
+   "active_legs": [
+    "mnq",
+    "mym_v03"
+   ],
+   "n_days": 1173,
+   "geometry_attest": {
+    "dd_lock_offset_usd": 1000000.0,
+    "trailing_dd_pct": -0.035,
+    "consistency_frac": null
+   },
+   "micro_eq": 2,
+   "weekly_coverage": 1.0,
+   "realized_full": {
+    "eod": {
+     "outcome": "pass",
+     "day": 139,
+     "max_dd_pct": 2.162
+    },
+    "intraday": {
+     "outcome": "pass",
+     "day": 139,
+     "max_dd_pct": 2.162
+    }
+   },
+   "rolling": {
+    "eod": {
+     "pass_pct": 84.83,
+     "bust_pct": 0.0,
+     "unresolved_pct": 15.17,
+     "median_days_to_pass": 143.0,
+     "n_starts": 1173
+    },
+    "intraday": {
+     "pass_pct": 84.83,
+     "bust_pct": 0.0,
+     "unresolved_pct": 15.17,
+     "median_days_to_pass": 143.0,
+     "n_starts": 1173
+    }
+   },
+   "boot_intraday": {
+    "bust_pct": 31.933,
+    "pass_pct": 68.067,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 106.0,
+    "p75_days_to_pass": 150.75,
+    "se_bust_pp": 0.851,
+    "se_pass_pp": 0.851,
+    "n_paths": 3000,
+    "n_weeks": 234,
+    "bust_attribution": {
+     "mnq": 599,
+     "mym_v03": 359
+    }
+   },
+   "halves": {
+    "split_date": "2024-04-02",
+    "h1": {
+     "bust_pct": 30.367,
+     "pass_pct": 69.633,
+     "unresolved_pct": 0.0,
+     "inactivity_pct": 0.0,
+     "median_days_to_pass": 90.0,
+     "p75_days_to_pass": 123.0,
+     "se_bust_pp": 0.84,
+     "se_pass_pp": 0.84,
+     "n_paths": 3000,
+     "n_weeks": 117,
+     "bust_attribution": {
+      "mnq": 567,
+      "mym_v03": 344
+     }
+    },
+    "h2": {
+     "bust_pct": 35.433,
+     "pass_pct": 64.567,
+     "unresolved_pct": 0.0,
+     "inactivity_pct": 0.0,
+     "median_days_to_pass": 128.0,
+     "p75_days_to_pass": 174.0,
+     "se_bust_pp": 0.873,
+     "se_pass_pp": 0.873,
+     "n_paths": 3000,
+     "n_weeks": 117,
+     "bust_attribution": {
+      "mnq": 573,
+      "mym_v03": 490
+     }
+    }
+   },
+   "fee": {
+    "p_pass_resolved": 0.6807,
+    "expected_fee_to_first_pass": 344.0,
+    "p_at_least_one_pass_in_2": 0.898
+   }
+  },
+  {
+   "sizing": {
+    "mnq": 1,
+    "mym_v03": 1,
+    "aegis": 2
+   },
+   "tier": "Tradeify_Select_100K",
+   "window": [
+    "2022-01-03",
+    "2026-07-01"
+   ],
+   "active_legs": [
+    "mnq",
+    "mym_v03",
+    "aegis"
+   ],
+   "n_days": 1173,
+   "geometry_attest": {
+    "dd_lock_offset_usd": 1000000.0,
+    "trailing_dd_pct": -0.03,
+    "consistency_frac": 0.4
+   },
+   "micro_eq": 22,
+   "weekly_coverage": 1.0,
+   "realized_full": {
+    "eod": {
+     "outcome": "pass",
+     "day": 139,
+     "max_dd_pct": 2.276
+    },
+    "intraday": {
+     "outcome": "pass",
+     "day": 139,
+     "max_dd_pct": 2.276
+    }
+   },
+   "rolling": {
+    "eod": {
+     "pass_pct": 91.05,
+     "bust_pct": 0.0,
+     "unresolved_pct": 8.95,
+     "median_days_to_pass": 125.0,
+     "n_starts": 1173
+    },
+    "intraday": {
+     "pass_pct": 91.05,
+     "bust_pct": 4.6,
+     "unresolved_pct": 4.35,
+     "median_days_to_pass": 125.0,
+     "n_starts": 1173
+    }
+   },
+   "boot_intraday": {
+    "bust_pct": 38.7,
+    "pass_pct": 61.3,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 91.0,
+    "p75_days_to_pass": 129.0,
+    "se_bust_pp": 0.889,
+    "se_pass_pp": 0.889,
+    "n_paths": 3000,
+    "n_weeks": 234,
+    "bust_attribution": {
+     "mnq": 629,
+     "mym_v03": 305,
+     "aegis": 227
+    }
+   },
+   "halves": {
+    "split_date": "2024-04-02",
+    "h1": {
+     "bust_pct": 37.133,
+     "pass_pct": 62.867,
+     "unresolved_pct": 0.0,
+     "inactivity_pct": 0.0,
+     "median_days_to_pass": 81.0,
+     "p75_days_to_pass": 109.0,
+     "se_bust_pp": 0.882,
+     "se_pass_pp": 0.882,
+     "n_paths": 3000,
+     "n_weeks": 117,
+     "bust_attribution": {
+      "mnq": 653,
+      "mym_v03": 274,
+      "aegis": 187
+     }
+    },
+    "h2": {
+     "bust_pct": 41.2,
+     "pass_pct": 58.8,
+     "unresolved_pct": 0.0,
+     "inactivity_pct": 0.0,
+     "median_days_to_pass": 108.0,
+     "p75_days_to_pass": 145.0,
+     "se_bust_pp": 0.899,
+     "se_pass_pp": 0.899,
+     "n_paths": 3000,
+     "n_weeks": 117,
+     "bust_attribution": {
+      "mnq": 647,
+      "mym_v03": 355,
+      "aegis": 234
+     }
+    }
+   },
+   "fee": {
+    "p_pass_resolved": 0.613,
+    "expected_fee_to_first_pass": 372.0,
+    "p_at_least_one_pass_in_2": 0.8502
+   }
+  },
+  {
+   "sizing": {
+    "mnq": 1,
+    "mym_v03": 1,
+    "aegis": 2
+   },
+   "tier": "Tradeify_Growth_100K",
+   "window": [
+    "2022-01-03",
+    "2026-07-01"
+   ],
+   "active_legs": [
+    "mnq",
+    "mym_v03",
+    "aegis"
+   ],
+   "n_days": 1173,
+   "geometry_attest": {
+    "dd_lock_offset_usd": 1000000.0,
+    "trailing_dd_pct": -0.035,
+    "consistency_frac": null
+   },
+   "micro_eq": 22,
+   "weekly_coverage": 1.0,
+   "realized_full": {
+    "eod": {
+     "outcome": "pass",
+     "day": 139,
+     "max_dd_pct": 2.276
+    },
+    "intraday": {
+     "outcome": "pass",
+     "day": 139,
+     "max_dd_pct": 2.276
+    }
+   },
+   "rolling": {
+    "eod": {
+     "pass_pct": 91.05,
+     "bust_pct": 0.0,
+     "unresolved_pct": 8.95,
+     "median_days_to_pass": 125.0,
+     "n_starts": 1173
+    },
+    "intraday": {
+     "pass_pct": 91.05,
+     "bust_pct": 0.0,
+     "unresolved_pct": 8.95,
+     "median_days_to_pass": 125.0,
+     "n_starts": 1173
+    }
+   },
+   "boot_intraday": {
+    "bust_pct": 27.233,
+    "pass_pct": 72.767,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 99.0,
+    "p75_days_to_pass": 141.0,
+    "se_bust_pp": 0.813,
+    "se_pass_pp": 0.813,
+    "n_paths": 3000,
+    "n_weeks": 234,
+    "bust_attribution": {
+     "mnq": 456,
+     "mym_v03": 234,
+     "aegis": 127
+    }
+   },
+   "halves": {
+    "split_date": "2024-04-02",
+    "h1": {
+     "bust_pct": 26.133,
+     "pass_pct": 73.867,
+     "unresolved_pct": 0.0,
+     "inactivity_pct": 0.0,
+     "median_days_to_pass": 89.0,
+     "p75_days_to_pass": 120.0,
+     "se_bust_pp": 0.802,
+     "se_pass_pp": 0.802,
+     "n_paths": 3000,
+     "n_weeks": 117,
+     "bust_attribution": {
+      "mnq": 478,
+      "mym_v03": 183,
+      "aegis": 123
+     }
+    },
+    "h2": {
+     "bust_pct": 28.967,
+     "pass_pct": 71.033,
+     "unresolved_pct": 0.0,
+     "inactivity_pct": 0.0,
+     "median_days_to_pass": 114.0,
+     "p75_days_to_pass": 156.0,
+     "se_bust_pp": 0.828,
+     "se_pass_pp": 0.828,
+     "n_paths": 3000,
+     "n_weeks": 117,
+     "bust_attribution": {
+      "mnq": 440,
+      "mym_v03": 251,
+      "aegis": 178
+     }
+    }
+   },
+   "fee": {
+    "p_pass_resolved": 0.7277,
+    "expected_fee_to_first_pass": 328.0,
+    "p_at_least_one_pass_in_2": 0.9258
+   }
+  },
+  {
+   "sizing": {
+    "mnq": 0,
+    "mym_v03": 2,
+    "aegis": 0
+   },
+   "tier": "Tradeify_Select_100K",
+   "window": [
+    "2022-01-03",
+    "2026-07-01"
+   ],
+   "active_legs": [
+    "mym_v03"
+   ],
+   "n_days": 1173,
+   "geometry_attest": {
+    "dd_lock_offset_usd": 1000000.0,
+    "trailing_dd_pct": -0.03,
+    "consistency_frac": 0.4
+   },
+   "micro_eq": 2,
+   "weekly_coverage": 1.0,
+   "realized_full": {
+    "eod": {
+     "outcome": "pass",
+     "day": 150,
+     "max_dd_pct": 2.631
+    },
+    "intraday": {
+     "outcome": "bust_trailing",
+     "day": 39,
+     "max_dd_pct": 2.631
+    }
+   },
+   "rolling": {
+    "eod": {
+     "pass_pct": 16.28,
+     "bust_pct": 44.93,
+     "unresolved_pct": 38.79,
+     "median_days_to_pass": 97.0,
+     "n_starts": 1173
+    },
+    "intraday": {
+     "pass_pct": 16.11,
+     "bust_pct": 57.46,
+     "unresolved_pct": 26.43,
+     "median_days_to_pass": 97.0,
+     "n_starts": 1173
+    }
+   },
+   "boot_intraday": {
+    "bust_pct": 70.867,
+    "pass_pct": 29.133,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 145.0,
+    "p75_days_to_pass": 198.0,
+    "se_bust_pp": 0.83,
+    "se_pass_pp": 0.83,
+    "n_paths": 3000,
+    "n_weeks": 234,
+    "bust_attribution": {
+     "mym_v03": 2126
+    }
+   },
+   "halves": {
+    "split_date": "2024-04-02",
+    "h1": {
+     "bust_pct": 62.2,
+     "pass_pct": 37.8,
+     "unresolved_pct": 0.0,
+     "inactivity_pct": 0.0,
+     "median_days_to_pass": 121.0,
+     "p75_days_to_pass": 168.0,
+     "se_bust_pp": 0.885,
+     "se_pass_pp": 0.885,
+     "n_paths": 3000,
+     "n_weeks": 117,
+     "bust_attribution": {
+      "mym_v03": 1866
+     }
+    },
+    "h2": {
+     "bust_pct": 83.133,
+     "pass_pct": 16.867,
+     "unresolved_pct": 0.0,
+     "inactivity_pct": 0.0,
+     "median_days_to_pass": 155.0,
+     "p75_days_to_pass": 212.5,
+     "se_bust_pp": 0.684,
+     "se_pass_pp": 0.684,
+     "n_paths": 3000,
+     "n_weeks": 117,
+     "bust_attribution": {
+      "mym_v03": 2494
+     }
+    }
+   },
+   "fee": {
+    "p_pass_resolved": 0.2913,
+    "expected_fee_to_first_pass": 676.0,
+    "p_at_least_one_pass_in_2": 0.4978
+   }
+  },
+  {
+   "sizing": {
+    "mnq": 0,
+    "mym_v03": 2,
+    "aegis": 0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "window": [
+    "2022-01-03",
+    "2026-07-01"
+   ],
+   "active_legs": [
+    "mym_v03"
+   ],
+   "n_days": 1173,
+   "geometry_attest": {
+    "dd_lock_offset_usd": 1000000.0,
+    "trailing_dd_pct": -0.035,
+    "consistency_frac": null
+   },
+   "micro_eq": 2,
+   "weekly_coverage": 1.0,
+   "realized_full": {
+    "eod": {
+     "outcome": "pass",
+     "day": 150,
+     "max_dd_pct": 2.631
+    },
+    "intraday": {
+     "outcome": "pass",
+     "day": 150,
+     "max_dd_pct": 2.631
+    }
+   },
+   "rolling": {
+    "eod": {
+     "pass_pct": 35.38,
+     "bust_pct": 41.52,
+     "unresolved_pct": 23.1,
+     "median_days_to_pass": 95.0,
+     "n_starts": 1173
+    },
+    "intraday": {
+     "pass_pct": 35.12,
+     "bust_pct": 41.77,
+     "unresolved_pct": 23.1,
+     "median_days_to_pass": 95.0,
+     "n_starts": 1173
+    }
+   },
+   "boot_intraday": {
+    "bust_pct": 55.0,
+    "pass_pct": 45.0,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 136.0,
+    "p75_days_to_pass": 195.0,
+    "se_bust_pp": 0.908,
+    "se_pass_pp": 0.908,
+    "n_paths": 3000,
+    "n_weeks": 234,
+    "bust_attribution": {
+     "mym_v03": 1650
+    }
+   },
+   "halves": {
+    "split_date": "2024-04-02",
+    "h1": {
+     "bust_pct": 49.567,
+     "pass_pct": 50.433,
+     "unresolved_pct": 0.0,
+     "inactivity_pct": 0.0,
+     "median_days_to_pass": 125.0,
+     "p75_days_to_pass": 178.0,
+     "se_bust_pp": 0.913,
+     "se_pass_pp": 0.913,
+     "n_paths": 3000,
+     "n_weeks": 117,
+     "bust_attribution": {
+      "mym_v03": 1487
+     }
+    },
+    "h2": {
+     "bust_pct": 65.7,
+     "pass_pct": 34.3,
+     "unresolved_pct": 0.0,
+     "inactivity_pct": 0.0,
+     "median_days_to_pass": 134.0,
+     "p75_days_to_pass": 199.0,
+     "se_bust_pp": 0.867,
+     "se_pass_pp": 0.867,
+     "n_paths": 3000,
+     "n_weeks": 117,
+     "bust_attribution": {
+      "mym_v03": 1971
+     }
+    }
+   },
+   "fee": {
+    "p_pass_resolved": 0.45,
+    "expected_fee_to_first_pass": 472.0,
+    "p_at_least_one_pass_in_2": 0.6975
+   }
+  },
+  {
+   "sizing": {
+    "mnq": 1,
+    "mym_v03": 0,
+    "aegis": 0
+   },
+   "tier": "Tradeify_Select_100K",
+   "window": [
+    "2022-01-03",
+    "2026-07-01"
+   ],
+   "active_legs": [
+    "mnq"
+   ],
+   "n_days": 1173,
+   "geometry_attest": {
+    "dd_lock_offset_usd": 1000000.0,
+    "trailing_dd_pct": -0.03,
+    "consistency_frac": 0.4
+   },
+   "micro_eq": 1,
+   "weekly_coverage": 0.9915,
+   "realized_full": {
+    "eod": {
+     "outcome": "pass",
+     "day": 149,
+     "max_dd_pct": 1.715
+    },
+    "intraday": {
+     "outcome": "pass",
+     "day": 149,
+     "max_dd_pct": 1.715
+    }
+   },
+   "rolling": {
+    "eod": {
+     "pass_pct": 73.74,
+     "bust_pct": 0.0,
+     "unresolved_pct": 26.26,
+     "median_days_to_pass": 170.0,
+     "n_starts": 1173
+    },
+    "intraday": {
+     "pass_pct": 73.74,
+     "bust_pct": 0.0,
+     "unresolved_pct": 26.26,
+     "median_days_to_pass": 170.0,
+     "n_starts": 1173
+    }
+   },
+   "boot_intraday": {
+    "bust_pct": 19.467,
+    "pass_pct": 80.533,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 167.0,
+    "p75_days_to_pass": 224.0,
+    "se_bust_pp": 0.723,
+    "se_pass_pp": 0.723,
+    "n_paths": 3000,
+    "n_weeks": 234,
+    "bust_attribution": {
+     "mnq": 584
+    }
+   },
+   "halves": {
+    "split_date": "2024-04-02",
+    "h1": {
+     "bust_pct": 18.133,
+     "pass_pct": 81.867,
+     "unresolved_pct": 0.0,
+     "inactivity_pct": 0.0,
+     "median_days_to_pass": 143.0,
+     "p75_days_to_pass": 190.0,
+     "se_bust_pp": 0.703,
+     "se_pass_pp": 0.703,
+     "n_paths": 3000,
+     "n_weeks": 117,
+     "bust_attribution": {
+      "mnq": 544
+     }
+    },
+    "h2": {
+     "bust_pct": 27.8,
+     "pass_pct": 72.2,
+     "unresolved_pct": 0.0,
+     "inactivity_pct": 0.0,
+     "median_days_to_pass": 194.0,
+     "p75_days_to_pass": 261.0,
+     "se_bust_pp": 0.818,
+     "se_pass_pp": 0.818,
+     "n_paths": 3000,
+     "n_weeks": 117,
+     "bust_attribution": {
+      "mnq": 834
+     }
+    }
+   },
+   "fee": {
+    "p_pass_resolved": 0.8053,
+    "expected_fee_to_first_pass": 306.0,
+    "p_at_least_one_pass_in_2": 0.9621
+   }
+  },
+  {
+   "sizing": {
+    "mnq": 1,
+    "mym_v03": 0,
+    "aegis": 0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "window": [
+    "2022-01-03",
+    "2026-07-01"
+   ],
+   "active_legs": [
+    "mnq"
+   ],
+   "n_days": 1173,
+   "geometry_attest": {
+    "dd_lock_offset_usd": 1000000.0,
+    "trailing_dd_pct": -0.035,
+    "consistency_frac": null
+   },
+   "micro_eq": 1,
+   "weekly_coverage": 0.9915,
+   "realized_full": {
+    "eod": {
+     "outcome": "pass",
+     "day": 149,
+     "max_dd_pct": 1.715
+    },
+    "intraday": {
+     "outcome": "pass",
+     "day": 149,
+     "max_dd_pct": 1.715
+    }
+   },
+   "rolling": {
+    "eod": {
+     "pass_pct": 73.74,
+     "bust_pct": 0.0,
+     "unresolved_pct": 26.26,
+     "median_days_to_pass": 170.0,
+     "n_starts": 1173
+    },
+    "intraday": {
+     "pass_pct": 73.74,
+     "bust_pct": 0.0,
+     "unresolved_pct": 26.26,
+     "median_days_to_pass": 170.0,
+     "n_starts": 1173
+    }
+   },
+   "boot_intraday": {
+    "bust_pct": 11.367,
+    "pass_pct": 88.633,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 175.0,
+    "p75_days_to_pass": 239.0,
+    "se_bust_pp": 0.58,
+    "se_pass_pp": 0.58,
+    "n_paths": 3000,
+    "n_weeks": 234,
+    "bust_attribution": {
+     "mnq": 341
+    }
+   },
+   "halves": {
+    "split_date": "2024-04-02",
+    "h1": {
+     "bust_pct": 10.167,
+     "pass_pct": 89.833,
+     "unresolved_pct": 0.0,
+     "inactivity_pct": 0.0,
+     "median_days_to_pass": 150.0,
+     "p75_days_to_pass": 203.0,
+     "se_bust_pp": 0.552,
+     "se_pass_pp": 0.552,
+     "n_paths": 3000,
+     "n_weeks": 117,
+     "bust_attribution": {
+      "mnq": 305
+     }
+    },
+    "h2": {
+     "bust_pct": 17.233,
+     "pass_pct": 82.767,
+     "unresolved_pct": 0.0,
+     "inactivity_pct": 0.0,
+     "median_days_to_pass": 206.0,
+     "p75_days_to_pass": 281.0,
+     "se_bust_pp": 0.69,
+     "se_pass_pp": 0.69,
+     "n_paths": 3000,
+     "n_weeks": 117,
+     "bust_attribution": {
+      "mnq": 517
+     }
+    }
+   },
+   "fee": {
+    "p_pass_resolved": 0.8863,
+    "expected_fee_to_first_pass": 287.0,
+    "p_at_least_one_pass_in_2": 0.9871
+   }
+  }
+ ]
+}

@@ -1,0 +1,959 @@
+{
+ "base": {
+  "Tradeify_Growth_100K": {
+   "tier": "Tradeify_Growth_100K",
+   "boot": {
+    "bust_pct": 8.433,
+    "pass_pct": 91.567,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 159.0,
+    "p75_days_to_pass": 217.0,
+    "se_bust_pp": 0.507,
+    "se_pass_pp": 0.507,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 174,
+     "aegis": 79
+    }
+   }
+  }
+ },
+ "results": [
+  {
+   "params": {
+    "edge_r": 0.05,
+    "wr": 0.55,
+    "W": 0.909,
+    "risk": 100,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 7,
+   "boot": {
+    "bust_pct": 14.333,
+    "pass_pct": 85.667,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 154.0,
+    "p75_days_to_pass": 211.0,
+    "se_bust_pp": 0.64,
+    "se_pass_pp": 0.64,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 251,
+     "aegis": 83,
+     "synth": 96
+    }
+   },
+   "realized_corr_mnq": -0.039901193919550416,
+   "realized_edge_r": -0.011,
+   "n_trades": 1023,
+   "annual_drift_usd": -275.0
+  },
+  {
+   "params": {
+    "edge_r": 0.05,
+    "wr": 0.55,
+    "W": 0.909,
+    "risk": 100,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 8,
+   "boot": {
+    "bust_pct": 8.867,
+    "pass_pct": 91.133,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 136.0,
+    "p75_days_to_pass": 183.0,
+    "se_bust_pp": 0.519,
+    "se_pass_pp": 0.519,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 176,
+     "aegis": 41,
+     "synth": 49
+    }
+   },
+   "realized_corr_mnq": 0.006171782111256634,
+   "realized_edge_r": 0.056,
+   "n_trades": 1023,
+   "annual_drift_usd": 1418.0
+  },
+  {
+   "params": {
+    "edge_r": 0.05,
+    "wr": 0.55,
+    "W": 0.909,
+    "risk": 200,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 7,
+   "boot": {
+    "bust_pct": 32.633,
+    "pass_pct": 67.367,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 129.0,
+    "p75_days_to_pass": 176.0,
+    "se_bust_pp": 0.856,
+    "se_pass_pp": 0.856,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 449,
+     "aegis": 155,
+     "synth": 375
+    }
+   },
+   "realized_corr_mnq": -0.039901193919550416,
+   "realized_edge_r": -0.011,
+   "n_trades": 1023,
+   "annual_drift_usd": -551.0
+  },
+  {
+   "params": {
+    "edge_r": 0.05,
+    "wr": 0.55,
+    "W": 0.909,
+    "risk": 200,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 8,
+   "boot": {
+    "bust_pct": 16.9,
+    "pass_pct": 83.1,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 107.0,
+    "p75_days_to_pass": 146.0,
+    "se_bust_pp": 0.684,
+    "se_pass_pp": 0.684,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 223,
+     "aegis": 67,
+     "synth": 217
+    }
+   },
+   "realized_corr_mnq": 0.006171782111256634,
+   "realized_edge_r": 0.056,
+   "n_trades": 1023,
+   "annual_drift_usd": 2835.0
+  },
+  {
+   "params": {
+    "edge_r": 0.05,
+    "wr": 0.75,
+    "W": 0.4,
+    "risk": 100,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 7,
+   "boot": {
+    "bust_pct": 8.667,
+    "pass_pct": 91.333,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 149.0,
+    "p75_days_to_pass": 201.0,
+    "se_bust_pp": 0.514,
+    "se_pass_pp": 0.514,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 166,
+     "aegis": 58,
+     "synth": 36
+    }
+   },
+   "realized_corr_mnq": 0.05108622527572636,
+   "realized_edge_r": 0.026,
+   "n_trades": 1023,
+   "annual_drift_usd": 665.0
+  },
+  {
+   "params": {
+    "edge_r": 0.05,
+    "wr": 0.75,
+    "W": 0.4,
+    "risk": 100,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 8,
+   "boot": {
+    "bust_pct": 7.7,
+    "pass_pct": 92.3,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 142.0,
+    "p75_days_to_pass": 192.0,
+    "se_bust_pp": 0.487,
+    "se_pass_pp": 0.487,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 148,
+     "aegis": 43,
+     "synth": 40
+    }
+   },
+   "realized_corr_mnq": -0.021314197505339447,
+   "realized_edge_r": 0.044,
+   "n_trades": 1023,
+   "annual_drift_usd": 1113.0
+  },
+  {
+   "params": {
+    "edge_r": 0.05,
+    "wr": 0.75,
+    "W": 0.4,
+    "risk": 200,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 7,
+   "boot": {
+    "bust_pct": 12.633,
+    "pass_pct": 87.367,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 131.0,
+    "p75_days_to_pass": 180.0,
+    "se_bust_pp": 0.607,
+    "se_pass_pp": 0.607,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 223,
+     "aegis": 74,
+     "synth": 82
+    }
+   },
+   "realized_corr_mnq": 0.05108622527572636,
+   "realized_edge_r": 0.026,
+   "n_trades": 1023,
+   "annual_drift_usd": 1330.0
+  },
+  {
+   "params": {
+    "edge_r": 0.05,
+    "wr": 0.75,
+    "W": 0.4,
+    "risk": 200,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 8,
+   "boot": {
+    "bust_pct": 10.567,
+    "pass_pct": 89.433,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 123.0,
+    "p75_days_to_pass": 169.0,
+    "se_bust_pp": 0.561,
+    "se_pass_pp": 0.561,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 190,
+     "aegis": 56,
+     "synth": 71
+    }
+   },
+   "realized_corr_mnq": -0.021314197505339447,
+   "realized_edge_r": 0.044,
+   "n_trades": 1023,
+   "annual_drift_usd": 2227.0
+  },
+  {
+   "params": {
+    "edge_r": 0.1,
+    "wr": 0.55,
+    "W": 1.0,
+    "risk": 100,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 7,
+   "boot": {
+    "bust_pct": 10.333,
+    "pass_pct": 89.667,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 141.0,
+    "p75_days_to_pass": 190.0,
+    "se_bust_pp": 0.556,
+    "se_pass_pp": 0.556,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 177,
+     "aegis": 58,
+     "synth": 75
+    }
+   },
+   "realized_corr_mnq": -0.039901193919550465,
+   "realized_edge_r": 0.036,
+   "n_trades": 1023,
+   "annual_drift_usd": 911.0
+  },
+  {
+   "params": {
+    "edge_r": 0.1,
+    "wr": 0.55,
+    "W": 1.0,
+    "risk": 100,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 8,
+   "boot": {
+    "bust_pct": 5.8,
+    "pass_pct": 94.2,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 123.0,
+    "p75_days_to_pass": 166.0,
+    "se_bust_pp": 0.427,
+    "se_pass_pp": 0.427,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 105,
+     "aegis": 28,
+     "synth": 41
+    }
+   },
+   "realized_corr_mnq": 0.006171782111256661,
+   "realized_edge_r": 0.107,
+   "n_trades": 1023,
+   "annual_drift_usd": 2685.0
+  },
+  {
+   "params": {
+    "edge_r": 0.1,
+    "wr": 0.55,
+    "W": 1.0,
+    "risk": 200,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 7,
+   "boot": {
+    "bust_pct": 22.667,
+    "pass_pct": 77.333,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 114.0,
+    "p75_days_to_pass": 153.25,
+    "se_bust_pp": 0.764,
+    "se_pass_pp": 0.764,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 323,
+     "aegis": 110,
+     "synth": 247
+    }
+   },
+   "realized_corr_mnq": -0.039901193919550465,
+   "realized_edge_r": 0.036,
+   "n_trades": 1023,
+   "annual_drift_usd": 1823.0
+  },
+  {
+   "params": {
+    "edge_r": 0.1,
+    "wr": 0.55,
+    "W": 1.0,
+    "risk": 200,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 8,
+   "boot": {
+    "bust_pct": 10.9,
+    "pass_pct": 89.1,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 95.0,
+    "p75_days_to_pass": 128.0,
+    "se_bust_pp": 0.569,
+    "se_pass_pp": 0.569,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 148,
+     "aegis": 44,
+     "synth": 135
+    }
+   },
+   "realized_corr_mnq": 0.006171782111256661,
+   "realized_edge_r": 0.107,
+   "n_trades": 1023,
+   "annual_drift_usd": 5370.0
+  },
+  {
+   "params": {
+    "edge_r": 0.1,
+    "wr": 0.75,
+    "W": 0.467,
+    "risk": 100,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 7,
+   "boot": {
+    "bust_pct": 4.833,
+    "pass_pct": 95.167,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 136.0,
+    "p75_days_to_pass": 182.0,
+    "se_bust_pp": 0.392,
+    "se_pass_pp": 0.392,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 97,
+     "aegis": 26,
+     "synth": 22
+    }
+   },
+   "realized_corr_mnq": 0.05108622527572639,
+   "realized_edge_r": 0.075,
+   "n_trades": 1023,
+   "annual_drift_usd": 1897.0
+  },
+  {
+   "params": {
+    "edge_r": 0.1,
+    "wr": 0.75,
+    "W": 0.467,
+    "risk": 100,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 8,
+   "boot": {
+    "bust_pct": 4.767,
+    "pass_pct": 95.233,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 130.0,
+    "p75_days_to_pass": 175.0,
+    "se_bust_pp": 0.389,
+    "se_pass_pp": 0.389,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 95,
+     "aegis": 29,
+     "synth": 19
+    }
+   },
+   "realized_corr_mnq": -0.02131419750533957,
+   "realized_edge_r": 0.094,
+   "n_trades": 1023,
+   "annual_drift_usd": 2366.0
+  },
+  {
+   "params": {
+    "edge_r": 0.1,
+    "wr": 0.75,
+    "W": 0.467,
+    "risk": 200,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 7,
+   "boot": {
+    "bust_pct": 5.5,
+    "pass_pct": 94.5,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 113.0,
+    "p75_days_to_pass": 151.0,
+    "se_bust_pp": 0.416,
+    "se_pass_pp": 0.416,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 90,
+     "aegis": 31,
+     "synth": 44
+    }
+   },
+   "realized_corr_mnq": 0.05108622527572639,
+   "realized_edge_r": 0.075,
+   "n_trades": 1023,
+   "annual_drift_usd": 3794.0
+  },
+  {
+   "params": {
+    "edge_r": 0.1,
+    "wr": 0.75,
+    "W": 0.467,
+    "risk": 200,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 8,
+   "boot": {
+    "bust_pct": 5.767,
+    "pass_pct": 94.233,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 107.0,
+    "p75_days_to_pass": 143.0,
+    "se_bust_pp": 0.426,
+    "se_pass_pp": 0.426,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 110,
+     "aegis": 29,
+     "synth": 34
+    }
+   },
+   "realized_corr_mnq": -0.02131419750533957,
+   "realized_edge_r": 0.094,
+   "n_trades": 1023,
+   "annual_drift_usd": 4733.0
+  },
+  {
+   "params": {
+    "edge_r": 0.1,
+    "wr": 0.45,
+    "W": 1.444,
+    "risk": 100,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 7,
+   "boot": {
+    "bust_pct": 25.867,
+    "pass_pct": 74.133,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 149.0,
+    "p75_days_to_pass": 209.0,
+    "se_bust_pp": 0.799,
+    "se_pass_pp": 0.799,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 390,
+     "aegis": 63,
+     "synth": 323
+    }
+   },
+   "realized_corr_mnq": -0.053394233394242374,
+   "realized_edge_r": -0.042,
+   "n_trades": 1023,
+   "annual_drift_usd": -1054.0
+  },
+  {
+   "params": {
+    "edge_r": 0.1,
+    "wr": 0.45,
+    "W": 1.444,
+    "risk": 100,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 8,
+   "boot": {
+    "bust_pct": 6.633,
+    "pass_pct": 93.367,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 118.0,
+    "p75_days_to_pass": 157.0,
+    "se_bust_pp": 0.454,
+    "se_pass_pp": 0.454,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 120,
+     "aegis": 26,
+     "synth": 53
+    }
+   },
+   "realized_corr_mnq": 0.050197890578309735,
+   "realized_edge_r": 0.123,
+   "n_trades": 1023,
+   "annual_drift_usd": 3101.0
+  },
+  {
+   "params": {
+    "edge_r": 0.1,
+    "wr": 0.45,
+    "W": 1.444,
+    "risk": 200,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 7,
+   "boot": {
+    "bust_pct": 52.833,
+    "pass_pct": 47.167,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 103.0,
+    "p75_days_to_pass": 142.0,
+    "se_bust_pp": 0.911,
+    "se_pass_pp": 0.911,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 666,
+     "aegis": 99,
+     "synth": 820
+    }
+   },
+   "realized_corr_mnq": -0.053394233394242374,
+   "realized_edge_r": -0.042,
+   "n_trades": 1023,
+   "annual_drift_usd": -2108.0
+  },
+  {
+   "params": {
+    "edge_r": 0.1,
+    "wr": 0.45,
+    "W": 1.444,
+    "risk": 200,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 8,
+   "boot": {
+    "bust_pct": 14.567,
+    "pass_pct": 85.433,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 84.0,
+    "p75_days_to_pass": 115.0,
+    "se_bust_pp": 0.644,
+    "se_pass_pp": 0.644,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 194,
+     "aegis": 60,
+     "synth": 183
+    }
+   },
+   "realized_corr_mnq": 0.050197890578309735,
+   "realized_edge_r": 0.123,
+   "n_trades": 1023,
+   "annual_drift_usd": 6202.0
+  },
+  {
+   "params": {
+    "edge_r": 0.15,
+    "wr": 0.45,
+    "W": 1.556,
+    "risk": 100,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 7,
+   "boot": {
+    "bust_pct": 20.067,
+    "pass_pct": 79.933,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 141.0,
+    "p75_days_to_pass": 196.0,
+    "se_bust_pp": 0.731,
+    "se_pass_pp": 0.731,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 329,
+     "aegis": 37,
+     "synth": 236
+    }
+   },
+   "realized_corr_mnq": -0.05339423339424242,
+   "realized_edge_r": 0.002,
+   "n_trades": 1023,
+   "annual_drift_usd": 44.0
+  },
+  {
+   "params": {
+    "edge_r": 0.15,
+    "wr": 0.45,
+    "W": 1.556,
+    "risk": 100,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 8,
+   "boot": {
+    "bust_pct": 4.833,
+    "pass_pct": 95.167,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 107.0,
+    "p75_days_to_pass": 141.0,
+    "se_bust_pp": 0.392,
+    "se_pass_pp": 0.392,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 87,
+     "aegis": 21,
+     "synth": 37
+    }
+   },
+   "realized_corr_mnq": 0.05019789057830972,
+   "realized_edge_r": 0.174,
+   "n_trades": 1023,
+   "annual_drift_usd": 4387.0
+  },
+  {
+   "params": {
+    "edge_r": 0.15,
+    "wr": 0.45,
+    "W": 1.556,
+    "risk": 200,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 7,
+   "boot": {
+    "bust_pct": 42.8,
+    "pass_pct": 57.2,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 96.0,
+    "p75_days_to_pass": 136.0,
+    "se_bust_pp": 0.903,
+    "se_pass_pp": 0.903,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 523,
+     "aegis": 81,
+     "synth": 680
+    }
+   },
+   "realized_corr_mnq": -0.05339423339424242,
+   "realized_edge_r": 0.002,
+   "n_trades": 1023,
+   "annual_drift_usd": 88.0
+  },
+  {
+   "params": {
+    "edge_r": 0.15,
+    "wr": 0.45,
+    "W": 1.556,
+    "risk": 200,
+    "cadence": 5,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 8,
+   "boot": {
+    "bust_pct": 10.567,
+    "pass_pct": 89.433,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 76.0,
+    "p75_days_to_pass": 102.0,
+    "se_bust_pp": 0.561,
+    "se_pass_pp": 0.561,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 137,
+     "aegis": 37,
+     "synth": 143
+    }
+   },
+   "realized_corr_mnq": 0.05019789057830972,
+   "realized_edge_r": 0.174,
+   "n_trades": 1023,
+   "annual_drift_usd": 8775.0
+  },
+  {
+   "params": {
+    "edge_r": 0.15,
+    "wr": 0.55,
+    "W": 1.091,
+    "risk": 150,
+    "cadence": 3,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 7,
+   "boot": {
+    "bust_pct": 11.667,
+    "pass_pct": 88.333,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 126.0,
+    "p75_days_to_pass": 171.0,
+    "se_bust_pp": 0.586,
+    "se_pass_pp": 0.586,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 187,
+     "aegis": 78,
+     "synth": 85
+    }
+   },
+   "realized_corr_mnq": 0.05629131031847482,
+   "realized_edge_r": 0.083,
+   "n_trades": 614,
+   "annual_drift_usd": 1881.0
+  },
+  {
+   "params": {
+    "edge_r": 0.15,
+    "wr": 0.55,
+    "W": 1.091,
+    "risk": 150,
+    "cadence": 3,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 8,
+   "boot": {
+    "bust_pct": 5.867,
+    "pass_pct": 94.133,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 119.0,
+    "p75_days_to_pass": 162.0,
+    "se_bust_pp": 0.429,
+    "se_pass_pp": 0.429,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 84,
+     "aegis": 32,
+     "synth": 60
+    }
+   },
+   "realized_corr_mnq": -0.04555465504669299,
+   "realized_edge_r": 0.141,
+   "n_trades": 614,
+   "annual_drift_usd": 3195.0
+  },
+  {
+   "params": {
+    "edge_r": 0.1,
+    "wr": 0.65,
+    "W": 0.692,
+    "risk": 150,
+    "cadence": 3,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 7,
+   "boot": {
+    "bust_pct": 7.2,
+    "pass_pct": 92.8,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 124.0,
+    "p75_days_to_pass": 166.0,
+    "se_bust_pp": 0.472,
+    "se_pass_pp": 0.472,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 110,
+     "aegis": 52,
+     "synth": 54
+    }
+   },
+   "realized_corr_mnq": 0.08011281442889798,
+   "realized_edge_r": 0.116,
+   "n_trades": 614,
+   "annual_drift_usd": 2638.0
+  },
+  {
+   "params": {
+    "edge_r": 0.1,
+    "wr": 0.65,
+    "W": 0.692,
+    "risk": 150,
+    "cadence": 3,
+    "rho": 0.0
+   },
+   "tier": "Tradeify_Growth_100K",
+   "seed": 8,
+   "boot": {
+    "bust_pct": 3.933,
+    "pass_pct": 96.067,
+    "unresolved_pct": 0.0,
+    "inactivity_pct": 0.0,
+    "median_days_to_pass": 119.0,
+    "p75_days_to_pass": 157.0,
+    "se_bust_pp": 0.355,
+    "se_pass_pp": 0.355,
+    "n_paths": 3000,
+    "n_weeks": 204,
+    "bust_attribution": {
+     "mnq": 58,
+     "aegis": 32,
+     "synth": 28
+    }
+   },
+   "realized_corr_mnq": 0.03877411330750826,
+   "realized_edge_r": 0.152,
+   "n_trades": 614,
+   "annual_drift_usd": 3451.0
+  }
+ ],
+ "n_sims": 1000,
+ "seeds": [
+  42,
+  123,
+  2026
+ ],
+ "realisations": [
+  7,
+  8
+ ]
+}
