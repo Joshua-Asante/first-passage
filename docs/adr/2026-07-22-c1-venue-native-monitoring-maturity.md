@@ -12,7 +12,7 @@
 **Related:** `2026-07-11-ops-cfd-estate-retirement.md` (venue-native rebuild
 rule); `2026-07-10-strategies-never-locked-lifecycle-governance.md`;
 `docs/spec/PREREG-NAS-ECR-1-live-edge-capture.md` (parked historical test);
-`docs/briefs/Q-DECAY-1-closure-scope-split.md`; proposed
+`docs/briefs/closures/Q-DECAY-1-closure-scope-split.md`; proposed
 `2026-07-22-challenge-era-substrate-retirement.md`;
 `2026-08-07-loop-s2-signal-host-fork.md` (express item-5 origin supersession).
 
@@ -62,7 +62,7 @@ fast-forwarding the current branch through the latest PR-review fix.
 - `docs/spec/PREREG-NAS-ECR-1-live-edge-capture.md` — anchor `47cc3eb`
   (2026-07-12). The frozen Copygram→DXTrade gate is unreachable; MNQ/Tradovate
   is not type-preserving and requires a fresh Pre-Q.
-- `docs/briefs/Q-DECAY-1-closure-scope-split.md` — anchor `79b78b7`
+- `docs/briefs/closures/Q-DECAY-1-closure-scope-split.md` — anchor `79b78b7`
   (2026-07-10). ECR is execution fidelity, not decay; common-mode edge death
   remains uncovered.
 - `docs/methodology/strategy_lifecycle.md` — anchor `ae91ddd`

@@ -137,7 +137,7 @@ These three fixes are applied immediately to the active brief sequence (Q-JOINT-
 - CC revision note (rev-1 audit): `archive/docs/briefs/2026-05-27-q-joint-tail-1-revision-note.md`
 - CC Phase 0 report: `archive/docs/briefs/2026-05-27-q-joint-tail-1-phase0.md`
 - Q-JOINT-TAIL-1 closure: `archive/docs/briefs/Q-JOINT-TAIL-1-closure.md`
-- Q-JOINT-TAIL-WEEKLY Pre-Q (first application of fixes): `docs/briefs/2026-05-27-q-joint-tail-weekly-pre-q.md`
+- Q-JOINT-TAIL-WEEKLY Pre-Q (first application of fixes): `docs/briefs/programs/2026-05-27-q-joint-tail-weekly-pre-q.md`
 
 ### Related SKILL.md trap registry
 
@@ -152,7 +152,7 @@ These three fixes are applied immediately to the active brief sequence (Q-JOINT-
 ls docs/lessons/2026-05-27-brief-authoring-traps-13-14-15.md
 
 # 2. Q-JOINT-TAIL-WEEKLY Pre-Q §9 references this lesson
-grep -F "Trap #15" docs/briefs/2026-05-27-q-joint-tail-weekly-pre-q.md
+grep -F "Trap #15" docs/briefs/programs/2026-05-27-q-joint-tail-weekly-pre-q.md
 
 # 3. Quarterly check: scan briefs authored after 2026-05-27 for trap firings
 # (manual review at quarterly cadence)

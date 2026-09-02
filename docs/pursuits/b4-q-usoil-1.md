@@ -19,4 +19,4 @@ executed here.
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3)
 **Tracking update:** [`operator-retirements-record`](../notes/2026-07-10-operator-retirements-record.md)
 row flipped from "Stays PARKED" to this disposition in the same commit.
-**Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row b4
+**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row b4

@@ -26,7 +26,7 @@ anything novel:
 
 | Anchor | Published | This run |
 |---|---|---|
-| Zero-trade Mon–Fri weeks | 27% ([book-composition brief §2](../../../docs/briefs/2026-07-23-tradeify-book-composition.md)) | **26.3%** (82/312) |
+| Zero-trade Mon–Fri weeks | 27% ([book-composition brief §2](../../../docs/briefs/programs/2026-07-23-tradeify-book-composition.md)) | **26.3%** (82/312) |
 | Winning days ≥$200 / month | 1.02 panel (`repro_capbound_before_snip.txt`) | **1.01** |
 | MYM / MNQ trading days | 191 / 190 ([third-leg spec](../../../docs/spec/2026-07-27-third-leg-target-spec.md) entry rates 191/623, 190/623) | **191 / 190** |
 
@@ -102,7 +102,7 @@ before ever hitting a dead week — a selection effect, not a strategy property.
    in **26.3% of weeks, max 4 consecutive**, at ~$1.82 RT + a tick of risk per instance
    (≈$150 cumulative over the 6-year panel). The cost is negligible; the open problem is
    *disposition*, not economics — the
-   [book-composition brief §5 item 5](../../../docs/briefs/2026-07-23-tradeify-book-composition.md)
+   [book-composition brief §5 item 5](../../../docs/briefs/programs/2026-07-23-tradeify-book-composition.md)
    forbids manual token trades ("Rail-level answer or accept warnings") and neither branch
    has been chosen, specified, or built. The compliance surface remains one unchecked
    checkbox ([`TRADEIFY_AUTOMATION_PAYOUT_COMPLIANCE.md` §4a](../../../docs/notes/rail_build/TRADEIFY_AUTOMATION_PAYOUT_COMPLIANCE.md)).

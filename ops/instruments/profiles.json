@@ -142,7 +142,7 @@
       },
       "opening-range-breakout": {
         "date": "2026-07-23",
-        "source": "../../docs/briefs/2026-07-17-0808-packet-delta-and-sequence.md",
+        "source": "../../docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md",
         "verdict": "AMBIGUOUS-PARKED"
       },
       "order-flow-depth-imbalance": {
@@ -214,7 +214,7 @@
       },
       "trend-following": {
         "date": "2026-07-23",
-        "source": "../../docs/briefs/2026-07-23-tradeify-book-composition.md",
+        "source": "../../docs/briefs/programs/2026-07-23-tradeify-book-composition.md",
         "verdict": "LIVE"
       },
       "venue-transfer": {
@@ -270,7 +270,7 @@
       },
       "opening-range-breakout": {
         "date": "2026-07-23",
-        "source": "../../docs/briefs/2026-07-17-0808-packet-delta-and-sequence.md",
+        "source": "../../docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md",
         "verdict": "AMBIGUOUS-PARKED"
       }
     },
@@ -1077,7 +1077,7 @@
       ]
     },
     "daily-range-state-persistence": {
-      "definition": "**NEW 2026-08-18.** Conditioner-role, not entry-role: does a day's True Range being in the trailing top quintile predict elevated next-day True Range (vs its own trailing median)? Distinct from `compression-gated-breakout` / `htf-compression-breakout-5m` (both entry-role compression\u2192expansion triggers on MNQ) \u2014 this class makes no entry claim, only a range-state-forecasting claim, and was originally scoped to the non-index triad ([Step-0 daily-geometry slate](../../docs/briefs/2026-08-18-step0-daily-geometry-mechanism-slate.md) \u00a72 row S1) \u2014 **widened 2026-08-29** to a single index-futures instrument (MYM), disclosed as a scope departure rather than assumed silently; the S1 (same-series, next-session) role this class tests is instrument-agnostic, only the original slate's naming was non-index-scoped. Grounding: evidence-robustness (volatility clustering \u2014 ARCH/GARCH canon), not a per-instrument WHO claim.",
+      "definition": "**NEW 2026-08-18.** Conditioner-role, not entry-role: does a day's True Range being in the trailing top quintile predict elevated next-day True Range (vs its own trailing median)? Distinct from `compression-gated-breakout` / `htf-compression-breakout-5m` (both entry-role compression\u2192expansion triggers on MNQ) \u2014 this class makes no entry claim, only a range-state-forecasting claim, and was originally scoped to the non-index triad ([Step-0 daily-geometry slate](../../docs/briefs/programs/2026-08-18-step0-daily-geometry-mechanism-slate.md) \u00a72 row S1) \u2014 **widened 2026-08-29** to a single index-futures instrument (MYM), disclosed as a scope departure rather than assumed silently; the S1 (same-series, next-session) role this class tests is instrument-agnostic, only the original slate's naming was non-index-scoped. Grounding: evidence-robustness (volatility clustering \u2014 ARCH/GARCH canon), not a per-instrument WHO claim.",
       "findings": [
         "(corrected battery, OFFICIAL): GC (parent, train era 2010\u20132019) top-quintile TR \u2192 elevated next-day TR: **NULL (driving L2 + L4)** \u2014 obs 0.5299 at the **8.4th percentile** of GC's own linear-ACF surrogate band (the earlier \"near-miss\" framing is retracted: the rate sat below the zero-mechanism benchmark's center); by-year 5/9 > 0.50 vs required 7. Ledger cell `DEAD` (re-proposal bar: the corrected battery + a different construction or longer panel). [MGC.md G4](MGC.md) \u00b7 [`RESULTS_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md) \u00a76",
         "(corrected battery, OFFICIAL): CL (parent, train era 2010\u20132019) top-quintile TR \u2192 elevated next-day TR: **SIGNAL-GENERIC** \u2014 presence passes (CI lb 0.5651; halves; L4 boundary-exact 6/8 under the rule's own n_cond<20 exclusion, a disclosed prediction-miss adjudicated rules-govern); attribution GENERIC (obs at the 69th percentile of its own linear-ACF band, p_upper 0.3107) \u2014 **canon-attributed volatility clustering, SURVIVAL-ONLY durability. NOT a mechanism; does NOT discharge MCL's mechanism-owed status; NOT a conditioner license** (ADDENDUM-1 A6 rails travel with any quote; the crisis>calm per-year ordering and drop-cluster diagnostic are mandatory co-quotes). **Conditioner-engineering branch PARKED** \u2014 [`Q-CONDVAL-1`](../../docs/briefs/closures/Q-CONDVAL-1-closure-falsified.md) `FALSIFIED` 2026-08-18 (committed C\u2212U 0.130 < frozen `L_star` 0.423 at the N-EDGE cell; O2 discharged). Finding stands. [MCL.md C4/C5/C6](MCL.md) \u00b7 [`RESULTS_S1B.md`](../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md) \u00a75",
@@ -1095,7 +1095,7 @@
       "definition": "A directional bet keyed to a scheduled settlement, auction, or macro-release window (settlement / auction / macro-release limbs).",
       "findings": [
         "The settlement limb does not reproduce at useful magnitude \u2014 MYM's third-Friday derivative-settlement reversal cleared exact-coverage sourcing (84/87, 96.6% PASS) but both power legs sit below the 0.2139 floor and the tradable limb is negative in 2024\u20132026. [MYM.md M5](MYM.md)",
-        "*Auction limb (2026-07-27) \u2014 dies at the PROCUREMENT GATE, not on edge, on ANY instrument.* Closing-auction/MOC-imbalance is reject-at-bar for an instrument-independent reason, hence recorded as a class finding rather than a cell. It is **not** killed by the free-data classification (the signal is exchange-licensed, unlike LETF EOD rebalance whose signal is public-AUM-derivable) nor by the a4 category prior (a published **signed** imbalance is not participant-category splitting) \u2014 those non-kills are stated so a future session does not borrow the wrong one. What binds: free-data route 1 requires **demonstrating** a vol-orthogonal, within-era-robust edge (F1 had no \u03b4 at all \u2014 unclaimed, not cleared); the order-flow modality is parenthesised to the standing *\"don't buy explanatory data before a survivor justifies it\"* rule (Avenue-A qualifying triple unmet; *scoped-not-procured*); and harvest Req 2 independently renders it UNSCREENABLE with the \u03b4-extraction probe route **circular** (it needs the gated data). Cheapest re-open is free: a published cohort \u03b4 for imbalance \u2192 index-futures response, citable without procurement. [F1 ruling](../../docs/briefs/2026-07-27-f1-moc-imbalance-mym-ruling.md)"
+        "*Auction limb (2026-07-27) \u2014 dies at the PROCUREMENT GATE, not on edge, on ANY instrument.* Closing-auction/MOC-imbalance is reject-at-bar for an instrument-independent reason, hence recorded as a class finding rather than a cell. It is **not** killed by the free-data classification (the signal is exchange-licensed, unlike LETF EOD rebalance whose signal is public-AUM-derivable) nor by the a4 category prior (a published **signed** imbalance is not participant-category splitting) \u2014 those non-kills are stated so a future session does not borrow the wrong one. What binds: free-data route 1 requires **demonstrating** a vol-orthogonal, within-era-robust edge (F1 had no \u03b4 at all \u2014 unclaimed, not cleared); the order-flow modality is parenthesised to the standing *\"don't buy explanatory data before a survivor justifies it\"* rule (Avenue-A qualifying triple unmet; *scoped-not-procured*); and harvest Req 2 independently renders it UNSCREENABLE with the \u03b4-extraction probe route **circular** (it needs the gated data). Cheapest re-open is free: a published cohort \u03b4 for imbalance \u2192 index-futures response, citable without procurement. [F1 ruling](../../docs/briefs/programs/2026-07-27-f1-moc-imbalance-mym-ruling.md)"
       ]
     },
     "expiry-oi-strike-convergence": {

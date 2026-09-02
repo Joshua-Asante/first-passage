@@ -8,7 +8,7 @@
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Authors:** Joshua (rulings) + Claude Code (recorder)
-**Related:** [MSL charter](../spec/2026-08-12-msl-manual-sourcing-loop-charter.md) · [first slate](../briefs/2026-08-12-msl-first-slate.md) · [program plan](../briefs/2026-08-12-msl-program-plan.md) · [MNQBASE-1 closure](../briefs/closures/MNQBASE-1-closure-intake-dry.md) · [TNEC-1](../spec/2026-08-08-tradeify-necessary-conditions-target-spec.md) · [fade design spec](../superpowers/specs/2026-07-30-tradeify-native-fade-program-design.md) §2.1/§7 · [ceremony tiering](2026-08-08-adr-ceremony-tiering.md)
+**Related:** [MSL charter](../spec/2026-08-12-msl-manual-sourcing-loop-charter.md) · [first slate](../briefs/programs/2026-08-12-msl-first-slate.md) · [program plan](../briefs/programs/2026-08-12-msl-program-plan.md) · [MNQBASE-1 closure](../briefs/closures/MNQBASE-1-closure-intake-dry.md) · [TNEC-1](../spec/2026-08-08-tradeify-necessary-conditions-target-spec.md) · [fade design spec](../superpowers/specs/2026-07-30-tradeify-native-fade-program-design.md) §2.1/§7 · [ceremony tiering](2026-08-08-adr-ceremony-tiering.md)
 **Layer:** research-sourcing governance. No locked parameter, allocation, `dd_protection` constant, rail state, Pine, or K ledger is touched. $0 · K=0 · nothing armed.
 
 ## §0 — Reads (verified this session at `a77a06e`, 2026-08-12)

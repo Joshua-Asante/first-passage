@@ -54,6 +54,7 @@ HOT_FILES = (
     "lab/CATALOG.md",
     "docs/briefs/INDEX.md",
     "docs/briefs/*.md",
+    "docs/briefs/programs/*.md",
     "docs/briefs/closures/*.md",
     "docs/rejected_candidates.md",
     "docs/SESSIONS.md",
@@ -159,6 +160,13 @@ def collect_chunks(repo: Path) -> list[dict[str, str]]:
             lines = _read(path).splitlines()[:24]
             heading = next((l for l in lines if H1.match(l)), path.name)
             chunks.append(_chunk(f"docs/briefs/{path.name}", heading, "\n".join(lines)))
+        programs_dir = briefs_dir / "programs"
+        if programs_dir.is_dir():
+            for path in sorted(programs_dir.glob("*.md")):
+                lines = _read(path).splitlines()[:24]
+                heading = next((l for l in lines if H1.match(l)), path.name)
+                rel = path.relative_to(repo).as_posix()
+                chunks.append(_chunk(rel, heading, "\n".join(lines)))
 
     audits_dir = repo / "docs" / "notes" / "audits"
     if audits_dir.is_dir():

@@ -111,7 +111,7 @@ Given that we have no reliable prior on a new mechanism's win rate, **a design w
 
 ## §8 — What this note does NOT establish
 
-1. **It changes no ratified surface.** The design box in the [first slate](../../briefs/2026-08-12-msl-first-slate.md) header was ratified with the charter (B1/B2). Re-pointing it is an operator election; this note is the derivation offered in support, nothing more.
+1. **It changes no ratified surface.** The design box in the [first slate](../../briefs/programs/2026-08-12-msl-first-slate.md) header was ratified with the charter (B1/B2). Re-pointing it is an operator election; this note is the derivation offered in support, nothing more.
 2. **The bust bound is an approximation.** `exp(−2μD/σ²)` assumes i.i.d. trades, a continuous diffusion, and an infinite horizon. Infinite horizon makes it **conservative** (bust-before-target ≤ bust-ever); i.i.d. makes it **optimistic** where real trades cluster. The spawned [Magdon-Ismail regression task](N-2026-08-13-external-eval-population-data.md) §4 replaces it with an exact closed form and its published tables — **every R_max in §3 should be re-derived once that lands**, and any number here is provisional until then.
 3. **No mechanism is proposed.** A hunting region is not a candidate. Slate-2 cards still walk charter steps 1→8 unchanged: dedup, executed door-check, $0 screens, cheap falsifier, Req 1a delete/flip, G0 on operator B4.
 4. **p is not transferable across exits.** C1's measured 0.461 was at `rr=1`; the same entry at `rr=3` has a **different and unknown** win rate — wider targets are hit less often. Nothing here licenses assuming any mechanism lands in the 0.30–0.42 band. That is what the explore measures.

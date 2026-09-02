@@ -5,7 +5,7 @@
 **Workers:** 3 Cursor packets (A, B, C). All **LOCAL-only** (see §0.5 q5).
 **Base ref:** `origin/main` @ `e0f414b` (PR #769 Board B1–B3 + B8 merged 2026-08-12).
 **Governing:** [`docs/adr/2026-07-14-cc-cursor-surface-allocation.md`](../../adr/2026-07-14-cc-cursor-surface-allocation.md) (every clause binds per packet) ·
-[`docs/briefs/2026-08-12-msl-program-plan.md`](../2026-08-12-msl-program-plan.md) §3 (worker layer) ·
+[`docs/briefs/programs/2026-08-12-msl-program-plan.md`](../programs/2026-08-12-msl-program-plan.md) §3 (worker layer) ·
 [`.claude/skills/cursor-fleet/SKILL.md`](../../../.claude/skills/cursor-fleet/SKILL.md) ·
 template lineage [`2026-07-31-cursor-fleet-fade-mcl-parity-umbrella.md`](2026-07-31-cursor-fleet-fade-mcl-parity-umbrella.md).
 
@@ -143,7 +143,7 @@ re-patch `firm_rules`; build a new MC engine; touch the c1 rail / `dry_run`.
 | C — `tv_static_equity` | `cursor/msl-tooling-pC` | `lab/research_utils/tv_static_equity.py` (new) · `tests/test_tv_static_equity.py` (new) · `lab/research_utils/fixtures/tv_static_equity/` (new) | ~45m | **MERGED** #774 |
 
 **Reserved to the orchestrator — no worker writes these:** `docs/SESSIONS.md`, `STATE.md`,
-`CLAUDE.md`, `lab/CATALOG.md`, `docs/briefs/INDEX.md`, `docs/briefs/2026-08-12-msl-program-plan.md`
+`CLAUDE.md`, `lab/CATALOG.md`, `docs/briefs/INDEX.md`, `docs/briefs/programs/2026-08-12-msl-program-plan.md`
 (§6 claim rows), `docs/adr/**`, `ops/instruments/**`, `core/**`, `**/*.pine`,
 `ops/c1_rail/**`, and any other packet's footprint.
 

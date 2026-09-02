@@ -15,7 +15,7 @@ Frozen before any book-state quantity has been computed for this construct anywh
 
 | Source | What it pins |
 |---|---|
-| [`docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md`](../../../../docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md) **read in full** | §6 qualifying triple (verbatim in §3). ⚠ **§2's fork table killed my first design before I wrote it**: "Execution-microstructure — MBP-10 depth to model ORB-MNQ fills more finely → **low marginal value, the data answers a question already answered**." Any slippage/fill-validation framing is that fork and fails condition 2 |
+| [`docs/briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md`](../../../../docs/briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md) **read in full** | §6 qualifying triple (verbatim in §3). ⚠ **§2's fork table killed my first design before I wrote it**: "Execution-microstructure — MBP-10 depth to model ORB-MNQ fills more finely → **low marginal value, the data answers a question already answered**." Any slippage/fill-validation framing is that fork and fails condition 2 |
 | [`ops/instruments/MNQ.md`](../../../../ops/instruments/MNQ.md) F2 GUARD (L93) | Verbatim: ORB filter slices *"may appear **ONLY** inside this DEAD list, never in a findings or edge tier… **Highest-risk laundering move on this instrument**."* Binds §5 FM-1 |
 | same, N1 + Stage-7 rider | ORB-MNQ-1: annSR **+0.890** (Bulenox) / **+0.835** (Tradeify), DSR 0.9754, `K_eff=2`. Four conditioning gates (N6/N8/N9/N10) **all FALSIFIED** |
 | [`lab/analysis/orb/orb_mnq_2026-07/RESULTS_decay_monitor.md`](../../orb/orb_mnq_2026-07/RESULTS_decay_monitor.md) | **The edge-side monitor already exists and is calibrated** — PF-CUSUM, 2021+ baseline PF 1.1691, floor 1.0855, `block_size=2`. It is a *seed*: it fires on realized P&L, i.e. **after** decay has already been paid for. No structural observable accompanies it |
@@ -200,8 +200,8 @@ one explanation.
 git log --oneline -- lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/PREREG.md | tail -1
 
 # The triple this clears, and the fork that killed the first design
-grep -n "Survivor-tied" docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md
-grep -n "answers a question already answered" docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md
+grep -n "Survivor-tied" docs/briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md
+grep -n "answers a question already answered" docs/briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md
 
 # The F2 guard FM-1 exists to satisfy
 grep -n "F2 GUARD" ops/instruments/MNQ.md

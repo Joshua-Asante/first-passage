@@ -2,7 +2,7 @@
 
 **Class:** (b) parked lane · **Standing:** SUBTRACT
 **Test applied:** new test (surfaced, not GSUB-1-permitted as originally listed — see
-[GSUB-2 §7 Phase 2](../briefs/GSUB-2-park-cohort-early-review.md#phase-2--disposition-proposals-test-applied-per-row)):
+[GSUB-2 §7 Phase 2](../briefs/programs/GSUB-2-park-cohort-early-review.md#phase-2--disposition-proposals-test-applied-per-row)):
 re-entry is gated on a precondition (a Striker venue seat) that is itself barred by separate,
 undated standing doctrine (CLAUDE.md §Live-execution posture — "both Striker legs were withdrawn
 2026-08-04 and stay barred") with no scheduled review of that bar before this pursuit's own
@@ -21,6 +21,6 @@ b4's `usoil_regime_capture` body). Named as a follow-up for `scripts/archive_lab
 executed here.
 
 **Ratified:** 2026-08-19 (GSUB-2 Phase 3, operator direct instruction)
-**Source:** [`GSUB-2 inventory + panel review`](../briefs/GSUB-2-park-cohort-early-review.md) ·
+**Source:** [`GSUB-2 inventory + panel review`](../briefs/programs/GSUB-2-park-cohort-early-review.md) ·
 [`closure`](../briefs/closures/GSUB-2-closure-resolved-loadbearing.md) · originally PARKed
-[`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row b2 (2026-08-09)
+[`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row b2 (2026-08-09)

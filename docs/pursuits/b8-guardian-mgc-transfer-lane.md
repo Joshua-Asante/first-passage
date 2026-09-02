@@ -41,5 +41,5 @@ daily equity troughs.
 **Ratified PARK:** 2026-08-11 / JA · **SUBTRACT:** 2026-08-11 (this closure)
 **Source:** [`R6 ADR`](../adr/2026-07-10-r6-nogo-futures-residual-disposition.md) §2 item 3 ·
 [`07-16 ADR`](../adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md) §2 item 1 ·
-[`MGC ledger`](../../ops/instruments/MGC.md) · [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) ·
+[`MGC ledger`](../../ops/instruments/MGC.md) · [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) ·
 [`Q-TXG-1 design`](../superpowers/specs/2026-08-11-transfer-expression-grid-design.md) §5

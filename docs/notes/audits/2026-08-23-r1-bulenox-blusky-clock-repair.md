@@ -50,7 +50,7 @@ they run through + every citing surface for the two published bust/pass figures 
   `docs/briefs/closures/Q-COMPOSE-1-closure-falsified.md`,
   `docs/briefs/pre-registration/2026-07-15-existing-strategy-book-candidate-2-prereg.md`,
   `docs/briefs/Q-GEOFIT-1-trailing-dd-funding-envelope.md`, `docs/rejected_candidates.md`,
-  `docs/briefs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md`,
+  `docs/briefs/programs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md`,
   `docs/briefs/Q-GATECART-1-survivor-gate-cartography.md`, `STATE.md` (read-only, no hits, no edit).
 
 ---

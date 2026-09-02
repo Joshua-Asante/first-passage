@@ -1,7 +1,7 @@
 # Closure — Hermes Agent adoption ruling: `RESOLVED-NO-GO`
 
 **Verdict:** `RESOLVED-NO-GO` — ratified by the operator 2026-07-27 (chat directive: "ratify the NO-GO")
-**Parent brief:** [`2026-07-27-hermes-agent-adoption-ruling.md`](../2026-07-27-hermes-agent-adoption-ruling.md)
+**Parent brief:** [`2026-07-27-hermes-agent-adoption-ruling.md`](../programs/2026-07-27-hermes-agent-adoption-ruling.md)
 **Decision record (canonical):** [`docs/adr/2026-07-27-hermes-agent-adoption-nogo.md`](../../adr/2026-07-27-hermes-agent-adoption-nogo.md) (`Accepted`)
 
 ---
@@ -53,7 +53,7 @@ Closing a brief must enumerate what it was carrying, or the obligations die with
 ## Verification
 
 ```bash
-python scripts/check_brief.py docs/briefs/2026-07-27-hermes-agent-adoption-ruling.md --type brief
+python scripts/check_brief.py docs/briefs/programs/2026-07-27-hermes-agent-adoption-ruling.md --type brief
 python scripts/check_adr_graph.py
 python -m pytest tests/ops/test_recall_guard.py tests/ops/test_recall_index.py lab/codification/tests/test_lint_controls.py -q
 python lab/analysis/harvest/fts5_delete_falsifier_2026-07-27/falsifier_v2.py .   # reproduces 0.718 / 0.222

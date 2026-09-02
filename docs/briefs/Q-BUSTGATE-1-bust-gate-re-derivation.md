@@ -20,10 +20,10 @@ Files read **before** authoring, each with a `git log -1` anchor (verified 2026-
 - `docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md` — anchor `be6dda6` (2026-07-13). **The object under re-derivation.** §3: Part A = headline **bust ≤ 3.0%** (daily+static+trailing) + **pass ≥ 50%**, Run-2, $100K band; **rationale = barrier-width analogy** ("3.0% = the $100K band's own barrier width; a deployable edge should bust less often than its barrier is wide"); operator declined the 2%/5% dials. §4 ceiling-mis-set reject + §5 forbidden moves + Trap-#12 (no in-place edit) read in full.
 - `docs/briefs/closures/Q-FUNNEL-1-closure-resolved.md` — anchor `b56c5b3` (2026-07-22). The pinned economic evidence. Horizon-robust cell `edge_panel_historical` prefers **1.00× over 0.25×/0.50× on EV/dollar-day at every horizon {126, 252, 504} in both regime halves**; the mechanism is stated verbatim: "at $328/reset the eval-fee cost of busting more often is cheap relative to the funded-payout upside forfeited by under-sizing." Bust of the ratified 0.50× rung = **0.08%**; of 1.00× = **4.37% (H1) / 10.37% (bootstrap-95th)**, "both well over the 3% ceiling."
 - `lab/analysis/c1/q_rail_1_2026-07/PHASE4.md` — anchor `43db219` (2026-07-18). Tradeify Select 100K **eval fee $181 list · $111 promo** (JULY, actual-paid); all-in cost-to-first-fill **$328 list / $258 promo**; one-reset contingency **$567 / $497**; activation after pass **$0**.
-- `docs/briefs/2026-07-23-tradeify-book-composition.md` — anchor `730bb29` (2026-07-23). Funded mechanics: 2-leg c1 geometry eval pass **63%** / median **8.2 mo**; funded-dead-1y **43%**; renewal-reward chain **$339/acct-mo**; Flex payout **≤ min($4,000, 50% of profit)**, 90/10.
+- `docs/briefs/programs/2026-07-23-tradeify-book-composition.md` — anchor `730bb29` (2026-07-23). Funded mechanics: 2-leg c1 geometry eval pass **63%** / median **8.2 mo**; funded-dead-1y **43%**; renewal-reward chain **$339/acct-mo**; Flex payout **≤ min($4,000, 50% of profit)**, 90/10.
 - `core/firm_rules.py` — anchor `f8f8db1` (2026-07-22). `Tradeify_Select_100K`: `dd_type="trailing_locking"`, `max_dd_pct=3.0` ($3,000 EOD trailing / $100K), `profit_target_pct=6.0` ($6,000), `consistency_rule_pct=40.0` (eval-only); `ACTIVE_FIRM="Tradeify_Select_100K"`.
 - `docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md` — anchor `549b453` (2026-07-22). §4 falsifier (≥1 candidate clears the bust ceiling on ≥2 of 4 friendly tiers; hard date 2026-11-08). The pre-reg operationalizes this §4.
-- `docs/briefs/2026-07-17-0808-packet-delta-and-sequence.md` — anchor `730bb29` (2026-07-23). §0.5 directive (1) [re-derive], (2) [1.00× aim]; §3 P0 [fresh Pre-Q + pre-reg; use actual-paid fee; forbidden: silently editing 3.0%]; §2 step 5 [OPEN A0 blocks any 1.00× rung ADR].
+- `docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md` — anchor `730bb29` (2026-07-23). §0.5 directive (1) [re-derive], (2) [1.00× aim]; §3 P0 [fresh Pre-Q + pre-reg; use actual-paid fee; forbidden: silently editing 3.0%]; §2 step 5 [OPEN A0 blocks any 1.00× rung ADR].
 
 **Context-scope note (Rule-0 sub-rule):** the incumbent ceiling's rationale (barrier-width) was read in its ±20-line surrounding context (survivor-scoring pre-reg §3, lines 139–145), not a single-line grep — the "excludes falsified-book 17.70% / not null-by-construction 1%" qualifiers sit in the same paragraph and are load-bearing for §2 below.
 
@@ -145,7 +145,7 @@ grep -n "111\|181\|328" lab/analysis/c1/q_rail_1_2026-07/PHASE4.md | head
 grep -n "dry_run\|WATCH-1\|0.50" STATE.md docs/notes/rail_build/RUNBOOK.md | head
 
 # This brief was actually re-read at the 08-08 gate (Trap #10 — hooks that never fire)
-grep -rn "Q-BUSTGATE-1" docs/SESSIONS.md docs/briefs/2026-07-17-0808-packet-delta-and-sequence.md
+grep -rn "Q-BUSTGATE-1" docs/SESSIONS.md docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md
 ```
 
 ---

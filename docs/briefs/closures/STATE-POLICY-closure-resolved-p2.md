@@ -3,10 +3,10 @@
 **Verdict:** `RESOLVED` (P2) — Q-EVALSEQ-1 un-dormed for scoring at the incumbent; frozen K=4 run licensed; policy-frontier measurement commissioned (named, not opened)
 **Closed:** 2026-08-16
 **Lane:** UNASSIGNED
-**Pre-registration:** [packet §6/§8](../2026-08-16-state-policy-scoring-review.md) — §6 table frozen at the packet's commit; no separate pre-reg file
+**Pre-registration:** [packet §6/§8](../programs/2026-08-16-state-policy-scoring-review.md) — §6 table frozen at the packet's commit; no separate pre-reg file
 **Spend / K:** $0 at close · the licensed run consumes Q-EVALSEQ-1's own frozen K (K_intrinsic = 3 non-control policies, banked in its prereg §6) when it fires · no Pine / TV / arming
 **Live effect:** none — scoring is simulation; no deployment surface touched
-**Artifacts:** [packet](../2026-08-16-state-policy-scoring-review.md) · [Q-EVALSEQ-1 prereg](../pre-registration/2026-07-24-2leg-eval-frontload-schedule-preregistration.md) · [b5](../../pursuits/b5-q-fundpol-1.md)
+**Artifacts:** [packet](../programs/2026-08-16-state-policy-scoring-review.md) · [Q-EVALSEQ-1 prereg](../pre-registration/2026-07-24-2leg-eval-frontload-schedule-preregistration.md) · [b5](../../pursuits/b5-q-fundpol-1.md)
 
 ---
 
@@ -53,7 +53,7 @@ Below the bar — watch: a Board packet whose §7 carries a conditional sibling 
 - **Routing:** (i) un-dorm stamp + frozen run (this session's licensed work, faithfulness gate first); (ii) Q-POLFRONT-1 brief authored before any frontier run; (iii) b5 renewal stamp; (iv) deep-iteration charter GO recorded on its own ADR (sibling election, same session)
 - **Entry packet:** Q-EVALSEQ-1's own frozen prereg is the entry packet — nothing re-derived here
 - **Stop rule / re-proposal bar:** n/a — integrated; the run closes under Q-EVALSEQ-1's frozen §6, and a FALSIFIED there spends the schedule lever (flat WATCH-1 stands) with no θ-retune of the four shapes
-- **Board write:** STATE decision index: P2 mark + charter GO lines; briefs INDEX row for Q-EVALSEQ-1 (OPEN, un-dormed). Owner: this closure · [packet](../2026-08-16-state-policy-scoring-review.md)
+- **Board write:** STATE decision index: P2 mark + charter GO lines; briefs INDEX row for Q-EVALSEQ-1 (OPEN, un-dormed). Owner: this closure · [packet](../programs/2026-08-16-state-policy-scoring-review.md)
 - **Registry:** n/a — RESOLVED / governance / not a strategy-grounds kill
 
 ## §10 audit-hook discharge
@@ -81,5 +81,5 @@ grep -n "Q-POLFRONT-1" docs/briefs/INDEX.md
 
 ```bash
 python scripts/check_closure_disposition.py docs/briefs/closures/STATE-POLICY-closure-resolved-p2.md
-python scripts/check_brief.py docs/briefs/2026-08-16-state-policy-scoring-review.md --type inquire
+python scripts/check_brief.py docs/briefs/programs/2026-08-16-state-policy-scoring-review.md --type inquire
 ```

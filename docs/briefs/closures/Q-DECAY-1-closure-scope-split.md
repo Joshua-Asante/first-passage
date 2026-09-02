@@ -51,3 +51,13 @@ This is an output for the operator + Cursor (human-in-loop monitoring change), c
 
 ## Anchors
 `dd_protection.py`@`6f5480b` · `firm_rules.py`@`57f491c` · `portfolio_mc.py`@`83e589f` · `ecr_rolling.py`@`a85e340` · `journal_review.py`@`2555b9f` · `operational_rules.md`@`6bcb034` (Rule 11) · `guardian_decay_gate_2026-06-25/`@`8212ff0` (README@`8ecf7be`) · `PREREG-NAS-ECR-1`@`73eeab6` · `time_to_pass.py`@`53f59f5`.
+## Iterate — loop exit
+
+- **Verdict used:** `SCOPE-SPLIT` — Guardian per-leg detector exists (narrowly); DJ30/NAS100/Aegis per-leg and common-mode family scopes CONFIRMED absent.
+- **Model update:** Common-mode edge death is invisible until drawdown reaches the bust line (~11.7% median max DD); accepting the shared-mechanism family carries that blind spot.
+- **Next:** STOP
+- **Routing:** STOP — analysis-only closure; operator decision on a family-level detector is surfaced but not built (all legs off live venues; DP-4 classifier interlock).
+- **Entry packet:** n/a
+- **Stop rule / re-proposal bar:** Re-arm when a leg goes live on some venue **and** a regime classifier passes its robustness gate — not a parameter tweak.
+- **Board write:** none — STOP, nothing owed; re-check hook consumed by the 2026-08-08 accept-beta fork ([`2026-07-14-a1-accept-beta-preassembly.md`](../programs/2026-07-14-a1-accept-beta-preassembly.md)).
+- **Registry:** n/a — SCOPE-SPLIT decay-detector analysis; not a strategy-grounds kill.

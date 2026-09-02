@@ -178,7 +178,7 @@ of the machinery itself.
 | Source | Anchor | Supplies |
 |---|---|---|
 | This ADR as it stood before this ruling | `73a77f7` 2026-08-16 | Counting machinery (a)–(d), admission definition (§2), running count 0/2 |
-| [Six-lead pursuit plan](../briefs/2026-08-17-six-lead-pursuit-plan.md) | `18d68f9` 2026-08-17 | §1 channel election (routes through harvest intake); §3/§4 Phase 0/Phase 1 framing — explicitly pre-admission |
+| [Six-lead pursuit plan](../briefs/programs/2026-08-17-six-lead-pursuit-plan.md) | `18d68f9` 2026-08-17 | §1 channel election (routes through harvest intake); §3/§4 Phase 0/Phase 1 framing — explicitly pre-admission |
 | [P1-CF/P2-CF LOG](../../lab/analysis/harvest/six_lead_cf_2026-08-17/LOG.md) | `18d68f9` 2026-08-17 | FAIL result on all four legs; "What this does NOT license" — no manifest, no `register_search open`, no Cap claim |
 
 **Amendment-first (sub-rules 8/10):** `rg` on `lab/CATALOG.md`, `docs/briefs/INDEX.md`,
@@ -377,7 +377,7 @@ grep -n "Running count (canonical): 0 / 2" docs/adr/2026-07-15-external-mechanis
 fires — no K/$ spent, no live-risk surface, no LOCKED/frozen surface touched, no admission
 requirement or §4 falsifier amended; this addendum only names a permitted search-traversal route
 within the existing sourcing/dedup workflow requirements 1–4 already govern). Drafted in
-[`six-lead pursuit plan`](../briefs/2026-08-17-six-lead-pursuit-plan.md) §13, landing the
+[`six-lead pursuit plan`](../briefs/programs/2026-08-17-six-lead-pursuit-plan.md) §13, landing the
 2026-08-16 fork election (admit an OpenAlex-based substitute traversal when S2/Semantic Scholar
 has no record of a seed paper) that this addendum retroactively documents.
 

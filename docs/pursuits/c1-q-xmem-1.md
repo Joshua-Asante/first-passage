@@ -3,7 +3,7 @@
 **Class:** (c) standing exploration · **Standing:** SUBTRACT
 **Test applied:** existing GSUB-1-permitted test ("outside current Survive/resource bounds"),
 re-applied on updated evidence — see
-[GSUB-2 §7 Phase 2](../briefs/GSUB-2-park-cohort-early-review.md#phase-2--disposition-proposals-test-applied-per-row).
+[GSUB-2 §7 Phase 2](../briefs/programs/GSUB-2-park-cohort-early-review.md#phase-2--disposition-proposals-test-applied-per-row).
 GSUB-1 (2026-08-09) applied this same test to justify the original PARK at ~24 idle days. At this
 review (2026-08-19), idle time had grown to 34 days, T0 was still never begun, and zero incidents
 had occurred against the named re-entry condition — no new evidence accrued in either direction,
@@ -24,7 +24,7 @@ The ECR
 (edge-captured-ratio-style) concept has no other pursuit owner and subtracts with this one.
 
 **Ratified:** 2026-08-19 (GSUB-2 Phase 3, operator direct instruction)
-**Source:** [`GSUB-2 inventory + panel review`](../briefs/GSUB-2-park-cohort-early-review.md) ·
+**Source:** [`GSUB-2 inventory + panel review`](../briefs/programs/GSUB-2-park-cohort-early-review.md) ·
 [`closure`](../briefs/closures/GSUB-2-closure-resolved-loadbearing.md) ·
 [`Q-XMEM-1 closure`](../briefs/closures/Q-XMEM-1-closure-subtract.md) · originally PARKed
-[`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row c1 (2026-08-09)
+[`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row c1 (2026-08-09)

@@ -37,13 +37,13 @@ Re-patching them individually is the accretion the M34 consolidation exists to r
 
 - `ops/prop_envelope_default.md` E6 → **M43**.
 - `core/mc/preflight.py`'s measured idle bracket → **M41**, which says so explicitly (*"the bracket finding is the same continuous sentence — do not double-patch"*).
-- `docs/briefs/2026-07-23-tradeify-book-composition.md` §4 H1 → **M34** item (2); §3's Tuesday-cap clause → **M34** item (4).
+- `docs/briefs/programs/2026-07-23-tradeify-book-composition.md` §4 H1 → **M34** item (2); §3's Tuesday-cap clause → **M34** item (4).
 - `docs/notes/rail_build/RUNBOOK.md`'s hand-maintained *"2 of 6"* skew count → **M20**.
 - `docs/spec/2026-07-27-third-leg-target-spec.md` S4's hedging bar → **M9**'s Status banner.
 - `docs/adr/2026-07-23-c1-rung-selection-ev-objective.md` — the live-rung assertion **and** revert triggers 2/3 → **M28**.
 - `docs/adr/2026-07-29-third-leg-symbol-occupancy-limb.md` §4 dormancy → **M29**.
 - `docs/briefs/pre-registration/2026-08-03-c1-cadence-leg-preregistration.md` — the reader-intercept **and** C5's cap arithmetic → **M39**.
-- `docs/briefs/2026-07-17-0808-packet-delta-and-sequence.md` §2 step 5 → **M30**.
+- `docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md` §2 step 5 → **M30**.
 
 ## Grouping rule
 

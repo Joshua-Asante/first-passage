@@ -1,7 +1,7 @@
 # Q-JOINT-TAIL-WEEKLY — closure: RETIRED (§9 panel-shape gate FAILED)
 
 **Status:** `RETIRED` (2026-07-14, at the pre-registered §9 authoring-time sanity gate — before any CC handoff)
-**Parent Pre-Q:** [`docs/briefs/2026-05-27-q-joint-tail-weekly-pre-q.md`](../2026-05-27-q-joint-tail-weekly-pre-q.md) (Pre-Q PASS, **conditional on §9**)
+**Parent Pre-Q:** [`docs/briefs/programs/2026-05-27-q-joint-tail-weekly-pre-q.md`](../programs/2026-05-27-q-joint-tail-weekly-pre-q.md) (Pre-Q PASS, **conditional on §9**)
 **Predecessor:** Q-JOINT-TAIL-1 (closed BLOCKED-RETIRED 2026-05-27 at daily resolution)
 **Disposition owner:** the Pre-Q's own §7/§9 branch ("§9 fails → RETURN TO PRE-Q / RETIRE, mirror Q-JOINT-TAIL-1") + roster next-action ("else RETIRE")
 **Artifact:** [`lab/archive/q_joint_tail_weekly_2026-07/sanity_check.py`](../../../lab/archive/q_joint_tail_weekly_2026-07/sanity_check.py)

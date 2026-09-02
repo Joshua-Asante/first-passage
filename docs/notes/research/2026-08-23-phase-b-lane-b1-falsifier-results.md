@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-23
 **Plan:** [`Phase B mechanism supply`](../../superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) — Lane B1, tasks B1.0/B1.1/B1.2/B1.4
-**Owner artifacts:** [`F1 ruling`](../../briefs/2026-07-27-f1-moc-imbalance-mym-ruling.md) (the re-proposal bar B1 routes through) · [`ops/instruments/MES.md`](../../../ops/instruments/MES.md) · [`ox-alpha notice`](../notice/N-2026-08-23-ox-alpha-mechanism-supply-candidates.md) (zero authority; framing only)
+**Owner artifacts:** [`F1 ruling`](../../briefs/programs/2026-07-27-f1-moc-imbalance-mym-ruling.md) (the re-proposal bar B1 routes through) · [`ops/instruments/MES.md`](../../../ops/instruments/MES.md) · [`ox-alpha notice`](../notice/N-2026-08-23-ox-alpha-mechanism-supply-candidates.md) (zero authority; framing only)
 **Authorization:** operator per-lane GO this session for B1/B2 (task brief). No card opened; no admission bar claimed cleared; B1.3 (operator bar-reading) explicitly **not** ruled here.
 
 Catalog attestation (this session, before writing): `lab/CATALOG.md` / `docs/briefs/INDEX.md` / `docs/rejected_candidates.md` carry no B1/MOC-imbalance-MES harness slug — nothing duplicated.
@@ -151,10 +151,10 @@ grep -n "removed afterwards\|eliminated in 2021" lab/analysis/c1/tradeify_fade_s
 # Expected: 2 hits, one per file
 
 # F1 ruling's own re-proposal bar text (what B1.1/B1.2 route through)
-grep -n "published cohort δ for imbalance" docs/briefs/2026-07-27-f1-moc-imbalance-mym-ruling.md
+grep -n "published cohort δ for imbalance" docs/briefs/programs/2026-07-27-f1-moc-imbalance-mym-ruling.md
 
 # F1's own "free data reverses, doesn't rescue" clause (load-bearing for the B1.3 question)
-grep -n "reverse" docs/briefs/2026-07-27-f1-moc-imbalance-mym-ruling.md
+grep -n "reverse" docs/briefs/programs/2026-07-27-f1-moc-imbalance-mym-ruling.md
 
 # A2's own B1 shape-pre-check citation (B1.4 source, not re-derived)
 # (phrase wraps across a line break in the source file, so match the two halves separately)

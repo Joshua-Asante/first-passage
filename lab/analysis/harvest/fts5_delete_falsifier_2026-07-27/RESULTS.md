@@ -4,7 +4,7 @@
 
 **Verdict:** `DELETE-HOLDS` — both frozen limbs PASS on point estimates. **Read the fragility note: limb 1 clears its floor by 2 pairs and its 95% CI straddles the floor.** Limb 2 passes overwhelmingly.
 **Current run:** v2, 2026-07-27 — pre-registration [`...-prereg-v2.md`](../../../docs/briefs/pre-registration/2026-07-27-fts5-delete-falsifier-prereg-v2.md), frozen `b04cd15` **before** this harness ran
-**Parent:** [`2026-07-27-hermes-agent-adoption-ruling.md`](../../../docs/briefs/2026-07-27-hermes-agent-adoption-ruling.md) limb A (operator ruling `A3` = Delete)
+**Parent:** [`2026-07-27-hermes-agent-adoption-ruling.md`](../../../docs/briefs/programs/2026-07-27-hermes-agent-adoption-ruling.md) limb A (operator ruling `A3` = Delete)
 **Harness:** [`falsifier_v2.py`](falsifier_v2.py) · superseded v1 harness [`falsifier.py`](falsifier.py)
 
 ---

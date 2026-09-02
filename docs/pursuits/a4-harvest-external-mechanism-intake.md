@@ -10,4 +10,4 @@
 **Owner artifacts:** [`harvest intake ADR`](../adr/2026-07-15-external-mechanism-harvest-intake.md) ·
 [`mechanism-sourcing radar design`](../superpowers/specs/2026-07-16-mechanism-sourcing-strategy-design.md)
 
-**Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row a4
+**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row a4

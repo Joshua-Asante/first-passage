@@ -7,7 +7,7 @@
 **Decision date:** 2026-07-15
 **Authors:** Joshua (risk-tolerance numbers, "confirm T1") + Claude Code (recorder/adjudicator)
 **Supersedes:** none — **admits** a new falsifiable claim set; does not edit or revive the retired challenge-era numbers (99.83/0.17/4.37 stay historical per the rescope ADR).
-**Related:** [`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](2026-07-11-challenge-era-claims-rescope.md) (§4 completion falsifier, discharged by this ADR — see its dated addendum); [`docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md`](../briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md) (parent Pre-Q, `H-SFRISK-1`); [`docs/briefs/pre-registration/Q-SFRISK-1-verdict-preregistration.md`](../briefs/pre-registration/Q-SFRISK-1-verdict-preregistration.md) (T1's frozen numbers); [`docs/briefs/Q-SFRISK-1-closure-resolved.md`](../briefs/Q-SFRISK-1-closure-resolved.md) (the closure this ADR is promoted from); [`docs/adr/2026-06-07-decompound-remc-hold.md`](2026-06-07-decompound-remc-hold.md) (the instrument this framework runs on; its HOLD is unaffected — see §2); [`docs/adr/2026-07-06-bust-day-maxdd-inclusion.md`](2026-07-06-bust-day-maxdd-inclusion.md) (explains the F1 fidelity delta, §0).
+**Related:** [`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](2026-07-11-challenge-era-claims-rescope.md) (§4 completion falsifier, discharged by this ADR — see its dated addendum); [`docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md`](../briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md) (parent Pre-Q, `H-SFRISK-1`); [`docs/briefs/pre-registration/Q-SFRISK-1-verdict-preregistration.md`](../briefs/pre-registration/Q-SFRISK-1-verdict-preregistration.md) (T1's frozen numbers); [`docs/briefs/closures/Q-SFRISK-1-closure-resolved.md`](../briefs/Q-SFRISK-1-closure-resolved.md) (the closure this ADR is promoted from); [`docs/adr/2026-06-07-decompound-remc-hold.md`](2026-06-07-decompound-remc-hold.md) (the instrument this framework runs on; its HOLD is unaffected — see §2); [`docs/adr/2026-07-06-bust-day-maxdd-inclusion.md`](2026-07-06-bust-day-maxdd-inclusion.md) (explains the F1 fidelity delta, §0).
 **Layer:** portfolio / governance (a new risk-characterization claim; **zero** locked parameter, allocation, `dd_protection` constant, or MC-anchor touch)
 
 ---
@@ -28,7 +28,7 @@ Read on-disk this session, off `origin/main` @ `432e14e`:
 
 ## §1 — Context
 
-The 2026-07-11 rescope ADR retired the challenge-era P(pass)/bust/p99-DD claims as *live* self-funded claims (the FXIFY venue that made them live claims no longer exists) but left a completion falsifier: without a successor risk-framework Pre-Q pre-registered, run, and adjudicated by 2026-11-08, D1 escalates to a mandatory blocker on any Aegis→M6J go-live decision. Q-SFRISK-1 was pre-registered 2026-07-14 (architecture), numerically frozen the same day (T1, operator-confirmed "confirm T1"), and run 2026-07-15 (Phase 1, merged `936a9e0`, independently cross-validated this session). Every declared clause of the sole declared triple clears on both regime halves without approaching the impracticality bar — [`docs/briefs/Q-SFRISK-1-closure-resolved.md`](../briefs/Q-SFRISK-1-closure-resolved.md) formally asserts `RESOLVED` per the frozen §6 table.
+The 2026-07-11 rescope ADR retired the challenge-era P(pass)/bust/p99-DD claims as *live* self-funded claims (the FXIFY venue that made them live claims no longer exists) but left a completion falsifier: without a successor risk-framework Pre-Q pre-registered, run, and adjudicated by 2026-11-08, D1 escalates to a mandatory blocker on any Aegis→M6J go-live decision. Q-SFRISK-1 was pre-registered 2026-07-14 (architecture), numerically frozen the same day (T1, operator-confirmed "confirm T1"), and run 2026-07-15 (Phase 1, merged `936a9e0`, independently cross-validated this session). Every declared clause of the sole declared triple clears on both regime halves without approaching the impracticality bar — [`docs/briefs/closures/Q-SFRISK-1-closure-resolved.md`](../briefs/Q-SFRISK-1-closure-resolved.md) formally asserts `RESOLVED` per the frozen §6 table.
 
 **Decision driver (one sentence):** the frozen gate cleared on real data under a pre-registered, non-negotiable spec — admitting T1 as the operative self-funded risk framework is the mechanical next step the parent brief's own §6/§9 already commit to, not a fresh judgment call.
 
@@ -100,7 +100,7 @@ The 2026-07-11 rescope ADR retired the challenge-era P(pass)/bust/p99-DD claims 
 - Treating "T1 cleared" as informally equivalent to "go-live is fine" despite §5's explicit prohibition — mitigated by that prohibition being named here and in the closure record, not left implicit.
 
 **Downstream artifacts updated (this session, §7):**
-- [`docs/briefs/Q-SFRISK-1-closure-resolved.md`](../briefs/Q-SFRISK-1-closure-resolved.md) — the closure this ADR is promoted from (done).
+- [`docs/briefs/closures/Q-SFRISK-1-closure-resolved.md`](../briefs/Q-SFRISK-1-closure-resolved.md) — the closure this ADR is promoted from (done).
 - `docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md` — `Status` flips `OPEN` → `CLOSED-RESOLVED`.
 - `docs/adr/2026-07-11-challenge-era-claims-rescope.md` — dated addendum discharging §4's D1 completion falsifier.
 - `STATE.md` — SFRISK forward-board entry updated to closed/RESOLVED.
@@ -123,7 +123,7 @@ Docs-only.
 
 ```bash
 # This ADR referenced from the closure record and the parent brief
-grep -n "2026-07-15-sfrisk-1-t1-admitting" docs/briefs/Q-SFRISK-1-closure-resolved.md docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md
+grep -n "2026-07-15-sfrisk-1-t1-admitting" docs/briefs/closures/Q-SFRISK-1-closure-resolved.md docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md
 
 # T1's three clauses cleared, as claimed here — cross-check against the Phase-1 report
 grep -n "8.00%\|4.53%\|51.0\|16.0" lab/analysis/regime/decompound_remc_2026-06-07/RESULTS_sfrisk_t1_phase1_2026-07-15.md

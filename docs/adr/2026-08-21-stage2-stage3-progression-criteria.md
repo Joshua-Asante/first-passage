@@ -116,7 +116,7 @@ What doesn't change: the forbidden-surface list, the human gate on risk-adjacent
 
 - Exact Phase 3 increment sequence — deferred until Phase 1's taxonomy exists.
 - Whether Phase 2 tooling itself gets built inside the autonomous lane or stays human-authored — deferred, likely its own CC handoff brief.
-- `docs/briefs/2026-07-17-0808-packet-delta-and-sequence.md`'s relevance to `lifecycle_call1/`'s provenance — **resolved this session, not open**: the file first enters this repo's tracked git history at commit `2e4d063` (a large, unrelated bulk-merge, PR #37, 2026-08-18); the doc-internal "2026-07-14" dating is a content-level claim from `docs/briefs/rnd-pipeline/2026-07-14-cursor-handoff-lifecycle-call1-sigma-harness.md` that predates the 2026-08-14 public-visibility git-history squash and is not independently git-verifiable in this checkout. See error-log row 1.
+- `docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md`'s relevance to `lifecycle_call1/`'s provenance — **resolved this session, not open**: the file first enters this repo's tracked git history at commit `2e4d063` (a large, unrelated bulk-merge, PR #37, 2026-08-18); the doc-internal "2026-07-14" dating is a content-level claim from `docs/briefs/rnd-pipeline/2026-07-14-cursor-handoff-lifecycle-call1-sigma-harness.md` that predates the 2026-08-14 public-visibility git-history squash and is not independently git-verifiable in this checkout. See error-log row 1.
 
 ---
 

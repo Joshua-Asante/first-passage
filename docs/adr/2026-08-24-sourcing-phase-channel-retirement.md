@@ -18,7 +18,7 @@
 - `docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md` — anchor `aef55a9` (2026-08-23), full read. Clause 2-B: "if by the second quarterly audit after ratification the census has produced zero seeds that pass the §3 intake screen, the channel is dead weight — retire the rank." Trigger check schedule rides 2026-11-08 / 2027-02-08. Clauses 2-A (four-clause mechanism definition) and 2-C (executed-K closure rule) confirmed unrelated to the census and left untouched by this ADR.
 - `docs/adr/2026-08-05-avenue-a-generate-confirm-route.md` — anchor `1a07c35` (2026-08-21), full read. Status `Accepted`; §4 falsifier's empirical limb requires "two completed Route B confirm campaigns that printed `RESOLVED` on CONFIRM" — structurally unfireable since zero campaigns, ever, have printed `RESOLVED` on CONFIRM. §7 item 4 pre-specifies the exact revert mechanics this ADR now executes: "Avenue A §6's addendum block must be withdrawn in the same change."
 - `docs/adr/2026-08-08-edge-cohort-correction-and-necessity-retarget.md` — anchor `1a07c35` (2026-08-21), full read. §2-C row L1: Route B's one tried family "PAUSED... Avenue A Route A/B doctrine itself is untouched," reopening path stated (a redesigned tradeable-object promotion floor). Row L2: "The structural-flow census stays closed (5 dry passes)" — an independent, second ratified statement of the census's dead status, corroborating clause 2-B.
-- `docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md` §6 — anchor `1a07c35` (2026-08-21). Condition 3 carries the frozen original ("Survivor-tied... not blind discovery") plus a later addendum block adding "(Route B) generate→confirm under `avenue_a_generate_confirm.md`" — confirmed the addendum is additive, not a rewrite of the frozen text, per the file's own explicit convention.
+- `docs/briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md` §6 — anchor `1a07c35` (2026-08-21). Condition 3 carries the frozen original ("Survivor-tied... not blind discovery") plus a later addendum block adding "(Route B) generate→confirm under `avenue_a_generate_confirm.md`" — confirmed the addendum is additive, not a rewrite of the frozen text, per the file's own explicit convention.
 - `docs/methodology/avenue_a_generate_confirm.md` — anchor `1a07c35` (2026-08-21), full read. The runnable Route B checklist (Stage G / Stage C, G0–G3, C0–C3), currently live.
 - `docs/methodology/strategy_harvest.md` §2.3 — anchor `ac05de6` (2026-08-24). Ranked channel portfolio; rank "1-tie" is the structural flow census.
 - `docs/briefs/Q-MSCHAN-1-microstructure-sourcing-channel-scoping.md` — anchor `1a07c35` (2026-08-21), full read. Entry condition (a): "an Avenue A §6 amendment ADR that reopens blind..." — a 2026-08-05 addendum block already names that ADR as the discharged reopen *path* (brief itself stays `DRAFTED — NOT OPENED`).
@@ -108,7 +108,7 @@ Presented with this record, the operator elected **full retirement** of Route B 
 - `docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md` — dated addendum after clause 2-B (pattern: the existing 2026-08-08 addendum on the same file), `Superseded-in-part-by` line added.
 - `docs/adr/2026-08-05-avenue-a-generate-confirm-route.md` — full retire: `Status: Superseded`, `Superseded-by:` this ADR, body moved to `docs/ltm/adr/`, hot file stubbed (accept+retire checklist, §7).
 - `docs/adr/2026-08-08-edge-cohort-correction-and-necessity-retarget.md` — dated addendum after §2-C row L1; a **second** `Superseded-in-part-by` line **appended** below the existing 2026-08-12 MSL-ratification entry (which targets row L2 and stays exactly as-is — never overwritten); L2–L5 untouched.
-- `docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md` §6 — withdraw the Route B addendum block (per that ADR's own §7 pre-specified instruction); frozen original condition-3 text stands alone again.
+- `docs/briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md` §6 — withdraw the Route B addendum block (per that ADR's own §7 pre-specified instruction); frozen original condition-3 text stands alone again.
 - `docs/methodology/avenue_a_generate_confirm.md` — header banner: `Withdrawn`, pointer to this ADR.
 - `docs/methodology/strategy_harvest.md` §2.3 — strike the "1-tie" row, pointer to this ADR.
 - `docs/briefs/Q-MSCHAN-1-microstructure-sourcing-channel-scoping.md` — entry condition (a)'s pointer to the now-superseded 2026-08-05 ADR gets a dated intercept noting the reopen path requires a fresh ADR, not a lookup of the retired one.
@@ -147,7 +147,7 @@ grep -rlI "structural flow census\|forced-flow census\|N-2026-07-26-forced-flow-
 # docs/adr/2026-08-15-notice-log-is-the-live-observation-routing-convention.md
 # docs/adr/2026-08-24-sourcing-phase-channel-retirement.md    (self-citation, expected)
 # docs/adr/INDEX.md                                             (self-citation, expected)
-# docs/briefs/2026-07-27-f1-moc-imbalance-mym-ruling.md
+# docs/briefs/programs/2026-07-27-f1-moc-imbalance-mym-ruling.md
 # docs/briefs/closures/2026-07-16-aegis-6j-prop-reconstruction-stage2-hsolo-falsified.md
 # docs/briefs/closures/MNQBASE-1-closure-intake-dry.md
 # docs/briefs/closures/Q-TNEC-ENV-1-closure.md
@@ -190,11 +190,11 @@ grep -rlI "Route B\|generate.\{0,3\}confirm\|2026-08-05-avenue-a\|avenue_a_gener
 # docs/adr/2026-08-13-implied-sr-report-only-fade-reopen.md
 # docs/adr/2026-08-24-sourcing-phase-channel-retirement.md      (self-citation, expected)
 # docs/adr/INDEX.md                                               (self-citation, expected)
-# docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md      (action owner, §6)
-# docs/briefs/2026-07-24-d2-letf-eod-flow-ruling.md
-# docs/briefs/2026-07-27-f1-moc-imbalance-mym-ruling.md
-# docs/briefs/2026-07-28-m2k-order-flow-avenue-a-ruling.md
-# docs/briefs/GSUB-1-inventory-and-dispositions.md
+# docs/briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md      (action owner, §6)
+# docs/briefs/programs/2026-07-24-d2-letf-eod-flow-ruling.md
+# docs/briefs/programs/2026-07-27-f1-moc-imbalance-mym-ruling.md
+# docs/briefs/programs/2026-07-28-m2k-order-flow-avenue-a-ruling.md
+# docs/briefs/programs/GSUB-1-inventory-and-dispositions.md
 # docs/briefs/Q-CAPA-1-cap-seat-route-a-n14-tripwire.md
 # docs/briefs/Q-CAPRES-2-mnq-cap-seat-reservation.md
 # docs/briefs/Q-MSCHAN-1-microstructure-sourcing-channel-scoping.md   (action owner, §6)

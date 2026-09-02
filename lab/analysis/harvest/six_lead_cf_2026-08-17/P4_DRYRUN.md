@@ -175,6 +175,6 @@ PYTHONPATH=lab python -m databento_fetch.db_fetch estimate \
 grep -n "addback_condition.*dealer-gamma-regime-gate" ../../../../docs/rejected_candidates.md
 # expect: the paid-NDX-native-or-different-flow-series bar, unedited
 
-rg -n "P4-L2-GAMMA" ../../../../lab/CATALOG.md ../../../../docs/briefs/2026-08-17-six-lead-pursuit-plan.md
+rg -n "P4-L2-GAMMA" ../../../../lab/CATALOG.md ../../../../docs/briefs/programs/2026-08-17-six-lead-pursuit-plan.md
 # expect: no CATALOG row change needed (reuses the existing six_lead_cf_2026-08-17 slug, per P3's own precedent)
 ```

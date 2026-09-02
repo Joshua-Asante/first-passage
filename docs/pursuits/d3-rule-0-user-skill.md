@@ -7,4 +7,4 @@
 **Review date:** none fixed
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3)
 
-**Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row d3
+**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row d3

@@ -13,15 +13,15 @@ microstructure as the sanctioned re-entry modality #2** ("untouched"). This brie
 
 Read before scoping (concrete repo paths):
 
-- [`docs/briefs/2026-07-14-a4-flow-data-fork-scoping.md`](2026-07-14-a4-flow-data-fork-scoping.md) —
+- [`docs/briefs/programs/2026-07-14-a4-flow-data-fork-scoping.md`](2026-07-14-a4-flow-data-fork-scoping.md) —
   the adjacent prior. Its ruling is precise and must be represented precisely: Databento GLBX L3/tick
   is **"net imbalance only (can't split categories) → non-identifying"** and **"never procure for [the
   flow-categorization] fork."** That binds any question needing **participant-category attribution**;
   it does **not** by itself kill depth-shape/queue/impact features (which MBP-10 does resolve).
-- [`docs/rejected_candidates.md`](../rejected_candidates.md) § "Single-instrument index-futures
+- [`docs/rejected_candidates.md`](../../rejected_candidates.md) § "Single-instrument index-futures
   intraday OHLCV directional timing — RAISED BAR" — modality #2 (order-flow/microstructure,
   "untouched") is sanctioned re-entry; but the domain is at tail-exhaustion (STABLE/saturating).
-- [`lab/analysis/orb/orb_mnq_2026-07/RESULTS_tv_export_realism.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_tv_export_realism.md)
+- [`lab/analysis/orb/orb_mnq_2026-07/RESULTS_tv_export_realism.md`](../../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_tv_export_realism.md)
   — the survivor's fills are **already known-good**: median 81 ticks through the trigger, 0.7% land
   ≤1 tick, **zero** bars where the level never traded. Execution-microstructure has low marginal value.
 - [`.claude/skills/databento-data/SKILL.md`](../../.claude/skills/databento-data/SKILL.md) — mandatory
@@ -90,10 +90,10 @@ Absent the qualifying triple, the verdict is **FALSIFIED (as scoped)** → **sco
 estimate command is runnable today); it is deliberately hard to satisfy. A qualifying feature would
 re-open toward RESOLVED, never AMBIGUOUS (the gate is binary on the triple).
 
-### Addendum 2026-08-05 — condition 3 gains a second route (ADR [`2026-08-05-avenue-a-generate-confirm-route`](../adr/2026-08-05-avenue-a-generate-confirm-route.md), `Accepted`) — **WITHDRAWN 2026-08-24**
+### Addendum 2026-08-05 — condition 3 gains a second route (ADR [`2026-08-05-avenue-a-generate-confirm-route`](../../adr/2026-08-05-avenue-a-generate-confirm-route.md), `Accepted`) — **WITHDRAWN 2026-08-24**
 
-> ⚠ **Withdrawn 2026-08-24.** [`ADR 2026-08-05-avenue-a-generate-confirm-route`](../adr/2026-08-05-avenue-a-generate-confirm-route.md)
-> is now `Superseded` in full by [`ADR 2026-08-24 — sourcing-phase channel retirement`](../adr/2026-08-24-sourcing-phase-channel-retirement.md).
+> ⚠ **Withdrawn 2026-08-24.** [`ADR 2026-08-05-avenue-a-generate-confirm-route`](../../adr/2026-08-05-avenue-a-generate-confirm-route.md)
+> is now `Superseded` in full by [`ADR 2026-08-24 — sourcing-phase channel retirement`](../../adr/2026-08-24-sourcing-phase-channel-retirement.md).
 > Per that ADR's own §7 pre-specified revert instruction ("If this ADR ever reverts to
 > `Proposed`/`Withdrawn`, ... Avenue A §6's addendum block must be withdrawn in the same change"),
 > this entire addendum block is withdrawn. §6's frozen original text is restored as the sole reading:
@@ -106,7 +106,7 @@ both routes.
 
 > **3 — Either (Route A) survivor-tied** — improves or monitors ORB-MNQ-1 (or another admitted
 > survivor), **or (Route B) generate→confirm** under
-> [`docs/methodology/avenue_a_generate_confirm.md`](../methodology/avenue_a_generate_confirm.md) —
+> [`docs/methodology/avenue_a_generate_confirm.md`](../../methodology/avenue_a_generate_confirm.md) —
 > not an unguided screen that claims admission from the exploration window.
 
 **Route A is unchanged and remains the default reading.** Route B is available *only* when that
@@ -138,7 +138,7 @@ PYTHONPATH=lab python -m databento_fetch.db_fetch estimate \
     --start 2026-07-20 --end 2026-07-23 --max-cost 5.00
 # Record the returned $ estimate here before any pull is even proposed:  __________
 # The two priors this scoping rests on:
-rg -n "net imbalance only|never procure" docs/briefs/2026-07-14-a4-flow-data-fork-scoping.md
+rg -n "net imbalance only|never procure" docs/briefs/programs/2026-07-14-a4-flow-data-fork-scoping.md
 rg -n "frac ≤1 tick|zero.*entry bars where the panel says the level never traded" lab/analysis/orb/orb_mnq_2026-07/RESULTS_tv_export_realism.md
 ```
 

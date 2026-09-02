@@ -14,4 +14,4 @@ mechanical subset only; this is the authoritative discipline gate)
 it's a documentation-boundary question, not a pursuit-standing question, so it stays out of this
 run's disposition.
 
-**Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row d2
+**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row d2

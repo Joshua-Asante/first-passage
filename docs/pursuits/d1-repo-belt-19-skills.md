@@ -9,4 +9,4 @@ at quarterly q2 (currently YELLOW watch flag, 2026-08-08 audit)
 net-positive cycle or any belt-patch without independent corroboration)
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3)
 
-**Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row d1
+**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row d1

@@ -8,7 +8,7 @@
 **Decision date:** 2026-07-13
 **Authors:** Joshua (decision) + Claude Code Opus 4.8 (research + recorder)
 **Ratifies:** [`ops/prop_envelope_default.md`](../../ops/prop_envelope_default.md) v0.1 → **v1.0** (change control now per its header)
-**Related:** [`2026-07-12-prop-portfolio-four-friendly-firms.md`](2026-07-12-prop-portfolio-four-friendly-firms.md) (§2 step-1 consumes the envelope); [`docs/briefs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md`](../briefs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md) (RATIFIED §7 — the G1/G2 gates this envelope feeds); [`2026-06-06-firm-constants-single-source.md`](2026-06-06-firm-constants-single-source.md) (why commissions land in `firm_rules`, not envelope prose)
+**Related:** [`2026-07-12-prop-portfolio-four-friendly-firms.md`](2026-07-12-prop-portfolio-four-friendly-firms.md) (§2 step-1 consumes the envelope); [`docs/briefs/programs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md`](../briefs/programs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md) (RATIFIED §7 — the G1/G2 gates this envelope feeds); [`2026-06-06-firm-constants-single-source.md`](2026-06-06-firm-constants-single-source.md) (why commissions land in `firm_rules`, not envelope prose)
 **Layer:** ops/governance + `core/firm_rules.py` **data fields** (additive) — no locked constant, allocation, `dd_protection` value, MC pin, or Pine touch.
 
 ---
