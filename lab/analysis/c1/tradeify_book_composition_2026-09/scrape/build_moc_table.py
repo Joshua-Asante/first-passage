@@ -20,6 +20,15 @@ OUT_CSV = "moc_imbalance_daily.csv"
 
 num = r"([+-]?\d[\d,]*\.?\d*)\s*(MLN|BLN|M|B|MILLION|BILLION)?"
 
+def _et_hhmm(iso: str) -> str:
+    """UTC ISO timestamp -> 'HH:MM' in America/New_York, so a wall-clock cutoff means the
+    same thing in EDT and EST."""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    return (datetime.fromisoformat(iso).astimezone(ZoneInfo("America/New_York"))
+            .strftime("%H:%M"))
+
+
 def to_mln(val, unit):
     v = float(val.replace(",", ""))
     if unit and unit.upper().startswith("B"):
@@ -82,7 +91,15 @@ def main():
     final = []
     for d in sorted(by_day):
         posts = sorted(by_day[d], key=lambda x: x["id"])
-        cands = [p for p in posts if not p["early"] and p["dt"][11:16] <= "20:30"]
+        # Cutoff must be applied in EASTERN time. The ~15:50 ET print lands at 19:50 UTC in
+        # EDT but 20:50 UTC in EST, so the old fixed "<= 20:30 UTC" test excluded every
+        # winter print from `cands`. It happened to be harmless on this dataset -- with
+        # `cands` empty the `(cands or posts)` fallback picks the right post, verified on all
+        # 72 EST days and all 3 days carrying two non-early posts, 0 changed -- but a winter
+        # day with an earlier non-early post would have silently selected that earlier post.
+        # Latent, not live. Fixed 2026-09-02 (Codex review, PR #260, second round).
+        cands = [p for p in posts
+                 if not p["early"] and _et_hhmm(p["dt"]) <= "17:00"]
         pick = (cands or posts)[-1]
         pick = dict(pick)
         pick["n_posts_that_day"] = len(posts)

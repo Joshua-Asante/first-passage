@@ -103,13 +103,54 @@ def load_trades(path: str) -> list[dict]:
     return out
 
 
+_SESSIONS: set | None = None
+
+
+def _sessions() -> set:
+    """Real CME equity-index session dates (data/cme_equity_sessions.json)."""
+    global _SESSIONS
+    if _SESSIONS is None:
+        p = os.path.join(HERE, "data", "cme_equity_sessions.json")
+        with open(p) as fh:
+            _SESSIONS = {pd.Timestamp(d) for d in json.load(fh)["sessions"]}
+    return _SESSIONS
+
+
+def roll_to_session(d: pd.Timestamp) -> pd.Timestamp:
+    """Map a booking date onto the next date the modelled path can hold.
+
+    TradingView books a trade's P&L on its own exit date, and for a position carried
+    through a weekend or an exchange closure that date is a Saturday, a Sunday, or a
+    closed weekday (Christmas). `build_cell` reindexes onto `pd.bdate_range`, so such a
+    booking was silently DROPPED from every path -- 6 trades, -210.92 per contract, real
+    losses that made the book look safer than it was. Rolling to the next real session is
+    the faithful treatment: the position actually closed when trading resumed.
+
+    Found 2026-09-02 while verifying the first Codex review, disclosed rather than fixed
+    because the grids were mid-run; fixed here after Codex correctly pushed back that a
+    committed grid must not omit real losses (PR #260, second review).
+
+    Outside the session calendar's span the rule degrades to "next weekday", which is the
+    best available and is only reachable past the calendar's end date.
+    """
+    sess = _sessions()
+    lo, hi = min(sess), max(sess)
+    out = pd.Timestamp(d)
+    for _ in range(10):
+        in_span = lo <= out <= hi
+        ok = (out in sess) if in_span else (out.weekday() < 5)
+        if ok:
+            return out
+        out += pd.Timedelta(days=1)
+    return out
+
+
 def daily_per_contract(trades: list[dict]) -> pd.Series:
-    s = pd.Series({}, dtype=float)
     acc: dict = {}
     for t in trades:
-        acc[t["exit_date"]] = acc.get(t["exit_date"], 0.0) + t["net_pnl_per_contract"]
-    s = pd.Series(acc, dtype=float).sort_index()
-    return s
+        d = roll_to_session(t["exit_date"])
+        acc[d] = acc.get(d, 0.0) + t["net_pnl_per_contract"]
+    return pd.Series(acc, dtype=float).sort_index()
 
 
 def slice_trades(trades, start, end):
@@ -130,8 +171,11 @@ def build_intraday_low_sequenced(trades_by_leg, leg_contracts, date_index):
         for t in trades:
             scaled = {"entry_time": t["entry_time"], "exit_time": t["exit_time"],
                       "net_pnl": t["net_pnl_per_contract"] * k, "mae": t["mae_per_contract"] * k}
-            day_opens.setdefault(t["entry_date"], []).append(scaled)
-            day_closes.setdefault(t["exit_date"], []).append(scaled)
+            # Bucket onto sessions the path can actually hold, same rule as the P&L series --
+            # otherwise a weekend/closure-dated leg of the floor is dropped while its P&L
+            # (now rolled) is kept, and the two channels disagree.
+            day_opens.setdefault(roll_to_session(t["entry_date"]), []).append(scaled)
+            day_closes.setdefault(roll_to_session(t["exit_date"]), []).append(scaled)
             # Open at the START of every day after the entry day, INCLUDING the exit day
             # (`[1:]`, not `[1:-1]`): on its exit day a multi-day trade is already open when
             # the session begins, so its MAE is achievable before its close event books the
@@ -140,7 +184,7 @@ def build_intraday_low_sequenced(trades_by_leg, leg_contracts, date_index):
             # three legs. Fixed 2026-09-02 (Codex review, PR #260); the same off-by-one is
             # present in the 2026-08-26 campaign's own followup_s10 this was ported from.
             for day in pd.date_range(t["entry_date"], t["exit_date"], freq="D")[1:]:
-                day_carries.setdefault(day, []).append(scaled)
+                day_carries.setdefault(roll_to_session(day), []).append(scaled)
     all_days = set(day_opens) | set(day_closes) | set(day_carries)
     low_by_day, realized_by_day = {}, {}
     for day in all_days:
@@ -319,6 +363,67 @@ def label(sizing):
     return "+".join(f"{k}x{v}" for k, v in sizing.items() if v > 0)
 
 
+def _job_key(job):
+    """Stable identity for one cell, independent of execution order."""
+    sizing, tier, n_sims, window, stage, legs = job
+    return json.dumps([sizing, tier, n_sims, [str(w) for w in window], stage, list(legs)],
+                      sort_keys=True, default=str)
+
+
+def _run_checkpointed(jobs, out_path, n_jobs):
+    """Run cells in bounded chunks, appending each result to a sidecar as it lands.
+
+    The finals stage does FOUR bootstraps per cell (intraday, EOD, and both halves) at
+    10,000 sims x 3 seeds, ~50x the per-cell work of the screen stage. Run flat with a
+    single `Parallel(...)` over all cells, it held every result in memory and wrote the
+    output only after the last cell returned, so one dead worker discarded the whole run.
+    That happened twice on 2026-09-02: at jobs=4 two of four loky workers died and joblib
+    blocked forever on them (8/12 cells, no traceback, no output); at jobs=6 the parent
+    died outright at ~9 minutes. Both left `grid_final.json` stale while the code that
+    should have produced it had already changed -- the exact "artifacts don't match the
+    code" defect the first review caught.
+
+    Chunking bounds peak memory (workers are torn down between chunks) and the sidecar
+    makes a crash cost one chunk instead of the run. `score_cell` is seeded from the
+    module-level SEEDS and depends only on its own argument tuple, so per-cell values do
+    not depend on execution order or on how the work is grouped; resuming is exact, not
+    approximate. Results are returned in `jobs` order regardless of completion order.
+    """
+    from joblib import Parallel, delayed
+
+    part = out_path + ".partial.jsonl"
+    done = {}
+    if os.path.exists(part):
+        with open(part, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rec = json.loads(line)
+                except json.JSONDecodeError:
+                    continue          # truncated tail from a hard kill; recompute that cell
+                done[rec["key"]] = rec["result"]
+        if done:
+            print(f"resume: {len(done)} cell(s) already checkpointed in {part}", flush=True)
+
+    pending = [j for j in jobs if _job_key(j) not in done]
+    for i in range(0, len(pending), n_jobs):
+        chunk = pending[i:i + n_jobs]
+        res = Parallel(n_jobs=min(n_jobs, len(chunk)), verbose=5)(
+            delayed(score_cell)(j) for j in chunk)
+        with open(part, "a", encoding="utf-8") as fh:
+            for j, r in zip(chunk, res):
+                k = _job_key(j)
+                # Round-trip through the sidecar so a resumed cell is byte-identical to a
+                # fresh one (both land in the output via json.dump(..., default=str)).
+                fh.write(json.dumps({"key": k, "result": r}, default=str) + "\n")
+                done[k] = json.loads(json.dumps(r, default=str))
+        print(f"checkpoint: {len(done)}/{len(jobs)} cells done", flush=True)
+
+    return [done[_job_key(j)] for j in jobs], part
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--stage", choices=("smoke", "screen", "final", "alt"), default="screen")
@@ -334,8 +439,6 @@ def main(argv=None):
         print(json.dumps(r, indent=1, default=str)[:3000])
         print(f"elapsed {time.time() - t0:.1f}s")
         return
-
-    from joblib import Parallel, delayed
 
     if a.stage == "screen":
         n_sims = a.n_sims or 1000
@@ -359,11 +462,13 @@ def main(argv=None):
 
     t0 = time.time()
     print(f"{a.stage}: {len(jobs)} cells, n_sims={n_sims} x {len(SEEDS)} seeds, jobs={a.jobs}", flush=True)
-    results = Parallel(n_jobs=a.jobs, verbose=5)(delayed(score_cell)(j) for j in jobs)
+    results, part = _run_checkpointed(jobs, out_path, a.jobs)
     with open(out_path, "w") as fh:
         json.dump({"stage": a.stage, "n_sims": n_sims, "seeds": SEEDS, "elapsed_s": round(time.time() - t0, 1),
                    "results": results}, fh, indent=1, default=str)
     print(f"wrote {out_path} in {time.time() - t0:.0f}s")
+    if os.path.exists(part):
+        os.remove(part)          # only after the real output is on disk
     for r in sorted(results, key=lambda r: (r["tier"], -r["boot_intraday"]["pass_pct"])):
         b = r["boot_intraday"]
         print(f"{r['tier'][:16]:16} {label(r['sizing']):22} bust {b['bust_pct']:6.2f}  pass {b['pass_pct']:6.2f}  "
