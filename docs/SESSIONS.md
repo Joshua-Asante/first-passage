@@ -33,6 +33,28 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-02a — Portable-edge cultivation campaign opened and review boundaries reconciled
+
+**Focus:** Operator elected portable genuine edge first (Tradeify Select preferred), accepted
+manual weekly preservation and edition-independent edge retention, and opened a bounded 2–3 day
+candidate-cultivation campaign.
+**Shipped:** Decision owner
+[`2026-09-02-portable-edge-cultivation-campaign-objective.md`](adr/2026-09-02-portable-edge-cultivation-campaign-objective.md)
+plus [`campaign plan`](superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md). Codex
+review corrections: exact P50 cannot be retroactively contracted after viewed Off/P50/P80
+selection; pre-contract access uses `EVIDENCE-BLOCKED`; reachability uses `PRE-CONTRACT DROP`, not
+`EXPRESSION-FAIL`; fresh operator GO required above $0 external spend; STRATEGIC 3×OUTER / 8-iteration
+tripwires declared; lab link fixed. Second review: B/C contracts now require a founding-frozen
+independent mechanism discriminator, and Confirm's first eligible bar must be strictly after the
+founding-freeze commit rather than merely after the last source read.
+**Decisions/defects:** P50 remains useful source/development evidence but is prospectively
+ineligible under this campaign absent a separate legacy-intake ruling. No candidate, K manifest,
+Confirm attempt, spend, capital, Pine, allocation, `dd_protection`, or rail change.
+**Open / next:** STATE queue: #1 [Portable-edge cultivation campaign](superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md) · #2 [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+**Live-ops state:** unchanged — c1 rail disarmed; no arm.
+
+---
+
 ## 2026-09-01b — `docs/briefs/` root leftovers filed (queue-exception: briefs-root leftovers)
 
 **Focus:** Off-queue hygiene — file dated program/slate/plan/ruling leftovers and stray closures out of `docs/briefs/` root per leftovers-only plan; retain `Q-*.md` bodies at root.
