@@ -891,6 +891,8 @@
     "docs/operational_rules.md",
     "docs/rejected_candidates.md",
     "docs/rule_0.md",
+    "docs/spec/2026-08-08-tradeify-necessary-conditions-target-spec.md",
+    "docs/spec/2026-08-11-tnec-application-unit-book-admission.md",
     "docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md",
     "lab/CATALOG.md",
     "lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md",
@@ -2024,7 +2026,7 @@
         {
           "order": 1,
           "name": "Survivor-scoring Part A admission gate",
-          "mechanism": "Governing instrument for standalone candidate admission. SUPERSEDED 2026-08-26: the v1 ceiling (bust<=3.0%) was replaced in full by prereg v2 — headline bust <= 5.0% (daily+static+trailing) AND pass floor >= 50%, discharged iff BOTH hold on >=2 distinct $100K firm tiers, AT LEAST ONE of which must be `trailing_locking` (Tradeify or MFFU). The added trailing_locking requirement is new in v2 and has no v1 counterpart. Landed in code: `prop_survivor_scoring.py` DEFAULT_PREREG re-points to the v2 body, and ceilings/tiers/seeds are parsed from the pre-registration rather than hardcoded. The v1 3.0% figure is historical record only — v2 §8 states this is NOT a finding that 3.0% was mis-set, but an operator risk-tolerance override.",
+          "mechanism": "Governing instrument for standalone candidate admission. SUPERSEDED 2026-08-26: the v1 ceiling (bust<=3.0%) was replaced in full by prereg v2 — headline bust <= 5.0% (daily+static+trailing) AND pass floor >= 50%, discharged iff BOTH hold on >=2 distinct $100K firm tiers, AT LEAST ONE of which must be `trailing_locking` (Tradeify or MFFU). v2 changed exactly ONE number — the eval ceiling 3.0% -> 5.0%. The >=1-`trailing_locking` discharge requirement and the frozen four-tier cross-section are carried over UNCHANGED from v1 (v1 line 145 states the same rule; v2 line 145 labels it verbatim \"Discharge rule (unchanged)\"). Landed in code: `prop_survivor_scoring.py` DEFAULT_PREREG re-points to the v2 body, and ceilings/tiers/seeds are parsed from the pre-registration rather than hardcoded. The v1 3.0% figure is historical record only — v2 §8 states this is NOT a finding that 3.0% was mis-set, but an operator risk-tolerance override.",
           "inputs": "Candidate's standalone MC output across firm tiers",
           "outputs": "Bust rate, pass rate per firm tier",
           "gate": "Layered pre-screens feed in but never substitute for this gate. Q-BUSTGATE-1's retained 3.0% figure and the third-leg spec's T5 row are flagged in objective_composition_map.md as NOT yet reconciled against the raised ceiling.",
@@ -2039,14 +2041,17 @@
         {
           "order": 2,
           "name": "Necessity screens (N-ACT / N-SURV / N-EDGE / N-SHAPE / N-SIZE)",
-          "mechanism": "Campaign-specific necessary-conditions battery: N-ACT (trade-frequency floor, e.g. >=1 trade/week); N-SURV (survival-ceiling limb, same bust<=3.0% ceiling per-construct); N-EDGE, N-SHAPE, N-SIZE (edge magnitude, payoff-shape feasibility vs venue win-rate/skew, position-size feasibility). Verdict emitted as a single disclosure string.",
+          "mechanism": "Campaign-specific necessary-conditions battery, owned by the TNEC-1 target spec (NOT by strategy_harvest.md, which the earlier draft mis-cited): N-ACT (>=1 trade per Mon-Fri week by construction; for a book, jointly, with co-idleness measured and disclosed — correlated idleness is the failure mode); N-SURV (pre-registered survivor-scoring at the frozen gate, explicitly INTRADAY-HONEST bust — an EOD-clock figure is a lower bound only and does not discharge this limb — at deployable integer sizing, composed for a book, with the regime both-halves gate applying); N-EDGE, N-SHAPE, N-SIZE (edge magnitude, payoff-shape feasibility vs venue win-rate/skew, position-size feasibility). Every candidate closes with the verdict string `N-ACT N-SURV N-EDGE N-SHAPE N-SIZE | bust | P(pass) | mu(disclosed)` so the failing limb is never lost to a summary word. ⚠ SKEW (verified 2026-09-02): TNEC-1's own N-SURV line still reads bust <= 3.0% citing the v1 prereg as \"unedited\" — but v1 was superseded in full by v2 on 2026-08-26, which raised that ceiling to 5.0%. The spec has not been reconciled.",
           "inputs": "Construct's trade log, MC output, and disclosed payoff shape",
           "outputs": "Five-limb N-ACT/N-SURV/N-EDGE/N-SHAPE/N-SIZE verdict string",
-          "gate": "Framed as 'nothing else gates intake' — this battery plus step 1 is the complete necessity set",
+          "gate": "TNEC-1 states \"nothing else gates intake\" for this set — but that claim is narrowed as of 2026-08-30 by the candidate-contract's complete-trade-object admission bar, which gates earlier and independently.",
           "kill_condition": "Any limb failing (e.g. N-ACT trades/week<1) is independently sufficient to kill the candidate",
           "refs": [
+            "docs/spec/2026-08-08-tradeify-necessary-conditions-target-spec.md",
+            "docs/spec/2026-08-11-tnec-application-unit-book-admission.md",
             "docs/rejected_candidates.md",
-            "docs/methodology/strategy_harvest.md#step 7"
+            "docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md",
+            "docs/adr/2026-08-30-candidate-contract.md"
           ]
         },
         {
@@ -2502,7 +2507,8 @@
       "Two of the six (terminal-taxonomy, evaluation-order) owe STATE.md forward-board rows that do not exist. The repo's own 2026-08-31 ADR-corpus audit found the same: \"Zero of the six 08-30 stems appear in STATE.md.\"",
       "channel-liveness-gate's required pointer paragraph in strategy_harvest.md §2.3 never landed, so that ADR's own Verification block does not pass as written.",
       "This map's Branch A/B/C/D taxonomy is not the repo's. The ADRs name five channels; HARV maps to Branch B, dense-1m and deep-iteration sit under Branch A, and MSL and no-counterparty-statistical/geometric have no Branch home here at all. Neither document cites the other's vocabulary.",
-      "Three competing decompositions of one pipeline now coexist: this map's 12 phases, PIPELINES.md's Stage 2->8 (MINE, BIND K, SCORE, BLOCK SIZE, CONFIRM, REALISM, BREADTH, ADMIT), and evaluation-order's 10 steps. None cross-references the others."
+      "Three competing decompositions of one pipeline now coexist: this map's 12 phases, PIPELINES.md's Stage 2->8 (MINE, BIND K, SCORE, BLOCK SIZE, CONFIRM, REALISM, BREADTH, ADMIT), and evaluation-order's 10 steps. None cross-references the others.",
+      "The Admission phase has no step for four admission-relevant mechanics ratified 2026-08-30: the complete-trade-object admission bar (a candidate missing signal/entry-clock/stop/exit/holding-horizon/costed-payoff-unit is not yet a candidate); the gate scope-class ruling (only the survivor-scoring Part-A gate is lifecycle-admission — treating a ROLE-BLOCKED or step-10 VENUE-FAIL as grounds for a register entry is a forbidden move); the contract-integrity check that distinguishes a void from a rejection; and the N_expr ladder, which caps how many times one mechanism may re-present itself for admission."
     ]
   }
 }
