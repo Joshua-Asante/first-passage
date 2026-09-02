@@ -14,6 +14,7 @@ from discovery.prop_survivor_scoring import (
     cost_law_kill,
     discharges_falsifier,
     load_scoring_thresholds,
+    StaleGateWarning,
     naive_daily_static_bust,
     reduce_to_deployable,
     score_candidate,
@@ -362,3 +363,31 @@ def test_e2e_f1_exposed_on_trailing_tier_rates():
 def test_production_default_sims_is_prereg_10k():
     t = _thr()
     assert t.sims_per_seed == 10_000
+
+
+def test_superseded_prereg_warns_and_flags():
+    """A CLOSED/superseded pre-reg must WARN, not silently hand back a dead ceiling.
+
+    Anchor incident 2026-09-02: a retrieved harness hard-coded the v1 path and scored
+    the W1 bootstrap partition against 3.0% a week after the live ceiling became 5.0%.
+    WARN rather than raise — reproducing a historical run against its own frozen
+    ceiling is a legitimate, necessary use (control arms, reproduction checks).
+    """
+    with pytest.warns(StaleGateWarning, match="SUPERSEDED"):
+        t = load_scoring_thresholds(PREREG_V1)
+    assert t.is_superseded is True
+    assert t.superseded_note is not None
+    assert "CLOSED" in t.superseded_note.upper()
+    # The historical number is still returned — the warning does not alter behaviour.
+    assert t.eval_bust_ceiling == pytest.approx(0.03)
+
+
+def test_live_prereg_does_not_warn():
+    import warnings
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", StaleGateWarning)
+        t = load_scoring_thresholds(PREREG_V2)
+    assert t.is_superseded is False
+    assert t.superseded_note is None
+    assert t.eval_bust_ceiling == pytest.approx(0.05)
