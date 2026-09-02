@@ -154,9 +154,78 @@ still reads *"Still unmeasured … the corrected 0.50× bootstrap-95th"*. That w
 later by `eval_shape_diagnostics_2026-07-28` (1.20%). Its frozen body carries a reader-intercept
 about a different row, so the stale line has no correction pointer.
 
+---
+
+## Addendum 2026-09-02b — re-scored against the live 5.0% ceiling (operator correction)
+
+**§2–§8 above are unedited** (Known Trap #12). This addendum corrects the *scoring*, not the
+measurement. Both governing changes below **pre-date this run** and are not post-hoc.
+
+### (a) The live Part A ceiling is 5.0%, not 3.0%
+
+Frozen **2026-08-26** in
+[`prereg v2`](../../../../docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md),
+which supersedes v1 in full (Part A eval ceiling only), a week before this run. §2's harness parsed
+3.0% because `run_class_s_c1_scoring.GATE_PREREG` still points at the v1 file — a stale pointer in a
+retrieved harness, not a judgement about which ceiling governs.
+
+**Re-scored at 5.0%, the interim PASSES on both anchorings:**
+
+| Anchor | Implied honest bust-95th | vs 5.0% | Headroom |
+|---|---|---|---|
+| This run's own EOD arm (0.68% + 2.658pp) | ≈ 3.33% | **PASS** | 1.67pp |
+| Published EOD pin (1.20% + 2.658pp) | ≈ 3.86% | **PASS** | 1.14pp |
+
+Pass-floor limb clears on both arms (5th pct 94.14% vs a 50% floor). 1 of 48 panels exceeds 5.0%.
+
+**This verdict is more robust than the 3.0% one was, not merely more favourable.** The unreproduced
+control gap is **0.52pp** (0.68% measured vs 1.20% published). At the 3.0% line that gap was large
+enough to flip the verdict; at the 5.0% line it sits well inside the 1.14pp worst-case headroom, so
+the conclusion survives the §4 uncertainty rather than depending on its resolution.
+
+⚠ Still interim: 48/100 panels, tier 1 of 2. §7's owed items stand.
+
+### (b) The weekly manual idle trade is agreed standing practice
+
+Recurrence **ruled 2026-08-16** (STATE decision index; weekly row live and satisfied 2026-08-26).
+This is the reversal the de-scope ADR explicitly anticipated — its §6 records that *"R8 is ~13
+maintenance trades/year at ~$1.82 RT, and the operator's objection to it was preference, not
+arithmetic"*, and that **T1 "is written exactly to catch this, and it is the cheapest trigger in the
+table."** T1's limb (a), a cadence instrument shipping, is therefore satisfied in substance.
+
+**T1's limb (b) remains a measurement, and it is not automatic — two different clocks are in play:**
+
+| Clock | Rule | Status |
+|---|---|---|
+| **Venue** (art. 10468318) | ≥1 trade per **Mon–Fri week**; satisfiable by a ~$2 token trade | **Addressed** by the agreed weekly trade. This is the clock that deletes the account. |
+| **Engine** (`core/mc/simulation.py:177`) | busts on **5 consecutive idle business days** | **Not automatically addressed.** |
+
+A once-per-calendar-week trade does not guarantee the engine's barrier is never reached: a trade on
+Monday of week 1 and Friday of week 2 leaves **8 consecutive idle business days**. The 92.6–97.6%
+path-death figure arises because `build_week_blocks` samples Mon-anchored 5-day blocks, so any fully
+dead week block *is* a 5-idle-day run — absorption is near-certain by construction with 26.3% dead
+weeks.
+
+**Consequence (actionable):** to clear T1's ≤10% limb the placement rule should cap the gap at
+**≤4 idle business days** (a fixed midweek slot), not merely "one trade per week." Then re-run the
+inactivity-ON re-MC with the trade modelled. That is a cheap $0 measurement and is now the binding
+item on T1 — a measurement, not a decision.
+
+### (c) Housekeeping collision to settle with one line (predates this run)
+
+[`2026-07-22 §4 discharge withdrawal`](../../../../docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md)
+§5 lists as a forbidden move: *"Moving the 3.0% ceiling … to re-admit candidate #1."* Candidate #1
+is this same Class-S book. The 2026-08-26 ceiling change was made on general risk-tolerance grounds,
+prompted by an unrelated study, and never cites that ADR. Nothing improper occurred — but the two
+documents collide the first time the 5.0% ceiling is applied to this book, and a one-line ruling (or
+a superseding note on either artifact) settles which governs. Flagged, not resolved here.
+
+---
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-09-02 | Campaign opened; harnesses vendored; `READING.md` frozen before any full-scale number; run launched | Claude Code (Opus 5) |
 | 2026-09-02 | Operator stopped the run at 48/100 panels, tier 1 of 2. Interim recorded; no verdict taken; EOD control reproduction flagged OPEN | Joshua (stop) + Claude Code |
+| 2026-09-02b | Operator correction: live ceiling is 5.0% (frozen 08-26) and the weekly manual idle trade is agreed standing practice (ruled 08-16) — both pre-date this run. Re-scored: interim **PASSES** at 5.0% on both anchorings, with headroom exceeding the control gap. T1 limb (b) identified as a measurement with a two-clock subtlety. Body §2–§8 unedited | Joshua (correction) + Claude Code |
