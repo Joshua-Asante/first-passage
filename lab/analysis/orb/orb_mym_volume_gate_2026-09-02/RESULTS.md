@@ -5,6 +5,11 @@
 **Source:** private Downloads-local `orb_mym_4_edition.pine`
 **Pine SHA-256:** `9292bd4ec0ca9074d6d6523491dcdde3709424bd53edf9c75dea79f3b9f65071`
 
+> **Cultivation routing, 2026-09-02:** assigned seat A in the operator-authorized
+> [`portable-edge cultivation campaign`](../../../docs/superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md).
+> Candidate-contract opening remains blocked on exact source/configuration and List-of-Trades
+> capture; this routing does not promote the source result.
+
 ## Question and tested catalogue
 
 Does a causal completed-opening-range volume gate improve the existing ORB-MYM v0.4 source
