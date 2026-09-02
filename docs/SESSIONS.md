@@ -33,7 +33,7 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
-## 2026-09-02b — W1's 4th partition run on the honest clock (INTERIM 48/100); superseded-prereg guard
+## 2026-09-02c — W1's 4th partition run on the honest clock (INTERIM 48/100); superseded-prereg guard
 
 **Focus:** Operator asked what the research methods that made real progress have in common, then
 where to point the resulting filter at a deployable `Tradeify_Select_100K` leg. The filter landed on
@@ -71,11 +71,33 @@ trade/Mon–Fri week; engine = 5 **consecutive** idle bdays, so once a week does
 **Open / next:** STATE queue: `#1` [Find a viable trading strategy — portable-edge cultivation
 campaign](superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md) · `#2` [B7-REFIRE Stage 1
 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
-— both formally unchanged by this session (row #1 was re-scoped upstream in `2026-09-02a`, merged in
-here). Owed on this campaign: panels 48→100 tier 1 then 0→100 tier 2 (resumes from checkpoint); T1
+— both formally unchanged by this session (row #1 was re-scoped upstream in `2026-09-02a` and again by
+the cultivation-campaign entry `2026-09-02b`, both merged in here). Owed on this campaign: panels 48→100 tier 1 then 0→100 tier 2 (resumes from checkpoint); T1
 inactivity-ON re-MC with the trade modelled at ≤4 idle bdays; a one-line ruling on the
 ceiling/withdrawal-ADR collision; repoint the 4 stale test modules.
 **Live-ops state:** unchanged — c1 rail disarmed, `dry_run=true`, M1 not `RESOLVED`, no arm.
+
+---
+
+## 2026-09-02b — Portable-edge cultivation campaign opened and review boundaries reconciled
+
+**Focus:** Operator elected portable genuine edge first (Tradeify Select preferred), accepted
+manual weekly preservation and edition-independent edge retention, and opened a bounded 2–3 day
+candidate-cultivation campaign.
+**Shipped:** Decision owner
+[`2026-09-02-portable-edge-cultivation-campaign-objective.md`](adr/2026-09-02-portable-edge-cultivation-campaign-objective.md)
+plus [`campaign plan`](superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md). Codex
+review corrections: exact P50 cannot be retroactively contracted after viewed Off/P50/P80
+selection; pre-contract access uses `EVIDENCE-BLOCKED`; reachability uses `PRE-CONTRACT DROP`, not
+`EXPRESSION-FAIL`; fresh operator GO required above $0 external spend; STRATEGIC 3×OUTER / 8-iteration
+tripwires declared; lab link fixed. Second review: B/C contracts now require a founding-frozen
+independent mechanism discriminator, and Confirm's first eligible bar must be strictly after the
+founding-freeze commit rather than merely after the last source read.
+**Decisions/defects:** P50 remains useful source/development evidence but is prospectively
+ineligible under this campaign absent a separate legacy-intake ruling. No candidate, K manifest,
+Confirm attempt, spend, capital, Pine, allocation, `dd_protection`, or rail change.
+**Open / next:** STATE queue: #1 [Portable-edge cultivation campaign](superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md) · #2 [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+**Live-ops state:** unchanged — c1 rail disarmed; no arm.
 
 ---
 

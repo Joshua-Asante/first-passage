@@ -37,8 +37,9 @@ The immediate sequence should be:
 1. decide the commercial target (`Select`, any Tradeify tier, or portable edge);
 2. capture the P50 expression and full List-of-Trades export, then compute its day-level payoff
    shape and Tradeify reachability without testing another threshold;
-3. if and only if that cheap reconstruction is plausibly reachable, freeze P50 for a genuinely
-   forward test;
+3. if and only if that cheap reconstruction is plausibly reachable, retain P50 as a development
+   prior and seek the separate legacy-intake ruling required before exact P50 can enter any
+   prospectively valid candidate path;
 4. do **not** spend roughly 703 core-hours on general L5 attribution merely to earn permission to
    ask whether P50 pays—the direct expression is now the shorter decision path;
 5. in parallel, replace broad mechanism ideation with a bounded acquisition brief for complete,
@@ -83,7 +84,9 @@ specifies at least:
 - integer sizing policy;
 - cost/slippage authority;
 - expected cadence, win/loss shape, clustering, and intraday MAE; and
-- development and untouched confirmation partitions.
+- development and untouched confirmation partitions; and
+- an independent mechanism discriminator with a frozen statistic, null, expected direction,
+  decision threshold, and coverage/power requirement.
 
 B1 demonstrated the distinction: source liveness could not repair absent expectancy, stop, exit,
 and sizing. Q-VOLREGIME L1–L4 demonstrates it again: next-bar **range** information has no native
@@ -216,10 +219,17 @@ repair it with P55, weekday retuning, a different stop, or a new exit.
 **Leverage:** high, but calendar-bound. **Why:** every historical threshold cell is viewed. New
 bars—not a re-sliced old panel—are the cleanest remaining evidence.
 
-The forward contract should freeze the current P50 expression, configuration hash, one primary
-unit of analysis, costs, minimum N/calendar horizon, stop conditions, and terminal verdict before
-the first eligible new bar. Use paper/shadow execution unless and until the existing capital gates
-separately authorize risk. Report operational misses as evidence failures, not market losses.
+The exact P50 expression cannot receive a forward contract under the current campaign: its
+Off/P50/P80 selection was already outcome-viewed before any contract/K freeze. Retain its source
+configuration and development evidence, but require either (a) a separate operator-ratified
+legacy/source-intake decision that explicitly reconciles that selection, or (b) a genuinely
+distinct successor prospectively frozen before payoff access. Paper/shadow execution is not a
+substitute for the missing prospective selection controls.
+
+For any admissible successor, commit the Confirm boundaries prospectively but start the interval
+strictly after the founding-freeze commit; bars that arrive between the source read and that commit
+are retrospective. The contract must also freeze the independent mechanism discriminator, because
+payoff confirmation alone cannot produce `CONFIRMED` under the terminal taxonomy.
 
 The precommitted horizon should be set from power and expected cadence, not impatience. If the
 required horizon is commercially too long, that is information about the candidate's value—not a
@@ -290,15 +300,18 @@ Operator chooses objective
           v
 Capture P50 trades + exact configuration (no new threshold)
           |
-          +-- evidence/config incomplete --> EVIDENCE-VOID; repair capture only
+          +-- evidence/config incomplete --> EVIDENCE-BLOCKED; repair capture only
           |
           v
 Day-level cost/shape/integer-size pre-check
           |
-          +-- clearly unreachable --------> EXPRESSION-FAIL; stop P50
+          +-- clearly unreachable --------> PRE-CONTRACT DROP (venue/cost-constraint-shaped)
           |
           v
-Freeze one genuinely forward P50 contract
+Retain P50 as source prior; seek legacy-intake ruling or a distinct prospective successor
+          |
+          v
+Freeze successor contract + K + independent discriminator; Confirm starts after freeze commit
           |
           +-- forward edge fails ---------> MARKET-NULL for this expression
           |
