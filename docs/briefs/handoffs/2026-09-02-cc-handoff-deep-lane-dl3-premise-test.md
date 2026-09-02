@@ -173,3 +173,167 @@ ls discovery_manifests/ | grep -i dl3                                           
 # Door check consulted, not merely executed
 python scripts/instrument_profiles.py cell <SYM> <family>; echo "exit=$?"         # expect exit=1 + BINDING BAR lines
 ```
+
+---
+
+## Addendum 2026-09-02 — executing-session corrections (append-only; the received body above is unedited)
+
+**Status:** recorded by the executing CC session at the Phase 0 gate, after a Codex review of
+[PR #263](https://github.com/Joshua-Asante/first-passage/pull/263) returned 11 findings against the
+body above. Each was verified against production before being accepted here; all 11 hold. The
+brief's body is **deliberately not edited** — it is the record of what was handed over (Trap #12 /
+the dated-record convention this repo uses elsewhere, e.g. the supply audit's own 2026-08-24
+conjunct-(iii) correction). **Where this addendum and the body disagree, this addendum governs
+execution.** $0 · K=0 · no campaign opened.
+
+### C1 — ⚠ The N-SURV gate is **bust ≤ 5.0%**, not 3.0%. The brief's §0 read-target is CLOSED.
+
+`docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md` carries a closure banner
+at its head: **`CLOSED 2026-08-26 — superseded by v2 (ceiling 3.0% → 5.0%, operator ruling)`**.
+The governing artifact is
+[`2026-08-26-prop-survivor-scoring-prereg-v2.md`](../pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md)
+(`Supersedes … in full (Part A eval ceiling 3.0% → 5.0% only)`), and production agrees:
+
+```
+$ python -c "import sys; sys.path.insert(0,'lab'); sys.path.insert(0,'core'); \
+  from discovery.prop_survivor_scoring import DEFAULT_PREREG, load_scoring_thresholds; \
+  print(DEFAULT_PREREG); print(load_scoring_thresholds())"
+…/docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md
+ScoringThresholds(eval_bust_ceiling=0.05, funded_bust_ceiling=0.01, pass_floor=0.5,
+  tier_keys=('Bulenox_100K','Tradeify_Select_100K','MFFU_Rapid_100K','BluSky_Premium_100K'), …)
+```
+
+Every "3.0%" in the body above (§0 read-target, §1 criterion c's framing, Phase 4) reads **5.0%**.
+Part B (funded, 1.0%) and the pass floor (≥50%) are unchanged. The v2 §8 is explicit that this was
+an **operator risk-tolerance override, not a re-derivation finding the old ceiling wrong** — cite it
+that way, never as new evidence.
+
+**C1-followon (not raised by the review; found while verifying it) — the venue-shape map underneath
+criterion (c) is scored against the superseded ceiling.** `run_region_sweep.py:77` and
+`run_designbox_sweep.py` both hard-pin `DD_GATE = 0.03` and assert
+`abs(thr.eval_bust_ceiling - DD_GATE) < 1e-9` at every invocation
+(`run_region_sweep.py:286`, `run_designbox_sweep.py:172`). Against the live v2 prereg that assert
+now **fails loudly** — which is precisely what A2's own §0 promised it would do if the prereg ever
+drifted. Consequences, stated but **not acted on** (out of scope; no `lab/` harness edited here):
+
+* A2 `RESULTS.md` §7's "no cell at win_rate ≤ 50% is `FEASIBLE`" and the 55–70% win-rate floor are
+  **3.0%-ceiling findings**. The floor at 5.0% is unmeasured and is necessarily **no higher**.
+* `RESULTS_DESIGNBOX_EXT.md`'s **80/80 INFEASIBLE** is likewise a 3.0%-ceiling result, and its
+  closest cell (WR=35%/cd=1/frontier-R, **bust 5.05%**, 2σ lower bound 4.80%) sits *astride* the new
+  line — a confident fail at 3.0%, an unresolved call at 5.0%.
+* Therefore criterion (c)'s "WR ≥ 55%" prior is **not currently established at the live gate**.
+  Phase 1 must present it as such and must not quote either document's verdicts as though they were
+  scored at 5.0%. Re-scoring the map is its own operator-gated decision, not a DL-3 deliverable.
+
+### C2 — Phase 4 omits mandatory pre-holdout steps 7 and 8.
+
+`2026-08-30-evaluation-order.md` §2 requires, **before any holdout is consumed**: step 7 the
+contract-integrity check (code/data hashes, manifest `K` vs contract `K`, frozen multiplicity
+configuration, candidate vs the step-6 hash-pinned commit, holdout vs the step-2 reservation — a
+mismatch is `EVIDENCE-VOID`, never an evidentiary rejection) and step 8 the zero-K role state-drift
+re-check (Product-Group/sign, cap, session, S7 occupancy; failure emits `ROLE-BLOCKED` and follows
+the contract's frozen succession rule — forfeit by default). The body's Phase 4 jumps from the
+selection freeze straight to the read. **Both steps run before the confirm read**, and the
+`ROLE-BLOCKED` succession/forfeit election is a founding-freeze field.
+
+### C3 — Phase 4 must gate on the frozen four-firm cross-section, not on Select alone.
+
+v2 §3 keeps v1's cross-section unchanged: exactly `Bulenox_100K` · `Tradeify_Select_100K` ·
+`MFFU_Rapid_100K` · `BluSky_Premium_100K`, discharged only when **≥2 distinct firms** clear Part A,
+**≥1 of them `trailing_locking`**; all other tiers are diagnostics only. `Tradeify_Growth_100K` is
+not in the set, and — the point the body missed — Growth and Select are the **same firm**, so two
+passing Tradeify tiers cannot satisfy "≥2 distinct". Score the frozen four; report Growth as a
+diagnostic. This also settles the body's §0.5 tier question: making Growth *gating* is not an
+operator preference this session can take, it is an amendment to a frozen prereg.
+
+### C4 — The door-check exit-code expectation in §1 deliverable 1 and §10 is inverted.
+
+`scripts/instrument_profiles.py::cmd_cell` returns **0** for a consulted clean cell, **1** only when
+a blocking verdict or a bar is present, and **2** for FATAL (missing ledger/unknown symbol/unknown
+mechanism — executed, not consulted). Charter §2.1's preferred non-index path requires *no* BINDING
+BAR, i.e. **exit 0**. Requiring "exit 1 + BINDING BAR lines" would reject the preferred clean
+candidate and reward a blocked one. **Consulted = exit 0 or 1; a clean route requires exit 0; only
+exit 2 is a non-consultation.** Verified live: `cell MYM opening-range-continuation` → exit 0 is
+wrong to expect too — that cell prints two BINDING BAR lines and a `DEAD` verdict; the real contract
+is the source above, not either document's expectation.
+
+### C5 — `M = 1` is frozen unconditionally for this lane, not "unless argued".
+
+Charter §2.3: the confirm partition is read **once, on the single pre-nominated survivor**, and
+per-variant confirm results are never computed. The general campaign-envelope ADR's `M` is a
+ceiling on how many cells Explore may advance; for a deep-lane campaign that ceiling is 1 by the
+charter's own selection rule. Declaring `M > 1` would mint confirm slots the lane cannot lawfully
+consume. **DL-3 freezes `α` with `M = 1` and a named procedure; the "unless argued" clause in the
+body's deliverable 3 is withdrawn.**
+
+### C6 — The third-abandonment consequence in §1 is overstated.
+
+Charter §4(c): abandonment **discloses, does not strike**; two consecutive trigger an
+audit-report duty, and that duty was **already discharged 2026-08-23**. A third abandonment
+therefore adds no strike and triggers no retirement. `2026-08-30-channel-liveness-gate.md` §2 maps
+deep-iteration's *yield* limb to "retirement" in effect but states plainly that **neither
+consequence is self-executing**, and the lane's reconciliation addendum is still owed and
+unauthored (STATE 2026-11-08 row). The 2026-11-08 starvation check requires a programme-level
+ruling, not an automatic close. The body's "a third abandonment is very likely the lane's death" is
+**not the counter state** and must not be allowed to bias family election toward risk-seeking.
+What is true: only a **confirm-read failure or a post-confirm N-SURV failure** strikes the yield
+limb (0/2), and that limb is the one mapped to retirement.
+
+### C7 — The §10 power hook must use the declared `K`, not a hardcoded 10.
+
+`register_search` refuses unless `--search-space-size == grammar.generation_budget`. GO-2's K ≈ 10
+is a default, not a literal. The audit command reads:
+
+```bash
+python -c "import sys; sys.path.insert(0,'lab'); \
+  from discovery.deep_lane_admission import deep_lane_power; \
+  from research_utils.axis_screen import floor_at_k; \
+  print(deep_lane_power(target_sr=<T>, floor_sr=floor_at_k(<K>, years=<Y>), years=<Y>))"
+# <K> = the contract's declared K; assert it equals grammar.generation_budget
+```
+
+### C8 — `evaluate_deep_admission` alone does not establish that the manifest would open.
+
+`open_run`'s `--lane deep` path additionally validates the grammar file and its SHA-256 (drift-
+checked), `K == generation_budget`, `--instrument` + `--data-window` syntax, burned-segment overlap
+(a hard abort, no manifest written), and the frozen `--prereg` path — plus any supplied cost-law
+inputs — all before writing. Step 2.2's pre-GO check must exercise each non-writing precondition and
+report them individually, rather than equating the three-conjunct predicate with acceptance.
+
+### C9 — Evaluation-order has **ten** steps; Phase 4 must record step 10.
+
+The body's §0 says "steps 1–9". Step 10 (portfolio and venue fit, `CONFIRMED` candidates only) is
+mandatory: re-run the step-8 role check if the deployment target moved, always re-check S7
+occupancy (dynamic), then composition/aggregate/activity/drawdown/sizing. A failure there rejects
+the **placement**, not the confirmed status (`CONFIRMED · VENUE-FAIL(edition)` is a valid standing
+disposition). Phase 4 currently closes at the N-SURV verdict and would never record placement.
+
+### C10 — The MOC-imbalance family is operator-closed; it is not a live census entry.
+
+Already raised independently at the Phase 0 gate and confirmed by the review.
+[`2026-09-01-next-vet-intake-decision.md`](../../notes/2026-09-01-next-vet-intake-decision.md):
+B1 strategy **`DROP`**, source pursuit **`STOP`**, zero measured expectancy, no complete expression.
+Its re-proposal bar requires independently credible evidence of a **large positive net** expectancy
+plus a complete frozen expression, and explicitly excludes "a different index micro". The cited
+`claude/elastic-gauss-910e93` worktree exists neither locally nor on `origin`. Phase 1 records the
+closure and the bar; it does not shortlist the family. Likewise `MNQTAPE-2` is **`NO-GO`** (operator
+declined 2026-08-23), not `HOLD`.
+
+### C11 — Prereg vs candidate contract: unresolved, with a proposed resolution.
+
+`2026-08-30-candidate-contract.md` §2 replaces the deep-iteration channel's freeze-chain documents
+with typed appends to **one** hash-addressed contract and forbids "a new file restating fields the
+contract already holds"; the review reads this as one artifact, not three. Charter §7 step 1 still
+mandates a pre-registration matching the `*deep-lane*` filename pattern, whose path is recorded on
+the charter's running-count line — and the deep lane's contract-migration addendum is **owed,
+unauthored, and forbidden to this session** (§5). **Proposed resolution, pending the operator's
+ruling:** one artifact, filed at the charter's mandatory `docs/briefs/pre-registration/*deep-lane*`
+path, structured as the candidate contract's append-only freeze points, carrying the envelope entry
+and the charter-specific sections (§2.2 conjuncts, half-split, nomination, SPA/StepM, forbidden
+moves) — one hash, one file, both ADRs' requirements met, no field restated twice. Phase 2 will not
+open until this is ruled on.
+
+### What this addendum does NOT do
+
+No `core/`, `lab/`, `scripts/`, charter, ADR, prereg, or STATE edit. It does not re-score the A2
+map, author the lane's owed addenda, elect a family, open a campaign, bind K, or apply any GO.
