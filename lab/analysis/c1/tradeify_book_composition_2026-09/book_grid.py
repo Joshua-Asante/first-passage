@@ -370,6 +370,61 @@ def _job_key(job):
                       sort_keys=True, default=str)
 
 
+def _sha256_file(path: str) -> str:
+    import hashlib
+    h = hashlib.sha256()
+    try:
+        with open(path, "rb") as fh:
+            for blk in iter(lambda: fh.read(1 << 20), b""):
+                h.update(blk)
+    except OSError:
+        return "ABSENT"
+    return h.hexdigest()[:16]
+
+
+def _run_fingerprint(jobs) -> dict:
+    """Everything outside the job tuple that can change a cell's computed value.
+
+    `_job_key` identifies a cell only by its CLI arguments. That is NOT enough to decide a
+    checkpointed cell may be reused: SEEDS, the engine, the firm rules, the session
+    calendar and the vendor exports all feed `score_cell` without appearing in the tuple.
+    Resuming across a change to any of them would silently splice stale cells into a fresh
+    grid while the output header advertised the new configuration -- the same
+    "artifacts do not match the code" failure this checkpointing was added to prevent.
+
+    So the sidecar carries this fingerprint and a resume is only honoured when it matches
+    byte for byte; otherwise the sidecar is discarded and every cell recomputed. Cheap to
+    be strict here: the cost of a false mismatch is one re-run, the cost of a false match
+    is a silently wrong published grid.
+
+    Raised by Codex as P1 on PR #271 -- correctly, and against my own commit message,
+    which claimed a resumed cell was "identical to a cold one" when that holds only with
+    all of the below held constant.
+    """
+    legs_used = sorted({leg for j in jobs for leg in j[5]})
+    tiers_used = sorted({j[1] for j in jobs})
+    return {
+        "seeds": list(SEEDS),
+        "horizon_cap": HORIZON_CAP,
+        "prices": [EVAL_PRICE, RESET_PRICE],
+        "micro_eq": {k: MICRO_EQ[k] for k in legs_used if k in MICRO_EQ},
+        "tiers": {t: TIERS.get(t) for t in tiers_used},
+        "firm_rules": {t: json.dumps(FIRM_RULES.get(t), sort_keys=True, default=str)
+                       for t in tiers_used},
+        "sessions_sha": _sha256_file(os.path.join(HERE, "data", "cme_equity_sessions.json")),
+        "inputs_sha": {leg: _sha256_file(os.path.join(DOWNLOADS, LEG_FILES[leg]))
+                       for leg in legs_used if leg in LEG_FILES},
+        "code_sha": {
+            "book_grid.py": _sha256_file(os.path.abspath(__file__)),
+            "mc/simulation.py": _sha256_file(
+                os.path.join(REPO_ROOT, "core", "mc", "simulation.py")),
+            "mc/preflight.py": _sha256_file(
+                os.path.join(REPO_ROOT, "core", "mc", "preflight.py")),
+            "firm_rules.py": _sha256_file(os.path.join(REPO_ROOT, "core", "firm_rules.py")),
+        },
+    }
+
+
 def _run_checkpointed(jobs, out_path, n_jobs):
     """Run cells in bounded chunks, appending each result to a sidecar as it lands.
 
@@ -384,16 +439,30 @@ def _run_checkpointed(jobs, out_path, n_jobs):
     code" defect the first review caught.
 
     Chunking bounds peak memory (workers are torn down between chunks) and the sidecar
-    makes a crash cost one chunk instead of the run. `score_cell` is seeded from the
-    module-level SEEDS and depends only on its own argument tuple, so per-cell values do
-    not depend on execution order or on how the work is grouped; resuming is exact, not
-    approximate. Results are returned in `jobs` order regardless of completion order.
+    makes a crash cost one chunk instead of the run. Within one configuration `score_cell`
+    is deterministic -- seeded from the module-level SEEDS, depending only on its own
+    argument tuple -- so per-cell values do not depend on execution order or on how the
+    work is grouped, and a resumed cell is identical to a cold one. Across a change to
+    SEEDS, the engine, the firm rules, the session calendar or a vendor export it would
+    NOT be, which is why the sidecar carries `_run_fingerprint` and is discarded whole
+    when that no longer matches. Results are returned in `jobs` order regardless of
+    completion order, because the renderers index positionally.
+
+    `n_jobs` follows joblib's convention, so a negative value means "all CPUs" (the repo
+    uses `n_jobs=-1` at `core/mc/modes.py`). It is normalised before use as a chunk width:
+    passed through raw it became the step of `range(0, len(pending), -1)`, which is empty,
+    so no cell ever ran and the final lookup raised `KeyError` for all of them.
     """
     from joblib import Parallel, delayed
 
+    width = n_jobs if n_jobs and n_jobs > 0 else (os.cpu_count() or 1)
     part = out_path + ".partial.jsonl"
+    fp = _run_fingerprint(jobs)
+    fp_line = json.dumps({"__fingerprint__": fp}, sort_keys=True, default=str)
+
     done = {}
     if os.path.exists(part):
+        seen_fp, has_fp = None, False
         with open(part, encoding="utf-8") as fh:
             for line in fh:
                 line = line.strip()
@@ -403,14 +472,35 @@ def _run_checkpointed(jobs, out_path, n_jobs):
                     rec = json.loads(line)
                 except json.JSONDecodeError:
                     continue          # truncated tail from a hard kill; recompute that cell
+                if "__fingerprint__" in rec:
+                    has_fp, seen_fp = True, rec["__fingerprint__"]
+                    continue
                 done[rec["key"]] = rec["result"]
-        if done:
+        # A sidecar is reusable only if it carries a fingerprint AND it matches. An
+        # unfingerprinted sidecar is refused rather than trusted: it predates this check,
+        # so nothing establishes which configuration produced its cells.
+        ok = has_fp and json.dumps({"__fingerprint__": seen_fp},
+                                   sort_keys=True, default=str) == fp_line
+        if not ok:
+            if done:
+                why = ("differs in: " + ", ".join(
+                    k for k, v in fp.items() if seen_fp.get(k) != v)) if has_fp \
+                    else "carries no run fingerprint"
+                print(f"resume REJECTED ({why}) -- recomputing all {len(jobs)} cells",
+                      flush=True)
+            done = {}
+            os.remove(part)
+        elif done:
             print(f"resume: {len(done)} cell(s) already checkpointed in {part}", flush=True)
 
+    if not os.path.exists(part):
+        with open(part, "w", encoding="utf-8") as fh:
+            fh.write(fp_line + "\n")
+
     pending = [j for j in jobs if _job_key(j) not in done]
-    for i in range(0, len(pending), n_jobs):
-        chunk = pending[i:i + n_jobs]
-        res = Parallel(n_jobs=min(n_jobs, len(chunk)), verbose=5)(
+    for i in range(0, len(pending), width):
+        chunk = pending[i:i + width]
+        res = Parallel(n_jobs=min(width, len(chunk)), verbose=5)(
             delayed(score_cell)(j) for j in chunk)
         with open(part, "a", encoding="utf-8") as fh:
             for j, r in zip(chunk, res):

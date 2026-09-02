@@ -193,18 +193,30 @@ def verdict():
     L.append(f"2. **Growth beats Select by more than any composition change.** Same books, same clock: MNQ×1 "
              f"{mnq_s:.1f}% → {mnq_g:.1f}% bust, MNQ×1+Aegis×2 {pair_s:.1f}% → {pair_g:.1f}%, at effectively "
              f"unchanged medians. The $500 wider rope is the biggest lever in the grid.")
+    # Control figures are read from controls.json for the same reason the finalist figures are
+    # read from grid_final.json: a re-run must not leave this prose self-contradictory.
+    # Round 2 of the PR #260 review caught the shuffled and excluded-regime figures being
+    # hard-coded here. Round 3 (PR #271) caught that item 3's co-movement ratio, per-leg
+    # expectancy and skew were STILL literals -- and by then the regenerated artifact had moved
+    # the MNQ/MYM joint-loss ratio to 1.24 while this prose still asserted 1.25. Every
+    # quantitative claim in the verdict now resolves from an artifact.
+    c = load("controls.json")
+    co = (c or {}).get("comovement", {})
+    _jl = co.get("joint_loss_days", {}).get("mnq-mym", {})
+    _pl = co.get("per_leg", {})
+    if _jl.get("ratio") and _pl.get("mnq") and _pl.get("mym"):
+        _me, _ye = _pl["mnq"]["mean_pc_per_trade_day"], _pl["mym"]["mean_pc_per_trade_day"]
+        mym_txt = (f"Its losses coincide with MNQ's {(_jl['ratio'] - 1) * 100:.0f}% more often than "
+                   f"independence (joint-loss ratio {_jl['ratio']:.2f}), its per-trade-day expectancy "
+                   f"is {_ye / _me:.2f}× MNQ's (${_ye:.0f} vs ${_me:.0f} per contract), and its "
+                   f"active-day skew is {_pl['mym']['skew_active']:.1f} (rare big wins, many small "
+                   f"losses).")
+    else:
+        mym_txt = "Its co-movement and per-leg statistics are absent (`controls.json` not built)."
     L.append(f"3. **MYM v0.4 hurts every book it joins.** MNQ×1 → MNQ×1+MYM×1 on Growth: {mnq_g:.1f}% → "
-             f"{mym_g:.1f}% bust. Its losses coincide with MNQ's 25% more often than independence (joint-loss "
-             f"ratio 1.25), its per-trade-day expectancy is a quarter of MNQ's ($12 vs $50 per contract), and its "
-             f"active-day skew is 4.5 (rare big wins, many small losses). Drop it as a leg. The v0.3 long-only "
+             f"{mym_g:.1f}% bust. {mym_txt} Drop it as a leg. The v0.3 long-only "
              f"export is no better, and this bootstrap does not reproduce the 19.5%-bust rolling-start figure in "
              f"`ops/instruments/MYM.md` M9.")
-    # Control figures are read from controls.json for the same reason the finalist figures are
-    # read from grid_final.json: a re-run with different seeds must not leave this prose
-    # self-contradictory (Codex review, PR #260, second round -- the first version of this
-    # function hard-coded 7.97 / 8.43 and the excluded-regime percentages while claiming
-    # re-runs could not make the verdict stale).
-    c = load("controls.json")
     ctl = {}
     if c:
         for r in c["results"]:

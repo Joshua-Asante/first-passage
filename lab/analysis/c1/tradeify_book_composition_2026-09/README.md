@@ -72,9 +72,20 @@ joblib blocked on them forever (8/12 cells, no traceback, no output), and at `--
 died at ~9 minutes. `--jobs 3` is what the committed figures were produced at. The stage now runs
 in chunks and appends each finished cell to `data/grid_final.json.partial.jsonl`, so a crash costs
 one chunk and re-running the same command resumes; the sidecar is deleted only once the real
-output is on disk. Cells are seeded from `SEEDS` and depend only on their own argument tuple, so a
-resumed cell is identical to a cold one, and results are returned in job order regardless of
-completion order. Guarded by `tests/lab/test_book_grid_checkpointing.py`.
+output is on disk. Within one configuration a cell is deterministic — seeded from `SEEDS`,
+depending only on its own argument tuple — so a resumed cell is identical to a cold one, and
+results are returned in job order regardless of completion order.
+
+**A resume is only honoured when the configuration is unchanged.** The sidecar's first record is a
+fingerprint of everything that feeds a cell without appearing in its argument tuple: `SEEDS`,
+`HORIZON_CAP`, the eval prices, the micro-equivalent caps, the tier consistency fractions and
+`FIRM_RULES` entries in play, and content hashes of the session calendar, each vendor export used,
+`book_grid.py` itself and `core/mc/simulation.py` / `core/mc/preflight.py` / `core/firm_rules.py`.
+On any mismatch — or if the sidecar predates the fingerprint — it is discarded whole and every cell
+recomputed. Being strict is cheap here: a false mismatch costs one re-run, whereas a false match
+would splice stale cells into a grid whose header advertises the new configuration, which is the
+same "artifacts do not match the code" failure this checkpointing exists to prevent. Guarded by
+`tests/lab/test_book_grid_checkpointing.py`.
 
 `data/cme_equity_sessions.json` (1,011 CME equity-index sessions, 13 weekday closures in the
 window) is committed so `third_leg_shape.py` never schedules a synthetic trade on a closed market.

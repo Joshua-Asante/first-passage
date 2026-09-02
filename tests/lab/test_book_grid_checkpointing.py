@@ -23,11 +23,19 @@ trust a resumed artifact as much as a cold one:
   * a sidecar truncated mid-write by a hard kill degrades to recomputing that one cell
     rather than crashing or, worse, loading a half-written record;
   * the sidecar survives `_run_checkpointed` itself -- only `main` removes it, and only
-    after the real output is safely on disk.
+    after the real output is safely on disk;
+  * a sidecar built under a DIFFERENT configuration (or carrying no fingerprint at all)
+    is refused rather than spliced into a fresh grid -- raised as P1 on PR #271, because
+    `_job_key` alone cannot see a change to SEEDS, the engine, the firm rules, the
+    session calendar or a vendor export;
+  * joblib's negative `n_jobs` ("all CPUs", as used at `core/mc/modes.py`) is normalised
+    before being used as a chunk width, instead of becoming a negative `range` step that
+    silently runs nothing.
 
-`n_jobs=1` throughout: joblib's sequential backend runs in-process, so the stubbed
-scorer is actually observed. Under a worker-process backend the monkeypatch would not
-propagate and every one of these tests would silently pass for the wrong reason.
+The stubbed scorer must actually be observed, which needs in-process execution: most
+tests pass `n_jobs=1`, and the two that deliberately resolve a wider width wrap the call
+in `parallel_backend("sequential")`. Under a worker-process backend the monkeypatch would
+not propagate and these tests would silently pass for the wrong reason.
 """
 from __future__ import annotations
 
@@ -57,6 +65,16 @@ def grid():
 def _job(sizing, tier, n_sims=10, stage="final"):
     return (sizing, tier, n_sims, ("2022-08-01", "2026-07-01"), stage,
             ("mnq", "mym", "aegis"))
+
+
+def _fp_line(grid, jobs):
+    """The fingerprint header a valid sidecar must carry (see the run-fingerprint tests).
+
+    Hand-built sidecars in these tests need it: without it the runner refuses the sidecar
+    outright, which is the intended behaviour but not what those tests are probing.
+    """
+    return json.dumps({"__fingerprint__": grid._run_fingerprint(jobs)},
+                      sort_keys=True, default=str) + "\n"
 
 
 def _stub(grid, monkeypatch):
@@ -120,7 +138,7 @@ def test_partial_resume_computes_only_the_missing_cells(grid, monkeypatch, tmp_p
     part = pathlib.Path(out + ".partial.jsonl")
 
     # only the middle cell was checkpointed before the imagined crash
-    part.write_text(json.dumps({
+    part.write_text(_fp_line(grid, jobs) + json.dumps({
         "key": grid._job_key(jobs[1]),
         "result": {"tier": "Tradeify_Select_100K", "sizing": {"mnq": 1, "aegis": 2},
                    "n_sims": 10, "marker": "PRESERVED"},
@@ -141,6 +159,7 @@ def test_results_follow_job_order_not_checkpoint_order(grid, monkeypatch, tmp_pa
 
     # sidecar written in REVERSE order, as an interleaved parallel run would produce
     with part.open("w", encoding="utf-8") as fh:
+        fh.write(_fp_line(grid, jobs))
         for j in reversed(jobs):
             fh.write(json.dumps({"key": grid._job_key(j),
                                  "result": {"aegis": j[0]["aegis"]}}) + "\n")
@@ -157,6 +176,7 @@ def test_truncated_sidecar_tail_is_tolerated(grid, monkeypatch, tmp_path):
     part = pathlib.Path(out + ".partial.jsonl")
 
     with part.open("w", encoding="utf-8") as fh:
+        fh.write(_fp_line(grid, jobs))
         fh.write(json.dumps({"key": grid._job_key(jobs[0]),
                              "result": {"marker": "GOOD"}}) + "\n")
         torn = json.dumps({"key": grid._job_key(jobs[1])})[:-3]   # torn off mid-write
@@ -190,3 +210,105 @@ def test_chunking_does_not_change_the_result_set(grid, monkeypatch, tmp_path):
         return [{k: v for k, v in r.items() if k != "marker"} for r in rs]
 
     assert strip(a) == strip(b)
+
+
+# ------------------------------------------------------- run fingerprint (PR #271, P1)
+#
+# `_job_key` identifies a cell by its CLI arguments only. SEEDS, the engine, the firm
+# rules, the session calendar and the vendor exports all feed `score_cell` without
+# appearing in that tuple, so a resume across a change to any of them would splice stale
+# cells into a fresh grid while the output header advertised the new configuration. The
+# sidecar therefore carries a fingerprint and a resume is honoured only on an exact match.
+
+def test_fingerprint_covers_seeds(grid, monkeypatch):
+    jobs = [_job({"mnq": 1, "aegis": 0}, "Tradeify_Select_100K")]
+    before = grid._run_fingerprint(jobs)
+    monkeypatch.setattr(grid, "SEEDS", (1, 2, 3))
+    assert grid._run_fingerprint(jobs) != before, "changing SEEDS must change the fingerprint"
+
+
+def test_fingerprint_covers_calendar_inputs_and_code(grid):
+    fp = grid._run_fingerprint([_job({"mnq": 1, "aegis": 2}, "Tradeify_Select_100K")])
+    for k in ("seeds", "horizon_cap", "tiers", "firm_rules", "sessions_sha",
+              "inputs_sha", "code_sha"):
+        assert k in fp, f"fingerprint is missing {k}"
+    # the calendar is committed, so its hash must actually resolve
+    assert fp["sessions_sha"] != "ABSENT"
+    assert "book_grid.py" in fp["code_sha"] and fp["code_sha"]["book_grid.py"] != "ABSENT"
+    # only the legs actually in play are fingerprinted
+    assert set(fp["inputs_sha"]) <= {"mnq", "mym", "aegis"}
+
+
+def test_sidecar_from_a_different_configuration_is_refused(grid, monkeypatch, tmp_path):
+    jobs = [_job({"mnq": 1, "aegis": k}, "Tradeify_Select_100K") for k in (0, 2)]
+    out = str(tmp_path / "grid.json")
+    part = pathlib.Path(out + ".partial.jsonl")
+
+    stale = grid._run_fingerprint(jobs)
+    stale["seeds"] = [999, 998, 997]          # as if SEEDS had changed since the crash
+    with part.open("w", encoding="utf-8") as fh:
+        fh.write(json.dumps({"__fingerprint__": stale}, sort_keys=True, default=str) + "\n")
+        for j in jobs:
+            fh.write(json.dumps({"key": grid._job_key(j),
+                                 "result": {"marker": "STALE"}}) + "\n")
+
+    calls = _stub(grid, monkeypatch)
+    res, _ = grid._run_checkpointed(jobs, out, 1)
+    assert len(calls) == 2, "a sidecar from another configuration must not be reused"
+    assert all(r.get("marker") != "STALE" for r in res), "stale results leaked into the grid"
+
+
+def test_unfingerprinted_sidecar_is_refused(grid, monkeypatch, tmp_path):
+    """Pre-fingerprint sidecars establish nothing about which config produced them."""
+    jobs = [_job({"mnq": 1, "aegis": k}, "Tradeify_Select_100K") for k in (0, 2)]
+    out = str(tmp_path / "grid.json")
+    part = pathlib.Path(out + ".partial.jsonl")
+    with part.open("w", encoding="utf-8") as fh:
+        for j in jobs:
+            fh.write(json.dumps({"key": grid._job_key(j),
+                                 "result": {"marker": "OLD"}}) + "\n")
+
+    calls = _stub(grid, monkeypatch)
+    res, _ = grid._run_checkpointed(jobs, out, 1)
+    assert len(calls) == 2, "an unfingerprinted sidecar must be refused, not trusted"
+    assert all(r.get("marker") != "OLD" for r in res)
+
+
+def test_matching_fingerprint_still_resumes(grid, monkeypatch, tmp_path):
+    """Strictness must not have broken the resume it exists to make safe."""
+    jobs = [_job({"mnq": 1, "aegis": k}, "Tradeify_Select_100K") for k in (0, 2)]
+    out = str(tmp_path / "grid.json")
+
+    calls = _stub(grid, monkeypatch)
+    grid._run_checkpointed(jobs, out, 1)
+    assert len(calls) == 2
+    calls.clear()
+    grid._run_checkpointed(jobs, out, 1)
+    assert calls == [], "a sidecar written by this same configuration must still resume"
+
+
+# ------------------------------------------------- joblib's negative n_jobs (PR #271, P2)
+
+def test_negative_jobs_is_all_cpus_not_an_empty_loop(grid, monkeypatch, tmp_path):
+    """`--jobs -1` is joblib's "all CPUs" (used at core/mc/modes.py), not a chunk step.
+
+    Used raw it became the step of `range(0, len(pending), -1)` -- empty -- so no cell ran
+    and the closing lookup raised KeyError for every one of them.
+    """
+    from joblib import parallel_backend
+    jobs = [_job({"mnq": 1, "aegis": k}, "Tradeify_Select_100K") for k in (0, 2, 3)]
+    calls = _stub(grid, monkeypatch)
+    # sequential backend so the stub is observed even though n_jobs resolves > 1
+    with parallel_backend("sequential"):
+        res, _ = grid._run_checkpointed(jobs, str(tmp_path / "g.json"), -1)
+    assert len(calls) == 3, f"expected all 3 cells computed, got {len(calls)}"
+    assert [r["sizing"]["aegis"] for r in res] == [0, 2, 3]
+
+
+def test_zero_jobs_does_not_hang_or_crash(grid, monkeypatch, tmp_path):
+    from joblib import parallel_backend
+    jobs = [_job({"mnq": 1, "aegis": 0}, "Tradeify_Select_100K")]
+    calls = _stub(grid, monkeypatch)
+    with parallel_backend("sequential"):
+        res, _ = grid._run_checkpointed(jobs, str(tmp_path / "g.json"), 0)
+    assert len(calls) == 1 and len(res) == 1
