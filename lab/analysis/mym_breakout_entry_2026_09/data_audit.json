@@ -1,0 +1,52 @@
+{
+  "chronological": true,
+  "complete_rth_sessions": 1804,
+  "duplicate_timestamps": 0,
+  "end_utc": "2026-07-31T20:45:00+00:00",
+  "exact_15_minute_intervals": 167995,
+  "excluded_rth_sessions": {
+    "incomplete_grid": 0,
+    "missing_opening_range": 0,
+    "too_few_bars": 64
+  },
+  "gaps_over_one_day": 383,
+  "interval_distribution_top": {
+    "0 days 00:15:00": 167995,
+    "0 days 00:30:00": 544,
+    "0 days 00:45:00": 3,
+    "0 days 01:15:00": 1438,
+    "0 days 05:00:00": 4,
+    "0 days 05:15:00": 44,
+    "2 days 00:15:00": 7,
+    "2 days 01:15:00": 337,
+    "2 days 02:15:00": 7,
+    "2 days 05:00:00": 7,
+    "2 days 05:15:00": 4,
+    "3 days 01:15:00": 12
+  },
+  "irregular_intervals": 2421,
+  "largest_gap": "3 days 05:00:00",
+  "limitations": [
+    "Continuous MYM1! is an unadjusted front-contract series and can contain roll gaps.",
+    "OHLC bars do not reveal intrabar path; target/stop ties are resolved stop-first.",
+    "The export ends 2026-07-31 although its filename is dated 2026-09-01.",
+    "RTH study excludes overnight information and incomplete/holiday sessions.",
+    "Commission is repository-authoritative for Tradeify Select; spread/slippage is a declared conservative model, not tick-level measurement."
+  ],
+  "metadata": {
+    "base_currency": "",
+    "mintick": 1.0,
+    "pointvalue": 0.5,
+    "quote_currency": "USD",
+    "schema": "BAR_EXPORT_meta_v0.2",
+    "symbol": "MYM",
+    "ticker": "MYM1!",
+    "timeframe": "15",
+    "timezone": "America/Chicago",
+    "type": "futures"
+  },
+  "nominal_interval_minutes": 15,
+  "row_count": 170417,
+  "start_utc": "2019-05-05T22:15:00+00:00",
+  "utc_dates": 2255
+}

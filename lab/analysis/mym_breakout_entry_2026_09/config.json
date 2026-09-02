@@ -1,0 +1,49 @@
+{
+  "study_id": "MYM-BREAKOUT-ENTRY-2026-09",
+  "instrument": {
+    "symbol": "MYM",
+    "ticker": "MYM1!",
+    "tick_size": 1.0,
+    "tick_value_usd": 0.5,
+    "point_value_usd": 0.5,
+    "contracts": 1
+  },
+  "session": {
+    "timezone": "America/Chicago",
+    "opening_range_start": "08:30",
+    "opening_range_end": "09:00",
+    "last_entry": "14:45",
+    "force_flat": "15:00",
+    "minimum_bars": 27
+  },
+  "execution": {
+    "commission_per_side_usd": 0.91,
+    "headline_slippage_ticks_per_side": 1,
+    "slippage_sensitivity_ticks_per_side": [0, 1, 2, 4],
+    "stop_points_headline": 300,
+    "stop_points_neighborhood": [250, 300, 350],
+    "target_r": 1.0,
+    "ambiguous_intrabar": "stop_first",
+    "same_bar_two_sided_entry": "no_fill",
+    "gap_through_stop": "worse_of_open_or_stop"
+  },
+  "periods": {
+    "development": ["2019-05-05", "2022-12-31"],
+    "validation": ["2023-01-01", "2024-12-31"],
+    "holdout": ["2025-01-01", "2026-07-31"]
+  },
+  "catalogue": [
+    {"family": "immediate", "description": "First intrabar touch of the opening-range boundary."},
+    {"family": "close_confirmed", "description": "First close beyond the boundary; enter next bar open."},
+    {"family": "buffer_10", "description": "First intrabar touch 10 points beyond the boundary."},
+    {"family": "retest_25", "description": "Close breakout, then first retest within 25 points that closes beyond; enter next open."},
+    {"family": "momentum_two_close", "description": "Two consecutive closes beyond the boundary; enter next open."}
+  ],
+  "decision_thresholds": {
+    "minimum_net_expectancy_r": 0.1,
+    "minimum_win_rate": 0.45,
+    "minimum_validation_trades": 100,
+    "minimum_holdout_trades": 75
+  },
+  "bootstrap": {"samples": 2000, "seed": 20260902}
+}
