@@ -1970,7 +1970,7 @@
         {
           "order": 1,
           "name": "Hard-structural compliance screens",
-          "mechanism": "Hedging/same-Product-Group + sign, session, instrument-class screens run FIRST and absolutely. Absolute rule with no exceptions: a short-capable/opposing-sign Equity Index Product Group leg cannot coexist with a long Equity Index leg on the same or any commonly-controlled account.",
+          "mechanism": "Hedging/same-Product-Group + sign, session, instrument-class screens run FIRST and absolutely. Absolute rule with no exceptions: a short-capable/opposing-sign Equity Index Product Group leg cannot coexist with a long Equity Index leg on the same or any commonly-controlled account. SCOPE ASYMMETRY (load-bearing, previously unstated): the limbs do NOT share a scope. Product-Group/sign is ABSOLUTE across any account under the same control — a rejection cannot be cleared by moving to another account you control. Cap, session, instrument-class and S7 order-symbol occupancy are scoped to the single account/book, so a rejection on those MAY clear on a different, non-affiliated account.",
           "inputs": "Candidate's Product Group, instrument class, and sign vs the existing/composed book",
           "outputs": "SCREEN-PASS / SCREEN-FAIL determination",
           "gate": "Runs before risk-breadth (step 2) is ever scored",
@@ -1982,11 +1982,11 @@
         {
           "order": 2,
           "name": "Risk-breadth admissibility (n_eff_risk_delta)",
-          "mechanism": "Against a dollar-denominated trailing drawdown barrier, admissibility is a risk-space property: require n_eff_risk_delta>0 (participation ratio of the weekly COVARIANCE matrix), never merely dependence N_eff (correlation matrix, scale-invariant and blind to whose dollar variance owns the tail).",
+          "mechanism": "Against a dollar-denominated trailing drawdown barrier, admissibility is a risk-space property: require n_eff_risk_delta>0 (participation ratio of the weekly COVARIANCE matrix), never merely dependence N_eff (correlation matrix, scale-invariant and blind to whose dollar variance owns the tail). ⚠ STATUS (2026-09-02): this coordinate is REPORT-OPTIONAL, not binding, because W4 superseded its sole-producer status in part — `breadth.py` is tombstoned, so item 6 has no live producer. The coordinates remain Stage-8 doctrine for book-leg admission if a producer is ever re-armed; they are not deleted.",
           "inputs": "Weekly covariance matrix of the composed book including the candidate at its intended weight",
           "outputs": "n_eff_risk_delta (change in risk-space participation ratio)",
           "gate": "n/a",
-          "kill_condition": "n_eff_risk_delta<=0 -> reject as a book leg (candidate may retain standalone CANDIDATE standing); does not proceed to the frozen-engine run at that weight",
+          "kill_condition": "n_eff_risk_delta<=0 -> presumptive reject as a book leg — but NECESSARY, NEVER SUFFICIENT, and currently report-optional. ORB-MNQ-1 is the standing negative control: it CLEARED this pre-screen at +0.003 and still took composed bust from 2.65% to 38.75%. Clearing the pre-screen is not evidence a leg composes safely.",
           "refs": [
             "docs/methodology/lessons/methodology_lessons.md M-21",
             "docs/adr/2026-07-20-stage8-variance-dominance-risk-neff-gate.md"
@@ -1995,11 +1995,11 @@
         {
           "order": 3,
           "name": "Daily-$-std ratio cheapest-falsifier (rho)",
-          "mechanism": "Companion to step 2, computable in seconds at panel-build: rho = candidate's daily-$-std / existing-book's daily-$-std, both at the intended weight and the adjudication panel's own $-basis.",
+          "mechanism": "Companion to step 2, computable in seconds at panel-build: rho = candidate's daily-$-std / existing-book's daily-$-std, both at the intended weight and the adjudication panel's own $-basis. Shares the same report-optional status as the risk-breadth coordinate above while `breadth.py` stays tombstoned.",
           "inputs": "Candidate's and existing book's daily-$std at the intended weight, same $-basis",
           "outputs": "rho ratio",
           "gate": "n/a",
-          "kill_condition": "rho>=1.0 -> presumptive reject; does not spend the frozen-engine run on that weight",
+          "kill_condition": "rho>=1.0 is a presumptive reject on that weight — discharged either by binding a SMALLER weight up front in the compose pre-registration, or by dropping the candidate as a book leg. It does not license spending the expensive engine run at the original weight.",
           "refs": [
             "docs/methodology/lessons/methodology_lessons.md M-21"
           ]
@@ -2007,14 +2007,16 @@
         {
           "order": 4,
           "name": "Composed-book frozen-engine MC",
-          "mechanism": "After clearing steps 1-3, run the full frozen survivor-scoring MC engine on the composed book (existing legs + candidate at intended weight), not just the standalone candidate, against the same bust/pass ceilings as the standalone admission gate (Phase 7 step 1).",
+          "mechanism": "After clearing steps 1-3, run the full frozen survivor-scoring MC engine on the composed book (existing legs + candidate at intended weight), not just the standalone candidate, against the same bust/pass ceilings as the standalone admission gate (Phase 7 step 1). ORDERING (doctrine, 2026-08-30): evaluation-order places composition and venue fit LAST — only after an edge exists — and rules that a failure here rejects the book-leg PLACEMENT, never the candidate's standalone confirmed status, and is never evidence the market effect is false.",
           "inputs": "Composed book (existing legs + candidate) at intended weight; frozen MC engine",
           "outputs": "Composed-book bust rate, pass rate, p99 DD, per firm tier and partition (full/H1/H2)",
           "gate": "n/a",
-          "kill_condition": "Composed bust>3.0% ceiling or P(pass)<50% on any required firm/partition -> FALSIFIED as a book leg at this weight, even if the leg clears standalone",
+          "kill_condition": "Composed bust > 5.0% OR P(pass) < 50% on >=2 distinct $100K firm tiers (>=1 `trailing_locking`) -> FALSIFIED as a book leg at this weight, even if the leg clears standalone. CEILING CORRECTED 2026-09-02: this step previously read 3.0%, contradicting the standalone admission gate elsewhere in this map — prereg v2 raised both to 5.0% on 2026-08-26 and supersedes v1 in full.",
           "refs": [
             "docs/methodology/objective_composition_map.md",
-            "docs/adr/2026-07-13-prop-account-book-segregation.md"
+            "docs/adr/2026-07-13-prop-account-book-segregation.md",
+            "docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md",
+            "docs/adr/2026-08-30-evaluation-order.md"
           ]
         }
       ]
