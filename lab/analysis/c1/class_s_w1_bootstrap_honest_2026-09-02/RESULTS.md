@@ -16,6 +16,15 @@ the second. What follows is an interim measurement with its uncertainty stated, 
 No locked surface, allocation, Pine, `dd_protection` constant, lifecycle state or rail setting was
 touched. Nothing was armed; `dry_run` stays `true`.
 
+> ⚠ **Reader-intercepts — two later corrections; the frozen body below is unedited (Trap #12).**
+> **1.** §2–§5 score against **3.0%**. The **live Part A ceiling is 5.0%** (frozen 2026-08-26, a week
+> before this run). Re-scored, the interim **PASSES** — see [Addendum 2026-09-02b](#addendum-2026-09-02b--re-scored-against-the-live-50-ceiling-operator-correction).
+> **2.** §3's last row and the whole of §4 say the EOD control "does not reproduce". **That is now
+> settled and §4's reading is WITHDRAWN** — the reproduction check ran and **all six full/H1/H2 cells
+> reproduce the published pins exactly**; the engine is faithful and the gap is incompleteness, not
+> divergence. See [Addendum 2026-09-02c](#addendum-2026-09-02c--reproduction-check-executed-4s-reading-is-withdrawn).
+> Quote the conservative **3.86%** figure, not §5's 3.33%.
+
 ---
 
 ## §1 — What was measured
@@ -222,6 +231,60 @@ a superseding note on either artifact) settles which governs. Flagged, not resol
 
 ---
 
+## Addendum 2026-09-02c — reproduction check EXECUTED; §4's reading is WITHDRAWN
+
+§2–§8 remain unedited. The owed check in §7 item 2 has now run
+([`repro_check.py`](repro_check.py) → [`repro_check_report.json`](repro_check_report.json)).
+
+### All six cells reproduce exactly
+
+| Partition | Clock | Measured | Published | Δ |
+|---|---|---|---|---|
+| Full | EOD | 0.1067% | 0.11% | −0.0033pp |
+| Full | honest | 0.7233% | 0.72% | +0.0033pp |
+| H1 | EOD | 0.2167% | 0.22% | −0.0033pp |
+| H1 | honest | **1.7700%** | 1.77% | **0.0000pp** |
+| H2 | EOD | 0.0367% | 0.04% | −0.0033pp |
+| H2 | honest | 0.2833% | 0.28% | +0.0033pp |
+
+Every Δ is ±0.0033pp — the published pins are quoted to two decimals and these are the
+full-precision values. These are **exact reproductions**, not near-misses.
+
+**The panel build, the `intraday_low` derivation and the MC engine are faithful on this tree under
+numpy 2.4.4 / pandas 3.0.2.** The version-drift hypothesis §4 advanced is dead.
+
+### §4's reading is withdrawn, and the reasoning error is named
+
+§4 concluded the control gap *"reads as systematic divergence from the July run, not small-sample
+noise."* **That conclusion is withdrawn.** It rested on an argument that does not hold:
+
+> *"a consistent estimator should not sit at half its target for 48 consecutive panels"*
+
+Consecutive prefixes are **nested** — going from n=40 to n=48 adds eight panels, and the 95th
+percentile moves only if one of those eight lands in the top ~5% of the distribution. Flatness
+across nested prefixes is therefore close to guaranteed by construction. It is weak evidence and §4
+treated it as strong. (Sibling of the standing lesson that a green gate is not coverage: a stable
+number is not a converged one.)
+
+### Revised reading of the control gap
+
+With the engine verified, the remaining explanation is **incompleteness**, not defect. The EOD arm's
+own distribution at n=48 is heavily right-skewed — max **1.5467%** against a mean of **0.2047%** — so
+the 95th percentile is genuinely unstable at that size, and the 52 unseen panels can plausibly carry
+it from 0.68% to the published 1.20%.
+
+**Consequence for §5, stated against the run's own interest:** if completion lifts the control from
+0.68% to 1.20%, the honest arm should be expected to rise by something similar, landing near
+**≈3.9%**. The two anchorings in §5 are therefore **not** equally good — the published-anchor figure
+(**3.86%**, headroom **1.14pp** to the live 5.0% ceiling) is the conservative and correct one to
+quote; the own-anchor figure (3.33%, 1.67pp) understates. §5's verdict is unchanged — **PASS at
+5.0%** — and now rests on a verified engine rather than an unexplained one.
+
+**Unchanged:** this is still 48/100 panels on tier 1 of 2. §7 item 1 stands; only item 2 is
+discharged. The partition is not complete and no gate verdict is taken.
+
+---
+
 ## Change history
 
 | Date | Change | By |
@@ -229,3 +292,4 @@ a superseding note on either artifact) settles which governs. Flagged, not resol
 | 2026-09-02 | Campaign opened; harnesses vendored; `READING.md` frozen before any full-scale number; run launched | Claude Code (Opus 5) |
 | 2026-09-02 | Operator stopped the run at 48/100 panels, tier 1 of 2. Interim recorded; no verdict taken; EOD control reproduction flagged OPEN | Joshua (stop) + Claude Code |
 | 2026-09-02b | Operator correction: live ceiling is 5.0% (frozen 08-26) and the weekly manual idle trade is agreed standing practice (ruled 08-16) — both pre-date this run. Re-scored: interim **PASSES** at 5.0% on both anchorings, with headroom exceeding the control gap. T1 limb (b) identified as a measurement with a two-clock subtlety. Body §2–§8 unedited | Joshua (correction) + Claude Code |
+| 2026-09-02c | Reproduction check executed: **all six full/H1/H2 cells reproduce the published pins exactly** (Δ ≤ 0.0033pp = rounding). Engine/panel verified faithful under numpy 2.4.4; version-drift hypothesis dead. §4's "systematic divergence" reading **withdrawn**, with its reasoning error named (nested-prefix flatness is weak evidence). Control gap re-read as incompleteness. §5 verdict unchanged (PASS at 5.0%); published-anchor 3.86% named as the conservative figure to quote | Claude Code |
