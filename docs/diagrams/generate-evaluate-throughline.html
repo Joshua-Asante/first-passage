@@ -1,4 +1,5 @@
 <title>Generate–Evaluate Throughline</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 
@@ -724,6 +725,7 @@
     <div class="navline" id="nav-line"></div>
   </nav>
   <main id="main-phases"></main>
+  <div class="no-results" id="no-results" hidden>No steps, refs, or kill conditions match that filter. Try a shorter term.</div>
 </div>
 
 <div class="wrap">
@@ -751,35 +753,106 @@
 <script id="pipeline-data" type="application/json">
 {
   "key_docs": [
-    "docs/rule_0.md",
-    "docs/operational_rules.md",
-    "docs/methodology/inqhiori-canon.md",
-    "docs/methodology/strategy_harvest.md",
+    ".claude/skills/brief-authoring/references/closure_record.md",
     ".claude/skills/futures-anomaly-discovery/SKILL.md",
-    "lab/discovery/register_search.py",
-    "lab/discovery/k_count.py",
-    "docs/methodology/avenue_a_generate_confirm.md",
+    ".claude/skills/futures-anomaly-discovery/reference/tool-discipline.md",
     ".claude/skills/strategy-validation/SKILL.md",
-    "docs/methodology/regime_robustness_gate.md",
-    "docs/methodology/objective_composition_map.md",
-    "docs/rejected_candidates.md",
-    "docs/methodology/rejected_signals.md",
-    "docs/adr/2026-08-04-iterate-closure-exit-mandatory.md",
-    "docs/methodology/strategy_lifecycle.md",
-    "docs/adr/2026-08-05-strategy-venue-binding-axis.md",
-    "ops/venue_editions/Tradeify_Select_100K.md",
+    ".claude/skills/strategy-validation/scripts/deflated_sharpe.py",
+    ".claude/skills/strategy-validation/scripts/selection_tests.py",
+    ".claude/skills/strategy-validation/scripts/step0_battery.py",
+    ".github/workflows/gate-manifest.yml",
+    ".github/workflows/manifest-check.yml",
+    ".github/workflows/validation-controls.yml",
     "CLAUDE.md",
+    "core/dd_protection.py",
+    "core/lifecycle.py",
+    "docs/adr/2026-06-05-monorepo-layer-boundaries.md",
+    "docs/adr/2026-06-12-three-loop-methodology-binding.md",
+    "docs/adr/2026-06-16-rule-2-budget-before-acting.md",
+    "docs/adr/2026-06-22-cost-geometry-pregate.md",
+    "docs/adr/2026-07-01-add-back-metric-layer-split.md",
+    "docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md",
+    "docs/adr/2026-07-12-dsr-k-rule-and-variance-floor-supersession.md",
+    "docs/adr/2026-07-13-prop-account-book-segregation.md",
+    "docs/adr/2026-07-20-stage8-variance-dominance-risk-neff-gate.md",
+    "docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md",
+    "docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md",
+    "docs/adr/2026-08-04-iterate-closure-exit-mandatory.md",
+    "docs/adr/2026-08-05-strategy-venue-binding-axis.md",
     "docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md",
-    "ops/c1_rail/c1_rail_arm.py",
+    "docs/adr/2026-08-07-w4-minimal-gate-set-dormancy.md",
+    "docs/adr/2026-08-08-great-prune.md",
+    "docs/adr/2026-08-09-grand-tier-quintessentials-binding.md",
+    "docs/adr/2026-08-13-dedup-first-before-new-work.md",
+    "docs/adr/2026-08-15-notice-log-is-the-live-observation-routing-convention.md",
+    "docs/adr/2026-08-16-deep-iteration-lane-charter.md",
     "docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md",
     "docs/adr/2026-08-21-persona-hierarchy-front-office-only.md",
-    "scripts/gates.yml",
-    "scripts/gate_manifest.py",
-    "docs/adr/2026-08-08-great-prune.md",
-    "docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md",
     "docs/adr/2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md",
+    "docs/adr/2026-08-24-sourcing-phase-channel-retirement.md",
     "docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md",
-    "docs/adr/2026-08-24-sourcing-phase-channel-retirement.md"
+    "docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md",
+    "docs/methodology/1r_estimation.md",
+    "docs/methodology/avenue_a_generate_confirm.md",
+    "docs/methodology/backtest_live_shrinkage.md",
+    "docs/methodology/inqhiori-canon.md",
+    "docs/methodology/lessons/methodology_lessons.md",
+    "docs/methodology/lessons/methodology_lessons.md M-16",
+    "docs/methodology/lessons/methodology_lessons.md M-17",
+    "docs/methodology/lessons/methodology_lessons.md M-18",
+    "docs/methodology/lessons/methodology_lessons.md M-19",
+    "docs/methodology/lessons/methodology_lessons.md M-20",
+    "docs/methodology/lessons/methodology_lessons.md M-21",
+    "docs/methodology/lessons/methodology_lessons.md M-Q-REGIME-1",
+    "docs/methodology/lessons/methodology_lessons.md M-Q-SWAP-3-2",
+    "docs/methodology/lessons/methodology_lessons.md M-SWAP-1",
+    "docs/methodology/objective_composition_map.md",
+    "docs/methodology/prefilter_rank_correlation_gate.md",
+    "docs/methodology/regime_robustness_gate.md",
+    "docs/methodology/rejected_signals.md",
+    "docs/methodology/strategy_harvest.md",
+    "docs/methodology/strategy_lifecycle.md",
+    "docs/operational_rules.md",
+    "docs/rejected_candidates.md",
+    "docs/rule_0.md",
+    "docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md",
+    "lab/CATALOG.md",
+    "lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md",
+    "lab/archive/msl_c1_mym_2026-08/EXPLORE_GO.DRAFT.md",
+    "lab/discovery/admission_schema.py",
+    "lab/discovery/deep_lane_admission.py",
+    "lab/discovery/k_count.py",
+    "lab/discovery/miner.py",
+    "lab/discovery/promotion_packet.py",
+    "lab/discovery/register_search.py",
+    "lab/discovery/stage24_runner.py",
+    "lab/research_utils/axis_screen.py",
+    "lab/research_utils/breadth.py",
+    "lab/research_utils/universe_gate.py",
+    "lab/validation_selftest.py",
+    "ops/c1_rail/c1_rail_arm.py",
+    "ops/c1_rail/c1_sizing_host_reference.py",
+    "ops/sentinel/scan.py",
+    "ops/venue_editions/Tradeify_Select_100K.md",
+    "scripts/check_adr_graph.py",
+    "scripts/check_advisor_dedup.py",
+    "scripts/check_boundaries.py",
+    "scripts/check_closure_disposition.py",
+    "scripts/check_data_manifests.py",
+    "scripts/check_governance_prose_control_chars.py",
+    "scripts/check_path_liveness.py",
+    "scripts/check_pine_manifest.py",
+    "scripts/check_pursuit_records.py",
+    "scripts/check_sessions_queue_bind.py",
+    "scripts/check_skills_no_constants.py",
+    "scripts/check_status_consistency.py",
+    "scripts/check_supersession_placement.py",
+    "scripts/cost_geometry_pregate.py",
+    "scripts/gate_manifest.py",
+    "scripts/gates.yml",
+    "scripts/githooks/pre-commit",
+    "scripts/instrument_profiles.py",
+    "scripts/roll_sessions.py"
   ],
   "terminal_states": [
     {
@@ -832,7 +905,7 @@
     },
     {
       "name": "CANDIDATE (book-level, pending ratification)",
-      "description": "Passed evaluation/validation and the regime-robustness gate; entered the authorization axis at book level, tagged MECHANISM or SURVIVAL-ONLY, awaiting operator ratification to AUTHORIZED (or S5 sandbox admission)."
+      "description": "Passed evaluation/validation — plus the regime-robustness gate ONLY when that gate's own scope applies (a dd_protection-class risk-constant change), which ordinary strategy/candidate additions do not trigger; entered the authorization axis at book level, tagged MECHANISM or SURVIVAL-ONLY, awaiting operator ratification to AUTHORIZED (or S5 sandbox admission)."
     },
     {
       "name": "AUTHORIZED · MECHANISM @ 1.00x",
@@ -1265,7 +1338,7 @@
     },
     {
       "phase_name": "Pre-Registration & K-Binding (Discovery Registration)",
-      "summary": "The convergent gate where mined (Branch A) and harvested (Branch B/C/D) candidates meet: a run's trial count K is bound and committed to a manifest BEFORE any result is examined, and the campaign is executed under that binding.",
+      "summary": "The convergent gate where mined (Branch A) and harvested (Branch B) candidates meet — the two live sourcing channels as of 2026-08-24 (Branch C structural census and Branch D Avenue A Route B were retired that date; see the Sourcing phase). A run's trial count K is bound and committed to a manifest BEFORE any result is examined, and the campaign is executed under that binding.",
       "steps": [
         {
           "order": 1,
@@ -2327,6 +2400,11 @@
     return t.indexOf("DORMANT") > -1 || t.indexOf("ARCHIVED") > -1 || t.indexOf("TOMBSTONED") > -1;
   }
 
+  function scrollToPhase(idx) {
+    var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    document.getElementById("phase-" + idx).scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+  }
+
   function stepCountLabel(steps) {
     var retired = steps.filter(function (s) { return s.retired; }).length;
     var live = steps.length - retired;
@@ -2539,7 +2617,7 @@
     btn.appendChild(el("span", "nn-count", stepCountLabel(phase.steps)));
     btn.addEventListener("click", function () {
       openPhase(idx);
-      document.getElementById("phase-" + idx).scrollIntoView({ behavior: "smooth", block: "start" });
+      scrollToPhase(idx);
     });
     navLine.appendChild(btn);
     navNodes.push(btn);
@@ -2572,7 +2650,7 @@
     var link = el("button", "ts-link", "→ " + CATS[map.phase]);
     link.addEventListener("click", function () {
       openPhase(map.phase);
-      document.getElementById("phase-" + map.phase).scrollIntoView({ behavior: "smooth", block: "start" });
+      scrollToPhase(map.phase);
     });
     card.appendChild(link);
     tbGrid.appendChild(card);
@@ -2631,9 +2709,8 @@
         section.style.display = "";
       }
     });
-    if (!q) {
-      // restore default: collapse everything back except leave user's manual state alone on clear
-    }
+    var noResults = document.getElementById("no-results");
+    noResults.hidden = !q || anyGlobalMatch;
   }
 })();
 </script>
