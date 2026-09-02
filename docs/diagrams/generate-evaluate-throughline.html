@@ -1,0 +1,2707 @@
+<title>Generate–Evaluate Throughline</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    color-scheme: light;
+    --ink: #171b20;
+    --ink-soft: #454c55;
+    --ink-faint: #6b747c;
+    --paper: #eef2f0;
+    --surface: #fbfcfb;
+    --surface-raised: #ffffff;
+    --line: #d5dbd8;
+    --line-strong: #b7c0bc;
+    --accent: #1e7a72;
+    --accent-strong: #124f49;
+    --accent-tint: #dcecea;
+    --kill: #9c4a3c;
+    --kill-tint: #f3e2de;
+    --hold: #b9821f;
+    --hold-tint: #f3ead4;
+    --pass: #3d7a4e;
+    --pass-tint: #dfeee2;
+    --live: #2f5f8a;
+    --live-tint: #dee9f1;
+    --neutral: #6b747c;
+    --neutral-tint: #e5e8e7;
+    --mono-bg: #e4e9e6;
+    --shadow: 0 1px 2px rgba(23,27,32,0.06), 0 8px 24px -16px rgba(23,27,32,0.18);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --ink: #e7ece9;
+      --ink-soft: #b1bab5;
+      --ink-faint: #838d88;
+      --paper: #12161a;
+      --surface: #181d21;
+      --surface-raised: #1e2429;
+      --line: #2c343a;
+      --line-strong: #3a444b;
+      --accent: #49b0a3;
+      --accent-strong: #8fd9cd;
+      --accent-tint: #1b3532;
+      --kill: #e08e7f;
+      --kill-tint: #3a2521;
+      --hold: #e4b356;
+      --hold-tint: #3a2f18;
+      --pass: #7ecb8f;
+      --pass-tint: #1e3324;
+      --live: #86b3dd;
+      --live-tint: #1c2c3a;
+      --neutral: #939da2;
+      --neutral-tint: #262c30;
+      --mono-bg: #20272c;
+      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 12px 28px -18px rgba(0,0,0,0.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ink: #e7ece9;
+    --ink-soft: #b1bab5;
+    --ink-faint: #838d88;
+    --paper: #12161a;
+    --surface: #181d21;
+    --surface-raised: #1e2429;
+    --line: #2c343a;
+    --line-strong: #3a444b;
+    --accent: #49b0a3;
+    --accent-strong: #8fd9cd;
+    --accent-tint: #1b3532;
+    --kill: #e08e7f;
+    --kill-tint: #3a2521;
+    --hold: #e4b356;
+    --hold-tint: #3a2f18;
+    --pass: #7ecb8f;
+    --pass-tint: #1e3324;
+    --live: #86b3dd;
+    --live-tint: #1c2c3a;
+    --neutral: #939da2;
+    --neutral-tint: #262c30;
+    --mono-bg: #20272c;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 12px 28px -18px rgba(0,0,0,0.6);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'IBM Plex Serif', Georgia, 'Times New Roman', serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--accent-tint); color: var(--accent-strong); }
+
+  a { color: var(--accent-strong); }
+  a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .display { font-family: 'IBM Plex Sans Condensed', 'Arial Narrow', sans-serif; }
+  .mono { font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px 96px; }
+
+  /* ---------- Header ---------- */
+  header.hero {
+    padding: 56px 24px 40px;
+    border-bottom: 1px solid var(--line);
+  }
+  .hero-inner { max-width: 1180px; margin: 0 auto; }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent-strong);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 18px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 22px; height: 1px;
+    background: var(--accent);
+    display: inline-block;
+  }
+  h1.title {
+    font-family: 'IBM Plex Sans Condensed', sans-serif;
+    font-weight: 700;
+    font-size: clamp(2.1rem, 4.4vw, 3.4rem);
+    line-height: 1.04;
+    letter-spacing: -0.01em;
+    margin: 0 0 6px;
+    text-wrap: balance;
+  }
+  h1.title .arrow { color: var(--accent); padding: 0 0.12em; }
+  h1.title .tail { color: var(--ink-faint); font-weight: 500; }
+  p.lede {
+    max-width: 66ch;
+    font-size: 1.09rem;
+    color: var(--ink-soft);
+    margin: 18px 0 0;
+  }
+  p.lede strong { color: var(--ink); font-weight: 600; }
+
+  .callout {
+    margin-top: 26px;
+    max-width: 78ch;
+    border: 1px solid var(--line-strong);
+    border-left: 3px solid var(--neutral);
+    background: var(--surface);
+    padding: 14px 18px;
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+  }
+  .callout .ct-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--neutral);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .callout strong { color: var(--ink); }
+  .callout.changelog {
+    border-left-color: var(--accent);
+    margin-top: 14px;
+  }
+  .callout.changelog .ct-label { color: var(--accent-strong); }
+  .callout.stale {
+    border-left-color: var(--kill);
+    border-left-width: 4px;
+    background: var(--kill-tint);
+  }
+  .callout.stale .ct-label { color: var(--kill); }
+
+  /* ---------- Legend / controls ---------- */
+  .toolbar {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 22px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 28px;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+  }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px 18px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--ink-soft); }
+  .legend span.dot { width: 9px; height: 9px; display: inline-block; margin-right: 6px; border-radius: 1px; vertical-align: middle; }
+  .legend .item { display: inline-flex; align-items: center; }
+  .dot-kill { background: var(--kill); }
+  .dot-hold { background: var(--hold); }
+  .dot-pass { background: var(--pass); }
+  .dot-live { background: var(--live); }
+  .dot-neutral { background: var(--neutral); border: 1px solid var(--line-strong); }
+
+  .controls { margin-left: auto; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  #search {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    padding: 8px 12px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    width: 220px;
+    max-width: 46vw;
+  }
+  #search::placeholder { color: var(--ink-faint); }
+  .btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    background: var(--surface);
+    color: var(--ink-soft);
+    border: 1px solid var(--line-strong);
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent-strong); }
+
+  /* ---------- Layout: nav rail + main ---------- */
+  .layout {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 36px 24px 0;
+    display: grid;
+    grid-template-columns: 250px minmax(0,1fr);
+    gap: 40px;
+    align-items: start;
+  }
+
+  nav.pipeline-nav {
+    position: sticky;
+    top: 20px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  nav.pipeline-nav h2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 14px;
+  }
+  .navline { position: relative; padding-left: 20px; }
+  .navline::before {
+    content: "";
+    position: absolute;
+    left: 5px; top: 6px; bottom: 6px;
+    width: 1px;
+    background: var(--line-strong);
+  }
+  .navnode {
+    position: relative;
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 7px 0 7px 14px;
+    color: var(--ink-soft);
+    font-family: 'IBM Plex Sans Condensed', sans-serif;
+    font-size: 13.5px;
+    line-height: 1.25;
+  }
+  .navnode::before {
+    content: "";
+    position: absolute;
+    left: -20px; top: 12px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1.5px solid var(--line-strong);
+  }
+  .navnode.cross::before { border-style: dashed; }
+  .navnode:hover { color: var(--accent-strong); }
+  .navnode.active { color: var(--accent-strong); }
+  .navnode.active::before { border-color: var(--accent); background: var(--accent); }
+  .navnode .nn-cat {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.07em;
+    color: var(--ink-faint);
+    margin-bottom: 1px;
+  }
+  .navnode .nn-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    color: var(--ink-faint);
+  }
+  .navnode.hasmatch .nn-count { color: var(--accent-strong); }
+
+  @media (max-width: 880px) {
+    .layout { grid-template-columns: 1fr; padding-top: 20px; }
+    nav.pipeline-nav {
+      position: static;
+      max-height: none;
+      overflow: visible;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 18px;
+      margin-bottom: 6px;
+    }
+    .navline { padding-left: 0; display: flex; overflow-x: auto; gap: 4px; }
+    .navline::before { display: none; }
+    .navnode { width: auto; flex: 0 0 auto; padding: 8px 12px; border: 1px solid var(--line); }
+    .navnode::before { display: none; }
+    .navnode.active { border-color: var(--accent); background: var(--accent-tint); }
+  }
+
+  /* ---------- Phase sections ---------- */
+  main { min-width: 0; }
+  section.phase {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    margin-bottom: 14px;
+    scroll-margin-top: 18px;
+  }
+  section.phase.cross { border-style: dashed; }
+
+  button.phase-head {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 18px 20px;
+    color: var(--ink);
+  }
+  button.phase-head:hover { background: var(--surface-raised); }
+  .ph-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--accent-strong);
+    background: var(--accent-tint);
+    border: 1px solid var(--accent);
+    width: 30px; height: 30px;
+    flex: 0 0 30px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ph-body-text { flex: 1; min-width: 0; }
+  .ph-cat {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-strong);
+    margin: 0 0 4px;
+  }
+  h2.ph-name {
+    font-family: 'IBM Plex Sans Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 1.32rem;
+    margin: 0 0 6px;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  p.ph-summary {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.94rem;
+    max-width: 74ch;
+  }
+  .ph-right {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 2px;
+  }
+  .ph-stepcount {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    white-space: nowrap;
+  }
+  .chev {
+    width: 16px; height: 16px;
+    transition: transform 0.18s ease;
+    color: var(--ink-faint);
+    flex: 0 0 16px;
+  }
+  button.phase-head[aria-expanded="true"] .chev { transform: rotate(90deg); }
+
+  .phase-body {
+    border-top: 1px solid var(--line);
+    padding: 20px 20px 26px;
+    display: grid;
+    gap: 14px;
+    overflow: hidden;
+  }
+  .phase-body[hidden] { display: none; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .phase-body { animation: reveal 0.22s ease; }
+  }
+  @keyframes reveal { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* subheads inside a phase body */
+  .subhead {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 10px 0 2px;
+    border-top: 1px dotted var(--line-strong);
+    margin-top: 4px;
+  }
+  .subhead:first-child { border-top: none; margin-top: 0; padding-top: 0; }
+
+  /* step card */
+  article.step {
+    border: 1px solid var(--line);
+    background: var(--surface-raised);
+    padding: 14px 16px;
+  }
+  article.step[data-dormant="1"] { border-style: dashed; }
+  article.step[data-retired="1"] {
+    border-style: dashed;
+    border-color: var(--kill);
+    opacity: 0.72;
+  }
+  article.step[data-retired="1"]:hover { opacity: 1; }
+  article.step[data-retired="1"] h3.step-name { text-decoration: line-through; text-decoration-color: var(--kill); }
+  .badge-retired {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--kill);
+    border: 1px solid var(--kill);
+    background: var(--kill-tint);
+    padding: 2px 6px;
+  }
+  .step-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+  .step-order {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    flex: 0 0 auto;
+  }
+  h3.step-name {
+    font-family: 'IBM Plex Sans Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 1.02rem;
+    margin: 0;
+    color: var(--ink);
+    flex: 1 1 auto;
+    min-width: 200px;
+  }
+  .badge-dormant {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    border: 1px dashed var(--line-strong);
+    padding: 2px 6px;
+  }
+  p.step-mech {
+    margin: 0 0 10px;
+    color: var(--ink-soft);
+    font-size: 0.93rem;
+  }
+  .step-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 20px;
+    margin-bottom: 10px;
+  }
+  @media (max-width: 560px) { .step-grid { grid-template-columns: 1fr; } }
+  .step-grid .lbl {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 2px;
+  }
+  .step-grid p { margin: 0; font-size: 0.85rem; color: var(--ink-soft); }
+
+  .step-flags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .chip {
+    font-size: 0.8rem;
+    padding: 4px 9px;
+    border: 1px solid;
+    line-height: 1.35;
+    max-width: 100%;
+  }
+  .chip-gate { border-color: var(--live); background: var(--live-tint); color: var(--live); }
+  .chip-kill { border-color: var(--kill); background: var(--kill-tint); color: var(--kill); }
+  .chip b { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; margin-right: 5px; }
+
+  .step-refs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ref {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    background: var(--mono-bg);
+    color: var(--ink-soft);
+    padding: 2px 7px;
+  }
+
+  /* lane layout for Sourcing phase */
+  .lanes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  @media (max-width: 900px) { .lanes { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .lanes { grid-template-columns: 1fr; } }
+  .lane { display: flex; flex-direction: column; gap: 10px; }
+  .lane-head {
+    font-family: 'IBM Plex Sans Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.98rem;
+    color: var(--accent-strong);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 6px;
+    margin-bottom: 2px;
+  }
+  .lane-head small {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 400;
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    color: var(--ink-faint);
+    text-transform: none;
+    margin-top: 2px;
+  }
+  .lane.retired .lane-head {
+    color: var(--ink-faint);
+    border-bottom-color: var(--line-strong);
+    text-decoration: line-through;
+    text-decoration-color: var(--kill);
+    text-decoration-thickness: 1.5px;
+  }
+  .lane.retired .lane-head small { text-decoration: none; }
+  .lane-retired-badge {
+    display: inline-block;
+    text-decoration: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: var(--kill);
+    background: var(--kill-tint);
+    border: 1px solid var(--kill);
+    padding: 2px 6px;
+    margin-top: 6px;
+  }
+  .lane.retired article.step { opacity: 0.62; }
+  .lane.retired article.step:hover { opacity: 1; }
+  .lane article.step { padding: 11px 12px; }
+  .lane h3.step-name { font-size: 0.9rem; }
+  .lane p.step-mech { font-size: 0.83rem; margin-bottom: 8px; }
+  .converge-note {
+    grid-column: 1 / -1;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    color: var(--accent-strong);
+    text-align: center;
+    padding: 6px 0 2px;
+    border-top: 1px solid var(--accent);
+    margin-top: 4px;
+  }
+
+  /* ---------- Terminal states board ---------- */
+  section.terminal-board { margin-top: 44px; }
+  .tb-head { margin-bottom: 18px; }
+  .tb-head h2 {
+    font-family: 'IBM Plex Sans Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin: 0 0 8px;
+  }
+  .tb-head p { margin: 0; color: var(--ink-soft); max-width: 74ch; font-size: 0.95rem; }
+  .tb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .tstate {
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--neutral);
+    background: var(--surface);
+    padding: 13px 15px;
+  }
+  .tstate[data-cat="kill"] { border-top-color: var(--kill); }
+  .tstate[data-cat="hold"] { border-top-color: var(--hold); }
+  .tstate[data-cat="advance"] { border-top-color: var(--pass); }
+  .tstate[data-cat="live"] { border-top-color: var(--live); }
+  .tstate .ts-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--ink);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .tstate p { margin: 0 0 8px; font-size: 0.84rem; color: var(--ink-soft); }
+  .ts-link {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    color: var(--accent-strong);
+    background: none;
+    border: 1px solid var(--accent);
+    padding: 3px 8px;
+    cursor: pointer;
+  }
+  .ts-link:hover { background: var(--accent-tint); }
+
+  /* ---------- Key docs ---------- */
+  section.keydocs { margin-top: 44px; border-top: 1px solid var(--line); padding-top: 24px; }
+  section.keydocs h2 {
+    font-family: 'IBM Plex Sans Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin: 0 0 6px;
+  }
+  section.keydocs p.kd-note { margin: 0 0 14px; color: var(--ink-soft); font-size: 0.9rem; }
+  .kd-list {
+    columns: 2 260px;
+    column-gap: 24px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .kd-list div { break-inside: avoid; padding: 3px 0; }
+
+  footer.page-foot {
+    max-width: 1180px;
+    margin: 56px auto 0;
+    padding: 20px 24px 0;
+    border-top: 1px solid var(--line);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    color: var(--ink-faint);
+  }
+
+  .no-results {
+    padding: 24px;
+    text-align: center;
+    color: var(--ink-faint);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    border: 1px dashed var(--line-strong);
+  }
+</style>
+
+<header class="hero">
+  <div class="hero-inner">
+    <p class="eyebrow">First Passage — mission pipeline, phases 1–2 of 5</p>
+    <h1 class="title">Generate <span class="arrow">→</span> Evaluate <span class="tail">→ deployment acceptance</span></h1>
+    <p class="lede">
+      The mission pipeline is <strong>generate → evaluate → deploy → measure → update</strong>. This map decomposes
+      the first two stages plus the deploy-<em>acceptance</em> decision into every mechanical step a candidate
+      strategy passes through — from a mined motif or a harvested citation to a book-level <strong>AUTHORIZED</strong>
+      descriptor and, ultimately, the capital-authorization gate that arms the c1 rail. It stops short of measure/update
+      (post-deployment decay surveillance). Assembled from <strong id="doc-count">–</strong> canonical source docs, each cited inline.
+    </p>
+    <div class="callout stale">
+      <span class="ct-label">⚠ Unverified against current main — read before trusting anything below</span>
+      This map's content was last verified against repo state as of <strong>2026-08-25</strong>
+      (branch tip <code class="mono">bbb2cce</code>). <code class="mono">main</code> has since advanced
+      <strong>413 commits</strong> (through <code class="mono">d148b91</code>, 2026-09-02), including several ADRs
+      whose names suggest they restructure this exact pipeline —
+      <code class="mono">candidate-contract</code>, <code class="mono">terminal-taxonomy</code>,
+      <code class="mono">evaluation-order</code>, <code class="mono">tradeable-reachable-gate</code>,
+      <code class="mono">channel-liveness-gate</code>, <code class="mono">operator-approvals-campaign-envelope</code>,
+      and a full retirement of the persona-hierarchy review panel. <strong>None of that has been read into this
+      map.</strong> Treat every phase/step/terminal-state below as a dated historical snapshot, not a current-state
+      claim, until it is re-audited against those ADRs.
+    </div>
+    <div class="callout">
+      <span class="ct-label">Current posture — 2026-08-24</span>
+      Every strategy in this repo is book-level <strong>AUTHORIZED-on-paper</strong> only. The c1 rail is
+      <strong>BUILT / WARM / DISARMED</strong> (<code class="mono">dry_run=true</code>); the live venue-edition set at
+      Tradeify_Select_100K is <strong>empty</strong>; no strategy-signal fill has ever occurred. Nothing in this map
+      describes a live book — see the <strong>Deployment Acceptance</strong> phase and the
+      <strong>DISARMED / NOT-LIVE</strong> terminal state below.
+    </div>
+    <div class="callout changelog">
+      <span class="ct-label">Revised 2026-08-25 — three ADRs landed 2026-08-24</span>
+      <strong>Sourcing</strong> — Branches C (structural flow census) and D (Avenue A Route B) <strong>RETIRED</strong>,
+      struck in place below (zero admissible seeds / 0-of-4 confirmed campaigns across their entire life); every
+      candidate now enters via Branch A or B. <strong>Validation</strong> — the multiplicity correction is
+      K-tiered (declared no-op at K∈{0,1}, runs at K∈{2,3}); the two cost-law formulas were confirmed distinct,
+      each with one canonical owner; <code class="mono">pursuit-records</code> is gone from the gate manifest.
+      <strong>Regime-robustness</strong> — confirmed conditional, not mandatory, for strategy additions; a worked
+      non-example now documents the anti-pattern. The retirement ADR went through a 50-agent adversarial review
+      that caught 3 blockers before ratification — detail in the cited ADRs, not restated here.
+    </div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="legend">
+    <span class="item"><span class="dot dot-kill"></span>kill / falsified</span>
+    <span class="item"><span class="dot dot-hold"></span>hold / retry</span>
+    <span class="item"><span class="dot dot-pass"></span>advances</span>
+    <span class="item"><span class="dot dot-live"></span>capital / venue</span>
+    <span class="item"><span class="dot dot-neutral"></span>neutral / scoped</span>
+    <span class="item"><span class="badge-dormant" style="padding:2px 6px;">dormant</span>&nbsp;currently unarmed test</span>
+  </div>
+  <div class="controls">
+    <input id="search" type="text" placeholder="Filter steps, refs, kill conditions…" autocomplete="off">
+    <button class="btn" id="expand-all">Expand all</button>
+    <button class="btn" id="collapse-all">Collapse all</button>
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="pipeline-nav" aria-label="Pipeline phases">
+    <h2>Throughline</h2>
+    <div class="navline" id="nav-line"></div>
+  </nav>
+  <main id="main-phases"></main>
+  <div class="no-results" id="no-results" hidden>No steps, refs, or kill conditions match that filter. Try a shorter term.</div>
+</div>
+
+<div class="wrap">
+  <section class="terminal-board" id="terminal-board">
+    <div class="tb-head">
+      <h2>Where a candidate's journey can end</h2>
+      <p>Every disposition a candidate can reach across the throughline above — kill, hold, or advance — plus the
+        two states that describe the repo's actual live posture today.</p>
+    </div>
+    <div class="tb-grid" id="tb-grid"></div>
+  </section>
+
+  <section class="keydocs">
+    <h2>Canonical source docs</h2>
+    <p class="kd-note">Every step above cites its authority inline; this is the deduplicated reading list.</p>
+    <div class="kd-list" id="kd-list"></div>
+  </section>
+
+  <footer class="page-foot">
+    Generated from the repo's own governance, discovery, validation, and lifecycle docs — pointers only, per
+    CLAUDE.md's own rule. Re-derive from source before citing a number downstream.
+  </footer>
+</div>
+
+<script id="pipeline-data" type="application/json">
+{
+  "key_docs": [
+    ".claude/skills/brief-authoring/references/closure_record.md",
+    ".claude/skills/futures-anomaly-discovery/SKILL.md",
+    ".claude/skills/futures-anomaly-discovery/reference/tool-discipline.md",
+    ".claude/skills/strategy-validation/SKILL.md",
+    ".claude/skills/strategy-validation/scripts/deflated_sharpe.py",
+    ".claude/skills/strategy-validation/scripts/selection_tests.py",
+    ".claude/skills/strategy-validation/scripts/step0_battery.py",
+    ".github/workflows/gate-manifest.yml",
+    ".github/workflows/manifest-check.yml",
+    ".github/workflows/validation-controls.yml",
+    "CLAUDE.md",
+    "core/dd_protection.py",
+    "core/lifecycle.py",
+    "docs/adr/2026-06-05-monorepo-layer-boundaries.md",
+    "docs/adr/2026-06-12-three-loop-methodology-binding.md",
+    "docs/adr/2026-06-16-rule-2-budget-before-acting.md",
+    "docs/adr/2026-06-22-cost-geometry-pregate.md",
+    "docs/adr/2026-07-01-add-back-metric-layer-split.md",
+    "docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md",
+    "docs/adr/2026-07-12-dsr-k-rule-and-variance-floor-supersession.md",
+    "docs/adr/2026-07-13-prop-account-book-segregation.md",
+    "docs/adr/2026-07-20-stage8-variance-dominance-risk-neff-gate.md",
+    "docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md",
+    "docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md",
+    "docs/adr/2026-08-04-iterate-closure-exit-mandatory.md",
+    "docs/adr/2026-08-05-strategy-venue-binding-axis.md",
+    "docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md",
+    "docs/adr/2026-08-07-w4-minimal-gate-set-dormancy.md",
+    "docs/adr/2026-08-08-great-prune.md",
+    "docs/adr/2026-08-09-grand-tier-quintessentials-binding.md",
+    "docs/adr/2026-08-13-dedup-first-before-new-work.md",
+    "docs/adr/2026-08-15-notice-log-is-the-live-observation-routing-convention.md",
+    "docs/adr/2026-08-16-deep-iteration-lane-charter.md",
+    "docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md",
+    "docs/adr/2026-08-21-persona-hierarchy-front-office-only.md",
+    "docs/adr/2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md",
+    "docs/adr/2026-08-24-sourcing-phase-channel-retirement.md",
+    "docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md",
+    "docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md",
+    "docs/methodology/1r_estimation.md",
+    "docs/methodology/avenue_a_generate_confirm.md",
+    "docs/methodology/backtest_live_shrinkage.md",
+    "docs/methodology/inqhiori-canon.md",
+    "docs/methodology/lessons/methodology_lessons.md",
+    "docs/methodology/objective_composition_map.md",
+    "docs/methodology/prefilter_rank_correlation_gate.md",
+    "docs/methodology/regime_robustness_gate.md",
+    "docs/methodology/rejected_signals.md",
+    "docs/methodology/strategy_harvest.md",
+    "docs/methodology/strategy_lifecycle.md",
+    "docs/operational_rules.md",
+    "docs/rejected_candidates.md",
+    "docs/rule_0.md",
+    "docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md",
+    "lab/CATALOG.md",
+    "lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md",
+    "lab/archive/msl_c1_mym_2026-08/EXPLORE_GO.DRAFT.md",
+    "lab/discovery/admission_schema.py",
+    "lab/discovery/deep_lane_admission.py",
+    "lab/discovery/k_count.py",
+    "lab/discovery/miner.py",
+    "lab/discovery/promotion_packet.py",
+    "lab/discovery/register_search.py",
+    "lab/discovery/stage24_runner.py",
+    "lab/research_utils/axis_screen.py",
+    "lab/research_utils/breadth.py",
+    "lab/research_utils/universe_gate.py",
+    "lab/validation_selftest.py",
+    "ops/c1_rail/c1_rail_arm.py",
+    "ops/c1_rail/c1_sizing_host_reference.py",
+    "ops/sentinel/scan.py",
+    "ops/venue_editions/Tradeify_Select_100K.md",
+    "scripts/check_adr_graph.py",
+    "scripts/check_advisor_dedup.py",
+    "scripts/check_boundaries.py",
+    "scripts/check_closure_disposition.py",
+    "scripts/check_data_manifests.py",
+    "scripts/check_governance_prose_control_chars.py",
+    "scripts/check_path_liveness.py",
+    "scripts/check_pine_manifest.py",
+    "scripts/check_pursuit_records.py",
+    "scripts/check_sessions_queue_bind.py",
+    "scripts/check_skills_no_constants.py",
+    "scripts/check_status_consistency.py",
+    "scripts/check_supersession_placement.py",
+    "scripts/cost_geometry_pregate.py",
+    "scripts/gate_manifest.py",
+    "scripts/gates.yml",
+    "scripts/githooks/pre-commit",
+    "scripts/instrument_profiles.py",
+    "scripts/roll_sessions.py"
+  ],
+  "terminal_states": [
+    {
+      "name": "DEAD-AT-DEDUP",
+      "description": "Killed at the universal pre-flight before any manifest work: mechanism_family x instrument matches a DEAD/AMBIGUOUS-PARKED/CONTINGENT-FORWARD entry in rejected_candidates.md, rejected_signals.md, or instrument_profiles.py's BLOCKING verdict, and is abandoned rather than addressed in a pre-registration."
+    },
+    {
+      "name": "UNSCREENABLE",
+      "description": "A harvested seed fails Requirement 2 (no citable cohort delta) or Requirement 4 (confirm-power <0.50) with no recovery path taken; dropped before the intake screen or routed to a delta-extraction probe that itself dies."
+    },
+    {
+      "name": "SHAPE-KILL",
+      "description": "A sourced candidate's payoff shape falls outside the venue's feasibility region at the harvest §2.4 pre-check; dropped before staging, zero K spent."
+    },
+    {
+      "name": "ABORT-NO-MANIFEST",
+      "description": "register_search open refuses to write a manifest because Cap/EM0 (floor_at_k>1.0, i.e. K>=4), power<0.50, a failed N-EDGE limb, EM2-EM5, K_mismatch, or a deep-lane conjunct (K_CEILING/FLOOR_CEILING/POWER_BELOW_MIN) fails. $0 spent, K=0 recorded nowhere."
+    },
+    {
+      "name": "FALSIFIED",
+      "description": "The candidate fails a battery limb after being scored — DELETE/FLIP/placebo fail, DSR below its pre-registered floor, cost-law fail, admission-gate bust/pass miss, or regime-robustness Part C miss. DEAD-listed into docs/rejected_candidates.md or docs/methodology/rejected_signals.md; re-proposal requires new mechanism evidence, never a wider grid or retune."
+    },
+    {
+      "name": "VOID-*",
+      "description": "A Generate-Confirm Route confirm run reports an honesty-limb failure (insufficient N/coverage, forbidden move detected). The specific CONFIRM cut may never be re-run; a retry requires an entirely new campaign with a fresh holdout — not a permanent mechanism kill."
+    },
+    {
+      "name": "AMBIGUOUS-HOLD",
+      "description": "Default verdict when criteria are neither cleanly met nor cleanly failed (e.g. a mixed floor/no-floor split across limbs, or a regime-boundary spread within the discountable band). Stays open; does not advance to lifecycle authorization."
+    },
+    {
+      "name": "REGIME-FRAGILE-REJECT",
+      "description": "Candidate strictly Pareto-dominates on the full panel but fails the regime-robustness gate Part C acceptance test (bootstrap 5th-pct, H1, or H2 pass-rate misses the brief's own headline floor). Rejected regardless of full-panel dominance."
+    },
+    {
+      "name": "SCREEN-DEAD (venue-edition level)",
+      "description": "A venue edition fails that firm's structural screen (occupancy/cap-table/flat-by-time/instrument-class). Edition-scoped only — the book-level CANDIDATE/AUTHORIZED status is untouched and may still be SCREENED elsewhere."
+    },
+    {
+      "name": "COMPOSED-BOOK-FALSIFIED",
+      "description": "A candidate clears standalone admission (bust<=3.0%, pass>=50%) but fails when composed into the existing book (composed bust>3.0% or pass<50% on a required firm/partition) — admission and composition are separately scoped decisions."
+    },
+    {
+      "name": "SANDBOX-ADMITTED (S5)",
+      "description": "A gate-validated packet passes both validate_promotion_packet and refute_promotion_packet and is admitted into a capped micro-size sandbox under an operator-approved budget ceiling. Not full book authorization, not M1 RESOLVED, no live trades — a bounded holding state pending a fresh operator GO to cross the ceiling."
+    },
+    {
+      "name": "STRATEGIC-KILL / REGISTERED-DELETE",
+      "description": "A closure's kill verdict operates above single-investigation scope (programme/track/instrument tier) and is ratified via programme-audit cadence, a fired pre-registered stopping rule, or explicit owner adjudication. Registered in rejected_candidates.md (object-layer) or rejected_signals.md (meta-layer) as the re-proposal bar for any future revival."
+    },
+    {
+      "name": "CANDIDATE (book-level, pending ratification)",
+      "description": "Passed evaluation/validation — plus the regime-robustness gate ONLY when that gate's own scope applies (a dd_protection-class risk-constant change), which ordinary strategy/candidate additions do not trigger; entered the authorization axis at book level, tagged MECHANISM or SURVIVAL-ONLY, awaiting operator ratification to AUTHORIZED (or S5 sandbox admission)."
+    },
+    {
+      "name": "AUTHORIZED · MECHANISM @ 1.00x",
+      "description": "Fully book-authorized after explicit operator ratification (never autonomous outside the S5 sandbox exception). Eligible to proceed to venue-edition binding and, eventually, deployment — but this state alone does not authorize live capital risk."
+    },
+    {
+      "name": "AUTHORIZED · SURVIVAL-ONLY @ WATCH-1 0.50x",
+      "description": "An unexplained/statistically-only-edge candidate enters one tier down from MECHANISM candidates, at half size, with 2x review cadence, pending a pre-registered OOS interval + minimum live-trade count before it may promote to full AUTHORIZED."
+    },
+    {
+      "name": "WITHDRAWN (venue-edition level)",
+      "description": "A venue edition is withdrawn at a specific firm (e.g. both Striker legs at Tradeify_Select_100K, 2026-08-04) without demoting the book-level authorization — M_book is never modified by an edition event."
+    },
+    {
+      "name": "ARMED / DEPLOYMENT-ACCEPTED",
+      "description": "The terminal state this pipeline targets: dry_run=false is set for a bounded armed_until window, requiring ALL of (1) M1 RESOLVED via validate_c1_monitoring_acceptance.validate(require_resolved=True), (2) a fresh session-scoped operator GO, (3) disarm scheduled before armed_until lapses. No agent may ever place the trade itself."
+    },
+    {
+      "name": "DISARMED / NOT-LIVE (current repo posture, 2026-08-24)",
+      "description": "The de facto current terminal state for every candidate in this repo: book-level AUTHORIZED-on-paper (or WITHDRAWN/SCREEN-DEAD at the edition/deployment level), c1 rail BUILT/WARM/DISARMED (dry_run=true), M1 not RESOLVED, live venue-edition set at Tradeify_Select_100K EMPTY, no strategy-signal fill has ever occurred. AUTHORIZED must never be read as a current live haircut."
+    },
+    {
+      "name": "RETIRED @ 0.00x (downstream of deploy-acceptance, noted for completeness)",
+      "description": "The one irreversible edge in the lifecycle ladder — WATCH-2 to RETIRED, or full shared-beta shutdown — reachable only via explicit operator GO/NO-GO against pre-registered criteria, never autonomously. Formally part of the measure/update phase (post-deployment decay surveillance), outside this task's generate->evaluate->deploy-acceptance scope, but listed as the ladder's ultimate terminal state."
+    }
+  ],
+  "phases": [
+    {
+      "phase_name": "Governance Pre-Flight & Brief Discipline",
+      "summary": "The INQHIORI/loop-selection meta-layer that wraps every subsequent phase: classifies which methodology governs the work, forces a ground-truth code read before any brief is authored, enforces dedup search and provenance discipline, gates the Notice/Inquire corpus itself (D-S-A), and sets an iteration budget before any compute or drafting spend begins. Applies once at pipeline entry and re-applies at every subsequent brief/ADR/closure authored downstream.",
+      "steps": [
+        {
+          "order": 1,
+          "name": "Loop-of-Record (LoR) classification",
+          "mechanism": "Classify the proposed work against the four-tier loop table: GRAND (pursuits, governed by The Quintessentials), STRATEGIC (funding/kill-continue, governed by The Algorithm Q-D-S-A), OUTER (per-investigation, governed by INQHIORI), INNER (per-session tactical, governed by OODA). Tiebreaker: if the falsifiable hypothesis cannot be stated in one sentence, default to OODA/INNER.",
+          "inputs": "Nature of the proposed work (candidate idea, code change, parameter question, tactical decision)",
+          "outputs": "A stated Loop-of-Record header that all subsequent iteration-budget and Delete-authority rules key off",
+          "gate": "A declared LoR header must be present before any Q/H work begins",
+          "kill_condition": "n/a (classification step, not a pass/fail gate)",
+          "refs": [
+            "docs/methodology/inqhiori-canon.md#14",
+            "docs/adr/2026-06-12-three-loop-methodology-binding.md",
+            "docs/adr/2026-08-09-grand-tier-quintessentials-binding.md"
+          ]
+        },
+        {
+          "order": 2,
+          "name": "Rule 0 — audit-first production-code read",
+          "mechanism": "Before writing the first line of any decision brief/ADR/implementation step touching risk controls or strategy code, read the production code file directly (not memory, not prior docs). Fixed order: production file -> brief against ground truth -> validate -> lock -> implementation. Where prior docs and code disagree, code wins and the discrepancy is flagged.",
+          "inputs": "Any proposed risk-control decision or strategy-code change",
+          "outputs": "Ground-truth citations feeding the brief's Sources Read block (step 5)",
+          "gate": "Load-bearing claims (identity, contract, cardinality) require code-resident verification",
+          "kill_condition": "A brief authored on memory/prior-doc assumption instead of the code read is a forbidden pattern and blocks authoring",
+          "refs": [
+            "docs/rule_0.md",
+            "docs/operational_rules.md#2"
+          ]
+        },
+        {
+          "order": 3,
+          "name": "Rule 8 §0 sub-rule discipline",
+          "mechanism": "Ten anchored sub-rules operationalize the Rule-0 read: cross-reference grep before calling something isolated cruft (N>3 callers reclassifies as doctrine-referenced); archive-convention verification; ±20-line context on cited lines; architecture truth read before prescribing edits; operational-tooling-integration checklist item on any lock; live-execution claims need the latest edge-captured/fill-quality citation; pre-registration freeze must be its own commit ancestor to the results commit; new closures carry a Registry: line.",
+          "inputs": "The brief/ADR/implementation-step draft and current repo state",
+          "outputs": "A completed, evidenced §0 section gating the rest of the brief",
+          "gate": "Sentinel Tier-1 preregistration_scan (report-only, fail-open, make sentinel) flags forbidden-move violations",
+          "kill_condition": "A same-commit self-attested freeze or missing Registry: line is flagged by Sentinel",
+          "refs": [
+            "docs/operational_rules.md#8",
+            "ops/sentinel/scan.py"
+          ]
+        },
+        {
+          "order": 4,
+          "name": "Dedup-first / instrument-ledger read (session-scoped)",
+          "mechanism": "Before opening any new lab/analysis/<theme>/<slug>/ directory or core-adjacent implementation, paste literal search output against lab/CATALOG.md, docs/briefs/INDEX.md, git log --oneline -20, and check_advisor_dedup.py --keywords. Any instrument-specific mechanism additionally reads that instrument's ops/instruments/<SYM>.md ledger in full at session start and appends a dated disposition at session end.",
+          "inputs": "Proposed new lab campaign, core-adjacent implementation, or instrument-specific mechanism",
+          "outputs": "Dedup evidence block in the brief's §0; updated instrument-ledger disposition entry",
+          "gate": "instrument-profiles pre-commit gate fails on a stale generated PROFILE view (mechanical enforcement of Rule 10)",
+          "kill_condition": "An unacknowledged duplicate (existing owner doc found but not cited) blocks minting a new ADR/brief/slug — default is amend-in-place",
+          "refs": [
+            "docs/operational_rules.md#10",
+            "docs/adr/2026-08-13-dedup-first-before-new-work.md",
+            "scripts/check_advisor_dedup.py",
+            "scripts/instrument_profiles.py"
+          ]
+        },
+        {
+          "order": 5,
+          "name": "Mandatory brief headers — D-S-A domain + Sources Read declaration",
+          "mechanism": "Fixed header order: Title -> D-S-A domain header (data|system|meta-process) -> Context -> Sources Read block (past chats searched; files read in full/part; user-memory classification; a mandatory non-empty 'tools available but unused' field) -> Pre-Q gate header -> Q/H/Method/Verdict/Cross-refs/Recursion.",
+          "inputs": "Step 2-4 evidence (code reads, dedup search output, ledger reads)",
+          "outputs": "A brief with verifiable, non-weasel-worded provenance for every claim",
+          "gate": "Weakening language ('spirit', 'loosely'), an unsupported 'memory is sufficient' claim, or an empty tools-unused field is a forbidden pattern",
+          "kill_condition": "A detected forbidden pattern stops authoring and requires re-sourcing before the Pre-Q gate header is written",
+          "refs": [
+            "docs/methodology/inqhiori-canon.md#3"
+          ]
+        },
+        {
+          "order": 6,
+          "name": "D-S-A pre-Q gate (Delete / Simplify / Accelerate)",
+          "mechanism": "Operates on the Identify/Notice corpus (not the system or the framework itself). Delete: remove items failing the relevance test ('stays if its presence could contradict a hypothesis not yet formed'); forbidden D-tests ('does this fit my model?') are disallowed. Simplify: collapse to lowest-dimension representation preserving the Noticed anomaly. Accelerate: index the simplified corpus so each Q costs O(seconds), bounded. Effort budget <=10% of I/N effort.",
+          "inputs": "The Sources-Read-verified I/N corpus from step 5",
+          "outputs": "A sharper, indexed corpus feeding the Q/H iteration in Phase 2-4; operator sign-off on every proposed Delete",
+          "gate": "The 3-line Pre-Q gate header (D/S/A) is mandatory in the brief; any 'no action' line must state why the gate didn't engage — silence is not permitted",
+          "kill_condition": "Exceeding the 10% effort budget signals the I/N step was wrong and restarts the outer loop, not a gate extension",
+          "refs": [
+            "docs/methodology/inqhiori-canon.md#1",
+            "docs/methodology/inqhiori-canon.md#5"
+          ]
+        },
+        {
+          "order": 7,
+          "name": "Rule 2 — budget before acting (iteration-budget declaration)",
+          "mechanism": "Before investigation/execution work starts, declare a spend budget in iterations sized by LoR: INNER 3 (self-extend once), OUTER 8 (no self-extension), STRATEGIC 3 constituent OUTER investigations (no self-extension). A tripwire, not a wall — hitting it forces a structured stop (spent/remaining/state/extend-or-stop, tagged by reversibility).",
+          "inputs": "The declared LoR (step 1) and gated corpus (step 6)",
+          "outputs": "An explicit iteration ceiling governing compute/drafting spend before a mandatory checkpoint",
+          "gate": "Extension authority mirrors loop tiers — only INNER self-extends; OUTER/STRATEGIC extension requires owner adjudication or re-audit",
+          "kill_condition": "Budget exhaustion on an irreversible action may never resolve to shipping under-validated — the only legal exits are re-audit-and-continue-on-a-new-budget or escalate to the operator",
+          "refs": [
+            "docs/methodology/inqhiori-canon.md#15",
+            "docs/adr/2026-06-16-rule-2-budget-before-acting.md"
+          ]
+        }
+      ]
+    },
+    {
+      "phase_name": "Sourcing / Idea Generation",
+      "summary": "Candidate origination — as of 2026-08-24, TWO live channels: mined signals (Branch A: STUMPY/ruptures/tsfresh/HMM/symbolic regression) and literature/structural harvesting (Branch B). Branch C (structural flow census) and Branch D (Avenue A Route B generate-confirm) were RETIRED 2026-08-24 — zero admissible seeds across their entire recorded life (Branch C: 4-5 passes, ~24 entries, 0 seeds; Branch D: 4 campaigns opened, 0/4 ever reached confirm) — see [sourcing-phase-channel-retirement ADR](docs/adr/2026-08-24-sourcing-phase-channel-retirement.md), `Accepted`, ratified after a 50-agent adversarial review found and fixed 3 BLOCKERs + 6 CONCERNs in the original draft. Steps below are kept for the historical record (struck, not deleted, per this repo's own dated-decision-integrity convention) — every candidate now enters via Branch A or B.",
+      "steps": [
+        {
+          "order": 1,
+          "name": "Notice-phase observation routing (conditional entry, narrative-observation origin only)",
+          "mechanism": "A surfaced observation not yet framed as a falsifiable question is logged to the Notice-log convention (docs/notes/notice/N-YYYY-MM-DD-slug.md) and dispositioned GRADUATE / DROP / HOLD. Superseded the canon's original Closed/Action/Forward routing for narrative observations (2026-08-15); that older vocabulary now governs only the mechanical verify_lock_anchors.py gate.",
+          "inputs": "A surfaced observation not yet framed as a falsifiable question",
+          "outputs": "GRADUATE items proceed into candidate sourcing below; DROP/HOLD end the observation's journey here",
+          "gate": "A dated Notice-log entry with an explicit disposition",
+          "kill_condition": "DROP disposition — the observation does not become a candidate",
+          "refs": [
+            "docs/methodology/inqhiori-canon.md#10",
+            "docs/adr/2026-08-15-notice-log-is-the-live-observation-routing-convention.md"
+          ]
+        },
+        {
+          "order": 2,
+          "name": "Concept-level dedup attestation + instrument-profile consult (mechanism-family x instrument)",
+          "mechanism": "Search docs/rejected_candidates.md (concept-intake-entry lines), closed discovery_manifests/*.json, and docs/methodology/rejected_signals.md by mechanism_family x instrument. Run `python scripts/instrument_profiles.py cell <SYMBOL> <mechanism-id>`, which prints ledger/prior-verdict/binding-bars/cost-hurdle/K-bank and exits nonzero (BLOCKING) on a DEAD/AMBIGUOUS-PARKED/CONTINGENT-FORWARD prior.",
+          "inputs": "Proposed mechanism_family (free text) + instrument symbol",
+          "outputs": "Dedup attestation prose (required field in the harvest seed manifest §5); saved profile-consult output, later required verbatim as --profile-consult on register_search open",
+          "gate": "instrument_profiles.py exit code 0=clear; exit 1=BLOCKING must be named and addressed in the eventual pre-registration (not a permanent bar)",
+          "kill_condition": "A screened-dead mechanism-family x instrument cell stays dead under new citation/packaging unless new mechanism evidence is offered",
+          "refs": [
+            "docs/rejected_candidates.md",
+            "docs/methodology/strategy_harvest.md#87",
+            "scripts/instrument_profiles.py",
+            "lab/discovery/register_search.py#273-340"
+          ]
+        },
+        {
+          "order": 3,
+          "name": "Rule 2 tool-selection ladder (least-overfit-first)",
+          "mechanism": "Reach for the lower-K, more-constrained tool before the flexible one: catch22 (22 features) before full tsfresh (~800); a fixed/criterion-chosen ruptures penalty before a penalty sweep; simple PySR expressions off the Pareto knee before deep search; held-out-likelihood HMM state count before in-sample fit.",
+          "inputs": "Candidate hypothesis class (motif/discord, regime, feature, expression)",
+          "outputs": "Chosen tool + escalation justification recorded in the eventual PREREG",
+          "gate": "n/a (discipline check)",
+          "kill_condition": "Reaching for full tsfresh or a deep PySR search as the first move is a named STOP-condition red flag",
+          "refs": [
+            ".claude/skills/futures-anomaly-discovery/SKILL.md#203-216"
+          ]
+        },
+        {
+          "order": 4,
+          "name": "Pre-mining data hygiene (Branch A gate)",
+          "mechanism": "Deseasonalize before mining: normalize by the time-of-day volatility U-shape; use midpoint (mbp-1/tbbo) not trade prices for short-horizon mean-reversion mining; confirm back-adjustment convention and session/DST/Globex-boundary provenance before any level-based motif search.",
+          "inputs": "Raw OHLCV/tick panel for the target instrument",
+          "outputs": "Hygiene-cleaned series ready for mining; documented normalization choice (counted in K if itself swept)",
+          "gate": "Futures-microstructure counterpart of strategy-validation's Step-0 panel-integrity battery (Phase 4)",
+          "kill_condition": "n/a (a hygiene failure produces a mined artifact mistaken for edge, caught downstream at DELETE/FLIP or placebo)",
+          "refs": [
+            ".claude/skills/futures-anomaly-discovery/reference/tool-discipline.md#76-97"
+          ]
+        },
+        {
+          "order": 5,
+          "name": "Branch A1 — STUMPY matrix-profile motif/discord search",
+          "mechanism": "Compute stumpy.stump(series_norm, m=m) for each window length m in a pre-registered set (default 30,60,90). Motifs=low-distance repeats; discords=high-distance anomalies-by-construction, never evidence of edge. K accrues as (subsequences) x (window lengths tried), declared before results examined.",
+          "inputs": "Hygiene-cleaned bar series; pre-registered window-length set",
+          "outputs": "List of motif/discord hits (location, distance, window, kind) routed as OBSERVATIONS, never entries",
+          "gate": "K accounting declared before results examined (Rule 1)",
+          "kill_condition": "n/a (feeds K-bracket binding, step 11)",
+          "refs": [
+            "lab/discovery/miner.py#17,94-108"
+          ]
+        },
+        {
+          "order": 6,
+          "name": "Branch A2 — ruptures change-point/regime segmentation",
+          "mechanism": "Pelt/binseg/window/kernel change-point detection partitions the series into regimes. Penalty (or n_bkps) is a researcher DOF — a sweep multiplies K by grid size. Output is a conditioning variable feeding regime-consistency tests, never a signal.",
+          "inputs": "Hygiene-cleaned bar series; fixed penalty or pre-registered penalty-sweep grid",
+          "outputs": "Break-point set / regime labels",
+          "gate": "K contributes RUPTURES_FACE=1 (fixed penalty) or full swept grid size if a sweep is pre-registered",
+          "kill_condition": "n/a",
+          "refs": [
+            "lab/discovery/miner.py#23",
+            "lab/discovery/k_count.py#18"
+          ]
+        },
+        {
+          "order": 7,
+          "name": "Branch A3 — tsfresh/catch22 feature extraction",
+          "mechanism": "catch22 (22-feature canonical subset) first; escalate to full tsfresh (~800 features, FRESH per-run FDR control) only when catch22 is demonstrably insufficient. tsfresh's FDR is per-run, not program-level — a selected feature is already multiplicity-contaminated relative to the whole research program.",
+          "inputs": "Hygiene-cleaned bar series or derived feature panel",
+          "outputs": "Selected feature(s)/covariate(s), not a strategy",
+          "gate": "K = 22 (catch22, always counted) or full tsfresh feature count when escalated",
+          "kill_condition": "n/a",
+          "refs": [
+            "lab/discovery/k_count.py#17"
+          ]
+        },
+        {
+          "order": 8,
+          "name": "Branch A4 — hmmlearn HMM regime states",
+          "mechanism": "Fit an HMM on IS data only (never re-fit on OOS). State count chosen by held-out likelihood or a pre-registered criterion, never in-sample fit. Every restart/seed/init attempt counts toward declared K. Labels must be filtered (forward-only) for real-time use — predict/decode is a smoothed posterior and a look-ahead leak if used directly.",
+          "inputs": "IS bar series; candidate state-count grid; seed/init budget",
+          "outputs": "Latent regime-state sequence (conditioning variable, not a signal)",
+          "gate": "State-count search + restart/seed attempts all count toward K",
+          "kill_condition": "n/a",
+          "refs": [
+            ".claude/skills/futures-anomaly-discovery/reference/tool-discipline.md#43-58"
+          ]
+        },
+        {
+          "order": 9,
+          "name": "Branch A5 — gplearn/PySR symbolic regression",
+          "mechanism": "Fits a closed-form expression mapping features to a target; the operator set, complexity ceiling, and population/generation budget must be pre-registered (otherwise K is unboundable). Every restart/seed counts. Prefer the Pareto-front knee, not the tail.",
+          "inputs": "Feature panel; pre-registered operator set, complexity ceiling, population/generation budget",
+          "outputs": "Candidate closed-form expression(s) ranked by Pareto position — the highest-suspicion output in the whole stack",
+          "gate": "Deep-lane variant (step 10) for larger K",
+          "kill_condition": "n/a",
+          "refs": [
+            ".claude/skills/futures-anomaly-discovery/reference/tool-discipline.md#60-74"
+          ]
+        },
+        {
+          "order": 10,
+          "name": "Branch A5b — deep-iteration lane (grammar-bound search, GROW charter)",
+          "mechanism": "Frozen, hash-pinned generation grammar (--grammar-file/--grammar-sha256); generation_budget IS K, fully counted. Three conjuncts required at freeze: K<=33 (K_CEILING); floor_at_k(K, confirm_years)<=2.0 (FLOOR_CEILING); power=Phi((target_sr-floor_sr)*sqrt(years))>=0.50 against the campaign's own a-priori target_sr. A burned-segment consult refuses opening on a previously-consulted data window.",
+          "inputs": "Frozen grammar.json + sha256 pin; declared K; confirm_years; a-priori target_sr; instrument + data window",
+          "outputs": "ADMIT/REFUSE via evaluate_deep_admission(); on ADMIT proceeds under stage24_runner-style mine->score->emit",
+          "gate": "evaluate_deep_admission() — a separate predicate from the mechanism-first EM/TNEC corridor",
+          "kill_condition": "REFUSE with reason code K_ABOVE_CEILING / FLOOR_ABOVE_CEILING / POWER_BELOW_MIN",
+          "refs": [
+            "lab/discovery/deep_lane_admission.py#36-131",
+            "docs/adr/2026-08-16-deep-iteration-lane-charter.md"
+          ]
+        },
+        {
+          "order": 11,
+          "name": "Branch A convergence — bind K_DSR via the non-overlap floor formula",
+          "mechanism": "For a mined campaign at IS bar count T: K_DSR = 22 (catch22) + 1 (ruptures) + sum over each frozen window m of floor(T/m) (non-overlap floor per window). A raw overlapping diagnostic K_raw is also reported but never used downstream.",
+          "inputs": "T (IS bar count); frozen window set (default 30,60,90)",
+          "outputs": "KBracket{T, windows, k_dsr, k_raw, n_subseq}",
+          "gate": "k_dsr is the number passed as --search-space-size to register_search open (Phase 3)",
+          "kill_condition": "n/a",
+          "refs": [
+            "lab/discovery/k_count.py#17-90"
+          ]
+        },
+        {
+          "order": 12,
+          "name": "Branch B1 — Harvest sourcing: ranked channel portfolio",
+          "mechanism": "Mechanism-class priority (Tier A fund-first, Tier B conditional, Tier C graveyard-watch) worked through a ranked channel list: rank1 citation-graph traversal / structural flow census (tie); rank2 survey/replication meta-studies; rank3 futures-native journals; rank4 CFTC COT/TFF; rank5 strategy encyclopedias (index only); rank6 practitioner books/blogs (idea-gen only). A quarterly radar cadence runs traversal + frozen Q1-Q6 query families + a shape pre-check.",
+          "inputs": "Confirmed Tier-A axes; frozen Q1-Q6 query families",
+          "outputs": "Staged candidate row(s) with citation + channel rank",
+          "gate": "§2.2 cost-reachability sniff test + §2.4 shape pre-check applied before staging",
+          "kill_condition": "Shape pre-check failure (candidate outside venue feasibility region) = SHAPE-KILL, dropped, never staged",
+          "refs": [
+            "docs/methodology/strategy_harvest.md#55-85",
+            "lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md"
+          ]
+        },
+        {
+          "order": 13,
+          "name": "Branch B2 — Harvest admission: five mandatory requirements",
+          "mechanism": "Req1 economic grounding (Path 1a WHO/WHEN/WHY/HOW clauses, or Path 1b evidence-robustness); Req2 cohort-cited per-instrument delta/sigma (no cross-instrument transplant); Req3 family K-bank (disclosure-only, never a gate); Req4 confirm-power>=0.50 at declared panel N; Req5 cost-law reachability (cohort delta bp/event >= 4x RT_frac at the campaign's own Stage-2 basis).",
+          "inputs": "Sourced seed's citation + claimed mechanism + cohort statistics",
+          "outputs": "Pass/fail/UNSCREENABLE disposition per requirement, or routing to a named recovery path",
+          "gate": "A seed failing any requirement other than Req3 is not screened",
+          "kill_condition": "UNSCREENABLE (Req2/Req4 with no recovery) or hard fail on Req1/Req5 drops the seed before it screens",
+          "refs": [
+            "docs/methodology/strategy_harvest.md#20-40",
+            "docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md"
+          ]
+        },
+        {
+          "order": 14,
+          "name": "Branch B3 — Profile consult + seed manifest authoring",
+          "mechanism": "Declare the (instrument, mechanism-class) cell via instrument_profiles.py cell (same mechanism as step 2, now recorded as a named field). Fill the §5 seed manifest template: admission-date, requirement paths, source+rank, K_banked disclosure, K_intrinsic (<=3, every varied axis enumerated), K_eff+floor(K_eff), delta/sigma, N+event frequency, power, dedup attestation, screen verdict, operator ratification.",
+          "inputs": "Requirement 1/2/4/5 findings; profile-cell consult output",
+          "outputs": "A filled harvest seed manifest",
+          "gate": "An incomplete manifest is unscreenable by construction",
+          "kill_condition": "n/a",
+          "refs": [
+            "docs/methodology/strategy_harvest.md#42-53,108-142"
+          ]
+        },
+        {
+          "order": 15,
+          "name": "Branch B4 — Intake screen (axis_screen.py: Clause K + Clause N)",
+          "mechanism": "Clause K: K_eff=K_intrinsic; floor(K_eff)=min annualized Sharpe clearing DSR>=0.95 at (K_eff,V=1/n), 6.5y. PASS iff floor<=Cap 1.0 (equivalent to K_eff<=3; K=4 already fails at 1.06). Clause N: power=Phi(sqrt(N)*|delta|/sigma-1.96)>=0.50. A PASS never blesses — it licenses campaign scoping only.",
+          "inputs": "K_intrinsic; declared N + delta/sigma from the manifest",
+          "outputs": "Screen verdict PASS/FAIL(K)/FAIL(N)/UNSCREENABLE",
+          "gate": "python -m research_utils.axis_screen — CAP/DSR_MIN/POWER_MIN/Z/YEARS/FREQS are frozen, no override",
+          "kill_condition": "FAIL(K) or FAIL(N) — a FAIL is strong (generous inputs couldn't rescue it)",
+          "refs": [
+            "docs/methodology/strategy_harvest.md#89-98",
+            "lab/research_utils/axis_screen.py#29-76"
+          ]
+        },
+        {
+          "order": 16,
+          "name": "Branch B5 — Operator ratification of the inventory addition",
+          "mechanism": "The screen verdict is recorded on the inventory as an operator-ratified addition with an anchor commit hash. FAIL/UNSCREENABLE rows are recorded below-the-line, never silently dropped.",
+          "inputs": "Screen verdict from step 15",
+          "outputs": "Ratified inventory row + anchor commit",
+          "gate": "Operator sign-off recorded on the manifest's operator-ratification field",
+          "kill_condition": "Below-the-line FAIL/UNSCREENABLE row does not proceed to campaign scoping",
+          "refs": [
+            "docs/methodology/strategy_harvest.md#145-149"
+          ]
+        },
+        {
+          "order": 17,
+          "name": "Branch B6 — Campaign scoping under HARV lane (Stage-0 pre-registration)",
+          "mechanism": "A ratified seed is scoped into a full campaign: a Stage-0 PREREG including a per-clause reachability attestation (HARD gate, non-empty; every JSON clause carries {value, units, basis, source}). Defaults + K accounting inherited by reference.",
+          "inputs": "Ratified seed manifest; reachability clauses",
+          "outputs": "A frozen Stage-0 PREREG.md under lab/analysis/<theme>/<slug>/",
+          "gate": "HARV ADR 2026-07-13 §2 HARD gate — no mechanism-first open without this attestation",
+          "kill_condition": "n/a (feeds Phase 3 register_search open)",
+          "refs": [
+            "docs/methodology/strategy_harvest.md#150,156-160"
+          ]
+        },
+        {
+          "order": 18,
+          "name": "Branch C — Structural flow census [RETIRED 2026-08-24]",
+          "mechanism": "Hand-built enumeration from exchange mechanics/mandate documents/fund filings, sourcing the four 1a clauses (WHO/WHEN/WHY/HOW) directly rather than via literature. Recorded as a Notice-log entry, not a manifest: four 1a clauses + venue check against core/firm_rules.py + family K-bank disclosure + graveyard-adjacency attestation.",
+          "inputs": "Market-structure facts (exchange rulebooks, mandate/fund-filing documents)",
+          "outputs": "A Notice-log entry naming the four clauses + venue check + K-bank disclosure",
+          "gate": "Zero K spent at this stage; must still clear Branch B's five admission requirements (steps 13-17) before it screens",
+          "kill_condition": "RETIRED 2026-08-24 (not a per-candidate kill — a channel-level retirement): zero admissible seeds across all 4-5 real passes (2026-07-26 -> 2026-08-01). Clause 2-B's own falsifier was substantively met; no future entry may open under this rank. Fails Branch B admission like any other sourced seed while it was live.",
+          "refs": [
+            "docs/methodology/strategy_harvest.md#79",
+            "docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md",
+            "docs/adr/2026-08-24-sourcing-phase-channel-retirement.md",
+            "docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md#2-B (superseded in part)"
+          ],
+          "retired": true
+        },
+        {
+          "order": 19,
+          "name": "Branch D1 — Generate-Confirm Route: G0 freeze exploration charter [RETIRED 2026-08-24]",
+          "mechanism": "Only while ADR 2026-08-05 is Accepted. Commits before any explore pull: instrument/symbology; schema ladder; disjoint EXPLORATION and CONFIRM windows (CONFIRM reserved, unread, never touched by exploration scores); frozen feature catalogue (size = K_intrinsic); flicker/cleaning rules; exact promotion-rule statistic+threshold; cost ceiling. After G0 commits, catalogue and windows never grow.",
+          "inputs": "Instrument; schema ladder; two disjoint windows; frozen feature catalogue",
+          "outputs": "A committed G0 pre-registration",
+          "gate": "ADR 2026-08-05 Status must == Accepted; steps 2 (dedup) and 4 (hygiene) are preconditions",
+          "kill_condition": "ADR not Accepted -> STOP (Route A only) Withdrawn 2026-08-24 alongside the rest of Route B — this G0 charter may no longer open (ADR 2026-08-05 is `Superseded`).",
+          "refs": [
+            "docs/methodology/avenue_a_generate_confirm.md#1-39",
+            "docs/adr/2026-08-24-sourcing-phase-channel-retirement.md"
+          ],
+          "retired": true
+        },
+        {
+          "order": 20,
+          "name": "Branch D2 — G1 cost dry-run + operator GO, G2 run exploration [RETIRED 2026-08-24]",
+          "mechanism": "G1: run db_fetch estimate for the EXPLORATION schema/window; record estimate; obtain operator GO for that schema x window only. G2: score every catalogue cell on EXPLORATION data only (or log an explicit skip, still counted toward K); emit a candidate list (may be empty) with exact feature definitions + EXPLORATION metrics. CONFIRM data is never touched.",
+          "inputs": "G0-frozen catalogue + EXPLORATION window; operator GO",
+          "outputs": "Candidate list (possibly empty), each with exact feature definition + EXPLORATION metrics",
+          "gate": "G3 disposition: 0 candidates -> STOP (board write, K disclosed); >=1 -> proceed to C0 for one pre-chosen candidate or a pre-registered multi-confirm budget M frozen at G0",
+          "kill_condition": "0 candidates from exploration -> STOP, channel empty at this catalogue/window Withdrawn 2026-08-24 — no campaign may run G1/G2 under this route any longer.",
+          "refs": [
+            "docs/methodology/avenue_a_generate_confirm.md#41-67",
+            "docs/adr/2026-08-24-sourcing-phase-channel-retirement.md"
+          ],
+          "retired": true
+        },
+        {
+          "order": 21,
+          "name": "Branch D3 — C0 freeze confirmatory PREREG (+ confirm-budget multiplicity adjustment) [RETIRED 2026-08-24]",
+          "mechanism": "Commits BEFORE any CONFIRM metric is computed: falsifiable hypothesis H; exact CONFIRM window from G0; statistic+gates (identical or stricter than the promotion rule); frozen placebo/bootstrap seed+block rule; K_intrinsic; confirm-budget M+multiplicity bar (default M=1; M>1 requires the per-candidate threshold Bonferroni/Holm-adjusted for M, stated numerically before any CONFIRM score, M frozen at G0); VOID-POWER; forbidden moves (no retune/window-edit/outcome-laundering).",
+          "inputs": "G2's chosen candidate; frozen CONFIRM window from G0",
+          "outputs": "A committed confirmatory PREREG",
+          "gate": "If any CONFIRM metric predates this commit, the confirm is void — an ordering trap caught mechanically via git log",
+          "kill_condition": "Confirming M>1 candidates at the unadjusted threshold is an instant-void anti-pattern (reproduces generate-winner->confirm-pass laundering one stage later) Withdrawn 2026-08-24 — no C0 freeze may open under this route any longer.",
+          "refs": [
+            "docs/methodology/avenue_a_generate_confirm.md#70-89,C0,Anti-patterns#6",
+            "docs/adr/2026-08-24-sourcing-phase-channel-retirement.md"
+          ],
+          "retired": true
+        },
+        {
+          "order": 22,
+          "name": "Branch D4 — C1/C2 confirm run, C3 verdict [RETIRED 2026-08-24]",
+          "mechanism": "C1: cost dry-run for the CONFIRM window; a separate operator GO distinct from the explore GO. C2: exactly ONE run discharging exactly one pre-registered verdict branch — no threshold sweep, no alternate horizon. C3 verdict: RESOLVED -> becomes a seed eligible for normal harvest/Stage-7+ path (re-enters Branch B admission, NOT auto-deployed); FALSIFIED -> DEAD-list; VOID-* -> report honesty limb, open a new campaign to retry.",
+          "inputs": "Committed confirmatory PREREG; CONFIRM-window data",
+          "outputs": "Verdict RESOLVED/FALSIFIED/VOID-*, plus board-write artifacts",
+          "gate": "RESOLVED is the only branch producing a seed; explicitly not a promotion",
+          "kill_condition": "FALSIFIED (exploration win was window luck/noise) or VOID-* (honesty limb, must restart) Withdrawn 2026-08-24 — 0/4 campaigns, across the mechanism's entire life, ever reached C1/C2/C3. Full retirement, not just the one paused order-flow-minute family.",
+          "refs": [
+            "docs/methodology/avenue_a_generate_confirm.md#91-124",
+            "docs/adr/2026-08-24-sourcing-phase-channel-retirement.md"
+          ],
+          "retired": true
+        },
+        {
+          "order": 23,
+          "name": "Cost-geometry Phase-0 pre-gate (new candidate entry mechanisms only)",
+          "mechanism": "Before the first backtest, run scripts/cost_geometry_pregate.py against the canonical TV 15m series with the strategy's realized stop-ATR multiple. PASS iff cost_R < 0.05R (median spread / median ATR15m derived cost).",
+          "inputs": "A new candidate entry mechanism + its realized stop specification",
+          "outputs": "cost_R value + verdict recorded in the instrument ledger disposition",
+          "gate": "A PASS is necessary but not sufficient — the pre-registered backtest still runs",
+          "kill_condition": "FAIL means the mechanism as specified is cost-infeasible and does not proceed to backtest without a stop-geometry change or lower-cost venue",
+          "refs": [
+            "docs/adr/2026-06-22-cost-geometry-pregate.md",
+            "scripts/cost_geometry_pregate.py"
+          ]
+        }
+      ]
+    },
+    {
+      "phase_name": "Pre-Registration & K-Binding (Discovery Registration)",
+      "summary": "The convergent gate where mined (Branch A) and harvested (Branch B) candidates meet — the two live sourcing channels as of 2026-08-24 (Branch C structural census and Branch D Avenue A Route B were retired that date; see the Sourcing phase). A run's trial count K is bound and committed to a manifest BEFORE any result is examined, and the campaign is executed under that binding.",
+      "steps": [
+        {
+          "order": 1,
+          "name": "register_search open — bind K before results examined",
+          "mechanism": "`PYTHONPATH=lab python -m discovery.register_search open` (or the skill's thin launcher). Refuses to overwrite an existing run_id. Three lanes: mechanism-first (default; requires --reachability-attestation, --profile-cell/--profile-consult, --admission-file scored against EM0/EM2-EM5+N-EDGE+DSR-cap/power, --prereg); blind (legacy 11-key schema, admission file optional but its refusals still abort if supplied); deep (requires --prereg, --grammar-file/sha256, --confirm-years, --target-sr per the Phase-2 §2.10 charter). An optional Requirement-5 cost-law pre-flight refuses if cohort delta can't clear 4x the round-trip cost hurdle.",
+          "inputs": "run_id; tool name; K (search-space-size); alpha (default 0.05); data-window; hypothesis; lane-specific artifacts",
+          "outputs": "discovery_manifests/<run_id>.json with status='open', recording K, alpha, data_window, hypothesis, params, attestation/profile/admission/prereg/cost-law pointers",
+          "gate": "Pre-registration is immutable — cannot re-declare K after seeing results",
+          "kill_condition": "Any refusal (Cap/EM0 when K>=4, power<0.50, failed N-EDGE, EM2-EM5 fail, K_mismatch, failed deep-lane conjunct) writes NO manifest at all: ABORT, $0/K=0",
+          "refs": [
+            "lab/discovery/register_search.py#640-714",
+            "lab/discovery/admission_schema.py"
+          ]
+        },
+        {
+          "order": 2,
+          "name": "Stage-2/4 runner — Mine -> Bind-K -> Score -> emit-matrix",
+          "mechanism": "stage24_runner.py mines (STUMPY/catch22-covariate/ruptures via discovery.miner.mine_series), freezes rules from mined hits or a spec, binds K_DSR via k_count.compute_k_bracket (same non-overlap-floor formula, now at real campaign-scale T), scores frozen IS rules against IS/OOS returns, and emits the Stage-4 return matrix — synthetic-only until the operator authorizes a real register_search open/db_fetch pull.",
+          "inputs": "Hygiene-cleaned IS/OOS bar series; frozen window set; frozen rules",
+          "outputs": "ScoreBundle of ScoredCandidate objects (is_eval, oos_eval, is_pvalue, cost_law_pass, dsr_unreachable_low_n flag); a Stage-4 trade-return matrix CSV",
+          "gate": "Catch22 is covariate-only (0 scored columns); low-n (<=250 OOS trades) candidates are flagged, never silently dropped",
+          "kill_condition": "n/a — feeds close",
+          "refs": [
+            "lab/discovery/stage24_runner.py#1-45,76-204"
+          ]
+        },
+        {
+          "order": 3,
+          "name": "register_search close — submit survivor p-values, cheap multiplicity triage",
+          "mechanism": "`discovery.register_search close --run-id <id> --pvalues <...>` (requires prior open). Computes Bonferroni threshold=alpha/K; naive-alpha pass count with expected false positives=K*alpha; BH-FDR step-up ranked 1..s. A separate --operator-stopped path banks --executed-k selection events actually examined and produces NO campaign verdict.",
+          "inputs": "run_id (previously opened); survivor p-values or executed-k+stop-reason+executed-looks",
+          "outputs": "Manifest updated to status='closed' with n_submitted, n_pass_naive_alpha, bonferroni_threshold, n_pass_bonferroni, n_multiplicity_killed, bh_rows, n_pass_bh, expected_false_positives_global_null, candidates[]",
+          "gate": "Verdict string is always 'FIRST-PASS ONLY... NOT a promotion' — hand the full candidate set to strategy-validation",
+          "kill_condition": "A naive-significant-but-Bonferroni-killed candidate is flagged explicitly as a classic data-snooping false positive, not carried forward",
+          "refs": [
+            "lab/discovery/register_search.py#731-861,717-728"
+          ]
+        },
+        {
+          "order": 4,
+          "name": "Hand-off — candidate + K manifest routed downstream, never blessed",
+          "mechanism": "The closed manifest is handed to strategy-validation for universe-level correction (SPA/StepM/PBO) and the native-micro OOS gate, which needs returns of all K strategies, not just survivors. A campaign's slug/status/one-liner is recorded in lab/CATALOG.md; a closing/open Q is tracked in docs/briefs/INDEX.md.",
+          "inputs": "Closed discovery manifest; scored candidate set (all K returns)",
+          "outputs": "A routed Inquire-phase falsifiable hypothesis (or a DEAD/dropped disposition in rejected_candidates.md), plus CATALOG.md/INDEX.md rows",
+          "gate": "'This layer GENERATES candidates; it never blesses them' — the gate proper is strategy-validation's, not discovery's",
+          "kill_condition": "n/a (routing step)",
+          "refs": [
+            ".claude/skills/futures-anomaly-discovery/SKILL.md#263-271",
+            "lab/CATALOG.md"
+          ]
+        }
+      ]
+    },
+    {
+      "phase_name": "Statistical Evaluation / Validation Battery",
+      "summary": "The strategy-validation skill's mechanical test suite — panel integrity, cost-law arithmetic, mechanism-specificity, null hygiene, multiplicity/DSR, and (currently DORMANT) universe-level correction. Cheapest and highest-signal falsifiers run first (fill-slip, excursion-bounded counterfactual, DELETE/FLIP) before any expensive MC or universe-level test is commissioned.",
+      "steps": [
+        {
+          "order": 1,
+          "name": "Pre-registration freeze & ordering-trap audit",
+          "mechanism": "Verify via `git log --format='%h %ci %s'` that the PREREG commit predates any RESULTS/scoring commit. If any CONFIRM metric was computed before the freeze commit, the confirm is void and a new campaign with a fresh holdout is required.",
+          "inputs": "Draft PREREG; git commit log",
+          "outputs": "Frozen, timestamped pre-registration; ordering audit result",
+          "gate": "Mechanical git-log check, not judgment",
+          "kill_condition": "A score predating the freeze commit voids the confirm (Anti-pattern #1)",
+          "refs": [
+            "docs/methodology/avenue_a_generate_confirm.md"
+          ]
+        },
+        {
+          "order": 2,
+          "name": "Step-0 panel-integrity battery",
+          "mechanism": "Mandatory before any metric on a TV/CSV export or bar-data panel: entry-minute census vs declared timeframe; UTC->ET DST-aware session-window check; day-of-week census; zero-entries-on-event-dates check; n-within-bounds vs prior runs; date-span coverage check; duplicate-export detection; config-fingerprint parse.",
+          "inputs": "Raw TV/broker CSV export or bar-data panel; declared timeframe/session/day-of-week/config metadata",
+          "outputs": "Battery report (per-check pass/fail); logged run",
+          "gate": "Any single check failing blocks all downstream metric computation on that panel",
+          "kill_condition": "A caught 4H-as-15m mislabel, duplicate export, or time-clustered subset mislabeled as full-span kills the panel before any statistic is trusted",
+          "refs": [
+            ".claude/skills/strategy-validation/scripts/step0_battery.py"
+          ]
+        },
+        {
+          "order": 3,
+          "name": "Cost-law pre-flight (Requirement-5 arithmetic, general form)",
+          "mechanism": "cost_R ~= [2*commission_pct*price + 2*slippage_ticks*ticksize]*(price/stop_dist)/price, computed at the campaign's own IS-panel basis, commissions shown explicitly. Mandatory inequality: cohort delta (bp/event) >= 4x RT_frac. Target expectancy >= 4x the hurdle. CONFIRMED 2026-08-24: this is one of TWO distinct cost-law formulas in the repo, not one formula restated five times as earlier assumed — this bp-of-panel-price form is the sole canonical property of `strategy_harvest.md` §1 Requirement 5 (unedited); the separate per-trade stop-distance-R form (Sourcing phase step 23) is independently owned by `scripts/cost_geometry_pregate.py`. `methodology_lessons.md` M-20 was rewritten from a verbatim restatement into a labeled derived mirror of this section.",
+          "inputs": "Intended stop distance, commission schedule, slippage-tick assumption, panel-era median price",
+          "outputs": "cost_R hurdle figure; PASS/FAIL vs 4x hurdle",
+          "gate": "Stage-0 arithmetic, not judgment",
+          "kill_condition": "FAIL -> UNREACHABLE; redesign the gate/instrument or do not open the campaign",
+          "refs": [
+            ".claude/skills/strategy-validation/SKILL.md#2",
+            "docs/methodology/strategy_harvest.md (Requirement 5)",
+            "docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md",
+            "docs/methodology/lessons/methodology_lessons.md#M-20 (derived mirror, not restatement)"
+          ]
+        },
+        {
+          "order": 4,
+          "name": "Analytic edge x frequency pass-ceiling screen",
+          "mechanism": "For a deadline-capped barrier objective, compute the a-priori pass-rate ceiling from (per-trade edge x trade frequency) vs barrier geometry before any MC. A thin single-setup edge has a computable ceiling near coin-flip and is dead-for-the-objective even when real.",
+          "inputs": "Per-trade edge estimate, trade frequency, barrier geometry",
+          "outputs": "Analytic pass-ceiling %; exit-policy information-ratio ranking",
+          "gate": "n/a (analytic, precedes MC commissioning)",
+          "kill_condition": "A ceiling that disqualifies the candidate for the objective kills it before any MC is built",
+          "refs": [
+            "docs/methodology/lessons/methodology_lessons.md M-18"
+          ]
+        },
+        {
+          "order": 5,
+          "name": "Fill-slip sweep (cheapest falsifier for stop/break entries)",
+          "mechanism": "One-parameter sweep of mean-R vs entry slip in {0,0.5,1,1.5} ticks BEFORE building any exit design, sizing frontier, or MC. Spread-cost-clearable != fill-robust.",
+          "inputs": "Trade-by-trade entry prices/levels; candidate stop-order type; median range/ATR",
+          "outputs": "meanR-vs-slip curve; zero-crossing slip value",
+          "gate": "Cost-net edge must survive >=1 realistic tick of slip before downstream design work is commissioned",
+          "kill_condition": "Zero-crossing below a realistic slip tick means the design is fill-fragile and killed before any exit/sizing work",
+          "refs": [
+            "docs/methodology/lessons/methodology_lessons.md M-16"
+          ]
+        },
+        {
+          "order": 6,
+          "name": "Gate-reachability attestation, own-units / own-basis",
+          "mechanism": "Every downstream gate must be simulated in its OWN units at the basis it's actually scored on (the IS panel, never present-day price), with commissions divided out explicitly.",
+          "inputs": "Every gate the campaign's design could fail at, listed with its native unit + scoring basis",
+          "outputs": "Per-gate reachability simulation, same-units/same-basis",
+          "gate": "An attestation in the wrong units/basis is treated as absent",
+          "kill_condition": "Campaign is not cleared to open on a wrong-basis attestation",
+          "refs": [
+            "docs/methodology/lessons/methodology_lessons.md M-20"
+          ]
+        },
+        {
+          "order": 7,
+          "name": "DSR-floor-at-axis-K a-priori screen",
+          "mechanism": "Before committing a discovery axis, compute the DSR demonstrability floor at the axis's intrinsic K and benchmark against best in-house edge and corrected published top-decile Sharpe.",
+          "inputs": "Axis's intrinsic K; trade-frequency band; production deflated_sharpe module",
+          "outputs": "DSR floor at axis K; comparison table vs benchmarks",
+          "gate": "n/a (a-priori screen)",
+          "kill_condition": "Floor exceeds both benchmarks -> axis DEAD at DSR admission regardless of downstream survivor-gate geometry",
+          "refs": [
+            "docs/methodology/lessons/methodology_lessons.md M-19"
+          ]
+        },
+        {
+          "order": 8,
+          "name": "Excursion-bounded counterfactual (zero-run kill test)",
+          "mechanism": "Use TV's MFE/MAE columns to bound a re-run proposal's counterfactual without spending a run: bucket trades into certain-win/certain-loss/ambiguous/scratch under the proposed stop/target; report best/worst expectancy bounds including costs.",
+          "inputs": "TV export with MFE/MAE columns; candidate's proposed stop/target",
+          "outputs": "Best/worst expectancy bound table by bucket",
+          "gate": "Required before ANY direction-flip or exit-redesign re-run is proposed",
+          "kill_condition": "A non-positive worst-bound after costs kills the design space with zero re-runs",
+          "refs": [
+            ".claude/skills/strategy-validation/SKILL.md#3"
+          ]
+        },
+        {
+          "order": 9,
+          "name": "Null-naming discipline",
+          "mechanism": "State explicitly what null the edge is measured against (zero-drift, buy-and-hold, or TSMOM) before running any permutation/placebo/bootstrap test. An unnamed null defaults to zero-drift, trivially beating drift on a trending instrument.",
+          "inputs": "Candidate's claimed edge; instrument's historical drift character",
+          "outputs": "Explicit stated null/benchmark, logged in the pre-registration",
+          "gate": "A test computed against an unnamed/undetrended null is inadmissible as evidence",
+          "kill_condition": "n/a (upstream discipline for steps 10-18)",
+          "refs": [
+            ".claude/skills/strategy-validation/SKILL.md#5"
+          ]
+        },
+        {
+          "order": 10,
+          "name": "Mechanism-specificity DELETE test",
+          "mechanism": "Sham arm with identical geometry but the selecting level swapped for a theoretically-null substitute of matching statistical shape. Score constrained and sham arms separately on IS.",
+          "inputs": "Frozen construct definition; pre-specified sham/no-selection substitute",
+          "outputs": "Constrained-arm vs sham-arm mean net R (IS only)",
+          "gate": "n/a",
+          "kill_condition": "sham mean R >= constrained mean R -> DELETE-FAIL -> arm not SHAPE-CLEAR",
+          "refs": [
+            "lab/archive/msl_c1_mym_2026-08/EXPLORE_GO.DRAFT.md"
+          ]
+        },
+        {
+          "order": 11,
+          "name": "Mechanism-specificity FLIP test",
+          "mechanism": "Enter WITH the extension at the same trigger bar (opposite side of the claimed fade/reversal), preserving stop/target magnitude. Score both arms separately on IS. Not a stand-alone sufficient test — degenerate when the anti-signal is mechanically catastrophic.",
+          "inputs": "Frozen construct definition; opposite-side entry rule at the same trigger",
+          "outputs": "Constrained-arm vs flip-arm mean net R (IS only)",
+          "gate": "One limb of a battery, not stand-alone",
+          "kill_condition": "flip mean R >= constrained mean R -> FLIP-FAIL -> arm not SHAPE-CLEAR",
+          "refs": [
+            "lab/archive/msl_c1_mym_2026-08/EXPLORE_GO.DRAFT.md",
+            "docs/methodology/lessons/methodology_lessons.md M-17"
+          ]
+        },
+        {
+          "order": 12,
+          "name": "Canonical placebo test (sign/label randomization)",
+          "mechanism": "Randomize trade sign/labels a fixed rep count (e.g. 1000, fixed seed) to build an empirical null; p_emp = P(placebo>=observed). A placebo pass alone never overrides a CI-FALSIFIED primary result.",
+          "inputs": "Realized trade R series; repetition count; fixed seed",
+          "outputs": "Empirical placebo-null distribution; p_emp",
+          "gate": "p_emp < 0.05 (or campaign-specific bar) required as an aux limb",
+          "kill_condition": "p_emp >= bar -> placebo fails, required limb for SHAPE-CLEAR",
+          "refs": [
+            "lab/archive/msl_c1_mym_2026-08/EXPLORE_GO.DRAFT.md"
+          ]
+        },
+        {
+          "order": 13,
+          "name": "Time-anchored same-day placebo",
+          "mechanism": "For time-of-day-anchored setups, slide the range-defining window to a random non-opening time on the SAME day, re-run the identical rule. Reject direction-flip and cross-day rotation as degenerate alternatives first. Confirm non-degenerate null BEFORE reading its p-value.",
+          "inputs": "Full intraday panel for the anchor day; identical entry/stop/exit rule at randomized non-anchor times",
+          "outputs": "Same-day placebo-null distribution; p-value; degeneracy check",
+          "gate": "Must confirm non-degenerate null before reporting p",
+          "kill_condition": "p above campaign bar -> anchor is not special, edge is a clock-window artifact",
+          "refs": [
+            "docs/methodology/lessons/methodology_lessons.md M-17"
+          ]
+        },
+        {
+          "order": 14,
+          "name": "Autocorrelation-aware surrogate battery (magnitude-persistence claims)",
+          "mechanism": "For persistence claims over an autocorrelated series, use constrained surrogates (IAAFT/phase-randomized, or parametric matched to the full ACF profile) — an AR(1)-only surrogate is a strawman on long-memory series.",
+          "inputs": "Full realized autocorrelated series; its measured ACF profile",
+          "outputs": "Surrogate-battery pass/fail on both presence and attribution questions, kept separate",
+          "gate": "n/a",
+          "kill_condition": "Failing against the full-ACF-matched surrogate battery denies the mechanism claim (presence may still stand separately)",
+          "refs": [
+            "docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md"
+          ]
+        },
+        {
+          "order": 15,
+          "name": "Block-shuffle discipline for time-clustered signals",
+          "mechanism": "Any permutation test on a time-clustered signal must block-shuffle (preserve local clustering) rather than shuffle individual observations.",
+          "inputs": "Time-clustered signal series; chosen block length",
+          "outputs": "Block-shuffled null distribution",
+          "gate": "n/a",
+          "kill_condition": "A naive (non-block) shuffle's p-value is inadmissible",
+          "refs": [
+            ".claude/skills/strategy-validation/SKILL.md#5"
+          ]
+        },
+        {
+          "order": 16,
+          "name": "Bootstrap CI on expectancy (block, not IID)",
+          "mechanism": "Compute bootstrap CI on expectancy plus P(<=0)/P(>=gate) via selection_tests.py using arch's stationary/circular block bootstrap with block_size calibrated to the return-autocorrelation scale (not the sqrt(T) default).",
+          "inputs": "Trade-level realized R series; block_size calibrated to measured ACF scale",
+          "outputs": "Bootstrap CI on expectancy; P(<=0); P(>=gate)",
+          "gate": "CI lower bound must clear the pre-registered gate for the primary limb to pass",
+          "kill_condition": "CI including/below 0 fails the primary limb",
+          "refs": [
+            ".claude/skills/strategy-validation/scripts/selection_tests.py"
+          ]
+        },
+        {
+          "order": 17,
+          "name": "Best-of-K subset test under demeaned null",
+          "mechanism": "For a post-hoc tuned config/slice, compute P(best-of-K subset >= observed) under a demeaned (zero-edge) null panel.",
+          "inputs": "Full panel; the specific best-of-K selection rule used",
+          "outputs": "P(best-of-K subset >= observed) under the null",
+          "gate": "n/a",
+          "kill_condition": "High P(best-of-K>=observed) means the selection is indistinguishable from lucky-slice noise",
+          "refs": [
+            ".claude/skills/strategy-validation/SKILL.md#5(b)"
+          ]
+        },
+        {
+          "order": 18,
+          "name": "Label-permutation test (best/spread)",
+          "mechanism": "Shuffle which observations carry the winning label and re-derive the same best-of-K/spread statistic many times to build the null; the formal permutation counterpart of step 17.",
+          "inputs": "Full panel; label-permutation procedure respecting block-shuffle discipline (step 15)",
+          "outputs": "P(best>=observed); P(spread>=observed)",
+          "gate": "n/a",
+          "kill_condition": "p above pre-registered threshold means observed best/spread is not distinguishable from noise",
+          "refs": [
+            ".claude/skills/strategy-validation/SKILL.md#5(c)"
+          ]
+        },
+        {
+          "order": 19,
+          "name": "Drop-top-k concentration test",
+          "mechanism": "Recompute the headline statistic with the top-k contributing trades/days removed, for increasing k.",
+          "inputs": "Trade-level P&L series ranked by contribution",
+          "outputs": "Statistic-vs-k curve",
+          "gate": "n/a",
+          "kill_condition": "Collapse to non-significant after dropping a small top-k fails the concentration limb",
+          "refs": [
+            ".claude/skills/strategy-validation/SKILL.md#5(d)"
+          ]
+        },
+        {
+          "order": 20,
+          "name": "Halves/thirds stationarity split",
+          "mechanism": "Split the panel into temporal halves/thirds and recompute the headline statistic in each partition.",
+          "inputs": "Full panel, split at documented temporal boundaries",
+          "outputs": "Per-partition headline statistic",
+          "gate": "n/a",
+          "kill_condition": "Sign-reversal or material divergence across partitions grounds AMBIGUOUS/FALSIFIED even if the full-panel statistic passes",
+          "refs": [
+            ".claude/skills/strategy-validation/SKILL.md#5(e)"
+          ]
+        },
+        {
+          "order": 21,
+          "name": "Plateau protocol (parameter robustness) — ARCHIVED, not standing path",
+          "mechanism": "Historically: +-1-step neighbor sweep per knob against a pre-registered pass criterion, same-feed baseline mandatory. Archived 2026-08-07 (W4 ADR) — not the standing validation path. Plateau != validity: validates parameters conditional on the selection, not the selection itself (covered by steps 9-20).",
+          "inputs": "Center config + +-1-step neighbor grid on one feed",
+          "outputs": "Per-neighbor expectancy; dome/flat/cliff shape classification",
+          "gate": "DORMANT — requires fresh pre-reg + operator GO to re-arm",
+          "kill_condition": "n/a (dormant, not evaluated by default)",
+          "refs": [
+            "docs/adr/2026-08-07-w4-minimal-gate-set-dormancy.md"
+          ]
+        },
+        {
+          "order": 22,
+          "name": "1R estimator selection & reproducibility logging",
+          "mechanism": "Unimodal strategies: median(abs(loss)) normalized by equity-at-entry (not fixed initial capital). Bimodal/actively-managed strategies: filter to full-stop losses only, use the mean of that filtered subset (or an MAE-based proxy). Any MC run must log the estimator used, values, and cite the doc.",
+          "inputs": "Per-strategy trade CSV with loss labels/exit reasons; equity-at-entry series",
+          "outputs": "Per-strategy 1R value(s) by normalization; estimator choice logged",
+          "gate": "A portfolio-MC run without this logging is rejected as non-reproducible",
+          "kill_condition": "Using median loss on a bimodal distribution silently under-allocates risk and produces artificially favorable bust numbers — treated as a defect, not accepted into portfolio decisions",
+          "refs": [
+            "docs/methodology/1r_estimation.md"
+          ]
+        },
+        {
+          "order": 23,
+          "name": "Additive-cost-shock dual-calibration check",
+          "mechanism": "For a cost-shock Pre-Q, run BOTH adaptive-1R (current pipeline recomputes implied_1r from post-shock losses, which can mask live impact) and fixed-1R (pre-shock baseline) MC; the more conservative verdict is canonical.",
+          "inputs": "Pre-shock and post-shock trade CSVs; portfolio_mc in both modes",
+          "outputs": "Two MC verdicts (adaptive vs fixed-1R) for the same question",
+          "gate": "The fixed-1R verdict is canonical",
+          "kill_condition": "A FALSIFIED verdict from adaptive-1R alone may not be cited as proof the shock is immaterial",
+          "refs": [
+            "docs/methodology/lessons/methodology_lessons.md M-SWAP-1"
+          ]
+        },
+        {
+          "order": 24,
+          "name": "Pre-filter rank-correlation gate (Gen-2 triage-engine validity)",
+          "mechanism": "Run both a pre-filter/triage engine and the fill-realism engine on the same pre-registered config grid; compute Spearman rho of a pre-registered ranking metric at the parity anchor config(s). rho and the parity band are frozen Gen-1 constants.",
+          "inputs": "Same pre-registered config grid scored on both engines",
+          "outputs": "Spearman rho at parity anchor; parity-band net/PF delta",
+          "gate": "rho >= 0.70 required for the triage tier to carry shortlist authority",
+          "kill_condition": "rho < 0.70 -> triage tier invalid, revert to authoritative-only engine for that campaign",
+          "refs": [
+            "docs/methodology/prefilter_rank_correlation_gate.md"
+          ]
+        },
+        {
+          "order": 25,
+          "name": "Deflated Sharpe Ratio (DSR) / Probabilistic Sharpe (PSR) computation",
+          "mechanism": "Consumes K (from Phase 3) and V (trial-Sharpe variance) to compute SR0 (expected max Sharpe under K zero-edge trials), then DSR=P(true SR>SR0), penalizing negative skew and fat tails. Sharpe must be per-observation, deannualized. Reference floor table: K=1->0.65, 2->0.85, 3->0.98, 4->1.06 (already FAIL).",
+          "inputs": "K; trial-Sharpe variance V; per-observation Sharpe, n",
+          "outputs": "SR0; DSR = P(true SR > SR0)",
+          "gate": "DSR must clear the pre-registered floor (default 0.95)",
+          "kill_condition": "DSR below the pre-registered floor fails the candidate at the DSR admission gate",
+          "refs": [
+            ".claude/skills/strategy-validation/scripts/deflated_sharpe.py",
+            "docs/adr/2026-07-12-dsr-k-rule-and-variance-floor-supersession.md"
+          ]
+        },
+        {
+          "order": 26,
+          "name": "DSR self-test (planted controls)",
+          "mechanism": "Planted negative and positive controls in the validation self-test suite must fail (negative control) and pass (positive control) DSR at the 0.95 threshold respectively, before trusting the DSR computation on a live candidate.",
+          "inputs": "Planted negative/positive control return series",
+          "outputs": "Self-test pass/fail on both planted controls",
+          "gate": "n/a",
+          "kill_condition": "Either planted control landing on the wrong side invalidates the DSR harness for that run",
+          "refs": [
+            "lab/validation_selftest.py"
+          ]
+        },
+        {
+          "order": 27,
+          "name": "SPA / Reality Check (White's/Hansen's) — DORMANT",
+          "mechanism": "K-column model-loss matrix vs benchmark loss series, via arch.bootstrap's SPA implementation (block bootstrap, block_size tied to return-autocorrelation scale) for the snooping-adjusted p-value that the best model beats the benchmark. K-TIERING added 2026-08-24 (scoped to §8a/§8c only — §8b DSR is already K-aware by construction): at declared K∈{0,1} this correction is a DECLARED no-op — logged as \"K≤1, correction not applicable,\" not silently skipped. It runs at K∈{2,3} — the only band that is both reachable and load-bearing, since the standard mechanism-first lane's admission ceiling already refuses to open a manifest at K≥4 (`floor_at_k(K) > CAP`).",
+          "inputs": "Benchmark loss series + K-column model-loss matrix; calibrated block_size",
+          "outputs": "Snooping-adjusted p-value that the best model beats the benchmark",
+          "gate": "DORMANT since W4 ADR 2026-08-07 — re-arm only via campaign pre-reg + operator GO",
+          "kill_condition": "n/a — no default pass/fail applies until re-armed",
+          "refs": [
+            "docs/adr/2026-08-07-w4-minimal-gate-set-dormancy.md",
+            "docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md"
+          ]
+        },
+        {
+          "order": 28,
+          "name": "StepM / Romano-Wolf — DORMANT",
+          "mechanism": "Wraps SPA to return the SET of models superior to the benchmark under family-wise error control, same arch.bootstrap engine.",
+          "inputs": "Same benchmark loss series + K-column model-loss matrix as step 27",
+          "outputs": "Set of models statistically superior to the benchmark, FWE-controlled",
+          "gate": "DORMANT, same W4 ADR",
+          "kill_condition": "n/a",
+          "refs": [
+            "docs/adr/2026-08-07-w4-minimal-gate-set-dormancy.md"
+          ]
+        },
+        {
+          "order": 29,
+          "name": "Model Confidence Set (MCS) — DORMANT",
+          "mechanism": "Returns the set of models statistically indistinguishable from the best, same universe-level correction layer.",
+          "inputs": "Same K-column model-loss matrix",
+          "outputs": "Model Confidence Set",
+          "gate": "DORMANT, bundled under W4",
+          "kill_condition": "n/a",
+          "refs": [
+            ".claude/skills/strategy-validation/SKILL.md#8a"
+          ]
+        },
+        {
+          "order": 30,
+          "name": "PBO via CPCV — DORMANT",
+          "mechanism": "Combinatorial train/test splits via skfolio.CombinatorialPurgedCV; ranks IS vs OOS performance per path; PBO=P(OOS rank of IS-best config lands in bottom half). Purging+embargoing control leakage not addressed by plateau or halves/thirds splits. Carries the same K-tiering convention as §8a (see SPA/Reality Check step above) — declared no-op at K∈{0,1}, runs at K∈{2,3}.",
+          "inputs": "Full candidate config space; n_folds/n_test_folds/purged_size/embargo_size",
+          "outputs": "PBO statistic across combinatorial paths",
+          "gate": "DORMANT under W4",
+          "kill_condition": "PBO>0.5 = overfit (if re-armed)",
+          "refs": [
+            ".claude/skills/strategy-validation/SKILL.md#8c",
+            "docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md"
+          ]
+        },
+        {
+          "order": 31,
+          "name": "universe_gate.py orchestrator (composed SPA+DSR+PBO) — DORMANT as default",
+          "mechanism": "Composes DSR + SPA/StepM + PBO into a single promote/reject verdict, retains a --self-test mode; not the default promotion path post-W4.",
+          "inputs": "Same universe-level inputs as steps 25,27,30",
+          "outputs": "Composed promote/reject verdict when re-armed",
+          "gate": "DORMANT as default path",
+          "kill_condition": "n/a",
+          "refs": [
+            "lab/research_utils/universe_gate.py"
+          ]
+        },
+        {
+          "order": 32,
+          "name": "Incremental breadth — TOMBSTONED as live producer",
+          "mechanism": "Retained at lab/research_utils/breadth.py for re-arm/self-test only; not the default Stage-8 path since W4.",
+          "inputs": "n/a",
+          "outputs": "n/a",
+          "gate": "TOMBSTONED — not invoked by default",
+          "kill_condition": "n/a",
+          "refs": [
+            "lab/research_utils/breadth.py"
+          ]
+        }
+      ]
+    },
+    {
+      "phase_name": "Regime-Robustness Gate",
+      "summary": "Mandatory (not conditional) for any dd_protection-constant change, any Pareto-relaxation on a risk-constant plane, or any single-panel MC comparison where regime distribution materially affects the result — applied at the tail of the statistical evaluation battery, against the candidate's own headline pass criteria. CORRECTED 2026-08-24: this gate is NOT a mandatory linear step for candidate/strategy additions — its own scope section excludes them (\"adding/removing strategies\" is on the explicit \"Not required\" list). A prior candidate pre-registration (the FROZEN Class-S existing-strategy-book candidate-1 chain, frozen 2026-07-15 — NOT ORB-MNQ-1, an earlier misattribution now corrected) imported this gate as a per-candidate rider with its consequence pre-declared non-blocking; when the gate then FAILed on both discharge tiers, the FAIL rode into intake as a caveat instead of a falsifier. Both source documents stay FROZEN and byte-unedited (Trap #12) — the correction lives in a worked non-example, discharging a 16-day-overdue audit action item (F1). See [2026-08-24 ADR](docs/adr/2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md).",
+      "steps": [
+        {
+          "order": 1,
+          "name": "Part A — 6-month block bootstrap",
+          "mechanism": "Define 6-month contiguous blocks over the locked panel timeline; resample with replacement to build 100 alternate-history panels of the same total length; rebuild inner MC week-blocks and run the full sweep at the candidate config (same seed count as the parent brief); compute the 5th percentile of the 100-panel pass-rate distribution. Upgrade n to 200 for close calls.",
+          "inputs": "Locked panel; candidate config; parent brief's seed count",
+          "outputs": "100-panel pass-rate/bust-rate/p99-DD distribution; 5th-percentile pass-rate",
+          "gate": "Feeds Part C acceptance test; not independently pass/fail",
+          "kill_condition": "n/a",
+          "refs": [
+            "docs/methodology/regime_robustness_gate.md#Procedure Part A",
+            "docs/adr/2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md"
+          ]
+        },
+        {
+          "order": 2,
+          "name": "Part B — half-panel time split",
+          "mechanism": "Split the locked panel at its temporal midpoint into H1/H2 (unequal-length halves acceptable if documented); run the full MC at the candidate config on each half independently, same seed count.",
+          "inputs": "Locked panel split at documented midpoint; candidate config; parent brief's seed count",
+          "outputs": "H1 and H2 pass_rate/bust_rate/p99_dd",
+          "gate": "Feeds Part C acceptance test; not independently pass/fail",
+          "kill_condition": "n/a",
+          "refs": [
+            "docs/methodology/regime_robustness_gate.md#Procedure Part B"
+          ]
+        },
+        {
+          "order": 3,
+          "name": "Part C — acceptance test (headline-floor doctrine)",
+          "mechanism": "PASS iff ALL THREE hold: bootstrap 5th-percentile pass-rate>=floor, H1 pass-rate>=floor, H2 pass-rate>=floor, where floor = the brief's OWN full-panel pass-rate floor (never a separately-invented regime floor). For multi-metric headline criteria (e.g. p99 DD + bust + median), the SAME multi-metric criteria apply to all three limbs.",
+          "inputs": "Outputs of Parts A and B; the brief's own full-panel headline criteria as the floor",
+          "outputs": "PASS / regime-fragile-REJECT verdict per candidate config",
+          "gate": "All three limbs must independently clear the same headline floor",
+          "kill_condition": "One miss rejects the candidate as regime-fragile even if it strictly Pareto-dominates on the full panel",
+          "refs": [
+            "docs/methodology/regime_robustness_gate.md#Procedure Part C",
+            "docs/methodology/lessons/methodology_lessons.md M-Q-SWAP-3-2"
+          ]
+        },
+        {
+          "order": 4,
+          "name": "Boundary-sensitivity multi-boundary sweep (conditional)",
+          "mechanism": "If an H1/H2 split lands within +-2 months of a structurally significant date (worked precedent 2024-04-30), treat the spread as priors-shifting by default; if verdict-deciding, sweep >=3 non-anchor boundary dates and compute the z-score of the anchor-date spread against the non-anchor boundary-spread distribution.",
+          "inputs": "Multi-boundary sweep of the same verdict statistic across >=4 boundary dates",
+          "outputs": "Per-boundary spread; mean/sigma/z-score of the anchor spread vs non-anchor boundaries",
+          "gate": "z >= pre-registered threshold (1.5 sigma precedent) treats the spread as structural in the verdict",
+          "kill_condition": "A confirmed structural (non-monotone, non-gradient) spread is not discountable as sample-size noise",
+          "refs": [
+            "docs/methodology/lessons/methodology_lessons.md M-Q-REGIME-1"
+          ]
+        }
+      ]
+    },
+    {
+      "phase_name": "Portfolio-Composition Screens (conditional, book-leg candidates)",
+      "summary": "Applies only when a candidate is proposed as a leg of an already-admitted or composed book, not to a standalone candidate. Hard-structural screens run absolutely first, before any cheap risk-space arithmetic, before any expensive frozen-engine MC.",
+      "steps": [
+        {
+          "order": 1,
+          "name": "Hard-structural compliance screens",
+          "mechanism": "Hedging/same-Product-Group + sign, session, instrument-class screens run FIRST and absolutely. Absolute rule with no exceptions: a short-capable/opposing-sign Equity Index Product Group leg cannot coexist with a long Equity Index leg on the same or any commonly-controlled account.",
+          "inputs": "Candidate's Product Group, instrument class, and sign vs the existing/composed book",
+          "outputs": "SCREEN-PASS / SCREEN-FAIL determination",
+          "gate": "Runs before risk-breadth (step 2) is ever scored",
+          "kill_condition": "SCREEN-FAIL on any S-requirement closes the candidate as a book leg before any further composition work",
+          "refs": [
+            "docs/methodology/objective_composition_map.md"
+          ]
+        },
+        {
+          "order": 2,
+          "name": "Risk-breadth admissibility (n_eff_risk_delta)",
+          "mechanism": "Against a dollar-denominated trailing drawdown barrier, admissibility is a risk-space property: require n_eff_risk_delta>0 (participation ratio of the weekly COVARIANCE matrix), never merely dependence N_eff (correlation matrix, scale-invariant and blind to whose dollar variance owns the tail).",
+          "inputs": "Weekly covariance matrix of the composed book including the candidate at its intended weight",
+          "outputs": "n_eff_risk_delta (change in risk-space participation ratio)",
+          "gate": "n/a",
+          "kill_condition": "n_eff_risk_delta<=0 -> reject as a book leg (candidate may retain standalone CANDIDATE standing); does not proceed to the frozen-engine run at that weight",
+          "refs": [
+            "docs/methodology/lessons/methodology_lessons.md M-21",
+            "docs/adr/2026-07-20-stage8-variance-dominance-risk-neff-gate.md"
+          ]
+        },
+        {
+          "order": 3,
+          "name": "Daily-$-std ratio cheapest-falsifier (rho)",
+          "mechanism": "Companion to step 2, computable in seconds at panel-build: rho = candidate's daily-$-std / existing-book's daily-$-std, both at the intended weight and the adjudication panel's own $-basis.",
+          "inputs": "Candidate's and existing book's daily-$std at the intended weight, same $-basis",
+          "outputs": "rho ratio",
+          "gate": "n/a",
+          "kill_condition": "rho>=1.0 -> presumptive reject; does not spend the frozen-engine run on that weight",
+          "refs": [
+            "docs/methodology/lessons/methodology_lessons.md M-21"
+          ]
+        },
+        {
+          "order": 4,
+          "name": "Composed-book frozen-engine MC",
+          "mechanism": "After clearing steps 1-3, run the full frozen survivor-scoring MC engine on the composed book (existing legs + candidate at intended weight), not just the standalone candidate, against the same bust/pass ceilings as the standalone admission gate (Phase 7 step 1).",
+          "inputs": "Composed book (existing legs + candidate) at intended weight; frozen MC engine",
+          "outputs": "Composed-book bust rate, pass rate, p99 DD, per firm tier and partition (full/H1/H2)",
+          "gate": "n/a",
+          "kill_condition": "Composed bust>3.0% ceiling or P(pass)<50% on any required firm/partition -> FALSIFIED as a book leg at this weight, even if the leg clears standalone",
+          "refs": [
+            "docs/methodology/objective_composition_map.md",
+            "docs/adr/2026-07-13-prop-account-book-segregation.md"
+          ]
+        }
+      ]
+    },
+    {
+      "phase_name": "Admission Gate & Necessity Screens",
+      "summary": "The final standalone-candidate gate before a candidate is eligible to enter the authorization/lifecycle axis. Layered pre-screens (regime-robustness, portfolio-composition) feed in but are necessary-not-sufficient; this is the discharge point.",
+      "steps": [
+        {
+          "order": 1,
+          "name": "Survivor-scoring Part A admission gate",
+          "mechanism": "Governing instrument for standalone candidate admission: bust<=3.0% AND pass>=50%, discharged iff BOTH hold on >=2 firms. The 3.0% bust figure was tested for economic justification (found not to be an economic quantity) and retained unedited regardless.",
+          "inputs": "Candidate's standalone MC output across firm tiers",
+          "outputs": "Bust rate, pass rate per firm tier",
+          "gate": "Layered pre-screens (Stage-8 variance-dominance, third-leg target-spec) feed in but never substitute for this gate",
+          "kill_condition": "bust>3.0% OR pass<50% on >=2 firms -> admission gate not discharged",
+          "refs": [
+            "docs/methodology/objective_composition_map.md",
+            "docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md"
+          ]
+        },
+        {
+          "order": 2,
+          "name": "Necessity screens (N-ACT / N-SURV / N-EDGE / N-SHAPE / N-SIZE)",
+          "mechanism": "Campaign-specific necessary-conditions battery: N-ACT (trade-frequency floor, e.g. >=1 trade/week); N-SURV (survival-ceiling limb, same bust<=3.0% ceiling per-construct); N-EDGE, N-SHAPE, N-SIZE (edge magnitude, payoff-shape feasibility vs venue win-rate/skew, position-size feasibility). Verdict emitted as a single disclosure string.",
+          "inputs": "Construct's trade log, MC output, and disclosed payoff shape",
+          "outputs": "Five-limb N-ACT/N-SURV/N-EDGE/N-SHAPE/N-SIZE verdict string",
+          "gate": "Framed as 'nothing else gates intake' — this battery plus step 1 is the complete necessity set",
+          "kill_condition": "Any limb failing (e.g. N-ACT trades/week<1) is independently sufficient to kill the candidate",
+          "refs": [
+            "docs/rejected_candidates.md",
+            "docs/methodology/strategy_harvest.md#step 7"
+          ]
+        },
+        {
+          "order": 3,
+          "name": "Epistemic-status metadata tagging",
+          "mechanism": "Every input in a concept-stage Pine script (or equivalent artifact) must declare STARTING POINT / LOCKED / OUT-OF-EVIDENCE-BASE in its tooltip/comment, traveling with the artifact.",
+          "inputs": "Every input/parameter in the candidate's implementation artifact",
+          "outputs": "Per-input epistemic-status tag inline in the artifact",
+          "gate": "An input without a status tag is treated as unvalidated by default",
+          "kill_condition": "Enabling an OUT-OF-EVIDENCE-BASE input is itself a new, un-evaluated hypothesis, not confirmation of anything already validated",
+          "refs": [
+            ".claude/skills/strategy-validation/SKILL.md#7"
+          ]
+        },
+        {
+          "order": 4,
+          "name": "Backtest -> live shrinkage / underwriting statement",
+          "mechanism": "Ex-ante planning prior for go-live sizing: plan for live to retain roughly 30-70% of backtest edge before strategy-specific divergence (McLean-Pontiff). Higher search intensity (K) -> retain less; lower capacity -> decay slower. Size on the shrunk, lower-confidence-bound edge, not the point estimate.",
+          "inputs": "Validated backtest's point-estimate edge; the candidate's search-intensity (K) and capacity profile",
+          "outputs": "Stated retention-assumption X% in the pre-registration/admission doc; sizing computed on the shrunk lower-confidence-bound edge",
+          "gate": "An admission doc with no stated retention assumption defaults (wrongly) to 100% — flagged as an authoring gap",
+          "kill_condition": "n/a (a planning discipline, not itself a pass/fail gate)",
+          "refs": [
+            "docs/methodology/backtest_live_shrinkage.md"
+          ]
+        }
+      ]
+    },
+    {
+      "phase_name": "Verdict Routing, Closure & Governance Adjudication",
+      "summary": "Every candidate's evaluation terminates in a typed disposition, discharged on the closure artifact itself; kill verdicts above single-investigation scope require STRATEGIC-tier adjudication; any resulting lock/constant change triggers a mandatory skew audit; every produced artifact is subject to the retention test.",
+      "steps": [
+        {
+          "order": 1,
+          "name": "Verdict routing + Iterate closure block + board-write + rejection-registry entry",
+          "mechanism": "Terminates in RESOLVED (becomes a seed/candidate eligible for lifecycle admission, never auto-deployed), FALSIFIED (DEAD-listed), VOID-* (honesty limb, retry needs a new campaign), or AMBIGUOUS-HOLD (default). Discharged as a mandatory typed `## Iterate` block: Verdict used / Model update / Next: INTEGRATE|ITERATE|STOP / routing / entry packet / stop rule / board write. A board write (instrument ledger, SESSIONS, CATALOG/manifest) is owed on every branch. FALSIFIED/DEAD entries carry rejection scope, closure basis, surviving findings, and a re-proposal bar requiring new mechanism evidence.",
+          "inputs": "All upstream step verdicts for the candidate; the H verdict from the Q/H cycle",
+          "outputs": "Final disposition; typed Iterate block; board-write entries; rejection-registry entry if FALSIFIED/DEAD",
+          "gate": "RESOLVED is required before any lifecycle/deployment step; STOP is a ratified extension with budget zero, not v1's binary Integrate/Iterate; ITERATE names a successor but never opens one (opening needs a fresh operator GO)",
+          "kill_condition": "FALSIFIED/DEAD entry's re-proposal bar blocks re-litigating the same construct without new mechanism evidence",
+          "refs": [
+            "docs/rejected_candidates.md",
+            "docs/methodology/rejected_signals.md",
+            "docs/adr/2026-08-04-iterate-closure-exit-mandatory.md",
+            ".claude/skills/brief-authoring/references/closure_record.md"
+          ]
+        },
+        {
+          "order": 2,
+          "name": "STRATEGIC-tier Delete adjudication",
+          "mechanism": "A kill at programme/track/instrument tier (not just a single sub-question) is a STRATEGIC-Loop-of-Record act — valid only via programme-audit cadence, a fired pre-registered stopping rule, or explicit owner adjudication. Lower-loop sessions may propose but not execute Strategic Deletes on local momentum. Add-back rate is tracked layer-segregated: meta-layer (rejected_signals.md) vs object-layer (rejected_candidates.md), never pooled.",
+          "inputs": "A STOP or kill verdict from step 1 operating above single-investigation scope",
+          "outputs": "A registered kill that becomes the re-proposal bar for any future revival",
+          "gate": "n/a (adjudication requirement itself is the gate)",
+          "kill_condition": "A Strategic Delete executed by an OUTER/INNER session on local momentum is a forbidden move",
+          "refs": [
+            "docs/adr/2026-07-01-add-back-metric-layer-split.md"
+          ]
+        },
+        {
+          "order": 3,
+          "name": "Doc/code skew audit (fires on every version lock or constant change)",
+          "mechanism": "If the work changes a strategy's locked version, or any locked risk/allocation/dd_protection constant, a skew audit runs before the lock commit closes — checking CLAUDE.md's strategy table/constants, every ADR's Code: cross-reference line, active overlay docs, and docs/methodology/ measurement values. Trigger is the lock event itself, not a calendar cadence.",
+          "inputs": "A version-lock or locked-constant-change event resulting from the work",
+          "outputs": "Repo-wide doc/code consistency restored, or an explicit finding of corrupted decisions requiring remediation",
+          "gate": "If the audit cannot run inline, it fires on the next repo-touch session and gates that session on completion before new decision work",
+          "kill_condition": "n/a (a repair obligation, not itself a candidate kill)",
+          "refs": [
+            "docs/operational_rules.md#6"
+          ]
+        },
+        {
+          "order": 4,
+          "name": "Retention test (governs whether resulting artifacts stay in the tree)",
+          "mechanism": "Every produced artifact survives only if it holds R1 (pipeline-consumed), R2 (live safety), R3 (re-proposal bar), R4 (reproducibility manifest), or R5 (open fireable obligation). Before any deletion commit: quoted-path scan, pathlib-join scan, inbound markdown-link analysis, and a full pytest run.",
+          "inputs": "The full set of artifacts the completed work produced",
+          "outputs": "Retained-vs-pruned classification per artifact; a snapshot git tag for pruned content",
+          "gate": "The pre-commit gate battery alone is not sufficient evidence of safety — the four-part scan is mandatory",
+          "kill_condition": "An artifact meeting none of R1-R5 is deleted under a snapshot tag; revival requires fresh pre-registration, never a lookup",
+          "refs": [
+            "docs/operational_rules.md#16",
+            "docs/adr/2026-08-08-great-prune.md"
+          ]
+        }
+      ]
+    },
+    {
+      "phase_name": "Lifecycle Authorization (Book-Level)",
+      "summary": "A candidate that has RESOLVED through evaluation, cleared the regime-robustness gate, and discharged the admission gate enters the authorization axis — orthogonal to the LOCKED parameter axis — at book level: CANDIDATE -> AUTHORIZED -> WATCH-1 -> WATCH-2 -> RETIRED, at 1.00x/0.50x/0.25x/0.00x.",
+      "steps": [
+        {
+          "order": 1,
+          "name": "Candidate enters the authorization axis at BOOK level (CANDIDATE tier)",
+          "mechanism": "A validated candidate enters the CANDIDATE->AUTHORIZED->WATCH-1->WATCH-2->RETIRED ladder at book level. The book's SL/TP/ATR/risk%/pyramid/session/BE/trail parameters are simultaneously LOCKED (immutable) — authorization changes never edit them.",
+          "inputs": "A validated candidate (passed evaluation + regime-robustness + admission gate); a durability-source classification decision",
+          "outputs": "A book-level descriptor `<strategy> · LOCKED · CANDIDATE · <durability-tag>`",
+          "gate": "No LOCKED parameter may be edited during or after this transition (forbidden-move)",
+          "kill_condition": "n/a (entry state, not a kill)",
+          "refs": [
+            "docs/methodology/strategy_lifecycle.md",
+            "docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md"
+          ]
+        },
+        {
+          "order": 2,
+          "name": "Durability-source tag assigned: MECHANISM vs SURVIVAL-ONLY",
+          "mechanism": "MECHANISM (explained edge) may enter at AUTHORIZED (1.00x). SURVIVAL-ONLY (unexplained/statistically-only edge, e.g. from the discovery stack) enters one tier down at WATCH-1 (0.50x), can only promote to AUTHORIZED after a pre-registered OOS interval + minimum live-trade count, gets 2x review cadence and a tighter 1-window Call-1 decay trigger.",
+          "inputs": "Candidate's evidentiary basis; pre-registered OOS promotion criteria if SURVIVAL-ONLY",
+          "outputs": "Durability tag {MECHANISM|SURVIVAL-ONLY} recorded in the descriptor triple; starting tier and review cadence set accordingly",
+          "gate": "n/a",
+          "kill_condition": "SURVIVAL-ONLY may not promote to AUTHORIZED without the pre-registered OOS interval + min trade count being met — an unearned promotion is a forbidden move",
+          "refs": [
+            "docs/methodology/strategy_lifecycle.md (Call 3)"
+          ]
+        },
+        {
+          "order": 3,
+          "name": "Bounded sandbox-up promotion (S5) — the one automated up-exception",
+          "mechanism": "Automation MAY promote a gate-validated candidate PACKET into a capped sandbox (micro size, fixed per-candidate loss/attempt budget, capped concurrency) if it passes BOTH validate_promotion_packet (schema/freeze-commit/self-test) AND refute_promotion_packet (independent adversarial refuter). Operator approves BUDGETS via promotion_ceilings.json, never individual candidates.",
+          "inputs": "A promotion packet: artifact-only claims, same-units schemas, freeze_commit hash, paired positive/negative self-tests",
+          "outputs": "Sandbox admission event; no live trades, no funding, no arming",
+          "gate": "The validator must FAIL the confabulated_packet.json fixture (else the lane is dead by its own falsifier)",
+          "kill_condition": "No promotion past sandbox ceiling without a fresh, separate operator GO; every ceiling-crossing stays operator-only",
+          "refs": [
+            "docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md",
+            "lab/discovery/promotion_packet.py"
+          ]
+        },
+        {
+          "order": 4,
+          "name": "Full AUTHORIZED book-level promotion (operator-only, not automatable)",
+          "mechanism": "Promotion from CANDIDATE to full AUTHORIZED (1.00x) at book level, outside the S5 sandbox exception, requires operator ratification (an ADR or equivalent explicit owner-adjudication act). No coded automated CANDIDATE->AUTHORIZED path exists; a CANDIDATE-state Call-1 breach is an operator review flag only, not an autonomous demotion.",
+          "inputs": "Operator judgment/ratification act; for SURVIVAL-ONLY tags, evidence the OOS promotion gate (step 2) was met",
+          "outputs": "Descriptor `<strategy> · LOCKED · AUTHORIZED · <durability-tag>`; lifecycle_state.json updated if the strategy needs explicit listing (absent entry defaults to AUTHORIZED@1.0x)",
+          "gate": "n/a",
+          "kill_condition": "Automation may never promote a tier outside the S5 sandbox lane, re-enter a RETIRED strategy, or increase size beyond the authorized tier — hard asymmetry, forbidden-move list",
+          "refs": [
+            "docs/methodology/strategy_lifecycle.md (Call 5)"
+          ]
+        }
+      ]
+    },
+    {
+      "phase_name": "Venue Binding & Deployment Wiring",
+      "summary": "A third orthogonal axis (added 2026-08-05, ratified 2026-08-22), disjoint from the book-level authorization axis: BOOK -> VENUE EDITION -> DEPLOYMENT. Owns everything that would change if the same mechanism ran at a different firm — cap allocation, cost basis, DD/trail geometry, cadence fit, symbol, compliance posture.",
+      "steps": [
+        {
+          "order": 1,
+          "name": "Venue-edition binding: BOOK -> VENUE EDITION",
+          "mechanism": "A book-level CANDIDATE/AUTHORIZED strategy is separately screened and bound to a specific venue-tier as a VENUE EDITION (`<strategy>@<firm-tier>`). Carries its own lifecycle CANDIDATE -> SCREENED -> ACTIVE -> WATCH-1/-2 -> WITHDRAWN/SCREEN-DEAD/RETIRED, independent of and never overwriting the book's authorization state. Composition rule (design-only, not yet wired into live sizing): effective_multiplier = M_book(tier) x M_edition(tier) x DD_SCALE(dd_state).",
+          "inputs": "A book-level CANDIDATE/AUTHORIZED strategy; a target firm-tier from core/firm_rules.AUTOMATION_FRIENDLY_PROP_FIRMS; venue-specific screens",
+          "outputs": "A new/updated row in ops/venue_editions/<firm_tier>.md: strategy | edition | state | cap_alloc | symbol | screen verdict+date | deployment pointer",
+          "gate": "Test: 'would this fact change if the same mechanism ran at a different firm?' — if yes, it's edition-or-deeper",
+          "kill_condition": "WITHDRAWN/SCREEN-DEAD editions carry M_edition=0.00 by construction; M_book is never modified by an edition event",
+          "refs": [
+            "docs/adr/2026-08-05-strategy-venue-binding-axis.md",
+            "ops/venue_editions/Tradeify_Select_100K.md"
+          ]
+        },
+        {
+          "order": 2,
+          "name": "Venue edition screened (CANDIDATE -> SCREENED / SCREEN-DEAD)",
+          "mechanism": "At the edition level, the candidate passes venue-specific structural screens (flat-by-time, micro-only, long-only-if-equity-index, no-Treasuries at edition level; symbol-occupancy and cap-table screens at deployment level). A screen failure produces SCREEN-DEAD — edition-scoped only, never a book-level death.",
+          "inputs": "Venue edition in CANDIDATE state; venue facts from core/firm_rules.py; occupancy/cap facts from ops/c1_rail/c1_sizing_host_reference.py LEG_MAP",
+          "outputs": "Edition state transitions to SCREENED (passed) or SCREEN-DEAD (failed) in the venue-edition registry",
+          "gate": "n/a",
+          "kill_condition": "SCREEN-DEAD must never be read as, or silently converted into, a book-level authorization change",
+          "refs": [
+            "docs/adr/2026-08-05-strategy-venue-binding-axis.md#2.4-2.5"
+          ]
+        },
+        {
+          "order": 3,
+          "name": "Live-sizing composition formula (BASE_RISK x DD_SCALE x lifecycle)",
+          "mechanism": "Once AUTHORIZED (and, if/when M_edition is wired, x M_edition), live risk_pct is computed at the risk_pct layer inside dd_protection.calculate_protection, never editing the underlying locked constants: risk_pct_live[strategy] = BASE_RISK[strategy] x DD_SCALE x lifecycle_multiplier[strategy]. Two independent de-risk signals stack multiplicatively.",
+          "inputs": "BASE_RISK[strategy] (core/firm_rules._BASE_RISK); DD_SCALE (0.40x in the 1.5% DD tier, else 1.0x); lifecycle_multiplier[strategy] (core/lifecycle.py TIER_MULTIPLIER)",
+          "outputs": "A live risk_pct value the operator workflow reads or the c1 sizing host consumes for integer-contract quantity",
+          "gate": "The lifecycle factor may never edit BASE_RISK/DD_SCALE/DD_TRIGGER (byte-identical pin, import-time guards)",
+          "kill_condition": "A tier change mutating a locked constant is an immediate integrity-failure falsifier",
+          "refs": [
+            "core/dd_protection.py",
+            "core/lifecycle.py"
+          ]
+        },
+        {
+          "order": 4,
+          "name": "Deployment binding: VENUE EDITION -> DEPLOYMENT (account/rail wiring)",
+          "mechanism": "DEPLOYMENT (`<strategy>@<firm-tier>#<account>`) owns account binding, rail slot (leg_id), arming state, live P&L — facts that would change even at the same firm with a different account (cap-table sharing, symbol occupancy, variance/correlation composition against other live legs). Today this is LEG_MAP in ops/c1_rail/c1_sizing_host_reference.py + the rail config.",
+          "inputs": "An ACTIVE venue edition; an account (the incumbent Tradeify_Select_100K eval); a rail leg_id slot in LEG_MAP",
+          "outputs": "A deployment record: leg_id, dry_run flag state, armed_until (if armed), cap_alloc-derived reserve_cap",
+          "gate": "Deployment wiring alone does NOT authorize capital risk — necessary but not sufficient",
+          "kill_condition": "n/a (feeds the capital-authorization gate, Phase 11)",
+          "refs": [
+            "docs/adr/2026-08-05-strategy-venue-binding-axis.md#2.1",
+            "ops/c1_rail/c1_sizing_host_reference.py"
+          ]
+        }
+      ]
+    },
+    {
+      "phase_name": "Deployment Acceptance Decision (Capital-Authorization Gate)",
+      "summary": "The final, non-negotiable gate before any capital is put at risk — deliberately separate from and stricter than the authorization/venue axes above. This is the deploy-acceptance decision this task's scope terminates at.",
+      "steps": [
+        {
+          "order": 1,
+          "name": "Capital-authorization gate: M1 RESOLVED + operator GO (arm), never automated send",
+          "mechanism": "dry_run=false may never be set while M1 (venue-native monitoring maturity) is not RESOLVED — gate trigger is ARM, not send. The M1 arming interlock mechanically validates the acceptance artifact via validate_c1_monitoring_acceptance.validate(require_resolved=True) in ops/c1_rail/c1_rail_arm.py (fixed 2026-08-09 — a forged or status-only artifact fails closed). Even once M1 is RESOLVED, live spend requires a SEPARATE, session-scoped operator GO. Disarm must happen before armed_until expiry (a prior lapse-while-armed self-bricked the host into a crash-loop). No agent may ever place a trade — the weekly venue-idle token trade stays operator-placed.",
+          "inputs": "A RESOLVED M1 acceptance artifact; a live, ACTIVE deployment (Phase 10 step 4); a fresh, session-scoped operator GO decision",
+          "outputs": "An armed rail session (dry_run=false, bounded armed_until window) — or, absent all preconditions, the rail stays BUILT/WARM/DISARMED as it is today",
+          "gate": "All three independently required: (1) M1 RESOLVED (validated, not status-claimed), (2) a fresh session-scoped operator GO, (3) disarm before armed_until lapses",
+          "kill_condition": "Missing any of the three conditions keeps the candidate DISARMED / NOT-LIVE regardless of book/venue authorization state",
+          "refs": [
+            "CLAUDE.md",
+            "docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md",
+            "ops/c1_rail/c1_rail_arm.py"
+          ]
+        },
+        {
+          "order": 2,
+          "name": "Advisory persona-hierarchy review panel (governance-of-what-governs)",
+          "mechanism": "GRAND-tier ratifications and strict-D2 STRATEGIC-tier Deletes are separately reviewed before ratification by a spawned Front-Office-only persona panel (CIO, Head of Research, Head of Execution, Falsifier Analyst, Pre-Registration Analyst, Research Analyst, TCA Analyst, plus CEO apex never-spawned and cross-office CFO). Retired Middle/Back-office functions run as mechanical gates, not personas. The safety-invariant hard-block (dry_run/M1/armed_until citation) is a standalone deterministic scan run unconditionally, independent of persona spawning.",
+          "inputs": "A frozen (already-committed) GRAND-tier ratification target or a strict-D2 STRATEGIC-tier Delete proposal",
+          "outputs": "Persona synthesis (advisory), including any hard-block finding if the target's own text cites a violated safety invariant",
+          "gate": "Trigger scope: GRAND ratifications + strict-D2 STRATEGIC-tier Deletes only, never every OUTER-tier closure",
+          "kill_condition": "The panel is advisory without exception — it never substitutes for the operator's own ratification act and can never itself authorize dry_run=false or a promotion",
+          "refs": [
+            "docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md",
+            "docs/adr/2026-08-21-persona-hierarchy-front-office-only.md"
+          ]
+        }
+      ]
+    },
+    {
+      "phase_name": "Repository Gate Enforcement Infrastructure (cross-cutting)",
+      "summary": "Not a sequential phase of the strategy pipeline but a mechanical substrate that applies at EVERY commit across all phases above — pre-registration commits, closure commits, lock commits, data-manifest updates, ADRs. scripts/gates.yml + scripts/gate_manifest.py is the single composition authority; wired into the local pre-commit hook and the required GitHub status check on main.",
+      "steps": [
+        {
+          "order": 1,
+          "name": "Gate composition authority (gates.yml + gate_manifest.py)",
+          "mechanism": "gates.yml is the declarative manifest ({id, tier, when.staged_regex, cmd}); gate_manifest.py is the sole runner, exposing --tier pre-commit (always + staged-matched path-conditional gates) / check (always + ALL path-conditional gates unconditionally + forced data-manifests — the full merge-gating battery) / validate (data-manifests + pine-manifest only). A fail-closed self-check guards against a mis-indented gate silently vanishing.",
+          "inputs": "scripts/gates.yml; staged files for pre-commit tier",
+          "outputs": "One of 3 composed gate batteries, or SystemExit on manifest self-inconsistency",
+          "gate": "n/a (meta-infrastructure)",
+          "kill_condition": "A gate landed at tier:soft (declared in comments, not an accepted CLI choice) runs in NO tier and is silently disabled",
+          "refs": [
+            "scripts/gates.yml",
+            "scripts/gate_manifest.py"
+          ]
+        },
+        {
+          "order": 2,
+          "name": "Wiring: pre-commit hook, Makefile, CI workflow",
+          "mechanism": "scripts/githooks/pre-commit (installed via scripts/install_hooks.sh) runs --tier pre-commit, blocking local commits. make check runs --tier check; make validate runs --tier validate. .github/workflows/gate-manifest.yml (job `skills`, matrix 3.12) triggers on every PR/push-to-main, checks out full history, and runs the identical --tier check.",
+          "inputs": "Commit staging (pre-commit) / PR or push-to-main (CI)",
+          "outputs": "Blocks local commit, or produces the `skills (3.12)` GitHub check",
+          "gate": "n/a",
+          "kill_condition": "n/a",
+          "refs": [
+            "scripts/githooks/pre-commit",
+            ".github/workflows/gate-manifest.yml"
+          ]
+        },
+        {
+          "order": 3,
+          "name": "Required-status-check / branch protection for main",
+          "mechanism": "main carries a main-protection ruleset (id 21071355, no bypass) requiring a PR (0 approvals), blocking force-push/deletion, requiring EXACTLY ONE status check: `skills (3.12)` (the full --tier check battery). Companion workflows (pytest, pylint, manifest-check, validation-controls) run but are deliberately NOT required.",
+          "inputs": "PR targeting main / push to main",
+          "outputs": "Merge blocked only by `skills (3.12)` failing",
+          "gate": "skills (3.12) is the sole required check",
+          "kill_condition": "A PR whose --tier check battery fails cannot merge to main",
+          "refs": [
+            "CLAUDE.md",
+            ".github/workflows/gate-manifest.yml"
+          ]
+        },
+        {
+          "order": 4,
+          "name": "pine-manifest + pine-pin-provenance",
+          "mechanism": "check_pine_manifest.py verifies MANIFEST.sha256 and PORT_MANIFEST.sha256 against on-disk .pine bytes (membership+hash integrity for gitignored strategy source). --check-pin-provenance (with --base in the non-required manifest-check.yml job) detects a hash pin added from a disposable/ephemeral checkout whose bytes were never persisted durably.",
+          "inputs": "MANIFEST.sha256, PORT_MANIFEST.sha256, on-disk .pine bytes",
+          "outputs": "Blocks a commit that silently changes locked/ported strategy behavior without a matching hash re-pin",
+          "gate": "pre-commit: always; CI check: required",
+          "kill_condition": "A drifted or missing pinned .pine file blocks the commit",
+          "refs": [
+            "scripts/check_pine_manifest.py"
+          ]
+        },
+        {
+          "order": 5,
+          "name": "boundaries + repo-map-layers",
+          "mechanism": "check_boundaries.py AST-parses every non-exempt *.py and enforces the 4-layer import contract (governance->core, lab->{core,governance}, ops->{core,governance}, core imports nothing internal, lab<->ops isolated). check_repo_map_layers.py cross-checks the scanner's hard-coded maps against repo_map_layers.yml.",
+          "inputs": "Every non-exempt *.py under core/, lab/, ops/, governance root",
+          "outputs": "Blocks any commit introducing an illegal cross-layer import, or a boundaries-scanner edit that diverges from the declared layer map",
+          "gate": "pre-commit: always/path-conditional; CI check: required",
+          "kill_condition": "An illegal edge (e.g. core importing lab) blocks the commit",
+          "refs": [
+            "scripts/check_boundaries.py",
+            "docs/adr/2026-06-05-monorepo-layer-boundaries.md"
+          ]
+        },
+        {
+          "order": 6,
+          "name": "path-liveness + data-manifests (vendor integrity gate)",
+          "mechanism": "check_path_liveness.py asserts every committed parent directory in MANIFEST.sha256 resolves on disk. check_data_manifests.py hashes working-tree bytes of the three gitignored vendor CSV trees against tracked SHA256SUMS, soft-degrading only when a manifest lists files and ZERO exist on disk.",
+          "inputs": "MANIFEST.sha256 committed paths; core/data/(tv_exports|bar_data|external)/",
+          "outputs": "Blocks a stale manifest pointer, or a data re-export committed without a matching SHA256SUMS update",
+          "gate": "pre-commit: always/data-conditional; CI check: required (data-manifests force-included)",
+          "kill_condition": "Drifted, missing, or extra vendor CSV files vs the manifest block the commit",
+          "refs": [
+            "scripts/check_path_liveness.py",
+            "scripts/check_data_manifests.py"
+          ]
+        },
+        {
+          "order": 7,
+          "name": "status-consistency + lab-catalog + instrument-profiles",
+          "mechanism": "check_status_consistency.py cross-checks lab/CATALOG.md against ops/instruments/*.md and rejected_candidates.md for candidate/study disposition drift. archive_lab_analysis.py --check-catalog-only checks CATALOG.md vs STM/LTM archive tier. instrument_profiles.py check validates PROFILE block schema, mechanism-id validity, and generated-view staleness.",
+          "inputs": "lab/CATALOG.md, docs/rejected_candidates.md, ops/instruments/",
+          "outputs": "Blocks a commit leaving candidate/study status inconsistent across tracking surfaces, or a ledger with a malformed/stale PROFILE block",
+          "gate": "pre-commit: path-conditional; CI check: required",
+          "kill_condition": "Directly polices the generate->evaluate pipeline's own candidate bookkeeping",
+          "refs": [
+            "scripts/check_status_consistency.py",
+            "scripts/instrument_profiles.py"
+          ]
+        },
+        {
+          "order": 8,
+          "name": "adr-graph + supersession-placement",
+          "mechanism": "check_adr_graph.py enforces ADR header Status vocabulary, supersession-edge integrity, cold-store stub shape, and INDEX.md sync. check_supersession_placement.py enforces that a supersession token appearing at/after an addendum heading is pre-echoed before that heading (the in-section retraction case stays a judgment call, deliberately not mechanized).",
+          "inputs": "docs/adr/ (both gates); RESULTS/desk-card docs (supersession-placement also)",
+          "outputs": "Blocks an ADR with invalid status/bad supersession edge/stale INDEX, or a withdrawn/superseded claim standing unmarked at the reader's actual reading position",
+          "gate": "pre-commit: path-conditional; CI check: required",
+          "kill_condition": "n/a",
+          "refs": [
+            "scripts/check_adr_graph.py",
+            "scripts/check_supersession_placement.py"
+          ]
+        },
+        {
+          "order": 9,
+          "name": "closure-disposition + sessions gates (order/append-only/queue-bind)",
+          "mechanism": "check_closure_disposition.py requires an Iterate heading + exactly one Next: token + a Board write token on every closure. roll_sessions.py enforces newest-first ordering and append-only history on SESSIONS.md; check_sessions_queue_bind.py enforces the newest entry cites every live STATE.md OPERATOR QUEUE row.",
+          "inputs": "docs/briefs/closures/; docs/SESSIONS.md; STATE.md",
+          "outputs": "Blocks a closure without a typed forward-disposition, or a SESSIONS.md edit that reorders/rewrites history or drops a live queue item",
+          "gate": "pre-commit: path-conditional (x4); CI check: required (x4)",
+          "kill_condition": "n/a",
+          "refs": [
+            "scripts/check_closure_disposition.py",
+            "scripts/roll_sessions.py",
+            "scripts/check_sessions_queue_bind.py"
+          ]
+        },
+        {
+          "order": 10,
+          "name": "governance-prose-control-chars + general repo-hygiene gates (skills-no-constants, skill-refs, root-doc-liveness)",
+          "mechanism": "check_governance_prose_control_chars.py rejects stray form-feed/vertical-tab characters in high-traffic governance prose (origin: a merge-inherited form-feed corrupted SESSIONS.md twice in 2026-08). skills-no-constants/skill-refs/root-doc-liveness police methodology-skill constant duplication, skill path rot, and dead links in root orientation docs.",
+          "inputs": "docs/SESSIONS.md, docs/rejected_candidates.md, docs/mc_anchor_history.md; .claude/skills/; README/CLAUDE/PIPELINES/REPO_MAP/STATE.md",
+          "outputs": "Blocks merge-corrupted control chars, a restated operational constant, a rotted skill path, or a dead root-doc link",
+          "gate": "pre-commit: always; CI check: required",
+          "kill_condition": "n/a",
+          "refs": [
+            "scripts/check_governance_prose_control_chars.py",
+            "scripts/check_skills_no_constants.py"
+          ]
+        },
+        {
+          "order": 11,
+          "name": "Report-only gates (sync-liveness, docs-runtime-inventory) and non-required companion CI",
+          "mechanism": "sync-liveness/docs-runtime-inventory always exit 0 by design (report-only). `pursuit-records` was RETIRED from `gates.yml` entirely 2026-08-24 (Rule 16 R5 — \"an obligation whose check cannot fire does not qualify\"; the script always returned 0 as invoked and was never selected by `--tier check` even before deletion). `scripts/check_pursuit_records.py` stays on disk, runnable manually, but wired into no tier. manifest-check.yml, validation-controls.yml, tests.yml, pylint.yml run real pytest/lint/vendor-secrecy checks but are NOT required status checks.",
+          "inputs": "Varies per gate/workflow",
+          "outputs": "Reports drift/coverage without blocking any merge",
+          "gate": "None of these block a merge, even when red",
+          "kill_condition": "n/a — explicitly advisory-only",
+          "refs": [
+            "scripts/check_pursuit_records.py",
+            ".github/workflows/manifest-check.yml",
+            ".github/workflows/validation-controls.yml",
+            "docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md"
+          ]
+        },
+        {
+          "order": 12,
+          "name": "Retention test procedure — explicitly NOT a mechanical gate",
+          "mechanism": "docs/operational_rules.md §16's R1-R5 retention test plus its mandatory 4-part classification instrument (quoted-path grep, pathlib-join scan, inbound markdown-link analysis, full pytest run) is a documented, human-or-agent-EXECUTED manual checklist owned by the Great Prune ADR — there is no retention/great-prune/deletion-check id anywhere in gates.yml.",
+          "inputs": "Candidate deletion commit; four manual/scripted scans, none wired to gates.yml",
+          "outputs": "No mechanical exit code — governs deletion by classification discipline only",
+          "gate": "Explicitly stated: 'the pre-commit gate battery does not run tests and is not sufficient evidence of safety'",
+          "kill_condition": "n/a (procedural, cross-referenced from Phase 8 step 4)",
+          "refs": [
+            "docs/operational_rules.md#16",
+            "docs/adr/2026-08-08-great-prune.md"
+          ]
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+<script>
+(function () {
+  "use strict";
+  var DATA = JSON.parse(document.getElementById("pipeline-data").textContent);
+  var PHASES = DATA.phases;
+  var TERMINALS = DATA.terminal_states;
+  var KEYDOCS = DATA.key_docs;
+
+  var CATS = [
+    "GOVERNANCE", "GENERATION", "REGISTRATION", "VALIDATION", "ROBUSTNESS",
+    "COMPOSITION", "ADMISSION", "ADJUDICATION", "AUTHORIZATION", "VENUE / WIRING",
+    "CAPITAL GATE", "INFRASTRUCTURE"
+  ];
+
+  // subheadings injected inside a phase's step list, keyed by phase index -> {order: text}
+  var SUBHEADS = {
+    3: {
+      1: "Pre-flight arithmetic & cheapest falsifiers first",
+      9: "Mechanism-specificity, null hygiene & robustness battery",
+      22: "Estimation & calibration checks",
+      25: "Multiplicity / universe-level correction — mostly dormant; K-tiered since 2026-08-24 (§8a/§8c only)"
+    }
+  };
+
+  // Sourcing (phase index 1) lane assignment by step order
+  var LANES = [
+    { key: "shared-pre", label: "Universal entry", sub: "runs once, any channel", orders: [1, 2] },
+    { key: "A", label: "Branch A — Mined signals", sub: "STUMPY · ruptures · tsfresh · HMM · PySR", orders: [3,4,5,6,7,8,9,10,11] },
+    { key: "B", label: "Branch B — Harvested / literature", sub: "citation graph · journals · COT · encyclopedias", orders: [12,13,14,15,16,17] },
+    { key: "C", label: "Branch C — Structural census", sub: "zero-K manual hypothesis from market mechanics",
+      orders: [18], retired: { date: "2026-08-24", note: "0 admissible seeds, ever — 4–5 passes" } },
+    { key: "D", label: "Branch D — Generate–Confirm route", sub: "disjoint explore / confirm windows (ADR-gated)",
+      orders: [19,20,21,22], retired: { date: "2026-08-24", note: "0/4 campaigns ever reached confirm" } },
+    { key: "shared-post", label: "Universal pre-flight gate", sub: "applies to every new entry mechanism", orders: [23] }
+  ];
+
+  // terminal state -> {phase index, category}
+  var TERMINAL_MAP = {
+    "DEAD-AT-DEDUP": { phase: 1, cat: "kill" },
+    "UNSCREENABLE": { phase: 1, cat: "kill" },
+    "SHAPE-KILL": { phase: 1, cat: "kill" },
+    "ABORT-NO-MANIFEST": { phase: 2, cat: "kill" },
+    "FALSIFIED": { phase: 3, cat: "kill" },
+    "VOID-*": { phase: 1, cat: "hold" },
+    "AMBIGUOUS-HOLD": { phase: 7, cat: "hold" },
+    "REGIME-FRAGILE-REJECT": { phase: 4, cat: "kill" },
+    "SCREEN-DEAD (venue-edition level)": { phase: 9, cat: "kill" },
+    "COMPOSED-BOOK-FALSIFIED": { phase: 5, cat: "kill" },
+    "SANDBOX-ADMITTED (S5)": { phase: 8, cat: "advance" },
+    "STRATEGIC-KILL / REGISTERED-DELETE": { phase: 7, cat: "kill" },
+    "CANDIDATE (book-level, pending ratification)": { phase: 8, cat: "advance" },
+    "AUTHORIZED · MECHANISM @ 1.00x": { phase: 8, cat: "advance" },
+    "AUTHORIZED · SURVIVAL-ONLY @ WATCH-1 0.50x": { phase: 8, cat: "advance" },
+    "WITHDRAWN (venue-edition level)": { phase: 9, cat: "neutral" },
+    "ARMED / DEPLOYMENT-ACCEPTED": { phase: 10, cat: "live" },
+    "DISARMED / NOT-LIVE (current repo posture, 2026-08-24)": { phase: 10, cat: "neutral" },
+    "RETIRED @ 0.00x (downstream of deploy-acceptance, noted for completeness)": { phase: 10, cat: "neutral" }
+  };
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  function isDormant(step) {
+    var t = ((step.mechanism || "") + " " + (step.gate || "")).toUpperCase();
+    return t.indexOf("DORMANT") > -1 || t.indexOf("ARCHIVED") > -1 || t.indexOf("TOMBSTONED") > -1;
+  }
+
+  function scrollToPhase(idx) {
+    var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    document.getElementById("phase-" + idx).scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+  }
+
+  function stepCountLabel(steps) {
+    var retired = steps.filter(function (s) { return s.retired; }).length;
+    var live = steps.length - retired;
+    if (!retired) return steps.length + (steps.length === 1 ? " step" : " steps");
+    return live + " live · " + retired + " retired";
+  }
+
+  function stepSearchText(step) {
+    return [step.name, step.mechanism, step.inputs, step.outputs, step.gate, step.kill_condition]
+      .concat(step.refs || [])
+      .join(" ")
+      .toLowerCase();
+  }
+
+  function refChips(refs) {
+    var wrap = el("div", "step-refs");
+    (refs || []).forEach(function (r) {
+      wrap.appendChild(el("span", "ref", r));
+    });
+    return wrap;
+  }
+
+  function stepCard(step, phaseIdx) {
+    var art = el("article", "step");
+    art.dataset.search = stepSearchText(step);
+    var dormant = isDormant(step);
+    if (dormant) art.dataset.dormant = "1";
+    if (step.retired) art.dataset.retired = "1";
+
+    var head = el("div", "step-head");
+    head.appendChild(el("span", "step-order", "· " + String(step.order).padStart(2, "0")));
+    head.appendChild(el("h3", "step-name", step.name));
+    if (step.retired) head.appendChild(el("span", "badge-retired", "retired"));
+    else if (dormant) head.appendChild(el("span", "badge-dormant", "dormant"));
+    art.appendChild(head);
+
+    art.appendChild(el("p", "step-mech", step.mechanism));
+
+    if (step.inputs || step.outputs) {
+      var grid = el("div", "step-grid");
+      if (step.inputs) {
+        var gi = el("div");
+        gi.appendChild(el("span", "lbl", "Inputs"));
+        gi.appendChild(el("p", null, step.inputs));
+        grid.appendChild(gi);
+      }
+      if (step.outputs) {
+        var go = el("div");
+        go.appendChild(el("span", "lbl", "Outputs"));
+        go.appendChild(el("p", null, step.outputs));
+        grid.appendChild(go);
+      }
+      art.appendChild(grid);
+    }
+
+    var flags = el("div", "step-flags");
+    if (step.gate && step.gate.trim().toLowerCase() !== "n/a") {
+      var g = el("span", "chip chip-gate");
+      g.appendChild(el("b", null, "Gate"));
+      g.appendChild(document.createTextNode(step.gate));
+      flags.appendChild(g);
+    }
+    if (step.kill_condition && step.kill_condition.trim().toLowerCase() !== "n/a") {
+      var k = el("span", "chip chip-kill");
+      k.appendChild(el("b", null, "Kill"));
+      k.appendChild(document.createTextNode(step.kill_condition));
+      flags.appendChild(k);
+    }
+    if (flags.childNodes.length) art.appendChild(flags);
+
+    if (step.refs && step.refs.length) art.appendChild(refChips(step.refs));
+
+    return art;
+  }
+
+  function buildLanes(phase, phaseIdx) {
+    var container = el("div");
+    var byOrder = {};
+    phase.steps.forEach(function (s) { byOrder[s.order] = s; });
+
+    LANES.forEach(function (lane) {
+      var steps = lane.orders.map(function (o) { return byOrder[o]; }).filter(Boolean);
+      if (!steps.length) return;
+      if (lane.key === "A" || lane.key === "shared-pre") {
+        // render shared-pre plainly (no lane box), lanes grid handled separately below
+      }
+    });
+
+    // shared-pre steps, plain
+    var pre = LANES[0].orders.map(function (o) { return byOrder[o]; }).filter(Boolean);
+    pre.forEach(function (s) { container.appendChild(stepCard(s, phaseIdx)); });
+
+    // four-lane grid (two live, two retired 2026-08-24 — kept for the historical record)
+    var lanesGrid = el("div", "lanes");
+    ["A", "B", "C", "D"].forEach(function (key) {
+      var laneDef = LANES.filter(function (l) { return l.key === key; })[0];
+      var steps = laneDef.orders.map(function (o) { return byOrder[o]; }).filter(Boolean);
+      var laneEl = el("div", "lane" + (laneDef.retired ? " retired" : ""));
+      var lh = el("div", "lane-head", laneDef.label);
+      var small = el("small", null, laneDef.sub);
+      lh.appendChild(small);
+      if (laneDef.retired) {
+        var badge = el("span", "lane-retired-badge", "RETIRED " + laneDef.retired.date + " — " + laneDef.retired.note);
+        lh.appendChild(badge);
+      }
+      laneEl.appendChild(lh);
+      steps.forEach(function (s) { laneEl.appendChild(stepCard(s, phaseIdx)); });
+      lanesGrid.appendChild(laneEl);
+    });
+    lanesGrid.appendChild(el("div", "converge-note", "↓ live channels (A, B) converge at Pre-Registration & K-Binding — C, D retired 2026-08-24 ↓"));
+    container.appendChild(lanesGrid);
+
+    // shared-post
+    var post = LANES[5].orders.map(function (o) { return byOrder[o]; }).filter(Boolean);
+    post.forEach(function (s) { container.appendChild(stepCard(s, phaseIdx)); });
+
+    return container;
+  }
+
+  function buildPhaseBody(phase, phaseIdx) {
+    var body = el("div", "phase-body");
+    body.hidden = true;
+
+    if (phaseIdx === 1) {
+      body.appendChild(buildLanes(phase, phaseIdx));
+      return body;
+    }
+
+    var subs = SUBHEADS[phaseIdx] || {};
+    phase.steps.forEach(function (step) {
+      if (subs[step.order]) body.appendChild(el("div", "subhead", subs[step.order]));
+      body.appendChild(stepCard(step, phaseIdx));
+    });
+    return body;
+  }
+
+  function buildPhaseSection(phase, phaseIdx) {
+    var isCross = phaseIdx === PHASES.length - 1;
+    var section = el("section", "phase" + (isCross ? " cross" : ""));
+    section.id = "phase-" + phaseIdx;
+
+    var head = el("button", "phase-head");
+    head.setAttribute("aria-expanded", "false");
+    head.setAttribute("aria-controls", "phase-body-" + phaseIdx);
+
+    head.appendChild(el("span", "ph-num", String(phaseIdx + 1).padStart(2, "0")));
+
+    var textWrap = el("div", "ph-body-text");
+    textWrap.appendChild(el("p", "ph-cat", CATS[phaseIdx] + (isCross ? " — applies to every phase above" : "")));
+    textWrap.appendChild(el("h2", "ph-name", phase.phase_name));
+    textWrap.appendChild(el("p", "ph-summary", phase.summary));
+    head.appendChild(textWrap);
+
+    var right = el("span", "ph-right");
+    right.appendChild(el("span", "ph-stepcount", stepCountLabel(phase.steps)));
+    var chev = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    chev.setAttribute("class", "chev");
+    chev.setAttribute("viewBox", "0 0 16 16");
+    chev.setAttribute("fill", "none");
+    var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", "M5 2l7 6-7 6");
+    path.setAttribute("stroke", "currentColor");
+    path.setAttribute("stroke-width", "1.6");
+    path.setAttribute("stroke-linecap", "round");
+    path.setAttribute("stroke-linejoin", "round");
+    chev.appendChild(path);
+    right.appendChild(chev);
+    head.appendChild(right);
+
+    section.appendChild(head);
+
+    var body = buildPhaseBody(phase, phaseIdx);
+    body.id = "phase-body-" + phaseIdx;
+    section.appendChild(body);
+
+    head.addEventListener("click", function () {
+      var expanded = head.getAttribute("aria-expanded") === "true";
+      head.setAttribute("aria-expanded", String(!expanded));
+      body.hidden = expanded;
+    });
+
+    return section;
+  }
+
+  function openPhase(idx) {
+    var head = document.querySelector('#phase-' + idx + ' .phase-head');
+    var body = document.getElementById('phase-body-' + idx);
+    if (head && body) {
+      head.setAttribute("aria-expanded", "true");
+      body.hidden = false;
+    }
+  }
+
+  // ---- render phases ----
+  var main = document.getElementById("main-phases");
+  PHASES.forEach(function (phase, idx) {
+    main.appendChild(buildPhaseSection(phase, idx));
+  });
+
+  // ---- render nav rail ----
+  var navLine = document.getElementById("nav-line");
+  var navNodes = [];
+  PHASES.forEach(function (phase, idx) {
+    var isCross = idx === PHASES.length - 1;
+    var btn = el("button", "navnode" + (isCross ? " cross" : ""));
+    btn.appendChild(el("span", "nn-cat", (idx + 1) + " · " + CATS[idx]));
+    var nameLine = el("span", null, phase.phase_name.length > 34 ? phase.phase_name.slice(0, 33) + "…" : phase.phase_name);
+    btn.appendChild(nameLine);
+    btn.appendChild(document.createElement("br"));
+    btn.appendChild(el("span", "nn-count", stepCountLabel(phase.steps)));
+    btn.addEventListener("click", function () {
+      openPhase(idx);
+      scrollToPhase(idx);
+    });
+    navLine.appendChild(btn);
+    navNodes.push(btn);
+  });
+
+  // scrollspy
+  var sections = PHASES.map(function (_, idx) { return document.getElementById("phase-" + idx); });
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var idx = sections.indexOf(entry.target);
+        if (idx === -1) return;
+        if (entry.isIntersecting) {
+          navNodes.forEach(function (n) { n.classList.remove("active"); });
+          navNodes[idx].classList.add("active");
+        }
+      });
+    }, { rootMargin: "-15% 0px -70% 0px", threshold: 0 });
+    sections.forEach(function (s) { if (s) io.observe(s); });
+  }
+
+  // ---- terminal states board ----
+  var tbGrid = document.getElementById("tb-grid");
+  TERMINALS.forEach(function (t) {
+    var map = TERMINAL_MAP[t.name] || { phase: 0, cat: "neutral" };
+    var card = el("div", "tstate");
+    card.dataset.cat = map.cat;
+    card.appendChild(el("span", "ts-name", t.name));
+    card.appendChild(el("p", null, t.description));
+    var link = el("button", "ts-link", "→ " + CATS[map.phase]);
+    link.addEventListener("click", function () {
+      openPhase(map.phase);
+      scrollToPhase(map.phase);
+    });
+    card.appendChild(link);
+    tbGrid.appendChild(card);
+  });
+
+  // ---- key docs ----
+  var kdList = document.getElementById("kd-list");
+  KEYDOCS.slice().sort().forEach(function (d) {
+    kdList.appendChild(el("div", null, d));
+  });
+  document.getElementById("doc-count").textContent = KEYDOCS.length;
+
+  // ---- expand / collapse all ----
+  document.getElementById("expand-all").addEventListener("click", function () {
+    PHASES.forEach(function (_, idx) { openPhase(idx); });
+  });
+  document.getElementById("collapse-all").addEventListener("click", function () {
+    PHASES.forEach(function (_, idx) {
+      var head = document.querySelector('#phase-' + idx + ' .phase-head');
+      var body = document.getElementById('phase-body-' + idx);
+      head.setAttribute("aria-expanded", "false");
+      body.hidden = true;
+    });
+  });
+
+  // ---- search / filter ----
+  var searchInput = document.getElementById("search");
+  var debounceTimer;
+  searchInput.addEventListener("input", function () {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(runFilter, 120);
+  });
+
+  function runFilter() {
+    var q = searchInput.value.trim().toLowerCase();
+    var anyGlobalMatch = false;
+    PHASES.forEach(function (phase, idx) {
+      var section = document.getElementById("phase-" + idx);
+      var steps = section.querySelectorAll("article.step");
+      var matchCount = 0;
+      steps.forEach(function (s) {
+        var match = !q || (s.dataset.search || "").indexOf(q) > -1;
+        s.style.display = match ? "" : "none";
+        if (match && q) matchCount++;
+      });
+      var navNode = navNodes[idx];
+      if (q) {
+        navNode.classList.toggle("hasmatch", matchCount > 0);
+        section.style.display = matchCount > 0 || !q ? "" : "none";
+        if (matchCount > 0) {
+          openPhase(idx);
+          anyGlobalMatch = true;
+        }
+      } else {
+        navNode.classList.remove("hasmatch");
+        section.style.display = "";
+      }
+    });
+    var noResults = document.getElementById("no-results");
+    noResults.hidden = !q || anyGlobalMatch;
+  }
+})();
+</script>
