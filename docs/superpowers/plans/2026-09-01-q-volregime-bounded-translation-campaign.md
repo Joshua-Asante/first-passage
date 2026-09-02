@@ -87,11 +87,21 @@ pilot or observed L5 result. Treat each as a design question, not an editorial c
   fixture that the planted probability intervention produces the intended distribution of the
   primary Brier-loss improvement. L1–L4 percentage-point lift and L5 Brier improvement are not the
   same unit.
-- [ ] **R4 — Bound the compute before authorization.** Four cells × 100 outer panels × 4,000 null
+- [~] **R4 — Bound the compute before authorization.** Four cells × 100 outer panels × 4,000 null
   replicates, plus planted effects and full re-estimation, is at least 1.6 million inner runs for
   C2 alone. Run a synthetic/tiny-fixture timing dry-run, publish estimated CPU-hours, memory,
   checkpoint bytes, and dollar cost, then obtain a cost GO. A reduced run may benchmark code but
   may not satisfy frozen acceptance bands.
+  **PARTIALLY DISCHARGED 2026-09-01:** the synthetic timing dry-run is done and the CPU-hour figure
+  published — **1,336 core-hours** for C2+C3 at the frozen sizing (1.002 s/replicate measured, or
+  0.689 s with the volume-free baseline cached, on a shape-matched 139,605-row synthetic panel).
+  Working set is ~15 MB/replicate and per-replicate checkpoint state is a scalar plus diagnostics,
+  so neither memory nor checkpoint bytes binds. **Still owed:** a dollar figure tied to an actual
+  target machine, and the cost GO itself. A `PROPOSED` right-sizing amendment cutting the budget to
+  **229 core-hours** — without altering any band, cell, `N_outer`, gate, or disposition — is filed
+  at [`ACCEPTANCE_BANDS.md`](../../../lab/analysis/_inbox/volregime_l5_pilot_2026-08-31/ACCEPTANCE_BANDS.md)
+  §6 and awaits operator ratification. Note that amendment is exactly the "amend the bands
+  prospectively" route, not the "reduced run against frozen bands" this item forbids.
 - [ ] **R5 — Freeze failure granularity.** State whether a pilot defect in one instrument parks
   only that instrument or both. Recommended: park only the affected instrument unless the defect is
   shared-code or proves the common method invalid.
