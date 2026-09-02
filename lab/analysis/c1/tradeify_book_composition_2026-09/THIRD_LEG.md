@@ -1,6 +1,6 @@
 # Third-leg shape sweep — what fits MNQ×1 + Aegis×2
 
-> ⚠ **Superseded for quantitative use by `THIRD_LEG_MINIMUM.md`.** This first sweep drew per-trade Bernoulli outcomes with two seeds shared across every cell; the realized edge wandered up to ±0.15R from target per seed and moved whole win-rate rows together (the 55% rows ran about +0.05R lucky), and the copula sign was inverted (rho labels flipped; realized correlation columns are correct). Directions hold; magnitudes do not. The exact-edge re-run is the reference.
+> ⚠ **Superseded for quantitative use by `THIRD_LEG_MINIMUM.md`.** This first sweep drew per-trade Bernoulli outcomes with two seeds shared across every cell; the realized edge wandered up to ±0.15R from target per seed and moved whole win-rate rows together (the 55% rows ran about +0.05R lucky), and the copula sign was inverted (rho labels flipped; realized correlation columns are correct). It also predates the real-session calendar, so it scheduled synthetic trades on 13 exchange closures. Directions hold; magnitudes do not. The exact-edge re-run is the reference.
 
 Synthetic third leg added to the real base book on the real date index (window 2022-08-01 → 2026-07-01); 1000 sims × 3 seeds per run, 2 panel realisations per cell averaged; intraday-honest block bootstrap through `run_seed`. Δ = cell − base at the same N. See `third_leg_shape.py` for the generator.
 

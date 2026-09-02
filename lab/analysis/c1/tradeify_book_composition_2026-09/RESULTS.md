@@ -2,55 +2,32 @@
 
 **Status:** EXPLORATORY — informal Downloads-lane measurement, not pre-registered, no K entry; the harness reuses `core/mc/simulation.py` and `core/mc/preflight.py` verbatim. Inputs are operator TradingView exports (uncommitted). See `book_grid.py` docstring for the exact files and unit conventions.
 
-## Verdict (2026-09-01)
+## Verdict (2026-09-01, corrected 2026-09-02 after Codex review of PR #260)
 
-**No configuration is a clear winner on all three axes (bust, pass, time).** The grid has a genuine bust-versus-speed
-frontier, and the two controls change how the Aegis cells should be read. What the 88-cell screen, the six full-N finalists
-(30,000 paths each) and the controls do settle:
+**No configuration is a clear winner on all three axes (bust, pass, time).** The grid has a genuine bust-versus-speed frontier, and the controls change how the Aegis cells should be read. What the 88-cell screen, the six full-N finalists (30,000 paths each) and the controls settle:
 
-1. **Any leg at 2 contracts is out.** Every book containing MNQ×2 or MYM×2 busts 40% to 66% on both tiers. Sizing, not
-   composition, is the first-order variable; the second is the tier.
-2. **Growth beats Select by more than any composition change.** Same books, same clock: MNQ×1 18.9% → 10.8% bust,
-   MNQ×1+Aegis×2 14.8% → 7.8%, with identical medians. The $500 wider rope is the biggest lever in the grid.
-3. **MYM v0.4 hurts every book it joins.** It buys 40 to 50 days of median time at +9 to +11 points of bust
-   (MNQ×1 → MNQ×1+MYM×1: 10.8% → 22.3% on Growth). Its losses coincide with MNQ's 25% more often than independence
-   (joint-loss ratio 1.25), its per-trade-day expectancy is a quarter of MNQ's ($12 vs $50 per contract), and its
-   active-day skew is 4.5 (rare big wins, many small losses). Drop it as a leg. The measured v0.3 long-only export is
-   no better (Growth pair 31.9% bust vs the 19.5% rolling-start figure in MYM.md M9, which this bootstrap does not
-   reproduce).
-4. **Aegis as ballast improves MNQ×1 on all three axes, but for the wrong reason.** MNQ×1+Aegis×2 vs MNQ×1 on Growth:
-   bust 7.8% vs 10.8%, pass 92.2% vs 89.2%, median 161 vs 190 days, all well beyond 2 SE. The shuffled-Aegis control
-   (dates permuted within year, drift kept, co-movement destroyed) busts the same or less than the real book on both
-   tiers at both sizes. So the gain is Aegis's positive drift over 2022-2026, not diversification. On its excluded
-   2020-02 → 2022-07 regime Aegis×2 passes 0.03% of paths in 2.4 years (95% unresolved) and busts 5% (Growth) / 11%
-   (Select); ×3 busts 27% / 41%. Aegis×2 beside MNQ×1 is therefore a bet that the 2022+ yen regime persists, with a
-   short-side rail change and a 6J Python port as its price. It fits the 30-micro funded start (21 micro-equivalents);
-   Aegis×3 (31) does not until the first ladder step.
-5. **Aegis alone is the only thing under the frozen 5% ceiling, and only on the favourable window.** Aegis×3 on Growth:
-   2.3% bust, 95.4% pass, median 602 days, 47% of weeks with no trade (token trade every other week). On the excluded
-   regime the same size busts 27%.
+1. **Any leg at 2 contracts is out.** Every book containing MNQ×2 or MYM×2 busts 40% to 66% on both tiers. Sizing, not composition, is the first-order variable; the second is the tier.
+2. **Growth beats Select by more than any composition change.** Same books, same clock: MNQ×1 18.9% → 10.8% bust, MNQ×1+Aegis×2 14.8% → 7.8%, at effectively unchanged medians. The $500 wider rope is the biggest lever in the grid.
+3. **MYM v0.4 hurts every book it joins.** MNQ×1 → MNQ×1+MYM×1 on Growth: 10.8% → 22.3% bust. Its losses coincide with MNQ's 25% more often than independence (joint-loss ratio 1.25), its per-trade-day expectancy is a quarter of MNQ's ($12 vs $50 per contract), and its active-day skew is 4.5 (rare big wins, many small losses). Drop it as a leg. The v0.3 long-only export is no better, and this bootstrap does not reproduce the 19.5%-bust rolling-start figure in `ops/instruments/MYM.md` M9.
+4. **Aegis as ballast improves MNQ×1 on all three axes, but for the wrong reason.** MNQ×1+Aegis×2 vs MNQ×1 on Growth: bust 7.8% vs 10.8%, median 161 vs 190 days. But the shuffled-Aegis control — a true derangement of its trade dates within each year, drift kept, co-movement destroyed — busts 7.97% on Growth against the real book's 8.43% at screen N. The control matches or beats the real book, so the gain is Aegis's positive drift over 2022-2026, not diversification. On its excluded 2020-02→2022-07 window Aegis×2 passes 0.03% of paths (5.1% bust on Growth, 11.3% on Select) and Aegis×3 busts 27%/41%.
+5. **Aegis alone is the only thing under the frozen 5% ceiling, and only on the favourable window.** Aegis×3 on Growth: 2.3% bust, 95.4% pass, median 602 days, but only 47% of weeks carry a trade (a token trade every other week) and the same size busts 27% on the excluded regime.
 
 **Defensible picks, in order, under the fee-priced criterion (pass ≥ 60%, median ≤ 200 days, worse half ≥ 50%):**
 
-| Pick | Tier | bust | pass | median days | worse half | Why / cost |
-|---|---|---:|---:|---:|---:|---|
-| MNQ×1 + Aegis×2 | Growth | 7.8% | 92.2% | 161 | 84% pass | Best bust/pass among fast books; gain is drift, regime-conditional; needs short-side rail + 6J port |
-| MNQ×1 | Growth | 10.8% | 89.2% | 190 | 77% pass | Simplest; one port, one leg, no Aegis regime bet; 99% weekly coverage |
-| MNQ×1 + Aegis×2 | Select | 14.8% | 85.2% | 154 | 74% pass | Same book on the live account; no Growth purchase |
-| MNQ×1 + MYM×1 + Aegis×2 | Growth | 19.2% | 80.8% | 108 | 76% pass | Fastest; pays 11 points of bust for 53 days |
+| Book | Tier | bust | pass | median days | worse-half pass |
+|---|---|---:|---:|---:|---:|
+| MNQx1 + AEGISx2 | Growth | 7.8% | 92.2% | 161 | 84% |
+| MNQx1 | Growth | 10.8% | 89.2% | 190 | 77% |
+| MNQx1 + AEGISx2 | Select | 14.8% | 85.2% | 154 | 74% |
+| MNQx1 + MYMx1 + AEGISx2 | Growth | 19.2% | 80.8% | 108 | 76% |
 
-**Bounds, stated plainly.** The bootstrap breaks the realized sequence and is the pessimistic read (every finalist's realized
-path passes, day 79 to 156, max drawdown 1.9% to 2.2%, and rolling starts never bust). The intraday channel is a trade-level
-sweep-line from TradingView's own adverse-excursion figures, not a bar replay. The window starts 2022-08-01 because MYM v0.4
-does; MNQ's own 2020-2021 (the recon_v2 six-year export busts its realized path in 2020 at one contract on Select) and
-Aegis's 2020-2022 are outside it. The MNQ recon lineage and MYM v0.4 are tuned charts with no untouched holdout. Export
-slippage and commission are whatever the operator set in TradingView; Aegis uses the sanctioned 1-tick `76620` panel
-(the 08-28 `cbcc9` export fills one tick better on every shared trade and was not used). Growth's soft $2,500 daily
-lockout is not modeled (pessimistic on the rope); Select's 40% consistency rule is.
+The first pick carries a regime bet (Aegis's drift) and needs a short-side rail change plus a 6J Python port. The second needs neither and costs about a month. The fourth is fastest and pays for it in bust.
+
+**Bounds, stated plainly.** The bootstrap breaks the realized sequence and is the pessimistic read: every finalist's realized path passes (day 79-156, max drawdown 1.9-2.2%) and rolling starts never bust. The intraday channel is a trade-level sweep-line from TradingView's own adverse-excursion figures, not a bar replay. The window starts 2022-08-01 because MYM v0.4 does, so MNQ's 2020-2021 and Aegis's 2020-2022 sit outside it. The MNQ and MYM lineages are tuned charts with no untouched holdout. Aegis uses the sanctioned 1-tick `76620` panel; the `cbcc9`/`c59e9` exports fill one tick better on every shared trade and are barred. Growth's soft $2,500 daily lockout is not modelled, so Growth figures are two-sided bounds. See README.md §Disclosed limits for the one known unfixed hole (P&L booked on a non-session date).
 
 ## Finalists at full N
 
-n_sims=10000 × seeds [42, 123, 2026] = 30,000 bootstrap paths per cell; elapsed 2537.5s. Bootstrap = 5-day block resample through `run_seed`, intraday-honest channel (timestamp-sequenced trade-level floor). Halves split at the window's business-day midpoint. Rolling = deterministic replay from every start day (intraday clock). E[fee] = $265 + $169 × (1−p)/p on resolved paths.
+n_sims=10000 × seeds [42, 123, 2026] = 30,000 bootstrap paths per cell; elapsed 6693.3s. Bootstrap = 5-day block resample through `run_seed`, intraday-honest channel (timestamp-sequenced trade-level floor). Halves split at the window's business-day midpoint. Rolling = deterministic replay from every start day (intraday clock). E[fee] = $265 + $169 × (1−p)/p on resolved paths.
 
 ### Tradeify_Growth_100K — window 2022-08-01 → 2026-07-01 (1023 business days)
 
@@ -90,7 +67,7 @@ Standalone legs on this tier:
 
 ## Screen grid — MNQ {0,1,2} × MYM v0.4 {0,1,2} × Aegis {0..4}
 
-n_sims=1000 × seeds [42, 123, 2026] = 3,000 bootstrap paths per cell; elapsed 669.0s. Bootstrap = 5-day block resample through `run_seed`, intraday-honest channel (timestamp-sequenced trade-level floor). Halves split at the window's business-day midpoint. Rolling = deterministic replay from every start day (intraday clock). E[fee] = $265 + $169 × (1−p)/p on resolved paths.
+n_sims=1000 × seeds [42, 123, 2026] = 3,000 bootstrap paths per cell; elapsed 1777.6s. Bootstrap = 5-day block resample through `run_seed`, intraday-honest channel (timestamp-sequenced trade-level floor). Halves split at the window's business-day midpoint. Rolling = deterministic replay from every start day (intraday clock). E[fee] = $265 + $169 × (1−p)/p on resolved paths.
 
 ### Tradeify_Growth_100K — window 2022-08-01 → 2026-07-01 (1023 business days)
 
@@ -218,7 +195,7 @@ Standalone legs on this tier:
 
 ## Reference cells with the measured MYM v0.3 export (long-only, MYM.md M9)
 
-n_sims=1000 × seeds [42, 123, 2026] = 3,000 bootstrap paths per cell; elapsed 116.4s. Bootstrap = 5-day block resample through `run_seed`, intraday-honest channel (timestamp-sequenced trade-level floor). Halves split at the window's business-day midpoint. Rolling = deterministic replay from every start day (intraday clock). E[fee] = $265 + $169 × (1−p)/p on resolved paths.
+n_sims=1000 × seeds [42, 123, 2026] = 3,000 bootstrap paths per cell; elapsed 388.0s. Bootstrap = 5-day block resample through `run_seed`, intraday-honest channel (timestamp-sequenced trade-level floor). Halves split at the window's business-day midpoint. Rolling = deterministic replay from every start day (intraday clock). E[fee] = $265 + $169 × (1−p)/p on resolved paths.
 
 ### Tradeify_Growth_100K — window 2022-01-03 → 2026-07-01 (1173 business days)
 
@@ -260,14 +237,14 @@ Standalone legs on this tier:
 
 ### (A) Shuffled-Aegis control — is Aegis's benefit co-movement or just positive drift?
 
-Every Aegis trade moved to another Aegis trade-date within the same calendar year (clock times kept): drift, count and per-year P&L preserved, day alignment with MNQ destroyed. Five permutations. If shuffled ≈ real, the benefit is drift, not diversification.
+Every Aegis trade moved to a DIFFERENT Aegis trade-date within the same calendar year (clock times kept): drift, count and per-year P&L preserved, day alignment with MNQ destroyed. Five draws, each a true derangement — a plain permutation leaves ~1 date mapped to itself per draw, which would preserve some of the alignment this control exists to destroy (fixed 2026-09-02, Codex review of PR #260). If shuffled ≈ real, the benefit is drift, not diversification.
 
 | Tier | Book | Real bust / pass / median | Shuffled bust (5 perms) | Shuffled mean bust | Real H1 / H2 bust | Shuffled mean H1 / H2 |
 |---|---|---:|---|---:|---:|---:|
-| Tradeify_Growth_100K | MNQx1 + AEGISx2 | 8.4 / 91.6 / 159 | 7.5, 6.4, 8.7, 7.5, 7.5 | 7.5 | 3.4 / 15.1 | 5.7 / 12.3 |
-| Tradeify_Growth_100K | MNQx1 + AEGISx3 | 9.1 / 90.9 / 146 | 7.8, 6.0, 9.5, 7.0, 7.7 | 7.6 | 3.7 / 15.1 | 6.8 / 11.0 |
-| Tradeify_Select_100K | MNQx1 + AEGISx2 | 14.4 / 85.6 / 155 | 13.4, 12.0, 15.3, 14.2, 14.3 | 13.9 | 7.9 / 25.8 | 11.6 / 22.2 |
-| Tradeify_Select_100K | MNQx1 + AEGISx3 | 15.0 / 85.0 / 142 | 14.2, 12.0, 15.9, 13.7, 14.0 | 14.0 | 8.5 / 25.1 | 13.3 / 20.5 |
+| Tradeify_Growth_100K | MNQx1 + AEGISx2 | 8.4 / 91.6 / 159 | 7.3, 7.2, 8.3, 8.0, 9.1 | 8.0 | 3.4 / 15.1 | 5.4 / 11.2 |
+| Tradeify_Growth_100K | MNQx1 + AEGISx3 | 9.1 / 90.9 / 146 | 7.0, 7.2, 8.5, 8.7, 10.1 | 8.3 | 3.7 / 15.1 | 6.4 / 9.6 |
+| Tradeify_Select_100K | MNQx1 + AEGISx2 | 14.4 / 85.6 / 155 | 13.3, 12.9, 15.4, 15.4, 16.3 | 14.7 | 7.9 / 25.8 | 10.8 / 20.4 |
+| Tradeify_Select_100K | MNQx1 + AEGISx3 | 15.0 / 85.0 / 142 | 13.2, 13.3, 15.1, 15.2, 17.1 | 14.8 | 8.5 / 25.1 | 12.3 / 18.2 |
 
 ### (B) Aegis alone on the regime the grid cannot see — 2020-02-24 → 2022-07-31 (sanctioned 1-tick panel)
 

@@ -36,8 +36,21 @@ def shuffle_aegis_trades(trades, seed):
     out = []
     for year, ts in by_year.items():
         dates = sorted({t["exit_date"] for t in ts})
-        perm = list(rng.permutation(len(dates)))
-        mapping = {dates[i]: dates[perm[i]] for i in range(len(dates))}
+        n = len(dates)
+        # DERANGEMENT, not a plain permutation: rng.permutation leaves ~1 date mapped to
+        # itself per draw (E[fixed points] = 1 for any n), which silently preserves some
+        # original MNQ/Aegis alignment in a control whose whole purpose is to destroy it.
+        # Rejection-sample until no fixed point remains. Fixed 2026-09-02 (Codex review,
+        # PR #260). n < 2 cannot be deranged -- left as identity and reported.
+        perm = list(rng.permutation(n))
+        if n >= 2:
+            tries = 0
+            while any(perm[i] == i for i in range(n)) and tries < 10_000:
+                perm = list(rng.permutation(n))
+                tries += 1
+            if any(perm[i] == i for i in range(n)):
+                raise RuntimeError(f"no derangement found for year {year} (n={n})")
+        mapping = {dates[i]: dates[perm[i]] for i in range(n)}
         for t in ts:
             nd = mapping[t["exit_date"]]
             shift = nd - t["exit_date"]

@@ -34,9 +34,19 @@ reimplemented anywhere in this directory.
 - **Aegis×2 beside MNQ×1 improves all three axes, but the gain is drift, not diversification** —
   a shuffled-Aegis control (dates permuted within year) matches or beats the real book. On the
   2020-02→2022-07 window the grid cannot see, Aegis×2 passes 0.03% of paths.
-- **Third-leg fit rule:** positive net edge is non-negotiable (a zero-edge leg adds +2 to +37 pp of
-  bust), and the win rate must clear roughly `85% − 2pp per 0.01R of edge` at a $200 stop
-  (`−4pp` at $100). Time saved tracks drift: ~$2.5K/yr ≈ −30 days.
+- **Third-leg fit rule:** positive net edge is non-negotiable — a zero-edge leg makes the book's
+  bust worse at *every* win rate and size tested (+2.4 to +35 pp). Given edge, the leg must clear a
+  break-even win rate that falls as edge rises and as the stop shrinks:
+
+  | net edge per trade | break-even WR at a $200 stop | at a $100 stop |
+  |---:|---:|---:|
+  | 0.05R | above 75% | 61% |
+  | 0.10R | 62% | 42% |
+  | 0.15R | 52% | ≤ 35% |
+  | 0.20R | 46% | ≤ 35% |
+
+  Time saved tracks drift (edge × stop × trades/yr): ~$2.5K/yr ≈ −30 days. Correlation with MNQ at
+  or below zero is worth about one win-rate step.
 - **The MOC fade is an underpowered non-result that fails the cost-law pre-screen** — gross
   +0.075R (95% CI −0.104R to +0.254R), below the 4× cost hurdle, and it does **not scale with
   imbalance size**, which a forced dealer-unwind must. Not a candidate; not a clean kill either.
@@ -52,8 +62,14 @@ python controls.py                                 # shuffled-Aegis + excluded-r
 python third_leg_shape.py --stage characterize     # what kills/slows the base book
 python third_leg_shape.py --stage minimum --jobs 7 # exact-edge minimum-attribute grid
 python render_results.py && python render_minimum.py && python render_third_leg.py
-python moc_fade_replay.py                          # needs the Databento cache below
+python moc_fade_replay.py                          # reads inputs/, needs the Databento cache below
 ```
+
+`data/cme_equity_sessions.json` (1,011 CME equity-index sessions, 13 weekday closures in the
+window) is committed so `third_leg_shape.py` never schedules a synthetic trade on a closed market.
+It was derived from MES hourly bars: daily bars are **wrong** for this, because `ohlcv-1d` buckets
+by UTC day and manufactures phantom weekend bars (`lesson_databento_ohlcv1d_weekend_bars`) — which
+showed up immediately as 206 fake Friday "closures".
 
 **Inputs are local and deliberately not committed** (vendor TradingView exports, same posture as
 `core/data/tv_exports/`). `book_grid.py`'s docstring names each file; they live in `~/Downloads`:
@@ -95,4 +111,29 @@ for how it was collected and, more importantly, **why 107 of its 342 rows carry 
   pessimistic on the rope, so Growth figures are two-sided bounds, not point estimates.
 - **Synthetic third-leg outcomes are independent draws** — no regime clustering — so a real leg
   with the same summary statistics will do worse than the grid says.
+- **Known, unfixed: P&L booked on a non-session date is dropped from the path.** `daily_per_contract`
+  buckets by the trade's own exit date, and `build_cell` reindexes onto `pd.bdate_range`, so a
+  trade whose exit date is a Saturday or Sunday vanishes. Found 2026-09-02 while verifying the
+  Codex review; measured exactly: **6 trades, −210.92 per contract in total** (MNQ −195.5 over 2
+  days, MYM −15.5 over 2 days, Aegis none) out of 2,526 trades and +$27,955/ct of in-window MNQ
+  P&L — under 1%, and *unfavourable* to drop for MNQ (keeping it makes MNQ slightly worse, not
+  better). Two further MYM trades book on Christmas Day, a weekday the exchange is closed. The
+  correct treatment is to roll a non-session booking to the next session; that is a follow-up,
+  deliberately **not** applied here because both grids were mid-run and mixing code versions
+  inside one study is worse than a disclosed sub-1% hole. The related exit-day carry bug Codex
+  found *was* fixed, and is provably inert on this data for the same reason: every multi-day
+  trade's exit date is a Sunday.
 - K disclosed inline in each results file; nothing here consumes a pre-registration.
+
+## Corrections after review
+
+Codex reviewed [PR #260](https://github.com/Joshua-Asante/first-passage/pull/260) and raised 7
+findings (2 P1, 5 P2). All 7 were verified against the code and artifacts; none was a false
+positive. Fixed here: unverified-sign rows no longer reach any replay (they were reaching the
+committed artifacts while the report quoted clean numbers); the flatten bar is the bar *after* the
+`close_all` submit bar, not the submit bar itself; cadence is measured over the observation span
+rather than over traded days, where it was identically 5.0/week; multi-day trades stay open on
+their exit day; synthetic legs trade only real CME sessions (`data/cme_equity_sessions.json`);
+the shuffled-Aegis control is a true derangement; the signal path resolves from the script's own
+directory. `MOC_FADE_REPLAY.md` §Corrections carries the before/after numbers. No verdict in this
+campaign changed.

@@ -132,7 +132,14 @@ def build_intraday_low_sequenced(trades_by_leg, leg_contracts, date_index):
                       "net_pnl": t["net_pnl_per_contract"] * k, "mae": t["mae_per_contract"] * k}
             day_opens.setdefault(t["entry_date"], []).append(scaled)
             day_closes.setdefault(t["exit_date"], []).append(scaled)
-            for day in pd.date_range(t["entry_date"], t["exit_date"], freq="D")[1:-1]:
+            # Open at the START of every day after the entry day, INCLUDING the exit day
+            # (`[1:]`, not `[1:-1]`): on its exit day a multi-day trade is already open when
+            # the session begins, so its MAE is achievable before its close event books the
+            # realized P&L. Slicing `[1:-1]` left the exit day's floor blind to that MAE
+            # whenever MAE was worse than net P&L -- 6 of the 8 multi-day trades across these
+            # three legs. Fixed 2026-09-02 (Codex review, PR #260); the same off-by-one is
+            # present in the 2026-08-26 campaign's own followup_s10 this was ported from.
+            for day in pd.date_range(t["entry_date"], t["exit_date"], freq="D")[1:]:
                 day_carries.setdefault(day, []).append(scaled)
     all_days = set(day_opens) | set(day_closes) | set(day_carries)
     low_by_day, realized_by_day = {}, {}

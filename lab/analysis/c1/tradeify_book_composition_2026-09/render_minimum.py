@@ -53,6 +53,33 @@ def main():
                         row.append("·")
                 md.append(f"| {e:.2f} | " + " | ".join(row) + " |")
             md.append("")
+    # Break-even win rate per edge level: the win rate at which Δbust crosses zero, by linear
+    # interpolation between the two bracketing measured cells. This is the fit rule stated as
+    # measurement rather than as a hand-fitted line.
+    md += ["## Break-even win rate (where Δ bust crosses zero), 5/week uncorrelated", "",
+           "A third leg at or above this win rate does not make the book's bust worse; below it, it does.", "",
+           "| edge R | stop $100 | stop $200 |", "|---:|---:|---:|"]
+    for e in edges:
+        cells_row = []
+        for risk in (100, 200):
+            pts = []
+            for w in wrs:
+                k = (e, w, risk, 5, 0.0)
+                if k in cells:
+                    pts.append((w, agg(k)["bust"] - base["bust_pct"]))
+            be = None
+            for j in range(len(pts) - 1):
+                (w0, d0), (w1, d1) = pts[j], pts[j + 1]
+                if d0 > 0 >= d1:
+                    be = w0 + (w1 - w0) * d0 / (d0 - d1)
+                    break
+            if be is None and pts and pts[0][1] <= 0:
+                # already neutral at the lowest win rate tested -- do not extrapolate below it
+                cells_row.append(f"<= {pts[0][0]:.0%}")
+                continue
+            cells_row.append(f"{be:.0%}" if be is not None else "> 75%")
+        md.append(f"| {e:.2f} | {cells_row[0]} | {cells_row[1]} |")
+    md.append("")
     # fit map: cells with Δbust <= +0.5 and Δmed <= -30
     md += ["## Cells that FIT (Δ bust ≤ +0.5 pp and at least 30 days saved), 5/week uncorrelated", "",
            "| edge R | win rate | mean win R | stop $ | bust % (Δ) | median days (Δ) | drift $/yr | sd bust across realisations |", "|---:|---:|---:|---:|---:|---:|---:|---:|"]

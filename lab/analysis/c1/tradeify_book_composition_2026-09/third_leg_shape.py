@@ -46,7 +46,18 @@ def load_base():
     return tr
 
 
-def synth_leg(edge_r, wr, risk, cadence, rho, mnq_daily, date_index, seed):
+def tradable_sessions():
+    """Real CME equity-index session dates. `pd.bdate_range` includes exchange closures
+    (Christmas, New Year, Good Friday, the 2025-01-09 day of mourning -- 13 in this window),
+    and scheduling a synthetic trade on a closed market fabricates P&L and cadence. Derived
+    from MES.v.0 ohlcv-1h mid-session bars; see data/cme_equity_sessions.json for the method.
+    Added 2026-09-02 (Codex review, PR #260)."""
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "cme_equity_sessions.json")
+    with open(p) as fh:
+        return {pd.Timestamp(d) for d in json.load(fh)["sessions"]}
+
+
+def synth_leg(edge_r, wr, risk, cadence, rho, mnq_daily, date_index, seed, sessions=None):
     rng = np.random.default_rng(seed)
     W = (edge_r + 1.0 - wr) / wr
     # MNQ daily P&L -> normal scores on MNQ trade days, 0 elsewhere
@@ -65,7 +76,9 @@ def synth_leg(edge_r, wr, risk, cadence, rho, mnq_daily, date_index, seed):
     # outcomes with an inverted copula sign and two shared seeds; its realized edge
     # wandered up to +/-0.15R from target per seed, coherently across whole win-rate rows.
     # Read that file's realized_edge_r / realized_corr_mnq columns, not its labels.)
-    days = [(i, day) for i, day in enumerate(date_index) if day.weekday() in CADENCE_DAYS[cadence]]
+    days = [(i, day) for i, day in enumerate(date_index)
+            if day.weekday() in CADENCE_DAYS[cadence]
+            and (sessions is None or day in sessions)]
     scores = np.empty(len(days))
     for j, (i, _day) in enumerate(days):
         eps = rng.standard_normal()
@@ -102,7 +115,8 @@ def sweep_cell(params, tier, seed, window):
     tr = load_base()
     date_index = pd.bdate_range(*window)
     mnq_daily = bg.daily_per_contract(tr["mnq"])
-    synth, W = synth_leg(edge_r, wr, risk, cadence, rho, mnq_daily, date_index, seed)
+    synth, W = synth_leg(edge_r, wr, risk, cadence, rho, mnq_daily, date_index, seed,
+                         sessions=tradable_sessions())
     tb = {"mnq": tr["mnq"], "aegis": tr["aegis"], "synth": synth}
     boot, path, low, di, active = score(tb, {**BASE, "synth": 1}, tier, window, N_SIMS)
     s = path[:, active.index("synth")]; m = path[:, active.index("mnq")]
