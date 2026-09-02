@@ -578,6 +578,54 @@
     margin-top: 4px;
   }
 
+  /* ---------- Pending-doctrine board ---------- */
+  section.doctrine-board { margin-top: 44px; }
+  #doctrine-headline { margin: 0; color: var(--ink-soft); max-width: 78ch; font-size: 0.95rem; }
+  .doctrine-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; margin-top: 18px; }
+  .doctrine-card {
+    border: 1px dashed var(--hold);
+    border-left: 3px solid var(--hold);
+    background: var(--surface);
+    padding: 13px 15px;
+  }
+  .doctrine-card[data-proposed="1"] { border-color: var(--neutral); border-left-color: var(--neutral); }
+  .doctrine-card .dc-adr {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    color: var(--ink);
+    display: block;
+    margin-bottom: 4px;
+    word-break: break-word;
+  }
+  .doctrine-card .dc-status {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--hold);
+    border: 1px solid var(--hold);
+    padding: 1px 6px;
+    margin-bottom: 8px;
+  }
+  .doctrine-card[data-proposed="1"] .dc-status { color: var(--neutral); border-color: var(--neutral); }
+  .doctrine-card p { margin: 0 0 8px; font-size: 0.85rem; color: var(--ink-soft); }
+  .doctrine-card .dc-hits {
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    border-top: 1px dotted var(--line-strong);
+    padding-top: 7px;
+  }
+  .doctrine-gaps { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 16px; }
+  .doctrine-gaps h3 {
+    font-family: 'IBM Plex Sans Condensed', sans-serif;
+    font-size: 1rem;
+    margin: 0 0 8px;
+    color: var(--ink);
+  }
+  .doctrine-gaps ul { margin: 0; padding-left: 20px; color: var(--ink-soft); font-size: 0.88rem; }
+  .doctrine-gaps li { margin-bottom: 7px; max-width: 82ch; }
+
   /* ---------- Terminal states board ---------- */
   section.terminal-board { margin-top: 44px; }
   .tb-head { margin-bottom: 18px; }
@@ -669,17 +717,19 @@
       (post-deployment decay surveillance). Assembled from <strong id="doc-count">–</strong> canonical source docs, each cited inline.
     </p>
     <div class="callout stale">
-      <span class="ct-label">⚠ Unverified against current main — read before trusting anything below</span>
-      This map's content was last verified against repo state as of <strong>2026-08-25</strong>
-      (branch tip <code class="mono">bbb2cce</code>). <code class="mono">main</code> has since advanced
-      <strong>413 commits</strong> (through <code class="mono">d148b91</code>, 2026-09-02), including several ADRs
-      whose names suggest they restructure this exact pipeline —
-      <code class="mono">candidate-contract</code>, <code class="mono">terminal-taxonomy</code>,
-      <code class="mono">evaluation-order</code>, <code class="mono">tradeable-reachable-gate</code>,
-      <code class="mono">channel-liveness-gate</code>, <code class="mono">operator-approvals-campaign-envelope</code>,
-      and a full retirement of the persona-hierarchy review panel. <strong>None of that has been read into this
-      map.</strong> Treat every phase/step/terminal-state below as a dated historical snapshot, not a current-state
-      claim, until it is re-audited against those ADRs.
+      <span class="ct-label">Re-audited 2026-09-02 against main at <code class="mono">d148b91</code> — what this map is, and isn't</span>
+      Content was re-verified on <strong>2026-09-02</strong> against <code class="mono">main</code> after a
+      <strong>413-commit</strong> window (from <code class="mono">bbb2cce</code>, this map's original 2026-08-25 cutoff).
+      <strong>The phases below describe live practice accurately.</strong> All 91 paths this map cites still resolve —
+      the window introduced no link rot — and the six ADRs ratified 2026-08-30 that restructure this pipeline are
+      <strong>ratified doctrine that has not taken effect</strong>: every sourcing channel owes a migration addendum
+      first, ten are owed across five channels and none has landed, and none of the six has any enforcing code.
+      What <em>was</em> stale has been corrected in place: the admission ceiling
+      (<code class="mono">3.0%</code> → <code class="mono">5.0%</code> plus a <code class="mono">trailing_locking</code>
+      requirement), the fully-retired persona panel, <code class="mono">VOID-*</code>'s reclassification as
+      nonterminal, the 21→30 gate roster, and the released Striker cap allocation. Read the
+      <strong>Ratified doctrine not yet in effect</strong> section below before treating any phase here as the
+      final word on how a candidate will be handled going forward.
     </div>
     <div class="callout">
       <span class="ct-label">Current posture — 2026-08-24</span>
@@ -688,6 +738,16 @@
       Tradeify_Select_100K is <strong>empty</strong>; no strategy-signal fill has ever occurred. Nothing in this map
       describes a live book — see the <strong>Deployment Acceptance</strong> phase and the
       <strong>DISARMED / NOT-LIVE</strong> terminal state below.
+    </div>
+    <div class="callout changelog">
+      <span class="ct-label">Revised 2026-09-02 — re-audit against the 413-commit window</span>
+      <strong>Corrected:</strong> admission ceiling now 5.0% with a <code class="mono">trailing_locking</code>
+      qualifier (prereg v2 superseded v1 in full on 2026-08-26); the persona-hierarchy panel step replaced by the
+      deterministic GRAND-tier safety-invariant hard block that survived its full retirement;
+      <code class="mono">VOID-*</code> reclassified nonterminal; gate roster 21→30; Striker
+      <code class="mono">cap_alloc</code> released to zero; a new BLOCKING DEAD cell at the sourcing door check.
+      <strong>Added:</strong> a doctrine layer for the six 2026-08-30 ADRs and the new confirm-phase verdict
+      vocabulary, tagged so it reads as ratified-but-pending rather than live.
     </div>
     <div class="callout changelog">
       <span class="ct-label">Revised 2026-08-25 — three ADRs landed 2026-08-24</span>
@@ -729,6 +789,18 @@
 </div>
 
 <div class="wrap">
+  <section class="doctrine-board" id="doctrine-board">
+    <div class="tb-head">
+      <h2>Ratified doctrine that is not yet in effect</h2>
+      <p id="doctrine-headline"></p>
+    </div>
+    <div class="doctrine-grid" id="doctrine-grid"></div>
+    <div class="doctrine-gaps">
+      <h3>Open reconciliation gaps</h3>
+      <ul id="doctrine-gaps-list"></ul>
+    </div>
+  </section>
+
   <section class="terminal-board" id="terminal-board">
     <div class="tb-head">
       <h2>Where a candidate's journey can end</h2>
@@ -760,6 +832,7 @@
     ".claude/skills/strategy-validation/scripts/deflated_sharpe.py",
     ".claude/skills/strategy-validation/scripts/selection_tests.py",
     ".claude/skills/strategy-validation/scripts/step0_battery.py",
+    ".claude/workflows/pre-ratification-adversarial-panel.js",
     ".github/workflows/gate-manifest.yml",
     ".github/workflows/manifest-check.yml",
     ".github/workflows/validation-controls.yml",
@@ -774,8 +847,10 @@
     "docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md",
     "docs/adr/2026-07-12-dsr-k-rule-and-variance-floor-supersession.md",
     "docs/adr/2026-07-13-prop-account-book-segregation.md",
+    "docs/adr/2026-07-16-harv-attestation-same-units-supersession.md",
     "docs/adr/2026-07-20-stage8-variance-dominance-risk-neff-gate.md",
     "docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md",
+    "docs/adr/2026-07-25-instrument-profile-index.md",
     "docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md",
     "docs/adr/2026-08-04-iterate-closure-exit-mandatory.md",
     "docs/adr/2026-08-05-strategy-venue-binding-axis.md",
@@ -788,10 +863,19 @@
     "docs/adr/2026-08-16-deep-iteration-lane-charter.md",
     "docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md",
     "docs/adr/2026-08-21-persona-hierarchy-front-office-only.md",
+    "docs/adr/2026-08-22-grow0-two-ledger-k-question.md",
     "docs/adr/2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md",
     "docs/adr/2026-08-24-sourcing-phase-channel-retirement.md",
     "docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md",
+    "docs/adr/2026-08-26-striker-legmap-cap-release.md",
+    "docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md",
+    "docs/adr/2026-08-29-clv-autocorrelation-admission-route-scope.md",
+    "docs/adr/2026-08-30-candidate-contract.md",
+    "docs/adr/2026-08-30-evaluation-order.md",
+    "docs/adr/2026-08-30-terminal-taxonomy.md",
+    "docs/adr/2026-08-31-persona-hierarchy-full-retirement.md",
     "docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md",
+    "docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md",
     "docs/methodology/1r_estimation.md",
     "docs/methodology/avenue_a_generate_confirm.md",
     "docs/methodology/backtest_live_shrinkage.md",
@@ -803,6 +887,7 @@
     "docs/methodology/rejected_signals.md",
     "docs/methodology/strategy_harvest.md",
     "docs/methodology/strategy_lifecycle.md",
+    "docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json",
     "docs/operational_rules.md",
     "docs/rejected_candidates.md",
     "docs/rule_0.md",
@@ -815,14 +900,17 @@
     "lab/discovery/k_count.py",
     "lab/discovery/miner.py",
     "lab/discovery/promotion_packet.py",
+    "lab/discovery/prop_survivor_scoring.py",
     "lab/discovery/register_search.py",
     "lab/discovery/stage24_runner.py",
     "lab/research_utils/axis_screen.py",
     "lab/research_utils/breadth.py",
+    "lab/research_utils/selection_tests.py",
     "lab/research_utils/universe_gate.py",
     "lab/validation_selftest.py",
     "ops/c1_rail/c1_rail_arm.py",
     "ops/c1_rail/c1_sizing_host_reference.py",
+    "ops/instruments/MECHANISMS.md",
     "ops/sentinel/scan.py",
     "ops/venue_editions/Tradeify_Select_100K.md",
     "scripts/check_adr_graph.py",
@@ -831,6 +919,7 @@
     "scripts/check_closure_disposition.py",
     "scripts/check_data_manifests.py",
     "scripts/check_governance_prose_control_chars.py",
+    "scripts/check_instrument_rejection_coverage.py",
     "scripts/check_path_liveness.py",
     "scripts/check_pine_manifest.py",
     "scripts/check_pursuit_records.py",
@@ -867,12 +956,12 @@
       "description": "The candidate fails a battery limb after being scored — DELETE/FLIP/placebo fail, DSR below its pre-registered floor, cost-law fail, admission-gate bust/pass miss, or regime-robustness Part C miss. DEAD-listed into docs/rejected_candidates.md or docs/methodology/rejected_signals.md; re-proposal requires new mechanism evidence, never a wider grid or retune."
     },
     {
-      "name": "VOID-*",
-      "description": "A Generate-Confirm Route confirm run reports an honesty-limb failure (insufficient N/coverage, forbidden move detected). The specific CONFIRM cut may never be re-run; a retry requires an entirely new campaign with a fresh holdout — not a permanent mechanism kill."
+      "name": "VOID-* / EVIDENCE-VOID (NONTERMINAL as of 2026-08-30)",
+      "description": "A confirm run reports an honesty-limb failure (insufficient N/coverage, forbidden move, or a contract-integrity mismatch). RECLASSIFIED 2026-08-30: terminal-taxonomy rules this is NEVER a terminal registry destination — an underpowered discriminator is not evidence against the mechanism, so it never routes to MARKET-NULL and never enters a rejection register. The specific CONFIRM cut may never be re-run; a retry needs an entirely new campaign with a fresh holdout, and under the campaign-envelope ADR that retry is not separately spendable — the attempt is exhausted."
     },
     {
       "name": "AMBIGUOUS-HOLD",
-      "description": "Default verdict when criteria are neither cleanly met nor cleanly failed (e.g. a mixed floor/no-floor split across limbs, or a regime-boundary spread within the discountable band). Stays open; does not advance to lifecycle authorization."
+      "description": "Default verdict when criteria are neither cleanly met nor cleanly failed (e.g. a mixed floor/no-floor split across limbs, or a regime-boundary spread within the discountable band). Stays open; does not advance to lifecycle authorization. ⚠ UNRESOLVED 2026-08-30: the new confirm-phase verdict set is closed at four (CONFIRMED / MARKET-NULL / EXPRESSION-FAIL / EVIDENCE-VOID) with \"no fifth combination left undefined,\" and terminal-taxonomy is silent on AMBIGUOUS-HOLD by name. Whether this disposition survives outside confirm scope or was implicitly retired is a real reconciliation gap, not a settled retirement."
     },
     {
       "name": "REGIME-FRAGILE-REJECT",
@@ -921,6 +1010,30 @@
     {
       "name": "RETIRED @ 0.00x (downstream of deploy-acceptance, noted for completeness)",
       "description": "The one irreversible edge in the lifecycle ladder — WATCH-2 to RETIRED, or full shared-beta shutdown — reachable only via explicit operator GO/NO-GO against pre-registered criteria, never autonomously. Formally part of the measure/update phase (post-deployment decay surveillance), outside this task's generate->evaluate->deploy-acceptance scope, but listed as the ladder's ultimate terminal state."
+    },
+    {
+      "name": "CONFIRMED (evidence axis — doctrine, 2026-08-30)",
+      "description": "Both the frozen mechanism-level discriminator AND the payoff/temporal implementation test clear. One of exactly four confirm-phase verdicts; no fifth combination is left undefined. RATIFIED DOCTRINE — not yet in effect per-channel."
+    },
+    {
+      "name": "MARKET-NULL (evidence axis — doctrine, 2026-08-30)",
+      "description": "The discriminator cleanly fails: a powered, adjudicated no. Routes here REGARDLESS of the payoff implementation's own read — including when the payoff statistic passes. Registers as `edge-failure`. RATIFIED DOCTRINE — not yet in effect per-channel."
+    },
+    {
+      "name": "EXPRESSION-FAIL (evidence axis — doctrine, 2026-08-30)",
+      "description": "The discriminator returns a clean pass while the specific entry/exit expression built on it is rejected. New fifth registry class `expression-failure`; add-back requires a materially new expression class differing on a declared structural axis (stop logic, exit family, holding-horizon class) — never a parameter re-tune. Bounded by the `N_expr` ladder, default 2, keyed to the mechanism. RATIFIED DOCTRINE — not yet in effect per-channel."
+    },
+    {
+      "name": "VENUE-FAIL (edition axis — doctrine, 2026-08-30)",
+      "description": "Post-confirm placement failure, orthogonal to the evidence axis: `CONFIRMED · VENUE-FAIL(edition)` is a valid standing disposition where neither fact overwrites the other. Enters NO rejection register. RATIFIED DOCTRINE — not yet in effect per-channel."
+    },
+    {
+      "name": "ROLE-BLOCKED (nonterminal — doctrine, 2026-08-30)",
+      "description": "Role/compliance state-drift caught at the zero-K re-check: the scoped account/book or symbol occupancy moved since the contract froze. Never a registry entry; re-screenable when the scope changes. Slot disposition follows the contract's frozen succession rule — forfeit by default (multiplicity divisor stays at M) or mechanical succession to the next-ranked candidate. RATIFIED DOCTRINE — not yet in effect per-channel."
+    },
+    {
+      "name": "CHANNEL-FAIL (nonterminal — doctrine, 2026-08-30)",
+      "description": "A sourcing channel hit its declared liveness ceiling, making retirement or mandatory redesign DUE — not automatically enacted; enactment still runs through operator GO. Never attributed to any one candidate's disposition, never a registry entry. RATIFIED DOCTRINE — not yet in effect per-channel."
     }
   ],
   "phases": [
@@ -962,10 +1075,11 @@
           "inputs": "The brief/ADR/implementation-step draft and current repo state",
           "outputs": "A completed, evidenced §0 section gating the rest of the brief",
           "gate": "Sentinel Tier-1 preregistration_scan (report-only, fail-open, make sentinel) flags forbidden-move violations",
-          "kill_condition": "A same-commit self-attested freeze or missing Registry: line is flagged by Sentinel",
+          "kill_condition": "Two different enforcers, with different teeth: (a) a same-commit self-attested freeze is flagged REPORT-ONLY by Sentinel Tier-1 `preregistration_scan` (`make sentinel`, fail-open — it never blocks a commit); (b) a missing `Registry:` line HARD-fails the `closure-disposition` pre-commit gate. Sentinel does not check Registry lines.",
           "refs": [
             "docs/operational_rules.md#8",
-            "ops/sentinel/scan.py"
+            "ops/sentinel/scan.py",
+            "scripts/check_closure_disposition.py"
           ]
         },
         {
@@ -1043,7 +1157,7 @@
         {
           "order": 2,
           "name": "Concept-level dedup attestation + instrument-profile consult (mechanism-family x instrument)",
-          "mechanism": "Search docs/rejected_candidates.md (concept-intake-entry lines), closed discovery_manifests/*.json, and docs/methodology/rejected_signals.md by mechanism_family x instrument. Run `python scripts/instrument_profiles.py cell <SYMBOL> <mechanism-id>`, which prints ledger/prior-verdict/binding-bars/cost-hurdle/K-bank and exits nonzero (BLOCKING) on a DEAD/AMBIGUOUS-PARKED/CONTINGENT-FORWARD prior.",
+          "mechanism": "Search docs/rejected_candidates.md (concept-intake-entry lines), closed discovery_manifests/*.json, and docs/methodology/rejected_signals.md by mechanism_family x instrument. Run `python scripts/instrument_profiles.py cell <SYMBOL> <mechanism-id>`, which prints ledger/prior-verdict/binding-bars/cost-hurdle/K-bank and exits nonzero (BLOCKING) on a DEAD/AMBIGUOUS-PARKED/CONTINGENT-FORWARD prior. LIVE EXAMPLE as of 2026-08-30: `bar-closing-location-autocorrelation` now returns verdict DEAD + BLOCKING on both MNQ and MYM, bound to the index-intraday-ohlcv-directional-timing-2026-07-21 bar — both CLV notices closed DROP after the $0 cost-law pre-screen measured ~18-20x below the per-event hurdle.",
           "inputs": "Proposed mechanism_family (free text) + instrument symbol",
           "outputs": "Dedup attestation prose (required field in the harvest seed manifest §5); saved profile-consult output, later required verbatim as --profile-consult on register_search open",
           "gate": "instrument_profiles.py exit code 0=clear; exit 1=BLOCKING must be named and addressed in the eventual pre-registration (not a permanent bar)",
@@ -1052,7 +1166,9 @@
             "docs/rejected_candidates.md",
             "docs/methodology/strategy_harvest.md#87",
             "scripts/instrument_profiles.py",
-            "lab/discovery/register_search.py#273-340"
+            "lab/discovery/register_search.py#273-340",
+            "docs/adr/2026-08-29-clv-autocorrelation-admission-route-scope.md",
+            "ops/instruments/MECHANISMS.md"
           ]
         },
         {
@@ -1064,7 +1180,7 @@
           "gate": "n/a (discipline check)",
           "kill_condition": "Reaching for full tsfresh or a deep PySR search as the first move is a named STOP-condition red flag",
           "refs": [
-            ".claude/skills/futures-anomaly-discovery/SKILL.md#203-216"
+            ".claude/skills/futures-anomaly-discovery/SKILL.md#225-238"
           ]
         },
         {
@@ -1143,14 +1259,15 @@
         {
           "order": 10,
           "name": "Branch A5b — deep-iteration lane (grammar-bound search, GROW charter)",
-          "mechanism": "Frozen, hash-pinned generation grammar (--grammar-file/--grammar-sha256); generation_budget IS K, fully counted. Three conjuncts required at freeze: K<=33 (K_CEILING); floor_at_k(K, confirm_years)<=2.0 (FLOOR_CEILING); power=Phi((target_sr-floor_sr)*sqrt(years))>=0.50 against the campaign's own a-priori target_sr. A burned-segment consult refuses opening on a previously-consulted data window.",
+          "mechanism": "Frozen, hash-pinned generation grammar (--grammar-file/--grammar-sha256); generation_budget IS K, fully counted. Three conjuncts required at freeze: K<=33 (K_CEILING); floor_at_k(K, confirm_years)<=2.0 (FLOOR_CEILING); power=Phi((target_sr-floor_sr)*sqrt(years))>=0.50 against the campaign's own a-priori target_sr. A burned-segment check refuses opening on a window that OVERLAPS A BURNED SEGMENT; a merely previously-consulted (non-burned) window is disclosure-only — `consultation_count` is recorded on the manifest and never refuses (charter §2.2(iv), the disclosure-only fourth conjunct added 2026-08-22).",
           "inputs": "Frozen grammar.json + sha256 pin; declared K; confirm_years; a-priori target_sr; instrument + data window",
           "outputs": "ADMIT/REFUSE via evaluate_deep_admission(); on ADMIT proceeds under stage24_runner-style mine->score->emit",
           "gate": "evaluate_deep_admission() — a separate predicate from the mechanism-first EM/TNEC corridor",
           "kill_condition": "REFUSE with reason code K_ABOVE_CEILING / FLOOR_ABOVE_CEILING / POWER_BELOW_MIN",
           "refs": [
             "lab/discovery/deep_lane_admission.py#36-131",
-            "docs/adr/2026-08-16-deep-iteration-lane-charter.md"
+            "docs/adr/2026-08-16-deep-iteration-lane-charter.md",
+            "docs/adr/2026-08-22-grow0-two-ledger-k-question.md"
           ]
         },
         {
@@ -1194,13 +1311,14 @@
         {
           "order": 14,
           "name": "Branch B3 — Profile consult + seed manifest authoring",
-          "mechanism": "Declare the (instrument, mechanism-class) cell via instrument_profiles.py cell (same mechanism as step 2, now recorded as a named field). Fill the §5 seed manifest template: admission-date, requirement paths, source+rank, K_banked disclosure, K_intrinsic (<=3, every varied axis enumerated), K_eff+floor(K_eff), delta/sigma, N+event frequency, power, dedup attestation, screen verdict, operator ratification.",
+          "mechanism": "Declare the (instrument, mechanism-class) cell via instrument_profiles.py cell (same mechanism as step 2, now recorded as a named field). Fill the §5 seed manifest template: admission-date, requirement paths, source+rank, K_banked disclosure, K_intrinsic (<=3, every varied axis enumerated), K_eff+floor(K_eff), delta/sigma, N+event frequency, power, dedup attestation, screen verdict, operator ratification. SUPERSEDED DOCTRINE 2026-08-30: the standalone seed manifest is replaced by a founding freeze of the single hash-addressed, append-only candidate contract for any candidate opened after that date — same field set, plus a REQUIRED complete tradeable entry/exit object (signal, entry clock, stop, exit/target, holding horizon, costed payoff unit). A candidate missing any one of those is not yet a candidate. Not yet in effect: HARV owes its migration addendum, so the manifest template above remains this channel's live practice.",
           "inputs": "Requirement 1/2/4/5 findings; profile-cell consult output",
           "outputs": "A filled harvest seed manifest",
           "gate": "An incomplete manifest is unscreenable by construction",
           "kill_condition": "n/a",
           "refs": [
-            "docs/methodology/strategy_harvest.md#42-53,108-142"
+            "docs/methodology/strategy_harvest.md#42-53,108-142",
+            "docs/adr/2026-08-30-candidate-contract.md"
           ]
         },
         {
@@ -1231,13 +1349,15 @@
         {
           "order": 17,
           "name": "Branch B6 — Campaign scoping under HARV lane (Stage-0 pre-registration)",
-          "mechanism": "A ratified seed is scoped into a full campaign: a Stage-0 PREREG including a per-clause reachability attestation (HARD gate, non-empty; every JSON clause carries {value, units, basis, source}). Defaults + K accounting inherited by reference.",
+          "mechanism": "A ratified seed is scoped into a full campaign: a Stage-0 PREREG including a per-clause reachability attestation (HARD gate, non-empty; every JSON clause carries {value, units, basis, source}). Defaults + K accounting inherited by reference. ATTRIBUTION CORRECTION: the attestation SPEC is owned by the 2026-07-16 same-units supersession ADR (the 2026-07-13 HARD gate itself stands but its §2 attestation specification is superseded-in-part), and the {value, units, basis, source} shape that `register_search.py` actually enforces comes from the 2026-07-25 instrument-profile ADR §2a. Under 2026-08-30 doctrine this Stage-0 PREREG becomes a pre-freeze append to the candidate contract rather than its own document.",
           "inputs": "Ratified seed manifest; reachability clauses",
           "outputs": "A frozen Stage-0 PREREG.md under lab/analysis/<theme>/<slug>/",
           "gate": "HARV ADR 2026-07-13 §2 HARD gate — no mechanism-first open without this attestation",
           "kill_condition": "n/a (feeds Phase 3 register_search open)",
           "refs": [
-            "docs/methodology/strategy_harvest.md#150,156-160"
+            "docs/methodology/strategy_harvest.md#150-156",
+            "docs/adr/2026-07-16-harv-attestation-same-units-supersession.md",
+            "docs/adr/2026-07-25-instrument-profile-index.md"
           ]
         },
         {
@@ -1334,13 +1454,13 @@
         {
           "order": 1,
           "name": "register_search open — bind K before results examined",
-          "mechanism": "`PYTHONPATH=lab python -m discovery.register_search open` (or the skill's thin launcher). Refuses to overwrite an existing run_id. Three lanes: mechanism-first (default; requires --reachability-attestation, --profile-cell/--profile-consult, --admission-file scored against EM0/EM2-EM5+N-EDGE+DSR-cap/power, --prereg); blind (legacy 11-key schema, admission file optional but its refusals still abort if supplied); deep (requires --prereg, --grammar-file/sha256, --confirm-years, --target-sr per the Phase-2 §2.10 charter). An optional Requirement-5 cost-law pre-flight refuses if cohort delta can't clear 4x the round-trip cost hurdle.",
+          "mechanism": "`PYTHONPATH=lab python -m discovery.register_search open` (or the skill's thin launcher). Refuses to overwrite an existing run_id. Three lanes: mechanism-first (default; requires --reachability-attestation, --profile-cell/--profile-consult, --admission-file scored against EM0/EM2-EM5+N-EDGE+DSR-cap/power, --prereg); blind (legacy 11-key schema, admission file optional but its refusals still abort if supplied); deep (requires --prereg, --grammar-file/sha256, --confirm-years, --target-sr per the Phase-2 §2.10 charter). An optional Requirement-5 cost-law pre-flight refuses if cohort delta can't clear 4x the round-trip cost hurdle. Added 2026-08-29 (both OPT-IN, neither mandatory): a closed-form stumpy K cross-check that recomputes the K_DSR bracket from params.T and aborts if it disagrees with --search-space-size, and a burned-segment consult on the deep lane that refuses a window overlapping a burned segment.",
           "inputs": "run_id; tool name; K (search-space-size); alpha (default 0.05); data-window; hypothesis; lane-specific artifacts",
           "outputs": "discovery_manifests/<run_id>.json with status='open', recording K, alpha, data_window, hypothesis, params, attestation/profile/admission/prereg/cost-law pointers",
           "gate": "Pre-registration is immutable — cannot re-declare K after seeing results",
-          "kill_condition": "Any refusal (Cap/EM0 when K>=4, power<0.50, failed N-EDGE, EM2-EM5 fail, K_mismatch, failed deep-lane conjunct) writes NO manifest at all: ABORT, $0/K=0",
+          "kill_condition": "Any refusal (Cap/EM0 when K>=4, power<0.50, failed N-EDGE, EM2-EM5 fail, K_mismatch, failed deep-lane conjunct) writes NO manifest at all: ABORT, $0/K=0 Plus, when supplied: a stumpy K_DSR mismatch, or a fractional params.T.",
           "refs": [
-            "lab/discovery/register_search.py#640-714",
+            "lab/discovery/register_search.py#712-789",
             "lab/discovery/admission_schema.py"
           ]
         },
@@ -1359,13 +1479,14 @@
         {
           "order": 3,
           "name": "register_search close — submit survivor p-values, cheap multiplicity triage",
-          "mechanism": "`discovery.register_search close --run-id <id> --pvalues <...>` (requires prior open). Computes Bonferroni threshold=alpha/K; naive-alpha pass count with expected false positives=K*alpha; BH-FDR step-up ranked 1..s. A separate --operator-stopped path banks --executed-k selection events actually examined and produces NO campaign verdict.",
+          "mechanism": "`discovery.register_search close --run-id <id> --pvalues <...>` (requires prior open). Computes Bonferroni threshold=alpha/K; naive-alpha pass count with expected false positives=K*alpha; BH-FDR step-up ranked 1..s. A separate --operator-stopped path banks --executed-k selection events actually examined and produces NO campaign verdict. This Bonferroni/BH triage is now explicitly the FIRST of two sequential corrections: the 2026-08-30 campaign-envelope ADR adds a second, frozen α/M/Bonferroni-or-Holm family-wise correction over the confirm family. They are cumulative, not alternatives.",
           "inputs": "run_id (previously opened); survivor p-values or executed-k+stop-reason+executed-looks",
           "outputs": "Manifest updated to status='closed' with n_submitted, n_pass_naive_alpha, bonferroni_threshold, n_pass_bonferroni, n_multiplicity_killed, bh_rows, n_pass_bh, expected_false_positives_global_null, candidates[]",
           "gate": "Verdict string is always 'FIRST-PASS ONLY... NOT a promotion' — hand the full candidate set to strategy-validation",
           "kill_condition": "A naive-significant-but-Bonferroni-killed candidate is flagged explicitly as a classic data-snooping false positive, not carried forward",
           "refs": [
-            "lab/discovery/register_search.py#731-861,717-728"
+            "lab/discovery/register_search.py#878-1012",
+            "lab/discovery/register_search.py#792-803"
           ]
         },
         {
@@ -1377,8 +1498,9 @@
           "gate": "'This layer GENERATES candidates; it never blesses them' — the gate proper is strategy-validation's, not discovery's",
           "kill_condition": "n/a (routing step)",
           "refs": [
-            ".claude/skills/futures-anomaly-discovery/SKILL.md#263-271",
-            "lab/CATALOG.md"
+            ".claude/skills/futures-anomaly-discovery/SKILL.md#285-293",
+            "lab/CATALOG.md",
+            "docs/adr/2026-08-30-terminal-taxonomy.md"
           ]
         }
       ]
@@ -1390,13 +1512,15 @@
         {
           "order": 1,
           "name": "Pre-registration freeze & ordering-trap audit",
-          "mechanism": "Verify via `git log --format='%h %ci %s'` that the PREREG commit predates any RESULTS/scoring commit. If any CONFIRM metric was computed before the freeze commit, the confirm is void and a new campaign with a fresh holdout is required.",
+          "mechanism": "Verify via `git log --format='%h %ci %s'` that the PREREG commit predates any RESULTS/scoring commit. If any CONFIRM metric was computed before the freeze commit, the confirm is void and a new campaign with a fresh holdout is required. OWNERSHIP MOVED: the cited Avenue A checklist was WITHDRAWN 2026-08-24 and its governing ADR is Superseded, so it is no longer authority for this step (retained as historical provenance only). Under 2026-08-30 doctrine the equivalent is: Explore closes with an append-only, hash-pinned selection freeze (full scored ranking plus the selected candidates) committed before any holdout access, and the evaluate phase's FIRST action is a contract-integrity check of hashes, K, multiplicity configuration and holdout against that freeze.",
           "inputs": "Draft PREREG; git commit log",
           "outputs": "Frozen, timestamped pre-registration; ordering audit result",
           "gate": "Mechanical git-log check, not judgment",
-          "kill_condition": "A score predating the freeze commit voids the confirm (Anti-pattern #1)",
+          "kill_condition": "A score predating the freeze commit voids the confirm. Under the new taxonomy this is EVIDENCE-VOID — it voids or stops the attempt and is never recorded as a structural or evidentiary rejection.",
           "refs": [
-            "docs/methodology/avenue_a_generate_confirm.md"
+            "docs/methodology/avenue_a_generate_confirm.md",
+            "docs/adr/2026-08-30-evaluation-order.md",
+            "docs/adr/2026-08-30-candidate-contract.md"
           ]
         },
         {
@@ -1574,13 +1698,14 @@
         {
           "order": 16,
           "name": "Bootstrap CI on expectancy (block, not IID)",
-          "mechanism": "Compute bootstrap CI on expectancy plus P(<=0)/P(>=gate) via selection_tests.py using arch's stationary/circular block bootstrap with block_size calibrated to the return-autocorrelation scale (not the sqrt(T) default).",
+          "mechanism": "Compute a bootstrap CI on expectancy plus P(<=0)/P(>=gate) via `selection_tests.py`. ⚠ DEFECT (verified 2026-09-02): the shipped implementation resamples trades IID with replacement — it is NOT the block bootstrap this step previously claimed. The module imports only argparse/numpy/pandas; there is no `arch`, no block structure and no block_size parameter. The skill's §8d carries the block-bootstrap requirement as an INSTRUCTION to upgrade, not a description of shipped behavior, and the arch stationary/circular block bootstrap exists only inside the dormant universe_gate path. Treat an IID CI on an autocorrelated return series as UNDERSTATING its width.",
           "inputs": "Trade-level realized R series; block_size calibrated to measured ACF scale",
           "outputs": "Bootstrap CI on expectancy; P(<=0); P(>=gate)",
-          "gate": "CI lower bound must clear the pre-registered gate for the primary limb to pass",
+          "gate": "CI lower bound must clear the pre-registered gate — but read the interval as optimistic until the §8d upgrade lands.",
           "kill_condition": "CI including/below 0 fails the primary limb",
           "refs": [
-            ".claude/skills/strategy-validation/scripts/selection_tests.py"
+            ".claude/skills/strategy-validation/scripts/selection_tests.py",
+            "lab/research_utils/selection_tests.py"
           ]
         },
         {
@@ -1782,12 +1907,12 @@
     },
     {
       "phase_name": "Regime-Robustness Gate",
-      "summary": "Mandatory (not conditional) for any dd_protection-constant change, any Pareto-relaxation on a risk-constant plane, or any single-panel MC comparison where regime distribution materially affects the result — applied at the tail of the statistical evaluation battery, against the candidate's own headline pass criteria. CORRECTED 2026-08-24: this gate is NOT a mandatory linear step for candidate/strategy additions — its own scope section excludes them (\"adding/removing strategies\" is on the explicit \"Not required\" list). A prior candidate pre-registration (the FROZEN Class-S existing-strategy-book candidate-1 chain, frozen 2026-07-15 — NOT ORB-MNQ-1, an earlier misattribution now corrected) imported this gate as a per-candidate rider with its consequence pre-declared non-blocking; when the gate then FAILed on both discharge tiers, the FAIL rode into intake as a caveat instead of a falsifier. Both source documents stay FROZEN and byte-unedited (Trap #12) — the correction lives in a worked non-example, discharging a 16-day-overdue audit action item (F1). See [2026-08-24 ADR](docs/adr/2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md).",
+      "summary": "Mandatory (not conditional) for any dd_protection-constant change, any Pareto-relaxation on a risk-constant plane, or any single-panel MC comparison where regime distribution materially affects the result — applied at the tail of the statistical evaluation battery, against the candidate's own headline pass criteria. CORRECTED 2026-08-24: this gate is NOT a mandatory linear step for candidate/strategy additions — its own scope section excludes them (\"adding/removing strategies\" is on the explicit \"Not required\" list). A prior candidate pre-registration (the FROZEN Class-S existing-strategy-book candidate-1 chain, frozen 2026-07-15 — NOT ORB-MNQ-1, an earlier misattribution now corrected) imported this gate as a per-candidate rider with its consequence pre-declared non-blocking; when the gate then FAILed on both discharge tiers, the FAIL rode into intake as a caveat instead of a falsifier. Both source documents stay FROZEN and byte-unedited (Trap #12) — the correction lives in a worked non-example, discharging a 16-day-overdue audit action item (F1). See [2026-08-24 ADR](docs/adr/2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md). ⚠ As of 2026-09-02 this whole gate is unrunnable in practice: Parts A and B both require an MC-engine-eligible locked panel and none is currently admitted.",
       "steps": [
         {
           "order": 1,
           "name": "Part A — 6-month block bootstrap",
-          "mechanism": "Define 6-month contiguous blocks over the locked panel timeline; resample with replacement to build 100 alternate-history panels of the same total length; rebuild inner MC week-blocks and run the full sweep at the candidate config (same seed count as the parent brief); compute the 5th percentile of the 100-panel pass-rate distribution. Upgrade n to 200 for close calls.",
+          "mechanism": "Define 6-month contiguous blocks over the locked panel timeline; resample with replacement to build 100 alternate-history panels of the same total length; rebuild inner MC week-blocks and run the full sweep at the candidate config (same seed count as the parent brief); compute the 5th percentile of the 100-panel pass-rate distribution. Upgrade n to 200 for close calls. ⚠ PRECONDITION UNMET (2026-09-02): this requires an MC-engine-eligible locked panel, and none is admitted today — the 52-month Pepperstone panel was retired 2026-08-02 and its bytes deleted, and the only other PANELS_BY_BROKER entry (\"cme\") is breadth-scoped and explicitly not substitutable here. Part A is currently UNRUNNABLE.",
           "inputs": "Locked panel; candidate config; parent brief's seed count",
           "outputs": "100-panel pass-rate/bust-rate/p99-DD distribution; 5th-percentile pass-rate",
           "gate": "Feeds Part C acceptance test; not independently pass/fail",
@@ -1800,7 +1925,7 @@
         {
           "order": 2,
           "name": "Part B — half-panel time split",
-          "mechanism": "Split the locked panel at its temporal midpoint into H1/H2 (unequal-length halves acceptable if documented); run the full MC at the candidate config on each half independently, same seed count.",
+          "mechanism": "Split the locked panel at its temporal midpoint into H1/H2 (unequal-length halves acceptable if documented); run the full MC at the candidate config on each half independently, same seed count. ⚠ PRECONDITION UNMET (2026-09-02): this requires an MC-engine-eligible locked panel, and none is admitted today — the 52-month Pepperstone panel was retired 2026-08-02 and its bytes deleted, and the only other PANELS_BY_BROKER entry (\"cme\") is breadth-scoped and explicitly not substitutable here. Part B has no live panel to split.",
           "inputs": "Locked panel split at documented midpoint; candidate config; parent brief's seed count",
           "outputs": "H1 and H2 pass_rate/bust_rate/p99_dd",
           "gate": "Feeds Part C acceptance test; not independently pass/fail",
@@ -1899,13 +2024,15 @@
         {
           "order": 1,
           "name": "Survivor-scoring Part A admission gate",
-          "mechanism": "Governing instrument for standalone candidate admission: bust<=3.0% AND pass>=50%, discharged iff BOTH hold on >=2 firms. The 3.0% bust figure was tested for economic justification (found not to be an economic quantity) and retained unedited regardless.",
+          "mechanism": "Governing instrument for standalone candidate admission. SUPERSEDED 2026-08-26: the v1 ceiling (bust<=3.0%) was replaced in full by prereg v2 — headline bust <= 5.0% (daily+static+trailing) AND pass floor >= 50%, discharged iff BOTH hold on >=2 distinct $100K firm tiers, AT LEAST ONE of which must be `trailing_locking` (Tradeify or MFFU). The added trailing_locking requirement is new in v2 and has no v1 counterpart. Landed in code: `prop_survivor_scoring.py` DEFAULT_PREREG re-points to the v2 body, and ceilings/tiers/seeds are parsed from the pre-registration rather than hardcoded. The v1 3.0% figure is historical record only — v2 §8 states this is NOT a finding that 3.0% was mis-set, but an operator risk-tolerance override.",
           "inputs": "Candidate's standalone MC output across firm tiers",
           "outputs": "Bust rate, pass rate per firm tier",
-          "gate": "Layered pre-screens (Stage-8 variance-dominance, third-leg target-spec) feed in but never substitute for this gate",
-          "kill_condition": "bust>3.0% OR pass<50% on >=2 firms -> admission gate not discharged",
+          "gate": "Layered pre-screens feed in but never substitute for this gate. Q-BUSTGATE-1's retained 3.0% figure and the third-leg spec's T5 row are flagged in objective_composition_map.md as NOT yet reconciled against the raised ceiling.",
+          "kill_condition": "bust>5.0% OR pass<50% on >=2 firms, OR no qualifying `trailing_locking` firm among the passers -> admission gate not discharged.",
           "refs": [
+            "docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md",
             "docs/methodology/objective_composition_map.md",
+            "lab/discovery/prop_survivor_scoring.py",
             "docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md"
           ]
         },
@@ -1955,7 +2082,7 @@
         {
           "order": 1,
           "name": "Verdict routing + Iterate closure block + board-write + rejection-registry entry",
-          "mechanism": "Terminates in RESOLVED (becomes a seed/candidate eligible for lifecycle admission, never auto-deployed), FALSIFIED (DEAD-listed), VOID-* (honesty limb, retry needs a new campaign), or AMBIGUOUS-HOLD (default). Discharged as a mandatory typed `## Iterate` block: Verdict used / Model update / Next: INTEGRATE|ITERATE|STOP / routing / entry packet / stop rule / board write. A board write (instrument ledger, SESSIONS, CATALOG/manifest) is owed on every branch. FALSIFIED/DEAD entries carry rejection scope, closure basis, surviving findings, and a re-proposal bar requiring new mechanism evidence.",
+          "mechanism": "Terminates in RESOLVED (becomes a seed/candidate eligible for lifecycle admission, never auto-deployed), FALSIFIED (DEAD-listed), VOID-* (honesty limb, retry needs a new campaign), or AMBIGUOUS-HOLD (default). Discharged as a mandatory typed `## Iterate` block: Verdict used / Model update / Next: INTEGRATE|ITERATE|STOP / routing / entry packet / stop rule / board write. A board write (instrument ledger, SESSIONS, CATALOG/manifest) is owed on every branch. FALSIFIED/DEAD entries carry rejection scope, closure basis, surviving findings, and a re-proposal bar requiring new mechanism evidence. As of 2026-08-27 this step gains its first mechanical enforcement: the `instrument-rejection-coverage` gate walks terminal-negative closures against `ops/instruments/<SYM>.md` DEAD rows. It is WARN-tier (`--exit-zero`) — it reports without blocking.",
           "inputs": "All upstream step verdicts for the candidate; the H verdict from the Q/H cycle",
           "outputs": "Final disposition; typed Iterate block; board-write entries; rejection-registry entry if FALSIFIED/DEAD",
           "gate": "RESOLVED is required before any lifecycle/deployment step; STOP is a ratified extension with budget zero, not v1's binary Integrate/Iterate; ITERATE names a successor but never opens one (opening needs a fresh operator GO)",
@@ -1964,7 +2091,8 @@
             "docs/rejected_candidates.md",
             "docs/methodology/rejected_signals.md",
             "docs/adr/2026-08-04-iterate-closure-exit-mandatory.md",
-            ".claude/skills/brief-authoring/references/closure_record.md"
+            ".claude/skills/brief-authoring/references/closure_record.md",
+            "scripts/check_instrument_rejection_coverage.py"
           ]
         },
         {
@@ -2069,14 +2197,15 @@
         {
           "order": 1,
           "name": "Venue-edition binding: BOOK -> VENUE EDITION",
-          "mechanism": "A book-level CANDIDATE/AUTHORIZED strategy is separately screened and bound to a specific venue-tier as a VENUE EDITION (`<strategy>@<firm-tier>`). Carries its own lifecycle CANDIDATE -> SCREENED -> ACTIVE -> WATCH-1/-2 -> WITHDRAWN/SCREEN-DEAD/RETIRED, independent of and never overwriting the book's authorization state. Composition rule (design-only, not yet wired into live sizing): effective_multiplier = M_book(tier) x M_edition(tier) x DD_SCALE(dd_state).",
+          "mechanism": "A book-level CANDIDATE/AUTHORIZED strategy is separately screened and bound to a specific venue-tier as a VENUE EDITION (`<strategy>@<firm-tier>`). Carries its own lifecycle CANDIDATE -> SCREENED -> ACTIVE -> WATCH-1/-2 -> WITHDRAWN/SCREEN-DEAD/RETIRED, independent of and never overwriting the book's authorization state. Composition rule (design-only, not yet wired into live sizing): effective_multiplier = M_book(tier) x M_edition(tier) x DD_SCALE(dd_state). CAP UPDATE 2026-08-26: both Striker legs' `cap_alloc` in LEG_MAP were zeroed (dj30_mym 69 -> 0, nas100_mnq 11 -> 0), releasing the full 80-micro account-aggregate cap as unclaimed headroom for a future leg. Cap-dollar dimension only — distinct from the research-occupancy release of 2026-08-12, and not authorization for any Striker redeploy (both legs stay barred).",
           "inputs": "A book-level CANDIDATE/AUTHORIZED strategy; a target firm-tier from core/firm_rules.AUTOMATION_FRIENDLY_PROP_FIRMS; venue-specific screens",
           "outputs": "A new/updated row in ops/venue_editions/<firm_tier>.md: strategy | edition | state | cap_alloc | symbol | screen verdict+date | deployment pointer",
           "gate": "Test: 'would this fact change if the same mechanism ran at a different firm?' — if yes, it's edition-or-deeper",
           "kill_condition": "WITHDRAWN/SCREEN-DEAD editions carry M_edition=0.00 by construction; M_book is never modified by an edition event",
           "refs": [
             "docs/adr/2026-08-05-strategy-venue-binding-axis.md",
-            "ops/venue_editions/Tradeify_Select_100K.md"
+            "ops/venue_editions/Tradeify_Select_100K.md",
+            "docs/adr/2026-08-26-striker-legmap-cap-release.md"
           ]
         },
         {
@@ -2107,14 +2236,15 @@
         {
           "order": 4,
           "name": "Deployment binding: VENUE EDITION -> DEPLOYMENT (account/rail wiring)",
-          "mechanism": "DEPLOYMENT (`<strategy>@<firm-tier>#<account>`) owns account binding, rail slot (leg_id), arming state, live P&L — facts that would change even at the same firm with a different account (cap-table sharing, symbol occupancy, variance/correlation composition against other live legs). Today this is LEG_MAP in ops/c1_rail/c1_sizing_host_reference.py + the rail config.",
+          "mechanism": "DEPLOYMENT (`<strategy>@<firm-tier>#<account>`) owns account binding, rail slot (leg_id), arming state, live P&L — facts that would change even at the same firm with a different account (cap-table sharing, symbol occupancy, variance/correlation composition against other live legs). Today this is LEG_MAP in ops/c1_rail/c1_sizing_host_reference.py + the rail config. CAP UPDATE 2026-08-26: both Striker legs' `cap_alloc` in LEG_MAP were zeroed (dj30_mym 69 -> 0, nas100_mnq 11 -> 0), releasing the full 80-micro account-aggregate cap as unclaimed headroom for a future leg. Cap-dollar dimension only — distinct from the research-occupancy release of 2026-08-12, and not authorization for any Striker redeploy (both legs stay barred).",
           "inputs": "An ACTIVE venue edition; an account (the incumbent Tradeify_Select_100K eval); a rail leg_id slot in LEG_MAP",
           "outputs": "A deployment record: leg_id, dry_run flag state, armed_until (if armed), cap_alloc-derived reserve_cap",
           "gate": "Deployment wiring alone does NOT authorize capital risk — necessary but not sufficient",
           "kill_condition": "n/a (feeds the capital-authorization gate, Phase 11)",
           "refs": [
             "docs/adr/2026-08-05-strategy-venue-binding-axis.md#2.1",
-            "ops/c1_rail/c1_sizing_host_reference.py"
+            "ops/c1_rail/c1_sizing_host_reference.py",
+            "docs/adr/2026-08-26-striker-legmap-cap-release.md"
           ]
         }
       ]
@@ -2126,7 +2256,7 @@
         {
           "order": 1,
           "name": "Capital-authorization gate: M1 RESOLVED + operator GO (arm), never automated send",
-          "mechanism": "dry_run=false may never be set while M1 (venue-native monitoring maturity) is not RESOLVED — gate trigger is ARM, not send. The M1 arming interlock mechanically validates the acceptance artifact via validate_c1_monitoring_acceptance.validate(require_resolved=True) in ops/c1_rail/c1_rail_arm.py (fixed 2026-08-09 — a forged or status-only artifact fails closed). Even once M1 is RESOLVED, live spend requires a SEPARATE, session-scoped operator GO. Disarm must happen before armed_until expiry (a prior lapse-while-armed self-bricked the host into a crash-loop). No agent may ever place a trade — the weekly venue-idle token trade stays operator-placed.",
+          "mechanism": "dry_run=false may never be set while M1 (venue-native monitoring maturity) is not RESOLVED — gate trigger is ARM, not send. The M1 arming interlock mechanically validates the acceptance artifact via validate_c1_monitoring_acceptance.validate(require_resolved=True) in ops/c1_rail/c1_rail_arm.py (fixed 2026-08-09 — a forged or status-only artifact fails closed). Even once M1 is RESOLVED, live spend requires a SEPARATE, session-scoped operator GO. Disarm must happen before armed_until expiry (a prior lapse-while-armed self-bricked the host into a crash-loop). No agent may ever place a trade — the weekly venue-idle token trade stays operator-placed. As of 2026-08-27 the same validator is ALSO wired into the gate roster as `m1-tree-skew` (tier: always, report-only `--check-tree-skew`, deliberately not `--require-tree-current`) — that adds repo-side visibility of acceptance-artifact tree skew but changes the arming interlock not at all. M1 currently reads `CODE_LANDED`, not `RESOLVED`, so the capital gate remains shut.",
           "inputs": "A RESOLVED M1 acceptance artifact; a live, ACTIVE deployment (Phase 10 step 4); a fresh, session-scoped operator GO decision",
           "outputs": "An armed rail session (dry_run=false, bounded armed_until window) — or, absent all preconditions, the rail stays BUILT/WARM/DISARMED as it is today",
           "gate": "All three independently required: (1) M1 RESOLVED (validated, not status-claimed), (2) a fresh session-scoped operator GO, (3) disarm before armed_until lapses",
@@ -2134,18 +2264,22 @@
           "refs": [
             "CLAUDE.md",
             "docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md",
-            "ops/c1_rail/c1_rail_arm.py"
+            "ops/c1_rail/c1_rail_arm.py",
+            "docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md",
+            "docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json"
           ]
         },
         {
           "order": 2,
-          "name": "Advisory persona-hierarchy review panel (governance-of-what-governs)",
-          "mechanism": "GRAND-tier ratifications and strict-D2 STRATEGIC-tier Deletes are separately reviewed before ratification by a spawned Front-Office-only persona panel (CIO, Head of Research, Head of Execution, Falsifier Analyst, Pre-Registration Analyst, Research Analyst, TCA Analyst, plus CEO apex never-spawned and cross-office CFO). Retired Middle/Back-office functions run as mechanical gates, not personas. The safety-invariant hard-block (dry_run/M1/armed_until citation) is a standalone deterministic scan run unconditionally, independent of persona spawning.",
+          "name": "GRAND-tier safety-invariant hard block (deterministic scan)",
+          "mechanism": "The advisory persona-hierarchy review panel that formerly sat here was FULLY RETIRED 2026-08-31 — all 34 files under `docs/personas/` and `scripts/check_personas.py` were deleted from the live tree (verified absent on disk), and no mechanical-gate replacement was commissioned for the nine retired seats. What survives, and is now the whole of this step, is the standalone deterministic safety-invariant scan: it checks that a GRAND-tier ratification target's own text cites the dry_run / M1 / armed_until invariants, fails closed if the scan itself errors, and runs unconditionally rather than being gated on any spawned persona. Separately, a GENERIC six-lens pre-ratification adversarial panel remains live (doctrine-completeness, arithmetic-rederivation, screen-scoring-completeness, input-validity, steelman-the-kill, structural-completeness) — but its scope is any brief/ADR/lock/closure ratification, NOT this deployment phase, so it is not a like-for-like replacement here.",
           "inputs": "A frozen (already-committed) GRAND-tier ratification target or a strict-D2 STRATEGIC-tier Delete proposal",
           "outputs": "Persona synthesis (advisory), including any hard-block finding if the target's own text cites a violated safety invariant",
-          "gate": "Trigger scope: GRAND ratifications + strict-D2 STRATEGIC-tier Deletes only, never every OUTER-tier closure",
-          "kill_condition": "The panel is advisory without exception — it never substitutes for the operator's own ratification act and can never itself authorize dry_run=false or a promotion",
+          "gate": "Trigger scope: GRAND-tier ratifications. The hard block is deterministic code, not a spawned reviewer.",
+          "kill_condition": "Accepted cost of the retirement, recorded in the ADR: the CFO subscription-ledger standing check and the Research Analyst cross-campaign dedup function now have no independence-isolated reviewer and fall to operator judgment.",
           "refs": [
+            "docs/adr/2026-08-31-persona-hierarchy-full-retirement.md",
+            ".claude/workflows/pre-ratification-adversarial-panel.js",
             "docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md",
             "docs/adr/2026-08-21-persona-hierarchy-front-office-only.md"
           ]
@@ -2154,19 +2288,20 @@
     },
     {
       "phase_name": "Repository Gate Enforcement Infrastructure (cross-cutting)",
-      "summary": "Not a sequential phase of the strategy pipeline but a mechanical substrate that applies at EVERY commit across all phases above — pre-registration commits, closure commits, lock commits, data-manifest updates, ADRs. scripts/gates.yml + scripts/gate_manifest.py is the single composition authority; wired into the local pre-commit hook and the required GitHub status check on main.",
+      "summary": "Not a sequential phase of the strategy pipeline but a mechanical substrate that applies at EVERY commit across all phases above — pre-registration commits, closure commits, lock commits, data-manifest updates, ADRs. scripts/gates.yml + scripts/gate_manifest.py is the single composition authority; wired into the local pre-commit hook and the required GitHub status check on main. ROSTER UPDATE 2026-09-02: the manifest has grown from 21 gates to 30 — nine added, zero removed, in the week after this map's original cutoff. Notably only TWO of the nine can actually fail a commit (`cost-model-closed-world`, `lifecycle-consistency`); six are WARN/report-only by their own exit codes (`--stats` / `--exit-zero`) and `skill-deploy-sync` skips wherever no local deploy target exists — i.e. on every CI runner. That is the same add-never-prune, cannot-fail pattern that earned `pursuit-records` its retirement on 2026-08-24.",
       "steps": [
         {
           "order": 1,
           "name": "Gate composition authority (gates.yml + gate_manifest.py)",
-          "mechanism": "gates.yml is the declarative manifest ({id, tier, when.staged_regex, cmd}); gate_manifest.py is the sole runner, exposing --tier pre-commit (always + staged-matched path-conditional gates) / check (always + ALL path-conditional gates unconditionally + forced data-manifests — the full merge-gating battery) / validate (data-manifests + pine-manifest only). A fail-closed self-check guards against a mis-indented gate silently vanishing.",
+          "mechanism": "gates.yml is the declarative manifest ({id, tier, when.staged_regex, cmd}); gate_manifest.py is the sole runner, exposing --tier pre-commit (always + staged-matched path-conditional gates) / check (always + ALL path-conditional gates unconditionally + forced data-manifests — the full merge-gating battery) / validate (data-manifests + pine-manifest only). A fail-closed self-check guards against a mis-indented gate silently vanishing. Nine gates were added 2026-08-26..08-31: `cost-model-closed-world` (HARD, path-conditional on lab/discovery/cost_model.py), `lifecycle-consistency` (HARD), `instrument-rejection-coverage` (WARN), `skill-deploy-sync` (skips without a deploy target), `m1-tree-skew` (report-only), `falsifier-reachability-census` (WARN), `notice-grade-k-correction` (report-only), `spec-provenance` (WARN), `rule2-trip-log-liveness` (WARN).",
           "inputs": "scripts/gates.yml; staged files for pre-commit tier",
           "outputs": "One of 3 composed gate batteries, or SystemExit on manifest self-inconsistency",
           "gate": "n/a (meta-infrastructure)",
           "kill_condition": "A gate landed at tier:soft (declared in comments, not an accepted CLI choice) runs in NO tier and is silently disabled",
           "refs": [
             "scripts/gates.yml",
-            "scripts/gate_manifest.py"
+            "scripts/gate_manifest.py",
+            "docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md"
           ]
         },
         {
@@ -2316,7 +2451,60 @@
         }
       ]
     }
-  ]
+  ],
+  "pending_doctrine": {
+    "headline": "Six ADRs ratified 2026-08-30 restructure this pipeline in doctrine, but are NOT yet in effect. Every live sourcing channel owes a migration addendum before the new contract replaces its freeze chain — candidate-contract §6 is explicit that \"until then, the channel's existing documents remain its live practice.\" STATE.md tracks ten owed addenda across five channels; zero have landed. None of the six has any code: greps for the contract, selection-freeze, N_expr, TRADEABLE-REACHABLE, channel-liveness and campaign_envelope across scripts/ lab/ ops/ core/ tests/ all return nothing, and each Ratification note explicitly withholds license to build enforcement. So the phases above still describe live practice accurately; they are behind on ratified doctrine, which is a different thing.",
+    "items": [
+      {
+        "adr": "docs/adr/2026-08-30-candidate-contract.md",
+        "status": "Accepted",
+        "effect": "One hash-addressed, append-only candidate contract per campaign replaces every per-channel freeze-chain document (HARV seed-manifest -> intake-screen -> Stage-0 prereg; dense-1m scoping-brief -> PREREG_G0; MSL slate-card -> G0-freeze). A candidate missing any element of the complete tradeable entry/exit object is not yet a candidate and cannot open a contract, consume a holdout, or claim candidate status. The K-ledger stays the sole machine-enforced K authority; the contract's K is a declaration that must match.",
+        "hits": "Collapses the document layer of Sourcing steps 14/17 and the whole of Pre-Registration."
+      },
+      {
+        "adr": "docs/adr/2026-08-30-evaluation-order.md",
+        "status": "Accepted",
+        "effect": "A canonical ten-step order: 1 structural class-level screening (pre-K, pre-pull) · 2 CONFIRM-window reservation then shape priors · 3 all-clause reachability attestation · 4 contract freeze · 5 TRADEABLE-REACHABLE · 6 K-ledger bind then Explore, closed by an append-only selection freeze · 7 contract-integrity check (first evaluate action) · 8 zero-K role state-drift re-check · 9 one untouched confirm run incl. temporal robustness, atomic · 10 portfolio and venue fit LAST. Only the survivor-scoring Part-A gate is lifecycle-admission; steps 1/8/10 are fit-for-scope only.",
+        "hits": "K-binding is no longer the front gate; cost-law and reachability move earlier; composition screens move to last."
+      },
+      {
+        "adr": "docs/adr/2026-08-30-terminal-taxonomy.md",
+        "status": "Accepted",
+        "effect": "Separates axes this map conflates: a four-verdict evidence axis, an orthogonal edition axis, five WHY-rejected registry classes (expression-failure new), and three nonterminal dispositions. Silent by name on 14 of this map's original 19 states — it replaces the confirm-phase slice, not the whole list.",
+        "hits": "Terminal-state board below carries the new vocabulary tagged as doctrine."
+      },
+      {
+        "adr": "docs/adr/2026-08-30-tradeable-reachable-gate.md",
+        "status": "Accepted",
+        "effect": "A pre-Explore orchestrator over four limbs (cost, latency, firm-geometry, payoff-shape) that derives no arithmetic of its own and introduces zero constants — it delegates to existing owners. Adds payoff-shape priors as a contract field: no contract freezes with the shape limb unscored. Its latency and firm-geometry limbs name no owning authority, so they are currently unimplementable as specified.",
+        "hits": "A new gate band between Pre-Registration and the Validation Battery that this map has no step for."
+      },
+      {
+        "adr": "docs/adr/2026-08-30-channel-liveness-gate.md",
+        "status": "Accepted",
+        "effect": "Every sourcing channel's founding charter must declare a reachable liveness ceiling and map it to one of two pre-declared consequences (retirement or mandatory redesign). Neither is self-executing — hitting the ceiling makes the consequence DUE, not enacted. Changes no existing channel's status: the five live channels are HARV, dense-1m/TNEC, MSL, no-counterparty-statistical/geometric, and deep-iteration.",
+        "hits": "Operates at channel-charter granularity — one level above where Sourcing begins. No phase here models it."
+      },
+      {
+        "adr": "docs/adr/2026-08-30-operator-approvals-campaign-envelope.md",
+        "status": "Accepted",
+        "effect": "One operator-approved envelope per contract, approved before Explore, fixing max spend, schemas, windows and K. Confirm attempts are not separately spendable: an EVIDENCE-VOID exhausts the attempt and needs a fresh campaign with a fresh holdout — never a retry inside the envelope. Freezes a multiplicity configuration (alpha, confirm count M, Bonferroni-or-Holm identity); a contract silent on procedure is integrity-invalid.",
+        "hits": "Removes an authority the operator previously had (informal re-ask on a spent holdout)."
+      },
+      {
+        "adr": "docs/adr/2026-08-31-hypothesize-exit-pine-test-instrument.md",
+        "status": "Proposed — NOT ratified",
+        "effect": "Would require an executable versioned Pine strategy() test instrument plus a declared Python/Pine parity contract before the Hypothesize phase exits, for candidates that have already cleared contract admission. Drafted, not ratified; its two owed pointer-edits are confirmed absent.",
+        "hits": "Would insert between Pre-Registration and the Validation Battery. Modelled here as pending, not live."
+      }
+    ],
+    "open_gaps": [
+      "Two of the six (terminal-taxonomy, evaluation-order) owe STATE.md forward-board rows that do not exist. The repo's own 2026-08-31 ADR-corpus audit found the same: \"Zero of the six 08-30 stems appear in STATE.md.\"",
+      "channel-liveness-gate's required pointer paragraph in strategy_harvest.md §2.3 never landed, so that ADR's own Verification block does not pass as written.",
+      "This map's Branch A/B/C/D taxonomy is not the repo's. The ADRs name five channels; HARV maps to Branch B, dense-1m and deep-iteration sit under Branch A, and MSL and no-counterparty-statistical/geometric have no Branch home here at all. Neither document cites the other's vocabulary.",
+      "Three competing decompositions of one pipeline now coexist: this map's 12 phases, PIPELINES.md's Stage 2->8 (MINE, BIND K, SCORE, BLOCK SIZE, CONFIRM, REALISM, BREADTH, ADMIT), and evaluation-order's 10 steps. None cross-references the others."
+    ]
+  }
 }
 </script>
 
@@ -2363,7 +2551,13 @@
     "SHAPE-KILL": { phase: 1, cat: "kill" },
     "ABORT-NO-MANIFEST": { phase: 2, cat: "kill" },
     "FALSIFIED": { phase: 3, cat: "kill" },
-    "VOID-*": { phase: 1, cat: "hold" },
+    "VOID-* / EVIDENCE-VOID (NONTERMINAL as of 2026-08-30)": { phase: 1, cat: "hold" },
+    "CONFIRMED (evidence axis — doctrine, 2026-08-30)": { phase: 7, cat: "advance" },
+    "MARKET-NULL (evidence axis — doctrine, 2026-08-30)": { phase: 7, cat: "kill" },
+    "EXPRESSION-FAIL (evidence axis — doctrine, 2026-08-30)": { phase: 7, cat: "kill" },
+    "VENUE-FAIL (edition axis — doctrine, 2026-08-30)": { phase: 9, cat: "neutral" },
+    "ROLE-BLOCKED (nonterminal — doctrine, 2026-08-30)": { phase: 5, cat: "hold" },
+    "CHANNEL-FAIL (nonterminal — doctrine, 2026-08-30)": { phase: 1, cat: "hold" },
     "AMBIGUOUS-HOLD": { phase: 7, cat: "hold" },
     "REGIME-FRAGILE-REJECT": { phase: 4, cat: "kill" },
     "SCREEN-DEAD (venue-edition level)": { phase: 9, cat: "kill" },
@@ -2628,6 +2822,29 @@
       });
     }, { rootMargin: "-15% 0px -70% 0px", threshold: 0 });
     sections.forEach(function (s) { if (s) io.observe(s); });
+  }
+
+  // ---- pending-doctrine board ----
+  var doctrine = DATA.pending_doctrine;
+  if (doctrine) {
+    document.getElementById("doctrine-headline").textContent = doctrine.headline;
+    var dGrid = document.getElementById("doctrine-grid");
+    (doctrine.items || []).forEach(function (it) {
+      var card = el("div", "doctrine-card");
+      var proposed = /proposed/i.test(it.status || "");
+      if (proposed) card.dataset.proposed = "1";
+      card.appendChild(el("span", "dc-adr", it.adr));
+      card.appendChild(el("span", "dc-status", it.status));
+      card.appendChild(el("p", null, it.effect));
+      if (it.hits) card.appendChild(el("p", "dc-hits", it.hits));
+      dGrid.appendChild(card);
+    });
+    var gapsList = document.getElementById("doctrine-gaps-list");
+    (doctrine.open_gaps || []).forEach(function (g) {
+      gapsList.appendChild(el("li", null, g));
+    });
+  } else {
+    document.getElementById("doctrine-board").hidden = true;
   }
 
   // ---- terminal states board ----
