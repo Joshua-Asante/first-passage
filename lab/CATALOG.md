@@ -97,6 +97,7 @@ documents the camp boundary for humans/tools.
 | eodadv_mnq_2026-08 | orb | FALSIFIED | yes | no pre-registered mechanism survives; 15:30 exit stays barred | lab/analysis/orb/eodadv_mnq_2026-08/ | — |
 | orb_mnq_2026-07 | orb | ACTIVE | yes | NAS100-ORB-30 on native MNQ; Stage-2 cost-law PASS then T2 payability FIRED | lab/analysis/orb/orb_mnq_2026-07/ | inputs gitignored |
 | orb_mnq_recon_v3_2026-08-31 | orb | ACTIVE | yes | Bust/pass rope walk on the recon-v3 DD-tuning candidate (core/strategies/candidates/orb_mnq_recon_v3.pine) — FAILS the live Tradeify gate (bust<=5.0%) at every k=1-3; k=1 20.78% intraday-honest bust, 4.2x over — real ~3.25x improvement vs frozen construct's 67.67% (T2 ADR) but not close to clearing | lab/analysis/orb/orb_mnq_recon_v3_2026-08-31/ | — |
+| orb_mym_volume_gate_2026-09-02 | orb | ACTIVE | yes | `SOURCE-STAGE EXPLORATORY — P50 SELECTED FOR FORWARD TEST, NOT CONFIRMED` | lab/analysis/orb/orb_mym_volume_gate_2026-09-02/ | — |
 | orb_universe_2026-06-22 | orb | ACTIVE | yes | which FXIFY CFD best suits Opening Range Breakout | lab/analysis/orb/orb_universe_2026-06-22/ | pkl gitignored |
 | sessconf_mnq_2026-08 | orb | ACTIVE | yes | faithful close_tod session-truncation sweep (MNQ, Tradeify) | lab/analysis/orb/sessconf_mnq_2026-08/ | — |
 
@@ -181,6 +182,7 @@ documents the camp boundary for humans/tools.
 | volregime_l3_2026-08-31 | _inbox | ACTIVE | yes | L3 PASS independently on MNQ and MYM; the presence battery is complete on both instruments and L5 attribution remains open. | lab/analysis/_inbox/volregime_l3_2026-08-31/ | — |
 | volregime_l5_design_2026-08-31 | _inbox | ACTIVE | yes | L5 attribution design frozen (Packet B, B1-B5 complete): bar-native nested forward-prediction comparison replacing the retired day-level joint-surrogation adaptation; B5 ran 5 Codex review rounds, closed clean; no code executed, no real L5 statistic inspected; Packet C1 pilot GO is the next gate | lab/analysis/_inbox/volregime_l5_design_2026-08-31/ | — |
 | volregime_l5_pilot_2026-08-31 | _inbox | ACTIVE | yes | Packet C1 acceptance bands frozen. Packet C2-C4 pipeline built (data prep, folds, S4.2-S4.4 null construction) and correctness-validated: identity-rotation reproduces real bias_volume exactly on both MNQ and MYM after fixing an excluded-day NaN cascade and an ungrouped-day exclusion gap; no large-scale simulation run yet, no real L5 statistic inspected; C2-C4 execution at the frozen N_outer=100/B=4000 scale and Packet D each need further separate authorization | lab/analysis/_inbox/volregime_l5_pilot_2026-08-31/ | — |
+| mym_breakout_entry_2026_09 | _inbox | ACTIVE | yes | Five predeclared MYM opening-range entry families: none reaches +0.10R on validation; intended holdout was consumed and remains exploratory only | lab/analysis/mym_breakout_entry_2026_09/ | — |
 
 ## Archived
 

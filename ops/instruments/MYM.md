@@ -4,7 +4,7 @@
 **Status (2026-08-04):** ⚠ **NO LONGER A LIVE c1 LEG — withdrawn from deployment.** The Tradeify venue is de-scoped as a deployment target for the locked Striker book, evaluation included ([`ADR 2026-08-04`](../../docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md); ⚠ **narrowed same day, Addendum 2026-08-04** — the bar is on redeploying this leg, not on Tradeify-shaped base-construct research); this leg never took a strategy-signal-originated fill and now has no venue. **Lifecycle unchanged: `Striker` stays `AUTHORIZED · MECHANISM @ 1.00×`** (canonical: [`strategy_lifecycle.md`](../../docs/methodology/strategy_lifecycle.md)) — no `core/lifecycle.py` write, no demotion; venue-fit is not decay. Pine, parameters and `LEG_MAP` untouched. Prior status line preserved below as record.
 
 **Status (prior, through 2026-08-03):** **LIVE c1 leg (disarmed).** Hosts the Striker DJ30 v4.5 **venue edition** (`striker_dj30_v4.5_mym.pine`) as one of the two c1 legs on the Tradeify Select 100K eval — `dry_run=true`, WATCH-1 0.50×, **no strategy-signal-originated fill yet** (rail has canned B4 fills: B6 dry-fire 2026-07-20 + 2026-07-27 SIM; account not pristine — see [`CLAUDE.md`](../../CLAUDE.md) live-execution posture). The **reconstruction** track on this instrument (opening-range *continuation*) is **TERMINAL**.
-**Last updated:** 2026-08-29
+**Last updated:** 2026-09-02
 
 **Purpose:** single source of instrument-level truth (operational rule 10, [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](../../docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md)). Any session deriving/testing/adjudicating on MYM MUST read this at session start and append a dated disposition. **Created 2026-07-25.** Sibling parent ledger: [`YM.md`](YM.md) (W1/W2 + the DJ30→MYM transfer falsification Y3). **The DEAD list is the point** — this instrument's highest-value content is what has been ruled out on it.
 
@@ -158,6 +158,29 @@ structure:
 
 ## SESSION LOG
 
+- **2026-09-02** — **ORB-MYM v0.4 opening-range volume gate: P50 exploratory source winner;
+  forward confirmation owed** ([`RESULTS`](../../lab/analysis/orb/orb_mym_volume_gate_2026-09-02/RESULTS.md)).
+  Operator TradingView reads with only the reported gate changed: Off $26,330.76 / PF 1.198 /
+  maxDD $9,634.98 / 1,891 closed legs; P50 $31,947.96 / PF 1.451 / maxDD $4,621.18 /
+  986 legs; P80 $9,524.48 / PF 1.248 / maxDD $5,016.00 / 443 legs. P50 beats Off by
+  +$5,617.20 while halving displayed maxDD; P80 removes most of the apparent value, so no further
+  percentile tuning is licensed on this fully viewed panel. Screenshot-only evidence, no trade
+  exports or complete Properties capture; profitable-trade rates are leg-level under pyramiding.
+  Private Downloads-local Pine SHA-256
+  `9292bd4ec0ca9074d6d6523491dcdde3709424bd53edf9c75dea79f3b9f65071`.
+  Source-stage prior only: no Confirm claim, lifecycle/allocation/rail change, or live-capital
+  authorization. Freeze P50 for genuinely forward paper data.
+- **2026-09-02** — **Alternative breakout-entry catalogue FALSIFIED**
+  ([`RESULTS`](../../lab/analysis/mym_breakout_entry_2026_09/RESULTS.md)). Canonical BAR EXPORT
+  v0.2 ingestion produced 170,417 unique M15 bars (2019-05-05→2026-07-31); metadata independently
+  confirms 1-point tick / $0.50 point value. Five frozen 08:30–09:00 CT opening-range entry
+  families × three $125/$150/$175 stops × four cost levels were evaluated chronologically.
+  No validation family met +0.10R and 45% WR; best validation was close-confirmed at +0.000R,
+  49.5% WR, n=475 under $2.82 RT cost. A protocol deviation consumed all holdout cells after no
+  candidate was selected; the disclosed best was +0.025R, 53.2%, n=380, 95% CI [-0.045,+0.095],
+  exploratory only and not Confirm evidence. No candidate; do not tune this consumed holdout. This does not revive or reproduce the
+  DEAD `opening-range-continuation` cell or the separate operator ORB+scale-in source lead. No
+  Pine, `core/`, allocation, `dd_protection`, lifecycle, rail, or deployment change.
 - **2026-08-29 (joint gate, follow-up #3)** — **Direct port of MNQ's `candidate24_joint_gate.py`
   run on MYM, testing candidates 2 (overnight range) and 4 (gap magnitude) against EACH OTHER
   rather than each vs. the day-history comparator — the joint stratification the 2026-08-29
