@@ -92,15 +92,21 @@ pilot or observed L5 result. Treat each as a design question, not an editorial c
   C2 alone. Run a synthetic/tiny-fixture timing dry-run, publish estimated CPU-hours, memory,
   checkpoint bytes, and dollar cost, then obtain a cost GO. A reduced run may benchmark code but
   may not satisfy frozen acceptance bands.
-  **PARTIALLY DISCHARGED 2026-09-01:** the synthetic timing dry-run is done and the CPU-hour figure
-  published — **1,336 core-hours** for C2+C3 at the frozen sizing (1.002 s/replicate measured, or
-  0.689 s with the volume-free baseline cached, on a shape-matched 139,605-row synthetic panel).
-  Working set is ~15 MB/replicate and per-replicate checkpoint state is a scalar plus diagnostics,
-  so neither memory nor checkpoint bytes binds. **Still owed:** a dollar figure tied to an actual
-  target machine, and the cost GO itself. A `PROPOSED` right-sizing amendment cutting the budget to
-  **229 core-hours** — without altering any band, cell, `N_outer`, gate, or disposition — is filed
-  at [`ACCEPTANCE_BANDS.md`](../../../lab/analysis/_inbox/volregime_l5_pilot_2026-08-31/ACCEPTANCE_BANDS.md)
-  §6 and awaits operator ratification. Note that amendment is exactly the "amend the bands
+  **PARTIALLY DISCHARGED 2026-09-01, corrected 2026-09-02:** the synthetic timing dry-run is done
+  and published — **1,271 core-hours** for C2+C3 at the frozen sizing, measured as **CPU-seconds
+  with thread pools pinned** (0.953 core-s/replicate, or 0.703 with the volume-free baselines
+  cached, on a shape-matched 139,605-row synthetic panel). ⚠ **Measure CPU time, not wall time:**
+  with BLAS threading left native a single replicate consumes **1.64 cores** while appearing to
+  take 0.90 s wall, so a wall-clock budget divided across N workers double-counts cores the
+  replicate already uses. Peak working set is **258 MB per worker process** (~16 GB at 64
+  concurrent workers) — an earlier note here asserted ~15 MB/replicate, which was never measured
+  and was wrong by ~17×. Per-replicate checkpoint state remains a scalar plus diagnostics, so
+  checkpoint bytes do not bind. **Still owed:** a dollar figure tied to an actual target machine,
+  a re-benchmark on `baseline_2`'s own feature set, and the cost GO itself. A `PROPOSED` right-sizing
+  amendment cutting the budget to **703 core-hours** — without altering any band, cell, `N_outer`,
+  gate, escalation or disposition — is filed at
+  [`ACCEPTANCE_BANDS.md`](../../../lab/analysis/_inbox/volregime_l5_pilot_2026-08-31/ACCEPTANCE_BANDS.md)
+  §6 and awaits operator ratification. That amendment is exactly the "amend the bands
   prospectively" route, not the "reduced run against frozen bands" this item forbids.
 - [ ] **R5 — Freeze failure granularity.** State whether a pilot defect in one instrument parks
   only that instrument or both. Recommended: park only the affected instrument unless the defect is

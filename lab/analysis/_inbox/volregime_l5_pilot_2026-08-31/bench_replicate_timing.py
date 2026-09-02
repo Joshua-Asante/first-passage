@@ -1,8 +1,8 @@
-"""R4 timing dry-run for the Q-VOLREGIME-1 L5 pilot (C2-C4 compute bound).
+"""R4 timing/memory dry-run for the Q-VOLREGIME-1 L5 pilot (C2-C4 compute bound).
 
 SYNTHETIC DATA ONLY. Touches no vendor panel, computes no outcome-bearing
-statistic, reads no real L5 result. Pure wall-clock measurement of one
-null-replicate's work as specified in DESIGN.md 4.2-4.4:
+statistic, reads no real L5 result. Measures one null-replicate's work as
+specified in DESIGN.md 4.2-4.4:
 
   step 1  OLS residualization of log-volume on the full baseline feature set
           (global, whole panel)
@@ -11,18 +11,40 @@ null-replicate's work as specified in DESIGN.md 4.2-4.4:
           from the reconstructed values (vectorized per slot)
   step 3  pseudo_bias_volume via the instrument's own comparator
   step 4  fold-local scoring: for each of n_folds expanding purged folds, fit
-          baseline_1 and augmented_1 (L2 logistic, C fixed) and score OOS
+          baseline and augmented (L2 logistic, C fixed) and score OOS
 
 Panel shape mirrors the real frames: MNQ 135,958 / MYM 139,605 scored rows,
 96 M15 slots/day, ~9-10 folds, ~12 baseline features.
+
+REPORTS CPU TIME, NOT JUST WALL TIME (Codex PR #258, P2). A core-hour budget
+divided across N workers is only meaningful in CPU-seconds: if a replicate's
+BLAS already spreads across threads, wall time understates core time and the
+divide-by-N-workers arithmetic double-counts the same cores. This script pins
+every numerical thread pool to 1 by default so wall and CPU time coincide, and
+prints both so the gap is visible rather than assumed away. Run with
+--native-threads to measure the unpinned behaviour for comparison.
+
+Also reports PEAK WORKING SET for one worker process, so a concurrent-worker
+memory bound can be computed rather than asserted.
 """
 from __future__ import annotations
 
-import time
+import argparse
+import os
+import sys
 
-import numpy as np
-import pandas as pd
-from sklearn.linear_model import LogisticRegression
+# Thread pinning must happen BEFORE numpy/sklearn import to take effect.
+_PIN = "--native-threads" not in sys.argv
+if _PIN:
+    for _var in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS",
+                 "NUMEXPR_NUM_THREADS", "VECLIB_MAXIMUM_THREADS"):
+        os.environ[_var] = "1"
+
+import time  # noqa: E402
+
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
+from sklearn.linear_model import LogisticRegression  # noqa: E402
 
 N_ROWS = 139_605          # MYM scored frame (l3_results.json)
 N_SLOTS = 96              # M15 slots per 24h
@@ -30,6 +52,47 @@ N_FOLDS = 10              # DESIGN 3.4: floor((span_months - 12) / 6)
 N_BASE_FEATURES = 12      # range, bias_range, 4 range lags, calendar controls
 TRAIL_N = 20              # MYM trailing same-slot window
 SETUP_FRAC = 12 / 71.0    # 12-month setup period out of ~71 months
+
+
+def peak_working_set_mb() -> float | None:
+    """Peak working set of THIS process, in MB. Windows-native; None elsewhere."""
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
+            _fields_ = [
+                ("cb", wintypes.DWORD),
+                ("PageFaultCount", wintypes.DWORD),
+                ("PeakWorkingSetSize", ctypes.c_size_t),
+                ("WorkingSetSize", ctypes.c_size_t),
+                ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
+                ("PagefileUsage", ctypes.c_size_t),
+                ("PeakPagefileUsage", ctypes.c_size_t),
+            ]
+
+        counters = PROCESS_MEMORY_COUNTERS()
+        counters.cb = ctypes.sizeof(counters)
+        handle = ctypes.windll.kernel32.GetCurrentProcess()
+        # K32GetProcessMemoryInfo (kernel32) is the modern export; psapi.dll's
+        # GetProcessMemoryInfo is the legacy path. Try both before giving up.
+        for fn in (getattr(ctypes.windll.kernel32, "K32GetProcessMemoryInfo", None),
+                   getattr(ctypes.windll.psapi, "GetProcessMemoryInfo", None)):
+            if fn is None:
+                continue
+            # argtypes/restype are load-bearing: without them the pseudo-handle
+            # (-1) is truncated and the call silently reports failure.
+            fn.argtypes = [wintypes.HANDLE, ctypes.POINTER(PROCESS_MEMORY_COUNTERS),
+                           wintypes.DWORD]
+            fn.restype = wintypes.BOOL
+            if fn(handle, ctypes.byref(counters), counters.cb):
+                return counters.PeakWorkingSetSize / 1024**2
+        return None
+    except Exception:
+        return None
 
 
 def make_panel(seed: int = 0) -> pd.DataFrame:
@@ -49,7 +112,7 @@ def make_panel(seed: int = 0) -> pd.DataFrame:
 def one_replicate(df: pd.DataFrame, X: np.ndarray, y: np.ndarray,
                   folds: list[tuple[np.ndarray, np.ndarray]],
                   rng: np.random.Generator, fit_baseline: bool = True) -> float:
-    """One null replicate. Returns the (meaningless, synthetic) Brier delta."""
+    """One null replicate. Returns a (meaningless, synthetic) Brier delta."""
     # --- step 1: global OLS residualization of log-volume on baseline features
     coef, *_ = np.linalg.lstsq(X, df["log_volume"].to_numpy(), rcond=None)
     fitted = X @ coef
@@ -59,10 +122,8 @@ def one_replicate(df: pd.DataFrame, X: np.ndarray, y: np.ndarray,
     #             reconstruction of pseudo-volume
     n_days = int(df["day"].max()) + 1
     shift = int(rng.integers(1, n_days))
-    resid_by_day = resid.reshape(-1, N_SLOTS) if len(resid) % N_SLOTS == 0 else None
-    if resid_by_day is None:
-        usable = (len(resid) // N_SLOTS) * N_SLOTS
-        resid_by_day = resid[:usable].reshape(-1, N_SLOTS)
+    usable = (len(resid) // N_SLOTS) * N_SLOTS
+    resid_by_day = resid[:usable].reshape(-1, N_SLOTS)
     rotated = np.roll(resid_by_day, shift, axis=0).reshape(-1)
     pseudo_log_vol = fitted[:len(rotated)] + rotated
     pseudo_vol = np.exp(pseudo_log_vol)
@@ -77,7 +138,7 @@ def one_replicate(df: pd.DataFrame, X: np.ndarray, y: np.ndarray,
     pseudo_bias = (pseudo_vol > thresh.to_numpy()).astype(float)
     pseudo_bias = np.nan_to_num(pseudo_bias)
 
-    # --- step 4: fold-local scoring, baseline_1 and augmented_1
+    # --- step 4: fold-local scoring, baseline and augmented
     Xa = np.column_stack([X[:len(pseudo_bias)], pseudo_bias])
     brier_base_num = brier_aug_num = 0.0
     n_scored = 0
@@ -115,40 +176,51 @@ def build_folds(n: int) -> list[tuple[np.ndarray, np.ndarray]]:
 
 
 def main() -> None:
-    import os
-    print(f"cores: {os.cpu_count()}")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--native-threads", action="store_true",
+                        help="do NOT pin BLAS/OMP thread pools to 1")
+    parser.add_argument("--reps", type=int, default=3)
+    args = parser.parse_args()
+
+    print(f"cores visible      : {os.cpu_count()}")
+    print(f"thread pools pinned: {'no (native)' if args.native_threads else 'yes (1 thread)'}")
+
     df = make_panel()
     X = df[[f"x{j}" for j in range(N_BASE_FEATURES)]].to_numpy()
     y = df["y"].to_numpy()
     folds = build_folds(len(df))
-    print(f"panel: {len(df):,} rows, {N_BASE_FEATURES} base features, "
+    print(f"panel              : {len(df):,} rows, {N_BASE_FEATURES} base features, "
           f"{len(folds)} folds")
-    print("train sizes:", [len(tr) for tr, _ in folds])
-    print("test sizes :", [len(te) for _, te in folds])
+    print(f"train sizes        : {[len(tr) for tr, _ in folds]}")
 
     rng = np.random.default_rng(1)
-    # warm-up (JIT/BLAS threadpool spin-up), not counted
-    one_replicate(df, X, y, folds, rng)
+    one_replicate(df, X, y, folds, rng)  # warm-up, not counted
 
+    results = {}
     for label, fit_base in (("full (baseline refit per replicate)", True),
-                            ("baseline cached (volume-free model is invariant)", False)):
-        times = []
-        for _ in range(3):
-            t0 = time.perf_counter()
+                            ("baseline cached (volume-free model is rotation-invariant)", False)):
+        walls, cpus = [], []
+        for _ in range(args.reps):
+            w0, c0 = time.perf_counter(), time.process_time()
             one_replicate(df, X, y, folds, rng, fit_baseline=fit_base)
-            times.append(time.perf_counter() - t0)
-        med = float(np.median(times))
-        print(f"\n{label}: {med:.3f} s/replicate  (runs: "
-              f"{', '.join(f'{t:.3f}' for t in times)})")
+            walls.append(time.perf_counter() - w0)
+            cpus.append(time.process_time() - c0)
+        wall, cpu = float(np.median(walls)), float(np.median(cpus))
+        results[fit_base] = (wall, cpu)
+        print(f"\n{label}")
+        print(f"  wall {wall:.3f} s   CPU {cpu:.3f} s   "
+              f"CPU/wall = {cpu/wall:.2f} threads-worth")
+        print(f"  -> budget unit for core-hours: {cpu:.3f} core-seconds/replicate")
 
-        for study, reps in (("C2 null-size", 4 * 100 * 4000),
-                            ("C3 power (primary + half)", 4 * 100 * 4000 * 2)):
-            core_hours = med * reps / 3600
-            print(f"  {study:28s} {reps:>10,} replicates -> "
-                  f"{core_hours:>10,.0f} core-hours ({core_hours/24:>7,.0f} core-days)")
-        total = med * (4 * 100 * 4000 * 3) / 3600
-        print(f"  {'C2+C3 total':28s} {4*100*4000*3:>10,} replicates -> "
-              f"{total:>10,.0f} core-hours ({total/24:>7,.0f} core-days)")
+    peak = peak_working_set_mb()
+    print(f"\npeak working set (1 worker process): "
+          f"{f'{peak:,.0f} MB' if peak else 'unavailable on this platform'}")
+    if peak:
+        for workers in (6, 64):
+            print(f"  {workers} concurrent workers -> ~{peak*workers/1024:,.1f} GB resident")
+
+    print("\nNOTE: multiply CPU-seconds (not wall) by replicate counts for a")
+    print("core-hour budget; see rightsize_arithmetic.py for the budget table.")
 
 
 if __name__ == "__main__":
