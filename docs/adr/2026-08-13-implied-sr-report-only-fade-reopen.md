@@ -25,7 +25,7 @@ Read before authoring, this session (2026-08-13), with `git log -1 --format='%h 
 - `lab/research_utils/msl_preflight.py` — anchor `1574063f` 2026-08-12. Computes implied SR; docstring already says "reported, never gated here"; CLI exits 0 on the fade-region fixture (2.98).
 - `lab/analysis/c1/tradeify_fade_stage0_2026-07-30/RESULTS.md` — anchor `92abdbb6` 2026-08-03. MCL n=4/5/6 cells still `feasible = True` (9.98 / 11.16 / 12.23 at pinned p=0.65). Close was doctrine overlay, not a lab-body rewrite.
 - `docs/notes/2026-07-31-fade-stage1-frozen-rulings.md` — anchor `a5171ef7` 2026-08-10. Ruling 5 records the promotion + close. Rulings 1–4 (4× · CONFIG-B-MCL · sizing · native σ) stand.
-- `docs/briefs/2026-08-12-msl-first-slate.md` — anchor `c0d20bd0` 2026-08-12. C1 kill list includes "implied-SR of the designed geometry ≤ 1.83"; C2/C3 list "implied-SR limb".
+- `docs/briefs/programs/2026-08-12-msl-first-slate.md` — anchor `c0d20bd0` 2026-08-12. C1 kill list includes "implied-SR of the designed geometry ≤ 1.83"; C2/C3 list "implied-SR limb".
 - `ops/instruments/MCL.md` — anchor `c0d20bd0` 2026-08-12. ACTIVE cell still `OPEN — geometry-cleared, mechanism-owed`; C2 already calls implied annSR **disclosure only**. Session log 2026-08-10c records the close.
 
 **Cheap falsifier (this session, $0):** `p=0.654, rr=0.66, n=3` → `round(implied_annualized_sr, 2) == 2.98` (reproduced). Fade RESULTS still marks the three frozen MCL cells feasible. The live FAIL is the MSL charter step-3 line, not the preflight.
@@ -104,7 +104,7 @@ The predecessor's own scope boundary is the load-bearing remainder: the gate bou
 - `docs/adr/2026-08-10-implied-sr-plausibility-gate.md` — **retired** to stub + LTM body (this ADR `full` supersedes).
 - `docs/adr/INDEX.md` — **regenerated**.
 - `docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md` — **edited**: implied-SR moved from FAIL list to disclosures.
-- `docs/briefs/2026-08-12-msl-first-slate.md` — **edited**: implied-SR removed from Stage-1 kill lists; kept as disclosure.
+- `docs/briefs/programs/2026-08-12-msl-first-slate.md` — **edited**: implied-SR removed from Stage-1 kill lists; kept as disclosure.
 - `docs/notes/2026-07-31-fade-stage1-frozen-rulings.md` — **edited**: Ruling 5 reversal banner; Rulings 1–4 untouched.
 - `ops/instruments/MCL.md` — **edited**: new session-log row; 2026-08-10c left as history.
 - `lab/analysis/c1/tradeify_fade_stage0_2026-07-30/CARD.md` — **edited**: owed disposition discharged.
@@ -114,7 +114,7 @@ The predecessor's own scope boundary is the load-bearing remainder: the gate bou
 - `lab/research_utils/msl_preflight.py` — **edited**: comment cites this ADR as report-only owner.
 - `docs/superpowers/specs/2026-08-11-transfer-expression-grid-design.md` — **edited**: measured-edge sentence now cites this ADR; no longer claims the fade region is closed.
 - `docs/briefs/handoffs/2026-08-12-cursor-fleet-msl-tooling-umbrella.md` — **left** (frozen P2 packet; historical).
-- `docs/briefs/2026-08-12-msl-program-plan.md` — **left** (2.98 is a formula pin, not a FAIL).
+- `docs/briefs/programs/2026-08-12-msl-program-plan.md` — **left** (2.98 is a formula pin, not a FAIL).
 - `tests/test_msl_preflight.py` — **left** (formula pin; CLI already exits 0 at 2.98).
 - `lab/CATALOG.md` — **left** (row already ACTIVE).
 - `docs/rejected_candidates.md` — **left** (BE3/SFX-1 are mechanism kills, not this region).
@@ -144,7 +144,7 @@ rg -n "implied-SR|> \*\*1\.83\*\*.*= FAIL" docs/spec/2026-08-12-msl-manual-sourc
 # Expected: disclosure wording; no "= FAIL" on the implied-SR line
 
 # Slate kill lists must not require implied-SR ≤ 1.83
-rg -n "implied-SR of the designed geometry ≤ 1.83" docs/briefs/2026-08-12-msl-first-slate.md
+rg -n "implied-SR of the designed geometry ≤ 1.83" docs/briefs/programs/2026-08-12-msl-first-slate.md
 # Expected: empty
 
 # Formula pin still holds (report, not gate)

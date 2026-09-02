@@ -2,7 +2,7 @@
 
 **Status:** `STAGE-1 FAIL` (route) · G0 **never frozen** · B4 **unpaid** · Pine not authorized · **$0 · K=0**
 **Card:** MSL-S2B · instrument **MYM** · elected mechanism **`sweep-failure-filtered-continuation`** (NEW)
-**Parent:** [MSL charter](../../../docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md) steps 2–4 · [second slate §S2B](../../../docs/briefs/2026-08-13-msl-second-slate.md) · [STAGE0 PASS](STAGE0.md) · [design-box ADR](../../../docs/adr/2026-08-13-msl-slate-2-design-box.md) · [B8 occupancy](../../../docs/adr/2026-08-12-msl-mym-occupancy-release.md)
+**Parent:** [MSL charter](../../../docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md) steps 2–4 · [second slate §S2B](../../../docs/briefs/programs/2026-08-13-msl-second-slate.md) · [STAGE0 PASS](STAGE0.md) · [design-box ADR](../../../docs/adr/2026-08-13-msl-slate-2-design-box.md) · [B8 occupancy](../../../docs/adr/2026-08-12-msl-mym-occupancy-release.md)
 **Evidence CLI:** [`card.yaml`](card.yaml) · [`preflight.json`](preflight.json) (`msl_preflight` — evidence only)
 **Closure:** [`MSL-S2B-closure-stage1-fail-route.md`](../../../docs/briefs/closures/MSL-S2B-closure-stage1-fail-route.md)
 
@@ -91,7 +91,7 @@ Needle set: sweep-failure / pdh-pdl-failed-break / opening-range-continuation / 
 `msl_preflight` needle `sweep-failure-filtered-continuation` → **1 hit** (this id’s `MECHANISMS.md` header — expected at card commit). Broader family+role sweep (executed this session):
 
 ```
-docs/briefs/2026-08-13-msl-second-slate.md — MSL-S2B card (this campaign)
+docs/briefs/programs/2026-08-13-msl-second-slate.md — MSL-S2B card (this campaign)
 docs/briefs/closures/MSL-C1-closure-falsified.md — entry-role FALSIFIED; DELETE PASS = filter asset
 docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md — route ① CLEAR for MR-at-level only
 docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md — temporal-selectivity lane default PAUSED

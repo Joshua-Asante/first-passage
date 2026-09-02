@@ -100,7 +100,7 @@ Gating a breakout entry on a prior volatility-compression phase resolving into e
 
 ## daily-range-state-persistence
 
-**NEW 2026-08-18.** Conditioner-role, not entry-role: does a day's True Range being in the trailing top quintile predict elevated next-day True Range (vs its own trailing median)? Distinct from `compression-gated-breakout` / `htf-compression-breakout-5m` (both entry-role compression→expansion triggers on MNQ) — this class makes no entry claim, only a range-state-forecasting claim, and was originally scoped to the non-index triad ([Step-0 daily-geometry slate](../../docs/briefs/2026-08-18-step0-daily-geometry-mechanism-slate.md) §2 row S1) — **widened 2026-08-29** to a single index-futures instrument (MYM), disclosed as a scope departure rather than assumed silently; the S1 (same-series, next-session) role this class tests is instrument-agnostic, only the original slate's naming was non-index-scoped. Grounding: evidence-robustness (volatility clustering — ARCH/GARCH canon), not a per-instrument WHO claim.
+**NEW 2026-08-18.** Conditioner-role, not entry-role: does a day's True Range being in the trailing top quintile predict elevated next-day True Range (vs its own trailing median)? Distinct from `compression-gated-breakout` / `htf-compression-breakout-5m` (both entry-role compression→expansion triggers on MNQ) — this class makes no entry claim, only a range-state-forecasting claim, and was originally scoped to the non-index triad ([Step-0 daily-geometry slate](../../docs/briefs/programs/2026-08-18-step0-daily-geometry-mechanism-slate.md) §2 row S1) — **widened 2026-08-29** to a single index-futures instrument (MYM), disclosed as a scope departure rather than assumed silently; the S1 (same-series, next-session) role this class tests is instrument-agnostic, only the original slate's naming was non-index-scoped. Grounding: evidence-robustness (volatility clustering — ARCH/GARCH canon), not a per-instrument WHO claim.
 
 - **Class finding:** (corrected battery, OFFICIAL): GC (parent, train era 2010–2019) top-quintile TR → elevated next-day TR: **NULL (driving L2 + L4)** — obs 0.5299 at the **8.4th percentile** of GC's own linear-ACF surrogate band (the earlier "near-miss" framing is retracted: the rate sat below the zero-mechanism benchmark's center); by-year 5/9 > 0.50 vs required 7. Ledger cell `DEAD` (re-proposal bar: the corrected battery + a different construction or longer panel). [MGC.md G4](MGC.md) · [`RESULTS_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md) §6
 
@@ -135,7 +135,7 @@ A directional bet keyed to a scheduled settlement, auction, or macro-release win
 
 - **Class finding:** The settlement limb does not reproduce at useful magnitude — MYM's third-Friday derivative-settlement reversal cleared exact-coverage sourcing (84/87, 96.6% PASS) but both power legs sit below the 0.2139 floor and the tradable limb is negative in 2024–2026. [MYM.md M5](MYM.md)
 
-- **Class finding:** *Auction limb (2026-07-27) — dies at the PROCUREMENT GATE, not on edge, on ANY instrument.* Closing-auction/MOC-imbalance is reject-at-bar for an instrument-independent reason, hence recorded as a class finding rather than a cell. It is **not** killed by the free-data classification (the signal is exchange-licensed, unlike LETF EOD rebalance whose signal is public-AUM-derivable) nor by the a4 category prior (a published **signed** imbalance is not participant-category splitting) — those non-kills are stated so a future session does not borrow the wrong one. What binds: free-data route 1 requires **demonstrating** a vol-orthogonal, within-era-robust edge (F1 had no δ at all — unclaimed, not cleared); the order-flow modality is parenthesised to the standing *"don't buy explanatory data before a survivor justifies it"* rule (Avenue-A qualifying triple unmet; *scoped-not-procured*); and harvest Req 2 independently renders it UNSCREENABLE with the δ-extraction probe route **circular** (it needs the gated data). Cheapest re-open is free: a published cohort δ for imbalance → index-futures response, citable without procurement. [F1 ruling](../../docs/briefs/2026-07-27-f1-moc-imbalance-mym-ruling.md)
+- **Class finding:** *Auction limb (2026-07-27) — dies at the PROCUREMENT GATE, not on edge, on ANY instrument.* Closing-auction/MOC-imbalance is reject-at-bar for an instrument-independent reason, hence recorded as a class finding rather than a cell. It is **not** killed by the free-data classification (the signal is exchange-licensed, unlike LETF EOD rebalance whose signal is public-AUM-derivable) nor by the a4 category prior (a published **signed** imbalance is not participant-category splitting) — those non-kills are stated so a future session does not borrow the wrong one. What binds: free-data route 1 requires **demonstrating** a vol-orthogonal, within-era-robust edge (F1 had no δ at all — unclaimed, not cleared); the order-flow modality is parenthesised to the standing *"don't buy explanatory data before a survivor justifies it"* rule (Avenue-A qualifying triple unmet; *scoped-not-procured*); and harvest Req 2 independently renders it UNSCREENABLE with the δ-extraction probe route **circular** (it needs the gated data). Cheapest re-open is free: a published cohort δ for imbalance → index-futures response, citable without procurement. [F1 ruling](../../docs/briefs/programs/2026-07-27-f1-moc-imbalance-mym-ruling.md)
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
@@ -288,9 +288,9 @@ Trading the break of a session opening range in the direction of the break.
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
 | GER40 | AMBIGUOUS-PARKED | 2026-06-22 | #G2 |
-| MNQ | AMBIGUOUS-PARKED | 2026-07-23 | ../../docs/briefs/2026-07-17-0808-packet-delta-and-sequence.md |
+| MNQ | AMBIGUOUS-PARKED | 2026-07-23 | ../../docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md |
 | NAS100 | AMBIGUOUS-PARKED | 2026-06-23 | #N7 |
-| NQ | AMBIGUOUS-PARKED | 2026-07-23 | ../../docs/briefs/2026-07-17-0808-packet-delta-and-sequence.md |
+| NQ | AMBIGUOUS-PARKED | 2026-07-23 | ../../docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md |
 | SPX500 | DEAD | 2026-06-22 | ../../lab/analysis/legacy/us500_discovery_2026-06-22/RESULTS.md |
 | USDCAD | DEAD | 2026-06-14 | ../../lab/archive/usdcad_reverse_2026-06-14/RESULTS.md |
 | ZB | DEAD | 2026-07-20 | ../../lab/archive/orb_zb_recon_2026-07/RESULTS.md |
@@ -461,7 +461,7 @@ Riding an established directional move rather than fading it or timing its start
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
 | BTCUSD | DEAD | 2026-06-30 | ../../docs/ltm/briefs/Q-BTC-3-closure-falsified.md |
-| MYM | LIVE | 2026-07-23 | ../../docs/briefs/2026-07-23-tradeify-book-composition.md |
+| MYM | LIVE | 2026-07-23 | ../../docs/briefs/programs/2026-07-23-tradeify-book-composition.md |
 | NAS100 | LIVE | 2026-05-05 | ../../core/strategies/_archive/nas/LOCK.md |
 | USDCAD | DEAD | 2026-06-14 | ../../lab/archive/usdcad_reverse_2026-06-14/RESULTS.md |
 | USOIL | AMBIGUOUS-PARKED | 2026-06-15 | #RGC-001 |

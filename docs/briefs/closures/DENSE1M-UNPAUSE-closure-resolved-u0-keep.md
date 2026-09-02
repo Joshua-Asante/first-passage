@@ -3,10 +3,10 @@
 **Verdict:** `RESOLVED` (U0 KEEP) — Branch A stands; dense-1m OHLCV temporal-selectivity / entry-geometry default stays paused; no CON-6
 **Closed:** 2026-08-15
 **Lane:** UNASSIGNED
-**Pre-registration:** [packet §6](../2026-08-15-dense1m-lane-unpause-review.md) frozen at `21dae757` — no separate pre-reg file
+**Pre-registration:** [packet §6](../programs/2026-08-15-dense1m-lane-unpause-review.md) frozen at `21dae757` — no separate pre-reg file
 **Spend / K:** $0.00 · Cap **not claimed** · no Pine / TV / arming
 **Live effect:** election no longer owed; pause text unchanged
-**Artifacts:** [packet](../2026-08-15-dense1m-lane-unpause-review.md) · [CON-5 Branch A](Q-TNEC-CON-5-closure-ambiguous-hold.md)
+**Artifacts:** [packet](../programs/2026-08-15-dense1m-lane-unpause-review.md) · [CON-5 Branch A](Q-TNEC-CON-5-closure-ambiguous-hold.md)
 
 ---
 
@@ -63,7 +63,7 @@ Below the two-incident bar — watch: an unpaid unpause packet can close KEEP wi
 - **Routing:** Branch A stands; no ADR; packet header records the mark; §6 table left frozen
 - **Entry packet:** n/a
 - **Stop rule / re-proposal bar:** a later Board mark of U1 or U2 (each still needs a **full** limb-4 ADR) or a new modality / non-route-① thesis — **not** a θ-retune, first/session-only cap, or stop-width rescue of CON-1–5
-- **Board write:** `SESSIONS Open/next: dense-1m pause stands (U0). No CON-6.` Owner: this closure · [packet](../2026-08-15-dense1m-lane-unpause-review.md)
+- **Board write:** `SESSIONS Open/next: dense-1m pause stands (U0). No CON-6.` Owner: this closure · [packet](../programs/2026-08-15-dense1m-lane-unpause-review.md)
 - **Registry:** n/a — RESOLVED / governance / not a strategy-grounds kill
 
 ## §10 audit-hook discharge
@@ -73,7 +73,7 @@ test ! -d lab/analysis/c1/mnq_tnec_con6_2026-08
 PASS
 
 # Packet §10 still greps OWED-election (frozen). Post-mark expected:
-rg -n "CLOSED-RESOLVED \\(U0 KEEP\\)" docs/briefs/2026-08-15-dense1m-lane-unpause-review.md
+rg -n "CLOSED-RESOLVED \\(U0 KEEP\\)" docs/briefs/programs/2026-08-15-dense1m-lane-unpause-review.md
 # one Status hit
 
 rg -n "OHLCV temporal-selectivity lane default \\*\\*paused\\*\\*" docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md
@@ -97,5 +97,5 @@ rg -n "Q-TNEC-CON-6" docs/briefs/INDEX.md lab/CATALOG.md || echo "no CON-6 yet"
 
 ```bash
 python scripts/check_closure_disposition.py docs/briefs/closures/DENSE1M-UNPAUSE-closure-resolved-u0-keep.md
-python3 scripts/check_brief.py docs/briefs/2026-08-15-dense1m-lane-unpause-review.md --type inquire
+python3 scripts/check_brief.py docs/briefs/programs/2026-08-15-dense1m-lane-unpause-review.md --type inquire
 ```

@@ -3,7 +3,7 @@
 **Status:** SCOPING COMPLETE — recommendation stands for the 2026-08-08 A4 decision (operator GO/NO-GO at the gate). Pre-assembles the Class-A **A4** evidence the ratified pre-triage asks to pre-stage.
 **Date:** 2026-07-14
 **Loop of record:** OUTER (research-data disposition, upstream of the HARV successor go/no-go)
-**Related:** [`docs/briefs/2026-07-12-08-08-packet-pretriage.md`](2026-07-12-08-08-packet-pretriage.md) §2 A4; [`docs/briefs/closures/Q-HARV-0-month-end-rebalance-ES.md`](closures/Q-HARV-0-month-end-rebalance-ES.md); [`lab/archive/harv_0_month_end_rebalance_es_2026-07/RESULTS.md`](../../lab/archive/harv_0_month_end_rebalance_es_2026-07/RESULTS.md); [`STATE.md`](../../STATE.md) Q-HARV-0 board line. Memory: `lesson_gate_reachability_preregistration`, `lesson_run_cheap_falsifier_before_authoring`.
+**Related:** [`docs/briefs/programs/2026-07-12-08-08-packet-pretriage.md`](2026-07-12-08-08-packet-pretriage.md) §2 A4; [`docs/briefs/closures/Q-HARV-0-month-end-rebalance-ES.md`](../closures/Q-HARV-0-month-end-rebalance-ES.md); [`lab/archive/harv_0_month_end_rebalance_es_2026-07/RESULTS.md`](../../../lab/archive/harv_0_month_end_rebalance_es_2026-07/RESULTS.md); [`STATE.md`](../../../STATE.md) Q-HARV-0 board line. Memory: `lesson_gate_reachability_preregistration`, `lesson_run_cheap_falsifier_before_authoring`.
 **Method:** 3-lens research workflow (adjudication-logic / data-source-landscape-with-web-verification / resolution-adversarial), 2026-07-14; all three converge on the recommendation below.
 
 ---
@@ -80,8 +80,8 @@ The Q-HARV-0 closure + STATE carry *"flow data adjudicates … which price data 
 
 ```bash
 # This scoping exists and is linked from the 08-08 packet's A4 evidence line
-test -f docs/briefs/2026-07-14-a4-flow-data-fork-scoping.md && echo present
-grep -n "A4" docs/briefs/2026-07-12-08-08-packet-pretriage.md   # A4 is the fork this pre-assembles
+test -f docs/briefs/programs/2026-07-14-a4-flow-data-fork-scoping.md && echo present
+grep -n "A4" docs/briefs/programs/2026-07-12-08-08-packet-pretriage.md   # A4 is the fork this pre-assembles
 
 # The cheap first move is a re-analysis of data in hand — no new pull, no register_search
 ls lab/analysis/harv_0_month_end_rebalance_es_2026-07/ 2>/dev/null || echo "(archived — see lab/archive/ or git)"

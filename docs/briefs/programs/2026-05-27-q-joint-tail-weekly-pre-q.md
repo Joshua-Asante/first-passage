@@ -175,7 +175,7 @@ Inherits from Q-JOINT-TAIL-1 rev 3 §5 (9 moves), with weekly-resolution-specifi
 
 If §9 sanity check confirms `n_active = 4 weeks` constitute the dominant pattern in the bottom-decile (≥30 weeks, expected ~20+):
 
-1. Author CC handoff brief `docs/briefs/2026-05-XX-q-joint-tail-weekly-cc-handoff.md` (date when authored).
+1. Author CC handoff brief `docs/briefs/programs/2026-05-XX-q-joint-tail-weekly-cc-handoff.md` (date when authored).
 2. Brief inherits the structure of Q-JOINT-TAIL-1 rev 3 with weekly-resolution adaptations.
 3. Apply Trap #13/#14/#15 procedural fixes at authoring time (consult `CLAUDE.md` at authoring, distinguish input-panel-property vs. MC-assumption claims, run panel-shape sanity check before threshold-locking).
 4. Hand off to CC.
@@ -234,7 +234,7 @@ Q-JOINT-TAIL-1's Phase 0 BLOCKED was an avoidable cycle: had the panel-shape (n_
 
 This §9 step is the procedural fix per the candidate-status Trap #15 lesson. It is *load-bearing* for this brief (the verdict can't be locked until §9 executes), and it is *transferable* — future Pre-Q briefs that depend on a panel-shape assumption should include the equivalent step.
 
-**§9 status:** **EXECUTED 2026-07-14 → FAIL → Q RETIRED.** Script: [`lab/archive/q_joint_tail_weekly_2026-07/sanity_check.py`](../../lab/archive/q_joint_tail_weekly_2026-07/sanity_check.py) (227 week-blocks, matching expected ~227). Both gate limbs failed: `n_active=4` share overall = **9.7%** (needed >50%); `n_active=4` in the 23-week bottom decile = **4 of 23** (needed ≥15) — the modal week has two strategies active, and the worst portfolio-weeks are concentration events, not 4-way co-failure. The book is temporally diversified at weekly resolution too, so the joint-tail question is non-falsifiable for this allocation at the weekly scale (as it was at the daily scale — Q-JOINT-TAIL-1). Per this §9's own FAIL disposition + the roster next-action, the Q is **RETIRED** (no CC handoff authored). Closure: [`docs/briefs/closures/Q-JOINT-TAIL-WEEKLY-closure-retired.md`](closures/Q-JOINT-TAIL-WEEKLY-closure-retired.md).
+**§9 status:** **EXECUTED 2026-07-14 → FAIL → Q RETIRED.** Script: [`lab/archive/q_joint_tail_weekly_2026-07/sanity_check.py`](../../../lab/archive/q_joint_tail_weekly_2026-07/sanity_check.py) (227 week-blocks, matching expected ~227). Both gate limbs failed: `n_active=4` share overall = **9.7%** (needed >50%); `n_active=4` in the 23-week bottom decile = **4 of 23** (needed ≥15) — the modal week has two strategies active, and the worst portfolio-weeks are concentration events, not 4-way co-failure. The book is temporally diversified at weekly resolution too, so the joint-tail question is non-falsifiable for this allocation at the weekly scale (as it was at the daily scale — Q-JOINT-TAIL-1). Per this §9's own FAIL disposition + the roster next-action, the Q is **RETIRED** (no CC handoff authored). Closure: [`docs/briefs/closures/Q-JOINT-TAIL-WEEKLY-closure-retired.md`](../closures/Q-JOINT-TAIL-WEEKLY-closure-retired.md).
 
 ---
 
@@ -248,7 +248,7 @@ grep -l "Q-JOINT-TAIL-WEEKLY" archive/docs/briefs/Q-JOINT-TAIL-1-closure.md
 # (manual — Joshua confirms the check ran and produced numbers)
 
 # 3. If CC handoff authored, it references this Pre-Q's §9 result
-grep -F "Pre-Q §9 sanity check" docs/briefs/2026-05-*-q-joint-tail-weekly-cc-handoff.md
+grep -F "Pre-Q §9 sanity check" docs/briefs/programs/2026-05-*-q-joint-tail-weekly-cc-handoff.md
 
 # 4. Lesson capture exists
 ls docs/lessons/2026-05-27-brief-authoring-traps-13-14-15.md

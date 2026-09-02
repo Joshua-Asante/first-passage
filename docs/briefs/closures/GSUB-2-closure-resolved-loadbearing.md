@@ -4,7 +4,7 @@
 **Closed:** 2026-08-19
 **Lane:** UNASSIGNED
 **Pre-registration:** §4/§6 gate frozen in
-[`GSUB-2-park-cohort-early-review.md`](../GSUB-2-park-cohort-early-review.md) §4/§8 — anchor commit
+[`GSUB-2-park-cohort-early-review.md`](../programs/GSUB-2-park-cohort-early-review.md) §4/§8 — anchor commit
 `ea087cc` (the commit that froze the brief, before Phase 2.5 spawned)
 **Successor:** none authored — the six unchanged PARKs ride to their pre-registered 2026-11-08
 expiry as-is; no new Q or pursuit opened
@@ -13,7 +13,7 @@ expiry as-is; no new Q or pursuit opened
 touches `dry_run`, `armed_until`, M1 status, any locked strategy's authorization multiplier, or
 `DD_TRIGGER`/`DD_SCALE`). Effect is governance-layer only: 2 pursuit records flipped PARK→SUBTRACT,
 1 Q-roster row closed, 2 superseding notes added to the GSUB-1 inventory (never silently edited).
-**Artifacts:** [`GSUB-2 brief`](../GSUB-2-park-cohort-early-review.md) ·
+**Artifacts:** [`GSUB-2 brief`](../programs/GSUB-2-park-cohort-early-review.md) ·
 [`b2 pursuit record`](../../pursuits/b2-striker-mym-reconstruction.md) ·
 [`c1 pursuit record`](../../pursuits/c1-q-xmem-1.md) ·
 [`Q-XMEM-1 closure`](Q-XMEM-1-closure-subtract.md) ·
@@ -133,9 +133,9 @@ persona-hierarchy mechanism, not a flaw in the underlying disposition reasoning.
 ```bash
 $ grep -A2 "out-of-frame evidence" docs/pursuits/b2-striker-mym-reconstruction.md docs/pursuits/c1-q-xmem-1.md
 (both present)
-$ grep -A3 "docs/briefs/GSUB-2" docs/personas/cio-log.md docs/personas/coo-log.md docs/personas/cro-log.md
+$ grep -A3 "docs/briefs/programs/GSUB-2" docs/personas/cio-log.md docs/personas/coo-log.md docs/personas/cro-log.md
 (all three present, 2026-08-19 entries)
-$ grep -c "superseded 2026-08-19" docs/briefs/GSUB-1-inventory-and-dispositions.md
+$ grep -c "superseded 2026-08-19" docs/briefs/programs/GSUB-1-inventory-and-dispositions.md
 2
 ```
 

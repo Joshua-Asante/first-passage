@@ -62,7 +62,7 @@ reading an already-collected, already-priced panel at $0, no new K.
   or a new modality / non-route-① thesis — not a θ-retune, first/session-only
   cap, or stop-width rescue."* **This ADR is that full limb-4 ADR**, marking
   **U1**, not U2.
-- [`docs/briefs/2026-08-15-dense1m-lane-unpause-review.md`](../briefs/2026-08-15-dense1m-lane-unpause-review.md)
+- [`docs/briefs/programs/2026-08-15-dense1m-lane-unpause-review.md`](../briefs/programs/2026-08-15-dense1m-lane-unpause-review.md)
   — anchor `2e9944a` 2026-08-15. The frozen packet the U0 mark above was made
   against; §6 route table confirms U1/U2 were live, named options at that
   review, not foreclosed ones.

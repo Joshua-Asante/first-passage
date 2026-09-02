@@ -10,7 +10,7 @@ lab/analysis/tradeify_futures3_remc_2026-07-11/run_tradeify_futures3_remc.py did
 inline, without the bucket-sum assertion.
 
 Discharges the two engine findings the ratified survivor-scoring recommendation
-(docs/briefs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md
+(docs/briefs/programs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md
 §0 constraint D + §1 F1; scorecard G3) requires GREEN before any prop-tier re-MC:
 
   * Constraint D — firm configs with daily_loss_pct=None must thread into

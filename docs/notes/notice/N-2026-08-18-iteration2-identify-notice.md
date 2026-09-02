@@ -50,7 +50,7 @@ A: the routing table (§4) + three entry packets ordered cheapest-falsifier-firs
 The corpus was assembled by source-grounded reads this session, not memory: baseline
 quantification + adversarial self-audit (retrospective workflow `wf_6ac22465-754`, both lenses
 reading SESSIONS.md/STATE.md/CATALOG.md/closures fresh with line cites), plus the PR #37
-artifacts ([slate](../../briefs/2026-08-18-step0-daily-geometry-mechanism-slate.md) ·
+artifacts ([slate](../../briefs/programs/2026-08-18-step0-daily-geometry-mechanism-slate.md) ·
 [corrected-battery spec + ADDENDUM-1](../../spec/2026-08-18-magnitude-persistence-corrected-null-battery.md) ·
 [audit note](../audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md) ·
 [RESULTS_CORRECTED](../../../lab/analysis/_inbox/rangestate_corrected_2026-08/RESULTS_CORRECTED.md)) ·

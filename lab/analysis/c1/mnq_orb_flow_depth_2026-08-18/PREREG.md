@@ -35,7 +35,7 @@ used the free `tbbo` schema; no MBP-10 spend has ever occurred against this cred
 
 | Source | What it pins |
 |---|---|
-| [`docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md`](../../../../docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md) **read in full** | §6 frozen qualifying triple (verbatim in §3 below) + the 2026-08-05 addendum giving condition 3 a second route (Route A survivor-tied / Route B generate-confirm). **Route A is used here** — same as MNQFLOW-1, no Route B apparatus needed. §2's fork table: "Discovery: depth-shape... only live sliver — but unjustified without a specific pre-registered feature." This document supplies that feature. |
+| [`docs/briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md`](../../../../docs/briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md) **read in full** | §6 frozen qualifying triple (verbatim in §3 below) + the 2026-08-05 addendum giving condition 3 a second route (Route A survivor-tied / Route B generate-confirm). **Route A is used here** — same as MNQFLOW-1, no Route B apparatus needed. §2's fork table: "Discovery: depth-shape... only live sliver — but unjustified without a specific pre-registered feature." This document supplies that feature. |
 | [`lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/PREREG.md`](../mnq_orb_flow_substrate_2026-08-05/PREREG.md) **read in full** | The parent construct's own frozen design, its qualifying-triple argument (mirrored, not copied, below), and its FM-4 stop-rule (which this document is the named, separately-authorized exception to). |
 | [`lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/RESULTS.md`](../mnq_orb_flow_substrate_2026-08-05/RESULTS.md) **read in full** | The L1 result under test at depth: diff **−0.009367**, CI95 **[−0.013430, −0.005354]**, placebo p_emp **0.000** (p95 threshold 0.004166), coverage **100.0% (255/255)**, halves agree (H1 −0.008133, H2 −0.010592). Depth-census counterargument (§2): L1 total size both sides p50=7 contracts, 99.98% of quotes fall in a tie-group, exactly-zero-imbalance 14.08% of the time — the coarseness this document tests whether depth resolves or inherits. |
 | [`ops/instruments/MNQ.md`](../../../../ops/instruments/MNQ.md) F2 GUARD + N1/Stage-7 | F2 GUARD (outcome-conditioned ORB filter slices barred from any findings tier) — inherited via FM-1 below. N1: ORB-MNQ-1 full-pipeline PASS, K_eff=2, DSR 0.9754; Stage-7 rider: full-window clears only at Bulenox ≤1 tick — Tradeify (the former, now de-scoped, deployment venue) fails the full-window limb. Not itself under test here, carried as context. |
@@ -140,7 +140,7 @@ inherited unresolved:
 ## §3 — The Avenue-A §6 qualifying triple, cleared condition by condition (Route A)
 
 > *"1. Depth-shape, not category ... 2. Not fill-trivial ... 3. Either (Route A) survivor-tied ...
-> or (Route B) generate→confirm."* — [`Avenue-A brief`](../../../../docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md) §6 + 2026-08-05 addendum.
+> or (Route B) generate→confirm."* — [`Avenue-A brief`](../../../../docs/briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md) §6 + 2026-08-05 addendum.
 
 **1 — Depth-shape, not category. ✓** `A_depth` is resting-size geometry summed across ten book
 levels. Exactly like MNQFLOW-1's L1 `A`, it attributes nothing to participant class — the a4 prior
@@ -396,7 +396,7 @@ byte exists to inflate a trial count).
 git log --oneline -- lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PREREG.md | tail -1
 
 # The triple this clears, and the addendum giving condition 3 a second (unused) route
-grep -n "Route A\|Route B\|qualifying triple" docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md
+grep -n "Route A\|Route B\|qualifying triple" docs/briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md
 
 # The parent construct's own stop-rule this document is the named exception to
 grep -n "MBP-10 arm" lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/RESULTS.md

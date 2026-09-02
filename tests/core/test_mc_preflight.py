@@ -5,7 +5,7 @@ on. No vendor CSVs required — firm_rules configs + synthetic seed results +
 tiny synthetic paths only, so this runs on a fresh public clone.
 
 Ground truth for the two findings under test:
-docs/briefs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md
+docs/briefs/programs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md
 (§0 constraint D, §1 F1, §2.1 G3).
 """
 

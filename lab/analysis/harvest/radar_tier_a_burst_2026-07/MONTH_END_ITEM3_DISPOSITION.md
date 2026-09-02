@@ -12,7 +12,7 @@
 |---|---|---|
 | [`Q-HARV-1` / HARV-2026-002](../../../docs/ltm/briefs/Q-HARV-1-month-end-rebalance-successor.md) | **DECLINED 2026-07-14** at mandatory §R — joint P(RESOLVED\|true) ≈ **5–6%** at 2018+ N | Fresh "same-units §R" successor on the **same 2018+ price panel** is already known-unreachable |
 | Same-units attestation ADR | `Accepted` 2026-07-16 | Strengthens the bar; does **not** create new N or a new information axis |
-| [`A4 scoping`](../../../docs/briefs/2026-07-14-a4-flow-data-fork-scoping.md) | Flow data cannot adjudicate crowd-vs-death | Procurement DEFER |
+| [`A4 scoping`](../../../docs/briefs/programs/2026-07-14-a4-flow-data-fork-scoping.md) | Flow data cannot adjudicate crowd-vs-death | Procurement DEFER |
 | [`A4 handoff`](../../../docs/briefs/handoffs/2026-07-14-cursor-handoff-a4-crowd-vs-death-diagnostic.md) + harness [`lab/analysis/harv_a4_footprint_2026-07/`](../../harv_a4_footprint_2026-07/) | Offline **16 passed**; **DROP-or-DEFER only** (never GO) | Real run gated on operator `ohlcv-1d` pull + flag — **not yet run** (no `parents_ohlcv_1d.parquet` in this checkout) |
 
 Authoring another month-end Pre-Q now would violate `lesson_run_cheap_falsifier_before_authoring` / Trap #12 (re-litigate a spent §R decline).

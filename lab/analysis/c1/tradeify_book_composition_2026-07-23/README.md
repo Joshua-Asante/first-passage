@@ -4,7 +4,7 @@ Tradeify Select 100K **prop-leg economics / book-composition gap analysis**
 (2026-07-23). Feeds the 08-08 gate as measurement input — not a live-ops GO.
 
 Companion brief (filed):
-[`docs/briefs/2026-07-23-tradeify-book-composition.md`](../../../docs/briefs/2026-07-23-tradeify-book-composition.md)
+[`docs/briefs/programs/2026-07-23-tradeify-book-composition.md`](../../../docs/briefs/programs/2026-07-23-tradeify-book-composition.md)
 (§1 posture corrected; §0.5/§6 split chain-rate vs bust-floor compose vs Q-COMPOSE-1 / Q-FUNNEL-1).
 
 ## Status

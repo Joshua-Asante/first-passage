@@ -18,14 +18,14 @@ frozen screen sketches so each GO costs one session.
 
 | Source | Supplies |
 |---|---|
-| [`deep-iteration lane charter`](../adr/2026-08-16-deep-iteration-lane-charter.md) (full) | Counters: abandoned 1 (consec 1/2) · falsified 0/2 · no active campaign; triad bar schemas (1d/1h/1m) priced **$0.0000** both windows (addendum table); §7 steps 2–4 (`--lane deep` flag, doc scoping, skill wiring) licensed, **not yet built** (verified: `register_search.py` knows only `blind\|mechanism-first`) |
-| [`TNEC-1`](../spec/2026-08-08-tradeify-necessary-conditions-target-spec.md) | N-ACT/N-SURV/N-EDGE/N-SHAPE/N-SIZE roster; **2026-11-08** falsifier clock; book co-idleness clause |
-| [`ops/instruments/MNQ.md`](../../ops/instruments/MNQ.md) (DEAD table incl. today's row) | The four-kill profile on direction-class daily/intraday OHLCV structure (N5 · Q-WLEGB-1 · SIZEDIV F3 · `H-DSTRUCT-MNQ-1` NULL 2026-08-18) |
-| [`ops/instruments/MGC.md`](../../ops/instruments/MGC.md) / [`MCL.md`](../../ops/instruments/MCL.md) / [`M6A.md`](../../ops/instruments/M6A.md) (full) | MGC `RE-ENTERED — class-attested`; MCL `OPEN — geometry-cleared, mechanism-owed` (cost pin 5.3423 bp/RT @2023 median; **W1 monthly roll ~14% session exclusion; W3 session-window ruling owed**); M6A Stage-2 ex-FOMC N=450/floor 0.0924 POWER-bound; **WHO-track 2026-08-14: FX event-window doors died** |
-| [`ops/instruments/MECHANISMS.md`](../../ops/instruments/MECHANISMS.md) | Compression-family cells are all ENTRY-role (XAUUSD F4 design-mismatch · CON-2 gross+/net− · CON-3 AMBIGUOUS-HOLD); no conditioner-role cell exists; no daily-range-geometry class yet (`NEW` id lands with a prereg commit, never with this slate) |
-| [`docs/rejected_candidates.md`](../rejected_candidates.md) (greps pasted in session log 2026-08-18a) | Gates-on-ORB kills (GEX/T10Y3M/Friday — G-era-confound battery imported); EIA/NG/TAS direction kills; both domain-level raised bars (index intraday OHLCV directional timing 07-21; EOD-adversity 08-02) |
-| `discovery_manifests/*.json` (all 15, listed this session) | Family banks for disclosure: GC/MGC 3,177 (DISC-CAMP-0) · CL 1 (`fb_eia_cl_reversal`) · 6E/6J/6CL 1 (`fc_carry`) — **disclosure-only** per [K-bank ADR](../adr/2026-08-04-family-k-bank-disclosure-not-gate.md) |
-| [`Q-POLFRONT-1 intraday-honest`](../../lab/analysis/c1/q_polfront_1_2026-08/RESULTS_INTRADAY_HONEST.md) · [MSL slate-2 design box](../adr/2026-08-13-msl-slate-2-design-box.md) | Sizing envelope R ≈ $75–200 at the $100K eval (conservative upper bounds); design box rr∈[2,3] · WR 0.30–0.42 · hard stop · k=1 · no pyramiding |
+| [`deep-iteration lane charter`](../../adr/2026-08-16-deep-iteration-lane-charter.md) (full) | Counters: abandoned 1 (consec 1/2) · falsified 0/2 · no active campaign; triad bar schemas (1d/1h/1m) priced **$0.0000** both windows (addendum table); §7 steps 2–4 (`--lane deep` flag, doc scoping, skill wiring) licensed, **not yet built** (verified: `register_search.py` knows only `blind\|mechanism-first`) |
+| [`TNEC-1`](../../spec/2026-08-08-tradeify-necessary-conditions-target-spec.md) | N-ACT/N-SURV/N-EDGE/N-SHAPE/N-SIZE roster; **2026-11-08** falsifier clock; book co-idleness clause |
+| [`ops/instruments/MNQ.md`](../../../ops/instruments/MNQ.md) (DEAD table incl. today's row) | The four-kill profile on direction-class daily/intraday OHLCV structure (N5 · Q-WLEGB-1 · SIZEDIV F3 · `H-DSTRUCT-MNQ-1` NULL 2026-08-18) |
+| [`ops/instruments/MGC.md`](../../../ops/instruments/MGC.md) / [`MCL.md`](../../../ops/instruments/MCL.md) / [`M6A.md`](../../../ops/instruments/M6A.md) (full) | MGC `RE-ENTERED — class-attested`; MCL `OPEN — geometry-cleared, mechanism-owed` (cost pin 5.3423 bp/RT @2023 median; **W1 monthly roll ~14% session exclusion; W3 session-window ruling owed**); M6A Stage-2 ex-FOMC N=450/floor 0.0924 POWER-bound; **WHO-track 2026-08-14: FX event-window doors died** |
+| [`ops/instruments/MECHANISMS.md`](../../../ops/instruments/MECHANISMS.md) | Compression-family cells are all ENTRY-role (XAUUSD F4 design-mismatch · CON-2 gross+/net− · CON-3 AMBIGUOUS-HOLD); no conditioner-role cell exists; no daily-range-geometry class yet (`NEW` id lands with a prereg commit, never with this slate) |
+| [`docs/rejected_candidates.md`](../../rejected_candidates.md) (greps pasted in session log 2026-08-18a) | Gates-on-ORB kills (GEX/T10Y3M/Friday — G-era-confound battery imported); EIA/NG/TAS direction kills; both domain-level raised bars (index intraday OHLCV directional timing 07-21; EOD-adversity 08-02) |
+| `discovery_manifests/*.json` (all 15, listed this session) | Family banks for disclosure: GC/MGC 3,177 (DISC-CAMP-0) · CL 1 (`fb_eia_cl_reversal`) · 6E/6J/6CL 1 (`fc_carry`) — **disclosure-only** per [K-bank ADR](../../adr/2026-08-04-family-k-bank-disclosure-not-gate.md) |
+| [`Q-POLFRONT-1 intraday-honest`](../../../lab/analysis/c1/q_polfront_1_2026-08/RESULTS_INTRADAY_HONEST.md) · [MSL slate-2 design box](../../adr/2026-08-13-msl-slate-2-design-box.md) | Sizing envelope R ≈ $75–200 at the $100K eval (conservative upper bounds); design box rr∈[2,3] · WR 0.30–0.42 · hard stop · k=1 · no pyramiding |
 
 ## §1 — Context (one paragraph)
 
@@ -53,7 +53,7 @@ clustering-preserving placebo as primary**), verdict SIGNAL / NULL / AMBIGUOUS, 
 > block-bootstrap CI lower bound (0.4545) fails by 4.55pp. Adversarially verified before trust
 > (4-lens + synthesis workflow; one MUST-FIX caught and fixed — CI block size — both
 > corrections verdict-preserving). Full detail:
-> [`RESULTS_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md).
+> [`RESULTS_S1A.md`](../../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md).
 >
 > **⚠ S1b RAN 2026-08-18 → raw `SIGNAL`, downgraded to `NOT-CONFIRMED` — the shared placebo
 > is invalidated, and this row's own "S1b is a live prior for it" framing is retracted.**
@@ -62,19 +62,19 @@ clustering-preserving placebo as primary**), verdict SIGNAL / NULL / AMBIGUOUS, 
 > either real dataset); S1b's raw SIGNAL also failed a regime-concentration test (crisis-year
 > cluster removal flips it to NULL). **S2 and S3 below are PAUSED, not GO-able, until the
 > structural fix named in the audit note lands.** Full detail:
-> [`RESULTS_S1B.md`](../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md) ·
+> [`RESULTS_S1B.md`](../../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md) ·
 > [audit note](../../notes/audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md).
 >
 > **✅ OFFICIAL corrected-null re-score landed 2026-08-18 (same day, operator PROCEED per the
 > frozen spec's ADDENDUM-1 A16):** the structural fix (IAAFT normal-scores null + L4 by-year
-> regime limb; [frozen battery spec](../spec/2026-08-18-magnitude-persistence-corrected-null-battery.md))
+> regime limb; [frozen battery spec](../../spec/2026-08-18-magnitude-persistence-corrected-null-battery.md))
 > ran officially. **S1a (GC) = NULL** (driving L2+L4; obs at the 8.4th pct of GC's own
 > linear-ACF band — the near-miss dissolved, CASE A) → counts toward §4's FALSIFIED tally.
 > **S1b (CL) = SIGNAL-GENERIC** (69th pct of its own band — canon-attributed volatility
 > clustering; L4 boundary-exact 6/8 under the rule's own small-n exclusion, a disclosed
 > prediction-miss adjudicated rules-govern) → **counts toward §4 RESOLVED, with A6 guard-rails:
 > not a mechanism, no mechanism-owed discharge, no conditioner license.** Record:
-> [`RESULTS_CORRECTED.md`](../../lab/analysis/_inbox/rangestate_corrected_2026-08/RESULTS_CORRECTED.md).
+> [`RESULTS_CORRECTED.md`](../../../lab/analysis/_inbox/rangestate_corrected_2026-08/RESULTS_CORRECTED.md).
 
 - **Frozen claim (sign = persistence):** `P(TR_{d+1} > median(TR, trailing 60d) | TR_d in top
   quintile of trailing 60d)` exceeds its block-shuffled null. Grounding: evidence-robustness
@@ -134,7 +134,7 @@ clustering-preserving placebo as primary**), verdict SIGNAL / NULL / AMBIGUOUS, 
 | P4 M6A event-window | WHO-track deaths 2026-08-14 (event-window door named) | Fresh grounds at the sourcing layer, not a slate row |
 
 > ⚠ **2026-08-18 — Q-EXPR-1 H1 admission screen (append-only intercept).**
-> [`Q-EXPR-1`](closures/Q-EXPR-1-closure-resolved.md) `RESOLVED` (H1): a claim whose native
+> [`Q-EXPR-1`](../closures/Q-EXPR-1-closure-resolved.md) `RESOLVED` (H1): a claim whose native
 > horizon is weekly or daily is rejected at $0 unless it names a same-horizon (session /
 > flat-by-16:00) expression *before* any build. P2's "asymmetric-payoff claim (weekly)"
 > re-entry and P3's "triad/weekly expression" re-entry do **not** clear that screen on
@@ -160,7 +160,7 @@ regularity — i.e. **≥1 SIGNAL among the GO'd screens** under their frozen ba
   given (inertness: report at the next quarterly audit, mirror of the lane charter's own limb).
 
 **⚠ Clock paused 2026-08-18, not stopped.** S1a and S1b both ran, but their shared placebo was
-found invalidated (autocorrelation-uncontrolled null; [audit note](../notes/audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md))
+found invalidated (autocorrelation-uncontrolled null; [audit note](../../notes/audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md))
 — neither a RESOLVED nor a FALSIFIED-contributing read can be drawn from either screen as run.
 S1a's raw `NULL` and S1b's raw `SIGNAL→NOT-CONFIRMED` both count as **zero** toward §4's
 RESOLVED/FALSIFIED tallies until re-run under a corrected null. The 2026-09-15 inertness date
@@ -171,7 +171,7 @@ the slate reports AMBIGUOUS at that date regardless, same as any other stall.
 Tally under valid tests: S1a (GC) = valid NULL; **S1b (CL) = SIGNAL-GENERIC → the "≥1 SIGNAL
 among GO'd screens" trigger fires.** Per this section's own RESOLVED consequence: the row
 routed to a conditioner-engineering prereg per D2, then **PARKED** by
-[`Q-CONDVAL-1`](closures/Q-CONDVAL-1-closure-falsified.md) (`FALSIFIED` 2026-08-18; O2
+[`Q-CONDVAL-1`](../closures/Q-CONDVAL-1-closure-falsified.md) (`FALSIFIED` 2026-08-18; O2
 discharged — the lift does not buy a material fraction of `hurdle_4x` at the N-EDGE cell).
 That prereg is not electable. **S2/S3
 pause states after the fix:** S2 un-pause condition (1) is now satisfied (diagnostic PASS on
@@ -212,7 +212,7 @@ all GO'd screens NULL / blocked-or-inert by 2026-09-15); the closure record carr
 
 ```bash
 # Slate status + this file's marks
-grep -n "Status:" docs/briefs/2026-08-18-step0-daily-geometry-mechanism-slate.md
+grep -n "Status:" docs/briefs/programs/2026-08-18-step0-daily-geometry-mechanism-slate.md
 
 # Screens that have actually run (inertness check for §4 AMBIGUOUS)
 ls lab/analysis/_inbox/ | grep -iE "s1a|s1b|rangestate|ovnight|eia" || echo "no screens run yet"
@@ -230,6 +230,6 @@ python -c "import json,glob; [print(json.load(open(f))['run_id'], json.load(open
 ## Verification
 
 ```bash
-python C:/Users/joshu/.claude/skills/brief-authoring/scripts/check_brief.py docs/briefs/2026-08-18-step0-daily-geometry-mechanism-slate.md
+python C:/Users/joshu/.claude/skills/brief-authoring/scripts/check_brief.py docs/briefs/programs/2026-08-18-step0-daily-geometry-mechanism-slate.md
 git log --oneline -1   # §0 anchor: 4062562 at authoring
 ```

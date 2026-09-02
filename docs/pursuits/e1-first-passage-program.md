@@ -14,4 +14,4 @@ time. The per-pursuit lines below it remain qualitative by design; the portfolio
 branches). It is not itself a disposable unit — every other pursuit's Aim-served field traces back
 to this one.
 
-**Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row e1
+**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row e1

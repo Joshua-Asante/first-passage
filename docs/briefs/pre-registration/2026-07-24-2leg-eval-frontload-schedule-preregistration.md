@@ -6,7 +6,7 @@
 flat-multiplier sweep never tested. **Status:** ⚠ **DORMANT 2026-08-04** — **not on the 08-08 slate** (venue de-scoped; "within-eval" has no eval). Frozen **K=4** policy family and §6 gate survive **unspent** and are re-usable at an F3 venue. Frozen body **byte-unedited**. Nothing is run here.
 
 > **UN-DORMED 2026-08-16 (scoring-only)** — operator P2 mark on the
-> [state-policy packet](../2026-08-16-state-policy-scoring-review.md)
+> [state-policy packet](../programs/2026-08-16-state-policy-scoring-review.md)
 > ([closure](../closures/STATE-POLICY-closure-resolved-p2.md)). The dormancy ground
 > ("'within-eval' has no eval") lapsed with S1's ratification of the incumbent eval as the
 > environment; the subject book remains deployment-barred — this stamp licenses the frozen
@@ -27,7 +27,7 @@ Production read before pre-registering (concrete repo paths):
   are frozen; the `lifecycle` factor "MULTIPLIES against BASE_RISK/DD_SCALE — it never edits them
   (axis-separation)". A within-eval schedule is a **fourth multiplicative factor at that same
   risk_pct layer**, not an edit to any constant.
-- [`docs/briefs/2026-07-23-tradeify-book-composition.md`](../2026-07-23-tradeify-book-composition.md)
+- [`docs/briefs/programs/2026-07-23-tradeify-book-composition.md`](../programs/2026-07-23-tradeify-book-composition.md)
   §2 (flat-multiplier sweep: cash/acct-mo $357→$337→$277→$200 across 0.5×→2×), §5 forbidden move #1
   ("size converts extraction to breach"), §7 (`Q-ORB-SIZE` — the *parked ORB-k* question this is
   distinct from).

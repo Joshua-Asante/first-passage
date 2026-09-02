@@ -7,7 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-**Related:** [`three-loop binding`](2026-06-12-three-loop-methodology-binding.md) (`Accepted` — extended one tier up, not amended) · [`GSUB-1 run spec`](../briefs/GSUB-1-first-grand-subtract-pass.md) (arms §4; ratifies alongside) · [`ceremony tiering`](2026-08-08-adr-ceremony-tiering.md) (limb-4 → FULL tier: creates doctrine)
+**Related:** [`three-loop binding`](2026-06-12-three-loop-methodology-binding.md) (`Accepted` — extended one tier up, not amended) · [`GSUB-1 run spec`](../briefs/programs/GSUB-1-first-grand-subtract-pass.md) (arms §4; ratifies alongside) · [`ceremony tiering`](2026-08-08-adr-ceremony-tiering.md) (limb-4 → FULL tier: creates doctrine)
 **Layer:** meta-process (tier binding); additionally creates a fourth operator domain — **pursuit** (§2.4). **$0 / K=0.**
 **Loop-of-Record:** STRATEGIC — binding methodology authority to tiers is governance-of-what-governs (same LoR class as the three-loop binding ADR's own declaration). On ACCEPT, the tier vocabulary itself gains GRAND.
 
@@ -269,7 +269,7 @@ forward-trigger board. `docs/pursuits/` is created by GSUB-1 Phase 4 (post-Phase
 
 GSUB-1 ran and closed the same day it was accepted:
 [`closure`](../briefs/closures/GSUB-1-closure-resolved-loadbearing.md) ·
-[`inventory + dispositions`](../briefs/GSUB-1-inventory-and-dispositions.md).
+[`inventory + dispositions`](../briefs/programs/GSUB-1-inventory-and-dispositions.md).
 
 **§4 reading:** the run yielded **19 ratified dispositions differing from status-quo standing**
 against a threshold of ≥1 (8 PARK · 9 SUBTRACT · 2 MERGE; operator bulk-ratified in-session).

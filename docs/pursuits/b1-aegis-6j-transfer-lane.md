@@ -13,4 +13,4 @@ standalone clause, so the OR-fallback (6J seat) is the one actually open today.
 **Test applied:** outside current Survive/resource bounds — no live venue route; idle since 2026-07-29
 
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3)
-**Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row b1
+**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row b1

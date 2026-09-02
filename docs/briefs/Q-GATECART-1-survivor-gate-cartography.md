@@ -132,7 +132,7 @@ grep -n "3.0%\|1.0%\|≥ 50%" docs/briefs/pre-registration/2026-07-13-prop-survi
 ls discovery_manifests/ | grep -i "gatecart" && echo "VIOLATION: K was consumed" || echo "clean"
 
 # 6. The map actually fed the 08-08 packet (Trap #10 — artifacts nobody re-reads)
-grep -rn "Q-GATECART-1" docs/SESSIONS.md docs/briefs/2026-07-12-08-08-packet-pretriage.md  # the 08-08 session must cite it
+grep -rn "Q-GATECART-1" docs/SESSIONS.md docs/briefs/programs/2026-07-12-08-08-packet-pretriage.md  # the 08-08 session must cite it
 ```
 
 ## Verification

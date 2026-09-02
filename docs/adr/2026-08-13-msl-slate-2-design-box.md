@@ -8,7 +8,7 @@
 **Retain-until:** none
 **Tier:** light
 **Authors:** Joshua (election: "go straight to P3.4") + Cursor (recorder)
-**Related:** [re-derivation](../notes/notice/N-2026-08-13-msl-design-box-rederivation.md) · [second slate](../briefs/2026-08-13-msl-second-slate.md) · [charter](../spec/2026-08-12-msl-manual-sourcing-loop-charter.md) · [Magdon-Ismail RESULTS](../../lab/analysis/mc/mc_mdd_closed_form_2026-08/RESULTS.md)
+**Related:** [re-derivation](../notes/notice/N-2026-08-13-msl-design-box-rederivation.md) · [second slate](../briefs/programs/2026-08-13-msl-second-slate.md) · [charter](../spec/2026-08-12-msl-manual-sourcing-loop-charter.md) · [Magdon-Ismail RESULTS](../../lab/analysis/mc/mc_mdd_closed_form_2026-08/RESULTS.md)
 **Layer:** MSL hunting-region election only. **$0 / K=0.** No arming, no Pine, no `core/`, no gate/threshold change.
 
 ## Decision
@@ -21,7 +21,7 @@ Operator instruction 2026-08-13: go straight to P3.4 (S2-A campaign manager). An
 
 ## Reads
 
-[re-derivation](../notes/notice/N-2026-08-13-msl-design-box-rederivation.md) @ `5dbf8129` · [second slate](../briefs/2026-08-13-msl-second-slate.md) @ `dc67c164` · [Magdon-Ismail RESULTS](../../lab/analysis/mc/mc_mdd_closed_form_2026-08/RESULTS.md) @ HEAD — **MEASURED, validation only, not calibration** · [eval-sprint notice](../notes/notice/N-2026-08-13-eval-sprint-lane-derivation.md) — **not elected**.
+[re-derivation](../notes/notice/N-2026-08-13-msl-design-box-rederivation.md) @ `5dbf8129` · [second slate](../briefs/programs/2026-08-13-msl-second-slate.md) @ `dc67c164` · [Magdon-Ismail RESULTS](../../lab/analysis/mc/mc_mdd_closed_form_2026-08/RESULTS.md) @ HEAD — **MEASURED, validation only, not calibration** · [eval-sprint notice](../notes/notice/N-2026-08-13-eval-sprint-lane-derivation.md) — **not elected**.
 
 ## Gate
 

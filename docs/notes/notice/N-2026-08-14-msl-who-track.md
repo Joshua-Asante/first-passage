@@ -17,7 +17,7 @@
 | Path | Anchor |
 |---|---|
 | [E1 closure](../../briefs/closures/MSL-S7-closure-resolved-e1-hold.md) | `39b17d41` |
-| [plan](../../briefs/2026-08-12-msl-program-plan.md) §4/§6 | `53d91873` |
+| [plan](../../briefs/programs/2026-08-12-msl-program-plan.md) §4/§6 | `53d91873` |
 | [slate-3 notice](N-2026-08-14-msl-slate-3-constraints.md) | `c4dc069d` |
 | census `N-2026-07-26-forced-flow-census.md` pass 3 backlog + pass 4 (pruned at the Great Prune; retrieve via `git show pre-prune-2026-08-08:docs/notes/notice/N-2026-07-26-forced-flow-census.md`) | standing |
 | [ADR 2026-07-26 §2-A](../../adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md) | four clauses |
@@ -270,7 +270,7 @@ test ! -d lab/analysis/c1/msl_s3a_mcl_2026-08
 test ! -d lab/analysis/c1/msl_s4a_mcl_2026-08
 test ! -d lab/analysis/c1/msl_s4a_m6a_2026-08
 rg -n "STILL DRY" docs/notes/notice/N-2026-08-14-msl-who-track.md
-rg -n "P3.8" docs/briefs/2026-08-12-msl-program-plan.md
+rg -n "P3.8" docs/briefs/programs/2026-08-12-msl-program-plan.md
 rg -n "no slate-4 card until NEW WHO" docs/briefs/closures/MSL-S7-closure-resolved-e1-hold.md
 # expect: E1 stop rule still present; this notice does not flip it
 ```

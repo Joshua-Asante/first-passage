@@ -141,7 +141,7 @@ paper.) The six-lead pursuit plan's P1 row (L3+L6) is **not** "merged pending ov
 — the overlap is resolved; L3 and L6 are the same lead, and the 2022 draft (richer author list,
 7 additional years of robustness work) is the version to carry forward. Downstream references to
 "six leads" (STATE.md 2026-08-17 decision line, the pursuit plan's priority table) need a forward
-correction, not a retro-edit — see `docs/briefs/2026-08-17-six-lead-pursuit-plan.md` §Phase-0
+correction, not a retro-edit — see `docs/briefs/programs/2026-08-17-six-lead-pursuit-plan.md` §Phase-0
 findings and the STATE.md correction line dated 2026-08-17 (this addendum).
 
 $0 / K=0 — two PDF reads, no data pull, no register_search, no Cap claim.

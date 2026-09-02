@@ -46,4 +46,4 @@ step (and a second, unnamed one) had already fired days earlier.
 [`RESULTS_EXP.md`](../../lab/analysis/_inbox/ict_mnq_2026-08/RESULTS_EXP.md) ·
 [`RESULTS_STOP.md`](../../lab/analysis/_inbox/ict_mnq_2026-08/RESULTS_STOP.md) ·
 [`ops/instruments/MNQ.md`](../../ops/instruments/MNQ.md) DEAD/REJECTED rows · originally PARKed
-[`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row b7 (2026-08-09)
+[`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row b7 (2026-08-09)

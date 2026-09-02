@@ -14,7 +14,7 @@ toplevel: C:/Users/joshu/multi_firm_operations/.worktrees/a4-footprint-diagnosti
 branch: cursor/a4-footprint-diagnostic @ a762500 (tracks origin/main; no commits ahead of main yet)
 checked:
   - docs/briefs/handoffs/2026-07-14-cursor-handoff-a4-crowd-vs-death-diagnostic.md (present)
-  - docs/briefs/2026-07-14-a4-flow-data-fork-scoping.md (present)
+  - docs/briefs/programs/2026-07-14-a4-flow-data-fork-scoping.md (present)
   - lab/archive/harv_0_month_end_rebalance_es_2026-07/{build_panel,run_harv0,chunked_pull}.py (present)
   - docs/adr/2026-07-13-harv-discovery-lane-ratification.md (Accepted; HARD gate §2)
   - lab/analysis/harv_a4_footprint_2026-07/ absent before this run (premises not already executed)
@@ -25,7 +25,7 @@ proceed: Phase-0 read-report below, then §2 TDD build
 
 ## §0 — Phase 0 read-report
 
-### A4 memo (`docs/briefs/2026-07-14-a4-flow-data-fork-scoping.md`) — §4 + §8
+### A4 memo (`docs/briefs/programs/2026-07-14-a4-flow-data-fork-scoping.md`) — §4 + §8
 
 **§4 (disposition map, memo-frozen):** price-only footprint + timing-migration on the in-hand `ohlcv-1d` panel.
 - Footprint attenuation → **H-death → DROP** the successor.

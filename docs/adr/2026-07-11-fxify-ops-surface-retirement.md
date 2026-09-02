@@ -179,7 +179,7 @@ git history; restore requires a fresh decision, not a revert. The handoff's broa
 Operator GO recorded on
 `docs/briefs/handoffs/2026-07-24-cursor-handoff-dead-surface-retirements.md`
 (via parent prune brief Packet D,
-`docs/briefs/2026-08-02-retired-surface-mission-alignment-prune.md`). Deleted:
+`docs/briefs/programs/2026-08-02-retired-surface-mission-alignment-prune.md`). Deleted:
 
 - `scripts/inactivity_simulator.py` (Q-MCTO-1 shadow; production `bust_inactivity`
   lives in `core/mc/simulation.py`)

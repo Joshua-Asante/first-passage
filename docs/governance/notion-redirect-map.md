@@ -44,7 +44,7 @@ Great Prune T1 pass — recover via `git show pre-prune-2026-08-08:<path>`.
 ## Loop records / investigations
 
 - `361dc0b53c11812d838be99fc1f7734f` — Execution Reconciliation Apr13–May14 → ARCHIVED-AT:docs/ltm/notes/archive/notion/execution-reconciliation-apr13-may14-2026.md
-- `36ddc0b53c11818ba799d9522280ed9a` — Q-JOINT-TAIL-WEEKLY (OPEN) → REPO:docs/briefs/2026-05-27-q-joint-tail-weekly-pre-q.md (roster: docs/briefs/INDEX.md); snapshot docs/ltm/notes/archive/notion/q-joint-tail-weekly.md  *(memory #13)*
+- `36ddc0b53c11818ba799d9522280ed9a` — Q-JOINT-TAIL-WEEKLY (OPEN) → REPO:docs/briefs/programs/2026-05-27-q-joint-tail-weekly-pre-q.md (roster: docs/briefs/INDEX.md); snapshot docs/ltm/notes/archive/notion/q-joint-tail-weekly.md  *(memory #13)*
 - `367dc0b53c11816eb4ded6ea231cbb8a` — Q-PRECOND-1 (closed FALSIFIED) → BULK-EXPORT pending (Joshua native); roster: docs/briefs/INDEX.md
 - `36ddc0b53c1181c481f4f164c2d7f722` — Q-JOINT-TAIL-1 (closed BLOCKED-RETIRED) → BULK-EXPORT pending (Joshua native); roster: docs/briefs/INDEX.md
 - `372dc0b53c1181cca132ecb973886cfc` — Execution Review Week 2026-05-25 → BULK-EXPORT pending (Joshua native) → docs/ltm/notes/archive/notion/

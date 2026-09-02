@@ -47,7 +47,7 @@
 | `core/mc/preflight.py` | `fc14682` 2026-07-30 | Line 124 — `inactivity_limit` reads `f["inactivity_max_idle_days"]` unless the `INACTIVITY_OFF` idiom is passed. |
 | `core/firm_rules.py` | `fc14682` 2026-07-30 | `Tradeify_Select_100K` printed in full this session: `inactivity_max_idle_days: 5`, `cost_per_side_usd: 0.91`, `micro_contract_cap: 80`, `max_dd_pct: 3.0`. |
 | `docs/notes/rail_build/TRADEIFY_AUTOMATION_PAYOUT_COMPLIANCE.md` | recorded 07-30, scope-corrected 07-31 | §2 (idle rule verbatim + soft-enforcement language), §3 (microscalping limbs), §1/§1a (automation identity; FTA §6.7(b)), §4a checklist. |
-| `docs/briefs/2026-07-23-tradeify-book-composition.md` | §5 item 5 | The standing prohibition this spec must route around: *"Manual token trades to satisfy the activity rule — off-spec discretion… Rail-level answer or accept warnings."* |
+| `docs/briefs/programs/2026-07-23-tradeify-book-composition.md` | §5 item 5 | The standing prohibition this spec must route around: *"Manual token trades to satisfy the activity rule — off-spec discretion… Rail-level answer or accept warnings."* |
 | `lab/analysis/c1/c1_cadence_inactivity_2026-08-02/RESULTS.md` | committed 2026-08-02 | Gap distribution + first inactivity-ON re-MC. |
 | `STATE.md` operator queue | curated 2026-08-01 | *"operator-hours are the binding resource and were the only unrationed one"* — the cost axis Option B is scored on. |
 
@@ -333,7 +333,7 @@ rg -n "Idle clock current" docs/notes/rail_build/TRADEIFY_AUTOMATION_PAYOUT_COMP
 # Expected: "- [ ]" while this spec is OPEN; "- [x]" only after a §6 discharge
 
 # 4. The C1 prohibition is unedited unless the operator converted it
-rg -n "Manual token trades" docs/briefs/2026-07-23-tradeify-book-composition.md
+rg -n "Manual token trades" docs/briefs/programs/2026-07-23-tradeify-book-composition.md
 # Expected: byte-unchanged §5 item 5 unless a dated operator ruling says otherwise
 
 # 5. Reproduce the exposure statistics
