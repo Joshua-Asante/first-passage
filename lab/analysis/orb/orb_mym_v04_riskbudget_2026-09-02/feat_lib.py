@@ -36,6 +36,19 @@ def _med(x, w):
     return pd.Series(x).rolling(w, min_periods=w).median().shift(1).to_numpy()
 
 
+def _med_prior_w_nonnull(x: np.ndarray, w: int, idx: pd.Index) -> np.ndarray:
+    """Trailing median over the last `w` NON-NULL observations, strictly prior
+    (skips null rows entirely rather than counting them toward `w` -- Codex
+    review on PR #265: a fixed w-row window with reduced min_periods silently
+    tests a shorter-than-registered lookback on any row within w of a null;
+    this instead always requires w REAL observations, matching the frozen
+    trailing-60-session definition exactly)."""
+    s = pd.Series(x, index=idx)
+    valid = s.dropna()
+    med = valid.rolling(w, min_periods=w).median().shift(1)
+    return med.reindex(idx).to_numpy()
+
+
 def tod_ratio(values, slot, window):
     n = len(values); out = np.full(n, np.nan); by_slot = {}
     for t in range(n):
@@ -84,10 +97,13 @@ def session_features() -> pd.DataFrame:
         f[f"{name}_low"] = sub["low"].reindex(idx).to_numpy()
     # as-run OR 09:15-09:45 = union of the 09:15 and 09:30 bars (Pine: inOR window)
     f["orr"] = np.maximum(f["b0915_high"], f["or0930_high"]) - np.minimum(f["b0915_low"], f["or0930_low"])
-    # min_periods=45: 3 sessions lack a 09:15/09:30 bar (ORR NaN) and would otherwise
-    # poison every 60-session window after them (598 -> 524 scorable days; fixed
-    # 2026-09-02, disclosed in PREREG_filters.md's addendum). Threshold unchanged.
-    f["orr_med60"] = pd.Series(f["orr"].to_numpy()).rolling(W, min_periods=45).median().shift(1).to_numpy()
+    # 3 sessions lack a 09:15/09:30 bar (ORR NaN), which poisons a fixed-width
+    # 60-ROW rolling window for every session within 60 rows after them (598 ->
+    # 524 scorable days). Fixed 2026-09-02 by skipping nulls entirely rather than
+    # lowering min_periods (Codex review, PR #265 -- a lowered min_periods tests
+    # a SHORTER lookback than the pre-registered 60-session median on affected
+    # rows, not the registered rule); this always requires 60 REAL observations.
+    f["orr_med60"] = _med_prior_w_nonnull(f["orr"].to_numpy(), W, idx)
     f["orr_wide"] = (f["orr"] > f["orr_med60"]).astype(float).where(f["orr_med60"].notna())
     f["or_width_atr"] = f["orr"] / f["atr20"]
     f["dow"] = idx.dayofweek

@@ -25,4 +25,4 @@ RAISED-BAR: keep prev-day RTH down,explor(dir),293.0,293,18.0,0.3879598662207358
 keep prev-day CLV >= median (closed high),explor,298.0,298,-12.6,0.5618729096989966,two,5706,1.245,3072,1.86,-984,0.0552
 keep prev-day CLV < median (closed low),explor,298.0,298,10.3,0.6404682274247492,two,9127,1.327,2802,3.26,-855,0.0742
 P2 Hot days x0.5 (descriptive),PRIMARY-sizing,438.0,598,,,,10596,1.243,3782,2.8,-717,0.0799
-P3 wide-OR days x0.5 (descriptive),PRIMARY-sizing,284.0,598,,,,10760,1.288,2846,3.78,-571,0.091
+P3 wide-OR days x0.5 (descriptive),PRIMARY-sizing,283.0,598,,,,10550,1.281,2846,3.71,-571,0.0891

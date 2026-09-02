@@ -13,6 +13,7 @@ sys.path.insert(0, str(REPO / "core"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from mc.simulation import HORIZON_CAP, run_seed, simulate_path  # noqa: E402
 from mc.preflight import firm_kwargs, summarize_outcomes  # noqa: E402
+from mc.ingest import build_week_blocks  # noqa: E402
 from feat_lib import day_frame  # noqa: E402
 
 OUT = Path(__file__).resolve().parent
@@ -48,11 +49,18 @@ CELLS = {
 
 
 def build(size: np.ndarray):
+    # Monday-anchored, non-overlapping 5-business-day blocks (core/mc/ingest.py::
+    # build_week_blocks, the canonical construction) -- fixed 2026-09-02 (Codex
+    # review, PR #265): a naive p[:u].reshape(n_weeks,5,1) chunks from whatever
+    # the panel's first row happens to be (here a Thursday), pairing Thu/Fri with
+    # the FOLLOWING week's Mon-Wed instead of the same calendar week, and drops
+    # the tail via truncation rather than an explicit incomplete-week policy.
     idx = pd.bdate_range(s.index.min(), s.index.max())
-    p = (pnl * size).reindex(idx, fill_value=0.0).to_numpy(float)
-    q = np.minimum((mae * size).reindex(idx, fill_value=0.0).to_numpy(float), 0.0)
-    n_weeks = len(idx) // 5; u = n_weeks * 5
-    return p.reshape(-1, 1), q, p[:u].reshape(n_weeks, 5, 1), q[:u].reshape(n_weeks, 5, 1)
+    p = (pnl * size).reindex(idx, fill_value=0.0)
+    q = np.minimum((mae * size).reindex(idx, fill_value=0.0), 0.0)
+    blocks = build_week_blocks(p.to_frame())
+    iblocks = build_week_blocks(q.to_frame())
+    return p.to_numpy(float).reshape(-1, 1), q.to_numpy(float), blocks, iblocks
 
 
 results = {}
@@ -77,4 +85,37 @@ for name, size in CELLS.items():
         print(f"[{time.time()-t0:6.0f}s] {name:28s} {tier:6s} bust={cell['bust_intraday']:6.2f}%  pass={cell['pass_intraday']:6.2f}%"
               + (f"  (EOD bust {cell['bust_eod']}% pass {cell['pass_eod']}%)" if 'bust_eod' in cell else ""), flush=True)
     (OUT / "bust_engine_results.json").write_text(json.dumps(results, indent=2))
+
+# ---------------------------------------------------------------------------
+# Inactivity-barrier check (Codex review, PR #265, P1): every cell above ran
+# with firm_kwargs's default inactivity_off=True (repo convention, matching
+# every other qty-scaling bust/pass measurement in this repo -- see
+# core/mc/preflight.py's own INACTIVITY_OFF docstring). That convention was
+# established for constructs that ALWAYS trade, just at different size; it is
+# untested for a construct that SKIPS entire days, which can run a real risk of
+# breaching Tradeify's actual 5-business-day inactivity limit
+# (firm_rules.py: inactivity_max_idle_days=5, sourced, not a placeholder).
+# Re-score the day-skipping cells with the barrier ON to measure the gap.
+# ---------------------------------------------------------------------------
+BARRIER_CHECK = ("base_q1", "base_q2", "P1_q1_skip_after_1100",
+                  "X_hot_only_q1", "X_hot_only_q2")
+print("\n=== inactivity-barrier check (Codex PR #265 P1): barrier ON vs repo-convention OFF ===", flush=True)
+barrier = {}
+for name in BARRIER_CHECK:
+    size = CELLS[name]
+    path, low, blocks, iblocks = build(size)
+    barrier[name] = {}
+    for tier, (fk, cons) in TIERS.items():
+        fkw_on = firm_kwargs(fk, consistency=cons, inactivity_off=False)
+        boot_on = summarize_outcomes([run_seed(sd, N_SIMS, blocks, 1.0, 1.0, horizon=HORIZON_CAP,
+                                               firm_kwargs=fkw_on, intraday_blocks=iblocks) for sd in SEEDS], N_SIMS)
+        off = results[name][tier]
+        on = {"bust_intraday": round(boot_on["headline_bust"] * 100, 2),
+              "pass_intraday": round(boot_on["pass_rate"] * 100, 2),
+              "bust_inactivity_rate": round(boot_on["rates"]["bust_inactivity"] * 100, 2)}
+        barrier[name][tier] = {"barrier_off": off, "barrier_on": on}
+        print(f"  {name:26s} {tier:6s} OFF bust={off['bust_intraday']:6.2f}%  "
+              f"ON bust={on['bust_intraday']:6.2f}%  (of which pure-inactivity {on['bust_inactivity_rate']:5.2f}%)"
+              f"  pass OFF={off['pass_intraday']:6.2f}% ON={on['pass_intraday']:6.2f}%", flush=True)
+(OUT / "inactivity_barrier_check.json").write_text(json.dumps(barrier, indent=2))
 print("done", flush=True)

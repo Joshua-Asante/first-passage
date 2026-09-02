@@ -136,7 +136,7 @@ more than the entire Select rope on one day** — the worst day in the §2 panel
 and the week containing day 42's realized bust.
 
 Pre-registration: [`PREREG_risk_budget.md`](PREREG_risk_budget.md). Script:
-[`risk_budget_test.py`](risk_budget_test.py) (ORR from the long bar panel, §0). Rule frozen at
+[`risk_budget_screen.py`](risk_budget_screen.py) (ORR from the long bar panel, §0). Rule frozen at
 budget=$1,500 (half the Select rope) before scoring; 4 disclosed neighbors/variants (K=5 this
 test).
 
@@ -202,7 +202,7 @@ python verify_pr259.py "<local ORB-MYM-1_v0.4_..._2026-09-02_49508.csv>"
 # §3 — risk-budget screen (needs the long BAR_EXPORT + the P50 CSV locally)
 python ../../../../scripts/parse_bar_export.py --symbol MYM \
     --in "<local BAR_EXPORT_v0.2_CBOT_MINI_MYM1!_2026-09-01_1b59b.csv>" --out /tmp/MYM_M15_long.csv
-python risk_budget_test.py /tmp/MYM_M15_long.csv "<local ...49508.csv>"
+python risk_budget_screen.py /tmp/MYM_M15_long.csv "<local ...49508.csv>"
 ```
 
 All CSVs above are operator-exported / vendor-sourced and are not committed, matching this repo's

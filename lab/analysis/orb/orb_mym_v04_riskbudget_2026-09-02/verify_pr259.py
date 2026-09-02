@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _reconcile_lite import load_csv  # noqa: E402
 from mc.simulation import HORIZON_CAP, run_seed, simulate_path  # noqa: E402
 from mc.preflight import firm_kwargs, summarize_outcomes  # noqa: E402
+from mc.ingest import build_week_blocks  # noqa: E402
 
 CSV = sys.argv[1] if len(sys.argv) > 1 else str(
     Path.home() / "Downloads" / "ORB-MYM-1_v0.4_CBOT_MINI_MYM1!_2026-09-02_49508.csv"
@@ -57,11 +58,13 @@ mae = days["mae_pc"].reindex(idx, fill_value=0.0)
 TIERS = {"Select": ("Tradeify_Select_100K", 0.40), "Growth": ("Tradeify_Growth_100K", None)}
 SEEDS = (1, 2, 3); N_SIMS = 4000
 print("\n=== canonical bootstrap bust/pass, intraday-honest, seeds(1,2,3) x 4000 ===")
+# Monday-anchored week blocks (core/mc/ingest.py::build_week_blocks) -- fixed
+# 2026-09-02 (Codex review, PR #265); see bust_engine.py's build() for why a
+# naive p[:u].reshape(nw,5,1) is wrong.
 for qty in (1, 2):
-    p = (pnl * qty).to_numpy(float); q = np.minimum((mae * qty).to_numpy(float), 0.0)
-    nw = len(idx) // 5; u = nw * 5
-    blocks = p[:u].reshape(nw, 5, 1); iblocks = q[:u].reshape(nw, 5, 1)
-    path = p.reshape(-1, 1); low = q
+    p = (pnl * qty); q = np.minimum((mae * qty), 0.0)
+    blocks = build_week_blocks(p.to_frame()); iblocks = build_week_blocks(q.to_frame())
+    path = p.to_numpy(float).reshape(-1, 1); low = q.to_numpy(float)
     for tier, (fk, cons) in TIERS.items():
         fkw = firm_kwargs(fk, consistency=cons)
         real = simulate_path(path, 1.0, 1.0, path.shape[0], intraday_low=low, **fkw)
@@ -69,3 +72,12 @@ for qty in (1, 2):
                                             firm_kwargs=fkw, intraday_blocks=iblocks) for sd in SEEDS], N_SIMS)
         print(f"q{qty} {tier:6s} bust={boot['headline_bust']*100:5.1f}%  pass={boot['pass_rate']*100:5.1f}%  "
               f"(realized path: {real[0]}, day {real[1]}, maxDD {real[2]*100:.2f}%)")
+    # Inactivity-barrier check (Codex P1): this construct (whole-position q1/q2,
+    # never skips a day) is the low-risk case for the barrier-off convention --
+    # run anyway for a same-panel comparison point against the skip-based cells.
+    for tier, (fk, cons) in TIERS.items():
+        fkw_on = firm_kwargs(fk, consistency=cons, inactivity_off=False)
+        boot_on = summarize_outcomes([run_seed(sd, N_SIMS, blocks, 1.0, 1.0, horizon=HORIZON_CAP,
+                                               firm_kwargs=fkw_on, intraday_blocks=iblocks) for sd in SEEDS], N_SIMS)
+        print(f"q{qty} {tier:6s} [barrier ON] bust={boot_on['headline_bust']*100:5.1f}%  "
+              f"pass={boot_on['pass_rate']*100:5.1f}%  (pure-inactivity {boot_on['rates']['bust_inactivity']*100:.2f}%)")
