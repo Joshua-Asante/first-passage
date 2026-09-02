@@ -901,7 +901,9 @@
     "lab/discovery/deep_lane_admission.py",
     "lab/discovery/k_count.py",
     "lab/discovery/miner.py",
+    "lab/discovery/promotion_ceilings.json",
     "lab/discovery/promotion_packet.py",
+    "lab/discovery/promotion_refuter.py",
     "lab/discovery/prop_survivor_scoring.py",
     "lab/discovery/register_search.py",
     "lab/discovery/stage24_runner.py",
@@ -963,7 +965,7 @@
     },
     {
       "name": "AMBIGUOUS-HOLD",
-      "description": "Default verdict when criteria are neither cleanly met nor cleanly failed (e.g. a mixed floor/no-floor split across limbs, or a regime-boundary spread within the discountable band). Stays open; does not advance to lifecycle authorization. ⚠ UNRESOLVED 2026-08-30: the new confirm-phase verdict set is closed at four (CONFIRMED / MARKET-NULL / EXPRESSION-FAIL / EVIDENCE-VOID) with \"no fifth combination left undefined,\" and terminal-taxonomy is silent on AMBIGUOUS-HOLD by name. Whether this disposition survives outside confirm scope or was implicitly retired is a real reconciliation gap, not a settled retirement."
+      "description": "Default verdict when criteria are neither cleanly met nor cleanly failed (e.g. a mixed floor/no-floor split across limbs, or a regime-boundary spread within the discountable band). Stays open; does not advance to lifecycle authorization. RESOLVED 2026-09-02: this is NOT superseded by the 2026-08-30 confirm-verdict set. It belongs to the closure-artifact verdict-as-filed vocabulary, which the Iterate-closure ADR §5 explicitly protects — normalizing that vocabulary is a named forbidden move. The confirm-phase four govern a different layer."
     },
     {
       "name": "REGIME-FRAGILE-REJECT",
@@ -2089,7 +2091,7 @@
         {
           "order": 1,
           "name": "Verdict routing + Iterate closure block + board-write + rejection-registry entry",
-          "mechanism": "Terminates in RESOLVED (becomes a seed/candidate eligible for lifecycle admission, never auto-deployed), FALSIFIED (DEAD-listed), VOID-* (honesty limb, retry needs a new campaign), or AMBIGUOUS-HOLD (default). Discharged as a mandatory typed `## Iterate` block: Verdict used / Model update / Next: INTEGRATE|ITERATE|STOP / routing / entry packet / stop rule / board write. A board write (instrument ledger, SESSIONS, CATALOG/manifest) is owed on every branch. FALSIFIED/DEAD entries carry rejection scope, closure basis, surviving findings, and a re-proposal bar requiring new mechanism evidence. As of 2026-08-27 this step gains its first mechanical enforcement: the `instrument-rejection-coverage` gate walks terminal-negative closures against `ops/instruments/<SYM>.md` DEAD rows. It is WARN-tier (`--exit-zero`) — it reports without blocking.",
+          "mechanism": "Terminates in RESOLVED (becomes a seed/candidate eligible for lifecycle admission, never auto-deployed), FALSIFIED (DEAD-listed), VOID-* (honesty limb, retry needs a new campaign), or AMBIGUOUS-HOLD (default). Discharged as a mandatory typed `## Iterate` block: Verdict used / Model update / Next: INTEGRATE|ITERATE|STOP / routing / entry packet / stop rule / board write. A board write (instrument ledger, SESSIONS, CATALOG/manifest) is owed on every branch. FALSIFIED/DEAD entries carry rejection scope, closure basis, surviving findings, and a re-proposal bar requiring new mechanism evidence. As of 2026-08-27 this step gains its first mechanical enforcement: the `instrument-rejection-coverage` gate walks terminal-negative closures against `ops/instruments/<SYM>.md` DEAD rows. It is WARN-tier (`--exit-zero`) — it reports without blocking. TWO VOCABULARIES, NOT ONE (clarified 2026-09-02). The closure-artifact verdict-as-filed set — RESOLVED / FALSIFIED / AMBIGUOUS[-qualifier] / VOID / MOOT / ABORT / operator-stopped / screen-fail — is UNCHANGED and explicitly PROTECTED: the Iterate-closure ADR §5 names \"inventing a closure-verdict taxonomy\" a forbidden move and rules that verdict-as-filed stands, with the typed surface being the DISPOSITION, not the verdict. The 2026-08-30 terminal-taxonomy four (CONFIRMED / MARKET-NULL / EXPRESSION-FAIL / EVIDENCE-VOID) govern the CONFIRM PHASE specifically. The two layers coexist; neither normalizes the other.",
           "inputs": "All upstream step verdicts for the candidate; the H verdict from the Q/H cycle",
           "outputs": "Final disposition; typed Iterate block; board-write entries; rejection-registry entry if FALSIFIED/DEAD",
           "gate": "RESOLVED is required before any lifecycle/deployment step; STOP is a ratified extension with budget zero, not v1's binary Integrate/Iterate; ITERATE names a successor but never opens one (opening needs a fresh operator GO)",
@@ -2099,7 +2101,8 @@
             "docs/methodology/rejected_signals.md",
             "docs/adr/2026-08-04-iterate-closure-exit-mandatory.md",
             ".claude/skills/brief-authoring/references/closure_record.md",
-            "scripts/check_instrument_rejection_coverage.py"
+            "scripts/check_instrument_rejection_coverage.py",
+            "docs/adr/2026-08-30-terminal-taxonomy.md"
           ]
         },
         {
@@ -2173,14 +2176,16 @@
         {
           "order": 3,
           "name": "Bounded sandbox-up promotion (S5) — the one automated up-exception",
-          "mechanism": "Automation MAY promote a gate-validated candidate PACKET into a capped sandbox (micro size, fixed per-candidate loss/attempt budget, capped concurrency) if it passes BOTH validate_promotion_packet (schema/freeze-commit/self-test) AND refute_promotion_packet (independent adversarial refuter). Operator approves BUDGETS via promotion_ceilings.json, never individual candidates.",
+          "mechanism": "Automation MAY promote a gate-validated candidate PACKET into a capped sandbox — ceilings read at promotion time from `promotion_ceilings.json`: 1 micro contract, $250 loss budget, 20 attempts, 2 concurrent. Automation may not edit that file; every ceiling-crossing is operator-only if it passes BOTH validate_promotion_packet (schema/freeze-commit/self-test) AND refute_promotion_packet (independent adversarial refuter). Operator approves BUDGETS via promotion_ceilings.json, never individual candidates.",
           "inputs": "A promotion packet: artifact-only claims, same-units schemas, freeze_commit hash, paired positive/negative self-tests",
           "outputs": "Sandbox admission event; no live trades, no funding, no arming",
           "gate": "The validator must FAIL the confabulated_packet.json fixture (else the lane is dead by its own falsifier)",
           "kill_condition": "No promotion past sandbox ceiling without a fresh, separate operator GO; every ceiling-crossing stays operator-only",
           "refs": [
             "docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md",
-            "lab/discovery/promotion_packet.py"
+            "lab/discovery/promotion_packet.py",
+            "lab/discovery/promotion_ceilings.json",
+            "lab/discovery/promotion_refuter.py"
           ]
         },
         {
