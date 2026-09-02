@@ -1,0 +1,168 @@
+{
+ "window": [
+  "2022-08-01",
+  "2026-07-01"
+ ],
+ "n_days": 1023,
+ "mnq_x1": {
+  "trade_days": 560,
+  "total_usd": 27955.0,
+  "per_year_usd": 6886.0,
+  "mean_active_day": 49.9,
+  "sd_active_day": 319.3,
+  "worst_day": -1066.0,
+  "best_day": 1648.0,
+  "p_loss_day_given_active": 0.439,
+  "mean_loss_day": -235.5,
+  "mean_win_day": 273.5,
+  "worst_5d_sum": -1389.0,
+  "worst_10d_sum": -1613.0,
+  "worst_20d_sum": -1401.0,
+  "worst_60d_sum": -1256.0,
+  "max_dd_realized": -1872.0,
+  "worst_dd_episodes (depth, bdays, start)": [
+   [
+    -1872.4399999999998,
+    70,
+    "2022-08-04"
+   ],
+   [
+    -1808.7599999999948,
+    34,
+    "2026-05-15"
+   ],
+   [
+    -1757.0599999999977,
+    71,
+    "2025-10-30"
+   ],
+   [
+    -1612.9199999999983,
+    14,
+    "2024-07-22"
+   ],
+   [
+    -1332.6199999999953,
+    81,
+    "2024-08-29"
+   ]
+  ],
+  "skew_active": 0.1
+ },
+ "aegis_x2": {
+  "trade_days": 120,
+  "total_usd": 6212.0,
+  "per_year_usd": 1530.0,
+  "mean_active_day": 51.8,
+  "sd_active_day": 222.9,
+  "worst_day": -400.0,
+  "best_day": 788.0,
+  "p_loss_day_given_active": 0.633,
+  "mean_loss_day": -73.3,
+  "mean_win_day": 267.7,
+  "worst_5d_sum": -425.0,
+  "worst_10d_sum": -487.0,
+  "worst_20d_sum": -500.0,
+  "worst_60d_sum": -674.0,
+  "max_dd_realized": -674.0,
+  "worst_dd_episodes (depth, bdays, start)": [
+   [
+    -674.1999999999999,
+    113,
+    "2022-09-28"
+   ],
+   [
+    -499.3000000000003,
+    69,
+    "2023-03-28"
+   ],
+   [
+    -486.80000000000064,
+    84,
+    "2024-08-27"
+   ],
+   [
+    -374.8000000000002,
+    30,
+    "2023-12-27"
+   ],
+   [
+    -374.3999999999978,
+    46,
+    "2025-06-23"
+   ]
+  ],
+  "skew_active": 1.19
+ },
+ "book": {
+  "trade_days": 634,
+  "total_usd": 34167.0,
+  "per_year_usd": 8416.0,
+  "mean_active_day": 53.9,
+  "sd_active_day": 319.0,
+  "worst_day": -1204.0,
+  "best_day": 1648.0,
+  "p_loss_day_given_active": 0.456,
+  "mean_loss_day": -212.6,
+  "mean_win_day": 277.1,
+  "worst_5d_sum": -1389.0,
+  "worst_10d_sum": -1638.0,
+  "worst_20d_sum": -1551.0,
+  "worst_60d_sum": -1430.0,
+  "max_dd_realized": -2133.0,
+  "worst_dd_episodes (depth, bdays, start)": [
+   [
+    -2133.459999999999,
+    34,
+    "2026-05-15"
+   ],
+   [
+    -2021.6,
+    70,
+    "2022-08-04"
+   ],
+   [
+    -1650.2200000000012,
+    15,
+    "2024-07-17"
+   ],
+   [
+    -1594.9199999999983,
+    82,
+    "2024-08-29"
+   ],
+   [
+    -1306.8600000000006,
+    18,
+    "2025-10-30"
+   ]
+  ],
+  "skew_active": 0.27
+ },
+ "worst_20d_window": {
+  "end": "2026-06-11",
+  "book": -1551.0,
+  "mnq": -1401.0,
+  "aegis": -150.0
+ },
+ "final_Tradeify_Select_100K": {
+  "bust_attribution": {
+   "mnq": 3023,
+   "aegis": 1430
+  },
+  "median_days": 154.0,
+  "p75_days": 207.0,
+  "bust": 14.843,
+  "pass": 85.157
+ },
+ "final_Tradeify_Growth_100K": {
+  "bust_attribution": {
+   "mnq": 1615,
+   "aegis": 736
+  },
+  "median_days": 161.0,
+  "p75_days": 219.0,
+  "bust": 7.837,
+  "pass": 92.163
+ }
+}
