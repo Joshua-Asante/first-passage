@@ -2,6 +2,10 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Eleventh roll, 2026-09-02** (one entry, pushed off by the portable-edge campaign decision):
+
+- **2026-08-23** — R1's `RESOLVED — WITH NAMED RESIDUAL` disposition ratified by operator, real-time GO ("done for what's live, openly incomplete for what isn't") — `Bulenox_100K`/`BluSky_Premium_100K` fully re-measured; archived PASS-side residual stays unauthorized. [`ratification`](../../../../../docs/superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md)
+
 **Tenth roll, 2026-09-01** (one entry, pushed off by the B1-pursuits closure):
 
 - **2026-08-23** — Phase A GO executed (A1 kill-register audit: revival list empty, A3 voided; A2 payoff-shape feasibility map published) alongside the firm-model-repair Q. [`SESSIONS 2026-08-23h`](../../../../../docs/SESSIONS.md) [`A1 audit`](../../../../../docs/notes/audits/2026-08-23-kill-register-attribution-audit.md) [`R1 RESULTS`](../../../../../lab/analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md)

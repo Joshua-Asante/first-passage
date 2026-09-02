@@ -54,7 +54,7 @@ BEHIND this list.** Items leave when done; it stays ≤5 so it cannot decay into
 
 | # | Item | Owner artifact | Blocks |
 |---|---|---|---|
-| 1 | **Find a viable trading strategy** — operator-authorized 2–3 day cultivation campaign opened 2026-09-02 for a portable edge, preferably Tradeify Select; manual weekly preservation is acceptable and confirmed edge survives edition failure. Seat A is ORB-MYM P50, still pre-contract and blocked on exact source/config/trade capture. Up to two complete-expression alternatives may be cultivated; at most one candidate contract/Confirm slot. No capital authority. | [`campaign`](docs/superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md) · [`P50 source result`](lab/analysis/orb/orb_mym_volume_gate_2026-09-02/RESULTS.md) · [`leverage memo`](docs/notes/2026-09-02-mechanism-supply-leverage-memo.md) · [`Phase B closure`](docs/superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) | production book (not M1 item 5) |
+| 1 | **Find a viable trading strategy** — 2–3 day portable-edge cultivation campaign active; Tradeify Select preferred, manual weekly preservation accepted, edition failure does not erase edge. Exact P50 is source-only and prospectively ineligible because its three-cell selection preceded contract/K freeze; B/C search for a prospectively contractable object. No capital authority. | [`decision ADR`](docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md) · [`campaign`](docs/superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md) · [`P50 source result`](lab/analysis/orb/orb_mym_volume_gate_2026-09-02/RESULTS.md) | production book (not M1 item 5) |
 | 2 | **B7-REFIRE Stage 1 + M1** — item 5 dated 2026-08-24; test strategy licensed. Does not wait on #1. No arm | [`M1 addendum`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy) · [`S2`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) | live-signal / arming path |
 
 Off-queue leftovers stay on their owner artifacts. Re-entry is promote to a numbered queue row and drop something else (cap ≤5). When a doable row leaves, do not auto-open a replacement — cite remaining rows until the operator promotes one.
@@ -70,6 +70,11 @@ One line per executed decision, newest first — consequence + owner. Posture su
 
 Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md) (P8 keep-15 roll, 2026-08-23; rolled 2026-08-27, 2026-08-29, twice on 2026-08-30, and twice on 2026-08-31).
 
+- **2026-09-02** — Portable genuine edge elected as the primary objective, with Tradeify Select
+  preferred; manual weekly preservation accepted; a confirmed edge survives edition failure.
+  Authorized a 2–3 day, research-only cultivation campaign with prospectively frozen candidate/K
+  controls and Rule-2 tripwires. Exact P50 remains source-only because its selection was already
+  viewed. No candidate/capital authority. [`ADR`](docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md)
 - **2026-09-01** — Operator closed both B1 MOC-wake pursuits: strategy `DROP` at Vet's confidently
   high positive-expectancy intake bar; source-liveness `STOP` as no-consumer work. No rows, outcomes,
   card, contract, pull, or K. Phase B now terminal with zero candidates; queue #1 remains finding a
@@ -87,7 +92,6 @@ Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state
 - **2026-08-24** — M1 item 5 dated 08-24; test strategy licensed (evaluate-hook → B1, `dry_run`). `#2` no longer waits on `#1`. No arm. [`M1 addendum`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) [`Survive-bound addendum`](docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--m1-item-5-no-longer-waits-on-queue-1)
 - **2026-08-24** — Operator queue: mechanism supply is `#1`; B7/M1 is `#2` (waits on #1). Placement is not a phase GO. [`Survive-bound addendum`](docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--the-blocker-of-b7m1-is-queue-1) [`overview`](docs/superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md)
 - **2026-08-24** — `Q-TRADECAP-2` closed `RESOLVED` — licensed close is frozen ID **2** (observe-only). Queue row 2 deleted (no auto-replace). No tripwire wire. [`elect-2`](docs/adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) [`closure`](docs/briefs/closures/Q-TRADECAP-2-closure-resolved.md)
-- **2026-08-23** — R1's `RESOLVED — WITH NAMED RESIDUAL` disposition ratified by operator, real-time GO ("done for what's live, openly incomplete for what isn't") — `Bulenox_100K`/`BluSky_Premium_100K` (what R3 actually consumes) are fully re-measured; the archived-campaign PASS-side residual stays un-re-run, not authorized for revival by this ratification. One item from the row below still open: A2's `sims_per_seed` reduction. [`ratification`](docs/superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md)
 > ⚠ **Truncated to the newest 15 at the 2026-08-08 Great Prune.** Older executed decisions are
 > owned by their ADRs (`docs/adr/`, tombstoned rows in [`TOMBSTONES.md`](docs/adr/TOMBSTONES.md));
 > full prior index: `git show pre-prune-2026-08-08:STATE.md`.

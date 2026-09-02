@@ -1,0 +1,15 @@
+[w1b] panel 2020-01-06->2026-06-30 n=1692 | gate bust<=3.0% pass>=50% seeds=(42, 123, 2026) sims=10000 horizon=1500 | arm=0.5x
+[w1b] bootstrap frozen params: n_panels=100 block=126bd seed=20260715
+[w1b] deriving bar-level intraday_low (W1 derivation, unmodified) ...
+[w1b] intraday_low ready in 4.8s min=-2562.42 neg_days=326
+[w1b] non-vacuity guard (1.00x book, short horizon) ...
+[w1b] non-vacuity OK -- eod bust=0.0250 real bust=0.3233
+[w1b] paired-draw equivalence OK on pids [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+[w1b] ===== Tradeify_Select_100K =====
+[boot] Tradeify_Select_100K n=100 block=126bd seed=20260715 jobs=8 batch=8 sims=10000
+[boot]   8/100 (1294s, est rem 14880s) eod95=0.6292% honest95=3.3882%
+[boot]   16/100 (3946s, est rem 20717s) eod95=0.7158% honest95=3.3875%
+[boot]   24/100 (6510s, est rem 20615s) eod95=0.6895% honest95=3.3527%
+[boot]   32/100 (8519s, est rem 18102s) eod95=0.7285% honest95=3.4042%
+[boot]   40/100 (10130s, est rem 15195s) eod95=0.7032% honest95=3.3708%
+[boot]   48/100 (11313s, est rem 12256s) eod95=0.6755% honest95=3.3340%
