@@ -1,0 +1,318 @@
+{
+  "base_q1": {
+    "n_traded_days": 598,
+    "avg_contracts_on_traded": 1.0,
+    "Select": {
+      "realized_intraday": [
+        "bust_trailing",
+        348,
+        2.85
+      ],
+      "bust_intraday": 34.7,
+      "pass_intraday": 65.27,
+      "bust_eod": 32.73,
+      "pass_eod": 67.22
+    },
+    "Growth": {
+      "realized_intraday": [
+        "bust_trailing",
+        367,
+        3.67
+      ],
+      "bust_intraday": 24.32,
+      "pass_intraday": 75.56,
+      "bust_eod": 22.86,
+      "pass_eod": 77.01
+    }
+  },
+  "base_q2": {
+    "n_traded_days": 598,
+    "avg_contracts_on_traded": 2.0,
+    "Select": {
+      "realized_intraday": [
+        "pass",
+        193,
+        2.46
+      ],
+      "bust_intraday": 60.79,
+      "pass_intraday": 39.21,
+      "bust_eod": 57.29,
+      "pass_eod": 42.71
+    },
+    "Growth": {
+      "realized_intraday": [
+        "pass",
+        193,
+        2.46
+      ],
+      "bust_intraday": 50.6,
+      "pass_intraday": 49.4,
+      "bust_eod": 47.35,
+      "pass_eod": 52.65
+    }
+  },
+  "P1_q1_skip_after_1100": {
+    "n_traded_days": 461,
+    "avg_contracts_on_traded": 1.0,
+    "Select": {
+      "realized_intraday": [
+        "bust_trailing",
+        347,
+        2.92
+      ],
+      "bust_intraday": 35.71,
+      "pass_intraday": 64.23
+    },
+    "Growth": {
+      "realized_intraday": [
+        "bust_trailing",
+        353,
+        3.37
+      ],
+      "bust_intraday": 25.39,
+      "pass_intraday": 74.36
+    }
+  },
+  "P1_q2_skip_after_1100": {
+    "n_traded_days": 461,
+    "avg_contracts_on_traded": 2.0,
+    "Select": {
+      "realized_intraday": [
+        "bust_trailing",
+        273,
+        3.41
+      ],
+      "bust_intraday": 59.29,
+      "pass_intraday": 40.71
+    },
+    "Growth": {
+      "realized_intraday": [
+        "bust_trailing",
+        273,
+        3.41
+      ],
+      "bust_intraday": 49.36,
+      "pass_intraday": 50.64
+    }
+  },
+  "P2_hot1_calm2": {
+    "n_traded_days": 598,
+    "avg_contracts_on_traded": 1.7324414715719063,
+    "Select": {
+      "realized_intraday": [
+        "pass",
+        216,
+        1.59
+      ],
+      "bust_intraday": 58.82,
+      "pass_intraday": 41.18
+    },
+    "Growth": {
+      "realized_intraday": [
+        "pass",
+        216,
+        1.59
+      ],
+      "bust_intraday": 49.01,
+      "pass_intraday": 50.99
+    }
+  },
+  "P3_wide1_narrow2": {
+    "n_traded_days": 598,
+    "avg_contracts_on_traded": 1.4749163879598661,
+    "Select": {
+      "realized_intraday": [
+        "bust_trailing",
+        346,
+        3.19
+      ],
+      "bust_intraday": 51.36,
+      "pass_intraday": 48.64
+    },
+    "Growth": {
+      "realized_intraday": [
+        "bust_trailing",
+        347,
+        4.0
+      ],
+      "bust_intraday": 40.95,
+      "pass_intraday": 59.05
+    }
+  },
+  "X_vol_tod_gt1_q1": {
+    "n_traded_days": 324,
+    "avg_contracts_on_traded": 1.0,
+    "Select": {
+      "realized_intraday": [
+        "pass",
+        542,
+        1.83
+      ],
+      "bust_intraday": 31.18,
+      "pass_intraday": 67.43
+    },
+    "Growth": {
+      "realized_intraday": [
+        "pass",
+        542,
+        1.83
+      ],
+      "bust_intraday": 21.02,
+      "pass_intraday": 75.88
+    }
+  },
+  "X_hot_only_q1": {
+    "n_traded_days": 160,
+    "avg_contracts_on_traded": 1.0,
+    "Select": {
+      "realized_intraday": [
+        "pass",
+        652,
+        1.11
+      ],
+      "bust_intraday": 16.25,
+      "pass_intraday": 76.14
+    },
+    "Growth": {
+      "realized_intraday": [
+        "pass",
+        652,
+        1.11
+      ],
+      "bust_intraday": 9.66,
+      "pass_intraday": 79.61
+    }
+  },
+  "X_hot_only_q2": {
+    "n_traded_days": 160,
+    "avg_contracts_on_traded": 2.0,
+    "Select": {
+      "realized_intraday": [
+        "pass",
+        372,
+        2.08
+      ],
+      "bust_intraday": 45.16,
+      "pass_intraday": 54.84
+    },
+    "Growth": {
+      "realized_intraday": [
+        "pass",
+        372,
+        2.08
+      ],
+      "bust_intraday": 34.57,
+      "pass_intraday": 65.43
+    }
+  },
+  "X_nothot_only_q1": {
+    "n_traded_days": 438,
+    "avg_contracts_on_traded": 1.0,
+    "Select": {
+      "realized_intraday": [
+        "bust_trailing",
+        362,
+        3.18
+      ],
+      "bust_intraday": 49.69,
+      "pass_intraday": 46.31
+    },
+    "Growth": {
+      "realized_intraday": [
+        "bust_trailing",
+        367,
+        3.72
+      ],
+      "bust_intraday": 38.06,
+      "pass_intraday": 53.17
+    }
+  },
+  "X_nothot_only_q2": {
+    "n_traded_days": 438,
+    "avg_contracts_on_traded": 2.0,
+    "Select": {
+      "realized_intraday": [
+        "bust_trailing",
+        303,
+        2.93
+      ],
+      "bust_intraday": 68.21,
+      "pass_intraday": 31.79
+    },
+    "Growth": {
+      "realized_intraday": [
+        "bust_trailing",
+        341,
+        3.37
+      ],
+      "bust_intraday": 60.17,
+      "pass_intraday": 39.83
+    }
+  },
+  "X_P2_inverse_hot2_calm1": {
+    "n_traded_days": 598,
+    "avg_contracts_on_traded": 1.2675585284280937,
+    "Select": {
+      "realized_intraday": [
+        "pass",
+        237,
+        2.14
+      ],
+      "bust_intraday": 49.37,
+      "pass_intraday": 50.63
+    },
+    "Growth": {
+      "realized_intraday": [
+        "pass",
+        237,
+        2.14
+      ],
+      "bust_intraday": 37.53,
+      "pass_intraday": 62.48
+    }
+  },
+  "X_P3_inverse_wide2_narrow1": {
+    "n_traded_days": 598,
+    "avg_contracts_on_traded": 1.5250836120401339,
+    "Select": {
+      "realized_intraday": [
+        "pass",
+        211,
+        2.13
+      ],
+      "bust_intraday": 58.15,
+      "pass_intraday": 41.85
+    },
+    "Growth": {
+      "realized_intraday": [
+        "pass",
+        211,
+        2.13
+      ],
+      "bust_intraday": 47.28,
+      "pass_intraday": 52.72
+    }
+  },
+  "X_P2andP3_q1_if_hot_or_wide": {
+    "n_traded_days": 598,
+    "avg_contracts_on_traded": 1.4096989966555185,
+    "Select": {
+      "realized_intraday": [
+        "bust_trailing",
+        346,
+        3.27
+      ],
+      "bust_intraday": 52.98,
+      "pass_intraday": 47.02
+    },
+    "Growth": {
+      "realized_intraday": [
+        "bust_trailing",
+        347,
+        4.08
+      ],
+      "bust_intraday": 43.13,
+      "pass_intraday": 56.87
+    }
+  }
+}
