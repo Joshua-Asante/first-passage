@@ -1,0 +1,228 @@
+[
+  {
+    "label": "base q1-flat",
+    "days_traded": 384,
+    "mean_qty_on_traded": 1.0,
+    "net": 16347.120000000003,
+    "maxdd": 2137.120000000001,
+    "worst_day": -1423.64,
+    "Select": {
+      "bust": 28.96,
+      "pass": 70.95,
+      "median_days_to_pass": 459.0,
+      "realized": [
+        "pass",
+        386,
+        1.93
+      ]
+    },
+    "Growth": {
+      "bust": 19.65,
+      "pass": 80.08,
+      "median_days_to_pass": 489.0,
+      "realized": [
+        "pass",
+        386,
+        1.93
+      ]
+    }
+  },
+  {
+    "label": "base q2-flat",
+    "days_traded": 384,
+    "mean_qty_on_traded": 2.0,
+    "net": 32694.240000000005,
+    "maxdd": 4274.240000000002,
+    "worst_day": -2847.28,
+    "Select": {
+      "bust": 51.12,
+      "pass": 48.88,
+      "median_days_to_pass": 159.0,
+      "realized": [
+        "bust_trailing",
+        42,
+        2.83
+      ]
+    },
+    "Growth": {
+      "bust": 43.08,
+      "pass": 56.92,
+      "median_days_to_pass": 166.0,
+      "realized": [
+        "bust_trailing",
+        42,
+        2.83
+      ]
+    }
+  },
+  {
+    "label": "PRIMARY budget $1,500",
+    "days_traded": 373,
+    "mean_qty_on_traded": 1.710455764075067,
+    "net": 25507.440000000002,
+    "maxdd": 3886.26,
+    "worst_day": -1550.92,
+    "Select": {
+      "bust": 43.92,
+      "pass": 56.08,
+      "median_days_to_pass": 239.0,
+      "realized": [
+        "pass",
+        151,
+        2.57
+      ],
+      "barrier_on": {
+        "bust": 0.34,
+        "pass": 0.0,
+        "bust_inactivity_rate": 99.66
+      }
+    },
+    "Growth": {
+      "bust": 33.87,
+      "pass": 66.13,
+      "median_days_to_pass": 251.0,
+      "realized": [
+        "pass",
+        151,
+        2.57
+      ],
+      "barrier_on": {
+        "bust": 0.09,
+        "pass": 0.01,
+        "bust_inactivity_rate": 99.9
+      }
+    }
+  },
+  {
+    "label": "neighbor budget $1,000",
+    "days_traded": 333,
+    "mean_qty_on_traded": 1.3093093093093093,
+    "net": 9231.200000000003,
+    "maxdd": 3715.800000000001,
+    "worst_day": -1091.92,
+    "Select": {
+      "bust": 56.45,
+      "pass": 43.31,
+      "median_days_to_pass": 509.0,
+      "realized": [
+        "bust_trailing",
+        557,
+        3.52
+      ],
+      "barrier_on": {
+        "bust": 0.02,
+        "pass": 0.0,
+        "bust_inactivity_rate": 99.98
+      }
+    },
+    "Growth": {
+      "bust": 46.87,
+      "pass": 52.12,
+      "median_days_to_pass": 555.0,
+      "realized": [
+        "bust_trailing",
+        557,
+        3.52
+      ],
+      "barrier_on": {
+        "bust": 0.0,
+        "pass": 0.0,
+        "bust_inactivity_rate": 100.0
+      }
+    }
+  },
+  {
+    "label": "neighbor budget $2,000",
+    "days_traded": 380,
+    "mean_qty_on_traded": 1.8763157894736842,
+    "net": 26361.480000000003,
+    "maxdd": 4738.359999999999,
+    "worst_day": -1709.92,
+    "Select": {
+      "bust": 50.45,
+      "pass": 49.55,
+      "median_days_to_pass": 204.0,
+      "realized": [
+        "bust_trailing",
+        42,
+        2.83
+      ]
+    },
+    "Growth": {
+      "bust": 40.92,
+      "pass": 59.08,
+      "median_days_to_pass": 215.0,
+      "realized": [
+        "pass",
+        137,
+        2.83
+      ]
+    }
+  },
+  {
+    "label": "variant hard-cap only (q2 or skip @$1,500)",
+    "days_traded": 265,
+    "mean_qty_on_traded": 2.0,
+    "net": 20126.36,
+    "maxdd": 4744.879999999999,
+    "worst_day": -1550.92,
+    "Select": {
+      "bust": 47.14,
+      "pass": 52.85,
+      "median_days_to_pass": 285.0,
+      "realized": [
+        "bust_trailing",
+        46,
+        3.29
+      ]
+    },
+    "Growth": {
+      "bust": 36.55,
+      "pass": 63.42,
+      "median_days_to_pass": 301.0,
+      "realized": [
+        "pass",
+        203,
+        3.29
+      ]
+    }
+  },
+  {
+    "label": "variant budget $1,500 at base qty 1",
+    "days_traded": 373,
+    "mean_qty_on_traded": 1.0,
+    "net": 15444.26,
+    "maxdd": 2137.120000000001,
+    "worst_day": -854.96,
+    "Select": {
+      "bust": 23.87,
+      "pass": 75.8,
+      "median_days_to_pass": 509.0,
+      "realized": [
+        "pass",
+        386,
+        1.42
+      ],
+      "barrier_on": {
+        "bust": 0.0,
+        "pass": 0.0,
+        "bust_inactivity_rate": 100.0
+      }
+    },
+    "Growth": {
+      "bust": 15.26,
+      "pass": 83.98,
+      "median_days_to_pass": 539.0,
+      "realized": [
+        "pass",
+        386,
+        1.42
+      ],
+      "barrier_on": {
+        "bust": 0.0,
+        "pass": 0.0,
+        "bust_inactivity_rate": 100.0
+      }
+    }
+  }
+]
