@@ -8,10 +8,10 @@
         348,
         2.85
       ],
-      "bust_intraday": 34.7,
-      "pass_intraday": 65.27,
-      "bust_eod": 32.73,
-      "pass_eod": 67.22
+      "bust_intraday": 41.66,
+      "pass_intraday": 58.33,
+      "bust_eod": 39.53,
+      "pass_eod": 60.46
     },
     "Growth": {
       "realized_intraday": [
@@ -19,10 +19,10 @@
         367,
         3.67
       ],
-      "bust_intraday": 24.32,
-      "pass_intraday": 75.56,
-      "bust_eod": 22.86,
-      "pass_eod": 77.01
+      "bust_intraday": 31.29,
+      "pass_intraday": 68.64,
+      "bust_eod": 29.62,
+      "pass_eod": 70.27
     }
   },
   "base_q2": {
@@ -34,10 +34,10 @@
         193,
         2.46
       ],
-      "bust_intraday": 60.79,
-      "pass_intraday": 39.21,
-      "bust_eod": 57.29,
-      "pass_eod": 42.71
+      "bust_intraday": 61.43,
+      "pass_intraday": 38.57,
+      "bust_eod": 58.45,
+      "pass_eod": 41.55
     },
     "Growth": {
       "realized_intraday": [
@@ -45,10 +45,10 @@
         193,
         2.46
       ],
-      "bust_intraday": 50.6,
-      "pass_intraday": 49.4,
-      "bust_eod": 47.35,
-      "pass_eod": 52.65
+      "bust_intraday": 52.54,
+      "pass_intraday": 47.46,
+      "bust_eod": 49.59,
+      "pass_eod": 50.41
     }
   },
   "P1_q1_skip_after_1100": {
@@ -60,8 +60,8 @@
         347,
         2.92
       ],
-      "bust_intraday": 35.71,
-      "pass_intraday": 64.23
+      "bust_intraday": 43.6,
+      "pass_intraday": 56.37
     },
     "Growth": {
       "realized_intraday": [
@@ -69,8 +69,8 @@
         353,
         3.37
       ],
-      "bust_intraday": 25.39,
-      "pass_intraday": 74.36
+      "bust_intraday": 33.43,
+      "pass_intraday": 66.44
     }
   },
   "P1_q2_skip_after_1100": {
@@ -82,8 +82,8 @@
         273,
         3.41
       ],
-      "bust_intraday": 59.29,
-      "pass_intraday": 40.71
+      "bust_intraday": 62.3,
+      "pass_intraday": 37.7
     },
     "Growth": {
       "realized_intraday": [
@@ -91,8 +91,8 @@
         273,
         3.41
       ],
-      "bust_intraday": 49.36,
-      "pass_intraday": 50.64
+      "bust_intraday": 53.87,
+      "pass_intraday": 46.12
     }
   },
   "P2_hot1_calm2": {
@@ -104,8 +104,8 @@
         216,
         1.59
       ],
-      "bust_intraday": 58.82,
-      "pass_intraday": 41.18
+      "bust_intraday": 61.7,
+      "pass_intraday": 38.3
     },
     "Growth": {
       "realized_intraday": [
@@ -113,21 +113,21 @@
         216,
         1.59
       ],
-      "bust_intraday": 49.01,
-      "pass_intraday": 50.99
+      "bust_intraday": 52.98,
+      "pass_intraday": 47.02
     }
   },
   "P3_wide1_narrow2": {
     "n_traded_days": 598,
-    "avg_contracts_on_traded": 1.4749163879598661,
+    "avg_contracts_on_traded": 1.4732441471571907,
     "Select": {
       "realized_intraday": [
         "bust_trailing",
         346,
         3.19
       ],
-      "bust_intraday": 51.36,
-      "pass_intraday": 48.64
+      "bust_intraday": 55.15,
+      "pass_intraday": 44.85
     },
     "Growth": {
       "realized_intraday": [
@@ -135,8 +135,8 @@
         347,
         4.0
       ],
-      "bust_intraday": 40.95,
-      "pass_intraday": 59.05
+      "bust_intraday": 45.55,
+      "pass_intraday": 54.45
     }
   },
   "X_vol_tod_gt1_q1": {
@@ -148,8 +148,8 @@
         542,
         1.83
       ],
-      "bust_intraday": 31.18,
-      "pass_intraday": 67.43
+      "bust_intraday": 38.75,
+      "pass_intraday": 60.46
     },
     "Growth": {
       "realized_intraday": [
@@ -157,8 +157,8 @@
         542,
         1.83
       ],
-      "bust_intraday": 21.02,
-      "pass_intraday": 75.88
+      "bust_intraday": 28.6,
+      "pass_intraday": 69.35
     }
   },
   "X_hot_only_q1": {
@@ -170,8 +170,8 @@
         652,
         1.11
       ],
-      "bust_intraday": 16.25,
-      "pass_intraday": 76.14
+      "bust_intraday": 22.17,
+      "pass_intraday": 71.07
     },
     "Growth": {
       "realized_intraday": [
@@ -179,8 +179,8 @@
         652,
         1.11
       ],
-      "bust_intraday": 9.66,
-      "pass_intraday": 79.61
+      "bust_intraday": 13.8,
+      "pass_intraday": 75.83
     }
   },
   "X_hot_only_q2": {
@@ -192,8 +192,8 @@
         372,
         2.08
       ],
-      "bust_intraday": 45.16,
-      "pass_intraday": 54.84
+      "bust_intraday": 49.17,
+      "pass_intraday": 50.82
     },
     "Growth": {
       "realized_intraday": [
@@ -201,8 +201,8 @@
         372,
         2.08
       ],
-      "bust_intraday": 34.57,
-      "pass_intraday": 65.43
+      "bust_intraday": 39.24,
+      "pass_intraday": 60.76
     }
   },
   "X_nothot_only_q1": {
@@ -214,8 +214,8 @@
         362,
         3.18
       ],
-      "bust_intraday": 49.69,
-      "pass_intraday": 46.31
+      "bust_intraday": 54.99,
+      "pass_intraday": 42.72
     },
     "Growth": {
       "realized_intraday": [
@@ -223,8 +223,8 @@
         367,
         3.72
       ],
-      "bust_intraday": 38.06,
-      "pass_intraday": 53.17
+      "bust_intraday": 43.23,
+      "pass_intraday": 50.82
     }
   },
   "X_nothot_only_q2": {
@@ -236,8 +236,8 @@
         303,
         2.93
       ],
-      "bust_intraday": 68.21,
-      "pass_intraday": 31.79
+      "bust_intraday": 70.21,
+      "pass_intraday": 29.79
     },
     "Growth": {
       "realized_intraday": [
@@ -245,8 +245,8 @@
         341,
         3.37
       ],
-      "bust_intraday": 60.17,
-      "pass_intraday": 39.83
+      "bust_intraday": 62.8,
+      "pass_intraday": 37.2
     }
   },
   "X_P2_inverse_hot2_calm1": {
@@ -258,8 +258,8 @@
         237,
         2.14
       ],
-      "bust_intraday": 49.37,
-      "pass_intraday": 50.63
+      "bust_intraday": 52.11,
+      "pass_intraday": 47.89
     },
     "Growth": {
       "realized_intraday": [
@@ -267,21 +267,21 @@
         237,
         2.14
       ],
-      "bust_intraday": 37.53,
-      "pass_intraday": 62.48
+      "bust_intraday": 41.72,
+      "pass_intraday": 58.28
     }
   },
   "X_P3_inverse_wide2_narrow1": {
     "n_traded_days": 598,
-    "avg_contracts_on_traded": 1.5250836120401339,
+    "avg_contracts_on_traded": 1.5267558528428093,
     "Select": {
       "realized_intraday": [
         "pass",
         211,
         2.13
       ],
-      "bust_intraday": 58.15,
-      "pass_intraday": 41.85
+      "bust_intraday": 59.17,
+      "pass_intraday": 40.83
     },
     "Growth": {
       "realized_intraday": [
@@ -289,21 +289,21 @@
         211,
         2.13
       ],
-      "bust_intraday": 47.28,
-      "pass_intraday": 52.72
+      "bust_intraday": 49.94,
+      "pass_intraday": 50.06
     }
   },
   "X_P2andP3_q1_if_hot_or_wide": {
     "n_traded_days": 598,
-    "avg_contracts_on_traded": 1.4096989966555185,
+    "avg_contracts_on_traded": 1.4080267558528428,
     "Select": {
       "realized_intraday": [
         "bust_trailing",
         346,
         3.27
       ],
-      "bust_intraday": 52.98,
-      "pass_intraday": 47.02
+      "bust_intraday": 57.07,
+      "pass_intraday": 42.93
     },
     "Growth": {
       "realized_intraday": [
@@ -311,8 +311,8 @@
         347,
         4.08
       ],
-      "bust_intraday": 43.13,
-      "pass_intraday": 56.87
+      "bust_intraday": 47.73,
+      "pass_intraday": 52.27
     }
   }
 }

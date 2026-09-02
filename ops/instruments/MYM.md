@@ -158,8 +158,9 @@ structure:
 
 ## SESSION LOG
 
-- **2026-09-02 (later)** — **Filter screen (3 FAIL) + independent verification of this ledger's
-  own P50 entry (below) + new `riskBudgetUsd` Pine input, engine-tested**
+- **2026-09-02 (later, corrected same day after PR #265 Codex review)** — **Filter screen (3
+  FAIL) + independent verification of this ledger's own P50 entry (below) + new `riskBudgetUsd`
+  Pine input, engine-tested**
   ([`RESULTS`](../../lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/RESULTS.md)). Three
   pre-registered filters on the v0.4 base export (598-day window, 2020-09-24→2026-07-02) — skip
   late breakouts, half-size Hot days, half-size wide-OR days — **all FAIL** the frozen dominance
@@ -168,22 +169,33 @@ structure:
   986-leg/$31,947.96 trade list** (not the screenshot reads that RESULTS.md's Off/P80 cells still
   rest on): net/PF reconcile to the cent, but at the qty-2 size the headline was measured, the
   realized historical path itself busts `Tradeify_Select_100K` on trading day 42 (maxDD 2.83% vs
-  the 3.0% trail), and the canonical bootstrap engine (`core/mc/simulation.py`) puts bust at
-  51.1% (Select) / 41.4% (Growth) — third time this construct shows good raw TradingView metrics
-  and a bad canonical-engine bust rate. Mechanism found in the Pine's own construction (stop +
-  every scale-in step are OR-width multiples; the Tradeify rope is fixed dollars — 2020-03-20's
-  560pt OR implied $4,200 planned risk at qty 2, more than the whole Select rope) motivated a new
+  the 3.0% trail), and the canonical bootstrap engine (`core/mc/simulation.py`, Monday-anchored
+  week blocks per `core/mc/ingest.py::build_week_blocks`) puts bust at 51.2% (Select) / 43.4%
+  (Growth) — third time this construct shows good raw TradingView metrics and a bad
+  canonical-engine bust rate. Mechanism found in the Pine's own construction (stop + every
+  scale-in step are OR-width multiples; the Tradeify rope is fixed dollars — 2020-03-20's 560pt
+  OR implied $4,200 planned risk at qty 2, more than the whole Select rope) motivated a new
   `riskBudgetUsd` input, pre-registered and engine-scored before being written into the script:
-  FAILS the same dominance rule at qty 2, but at base qty 1 clears it on both tiers (Select
-  22.1%→15.7% bust, Growth 14.0%→9.0%), in practice a far-tail 11-of-384-day OR-width skip whose
-  own net is positive. Default **OFF** — reproduces every previously-measured number in the
-  file's header exactly; a tighter budget measured WORSE (edge concentrates on wide-OR days).
-  `python scripts/pine_check.py` (TradingView Guest compile) → `OK`; new Pine SHA-256 differs
-  from the `9292bd4e…` cited below (this edit postdates every measurement in this entry). K
-  disclosed (§ counts in the RESULTS doc), not registered via `discovery.register_search` —
-  cumulative informal K on this construct family this session ≈35. Source-stage only: no Confirm
-  claim, lifecycle/allocation/rail change, or live-capital authorization. Next step (not done
-  here): one pre-registered TV-native A/B of `riskBudgetUsd=1500` at qty 1.
+  FAILS the same dominance rule at qty 2. **Per the pre-registration's own rule ("neighbors are
+  never promoted over the primary"), that is where this stops** — a qty-1 variant scored better
+  in isolation (Select 29.0%→23.9% bust, Growth 19.7%→15.3% bust) but is the observed winner
+  among several scored variants, not a licensed recommendation; an earlier pass of this entry
+  recommended it as a next-step A/B, which was a genuine rule violation caught in review and
+  corrected here, not silently edited away. In practice it is a far-tail 11-of-384-day OR-width
+  skip whose own net is positive. Default **OFF** — reproduces every previously-measured number
+  in the file's header exactly; a tighter budget measured WORSE (edge concentrates on wide-OR
+  days). `python scripts/pine_check.py` (TradingView Guest compile) → `OK`; new Pine SHA-256
+  `806619993410e2cdc666dc0e1bc7a1e42dd98ac6fab33dccb1870cbe6cc4e89b`, differing from the
+  `9292bd4e…` cited below (this edit postdates every measurement in this entry). K disclosed (§
+  counts in the RESULTS doc), not registered via `discovery.register_search` — cumulative
+  informal K on this construct family this session ≈35. **Inactivity-barrier check (Codex
+  review): every cell here, including the densest (base_q1, 39.7% trade-day density), collapses
+  to ~99% total failure via pure inactivity if the standing weekly venue-idle token trade is
+  assumed absent — confirmation the mitigation is load-bearing for this whole construct family,
+  not a new problem; see
+  [[feedback_inactivity_barrier_off_is_correct_weekly_token_trade]].** Source-stage only: no
+  Confirm claim, lifecycle/allocation/rail change, or live-capital authorization. No next-step
+  A/B is recommended by this entry.
 - **2026-09-02** — **ORB-MYM v0.4 opening-range volume gate: P50 exploratory source winner;
   forward confirmation owed** ([`RESULTS`](../../lab/analysis/orb/orb_mym_volume_gate_2026-09-02/RESULTS.md)).
   Operator TradingView reads with only the reported gate changed: Off $26,330.76 / PF 1.198 /
