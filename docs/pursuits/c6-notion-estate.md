@@ -24,4 +24,4 @@ Notion export bodies recover via `pre-prune-2026-08-08`. Behavioral-archive CSV 
 remains `DONE_WITH_CONCERNS` (accepted on the 2026-08-10 GO).
 
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3) · **Follow-up recorded:** 2026-08-10
-**Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row c6
+**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row c6

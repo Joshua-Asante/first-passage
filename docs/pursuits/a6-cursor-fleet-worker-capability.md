@@ -9,4 +9,4 @@
 
 **Owner artifacts:** `cursor-fleet` skill · three frozen packets pending dispatch (2026-08-09: dense-1m entry lane, instrument lane, W1 re-run)
 
-**Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row a6
+**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row a6

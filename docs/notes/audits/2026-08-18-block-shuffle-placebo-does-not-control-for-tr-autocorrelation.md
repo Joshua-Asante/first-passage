@@ -5,7 +5,7 @@
 **Triggered by:** unexpected outcome (adversarial review of a claimed SIGNAL)
 **Authors:** Joshua (GO) + Claude Code (drafter, adversarial-verify workflow `wf_b2b794d6-380`)
 **Scope:** the `daily-range-state-persistence` Tier-1 screen template (`run_s1a.py`/`run_s1b.py`,
-shared byte-for-byte) — [Step-0 slate](../../briefs/2026-08-18-step0-daily-geometry-mechanism-slate.md)
+shared byte-for-byte) — [Step-0 slate](../../briefs/programs/2026-08-18-step0-daily-geometry-mechanism-slate.md)
 rows S1a/S1b, and by direct exposure S2/S3 which were queued to reuse the same battery.
 **Lives in:** `docs/notes/audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md`
 
@@ -202,7 +202,7 @@ grep -rn "block_shuffle_conditional_p95\|AR.*surrogate\|GARCH.*surrogate" \
 
 # S2/S3 pause is lifted only after a structural fix lands:
 grep -n "PAUSED\|AUDIT-2026-08-18-tr-placebo" \
-  docs/briefs/2026-08-18-step0-daily-geometry-mechanism-slate.md
+  docs/briefs/programs/2026-08-18-step0-daily-geometry-mechanism-slate.md
 ```
 
 ---
@@ -230,5 +230,5 @@ grep -n "PAUSED\|AUDIT-2026-08-18-tr-placebo" \
 git log --oneline -1   # anchor commit at authoring
 grep -n "NOT-CONFIRMED" lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md
 grep -n "AUDIT-2026-08-18" ops/instruments/MECHANISMS.md ops/instruments/MGC.md \
-  ops/instruments/MCL.md docs/briefs/2026-08-18-step0-daily-geometry-mechanism-slate.md
+  ops/instruments/MCL.md docs/briefs/programs/2026-08-18-step0-daily-geometry-mechanism-slate.md
 ```

@@ -11,4 +11,4 @@ daemon build GO (2026-08-08) — its stranding is actively resolving, not stalle
 **Owner artifacts:** [`Q-SIGID-1`](../briefs/Q-SIGID-1-intra-bar-signal-identity.md) ·
 [`pre-reg`](../briefs/pre-registration/Q-SIGID-1-verdict-preregistration.md)
 
-**Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row c2
+**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row c2

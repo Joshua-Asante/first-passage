@@ -6,7 +6,7 @@
   "dedup_paths": [
     "docs/rejected_candidates.md",
     "lab/CATALOG.md",
-    "docs/briefs/2026-08-13-msl-second-slate.md",
+    "docs/briefs/programs/2026-08-13-msl-second-slate.md",
     "docs/briefs/closures/MSL-C1-closure-falsified.md",
     "docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md",
     "docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md",

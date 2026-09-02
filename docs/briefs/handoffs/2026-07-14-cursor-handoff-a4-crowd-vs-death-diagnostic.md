@@ -5,7 +5,7 @@
 **Spawn target:** Cursor (research venv `.venv-research`; pandas/numpy/scipy; **no** Databento client in new code).
 **Repo:** `multi_firm_operations`
 **Brief type:** Cursor handoff (multi-step; TDD build-with-synthetic, real-run gated on the operator's pull)
-**Parent question:** the **A4 fork** — is the Q-HARV-0 month-end-harvest era decay **mechanism-death** (no on-futures harvest survives) or **not-clearly-dead**? Pre-registered in [`docs/briefs/2026-07-14-a4-flow-data-fork-scoping.md`](../2026-07-14-a4-flow-data-fork-scoping.md) §4. **This diagnostic is a conservative DROP-or-DEFER filter, not a go/no-go: it can kill a dead candidate (save the K) but NEVER bless one.**
+**Parent question:** the **A4 fork** — is the Q-HARV-0 month-end-harvest era decay **mechanism-death** (no on-futures harvest survives) or **not-clearly-dead**? Pre-registered in [`docs/briefs/programs/2026-07-14-a4-flow-data-fork-scoping.md`](../programs/2026-07-14-a4-flow-data-fork-scoping.md) §4. **This diagnostic is a conservative DROP-or-DEFER filter, not a go/no-go: it can kill a dead candidate (save the K) but NEVER bless one.**
 **Authority:** Joshua (CEO). claude.ai authored; Cursor executes. **No commit/merge without Joshua's go.** **NO `db_fetch` pull / estimate, NO Databento client construction anywhere in new code** — the pull is operator-side (skill Rule 1: mandatory cost estimate first). Build + test on synthetic fixtures; the real run is gated on `parents_ohlcv_1d.parquet` existing AND an explicit operator flag.
 
 **Workspace pin (CORRECTED v3):** PR #368 has **merged to `main`** (commit `fcf8f32`, 2026-07-14 12:28 ET). The pre-registration memo and this handoff are both already on `origin/main`, byte-identical since the merge. **The old feature branch `claude/repo-priorities-474be0` is deleted from origin — do not reference it.** Branch off **`origin/main`**: `git fetch origin && git checkout -b cursor/a4-footprint-diagnostic origin/main`. Build in a **new** dir `lab/analysis/harvest/harv_a4_footprint_2026-07/` — **do not mutate the archived study** `lab/archive/harv_0_month_end_rebalance_es_2026-07/` (import/copy its frozen panel functions; leave its bytes untouched).
@@ -27,7 +27,7 @@
 
 Cursor: read each and post a read-report first. If repo state contradicts a §2 assumption, `NEEDS_CONTEXT`.
 
-- [`docs/briefs/2026-07-14-a4-flow-data-fork-scoping.md`](../2026-07-14-a4-flow-data-fork-scoping.md) — report **§4 (disposition map)** + §8 verbatim. Note v2 of THIS handoff **narrows** the frozen map to its DROP + (non-GO) DEFER outputs by design — assert against that narrowing, stated in §4 below.
+- [`docs/briefs/programs/2026-07-14-a4-flow-data-fork-scoping.md`](../programs/2026-07-14-a4-flow-data-fork-scoping.md) — report **§4 (disposition map)** + §8 verbatim. Note v2 of THIS handoff **narrows** the frozen map to its DROP + (non-GO) DEFER outputs by design — assert against that narrowing, stated in §4 below.
 - `lab/archive/harv_0_month_end_rebalance_es_2026-07/build_panel.py` — report: `load_symbol_frame` (**returns OHLC only — DROPS `volume`**; §2.1 needs a volume-preserving variant), the settle-date/weekend-drop logic, `signal_from_r_spread` (**qualifying is truncation-floored at |R_spread|≥100bp** — L107-113), `build_monthly_panel` columns (`T_1..T_4`, `R_spread`, `R_spread_bp`, `window`, `signal`, `qualifying`, `quarter_end`, `micro_era`), and **L149-151 (R_spread conditioning window ends at `close[T-4]`)** — this is why T-4 is the selection endpoint. Frozen functions: import/copy, never edit.
 - `lab/archive/harv_0_month_end_rebalance_es_2026-07/run_harv0.py` — report `perm_test_signed` + `effect_on` (the signed-effect + label-permutation + bootstrap pattern the informational timing leg reuses).
 - `lab/archive/harv_0_month_end_rebalance_es_2026-07/chunked_pull.py` — report the symbols/schema/range (`ES.c.0 YM.c.0 ZN.c.0 GC.c.0` + `MES/MYM`, `ohlcv-1d` continuous, 2010-06-06→2026-07-01). **Confirm `ohlcv-1d` carries `volume`** (it does) — the footprint premise depends on it.
@@ -161,7 +161,7 @@ grep -E "^Status: (DONE|DONE_WITH_CONCERNS|NEEDS_CONTEXT|BLOCKED)" <cursor-retur
 ```
 
 ## Related
-- Pre-registration: [`2026-07-14-a4-flow-data-fork-scoping.md`](../2026-07-14-a4-flow-data-fork-scoping.md) (§4 map, §8) · PR #368 (merged to `main` at `fcf8f32`, 2026-07-14).
+- Pre-registration: [`2026-07-14-a4-flow-data-fork-scoping.md`](../programs/2026-07-14-a4-flow-data-fork-scoping.md) (§4 map, §8) · PR #368 (merged to `main` at `fcf8f32`, 2026-07-14).
 - DEFER-destination correction (v3): [`Q-HARV-1 / HARV-2026-002`](../../ltm/briefs/Q-HARV-1-month-end-rebalance-successor.md) DECLINED at §R (commit `9bddd33`) · [`Q-KBUDGET-1`](../pre-registration/Q-KBUDGET-1-screen-preregistration.md) (the inventory DEFER now feeds).
 - HARV lane reachability discipline: [`docs/adr/2026-07-13-harv-discovery-lane-ratification.md`](../../adr/2026-07-13-harv-discovery-lane-ratification.md) (Accepted, HARD gate).
 - Data provenance: `lab/archive/harv_0_month_end_rebalance_es_2026-07/chunked_pull.py`.

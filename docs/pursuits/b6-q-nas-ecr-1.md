@@ -18,4 +18,4 @@ ECR (edge-captured ratio) concept itself is the residual — no other pursuit cu
 estate"); this record supplies the missing re-entry+expiry fields
 
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3)
-**Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row b6
+**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row b6

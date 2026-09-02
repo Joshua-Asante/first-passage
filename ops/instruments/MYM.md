@@ -26,7 +26,7 @@ cells:
   - mechanism: trend-following
     verdict: LIVE
     date: 2026-07-23
-    source: "../../docs/briefs/2026-07-23-tradeify-book-composition.md"
+    source: "../../docs/briefs/programs/2026-07-23-tradeify-book-composition.md"
   - mechanism: opening-range-continuation
     verdict: DEAD
     date: 2026-07-16
@@ -97,7 +97,7 @@ structure:
 
 | # | Finding | Evidence | Confidence |
 |---|---|---|---|
-| **M1** | **The incumbent locked leg is profitable on this instrument.** Striker DJ30 v4.5 MYM venue edition on its own export: **PF 1.80 / WR 40.3% / n=263 / net $35,121.70**. This is the correct reference when reading the reconstruction failures below — MYM is **not** a barren instrument; one narrow *continuation* expression failed on it. | [`2026-07-23-tradeify-book-composition.md`](../../docs/briefs/2026-07-23-tradeify-book-composition.md) | **HIGH** (measured export). |
+| **M1** | **The incumbent locked leg is profitable on this instrument.** Striker DJ30 v4.5 MYM venue edition on its own export: **PF 1.80 / WR 40.3% / n=263 / net $35,121.70**. This is the correct reference when reading the reconstruction failures below — MYM is **not** a barren instrument; one narrow *continuation* expression failed on it. | [`2026-07-23-tradeify-book-composition.md`](../../docs/briefs/programs/2026-07-23-tradeify-book-composition.md) | **HIGH** (measured export). |
 | **M2** | **Opening-range CONTINUATION does not survive on MYM.** `S-MYM-ORC-02` (session-aware, N=403): **D0/D1/D9 PASS, D2–D8 FAIL** — placebo **p=0.2144**, gross/cost ratio **0.693** against a 4.00 bar, net **−0.0210R**, PF **0.951**. Seven independent failures where one suffices under §6.2. | [`closure`](../../docs/briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md) | **HIGH** (pre-registered). |
 | **M3** | **D3 is arithmetically unrescuable by sizing.** The gross/cost ratio reduces to mean gross $ ÷ mean cost $ = **0.655** — contracts and stop-width cancel out. No position-size, risk-%, or R-renormalization can move it; only hold-time or venue can, and hold-time is an explicitly-mapped exhausted lever. | [`closure` §D3](../../docs/briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md) | **HIGH** (algebraic). |
 | **M4** | **ORC-01's AMBIGUOUS was the gate working, not a runner bug.** Its exit-2 was the **pre-registered AMBIGUOUS-HOLD branch operating correctly** against a blind spot in the frozen candidate-1 semantic — a universal 16:00 force-flat vs **53 exchange early closes**. Cited correctly: this is a spec blind-spot finding, not a code defect. | [`closure` §3](../../docs/briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-1-ambiguous.md) | **HIGH**. |

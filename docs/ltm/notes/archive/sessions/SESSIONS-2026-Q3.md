@@ -2235,7 +2235,7 @@ disclosed) → **NULL, 3 of 4 limbs failed**; bearish arm carries zero informati
 daily-native null. MNQ ledger DEAD row added.
 [`PREREG`](../../../../../lab/analysis/_inbox/dstruct_mnq_2026-08/PREREG_DSTRUCT.md) ·
 [`RESULTS`](../../../../../lab/analysis/_inbox/dstruct_mnq_2026-08/RESULTS_DSTRUCT.md).
-(3) Step-0 slate drafted: [`brief`](../../../../briefs/2026-08-18-step0-daily-geometry-mechanism-slate.md)
+(3) Step-0 slate drafted: [`brief`](../../../../briefs/programs/2026-08-18-step0-daily-geometry-mechanism-slate.md)
 — daily-geometry class (range/level, not direction) on the non-index triad, per-row WHO +
 dedup + cost arithmetic + frozen Tier-1 screen specs. Operator marks owed on the slate.
 
@@ -2370,7 +2370,7 @@ fourth insignificant/below cost hurdle). Harvest §4 limb-2 counter **ruled — 
 sourcing-channel addendum landed on the harvest intake ADR (light tier, $0/K=0).
 [`CF LOG`](../../../../../lab/analysis/harvest/six_lead_cf_2026-08-17/LOG.md) ·
 [`harvest intake ADR`](../../../../adr/2026-07-15-external-mechanism-harvest-intake.md) ·
-[`plan`](../../../../briefs/2026-08-17-six-lead-pursuit-plan.md) §13.
+[`plan`](../../../../briefs/programs/2026-08-17-six-lead-pursuit-plan.md) §13.
 
 **Decisions/defects:** None new beyond the three landings above — all three were already
 recommended/drafted by the plan's own §13 marks packet; this session executed and ratified them,
@@ -2601,7 +2601,7 @@ dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
 
 **Focus:** Operator: "address head on what may be holding us back from finding viable strategies for Tradeify" (ultracode). Diagnose, then draft the elected next steps.
 
-**Shipped:** branch `claude/dry-funnel-election-packets` — [state-policy scoring packet](../../../../briefs/2026-08-16-state-policy-scoring-review.md) (`OWED-election`: P0 keep-dormant / P1 run Q-EVALSEQ-1 as frozen / P2 + policy frontier) · [deep-iteration lane charter](../../../../adr/2026-08-16-deep-iteration-lane-charter.md) (`Proposed`, full tier; default disposition HOLD to the 2026-11-08 §4 reading). $0 · K=0 · nothing runs.
+**Shipped:** branch `claude/dry-funnel-election-packets` — [state-policy scoring packet](../../../../briefs/programs/2026-08-16-state-policy-scoring-review.md) (`OWED-election`: P0 keep-dormant / P1 run Q-EVALSEQ-1 as frozen / P2 + policy frontier) · [deep-iteration lane charter](../../../../adr/2026-08-16-deep-iteration-lane-charter.md) (`Proposed`, full tier; default disposition HOLD to the 2026-11-08 §4 reading). $0 · K=0 · nothing runs.
 
 **Decisions/defects:** none ratified — both artifacts are operator elections. Session diagnostic (8 readers + 7 refuters, operator-held): dryness = mechanism supply (matches the 08-15 wall audit) + an unmodeled within-attempt state-policy lever (every N-SURV number is constant-policy; Q-EVALSEQ-1 dormant) + no priced iteration depth. Refuted en route: ORB retry-EV rescue; small-weight compose; CONFIRM reads. Both drafts adversarially reviewed pre-commit (11 blockers fixed, incl. an unbinding K-predicate).
 
@@ -2699,7 +2699,7 @@ dense-1m U0 KEEP; MSL E1 HOLD; four-firms §4 2026-11-08.
 
 **Focus:** Draft a reviewable plan for unpausing the dense-1m OHLCV temporal-selectivity / entry-geometry default. Pause stays until a Board mark.
 
-**Shipped:** branch `cursor/dense1m-unpause-plan-22c1` — [packet](../../../../briefs/2026-08-15-dense1m-lane-unpause-review.md) presents U0 KEEP / U1 ADMIT-ONE / U2 OPEN-DEFAULT; elects none; no CON-6, no camp, no ADR. $0 · K=0.
+**Shipped:** branch `cursor/dense1m-unpause-plan-22c1` — [packet](../../../../briefs/programs/2026-08-15-dense1m-lane-unpause-review.md) presents U0 KEEP / U1 ADMIT-ONE / U2 OPEN-DEFAULT; elects none; no CON-6, no camp, no ADR. $0 · K=0.
 
 **Decisions/defects:** none marked. Owner of the pause remains [CON-5 Branch A](../../../../briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md). U1/U2 would need a full limb-4 ADR.
 
@@ -3060,9 +3060,9 @@ token; Magdon-Ismail B.
 
 **Focus:** Plan-§7 Board packet: evidence + E1 HOLD / E2 CLOSE; do not elect.
 
-**Shipped:** branch `cursor/msl-s7-board-review-85f5` — [PR #820](https://github.com/Joshua-Asante/first-passage-archive/pull/820) — [packet](../../../../briefs/2026-08-14-msl-slate-generation-review.md) · plan §6 P3.7 **OWED-election** · no camp · no E2 ADR. $0 · K=0.
+**Shipped:** branch `cursor/msl-s7-board-review-85f5` — [PR #820](https://github.com/Joshua-Asante/first-passage-archive/pull/820) — [packet](../../../../briefs/programs/2026-08-14-msl-slate-generation-review.md) · plan §6 P3.7 **OWED-election** · no camp · no E2 ADR. $0 · K=0.
 
-**Decisions/defects:** Yield not fired (four G0s; two pre-G0 deaths). Operator owns E1/E2. Owner: [packet](../../../../briefs/2026-08-14-msl-slate-generation-review.md).
+**Decisions/defects:** Yield not fired (four G0s; two pre-G0 deaths). Operator owns E1/E2. Owner: [packet](../../../../briefs/programs/2026-08-14-msl-slate-generation-review.md).
 
 **Open / next:** Operator mark E1 (HOLD, recommended) or E2 (CLOSE via full ADR). Carry: F-2 disposition; CapFLOW; F1 2026-11-08; M1; weekly token; Magdon-Ismail B; research venvs. Confirm #806 CI; cart confirm.
 
@@ -3104,7 +3104,7 @@ token; Magdon-Ismail B.
 
 **Shipped:** branch `cursor/msl-s2b-stage01-85f5` — [PR #817](https://github.com/Joshua-Asante/first-passage-archive/pull/817) — camp [`msl_s2b_mym_2026-08`](../../../../../lab/analysis/c1/msl_s2b_mym_2026-08) · [STAGE0](../../../../../lab/analysis/c1/msl_s2b_mym_2026-08/STAGE0.md) · [STAGE1](../../../../../lab/analysis/c1/msl_s2b_mym_2026-08/STAGE1.md) · [closure](../../../../briefs/closures/MSL-S2B-closure-stage1-fail-route.md) · MECHANISMS + registry + plan §6. $0 · K=0. No G0/Pine. Renumbered `14h`→`14i` on merge (#816 claimed `14h`).
 
-**Decisions/defects:** Pre-G0 kill — raised bar unbound for continuation *entry*; SLR route ① filter-only; temporal-selectivity paused; composite refused. Owner: [second slate §S2B](../../../../briefs/2026-08-13-msl-second-slate.md) · [closure](../../../../briefs/closures/MSL-S2B-closure-stage1-fail-route.md).
+**Decisions/defects:** Pre-G0 kill — raised bar unbound for continuation *entry*; SLR route ① filter-only; temporal-selectivity paused; composite refused. Owner: [second slate §S2B](../../../../briefs/programs/2026-08-13-msl-second-slate.md) · [closure](../../../../briefs/closures/MSL-S2B-closure-stage1-fail-route.md).
 
 **Open / next:** Stage-1 deaths **2/3**; slate-2 exhausted — Board owns next slate / channel review. Carry: Operator F-2 disposition (ADR-count axis already fired — from 14h/#816); CapFLOW; F1 2026-11-08; M1; weekly token; Magdon-Ismail B; research venvs. On Windows: `make sync-skills` from primary checkout. Confirm #806 CI green; cart confirm.
 

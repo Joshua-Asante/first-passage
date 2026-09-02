@@ -1,6 +1,6 @@
 """P1-CF / P2-CF -- six-lead pursuit plan cheap falsifiers, 2026-08-17.
 
-Design frozen in docs/briefs/2026-08-17-six-lead-pursuit-plan.md Sec4
+Design frozen in docs/briefs/programs/2026-08-17-six-lead-pursuit-plan.md Sec4
 ("P1-CF / P2-CF design freeze") before this script was written -- segmentation,
 roll-handling, session boundary, and stop-sizing were fixed a priori.
 

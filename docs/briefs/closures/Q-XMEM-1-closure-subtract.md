@@ -17,7 +17,7 @@ and not re-litigated by this closure.
 **Live effect:** none — a research-tooling pursuit, no `core/`, `ops/c1_rail/`, or
 `ops/c1_signal_daemon/` touch (CRO's own independent GSUB-2 review confirmed this).
 **Artifacts:** [`pursuit c1`](../../pursuits/c1-q-xmem-1.md) ·
-[`GSUB-2 brief`](../GSUB-2-park-cohort-early-review.md) ·
+[`GSUB-2 brief`](../programs/GSUB-2-park-cohort-early-review.md) ·
 [`GSUB-2 closure`](GSUB-2-closure-resolved-loadbearing.md) ·
 [`Limb B RESULTS`](../../../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md)
 

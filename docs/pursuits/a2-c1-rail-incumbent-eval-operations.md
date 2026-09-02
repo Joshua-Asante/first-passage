@@ -26,4 +26,4 @@ triggers → *Weekly — recurring*, which the existing daily 07:04 `daily-repo-
 forward-obligation radar reads. It was previously invisible only because queue-table rows carry no
 date and that radar scans the forward-triggers section. No new standing config was required.
 
-**Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row a2
+**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row a2

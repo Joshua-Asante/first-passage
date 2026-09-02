@@ -2,7 +2,7 @@
 
 **Status:** `FROZEN` — 2026-07-27, **before any recall number exists**
 **Supersedes:** [`2026-07-27-fts5-delete-falsifier-prereg.md`](2026-07-27-fts5-delete-falsifier-prereg.md) (v1, commit `f70d46b`), which returned `AMBIGUOUS` on an empty fixture — see [`RESULTS`](../../../lab/analysis/harvest/fts5_delete_falsifier_2026-07-27/RESULTS.md)
-**Parent brief:** [`2026-07-27-hermes-agent-adoption-ruling.md`](../2026-07-27-hermes-agent-adoption-ruling.md) §6 limb A — operator ruling `A3` (Delete)
+**Parent brief:** [`2026-07-27-hermes-agent-adoption-ruling.md`](../programs/2026-07-27-hermes-agent-adoption-ruling.md) §6 limb A — operator ruling `A3` (Delete)
 **Bears on:** [`Q-XMEM-1`](../Q-XMEM-1-cross-surface-memory-sidecar-pilot.md) — architecture stays frozen and untouched
 
 ---

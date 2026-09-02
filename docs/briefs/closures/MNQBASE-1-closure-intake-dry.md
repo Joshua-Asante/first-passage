@@ -114,8 +114,8 @@ $ rg --no-ignore -il "regime.?overlay|gmm|markov|hidden.?markov|regime classif" 
      discovery_manifests ops/instruments
 ops/instruments/MECHANISMS.md      ops/instruments/NAS100.md     ops/instruments/SPX500.md
 ops/instruments/XAUUSD.md          ops/instruments/PROFILES.md   ops/instruments/profiles.json
-docs/briefs/2026-07-14-a1-accept-beta-preassembly.md
-docs/briefs/Q-DECAY-1-closure-scope-split.md
+docs/briefs/programs/2026-07-14-a1-accept-beta-preassembly.md
+docs/briefs/closures/Q-DECAY-1-closure-scope-split.md
 docs/briefs/rnd-pipeline/MNQBASE-1-...-scoping.md
 # -> no rejected_candidates.md / rejected_signals.md / manifest hit. The regime-classifier
 #    family is NOT registry-barred; nearest class is `regime-overlay` (§3.3).

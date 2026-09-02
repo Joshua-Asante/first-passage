@@ -10,4 +10,4 @@
 **Owner artifacts:** [`tradable-anomalies-statistics adoption ADR`](../adr/2026-07-11-tradable-anomalies-statistics-adoption.md) ·
 [`sentinel design`](../spec/2026-06-23-inqhiori-sentinel-design.md)
 
-**Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row a5
+**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row a5

@@ -2,10 +2,10 @@
 
 **Closed:** 2026-07-15
 **Closing verdict:** `RESOLVED`
-**Parent brief:** [`docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md`](Q-SFRISK-1-successor-self-funded-risk-framework.md) (§6 gate criteria, §9 closure format)
-**Pre-registration:** [`docs/briefs/pre-registration/Q-SFRISK-1-verdict-preregistration.md`](pre-registration/Q-SFRISK-1-verdict-preregistration.md) (`9b219ab`, `NUMERIC FROZEN` 2026-07-14 — single triple T1, operator-confirmed via "confirm T1")
-**Phase-1 numeric report:** [`lab/analysis/regime/decompound_remc_2026-06-07/RESULTS_sfrisk_t1_phase1_2026-07-15.md`](../../lab/analysis/regime/decompound_remc_2026-06-07/RESULTS_sfrisk_t1_phase1_2026-07-15.md) (merged `936a9e0`; independently cross-validated by a second local run this session — byte-identical numbers)
-**Admitting artifact:** [`docs/adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md`](../adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md) (`Accepted`, ratified 2026-07-15)
+**Parent brief:** [`docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md`](../Q-SFRISK-1-successor-self-funded-risk-framework.md) (§6 gate criteria, §9 closure format)
+**Pre-registration:** [`docs/briefs/pre-registration/Q-SFRISK-1-verdict-preregistration.md`](../pre-registration/Q-SFRISK-1-verdict-preregistration.md) (`9b219ab`, `NUMERIC FROZEN` 2026-07-14 — single triple T1, operator-confirmed via "confirm T1")
+**Phase-1 numeric report:** [`lab/analysis/regime/decompound_remc_2026-06-07/RESULTS_sfrisk_t1_phase1_2026-07-15.md`](../../../lab/analysis/regime/decompound_remc_2026-06-07/RESULTS_sfrisk_t1_phase1_2026-07-15.md) (merged `936a9e0`; independently cross-validated by a second local run this session — byte-identical numbers)
+**Admitting artifact:** [`docs/adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md`](../../adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md) (`Accepted`, ratified 2026-07-15)
 
 ---
 
@@ -31,7 +31,7 @@ Both conditions hold: the numeric amendment was committed and operator-ratified 
 
 ## §2 — Fidelity note (transparency, not a gate)
 
-F1's H1 p99 (8.00%) differs from the informal reproduction target cited in the pre-registration and the Phase-1 report (7.76%, from `RESULTS_cleanvintage_2026-06-25.md`'s LOCKED row) — pass/bust/median-days are byte-identical across both figures; only the max-DD tail statistic moved. This is **explained, not a defect**: [`docs/adr/2026-07-06-bust-day-maxdd-inclusion.md`](../adr/2026-07-06-bust-day-maxdd-inclusion.md) (`Accepted`, landed `83e589f`, 2026-07-06) corrected the MC engine so a bust path's `max_dd` includes the breach day's own drawdown — a fix that lands between the 2026-06-25 reference doc and every Phase-1 run, and scales with bust rate (H1's 13.84% bust moves; H2's 0.21% bust does not, and indeed H2 matches exactly). The 8.00% figure is the current, correct number under the ratified engine fix. It does not change T1's disposition — H1 still clears the 10% bar with 2.00pp of headroom.
+F1's H1 p99 (8.00%) differs from the informal reproduction target cited in the pre-registration and the Phase-1 report (7.76%, from `RESULTS_cleanvintage_2026-06-25.md`'s LOCKED row) — pass/bust/median-days are byte-identical across both figures; only the max-DD tail statistic moved. This is **explained, not a defect**: [`docs/adr/2026-07-06-bust-day-maxdd-inclusion.md`](../../adr/2026-07-06-bust-day-maxdd-inclusion.md) (`Accepted`, landed `83e589f`, 2026-07-06) corrected the MC engine so a bust path's `max_dd` includes the breach day's own drawdown — a fix that lands between the 2026-06-25 reference doc and every Phase-1 run, and scales with bust rate (H1's 13.84% bust moves; H2's 0.21% bust does not, and indeed H2 matches exactly). The 8.00% figure is the current, correct number under the ratified engine fix. It does not change T1's disposition — H1 still clears the 10% bar with 2.00pp of headroom.
 
 Two independent Phase-1 runs (one merged to main via `936a9e0`, one run locally this session against the identical frozen spec) produced byte-identical numbers across every reported cell — cross-validating both the instrument's determinism and the correctness of the F4 panel-source fix (clean-vintage panel, not the stitched 2026-06-07 vintage `days_to_first_skim.build_banded_portfolio_panel()` would have defaulted to).
 
@@ -39,7 +39,7 @@ Two independent Phase-1 runs (one merged to main via `936a9e0`, one run locally 
 
 ## §3 — Completion falsifier discharge (rescope ADR §4)
 
-[`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](../adr/2026-07-11-challenge-era-claims-rescope.md) §4's completion falsifier required a successor risk-framework Pre-Q pre-registered by 2026-11-08, or D1 escalates to a mandatory go-live blocker. This closure discharges it in full — existence (architecture pre-registered 2026-07-14), numeric freeze (T1 confirmed 2026-07-14), analysis (Phase 1 run + merged 2026-07-15), and verdict (this closure, `RESOLVED`, 2026-07-15) — well inside the hard date. See the rescope ADR's dated addendum for the formal discharge note.
+[`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](../../adr/2026-07-11-challenge-era-claims-rescope.md) §4's completion falsifier required a successor risk-framework Pre-Q pre-registered by 2026-11-08, or D1 escalates to a mandatory go-live blocker. This closure discharges it in full — existence (architecture pre-registered 2026-07-14), numeric freeze (T1 confirmed 2026-07-14), analysis (Phase 1 run + merged 2026-07-15), and verdict (this closure, `RESOLVED`, 2026-07-15) — well inside the hard date. See the rescope ADR's dated addendum for the formal discharge note.
 
 ---
 
@@ -53,7 +53,7 @@ Two independent Phase-1 runs (one merged to main via `936a9e0`, one run locally 
 
 ## §5 — Downstream artifacts (this closure's obligations)
 
-- [`docs/adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md`](../adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md) — the admitting ADR (§7 step 3 of the parent brief), `Accepted`, ratified 2026-07-15.
+- [`docs/adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md`](../../adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md) — the admitting ADR (§7 step 3 of the parent brief), `Accepted`, ratified 2026-07-15.
 - Parent brief `Status` flips `OPEN` → `CLOSED-RESOLVED`, pointing here.
 - Rescope ADR (`2026-07-11-challenge-era-claims-rescope.md`) — dated addendum discharging §4's D1 completion falsifier.
 - `STATE.md` — the SFRISK forward-board entry updated from "Phase 1 unblocked" to closed/RESOLVED, pointing at this closure.
@@ -65,7 +65,7 @@ Two independent Phase-1 runs (one merged to main via `936a9e0`, one run locally 
 
 ```bash
 # Verdict recorded
-grep -n "Verdict: \`RESOLVED\`" docs/briefs/Q-SFRISK-1-closure-resolved.md
+grep -n "Verdict: \`RESOLVED\`" docs/briefs/closures/Q-SFRISK-1-closure-resolved.md
 
 # Parent brief flipped closed
 grep -n "^\*\*Status:\*\*" docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md
@@ -88,11 +88,23 @@ python scripts/verify_lock_anchors.py
 
 ---
 
+
+## Iterate — loop exit
+
+- **Verdict used:** `RESOLVED` — T1 clears all three frozen clauses on both regime halves; admitting ADR ratified 2026-07-15.
+- **Model update:** A falsifiable successor to the retired challenge-era P(pass) claim exists at the governance layer; it does not authorize go-live or touch locked MC anchor / risk constants.
+- **Next:** INTEGRATE
+- **Routing:** INTEGRATE — [`docs/adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md`](../../adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md) is the owning artifact; rescope ADR §4 D1 completion falsifier discharged.
+- **Entry packet:** n/a
+- **Stop rule / re-proposal bar:** n/a — integrated at close; F2/TUW deferred by explicit operator scope, not reopened by this disposition.
+- **Board write:** none — STOP, nothing owed (STATE/SESSIONS updated 2026-07-15 at original close).
+- **Registry:** n/a — RESOLVED successor risk-framework admission; not a strategy-grounds kill.
+
 ## Verification
 
 ```bash
 python C:/Users/joshu/.claude/skills/brief-authoring/scripts/check_brief.py \
-  docs/briefs/Q-SFRISK-1-closure-resolved.md --type closure
+  docs/briefs/closures/Q-SFRISK-1-closure-resolved.md --type closure
 
 git log -1 --format='%h %ci' -- lab/analysis/regime/decompound_remc_2026-06-07/RESULTS_sfrisk_t1_phase1_2026-07-15.md
 # Expect the merge commit that landed 936a9e0's content

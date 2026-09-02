@@ -13,7 +13,7 @@ requires closing this pre-registration and opening a fresh one (Known Trap #12).
 until — and unless — the companion Pre-Q brief admits a successor under the §D rule below.
 **Loop of record:** STRATEGIC.
 **Companion Pre-Q:** [`../Q-BUSTGATE-1-bust-gate-re-derivation.md`](../Q-BUSTGATE-1-bust-gate-re-derivation.md).
-**Packet home:** [`../2026-07-17-0808-packet-delta-and-sequence.md`](../2026-07-17-0808-packet-delta-and-sequence.md) §0.5 directive (1), §3 P0.
+**Packet home:** [`../2026-07-17-0808-packet-delta-and-sequence.md`](../programs/2026-07-17-0808-packet-delta-and-sequence.md) §0.5 directive (1), §3 P0.
 **Authored:** 2026-07-23 · Claude Code (Opus 4.8), operator-directed.
 
 ---

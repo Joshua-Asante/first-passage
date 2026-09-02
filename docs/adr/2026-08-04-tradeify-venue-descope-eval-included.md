@@ -261,7 +261,7 @@ for f in core/lifecycle.py core/firm_rules.py ops/c1_rail/c1_sizing_host_referen
 # Expected: 4441c72 / 2345095 / 2345095 / 97011c1 as recorded in §0
 
 # Every §1 measurement traces to a committed artifact
-rg -n "104\.7|299\.80|49\.06" docs/briefs/2026-07-23-tradeify-book-composition.md
+rg -n "104\.7|299\.80|49\.06" docs/briefs/programs/2026-07-23-tradeify-book-composition.md
 # ⚠ 1.01 and 22.2 are NOT in that brief (it carries the rounded "1.0"); they live here:
 rg -n "1\.01|22\.2" lab/analysis/c1/c1_cadence_inactivity_2026-08-02/RESULTS.md
 rg -n "3\.633|744|28\.38" lab/archive/q_geofit_1_2026-07/RESULTS.md

@@ -11,16 +11,16 @@ days; edge must concentrate on large-move days AND clear 4× cost in the 3:45–
 
 Read before ruling (concrete repo paths):
 
-- [`docs/rejected_candidates.md`](../rejected_candidates.md) § "Domain-level tail-exhaustion raised
+- [`docs/rejected_candidates.md`](../../rejected_candidates.md) § "Domain-level tail-exhaustion raised
   bars" **and** the free-data 5th-leg domain roll-up — the re-proposal bar this candidate is judged
   against (three clearance routes: paid/exogenous data the free searches could not access; a new
   venue class relaxing a *binding* wall; or a dated live incident).
-- [`docs/rejected_candidates.md`](../rejected_candidates.md) § "index-dispersion-correlation-premium
+- [`docs/rejected_candidates.md`](../../rejected_candidates.md) § "index-dispersion-correlation-premium
   on SPX500" — the entry-format template used in §6 (heading block + `concept-intake-entry` comment
   + bullet).
-- [`core/firm_rules.py`](../../core/firm_rules.py) `Tradeify_Select_100K` — venue constraint:
+- [`core/firm_rules.py`](../../../core/firm_rules.py) `Tradeify_Select_100K` — venue constraint:
   `weekend_holds`/overnight = false, EOD flat; the tradable expression is intraday ES/NQ futures.
-- [`docs/briefs/2026-07-14-a4-flow-data-fork-scoping.md`](2026-07-14-a4-flow-data-fork-scoping.md) —
+- [`docs/briefs/programs/2026-07-14-a4-flow-data-fork-scoping.md`](2026-07-14-a4-flow-data-fork-scoping.md) —
   the adjacent flow-data ruling (net-imbalance-only / never-procure) establishing that EOD-flow
   effects in this program are "real as mechanisms but thin / redundant / decaying as tradable alpha."
 
@@ -87,7 +87,7 @@ in the tail-exhausted free-data 5th-leg domain. It clears **none** of the three 
 Corroborating (not load-bearing) priors: the whole EOD-flow thread in this program reads
 "real-mechanism / thin-or-redundant-and-decaying-alpha" (a4-flow scoping; advisor's own caveat that
 these signals decay with adoption), and LETF rebalance flow is among the most widely front-run of
-them. Disposition recorded in [`docs/rejected_candidates.md`](../rejected_candidates.md) (this brief
+them. Disposition recorded in [`docs/rejected_candidates.md`](../../rejected_candidates.md) (this brief
 is the Authoritative artifact).
 
 **Re-open condition (mechanism-evidence, not parameters):** a fresh single-cut pre-registration on
@@ -109,7 +109,7 @@ rg -n "Domain-level tail-exhaustion raised bars" docs/rejected_candidates.md
 # After recording, the rejected entry + its concept-intake comment must be present:
 rg -n "leveraged-etf-eod-rebalance-flow|leveraged/inverse-ETF EOD" docs/rejected_candidates.md
 # This brief is the Authoritative artifact the entry points to:
-test -f docs/briefs/2026-07-24-d2-letf-eod-flow-ruling.md && echo AUTHORITATIVE_OK
+test -f docs/briefs/programs/2026-07-24-d2-letf-eod-flow-ruling.md && echo AUTHORITATIVE_OK
 ```
 
 ## Verification

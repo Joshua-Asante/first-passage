@@ -22,4 +22,4 @@ exact user-level copy. Zero unique content found worth preserving.
 **Residuals transferred:** none — the archived copy is strictly dominated, nothing to graft.
 
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3)
-**Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row d4
+**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row d4

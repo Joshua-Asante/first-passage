@@ -148,5 +148,5 @@ dispositions (two plugin-bundled, one archived), not by a reversal of the ADR's 
 
 **Disposition:** the three-skill migration plan named in this ADR's ratification note is
 executed-as-superseded — overtaken by GSUB-1's per-skill findings rather than carried out as
-originally planned. See `docs/briefs/GSUB-1-inventory-and-dispositions.md` for the full disposition
+originally planned. See `docs/briefs/programs/GSUB-1-inventory-and-dispositions.md` for the full disposition
 ledger.

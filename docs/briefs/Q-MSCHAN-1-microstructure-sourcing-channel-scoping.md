@@ -107,7 +107,7 @@ except for this note and the status header, as the historical record of what was
 - `discovery_manifests/orb_mnq_intraday_breakout.json` — anchor: working-tree diff read 2026-08-04 (manifest closure mechanics)
 
 Anchored, body unread at authoring time — `[§0-pending content read before lock]` (moot; brief does not lock):
-- `docs/briefs/2026-07-24-avenue-a-microstructure-scoping.md` — anchor: `91137fb` (2026-08-03) — the qualifying feature-triple gate; this is the gate condition 3 of which barred this brief
+- `docs/briefs/programs/2026-07-24-avenue-a-microstructure-scoping.md` — anchor: `91137fb` (2026-08-03) — the qualifying feature-triple gate; this is the gate condition 3 of which barred this brief
 - `docs/briefs/closures/MNQBASE-1-closure-intake-dry.md` — anchor: `5c5012c` (2026-08-04) — re-proposal bar wording
 - `docs/adr/2026-07-15-external-mechanism-harvest-intake.md` §4 — anchor: `1bafe6f` (2026-08-03) — idle guard 2026-11-08; 2-B fires at *second* audit
 - `docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md` — anchor: `2ef7405` (2026-08-04) — K_eff = K_intrinsic, within-search only

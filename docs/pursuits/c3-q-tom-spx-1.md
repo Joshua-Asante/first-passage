@@ -13,5 +13,5 @@ and not reserved
 until expiry; SUBTRACT is the checker vocabulary for a dead pursuit record
 
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3 PARK) · **SUBTRACT:** 2026-08-23 (P10)
-**Source:** [`GSUB-1 inventory`](../briefs/GSUB-1-inventory-and-dispositions.md) row c3 ·
+**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row c3 ·
 [`closure`](../briefs/closures/Q-TOM-SPX-1-closure-dead.md)

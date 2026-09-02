@@ -61,7 +61,7 @@ All content-read from the working tree; per-file anchors (`git log -1`):
   tiers, else demote to research-only; hard date 2026-11-08. §4 internal wording tension
   (H "bust ceiling" vs revert trigger "pass-rate ceiling") — **resolved here by the
   two-part ceiling** (§3: bust gate + pass floor).
-- **`docs/briefs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md` @ `263c07c`**
+- **`docs/briefs/programs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md` @ `263c07c`**
   — **RATIFIED 2026-07-13, §6 `RESOLVED`, no dial adjustments** (§7). This pre-registration
   transcribes its §2.1 (G0–G8), §2.2 (ceiling), §2.3 (tiers/discharge), §2.4 (freeze list),
   §4 (H-SCORE), §5 (forbidden moves). Numbers are FIXED there; not re-opened here.
@@ -272,7 +272,7 @@ python ~/.claude/skills/brief-authoring/scripts/check_brief.py \
 # §0 anchors
 git log -1 --format='%h %ci' -- core/firm_rules.py                                      # expect 6a0c801
 git log -1 --format='%h %ci' -- ops/prop_envelope_default.md                            # v1.0 RATIFIED
-git log -1 --format='%h %ci' -- docs/briefs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md  # 263c07c
+git log -1 --format='%h %ci' 263c07c -- docs/briefs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md  # 263c07c
 
 # Ceiling calibration source (falsified-book quality it must exclude)
 grep -n "17.70\|17.7" lab/analysis/c1/tradeify_futures3_remc_2026-07-11/RESULTS.md
