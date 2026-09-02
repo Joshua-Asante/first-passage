@@ -1,5 +1,10 @@
 # Tradeify viable-strategy blockers — a contrarian review of the landed PRs
 
+> **2026-09-02 follow-up:** the elemental decomposition and reprioritization after the new
+> ORB-MYM P50 source read lives in
+> [`2026-09-02-mechanism-supply-leverage-memo.md`](2026-09-02-mechanism-supply-leverage-memo.md).
+> It is advisory and does not change this review's dated evidence claims.
+
 **As of:** 2026-09-01  
 **Decision question:** What is actually preventing a viable strategy for Tradeify, and what
 should change now?  
