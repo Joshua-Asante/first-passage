@@ -19,6 +19,32 @@ from lab.analysis.mym_breakout_entry_2026_09.run_research import (
 
 
 class ExecutionAccountingTests(unittest.TestCase):
+    def test_long_target_gap_wins_before_later_intrabar_stop(self) -> None:
+        bars = pd.DataFrame(
+            [{"time": "2025-01-02T15:00:00Z", "open": 1350, "high": 1360, "low": 690, "close": 1000}]
+        )
+
+        trade = evaluate_position(
+            side="long", entry_price=1000, bars=bars, stop_points=300, target_points=300,
+            tick_size=1, point_value=0.5, commission_per_side=0.91, slippage_ticks_per_side=0,
+        )
+
+        self.assertEqual(trade["exit_reason"], "target")
+        self.assertEqual(trade["exit_price_raw"], 1300)
+
+    def test_short_target_gap_wins_before_later_intrabar_stop(self) -> None:
+        bars = pd.DataFrame(
+            [{"time": "2025-01-02T15:00:00Z", "open": 650, "high": 1310, "low": 640, "close": 1000}]
+        )
+
+        trade = evaluate_position(
+            side="short", entry_price=1000, bars=bars, stop_points=300, target_points=300,
+            tick_size=1, point_value=0.5, commission_per_side=0.91, slippage_ticks_per_side=0,
+        )
+
+        self.assertEqual(trade["exit_reason"], "target")
+        self.assertEqual(trade["exit_price_raw"], 700)
+
     def test_stop_wins_when_stop_and_target_touch_same_bar(self) -> None:
         bars = pd.DataFrame(
             [{"time": "2025-01-02T15:00:00Z", "open": 1000, "high": 1310, "low": 690, "close": 1000}]
@@ -85,6 +111,14 @@ class ExecutionAccountingTests(unittest.TestCase):
 
 
 class MetricsAndValidationTests(unittest.TestCase):
+    @staticmethod
+    def valid_metadata() -> dict[str, object]:
+        return {
+            "schema": "BAR_EXPORT_meta_v0.2", "type": "futures", "symbol": "MYM",
+            "ticker": "MYM1!", "mintick": 1.0, "pointvalue": 0.5, "timeframe": "15",
+            "timezone": "America/Chicago",
+        }
+
     def test_metrics_use_net_r_and_report_drawdown_profit_factor(self) -> None:
         trades = pd.DataFrame(
             {
@@ -122,17 +156,17 @@ class MetricsAndValidationTests(unittest.TestCase):
                 "volume": [1, 1],
             }
         )
-        metadata = {"symbol": "MNQ", "ticker": "MNQ1!", "mintick": 0.25, "pointvalue": 2.0, "timeframe": "15"}
+        metadata = self.valid_metadata() | {"symbol": "MNQ", "ticker": "MNQ1!", "mintick": 0.25, "pointvalue": 2.0}
 
         with self.assertRaisesRegex(ValueError, "metadata"):
             validate_inputs(bars, metadata)
 
-        metadata = {"symbol": "MYM", "ticker": "MYM1!", "mintick": 1.0, "pointvalue": 0.5, "timeframe": "15"}
+        metadata = self.valid_metadata()
         with self.assertRaisesRegex(ValueError, "duplicate"):
             validate_inputs(bars, metadata)
 
     def test_input_validation_rejects_unsorted_time_and_invalid_ohlc(self) -> None:
-        metadata = {"symbol": "MYM", "ticker": "MYM1!", "mintick": 1.0, "pointvalue": 0.5, "timeframe": "15"}
+        metadata = self.valid_metadata()
         bars = pd.DataFrame(
             {
                 "time": pd.to_datetime(["2025-01-02T15:15:00Z", "2025-01-02T15:00:00Z"]),
@@ -146,6 +180,24 @@ class MetricsAndValidationTests(unittest.TestCase):
         bars.loc[0, "low"] = 1005
         with self.assertRaisesRegex(ValueError, "OHLC"):
             validate_inputs(bars, metadata)
+
+    def test_input_validation_rejects_wrong_schema_type_or_timezone(self) -> None:
+        bars = pd.DataFrame(
+            {
+                "time": pd.to_datetime(["2025-01-02T15:00:00Z"]), "open": [1000],
+                "high": [1010], "low": [990], "close": [1000], "volume": [1],
+            }
+        )
+        invalid_values = {
+            "schema": "BAR_EXPORT_meta_v0.1", "type": "equity", "timezone": "UTC",
+        }
+        for field, value in invalid_values.items():
+            with self.subTest(field=field), self.assertRaisesRegex(ValueError, "metadata"):
+                validate_inputs(bars, self.valid_metadata() | {field: value})
+            missing = self.valid_metadata()
+            del missing[field]
+            with self.subTest(field=field, condition="missing"), self.assertRaisesRegex(ValueError, "metadata"):
+                validate_inputs(bars, missing)
 
     def test_bootstrap_confidence_interval_is_deterministic(self) -> None:
         values = pd.Series([1.0, -1.0, 0.5, -0.5, 1.0, -1.0])

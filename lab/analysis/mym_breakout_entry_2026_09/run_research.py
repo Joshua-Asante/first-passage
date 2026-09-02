@@ -56,11 +56,18 @@ def evaluate_position(
     exit_time = bars.iloc[-1]["time"]
     exit_reason = "time"
     for row in bars.itertuples(index=False):
+        bar_open = float(row.open)
         if side == "long":
             stop_hit = row.low <= stop_price
             target_hit = row.high >= target_price
-            if stop_hit:
-                exit_price = min(float(row.open), stop_price)
+            if bar_open <= stop_price:
+                exit_price = bar_open
+                exit_reason = "stop"
+            elif bar_open >= target_price:
+                exit_price = target_price
+                exit_reason = "target"
+            elif stop_hit:
+                exit_price = stop_price
                 exit_reason = "stop"
             elif target_hit:
                 exit_price = target_price
@@ -68,8 +75,14 @@ def evaluate_position(
         else:
             stop_hit = row.high >= stop_price
             target_hit = row.low <= target_price
-            if stop_hit:
-                exit_price = max(float(row.open), stop_price)
+            if bar_open >= stop_price:
+                exit_price = bar_open
+                exit_reason = "stop"
+            elif bar_open <= target_price:
+                exit_price = target_price
+                exit_reason = "target"
+            elif stop_hit:
+                exit_price = stop_price
                 exit_reason = "stop"
             elif target_hit:
                 exit_price = target_price
@@ -243,7 +256,16 @@ def summarize_trades(trades: pd.DataFrame) -> dict[str, Any]:
 
 def validate_inputs(bars: pd.DataFrame, metadata: dict[str, Any]) -> None:
     """Hard-fail on data or instrument identity defects."""
-    expected = {"symbol": "MYM", "ticker": "MYM1!", "mintick": 1.0, "pointvalue": 0.5, "timeframe": "15"}
+    expected = {
+        "schema": "BAR_EXPORT_meta_v0.2",
+        "type": "futures",
+        "symbol": "MYM",
+        "ticker": "MYM1!",
+        "mintick": 1.0,
+        "pointvalue": 0.5,
+        "timeframe": "15",
+        "timezone": "America/Chicago",
+    }
     if any(metadata.get(key) != value for key, value in expected.items()):
         raise ValueError(f"metadata mismatch: expected {expected}, got {metadata}")
     required = {"time", "open", "high", "low", "close", "volume"}
