@@ -158,6 +158,18 @@ structure:
 
 ## SESSION LOG
 
+- **2026-09-02** — **ORB-MYM v0.4 opening-range volume gate: P50 exploratory source winner;
+  forward confirmation owed** ([`RESULTS`](../../lab/analysis/orb/orb_mym_volume_gate_2026-09-02/RESULTS.md)).
+  Operator TradingView reads with only the reported gate changed: Off $26,330.76 / PF 1.198 /
+  maxDD $9,634.98 / 1,891 closed legs; P50 $31,947.96 / PF 1.451 / maxDD $4,621.18 /
+  986 legs; P80 $9,524.48 / PF 1.248 / maxDD $5,016.00 / 443 legs. P50 beats Off by
+  +$5,617.20 while halving displayed maxDD; P80 removes most of the apparent value, so no further
+  percentile tuning is licensed on this fully viewed panel. Screenshot-only evidence, no trade
+  exports or complete Properties capture; profitable-trade rates are leg-level under pyramiding.
+  Private Downloads-local Pine SHA-256
+  `9292bd4ec0ca9074d6d6523491dcdde3709424bd53edf9c75dea79f3b9f65071`.
+  Source-stage prior only: no Confirm claim, lifecycle/allocation/rail change, or live-capital
+  authorization. Freeze P50 for genuinely forward paper data.
 - **2026-09-02** — **Alternative breakout-entry catalogue FALSIFIED**
   ([`RESULTS`](../../lab/analysis/mym_breakout_entry_2026_09/RESULTS.md)). Canonical BAR EXPORT
   v0.2 ingestion produced 170,417 unique M15 bars (2019-05-05→2026-07-31); metadata independently
