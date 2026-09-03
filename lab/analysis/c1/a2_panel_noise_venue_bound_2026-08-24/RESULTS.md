@@ -7,9 +7,23 @@
 > The size-invariant bound `T_min(yr) = (target/rope)·(ln(1/b)/2)/annSR²` is published here at
 > **b = 0.03**, v1's Part A ceiling. The **live** ceiling is **5.0%** since 2026-08-26
 > ([`prereg v2`](../../../../docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3).
-> `b` is quantitatively load-bearing: `ln(1/0.03) = 3.507` falls to `ln(1/0.05) = 2.996`, so **every
-> `T_min`, `n_min` and tier requirement below shrinks by ~15%**, and the headline "corpus maximum
-> (annSR +1.28) is **2.1× short** of a six-month pass" would read ~1.8× at the live ceiling.
+> `b` is quantitatively load-bearing — but it does **not** enter every figure below the same way.
+> `ln(1/0.03) = 3.507` falls to `ln(1/0.05) = 2.996`, a **14.6%** reduction, and that reduction
+> propagates at two different rates:
+>
+> * **Linear** in `ln(1/b)` — `T_min`, `n_min`, and §6's `C` column: each shrinks **~14.6%**.
+> * **Square-root** — any *required* `annSR`, since inverting `T_min = C/annSR²` gives
+>   `annSR = √(C/T)`: these shrink only **~7.6%**. §6's six-month requirement moves
+>   `Select_100K` **2.648 → 2.448**, `Select_50K` **2.293 → 2.120**, `Growth_100K` **2.452 → 2.266**.
+>
+> The headline "corpus maximum (annSR +1.28) is **2.1× short** of a six-month pass" is a **Sharpe**
+> ratio (2.648 / 1.28 = 2.07), so it takes the square-root rate: at the live ceiling it reads
+> **~1.91×**, not ~1.8×.
+>
+> ⚠ **Corrected 2026-09-03** (Codex round 4, PR #282): this banner first published ~1.8×, applying
+> the linear `T_min` shrink to a quantity that scales as its square root. The ~15% figure is correct
+> for `T_min`/`n_min`/`C` and wrong for every Sharpe requirement — a banner meant to supply current
+> planning magnitudes must not itself mis-transform them.
 >
 > **The verdict direction does not flip** — the corpus maximum still misses, and the four live TNEC
 > lanes remain an order of magnitude away — but **do not quote these magnitudes for current
