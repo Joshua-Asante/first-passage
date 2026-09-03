@@ -41,7 +41,7 @@ re-anchor items plus D13, after [PR #289](https://github.com/Joshua-Asante/first
 worker PR merged.
 **Shipped:** [campaign-state artifact](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)
 new §11 recording the delta verdict item by item.
-**Decisions/defects:** **28 item verdicts — 18 PASS, 5 PARTIAL, 4 FAIL, zero overturned by the challenge
+**Decisions/defects:** **28 item verdicts — 18 PASS, 5 PARTIAL, 4 FAIL, 1 NA, zero overturned by the challenge
 pass.** Orchestrator-run: 240 tests pass, `--tier check` exit 0, no vendor bytes, no orchestrator-surface
 edits, `cost_model.py` byte-unchanged, `__init__.py` present. **The blocker is singular and decisive:
 `reconciliation_manifest.json` and `RESULTS.md` were never regenerated** — neither appears in the diff. The
