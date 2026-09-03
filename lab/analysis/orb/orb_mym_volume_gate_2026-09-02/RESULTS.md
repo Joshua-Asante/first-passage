@@ -1,5 +1,6 @@
 # ORB-MYM v0.4 opening-range volume gate — operator TradingView read, 2026-09-02
 
+**In-flight:** yes
 **Status:** `SOURCE-STAGE EXPLORATORY — P50 SELECTED FOR FORWARD TEST, NOT CONFIRMED`
 **Instrument:** MYM, TradingView chart/Strategy Tester
 **Source:** private Downloads-local `orb_mym_4_edition.pine`

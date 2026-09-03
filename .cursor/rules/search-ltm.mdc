@@ -11,7 +11,7 @@ trees stay **git-tracked** and **Readable by exact path**.
 
 ## Lookup order
 
-1. [`lab/CATALOG.md`](lab/CATALOG.md) → CARD stub → archive body only if re-running
+1. [`lab/CATALOG.md`](lab/CATALOG.md) **In flight** first, then Hot bodies → CARD stub → archive body only if re-running
 2. [`core/strategies/CATALOG.md`](core/strategies/CATALOG.md) → `*_CARD.md` stub → `_archive/<family>/` body for Rule-0 deep reads
 3. [`docs/briefs/INDEX.md`](docs/briefs/INDEX.md) / [`STATE.md`](STATE.md) → closed briefs under `docs/ltm/briefs/`
 4. [`docs/ltm/README.md`](docs/ltm/README.md) for layout

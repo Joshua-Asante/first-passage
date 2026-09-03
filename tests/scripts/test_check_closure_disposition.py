@@ -459,6 +459,14 @@ def test_coverage_skips_non_closure_bearing_statuses(tmp_path):
     assert "Q-FUNDPOL-1" not in ids, "Dormant section is not closure-bearing"
 
 
+def test_claimed_closed_from_hot_bodies_heading():
+    for heading in ("## Active", "## Hot bodies"):
+        text = _CATALOG_FIXTURE.replace("## Active", heading)
+        claimed = ccd.claimed_closed_campaigns_from_catalog(text)
+        ids = {c.campaign_id for c in claimed}
+        assert "Q-R2VBUCK-1" in ids
+
+
 def test_coverage_id_extraction_matches_roster_stored_form():
     # M-AHF: bold + em-dash + backticks around CLOSED — extract from the real INDEX.
     text = (

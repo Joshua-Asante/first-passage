@@ -33,7 +33,7 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
-## 2026-09-03d — VOLREGIME translation rebind; enter at Packet T
+## 2026-09-03f — VOLREGIME translation rebind; enter at Packet T
 
 **Focus:** Operator corrected the off-queue Sep 2 campaign: Q-VOLREGIME already has GO, presence
 already ran, and this campaign is VOLREGIME translation — not Seat A = ineligible P50.
@@ -53,7 +53,62 @@ campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) ·
 [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
 — residue (queue-exception): off-queue VOLREGIME translation at Packet T
 ([T0](notes/2026-09-03-volregime-translation-t0.md)).
+
+---
+
+## 2026-09-03e — Incremental Phase 1 gate read on Codex's `4c186e7`: force-flat is the daily 16:45 ET deadline
+
+**Focus:** Operator reported a new Codex push to `codex/tradeify-stage1-normalization`; ran the incremental
+gate read (Task 4/8, venue audit) as a diff-plus-worktree read without opening vendor bytes.
+**Shipped:** [campaign-state artifact](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)
+update only — §2/§5 Phase 1 rows at `4c186e7`, §4 gate interpretations (G1.6 force-flat definition; G1.4
+commission-mismatch basis), §7 anchor warning, §8 ledger, §9 read. Prompt for the local Codex session
+delivered in chat.
+**Decisions/defects:** 55/55 tests pass; `cost_model.py` byte-unchanged; CI composition red on `lab-catalog`
+only (row still missing). **G1.6 red at `4c186e7`:** Codex's spec §4.4 and `analyze_venue` treat only
+Friday-to-Sunday holds as `FORCE_FLAT_VIOLATION` and every other cross-date hold as a warning, but the repo's
+venue record (`core/firm_rules.py` Tradeify block, re-verified 2026-07-22; `ops/prop_envelope_default.md`
+E1) is a **daily 16:45 ET flat deadline** (12:59 ET holiday-short), so every hold spanning a deadline
+instant is a Phase 2 blocker for that strategy; the cross-date test is also the wrong proxy (15:00 → 18:30
+ET same date spans it; 23:00 → 01:00 ET does not). Spec anchor §7.7 becomes a sub-count and must be
+re-frozen before the runner runs. **G1.4 interpretation:** Aegis's Pine default (`$1.30`/side) differs from
+the setting the export ran with (`$3.10`/side = venue), so the Pine-vs-export/venue codes are inventory,
+not blockers — under the whole-export-viewed ruling the export is the object; operator may veto. Task 5
+should carry micro-equivalent quantities (6J = 10) because the Tradeify cap is account-aggregate (per-strategy breaches
+stay Phase 1 blockers; only the joint cap verdict waits for Phase 4). Codex review of #279 (three P2: the
+12:59 ET holiday-short deadline caps the verdict at `NEEDS_CONTEXT` until the early-close calendar is
+captured; per-strategy cap breaches stay in Phase 1; G1.3 partial until the ledger hash exists) folded in
+the same PR. D8/D9
+config re-freeze, CATALOG row, merge of `main` (35 behind), Tasks 5–8 and the PR remain outstanding. No
+`core`/Pine/allocation/`dd_protection`/rail change. $0/K=0.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — Phase 1 in progress
+(Task 4/8 on `origin` @ `4c186e7`); Codex to re-freeze the force-flat definition + anchor §7.7, apply
+D8/D9, add the CATALOG row, merge `main`, finish Tasks 5–8, open the PR; full gate then (check-in armed);
+D7 open pending purge · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— unchanged.
 **Live-ops state:** unchanged — c1 rail disarmed, `dry_run=true`, M1 not `RESOLVED`, no arm.
+
+---
+
+## 2026-09-03d — Catalog status words mean English (P1 falsifier)
+
+**Focus:** Status words and catalogs were being read as a work list. `ACTIVE` / `## Active` /
+`hot` meant “keep the body,” not “in flight.” Class-S #1, the failed combined book, and HOLD
+order-flow camps looked live; recent work in `_inbox` was buried.
+**Shipped:** `cursor/catalog-live-index-e931` — `028eb90` addendum · `b951143` regenerator ·
+`32dd565` Verdict stamps + CATALOG regen · blast-radius pointer refresh (`REPO_MAP`, theme
+READMEs, README lead token, trade-csv skill). Derived `## In flight` (STATE queue + INDEX Open +
+`In-flight: yes`; exclude `HOLD` and archiveable statuses); `## Hot bodies` replaces `## Active`;
+`_inbox` first under Hot bodies. README token table now means English.
+**Decisions/defects:** Live-only index, not a `LIVE` token. No mass `--slug`. P1 glossary
+falsified — [addendum](adr/2026-08-22-catalog-hot-vs-disposition.md#addendum--2026-09-03).
+`queue-exception: P1 falsifier fired; catalogs are being read as the work list`.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2` [B7-REFIRE Stage 1
++ M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+**Live-ops state:** rail remains built / disarmed; no book deployed.
 
 ---
 

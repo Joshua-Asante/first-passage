@@ -1,4 +1,5 @@
 **Theme:** _inbox
+**Verdict:** NULL — official corrected-null re-score
 **Status:** ACTIVE — OFFICIAL corrected-null re-score complete: S1a (GC) NULL (driving L2,L4; obs at 8.4th pct of its own linear-ACF band — near-miss dissolved); S1b (CL) SIGNAL-GENERIC (69th pct, canon-attributed; L4 boundary-exact 6/8)
 # Corrected-null re-score (OFFICIAL) — `H-RANGESTATE-GC-1` and `H-RANGESTATE-CL-1` under the frozen class battery
 

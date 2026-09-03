@@ -135,6 +135,27 @@ def test_load_corpus_reads_all_eight_surfaces(tmp_path: Path):
     assert "docs/adr/TOMBSTONES.md" not in surfaces
 
 
+def test_load_corpus_skips_in_flight_catalog_rows(tmp_path: Path):
+    (tmp_path / "lab").mkdir(exist_ok=True)
+    (tmp_path / "lab" / "CATALOG.md").write_text(
+        "## In flight\n\n"
+        "| slug | theme | status | one-liner | body |\n"
+        "|---|---|---|---|---|\n"
+        "| live_camp | c1 | ACTIVE | pointer | lab/analysis/c1/live_camp/ |\n"
+        "\n"
+        "## Hot bodies\n\n"
+        "| slug | theme | status | hot | one-liner | body | heavy |\n"
+        "|---|---|---|---|---|---|---|\n"
+        "| live_camp | c1 | ACTIVE | yes | pointer | lab/analysis/c1/live_camp/ | — |\n"
+        "| other_camp | c1 | CLOSED | yes | done | lab/analysis/c1/other_camp/ | — |\n",
+        encoding="utf-8",
+    )
+    chunks = [c for c in cad.load_corpus(tmp_path) if c.surface == "lab/CATALOG.md"]
+    labels = [c.label for c in chunks]
+    assert labels.count("live_camp") == 1
+    assert "other_camp" in labels
+
+
 def test_load_corpus_follows_retired_adr_body_pointer(tmp_path: Path):
     """A retired ADR's card-shape stub carries only a `**Body:**` pointer --
     the substantive text lives in docs/ltm/adr/. Indexing the stub's own short
