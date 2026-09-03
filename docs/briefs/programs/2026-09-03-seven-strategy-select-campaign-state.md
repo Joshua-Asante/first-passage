@@ -1,6 +1,6 @@
 # Seven-strategy Select configuration campaign — campaign state (orchestrator-only writes)
 
-**Status:** `PHASE 0 SKIPPED (operator override) · PHASE 1 IN PROGRESS — Task 1/8 on origin (a51bc60), partial gate read · D8 + D9 RESOLVED (native editions w/ pyramid down; America/New_York) · PLAN + THIS FILE ON MAIN (#272, #273 merged) · STATE QUEUE #1 (D2/D4 resolved — PR #275) · OLD VENDOR-BYTE REF DELETED, OBJECT PURGE PENDING (§6 D7)`
+**Status:** `PHASE 0 SKIPPED (operator override) · PHASE 1 IN PROGRESS — Task 4/8 on origin (4c186e7), incremental gate read; G1.6 FINDING RELAYED (force-flat = daily 16:45 ET, not weekends only) · D8 + D9 RESOLVED (native editions w/ pyramid down; America/New_York), Codex config re-freeze pending · PLAN + THIS FILE ON MAIN (#272, #273 merged) · STATE QUEUE #1 (D2/D4 resolved — PR #275) · OLD VENDOR-BYTE REF DELETED, OBJECT PURGE PENDING (§6 D7)`
 **Last curated:** 2026-09-03 (orchestrator session `claude/orchestrator-role-takeover-yza7vp`; queue-placement reconciliation by `claude/state-pipelines-alignment-ng62y9`, PR #275)
 **Parent plan:** [`2026-09-02-seven-strategy-tradeify-select-configuration.md`](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
 (PR [#272](https://github.com/Joshua-Asante/first-passage/pull/272) — **merged 2026-09-03** together
@@ -35,7 +35,7 @@ CAVEATS / REFUTED`.
 |---|---|---|---|---|
 | Plan | Codex review folded; operator merge | **MERGED** (#272 + #273, 2026-09-03) | operator | `main` @ `5eff0ec` |
 | 0 — Receive and inventory | — | **SKIPPED** (operator override 2026-09-03), after the first return (`codex/mym-breakout-research` @ `706a03e`) failed the gate: no intake, ~100 MB vendor bytes. Inventory duties fold into Phase 1 (G1.2) | — | §8 ledger |
-| 1 — Normalize and reproduce (+ folded Phase 0 inventory) | §4 Phase 1 gate G1.1–G1.10, verdict `PASS` | **IN PROGRESS** — `codex/tradeify-stage1-normalization` @ `a51bc60` (base `11d22e2`) carries **Task 1 of 8** (source identity + fee schedule + config + 6 tests; plan checklist 0/49). Partial gate read 2026-09-03: G1.1 ✓ · G1.5 ✓ · G1.8 ✓ (by design) · G1.4 tolerances pre-committed ✓ · G1.2 partial · G1.7 partial · **G1.9 red — study dir not in `lab/CATALOG.md`** · G1.3 / G1.6 / G1.10 pending the runner. No PR yet | Codex → orchestrator review | §8 ledger, §9 |
+| 1 — Normalize and reproduce (+ folded Phase 0 inventory) | §4 Phase 1 gate G1.1–G1.10, verdict `PASS` | **IN PROGRESS** — `codex/tradeify-stage1-normalization` @ `4c186e7` (base `11d22e2`, 35 behind `main`) carries **Task 4 of 8** (identity + strict normalization + reconstruction/accounting + venue audit; 55 tests). Incremental gate read 2026-09-03: G1.1 ✓ · G1.5 ✓ · G1.8 ✓ · G1.4 tolerances pre-committed ✓ · G1.3 ✓ on synthetic tests (no repair path; orphans, duplicates, identity mismatches are blockers) · **G1.6 red — force-flat modeled as Friday-to-Sunday only; the venue rule is a daily 16:45 ET deadline (§4 note)** · G1.2 partial (D8/D9 not yet applied: `source_timezone` still `null`, prototypes' intent unflipped, no pyramid field) · G1.7 partial (adapter + block builder are Task 5) · **G1.9 red — study dir not in `lab/CATALOG.md`** · G1.10 pending. No PR yet | Codex → orchestrator review | §8 ledger, §9 |
 | 2 — Standalone quality (joint-book limbs moved to Phase 4, after the freeze) | eliminations recorded with reasons on standalone evidence; no portfolio result computed | QUEUED | Codex + orchestrator | — |
 | 3 — Freeze search + validation design | pre-registration committed **before** any Phase 4 run; **all 14 contract items** frozen (1–9 numeric; 10 multiplicity; 11 `N_conf`; 12 Phase 6 severities; 13 Rule 2 iterations; 14 the seven per-template candidate contracts); operator ratifies | QUEUED (orchestrator authors; `pre-ratification-adversarial-panel` before ratification) | orchestrator → operator | — |
 | 4 — Joint-book audit + deterministic screen (development segment only) | trial ledger complete incl. failures | QUEUED | Codex / local | — |
@@ -94,6 +94,34 @@ orchestrator to Codex's Phase 1 PR as a diff-plus-CI read, never opening vendor 
 | G1.9 | **Repo integration:** study directory under `lab/analysis/` (Codex named `tradeify_seven_strategy_phase1_2026-09`) registered in [`lab/CATALOG.md`](../../../lab/CATALOG.md); `__init__.py`; `python scripts/gate_manifest.py --tier pre-commit` exit 0 pasted; required check `skills (3.12)` green. | `NEEDS_CONTEXT` |
 | G1.10 | **Rule 2 line** in the PR description: `$0 · K=0 · MC=none` and the iteration count consumed against constituent (i) of plan contract item 13. | `NEEDS_CONTEXT` |
 
+**Gate interpretations recorded on the `4c186e7` read (orchestrator, 2026-09-03). The frozen rows above are
+unchanged; these bind how two of them are applied:**
+
+- **G1.6 — "force-flat" is the venue's daily deadline, not weekends.** The repo's venue record is a **daily
+  16:45 ET flat deadline** (12:59 ET holiday-short; session 18:00 ET → 16:45 ET next day across the
+  17:00–18:00 ET maintenance break; auto-flatten non-fatal, slippage only) — `core/firm_rules.py` Tradeify
+  comment block (re-verification pass 2026-07-22, articles 10495876 + 12268167) and
+  [`ops/prop_envelope_default.md`](../../../ops/prop_envelope_default.md) E1 + Tradeify row; `weekend_holds:
+  False` is that rule's engine field name. Codex's spec §4.4 and `analyze_venue` (`4c186e7`) emit
+  `FORCE_FLAT_VIOLATION` (BLOCKER) only for Friday-to-Sunday holds and `CROSS_DATE_HOLD` (WARNING) for every
+  other date change. Under the venue rule every hold spanning a 16:45 ET instant is a position the venue
+  would have flattened — the export's exit for that trade is one the venue could never have produced — so it
+  is a Phase 2 blocker for that strategy (G1.6: "weekend/overnight holds … session-boundary breaches"). A
+  naive cross-date test is also the wrong proxy: 15:00 → 18:30 ET same date spans the deadline; 23:00 →
+  01:00 ET does not. With D9 resolved the exact test is cheap: localize to `America/New_York` and flag any
+  trade with a 16:45 ET instant in `(entry, exit]`; keep `friday_to_sunday_holds` as a sub-count; record the
+  12:59 ET holiday-short deadline as an explicit unmodeled dimension (the early-close calendar is not in the
+  repo). Spec anchor §7.7 ("exactly three ORB-MNQ force-flat violations") becomes a **sub-count anchor** and
+  must be re-frozen before the runner runs — still a pre-commitment, since no run exists.
+- **G1.4 / G1.5 — "commission mismatch" is export-implied vs venue schedule.** Aegis 6J1's Pine declares
+  `$1.30`/side but the export was produced at `$3.10`/side, which **matches** the venue row (6J `$6.20`
+  round trip). Under the whole-export-viewed ruling the export is the object; the Pine default it did not
+  run with is provenance. So `EXPORT_VENUE_COMMISSION_MISMATCH` stays a BLOCKER, while
+  `PINE_EXPORT_COMMISSION_MISMATCH` / `PINE_VENUE_COMMISSION_MISMATCH` are inventory (WARNING) whenever the
+  export-implied fee matches the venue. At `4c186e7` all three default to BLOCKER and spec §4.6 rolls the
+  most severe status up, which would block Aegis at Phase 1 for a default it never ran with. Operator may
+  veto this reading.
+
 ## §5 Claim manifest
 
 | Item | Holder | Status | PR / commit | Note |
@@ -103,12 +131,12 @@ orchestrator to Codex's Phase 1 PR as a diff-plus-CI read, never opening vendor 
 | Phase 0 intake (first return) | Codex, `codex/mym-breakout-research` @ `706a03e` | **RETURNED — FAIL** (G0.1, G0.3); phase then **SKIPPED** by operator override | no PR | pushed by the operator 2026-09-03: one commit on a base **68 commits behind `main`** (pre-dates PR #259's merge). Content: vet-intake notes for `ORB-MYM-SCALE-1` (`docs/notes/2026-09-01-orb-mym-scale-vet-intake.md`, `2026-09-02-next-vet-candidate-assessment.md`, a three-speed-spec paragraph) plus the raw TV bar export, the parsed `MYM_M15.csv`, and the 60-cell trade ledger. Not a seven-strategy intake |
 | Phase 0 gate review | orchestrator | **DONE — `FAIL`** (this session) | — | §4 applied as a diff read; vendor files were opened only to two header lines each for content-class identification, no statistic computed |
 | Phase 0 re-dispatch packet | orchestrator | **SUPERSEDED** — Phase 0 skipped | — | replaced by the §9 Phase 1 dispatch record |
-| Phase 1 normalization (+ folded inventory) | Codex, `codex/tradeify-stage1-normalization` @ `a51bc60` (base `11d22e2`) | **IN PROGRESS** — Task 1/8 on `origin` | no PR yet | design spec + 8-task plan committed; the calendar-week adapter and joint block builder **are** designed (spec §4.5), so the anticipated G1.7 re-anchor is withdrawn — execution remains |
-| Phase 1 gate review | orchestrator | **PARTIAL READ DONE** 2026-09-03 on `a51bc60`; full verdict when the runner, reports, and PR land | — | worktree re-run: 6/6 tests pass, `check_boundaries` OK, CI composition (`--tier check`) red on `lab-catalog` only |
+| Phase 1 normalization (+ folded inventory) | Codex, `codex/tradeify-stage1-normalization` @ `4c186e7` (base `11d22e2`) | **IN PROGRESS** — Task 4/8 on `origin` | no PR yet | Tasks 1–4 landed (identity, strict normalization, reconstruction + accounting, venue audit; 55 tests); Task 5 (joint ledger + calendar-week adapter), 6 (runner + reports), 7–8 remain; D8/D9 config re-freeze, the CATALOG row, and the G1.6 force-flat re-freeze still outstanding |
+| Phase 1 gate review | orchestrator | **PARTIAL READS DONE** 2026-09-03 on `a51bc60` and `4c186e7`; full verdict when the runner, reports, and PR land | — | worktree re-run at `4c186e7`: 55/55 tests pass, `lab/discovery/cost_model.py` byte-unchanged, `check_boundaries` OK, CI composition (`--tier check`) red on `lab-catalog` only; one G1.6 finding and one G1.4 interpretation recorded in §4 |
 | Campaign pre-registration (contract items 1–14 + seven candidate contracts; Phase 3 deliverable) | orchestrator authors → adversarial panel → operator ratifies | **QUEUED** | — | must exist before any Phase 4 run |
 | Phases 1–8 | per §2 | **QUEUED** | — | — |
 
-**Hashes:** the seven Pine and seven export SHA-256 pins are committed in `phase1_config.json` on `codex/tradeify-stage1-normalization` @ `a51bc60` and listed in the design spec §2; this session read the pins, never the bytes. Code commit reviewed: `a51bc60`. Config and ledger hashes: runner deliverables, not yet recorded. **Compute:** completed 0 · remaining
+**Hashes:** the seven Pine and seven export SHA-256 pins are committed in `phase1_config.json` on `codex/tradeify-stage1-normalization` @ `a51bc60` and listed in the design spec §2; this session read the pins, never the bytes. Code commits reviewed: `a51bc60`, `4c186e7`. Config and ledger hashes: runner deliverables, not yet recorded. **Compute:** completed 0 · remaining
 undetermined until §6 D3. **Defects / invalidations:** none; no prior output exists to invalidate.
 
 ## §6 Decisions requiring operator input
@@ -133,6 +161,8 @@ git fetch origin && git log --oneline origin/main..origin/codex/tradeify-stage1-
 # its head run `python scripts/gate_manifest.py --tier check` and the four Phase 1 test modules, then check the
 # committed reconciliation manifest against the spec §7.5–7.7 anchors frozen at a51bc60 (row/trade counts,
 # net P&L to the cent, exactly three ORB-MNQ force-flat violations).
+# ⚠ §7.7 is a Friday-to-Sunday SUB-COUNT once the daily 16:45 ET deadline is modeled (§4 note) — Codex re-freezes
+# it before the runner runs; the violation total is whatever the deadline test yields.
 python scripts/gate_manifest.py --tier pre-commit                            # before any integration commit
 ```
 
@@ -157,6 +187,7 @@ python scripts/gate_manifest.py --tier pre-commit                            # b
 | 2026-09-03 | Codex pushed `codex/tradeify-stage1-normalization` @ `a51bc60` (5 commits on `11d22e2`): operator-approved design spec, 8-task plan (0/49 steps checked), `phase1_config.json` — seven strategies (Aegis 6J1 short-only; ORB-MNQ recon v7; Striker DJ30 MNQ-prototype and MYM v4.5; Striker NAS100 MNQ v1 and MYM-prototype; Vanguard MGC v0.4), hashes, tz `null`, intraday-path `false`, two intended-vs-encoded instrument mismatches — primary-source Tradeify fee capture (6J 6.20 / MNQ 1.82 / MYM 1.82 / MGC 2.12 round trip), `tv_trade_ledger.py` (identity + fee loader), 6 tests. **Partial gate read:** G1.1 ✓ (no vendor bytes; `local_artifacts/` ignored; basenames + SHA-256 only); G1.5 ✓; G1.8 ✓ (loader rejects any claim class but `EXPLORATORY`); G1.4 tolerances pre-committed ✓ (spec §5); G1.2 partial (counts/bounds await the runner — spec §7.5–7.6 pre-commits row/trade counts and net P&L to the cent, verifiable later); G1.7 partial (6 tests; adapter + block builder designed); **G1.9 red** (`lab-catalog`: study dir absent from `lab/CATALOG.md`); G1.3 / G1.6 / G1.10 pending. Worktree re-run: 6/6 tests pass, boundaries OK, 6J tick value 12.5M × 0.0000005 = $6.25 confirmed. **Verdict: IN PROGRESS, not a Phase 1 return** | Phase 1 `IN PROGRESS`; D8, D9 raised |
 | 2026-09-03 | Codex review of #273 (`6ca5577`): six P1 + four P2 — eight bind the plan (folded at `e8694a9`), two bind this file (D1 merge order; D3 in iterations). §3/§4 corrected on verified source: engine inactivity is consecutive-idle-days vs the venue's calendar week; `cost_per_side_usd` is the index-micro row; `paired_blocks_from_daily` is single-series; `pair_tv_export_dataframe` raises on shorts; G0.2 gains the last-inspection field | plan `REVIEW FOLDED ×3` |
 | 2026-09-03 | Both #272 and #273 confirmed merged (D1 resolved). Separate session ([PR #275](https://github.com/Joshua-Asante/first-passage/pull/275)) reconciled `STATE.md`'s queue with this campaign: promoted to queue **#1** (D2 resolved — not Row 3, replaces the cultivation row); D4 resolved with it (separate program, now the higher-priority one; cultivation demoted off-queue). `PIPELINES.md`'s P1/P4 dispositions corrected to name this campaign with the same links. Flagged by Codex review as a stale-artifact P2 finding on #275, then fixed here in the same pass | queue placement `RESOLVED` |
+| 2026-09-03 | Codex pushed `codex/tradeify-stage1-normalization` @ `4c186e7` (Task 4/8: venue audit — separate commission bases, tick grid, exposure bounds under both tie orders, holds, roll/spread status; 55 tests). Incremental gate read: no vendor bytes, `cost_model.py` byte-unchanged, no orchestrator-surface edits, CI red on `lab-catalog` only. **G1.6 finding:** force-flat modeled as Friday-to-Sunday only vs the venue's daily 16:45 ET deadline (`firm_rules.py` re-verification 2026-07-22; `prop_envelope_default.md` E1) — spec §4.4, anchor §7.7, code and test to be re-frozen before the runner. **G1.4 interpretation:** Pine-default-vs-export commission codes are inventory when the export matches the venue (Aegis `$3.10`/side). Task 5 to carry micro-equivalent quantities for the account-aggregate cap. D8/D9 config re-freeze and the CATALOG row still pending | Phase 1 `IN PROGRESS`; findings relayed via operator prompt |
 
 ## §9 Phase 1 dispatch record (Codex, operator-relayed 2026-09-03)
 
@@ -202,3 +233,22 @@ next push should also flip their `intended_instrument` (DJ30 → MYM, NAS100 →
 lineage notes accordingly, and add `pine_pyramiding` (the Strategy Properties value) to all seven
 entries. With that, the set is **five templates**: Aegis 6J1; ORB-MNQ recon v7; DJ30-MYM {locked
 750%, pyramid-down}; NAS100-MNQ {locked 1000%, pyramid-down}; Vanguard MGC v0.4.
+
+**Orchestrator read at `4c186e7` (Task 4 of 8, 2026-09-03, incremental):** one commit on `fe35529` —
+`analyze_venue` + `VenueMetrics` in `trade_reconciliation.py` (Pine / export-implied / venue commission
+bases kept separate; tick-grid check against `INSTRUMENT_SPECS` plus campaign-local 6J geometry;
+peak-open-quantity bounds under both tie orders vs `contract_cap`; cross-date and Friday-to-Sunday holds;
+`CONTINUOUS_CONTRACT_ROLL_UNRESOLVED` for every `1!` symbol; spread `NOT_SEPARATELY_OBSERVABLE`) and 16
+new tests. Worktree: 55/55 pass; `lab/discovery/cost_model.py` byte-unchanged (spec §7.2 ✓); no vendor
+bytes; no orchestrator-surface edits; CI composition red on `lab-catalog` only. Findings, all cheap before
+the runner exists: (1) **G1.6** force-flat definition (§4 note) — spec §4.4, anchor §7.7, `analyze_venue`,
+and the test `test_cross_date_hold_is_reported_without_force_flat_false_positive` all encode weekends-only;
+(2) **G1.4 interpretation** — Pine-vs-export/venue commission codes are inventory, not blockers, when the
+export-implied fee equals the venue's (§4 note); (3) **Task 5 carry-forward** — the Tradeify cap is
+**account-aggregate**, counted 10 micros = 1 mini (`firm_rules.py` comment; article 12268167), so the joint
+ledger should carry `micro_equivalent_quantity` per event (6J = 10; MNQ/MYM/MGC = 1) for Phase 4 — no cap
+verdict in Phase 1; (4) `VenueMetrics.overnight_holds` is assigned the cross-date count — after (1) it
+should be the deadline-spanning count. Still outstanding from the `a51bc60` read: D9 `source_timezone`
+(all seven still `null`), D8 intent flip / renames / `pine_pyramiding`, the `lab/CATALOG.md` row (by hand),
+a merge of `main` (35 behind), Tasks 5–8, and the PR with the Rule 2 line. Verdict unchanged:
+**IN PROGRESS, not a Phase 1 return.**
