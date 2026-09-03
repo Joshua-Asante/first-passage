@@ -122,6 +122,11 @@ def _seven_source_fixture(root: Path) -> tuple[Path, Path, list[str]]:
         pine_bytes = f"// fixture {index}\n".encode()
         (source_dir / export_name).write_bytes(export_bytes)
         (source_dir / pine_name).write_bytes(pine_bytes)
+        pin_divergence = (
+            "day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}"
+            if strategy_id == "striker_nas100_mnq_dow_wed_excluded"
+            else None
+        )
         strategies.append(
             {
                 "strategy_id": strategy_id,
@@ -143,8 +148,10 @@ def _seven_source_fixture(root: Path) -> tuple[Path, Path, list[str]]:
                 "pine_commission_per_side_usd": "0.91",
                 "pine_slippage_ticks_per_side": "1",
                 "pine_pyramiding_pct": "100",
-                "pine_pin_status": "NOT_IN_PORT_MANIFEST",
-                "pin_divergence": None,
+                "pine_pin_status": (
+                    "UNPINNED_MODIFIED" if pin_divergence else "NOT_IN_PORT_MANIFEST"
+                ),
+                "pin_divergence": pin_divergence,
                 "contract_cap": 80,
             }
         )
@@ -208,13 +215,13 @@ def test_campaign_writes_local_rows_but_aggregate_contains_no_absolute_path(tmp_
     assert (output_dir / "weekly_exit_blocks.csv").exists()
     report_paths = sorted((output_dir / "strategy_reports").glob("*.json"))
     assert [path.stem for path in report_paths] == sorted(strategy_ids)
-    detailed = json.loads(report_paths[0].read_text(encoding="utf-8"))
-    assert detailed["strategy_id"] == report_paths[0].stem
-    assert detailed["claim_class"] == "EXPLORATORY"
-    assert detailed["source_identity"]["pine_pin_status"] == "NOT_IN_PORT_MANIFEST"
-    assert detailed["source_identity"]["pin_divergence"] is None
-    assert detailed["issues"]
-    assert set(detailed["issues"][0]) == {
+    detail = json.loads(report_paths[0].read_text(encoding="utf-8"))
+    assert detail["strategy_id"] == report_paths[0].stem
+    assert detail["claim_class"] == "EXPLORATORY"
+    assert detail["source_identity"]["pine_pin_status"] == "NOT_IN_PORT_MANIFEST"
+    assert detail["source_identity"]["pin_divergence"] is None
+    assert detail["issues"]
+    assert set(detail["issues"][0]) == {
         "code",
         "detail",
         "severity",
@@ -226,16 +233,18 @@ def test_campaign_writes_local_rows_but_aggregate_contains_no_absolute_path(tmp_
     assert manifest["phase1_verdict_cap"] == "NEEDS_CONTEXT"
     assert manifest["git_base_commit"] == "ed181233afd01d8fc128bc76ac626e43c3761f87"
     assert [row["strategy_id"] for row in manifest["strategies"]] == strategy_ids
-    assert all(row["pine_pin_status"] == "NOT_IN_PORT_MANIFEST" for row in manifest["strategies"])
-    assert all(row["pin_divergence"] is None for row in manifest["strategies"])
-    assert all(
-        row["source_identity"]["pine_pin_status"] == "NOT_IN_PORT_MANIFEST"
-        for row in manifest["strategies"]
+    modified_id = "striker_nas100_mnq_dow_wed_excluded"
+    modified_divergence = "day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}"
+    modified_record = next(row for row in manifest["strategies"] if row["strategy_id"] == modified_id)
+    assert modified_record["pine_pin_status"] == "UNPINNED_MODIFIED"
+    assert modified_record["pin_divergence"] == modified_divergence
+    assert modified_record["source_identity"]["pine_pin_status"] == "UNPINNED_MODIFIED"
+    assert modified_record["source_identity"]["pin_divergence"] == modified_divergence
+    modified_detail = json.loads(
+        (output_dir / "strategy_reports" / f"{modified_id}.json").read_text(encoding="utf-8")
     )
-    assert all(
-        row["source_identity"]["pin_divergence"] is None
-        for row in manifest["strategies"]
-    )
+    assert modified_detail["source_identity"]["pine_pin_status"] == "UNPINNED_MODIFIED"
+    assert modified_detail["source_identity"]["pin_divergence"] == modified_divergence
     assert set(manifest["local_strategy_report_sha256"]) == set(strategy_ids)
     assert manifest["local_strategy_report_sha256"] == {
         path.stem: sha256(path.read_bytes()).hexdigest() for path in report_paths
