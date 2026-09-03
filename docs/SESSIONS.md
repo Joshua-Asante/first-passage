@@ -33,6 +33,42 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-03c — Phase 1 partial gate read on Codex's `a51bc60`; D8/D9 raised; D9 resolved
+
+**Focus:** Orchestrator check-in after both campaign PRs merged. Operator pushed Codex's Phase 1 branch
+`codex/tradeify-stage1-normalization` @ `a51bc60`; ran the frozen Phase 1 gate as a diff-plus-CI read
+without opening vendor bytes.
+**Shipped:** [campaign-state artifact](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)
+update only — §2/§5 Phase 1 rows, §6 D1 closed, D7 kept **open** (ref deleted, object purge still
+pending), D8/D9 opened, §7 commands, §8 ledger, §9 read.
+**Decisions/defects:** The push is **Task 1 of 8** (identity boundary, primary-source fee capture,
+frozen config, 6 tests; plan checklist 0/49) — verdict **IN PROGRESS**, not a Phase 1 return. Partial
+read: G1.1 ✓ (no vendor bytes; `local_artifacts/` ignored), G1.5 ✓, G1.8 ✓, G1.4 tolerances
+pre-committed ✓; **G1.9 red** — the study dir is absent from `lab/CATALOG.md`, so CI's required check
+would fail; G1.3/G1.6/G1.10 await the runner. Worktree re-run: 6/6 tests pass, boundaries OK. The
+anticipated G1.7 re-anchor is withdrawn (calendar-week adapter and joint block builder are designed,
+spec §4.5). Two source-set facts need the operator: **D8** two prototypes are declared on one
+instrument but exported from the other's chart; **D9** the TradingView chart timezone is unknown for
+all seven (`timestamp_utc` null) — this **blocks a Phase 1 PASS**, since the plan's Phase 1 ledger
+is canonical UTC (Codex review of #274); **resolved later this session** — operator ruled
+`America/New_York` for all seven, Codex re-freezes the config. **D8 also resolved later this session:**
+the two "prototype" exports are the **native editions with the pyramid turned down** (DJ30 on MYM,
+NAS100 on MNQ), not Q-TXG-1 swap cells — exports on the right chart, declared intent and names wrong;
+consequence under the candidate-contract ADR: **five templates**, each pyramid variant a cell of its
+locked sibling's template (plan item 14 corrected). D7 stays
+open until GitHub confirms the object purge; a deleted ref alone does not remove the blobs. Good pre-commitment noted: the spec freezes expected row/trade
+counts and net P&L to the cent before the runner exists. No `core`/Pine/allocation/`dd_protection`/rail
+change. $0/K=0.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — Phase 1 in progress
+(Task 1/8 on `origin` @ `a51bc60`); full gate when the runner, reports, CATALOG row, and PR land
+(check-in armed); D8 resolved (native editions, pyramid down → five templates); D9 resolved (`America/New_York`); D7 open pending purge · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— unchanged.
+**Live-ops state:** unchanged — c1 rail disarmed, `dry_run=true`, M1 not `RESOLVED`, no arm.
+
+---
+
 ## 2026-09-03b — Queue/pipeline naming realignment: seven-strategy Select campaign is queue #1
 
 **Focus:** Operator flagged that STATE's queue, PIPELINES.md's "one turning pipeline" claim, and the
