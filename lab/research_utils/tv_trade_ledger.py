@@ -206,16 +206,14 @@ def _source_spec(value: object) -> SourceSpec:
 
 def load_source_specs(path: str | Path) -> tuple[SourceSpec, ...]:
     """Load and validate the immutable exploratory source inventory."""
-    payload = _load_json(Path(path))
-    if not isinstance(payload, dict) or set(payload) not in (
-        {"claim_class", "strategies"},
-        {"claim_class", "platform", "strategies"},
-    ):
-        raise ValueError("source configuration must contain claim_class and strategies")
+    payload = _require_exact_keys(
+        _load_json(Path(path)),
+        frozenset({"claim_class", "platform", "strategies"}),
+        "source configuration",
+    )
     if payload["claim_class"] != "EXPLORATORY":
         raise ValueError("claim_class must be EXPLORATORY")
-    if "platform" in payload:
-        _require_nonempty_string(payload["platform"], "platform")
+    _require_nonempty_string(payload["platform"], "platform")
     strategies = payload["strategies"]
     if not isinstance(strategies, list) or not strategies:
         raise ValueError("strategies must be a non-empty array")

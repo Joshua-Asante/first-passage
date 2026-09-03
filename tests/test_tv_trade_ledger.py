@@ -87,6 +87,23 @@ def test_load_source_specs_rejects_duplicate_strategy_id(tmp_path):
         load_source_specs(path)
 
 
+def test_load_source_specs_rejects_platformless_configuration(tmp_path):
+    """Removing the frozen platform provenance must make the config invalid."""
+    path = tmp_path / "config.json"
+    path.write_text(
+        json.dumps(
+            {
+                "claim_class": "EXPLORATORY",
+                "strategies": [_spec_dict("fixture", "source.csv", "source.pine")],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="source configuration keys mismatch"):
+        load_source_specs(path)
+
+
 def test_verify_source_pair_rejects_changed_export(tmp_path):
     """Removing byte-level export verification must surface a hard identity error."""
     export = tmp_path / "source.csv"
