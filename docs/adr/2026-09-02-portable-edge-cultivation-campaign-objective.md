@@ -1,6 +1,6 @@
 # Portable-edge cultivation campaign objective and boundaries
 
-**Status:** `Accepted` — direct operator election, 2026-09-02.  
+**Status:** `Accepted` — direct operator election, 2026-09-02. **Addendum 2026-09-03 (`Accepted`): this campaign is VOLREGIME translation; envelope GO recorded; enter at Packet T; L5 waived for this campaign only — see the dated addendum.**  
 **Decision date:** 2026-09-02  
 **Supersedes:** none  
 **Superseded-by:** none  
@@ -159,3 +159,69 @@ Accepted from the operator's direct 2026-09-02 elections and campaign instructio
 prospective-freeze restriction and pre-contract vocabulary are reconciliations required by the
 already-Accepted candidate-contract, evaluation-order, approvals, and terminal-taxonomy ADRs; they
 do not narrow the elected portable-edge objective.
+
+## Addendum 2026-09-03 — campaign is VOLREGIME translation; enter at Packet T
+
+**Status of this addendum: `Accepted` — direct operator election, recorded 2026-09-03.**
+The operator stated that Q-VOLREGIME already has GO, that it was already run, and that this
+campaign is VOLREGIME translation. This addendum records those elections on the existing campaign
+owner. It does not open a second campaign ADR.
+
+**Reads for this ruling (verified 2026-09-03, this worktree at `dafbce4` plus the cheap falsifier below):**
+
+| Source | Anchor | Supplies |
+|---|---|---|
+| This ADR §§1–3 | `f67306c` 2026-09-02 | Commercial elections that stay; P50 ineligibility that stays; Seat A = P50 that this addendum retires as the lead |
+| [`2026-09-01-q-volregime-bounded-translation-campaign.md`](../superpowers/plans/2026-09-01-q-volregime-bounded-translation-campaign.md) | `36b5305` 2026-09-02 | Execution owner still marked `PROPOSED — AWAITING OPERATOR ENVELOPE GO`; T0.1 item 1 requires L5 before an ORB-shaped template |
+| [`Q-VOLREGIME-1-intraday-bar-volume-regime.md`](../briefs/Q-VOLREGIME-1-intraday-bar-volume-regime.md) §5 | `36b5305` 2026-09-02 | Frozen forbidden move: no entry construct before the brief resolves |
+| [`volregime_l3_2026-08-31/RESULTS.md`](../../lab/analysis/_inbox/volregime_l3_2026-08-31/RESULTS.md) | `a60cc03` 2026-08-31 | L3 PASS both instruments — presence already run |
+| [`volregime_byyear_l4_2026-08-31/RESULTS.md`](../../lab/analysis/_inbox/volregime_byyear_l4_2026-08-31/RESULTS.md) | `a60cc03` 2026-08-31 | L4 PASS 7/7 both instruments |
+| [`ACCEPTANCE_BANDS.md`](../../lab/analysis/_inbox/volregime_l5_pilot_2026-08-31/ACCEPTANCE_BANDS.md) | `36b5305` 2026-09-02 | Packet C1 frozen; `FROZEN, NOT YET EXECUTED` — no observed L5 |
+| [`STATE.md`](../../STATE.md) queue | `dafbce4` 2026-09-03 | Live `#1` is the seven-strategy Select campaign; this campaign is already off-queue and stays off-queue |
+
+**Cheap falsifier (PARENT-side, 2026-09-03, before this addendum was written):**
+
+```
+$ ls lab/analysis/_inbox/volregime_l5_pilot_2026-08-31/RESULTS.md
+ls: cannot access '.../RESULTS.md': No such file or directory
+$ head -3 lab/analysis/_inbox/volregime_l3_2026-08-31/RESULTS.md
+# Q-VOLREGIME-1 L3 chronological halves — 2026-08-31
+**Status:** `ACTIVE` — L3 PASS independently on MNQ and MYM
+$ head -3 lab/analysis/_inbox/volregime_byyear_l4_2026-08-31/RESULTS.md
+# Q-VOLREGIME-1 bar-level by-year L4 — 2026-08-31
+**Status:** ACTIVE — L4 PASS independently on MNQ and MYM
+```
+
+L1–L4 and Packet C1 have run. C2–C5 and observed L5 have not. “Already run” in the operator
+election names the presence battery and the C1 freeze, not an observed L5 attribution.
+
+**The ruling.**
+
+1. **This campaign is the Sep 1 VOLREGIME translation campaign.** Live execution owner:
+   [`2026-09-01-q-volregime-bounded-translation-campaign.md`](../superpowers/plans/2026-09-01-q-volregime-bounded-translation-campaign.md).
+   The Sep 2 commercial elections stand: portable genuine edge first; `Tradeify_Select_100K`
+   preferred; manual weekly preservation accepted; edition failure does not erase a confirmed
+   edge; $0 external spend; ≤48 local core-hours; 2–3 calendar days; at most one candidate
+   contract; `M=1`; `α=0.05` Bonferroni identity. No capital, rail, Pine, allocation, or
+   `dd_protection` authority.
+2. **Envelope GO is given.** The translation plan’s `AWAITING OPERATOR ENVELOPE GO` status is
+   discharged. Queue placement is still not authorization for Packets P or A.
+3. **Enter at Packet T.** L1–L4 presence is the admitted prior for this campaign. C2–C5 and
+   observed L5 remain unrun open science and are **not** this campaign’s next packet. This is a
+   prospective, campaign-scoped waiver of translation-plan T0.1 item 1 and of Q-VOLREGIME-1 §5’s
+   “no entry construct before this brief resolves.” It does **not** close, certify, or `RESOLVED`
+   Q-VOLREGIME-1. It does **not** ratify the 703-core-hour §6 right-size. It does **not** authorize
+   inspecting a nonexistent observed L5 result.
+4. **Exact P50 stays source-only and prospectively ineligible** (§1.5, byte-unchanged). Seat A is
+   no longer P50. Hunting the gitignored Pine `9292bd4e…` is not Day-1 work.
+5. **MNQ is the primary translation instrument.** MYM is replication-only unless a second,
+   genuinely distinct template earns the other slot. This avoids the MYM-P50 near-neighbour.
+6. Translation success is a **new** candidate. L1–L4 do not inherit into Confirm, venue MC, or
+   lifecycle.
+
+**Queue.** This campaign remains **off-queue**. Live `#1` is the seven-strategy Select campaign
+(decision index 2026-09-03). This addendum does not steal that row. Re-entry requires a later
+operator promotion under the Survive-bound cap.
+
+**What this does NOT do:** open a contract; freeze a template; score a payoff cell; start Packet P
+or observed L5; admit exact P50; change `#1`; arm the rail.

@@ -127,7 +127,7 @@
 | 2026-08-30-tradeable-reachable-gate.md | Accepted | 2026-08-30 | none | ratified by operator (Joshua) 2026-08-30; see Ratification note. |
 | 2026-08-31-hypothesize-exit-pine-test-instrument.md | Proposed | 2026-08-31 | none | drafted by Claude Code, ratification is an operator decision. Date below is the draft date, not a ratification date — see §9. |
 | 2026-08-31-persona-hierarchy-full-retirement.md | Accepted | 2026-08-31 | `2026-08-19-loop-persona-hierarchy-review-panel.md` full; `2026-08-21-persona-hierarchy-front-office-only.md` full | ratified by operator (Joshua) 2026-08-31, in-session direct instruction ("I |
-| 2026-09-02-portable-edge-cultivation-campaign-objective.md | Accepted | 2026-09-02 | none | direct operator election, 2026-09-02. |
+| 2026-09-02-portable-edge-cultivation-campaign-objective.md | Accepted | 2026-09-02 | none | direct operator election, 2026-09-02. **Addendum 2026-09-03 (`Accepted`): this campaign is VOLREGIME translation; envelope GO recorded; enter at Packet T; L5 waived for this campaign only — see the dated addendum.** |
 
 ## Partially superseded
 

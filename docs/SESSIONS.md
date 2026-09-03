@@ -33,6 +33,30 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-03d — VOLREGIME translation rebind; enter at Packet T
+
+**Focus:** Operator corrected the off-queue Sep 2 campaign: Q-VOLREGIME already has GO, presence
+already ran, and this campaign is VOLREGIME translation — not Seat A = ineligible P50.
+`queue-exception: operator-approved rebind of the demoted portable-edge campaign; live #1 stays the seven-strategy Select campaign.`
+**Shipped:** [ADR addendum](adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03--campaign-is-volregime-translation-enter-at-packet-t)
+· translation plan `AUTHORIZED — ENTER AT PACKET T`
+· [T0](notes/2026-09-03-volregime-translation-t0.md) · [NB1 Vet](notes/2026-09-03-volregime-nb1-vet-card.md)
+(`VET-INCOMPLETE`, no contract).
+**Decisions/defects:** L1–L4 is the admitted prior; C2–C5 / observed L5 stay unrun. Exact P50 stays
+ineligible. MNQ primary. Template A (`VOLREGIME-NB1`) survives T0; volume-conditioned ORB fails T0
+(“more range means breakout”). W1 is not re-verdicted — owner
+[`RESULTS`](../lab/analysis/c1/class_s_w1_bootstrap_honest_2026-09-02/RESULTS.md) still holds both
+facts (no partition verdict at 48/100 **and** interim 5.0% re-score with 1.14pp headroom). The
+SESSIONS-only “67-agent / 14 routes” sentence is not a campaign premise. `#1` not stolen.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— residue (queue-exception): off-queue VOLREGIME translation at Packet T
+([T0](notes/2026-09-03-volregime-translation-t0.md)).
+**Live-ops state:** unchanged — c1 rail disarmed, `dry_run=true`, M1 not `RESOLVED`, no arm.
+
+---
+
 ## 2026-09-03c — Phase 1 partial gate read on Codex's `a51bc60`; D8/D9 raised; D9 resolved
 
 **Focus:** Orchestrator check-in after both campaign PRs merged. Operator pushed Codex's Phase 1 branch

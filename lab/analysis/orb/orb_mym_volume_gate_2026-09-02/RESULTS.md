@@ -5,11 +5,12 @@
 **Source:** private Downloads-local `orb_mym_4_edition.pine`
 **Pine SHA-256:** `9292bd4ec0ca9074d6d6523491dcdde3709424bd53edf9c75dea79f3b9f65071`
 
-> **Cultivation routing, 2026-09-02:** assigned seat A in the operator-authorized
-> [`portable-edge cultivation campaign`](../../../../docs/superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md).
-> Exact P50 is source/development evidence only: its Off/P50/P80 selection preceded any contract/K
-> freeze, so this campaign cannot open a candidate contract around it retroactively. Source/config
-> and List-of-Trades capture remain owed for provenance; this routing does not promote the result.
+> **Cultivation routing, 2026-09-03:** exact P50 is **not** Seat A. The Sep 2 campaign was rebound
+> to VOLREGIME translation
+> ([`ADR addendum`](../../../../docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03--campaign-is-volregime-translation-enter-at-packet-t)).
+> This result remains source/development evidence only: Off/P50/P80 was viewed before any
+> contract/K freeze, so no campaign may open a candidate contract around exact P50 retroactively.
+> It is a different observable from Q-VOLREGIME `bias_volume`.
 
 ## Question and tested catalogue
 

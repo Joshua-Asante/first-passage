@@ -1,24 +1,36 @@
 # Q-VOLREGIME-1 bounded translation campaign
 
-> **Status:** `PROPOSED — AWAITING OPERATOR ENVELOPE GO`. This plan authorizes no pilot,
-> outcome-bearing computation, candidate contract, Pine implementation, allocation, rail, or live
-> action. Every execution gate below is separate. Queue placement is not authorization.
+> **Status:** `AUTHORIZED — ENTER AT PACKET T`. Envelope GO recorded 2026-09-03 on
+> [`2026-09-02-portable-edge-cultivation-campaign-objective.md`](../../adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03--campaign-is-volregime-translation-enter-at-packet-t).
+> Packets P and A are **not this campaign**. No candidate contract, Pine, allocation, rail, or live
+> action is authorized by the GO alone. T0 is discharged
+> ([`2026-09-03 T0`](../../notes/2026-09-03-volregime-translation-t0.md)): Template A
+> (`VOLREGIME-NB1`) survives; volume-conditioned ORB fails. Next is T1 (`VET-INCOMPLETE`) — no
+> founding freeze.
 >
 > **Purpose:** give the one defensible live mechanism lead one bounded chance to become a complete,
 > confirmed, Tradeify-reachable trade expression—then stop. This is the execution plan implied by
 > the 2026-09-01 blockers review, not a claim that Q-VOLREGIME is already a strategy.
+>
+> **2026-09-03 authorization (do not re-ask):** portable edge first; Select preferred; manual weekly
+> preservation accepted; $0 / ≤48 local core-hours / 2–3 days; one contract; `M=1`. MNQ primary;
+> MYM replication-only unless a second distinct template earns the other slot. Exact P50 remains
+> ineligible. **T0.1 item 1 is waived for this campaign only** — L1–L4 presence is the admitted
+> prior; C2–C5 and observed L5 stay unrun open science. Q-VOLREGIME-1 is not closed or certified.
 
 ## 0. Executive envelope
 
-The campaign has four serial decisions:
+The campaign has four serial decisions. **This authorized campaign starts at decision 3
+(Packet T).** Decisions 1–2 (Packets P and A) remain designed, unrun, and outside this envelope.
 
-1. **Trust the attribution machinery:** finish the already-designed C2–C5 pilot without looking at
-   the real L5 augmented-minus-baseline result.
-2. **Attribute once:** if and only if the pilot clears, execute the pre-registered L5 comparison
-   once per surviving instrument.
-3. **Translate before measuring payoff:** if and only if L5 confirms incremental information,
-   derive no more than **two complete trade templates total**, freeze them, and reject any template
-   that cannot plausibly reach Tradeify geometry without outcome data.
+1. **Trust the attribution machinery (not this campaign):** finish the already-designed C2–C5
+   pilot without looking at the real L5 augmented-minus-baseline result.
+2. **Attribute once (not this campaign):** if and only if the pilot clears, execute the
+   pre-registered L5 comparison once per surviving instrument.
+3. **Translate before measuring payoff:** derive no more than **two complete trade templates
+   total**, freeze them, and reject any template that cannot plausibly reach Tradeify geometry
+   without outcome data. **2026-09-03:** L1–L4 presence is the admitted prior; L5 is not a
+   prerequisite for this campaign.
 4. **Explore and confirm once:** use one campaign-level multiplicity envelope, an append-only
    selection freeze, untouched confirmation, parity, honest costs/clocks/tails, and Tradeify MC.
 
@@ -41,11 +53,11 @@ in Packet T. That would be a positive campaign outcome if it confirms and clears
 | Pilot escalation | Existing 4→8 trading-day embargo retry only | Available solely for the frozen Type-I failure described in `ACCEPTANCE_BANDS.md` |
 | Rescue edits | 0 | Entry, stop, target, session, horizon, filter, or sizing-policy change creates an out-of-campaign candidate |
 
-**Operator elections required with the envelope GO:** primary commercial objective
-(`Tradeify_Select_100K`, any Tradeify tier, or portable confirmed edge); whether a manual weekly
-account-preservation trade is a permissible permanent account-level control; the campaign's K and
-dollar ceilings; and whether MYM is a replication-only instrument or may own one of the two trade
-templates. Until these are answered, Template stage cannot freeze a correct reachability gate.
+**Operator elections (discharged 2026-09-03):** portable genuine edge first, `Tradeify_Select_100K`
+preferred; manual weekly preservation is an accepted permanent account-level control; envelope
+$0 external / ≤48 local core-hours / 2–3 days; MYM is replication-only unless a second distinct
+template earns the other slot. Template stage may now freeze a reachability gate against those
+answers. The 703-core-hour §6 right-size is **not** ratified.
 
 ## 1. Governing artifacts and precedence
 
@@ -197,11 +209,17 @@ advances alone. Two survivors do not increase the two-template cap.
 
 ## Packet T — Translate attributed information into complete trade templates
 
-**Entry:** at least one primary L5 attribution result clears.  
+**Entry (2026-09-03, this campaign):** L1–L4 presence is complete on both instruments. Observed L5
+is **not** required. Packets P/A stay unrun.  
 **Purpose:** bridge “next M15 bar has elevated range probability” to a trade object without using
 payoff outcomes to invent direction or exits.
 
 ### T0 — Write the bridge or stop
+
+**Discharged 2026-09-03:** [`docs/notes/2026-09-03-volregime-translation-t0.md`](../../notes/2026-09-03-volregime-translation-t0.md).
+Template A (`VOLREGIME-NB1`) survives. Template B (volume-conditioned ORB) fails T0. Exact P50 is
+ineligible. Vet: [`2026-09-03-volregime-nb1-vet-card.md`](../../notes/2026-09-03-volregime-nb1-vet-card.md)
+(`VET-INCOMPLETE` — no contract).
 
 For each proposed template, write one falsifiable sentence answering:
 
@@ -219,8 +237,10 @@ A volume-conditioned ORB can be a legitimate translation because the Q-VOLREGIME
 one of the previously tested gap/GEX/rates/calendar gates. The prior failures remain adverse prior
 evidence rather than a universal theorem. An ORB template is admissible only when all of these hold:
 
-1. the relevant instrument's **primary L5 attribution passes first**—L1–L4 presence alone is not
-   permission to join the observable to ORB;
+1. ~~the relevant instrument's **primary L5 attribution passes first**—L1–L4 presence alone is not
+   permission to join the observable to ORB;~~ **WAIVED 2026-09-03 for this campaign only**
+   (addendum on the Sep 2 campaign ADR). L1–L4 presence is the admitted prior. An ORB-shaped
+   template still needs a T0 bridge that is not “more range means breakout,” plus items 2–6;
 2. the contract states why the exact trigger-bar volume state should distinguish ORB continuation
    from whipsaw, rather than merely predict larger unsigned next-bar range;
 3. the prior-art review distinguishes this exact construction from the dead gap-conditioned cell,
@@ -232,9 +252,12 @@ evidence rather than a universal theorem. An ORB template is admissible only whe
 6. it consumes one of the two campaign template slots and competes normally at Explore. It receives
    no automatic Confirm seat and cannot be replaced by a second ORB parameterization after failure.
 
-Passing L5 is therefore a **re-proposal prerequisite**, not evidence that ORB payoff improves. A
-confirmed, Tradeify-clear volume-conditioned ORB counts as full success. A failed ORB translation
-does not revoke the L5 class finding and does not authorize another conditioner.
+Passing L5 remains a **re-proposal prerequisite for campaigns that have not waived T0.1 item 1**.
+This campaign waived item 1 on 2026-09-03; an ORB-shaped template still needs a T0 bridge that is
+not “more range means breakout,” plus items 2–6. A confirmed, Tradeify-clear volume-conditioned
+ORB would count as full success. A failed ORB translation does not revoke the L1–L4 class finding
+and does not authorize another conditioner. This campaign’s Template B failed T0 on the forbidden
+sentence, so the ORB slot is unused.
 
 ### T1 — Vet no more than two templates
 
