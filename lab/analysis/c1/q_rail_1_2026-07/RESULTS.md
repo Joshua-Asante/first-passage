@@ -1,4 +1,5 @@
 **Theme:** c1
+**Verdict:** CLOSED — c1 rail Phases 0–4 CLOSED RESOLVED
 **Status:** ACTIVE — c1 rail Phases 0–4 CLOSED RESOLVED; ceiling $700 operator-signed
 # Q-RAIL-1 — Phase 0–3 + 1b RESULTS
 

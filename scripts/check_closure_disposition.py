@@ -659,7 +659,7 @@ def claimed_closed_campaigns_from_catalog(text: str) -> list[ClaimedClosed]:
     table: str | None = None
     for raw in text.splitlines():
         line = raw.strip()
-        if re.match(r"^##\s+Active\b", line):
+        if re.match(r"^##\s+(Active|Hot bodies)\b", line):
             table = "active"
             continue
         if re.match(r"^##\s+Archived\b", line):

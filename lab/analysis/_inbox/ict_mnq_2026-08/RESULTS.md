@@ -1,6 +1,7 @@
 # Q-ICT-MNQ-1 — RESULTS (Layers D + W, frozen-key confirmation on NQ/MNQ)
 
 **Theme:** _inbox
+**Verdict:** FALSIFIED — no layer licenses a deployable edge
 
 > **Layers 1H and 1M are in [`RESULTS_1H_1M.md`](RESULTS_1H_1M.md)** (fresh verdicts on
 > databento MNQ native data): **1H FALSIFIED** on multi-regime data at ~12× the original's
