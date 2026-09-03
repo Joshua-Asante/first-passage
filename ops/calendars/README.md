@@ -23,6 +23,17 @@ read the per-holiday clearing advisories, or make an authenticated CME Reference
 settlement-times PDFs over the ex-ante advisories — CME finalises holiday hours roughly two weeks
 out — and never conflate a settlement time with a Globex close time.
 
+> ✅ **Accepted for the seven-strategy Select campaign, 2026-09-03 (operator, decision D19).** That
+> acceptance is **scoped to date membership, not close times**, and the scope is what makes it safe:
+> the campaign consumes this file to decide *which dates* carry Tradeify's blanket 12:59 ET
+> holiday-short deadline, and every one of the 13 `unresolved` items bar one is a dispute about a
+> close **time** — none moves a date in or out of `venue_flat_dates`.
+>
+> ⚠ **The acceptance does not travel.** Read `equity_index_close_et`, `metals_close_et` or
+> `fx_close_et` to model an *exchange session* rather than a *venue deadline*, and those 13 disputes
+> are live again — up to 90 minutes on MGC and up to 4 hours on 6J. D19 does not cover that use.
+> Any consumer outside the campaign is on secondary, unaccepted provenance.
+
 ## The three derived lists
 
 * **`venue_flat_dates`** (49) — dates where **any** of the three groups closes early. This is the set
