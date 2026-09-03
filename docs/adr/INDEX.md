@@ -128,7 +128,7 @@
 | 2026-08-31-hypothesize-exit-pine-test-instrument.md | Proposed | 2026-08-31 | none | drafted by Claude Code, ratification is an operator decision. Date below is the draft date, not a ratification date — see §9. |
 | 2026-08-31-persona-hierarchy-full-retirement.md | Accepted | 2026-08-31 | `2026-08-19-loop-persona-hierarchy-review-panel.md` full; `2026-08-21-persona-hierarchy-front-office-only.md` full | ratified by operator (Joshua) 2026-08-31, in-session direct instruction ("I |
 | 2026-09-02-portable-edge-cultivation-campaign-objective.md | Accepted | 2026-09-02 | none | direct operator election, 2026-09-02. **Addendum 2026-09-03 (`Accepted`): this campaign is VOLREGIME translation; envelope GO recorded; L5 waived for this campaign only. Addendum 2026-09-03b (`Accepted`): Packet T0 closed `PRE-CONTRACT DROP` — see the dated addenda.** |
-| 2026-09-03-venue-legality-re-expression-lane.md | Proposed | 2026-09-03 | none | drafted by the orchestrator 2026-09-03 on the operator's D11 election ("I will re-express these"); **requires operator ratification before any replacement export's results are inspected**. |
+| 2026-09-03-venue-legality-re-expression-lane.md | Accepted | 2026-09-03 | none | ratified by operator (Joshua) 2026-09-03 ("I ratify the lane ADR"), before any replacement export existed and therefore before any replacement result could be inspected. The ratification-order requirement in §2 is satisfied on the record. |
 
 ## Partially superseded
 

@@ -1,6 +1,6 @@
 # Venue-legality re-expression lane for the seven-strategy Select campaign — post-view session bounding admitted under an exogenous trigger — `venue-legality-re-expression`
 
-**Status:** `Proposed` — drafted by the orchestrator 2026-09-03 on the operator's D11 election ("I will re-express these"); **requires operator ratification before any replacement export's results are inspected**.
+**Status:** `Accepted` — ratified by operator (Joshua) 2026-09-03 ("I ratify the lane ADR"), before any replacement export existed and therefore before any replacement result could be inspected. The ratification-order requirement in §2 is satisfied on the record.
 **Decision date:** 2026-09-03
 **Supersedes:** none
 **Superseded-by:** none
@@ -23,6 +23,30 @@ Files read **before** authoring this record, this session (2026-09-03):
 - `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json` — anchor `ca6748a` (2026-09-03). The three affected declared sessions and bar sizes: `orb_mnq_recon_v7` 15-minute, `09:15-16:55 America/New_York`; `vanguard_mgc_v04` 15-minute, `09:00-16:59 America/New_York`; `aegis_6j1` 15-minute, `10:00-13:45 America/New_York, Mon-Wed; force-flat 16:30 America/New_York`.
 - `docs/adr/2026-08-08-adr-ceremony-tiering.md` — anchor `e4962f7` (2026-08-29). "Ambiguous tier → FULL"; a light record later found to gate a full-tier matter is superseded, never padded. Tier chosen accordingly.
 - `docs/methodology/inqhiori-canon.md` — anchor `9c89dfa` (2026-08-31). §15 Rule 2 (budget before acting); an iteration is one complete attempt-and-check cycle. Each replacement's Phase 1 pass consumes iterations and is counted, not exempt.
+
+**Post-ratification source reads (2026-09-03, after the operator supplied the five Pine bodies).** These confirm §1's
+table and **refute** one hypothesis this record relied on:
+
+- `aegis_6J1.pine` — its EOD block fires `eod_zone` at 16:30 ET and the script does not set `process_orders_on_close`,
+  so the close fills at the next bar's open, 16:45 ET. Its header documents this as a deliberate 14-minute buffer
+  against **Bulenox's** 15:59 CT (16:59 ET) deadline. Its filters already resolve through an explicit
+  `America/New_York` input — deviation [1] in its own header, added precisely to avoid the exchange-timezone shift.
+  **The timezone diagnosis in the campaign artifact was therefore wrong and is corrected there.**
+- `Vanguard_Gold_MGC_v0.4.pine` — `lastSafeBar` backs off exactly one bar from a **16:59 ET** deadline input, firing
+  16:30 and filling 16:45. Its header's STILL OPEN list already states "Holiday-short calendar (early-close days) not
+  modeled".
+- `orb_mnq_7_reconstruction.pine` — `sessEndM` 55 makes `lastBarOfSession` the bar opening 16:45, and
+  `process_orders_on_close=true` records the flat on that bar. Its own tooltip already anticipated the fix: "Tradeify
+  auto-flattens 16:45 ET regular … set 30 for a venue-faithful paper run." It also already cancels its resting stop
+  entries at the session-end bar.
+- Both Striker bodies — `calcSize` sizes from a **static `accountSize` input (100000)**, not `strategy.equity`, and both
+  set `margin_long=0, margin_short=0`. Their EOD fires 15:45 ET for a 16:00 fill, which is why neither carries a
+  force-flat flag. Their day soft-stop, however, is anchored to `strategy.initial_capital` and is **not** gated by
+  `backtestMode`.
+
+**Consequence for this lane.** The permitted change (§2.2) is confirmed to be a one-input edit in each of the three
+bodies, not a rewrite: the scripts already contain correct, timezone-aware, deadline-parameterised flatten machinery
+pointed at the wrong deadline. That is the narrowest possible form of the change this record authorises.
 
 ---
 

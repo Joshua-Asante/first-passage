@@ -7,6 +7,10 @@ until that record is `Accepted`).
 **Applies to:** `orb_mnq_recon_v7`, `vanguard_mgc_v04`, `aegis_6j1`.
 **Scope:** adds a session bound. Changes nothing else. Any other edit voids the lane.
 
+⚠ **§1–§4 below were written before the Pine was available and describe a generic insert. The operator supplied the
+real bodies on 2026-09-03 and the edits were applied directly — see §8, which supersedes §2's block. The arithmetic
+in §1 stands and is what §8 implements.**
+
 ---
 
 ## §1 — What the venue requires, and what that means for a 15-minute chart
@@ -229,3 +233,36 @@ freeze to gain a weaker check.
 
 Flagging it rather than deciding silently: if the operator wants the tag adopted anyway, say so **before** the
 re-export, because it changes the export filenames that get pinned.
+
+---
+
+## §8 — The applied edits (2026-09-03, on the operator's own bodies)
+
+The three scripts already contained correct, timezone-aware, deadline-parameterised flatten machinery. Every one was
+simply pointed at the **wrong deadline** — 16:55 to 16:59 ET, the older Tradeify print or Bulenox's 15:59 CT — so each
+backed off one bar to a fill recorded at exactly **16:45 ET**, which is Tradeify's current cutoff and therefore a
+violation under `entry < deadline <= exit`. One defect, three scripts.
+
+| Script | Mechanism | Was | Now | Recorded fill |
+|---|---|---|---|---|
+| `aegis_6J1.pine` | `eod_zone = bar_minutes >= eod_cut`, next-bar fill | `eod_m` **30** (16:30 → fill 16:45) | `eod_m` **0** | 16:15 ET |
+| | early-close cutoff, next-bar fill | `eod_early_m` **30** (12:30 → fill 12:45) | `eod_early_m` **15** | 12:30 ET |
+| `Vanguard_Gold_MGC_v0.4.pine` | `lastSafeBar` backs off one bar from the deadline | `flatMinuteET` **59** (fires 16:30 → fill 16:45) | `flatMinuteET` **15** | 16:15 ET |
+| `orb_mnq_7_reconstruction.pine` | `lastBarOfSession`, `process_orders_on_close=true` | `sessEndM` **55** (records on the 16:45 bar) | `sessEndM` **30** | 16:15 ET |
+
+**Early-close handling added where it was absent.** Aegis already carried an `early_close_dates` input with a
+best-effort 2022–2027 list. MGC and ORB carried none, and both said so in their own headers. Both now take the same
+input plus an early deadline (MGC 12:15, ORB session close 12:45), parsed with the identical pattern Aegis already
+ships. ⚠ The list is Aegis's interim, marked as such in the tooltip; the verified D12 calendar replaces it.
+
+**Nothing else moved.** Non-comment diffs: Aegis 3 lines (title, two inputs), MGC and ORB one input plus the added
+early-close block, and the strategy title. No entry, stop, target, trail, breakeven, sizing, filter, risk or rail
+value changed in any of the three.
+
+**Separately, not part of this lane:** both Striker bodies re-export with `initial_capital` 200000 → 100000 (campaign
+decision D15), one line each. Sizing does not move — `calcSize` reads a static `accountSize` input of 100000 — but the
+day soft-stop is anchored to `strategy.initial_capital` and is live in backtest mode, so 200K halted the day at twice
+the intended dollar loss.
+
+⚠ **Not compile-verified.** `scripts/pine_check.py` calls TradingView's guest compile endpoint, which this environment's
+proxy refuses with 403. Confirm each script compiles on paste before running the export.
