@@ -10,9 +10,12 @@ rule -- see RESULTS.md) and the intraday-honest limb.
 Compute-budget disclosure (RESULTS.md "Compute budget" section has the full
 numbers): the frozen survivor-scoring sims_per_seed (10,000, from
 load_scoring_thresholds()) measured at ~300s per (tuple, firm) cell on this
-machine. A full 630-cell grid at that N is ~52 CPU-hours -- outside this
-task's responsible compute budget (Rule 2, CLAUDE.md). This harness therefore
-runs the FULL 630-cell grid (zero cells dropped -- coverage is not narrowed)
+machine. A full 945-cell grid at that N is ~78.75 CPU-hours -- outside this
+task's responsible compute budget (Rule 2, CLAUDE.md). (⚠ Corrected 2026-09-03: this
+disclosure read "630-cell / ~52 CPU-hours" from when FIRM_KEYS held two firms.
+Tradeify_Growth_100K was added 2026-08-24, making it 315 x 3 = 945 -- an operator
+budgeting from the old figure underbudgeted the run by 50%.) This harness therefore
+runs the FULL 945-cell grid (zero cells dropped -- coverage is not narrowed)
 at a reduced `--n-sims` per seed, keeping the frozen SEEDS (42/123/2026) and
 frozen HORIZON (1500) byte-identical to load_scoring_thresholds() -- the only
 axis that moves is sims_per_seed, disclosed on every output row via
@@ -31,7 +34,7 @@ selected AFTER the sweep completed, by gate proximity (every cell whose
 verdict was MARGINAL in the committed region_data.jsonl), not by outcome.
 
 Sharded execution: pass --shard-index i --n-shards N to score only cells
-i, i+N, i+2N, ... of the fixed 630-cell enumeration (deterministic, so shards
+i, i+N, i+2N, ... of the fixed 945-cell enumeration (deterministic, so shards
 partition the grid exactly once with no overlap and no gap). Each shard
 appends to its own JSONL as it goes -- safe to inspect mid-run, safe to
 resume (existing rows are not re-computed on a re-invocation with the same
@@ -100,7 +103,8 @@ VALIDATION_CELLS: List[Tuple[float, str, int, float]] = [
 ]
 
 # MARGINAL-band cross-check cells -- added as a fix for a review finding on
-# the original 630-cell sweep (RESULTS.md Sec4.1): VALIDATION_CELLS above are
+# the original sweep (RESULTS.md Sec4.1, when the grid was 630 cells at two firms):
+# VALIDATION_CELLS above are
 # all far-from-gate corner cases, chosen for coverage diversity BEFORE the
 # sweep ran, so none of them tested whether a cell landing MARGINAL under the
 # reduced sweep-N (sims_per_seed=500) would resolve to a clear PASS/FAIL (or
@@ -131,7 +135,11 @@ def firm_consistency(firm_key: str) -> float | None:
 
 
 def all_cells() -> List[Tuple[float, str, int, float, str]]:
-    """Fixed 630-cell enumeration: 315 tuples x 2 firms, tuple-major order."""
+    """Fixed 945-cell enumeration: 315 tuples x 3 firms (FIRM_KEYS), tuple-major order.
+
+    Was 315 x 2 = 630 until Tradeify_Growth_100K joined FIRM_KEYS on 2026-08-24;
+    the count follows len(FIRM_KEYS) and is not hard-coded.
+    """
     out = []
     for t in sg.all_tuples():
         for firm in FIRM_KEYS:

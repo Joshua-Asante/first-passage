@@ -8,9 +8,18 @@ Does not invent a store, does not place trades, and must never read as a
 standing licence or a reminder-to-trade. STATE.md row 0 owns the recurrence
 posture (RECURRENCE-UNRULED).
 
-⚠ This module is the ONLY faithful implementation of the venue rule (2026-09-03).
+⚠ This module is the venue rule's OPERATIONAL/REPORTING surface (2026-09-03) --
+the weekly coverage-decision reader, not the only place the bucket is modelled.
 The rule is a per-Mon-Fri-week BUCKET -- ">=1 trade per week" (art. 10468318) --
-which is what ``mon_fri_week`` / ``decision_status`` below model. The MC engine
+which is what ``mon_fri_week`` / ``decision_status`` below model. Two research
+surfaces model the same bucket and are reusable:
+  * ``lab/analysis/c1/tradeify_book_composition_2026-09/book_grid.py``
+    ``weekly_coverage`` -- ``pd.period_range(..., freq="W-FRI")`` coverage fraction.
+  * ``lab/analysis/c1/msl_monsurf_1_idle_clock_2026-08/idle_clock_monitor.py``
+    ``evaluate_week`` -- per-week T-2/T-1 alerts, ``breached`` iff the week has
+    zero active days, i.e. the venue predicate exactly.
+Do not treat this report parser as the sole semantic authority; prefer those when
+you need the bucket as a computation rather than as a coverage-note read. The MC engine
 models something different and stricter: ``core/mc/simulation.py`` counts ROLLING
 consecutive idle business days against ``firm_rules`` ``inactivity_max_idle_days:
 5``. The two are not interchangeable -- a calendar trading Mon-wk1 / Fri-wk2 /

@@ -118,9 +118,13 @@ BUST_KEYS: Tuple[str, ...] = ("bust_daily", "bust_static", "bust_trailing")
 # engine UNDER-fires. So: barrier-ON rates are conservative ceilings **when the
 # input series covers every business day**, and are unsound in either direction
 # when it does not — validate/reindex to a full calendar before reading one.
-# Modelling the bucket rule faithfully is unspent work needing its own ADR;
-# `ops/sentinel/activity_week.py` is the only surface that implements the real
-# Mon-Fri bucket, and it is report-only.
+# Making THIS ENGINE bucket-aware is unspent work needing its own ADR + re-MC.
+# Faithful bucket models that already exist (reusable, none of them in the MC path):
+#   * ops/sentinel/activity_week.py                     -- report-only coverage reader
+#   * lab/.../tradeify_book_composition_2026-09/book_grid.py::weekly_coverage
+#                                                       -- pd W-FRI coverage fraction
+#   * lab/.../msl_monsurf_1_idle_clock_2026-08/idle_clock_monitor.py::evaluate_week
+#                                                       -- breached iff zero active days
 INACTIVITY_OFF: int = HORIZON_CAP + 1
 
 

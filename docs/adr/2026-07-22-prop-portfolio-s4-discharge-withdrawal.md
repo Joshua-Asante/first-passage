@@ -201,7 +201,11 @@ the measurement that would settle it has not been run.
 
 **Neither document saw this.** v2's §5 is careful to bar reading the `aegis_orbmnq_combined_book_2026-08-26`
 study as having cleared any gate — but it never mentions candidate #1, this ADR, or the forbidden
-move, and greps clean for `withdrawal` / `forbidden` / `candidate #1`. v2's §1 states *"no
+move. ⚠ **Corrected 2026-09-03:** an earlier draft of this line claimed v2 "greps clean" for
+`withdrawal` / `forbidden` / `candidate #1`. It does not — v2's own §5 heading (line 171) is
+"Forbidden moves", so that disjunction always hits, and the prose disagreed with its own hook 3.
+What is actually absent from v2 is any reference to **candidate #1** or to **this ADR**; hook 3
+below is narrowed to those collision-specific terms. v2's §1 states *"no
 DISC-CAMP-0 survivor has been scored under this version"*, which is true and is precisely why the
 gap went unnoticed: candidate #1 was scored under **v1**, so it is invisible to a
 "nothing-scored-yet" check while remaining fully re-admissible by arithmetic.
@@ -266,9 +270,11 @@ grep -n "2026-08-26-prop-survivor-scoring-prereg-v2" lab/discovery/prop_survivor
 # 2. §5's forbidden move is still present and unedited.
 grep -n "Moving the 3.0% ceiling" docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md
 
-# 3. v2 still does NOT address candidate #1 (the gap this addendum names).
-grep -ni "candidate #1\|withdrawal\|forbidden move" \
-  docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md   # expect: no candidate-#1 hit
+# 3. v2 still does NOT address candidate #1 or this ADR (the gap this addendum names).
+#    Collision-specific terms ONLY: v2's own §5 heading is "Forbidden moves", so that phrase
+#    is not a discriminator and must never appear in this hook (it made the hook self-hitting).
+grep -ni "candidate #1\|candidate 1\|s4-discharge-withdrawal\|discharge WITHDRAWN" \
+  docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md   # expect: empty
 
 # 4. Nobody reads 4.74%/4.25%-under-5.0% as a discharge. Every hit must be a FAIL
 #    statement or carry a 2026-09-03 intercept; a bare "clears"/"discharges" is the defect.

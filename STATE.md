@@ -82,7 +82,14 @@ evidence it is active — check the manifests. Read the tag as this index's own 
 process work it mostly records, a visible label rather than a silent default no reader notices, not as
 a claim about the discovery pipeline's state either way.
 
-Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md) (P8 keep-15 roll, 2026-08-23; rolled 2026-08-27, 2026-08-29 (×2), 2026-08-30 (×2), 2026-08-31 (×2), 2026-09-01 (×2), 2026-09-02, and 2026-09-03).
+Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md) (P8 keep-15 roll, 2026-08-23; rolled 2026-08-27, 2026-08-29 (×2), 2026-08-30 (×2), 2026-08-31 (×2), 2026-09-01 (×2), 2026-09-02, and 2026-09-03 (×2)).
+
+- **2026-09-03** — Off-queue portable-edge campaign rebound to VOLREGIME translation: envelope GO
+  recorded; L5 waived for this campaign only; T0 then closed `PRE-CONTRACT DROP` (both templates
+  fail; no contract). Exact P50 stays ineligible. Does not steal queue `#1`. $0/K=0.
+  [`ADR addendum`](docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03--campaign-is-volregime-translation-enter-at-packet-t)
+  · [`T0 addendum`](docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03b--t0-pre-contract-drop)
+  · [`T0`](docs/notes/2026-09-03-volregime-translation-t0.md)
 
 > **Retracted verdicts do not occupy a slot (2026-09-03).** A closure whose verdict was later
 > retracted is not an executed decision — the *correction* is. The 2026-08-30 `Q-RANGECOND-1`
@@ -125,7 +132,6 @@ Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state
 - **2026-08-24** — Regime-gate scope ratified + F1 discharged; validation-battery K-tiering, cost-law split, `pursuit-records` retired. Worked non-example lands on the Class-S candidate-1 rider chain, not ORB-MNQ-1 as originally proposed (verified against production). No code/risk-constant/allocation touched. $0/K=0. [`ADR-A`](docs/adr/2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md) · [`ADR-B`](docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md) · [`PR #163`](https://github.com/Joshua-Asante/first-passage/pull/163)
 - **2026-08-24** — A2 disclosed-N reduction accepted (consistency-plan Packet 0). Published region is the screen. Not a Phase B GO. [`A2 RESULTS §4`](lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md) [`plan`](docs/superpowers/plans/2026-08-24-viable-strategy-surface-consistency.md)
 - **2026-08-24** — M1 item 5 dated 08-24; test strategy licensed (evaluate-hook → B1, `dry_run`). `#2` no longer waits on `#1`. No arm. [`M1 addendum`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) [`Survive-bound addendum`](docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--m1-item-5-no-longer-waits-on-queue-1)
-- **2026-08-24** — Operator queue: mechanism supply is `#1`; B7/M1 is `#2` (waits on #1). Placement is not a phase GO. [`Survive-bound addendum`](docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--the-blocker-of-b7m1-is-queue-1) [`overview`](docs/superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md)
 > ⚠ **Truncated to the newest 15 at the 2026-08-08 Great Prune.** Older executed decisions are
 > owned by their ADRs (`docs/adr/`, tombstoned rows in [`TOMBSTONES.md`](docs/adr/TOMBSTONES.md));
 > full prior index: `git show pre-prune-2026-08-08:STATE.md`.
