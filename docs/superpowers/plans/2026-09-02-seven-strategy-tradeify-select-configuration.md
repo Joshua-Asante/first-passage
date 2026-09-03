@@ -8,7 +8,12 @@ or authorization to trade.
 `Tradeify_Select_100K` evaluation subject to a bust probability below 5% under the frozen qualifying
 bound (decision contract item 3), using the seven supplied strategies without changing their signal
 rules after results are viewed. The *out-of-sample* label attaches only under the confirmation-count
-rule (item 11); otherwise the claim is model-fitted and says so.
+rule (item 11); otherwise the claim is model-fitted and says so. **Operator ruling 2026-09-03:**
+every supplied strategy is treated as tuned and viewed on the whole export, so no historical bytes
+can serve as confirmation; confirmation is forward-only (item 8), and the campaign's own
+deliverable is a **model-fitted** configuration, unfalsified on the forward interval, until item
+11's count accrues. **Operator override 2026-09-03:** Phase 0 is skipped; its hashing and
+inventory duties fold into Phase 1's deliverables.
 
 **Safety boundary:** no strategy is deployed and the c1 rail remains disarmed. Research output can
 recommend a configuration; it cannot arm the rail or place a trade.
@@ -36,9 +41,11 @@ Before the first portfolio result is computed, freeze a campaign pre-registratio
    collision policy, daily loss governor, and any portfolio-level risk scale); and
 7. the random seeds, bootstrap family, block-length selection rule, the joint-flat block-boundary
    rule (Phase 3), search budget, and the confirmation set;
-8. the confirmation start date **derived** from the later of each included strategy's final
-   design-decision date and last result-inspection date (Phase 0 fields, Phase 3 rule) and the
-   minimum confirmation length in trading days and expected trades; and
+8. the confirmation set: by operator ruling (2026-09-03) every supplied strategy is treated as
+   tuned and viewed on the whole export, so **no historical segment is confirmation data**;
+   confirmation is a reserved **forward** interval whose first eligible bar is strictly after the
+   pre-registration commit (bars between the last source read and that commit are excluded), with
+   its minimum length in trading days and expected trades frozen here; and
 9. every Phase 4 screen cutoff as a number: dominance rule and margin, outlier-removal count and
    surviving floor, single-year/single-strategy dependence test, cost and slippage stress values,
    and the safety-screen threshold. No result-dependent adjective survives into the
@@ -51,12 +58,12 @@ Before the first portfolio result is computed, freeze a campaign pre-registratio
     only after ordering). Frozen before Phase 4, applied to every slot in Phase 7, never revised
     mid-campaign; and
 11. the **confirmation-observation rule**: the number `N_conf` of non-overlapping, joint-flat,
-    untouched confirmation evaluations the reserved segment must supply before the out-of-sample
+    untouched confirmation evaluations the forward interval must accrue before the out-of-sample
     label may attach. Zero busts in `N_conf` independent evaluations gives a one-sided `1 − α/M`
     binomial upper bound below 5% only when `N_conf ≥ ln(α/M) / ln(0.95)` — **59** at `α = 0.05`,
     `M = 1`, more for any `M > 1`. Rolling starts inside one segment overlap and do not count.
-    When the derived segment cannot supply `N_conf`, the claim is frozen here as
-    *model-fitted; unfalsified on the reserved segment* and may not be called out-of-sample;
+    Until the forward interval has accrued `N_conf` such evaluations, the claim is frozen here as
+    *model-fitted; unfalsified on the forward interval* and may not be called out-of-sample;
 12. every Phase 6 challenge as a number: the block-length set, the commission multiplier and
     adverse-tick values, the delay / missed-trade / outage rates, the added downside-correlation
     and loss-clustering amounts, the top-trade / month / year removal counts, and each challenge's
@@ -77,7 +84,7 @@ Before the first portfolio result is computed, freeze a campaign pre-registratio
 If the exact 5% boundary is operational rather than statistical, report both the point-estimate
 frontier and the confidence-qualified frontier, but only the latter may be called a pass.
 
-## Phase 0 — Receive and inventory the evidence
+## Phase 0 — Receive and inventory the evidence (**skipped by operator override 2026-09-03** — the inventory below is delivered inside Phase 1)
 
 Create a read-only intake manifest for each of the seven strategies and exports:
 
@@ -87,14 +94,9 @@ Create a read-only intake manifest for each of the seven strategies and exports:
 - complete trades, including entry/exit timestamps and prices, quantity, commission, slippage,
   maximum adverse excursion (MAE), maximum favorable excursion, and stable trade ID where
   available;
-- the strategy's **final design-decision date** — the last change to any signal, filter, stop,
-  exit, or sizing rule, from the author's own record — and the overlap between development/tuning
-  and the reported four-year period. An unknown date is recorded as `UNKNOWN`, never guessed;
-  Phase 3 treats `UNKNOWN` as the export's last timestamp;
-- the strategy's **last result-inspection date** — the last time the author, or any tool acting
-  for them, viewed a backtest, equity curve, trade list, or summary covering any part of the
-  export, whether or not a change followed. Viewing without changing still consumes the data.
-  `UNKNOWN` is recorded, never guessed, and is treated like an unknown design-decision date;
+- the standing contamination record — by operator ruling (2026-09-03) every supplied strategy is
+  recorded as **tuned and viewed on the whole export**; no per-strategy design or inspection date
+  is collected, and no part of the export is claimed as untouched;
 - whether **synchronized intraday bars** (or timestamped intratrade equity paths) exist for the
   strategy's instrument and session across the full period, as distinct from a per-trade MAE
   scalar; and
@@ -111,28 +113,22 @@ inventoried as `LOWER BOUND`-capable (the repository's existing honesty label �
 `lab/research_utils/msl_score.py`); a configuration containing it can be screened but cannot
 qualify (Phase 5, Phase 7). Never infer that an EOD-safe path is intraday-safe.
 
-**Reserve the confirmation window now, not in Phase 3.** As soon as the final design-decision and
-last-inspection dates exist, compute the derived confirmation start (Phase 3 rule) per strategy and per candidate inclusion
-set, split every export at that boundary, and **quarantine the reserved bytes**: a separate
-gitignored directory, SHA-256 recorded in the manifest, and a loader assertion — not a convention —
-that no Phase 1–6 code path can open them. Metadata (row count, first/last timestamp) may be read
-from the whole export; no P&L, drawdown, cadence, or trade statistic is computed on the reserved
-segment before Phase 7. Anything that can affect an elimination or a selection reads development
-data only, from Phase 1 onward.
+**No historical bytes are reserved.** Under the ruling above the whole export is development data,
+so nothing is split or quarantined at intake; the forward confirmation interval opens only after
+the Phase 3 pre-registration commit, and every bar received for it is quarantined on receipt
+(separate gitignored directory, SHA-256 in the manifest, and a loader assertion — not a
+convention — that no Phase 1–6 code path can open it).
 
 **Deliverable:** `INTAKE.md`, a machine-readable manifest, a discrepancy report, and the
-reserved-window record (boundary timestamp per strategy, quarantined-file hashes, loader-assertion
-test). No ranking is performed in this phase.
+forward-interval quarantine test (loader assertion), ready before Phase 3 commits. No ranking is performed in this phase.
 
 ## Phase 1 — Normalize and reproduce each strategy independently
 
 Build one canonical event ledger in UTC while retaining exchange-local session dates. Preserve the
 original trade stream and add normalized fields; do not silently repair source rows. Reconcile each
 strategy to its source report on trade count, gross/net P&L, win rate, profit factor, maximum
-drawdown, and monthly totals **over the development segment only** (the report's subtotals or its
-trade list filtered to that segment). Whole-period totals are reconciled once, **inside** Phase 7's
-single atomic confirmation read — never before it, because deriving them reads the reserved bytes;
-a mismatch there voids that slot (`EVIDENCE-VOID`), never a tuning opportunity. Explicitly model:
+drawdown, and monthly totals **over the whole export** (all of it is development data under the
+ruling). A material mismatch blocks that strategy; it is never a tuning opportunity. Explicitly model:
 
 - commissions and exchange/NFA fees **per instrument**, from a **per-instrument Tradeify
   commission table that Phase 1 delivers and hashes**: captured from the venue's published
@@ -155,8 +151,8 @@ adapter** (Phase 5), the **multi-strategy joint block builder** (Phase 3), and p
 
 ## Phase 2 — Audit standalone quality
 
-Measure each strategy without optimizing it — **on development data only**; the reserved segment
-stays quarantined (Phase 0) because every measurement here can feed an elimination: net expectancy,
+Measure each strategy without optimizing it, on the export (all development data under the
+ruling): net expectancy,
 trade cadence, time in market, drawdown, tail loss, year/quarter/month stability, long/short and
 session decomposition, parameter history, and performance under higher costs. **Standalone limbs
 only:** nothing in this phase composes two strategies, because the decision contract freezes the
@@ -173,22 +169,18 @@ recorded there and alter no frozen field.
 
 ## Phase 3 — Freeze the search and validation design
 
-Partition chronologically, never by individual trade. The development/confirmation boundary was
-reserved and quarantined at intake (Phase 0); Phase 3 restates it, adds walk-forward folds inside
-the development segment, and freezes both in the pre-registration. For only four years of history,
-prioritize time integrity over maximizing the training sample and disclose the small effective
-sample size.
+Partition chronologically, never by individual trade. Under the ruling the whole export is the
+development segment; Phase 3 adds walk-forward folds inside it and freezes them, together with the
+forward confirmation interval (contract item 8), in the pre-registration. For only four years of
+history, prioritize time integrity over maximizing the training sample and disclose the small
+effective sample size.
 
-**Confirmation start is derived, not chosen.** The confirmation segment begins strictly after the
-**later** of the latest final design-decision date and the latest last result-inspection date
-among the strategies a configuration includes (Phase 0 fields) — a viewed result is consumed even
-when no change followed. Recording an overlap never converts a development slice into
-out-of-sample data. A strategy for which either date post-dates the export, or is `UNKNOWN`, has no
-untouched historical segment:
-a configuration that includes it cannot qualify from historical data, and its confirmation moves to
-a reserved forward interval whose first eligible bar is strictly after the pre-registration
-commit. If the derived segment is shorter than the frozen minimum (decision contract item 8), the
-outcome for that inclusion set is **no qualifying configuration**, not a shorter window.
+**Confirmation is forward-only.** By operator ruling (2026-09-03) no historical slice is untouched
+for any supplied strategy, so the confirmation set is a reserved forward interval: first eligible
+bar strictly after the pre-registration commit, every bar between the last source read and that
+commit excluded, minimum length frozen in contract item 8. Untouched-ness is guaranteed by time,
+not by a date claim. If the interval is cut short before the frozen minimum accrues, the outcome is
+**no qualifying configuration**, not a shorter window.
 
 **Block boundaries are joint-flat.** Bootstrap block edges may fall only at timestamps where every
 included strategy is flat, so no resampled path inherits position state, orphan exits, or duplicate
@@ -216,8 +208,7 @@ slot in this campaign, and `N_conf` (item 11) is computed from the frozen `α/M`
 **Seven candidate contracts precede the book search** (decision contract item 14). Each supplied
 strategy is a distinct entry/exit template, and the candidate-contract ADR admits cells within one
 contract only as parameterizations of a single template; Phase 3 therefore opens one hash-pinned
-contract per strategy — template fields, contamination and last-inspection record, reserved
-confirmation window, cost authority, K ledger, and the mechanism discriminator or its declared
+contract per strategy — template fields, the standing contamination ruling, the forward confirmation interval, cost authority, K ledger, and the mechanism discriminator or its declared
 absence — under the shared campaign envelope and the single multiplicity configuration. The
 configuration catalogue composes contracted candidates only; a strategy without a contract never
 enters it. A contract that declares no discriminator may still contribute to a book configuration,
@@ -237,8 +228,8 @@ search is run.
 Begin with the joint-book audit deferred from Phase 2 (dependence, collisions, concentration,
 contribution), on development data, recorded but permitted to alter no frozen field. Then run
 every allowed configuration once on the realized **development-segment** chronology and on
-rolling start dates inside that segment. The confirmation segment is not loaded in this phase: a
-screen that touches it turns Phase 7 into a second look, not a confirmation. Apply the exact
+rolling start dates inside that segment. The forward confirmation interval has not begun when this phase runs; nothing received for it is
+ever loaded here. Apply the exact
 Select rules and event ordering. Reject configurations that:
 
 - bust on the realized development path or breach a contract/session rule;
@@ -253,7 +244,7 @@ This phase is a cheap funnel, not evidence of a sub-5% bust rate.
 ## Phase 5 — Coarse joint Monte Carlo search
 
 For survivors, resample **synchronized, joint-flat time blocks across all included strategies**
-(Phase 3 block rule), drawn from the development segment only, so market regimes, flat days,
+(Phase 3 block rule), drawn from the export, so market regimes, flat days,
 collisions, cross-strategy dependence, and position state remain aligned. Evaluate the trailing
 floor intraday from timestamped intratrade equity paths or synchronized bar replay. A leg that
 offers only a scalar MAE, or nothing, is scored on the end-of-day clock and the whole
@@ -300,21 +291,20 @@ After Phase 6, order the shortlist by the frozen objective on development eviden
 per-slot level (`α/M` under Bonferroni, or the Holm step-down bar after ordering). Commit the
 selected-set hash before anything below runs.
 
-**Contract-integrity check, immediately before the reserved segment is touched — hashes and
+**Contract-integrity check, immediately before the forward interval is touched — hashes and
 development-only totals, nothing that reads reserved bytes.** Re-hash and compare every frozen
 input (intake manifest, quarantined confirmation files by hash only), the code commit, the
 configuration manifest, the pre-registration, the seven candidate contracts, and the committed
 selected-set hash; re-verify the venue snapshot (symbols, sessions, contract caps, rule set, fees,
 inactivity clock) against a fresh primary-source capture and against `core/firm_rules.py`;
-re-reconcile each strategy's development-segment totals. Any mismatch aborts **before**
-consumption: the configuration is `BLOCKED`, the reserved segment stays unconsumed, and the
+re-reconcile each strategy's export totals. Any mismatch aborts **before**
+consumption: the configuration is `BLOCKED`, the forward interval stays unconsumed, and the
 discrepancy is filed. Phase 8 cannot restore a consumed holdout, so nothing is deferred to it.
 
-Then perform the **single atomic confirmation read** per slot, with no retry: whole-period source
-reconciliation (deferred from Phase 1, because it derives reserved P&L) and the realized
-reserved-segment path in one step. A reconciliation mismatch discovered here has already consumed
-the slot — the configuration's verdict is `EVIDENCE-VOID`, no second slot opens for it, and the
-mismatch is filed. Then run the high-precision independent Monte Carlo with new seeds. New seeds make draws independent only conditional on the same fitted block
+Then perform the **single atomic confirmation read** per slot, with no retry: the realized
+forward-interval path, once the interval has accrued its frozen minimum. A slot read before the
+minimum accrues is consumed and `EVIDENCE-VOID`. Then run the high-precision independent Monte
+Carlo with new seeds. New seeds make draws independent only conditional on the same fitted block
 distribution, so the final report must include:
 
 - the safety estimand `P(bust before pass)`: point estimate, numerator/denominator with
@@ -333,17 +323,17 @@ distribution, so the final report must include:
   The quantile is taken at `1 − α/M` under Bonferroni (the Holm bar after ordering), not a fixed
   95th, and is paired with the worst pre-registered Phase 6 partition (halves,
   leave-one-year-out). A configuration qualifies only if that quantile and the worst partition
-  clear 5% **and** the reserved segment does not falsify it (next bullet). If the
+  clear 5% **and** the forward interval does not falsify it (next bullet). If the
   selection-inclusive bootstrap is infeasible within the frozen budget, only a post-selection
   correction **named and frozen in Phase 3 with its reference** may substitute; otherwise the
   configuration cannot qualify and the claim is limited to *under the fitted simulation model*;
-- the **reserved-segment falsifier**: one realized path per slot is one binary observation and
+- the **forward-interval falsifier**: one realized path per slot is one binary observation and
   cannot bound a 5% probability (zero busts in one trial leaves a one-sided 95% upper bound of
-  95%). It is a falsifier, not an estimate: a bust on the reserved segment, or a realized
+  95%). It is a falsifier, not an estimate: a bust on the forward interval, or a realized
   time-to-pass outside the model's frozen predictive interval, fails the configuration outright; a
   non-bust only leaves the model-fitted claim standing. The *out-of-sample* label attaches only when
-  the reserved segment supplies `N_conf` non-overlapping evaluations (decision contract item 11);
-  otherwise the report labels the result **`model-fitted; unfalsified on the reserved segment`**
+  the forward interval has accrued `N_conf` non-overlapping evaluations (decision contract item 11);
+  otherwise the report labels the result **`model-fitted; unfalsified on the forward interval`**
   and never calls it an out-of-sample bust probability;
 - pass, bust, and unresolved-at-cap shares at the frozen horizon, with the unresolved share also
   shown folded into the bust numerator;
@@ -411,8 +401,7 @@ Place or copy the seven strategy files and seven backtest exports into an access
 directory (kept uncommitted if vendor-licensed), then provide the exact path. Phase 0 can begin as
 soon as those 14 inputs are visible. The minimum useful export has one row per trade with entry and
 exit timestamps, prices, quantity, and net/gross P&L. Replayable intraday bars (or timestamped
-intratrade equity paths) covering every strategy's instrument and session, plus each strategy's
-final design-decision date, are required for a decision-grade trailing-drawdown result; a scalar
+intratrade equity paths) covering every strategy's instrument and session are required for a decision-grade trailing-drawdown result; a scalar
 MAE supports only a `LOWER BOUND` result.
 
 ## Review reconciliation — 2026-09-03
@@ -464,3 +453,15 @@ plan land here (the other three bind the campaign-state artifact):
 | `cost_model.resolve_commission` raises for MGC; specs are geometry, not fees | Phase 1 per-instrument commission table deliverable (primary source, reconciled to `firm_rules` comments) |
 | Whole-period reconciliation read reserved P&L before the "unconsumed" promise | Phase 1, Phase 7: pre-access check is hash + development-only; whole-period reconciliation inside the single atomic read, `EVIDENCE-VOID` on mismatch |
 | Handoff labels used where terminal verdicts belong | Phase 7 terminal-taxonomy vocabulary; handoff labels declared nonterminal |
+
+**Operator ruling 2026-09-03 — simplification.** All seven supplied strategies are treated as tuned
+and viewed on the whole export. This supersedes the per-strategy final design-decision and
+last-inspection dates, the derived confirmation start, and the intake-time reservation of
+historical bytes (first-pass finding 2, second-pass finding 4, third-pass finding 1): treating
+everything as viewed is the conservative resolution of each. Confirmation is forward-only;
+historical results are model-fitted.
+
+**Operator override 2026-09-03 — Phase 0 skipped.** Phase 1 starts directly on the seven attached
+TradingView exports (Codex, local worktree branch `codex/tradeify-stage1-normalization`). Phase 0's
+hashing, inventory, direction, timezone, and bars/MAE checks become Phase 1 deliverables; no
+untouched or out-of-sample claim survives the skip, which the ruling above had already removed.
