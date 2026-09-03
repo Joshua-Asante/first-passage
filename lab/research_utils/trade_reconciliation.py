@@ -10,7 +10,7 @@ from typing import Mapping
 import pandas as pd
 
 from discovery.cost_model import INSTRUMENT_SPECS
-from research_utils.tv_trade_ledger import Issue, SourceSpec
+from research_utils.tv_trade_ledger import FeeSchedule, Issue, SourceSpec
 
 
 _CENT_TOLERANCE = Decimal("0.01")
@@ -81,6 +81,29 @@ class AccountingMetrics:
     max_drawdown_usd: Decimal
     monthly_net_pnl: Mapping[str, Decimal]
     final_source_cumulative_pnl_usd: Decimal | None
+    issues: tuple[Issue, ...]
+
+
+@dataclass(frozen=True)
+class VenueMetrics:
+    trade_count: int
+    intended_instrument: str
+    encoded_instrument: str
+    venue_commission_per_side_usd: Decimal
+    pine_commission_per_side_usd: Decimal
+    export_implied_commission_per_side_usd: Decimal | None
+    export_implied_commission_per_side_values_usd: tuple[Decimal, ...]
+    peak_open_quantity_min: int
+    peak_open_quantity_max: int
+    contract_cap: int
+    cross_date_holds: int
+    overnight_holds: int
+    friday_to_sunday_holds: int
+    contract_month_attribution_status: str
+    roll_seam_attribution_status: str
+    bid_ask_spread_status: str
+    pine_slippage_ticks_per_side: Decimal
+    slippage_basis: str
     issues: tuple[Issue, ...]
 
 
@@ -431,5 +454,277 @@ def calculate_accounting(trades: pd.DataFrame) -> AccountingMetrics:
         max_drawdown_usd=_money(max_drawdown),
         monthly_net_pnl=MappingProxyType(monthly),
         final_source_cumulative_pnl_usd=final_source_cumulative,
+        issues=tuple(issues),
+    )
+
+
+def _venue_issue(
+    code: str,
+    spec: SourceSpec,
+    detail: Mapping[str, object],
+    *,
+    severity: str = "BLOCKER",
+    trade_id: int | None = None,
+    source_rows: tuple[int, ...] = (),
+) -> Issue:
+    return Issue(
+        code=code,
+        severity=severity,
+        strategy_id=spec.strategy_id,
+        detail=detail,
+        trade_id=trade_id,
+        source_rows=source_rows,
+    )
+
+
+def _commission_issues(
+    trades: pd.DataFrame,
+    spec: SourceSpec,
+    venue_fee: Decimal,
+) -> tuple[Decimal | None, tuple[Decimal, ...], list[Issue]]:
+    values = tuple(
+        sorted(
+            {
+                Decimal(trade["commission_usd"])
+                / (Decimal("2") * Decimal(int(trade["quantity"])))
+                for _, trade in trades.iterrows()
+            }
+        )
+    )
+    export_fee = values[0] if len(values) == 1 else None
+    issues: list[Issue] = []
+    source_rows = tuple(int(value) for value in trades.get("exit_source_row", ()))
+    if len(values) > 1:
+        issues.append(
+            _venue_issue(
+                "VARIABLE_EXPORT_COMMISSION",
+                spec,
+                {"per_side_values_usd": values},
+                source_rows=source_rows,
+            )
+        )
+
+    if values and any(abs(value - venue_fee) > _CENT_TOLERANCE for value in values):
+        issues.append(
+            _venue_issue(
+                "EXPORT_VENUE_COMMISSION_MISMATCH",
+                spec,
+                {
+                    "export_per_side_values_usd": values,
+                    "venue_per_side_usd": venue_fee,
+                },
+                source_rows=source_rows,
+            )
+        )
+    if values and any(
+        abs(value - spec.pine_commission_per_side_usd) > _CENT_TOLERANCE
+        for value in values
+    ):
+        issues.append(
+            _venue_issue(
+                "PINE_EXPORT_COMMISSION_MISMATCH",
+                spec,
+                {
+                    "pine_per_side_usd": spec.pine_commission_per_side_usd,
+                    "export_per_side_values_usd": values,
+                },
+                source_rows=source_rows,
+            )
+        )
+    if abs(spec.pine_commission_per_side_usd - venue_fee) > _CENT_TOLERANCE:
+        issues.append(
+            _venue_issue(
+                "PINE_VENUE_COMMISSION_MISMATCH",
+                spec,
+                {
+                    "pine_per_side_usd": spec.pine_commission_per_side_usd,
+                    "venue_per_side_usd": venue_fee,
+                },
+            )
+        )
+    return export_fee, values, issues
+
+
+def _exposure_bounds(trades: pd.DataFrame) -> tuple[int, int]:
+    events: dict[pd.Timestamp, dict[str, int]] = {}
+    for _, trade in trades.iterrows():
+        quantity = int(trade["quantity"])
+        entry_time = pd.Timestamp(trade["entry_timestamp_naive"])
+        exit_time = pd.Timestamp(trade["exit_timestamp_naive"])
+        events.setdefault(entry_time, {"entries": 0, "exits": 0})["entries"] += quantity
+        events.setdefault(exit_time, {"entries": 0, "exits": 0})["exits"] += quantity
+
+    def peak(*, entries_first: bool) -> int:
+        current = 0
+        maximum = 0
+        for timestamp in sorted(events):
+            event = events[timestamp]
+            deltas = (
+                (event["entries"], -event["exits"])
+                if entries_first
+                else (-event["exits"], event["entries"])
+            )
+            for delta in deltas:
+                current += delta
+                maximum = max(maximum, current)
+        return maximum
+
+    return peak(entries_first=False), peak(entries_first=True)
+
+
+def _spans_friday_to_sunday(entry: pd.Timestamp, exit_: pd.Timestamp) -> bool:
+    day = entry.normalize()
+    end = exit_.normalize()
+    while day <= end:
+        if day.weekday() == 4 and day + pd.Timedelta(days=2) <= end:
+            return True
+        day += pd.Timedelta(days=1)
+    return False
+
+
+def analyze_venue(
+    trades: pd.DataFrame,
+    spec: SourceSpec,
+    fee_schedule: FeeSchedule,
+) -> VenueMetrics:
+    """Audit instrument and venue constraints without changing source trades."""
+    geometry = instrument_geometry(spec.encoded_instrument)
+    venue_fee = fee_schedule.per_side_usd[spec.encoded_instrument]
+    export_fee, export_values, issues = _commission_issues(trades, spec, venue_fee)
+
+    if spec.intended_instrument != spec.encoded_instrument:
+        issues.append(
+            _venue_issue(
+                "INSTRUMENT_MISMATCH",
+                spec,
+                {
+                    "intended_instrument": spec.intended_instrument,
+                    "encoded_instrument": spec.encoded_instrument,
+                },
+            )
+        )
+
+    tick_tolerance = Decimal("1e-9")
+    for _, trade in trades.iterrows():
+        trade_id = int(trade["source_trade_id"])
+        for leg, price_field, row_field in (
+            ("ENTRY", "entry_price", "entry_source_row"),
+            ("EXIT", "exit_price", "exit_source_row"),
+        ):
+            price = Decimal(trade[price_field])
+            tick_count = price / geometry.tick_size
+            distance = abs(tick_count - tick_count.to_integral_value())
+            if distance > tick_tolerance:
+                issues.append(
+                    _venue_issue(
+                        "OFF_TICK_PRICE",
+                        spec,
+                        {
+                            "leg": leg,
+                            "price": price,
+                            "tick_size": geometry.tick_size,
+                            "distance_to_nearest_tick": distance,
+                        },
+                        trade_id=trade_id,
+                        source_rows=(int(trade[row_field]),),
+                    )
+                )
+
+    peak_min, peak_max = _exposure_bounds(trades)
+    if peak_min > spec.contract_cap:
+        issues.append(
+            _venue_issue(
+                "CONTRACT_CAP_BREACH",
+                spec,
+                {
+                    "contract_cap": spec.contract_cap,
+                    "peak_open_quantity_min": peak_min,
+                    "peak_open_quantity_max": peak_max,
+                },
+            )
+        )
+    elif peak_max > spec.contract_cap:
+        issues.append(
+            _venue_issue(
+                "CAP_STATUS_AMBIGUOUS_AT_TIMESTAMP_TIE",
+                spec,
+                {
+                    "contract_cap": spec.contract_cap,
+                    "peak_open_quantity_min": peak_min,
+                    "peak_open_quantity_max": peak_max,
+                },
+            )
+        )
+
+    cross_date_holds = 0
+    friday_to_sunday_holds = 0
+    for _, trade in trades.iterrows():
+        entry = pd.Timestamp(trade["entry_timestamp_naive"])
+        exit_ = pd.Timestamp(trade["exit_timestamp_naive"])
+        trade_id = int(trade["source_trade_id"])
+        source_rows = (int(trade["entry_source_row"]), int(trade["exit_source_row"]))
+        if entry.date() != exit_.date():
+            cross_date_holds += 1
+            issues.append(
+                _venue_issue(
+                    "CROSS_DATE_HOLD",
+                    spec,
+                    {"entry_date": entry.date(), "exit_date": exit_.date()},
+                    severity="WARNING",
+                    trade_id=trade_id,
+                    source_rows=source_rows,
+                )
+            )
+        if _spans_friday_to_sunday(entry, exit_):
+            friday_to_sunday_holds += 1
+            issues.append(
+                _venue_issue(
+                    "FORCE_FLAT_VIOLATION",
+                    spec,
+                    {
+                        "entry_timestamp": entry,
+                        "exit_timestamp": exit_,
+                    },
+                    trade_id=trade_id,
+                    source_rows=source_rows,
+                )
+            )
+
+    if spec.continuous_symbol:
+        contract_month_status = "UNAVAILABLE"
+        roll_seam_status = "UNAVAILABLE"
+        issues.append(
+            _venue_issue(
+                "CONTINUOUS_CONTRACT_ROLL_UNRESOLVED",
+                spec,
+                {
+                    "contract_month_attribution": contract_month_status,
+                    "roll_seam_attribution": roll_seam_status,
+                },
+            )
+        )
+    else:
+        contract_month_status = "SOURCE_ENCODED_INSTRUMENT"
+        roll_seam_status = "NOT_APPLICABLE"
+
+    return VenueMetrics(
+        trade_count=len(trades),
+        intended_instrument=spec.intended_instrument,
+        encoded_instrument=spec.encoded_instrument,
+        venue_commission_per_side_usd=venue_fee,
+        pine_commission_per_side_usd=spec.pine_commission_per_side_usd,
+        export_implied_commission_per_side_usd=export_fee,
+        export_implied_commission_per_side_values_usd=export_values,
+        peak_open_quantity_min=peak_min,
+        peak_open_quantity_max=peak_max,
+        contract_cap=spec.contract_cap,
+        cross_date_holds=cross_date_holds,
+        overnight_holds=cross_date_holds,
+        friday_to_sunday_holds=friday_to_sunday_holds,
+        contract_month_attribution_status=contract_month_status,
+        roll_seam_attribution_status=roll_seam_status,
+        bid_ask_spread_status="NOT_SEPARATELY_OBSERVABLE",
+        pine_slippage_ticks_per_side=spec.pine_slippage_ticks_per_side,
+        slippage_basis="PINE_DECLARED_TICKS_AND_FILL_PRICES",
         issues=tuple(issues),
     )

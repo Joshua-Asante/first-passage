@@ -1,22 +1,32 @@
 """Strict reconstruction and accounting tests for Tradeify Phase 1."""
 
 from decimal import Decimal
+from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from research_utils.trade_reconciliation import (
     TRADE_COLUMNS,
+    analyze_venue,
     calculate_accounting,
     instrument_geometry,
     reconstruct_trades,
 )
-from research_utils.tv_trade_ledger import SourceSpec
+from research_utils.tv_trade_ledger import SourceSpec, load_fee_schedule
 
 
-def _spec(*, instrument: str = "MNQ") -> SourceSpec:
+def _spec(
+    *,
+    instrument: str = "MNQ",
+    intended_instrument: str | None = None,
+    contract_cap: int = 80,
+    continuous_symbol: bool = True,
+    pine_commission: str = "0.91",
+) -> SourceSpec:
     return SourceSpec(
         strategy_id="fixture",
-        intended_instrument=instrument,
+        intended_instrument=intended_instrument or instrument,
         encoded_instrument=instrument,
         export_filename="source.csv",
         export_sha256="0" * 64,
@@ -28,12 +38,24 @@ def _spec(*, instrument: str = "MNQ") -> SourceSpec:
         declared_session="09:30-16:00 America/New_York",
         direction_evidence="long-only",
         quantity_convention="integer contracts",
-        continuous_symbol=True,
+        continuous_symbol=continuous_symbol,
         synchronized_intraday_path_available=False,
         lineage_notes=("fixture",),
-        pine_commission_per_side_usd=Decimal("0.91"),
+        pine_commission_per_side_usd=Decimal(pine_commission),
         pine_slippage_ticks_per_side=Decimal("1"),
-        contract_cap=80,
+        contract_cap=contract_cap,
+    )
+
+
+@pytest.fixture
+def fee_schedule():
+    return load_fee_schedule(
+        Path(__file__).parents[1]
+        / "lab"
+        / "analysis"
+        / "c1"
+        / "tradeify_seven_strategy_phase1_2026-09"
+        / "tradeify_commission_schedule.json"
     )
 
 
@@ -289,10 +311,11 @@ def test_reconstruct_preserves_first_source_appearance_for_rows_and_issues():
 
 def _trade(
     trade_id: int,
-    exit_timestamp: str,
-    net: str,
-    commission: str,
+    exit_timestamp: str = "2026-01-05 10:00",
+    net: str = "0.18",
+    commission: str = "1.82",
     *,
+    qty: int = 1,
     exit_row: int | None = None,
     cumulative: str | None = None,
     gross: str | None = "derived",
@@ -316,7 +339,7 @@ def _trade(
         "exit_timestamp_utc": pd.NaT,
         "entry_price": Decimal("100.00"),
         "exit_price": Decimal("101.00"),
-        "quantity": 1,
+        "quantity": qty,
         "net_pnl_usd": net_pnl,
         "commission_usd": commission_usd,
         "gross_pnl_usd": gross_pnl,
@@ -331,6 +354,232 @@ def _trade(
 
 def _trades(*rows: dict[str, object]) -> pd.DataFrame:
     return pd.DataFrame(rows, columns=TRADE_COLUMNS)
+
+
+def _trade_between(
+    trade_id: int,
+    entry_timestamp: str,
+    exit_timestamp: str,
+    commission: str = "1.82",
+    *,
+    qty: int = 1,
+) -> dict[str, object]:
+    trade = _trade(trade_id, exit_timestamp, commission=commission, qty=qty)
+    trade["entry_timestamp_naive"] = pd.Timestamp(entry_timestamp)
+    return trade
+
+
+def _overlapping_trades_same_boundary(*, qty: int) -> pd.DataFrame:
+    return _trades(
+        _trade_between(1, "2026-01-05 09:00", "2026-01-05 10:00", qty=qty),
+        _trade_between(2, "2026-01-05 10:00", "2026-01-05 11:00", qty=qty),
+    )
+
+
+def _issue_codes(metrics: object) -> set[str]:
+    return {issue.code for issue in metrics.issues}
+
+
+@pytest.mark.parametrize(
+    ("symbol", "commission", "per_side"),
+    [
+        ("6J", "6.20", "3.10"),
+        ("MNQ", "1.82", "0.91"),
+        ("MYM", "1.82", "0.91"),
+        ("MGC", "2.12", "1.06"),
+    ],
+)
+def test_primary_schedule_drives_phase1_fee_reconciliation(
+    fee_schedule, symbol, commission, per_side
+):
+    """A non-primary resolver would misprice one or more campaign instruments."""
+    trades = _trades(_trade(1, commission=commission, qty=1))
+
+    venue = analyze_venue(trades, _spec(instrument=symbol), fee_schedule)
+
+    assert venue.venue_commission_per_side_usd == Decimal(per_side)
+    assert "EXPORT_VENUE_COMMISSION_MISMATCH" not in _issue_codes(venue)
+
+
+def test_exposure_reports_tie_order_bounds(fee_schedule):
+    """Choosing one same-timestamp order would conceal cap-status ambiguity."""
+    trades = _overlapping_trades_same_boundary(qty=50)
+
+    venue = analyze_venue(
+        trades, _spec(instrument="MNQ", contract_cap=80), fee_schedule
+    )
+
+    assert venue.peak_open_quantity_min == 50
+    assert venue.peak_open_quantity_max == 100
+    assert "CAP_STATUS_AMBIGUOUS_AT_TIMESTAMP_TIE" in _issue_codes(venue)
+
+
+def test_friday_to_sunday_hold_is_a_blocker_and_trade_is_retained(fee_schedule):
+    """Force-flat auditing must report, rather than delete, a source trade."""
+    trades = _trades(
+        _trade_between(41, "2026-01-09 10:00", "2026-01-11 18:00", "1.82")
+    )
+
+    venue = analyze_venue(trades, _spec(), fee_schedule)
+
+    assert venue.trade_count == 1
+    assert venue.friday_to_sunday_holds == 1
+    issue = next(i for i in venue.issues if i.code == "FORCE_FLAT_VIOLATION")
+    assert issue.trade_id == 41
+    assert issue.severity == "BLOCKER"
+
+
+def test_aegis_pine_export_and_venue_commissions_stay_separate(fee_schedule):
+    """Replacing observed export fees with Pine settings would hide Aegis drift."""
+    trades = _trades(
+        _trade(1, "2026-01-05 10:00", "50.20", "24.80", qty=4)
+    )
+
+    venue = analyze_venue(
+        trades, _spec(instrument="6J", pine_commission="1.30"), fee_schedule
+    )
+
+    assert venue.export_implied_commission_per_side_usd == Decimal("3.10")
+    assert venue.venue_commission_per_side_usd == Decimal("3.10")
+    assert "PINE_EXPORT_COMMISSION_MISMATCH" in _issue_codes(venue)
+    assert "PINE_VENUE_COMMISSION_MISMATCH" in _issue_codes(venue)
+    assert "EXPORT_VENUE_COMMISSION_MISMATCH" not in _issue_codes(venue)
+
+
+def test_continuous_contract_and_unobservable_spread_are_explicit(fee_schedule):
+    """Continuous fills must not imply contract attribution or an observed spread."""
+    venue = analyze_venue(
+        _trades(_trade(1)), _spec(continuous_symbol=True), fee_schedule
+    )
+
+    assert "CONTINUOUS_CONTRACT_ROLL_UNRESOLVED" in _issue_codes(venue)
+    assert venue.contract_month_attribution_status == "UNAVAILABLE"
+    assert venue.roll_seam_attribution_status == "UNAVAILABLE"
+    assert venue.bid_ask_spread_status == "NOT_SEPARATELY_OBSERVABLE"
+    assert venue.slippage_basis == "PINE_DECLARED_TICKS_AND_FILL_PRICES"
+    assert venue.pine_slippage_ticks_per_side == Decimal("1")
+
+
+def test_off_tick_entry_and_exit_prices_are_reported_without_removing_trade(
+    fee_schedule,
+):
+    """Rounding source fills onto the MNQ grid would silently repair evidence."""
+    trade = _trade(7)
+    trade["entry_price"] = Decimal("100.125")
+    trade["exit_price"] = Decimal("101.0000000005")
+
+    venue = analyze_venue(_trades(trade), _spec(), fee_schedule)
+
+    assert venue.trade_count == 1
+    issues = [issue for issue in venue.issues if issue.code == "OFF_TICK_PRICE"]
+    assert [(issue.trade_id, issue.detail["leg"]) for issue in issues] == [
+        (7, "ENTRY"),
+        (7, "EXIT"),
+    ]
+
+
+def test_tick_grid_accepts_the_frozen_one_billionth_tick_tolerance(fee_schedule):
+    """A stricter comparison would reject the explicitly accepted rounding boundary."""
+    trade = _trade(8)
+    trade["entry_price"] = Decimal("100.00000000025")
+
+    venue = analyze_venue(_trades(trade), _spec(), fee_schedule)
+
+    assert not [issue for issue in venue.issues if issue.code == "OFF_TICK_PRICE"]
+
+
+def test_intended_and_encoded_instrument_mismatch_is_explicit(fee_schedule):
+    """Analyzing encoded geometry must not certify a different intended instrument."""
+    venue = analyze_venue(
+        _trades(_trade(1)),
+        _spec(instrument="MNQ", intended_instrument="MYM"),
+        fee_schedule,
+    )
+
+    issue = next(i for i in venue.issues if i.code == "INSTRUMENT_MISMATCH")
+    assert issue.detail == {
+        "intended_instrument": "MYM",
+        "encoded_instrument": "MNQ",
+    }
+
+
+def test_exposure_reports_confirmed_contract_cap_breach(fee_schedule):
+    """A trade individually over cap is a breach under every tie ordering."""
+    venue = analyze_venue(
+        _trades(_trade_between(1, "2026-01-05 09:00", "2026-01-05 10:00", qty=81)),
+        _spec(contract_cap=80),
+        fee_schedule,
+    )
+
+    assert venue.peak_open_quantity_min == 81
+    assert venue.peak_open_quantity_max == 81
+    assert "CONTRACT_CAP_BREACH" in _issue_codes(venue)
+    assert "CAP_STATUS_AMBIGUOUS_AT_TIMESTAMP_TIE" not in _issue_codes(venue)
+
+
+def test_non_overlapping_trades_do_not_inflate_exposure(fee_schedule):
+    """Summing all trade quantities would invent a cap breach without overlap."""
+    venue = analyze_venue(
+        _trades(
+            _trade_between(1, "2026-01-05 09:00", "2026-01-05 10:00", qty=50),
+            _trade_between(2, "2026-01-05 10:01", "2026-01-05 11:00", qty=50),
+        ),
+        _spec(contract_cap=80),
+        fee_schedule,
+    )
+
+    assert venue.peak_open_quantity_min == 50
+    assert venue.peak_open_quantity_max == 50
+    assert not (
+        {"CONTRACT_CAP_BREACH", "CAP_STATUS_AMBIGUOUS_AT_TIMESTAMP_TIE"}
+        & _issue_codes(venue)
+    )
+
+
+def test_variable_export_commissions_are_reported_without_averaging(fee_schedule):
+    """A mean could falsely agree with the primary fee while individual rows vary."""
+    venue = analyze_venue(
+        _trades(
+            _trade(1, commission="1.82"),
+            _trade(2, "2026-01-05 10:30", commission="2.00"),
+        ),
+        _spec(),
+        fee_schedule,
+    )
+
+    assert venue.export_implied_commission_per_side_usd is None
+    assert venue.export_implied_commission_per_side_values_usd == (
+        Decimal("0.91"),
+        Decimal("1.00"),
+    )
+    assert "VARIABLE_EXPORT_COMMISSION" in _issue_codes(venue)
+
+
+def test_non_continuous_source_has_no_roll_attribution_issue(fee_schedule):
+    """Specific-contract sources must not inherit the continuous-symbol blocker."""
+    venue = analyze_venue(
+        _trades(_trade(1)), _spec(continuous_symbol=False), fee_schedule
+    )
+
+    assert "CONTINUOUS_CONTRACT_ROLL_UNRESOLVED" not in _issue_codes(venue)
+    assert venue.contract_month_attribution_status == "SOURCE_ENCODED_INSTRUMENT"
+    assert venue.roll_seam_attribution_status == "NOT_APPLICABLE"
+
+
+def test_cross_date_hold_is_reported_without_force_flat_false_positive(fee_schedule):
+    """Every date boundary matters, but an ordinary overnight is not Fri-to-Sun."""
+    venue = analyze_venue(
+        _trades(
+            _trade_between(3, "2026-01-05 23:55", "2026-01-06 00:05")
+        ),
+        _spec(),
+        fee_schedule,
+    )
+
+    assert venue.cross_date_holds == 1
+    assert venue.friday_to_sunday_holds == 0
+    assert "CROSS_DATE_HOLD" in _issue_codes(venue)
+    assert "FORCE_FLAT_VIOLATION" not in _issue_codes(venue)
 
 
 def test_calculate_accounting_uses_exit_chronology_and_decimal_money():
