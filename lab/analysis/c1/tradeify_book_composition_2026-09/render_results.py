@@ -149,6 +149,36 @@ def render_controls(data):
     return "\n".join(out)
 
 
+def drift_reading(shuf_g, real_g, n_shuf):
+    """Headline + control sentence for verdict item 4, conditioned on the control.
+
+    "The Aegis gain is drift, not diversification" is a CONCLUSION FROM the shuffled
+    control, so it may only be asserted when that control exists AND actually orders that
+    way. Earlier versions appended it unconditionally: with `controls.json` missing the
+    prose still reported an unavailable control's finding as established, and had a re-run
+    put the shuffled book ABOVE the real one the sentence would have contradicted the
+    figures printed immediately beside it. Raised by Codex on PR #271 (round 4).
+
+    Returns (headline, control-clause). The caller renders "But {clause}."
+    """
+    if shuf_g is None:
+        return ("**Aegis as ballast improves MNQ×1 on all three axes.**",
+                "the shuffled-Aegis control is absent (`controls.json` not built), so whether that "
+                "gain is diversification or merely Aegis's own drift is UNTESTED here")
+    common = (f"the shuffled-Aegis control — a true derangement of its trade dates within each year, "
+              f"drift kept, co-movement destroyed — busts {shuf_g:.2f}% on Growth ({n_shuf} draws)")
+    if shuf_g <= real_g:
+        return ("**Aegis as ballast improves MNQ×1 on all three axes, but for the wrong reason.**",
+                f"{common} against the real book's {real_g:.2f}% at screen N. The control matches or "
+                f"beats the real book, so the gain is Aegis's positive drift over 2022-2026, not "
+                f"diversification")
+    return ("**Aegis as ballast improves MNQ×1 on all three axes; the control does not attribute that "
+            "to drift.**",
+            f"{common}, WORSE than the real book's {real_g:.2f}% at screen N. Destroying the "
+            f"co-movement hurt, so this control does not support reading the gain as drift alone; "
+            f"treat the split between drift and diversification as unresolved")
+
+
 def _fin():
     """Finalist cells keyed (tier, sizing-label) -> boot_intraday dict, from grid_final.json.
     Every number in the verdict below is read from the data, not transcribed, so a re-run
@@ -193,26 +223,65 @@ def verdict():
     L.append(f"2. **Growth beats Select by more than any composition change.** Same books, same clock: MNQ×1 "
              f"{mnq_s:.1f}% → {mnq_g:.1f}% bust, MNQ×1+Aegis×2 {pair_s:.1f}% → {pair_g:.1f}%, at effectively "
              f"unchanged medians. The $500 wider rope is the biggest lever in the grid.")
+    # Control figures are read from controls.json for the same reason the finalist figures are
+    # read from grid_final.json: a re-run must not leave this prose self-contradictory.
+    # Round 2 of the PR #260 review caught the shuffled and excluded-regime figures being
+    # hard-coded here. Round 3 (PR #271) caught that item 3's co-movement ratio, per-leg
+    # expectancy and skew were STILL literals -- and by then the regenerated artifact had moved
+    # the MNQ/MYM joint-loss ratio to 1.24 while this prose still asserted 1.25. Every
+    # quantitative claim in the verdict now resolves from an artifact.
+    c = load("controls.json")
+    co = (c or {}).get("comovement", {})
+    _jl = co.get("joint_loss_days", {}).get("mnq-mym", {})
+    _pl = co.get("per_leg", {})
+    if _jl.get("ratio") and _pl.get("mnq") and _pl.get("mym"):
+        _me, _ye = _pl["mnq"]["mean_pc_per_trade_day"], _pl["mym"]["mean_pc_per_trade_day"]
+        mym_txt = (f"Its losses coincide with MNQ's {(_jl['ratio'] - 1) * 100:.0f}% more often than "
+                   f"independence (joint-loss ratio {_jl['ratio']:.2f}), its per-trade-day expectancy "
+                   f"is {_ye / _me:.2f}× MNQ's (${_ye:.0f} vs ${_me:.0f} per contract), and its "
+                   f"active-day skew is {_pl['mym']['skew_active']:.1f} (rare big wins, many small "
+                   f"losses).")
+    else:
+        mym_txt = "Its co-movement and per-leg statistics are absent (`controls.json` not built)."
     L.append(f"3. **MYM v0.4 hurts every book it joins.** MNQ×1 → MNQ×1+MYM×1 on Growth: {mnq_g:.1f}% → "
-             f"{mym_g:.1f}% bust. Its losses coincide with MNQ's 25% more often than independence (joint-loss "
-             f"ratio 1.25), its per-trade-day expectancy is a quarter of MNQ's ($12 vs $50 per contract), and its "
-             f"active-day skew is 4.5 (rare big wins, many small losses). Drop it as a leg. The v0.3 long-only "
+             f"{mym_g:.1f}% bust. {mym_txt} Drop it as a leg. The v0.3 long-only "
              f"export is no better, and this bootstrap does not reproduce the 19.5%-bust rolling-start figure in "
              f"`ops/instruments/MYM.md` M9.")
-    L.append(f"4. **Aegis as ballast improves MNQ×1 on all three axes, but for the wrong reason.** MNQ×1+Aegis×2 vs "
+    ctl = {}
+    if c:
+        for r in c["results"]:
+            ctl.setdefault((r["tier"], label(r["sizing"]), r["tag"].split(" seed")[0]), []).append(r)
+
+    def ctl_bust(tier, lab, tag):
+        rs = ctl.get((tier, lab, tag), [])
+        return (sum(r["boot"]["bust_pct"] for r in rs) / len(rs)) if rs else None
+
+    real_g = ctl_bust(G, "MNQx1 + AEGISx2", "real")
+    shuf_g = ctl_bust(G, "MNQx1 + AEGISx2", "shuffled")
+    n_shuf = len(ctl.get((G, "MNQx1 + AEGISx2", "shuffled"), []))
+    ex_g2 = ctl_bust(G, "AEGISx2", "aegis 2020-02..2022-07")
+    ex_s2 = ctl_bust(S, "AEGISx2", "aegis 2020-02..2022-07")
+    ex_g3 = ctl_bust(G, "AEGISx3", "aegis 2020-02..2022-07")
+    ex_s3 = ctl_bust(S, "AEGISx3", "aegis 2020-02..2022-07")
+    ex_pass = None
+    if ctl.get((G, "AEGISx2", "aegis 2020-02..2022-07")):
+        ex_pass = ctl[(G, "AEGISx2", "aegis 2020-02..2022-07")][0]["boot"]["pass_pct"]
+    head, ctl_txt = drift_reading(shuf_g, real_g, n_shuf)
+    ex_txt = ("" if ex_g2 is None else
+              f" On its excluded 2020-02→2022-07 window Aegis×2 passes {ex_pass:.2f}% of paths "
+              f"({ex_g2:.1f}% bust on Growth, {ex_s2:.1f}% on Select) and Aegis×3 busts "
+              f"{ex_g3:.0f}%/{ex_s3:.0f}%.")
+    L.append(f"4. {head} MNQ×1+Aegis×2 vs "
              f"MNQ×1 on Growth: bust {pair_g:.1f}% vs {mnq_g:.1f}%, median "
              f"{f[(G, 'MNQx1 + AEGISx2')]['boot_intraday']['median_days_to_pass']:.0f} vs "
-             f"{f[(G, 'MNQx1')]['boot_intraday']['median_days_to_pass']:.0f} days. But the shuffled-Aegis control — a "
-             f"true derangement of its trade dates within each year, drift kept, co-movement destroyed — busts "
-             f"7.97% on Growth against the real book's 8.43% at screen N. The control matches or beats the real "
-             f"book, so the gain is Aegis's positive drift over 2022-2026, not diversification. On its excluded "
-             f"2020-02→2022-07 window Aegis×2 passes 0.03% of paths (5.1% bust on Growth, 11.3% on Select) and "
-             f"Aegis×3 busts 27%/41%.")
+             f"{f[(G, 'MNQx1')]['boot_intraday']['median_days_to_pass']:.0f} days. But {ctl_txt}.{ex_txt}")
+    aeg_cov = f[(G, "AEGISx3")]["weekly_coverage"] * 100
     L.append(f"5. **Aegis alone is the only thing under the frozen 5% ceiling, and only on the favourable window.** "
              f"Aegis×3 on Growth: {aeg_g:.1f}% bust, "
              f"{f[(G, 'AEGISx3')]['boot_intraday']['pass_pct']:.1f}% pass, median "
-             f"{f[(G, 'AEGISx3')]['boot_intraday']['median_days_to_pass']:.0f} days, but only 47% of weeks carry a "
-             f"trade (a token trade every other week) and the same size busts 27% on the excluded regime.\n")
+             f"{f[(G, 'AEGISx3')]['boot_intraday']['median_days_to_pass']:.0f} days, but only {aeg_cov:.0f}% of "
+             f"weeks carry a trade (a token trade roughly every other week)"
+             + (f" and the same size busts {ex_g3:.0f}% on the excluded regime.\n" if ex_g3 is not None else ".\n"))
     L.append("**Defensible picks, in order, under the fee-priced criterion (pass ≥ 60%, median ≤ 200 days, worse "
              "half ≥ 50%):**\n")
     L.append("| Book | Tier | bust | pass | median days | worse-half pass |")
@@ -231,8 +300,10 @@ def verdict():
              "Aegis's 2020-2022 sit outside it. The MNQ and MYM lineages are tuned charts with no untouched "
              "holdout. Aegis uses the sanctioned 1-tick `76620` panel; the `cbcc9`/`c59e9` exports fill one tick "
              "better on every shared trade and are barred. Growth's soft $2,500 daily lockout is not modelled, so "
-             "Growth figures are two-sided bounds. See README.md §Disclosed limits for the one known unfixed hole "
-             "(P&L booked on a non-session date).\n")
+             "Growth figures are two-sided bounds. P&L booked on a non-session date used to be dropped by the "
+             "business-day reindex -- 6 trades, -210.92 per contract of real losses; that is fixed and these "
+             "figures include it (bust rose in 10 of 12 finalist cells, by at most 0.55 pp, and fell in none). "
+             "See README.md §Disclosed limits for what remains disclosed rather than fixed.\n")
     return "\n".join(L)
 
 

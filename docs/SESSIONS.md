@@ -33,6 +33,156 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-03c — Phase 1 partial gate read on Codex's `a51bc60`; D8/D9 raised; D9 resolved
+
+**Focus:** Orchestrator check-in after both campaign PRs merged. Operator pushed Codex's Phase 1 branch
+`codex/tradeify-stage1-normalization` @ `a51bc60`; ran the frozen Phase 1 gate as a diff-plus-CI read
+without opening vendor bytes.
+**Shipped:** [campaign-state artifact](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)
+update only — §2/§5 Phase 1 rows, §6 D1 closed, D7 kept **open** (ref deleted, object purge still
+pending), D8/D9 opened, §7 commands, §8 ledger, §9 read.
+**Decisions/defects:** The push is **Task 1 of 8** (identity boundary, primary-source fee capture,
+frozen config, 6 tests; plan checklist 0/49) — verdict **IN PROGRESS**, not a Phase 1 return. Partial
+read: G1.1 ✓ (no vendor bytes; `local_artifacts/` ignored), G1.5 ✓, G1.8 ✓, G1.4 tolerances
+pre-committed ✓; **G1.9 red** — the study dir is absent from `lab/CATALOG.md`, so CI's required check
+would fail; G1.3/G1.6/G1.10 await the runner. Worktree re-run: 6/6 tests pass, boundaries OK. The
+anticipated G1.7 re-anchor is withdrawn (calendar-week adapter and joint block builder are designed,
+spec §4.5). Two source-set facts need the operator: **D8** two prototypes are declared on one
+instrument but exported from the other's chart; **D9** the TradingView chart timezone is unknown for
+all seven (`timestamp_utc` null) — this **blocks a Phase 1 PASS**, since the plan's Phase 1 ledger
+is canonical UTC (Codex review of #274); **resolved later this session** — operator ruled
+`America/New_York` for all seven, Codex re-freezes the config. **D8 also resolved later this session:**
+the two "prototype" exports are the **native editions with the pyramid turned down** (DJ30 on MYM,
+NAS100 on MNQ), not Q-TXG-1 swap cells — exports on the right chart, declared intent and names wrong;
+consequence under the candidate-contract ADR: **five templates**, each pyramid variant a cell of its
+locked sibling's template (plan item 14 corrected). D7 stays
+open until GitHub confirms the object purge; a deleted ref alone does not remove the blobs. Good pre-commitment noted: the spec freezes expected row/trade
+counts and net P&L to the cent before the runner exists. No `core`/Pine/allocation/`dd_protection`/rail
+change. $0/K=0.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — Phase 1 in progress
+(Task 1/8 on `origin` @ `a51bc60`); full gate when the runner, reports, CATALOG row, and PR land
+(check-in armed); D8 resolved (native editions, pyramid down → five templates); D9 resolved (`America/New_York`); D7 open pending purge · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— unchanged.
+**Live-ops state:** unchanged — c1 rail disarmed, `dry_run=true`, M1 not `RESOLVED`, no arm.
+
+---
+
+## 2026-09-03b — Queue/pipeline naming realignment: seven-strategy Select campaign is queue #1
+
+**Focus:** Operator flagged that STATE's queue, PIPELINES.md's "one turning pipeline" claim, and the
+newest SESSIONS entry didn't agree on what the live campaign is — the last 48 hours' PRs (portable-edge
+cultivation, research-methods synthesis, DL-3, W1 bootstrap, the seven-strategy Select campaign) ran
+almost entirely outside P1 Gen-2 Databento discovery, the pipeline PIPELINES.md named as "the one
+turning pipeline."
+**Shipped:** Operator ruling recorded: the seven-strategy Tradeify Select configuration campaign is the
+live/turning campaign. `STATE.md` queue row **#1** replaced (portable-edge cultivation → seven-strategy
+Select campaign, [campaign state](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) ·
+[plan](superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)); portable-edge
+cultivation demoted off-queue (stays open on its own [ADR](adr/2026-09-02-portable-edge-cultivation-campaign-objective.md),
+no queue row). Decision-index entry added; twelfth keep-15 roll executed (`Q-TRADECAP-2` pushed to
+[archive](ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md)). `PIPELINES.md` corrected:
+P4's at-a-glance status IDLE → ACTIVE (the same campaign, same links as STATE/this entry); P1's "one
+turning pipeline" line now points to P4 for the currently turning work, since no PR this window is
+P1-shaped (no Databento pull, no STUMPY/catch22 mining, no new `discovery_manifests/` entry).
+**Decisions/defects:** No new evidence, no candidate contract, no capital. The campaign's own state and
+phase are unchanged by this session (Phase 0 skipped, Phase 1 in flight on `codex/tradeify-stage1-normalization`,
+no PR yet) — this is a cross-surface naming/consistency fix only. No `core`/Pine/allocation/
+`dd_protection`/rail change. $0/K=0.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — Phase 1 in flight; gate
+review fires when Codex's `codex/tradeify-stage1-normalization` PR lands · `#2` [B7-REFIRE Stage 1 +
+M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— unchanged.
+
+---
+
+## 2026-09-03a — Orchestrator takeover: seven-strategy Select configuration campaign; Codex P1 review folded into PR #272
+
+**Focus:** Operator handed Claude Code the orchestrator role for the seven-strategy
+`Tradeify_Select_100K` configuration campaign (plan on [PR #272](https://github.com/Joshua-Asante/first-passage/pull/272))
+while Codex completes Phase 0 on `codex/mym-breakout-research`, then asked for the Codex review's
+P1 findings on that PR to be addressed.
+**Shipped:** `459421b` on PR #272 — six P1 + one P2 folded into the plan (development-only Phase 4
+screen; confirmation start **derived** from each strategy's final design-decision date; estimand
+`P(bust before pass)` with unresolved-at-cap paths counted as busts; qualifying bound = outer
+block-bootstrap 95th + worst partition, MC-only UCB never qualifying; scalar MAE = `LOWER BOUND`
+only; every screen cutoff frozen numerically in Phase 3; joint-flat integer-week blocks) plus a
+reconciliation table; threads resolved. Second Codex pass `78c82de` (four P1: multiplicity `α`/`M`
+per the campaign-envelope ADR; pre-confirmation integrity + venue re-check; one realized path is a
+falsifier, not a 5% estimate — `N_conf` arithmetic + `model-fitted` label; holdout reserved and
+quarantined at Phase 0, Phases 1–2 development-only). Third pass `e8694a9` (Codex review of PR #273:
+last-inspection date joins the derived confirmation start; outer bootstrap re-runs the frozen
+selection per replicate; Phase 2 standalone-only; numeric Phase 6; calendar-week inactivity adapter;
+multi-strategy joint block builder; per-instrument fees; Rule 2 as STRATEGIC ≤3 OUTER × 8
+iterations). New orchestrator-owned campaign-state artifact + claim
+manifest [`2026-09-03-seven-strategy-select-campaign-state.md`](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md):
+roles, phase board, canonical-authority list (reuse-don't-rewrite), **Phase 0 acceptance gate
+G0.1–G0.10, then — after the operator skipped Phase 0 — Phase 1 gate G1.1–G1.10, each frozen before any
+Codex output was read**, operator decisions D1–D7.
+**Decisions/defects:** The handoff called PR #272 merged; it is **open** (checks green) — fixes went
+to its branch, not a parallel copy (operator merges, D1). `codex/mym-breakout-research` is a reused
+name: PR #259's head (merged 09-02), whose study consumed the 2025→2026-07 holdout for five ORB-MYM
+entry families — bound into the gate as a contamination check (G0.6). Joint-flat weekly blocks rest
+on `weekend_holds: False`, a config fact **not engine-enforced** — re-verified at Phase 0, not
+assumed. No queue row opened (operator call, D2); the Rule-2 budget is now stated in iterations (plan
+contract item 13) with the operator confirming its three constituents (D3);
+its relation to queue row 1's cultivation envelope is unruled (D4) — Phase 0 is inventory-only and
+safe under either reading. **Gate review of the pushed `codex/mym-breakout-research` (`706a03e`): `FAIL`** —
+no intake deliverables (zero of seven strategies) and ~100 MB of vendor-derived CSVs committed on a
+public ref; base 68 commits behind `main`. D7 (purge) raised; `.gitignore` hardened for
+`workspace_inputs/` / `workspace_outputs/`; §9 re-dispatch packet authored — then
+superseded: the operator ruled the simpler path (all seven tuned and viewed on the whole export;
+confirmation forward-only; historical results model-fitted — plan `11d22e2`), **skipped Phase 0**,
+and dispatched Phase 1 to Codex on a local worktree; Phase 1 gate G1.1–G1.10 frozen before any
+output existed. Fourth Codex pass folded (`6aa7ff8`). Remote-ref deletion refused with HTTP 403
+from this session — operator deletes. No `core`/Pine/allocation/`dd_protection`/rail change. $0/K=0.
+**Open / next:** STATE queue: `#1` [Find a viable trading strategy — portable-edge cultivation
+campaign](superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md) · `#2` [B7-REFIRE Stage 1
++ M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— both unchanged. `queue-exception: orchestrator-takeover` — Phase 0 skipped by override; the Phase 1
+gate review fires when Codex's `codex/tradeify-stage1-normalization` PR lands (check-in armed); D7
+ref deletion is the operator's; decisions D1–D5 sit in the campaign-state artifact.
+
+---
+
+## 2026-09-02d — PR #260's second review round landed; the finals grid made crash-resilient
+
+**Focus:** Operator asked to check the Codex review on [PR #260](https://github.com/Joshua-Asante/first-passage/pull/260)
+and push the fixes. Two rounds ran; this entry covers round 2 and the harness defect that
+regenerating the artifacts exposed.
+**Shipped:** [`tradeify_book_composition_2026-09`](../lab/analysis/c1/tradeify_book_composition_2026-09/)
+round-2 corrections — `roll_to_session` (non-session P&L), an Eastern-time MOC print cutoff, and a
+`verdict()` that reads both `grid_final.json` and `controls.json` instead of embedding either;
+plus `_run_checkpointed` in `book_grid.py`, making the finals stage chunked and resumable. All six
+artifacts regenerated under the fixed code, then `RESULTS.md` / `THIRD_LEG_MINIMUM.md` and the
+README break-even table re-rendered from them.
+[`test_book_grid_session_rolling.py`](../tests/lab/test_book_grid_session_rolling.py) (11 cases) ·
+[`test_book_grid_checkpointing.py`](../tests/lab/test_book_grid_checkpointing.py) (8 cases) — 27 green.
+**Decisions/defects:** 10 findings across the two Codex rounds, **every one verified real, none a
+false positive, no campaign verdict changed.** Round 2's load-bearing find: P&L booked on a
+non-session date was silently dropped by the `bdate_range` reindex — **6 trades, −210.92 per
+contract of real losses** — which round 1 only *disclosed*, on the stated grounds that the grids
+were mid-run; Codex correctly pushed back that a committed grid must not omit real losses, and by
+then that reason had expired. Restoring them moved bust **up in 10 of 12 finalist cells and down in
+0**, by at most 0.55 pp; the 2 unchanged cells are the Aegis-only books, which hold no multi-day
+trades. The ET-cutoff bug was **latent — 0 selections changed** across all 72 EST days. The
+finals stage separately proved unable to survive its own regeneration: run flat it lost two
+consecutive ~40-minute runs to loky worker death on 16 GB, leaving `grid_final.json` stale while
+its own code had changed — the defect round 1 caught, recurring. **Own defect, non-code:**
+diagnosed a healthy job as dead via Git Bash `kill -0` on a Windows PID (different process
+namespace), after which two finals runs raced one output file for 9 minutes; recorded to memory.
+PR #260 merged mid-session, so these corrections land on a fresh branch and a new PR.
+**Open / next:** STATE queue: `#1` [Find a viable trading strategy — portable-edge cultivation
+campaign](superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md) · `#2` [B7-REFIRE Stage 1
++ M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— both formally unchanged by this session; still EXPLORATORY, no pre-registration, no K ledger
+entry, no candidate contract, $0 spend.
+**Live-ops state:** unchanged — c1 rail disarmed, `dry_run=true`, M1 not `RESOLVED`, no arm.
+
+---
+
 ## 2026-09-02c — W1's 4th partition run on the honest clock (INTERIM 48/100); superseded-prereg guard
 
 **Focus:** Operator asked what the research methods that made real progress have in common, then

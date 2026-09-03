@@ -40,7 +40,7 @@ reimplemented anywhere in this directory.
 
   | net edge per trade | break-even WR at a $200 stop | at a $100 stop |
   |---:|---:|---:|
-  | 0.05R | above 75% | 61% |
+  | 0.05R | above 75% | 62% |
   | 0.10R | 62% | 42% |
   | 0.15R | 52% | ≤ 35% |
   | 0.20R | 46% | ≤ 35% |
@@ -57,13 +57,78 @@ reimplemented anywhere in this directory.
 cd lab/analysis/c1/tradeify_book_composition_2026-09
 python book_grid.py --stage smoke                  # 1 cell, ~12 s, plumbing check
 python book_grid.py --stage screen --jobs 7        # 88 cells, ~11 min
-python book_grid.py --stage final --jobs 4 --finalists '[{"mnq":1,"mym":0,"aegis":2}, ...]'
+python book_grid.py --stage final --jobs 3 --finalists '[{"mnq":1,"mym":0,"aegis":2}, ...]'
 python controls.py                                 # shuffled-Aegis + excluded-regime + co-movement
 python third_leg_shape.py --stage characterize     # what kills/slows the base book
 python third_leg_shape.py --stage minimum --jobs 7 # exact-edge minimum-attribute grid
 python render_results.py && python render_minimum.py && python render_third_leg.py
 python moc_fade_replay.py                          # reads inputs/, needs the Databento cache below
 ```
+
+⚠ **The order in the block above is a dependency order, not a suggestion.**
+`third_leg_shape.py --stage characterize` copies each finalist tier's bust, pass,
+median-days and bust-attribution straight out of `grid_final.json`, so running it *before*
+the final grid publishes two different risk estimates for the same book. That happened on
+2026-09-02: the grid was regenerated at 19:00 with the non-session-P&L fix, the
+characterization at 16:33, and the committed pair disagreed (Select 14.843% vs 15.25%
+bust, attribution 3023/1430 vs 3114/1461) while the PR claimed all six artifacts were
+mutually consistent. Every artifact *had* been regenerated — in the wrong order, with
+nothing checking the derived one against its source. `tests/lab/test_campaign_artifact_consistency.py`
+is now that check. `third_leg_minimum.json` is *not* in this chain: it computes its own
+base from the leg exports rather than reading either file.
+
+⚠ **Keep `--jobs` low on the finals stage.** It runs four bootstraps per cell (intraday, EOD and
+both halves) at 10,000 sims × 3 seeds, ~50× the per-cell work of the screen stage, and on a 16 GB
+machine it will not survive high parallelism: at `--jobs 4` two of four loky workers died and
+joblib blocked on them forever (8/12 cells, no traceback, no output), and at `--jobs 6` the parent
+died at ~9 minutes. `--jobs 3` is what the committed figures were produced at. `--jobs` is resolved
+through `joblib.effective_n_jobs`, so negatives are offsets (`-1` all CPUs, `-2` all but one) and a
+cgroup/CFS quota, a CPU affinity mask or `LOKY_MAX_CPU_COUNT` is honoured — `os.cpu_count()` reports
+*host* CPUs and would silently launch 7 workers inside a 2-CPU allocation, which is the failure this
+whole section is about. `0` means serial here, since joblib rejects `n_jobs=0` outright. The stage now runs
+in chunks and appends each finished cell to a `data/grid_final.json.partial.<fp>.<pid>.jsonl` sidecar, so
+a crash costs one chunk and re-running the same command resumes; the sidecar is deleted only once
+the real output is on disk, and that output is published by rename rather than by truncate-in-place.
+The loky executor is explicitly shut down at each chunk boundary — without that, joblib **reuses**
+the same worker processes and their retained memory across chunks, so chunking alone would buy
+crash resilience but no memory bound (an earlier version of this README claimed otherwise).
+Within one configuration a cell is deterministic — seeded from `SEEDS`,
+depending only on its own argument tuple — so a resumed cell is identical to a cold one, and
+results are returned in job order regardless of completion order.
+
+**A resume is only honoured when the configuration is unchanged.** The sidecar's first record is a
+fingerprint of everything that feeds a cell without appearing in its argument tuple: `SEEDS`,
+`HORIZON_CAP`, the eval prices, the micro-equivalent caps, the tier consistency fractions and
+`FIRM_RULES` entries in play; content hashes of the session calendar, each vendor export used,
+`book_grid.py` itself and `core/mc/simulation.py` / `core/mc/preflight.py` / `core/firm_rules.py` /
+`core/dd_protection.py` / `core/historical_challenge.py`; **and the numerical runtime** (Python,
+NumPy, pandas versions). The runtime belongs there because `run_seed` draws its bootstrap indices
+from `np.random.default_rng`, and NumPy freezes only the legacy `RandomState` — under NEP 19 a
+`Generator` stream may change between releases, so an environment bump can make a freshly computed
+cell disagree with a reused one. scipy is deliberately excluded: it is not imported anywhere in the
+compute path, so pinning it would invalidate sidecars for no reason.
+On any mismatch — or if the sidecar predates the fingerprint — it is discarded whole and every cell
+recomputed. Being strict is cheap here: a false mismatch costs one re-run, whereas a false match
+would splice stale cells into a grid whose header advertises the new configuration, which is the
+same "artifacts do not match the code" failure this checkpointing exists to prevent.
+
+**Sidecar names carry both the fingerprint and the pid**, because two different races needed
+closing, and this campaign has already had two finals runs racing one output:
+
+- *Across configurations.* Header-only scoping left a check-then-create window: a second process
+  could replace the sidecar with fingerprint B while the first appended cells computed under
+  fingerprint A, leaving B's header over A's records — which `_job_key` cannot detect.
+- *Within one configuration.* An earlier version of this README called that case "harmless". It is
+  not: the **cleanup** path raced. `if exists: remove` is check-then-act, so two runs finishing
+  together both passed and the second raised `FileNotFoundError` with its artifact already safely
+  written; and a run finishing first deleted the sidecar out from under a still-computing sibling,
+  whose next append recreated it with **no fingerprint header**, quietly making that work unusable
+  after a later crash.
+
+So each process writes only its own file, a resume merges every sibling sidecar for the same
+fingerprint (which is what still lets a fresh process resume a crashed one's cells), an append
+re-writes the header if the file has gone, and every removal is exception-safe. Guarded by
+`tests/lab/test_book_grid_checkpointing.py`.
 
 `data/cme_equity_sessions.json` (1,011 CME equity-index sessions, 13 weekday closures in the
 window) is committed so `third_leg_shape.py` never schedules a synthetic trade on a closed market.
@@ -111,29 +176,39 @@ for how it was collected and, more importantly, **why 107 of its 342 rows carry 
   pessimistic on the rope, so Growth figures are two-sided bounds, not point estimates.
 - **Synthetic third-leg outcomes are independent draws** — no regime clustering — so a real leg
   with the same summary statistics will do worse than the grid says.
-- **Known, unfixed: P&L booked on a non-session date is dropped from the path.** `daily_per_contract`
-  buckets by the trade's own exit date, and `build_cell` reindexes onto `pd.bdate_range`, so a
-  trade whose exit date is a Saturday or Sunday vanishes. Found 2026-09-02 while verifying the
-  Codex review; measured exactly: **6 trades, −210.92 per contract in total** (MNQ −195.5 over 2
-  days, MYM −15.5 over 2 days, Aegis none) out of 2,526 trades and +$27,955/ct of in-window MNQ
-  P&L — under 1%, and *unfavourable* to drop for MNQ (keeping it makes MNQ slightly worse, not
-  better). Two further MYM trades book on Christmas Day, a weekday the exchange is closed. The
-  correct treatment is to roll a non-session booking to the next session; that is a follow-up,
-  deliberately **not** applied here because both grids were mid-run and mixing code versions
-  inside one study is worse than a disclosed sub-1% hole. The related exit-day carry bug Codex
-  found *was* fixed, and is provably inert on this data for the same reason: every multi-day
-  trade's exit date is a Sunday.
+- **Fixed, was a real hole: P&L booked on a non-session date used to be dropped.**
+  `daily_per_contract` buckets by the trade's own exit date and `build_cell` reindexes onto
+  `pd.bdate_range`, so a position carried through a weekend or a closure booked onto a date the
+  path could not hold and vanished — **6 trades, −210.92 per contract of real losses**, which made
+  the book look safer than it was. `roll_to_session` now maps every booking (P&L series *and* both
+  legs of the intraday floor) onto the next real CME session. Effect, in the honest direction:
+  MNQ's in-window P&L falls from +$27,954.7 to +$27,759.2 per contract, MYM's from +$11,399.9 to
+  +$11,384.5, Aegis unchanged; zero weekend-dated buckets remain. Found 2026-09-02 while verifying
+  the first Codex review and initially only disclosed; fixed after the second review correctly
+  pushed back that a committed grid must not omit real losses. Guarded by
+  `tests/lab/test_book_grid_session_rolling.py`. The related exit-day carry fix stays inert on this
+  data for the same underlying reason: every multi-day trade here exits on a Sunday.
 - K disclosed inline in each results file; nothing here consumes a pre-registration.
 
 ## Corrections after review
 
-Codex reviewed [PR #260](https://github.com/Joshua-Asante/first-passage/pull/260) and raised 7
-findings (2 P1, 5 P2). All 7 were verified against the code and artifacts; none was a false
-positive. Fixed here: unverified-sign rows no longer reach any replay (they were reaching the
-committed artifacts while the report quoted clean numbers); the flatten bar is the bar *after* the
-`close_all` submit bar, not the submit bar itself; cadence is measured over the observation span
-rather than over traded days, where it was identically 5.0/week; multi-day trades stay open on
-their exit day; synthetic legs trade only real CME sessions (`data/cme_equity_sessions.json`);
-the shuffled-Aegis control is a true derangement; the signal path resolves from the script's own
-directory. `MOC_FADE_REPLAY.md` §Corrections carries the before/after numbers. No verdict in this
-campaign changed.
+Two rounds of Codex review on [PR #260](https://github.com/Joshua-Asante/first-passage/pull/260),
+10 findings total, every one verified against the code and artifacts before being accepted. None
+was a false positive. No verdict in this campaign changed in either round.
+
+**Round 1 — 7 findings (2 P1, 5 P2).** Unverified-sign rows no longer reach any replay (they were
+reaching the committed artifacts while the report quoted clean numbers — the two had diverged
+because the clean run was ad-hoc and never fed back); the flatten bar is the bar *after* the
+`close_all` submit bar, not the submit bar itself, so time exits are no longer priced 5 minutes
+early; cadence is measured over the observation span rather than over traded days, where it was
+identically 5.0/week; multi-day trades stay open on their exit day; synthetic legs trade only real
+CME sessions; the shuffled-Aegis control is a true derangement; the signal path resolves from the
+script's own directory. `MOC_FADE_REPLAY.md` §Corrections carries the before/after numbers.
+
+**Round 2 — 3 findings (all P2), all on the round-1 work rather than the original.** The verdict
+prose hard-coded the control figures while the same function claimed a re-run could not make it
+stale — both data sources now feed it. The final-print cutoff compared a fixed UTC time, so every
+winter print fell outside the candidate set; now compared in Eastern time. Latent only: verified
+across all 72 EST days and the 3 days carrying two non-early posts, **0 selections changed**,
+because the empty-candidate fallback happened to rescue the right post. And the non-session P&L
+hole above, which round 1 disclosed and this round fixes.
