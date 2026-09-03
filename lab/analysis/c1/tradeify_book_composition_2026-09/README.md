@@ -65,11 +65,25 @@ python render_results.py && python render_minimum.py && python render_third_leg.
 python moc_fade_replay.py                          # reads inputs/, needs the Databento cache below
 ```
 
+⚠ **The order in the block above is a dependency order, not a suggestion.**
+`third_leg_shape.py --stage characterize` copies each finalist tier's bust, pass,
+median-days and bust-attribution straight out of `grid_final.json`, so running it *before*
+the final grid publishes two different risk estimates for the same book. That happened on
+2026-09-02: the grid was regenerated at 19:00 with the non-session-P&L fix, the
+characterization at 16:33, and the committed pair disagreed (Select 14.843% vs 15.25%
+bust, attribution 3023/1430 vs 3114/1461) while the PR claimed all six artifacts were
+mutually consistent. Every artifact *had* been regenerated — in the wrong order, with
+nothing checking the derived one against its source. `tests/lab/test_campaign_artifact_consistency.py`
+is now that check. `third_leg_minimum.json` is *not* in this chain: it computes its own
+base from the leg exports rather than reading either file.
+
 ⚠ **Keep `--jobs` low on the finals stage.** It runs four bootstraps per cell (intraday, EOD and
 both halves) at 10,000 sims × 3 seeds, ~50× the per-cell work of the screen stage, and on a 16 GB
 machine it will not survive high parallelism: at `--jobs 4` two of four loky workers died and
 joblib blocked on them forever (8/12 cells, no traceback, no output), and at `--jobs 6` the parent
-died at ~9 minutes. `--jobs 3` is what the committed figures were produced at. The stage now runs
+died at ~9 minutes. `--jobs 3` is what the committed figures were produced at. `--jobs` follows
+joblib's convention, so negatives are offsets from the CPU count (`-1` all CPUs, `-2` all but one);
+`0` means serial here, since joblib rejects `n_jobs=0` outright. The stage now runs
 in chunks and appends each finished cell to `data/grid_final.json.partial.jsonl`, so a crash costs
 one chunk and re-running the same command resumes; the sidecar is deleted only once the real
 output is on disk. Within one configuration a cell is deterministic — seeded from `SEEDS`,

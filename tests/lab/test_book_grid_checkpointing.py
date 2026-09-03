@@ -312,3 +312,71 @@ def test_zero_jobs_does_not_hang_or_crash(grid, monkeypatch, tmp_path):
     with parallel_backend("sequential"):
         res, _ = grid._run_checkpointed(jobs, str(tmp_path / "g.json"), 0)
     assert len(calls) == 1 and len(res) == 1
+
+
+def test_effective_jobs_follows_joblibs_negative_offsets(grid, monkeypatch):
+    """joblib reads negatives as offsets: -1 all CPUs, -2 all but one, -N => cpus+1-N.
+
+    Collapsing every negative to `os.cpu_count()` silently granted MORE parallelism than
+    the caller reserved -- which on the finals stage is the difference between finishing
+    and having workers killed.
+    """
+    import os as _os
+    monkeypatch.setattr(_os, "cpu_count", lambda: 8)
+    assert grid._effective_jobs(-1) == 8, "-1 is all CPUs"
+    assert grid._effective_jobs(-2) == 7, "-2 must reserve one CPU, not take all 8"
+    assert grid._effective_jobs(-3) == 6
+    assert grid._effective_jobs(-8) == 1
+    assert grid._effective_jobs(-99) == 1, "must clamp at 1, never 0 or negative"
+    # positives pass through; 0/None mean serial, since joblib rejects n_jobs=0 outright
+    assert grid._effective_jobs(3) == 3
+    assert grid._effective_jobs(0) == 1
+    assert grid._effective_jobs(None) == 1
+
+
+def test_negative_jobs_offset_is_used_as_the_chunk_width(grid, monkeypatch, tmp_path):
+    """The resolved count, not the raw negative, must reach the chunking."""
+    import os as _os
+    from joblib import parallel_backend
+    monkeypatch.setattr(_os, "cpu_count", lambda: 4)
+    jobs = [_job({"mnq": 1, "aegis": k}, "Tradeify_Select_100K") for k in (0, 2, 3)]
+    calls = _stub(grid, monkeypatch)
+    with parallel_backend("sequential"):
+        res, _ = grid._run_checkpointed(jobs, str(tmp_path / "g.json"), -2)   # => width 3
+    assert len(calls) == 3 and [r["sizing"]["aegis"] for r in res] == [0, 2, 3]
+
+
+# ------------------------------------------------ torn sidecar repair (PR #271, round 4)
+
+def test_torn_tail_is_removed_so_later_appends_stay_parseable(grid, monkeypatch, tmp_path):
+    """Skipping a torn record is not enough -- the bad bytes must go.
+
+    A hard kill can leave the last record truncated with no trailing newline. Skipping it
+    on read but appending after it fused the next completed cell onto the junk, producing a
+    SECOND invalid line; if that resumed run was itself interrupted before publishing, the
+    freshly computed cell was discarded too and could be recomputed indefinitely.
+    """
+    jobs = [_job({"mnq": 1, "aegis": k}, "Tradeify_Select_100K") for k in (0, 2)]
+    out = str(tmp_path / "grid.json")
+    part = pathlib.Path(out + ".partial.jsonl")
+
+    with part.open("w", encoding="utf-8") as fh:
+        fh.write(_fp_line(grid, jobs))
+        fh.write(json.dumps({"key": grid._job_key(jobs[0]),
+                             "result": {"marker": "GOOD"}}) + "\n")
+        fh.write(json.dumps({"key": grid._job_key(jobs[1])})[:-3])   # torn, no newline
+
+    calls = _stub(grid, monkeypatch)
+    grid._run_checkpointed(jobs, out, 1)
+    assert len(calls) == 1, "only the torn cell should be recomputed"
+
+    # every line in the repaired sidecar must parse -- no fused record at the seam
+    lines = [ln for ln in part.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    for ln in lines:
+        json.loads(ln)      # raises if the append fused onto the torn bytes
+
+    # and the recomputed cell must survive a further interruption: a second resume sees both
+    calls.clear()
+    res, _ = grid._run_checkpointed(jobs, out, 1)
+    assert calls == [], "the cell recomputed after the repair was not durably checkpointed"
+    assert res[0]["marker"] == "GOOD"

@@ -149,6 +149,36 @@ def render_controls(data):
     return "\n".join(out)
 
 
+def drift_reading(shuf_g, real_g, n_shuf):
+    """Headline + control sentence for verdict item 4, conditioned on the control.
+
+    "The Aegis gain is drift, not diversification" is a CONCLUSION FROM the shuffled
+    control, so it may only be asserted when that control exists AND actually orders that
+    way. Earlier versions appended it unconditionally: with `controls.json` missing the
+    prose still reported an unavailable control's finding as established, and had a re-run
+    put the shuffled book ABOVE the real one the sentence would have contradicted the
+    figures printed immediately beside it. Raised by Codex on PR #271 (round 4).
+
+    Returns (headline, control-clause). The caller renders "But {clause}."
+    """
+    if shuf_g is None:
+        return ("**Aegis as ballast improves MNQ×1 on all three axes.**",
+                "the shuffled-Aegis control is absent (`controls.json` not built), so whether that "
+                "gain is diversification or merely Aegis's own drift is UNTESTED here")
+    common = (f"the shuffled-Aegis control — a true derangement of its trade dates within each year, "
+              f"drift kept, co-movement destroyed — busts {shuf_g:.2f}% on Growth ({n_shuf} draws)")
+    if shuf_g <= real_g:
+        return ("**Aegis as ballast improves MNQ×1 on all three axes, but for the wrong reason.**",
+                f"{common} against the real book's {real_g:.2f}% at screen N. The control matches or "
+                f"beats the real book, so the gain is Aegis's positive drift over 2022-2026, not "
+                f"diversification")
+    return ("**Aegis as ballast improves MNQ×1 on all three axes; the control does not attribute that "
+            "to drift.**",
+            f"{common}, WORSE than the real book's {real_g:.2f}% at screen N. Destroying the "
+            f"co-movement hurt, so this control does not support reading the gain as drift alone; "
+            f"treat the split between drift and diversification as unresolved")
+
+
 def _fin():
     """Finalist cells keyed (tier, sizing-label) -> boot_intraday dict, from grid_final.json.
     Every number in the verdict below is read from the data, not transcribed, so a re-run
@@ -236,20 +266,15 @@ def verdict():
     ex_pass = None
     if ctl.get((G, "AEGISx2", "aegis 2020-02..2022-07")):
         ex_pass = ctl[(G, "AEGISx2", "aegis 2020-02..2022-07")][0]["boot"]["pass_pct"]
-    ctl_txt = ("the shuffled-Aegis control is absent (`controls.json` not built)"
-               if shuf_g is None else
-               f"the shuffled-Aegis control — a true derangement of its trade dates within each year, drift "
-               f"kept, co-movement destroyed — busts {shuf_g:.2f}% on Growth ({n_shuf} draws) against the real "
-               f"book's {real_g:.2f}% at screen N. The control matches or beats the real book")
+    head, ctl_txt = drift_reading(shuf_g, real_g, n_shuf)
     ex_txt = ("" if ex_g2 is None else
               f" On its excluded 2020-02→2022-07 window Aegis×2 passes {ex_pass:.2f}% of paths "
               f"({ex_g2:.1f}% bust on Growth, {ex_s2:.1f}% on Select) and Aegis×3 busts "
               f"{ex_g3:.0f}%/{ex_s3:.0f}%.")
-    L.append(f"4. **Aegis as ballast improves MNQ×1 on all three axes, but for the wrong reason.** MNQ×1+Aegis×2 vs "
+    L.append(f"4. {head} MNQ×1+Aegis×2 vs "
              f"MNQ×1 on Growth: bust {pair_g:.1f}% vs {mnq_g:.1f}%, median "
              f"{f[(G, 'MNQx1 + AEGISx2')]['boot_intraday']['median_days_to_pass']:.0f} vs "
-             f"{f[(G, 'MNQx1')]['boot_intraday']['median_days_to_pass']:.0f} days. But {ctl_txt}, so the gain is "
-             f"Aegis's positive drift over 2022-2026, not diversification.{ex_txt}")
+             f"{f[(G, 'MNQx1')]['boot_intraday']['median_days_to_pass']:.0f} days. But {ctl_txt}.{ex_txt}")
     aeg_cov = f[(G, "AEGISx3")]["weekly_coverage"] * 100
     L.append(f"5. **Aegis alone is the only thing under the frozen 5% ceiling, and only on the favourable window.** "
              f"Aegis×3 on Growth: {aeg_g:.1f}% bust, "

@@ -370,6 +370,28 @@ def _job_key(job):
                       sort_keys=True, default=str)
 
 
+def _effective_jobs(n_jobs) -> int:
+    """Resolve `n_jobs` to a worker count using joblib's own convention.
+
+    joblib reads negatives as offsets from the CPU count -- `-1` is all CPUs, `-2` all but
+    one, and generally `n_cpus + 1 + n_jobs` -- which is how a caller reserves headroom.
+    Collapsing every negative to `os.cpu_count()` (the first version of this) silently
+    granted MORE parallelism than asked for, and on this stage that is the difference
+    between a run that finishes and one whose workers get killed: `--jobs -2` on an 8-CPU
+    box would have run 8 workers when the caller explicitly asked for 7.
+
+    `0` and `None` resolve to 1 rather than to all CPUs: joblib rejects `n_jobs=0`
+    outright, and for a CLI argument the safe reading of "no parallelism specified" is
+    serial, not maximal.
+    """
+    cpus = os.cpu_count() or 1
+    if not n_jobs:                      # 0 or None
+        return 1
+    if n_jobs < 0:
+        return max(1, cpus + 1 + n_jobs)
+    return int(n_jobs)
+
+
 def _sha256_file(path: str) -> str:
     import hashlib
     h = hashlib.sha256()
@@ -448,34 +470,42 @@ def _run_checkpointed(jobs, out_path, n_jobs):
     when that no longer matches. Results are returned in `jobs` order regardless of
     completion order, because the renderers index positionally.
 
-    `n_jobs` follows joblib's convention, so a negative value means "all CPUs" (the repo
-    uses `n_jobs=-1` at `core/mc/modes.py`). It is normalised before use as a chunk width:
-    passed through raw it became the step of `range(0, len(pending), -1)`, which is empty,
-    so no cell ever ran and the final lookup raised `KeyError` for all of them.
+    `n_jobs` is resolved through `_effective_jobs` before being used as a chunk width.
+    Passed through raw, a negative became the step of `range(0, len(pending), -1)`, which
+    is empty, so no cell ever ran and the final lookup raised `KeyError` for all of them.
+
+    A torn final record is rewritten away rather than merely skipped. Skipping it left the
+    bad bytes at EOF with no trailing newline, so the resumed run's first append fused onto
+    them and produced a SECOND invalid line -- losing that freshly computed cell too if the
+    resume was itself interrupted. Every failure then re-tore the tail and the same cell
+    could be recomputed indefinitely.
     """
     from joblib import Parallel, delayed
 
-    width = n_jobs if n_jobs and n_jobs > 0 else (os.cpu_count() or 1)
+    width = _effective_jobs(n_jobs)
     part = out_path + ".partial.jsonl"
     fp = _run_fingerprint(jobs)
     fp_line = json.dumps({"__fingerprint__": fp}, sort_keys=True, default=str)
 
     done = {}
     if os.path.exists(part):
-        seen_fp, has_fp = None, False
+        seen_fp, has_fp, torn = None, False, False
+        keep = []                     # verbatim valid cell lines, for rewriting a torn file
         with open(part, encoding="utf-8") as fh:
             for line in fh:
-                line = line.strip()
-                if not line:
+                s = line.strip()
+                if not s:
                     continue
                 try:
-                    rec = json.loads(line)
+                    rec = json.loads(s)
                 except json.JSONDecodeError:
-                    continue          # truncated tail from a hard kill; recompute that cell
+                    torn = True       # truncated tail from a hard kill; recompute that cell
+                    continue
                 if "__fingerprint__" in rec:
                     has_fp, seen_fp = True, rec["__fingerprint__"]
                     continue
                 done[rec["key"]] = rec["result"]
+                keep.append(s)
         # A sidecar is reusable only if it carries a fingerprint AND it matches. An
         # unfingerprinted sidecar is refused rather than trusted: it predates this check,
         # so nothing establishes which configuration produced its cells.
@@ -490,8 +520,18 @@ def _run_checkpointed(jobs, out_path, n_jobs):
                       flush=True)
             done = {}
             os.remove(part)
-        elif done:
-            print(f"resume: {len(done)} cell(s) already checkpointed in {part}", flush=True)
+        else:
+            if torn:
+                # Drop the unparseable bytes so the next append starts on a clean line.
+                with open(part, "w", encoding="utf-8") as fh:
+                    fh.write(fp_line + "\n")
+                    for s in keep:
+                        fh.write(s + "\n")
+                print(f"repaired a torn sidecar tail; kept {len(keep)} intact cell(s)",
+                      flush=True)
+            if done:
+                print(f"resume: {len(done)} cell(s) already checkpointed in {part}",
+                      flush=True)
 
     if not os.path.exists(part):
         with open(part, "w", encoding="utf-8") as fh:

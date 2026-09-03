@@ -147,22 +147,22 @@
  },
  "final_Tradeify_Select_100K": {
   "bust_attribution": {
-   "mnq": 3023,
-   "aegis": 1430
+   "mnq": 3114,
+   "aegis": 1461
   },
   "median_days": 154.0,
   "p75_days": 207.0,
-  "bust": 14.843,
-  "pass": 85.157
+  "bust": 15.25,
+  "pass": 84.75
  },
  "final_Tradeify_Growth_100K": {
   "bust_attribution": {
-   "mnq": 1615,
-   "aegis": 736
+   "mnq": 1657,
+   "aegis": 771
   },
   "median_days": 161.0,
   "p75_days": 219.0,
-  "bust": 7.837,
-  "pass": 92.163
+  "bust": 8.093,
+  "pass": 91.907
  }
 }
