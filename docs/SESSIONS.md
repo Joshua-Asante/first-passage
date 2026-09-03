@@ -66,7 +66,69 @@ deadline-spanning three), D12 (early-close calendar); Codex runs the nine-item r
 re-verdicts on the delta (check-in armed); D7 open pending purge · `#2`
 [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
 — unchanged.
+## 2026-09-03k — Codex P2: keep the spent P50 iteration on Seat A
+
+**Focus:** Address Codex’s follow-up on #281 after T0 `PRE-CONTRACT DROP`: live pointers said
+Seat A was unassigned while the ledger still charged P50 A0 at 1/8.
+`queue-exception: same off-queue campaign as 2026-09-03i; live #1 stays the seven-strategy Select campaign.`
+**Shipped:** cultivation-plan banner, P50 RESULTS routing line, and addendum 2026-09-03 §4 now
+say P50 is **retired as the lead** and Seat A **keeps** the spent 1/8. Merged `origin/main`;
+relabeled this branch’s SESSIONS `f`/`g` → `i`/`j` to clear the collision with main’s currency-gate
+letters.
+**Decisions/defects:** Rule-2 map unchanged (A 1/8 STOPPED, B 2/8 STOPPED, C 0/8). No new
+template, contract, or `#1` change.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— residue (queue-exception): off-queue VOLREGIME translation closed at T0
+([`PRE-CONTRACT DROP`](notes/2026-09-03-volregime-translation-t0.md)).
 **Live-ops state:** unchanged — c1 rail disarmed, `dry_run=true`, M1 not `RESOLVED`, no arm.
+
+---
+
+## 2026-09-03j — Codex review of #281: T0 `PRE-CONTRACT DROP`
+
+**Focus:** Respond to Codex’s eight findings on the off-queue VOLREGIME translation rebind.
+`queue-exception: same off-queue campaign as 2026-09-03i; live #1 stays the seven-strategy Select campaign.`
+**Shipped:** [addendum 2026-09-03b](adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03b--t0-pre-contract-drop)
+· [T0](notes/2026-09-03-volregime-translation-t0.md) both templates fail
+· [NB1 Vet](notes/2026-09-03-volregime-nb1-vet-card.md) withdrawn (`T0-FAIL`).
+**Decisions/defects:** All eight findings accepted after disk reads. NB1 has no cited convexity
+prior; L1–L4 is pooled ToD, not the first RTH bar; MNQ comparator is `>=`; raised-bar Route still
+binds and was unpaid; extraction probe needs its own GO + Confirm reservation; pre-contract close
+is `PRE-CONTRACT DROP` not `EXPRESSION-FAIL`; Rule-2 seats remapped (A 1/8 STOPPED, B 2/8 STOPPED,
+C 0/8); `mym_breakout_entry_2026_09` is closer prior art than the first Novelty list. Q stays
+`OPEN`. `#1` not stolen.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— residue (queue-exception): off-queue VOLREGIME translation closed at T0
+([`PRE-CONTRACT DROP`](notes/2026-09-03-volregime-translation-t0.md)).
+**Live-ops state:** unchanged — c1 rail disarmed, `dry_run=true`, M1 not `RESOLVED`, no arm.
+
+---
+
+## 2026-09-03i — VOLREGIME translation rebind; enter at Packet T
+
+**Focus:** Operator corrected the off-queue Sep 2 campaign: Q-VOLREGIME already has GO, presence
+already ran, and this campaign is VOLREGIME translation — P50 ineligible and retired as the lead
+(Seat A keeps the spent A0 charge).
+`queue-exception: operator-approved rebind of the demoted portable-edge campaign; live #1 stays the seven-strategy Select campaign.`
+**Shipped:** [ADR addendum](adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03--campaign-is-volregime-translation-enter-at-packet-t)
+· translation plan `AUTHORIZED — ENTER AT PACKET T`
+· [T0](notes/2026-09-03-volregime-translation-t0.md) · [NB1 Vet](notes/2026-09-03-volregime-nb1-vet-card.md)
+(`VET-INCOMPLETE`, no contract).
+**Decisions/defects:** L1–L4 is the admitted prior; C2–C5 / observed L5 stay unrun. Exact P50 stays
+ineligible. MNQ primary. Template A (`VOLREGIME-NB1`) survives T0; volume-conditioned ORB fails T0
+(“more range means breakout”). W1 is not re-verdicted — owner
+[`RESULTS`](../lab/analysis/c1/class_s_w1_bootstrap_honest_2026-09-02/RESULTS.md) still holds both
+facts (no partition verdict at 48/100 **and** interim 5.0% re-score with 1.14pp headroom). The
+SESSIONS-only “67-agent / 14 routes” sentence is not a campaign premise. `#1` not stolen.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— residue (queue-exception): off-queue VOLREGIME translation at Packet T
+([T0](notes/2026-09-03-volregime-translation-t0.md)).
 
 ---
 
