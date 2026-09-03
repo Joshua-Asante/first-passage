@@ -36,9 +36,9 @@ Before the first portfolio result is computed, freeze a campaign pre-registratio
    collision policy, daily loss governor, and any portfolio-level risk scale); and
 7. the random seeds, bootstrap family, block-length selection rule, the joint-flat block-boundary
    rule (Phase 3), search budget, and the confirmation set;
-8. the confirmation start date **derived** from the included strategies' final design-decision
-   dates (Phase 0 field, Phase 3 rule) and the minimum confirmation length in trading days and
-   expected trades; and
+8. the confirmation start date **derived** from the later of each included strategy's final
+   design-decision date and last result-inspection date (Phase 0 fields, Phase 3 rule) and the
+   minimum confirmation length in trading days and expected trades; and
 9. every Phase 4 screen cutoff as a number: dominance rule and margin, outlier-removal count and
    surviving floor, single-year/single-strategy dependence test, cost and slippage stress values,
    and the safety-screen threshold. No result-dependent adjective survives into the
@@ -56,7 +56,19 @@ Before the first portfolio result is computed, freeze a campaign pre-registratio
     binomial upper bound below 5% only when `N_conf ≥ ln(α/M) / ln(0.95)` — **59** at `α = 0.05`,
     `M = 1`, more for any `M > 1`. Rolling starts inside one segment overlap and do not count.
     When the derived segment cannot supply `N_conf`, the claim is frozen here as
-    *model-fitted; unfalsified on the reserved segment* and may not be called out-of-sample.
+    *model-fitted; unfalsified on the reserved segment* and may not be called out-of-sample;
+12. every Phase 6 challenge as a number: the block-length set, the commission multiplier and
+    adverse-tick values, the delay / missed-trade / outage rates, the added downside-correlation
+    and loss-clustering amounts, the top-trade / month / year removal counts, and each challenge's
+    verdict cutoff. A severity chosen after Phase 5 results are visible voids that challenge; and
+13. the Rule 2 budget in the canon's own unit
+    ([`inqhiori-canon.md` §15](../../methodology/inqhiori-canon.md)): loop class and iteration
+    count, never a time or compute figure. This campaign is **STRATEGIC** (a funding-tier decision)
+    and is composed of at most **3 constituent OUTER investigations** of **8** complete
+    attempt-and-check iterations each, with no self-extension — proposed constituents (i) intake,
+    normalization, standalone audit (Phases 0–2); (ii) frozen search and robustness (Phases 3–6);
+    (iii) confirmation and shadow parity (Phases 7–8). External spend and local core-hours are
+    disclosure lines beside the count, not the budget.
 
 If the exact 5% boundary is operational rather than statistical, report both the point-estimate
 frontier and the confidence-qualified frontier, but only the latter may be called a pass.
@@ -75,6 +87,10 @@ Create a read-only intake manifest for each of the seven strategies and exports:
   exit, or sizing rule, from the author's own record — and the overlap between development/tuning
   and the reported four-year period. An unknown date is recorded as `UNKNOWN`, never guessed;
   Phase 3 treats `UNKNOWN` as the export's last timestamp;
+- the strategy's **last result-inspection date** — the last time the author, or any tool acting
+  for them, viewed a backtest, equity curve, trade list, or summary covering any part of the
+  export, whether or not a change followed. Viewing without changing still consumes the data.
+  `UNKNOWN` is recorded, never guessed, and is treated like an unknown design-decision date;
 - whether **synchronized intraday bars** (or timestamped intratrade equity paths) exist for the
   strategy's instrument and session across the full period, as distinct from a per-trade MAE
   scalar; and
@@ -91,8 +107,8 @@ inventoried as `LOWER BOUND`-capable (the repository's existing honesty label �
 `lab/research_utils/msl_score.py`); a configuration containing it can be screened but cannot
 qualify (Phase 5, Phase 7). Never infer that an EOD-safe path is intraday-safe.
 
-**Reserve the confirmation window now, not in Phase 3.** As soon as the final design-decision dates
-exist, compute the derived confirmation start (Phase 3 rule) per strategy and per candidate inclusion
+**Reserve the confirmation window now, not in Phase 3.** As soon as the final design-decision and
+last-inspection dates exist, compute the derived confirmation start (Phase 3 rule) per strategy and per candidate inclusion
 set, split every export at that boundary, and **quarantine the reserved bytes**: a separate
 gitignored directory, SHA-256 recorded in the manifest, and a loader assertion — not a convention —
 that no Phase 1–6 code path can open them. Metadata (row count, first/last timestamp) may be read
@@ -114,7 +130,10 @@ trade list filtered to that segment). Whole-period totals are reconciled once, i
 immediately before the reserved segment is consumed; a mismatch there is `BLOCKED`, never a tuning
 opportunity. Explicitly model:
 
-- commissions, exchange/NFA fees, bid/ask spread, and adverse slippage;
+- commissions and exchange/NFA fees **per instrument** — the tier scalar `cost_per_side_usd` in
+  `core/firm_rules.py` is the index-micro row (MNQ/MYM/MES/M2K; its own comment prices MGC
+  higher), so fees resolve through the per-instrument specs in `lab/discovery/cost_model.py`,
+  never through one scalar — plus bid/ask spread and adverse slippage;
 - simultaneous positions, pyramiding, partial exits, overnight positions, and session boundaries;
 - futures point values, tick sizes, contract rolls, and quantity multipliers; and
 - the rule engine's order of operations at equal timestamps.
@@ -123,24 +142,26 @@ Acceptance tolerances are frozen before reconciliation. Material mismatches bloc
 rather than being tuned away.
 
 **Deliverable:** seven reconciliation reports, a canonical joint ledger, and deterministic tests
-for unit conversion, timestamp ordering, and firm-barrier behavior.
+for unit conversion, timestamp ordering, firm-barrier behavior, the **calendar-week inactivity
+adapter** (Phase 5), the **multi-strategy joint block builder** (Phase 3), and per-instrument fees.
 
-## Phase 2 — Audit standalone quality and dependence
+## Phase 2 — Audit standalone quality
 
 Measure each strategy without optimizing it — **on development data only**; the reserved segment
 stays quarantined (Phase 0) because every measurement here can feed an elimination: net expectancy,
 trade cadence, time in market, drawdown, tail loss, year/quarter/month stability, long/short and
-session decomposition, parameter history, and performance under higher costs. Then measure the joint
-book on the shared development chronology:
+session decomposition, parameter history, and performance under higher costs. **Standalone limbs
+only:** nothing in this phase composes two strategies, because the decision contract freezes the
+design before the first portfolio result and the pre-registration does not exist until Phase 3.
 
-- daily and intraday P&L correlation;
-- joint-loss frequency and downside-tail dependence;
-- collisions competing for the same contract cap or daily risk budget;
-- regime/common-mechanism concentration; and
-- contribution to pass speed versus contribution to bust risk.
+Use this phase to eliminate malformed, venue-illegal, or economically non-viable inputs, not to
+pick the best portfolio. Record every elimination with a reason; each rests on standalone evidence.
 
-Use this phase to eliminate malformed or economically non-viable inputs, not to pick the best
-portfolio. Record every elimination with a reason.
+The joint-book limbs — daily and intraday P&L correlation; joint-loss frequency and downside-tail
+dependence; collisions competing for the same contract cap or daily risk budget; regime /
+common-mechanism concentration; contribution to pass speed versus contribution to bust risk — are
+**portfolio results** and move to Phase 4, after the Phase 3 freeze, as its first step. They are
+recorded there and alter no frozen field.
 
 ## Phase 3 — Freeze the search and validation design
 
@@ -151,9 +172,11 @@ prioritize time integrity over maximizing the training sample and disclose the s
 sample size.
 
 **Confirmation start is derived, not chosen.** The confirmation segment begins strictly after the
-latest final design-decision date among the strategies a configuration includes (Phase 0 field).
-Recording an overlap never converts a development slice into out-of-sample data. A strategy whose
-final design decision post-dates the export, or is `UNKNOWN`, has no untouched historical segment:
+**later** of the latest final design-decision date and the latest last result-inspection date
+among the strategies a configuration includes (Phase 0 fields) — a viewed result is consumed even
+when no change followed. Recording an overlap never converts a development slice into
+out-of-sample data. A strategy for which either date post-dates the export, or is `UNKNOWN`, has no
+untouched historical segment:
 a configuration that includes it cannot qualify from historical data, and its confirmation moves to
 a reserved forward interval whose first eligible bar is strictly after the pre-registration
 commit. If the derived segment is shorter than the frozen minimum (decision contract item 8), the
@@ -165,10 +188,14 @@ entries from an unrelated block, and no position is ever forced flat to make a b
 repository's rule snapshot records `weekend_holds: False` for the Tradeify tiers
 (`core/firm_rules.py` — a configuration fact, re-verified against the Phase 0 primary-source
 capture, not engine-enforced), so calendar-week boundaries are joint-flat for every venue-legal
-strategy and match the existing week-block convention (`paired_blocks_from_daily`,
-`lab/discovery/prop_survivor_scoring.py`). Block lengths are integer weeks. A strategy that carries
-a position across a week boundary is venue-illegal and leaves in Phase 2; no state-preserving
-stitching rule is admitted under this campaign.
+strategy. The existing single-series helper (`paired_blocks_from_daily`,
+`lab/discovery/prop_survivor_scoring.py`) is the **precedent, not the tool**: it takes one
+strategy's daily arrays, replaces real dates with a synthetic business-day index, and cannot assert
+joint flatness. Phase 1 delivers a multi-strategy block builder that keeps real timestamps, aligns
+holidays and differing active dates, and asserts that every included leg is flat at every block
+edge, with tests. Block lengths are integer weeks. A strategy that carries a position across a
+week boundary is venue-illegal and leaves in Phase 2; no state-preserving stitching rule is
+admitted under this campaign.
 
 **Freeze every Phase 4 cutoff here** (decision contract item 9). Phase 4 may not run while any of
 its rejection rules is still an adjective.
@@ -188,7 +215,9 @@ search is run.
 
 ## Phase 4 — Fast deterministic screen
 
-Run every allowed configuration once on the realized **development-segment** chronology and on
+Begin with the joint-book audit deferred from Phase 2 (dependence, collisions, concentration,
+contribution), on development data, recorded but permitted to alter no frozen field. Then run
+every allowed configuration once on the realized **development-segment** chronology and on
 rolling start dates inside that segment. The confirmation segment is not loaded in this phase: a
 screen that touches it turns Phase 7 into a second look, not a confirmation. Apply the exact
 Select rules and event ordering. Reject configurations that:
@@ -212,7 +241,10 @@ offers only a scalar MAE, or nothing, is scored on the end-of-day clock and the 
 configuration's result carries the `LOWER BOUND` label; a `LOWER BOUND` result cannot qualify in
 Phase 7. Simulate every path to resolution (bust or pass) up to the frozen horizon cap and count
 paths still open at the cap as busts in every safety statistic (decision contract item 5). Include
-plausible execution stress and the actual inactivity/trading-day clock.
+plausible execution stress and the venue's **calendar-week inactivity clock** — at least one trade
+in each Monday–Friday week, the venue fact recorded in `core/firm_rules.py` — through the adapter
+tested in Phase 1, never the engine's default of consecutive idle business days (`simulate_path`
+`inactivity_limit`), which diverges on cross-week gaps and holiday-shortened weeks.
 
 Use sequential allocation of compute:
 
@@ -236,8 +268,10 @@ Challenge the shortlist with:
 - higher downside correlation and clustered-loss stress; and
 - alternative but rule-faithful same-timestamp ordering where source resolution is ambiguous.
 
-A candidate fails if it needs favorable execution, one exceptional regime, or an arbitrary
-timestamp convention to remain under the ceiling. No failed candidate is repaired by changing a
+Every severity and cutoff above is a number frozen in the Phase 3 pre-registration (decision
+contract item 12); a challenge whose parameter was chosen after Phase 5 results were visible is
+void and clears nothing. A candidate fails if it needs favorable execution, one exceptional regime,
+or an arbitrary timestamp convention to remain under the ceiling. No failed candidate is repaired by changing a
 strategy's signal parameters inside this campaign.
 
 ## Phase 7 — Locked confirmation run
@@ -263,16 +297,20 @@ distribution, so the final report must include:
 - the safety estimand `P(bust before pass)`: point estimate, numerator/denominator with
   unresolved-at-cap paths counted in the numerator, Monte Carlo standard error, and the one-sided
   95% upper bound from simulation error alone — reported, never the qualifying statistic;
-- the **qualifying bound**, which carries source-sample and model uncertainty: an outer block
-  bootstrap over the historical development weeks (B outer replicates, each re-fitted and
-  re-simulated with fresh inner seeds; the statistic is the 95th percentile of the conservative
-  bust estimate across outer replicates — the same two-level design as the repository's W1
-  bootstrap-95th packet, `lab/analysis/c1/class_s_w1_bootstrap_honest_2026-09-02/`), together with
-  the worst pre-registered Phase 6 partition (halves, leave-one-year-out). The outer-bootstrap
-  quantile is taken at `1 − α/M` under Bonferroni (the Holm bar after ordering), not a fixed 95th.
-  A configuration qualifies only if that quantile and the worst partition clear 5% **and** the
-  reserved segment does not falsify it (next bullet). If the outer bootstrap is infeasible within
-  the frozen budget, the claim is explicitly limited to *under the fitted simulation model*;
+- the **qualifying bound**, which carries source-sample, model, **and selection** uncertainty: an
+  outer block bootstrap over the historical development weeks in which **every replicate re-runs
+  the frozen Phase 4–5 selection procedure on its resampled development data** and then scores
+  whichever configuration that replicate selects (B outer replicates, fresh inner seeds — the
+  two-level design of the repository's W1 bootstrap-95th packet,
+  `lab/analysis/c1/class_s_w1_bootstrap_honest_2026-09-02/`, extended by the selection step).
+  Bootstrapping only the already-selected winner conditions on the selection and is not admitted.
+  The quantile is taken at `1 − α/M` under Bonferroni (the Holm bar after ordering), not a fixed
+  95th, and is paired with the worst pre-registered Phase 6 partition (halves,
+  leave-one-year-out). A configuration qualifies only if that quantile and the worst partition
+  clear 5% **and** the reserved segment does not falsify it (next bullet). If the
+  selection-inclusive bootstrap is infeasible within the frozen budget, only a post-selection
+  correction **named and frozen in Phase 3 with its reference** may substitute; otherwise the
+  configuration cannot qualify and the claim is limited to *under the fitted simulation model*;
 - the **reserved-segment falsifier**: one realized path per slot is one binary observation and
   cannot bound a 5% probability (zero busts in one trial leaves a one-sided 95% upper bound of
   95%). It is a falsifier, not an estimate: a bust on the reserved segment, or a realized
@@ -369,3 +407,18 @@ Second Codex pass on `459421b` (2026-09-03) raised four further P1 findings:
 | No contract-integrity / venue re-check before the one-shot confirmation | Phase 7 integrity check (hashes, selected-set commit, venue snapshot, whole-period reconciliation) |
 | One realized path treated as a 5% probability test | Contract item 11 (`N_conf` arithmetic), Phase 7 falsifier semantics, model-fitted label, Objective |
 | Phase 2 eliminations read the holdout before Phase 3 reserved it | Phase 0 reservation + quarantine with loader assertion; Phases 1–2 development-only |
+
+Third pass — Codex review of the orchestrator PR (#273, commit `6ca5577`, which carried this plan)
+raised six P1 + four P2; the eight that bind the plan land here (the other two bind the
+campaign-state artifact):
+
+| Finding | Where it now binds |
+|---|---|
+| Confirmation start ignored the last result inspection | Phase 0 field, Phase 3 derived start (later of both dates), contract item 8 |
+| Outer bootstrap conditioned on the already-selected winner | Phase 7 selection-inclusive outer bootstrap; frozen post-selection correction as the only substitute |
+| Phase 2 computed portfolio results before the Phase 3 freeze | Phase 2 standalone-only; joint-book limbs moved to Phase 4 after the freeze |
+| Phase 6 severities and cutoffs discretionary | Contract item 12, Phase 6 |
+| Inactivity described as "5 idle days" while the venue clock is calendar-week | Phase 5 calendar-week adapter, Phase 1 test |
+| `paired_blocks_from_daily` cannot build joint-flat multi-strategy blocks | Phase 3 precedent-not-tool, Phase 1 block-builder deliverable |
+| Fees taken from the index-micro tier scalar | Phase 1 per-instrument fee authority |
+| Rule 2 budget expressed in core-hours | Contract item 13 (STRATEGIC, ≤3 OUTER × 8 iterations) |
