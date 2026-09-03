@@ -33,6 +33,42 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-03f — Phase 1 returned (PR #283): gate verdict `NEEDS_CONTEXT`; Striker identities contested by the pins
+
+**Focus:** Hourly check-in found Codex's Phase 1 return — `codex/tradeify-stage1-normalization` @ `809bbb4`,
+[PR #283](https://github.com/Joshua-Asante/first-passage/pull/283) — and applied the frozen G1.1–G1.10 gate as a diff-plus-CI read with a worktree run,
+never opening vendor bytes and never merging.
+**Shipped:** [campaign-state artifact](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)
+update only — §2/§5 Phase 1 rows (`RETURNED — NEEDS_CONTEXT`), §4 verdict line, §6 D10/D11/D12, §7, §8, §9
+full read + seven-item re-anchor list. Verdict comment posted on #283; Codex prompt delivered in chat.
+**Decisions/defects:** Verified on the branch: no vendor bytes, `cost_model.py` byte-unchanged, 125/125 tests,
+gate battery exit 0, required check green, both CATALOG rows, D9 applied, pyramid field on all seven, the
+daily 16:45 ET deadline audit with Friday→Sunday as a sub-count, micro-equivalent quantities, and **all seven
+row/trade counts and net P&L figures reproduce to the cent** against the spec anchors frozen at `a51bc60`.
+Three findings hold the verdict at `NEEDS_CONTEXT`: (1) **G1.2 identity (D10)** — Rule 0 read of
+`core/strategies/PORT_MANIFEST.sha256`: the two prototype-named exports are the **pinned Q-TXG-1 sibling-swap
+bodies** (DJ30→MNQ port run on a MYM chart at pyramid 750; NAS100→MYM port run on an MNQ chart at 1000), and the
+two files named as the locked MYM/MNQ editions match **no pin** (modified bodies; DJ30 at 250, NAS100 at
+1000) — none of the four is a pinned locked venue edition, so D8's "native editions with the pyramid down"
+does not describe the set; (2) the CME early-close capture holds zero rows (D12) — the §4 cap applies;
+(3) no joint-flat block builder and no Phase 3 deferral (G1.7), plus `__init__.py` (G1.9) and the Rule 2
+iteration count (G1.10). Codex's bot added 1 P1 (tie-order causality in `_exposure_bounds`) + 5 P2, all
+worker-side. The venue audit itself is the headline: ORB-MNQ **310/681**, Vanguard MGC **226/343**, Aegis
+**9/122** trades span the 16:45 ET deadline, and per-strategy peak exposure sits at 76–80 of 80
+micro-equivalents (D11) — the exported set is not a venue-legal book at these sizes. Rule 2 count,
+provisional pending D3: constituent (i) iteration 2 of ≤8. No `core`/Pine/allocation/`dd_protection`/rail
+change. $0/K=0.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — Phase 1 `RETURNED —
+NEEDS_CONTEXT` on #283 @ `809bbb4`; operator rules D10 (Striker identities), D11 (re-express or drop the
+deadline-spanning three), D12 (early-close calendar); Codex runs the seven-item re-anchor round; orchestrator
+re-verdicts on the delta (check-in armed); D7 open pending purge · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— unchanged.
+**Live-ops state:** unchanged — c1 rail disarmed, `dry_run=true`, M1 not `RESOLVED`, no arm.
+
+---
+
 ## 2026-09-03e — Incremental Phase 1 gate read on Codex's `4c186e7`: force-flat is the daily 16:45 ET deadline
 
 **Focus:** Operator reported a new Codex push to `codex/tradeify-stage1-normalization`; ran the incremental
