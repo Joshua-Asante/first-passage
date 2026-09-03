@@ -143,18 +143,27 @@ attempt: the strategy drops.
 
 ## §6 — Falsifier
 
-**H:** the lane changes venue legality without changing edge selection — the replacements' *relative*
-ordering by any performance metric is unchanged from the superseded exports, so nothing was selected on.
+**H:** the lane changes venue legality without changing edge selection — every replacement differs from its
+predecessor by exactly the prescribed session bound, and by nothing that could have been chosen from a result.
 
-**FALSIFIED if:** the re-expressed set reorders against the superseded set on net P&L rank, **or** any
-replacement's session bound differs from the one the spec prescribes for its bar size, **or** a second
-replacement is produced for any strategy.
+⚠ **The falsifier tests process compliance, not economic outcome** (corrected 2026-09-03 after Codex's review of
+[#289](https://github.com/Joshua-Asante/first-passage/pull/289), accepted). An earlier draft would have counted
+any change in the strategies' net-P&L *ranking* as falsification. That was wrong: the deadline bites the three
+strategies by wildly different amounts — 310 of 681 ORB-MNQ trades against 9 of 122 for Aegis — so a legitimate,
+pre-declared, uniformly-applied cutoff is *expected* to reorder them. Rejecting a replacement because its
+predeclared edit had the economic effect it was always going to have would reject valid work for the wrong reason.
 
-**RESOLVED at:** the Phase 1 re-read of the replaced set, if the three replacements pass §5 and the rank
-order is preserved.
+**FALSIFIED if:** any replacement's session bound differs from the one the spec prescribes for its bar size,
+**or** its diff against the superseded body touches anything beyond the session-bound block and the entry
+guards, **or** any frozen re-export setting (date range, chart, timeframe, initial capital, commission,
+slippage, pyramiding, detalization, DEEP) differs from the superseded export's, **or** a second replacement is
+produced for any strategy.
 
-**AMBIGUOUS** (extend to Phase 2) if fewer than three replacements are produced, since a one-strategy
-comparison cannot show reordering.
+**RESOLVED at:** the Phase 1 re-read of the replaced set, if every replacement passes §5 and each diff and
+settings comparison comes back clean.
+
+**AMBIGUOUS** (extend to Phase 2) if a re-export setting cannot be recovered from the superseded export, since
+the comparison then rests on recollection rather than record.
 
 ---
 

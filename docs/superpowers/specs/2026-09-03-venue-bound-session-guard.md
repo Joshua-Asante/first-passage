@@ -82,7 +82,18 @@ venueAtOrPastFlat = venueBarOpenMin >= venueFlatFrom
 //     manufacture zero-duration trades it immediately closes.
 venueEntryBlocked = venueAtOrPastFlat
 
-// (b) forced flatten.
+// (b) retract entry orders already resting. Blocking future strategy.entry
+//     calls does NOT retract an order submitted on an earlier bar, so a
+//     resting stop or limit entry could still fill after the cutoff — and
+//     if the book is flat at the cutoff, (c) never fires to catch it.
+//     ⚠ Cancel the ENTRY ids only. strategy.cancel_all() would also cancel
+//     the pending strategy.exit stop and target, leaving the position
+//     unprotected for the bar between the signal and the fill.
+if venueAtOrPastFlat
+    strategy.cancel("L")          // <- replace with THIS script's entry ids
+    strategy.cancel("S")
+
+// (c) forced flatten.
 if venueAtOrPastFlat and strategy.position_size != 0
     strategy.close_all(comment = "VENUE_FLAT")
 // ──────────────────────────────────────────────────────────────────────────
@@ -156,8 +167,14 @@ Hold every one of these identical to the superseded export, or the replacement i
 - **Chart** the same continuous symbol (`MNQ1!`, `MGC1!`, `6J1!`) and the same 15-minute timeframe.
 - **Initial capital** the same figure the superseded export used — MGC and ORB-MNQ ran at **100K**, so keep
   100K. ⚠ See the note in §6 about the Strikers.
-- **Commission and slippage** unchanged: ORB-MNQ `$0.91`/side and 1 tick; MGC `$1.06`/side and 3 ticks;
-  Aegis `$1.30`/side and 1 tick, which is the figure its Pine declares.
+- **Commission and slippage** unchanged **from what the original export charged**, which is not always what
+  the Pine declares: ORB-MNQ `$0.91`/side and 1 tick; MGC `$1.06`/side and 3 ticks; **Aegis `$3.10`/side**
+  and 1 tick. ⚠ Aegis's Pine declares `$1.30`, but the committed manifest records
+  `export_implied_commission_per_side_usd: 3.1` and `venue_commission_per_side_usd: 3.10` — the original
+  export charged the venue figure. **Re-exporting Aegis at `$1.30` would more than halve its costs and
+  inflate the replacement's P&L**, which is a change beyond the session bound and would void the lane.
+  Leave the `PINE_EXPORT_COMMISSION_MISMATCH` and `PINE_VENUE_COMMISSION_MISMATCH` warnings standing; they
+  are inventory, not something this edit repairs.
 - **Pyramiding** unchanged: ORB-MNQ 100, MGC 80, Aegis 0.
 - **Chart timezone** `America/New_York`, as ruled in D9.
 - **Bar detalization** stays on **Default** (4 OHLC ticks), exactly as the supplied panels show. Switching to
@@ -175,8 +192,10 @@ including the commission and monthly rows.
 1. In the Strategy Tester's trade list, sort by exit time and confirm **no exit is stamped at or after
    16:45 ET**, and none at or after 12:59 ET on an early-close date.
 2. Confirm no position is carried across a weekend.
-3. Confirm the trade count *fell* relative to the superseded export. If it rose, the guard is blocking
-   exits rather than entries and has been pasted in the wrong place.
+3. Compare the trade count to the superseded export and **record** the change; do not treat it as a pass
+   criterion. A correct guard need not reduce the count — Aegis already stops entering at 13:45, so its
+   122 trades may simply exit at different timestamps. A count that *rose* is worth investigating, since
+   the guard should never create entries, but the check that decides correctness is step 1.
 4. Diff the new Pine against the superseded body and confirm the only changes are the §2 block, the
    `and not venueEntryBlocked` clauses, and — for Aegis only — the deleted old flatten.
 
