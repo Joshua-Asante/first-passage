@@ -2,6 +2,10 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Twelfth roll, 2026-09-03** (one entry, pushed off by the seven-strategy Select campaign queue-reprioritization decision):
+
+- **2026-08-24** — `Q-TRADECAP-2` closed `RESOLVED` — licensed close is frozen ID **2** (observe-only). Queue row 2 deleted (no auto-replace). No tripwire wire. [`elect-2`](../../../../../docs/adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) [`closure`](../../../../../docs/briefs/closures/Q-TRADECAP-2-closure-resolved.md)
+
 **Eleventh roll, 2026-09-02** (one entry, pushed off by the portable-edge campaign decision):
 
 - **2026-08-23** — R1's `RESOLVED — WITH NAMED RESIDUAL` disposition ratified by operator, real-time GO ("done for what's live, openly incomplete for what isn't") — `Bulenox_100K`/`BluSky_Premium_100K` fully re-measured; archived PASS-side residual stays unauthorized. [`ratification`](../../../../../docs/superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md)
