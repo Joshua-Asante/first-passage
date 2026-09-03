@@ -1,4 +1,4 @@
-# Tradeify Seven-Strategy Phase 1 Normalization Design
+# Tradeify Five-Active-Source Phase 1 Normalization Design
 
 **Status:** Approved by the operator on 2026-09-02
 **Branch:** `codex/tradeify-stage1-normalization`
@@ -7,7 +7,7 @@
 
 ## 1. Goal and scope
 
-Build a deterministic, strict reconciliation pipeline for the seven supplied TradingView Pine/CSV pairs. The pipeline folds the skipped Phase 0 inventory duties into Phase 1, converts every source row into a canonical event representation, reconstructs one accounting record per trade, validates instrument and venue constraints, and emits one aggregate reconciliation report per strategy plus a joint-ledger manifest.
+Build a deterministic, strict reconciliation pipeline for five retained TradingView Pine/CSV pairs. The pipeline folds the skipped Phase 0 inventory duties into Phase 1, converts every active source row into a canonical event representation, reconstructs one accounting record per trade, validates instrument and venue constraints, and emits one aggregate reconciliation report per strategy plus a joint-ledger manifest. Two dropped swap-port records remain provenance-only inventory.
 
 The operator explicitly skipped Phase 0. Therefore all supplied history is consumed development data. Nothing produced by this phase may be described as untouched, out-of-sample, confirmatory, qualified, admitted, or deployable.
 
@@ -21,17 +21,17 @@ The source directory is supplied at runtime and is not encoded as an absolute pa
 |---|---|---|---|---|
 | `aegis_6j1` | `6J` | `aegis_6J1.pine` (`8578ee3d760b5112bb1dd77e65a07466aee8629a9424e4115e422fdaab5aede8`) | `Aegis_6J1_CME_6J1!_2026-09-02_a0c7a.csv` (`7affdcb832db31b2d6b18b1e379b59206e7166e2a7f166fb310aaed484c69bb9`) | Pine declares `$1.30`/side while the export charges `$3.10`/side/contract |
 | `orb_mnq_recon_v7` | `MNQ` | `orb_mnq_7_reconstruction.pine` (`f05c7aa429846811149e6ff7c8e63a2fd4457075b6c45dedfc77c7e0fa76e9b4`) | `ORB-MNQ-1_recon_v7_CME_MINI_MNQ1!_2026-09-02_c1f14.csv` (`ece1eaf52db118302c6e51b1781dd47decb57f67f44d6990c4ea0ba3500281e6`) | development-tuned reconstruction; three Friday-to-Sunday holds |
-| `striker_dj30_qtxg1_swap_body_on_mym` | `MYM` | `striker_dj30_v4.5_mnq_qtxg1_prototype.pine` (`178a2a8e1c78e45a5142749f92284c09d286907a7e096883e1133297cb8a806d`) | `Striker_DJ30_MNQ_Q-TXG-1_PROTOTYPE_CBOT_MINI_MYM1!_2026-09-02_82cba.csv` (`2c2d893ba0daa127f1c857e81ec436b535e4e8eb85f0c728e2ba39dc6485826d`) | `PINNED_SWAP_PROTOTYPE`: DJ30 logic ported to MNQ, exported here on MYM at pyramid 750; literal `EXPLORATORY` chart run only, not locked/native-edition evidence or proof of correct swap-port point-value overrides |
-| `striker_dj30_native_pyramid_down_on_mym` | `MYM` | `striker_dj30_v4.5_mym.pine` (`5c4b1026cb6f3a475dba962783b2a053e9fbeb123570dd964d7154ea80b3f9d0`) | `Striker_DJ30_v4.5_MYM_CBOT_MINI_MYM1!_2026-09-02_4e60e.csv` (`7082a16d5ec8b17dafa4bf0b026c0a5dc23190de9d21d4036700f0ce97448c63`) | `UNPINNED_MODIFIED`: local byte diff against `2b895317…` changes only `pyramidSize` default 750→250; sole pyramid-down source, not a pinned locked venue edition |
-| `striker_nas100_mnq_dow_wed_excluded` | `MNQ` | `striker_nas100_v1_mnq.pine` (`d18c2699ea3856df884eced84c9384adea953f3a2470bea4f2d671b6cd294057`) | `Striker_NAS100_MNQ_CME_MINI_MNQ1!_2026-09-02_57a64.csv` (`edfe73c60b441c13855d0129dc82e830b032b7159313519d5a212a97cf30f22a`) | `UNPINNED_MODIFIED`: local byte diff against `bb921399…` changes only `allowThu` and `allowFri` defaults false→true, producing `{Mon,Tue,Thu,Fri}` versus locked `{Mon,Tue}`; a parameter cell of the NAS100 template, never the locked edition, and remains pyramid 1000 |
-| `striker_nas100_qtxg1_swap_body_on_mnq` | `MNQ` | `striker_nas100_v1_mym_qtxg1_prototype.pine` (`19264da29a3d9a30200600689e1950931f1abfb648e9071a232ee83fdec2756c`) | `Striker_NAS100_MYM_QTXG1_CME_MINI_MNQ1!_2026-09-02_304f8.csv` (`f1e35c4ee1c9735c3ebbed99648a42034d9b3f57b53960f9e41f6e6c09b25f9c`) | `PINNED_SWAP_PROTOTYPE`: NAS100 logic ported to MYM, exported here on MNQ at pyramid 1000; literal `EXPLORATORY` chart run only, not locked/native-edition evidence or proof of correct swap-port point-value overrides |
+| `striker_dj30_mym_pyramid_250` | `MYM` | `striker_dj30_v4.5_mym_pyramid_250.pine` (`5c4b1026cb6f3a475dba962783b2a053e9fbeb123570dd964d7154ea80b3f9d0`) | `Striker_DJ30_v4.5_MYM_CBOT_MINI_MYM1!_2026-09-02_4e60e.csv` (`7082a16d5ec8b17dafa4bf0b026c0a5dc23190de9d21d4036700f0ce97448c63`) | `PINNED_RESEARCH_VARIANT`, `pyramid 250% vs locked 750%`; a pyramid cell of the DJ30 template, never the locked edition |
+| `striker_nas100_mnq_dow_wed_excluded` | `MNQ` | `striker_nas100_v1_mnq_dow_wed_excluded.pine` (`d18c2699ea3856df884eced84c9384adea953f3a2470bea4f2d671b6cd294057`) | `Striker_NAS100_MNQ_CME_MINI_MNQ1!_2026-09-02_57a64.csv` (`edfe73c60b441c13855d0129dc82e830b032b7159313519d5a212a97cf30f22a`) | `PINNED_RESEARCH_VARIANT`, `day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}`; a DOW cell of the NAS100 template, never the locked edition, pyramid 1000 |
 | `vanguard_mgc_v04` | `MGC` | `Vanguard_Gold_MGC_v0.4.pine` (`ae5fd66ce51c478187c605574a03f89a64e6f8f245e77477eeaedd1efe2cf772`) | `Vanguard_Gold_Futures_v0.4_(MGC)_COMEX_MINI_MGC1!_2026-09-02_65e4e.csv` (`491d41c7168b1a9645efb74fb4ac9b898c8a6e3a5ce4c8fbbc4ddd5c9e6ced83`) | venue fee is `$2.12` round trip; continuous-symbol roll provenance remains absent |
 
-Hash mismatch, missing file, extra configured source, or filename mismatch is a hard intake error. A configured instrument disagreement is a reportable blocking issue; it is never repaired by substituting an instrument.
+Both research variants have their candidate `PORT_MANIFEST.sha256` pin refs recorded in configuration. The dropped `striker_dj30_qtxg1_swap_body_on_mym` and `striker_nas100_qtxg1_swap_body_on_mnq` records retain their original export/Pine basenames, hashes, and archive pin refs with reason `SWAP_PORT_BODY_POINT_VALUE_NOT_OVERRIDDEN`. Their 4× wrong point-value sizing interacts with cap/pyramid, is not rescalable, and is never repaired. They are provenance only, never normalized or counted.
+
+Hash mismatch, byte-length mismatch, missing file, extra configured source, or filename mismatch is a hard intake error. A configured instrument disagreement is a reportable blocking issue; it is never repaired by substituting an instrument.
 
 ## 3. Data ownership
 
-The fourteen supplied files and the generated row-level event/trade ledgers remain local and gitignored. Git receives only:
+The ten active supplied files and the generated row-level event/trade ledgers remain local and gitignored. Git receives only:
 
 - source basenames and SHA-256 pins;
 - a compact primary-source Tradeify fee capture and its SHA-256;
@@ -46,9 +46,9 @@ The campaign runner writes local material under `local_artifacts/`. The director
 
 ### 4.1 Frozen campaign configuration
 
-`phase1_config.json` defines each strategy ID, source basenames/hashes, intended instrument, instrument encoded by the export filename, Pine-declared commission/slippage/pyramiding, `pine_pin_status`, declared bar size/session/direction evidence, platform and lineage notes, quantity convention, continuous-symbol status, and `source_timezone`. `PORT_MANIFEST.sha256` is authoritative for `pine_pin_status`; its closed values distinguish pinned swap prototypes, unpinned modified bodies, and sources absent from that manifest.
+`phase1_config.json` defines each active strategy ID, source basenames/hashes/byte lengths, intended instrument, instrument encoded by the export filename, Pine-declared commission/slippage/pyramiding, `pine_pin_status`, nullable `pin_ref`, declared bar size/session/direction evidence, platform and lineage notes, quantity convention, continuous-symbol status, and `source_timezone`. It also defines a strictly validated `dropped_sources` inventory. `PORT_MANIFEST.sha256` is authoritative for pin membership; a `PINNED_RESEARCH_VARIANT` requires a nonempty divergence and candidate ref, while `NOT_IN_PORT_MANIFEST` has null ref/divergence.
 
-Operator ruling D9 freezes `source_timezone="America/New_York"` for all seven strategies. Direction, bar-size, session, venue, scalar-MAE, and synchronized-intraday-path availability remain inventoried without inferring any other missing evidence. Operator ruling D8 freezes the actual Pine pyramid values: exactly one reduced cell (DJ30 250% versus its 750% sibling); both NAS100 Pines remain 1000%. The seven exports represent five entry/exit templates.
+Operator ruling D9 freezes `source_timezone="America/New_York"` for all five active strategies. Direction, bar-size, session, venue, scalar-MAE, and synchronized-intraday-path availability remain inventoried without inferring any other missing evidence. Operator ruling D8 freezes the actual Pine pyramid values: DJ30 is a 250% research cell versus locked 750%; NAS100 remains 1000%.
 
 ### 4.2 Strict source normalization
 
@@ -56,10 +56,10 @@ Operator ruling D9 freezes `source_timezone="America/New_York"` for all seven st
 
 - accept UTF-8 with an optional BOM;
 - require each canonical column exactly once after known alias normalization;
-- retain `source_row_number`, raw timestamp text, signal text, type text, and all numeric source fields;
+- retain `source_row_number`, `source_row_sha256` (SHA-256 of exact raw CSV record bytes, including its original terminator when present), raw timestamp text, signal text, type text, and all numeric source fields;
 - parse money and quantity through `Decimal`, rejecting non-finite or malformed values;
 - classify event type and direction from `Type` without guessing unknown labels;
-- verify the configured SHA-256 before parsing;
+- verify configured byte length and SHA-256 before parsing;
 - retain the source row ordering and assign canonical order by `(timestamp_naive, source_row_number)`;
 - flag same-timestamp groups rather than inventing causal order;
 - localize the frozen `America/New_York` source wall time with `zoneinfo`, convert to UTC, and derive the configured session-timezone date;
@@ -97,9 +97,9 @@ Bid/ask spread is recorded as not separately observable in the TradingView trade
 
 Venue checks identify violations but never edit trades. `FORCE_FLAT_VIOLATION` is a blocker whenever a venue deadline instant falls in `(entry, exit]`: `16:45 America/New_York` every regular day and `12:59 America/New_York` on an allowlisted CME early-close date. `overnight_holds` is the deadline-spanning count; raw date boundaries remain separately inventoried as `cross_date_holds`. ORB-MNQ's exactly three Friday-to-Sunday holds remain in every total as a sub-count; the total force-flat violation count is whatever the daily-deadline audit yields.
 
-`cme_early_close_calendar.json` freezes the primary-source CME holiday-calendar capture over the seven exports' combined date span and is hashed with the other campaign inputs. When complete primary-source rows cannot be captured, the file and every report say `NEEDS_CONTEXT`; the runner must not infer holiday dates or silently claim complete 12:59 coverage.
+`cme_early_close_calendar.json` freezes the primary-source CME holiday-calendar capture over the five active exports' combined date span and is hashed with the other campaign inputs. When complete primary-source rows cannot be captured, the file and every report say `NEEDS_CONTEXT`; the runner must not infer holiday dates or silently claim complete 12:59 coverage.
 
-All seven exports identify continuous `1!` chart symbols rather than specific tradable contract months. Each report emits `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED`; without a roll ledger or individual-contract export, Phase 1 cannot prove which contract generated a fill or whether a fill crosses a back-adjustment seam.
+All five active exports identify continuous `1!` chart symbols rather than specific tradable contract months. Each report emits `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED`; without a roll ledger or individual-contract export, Phase 1 cannot prove which contract generated a fill or whether a fill crosses a back-adjustment seam.
 
 ### 4.5 Joint ledger and weekly adapter
 
@@ -111,13 +111,13 @@ Phase 1 delivers deterministic joint event union and ISO-week exit aggregation o
 
 ### 4.6 Campaign runner and reports
 
-`run_phase1.py` accepts `--source-dir`, `--output-dir`, and `--config`. It first verifies all fourteen files, then processes strategies independently so one blocked strategy does not erase the other reports. It writes local canonical event/trade ledgers atomically, hashes them, and writes aggregate JSON/Markdown deterministically.
+`run_phase1.py` accepts `--source-dir`, `--output-dir`, and `--config`. It first verifies the ten active files, then processes strategies independently so one blocked strategy does not erase the other reports. It writes local canonical event/trade ledgers atomically, hashes them, and writes aggregate JSON/Markdown deterministically. Aggregate outputs render five active sources plus two dropped provenance records; dropped sources never enter ledgers or weekly results.
 
 Exit codes:
 
 - `0`: run completed and all configured reports were written, even when reports contain expected reconciliation blockers;
 - `2`: invocation or configuration error;
-- `3`: source identity/schema failure prevented a complete seven-strategy run;
+- `3`: source identity/schema failure prevented a complete five-active-source run;
 - `4`: output write failure.
 
 Each strategy status is one of:
@@ -154,9 +154,9 @@ The implementation is accepted when:
 1. Synthetic tests prove strict schema/hash behavior, Decimal parsing, duplicate/orphan handling, timezone/DST handling, stable ties, tick conversion, fee-table reconciliation, overlap/cap measurement, force-flat reporting, weekly zero-fill, and deterministic output.
 2. `lab/discovery/cost_model.py` remains byte-unchanged, and the existing cost-model tests still pass.
 3. Existing production firm-barrier tests for Tradeify trailing drawdown, intraday lows, lock behavior, consistency, and horizon-cap outcomes pass and are recorded in the verification evidence.
-4. A local smoke run verifies all fourteen frozen hashes and produces seven reports plus joint-ledger hashes without committing source or row-level data.
-5. The run reports the observed row/trade counts in configuration order: Aegis `244/122`, ORB-MNQ `1362/681`, DJ30-MYM locked-pyramid `406/203`, DJ30-MYM pyramid-down `406/203`, NAS100-MNQ locked lineage `756/378`, NAS100-MNQ native variant `368/184`, Vanguard-MGC `686/343`.
-6. Aggregate net P&L reproduces to the cent: `$28,702.75`, `$47,533.16`, `$10,208.62`, `$31,770.36`, `$112,253.42`, `$170,250.58`, and `$20,388.04`, respectively.
+4. A local smoke run verifies all ten active frozen file hashes and byte lengths, produces five reports plus joint-ledger hashes, and inventories the two dropped records without committing source or row-level data.
+5. The run reports the observed row/trade counts in configuration order: Aegis `244/122`, ORB-MNQ `1362/681`, DJ30-MYM pyramid-250 `406/203`, NAS100-MNQ DOW cell `756/378`, Vanguard-MGC `686/343`.
+6. Aggregate net P&L reproduces to the cent: `$28,702.75`, `$47,533.16`, `$31,770.36`, `$112,253.42`, and `$20,388.04`, respectively.
 7. The ORB-MNQ report contains exactly three Friday-to-Sunday holds as a sub-count; its total `FORCE_FLAT_VIOLATION` count is frozen from the daily-deadline audit.
 8. Aegis reports the `$1.30` Pine setting versus `$3.10` export-implied fee as provenance warnings (`PINE_EXPORT_COMMISSION_MISMATCH` and `PINE_VENUE_COMMISSION_MISMATCH`) because the export-implied `$3.10` equals the venue fee. `EXPORT_VENUE_COMMISSION_MISMATCH` remains a blocker whenever export-implied and venue fees differ. MGC matches the primary-source `$1.06` per-side row. Both source streams remain unaltered.
 9. Every strategy reports missing contract-month/roll provenance for its continuous `1!` export.

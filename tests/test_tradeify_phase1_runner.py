@@ -1,4 +1,4 @@
-"""Synthetic end-to-end tests for the seven-strategy Phase 1 runner."""
+"""Synthetic end-to-end tests for the five-active-source Phase 1 runner."""
 
 import csv
 from hashlib import sha256
@@ -29,10 +29,8 @@ _SPEC.loader.exec_module(run_phase1)
 _FROZEN_STRATEGY_IDS = [
     "aegis_6j1",
     "orb_mnq_recon_v7",
-    "striker_dj30_qtxg1_swap_body_on_mym",
-    "striker_dj30_native_pyramid_down_on_mym",
+    "striker_dj30_mym_pyramid_250",
     "striker_nas100_mnq_dow_wed_excluded",
-    "striker_nas100_qtxg1_swap_body_on_mnq",
     "vanguard_mgc_v04",
 ]
 
@@ -108,7 +106,7 @@ def _csv_bytes(index: int) -> bytes:
     return stream.getvalue().encode("utf-8")
 
 
-def _seven_source_fixture(root: Path) -> tuple[Path, Path, list[str]]:
+def _five_source_fixture(root: Path) -> tuple[Path, Path, list[str]]:
     source_dir = root / "sources"
     campaign_dir = root / "campaign"
     source_dir.mkdir()
@@ -117,16 +115,28 @@ def _seven_source_fixture(root: Path) -> tuple[Path, Path, list[str]]:
     strategies = []
     for index, strategy_id in enumerate(strategy_ids):
         export_name = f"source_{index}.csv"
-        pine_name = f"source_{index}.pine"
+        pine_name = {
+            "striker_dj30_mym_pyramid_250": "striker_dj30_v4.5_mym_pyramid_250.pine",
+            "striker_nas100_mnq_dow_wed_excluded": "striker_nas100_v1_mnq_dow_wed_excluded.pine",
+        }.get(strategy_id, f"source_{index}.pine")
         export_bytes = _csv_bytes(index)
         pine_bytes = f"// fixture {index}\n".encode()
         (source_dir / export_name).write_bytes(export_bytes)
         (source_dir / pine_name).write_bytes(pine_bytes)
-        pin_divergence = (
-            "day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}"
-            if strategy_id == "striker_nas100_mnq_dow_wed_excluded"
-            else None
-        )
+        research_variant = {
+            "striker_dj30_mym_pyramid_250": (
+                "pyramid 250% vs locked 750%",
+                "core/strategies/PORT_MANIFEST.sha256:core/strategies/candidates/"
+                "striker_dj30_v4.5_mym_pyramid_250.pine",
+            ),
+            "striker_nas100_mnq_dow_wed_excluded": (
+                "day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}",
+                "core/strategies/PORT_MANIFEST.sha256:core/strategies/candidates/"
+                "striker_nas100_v1_mnq_dow_wed_excluded.pine",
+            ),
+        }.get(strategy_id)
+        pin_divergence = research_variant[0] if research_variant else None
+        pin_ref = research_variant[1] if research_variant else None
         strategies.append(
             {
                 "strategy_id": strategy_id,
@@ -134,8 +144,10 @@ def _seven_source_fixture(root: Path) -> tuple[Path, Path, list[str]]:
                 "encoded_instrument": "MNQ",
                 "export_filename": export_name,
                 "export_sha256": sha256(export_bytes).hexdigest(),
+                "export_bytes": len(export_bytes),
                 "pine_filename": pine_name,
                 "pine_sha256": sha256(pine_bytes).hexdigest(),
+                "pine_bytes": len(pine_bytes),
                 "source_timezone": "America/New_York",
                 "session_timezone": "America/New_York",
                 "declared_bar_size_minutes": 15,
@@ -149,8 +161,11 @@ def _seven_source_fixture(root: Path) -> tuple[Path, Path, list[str]]:
                 "pine_slippage_ticks_per_side": "1",
                 "pine_pyramiding_pct": "100",
                 "pine_pin_status": (
-                    "UNPINNED_MODIFIED" if pin_divergence else "NOT_IN_PORT_MANIFEST"
+                    "PINNED_RESEARCH_VARIANT"
+                    if pin_divergence
+                    else "NOT_IN_PORT_MANIFEST"
                 ),
+                "pin_ref": pin_ref,
                 "pin_divergence": pin_divergence,
                 "contract_cap": 80,
             }
@@ -162,6 +177,26 @@ def _seven_source_fixture(root: Path) -> tuple[Path, Path, list[str]]:
                 "claim_class": "EXPLORATORY",
                 "platform": "TradingView Strategy Tester over a continuous futures chart",
                 "strategies": strategies,
+                "dropped_sources": [
+                    {
+                        "strategy_id_as_named_before": "striker_dj30_qtxg1_swap_body_on_mym",
+                        "export_filename": "dropped_dj.csv",
+                        "export_sha256": "a" * 64,
+                        "pine_filename": "dropped_dj.pine",
+                        "pine_sha256": "b" * 64,
+                        "pin_ref": "core/strategies/PORT_MANIFEST.sha256:core/strategies/_archive/striker/dropped_dj.pine",
+                        "reason": "SWAP_PORT_BODY_POINT_VALUE_NOT_OVERRIDDEN",
+                    },
+                    {
+                        "strategy_id_as_named_before": "striker_nas100_qtxg1_swap_body_on_mnq",
+                        "export_filename": "dropped_nas.csv",
+                        "export_sha256": "c" * 64,
+                        "pine_filename": "dropped_nas.pine",
+                        "pine_sha256": "d" * 64,
+                        "pin_ref": "core/strategies/PORT_MANIFEST.sha256:core/strategies/_archive/nas/dropped_nas.pine",
+                        "reason": "SWAP_PORT_BODY_POINT_VALUE_NOT_OVERRIDDEN",
+                    },
+                ],
             }
         ),
         encoding="utf-8",
@@ -201,6 +236,10 @@ def _seven_source_fixture(root: Path) -> tuple[Path, Path, list[str]]:
     return source_dir, config, strategy_ids
 
 
+# Keep the established fixture call sites readable while its active inventory is five.
+_seven_source_fixture = _five_source_fixture
+
+
 def test_campaign_writes_local_rows_but_aggregate_contains_no_absolute_path(tmp_path):
     source_dir, config, strategy_ids = _seven_source_fixture(tmp_path)
     output_dir = tmp_path / "local_artifacts"
@@ -231,24 +270,41 @@ def test_campaign_writes_local_rows_but_aggregate_contains_no_absolute_path(tmp_
     assert str(source_dir.resolve()) not in manifest_text
     assert "EXPLORATORY" in manifest_text
     assert manifest["phase1_verdict_cap"] == "NEEDS_CONTEXT"
+    assert manifest["ledgers"]["source_row_sha256"] == {
+        "algorithm": "SHA-256",
+        "input": "exact raw CSV record bytes including original record terminator when present",
+    }
     assert manifest["git_base_commit"] == "ed181233afd01d8fc128bc76ac626e43c3761f87"
     assert [row["strategy_id"] for row in manifest["strategies"]] == strategy_ids
     modified_id = "striker_nas100_mnq_dow_wed_excluded"
     modified_divergence = "day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}"
     modified_record = next(row for row in manifest["strategies"] if row["strategy_id"] == modified_id)
-    assert modified_record["pine_pin_status"] == "UNPINNED_MODIFIED"
+    assert modified_record["pine_pin_status"] == "PINNED_RESEARCH_VARIANT"
     assert modified_record["pin_divergence"] == modified_divergence
-    assert modified_record["source_identity"]["pine_pin_status"] == "UNPINNED_MODIFIED"
+    assert modified_record["pin_ref"].endswith(
+        "striker_nas100_v1_mnq_dow_wed_excluded.pine"
+    )
+    assert modified_record["source_identity"]["pine_pin_status"] == "PINNED_RESEARCH_VARIANT"
     assert modified_record["source_identity"]["pin_divergence"] == modified_divergence
     modified_detail = json.loads(
         (output_dir / "strategy_reports" / f"{modified_id}.json").read_text(encoding="utf-8")
     )
-    assert modified_detail["source_identity"]["pine_pin_status"] == "UNPINNED_MODIFIED"
+    assert modified_detail["source_identity"]["pine_pin_status"] == "PINNED_RESEARCH_VARIANT"
     assert modified_detail["source_identity"]["pin_divergence"] == modified_divergence
     assert set(manifest["local_strategy_report_sha256"]) == set(strategy_ids)
     assert manifest["local_strategy_report_sha256"] == {
         path.stem: sha256(path.read_bytes()).hexdigest() for path in report_paths
     }
+    assert [
+        source["strategy_id_as_named_before"] for source in manifest["dropped_sources"]
+    ] == [
+        "striker_dj30_qtxg1_swap_body_on_mym",
+        "striker_nas100_qtxg1_swap_body_on_mnq",
+    ]
+    assert all(
+        source["reason"] == "SWAP_PORT_BODY_POINT_VALUE_NOT_OVERRIDDEN"
+        for source in manifest["dropped_sources"]
+    )
 
 
 def test_campaign_output_is_byte_deterministic(tmp_path):
@@ -293,15 +349,49 @@ def test_header_only_exports_complete_without_key_error_and_write_zero_trade_led
         export = source_dir / f"source_{index}.csv"
         export.write_bytes((",".join(_HEADERS) + "\n").encode("utf-8"))
         strategy["export_sha256"] = sha256(export.read_bytes()).hexdigest()
+        strategy["export_bytes"] = len(export.read_bytes())
     config.write_text(json.dumps(payload), encoding="utf-8")
 
     result = run_phase1.run_campaign(config, source_dir, tmp_path / "local_artifacts")
     manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
     trades = (tmp_path / "local_artifacts" / "canonical_trades.csv").read_text(encoding="utf-8")
 
-    assert [row["trade_count"] for row in manifest["strategies"]] == [0] * 7
+    assert [row["trade_count"] for row in manifest["strategies"]] == [0] * 5
     assert all(row["strategy_id"] in strategy_ids for row in manifest["strategies"])
     assert trades.splitlines()[0].split(",")[10] == "duration_bars"
+    events = (tmp_path / "local_artifacts" / "canonical_events.csv").read_text(encoding="utf-8")
+    assert "source_row_sha256" in events.splitlines()[0]
+
+
+def test_event_hashes_exact_raw_multiline_csv_records_with_original_terminators(tmp_path):
+    """Record hashes bind the input bytes, rather than a reconstructed CSV representation."""
+    source_dir, config, _ = _five_source_fixture(tmp_path)
+    header = (",".join(_HEADERS) + "\r\n").encode("utf-8")
+    entry = (
+        b'1,Entry long,2026-01-01 10:00,"fixture\r\nline",100.00,1,100.00,0.18,'
+        b'1.00,1.82,2.00,2.00,-1.00,-1.00,0.18,1.00,1\r\n'
+    )
+    exit = (
+        b'1,Exit long,2026-01-01 10:15,fixture,101.00,1,100.00,0.18,1.00,'
+        b'1.82,2.00,2.00,-1.00,-1.00,0.18,1.00,1'
+    )
+    payload = b"\xef\xbb\xbf" + header + entry + exit
+    export = source_dir / "source_0.csv"
+    export.write_bytes(payload)
+    config_payload = json.loads(config.read_text(encoding="utf-8"))
+    config_payload["strategies"][0]["export_sha256"] = sha256(payload).hexdigest()
+    config_payload["strategies"][0]["export_bytes"] = len(payload)
+    config.write_text(json.dumps(config_payload), encoding="utf-8")
+
+    spec = run_phase1.load_source_specs(config)[0]
+    events = run_phase1.normalize_export(run_phase1.verify_source_pair(source_dir, spec)).events
+
+    assert events["source_row_number"].tolist() == [1, 2]
+    assert events["source_row_sha256"].tolist() == [
+        sha256(entry).hexdigest(),
+        sha256(exit).hexdigest(),
+    ]
+    assert events["signal"].iloc[0] == "fixture\r\nline"
 
 
 def test_campaign_publication_rolls_back_all_targets_after_late_replace_failure(tmp_path, monkeypatch):

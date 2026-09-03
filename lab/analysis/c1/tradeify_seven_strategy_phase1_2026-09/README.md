@@ -1,24 +1,26 @@
-# Tradeify seven-strategy Phase 1 normalization
+# Tradeify five-active-source Phase 1 normalization
 
 **Theme:** c1
 
 **In-flight:** yes
 
-**Status:** ACTIVE — strict seven-strategy Tradeify source, accounting, deadline, cap, and provenance normalization
+**Status:** ACTIVE — strict five-source Tradeify source, accounting, deadline, cap, and provenance normalization
 
-Strict, deterministic `EXPLORATORY` normalization of the seven supplied Tradeify Select TradingView export/Pine pairs, with source identity, accounting, fee, daily force-flat, micro-equivalent cap, and continuous-contract provenance checks.
+Strict, deterministic `EXPLORATORY` normalization of five retained Tradeify Select TradingView export/Pine pairs, with source identity, accounting, fee, daily force-flat, micro-equivalent cap, and continuous-contract provenance checks. Two historical swap-port exports remain provenance-only dropped inventory records.
 
 Phase 0 was skipped by operator direction. All supplied history is development data: no result here is untouched, out-of-sample, confirmatory, qualified, admitted, or deployable. Phase 1 does not rank, compare, compose, bootstrap, run Monte Carlo, or rerun Pine.
 
 ## Source and output ownership
 
-The fourteen source files are provided only through `--source-dir`; their basenames and SHA-256 pins are frozen in `phase1_config.json`. The vendor bytes are never copied into this repository. Canonical event, trade, and weekly ledgers are vendor-derived and deliberately written only to the campaign's ignored `local_artifacts/` directory. Committed `reconciliation_manifest.json` and `RESULTS.md` contain aggregate values and hashes, never an absolute source path or full row-level ledger.
+The ten active source files are provided only through `--source-dir`; their basenames, SHA-256 pins, and byte lengths are frozen in `phase1_config.json`. The vendor bytes are never copied into this repository. Canonical event, trade, and weekly ledgers are vendor-derived and deliberately written only to the campaign's ignored `local_artifacts/` directory. Committed `reconciliation_manifest.json` and `RESULTS.md` contain aggregate values and hashes, never an absolute source path or full row-level ledger. Every canonical event additionally carries `source_row_sha256`, the SHA-256 of its exact raw CSV record bytes, including its original terminator where present.
 
-`source_timezone` is `America/New_York` for all seven inputs. Normalization uses `zoneinfo`, emits UTC timestamps and exchange-session dates, and rejects ambiguous or nonexistent DST wall times instead of guessing. Test commands and counts are frozen separately in `VERIFICATION.md`, which the campaign runner does not overwrite.
+`source_timezone` is `America/New_York` for all five active inputs. Normalization uses `zoneinfo`, emits UTC timestamps and exchange-session dates, and rejects ambiguous or nonexistent DST wall times instead of guessing. Test commands and counts are frozen separately in `VERIFICATION.md`, which the campaign runner does not overwrite.
 
-## Strategy lineage and pyramid inventory
+## Active and dropped identity inventory
 
-The source-grounded inventory has five entry/exit templates represented by seven exports. `core/strategies/PORT_MANIFEST.sha256` is authoritative for pin membership. `striker_dj30_native_pyramid_down_on_mym` is a provisional D10 name for the unpinned DJ30 modified body at 250%, versus 750% in the pinned swap prototype `striker_dj30_qtxg1_swap_body_on_mym`; both that ID and the two `*_swap_body_*` IDs remain provisional pending the remaining D10 naming answers. `striker_nas100_mnq_dow_wed_excluded` is an unpinned parameter cell of the NAS100 template with day-of-week set `{Mon,Tue,Thu,Fri}` versus the locked `{Mon,Tue}` set; it is never the locked edition and remains at pyramid 1000%. The swap-body sources are literal `EXPLORATORY` chart runs only: neither is locked/native-edition evidence or proof of correct swap-port point-value overrides. The source basenames and bytes are unchanged even where their historical filenames contain obsolete instrument or Q-TXG-1 labels.
+The retained inventory is exactly `aegis_6j1`, `orb_mnq_recon_v7`, `striker_dj30_mym_pyramid_250`, `striker_nas100_mnq_dow_wed_excluded`, and `vanguard_mgc_v04`, in that order. `PORT_MANIFEST.sha256` is authoritative for pin membership. The DJ body is `PINNED_RESEARCH_VARIANT` at `pyramid 250% vs locked 750%`: a pyramid cell of the DJ30 template, never the locked edition. The NAS body is `PINNED_RESEARCH_VARIANT` at `day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}`: a DOW cell of the NAS100 template, never the locked edition, with pyramid still 1000%. Their candidate pin refs and hashes are frozen in config.
+
+The two dropped records, `striker_dj30_qtxg1_swap_body_on_mym` and `striker_nas100_qtxg1_swap_body_on_mnq`, are unusable swap-port exports: point-value sizing was not overridden (a 4× mismatch interacting with cap and pyramid), cannot be rescaled, and will never be repaired. They appear only in the aggregate provenance inventory with their archive pin refs, filenames, and hashes; they are never normalized, counted, or included in ledgers, weekly results, ranking, or composition.
 
 ## Venue boundaries
 
@@ -35,7 +37,7 @@ Phase 1 delivers deterministic joint event union and ISO-week exit aggregation o
 ```powershell
 python lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/run_phase1.py `
   --config lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json `
-  --source-dir 'C:\path\to\the\fourteen\frozen\files' `
+  --source-dir 'C:\path\to\the\ten\active\frozen\files' `
   --output-dir lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts
 ```
 

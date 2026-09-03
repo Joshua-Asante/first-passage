@@ -36,8 +36,10 @@ def _spec_dict(strategy_id: str, export_filename: str, pine_filename: str) -> di
         "encoded_instrument": "MNQ",
         "export_filename": export_filename,
         "export_sha256": sha256(b"export").hexdigest(),
+        "export_bytes": len(b"export"),
         "pine_filename": pine_filename,
         "pine_sha256": sha256(b"pine").hexdigest(),
+        "pine_bytes": len(b"pine"),
         "source_timezone": None,
         "session_timezone": "America/New_York",
         "declared_bar_size_minutes": 15,
@@ -51,6 +53,7 @@ def _spec_dict(strategy_id: str, export_filename: str, pine_filename: str) -> di
         "pine_slippage_ticks_per_side": "1",
         "pine_pyramiding_pct": "100",
         "pine_pin_status": "NOT_IN_PORT_MANIFEST",
+        "pin_ref": None,
         "pin_divergence": None,
         "contract_cap": 80,
     }
@@ -67,6 +70,7 @@ def _source_spec(**overrides: object):
                 "claim_class": "EXPLORATORY",
                 "platform": "TradingView Strategy Tester over a continuous futures chart",
                 "strategies": [payload],
+                "dropped_sources": [],
             }
         ),
         encoding="utf-8",
@@ -86,6 +90,7 @@ def test_load_source_specs_rejects_duplicate_strategy_id(tmp_path):
             _spec_dict("same", "one.csv", "one.pine"),
             _spec_dict("same", "two.csv", "two.pine"),
         ],
+        "dropped_sources": [],
     }
     path = tmp_path / "config.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
@@ -102,6 +107,7 @@ def test_load_source_specs_rejects_platformless_configuration(tmp_path):
             {
                 "claim_class": "EXPLORATORY",
                 "strategies": [_spec_dict("fixture", "source.csv", "source.pine")],
+                "dropped_sources": [],
             }
         ),
         encoding="utf-8",
@@ -120,23 +126,23 @@ def test_verify_source_pair_rejects_changed_export(tmp_path):
     spec = _source_spec(
         export_sha256=sha256(b"expected").hexdigest(),
         pine_sha256=sha256(b"pine").hexdigest(),
+        export_bytes=len(b"changed"),
+        pine_bytes=len(b"pine"),
     )
 
     with pytest.raises(SourceIdentityError, match="source.csv.*SHA-256"):
         verify_source_pair(tmp_path, spec)
 
 
-def test_frozen_configuration_has_seven_continuous_source_specs():
+def test_frozen_configuration_has_five_continuous_source_specs():
     """A changed campaign pin, session inventory, or source count must be observable."""
     specs = load_source_specs(_CONFIG_PATH)
 
     assert [spec.strategy_id for spec in specs] == [
         "aegis_6j1",
         "orb_mnq_recon_v7",
-        "striker_dj30_qtxg1_swap_body_on_mym",
-        "striker_dj30_native_pyramid_down_on_mym",
+        "striker_dj30_mym_pyramid_250",
         "striker_nas100_mnq_dow_wed_excluded",
-        "striker_nas100_qtxg1_swap_body_on_mnq",
         "vanguard_mgc_v04",
     ]
     assert all(spec.source_timezone == "America/New_York" for spec in specs)
@@ -147,8 +153,8 @@ def test_frozen_configuration_has_seven_continuous_source_specs():
     assert specs[0].declared_session == "10:00-13:45 America/New_York, Mon-Wed; force-flat 16:30 America/New_York"
     assert specs[2].intended_instrument == "MYM"
     assert specs[2].encoded_instrument == "MYM"
-    assert specs[5].intended_instrument == "MNQ"
-    assert specs[5].encoded_instrument == "MNQ"
+    assert specs[3].intended_instrument == "MNQ"
+    assert specs[3].encoded_instrument == "MNQ"
 
 
 def test_frozen_configuration_records_pine_pyramiding_from_each_source():
@@ -158,10 +164,8 @@ def test_frozen_configuration_records_pine_pyramiding_from_each_source():
     assert {spec.strategy_id: spec.pine_pyramiding_pct for spec in specs} == {
         "aegis_6j1": Decimal("0"),
         "orb_mnq_recon_v7": Decimal("100"),
-        "striker_dj30_qtxg1_swap_body_on_mym": Decimal("750"),
-        "striker_dj30_native_pyramid_down_on_mym": Decimal("250"),
+        "striker_dj30_mym_pyramid_250": Decimal("250"),
         "striker_nas100_mnq_dow_wed_excluded": Decimal("1000"),
-        "striker_nas100_qtxg1_swap_body_on_mnq": Decimal("1000"),
         "vanguard_mgc_v04": Decimal("80"),
     }
     assert [spec.pine_pyramiding_pct for spec in specs].count(Decimal("250")) == 1
@@ -178,40 +182,23 @@ def test_frozen_configuration_records_manifest_derived_pin_status_and_body_ident
     } == {
         "8578ee3d760b5112bb1dd77e65a07466aee8629a9424e4115e422fdaab5aede8": "NOT_IN_PORT_MANIFEST",
         "f05c7aa429846811149e6ff7c8e63a2fd4457075b6c45dedfc77c7e0fa76e9b4": "NOT_IN_PORT_MANIFEST",
-        "178a2a8e1c78e45a5142749f92284c09d286907a7e096883e1133297cb8a806d": "PINNED_SWAP_PROTOTYPE",
-        "5c4b1026cb6f3a475dba962783b2a053e9fbeb123570dd964d7154ea80b3f9d0": "UNPINNED_MODIFIED",
-        "d18c2699ea3856df884eced84c9384adea953f3a2470bea4f2d671b6cd294057": "UNPINNED_MODIFIED",
-        "19264da29a3d9a30200600689e1950931f1abfb648e9071a232ee83fdec2756c": "PINNED_SWAP_PROTOTYPE",
+        "5c4b1026cb6f3a475dba962783b2a053e9fbeb123570dd964d7154ea80b3f9d0": "PINNED_RESEARCH_VARIANT",
+        "d18c2699ea3856df884eced84c9384adea953f3a2470bea4f2d671b6cd294057": "PINNED_RESEARCH_VARIANT",
         "ae5fd66ce51c478187c605574a03f89a64e6f8f245e77477eeaedd1efe2cf772": "NOT_IN_PORT_MANIFEST",
     }
     dj_modified = by_hash[
         "5c4b1026cb6f3a475dba962783b2a053e9fbeb123570dd964d7154ea80b3f9d0"
     ]
-    assert dj_modified.strategy_id == "striker_dj30_native_pyramid_down_on_mym"
+    assert dj_modified.strategy_id == "striker_dj30_mym_pyramid_250"
     assert dj_modified.pine_pyramiding_pct == Decimal("250")
-    assert dj_modified.pin_divergence == "pyramidSize default 250 vs pinned 750"
-    assert dj_modified.lineage_notes == (
-        "Local byte diff against 2b895317 changes only pyramidSize default 750 to 250; this DJ30 modified native body is provisional pending the remaining D10 naming answers, retained as a literal EXPLORATORY chart run rather than a pinned locked venue edition.",
-    )
+    assert dj_modified.pin_divergence == "pyramid 250% vs locked 750%"
+    assert dj_modified.pin_ref.endswith("striker_dj30_v4.5_mym_pyramid_250.pine")
     nas_modified = by_hash["d18c2699ea3856df884eced84c9384adea953f3a2470bea4f2d671b6cd294057"]
     assert nas_modified.strategy_id == "striker_nas100_mnq_dow_wed_excluded"
     assert nas_modified.pine_pyramiding_pct == Decimal("1000")
-    assert nas_modified.pine_pin_status == "UNPINNED_MODIFIED"
+    assert nas_modified.pine_pin_status == "PINNED_RESEARCH_VARIANT"
     assert nas_modified.pin_divergence == "day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}"
-    assert nas_modified.lineage_notes == (
-        "Local byte diff against bb921399 changes only allowThu and allowFri defaults from false to true, producing day-of-week set {Mon,Tue,Thu,Fri} versus locked {Mon,Tue}; this is a parameter cell of the NAS100 template, never the locked edition, and remains pyramid 1000.",
-    )
-    provisional_striker_ids = (
-        "striker_dj30_qtxg1_swap_body_on_mym",
-        "striker_dj30_native_pyramid_down_on_mym",
-        "striker_nas100_qtxg1_swap_body_on_mnq",
-    )
-    assert all(
-        "provisional pending the remaining D10 naming answers" in next(
-            spec.lineage_notes[0] for spec in specs if spec.strategy_id == strategy_id
-        )
-        for strategy_id in provisional_striker_ids
-    )
+    assert nas_modified.pin_ref.endswith("striker_nas100_v1_mnq_dow_wed_excluded.pine")
     assert all(
         "_v45" not in spec.strategy_id and "_v1" not in spec.strategy_id
         for spec in specs
@@ -225,6 +212,7 @@ def test_load_source_specs_rejects_unknown_pine_pin_status(tmp_path):
         "claim_class": "EXPLORATORY",
         "platform": "TradingView Strategy Tester over a continuous futures chart",
         "strategies": [_spec_dict("fixture", "source.csv", "source.pine")],
+        "dropped_sources": [],
     }
     payload["strategies"][0]["pine_pin_status"] = "PINNED_LOCKED_EDITION"
     path = tmp_path / "config.json"
@@ -239,7 +227,7 @@ def test_load_source_specs_rejects_unknown_pine_pin_status(tmp_path):
     [
         ("UNPINNED_MODIFIED", None, "UNPINNED_MODIFIED requires a non-empty pin_divergence"),
         ("UNPINNED_MODIFIED", "", "UNPINNED_MODIFIED requires a non-empty pin_divergence"),
-        ("NOT_IN_PORT_MANIFEST", "body changed", "pin_divergence must be null"),
+        ("NOT_IN_PORT_MANIFEST", "body changed", "NOT_IN_PORT_MANIFEST requires null"),
         ("PINNED_SWAP_PROTOTYPE", "body changed", "pin_divergence must be null"),
     ],
 )
@@ -253,6 +241,7 @@ def test_load_source_specs_couples_pin_status_to_divergence(
         "strategies": [
             _spec_dict("fixture", "source.csv", "source.pine")
         ],
+        "dropped_sources": [],
     }
     payload["strategies"][0]["pine_pin_status"] = pine_pin_status
     payload["strategies"][0]["pin_divergence"] = pin_divergence
@@ -395,6 +384,8 @@ def _verified_csv(
     spec = _source_spec(
         export_sha256=sha256(export.read_bytes()).hexdigest(),
         pine_sha256=sha256(pine.read_bytes()).hexdigest(),
+        export_bytes=len(export.read_bytes()),
+        pine_bytes=len(pine.read_bytes()),
         source_timezone=source_timezone,
     )
     return verify_source_pair(tmp_path, spec)
@@ -448,6 +439,8 @@ def test_normalize_maps_hash_pinned_malformed_utf8_to_schema_error(tmp_path):
         _source_spec(
             export_sha256=sha256(export.read_bytes()).hexdigest(),
             pine_sha256=sha256(pine.read_bytes()).hexdigest(),
+            export_bytes=len(export.read_bytes()),
+            pine_bytes=len(pine.read_bytes()),
         ),
     )
 
@@ -462,7 +455,7 @@ def test_normalize_empty_canonical_export_retains_typed_event_columns(tmp_path):
     events = normalize_export(source).events
 
     assert list(events.columns) == [
-        "strategy_id", "encoded_instrument", "source_trade_id", "source_row_number",
+        "strategy_id", "encoded_instrument", "source_trade_id", "source_row_number", "source_row_sha256",
         "timestamp_raw", "timestamp_naive", "timestamp_utc", "exchange_session_date",
         "type_raw", "event_type", "direction", "signal", "price_usd", "quantity",
         "size_value_usd", "net_pnl_usd", "return_pct", "commission_usd",

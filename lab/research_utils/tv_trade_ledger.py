@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from decimal import Decimal, InvalidOperation
 from hashlib import sha256
-from io import BytesIO, TextIOWrapper
+from io import StringIO
 import json
 from pathlib import Path
 import re
@@ -26,8 +26,10 @@ _SOURCE_KEYS = frozenset(
         "encoded_instrument",
         "export_filename",
         "export_sha256",
+        "export_bytes",
         "pine_filename",
         "pine_sha256",
+        "pine_bytes",
         "source_timezone",
         "session_timezone",
         "declared_bar_size_minutes",
@@ -41,13 +43,32 @@ _SOURCE_KEYS = frozenset(
         "pine_slippage_ticks_per_side",
         "pine_pyramiding_pct",
         "pine_pin_status",
+        "pin_ref",
         "pin_divergence",
         "contract_cap",
     }
 )
-_PINE_PIN_STATUSES = frozenset(
-    {"NOT_IN_PORT_MANIFEST", "PINNED_SWAP_PROTOTYPE", "UNPINNED_MODIFIED"}
+_DROPPED_SOURCE_KEYS = frozenset(
+    {
+        "strategy_id_as_named_before",
+        "export_filename",
+        "export_sha256",
+        "pine_filename",
+        "pine_sha256",
+        "pin_ref",
+        "reason",
+    }
 )
+_PINE_PIN_STATUSES = frozenset(
+    {
+        "NOT_IN_PORT_MANIFEST",
+        "PINNED_RESEARCH_VARIANT",
+        "PINNED_SWAP_PROTOTYPE",
+        "UNPINNED_MODIFIED",
+    }
+)
+_DROP_REASON = "SWAP_PORT_BODY_POINT_VALUE_NOT_OVERRIDDEN"
+_PORT_MANIFEST_PREFIX = "core/strategies/PORT_MANIFEST.sha256:"
 _FEE_URL = "https://help.tradeify.co/en/articles/10468315-trading-commission-fees"
 _FEE_PAGE_DATE = "2026-04-28"
 _FEE_OBSERVED_DATE = "2026-09-02"
@@ -77,6 +98,7 @@ EVENT_COLUMNS = (
     "encoded_instrument",
     "source_trade_id",
     "source_row_number",
+    "source_row_sha256",
     "timestamp_raw",
     "timestamp_naive",
     "timestamp_utc",
@@ -105,6 +127,7 @@ _EMPTY_EVENT_DTYPES = {
     "encoded_instrument": "object",
     "source_trade_id": "int64",
     "source_row_number": "int64",
+    "source_row_sha256": "object",
     "timestamp_raw": "object",
     "timestamp_naive": "datetime64[ns]",
     "timestamp_utc": "datetime64[ns, UTC]",
@@ -176,10 +199,16 @@ class SourceSpec:
     pine_slippage_ticks_per_side: Decimal
     pine_pyramiding_pct: Decimal
     pine_pin_status: Literal[
-        "NOT_IN_PORT_MANIFEST", "PINNED_SWAP_PROTOTYPE", "UNPINNED_MODIFIED"
+        "NOT_IN_PORT_MANIFEST",
+        "PINNED_RESEARCH_VARIANT",
+        "PINNED_SWAP_PROTOTYPE",
+        "UNPINNED_MODIFIED",
     ]
     pin_divergence: str | None
     contract_cap: int
+    export_bytes: int = 0
+    pine_bytes: int = 0
+    pin_ref: str | None = None
 
 
 @dataclass(frozen=True)
@@ -188,6 +217,28 @@ class VerifiedSource:
     export_path: Path
     pine_path: Path
     export_bytes: bytes
+
+
+@dataclass(frozen=True)
+class DroppedSource:
+    """A validated provenance record which is intentionally never normalized."""
+
+    strategy_id_as_named_before: str
+    export_filename: str
+    export_sha256: str
+    pine_filename: str
+    pine_sha256: str
+    pin_ref: str
+    reason: Literal["SWAP_PORT_BODY_POINT_VALUE_NOT_OVERRIDDEN"]
+
+
+@dataclass(frozen=True)
+class SourceInventory:
+    """One parsed configuration snapshot shared by active and dropped inventories."""
+
+    specs: tuple[SourceSpec, ...]
+    dropped_sources: tuple[DroppedSource, ...]
+    config_sha256: str
 
 
 @dataclass(frozen=True)
@@ -213,6 +264,17 @@ def _load_json(path: Path) -> object:
     except OSError as exc:
         raise ValueError(f"cannot read JSON configuration: {path}") from exc
     except json.JSONDecodeError as exc:
+        raise ValueError(f"invalid JSON configuration: {path}") from exc
+
+
+def _load_json_snapshot(path: Path) -> tuple[object, bytes]:
+    """Read a configuration once so consumers share both values and its digest."""
+    try:
+        raw = path.read_bytes()
+        return json.loads(raw.decode("utf-8")), raw
+    except OSError as exc:
+        raise ValueError(f"cannot read JSON configuration: {path}") from exc
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise ValueError(f"invalid JSON configuration: {path}") from exc
 
 
@@ -264,6 +326,21 @@ def _validate_filename(value: object, field: str) -> str:
     return filename
 
 
+def _validate_byte_count(value: object, field: str) -> int:
+    if type(value) is not int or value < 0:
+        raise ValueError(f"{field} must be a non-negative integer")
+    return value
+
+
+def _validate_pin_ref(value: object, field: str, *, required: bool) -> str | None:
+    if value is None and not required:
+        return None
+    reference = _require_nonempty_string(value, field)
+    if not reference.startswith(_PORT_MANIFEST_PREFIX):
+        raise ValueError(f"{field} must reference PORT_MANIFEST.sha256")
+    return reference
+
+
 def _source_spec(value: object) -> SourceSpec:
     record = _require_exact_keys(value, _SOURCE_KEYS, "strategy")
     strategy_id = _require_nonempty_string(record["strategy_id"], "strategy_id")
@@ -281,12 +358,24 @@ def _source_spec(value: object) -> SourceSpec:
             "pine_pin_status must be one of "
             f"{sorted(_PINE_PIN_STATUSES)!r}: {pine_pin_status}"
         )
+    pin_ref = _validate_pin_ref(record["pin_ref"], "pin_ref", required=False)
     pin_divergence = record["pin_divergence"]
-    if pine_pin_status == "UNPINNED_MODIFIED":
+    if pine_pin_status == "PINNED_RESEARCH_VARIANT":
+        if not isinstance(pin_divergence, str) or not pin_divergence.strip():
+            raise ValueError("PINNED_RESEARCH_VARIANT requires a non-empty pin_divergence")
+        if pin_ref is None:
+            raise ValueError("PINNED_RESEARCH_VARIANT requires a pin_ref")
+        expected_ref = f"{_PORT_MANIFEST_PREFIX}core/strategies/candidates/{record['pine_filename']}"
+        if pin_ref != expected_ref:
+            raise ValueError("PINNED_RESEARCH_VARIANT pin_ref must name its candidate Pine")
+    elif pine_pin_status == "NOT_IN_PORT_MANIFEST":
+        if pin_ref is not None or pin_divergence is not None:
+            raise ValueError("NOT_IN_PORT_MANIFEST requires null pin_ref and pin_divergence")
+    elif pine_pin_status == "UNPINNED_MODIFIED":
         if not isinstance(pin_divergence, str) or not pin_divergence.strip():
             raise ValueError("UNPINNED_MODIFIED requires a non-empty pin_divergence")
     elif pin_divergence is not None:
-        raise ValueError("pin_divergence must be null unless pine_pin_status is UNPINNED_MODIFIED")
+        raise ValueError("pin_divergence must be null unless pine_pin_status is a modified body")
     for field in ("declared_bar_size_minutes", "contract_cap"):
         if type(record[field]) is not int or record[field] <= 0:
             raise ValueError(f"{field} must be a positive integer")
@@ -305,8 +394,10 @@ def _source_spec(value: object) -> SourceSpec:
         encoded_instrument=_require_nonempty_string(record["encoded_instrument"], "encoded_instrument"),
         export_filename=_validate_filename(record["export_filename"], "export_filename"),
         export_sha256=export_hash,
+        export_bytes=_validate_byte_count(record["export_bytes"], "export_bytes"),
         pine_filename=_validate_filename(record["pine_filename"], "pine_filename"),
         pine_sha256=pine_hash,
+        pine_bytes=_validate_byte_count(record["pine_bytes"], "pine_bytes"),
         source_timezone=_validate_timezone(record["source_timezone"], "source_timezone", nullable=True),
         session_timezone=_validate_timezone(record["session_timezone"], "session_timezone", nullable=False),
         declared_bar_size_minutes=record["declared_bar_size_minutes"],
@@ -326,16 +417,49 @@ def _source_spec(value: object) -> SourceSpec:
             record["pine_pyramiding_pct"], "pine_pyramiding_pct", allow_zero=True
         ),
         pine_pin_status=pine_pin_status,
+        pin_ref=pin_ref,
         pin_divergence=pin_divergence,
         contract_cap=record["contract_cap"],
     )
 
 
-def load_source_specs(path: str | Path) -> tuple[SourceSpec, ...]:
-    """Load and validate the immutable exploratory source inventory."""
+def _dropped_source(value: object) -> DroppedSource:
+    record = _require_exact_keys(value, _DROPPED_SOURCE_KEYS, "dropped source")
+    strategy_id = _require_nonempty_string(
+        record["strategy_id_as_named_before"], "strategy_id_as_named_before"
+    )
+    export_hash = _require_nonempty_string(record["export_sha256"], "export_sha256")
+    pine_hash = _require_nonempty_string(record["pine_sha256"], "pine_sha256")
+    if not _HASH_RE.fullmatch(export_hash) or not _HASH_RE.fullmatch(pine_hash):
+        raise ValueError(f"invalid dropped source hash for {strategy_id}")
+    pine_filename = _validate_filename(record["pine_filename"], "pine_filename")
+    expected_directory = "striker" if strategy_id.startswith("striker_dj30_") else "nas"
+    expected_ref = (
+        f"{_PORT_MANIFEST_PREFIX}core/strategies/_archive/{expected_directory}/"
+        f"{pine_filename}"
+    )
+    pin_ref = _validate_pin_ref(record["pin_ref"], "pin_ref", required=True)
+    if pin_ref != expected_ref:
+        raise ValueError(f"dropped source pin_ref must name its {expected_directory} archive Pine")
+    if record["reason"] != _DROP_REASON:
+        raise ValueError(f"dropped source reason must be {_DROP_REASON}")
+    return DroppedSource(
+        strategy_id_as_named_before=strategy_id,
+        export_filename=_validate_filename(record["export_filename"], "export_filename"),
+        export_sha256=export_hash,
+        pine_filename=pine_filename,
+        pine_sha256=pine_hash,
+        pin_ref=pin_ref,
+        reason=record["reason"],
+    )
+
+
+def load_source_inventory(path: str | Path) -> SourceInventory:
+    """Load one strict snapshot of active and dropped exploratory source identities."""
+    payload_value, raw_config = _load_json_snapshot(Path(path))
     payload = _require_exact_keys(
-        _load_json(Path(path)),
-        frozenset({"claim_class", "platform", "strategies"}),
+        payload_value,
+        frozenset({"claim_class", "platform", "strategies", "dropped_sources"}),
         "source configuration",
     )
     if payload["claim_class"] != "EXPLORATORY":
@@ -345,6 +469,10 @@ def load_source_specs(path: str | Path) -> tuple[SourceSpec, ...]:
     if not isinstance(strategies, list) or not strategies:
         raise ValueError("strategies must be a non-empty array")
     specs = tuple(_source_spec(strategy) for strategy in strategies)
+    dropped_records = payload["dropped_sources"]
+    if not isinstance(dropped_records, list):
+        raise ValueError("dropped_sources must be an array")
+    dropped_sources = tuple(_dropped_source(source) for source in dropped_records)
     strategy_ids: set[str] = set()
     basenames: set[str] = set()
     for spec in specs:
@@ -355,7 +483,24 @@ def load_source_specs(path: str | Path) -> tuple[SourceSpec, ...]:
             if filename in basenames:
                 raise ValueError(f"duplicate source basename: {filename}")
             basenames.add(filename)
-    return specs
+    for source in dropped_sources:
+        if source.strategy_id_as_named_before in strategy_ids:
+            raise ValueError(f"active and dropped identity collision: {source.strategy_id_as_named_before}")
+        strategy_ids.add(source.strategy_id_as_named_before)
+        for filename in (source.export_filename, source.pine_filename):
+            if filename in basenames:
+                raise ValueError(f"duplicate source basename: {filename}")
+            basenames.add(filename)
+    return SourceInventory(
+        specs=specs,
+        dropped_sources=dropped_sources,
+        config_sha256=sha256(raw_config).hexdigest(),
+    )
+
+
+def load_source_specs(path: str | Path) -> tuple[SourceSpec, ...]:
+    """Load active specs while preserving the established narrow API."""
+    return load_source_inventory(path).specs
 
 
 def sha256_file(path: str | Path) -> str:
@@ -380,7 +525,7 @@ def _resolved_child(source_dir: Path, filename: str, kind: str) -> Path:
 
 
 def verify_source_pair(source_dir: str | Path, spec: SourceSpec) -> VerifiedSource:
-    """Verify both source files match their frozen filenames and byte hashes."""
+    """Verify both source files match their frozen filenames, sizes, and hashes."""
     root = Path(source_dir)
     export_path = _resolved_child(root, spec.export_filename, "export")
     pine_path = _resolved_child(root, spec.pine_filename, "Pine")
@@ -388,12 +533,26 @@ def verify_source_pair(source_dir: str | Path, spec: SourceSpec) -> VerifiedSour
         export_bytes = export_path.read_bytes()
     except OSError as exc:
         raise SourceIdentityError(f"cannot read export source: {export_path.name}") from exc
+    if len(export_bytes) != spec.export_bytes:
+        raise SourceIdentityError(
+            f"{export_path.name} byte length mismatch: expected {spec.export_bytes}, "
+            f"observed {len(export_bytes)}"
+        )
     observed_export = sha256(export_bytes).hexdigest()
     if observed_export != spec.export_sha256:
         raise SourceIdentityError(
             f"{export_path.name} SHA-256 mismatch: expected {spec.export_sha256}, observed {observed_export}"
         )
-    observed_pine = sha256_file(pine_path)
+    try:
+        pine_bytes = pine_path.read_bytes()
+    except OSError as exc:
+        raise SourceIdentityError(f"cannot read Pine source: {pine_path.name}") from exc
+    if len(pine_bytes) != spec.pine_bytes:
+        raise SourceIdentityError(
+            f"{pine_path.name} byte length mismatch: expected {spec.pine_bytes}, "
+            f"observed {len(pine_bytes)}"
+        )
+    observed_pine = sha256(pine_bytes).hexdigest()
     if observed_pine != spec.pine_sha256:
         raise SourceIdentityError(
             f"{pine_path.name} SHA-256 mismatch: expected {spec.pine_sha256}, observed {observed_pine}"
@@ -547,7 +706,7 @@ def _localize_unambiguous(naive: datetime, zone: ZoneInfo) -> datetime:
 
 
 def _event_record(
-    row: Mapping[str, object], source_row_number: int, spec: SourceSpec
+    row: Mapping[str, object], source_row_number: int, source_row_bytes: bytes, spec: SourceSpec
 ) -> dict[str, object]:
     timestamp_raw = row["Date and time"]
     naive_datetime = _parse_timestamp(timestamp_raw)
@@ -562,6 +721,7 @@ def _event_record(
         "encoded_instrument": spec.encoded_instrument,
         "source_trade_id": _parse_positive_integral(row["Trade number"], "Trade number"),
         "source_row_number": source_row_number,
+        "source_row_sha256": sha256(source_row_bytes).hexdigest(),
         "timestamp_raw": timestamp_raw,
         "timestamp_naive": pd.Timestamp(naive_datetime),
         "timestamp_utc": pd.NaT,
@@ -600,22 +760,73 @@ def _event_record(
     return event
 
 
+def _raw_csv_records(payload: bytes) -> list[bytes]:
+    """Split RFC-style CSV bytes without normalizing row terminators or quoted fields."""
+    records: list[bytes] = []
+    start = 0
+    index = 0
+    in_quotes = False
+    at_field_start = True
+    while index < len(payload):
+        byte = payload[index]
+        if byte == ord('"'):
+            if in_quotes and index + 1 < len(payload) and payload[index + 1] == ord('"'):
+                index += 2
+                at_field_start = False
+                continue
+            if in_quotes:
+                in_quotes = False
+            elif at_field_start:
+                in_quotes = True
+            at_field_start = False
+        elif not in_quotes and byte in (ord("\r"), ord("\n")):
+            terminator_length = 2 if byte == ord("\r") and index + 1 < len(payload) and payload[index + 1] == ord("\n") else 1
+            end = index + terminator_length
+            records.append(payload[start:end])
+            start = end
+            index = end
+            at_field_start = True
+            continue
+        elif not in_quotes and byte == ord(","):
+            at_field_start = True
+        else:
+            at_field_start = False
+        index += 1
+    if start < len(payload):
+        records.append(payload[start:])
+    return records
+
+
+def _parse_csv_record(record: bytes, *, header: bool) -> list[str]:
+    encoding = "utf-8-sig" if header else "utf-8"
+    text = record.decode(encoding)
+    rows = list(csv.reader(StringIO(text, newline="")))
+    if len(rows) != 1:
+        raise TradeExportSchemaError("CSV record parsing did not yield exactly one record")
+    return rows[0]
+
+
 def normalize_export(source: VerifiedSource) -> NormalizationResult:
     """Parse a verified TradingView export into strictly typed, stable event rows."""
     try:
-        with TextIOWrapper(BytesIO(source.export_bytes), encoding="utf-8-sig", newline="") as handle:
-            reader = csv.DictReader(handle)
-            _normalized_headers(reader.fieldnames)
-            events: list[dict[str, object]] = []
-            for source_row_number, raw in enumerate(reader, start=1):
-                if None in raw:
-                    raise TradeExportSchemaError(
-                        f"source row {source_row_number} has more fields than the header"
-                    )
-                canonical_row = {
-                    COLUMN_ALIASES.get(header, header): value for header, value in raw.items()
-                }
-                events.append(_event_record(canonical_row, source_row_number, source.spec))
+        records = _raw_csv_records(source.export_bytes)
+        if not records:
+            raise TradeExportSchemaError("CSV export has no header row")
+        headers = _normalized_headers(_parse_csv_record(records[0], header=True))
+        events: list[dict[str, object]] = []
+        for source_row_number, raw_record in enumerate(records[1:], start=1):
+            values = _parse_csv_record(raw_record, header=False)
+            if len(values) > len(headers):
+                raise TradeExportSchemaError(
+                    f"source row {source_row_number} has more fields than the header"
+                )
+            raw = dict(zip(headers, values, strict=False))
+            canonical_row = {
+                COLUMN_ALIASES.get(header, header): value for header, value in raw.items()
+            }
+            events.append(
+                _event_record(canonical_row, source_row_number, raw_record, source.spec)
+            )
     except UnicodeDecodeError as exc:
         raise TradeExportSchemaError(
             f"TradingView export is not valid UTF-8: {source.export_path.name}"
