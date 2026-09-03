@@ -452,7 +452,7 @@ plan land here (the other three bind the campaign-state artifact):
 | Finding | Where it now binds |
 |---|---|
 | Outer bootstrap scored only each replicate's winner, not ranks 2…`M` | Phase 7: every selected slot scored per replicate, slot-specific `1 − α/M` bounds |
-| Book search across distinct templates without candidate contracts | Contract item 14, Phase 3 seven per-template contracts, discriminator ceiling |
+| Book search across distinct templates without candidate contracts | Contract item 14, Phase 3 per-template contracts (seven at ratification; **five** since the operator's D10 (ii) ruling of 2026-09-03 dropped the two mis-sized swap-port exports — count owned by the [campaign-state artifact](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) §2/§6), discriminator ceiling |
 | `cost_model.resolve_commission` raises for MGC; specs are geometry, not fees | Phase 1 per-instrument commission table deliverable (primary source, reconciled to `firm_rules` comments) |
 | Whole-period reconciliation read reserved P&L before the "unconsumed" promise | Phase 1, Phase 7: pre-access check is hash + development-only; whole-period reconciliation inside the single atomic read, `EVIDENCE-VOID` on mismatch |
 | Handoff labels used where terminal verdicts belong | Phase 7 terminal-taxonomy vocabulary; handoff labels declared nonterminal |
