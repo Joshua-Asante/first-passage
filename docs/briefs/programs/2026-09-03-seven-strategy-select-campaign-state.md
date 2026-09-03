@@ -404,6 +404,10 @@ finding; it sets the scale of the sizing haircut Phase 2 will have to find, and 
 and lifecycle-multiplier work cannot be deferred past the freeze.
 
 **Inventory recorded with the anchors:** `Script execution` reads **2** for MGC, DJ30 and NAS100 and **1**
-for ORB-MNQ and Aegis. The panels' span ends **2026-09-02**, one day past the committed
+for ORB-MNQ and Aegis. Per the repo's Pine skill that dropdown is the **calculation-events** setting, not a
+warning count — `On bar close` is always on, so a reading of 2 means one additional calc event is enabled on
+those three. It is a fill-realism difference between the panels and belongs in each entry's lineage note; Codex
+records it as `tv_script_execution_events` in the config. All five panels are **DEEP** with **Default**
+detalization (4 OHLC ticks), which must not drift on any re-export. The panels' span ends **2026-09-02**, one day past the committed
 `coverage_end: 2026-09-01` in `cme_early_close_calendar.json` — Codex extends the coverage span to
 2026-09-02 so the calendar covers every exported session.

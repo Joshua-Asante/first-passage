@@ -46,6 +46,13 @@ signal bar is the last safe one, and the same arithmetic gives 12:15 on an early
 ## §2 — The block to paste
 
 Insert once, after the strategy's inputs and before its entry/exit logic. Nothing above it changes.
+Pine **v6** throughout (`//@version=6`), so keep each ternary on one line and indent every continuation line
+further than the line it continues — the two syntax rules this repo's Pine skill flags first.
+
+The early-close set is carried as a **comma-delimited string**, not `array.from`. A fixed list of roughly forty
+dates is near the practical argument count for a variadic call, and the delimited-string lookup has no such
+limit and is trivially eyeballed. The leading and trailing commas matter: without them a date could match as a
+substring of a neighbouring token.
 
 ```pine
 // ─── Venue session bound — Tradeify_Select_100K ───────────────────────────
@@ -60,14 +67,13 @@ VENUE_TZ = "America/New_York"
 VENUE_FLAT_REGULAR = 16 * 60 + 0
 VENUE_FLAT_SHORT   = 12 * 60 + 15
 
-// CME early-close dates as YYYYMMDD, covering the export span.
+// CME early-close dates as YYYYMMDD, comma-delimited with leading and
+// trailing commas so a lookup can never match a partial token.
 // Generated — see ops/calendars/cme_holiday_calendar.json. Do not hand-edit.
-var int[] venueEarlyCloseDates = array.from(
-  // <<< PASTE THE GENERATED LIST HERE >>>
-  )
+var string VENUE_EARLY_CLOSE = ",<<< PASTE THE GENERATED LIST HERE >>>,"
 
 venueYmd = year(time, VENUE_TZ) * 10000 + month(time, VENUE_TZ) * 100 + dayofmonth(time, VENUE_TZ)
-venueIsShortDay = array.includes(venueEarlyCloseDates, venueYmd)
+venueIsShortDay = str.contains(VENUE_EARLY_CLOSE, "," + str.tostring(venueYmd) + ",")
 venueBarOpenMin = hour(time, VENUE_TZ) * 60 + minute(time, VENUE_TZ)
 venueFlatFrom   = venueIsShortDay ? VENUE_FLAT_SHORT : VENUE_FLAT_REGULAR
 venueAtOrPastFlat = venueBarOpenMin >= venueFlatFrom
@@ -154,6 +160,10 @@ Hold every one of these identical to the superseded export, or the replacement i
   Aegis `$1.30`/side and 1 tick, which is the figure its Pine declares.
 - **Pyramiding** unchanged: ORB-MNQ 100, MGC 80, Aegis 0.
 - **Chart timezone** `America/New_York`, as ruled in D9.
+- **Bar detalization** stays on **Default** (4 OHLC ticks), exactly as the supplied panels show. Switching to
+  `High` pulls a lower timeframe for intrabar fills and would change the fills themselves, which is a different
+  measurement, not a re-expression.
+- **DEEP** backtest stays on. Regular mode trims at 9,000 trades; Deep holds up to 1M.
 
 Then send me, per strategy: the export CSV, the new Pine file, and the **Performance Summary** screenshot
 including the commission and monthly rows.
@@ -175,3 +185,22 @@ capital while the campaign targets a **$100K** Select account. That does not aff
 this spec, and I am not asking you to change it here, but it means the Striker exports' position sizes are
 not the sizes a 100K account would produce. I have raised it in the campaign-state artifact as its own
 decision item; it will need its own ruling before Phase 2.
+
+---
+
+## §7 — One convention deliberately not adopted, and why
+
+The repo's Pine skill carries the **config-fingerprint convention**
+([ADR 2026-06-11](../../adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md), proposal P3): active-derivation
+strategy scripts embed a `[cfgNN]` tag in the strategy title so an export filename self-identifies its
+configuration, and existing scripts adopt "at their next legitimate edit" — which this edit is.
+
+**These three editions do not adopt it**, on the convention's own stated exemption for frozen and pre-registered
+scripts, whose "exports are identified by the pre-registration itself". This campaign pins **both** the Pine body
+and the export by SHA-256 in `phase1_config.json` and verifies them at load, which is strictly stronger than a
+title tag: a tag catches a mislabeled export, a hash catches any altered byte. Adopting the tag would also change
+each strategy's title, hence its export filename, hence a field the frozen config already pins — churning the
+freeze to gain a weaker check.
+
+Flagging it rather than deciding silently: if the operator wants the tag adopted anyway, say so **before** the
+re-export, because it changes the export filenames that get pinned.
