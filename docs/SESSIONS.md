@@ -63,12 +63,16 @@ on `weekend_holds: False`, a config fact **not engine-enforced** — re-verified
 assumed. No queue row opened (operator call, D2); the Rule-2 budget is now stated in iterations (plan
 contract item 13) with the operator confirming its three constituents (D3);
 its relation to queue row 1's cultivation envelope is unruled (D4) — Phase 0 is inventory-only and
-safe under either reading. No `core/`/Pine/allocation/`dd_protection`/rail change. $0/K=0.
+safe under either reading. **Gate review of the pushed `codex/mym-breakout-research` (`706a03e`): `FAIL`** —
+no intake deliverables (zero of seven strategies) and ~100 MB of vendor-derived CSVs committed on a
+public ref; base 68 commits behind `main`. D7 (purge) raised; `.gitignore` hardened for
+`workspace_inputs/` / `workspace_outputs/`; §9 re-dispatch packet authored. No
+`core/`/Pine/allocation/`dd_protection`/rail change. $0/K=0.
 **Open / next:** STATE queue: `#1` [Find a viable trading strategy — portable-edge cultivation
 campaign](superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md) · `#2` [B7-REFIRE Stage 1
 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
-— both unchanged. `queue-exception: orchestrator-takeover` — Phase 0 gate review fires when the
-Codex PR lands (check-in scheduled); operator decisions D1–D6 sit in the campaign-state artifact.
+— both unchanged. `queue-exception: orchestrator-takeover` — Phase 0 gate review returned `FAIL` on
+the pushed branch — re-dispatch owed after D7 (check-in armed); operator decisions D1–D7 sit in the campaign-state artifact.
 
 ---
 

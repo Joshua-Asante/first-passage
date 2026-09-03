@@ -1,6 +1,6 @@
 # Seven-strategy Select configuration campaign — campaign state (orchestrator-only writes)
 
-**Status:** `PHASE 0 IN FLIGHT (Codex) · PHASE-0 GATE FROZEN · PLAN REVIEW FOLDED (PR #272 open)`
+**Status:** `PHASE 0 GATE: FAIL — re-dispatch owed (§9) · VENDOR BYTES ON A PUBLIC REF (§6 D7) · PLAN REVIEW FOLDED ×3 (PR #272 open)`
 **Last curated:** 2026-09-03 (orchestrator session `claude/orchestrator-role-takeover-yza7vp`)
 **Parent plan:** [`2026-09-02-seven-strategy-tradeify-select-configuration.md`](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
 (PR [#272](https://github.com/Joshua-Asante/first-passage/pull/272) — **open, not merged** as of
@@ -35,7 +35,7 @@ CAVEATS / REFUTED`.
 | Phase | Gate to leave it | Status | Holder | Evidence |
 |---|---|---|---|---|
 | Plan | Codex review folded; operator merge | **REVIEW FOLDED ×3** — merge pending (§6 D1) | operator | PR #272 @ `e8694a9` (also carried by this branch) |
-| 0 — Receive and inventory | §4 gate below, verdict `PASS` | **IN FLIGHT** (Codex, `codex/mym-breakout-research`, operator-reported 2026-09-03; branch not yet on `origin` at curation) | Codex → orchestrator review | — |
+| 0 — Receive and inventory | §4 gate below, verdict `PASS` | **FAIL** (2026-09-03 gate review of `codex/mym-breakout-research` @ `706a03e`) — **G0.1:** no `INTAKE.md`, manifest, or discrepancy report; zero of seven strategies inventoried. **G0.3:** three vendor-derived CSVs (~100 MB) committed under `workspace_inputs/` / `workspace_outputs/` on a public ref. Re-dispatch per §9 after §6 D7 | Codex → orchestrator review | §8 ledger, 2026-09-03 gate review |
 | 1 — Normalize and reproduce | seven reconciliation reports within frozen tolerances; joint ledger; tests | QUEUED (blocked on 0) | Codex | — |
 | 2 — Standalone quality (joint-book limbs moved to Phase 4, after the freeze) | eliminations recorded with reasons on standalone evidence; no portfolio result computed | QUEUED | Codex + orchestrator | — |
 | 3 — Freeze search + validation design | pre-registration committed **before** any Phase 4 run; contract items 1–9 all numeric; operator ratifies | QUEUED (orchestrator authors; `pre-ratification-adversarial-panel` before ratification) | orchestrator → operator | — |
@@ -93,8 +93,9 @@ only where a claim matters if wrong). Verdicts: **`PASS`** (Phase 1 unlocked) ·
 |---|---|---|---|---|
 | Campaign plan | Codex (operator task) | **REVIEWED** — three passes folded | #272 @ `e8694a9` | pass 1: six P1 + one P2 (Phases 0/3/4/5/7, contract items 3/5/8/9); pass 2: four P1 (multiplicity `α`/`M`/procedure, pre-confirmation integrity check, one-path falsifier semantics + `N_conf`, holdout reserved at intake — contract items 10/11, Phases 0/1/2/7); pass 3 (Codex review of #273): eight plan-binding findings — last-inspection date, selection-inclusive outer bootstrap, Phase 2 standalone-only, numeric Phase 6, calendar-week inactivity adapter, joint block builder, per-instrument fees, Rule 2 in iterations (contract items 12/13); three reconciliation tables in the plan |
 | Orchestrator takeover; this file; Phase 0 gate | orchestrator session 2026-09-03 | **DONE** (pending merge) | this branch | gate frozen before any Phase 0 output was read |
-| Phase 0 intake | Codex, `codex/mym-breakout-research` | **DISPATCHED** (operator-reported; pre-dates both review passes — expect G0.2's three new fields, G0.4's direction check, and G0.10's reserved-window record to need one re-anchor) | pending | branch not on `origin` at curation |
-| Phase 0 gate review | orchestrator | **QUEUED** — fires when the Codex PR appears | — | check-in scheduled from the takeover session |
+| Phase 0 intake (first return) | Codex, `codex/mym-breakout-research` @ `706a03e` | **RETURNED — FAIL** (G0.1, G0.3) | no PR | pushed by the operator 2026-09-03: one commit on a base **68 commits behind `main`** (pre-dates PR #259's merge). Content: vet-intake notes for `ORB-MYM-SCALE-1` (`docs/notes/2026-09-01-orb-mym-scale-vet-intake.md`, `2026-09-02-next-vet-candidate-assessment.md`, a three-speed-spec paragraph) plus the raw TV bar export, the parsed `MYM_M15.csv`, and the 60-cell trade ledger. Not a seven-strategy intake |
+| Phase 0 gate review | orchestrator | **DONE — `FAIL`** (this session) | — | §4 applied as a diff read; vendor files were opened only to two header lines each for content-class identification, no statistic computed |
+| Phase 0 re-dispatch packet | orchestrator | **AUTHORED** (§9) — blocked on §6 D7 | — | operator pastes to Codex; the packet carries its own Phase-0 staleness check and the intake-directory rule |
 | Campaign pre-registration (contract items 1–9; Phase 3 deliverable) | orchestrator authors → adversarial panel → operator ratifies | **QUEUED** | — | must exist before any Phase 4 run |
 | Phases 1–8 | per §2 | **QUEUED** | — | — |
 
@@ -110,14 +111,17 @@ undetermined until §6 D3. **Defects / invalidations:** none; no prior output ex
 | D3 | Rule 2 budget — confirm the classification | Rule 2 counts complete attempt-and-check iterations under the INNER/OUTER/STRATEGIC 3/8/3 limits ([canon §15](../../methodology/inqhiori-canon.md)); a core-hour figure is not a budget. Plan contract item 13 now proposes **STRATEGIC, ≤3 constituent OUTER investigations × 8 iterations, no self-extension** | Confirm item 13's three constituents; keep $0 external data and any core-hour figure as disclosure lines only. Phase 0 is iteration 1 of constituent (i) |
 | D4 | Relation to queue row 1 (portable-edge cultivation, 2–3 day clock from 2026-09-02, ≤1 candidate contract, ≤3 seats) | Seven *supplied* strategies are complete expressions — the cultivation plan's seats B/C class — but the configuration search is a book-composition objective the cultivation envelope does not name | Rule it a **separate program** under its own envelope (this file); Phase 0 is inventory-only and safe under either reading, so no work waits on D4 |
 | D5 | 5% ceiling vs 2026-07-22 §4-withdrawal ADR §5 | Flagged unruled in `SESSIONS 2026-09-02c`; Phase 7 cannot call a pass while the ceiling's own provenance is contested | One-line ruling before Phase 3 ratification |
+| D7 | **Purge the vendor bytes from the public remote** | `706a03e` on `origin/codex/mym-breakout-research` carries the raw TV bar export (`BAR_EXPORT_v0.2_CBOT_MINI_MYM1!_2026-09-01_1b59b.csv`, sha256 `16e8ded6…`, pinned in no tracked manifest), the parsed `MYM_M15.csv`, and `all_declared_trades.csv` (which PR #259's RESULTS declared local-only for carrying vendor-derived prices/timestamps). The orchestrator does not rewrite another author's branch | Delete the remote ref, or force-push the branch without `workspace_inputs/` and `workspace_outputs/`; then ask GitHub support to purge the unreachable objects. #273 lands the `.gitignore` hardening so those roots can never be committed again. Confirm where Codex's actual seven-strategy intake lives (likely uncommitted in its sandbox) before re-dispatching |
 | D6 | The seven strategies' identities and the intake path | Plan §Immediate next action; only the operator holds the files | Deliver to Codex's intake dir (gitignored); the Phase 0 manifest carries hashes into this file |
 
 ## §7 Next exact commands (orchestrator, next session)
 
 ```bash
 git fetch origin
-git ls-remote --heads origin | grep -E 'codex/mym-breakout-research'          # Phase 0 branch landed?
-# When the Phase 0 PR exists: read its file list + CI, apply §4 G0.1–G0.9 as a diff read,
+git ls-remote --heads origin | grep -E 'codex/'                               # re-dispatched Phase 0 branch?
+# D7 first: confirm the vendor bytes are gone from origin/codex/mym-breakout-research (or the ref is deleted):
+git fetch origin && git ls-tree -r -l origin/codex/mym-breakout-research | awk '$4 > 1000000'   # expect empty
+# When the re-dispatched Phase 0 PR exists: read its file list + CI, apply §4 G0.1–G0.10 as a diff read,
 # then record verdict + actual study path in §2/§5 and (on PASS) unlock Phase 1.
 python scripts/gate_manifest.py --tier pre-commit                            # before any integration commit
 ```
@@ -132,4 +136,58 @@ python scripts/gate_manifest.py --tier pre-commit                            # b
 | 2026-09-03 | Review findings folded at `459421b`; threads resolved; summary comment posted | plan `REVIEW FOLDED` |
 | 2026-09-03 | §4 Phase 0 gate frozen before any Phase 0 output was read; §3 authorities pinned; §6 D1–D6 raised | state `PHASE 0 IN FLIGHT` |
 | 2026-09-03 | Second Codex pass on `459421b` — four P1 (shortlist multiplicity; pre-confirmation integrity check; one realized path is not a 5% test; holdout must be reserved before Phase 2) folded at `78c82de`; G0.10 added to the Phase 0 gate, still before any Phase 0 output was read | plan `REVIEW FOLDED ×2` |
+| 2026-09-03 | Operator pushed `codex/mym-breakout-research` @ `706a03e`. Gate review: **FAIL** — G0.1 (no intake deliverables; zero strategies) and G0.3 (vendor bytes committed: raw export 67 MB, parsed panel 10 MB, trade ledger 23 MB — all three roots un-ignored on `main`). Base 68 commits behind `main`; its doc changes concern the `ORB-MYM-SCALE-1` vet intake and the three-speed spec, not this campaign | Phase 0 `FAIL`; D7 raised; `.gitignore` hardened in #273; §9 re-dispatch packet authored |
 | 2026-09-03 | Codex review of #273 (`6ca5577`): six P1 + four P2 — eight bind the plan (folded at `e8694a9`), two bind this file (D1 merge order; D3 in iterations). §3/§4 corrected on verified source: engine inactivity is consecutive-idle-days vs the venue's calendar week; `cost_per_side_usd` is the index-micro row; `paired_blocks_from_daily` is single-series; `pair_tv_export_dataframe` raises on shorts; G0.2 gains the last-inspection field | plan `REVIEW FOLDED ×3` |
+
+## §9 Phase 0 dispatch packet (Codex) — copy/paste after §6 D7 clears
+
+```text
+You are executing Phase 0 ONLY of docs/superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md
+(read it from disk at the current head of codex/plan-phases-for-tradeify-select-evaluation or main — whichever
+carries commit e8694a9 or later; if neither does, stop and return NEEDS_CONTEXT). The acceptance gate you will be
+judged against is §4 G0.1–G0.10 of docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md — read
+it in full before writing anything.
+
+PHASE-0 STALENESS CHECK (run first; stop with NEEDS_CONTEXT on any miss)
+- git fetch origin && git log --oneline -1 origin/main ; branch from CURRENT origin/main, never from an old sandbox base.
+- The seven strategy files and seven backtest exports are visible at the intake path the operator gives you.
+  If fewer than 14 inputs are visible, return NEEDS_CONTEXT naming exactly which are missing. Do not substitute.
+
+INTAKE DIRECTORY RULE (G0.3 — a miss is FAIL and a public-repo breach)
+- Stage every input under lab/analysis/c1/seven_strategy_select_config_2026-09/inputs/ . That path is gitignored for
+  *.csv and *.pine by the repository's standing rules. Never write inputs under workspace_inputs/, workspace_outputs/,
+  or any other root; never `git add -f`; before committing run `git ls-tree -r -l --cached HEAD | awk '$4 > 1000000'`
+  and `git status --short | grep -E '\.(csv|pine)$'` — both must be empty.
+- The manifest carries SHA-256, byte size, row count, first/last timestamp for every input. Hashes, never bytes.
+
+DELIVERABLES (all four, or the phase is not complete)
+1. INTAKE.md — one section per strategy with every plan Phase 0 field, including: final design-decision date,
+   last result-inspection date (UNKNOWN allowed, never guessed), direction, and whether synchronized intraday bars
+   or timestamped intratrade paths exist. Label each strategy decision-grade-capable or LOWER BOUND-capable.
+2. intake_manifest.json — machine-readable mirror of (1) plus input hashes and the loader used per input.
+3. DISCREPANCIES.md — every strategy-file ↔ export mismatch (symbol, session, quantity convention, gross/net,
+   commission/slippage settings); if none, list the checks run.
+4. The reserved-window record (G0.10): the derived confirmation boundary per strategy (later of the two dates),
+   the quarantined confirmation files under inputs/reserved/ with their hashes, and a loader-assertion test proving
+   Phase 1–6 code cannot open them.
+
+LOADERS (G0.4): long-only TV trade exports through core/tv_export_loader.py; bars through scripts/parse_bar_export.py.
+A short or two-sided export is recorded LOADER-BLOCKED with a hand-paired fixture; do not write an alternative parser.
+
+CONTAMINATION RECORD (G0.6): for each strategy, state development/tuning overlap with the export AND whether it belongs
+to a family already studied in this repository (lab/analysis/mym_breakout_entry_2026_09/ consumed its 2025→2026-07
+holdout; lab/analysis/orb/orb_mym_volume_gate_2026-09-02/ is fully viewed). A consumed interval cannot be reserved.
+
+FORBIDDEN (any one is FAIL)
+- Ranking, ordering, or comparing strategies by return/PF/drawdown; scoring any payoff cell; any Monte Carlo run.
+- Computing any P&L, drawdown, cadence, or trade statistic on the reserved (confirmation) segment.
+- Editing STATE.md, docs/SESSIONS.md, any ADR, the plan, or the campaign-state artifact (orchestrator-only).
+- Repairing or "cleaning" source rows; inferring EOD-safe ⇒ intraday-safe.
+
+RETURN CONTRACT
+- Register the study directory in lab/CATALOG.md; add __init__.py if tests ship; run
+  `python scripts/gate_manifest.py --tier pre-commit` and paste its exit code.
+- Open a PR from a fresh codex/* branch off current origin/main, titled
+  "research(c1): seven-strategy Select — Phase 0 intake". First line of the description:
+  `PHASE0 <DONE|DONE_WITH_CONCERNS|NEEDS_CONTEXT|BLOCKED> — $0 · K=0 · MC=none — <one-clause outcome>`.
+```
