@@ -69,6 +69,41 @@ campaign](superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md) ·
 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
 — both unchanged. `queue-exception: orchestrator-takeover` — Phase 0 gate review fires when the
 Codex PR lands (check-in scheduled); operator decisions D1–D6 sit in the campaign-state artifact.
+
+---
+
+## 2026-09-02d — PR #260's second review round landed; the finals grid made crash-resilient
+
+**Focus:** Operator asked to check the Codex review on [PR #260](https://github.com/Joshua-Asante/first-passage/pull/260)
+and push the fixes. Two rounds ran; this entry covers round 2 and the harness defect that
+regenerating the artifacts exposed.
+**Shipped:** [`tradeify_book_composition_2026-09`](../lab/analysis/c1/tradeify_book_composition_2026-09/)
+round-2 corrections — `roll_to_session` (non-session P&L), an Eastern-time MOC print cutoff, and a
+`verdict()` that reads both `grid_final.json` and `controls.json` instead of embedding either;
+plus `_run_checkpointed` in `book_grid.py`, making the finals stage chunked and resumable. All six
+artifacts regenerated under the fixed code, then `RESULTS.md` / `THIRD_LEG_MINIMUM.md` and the
+README break-even table re-rendered from them.
+[`test_book_grid_session_rolling.py`](../tests/lab/test_book_grid_session_rolling.py) (11 cases) ·
+[`test_book_grid_checkpointing.py`](../tests/lab/test_book_grid_checkpointing.py) (8 cases) — 27 green.
+**Decisions/defects:** 10 findings across the two Codex rounds, **every one verified real, none a
+false positive, no campaign verdict changed.** Round 2's load-bearing find: P&L booked on a
+non-session date was silently dropped by the `bdate_range` reindex — **6 trades, −210.92 per
+contract of real losses** — which round 1 only *disclosed*, on the stated grounds that the grids
+were mid-run; Codex correctly pushed back that a committed grid must not omit real losses, and by
+then that reason had expired. Restoring them moved bust **up in 10 of 12 finalist cells and down in
+0**, by at most 0.55 pp; the 2 unchanged cells are the Aegis-only books, which hold no multi-day
+trades. The ET-cutoff bug was **latent — 0 selections changed** across all 72 EST days. The
+finals stage separately proved unable to survive its own regeneration: run flat it lost two
+consecutive ~40-minute runs to loky worker death on 16 GB, leaving `grid_final.json` stale while
+its own code had changed — the defect round 1 caught, recurring. **Own defect, non-code:**
+diagnosed a healthy job as dead via Git Bash `kill -0` on a Windows PID (different process
+namespace), after which two finals runs raced one output file for 9 minutes; recorded to memory.
+PR #260 merged mid-session, so these corrections land on a fresh branch and a new PR.
+**Open / next:** STATE queue: `#1` [Find a viable trading strategy — portable-edge cultivation
+campaign](superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md) · `#2` [B7-REFIRE Stage 1
++ M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— both formally unchanged by this session; still EXPLORATORY, no pre-registration, no K ledger
+entry, no candidate contract, $0 spend.
 **Live-ops state:** unchanged — c1 rail disarmed, `dry_run=true`, M1 not `RESOLVED`, no arm.
 
 ---
