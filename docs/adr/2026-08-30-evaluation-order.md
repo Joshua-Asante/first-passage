@@ -393,9 +393,53 @@ state-drift re-check script (§7, separate implementation handoff) · any edit t
 
 ---
 
+## Addendum 2026-09-03 — canonical-owner cross-reference: `PIPELINES.md` P1 and the throughline diagram now point here; this ADR's decision text is unedited
+
+**Status of this addendum: informational, no decision-text change (Trap #12 — §2's decision stands
+byte-stable).** Filed to close a gap the pipeline-diagram re-audits named without fixing: PR #262's
+`open_gaps` entry (carried unresolved into PR #264) read *"Three competing decompositions of one
+pipeline now coexist: this map's 12 phases, `PIPELINES.md`'s Stage 2→8..., and `evaluation-order`'s 10
+steps. None cross-references the others."*
+
+This ADR is the **single canonical owner** of pipeline step ordering — its own title says so, and §2
+states it as "one canonical ordered pipeline." `PIPELINES.md` P1 now points here explicitly and
+separates three things that were previously conflated: (1) its own Stage 2→8 labels (`MINE`/`BIND K`/
+`SCORE`/.../`ADMIT`) are legacy research-activity vocabulary, not a rival ordering authority; (2) each
+channel's freeze-chain documents (seed manifest → intake screen → Stage-0 preregistration) are a
+narrower, separate concern — the *artifact format* a candidate is recorded in, which per
+`2026-08-30-candidate-contract.md` §6 stays "the channel's existing documents... its live practice"
+until that channel's own dated migration addendum lands; (3) this ADR's own ten-step order, whose §2
+effectivity clause carries no migration carve-out ("immediately upon acceptance, for any candidate
+contract frozen after this date"), so it already governs any contract frozen after 2026-08-30
+regardless of (1) or (2). `docs/diagrams/generate-evaluate-throughline.html` is the visual/interactive
+companion and now states the identical three-way distinction (its own 2026-09-03 revision), and its
+per-ADR `pending_doctrine` entry already carried the correct "EFFECTIVE for any candidate contract
+frozen after 2026-08-30" framing this addendum aligns `PIPELINES.md` to.
+
+Neither `PIPELINES.md` nor the diagram gains authority to redefine this ADR's step order — a future
+change to §2 lands here first. But neither is a bare pointer today: `PIPELINES.md` carries its own
+ordered Stage 2→8 list and the diagram's `pending_doctrine.items` entry for this ADR restates the full
+ten-step sequence for readers who don't open this file. A future §2 change means updating **both**
+restatements to match, not only their pointer prose — Rule 7 (`docs/operational_rules.md`) makes this
+ADR the fact's owner, not the sole place the fact may ever appear.
+
+This addendum also discharges this ADR's own §6 "STATE.md — new forward-board row" downstream
+artifact, together with the three sibling 2026-08-30 ADRs carrying the identical unmet obligation
+(`terminal-taxonomy`, `tradeable-reachable-gate`, `operator-approvals-campaign-envelope`) — one shared
+row, `STATE.md`'s 2026-11-08 section, the same row-sharing convention `2026-08-30-channel-liveness-gate.md`
+and `2026-08-30-candidate-contract.md` already used for their own shared row. This addendum does not
+build the selection-freeze hash-pinning tool or the state-drift re-check script (§7) — those remain
+owed, dated, unbuilt.
+
+No `core/`, `ops/`, `dd_protection`, Pine, or allocation change. No campaign, contract, K, or spend
+opened. $0/K=0.
+
+---
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-08-30 | Initial authoring | Joshua + Claude Code |
 | 2026-08-30 | Ratified — status → `Accepted`; `Amends-in-part` edge to candidate-contract.md landed | Joshua (operator ratification) |
+| 2026-09-03 | Addendum — cross-referenced `PIPELINES.md` and the throughline diagram as pointers to this ADR's canonical order; discharged the four ADRs' shared owed STATE.md row | Claude Code |
