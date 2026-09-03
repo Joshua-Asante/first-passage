@@ -884,7 +884,7 @@ def render_catalog(
         parts.append(_render_in_flight_table(in_flight_rows))
     else:
         parts.append(
-            "_None derived — STATE queue, INDEX Open, and `In-flight: yes` "
+            "_None derived — Owner artifact / Home cells and `In-flight: yes` "
             "named no hot non-HOLD, non-terminal body._"
         )
     parts.extend(["", "## Hot bodies", ""])
