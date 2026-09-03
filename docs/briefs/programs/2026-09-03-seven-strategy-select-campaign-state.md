@@ -625,6 +625,14 @@ $23.66 exactly. The implied per-row rate is $1.82 = 2 × $0.91 on both files, so
 $0.91/contract rate is confirmed applied. Codex uses the halved figure and adds a regression asserting
 the entry-row and exit-row commissions are equal, so the trap cannot be walked into silently.
 
+⚠ **This answers the operator's question and does NOT lift G1.4's commission limb.** Codex's finding on
+#291 stands unchanged: TradingView computes that column as `rate × qty × 2`, which is exactly what the
+runner computes, so summing it reproduces the runner's own arithmetic rather than checking it. The
+figures above are the **totals the operator could not find**, not an independent anchor. G1.4's
+total-commissions metric stays **partial** until TradingView's own **"Commission paid"** summary figure
+is supplied — and if that figure does not exist in the UI either, the metric moves to
+`UNAVAILABLE_AT_SOURCE` alongside monthly net rather than staying open indefinitely.
+
 ### 12f — Striker re-export verification, and one unexplained delta
 
 The Properties panels close the "re-exports unverified" finding: **Initial capital 100,000** on both,
