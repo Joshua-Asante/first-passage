@@ -211,3 +211,6 @@ def test_runner_echoes_populated_secondary_without_lifting_context_cap(tmp_path,
     assert manifest["cme_early_close_calendar"]["evidence_metadata"]["source_revisions"]["pins"] == {"example/calendar": "a" * 40}
     assert "populated SECONDARY" in rendered
     assert "no historical early-close date was inferred" not in rendered
+    assert "full-closure inventory (1): 2026-12-25" in rendered
+    assert "Sub-deadline inventory (1):" in rendered
+    assert "2026-04-03 Good Friday — equity_index=09:15, fx=11:15" in rendered

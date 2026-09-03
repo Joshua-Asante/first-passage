@@ -431,6 +431,18 @@ def _render_report(manifest: dict[str, object]) -> bytes:
     evidence_kind = calendar.get("evidence_kind", "PRIMARY")
     secondary_metadata = calendar.get("evidence_metadata", {})
     if evidence_kind == "SECONDARY":
+        full_closures = secondary_metadata["full_closure_dates"]
+        sub_deadlines = secondary_metadata["sub_deadline_close_dates"]
+        full_closure_inventory = ", ".join(full_closures["dates"]) or "none"
+        sub_deadline_inventory = [
+            f"{item['date']} {item['holiday']} — "
+            + ", ".join(
+                f"{group}={close}"
+                for group, close in sorted(item["closes_et"].items())
+            )
+            for item in sub_deadlines["dates"]
+        ]
+        sub_deadline_rows = [f"  - {detail}" for detail in sub_deadline_inventory] or ["  - none"]
         calendar_boundary = (
             f"- CME holiday-short coverage is `{calendar_status}` with populated SECONDARY rows; "
             "the exact account-level EARLY_CLOSE union drives 12:59 ET deadlines but cannot lift the context cap."
@@ -442,9 +454,12 @@ def _render_report(manifest: dict[str, object]) -> bytes:
             f"- Secondary provenance note: {secondary_metadata['provenance_note']}",
             f"- Day basis: `{secondary_metadata['day_basis']['basis']}` — {secondary_metadata['day_basis']['note']}",
             "- CME trade-date full-closure inventory is not converted into wall-date deadlines: "
-            f"{secondary_metadata['full_closure_dates']['rule']}",
+            f"{full_closures['rule']}",
+            f"- Secondary full-closure inventory ({full_closures['count']}): {full_closure_inventory}",
             "- Pre-12:59 market closes remain limitations, never modeled closure/no-trade rules: "
-            f"{secondary_metadata['sub_deadline_close_dates']['rule']}",
+            f"{sub_deadlines['rule']}",
+            f"- Sub-deadline inventory ({sub_deadlines['count']}):",
+            *sub_deadline_rows,
             *[f"- Secondary source URL (inert provenance): {url}" for url in secondary_metadata["source_urls"]],
             *[
                 f"- Secondary unresolved {item['date']}: {item['issue']}"
