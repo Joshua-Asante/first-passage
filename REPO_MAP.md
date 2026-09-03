@@ -120,7 +120,7 @@ Regenerate: `python scripts/check_repo_map_scripts_table.py --write`.
 `--check` exits 1 on drift; it is **not** wired into `gates.yml`.
 
 <!-- BEGIN generated: scripts-table -->
-_62 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_63 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 | Script | Layer | Gate id (tier) | Notes |
 |---|---|---|---|
@@ -157,6 +157,7 @@ _62 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/check_skill_refs.py` | governance | `skill-refs` (always) | — |
 | `scripts/check_skills_no_constants.py` | governance | `skills-no-constants` (always) | — |
 | `scripts/check_spec_provenance.py` | governance | `spec-provenance` (always) | --stats (report-only); layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_state_currency.py` | governance | `state-currency` (always) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_status_consistency.py` | governance | `status-consistency` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_supersession_placement.py` | governance | `supersession-placement` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/cost_geometry_pregate.py` | lab | — | manual/local only, not in gates.yml |

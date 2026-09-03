@@ -12,9 +12,9 @@
 > **Queue:** off-queue. Live `#1` is the seven-strategy Select campaign. This file is not the
 > turning campaign.
 
-This file remains the Sep 2 envelope record and the Rule-2 seat ledger. It does **not** assign
-Seat A to exact P50 and does **not** send the next session to hunt a gitignored Pine or continue
-T1 on NB1.
+This file remains the Sep 2 envelope record and the Rule-2 seat ledger. Exact P50 is **retired
+as the lead** — not a live workstream — but the spent A0 iteration **stays charged on Seat A**
+(1/8 STOPPED). Do not hunt a gitignored Pine or continue T1 on NB1.
 
 ## 0. What still binds
 

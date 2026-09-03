@@ -475,6 +475,85 @@ def test_in_flight_excludes_hold_and_spent_includes_named(tmp_path: Path):
     assert "| slug | theme | status | one-liner | body |" in inflight
 
 
+def test_in_flight_reads_owner_and_home_columns_only(tmp_path: Path):
+    analysis = tmp_path / "lab" / "analysis"
+    for name in ("owner_camp", "block_camp", "home_camp", "next_camp"):
+        camp = analysis / "c1" / name
+        camp.mkdir(parents=True)
+        (camp / "RESULTS.md").write_text(
+            f"**Theme:** c1\n**Status:** ACTIVE — {name}\n", encoding="utf-8"
+        )
+    (tmp_path / "STATE.md").write_text(
+        "## OPERATOR QUEUE — strictly ordered\n\n"
+        "| # | Item | Owner artifact | Blocks |\n"
+        "|---|---|---|---|\n"
+        "| 1 | find | [`owner`](lab/analysis/c1/owner_camp/RESULTS.md) | "
+        "[`block`](lab/analysis/c1/block_camp/RESULTS.md) |\n",
+        encoding="utf-8",
+    )
+    briefs = tmp_path / "docs" / "briefs"
+    briefs.mkdir(parents=True)
+    (briefs / "INDEX.md").write_text(
+        "## Open\n\n"
+        "| Q | Status | Home (canonical) | Next action |\n"
+        "|---|---|---|---|\n"
+        "| **Q-X** — cites [`qprose`](lab/analysis/c1/next_camp/RESULTS.md) | OPEN | "
+        "[`home`](lab/analysis/c1/home_camp/RESULTS.md) | "
+        "[`next`](lab/analysis/c1/next_camp/RESULTS.md) |\n",
+        encoding="utf-8",
+    )
+    rows = ala.scan_lab(tmp_path)
+    slugs = ala.derive_in_flight_slugs(tmp_path, rows)
+    assert slugs == frozenset({"owner_camp", "home_camp"})
+    assert "block_camp" not in slugs
+    assert "next_camp" not in slugs
+
+
+def test_in_flight_stamp_survives_results_card(tmp_path: Path):
+    camp = tmp_path / "lab" / "analysis" / "_inbox" / "l5_camp"
+    camp.mkdir(parents=True)
+    (camp / "README.md").write_text(
+        "# L5\n**In-flight:** yes\n**Status:** ACTIVE — design\n",
+        encoding="utf-8",
+    )
+    (camp / "RESULTS.md").write_text(
+        "**Theme:** _inbox\n**Status:** ACTIVE — first results, no stamp\n",
+        encoding="utf-8",
+    )
+    rows = ala.scan_lab(tmp_path)
+    by_slug = {r.slug: r for r in rows}
+    assert by_slug["l5_camp"].in_flight is True
+    slugs = ala.derive_in_flight_slugs(tmp_path, rows)
+    assert "l5_camp" in slugs
+
+
+def test_heavy_from_catalog_survives_escaped_pipe(tmp_path: Path):
+    one = "DEAD via orthogonality (|t|<2/wrong-signed); placebo only for 6B"
+    catalog = (
+        "## Hot bodies\n\n"
+        "| slug | theme | status | hot | one-liner | body | heavy |\n"
+        "|---|---|---|---|---|---|---|\n"
+        f"| pipe_camp | _inbox | CLOSED | yes | {ala._escape_cell(one)} | "
+        "lab/analysis/_inbox/pipe_camp/ | inputs gitignored |\n"
+    )
+    heavies = ala._heavy_from_catalog(catalog)
+    liners = ala._one_liners_from_catalog(catalog)
+    assert heavies["pipe_camp"] == "inputs gitignored"
+    assert liners["pipe_camp"] == one
+
+
+def test_archive_refuses_inbox_camp(tmp_path: Path):
+    camp = tmp_path / "lab" / "analysis" / "_inbox" / "ict_mnq_2026-08"
+    camp.mkdir(parents=True)
+    (camp / "RESULTS.md").write_text(
+        "**Verdict:** FALSIFIED — no edge\n", encoding="utf-8"
+    )
+    with pytest.raises(ala.ArchiveError, match="leave _inbox"):
+        ala.archive_slug(tmp_path, "ict_mnq_2026-08", dry_run=True, use_git=False)
+    assert (camp / "RESULTS.md").is_file()
+    assert not (tmp_path / "lab" / "archive" / "ict_mnq_2026-08").exists()
+
+
 def test_regenerate_preserves_gitignored_heavy(tmp_path: Path):
     study = tmp_path / "lab" / "analysis" / "heavy_study"
     study.mkdir(parents=True)
@@ -510,7 +589,10 @@ def test_compare_tolerates_in_flight_one_liner(tmp_path: Path):
     )
     (tmp_path / "STATE.md").write_text(
         "## OPERATOR QUEUE — strictly ordered\n\n"
-        "[`live`](lab/analysis/c1/live_camp/RESULTS.md)\n",
+        "| # | Item | Owner artifact | Blocks |\n"
+        "|---|---|---|---|\n"
+        "| 1 | find | [`live`](lab/analysis/c1/live_camp/RESULTS.md) | "
+        "[`noise`](lab/analysis/c1/noise_camp/RESULTS.md) |\n",
         encoding="utf-8",
     )
     rows = ala.scan_lab(tmp_path)

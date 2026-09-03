@@ -82,6 +82,21 @@ def _chunk(path: str, heading: str, body: str) -> dict[str, str]:
     return {"path": path, "heading": heading.strip(), "text": text}
 
 
+def _omit_h2_section(text: str, heading: str) -> str:
+    """Drop a ``##`` section (heading + body until the next ``##``)."""
+    out: list[str] = []
+    skipping = False
+    for line in text.splitlines():
+        if line.startswith("## "):
+            skipping = line.strip() == heading
+            if skipping:
+                continue
+        if skipping:
+            continue
+        out.append(line)
+    return "\n".join(out)
+
+
 def chunk_by_heading(rel: str, text: str, heading_re: re.Pattern[str]) -> list[dict[str, str]]:
     chunks: list[dict[str, str]] = []
     current_h = rel
@@ -104,9 +119,12 @@ def collect_chunks(repo: Path) -> list[dict[str, str]]:
 
     catalog = repo / "lab" / "CATALOG.md"
     if catalog.is_file():
-        chunks.extend(chunk_by_heading("lab/CATALOG.md", _read(catalog), H3))
-        # Table rows are the actual liveness units.
-        for line in _read(catalog).splitlines():
+        # Drop ## In flight before H3 chunking *and* the row loop. Otherwise
+        # the pre-### preamble chunk still carries every In-flight row
+        # (Codex P2 on #280). Hot-bodies copies stay the retrieval unit.
+        catalog_text = _omit_h2_section(_read(catalog), "## In flight")
+        chunks.extend(chunk_by_heading("lab/CATALOG.md", catalog_text, H3))
+        for line in catalog_text.splitlines():
             if line.startswith("|") and ("ACTIVE" in line or "HOLD" in line):
                 cells = [c.strip() for c in line.strip("|").split("|")]
                 if cells and cells[0] not in {"slug", "---"}:

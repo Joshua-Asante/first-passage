@@ -212,8 +212,9 @@ election names the presence battery and the C1 freeze, not an observed L5 attrib
    “no entry construct before this brief resolves.” It does **not** close, certify, or `RESOLVED`
    Q-VOLREGIME-1. It does **not** ratify the 703-core-hour §6 right-size. It does **not** authorize
    inspecting a nonexistent observed L5 result.
-4. **Exact P50 stays source-only and prospectively ineligible** (§1.5, byte-unchanged). Seat A is
-   no longer P50. Hunting the gitignored Pine `9292bd4e…` is not Day-1 work.
+4. **Exact P50 stays source-only and prospectively ineligible** (§1.5, byte-unchanged). P50 is
+   retired as the lead. Seat A remains the charged retired-P50 source-identity seat (1/8 STOPPED;
+   see addendum 2026-09-03b). Hunting the gitignored Pine `9292bd4e…` is not Day-1 work.
 5. **MNQ is the primary translation instrument.** MYM is replication-only unless a second,
    genuinely distinct template earns the other slot. This avoids the MYM-P50 near-neighbour.
 6. Translation success is a **new** candidate. L1–L4 do not inherit into Confirm, venue MC, or

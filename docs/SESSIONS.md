@@ -33,10 +33,30 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
-## 2026-09-03g — Codex review of #281: T0 `PRE-CONTRACT DROP`
+## 2026-09-03k — Codex P2: keep the spent P50 iteration on Seat A
+
+**Focus:** Address Codex’s follow-up on #281 after T0 `PRE-CONTRACT DROP`: live pointers said
+Seat A was unassigned while the ledger still charged P50 A0 at 1/8.
+`queue-exception: same off-queue campaign as 2026-09-03i; live #1 stays the seven-strategy Select campaign.`
+**Shipped:** cultivation-plan banner, P50 RESULTS routing line, and addendum 2026-09-03 §4 now
+say P50 is **retired as the lead** and Seat A **keeps** the spent 1/8. Merged `origin/main`;
+relabeled this branch’s SESSIONS `f`/`g` → `i`/`j` to clear the collision with main’s currency-gate
+letters.
+**Decisions/defects:** Rule-2 map unchanged (A 1/8 STOPPED, B 2/8 STOPPED, C 0/8). No new
+template, contract, or `#1` change.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— residue (queue-exception): off-queue VOLREGIME translation closed at T0
+([`PRE-CONTRACT DROP`](notes/2026-09-03-volregime-translation-t0.md)).
+**Live-ops state:** unchanged — c1 rail disarmed, `dry_run=true`, M1 not `RESOLVED`, no arm.
+
+---
+
+## 2026-09-03j — Codex review of #281: T0 `PRE-CONTRACT DROP`
 
 **Focus:** Respond to Codex’s eight findings on the off-queue VOLREGIME translation rebind.
-`queue-exception: same off-queue campaign as 2026-09-03f; live #1 stays the seven-strategy Select campaign.`
+`queue-exception: same off-queue campaign as 2026-09-03i; live #1 stays the seven-strategy Select campaign.`
 **Shipped:** [addendum 2026-09-03b](adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03b--t0-pre-contract-drop)
 · [T0](notes/2026-09-03-volregime-translation-t0.md) both templates fail
 · [NB1 Vet](notes/2026-09-03-volregime-nb1-vet-card.md) withdrawn (`T0-FAIL`).
@@ -55,10 +75,11 @@ campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) ·
 
 ---
 
-## 2026-09-03f — VOLREGIME translation rebind; enter at Packet T
+## 2026-09-03i — VOLREGIME translation rebind; enter at Packet T
 
 **Focus:** Operator corrected the off-queue Sep 2 campaign: Q-VOLREGIME already has GO, presence
-already ran, and this campaign is VOLREGIME translation — not Seat A = ineligible P50.
+already ran, and this campaign is VOLREGIME translation — P50 ineligible and retired as the lead
+(Seat A keeps the spent A0 charge).
 `queue-exception: operator-approved rebind of the demoted portable-edge campaign; live #1 stays the seven-strategy Select campaign.`
 **Shipped:** [ADR addendum](adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03--campaign-is-volregime-translation-enter-at-packet-t)
 · translation plan `AUTHORIZED — ENTER AT PACKET T`
@@ -75,6 +96,35 @@ campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) ·
 [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
 — residue (queue-exception): off-queue VOLREGIME translation at Packet T
 ([T0](notes/2026-09-03-volregime-translation-t0.md)).
+
+---
+
+## 2026-09-03h — Catalog In-flight H3 strip + sessions append-only restore
+
+**Focus:** Codex P2 on #280: In flight still entered retrieval via the pre-`###` H3 chunk. CI `skills` failed because `2026-09-03d` was mutated after #276 merged.
+**Shipped:** `cursor/catalog-live-index-e931` — omit `## In flight` before `chunk_by_heading`; restore the frozen `2026-09-03d` body.
+**Decisions/defects:** [addendum](adr/2026-08-22-catalog-hot-vs-disposition.md#addendum--2026-09-03).
+`queue-exception: P1 falsifier fired; catalogs are being read as the work list`.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2` [B7-REFIRE Stage 1
++ M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+**Live-ops state:** rail remains built / disarmed; no book deployed.
+
+---
+
+## 2026-09-03g — STATE currency gate (queue-exception: STATE currency gate)
+
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+
+---
+
+## 2026-09-03f — STATE currency gate Codex P2 hardenings (queue-exception: STATE currency gate)
+
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
 
 ---
 
