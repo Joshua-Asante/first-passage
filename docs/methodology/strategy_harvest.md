@@ -69,15 +69,19 @@ Canonical: [`docs/adr/2026-07-25-instrument-profile-index.md`](../adr/2026-07-25
 ### 2.3 Ranked channel portfolio (replaces the old screenability-only tiers)
 
 **Channel-liveness requirement (added 2026-09-03, [`channel-liveness-gate`](../adr/2026-08-30-channel-liveness-gate.md)
-`Accepted` 2026-08-30):** every channel's founding charter must declare, at channel-open, a **reachable
-liveness ceiling** — a bounded count of unsuccessful attempts in the channel's own yield unit, and/or a
-bounded elapsed-time horizon — mapping to exactly one of two consequences: retirement, or mandatory
-redesign. Each of the six ranks below already carries some shape of consecutive-failure or
-calendar-bound clause in its own ratifying artifact (that ADR's §0/§1); none has yet been run through
-`gate-reachability-audit` or reconciled onto this ADR's two-option taxonomy. That reconciliation is a
-dated addendum owed on each channel's own owning artifact — never a rewrite here, per amendment-first
-discipline (that ADR §5) — tracked at [`STATE.md`](../../STATE.md), not restated as per-row numbers in
-this table.
+`Accepted` 2026-08-30):** every **channel's** founding charter must declare, at channel-open, a
+**reachable liveness ceiling** — a bounded count of unsuccessful attempts in the channel's own yield
+unit, and/or a bounded elapsed-time horizon — mapping to exactly one of two consequences: retirement,
+or mandatory redesign. This requirement binds at the **channel** level, not per rank: that ADR names
+five live channels (HARV, dense-1m/TNEC, MSL, no-counterparty-statistical/geometric, deep-iteration),
+each with its own ratifying artifact and liveness clause. **HARV is one of the five** — the six ranks
+below are sourcing *methods* inside the HARV channel, not five independently-chartered channels of
+their own; HARV's own owning artifact ([`2026-07-15-external-mechanism-harvest-intake.md`](../adr/2026-07-15-external-mechanism-harvest-intake.md))
+already carries a liveness clause (§0/§1 of that ADR) covering the whole rank-1–6 portfolio, not each
+rank separately. None of the five channels' clauses has yet been run through `gate-reachability-audit`
+or reconciled onto this ADR's two-option taxonomy. That reconciliation is a dated addendum owed on
+each channel's own owning artifact — never a rewrite here, per amendment-first discipline (that ADR
+§5) — tracked at [`STATE.md`](../../STATE.md), not restated as per-row numbers in this table.
 
 | Rank | Channel | Method | Note |
 |---|---|---|---|

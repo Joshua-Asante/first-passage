@@ -29,15 +29,22 @@ The essential function of the repo is not "research → deploy" but **"research 
 The one turning pipeline. A **campaign** is one bounded run of discovery→validation→admission against a pre-registered search universe on one instrument family. Stage numbering is canonical (`docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md`, pruned); rules of evidence are operator-ratified ([`…discovery-campaign-defaults-ratified`](docs/adr/2026-07-11-discovery-campaign-defaults-ratified.md)).
 
 ⚠ **Two decompositions of this pipeline coexist by design — cross-referenced here so neither reads as
-a competitor.** The Stage 2→8 numbering below is **today's live practice** (per-channel freeze chains,
-`discovery-campaign-template.md`-derived). [`evaluation-order`](docs/adr/2026-08-30-evaluation-order.md)
-(`Accepted` 2026-08-30) is the **ratified, single canonical ten-step order** a candidate contract moves
-through once each channel's own migration addendum lands — until then, per
-[`candidate-contract`](docs/adr/2026-08-30-candidate-contract.md) §6, "the channel's existing documents
-remain its live practice." Doctrine binds now; migration is dated-owed, not silent (`STATE.md`). The
-interactive walkthrough is [`generate-evaluate-throughline.html`](docs/diagrams/generate-evaluate-throughline.html),
-which cites both. Read Stage 2→8 as what a campaign does today, `evaluation-order`'s ten steps as what
-it will do once migrated, and neither as a third, independent map.
+a competitor, and neither is misread as suspending the other.** The Stage 2→8 numbering below is the
+**document shape** (seed manifest → intake screen → Stage-0 preregistration, per channel) — that shape
+is **today's live practice until each channel's own migration addendum lands**, per
+[`candidate-contract`](docs/adr/2026-08-30-candidate-contract.md) §6 ("the channel's existing documents
+remain its live practice" until then). That carve-out is about **which artifact** records a candidate,
+not about **step order**. [`evaluation-order`](docs/adr/2026-08-30-evaluation-order.md) (`Accepted`
+2026-08-30) is the ratified, single canonical **ten-step order**, and its own §2 states
+"Effective: immediately upon acceptance, for any candidate contract frozen after this date" — no
+migration carve-out. **A candidate contract frozen after 2026-08-30 is already bound by that order
+(structural screening before catalogue, the pre-Explore `TRADEABLE-REACHABLE` gate, the append-only
+selection freeze, the zero-K state-drift re-check) even while its channel still uses the pre-migration
+document shape below.** Migration changes which artifact records the steps, never whether they apply.
+Doctrine binds now; document migration is dated-owed, not silent (`STATE.md`). The interactive
+walkthrough is [`generate-evaluate-throughline.html`](docs/diagrams/generate-evaluate-throughline.html),
+which cites both and restates the same distinction per-ADR. Read Stage 2→8 as today's document shape,
+`evaluation-order`'s ten steps as the order already governing it, and neither as a third, independent map.
 
 ### Data flow
 

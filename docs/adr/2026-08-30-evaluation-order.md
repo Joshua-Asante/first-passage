@@ -403,13 +403,24 @@ steps. None cross-references the others."*
 
 This ADR is the **single canonical owner** of pipeline step ordering — its own title says so, and §2
 states it as "one canonical ordered pipeline." `PIPELINES.md` P1 now points here explicitly, framing
-its Stage 2→8 list as **today's live practice** (per `2026-08-30-candidate-contract.md` §6: each
-channel's existing documents remain its live practice until that channel's own migration addendum
-lands) rather than a competing decomposition. `docs/diagrams/generate-evaluate-throughline.html` is the
-visual/interactive companion and now cites both in the same terms (its own 2026-09-03 revision).
-Neither `PIPELINES.md` nor the diagram gains authority to restate this ADR's step order — a future
-change to §2 lands here first; those two documents' own pointer text is the only thing that should
-ever need updating in response (Rule 7, `docs/operational_rules.md`).
+its Stage 2→8 list as the **document shape** that is today's live practice (per
+`2026-08-30-candidate-contract.md` §6: each channel's existing freeze-chain documents remain its live
+practice until that channel's own migration addendum lands) — never as a rival step order. That
+carve-out is `candidate-contract`'s own, about which artifact records a candidate; it does not extend
+to this ADR. §2's own effectivity clause carries no migration carve-out ("immediately upon acceptance,
+for any candidate contract frozen after this date"), so this ADR's order already governs any contract
+frozen after 2026-08-30, including one still recorded in a pre-migration channel's old document shape.
+`docs/diagrams/generate-evaluate-throughline.html` is the visual/interactive companion and now states
+the identical distinction (its own 2026-09-03 revision), and its per-ADR `pending_doctrine` entry
+already carried the correct "EFFECTIVE for any candidate contract frozen after 2026-08-30" framing
+this addendum aligns `PIPELINES.md` to.
+
+Neither `PIPELINES.md` nor the diagram gains authority to redefine this ADR's step order — a future
+change to §2 lands here first. But neither is a bare pointer today: `PIPELINES.md` carries its own
+ordered Stage 2→8 list and the diagram's `pending_doctrine.items` entry for this ADR restates the full
+ten-step sequence for readers who don't open this file. A future §2 change means updating **both**
+restatements to match, not only their pointer prose — Rule 7 (`docs/operational_rules.md`) makes this
+ADR the fact's owner, not the sole place the fact may ever appear.
 
 This addendum also discharges this ADR's own §6 "STATE.md — new forward-board row" downstream
 artifact, together with the three sibling 2026-08-30 ADRs carrying the identical unmet obligation
