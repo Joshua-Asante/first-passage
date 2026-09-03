@@ -54,8 +54,9 @@ does not describe the set; (2) the CME early-close capture holds zero rows (D12)
 (3) no joint-flat block builder and no Phase 3 deferral (G1.7), plus `__init__.py` (G1.9) and the Rule 2
 iteration count (G1.10). Codex's bot added 1 P1 (tie-order causality in `_exposure_bounds`) + 5 P2, all
 worker-side. The venue audit itself is the headline: ORB-MNQ **310/681**, Vanguard MGC **226/343**, Aegis
-**9/122** trades span the 16:45 ET deadline, and per-strategy peak exposure sits at 76–80 of 80
-micro-equivalents (D11) — the exported set is not a venue-legal book at these sizes. Rule 2 count,
+**9/122** trades span the 16:45 ET deadline (D11) — those three are venue-illegal as exported; standalone cap
+headroom of 0–4 micro-equivalents for Aegis and each Striker is inventory only, the aggregate-cap verdict
+waits for Phase 4's joint chronology (Codex review of #284, one P1, accepted). Rule 2 count,
 provisional pending D3: constituent (i) iteration 2 of ≤8. No `core`/Pine/allocation/`dd_protection`/rail
 change. $0/K=0.
 **Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
