@@ -1,6 +1,6 @@
 # Seven-strategy Select configuration campaign — campaign state (orchestrator-only writes)
 
-**Status:** `PHASE 1 RE-ANCHOR ROUND READ AT a35b4e8 (2026-09-03) — VERDICT STILL NEEDS_CONTEXT (§11): 18 PASS / 5 PARTIAL / 4 FAIL / 1 NA, ZERO OVERTURNED BY THE ADVERSARIAL PASS. **SOLE BLOCKER: reconciliation_manifest.json AND RESULTS.md WERE NEVER REGENERATED** — 7 ROWS, RETIRED IDS, CONFIG HASH 8881a2af vs ACTUAL 0a6c1643. WORKER ALSO OWES: MERGE OF MAIN 8327f14, A REAL PIN-EXISTENCE CHECK, RUNNER-VERSION BUMP, RULE 2 ITERATION LINE, D13 ACCEPTED_UNMODELED. EARLY-CLOSE ROWS BLOCKED ON THE ORCHESTRATOR'S D12 CALENDAR · PHASE 0 SKIPPED (operator override) · HISTORY: PHASE 1 RETURNED — PR #283 @ 809bbb4, GATE VERDICT NEEDS_CONTEXT; #283 MERGED BY THE OPERATOR (39530d4, 17:12Z) BEFORE THE RE-ANCHOR ROUND — FOLLOW-UP CODEX PR PENDING (TWELVE RE-ANCHOR ITEMS + D13 ROLL DISPOSITION; G1.3/G1.4 BACK TO PARTIAL AFTER CODEX'S RE-REVIEW OF #284) (one re-anchor round: Striker source identities vs repo pins — D10; CME early-close rows — D12; Codex-bot P1 tie-order fix + re-run; joint-flat block builder deferral; __init__.py; Rule 2 iteration line) · VENUE-LEGALITY SCALE FLAGGED (ORB-MNQ 310/681, MGC 226/343, Aegis 9/122 trades span the 16:45 ET deadline — D11) · D8 SUPERSEDED BY D10; D10 RESOLVED (NAS100 = DOW CELL; TWO SWAP-PORT EXPORTS DROPPED — POINT VALUE NOT OVERRIDDEN) → FIVE STRATEGIES, FIVE TEMPLATES, ONE CELL EACH · D9 APPLIED · PLAN + THIS FILE ON MAIN · STATE QUEUE #1 · OLD VENDOR-BYTE REF DELETED, OBJECT PURGE PENDING (§6 D7) · SIDE PRs READ (D14): #286 PINS THE TWO MODIFIED STRIKER BODIES AS RESEARCH VARIANTS, DJ30 DIFF DECLARED PYRAMID-ONLY → D10 CLOSED; MERGE #286 AND #284, FOLD #287's CONFIG HUNK INTO THE CODEX FOLLOW-UP, DROP ITS ARTIFACT HUNK · CODEX ROUND 3 ON #284 FOLDED (4 P1 + 1 P2: FULL TWELVE-ITEM DELTA CHECKLIST + D13; FIVE CONTRACTS IN PHASE 3; NAS100 ID FINAL; CALENDAR SCHEMA EXTENSION FIRST; D11 REPLACEMENTS RE-ENTER PHASE 1) · CODEX ROUND 4 FOLDED (5 P1 + 1 P2: POPULATION AMENDED TO FIVE ACTIVE + TWO DROPPED RECORDS; **D11 RE-EXPRESSION CONFLICTS WITH THE PLAN'S OWN NO-POST-VIEW-CHANGE OBJECTIVE — RECOMMENDATION NARROWED TO DROP-ONLY UNLESS THE OPERATOR AMENDS SCOPE FIRST**; CALENDAR SOURCES NEED A HASHED CAPTURE FILE; PLAN ITEM 14 RATIONALE RE-BASED ON D10; ITERATION 3; CONFIG LOADER MIGRATES WITH THE SCHEMA) · **OPERATOR RULED 2026-09-03: D11 RE-EXPRESS (LANE ADR `Proposed`, RATIFICATION REQUIRED BEFORE ANY REPLACEMENT RESULT IS INSPECTED; EDIT SPEC ISSUED) · D12 ORCHESTRATOR SOURCES THE CME CALENDARS · D13 (b) CONTINUOUS BASIS ACCEPTED WITH SEAM RISK PRE-REGISTERED + PHASE 6 SEAM-SENSITIVITY CHECK · ITEM 11 TV ANCHORS SUPPLIED FOR ALL FIVE (COMMISSIONS + MONTHLY STILL MISSING)** · NEW: D15 STRIKER EXPORTS RAN AT 200K INITIAL CAPITAL vs THE 100K SELECT TIER; D16 HEDGING RULE PUTS MYM + BOTH MNQ LEGS IN ONE PRODUCT GROUP · **LANE ADR RATIFIED BY THE OPERATOR 2026-09-03; PINE SUPPLIED AND EDITED DIRECTLY — ROOT CAUSE IS ONE DEFECT IN THREE SCRIPTS: ALL THREE RECORD THE EOD EXIT AT EXACTLY 16:45 ET, THE DEADLINE INSTANT. AEGIS TIMEZONE HYPOTHESIS REFUTED. D15 RESOLVED: SIZING IS STATIC-100K, THE DAY SOFT-STOP IS THE CAPITAL-DEPENDENT PART** · **2026-09-03 LATER: D12 CLOSED — CME 2022-2026 CALENDAR LANDED AT `ops/calendars/` (85 ENTRIES, 49 EARLY-CLOSE, SECONDARY PROVENANCE SO THE `NEEDS_CONTEXT` CAP STANDS); ALL THREE VENUE-BOUND PINE BODIES RE-POINTED TO ONE 75-DATE UNION LIST — THE THREE EXPORTS ARE UNBLOCKED. D3 RULED (RE-PARTITION, NOT RAISE; ITERATION UNIT = ONE DISPATCH CYCLE, CONSTITUENT (i) AT 3/8). D5 RULED — CANDIDATE #1 RE-ADMITTED, §4 DISCHARGE RESTORED (EOD-CLOCK ONLY), WITHDRAWAL-ADR ADDENDUM RATIFIED IN THE OPPOSITE DISPOSITION AND SUPERSEDING-ADR REQUIREMENT WAIVED. COMMISSION TOTALS RECOVERED FROM THE EXPORT BYTES ($7,647.64 / $5,585.58, TV DOUBLE-COUNTS THEM). STRIKER RE-EXPORTS VERIFIED AT 100K FROM THE PROPERTIES PANELS — NAS100 DELTA $0.00 AND EXPLAINED, **DJ30 +$287.00 UNEXPLAINED AND BLOCKS ITS G1.4 ROW**. BOTH STRIKERS MEASURED VENUE-CLEAN ON ALL 49 EARLY-CLOSE DATES, BUT NEITHER CARRIES AN EARLY-CLOSE BRANCH — RESIDUAL RISK R-STRIKER-EC. SEE §12**`
+**Status:** `PHASE 1 RE-ANCHOR ROUND READ AT a35b4e8 (2026-09-03) — VERDICT STILL NEEDS_CONTEXT (§11): 18 PASS / 5 PARTIAL / 4 FAIL / 1 NA, ZERO OVERTURNED BY THE ADVERSARIAL PASS. **SOLE BLOCKER: reconciliation_manifest.json AND RESULTS.md WERE NEVER REGENERATED** — 7 ROWS, RETIRED IDS, CONFIG HASH 8881a2af vs ACTUAL 0a6c1643. WORKER ALSO OWES: MERGE OF MAIN 8327f14, A REAL PIN-EXISTENCE CHECK, RUNNER-VERSION BUMP, RULE 2 ITERATION LINE, D13 ACCEPTED_UNMODELED. EARLY-CLOSE ROWS BLOCKED ON THE ORCHESTRATOR'S D12 CALENDAR · PHASE 0 SKIPPED (operator override) · HISTORY: PHASE 1 RETURNED — PR #283 @ 809bbb4, GATE VERDICT NEEDS_CONTEXT; #283 MERGED BY THE OPERATOR (39530d4, 17:12Z) BEFORE THE RE-ANCHOR ROUND — FOLLOW-UP CODEX PR PENDING (TWELVE RE-ANCHOR ITEMS + D13 ROLL DISPOSITION; G1.3/G1.4 BACK TO PARTIAL AFTER CODEX'S RE-REVIEW OF #284) (one re-anchor round: Striker source identities vs repo pins — D10; CME early-close rows — D12; Codex-bot P1 tie-order fix + re-run; joint-flat block builder deferral; __init__.py; Rule 2 iteration line) · VENUE-LEGALITY SCALE FLAGGED (ORB-MNQ 310/681, MGC 226/343, Aegis 9/122 trades span the 16:45 ET deadline — D11) · D8 SUPERSEDED BY D10; D10 RESOLVED (NAS100 = DOW CELL; TWO SWAP-PORT EXPORTS DROPPED — POINT VALUE NOT OVERRIDDEN) → FIVE STRATEGIES, FIVE TEMPLATES, ONE CELL EACH · D9 APPLIED · PLAN + THIS FILE ON MAIN · STATE QUEUE #1 · OLD VENDOR-BYTE REF DELETED, OBJECT PURGE PENDING (§6 D7) · SIDE PRs READ (D14): #286 PINS THE TWO MODIFIED STRIKER BODIES AS RESEARCH VARIANTS, DJ30 DIFF DECLARED PYRAMID-ONLY → D10 CLOSED; MERGE #286 AND #284, FOLD #287's CONFIG HUNK INTO THE CODEX FOLLOW-UP, DROP ITS ARTIFACT HUNK · CODEX ROUND 3 ON #284 FOLDED (4 P1 + 1 P2: FULL TWELVE-ITEM DELTA CHECKLIST + D13; FIVE CONTRACTS IN PHASE 3; NAS100 ID FINAL; CALENDAR SCHEMA EXTENSION FIRST; D11 REPLACEMENTS RE-ENTER PHASE 1) · CODEX ROUND 4 FOLDED (5 P1 + 1 P2: POPULATION AMENDED TO FIVE ACTIVE + TWO DROPPED RECORDS; **D11 RE-EXPRESSION CONFLICTS WITH THE PLAN'S OWN NO-POST-VIEW-CHANGE OBJECTIVE — RECOMMENDATION NARROWED TO DROP-ONLY UNLESS THE OPERATOR AMENDS SCOPE FIRST**; CALENDAR SOURCES NEED A HASHED CAPTURE FILE; PLAN ITEM 14 RATIONALE RE-BASED ON D10; ITERATION 3; CONFIG LOADER MIGRATES WITH THE SCHEMA) · **OPERATOR RULED 2026-09-03: D11 RE-EXPRESS (LANE ADR `Proposed`, RATIFICATION REQUIRED BEFORE ANY REPLACEMENT RESULT IS INSPECTED; EDIT SPEC ISSUED) · D12 ORCHESTRATOR SOURCES THE CME CALENDARS · D13 (b) CONTINUOUS BASIS ACCEPTED WITH SEAM RISK PRE-REGISTERED + PHASE 6 SEAM-SENSITIVITY CHECK · ITEM 11 TV ANCHORS SUPPLIED FOR ALL FIVE (COMMISSIONS + MONTHLY STILL MISSING)** · NEW: D15 STRIKER EXPORTS RAN AT 200K INITIAL CAPITAL vs THE 100K SELECT TIER; D16 HEDGING RULE PUTS MYM + BOTH MNQ LEGS IN ONE PRODUCT GROUP · **LANE ADR RATIFIED BY THE OPERATOR 2026-09-03; PINE SUPPLIED AND EDITED DIRECTLY — ROOT CAUSE IS ONE DEFECT IN THREE SCRIPTS: ALL THREE RECORD THE EOD EXIT AT EXACTLY 16:45 ET, THE DEADLINE INSTANT. AEGIS TIMEZONE HYPOTHESIS REFUTED. D15 RESOLVED: SIZING IS STATIC-100K, THE DAY SOFT-STOP IS THE CAPITAL-DEPENDENT PART** · **2026-09-03 LATER: D12 CLOSED — CME 2022-2026 CALENDAR LANDED AT `ops/calendars/` (85 ENTRIES, 49 EARLY-CLOSE, SECONDARY PROVENANCE SO THE `NEEDS_CONTEXT` CAP STANDS); ALL THREE VENUE-BOUND PINE BODIES RE-POINTED TO ONE 75-DATE UNION LIST — THE THREE EXPORTS ARE UNBLOCKED. D3 RULED (RE-PARTITION, NOT RAISE; ITERATION UNIT = ONE DISPATCH CYCLE, CONSTITUENT (i) AT 3/8). D5 RULED — CANDIDATE #1 RE-ADMITTED, §4 DISCHARGE RESTORED (EOD-CLOCK ONLY), WITHDRAWAL-ADR ADDENDUM RATIFIED IN THE OPPOSITE DISPOSITION AND SUPERSEDING-ADR REQUIREMENT WAIVED. COMMISSION TOTALS RECOVERED FROM THE EXPORT BYTES ($7,647.64 / $5,585.58, TV DOUBLE-COUNTS THEM). STRIKER RE-EXPORTS VERIFIED AT 100K FROM THE PROPERTIES PANELS — NAS100 DELTA $0.00 AND EXPLAINED, **DJ30 +$287.00 UNEXPLAINED AND BLOCKS ITS G1.4 ROW**. BOTH STRIKERS MEASURED VENUE-CLEAN ON ALL 49 EARLY-CLOSE DATES, BUT NEITHER CARRIES AN EARLY-CLOSE BRANCH — RESIDUAL RISK R-STRIKER-EC. SEE §12** · **2026-09-03 LATEST: CODEX PR #292 @ `80abcec` GATE-READ (§14) — VERDICT `NEEDS_CONTEXT` HOLDS. ENGINEERING SOUND (RUNNER v2, REAL PIN CHECK, RECOVERY FIX, 2,455 TESTS, GATE 0) BUT **ALL FIVE FROZEN SOURCES ARE SUPERSEDED** — RELAY LAG, NOT WORKER ERROR. CALENDAR STILL EMPTY AND BLOCKED ON #291 MERGING; ITS PER-YEAR `capture_basename` SCHEMA DOES NOT FIT A SECONDARY-SOURCED CALENDAR. TIE-BATCHING CORRECTION **APPROVED** — A RULE 0 READ SHOWS IT CAN ONLY MOVE `BREACH`→`AMBIGUOUS`, NEVER `AMBIGUOUS`→CLEAN, SO IT CANNOT WEAKEN THE CAP CHECK. ⚠ ONE PEAK IS EXACTLY AT THE CAP (80 vs 80) AND THE BOOK-LEVEL SUM IS 244 vs 80. D17 RULED — MONTHLY TOTALS RECONSTRUCTED (FEASIBILITY PROVEN, ZERO MONTH-SPANNING HOLDS), COMMISSIONS AMENDED OUT. THREE VENUE-BOUND RE-EXPORTS LAND CLEAN: **545 FORCE-FLAT VIOLATIONS → 0** AT 1.86% OF COMBINED NET (§13). D7 HELD BY OPERATOR**`
 **Last curated:** 2026-09-03 (orchestrator session `claude/orchestrator-role-takeover-yza7vp`; queue-placement reconciliation by `claude/state-pipelines-alignment-ng62y9`, PR #275)
 **Parent plan:** [`2026-09-02-seven-strategy-tradeify-select-configuration.md`](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
 (PR [#272](https://github.com/Joshua-Asante/first-passage/pull/272) — **merged 2026-09-03** together
@@ -799,4 +799,103 @@ rows, their `phase1_config.json` source hashes and byte counts, their `reconcili
 rows, and any `RESULTS.md` figure derived from them. New Key-stats panels are owed for all three
 before G1.4 can re-anchor; the figures in 13a are export-derived and are **not** a substitute for
 an independent panel.
+
+
+## §14 Gate read — Codex PR #292 @ `80abcec` (draft, 2026-09-03)
+
+**Verdict: `NEEDS_CONTEXT` holds. The engineering is sound and the freeze must be re-run — every
+one of the five frozen sources is superseded.** This is relay lag, not worker error: three sources
+were re-exported and two re-captured after `80abcec` was pushed, and the calendar the runner needs
+is on an unmerged branch.
+
+What landed is substantial and is not in question: runner `v2`, pin references that resolve against
+real `PORT_MANIFEST.sha256` entries and bind digest **and** basename, exact parsed-snapshot fee
+fingerprints, wrong-export-size and wrong-Pine-size regressions, typed zero-trade ledgers, D13
+`ACCEPTED_UNMODELED`, a publisher recovery fix with real-file fault injection, and 2,455 tests
+passing with `--tier check` exit 0. The twelve re-anchor items are addressed.
+
+### 14a — P1: all five frozen sources are stale
+
+| Strategy | Frozen bytes | Current bytes | Current sha256 (16) |
+|---|---|---|---|
+| `aegis_6j1` | 28,612 | **28,364** | `71e732fc92d28a56` |
+| `orb_mnq_recon_v7` | 160,584 | **160,557** | `bff235ea0934dace` |
+| `vanguard_mgc_v04` | 75,654 | **74,473** | `7b9cc65c98945055` |
+| `striker_dj30_mym_pyramid_250` | 47,149 | **47,348** | `5a5006588fa5c876` |
+| `striker_nas100_mnq_dow_wed_excluded` | 88,131 | **88,221** | `f6a93bb653d710a7` |
+
+The first three are the **pre-re-expression** exports carrying 310 / 226 / 9 force-flat violations;
+their replacements carry **zero** (§13). The last two are the **superseded 200K** Striker runs —
+`47,149` and `88,131` are exactly the byte counts Codex itself named as superseded on #291. So the
+v2 generation is a correct normalization of the wrong generation, on every leg.
+
+### 14b — P1: the early-close calendar is still empty, and the fix is blocked on a merge
+
+Codex's committed calendar is unchanged: `coverage_status: NEEDS_CONTEXT`, `sources: []`,
+`rows: []`, hash `742e8350…`. The verified 49-date calendar exists
+([`ops/calendars/`](../../../ops/calendars/cme_holiday_calendar_2022_2026.json)) but sits on
+**PR #291, unmerged**. ⚠ **Hard sequencing dependency: #291 must merge before Codex can populate
+the rows.** Until then the 12:59 ET dimension stays `NEEDS_CONTEXT` and Codex is right not to
+invent dates. Note the schema Codex built requires a per-year `sources[]` entry with a
+`capture_basename` whose sha256 matches a file on disk — the landed calendar is **secondary-sourced
+and has no per-year CME capture**, so populating rows will require either a schema accommodation or
+per-year capture files. That is a real design question, not a formality.
+
+### 14c — P1: D17 supersedes the G1.4 partial
+
+The PR states *"Independent commissions and monthly totals remain absent, so G1.4 is partial."*
+That was correct when written and is now superseded by the **D17 ruling** (§6): monthly totals are
+**reconstructed from the row-level ledger** — feasibility proven, exact reconciliation on all five,
+and zero month-spanning holds so the attribution basis is moot — and commissions is **amended out**
+of the frozen row. Codex implements the reconstruction and records the amendment.
+
+### 14d — The tie-batching question: APPROVED, and it is strictly safe
+
+Codex asked whether it may correct the mandated tie batching to compute a true causal minimum.
+**Approved.** The orchestrator's first instinct was that this loosens a safety-relevant cap check;
+**a Rule 0 read of `_exposure_bounds` and its call site refutes that.** The verdict ladder is:
+
+```
+if   peak_min > cap:   CONTRACT_CAP_BREACH                  # every ordering breaches
+elif peak_max > cap:   CAP_STATUS_AMBIGUOUS_AT_TIMESTAMP_TIE
+else:                  clean
+```
+
+A definite breach is asserted only when the **lower** bound clears the cap, and ambiguity only when
+the **upper** bound does. So the current defect — `peak(upper_bound=False)` ordering
+`(-prior_exits, +entries, -zero_exits)` batches a zero-duration trade's entry alongside a lasting
+entry and reports 130 where an interleaved ordering peaks at 70 — produces **false definite
+breaches**, never false cleans. Correcting it can only move a case `BREACH → AMBIGUOUS`. It can
+never move `AMBIGUOUS → clean`, because clean requires `peak_max <= cap` and the fix does not touch
+`peak_max`; and if `peak_max <= cap` then `peak_min <= peak_max <= cap` already, so it was never a
+breach. **The correction cannot weaken the cap check in any direction.**
+
+Conditions: (i) touch only the `upper_bound=False` limb — `peak(upper_bound=True)` stays
+byte-identical, it is the conservative limb and the ambiguity trigger; (ii) add a regression using
+Codex's own example (prior 50-micro exit, zero-duration 70-micro, lasting 60-micro entry at one
+timestamp) asserting min **70** and max unchanged; (iii) add a property test asserting
+`peak_min <= peak_max` always; (iv) confirm the five peaks are unchanged, as predicted.
+
+⚠ **One peak sits exactly at the cap.** `Tradeify_Select_100K` carries `micro_contract_cap: 80`
+(`core/firm_rules.py`) and the reported peaks are **80** / 4 / 77 / 77 / 6. The 80 is clean only
+because the comparison is a strict `>`. Any re-export that nudges it to 81 flips to a definite
+breach, and three of the five legs were re-exported today — so this must be re-checked on the
+re-pinned bytes, not carried.
+
+⚠ **The deferred book-level cap verdict is load-bearing, not housekeeping.** The venue cap is
+**account-aggregate**, not per-strategy ([`prop_envelope_default.md`](../../../ops/prop_envelope_default.md),
+"100K 8/80"). A naive sum of the per-strategy peaks is **244 against a cap of 80** — 3× over. The
+Phase 4 deferral is correct as sequencing, but no reader should mistake five passing per-strategy
+checks for a book that fits.
+
+### 14e — What Codex owes next
+
+1. Re-pin all five sources to the current-of-record bytes (14a) and re-run the freeze.
+2. Wait on #291 merging, then populate the calendar rows — and resolve the per-year
+   `capture_basename` requirement against a secondary-sourced calendar (14b).
+3. Implement D17: monthly reconstruction, commissions amendment (14c).
+4. Apply the tie-batching correction under the four conditions (14d).
+5. Re-check the at-cap 80 on the re-pinned bytes.
+6. Re-run the venue audit — the three re-expressed legs should now report **zero** force-flat
+   violations, which is the independent confirmation of §13's orchestrator-side measurement.
 
