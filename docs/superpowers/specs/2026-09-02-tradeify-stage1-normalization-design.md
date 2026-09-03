@@ -107,6 +107,8 @@ All seven exports identify continuous `1!` chart symbols rather than specific tr
 
 The calendar-week adapter groups trade exits by ISO Monday-start week while preserving empty weeks between the minimum and maximum exit date. It returns both per-strategy columns and a joint total. This is plumbing only: Phase 1 performs no portfolio ranking, dependence estimation, bootstrap, or qualification simulation.
 
+Phase 1 delivers deterministic joint event union and ISO-week exit aggregation only; neither is a joint-flat block builder. The joint-flat block builder is deferred to Phase 3, before Phase 4 composition, because it requires a synchronized all-leg chronology and must prove every included leg is flat at each block edge. ORB-MNQ's three Friday-to-Sunday holds make the affected weekly edges fail that assertion; they are reported and never repaired. No Phase 1 ranking, dependence, composition, Monte Carlo, or Pine rerun occurs.
+
 ### 4.6 Campaign runner and reports
 
 `run_phase1.py` accepts `--source-dir`, `--output-dir`, and `--config`. It first verifies all fourteen files, then processes strategies independently so one blocked strategy does not erase the other reports. It writes local canonical event/trade ledgers atomically, hashes them, and writes aggregate JSON/Markdown deterministically.

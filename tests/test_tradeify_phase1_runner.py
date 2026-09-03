@@ -435,6 +435,24 @@ def test_complete_calendar_must_cover_observed_source_span(tmp_path):
         run_phase1.run_campaign(config, source_dir, tmp_path / "local_artifacts")
 
 
+def test_campaign_report_renders_accepted_cme_early_close_fallback_note(tmp_path):
+    """A generic NEEDS_CONTEXT label must not hide the accepted early-close risk."""
+    source_dir, config, _ = _seven_source_fixture(tmp_path)
+    calendar_path = config.parent / "cme_early_close_calendar.json"
+    calendar = json.loads(calendar_path.read_text(encoding="utf-8"))
+    coverage_note = (
+        "If the primary-source 2022–2026 CME early-close dates cannot be captured, "
+        "report a NEEDS_CONTEXT cap, never a silent omission; an early-close hold may "
+        "go undetected."
+    )
+    calendar["coverage_note"] = coverage_note
+    calendar_path.write_text(json.dumps(calendar), encoding="utf-8")
+
+    result = run_phase1.run_campaign(config, source_dir, tmp_path / "local_artifacts")
+
+    assert coverage_note in result.report_path.read_text(encoding="utf-8")
+
+
 def test_invalid_invocation_returns_two():
     assert run_phase1.main([]) == 2
 

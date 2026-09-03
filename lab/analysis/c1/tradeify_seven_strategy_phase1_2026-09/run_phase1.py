@@ -312,6 +312,7 @@ def _strategy_record(
 
 
 def _render_report(manifest: dict[str, object]) -> bytes:
+    coverage_note = manifest.get("cme_early_close_coverage_note")
     if manifest["phase1_verdict_cap"] == "COMPLETE":
         calendar_boundary = (
             "- CME holiday-short coverage is `COMPLETE` for the observed source span; "
@@ -359,6 +360,11 @@ def _render_report(manifest: dict[str, object]) -> bytes:
             "- Scalar MAE/MFE values are inventory-only excursion bounds, not timestamped paths.",
             "- Per-strategy caps are measured against 80 micro-equivalents; the joint book-cap verdict is deferred to Phase 4.",
             calendar_boundary,
+            *(
+                [f"- CME early-close coverage note: {coverage_note}"]
+                if coverage_note
+                else []
+            ),
             "",
             "## Frozen hashes",
             "",
@@ -499,6 +505,7 @@ def run_campaign(
         "phase0_status": "SKIPPED_BY_OPERATOR",
         "campaign_status": campaign_status,
         "phase1_verdict_cap": early_close_calendar.coverage_status,
+        "cme_early_close_coverage_note": early_close_calendar.coverage_note,
         "runner_version": _RUNNER_VERSION,
         "git_base_commit": _BASE_COMMIT,
         "inputs": {
