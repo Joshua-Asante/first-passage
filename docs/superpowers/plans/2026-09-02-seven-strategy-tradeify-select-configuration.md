@@ -81,10 +81,15 @@ Before the first portfolio result is computed, freeze a campaign pre-registratio
     [candidate-contract ADR](../../adr/2026-08-30-candidate-contract.md): a distinct template is
     never a cell inside another template's contract, and a different parameterization of the same
     template (a pyramid-reduced variant, say) is a cell inside that template's contract, never a
-    second contract. The supplied set holds **five** templates (operator ruling 2026-09-03: the two
-    Striker "prototypes" are the native editions with the pyramid turned down, so each is a cell of
-    its locked sibling's template); the catalogue treats such a pair as one mutually exclusive
-    choice, never two independent legs.
+    second contract. The supplied set holds **five** templates — **rationale re-based 2026-09-03 on the operator's D10
+    ruling, which superseded D8's "native editions with the pyramid turned down" reading**: the two
+    Q-TXG-1 swap-port exports ran without the point-value override, are mis-sized, and are **dropped**
+    from the campaign as provenance-only records, leaving Aegis 6J1, ORB-MNQ recon v7, DJ30-MYM
+    pyramid-250, NAS100-MNQ Wednesday-excluded and Vanguard MGC v0.4 — five templates with **one cell
+    each**, and no locked venue edition among them. There is therefore no prototype/locked sibling pair
+    to compose: the catalogue must not reintroduce a locked sibling cell that the campaign does not
+    carry. The mutually-exclusive-cell rule still governs any future pair. Live count and set owned by
+    the [campaign-state artifact](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) §2/§6.
 
 If the exact 5% boundary is operational rather than statistical, report both the point-estimate
 frontier and the confidence-qualified frontier, but only the latter may be called a pass.
@@ -150,7 +155,9 @@ ruling). A material mismatch blocks that strategy; it is never a tuning opportun
 Acceptance tolerances are frozen before reconciliation. Material mismatches block that strategy
 rather than being tuned away.
 
-**Deliverable:** seven reconciliation reports, a canonical joint ledger, and deterministic tests
+**Deliverable:** one reconciliation report per active strategy — seven as first written, **five** since the
+operator's D10 (ii) drop of the two mis-sized swap-port exports, which stay as provenance-only
+dropped-source records and are never reconciled — a canonical joint ledger, and deterministic tests
 for unit conversion, timestamp ordering, firm-barrier behavior, the **calendar-week inactivity
 adapter** (Phase 5), the **multi-strategy joint block builder** (Phase 3), and per-instrument fees.
 
@@ -452,7 +459,7 @@ plan land here (the other three bind the campaign-state artifact):
 | Finding | Where it now binds |
 |---|---|
 | Outer bootstrap scored only each replicate's winner, not ranks 2…`M` | Phase 7: every selected slot scored per replicate, slot-specific `1 − α/M` bounds |
-| Book search across distinct templates without candidate contracts | Contract item 14, Phase 3 seven per-template contracts, discriminator ceiling |
+| Book search across distinct templates without candidate contracts | Contract item 14, Phase 3 per-template contracts (seven at ratification; **five** since the operator's D10 (ii) ruling of 2026-09-03 dropped the two mis-sized swap-port exports — count owned by the [campaign-state artifact](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) §2/§6), discriminator ceiling |
 | `cost_model.resolve_commission` raises for MGC; specs are geometry, not fees | Phase 1 per-instrument commission table deliverable (primary source, reconciled to `firm_rules` comments) |
 | Whole-period reconciliation read reserved P&L before the "unconsumed" promise | Phase 1, Phase 7: pre-access check is hash + development-only; whole-period reconciliation inside the single atomic read, `EVIDENCE-VOID` on mismatch |
 | Handoff labels used where terminal verdicts belong | Phase 7 terminal-taxonomy vocabulary; handoff labels declared nonterminal |
