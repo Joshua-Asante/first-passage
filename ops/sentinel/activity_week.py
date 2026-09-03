@@ -15,9 +15,11 @@ models something different and stricter: ``core/mc/simulation.py`` counts ROLLIN
 consecutive idle business days against ``firm_rules`` ``inactivity_max_idle_days:
 5``. The two are not interchangeable -- a calendar trading Mon-wk1 / Fri-wk2 /
 Mon-wk3 / Fri-wk4 satisfies THIS module in every week while the engine returns
-``bust_inactivity`` on day 6 (measured 2026-09-03). Because 5 idle bdays inside
-one Mon-Fri week is necessarily 5 consecutive, the engine never misses a real
-breach -- it over-fires, so every barrier-ON figure is a conservative ceiling.
+``bust_inactivity`` on day 6 (measured 2026-09-03) -- it over-fires. On a COMPLETE
+business-day calendar it cannot miss a real breach, so barrier-ON figures are
+conservative ceilings there; on a sparse trade-days-only series the idle days are
+dropped before the engine sees them and it UNDER-fires instead (see the
+``core/mc/preflight.py`` ``INACTIVITY_OFF`` block).
 Do not "reconcile" the two by loosening this module to the engine's shape: the
 venue rule is the fact, and the engine's counter is a bound on it.
 """

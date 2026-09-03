@@ -101,14 +101,24 @@ BUST_KEYS: Tuple[str, ...] = ("bust_daily", "bust_static", "bust_trailing")
 # ⚠ AND the barrier is an UPPER BOUND, not a model of the venue rule. Tradeify's
 # rule is ">=1 trade per Mon-Fri week" (art. 10468318), a per-week BUCKET;
 # simulation.py counts ROLLING consecutive idle business days and fires at
-# `inactivity_max_idle_days`. Those are not the same predicate. Every real
-# violation trips the counter (5 idle bdays inside one Mon-Fri week is 5
-# consecutive), so the barrier never MISSES a breach — but it also fires on
+# `inactivity_max_idle_days`. Those are not the same predicate. It over-fires on
 # calendars the venue permits. Measured 2026-09-03 against this engine: trades on
 # Mon-wk1 / Fri-wk2 / Mon-wk3 / Fri-wk4 satisfies the venue in all four weeks and
-# still returns `bust_inactivity` on day 6. Consequence: barrier-ON inactivity
-# rates are conservative ceilings on true venue-inactivity risk, not estimates of
-# it. Modelling the bucket rule faithfully is unspent work needing its own ADR;
+# still returns `bust_inactivity` on day 6.
+#
+# ⚠ BUT "conservative ceiling" holds ONLY on a COMPLETE business-day calendar, and
+# nothing enforces one. `nsurv_channel.load_candidate_daily_pnl` accepts sparse
+# dates without reindexing, and `prop_survivor_scoring.paired_blocks_from_daily`
+# then DISCARDS the real dates for a synthetic contiguous `pd.bdate_range` index —
+# so a trade-days-only export has its idle days deleted and never presents five
+# zeros to `simulate_path`. Measured 2026-09-03 on one candidate trading Mon-wk1
+# and Mon-wk3 (week 2 entirely idle = a real venue breach): the complete-calendar
+# CSV yields a 9-day idle run and fires; the trade-days-only CSV collapses to 2
+# rows and the barrier is never evaluated at all. In that supported input path the
+# engine UNDER-fires. So: barrier-ON rates are conservative ceilings **when the
+# input series covers every business day**, and are unsound in either direction
+# when it does not — validate/reindex to a full calendar before reading one.
+# Modelling the bucket rule faithfully is unspent work needing its own ADR;
 # `ops/sentinel/activity_week.py` is the only surface that implements the real
 # Mon-Fri bucket, and it is report-only.
 INACTIVITY_OFF: int = HORIZON_CAP + 1

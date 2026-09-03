@@ -242,9 +242,13 @@ FIRM_RULES = {
     #   counts ROLLING consecutive idle business days. Those differ: a calendar
     #   trading Mon-wk1 / Fri-wk2 / Mon-wk3 / Fri-wk4 satisfies the venue in every
     #   week yet returns bust_inactivity on day 6 (measured against this engine
-    #   2026-09-03). Because 5 idle bdays inside one Mon-Fri week is necessarily 5
-    #   consecutive, the counter never MISSES a real breach — it only over-fires,
-    #   so barrier-ON figures are conservative CEILINGS on venue-inactivity risk.
+    #   2026-09-03) — it over-fires. On a COMPLETE business-day calendar it cannot
+    #   miss a real breach (5 idle bdays inside one Mon-Fri week is necessarily 5
+    #   consecutive), so barrier-ON figures are conservative CEILINGS there. ⚠ That
+    #   precondition is NOT enforced: a sparse, trade-days-only input series has its
+    #   idle days dropped before simulate_path ever sees them, and the engine then
+    #   UNDER-fires (see the core/mc/preflight.py INACTIVITY_OFF block for the
+    #   measured demonstration and the two functions responsible).
     #   This is the same calendar-vs-bday care the BluSky block below applies to
     #   its "30 consecutive days" clause, extended to the rolling-vs-bucket axis it
     #   did not cover. 5 is retained deliberately as the conservative bound; making

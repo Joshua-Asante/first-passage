@@ -185,12 +185,19 @@ Every figure in §2 is an **EOD-clock lower bound**, as this ADR's own 2026-08-0
 already says. On the intraday-honest clock the two `trailing` controls collapse — Bulenox
 3.51% → **26.77%**, BluSky 4.44% → **32.26%** at 1.00×
 ([`R1 7-tier`](../../lab/analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md)) — failing at
-either ceiling. But **no intraday-honest 1.00× figure exists for `Tradeify_Select_100K` or
-`MFFU_Rapid_100K`**: W1 published only the 0.50× arm (0.72%,
-[`RESULTS_INTRADAY_W1`](../../lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/RESULTS_INTRADAY_W1.md)).
-So the `trailing_locking` limb — the one §4 requires — is **undetermined, not safely-failing**. A
-reader cannot resolve this collision by pointing at the clock; the measurement that would settle it
-has not been run.
+either ceiling. On the `trailing_locking` side W1 published the 0.50× arm at gate grade (0.72%) —
+but it also carries a **1.00×** honest-clock guard run, and that run is **strongly adverse**:
+**real bust 32.33%** / pass 57.17% against EOD 2.50% / 71.00%
+([`RESULTS_INTRADAY_W1`](../../lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/RESULTS_INTRADAY_W1.md)
+§Non-vacuity). At 32.33% candidate #1 fails at **3.0% and 5.0% alike**, so the clock axis, as far as
+it has been measured, points the same way this ruling does.
+
+**It is not gate-grade, and that is the point.** That run is horizon 400 / 200 sims per seed at book
+level, not the frozen 10k × 3 / horizon-1500 contract, and it does not resolve `MFFU_Rapid_100K`
+separately. So the `trailing_locking` limb is **undetermined at gate grade** — no reader can
+*settle* this collision by pointing at the clock, and equally no reader should be told the clock is
+silent. The only honest summary is: the sole 1.00× honest-clock evidence that exists is adverse, and
+the measurement that would settle it has not been run.
 
 **Neither document saw this.** v2's §5 is careful to bar reading the `aegis_orbmnq_combined_book_2026-08-26`
 study as having cleared any gate — but it never mentions candidate #1, this ADR, or the forbidden

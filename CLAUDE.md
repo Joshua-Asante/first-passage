@@ -97,8 +97,12 @@ is degenerate: **92.6–97.6%** path death
 and **74.8–100%** pure-inactivity failure across every cell tested, including one at 39.7%
 trade-day density ([`orb_mym_v04_riskbudget_2026-09-02`](lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/RESULTS.md)
 §5c). Barrier-ON does not refine the pins; it measures the mitigation's absence. Do not re-open
-this as a fresh finding — and note those ON figures are themselves **ceilings**, since the engine's
-rolling counter over-fires against the weekly bucket rule (`core/mc/preflight.py`, `INACTIVITY_OFF`).
+this as a fresh finding. ⚠ And read those ON figures carefully: the engine's rolling counter
+**over**-fires against the weekly bucket rule, so on a complete business-day calendar they are
+conservative **ceilings** — but on a sparse, trade-days-only input series the idle days are dropped
+before the engine sees them and it **under**-fires instead. Neither direction is safe without a
+full-calendar input; the measured demonstration of both is in `core/mc/preflight.py`
+(`INACTIVITY_OFF`).
 
 ## Architecture
 

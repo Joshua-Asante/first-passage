@@ -103,7 +103,10 @@ development evidence, not confirmation.
 > day 42**. Seat A's "economically material conditioner result" is therefore material on raw P&L
 > and **not** on survival at size — the third time this construct family has shown that split.
 > Owner: [`orb_mym_v04_riskbudget_2026-09-02/RESULTS.md`](../../../lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/RESULTS.md) §2. This does not close seat A; it
-> replaces its known-evidence line.
+> replaces its known-evidence line. **A0 is still `EVIDENCE-BLOCKED`** — only the List-of-Trades
+> input arrived; the SHA-matching Pine body, full Properties and hash verification did not, so the
+> realized configuration behind these numbers remains unidentified (material here: §2 found Tue/Wed
+> settings differing from the Pine defaults). Do not read this banner as licensing A1.
 
 **Prospective-admission bar:** P50 was selected from the fully viewed Off/P50/P80 source catalogue
 without a prior contract or K manifest. It is therefore **ineligible to open a candidate contract
@@ -243,7 +246,7 @@ seat iteration.
 | 2026-09-02 | Searched `/workspace`, `/root`, and `/tmp` for the named Pine and MYM/ORB trade exports; neither the Pine nor a P50 List-of-Trades export is present | A0 access blocker confirmed; exact operator capture remains next action |
 | 2026-09-02 | Authored a copy/paste local-session execution handoff with A0→A2 commands, B/C continuation, evidence rules, and required terminal states | ready for next local session after PR merge |
 | 2026-09-02 | Codex review reconciliation: P50 cannot be retroactively frozen; A0 uses EVIDENCE-BLOCKED; pre-contract reachability uses PRE-CONTRACT DROP; fresh GO required above spend; Rule-2 tripwire bound | decision ADR owns durable rulings |
-| 2026-09-02 | Operator supplied the P50 List-of-Trades; reconstructed and run through the canonical engine ([`RESULTS`](../../../lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/RESULTS.md) §2) — exit-only net reconciles to the cent, but qty-2 Select/Growth bust 51.2%/43.4% and the realized path busts Select on day 42 | A0 no longer evidence-blocked; seat A's raw-metric claim stands, its survival claim does not |
+| 2026-09-02 | Operator supplied the P50 List-of-Trades; reconstructed and run through the canonical engine ([`RESULTS`](../../../lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/RESULTS.md) §2) — exit-only net reconciles to the cent, but qty-2 Select/Growth bust 51.2%/43.4% and the realized path busts Select on day 42 | **A0 remains `EVIDENCE-BLOCKED`** — the List-of-Trades blocker cleared, but A0 also requires the SHA-matching Pine body, full Properties (quantity, pyramiding, commission, slippage) and hash verification, none of which arrived; configuration identity is still unestablished. Seat A's raw-metric claim stands and its survival claim does not, but neither licenses starting A1 |
 | 2026-09-02 | Second Codex review reconciliation: every B/C contract must freeze an independent mechanism discriminator; Confirm begins strictly after the founding-freeze commit, not merely after the last source read | prospective contract checklist corrected |
 
 ## 9. Required terminal artifact
