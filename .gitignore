@@ -263,3 +263,11 @@ ops/data/recall.db
 
 # Untracked vendor / study clones — not a runtime dependency.
 third_party/
+
+# Codex cloud-sandbox scratch roots: workspace_inputs/ (vendor exports staged for intake) and
+# workspace_outputs/ (parsed panels / trade ledgers). Never commit — public repo, vendor-licensed
+# bytes. Added 2026-09-03 after 706a03e on codex/mym-breakout-research pushed ~100 MB of them to
+# a public ref (campaign-state artifact §6 D7). Intake inputs belong under
+# lab/analysis/<theme>/<slug>/inputs/, already ignored above.
+workspace_inputs/
+workspace_outputs/
