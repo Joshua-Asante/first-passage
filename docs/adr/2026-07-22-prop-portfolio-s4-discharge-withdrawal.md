@@ -1,6 +1,7 @@
 # ADR 2026-07-22 — Prop-portfolio §4 falsifier: discharge WITHDRAWN (eval drawdown-locking correction)
 
 **Status:** Accepted
+**Disposition note:** §4/§5 **overridden 2026-09-03** by the operator ruling in the addendum below — candidate #1 re-admitted, §4 discharge restored, EOD-clock only. The ADR itself stands.
 **Superseded-by:** none
 **Retain-until:** superseded by a fresh discharge under corrected geometry, or by the §4 hard date 2026-11-08
 **Decision date:** 2026-07-22
@@ -20,11 +21,18 @@
 > `discharges_falsifier = False`" becomes **four** clearers including **both** `trailing_locking`
 > tiers, and §4's "≥2 firms, ≥1 `trailing_locking`" is satisfied on numbers already published here.
 >
-> **That is exactly the move §5 forbids**, and §5 is **not** repealed by the ceiling raise. See
-> [Addendum 2026-09-03](#addendum-2026-09-03--the-50-ceiling-does-not-re-admit-candidate-1-proposed)
-> for the collision and the proposed one-line ruling. **Until an operator ratifies it, the §4
-> discharge stays WITHDRAWN and candidate #1 stays out** — the safe reading, and the one §5's own
-> text already directs. Do not cite 4.74%/4.25%-under-5.0% as a discharge anywhere.
+> **That is exactly the move §5 forbids** — and on **2026-09-03 the operator elected it anyway.**
+> Candidate #1 is **RE-ADMITTED** and the §4 discharge is **RESTORED** on those §2 figures; §4's
+> restore-trigger table and §5's forbidden move are **overridden but unedited**, kept as the record
+> of what was overridden. See
+> [Addendum 2026-09-03](#addendum-2026-09-03--candidate-1-re-admitted-at-the-50-ceiling-accepted)
+> for the ruling, the collision it settles, and the superseded prospective-only case.
+>
+> ⚠ **The discharge is EOD-clock only.** The sole 1.00× intraday-honest measurement of candidate #1
+> puts real bust at **32.33%** — a failure at 3.0% and 5.0% alike — and it is not gate-grade, so it
+> settles nothing either way. Cite this discharge **only** with that qualifier. It is not a finding
+> that candidate #1 survives an honest clock, and it is not a pass, a deployment, or a capital
+> authorization.
 >
 > Frozen body below unedited (Trap #12); banner placed upstream of §2/§4/§5 per
 > [`operational_rules.md`](../operational_rules.md) §14.
@@ -158,12 +166,28 @@ python lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/remc_native_post
 # Expected: ALL MATCH (canonical path reproduces this ADR's corrected figures with zero override)
 ```
 
-## Addendum 2026-09-03 — the 5.0% ceiling does not re-admit candidate #1 (`Proposed`)
+## Addendum 2026-09-03 — candidate #1 re-admitted at the 5.0% ceiling (`Accepted`)
 
-**Status:** `Proposed` — **pending operator ratification.** This addendum rules nothing on its own
-authority; it names a collision, states the reading that follows from the two documents' own text,
-and installs the safe default until the operator elects. It moves no number, touches no `core/`,
-Pine, allocation, `dd_protection`, or rail surface, and opens no re-MC. $0 / K=0.
+**Status:** `Accepted` — **operator ruling, 2026-09-03** (chat, verbatim: *"I am allowing
+Candidate 1 to be readmitted. No need for the superceding ADR, I just need to edit the existing
+one"*). The operator elected the **retroactive** reading and **waived** the superseding-ADR
+requirement this addendum's own §"What the operator is actually being asked" had set for that
+election, directing the ruling be recorded here instead. Recorded, not decided, by the author.
+
+It moves no number, touches no `core/`, Pine, allocation, `dd_protection`, or rail surface, and
+opens no re-MC — the discharge rests on figures already published in §2 above. $0 / K=0.
+
+> ⚠ **The adverse evidence is not repealed by this ruling and is restated here so no reader
+> mistakes a discharge for a survival claim.** Every §2 figure is an **EOD-clock lower bound**. The
+> only 1.00× intraday-honest measurement that exists for candidate #1 puts real bust at **32.33%**
+> against EOD 2.50%
+> ([`RESULTS_INTRADAY_W1`](../../lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/RESULTS_INTRADAY_W1.md)
+> §Non-vacuity) — a failure at 3.0% and 5.0% alike. It is **not** gate-grade (horizon 400 / 200 sims
+> per seed at book level, not the frozen 10k × 3 / horizon-1500 contract) and it does not resolve
+> `MFFU_Rapid_100K` separately, so it cannot *settle* the question either way. **What this ruling
+> discharges is the §4 falsifier on the EOD clock. It is not a finding that candidate #1 survives an
+> honest clock, and it must never be cited as one.** The gate-grade honest-clock re-score remains
+> unrun and is the measurement that would settle it.
 
 ### The collision
 
@@ -210,18 +234,42 @@ DISC-CAMP-0 survivor has been scored under this version"*, which is true and is 
 gap went unnoticed: candidate #1 was scored under **v1**, so it is invisible to a
 "nothing-scored-yet" check while remaining fully re-admissible by arithmetic.
 
-### Proposed ruling (one line)
+### Ruling (operator, 2026-09-03)
 
-> **The 5.0% ceiling is prospective-only: it applies to candidates scored on or after 2026-08-26
-> and does not re-admit Class-S candidate #1, whose §4 discharge stays WITHDRAWN — §5's forbidden
-> move survives the ceiling raise intact.**
+> **The 5.0% ceiling applies to candidate #1. Class-S candidate #1 is RE-ADMITTED, and the §4
+> falsifier discharge of 2026-07-15 is RESTORED on the corrected-geometry figures published in §2
+> — `Tradeify_Select_100K` 4.74% and `MFFU_Rapid_100K` 4.25%, two firms, both `trailing_locking`,
+> both under 5.0%. §5's forbidden move is overridden by operator election, not repealed by
+> argument.**
 
-Equivalently, and narrower if the operator prefers the tighter form: *a withdrawn EOD-clock figure
-may not be re-read at a later ceiling to restore a discharge, because the withdrawal rested on a
-corrected **input**, not on the bar.* Both forms reach the same disposition; the second binds only
-this collision and leaves the general prospectivity question open.
+**Reading this correctly.** §5 barred *"moving the 3.0% ceiling … to re-admit candidate #1"* on the
+grounds that *"the input was wrong, not the bar."* That reasoning is not refuted here and is not
+withdrawn. What happened instead is that the bar moved for independent reasons two months later
+([`prereg v2`](../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §8, an
+operator risk-tolerance dial), and the operator has now elected to let candidate #1 be read at the
+moved bar. **This is an operator override of a frozen pre-registered gate, exercised on the
+operator's own authority over risk tolerance — it is not a measurement result, and no measurement
+changed.** The three sections it overrides (§4's restore-trigger table, §5's forbidden move, and
+this addendum's own superseding-ADR requirement) stay in the file, unedited, as the record of what
+was overridden.
 
-### Why this reading and not the other
+**What the discharge now rests on.** Nothing new. The §2 table, scored 2026-07-15 under prereg v1
+geometry and re-scored 2026-07-22 under the corrected eval geometry, read against a 5.0% instead of
+a 3.0% ceiling. Four tiers clear — Bulenox 3.51%, Tradeify_Select_100K 4.74%, MFFU_Rapid_100K 4.25%,
+BluSky_Premium_100K 4.44% — and §4's *"≥2 firms clear Part A, of which ≥1 is `trailing_locking`"*
+is satisfied twice over. `discharges_falsifier` reads **True** on those inputs.
+
+**What is still owed.** The gate-grade intraday-honest re-score (see the Status warning above). Until
+it runs, every citation of this discharge must carry the EOD-clock qualifier, exactly as
+[`docs/mc_anchor_history.md`](../mc_anchor_history.md) requires of the historical MC anchor. A
+discharged falsifier is not a pass, a deployment, or a capital authorization — those remain
+separate, always-revocable axes.
+
+### The prospective-only reading, superseded 2026-09-03 (retained as the record of what was overridden)
+
+The four arguments below were this addendum's `Proposed` case for the opposite disposition. The
+operator's ruling supersedes them. They are kept unedited because §5's reasoning is what the
+override overrides, and a reader who cannot see it cannot audit the override.
 
 - **It is what both documents already say.** §5 bars the ceiling move *"to re-admit candidate #1"*
   — a purpose-scoped bar, not a bar on the number. v2 §8 frames its own change as *"a general
@@ -239,14 +287,20 @@ this collision and leaves the general prospectivity question open.
   documented firm-rule change), or by an explicit operator ADR that re-admits it *on stated
   grounds*. What this ruling bars is re-admission **by arithmetic drift alone**.
 
-### What the operator is actually being asked
+### What the operator was asked, and what they elected
 
-Ratify the line above, **or** elect the opposite (the 5.0% ceiling is retroactive and §4 is
-discharged by candidate #1 on the 4.74% / 4.25% figures) — which would be a §4 **discharge** and
-therefore needs a superseding ADR under §4's own restore-trigger table, not an addendum. A third
-option: ratify prospective-only *and* commission the corrected-geometry re-score at 5.0% as a
-fresh, pre-registered candidate — legitimate under §4's first admissible route, and costed
-separately.
+Ratify prospective-only, **or** elect the opposite (the 5.0% ceiling is retroactive and §4
+is discharged by candidate #1 on the 4.74% / 4.25% figures) — which this addendum said would be a §4
+**discharge** and therefore need a superseding ADR under §4's own restore-trigger table, not an
+addendum. A third option: ratify prospective-only *and* commission the corrected-geometry re-score
+at 5.0% as a fresh, pre-registered candidate.
+
+**Elected 2026-09-03: the second option, with the superseding-ADR requirement waived.** The operator
+directed that the ruling be recorded by editing this ADR rather than by a new one. Recorded above.
+⚠ Consequence a future reader must not miss: the §4 restore-trigger table in §4 and the forbidden
+move in §5 are now **overridden but unedited**. Read them as history, and read this addendum for the
+live disposition. The third option is not foreclosed — the gate-grade honest-clock re-score is still
+the measurement that would put this discharge on measured rather than elected footing.
 
 **Already owed, now answered:** three surfaces log this as an open ruling and can cite this
 addendum — [`class_s_w1_bootstrap_honest_2026-09-02/RESULTS.md`](../../lab/analysis/c1/class_s_w1_bootstrap_honest_2026-09-02/RESULTS.md)
@@ -276,12 +330,17 @@ grep -n "Moving the 3.0% ceiling" docs/adr/2026-07-22-prop-portfolio-s4-discharg
 grep -ni "candidate #1\|candidate 1\|s4-discharge-withdrawal\|discharge WITHDRAWN" \
   docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md   # expect: empty
 
-# 4. Nobody reads 4.74%/4.25%-under-5.0% as a discharge. Every hit must be a FAIL
-#    statement or carry a 2026-09-03 intercept; a bare "clears"/"discharges" is the defect.
+# 4. INVERTED BY THE 2026-09-03 RULING. 4.74%/4.25%-under-5.0% IS now a discharge — but an
+#    EOD-clock one. Every hit must carry that qualifier; a bare "discharges" with no clock
+#    caveat is the defect this hook now looks for.
 grep -rn "4.74\|4.25" --include="*.md" docs/ lab/ STATE.md | grep -i "discharg"
-# Known-good as of 2026-09-03: this ADR; tradeify_eval_lock_correction_2026-07-22/RESULTS.md;
+# Known surfaces as of 2026-09-03: this ADR; tradeify_eval_lock_correction_2026-07-22/RESULTS.md;
 # class_s_c1_haircut_regime_remc_2026-07-16/RESULTS.md; the 2026-08-05 claim-alignment audit
 # (frozen). Anything NEW in that list needs checking.
+
+# 5. The override is visible, not silent: §5's forbidden move is still in the file, unedited.
+grep -n "Moving the 3.0% ceiling" docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md
+grep -n "overridden but unedited" docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md
 ```
 
 ## Change history
@@ -291,3 +350,4 @@ grep -rn "4.74\|4.25" --include="*.md" docs/ lab/ STATE.md | grep -i "discharg"
 | 2026-07-22 | Initial authoring; discharge withdrawn on corrected-geometry re-MC (operator-authorised) | Claude Code |
 | 2026-08-04 | Addendum appended: the constant §10 hook 3 asserted was "NOT hand-edited" is now fixed at the source by [`ADR 2026-08-04`](2026-08-04-firm-rules-eval-lock-fix-applied.md). §1–§10 above (including hook 3, as historical record) left byte-unchanged; no decision in this ADR is altered. | Joshua (directive) + Claude Code (draft + apply) |
 | 2026-09-03 | Head reader-intercept + **Addendum 2026-09-03 (`Proposed`)**: names the collision between §5's forbidden move and prereg v2's 5.0% ceiling — candidate #1's own §2 figures (4.74% / 4.25%, both `trailing_locking`) clear 5.0%, so the raise would re-admit it by arithmetic. Proposes prospective-only. §1–§10 byte-unchanged; no discharge, no re-MC, no number moved. $0/K=0. | Claude Code (Opus 5) |
+| 2026-09-03 | **Addendum ratified as `Accepted`, in the OPPOSITE disposition to the one it proposed** — operator ruling: candidate #1 **re-admitted** at the 5.0% ceiling, §4 discharge **restored** on the §2 corrected-geometry figures, superseding-ADR requirement **waived** by operator direction. §1–§10 still byte-unchanged; §4's restore-trigger table and §5's forbidden move overridden but unedited. No re-MC, no number moved, no `core/`/Pine/allocation/`dd_protection`/rail surface touched. Discharge is **EOD-clock only** — the 32.33% honest-clock guard run stands unrepealed. $0/K=0. | Joshua (ruling) + Claude Code (record) |

@@ -15,10 +15,13 @@
 > 2026-08-26 ([`prereg v2`](../../../../docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3). At 5.0% the corrected EOD-clock figures here —
 > Tradeify_Select_100K **4.74%**, MFFU_Rapid_100K **4.25%**, Bulenox_100K 3.51%, BluSky_Premium_100K
 > 4.44% — would all *clear*, which would restore the §4 discharge this measurement withdrew.
-> **That reading is barred pending an operator ruling**, on two independent grounds: the withdrawal
-> ADR's §5 names it as a forbidden move, and these are **EOD-clock lower bounds** (see the
-> intercept above), so they cannot restore a discharge at any ceiling. See
-> [`withdrawal ADR` Addendum 2026-09-03](../../../../docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-09-03--the-50-ceiling-does-not-re-admit-candidate-1-proposed).
+> ⚠ **RULED 2026-09-03: that reading is now the live one.** The operator re-admitted candidate #1 at
+> the 5.0% ceiling and **restored** the §4 discharge on exactly these four figures, overriding the
+> withdrawal ADR's §5 by election. The second ground stands unrepealed and now travels with every
+> citation: these are **EOD-clock lower bounds** (see the intercept above), so the restored discharge
+> is an **EOD-clock discharge** and is not evidence of survival on an honest clock — the only 1.00×
+> honest-clock measurement of this candidate reads **32.33%**. See
+> [`withdrawal ADR` Addendum 2026-09-03](../../../../docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-09-03--candidate-1-re-admitted-at-the-50-ceiling-accepted).
 > Frozen body unedited.
 
 # Tradeify / MFFU eval-tier drawdown-locking correction — re-MC RESULTS

@@ -138,13 +138,26 @@ disliked, tuning anything beyond the session bound, or re-running until a replac
 - Producing more than **one** replacement per strategy. A second attempt at the same strategy is a search
   over session bounds and is void; the strategy drops instead. ⚠ **The count starts at the first export taken
   against the VERIFIED D12 early-close calendar.** An export run against the interim placeholder list is not a
-  replacement at all and must not be produced (§4 forbids it below); the one-attempt rule must never be satisfied
-  by a body whose holiday dates were known-unverified, or the rule would consume the single attempt on a
-  configuration nobody intended to test.
-- **Exporting any of the three before the verified per-product-group early-close calendar replaces the interim
-  list.** The interim list was carried over from `aegis_6J1.pine`, an **FX** body; MGC is COMEX metals and ORB is
-  CME equity index, and D12 records that the three groups keep different holiday sessions. A wrong date either
-  flattens an ordinary session or misses a real short one, and either corrupts the one permitted replacement.
+  replacement at all and must not be produced; the one-attempt rule must never be satisfied by a body whose
+  holiday dates were known-unverified, or the rule would consume the single attempt on a configuration nobody
+  intended to test. **The clock starts 2026-09-03**, with the re-pointed bodies below.
+- ~~**Exporting any of the three before the verified per-product-group early-close calendar replaces the interim
+  list.**~~ **DISCHARGED 2026-09-03 — the calendar is landed and the three bodies are re-pointed; exporting is
+  permitted from this date.** The prohibition stood because the interim list was carried over from
+  `aegis_6J1.pine`, an **FX** body, while MGC is COMEX metals and ORB is CME equity index, and D12 records that
+  the three groups keep different holiday sessions. The research bore that out — on an ordinary US federal
+  holiday equity index closes 13:00 ET, metals 14:30 ET, and FX often not at all — but it also showed the fix is
+  **not** a per-product-group list. Tradeify's 12:59 ET holiday-short deadline is a blanket account-level rule,
+  so the correct construction is the **union** over the three groups, identical in every body; a per-group list
+  would omit ordinary federal holidays from the FX body and leave 6J resting past the deadline. All three bodies
+  now carry the same 75-date union list owned by
+  [`ops/calendars/cme_holiday_calendar_2022_2026.json`](../../ops/calendars/cme_holiday_calendar_2022_2026.json).
+  ⚠ **Two conditions ride with the discharge.** (1) The calendar's provenance is **SECONDARY** — no CME primary
+  source was reachable — so a replacement export inherits a `NEEDS_CONTEXT` provenance cap it cannot clear on its
+  own; that is a cap on the *verdict*, not a bar on the *export*. (2) Three dates close **before** 12:59 ET
+  (2023-04-07, 2026-04-03, 2025-01-09) and no deadline can express them; Aegis 6J is the live exposure, trading
+  to 11:15 ET on both Good Fridays. Those need a no-trade block, and a replacement that silently relies on the
+  deadline there is not venue-legal. See the campaign-state artifact §12.
 - Carrying the original expression's Phase 1 verdict, reconciliation anchors, or TradingView summary
   anchors onto the replacement.
 - Inspecting replacement results before this record is `Accepted`.
