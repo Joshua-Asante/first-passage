@@ -34,8 +34,11 @@
 > 200 sims/seed, book level, MFFU not resolved separately), so it cannot settle the collision — but
 > it is the only 1.00× honest-clock evidence there is, it is **strongly adverse** (failing at 3.0%
 > and 5.0% alike), and it must not be omitted from any account of whether 4.74% may be re-read.
-> See that ADR's
-> [Addendum 2026-09-03](../../../../docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-09-03--the-50-ceiling-does-not-re-admit-candidate-1-proposed).
+> **RULED 2026-09-03 — the operator re-admitted candidate #1 at the 5.0% ceiling and restored the
+> §4 discharge**; §5's bar is overridden by election, not by argument, and the 32.33% figure above is
+> **not repealed** by that ruling. The discharge is EOD-clock only and must never be cited without
+> that qualifier. See that ADR's
+> [Addendum 2026-09-03](../../../../docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-09-03--candidate-1-re-admitted-at-the-50-ceiling-accepted).
 >
 > **(3)** Both Striker legs were withdrawn from the c1 eval deployment 2026-08-04. The re-MC
 > result itself (regime-robustness at the 0.50× haircut) is unaffected.
