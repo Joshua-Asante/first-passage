@@ -645,6 +645,28 @@ top-down at the desk, the retraction inverted into its opposite), caught only
 by a manual pre-merge review; the gate's first repo scan then found **four
 merged-or-pending instances**, confirming the pattern predates the session.
 
+**§14 corollary — a correction is a claim (2026-09-03).** The banner that
+replaces a wrong figure is the most dangerous place to put another one: it
+carries a "corrected" stamp and gets read as settled. Before publishing any
+correction: (a) grep the repo for the *claim*, not the file — the sibling
+module, the `.md` that publishes the `.py`'s number, and every surface you
+wrote this session are restating surfaces; (b) recompute replacement numbers
+from source, never by transforming a published figure (a 14.6% **shrink** in
+`ln(1/b)` is only a 7.6% shrink in any √-derived Sharpe — the two directions
+aren't symmetric, a 14.6% *growth* in the same term is only ~7.1%); (c) keep
+the artifact's own hedge words — "proxy", "guard run", "not gate-grade" —
+verbatim; (d) "not determinable from the published artifact" is a complete
+answer, and often the right one. Evidence: PR #282/#285 — 15 review findings,
+6 of them defects inside the corrections themselves.
+
+⚠ **Printed precision is not measured precision.** A figure printed `:.2f`
+bounds the true value to the closed interval `[x−0.005, x+0.005]`, not a
+point; round-half-to-even ties mean either edge can be the true value
+depending on the retained digit's parity, so treat the bound as closed, not
+half-open. Any inequality derived from it must hold across that whole
+interval, or it is not established. Running-max statistics (`max_dd`) carry a
+second caveat: the max need not belong to the day being explained.
+
 ---
 
 ## 15. Always-on hosting is not the desktop (console-only desktops)
@@ -732,6 +754,7 @@ Full incident narration for each entry lives in `git log -p` on this file and in
 log states what changed and why in one line. Unless noted, edits are additive — no locked config,
 allocation, `dd_protection`, Pine, or rail touched.
 
+- **2026-09-03** — Rule 14 gains a "correction is a claim" corollary (grep the claim not the file, recompute from source, keep hedge words, "not determinable" is a complete answer) + a printed-precision caveat on `:.2f` interval bounds. No rule-text renumbering; additive only.
 - **2026-09-03** — Rule 7 gains a wrapper-accretion discipline paragraph: don't stack a new pointer/wrapper artifact over a fact family carrying an outstanding dated debt, citing PR #250 and #262/#264 as the precedent this fixes. No rule-text renumbering; additive only.
 - **2026-08-28** — Rule 17 added (quarterly programme-audit checklist; `check_falsifier_reachability.py --stats` census, wired `gates.yml`). [`ADR`](adr/2026-08-27-ssot-data-lineage-remediation-program.md)
 - **2026-08-23** — P4 museum rules: Rule 1 origin marked HISTORICAL (Guardian cold-stored); Rule 7 lock-state paths retargeted to `_archive/<family>/`.

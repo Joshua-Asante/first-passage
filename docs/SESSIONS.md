@@ -33,6 +33,42 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-03l — Phase 1 returned (PR #283): gate verdict `NEEDS_CONTEXT`; Striker identities contested by the pins
+
+**Focus:** Hourly check-in found Codex's Phase 1 return — `codex/tradeify-stage1-normalization` @ `809bbb4`,
+[PR #283](https://github.com/Joshua-Asante/first-passage/pull/283) — and applied the frozen G1.1–G1.10 gate as a diff-plus-CI read with a worktree run,
+never opening vendor bytes and never merging.
+**Shipped:** [campaign-state artifact](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)
+update only — §2/§5 Phase 1 rows (`RETURNED — NEEDS_CONTEXT`), §4 verdict line, §6 D10/D11/D12, §7, §8, §9
+full read + twelve-item re-anchor list. Verdict comment posted on #283; Codex prompt delivered in chat.
+**Decisions/defects:** Verified on the branch: no vendor bytes, `cost_model.py` byte-unchanged, 125/125 tests,
+gate battery exit 0, required check green, both CATALOG rows, D9 applied, pyramid field on all seven, the
+daily 16:45 ET deadline audit with Friday→Sunday as a sub-count, micro-equivalent quantities, and **all seven
+row/trade counts and net P&L figures reproduce to the cent** against the spec anchors frozen at `a51bc60`.
+Three findings hold the verdict at `NEEDS_CONTEXT`: (1) **G1.2 identity (D10)** — Rule 0 read of
+`core/strategies/PORT_MANIFEST.sha256`: the two prototype-named exports are the **pinned Q-TXG-1 sibling-swap
+bodies** (DJ30→MNQ port run on a MYM chart at pyramid 750; NAS100→MYM port run on an MNQ chart at 1000), and the
+two files named as the locked MYM/MNQ editions match **no pin** (modified bodies; DJ30 at 250, NAS100 at
+1000) — none of the four is a pinned locked venue edition, so D8's "native editions with the pyramid down"
+does not describe the set; (2) the CME early-close capture holds zero rows (D12) — the §4 cap applies;
+(3) no joint-flat block builder and no Phase 3 deferral (G1.7), plus `__init__.py` (G1.9) and the Rule 2
+iteration count (G1.10). Codex's bot added 1 P1 (tie-order causality in `_exposure_bounds`) + 5 P2, all
+worker-side. The venue audit itself is the headline: ORB-MNQ **310/681**, Vanguard MGC **226/343**, Aegis
+**9/122** trades span the 16:45 ET deadline (D11) — those three are venue-illegal as exported; standalone cap
+headroom of 0–4 micro-equivalents for Aegis and each Striker is inventory only, the aggregate-cap verdict
+waits for Phase 4's joint chronology (Codex review of #284, one P1, accepted). Rule 2 count,
+provisional pending D3: constituent (i) iteration 2 of ≤8. **D10 partial ruling (operator, later this session):** the modified `striker_nas100_v1_mnq.pine` body differs from its pin by the day-of-week set — exclude Wednesday only ({Mon, Tue, Thu, Fri}) versus the locked Mon + Tue (`striker_nas100_CHANGELOG.md`) — a parameter-axis change, so that export is a day-of-week cell of the NAS100 template, not the locked edition; the doubled trade count (378 vs 184) follows. Still open: the DJ30 modified body's full diff and whether the two swap-port exports ran with native chart inputs. **#283 was merged by the operator at `39530d4` (17:12Z) before the re-anchor round;** the nine items now land through a follow-up Codex PR off `main`, which gets the delta read. **Codex's re-review of #284** (2 P1 + 4 P2, all verified and accepted): G1.3 and G1.4 go back to partial (no per-row source hash; only counts and net P&L have independent anchors), G1.2 also lacks byte sizes, D8 is superseded by D10 and the five-template premise withdrawn, the continuous-contract roll blocker on all seven reports needs an operator disposition (D13), and a re-expressed exit must fill strictly before 16:45 ET. The re-anchor list is now twelve items plus D13; the orchestrator also ruled the three Striker IDs on the local session's request. **D10 (ii) resolved (operator): the point-value input was not overridden, so the two swap-port exports are mis-sized and dropped** — the set is five strategies, five templates, one cell each. **Side PRs read (D14):** [#286](https://github.com/Joshua-Asante/first-passage/pull/286) pins the two modified Striker bodies as research variants (manifest-only, every check green) and declares the DJ30 diff pyramid-only — D10 closed; [#287](https://github.com/Joshua-Asante/first-passage/pull/287) repoints two `pine_filename` fields but writes a colliding "D10" row into the orchestrator-only artifact (merge-tree conflict with #284) and moves the frozen config hash with no re-run, leaving the committed manifest, spec §7.5 and the runner test describing a config no longer on disk — advice: merge #286 and #284, close #287 and fold its config hunk into the Codex follow-up (§9 item 1). **Codex round 3 on #284** (4 P1 + 1 P2, verified, accepted): the §7 delta checklist carries all twelve items plus D13; Phase 3 / claim manifest / plan item 14 read five candidate contracts; NAS100 variant ID final (`striker_nas100_mnq_dow_wed_excluded`); the early-close calendar schema is extended before rows are frozen; D11 replacements re-enter Phase 1 in full. **Codex round 4** (5 P1 + 1 P2, verified, accepted): the frozen gate, D13 and the plan's Phase 1 deliverable are scoped to five active reports plus two provenance-only dropped records; **D11's re-expression path conflicts with the plan's own "no signal-rule change after results are viewed" objective and its no-repair robustness clause, so the recommendation narrows to drop-only unless the operator amends scope on the record first**; early-close `sources` records gain a hashed `capture_basename`; the plan's contract item 14 rationale is re-based on D10; the follow-up reports Rule 2 iteration 3; the config loader migrates with the provenance schema. No `core`/Pine/allocation/`dd_protection`/rail
+change. $0/K=0.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — Phase 1 `RETURNED —
+NEEDS_CONTEXT` on #283 @ `809bbb4` (merged by the operator at `39530d4` before the re-anchor round; follow-up Codex PR pending); operator rules D11 (re-express or drop the
+deadline-spanning three), D12 (early-close calendar), D13 (roll blocker); Codex runs the twelve-item re-anchor round; orchestrator
+re-verdicts on the delta (check-in armed); D7 open pending purge; D14 — operator merges #286, folds #287 into the follow-up; D11 now needs a scope ruling before any re-expression · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— unchanged.
+
+---
+
 ## 2026-09-03k — Codex P2: keep the spent P50 iteration on Seat A
 
 **Focus:** Address Codex’s follow-up on #281 after T0 `PRE-CONTRACT DROP`: live pointers said
