@@ -54,7 +54,8 @@ multi-strategy joint block builder; per-instrument fees; Rule 2 as STRATEGIC ≤
 iterations). New orchestrator-owned campaign-state artifact + claim
 manifest [`2026-09-03-seven-strategy-select-campaign-state.md`](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md):
 roles, phase board, canonical-authority list (reuse-don't-rewrite), **Phase 0 acceptance gate
-G0.1–G0.10 frozen before any Codex output was read**, operator decisions D1–D6.
+G0.1–G0.10, then — after the operator skipped Phase 0 — Phase 1 gate G1.1–G1.10, each frozen before any
+Codex output was read**, operator decisions D1–D7.
 **Decisions/defects:** The handoff called PR #272 merged; it is **open** (checks green) — fixes went
 to its branch, not a parallel copy (operator merges, D1). `codex/mym-breakout-research` is a reused
 name: PR #259's head (merged 09-02), whose study consumed the 2025→2026-07 holdout for five ORB-MYM
@@ -66,13 +67,18 @@ its relation to queue row 1's cultivation envelope is unruled (D4) — Phase 0 i
 safe under either reading. **Gate review of the pushed `codex/mym-breakout-research` (`706a03e`): `FAIL`** —
 no intake deliverables (zero of seven strategies) and ~100 MB of vendor-derived CSVs committed on a
 public ref; base 68 commits behind `main`. D7 (purge) raised; `.gitignore` hardened for
-`workspace_inputs/` / `workspace_outputs/`; §9 re-dispatch packet authored. No
-`core/`/Pine/allocation/`dd_protection`/rail change. $0/K=0.
+`workspace_inputs/` / `workspace_outputs/`; §9 re-dispatch packet authored — then
+superseded: the operator ruled the simpler path (all seven tuned and viewed on the whole export;
+confirmation forward-only; historical results model-fitted — plan `11d22e2`), **skipped Phase 0**,
+and dispatched Phase 1 to Codex on a local worktree; Phase 1 gate G1.1–G1.10 frozen before any
+output existed. Fourth Codex pass folded (`6aa7ff8`). Remote-ref deletion refused with HTTP 403
+from this session — operator deletes. No `core`/Pine/allocation/`dd_protection`/rail change. $0/K=0.
 **Open / next:** STATE queue: `#1` [Find a viable trading strategy — portable-edge cultivation
 campaign](superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md) · `#2` [B7-REFIRE Stage 1
 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
-— both unchanged. `queue-exception: orchestrator-takeover` — Phase 0 gate review returned `FAIL` on
-the pushed branch — re-dispatch owed after D7 (check-in armed); operator decisions D1–D7 sit in the campaign-state artifact.
+— both unchanged. `queue-exception: orchestrator-takeover` — Phase 0 skipped by override; the Phase 1
+gate review fires when Codex's `codex/tradeify-stage1-normalization` PR lands (check-in armed); D7
+ref deletion is the operator's; decisions D1–D5 sit in the campaign-state artifact.
 
 ---
 
