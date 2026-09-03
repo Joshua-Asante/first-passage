@@ -189,8 +189,9 @@ the spec §4.5, so the anticipated re-anchor is withdrawn. Outstanding before a 
 seven aggregate reports and ledger hashes, the `lab/CATALOG.md` row (**add it by hand** —
 `archive_lab_analysis.py --regenerate-catalog` also rewrites other rows' heavy-column notes), a
 merge of `main` (the branch is 24 commits behind), and a PR whose first description line carries
-the Rule 2 line. Two operator inputs are open on the source set itself: §6 D8 (instrument
-mismatches) and D9 (chart timezone).
+the Rule 2 line. One operator input stays open on the source set itself: §6 D8 (instrument
+mismatches). D9 (chart timezone) is resolved — `America/New_York` — and is now an implementation
+follow-up for Codex, not an operator escalation.
 **D9 resolved 2026-09-03:** chart timezone `America/New_York` for all seven — Codex's next push should
 carry the re-frozen config (all seven `source_timezone` set), the updated identity test, and UTC /
 session-date columns populated by the runner.

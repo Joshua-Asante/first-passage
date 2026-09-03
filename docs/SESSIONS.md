@@ -39,7 +39,8 @@ any entry, full or stub (a-first; bare claims `a`).
 `codex/tradeify-stage1-normalization` @ `a51bc60`; ran the frozen Phase 1 gate as a diff-plus-CI read
 without opening vendor bytes.
 **Shipped:** [campaign-state artifact](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)
-update only — §2/§5 Phase 1 rows, §6 D1/D7 closed, D8/D9 opened, §7 commands, §8 ledger, §9 read.
+update only — §2/§5 Phase 1 rows, §6 D1 closed, D7 kept **open** (ref deleted, object purge still
+pending), D8/D9 opened, §7 commands, §8 ledger, §9 read.
 **Decisions/defects:** The push is **Task 1 of 8** (identity boundary, primary-source fee capture,
 frozen config, 6 tests; plan checklist 0/49) — verdict **IN PROGRESS**, not a Phase 1 return. Partial
 read: G1.1 ✓ (no vendor bytes; `local_artifacts/` ignored), G1.5 ✓, G1.8 ✓, G1.4 tolerances
