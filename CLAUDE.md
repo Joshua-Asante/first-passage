@@ -88,6 +88,8 @@ in-file signal, which [`operational_rules.md`](docs/operational_rules.md) §14 a
 | **Q-RANGECOND-1 verdict** | **`FALSIFIED`** (2026-08-31) | [`closure-falsified`](docs/briefs/closures/Q-RANGECOND-1-closure-falsified.md) | `RESOLVED` + `+24.75pp` / `66.47%` / `+0.711R` are **retracted** — the [resolved closure](docs/briefs/closures/Q-RANGECOND-1-closure-resolved.md) is frozen historical record behind its own banner, and no longer occupies a STATE decision-index slot |
 | **ORB-MYM headline** | the **canonical engine**, not TradingView | [`orb_mym_v04_riskbudget_2026-09-02/RESULTS.md`](lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/RESULTS.md) §2 | TV net/PF/maxDD are **leg-level under pyramiding** and carry no firm DD geometry. P50's $31,947.96 reconciles to the cent yet **busts Select on day 42** at the size it was measured. Third occurrence in this construct family |
 
+*Pointer-heavy, number-light — every figure here is restated from its owner; never apply a transformation in this table.*
+
 ⚠ **Every published prop-tier bust/pass figure in this repo assumes the inactivity barrier is
 OFF** (`firm_kwargs(inactivity_off=True)`) unless its own file says otherwise. That is the
 intended operational model — it assumes the **operator-placed weekly venue-idle token trade**,

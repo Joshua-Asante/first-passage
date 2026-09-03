@@ -645,6 +645,25 @@ top-down at the desk, the retraction inverted into its opposite), caught only
 by a manual pre-merge review; the gate's first repo scan then found **four
 merged-or-pending instances**, confirming the pattern predates the session.
 
+**§14 corollary — a correction is a claim (2026-09-03).** The banner that
+replaces a wrong figure is the most dangerous place to put another one: it
+carries a "corrected" stamp and gets read as settled. Before publishing any
+correction: (a) grep the repo for the *claim*, not the file — the sibling
+module, the `.md` that publishes the `.py`'s number, and every surface you
+wrote this session are restating surfaces; (b) recompute replacement numbers
+from source, never by transforming a published figure (a 14.6% shift in
+`ln(1/b)` is 7.6% in any √-derived Sharpe); (c) keep the artifact's own hedge
+words — "proxy", "guard run", "not gate-grade" — verbatim; (d) "not
+determinable from the published artifact" is a complete answer, and often the
+right one. Evidence: PR #282/#285 — 15 review findings, 6 of them defects
+inside the corrections themselves.
+
+⚠ **Printed precision is not measured precision.** A figure printed `:.2f`
+bounds the true value to `[x−0.005, x+0.005)`; any inequality derived from it
+must hold across that whole interval, or it is not established. Running-max
+statistics (`max_dd`) carry a second caveat: the max need not belong to the
+day being explained.
+
 ---
 
 ## 15. Always-on hosting is not the desktop (console-only desktops)
