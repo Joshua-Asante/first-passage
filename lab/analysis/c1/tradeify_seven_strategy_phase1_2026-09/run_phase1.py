@@ -103,6 +103,9 @@ def _publish_payloads(payloads: dict[Path, bytes]) -> None:
     }
     backed_up: set[Path] = set()
     published: set[Path] = set()
+    publication_error: OSError | None = None
+    recovery_failures: list[str] = []
+    preserved_backups: list[Path] = []
     try:
         for target, payload in payloads.items():
             _atomic_write_bytes(staged[target], payload)
@@ -113,16 +116,37 @@ def _publish_payloads(payloads: dict[Path, bytes]) -> None:
         for target in payloads:
             os.replace(staged[target], target)
             published.add(target)
-    except OSError:
-        for target in published:
-            target.unlink(missing_ok=True)
-        for target in backed_up:
-            if backups[target].exists():
-                os.replace(backups[target], target)
-        raise
+    except OSError as exc:
+        publication_error = exc
+        for target in payloads:
+            try:
+                if target in backed_up:
+                    # Replacement restores old bytes directly, even if new bytes exist.
+                    os.replace(backups[target], target)
+                elif target in published:
+                    target.unlink(missing_ok=True)
+            except OSError as recovery_error:
+                recovery_failures.append(f"{target}: {recovery_error}")
+                if target in backed_up:
+                    preserved_backups.append(backups[target])
     finally:
-        for temporary in (*staged.values(), *backups.values()):
-            temporary.unlink(missing_ok=True)
+        # A failed restoration leaves the backup as the only recoverable old copy.
+        disposable = (*staged.values(), *(backups.values() if publication_error is None else ()))
+        for temporary in disposable:
+            try:
+                temporary.unlink(missing_ok=True)
+            except OSError as cleanup_error:
+                recovery_failures.append(f"cleanup {temporary}: {cleanup_error}")
+    if publication_error is not None:
+        if recovery_failures:
+            raise OSError(
+                f"publication failed: {publication_error}; recovery incomplete: "
+                f"{'; '.join(recovery_failures)}; preserved recovery backups: "
+                f"{', '.join(map(str, preserved_backups)) or 'none'}"
+            ) from publication_error
+        raise publication_error
+    if recovery_failures:
+        raise OSError(f"publication completed but cleanup failed: {'; '.join(recovery_failures)}")
 
 
 def _csv_bytes(frame: pd.DataFrame) -> bytes:

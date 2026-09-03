@@ -35,6 +35,8 @@ Generation `tradeify-phase1-normalization-v2` identifies the manifest/report con
 
 ## Venue boundaries
 
+Known F1 contract limitation: the explicitly mandated same-timestamp batching (earlier exits → all entries → zero-duration exits) is retained pending the operator's correction decision. Its reported minimum is not a guaranteed global causal minimum when zero-duration and new lasting entries coincide. For example, prior 50 exits alongside a zero-duration 70 and a new lasting 60: batching reports 130, while a feasible own-entry-before-exit ordering reaches a minimum peak of 70. The five current sources have no such coincident zero-duration/new-entry groups; their peaks and cap classifications are unchanged. Publication remains `NEEDS_CONTEXT` on this unresolved contract; no generic bound-correctness or unconditional software-readiness claim is made.
+
 The per-strategy Tradeify cap remains a Phase 1 blocker check against 80 micro-equivalents (`6J=10`, `MNQ/MYM/MGC=1` per contract). The joint ledger carries that unit on every event, but the joint book-cap verdict is deferred to Phase 4.
 
 Force-flat auditing checks whether a daily Tradeify deadline instant lies in `(entry, exit]`: 16:45 America/New_York on regular days and 12:59 on CME early-close dates. The primary CME page did not expose a complete 2022-09-01 through 2026-09-02 historical calendar, and the CME Reference Data API requires an OAuth API ID. `cme_early_close_calendar.json` therefore freezes the gap as `NEEDS_CONTEXT`; it contains no inferred holiday dates. Regular 16:45 checks still run, while every aggregate report preserves the holiday-short verdict cap.

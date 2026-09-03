@@ -512,6 +512,72 @@ def test_campaign_staging_replace_failure_cleans_inner_temp_and_preserves_old_ta
     ]
 
 
+def test_publication_restore_failure_preserves_backup_and_restores_other_targets(tmp_path, monkeypatch):
+    """A rollback error must not erase the only recoverable old-generation bytes."""
+    targets = [tmp_path / f"artifact_{index}.json" for index in range(3)]
+    old_bytes = {target: f"old:{target.name}".encode() for target in targets}
+    for target, payload in old_bytes.items():
+        target.write_bytes(payload)
+    publication_error = OSError("late publication failure")
+    real_replace = run_phase1.os.replace
+
+    def fail_publication_then_one_restore(source, destination):
+        if str(source).endswith(".stage") and Path(destination) == targets[2]:
+            raise publication_error
+        if str(source).endswith(".backup") and Path(destination) == targets[0]:
+            raise OSError("first restore is unavailable")
+        return real_replace(source, destination)
+
+    monkeypatch.setattr(run_phase1.os, "replace", fail_publication_then_one_restore)
+    with pytest.raises(OSError) as caught:
+        run_phase1._publish_payloads({target: b"new" for target in targets})
+
+    backups = list(tmp_path.glob("*.backup"))
+    assert len(backups) == 1
+    assert backups[0].read_bytes() == old_bytes[targets[0]]
+    assert all(target.read_bytes() == old_bytes[target] for target in targets[1:])
+    assert str(backups[0]) in str(caught.value)
+    assert "first restore is unavailable" in str(caught.value)
+    assert "late publication failure" in str(caught.value)
+    assert caught.value.__cause__ is publication_error
+    assert not list(tmp_path.glob("*.stage"))
+
+
+def test_publication_unlink_failure_does_not_abort_other_restorations(tmp_path, monkeypatch):
+    """An undeletable newly published file must not strand unrelated old artifacts."""
+    new_target = tmp_path / "new.json"
+    old_targets = [tmp_path / "old_1.json", tmp_path / "old_2.json"]
+    for target in old_targets:
+        target.write_bytes(b"old")
+    publication_error = OSError("late publication failure")
+    real_replace = run_phase1.os.replace
+    real_unlink = Path.unlink
+
+    def fail_third_publication(source, destination):
+        if str(source).endswith(".stage") and Path(destination) == old_targets[1]:
+            raise publication_error
+        return real_replace(source, destination)
+
+    def fail_new_target_unlink(path, *args, **kwargs):
+        if path == new_target:
+            raise OSError("new target cannot be unlinked")
+        return real_unlink(path, *args, **kwargs)
+
+    monkeypatch.setattr(run_phase1.os, "replace", fail_third_publication)
+    monkeypatch.setattr(Path, "unlink", fail_new_target_unlink)
+    with pytest.raises(OSError) as caught:
+        run_phase1._publish_payloads({new_target: b"new", **{target: b"new" for target in old_targets}})
+
+    assert all(target.exists() and target.read_bytes() == b"old" for target in old_targets)
+    assert new_target.read_bytes() == b"new"
+    assert str(new_target) in str(caught.value)
+    assert "new target cannot be unlinked" in str(caught.value)
+    assert "late publication failure" in str(caught.value)
+    assert caught.value.__cause__ is publication_error
+    assert not list(tmp_path.glob("*.backup"))
+    assert not list(tmp_path.glob("*.stage"))
+
+
 def test_campaign_rejects_non_frozen_strategy_roster_before_source_reads(tmp_path):
     source_dir, config, _ = _seven_source_fixture(tmp_path)
     payload = json.loads(config.read_text(encoding="utf-8"))
