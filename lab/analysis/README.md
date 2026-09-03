@@ -1,16 +1,17 @@
 # `lab/analysis/` — hot campaign bodies + archive stubs
 
-**Open [`../CATALOG.md`](../CATALOG.md) first.** Do not glob this directory
-to infer what is live.
+**Open [`../CATALOG.md`](../CATALOG.md) In flight first.** Do not glob this
+directory to infer what is live. Hot bodies means the body is still here, not
+“do this next.” The operator work list is [`STATE.md`](../../STATE.md).
 
 | Layout | Meaning |
 |---|---|
 | `<theme>/<slug>/` | Hot body (theme README names the family) |
 | `<slug>/CARD.md` | Archived stub only; body is `lab/archive/<slug>/` — **not** a second live tree |
-| `_inbox/` | Unassigned — must leave before archive |
+| `_inbox/` | Cataloged theme — unassigned until RESULTS/PREREG/Verdict; must leave before `--slug` |
 
-Theme READMEs today: `c1/`, `harvest/`, `regime/`, `striker/`, `aegis/`,
-`orb/`, `legacy/`, `mc/`, `_inbox/`.
+Theme READMEs today: `_inbox/`, `c1/`, `harvest/`, `regime/`, `striker/`, `aegis/`,
+`orb/`, `legacy/`, `mc/`.
 Archive tool: `python scripts/archive_lab_analysis.py --help`.
 
 ## Phase 2 leftovers (2026-08-22)

@@ -1,4 +1,5 @@
 **Theme:** c1
+**Verdict:** CLOSED — G0–G8 scoring superseded; §4 discharge withdrawn
 **Status:** ACTIVE — G0–G8 scoring for Class-S candidate #1 (locked-book MYM+MNQ)
 # Class-S candidate #1 — G0–G8 scoring RESULTS
 

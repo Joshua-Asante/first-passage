@@ -104,6 +104,11 @@ P2–P5 are closed. P6–P10 landed 2026-08-23 (same PR; README + STATE diet + t
 
 **Falsifier:** a newcomer reading README §Where to look still cannot tell `ACTIVE` from “in-flight.”
 
+**Successor (2026-09-03):** falsifier fired — the glossary taught non-English tokens instead of
+making them mean English. Owner is the 2026-09-03 addendum on
+[`2026-08-22-catalog-hot-vs-disposition.md`](../../adr/2026-08-22-catalog-hot-vs-disposition.md).
+Do not reopen P1 as a packet.
+
 ---
 
 ### P2 — MEMORY.md reach (assumptions-sweep D1)

@@ -228,6 +228,50 @@ requires the regenerator per item 6, unchanged.
 
 ---
 
+## Addendum — 2026-09-03
+
+**Commissioned** this session (`queue-exception: P1 falsifier fired; catalogs are being read as
+the work list`). Does **not** amend §2's two-axis split (`hot` = body location; `status` =
+disposition), Verdict-wins, C2-joins-to-`hot`, or `--slug` eligibility. Authorizes the
+presentation + stamp GO that P1 deferred and that §5 forbade as a silent mass-stamp.
+
+**Cheap falsifier (parent-side, 2026-09-03, before this addendum):**
+
+```
+$ rg -c '\| ACTIVE \|' lab/CATALOG.md
+# 103
+$ rg -n 'class_s_candidate1_scoring|aegis_orbmnq_combined_book|mnq_orb_flow_depth' lab/CATALOG.md
+# all three sit in ## Active; first two status=ACTIVE; flow-depth status=HOLD
+$ rg -n '^### _inbox' lab/CATALOG.md
+# already a cataloged theme — buried last
+$ rg -n 'cannot tell .ACTIVE. from' docs/superpowers/plans/2026-08-23-repo-pain-point-packets.md
+# P1 falsifier still the live claim
+```
+
+P1's README glossary ("these tokens do not mean English") is **falsified** as a repair: a
+newcomer still treats `## Active` + 103 `ACTIVE` rows as a work list. Successor is this
+addendum, not a reopened P1 packet and not a `LIVE` status token (another glossary row).
+
+**Locks:**
+
+1. **`## Active` → `## Hot bodies`.** Internal table id stays `active`. Parsers accept both
+   headings. Hot means "keep the body," not "in flight."
+2. **Generated `## In flight` first.** Membership is derived, not "every leftover `ACTIVE`":
+   lab slugs named by `STATE.md` operator-queue owners, lab slugs in `docs/briefs/INDEX.md`
+   `## Open` homes, and cards carrying `**In-flight:** yes`. **Exclude `HOLD` and
+   archiveable statuses (`CLOSED` / `FALSIFIED` / `RETIRED` / `NULL`).** Not the
+   operator work list (that remains `STATE.md`).
+3. **`ACTIVE` is forbidden on a decided campaign.** Stamp `**Verdict:**` as a separate line
+   (Verdict-wins already landed). Do not `--slug`. This is the mass-Verdict GO §5 deferred.
+4. Regenerator remains the sole CATALOG writer (2026-08-29 single-row exception unchanged).
+5. `_inbox` stays a cataloged theme, rendered first under Hot bodies. Outcome-bearing work
+   must carry a Verdict and leave `_inbox` before `--slug`. Do not mass-relocate trees.
+
+**Forbidden under this addendum:** a sixth root doc; a `LIVE` token; mass `--slug`; hand-editing
+`status`/`hot` cells.
+
+---
+
 ## Change history
 
 | Date | Change | By |
@@ -236,3 +280,5 @@ requires the regenerator per item 6, unchanged.
 | 2026-08-22 | Operator `Accepted` + Phase 1 GO (parser / C2 / `hot` column) | Joshua (in-session) + Cursor Cloud Agent |
 | 2026-08-22 | Blast-radius parentheticals: Phase 1 landed (this GO); §0/§1 left as defect record | Cursor Cloud Agent |
 | 2026-08-29 | Addendum: worktree-isolated single-new-row hand-insert sanctioned as a narrow exception to §2 item 6, distinct from C-P1-10's repaired defect. | Joshua (operator GO, in-session) + Claude Code |
+| 2026-09-03 | Addendum: `## Hot bodies` + derived `## In flight`; Verdict-stamp GO on spent `ACTIVE`; P1 glossary falsified. | Cursor Cloud Agent (this commission) |
+| 2026-09-03 | In-flight membership also excludes archiveable statuses (Codex P1 on #276). | Cursor Cloud Agent |

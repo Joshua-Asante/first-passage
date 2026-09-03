@@ -24,6 +24,7 @@ Corpus searched (the surfaces this repo already treats as closure-of-record):
   docs/notes/audits/*.md           one chunk per file
   docs/SESSIONS.md                 one chunk per "## " entry
   lab/CATALOG.md                   one chunk per "| slug | ..." row
+                                   (Hot bodies / Archived only; skip In flight)
   docs/rejected_candidates.md      one chunk per "### " entry
   ops/instruments/*.md             one chunk per file
   docs/briefs/rnd-pipeline/*.md    one chunk per file
@@ -189,7 +190,13 @@ def load_corpus(repo_root: Path) -> list[Chunk]:
     if catalog_path.is_file():
         text = catalog_path.read_text(encoding="utf-8", errors="replace")
         surface = catalog_path.relative_to(repo_root).as_posix()
+        catalog_section = ""
         for line in text.splitlines():
+            if line.startswith("## "):
+                catalog_section = line.strip()
+                continue
+            if catalog_section == "## In flight":
+                continue
             if line.startswith("| ") and "---" not in line and "slug" not in line.split("|")[1]:
                 slug = line.split("|")[1].strip()
                 if slug:
