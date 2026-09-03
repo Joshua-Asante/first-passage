@@ -33,6 +33,28 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-03g — Codex review of #281: T0 `PRE-CONTRACT DROP`
+
+**Focus:** Respond to Codex’s eight findings on the off-queue VOLREGIME translation rebind.
+`queue-exception: same off-queue campaign as 2026-09-03f; live #1 stays the seven-strategy Select campaign.`
+**Shipped:** [addendum 2026-09-03b](adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03b--t0-pre-contract-drop)
+· [T0](notes/2026-09-03-volregime-translation-t0.md) both templates fail
+· [NB1 Vet](notes/2026-09-03-volregime-nb1-vet-card.md) withdrawn (`T0-FAIL`).
+**Decisions/defects:** All eight findings accepted after disk reads. NB1 has no cited convexity
+prior; L1–L4 is pooled ToD, not the first RTH bar; MNQ comparator is `>=`; raised-bar Route still
+binds and was unpaid; extraction probe needs its own GO + Confirm reservation; pre-contract close
+is `PRE-CONTRACT DROP` not `EXPRESSION-FAIL`; Rule-2 seats remapped (A 1/8 STOPPED, B 2/8 STOPPED,
+C 0/8); `mym_breakout_entry_2026_09` is closer prior art than the first Novelty list. Q stays
+`OPEN`. `#1` not stolen.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— residue (queue-exception): off-queue VOLREGIME translation closed at T0
+([`PRE-CONTRACT DROP`](notes/2026-09-03-volregime-translation-t0.md)).
+**Live-ops state:** unchanged — c1 rail disarmed, `dry_run=true`, M1 not `RESOLVED`, no arm.
+
+---
+
 ## 2026-09-03f — VOLREGIME translation rebind; enter at Packet T
 
 **Focus:** Operator corrected the off-queue Sep 2 campaign: Q-VOLREGIME already has GO, presence

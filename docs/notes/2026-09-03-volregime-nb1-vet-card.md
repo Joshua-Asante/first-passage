@@ -2,49 +2,48 @@
 
 **Date:** 2026-09-03  
 **Author:** Cursor (Grok 4.6)  
-**Status:** **`VET-INCOMPLETE`** — Decision and Novelty clear; Structural conditional; Cost /
-Shape / Power unresolved. Not `VET-PASS`. No candidate contract opened.  
+**Status:** **`T0-FAIL` / withdrawn.** Decision and Novelty **retracted**. Not `VET-PASS`.
+No candidate contract. Parent T0 closed `PRE-CONTRACT DROP`.  
 **Parent T0:** [`2026-09-03-volregime-translation-t0.md`](2026-09-03-volregime-translation-t0.md)  
 **Funnel:** [`2026-09-01-three-speed-alpha-research-design.md`](../superpowers/specs/2026-09-01-three-speed-alpha-research-design.md)
 (`Proposed` — used as the Vet field list, not as standing doctrine).  
 **Spend / K:** $0 / K=0 — no payoff comparison, no extraction probe.
 
-This card authorizes nothing. It is the T1 read the translation plan owes after a surviving T0
-bridge. A founding freeze is forbidden until the unresolved gates are either cleared without
-outcome access or the template is dropped.
+This card authorizes nothing. Codex review of PR #281 (accepted 2026-09-03) showed the T0
+“survives” read was wrong, so the earlier Decision/Novelty Clear scores are withdrawn.
 
 ## 1. Fields
 
 | Field | Content |
 |---|---|
-| **Candidate ID** | `VOLREGIME-NB1` v0.1 draft |
-| **Observation / source** | Q-VOLREGIME-1 L1–L4 presence: MNQ stratified lift +22.3pp / +27.4pp; L3 PASS both halves; L4 PASS 7/7. Direction limb clean null. Observed L5 **not run**. |
-| **Decision bridge** | See T0 Template A — first-touch of the trigger bar’s range claims the next bar’s unsigned excursion. |
-| **Trade expression** | New candidate. Not a gate on `ORB-MNQ-1`. Not exact P50. |
-| **Role** | Entry construct (volatility / first-passage), not a conditioner-only class finding. |
-| **Venue legality** | MNQ legal; occupancy released (2026-08-12). One micro. Flat by 10:00 ET. Activity: one attempt on high-volume first RTH bars only; weekly idle still possible — operator token trade is accepted and is **not** scored as strategy alpha. |
-| **Data route** | $0 — on-disk `MNQ_M15.csv` if a later pre-freeze extraction is authorized. Not run here. |
-| **Search declaration** | Moot until `VET-PASS`. Campaign envelope already freezes `M=1`, `α=0.05`. |
+| **Candidate ID** | `VOLREGIME-NB1` v0.1 draft — **rejected at T0** |
+| **Observation / source** | Q-VOLREGIME-1 L1–L4 presence is pooled across ToD slots, not the first RTH bar. Observed L5 **not run**. |
+| **Decision bridge** | Failed T0 — no cited convexity prior; path geometry not implied by unsigned-range elevation. |
+| **Trade expression** | Not a live template. Not a gate on `ORB-MNQ-1`. Not exact P50. |
+| **Role** | Would have been an entry construct. Conditioner-role class finding is unchanged. |
+| **Raised-bar Route** | **Unpaid.** The 2026-09-03 waiver did not lift Q-VOLREGIME-1 §5’s Route conjunct. A single-index, flat-by-close OHLCV entry is inside [`rejected_candidates.md`](../rejected_candidates.md) (2026-07-21). No Route 1/2/3 argument was recorded. |
+| **Data route** | $0. No probe. |
 
-## 2. Six-gate read
+## 2. Six-gate read (retracted)
 
 | Gate | Read | Basis |
 |---|---|---|
-| Decision | **Clear** | T0 sentence matches the conditioned quantity (unsigned next-bar range) and does not smuggle direction. |
-| Structural | **Conditional** | Product, session, integer size, and flat-by-10:00 are legal. Standalone weekly activity is not guaranteed if `bias_volume=0` clusters; the accepted manual preservation trade covers the account, not the expression. |
-| Cost | **Unresolved** | `cost_R` depends on the 09:30–09:45 range distribution under `bias_volume=1`. Dollar fee invariance is not an R-unit argument (`GAPCOND-ORB-1` lesson). No extraction run. |
-| Shape | **Unresolved** | Intraday MAE, loss clustering, and Select bust path are unmeasured. EOD drawdown is not a substitute. Pre-freeze extraction, if run, must use a development partition that cannot become Confirm. |
-| Power | **Unresolved** | Reserved Confirm n is unknown until partitions freeze. Cannot score Clear from the full-panel L1–L4 n. |
-| Novelty | **Clear** | Distinct observable from P50 opening-range aggregate volume; distinct expression from `GAPCOND-ORB-1` / ORB-MNQ-1 gate-re-adds; distinct from relative-volume rotation and `OPENPRESS-1`. Empty greps were not treated as proof — those named artifacts were read. |
+| Decision | **Fail** (retracted from Clear) | T0 bridge is tautological / still a first-passage continuation claim. |
+| Structural | **Not scored** | T0 failed first. |
+| Cost | **Not scored** | T0 failed first. A later probe would need its own operator envelope and an append-only Confirm reservation *before* any read ([`tradeable-reachable`](../adr/2026-08-30-tradeable-reachable-gate.md) · [`campaign envelope`](../adr/2026-08-30-operator-approvals-campaign-envelope.md)). The campaign $0 / 48-core-hour envelope is **not** that approval. |
+| Shape | **Not scored** | Same probe-envelope bar. |
+| Power | **Not scored** | T0 failed first. |
+| Novelty | **Fail** (retracted from Clear) | Closest prior art was omitted: [`mym_breakout_entry_2026_09/RESULTS.md`](../../lab/analysis/mym_breakout_entry_2026_09/RESULTS.md) — two-sided opening-range stop-entry, 1R, no robust candidate; names an independently justified volume conditioner as re-entry. That is adverse evidence, not a license. P50 / `GAPCOND-ORB-1` / `OPENPRESS-1` remain distinct but were not sufficient alone. |
 
 ## 3. Disposition
 
-`VET-INCOMPLETE`. Do not open a candidate contract. Do not hash a founding freeze. Do not Explore.
+`T0-FAIL`. Do not open a candidate contract. Do not hash a founding freeze. Do not Explore.
+Do **not** run a pre-freeze extraction probe — no surviving template, and no probe-specific GO
+or Confirm-window reservation exists.
 
-Allowed next steps inside the $0 / 48-core-hour envelope:
+Allowed next steps: none on this template. Campaign terminal is `PRE-CONTRACT DROP` on the
+T0 owner. A later translation would be a new Packet T after a cited convexity prior **and** a
+recorded raised-bar Route, not a continuation of this card.
 
-1. a pre-freeze extraction probe on a development partition that is declared unusable as Confirm,
-   scoring Cost/Shape only; or
-2. drop the template (`EXPRESSION-FAIL` if it is the only slot).
-
-Forbidden: threshold grids; P50 reconstruction; Packet P / observed L5; stealing STATE `#1`.
+Forbidden: threshold grids; P50 reconstruction; Packet P / observed L5; stealing STATE `#1`;
+treating the campaign envelope as a probe GO.

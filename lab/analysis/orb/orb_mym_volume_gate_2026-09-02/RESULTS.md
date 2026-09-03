@@ -7,8 +7,8 @@
 **Pine SHA-256:** `9292bd4ec0ca9074d6d6523491dcdde3709424bd53edf9c75dea79f3b9f65071`
 
 > **Cultivation routing, 2026-09-03:** exact P50 is **not** Seat A. The Sep 2 campaign was rebound
-> to VOLREGIME translation
-> ([`ADR addendum`](../../../../docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03--campaign-is-volregime-translation-enter-at-packet-t)).
+> to VOLREGIME translation and closed at T0 as `PRE-CONTRACT DROP`
+> ([`addendum 2026-09-03b`](../../../../docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03b--t0-pre-contract-drop)).
 > This result remains source/development evidence only: Off/P50/P80 was viewed before any
 > contract/K freeze, so no campaign may open a candidate contract around exact P50 retroactively.
 > It is a different observable from Q-VOLREGIME `bias_volume`.

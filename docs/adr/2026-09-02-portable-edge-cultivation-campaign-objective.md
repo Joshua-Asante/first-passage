@@ -1,6 +1,6 @@
 # Portable-edge cultivation campaign objective and boundaries
 
-**Status:** `Accepted` — direct operator election, 2026-09-02. **Addendum 2026-09-03 (`Accepted`): this campaign is VOLREGIME translation; envelope GO recorded; enter at Packet T; L5 waived for this campaign only — see the dated addendum.**  
+**Status:** `Accepted` — direct operator election, 2026-09-02. **Addendum 2026-09-03 (`Accepted`): this campaign is VOLREGIME translation; envelope GO recorded; L5 waived for this campaign only. Addendum 2026-09-03b (`Accepted`): Packet T0 closed `PRE-CONTRACT DROP` — see the dated addenda.**  
 **Decision date:** 2026-09-02  
 **Supersedes:** none  
 **Superseded-by:** none  
@@ -225,3 +225,31 @@ operator promotion under the Survive-bound cap.
 
 **What this does NOT do:** open a contract; freeze a template; score a payoff cell; start Packet P
 or observed L5; admit exact P50; change `#1`; arm the rail.
+
+## Addendum 2026-09-03b — T0 `PRE-CONTRACT DROP`
+
+**Status of this addendum: `Accepted` — Codex review of PR #281, recorded 2026-09-03.**
+All eight findings were verified against the cited owners and accepted.
+
+**The ruling.**
+
+1. **T0 has no surviving bridge.** `VOLREGIME-NB1` fails: no cited convexity prior; L1–L4 does
+   not imply first-passage path geometry; the opening-slot sketch is an unmeasured subpopulation
+   of the pooled 135,958-bar MNQ presence battery. Volume-conditioned ORB still fails on the
+   forbidden “more range means breakout” sentence. Exact P50 stays ineligible.
+2. **Campaign terminal is `PRE-CONTRACT DROP`** under §1.6. `EXPRESSION-FAIL` remains unavailable
+   until a candidate-contract state exists. L1–L4 stay class findings. Do not open T1/T2, a
+   contract, or a third template.
+3. **The 2026-09-03 L5-skip did not waive the raised-bar Route.** Q-VOLREGIME-1 §5 still requires
+   a Route 1/2/3 argument before any entry construct
+   ([`rejected_candidates.md`](../rejected_candidates.md) 2026-07-21). Unpaid; moot for this
+   close because no template proceeds.
+4. **A pre-freeze extraction probe is not authorized.** It needs its own operator envelope and an
+   append-only Confirm reservation before any read. The campaign $0 / 48-core-hour envelope is
+   not that approval.
+5. **Rule-2 seats are remapped** on the cultivation plan ledger. Retired P50 source-identity
+   stays Seat A at 1/8 STOPPED. Translation T0 is Seat B at 2/8 and now STOPPED by this drop.
+   Seat C unused.
+
+**What this does NOT do:** close Q-VOLREGIME-1; ratify the 703-core-hour right-size; start
+Packet P or observed L5; steal queue `#1`; arm the rail.

@@ -82,11 +82,10 @@ a claim about the discovery pipeline's state either way.
 Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md) (P8 keep-15 roll, 2026-08-23; rolled 2026-08-27, 2026-08-29 (×2), 2026-08-30 (×2), 2026-08-31 (×2), 2026-09-01 (×2), 2026-09-02, and 2026-09-03 (×2)).
 
 - **2026-09-03** — Off-queue portable-edge campaign rebound to VOLREGIME translation: envelope GO
-  recorded; enter at Packet T; L1–L4 is the admitted prior; L5 waived for this campaign only;
-  exact P50 stays ineligible and is no longer Seat A; MNQ primary. Does not steal queue `#1`
-  (seven-strategy Select). No candidate/capital/`core`/Pine/rail change. $0/K=0.
+  recorded; L5 waived for this campaign only; T0 then closed `PRE-CONTRACT DROP` (both templates
+  fail; no contract). Exact P50 stays ineligible. Does not steal queue `#1`. $0/K=0.
   [`ADR addendum`](docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03--campaign-is-volregime-translation-enter-at-packet-t)
-  · [`translation plan`](docs/superpowers/plans/2026-09-01-q-volregime-bounded-translation-campaign.md)
+  · [`T0 addendum`](docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03b--t0-pre-contract-drop)
   · [`T0`](docs/notes/2026-09-03-volregime-translation-t0.md)
 - **2026-09-03** — Queue reprioritized: the seven-strategy Tradeify Select configuration campaign
   ([PR #272](https://github.com/Joshua-Asante/first-passage/pull/272) plan ·

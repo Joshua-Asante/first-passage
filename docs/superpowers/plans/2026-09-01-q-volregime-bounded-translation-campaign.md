@@ -1,12 +1,11 @@
 # Q-VOLREGIME-1 bounded translation campaign
 
-> **Status:** `AUTHORIZED — ENTER AT PACKET T`. Envelope GO recorded 2026-09-03 on
-> [`2026-09-02-portable-edge-cultivation-campaign-objective.md`](../../adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03--campaign-is-volregime-translation-enter-at-packet-t).
-> Packets P and A are **not this campaign**. No candidate contract, Pine, allocation, rail, or live
-> action is authorized by the GO alone. T0 is discharged
-> ([`2026-09-03 T0`](../../notes/2026-09-03-volregime-translation-t0.md)): Template A
-> (`VOLREGIME-NB1`) survives; volume-conditioned ORB fails. Next is T1 (`VET-INCOMPLETE`) — no
-> founding freeze.
+> **Status:** `COMPLETE — PRE-CONTRACT DROP AT T0`. Envelope GO recorded 2026-09-03; T0 reviewed
+> 2026-09-03 and closed with no surviving bridge
+> ([`ADR addendum 2026-09-03b`](../../adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03b--t0-pre-contract-drop)
+> · [`T0`](../../notes/2026-09-03-volregime-translation-t0.md)). Packets P and A are **not this
+> campaign**. No candidate contract, Pine, allocation, rail, T1/T2, or extraction probe is
+> authorized. L1–L4 remain class findings. Q-VOLREGIME-1 is not closed.
 >
 > **Purpose:** give the one defensible live mechanism lead one bounded chance to become a complete,
 > confirmed, Tradeify-reachable trade expression—then stop. This is the execution plan implied by
@@ -216,10 +215,12 @@ payoff outcomes to invent direction or exits.
 
 ### T0 — Write the bridge or stop
 
-**Discharged 2026-09-03:** [`docs/notes/2026-09-03-volregime-translation-t0.md`](../../notes/2026-09-03-volregime-translation-t0.md).
-Template A (`VOLREGIME-NB1`) survives. Template B (volume-conditioned ORB) fails T0. Exact P50 is
-ineligible. Vet: [`2026-09-03-volregime-nb1-vet-card.md`](../../notes/2026-09-03-volregime-nb1-vet-card.md)
-(`VET-INCOMPLETE` — no contract).
+**Discharged 2026-09-03 as `PRE-CONTRACT DROP`:**
+[`docs/notes/2026-09-03-volregime-translation-t0.md`](../../notes/2026-09-03-volregime-translation-t0.md).
+Both Template A (`VOLREGIME-NB1`) and Template B (volume-conditioned ORB) fail T0. Exact P50 is
+ineligible. Vet card withdrawn:
+[`2026-09-03-volregime-nb1-vet-card.md`](../../notes/2026-09-03-volregime-nb1-vet-card.md)
+(`T0-FAIL`). Do not enter T1/T2.
 
 For each proposed template, write one falsifiable sentence answering:
 
@@ -229,7 +230,9 @@ For each proposed template, write one falsifiable sentence answering:
 
 Acceptable bridges require a cited directional/convexity prior that was not selected from this
 campaign's reserved payoff window. “More range means breakout” is not a bridge. If no bridge
-survives review, close `EXPRESSION-FAIL` and stop; attribution remains a class finding.
+survives review **before a contract exists**, close `PRE-CONTRACT DROP` per the campaign ADR §1.6
+and stop; L1–L4 remain class findings. `EXPRESSION-FAIL` is reserved for a later contract/Confirm
+state.
 
 ### T0.1 — ORB is eligible, but not grandfathered
 
@@ -331,7 +334,8 @@ committed before exploration.
 |---|---|---|---|
 | Pilot | `AMBIGUOUS-PARKED` | L1–L4 presence remains; attribution machinery not trusted | Tune pilot repeatedly or inspect observed L5 |
 | L5 attribution | `MARKET-NULL` / parent frozen fail | Presence did not establish incremental forecast information | Change learner, threshold, metric, or horizon |
-| Translation | `EXPRESSION-FAIL` | Attributed information may remain scientifically valid | Call proxy a strategy; add a third template |
+| Translation (pre-contract T0) | `PRE-CONTRACT DROP` | L1–L4 presence remains a class finding | Call proxy a strategy; add a third template; file `EXPRESSION-FAIL` before a contract exists |
+| Translation (post-contract) | `EXPRESSION-FAIL` | Attributed information may remain scientifically valid | Rescue the same contract after result access |
 | Explore/Confirm | `MARKET-NULL`, `EXPRESSION-FAIL`, or `EVIDENCE-VOID` | Exact class determines re-entry condition | Rescue same contract after result access |
 | Venue | `CONFIRMED · VENUE-FAIL(edition)` | Edge remains confirmed; Tradeify placement failed | Overwrite confirmation or tune for Select |
 | Venue + programme | `CONFIRMED · TRADEIFY-CLEAR · <multi-firm verdict>` | Evidence, edition, and programme axes stay separate | Use firm-count governance to change evidence |
