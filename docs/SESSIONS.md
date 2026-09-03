@@ -33,6 +33,93 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-03n — Delta gate read of Codex's re-anchor round: verdict holds at `NEEDS_CONTEXT`
+
+**Focus:** Audit `codex/tradeify-stage1-normalization` @ `a35b4e8` (17 files, +2,112) against the twelve §9
+re-anchor items plus D13, after [PR #289](https://github.com/Joshua-Asante/first-passage/pull/289) merged
+(`ceeb2ab`). Six parallel verifier agents, each followed by an adversarial challenger. No vendor bytes; no
+worker PR merged.
+**Shipped:** [campaign-state artifact](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)
+new §11 recording the delta verdict item by item.
+**Decisions/defects:** **28 item verdicts — 18 PASS, 5 PARTIAL, 4 FAIL, 1 NA, zero overturned by the challenge
+pass.** Orchestrator-run: 240 tests pass, `--tier check` exit 0, no vendor bytes, no orchestrator-surface
+edits, `cost_model.py` byte-unchanged, `__init__.py` present. **The blocker is singular and decisive:
+`reconciliation_manifest.json` and `RESULTS.md` were never regenerated** — neither appears in the diff. The
+committed manifest still carries seven rows under the retired ids, no `dropped_sources`, null byte and pin
+fields, no `source_row_sha256`, and input hashes `8881a2af…`/`a368dc61…` against actual
+`0a6c1643…`/`742e8350…`; RESULTS.md still prints P&L for `striker_nas100_mnq_native_variant`, a dropped
+identity. The delivery ships reports describing a population that no longer exists. Genuinely strong: the
+identity freeze is enforced in code with frozen rosters that raise on mismatch; the `_exposure_bounds`
+causality fix and four of five P2s land with tests; the early-close `capture_basename` is load-bearing and
+`COMPLETE` is rejected without evidence; `source_row_sha256` digests raw CSV row bytes; the TV anchors match
+§10 exactly with `missing_metrics` naming the gaps rather than passing silently. **The pin-status finding
+inverted mid-read:** scored `FAIL` because the `candidates/` pin_ref did not resolve, then #286 was
+re-opened and merged (`8327f14`) so it now does — Codex's records are correct and need only a merge of
+current `main`. **The durable defect underneath it stands:** no code opens `PORT_MANIFEST.sha256` to confirm
+a claimed pin exists, and the validator hard-codes the `candidates/` path, so a dangling pin_ref passes
+today. Also unprompted: `_RUNNER_VERSION` was not bumped, so `runner_version` no longer discriminates
+generations. D13 remains `BLOCKER` — relay lag, the (b) ruling reached `main` only at `ceeb2ab`. No
+`core`/Pine/allocation/`dd_protection`/rail change. $0/K=0.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — Codex re-runs and re-freezes
+(manifest + RESULTS), merges current `main`, adds the pin-existence check, bumps the runner version, carries
+the Rule 2 iteration line and the D13 `ACCEPTED_UNMODELED` disposition; orchestrator lands the D12 calendar,
+which unblocks the three venue-bound re-exports; operator supplies commissions + monthly net and may
+re-export the two Strikers at 100K; D3, D5, D7 open · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— unchanged.
+
+`queue-exception: same off-queue campaign as 2026-09-03i; live #1 stays the seven-strategy Select campaign.`
+
+---
+
+## 2026-09-03m — Operator rulings D11–D13; venue re-expression lane ADR + edit spec; TV anchors land
+
+**Focus:** Apply the operator's four rulings on the seven-strategy Select campaign after
+[PR #284](https://github.com/Joshua-Asante/first-passage/pull/284) merged, and source the CME calendar the
+campaign was blocked on. No vendor bytes opened; no worker PR merged.
+**Shipped:** new [venue-legality re-expression lane ADR](adr/2026-09-03-venue-legality-re-expression-lane.md)
+(`Proposed`, full tier) + [venue-bound session guard spec](superpowers/specs/2026-09-03-venue-bound-session-guard.md);
+[campaign-state artifact](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) §6 D11/D12/D13 ruled,
+D15/D16 raised, §9 item 11 updated, new §10 TradingView anchors.
+**Decisions/defects:** **D11 re-express** — re-expression is a post-view change that the plan's own Objective
+("without changing their signal rules after results are viewed") and its Phase 6 no-repair clause forbid, so the
+ruling needs a dated scope amendment ratified *before* any replacement result is inspected; the ADR admits a lane
+whose trigger is a venue flag and never a performance result, permits the session bound and nothing else, and
+re-runs the full G1.1–G1.10 gate on each replacement. The edit spec carries the load-bearing arithmetic: Pine fills
+`close_all` on the **next** bar and the export's stamp convention (bar open vs bar close) is unverified, so on
+15-minute bars the flatten must signal on the bar opening **16:00 ET** (fills 16:15, worst-case stamp 16:30) and
+**12:15 ET** on an early-close date; a 16:15 signal fills at a bar whose close stamp is exactly 16:45 and still
+violates `entry < deadline <= exit_`. **The Pine could not be edited here** — `**/*.pine` is gitignored and none of
+the three bodies exists in this clone — so the deliverable is a paste-ready spec, not a diff. Aegis is diagnosed as
+an implementation defect rather than a design choice: its session ends 13:45 ET and its Pine already declares a
+16:30 ET flatten, yet 9 trades span 16:45, most likely a fixed-offset or exchange-time flatten. **D12** — the
+orchestrator sources the 2022–2026 CME calendars directly (multi-agent research: one researcher per year, three
+adversarial lenses each, three corroboration lanes) for durable storage under `ops/calendars/`. **D13 (b)** —
+continuous-symbol basis accepted; the seam risk is pre-registered and a Phase 6 seam-sensitivity check with it, so
+the roll blocker becomes `ACCEPTED_UNMODELED` rather than a gate. **Item 11** — TradingView Key-stats panels
+supplied for all five retained strategies and frozen in §10; every trade count and net-P&L figure matches the
+committed manifest **exactly**, the first independent confirmation of the runner's accounting, but commissions and
+monthly net are absent so G1.4 stays partial. Two findings raised: **D15**, both Striker exports ran at **200K**
+initial capital against the **100K** Select tier, so equity-based sizing would double their positions; **D16**, the
+hedging rule puts MYM and both MNQ legs in one Product Group where opposing directions are prohibited in and across
+accounts, which Phase 1 never tested. ⚠ The §10 max-DD figures are TradingView equity drawdowns, leg-level under
+pyramiding with no firm DD geometry — the fourth occurrence in this construct family; three of five exceed the
+tier's $3,000 trailing barrier at their exported size, which sizes the Phase 2 haircut and is not a bust verdict.
+No `core`/Pine/allocation/`dd_protection`/rail change. $0/K=0.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — **lane ADR `Accepted`, Pine edits
+applied, D15 resolved from source.** Next: orchestrator lands the verified CME calendar and swaps out the interim
+early-close list, which **blocks** the three venue-bound re-exports; operator may re-export the two Strikers at 100K
+now and supplies the commission + monthly rows; every re-export lands with refreshed hashes, filenames and
+`pin_divergence` per guard-spec §9; Codex runs the twelve-item re-anchor round; D7 open pending purge · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— unchanged.
+
+`queue-exception: same off-queue campaign as 2026-09-03i; live #1 stays the seven-strategy Select campaign.`
+
+---
+
 ## 2026-09-03l — Phase 1 returned (PR #283): gate verdict `NEEDS_CONTEXT`; Striker identities contested by the pins
 
 **Focus:** Hourly check-in found Codex's Phase 1 return — `codex/tradeify-stage1-normalization` @ `809bbb4`,
