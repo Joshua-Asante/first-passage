@@ -158,6 +158,15 @@ gates:
       - python
       - scripts/check_sessions_queue_bind.py
 
+  # always, not path-conditional on STATE.md: a stale Last curated / weekly
+  # deadline must fail the next unrelated commit (the daily digest is skipped).
+  # Clock is America/New_York; tests inject STATE_CURRENCY_TODAY.
+  - id: state-currency
+    tier: always
+    cmd:
+      - python
+      - scripts/check_state_currency.py
+
   # Trigger must match check_supersession_placement.py's own in_scope() -- the
   # checker never scans docs/adr/ (see its SCOPE docstring), so a docs/adr/
   # trigger let this gate run on edits it could never find anything in, while
