@@ -39,8 +39,12 @@ _SOURCE_KEYS = frozenset(
         "pine_commission_per_side_usd",
         "pine_slippage_ticks_per_side",
         "pine_pyramiding_pct",
+        "pine_pin_status",
         "contract_cap",
     }
+)
+_PINE_PIN_STATUSES = frozenset(
+    {"NOT_IN_PORT_MANIFEST", "PINNED_SWAP_PROTOTYPE", "UNPINNED_MODIFIED"}
 )
 _FEE_URL = "https://help.tradeify.co/en/articles/10468315-trading-commission-fees"
 _FEE_PAGE_DATE = "2026-04-28"
@@ -113,6 +117,9 @@ class SourceSpec:
     pine_commission_per_side_usd: Decimal
     pine_slippage_ticks_per_side: Decimal
     pine_pyramiding_pct: Decimal
+    pine_pin_status: Literal[
+        "NOT_IN_PORT_MANIFEST", "PINNED_SWAP_PROTOTYPE", "UNPINNED_MODIFIED"
+    ]
     contract_cap: int
 
 
@@ -206,6 +213,14 @@ def _source_spec(value: object) -> SourceSpec:
         raise ValueError(f"invalid export_sha256 for {strategy_id}")
     if not _HASH_RE.fullmatch(pine_hash):
         raise ValueError(f"invalid pine_sha256 for {strategy_id}")
+    pine_pin_status = _require_nonempty_string(
+        record["pine_pin_status"], "pine_pin_status"
+    )
+    if pine_pin_status not in _PINE_PIN_STATUSES:
+        raise ValueError(
+            "pine_pin_status must be one of "
+            f"{sorted(_PINE_PIN_STATUSES)!r}: {pine_pin_status}"
+        )
     for field in ("declared_bar_size_minutes", "contract_cap"):
         if type(record[field]) is not int or record[field] <= 0:
             raise ValueError(f"{field} must be a positive integer")
@@ -244,6 +259,7 @@ def _source_spec(value: object) -> SourceSpec:
         pine_pyramiding_pct=_require_decimal(
             record["pine_pyramiding_pct"], "pine_pyramiding_pct", allow_zero=True
         ),
+        pine_pin_status=pine_pin_status,
         contract_cap=record["contract_cap"],
     )
 

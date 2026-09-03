@@ -29,10 +29,10 @@ _SPEC.loader.exec_module(run_phase1)
 _FROZEN_STRATEGY_IDS = [
     "aegis_6j1",
     "orb_mnq_recon_v7",
-    "striker_dj30_mym_v45",
-    "striker_dj30_mym_pyramid_down",
-    "striker_nas100_mnq_v1",
-    "striker_nas100_mnq_native_variant",
+    "striker_dj30_qtxg1_swap_body_on_mym",
+    "striker_dj30_native_pyramid_down_on_mym",
+    "striker_nas100_native_dow_modified_on_mnq",
+    "striker_nas100_qtxg1_swap_body_on_mnq",
     "vanguard_mgc_v04",
 ]
 
@@ -143,6 +143,7 @@ def _seven_source_fixture(root: Path) -> tuple[Path, Path, list[str]]:
                 "pine_commission_per_side_usd": "0.91",
                 "pine_slippage_ticks_per_side": "1",
                 "pine_pyramiding_pct": "100",
+                "pine_pin_status": "NOT_IN_PORT_MANIFEST",
                 "contract_cap": 80,
             }
         )
@@ -209,6 +210,7 @@ def test_campaign_writes_local_rows_but_aggregate_contains_no_absolute_path(tmp_
     detailed = json.loads(report_paths[0].read_text(encoding="utf-8"))
     assert detailed["strategy_id"] == report_paths[0].stem
     assert detailed["claim_class"] == "EXPLORATORY"
+    assert detailed["source_identity"]["pine_pin_status"] == "NOT_IN_PORT_MANIFEST"
     assert detailed["issues"]
     assert set(detailed["issues"][0]) == {
         "code",
@@ -222,6 +224,11 @@ def test_campaign_writes_local_rows_but_aggregate_contains_no_absolute_path(tmp_
     assert manifest["phase1_verdict_cap"] == "NEEDS_CONTEXT"
     assert manifest["git_base_commit"] == "ed181233afd01d8fc128bc76ac626e43c3761f87"
     assert [row["strategy_id"] for row in manifest["strategies"]] == strategy_ids
+    assert all(row["pine_pin_status"] == "NOT_IN_PORT_MANIFEST" for row in manifest["strategies"])
+    assert all(
+        row["source_identity"]["pine_pin_status"] == "NOT_IN_PORT_MANIFEST"
+        for row in manifest["strategies"]
+    )
     assert set(manifest["local_strategy_report_sha256"]) == set(strategy_ids)
     assert manifest["local_strategy_report_sha256"] == {
         path.stem: sha256(path.read_bytes()).hexdigest() for path in report_paths

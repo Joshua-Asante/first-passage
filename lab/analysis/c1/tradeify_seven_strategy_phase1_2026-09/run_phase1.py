@@ -52,10 +52,10 @@ _BASE_COMMIT = "ed181233afd01d8fc128bc76ac626e43c3761f87"
 _FROZEN_STRATEGY_IDS = (
     "aegis_6j1",
     "orb_mnq_recon_v7",
-    "striker_dj30_mym_v45",
-    "striker_dj30_mym_pyramid_down",
-    "striker_nas100_mnq_v1",
-    "striker_nas100_mnq_native_variant",
+    "striker_dj30_qtxg1_swap_body_on_mym",
+    "striker_dj30_native_pyramid_down_on_mym",
+    "striker_nas100_native_dow_modified_on_mnq",
+    "striker_nas100_qtxg1_swap_body_on_mnq",
     "vanguard_mgc_v04",
 )
 
@@ -236,6 +236,7 @@ def _strategy_record(
         "monthly_net_pnl": dict(accounting.monthly_net_pnl),
         "final_source_cumulative_pnl_usd": accounting.final_source_cumulative_pnl_usd,
         "pine_pyramiding_pct": spec.pine_pyramiding_pct,
+        "pine_pin_status": spec.pine_pin_status,
         "micro_equivalent_multiplier": venue.micro_equivalent_multiplier,
         "peak_open_micro_equivalent_quantity_min": (
             venue.peak_open_micro_equivalent_quantity_min
@@ -263,6 +264,7 @@ def _strategy_record(
             "export_sha256": spec.export_sha256,
             "pine_filename": spec.pine_filename,
             "pine_sha256": spec.pine_sha256,
+            "pine_pin_status": spec.pine_pin_status,
         },
     }
 
@@ -431,6 +433,7 @@ def run_campaign(
                     "export_sha256": spec.export_sha256,
                     "pine_filename": spec.pine_filename,
                     "pine_sha256": spec.pine_sha256,
+                    "pine_pin_status": spec.pine_pin_status,
                 },
                 "issues": _detailed_issue_rows(issues_by_strategy[strategy_id]),
             }

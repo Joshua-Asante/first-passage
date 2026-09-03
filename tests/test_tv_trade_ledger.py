@@ -50,6 +50,7 @@ def _spec_dict(strategy_id: str, export_filename: str, pine_filename: str) -> di
         "pine_commission_per_side_usd": "0.91",
         "pine_slippage_ticks_per_side": "1",
         "pine_pyramiding_pct": "100",
+        "pine_pin_status": "NOT_IN_PORT_MANIFEST",
         "contract_cap": 80,
     }
 
@@ -131,10 +132,10 @@ def test_frozen_configuration_has_seven_continuous_source_specs():
     assert [spec.strategy_id for spec in specs] == [
         "aegis_6j1",
         "orb_mnq_recon_v7",
-        "striker_dj30_mym_v45",
-        "striker_dj30_mym_pyramid_down",
-        "striker_nas100_mnq_v1",
-        "striker_nas100_mnq_native_variant",
+        "striker_dj30_qtxg1_swap_body_on_mym",
+        "striker_dj30_native_pyramid_down_on_mym",
+        "striker_nas100_native_dow_modified_on_mnq",
+        "striker_nas100_qtxg1_swap_body_on_mnq",
         "vanguard_mgc_v04",
     ]
     assert all(spec.source_timezone == "America/New_York" for spec in specs)
@@ -156,17 +157,56 @@ def test_frozen_configuration_records_pine_pyramiding_from_each_source():
     assert {spec.strategy_id: spec.pine_pyramiding_pct for spec in specs} == {
         "aegis_6j1": Decimal("0"),
         "orb_mnq_recon_v7": Decimal("100"),
-        "striker_dj30_mym_v45": Decimal("750"),
-        "striker_dj30_mym_pyramid_down": Decimal("250"),
-        "striker_nas100_mnq_v1": Decimal("1000"),
-        "striker_nas100_mnq_native_variant": Decimal("1000"),
+        "striker_dj30_qtxg1_swap_body_on_mym": Decimal("750"),
+        "striker_dj30_native_pyramid_down_on_mym": Decimal("250"),
+        "striker_nas100_native_dow_modified_on_mnq": Decimal("1000"),
+        "striker_nas100_qtxg1_swap_body_on_mnq": Decimal("1000"),
         "vanguard_mgc_v04": Decimal("80"),
     }
-    dj30 = {spec.strategy_id: spec for spec in specs if spec.strategy_id.startswith("striker_dj30")}
-    assert (
-        dj30["striker_dj30_mym_pyramid_down"].pine_pyramiding_pct
-        < dj30["striker_dj30_mym_v45"].pine_pyramiding_pct
+    assert [spec.pine_pyramiding_pct for spec in specs].count(Decimal("250")) == 1
+
+
+def test_frozen_configuration_records_manifest_derived_pin_status_and_body_identity():
+    """Mislabeling a supplied Pine as locked, swapped, or pyramid-down must be visible."""
+    specs = load_source_specs(_CONFIG_PATH)
+    by_hash = {spec.pine_sha256: spec for spec in specs}
+
+    assert {
+        pine_hash: spec.pine_pin_status
+        for pine_hash, spec in by_hash.items()
+    } == {
+        "8578ee3d760b5112bb1dd77e65a07466aee8629a9424e4115e422fdaab5aede8": "NOT_IN_PORT_MANIFEST",
+        "f05c7aa429846811149e6ff7c8e63a2fd4457075b6c45dedfc77c7e0fa76e9b4": "NOT_IN_PORT_MANIFEST",
+        "178a2a8e1c78e45a5142749f92284c09d286907a7e096883e1133297cb8a806d": "PINNED_SWAP_PROTOTYPE",
+        "5c4b1026cb6f3a475dba962783b2a053e9fbeb123570dd964d7154ea80b3f9d0": "UNPINNED_MODIFIED",
+        "d18c2699ea3856df884eced84c9384adea953f3a2470bea4f2d671b6cd294057": "UNPINNED_MODIFIED",
+        "19264da29a3d9a30200600689e1950931f1abfb648e9071a232ee83fdec2756c": "PINNED_SWAP_PROTOTYPE",
+        "ae5fd66ce51c478187c605574a03f89a64e6f8f245e77477eeaedd1efe2cf772": "NOT_IN_PORT_MANIFEST",
+    }
+    assert by_hash["5c4b1026cb6f3a475dba962783b2a053e9fbeb123570dd964d7154ea80b3f9d0"].pine_pyramiding_pct == Decimal("250")
+    nas_modified = by_hash["d18c2699ea3856df884eced84c9384adea953f3a2470bea4f2d671b6cd294057"]
+    assert nas_modified.strategy_id == "striker_nas100_native_dow_modified_on_mnq"
+    assert nas_modified.pine_pyramiding_pct == Decimal("1000")
+    assert all(
+        "_v45" not in spec.strategy_id and "_v1" not in spec.strategy_id
+        for spec in specs
+        if spec.strategy_id.startswith("striker_")
     )
+
+
+def test_load_source_specs_rejects_unknown_pine_pin_status(tmp_path):
+    """Accepting an arbitrary manifest label would make the identity audit non-closed."""
+    payload = {
+        "claim_class": "EXPLORATORY",
+        "platform": "TradingView Strategy Tester over a continuous futures chart",
+        "strategies": [_spec_dict("fixture", "source.csv", "source.pine")],
+    }
+    payload["strategies"][0]["pine_pin_status"] = "PINNED_LOCKED_EDITION"
+    path = tmp_path / "config.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="pine_pin_status must be one of"):
+        load_source_specs(path)
 
 
 def test_fee_schedule_uses_primary_round_trip_values_and_derives_per_side_values():

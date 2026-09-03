@@ -18,7 +18,7 @@ The fourteen source files are provided only through `--source-dir`; their basena
 
 ## Strategy lineage and pyramid inventory
 
-The source-grounded inventory has five entry/exit templates represented by seven exports. Exactly one export is a reduced-pyramid parameterization: `striker_dj30_mym_pyramid_down` uses the Pine's 250% setting versus 750% in `striker_dj30_mym_v45`. Both NAS100 Pines specify 1000%, so `striker_nas100_mnq_native_variant` is a distinct frozen source lineage, not a pyramid-down cell. The source basenames and bytes are unchanged even where their historical filenames contain obsolete instrument or Q-TXG-1 labels.
+The source-grounded inventory has five entry/exit templates represented by seven exports. `core/strategies/PORT_MANIFEST.sha256` is authoritative for pin membership. Exactly one export is a reduced-pyramid parameterization: `striker_dj30_native_pyramid_down_on_mym` is the unpinned DJ30 modified native body at 250%, versus 750% in the pinned swap prototype `striker_dj30_qtxg1_swap_body_on_mym`. `striker_nas100_native_dow_modified_on_mnq` is an unpinned body differing only in its Thursday/Friday defaults and remains at 1000%; it is not pyramid-down. Both `*_swap_body_*` sources are literal `EXPLORATORY` chart runs only: neither is locked/native-edition evidence or proof of correct swap-port point-value overrides. The source basenames and bytes are unchanged even where their historical filenames contain obsolete instrument or Q-TXG-1 labels.
 
 ## Venue boundaries
 
