@@ -51,7 +51,11 @@ ET same date spans it; 23:00 → 01:00 ET does not). Spec anchor §7.7 becomes a
 re-frozen before the runner runs. **G1.4 interpretation:** Aegis's Pine default (`$1.30`/side) differs from
 the setting the export ran with (`$3.10`/side = venue), so the Pine-vs-export/venue codes are inventory,
 not blockers — under the whole-export-viewed ruling the export is the object; operator may veto. Task 5
-should carry micro-equivalent quantities (6J = 10) because the Tradeify cap is account-aggregate. D8/D9
+should carry micro-equivalent quantities (6J = 10) because the Tradeify cap is account-aggregate (per-strategy breaches
+stay Phase 1 blockers; only the joint cap verdict waits for Phase 4). Codex review of #279 (three P2: the
+12:59 ET holiday-short deadline caps the verdict at `NEEDS_CONTEXT` until the early-close calendar is
+captured; per-strategy cap breaches stay in Phase 1; G1.3 partial until the ledger hash exists) folded in
+the same PR. D8/D9
 config re-freeze, CATALOG row, merge of `main` (35 behind), Tasks 5–8 and the PR remain outstanding. No
 `core`/Pine/allocation/`dd_protection`/rail change. $0/K=0.
 **Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration

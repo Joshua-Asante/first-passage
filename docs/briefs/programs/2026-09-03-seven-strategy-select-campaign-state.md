@@ -35,7 +35,7 @@ CAVEATS / REFUTED`.
 |---|---|---|---|---|
 | Plan | Codex review folded; operator merge | **MERGED** (#272 + #273, 2026-09-03) | operator | `main` @ `5eff0ec` |
 | 0 — Receive and inventory | — | **SKIPPED** (operator override 2026-09-03), after the first return (`codex/mym-breakout-research` @ `706a03e`) failed the gate: no intake, ~100 MB vendor bytes. Inventory duties fold into Phase 1 (G1.2) | — | §8 ledger |
-| 1 — Normalize and reproduce (+ folded Phase 0 inventory) | §4 Phase 1 gate G1.1–G1.10, verdict `PASS` | **IN PROGRESS** — `codex/tradeify-stage1-normalization` @ `4c186e7` (base `11d22e2`, 35 behind `main`) carries **Task 4 of 8** (identity + strict normalization + reconstruction/accounting + venue audit; 55 tests). Incremental gate read 2026-09-03: G1.1 ✓ · G1.5 ✓ · G1.8 ✓ · G1.4 tolerances pre-committed ✓ · G1.3 ✓ on synthetic tests (no repair path; orphans, duplicates, identity mismatches are blockers) · **G1.6 red — force-flat modeled as Friday-to-Sunday only; the venue rule is a daily 16:45 ET deadline (§4 note)** · G1.2 partial (D8/D9 not yet applied: `source_timezone` still `null`, prototypes' intent unflipped, no pyramid field) · G1.7 partial (adapter + block builder are Task 5) · **G1.9 red — study dir not in `lab/CATALOG.md`** · G1.10 pending. No PR yet | Codex → orchestrator review | §8 ledger, §9 |
+| 1 — Normalize and reproduce (+ folded Phase 0 inventory) | §4 Phase 1 gate G1.1–G1.10, verdict `PASS` | **IN PROGRESS** — `codex/tradeify-stage1-normalization` @ `4c186e7` (base `11d22e2`, 35 behind `main`) carries **Task 4 of 8** (identity + strict normalization + reconstruction/accounting + venue audit; 55 tests). Incremental gate read 2026-09-03: G1.1 ✓ · G1.5 ✓ · G1.8 ✓ · G1.4 tolerances pre-committed ✓ · G1.3 partial (no repair path on synthetic tests — orphans, duplicates, identity mismatches are blockers; the canonical ledger, its mandated fields, and the committed ledger hash await the runner) · **G1.6 red — force-flat modeled as Friday-to-Sunday only; the venue rule is a daily 16:45 ET deadline (§4 note)** · G1.2 partial (D8/D9 not yet applied: `source_timezone` still `null`, prototypes' intent unflipped, no pyramid field) · G1.7 partial (adapter + block builder are Task 5) · **G1.9 red — study dir not in `lab/CATALOG.md`** · G1.10 pending. No PR yet | Codex → orchestrator review | §8 ledger, §9 |
 | 2 — Standalone quality (joint-book limbs moved to Phase 4, after the freeze) | eliminations recorded with reasons on standalone evidence; no portfolio result computed | QUEUED | Codex + orchestrator | — |
 | 3 — Freeze search + validation design | pre-registration committed **before** any Phase 4 run; **all 14 contract items** frozen (1–9 numeric; 10 multiplicity; 11 `N_conf`; 12 Phase 6 severities; 13 Rule 2 iterations; 14 the seven per-template candidate contracts); operator ratifies | QUEUED (orchestrator authors; `pre-ratification-adversarial-panel` before ratification) | orchestrator → operator | — |
 | 4 — Joint-book audit + deterministic screen (development segment only) | trial ledger complete incl. failures | QUEUED | Codex / local | — |
@@ -109,9 +109,11 @@ unchanged; these bind how two of them are applied:**
   is a Phase 2 blocker for that strategy (G1.6: "weekend/overnight holds … session-boundary breaches"). A
   naive cross-date test is also the wrong proxy: 15:00 → 18:30 ET same date spans the deadline; 23:00 →
   01:00 ET does not. With D9 resolved the exact test is cheap: localize to `America/New_York` and flag any
-  trade with a 16:45 ET instant in `(entry, exit]`; keep `friday_to_sunday_holds` as a sub-count; record the
-  12:59 ET holiday-short deadline as an explicit unmodeled dimension (the early-close calendar is not in the
-  repo). Spec anchor §7.7 ("exactly three ORB-MNQ force-flat violations") becomes a **sub-count anchor** and
+  trade with a 16:45 ET instant in `(entry, exit]`; keep `friday_to_sunday_holds` as a sub-count. For the
+  12:59 ET holiday-short deadline, capture the CME early-close calendar over the export span from a primary
+  source as a hashed campaign-local file (the commission-schedule pattern; Rule 13) and apply 12:59 ET on
+  those dates — until that capture lands, this dimension **caps the Phase 1 verdict at `NEEDS_CONTEXT`**,
+  since an unmodeled early close could pass a session-boundary breach into Phase 2. Spec anchor §7.7 ("exactly three ORB-MNQ force-flat violations") becomes a **sub-count anchor** and
   must be re-frozen before the runner runs — still a pre-commitment, since no run exists.
 - **G1.4 / G1.5 — "commission mismatch" is export-implied vs venue schedule.** Aegis 6J1's Pine declares
   `$1.30`/side but the export was produced at `$3.10`/side, which **matches** the venue row (6J `$6.20`
@@ -188,6 +190,7 @@ python scripts/gate_manifest.py --tier pre-commit                            # b
 | 2026-09-03 | Codex review of #273 (`6ca5577`): six P1 + four P2 — eight bind the plan (folded at `e8694a9`), two bind this file (D1 merge order; D3 in iterations). §3/§4 corrected on verified source: engine inactivity is consecutive-idle-days vs the venue's calendar week; `cost_per_side_usd` is the index-micro row; `paired_blocks_from_daily` is single-series; `pair_tv_export_dataframe` raises on shorts; G0.2 gains the last-inspection field | plan `REVIEW FOLDED ×3` |
 | 2026-09-03 | Both #272 and #273 confirmed merged (D1 resolved). Separate session ([PR #275](https://github.com/Joshua-Asante/first-passage/pull/275)) reconciled `STATE.md`'s queue with this campaign: promoted to queue **#1** (D2 resolved — not Row 3, replaces the cultivation row); D4 resolved with it (separate program, now the higher-priority one; cultivation demoted off-queue). `PIPELINES.md`'s P1/P4 dispositions corrected to name this campaign with the same links. Flagged by Codex review as a stale-artifact P2 finding on #275, then fixed here in the same pass | queue placement `RESOLVED` |
 | 2026-09-03 | Codex pushed `codex/tradeify-stage1-normalization` @ `4c186e7` (Task 4/8: venue audit — separate commission bases, tick grid, exposure bounds under both tie orders, holds, roll/spread status; 55 tests). Incremental gate read: no vendor bytes, `cost_model.py` byte-unchanged, no orchestrator-surface edits, CI red on `lab-catalog` only. **G1.6 finding:** force-flat modeled as Friday-to-Sunday only vs the venue's daily 16:45 ET deadline (`firm_rules.py` re-verification 2026-07-22; `prop_envelope_default.md` E1) — spec §4.4, anchor §7.7, code and test to be re-frozen before the runner. **G1.4 interpretation:** Pine-default-vs-export commission codes are inventory when the export matches the venue (Aegis `$3.10`/side). Task 5 to carry micro-equivalent quantities for the account-aggregate cap. D8/D9 config re-freeze and the CATALOG row still pending | Phase 1 `IN PROGRESS`; findings relayed via operator prompt |
+| 2026-09-03 | Codex review of [#279](https://github.com/Joshua-Asante/first-passage/pull/279) (`83b17e9`): three P2 — (i) the 12:59 ET holiday-short deadline cannot stay an unmodeled dimension under G1.6 → capture the CME early-close calendar as a hashed primary-source file, and until then it caps the Phase 1 verdict at `NEEDS_CONTEXT`; (ii) per-strategy contract-cap breaches stay Phase 1 blockers (only the joint cap verdict waits for Phase 4); (iii) G1.3 is partial until the canonical ledger and its committed hash exist. All three folded in the same PR | plan unchanged; §2/§4/§9 corrected |
 
 ## §9 Phase 1 dispatch record (Codex, operator-relayed 2026-09-03)
 
@@ -246,8 +249,10 @@ and the test `test_cross_date_hold_is_reported_without_force_flat_false_positive
 (2) **G1.4 interpretation** — Pine-vs-export/venue commission codes are inventory, not blockers, when the
 export-implied fee equals the venue's (§4 note); (3) **Task 5 carry-forward** — the Tradeify cap is
 **account-aggregate**, counted 10 micros = 1 mini (`firm_rules.py` comment; article 12268167), so the joint
-ledger should carry `micro_equivalent_quantity` per event (6J = 10; MNQ/MYM/MGC = 1) for Phase 4 — no cap
-verdict in Phase 1; (4) `VenueMetrics.overnight_holds` is assigned the cross-date count — after (1) it
+ledger should carry `micro_equivalent_quantity` per event (6J = 10; MNQ/MYM/MGC = 1). The per-strategy check
+already in `analyze_venue` (`CONTRACT_CAP_BREACH` against the 80-micro-equivalent account cap) stays a Phase 1
+blocker — a single strategy over the account cap on its own is unconditionally illegal; only the **joint**
+(book-level) cap verdict waits for Phase 4; (4) `VenueMetrics.overnight_holds` is assigned the cross-date count — after (1) it
 should be the deadline-spanning count. Still outstanding from the `a51bc60` read: D9 `source_timezone`
 (all seven still `null`), D8 intent flip / renames / `pine_pyramiding`, the `lab/CATALOG.md` row (by hand),
 a merge of `main` (35 behind), Tasks 5–8, and the PR with the Rule 2 line. Verdict unchanged:
