@@ -18,6 +18,7 @@ import pandas as pd
 
 
 _REPO = Path(__file__).resolve().parents[4]
+_CAMPAIGN_DIR = Path(__file__).resolve().parent
 _LAB = _REPO / "lab"
 _CORE = _REPO / "core"
 for _import_root in (_REPO, _LAB, _CORE):
@@ -126,12 +127,12 @@ def _validate_strategy_roster(specs: Sequence[object]) -> None:
         )
 
 
-def _validate_output_dir(output_dir: Path, campaign_dir: Path) -> None:
+def _validate_output_dir(output_dir: Path) -> None:
     try:
         output_dir.relative_to(_REPO)
     except ValueError:
         return
-    allowed_root = (campaign_dir / "local_artifacts").resolve()
+    allowed_root = (_CAMPAIGN_DIR / "local_artifacts").resolve()
     if output_dir != allowed_root and not output_dir.is_relative_to(allowed_root):
         raise ValueError(
             "output directory inside the repository must be campaign-local "
@@ -309,7 +310,7 @@ def _render_report(manifest: dict[str, object]) -> bytes:
             "",
             "## Evidence boundaries",
             "",
-            "- The source CSV/Pine bytes and all row-level event/trade/weekly ledgers remain local and gitignored.",
+            "- The source CSV/Pine bytes, row-level event/trade/weekly ledgers, and seven detailed issue reports remain local and gitignored.",
             "- No source row was repaired, dropped for an outcome, re-ranked, composed, simulated, or rerun in Pine.",
             "- Scalar MAE/MFE values are inventory-only excursion bounds, not timestamped paths.",
             "- Per-strategy caps are measured against 80 micro-equivalents; the joint book-cap verdict is deferred to Phase 4.",
@@ -362,7 +363,7 @@ def run_campaign(
     fee_path = campaign_dir / "tradeify_commission_schedule.json"
     calendar_path = campaign_dir / "cme_early_close_calendar.json"
 
-    _validate_output_dir(output_dir, campaign_dir)
+    _validate_output_dir(output_dir)
     specs = load_source_specs(config_path)
     _validate_strategy_roster(specs)
     fee_schedule = load_fee_schedule(fee_path)

@@ -40,12 +40,6 @@ Holiday-short verdict cap: `NEEDS_CONTEXT`
 - Canonical trades: `900002b84762299273cdfe0dad75e5ab06324b884a22ef1f81e28fa8e3145105`
 - Weekly exit blocks: `5bdcef07a717bf32b816c595cfbf6066e1f94a7ca9ad35e31b749bc8bc72cb0a`
 
-## Verification evidence
-
-- Evidence revision: `98e82b230bd63f8d922b76742d650f6e254a0002`; environment: Windows, Python 3.14.3.
-- Focused Phase 1 and cost-model contract: `python -m pytest tests/test_tv_trade_ledger.py tests/test_trade_reconciliation.py tests/test_joint_trade_blocks.py tests/test_cost_model.py tests/test_tradeify_phase1_runner.py -q` — 123 passed.
-- Unchanged production firm barriers: `python -m pytest tests/core/test_mc_intraday_barrier.py tests/core/test_trailing_dd_boundary.py tests/core/test_trailing_locking_boundary.py tests/core/test_mc_preflight.py -q` — 59 passed.
-
 ## Issues by strategy
 
 ### aegis_6j1

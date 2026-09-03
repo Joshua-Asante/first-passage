@@ -269,6 +269,20 @@ def test_campaign_rejects_repo_output_outside_campaign_local_artifacts(tmp_path)
     assert not unsafe.exists()
 
 
+def test_alternate_in_repo_config_cannot_authorize_an_output_directory(tmp_path):
+    source_dir, _, _ = _seven_source_fixture(tmp_path)
+    alternate_campaign = _CAMPAIGN_DIR.parent / "alternate_phase1_campaign_fixture"
+
+    with pytest.raises(ValueError, match="output directory inside the repository"):
+        run_phase1.run_campaign(
+            alternate_campaign / "phase1_config.json",
+            source_dir,
+            alternate_campaign / "local_artifacts",
+        )
+
+    assert not alternate_campaign.exists()
+
+
 def test_complete_calendar_must_cover_observed_source_span(tmp_path):
     source_dir, config, _ = _seven_source_fixture(tmp_path)
     calendar_path = config.parent / "cme_early_close_calendar.json"
@@ -387,4 +401,14 @@ def test_committed_manifest_matches_frozen_seven_strategy_acceptance():
     assert all(
         row["contract_month_attribution_status"] == "UNAVAILABLE"
         for row in rows.values()
+    )
+
+
+def test_committed_results_match_the_deterministic_renderer():
+    manifest = json.loads(
+        (_CAMPAIGN_DIR / "reconciliation_manifest.json").read_text(encoding="utf-8")
+    )
+
+    assert (_CAMPAIGN_DIR / "RESULTS.md").read_bytes() == run_phase1._render_report(
+        manifest
     )
