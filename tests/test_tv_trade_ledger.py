@@ -298,6 +298,14 @@ def test_normalize_rejects_unknown_type_instead_of_guessing(tmp_path):
         normalize_export(source)
 
 
+def test_normalize_rejects_noncanonical_timestamp_text(tmp_path):
+    """Permitting unpadded fields would silently repair the source timestamp text."""
+    source = _verified_csv(tmp_path, rows=[_row(1, "Entry long", "2026-1-5 9:03")])
+
+    with pytest.raises(TradeExportSchemaError, match="Date and time must match"):
+        normalize_export(source)
+
+
 def test_normalize_accepts_bom_and_accounting_parentheses(tmp_path):
     """Dropping BOM or accounting-negative handling would reject valid source CSV syntax."""
     source = _verified_csv(

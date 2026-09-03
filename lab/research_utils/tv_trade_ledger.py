@@ -70,6 +70,7 @@ COLUMN_ALIASES = {
     "Net P&L USD": "Net PnL USD",
 }
 _DECIMAL_RE = re.compile(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)\Z")
+_TIMESTAMP_RE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}\Z")
 
 
 class SourceIdentityError(ValueError):
@@ -408,8 +409,11 @@ def _classify_type(value: str) -> tuple[str, str]:
 
 
 def _parse_timestamp(value: object) -> datetime:
-    if not isinstance(value, str):
-        raise TradeExportSchemaError("Date and time must be a string in %Y-%m-%d %H:%M format")
+    if not isinstance(value, str) or not _TIMESTAMP_RE.fullmatch(value):
+        raise TradeExportSchemaError(
+            "Date and time must match %Y-%m-%d %H:%M exactly: "
+            f"{value!r}"
+        )
     try:
         return datetime.strptime(value, "%Y-%m-%d %H:%M")
     except ValueError as exc:
