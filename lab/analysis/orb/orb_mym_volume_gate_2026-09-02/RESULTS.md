@@ -19,9 +19,23 @@
 > **The numbers in the table below are real and reproduce; they are not a survival verdict.**
 > The operator's List-of-Trades CSV behind the P50 cell was later put through the repo's canonical
 > bust engine at **the size the $31,947.96 headline was measured at (qty 2)**:
-> **Select 51.2% bust / 48.8% pass**, and the realized historical path **busts Select on day 42**
-> (maxDD 2.83% against the 3.0% trail). Exit-only net reconciles **to the cent** (986 rows /
-> $31,947.96) — raw P&L is not what fails; survival at size is.
+> **Select 51.2% bust / 48.8% pass**, and the realized historical path **busts Select on day 42**.
+> Exit-only net reconciles **to the cent** (986 rows / $31,947.96) — raw P&L is not what fails;
+> survival at size is.
+>
+> ⚠ **Corrected 2026-09-03** (Codex round 4): this banner first read "maxDD 2.83% against the 3.0%
+> trail", which is internally contradictory — those are two different quantities. **2.83% is the
+> engine's `max_dd`: end-of-day equity, as a fraction of the running peak** — `core/mc/simulation.py`
+> fixes both deliberately and says so in its own docstring. The barrier is a fixed **$3,000 below
+> the EOD peak, tested against `equity_test`** — which this run feeds a **trade-level MAE proxy**
+> (the worst *single leg's* adverse excursion that day), not a true account-level low; the export
+> runs ~2.6 legs per traded day under pyramiding, and the campaign's own PREREG calls it "trade-level".
+> So 2.83% is not the number the barrier reads, and its being under 3.0% is no contradiction.
+> **What actually triggered the day-42 breach is not determinable from the published artifact**, and
+> this banner does not guess: `max_dd` prints to two decimals, which bounds the implied peak only to
+> ($105,820, $106,195] — straddling the $106,000 target — and it is a running max that need not be
+> day 42's. (An earlier version of this banner inferred an above-target peak and named the intraday
+> excursion as the likely trigger; that inference was unsound and is withdrawn.)
 > Owner of that measurement:
 > [`orb_mym_v04_riskbudget_2026-09-02/RESULTS.md`](../orb_mym_v04_riskbudget_2026-09-02/RESULTS.md) §2.
 >
