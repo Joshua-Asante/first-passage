@@ -15,7 +15,10 @@ from research_utils import msl_score as ms
 from research_utils import nsurv_channel as ns
 
 REPO = Path(__file__).resolve().parents[1]
-PREREG = REPO / "docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md"
+# v1 — CLOSED 2026-08-26. Pinned deliberately as a stable loader fixture; the LIVE
+# Part A ceiling is 5.0% (v2), not the 3.0% this file parses. See
+# tests/test_prop_survivor_scoring.py for the v1/v2 split.
+PREREG_V1 = REPO / "docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md"
 FIXTURES = REPO / "lab/research_utils/fixtures/msl_score"
 W1_RESULTS_MD = (
     REPO / "lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/RESULTS_INTRADAY_W1.md"
@@ -26,7 +29,7 @@ _TEST_HORIZON = 400
 
 
 def _thr():
-    return replace(load_scoring_thresholds(PREREG), horizon=_TEST_HORIZON)
+    return replace(load_scoring_thresholds(PREREG_V1), horizon=_TEST_HORIZON)
 
 
 def _synthetic_frame(n: int = 80, *, seed: int = 7) -> pd.DataFrame:

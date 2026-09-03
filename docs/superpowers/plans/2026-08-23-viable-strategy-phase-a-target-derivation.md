@@ -78,7 +78,10 @@ target instead of an open search.
   clustered-win (the bounded-duration profile)}, trades/week {1, 2, 3, 5, 8}, per-trade risk
   {frozen from EM2's edge-indexed frontier — interpolate down, never up}. Axes are **coverage,
   not selection** — pre-registered as such.
-- [x] **Scored gates, jointly, per tuple:** trailing-DD bust ≤ 3.0% (intraday-honest limb — the
+- [x] **Scored gates, jointly, per tuple:** trailing-DD bust ≤ 3.0% (⚠ **3.0% is the superseded v1
+  ceiling** — raised to **5.0%** on 2026-08-26, [`prereg v2`](../../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3. Phase A's scored outputs,
+  including the A2 map's FEASIBLE/MARGINAL/INFEASIBLE labels, are 3.0% results and have not been
+  re-scored) (intraday-honest limb — the
   synthetic process must generate within-day excursion, not close-only P&L); P(pass) ≥ 50%;
   consistency (no day > 40% of cumulative — including early-path breach, when cumulative is
   small); activity (≥1 trade/week satisfied structurally or via the operator token-trade,

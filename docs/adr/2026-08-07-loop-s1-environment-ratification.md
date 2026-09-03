@@ -41,7 +41,11 @@ Q-VENUEGEO-1 remains valuable evidence (Bulenox/BluSky/MFFU geometry) but is **n
 
 **Unchanged:**
 - De-scope clauses 1–2 — both withdrawn Striker legs stay barred from redeploy at this venue.
-- Fork F1 (§4 reading of a de-scoped firm) — still due 2026-11-08.
+- Fork F1 (§4 reading of a de-scoped firm) — ⚠ **no longer due: ruled 2026-08-23 (Tradeify
+  excluded) and reversed 2026-09-01 — a Tradeify-resting discharge counts toward §4 again**
+  ([`F1 reversal`](2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-09-01--f1-reversed-a-tradeify-resting-discharge-now-counts-toward-4)).
+  Nothing else in this list moves; noted 2026-09-03 because this is a normative "Unchanged" row,
+  not narrative.
 - Attended-only posture, per-armed-session GO, M1 arm-gate, locked `BASE_RISK` / allocation constants.
 
 **Consequence for MNQDTL-1:** the no-successor ruling **forecloses R1** (ORB re-score on an F3 successor-venue basis; its F-A/F-C successor preconditions). **R2** (new construct via Route A/B under EM0–EM5) is the live route. Incumbent-eval scoring of new constructs is in scope; ORB unpark still needs its own GO + survivor-scoring pass.

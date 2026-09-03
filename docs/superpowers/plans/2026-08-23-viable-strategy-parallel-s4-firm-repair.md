@@ -12,6 +12,11 @@ parallel with Phases A/B; R1+R2 must have landed **before** any Phase-C survivor
 **Cost:** $0 / K=0 — reuses committed engine fixtures and free primary-source reads.
 **Parent:** [`sequence overview`](2026-08-23-viable-strategy-sequence-overview.md)
 
+> ⚠ **2026-09-03:** the "≥2 of {Bulenox, MFFU, BluSky}" below is the **2026-08-23 F1 ruling**,
+> **reversed 2026-09-01** ([`F1 reversal`](../../../docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-09-01--f1-reversed-a-tradeify-resting-discharge-now-counts-toward-4)) — the frozen set is four again
+> {Bulenox, **Tradeify**, MFFU, BluSky}. This does not change why the firm-repair work was on the
+> critical path (the Bulenox/BluSky engine models were the untrusted ones either way).
+
 **Why this is on the §4 critical path:** post-F1, §4 discharge requires ≥1 pre-registered
 candidate clearing the frozen gate on **≥2 of {Bulenox, MFFU, BluSky}** by 2026-11-08. Q-FIRMEOD-1
 proved the engine models for two of those three cannot currently be trusted (Bulenox CLOCK flip

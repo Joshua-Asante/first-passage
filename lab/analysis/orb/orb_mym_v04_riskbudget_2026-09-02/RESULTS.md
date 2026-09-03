@@ -250,7 +250,12 @@ absolute levels).
 **§5c — inactivity barrier: confirmation, not a new finding.** Every bust/pass cell above used
 `firm_kwargs`'s default `inactivity_off=True` (repo-wide convention). A review comment asked
 whether cells that skip whole days (Hot-only, the risk-budget skip variants) risk breaching
-Tradeify's real 5-business-day inactivity rule. **They do, mechanically and dramatically** — turning
+Tradeify's inactivity rule — modelled here by the engine's 5-idle-**business-day** proxy. (⚠ Named
+precisely 2026-09-03: Tradeify has no 5-business-day rule. Art. 10468318 publishes a per-Mon–Fri-week
+**bucket** — ≥1 trade per week. `simulation.py` counts **rolling** consecutive idle bdays, which is
+strictly stricter, so the barrier-ON rates below are conservative **upper bounds** on venue
+inactivity risk, not estimates of it. The conclusion is unaffected and the true rate can only be
+lower.) **They do, mechanically and dramatically** — turning
 the barrier on collapses bust/pass to near-0%/0% with 97–100% pure-inactivity failure for *every*
 cell tested, including §1's base_q1 at 39.7% trade-day density (96.9–98.2% inactivity) and §3's
 qty-2 primary at 97% of its own (already-filtered) days traded (99.7–99.9% inactivity). **This is

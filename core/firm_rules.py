@@ -237,6 +237,24 @@ FIRM_RULES = {
     #   2026-08-02 measures the barrier ON at 92.6-97.6% path death, and the
     #   mitigation it assumes is undelivered at the execution layer (residual
     #   track R8, still owed). Value 5 unchanged; no constant moved by this note.
+    #   ⚠ UNIT SEMANTICS (2026-09-03) — 5 is a BOUND, not the rule. The venue rule
+    #   is a per-Mon-Fri-week BUCKET (">=1 trade per week"); simulation.py:171-178
+    #   counts ROLLING consecutive idle business days. Those differ: a calendar
+    #   trading Mon-wk1 / Fri-wk2 / Mon-wk3 / Fri-wk4 satisfies the venue in every
+    #   week yet returns bust_inactivity on day 6 (measured against this engine
+    #   2026-09-03) — it over-fires. On a COMPLETE business-day calendar it cannot
+    #   miss a real breach (5 idle bdays inside one Mon-Fri week is necessarily 5
+    #   consecutive), so barrier-ON figures are conservative CEILINGS there. ⚠ That
+    #   precondition is NOT enforced: a sparse, trade-days-only input series has its
+    #   idle days dropped before simulate_path ever sees them, and the engine then
+    #   UNDER-fires (see the core/mc/preflight.py INACTIVITY_OFF block for the
+    #   measured demonstration and the two functions responsible).
+    #   This is the same calendar-vs-bday care the BluSky block below applies to
+    #   its "30 consecutive days" clause, extended to the rolling-vs-bucket axis it
+    #   did not cover. 5 is retained deliberately as the conservative bound; making
+    #   the engine bucket-aware is unspent work needing its own ADR + re-MC. The
+    #   only faithful implementation of the bucket rule is the report-only
+    #   ops/sentinel/activity_week.py. Value 5 unchanged; no constant moved.
     # micro_contract_cap: EVAL micro-contract cap per tier (1/10, 4/40, 8/80,
     #   12/120 mini/micro -> micro caps 10/40/80/120). Funded Select scales
     #   progressively from a reduced base on EOD-equity triggers. Used only by a

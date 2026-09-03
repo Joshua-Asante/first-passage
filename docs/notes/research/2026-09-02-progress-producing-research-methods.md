@@ -136,6 +136,17 @@ choice from three settings to one and bought a better next observation. Its limi
 screenshot reads, leg-level rather than day-level win rate, incomplete property capture, fully
 viewed history, and informal K—remain attached to its license.
 
+> ⚠ **The stronger lesson landed hours later, and belongs with this exemplar (added 2026-09-03).**
+> The trade list arrived and the same panel went through the canonical engine: raw net reconciled
+> to the cent, and **`Tradeify_Select_100K` busts 51.2% of paths at the size the headline was
+> measured**, with the realized path busting on day 42
+> ([`RESULTS`](../../../lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/RESULTS.md) §2). The
+> listed limitations were all real, but none of them is the one that mattered: **displayed TV
+> metrics and prop-tier survival are different quantities**, and no amount of care about screenshot
+> provenance closes that gap — only running the trade list through the engine does. Read as a worked
+> example, this section is stronger with that ending, not weaker: the small, tier-matched license
+> was correct precisely because the raw metrics could not license more.
+
 **Common feature:** evidence tier and action tier match. Exploratory evidence may select the next
 test; it may not promote capital, claim lifecycle confirmation, or erase multiplicity.
 
