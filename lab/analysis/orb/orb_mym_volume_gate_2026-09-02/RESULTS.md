@@ -27,11 +27,15 @@
 > trail", which is internally contradictory — those are two different quantities. **2.83% is the
 > engine's `max_dd`: end-of-day equity, as a fraction of the running peak** — `core/mc/simulation.py`
 > fixes both deliberately and says so in its own docstring. The barrier is a fixed **$3,000 below
-> the EOD peak, tested against the day's intraday low** (`equity_test`, supplied by this run via
-> `intraday_low=`). So 2.83% is not the number the barrier reads, and its being under 3.0% is no
-> contradiction. An EOD-only breach would have required a peak ≥ **$106,007** — above the account's
-> own **$106,000** profit target — so the intraday excursion is the likely trigger; confirming that
-> needs the operator-local trade CSV, which is not in this tree.
+> the EOD peak, tested against `equity_test`** — which this run feeds a **trade-level MAE proxy**
+> (the worst *single leg's* adverse excursion that day), not a true account-level low; the export
+> runs ~2.6 legs per traded day under pyramiding, and the campaign's own PREREG calls it "trade-level".
+> So 2.83% is not the number the barrier reads, and its being under 3.0% is no contradiction.
+> **What actually triggered the day-42 breach is not determinable from the published artifact**, and
+> this banner does not guess: `max_dd` prints to two decimals, which bounds the implied peak only to
+> ($105,820, $106,195] — straddling the $106,000 target — and it is a running max that need not be
+> day 42's. (An earlier version of this banner inferred an above-target peak and named the intraday
+> excursion as the likely trigger; that inference was unsound and is withdrawn.)
 > Owner of that measurement:
 > [`orb_mym_v04_riskbudget_2026-09-02/RESULTS.md`](../orb_mym_v04_riskbudget_2026-09-02/RESULTS.md) §2.
 >
