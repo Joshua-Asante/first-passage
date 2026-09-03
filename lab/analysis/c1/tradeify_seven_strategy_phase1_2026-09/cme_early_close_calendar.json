@@ -1,0 +1,10 @@
+{
+  "source_url": "https://www.cmegroup.com/trading-hours.html",
+  "page_date": null,
+  "observed_date": "2026-09-03",
+  "coverage_start": "2022-09-01",
+  "coverage_end": "2026-09-01",
+  "coverage_status": "NEEDS_CONTEXT",
+  "coverage_note": "The CME Group page exposed current-year holiday schedules but not a complete primary-source history for 2022-09-01 through 2026-09-01; the CME Reference Data API requires an OAuth API ID. No early-close dates are inferred. Phase 1 applies the regular 16:45 America/New_York deadline and caps the holiday-short verdict at NEEDS_CONTEXT until the primary-source rows are supplied.",
+  "rows": []
+}
