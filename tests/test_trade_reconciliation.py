@@ -771,7 +771,7 @@ def test_campaign_calendar_freezes_primary_source_capture_gap(
     assert calendar.source_url == "https://www.cmegroup.com/trading-hours.html"
     assert calendar.observed_date.isoformat() == "2026-09-03"
     assert calendar.coverage_start.isoformat() == "2022-09-01"
-    assert calendar.coverage_end.isoformat() == "2026-09-01"
+    assert calendar.coverage_end.isoformat() == "2026-09-02"
     assert calendar.coverage_status == "NEEDS_CONTEXT"
     assert calendar.early_close_dates == frozenset()
 
@@ -789,6 +789,7 @@ def test_complete_multiyear_calendar_requires_observed_early_close_rows(tmp_path
                 "coverage_end": "2026-09-01",
                 "coverage_status": "COMPLETE",
                 "coverage_note": "unsupported empty complete fixture",
+                "sources": [],
                 "rows": [],
             }
         ),

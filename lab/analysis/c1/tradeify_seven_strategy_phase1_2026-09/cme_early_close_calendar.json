@@ -3,8 +3,9 @@
   "page_date": null,
   "observed_date": "2026-09-03",
   "coverage_start": "2022-09-01",
-  "coverage_end": "2026-09-01",
+  "coverage_end": "2026-09-02",
   "coverage_status": "NEEDS_CONTEXT",
   "coverage_note": "If the primary-source 2022–2026 CME early-close dates cannot be captured, report a NEEDS_CONTEXT cap, never a silent omission; an early-close hold may go undetected.",
+  "sources": [],
   "rows": []
 }

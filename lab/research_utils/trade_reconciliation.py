@@ -5,10 +5,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
+from hashlib import sha256
 import json
 from pathlib import Path
+import re
 from types import MappingProxyType
 from typing import Mapping
+from urllib.parse import urlsplit
 
 import pandas as pd
 
@@ -125,6 +128,8 @@ class EarlyCloseCalendar:
     coverage_status: str
     coverage_note: str
     early_close_dates: frozenset[date]
+    sources: tuple[Mapping[str, object], ...] = ()
+    input_sha256: str = ""
 
 
 def _calendar_date(value: object, field: str, *, nullable: bool = False) -> date | None:
@@ -141,12 +146,75 @@ def _calendar_date(value: object, field: str, *, nullable: bool = False) -> date
     return parsed
 
 
-def load_early_close_calendar(path: str | Path) -> EarlyCloseCalendar:
+def _cme_url(value: object) -> None:
+    if not isinstance(value, str):
+        raise ValueError("source_url must be a primary CME HTTPS URL")
+    parsed = urlsplit(value)
+    if (parsed.scheme != "https" or parsed.hostname not in {"cmegroup.com", "www.cmegroup.com"}
+            or parsed.username or parsed.password or parsed.port not in {None, 443}):
+        raise ValueError("source_url must be a primary CME HTTPS URL")
+
+
+def _capture_rows(rows: object, year: int) -> set[date]:
+    if not isinstance(rows, list):
+        raise ValueError("capture rows must be an array")
+    dates: set[date] = set()
+    for row in rows:
+        if not isinstance(row, dict) or set(row) != {"date", "deadline_local"}:
+            raise ValueError("capture row keys mismatch")
+        day = _calendar_date(row["date"], "capture date")
+        if day.year != year or day in dates:
+            raise ValueError("capture row year mismatch or duplicate date")
+        if row["deadline_local"] != "12:59 America/New_York":
+            raise ValueError("capture deadline must be 12:59 America/New_York")
+        dates.add(day)
+    return dates
+
+
+def _load_calendar_sources(sources: object, capture_dir: Path) -> tuple[dict[int, dict], dict[int, set[date]]]:
+    if not isinstance(sources, list):
+        raise ValueError("sources must be an array")
+    records, dates = {}, {}
+    root = capture_dir.resolve()
+    for source in sources:
+        if not isinstance(source, dict) or set(source) != {"year", "source_url", "page_date", "capture_basename", "sha256"}:
+            raise ValueError("calendar source keys mismatch")
+        year = source["year"]
+        if type(year) is not int or not 1 <= year <= 9999 or year in records:
+            raise ValueError("calendar source year must be unique integer")
+        _cme_url(source["source_url"])
+        _calendar_date(source["page_date"], "source page_date")
+        if not isinstance(source["sha256"], str) or not re.fullmatch(r"[0-9a-f]{64}", source["sha256"]):
+            raise ValueError("calendar source sha256 must be lowercase SHA256")
+        name = source["capture_basename"]
+        if (not isinstance(name, str) or not name or name in {".", ".."}
+                or any(c in name for c in '/\\:') or Path(name).name != name):
+            raise ValueError("capture_basename must be a safe basename")
+        target = (root / name).resolve()
+        if not target.is_relative_to(root):
+            raise ValueError("calendar capture escapes capture directory")
+        try:
+            raw = target.read_bytes()
+            if sha256(raw).hexdigest() != source["sha256"]:
+                raise ValueError("calendar capture SHA256 mismatch")
+            capture = json.loads(raw.decode("utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ValueError("cannot load yearly CME JSON capture") from exc
+        if not isinstance(capture, dict) or set(capture) != {"year", "source_url", "page_date", "rows"}:
+            raise ValueError("yearly CME JSON capture keys mismatch")
+        if type(capture["year"]) is not int or any(capture[k] != source[k] for k in ("year", "source_url", "page_date")):
+            raise ValueError("yearly capture year/source metadata mismatch")
+        records[year] = dict(source)
+        dates[year] = _capture_rows(capture["rows"], year)
+    return records, dates
+
+
+def load_early_close_calendar(path: str | Path, *, capture_dir: str | Path | None = None) -> EarlyCloseCalendar:
     """Load the frozen CME early-close capture, including explicit coverage gaps."""
     try:
-        with Path(path).open(encoding="utf-8") as handle:
-            payload = json.load(handle)
-    except (OSError, json.JSONDecodeError) as exc:
+        raw = Path(path).read_bytes()
+        payload = json.loads(raw.decode("utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise ValueError(f"cannot load CME early-close calendar: {path}") from exc
     expected_keys = {
         "source_url",
@@ -157,6 +225,7 @@ def load_early_close_calendar(path: str | Path) -> EarlyCloseCalendar:
         "coverage_status",
         "coverage_note",
         "rows",
+        "sources",
     }
     if not isinstance(payload, dict) or set(payload) != expected_keys:
         raise ValueError("CME early-close calendar keys mismatch")
@@ -175,6 +244,11 @@ def load_early_close_calendar(path: str | Path) -> EarlyCloseCalendar:
     assert coverage_end is not None
     if coverage_start > coverage_end:
         raise ValueError("coverage_start must not be after coverage_end")
+    _cme_url(payload["source_url"])
+    sources, captured_dates = _load_calendar_sources(
+        payload["sources"], Path(capture_dir) if capture_dir is not None
+        else Path(path).parent / "local_artifacts" / "calendar_captures",
+    )
     rows = payload["rows"]
     if not isinstance(rows, list):
         raise ValueError("rows must be an array")
@@ -186,10 +260,12 @@ def load_early_close_calendar(path: str | Path) -> EarlyCloseCalendar:
         raise ValueError("COMPLETE multi-year calendar requires non-empty rows")
     early_dates: set[date] = set()
     for index, row in enumerate(rows):
-        if not isinstance(row, dict) or set(row) != {"date", "deadline_local"}:
+        if not isinstance(row, dict) or set(row) != {"date", "deadline_local", "source_year"}:
             raise ValueError(f"rows[{index}] keys mismatch")
         row_date = _calendar_date(row["date"], f"rows[{index}].date")
         assert row_date is not None
+        if type(row["source_year"]) is not int or row["source_year"] not in sources or row["source_year"] != row_date.year:
+            raise ValueError("row source_year must resolve to its declared year")
         if not coverage_start <= row_date <= coverage_end:
             raise ValueError(f"rows[{index}].date is outside the coverage span")
         if row["deadline_local"] != "12:59 America/New_York":
@@ -197,6 +273,17 @@ def load_early_close_calendar(path: str | Path) -> EarlyCloseCalendar:
         if row_date in early_dates:
             raise ValueError(f"duplicate CME early-close date: {row_date.isoformat()}")
         early_dates.add(row_date)
+    for year, captured in captured_dates.items():
+        expected = {day for day in captured if coverage_start <= day <= coverage_end}
+        if {day for day in early_dates if day.year == year} != expected:
+            raise ValueError("calendar rows differ from yearly capture within coverage")
+    if status == "COMPLETE":
+        if set(range(coverage_start.year, coverage_end.year + 1)) - sources.keys():
+            raise ValueError("COMPLETE calendar requires a source for every covered year")
+        for year in range(coverage_start.year, coverage_end.year + 1):
+            if coverage_start <= date(year, 1, 1) and coverage_end >= date(year, 12, 31):
+                if not any(day.year == year for day in early_dates):
+                    raise ValueError("COMPLETE calendar requires rows for every fully covered year")
     return EarlyCloseCalendar(
         source_url=payload["source_url"],
         page_date=page_date,
@@ -206,6 +293,8 @@ def load_early_close_calendar(path: str | Path) -> EarlyCloseCalendar:
         coverage_status=status,
         coverage_note=payload["coverage_note"],
         early_close_dates=frozenset(early_dates),
+        sources=tuple(MappingProxyType(source) for source in sources.values()),
+        input_sha256=sha256(raw).hexdigest(),
     )
 
 

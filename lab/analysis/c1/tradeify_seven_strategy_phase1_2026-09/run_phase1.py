@@ -47,6 +47,11 @@ from research_utils.tv_trade_ledger import (  # noqa: E402
     sha256_file,
     verify_source_pair,
 )
+from research_utils.tv_summary_reconciliation import (  # noqa: E402
+    SUMMARY_TOLERANCES,
+    load_summary_anchors,
+    reconcile_summary,
+)
 
 
 _RUNNER_VERSION = "tradeify-phase1-normalization-v1"
@@ -385,14 +390,15 @@ def _render_report(manifest: dict[str, object]) -> bytes:
     if "dropped_sources" not in manifest:
         return _render_legacy_report(manifest)
     coverage_note = manifest.get("cme_early_close_coverage_note")
-    if manifest["phase1_verdict_cap"] == "COMPLETE":
+    calendar_status = manifest.get("cme_early_close_calendar", {}).get("coverage_status", manifest["phase1_verdict_cap"])
+    if calendar_status == "COMPLETE":
         calendar_boundary = (
             "- CME holiday-short coverage is `COMPLETE` for the observed source span; "
             "the captured early-close rows drive 12:59 ET deadlines."
         )
     else:
         calendar_boundary = (
-            f"- CME holiday-short coverage is `{manifest['phase1_verdict_cap']}`; "
+            f"- CME holiday-short coverage is `{calendar_status}`; "
             "no historical early-close date was inferred."
         )
     lines = [
@@ -408,7 +414,7 @@ def _render_report(manifest: dict[str, object]) -> bytes:
         "",
         f"Campaign status: `{manifest['campaign_status']}`",
         "",
-        f"Holiday-short verdict cap: `{manifest['phase1_verdict_cap']}`",
+        f"Phase 1 evidence verdict cap: `{manifest['phase1_verdict_cap']}`",
         "",
         "## Strategy inventory",
         "",
@@ -459,6 +465,7 @@ def _render_report(manifest: dict[str, object]) -> bytes:
             "",
             f"- Config: `{manifest['inputs']['config_sha256']}`",
             f"- CME calendar capture: `{manifest['inputs']['cme_early_close_calendar_sha256']}`",
+            f"- Independent TradingView anchors: `{manifest['inputs']['tv_summary_anchors_sha256']}`",
             f"- Canonical events: `{manifest['ledgers']['canonical_events_sha256']}`",
             f"- Canonical trades: `{manifest['ledgers']['canonical_trades_sha256']}`",
             f"- Weekly exit blocks: `{manifest['ledgers']['weekly_exit_blocks_sha256']}`",
@@ -478,6 +485,17 @@ def _render_report(manifest: dict[str, object]) -> bytes:
         else:
             lines.append("- No issues.")
         lines.append("")
+    lines.extend([
+        "## Independent TradingView summary reconciliation", "",
+        f"G1.4 coverage: `{manifest['summary_reconciliation_status']}`. {manifest['summary_coverage_note']}", "",
+        "Observed max drawdown uses closed-trade exit equity; TradingView panel equity drawdown may differ. Discrepancies remain blockers; no series is repaired.", "",
+    ])
+    for row in manifest["strategies"]:
+        lines.extend([f"### {row['strategy_id']}", "", row["summary_source_note"] or "No independent operator summary supplied.", "",
+                      "| Metric | Observed | Anchor | Difference | Tolerance | Status |",
+                      "|---|---|---|---|---|---|",
+                      *["| {metric} | {observed} | {anchor} | {difference} | {tolerance} | {status} |".format(**comparison)
+                        for comparison in row["summary_comparisons"]], ""])
     lines.extend(
         [
             "## Reproduce",
@@ -509,6 +527,7 @@ def run_campaign(
     _validate_dropped_source_roster(inventory.dropped_sources)
     fee_schedule = load_fee_schedule(fee_path)
     early_close_calendar = load_early_close_calendar(calendar_path)
+    summary_inventory = load_summary_anchors(campaign_dir / "tv_summary_anchors.json", specs)
     verified = [verify_source_pair(source_dir, spec) for spec in specs]
 
     normalized_by_strategy = {
@@ -523,6 +542,7 @@ def run_campaign(
     trades_by_strategy: dict[str, pd.DataFrame] = {}
     issues_by_strategy: dict[str, tuple[object, ...]] = {}
     strategy_records: list[dict[str, object]] = []
+    summaries_by_strategy: dict[str, dict[str, object]] = {}
     for source in verified:
         normalized = normalized_by_strategy[source.spec.strategy_id]
         reconstruction = reconstruct_trades(normalized.events, source.spec)
@@ -533,7 +553,14 @@ def run_campaign(
             fee_schedule,
             early_close_calendar=early_close_calendar,
         )
-        issues = (*normalized.issues, *reconstruction.issues, *accounting.issues, *venue.issues)
+        comparisons, summary_issues = reconcile_summary(accounting, source.spec, summary_inventory)
+        anchor = summary_inventory.anchors.get(source.spec.strategy_id)
+        summary_record = {
+            "summary_source_note": anchor["source_note"] if anchor else None,
+            "summary_comparisons": comparisons,
+        }
+        summaries_by_strategy[source.spec.strategy_id] = summary_record
+        issues = (*normalized.issues, *reconstruction.issues, *accounting.issues, *venue.issues, *summary_issues)
         trades_by_strategy[source.spec.strategy_id] = reconstruction.trades
         issues_by_strategy[source.spec.strategy_id] = issues
         strategy_records.append(
@@ -544,7 +571,7 @@ def run_campaign(
                 accounting,
                 venue,
                 issues,
-            )
+            ) | summary_record
         )
 
     joint_events = build_joint_events(
@@ -582,6 +609,7 @@ def run_campaign(
                     "pin_divergence": spec.pin_divergence,
                 },
                 "issues": _detailed_issue_rows(issues_by_strategy[strategy_id]),
+                **summaries_by_strategy[strategy_id],
             }
         )
         detail_payloads[
@@ -598,14 +626,31 @@ def run_campaign(
         "claim_class": "EXPLORATORY",
         "phase0_status": "SKIPPED_BY_OPERATOR",
         "campaign_status": campaign_status,
-        "phase1_verdict_cap": early_close_calendar.coverage_status,
+        "phase1_verdict_cap": (
+            "COMPLETE" if early_close_calendar.coverage_status == summary_inventory.coverage_status == "COMPLETE"
+            else "NEEDS_CONTEXT"
+        ),
+        "summary_reconciliation_status": summary_inventory.coverage_status,
+        "summary_coverage_note": summary_inventory.coverage_note,
+        "cme_early_close_calendar": {
+            "source_url": early_close_calendar.source_url,
+            "page_date": early_close_calendar.page_date,
+            "observed_date": early_close_calendar.observed_date,
+            "coverage_start": early_close_calendar.coverage_start,
+            "coverage_end": early_close_calendar.coverage_end,
+            "coverage_status": early_close_calendar.coverage_status,
+            "coverage_note": early_close_calendar.coverage_note,
+            "sources": [dict(source) for source in early_close_calendar.sources],
+            "observed_row_count": len(early_close_calendar.early_close_dates),
+        },
         "cme_early_close_coverage_note": early_close_calendar.coverage_note,
         "runner_version": _RUNNER_VERSION,
         "git_base_commit": _BASE_COMMIT,
         "inputs": {
             "config_sha256": inventory.config_sha256,
             "tradeify_commission_schedule_sha256": sha256_file(fee_path),
-            "cme_early_close_calendar_sha256": sha256_file(calendar_path),
+            "cme_early_close_calendar_sha256": early_close_calendar.input_sha256,
+            "tv_summary_anchors_sha256": summary_inventory.input_sha256,
         },
         "ledgers": {
             "timestamp_domain": (
@@ -626,6 +671,7 @@ def run_campaign(
             "aggregate_money_usd": "0.01",
             "tick_grid_ticks": "1e-9",
             "duplicated_source_fee_and_identity": "exact",
+            "tv_summary": SUMMARY_TOLERANCES,
         },
         "strategies": strategy_records,
         "dropped_sources": [

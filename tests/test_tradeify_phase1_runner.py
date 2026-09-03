@@ -228,6 +228,7 @@ def _five_source_fixture(root: Path) -> tuple[Path, Path, list[str]]:
                 "coverage_end": "2026-09-01",
                 "coverage_status": "NEEDS_CONTEXT",
                 "coverage_note": "synthetic incomplete calendar",
+                "sources": [],
                 "rows": [],
             }
         ),
@@ -337,12 +338,15 @@ def test_malformed_utf8_hash_pinned_export_returns_intake_exit_code(tmp_path, ca
     export.write_bytes(b"\xff")
     payload = json.loads(config.read_text(encoding="utf-8"))
     payload["strategies"][0]["export_sha256"] = sha256(export.read_bytes()).hexdigest()
+    payload["strategies"][0]["export_bytes"] = len(export.read_bytes())
     config.write_text(json.dumps(payload), encoding="utf-8")
 
     assert run_phase1.main(
         ["--config", str(config), "--source-dir", str(source_dir)]
     ) == 3
-    assert "intake failure:" in capsys.readouterr().err
+    diagnostic = capsys.readouterr().err
+    assert "intake failure:" in diagnostic
+    assert "UTF-8" in diagnostic
 
 
 def test_short_hash_pinned_export_returns_intake_exit_code(tmp_path, capsys):
@@ -529,9 +533,10 @@ def test_alternate_in_repo_config_cannot_authorize_an_output_directory(tmp_path)
 
 
 def test_complete_calendar_must_cover_observed_source_span(tmp_path):
+    from test_cme_calendar_evidence import calendar_fixture
     source_dir, config, _ = _seven_source_fixture(tmp_path)
     calendar_path = config.parent / "cme_early_close_calendar.json"
-    calendar = json.loads(calendar_path.read_text(encoding="utf-8"))
+    _, calendar, _ = calendar_fixture(config.parent)
     calendar.update(
         {
             "coverage_start": "2025-01-01",
@@ -540,6 +545,8 @@ def test_complete_calendar_must_cover_observed_source_span(tmp_path):
             "coverage_note": "synthetic complete but out-of-span calendar",
         }
     )
+    calendar["sources"] = calendar["sources"][:1]
+    calendar["rows"] = calendar["rows"][:1]
     calendar_path.write_text(json.dumps(calendar), encoding="utf-8")
 
     with pytest.raises(ValueError, match="does not cover observed source span"):
