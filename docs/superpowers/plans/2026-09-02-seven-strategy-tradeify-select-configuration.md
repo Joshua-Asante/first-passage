@@ -68,7 +68,11 @@ Before the first portfolio result is computed, freeze a campaign pre-registratio
     attempt-and-check iterations each, with no self-extension — proposed constituents (i) intake,
     normalization, standalone audit (Phases 0–2); (ii) frozen search and robustness (Phases 3–6);
     (iii) confirmation and shadow parity (Phases 7–8). External spend and local core-hours are
-    disclosure lines beside the count, not the budget.
+    disclosure lines beside the count, not the budget; and
+14. the hashes of the **seven per-template candidate contracts** (Phase 3) that the configuration
+    catalogue is permitted to compose — one per supplied strategy, per the
+    [candidate-contract ADR](../../adr/2026-08-30-candidate-contract.md): a distinct entry/exit
+    template is never a cell inside another template's contract.
 
 If the exact 5% boundary is operational rather than statistical, report both the point-estimate
 frontier and the confidence-qualified frontier, but only the latter may be called a pass.
@@ -126,14 +130,18 @@ Build one canonical event ledger in UTC while retaining exchange-local session d
 original trade stream and add normalized fields; do not silently repair source rows. Reconcile each
 strategy to its source report on trade count, gross/net P&L, win rate, profit factor, maximum
 drawdown, and monthly totals **over the development segment only** (the report's subtotals or its
-trade list filtered to that segment). Whole-period totals are reconciled once, in Phase 7,
-immediately before the reserved segment is consumed; a mismatch there is `BLOCKED`, never a tuning
-opportunity. Explicitly model:
+trade list filtered to that segment). Whole-period totals are reconciled once, **inside** Phase 7's
+single atomic confirmation read — never before it, because deriving them reads the reserved bytes;
+a mismatch there voids that slot (`EVIDENCE-VOID`), never a tuning opportunity. Explicitly model:
 
-- commissions and exchange/NFA fees **per instrument** — the tier scalar `cost_per_side_usd` in
-  `core/firm_rules.py` is the index-micro row (MNQ/MYM/MES/M2K; its own comment prices MGC
-  higher), so fees resolve through the per-instrument specs in `lab/discovery/cost_model.py`,
-  never through one scalar — plus bid/ask spread and adverse slippage;
+- commissions and exchange/NFA fees **per instrument**, from a **per-instrument Tradeify
+  commission table that Phase 1 delivers and hashes**: captured from the venue's published
+  schedule as a primary source (Rule 13) and reconciled to the values `core/firm_rules.py` records
+  in comment ($0.91/side index micros; $1.06/side MGC). The tier scalar `cost_per_side_usd` is
+  the index-micro row only, and `lab/discovery/cost_model.py::resolve_commission` deliberately
+  **raises** for every non-index-micro instrument (its `INSTRUMENT_SPECS` hold tick geometry, not
+  fees) — it is not the resolver and is not extended in a worker branch (SSOT closed-world gate).
+  Plus bid/ask spread and adverse slippage;
 - simultaneous positions, pyramiding, partial exits, overnight positions, and session boundaries;
 - futures point values, tick sizes, contract rolls, and quantity multipliers; and
 - the rule engine's order of operations at equal timestamps.
@@ -204,6 +212,17 @@ its rejection rules is still an adjective.
 procedure. The shortlist that reaches Phase 7 is the first `M` configurations under the frozen
 lexicographic objective on development evidence; no other configuration consumes a confirmation
 slot in this campaign, and `N_conf` (item 11) is computed from the frozen `α/M` at the same time.
+
+**Seven candidate contracts precede the book search** (decision contract item 14). Each supplied
+strategy is a distinct entry/exit template, and the candidate-contract ADR admits cells within one
+contract only as parameterizations of a single template; Phase 3 therefore opens one hash-pinned
+contract per strategy — template fields, contamination and last-inspection record, reserved
+confirmation window, cost authority, K ledger, and the mechanism discriminator or its declared
+absence — under the shared campaign envelope and the single multiplicity configuration. The
+configuration catalogue composes contracted candidates only; a strategy without a contract never
+enters it. A contract that declares no discriminator may still contribute to a book configuration,
+but that configuration's terminal verdict is then capped below `CONFIRMED` (terminal taxonomy:
+a payoff pass without a validated mechanism association is not confirmable evidence).
 
 Define a bounded search space. Start with `{off, 1 contract}` for each strategy, then permit larger
 integer quantities or a small frozen set of portfolio risk scales only where standalone geometry
@@ -281,17 +300,21 @@ After Phase 6, order the shortlist by the frozen objective on development eviden
 per-slot level (`α/M` under Bonferroni, or the Holm step-down bar after ordering). Commit the
 selected-set hash before anything below runs.
 
-**Contract-integrity check, immediately before the reserved segment is touched.** Re-hash and
-compare every frozen input (intake manifest, quarantined confirmation files), the code commit, the
-configuration manifest, the pre-registration, and the committed selected-set hash; re-verify the
-venue snapshot (symbols, sessions, contract caps, rule set, fees, inactivity clock) against a fresh
-primary-source capture and against `core/firm_rules.py`; reconcile each strategy's whole-period
-source totals (deferred from Phase 1). Any mismatch aborts **before** consumption: the configuration
-is `BLOCKED`, the reserved segment stays unconsumed, and the discrepancy is filed. Phase 8 cannot
-restore a consumed holdout, so nothing is deferred to it.
+**Contract-integrity check, immediately before the reserved segment is touched — hashes and
+development-only totals, nothing that reads reserved bytes.** Re-hash and compare every frozen
+input (intake manifest, quarantined confirmation files by hash only), the code commit, the
+configuration manifest, the pre-registration, the seven candidate contracts, and the committed
+selected-set hash; re-verify the venue snapshot (symbols, sessions, contract caps, rule set, fees,
+inactivity clock) against a fresh primary-source capture and against `core/firm_rules.py`;
+re-reconcile each strategy's development-segment totals. Any mismatch aborts **before**
+consumption: the configuration is `BLOCKED`, the reserved segment stays unconsumed, and the
+discrepancy is filed. Phase 8 cannot restore a consumed holdout, so nothing is deferred to it.
 
-Then run the reserved confirmation segment once per slot and the high-precision independent Monte
-Carlo with new seeds. New seeds make draws independent only conditional on the same fitted block
+Then perform the **single atomic confirmation read** per slot, with no retry: whole-period source
+reconciliation (deferred from Phase 1, because it derives reserved P&L) and the realized
+reserved-segment path in one step. A reconciliation mismatch discovered here has already consumed
+the slot — the configuration's verdict is `EVIDENCE-VOID`, no second slot opens for it, and the
+mismatch is filed. Then run the high-precision independent Monte Carlo with new seeds. New seeds make draws independent only conditional on the same fitted block
 distribution, so the final report must include:
 
 - the safety estimand `P(bust before pass)`: point estimate, numerator/denominator with
@@ -300,7 +323,10 @@ distribution, so the final report must include:
 - the **qualifying bound**, which carries source-sample, model, **and selection** uncertainty: an
   outer block bootstrap over the historical development weeks in which **every replicate re-runs
   the frozen Phase 4–5 selection procedure on its resampled development data** and then scores
-  whichever configuration that replicate selects (B outer replicates, fresh inner seeds — the
+  **every one of the up-to-`M` slots that replicate selects**, so each slot carries its own
+  selection-inclusive bound — slot `i`'s statistic is the `1 − α/M` quantile across replicates
+  of the bust estimate of each replicate's rank-`i` selection (B outer replicates, fresh inner
+  seeds — the
   two-level design of the repository's W1 bootstrap-95th packet,
   `lab/analysis/c1/class_s_w1_bootstrap_honest_2026-09-02/`, extended by the selection step).
   Bootstrapping only the already-selected winner conditions on the selection and is not admitted.
@@ -329,7 +355,12 @@ distribution, so the final report must include:
 - sensitivity tables and all disclosed limitations.
 
 Only configurations whose confirmation evidence satisfies the frozen safety rule qualify. If none
-does, the correct outcome is **no qualifying configuration**, not a relaxed ceiling.
+does, the correct outcome is **no qualifying configuration**, not a relaxed ceiling. Per-candidate
+terminal verdicts use the
+[terminal taxonomy](../../adr/2026-08-30-terminal-taxonomy.md)'s confirm-phase vocabulary —
+`CONFIRMED`, `MARKET-NULL`, `EXPRESSION-FAIL`, `EVIDENCE-VOID` — never the session-handoff labels
+(`EXPLORATORY` / `CONFIRMATORY` / `BLOCKED`), which describe evidence state between sessions and
+are not verdicts.
 
 ## Phase 8 — Shadow-operational verification
 
@@ -422,3 +453,14 @@ campaign-state artifact):
 | `paired_blocks_from_daily` cannot build joint-flat multi-strategy blocks | Phase 3 precedent-not-tool, Phase 1 block-builder deliverable |
 | Fees taken from the index-micro tier scalar | Phase 1 per-instrument fee authority |
 | Rule 2 budget expressed in core-hours | Contract item 13 (STRATEGIC, ≤3 OUTER × 8 iterations) |
+
+Fourth pass — Codex re-review of #273 at `7edebae` raised six P1 + two P2; the five that bind the
+plan land here (the other three bind the campaign-state artifact):
+
+| Finding | Where it now binds |
+|---|---|
+| Outer bootstrap scored only each replicate's winner, not ranks 2…`M` | Phase 7: every selected slot scored per replicate, slot-specific `1 − α/M` bounds |
+| Book search across distinct templates without candidate contracts | Contract item 14, Phase 3 seven per-template contracts, discriminator ceiling |
+| `cost_model.resolve_commission` raises for MGC; specs are geometry, not fees | Phase 1 per-instrument commission table deliverable (primary source, reconciled to `firm_rules` comments) |
+| Whole-period reconciliation read reserved P&L before the "unconsumed" promise | Phase 1, Phase 7: pre-access check is hash + development-only; whole-period reconciliation inside the single atomic read, `EVIDENCE-VOID` on mismatch |
+| Handoff labels used where terminal verdicts belong | Phase 7 terminal-taxonomy vocabulary; handoff labels declared nonterminal |
