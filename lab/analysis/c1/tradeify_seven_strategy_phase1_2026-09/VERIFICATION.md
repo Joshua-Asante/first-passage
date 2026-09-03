@@ -2,7 +2,7 @@
 
 Audit date: 2026-09-03. This evidence is separate from generated RESULTS. Final generation is `tradeify-phase1-normalization-v2`. All five sources remain `EXPLORATORY`; campaign status is `BLOCKED_EXPLORATORY`, verdict cap is `NEEDS_CONTEXT`, and G1.4 is partial. D13(b) is now `ACCEPTED_UNMODELED`: the continuous-roll limitation is WARNING, not a blocker by itself; attribution remains UNAVAILABLE. Nothing here qualifies or deploys a strategy.
 
-The operator addendum's actual pin lookup, version identity, D13 policy, parsed-fee snapshot and wrong-byte-length tests are implemented and verified. The v2 real run supersedes the earlier v1 generation. Code and acceptance literals are frozen; full-suite v2 verification is pending at this review checkpoint.
+The operator addendum's actual pin lookup, version identity, D13 policy, parsed-fee snapshot and wrong-byte-length tests are implemented and verified. The v2 real run supersedes the earlier v1 generation. Code and acceptance literals were frozen before the full suite, which passed with exit 0.
 
 ## Revision, environment and reproduction
 
@@ -78,7 +78,9 @@ Final v2 focused exit 0: **334 passed, 1 skipped in 8.13s**, no warnings. Sole s
 .venv/Scripts/python.exe -m pytest -p no:cacheprovider --basetemp "$TEST_TMP/r4-v2-full" -q -rs
 ```
 
-Final v2 full suite is pending at this review checkpoint (exec session 16357), with all code/acceptance literals stable before collection and no subsequent code/test edits. Output is streamed to external `r4-v2-full-suite.log`; no final v2 suite result is claimed yet.
+Final v2 full suite (exec session 16357): **exit 0; 2,453 passed, 35 skipped, 23 warnings, 6 subtests passed in 436.13s (7:16)**. All code/acceptance literals were stable before collection and no code/tests changed during the run. External `r4-v2-full-suite.log` preserves complete warning and skip inventories.
+
+Skips concern absent optional packages (`funded_scaling`, `databento`, `arch`), unavailable private data/history/docs and operator CrossTrade/NT8 integration, one interpreter-specific branch, an obsolete WARN-tier branch, and the single Windows file-symlink privilege limitation. Warnings concern `pkg_resources`, nolds' sklearn/RANSAC fallback, plotting deprecations and explicit historical scoring-gate notices. No skip or warning was suppressed or repaired outside this task.
 
 Historical v1 full suite: exit 1, 1 failed/2,423 passed/35 skipped/23 warnings/6 subtests passed in 484.58s. Its sole failure collected the old RESULTS literal before the mid-run freeze update (`e5c22cfc...` expected vs `e4dd8506...` actual). This worker invocation-order error is not claimed as an external failure or valid final-tree verification; corrected tests subsequently passed. Warnings were dependency deprecations and explicit historical stale-gate notices; `r4-full-suite.log` retains complete history.
 
@@ -98,3 +100,9 @@ Campaign-local `.gitattributes` pins `*.json text eol=lf` and `RESULTS.md text e
 `git diff --check` passed. `git ls-tree -r -l HEAD` found no tracked blob over 1,000,000 bytes. `git diff --name-only origin/main...HEAD -- '*.csv' '*.pine'` was empty. Local outputs are ignored, no source/row bytes staged, no absolute private source path in tracked study artifacts. Old output directories were preserved.
 
 Orchestrator surfaces, plans, ADRs, campaign-state, core/ops and cost-model logic are untouched by this worker. Original-base cost-model blob materialized with the existing Windows CRLF policy exactly equals current raw bytes; SHA-256 `8397a9d9a34d86121bad9ac41993330d44a4813b5876e20d138bc623f31f9a98`. A `core.autocrlf=false` whole-worktree diagnostic flags pre-existing PORT_MANIFEST CRLF bytes as whitespace; ordinary policy-aware diff is clean and that file was not edited.
+
+## Controller checkpoint and post-merge evidence
+
+Controller committed the frozen R4 delta as `1401bd4` and merged documentation-only main `88e4080` as `2fbd8f1`. The main update did not change campaign code/config/pins or source/output bytes. The real-run code provenance above remains the invocation-time checkout plus uncommitted delta, now represented by that checkpoint.
+
+Controller independently repeated the same 14-module coverage: 334 passed, 1 skipped in 10.35s. Controller's post-merge complete gate (`--tier check`, session 45928) and catalog check each exited 0; external `r4-v2-postmerge-gates.log` retains evidence. New main's ADR increases the report-only prose-falsifier count from 105 to 106; no new hard finding. Controller also verified all six hashed JSON/RESULTS raw working bytes equal their HEAD blobs, no oversized tracked blob, no source/ledger bytes staged, and clean scoped hygiene. This final update changes evidence documentation only.
