@@ -1,0 +1,180 @@
+{
+  "base_q1": {
+    "Select": {
+      "barrier_off": {
+        "realized_intraday": [
+          "bust_trailing",
+          348,
+          2.85
+        ],
+        "bust_intraday": 41.66,
+        "pass_intraday": 58.33,
+        "bust_eod": 39.53,
+        "pass_eod": 60.46
+      },
+      "barrier_on": {
+        "bust_intraday": 2.46,
+        "pass_intraday": 0.67,
+        "bust_inactivity_rate": 96.88
+      }
+    },
+    "Growth": {
+      "barrier_off": {
+        "realized_intraday": [
+          "bust_trailing",
+          367,
+          3.67
+        ],
+        "bust_intraday": 31.29,
+        "pass_intraday": 68.64,
+        "bust_eod": 29.62,
+        "pass_eod": 70.27
+      },
+      "barrier_on": {
+        "bust_intraday": 1.14,
+        "pass_intraday": 0.68,
+        "bust_inactivity_rate": 98.18
+      }
+    }
+  },
+  "base_q2": {
+    "Select": {
+      "barrier_off": {
+        "realized_intraday": [
+          "pass",
+          193,
+          2.46
+        ],
+        "bust_intraday": 61.43,
+        "pass_intraday": 38.57,
+        "bust_eod": 58.45,
+        "pass_eod": 41.55
+      },
+      "barrier_on": {
+        "bust_intraday": 19.3,
+        "pass_intraday": 5.93,
+        "bust_inactivity_rate": 74.77
+      }
+    },
+    "Growth": {
+      "barrier_off": {
+        "realized_intraday": [
+          "pass",
+          193,
+          2.46
+        ],
+        "bust_intraday": 52.54,
+        "pass_intraday": 47.46,
+        "bust_eod": 49.59,
+        "pass_eod": 50.41
+      },
+      "barrier_on": {
+        "bust_intraday": 13.63,
+        "pass_intraday": 6.64,
+        "bust_inactivity_rate": 79.73
+      }
+    }
+  },
+  "P1_q1_skip_after_1100": {
+    "Select": {
+      "barrier_off": {
+        "realized_intraday": [
+          "bust_trailing",
+          347,
+          2.92
+        ],
+        "bust_intraday": 43.6,
+        "pass_intraday": 56.37
+      },
+      "barrier_on": {
+        "bust_intraday": 0.43,
+        "pass_intraday": 0.03,
+        "bust_inactivity_rate": 99.54
+      }
+    },
+    "Growth": {
+      "barrier_off": {
+        "realized_intraday": [
+          "bust_trailing",
+          353,
+          3.37
+        ],
+        "bust_intraday": 33.43,
+        "pass_intraday": 66.44
+      },
+      "barrier_on": {
+        "bust_intraday": 0.17,
+        "pass_intraday": 0.03,
+        "bust_inactivity_rate": 99.8
+      }
+    }
+  },
+  "X_hot_only_q1": {
+    "Select": {
+      "barrier_off": {
+        "realized_intraday": [
+          "pass",
+          652,
+          1.11
+        ],
+        "bust_intraday": 22.17,
+        "pass_intraday": 71.07
+      },
+      "barrier_on": {
+        "bust_intraday": 0.0,
+        "pass_intraday": 0.0,
+        "bust_inactivity_rate": 100.0
+      }
+    },
+    "Growth": {
+      "barrier_off": {
+        "realized_intraday": [
+          "pass",
+          652,
+          1.11
+        ],
+        "bust_intraday": 13.8,
+        "pass_intraday": 75.83
+      },
+      "barrier_on": {
+        "bust_intraday": 0.0,
+        "pass_intraday": 0.0,
+        "bust_inactivity_rate": 100.0
+      }
+    }
+  },
+  "X_hot_only_q2": {
+    "Select": {
+      "barrier_off": {
+        "realized_intraday": [
+          "pass",
+          372,
+          2.08
+        ],
+        "bust_intraday": 49.17,
+        "pass_intraday": 50.82
+      },
+      "barrier_on": {
+        "bust_intraday": 0.11,
+        "pass_intraday": 0.0,
+        "bust_inactivity_rate": 99.89
+      }
+    },
+    "Growth": {
+      "barrier_off": {
+        "realized_intraday": [
+          "pass",
+          372,
+          2.08
+        ],
+        "bust_intraday": 39.24,
+        "pass_intraday": 60.76
+      },
+      "barrier_on": {
+        "bust_intraday": 0.05,
+        "pass_intraday": 0.02,
+        "bust_inactivity_rate": 99.93
+      }
+    }
+  }
+}

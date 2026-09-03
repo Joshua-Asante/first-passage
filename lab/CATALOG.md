@@ -99,6 +99,7 @@ documents the camp boundary for humans/tools.
 | eodadv_mnq_2026-08 | orb | FALSIFIED | yes | no pre-registered mechanism survives; 15:30 exit stays barred | lab/analysis/orb/eodadv_mnq_2026-08/ | — |
 | orb_mnq_2026-07 | orb | ACTIVE | yes | NAS100-ORB-30 on native MNQ; Stage-2 cost-law PASS then T2 payability FIRED | lab/analysis/orb/orb_mnq_2026-07/ | inputs gitignored |
 | orb_mnq_recon_v3_2026-08-31 | orb | ACTIVE | yes | Bust/pass rope walk on the recon-v3 DD-tuning candidate (core/strategies/candidates/orb_mnq_recon_v3.pine) — FAILS the live Tradeify gate (bust<=5.0%) at every k=1-3; k=1 20.78% intraday-honest bust, 4.2x over — real ~3.25x improvement vs frozen construct's 67.67% (T2 ADR) but not close to clearing | lab/analysis/orb/orb_mnq_recon_v3_2026-08-31/ | — |
+| orb_mym_v04_riskbudget_2026-09-02 | orb | ACTIVE | yes | `EXPLORATORY — NO FILTER PROMOTED; ONE PINE INPUT ADDED, DEFAULT OFF`. Candidate | lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/ | — |
 | orb_mym_volume_gate_2026-09-02 | orb | ACTIVE | yes | `SOURCE-STAGE EXPLORATORY — P50 SELECTED FOR FORWARD TEST, NOT CONFIRMED` | lab/analysis/orb/orb_mym_volume_gate_2026-09-02/ | — |
 | orb_universe_2026-06-22 | orb | ACTIVE | yes | which FXIFY CFD best suits Opening Range Breakout | lab/analysis/orb/orb_universe_2026-06-22/ | pkl gitignored |
 | sessconf_mnq_2026-08 | orb | ACTIVE | yes | faithful close_tod session-truncation sweep (MNQ, Tradeify) | lab/analysis/orb/sessconf_mnq_2026-08/ | — |
