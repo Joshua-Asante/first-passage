@@ -154,8 +154,14 @@ Save each under a **new filename** — never edit a body in place under its old 
 | `aegis_6J1.pine` | `aegis_6J1_venue_bound.pine` | `aegis_6j1_venue_bound` |
 
 Each new body is hash-pinned in `core/strategies/PORT_MANIFEST.sha256` under `core/strategies/candidates/`
-with a provenance comment naming the superseded body, its pin, and the single change — the same shape
-[#286](https://github.com/Joshua-Asante/first-passage/pull/286) used for the two Striker research variants.
+with a dated provenance comment naming the superseded body, its pin, the single change, and that these are
+**research variants, not venue editions**.
+
+⚠ No such candidate block exists on `main` today. [#286](https://github.com/Joshua-Asante/first-passage/pull/286)
+would have added one for the two Striker research variants but was **closed without merging** on 2026-09-03, so
+this pinning step starts the section rather than extending it. Pin the three venue-bound editions in the same
+commit that lands their config entries — a body with no manifest record is a body the repo cannot later prove
+existed.
 
 ---
 
