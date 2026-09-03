@@ -152,6 +152,10 @@ def test_d17_runner_publishes_only_hashed_local_monthly_ledgers(tmp_path):
         local = json.loads(local_path.read_bytes())
         record = next(row for row in manifest["strategies"] if row["strategy_id"] == strategy_id)
         assert sha256(local_path.read_bytes()).hexdigest() == manifest["local_monthly_reconciliation_sha256"][strategy_id]
+        assert (
+            f"- Local monthly reconciliation {strategy_id}: "
+            f"`{manifest['local_monthly_reconciliation_sha256'][strategy_id]}`"
+        ) in report
         assert record["monthly_reconciliation"]["bucket_count"] == local["bucket_count"]
         assert record["monthly_reconciliation"]["comparison_status"] == "RECONSTRUCTED"
         assert all(comparison["metric"] not in {"total_commissions_usd", "monthly_net_pnl_usd"}

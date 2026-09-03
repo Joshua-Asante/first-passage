@@ -602,6 +602,12 @@ def _render_report(manifest: dict[str, object]) -> bytes:
                 f"- Detail report {strategy_id}: `{digest}`"
                 for strategy_id, digest in sorted(manifest["local_strategy_report_sha256"].items())
             ],
+            *[
+                f"- Local monthly reconciliation {strategy_id}: `{digest}`"
+                for strategy_id, digest in sorted(
+                    manifest.get("local_monthly_reconciliation_sha256", {}).items()
+                )
+            ],
             "",
             "## Issues by strategy",
             "",

@@ -806,18 +806,22 @@ def test_incomplete_holiday_calendar_sets_needs_context_cap(fee_schedule):
     assert issue.severity == "WARNING"
 
 
-def test_campaign_calendar_freezes_primary_source_capture_gap(
+def test_campaign_calendar_freezes_d19_accepted_secondary_venue_dates(
     campaign_early_close_calendar,
 ):
-    """A missing historical CME extract must be hashed and explicit, not inferred."""
+    """D19 completion must retain the exact secondary calendar instead of implying a primary capture."""
     calendar = campaign_early_close_calendar
 
-    assert calendar.source_url == "https://www.cmegroup.com/trading-hours.html"
+    assert calendar.source_url == (
+        "https://github.com/Joshua-Asante/first-passage/blob/0e3f40b/"
+        "ops/calendars/cme_holiday_calendar_2022_2026.json"
+    )
     assert calendar.observed_date.isoformat() == "2026-09-03"
-    assert calendar.coverage_start.isoformat() == "2022-09-01"
-    assert calendar.coverage_end.isoformat() == "2026-09-02"
-    assert calendar.coverage_status == "NEEDS_CONTEXT"
-    assert calendar.early_close_dates == frozenset()
+    assert calendar.coverage_start.isoformat() == "2022-01-01"
+    assert calendar.coverage_end.isoformat() == "2026-12-31"
+    assert calendar.coverage_status == "COMPLETE"
+    assert len(calendar.early_close_dates) == 49
+    assert calendar.evidence_kind == "SECONDARY"
 
 
 def test_complete_multiyear_calendar_requires_observed_early_close_rows(tmp_path):

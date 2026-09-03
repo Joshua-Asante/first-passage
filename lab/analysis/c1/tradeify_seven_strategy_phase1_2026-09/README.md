@@ -18,7 +18,7 @@ The ten active source files are provided only through `--source-dir`; their base
 
 ## Active and dropped identity inventory
 
-The retained inventory is exactly `aegis_6j1`, `orb_mnq_recon_v7`, `striker_dj30_mym_pyramid_250`, `striker_nas100_mnq_dow_wed_excluded`, and `vanguard_mgc_v04`, in that order. The five 2026-09-03 venue-bound source pairs are frozen by filename, byte count and SHA-256 in config. The first three are `NOT_IN_PORT_MANIFEST`. DJ and NAS are hash-frozen 100K `UNPINNED_MODIFIED` bodies that cite the existing candidate pins only as ancestors: their divergence preserves respectively `pyramid 250% vs locked 750%` and `day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}`, plus `initial_capital 100000 vs research-variant pin 200000`. Neither is the locked edition.
+The retained inventory is exactly `aegis_6j1`, `orb_mnq_recon_v7`, `striker_dj30_mym_pyramid_250`, `striker_nas100_mnq_dow_wed_excluded`, and `vanguard_mgc_v04`, in that order. The five 2026-09-03 venue-bound source pairs are frozen by filename, byte count and SHA-256 in config. Aegis, ORB, and Vanguard are `NOT_IN_PORT_MANIFEST`. DJ and NAS are hash-frozen 100K `UNPINNED_MODIFIED` bodies that cite the existing candidate pins only as ancestors: their divergence preserves respectively `pyramid 250% vs locked 750%` and `day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}`, plus `initial_capital 100000 vs research-variant pin 200000`. Neither is the locked edition.
 
 The two dropped records, `striker_dj30_qtxg1_swap_body_on_mym` and `striker_nas100_qtxg1_swap_body_on_mnq`, are unusable swap-port exports: point-value sizing was not overridden (a 4× mismatch interacting with cap and pyramid), cannot be rescaled, and will never be repaired. They appear only in the aggregate provenance inventory with their archive pin refs, filenames, and hashes; they are never normalized, counted, or included in ledgers, weekly results, ranking, or composition.
 
@@ -35,17 +35,15 @@ Generation `tradeify-phase1-normalization-v3` identifies the manifest/report con
 
 ## Venue boundaries
 
-Known F1 contract limitation: the explicitly mandated same-timestamp batching (earlier exits → all entries → zero-duration exits) is retained pending the operator's correction decision. Its reported minimum is not a guaranteed global causal minimum when zero-duration and new lasting entries coincide. For example, prior 50 exits alongside a zero-duration 70 and a new lasting 60: batching reports 130, while a feasible own-entry-before-exit ordering reaches a minimum peak of 70. The five current sources have no such coincident zero-duration/new-entry groups; their peaks and cap classifications are unchanged. Publication remains `NEEDS_CONTEXT` on this unresolved contract; no generic bound-correctness or unconditional software-readiness claim is made.
+The frozen upper-bound implementation is the reviewed `80abcec` behavior; the final replacement bytes measure peak micro-equivalent ranges of `80/80`, `4/6`, `77/77`, `77/77`, and `6/6` in configuration order. These are per-strategy observations only: no Phase 1 book-level cap verdict is claimed.
 
 The per-strategy Tradeify cap remains a Phase 1 blocker check against 80 micro-equivalents (`6J=10`, `MNQ/MYM/MGC=1` per contract). The joint ledger carries that unit on every event, but the joint book-cap verdict is deferred to Phase 4.
 
-Force-flat auditing checks whether a daily Tradeify deadline instant lies in `(entry, exit]`: 16:45 America/New_York on regular days and 12:59 on CME early-close dates. The primary CME page did not expose a complete 2022-09-01 through 2026-09-02 historical calendar, and the CME Reference Data API requires an OAuth API ID. `cme_early_close_calendar.json` therefore freezes the gap as `NEEDS_CONTEXT`; it contains no inferred holiday dates. Regular 16:45 checks still run, while every aggregate report preserves the holiday-short verdict cap.
+Force-flat auditing checks whether a daily Tradeify deadline instant lies in `(entry, exit]`: 16:45 America/New_York on regular days and 12:59 on the D19-accepted 49-date secondary venue-date calendar. The final replacement ledgers have zero force-flat and Friday-to-Sunday holds for all five strategies. D19 does not upgrade this source to primary evidence or model product close times/exchange sessions; its accepted and unresolved residuals remain in `RESULTS.md`. The verdict cap remains `NEEDS_CONTEXT` because fresh independent scalar panels are missing (including DJ30's unexplained +$287 replacement-run delta), not because the D19 calendar is incomplete.
 
 ## Evidence inputs and independent summary checks
 
-The historical calendar coverage target is 2022-09-01 through 2026-09-02. `cme_early_close_calendar.json` retains its exact compatibility metadata and adds `sources: []`; each future yearly source must provide exactly `{year, source_url, page_date, capture_basename, sha256}`, and every calendar row exactly `{date, deadline_local, source_year}`. A source must resolve to actual matching bytes in ignored `local_artifacts/calendar_captures`; a digest-shaped string alone cannot certify evidence. Symlink/traversal escapes, unknown years, duplicate dates/sources, changed bytes and missing covered years are rejected.
-
-The supported capture format is a reviewed yearly primary-source JSON extract with exact `{year, source_url, page_date, rows}` keys and `{date, deadline_local}` rows. Metadata/year and all row years are checked, and the calendar must include precisely the captured rows within its coverage. Raw CME PDF/HTML requires a separately reviewed extraction step; no historical dates are reconstructed or guessed. No yearly extracts have been supplied, so the committed inventory remains empty and `NEEDS_CONTEXT`. Regular daily-deadline checks continue; structural validation does not establish missing historical truth.
+The primary calendar capture schema remains available for future reviewed yearly extracts, but the checked-in D19 wrapper spans 2022-01-01 through 2026-12-31 and binds exactly 49 account-level `EARLY_CLOSE` venue dates. Its source-calendar SHA-256 is `2698f2688cce582b08df58516fd770fa4a71a18de04870d9c14511731ea181e9` on the LF-pinned Git blob; no full-closure date is converted to a short-session deadline.
 
 The only secondary compatibility path is the separately tagged `tradeify_secondary_early_close/v1` wrapper. It pins the exact LF bytes of in-repository `ops/calendars/cme_holiday_calendar_2022_2026.json` and uses only its declared account-level union of 49 `EARLY_CLOSE` dates as 12:59 ET rows; a product group (including 6J) marked `NORMAL` does not remove that blanket Tradeify deadline. D19 accepts this venue-date membership evidence as `COMPLETE`, not as primary evidence or product-close/exchange-session modeling. CME-trade-date full-closure dates are never converted to wall-date deadlines; the three sub-deadline notes, thirteen unresolved items, 2025-11-28 conservative scheduled-half-day/outage classification, and possible non-conservative missing ad-hoc closures from 2026-05-28 through 2026-09-02 remain explicit limitations.
 
@@ -55,7 +53,7 @@ D17 retains five independent scalar Key-stats requirements (count, net, win-rate
 
 ## Joint-ledger scope
 
-Phase 1 delivers deterministic joint event union and ISO-week exit aggregation only; neither is a joint-flat block builder. The joint-flat block builder is deferred to Phase 3, before Phase 4 composition, because it requires a synchronized all-leg chronology and must prove every included leg is flat at each block edge. ORB-MNQ's three Friday-to-Sunday holds make the affected weekly edges fail that assertion; they are reported and never repaired. No Phase 1 ranking, dependence, composition, Monte Carlo, or Pine rerun occurs.
+Phase 1 delivers deterministic joint event union and ISO-week exit aggregation only; neither is a joint-flat block builder. The joint-flat block builder is deferred to Phase 3, before Phase 4 composition, because it requires a synchronized all-leg chronology and must prove every included leg is flat at each block edge. The final replacement source has zero Friday-to-Sunday holds; no Phase 1 ranking, dependence, composition, Monte Carlo, or Pine rerun occurs.
 
 ## Reproduce
 
@@ -63,7 +61,7 @@ Phase 1 delivers deterministic joint event union and ISO-week exit aggregation o
 .venv/Scripts/python.exe lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/run_phase1.py `
   --config lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json `
   --source-dir 'C:\path\to\the\ten\active\frozen\files' `
-  --output-dir lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/reanchor_iteration3
+  --output-dir lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/reanchor_replacements_2026-09-03
 ```
 
 The aggregate report remains `EXPLORATORY` even when all byte and accounting checks reproduce exactly. Re-running Pine needs a separate, explicitly authorized bar-data and execution-engine project.
