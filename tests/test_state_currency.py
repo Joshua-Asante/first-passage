@@ -129,3 +129,55 @@ def test_newest_index_date_is_max_not_first() -> None:
 def test_today_et_reads_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("STATE_CURRENCY_TODAY", "2026-09-03")
     assert mod.today_et() == date(2026, 9, 3)
+
+
+def test_weekly_deadline_beyond_horizon_exits_one(tmp_path: Path) -> None:
+    state = _write(tmp_path / "STATE.md", _state(weekly="2027-09-04"))
+    assert _run(state, "2026-09-03") == 1
+
+
+def test_weekly_horizon_is_seven_days(tmp_path: Path) -> None:
+    on_horizon = _write(tmp_path / "on.md", _state(weekly="2026-09-10"))
+    past_horizon = _write(tmp_path / "past.md", _state(weekly="2026-09-11"))
+    assert _run(on_horizon, "2026-09-03") == 0
+    assert _run(past_horizon, "2026-09-03") == 1
+
+
+def test_monthly_horizon_is_thirty_one_days(tmp_path: Path) -> None:
+    on_horizon = _write(tmp_path / "on.md", _state(monthly="2026-10-04"))
+    past_horizon = _write(tmp_path / "past.md", _state(monthly="2026-10-05"))
+    assert _run(on_horizon, "2026-09-03") == 0
+    assert _run(past_horizon, "2026-09-03") == 1
+
+
+def test_duplicate_weekly_heading_exits_one(tmp_path: Path) -> None:
+    state = _write(
+        tmp_path / "STATE.md",
+        _state(
+            extra_headings=(
+                "\n### Weekly — recurring (rolling; next deadline **2026-09-11**)\n\n"
+                "- **duplicate.**\n"
+            )
+        ),
+    )
+    assert _run(state, "2026-09-03") == 1
+
+
+def test_negated_discharged_heading_exits_one(tmp_path: Path) -> None:
+    not_discharged = _write(
+        tmp_path / "not.md",
+        _state(extra_headings="\n### 2026-08-24 — NOT DISCHARGED\n\n- **still owed.**\n"),
+    )
+    undischarged = _write(
+        tmp_path / "un.md",
+        _state(extra_headings="\n### 2026-08-24 — UNDISCHARGED\n\n- **still owed.**\n"),
+    )
+    assert _run(not_discharged, "2026-09-03") == 1
+    assert _run(undischarged, "2026-09-03") == 1
+
+
+def test_heading_is_discharged_requires_affirmative_token() -> None:
+    assert mod.heading_is_discharged("### 2026-08-08 — DISCHARGED") is True
+    assert mod.heading_is_discharged("### 2026-08-24 — NOT DISCHARGED") is False
+    assert mod.heading_is_discharged("### 2026-08-24 — UNDISCHARGED") is False
+    assert mod.heading_is_discharged("### 2026-08-24 (Monday)") is False

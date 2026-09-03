@@ -33,6 +33,14 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-03f — STATE currency gate Codex P2 hardenings (queue-exception: STATE currency gate)
+
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+
+---
+
 ## 2026-09-03e — STATE currency gate (queue-exception: STATE currency gate)
 
 **Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration

@@ -152,6 +152,7 @@ git log -1 --format='%h %cs' -- STATE.md                    # expected 74ef32c 2
 
 | Date | Change | By |
 |---|---|---|
+| 2026-09-03 | Codex review: cadence horizon, no duplicate recurring headings, affirmative `DISCHARGED` | Joshua + Cursor |
 | 2026-09-03 | Addendum: `state-currency` gate on Last curated + rolling dates | Joshua + Cursor |
 | 2026-08-23 | Addendum: MEMORY assistive-only; Rule 7 owner demoted | Joshua + Cursor |
 | 2026-06-30 | Initial authoring + execution (STATE.md 4→2 roles; §7 charter amended) | Joshua + Claude Code |
@@ -227,10 +228,12 @@ report-only `daily-repo-truth-sync` digest (skipped; past-due rows also fell out
 
 1. `Last curated:` ≥ newest `- **YYYY-MM-DD**` bullet under `## Executed operator decisions`.
 2. `### Weekly — recurring` and `### Monthly — recurring` each carry
-   `next deadline **YYYY-MM-DD**` ≥ today in `America/New_York`.
+   `next deadline **YYYY-MM-DD**` ≥ today in `America/New_York`
+   (same-day Codex review: also within one cadence period; no duplicate headings).
 3. A `### YYYY-MM-DD` heading under `## Scheduled forward triggers` whose date is in the
-   past fails unless the heading contains `DISCHARGED`. Session-shaped “this session”
-   promises do not belong on this board (other home, or a queue row).
+   past fails unless the heading carries the standalone token `DISCHARGED`
+   (same-day Codex review: not `NOT DISCHARGED` / `UNDISCHARGED`). Session-shaped
+   “this session” promises do not belong on this board (other home, or a queue row).
 
 Gate id `state-currency` in [`scripts/gates.yml`](../../scripts/gates.yml) is `tier: always`,
 not path-conditional on `STATE.md`: a stale date must fail the next unrelated commit.
@@ -240,3 +243,14 @@ local — this gate is not a second scheduling surface.
 **Boundary.** Does not place the weekly venue trade, does not re-home disaster-stop or
 M1 item 5 (queue `#2` and their plan/BLOCKED note remain the owners), and does not
 edit the local scheduled-task skill.
+
+**Review hardenings (Codex, same day).** The three invariants above stay; the
+checker now also fails closed on three merge/typo shapes that would otherwise
+silence the always-on gate:
+
+1. `Weekly` / `Monthly` `next deadline` must fall within one cadence period of
+   today (`Weekly` ≤7d, `Monthly` ≤31d), not merely `≥ today`.
+2. A second `### Weekly — recurring` or `### Monthly — recurring` heading fails
+   (no last-wins overwrite).
+3. A past `### YYYY-MM-DD` heading is exempt only when it carries the standalone
+   token `DISCHARGED`. `NOT DISCHARGED` / `UNDISCHARGED` stay owed.

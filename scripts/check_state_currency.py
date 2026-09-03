@@ -16,7 +16,7 @@ import argparse
 import os
 import re
 import sys
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -40,6 +40,16 @@ RECURRING_HEADING_RE = re.compile(
 )
 DEADLINE_RE = re.compile(r"next deadline \*\*(\d{4}-\d{2}-\d{2})\*\*")
 DATED_HEADING_RE = re.compile(r"^### (\d{4}-\d{2}-\d{2})\b(.*)$", re.M)
+# Whole-token DISCHARGED only. UNDISCHARGED is one token and does not match;
+# NOT/NEVER/NON/UN immediately before DISCHARGED is a negation, not a discharge.
+DISCHARGED_TOKEN_RE = re.compile(r"[A-Z]+")
+DISCHARGED_NEGATION = frozenset({"NOT", "NEVER", "NON", "UN"})
+WEEKLY_HORIZON_DAYS = 7
+MONTHLY_HORIZON_DAYS = 31
+HORIZON_BY_KIND = {
+    "Weekly": WEEKLY_HORIZON_DAYS,
+    "Monthly": MONTHLY_HORIZON_DAYS,
+}
 
 
 def today_et() -> date:
@@ -74,6 +84,8 @@ def recurring_deadlines(forward_text: str) -> list[tuple[str, date]]:
         deadline = DEADLINE_RE.search(heading)
         if deadline is None:
             raise ValueError(f"{kind} recurring heading has no next deadline **YYYY-MM-DD**")
+        if kind in found:
+            raise ValueError(f"duplicate {kind} recurring heading")
         found[kind] = date.fromisoformat(deadline.group(1))
     missing = [k for k in ("Weekly", "Monthly") if k not in found]
     if missing:
@@ -81,12 +93,22 @@ def recurring_deadlines(forward_text: str) -> list[tuple[str, date]]:
     return [(k, found[k]) for k in ("Weekly", "Monthly")]
 
 
+def heading_is_discharged(heading: str) -> bool:
+    tokens = DISCHARGED_TOKEN_RE.findall(heading.upper())
+    try:
+        idx = tokens.index("DISCHARGED")
+    except ValueError:
+        return False
+    if idx > 0 and tokens[idx - 1] in DISCHARGED_NEGATION:
+        return False
+    return True
+
+
 def past_dated_headings(forward_text: str, today: date) -> list[str]:
     stale: list[str] = []
     for match in DATED_HEADING_RE.finditer(forward_text):
         heading_date = date.fromisoformat(match.group(1))
-        rest = match.group(2)
-        if "DISCHARGED" in rest.upper() or "DISCHARGED" in match.group(0).upper():
+        if heading_is_discharged(match.group(0)):
             continue
         if heading_date < today:
             stale.append(match.group(0).strip())
@@ -110,6 +132,15 @@ def problems(text: str, today: date) -> list[str]:
         if deadline < today:
             out.append(
                 f"{kind} next deadline {deadline.isoformat()} is in the past "
+                f"(today {today.isoformat()} ET)"
+            )
+            continue
+        horizon = HORIZON_BY_KIND[kind]
+        latest = today + timedelta(days=horizon)
+        if deadline > latest:
+            out.append(
+                f"{kind} next deadline {deadline.isoformat()} is beyond the "
+                f"{horizon}-day next-occurrence horizon "
                 f"(today {today.isoformat()} ET)"
             )
     for heading in past_dated_headings(body, today):
