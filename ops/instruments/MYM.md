@@ -168,8 +168,13 @@ structure:
   (this ledger's own entry immediately below) independently re-verified against the real
   986-leg/$31,947.96 trade list** (not the screenshot reads that RESULTS.md's Off/P80 cells still
   rest on): net/PF reconcile to the cent, but at the qty-2 size the headline was measured, the
-  realized historical path itself busts `Tradeify_Select_100K` on trading day 42 (maxDD 2.83% vs
-  the 3.0% trail), and the canonical bootstrap engine (`core/mc/simulation.py`, Monday-anchored
+  realized historical path itself busts `Tradeify_Select_100K` on trading day 42 — ⚠ **corrected
+  2026-09-03:** this entry read "(maxDD 2.83% vs the 3.0% trail)", which compares two different
+  quantities. The engine's `max_dd` of **2.83%** is **end-of-day equity as a fraction of the running
+  peak**; the barrier tests a fixed **$3,000 below the EOD peak against the day's intraday low**. It
+  is not "under 3.0% yet busted". An EOD-only breach would need a peak ≥ $106,007, above the tier's
+  own $106,000 target, so the intraday excursion is the likely trigger (the confirming trade CSV is
+  operator-local) — and the canonical bootstrap engine (`core/mc/simulation.py`, Monday-anchored
   week blocks per `core/mc/ingest.py::build_week_blocks`) puts bust at 51.2% (Select) / 43.4%
   (Growth) — third time this construct shows good raw TradingView metrics and a bad
   canonical-engine bust rate. Mechanism found in the Pine's own construction (stop + every

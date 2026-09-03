@@ -120,6 +120,21 @@ match PR #259's screenshot row to the cent. Day-level reconstruction (real trade
 the residual is the known TV-intrabar-vs-close-reconstruction gap, not a defect), RF 7.47, worst
 day −$1,424.
 
+> ⚠ **Reader-intercept 2026-09-03 (PR #282, Codex round 4) — read the table's `maxDD 2.83% vs the
+> 3.0% trail` parenthetical as two different quantities, not one comparison.** Body below is
+> unedited; the bust/pass figures and the day-42 verdict are unaffected. **2.83% is the engine's
+> `max_dd`: end-of-day equity as a fraction of the running peak** — `core/mc/simulation.py` fixes
+> both deliberately ("`max_dd` stays END-OF-DAY denominated"). The `trailing_locking` barrier tests a
+> different number: a fixed **$3,000 below the EOD peak**, against the day's **intraday low**
+> (`equity_test`, supplied by `verify_pr259.py` via `intraday_low=`). So the row does not say
+> "2.83% < 3.0% yet busted" — it reports an EOD drawdown statistic beside an intraday barrier
+> outcome. An EOD-only breach would have required a peak ≥ **$106,007**, above this tier's own
+> **$106,000** profit target, so the intraday excursion is the likely trigger; confirming that needs
+> the operator-local trade CSV, which is not in this tree. Restated on the two surfaces that quote
+> this row — [`orb_mym_volume_gate_2026-09-02/RESULTS.md`](../orb_mym_volume_gate_2026-09-02/RESULTS.md)
+> and [`ops/instruments/MYM.md`](../../../../ops/instruments/MYM.md) M9
+> ([`operational_rules.md`](../../../../docs/operational_rules.md) §14).
+
 **Then through the same canonical bootstrap engine, at the size the headline was measured (qty 2):**
 
 | size | Select bust/pass | Growth bust/pass | realized historical path |
