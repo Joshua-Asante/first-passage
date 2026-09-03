@@ -9,6 +9,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+import pytest
+
 
 _RUNNER_PATH = (
     Path(__file__).parents[1]
@@ -23,6 +25,16 @@ _SPEC = importlib.util.spec_from_file_location("tradeify_phase1_runner", _RUNNER
 assert _SPEC is not None and _SPEC.loader is not None
 run_phase1 = importlib.util.module_from_spec(_SPEC)
 _SPEC.loader.exec_module(run_phase1)
+
+_FROZEN_STRATEGY_IDS = [
+    "aegis_6j1",
+    "orb_mnq_recon_v7",
+    "striker_dj30_mym_v45",
+    "striker_dj30_mym_pyramid_down",
+    "striker_nas100_mnq_v1",
+    "striker_nas100_mnq_native_variant",
+    "vanguard_mgc_v04",
+]
 
 
 _HEADERS = [
@@ -101,7 +113,7 @@ def _seven_source_fixture(root: Path) -> tuple[Path, Path, list[str]]:
     campaign_dir = root / "campaign"
     source_dir.mkdir()
     campaign_dir.mkdir()
-    strategy_ids = ["zeta", "alpha", "echo", "bravo", "golf", "charlie", "delta"]
+    strategy_ids = _FROZEN_STRATEGY_IDS
     strategies = []
     for index, strategy_id in enumerate(strategy_ids):
         export_name = f"source_{index}.csv"
@@ -192,10 +204,28 @@ def test_campaign_writes_local_rows_but_aggregate_contains_no_absolute_path(tmp_
     assert (output_dir / "canonical_events.csv").exists()
     assert (output_dir / "canonical_trades.csv").exists()
     assert (output_dir / "weekly_exit_blocks.csv").exists()
+    report_paths = sorted((output_dir / "strategy_reports").glob("*.json"))
+    assert [path.stem for path in report_paths] == sorted(strategy_ids)
+    detailed = json.loads(report_paths[0].read_text(encoding="utf-8"))
+    assert detailed["strategy_id"] == report_paths[0].stem
+    assert detailed["claim_class"] == "EXPLORATORY"
+    assert detailed["issues"]
+    assert set(detailed["issues"][0]) == {
+        "code",
+        "detail",
+        "severity",
+        "source_rows",
+        "trade_id",
+    }
     assert str(source_dir.resolve()) not in manifest_text
     assert "EXPLORATORY" in manifest_text
     assert manifest["phase1_verdict_cap"] == "NEEDS_CONTEXT"
+    assert manifest["git_base_commit"] == "ed181233afd01d8fc128bc76ac626e43c3761f87"
     assert [row["strategy_id"] for row in manifest["strategies"]] == strategy_ids
+    assert set(manifest["local_strategy_report_sha256"]) == set(strategy_ids)
+    assert manifest["local_strategy_report_sha256"] == {
+        path.stem: sha256(path.read_bytes()).hexdigest() for path in report_paths
+    }
 
 
 def test_campaign_output_is_byte_deterministic(tmp_path):
@@ -215,6 +245,46 @@ def test_hash_failure_returns_intake_exit_code(tmp_path):
     assert run_phase1.main(
         ["--config", str(config), "--source-dir", str(source_dir)]
     ) == 3
+
+
+def test_campaign_rejects_non_frozen_strategy_roster_before_source_reads(tmp_path):
+    source_dir, config, _ = _seven_source_fixture(tmp_path)
+    payload = json.loads(config.read_text(encoding="utf-8"))
+    payload["strategies"].pop()
+    config.write_text(json.dumps(payload), encoding="utf-8")
+    for source in source_dir.iterdir():
+        source.unlink()
+
+    with pytest.raises(ValueError, match="frozen strategy roster mismatch"):
+        run_phase1.run_campaign(config, source_dir, tmp_path / "local_artifacts")
+
+
+def test_campaign_rejects_repo_output_outside_campaign_local_artifacts(tmp_path):
+    source_dir, config, _ = _seven_source_fixture(tmp_path)
+    unsafe = _CAMPAIGN_DIR / "unsafe_phase1_rows"
+
+    with pytest.raises(ValueError, match="output directory inside the repository"):
+        run_phase1.run_campaign(config, source_dir, unsafe)
+
+    assert not unsafe.exists()
+
+
+def test_complete_calendar_must_cover_observed_source_span(tmp_path):
+    source_dir, config, _ = _seven_source_fixture(tmp_path)
+    calendar_path = config.parent / "cme_early_close_calendar.json"
+    calendar = json.loads(calendar_path.read_text(encoding="utf-8"))
+    calendar.update(
+        {
+            "coverage_start": "2025-01-01",
+            "coverage_end": "2025-12-31",
+            "coverage_status": "COMPLETE",
+            "coverage_note": "synthetic complete but out-of-span calendar",
+        }
+    )
+    calendar_path.write_text(json.dumps(calendar), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="does not cover observed source span"):
+        run_phase1.run_campaign(config, source_dir, tmp_path / "local_artifacts")
 
 
 def test_invalid_invocation_returns_two():

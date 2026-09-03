@@ -6,6 +6,7 @@ from pathlib import Path
 import csv
 
 from decimal import Decimal
+from uuid import uuid4
 
 import pytest
 
@@ -56,7 +57,7 @@ def _spec_dict(strategy_id: str, export_filename: str, pine_filename: str) -> di
 def _source_spec(**overrides: object):
     payload = _spec_dict("fixture", "source.csv", "source.pine")
     payload.update(overrides)
-    path = Path.cwd() / ".pytest_tv_trade_ledger_fixture_config.json"
+    path = Path.cwd() / f".pytest_tv_trade_ledger_fixture_{uuid4().hex}.json"
     # The helper uses the loader so the identity test exercises the same real boundary.
     path.write_text(
         json.dumps(

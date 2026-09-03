@@ -13,6 +13,15 @@
     "timestamp_domain": "UTC",
     "weekly_exit_blocks_sha256": "5bdcef07a717bf32b816c595cfbf6066e1f94a7ca9ad35e31b749bc8bc72cb0a"
   },
+  "local_strategy_report_sha256": {
+    "aegis_6j1": "a123dd1cd08b8ee719df5d18bfdd02e12cdca4ebc71ced2d4cdb028510677e1a",
+    "orb_mnq_recon_v7": "282a4cc2e463f06ab160f82ccac95abf6edc62df57ee5f282a095c97472000d7",
+    "striker_dj30_mym_pyramid_down": "a0177b3788b70d8d4765a0e218e52549d47f2ec27dee0b7dd9159f6a1912c8e1",
+    "striker_dj30_mym_v45": "f20cb80d75671c4383089262affe80f363f1577b8bff681f7eac1e7db00a6a9e",
+    "striker_nas100_mnq_native_variant": "ea1521ebca9c2edadb1a011a20a82e0734e1919c32ed1377e4a84bbbbea72330",
+    "striker_nas100_mnq_v1": "83aec3a40dee7b3ad9dbe956d2f19c6156f89749d9c77588048048358b577ff0",
+    "vanguard_mgc_v04": "0d035491e6aa1f87a2bbef079cc358c37b4207df3067e6207f16f0a3b50a3fb4"
+  },
   "phase0_status": "SKIPPED_BY_OPERATOR",
   "phase1_verdict_cap": "NEEDS_CONTEXT",
   "runner_version": "tradeify-phase1-normalization-v1",
@@ -812,7 +821,7 @@
   ],
   "tolerances": {
     "aggregate_money_usd": "0.01",
-    "pairing_and_source_identity": "exact",
+    "duplicated_source_fee_and_identity": "exact",
     "tick_grid_ticks": "1e-9"
   }
 }

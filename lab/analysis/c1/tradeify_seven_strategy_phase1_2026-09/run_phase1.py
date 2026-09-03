@@ -11,7 +11,6 @@ from hashlib import sha256
 from io import StringIO
 import json
 from pathlib import Path
-import subprocess
 import sys
 from typing import NamedTuple, Sequence
 
@@ -48,6 +47,16 @@ from research_utils.tv_trade_ledger import (  # noqa: E402
 
 _RUNNER_VERSION = "tradeify-phase1-normalization-v1"
 _SEVERITY_ORDER = {"INFO": 0, "WARNING": 1, "BLOCKER": 2, "FATAL": 3}
+_BASE_COMMIT = "ed181233afd01d8fc128bc76ac626e43c3761f87"
+_FROZEN_STRATEGY_IDS = (
+    "aegis_6j1",
+    "orb_mnq_recon_v7",
+    "striker_dj30_mym_v45",
+    "striker_dj30_mym_pyramid_down",
+    "striker_nas100_mnq_v1",
+    "striker_nas100_mnq_native_variant",
+    "vanguard_mgc_v04",
+)
 
 
 class CampaignResult(NamedTuple):
@@ -108,18 +117,74 @@ def _digest(payload: bytes) -> str:
     return sha256(payload).hexdigest()
 
 
-def _git_ref(ref: str) -> str:
-    try:
-        result = subprocess.run(
-            ["git", "rev-parse", ref],
-            cwd=_REPO,
-            check=True,
-            capture_output=True,
-            text=True,
+def _validate_strategy_roster(specs: Sequence[object]) -> None:
+    observed = tuple(spec.strategy_id for spec in specs)
+    if observed != _FROZEN_STRATEGY_IDS:
+        raise ValueError(
+            "frozen strategy roster mismatch: "
+            f"expected={list(_FROZEN_STRATEGY_IDS)!r}, observed={list(observed)!r}"
         )
-    except (OSError, subprocess.CalledProcessError):
-        return "UNKNOWN"
-    return result.stdout.strip()
+
+
+def _validate_output_dir(output_dir: Path, campaign_dir: Path) -> None:
+    try:
+        output_dir.relative_to(_REPO)
+    except ValueError:
+        return
+    allowed_root = (campaign_dir / "local_artifacts").resolve()
+    if output_dir != allowed_root and not output_dir.is_relative_to(allowed_root):
+        raise ValueError(
+            "output directory inside the repository must be campaign-local "
+            f"local_artifacts: {allowed_root}"
+        )
+
+
+def _validate_calendar_coverage(
+    events_by_strategy: dict[str, pd.DataFrame],
+    early_close_calendar: object,
+) -> None:
+    if early_close_calendar.coverage_status != "COMPLETE":
+        return
+    timestamps = pd.concat(
+        [frame["timestamp_naive"] for frame in events_by_strategy.values()],
+        ignore_index=True,
+    )
+    if timestamps.empty:
+        return
+    observed_start = pd.Timestamp(timestamps.min()).date()
+    observed_end = pd.Timestamp(timestamps.max()).date()
+    if (
+        observed_start < early_close_calendar.coverage_start
+        or observed_end > early_close_calendar.coverage_end
+    ):
+        raise ValueError(
+            "COMPLETE CME early-close calendar does not cover observed source span: "
+            f"calendar={early_close_calendar.coverage_start.isoformat()}.."
+            f"{early_close_calendar.coverage_end.isoformat()}, "
+            f"observed={observed_start.isoformat()}..{observed_end.isoformat()}"
+        )
+
+
+def _detailed_issue_rows(issues: Sequence[object]) -> list[dict[str, object]]:
+    ordered = sorted(
+        issues,
+        key=lambda issue: (
+            -_SEVERITY_ORDER[issue.severity],
+            issue.code,
+            -1 if issue.trade_id is None else issue.trade_id,
+            issue.source_rows,
+        ),
+    )
+    return [
+        {
+            "code": issue.code,
+            "severity": issue.severity,
+            "trade_id": issue.trade_id,
+            "source_rows": issue.source_rows,
+            "detail": dict(issue.detail),
+        }
+        for issue in ordered
+    ]
 
 
 def _issue_summary(issues: Sequence[object]) -> tuple[dict[str, int], list[dict[str, object]]]:
@@ -202,6 +267,16 @@ def _strategy_record(
 
 
 def _render_report(manifest: dict[str, object]) -> bytes:
+    if manifest["phase1_verdict_cap"] == "COMPLETE":
+        calendar_boundary = (
+            "- CME holiday-short coverage is `COMPLETE` for the observed source span; "
+            "the captured early-close rows drive 12:59 ET deadlines."
+        )
+    else:
+        calendar_boundary = (
+            f"- CME holiday-short coverage is `{manifest['phase1_verdict_cap']}`; "
+            "no historical early-close date was inferred."
+        )
     lines = [
         "# Tradeify seven-strategy Phase 1 reconciliation",
         "",
@@ -238,7 +313,7 @@ def _render_report(manifest: dict[str, object]) -> bytes:
             "- No source row was repaired, dropped for an outcome, re-ranked, composed, simulated, or rerun in Pine.",
             "- Scalar MAE/MFE values are inventory-only excursion bounds, not timestamped paths.",
             "- Per-strategy caps are measured against 80 micro-equivalents; the joint book-cap verdict is deferred to Phase 4.",
-            "- CME holiday-short coverage is `NEEDS_CONTEXT`; no historical early-close date was inferred.",
+            calendar_boundary,
             "",
             "## Frozen hashes",
             "",
@@ -287,16 +362,27 @@ def run_campaign(
     fee_path = campaign_dir / "tradeify_commission_schedule.json"
     calendar_path = campaign_dir / "cme_early_close_calendar.json"
 
+    _validate_output_dir(output_dir, campaign_dir)
     specs = load_source_specs(config_path)
+    _validate_strategy_roster(specs)
     fee_schedule = load_fee_schedule(fee_path)
     early_close_calendar = load_early_close_calendar(calendar_path)
     verified = [verify_source_pair(source_dir, spec) for spec in specs]
 
-    events_by_strategy: dict[str, pd.DataFrame] = {}
+    normalized_by_strategy = {
+        source.spec.strategy_id: normalize_export(source) for source in verified
+    }
+    events_by_strategy = {
+        strategy_id: normalized.events
+        for strategy_id, normalized in normalized_by_strategy.items()
+    }
+    _validate_calendar_coverage(events_by_strategy, early_close_calendar)
+
     trades_by_strategy: dict[str, pd.DataFrame] = {}
+    issues_by_strategy: dict[str, tuple[object, ...]] = {}
     strategy_records: list[dict[str, object]] = []
     for source in verified:
-        normalized = normalize_export(source)
+        normalized = normalized_by_strategy[source.spec.strategy_id]
         reconstruction = reconstruct_trades(normalized.events, source.spec)
         accounting = calculate_accounting(reconstruction.trades)
         venue = analyze_venue(
@@ -306,8 +392,8 @@ def run_campaign(
             early_close_calendar=early_close_calendar,
         )
         issues = (*normalized.issues, *reconstruction.issues, *accounting.issues, *venue.issues)
-        events_by_strategy[source.spec.strategy_id] = normalized.events
         trades_by_strategy[source.spec.strategy_id] = reconstruction.trades
+        issues_by_strategy[source.spec.strategy_id] = issues
         strategy_records.append(
             _strategy_record(
                 source.spec,
@@ -332,6 +418,27 @@ def run_campaign(
     _atomic_write_bytes(output_dir / "canonical_events.csv", event_bytes)
     _atomic_write_bytes(output_dir / "canonical_trades.csv", trade_bytes)
     _atomic_write_bytes(output_dir / "weekly_exit_blocks.csv", weekly_bytes)
+    local_strategy_report_sha256: dict[str, str] = {}
+    for spec in specs:
+        strategy_id = spec.strategy_id
+        detail_bytes = _json_bytes(
+            {
+                "claim_class": "EXPLORATORY",
+                "strategy_id": strategy_id,
+                "source_identity": {
+                    "export_filename": spec.export_filename,
+                    "export_sha256": spec.export_sha256,
+                    "pine_filename": spec.pine_filename,
+                    "pine_sha256": spec.pine_sha256,
+                },
+                "issues": _detailed_issue_rows(issues_by_strategy[strategy_id]),
+            }
+        )
+        _atomic_write_bytes(
+            output_dir / "strategy_reports" / f"{strategy_id}.json",
+            detail_bytes,
+        )
+        local_strategy_report_sha256[strategy_id] = _digest(detail_bytes)
 
     campaign_status = (
         "BLOCKED_EXPLORATORY"
@@ -344,7 +451,7 @@ def run_campaign(
         "campaign_status": campaign_status,
         "phase1_verdict_cap": early_close_calendar.coverage_status,
         "runner_version": _RUNNER_VERSION,
-        "git_base_commit": _git_ref("origin/main"),
+        "git_base_commit": _BASE_COMMIT,
         "inputs": {
             "config_sha256": sha256_file(config_path),
             "tradeify_commission_schedule_sha256": sha256_file(fee_path),
@@ -360,10 +467,11 @@ def run_campaign(
             "canonical_trades_sha256": _digest(trade_bytes),
             "weekly_exit_blocks_sha256": _digest(weekly_bytes),
         },
+        "local_strategy_report_sha256": local_strategy_report_sha256,
         "tolerances": {
             "aggregate_money_usd": "0.01",
             "tick_grid_ticks": "1e-9",
-            "pairing_and_source_identity": "exact",
+            "duplicated_source_fee_and_identity": "exact",
         },
         "strategies": strategy_records,
     }

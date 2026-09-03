@@ -255,7 +255,7 @@ def _summary_mismatches(entry: pd.Series, exit_: pd.Series) -> tuple[str, ...]:
     mismatches = [
         field
         for field in _CENT_SUMMARY_FIELDS
-        if abs(Decimal(entry[field]) - Decimal(exit_[field])) > _CENT_TOLERANCE
+        if Decimal(entry[field]) != Decimal(exit_[field])
     ]
     mismatches.extend(
         field
@@ -608,7 +608,7 @@ def _commission_issues(
             )
         )
 
-    if values and any(abs(value - venue_fee) > _CENT_TOLERANCE for value in values):
+    if values and any(value != venue_fee for value in values):
         issues.append(
             _venue_issue(
                 "EXPORT_VENUE_COMMISSION_MISMATCH",
@@ -620,12 +620,10 @@ def _commission_issues(
                 source_rows=source_rows,
             )
         )
-    export_matches_venue = bool(values) and all(
-        abs(value - venue_fee) <= _CENT_TOLERANCE for value in values
-    )
+    export_matches_venue = bool(values) and all(value == venue_fee for value in values)
     pine_mismatch_severity = "WARNING" if export_matches_venue else "BLOCKER"
     if values and any(
-        abs(value - spec.pine_commission_per_side_usd) > _CENT_TOLERANCE
+        value != spec.pine_commission_per_side_usd
         for value in values
     ):
         issues.append(
@@ -640,7 +638,7 @@ def _commission_issues(
                 source_rows=source_rows,
             )
         )
-    if abs(spec.pine_commission_per_side_usd - venue_fee) > _CENT_TOLERANCE:
+    if spec.pine_commission_per_side_usd != venue_fee:
         issues.append(
             _venue_issue(
                 "PINE_VENUE_COMMISSION_MISMATCH",

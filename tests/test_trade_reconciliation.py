@@ -292,6 +292,19 @@ def test_reconstruct_rejects_duplicated_trade_summary_mismatch():
     ]
 
 
+def test_reconstruct_rejects_one_cent_duplicated_trade_summary_mismatch():
+    """The aggregate cent tolerance must not weaken exact duplicated source fields."""
+    entry = _event(1, "ENTRY", row=1)
+    exit_ = _event(1, "EXIT", row=2)
+    exit_["commission_usd"] = Decimal("1.83")
+
+    result = reconstruct_trades(_events(entry, exit_), _spec())
+
+    assert result.trades.empty
+    assert result.issues[0].code == "DUPLICATED_TRADE_SUMMARY_MISMATCH"
+    assert result.issues[0].detail["fields"] == ("commission_usd",)
+
+
 def test_reconstruct_keeps_scalar_excursions_explicitly_bounded():
     """Scalar TradingView excursions must not be promoted into a timestamped path."""
     result = reconstruct_trades(
@@ -431,6 +444,24 @@ def test_primary_schedule_drives_phase1_fee_reconciliation(
 
     assert venue.venue_commission_per_side_usd == Decimal(per_side)
     assert "EXPORT_VENUE_COMMISSION_MISMATCH" not in _issue_codes(venue)
+
+
+def test_one_cent_export_venue_fee_mismatch_is_a_blocker(fee_schedule):
+    """The aggregate cent tolerance must not be applied to fee provenance."""
+    venue = analyze_venue(
+        _trades(_trade(1, commission="1.84", qty=1)),
+        _spec(instrument="MNQ", pine_commission="0.92"),
+        fee_schedule,
+    )
+
+    issue = next(
+        issue
+        for issue in venue.issues
+        if issue.code == "EXPORT_VENUE_COMMISSION_MISMATCH"
+    )
+    assert issue.severity == "BLOCKER"
+    assert issue.detail["export_per_side_values_usd"] == (Decimal("0.92"),)
+    assert issue.detail["venue_per_side_usd"] == Decimal("0.91")
 
 
 def test_exposure_reports_tie_order_bounds(fee_schedule):
