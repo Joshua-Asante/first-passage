@@ -49,7 +49,8 @@ anticipated G1.7 re-anchor is withdrawn (calendar-week adapter and joint block b
 spec §4.5). Two source-set facts need the operator: **D8** two prototypes are declared on one
 instrument but exported from the other's chart; **D9** the TradingView chart timezone is unknown for
 all seven (`timestamp_utc` null) — this **blocks a Phase 1 PASS**, since the plan's Phase 1 ledger
-is canonical UTC (Codex review of #274; verdict capped at `NEEDS_CONTEXT` until resolved). D7 stays
+is canonical UTC (Codex review of #274); **resolved later this session** — operator ruled
+`America/New_York` for all seven, Codex re-freezes the config. D7 stays
 open until GitHub confirms the object purge; a deleted ref alone does not remove the blobs. Good pre-commitment noted: the spec freezes expected row/trade
 counts and net P&L to the cent before the runner exists. No `core`/Pine/allocation/`dd_protection`/rail
 change. $0/K=0.
@@ -57,7 +58,7 @@ change. $0/K=0.
 campaign](superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md) · `#2` [B7-REFIRE Stage 1
 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
 — both unchanged. `queue-exception: orchestrator-takeover` — full Phase 1 gate when the runner,
-reports, CATALOG row, and PR land (check-in armed); D8/D9 to the operator.
+reports, CATALOG row, and PR land (check-in armed); D8 to the operator; D9 resolved (`America/New_York`).
 **Live-ops state:** unchanged — c1 rail disarmed, `dry_run=true`, M1 not `RESOLVED`, no arm.
 
 ---
