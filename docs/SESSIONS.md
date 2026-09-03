@@ -33,6 +33,51 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-03p — D17/D18/D19 ruled; the calendar's secondary provenance accepted; four self-corrections
+
+**Focus:** Land three operator rulings that arrived after `2026-09-03o`, gate-read Codex PR #292, and fold two
+Codex review rounds on PR #293. ⚠ **This entry supersedes `2026-09-03o`'s sentence "The study's `NEEDS_CONTEXT`
+cap therefore stands"** — that was true when written and is now superseded by D19. The frozen entry is left
+unedited; this is its current-state pointer.
+**Shipped:** [campaign-state](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) §12g/§13/§14
+plus D17–D19; [PR #291](https://github.com/Joshua-Asante/first-passage/pull/291) merged (`0e3f40b`);
+[PR #293](https://github.com/Joshua-Asante/first-passage/pull/293) open; D19 amendments in the
+[normalization design](superpowers/specs/2026-09-02-tradeify-stage1-normalization-design.md), the
+[re-expression lane ADR](adr/2026-09-03-venue-legality-re-expression-lane.md) and the
+[guard spec](superpowers/specs/2026-09-03-venue-bound-session-guard.md).
+**Decisions/defects:** **D17** — G1.4 named two dimensions TradingView cannot supply. Operator ruled
+**reconstruct** monthly totals from the row-level ledger (feasibility proven: exact reconciliation on all five,
+and **zero month-spanning holds**, so entry-vs-exit-month attribution is moot — a direct consequence of every leg
+now being flat by its daily deadline) and **amend** for commissions, where no independent figure exists at any
+price. **D18** — operator stopped orchestrator-side adversarial passes; Codex's review is that layer. Recorded
+what it does *not* relax: Rule 0 reads and byte-level measurement stay, and both earned their keep this session.
+**D19** — operator accepts the calendar's **SECONDARY** provenance; `coverage_status` may read `COMPLETE` and the
+runner's calendar-derived `phase1_verdict_cap` lifts. **The three venue-bound re-exports landed clean: 545
+force-flat violations → 0, at 1.86% of combined net.** Vanguard's first capture was truncated (87 trades vs 338)
+and is recorded as a **defective capture, not a spent lane attempt** — identical Pine bytes, so re-capturing is
+the same attempt. Codex PR #292 gate-read: engineering sound, **all five frozen sources superseded**; a §14f
+merge handshake now defines "green light" as six checkable conditions.
+**Four self-corrections, all caught by Codex, all mine:** (1) I built the Pine guard list as
+`venue_flat_dates ∪ full_closure_dates` justified by "fully-closed dates are inert — no bars, no effect", which
+contradicts the `day_basis` note I wrote in the same commit; a wall-clock guard listing a trade-date closure marks
+the 18:00–24:00 ET reopen as short. Measured no-op here (zero evening stamps in all five exports) but wrong as
+stated. (2) Green-light condition 2 asked only for non-empty calendar rows — a one-row calendar would have passed
+conditions 2 **and 3**, because an omitted date silently reverts to the 16:45 deadline. Now exact set equality.
+(3) I claimed all but one `unresolved` item is a close-time dispute and none moves a date; **two bear on
+membership** and D19 now accepts them explicitly, with their directions recorded. (4) The stated MGC uncertainty
+of 90 min was the Labor Day range, not the maximum (~3h15m at Christmas Eve). Also: D19 initially landed in one
+document while three others still asserted the opposite cap — the same shape as D17's finding — now superseded in
+all of them.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — Codex re-pins all five sources
+and re-freezes (§14a/§14e); operator merges #293 and holds the D7 purge ticket; the DJ30 +$287.00 vs its
+superseded 200K panel stays a known-unknown, no longer blocking · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— unchanged.
+**Class:** Decision · **Rule 2:** constituent (i) iteration 3 of 8 · $0 / K=0
+
+---
+
 ## 2026-09-03o — CME 2022-2026 calendar landed; D3/D5/D12 ruled; the three re-exports unblocked
 
 **Focus:** Discharge operator ruling D12 (source the CME holiday calendars directly and store them for future

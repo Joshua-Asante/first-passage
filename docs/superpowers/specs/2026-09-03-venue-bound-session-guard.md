@@ -209,10 +209,20 @@ holiday and leave 6J resting past the deadline. **All three bodies now carry the
 (49 early-close ∪ 16 full-closure, 2022–2026 verified, ∪ 10 unverified 2027 carry-over rows), verified identical
 across the three files.
 
-⚠ **Two conditions ride with the clearance.**
-1. **The calendar's provenance is SECONDARY** — no CME source was reachable, so every cell is reconstructed from
+⚠ **SUPERSEDED 2026-09-03 by operator ruling D19** (Codex on
+[#293](https://github.com/Joshua-Asante/first-passage/pull/293), P1, accepted — this clause and the guard
+spec's twin both still asserted the cap after the normalization design had been amended, leaving a worker
+unable to comply with all three documents at once). **The operator accepts the SECONDARY provenance**, so
+`coverage_status` may read `COMPLETE` and the calendar-derived verdict cap lifts. Condition (1) as written
+below is history. What survives it: the acceptance is scoped to **date membership**, not the per-group close
+times; two `unresolved` items bear on membership and are accepted explicitly (2025-11-28's possible
+`FULL_CLOSURE` resolution — conservative; and an unruled-out ad-hoc closure 2026-05-28…09-02 — **not**
+conservative); and every non-calendar cap still binds. See campaign-state §6 D19.
+
+⚠ **Two conditions rode with the clearance.**
+1. ~~**The calendar's provenance is SECONDARY** — no CME source was reachable, so every cell is reconstructed from
    five independent third-party encodings. A replacement export inherits a `NEEDS_CONTEXT` provenance cap it
-   cannot clear on its own. That caps the *verdict*, not the *export*.
+   cannot clear on its own. That caps the *verdict*, not the *export*.~~ **(Superseded by D19, above.)**
 2. **Three dates close before 12:59 ET and no deadline can express them** — 2023-04-07 and 2026-04-03 (Good Friday
    falling on an employment-report morning: equity 09:15 ET, FX 11:15 ET, metals shut) and 2025-01-09 (equity
    09:30 ET). They are in the list, where they are inert. **Aegis 6J is the live exposure**, trading to 11:15 ET on
