@@ -732,6 +732,7 @@ Full incident narration for each entry lives in `git log -p` on this file and in
 log states what changed and why in one line. Unless noted, edits are additive — no locked config,
 allocation, `dd_protection`, Pine, or rail touched.
 
+- **2026-09-03** — Rule 7 gains a wrapper-accretion discipline paragraph: don't stack a new pointer/wrapper artifact over a fact family carrying an outstanding dated debt, citing PR #250 and #262/#264 as the precedent this fixes. No rule-text renumbering; additive only.
 - **2026-08-28** — Rule 17 added (quarterly programme-audit checklist; `check_falsifier_reachability.py --stats` census, wired `gates.yml`). [`ADR`](adr/2026-08-27-ssot-data-lineage-remediation-program.md)
 - **2026-08-23** — P4 museum rules: Rule 1 origin marked HISTORICAL (Guardian cold-stored); Rule 7 lock-state paths retargeted to `_archive/<family>/`.
 - **2026-08-23** — Rule 7 durable-atoms owner demoted to owning ADRs / `docs/methodology/lessons/`; Claude-project MEMORY is assistive-only, never a Rule 7 owner. [`addendum`](adr/2026-06-30-state-md-role-reduction.md#addendum-2026-08-23--memory-is-assistive-only-not-the-rule-7-owner)

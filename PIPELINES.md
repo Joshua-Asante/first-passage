@@ -32,7 +32,10 @@ work. That's the seven-strategy Tradeify Select configuration campaign, running 
 almost none of the recent PRs are P1-shaped (no Databento pull, no STUMPY/catch22 mining, no new
 `discovery_manifests/` entry) — the seven strategies were supplied, not discovered here. A
 **campaign** is one bounded run of discovery→validation→admission against a pre-registered search
-universe on one instrument family. Stage numbering is canonical (`docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md`, pruned); rules of evidence are operator-ratified ([`…discovery-campaign-defaults-ratified`](docs/adr/2026-07-11-discovery-campaign-defaults-ratified.md)).
+universe on one instrument family. Stage numbering was canonical pre-2026-08-30
+(`docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md`, pruned) — see the warning immediately
+below for what supersedes it as an ordering authority for any contract frozen after that date; rules
+of evidence are operator-ratified ([`…discovery-campaign-defaults-ratified`](docs/adr/2026-07-11-discovery-campaign-defaults-ratified.md)).
 
 ⚠ **Three things below are easy to conflate; none is a competing binding order.** (1) The Stage 2→8
 labels in the ASCII flow just below (`MINE` / `BIND K` / `SCORE` / `BLOCK SIZE` / `CONFIRM` / `REALISM`
