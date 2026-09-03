@@ -681,7 +681,8 @@ def derive_in_flight_slugs(
 ) -> frozenset[str]:
     """Derived In-flight set: STATE queue + INDEX Open + ``In-flight: yes``.
 
-    ``HOLD`` is excluded. Slugs not present as hot bodies are ignored.
+    ``HOLD`` and archiveable statuses are excluded. Slugs not present as
+    hot bodies are ignored.
     """
     active = {
         r.slug: r
@@ -704,15 +705,16 @@ def derive_in_flight_slugs(
             )
         )
     named |= {r.slug for r in active.values() if r.in_flight}
+    excluded = _ARCHIVEABLE | {"HOLD"}
     return frozenset(
         slug
         for slug, row in active.items()
-        if slug in named and row.status != "HOLD"
+        if slug in named and row.status not in excluded
     )
 
 
 def _render_in_flight_table(rows: list[CatalogRow]) -> str:
-    """5-col compact table — not a CATALOG data schema (ignored by the splitter)."""
+    """5-col compact table (section ``in_flight`` in the freshness compare)."""
     lines = [
         "| slug | theme | status | one-liner | body |",
         "|---|---|---|---|---|",
@@ -812,7 +814,7 @@ def render_catalog(
     else:
         parts.append(
             "_None derived — STATE queue, INDEX Open, and `In-flight: yes` "
-            "named no hot non-HOLD body._"
+            "named no hot non-HOLD, non-terminal body._"
         )
     parts.extend(["", "## Hot bodies", ""])
     if not active:
@@ -903,17 +905,60 @@ def _preserve_authored_one_liners(
     return out
 
 
+def _heavy_from_catalog(text: str) -> dict[str, str]:
+    """Slug → heavy cell from an on-disk CATALOG, header-name keyed."""
+    out: dict[str, str] = {}
+    heavy_i: int | None = None
+    for raw in text.splitlines():
+        if not raw.startswith("|"):
+            continue
+        cells = [c.strip() for c in raw.strip().strip("|").split("|")]
+        if not cells:
+            continue
+        lower = [c.lower() for c in cells]
+        if "slug" in lower and "heavy" in lower:
+            heavy_i = lower.index("heavy")
+            continue
+        if "slug" in lower:
+            heavy_i = None
+            continue
+        if heavy_i is None or set(cells[0]) <= set("-: "):
+            continue
+        if heavy_i < len(cells):
+            out[cells[0]] = cells[heavy_i]
+    return out
+
+
+def _preserve_heavy_annotations(
+    rows: list[CatalogRow], existing: dict[str, str]
+) -> list[CatalogRow]:
+    """Keep committed gitignored-heavy notes when this checkout cannot see the bytes."""
+    out: list[CatalogRow] = []
+    for row in rows:
+        old = existing.get(row.slug)
+        if row.heavy == _HEAVY_NONE and old in _HEAVY_GITIGNORED:
+            out.append(replace(row, heavy=old))
+        else:
+            out.append(row)
+    return out
+
+
 def regenerate_catalog(
     repo: Path,
     tracked_override: dict[str, frozenset[str]] | None = None,
 ) -> str:
-    existing: dict[str, str] = {}
+    existing_one: dict[str, str] = {}
+    existing_heavy: dict[str, str] = {}
     path = repo / CATALOG_REL
     if path.is_file():
-        existing = _one_liners_from_catalog(path.read_text(encoding="utf-8"))
+        text = path.read_text(encoding="utf-8")
+        existing_one = _one_liners_from_catalog(text)
+        existing_heavy = _heavy_from_catalog(text)
     rows = scan_lab(repo, tracked_override=tracked_override)
-    if existing:
-        rows = _preserve_authored_one_liners(rows, existing)
+    if existing_one:
+        rows = _preserve_authored_one_liners(rows, existing_one)
+    if existing_heavy:
+        rows = _preserve_heavy_annotations(rows, existing_heavy)
     text = _render_catalog_from_scan(repo, rows)
     write_catalog(repo, text)
     return text
@@ -1308,28 +1353,36 @@ def _theme_mismatch_issue(dir_theme: str, stamped: str, slug: str) -> str | None
 
 # Active (7-col): slug, theme, status, hot, one-liner, body, heavy.
 # Archived (7-col): slug, status, one-liner, card, body, heavy, closed.
+# In flight (5-col): slug, theme, status, one-liner, body.
 # Legacy Active (6-col, no `hot`) is still accepted by the splitter so a
 # mid-transition --check can name the schema drift instead of dropping rows.
 _ACTIVE_COLS = 7
 _ACTIVE_COLS_LEGACY = 6
 _ARCHIVED_COLS = 7
+_IN_FLIGHT_COLS = 5
 
 
 def _split_catalog_row(line: str) -> list[str] | None:
     """Split a machine-rendered catalog data row into its cells, else None.
 
-    Accepts Active (7-col, or legacy 6-col) and Archived (7-col) schemas. Renderers join cells
-    with ``" | "`` and wrap them in ``"| … |"``; ``_escape_cell`` only turns
-    ``|`` into ``\\|`` (which carries no surrounding spaces), so the ``" | "``
-    delimiter is unambiguous. The ``|---|`` separator (no spaces) and non-table
-    lines return None; the header row parses as cells but is filtered by the
-    caller via ``cells[0] == "slug"``.
+    Accepts Active (7-col, or legacy 6-col), In flight (5-col), and Archived
+    (7-col) schemas. Renderers join cells with ``" | "`` and wrap them in
+    ``"| … |"``; ``_escape_cell`` only turns ``|`` into ``\\|`` (which carries
+    no surrounding spaces), so the ``" | "`` delimiter is unambiguous. The
+    ``|---|`` separator (no spaces) and non-table lines return None; the
+    header row parses as cells but is filtered by the caller via
+    ``cells[0] == "slug"``.
     """
     s = line.strip()
     if len(s) < 2 or not s.startswith("|") or not s.endswith("|"):
         return None
     cells = [c.strip() for c in s[1:-1].split(" | ")]
-    if len(cells) not in (_ACTIVE_COLS, _ACTIVE_COLS_LEGACY, _ARCHIVED_COLS):
+    if len(cells) not in (
+        _ACTIVE_COLS,
+        _ACTIVE_COLS_LEGACY,
+        _ARCHIVED_COLS,
+        _IN_FLIGHT_COLS,
+    ):
         return None
     return cells
 
@@ -1341,14 +1394,14 @@ def _partition_catalog(
 
     Structural = everything that is not a data row: preamble, section headers,
     theme subsections, the table header + separator, empty-state sentinels.
-    Data rows are keyed by ``(section, slug)`` where ``section`` is ``active`` or
-    ``archived`` (from the nearest ``## Hot bodies`` / ``## Active`` /
-    ``## Archived`` heading). ``## In flight`` is a derived pointer table
-    (5-col; ignored by the splitter) and ends the active table. A slug may
-    appear once per section; same-section repeats are recorded in ``dupes``.
-    Cross-section presence (Active+Archived) is NOT collapsed — the comparator
-    sees both keys so a phantom Active row cannot be overwritten by the
-    Archived twin (2026-08-13 MSL false-pass).
+    Data rows are keyed by ``(section, slug)`` where ``section`` is
+    ``in_flight``, ``active``, or ``archived`` (from the nearest
+    ``## In flight`` / ``## Hot bodies`` / ``## Active`` / ``## Archived``
+    heading). A slug may appear once per section; same-section repeats are
+    recorded in ``dupes``. Cross-section presence (In flight + Hot bodies,
+    or Active+Archived) is NOT collapsed — the comparator sees both keys so
+    a phantom Active row cannot be overwritten by the Archived twin
+    (2026-08-13 MSL false-pass).
     """
     struct: list[str] = []
     rows: dict[tuple[str, str], list[str]] = {}
@@ -1356,6 +1409,10 @@ def _partition_catalog(
     section: str | None = None
     for line in _normalize_catalog_text(text).splitlines():
         stripped = line.strip()
+        if stripped == "## In flight":
+            section = "in_flight"
+            struct.append(line)
+            continue
         if stripped in _HOT_BODY_HEADINGS:
             section = "active"
             struct.append(line)
@@ -1439,10 +1496,12 @@ def _compare_catalog(on_disk: str, expected: str) -> tuple[list[str], list[str]]
         if len(disk_cells) != len(exp_cells):
             return ([_CATALOG_STALE], warnings)
         # Active 7-col: slug, theme, status, hot, one-liner, body, heavy.
+        # In flight 5-col: slug, theme, status, one-liner, body (no heavy).
         # Archived 7-col: slug, status, one-liner, card, body, heavy, closed.
-        # Distinguish by section — both schemas are 7 cells.
         if _section == "active":
             status_i, one_liner_i, heavy_i = 2, 4, 6
+        elif _section == "in_flight":
+            status_i, one_liner_i, heavy_i = 2, 3, None
         else:
             status_i, one_liner_i, heavy_i = 1, 2, 5
         for i in range(len(disk_cells)):
@@ -1478,6 +1537,8 @@ def _compare_catalog(on_disk: str, expected: str) -> tuple[list[str], list[str]]
         # checked out. ``exp == "—"`` IS the "absent in this environment" signal —
         # so committed "—" → scanned annotation (files added but catalog not
         # regenerated) is the opposite direction and stays a hard-fail.
+        if heavy_i is None:
+            continue
         if disk_cells[heavy_i] == exp_cells[heavy_i]:
             continue
         if (

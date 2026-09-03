@@ -442,7 +442,8 @@ def test_in_flight_excludes_hold_and_spent_includes_named(tmp_path: Path):
         "| # | Item | Owner artifact | Blocks |\n"
         "|---|---|---|---|\n"
         "| 1 | find | [`P50`](lab/analysis/c1/live_camp/RESULTS.md) · "
-        "[`held`](lab/analysis/c1/held_camp/RESULTS.md) | — |\n",
+        "[`held`](lab/analysis/c1/held_camp/RESULTS.md) · "
+        "[`spent`](lab/analysis/c1/spent_camp/RESULTS.md) | — |\n",
         encoding="utf-8",
     )
     briefs = tmp_path / "docs" / "briefs"
@@ -470,7 +471,56 @@ def test_in_flight_excludes_hold_and_spent_includes_named(tmp_path: Path):
     assert "## In flight" in inflight
     assert "live_camp" in inflight and "escape_camp" in inflight
     assert "held_camp" not in inflight
+    assert "spent_camp" not in inflight
     assert "| slug | theme | status | one-liner | body |" in inflight
+
+
+def test_regenerate_preserves_gitignored_heavy(tmp_path: Path):
+    study = tmp_path / "lab" / "analysis" / "heavy_study"
+    study.mkdir(parents=True)
+    (study / "RESULTS.md").write_text(
+        "**Status:** ACTIVE — measuring\n", encoding="utf-8"
+    )
+    scanned = ala.scan_lab(tmp_path)
+    committed = [
+        ala.CatalogRow(
+            slug=r.slug,
+            theme=r.theme,
+            status=r.status,
+            one_liner=r.one_liner,
+            card=r.card,
+            body=r.body,
+            heavy="inputs gitignored",
+            closed=r.closed,
+        )
+        for r in scanned
+    ]
+    ala.write_catalog(tmp_path, ala.render_catalog(committed))
+    ala.regenerate_catalog(tmp_path)
+    text = (tmp_path / "lab" / "CATALOG.md").read_text(encoding="utf-8")
+    assert "inputs gitignored" in text
+
+
+def test_compare_tolerates_in_flight_one_liner(tmp_path: Path):
+    study = tmp_path / "lab" / "analysis" / "c1" / "live_camp"
+    study.mkdir(parents=True)
+    (study / "RESULTS.md").write_text(
+        "**Theme:** c1\n**Status:** ACTIVE — " + ("x" * 200) + "\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "STATE.md").write_text(
+        "## OPERATOR QUEUE — strictly ordered\n\n"
+        "[`live`](lab/analysis/c1/live_camp/RESULTS.md)\n",
+        encoding="utf-8",
+    )
+    rows = ala.scan_lab(tmp_path)
+    slugs = ala.derive_in_flight_slugs(tmp_path, rows)
+    expected = ala.render_catalog(rows, in_flight_slugs=slugs)
+    # Committed In flight + Hot bodies keep the untruncated one-liner.
+    long = "ACTIVE — " + ("x" * 200)
+    disk = expected.replace(rows[0].one_liner, long)
+    issues, _warnings = ala._compare_catalog(disk, expected)
+    assert issues == []
 
 
 # ── Task 3: archive move + stub + sibling link rewrite ───────────────────────

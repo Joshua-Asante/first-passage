@@ -258,7 +258,8 @@ addendum, not a reopened P1 packet and not a `LIVE` status token (another glossa
    headings. Hot means "keep the body," not "in flight."
 2. **Generated `## In flight` first.** Membership is derived, not "every leftover `ACTIVE`":
    lab slugs named by `STATE.md` operator-queue owners, lab slugs in `docs/briefs/INDEX.md`
-   `## Open` homes, and cards carrying `**In-flight:** yes`. **Exclude `HOLD`.** Not the
+   `## Open` homes, and cards carrying `**In-flight:** yes`. **Exclude `HOLD` and
+   archiveable statuses (`CLOSED` / `FALSIFIED` / `RETIRED` / `NULL`).** Not the
    operator work list (that remains `STATE.md`).
 3. **`ACTIVE` is forbidden on a decided campaign.** Stamp `**Verdict:**` as a separate line
    (Verdict-wins already landed). Do not `--slug`. This is the mass-Verdict GO §5 deferred.
@@ -280,3 +281,4 @@ addendum, not a reopened P1 packet and not a `LIVE` status token (another glossa
 | 2026-08-22 | Blast-radius parentheticals: Phase 1 landed (this GO); §0/§1 left as defect record | Cursor Cloud Agent |
 | 2026-08-29 | Addendum: worktree-isolated single-new-row hand-insert sanctioned as a narrow exception to §2 item 6, distinct from C-P1-10's repaired defect. | Joshua (operator GO, in-session) + Claude Code |
 | 2026-09-03 | Addendum: `## Hot bodies` + derived `## In flight`; Verdict-stamp GO on spent `ACTIVE`; P1 glossary falsified. | Cursor Cloud Agent (this commission) |
+| 2026-09-03 | In-flight membership also excludes archiveable statuses (Codex P1 on #276). | Cursor Cloud Agent |
