@@ -385,7 +385,8 @@ def test_regenerate_catalog_partitions_active_and_archived(tmp_path: Path):
     }
 
     text = ala.render_catalog(ala.scan_lab(tmp_path, tracked_override=tracked))
-    assert "## Active" in text and "## Archived" in text
+    assert "## Hot bodies" in text and "## Archived" in text
+    assert "## In flight" in text
     assert "holdme" in text and "HOLD" in text
     assert "old" in text and "lab/archive/old" in text
     assert "hot" in text and "ACTIVE" in text
@@ -410,6 +411,66 @@ def test_render_catalog_groups_active_by_theme(tmp_path: Path):
     assert "### striker" not in text  # omit empty
     assert "| slug | theme | status | hot | one-liner | body | heavy |" in text
     assert "lab/analysis/c1/a/" in text
+
+
+def test_in_flight_excludes_hold_and_spent_includes_named(tmp_path: Path):
+    analysis = tmp_path / "lab" / "analysis"
+    live = analysis / "c1" / "live_camp"
+    live.mkdir(parents=True)
+    (live / "RESULTS.md").write_text(
+        "**Theme:** c1\n**Status:** ACTIVE — still open\n", encoding="utf-8"
+    )
+    held = analysis / "c1" / "held_camp"
+    held.mkdir(parents=True)
+    (held / "RESULTS.md").write_text(
+        "**Theme:** c1\n**Status:** HOLD — operator hold\n", encoding="utf-8"
+    )
+    spent = analysis / "c1" / "spent_camp"
+    spent.mkdir(parents=True)
+    (spent / "RESULTS.md").write_text(
+        "**Theme:** c1\n**Verdict:** FALSIFIED — no config survives\n",
+        encoding="utf-8",
+    )
+    escape = analysis / "orb" / "escape_camp"
+    escape.mkdir(parents=True)
+    (escape / "RESULTS.md").write_text(
+        "**Theme:** orb\n**In-flight:** yes\n**Status:** ACTIVE — cultivation\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "STATE.md").write_text(
+        "## OPERATOR QUEUE — strictly ordered\n\n"
+        "| # | Item | Owner artifact | Blocks |\n"
+        "|---|---|---|---|\n"
+        "| 1 | find | [`P50`](lab/analysis/c1/live_camp/RESULTS.md) · "
+        "[`held`](lab/analysis/c1/held_camp/RESULTS.md) | — |\n",
+        encoding="utf-8",
+    )
+    briefs = tmp_path / "docs" / "briefs"
+    briefs.mkdir(parents=True)
+    (briefs / "INDEX.md").write_text(
+        "## Open\n\n"
+        "| Q | Status | Home |\n"
+        "|---|---|---|\n"
+        "| **Q-X** | OPEN | [`live`](lab/analysis/c1/live_camp/RESULTS.md) |\n",
+        encoding="utf-8",
+    )
+    tracked = {
+        "live_camp": frozenset({"lab/analysis/c1/live_camp/RESULTS.md"}),
+        "held_camp": frozenset({"lab/analysis/c1/held_camp/RESULTS.md"}),
+        "spent_camp": frozenset({"lab/analysis/c1/spent_camp/RESULTS.md"}),
+        "escape_camp": frozenset({"lab/analysis/orb/escape_camp/RESULTS.md"}),
+    }
+    rows = ala.scan_lab(tmp_path, tracked_override=tracked)
+    slugs = ala.derive_in_flight_slugs(tmp_path, rows)
+    assert slugs == frozenset({"live_camp", "escape_camp"})
+    assert "held_camp" not in slugs
+    assert "spent_camp" not in slugs
+    text = ala.render_catalog(rows, in_flight_slugs=slugs)
+    inflight = text.split("## Hot bodies")[0]
+    assert "## In flight" in inflight
+    assert "live_camp" in inflight and "escape_camp" in inflight
+    assert "held_camp" not in inflight
+    assert "| slug | theme | status | one-liner | body |" in inflight
 
 
 # ── Task 3: archive move + stub + sibling link rewrite ───────────────────────
@@ -663,7 +724,7 @@ def test_unarchive_round_trip(tmp_path: Path):
     assert not (tmp_path / "lab/analysis/study/CARD.md").exists()
     assert not (tmp_path / "lab/archive/study").exists()
     catalog = (tmp_path / "lab/CATALOG.md").read_text(encoding="utf-8")
-    assert "## Active" in catalog and "study" in catalog
+    assert "## Hot bodies" in catalog and "study" in catalog
     assert "lab/archive/study" not in catalog
 
 
@@ -959,7 +1020,7 @@ def test_full_dir_archiveable_keeps_disposition_and_hot_yes(tmp_path: Path):
     assert rows[0].hot == "yes"
     text = ala.render_catalog(rows)
     active = text.split("## Archived")[0]
-    assert "## Active" in active and "done_study" in active
+    assert "## Hot bodies" in active and "done_study" in active
     assert "| FALSIFIED | yes |" in active
 
 

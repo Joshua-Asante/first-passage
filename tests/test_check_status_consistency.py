@@ -94,6 +94,21 @@ def test_parse_catalog_themed_active_columns():
     assert cat["old"].body_tier == "archived"
 
 
+def test_parse_catalog_hot_bodies_heading_is_active():
+    text = CATALOG_THEMED_HOT.replace("## Active", "## Hot bodies")
+    text = (
+        "# Lab analysis catalog\n\n## In flight\n\n"
+        "| slug | theme | status | one-liner | body |\n"
+        "|---|---|---|---|---|\n"
+        "| stay_hot | c1 | FALSIFIED | leftover | lab/analysis/c1/stay_hot/ |\n\n"
+        + text.split("# Lab analysis catalog\n\n", 1)[-1]
+    )
+    cat = csc.parse_catalog(text)
+    assert cat["stay_hot"].table == "active"
+    assert cat["stay_hot"].status == "FALSIFIED"
+    assert cat["stay_hot"].hot == "yes"
+
+
 def test_slug_link_nested_hot_extracts_study_slug_not_theme():
     links = csc._links_in_line(
         "see [x](lab/analysis/c1/band_study/RESULTS.md)"
