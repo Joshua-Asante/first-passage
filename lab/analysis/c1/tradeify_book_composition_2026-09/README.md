@@ -81,9 +81,11 @@ base from the leg exports rather than reading either file.
 both halves) at 10,000 sims × 3 seeds, ~50× the per-cell work of the screen stage, and on a 16 GB
 machine it will not survive high parallelism: at `--jobs 4` two of four loky workers died and
 joblib blocked on them forever (8/12 cells, no traceback, no output), and at `--jobs 6` the parent
-died at ~9 minutes. `--jobs 3` is what the committed figures were produced at. `--jobs` follows
-joblib's convention, so negatives are offsets from the CPU count (`-1` all CPUs, `-2` all but one);
-`0` means serial here, since joblib rejects `n_jobs=0` outright. The stage now runs
+died at ~9 minutes. `--jobs 3` is what the committed figures were produced at. `--jobs` is resolved
+through `joblib.effective_n_jobs`, so negatives are offsets (`-1` all CPUs, `-2` all but one) and a
+cgroup/CFS quota, a CPU affinity mask or `LOKY_MAX_CPU_COUNT` is honoured — `os.cpu_count()` reports
+*host* CPUs and would silently launch 7 workers inside a 2-CPU allocation, which is the failure this
+whole section is about. `0` means serial here, since joblib rejects `n_jobs=0` outright. The stage now runs
 in chunks and appends each finished cell to `data/grid_final.json.partial.jsonl`, so a crash costs
 one chunk and re-running the same command resumes; the sidecar is deleted only once the real
 output is on disk. Within one configuration a cell is deterministic — seeded from `SEEDS`,

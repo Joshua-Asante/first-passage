@@ -314,24 +314,42 @@ def test_zero_jobs_does_not_hang_or_crash(grid, monkeypatch, tmp_path):
     assert len(calls) == 1 and len(res) == 1
 
 
-def test_effective_jobs_follows_joblibs_negative_offsets(grid, monkeypatch):
-    """joblib reads negatives as offsets: -1 all CPUs, -2 all but one, -N => cpus+1-N.
+def test_effective_jobs_agrees_with_joblib(grid):
+    """The resolved width must be whatever joblib itself would use.
 
-    Collapsing every negative to `os.cpu_count()` silently granted MORE parallelism than
-    the caller reserved -- which on the finals stage is the difference between finishing
-    and having workers killed.
+    joblib reads negatives as offsets (-1 all CPUs, -2 all but one). Three attempts got
+    this wrong before delegating: the raw value (empty `range` step, nothing ran),
+    collapsing negatives to `os.cpu_count()` (more parallelism than reserved), and
+    computing `os.cpu_count() + 1 + n_jobs` by hand (see the constrained-CPU test).
     """
-    import os as _os
-    monkeypatch.setattr(_os, "cpu_count", lambda: 8)
-    assert grid._effective_jobs(-1) == 8, "-1 is all CPUs"
-    assert grid._effective_jobs(-2) == 7, "-2 must reserve one CPU, not take all 8"
-    assert grid._effective_jobs(-3) == 6
-    assert grid._effective_jobs(-8) == 1
-    assert grid._effective_jobs(-99) == 1, "must clamp at 1, never 0 or negative"
-    # positives pass through; 0/None mean serial, since joblib rejects n_jobs=0 outright
-    assert grid._effective_jobs(3) == 3
+    from joblib import effective_n_jobs
+    for n in (-1, -2, -3, 1, 2, 3, 7):
+        assert grid._effective_jobs(n) == max(1, effective_n_jobs(n)), n
+    # 0/None mean serial here: joblib rejects n_jobs=0 outright, and for a CLI argument
+    # the safe reading of "unspecified" is serial rather than maximal.
     assert grid._effective_jobs(0) == 1
     assert grid._effective_jobs(None) == 1
+    # never 0 or negative, whatever is passed
+    for n in (-99, -1000):
+        assert grid._effective_jobs(n) >= 1
+
+
+def test_effective_jobs_honours_joblibs_constrained_cpu_count(grid, monkeypatch):
+    """`os.cpu_count()` is HOST CPUs; joblib honours cgroup/affinity/LOKY_MAX_CPU_COUNT.
+
+    Measured on an 8-CPU box: under `LOKY_MAX_CPU_COUNT=2`, `joblib.cpu_count()` is 2 and
+    `effective_n_jobs(-2)` is 1, while a hand-rolled `os.cpu_count() + 1 + n_jobs` yields
+    7. Launching 7 workers inside a 2-CPU allocation reproduces the memory failures this
+    checkpointing exists to prevent, so the resolution must come from joblib.
+    Raised by Codex on PR #271 (round 5).
+    """
+    import os as _os
+    monkeypatch.setenv("LOKY_MAX_CPU_COUNT", "2")
+    hand_rolled = (_os.cpu_count() or 1) + 1 - 2      # the rejected formula, for -2
+    got = grid._effective_jobs(-2)
+    assert got <= 2, (
+        f"resolved {got} workers under a 2-CPU constraint; the host-CPU formula would "
+        f"have given {hand_rolled}")
 
 
 def test_negative_jobs_offset_is_used_as_the_chunk_width(grid, monkeypatch, tmp_path):

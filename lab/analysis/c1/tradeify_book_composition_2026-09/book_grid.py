@@ -371,25 +371,33 @@ def _job_key(job):
 
 
 def _effective_jobs(n_jobs) -> int:
-    """Resolve `n_jobs` to a worker count using joblib's own convention.
+    """Resolve `n_jobs` to a worker count by asking joblib, not by reimplementing it.
 
-    joblib reads negatives as offsets from the CPU count -- `-1` is all CPUs, `-2` all but
-    one, and generally `n_cpus + 1 + n_jobs` -- which is how a caller reserves headroom.
-    Collapsing every negative to `os.cpu_count()` (the first version of this) silently
-    granted MORE parallelism than asked for, and on this stage that is the difference
-    between a run that finishes and one whose workers get killed: `--jobs -2` on an 8-CPU
-    box would have run 8 workers when the caller explicitly asked for 7.
+    Two earlier attempts at this were both wrong, in the same direction -- granting MORE
+    parallelism than the caller reserved, on the one stage that dies from exactly that:
 
-    `0` and `None` resolve to 1 rather than to all CPUs: joblib rejects `n_jobs=0`
+    1. Passing the raw value through. A negative became the step of
+       `range(0, len(pending), -1)`, which is empty, so no cell ran at all.
+    2. Collapsing every negative to `os.cpu_count()`. joblib reads negatives as offsets
+       (`-1` all CPUs, `-2` all but one), so `--jobs -2` ran 8 workers on an 8-CPU box
+       where 7 were asked for.
+    3. Computing `os.cpu_count() + 1 + n_jobs` by hand. Still wrong, because
+       `os.cpu_count()` reports HOST CPUs and ignores cgroup/CFS quotas, CPU affinity
+       masks and `LOKY_MAX_CPU_COUNT`, all of which joblib honours. Measured: under
+       `LOKY_MAX_CPU_COUNT=2` on this 8-CPU box, `joblib.cpu_count()` is 2 and
+       `effective_n_jobs(-2)` is 1, while the hand formula yields 7.
+
+    So delegate. `joblib.effective_n_jobs` applies joblib's own semantics including the
+    constrained CPU count. Only `0`/`None` are handled here: joblib rejects `n_jobs=0`
     outright, and for a CLI argument the safe reading of "no parallelism specified" is
-    serial, not maximal.
+    serial rather than maximal.
+
+    Raised across PR #271 review rounds 3, 4 and 5.
     """
-    cpus = os.cpu_count() or 1
     if not n_jobs:                      # 0 or None
         return 1
-    if n_jobs < 0:
-        return max(1, cpus + 1 + n_jobs)
-    return int(n_jobs)
+    from joblib import effective_n_jobs
+    return max(1, int(effective_n_jobs(n_jobs)))
 
 
 def _sha256_file(path: str) -> str:
