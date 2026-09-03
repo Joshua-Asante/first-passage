@@ -175,6 +175,20 @@ duplicating canonical state with no link back, so it silently became wrong.
 `STATE.md` was demoted to in-flight-only the same day and this rule written to
 prevent the class.
 
+**Wrapper accretion is not a Rule-7 violation on its own, but it can hide one.** A labeled mirror that
+correctly cites its canonical owner (a spec, a diagram, a design doc) still costs review and reading
+time every time a new one is built over the *same* fact family. When that family already carries a
+named, dated reconciliation debt — an owed addendum, an owed STATE.md row, owed enforcement code —
+adding another wrapper before the debt lands or is explicitly dropped reads as progress without paying
+it down, and each new wrapper is itself one more place the debt can go stale. Two same-week
+precedents: PR #250 (three-speed funnel v3, a "thin wrapper over the six ratified 2026-08-30 ADRs")
+and PR #262/#264 (the throughline diagram, which *found* — but did not fix — the same ADRs' unlanded
+STATE.md rows and the pipeline's own three-way cross-reference gap, both closed only by the 2026-09-03
+edits this rule now cites). Neither PR cited its owner incorrectly; both landed on top of a debt
+neither PR paid down. **Before authoring a new pointer/wrapper artifact over a fact family with an
+outstanding dated debt, land the debt or record an explicit decision to drop it — do not stack a third
+wrapper on an unpaid second.**
+
 ---
 
 ## 8. Rule 0 sub-rules (brief-authoring / §0 discipline)

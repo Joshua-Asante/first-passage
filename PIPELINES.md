@@ -28,6 +28,17 @@ The essential function of the repo is not "research → deploy" but **"research 
 
 The one turning pipeline. A **campaign** is one bounded run of discovery→validation→admission against a pre-registered search universe on one instrument family. Stage numbering is canonical (`docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md`, pruned); rules of evidence are operator-ratified ([`…discovery-campaign-defaults-ratified`](docs/adr/2026-07-11-discovery-campaign-defaults-ratified.md)).
 
+⚠ **Two decompositions of this pipeline coexist by design — cross-referenced here so neither reads as
+a competitor.** The Stage 2→8 numbering below is **today's live practice** (per-channel freeze chains,
+`discovery-campaign-template.md`-derived). [`evaluation-order`](docs/adr/2026-08-30-evaluation-order.md)
+(`Accepted` 2026-08-30) is the **ratified, single canonical ten-step order** a candidate contract moves
+through once each channel's own migration addendum lands — until then, per
+[`candidate-contract`](docs/adr/2026-08-30-candidate-contract.md) §6, "the channel's existing documents
+remain its live practice." Doctrine binds now; migration is dated-owed, not silent (`STATE.md`). The
+interactive walkthrough is [`generate-evaluate-throughline.html`](docs/diagrams/generate-evaluate-throughline.html),
+which cites both. Read Stage 2→8 as what a campaign does today, `evaluation-order`'s ten steps as what
+it will do once migrated, and neither as a third, independent map.
+
 ### Data flow
 
 ```text
