@@ -54,7 +54,7 @@ BEHIND this list.** Items leave when done; it stays ≤5 so it cannot decay into
 
 | # | Item | Owner artifact | Blocks |
 |---|---|---|---|
-| 1 | **Find a viable trading strategy** — 2–3 day portable-edge cultivation campaign active; Tradeify Select preferred, manual weekly preservation accepted, edition failure does not erase edge. Exact P50 is source-only and prospectively ineligible because its three-cell selection preceded contract/K freeze; B/C search for a prospectively contractable object. No capital authority. | [`decision ADR`](docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md) · [`campaign`](docs/superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md) · [`P50 source result`](lab/analysis/orb/orb_mym_volume_gate_2026-09-02/RESULTS.md) | production book (not M1 item 5) |
+| 1 | **Seven-strategy Tradeify Select configuration campaign** — the live/turning campaign; plan ([PR #272](https://github.com/Joshua-Asante/first-passage/pull/272)) and orchestrator takeover ([PR #273](https://github.com/Joshua-Asante/first-passage/pull/273)) both merged 2026-09-03. Phase 0 skipped by operator override; Phase 1 (normalization + reconciliation) dispatched to Codex on a local worktree, gate frozen before any output was read. No candidate contract, no capital, c1 rail stays disarmed. $0/K=0. | [`campaign state`](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · [`plan`](docs/superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) | Phase 2+ (standalone quality → freeze → Phase 4 joint audit) |
 | 2 | **B7-REFIRE Stage 1 + M1** — item 5 dated 2026-08-24; test strategy licensed. Does not wait on #1. No arm | [`M1 addendum`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy) · [`S2`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) | live-signal / arming path |
 
 Off-queue leftovers stay on their owner artifacts. Re-entry is promote to a numbered queue row and drop something else (cap ≤5). When a doable row leaves, do not auto-open a replacement — cite remaining rows until the operator promotes one.
@@ -69,18 +69,28 @@ One line per executed decision, newest first — consequence + owner. Posture su
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
 
 ⚠ **A `$0/K=0` tag below usually means governance, audit, or ADR-authoring work closed — not that P1
-(`PIPELINES.md`) went idle.** 7 of the newest 15 rows carry the literal tag; those are doctrine/process
-decisions, not discovery campaigns, and it is **not** the (`Proposed`) three-speed design's `K=0`
-**Vet** speed — that design's own scope excludes governance and measurement-method questions from the
-funnel entirely ([`the design`](docs/superpowers/specs/2026-09-01-three-speed-alpha-research-design.md):
-Vet screens a tradeable-alpha proposal before contract-open, never a governance decision). K-bearing P1
-exploration is tracked in `discovery_manifests/`, not here; a `$0/K=0` row here is neither evidence P1
-is idle nor evidence it is active — check the manifests. Read the tag as this index's own default
-shape for the process work it mostly records, a visible label rather than a silent default no reader
-notices, not as a claim about the discovery pipeline's state either way.
+(`PIPELINES.md`) went idle.** Doctrine/process decisions, not discovery campaigns, most commonly carry
+it, and it is **not** the (`Proposed`) three-speed design's `K=0` **Vet** speed — that design's own
+scope excludes governance and measurement-method questions from the funnel entirely
+([`the design`](docs/superpowers/specs/2026-09-01-three-speed-alpha-research-design.md): Vet screens a
+tradeable-alpha proposal before contract-open, never a governance decision). K-bearing P1 exploration
+is tracked in `discovery_manifests/`, not here; a `$0/K=0` row here is neither evidence P1 is idle nor
+evidence it is active — check the manifests. Read the tag as this index's own default shape for the
+process work it mostly records, a visible label rather than a silent default no reader notices, not as
+a claim about the discovery pipeline's state either way.
 
-Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md) (P8 keep-15 roll, 2026-08-23; rolled 2026-08-27, 2026-08-29, twice on 2026-08-30, and twice on 2026-08-31).
+Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md) (P8 keep-15 roll, 2026-08-23; rolled 2026-08-27, 2026-08-29 (×2), 2026-08-30 (×2), 2026-08-31 (×2), 2026-09-01 (×2), 2026-09-02, and 2026-09-03).
 
+- **2026-09-03** — Queue reprioritized: the seven-strategy Tradeify Select configuration campaign
+  ([PR #272](https://github.com/Joshua-Asante/first-passage/pull/272) plan ·
+  [PR #273](https://github.com/Joshua-Asante/first-passage/pull/273) orchestrator takeover, both
+  merged) promoted to queue **#1** — Phase 0 skipped, Phase 1 in flight. Portable-edge cultivation
+  campaign (prior #1) demoted off-queue, stays open on its own ADR/plan; `#2` (B7-REFIRE/M1)
+  unchanged. `PIPELINES.md`'s P1/P4 dispositions corrected to match the same object. No
+  `core`/Pine/allocation/`dd_protection`/rail change. $0/K=0.
+  [`campaign state`](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) ·
+  [`plan`](docs/superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) ·
+  [`cultivation ADR`](docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md)
 - **2026-09-02** — Portable genuine edge elected as the primary objective, with Tradeify Select
   preferred; manual weekly preservation accepted; a confirmed edge survives edition failure.
   Authorized a 2–3 day, research-only cultivation campaign with prospectively frozen candidate/K
@@ -102,7 +112,6 @@ Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state
 - **2026-08-24** — A2 disclosed-N reduction accepted (consistency-plan Packet 0). Published region is the screen. Not a Phase B GO. [`A2 RESULTS §4`](lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md) [`plan`](docs/superpowers/plans/2026-08-24-viable-strategy-surface-consistency.md)
 - **2026-08-24** — M1 item 5 dated 08-24; test strategy licensed (evaluate-hook → B1, `dry_run`). `#2` no longer waits on `#1`. No arm. [`M1 addendum`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) [`Survive-bound addendum`](docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--m1-item-5-no-longer-waits-on-queue-1)
 - **2026-08-24** — Operator queue: mechanism supply is `#1`; B7/M1 is `#2` (waits on #1). Placement is not a phase GO. [`Survive-bound addendum`](docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--the-blocker-of-b7m1-is-queue-1) [`overview`](docs/superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md)
-- **2026-08-24** — `Q-TRADECAP-2` closed `RESOLVED` — licensed close is frozen ID **2** (observe-only). Queue row 2 deleted (no auto-replace). No tripwire wire. [`elect-2`](docs/adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) [`closure`](docs/briefs/closures/Q-TRADECAP-2-closure-resolved.md)
 > ⚠ **Truncated to the newest 15 at the 2026-08-08 Great Prune.** Older executed decisions are
 > owned by their ADRs (`docs/adr/`, tombstoned rows in [`TOMBSTONES.md`](docs/adr/TOMBSTONES.md));
 > full prior index: `git show pre-prune-2026-08-08:STATE.md`.

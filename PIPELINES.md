@@ -10,10 +10,10 @@
 
 | # | Pipeline | Substrate (data in) | Status | Owner layers |
 |---|---|---|---|---|
-| **P1** | **Discovery / research (Gen-2)** | Databento GLBX.MDP3 CME futures (parents 2010+, micros 2019+) | **ACTIVE** (research) | `.claude/skills/*`, `lab/`, `discovery_manifests/` |
+| **P1** | **Discovery / research (Gen-2)** | Databento GLBX.MDP3 CME futures (parents 2010+, micros 2019+) | **ACTIVE** (research mechanism; no campaign presently running through it — the currently turning work is P4's seven-strategy Select campaign, [STATE queue #1](STATE.md)) | `.claude/skills/*`, `lab/`, `discovery_manifests/` |
 | **P2** | **Codification bridge (Python→Pine)** | — | **RETIRED 2026-08-02** (retrieve via git) | ~~`lab/codification/`~~ |
 | **P3** | **Portfolio construction (MC)** | Locked-strategy TV trade-lists | **IDLE** (Pepperstone anchor retired; `cme` 2-leg panel is breadth-only — see P3) | `core/mc/`, `core/{dd_protection,firm_rules,portfolio_mc}` |
-| **P4** | **Firm application / sizing** | Portfolio + prop-firm rule set | **IDLE** — legacy book has no venue; the c1 eval deployment was withdrawn 2026-08-04 | `core/{firm_rules,lifecycle}`, `ops/cli.py` |
+| **P4** | **Firm application / sizing** | Portfolio + prop-firm rule set | **ACTIVE** — seven-strategy Tradeify Select configuration campaign in flight ([STATE queue #1](STATE.md)); legacy book still has no venue | `core/{firm_rules,lifecycle}`, `ops/cli.py` |
 | **P5** | **Live execution rail (c1)** | Ruled host B1 signals → broker fills | **BUILT · DISARMED** — incumbent eval live ([S1](docs/adr/2026-08-07-loop-s1-environment-ratification.md)); no book deployed; Striker legs barred | `ops/c1_rail/` · `ops/c1_signal_daemon/` · `deploy/c1_rail/` · `deploy/c1_signal_daemon/` |
 | **P6** | **Monitoring (edge / decay / tail / execution)** | Live fills vs backtest counterfactual | **CFD estate RETIRED; venue-native M1 spine CODE_LANDED** | `ops/c1_rail/c1_rail_telemetry.py`, `ops/sentinel/` |
 | **X** | **Governance / discipline** | Every artifact the other six emit | **LIVE throughout** | `scripts/check_*`, `docs/`, hash-pinned manifests |
@@ -26,7 +26,13 @@ The essential function of the repo is not "research → deploy" but **"research 
 
 ## P1 — Discovery / research pipeline (Gen-2) — ACTIVE
 
-The one turning pipeline. A **campaign** is one bounded run of discovery→validation→admission against a pre-registered search universe on one instrument family. Stage numbering is canonical (`docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md`, pruned); rules of evidence are operator-ratified ([`…discovery-campaign-defaults-ratified`](docs/adr/2026-07-11-discovery-campaign-defaults-ratified.md)).
+The discovery-mechanism pipeline (STUMPY/catch22/ruptures → K-bind) — not the currently turning
+work. That's the seven-strategy Tradeify Select configuration campaign, running through P4 (see
+[STATE.md](STATE.md) queue #1 · [campaign state](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)):
+almost none of the recent PRs are P1-shaped (no Databento pull, no STUMPY/catch22 mining, no new
+`discovery_manifests/` entry) — the seven strategies were supplied, not discovered here. A
+**campaign** is one bounded run of discovery→validation→admission against a pre-registered search
+universe on one instrument family. Stage numbering is canonical (`docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md`, pruned); rules of evidence are operator-ratified ([`…discovery-campaign-defaults-ratified`](docs/adr/2026-07-11-discovery-campaign-defaults-ratified.md)).
 
 ⚠ **Two decompositions of this pipeline coexist by design — cross-referenced here so neither reads as
 a competitor, and neither is misread as suspending the other.** The Stage 2→8 numbering below is the
@@ -137,7 +143,7 @@ MC anchor (pass% / bust% / p99 DD%) + bust-probability distribution
 **Two tracks, one surface:**
 
 - **Legacy book — IDLE.** No live account; the CFD/challenge era is closed. Call-4 beta-cohesion diagnostic is report-only at [`lab/research_utils/beta_cohesion.py`](lab/research_utils/beta_cohesion.py) ([`strategy_lifecycle.md`](docs/methodology/strategy_lifecycle.md) Implementation status). Call-1 σ-source remains pending.
-- **Prop-portfolio program — the live track.** A greenfield construction+application flow for candidates targeting `core/firm_rules.AUTOMATION_FRIENDLY_PROP_FIRMS` ([ADR](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md)). Its scoring harness (`lab/discovery/prop_survivor_scoring.py`, G0–G8) is **built ahead of any candidate**, and the survivor-scoring gate is **frozen** ([pre-registration v2](docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) — bust ≤5.0% at the $100K common band (raised 2026-08-26 from the v1 3.0%, operator risk-tolerance override, v2 §8); discharge = ≥2 of 4 firms). Inputs landed: [`ops/prop_envelope_default.md`](ops/prop_envelope_default.md) + `core/dd_geometry.py` (venue-agnostic drawdown-mechanism registry). Rail build + account registration landed under the c1 GO (P5); the Striker-book deployment limb was **superseded 2026-08-04**. Incumbent eval is the environment for new strategies ([S1](docs/adr/2026-08-07-loop-s1-environment-ratification.md); F2+F3 ruled). No book deployed — B7 / M1 wait on an acceptable strategy ([`STATE.md`](STATE.md) queue). Program demotes to research-only if no candidate clears any tier by **2026-11-08**.
+- **Prop-portfolio program — the live track.** A greenfield construction+application flow for candidates targeting `core/firm_rules.AUTOMATION_FRIENDLY_PROP_FIRMS` ([ADR](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md)). Its scoring harness (`lab/discovery/prop_survivor_scoring.py`, G0–G8) is **built ahead of any candidate**, and the survivor-scoring gate is **frozen** ([pre-registration v2](docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) — bust ≤5.0% at the $100K common band (raised 2026-08-26 from the v1 3.0%, operator risk-tolerance override, v2 §8); discharge = ≥2 of 4 firms). Inputs landed: [`ops/prop_envelope_default.md`](ops/prop_envelope_default.md) + `core/dd_geometry.py` (venue-agnostic drawdown-mechanism registry). Rail build + account registration landed under the c1 GO (P5); the Striker-book deployment limb was **superseded 2026-08-04**. Incumbent eval is the environment for new strategies ([S1](docs/adr/2026-08-07-loop-s1-environment-ratification.md); F2+F3 ruled). **Currently turning:** the seven-strategy Tradeify Select configuration campaign ([STATE.md](STATE.md) queue #1) — Phase 0 skipped by operator override, Phase 1 (normalization + reconciliation) in flight on Codex; no candidate admitted yet. [`campaign state`](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · [`plan`](docs/superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md). No book deployed — B7 / M1 wait on an acceptable strategy ([`STATE.md`](STATE.md) queue). Program demotes to research-only if no candidate clears any tier by **2026-11-08**.
 
 ---
 
