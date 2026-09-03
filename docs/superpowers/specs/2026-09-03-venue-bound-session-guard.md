@@ -73,7 +73,7 @@ VENUE_FLAT_SHORT   = 12 * 60 + 15
 
 // CME early-close dates as YYYYMMDD, comma-delimited with leading and
 // trailing commas so a lookup can never match a partial token.
-// Generated — see ops/calendars/cme_holiday_calendar.json. Do not hand-edit.
+// Generated — see ops/calendars/cme_holiday_calendar_2022_2026.json. Do not hand-edit.
 var string VENUE_EARLY_CLOSE = ",<<< PASTE THE GENERATED LIST HERE >>>,"
 
 venueYmd = year(time, VENUE_TZ) * 10000 + month(time, VENUE_TZ) * 100 + dayofmonth(time, VENUE_TZ)
@@ -192,12 +192,34 @@ Hold every one of these identical to the superseded export, or the replacement i
   measurement, not a re-expression.
 - **DEEP** backtest stays on. Regular mode trims at 9,000 trades; Deep holds up to 1M.
 
-⛔ **Do not export the three venue-bound editions yet.** Their early-close list is an interim copy taken from
-`aegis_6J1.pine`, which is an **FX** body. MGC is COMEX metals and ORB is CME equity index, and those groups do not
-keep the same holiday sessions. A wrong date flattens an ordinary session or misses a real short one, and the lane
-allows **one** replacement per strategy — so an export against the interim list would burn the single attempt on a
-configuration nobody meant to test. Wait for the verified per-group calendar; the ADR now forbids exporting before
-it lands. The two Striker re-exports carry no such dependency and may go at any time.
+✅ **CLEARED 2026-09-03 — export the three venue-bound editions.** The prohibition below is discharged; the
+verified calendar has landed and all three bodies are re-pointed.
+
+> ⛔ *(superseded, kept as the record)* Do not export the three venue-bound editions yet. Their early-close list is
+> an interim copy taken from `aegis_6J1.pine`, which is an **FX** body. MGC is COMEX metals and ORB is CME equity
+> index, and those groups do not keep the same holiday sessions. A wrong date flattens an ordinary session or misses
+> a real short one, and the lane allows **one** replacement per strategy — so an export against the interim list
+> would burn the single attempt on a configuration nobody meant to test.
+
+**What replaced it.** [`ops/calendars/cme_holiday_calendar_2022_2026.json`](../../../ops/calendars/README.md).
+The premise was right — equity index closes 13:00 ET on an ordinary US federal holiday, metals 14:30 ET, FX often
+not at all — but the fix is **not** three per-group lists. Tradeify's 12:59 ET holiday-short deadline is a blanket
+**account-level** rule with no per-product carve-out, so a per-group FX list would omit every ordinary federal
+holiday and leave 6J resting past the deadline. **All three bodies now carry the same 75-date union list**
+(49 early-close ∪ 16 full-closure, 2022–2026 verified, ∪ 10 unverified 2027 carry-over rows), verified identical
+across the three files.
+
+⚠ **Two conditions ride with the clearance.**
+1. **The calendar's provenance is SECONDARY** — no CME source was reachable, so every cell is reconstructed from
+   five independent third-party encodings. A replacement export inherits a `NEEDS_CONTEXT` provenance cap it
+   cannot clear on its own. That caps the *verdict*, not the *export*.
+2. **Three dates close before 12:59 ET and no deadline can express them** — 2023-04-07 and 2026-04-03 (Good Friday
+   falling on an employment-report morning: equity 09:15 ET, FX 11:15 ET, metals shut) and 2025-01-09 (equity
+   09:30 ET). They are in the list, where they are inert. **Aegis 6J is the live exposure**, trading to 11:15 ET on
+   both Good Fridays — an hour before its 12:15 ET cutoff can fire. Codex checks the Aegis ledger for holds on
+   those two dates before Phase 2.
+
+The two Striker re-exports carried no such dependency and have already been received and verified at 100K.
 
 Then send me, per strategy: the export CSV, the new Pine file, and the **Performance Summary** screenshot
 including the commission and monthly rows.
@@ -263,7 +285,10 @@ violation under `entry < deadline <= exit`. One defect, three scripts.
 **Early-close handling added where it was absent.** Aegis already carried an `early_close_dates` input with a
 best-effort 2022–2027 list. MGC and ORB carried none, and both said so in their own headers. Both now take the same
 input plus an early deadline (MGC 12:15, ORB session close 12:45), parsed with the identical pattern Aegis already
-ships. ⚠ The list is Aegis's interim, marked as such in the tooltip; the verified D12 calendar replaces it.
+ships. ✅ **Updated 2026-09-03:** the interim list is gone. All three bodies now carry the same 75-date union list
+owned by [`ops/calendars/`](../../../ops/calendars/README.md), and each tooltip names that file, the union rule,
+the SECONDARY provenance and the three sub-deadline dates. The lists were verified byte-identical across the three
+files after the edit.
 
 **Nothing else moved.** Non-comment diffs: Aegis 3 lines (title, two inputs), MGC and ORB one input plus the added
 early-close block, and the strategy title. No entry, stop, target, trail, breakeven, sizing, filter, risk or rail
