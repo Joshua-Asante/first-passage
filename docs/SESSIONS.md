@@ -33,6 +33,52 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-03m — Operator rulings D11–D13; venue re-expression lane ADR + edit spec; TV anchors land
+
+**Focus:** Apply the operator's four rulings on the seven-strategy Select campaign after
+[PR #284](https://github.com/Joshua-Asante/first-passage/pull/284) merged, and source the CME calendar the
+campaign was blocked on. No vendor bytes opened; no worker PR merged.
+**Shipped:** new [venue-legality re-expression lane ADR](adr/2026-09-03-venue-legality-re-expression-lane.md)
+(`Proposed`, full tier) + [venue-bound session guard spec](superpowers/specs/2026-09-03-venue-bound-session-guard.md);
+[campaign-state artifact](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) §6 D11/D12/D13 ruled,
+D15/D16 raised, §9 item 11 updated, new §10 TradingView anchors.
+**Decisions/defects:** **D11 re-express** — re-expression is a post-view change that the plan's own Objective
+("without changing their signal rules after results are viewed") and its Phase 6 no-repair clause forbid, so the
+ruling needs a dated scope amendment ratified *before* any replacement result is inspected; the ADR admits a lane
+whose trigger is a venue flag and never a performance result, permits the session bound and nothing else, and
+re-runs the full G1.1–G1.10 gate on each replacement. The edit spec carries the load-bearing arithmetic: Pine fills
+`close_all` on the **next** bar and the export's stamp convention (bar open vs bar close) is unverified, so on
+15-minute bars the flatten must signal on the bar opening **16:00 ET** (fills 16:15, worst-case stamp 16:30) and
+**12:15 ET** on an early-close date; a 16:15 signal fills at a bar whose close stamp is exactly 16:45 and still
+violates `entry < deadline <= exit_`. **The Pine could not be edited here** — `**/*.pine` is gitignored and none of
+the three bodies exists in this clone — so the deliverable is a paste-ready spec, not a diff. Aegis is diagnosed as
+an implementation defect rather than a design choice: its session ends 13:45 ET and its Pine already declares a
+16:30 ET flatten, yet 9 trades span 16:45, most likely a fixed-offset or exchange-time flatten. **D12** — the
+orchestrator sources the 2022–2026 CME calendars directly (multi-agent research: one researcher per year, three
+adversarial lenses each, three corroboration lanes) for durable storage under `ops/calendars/`. **D13 (b)** —
+continuous-symbol basis accepted; the seam risk is pre-registered and a Phase 6 seam-sensitivity check with it, so
+the roll blocker becomes `ACCEPTED_UNMODELED` rather than a gate. **Item 11** — TradingView Key-stats panels
+supplied for all five retained strategies and frozen in §10; every trade count and net-P&L figure matches the
+committed manifest **exactly**, the first independent confirmation of the runner's accounting, but commissions and
+monthly net are absent so G1.4 stays partial. Two findings raised: **D15**, both Striker exports ran at **200K**
+initial capital against the **100K** Select tier, so equity-based sizing would double their positions; **D16**, the
+hedging rule puts MYM and both MNQ legs in one Product Group where opposing directions are prohibited in and across
+accounts, which Phase 1 never tested. ⚠ The §10 max-DD figures are TradingView equity drawdowns, leg-level under
+pyramiding with no firm DD geometry — the fourth occurrence in this construct family; three of five exceed the
+tier's $3,000 trailing barrier at their exported size, which sizes the Phase 2 haircut and is not a bust verdict.
+No `core`/Pine/allocation/`dd_protection`/rail change. $0/K=0.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — operator ratifies the
+re-expression-lane ADR before inspecting any replacement export, answers D15 (Striker sizing basis) and supplies the
+commission + monthly rows; orchestrator lands the CME calendar and the generated date array; Codex runs the
+twelve-item re-anchor round; D7 open pending purge · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— unchanged.
+
+`queue-exception: same off-queue campaign as 2026-09-03i; live #1 stays the seven-strategy Select campaign.`
+
+---
+
 ## 2026-09-03l — Phase 1 returned (PR #283): gate verdict `NEEDS_CONTEXT`; Striker identities contested by the pins
 
 **Focus:** Hourly check-in found Codex's Phase 1 return — `codex/tradeify-stage1-normalization` @ `809bbb4`,
