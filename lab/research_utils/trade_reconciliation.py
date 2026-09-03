@@ -118,7 +118,7 @@ class VenueMetrics:
 
 @dataclass(frozen=True)
 class EarlyCloseCalendar:
-    """Primary-source CME early-close dates over the campaign evidence span."""
+    """CME early-close dates over the campaign evidence span and their evidence limits."""
 
     source_url: str
     page_date: date | None
@@ -130,6 +130,9 @@ class EarlyCloseCalendar:
     early_close_dates: frozenset[date]
     sources: tuple[Mapping[str, object], ...] = ()
     input_sha256: str = ""
+    evidence_kind: str = "PRIMARY"
+    source_calendar_sha256: str | None = None
+    evidence_metadata: Mapping[str, object] = MappingProxyType({})
 
 
 def _calendar_date(value: object, field: str, *, nullable: bool = False) -> date | None:
@@ -209,13 +212,22 @@ def _load_calendar_sources(sources: object, capture_dir: Path) -> tuple[dict[int
     return records, dates
 
 
-def load_early_close_calendar(path: str | Path, *, capture_dir: str | Path | None = None) -> EarlyCloseCalendar:
+def load_early_close_calendar(
+    path: str | Path,
+    *,
+    capture_dir: str | Path | None = None,
+    repo_root: str | Path | None = None,
+) -> EarlyCloseCalendar:
     """Load the frozen CME early-close capture, including explicit coverage gaps."""
     try:
         raw = Path(path).read_bytes()
         payload = json.loads(raw.decode("utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise ValueError(f"cannot load CME early-close calendar: {path}") from exc
+    if isinstance(payload, dict) and payload.get("schema") == "tradeify_secondary_early_close/v1":
+        from research_utils.secondary_calendar_evidence import load_secondary_early_close_calendar
+
+        return load_secondary_early_close_calendar(path, repo_root=repo_root, _raw=raw)
     expected_keys = {
         "source_url",
         "page_date",

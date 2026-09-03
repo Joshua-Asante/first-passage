@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter
+from collections.abc import Mapping
 from dataclasses import asdict
 import csv
 from datetime import date, datetime
@@ -184,6 +185,15 @@ def _json_bytes(payload: object) -> bytes:
         )
         + "\n"
     ).encode("utf-8")
+
+
+def _plain_evidence(value: object) -> object:
+    """Copy immutable calendar provenance into the published JSON domain."""
+    if isinstance(value, Mapping):
+        return {str(key): _plain_evidence(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return [_plain_evidence(item) for item in value]
+    return value
 
 
 def _digest(payload: bytes) -> str:
@@ -417,16 +427,44 @@ def _render_report(manifest: dict[str, object]) -> bytes:
     manifest = json.loads(_json_bytes(manifest))
     coverage_note = manifest.get("cme_early_close_coverage_note")
     calendar_status = manifest.get("cme_early_close_calendar", {}).get("coverage_status", manifest["phase1_verdict_cap"])
-    if calendar_status == "COMPLETE":
+    calendar = manifest.get("cme_early_close_calendar", {})
+    evidence_kind = calendar.get("evidence_kind", "PRIMARY")
+    secondary_metadata = calendar.get("evidence_metadata", {})
+    if evidence_kind == "SECONDARY":
+        calendar_boundary = (
+            f"- CME holiday-short coverage is `{calendar_status}` with populated SECONDARY rows; "
+            "the exact account-level EARLY_CLOSE union drives 12:59 ET deadlines but cannot lift the context cap."
+        )
+        secondary_limitations = [
+            "- Secondary provenance is retained without a primary-CME upgrade: "
+            f"`{secondary_metadata['source_calendar']['repo_path']}` SHA-256 "
+            f"`{secondary_metadata['source_calendar']['sha256']}` under `{secondary_metadata['schema']}`.",
+            f"- Secondary provenance note: {secondary_metadata['provenance_note']}",
+            f"- Day basis: `{secondary_metadata['day_basis']['basis']}` — {secondary_metadata['day_basis']['note']}",
+            "- CME trade-date full-closure inventory is not converted into wall-date deadlines: "
+            f"{secondary_metadata['full_closure_dates']['rule']}",
+            "- Pre-12:59 market closes remain limitations, never modeled closure/no-trade rules: "
+            f"{secondary_metadata['sub_deadline_close_dates']['rule']}",
+            *[f"- Secondary source URL (inert provenance): {url}" for url in secondary_metadata["source_urls"]],
+            *[
+                f"- Secondary unresolved {item['date']}: {item['issue']}"
+                for item in secondary_metadata["unresolved"]
+            ],
+            "- Secondary source revisions remain provenance limits, not captured-byte proof: "
+            f"{secondary_metadata['source_revisions']['note']}",
+        ]
+    elif calendar_status == "COMPLETE":
         calendar_boundary = (
             "- CME holiday-short coverage is `COMPLETE` for the observed source span; "
             "the captured early-close rows drive 12:59 ET deadlines."
         )
+        secondary_limitations = []
     else:
         calendar_boundary = (
             f"- CME holiday-short coverage is `{calendar_status}`; "
             "no historical early-close date was inferred."
         )
+        secondary_limitations = []
     lines = [
         "# Tradeify five-active-source Phase 1 reconciliation",
         "",
@@ -496,6 +534,7 @@ def _render_report(manifest: dict[str, object]) -> bytes:
                 if coverage_note
                 else []
             ),
+            *secondary_limitations,
             "",
             "## Frozen hashes",
             "",
@@ -687,6 +726,9 @@ def run_campaign(
             "coverage_note": early_close_calendar.coverage_note,
             "sources": [dict(source) for source in early_close_calendar.sources],
             "observed_row_count": len(early_close_calendar.early_close_dates),
+            "evidence_kind": early_close_calendar.evidence_kind,
+            "source_calendar_sha256": early_close_calendar.source_calendar_sha256,
+            "evidence_metadata": _plain_evidence(early_close_calendar.evidence_metadata),
         },
         "cme_early_close_coverage_note": early_close_calendar.coverage_note,
         "runner_version": _RUNNER_VERSION,
