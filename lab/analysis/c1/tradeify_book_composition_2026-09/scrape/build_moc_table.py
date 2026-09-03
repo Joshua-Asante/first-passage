@@ -9,7 +9,15 @@ Formats handled (FinancialJuice Telegram/X mirror):
   C  "MOC IMBALANCE 2.1 BLN SELL-SIDE." / "MOC imbalance 4 bln buy-side" single figure, words carry the
      sign -> sp500 only, flagged single_figure
   Posts containing "Early" are kept but flagged early=True and never used as the day's final print.
-Per day: the LAST non-early post before 20:30 UTC (or the last early one if nothing else) is final.
+Per day: the LAST non-early post at or before 17:00 EASTERN (or the last early one if nothing
+else) is final. The boundary is Eastern, not UTC, deliberately: the ~15:50 ET print lands at
+19:50 UTC under EDT but 20:50 UTC under EST, so the original fixed "before 20:30 UTC" rule
+silently excluded every winter print. Note the replacement is also WIDER than what it replaced --
+17:00 ET is 21:00 UTC in summer and 22:00 UTC in winter -- so a late revision inside those
+intervals is now eligible to supersede the ~15:50 print, where the old rule would have ignored it.
+That is the intended reading of "the day's final print"; it is recorded here because the two rules
+are not nested. Changed 2026-09-02 (Codex review, PR #260 round 2); this contract line corrected
+to match the code 2026-09-03 (PR #271 round 7, doc/code skew).
 """
 import csv, json, re, sys, os
 from collections import defaultdict

@@ -88,6 +88,58 @@ def test_no_weekend_buckets_survive_in_the_pnl_series(grid):
         assert not weekend, f"{leg} still books P&L on {weekend[:3]}"
 
 
+# -------------------------------------------- window selection uses the ROLLED date
+#
+# Both channels must agree on which window a trade belongs to. `daily_per_contract`
+# buckets by `roll_to_session(exit_date)`, so filtering `slice_trades` on the RAW
+# `exit_date` split them: a trade exiting on a non-session immediately before a window
+# start rolled INTO that window's P&L series while being excluded from the intraday
+# reconstruction, and `build_cell`'s reconstruction-mismatch assertion would fire instead
+# of a grid being produced. Latent on the committed exports (measured: zero trades fall in
+# the gap for any leg against either window), but a real inconsistency introduced by the
+# roll fix itself. Raised by Codex on PR #271 (round 7).
+
+def _trade(exit_date, pnl=-100.0):
+    import pandas as pd
+    ts = pd.Timestamp(exit_date)
+    return {"trade_number": exit_date, "entry_time": ts, "exit_time": ts,
+            "entry_date": ts, "exit_date": ts, "qty": 1.0, "side": "long",
+            "net_pnl_per_contract": pnl, "mae_per_contract": -50.0,
+            "signal_entry": "e", "signal_exit": "x"}
+
+
+def test_slice_trades_keeps_a_trade_whose_roll_lands_inside_the_window(grid):
+    """Sunday 2022-07-31 rolls to Monday 2022-08-01, the WINDOW start: it must be kept."""
+    import pandas as pd
+    assert grid.roll_to_session(pd.Timestamp("2022-07-31")) == pd.Timestamp("2022-08-01")
+    kept = grid.slice_trades([_trade("2022-07-31")], "2022-08-01", "2026-07-01")
+    assert len(kept) == 1, (
+        "trade booked into the window by roll_to_session was dropped by slice_trades; "
+        "build_cell would raise its reconstruction-mismatch assertion")
+
+
+def test_slice_trades_drops_a_trade_whose_roll_lands_outside(grid):
+    """The rule must still exclude, not merely include -- otherwise it is not a filter."""
+    kept = grid.slice_trades([_trade("2022-07-28")], "2022-08-01", "2026-07-01")
+    assert kept == []
+
+
+def test_slice_trades_agrees_with_daily_per_contract_on_the_real_exports(grid):
+    """End-to-end: the two channels must select the same trades on the real data."""
+    import os
+    import pandas as pd
+    start, end = pd.Timestamp("2022-08-01"), pd.Timestamp("2026-07-01")
+    for leg in ("mnq", "mym", "aegis"):
+        p = os.path.join(grid.DOWNLOADS, grid.LEG_FILES[leg])
+        if not os.path.exists(p):
+            pytest.skip(f"vendor export absent: {leg}")
+        trades = grid.load_trades(p)
+        sliced = {t["trade_number"] for t in grid.slice_trades(trades, start, end)}
+        booked = {t["trade_number"] for t in trades
+                  if start <= grid.roll_to_session(t["exit_date"]) <= end}
+        assert sliced == booked, f"{leg}: channels disagree on {sliced ^ booked}"
+
+
 # ---------------------------------------------------------------- ET cutoff
 
 def test_et_cutoff_is_dst_aware(parser):

@@ -86,7 +86,7 @@ through `joblib.effective_n_jobs`, so negatives are offsets (`-1` all CPUs, `-2`
 cgroup/CFS quota, a CPU affinity mask or `LOKY_MAX_CPU_COUNT` is honoured — `os.cpu_count()` reports
 *host* CPUs and would silently launch 7 workers inside a 2-CPU allocation, which is the failure this
 whole section is about. `0` means serial here, since joblib rejects `n_jobs=0` outright. The stage now runs
-in chunks and appends each finished cell to a `data/grid_final.json.partial.<fp>.jsonl` sidecar, so
+in chunks and appends each finished cell to a `data/grid_final.json.partial.<fp>.<pid>.jsonl` sidecar, so
 a crash costs one chunk and re-running the same command resumes; the sidecar is deleted only once
 the real output is on disk, and that output is published by rename rather than by truncate-in-place.
 The loky executor is explicitly shut down at each chunk boundary — without that, joblib **reuses**
@@ -106,14 +106,23 @@ recomputed. Being strict is cheap here: a false mismatch costs one re-run, where
 would splice stale cells into a grid whose header advertises the new configuration, which is the
 same "artifacts do not match the code" failure this checkpointing exists to prevent.
 
-The fingerprint is in the sidecar's **filename**, not only its header, so two configurations can
-never name the same file. Header-only scoping left a real race, and not a hypothetical one for this
-campaign: creating the sidecar is a check-then-create, so a second process could replace it with
-fingerprint B while the first appended cells computed under fingerprint A, leaving B's header over
-A's records — and this campaign has already had two finals runs racing one output. Two processes
-sharing one *configuration* still share a sidecar, which is harmless: identical inputs give
-identical cells, and an interleaved partial write degrades to an unparseable line the torn-tail
-repair recomputes. Guarded by `tests/lab/test_book_grid_checkpointing.py`.
+**Sidecar names carry both the fingerprint and the pid**, because two different races needed
+closing, and this campaign has already had two finals runs racing one output:
+
+- *Across configurations.* Header-only scoping left a check-then-create window: a second process
+  could replace the sidecar with fingerprint B while the first appended cells computed under
+  fingerprint A, leaving B's header over A's records — which `_job_key` cannot detect.
+- *Within one configuration.* An earlier version of this README called that case "harmless". It is
+  not: the **cleanup** path raced. `if exists: remove` is check-then-act, so two runs finishing
+  together both passed and the second raised `FileNotFoundError` with its artifact already safely
+  written; and a run finishing first deleted the sidecar out from under a still-computing sibling,
+  whose next append recreated it with **no fingerprint header**, quietly making that work unusable
+  after a later crash.
+
+So each process writes only its own file, a resume merges every sibling sidecar for the same
+fingerprint (which is what still lets a fresh process resume a crashed one's cells), an append
+re-writes the header if the file has gone, and every removal is exception-safe. Guarded by
+`tests/lab/test_book_grid_checkpointing.py`.
 
 `data/cme_equity_sessions.json` (1,011 CME equity-index sessions, 13 weekday closures in the
 window) is committed so `third_leg_shape.py` never schedules a synthetic trade on a closed market.

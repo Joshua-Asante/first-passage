@@ -154,8 +154,22 @@ def daily_per_contract(trades: list[dict]) -> pd.Series:
 
 
 def slice_trades(trades, start, end):
+    """Select trades for a window by the SAME date `daily_per_contract` books them on.
+
+    Both channels must agree on which window a trade belongs to. `daily_per_contract`
+    buckets by `roll_to_session(exit_date)`, so filtering here on the raw `exit_date` split
+    them: a trade exiting on a non-session immediately before a window start (a Sunday
+    before a Monday start) rolled INTO the window's P&L series while being excluded from
+    the intraday reconstruction, and `build_cell`'s reconstruction-mismatch assertion would
+    fire instead of a grid being produced.
+
+    Latent on the committed data -- measured across all four leg exports against both
+    WINDOW and ALT_WINDOW, zero trades fall in that gap, which is why the grid ran -- but
+    a real inconsistency introduced by the roll fix itself. Raised by Codex on PR #271
+    (round 7).
+    """
     start, end = pd.Timestamp(start), pd.Timestamp(end)
-    return [t for t in trades if start <= t["exit_date"] <= end]
+    return [t for t in trades if start <= roll_to_session(t["exit_date"]) <= end]
 
 
 # ---------------------------------------------------------------------------
@@ -404,29 +418,52 @@ def _fp_line_for(jobs) -> str:
     return json.dumps({"__fingerprint__": _run_fingerprint(jobs)}, sort_keys=True, default=str)
 
 
-def sidecar_path(out_path: str, jobs) -> str:
-    """Checkpoint sidecar for this output AND this configuration.
-
-    The fingerprint is in the FILENAME, not merely in the header, so two configurations
-    can never share a sidecar. Header-only scoping left a real race: creating the sidecar
-    is a check-then-create, so a second process could replace it with fingerprint B while
-    the first appended cells computed under fingerprint A; the surviving file then carried
-    B's header over A's records, and because `_job_key` omits everything the fingerprint
-    represents, B's next resume would trust them. Silent configuration mixing.
-
-    That is not hypothetical here -- this campaign already had two finals runs racing one
-    output on 2026-09-02, which is how the mixing became reachable at all. Scoping the
-    name makes the cross-configuration case structurally impossible rather than
-    merely detected. Raised by Codex on PR #271 (round 6).
-
-    Two processes sharing one configuration still share a sidecar, which is benign for
-    correctness: identical inputs give identical cells, a later record simply overwrites
-    an equal one, and an interleaved partial write degrades to an unparseable line that
-    the torn-tail repair recomputes.
-    """
+def _fp_hash(jobs) -> str:
     import hashlib
-    h = hashlib.sha256(_fp_line_for(jobs).encode("utf-8")).hexdigest()[:12]
-    return f"{out_path}.partial.{h}.jsonl"
+    return hashlib.sha256(_fp_line_for(jobs).encode("utf-8")).hexdigest()[:12]
+
+
+def sidecar_path(out_path: str, jobs, pid: int | None = None) -> str:
+    """This process's checkpoint sidecar, scoped by output, configuration AND pid.
+
+    Two levels of scoping, for two different races:
+
+    * The FINGERPRINT is in the name so two configurations can never share a file.
+      Header-only scoping left a check-then-create window: process A creates the sidecar
+      under fingerprint A, B replaces it under B, then A appends cells computed under A.
+      The survivor carried B's header over A's records, and `_job_key` cannot see the
+      difference, so B's next resume trusted them. Silent configuration mixing.
+    * The PID is in the name so two processes never write the same file. Sharing one file
+      per configuration was NOT harmless, though an earlier revision of this docstring
+      said so: the cleanup path itself raced. `if os.path.exists(part): os.remove(part)`
+      is check-then-act, so two runs finishing together both passed and the second raised
+      `FileNotFoundError` after its artifact was already safely written; and a run that
+      finished first deleted the sidecar out from under a still-computing sibling, whose
+      next append recreated the file with no fingerprint header, making its checkpoints
+      unusable after a later crash.
+
+    Neither race is hypothetical for this campaign, which had two finals runs racing one
+    output on 2026-09-02. Raised by Codex on PR #271, rounds 6 and 7.
+
+    A resume merges every sibling sidecar for the same fingerprint (see
+    `_read_sidecars`), so per-pid files still resume a crashed run's work; only the
+    current process's file is ever written or deleted.
+    """
+    return f"{out_path}.partial.{_fp_hash(jobs)}.{os.getpid() if pid is None else pid}.jsonl"
+
+
+def _sidecar_siblings(out_path: str, jobs) -> list[str]:
+    """Every sidecar for this output and configuration, whichever process wrote it."""
+    import glob
+    return sorted(glob.glob(f"{out_path}.partial.{_fp_hash(jobs)}.*.jsonl"))
+
+
+def _unlink_quietly(path: str) -> None:
+    """Removal must never raise: a sibling may have removed it, and the artifact is safe."""
+    try:
+        os.remove(path)
+    except (FileNotFoundError, PermissionError, OSError):
+        pass
 
 
 def _recycle_workers() -> None:
@@ -557,61 +594,66 @@ def _run_checkpointed(jobs, out_path, n_jobs):
     fp_line = _fp_line_for(jobs)
     part = sidecar_path(out_path, jobs)
 
+    # Merge every sibling sidecar for this configuration, whichever process wrote it, so
+    # per-pid files still resume a crashed run's work. Only `part` (ours) is ever written.
     done = {}
-    if os.path.exists(part):
-        seen_fp, has_fp, torn = None, False, False
-        keep = []                     # verbatim valid cell lines, for rewriting a torn file
-        with open(part, encoding="utf-8") as fh:
-            for line in fh:
-                s = line.strip()
-                if not s:
-                    continue
-                try:
-                    rec = json.loads(s)
-                except json.JSONDecodeError:
-                    torn = True       # truncated tail from a hard kill; recompute that cell
-                    continue
-                if "__fingerprint__" in rec:
-                    has_fp, seen_fp = True, rec["__fingerprint__"]
-                    continue
-                done[rec["key"]] = rec["result"]
-                keep.append(s)
-        # A sidecar is reusable only if it carries a fingerprint AND it matches. An
-        # unfingerprinted sidecar is refused rather than trusted: it predates this check,
-        # so nothing establishes which configuration produced its cells.
-        ok = has_fp and json.dumps({"__fingerprint__": seen_fp},
-                                   sort_keys=True, default=str) == fp_line
-        if not ok:
-            if done:
-                why = ("differs in: " + ", ".join(
-                    k for k, v in fp.items() if seen_fp.get(k) != v)) if has_fp \
-                    else "carries no run fingerprint"
-                print(f"resume REJECTED ({why}) -- recomputing all {len(jobs)} cells",
-                      flush=True)
-            done = {}
-            os.remove(part)
-        else:
-            if torn:
-                # Drop the unparseable bytes so the next append starts on a clean line.
-                with open(part, "w", encoding="utf-8") as fh:
-                    fh.write(fp_line + "\n")
-                    for s in keep:
-                        fh.write(s + "\n")
-                print(f"repaired a torn sidecar tail; kept {len(keep)} intact cell(s)",
-                      flush=True)
-            if done:
-                print(f"resume: {len(done)} cell(s) already checkpointed in {part}",
-                      flush=True)
-
-    if not os.path.exists(part):
-        with open(part, "w", encoding="utf-8") as fh:
-            fh.write(fp_line + "\n")
+    for sib in _sidecar_siblings(out_path, jobs):
+        recs, has_fp, seen_fp, torn = [], False, None, False
+        try:
+            with open(sib, encoding="utf-8") as fh:
+                for line in fh:
+                    t = line.strip()
+                    if not t:
+                        continue
+                    try:
+                        rec = json.loads(t)
+                    except json.JSONDecodeError:
+                        torn = True   # truncated tail from a hard kill; recompute that cell
+                        continue
+                    if "__fingerprint__" in rec:
+                        has_fp, seen_fp = True, rec["__fingerprint__"]
+                        continue
+                    recs.append((rec["key"], rec["result"], t))
+        except OSError:
+            continue                  # a sibling vanished mid-read; nothing to reuse
+        # Reusable only if it carries a fingerprint AND it matches. The filename already
+        # encodes the fingerprint, so this is defence in depth against a hash collision or
+        # hand-editing; an unfingerprinted file establishes nothing and is refused.
+        if not (has_fp and json.dumps({"__fingerprint__": seen_fp},
+                                      sort_keys=True, default=str) == fp_line):
+            if recs:
+                if has_fp:
+                    diff = ", ".join(k for k, v in fp.items()
+                                     if (seen_fp or {}).get(k) != v)
+                    why = f"differs in: {diff}"
+                else:
+                    why = "carries no run fingerprint"
+                print(f"ignoring sidecar {os.path.basename(sib)} ({why})", flush=True)
+            if sib == part:
+                _unlink_quietly(sib)  # ours and unusable: start clean
+            continue
+        for k, v, _t in recs:
+            done[k] = v
+        if torn and sib == part:
+            # Drop the unparseable bytes so our next append starts on a clean line. Only
+            # ever our own file -- rewriting a sibling could clobber a live process.
+            with open(part, "w", encoding="utf-8") as fh:
+                fh.write(fp_line + "\n")
+                for _k, _v, t in recs:
+                    fh.write(t + "\n")
+            print(f"repaired a torn sidecar tail; kept {len(recs)} intact cell(s)",
+                  flush=True)
+    if done:
+        print(f"resume: {len(done)} cell(s) already checkpointed", flush=True)
 
     pending = [j for j in jobs if _job_key(j) not in done]
     for i in range(0, len(pending), width):
         chunk = pending[i:i + width]
         res = Parallel(n_jobs=min(width, len(chunk)), verbose=5)(
             delayed(score_cell)(j) for j in chunk)
+        if not os.path.exists(part):
+            with open(part, "w", encoding="utf-8") as fh:
+                fh.write(fp_line + "\n")   # never append into a headerless file
         with open(part, "a", encoding="utf-8") as fh:
             for j, r in zip(chunk, res):
                 k = _job_key(j)
@@ -674,8 +716,10 @@ def main(argv=None):
                    "results": results}, fh, indent=1, default=str)
     os.replace(tmp, out_path)
     print(f"wrote {out_path} in {time.time() - t0:.0f}s")
-    if os.path.exists(part):
-        os.remove(part)          # only after the real output is on disk
+    # Only after the real output is on disk, and only OUR sidecar. `if exists: remove` was
+    # check-then-act: two same-configuration runs finishing together both passed the test
+    # and the second raised FileNotFoundError with its artifact already safely written.
+    _unlink_quietly(part)
     for r in sorted(results, key=lambda r: (r["tier"], -r["boot_intraday"]["pass_pct"])):
         b = r["boot_intraday"]
         print(f"{r['tier'][:16]:16} {label(r['sizing']):22} bust {b['bust_pct']:6.2f}  pass {b['pass_pct']:6.2f}  "

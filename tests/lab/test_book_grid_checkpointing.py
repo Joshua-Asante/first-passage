@@ -51,6 +51,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import pathlib
 
 import pytest
@@ -418,6 +419,86 @@ def test_one_configuration_cannot_consume_anothers_checkpoints(grid, monkeypatch
     assert len(calls) == 2, "config B reused config A's checkpointed cells"
     assert part_b != part_a, "both configurations wrote the same sidecar"
     assert pathlib.Path(part_a).read_bytes() == a_bytes, "config B mutated config A's sidecar"
+
+
+# ------------------------------ same-configuration sidecar safety (PR #271, round 7, P2)
+#
+# Round 6 scoped the sidecar by fingerprint and I claimed same-configuration sharing was
+# harmless. It was not: the CLEANUP path raced. `if exists: remove` is check-then-act, so
+# two runs finishing together both passed and the second raised FileNotFoundError with its
+# artifact already written; and a run finishing first deleted the sidecar out from under a
+# still-computing sibling, whose next append recreated it with no fingerprint header,
+# making those checkpoints unusable after a later crash. Sidecars are now per-pid, a
+# resume merges every sibling for the configuration, and only our own file is written or
+# deleted.
+
+def test_sidecar_name_is_scoped_to_the_process(grid, tmp_path):
+    jobs = [_job({"mnq": 1, "aegis": 2}, "Tradeify_Select_100K")]
+    out = str(tmp_path / "grid.json")
+    mine = grid.sidecar_path(out, jobs)
+    theirs = grid.sidecar_path(out, jobs, pid=(os.getpid() + 1))
+    assert mine != theirs, "two processes would write the same sidecar"
+    assert mine.startswith(out) and theirs.startswith(out)
+
+
+def test_resume_merges_a_sibling_processs_sidecar(grid, monkeypatch, tmp_path):
+    """A crashed run's work must still be reusable, even though files are per-pid."""
+    jobs = [_job({"mnq": 1, "aegis": k}, "Tradeify_Select_100K") for k in (0, 2)]
+    out = str(tmp_path / "grid.json")
+
+    # a previous process (different pid) checkpointed the first cell, then died
+    sib = pathlib.Path(grid.sidecar_path(out, jobs, pid=(os.getpid() + 1)))
+    sib.write_text(_fp_line(grid, jobs) + json.dumps({
+        "key": grid._job_key(jobs[0]), "result": {"marker": "FROM_SIBLING"},
+    }) + "\n", encoding="utf-8")
+
+    calls = _stub(grid, monkeypatch)
+    res, part = grid._run_checkpointed(jobs, out, 1)
+    assert len(calls) == 1, "the sibling's checkpointed cell was recomputed"
+    assert res[0]["marker"] == "FROM_SIBLING"
+    assert part != str(sib), "wrote into another process's sidecar"
+    assert sib.exists(), "another process's sidecar was deleted"
+
+
+def test_completion_does_not_delete_another_processs_sidecar(grid, monkeypatch, tmp_path):
+    jobs = [_job({"mnq": 1, "aegis": 0}, "Tradeify_Select_100K")]
+    out = str(tmp_path / "grid.json")
+    sib = pathlib.Path(grid.sidecar_path(out, jobs, pid=(os.getpid() + 1)))
+    sib.write_text(_fp_line(grid, jobs), encoding="utf-8")
+    before = sib.read_bytes()
+
+    _stub(grid, monkeypatch)
+    grid._run_checkpointed(jobs, out, 1)
+    assert sib.exists() and sib.read_bytes() == before, "a sibling's sidecar was touched"
+
+
+def test_append_never_lands_in_a_headerless_sidecar(grid, monkeypatch, tmp_path):
+    """If our sidecar is removed, the next append must re-write the header first.
+
+    Otherwise `open(part, "a")` silently recreates a headerless file, whose checkpoints
+    are then refused after a later crash -- work done and thrown away.
+    """
+    jobs = [_job({"mnq": 1, "aegis": k}, "Tradeify_Select_100K") for k in (0, 2)]
+    out = str(tmp_path / "grid.json")
+
+    _stub(grid, monkeypatch)
+    _, part = grid._run_checkpointed(jobs, out, 1)
+    pathlib.Path(part).unlink()                      # as a racing sibling's cleanup would
+
+    _stub(grid, monkeypatch)
+    _, part2 = grid._run_checkpointed(jobs, out, 1)
+    first = pathlib.Path(part2).read_text(encoding="utf-8").splitlines()[0]
+    assert "__fingerprint__" in json.loads(first), "sidecar was recreated without a header"
+
+
+def test_unlink_quietly_never_raises(grid, tmp_path):
+    """Cleanup must not turn a successful run into a nonzero exit."""
+    grid._unlink_quietly(str(tmp_path / "does-not-exist.jsonl"))
+    p = tmp_path / "x.jsonl"
+    p.write_text("x", encoding="utf-8")
+    grid._unlink_quietly(str(p))
+    assert not p.exists()
+    grid._unlink_quietly(str(p))                     # second removal is a no-op
 
 
 # ------------------------------------------ loky worker recycling (PR #271, round 6, P2)
