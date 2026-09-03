@@ -40,9 +40,11 @@ any entry, full or stub (a-first; bare claims `a`).
 order-flow camps looked live; recent work in `_inbox` was buried.
 **Shipped:** `cursor/catalog-live-index-e931` — `028eb90` addendum · `b951143` regenerator ·
 `32dd565` Verdict stamps + CATALOG regen · blast-radius pointer refresh (`REPO_MAP`, theme
-READMEs, README lead token, trade-csv skill). Derived `## In flight` (STATE queue + INDEX Open +
-`In-flight: yes`; exclude `HOLD` and archiveable statuses); `## Hot bodies` replaces `## Active`;
-`_inbox` first under Hot bodies. README token table now means English.
+READMEs, README lead token, trade-csv skill) · Codex pass-2 (`repo_retrieve` skips In flight;
+escaped-pipe preserve; `--slug` refuses `_inbox`; In-flight stamp from any head card; Owner/Home
+columns only). Derived `## In flight` (STATE Owner artifact + INDEX Home + `In-flight: yes`;
+exclude `HOLD` and archiveable statuses); `## Hot bodies` replaces `## Active`; `_inbox` first
+under Hot bodies. README token table now means English.
 **Decisions/defects:** Live-only index, not a `LIVE` token. No mass `--slug`. P1 glossary
 falsified — [addendum](adr/2026-08-22-catalog-hot-vs-disposition.md#addendum--2026-09-03).
 `queue-exception: P1 falsifier fired; catalogs are being read as the work list`.

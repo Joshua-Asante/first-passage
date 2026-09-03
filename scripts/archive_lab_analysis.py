@@ -360,19 +360,41 @@ def parse_disposition(text: str) -> Disposition | None:
 
 def choose_source_card(slug_dir: Path) -> Path | None:
     """Pick decisive source card: RESULTS* > verdict.md > CLOSURE.md > README.md."""
+    cards = list_head_cards(slug_dir)
+    return cards[0] if cards else None
+
+
+def list_head_cards(slug_dir: Path) -> list[Path]:
+    """Head cards in choose_source_card preference order (may be empty)."""
     if not slug_dir.is_dir():
-        return None
+        return []
+    out: list[Path] = []
     results_md = slug_dir / "RESULTS.md"
     if results_md.is_file():
-        return results_md
-    results_variants = sorted(slug_dir.glob("RESULTS_*.md"))
-    if results_variants:
-        return results_variants[0]
+        out.append(results_md)
+    out.extend(sorted(slug_dir.glob("RESULTS_*.md")))
     for name in ("verdict.md", "CLOSURE.md", "README.md"):
         candidate = slug_dir / name
         if candidate.is_file():
-            return candidate
-    return None
+            out.append(candidate)
+    return out
+
+
+def _in_flight_from_dir(slug_dir: Path) -> bool:
+    """True when any head card stamps ``**In-flight:** yes``.
+
+    RESULTS* wins ``choose_source_card``; L5-style camps stamp In-flight on
+    README only. Searching the winner alone would drop the stamp the moment
+    a results card appears.
+    """
+    for card in list_head_cards(slug_dir):
+        try:
+            text = card.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        if _IN_FLIGHT_RE.search(text):
+            return True
+    return False
 
 
 def is_theme_dir_name(name: str) -> bool:
@@ -558,6 +580,10 @@ def _escape_cell(value: str) -> str:
     return value.replace("|", "\\|")
 
 
+def _unescape_cell(value: str) -> str:
+    return value.replace("\\|", "|")
+
+
 def _row_from_stub(
     repo: Path,
     slug: str,
@@ -607,7 +633,7 @@ def _row_from_full_dir(
         heavy=_heavy_note(slug_dir),
         closed="—",
         hot="yes",
-        in_flight=bool(_IN_FLIGHT_RE.search(source_text)),
+        in_flight=_in_flight_from_dir(slug_dir),
     )
 
 
@@ -675,14 +701,53 @@ def _slugs_from_lab_paths(text: str) -> set[str]:
     return {m.group(1) for m in _LAB_SLUG_PATH_RE.finditer(text)}
 
 
+_STATE_OWNER_HEADERS = frozenset({"owner artifact"})
+_INDEX_HOME_HEADERS = frozenset({"home (canonical)", "home"})
+
+
+def _markdown_table_column(text: str, header_names: frozenset[str]) -> str:
+    """Join cell text from named columns of markdown tables in *text*.
+
+    Header match is case-insensitive exact. Used so In-flight derivation
+    reads only STATE ``Owner artifact`` and INDEX ``Home (canonical)``
+    (or the shorter ``Home`` test/legacy header), not Blocks / Next action
+    / question prose.
+    """
+    wanted = {n.casefold() for n in header_names}
+    out: list[str] = []
+    col_i: int | None = None
+    for raw in text.splitlines():
+        s = raw.strip()
+        if not (s.startswith("|") and s.endswith("|") and len(s) >= 2):
+            col_i = None
+            continue
+        cells = [c.strip() for c in s[1:-1].split(" | ")]
+        if not cells:
+            col_i = None
+            continue
+        lower = [c.casefold() for c in cells]
+        if any(h in wanted for h in lower):
+            for i, h in enumerate(lower):
+                if h in wanted:
+                    col_i = i
+                    break
+            continue
+        if col_i is None or set(cells[0]) <= set("-: "):
+            continue
+        if col_i < len(cells):
+            out.append(cells[col_i])
+    return "\n".join(out)
+
+
 def derive_in_flight_slugs(
     repo: Path,
     rows: list[CatalogRow],
 ) -> frozenset[str]:
-    """Derived In-flight set: STATE queue + INDEX Open + ``In-flight: yes``.
+    """Derived In-flight set: STATE Owner + INDEX Home + ``In-flight: yes``.
 
-    ``HOLD`` and archiveable statuses are excluded. Slugs not present as
-    hot bodies are ignored.
+    Queue/Open prose outside those columns is ignored. ``HOLD`` and
+    archiveable statuses are excluded. Slugs not present as hot bodies
+    are ignored.
     """
     active = {
         r.slug: r
@@ -693,15 +758,21 @@ def derive_in_flight_slugs(
     state_path = repo / "STATE.md"
     if state_path.is_file():
         named |= _slugs_from_lab_paths(
-            _section_after_heading(
-                state_path.read_text(encoding="utf-8"), _STATE_QUEUE_HEADING
+            _markdown_table_column(
+                _section_after_heading(
+                    state_path.read_text(encoding="utf-8"), _STATE_QUEUE_HEADING
+                ),
+                _STATE_OWNER_HEADERS,
             )
         )
     index_path = repo / "docs" / "briefs" / "INDEX.md"
     if index_path.is_file():
         named |= _slugs_from_lab_paths(
-            _section_after_heading(
-                index_path.read_text(encoding="utf-8"), _INDEX_OPEN_HEADING
+            _markdown_table_column(
+                _section_after_heading(
+                    index_path.read_text(encoding="utf-8"), _INDEX_OPEN_HEADING
+                ),
+                _INDEX_HOME_HEADERS,
             )
         )
     named |= {r.slug for r in active.values() if r.in_flight}
@@ -866,8 +937,8 @@ def _one_liners_from_catalog(text: str) -> dict[str, str]:
     for raw in text.splitlines():
         if not raw.startswith("|"):
             continue
-        cells = [c.strip() for c in raw.strip().strip("|").split("|")]
-        if not cells:
+        cells = _split_catalog_row(raw)
+        if cells is None:
             continue
         lower = [c.lower() for c in cells]
         if "slug" in lower and "one-liner" in lower:
@@ -912,8 +983,8 @@ def _heavy_from_catalog(text: str) -> dict[str, str]:
     for raw in text.splitlines():
         if not raw.startswith("|"):
             continue
-        cells = [c.strip() for c in raw.strip().strip("|").split("|")]
-        if not cells:
+        cells = _split_catalog_row(raw)
+        if cells is None:
             continue
         lower = [c.lower() for c in cells]
         if "slug" in lower and "heavy" in lower:
@@ -1376,7 +1447,7 @@ def _split_catalog_row(line: str) -> list[str] | None:
     s = line.strip()
     if len(s) < 2 or not s.startswith("|") or not s.endswith("|"):
         return None
-    cells = [c.strip() for c in s[1:-1].split(" | ")]
+    cells = [_unescape_cell(c.strip()) for c in s[1:-1].split(" | ")]
     if len(cells) not in (
         _ACTIVE_COLS,
         _ACTIVE_COLS_LEGACY,
@@ -2011,6 +2082,16 @@ def archive_slug(
         and archive_body.is_dir()
     ):
         raise ArchiveError(f"already archived: {slug}")
+
+    try:
+        rel_parts = slug_dir.relative_to(repo / ANALYSIS_REL).parts
+    except ValueError:
+        rel_parts = ()
+    if rel_parts and rel_parts[0] == "_inbox":
+        raise ArchiveError(
+            f"leave _inbox before --slug: {slug} still under "
+            f"{ANALYSIS_REL}/_inbox/"
+        )
 
     source = choose_source_card(slug_dir)
     if source is None:

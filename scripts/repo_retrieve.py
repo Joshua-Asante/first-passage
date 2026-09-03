@@ -105,8 +105,15 @@ def collect_chunks(repo: Path) -> list[dict[str, str]]:
     catalog = repo / "lab" / "CATALOG.md"
     if catalog.is_file():
         chunks.extend(chunk_by_heading("lab/CATALOG.md", _read(catalog), H3))
-        # Table rows are the actual liveness units.
+        # Table rows are the actual liveness units. Skip ## In flight — those
+        # slugs are already emitted under Hot bodies (same as advisor-dedup).
+        catalog_section = ""
         for line in _read(catalog).splitlines():
+            if line.startswith("## "):
+                catalog_section = line.strip()
+                continue
+            if catalog_section == "## In flight":
+                continue
             if line.startswith("|") and ("ACTIVE" in line or "HOLD" in line):
                 cells = [c.strip() for c in line.strip("|").split("|")]
                 if cells and cells[0] not in {"slug", "---"}:
