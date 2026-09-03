@@ -1,11 +1,11 @@
 # `lab/` — research (free-churn)
 
 Imports `core` + root-resident governance. **Open [`CATALOG.md`](CATALOG.md)
-first** — do not glob `analysis/` to infer what is live.
+In flight first** — do not glob `analysis/` to infer what is live.
 
 | Path | Job |
 |---|---|
-| [`CATALOG.md`](CATALOG.md) | Generated registry (hot / HOLD / archived) |
+| [`CATALOG.md`](CATALOG.md) | Generated registry (In flight / hot bodies / archived) |
 | [`analysis/`](analysis/) | Hot campaign bodies (`<theme>/<slug>/`) + flat `CARD.md` stubs |
 | [`archive/`](archive/) | Cold bodies for archived slugs |
 | [`research_utils/`](research_utils/) | Stable primitives (DSR, Step-0, universe gate, …) |

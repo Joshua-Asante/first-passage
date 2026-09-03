@@ -33,6 +33,25 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-03b — Catalog status words mean English (P1 falsifier)
+
+**Focus:** Status words and catalogs were being read as a work list. `ACTIVE` / `## Active` /
+`hot` meant “keep the body,” not “in flight.” Class-S #1, the failed combined book, and HOLD
+order-flow camps looked live; recent work in `_inbox` was buried.
+**Shipped:** `cursor/catalog-live-index-e931` — `028eb90` addendum · `b951143` regenerator ·
+`32dd565` Verdict stamps + CATALOG regen. Derived `## In flight` (STATE queue + INDEX Open +
+`In-flight: yes`; exclude `HOLD`); `## Hot bodies` replaces `## Active`; `_inbox` first under
+Hot bodies. README token table now means English.
+**Decisions/defects:** Live-only index, not a `LIVE` token. No mass `--slug`. P1 glossary
+falsified — [addendum](adr/2026-08-22-catalog-hot-vs-disposition.md#addendum--2026-09-03).
+`queue-exception: P1 falsifier fired; catalogs are being read as the work list`.
+**Open / next:** STATE queue: `#1` [Find a viable trading strategy — portable-edge cultivation
+campaign](superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md) · `#2` [B7-REFIRE Stage 1
++ M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+**Live-ops state:** rail remains built / disarmed; no book deployed.
+
+---
+
 ## 2026-09-03a — Orchestrator takeover: seven-strategy Select configuration campaign; Codex P1 review folded into PR #272
 
 **Focus:** Operator handed Claude Code the orchestrator role for the seven-strategy
