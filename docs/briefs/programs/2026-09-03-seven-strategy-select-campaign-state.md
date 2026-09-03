@@ -923,3 +923,27 @@ checks for a book that fits.
 6. Re-run the venue audit — the three re-expressed legs should now report **zero** force-flat
    violations, which is the independent confirmation of §13's orchestrator-side measurement.
 
+### 14f — The merge handshake, and what "green light" means
+
+**Operator, 2026-09-03:** *"I make the merge decisions anyway, I'll remember not to merge until you
+give the green light."* The standing rule is unchanged — the orchestrator never merges, the operator
+does — and this adds the handshake that keeps a superseded generation off `main`. So that the green
+light is a **defined condition** rather than a judgment call, it is granted when **all** of these
+hold on the PR's current head, each checkable by a reader who is not the orchestrator:
+
+| # | Condition | How to check |
+|---|---|---|
+| 1 | All five `export_sha256`/`export_bytes` in `phase1_config.json` match the §14a current-of-record table | diff the five pairs |
+| 2 | `cme_early_close_calendar.json` has non-empty `rows` sourced from `derived.venue_flat_dates`, **not** the union with `full_closure_dates` | `len(rows) > 0`; spot-check that no full-closure date appears |
+| 3 | The venue audit reports **zero** force-flat violations on the three re-expressed legs | RESULTS / manifest venue section |
+| 4 | `reconciliation_manifest.json` and `RESULTS.md` are regenerated against those inputs — no retired ids, no stale input hashes | manifest `inputs` block vs the actual files |
+| 5 | D17 is implemented: monthly totals reconstructed, commissions amendment recorded | manifest monthly section; G1.4 note |
+| 6 | The tie-batching correction is applied under §14d's four conditions, and the at-cap **80** is re-derived on the re-pinned bytes | the two new tests; the peak table |
+
+⚠ **What the green light is NOT.** It is not a Phase 1 `COMPLETE` verdict and not Phase 2 admission.
+The calendar's provenance is SECONDARY, so `coverage_status` stays `NEEDS_CONTEXT` and the Phase 1
+verdict stays capped **even with all six conditions met** — the cap lifts only on a primary CME
+source or an operator-ratified acceptance of the secondary one. The green light means "this
+generation is internally consistent and built on the current-of-record inputs, so landing it does
+not put a wrong generation on `main`." Nothing more.
+
