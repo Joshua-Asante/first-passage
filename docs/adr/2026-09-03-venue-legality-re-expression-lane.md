@@ -152,9 +152,19 @@ disliked, tuning anything beyond the session bound, or re-running until a replac
   would omit ordinary federal holidays from the FX body and leave 6J resting past the deadline. All three bodies
   now carry the same 75-date union list owned by
   [`ops/calendars/cme_holiday_calendar_2022_2026.json`](../../ops/calendars/cme_holiday_calendar_2022_2026.json).
-  ⚠ **Two conditions ride with the discharge.** (1) The calendar's provenance is **SECONDARY** — no CME primary
+  ⚠ **SUPERSEDED 2026-09-03 by operator ruling D19** (Codex on
+  [#293](https://github.com/Joshua-Asante/first-passage/pull/293), P1, accepted — this clause and the guard
+  spec's twin both still asserted the cap after the normalization design had been amended, leaving a worker
+  unable to comply with all three documents at once). **The operator accepts the SECONDARY provenance**, so
+  `coverage_status` may read `COMPLETE` and the calendar-derived verdict cap lifts. Condition (1) as written
+  below is history. What survives it: the acceptance is scoped to **date membership**, not the per-group close
+  times; two `unresolved` items bear on membership and are accepted explicitly (2025-11-28's possible
+  `FULL_CLOSURE` resolution — conservative; and an unruled-out ad-hoc closure 2026-05-28…09-02 — **not**
+  conservative); and every non-calendar cap still binds. See campaign-state §6 D19.
+
+  ⚠ **Two conditions rode with the discharge.** (1) ~~The calendar's provenance is **SECONDARY** — no CME primary
   source was reachable — so a replacement export inherits a `NEEDS_CONTEXT` provenance cap it cannot clear on its
-  own; that is a cap on the *verdict*, not a bar on the *export*. (2) Three dates close **before** 12:59 ET
+  own; that is a cap on the *verdict*, not a bar on the *export*.~~ **(Superseded by D19, above.)** (2) Three dates close **before** 12:59 ET
   (2023-04-07, 2026-04-03, 2025-01-09) and no deadline can express them; Aegis 6J is the live exposure, trading
   to 11:15 ET on both Good Fridays. Those need a no-trade block, and a replacement that silently relies on the
   deadline there is not venue-legal. See the campaign-state artifact §12.
