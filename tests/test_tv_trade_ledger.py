@@ -183,10 +183,20 @@ def test_frozen_configuration_records_manifest_derived_pin_status_and_body_ident
         "19264da29a3d9a30200600689e1950931f1abfb648e9071a232ee83fdec2756c": "PINNED_SWAP_PROTOTYPE",
         "ae5fd66ce51c478187c605574a03f89a64e6f8f245e77477eeaedd1efe2cf772": "NOT_IN_PORT_MANIFEST",
     }
-    assert by_hash["5c4b1026cb6f3a475dba962783b2a053e9fbeb123570dd964d7154ea80b3f9d0"].pine_pyramiding_pct == Decimal("250")
+    dj_modified = by_hash[
+        "5c4b1026cb6f3a475dba962783b2a053e9fbeb123570dd964d7154ea80b3f9d0"
+    ]
+    assert dj_modified.strategy_id == "striker_dj30_native_pyramid_down_on_mym"
+    assert dj_modified.pine_pyramiding_pct == Decimal("250")
+    assert dj_modified.lineage_notes == (
+        "Local byte diff against 2b895317 changes only pyramidSize default 750 to 250; this DJ30 modified native body is the sole pyramid-down source, retained as a literal EXPLORATORY chart run rather than a pinned locked venue edition.",
+    )
     nas_modified = by_hash["d18c2699ea3856df884eced84c9384adea953f3a2470bea4f2d671b6cd294057"]
     assert nas_modified.strategy_id == "striker_nas100_native_dow_modified_on_mnq"
     assert nas_modified.pine_pyramiding_pct == Decimal("1000")
+    assert nas_modified.lineage_notes == (
+        "Local byte diff against bb921399 changes only allowThu and allowFri defaults from false to true; pyramid stays 1000, so this is a DOW-modified body, not pyramid-down, retained as a literal EXPLORATORY chart run rather than a pinned locked venue edition.",
+    )
     assert all(
         "_v45" not in spec.strategy_id and "_v1" not in spec.strategy_id
         for spec in specs
