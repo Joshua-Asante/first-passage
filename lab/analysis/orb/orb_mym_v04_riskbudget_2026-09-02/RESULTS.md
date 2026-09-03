@@ -1,5 +1,6 @@
 # ORB-MYM-1 v0.4 — conditioning-filter screen, PR #259 verification, riskBudgetUsd input
 
+**In-flight:** yes
 **Status:** `EXPLORATORY — NO FILTER PROMOTED; ONE PINE INPUT ADDED, DEFAULT OFF`. Candidate
 construct only (`orb_mym_4_edition.pine`, CANDIDATE lifecycle, never AUTHORIZED, chart-only paper
 vehicle — see `ops/instruments/MYM.md` M8/M9). No lifecycle, allocation, `dd_protection`, rail, or

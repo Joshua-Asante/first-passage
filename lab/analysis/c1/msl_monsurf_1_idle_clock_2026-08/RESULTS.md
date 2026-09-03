@@ -1,3 +1,4 @@
+**Verdict:** CLOSED — Q-MONSURF-1 M-B RESOLVED
 # Q-MONSURF-1 M-B acceptance battery — RESULTS
 
 **Verdict:** ACTIVE — `Q-MONSURF-1` M-B idle-clock monitor — `RESOLVED` 2026-08-23: 0 missed / 0 spurious across all 312 real historical weeks, mutation-verified. Registration-ready (gated on F3 only). [closure](../../../docs/briefs/closures/Q-MONSURF-1-closure-resolved.md)
