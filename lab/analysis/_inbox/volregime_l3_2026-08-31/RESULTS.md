@@ -1,5 +1,6 @@
 # Q-VOLREGIME-1 L3 chronological halves — 2026-08-31
 
+**In-flight:** yes
 **Status:** `ACTIVE` — L3 PASS independently on MNQ and MYM; the presence battery is complete on both instruments and L5 attribution remains open.
 
 ## Result
