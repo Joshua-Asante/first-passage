@@ -14,7 +14,7 @@ Phase 0 was skipped by operator direction. All supplied history is development d
 
 The fourteen source files are provided only through `--source-dir`; their basenames and SHA-256 pins are frozen in `phase1_config.json`. The vendor bytes are never copied into this repository. Canonical event, trade, and weekly ledgers are vendor-derived and deliberately written only to the campaign's ignored `local_artifacts/` directory. Committed `reconciliation_manifest.json` and `RESULTS.md` contain aggregate values and hashes, never an absolute source path or full row-level ledger.
 
-`source_timezone` is `America/New_York` for all seven inputs. Normalization uses `zoneinfo`, emits UTC timestamps and exchange-session dates, and rejects ambiguous or nonexistent DST wall times instead of guessing.
+`source_timezone` is `America/New_York` for all seven inputs. Normalization uses `zoneinfo`, emits UTC timestamps and exchange-session dates, and rejects ambiguous or nonexistent DST wall times instead of guessing. Test commands and counts are frozen separately in `VERIFICATION.md`, which the campaign runner does not overwrite.
 
 ## Strategy lineage and pyramid inventory
 
