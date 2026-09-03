@@ -86,9 +86,13 @@ through `joblib.effective_n_jobs`, so negatives are offsets (`-1` all CPUs, `-2`
 cgroup/CFS quota, a CPU affinity mask or `LOKY_MAX_CPU_COUNT` is honoured — `os.cpu_count()` reports
 *host* CPUs and would silently launch 7 workers inside a 2-CPU allocation, which is the failure this
 whole section is about. `0` means serial here, since joblib rejects `n_jobs=0` outright. The stage now runs
-in chunks and appends each finished cell to `data/grid_final.json.partial.jsonl`, so a crash costs
-one chunk and re-running the same command resumes; the sidecar is deleted only once the real
-output is on disk. Within one configuration a cell is deterministic — seeded from `SEEDS`,
+in chunks and appends each finished cell to a `data/grid_final.json.partial.<fp>.jsonl` sidecar, so
+a crash costs one chunk and re-running the same command resumes; the sidecar is deleted only once
+the real output is on disk, and that output is published by rename rather than by truncate-in-place.
+The loky executor is explicitly shut down at each chunk boundary — without that, joblib **reuses**
+the same worker processes and their retained memory across chunks, so chunking alone would buy
+crash resilience but no memory bound (an earlier version of this README claimed otherwise).
+Within one configuration a cell is deterministic — seeded from `SEEDS`,
 depending only on its own argument tuple — so a resumed cell is identical to a cold one, and
 results are returned in job order regardless of completion order.
 
@@ -100,8 +104,16 @@ fingerprint of everything that feeds a cell without appearing in its argument tu
 On any mismatch — or if the sidecar predates the fingerprint — it is discarded whole and every cell
 recomputed. Being strict is cheap here: a false mismatch costs one re-run, whereas a false match
 would splice stale cells into a grid whose header advertises the new configuration, which is the
-same "artifacts do not match the code" failure this checkpointing exists to prevent. Guarded by
-`tests/lab/test_book_grid_checkpointing.py`.
+same "artifacts do not match the code" failure this checkpointing exists to prevent.
+
+The fingerprint is in the sidecar's **filename**, not only its header, so two configurations can
+never name the same file. Header-only scoping left a real race, and not a hypothetical one for this
+campaign: creating the sidecar is a check-then-create, so a second process could replace it with
+fingerprint B while the first appended cells computed under fingerprint A, leaving B's header over
+A's records — and this campaign has already had two finals runs racing one output. Two processes
+sharing one *configuration* still share a sidecar, which is harmless: identical inputs give
+identical cells, and an interleaved partial write degrades to an unparseable line the torn-tail
+repair recomputes. Guarded by `tests/lab/test_book_grid_checkpointing.py`.
 
 `data/cme_equity_sessions.json` (1,011 CME equity-index sessions, 13 weekday closures in the
 window) is committed so `third_leg_shape.py` never schedules a synthetic trade on a closed market.

@@ -400,6 +400,62 @@ def _effective_jobs(n_jobs) -> int:
     return max(1, int(effective_n_jobs(n_jobs)))
 
 
+def _fp_line_for(jobs) -> str:
+    return json.dumps({"__fingerprint__": _run_fingerprint(jobs)}, sort_keys=True, default=str)
+
+
+def sidecar_path(out_path: str, jobs) -> str:
+    """Checkpoint sidecar for this output AND this configuration.
+
+    The fingerprint is in the FILENAME, not merely in the header, so two configurations
+    can never share a sidecar. Header-only scoping left a real race: creating the sidecar
+    is a check-then-create, so a second process could replace it with fingerprint B while
+    the first appended cells computed under fingerprint A; the surviving file then carried
+    B's header over A's records, and because `_job_key` omits everything the fingerprint
+    represents, B's next resume would trust them. Silent configuration mixing.
+
+    That is not hypothetical here -- this campaign already had two finals runs racing one
+    output on 2026-09-02, which is how the mixing became reachable at all. Scoping the
+    name makes the cross-configuration case structurally impossible rather than
+    merely detected. Raised by Codex on PR #271 (round 6).
+
+    Two processes sharing one configuration still share a sidecar, which is benign for
+    correctness: identical inputs give identical cells, a later record simply overwrites
+    an equal one, and an interleaved partial write degrades to an unparseable line that
+    the torn-tail repair recomputes.
+    """
+    import hashlib
+    h = hashlib.sha256(_fp_line_for(jobs).encode("utf-8")).hexdigest()[:12]
+    return f"{out_path}.partial.{h}.jsonl"
+
+
+def _recycle_workers() -> None:
+    """Actually tear down the loky workers between chunks.
+
+    joblib's loky backend keeps a REUSABLE executor: constructing a new `Parallel` does
+    not start new processes, so the same workers -- and whatever allocator or native
+    library RSS they are holding -- survive every chunk. Measured directly: two successive
+    `Parallel(n_jobs=2)` calls reported the identical worker PID, and only an explicit
+    executor shutdown produced fresh ones.
+
+    This falsified the memory-bounding rationale stated for chunking in earlier revisions
+    of this file, its README and its commit messages: chunking gave crash resilience, and
+    the memory relief came from lowering `--jobs`, not from any teardown. With this call
+    the stated bound is real. Raised by Codex on PR #271 (round 6).
+
+    No-op under a non-loky backend (the tests run sequentially), and never fatal: failing
+    to recycle costs memory, not correctness.
+    """
+    try:
+        from joblib.parallel import get_active_backend
+        if type(get_active_backend()[0]).__name__.lower().startswith("sequential"):
+            return
+        from joblib.externals.loky import get_reusable_executor
+        get_reusable_executor().shutdown(wait=True)
+    except Exception:
+        pass
+
+
 def _sha256_file(path: str) -> str:
     import hashlib
     h = hashlib.sha256()
@@ -468,8 +524,14 @@ def _run_checkpointed(jobs, out_path, n_jobs):
     should have produced it had already changed -- the exact "artifacts don't match the
     code" defect the first review caught.
 
-    Chunking bounds peak memory (workers are torn down between chunks) and the sidecar
-    makes a crash cost one chunk instead of the run. Within one configuration `score_cell`
+    Chunking makes a crash cost one chunk instead of the whole run, and `_recycle_workers`
+    at each chunk boundary bounds peak memory. Those are two separate mechanisms, and
+    earlier revisions of this docstring wrongly folded them into one, asserting that
+    chunking bounded memory "since workers are torn down between chunks". It did not:
+    loky reuses its executor, so a new `Parallel` reuses the same processes and their
+    retained RSS. Chunking alone bought resilience; the memory relief in the run that
+    finally completed came from `--jobs 3`, not from teardown. Within one configuration
+    `score_cell`
     is deterministic -- seeded from the module-level SEEDS, depending only on its own
     argument tuple -- so per-cell values do not depend on execution order or on how the
     work is grouped, and a resumed cell is identical to a cold one. Across a change to
@@ -491,9 +553,9 @@ def _run_checkpointed(jobs, out_path, n_jobs):
     from joblib import Parallel, delayed
 
     width = _effective_jobs(n_jobs)
-    part = out_path + ".partial.jsonl"
     fp = _run_fingerprint(jobs)
-    fp_line = json.dumps({"__fingerprint__": fp}, sort_keys=True, default=str)
+    fp_line = _fp_line_for(jobs)
+    part = sidecar_path(out_path, jobs)
 
     done = {}
     if os.path.exists(part):
@@ -558,6 +620,7 @@ def _run_checkpointed(jobs, out_path, n_jobs):
                 fh.write(json.dumps({"key": k, "result": r}, default=str) + "\n")
                 done[k] = json.loads(json.dumps(r, default=str))
         print(f"checkpoint: {len(done)}/{len(jobs)} cells done", flush=True)
+        _recycle_workers()      # loky reuses its executor; a new Parallel() would not
 
     return [done[_job_key(j)] for j in jobs], part
 
@@ -601,9 +664,15 @@ def main(argv=None):
     t0 = time.time()
     print(f"{a.stage}: {len(jobs)} cells, n_sims={n_sims} x {len(SEEDS)} seeds, jobs={a.jobs}", flush=True)
     results, part = _run_checkpointed(jobs, out_path, a.jobs)
-    with open(out_path, "w") as fh:
+    # Publish atomically: write beside the target, then rename over it. A plain open("w")
+    # truncates first, so a crash -- or a second grid process racing this one, which this
+    # campaign has actually had -- could leave a half-written or interleaved artifact that
+    # still parses as JSON. os.replace is atomic on both POSIX and Windows.
+    tmp = f"{out_path}.tmp.{os.getpid()}"
+    with open(tmp, "w") as fh:
         json.dump({"stage": a.stage, "n_sims": n_sims, "seeds": SEEDS, "elapsed_s": round(time.time() - t0, 1),
                    "results": results}, fh, indent=1, default=str)
+    os.replace(tmp, out_path)
     print(f"wrote {out_path} in {time.time() - t0:.0f}s")
     if os.path.exists(part):
         os.remove(part)          # only after the real output is on disk

@@ -11,10 +11,20 @@ Both times `grid_final.json` stayed stale while the code that should have produc
 had already changed -- the exact "committed artifacts do not match the code" defect the
 first review of PR #260 caught.
 
-`_run_checkpointed` chunks the work (bounding peak memory, since workers are torn down
-between chunks) and appends each result to a sidecar as it lands, so a crash costs one
-chunk instead of the whole run. These tests pin the properties that make it safe to
-trust a resumed artifact as much as a cold one:
+`_run_checkpointed` chunks the work and appends each result to a sidecar as it lands, so
+a crash costs one chunk instead of the whole run.
+
+⚠ Earlier revisions of this docstring claimed chunking bounded peak memory "since workers
+are torn down between chunks". That was FALSE: joblib's loky backend keeps a reusable
+executor, so constructing a new `Parallel` reuses the same processes and whatever RSS they
+hold -- measured, two successive `Parallel(n_jobs=2)` calls reported the identical worker
+PID. Chunking bought crash resilience; the memory relief came from lowering `--jobs`.
+`_recycle_workers` now shuts the executor down at each chunk boundary, which is what makes
+the claim true, and `test_recycle_workers_actually_replaces_the_loky_pool` holds it to it.
+Raised by Codex on PR #271 (round 6).
+
+These tests pin the properties that make it safe to trust a resumed artifact as much as a
+cold one:
 
   * cell identity is exact, so a resume can never silently reuse the wrong cell;
   * a resumed cell is NOT recomputed (that is the whole point);
@@ -77,6 +87,12 @@ def _fp_line(grid, jobs):
                       sort_keys=True, default=str) + "\n"
 
 
+def _pid(_):
+    """Module-level so loky can pickle it; returns the worker process's own PID."""
+    import os
+    return os.getpid()
+
+
 def _stub(grid, monkeypatch):
     """Replace score_cell with a counting stub that echoes its own cell identity."""
     calls = []
@@ -135,7 +151,7 @@ def test_resume_does_not_recompute_checkpointed_cells(grid, monkeypatch, tmp_pat
 def test_partial_resume_computes_only_the_missing_cells(grid, monkeypatch, tmp_path):
     jobs = [_job({"mnq": 1, "aegis": k}, "Tradeify_Select_100K") for k in (0, 2, 3)]
     out = str(tmp_path / "grid.json")
-    part = pathlib.Path(out + ".partial.jsonl")
+    part = pathlib.Path(grid.sidecar_path(out, jobs))
 
     # only the middle cell was checkpointed before the imagined crash
     part.write_text(_fp_line(grid, jobs) + json.dumps({
@@ -155,7 +171,7 @@ def test_results_follow_job_order_not_checkpoint_order(grid, monkeypatch, tmp_pa
     """The renderers index positionally, so a resume must not permute the grid."""
     jobs = [_job({"mnq": 1, "aegis": k}, "Tradeify_Select_100K") for k in (0, 2, 3)]
     out = str(tmp_path / "grid.json")
-    part = pathlib.Path(out + ".partial.jsonl")
+    part = pathlib.Path(grid.sidecar_path(out, jobs))
 
     # sidecar written in REVERSE order, as an interleaved parallel run would produce
     with part.open("w", encoding="utf-8") as fh:
@@ -173,7 +189,7 @@ def test_truncated_sidecar_tail_is_tolerated(grid, monkeypatch, tmp_path):
     """A hard kill mid-write leaves a partial line; it must cost one cell, not the run."""
     jobs = [_job({"mnq": 1, "aegis": k}, "Tradeify_Select_100K") for k in (0, 2)]
     out = str(tmp_path / "grid.json")
-    part = pathlib.Path(out + ".partial.jsonl")
+    part = pathlib.Path(grid.sidecar_path(out, jobs))
 
     with part.open("w", encoding="utf-8") as fh:
         fh.write(_fp_line(grid, jobs))
@@ -242,7 +258,7 @@ def test_fingerprint_covers_calendar_inputs_and_code(grid):
 def test_sidecar_from_a_different_configuration_is_refused(grid, monkeypatch, tmp_path):
     jobs = [_job({"mnq": 1, "aegis": k}, "Tradeify_Select_100K") for k in (0, 2)]
     out = str(tmp_path / "grid.json")
-    part = pathlib.Path(out + ".partial.jsonl")
+    part = pathlib.Path(grid.sidecar_path(out, jobs))
 
     stale = grid._run_fingerprint(jobs)
     stale["seeds"] = [999, 998, 997]          # as if SEEDS had changed since the crash
@@ -262,7 +278,7 @@ def test_unfingerprinted_sidecar_is_refused(grid, monkeypatch, tmp_path):
     """Pre-fingerprint sidecars establish nothing about which config produced them."""
     jobs = [_job({"mnq": 1, "aegis": k}, "Tradeify_Select_100K") for k in (0, 2)]
     out = str(tmp_path / "grid.json")
-    part = pathlib.Path(out + ".partial.jsonl")
+    part = pathlib.Path(grid.sidecar_path(out, jobs))
     with part.open("w", encoding="utf-8") as fh:
         for j in jobs:
             fh.write(json.dumps({"key": grid._job_key(j),
@@ -366,6 +382,79 @@ def test_negative_jobs_offset_is_used_as_the_chunk_width(grid, monkeypatch, tmp_
 
 # ------------------------------------------------ torn sidecar repair (PR #271, round 4)
 
+# -------------------------------------------- sidecar isolation (PR #271, round 6, P1)
+
+def test_sidecar_name_is_scoped_to_the_configuration(grid, monkeypatch, tmp_path):
+    """Two configurations must not be able to name the same sidecar file.
+
+    Header-only scoping left a check-then-create race: a second process could replace the
+    sidecar with fingerprint B while the first appended cells computed under fingerprint A,
+    and B's next resume would trust them because `_job_key` omits everything the
+    fingerprint represents. Putting the fingerprint in the NAME makes that structurally
+    impossible instead of merely detectable.
+    """
+    jobs = [_job({"mnq": 1, "aegis": 2}, "Tradeify_Select_100K")]
+    out = str(tmp_path / "grid.json")
+    before = grid.sidecar_path(out, jobs)
+    monkeypatch.setattr(grid, "SEEDS", (1, 2, 3))
+    after = grid.sidecar_path(out, jobs)
+    assert before != after, "a changed configuration reused the same sidecar filename"
+    assert before.startswith(out) and after.startswith(out)
+
+
+def test_one_configuration_cannot_consume_anothers_checkpoints(grid, monkeypatch, tmp_path):
+    """End-to-end: run config A, switch configuration, confirm nothing of A is reused."""
+    jobs = [_job({"mnq": 1, "aegis": k}, "Tradeify_Select_100K") for k in (0, 2)]
+    out = str(tmp_path / "grid.json")
+
+    calls = _stub(grid, monkeypatch)
+    _, part_a = grid._run_checkpointed(jobs, out, 1)
+    assert len(calls) == 2
+    a_bytes = pathlib.Path(part_a).read_bytes()
+
+    monkeypatch.setattr(grid, "SEEDS", (7, 8, 9))         # a different configuration
+    calls.clear()
+    _, part_b = grid._run_checkpointed(jobs, out, 1)
+    assert len(calls) == 2, "config B reused config A's checkpointed cells"
+    assert part_b != part_a, "both configurations wrote the same sidecar"
+    assert pathlib.Path(part_a).read_bytes() == a_bytes, "config B mutated config A's sidecar"
+
+
+# ------------------------------------------ loky worker recycling (PR #271, round 6, P2)
+
+def test_recycle_workers_actually_replaces_the_loky_pool(grid):
+    """The memory bound is only real if the workers genuinely go away.
+
+    The control half matters as much as the assertion: it demonstrates that WITHOUT the
+    explicit shutdown loky hands back the same processes, which is exactly why the earlier
+    "workers are torn down between chunks" claim was false.
+    """
+    from joblib import Parallel, delayed
+
+    # control: no shutdown between calls -> loky reuses its executor
+    c = Parallel(n_jobs=2)(delayed(_pid)(i) for i in range(4))
+    d = Parallel(n_jobs=2)(delayed(_pid)(i) for i in range(4))
+    assert set(c) & set(d), (
+        "control failed: loky did not reuse workers, so this test cannot show that "
+        "_recycle_workers is what makes the teardown happen")
+
+    # with the shutdown, the next chunk runs in fresh processes
+    a = Parallel(n_jobs=2)(delayed(_pid)(i) for i in range(4))
+    grid._recycle_workers()
+    b = Parallel(n_jobs=2)(delayed(_pid)(i) for i in range(4))
+    assert not (set(a) & set(b)), f"workers survived the recycle: {sorted(set(a) & set(b))}"
+
+    grid._recycle_workers()      # leave no pool behind for later tests
+
+
+def test_recycle_workers_is_a_safe_noop_under_a_sequential_backend(grid):
+    """Never fatal: failing to recycle costs memory, not correctness."""
+    from joblib import parallel_backend
+    with parallel_backend("sequential"):
+        grid._recycle_workers()
+        grid._recycle_workers()
+
+
 def test_torn_tail_is_removed_so_later_appends_stay_parseable(grid, monkeypatch, tmp_path):
     """Skipping a torn record is not enough -- the bad bytes must go.
 
@@ -376,7 +465,7 @@ def test_torn_tail_is_removed_so_later_appends_stay_parseable(grid, monkeypatch,
     """
     jobs = [_job({"mnq": 1, "aegis": k}, "Tradeify_Select_100K") for k in (0, 2)]
     out = str(tmp_path / "grid.json")
-    part = pathlib.Path(out + ".partial.jsonl")
+    part = pathlib.Path(grid.sidecar_path(out, jobs))
 
     with part.open("w", encoding="utf-8") as fh:
         fh.write(_fp_line(grid, jobs))
