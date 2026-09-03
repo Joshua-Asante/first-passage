@@ -34,23 +34,26 @@ almost none of the recent PRs are P1-shaped (no Databento pull, no STUMPY/catch2
 **campaign** is one bounded run of discovery→validation→admission against a pre-registered search
 universe on one instrument family. Stage numbering is canonical (`docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md`, pruned); rules of evidence are operator-ratified ([`…discovery-campaign-defaults-ratified`](docs/adr/2026-07-11-discovery-campaign-defaults-ratified.md)).
 
-⚠ **Two decompositions of this pipeline coexist by design — cross-referenced here so neither reads as
-a competitor, and neither is misread as suspending the other.** The Stage 2→8 numbering below is the
-**document shape** (seed manifest → intake screen → Stage-0 preregistration, per channel) — that shape
-is **today's live practice until each channel's own migration addendum lands**, per
-[`candidate-contract`](docs/adr/2026-08-30-candidate-contract.md) §6 ("the channel's existing documents
-remain its live practice" until then). That carve-out is about **which artifact** records a candidate,
-not about **step order**. [`evaluation-order`](docs/adr/2026-08-30-evaluation-order.md) (`Accepted`
-2026-08-30) is the ratified, single canonical **ten-step order**, and its own §2 states
-"Effective: immediately upon acceptance, for any candidate contract frozen after this date" — no
-migration carve-out. **A candidate contract frozen after 2026-08-30 is already bound by that order
-(structural screening before catalogue, the pre-Explore `TRADEABLE-REACHABLE` gate, the append-only
-selection freeze, the zero-K state-drift re-check) even while its channel still uses the pre-migration
-document shape below.** Migration changes which artifact records the steps, never whether they apply.
-Doctrine binds now; document migration is dated-owed, not silent (`STATE.md`). The interactive
-walkthrough is [`generate-evaluate-throughline.html`](docs/diagrams/generate-evaluate-throughline.html),
-which cites both and restates the same distinction per-ADR. Read Stage 2→8 as today's document shape,
-`evaluation-order`'s ten steps as the order already governing it, and neither as a third, independent map.
+⚠ **Three things below are easy to conflate; none is a competing binding order.** (1) The Stage 2→8
+labels in the ASCII flow just below (`MINE` / `BIND K` / `SCORE` / `BLOCK SIZE` / `CONFIRM` / `REALISM`
+/ `BREADTH` / `ADMIT`) are **legacy research-activity vocabulary** — a pre-2026-08-30 way of naming
+what a campaign does — retained here for continuity with older prose elsewhere in the repo, **not** an
+independent ordering authority for any candidate contract frozen after 2026-08-30. (2) Each channel's
+**freeze-chain documents** (seed manifest → intake screen → Stage-0 preregistration) are a separate,
+narrower thing: the *artifact format* a candidate is recorded in, which per
+[`candidate-contract`](docs/adr/2026-08-30-candidate-contract.md) §6 stays "the channel's existing
+documents... its live practice" until that channel's own dated migration addendum lands (owed,
+tracked in `STATE.md`, not silent). (3) [`evaluation-order`](docs/adr/2026-08-30-evaluation-order.md)
+(`Accepted` 2026-08-30) is the ratified, single canonical **ten-step order**, and its own §2 carries no
+migration carve-out ("Effective: immediately upon acceptance, for any candidate contract frozen after
+this date"). **A candidate contract frozen after 2026-08-30 is already bound by that order — structural
+screening before catalogue, the pre-Explore `TRADEABLE-REACHABLE` gate, the append-only selection
+freeze, the zero-K state-drift re-check — regardless of (1) and (2).** This file does not attempt a
+step-by-step Stage-2→8-to-ten-step crosswalk; `evaluation-order` is the sole authority for the order,
+and (1)/(2) are retained/owed for reasons that have nothing to do with which order governs. The
+interactive walkthrough is
+[`generate-evaluate-throughline.html`](docs/diagrams/generate-evaluate-throughline.html), which states
+the same three-way distinction.
 
 ### Data flow
 

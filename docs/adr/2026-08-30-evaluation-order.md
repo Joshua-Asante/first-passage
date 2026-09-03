@@ -402,18 +402,19 @@ pipeline now coexist: this map's 12 phases, `PIPELINES.md`'s Stage 2→8..., and
 steps. None cross-references the others."*
 
 This ADR is the **single canonical owner** of pipeline step ordering — its own title says so, and §2
-states it as "one canonical ordered pipeline." `PIPELINES.md` P1 now points here explicitly, framing
-its Stage 2→8 list as the **document shape** that is today's live practice (per
-`2026-08-30-candidate-contract.md` §6: each channel's existing freeze-chain documents remain its live
-practice until that channel's own migration addendum lands) — never as a rival step order. That
-carve-out is `candidate-contract`'s own, about which artifact records a candidate; it does not extend
-to this ADR. §2's own effectivity clause carries no migration carve-out ("immediately upon acceptance,
-for any candidate contract frozen after this date"), so this ADR's order already governs any contract
-frozen after 2026-08-30, including one still recorded in a pre-migration channel's old document shape.
-`docs/diagrams/generate-evaluate-throughline.html` is the visual/interactive companion and now states
-the identical distinction (its own 2026-09-03 revision), and its per-ADR `pending_doctrine` entry
-already carried the correct "EFFECTIVE for any candidate contract frozen after 2026-08-30" framing
-this addendum aligns `PIPELINES.md` to.
+states it as "one canonical ordered pipeline." `PIPELINES.md` P1 now points here explicitly and
+separates three things that were previously conflated: (1) its own Stage 2→8 labels (`MINE`/`BIND K`/
+`SCORE`/.../`ADMIT`) are legacy research-activity vocabulary, not a rival ordering authority; (2) each
+channel's freeze-chain documents (seed manifest → intake screen → Stage-0 preregistration) are a
+narrower, separate concern — the *artifact format* a candidate is recorded in, which per
+`2026-08-30-candidate-contract.md` §6 stays "the channel's existing documents... its live practice"
+until that channel's own dated migration addendum lands; (3) this ADR's own ten-step order, whose §2
+effectivity clause carries no migration carve-out ("immediately upon acceptance, for any candidate
+contract frozen after this date"), so it already governs any contract frozen after 2026-08-30
+regardless of (1) or (2). `docs/diagrams/generate-evaluate-throughline.html` is the visual/interactive
+companion and now states the identical three-way distinction (its own 2026-09-03 revision), and its
+per-ADR `pending_doctrine` entry already carried the correct "EFFECTIVE for any candidate contract
+frozen after 2026-08-30" framing this addendum aligns `PIPELINES.md` to.
 
 Neither `PIPELINES.md` nor the diagram gains authority to redefine this ADR's step order — a future
 change to §2 lands here first. But neither is a bare pointer today: `PIPELINES.md` carries its own

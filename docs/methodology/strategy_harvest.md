@@ -77,7 +77,9 @@ five live channels (HARV, dense-1m/TNEC, MSL, no-counterparty-statistical/geomet
 each with its own ratifying artifact and liveness clause. **HARV is one of the five** — the six ranks
 below are sourcing *methods* inside the HARV channel, not five independently-chartered channels of
 their own; HARV's own owning artifact ([`2026-07-15-external-mechanism-harvest-intake.md`](../adr/2026-07-15-external-mechanism-harvest-intake.md))
-already carries a liveness clause (§0/§1 of that ADR) covering the whole rank-1–6 portfolio, not each
+already carries a liveness clause (§4: the first-two-closures `FALSIFIED` revert trigger, the
+2026-11-08 idle guard, and the `RESOLVED`/`FALSIFIED`/`AMBIGUOUS` verdict vocabulary — extended by that
+ADR's own Addendum 2026-08-16 to a fourth `AMBIGUOUS-HOLD` branch) covering the whole rank-1–6 portfolio, not each
 rank separately. None of the five channels' clauses has yet been run through `gate-reachability-audit`
 or reconciled onto this ADR's two-option taxonomy. That reconciliation is a dated addendum owed on
 each channel's own owning artifact — never a rewrite here, per amendment-first discipline (that ADR
