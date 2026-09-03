@@ -4,6 +4,12 @@
 > ORB-MYM P50 source read lives in
 > [`2026-09-02-mechanism-supply-leverage-memo.md`](2026-09-02-mechanism-supply-leverage-memo.md).
 > It is advisory and does not change this review's dated evidence claims.
+>
+> ⚠ **2026-09-03 — this review’s “do not open an ORB conditioner before L5” is waived for the
+> off-queue VOLREGIME translation campaign only.** Enter at Packet T on L1–L4 presence
+> ([`ADR addendum`](../adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03--campaign-is-volregime-translation-enter-at-packet-t)
+> · [`translation plan`](../superpowers/plans/2026-09-01-q-volregime-bounded-translation-campaign.md)).
+> The waiver does not close Q-VOLREGIME-1. Dated evidence claims below stay as written.
 
 **As of:** 2026-09-01  
 **Decision question:** What is actually preventing a viable strategy for Tradeify, and what

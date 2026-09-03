@@ -7,9 +7,13 @@ Tradeify strategy, given the estate's repeated zero-candidate result?
 
 > **Operator resolution / campaign launch, 2026-09-02:** portable edge is primary, Tradeify Select
 > is preferred, manual weekly preservation is acceptable, the research clock is 2–3 days, spend is
-> flexible but remains Rule-2 bounded, and an edge survives edition failure. The resulting
-> cultivation campaign is
-> [`2026-09-02-portable-edge-cultivation-campaign.md`](../superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md).
+> flexible but remains Rule-2 bounded, and an edge survives edition failure.
+>
+> ⚠ **2026-09-03 — this memo must not re-elect “reconstruct P50 instead of translation.”** The
+> operator rebound the Sep 2 campaign to VOLREGIME translation and entered at Packet T
+> ([`ADR addendum`](../adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03--campaign-is-volregime-translation-enter-at-packet-t)
+> · [`translation plan`](../superpowers/plans/2026-09-01-q-volregime-bounded-translation-campaign.md)).
+> Exact P50 stays ineligible. This memo remains advisory and has no gate authority.
 
 ## Executive answer
 
@@ -32,7 +36,11 @@ TradingView panel reports better net P&L, profit factor, and drawdown than both 
 and P80, but it lacks retained trades, configuration proof, day-level shape, and an untouched
 sample. It is a **lead**, not a candidate.
 
-The immediate sequence should be:
+The 2026-09-02 immediate sequence below is **historical advisory**. The live campaign instruction
+is VOLREGIME translation at Packet T, not P50 reconstruction (banner above). Do not re-elect
+step 2–4 as the next action.
+
+The 2026-09-02 sequence was:
 
 1. decide the commercial target (`Select`, any Tradeify tier, or portable edge);
 2. capture the P50 expression and full List-of-Trades export, then compute its day-level payoff

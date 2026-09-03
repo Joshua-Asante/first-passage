@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-08-31
+**Last curated:** 2026-09-03
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
@@ -21,6 +21,9 @@ entry first).
 - Forward triggers: date/criterion + owner link only; detail stays with the owner.
 - Retention test for every row: *open or still owed, and no other home.* If either
   fails, it leaves.
+- Recurring `next deadline` dates and `Last curated` are mechanically gated
+  (`state-currency`); session-shaped “this session” promises do not belong on
+  the dated-trigger board.
 - **Entry classes + ~40-word soft target (W5 direction, not an enforced cap):** Decision /
   Build / Measurement / Hygiene — see [`W5 ADR`](docs/adr/2026-08-07-w5-governance-diet.md);
   prefer links over prose.
@@ -79,8 +82,14 @@ evidence it is active — check the manifests. Read the tag as this index's own 
 process work it mostly records, a visible label rather than a silent default no reader notices, not as
 a claim about the discovery pipeline's state either way.
 
-Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md) (P8 keep-15 roll, 2026-08-23; rolled 2026-08-27, 2026-08-29 (×2), 2026-08-30 (×2), 2026-08-31 (×2), 2026-09-01 (×2), 2026-09-02, and 2026-09-03).
+Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md) (P8 keep-15 roll, 2026-08-23; rolled 2026-08-27, 2026-08-29 (×2), 2026-08-30 (×2), 2026-08-31 (×2), 2026-09-01 (×2), 2026-09-02, and 2026-09-03 (×2)).
 
+- **2026-09-03** — Off-queue portable-edge campaign rebound to VOLREGIME translation: envelope GO
+  recorded; L5 waived for this campaign only; T0 then closed `PRE-CONTRACT DROP` (both templates
+  fail; no contract). Exact P50 stays ineligible. Does not steal queue `#1`. $0/K=0.
+  [`ADR addendum`](docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03--campaign-is-volregime-translation-enter-at-packet-t)
+  · [`T0 addendum`](docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03b--t0-pre-contract-drop)
+  · [`T0`](docs/notes/2026-09-03-volregime-translation-t0.md)
 - **2026-09-03** — Queue reprioritized: the seven-strategy Tradeify Select configuration campaign
   ([PR #272](https://github.com/Joshua-Asante/first-passage/pull/272) plan ·
   [PR #273](https://github.com/Joshua-Asante/first-passage/pull/273) orchestrator takeover, both
@@ -111,7 +120,6 @@ Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state
 - **2026-08-24** — Regime-gate scope ratified + F1 discharged; validation-battery K-tiering, cost-law split, `pursuit-records` retired. Worked non-example lands on the Class-S candidate-1 rider chain, not ORB-MNQ-1 as originally proposed (verified against production). No code/risk-constant/allocation touched. $0/K=0. [`ADR-A`](docs/adr/2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md) · [`ADR-B`](docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md) · [`PR #163`](https://github.com/Joshua-Asante/first-passage/pull/163)
 - **2026-08-24** — A2 disclosed-N reduction accepted (consistency-plan Packet 0). Published region is the screen. Not a Phase B GO. [`A2 RESULTS §4`](lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md) [`plan`](docs/superpowers/plans/2026-08-24-viable-strategy-surface-consistency.md)
 - **2026-08-24** — M1 item 5 dated 08-24; test strategy licensed (evaluate-hook → B1, `dry_run`). `#2` no longer waits on `#1`. No arm. [`M1 addendum`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) [`Survive-bound addendum`](docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--m1-item-5-no-longer-waits-on-queue-1)
-- **2026-08-24** — Operator queue: mechanism supply is `#1`; B7/M1 is `#2` (waits on #1). Placement is not a phase GO. [`Survive-bound addendum`](docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--the-blocker-of-b7m1-is-queue-1) [`overview`](docs/superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md)
 > ⚠ **Truncated to the newest 15 at the 2026-08-08 Great Prune.** Older executed decisions are
 > owned by their ADRs (`docs/adr/`, tombstoned rows in [`TOMBSTONES.md`](docs/adr/TOMBSTONES.md));
 > full prior index: `git show pre-prune-2026-08-08:STATE.md`.
@@ -139,13 +147,14 @@ Canonical dates/criteria live with their owners; this board is a pointer so
 obligations are not lost between sessions. Closed/retired/discharged rows are
 deleted (not struck).
 
-### Weekly — recurring (rolling; next deadline **2026-08-28**, bucket 08-24→08-28)
+### Weekly — recurring (rolling; next deadline **2026-09-04**, bucket 08-31→09-04)
 
-> ✅ **This week's trade placed 2026-08-26** (round-trip, MNQU6, both legs filled; bucket
-> 08-24→08-28 satisfied). Prior week 08-17→08-21 satisfied (operator-confirmed 2026-08-22). Row
-> stays live — roll this date forward each Monday. **Recurrence ruled 2026-08-16** (decision
-> index, above): re-electing coverage every week is the standing design, not an open question —
-> this row's own weekly cadence is that design in practice, not a symptom of anything unresolved.
+> Last confirmed placement: **2026-08-26** (round-trip, MNQU6, both legs filled) — that
+> satisfies bucket 08-24→08-28 only. Prior week 08-17→08-21 satisfied (operator-confirmed
+> 2026-08-22). Current bucket 08-31→09-04 is **not claimed placed**. Row stays live — roll
+> this date forward each Monday. **Recurrence ruled 2026-08-16** (decision index, above):
+> re-electing coverage every week is the standing design, not an open question — this
+> row's own weekly cadence is that design in practice, not a symptom of anything unresolved.
 
 - **Venue idle-clock — ≥1 operator-placed trade per Mon–Fri week on the live account (identifier
   redacted from the public tree).**
@@ -247,17 +256,6 @@ deleted (not struck).
 > [`2026-08-08-quarterly-audit.md`](docs/notes/audits/programme-audit/2026-08-08-quarterly-audit.md).
 > The former ~90-line rider blockquote is deleted per the retention test — it restated obligations
 > the audit note now owns. **Operator rulings still open** are carried as queue rows, not here.
-
-### 2026-08-24 (Monday)
-
-- **Disaster-stop Phase 0a — attended real-account SIM.** Operator will attend and run the
-  `stop_loss=` / `closeposition` observation on the real (non-paper) Tradeify eval account this
-  session (committed 2026-08-23). Only a recorded PASS unlocks Phase 1 (`sl=` wiring into
-  `ops/c1_rail/c1_rail_listener.py`); the prior unattended attempt came back BLOCKED. [`plan`](docs/superpowers/plans/2026-08-23-disaster-stop-phase-0-1-implementation.md) · [`BLOCKED note`](docs/notes/rail_build/2026-08-23-disaster-stop-phase-0.md)
-- **M1 item 5 — attended test-strategy emit.** Operator will attend and discharge item 5 with a
-  test strategy on the ruled host (`Strategy.on_bar` → daemon B1 POST → expected non-zero sizing
-  at `dry_run=true`). Not a canned hand-POST. Not an arm. `operator_signoff` still owed after a
-  recorded event id. [`M1 addendum`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) (in-part superseded by [`S2 signal-host fork`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) and [`S5 bounded promotion lane`](docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md)) · [`S2b addendum`](docs/adr/2026-08-08-s2b-signal-daemon-build.md#addendum-2026-08-24--test-strategy-emit-go-for-m1-item-5)
 
 ### 2026-10-11 (approx.)
 

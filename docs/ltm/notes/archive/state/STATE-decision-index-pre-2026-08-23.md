@@ -2,6 +2,10 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Thirteenth roll, 2026-09-03** (one entry, pushed off by the VOLREGIME translation GO addendum):
+
+- **2026-08-24** — Operator queue: mechanism supply is `#1`; B7/M1 is `#2` (waits on #1). Placement is not a phase GO. [`Survive-bound addendum`](../../../../../docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--the-blocker-of-b7m1-is-queue-1) [`overview`](../../../../../docs/superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md)
+
 **Twelfth roll, 2026-09-03** (one entry, pushed off by the seven-strategy Select campaign queue-reprioritization decision):
 
 - **2026-08-24** — `Q-TRADECAP-2` closed `RESOLVED` — licensed close is frozen ID **2** (observe-only). Queue row 2 deleted (no auto-replace). No tripwire wire. [`elect-2`](../../../../../docs/adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) [`closure`](../../../../../docs/briefs/closures/Q-TRADECAP-2-closure-resolved.md)
