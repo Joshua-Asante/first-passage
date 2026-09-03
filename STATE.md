@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-08-31
+**Last curated:** 2026-09-03
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
@@ -21,6 +21,9 @@ entry first).
 - Forward triggers: date/criterion + owner link only; detail stays with the owner.
 - Retention test for every row: *open or still owed, and no other home.* If either
   fails, it leaves.
+- Recurring `next deadline` dates and `Last curated` are mechanically gated
+  (`state-currency`); session-shaped “this session” promises do not belong on
+  the dated-trigger board.
 - **Entry classes + ~40-word soft target (W5 direction, not an enforced cap):** Decision /
   Build / Measurement / Hygiene — see [`W5 ADR`](docs/adr/2026-08-07-w5-governance-diet.md);
   prefer links over prose.
@@ -67,6 +70,17 @@ ADRs own the decision narrative ([`docs/operational_rules.md`](docs/operational_
 Rule 7; [`docs/adr/2026-07-16-root-doc-charter-dedup.md`](docs/adr/2026-07-16-root-doc-charter-dedup.md)).
 One line per executed decision, newest first — consequence + owner. Posture summary:
 [`CLAUDE.md`](CLAUDE.md) §Live-execution posture.
+
+⚠ **A `$0/K=0` tag below usually means governance, audit, or ADR-authoring work closed — not that P1
+(`PIPELINES.md`) went idle.** Doctrine/process decisions, not discovery campaigns, most commonly carry
+it, and it is **not** the (`Proposed`) three-speed design's `K=0` **Vet** speed — that design's own
+scope excludes governance and measurement-method questions from the funnel entirely
+([`the design`](docs/superpowers/specs/2026-09-01-three-speed-alpha-research-design.md): Vet screens a
+tradeable-alpha proposal before contract-open, never a governance decision). K-bearing P1 exploration
+is tracked in `discovery_manifests/`, not here; a `$0/K=0` row here is neither evidence P1 is idle nor
+evidence it is active — check the manifests. Read the tag as this index's own default shape for the
+process work it mostly records, a visible label rather than a silent default no reader notices, not as
+a claim about the discovery pipeline's state either way.
 
 Newest **15** live here. Older bullets: [`archive`](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md) (P8 keep-15 roll, 2026-08-23; rolled 2026-08-27, 2026-08-29 (×2), 2026-08-30 (×2), 2026-08-31 (×2), 2026-09-01 (×2), 2026-09-02, and 2026-09-03).
 
@@ -128,13 +142,14 @@ Canonical dates/criteria live with their owners; this board is a pointer so
 obligations are not lost between sessions. Closed/retired/discharged rows are
 deleted (not struck).
 
-### Weekly — recurring (rolling; next deadline **2026-08-28**, bucket 08-24→08-28)
+### Weekly — recurring (rolling; next deadline **2026-09-04**, bucket 08-31→09-04)
 
-> ✅ **This week's trade placed 2026-08-26** (round-trip, MNQU6, both legs filled; bucket
-> 08-24→08-28 satisfied). Prior week 08-17→08-21 satisfied (operator-confirmed 2026-08-22). Row
-> stays live — roll this date forward each Monday. **Recurrence ruled 2026-08-16** (decision
-> index, above): re-electing coverage every week is the standing design, not an open question —
-> this row's own weekly cadence is that design in practice, not a symptom of anything unresolved.
+> Last confirmed placement: **2026-08-26** (round-trip, MNQU6, both legs filled) — that
+> satisfies bucket 08-24→08-28 only. Prior week 08-17→08-21 satisfied (operator-confirmed
+> 2026-08-22). Current bucket 08-31→09-04 is **not claimed placed**. Row stays live — roll
+> this date forward each Monday. **Recurrence ruled 2026-08-16** (decision index, above):
+> re-electing coverage every week is the standing design, not an open question — this
+> row's own weekly cadence is that design in practice, not a symptom of anything unresolved.
 
 - **Venue idle-clock — ≥1 operator-placed trade per Mon–Fri week on the live account (identifier
   redacted from the public tree).**
@@ -237,17 +252,6 @@ deleted (not struck).
 > The former ~90-line rider blockquote is deleted per the retention test — it restated obligations
 > the audit note now owns. **Operator rulings still open** are carried as queue rows, not here.
 
-### 2026-08-24 (Monday)
-
-- **Disaster-stop Phase 0a — attended real-account SIM.** Operator will attend and run the
-  `stop_loss=` / `closeposition` observation on the real (non-paper) Tradeify eval account this
-  session (committed 2026-08-23). Only a recorded PASS unlocks Phase 1 (`sl=` wiring into
-  `ops/c1_rail/c1_rail_listener.py`); the prior unattended attempt came back BLOCKED. [`plan`](docs/superpowers/plans/2026-08-23-disaster-stop-phase-0-1-implementation.md) · [`BLOCKED note`](docs/notes/rail_build/2026-08-23-disaster-stop-phase-0.md)
-- **M1 item 5 — attended test-strategy emit.** Operator will attend and discharge item 5 with a
-  test strategy on the ruled host (`Strategy.on_bar` → daemon B1 POST → expected non-zero sizing
-  at `dry_run=true`). Not a canned hand-POST. Not an arm. `operator_signoff` still owed after a
-  recorded event id. [`M1 addendum`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) (in-part superseded by [`S2 signal-host fork`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) and [`S5 bounded promotion lane`](docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md)) · [`S2b addendum`](docs/adr/2026-08-08-s2b-signal-daemon-build.md#addendum-2026-08-24--test-strategy-emit-go-for-m1-item-5)
-
 ### 2026-10-11 (approx.)
 
 - **prop_envelope §4 overlay 90-day re-verify** — rows verified 2026-07-13; stale after ~2026-10-11. [`prop_envelope`](ops/prop_envelope_default.md) · [`ratification ADR`](docs/adr/2026-07-13-prop-envelope-v1-ratification.md)
@@ -267,6 +271,7 @@ deleted (not struck).
 - **Regime-candidate flag lane §4 two-strikes check** — any flag-lane follow-up closures since ratification + their confirm verdicts. [`ADR`](docs/adr/2026-07-26-regime-candidate-flag-lane.md)
 - **CLAUDE.md Live-execution posture size-hook exception** — `2026-07-16-root-doc-charter-dedup.md`'s own §10 hook expects that section at ≤25 lines; it's 54 today (Safety invariants block, Account-state paragraph, Eval-bust-figures warning all accreted post-2026-08-03, each individually safety-relevant). Operator call owed: accept as a bounded safety-content exception (revise the hook's ceiling) or trim back to pointer form with detail pushed to the owning ADRs/RUNBOOK. [`ADR`](docs/adr/2026-07-16-root-doc-charter-dedup.md) · [`adr-decay-audit`](docs/notes/audits/adr-corpus/2026-08-29-adr-decay-audit.md) §7
 - **Persona-hierarchy full-retirement §4 falsifier** — a genuinely recurring judgment-call class inside one of the 9 retired seats' former Domains demonstrably goes unaddressed, within 3 such gaps after 2026-08-31 or this quarterly gate, whichever is first. No mechanical detector; this row is the scheduled backstop. [`ADR §4`](docs/adr/2026-08-31-persona-hierarchy-full-retirement.md)
+- **Four of the six 2026-08-30 ADRs' own owed mechanical-enforcement STATE.md rows — none tracked until this row; detail stays on each ADR's own §6/Ratification note.** Check due at the next quarterly programme audit, alongside the row below. [`evaluation-order`](docs/adr/2026-08-30-evaluation-order.md) §6 · [`terminal-taxonomy`](docs/adr/2026-08-30-terminal-taxonomy.md) §6 · [`tradeable-reachable-gate`](docs/adr/2026-08-30-tradeable-reachable-gate.md) §6 · [`operator-approvals-campaign-envelope`](docs/adr/2026-08-30-operator-approvals-campaign-envelope.md) §6
 - **Channel-liveness-gate / candidate-contract — ten owed reconciliation addenda across five sourcing channels, no tracked STATE.md home until this row.** Both `2026-08-30-channel-liveness-gate.md` and `2026-08-30-candidate-contract.md` declare §7 Phase 3 = "add the STATE.md forward-board row" and both read `Accepted`, but neither row was ever added (`2026-08-31-adr-corpus-audit.md` §6). Each of the same five channel-owning artifacts is owed two dated addenda — a liveness-ceiling reconciliation and a separate candidate-contract migration addendum: HARV ([`2026-07-15-external-mechanism-harvest-intake.md`](docs/adr/2026-07-15-external-mechanism-harvest-intake.md), superseded by [`2026-08-07-loop-s5-bounded-promotion-lane.md`](docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md) / [`2026-07-13-harv-discovery-lane-ratification.md`](docs/adr/2026-07-13-harv-discovery-lane-ratification.md), superseded by [`2026-07-16-harv-attestation-same-units-supersession.md`](docs/adr/2026-07-16-harv-attestation-same-units-supersession.md)) · dense-1m/TNEC ([`2026-08-09-dense1m-entry-mechanism-lane-spec.md`](docs/spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md)) · MSL ([`2026-08-12-msl-manual-sourcing-loop-charter.md`](docs/spec/2026-08-12-msl-manual-sourcing-loop-charter.md) / [`2026-08-12-msl-sourcing-channel-ratification.md`](docs/adr/2026-08-12-msl-sourcing-channel-ratification.md)) · no-counterparty-statistical/geometric ([`2026-08-15-no-counterparty-statistical-sourcing-channel.md`](docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md)) · deep-iteration ([`2026-08-16-deep-iteration-lane-charter.md`](docs/adr/2026-08-16-deep-iteration-lane-charter.md), superseded by [`2026-08-22-grow0-two-ledger-k-question.md`](docs/adr/2026-08-22-grow0-two-ledger-k-question.md)). This row discharges both ADRs' §7 Phase-3 obligation — candidate-contract §6 explicitly permits sharing the row already added by the liveness-gate ADR. Check due at the next quarterly programme audit. [`channel-liveness-gate ADR`](docs/adr/2026-08-30-channel-liveness-gate.md) · [`candidate-contract ADR`](docs/adr/2026-08-30-candidate-contract.md)
 
 ### 2027-02-08

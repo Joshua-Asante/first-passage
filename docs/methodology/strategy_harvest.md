@@ -68,6 +68,23 @@ Canonical: [`docs/adr/2026-07-25-instrument-profile-index.md`](../adr/2026-07-25
 
 ### 2.3 Ranked channel portfolio (replaces the old screenability-only tiers)
 
+**Channel-liveness requirement (added 2026-09-03, [`channel-liveness-gate`](../adr/2026-08-30-channel-liveness-gate.md)
+`Accepted` 2026-08-30):** every **channel's** founding charter must declare, at channel-open, a
+**reachable liveness ceiling** — a bounded count of unsuccessful attempts in the channel's own yield
+unit, and/or a bounded elapsed-time horizon — mapping to exactly one of two consequences: retirement,
+or mandatory redesign. This requirement binds at the **channel** level, not per rank: that ADR names
+five live channels (HARV, dense-1m/TNEC, MSL, no-counterparty-statistical/geometric, deep-iteration),
+each with its own ratifying artifact and liveness clause. **HARV is one of the five** — the six ranks
+below are sourcing *methods* inside the HARV channel, not five independently-chartered channels of
+their own; HARV's own owning artifact ([`2026-07-15-external-mechanism-harvest-intake.md`](../adr/2026-07-15-external-mechanism-harvest-intake.md))
+already carries a liveness clause (§4: the first-two-closures `FALSIFIED` revert trigger, the
+2026-11-08 idle guard, and the `RESOLVED`/`FALSIFIED`/`AMBIGUOUS` verdict vocabulary — extended by that
+ADR's own Addendum 2026-08-16 to a fourth `AMBIGUOUS-HOLD` branch) covering the whole rank-1–6 portfolio, not each
+rank separately. None of the five channels' clauses has yet been run through `gate-reachability-audit`
+or reconciled onto this ADR's two-option taxonomy. That reconciliation is a dated addendum owed on
+each channel's own owning artifact — never a rewrite here, per amendment-first discipline (that ADR
+§5) — tracked at [`STATE.md`](../../STATE.md), not restated as per-row numbers in this table.
+
 | Rank | Channel | Method | Note |
 |---|---|---|---|
 | 1 | Citation-graph traversal from confirmed Tier-A axes | Semantic Scholar Academic Graph API (free), forward-citations | **Scoped**: influential-citation filter + futures-cohort keyword requirement — an unscoped traversal from a canonical TSMOM-class paper runs into thousands of citations and is not by-hand tractable |

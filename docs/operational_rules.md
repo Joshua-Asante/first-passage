@@ -175,6 +175,20 @@ duplicating canonical state with no link back, so it silently became wrong.
 `STATE.md` was demoted to in-flight-only the same day and this rule written to
 prevent the class.
 
+**Wrapper accretion is not a Rule-7 violation on its own, but it can hide one.** A labeled mirror that
+correctly cites its canonical owner (a spec, a diagram, a design doc) still costs review and reading
+time every time a new one is built over the *same* fact family. When that family already carries a
+named, dated reconciliation debt — an owed addendum, an owed STATE.md row, owed enforcement code —
+adding another wrapper before the debt lands or is explicitly dropped reads as progress without paying
+it down, and each new wrapper is itself one more place the debt can go stale. Two same-week
+precedents: PR #250 (three-speed funnel v3, a "thin wrapper over the six ratified 2026-08-30 ADRs")
+and PR #262/#264 (the throughline diagram, which *found* — but did not fix — the same ADRs' unlanded
+STATE.md rows and the pipeline's own three-way cross-reference gap, both closed only by the 2026-09-03
+edits this rule now cites). Neither PR cited its owner incorrectly; both landed on top of a debt
+neither PR paid down. **Before authoring a new pointer/wrapper artifact over a fact family with an
+outstanding dated debt, land the debt or record an explicit decision to drop it — do not stack a third
+wrapper on an unpaid second.**
+
 ---
 
 ## 8. Rule 0 sub-rules (brief-authoring / §0 discipline)
@@ -718,6 +732,7 @@ Full incident narration for each entry lives in `git log -p` on this file and in
 log states what changed and why in one line. Unless noted, edits are additive — no locked config,
 allocation, `dd_protection`, Pine, or rail touched.
 
+- **2026-09-03** — Rule 7 gains a wrapper-accretion discipline paragraph: don't stack a new pointer/wrapper artifact over a fact family carrying an outstanding dated debt, citing PR #250 and #262/#264 as the precedent this fixes. No rule-text renumbering; additive only.
 - **2026-08-28** — Rule 17 added (quarterly programme-audit checklist; `check_falsifier_reachability.py --stats` census, wired `gates.yml`). [`ADR`](adr/2026-08-27-ssot-data-lineage-remediation-program.md)
 - **2026-08-23** — P4 museum rules: Rule 1 origin marked HISTORICAL (Guardian cold-stored); Rule 7 lock-state paths retargeted to `_archive/<family>/`.
 - **2026-08-23** — Rule 7 durable-atoms owner demoted to owning ADRs / `docs/methodology/lessons/`; Claude-project MEMORY is assistive-only, never a Rule 7 owner. [`addendum`](adr/2026-06-30-state-md-role-reduction.md#addendum-2026-08-23--memory-is-assistive-only-not-the-rule-7-owner)
