@@ -80,7 +80,7 @@
       "encoded_instrument": "MYM",
       "export_filename": "Striker_DJ30_v4.5_MYM_CBOT_MINI_MYM1!_2026-09-02_4e60e.csv",
       "export_sha256": "7082a16d5ec8b17dafa4bf0b026c0a5dc23190de9d21d4036700f0ce97448c63",
-      "pine_filename": "striker_dj30_v4.5_mym.pine",
+      "pine_filename": "striker_dj30_v4.5_mym_pyramid_250.pine",
       "pine_sha256": "5c4b1026cb6f3a475dba962783b2a053e9fbeb123570dd964d7154ea80b3f9d0",
       "source_timezone": "America/New_York",
       "session_timezone": "UTC",
@@ -91,7 +91,8 @@
       "continuous_symbol": true,
       "synchronized_intraday_path_available": false,
       "lineage_notes": [
-        "Native edition; pyramid reduced from the locked 750% to the Pine's 250% — a new expression, not the locked strategy; not the Q-TXG-1 swap cell."
+        "Native edition; pyramid reduced from the locked 750% to the Pine's 250% — a new expression, not the locked strategy; not the Q-TXG-1 swap cell.",
+        "2026-09-03: pine_filename corrected to the hash-pinned research-variant name (was citing the locked striker_dj30_v4.5_mym.pine, which the durable checkout independently verified still equals its own PORT_MANIFEST pin 2b895317…; this entry's own pine_sha256 is unchanged and was already the modified body). Pinned as a candidate in PORT_MANIFEST.sha256 (first-passage#286)."
       ],
       "pine_commission_per_side_usd": "0.91",
       "pine_slippage_ticks_per_side": "1",
@@ -104,7 +105,7 @@
       "encoded_instrument": "MNQ",
       "export_filename": "Striker_NAS100_MNQ_CME_MINI_MNQ1!_2026-09-02_57a64.csv",
       "export_sha256": "edfe73c60b441c13855d0129dc82e830b032b7159313519d5a212a97cf30f22a",
-      "pine_filename": "striker_nas100_v1_mnq.pine",
+      "pine_filename": "striker_nas100_v1_mnq_dow_wed_excluded.pine",
       "pine_sha256": "d18c2699ea3856df884eced84c9384adea953f3a2470bea4f2d671b6cd294057",
       "source_timezone": "America/New_York",
       "session_timezone": "UTC",
@@ -115,7 +116,8 @@
       "continuous_symbol": true,
       "synchronized_intraday_path_available": false,
       "lineage_notes": [
-        "Prior repository lineage differs from this supplied Pine revision."
+        "Local byte diff against the locked striker_nas100_v1_mnq.pine (PORT_MANIFEST pin bb921399…, independently verified unchanged on the durable checkout) is allowThu/allowFri default false -> true only — day-of-week set becomes {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}; pyramidSize unchanged at 1000%.",
+        "2026-09-03: pine_filename corrected to this hash-pinned research-variant name (was citing the locked filename while pine_sha256 was already the modified body). Pinned as a candidate in PORT_MANIFEST.sha256 (first-passage#286)."
       ],
       "pine_commission_per_side_usd": "0.91",
       "pine_slippage_ticks_per_side": "1",
