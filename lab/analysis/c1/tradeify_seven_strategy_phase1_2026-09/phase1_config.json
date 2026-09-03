@@ -1,6 +1,15 @@
 {
   "claim_class": "EXPLORATORY",
   "platform": "TradingView Strategy Tester over a continuous futures chart",
+  "continuous_contract_roll_policy": {
+    "disposition": "ACCEPTED_UNMODELED",
+    "ruling_date": "2026-09-03",
+    "ruling_ref": "Operator ruling 2026-09-03; docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md §6 D13(b).",
+    "obligations": [
+      "Phase 3 pre-registration states back-adjustment seam risk as a limitation of every campaign claim: fills cannot be attributed to a contract month, and a seam crossing is indistinguishable from a price move.",
+      "A Phase 6 seam-sensitivity check is pre-registered with its severity frozen alongside the other Phase 6 cutoffs."
+    ]
+  },
   "strategies": [
     {
       "strategy_id": "aegis_6j1",
@@ -8,8 +17,10 @@
       "encoded_instrument": "6J",
       "export_filename": "Aegis_6J1_CME_6J1!_2026-09-02_a0c7a.csv",
       "export_sha256": "7affdcb832db31b2d6b18b1e379b59206e7166e2a7f166fb310aaed484c69bb9",
+      "export_bytes": 28612,
       "pine_filename": "aegis_6J1.pine",
       "pine_sha256": "8578ee3d760b5112bb1dd77e65a07466aee8629a9424e4115e422fdaab5aede8",
+      "pine_bytes": 50184,
       "source_timezone": "America/New_York",
       "session_timezone": "America/New_York",
       "declared_bar_size_minutes": 15,
@@ -24,6 +35,9 @@
       "pine_commission_per_side_usd": "1.30",
       "pine_slippage_ticks_per_side": "1",
       "pine_pyramiding_pct": "0",
+      "pine_pin_status": "NOT_IN_PORT_MANIFEST",
+      "pin_ref": null,
+      "pin_divergence": null,
       "contract_cap": 80
     },
     {
@@ -32,8 +46,10 @@
       "encoded_instrument": "MNQ",
       "export_filename": "ORB-MNQ-1_recon_v7_CME_MINI_MNQ1!_2026-09-02_c1f14.csv",
       "export_sha256": "ece1eaf52db118302c6e51b1781dd47decb57f67f44d6990c4ea0ba3500281e6",
+      "export_bytes": 160584,
       "pine_filename": "orb_mnq_7_reconstruction.pine",
       "pine_sha256": "f05c7aa429846811149e6ff7c8e63a2fd4457075b6c45dedfc77c7e0fa76e9b4",
+      "pine_bytes": 19878,
       "source_timezone": "America/New_York",
       "session_timezone": "America/New_York",
       "declared_bar_size_minutes": 15,
@@ -48,40 +64,21 @@
       "pine_commission_per_side_usd": "0.91",
       "pine_slippage_ticks_per_side": "1",
       "pine_pyramiding_pct": "100",
+      "pine_pin_status": "NOT_IN_PORT_MANIFEST",
+      "pin_ref": null,
+      "pin_divergence": null,
       "contract_cap": 80
     },
     {
-      "strategy_id": "striker_dj30_mym_v45",
-      "intended_instrument": "MYM",
-      "encoded_instrument": "MYM",
-      "export_filename": "Striker_DJ30_MNQ_Q-TXG-1_PROTOTYPE_CBOT_MINI_MYM1!_2026-09-02_82cba.csv",
-      "export_sha256": "2c2d893ba0daa127f1c857e81ec436b535e4e8eb85f0c728e2ba39dc6485826d",
-      "pine_filename": "striker_dj30_v4.5_mnq_qtxg1_prototype.pine",
-      "pine_sha256": "178a2a8e1c78e45a5142749f92284c09d286907a7e096883e1133297cb8a806d",
-      "source_timezone": "America/New_York",
-      "session_timezone": "UTC",
-      "declared_bar_size_minutes": 15,
-      "declared_session": "13:00-17:00 UTC; force-flat 15:45 America/New_York",
-      "direction_evidence": "long-only",
-      "quantity_convention": "integer contracts",
-      "continuous_symbol": true,
-      "synchronized_intraday_path_available": false,
-      "lineage_notes": [
-        "Native edition on MYM with the Pine's locked 750% pyramid size; not the Q-TXG-1 swap cell."
-      ],
-      "pine_commission_per_side_usd": "0.91",
-      "pine_slippage_ticks_per_side": "1",
-      "pine_pyramiding_pct": "750",
-      "contract_cap": 80
-    },
-    {
-      "strategy_id": "striker_dj30_mym_pyramid_down",
+      "strategy_id": "striker_dj30_mym_pyramid_250",
       "intended_instrument": "MYM",
       "encoded_instrument": "MYM",
       "export_filename": "Striker_DJ30_v4.5_MYM_CBOT_MINI_MYM1!_2026-09-02_4e60e.csv",
       "export_sha256": "7082a16d5ec8b17dafa4bf0b026c0a5dc23190de9d21d4036700f0ce97448c63",
-      "pine_filename": "striker_dj30_v4.5_mym.pine",
+      "export_bytes": 47149,
+      "pine_filename": "striker_dj30_v4.5_mym_pyramid_250.pine",
       "pine_sha256": "5c4b1026cb6f3a475dba962783b2a053e9fbeb123570dd964d7154ea80b3f9d0",
+      "pine_bytes": 26726,
       "source_timezone": "America/New_York",
       "session_timezone": "UTC",
       "declared_bar_size_minutes": 15,
@@ -91,21 +88,26 @@
       "continuous_symbol": true,
       "synchronized_intraday_path_available": false,
       "lineage_notes": [
-        "Native edition; pyramid reduced from the locked 750% to the Pine's 250% — a new expression, not the locked strategy; not the Q-TXG-1 swap cell."
+        "A pyramid cell of the DJ30 template, never the locked edition; operator-confirmed full diff is pyramid-only."
       ],
       "pine_commission_per_side_usd": "0.91",
       "pine_slippage_ticks_per_side": "1",
       "pine_pyramiding_pct": "250",
+      "pine_pin_status": "PINNED_RESEARCH_VARIANT",
+      "pin_ref": "core/strategies/PORT_MANIFEST.sha256:core/strategies/candidates/striker_dj30_v4.5_mym_pyramid_250.pine",
+      "pin_divergence": "pyramid 250% vs locked 750%",
       "contract_cap": 80
     },
     {
-      "strategy_id": "striker_nas100_mnq_v1",
+      "strategy_id": "striker_nas100_mnq_dow_wed_excluded",
       "intended_instrument": "MNQ",
       "encoded_instrument": "MNQ",
       "export_filename": "Striker_NAS100_MNQ_CME_MINI_MNQ1!_2026-09-02_57a64.csv",
       "export_sha256": "edfe73c60b441c13855d0129dc82e830b032b7159313519d5a212a97cf30f22a",
-      "pine_filename": "striker_nas100_v1_mnq.pine",
+      "export_bytes": 88131,
+      "pine_filename": "striker_nas100_v1_mnq_dow_wed_excluded.pine",
       "pine_sha256": "d18c2699ea3856df884eced84c9384adea953f3a2470bea4f2d671b6cd294057",
+      "pine_bytes": 32242,
       "source_timezone": "America/New_York",
       "session_timezone": "UTC",
       "declared_bar_size_minutes": 15,
@@ -115,35 +117,14 @@
       "continuous_symbol": true,
       "synchronized_intraday_path_available": false,
       "lineage_notes": [
-        "Prior repository lineage differs from this supplied Pine revision."
+        "Local byte diff against bb921399 changes only allowThu and allowFri defaults from false to true, producing day-of-week set {Mon,Tue,Thu,Fri} versus locked {Mon,Tue}; this is a parameter cell of the NAS100 template, never the locked edition, and remains pyramid 1000."
       ],
       "pine_commission_per_side_usd": "0.91",
       "pine_slippage_ticks_per_side": "1",
       "pine_pyramiding_pct": "1000",
-      "contract_cap": 80
-    },
-    {
-      "strategy_id": "striker_nas100_mnq_native_variant",
-      "intended_instrument": "MNQ",
-      "encoded_instrument": "MNQ",
-      "export_filename": "Striker_NAS100_MYM_QTXG1_CME_MINI_MNQ1!_2026-09-02_304f8.csv",
-      "export_sha256": "f1e35c4ee1c9735c3ebbed99648a42034d9b3f57b53960f9e41f6e6c09b25f9c",
-      "pine_filename": "striker_nas100_v1_mym_qtxg1_prototype.pine",
-      "pine_sha256": "19264da29a3d9a30200600689e1950931f1abfb648e9071a232ee83fdec2756c",
-      "source_timezone": "America/New_York",
-      "session_timezone": "UTC",
-      "declared_bar_size_minutes": 15,
-      "declared_session": "13:00-17:00 UTC; force-flat 15:45 America/New_York",
-      "direction_evidence": "long-only",
-      "quantity_convention": "integer contracts",
-      "continuous_symbol": true,
-      "synchronized_intraday_path_available": false,
-      "lineage_notes": [
-        "Native edition on MNQ; Pine pyramid size matches the locked 1000%; not the Q-TXG-1 swap cell and not a pyramid-down variant."
-      ],
-      "pine_commission_per_side_usd": "0.91",
-      "pine_slippage_ticks_per_side": "1",
-      "pine_pyramiding_pct": "1000",
+      "pine_pin_status": "PINNED_RESEARCH_VARIANT",
+      "pin_ref": "core/strategies/PORT_MANIFEST.sha256:core/strategies/candidates/striker_nas100_v1_mnq_dow_wed_excluded.pine",
+      "pin_divergence": "day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}",
       "contract_cap": 80
     },
     {
@@ -152,8 +133,10 @@
       "encoded_instrument": "MGC",
       "export_filename": "Vanguard_Gold_Futures_v0.4_(MGC)_COMEX_MINI_MGC1!_2026-09-02_65e4e.csv",
       "export_sha256": "491d41c7168b1a9645efb74fb4ac9b898c8a6e3a5ce4c8fbbc4ddd5c9e6ced83",
+      "export_bytes": 75654,
       "pine_filename": "Vanguard_Gold_MGC_v0.4.pine",
       "pine_sha256": "ae5fd66ce51c478187c605574a03f89a64e6f8f245e77477eeaedd1efe2cf772",
+      "pine_bytes": 39993,
       "source_timezone": "America/New_York",
       "session_timezone": "America/New_York",
       "declared_bar_size_minutes": 15,
@@ -168,7 +151,30 @@
       "pine_commission_per_side_usd": "1.06",
       "pine_slippage_ticks_per_side": "3",
       "pine_pyramiding_pct": "80",
+      "pine_pin_status": "NOT_IN_PORT_MANIFEST",
+      "pin_ref": null,
+      "pin_divergence": null,
       "contract_cap": 80
+    }
+  ],
+  "dropped_sources": [
+    {
+      "strategy_id_as_named_before": "striker_dj30_qtxg1_swap_body_on_mym",
+      "export_filename": "Striker_DJ30_MNQ_Q-TXG-1_PROTOTYPE_CBOT_MINI_MYM1!_2026-09-02_82cba.csv",
+      "export_sha256": "2c2d893ba0daa127f1c857e81ec436b535e4e8eb85f0c728e2ba39dc6485826d",
+      "pine_filename": "striker_dj30_v4.5_mnq_qtxg1_prototype.pine",
+      "pine_sha256": "178a2a8e1c78e45a5142749f92284c09d286907a7e096883e1133297cb8a806d",
+      "pin_ref": "core/strategies/PORT_MANIFEST.sha256:core/strategies/_archive/striker/striker_dj30_v4.5_mnq_qtxg1_prototype.pine",
+      "reason": "SWAP_PORT_BODY_POINT_VALUE_NOT_OVERRIDDEN"
+    },
+    {
+      "strategy_id_as_named_before": "striker_nas100_qtxg1_swap_body_on_mnq",
+      "export_filename": "Striker_NAS100_MYM_QTXG1_CME_MINI_MNQ1!_2026-09-02_304f8.csv",
+      "export_sha256": "f1e35c4ee1c9735c3ebbed99648a42034d9b3f57b53960f9e41f6e6c09b25f9c",
+      "pine_filename": "striker_nas100_v1_mym_qtxg1_prototype.pine",
+      "pine_sha256": "19264da29a3d9a30200600689e1950931f1abfb648e9071a232ee83fdec2756c",
+      "pin_ref": "core/strategies/PORT_MANIFEST.sha256:core/strategies/_archive/nas/striker_nas100_v1_mym_qtxg1_prototype.pine",
+      "reason": "SWAP_PORT_BODY_POINT_VALUE_NOT_OVERRIDDEN"
     }
   ]
 }

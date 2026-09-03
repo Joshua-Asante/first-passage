@@ -1,0 +1,82 @@
+{
+  "claim_class": "EXPLORATORY",
+  "coverage_status": "NEEDS_CONTEXT",
+  "coverage_note": "Operator TradingView Key-stats are supplied for five active sources; independent total commissions and monthly net P&L have not been supplied. G1.4 remains partial; missing anchors are never inferred from exports or computed reports.",
+  "strategies": [
+    {
+      "strategy_id": "aegis_6j1",
+      "export_sha256": "7affdcb832db31b2d6b18b1e379b59206e7166e2a7f166fb310aaed484c69bb9",
+      "source_note": "Operator TradingView Key-stats transcribed by orchestrator in campaign-state section 10 at commit 716357e (origin/claude/orchestrator-role-takeover-yza7vp); panel span 2022-09-01 through 2026-09-02; DEEP backtest; Default detail (4 OHLC ticks); initial capital USD 100000 (inventory only, no rescaling).",
+      "missing_metrics": ["total_commissions_usd", "monthly_net_pnl_usd"],
+      "metrics": {
+        "trade_count": 122,
+        "net_pnl_usd": "28702.75",
+        "win_rate_pct": "63.93",
+        "profit_factor": "3.483",
+        "max_drawdown_usd": "1470.40",
+        "total_commissions_usd": null,
+        "monthly_net_pnl_usd": null
+      }
+    },
+    {
+      "strategy_id": "orb_mnq_recon_v7",
+      "export_sha256": "ece1eaf52db118302c6e51b1781dd47decb57f67f44d6990c4ea0ba3500281e6",
+      "source_note": "Operator TradingView Key-stats transcribed by orchestrator in campaign-state section 10 at commit 716357e (origin/claude/orchestrator-role-takeover-yza7vp); panel span 2022-09-01 through 2026-09-02; DEEP backtest; Default detail (4 OHLC ticks); initial capital USD 100000 (inventory only, no rescaling).",
+      "missing_metrics": ["total_commissions_usd", "monthly_net_pnl_usd"],
+      "metrics": {
+        "trade_count": 681,
+        "net_pnl_usd": "47533.16",
+        "win_rate_pct": "56.83",
+        "profit_factor": "1.435",
+        "max_drawdown_usd": "6794.02",
+        "total_commissions_usd": null,
+        "monthly_net_pnl_usd": null
+      }
+    },
+    {
+      "strategy_id": "striker_dj30_mym_pyramid_250",
+      "export_sha256": "7082a16d5ec8b17dafa4bf0b026c0a5dc23190de9d21d4036700f0ce97448c63",
+      "source_note": "Operator TradingView Key-stats transcribed by orchestrator in campaign-state section 10 at commit 716357e (origin/claude/orchestrator-role-takeover-yza7vp); panel span 2022-09-01 through 2026-09-02; DEEP backtest; Default detail (4 OHLC ticks); initial capital USD 200000 (inventory only, no rescaling).",
+      "missing_metrics": ["total_commissions_usd", "monthly_net_pnl_usd"],
+      "metrics": {
+        "trade_count": 203,
+        "net_pnl_usd": "31770.36",
+        "win_rate_pct": "42.36",
+        "profit_factor": "1.682",
+        "max_drawdown_usd": "4568.68",
+        "total_commissions_usd": null,
+        "monthly_net_pnl_usd": null
+      }
+    },
+    {
+      "strategy_id": "striker_nas100_mnq_dow_wed_excluded",
+      "export_sha256": "edfe73c60b441c13855d0129dc82e830b032b7159313519d5a212a97cf30f22a",
+      "source_note": "Operator TradingView Key-stats transcribed by orchestrator in campaign-state section 10 at commit 716357e (origin/claude/orchestrator-role-takeover-yza7vp); panel span 2022-09-01 through 2026-09-02; DEEP backtest; Default detail (4 OHLC ticks); initial capital USD 200000 (inventory only, no rescaling).",
+      "missing_metrics": ["total_commissions_usd", "monthly_net_pnl_usd"],
+      "metrics": {
+        "trade_count": 378,
+        "net_pnl_usd": "112253.42",
+        "win_rate_pct": "54.50",
+        "profit_factor": "2.604",
+        "max_drawdown_usd": "8269.62",
+        "total_commissions_usd": null,
+        "monthly_net_pnl_usd": null
+      }
+    },
+    {
+      "strategy_id": "vanguard_mgc_v04",
+      "export_sha256": "491d41c7168b1a9645efb74fb4ac9b898c8a6e3a5ce4c8fbbc4ddd5c9e6ced83",
+      "source_note": "Operator TradingView Key-stats transcribed by orchestrator in campaign-state section 10 at commit 716357e (origin/claude/orchestrator-role-takeover-yza7vp); panel span 2022-09-01 through 2026-09-02; DEEP backtest; Default detail (4 OHLC ticks); initial capital USD 100000 (inventory only, no rescaling).",
+      "missing_metrics": ["total_commissions_usd", "monthly_net_pnl_usd"],
+      "metrics": {
+        "trade_count": 343,
+        "net_pnl_usd": "20388.04",
+        "win_rate_pct": "50.15",
+        "profit_factor": "1.965",
+        "max_drawdown_usd": "1847.60",
+        "total_commissions_usd": null,
+        "monthly_net_pnl_usd": null
+      }
+    }
+  ]
+}

@@ -31,7 +31,7 @@ documents the camp boundary for humans/tools.
 | volregime_l5_pilot_2026-08-31 | _inbox | ACTIVE | Packet C1 bands frozen; large-scale sim not run | lab/analysis/_inbox/volregime_l5_pilot_2026-08-31/ |
 | c1_signal_identity_2026-07-28 | c1 | ACTIVE | full-panel MEASURED** (2026-07-29); Q-SIGID-1 §6 offline limb = **FULL** (plan... | lab/analysis/c1/c1_signal_identity_2026-07-28/ |
 | parity_gen2_2026-08 | c1 | ACTIVE | — | lab/analysis/c1/parity_gen2_2026-08/ |
-| tradeify_seven_strategy_phase1_2026-09 | c1 | ACTIVE | strict seven-strategy Tradeify source, accounting, deadline, cap, and provenance normalization | lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/ |
+| tradeify_seven_strategy_phase1_2026-09 | c1 | ACTIVE | strict five-source Tradeify source, accounting, deadline, cap, and provenance normalization | lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/ |
 | orb_mym_v04_riskbudget_2026-09-02 | orb | ACTIVE | `EXPLORATORY — NO FILTER PROMOTED; ONE PINE INPUT ADDED, DEFAULT OFF`. Candidate | lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/ |
 | orb_mym_volume_gate_2026-09-02 | orb | ACTIVE | `SOURCE-STAGE EXPLORATORY — P50 SELECTED FOR FORWARD TEST, NOT CONFIRMED` | lab/analysis/orb/orb_mym_volume_gate_2026-09-02/ |
 
@@ -124,7 +124,7 @@ documents the camp boundary for humans/tools.
 | tradeify_futures3_bustcut_2026-07-11 | c1 | ACTIVE | yes | Tradeify Select Flex 50K bust-cut Tests 1+2 | lab/analysis/c1/tradeify_futures3_bustcut_2026-07-11/ | — |
 | tradeify_futures3_remc_2026-07-11 | c1 | ACTIVE | yes | Tradeify Select Flex 3-leg futures remc panel | lab/analysis/c1/tradeify_futures3_remc_2026-07-11/ | — |
 | tradeify_seed_target_spec_2026-08-04 | c1 | ACTIVE | yes | at the ratified Part A gate the eval's binding constraint for a seed construct is the **weekly activity rule and... | lab/analysis/c1/tradeify_seed_target_spec_2026-08-04/ | — |
-| tradeify_seven_strategy_phase1_2026-09 | c1 | ACTIVE | yes | strict seven-strategy Tradeify source, accounting, deadline, cap, and provenance normalization | lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/ | — |
+| tradeify_seven_strategy_phase1_2026-09 | c1 | ACTIVE | yes | strict five-source Tradeify source, accounting, deadline, cap, and provenance normalization | lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/ | — |
 | tvcov_2026-07 | c1 | ACTIVE | yes | TV intraday bar-coverage census (Q-TVCOV-1) | lab/analysis/c1/tvcov_2026-07/ | — |
 | venuegeo_dp3_bustceiling_2026-08-05 | c1 | ACTIVE | yes | bust-ceiling half of DP3 measured; EV/$ half (pass-EV per eval-dollar) NOT run — each firm's evaluation-purchase... | lab/analysis/c1/venuegeo_dp3_bustceiling_2026-08-05/ | — |
 | wstruct_cost_geometry_2026-07-28 | c1 | ACTIVE | yes | corrects WSTRUCT-M2K-1 §2.2 on cost; asymmetric-payoff frontier is OPEN but harvest returns 0 seeds (modality-barred) | lab/analysis/c1/wstruct_cost_geometry_2026-07-28/ | — |

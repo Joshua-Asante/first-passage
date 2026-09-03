@@ -5,15 +5,18 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
+from hashlib import sha256
 import json
 from pathlib import Path
+import re
 from types import MappingProxyType
 from typing import Mapping
+from urllib.parse import urlsplit
 
 import pandas as pd
 
 from discovery.cost_model import INSTRUMENT_SPECS
-from research_utils.tv_trade_ledger import FeeSchedule, Issue, SourceSpec
+from research_utils.tv_trade_ledger import ContinuousContractRollPolicy, FeeSchedule, Issue, SourceSpec
 
 
 _CENT_TOLERANCE = Decimal("0.01")
@@ -43,6 +46,7 @@ TRADE_COLUMNS = [
     "entry_price",
     "exit_price",
     "quantity",
+    "duration_bars",
     "net_pnl_usd",
     "commission_usd",
     "gross_pnl_usd",
@@ -124,6 +128,8 @@ class EarlyCloseCalendar:
     coverage_status: str
     coverage_note: str
     early_close_dates: frozenset[date]
+    sources: tuple[Mapping[str, object], ...] = ()
+    input_sha256: str = ""
 
 
 def _calendar_date(value: object, field: str, *, nullable: bool = False) -> date | None:
@@ -140,12 +146,75 @@ def _calendar_date(value: object, field: str, *, nullable: bool = False) -> date
     return parsed
 
 
-def load_early_close_calendar(path: str | Path) -> EarlyCloseCalendar:
+def _cme_url(value: object) -> None:
+    if not isinstance(value, str):
+        raise ValueError("source_url must be a primary CME HTTPS URL")
+    parsed = urlsplit(value)
+    if (parsed.scheme != "https" or parsed.hostname not in {"cmegroup.com", "www.cmegroup.com"}
+            or parsed.username or parsed.password or parsed.port not in {None, 443}):
+        raise ValueError("source_url must be a primary CME HTTPS URL")
+
+
+def _capture_rows(rows: object, year: int) -> set[date]:
+    if not isinstance(rows, list):
+        raise ValueError("capture rows must be an array")
+    dates: set[date] = set()
+    for row in rows:
+        if not isinstance(row, dict) or set(row) != {"date", "deadline_local"}:
+            raise ValueError("capture row keys mismatch")
+        day = _calendar_date(row["date"], "capture date")
+        if day.year != year or day in dates:
+            raise ValueError("capture row year mismatch or duplicate date")
+        if row["deadline_local"] != "12:59 America/New_York":
+            raise ValueError("capture deadline must be 12:59 America/New_York")
+        dates.add(day)
+    return dates
+
+
+def _load_calendar_sources(sources: object, capture_dir: Path) -> tuple[dict[int, dict], dict[int, set[date]]]:
+    if not isinstance(sources, list):
+        raise ValueError("sources must be an array")
+    records, dates = {}, {}
+    root = capture_dir.resolve()
+    for source in sources:
+        if not isinstance(source, dict) or set(source) != {"year", "source_url", "page_date", "capture_basename", "sha256"}:
+            raise ValueError("calendar source keys mismatch")
+        year = source["year"]
+        if type(year) is not int or not 1 <= year <= 9999 or year in records:
+            raise ValueError("calendar source year must be unique integer")
+        _cme_url(source["source_url"])
+        _calendar_date(source["page_date"], "source page_date")
+        if not isinstance(source["sha256"], str) or not re.fullmatch(r"[0-9a-f]{64}", source["sha256"]):
+            raise ValueError("calendar source sha256 must be lowercase SHA256")
+        name = source["capture_basename"]
+        if (not isinstance(name, str) or not name or name in {".", ".."}
+                or any(c in name for c in '/\\:') or Path(name).name != name):
+            raise ValueError("capture_basename must be a safe basename")
+        target = (root / name).resolve()
+        if not target.is_relative_to(root):
+            raise ValueError("calendar capture escapes capture directory")
+        try:
+            raw = target.read_bytes()
+            if sha256(raw).hexdigest() != source["sha256"]:
+                raise ValueError("calendar capture SHA256 mismatch")
+            capture = json.loads(raw.decode("utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ValueError("cannot load yearly CME JSON capture") from exc
+        if not isinstance(capture, dict) or set(capture) != {"year", "source_url", "page_date", "rows"}:
+            raise ValueError("yearly CME JSON capture keys mismatch")
+        if type(capture["year"]) is not int or any(capture[k] != source[k] for k in ("year", "source_url", "page_date")):
+            raise ValueError("yearly capture year/source metadata mismatch")
+        records[year] = dict(source)
+        dates[year] = _capture_rows(capture["rows"], year)
+    return records, dates
+
+
+def load_early_close_calendar(path: str | Path, *, capture_dir: str | Path | None = None) -> EarlyCloseCalendar:
     """Load the frozen CME early-close capture, including explicit coverage gaps."""
     try:
-        with Path(path).open(encoding="utf-8") as handle:
-            payload = json.load(handle)
-    except (OSError, json.JSONDecodeError) as exc:
+        raw = Path(path).read_bytes()
+        payload = json.loads(raw.decode("utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise ValueError(f"cannot load CME early-close calendar: {path}") from exc
     expected_keys = {
         "source_url",
@@ -156,6 +225,7 @@ def load_early_close_calendar(path: str | Path) -> EarlyCloseCalendar:
         "coverage_status",
         "coverage_note",
         "rows",
+        "sources",
     }
     if not isinstance(payload, dict) or set(payload) != expected_keys:
         raise ValueError("CME early-close calendar keys mismatch")
@@ -174,15 +244,28 @@ def load_early_close_calendar(path: str | Path) -> EarlyCloseCalendar:
     assert coverage_end is not None
     if coverage_start > coverage_end:
         raise ValueError("coverage_start must not be after coverage_end")
+    _cme_url(payload["source_url"])
+    sources, captured_dates = _load_calendar_sources(
+        payload["sources"], Path(capture_dir) if capture_dir is not None
+        else Path(path).parent / "local_artifacts" / "calendar_captures",
+    )
     rows = payload["rows"]
     if not isinstance(rows, list):
         raise ValueError("rows must be an array")
+    if (
+        status == "COMPLETE"
+        and coverage_start.year != coverage_end.year
+        and not rows
+    ):
+        raise ValueError("COMPLETE multi-year calendar requires non-empty rows")
     early_dates: set[date] = set()
     for index, row in enumerate(rows):
-        if not isinstance(row, dict) or set(row) != {"date", "deadline_local"}:
+        if not isinstance(row, dict) or set(row) != {"date", "deadline_local", "source_year"}:
             raise ValueError(f"rows[{index}] keys mismatch")
         row_date = _calendar_date(row["date"], f"rows[{index}].date")
         assert row_date is not None
+        if type(row["source_year"]) is not int or row["source_year"] not in sources or row["source_year"] != row_date.year:
+            raise ValueError("row source_year must resolve to its declared year")
         if not coverage_start <= row_date <= coverage_end:
             raise ValueError(f"rows[{index}].date is outside the coverage span")
         if row["deadline_local"] != "12:59 America/New_York":
@@ -190,6 +273,17 @@ def load_early_close_calendar(path: str | Path) -> EarlyCloseCalendar:
         if row_date in early_dates:
             raise ValueError(f"duplicate CME early-close date: {row_date.isoformat()}")
         early_dates.add(row_date)
+    for year, captured in captured_dates.items():
+        expected = {day for day in captured if coverage_start <= day <= coverage_end}
+        if {day for day in early_dates if day.year == year} != expected:
+            raise ValueError("calendar rows differ from yearly capture within coverage")
+    if status == "COMPLETE":
+        if set(range(coverage_start.year, coverage_end.year + 1)) - sources.keys():
+            raise ValueError("COMPLETE calendar requires a source for every covered year")
+        for year in range(coverage_start.year, coverage_end.year + 1):
+            if coverage_start <= date(year, 1, 1) and coverage_end >= date(year, 12, 31):
+                if not any(day.year == year for day in early_dates):
+                    raise ValueError("COMPLETE calendar requires rows for every fully covered year")
     return EarlyCloseCalendar(
         source_url=payload["source_url"],
         page_date=page_date,
@@ -199,6 +293,8 @@ def load_early_close_calendar(path: str | Path) -> EarlyCloseCalendar:
         coverage_status=status,
         coverage_note=payload["coverage_note"],
         early_close_dates=frozenset(early_dates),
+        sources=tuple(MappingProxyType(source) for source in sources.values()),
+        input_sha256=sha256(raw).hexdigest(),
     )
 
 
@@ -441,6 +537,7 @@ def reconstruct_trades(events: pd.DataFrame, spec: SourceSpec) -> Reconstruction
                 "entry_price": entry_price,
                 "exit_price": exit_price,
                 "quantity": entry_quantity,
+                "duration_bars": Decimal(entry["duration_bars"]),
                 "net_pnl_usd": net_pnl,
                 "commission_usd": commission,
                 "gross_pnl_usd": gross_pnl,
@@ -659,25 +756,36 @@ def _exposure_bounds(trades: pd.DataFrame, *, quantity_multiplier: int) -> tuple
         quantity = int(trade["quantity"]) * quantity_multiplier
         entry_time = pd.Timestamp(trade["entry_timestamp_naive"])
         exit_time = pd.Timestamp(trade["exit_timestamp_naive"])
-        events.setdefault(entry_time, {"entries": 0, "exits": 0})["entries"] += quantity
-        events.setdefault(exit_time, {"entries": 0, "exits": 0})["exits"] += quantity
+        events.setdefault(entry_time, {"entries": 0, "prior_exits": 0, "zero_exits": 0})[
+            "entries"
+        ] += quantity
+        exit_kind = "zero_exits" if entry_time == exit_time else "prior_exits"
+        events.setdefault(exit_time, {"entries": 0, "prior_exits": 0, "zero_exits": 0})[
+            exit_kind
+        ] += quantity
 
-    def peak(*, entries_first: bool) -> int:
+    def peak(*, upper_bound: bool) -> int:
         current = 0
         maximum = 0
         for timestamp in sorted(events):
             event = events[timestamp]
-            deltas = (
-                (event["entries"], -event["exits"])
-                if entries_first
-                else (-event["exits"], event["entries"])
-            )
+            if upper_bound:
+                deltas = (
+                    event["entries"],
+                    -event["prior_exits"] - event["zero_exits"],
+                )
+            else:
+                deltas = (
+                    -event["prior_exits"],
+                    event["entries"],
+                    -event["zero_exits"],
+                )
             for delta in deltas:
                 current += delta
                 maximum = max(maximum, current)
         return maximum
 
-    return peak(entries_first=False), peak(entries_first=True)
+    return peak(upper_bound=False), peak(upper_bound=True)
 
 
 def _spans_friday_to_sunday(entry: pd.Timestamp, exit_: pd.Timestamp) -> bool:
@@ -737,6 +845,7 @@ def analyze_venue(
     fee_schedule: FeeSchedule,
     *,
     early_close_calendar: EarlyCloseCalendar | None = None,
+    continuous_contract_roll_policy: ContinuousContractRollPolicy | None = None,
 ) -> VenueMetrics:
     """Audit instrument and venue constraints without changing source trades."""
     geometry = instrument_geometry(spec.encoded_instrument)
@@ -874,6 +983,8 @@ def analyze_venue(
     if spec.continuous_symbol:
         contract_month_status = "UNAVAILABLE"
         roll_seam_status = "UNAVAILABLE"
+        roll_policy = continuous_contract_roll_policy
+        accepted = roll_policy is not None and roll_policy.disposition == "ACCEPTED_UNMODELED"
         issues.append(
             _venue_issue(
                 "CONTINUOUS_CONTRACT_ROLL_UNRESOLVED",
@@ -881,7 +992,12 @@ def analyze_venue(
                 {
                     "contract_month_attribution": contract_month_status,
                     "roll_seam_attribution": roll_seam_status,
+                    "disposition": roll_policy.disposition if roll_policy else "UNRESOLVED",
+                    "ruling_date": roll_policy.ruling_date if roll_policy else None,
+                    "ruling_ref": roll_policy.ruling_ref if roll_policy else None,
+                    "obligations": roll_policy.obligations if roll_policy else (),
                 },
+                severity="WARNING" if accepted else "BLOCKER",
             )
         )
     else:

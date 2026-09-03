@@ -30,7 +30,11 @@ def _validate_strategy_frame(
         )
 
 
-def build_joint_events(events_by_strategy: Mapping[str, pd.DataFrame]) -> pd.DataFrame:
+def build_joint_events(
+    events_by_strategy: Mapping[str, pd.DataFrame],
+    *,
+    encoded_instruments_by_strategy: Mapping[str, str] | None = None,
+) -> pd.DataFrame:
     """Union canonical events with stable ties and per-event cap-unit quantities."""
     required = {
         "strategy_id",
@@ -46,6 +50,12 @@ def build_joint_events(events_by_strategy: Mapping[str, pd.DataFrame]) -> pd.Dat
         _validate_strategy_frame(strategy_id, source, required_columns=required)
         frame = source.copy()
         instruments = tuple(frame["encoded_instrument"].drop_duplicates())
+        if not instruments:
+            if encoded_instruments_by_strategy is None:
+                raise ValueError(
+                    f"{strategy_id} has no events and no configured encoded instrument"
+                )
+            instruments = (encoded_instruments_by_strategy[strategy_id],)
         if len(instruments) != 1:
             raise ValueError(
                 f"{strategy_id} must contain exactly one encoded_instrument"

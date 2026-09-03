@@ -1,18 +1,21 @@
-"""Run strict, exploratory Phase 1 normalization for the seven frozen exports."""
+"""Run strict, exploratory Phase 1 normalization for five retained exports."""
 
 from __future__ import annotations
 
 import argparse
 from collections import Counter
+from dataclasses import asdict
 import csv
 from datetime import date, datetime
 from decimal import Decimal
 from hashlib import sha256
 from io import StringIO
 import json
+import os
 from pathlib import Path
 import sys
 from typing import NamedTuple, Sequence
+from uuid import uuid4
 
 import pandas as pd
 
@@ -39,24 +42,31 @@ from research_utils.tv_trade_ledger import (  # noqa: E402
     SourceIdentityError,
     TradeExportSchemaError,
     load_fee_schedule,
+    load_source_inventory,
     load_source_specs,
     normalize_export,
-    sha256_file,
     verify_source_pair,
+)
+from research_utils.tv_summary_reconciliation import (  # noqa: E402
+    SUMMARY_TOLERANCES,
+    load_summary_anchors,
+    reconcile_summary,
 )
 
 
-_RUNNER_VERSION = "tradeify-phase1-normalization-v1"
+_RUNNER_VERSION = "tradeify-phase1-normalization-v2"
 _SEVERITY_ORDER = {"INFO": 0, "WARNING": 1, "BLOCKER": 2, "FATAL": 3}
 _BASE_COMMIT = "ed181233afd01d8fc128bc76ac626e43c3761f87"
 _FROZEN_STRATEGY_IDS = (
     "aegis_6j1",
     "orb_mnq_recon_v7",
-    "striker_dj30_mym_v45",
-    "striker_dj30_mym_pyramid_down",
-    "striker_nas100_mnq_v1",
-    "striker_nas100_mnq_native_variant",
+    "striker_dj30_mym_pyramid_250",
+    "striker_nas100_mnq_dow_wed_excluded",
     "vanguard_mgc_v04",
+)
+_FROZEN_DROPPED_SOURCE_IDS = (
+    "striker_dj30_qtxg1_swap_body_on_mym",
+    "striker_nas100_qtxg1_swap_body_on_mnq",
 )
 
 
@@ -71,10 +81,72 @@ class CampaignResult(NamedTuple):
 def _atomic_write_bytes(path: Path, payload: bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(f".{path.name}.tmp")
-    with temporary.open("wb") as handle:
-        handle.write(payload)
-        handle.flush()
-    temporary.replace(path)
+    try:
+        with temporary.open("wb") as handle:
+            handle.write(payload)
+            handle.flush()
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _publish_payloads(payloads: dict[Path, bytes]) -> None:
+    """Publish a complete campaign generation, restoring old bytes on replace failure."""
+    token = uuid4().hex
+    staged = {
+        target: target.with_name(f".{target.name}.phase1-{token}.stage")
+        for target in payloads
+    }
+    backups = {
+        target: target.with_name(f".{target.name}.phase1-{token}.backup")
+        for target in payloads
+    }
+    backed_up: set[Path] = set()
+    published: set[Path] = set()
+    publication_error: OSError | None = None
+    recovery_failures: list[str] = []
+    preserved_backups: list[Path] = []
+    try:
+        for target, payload in payloads.items():
+            _atomic_write_bytes(staged[target], payload)
+        for target in payloads:
+            if target.exists():
+                os.replace(target, backups[target])
+                backed_up.add(target)
+        for target in payloads:
+            os.replace(staged[target], target)
+            published.add(target)
+    except OSError as exc:
+        publication_error = exc
+        for target in payloads:
+            try:
+                if target in backed_up:
+                    # Replacement restores old bytes directly, even if new bytes exist.
+                    os.replace(backups[target], target)
+                elif target in published:
+                    target.unlink(missing_ok=True)
+            except OSError as recovery_error:
+                recovery_failures.append(f"{target}: {recovery_error}")
+                if target in backed_up:
+                    preserved_backups.append(backups[target])
+    finally:
+        # A failed restoration leaves the backup as the only recoverable old copy.
+        disposable = (*staged.values(), *(backups.values() if publication_error is None else ()))
+        for temporary in disposable:
+            try:
+                temporary.unlink(missing_ok=True)
+            except OSError as cleanup_error:
+                recovery_failures.append(f"cleanup {temporary}: {cleanup_error}")
+    if publication_error is not None:
+        if recovery_failures:
+            raise OSError(
+                f"publication failed: {publication_error}; recovery incomplete: "
+                f"{'; '.join(recovery_failures)}; preserved recovery backups: "
+                f"{', '.join(map(str, preserved_backups)) or 'none'}"
+            ) from publication_error
+        raise publication_error
+    if recovery_failures:
+        raise OSError(f"publication completed but cleanup failed: {'; '.join(recovery_failures)}")
 
 
 def _csv_bytes(frame: pd.DataFrame) -> bytes:
@@ -124,6 +196,15 @@ def _validate_strategy_roster(specs: Sequence[object]) -> None:
         raise ValueError(
             "frozen strategy roster mismatch: "
             f"expected={list(_FROZEN_STRATEGY_IDS)!r}, observed={list(observed)!r}"
+        )
+
+
+def _validate_dropped_source_roster(dropped_sources: Sequence[object]) -> None:
+    observed = tuple(source.strategy_id_as_named_before for source in dropped_sources)
+    if observed != _FROZEN_DROPPED_SOURCE_IDS:
+        raise ValueError(
+            "frozen dropped source roster mismatch: "
+            f"expected={list(_FROZEN_DROPPED_SOURCE_IDS)!r}, observed={list(observed)!r}"
         )
 
 
@@ -236,6 +317,11 @@ def _strategy_record(
         "monthly_net_pnl": dict(accounting.monthly_net_pnl),
         "final_source_cumulative_pnl_usd": accounting.final_source_cumulative_pnl_usd,
         "pine_pyramiding_pct": spec.pine_pyramiding_pct,
+        "pine_pin_status": spec.pine_pin_status,
+        "pin_ref": spec.pin_ref,
+        "pin_divergence": spec.pin_divergence,
+        "export_bytes": spec.export_bytes,
+        "pine_bytes": spec.pine_bytes,
         "micro_equivalent_multiplier": venue.micro_equivalent_multiplier,
         "peak_open_micro_equivalent_quantity_min": (
             venue.peak_open_micro_equivalent_quantity_min
@@ -261,46 +347,120 @@ def _strategy_record(
         "source_identity": {
             "export_filename": spec.export_filename,
             "export_sha256": spec.export_sha256,
+            "export_bytes": spec.export_bytes,
             "pine_filename": spec.pine_filename,
             "pine_sha256": spec.pine_sha256,
+            "pine_bytes": spec.pine_bytes,
+            "pine_pin_status": spec.pine_pin_status,
+            "pin_ref": spec.pin_ref,
+            "pin_divergence": spec.pin_divergence,
         },
     }
 
 
+def _render_legacy_report(manifest: dict[str, object]) -> bytes:
+    """Keep the checked-in pre-R4 artifact acceptance test deterministic."""
+    coverage_note = manifest.get("cme_early_close_coverage_note")
+    calendar_boundary = (
+        "- CME holiday-short coverage is `COMPLETE` for the observed source span; "
+        "the captured early-close rows drive 12:59 ET deadlines."
+        if manifest["phase1_verdict_cap"] == "COMPLETE"
+        else f"- CME holiday-short coverage is `{manifest['phase1_verdict_cap']}`; no historical early-close date was inferred."
+    )
+    lines = [
+        "# Tradeify seven-strategy Phase 1 reconciliation", "", "**Theme:** c1", "",
+        "**In-flight:** yes", "",
+        "**Status:** ACTIVE — strict seven-strategy Tradeify source, accounting, deadline, cap, and provenance normalization", "",
+        "> **EXPLORATORY — Phase 0 was skipped.** All supplied history is development data; this report is not confirmatory, qualified, admitted, or deployable.", "",
+        f"Campaign status: `{manifest['campaign_status']}`", "",
+        f"Holiday-short verdict cap: `{manifest['phase1_verdict_cap']}`", "",
+        "## Strategy inventory", "",
+        "| Strategy | Status | Rows | Trades | Net P&L | Daily-deadline holds | Fri→Sun sub-count |",
+        "|---|---|---:|---:|---:|---:|---:|",
+    ]
+    for row in manifest["strategies"]:
+        lines.append("| {strategy_id} | {status} | {source_row_count} | {trade_count} | ${net_pnl_usd} | {overnight_holds} | {friday_to_sunday_holds} |".format(**row))
+    lines.extend([
+        "", "## Evidence boundaries", "",
+        "- The source CSV/Pine bytes, row-level event/trade/weekly ledgers, and seven detailed issue reports remain local and gitignored.",
+        "- No source row was repaired, dropped for an outcome, re-ranked, composed, simulated, or rerun in Pine.",
+        "- Scalar MAE/MFE values are inventory-only excursion bounds, not timestamped paths.",
+        "- Per-strategy caps are measured against 80 micro-equivalents; the joint book-cap verdict is deferred to Phase 4.",
+        calendar_boundary,
+        *([f"- CME early-close coverage note: {coverage_note}"] if coverage_note else []),
+        "", "## Frozen hashes", "",
+        f"- Config: `{manifest['inputs']['config_sha256']}`",
+        f"- CME calendar capture: `{manifest['inputs']['cme_early_close_calendar_sha256']}`",
+        f"- Canonical events: `{manifest['ledgers']['canonical_events_sha256']}`",
+        f"- Canonical trades: `{manifest['ledgers']['canonical_trades_sha256']}`",
+        f"- Weekly exit blocks: `{manifest['ledgers']['weekly_exit_blocks_sha256']}`",
+        "", "## Issues by strategy", "",
+    ])
+    for row in manifest["strategies"]:
+        lines.extend([f"### {row['strategy_id']}", ""])
+        lines.extend(
+            [f"- `{issue['severity']}` `{issue['code']}` × {issue['count']}" for issue in row["issues"]]
+            if row["issues"] else ["- No issues."]
+        )
+        lines.append("")
+    lines.extend([
+        "## Reproduce", "",
+        "Provide the frozen source directory at runtime and run `python run_phase1.py --config phase1_config.json --source-dir <source-dir> --output-dir local_artifacts`.", "",
+    ])
+    return "\n".join(lines).encode("utf-8")
+
+
 def _render_report(manifest: dict[str, object]) -> bytes:
-    if manifest["phase1_verdict_cap"] == "COMPLETE":
+    if "dropped_sources" not in manifest:
+        return _render_legacy_report(manifest)
+    # Render the published JSON domain, not Python-only Decimal/map representations.
+    manifest = json.loads(_json_bytes(manifest))
+    coverage_note = manifest.get("cme_early_close_coverage_note")
+    calendar_status = manifest.get("cme_early_close_calendar", {}).get("coverage_status", manifest["phase1_verdict_cap"])
+    if calendar_status == "COMPLETE":
         calendar_boundary = (
             "- CME holiday-short coverage is `COMPLETE` for the observed source span; "
             "the captured early-close rows drive 12:59 ET deadlines."
         )
     else:
         calendar_boundary = (
-            f"- CME holiday-short coverage is `{manifest['phase1_verdict_cap']}`; "
+            f"- CME holiday-short coverage is `{calendar_status}`; "
             "no historical early-close date was inferred."
         )
     lines = [
-        "# Tradeify seven-strategy Phase 1 reconciliation",
+        "# Tradeify five-active-source Phase 1 reconciliation",
         "",
         "**Theme:** c1",
         "",
         "**In-flight:** yes",
         "",
-        "**Status:** ACTIVE — strict seven-strategy Tradeify source, accounting, deadline, cap, and provenance normalization",
+        "**Status:** ACTIVE — strict five-source Tradeify source, accounting, deadline, cap, and provenance normalization",
         "",
         "> **EXPLORATORY — Phase 0 was skipped.** All supplied history is development data; this report is not confirmatory, qualified, admitted, or deployable.",
         "",
         f"Campaign status: `{manifest['campaign_status']}`",
         "",
-        f"Holiday-short verdict cap: `{manifest['phase1_verdict_cap']}`",
+        f"Phase 1 evidence verdict cap: `{manifest['phase1_verdict_cap']}`",
+        "",
+        f"Runner generation: `{manifest['runner_version']}`",
+        "",
+        "## Continuous-contract roll disposition",
+        "",
+        f"D13: `{manifest['continuous_contract_roll_policy']['disposition']}` — contract-month and seam attribution remain unavailable, not modeled or resolved.",
+        "",
+        manifest["continuous_contract_roll_policy"]["ruling_ref"],
+        "",
+        *[f"- {obligation}" for obligation in manifest["continuous_contract_roll_policy"]["obligations"]],
         "",
         "## Strategy inventory",
         "",
-        "| Strategy | Status | Rows | Trades | Net P&L | Daily-deadline holds | Fri→Sun sub-count |",
-        "|---|---|---:|---:|---:|---:|---:|",
+        "| Strategy | Status | Pine pin status | Pin ref | Divergence | Export bytes | Pine bytes | Rows | Trades | Net P&L | Daily-deadline holds | Fri→Sun sub-count |",
+        "|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in manifest["strategies"]:
         lines.append(
-            "| {strategy_id} | {status} | {source_row_count} | {trade_count} | "
+            "| {strategy_id} | {status} | {pine_pin_status} | {pin_ref} | {pin_divergence} | "
+            "{export_bytes} | {pine_bytes} | {source_row_count} | {trade_count} | "
             "${net_pnl_usd} | {overnight_holds} | {friday_to_sunday_holds} |".format(
                 **row
             )
@@ -308,21 +468,48 @@ def _render_report(manifest: dict[str, object]) -> bytes:
     lines.extend(
         [
             "",
+            "## Dropped source inventory",
+            "",
+            "These exports are provenance only and are never normalized, counted, or used in ledgers or weekly results.",
+            "",
+            "| Previous strategy ID | Export | Export SHA-256 | Pine | Pine SHA-256 | Pin ref | Reason |",
+            "|---|---|---|---|---|---|---|",
+        ]
+    )
+    for source in manifest["dropped_sources"]:
+        lines.append(
+            "| {strategy_id_as_named_before} | {export_filename} | {export_sha256} | "
+            "{pine_filename} | {pine_sha256} | {pin_ref} | {reason} |".format(**source)
+        )
+    lines.extend(
+        [
+            "",
             "## Evidence boundaries",
             "",
-            "- The source CSV/Pine bytes, row-level event/trade/weekly ledgers, and seven detailed issue reports remain local and gitignored.",
+            "- The source CSV/Pine bytes, row-level event/trade/weekly ledgers, and five detailed issue reports remain local and gitignored.",
             "- No source row was repaired, dropped for an outcome, re-ranked, composed, simulated, or rerun in Pine.",
             "- Scalar MAE/MFE values are inventory-only excursion bounds, not timestamped paths.",
             "- Per-strategy caps are measured against 80 micro-equivalents; the joint book-cap verdict is deferred to Phase 4.",
             calendar_boundary,
+            *(
+                [f"- CME early-close coverage note: {coverage_note}"]
+                if coverage_note
+                else []
+            ),
             "",
             "## Frozen hashes",
             "",
             f"- Config: `{manifest['inputs']['config_sha256']}`",
+            f"- Tradeify fee capture: `{manifest['inputs']['tradeify_commission_schedule_sha256']}`",
             f"- CME calendar capture: `{manifest['inputs']['cme_early_close_calendar_sha256']}`",
+            f"- Independent TradingView anchors: `{manifest['inputs']['tv_summary_anchors_sha256']}`",
             f"- Canonical events: `{manifest['ledgers']['canonical_events_sha256']}`",
             f"- Canonical trades: `{manifest['ledgers']['canonical_trades_sha256']}`",
             f"- Weekly exit blocks: `{manifest['ledgers']['weekly_exit_blocks_sha256']}`",
+            *[
+                f"- Detail report {strategy_id}: `{digest}`"
+                for strategy_id, digest in sorted(manifest["local_strategy_report_sha256"].items())
+            ],
             "",
             "## Issues by strategy",
             "",
@@ -339,6 +526,17 @@ def _render_report(manifest: dict[str, object]) -> bytes:
         else:
             lines.append("- No issues.")
         lines.append("")
+    lines.extend([
+        "## Independent TradingView summary reconciliation", "",
+        f"G1.4 coverage: `{manifest['summary_reconciliation_status']}`. {manifest['summary_coverage_note']}", "",
+        "Observed max drawdown uses closed-trade exit equity; TradingView panel equity drawdown may differ. Discrepancies remain blockers; no series is repaired.", "",
+    ])
+    for row in manifest["strategies"]:
+        lines.extend([f"### {row['strategy_id']}", "", row["summary_source_note"] or "No independent operator summary supplied.", "",
+                      "| Metric | Observed | Anchor | Difference | Tolerance | Status |",
+                      "|---|---|---|---|---|---|",
+                      *["| {metric} | {observed} | {anchor} | {difference} | {tolerance} | {status} |".format(**comparison)
+                        for comparison in row["summary_comparisons"]], ""])
     lines.extend(
         [
             "## Reproduce",
@@ -364,10 +562,15 @@ def run_campaign(
     calendar_path = campaign_dir / "cme_early_close_calendar.json"
 
     _validate_output_dir(output_dir)
-    specs = load_source_specs(config_path)
+    inventory = load_source_inventory(config_path)
+    roll_policy = inventory.continuous_contract_roll_policy
+    roll_policy_record = asdict(roll_policy)
+    specs = inventory.specs
     _validate_strategy_roster(specs)
+    _validate_dropped_source_roster(inventory.dropped_sources)
     fee_schedule = load_fee_schedule(fee_path)
     early_close_calendar = load_early_close_calendar(calendar_path)
+    summary_inventory = load_summary_anchors(campaign_dir / "tv_summary_anchors.json", specs)
     verified = [verify_source_pair(source_dir, spec) for spec in specs]
 
     normalized_by_strategy = {
@@ -382,6 +585,7 @@ def run_campaign(
     trades_by_strategy: dict[str, pd.DataFrame] = {}
     issues_by_strategy: dict[str, tuple[object, ...]] = {}
     strategy_records: list[dict[str, object]] = []
+    summaries_by_strategy: dict[str, dict[str, object]] = {}
     for source in verified:
         normalized = normalized_by_strategy[source.spec.strategy_id]
         reconstruction = reconstruct_trades(normalized.events, source.spec)
@@ -391,8 +595,17 @@ def run_campaign(
             source.spec,
             fee_schedule,
             early_close_calendar=early_close_calendar,
+            continuous_contract_roll_policy=roll_policy,
         )
-        issues = (*normalized.issues, *reconstruction.issues, *accounting.issues, *venue.issues)
+        comparisons, summary_issues = reconcile_summary(accounting, source.spec, summary_inventory)
+        anchor = summary_inventory.anchors.get(source.spec.strategy_id)
+        summary_record = {
+            "continuous_contract_roll_policy": roll_policy_record,
+            "summary_source_note": anchor["source_note"] if anchor else None,
+            "summary_comparisons": comparisons,
+        }
+        summaries_by_strategy[source.spec.strategy_id] = summary_record
+        issues = (*normalized.issues, *reconstruction.issues, *accounting.issues, *venue.issues, *summary_issues)
         trades_by_strategy[source.spec.strategy_id] = reconstruction.trades
         issues_by_strategy[source.spec.strategy_id] = issues
         strategy_records.append(
@@ -403,10 +616,15 @@ def run_campaign(
                 accounting,
                 venue,
                 issues,
-            )
+            ) | summary_record
         )
 
-    joint_events = build_joint_events(events_by_strategy)
+    joint_events = build_joint_events(
+        events_by_strategy,
+        encoded_instruments_by_strategy={
+            spec.strategy_id: spec.encoded_instrument for spec in specs
+        },
+    )
     canonical_trades = pd.concat(
         [trades_by_strategy[spec.strategy_id] for spec in specs],
         ignore_index=True,
@@ -416,9 +634,7 @@ def run_campaign(
     event_bytes = _csv_bytes(joint_events)
     trade_bytes = _csv_bytes(canonical_trades)
     weekly_bytes = _csv_bytes(weekly_blocks)
-    _atomic_write_bytes(output_dir / "canonical_events.csv", event_bytes)
-    _atomic_write_bytes(output_dir / "canonical_trades.csv", trade_bytes)
-    _atomic_write_bytes(output_dir / "weekly_exit_blocks.csv", weekly_bytes)
+    detail_payloads: dict[Path, bytes] = {}
     local_strategy_report_sha256: dict[str, str] = {}
     for spec in specs:
         strategy_id = spec.strategy_id
@@ -429,16 +645,21 @@ def run_campaign(
                 "source_identity": {
                     "export_filename": spec.export_filename,
                     "export_sha256": spec.export_sha256,
+                    "export_bytes": spec.export_bytes,
                     "pine_filename": spec.pine_filename,
                     "pine_sha256": spec.pine_sha256,
+                    "pine_bytes": spec.pine_bytes,
+                    "pine_pin_status": spec.pine_pin_status,
+                    "pin_ref": spec.pin_ref,
+                    "pin_divergence": spec.pin_divergence,
                 },
                 "issues": _detailed_issue_rows(issues_by_strategy[strategy_id]),
+                **summaries_by_strategy[strategy_id],
             }
         )
-        _atomic_write_bytes(
-            output_dir / "strategy_reports" / f"{strategy_id}.json",
-            detail_bytes,
-        )
+        detail_payloads[
+            output_dir / "strategy_reports" / f"{strategy_id}.json"
+        ] = detail_bytes
         local_strategy_report_sha256[strategy_id] = _digest(detail_bytes)
 
     campaign_status = (
@@ -450,13 +671,32 @@ def run_campaign(
         "claim_class": "EXPLORATORY",
         "phase0_status": "SKIPPED_BY_OPERATOR",
         "campaign_status": campaign_status,
-        "phase1_verdict_cap": early_close_calendar.coverage_status,
+        "phase1_verdict_cap": (
+            "COMPLETE" if early_close_calendar.coverage_status == summary_inventory.coverage_status == "COMPLETE"
+            else "NEEDS_CONTEXT"
+        ),
+        "summary_reconciliation_status": summary_inventory.coverage_status,
+        "summary_coverage_note": summary_inventory.coverage_note,
+        "cme_early_close_calendar": {
+            "source_url": early_close_calendar.source_url,
+            "page_date": early_close_calendar.page_date,
+            "observed_date": early_close_calendar.observed_date,
+            "coverage_start": early_close_calendar.coverage_start,
+            "coverage_end": early_close_calendar.coverage_end,
+            "coverage_status": early_close_calendar.coverage_status,
+            "coverage_note": early_close_calendar.coverage_note,
+            "sources": [dict(source) for source in early_close_calendar.sources],
+            "observed_row_count": len(early_close_calendar.early_close_dates),
+        },
+        "cme_early_close_coverage_note": early_close_calendar.coverage_note,
         "runner_version": _RUNNER_VERSION,
+        "continuous_contract_roll_policy": roll_policy_record,
         "git_base_commit": _BASE_COMMIT,
         "inputs": {
-            "config_sha256": sha256_file(config_path),
-            "tradeify_commission_schedule_sha256": sha256_file(fee_path),
-            "cme_early_close_calendar_sha256": sha256_file(calendar_path),
+            "config_sha256": inventory.config_sha256,
+            "tradeify_commission_schedule_sha256": fee_schedule.input_sha256,
+            "cme_early_close_calendar_sha256": early_close_calendar.input_sha256,
+            "tv_summary_anchors_sha256": summary_inventory.input_sha256,
         },
         "ledgers": {
             "timestamp_domain": (
@@ -465,6 +705,10 @@ def run_campaign(
                 else "UTC"
             ),
             "canonical_events_sha256": _digest(event_bytes),
+            "source_row_sha256": {
+                "algorithm": "SHA-256",
+                "input": "exact raw CSV record bytes including original record terminator when present",
+            },
             "canonical_trades_sha256": _digest(trade_bytes),
             "weekly_exit_blocks_sha256": _digest(weekly_bytes),
         },
@@ -473,15 +717,36 @@ def run_campaign(
             "aggregate_money_usd": "0.01",
             "tick_grid_ticks": "1e-9",
             "duplicated_source_fee_and_identity": "exact",
+            "tv_summary": SUMMARY_TOLERANCES,
         },
         "strategies": strategy_records,
+        "dropped_sources": [
+            {
+                "strategy_id_as_named_before": source.strategy_id_as_named_before,
+                "export_filename": source.export_filename,
+                "export_sha256": source.export_sha256,
+                "pine_filename": source.pine_filename,
+                "pine_sha256": source.pine_sha256,
+                "pin_ref": source.pin_ref,
+                "reason": source.reason,
+            }
+            for source in inventory.dropped_sources
+        ],
     }
     manifest_bytes = _json_bytes(manifest)
     report_bytes = _render_report(manifest)
     manifest_path = campaign_dir / "reconciliation_manifest.json"
     report_path = campaign_dir / "RESULTS.md"
-    _atomic_write_bytes(manifest_path, manifest_bytes)
-    _atomic_write_bytes(report_path, report_bytes)
+    _publish_payloads(
+        {
+            output_dir / "canonical_events.csv": event_bytes,
+            output_dir / "canonical_trades.csv": trade_bytes,
+            output_dir / "weekly_exit_blocks.csv": weekly_bytes,
+            **detail_payloads,
+            manifest_path: manifest_bytes,
+            report_path: report_bytes,
+        }
+    )
     return CampaignResult(
         status=campaign_status,
         manifest_path=manifest_path,
