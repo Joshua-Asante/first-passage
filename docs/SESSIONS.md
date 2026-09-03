@@ -33,6 +33,33 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-03b — Phase 1 partial gate read on Codex's `a51bc60`; #272/#273 merged; D8/D9 raised
+
+**Focus:** Orchestrator check-in after both campaign PRs merged. Operator pushed Codex's Phase 1 branch
+`codex/tradeify-stage1-normalization` @ `a51bc60`; ran the frozen Phase 1 gate as a diff-plus-CI read
+without opening vendor bytes.
+**Shipped:** [campaign-state artifact](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)
+update only — §2/§5 Phase 1 rows, §6 D1/D7 closed, D8/D9 opened, §7 commands, §8 ledger, §9 read.
+**Decisions/defects:** The push is **Task 1 of 8** (identity boundary, primary-source fee capture,
+frozen config, 6 tests; plan checklist 0/49) — verdict **IN PROGRESS**, not a Phase 1 return. Partial
+read: G1.1 ✓ (no vendor bytes; `local_artifacts/` ignored), G1.5 ✓, G1.8 ✓, G1.4 tolerances
+pre-committed ✓; **G1.9 red** — the study dir is absent from `lab/CATALOG.md`, so CI's required check
+would fail; G1.3/G1.6/G1.10 await the runner. Worktree re-run: 6/6 tests pass, boundaries OK. The
+anticipated G1.7 re-anchor is withdrawn (calendar-week adapter and joint block builder are designed,
+spec §4.5). Two source-set facts need the operator: **D8** two prototypes are declared on one
+instrument but exported from the other's chart; **D9** the TradingView chart timezone is unknown for
+all seven (`timestamp_utc` null). Good pre-commitment noted: the spec freezes expected row/trade
+counts and net P&L to the cent before the runner exists. No `core`/Pine/allocation/`dd_protection`/rail
+change. $0/K=0.
+**Open / next:** STATE queue: `#1` [Find a viable trading strategy — portable-edge cultivation
+campaign](superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md) · `#2` [B7-REFIRE Stage 1
++ M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— both unchanged. `queue-exception: orchestrator-takeover` — full Phase 1 gate when the runner,
+reports, CATALOG row, and PR land (check-in armed); D8/D9 to the operator.
+**Live-ops state:** unchanged — c1 rail disarmed, `dry_run=true`, M1 not `RESOLVED`, no arm.
+
+---
+
 ## 2026-09-03a — Orchestrator takeover: seven-strategy Select configuration campaign; Codex P1 review folded into PR #272
 
 **Focus:** Operator handed Claude Code the orchestrator role for the seven-strategy

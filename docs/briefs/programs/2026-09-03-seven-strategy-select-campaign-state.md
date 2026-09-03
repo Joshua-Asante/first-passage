@@ -1,12 +1,11 @@
 # Seven-strategy Select configuration campaign — campaign state (orchestrator-only writes)
 
-**Status:** `PHASE 0 SKIPPED (operator override) · PHASE 1 IN FLIGHT (Codex, local worktree) · PHASE-1 GATE FROZEN · VENDOR BYTES STILL ON A PUBLIC REF (§6 D7 — operator deletes) · PLAN REVIEW FOLDED ×4 (PR #272 open)`
+**Status:** `PHASE 0 SKIPPED (operator override) · PHASE 1 IN PROGRESS — Task 1/8 on origin (a51bc60), partial gate read · PLAN + THIS FILE ON MAIN (#272, #273 merged) · OLD VENDOR-BYTE REF DELETED`
 **Last curated:** 2026-09-03 (orchestrator session `claude/orchestrator-role-takeover-yza7vp`)
 **Parent plan:** [`2026-09-02-seven-strategy-tradeify-select-configuration.md`](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
-(PR [#272](https://github.com/Joshua-Asante/first-passage/pull/272) — **open, not merged** as of
-this curation; four Codex passes are folded in — `459421b`, `78c82de`, `e8694a9`, `6aa7ff8` — and
-the operator's 2026-09-03 ruling and override at `11d22e2`. This branch integrates the plan by
-merge, so either PR may merge first — §6 D1).
+(PR [#272](https://github.com/Joshua-Asante/first-passage/pull/272) — **merged 2026-09-03** together
+with #273; four Codex passes `459421b`, `78c82de`, `e8694a9`, `6aa7ff8`, the operator's ruling and
+override `11d22e2`, and the Phase 7 simplification `1fe4600` are all on `main`).
 **Role:** this file is the plan's *compact campaign state artifact* (plan §Session handoff protocol)
 **and the claim manifest**. One writer — the orchestrating Claude Code session — per the MSL
 precedent ([`2026-08-12-msl-program-plan.md`](2026-08-12-msl-program-plan.md) §6) and the
@@ -34,9 +33,9 @@ CAVEATS / REFUTED`.
 
 | Phase | Gate to leave it | Status | Holder | Evidence |
 |---|---|---|---|---|
-| Plan | Codex review folded; operator merge | **REVIEW FOLDED ×4 + ruling/override** — merge pending (§6 D1) | operator | PR #272 @ `11d22e2` (also carried by this branch) |
+| Plan | Codex review folded; operator merge | **MERGED** (#272 + #273, 2026-09-03) | operator | `main` @ `5eff0ec` |
 | 0 — Receive and inventory | — | **SKIPPED** (operator override 2026-09-03), after the first return (`codex/mym-breakout-research` @ `706a03e`) failed the gate: no intake, ~100 MB vendor bytes. Inventory duties fold into Phase 1 (G1.2) | — | §8 ledger |
-| 1 — Normalize and reproduce (+ folded Phase 0 inventory) | §4 Phase 1 gate G1.1–G1.10, verdict `PASS` | **IN FLIGHT** — Codex, local worktree branch `codex/tradeify-stage1-normalization` (base `e8694a9`; operator-reported 2026-09-03; not on `origin` at curation) | Codex → orchestrator review | §9 dispatch record |
+| 1 — Normalize and reproduce (+ folded Phase 0 inventory) | §4 Phase 1 gate G1.1–G1.10, verdict `PASS` | **IN PROGRESS** — `codex/tradeify-stage1-normalization` @ `a51bc60` (base `11d22e2`) carries **Task 1 of 8** (source identity + fee schedule + config + 6 tests; plan checklist 0/49). Partial gate read 2026-09-03: G1.1 ✓ · G1.5 ✓ · G1.8 ✓ (by design) · G1.4 tolerances pre-committed ✓ · G1.2 partial · G1.7 partial · **G1.9 red — study dir not in `lab/CATALOG.md`** · G1.3 / G1.6 / G1.10 pending the runner. No PR yet | Codex → orchestrator review | §8 ledger, §9 |
 | 2 — Standalone quality (joint-book limbs moved to Phase 4, after the freeze) | eliminations recorded with reasons on standalone evidence; no portfolio result computed | QUEUED | Codex + orchestrator | — |
 | 3 — Freeze search + validation design | pre-registration committed **before** any Phase 4 run; **all 14 contract items** frozen (1–9 numeric; 10 multiplicity; 11 `N_conf`; 12 Phase 6 severities; 13 Rule 2 iterations; 14 the seven per-template candidate contracts); operator ratifies | QUEUED (orchestrator authors; `pre-ratification-adversarial-panel` before ratification) | orchestrator → operator | — |
 | 4 — Joint-book audit + deterministic screen (development segment only) | trial ledger complete incl. failures | QUEUED | Codex / local | — |
@@ -104,8 +103,8 @@ orchestrator to Codex's Phase 1 PR as a diff-plus-CI read, never opening vendor 
 | Phase 0 intake (first return) | Codex, `codex/mym-breakout-research` @ `706a03e` | **RETURNED — FAIL** (G0.1, G0.3); phase then **SKIPPED** by operator override | no PR | pushed by the operator 2026-09-03: one commit on a base **68 commits behind `main`** (pre-dates PR #259's merge). Content: vet-intake notes for `ORB-MYM-SCALE-1` (`docs/notes/2026-09-01-orb-mym-scale-vet-intake.md`, `2026-09-02-next-vet-candidate-assessment.md`, a three-speed-spec paragraph) plus the raw TV bar export, the parsed `MYM_M15.csv`, and the 60-cell trade ledger. Not a seven-strategy intake |
 | Phase 0 gate review | orchestrator | **DONE — `FAIL`** (this session) | — | §4 applied as a diff read; vendor files were opened only to two header lines each for content-class identification, no statistic computed |
 | Phase 0 re-dispatch packet | orchestrator | **SUPERSEDED** — Phase 0 skipped | — | replaced by the §9 Phase 1 dispatch record |
-| Phase 1 normalization (+ folded inventory) | Codex, `codex/tradeify-stage1-normalization` (local worktree, base `e8694a9`) | **DISPATCHED** by the operator 2026-09-03 | pending | design bullets in §9; expect G1.7 (week-clock adapter, block builder) to need one re-anchor |
-| Phase 1 gate review | orchestrator | **QUEUED** — fires when the Codex PR appears | — | G1.1–G1.10 frozen before any output was read |
+| Phase 1 normalization (+ folded inventory) | Codex, `codex/tradeify-stage1-normalization` @ `a51bc60` (base `11d22e2`) | **IN PROGRESS** — Task 1/8 on `origin` | no PR yet | design spec + 8-task plan committed; the calendar-week adapter and joint block builder **are** designed (spec §4.5), so the anticipated G1.7 re-anchor is withdrawn — execution remains |
+| Phase 1 gate review | orchestrator | **PARTIAL READ DONE** 2026-09-03 on `a51bc60`; full verdict when the runner, reports, and PR land | — | worktree re-run: 6/6 tests pass, `check_boundaries` OK, CI composition (`--tier check`) red on `lab-catalog` only |
 | Campaign pre-registration (contract items 1–14 + seven candidate contracts; Phase 3 deliverable) | orchestrator authors → adversarial panel → operator ratifies | **QUEUED** | — | must exist before any Phase 4 run |
 | Phases 1–8 | per §2 | **QUEUED** | — | — |
 
@@ -116,21 +115,24 @@ undetermined until §6 D3. **Defects / invalidations:** none; no prior output ex
 
 | # | Decision | Why it is the operator's | Orchestrator recommendation |
 |---|---|---|---|
-| D1 | Merge order for #272 (plan) and #273 (this file) | Merge is operator-only for non-packet PRs. #273 integrates the plan by merge, so **either order works**: #272 first leaves #273 as the two artifacts; #273 first lands the plan too and #272 becomes a no-op to close | Merge #272 then #273; or #273 alone and close #272 — never edit the plan on both as independent branches |
+| D1 | Merge #272 / #273 | — | **Done 2026-09-03** — both merged; plan and this file on `main` |
 | D2 | `STATE.md` queue placement | Queue cap ≤5, 2 rows live; promotion is an operator act (STATE standing rule: "do not auto-open a replacement") | Row 3: *"Seven-strategy Select configuration campaign — Phase 0 (Codex) → Phase 0 gate → prereg; no capital"* with this file as owner. Alternative: fold under row 1's owner set if D4 rules it inside the cultivation envelope |
 | D3 | Rule 2 budget — confirm the classification | Rule 2 counts complete attempt-and-check iterations under the INNER/OUTER/STRATEGIC 3/8/3 limits ([canon §15](../../methodology/inqhiori-canon.md)); a core-hour figure is not a budget. Plan contract item 13 now proposes **STRATEGIC, ≤3 constituent OUTER investigations × 8 iterations, no self-extension** | Confirm item 13's three constituents; keep $0 external data and any core-hour figure as disclosure lines only. Phase 0 is iteration 1 of constituent (i) |
 | D4 | Relation to queue row 1 (portable-edge cultivation, 2–3 day clock from 2026-09-02, ≤1 candidate contract, ≤3 seats) | Seven *supplied* strategies are complete expressions — the cultivation plan's seats B/C class — but the configuration search is a book-composition objective the cultivation envelope does not name | Rule it a **separate program** under its own envelope (this file); Phase 0 is inventory-only and safe under either reading, so no work waits on D4 |
 | D5 | 5% ceiling vs 2026-07-22 §4-withdrawal ADR §5 | Flagged unruled in `SESSIONS 2026-09-02c`; Phase 7 cannot call a pass while the ceiling's own provenance is contested | One-line ruling before Phase 3 ratification |
-| D7 | **Purge the vendor bytes from the public remote** | `706a03e` on `origin/codex/mym-breakout-research` carries the raw TV bar export (`BAR_EXPORT_v0.2_CBOT_MINI_MYM1!_2026-09-01_1b59b.csv`, sha256 `16e8ded6…`, pinned in no tracked manifest), the parsed `MYM_M15.csv`, and `all_declared_trades.csv` (which PR #259's RESULTS declared local-only for carrying vendor-derived prices/timestamps). The orchestrator does not rewrite another author's branch | Delete the remote ref, or force-push the branch without `workspace_inputs/` and `workspace_outputs/`; then ask GitHub support to purge the unreachable objects. #273 lands the `.gitignore` hardening so those roots can never be committed again. **Status 2026-09-03:** deletion attempted from this session (`git push origin --delete`) and refused with **HTTP 403** by the session's git credential — the operator deletes the ref (GitHub branches page, or the same command locally) and then requests the purge. Re-dispatch is moot: Phase 0 is skipped and Phase 1 runs from a fresh local worktree |
+| D7 | **Purge the vendor bytes from the public remote** | `706a03e` on the old `codex/mym-breakout-research` carried the raw TV bar export, the parsed `MYM_M15.csv`, and the local-only trade ledger. This session's deletion was refused (HTTP 403) | **Done 2026-09-03** — Cursor deleted the ref at the operator's direction; it is gone from `origin`. The GitHub support purge of unreachable objects remains the operator's to request |
+| D8 | **Two instrument mismatches** in the supplied set | `striker_dj30_mnq_prototype` is declared MNQ but its export is a MYM chart; `striker_nas100_mym_prototype` is declared MYM but its export is an MNQ chart (spec §2, config `encoded_instrument`). The design rightly refuses to repair this, so both will sit `BLOCKED_EXPLORATORY` | Re-export each prototype on its intended instrument (new hashes → config re-freeze) or re-declare the intent to match the export; Phase 2 cannot admit them otherwise |
+| D9 | **TradingView chart timezone** of the seven exports | `source_timezone` is `null` for all seven; `timestamp_utc` and session dates stay null and joint ordering runs in the source-timestamp domain. One value — the chart timezone the exports were taken in — resolves it for all seven | State it; Codex re-freezes the config fingerprint. Not blocking Phase 1 accounting; required before Phase 3's joint-flat weekly blocks can be trusted |
 | D6 | The seven strategies' identities and the intake path | Plan §Immediate next action; only the operator holds the files | **Done 2026-09-03** — seven TradingView exports attached to Codex's local session; identities and hashes land through G1.2 |
 
 ## §7 Next exact commands (orchestrator, next session)
 
 ```bash
-git fetch origin
-git ls-remote --heads origin | grep -E 'codex/(tradeify-stage1|mym-breakout)'   # Phase 1 branch landed? old ref gone?
-# When the Phase 1 PR exists: read its file list + CI, apply §4 G1.1–G1.10 as a diff read (never open
-# vendor bytes), record verdict + study path in §2/§5, and on PASS unlock Phase 2.
+git fetch origin && git log --oneline origin/main..origin/codex/tradeify-stage1-normalization   # new Task commits?
+# When the Phase 1 PR exists: apply §4 G1.1–G1.10 as a diff read (never open vendor bytes). In a worktree of
+# its head run `python scripts/gate_manifest.py --tier check` and the four Phase 1 test modules, then check the
+# committed reconciliation manifest against the spec §7.5–7.7 anchors frozen at a51bc60 (row/trade counts,
+# net P&L to the cent, exactly three ORB-MNQ force-flat violations).
 python scripts/gate_manifest.py --tier pre-commit                            # before any integration commit
 ```
 
@@ -149,6 +151,8 @@ python scripts/gate_manifest.py --tier pre-commit                            # b
 | 2026-09-03 | **Operator ruling:** all seven strategies treated as tuned and viewed on the whole export → confirmation forward-only, historical results model-fitted; per-strategy dates and intake-time reservation dropped (plan `11d22e2`) | simplification |
 | 2026-09-03 | **Operator override:** Phase 0 skipped; Phase 1 dispatched to Codex on local worktree `codex/tradeify-stage1-normalization` (base `e8694a9`) with the seven attached exports; §4 Phase 1 gate frozen before any output was read; §9 packet superseded by the dispatch record | Phase 1 `IN FLIGHT` |
 | 2026-09-03 | Remote-ref deletion attempted per operator instruction — HTTP 403 from this session's git credential; operator to delete | D7 open |
+| 2026-09-03 | #272 and #273 merged; old vendor-byte ref deleted (Cursor); orchestrator branch restarted from `main` | plan + this file on `main`; D1, D7 done |
+| 2026-09-03 | Codex pushed `codex/tradeify-stage1-normalization` @ `a51bc60` (5 commits on `11d22e2`): operator-approved design spec, 8-task plan (0/49 steps checked), `phase1_config.json` — seven strategies (Aegis 6J1 short-only; ORB-MNQ recon v7; Striker DJ30 MNQ-prototype and MYM v4.5; Striker NAS100 MNQ v1 and MYM-prototype; Vanguard MGC v0.4), hashes, tz `null`, intraday-path `false`, two intended-vs-encoded instrument mismatches — primary-source Tradeify fee capture (6J 6.20 / MNQ 1.82 / MYM 1.82 / MGC 2.12 round trip), `tv_trade_ledger.py` (identity + fee loader), 6 tests. **Partial gate read:** G1.1 ✓ (no vendor bytes; `local_artifacts/` ignored; basenames + SHA-256 only); G1.5 ✓; G1.8 ✓ (loader rejects any claim class but `EXPLORATORY`); G1.4 tolerances pre-committed ✓ (spec §5); G1.2 partial (counts/bounds await the runner — spec §7.5–7.6 pre-commits row/trade counts and net P&L to the cent, verifiable later); G1.7 partial (6 tests; adapter + block builder designed); **G1.9 red** (`lab-catalog`: study dir absent from `lab/CATALOG.md`); G1.3 / G1.6 / G1.10 pending. Worktree re-run: 6/6 tests pass, boundaries OK, 6J tick value 12.5M × 0.0000005 = $6.25 confirmed. **Verdict: IN PROGRESS, not a Phase 1 return** | Phase 1 `IN PROGRESS`; D8, D9 raised |
 | 2026-09-03 | Codex review of #273 (`6ca5577`): six P1 + four P2 — eight bind the plan (folded at `e8694a9`), two bind this file (D1 merge order; D3 in iterations). §3/§4 corrected on verified source: engine inactivity is consecutive-idle-days vs the venue's calendar week; `cost_per_side_usd` is the index-micro row; `paired_blocks_from_daily` is single-series; `pair_tv_export_dataframe` raises on shorts; G0.2 gains the last-inspection field | plan `REVIEW FOLDED ×3` |
 
 ## §9 Phase 1 dispatch record (Codex, operator-relayed 2026-09-03)
@@ -176,3 +180,13 @@ Orchestrator read at dispatch: G1.1, G1.3, G1.4, G1.5, G1.6, G1.8 are declared; 
 row is declared `UNRESOLVED` (acceptable with the consequence stated); G1.7's calendar-week
 inactivity adapter and joint block builder are **not** declared — expect one `NEEDS_CONTEXT`
 re-anchor or an explicit deferral to Phase 3.
+
+Orchestrator read at `a51bc60` (Task 1 of 8, 2026-09-03): the identity boundary and fee capture are
+as declared. G1.7's two designed deliverables (calendar-week adapter, joint block builder) are in
+the spec §4.5, so the anticipated re-anchor is withdrawn. Outstanding before a full gate:
+`trade_reconciliation.py`, `joint_trade_blocks.py`, `run_phase1.py`, README, the runner tests, the
+seven aggregate reports and ledger hashes, the `lab/CATALOG.md` row (**add it by hand** —
+`archive_lab_analysis.py --regenerate-catalog` also rewrites other rows' heavy-column notes), a
+merge of `main` (the branch is 24 commits behind), and a PR whose first description line carries
+the Rule 2 line. Two operator inputs are open on the source set itself: §6 D8 (instrument
+mismatches) and D9 (chart timezone).
