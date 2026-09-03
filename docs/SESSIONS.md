@@ -33,6 +33,38 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-03a — Orchestrator takeover: seven-strategy Select configuration campaign; Codex P1 review folded into PR #272
+
+**Focus:** Operator handed Claude Code the orchestrator role for the seven-strategy
+`Tradeify_Select_100K` configuration campaign (plan on [PR #272](https://github.com/Joshua-Asante/first-passage/pull/272))
+while Codex completes Phase 0 on `codex/mym-breakout-research`, then asked for the Codex review's
+P1 findings on that PR to be addressed.
+**Shipped:** `459421b` on PR #272 — six P1 + one P2 folded into the plan (development-only Phase 4
+screen; confirmation start **derived** from each strategy's final design-decision date; estimand
+`P(bust before pass)` with unresolved-at-cap paths counted as busts; qualifying bound = outer
+block-bootstrap 95th + worst partition, MC-only UCB never qualifying; scalar MAE = `LOWER BOUND`
+only; every screen cutoff frozen numerically in Phase 3; joint-flat integer-week blocks) plus a
+reconciliation table; threads resolved. New orchestrator-owned campaign-state artifact + claim
+manifest [`2026-09-03-seven-strategy-select-campaign-state.md`](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md):
+roles, phase board, canonical-authority list (reuse-don't-rewrite), **Phase 0 acceptance gate
+G0.1–G0.9 frozen before any Codex output was read**, operator decisions D1–D6.
+**Decisions/defects:** The handoff called PR #272 merged; it is **open** (checks green) — fixes went
+to its branch, not a parallel copy (operator merges, D1). `codex/mym-breakout-research` is a reused
+name: PR #259's head (merged 09-02), whose study consumed the 2025→2026-07 holdout for five ORB-MYM
+entry families — bound into the gate as a contamination check (G0.6). Joint-flat weekly blocks rest
+on `weekend_holds: False`, a config fact **not engine-enforced** — re-verified at Phase 0, not
+assumed. No queue row opened (operator call, D2); no Rule-2 budget exists for the campaign (D3);
+its relation to queue row 1's cultivation envelope is unruled (D4) — Phase 0 is inventory-only and
+safe under either reading. No `core/`/Pine/allocation/`dd_protection`/rail change. $0/K=0.
+**Open / next:** STATE queue: `#1` [Find a viable trading strategy — portable-edge cultivation
+campaign](superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md) · `#2` [B7-REFIRE Stage 1
++ M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— both unchanged. `queue-exception: orchestrator-takeover` — Phase 0 gate review fires when the
+Codex PR lands (check-in scheduled); operator decisions D1–D6 sit in the campaign-state artifact.
+**Live-ops state:** unchanged — c1 rail disarmed, `dry_run=true`, M1 not `RESOLVED`, no arm.
+
+---
+
 ## 2026-09-02c — W1's 4th partition run on the honest clock (INTERIM 48/100); superseded-prereg guard
 
 **Focus:** Operator asked what the research methods that made real progress have in common, then
