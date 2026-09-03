@@ -1,4 +1,5 @@
 **Theme:** c1
+**Verdict:** HOLD — INTERIM; operator stopped at 48/100 panels
 
 # W1 4th partition — intraday-honest bootstrap-95th at 0.50× — **INTERIM, INCOMPLETE**
 

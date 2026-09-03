@@ -1,4 +1,5 @@
 **Theme:** c1
+**Verdict:** CLOSED — Class-S #1 haircut re-MC superseded; §4 discharge withdrawn
 **Status:** ACTIVE — lifecycle-haircut regime re-MC for Class-S candidate #1
 # Class-S candidate #1 — lifecycle-haircut regime re-MC: RESULTS
 

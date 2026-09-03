@@ -76,10 +76,15 @@ Before the first portfolio result is computed, freeze a campaign pre-registratio
     normalization, standalone audit (Phases 0–2); (ii) frozen search and robustness (Phases 3–6);
     (iii) confirmation and shadow parity (Phases 7–8). External spend and local core-hours are
     disclosure lines beside the count, not the budget; and
-14. the hashes of the **seven per-template candidate contracts** (Phase 3) that the configuration
-    catalogue is permitted to compose — one per supplied strategy, per the
-    [candidate-contract ADR](../../adr/2026-08-30-candidate-contract.md): a distinct entry/exit
-    template is never a cell inside another template's contract.
+14. the hashes of the **per-template candidate contracts** (Phase 3) that the configuration
+    catalogue is permitted to compose — one per distinct entry/exit template, per the
+    [candidate-contract ADR](../../adr/2026-08-30-candidate-contract.md): a distinct template is
+    never a cell inside another template's contract, and a different parameterization of the same
+    template (a pyramid-reduced variant, say) is a cell inside that template's contract, never a
+    second contract. The supplied set holds **five** templates (operator ruling 2026-09-03: the two
+    Striker "prototypes" are the native editions with the pyramid turned down, so each is a cell of
+    its locked sibling's template); the catalogue treats such a pair as one mutually exclusive
+    choice, never two independent legs.
 
 If the exact 5% boundary is operational rather than statistical, report both the point-estimate
 frontier and the confidence-qualified frontier, but only the latter may be called a pass.
@@ -205,10 +210,11 @@ procedure. The shortlist that reaches Phase 7 is the first `M` configurations un
 lexicographic objective on development evidence; no other configuration consumes a confirmation
 slot in this campaign, and `N_conf` (item 11) is computed from the frozen `α/M` at the same time.
 
-**Seven candidate contracts precede the book search** (decision contract item 14). Each supplied
-strategy is a distinct entry/exit template, and the candidate-contract ADR admits cells within one
-contract only as parameterizations of a single template; Phase 3 therefore opens one hash-pinned
-contract per strategy — template fields, the standing contamination ruling, the forward confirmation interval, cost authority, K ledger, and the mechanism discriminator or its declared
+**Per-template candidate contracts precede the book search** (decision contract item 14). The
+candidate-contract ADR admits cells within one contract only as parameterizations of a single
+template; Phase 3 therefore opens one hash-pinned contract per distinct template — five for this
+set, with each pyramid-reduced Striker variant a cell inside its locked sibling's contract —
+carrying template fields, the standing contamination ruling, the forward confirmation interval, cost authority, K ledger, and the mechanism discriminator or its declared
 absence — under the shared campaign envelope and the single multiplicity configuration. The
 configuration catalogue composes contracted candidates only; a strategy without a contract never
 enters it. A contract that declares no discriminator may still contribute to a book configuration,
@@ -292,8 +298,8 @@ per-slot level (`α/M` under Bonferroni, or the Holm step-down bar after orderin
 selected-set hash before anything below runs.
 
 **Before touching the forward interval, check that nothing has moved.** Re-hash the inputs, the
-code commit, the configuration manifest, the pre-registration, the seven candidate contracts, and
-the committed selected set; re-check the venue rules (symbols, sessions, contract caps, fees, the
+code commit, the configuration manifest, the pre-registration, the per-template candidate
+contracts, and the committed selected set; re-check the venue rules (symbols, sessions, contract caps, fees, the
 inactivity clock) against a fresh capture and `core/firm_rules.py`; re-run the export
 reconciliation. Any difference stops the run before forward data is read: the configuration is
 `BLOCKED`, the forward interval stays untouched, and the difference is filed. Phase 8 cannot give a
