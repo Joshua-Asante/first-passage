@@ -19,16 +19,28 @@ Before the first portfolio result is computed, freeze a campaign pre-registratio
    captures), starting balance, target, drawdown clock and lock behavior, daily limits, consistency
    and inactivity rules, contract caps, permitted instruments/hours, and fees;
 2. the primary objective: minimize median trading days to pass among configurations whose
-   conservative bust estimate is below 5%;
-3. the safety decision rule: the **one-sided 95% upper confidence bound**, not only the point
-   estimate, must be below 5% in the final independent simulation;
+   qualifying bound (item 3) is below 5%;
+3. the safety decision rule: the safety estimand is `P(bust before pass)` over the evaluation
+   lifecycle (item 5), and the qualifying statistic is a bound that carries **source-sample and
+   model uncertainty as well as simulation error** (Phase 7). A Monte Carlo-only one-sided 95%
+   upper bound is reported but can never qualify a configuration on its own — more paths shrink
+   it toward zero without adding one day of history;
 4. tie-breakers, in order: higher pass probability by the evaluation horizon, lower 95th-percentile
    time to pass, lower expected evaluation fees, lower tail drawdown, then fewer active strategies;
-5. the evaluation horizon and treatment of unresolved paths;
+5. the evaluation horizon cap and the treatment of unresolved paths: a path still open at the cap
+   counts as a bust in every safety statistic (the engine already tags these `horizon_cap`
+   outcomes — `core/mc/simulation.py`); disclosing the unresolved share is not a substitute;
 6. the allowed configuration grammar (strategy inclusion, integer contract quantities, session
    collision policy, daily loss governor, and any portfolio-level risk scale); and
-7. the random seeds, bootstrap family, block-length selection rule, search budget, and untouched
-   confirmation set.
+7. the random seeds, bootstrap family, block-length selection rule, the joint-flat block-boundary
+   rule (Phase 3), search budget, and the confirmation set;
+8. the confirmation start date **derived** from the included strategies' final design-decision
+   dates (Phase 0 field, Phase 3 rule) and the minimum confirmation length in trading days and
+   expected trades; and
+9. every Phase 4 screen cutoff as a number: dominance rule and margin, outlier-removal count and
+   surviving floor, single-year/single-strategy dependence test, cost and slippage stress values,
+   and the safety-screen threshold. No result-dependent adjective survives into the
+   pre-registration.
 
 If the exact 5% boundary is operational rather than statistical, report both the point-estimate
 frontier and the confidence-qualified frontier, but only the latter may be called a pass.
@@ -43,13 +55,25 @@ Create a read-only intake manifest for each of the seven strategies and exports:
 - complete trades, including entry/exit timestamps and prices, quantity, commission, slippage,
   maximum adverse excursion (MAE), maximum favorable excursion, and stable trade ID where
   available;
-- overlap between strategy development/tuning and the reported four-year period; and
+- the strategy's **final design-decision date** — the last change to any signal, filter, stop,
+  exit, or sizing rule, from the author's own record — and the overlap between development/tuning
+  and the reported four-year period. An unknown date is recorded as `UNKNOWN`, never guessed;
+  Phase 3 treats `UNKNOWN` as the export's last timestamp;
+- whether **synchronized intraday bars** (or timestamped intratrade equity paths) exist for the
+  strategy's instrument and session across the full period, as distinct from a per-trade MAE
+  scalar; and
 - known parameter searches, rejected variants, missing trades, platform assumptions, and changes
   made during the backtest window.
 
 **Hard stop:** summary reports or equity curves alone are insufficient for an intraday-honest bust
-estimate. If MAE is absent, obtain bar data for replay or label the first result EOD-only and
-non-decision-grade. Never infer that an EOD-safe path is intraday-safe.
+estimate. A scalar per-trade MAE is not intraday evidence either: it does not say *when* the
+adverse excursion occurred relative to realized gains, the running peak, or the other strategies'
+excursions, so it cannot place the trailing floor when trades overlap or several trades share a
+session. Decision-grade trailing-floor evaluation needs timestamped intratrade equity paths or
+synchronized bar replay across every included strategy. A strategy with MAE only, or neither, is
+inventoried as `LOWER BOUND`-capable (the repository's existing honesty label —
+`lab/research_utils/msl_score.py`); a configuration containing it can be screened but cannot
+qualify (Phase 5, Phase 7). Never infer that an EOD-safe path is intraday-safe.
 
 **Deliverable:** `INTAKE.md` plus a machine-readable manifest and a discrepancy report. No ranking is
 performed in this phase.
@@ -94,6 +118,29 @@ search and an untouched terminal segment for confirmation; add walk-forward fold
 development segment. For only four years of history, prioritize time integrity over maximizing the
 training sample and disclose the small effective sample size.
 
+**Confirmation start is derived, not chosen.** The confirmation segment begins strictly after the
+latest final design-decision date among the strategies a configuration includes (Phase 0 field).
+Recording an overlap never converts a development slice into out-of-sample data. A strategy whose
+final design decision post-dates the export, or is `UNKNOWN`, has no untouched historical segment:
+a configuration that includes it cannot qualify from historical data, and its confirmation moves to
+a reserved forward interval whose first eligible bar is strictly after the pre-registration
+commit. If the derived segment is shorter than the frozen minimum (decision contract item 8), the
+outcome for that inclusion set is **no qualifying configuration**, not a shorter window.
+
+**Block boundaries are joint-flat.** Bootstrap block edges may fall only at timestamps where every
+included strategy is flat, so no resampled path inherits position state, orphan exits, or duplicate
+entries from an unrelated block, and no position is ever forced flat to make a boundary. The
+repository's rule snapshot records `weekend_holds: False` for the Tradeify tiers
+(`core/firm_rules.py` — a configuration fact, re-verified against the Phase 0 primary-source
+capture, not engine-enforced), so calendar-week boundaries are joint-flat for every venue-legal
+strategy and match the existing week-block convention (`paired_blocks_from_daily`,
+`lab/discovery/prop_survivor_scoring.py`). Block lengths are integer weeks. A strategy that carries
+a position across a week boundary is venue-illegal and leaves in Phase 2; no state-preserving
+stitching rule is admitted under this campaign.
+
+**Freeze every Phase 4 cutoff here** (decision contract item 9). Phase 4 may not run while any of
+its rejection rules is still an adjective.
+
 Define a bounded search space. Start with `{off, 1 contract}` for each strategy, then permit larger
 integer quantities or a small frozen set of portfolio risk scales only where standalone geometry
 makes them reachable. Prohibit signal-parameter optimization. Count every evaluated configuration
@@ -104,23 +151,31 @@ search is run.
 
 ## Phase 4 — Fast deterministic screen
 
-Run every allowed configuration once on the realized joint chronology and on rolling start dates.
-Apply the exact Select rules and event ordering. Reject configurations that:
+Run every allowed configuration once on the realized **development-segment** chronology and on
+rolling start dates inside that segment. The confirmation segment is not loaded in this phase: a
+screen that touches it turns Phase 7 into a second look, not a confirmation. Apply the exact
+Select rules and event ordering. Reject configurations that:
 
-- bust on the realized path or breach a contract/session rule;
+- bust on the realized development path or breach a contract/session rule;
 - cannot reach the target within the frozen horizon;
-- are clearly dominated on bust, pass rate, and speed;
-- depend on one year, one strategy, or a small number of outlier trades; or
-- already exceed a loose safety screen under modest cost and slippage stress.
+- are dominated on bust, pass rate, and speed under the frozen Phase 3 dominance rule and margin;
+- depend on one year, one strategy, or the frozen number of top trades (Phase 3 outlier test); or
+- exceed the frozen Phase 3 safety-screen threshold under the frozen cost and slippage stress
+  values.
 
 This phase is a cheap funnel, not evidence of a sub-5% bust rate.
 
 ## Phase 5 — Coarse joint Monte Carlo search
 
-For survivors, resample **synchronized time blocks across all seven strategies** so market regimes,
-flat days, collisions, and cross-strategy dependence remain aligned. Where trade-level MAE or bar
-replay exists, evaluate the trailing floor intraday. Include plausible execution stress and the
-actual inactivity/trading-day clock.
+For survivors, resample **synchronized, joint-flat time blocks across all included strategies**
+(Phase 3 block rule), drawn from the development segment only, so market regimes, flat days,
+collisions, cross-strategy dependence, and position state remain aligned. Evaluate the trailing
+floor intraday from timestamped intratrade equity paths or synchronized bar replay. A leg that
+offers only a scalar MAE, or nothing, is scored on the end-of-day clock and the whole
+configuration's result carries the `LOWER BOUND` label; a `LOWER BOUND` result cannot qualify in
+Phase 7. Simulate every path to resolution (bust or pass) up to the frozen horizon cap and count
+paths still open at the cap as busts in every safety statistic (decision contract item 5). Include
+plausible execution stress and the actual inactivity/trading-day clock.
 
 Use sequential allocation of compute:
 
@@ -150,12 +205,25 @@ strategy's signal parameters inside this campaign.
 
 ## Phase 7 — Locked confirmation run
 
-After selecting a small shortlist, run the untouched chronological confirmation once. Then perform
-a high-precision independent Monte Carlo with new seeds. The final report must include:
+After selecting a small shortlist, run the derived confirmation segment (Phase 3) once. Then
+perform a high-precision independent Monte Carlo with new seeds. New seeds make draws independent
+only conditional on the same fitted block distribution, so the final report must include:
 
-- bust point estimate, numerator/denominator, Monte Carlo standard error, and one-sided 95% upper
-  confidence bound;
-- pass and unresolved probabilities at the frozen horizon;
+- the safety estimand `P(bust before pass)`: point estimate, numerator/denominator with
+  unresolved-at-cap paths counted in the numerator, Monte Carlo standard error, and the one-sided
+  95% upper bound from simulation error alone — reported, never the qualifying statistic;
+- the **qualifying bound**, which carries source-sample and model uncertainty: an outer block
+  bootstrap over the historical development weeks (B outer replicates, each re-fitted and
+  re-simulated with fresh inner seeds; the statistic is the 95th percentile of the conservative
+  bust estimate across outer replicates — the same two-level design as the repository's W1
+  bootstrap-95th packet, `lab/analysis/c1/class_s_w1_bootstrap_honest_2026-09-02/`), together with
+  the worst pre-registered Phase 6 partition (halves, leave-one-year-out). A configuration
+  qualifies only if the outer-bootstrap 95th percentile, the worst partition, and the realized
+  confirmation-segment path all clear 5%. If the outer bootstrap is infeasible within the frozen
+  budget, the claim is explicitly limited to *under the fitted simulation model* and may not be
+  called an out-of-sample bust probability;
+- pass, bust, and unresolved-at-cap shares at the frozen horizon, with the unresolved share also
+  shown folded into the bust numerator;
 - median and 90th/95th-percentile trading days to pass, conditional and unconditional views clearly
   labeled;
 - expected fees/evaluations to first pass;
@@ -214,5 +282,22 @@ a partial run as final.
 Place or copy the seven strategy files and seven backtest exports into an accessible local intake
 directory (kept uncommitted if vendor-licensed), then provide the exact path. Phase 0 can begin as
 soon as those 14 inputs are visible. The minimum useful export has one row per trade with entry and
-exit timestamps, prices, quantity, and net/gross P&L; MAE or replayable intraday bars are required
-for a decision-grade trailing-drawdown result.
+exit timestamps, prices, quantity, and net/gross P&L. Replayable intraday bars (or timestamped
+intratrade equity paths) covering every strategy's instrument and session, plus each strategy's
+final design-decision date, are required for a decision-grade trailing-drawdown result; a scalar
+MAE supports only a `LOWER BOUND` result.
+
+## Review reconciliation — 2026-09-03
+
+Codex review of the first draft (PR #272, commit `aebb774`) raised six P1 findings and one P2; each
+is folded into the phase it governs rather than appended as an exception:
+
+| Finding | Where it now binds |
+|---|---|
+| Deterministic screen exposed the confirmation segment | Phase 4 (development segment only) |
+| Development overlap recorded but confirmation still called untouched | Phase 0 field, Phase 3 derived start, contract item 8 |
+| Monte Carlo-only upper bound ignores source-sample/model uncertainty | Contract item 3, Phase 7 qualifying bound |
+| Scalar MAE treated as intraday evidence | Phase 0 hard stop, Phase 5 `LOWER BOUND` rule |
+| Unresolved paths excluded from the safety estimand | Contract item 5, Phase 5, Phase 7 |
+| Screen cutoffs left as adjectives | Contract item 9, Phase 3, Phase 4 |
+| Block resampling silent on open positions | Phase 3 joint-flat rule, Phase 5 |
