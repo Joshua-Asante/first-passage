@@ -2,12 +2,12 @@
 
 Audit date: 2026-09-03. This evidence is separate from generated RESULTS. Final generation is `tradeify-phase1-normalization-v2`. All five sources remain `EXPLORATORY`; campaign status is `BLOCKED_EXPLORATORY`, verdict cap is `NEEDS_CONTEXT`, and G1.4 is partial. D13(b) is now `ACCEPTED_UNMODELED`: the continuous-roll limitation is WARNING, not a blocker by itself; attribution remains UNAVAILABLE. Nothing here qualifies or deploys a strategy.
 
-The operator addendum's actual pin lookup, version identity, D13 policy, parsed-fee snapshot and wrong-byte-length tests are implemented and verified. The v2 real run supersedes the earlier v1 generation. Code and acceptance literals were frozen before the full suite, which passed with exit 0.
+The operator addendum's actual pin lookup, version identity, D13 policy, parsed-fee snapshot and wrong-byte-length tests are implemented and verified. The subsequent F2 publication-recovery fix passed covering and full-suite tests; its real rerun is byte-identical. F1 remains the disclosed contract limitation below, so publication stays NEEDS_CONTEXT and no unconditional readiness claim is made.
 
 ## Revision, environment and reproduction
 
-- Checkout: `67d65d76722e86b091c422e666d00103a72a7d6a`, incorporating main `8327f14` and both authoritative candidate pins.
-- The final v2 real run used uncommitted R4 loader/venue/renderer changes on that checkout; this was not unchanged code at `67d65d7`. Raw code SHA-256: runner `2de2016fcee3d7ff64116a852bca96b71d3b0eb53f8119e0e69e46f4804c569e`; `tv_trade_ledger.py` `cdd925c0b77efc31ded8b90a9a3ead0cd79dac9fa9af9a0e1e77f272d520b075`; `trade_reconciliation.py` `e834db8f5f8d1a1180704e826da71b73659635828c4f39e30d7222ea17cfca67`.
+- Original v2 checkout: `67d65d76722e86b091c422e666d00103a72a7d6a`, incorporating main `8327f14` and both authoritative candidate pins. The latest F2 recovery-only real rerun used `11ab8f82ae189fd334c96fc2e5dea91896fada7e` plus the uncommitted recovery fix, not unchanged checkpoint code.
+- Latest raw code SHA-256: runner `e9cbaf476a9d30d090385ee0f7a535ea432c8000fc14633be6508dbad5fa5c4c`; `tv_trade_ledger.py` `cdd925c0b77efc31ded8b90a9a3ead0cd79dac9fa9af9a0e1e77f272d520b075`; `trade_reconciliation.py` `e834db8f5f8d1a1180704e826da71b73659635828c4f39e30d7222ea17cfca67`. The prior v2 runner hash was `2de2016fcee3d7ff64116a852bca96b71d3b0eb53f8119e0e69e46f4804c569e`.
 - Manifest `git_base_commit` remains original campaign base `ed181233afd01d8fc128bc76ac626e43c3761f87`, not the run-code revision.
 - Windows; `.venv/Scripts/python.exe`, Python 3.14.3, pandas 3.0.5, NumPy 2.5.2, pytest 9.1.1, PyYAML 6.0.3.
 - Exact source basenames, byte lengths and SHA-256 pins in `phase1_config.json` were independently verified before parsing and after the replacement run. Dropped exports were never opened or parsed.
@@ -22,6 +22,8 @@ Historical v1 runs: both exit 0. The first exposed `Decimal('...')` monthly-map 
 
 After the operator addendum and synthetic GREEN, one final v2 invocation of the command above exited 0. The explicit D13 policy changes config, five detail reports, manifest and RESULTS hashes; three ledger hashes, fee/calendar/summary snapshots and all ten source files remain unchanged. No tolerances or accounting changed.
 
+After F2 recovery GREEN, the same command ran once successfully again (exit 0). Independent before/after SHA-256 comparison of all 14 frozen input/output files proved byte identity, and all ten source basenames/lengths/hashes still matched. No staging/backup debris remained after successful publication. This changes recovery safety only: failed rollback retains outstanding backups, attempts other recoveries, and names retained paths without hiding the original publication error. F1 algorithm/generated-report behavior is unchanged.
+
 Actual PORT_MANIFEST entries are loaded once; pinned active/dropped refs must match existing target basename/hash, with safe manifest-owned placement and no private in-repo Pine requirement. The immutable D13 object is passed explicitly to venue analysis; default callers without it still see the roll blocker. Fee hashing now uses the exact parsed bytes even if the file changes afterward. Operator ruling 2026-09-03, campaign-state §6 D13(b), binds:
 
 - Phase 3 pre-registration states back-adjustment seam risk as a limitation of every campaign claim: fills cannot be attributed to a contract month, and a seam crossing is indistinguishable from a price move.
@@ -30,6 +32,8 @@ Actual PORT_MANIFEST entries are loaded once; pinned active/dropped refs must ma
 Neither future obligation is claimed discharged by this implementation.
 
 ## Independent aggregate and boundary checks
+
+Known F1 exposure-contract limitation, not fixed: the operator-mandated batching (earlier exits → all entries → zero-duration exits) is not a global causal minimum for coincident zero-duration/new lasting entries. Prior 50 exiting, zero-duration 70 and new lasting 60 gives the existing minimum 130, but a feasible ordering gives 70. The correction decision remains pending; literal behavior and generated reports are unchanged. Current zero-duration counts are 6/12/0/0/12, with no affected coincident groups; current minima 80/4/77/77/6 and cap classifications are unchanged. Publication remains `NEEDS_CONTEXT`; this evidence makes no generic bound-correctness or unconditional software-readiness claim.
 
 | Strategy | Events | Trades | Net P&L USD | Daily violations | Fri→Sun | Closed-trade / TV panel max DD USD |
 |---|---:|---:|---:|---:|---:|---|
@@ -69,16 +73,20 @@ Independently hashed with `Get-FileHash -Algorithm SHA256`; the first 12 match m
 All pytest commands use `-p no:cacheprovider` and an external basetemp. Here `$TEST_TMP` names the explicitly writable external visualization directory, not any repository directory. Baseline eight Phase 1/evidence/safety modules: 198 passed, 1 Windows symlink skip, exit 0. Pre-real-run synthetic suite: 198 passed, 1 skipped, 1 stale-manifest acceptance deselected, exit 0. Renderer synthetic RED: 1 failed, 20 deselected; GREEN covering runner/evidence: 116 passed, 1 skipped, 1 stale-RESULTS acceptance deselected, exit 0.
 
 ```powershell
-.venv/Scripts/python.exe -m pytest tests/test_tv_trade_ledger.py tests/test_trade_reconciliation.py tests/test_joint_trade_blocks.py tests/test_tradeify_phase1_runner.py tests/test_phase1_safety_gates.py tests/test_cme_calendar_evidence.py tests/test_tv_summary_reconciliation.py tests/test_tradeify_phase1_evidence_integration.py tests/test_tradeify_phase1_identity_policy.py tests/test_cost_model.py tests/core/test_mc_intraday_barrier.py tests/core/test_trailing_dd_boundary.py tests/core/test_trailing_locking_boundary.py tests/core/test_mc_preflight.py -p no:cacheprovider --basetemp "$TEST_TMP/r4-v2-final-focused" -q -rs
+.venv/Scripts/python.exe -m pytest tests/test_tv_trade_ledger.py tests/test_trade_reconciliation.py tests/test_joint_trade_blocks.py tests/test_tradeify_phase1_runner.py tests/test_phase1_safety_gates.py tests/test_cme_calendar_evidence.py tests/test_tv_summary_reconciliation.py tests/test_tradeify_phase1_evidence_integration.py tests/test_tradeify_phase1_identity_policy.py tests/test_cost_model.py tests/core/test_mc_intraday_barrier.py tests/core/test_trailing_dd_boundary.py tests/core/test_trailing_locking_boundary.py tests/core/test_mc_preflight.py -p no:cacheprovider --basetemp "$TEST_TMP/final-v2-fix-focused" -q -rs
 ```
 
-Final v2 focused exit 0: **334 passed, 1 skipped in 8.13s**, no warnings. Sole skip: `test_symlink_capture_cannot_escape_directory`, WinError 1314 (file-symlink creation privilege unavailable). Production barrier files are unchanged. Before the v2 real run, all nine synthetic campaign/evidence/safety modules passed 227 tests, 1 skipped, 2 deliberately stale committed-artifact tests deselected, exit 0. New RED evidence: identity/policy module 14 failed/9 passed; fee/policy integration 2 failed/2 passed. Explicit wrong-byte-length tests already passed the existing implementation. A self-review dot-target diagnostic regression failed then passed after rejecting an empty normalized path.
+Latest F2-focused exit 0: **336 passed, 1 skipped in 8.54s**, no warnings. The two added real-filesystem regressions first failed (missing preserved backup; other targets not restored after unlink failure), then passed along with the existing recovery tests. Initial narrow recovery GREEN: 148 passed, 1 skipped in 7.14s. Sole skip: `test_symlink_capture_cannot_escape_directory`, WinError 1314. Production barrier and exposure files are unchanged.
+
+Prior v2 focused evidence: 334 passed, 1 skipped in 8.13s. Before the v2 generation, nine synthetic modules passed 227 tests, 1 skipped, 2 stale committed-artifact tests deselected. Prior RED: identity/policy 14 failed/9 passed; fee/policy integration 2 failed/2 passed; wrong-byte-length tests already passed existing guards. Dot-target diagnostic RED passed after safe-path validation was corrected.
 
 ```powershell
-.venv/Scripts/python.exe -m pytest -p no:cacheprovider --basetemp "$TEST_TMP/r4-v2-full" -q -rs
+.venv/Scripts/python.exe -m pytest -p no:cacheprovider --basetemp "$TEST_TMP/final-v2-fix-full" -q -rs
 ```
 
-Final v2 full suite (exec session 16357): **exit 0; 2,453 passed, 35 skipped, 23 warnings, 6 subtests passed in 436.13s (7:16)**. All code/acceptance literals were stable before collection and no code/tests changed during the run. External `r4-v2-full-suite.log` preserves complete warning and skip inventories.
+Latest F2 recovery full suite (exec session 90916): **exit 0; 2,455 passed, 35 skipped, 23 warnings, 6 subtests passed in 428.14s (7:08)**, after the byte-identical rerun and 336/1 focused GREEN. Code/tests stayed frozen throughout execution. External `final-v2-fix-full-suite.log` records the full warning/skip inventory; its categories are unchanged from the prior run described below. Controller checkpointed the exact recovery code/tests and F1 README disclosure as `bbd4564`; no worker commits were made.
+
+Prior v2 full suite (exec session 16357): **exit 0; 2,453 passed, 35 skipped, 23 warnings, 6 subtests passed in 436.13s (7:16)**. That is prior-checkpoint evidence, not a claim about the recovery fix. External `r4-v2-full-suite.log` preserves its complete warning/skip inventory.
 
 Skips concern absent optional packages (`funded_scaling`, `databento`, `arch`), unavailable private data/history/docs and operator CrossTrade/NT8 integration, one interpreter-specific branch, an obsolete WARN-tier branch, and the single Windows file-symlink privilege limitation. Warnings concern `pkg_resources`, nolds' sklearn/RANSAC fallback, plotting deprecations and explicit historical scoring-gate notices. No skip or warning was suppressed or repaired outside this task.
 
