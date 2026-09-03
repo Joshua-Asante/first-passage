@@ -41,6 +41,7 @@ _SOURCE_KEYS = frozenset(
         "pine_slippage_ticks_per_side",
         "pine_pyramiding_pct",
         "pine_pin_status",
+        "pin_divergence",
         "contract_cap",
     }
 )
@@ -177,6 +178,7 @@ class SourceSpec:
     pine_pin_status: Literal[
         "NOT_IN_PORT_MANIFEST", "PINNED_SWAP_PROTOTYPE", "UNPINNED_MODIFIED"
     ]
+    pin_divergence: str | None
     contract_cap: int
 
 
@@ -279,6 +281,12 @@ def _source_spec(value: object) -> SourceSpec:
             "pine_pin_status must be one of "
             f"{sorted(_PINE_PIN_STATUSES)!r}: {pine_pin_status}"
         )
+    pin_divergence = record["pin_divergence"]
+    if pine_pin_status == "UNPINNED_MODIFIED":
+        if not isinstance(pin_divergence, str) or not pin_divergence.strip():
+            raise ValueError("UNPINNED_MODIFIED requires a non-empty pin_divergence")
+    elif pin_divergence is not None:
+        raise ValueError("pin_divergence must be null unless pine_pin_status is UNPINNED_MODIFIED")
     for field in ("declared_bar_size_minutes", "contract_cap"):
         if type(record[field]) is not int or record[field] <= 0:
             raise ValueError(f"{field} must be a positive integer")
@@ -318,6 +326,7 @@ def _source_spec(value: object) -> SourceSpec:
             record["pine_pyramiding_pct"], "pine_pyramiding_pct", allow_zero=True
         ),
         pine_pin_status=pine_pin_status,
+        pin_divergence=pin_divergence,
         contract_cap=record["contract_cap"],
     )
 

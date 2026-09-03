@@ -51,6 +51,7 @@ def _spec_dict(strategy_id: str, export_filename: str, pine_filename: str) -> di
         "pine_slippage_ticks_per_side": "1",
         "pine_pyramiding_pct": "100",
         "pine_pin_status": "NOT_IN_PORT_MANIFEST",
+        "pin_divergence": None,
         "contract_cap": 80,
     }
 
@@ -134,7 +135,7 @@ def test_frozen_configuration_has_seven_continuous_source_specs():
         "orb_mnq_recon_v7",
         "striker_dj30_qtxg1_swap_body_on_mym",
         "striker_dj30_native_pyramid_down_on_mym",
-        "striker_nas100_native_dow_modified_on_mnq",
+        "striker_nas100_mnq_dow_wed_excluded",
         "striker_nas100_qtxg1_swap_body_on_mnq",
         "vanguard_mgc_v04",
     ]
@@ -159,7 +160,7 @@ def test_frozen_configuration_records_pine_pyramiding_from_each_source():
         "orb_mnq_recon_v7": Decimal("100"),
         "striker_dj30_qtxg1_swap_body_on_mym": Decimal("750"),
         "striker_dj30_native_pyramid_down_on_mym": Decimal("250"),
-        "striker_nas100_native_dow_modified_on_mnq": Decimal("1000"),
+        "striker_nas100_mnq_dow_wed_excluded": Decimal("1000"),
         "striker_nas100_qtxg1_swap_body_on_mnq": Decimal("1000"),
         "vanguard_mgc_v04": Decimal("80"),
     }
@@ -188,14 +189,28 @@ def test_frozen_configuration_records_manifest_derived_pin_status_and_body_ident
     ]
     assert dj_modified.strategy_id == "striker_dj30_native_pyramid_down_on_mym"
     assert dj_modified.pine_pyramiding_pct == Decimal("250")
+    assert dj_modified.pin_divergence == "pyramidSize default 250 vs pinned 750"
     assert dj_modified.lineage_notes == (
-        "Local byte diff against 2b895317 changes only pyramidSize default 750 to 250; this DJ30 modified native body is the sole pyramid-down source, retained as a literal EXPLORATORY chart run rather than a pinned locked venue edition.",
+        "Local byte diff against 2b895317 changes only pyramidSize default 750 to 250; this DJ30 modified native body is provisional pending the remaining D10 naming answers, retained as a literal EXPLORATORY chart run rather than a pinned locked venue edition.",
     )
     nas_modified = by_hash["d18c2699ea3856df884eced84c9384adea953f3a2470bea4f2d671b6cd294057"]
-    assert nas_modified.strategy_id == "striker_nas100_native_dow_modified_on_mnq"
+    assert nas_modified.strategy_id == "striker_nas100_mnq_dow_wed_excluded"
     assert nas_modified.pine_pyramiding_pct == Decimal("1000")
+    assert nas_modified.pine_pin_status == "UNPINNED_MODIFIED"
+    assert nas_modified.pin_divergence == "day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}"
     assert nas_modified.lineage_notes == (
-        "Local byte diff against bb921399 changes only allowThu and allowFri defaults from false to true; pyramid stays 1000, so this is a DOW-modified body, not pyramid-down, retained as a literal EXPLORATORY chart run rather than a pinned locked venue edition.",
+        "Local byte diff against bb921399 changes only allowThu and allowFri defaults from false to true, producing day-of-week set {Mon,Tue,Thu,Fri} versus locked {Mon,Tue}; this is a parameter cell of the NAS100 template, never the locked edition, and remains pyramid 1000.",
+    )
+    provisional_striker_ids = (
+        "striker_dj30_qtxg1_swap_body_on_mym",
+        "striker_dj30_native_pyramid_down_on_mym",
+        "striker_nas100_qtxg1_swap_body_on_mnq",
+    )
+    assert all(
+        "provisional pending the remaining D10 naming answers" in next(
+            spec.lineage_notes[0] for spec in specs if spec.strategy_id == strategy_id
+        )
+        for strategy_id in provisional_striker_ids
     )
     assert all(
         "_v45" not in spec.strategy_id and "_v1" not in spec.strategy_id
@@ -216,6 +231,35 @@ def test_load_source_specs_rejects_unknown_pine_pin_status(tmp_path):
     path.write_text(json.dumps(payload), encoding="utf-8")
 
     with pytest.raises(ValueError, match="pine_pin_status must be one of"):
+        load_source_specs(path)
+
+
+@pytest.mark.parametrize(
+    ("pine_pin_status", "pin_divergence", "match"),
+    [
+        ("UNPINNED_MODIFIED", None, "UNPINNED_MODIFIED requires a non-empty pin_divergence"),
+        ("UNPINNED_MODIFIED", "", "UNPINNED_MODIFIED requires a non-empty pin_divergence"),
+        ("NOT_IN_PORT_MANIFEST", "body changed", "pin_divergence must be null"),
+        ("PINNED_SWAP_PROTOTYPE", "body changed", "pin_divergence must be null"),
+    ],
+)
+def test_load_source_specs_couples_pin_status_to_divergence(
+    tmp_path, pine_pin_status, pin_divergence, match
+):
+    """A modified-body label without facts, or facts on another label, corrupts identity."""
+    payload = {
+        "claim_class": "EXPLORATORY",
+        "platform": "TradingView Strategy Tester over a continuous futures chart",
+        "strategies": [
+            _spec_dict("fixture", "source.csv", "source.pine")
+        ],
+    }
+    payload["strategies"][0]["pine_pin_status"] = pine_pin_status
+    payload["strategies"][0]["pin_divergence"] = pin_divergence
+    path = tmp_path / "config.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match=match):
         load_source_specs(path)
 
 

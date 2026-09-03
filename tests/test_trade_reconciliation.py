@@ -49,6 +49,7 @@ def _spec(
         pine_slippage_ticks_per_side=Decimal("1"),
         pine_pyramiding_pct=Decimal("100"),
         pine_pin_status="NOT_IN_PORT_MANIFEST",
+        pin_divergence=None,
         contract_cap=contract_cap,
     )
 

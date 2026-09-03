@@ -56,7 +56,7 @@ _FROZEN_STRATEGY_IDS = (
     "orb_mnq_recon_v7",
     "striker_dj30_qtxg1_swap_body_on_mym",
     "striker_dj30_native_pyramid_down_on_mym",
-    "striker_nas100_native_dow_modified_on_mnq",
+    "striker_nas100_mnq_dow_wed_excluded",
     "striker_nas100_qtxg1_swap_body_on_mnq",
     "vanguard_mgc_v04",
 )
@@ -277,6 +277,7 @@ def _strategy_record(
         "final_source_cumulative_pnl_usd": accounting.final_source_cumulative_pnl_usd,
         "pine_pyramiding_pct": spec.pine_pyramiding_pct,
         "pine_pin_status": spec.pine_pin_status,
+        "pin_divergence": spec.pin_divergence,
         "micro_equivalent_multiplier": venue.micro_equivalent_multiplier,
         "peak_open_micro_equivalent_quantity_min": (
             venue.peak_open_micro_equivalent_quantity_min
@@ -305,6 +306,7 @@ def _strategy_record(
             "pine_filename": spec.pine_filename,
             "pine_sha256": spec.pine_sha256,
             "pine_pin_status": spec.pine_pin_status,
+            "pin_divergence": spec.pin_divergence,
         },
     }
 
@@ -477,6 +479,7 @@ def run_campaign(
                     "pine_filename": spec.pine_filename,
                     "pine_sha256": spec.pine_sha256,
                     "pine_pin_status": spec.pine_pin_status,
+                    "pin_divergence": spec.pin_divergence,
                 },
                 "issues": _detailed_issue_rows(issues_by_strategy[strategy_id]),
             }

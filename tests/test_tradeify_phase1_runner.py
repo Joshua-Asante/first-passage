@@ -31,7 +31,7 @@ _FROZEN_STRATEGY_IDS = [
     "orb_mnq_recon_v7",
     "striker_dj30_qtxg1_swap_body_on_mym",
     "striker_dj30_native_pyramid_down_on_mym",
-    "striker_nas100_native_dow_modified_on_mnq",
+    "striker_nas100_mnq_dow_wed_excluded",
     "striker_nas100_qtxg1_swap_body_on_mnq",
     "vanguard_mgc_v04",
 ]
@@ -144,6 +144,7 @@ def _seven_source_fixture(root: Path) -> tuple[Path, Path, list[str]]:
                 "pine_slippage_ticks_per_side": "1",
                 "pine_pyramiding_pct": "100",
                 "pine_pin_status": "NOT_IN_PORT_MANIFEST",
+                "pin_divergence": None,
                 "contract_cap": 80,
             }
         )
@@ -211,6 +212,7 @@ def test_campaign_writes_local_rows_but_aggregate_contains_no_absolute_path(tmp_
     assert detailed["strategy_id"] == report_paths[0].stem
     assert detailed["claim_class"] == "EXPLORATORY"
     assert detailed["source_identity"]["pine_pin_status"] == "NOT_IN_PORT_MANIFEST"
+    assert detailed["source_identity"]["pin_divergence"] is None
     assert detailed["issues"]
     assert set(detailed["issues"][0]) == {
         "code",
@@ -225,8 +227,13 @@ def test_campaign_writes_local_rows_but_aggregate_contains_no_absolute_path(tmp_
     assert manifest["git_base_commit"] == "ed181233afd01d8fc128bc76ac626e43c3761f87"
     assert [row["strategy_id"] for row in manifest["strategies"]] == strategy_ids
     assert all(row["pine_pin_status"] == "NOT_IN_PORT_MANIFEST" for row in manifest["strategies"])
+    assert all(row["pin_divergence"] is None for row in manifest["strategies"])
     assert all(
         row["source_identity"]["pine_pin_status"] == "NOT_IN_PORT_MANIFEST"
+        for row in manifest["strategies"]
+    )
+    assert all(
+        row["source_identity"]["pin_divergence"] is None
         for row in manifest["strategies"]
     )
     assert set(manifest["local_strategy_report_sha256"]) == set(strategy_ids)
