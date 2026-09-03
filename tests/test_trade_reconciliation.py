@@ -3,6 +3,7 @@
 from decimal import Decimal
 import json
 from pathlib import Path
+import random
 
 import pandas as pd
 import pytest
@@ -16,6 +17,7 @@ from research_utils.trade_reconciliation import (
     load_early_close_calendar,
     micro_equivalent_multiplier,
     reconstruct_trades,
+    _exposure_bounds,
 )
 from research_utils.tv_trade_ledger import SourceSpec, load_fee_schedule
 
@@ -515,8 +517,50 @@ def test_exposure_mixed_tie_never_goes_negative_and_keeps_distinct_bounds(fee_sc
 
     venue = analyze_venue(trades, _spec(contract_cap=80), fee_schedule)
 
-    assert venue.peak_open_micro_equivalent_quantity_min == 130
+    assert venue.peak_open_micro_equivalent_quantity_min == 70
     assert venue.peak_open_micro_equivalent_quantity_max == 180
+    assert "CAP_STATUS_AMBIGUOUS_AT_TIMESTAMP_TIE" in _issue_codes(venue)
+
+
+def test_exposure_bounds_keep_minimum_below_maximum_for_valid_tied_trades():
+    """Every feasible tie ordering must leave the lower bound no greater than the upper bound."""
+    rng = random.Random(20260903)
+    base = pd.Timestamp("2026-01-05 09:00")
+
+    for multiplier in (1, 10):
+        for sample in range(256):
+            rows = []
+            generated = (
+                (0, 0, 1),  # zero-duration trade
+                (0, 4, 2),  # lasting trade overlapping the zero-duration entry
+                (4, 5, 3),  # lasting entry tied to the prior trade's exit
+                (1, 3, 1),  # overlapping lasting trade
+            )
+            for trade_id, (entry_offset, exit_offset, qty) in enumerate(generated, 1):
+                rows.append(
+                    _trade_between(
+                        sample * 10 + trade_id,
+                        str(base + pd.Timedelta(minutes=entry_offset)),
+                        str(base + pd.Timedelta(minutes=exit_offset)),
+                        qty=qty,
+                    )
+                )
+            for trade_id in range(5, rng.randint(5, 8) + 1):
+                entry_offset = rng.randint(0, 4)
+                exit_offset = rng.randint(entry_offset, 5)
+                rows.append(
+                    _trade_between(
+                        sample * 10 + trade_id,
+                        str(base + pd.Timedelta(minutes=entry_offset)),
+                        str(base + pd.Timedelta(minutes=exit_offset)),
+                        qty=rng.randint(1, 4),
+                    )
+                )
+
+            peak_min, peak_max = _exposure_bounds(
+                _trades(*rows), quantity_multiplier=multiplier
+            )
+            assert peak_min <= peak_max
 
 
 def test_6j_exposure_is_measured_in_micro_equivalents(fee_schedule):

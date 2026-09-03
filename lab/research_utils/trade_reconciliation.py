@@ -775,11 +775,19 @@ def _exposure_bounds(trades: pd.DataFrame, *, quantity_multiplier: int) -> tuple
                     -event["prior_exits"] - event["zero_exits"],
                 )
             else:
-                deltas = (
-                    -event["prior_exits"],
-                    event["entries"],
-                    -event["zero_exits"],
-                )
+                current -= event["prior_exits"]
+                maximum = max(maximum, current)
+                for _, trade in trades.iterrows():
+                    entry_time = pd.Timestamp(trade["entry_timestamp_naive"])
+                    exit_time = pd.Timestamp(trade["exit_timestamp_naive"])
+                    if entry_time == timestamp and exit_time == timestamp:
+                        quantity = int(trade["quantity"]) * quantity_multiplier
+                        current += quantity
+                        maximum = max(maximum, current)
+                        current -= quantity
+                current += event["entries"] - event["zero_exits"]
+                maximum = max(maximum, current)
+                continue
             for delta in deltas:
                 current += delta
                 maximum = max(maximum, current)
