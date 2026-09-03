@@ -47,7 +47,11 @@ only; every screen cutoff frozen numerically in Phase 3; joint-flat integer-week
 reconciliation table; threads resolved. Second Codex pass `78c82de` (four P1: multiplicity `α`/`M`
 per the campaign-envelope ADR; pre-confirmation integrity + venue re-check; one realized path is a
 falsifier, not a 5% estimate — `N_conf` arithmetic + `model-fitted` label; holdout reserved and
-quarantined at Phase 0, Phases 1–2 development-only). New orchestrator-owned campaign-state artifact + claim
+quarantined at Phase 0, Phases 1–2 development-only). Third pass `e8694a9` (Codex review of PR #273:
+last-inspection date joins the derived confirmation start; outer bootstrap re-runs the frozen
+selection per replicate; Phase 2 standalone-only; numeric Phase 6; calendar-week inactivity adapter;
+multi-strategy joint block builder; per-instrument fees; Rule 2 as STRATEGIC ≤3 OUTER × 8
+iterations). New orchestrator-owned campaign-state artifact + claim
 manifest [`2026-09-03-seven-strategy-select-campaign-state.md`](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md):
 roles, phase board, canonical-authority list (reuse-don't-rewrite), **Phase 0 acceptance gate
 G0.1–G0.10 frozen before any Codex output was read**, operator decisions D1–D6.
@@ -56,7 +60,8 @@ to its branch, not a parallel copy (operator merges, D1). `codex/mym-breakout-re
 name: PR #259's head (merged 09-02), whose study consumed the 2025→2026-07 holdout for five ORB-MYM
 entry families — bound into the gate as a contamination check (G0.6). Joint-flat weekly blocks rest
 on `weekend_holds: False`, a config fact **not engine-enforced** — re-verified at Phase 0, not
-assumed. No queue row opened (operator call, D2); no Rule-2 budget exists for the campaign (D3);
+assumed. No queue row opened (operator call, D2); the Rule-2 budget is now stated in iterations (plan
+contract item 13) with the operator confirming its three constituents (D3);
 its relation to queue row 1's cultivation envelope is unruled (D4) — Phase 0 is inventory-only and
 safe under either reading. No `core/`/Pine/allocation/`dd_protection`/rail change. $0/K=0.
 **Open / next:** STATE queue: `#1` [Find a viable trading strategy — portable-edge cultivation
