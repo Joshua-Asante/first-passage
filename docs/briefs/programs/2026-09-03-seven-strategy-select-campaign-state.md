@@ -414,3 +414,59 @@ records it as `tv_script_execution_events` in the config. All five panels are **
 detalization (4 OHLC ticks), which must not drift on any re-export. The panels' span ends **2026-09-02**, one day past the committed
 `coverage_end: 2026-09-01` in `cme_early_close_calendar.json` — Codex extends the coverage span to
 2026-09-02 so the calendar covers every exported session.
+
+## §11 Delta gate read — Codex re-anchor round at `a35b4e8` (2026-09-03)
+
+**Verdict: `NEEDS_CONTEXT` stands.** Read as a diff-plus-worktree audit of
+`codex/tradeify-stage1-normalization` @ `a35b4e8` (17 files, +2,112) against the twelve §9 items plus D13.
+Method: six parallel verifier agents, each followed by an adversarial challenger instructed to overturn
+its verdict in either direction. **28 item verdicts — 18 PASS, 5 PARTIAL, 4 FAIL, 1 NA; zero overturned by
+the challenge pass.** Orchestrator-run checks: **240 tests pass**, `gate_manifest.py --tier check` exit 0,
+no vendor bytes, no `.csv`/`.pine` added, no orchestrator-surface edits, `cost_model.py` byte-unchanged.
+
+**The blocker is one thing, and it is decisive.** `reconciliation_manifest.json` and `RESULTS.md` **were
+never regenerated** — neither file appears in the branch diff. The committed manifest still carries **seven**
+strategy rows under the retired ids (`striker_dj30_mym_v45`, `striker_dj30_mym_pyramid_down`,
+`striker_nas100_mnq_v1`, `striker_nas100_mnq_native_variant`), no `dropped_sources` key, null byte and pin
+fields, no `source_row_sha256` column, no `summary_reconciliation_status`, and input hashes
+`config 8881a2af…` / `calendar a368dc61…` against actual `0a6c1643…` / `742e8350…`. RESULTS.md still prints
+P&L for `striker_nas100_mnq_native_variant` ($170,250.58), an identity the campaign dropped. **The delivery
+therefore ships committed reports describing a population that no longer exists.** Everything downstream of
+those two files is unreadable until the runner re-runs. This is the worker's own "final hash freeze pending",
+but its consequence is larger than a missing freeze: the artifacts actively contradict the config.
+
+| §9 item | Verdict | Note |
+|---|---|---|
+| 1 identity — five strategies, `dropped_sources`, ruled ids | **PASS** | Frozen in code, not just data: `_FROZEN_STRATEGY_IDS` / `_FROZEN_DROPPED_SOURCE_IDS` raise on mismatch; a test asserts no active id contains `_v45` or `_v1` |
+| 1(c) pin status | **see below** | Verdict `FAIL` **as read at `a35b4e8`, now superseded** — see the pin note |
+| 2 `_exposure_bounds` tie-order + 4 of 5 P2s | **PASS** | Causality fix, atomic publish, `duration_bars`, exact-fee-set validation, malformed-UTF-8 → status 3 all implemented and tested |
+| 2 — hash-covers-parsed-bytes P2 | **PARTIAL** | The **fee schedule** is still hashed by a separate re-read (`sha256_file(fee_path)` distinct from the parse); `FeeSchedule` carries no `input_sha256` and no test pins the equality |
+| 3 early-close schema | **PASS** | `sources` array with `capture_basename` is load-bearing — the loader hashes that exact file and validates its year |
+| 3 rows frozen | **PARTIAL** | 0 rows, 0 sources — **blocked on the orchestrator's D12 calendar, not on the worker** |
+| 4 joint-flat builder / deferral | **PASS** | Explicit Phase 3 deferral with the reason recorded |
+| 5 `__init__.py` | **PASS** | Present |
+| 6 Rule 2 iteration line | **FAIL** | No iteration count anywhere — README, RESULTS, VERIFICATION, spec. Unchanged since the #283 read |
+| 7 merge of `main`, no orchestrator surface | **PASS** | Both confirmed from git |
+| 8 zero-trade typed ledger | **PASS** | Typed empty frame with canonical columns; instrument from the source spec |
+| 9 `COMPLETE`-calendar evidence | **PASS** | `COMPLETE` is rejected with empty rows or absent evidence; a status string alone cannot lift the cap |
+| 10 `source_row_sha256` | **PASS** (code) / **PARTIAL** (manifest) | Digest of the raw CSV row bytes as read; the column is absent only from the stale manifest |
+| 11 TV anchors + comparison | **PASS** | All five figure sets match §10 exactly; `missing_metrics` names commissions and monthly net rather than passing silently; per-strategy capital correctly records 200K for the two Strikers |
+| 11(a) max-drawdown percent | **PARTIAL** | No `max_drawdown_pct` metric exists. Defensible — the percent is not comparable across a 200K and a 100K basis — but it must be recorded as a deliberate omission, not left silent |
+| 12 byte sizes | **PARTIAL** | Verified at load **before** the digest on both legs, and echoed by the manifest-building code; absent from the stale artifact, and no regression test pins that a wrong byte count raises |
+| D13 roll disposition | **FAIL** | No `ACCEPTED_UNMODELED` anywhere; severity is still `BLOCKER` and still gates status. **Relay lag, not worker error** — the operator's (b) ruling reached `main` only at `ceeb2ab`, after `a35b4e8` |
+
+⚠ **The pin-status finding inverted mid-read, and the current fact is what counts.** The audit scored item
+1(c) `FAIL` because `phase1_config.json` declares both modified Striker bodies `PINNED_RESEARCH_VARIANT` with
+a `pin_ref` into `core/strategies/candidates/`, and that path was absent from the `PORT_MANIFEST.sha256` the
+branch had merged. **#286 was then re-opened and merged (`8327f14`), so those two pins now exist on `main`**
+(lines 209–210). Codex's records are therefore **correct as written**; the only action is to merge current
+`main`. **But the audit surfaced a durable defect underneath the false alarm, and that one stands:**
+`_validate_pin_ref` checks only that the string starts with the manifest prefix, and **no code anywhere opens
+`PORT_MANIFEST.sha256` to confirm a claimed pin actually exists** — worse, the validator *hard-codes* the
+`candidates/` path as the expected reference for `PINNED_RESEARCH_VARIANT`. A pin reference that resolves to
+nothing passes validation today. That is the mechanism that let a dangling reference sit unnoticed through a
+full round, and it is a worker item regardless of #286.
+
+**Also surfaced, unprompted:** `_RUNNER_VERSION` is still `tradeify-phase1-normalization-v1` despite
+substantial runner changes, so the manifest's `runner_version` cannot distinguish this generation from the
+last — a provenance field that has quietly stopped discriminating.

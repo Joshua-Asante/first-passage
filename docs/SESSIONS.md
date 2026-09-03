@@ -33,6 +33,46 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-03n — Delta gate read of Codex's re-anchor round: verdict holds at `NEEDS_CONTEXT`
+
+**Focus:** Audit `codex/tradeify-stage1-normalization` @ `a35b4e8` (17 files, +2,112) against the twelve §9
+re-anchor items plus D13, after [PR #289](https://github.com/Joshua-Asante/first-passage/pull/289) merged
+(`ceeb2ab`). Six parallel verifier agents, each followed by an adversarial challenger. No vendor bytes; no
+worker PR merged.
+**Shipped:** [campaign-state artifact](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)
+new §11 recording the delta verdict item by item.
+**Decisions/defects:** **28 item verdicts — 18 PASS, 5 PARTIAL, 4 FAIL, zero overturned by the challenge
+pass.** Orchestrator-run: 240 tests pass, `--tier check` exit 0, no vendor bytes, no orchestrator-surface
+edits, `cost_model.py` byte-unchanged, `__init__.py` present. **The blocker is singular and decisive:
+`reconciliation_manifest.json` and `RESULTS.md` were never regenerated** — neither appears in the diff. The
+committed manifest still carries seven rows under the retired ids, no `dropped_sources`, null byte and pin
+fields, no `source_row_sha256`, and input hashes `8881a2af…`/`a368dc61…` against actual
+`0a6c1643…`/`742e8350…`; RESULTS.md still prints P&L for `striker_nas100_mnq_native_variant`, a dropped
+identity. The delivery ships reports describing a population that no longer exists. Genuinely strong: the
+identity freeze is enforced in code with frozen rosters that raise on mismatch; the `_exposure_bounds`
+causality fix and four of five P2s land with tests; the early-close `capture_basename` is load-bearing and
+`COMPLETE` is rejected without evidence; `source_row_sha256` digests raw CSV row bytes; the TV anchors match
+§10 exactly with `missing_metrics` naming the gaps rather than passing silently. **The pin-status finding
+inverted mid-read:** scored `FAIL` because the `candidates/` pin_ref did not resolve, then #286 was
+re-opened and merged (`8327f14`) so it now does — Codex's records are correct and need only a merge of
+current `main`. **The durable defect underneath it stands:** no code opens `PORT_MANIFEST.sha256` to confirm
+a claimed pin exists, and the validator hard-codes the `candidates/` path, so a dangling pin_ref passes
+today. Also unprompted: `_RUNNER_VERSION` was not bumped, so `runner_version` no longer discriminates
+generations. D13 remains `BLOCKER` — relay lag, the (b) ruling reached `main` only at `ceeb2ab`. No
+`core`/Pine/allocation/`dd_protection`/rail change. $0/K=0.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — Codex re-runs and re-freezes
+(manifest + RESULTS), merges current `main`, adds the pin-existence check, bumps the runner version, carries
+the Rule 2 iteration line and the D13 `ACCEPTED_UNMODELED` disposition; orchestrator lands the D12 calendar,
+which unblocks the three venue-bound re-exports; operator supplies commissions + monthly net and may
+re-export the two Strikers at 100K; D3, D5, D7 open · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— unchanged.
+
+`queue-exception: same off-queue campaign as 2026-09-03i; live #1 stays the seven-strategy Select campaign.`
+
+---
+
 ## 2026-09-03m — Operator rulings D11–D13; venue re-expression lane ADR + edit spec; TV anchors land
 
 **Focus:** Apply the operator's four rulings on the seven-strategy Select campaign after
