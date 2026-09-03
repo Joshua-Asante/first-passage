@@ -48,7 +48,9 @@ would fail; G1.3/G1.6/G1.10 await the runner. Worktree re-run: 6/6 tests pass, b
 anticipated G1.7 re-anchor is withdrawn (calendar-week adapter and joint block builder are designed,
 spec §4.5). Two source-set facts need the operator: **D8** two prototypes are declared on one
 instrument but exported from the other's chart; **D9** the TradingView chart timezone is unknown for
-all seven (`timestamp_utc` null). Good pre-commitment noted: the spec freezes expected row/trade
+all seven (`timestamp_utc` null) — this **blocks a Phase 1 PASS**, since the plan's Phase 1 ledger
+is canonical UTC (Codex review of #274; verdict capped at `NEEDS_CONTEXT` until resolved). D7 stays
+open until GitHub confirms the object purge; a deleted ref alone does not remove the blobs. Good pre-commitment noted: the spec freezes expected row/trade
 counts and net P&L to the cent before the runner exists. No `core`/Pine/allocation/`dd_protection`/rail
 change. $0/K=0.
 **Open / next:** STATE queue: `#1` [Find a viable trading strategy — portable-edge cultivation
