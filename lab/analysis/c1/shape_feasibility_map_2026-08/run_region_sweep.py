@@ -74,8 +74,20 @@ import shape_generator as sg  # noqa: E402
 # consistency rule, and min_trading_days 1 vs 3. RESULTS.md Sec7.1 found the rope is
 # the binding gate, so this isolates +16.7% rope headroom on the binding constraint.
 FIRM_KEYS: Tuple[str, ...] = ("Tradeify_Select_100K", "MFFU_Rapid_100K", "Tradeify_Growth_100K")
-DD_GATE = 0.03  # eval_bust_ceiling, also independently confirmed == thr.eval_bust_ceiling below
-PASS_GATE = 0.50  # pass_floor, also independently confirmed == thr.pass_floor below
+# ⚠ SUPERSEDED CEILING, PINNED DELIBERATELY (2026-09-03). The LIVE
+# eval_bust_ceiling is 0.05 (prereg v2, 2026-08-26); this campaign's published
+# 945-cell region was swept and labelled at v1's 0.03. From 2026-08-26 until this
+# note, `load_scoring_thresholds()` with no path resolved to v2 and the assert
+# below raised AssertionError(0.05) on EVERY invocation -- the guard worked, but
+# the harness was silently unrunnable. Resolved by pinning the v1 path explicitly
+# (see PREREG_V1 below), which is the correct semantic: this harness exists to
+# REPRODUCE its own published verdicts, and reproducing them requires their own
+# frozen ceiling. Re-scoring the region at 0.05 is separate, unspent work needing
+# its own GO -- it is not what this file does, and must not be done by editing
+# this constant. The StaleGateWarning the pinned load emits is expected.
+PREREG_V1 = _ROOT / "docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md"
+DD_GATE = 0.03  # v1's frozen eval_bust_ceiling; confirmed == thr.eval_bust_ceiling below
+PASS_GATE = 0.50  # pass_floor, unchanged by v2; also confirmed == thr.pass_floor below
 
 # Fixed reference cells for the --validation pass (full frozen N). Chosen for
 # CORNER coverage (fast-pass, fast-bust, near-zero-edge already measured in
@@ -282,7 +294,9 @@ def main(argv=None) -> int:
     if args.validation and args.marginal_validation:
         ap.error("--validation and --marginal-validation are mutually exclusive")
 
-    thr = load_scoring_thresholds()
+    # Pinned to v1 on purpose -- see the DD_GATE block above. Passing no path
+    # resolves to DEFAULT_PREREG (v2, ceiling 0.05) and makes this assert fail.
+    thr = load_scoring_thresholds(PREREG_V1)
     assert abs(thr.eval_bust_ceiling - DD_GATE) < 1e-9, thr.eval_bust_ceiling
     assert abs(thr.pass_floor - PASS_GATE) < 1e-9, thr.pass_floor
 

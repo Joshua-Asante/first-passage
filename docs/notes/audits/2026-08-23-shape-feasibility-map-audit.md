@@ -53,6 +53,9 @@ Full numbers and tables live in `RESULTS.md` §6/§7/§8; this is the short vers
 - **The region is non-empty at every shape and, at the top win-rate values (65–70%), FEASIBLE at
   every cadence and every EM2 risk level tested** — Gate A2's `FALSIFIED (design)` disjunct (empty
   at every tuple) does not fire; this is a genuine `RESOLVED`-shaped outcome.
+- ⚠ **2026-09-03: ceiling raised 3.0% → 5.0%** ([`prereg v2`](../../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3, 2026-08-26). The
+  binding-constraint finding immediately below is a **3.0% result** and is itself ceiling-dependent
+  — at 5.0% several near-gate cells clear on bust, so which gate binds has not been re-derived.
 - **The trailing-DD bust gate (≤3.0%), not the pass floor (≥50%), is the binding constraint through
   most of the grid's transition zone** — many cells clear P(pass) comfortably (60–90%+) while
   failing bust by a wide margin (RESULTS.md §7 point 1). This was not anticipated going in; it only

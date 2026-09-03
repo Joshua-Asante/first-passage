@@ -96,6 +96,15 @@ to an economically material conditioner result.
 and halves displayed maximum drawdown versus `Off`; P80 is worse than P50. This is selection and
 development evidence, not confirmation.
 
+> ⚠ **Superseded in part, 2026-09-02 (same day, later):** the P50 List-of-Trades was subsequently
+> supplied and reconstructed. Raw net reconciles to the cent (986 exit rows / $31,947.96), but
+> through the canonical engine **at the size the headline was measured (qty 2)** Select returns
+> **51.2% bust / 48.8% pass** (Growth 43.4/56.6) and the realized historical path **busts Select on
+> day 42**. Seat A's "economically material conditioner result" is therefore material on raw P&L
+> and **not** on survival at size — the third time this construct family has shown that split.
+> Owner: [`orb_mym_v04_riskbudget_2026-09-02/RESULTS.md`](../../../lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/RESULTS.md) §2. This does not close seat A; it
+> replaces its known-evidence line.
+
 **Prospective-admission bar:** P50 was selected from the fully viewed Off/P50/P80 source catalogue
 without a prior contract or K manifest. It is therefore **ineligible to open a candidate contract
 under this campaign**. Seat A may reconstruct it only as development/source evidence; exact P50
@@ -234,6 +243,7 @@ seat iteration.
 | 2026-09-02 | Searched `/workspace`, `/root`, and `/tmp` for the named Pine and MYM/ORB trade exports; neither the Pine nor a P50 List-of-Trades export is present | A0 access blocker confirmed; exact operator capture remains next action |
 | 2026-09-02 | Authored a copy/paste local-session execution handoff with A0→A2 commands, B/C continuation, evidence rules, and required terminal states | ready for next local session after PR merge |
 | 2026-09-02 | Codex review reconciliation: P50 cannot be retroactively frozen; A0 uses EVIDENCE-BLOCKED; pre-contract reachability uses PRE-CONTRACT DROP; fresh GO required above spend; Rule-2 tripwire bound | decision ADR owns durable rulings |
+| 2026-09-02 | Operator supplied the P50 List-of-Trades; reconstructed and run through the canonical engine ([`RESULTS`](../../../lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/RESULTS.md) §2) — exit-only net reconciles to the cent, but qty-2 Select/Growth bust 51.2%/43.4% and the realized path busts Select on day 42 | A0 no longer evidence-blocked; seat A's raw-metric claim stands, its survival claim does not |
 | 2026-09-02 | Second Codex review reconciliation: every B/C contract must freeze an independent mechanism discriminator; Confirm begins strictly after the founding-freeze commit, not merely after the last source read | prospective contract checklist corrected |
 
 ## 9. Required terminal artifact

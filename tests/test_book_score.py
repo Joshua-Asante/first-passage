@@ -144,7 +144,7 @@ def test_score_book_of_one_delegates_to_score_nsurv(monkeypatch):
             sizing_basis_usd=ns.SIZING_BASIS_USD,
             half_boundary_date=pd.Timestamp(half_boundary_date).date().isoformat(),
             thresholds_source=str(PREREG_V1),
-            eval_bust_ceiling=0.03,
+            eval_bust_ceiling=0.03,  # v1's historical value; fixture only (live: 0.05)
             pass_floor=0.5,
             full=ns.PartitionScore(
                 "full", 0.01, 0.8, True, len(frame_in), 40, 0.4, "run2", True
@@ -184,7 +184,7 @@ def test_marginal_excludes_named_leg_and_emits_step3_lines(monkeypatch):
             sizing_basis_usd=ns.SIZING_BASIS_USD,
             half_boundary_date=pd.Timestamp(half_boundary_date).date().isoformat(),
             thresholds_source=str(PREREG_V1),
-            eval_bust_ceiling=0.03,
+            eval_bust_ceiling=0.03,  # v1's historical value; fixture only (live: 0.05)
             pass_floor=0.5,
             full=ns.PartitionScore(
                 "full", bust, pass_rate, True, len(frame_in), 40, 0.4, "run2", True

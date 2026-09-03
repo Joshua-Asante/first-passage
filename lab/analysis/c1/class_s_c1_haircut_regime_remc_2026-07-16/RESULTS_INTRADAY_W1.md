@@ -6,7 +6,7 @@
 **Owner ADR:** [`docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md`](../../../docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md)
 **Frozen contract:** [`docs/spec/2026-08-04-phase4-both-halves-intraday-rerun-spec.md`](../../../docs/spec/2026-08-04-phase4-both-halves-intraday-rerun-spec.md)
 **Runner / raw:** [`run_w1_intraday_both_halves.py`](run_w1_intraday_both_halves.py) · [`w1_intraday_both_halves_report.json`](w1_intraday_both_halves_report.json)
-**Gate (frozen, unedited):** bust ≤ 3.0% ∧ P(pass) ≥ 50% — [`2026-07-13 survivor-scoring prereg`](../../../docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md)
+**Gate (as frozen for this campaign, unedited):** bust ≤ 3.0% ∧ P(pass) ≥ 50% — [`2026-07-13 survivor-scoring prereg`](../../../../docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md) — ⚠ **superseded 2026-08-26: the live Part A ceiling is 5.0%** ([`prereg v2`](../../../../docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3). Both tiers below PASS at either ceiling, so no verdict here moves; the label is corrected because CLAUDE.md routes readers to this file as the Class-S honest-clock RESULTS of record. ⚠ **These are the 0.50× arm only — no 1.00× honest-clock figure exists for either `trailing_locking` tier**, which is why the ceiling collision on candidate #1 cannot be settled from this file.
 
 ---
 

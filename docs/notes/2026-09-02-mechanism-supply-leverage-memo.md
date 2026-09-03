@@ -159,8 +159,12 @@ either.
 
 ### Not established
 
-- P50's day- or position-level win rate, mean win/loss, tail, loss clustering, intraday MAE, or
-  Tradeify bust/pass probability.
+- ~~P50's day- or position-level win rate, mean win/loss, tail, loss clustering, intraday MAE, or
+  Tradeify bust/pass probability.~~ ⚠ **Established later the same day** from the supplied
+  List-of-Trades: day-level WR **56.1%**, PF **1.459**, maxDD **$2,137**, worst day **−$1,424**, and
+  Tradeify bust/pass at the measured qty 2 — **Select 51.2% / 48.8%**, busting on day 42. See
+  [`orb_mym_v04_riskbudget_2026-09-02/RESULTS.md`](../../lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/RESULTS.md) §2. The "Established" bullet above remains
+  correct about the raw TV metrics; what it could not say is that they do not survive at size.
 - Configuration identity across the three TradingView reads.
 - P50 performance on any untouched or forward sample.
 - That the opening-range aggregate-volume gate is the same construct as Q-VOLREGIME's M15

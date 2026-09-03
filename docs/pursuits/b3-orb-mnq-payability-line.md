@@ -83,6 +83,15 @@ genuinely open and could still move this picture; see that RESULTS.md §10.4.
 
 ## Addendum 2026-08-30 — overnight-range-conditioned ORB-MNQ-1: new payability evidence, standalone leg, on point for this document's own re-entry clause
 
+> ⚠ **RETRACTED 2026-08-31 — DO NOT CITE THIS ADDENDUM'S EVIDENCE.** The `RESOLVED` verdict it
+> reports was retracted the next day on a look-ahead defect in `data_lib.py::overnight_ohlc`:
+> WR diff **+24.75pp → +0.75pp** (CI includes 0), mean-win diff **+0.711R → −0.058R** (sign-flipped).
+> Corrected verdict `FALSIFIED` —
+> [`Q-RANGECOND-1-closure-falsified.md`](../briefs/closures/Q-RANGECOND-1-closure-falsified.md).
+> `ORB-MNQ-1` stays `PARKED`; no re-entry clause is triggered. Full retraction 30 lines below
+> ("⚠ Addendum RETRACTED 2026-08-31"); this line exists so the retraction is not downstream of the
+> claim in reading order ([`operational_rules.md`](../operational_rules.md) §14). Body unedited.
+
 `Q-RANGECOND-1` ([`closure`](../briefs/closures/Q-RANGECOND-1-closure-resolved.md)) tested whether
 `Q-RANGEXFER-1`'s own presence-verified overnight-range conditioner (a day-selection filter,
 independently derived, never touching this instrument's own trade log — see that closure's own

@@ -14,10 +14,11 @@
 >
 > **The live Part A eval bust ceiling is 5.0% (since 2026-08-26** —
 > [`prereg v2`](../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3, an
-> operator risk-tolerance override; `DEFAULT_PREREG` points at it**).** §2's own corrected-geometry
-> figures for candidate #1 — **Tradeify_Select_100K 4.74%** and **MFFU_Rapid_100K 4.25%**, both
-> `trailing_locking` — **both clear 5.0%**. Read mechanically, the raised ceiling satisfies §4's
-> "≥2 firms, ≥1 `trailing_locking`" on numbers already published here.
+> operator risk-tolerance override; `DEFAULT_PREREG` points at it**).** **All four** of §2's
+> corrected-geometry figures — Bulenox 3.51%, **Tradeify_Select_100K 4.74%**, **MFFU_Rapid_100K
+> 4.25%**, BluSky 4.44% — sit strictly between 3.0% and 5.0%. Read mechanically, "zero clearers,
+> `discharges_falsifier = False`" becomes **four** clearers including **both** `trailing_locking`
+> tiers, and §4's "≥2 firms, ≥1 `trailing_locking`" is satisfied on numbers already published here.
 >
 > **That is exactly the move §5 forbids**, and §5 is **not** repealed by the ceiling raise. See
 > [Addendum 2026-09-03](#addendum-2026-09-03--the-50-ceiling-does-not-re-admit-candidate-1-proposed)
@@ -175,8 +176,21 @@ Two ratified documents now point opposite ways on the same arithmetic:
 
 Candidate #1's corrected-geometry figures, published in §2 above, are **Tradeify_Select_100K
 4.74%** and **MFFU_Rapid_100K 4.25%** — two firms, both `trailing_locking`, **both under 5.0%**.
-So the ceiling raise does not merely *permit* re-admission; applied mechanically it **performs**
-it, with no new measurement, on the exact candidate §5 names.
+Bulenox (3.51%) and BluSky (4.44%) clear it too, so the raise turns a **zero**-clearer table into a
+**four**-clearer one. The ceiling raise does not merely *permit* re-admission; applied mechanically
+it **performs** it, with no new measurement, on the exact candidate §5 names.
+
+**The clock axis is the second, independent bar — and it does not resolve the question either.**
+Every figure in §2 is an **EOD-clock lower bound**, as this ADR's own 2026-08-07/08-22 intercept
+already says. On the intraday-honest clock the two `trailing` controls collapse — Bulenox
+3.51% → **26.77%**, BluSky 4.44% → **32.26%** at 1.00×
+([`R1 7-tier`](../../lab/analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md)) — failing at
+either ceiling. But **no intraday-honest 1.00× figure exists for `Tradeify_Select_100K` or
+`MFFU_Rapid_100K`**: W1 published only the 0.50× arm (0.72%,
+[`RESULTS_INTRADAY_W1`](../../lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/RESULTS_INTRADAY_W1.md)).
+So the `trailing_locking` limb — the one §4 requires — is **undetermined, not safely-failing**. A
+reader cannot resolve this collision by pointing at the clock; the measurement that would settle it
+has not been run.
 
 **Neither document saw this.** v2's §5 is careful to bar reading the `aegis_orbmnq_combined_book_2026-08-26`
 study as having cleared any gate — but it never mentions candidate #1, this ADR, or the forbidden
@@ -190,6 +204,11 @@ gap went unnoticed: candidate #1 was scored under **v1**, so it is invisible to 
 > **The 5.0% ceiling is prospective-only: it applies to candidates scored on or after 2026-08-26
 > and does not re-admit Class-S candidate #1, whose §4 discharge stays WITHDRAWN — §5's forbidden
 > move survives the ceiling raise intact.**
+
+Equivalently, and narrower if the operator prefers the tighter form: *a withdrawn EOD-clock figure
+may not be re-read at a later ceiling to restore a discharge, because the withdrawal rested on a
+corrected **input**, not on the bar.* Both forms reach the same disposition; the second binds only
+this collision and leaves the general prospectivity question open.
 
 ### Why this reading and not the other
 
@@ -218,6 +237,12 @@ option: ratify prospective-only *and* commission the corrected-geometry re-score
 fresh, pre-registered candidate — legitimate under §4's first admissible route, and costed
 separately.
 
+**Already owed, now answered:** three surfaces log this as an open ruling and can cite this
+addendum — [`class_s_w1_bootstrap_honest_2026-09-02/RESULTS.md`](../../lab/analysis/c1/class_s_w1_bootstrap_honest_2026-09-02/RESULTS.md)
+§(c), [`SESSIONS.md`](../SESSIONS.md) (owed-items line), and
+[`2026-09-03-seven-strategy-select-campaign-state.md`](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)
+row D5, which gates Phase 7 on it.
+
 **Not decided here:** anything about the 2026-11-08 hard date (unchanged), the 50% pass floor
 (unchanged), the `trailing_locking` requirement (unchanged), Part B's 1.0% funded ceiling
 (unchanged), or the four-firm set (restored 2026-09-01 by the
@@ -238,8 +263,12 @@ grep -n "Moving the 3.0% ceiling" docs/adr/2026-07-22-prop-portfolio-s4-discharg
 grep -ni "candidate #1\|withdrawal\|forbidden move" \
   docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md   # expect: no candidate-#1 hit
 
-# 4. Nobody has cited 4.74%/4.25%-under-5.0% as a discharge.
-grep -rn "4.74\|4.25" --include="*.md" docs/ lab/ STATE.md | grep -i "discharg"   # expect: empty
+# 4. Nobody reads 4.74%/4.25%-under-5.0% as a discharge. Every hit must be a FAIL
+#    statement or carry a 2026-09-03 intercept; a bare "clears"/"discharges" is the defect.
+grep -rn "4.74\|4.25" --include="*.md" docs/ lab/ STATE.md | grep -i "discharg"
+# Known-good as of 2026-09-03: this ADR; tradeify_eval_lock_correction_2026-07-22/RESULTS.md;
+# class_s_c1_haircut_regime_remc_2026-07-16/RESULTS.md; the 2026-08-05 claim-alignment audit
+# (frozen). Anything NEW in that list needs checking.
 ```
 
 ## Change history

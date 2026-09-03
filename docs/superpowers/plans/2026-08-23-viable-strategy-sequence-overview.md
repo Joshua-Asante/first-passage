@@ -7,6 +7,13 @@ GOs function as operator promotions. STATE `#1` as of 2026-08-24
 ([addendum](../../adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--the-blocker-of-b7m1-is-queue-1));
 that placement is not a phase GO.
 
+> ⚠ **Reader-intercept 2026-09-03 — both numbers in this objective have moved since authoring.**
+> (1) The Part A ceiling is **5.0%**, not 3.0% ([`prereg v2`](../../../docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3, 2026-08-26).
+> (2) **Tradeify counts toward §4 again** — fork F1 was ruled 2026-08-23 (Tradeify excluded, the
+> three-firm reading below) and **reversed 2026-09-01** ([`F1 reversal`](../../../docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-09-01--f1-reversed-a-tradeify-resting-discharge-now-counts-toward-4)),
+> restoring the four-firm set {Bulenox, Tradeify, MFFU, BluSky}. Election only; no code moved.
+> Read (b) as "≥2 of the four frozen $100K tiers, ≥1 `trailing_locking`". Body unedited.
+
 **Objective:** a strategy that (a) clears the frozen survivor gate — bust ≤ 3.0% ∧ P(pass) ≥ 50%,
 intraday-honest — on `Tradeify_Select_100K`'s real geometry, deployable on the S2b→rail path, and
 (b) where possible also clears ≥2 of {Bulenox, MFFU, BluSky} to discharge the four-firms §4
@@ -42,7 +49,9 @@ step 0.
   evidence; don't spend the last blind-channel pre-G0 slot casually; E1 stands (no slate-4 card
   until a WHO clears the full admission bar).
 - **Honest terminal states:** a deployed survivor; a Tradeify-only survivor (deploys; §4 reads as
-  designed); or dry — channel falsifiers fire and the programme demotes to research-only, which
+  designed — ⚠ post-2026-09-01 reversal that means it contributes **one real tier** toward the
+  "≥2 of four", not zero as this file's objective line assumed, and one tier is not a discharge);
+  or dry — channel falsifiers fire and the programme demotes to research-only, which
   the standing base case names as the *designed* outcome, not a process failure.
 
 ## Provenance

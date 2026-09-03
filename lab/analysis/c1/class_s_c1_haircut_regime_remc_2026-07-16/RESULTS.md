@@ -17,13 +17,18 @@
 > **(2) §4 is NOT discharged.** L71–72 ("The mechanical Part A **DISCHARGED** (four-firms §4
 > falsifier) is unchanged") and L92 ("program §4 was already discharged by candidate #1") are
 > stale. That discharge was **WITHDRAWN 2026-07-22** —
-> [`docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md`](../../../docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md)
+> [`docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md`](../../../../docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md)
 > (`Accepted`): corrected eval geometry flips both `trailing_locking` tiers Part A FAIL,
 > `discharges_falsifier = False`, and §4 is live with hard date **2026-11-08**. The 2026-07-24
 > 50K-band re-score found two Part A clearers (`Tradeify_Select_50K` 1.06% / `MFFU_Rapid_50K`
 > 0.96%), which defeats the 11-08 "no clearer on any tier" demotion clause **without**
 > discharging §4; `Tradeify_Select_100K` @ 1.00× corrected scores **4.74% — FAIL** against the
-> 3.0% ceiling.
+> 3.0% ceiling. ⚠ **2026-09-03:** that ceiling was raised to **5.0%** on 2026-08-26
+> ([`prereg v2`](../../../../docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md)
+> §3), against which 4.74% would read PASS. **Do not re-read it that way** — the withdrawal ADR's
+> §5 bars moving the ceiling to re-admit this candidate, and 4.74% is an EOD-clock lower bound with
+> no 1.00× honest-clock successor. See that ADR's
+> [Addendum 2026-09-03](../../../../docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-09-03--the-50-ceiling-does-not-re-admit-candidate-1-proposed).
 >
 > **(3)** Both Striker legs were withdrawn from the c1 eval deployment 2026-08-04. The re-MC
 > result itself (regime-robustness at the 0.50× haircut) is unaffected.
