@@ -270,6 +270,10 @@ def test_campaign_writes_local_rows_but_aggregate_contains_no_absolute_path(tmp_
     assert str(source_dir.resolve()) not in manifest_text
     assert "EXPLORATORY" in manifest_text
     assert manifest["phase1_verdict_cap"] == "NEEDS_CONTEXT"
+    rendered = result.report_path.read_text(encoding="utf-8")
+    assert "| Strategy | Status | Pine pin status |" in rendered
+    assert "| aegis_6j1 | BLOCKED_EXPLORATORY | NOT_IN_PORT_MANIFEST |" in rendered
+    assert "| striker_nas100_mnq_dow_wed_excluded | BLOCKED_EXPLORATORY | PINNED_RESEARCH_VARIANT |" in rendered
     assert manifest["ledgers"]["source_row_sha256"] == {
         "algorithm": "SHA-256",
         "input": "exact raw CSV record bytes including original record terminator when present",
@@ -339,6 +343,23 @@ def test_malformed_utf8_hash_pinned_export_returns_intake_exit_code(tmp_path, ca
         ["--config", str(config), "--source-dir", str(source_dir)]
     ) == 3
     assert "intake failure:" in capsys.readouterr().err
+
+
+def test_short_hash_pinned_export_returns_intake_exit_code(tmp_path, capsys):
+    """A short logical CSV record is an intake/schema failure, not a runner traceback."""
+    source_dir, config, _ = _five_source_fixture(tmp_path)
+    export = source_dir / "source_0.csv"
+    short_record = export.read_bytes().rsplit(b",", 1)[0]
+    export.write_bytes(short_record)
+    payload = json.loads(config.read_text(encoding="utf-8"))
+    payload["strategies"][0]["export_sha256"] = sha256(short_record).hexdigest()
+    payload["strategies"][0]["export_bytes"] = len(short_record)
+    config.write_text(json.dumps(payload), encoding="utf-8")
+
+    assert run_phase1.main(
+        ["--config", str(config), "--source-dir", str(source_dir)]
+    ) == 3
+    assert "intake failure: source row 2 has 16 fields; expected 17" in capsys.readouterr().err
 
 
 def test_header_only_exports_complete_without_key_error_and_write_zero_trade_ledger(tmp_path):

@@ -816,9 +816,10 @@ def normalize_export(source: VerifiedSource) -> NormalizationResult:
         events: list[dict[str, object]] = []
         for source_row_number, raw_record in enumerate(records[1:], start=1):
             values = _parse_csv_record(raw_record, header=False)
-            if len(values) > len(headers):
+            if len(values) != len(headers):
                 raise TradeExportSchemaError(
-                    f"source row {source_row_number} has more fields than the header"
+                    f"source row {source_row_number} has {len(values)} fields; "
+                    f"expected {len(headers)}"
                 )
             raw = dict(zip(headers, values, strict=False))
             canonical_row = {

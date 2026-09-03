@@ -412,12 +412,12 @@ def _render_report(manifest: dict[str, object]) -> bytes:
         "",
         "## Strategy inventory",
         "",
-        "| Strategy | Status | Pin ref | Divergence | Export bytes | Pine bytes | Rows | Trades | Net P&L | Daily-deadline holds | Fri→Sun sub-count |",
-        "|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|",
+        "| Strategy | Status | Pine pin status | Pin ref | Divergence | Export bytes | Pine bytes | Rows | Trades | Net P&L | Daily-deadline holds | Fri→Sun sub-count |",
+        "|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in manifest["strategies"]:
         lines.append(
-            "| {strategy_id} | {status} | {pin_ref} | {pin_divergence} | "
+            "| {strategy_id} | {status} | {pine_pin_status} | {pin_ref} | {pin_divergence} | "
             "{export_bytes} | {pine_bytes} | {source_row_count} | {trade_count} | "
             "${net_pnl_usd} | {overnight_holds} | {friday_to_sunday_holds} |".format(
                 **row
@@ -444,7 +444,7 @@ def _render_report(manifest: dict[str, object]) -> bytes:
             "",
             "## Evidence boundaries",
             "",
-            "- The source CSV/Pine bytes, row-level event/trade/weekly ledgers, and seven detailed issue reports remain local and gitignored.",
+            "- The source CSV/Pine bytes, row-level event/trade/weekly ledgers, and five detailed issue reports remain local and gitignored.",
             "- No source row was repaired, dropped for an outcome, re-ranked, composed, simulated, or rerun in Pine.",
             "- Scalar MAE/MFE values are inventory-only excursion bounds, not timestamped paths.",
             "- Per-strategy caps are measured against 80 micro-equivalents; the joint book-cap verdict is deferred to Phase 4.",

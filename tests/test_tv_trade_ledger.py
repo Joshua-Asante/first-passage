@@ -368,6 +368,7 @@ def _verified_csv(
     source_timezone: str | None = None,
     headers: list[str] | None = None,
     bom: bool = False,
+    omit_final_field: bool = False,
 ):
     tmp_path.mkdir(parents=True, exist_ok=True)
     export = tmp_path / "source.csv"
@@ -380,6 +381,8 @@ def _verified_csv(
             writer.writerow(row)
     if bom:
         export.write_bytes(b"\xef\xbb\xbf" + export.read_bytes())
+    if omit_final_field:
+        export.write_bytes(export.read_bytes().rsplit(b",", 1)[0])
     pine.write_text("pine", encoding="utf-8")
     spec = _source_spec(
         export_sha256=sha256(export.read_bytes()).hexdigest(),
@@ -536,6 +539,18 @@ def test_normalize_rejects_missing_or_duplicate_canonical_columns(tmp_path):
     )
     with pytest.raises(TradeExportSchemaError, match="duplicate canonical columns.*Trade number"):
         normalize_export(duplicate)
+
+
+def test_normalize_rejects_short_record_as_schema_error(tmp_path):
+    """A truncated final field must not surface as an internal mapping KeyError."""
+    source = _verified_csv(
+        tmp_path,
+        rows=[_row(1, "Entry long", "2026-01-05 09:30")],
+        omit_final_field=True,
+    )
+
+    with pytest.raises(TradeExportSchemaError, match="source row 1 has 16 fields; expected 17"):
+        normalize_export(source)
 
 
 @pytest.mark.parametrize(
