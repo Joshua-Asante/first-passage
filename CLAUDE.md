@@ -72,6 +72,34 @@ archived figure from a closed/NO-GO'd, non-live book — see RESULTS.md §2/§4b
 ([W1 ADR](docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md) `Accepted` 2026-08-22 —
 other decisions of record still pending as measurement).
 
+### Load-bearing numbers — the live value, and the one place that owns it
+
+**Several of these numbers have two values in the tree. The other value is historical.** Read this
+table before quoting any of them; each owner is the only surface authorized to move its number.
+Added 2026-09-03 — a reader landing on a stale surface was getting the wrong figure with no
+in-file signal, which [`operational_rules.md`](docs/operational_rules.md) §14 already forbids.
+
+| Number | **LIVE value** | Owner (the only authority) | The other value you will find |
+|---|---|---|---|
+| **Part A eval bust ceiling** | **5.0%** (since 2026-08-26) | [`prereg v2`](docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3 → `prop_survivor_scoring.DEFAULT_PREREG` | **3.0%** = [`prereg v1`](docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md), CLOSED. Still correct-in-context in the [A2 map](lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md) (its verdict labels are keyed to it), the [withdrawal ADR](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md), and the v1-pinned loader tests. Each now carries a head banner. **Do not confuse with `max_dd_pct: 3.0`** — the $100K tier's DD barrier width, a different live 3.0% |
+| **Pass floor / funded ceiling / `trailing_locking` rule** | **50% / 1.0% / ≥1 required** | same prereg v2 §3 | unchanged from v1 — no second value |
+| **§4 firm set** | **four firms** — Bulenox · Tradeify · MFFU · BluSky | [F1 reversal](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-09-01--f1-reversed-a-tradeify-resting-discharge-now-counts-toward-4) (2026-09-01) | the **three-firm** reading (2026-08-23 → 2026-09-01) survives only in that ADR's own dated addendum, SESSIONS, and archives. **Election only — no code moved:** `AUTOMATION_FRIENDLY_PROP_FIRMS` and both preregs' frozen `$100K×4` tier set always held Tradeify |
+| **Venue inactivity rule** | **≥1 trade per Mon–Fri week**, per account, eval **and** funded (art. 10468318; deletion is irreversible, art. 12268494) | [`core/firm_rules.py`](core/firm_rules.py) `Tradeify_Select_*` sourcing block (`TRADEIFY_AUTOMATION_PAYOUT_COMPLIANCE.md` §2a is the owner of record, and is **redacted from this public clone**) | **"5 consecutive idle days"** is the *engine's* `inactivity_max_idle_days`, a rolling counter — a conservative **upper bound** on the weekly rule, not the rule (see below). [`ops/sentinel/activity_week.py`](ops/sentinel/activity_week.py) is the only faithful bucket implementation, and is report-only |
+| **Q-RANGECOND-1 verdict** | **`FALSIFIED`** (2026-08-31) | [`closure-falsified`](docs/briefs/closures/Q-RANGECOND-1-closure-falsified.md) | `RESOLVED` + `+24.75pp` / `66.47%` / `+0.711R` are **retracted** — the [resolved closure](docs/briefs/closures/Q-RANGECOND-1-closure-resolved.md) is frozen historical record behind its own banner, and no longer occupies a STATE decision-index slot |
+| **ORB-MYM headline** | the **canonical engine**, not TradingView | [`orb_mym_v04_riskbudget_2026-09-02/RESULTS.md`](lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/RESULTS.md) §2 | TV net/PF/maxDD are **leg-level under pyramiding** and carry no firm DD geometry. P50's $31,947.96 reconciles to the cent yet **busts Select on day 42** at the size it was measured. Third occurrence in this construct family |
+
+⚠ **Every published prop-tier bust/pass figure in this repo assumes the inactivity barrier is
+OFF** (`firm_kwargs(inactivity_off=True)`) unless its own file says otherwise. That is the
+intended operational model — it assumes the **operator-placed weekly venue-idle token trade**,
+which is therefore load-bearing, not optional. The inactivity-**ON** re-MC has been run twice and
+is degenerate: **92.6–97.6%** path death
+([`c1_cadence_inactivity_2026-08-02`](lab/analysis/c1/c1_cadence_inactivity_2026-08-02/RESULTS.md))
+and **74.8–100%** pure-inactivity failure across every cell tested, including one at 39.7%
+trade-day density ([`orb_mym_v04_riskbudget_2026-09-02`](lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/RESULTS.md)
+§5c). Barrier-ON does not refine the pins; it measures the mitigation's absence. Do not re-open
+this as a fresh finding — and note those ON figures are themselves **ceilings**, since the engine's
+rolling counter over-fires against the weekly bucket rule (`core/mc/preflight.py`, `INACTIVITY_OFF`).
+
 ## Architecture
 
 **4-layer monorepo** ([boundaries ADR](docs/adr/2026-06-05-monorepo-layer-boundaries.md); map in

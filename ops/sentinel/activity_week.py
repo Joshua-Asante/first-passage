@@ -7,6 +7,19 @@ TRADEIFY_AUTOMATION_PAYOUT_COMPLIANCE.md §2a; idle-clock tracking spec §4).
 Does not invent a store, does not place trades, and must never read as a
 standing licence or a reminder-to-trade. STATE.md row 0 owns the recurrence
 posture (RECURRENCE-UNRULED).
+
+⚠ This module is the ONLY faithful implementation of the venue rule (2026-09-03).
+The rule is a per-Mon-Fri-week BUCKET -- ">=1 trade per week" (art. 10468318) --
+which is what ``mon_fri_week`` / ``decision_status`` below model. The MC engine
+models something different and stricter: ``core/mc/simulation.py`` counts ROLLING
+consecutive idle business days against ``firm_rules`` ``inactivity_max_idle_days:
+5``. The two are not interchangeable -- a calendar trading Mon-wk1 / Fri-wk2 /
+Mon-wk3 / Fri-wk4 satisfies THIS module in every week while the engine returns
+``bust_inactivity`` on day 6 (measured 2026-09-03). Because 5 idle bdays inside
+one Mon-Fri week is necessarily 5 consecutive, the engine never misses a real
+breach -- it over-fires, so every barrier-ON figure is a conservative ceiling.
+Do not "reconcile" the two by loosening this module to the engine's shape: the
+venue rule is the fact, and the engine's counter is a bound on it.
 """
 from __future__ import annotations
 

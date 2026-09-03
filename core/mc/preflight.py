@@ -78,6 +78,39 @@ BUST_KEYS: Tuple[str, ...] = ("bust_daily", "bust_static", "bust_trailing")
 # that is NOT the modelled automated mitigation. Barrier-ON limits are per-firm
 # in firm_rules.py — do not transcribe percentages here. Every published inactivity-
 # OFF figure is barrier-off. Matches the harness INACT_OFF idiom.
+#
+# ⚠ READ THIS BEFORE QUOTING ANY PROP-TIER BUST/PASS FIGURE (added 2026-09-03).
+# `firm_kwargs` defaults `inactivity_off=True`, so **every published prop-tier
+# bust/pass number in this repo assumes the barrier is OFF** unless its own file
+# says otherwise — including the Part A figures, the A2 feasibility map, and the
+# ORB campaign cells. That is a deliberate modelling choice, not an oversight:
+# the operator maintains a standing weekly venue-idle token trade that satisfies
+# the rule when the strategy itself has not fired (CLAUDE.md §Live-execution
+# posture; one such trade executed 2026-08-12). The choice is PRICED, twice:
+#   * lab/analysis/c1/c1_cadence_inactivity_2026-08-02   — 92.6-97.6% path death
+#   * lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02 — §5c + inactivity_
+#     barrier_check.json: 74.8-100% pure-inactivity failure across every cell
+#     tested, including one at 39.7% trade-day density.
+# So the inactivity-ON re-MC has been RUN and is degenerate: with the barrier on
+# and no token trade, nearly every path dies of inactivity before its edge can
+# express. Turning it on repo-wide would not refine the published pins, it would
+# replace them with a measurement of the token-trade mitigation's absence. Do not
+# re-litigate this as a fresh finding — the correct disclosure is this comment,
+# stated where the figures are read.
+#
+# ⚠ AND the barrier is an UPPER BOUND, not a model of the venue rule. Tradeify's
+# rule is ">=1 trade per Mon-Fri week" (art. 10468318), a per-week BUCKET;
+# simulation.py counts ROLLING consecutive idle business days and fires at
+# `inactivity_max_idle_days`. Those are not the same predicate. Every real
+# violation trips the counter (5 idle bdays inside one Mon-Fri week is 5
+# consecutive), so the barrier never MISSES a breach — but it also fires on
+# calendars the venue permits. Measured 2026-09-03 against this engine: trades on
+# Mon-wk1 / Fri-wk2 / Mon-wk3 / Fri-wk4 satisfies the venue in all four weeks and
+# still returns `bust_inactivity` on day 6. Consequence: barrier-ON inactivity
+# rates are conservative ceilings on true venue-inactivity risk, not estimates of
+# it. Modelling the bucket rule faithfully is unspent work needing its own ADR;
+# `ops/sentinel/activity_week.py` is the only surface that implements the real
+# Mon-Fri bucket, and it is report-only.
 INACTIVITY_OFF: int = HORIZON_CAP + 1
 
 

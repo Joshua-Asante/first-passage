@@ -11,6 +11,26 @@
 > freeze, so this campaign cannot open a candidate contract around it retroactively. Source/config
 > and List-of-Trades capture remain owed for provenance; this routing does not promote the result.
 
+> ## ⚠ Reader-intercept 2026-09-03 — the P50 row below is a TradingView read, and the canonical engine disagrees with it
+>
+> **The numbers in the table below are real and reproduce; they are not a survival verdict.**
+> The operator's List-of-Trades CSV behind the P50 cell was later put through the repo's canonical
+> bust engine at **the size the $31,947.96 headline was measured at (qty 2)**:
+> **Select 51.2% bust / 48.8% pass**, and the realized historical path **busts Select on day 42**
+> (maxDD 2.83% against the 3.0% trail). Exit-only net reconciles **to the cent** (986 rows /
+> $31,947.96) — raw P&L is not what fails; survival at size is.
+> Owner of that measurement:
+> [`orb_mym_v04_riskbudget_2026-09-02/RESULTS.md`](../orb_mym_v04_riskbudget_2026-09-02/RESULTS.md) §2.
+>
+> **Which number is authoritative:** the canonical engine. TradingView net / PF / max-drawdown are
+> **leg-level under pyramiding** and carry no firm DD geometry, so they cannot express a prop-tier
+> bust. This is the **third** time this construct family has shown good raw TV metrics against a bad
+> canonical bust rate (v0.3 62–74% bust, [`ops/instruments/MYM.md`](../../../../ops/instruments/MYM.md)
+> M9; §1 Hot-only; now P50 at its own reported size). Body below is unedited — the `SOURCE-STAGE
+> EXPLORATORY … NOT CONFIRMED` status above was always correct; this banner only puts the
+> disagreement upstream of the table instead of one directory away
+> ([`operational_rules.md`](../../../../docs/operational_rules.md) §14).
+
 ## Question and tested catalogue
 
 Does a causal completed-opening-range volume gate improve the existing ORB-MYM v0.4 source
