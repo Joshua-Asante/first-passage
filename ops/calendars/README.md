@@ -41,20 +41,38 @@ normal session while equity index closes at 13:00 ET, so an FX-derived list woul
 position resting past the venue deadline. Use the **union**.
 
 This is why the three venue-bound Pine bodies (Aegis 6J, Vanguard MGC, ORB MNQ) all carry the same
-`venue_flat_dates ∪ full_closure_dates` list, not three different ones. Fully-closed dates are inert
-in a guard (no bars, no effect) and are included so the list is simply "every non-normal CME trade
-date."
+list rather than three different ones.
 
-Copy-paste list for a Pine `input.text_area` (2022–2026 verified, plus unverified 2027 carry-over):
+> ⚠ **CORRECTION 2026-09-03 (Codex on [PR #291](https://github.com/Joshua-Asante/first-passage/pull/291), P2, accepted).**
+> An earlier revision of this file built the guard list as `venue_flat_dates ∪ full_closure_dates`,
+> justifying the union with "fully-closed dates are inert in a guard (no bars, no effect)."
+> **That justification is wrong.** A Pine guard keys on the bar's **wall-clock** date, while
+> `full_closure_dates` rows are keyed to the **CME trade date** — and this file's own `day_basis`
+> note records that 2022-12-26, 2023-01-02 and their siblings carry real Globex bars from
+> 18:00–24:00 ET on that wall-clock date. Listing them marks that reopened session as short, which
+> can force a flatten or block entries in a session that is not short at all.
+>
+> **Use `venue_flat_dates` alone for a wall-clock guard.** The list below has been corrected to 49
+> verified early-close dates plus the 10 unverified 2027 carry-over rows.
+>
+> **The three shipped bodies still carry the old 59+16 union, and that is deliberate.** The
+> difference is a **measured no-op** on all five campaign strategies: zero activity on any of the 16
+> full-closure dates and **zero stamps at or after 18:00 ET anywhere** in any of the five exports,
+> so the evening reopen is never reached. Re-cutting the Pine would move its pinned hash, invalidate
+> the exports already taken against it, and risk consuming the re-expression lane's single permitted
+> attempt — for a change proven to alter nothing. The correction lands at each body's next
+> legitimate edit. ⚠ It becomes load-bearing the moment a strategy trades the evening session.
+
+Copy-paste list for a Pine `input.text_area` — **`venue_flat_dates` only** (49 verified 2022–2026,
+plus 10 unverified 2027 carry-over):
 
 ```
-20220117,20220221,20220415,20220530,20220620,20220704,20220905,20221124,20221125,20221225,20221226,
-20230101,20230102,20230116,20230220,20230407,20230529,20230619,20230703,20230704,20230904,20231123,
-20231124,20231224,20231225,20231231,20240101,20240115,20240219,20240329,20240527,20240619,20240703,
-20240704,20240902,20241128,20241129,20241224,20241225,20250101,20250109,20250120,20250217,20250418,
-20250526,20250619,20250703,20250704,20250901,20251127,20251128,20251224,20251225,20260101,20260119,
-20260216,20260403,20260525,20260619,20260703,20260907,20261126,20261127,20261224,20261225,20270118,
-20270215,20270531,20270618,20270705,20270906,20271125,20271126,20271223,20271224
+20220117,20220221,20220530,20220620,20220704,20220905,20221124,20221125,20230116,20230220,20230407,
+20230529,20230619,20230703,20230704,20230904,20231123,20231124,20240115,20240219,20240527,20240619,
+20240703,20240704,20240902,20241128,20241129,20241224,20250109,20250120,20250217,20250526,20250619,
+20250703,20250704,20250901,20251127,20251128,20251224,20260119,20260216,20260403,20260525,20260619,
+20260703,20260907,20261126,20261127,20261224,20270118,20270215,20270531,20270618,20270705,20270906,
+20271125,20271126,20271223,20271224
 ```
 
 ## Three traps a consumer must not walk into

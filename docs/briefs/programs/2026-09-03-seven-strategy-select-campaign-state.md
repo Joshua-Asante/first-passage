@@ -560,7 +560,7 @@ only on (1); DJ30 is blocked on both.**
 derived lists and a 13-item `unresolved` register carrying the competing readings and the size of
 each error.
 
-⚠ **Provenance is SECONDARY.** `www.cmegroup.com`, `investor.cmegroup.com` and every broker mirror
+⚠ **Provenance is SECONDARY, and the sources are now commit-pinned** (Codex on #291, P2, accepted: unpinned `master`/`main` URLs stop identifying the data once those branches move, and several cells were decided by choosing between *conflicting* library encodings, so an unpinned reference cannot support an audit of which revision backed which cell). All 15 raw URLs carry commit SHAs and a `source_revisions` block records them. ⚠ Honest limit, recorded in that block: they are branch tips resolved at pin time, ~1h after the research pass read the same branches unpinned — the best available reconstruction, not a proven capture. `www.cmegroup.com`, `investor.cmegroup.com` and every broker mirror
 returned 403 at the egress proxy's CONNECT layer, so **no CME primary source was fetched for any
 date**. The calendar is reconstructed from five independent third-party encodings (QuantConnect
 Lean's market-hours database, `pandas_market_calendars`, `exchange_calendars`, `vacanza/holidays`,
@@ -593,9 +593,28 @@ is the **union** over all three groups, identical in every body. All three venue
 now carry the same 75-date list (49 early-close ∪ 16 full-closure, 2022–2026 verified, plus 10
 unverified 2027 carry-over rows kept because adding a date is conservative and removing one is not).
 
-**What the interim list actually got wrong.** It was a decent US-holiday list — 50 dates, of which
-the five extra Christmas-day rows are inert. Its real defect is three **missing** dates, and they
-are exactly the dangerous ones (12c).
+**What the interim list actually got wrong.** It was a decent US-holiday list — 50 dates. Its real
+defect is three **missing** dates, and they are exactly the dangerous ones (12c).
+
+⚠ **CORRECTION 2026-09-03 (Codex on #291, P2, accepted) — the union was built on a false premise.**
+This section originally justified adding the 16 `full_closure_dates` to the guard on the grounds
+that fully-closed dates are "inert in a guard (no bars, no effect)". **That is wrong.** A Pine guard
+keys on the bar's **wall-clock** date; `full_closure_dates` rows are keyed to the **CME trade
+date**; and the calendar's own `day_basis` note records that 2022-12-26, 2023-01-02 and their
+siblings carry real Globex bars 18:00–24:00 ET on that wall-clock date — the reopen belonging to the
+*next* trade date. Listing them marks that reopened session short, which can force a flatten or
+block entries in a session that is not short. The correct guard list is **`venue_flat_dates`
+alone**; `ops/calendars/` is corrected and now ships 49 + 10 carry-over.
+
+**Measured consequence for this campaign: none.** Across all five current-of-record exports there is
+**zero activity on any of the 16 full-closure dates** and **zero stamps at or after 18:00 ET
+anywhere** — every one of these bodies is day-session-only, so the evening reopen is never reached.
+⚠ But that is a property of these five session filters, not of the guard, and it is exactly the
+distinction the original "no bars, no effect" claim elided. **The three shipped bodies keep the
+union list deliberately:** re-cutting the Pine would move its pinned hash, invalidate exports
+already taken against it, and risk consuming the lane's single permitted attempt — for a change
+proven to alter nothing. The correction lands at each body's next legitimate edit, and becomes
+load-bearing the moment a strategy trades the evening session.
 
 ### 12c — Three dates a 12:59 ET deadline structurally cannot express
 

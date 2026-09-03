@@ -16,7 +16,7 @@
   },
   "derived": {
     "venue_flat_dates": {
-      "rule": "Dates on which Tradeify's 12:59 ET holiday-short force-flat deadline applies. Constructed as the UNION over the three product groups of EARLY_CLOSE dates, because the Tradeify rule is a blanket account-level deadline (ops/prop_envelope_default.md, article 10495876) with no per-product carve-out. A per-group list is UNSAFE: on an ordinary US federal holiday CME FX runs a normal session while equity index closes at 13:00 ET, so an FX-specific list would leave a 6J position resting past the venue deadline.",
+      "rule": "Dates on which Tradeify's 12:59 ET holiday-short force-flat deadline applies. Constructed as the UNION over the three product groups of EARLY_CLOSE dates, because the Tradeify rule is a blanket account-level deadline (ops/prop_envelope_default.md, article 10495876) with no per-product carve-out. A per-group list is UNSAFE: on an ordinary US federal holiday CME FX runs a normal session while equity index closes at 13:00 ET, so an FX-specific list would leave a 6J position resting past the venue deadline. \u26a0 This list, and ONLY this list, is what a wall-clock-keyed Pine guard should carry - see the warning on full_closure_dates.",
       "count": 49,
       "dates": [
         "2022-01-17",
@@ -71,7 +71,7 @@
       ]
     },
     "full_closure_dates": {
-      "rule": "All three product groups FULL_CLOSURE on the CME trade date. Load-bearing for the venue's >=1-trade-per-Mon-Fri-week inactivity rule.",
+      "rule": "All three product groups FULL_CLOSURE on the CME TRADE DATE. Load-bearing for the venue's >=1-trade-per-Mon-Fri-week inactivity rule. \u26a0 DO NOT PUT THESE IN A WALL-CLOCK-KEYED GUARD LIST (Codex on PR #291, P2, accepted). A Pine guard keys on the bar's wall-clock year/month/day, but these rows are trade-date-keyed, and dates such as 2022-12-26 and 2023-01-02 carry real Globex bars from 18:00-24:00 ET on that wall-clock date - the reopen belonging to the NEXT trade date. Including them marks that reopened session short, which can force a flatten or block entries in a session that is not short at all. The earlier justification that they are 'inert - no bars, no effect' was WRONG. Use derived.venue_flat_dates alone for a wall-clock guard, or translate trade dates to explicit session intervals first.",
       "count": 16,
       "dates": [
         "2022-04-15",
@@ -1145,25 +1145,25 @@
     }
   ],
   "source_urls": [
-    "https://raw.githubusercontent.com/QuantConnect/Lean/master/Data/market-hours/market-hours-database.json",
-    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/master/pandas_market_calendars/calendars/cme_globex_equities.py",
-    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/master/pandas_market_calendars/calendars/cme_globex_energy_and_metals.py",
-    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/master/pandas_market_calendars/calendars/cme_globex_fx.py",
-    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/master/pandas_market_calendars/calendars/cme.py",
-    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/master/pandas_market_calendars/holidays/cme.py",
-    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/master/pandas_market_calendars/holidays/cme_globex.py",
-    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/master/pandas_market_calendars/holidays/us.py",
-    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/master/pandas_market_calendars/tests/test_exchange_calendar_cme_globex_equities.py",
-    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/master/pandas_market_calendars/tests/test_exchange_calendar_cme_globex_fx.py",
-    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/master/pandas_market_calendars/tests/test_exchange_calendar_cme_globex_energy_and_metals.py",
-    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/master/docs/change_log.rst",
-    "https://raw.githubusercontent.com/gerrymanoim/exchange_calendars/master/exchange_calendars/exchange_calendar_cmes.py",
-    "https://raw.githubusercontent.com/gerrymanoim/exchange_calendars/master/exchange_calendars/us_holidays.py",
+    "https://raw.githubusercontent.com/QuantConnect/Lean/cfc7e8ac451e384b08b697465e33016ab26c1263/Data/market-hours/market-hours-database.json",
+    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/pandas_market_calendars/calendars/cme_globex_equities.py",
+    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/pandas_market_calendars/calendars/cme_globex_energy_and_metals.py",
+    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/pandas_market_calendars/calendars/cme_globex_fx.py",
+    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/pandas_market_calendars/calendars/cme.py",
+    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/pandas_market_calendars/holidays/cme.py",
+    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/pandas_market_calendars/holidays/cme_globex.py",
+    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/pandas_market_calendars/holidays/us.py",
+    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/pandas_market_calendars/tests/test_exchange_calendar_cme_globex_equities.py",
+    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/pandas_market_calendars/tests/test_exchange_calendar_cme_globex_fx.py",
+    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/pandas_market_calendars/tests/test_exchange_calendar_cme_globex_energy_and_metals.py",
+    "https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/docs/change_log.rst",
+    "https://raw.githubusercontent.com/gerrymanoim/exchange_calendars/5de07333a58052eee033246bfe63f24e71da958f/exchange_calendars/exchange_calendar_cmes.py",
+    "https://raw.githubusercontent.com/gerrymanoim/exchange_calendars/5de07333a58052eee033246bfe63f24e71da958f/exchange_calendars/us_holidays.py",
     "https://raw.githubusercontent.com/LironKruchinin/backtesting/5f4d909180aa84f1536d842939e073577a83d4f7/crates/crucible-data/src/calendar/tables/cme_globex_commodities.toml",
     "https://raw.githubusercontent.com/LironKruchinin/backtesting/5f4d909180aa84f1536d842939e073577a83d4f7/crates/crucible-data/src/calendar/tables/cme_globex.toml",
     "https://raw.githubusercontent.com/LironKruchinin/backtesting/5f4d909180aa84f1536d842939e073577a83d4f7/docs/SESSION_ERAS.md",
     "https://raw.githubusercontent.com/EPOCHDevs/EpochFrame/d2545a3/src/calendar/calendars/cme_globex.cpp",
-    "https://raw.githubusercontent.com/vacanza/holidays/main/holidays/financial/chicago_mercantile_exchange.py",
+    "https://raw.githubusercontent.com/vacanza/holidays/a5aca80f6b5f91485da14d23f79b99c109fa2f2d/holidays/financial/chicago_mercantile_exchange.py",
     "https://pypi.org/project/pandas-market-calendars/",
     "https://pypi.org/project/exchange-calendars/",
     "file:///home/user/first-passage/lab/analysis/c1/tradeify_book_composition_2026-09/data/cme_equity_sessions.json",
@@ -1225,5 +1225,17 @@
       "date": "2022-12-26",
       "issue": "DAY-CONVENTION AMBIGUITY, CALENDAR-WIDE. Every FULL_CLOSURE row in this calendar is keyed to the CME TRADE DATE, not to the wall clock, but the schema carries no discriminator and the initial per-year research files never declared the convention. Concretely: 2022-12-26, 2023-01-02, 2023-12-25 and 2025-12-25 each carry ~360 minutes of real Globex trading on the calendar day (the 18:00-24:00 ET reopen belonging to the NEXT trade date), while 2022-12-25, 2023-01-01, 2023-12-24 and 2023-12-31 carry a genuine zero \u2014 yet all eight read FULL_CLOSURE. Symmetrically, 2025-12-24 (EARLY_CLOSE) and 2025-12-31 (NORMAL) are structurally identical on a wall-clock reading: both shut and neither reopened that evening. Because MYM/MNQ/MGC/6J bar exports are normally stamped by wall-clock timestamp rather than CME trade date, and because the known downstream consumer (lab/research_utils/trade_reconciliation.py, rows of {date, deadline_local}, selecting 12:59 vs 16:45 America/New_York by calendar-date membership) is calendar-date-keyed and product-group-blind, an undeclared convention is exactly the silent-failure mode this calendar exists to prevent. Recommend adding an explicit basis field, or splitting status into trade_date_status plus calendar_day_minutes, before ingestion. Related: a single date-level 12:59 ET early-close flag cannot express the three distinct per-group times this calendar records and will be over-tight for MGC and 6J on Rule A days by 60-240 minutes."
     }
-  ]
+  ],
+  "source_revisions": {
+    "pinned_at": "2026-09-03",
+    "pins": {
+      "QuantConnect/Lean": "cfc7e8ac451e384b08b697465e33016ab26c1263",
+      "rsheftel/pandas_market_calendars": "275890784073a3a3a347e4f05f4dc986456e6a75",
+      "gerrymanoim/exchange_calendars": "5de07333a58052eee033246bfe63f24e71da958f",
+      "vacanza/holidays": "a5aca80f6b5f91485da14d23f79b99c109fa2f2d",
+      "EPOCHDevs/EpochFrame": "d2545a37d7e6cc4c1057413b7935c25cfb50448d",
+      "LironKruchinin/backtesting": "5f4d909180aa84f1536d842939e073577a83d4f7"
+    },
+    "note": "Codex on PR #291 (P2, accepted): unpinned master/main URLs stop identifying the data once those branches move, and several emitted cells were decided by choosing between CONFLICTING library encodings - so an unpinned reference cannot support an audit of which revision backed which cell. Every raw.githubusercontent URL above is now commit-pinned. \u26a0 HONEST LIMIT: these are the branch tips resolved by `git ls-remote` at pin time on 2026-09-03, roughly an hour after the research pass read the same branches UNPINNED. They are the best available reconstruction, NOT a proven capture of the exact bytes read. A branch that moved inside that window would not be detected. To make this audit-grade rather than audit-plausible, retain hashed captures of the source files alongside this calendar, or resolve the primary CME source and retire the secondary reconstruction entirely."
+  }
 }
