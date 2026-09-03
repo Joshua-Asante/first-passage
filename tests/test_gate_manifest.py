@@ -59,6 +59,10 @@ EXPECTED_ALWAYS = {
     # own exit code is always 0 unless --strict, per its docstring), same
     # reasoning as spec-provenance above.
     "rule2-trip-log-liveness",
+    # STATE currency (Last curated + rolling next-deadline + past dated
+    # subsections). always, not path-conditional on STATE.md: a stale date
+    # must fail the next unrelated commit when the daily digest is skipped.
+    "state-currency",
 }
 
 EXPECTED_PATH_CONDITIONAL = {
