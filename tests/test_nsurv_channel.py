@@ -15,7 +15,14 @@ from discovery.prop_survivor_scoring import load_scoring_thresholds
 from research_utils import nsurv_channel as ns
 
 REPO = Path(__file__).resolve().parents[1]
-PREREG = REPO / "docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md"
+# v1 — CLOSED 2026-08-26 (its own head banner), superseded by
+# 2026-08-26-prop-survivor-scoring-prereg-v2.md: the LIVE Part A eval bust
+# ceiling is 5.0%, not the 3.0% pinned below. This fixture deliberately stays on
+# v1 so the loader keeps regression-testing v1's frozen 3.0% text forever,
+# independent of whichever file DEFAULT_PREREG points at (Trap #12 — v1's own
+# numbers are never edited in place, so this pin never needs to change). The
+# StaleGateWarning these calls emit is expected and is the point.
+PREREG_V1 = REPO / "docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md"
 W1_DIR = REPO / "lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16"
 W1_REPORT = W1_DIR / "w1_intraday_both_halves_report.json"
 W1_RESULTS_MD = W1_DIR / "RESULTS_INTRADAY_W1.md"
@@ -25,7 +32,7 @@ _TEST_HORIZON = 400
 
 
 def _thr():
-    return replace(load_scoring_thresholds(PREREG), horizon=_TEST_HORIZON)
+    return replace(load_scoring_thresholds(PREREG_V1), horizon=_TEST_HORIZON)
 
 
 def _synthetic_frame(n: int = 80, *, seed: int = 7) -> pd.DataFrame:
@@ -47,8 +54,11 @@ def _synthetic_frame(n: int = 80, *, seed: int = 7) -> pd.DataFrame:
 
 
 def test_threshold_edges_non_strict_bust_le_and_pass_ge():
-    """Prereg Part A: bust ≤ 3.0% ∧ P(pass) ≥ 50% — both bounds inclusive."""
-    thr = load_scoring_thresholds(PREREG)
+    """**v1**'s frozen Part A: bust ≤ 3.0% ∧ P(pass) ≥ 50% — both bounds
+    inclusive. 3.0% is v1's HISTORICAL ceiling; the live Part A ceiling is **5.0%**
+    (prereg v2, 2026-08-26). What this test pins is the inequality *direction* and
+    inclusivity, which v2 did not change — not the number itself."""
+    thr = load_scoring_thresholds(PREREG_V1)
     assert thr.eval_bust_ceiling == pytest.approx(0.03)
     assert thr.pass_floor == pytest.approx(0.50)
 
@@ -408,7 +418,7 @@ def test_w1_pin_reproduction_known_answer(tmp_path: Path):
     assert len(frame) == pins["panel_n_bdays"]
 
     # Full frozen prereg sims/horizon — exact pin match requires production posture.
-    thr = load_scoring_thresholds(PREREG)
+    thr = load_scoring_thresholds(PREREG_V1)
     report = ns.score_nsurv(
         frame,
         half_boundary_date=boundary,

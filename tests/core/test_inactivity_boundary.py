@@ -180,7 +180,9 @@ def test_offsetting_pnls_count_as_trading_day_for_phase_completion():
 def test_inactivity_at_boundary_constant_matches_60():
     """Pin the constant. Phase 2 + ADR adoption shifts here; this test forces co-edit."""
     assert INACTIVITY_LIMIT == 60, (
-        f"INACTIVITY_LIMIT must match FXIFY firm_rules.py:14 inactivity_max_idle_days=60; "
+        f"INACTIVITY_LIMIT must match core/historical_challenge.py's retired FXIFY "
+        f"semantic (_INACTIVITY_MAX_IDLE_DAYS=60) -- NOT any living FIRM_RULES tier, "
+        f"which carry 5 (weekly-rule bound) or 22 (30-calendar-day bound); "
         f"got {INACTIVITY_LIMIT}"
     )
 

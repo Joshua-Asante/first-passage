@@ -6,8 +6,14 @@ composed series on the frozen Part-A path via ``nsurv_channel.score_nsurv``
 is named, also score book-without-that-leg and emit the step-3 comparison lines
 (composed bust vs ceiling; composed P(pass) vs book-without).
 
-**Computes, does not admit.** PASS/FAIL lines follow the frozen 2026-07-13
-thresholds (bust ≤ 3.0% ∧ P(pass) ≥ 50%, non-strict) but never authorize capital.
+**Computes, does not admit.** PASS/FAIL lines follow whatever
+``prop_survivor_scoring.load_scoring_thresholds()`` resolves at call time — i.e.
+``DEFAULT_PREREG``, which since 2026-08-26 is **v2: bust ≤ 5.0% ∧ P(pass) ≥ 50%**
+(non-strict). ⚠ This docstring previously named the frozen 2026-07-13 v1 thresholds
+(bust ≤ 3.0%), which ``score_book`` has not used since that date — a 3–5% composed
+bust was being described with the opposite verdict at this API surface. Callers may
+still pass an explicit ``thresholds=`` to reproduce a historical run against its own
+frozen ceiling. Never authorizes capital either way.
 Sibling of ``cov_prekill.py`` (step 2) and reshaped successor to the single-series
 ``nsurv_channel`` P2 idea — Q-TXG-1 already scores SINGLE cells via that channel;
 this module owns the COMPOSED book case.

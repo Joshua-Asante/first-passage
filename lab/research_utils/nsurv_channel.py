@@ -8,13 +8,20 @@ single ``N-SURV PASS|FAIL`` line.
 
 Engine path is the same W1 used
 (``lab/discovery/prop_survivor_scoring.py`` → ``run_tier_remc`` / ``run_seed`` /
-``simulate_path``). Thresholds are parsed from the frozen 2026-07-13
-pre-registration — never restated here. No MC re-calibration, no
-``dd_protection`` / ``firm_rules`` edits.
+``simulate_path``). Thresholds are parsed at runtime from
+``prop_survivor_scoring.DEFAULT_PREREG`` — never restated here. No MC
+re-calibration, no ``dd_protection`` / ``firm_rules`` edits.
 
-Inequality directions (frozen prereg Part A / ``score_part_a``):
-  bust ≤ 3.0%  ∧  P(pass) ≥ 50%
-Both bounds are **non-strict** (exactly 3.0% bust clears; exactly 50% pass clears).
+Inequality directions (prereg Part A / ``score_part_a``) — this module pins the
+DIRECTION and inclusivity, never the number:
+  bust ≤ eval_bust_ceiling  ∧  P(pass) ≥ pass_floor
+Both bounds are **non-strict** (a value exactly ON the ceiling/floor clears).
+
+⚠ The live ceiling is **5.0%** (``2026-08-26-prop-survivor-scoring-prereg-v2.md``
+§3, which ``DEFAULT_PREREG`` points at). Docstrings and tests here previously read
+**3.0%** — that is the CLOSED 2026-07-13 v1 value, kept only as a loader fixture.
+Whatever ``DEFAULT_PREREG`` resolves to is the gate; do not transcribe either
+number into this module.
 
 Input contract
 --------------

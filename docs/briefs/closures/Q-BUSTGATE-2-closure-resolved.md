@@ -1,5 +1,14 @@
 # Q-BUSTGATE-2 — CLOSURE: `RESOLVED` (3.0% reconfirmed unchanged under the 2026-08-13 inputs)
 
+> ## ⚠ Superseded as a statement of the LIVE ceiling, 2026-08-26 — the verdict below is not retracted
+>
+> This closure reconfirmed 3.0% on **economic** grounds and that reasoning is undisturbed. The
+> ceiling was nonetheless raised to **5.0%** on 2026-08-26
+> ([`prereg v2`](../pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3) — **not** because this closure was wrong, but as a
+> declared operator risk-tolerance override on separately stated grounds (v2 §8, which does not
+> re-argue the derivation). Do not cite this file for the live ceiling; cite prereg v2. Frozen
+> below, unedited (Trap #12).
+
 **Verdict:** `RESOLVED` — the sole regime-admissible rung (0.50×) clears the 3.0% ceiling on the intraday-honest clock; neither the new population data nor the updated fee schedule moves it
 **Closed:** 2026-08-15
 **Lane:** UNASSIGNED

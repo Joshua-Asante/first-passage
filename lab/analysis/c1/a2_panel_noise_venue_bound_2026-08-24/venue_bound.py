@@ -29,7 +29,13 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[4]
 A2_JSONL = REPO_ROOT / "lab/analysis/c1/shape_feasibility_map_2026-08/region_data_with_growth.jsonl"
 
-BUST_CEILING = 0.03          # frozen, prop-survivor-scoring prereg 2026-07-13
+# ⚠ v1's frozen ceiling (prereg 2026-07-13), pinned to reproduce THIS campaign's
+# published bound. The LIVE ceiling is 0.05 (prereg v2, 2026-08-26). This constant
+# is quantitatively load-bearing -- it enters as math.log(1.0 / BUST_CEILING), so
+# at 0.05 the bound term falls 3.507 -> 2.996 and every min_years / required-panel
+# figure below shrinks by ~15%. Do not "update" it in place: re-deriving the bound
+# at the live ceiling is a separate result needing its own GO.
+BUST_CEILING = 0.03          # frozen, prop-survivor-scoring prereg 2026-07-13 (v1, CLOSED)
 TRADING_DAYS_PER_YEAR = 252
 
 # (rope $, target $) per tier -- core/firm_rules.py

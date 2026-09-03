@@ -19,7 +19,14 @@ from research_utils import book_score as bs
 from research_utils import nsurv_channel as ns
 
 REPO = Path(__file__).resolve().parents[1]
-PREREG = REPO / "docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md"
+# v1 — CLOSED 2026-08-26 (its own head banner), superseded by
+# 2026-08-26-prop-survivor-scoring-prereg-v2.md: the LIVE Part A eval bust
+# ceiling is 5.0%, not the 3.0% pinned below. This fixture deliberately stays on
+# v1 so the loader keeps regression-testing v1's frozen 3.0% text forever,
+# independent of whichever file DEFAULT_PREREG points at (Trap #12 — v1's own
+# numbers are never edited in place, so this pin never needs to change). The
+# StaleGateWarning these calls emit is expected and is the point.
+PREREG_V1 = REPO / "docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md"
 TXG_CELL = (
     REPO
     / "lab/archive/transfer_expression_grid_2026-08/cells/striker_mnq"
@@ -32,7 +39,7 @@ _TEST_HORIZON = 400
 
 
 def _thr():
-    return replace(load_scoring_thresholds(PREREG), horizon=_TEST_HORIZON)
+    return replace(load_scoring_thresholds(PREREG_V1), horizon=_TEST_HORIZON)
 
 
 def _leg_frame(
@@ -103,8 +110,11 @@ def test_compose_rejects_positive_intraday_low():
 
 
 def test_threshold_edges_non_strict_bust_le_and_pass_ge():
-    """Prereg Part A: bust ≤ 3.0% ∧ P(pass) ≥ 50% — both bounds inclusive."""
-    thr = load_scoring_thresholds(PREREG)
+    """**v1**'s frozen Part A: bust ≤ 3.0% ∧ P(pass) ≥ 50% — both bounds
+    inclusive. 3.0% is v1's HISTORICAL ceiling; the live Part A ceiling is **5.0%**
+    (prereg v2, 2026-08-26). What this test pins is the inequality *direction* and
+    inclusivity, which v2 did not change — not the number itself."""
+    thr = load_scoring_thresholds(PREREG_V1)
     assert thr.eval_bust_ceiling == pytest.approx(0.03)
     assert thr.pass_floor == pytest.approx(0.50)
     assert bs.clears_bust_ceiling(0.03, thr) is True
@@ -133,8 +143,8 @@ def test_score_book_of_one_delegates_to_score_nsurv(monkeypatch):
             firm_key=ns.DEFAULT_FIRM_KEY,
             sizing_basis_usd=ns.SIZING_BASIS_USD,
             half_boundary_date=pd.Timestamp(half_boundary_date).date().isoformat(),
-            thresholds_source=str(PREREG),
-            eval_bust_ceiling=0.03,
+            thresholds_source=str(PREREG_V1),
+            eval_bust_ceiling=0.03,  # v1's historical value; fixture only (live: 0.05)
             pass_floor=0.5,
             full=ns.PartitionScore(
                 "full", 0.01, 0.8, True, len(frame_in), 40, 0.4, "run2", True
@@ -173,8 +183,8 @@ def test_marginal_excludes_named_leg_and_emits_step3_lines(monkeypatch):
             firm_key=ns.DEFAULT_FIRM_KEY,
             sizing_basis_usd=ns.SIZING_BASIS_USD,
             half_boundary_date=pd.Timestamp(half_boundary_date).date().isoformat(),
-            thresholds_source=str(PREREG),
-            eval_bust_ceiling=0.03,
+            thresholds_source=str(PREREG_V1),
+            eval_bust_ceiling=0.03,  # v1's historical value; fixture only (live: 0.05)
             pass_floor=0.5,
             full=ns.PartitionScore(
                 "full", bust, pass_rate, True, len(frame_in), 40, 0.4, "run2", True
@@ -238,7 +248,7 @@ def test_q_txg1_striker_mnq_book_of_1_reproduces_panel_score():
         )
 
     expected = json.loads(TXG_PANEL_SCORE.read_text(encoding="utf-8"))["nsurv"]
-    thr = load_scoring_thresholds(PREREG)
+    thr = load_scoring_thresholds(PREREG_V1)
     report = bs.score_book_from_paths(
         {"striker_mnq": TXG_DAILY},
         half_boundary_date=expected["half_boundary_date"],

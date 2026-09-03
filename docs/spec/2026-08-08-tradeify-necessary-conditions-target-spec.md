@@ -3,6 +3,12 @@
 Status: RATIFIED · 2026-08-08 / JA · authorizes nothing ($0 · K=0) · depends: [ADR 2026-08-08 edge-cohort correction + necessity retarget](../adr/2026-08-08-edge-cohort-correction-and-necessity-retarget.md) (§8 filled; atomic with this flip)
 Objective: Replace MNQDTL-1's elective target (D1 daily cadence · D2 $325 · μ-gate · MNQ-only) **as the intake gate** with the venue/program-**necessary** condition set for admitting a strategy — or a book of strategies scored jointly — to the incumbent `Tradeify_Select_100K` eval. MNQDTL-1 remains `RATIFIED` as historical target record; closed doors C1–C11 stand.
 
+> ⚠ **Reader-intercept 2026-09-03 — N-SURV's ceiling moved.** The live Part A eval bust ceiling is
+> **5.0%**, not the 3.0% item 2 names ([`prereg v2`](../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3, 2026-08-26,
+> an operator risk-tolerance override; `prop_survivor_scoring.DEFAULT_PREREG` resolves to it). The
+> pass floor (≥50%), the intraday-honest clock, and every other limb below are **unchanged**. Body
+> frozen at ratification (Trap #12); read item 2's threshold as **bust ≤ 5.0%**.
+
 Necessary set (single construct, or book jointly; **nothing else gates intake**):
 
 1. **N-ACT** — ≥1 trade per Mon–Fri week by construction (book: jointly, co-idleness measured and disclosed — correlated idleness is the failure mode). Operator token trade remains the fallback until a candidate lands (STATE row 0; R8 still owed).
