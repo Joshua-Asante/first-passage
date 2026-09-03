@@ -44,10 +44,13 @@ screen; confirmation start **derived** from each strategy's final design-decisio
 `P(bust before pass)` with unresolved-at-cap paths counted as busts; qualifying bound = outer
 block-bootstrap 95th + worst partition, MC-only UCB never qualifying; scalar MAE = `LOWER BOUND`
 only; every screen cutoff frozen numerically in Phase 3; joint-flat integer-week blocks) plus a
-reconciliation table; threads resolved. New orchestrator-owned campaign-state artifact + claim
+reconciliation table; threads resolved. Second Codex pass `78c82de` (four P1: multiplicity `α`/`M`
+per the campaign-envelope ADR; pre-confirmation integrity + venue re-check; one realized path is a
+falsifier, not a 5% estimate — `N_conf` arithmetic + `model-fitted` label; holdout reserved and
+quarantined at Phase 0, Phases 1–2 development-only). New orchestrator-owned campaign-state artifact + claim
 manifest [`2026-09-03-seven-strategy-select-campaign-state.md`](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md):
 roles, phase board, canonical-authority list (reuse-don't-rewrite), **Phase 0 acceptance gate
-G0.1–G0.9 frozen before any Codex output was read**, operator decisions D1–D6.
+G0.1–G0.10 frozen before any Codex output was read**, operator decisions D1–D6.
 **Decisions/defects:** The handoff called PR #272 merged; it is **open** (checks green) — fixes went
 to its branch, not a parallel copy (operator merges, D1). `codex/mym-breakout-research` is a reused
 name: PR #259's head (merged 09-02), whose study consumed the 2025→2026-07 holdout for five ORB-MYM

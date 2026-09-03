@@ -4,7 +4,8 @@
 **Last curated:** 2026-09-03 (orchestrator session `claude/orchestrator-role-takeover-yza7vp`)
 **Parent plan:** [`2026-09-02-seven-strategy-tradeify-select-configuration.md`](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
 (PR [#272](https://github.com/Joshua-Asante/first-passage/pull/272) — **open, not merged** as of
-this curation; the Codex review's six P1 + one P2 findings are folded in at `459421b`).
+this curation; two Codex passes are folded in — six P1 + one P2 at `459421b`, four further P1 at
+`78c82de`).
 **Role:** this file is the plan's *compact campaign state artifact* (plan §Session handoff protocol)
 **and the claim manifest**. One writer — the orchestrating Claude Code session — per the MSL
 precedent ([`2026-08-12-msl-program-plan.md`](2026-08-12-msl-program-plan.md) §6) and the
@@ -32,7 +33,7 @@ CAVEATS / REFUTED`.
 
 | Phase | Gate to leave it | Status | Holder | Evidence |
 |---|---|---|---|---|
-| Plan | Codex review folded; operator merge | **REVIEW FOLDED** — merge pending (§6 D1) | operator | PR #272 @ `459421b` |
+| Plan | Codex review folded; operator merge | **REVIEW FOLDED ×2** — merge pending (§6 D1) | operator | PR #272 @ `78c82de` |
 | 0 — Receive and inventory | §4 gate below, verdict `PASS` | **IN FLIGHT** (Codex, `codex/mym-breakout-research`, operator-reported 2026-09-03; branch not yet on `origin` at curation) | Codex → orchestrator review | — |
 | 1 — Normalize and reproduce | seven reconciliation reports within frozen tolerances; joint ledger; tests | QUEUED (blocked on 0) | Codex | — |
 | 2 — Standalone quality and dependence | eliminations recorded with reasons; no portfolio pick | QUEUED | Codex + orchestrator | — |
@@ -83,14 +84,15 @@ only where a claim matters if wrong). Verdicts: **`PASS`** (Phase 1 unlocked) ·
 | G0.7 | Discrepancy report lists every strategy-file ↔ export mismatch (symbol, session, quantity convention, gross/net, commission/slippage settings). An empty report states the checks run. | `NEEDS_CONTEXT` |
 | G0.8 | Study directory under `lab/analysis/<theme>/<slug>/` registered in [`lab/CATALOG.md`](../../../lab/CATALOG.md) (`lab-catalog` gate); `__init__.py` if tests ship; required CI check `skills (3.12)` green. Recommended slug `lab/analysis/c1/seven_strategy_select_config_2026-09/`; the actual path is recorded in §5 at review. | `NEEDS_CONTEXT` |
 | G0.9 | Rule 2 accounting: $0 external spend, no MC compute, K=0 declared in the PR description. | `FAIL` if any cell scored |
+| G0.10 | **Reserved-window record** (added 2026-09-03 after the second Codex pass, still before any Phase 0 output was read): derived confirmation boundary per strategy, quarantined-file SHA-256s under a gitignored path, and a loader-assertion test that Phase 1–6 code cannot open them. No P&L, drawdown, cadence, or trade statistic computed on the reserved bytes. | `NEEDS_CONTEXT`; `FAIL` if any statistic was computed on the reserved segment |
 
 ## §5 Claim manifest
 
 | Item | Holder | Status | PR / commit | Note |
 |---|---|---|---|---|
-| Campaign plan | Codex (operator task) | **REVIEWED** — review folded | #272 @ `459421b` | six P1 + one P2 folded into Phases 0/3/4/5/7 + contract items 3/5/8/9; reconciliation table in the plan |
+| Campaign plan | Codex (operator task) | **REVIEWED** — two passes folded | #272 @ `78c82de` | pass 1: six P1 + one P2 (Phases 0/3/4/5/7, contract items 3/5/8/9); pass 2: four P1 (multiplicity `α`/`M`/procedure, pre-confirmation integrity check, one-path falsifier semantics + `N_conf`, holdout reserved at intake — contract items 10/11, Phases 0/1/2/7); two reconciliation tables in the plan |
 | Orchestrator takeover; this file; Phase 0 gate | orchestrator session 2026-09-03 | **DONE** (pending merge) | this branch | gate frozen before any Phase 0 output was read |
-| Phase 0 intake | Codex, `codex/mym-breakout-research` | **DISPATCHED** (operator-reported; pre-dates the review fixes — expect G0.2's two new fields to need a re-anchor) | pending | branch not on `origin` at curation |
+| Phase 0 intake | Codex, `codex/mym-breakout-research` | **DISPATCHED** (operator-reported; pre-dates both review passes — expect G0.2's two new fields and G0.10's reserved-window record to need one re-anchor) | pending | branch not on `origin` at curation |
 | Phase 0 gate review | orchestrator | **QUEUED** — fires when the Codex PR appears | — | check-in scheduled from the takeover session |
 | Campaign pre-registration (contract items 1–9; Phase 3 deliverable) | orchestrator authors → adversarial panel → operator ratifies | **QUEUED** | — | must exist before any Phase 4 run |
 | Phases 1–8 | per §2 | **QUEUED** | — | — |
@@ -128,3 +130,4 @@ python scripts/gate_manifest.py --tier pre-commit                            # b
 | 2026-09-03 | PR #272 found **open**, not merged; `codex/mym-breakout-research` found absent on `origin` and identified as PR #259's reused head name | recorded, not blocking |
 | 2026-09-03 | Review findings folded at `459421b`; threads resolved; summary comment posted | plan `REVIEW FOLDED` |
 | 2026-09-03 | §4 Phase 0 gate frozen before any Phase 0 output was read; §3 authorities pinned; §6 D1–D6 raised | state `PHASE 0 IN FLIGHT` |
+| 2026-09-03 | Second Codex pass on `459421b` — four P1 (shortlist multiplicity; pre-confirmation integrity check; one realized path is not a 5% test; holdout must be reserved before Phase 2) folded at `78c82de`; G0.10 added to the Phase 0 gate, still before any Phase 0 output was read | plan `REVIEW FOLDED ×2` |
