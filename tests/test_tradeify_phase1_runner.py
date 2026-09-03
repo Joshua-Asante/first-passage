@@ -325,6 +325,46 @@ def test_campaign_publication_rolls_back_all_targets_after_late_replace_failure(
     assert not list(tmp_path.rglob(".*.phase1-*"))
 
 
+def test_campaign_staging_replace_failure_cleans_inner_temp_and_preserves_old_targets(
+    tmp_path, monkeypatch,
+):
+    """A failed stage finalization must not leak its inner temp or touch a target generation."""
+    source_dir, config, strategy_ids = _seven_source_fixture(tmp_path)
+    output_dir = tmp_path / "local_artifacts"
+    targets = [
+        output_dir / "canonical_events.csv",
+        output_dir / "canonical_trades.csv",
+        output_dir / "weekly_exit_blocks.csv",
+        *(output_dir / "strategy_reports" / f"{strategy_id}.json" for strategy_id in strategy_ids),
+        config.parent / "reconciliation_manifest.json",
+        config.parent / "RESULTS.md",
+    ]
+    old_bytes = {target: f"old:{target.name}".encode("utf-8") for target in targets}
+    for target, payload in old_bytes.items():
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(payload)
+
+    real_replace = run_phase1.os.replace
+
+    def fail_stage_finalization(source, destination):
+        if str(source).endswith(".tmp") and str(destination).endswith(".stage"):
+            raise OSError("fixture stage finalization failure")
+        return real_replace(source, destination)
+
+    monkeypatch.setattr(run_phase1.os, "replace", fail_stage_finalization)
+
+    with pytest.raises(OSError, match="fixture stage finalization failure"):
+        run_phase1.run_campaign(config, source_dir, output_dir)
+
+    assert {target: target.read_bytes() for target in targets} == old_bytes
+    assert not [
+        path
+        for path in tmp_path.rglob("*")
+        if path.name.startswith(".")
+        and (path.name.endswith(".tmp") or ".phase1-" in path.name)
+    ]
+
+
 def test_campaign_rejects_non_frozen_strategy_roster_before_source_reads(tmp_path):
     source_dir, config, _ = _seven_source_fixture(tmp_path)
     payload = json.loads(config.read_text(encoding="utf-8"))

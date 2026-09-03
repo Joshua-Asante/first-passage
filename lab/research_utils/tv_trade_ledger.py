@@ -99,6 +99,34 @@ EVENT_COLUMNS = (
     "duration_bars",
     "concurrent_timestamp",
 )
+_EMPTY_EVENT_DTYPES = {
+    "strategy_id": "object",
+    "encoded_instrument": "object",
+    "source_trade_id": "int64",
+    "source_row_number": "int64",
+    "timestamp_raw": "object",
+    "timestamp_naive": "datetime64[ns]",
+    "timestamp_utc": "datetime64[ns, UTC]",
+    "exchange_session_date": "object",
+    "type_raw": "object",
+    "event_type": "object",
+    "direction": "object",
+    "signal": "object",
+    "price_usd": "object",
+    "quantity": "int64",
+    "size_value_usd": "object",
+    "net_pnl_usd": "object",
+    "return_pct": "object",
+    "commission_usd": "object",
+    "favorable_excursion_usd": "object",
+    "favorable_excursion_pct": "object",
+    "adverse_excursion_usd": "object",
+    "adverse_excursion_pct": "object",
+    "cumulative_pnl_usd": "object",
+    "cumulative_pnl_pct": "object",
+    "duration_bars": "object",
+    "concurrent_timestamp": "bool",
+}
 COLUMN_ALIASES = {
     "Trade #": "Trade number",
     "Net P&L USD": "Net PnL USD",
@@ -590,4 +618,14 @@ def normalize_export(source: VerifiedSource) -> NormalizationResult:
         timestamp_counts[timestamp] = timestamp_counts.get(timestamp, 0) + 1
     for event in events:
         event["concurrent_timestamp"] = timestamp_counts[event["timestamp_naive"]] > 1
-    return NormalizationResult(events=pd.DataFrame(events, columns=EVENT_COLUMNS), issues=())
+    frame = (
+        pd.DataFrame(events, columns=EVENT_COLUMNS)
+        if events
+        else pd.DataFrame(
+            {
+                column: pd.Series(dtype=_EMPTY_EVENT_DTYPES[column])
+                for column in EVENT_COLUMNS
+            }
+        )
+    )
+    return NormalizationResult(events=frame, issues=())

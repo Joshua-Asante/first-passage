@@ -427,6 +427,14 @@ def test_normalize_empty_canonical_export_retains_typed_event_columns(tmp_path):
         "duration_bars", "concurrent_timestamp",
     ]
     assert events.empty
+    assert str(events["source_trade_id"].dtype) == "int64"
+    assert str(events["source_row_number"].dtype) == "int64"
+    assert str(events["quantity"].dtype) == "int64"
+    assert str(events["timestamp_naive"].dtype) == "datetime64[ns]"
+    assert str(events["timestamp_utc"].dtype) == "datetime64[ns, UTC]"
+    assert str(events["concurrent_timestamp"].dtype) == "bool"
+    assert events["price_usd"].dtype == object
+    assert events["exchange_session_date"].dtype == object
 
 
 def test_normalize_localizes_only_with_explicit_timezone(tmp_path):
