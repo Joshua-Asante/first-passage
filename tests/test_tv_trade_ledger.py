@@ -59,6 +59,11 @@ def _spec_dict(strategy_id: str, export_filename: str, pine_filename: str) -> di
     }
 
 
+def _unresolved_roll_policy():
+    return {"disposition": "UNRESOLVED", "ruling_date": "2026-09-03",
+            "ruling_ref": "Synthetic fixture has no acceptance ruling", "obligations": []}
+
+
 def _source_spec(**overrides: object):
     payload = _spec_dict("fixture", "source.csv", "source.pine")
     payload.update(overrides)
@@ -71,6 +76,7 @@ def _source_spec(**overrides: object):
                 "platform": "TradingView Strategy Tester over a continuous futures chart",
                 "strategies": [payload],
                 "dropped_sources": [],
+                "continuous_contract_roll_policy": _unresolved_roll_policy(),
             }
         ),
         encoding="utf-8",
@@ -91,6 +97,7 @@ def test_load_source_specs_rejects_duplicate_strategy_id(tmp_path):
             _spec_dict("same", "two.csv", "two.pine"),
         ],
         "dropped_sources": [],
+        "continuous_contract_roll_policy": _unresolved_roll_policy(),
     }
     path = tmp_path / "config.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
@@ -108,6 +115,7 @@ def test_load_source_specs_rejects_platformless_configuration(tmp_path):
                 "claim_class": "EXPLORATORY",
                 "strategies": [_spec_dict("fixture", "source.csv", "source.pine")],
                 "dropped_sources": [],
+                "continuous_contract_roll_policy": _unresolved_roll_policy(),
             }
         ),
         encoding="utf-8",
@@ -213,6 +221,7 @@ def test_load_source_specs_rejects_unknown_pine_pin_status(tmp_path):
         "platform": "TradingView Strategy Tester over a continuous futures chart",
         "strategies": [_spec_dict("fixture", "source.csv", "source.pine")],
         "dropped_sources": [],
+        "continuous_contract_roll_policy": _unresolved_roll_policy(),
     }
     payload["strategies"][0]["pine_pin_status"] = "PINNED_LOCKED_EDITION"
     path = tmp_path / "config.json"
@@ -242,6 +251,7 @@ def test_load_source_specs_couples_pin_status_to_divergence(
             _spec_dict("fixture", "source.csv", "source.pine")
         ],
         "dropped_sources": [],
+        "continuous_contract_roll_policy": _unresolved_roll_policy(),
     }
     payload["strategies"][0]["pine_pin_status"] = pine_pin_status
     payload["strategies"][0]["pin_divergence"] = pin_divergence

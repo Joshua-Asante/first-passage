@@ -9,7 +9,7 @@ from decimal import Decimal, InvalidOperation
 from hashlib import sha256
 from io import StringIO
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 from types import MappingProxyType
 from typing import Literal, Mapping
@@ -69,6 +69,11 @@ _PINE_PIN_STATUSES = frozenset(
 )
 _DROP_REASON = "SWAP_PORT_BODY_POINT_VALUE_NOT_OVERRIDDEN"
 _PORT_MANIFEST_PREFIX = "core/strategies/PORT_MANIFEST.sha256:"
+_PORT_MANIFEST_PATH = Path(__file__).resolve().parents[2] / "core/strategies/PORT_MANIFEST.sha256"
+_ROLL_OBLIGATIONS = (
+    "Phase 3 pre-registration states back-adjustment seam risk as a limitation of every campaign claim: fills cannot be attributed to a contract month, and a seam crossing is indistinguishable from a price move.",
+    "A Phase 6 seam-sensitivity check is pre-registered with its severity frozen alongside the other Phase 6 cutoffs.",
+)
 _FEE_URL = "https://help.tradeify.co/en/articles/10468315-trading-commission-fees"
 _FEE_PAGE_DATE = "2026-04-28"
 _FEE_OBSERVED_DATE = "2026-09-02"
@@ -233,12 +238,21 @@ class DroppedSource:
 
 
 @dataclass(frozen=True)
+class ContinuousContractRollPolicy:
+    disposition: Literal["ACCEPTED_UNMODELED", "UNRESOLVED"]
+    ruling_date: date
+    ruling_ref: str
+    obligations: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class SourceInventory:
     """One parsed configuration snapshot shared by active and dropped inventories."""
 
     specs: tuple[SourceSpec, ...]
     dropped_sources: tuple[DroppedSource, ...]
     config_sha256: str
+    continuous_contract_roll_policy: ContinuousContractRollPolicy
 
 
 @dataclass(frozen=True)
@@ -249,6 +263,7 @@ class FeeSchedule:
     totals_include: str
     round_trip_usd: Mapping[str, Decimal]
     per_side_usd: Mapping[str, Decimal]
+    input_sha256: str
 
 
 @dataclass(frozen=True)
@@ -332,16 +347,58 @@ def _validate_byte_count(value: object, field: str) -> int:
     return value
 
 
-def _validate_pin_ref(value: object, field: str, *, required: bool) -> str | None:
+def _manifest_target(value: str) -> str:
+    target = PurePosixPath(value)
+    if (
+        not value or not target.parts or value != value.strip() or target.is_absolute()
+        or str(target) != value or any(part in {".", ".."} for part in target.parts)
+        or "\\" in value or ":" in value or any(ord(char) < 32 for char in value)
+    ):
+        raise ValueError("pin target must be a safe normalized repo-relative path")
+    return value
+
+
+def _load_port_manifest(path: Path) -> Mapping[str, str]:
+    try:
+        lines = path.read_bytes().decode("utf-8").splitlines()
+    except (OSError, UnicodeDecodeError) as exc:
+        raise ValueError("cannot read PORT_MANIFEST.sha256") from exc
+    pins: dict[str, str] = {}
+    for line_number, line in enumerate(lines, 1):
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        match = re.fullmatch(r"([0-9a-f]{64}) [ *](.+)", line)
+        if match is None:
+            raise ValueError(f"invalid PORT_MANIFEST row {line_number}")
+        digest, target = match.groups()
+        target = _manifest_target(target)
+        if target in pins:
+            raise ValueError(f"duplicate PORT_MANIFEST path: {target}")
+        pins[target] = digest
+    return MappingProxyType(pins)
+
+
+def _validate_pin_ref(
+    value: object, field: str, *, required: bool, pins: Mapping[str, str],
+    pine_filename: str, pine_sha256: str | None,
+) -> str | None:
     if value is None and not required:
         return None
     reference = _require_nonempty_string(value, field)
     if not reference.startswith(_PORT_MANIFEST_PREFIX):
         raise ValueError(f"{field} must reference PORT_MANIFEST.sha256")
+    target = _manifest_target(reference[len(_PORT_MANIFEST_PREFIX):])
+    if target not in pins:
+        raise ValueError(f"pin target not found in PORT_MANIFEST: {target}")
+    if pine_sha256 is not None:
+        if PurePosixPath(target).name != pine_filename:
+            raise ValueError(f"pin basename mismatch: {target}")
+        if pins[target] != pine_sha256:
+            raise ValueError(f"pin hash mismatch: {target}")
     return reference
 
 
-def _source_spec(value: object) -> SourceSpec:
+def _source_spec(value: object, pins: Mapping[str, str]) -> SourceSpec:
     record = _require_exact_keys(value, _SOURCE_KEYS, "strategy")
     strategy_id = _require_nonempty_string(record["strategy_id"], "strategy_id")
     export_hash = _require_nonempty_string(record["export_sha256"], "export_sha256")
@@ -358,16 +415,13 @@ def _source_spec(value: object) -> SourceSpec:
             "pine_pin_status must be one of "
             f"{sorted(_PINE_PIN_STATUSES)!r}: {pine_pin_status}"
         )
-    pin_ref = _validate_pin_ref(record["pin_ref"], "pin_ref", required=False)
+    pin_ref = record["pin_ref"]
     pin_divergence = record["pin_divergence"]
     if pine_pin_status == "PINNED_RESEARCH_VARIANT":
         if not isinstance(pin_divergence, str) or not pin_divergence.strip():
             raise ValueError("PINNED_RESEARCH_VARIANT requires a non-empty pin_divergence")
         if pin_ref is None:
             raise ValueError("PINNED_RESEARCH_VARIANT requires a pin_ref")
-        expected_ref = f"{_PORT_MANIFEST_PREFIX}core/strategies/candidates/{record['pine_filename']}"
-        if pin_ref != expected_ref:
-            raise ValueError("PINNED_RESEARCH_VARIANT pin_ref must name its candidate Pine")
     elif pine_pin_status == "NOT_IN_PORT_MANIFEST":
         if pin_ref is not None or pin_divergence is not None:
             raise ValueError("NOT_IN_PORT_MANIFEST requires null pin_ref and pin_divergence")
@@ -376,6 +430,11 @@ def _source_spec(value: object) -> SourceSpec:
             raise ValueError("UNPINNED_MODIFIED requires a non-empty pin_divergence")
     elif pin_divergence is not None:
         raise ValueError("pin_divergence must be null unless pine_pin_status is a modified body")
+    pin_ref = _validate_pin_ref(
+        pin_ref, "pin_ref", required=pine_pin_status != "NOT_IN_PORT_MANIFEST", pins=pins,
+        pine_filename=_validate_filename(record["pine_filename"], "pine_filename"),
+        pine_sha256=None if pine_pin_status == "UNPINNED_MODIFIED" else pine_hash,
+    )
     for field in ("declared_bar_size_minutes", "contract_cap"):
         if type(record[field]) is not int or record[field] <= 0:
             raise ValueError(f"{field} must be a positive integer")
@@ -423,7 +482,7 @@ def _source_spec(value: object) -> SourceSpec:
     )
 
 
-def _dropped_source(value: object) -> DroppedSource:
+def _dropped_source(value: object, pins: Mapping[str, str]) -> DroppedSource:
     record = _require_exact_keys(value, _DROPPED_SOURCE_KEYS, "dropped source")
     strategy_id = _require_nonempty_string(
         record["strategy_id_as_named_before"], "strategy_id_as_named_before"
@@ -433,14 +492,10 @@ def _dropped_source(value: object) -> DroppedSource:
     if not _HASH_RE.fullmatch(export_hash) or not _HASH_RE.fullmatch(pine_hash):
         raise ValueError(f"invalid dropped source hash for {strategy_id}")
     pine_filename = _validate_filename(record["pine_filename"], "pine_filename")
-    expected_directory = "striker" if strategy_id.startswith("striker_dj30_") else "nas"
-    expected_ref = (
-        f"{_PORT_MANIFEST_PREFIX}core/strategies/_archive/{expected_directory}/"
-        f"{pine_filename}"
+    pin_ref = _validate_pin_ref(
+        record["pin_ref"], "pin_ref", required=True, pins=pins,
+        pine_filename=pine_filename, pine_sha256=pine_hash,
     )
-    pin_ref = _validate_pin_ref(record["pin_ref"], "pin_ref", required=True)
-    if pin_ref != expected_ref:
-        raise ValueError(f"dropped source pin_ref must name its {expected_directory} archive Pine")
     if record["reason"] != _DROP_REASON:
         raise ValueError(f"dropped source reason must be {_DROP_REASON}")
     return DroppedSource(
@@ -454,12 +509,35 @@ def _dropped_source(value: object) -> DroppedSource:
     )
 
 
+def _roll_policy(value: object) -> ContinuousContractRollPolicy:
+    record = _require_exact_keys(value, frozenset({"disposition", "ruling_date", "ruling_ref", "obligations"}), "continuous contract roll policy")
+    disposition = _require_nonempty_string(record["disposition"], "roll disposition")
+    if disposition not in {"ACCEPTED_UNMODELED", "UNRESOLVED"}:
+        raise ValueError("invalid continuous contract roll disposition")
+    date_text = _require_nonempty_string(record["ruling_date"], "roll ruling_date")
+    ruling_date = date.fromisoformat(date_text)
+    if ruling_date.isoformat() != date_text:
+        raise ValueError("roll ruling_date must be an ISO calendar date")
+    ruling_ref = _require_nonempty_string(record["ruling_ref"], "roll ruling_ref")
+    obligations = record["obligations"]
+    if not isinstance(obligations, list):
+        raise ValueError("roll obligations must be an array")
+    obligations = tuple(_require_nonempty_string(item, "roll obligation") for item in obligations)
+    if len(set(obligations)) != len(obligations):
+        raise ValueError("roll obligations must be distinct")
+    if disposition == "ACCEPTED_UNMODELED" and set(obligations) != set(_ROLL_OBLIGATIONS):
+        raise ValueError("accepted roll policy requires both frozen obligations")
+    if disposition == "UNRESOLVED" and obligations:
+        raise ValueError("unresolved roll policy must not claim accepted obligations")
+    return ContinuousContractRollPolicy(disposition, ruling_date, ruling_ref, obligations)
+
+
 def load_source_inventory(path: str | Path) -> SourceInventory:
     """Load one strict snapshot of active and dropped exploratory source identities."""
     payload_value, raw_config = _load_json_snapshot(Path(path))
     payload = _require_exact_keys(
         payload_value,
-        frozenset({"claim_class", "platform", "strategies", "dropped_sources"}),
+        frozenset({"claim_class", "platform", "strategies", "dropped_sources", "continuous_contract_roll_policy"}),
         "source configuration",
     )
     if payload["claim_class"] != "EXPLORATORY":
@@ -468,11 +546,13 @@ def load_source_inventory(path: str | Path) -> SourceInventory:
     strategies = payload["strategies"]
     if not isinstance(strategies, list) or not strategies:
         raise ValueError("strategies must be a non-empty array")
-    specs = tuple(_source_spec(strategy) for strategy in strategies)
+    roll_policy = _roll_policy(payload["continuous_contract_roll_policy"])
+    pins = _load_port_manifest(_PORT_MANIFEST_PATH)
+    specs = tuple(_source_spec(strategy, pins) for strategy in strategies)
     dropped_records = payload["dropped_sources"]
     if not isinstance(dropped_records, list):
         raise ValueError("dropped_sources must be an array")
-    dropped_sources = tuple(_dropped_source(source) for source in dropped_records)
+    dropped_sources = tuple(_dropped_source(source, pins) for source in dropped_records)
     strategy_ids: set[str] = set()
     basenames: set[str] = set()
     for spec in specs:
@@ -495,6 +575,7 @@ def load_source_inventory(path: str | Path) -> SourceInventory:
         specs=specs,
         dropped_sources=dropped_sources,
         config_sha256=sha256(raw_config).hexdigest(),
+        continuous_contract_roll_policy=roll_policy,
     )
 
 
@@ -568,7 +649,8 @@ def verify_source_pair(source_dir: str | Path, spec: SourceSpec) -> VerifiedSour
 def load_fee_schedule(path: str | Path) -> FeeSchedule:
     """Load the compact, primary-source Tradeify fee capture."""
     keys = frozenset({"source_url", "page_date", "observed_date", "totals_include", "rows"})
-    payload = _require_exact_keys(_load_json(Path(path)), keys, "fee schedule")
+    value, raw = _load_json_snapshot(Path(path))
+    payload = _require_exact_keys(value, keys, "fee schedule")
     if payload["source_url"] != _FEE_URL:
         raise ValueError("fee schedule source_url does not match the frozen primary source")
     if payload["page_date"] != _FEE_PAGE_DATE:
@@ -599,6 +681,7 @@ def load_fee_schedule(path: str | Path) -> FeeSchedule:
             f"missing={missing}, unexpected={unexpected}"
         )
     return FeeSchedule(
+        input_sha256=sha256(raw).hexdigest(),
         source_url=payload["source_url"],
         page_date=date.fromisoformat(payload["page_date"]),
         observed_date=date.fromisoformat(payload["observed_date"]),

@@ -16,7 +16,7 @@ from urllib.parse import urlsplit
 import pandas as pd
 
 from discovery.cost_model import INSTRUMENT_SPECS
-from research_utils.tv_trade_ledger import FeeSchedule, Issue, SourceSpec
+from research_utils.tv_trade_ledger import ContinuousContractRollPolicy, FeeSchedule, Issue, SourceSpec
 
 
 _CENT_TOLERANCE = Decimal("0.01")
@@ -845,6 +845,7 @@ def analyze_venue(
     fee_schedule: FeeSchedule,
     *,
     early_close_calendar: EarlyCloseCalendar | None = None,
+    continuous_contract_roll_policy: ContinuousContractRollPolicy | None = None,
 ) -> VenueMetrics:
     """Audit instrument and venue constraints without changing source trades."""
     geometry = instrument_geometry(spec.encoded_instrument)
@@ -982,6 +983,8 @@ def analyze_venue(
     if spec.continuous_symbol:
         contract_month_status = "UNAVAILABLE"
         roll_seam_status = "UNAVAILABLE"
+        roll_policy = continuous_contract_roll_policy
+        accepted = roll_policy is not None and roll_policy.disposition == "ACCEPTED_UNMODELED"
         issues.append(
             _venue_issue(
                 "CONTINUOUS_CONTRACT_ROLL_UNRESOLVED",
@@ -989,7 +992,12 @@ def analyze_venue(
                 {
                     "contract_month_attribution": contract_month_status,
                     "roll_seam_attribution": roll_seam_status,
+                    "disposition": roll_policy.disposition if roll_policy else "UNRESOLVED",
+                    "ruling_date": roll_policy.ruling_date if roll_policy else None,
+                    "ruling_ref": roll_policy.ruling_ref if roll_policy else None,
+                    "obligations": roll_policy.obligations if roll_policy else (),
                 },
+                severity="WARNING" if accepted else "BLOCKER",
             )
         )
     else:

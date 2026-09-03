@@ -22,6 +22,17 @@ The retained inventory is exactly `aegis_6j1`, `orb_mnq_recon_v7`, `striker_dj30
 
 The two dropped records, `striker_dj30_qtxg1_swap_body_on_mym` and `striker_nas100_qtxg1_swap_body_on_mnq`, are unusable swap-port exports: point-value sizing was not overridden (a 4× mismatch interacting with cap and pyramid), cannot be rescaled, and will never be repaired. They appear only in the aggregate provenance inventory with their archive pin refs, filenames, and hashes; they are never normalized, counted, or included in ledgers, weekly results, ranking, or composition.
 
+The loader parses the actual repository `PORT_MANIFEST.sha256` once per inventory load. Every active pinned and dropped ref must name an existing safe repo-relative entry with the same Pine basename and SHA-256. Directory placement is owned by that manifest, not a hardcoded `candidates/` prefix. Malformed, duplicate, dangling and mismatched entries fail closed. An `UNPINNED_MODIFIED` compatibility record must reference a real ancestor pin, without claiming its modified body's hash matches that ancestor. Private Pine bodies need not exist inside the repository.
+
+## D13 continuous-contract disposition
+
+Operator ruling 2026-09-03; `docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md` §6 D13(b): continuous basis is `ACCEPTED_UNMODELED` for Phases 2–4, not modeled or resolved. The exact config object `continuous_contract_roll_policy` freezes disposition, ruling date/reference and both obligations below. It flows explicitly into venue analysis and every manifest/strategy/detail/report; generic callers without a policy still receive the unresolved roll blocker. This campaign retains `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED` as a WARNING limitation. Contract-month and seam attribution remain `UNAVAILABLE`; other blockers and the calendar/summary `NEEDS_CONTEXT` cap are unaffected.
+
+- Phase 3 pre-registration states back-adjustment seam risk as a limitation of every campaign claim: fills cannot be attributed to a contract month, and a seam crossing is indistinguishable from a price move.
+- A Phase 6 seam-sensitivity check is pre-registered with its severity frozen alongside the other Phase 6 cutoffs.
+
+Generation `tradeify-phase1-normalization-v2` identifies the manifest/report contract. Config, calendar, fee schedule and independent summaries carry hashes from their exact parsed byte snapshots; a later filesystem change cannot silently replace a snapshot digest. This does not establish missing evidence or satisfy either future D13 obligation.
+
 ## Venue boundaries
 
 The per-strategy Tradeify cap remains a Phase 1 blocker check against 80 micro-equivalents (`6J=10`, `MNQ/MYM/MGC=1` per contract). The joint ledger carries that unit on every event, but the joint book-cap verdict is deferred to Phase 4.
@@ -45,10 +56,10 @@ Phase 1 delivers deterministic joint event union and ISO-week exit aggregation o
 ## Reproduce
 
 ```powershell
-python lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/run_phase1.py `
+.venv/Scripts/python.exe lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/run_phase1.py `
   --config lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json `
   --source-dir 'C:\path\to\the\ten\active\frozen\files' `
-  --output-dir lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts
+  --output-dir lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/reanchor_iteration3
 ```
 
 The aggregate report remains `EXPLORATORY` even when all byte and accounting checks reproduce exactly. Re-running Pine needs a separate, explicitly authorized bar-data and execution-engine project.

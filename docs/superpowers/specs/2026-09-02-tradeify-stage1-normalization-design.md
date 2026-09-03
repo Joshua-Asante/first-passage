@@ -46,7 +46,7 @@ The campaign runner writes local material under `local_artifacts/`. The director
 
 ### 4.1 Frozen campaign configuration
 
-`phase1_config.json` defines each active strategy ID, source basenames/hashes/byte lengths, intended instrument, instrument encoded by the export filename, Pine-declared commission/slippage/pyramiding, `pine_pin_status`, nullable `pin_ref`, declared bar size/session/direction evidence, platform and lineage notes, quantity convention, continuous-symbol status, and `source_timezone`. It also defines a strictly validated `dropped_sources` inventory. `PORT_MANIFEST.sha256` is authoritative for pin membership; a `PINNED_RESEARCH_VARIANT` requires a nonempty divergence and candidate ref, while `NOT_IN_PORT_MANIFEST` has null ref/divergence.
+`phase1_config.json` defines each active strategy ID, source basenames/hashes/byte lengths, intended instrument, instrument encoded by the export filename, Pine-declared commission/slippage/pyramiding, `pine_pin_status`, nullable `pin_ref`, declared bar size/session/direction evidence, platform and lineage notes, quantity convention, continuous-symbol status, and `source_timezone`. It also defines strictly validated `dropped_sources` and `continuous_contract_roll_policy` objects. The actual `PORT_MANIFEST.sha256` is parsed once per inventory load: pinned active/dropped refs require safe normalized repo-relative target membership, equal Pine basename and equal SHA-256. Directory placement belongs to the manifest, not hardcoded candidates/archive prefixes; malformed/duplicate/dangling entries fail closed. `PINNED_RESEARCH_VARIANT` requires nonempty divergence; `NOT_IN_PORT_MANIFEST` has null ref/divergence. `UNPINNED_MODIFIED` requires an existing ancestor ref without claiming equal modified-body hash. Private dropped source bytes are never read.
 
 Operator ruling D9 freezes `source_timezone="America/New_York"` for all five active strategies. Direction, bar-size, session, venue, scalar-MAE, and synchronized-intraday-path availability remain inventoried without inferring any other missing evidence. Operator ruling D8 freezes the actual Pine pyramid values: DJ30 is a 250% research cell versus locked 750%; NAS100 remains 1000%.
 
@@ -99,7 +99,12 @@ Venue checks identify violations but never edit trades. `FORCE_FLAT_VIOLATION` i
 
 `cme_early_close_calendar.json` freezes the primary-source CME holiday-calendar capture over the five active exports' combined date span and is hashed with the other campaign inputs. When complete primary-source rows cannot be captured, the file and every report say `NEEDS_CONTEXT`; the runner must not infer holiday dates or silently claim complete 12:59 coverage.
 
-All five active exports identify continuous `1!` chart symbols rather than specific tradable contract months. Each report emits `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED`; without a roll ledger or individual-contract export, Phase 1 cannot prove which contract generated a fill or whether a fill crosses a back-adjustment seam.
+All five active exports identify continuous `1!` chart symbols rather than specific tradable contract months. Each report emits `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED`; without a roll ledger or individual-contract export, Phase 1 cannot prove which contract generated a fill or whether a fill crosses a back-adjustment seam. Operator ruling 2026-09-03, campaign-state §6 D13(b), accepts the continuous basis for Phases 2–4 as `ACCEPTED_UNMODELED`, not resolved. Exact config policy keys are `{disposition, ruling_date, ruling_ref, obligations}`; accepted metadata requires a valid ISO date, nonempty reference and exactly the two frozen distinct obligations below. The immutable policy flows explicitly to `analyze_venue`; only the roll issue becomes WARNING, while attribution remains UNAVAILABLE and other blockers remain unchanged. Absent policy on other callers defaults to the unresolved BLOCKER.
+
+- Phase 3 pre-registration states back-adjustment seam risk as a limitation of every campaign claim: fills cannot be attributed to a contract month, and a seam crossing is indistinguishable from a price move.
+- A Phase 6 seam-sensitivity check is pre-registered with its severity frozen alongside the other Phase 6 cutoffs.
+
+Policy/reference/obligations are echoed in aggregate, per-strategy and detail reports. This acceptance does not discharge those future obligations.
 
 ### 4.5 Joint ledger and weekly adapter
 
@@ -126,7 +131,7 @@ Each strategy status is one of:
 - `BLOCKED_EXPLORATORY`: at least one structural, identity, timezone, cost, or venue blocker remains;
 - `FAILED_INTAKE`: source identity/schema prevented normalization.
 
-The campaign-wide status is the most severe constituent status. Unresolved continuous-contract rolls remain an explicit blocker dimension, and incomplete primary-source CME early-close coverage caps the holiday-short verdict at `NEEDS_CONTEXT`; neither prevents the remaining accounting report from being produced.
+The campaign-wide status is the most severe constituent status. D13(b)'s accepted-unmodeled continuous-roll limitation alone no longer blocks this campaign, but other callers without explicit acceptance retain the roll blocker. Incomplete primary-source CME early-close coverage and missing independent summaries retain the `NEEDS_CONTEXT` cap. Generation `tradeify-phase1-normalization-v2` is echoed in manifest/RESULTS; fee/config/calendar/summary digests come from the exact parsed byte snapshots, never a post-load reread.
 
 ## 5. Frozen tolerances and ordering
 

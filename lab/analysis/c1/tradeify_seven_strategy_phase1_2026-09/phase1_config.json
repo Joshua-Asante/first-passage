@@ -1,6 +1,15 @@
 {
   "claim_class": "EXPLORATORY",
   "platform": "TradingView Strategy Tester over a continuous futures chart",
+  "continuous_contract_roll_policy": {
+    "disposition": "ACCEPTED_UNMODELED",
+    "ruling_date": "2026-09-03",
+    "ruling_ref": "Operator ruling 2026-09-03; docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md §6 D13(b).",
+    "obligations": [
+      "Phase 3 pre-registration states back-adjustment seam risk as a limitation of every campaign claim: fills cannot be attributed to a contract month, and a seam crossing is indistinguishable from a price move.",
+      "A Phase 6 seam-sensitivity check is pre-registered with its severity frozen alongside the other Phase 6 cutoffs."
+    ]
+  },
   "strategies": [
     {
       "strategy_id": "aegis_6j1",

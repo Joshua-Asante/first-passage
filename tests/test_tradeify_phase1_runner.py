@@ -10,6 +10,8 @@ import subprocess
 import sys
 
 import pytest
+from research_utils import tv_trade_ledger
+from test_tv_trade_ledger import _unresolved_roll_policy
 
 
 _RUNNER_PATH = (
@@ -106,6 +108,12 @@ def _csv_bytes(index: int) -> bytes:
     return stream.getvalue().encode("utf-8")
 
 
+@pytest.fixture(autouse=True)
+def synthetic_pin_manifest(tmp_path, monkeypatch):
+    """Use a real synthetic pin file at the explicit loader dependency boundary."""
+    monkeypatch.setattr(tv_trade_ledger, "_PORT_MANIFEST_PATH", tmp_path / "PORT_MANIFEST.sha256")
+
+
 def _five_source_fixture(root: Path) -> tuple[Path, Path, list[str]]:
     source_dir = root / "sources"
     campaign_dir = root / "campaign"
@@ -177,6 +185,7 @@ def _five_source_fixture(root: Path) -> tuple[Path, Path, list[str]]:
                 "claim_class": "EXPLORATORY",
                 "platform": "TradingView Strategy Tester over a continuous futures chart",
                 "strategies": strategies,
+                "continuous_contract_roll_policy": _unresolved_roll_policy(),
                 "dropped_sources": [
                     {
                         "strategy_id_as_named_before": "striker_dj30_qtxg1_swap_body_on_mym",
@@ -200,6 +209,13 @@ def _five_source_fixture(root: Path) -> tuple[Path, Path, list[str]]:
             }
         ),
         encoding="utf-8",
+    )
+    payload = json.loads(config.read_bytes())
+    pinned = [row for row in payload["strategies"] if row["pin_ref"]] + payload["dropped_sources"]
+    (root / "PORT_MANIFEST.sha256").write_text(
+        "# Real synthetic manifest, no source files needed for dropped metadata\n" + "".join(
+            f"{row['pine_sha256']}  {row['pin_ref'].split(':', 1)[1]}\n" for row in pinned
+        ), encoding="utf-8",
     )
     (campaign_dir / "tradeify_commission_schedule.json").write_text(
         json.dumps(
@@ -582,6 +598,20 @@ def test_invalid_invocation_returns_two():
     assert run_phase1.main([]) == 2
 
 
+@pytest.mark.parametrize("kind", ["export", "pine"])
+def test_correct_hash_wrong_source_byte_length_returns_intake_three(tmp_path, capsys, kind):
+    source_dir, config, _ = _five_source_fixture(tmp_path)
+    payload = json.loads(config.read_bytes())
+    source = payload["strategies"][0]
+    assert sha256((source_dir / source[f"{kind}_filename"]).read_bytes()).hexdigest() == source[f"{kind}_sha256"]
+    source[f"{kind}_bytes"] += 1
+    config.write_text(json.dumps(payload), encoding="utf-8")
+    assert run_phase1.main(["--config", str(config), "--source-dir", str(source_dir)]) == 3
+    diagnostic = capsys.readouterr().err
+    assert "byte length mismatch: expected" in diagnostic
+    assert source[f"{kind}_filename"] in diagnostic
+
+
 def test_output_failure_returns_four(tmp_path, monkeypatch):
     source_dir, config, _ = _seven_source_fixture(tmp_path)
 
@@ -595,19 +625,13 @@ def test_output_failure_returns_four(tmp_path, monkeypatch):
 
 
 def test_direct_script_entrypoint_bootstraps_repo_imports(tmp_path):
-    source_dir, config, _ = _seven_source_fixture(tmp_path)
     environment = os.environ.copy()
     environment.pop("PYTHONPATH", None)
     result = subprocess.run(
         [
             sys.executable,
             str(_RUNNER_PATH),
-            "--config",
-            str(config),
-            "--source-dir",
-            str(source_dir),
-            "--output-dir",
-            str(tmp_path / "rows"),
+            "--help",
         ],
         cwd=tmp_path,
         env=environment,
@@ -616,19 +640,48 @@ def test_direct_script_entrypoint_bootstraps_repo_imports(tmp_path):
     )
 
     assert result.returncode == 0, result.stderr
+    assert "--source-dir" in result.stdout
 
 
-def test_committed_manifest_matches_frozen_seven_strategy_acceptance():
+def test_report_publishes_every_input_ledger_and_detail_digest(tmp_path):
+    """Omitting a frozen evidence or detail digest must be visible to report consumers."""
+    source_dir, config, _ = _five_source_fixture(tmp_path)
+    result = run_phase1.run_campaign(config, source_dir, tmp_path / "rows")
+    manifest = json.loads(result.manifest_bytes)
+    rendered = result.report_bytes.decode("utf-8")
+
+    for digest in manifest["inputs"].values():
+        assert f"`{digest}`" in rendered
+    for name, digest in manifest["ledgers"].items():
+        if name.endswith("_sha256") and isinstance(digest, str):
+            assert f"`{digest}`" in rendered
+    for strategy_id, digest in manifest["local_strategy_report_sha256"].items():
+        assert f"- Detail report {strategy_id}: `{digest}`" in rendered
+
+
+def test_report_missing_monthly_anchor_roundtrips_with_plain_decimal_display(tmp_path):
+    """An in-memory Decimal map and its published JSON must render identical evidence."""
+    source_dir, config, _ = _five_source_fixture(tmp_path)
+    result = run_phase1.run_campaign(config, source_dir, tmp_path / "rows")
+    manifest = json.loads(result.manifest_bytes)
+
+    assert result.report_bytes == run_phase1._render_report(manifest)
+    assert (
+        b"| monthly_net_pnl_usd | {'2026-01': '0.18'} | None | None | 0.01 | MISSING_ANCHOR |"
+        in result.report_bytes
+    )
+    assert b"Decimal(" not in result.report_bytes
+
+
+def test_committed_manifest_matches_frozen_five_strategy_acceptance():
     manifest = json.loads(
         (_CAMPAIGN_DIR / "reconciliation_manifest.json").read_text(encoding="utf-8")
     )
     expected = {
         "aegis_6j1": (244, 122, "28702.75"),
         "orb_mnq_recon_v7": (1362, 681, "47533.16"),
-        "striker_dj30_mym_v45": (406, 203, "10208.62"),
-        "striker_dj30_mym_pyramid_down": (406, 203, "31770.36"),
-        "striker_nas100_mnq_v1": (756, 378, "112253.42"),
-        "striker_nas100_mnq_native_variant": (368, 184, "170250.58"),
+        "striker_dj30_mym_pyramid_250": (406, 203, "31770.36"),
+        "striker_nas100_mnq_dow_wed_excluded": (756, 378, "112253.42"),
         "vanguard_mgc_v04": (686, 343, "20388.04"),
     }
     observed = {
@@ -641,23 +694,65 @@ def test_committed_manifest_matches_frozen_seven_strategy_acceptance():
     }
 
     assert observed == expected
+    from test_tradeify_phase1_identity_policy import accepted_policy
+    assert manifest["runner_version"] == "tradeify-phase1-normalization-v2"
+    assert manifest["continuous_contract_roll_policy"] == accepted_policy()
+    for row in manifest["strategies"]:
+        assert row["continuous_contract_roll_policy"] == accepted_policy()
+        roll = next(issue for issue in row["issues"] if issue["code"] == "CONTINUOUS_CONTRACT_ROLL_UNRESOLVED")
+        assert roll["severity"] == "WARNING"
     assert manifest["campaign_status"] == "BLOCKED_EXPLORATORY"
     assert manifest["phase1_verdict_cap"] == "NEEDS_CONTEXT"
-    assert manifest["inputs"]["config_sha256"] == (
-        "8881a2af5ab63cb7abec7028d22832ed647cfef10d484eba7d97515fcb0ea227"
-    )
+    assert manifest["inputs"] == {
+        "config_sha256": "bc806ace41f899f17fa9cd54960bcd7c6ee6f3b02b28f8574c5b600997667e87",
+        "tradeify_commission_schedule_sha256": "61c8957a4adfabf6b8e8c4eb984e6d9388a223145f90b0b9ca66b3dd7ca28750",
+        "cme_early_close_calendar_sha256": "742e83508a3addf034ce6536e42553522bea28c96f8e3718629cf5495c405277",
+        "tv_summary_anchors_sha256": "a3c3ae0c102adf15199a2f68cebe07a97c4cae1b0b5b4f7c07f73c1093c96ff2",
+    }
+    for input_name, filename in {
+        "config": "phase1_config.json",
+        "tradeify_commission_schedule": "tradeify_commission_schedule.json",
+        "cme_early_close_calendar": "cme_early_close_calendar.json",
+        "tv_summary_anchors": "tv_summary_anchors.json",
+    }.items():
+        assert sha256((_CAMPAIGN_DIR / filename).read_bytes()).hexdigest() == (
+            manifest["inputs"][f"{input_name}_sha256"]
+        )
     assert manifest["ledgers"] == {
         "canonical_events_sha256": (
-            "03efac85c4cf67ef9a577ec0844383015eed5d85a5b3239ec47a2c38643d84bf"
+            "c04e2cc8b07a21abb47b70f6c195ea0336ec76087c0e76fb26f37e64f2c945ee"
         ),
         "canonical_trades_sha256": (
-            "900002b84762299273cdfe0dad75e5ab06324b884a22ef1f81e28fa8e3145105"
+            "0336cf3836055fbc951c995725c718e15aaff03e064bfade5f8310a5c382e257"
         ),
+        "source_row_sha256": {
+            "algorithm": "SHA-256",
+            "input": "exact raw CSV record bytes including original record terminator when present",
+        },
         "timestamp_domain": "UTC",
         "weekly_exit_blocks_sha256": (
-            "5bdcef07a717bf32b816c595cfbf6066e1f94a7ca9ad35e31b749bc8bc72cb0a"
+            "e33f48c13c3fd4c6438bb755fb6ac070bebbbf308ad0377320468a1a6ef8850e"
         ),
     }
+    assert manifest["local_strategy_report_sha256"] == {
+        "aegis_6j1": "9b40524e9c06870161ed77fde5cb1cea4a2501d7696cc6899607a2ab0e25b7c5",
+        "orb_mnq_recon_v7": "3cdf75dfc2821279f90dbafc0ac100ad227deefe9ab96360db157f880df7b8af",
+        "striker_dj30_mym_pyramid_250": "a762cc3b255f879ee3b92c77d6dc27a3de9d443a8c8219b94797e4833eff904e",
+        "striker_nas100_mnq_dow_wed_excluded": "c5c3d8f431b4ecdda6943e562ee9f152a924132d9f2d82e286c0293933187a8a",
+        "vanguard_mgc_v04": "ab61978d7dc7c6f1428c7d945d6258e0bcab5c5fdd276a84a1cea05bfba73af7",
+    }
+    assert sha256((_CAMPAIGN_DIR / "reconciliation_manifest.json").read_bytes()).hexdigest() == (
+        "89a0d42e97b38ddd12fca29a151e17d26e6395a7d85502482c125303b7cd479c"
+    )
+    assert sha256((_CAMPAIGN_DIR / "RESULTS.md").read_bytes()).hexdigest() == (
+        "ab69e3a70b461356edfe4218bef6177ae919730c72cab59cb0e8e27310e5b8cc"
+    )
+    assert [source["strategy_id_as_named_before"] for source in manifest["dropped_sources"]] == [
+        "striker_dj30_qtxg1_swap_body_on_mym",
+        "striker_nas100_qtxg1_swap_body_on_mnq",
+    ]
+    config = json.loads((_CAMPAIGN_DIR / "phase1_config.json").read_bytes())
+    assert manifest["dropped_sources"] == config["dropped_sources"]
     rows = {row["strategy_id"]: row for row in manifest["strategies"]}
     assert rows["orb_mnq_recon_v7"]["friday_to_sunday_holds"] == 3
     assert rows["orb_mnq_recon_v7"]["issue_counts"]["FORCE_FLAT_VIOLATION"] == 310

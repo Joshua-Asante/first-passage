@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from test_tradeify_phase1_runner import _five_source_fixture, run_phase1
+from test_tradeify_phase1_runner import _five_source_fixture, run_phase1, synthetic_pin_manifest
 from test_cme_calendar_evidence import calendar_fixture
 
 
@@ -117,3 +117,47 @@ def test_summary_snapshot_hash_survives_later_file_change(tmp_path, monkeypatch)
     monkeypatch.setattr(run_phase1, "load_summary_anchors", load_then_change_file)
     result = run_phase1.run_campaign(config, source_dir, tmp_path / "out")
     assert json.loads(result.manifest_bytes)["inputs"]["tv_summary_anchors_sha256"] == digest
+
+
+def test_fee_snapshot_hash_survives_later_file_change(tmp_path, monkeypatch):
+    source_dir, config, _ = _five_source_fixture(tmp_path)
+    fee_path = config.parent / "tradeify_commission_schedule.json"
+    digest = sha256(fee_path.read_bytes()).hexdigest()
+    real_load = run_phase1.load_fee_schedule
+
+    def load_then_change_file(path):
+        loaded = real_load(path)
+        path.write_bytes(b"changed after load")
+        return loaded
+
+    monkeypatch.setattr(run_phase1, "load_fee_schedule", load_then_change_file)
+    result = run_phase1.run_campaign(config, source_dir, tmp_path / "out")
+    manifest = json.loads(result.manifest_bytes)
+    assert manifest["inputs"]["tradeify_commission_schedule_sha256"] == digest
+    assert all(row["venue_commission_per_side_usd"] == "0.91" for row in manifest["strategies"])
+
+
+def test_runner_v2_echoes_explicit_accepted_roll_policy(tmp_path):
+    from test_tradeify_phase1_identity_policy import accepted_policy, OBLIGATIONS
+    source_dir, config, _ = _five_source_fixture(tmp_path)
+    payload = json.loads(config.read_bytes())
+    payload["continuous_contract_roll_policy"] = accepted_policy()
+    config.write_text(json.dumps(payload), encoding="utf-8")
+    result = run_phase1.run_campaign(config, source_dir, tmp_path / "out")
+    manifest = json.loads(result.manifest_bytes)
+    assert manifest["runner_version"] == "tradeify-phase1-normalization-v2"
+    assert manifest["continuous_contract_roll_policy"] == accepted_policy()
+    assert "tradeify-phase1-normalization-v2" in result.report_bytes.decode()
+    assert "ACCEPTED_UNMODELED" in result.report_bytes.decode()
+    for obligation in OBLIGATIONS:
+        assert obligation in result.report_bytes.decode()
+    for row in manifest["strategies"]:
+        assert row["continuous_contract_roll_policy"] == accepted_policy()
+        assert row["status"] == "RECONCILED_EXPLORATORY"
+        assert row["contract_month_attribution_status"] == "UNAVAILABLE"
+        detail = json.loads((tmp_path / "out" / "strategy_reports" / f"{row['strategy_id']}.json").read_bytes())
+        assert detail["continuous_contract_roll_policy"] == accepted_policy()
+        roll = next(issue for issue in detail["issues"] if issue["code"] == "CONTINUOUS_CONTRACT_ROLL_UNRESOLVED")
+        assert roll["severity"] == "WARNING"
+        assert roll["detail"]["obligations"] == OBLIGATIONS
+    assert manifest["phase1_verdict_cap"] == "NEEDS_CONTEXT"

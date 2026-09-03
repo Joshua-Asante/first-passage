@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter
+from dataclasses import asdict
 import csv
 from datetime import date, datetime
 from decimal import Decimal
@@ -44,7 +45,6 @@ from research_utils.tv_trade_ledger import (  # noqa: E402
     load_source_inventory,
     load_source_specs,
     normalize_export,
-    sha256_file,
     verify_source_pair,
 )
 from research_utils.tv_summary_reconciliation import (  # noqa: E402
@@ -54,7 +54,7 @@ from research_utils.tv_summary_reconciliation import (  # noqa: E402
 )
 
 
-_RUNNER_VERSION = "tradeify-phase1-normalization-v1"
+_RUNNER_VERSION = "tradeify-phase1-normalization-v2"
 _SEVERITY_ORDER = {"INFO": 0, "WARNING": 1, "BLOCKER": 2, "FATAL": 3}
 _BASE_COMMIT = "ed181233afd01d8fc128bc76ac626e43c3761f87"
 _FROZEN_STRATEGY_IDS = (
@@ -389,6 +389,8 @@ def _render_legacy_report(manifest: dict[str, object]) -> bytes:
 def _render_report(manifest: dict[str, object]) -> bytes:
     if "dropped_sources" not in manifest:
         return _render_legacy_report(manifest)
+    # Render the published JSON domain, not Python-only Decimal/map representations.
+    manifest = json.loads(_json_bytes(manifest))
     coverage_note = manifest.get("cme_early_close_coverage_note")
     calendar_status = manifest.get("cme_early_close_calendar", {}).get("coverage_status", manifest["phase1_verdict_cap"])
     if calendar_status == "COMPLETE":
@@ -415,6 +417,16 @@ def _render_report(manifest: dict[str, object]) -> bytes:
         f"Campaign status: `{manifest['campaign_status']}`",
         "",
         f"Phase 1 evidence verdict cap: `{manifest['phase1_verdict_cap']}`",
+        "",
+        f"Runner generation: `{manifest['runner_version']}`",
+        "",
+        "## Continuous-contract roll disposition",
+        "",
+        f"D13: `{manifest['continuous_contract_roll_policy']['disposition']}` — contract-month and seam attribution remain unavailable, not modeled or resolved.",
+        "",
+        manifest["continuous_contract_roll_policy"]["ruling_ref"],
+        "",
+        *[f"- {obligation}" for obligation in manifest["continuous_contract_roll_policy"]["obligations"]],
         "",
         "## Strategy inventory",
         "",
@@ -464,11 +476,16 @@ def _render_report(manifest: dict[str, object]) -> bytes:
             "## Frozen hashes",
             "",
             f"- Config: `{manifest['inputs']['config_sha256']}`",
+            f"- Tradeify fee capture: `{manifest['inputs']['tradeify_commission_schedule_sha256']}`",
             f"- CME calendar capture: `{manifest['inputs']['cme_early_close_calendar_sha256']}`",
             f"- Independent TradingView anchors: `{manifest['inputs']['tv_summary_anchors_sha256']}`",
             f"- Canonical events: `{manifest['ledgers']['canonical_events_sha256']}`",
             f"- Canonical trades: `{manifest['ledgers']['canonical_trades_sha256']}`",
             f"- Weekly exit blocks: `{manifest['ledgers']['weekly_exit_blocks_sha256']}`",
+            *[
+                f"- Detail report {strategy_id}: `{digest}`"
+                for strategy_id, digest in sorted(manifest["local_strategy_report_sha256"].items())
+            ],
             "",
             "## Issues by strategy",
             "",
@@ -522,6 +539,8 @@ def run_campaign(
 
     _validate_output_dir(output_dir)
     inventory = load_source_inventory(config_path)
+    roll_policy = inventory.continuous_contract_roll_policy
+    roll_policy_record = asdict(roll_policy)
     specs = inventory.specs
     _validate_strategy_roster(specs)
     _validate_dropped_source_roster(inventory.dropped_sources)
@@ -552,10 +571,12 @@ def run_campaign(
             source.spec,
             fee_schedule,
             early_close_calendar=early_close_calendar,
+            continuous_contract_roll_policy=roll_policy,
         )
         comparisons, summary_issues = reconcile_summary(accounting, source.spec, summary_inventory)
         anchor = summary_inventory.anchors.get(source.spec.strategy_id)
         summary_record = {
+            "continuous_contract_roll_policy": roll_policy_record,
             "summary_source_note": anchor["source_note"] if anchor else None,
             "summary_comparisons": comparisons,
         }
@@ -645,10 +666,11 @@ def run_campaign(
         },
         "cme_early_close_coverage_note": early_close_calendar.coverage_note,
         "runner_version": _RUNNER_VERSION,
+        "continuous_contract_roll_policy": roll_policy_record,
         "git_base_commit": _BASE_COMMIT,
         "inputs": {
             "config_sha256": inventory.config_sha256,
-            "tradeify_commission_schedule_sha256": sha256_file(fee_path),
+            "tradeify_commission_schedule_sha256": fee_schedule.input_sha256,
             "cme_early_close_calendar_sha256": early_close_calendar.input_sha256,
             "tv_summary_anchors_sha256": summary_inventory.input_sha256,
         },
