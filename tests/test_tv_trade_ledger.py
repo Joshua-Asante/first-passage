@@ -48,6 +48,7 @@ def _spec_dict(strategy_id: str, export_filename: str, pine_filename: str) -> di
         "lineage_notes": ["development fixture"],
         "pine_commission_per_side_usd": "0.91",
         "pine_slippage_ticks_per_side": "1",
+        "pine_pyramiding_pct": "100",
         "contract_cap": 80,
     }
 
@@ -129,21 +130,42 @@ def test_frozen_configuration_has_seven_continuous_source_specs():
     assert [spec.strategy_id for spec in specs] == [
         "aegis_6j1",
         "orb_mnq_recon_v7",
-        "striker_dj30_mnq_prototype",
         "striker_dj30_mym_v45",
+        "striker_dj30_mym_pyramid_down",
         "striker_nas100_mnq_v1",
-        "striker_nas100_mym_prototype",
+        "striker_nas100_mnq_native_variant",
         "vanguard_mgc_v04",
     ]
-    assert all(spec.source_timezone is None for spec in specs)
+    assert all(spec.source_timezone == "America/New_York" for spec in specs)
     assert all(spec.declared_bar_size_minutes == 15 for spec in specs)
     assert all(spec.continuous_symbol for spec in specs)
     assert all(not spec.synchronized_intraday_path_available for spec in specs)
+    assert all(spec.contract_cap == 80 for spec in specs)
     assert specs[0].declared_session == "10:00-13:45 America/New_York, Mon-Wed; force-flat 16:30 America/New_York"
-    assert specs[2].intended_instrument == "MNQ"
+    assert specs[2].intended_instrument == "MYM"
     assert specs[2].encoded_instrument == "MYM"
-    assert specs[5].intended_instrument == "MYM"
+    assert specs[5].intended_instrument == "MNQ"
     assert specs[5].encoded_instrument == "MNQ"
+
+
+def test_frozen_configuration_records_pine_pyramiding_from_each_source():
+    """Losing the source-grounded add-size inventory would hide the one reduced cell."""
+    specs = load_source_specs(_CONFIG_PATH)
+
+    assert {spec.strategy_id: spec.pine_pyramiding_pct for spec in specs} == {
+        "aegis_6j1": Decimal("0"),
+        "orb_mnq_recon_v7": Decimal("100"),
+        "striker_dj30_mym_v45": Decimal("750"),
+        "striker_dj30_mym_pyramid_down": Decimal("250"),
+        "striker_nas100_mnq_v1": Decimal("1000"),
+        "striker_nas100_mnq_native_variant": Decimal("1000"),
+        "vanguard_mgc_v04": Decimal("80"),
+    }
+    dj30 = {spec.strategy_id: spec for spec in specs if spec.strategy_id.startswith("striker_dj30")}
+    assert (
+        dj30["striker_dj30_mym_pyramid_down"].pine_pyramiding_pct
+        < dj30["striker_dj30_mym_v45"].pine_pyramiding_pct
+    )
 
 
 def test_fee_schedule_uses_primary_round_trip_values_and_derives_per_side_values():

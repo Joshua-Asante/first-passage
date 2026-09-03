@@ -38,6 +38,7 @@ _SOURCE_KEYS = frozenset(
         "lineage_notes",
         "pine_commission_per_side_usd",
         "pine_slippage_ticks_per_side",
+        "pine_pyramiding_pct",
         "contract_cap",
     }
 )
@@ -111,6 +112,7 @@ class SourceSpec:
     lineage_notes: tuple[str, ...]
     pine_commission_per_side_usd: Decimal
     pine_slippage_ticks_per_side: Decimal
+    pine_pyramiding_pct: Decimal
     contract_cap: int
 
 
@@ -238,6 +240,9 @@ def _source_spec(value: object) -> SourceSpec:
         ),
         pine_slippage_ticks_per_side=_require_decimal(
             record["pine_slippage_ticks_per_side"], "pine_slippage_ticks_per_side", allow_zero=True
+        ),
+        pine_pyramiding_pct=_require_decimal(
+            record["pine_pyramiding_pct"], "pine_pyramiding_pct", allow_zero=True
         ),
         contract_cap=record["contract_cap"],
     )
@@ -450,6 +455,7 @@ def _event_record(
         raise TradeExportSchemaError("Signal must be a string")
     event: dict[str, object] = {
         "strategy_id": spec.strategy_id,
+        "encoded_instrument": spec.encoded_instrument,
         "source_trade_id": _parse_positive_integral(row["Trade number"], "Trade number"),
         "source_row_number": source_row_number,
         "timestamp_raw": timestamp_raw,

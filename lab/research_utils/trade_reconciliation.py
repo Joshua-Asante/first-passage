@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 from decimal import Decimal
+import json
+from pathlib import Path
 from types import MappingProxyType
 from typing import Mapping
 
@@ -93,18 +96,110 @@ class VenueMetrics:
     pine_commission_per_side_usd: Decimal
     export_implied_commission_per_side_usd: Decimal | None
     export_implied_commission_per_side_values_usd: tuple[Decimal, ...]
-    peak_open_quantity_min: int
-    peak_open_quantity_max: int
-    contract_cap: int
+    micro_equivalent_multiplier: int
+    peak_open_micro_equivalent_quantity_min: int
+    peak_open_micro_equivalent_quantity_max: int
+    micro_equivalent_contract_cap: int
     cross_date_holds: int
     overnight_holds: int
     friday_to_sunday_holds: int
+    holiday_short_deadline_status: str
     contract_month_attribution_status: str
     roll_seam_attribution_status: str
     bid_ask_spread_status: str
     pine_slippage_ticks_per_side: Decimal
     slippage_basis: str
     issues: tuple[Issue, ...]
+
+
+@dataclass(frozen=True)
+class EarlyCloseCalendar:
+    """Primary-source CME early-close dates over the campaign evidence span."""
+
+    source_url: str
+    page_date: date | None
+    observed_date: date
+    coverage_start: date
+    coverage_end: date
+    coverage_status: str
+    coverage_note: str
+    early_close_dates: frozenset[date]
+
+
+def _calendar_date(value: object, field: str, *, nullable: bool = False) -> date | None:
+    if value is None and nullable:
+        return None
+    if not isinstance(value, str):
+        raise ValueError(f"{field} must be an ISO date")
+    try:
+        parsed = date.fromisoformat(value)
+    except ValueError as exc:
+        raise ValueError(f"{field} must be an ISO date") from exc
+    if parsed.isoformat() != value:
+        raise ValueError(f"{field} must be an ISO date")
+    return parsed
+
+
+def load_early_close_calendar(path: str | Path) -> EarlyCloseCalendar:
+    """Load the frozen CME early-close capture, including explicit coverage gaps."""
+    try:
+        with Path(path).open(encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"cannot load CME early-close calendar: {path}") from exc
+    expected_keys = {
+        "source_url",
+        "page_date",
+        "observed_date",
+        "coverage_start",
+        "coverage_end",
+        "coverage_status",
+        "coverage_note",
+        "rows",
+    }
+    if not isinstance(payload, dict) or set(payload) != expected_keys:
+        raise ValueError("CME early-close calendar keys mismatch")
+    for field in ("source_url", "coverage_status", "coverage_note"):
+        if not isinstance(payload[field], str) or not payload[field].strip():
+            raise ValueError(f"{field} must be a non-empty string")
+    status = payload["coverage_status"]
+    if status not in {"COMPLETE", "NEEDS_CONTEXT"}:
+        raise ValueError("coverage_status must be COMPLETE or NEEDS_CONTEXT")
+    page_date = _calendar_date(payload["page_date"], "page_date", nullable=True)
+    observed_date = _calendar_date(payload["observed_date"], "observed_date")
+    coverage_start = _calendar_date(payload["coverage_start"], "coverage_start")
+    coverage_end = _calendar_date(payload["coverage_end"], "coverage_end")
+    assert observed_date is not None
+    assert coverage_start is not None
+    assert coverage_end is not None
+    if coverage_start > coverage_end:
+        raise ValueError("coverage_start must not be after coverage_end")
+    rows = payload["rows"]
+    if not isinstance(rows, list):
+        raise ValueError("rows must be an array")
+    early_dates: set[date] = set()
+    for index, row in enumerate(rows):
+        if not isinstance(row, dict) or set(row) != {"date", "deadline_local"}:
+            raise ValueError(f"rows[{index}] keys mismatch")
+        row_date = _calendar_date(row["date"], f"rows[{index}].date")
+        assert row_date is not None
+        if not coverage_start <= row_date <= coverage_end:
+            raise ValueError(f"rows[{index}].date is outside the coverage span")
+        if row["deadline_local"] != "12:59 America/New_York":
+            raise ValueError(f"rows[{index}].deadline_local must be 12:59 America/New_York")
+        if row_date in early_dates:
+            raise ValueError(f"duplicate CME early-close date: {row_date.isoformat()}")
+        early_dates.add(row_date)
+    return EarlyCloseCalendar(
+        source_url=payload["source_url"],
+        page_date=page_date,
+        observed_date=observed_date,
+        coverage_start=coverage_start,
+        coverage_end=coverage_end,
+        coverage_status=status,
+        coverage_note=payload["coverage_note"],
+        early_close_dates=frozenset(early_dates),
+    )
 
 
 _CAMPAIGN_GEOMETRY: Mapping[str, InstrumentGeometry] = {
@@ -128,6 +223,15 @@ def instrument_geometry(symbol: str) -> InstrumentGeometry:
         tick_size=Decimal(str(spec.tick_size)),
         tick_value=Decimal(str(spec.tick_value)),
     )
+
+
+def micro_equivalent_multiplier(symbol: str) -> int:
+    """Return the Tradeify account-cap weight for one campaign contract."""
+    if symbol == "6J":
+        return 10
+    if symbol in {"MNQ", "MYM", "MGC"}:
+        return 1
+    raise ValueError("unsupported Tradeify Phase 1 instrument: " + repr(symbol))
 
 
 def _issue(
@@ -516,6 +620,10 @@ def _commission_issues(
                 source_rows=source_rows,
             )
         )
+    export_matches_venue = bool(values) and all(
+        abs(value - venue_fee) <= _CENT_TOLERANCE for value in values
+    )
+    pine_mismatch_severity = "WARNING" if export_matches_venue else "BLOCKER"
     if values and any(
         abs(value - spec.pine_commission_per_side_usd) > _CENT_TOLERANCE
         for value in values
@@ -528,6 +636,7 @@ def _commission_issues(
                     "pine_per_side_usd": spec.pine_commission_per_side_usd,
                     "export_per_side_values_usd": values,
                 },
+                severity=pine_mismatch_severity,
                 source_rows=source_rows,
             )
         )
@@ -540,15 +649,16 @@ def _commission_issues(
                     "pine_per_side_usd": spec.pine_commission_per_side_usd,
                     "venue_per_side_usd": venue_fee,
                 },
+                severity=pine_mismatch_severity,
             )
         )
     return export_fee, values, issues
 
 
-def _exposure_bounds(trades: pd.DataFrame) -> tuple[int, int]:
+def _exposure_bounds(trades: pd.DataFrame, *, quantity_multiplier: int) -> tuple[int, int]:
     events: dict[pd.Timestamp, dict[str, int]] = {}
     for _, trade in trades.iterrows():
-        quantity = int(trade["quantity"])
+        quantity = int(trade["quantity"]) * quantity_multiplier
         entry_time = pd.Timestamp(trade["entry_timestamp_naive"])
         exit_time = pd.Timestamp(trade["exit_timestamp_naive"])
         events.setdefault(entry_time, {"entries": 0, "exits": 0})["entries"] += quantity
@@ -582,10 +692,53 @@ def _spans_friday_to_sunday(entry: pd.Timestamp, exit_: pd.Timestamp) -> bool:
     return False
 
 
+def _local_timestamp(trade: pd.Series, leg: str, source_timezone: str | None) -> pd.Timestamp:
+    utc_value = trade[f"{leg}_timestamp_utc"]
+    if not pd.isna(utc_value):
+        value = pd.Timestamp(utc_value)
+        if value.tzinfo is None:
+            value = value.tz_localize("UTC")
+        return value.tz_convert("America/New_York")
+    if source_timezone is None:
+        raise ValueError("source_timezone is required for Tradeify venue deadlines")
+    naive = pd.Timestamp(trade[f"{leg}_timestamp_naive"])
+    if naive.tzinfo is not None:
+        localized = naive.tz_convert(source_timezone)
+    else:
+        localized = naive.tz_localize(
+            source_timezone,
+            ambiguous="raise",
+            nonexistent="raise",
+        )
+    return localized.tz_convert("America/New_York")
+
+
+def _deadline_timestamps(
+    entry: pd.Timestamp,
+    exit_: pd.Timestamp,
+    early_close_dates: frozenset[date],
+) -> tuple[pd.Timestamp, ...]:
+    deadlines: list[pd.Timestamp] = []
+    day = entry.date()
+    while day <= exit_.date():
+        clock = "12:59" if day in early_close_dates else "16:45"
+        deadline = pd.Timestamp(f"{day.isoformat()} {clock}").tz_localize(
+            "America/New_York",
+            ambiguous="raise",
+            nonexistent="raise",
+        )
+        if entry < deadline <= exit_:
+            deadlines.append(deadline)
+        day += pd.Timedelta(days=1)
+    return tuple(deadlines)
+
+
 def analyze_venue(
     trades: pd.DataFrame,
     spec: SourceSpec,
     fee_schedule: FeeSchedule,
+    *,
+    early_close_calendar: EarlyCloseCalendar | None = None,
 ) -> VenueMetrics:
     """Audit instrument and venue constraints without changing source trades."""
     geometry = instrument_geometry(spec.encoded_instrument)
@@ -630,16 +783,20 @@ def analyze_venue(
                     )
                 )
 
-    peak_min, peak_max = _exposure_bounds(trades)
+    quantity_multiplier = micro_equivalent_multiplier(spec.encoded_instrument)
+    peak_min, peak_max = _exposure_bounds(
+        trades,
+        quantity_multiplier=quantity_multiplier,
+    )
     if peak_min > spec.contract_cap:
         issues.append(
             _venue_issue(
                 "CONTRACT_CAP_BREACH",
                 spec,
                 {
-                    "contract_cap": spec.contract_cap,
-                    "peak_open_quantity_min": peak_min,
-                    "peak_open_quantity_max": peak_max,
+                    "micro_equivalent_contract_cap": spec.contract_cap,
+                    "peak_open_micro_equivalent_quantity_min": peak_min,
+                    "peak_open_micro_equivalent_quantity_max": peak_max,
                 },
             )
         )
@@ -649,18 +806,40 @@ def analyze_venue(
                 "CAP_STATUS_AMBIGUOUS_AT_TIMESTAMP_TIE",
                 spec,
                 {
-                    "contract_cap": spec.contract_cap,
-                    "peak_open_quantity_min": peak_min,
-                    "peak_open_quantity_max": peak_max,
+                    "micro_equivalent_contract_cap": spec.contract_cap,
+                    "peak_open_micro_equivalent_quantity_min": peak_min,
+                    "peak_open_micro_equivalent_quantity_max": peak_max,
                 },
             )
         )
 
+    if early_close_calendar is None:
+        holiday_status = "NEEDS_CONTEXT"
+        early_close_dates: frozenset[date] = frozenset()
+        holiday_note = "CME early-close calendar was not supplied"
+    else:
+        holiday_status = early_close_calendar.coverage_status
+        early_close_dates = early_close_calendar.early_close_dates
+        holiday_note = early_close_calendar.coverage_note
+    if holiday_status != "COMPLETE":
+        issues.append(
+            _venue_issue(
+                "EARLY_CLOSE_CALENDAR_INCOMPLETE",
+                spec,
+                {
+                    "status": holiday_status,
+                    "coverage_note": holiday_note,
+                },
+                severity="WARNING",
+            )
+        )
+
     cross_date_holds = 0
+    deadline_spanning_holds = 0
     friday_to_sunday_holds = 0
     for _, trade in trades.iterrows():
-        entry = pd.Timestamp(trade["entry_timestamp_naive"])
-        exit_ = pd.Timestamp(trade["exit_timestamp_naive"])
+        entry = _local_timestamp(trade, "entry", spec.source_timezone)
+        exit_ = _local_timestamp(trade, "exit", spec.source_timezone)
         trade_id = int(trade["source_trade_id"])
         source_rows = (int(trade["entry_source_row"]), int(trade["exit_source_row"]))
         if entry.date() != exit_.date():
@@ -677,6 +856,9 @@ def analyze_venue(
             )
         if _spans_friday_to_sunday(entry, exit_):
             friday_to_sunday_holds += 1
+        deadline_timestamps = _deadline_timestamps(entry, exit_, early_close_dates)
+        if deadline_timestamps:
+            deadline_spanning_holds += 1
             issues.append(
                 _venue_issue(
                     "FORCE_FLAT_VIOLATION",
@@ -684,6 +866,7 @@ def analyze_venue(
                     {
                         "entry_timestamp": entry,
                         "exit_timestamp": exit_,
+                        "deadline_timestamps": deadline_timestamps,
                     },
                     trade_id=trade_id,
                     source_rows=source_rows,
@@ -715,12 +898,14 @@ def analyze_venue(
         pine_commission_per_side_usd=spec.pine_commission_per_side_usd,
         export_implied_commission_per_side_usd=export_fee,
         export_implied_commission_per_side_values_usd=export_values,
-        peak_open_quantity_min=peak_min,
-        peak_open_quantity_max=peak_max,
-        contract_cap=spec.contract_cap,
+        micro_equivalent_multiplier=quantity_multiplier,
+        peak_open_micro_equivalent_quantity_min=peak_min,
+        peak_open_micro_equivalent_quantity_max=peak_max,
+        micro_equivalent_contract_cap=spec.contract_cap,
         cross_date_holds=cross_date_holds,
-        overnight_holds=cross_date_holds,
+        overnight_holds=deadline_spanning_holds,
         friday_to_sunday_holds=friday_to_sunday_holds,
+        holiday_short_deadline_status=holiday_status,
         contract_month_attribution_status=contract_month_status,
         roll_seam_attribution_status=roll_seam_status,
         bid_ask_spread_status="NOT_SEPARATELY_OBSERVABLE",

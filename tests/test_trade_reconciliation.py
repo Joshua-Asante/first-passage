@@ -7,10 +7,13 @@ import pandas as pd
 import pytest
 
 from research_utils.trade_reconciliation import (
+    EarlyCloseCalendar,
     TRADE_COLUMNS,
     analyze_venue,
     calculate_accounting,
     instrument_geometry,
+    load_early_close_calendar,
+    micro_equivalent_multiplier,
     reconstruct_trades,
 )
 from research_utils.tv_trade_ledger import SourceSpec, load_fee_schedule
@@ -32,7 +35,7 @@ def _spec(
         export_sha256="0" * 64,
         pine_filename="source.pine",
         pine_sha256="1" * 64,
-        source_timezone=None,
+        source_timezone="America/New_York",
         session_timezone="America/New_York",
         declared_bar_size_minutes=15,
         declared_session="09:30-16:00 America/New_York",
@@ -43,6 +46,7 @@ def _spec(
         lineage_notes=("fixture",),
         pine_commission_per_side_usd=Decimal(pine_commission),
         pine_slippage_ticks_per_side=Decimal("1"),
+        pine_pyramiding_pct=Decimal("100"),
         contract_cap=contract_cap,
     )
 
@@ -56,6 +60,18 @@ def fee_schedule():
         / "c1"
         / "tradeify_seven_strategy_phase1_2026-09"
         / "tradeify_commission_schedule.json"
+    )
+
+
+@pytest.fixture
+def campaign_early_close_calendar():
+    return load_early_close_calendar(
+        Path(__file__).parents[1]
+        / "lab"
+        / "analysis"
+        / "c1"
+        / "tradeify_seven_strategy_phase1_2026-09"
+        / "cme_early_close_calendar.json"
     )
 
 
@@ -380,6 +396,22 @@ def _issue_codes(metrics: object) -> set[str]:
     return {issue.code for issue in metrics.issues}
 
 
+def _early_close_calendar(
+    *dates: str,
+    coverage_status: str = "COMPLETE",
+) -> EarlyCloseCalendar:
+    return EarlyCloseCalendar(
+        source_url="https://www.cmegroup.com/trading-hours.html",
+        page_date=None,
+        observed_date=pd.Timestamp("2026-09-03").date(),
+        coverage_start=pd.Timestamp("2022-09-01").date(),
+        coverage_end=pd.Timestamp("2026-09-01").date(),
+        coverage_status=coverage_status,
+        coverage_note="fixture",
+        early_close_dates=frozenset(pd.Timestamp(value).date() for value in dates),
+    )
+
+
 @pytest.mark.parametrize(
     ("symbol", "commission", "per_side"),
     [
@@ -409,9 +441,31 @@ def test_exposure_reports_tie_order_bounds(fee_schedule):
         trades, _spec(instrument="MNQ", contract_cap=80), fee_schedule
     )
 
-    assert venue.peak_open_quantity_min == 50
-    assert venue.peak_open_quantity_max == 100
+    assert venue.peak_open_micro_equivalent_quantity_min == 50
+    assert venue.peak_open_micro_equivalent_quantity_max == 100
     assert "CAP_STATUS_AMBIGUOUS_AT_TIMESTAMP_TIE" in _issue_codes(venue)
+
+
+def test_6j_exposure_is_measured_in_micro_equivalents(fee_schedule):
+    """The account cap counts one 6J contract as ten micros, not one unit."""
+    assert micro_equivalent_multiplier("6J") == 10
+    assert micro_equivalent_multiplier("MNQ") == 1
+
+    at_cap = analyze_venue(
+        _trades(_trade_between(1, "2026-01-05 09:00", "2026-01-05 10:00", qty=8)),
+        _spec(instrument="6J", contract_cap=80, pine_commission="3.10"),
+        fee_schedule,
+    )
+    over_cap = analyze_venue(
+        _trades(_trade_between(2, "2026-01-05 09:00", "2026-01-05 10:00", qty=9)),
+        _spec(instrument="6J", contract_cap=80, pine_commission="3.10"),
+        fee_schedule,
+    )
+
+    assert at_cap.peak_open_micro_equivalent_quantity_max == 80
+    assert "CONTRACT_CAP_BREACH" not in _issue_codes(at_cap)
+    assert over_cap.peak_open_micro_equivalent_quantity_min == 90
+    assert "CONTRACT_CAP_BREACH" in _issue_codes(over_cap)
 
 
 def test_friday_to_sunday_hold_is_a_blocker_and_trade_is_retained(fee_schedule):
@@ -424,6 +478,7 @@ def test_friday_to_sunday_hold_is_a_blocker_and_trade_is_retained(fee_schedule):
 
     assert venue.trade_count == 1
     assert venue.friday_to_sunday_holds == 1
+    assert venue.overnight_holds == 1
     issue = next(i for i in venue.issues if i.code == "FORCE_FLAT_VIOLATION")
     assert issue.trade_id == 41
     assert issue.severity == "BLOCKER"
@@ -444,6 +499,15 @@ def test_aegis_pine_export_and_venue_commissions_stay_separate(fee_schedule):
     assert "PINE_EXPORT_COMMISSION_MISMATCH" in _issue_codes(venue)
     assert "PINE_VENUE_COMMISSION_MISMATCH" in _issue_codes(venue)
     assert "EXPORT_VENUE_COMMISSION_MISMATCH" not in _issue_codes(venue)
+    pine_issues = {
+        issue.code: issue.severity
+        for issue in venue.issues
+        if issue.code.startswith("PINE_") and issue.code.endswith("_COMMISSION_MISMATCH")
+    }
+    assert pine_issues == {
+        "PINE_EXPORT_COMMISSION_MISMATCH": "WARNING",
+        "PINE_VENUE_COMMISSION_MISMATCH": "WARNING",
+    }
 
 
 def test_continuous_contract_and_unobservable_spread_are_explicit(fee_schedule):
@@ -511,8 +575,8 @@ def test_exposure_reports_confirmed_contract_cap_breach(fee_schedule):
         fee_schedule,
     )
 
-    assert venue.peak_open_quantity_min == 81
-    assert venue.peak_open_quantity_max == 81
+    assert venue.peak_open_micro_equivalent_quantity_min == 81
+    assert venue.peak_open_micro_equivalent_quantity_max == 81
     assert "CONTRACT_CAP_BREACH" in _issue_codes(venue)
     assert "CAP_STATUS_AMBIGUOUS_AT_TIMESTAMP_TIE" not in _issue_codes(venue)
 
@@ -528,8 +592,8 @@ def test_non_overlapping_trades_do_not_inflate_exposure(fee_schedule):
         fee_schedule,
     )
 
-    assert venue.peak_open_quantity_min == 50
-    assert venue.peak_open_quantity_max == 50
+    assert venue.peak_open_micro_equivalent_quantity_min == 50
+    assert venue.peak_open_micro_equivalent_quantity_max == 50
     assert not (
         {"CONTRACT_CAP_BREACH", "CAP_STATUS_AMBIGUOUS_AT_TIMESTAMP_TIE"}
         & _issue_codes(venue)
@@ -566,20 +630,77 @@ def test_non_continuous_source_has_no_roll_attribution_issue(fee_schedule):
     assert venue.roll_seam_attribution_status == "NOT_APPLICABLE"
 
 
-def test_cross_date_hold_is_reported_without_force_flat_false_positive(fee_schedule):
-    """Every date boundary matters, but an ordinary overnight is not Fri-to-Sun."""
-    venue = analyze_venue(
+def test_force_flat_uses_daily_deadline_not_cross_date_or_weekend_proxy(fee_schedule):
+    """The venue deadline, not the calendar boundary, defines the violation."""
+    overnight = analyze_venue(
         _trades(
-            _trade_between(3, "2026-01-05 23:55", "2026-01-06 00:05")
+            _trade_between(3, "2026-01-05 23:00", "2026-01-06 01:00")
+        ),
+        _spec(),
+        fee_schedule,
+    )
+    same_date = analyze_venue(
+        _trades(
+            _trade_between(4, "2026-01-05 15:00", "2026-01-05 18:30")
         ),
         _spec(),
         fee_schedule,
     )
 
-    assert venue.cross_date_holds == 1
-    assert venue.friday_to_sunday_holds == 0
-    assert "CROSS_DATE_HOLD" in _issue_codes(venue)
-    assert "FORCE_FLAT_VIOLATION" not in _issue_codes(venue)
+    assert overnight.cross_date_holds == 1
+    assert overnight.overnight_holds == 0
+    assert overnight.friday_to_sunday_holds == 0
+    assert "CROSS_DATE_HOLD" in _issue_codes(overnight)
+    assert "FORCE_FLAT_VIOLATION" not in _issue_codes(overnight)
+    assert same_date.cross_date_holds == 0
+    assert same_date.overnight_holds == 1
+    assert "FORCE_FLAT_VIOLATION" in _issue_codes(same_date)
+
+
+def test_holiday_short_date_uses_1259_eastern_deadline(fee_schedule):
+    """Applying the regular close on a CME early-close date would miss the breach."""
+    calendar = _early_close_calendar("2026-07-03")
+    venue = analyze_venue(
+        _trades(
+            _trade_between(5, "2026-07-03 12:30", "2026-07-03 13:30")
+        ),
+        _spec(),
+        fee_schedule,
+        early_close_calendar=calendar,
+    )
+
+    issue = next(i for i in venue.issues if i.code == "FORCE_FLAT_VIOLATION")
+    assert issue.detail["deadline_timestamps"] == (
+        pd.Timestamp("2026-07-03 12:59", tz="America/New_York"),
+    )
+
+
+def test_incomplete_holiday_calendar_sets_needs_context_cap(fee_schedule):
+    """Unavailable primary-source history must remain visible in every venue report."""
+    venue = analyze_venue(
+        _trades(_trade(1)),
+        _spec(),
+        fee_schedule,
+        early_close_calendar=_early_close_calendar(coverage_status="NEEDS_CONTEXT"),
+    )
+
+    assert venue.holiday_short_deadline_status == "NEEDS_CONTEXT"
+    issue = next(i for i in venue.issues if i.code == "EARLY_CLOSE_CALENDAR_INCOMPLETE")
+    assert issue.severity == "WARNING"
+
+
+def test_campaign_calendar_freezes_primary_source_capture_gap(
+    campaign_early_close_calendar,
+):
+    """A missing historical CME extract must be hashed and explicit, not inferred."""
+    calendar = campaign_early_close_calendar
+
+    assert calendar.source_url == "https://www.cmegroup.com/trading-hours.html"
+    assert calendar.observed_date.isoformat() == "2026-09-03"
+    assert calendar.coverage_start.isoformat() == "2022-09-01"
+    assert calendar.coverage_end.isoformat() == "2026-09-01"
+    assert calendar.coverage_status == "NEEDS_CONTEXT"
+    assert calendar.early_close_dates == frozenset()
 
 
 def test_calculate_accounting_uses_exit_chronology_and_decimal_money():
