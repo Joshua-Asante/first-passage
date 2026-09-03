@@ -26,7 +26,7 @@ Holiday-short verdict cap: `NEEDS_CONTEXT`
 
 ## Evidence boundaries
 
-- The source CSV/Pine bytes and all row-level event/trade/weekly ledgers remain local and gitignored.
+- The source CSV/Pine bytes, row-level event/trade/weekly ledgers, and seven detailed issue reports remain local and gitignored.
 - No source row was repaired, dropped for an outcome, re-ranked, composed, simulated, or rerun in Pine.
 - Scalar MAE/MFE values are inventory-only excursion bounds, not timestamped paths.
 - Per-strategy caps are measured against 80 micro-equivalents; the joint book-cap verdict is deferred to Phase 4.
@@ -39,6 +39,12 @@ Holiday-short verdict cap: `NEEDS_CONTEXT`
 - Canonical events: `03efac85c4cf67ef9a577ec0844383015eed5d85a5b3239ec47a2c38643d84bf`
 - Canonical trades: `900002b84762299273cdfe0dad75e5ab06324b884a22ef1f81e28fa8e3145105`
 - Weekly exit blocks: `5bdcef07a717bf32b816c595cfbf6066e1f94a7ca9ad35e31b749bc8bc72cb0a`
+
+## Verification evidence
+
+- Evidence revision: `98e82b230bd63f8d922b76742d650f6e254a0002`; environment: Windows, Python 3.14.3.
+- Focused Phase 1 and cost-model contract: `python -m pytest tests/test_tv_trade_ledger.py tests/test_trade_reconciliation.py tests/test_joint_trade_blocks.py tests/test_cost_model.py tests/test_tradeify_phase1_runner.py -q` — 123 passed.
+- Unchanged production firm barriers: `python -m pytest tests/core/test_mc_intraday_barrier.py tests/core/test_trailing_dd_boundary.py tests/core/test_trailing_locking_boundary.py tests/core/test_mc_preflight.py -q` — 59 passed.
 
 ## Issues by strategy
 
