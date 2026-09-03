@@ -36,8 +36,10 @@ def _spec_dict(strategy_id: str, export_filename: str, pine_filename: str) -> di
         "encoded_instrument": "MNQ",
         "export_filename": export_filename,
         "export_sha256": sha256(b"export").hexdigest(),
+        "export_bytes": len(b"export"),
         "pine_filename": pine_filename,
         "pine_sha256": sha256(b"pine").hexdigest(),
+        "pine_bytes": len(b"pine"),
         "source_timezone": None,
         "session_timezone": "America/New_York",
         "declared_bar_size_minutes": 15,
@@ -50,8 +52,16 @@ def _spec_dict(strategy_id: str, export_filename: str, pine_filename: str) -> di
         "pine_commission_per_side_usd": "0.91",
         "pine_slippage_ticks_per_side": "1",
         "pine_pyramiding_pct": "100",
+        "pine_pin_status": "NOT_IN_PORT_MANIFEST",
+        "pin_ref": None,
+        "pin_divergence": None,
         "contract_cap": 80,
     }
+
+
+def _unresolved_roll_policy():
+    return {"disposition": "UNRESOLVED", "ruling_date": "2026-09-03",
+            "ruling_ref": "Synthetic fixture has no acceptance ruling", "obligations": []}
 
 
 def _source_spec(**overrides: object):
@@ -65,6 +75,8 @@ def _source_spec(**overrides: object):
                 "claim_class": "EXPLORATORY",
                 "platform": "TradingView Strategy Tester over a continuous futures chart",
                 "strategies": [payload],
+                "dropped_sources": [],
+                "continuous_contract_roll_policy": _unresolved_roll_policy(),
             }
         ),
         encoding="utf-8",
@@ -84,6 +96,8 @@ def test_load_source_specs_rejects_duplicate_strategy_id(tmp_path):
             _spec_dict("same", "one.csv", "one.pine"),
             _spec_dict("same", "two.csv", "two.pine"),
         ],
+        "dropped_sources": [],
+        "continuous_contract_roll_policy": _unresolved_roll_policy(),
     }
     path = tmp_path / "config.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
@@ -100,6 +114,8 @@ def test_load_source_specs_rejects_platformless_configuration(tmp_path):
             {
                 "claim_class": "EXPLORATORY",
                 "strategies": [_spec_dict("fixture", "source.csv", "source.pine")],
+                "dropped_sources": [],
+                "continuous_contract_roll_policy": _unresolved_roll_policy(),
             }
         ),
         encoding="utf-8",
@@ -118,23 +134,23 @@ def test_verify_source_pair_rejects_changed_export(tmp_path):
     spec = _source_spec(
         export_sha256=sha256(b"expected").hexdigest(),
         pine_sha256=sha256(b"pine").hexdigest(),
+        export_bytes=len(b"changed"),
+        pine_bytes=len(b"pine"),
     )
 
     with pytest.raises(SourceIdentityError, match="source.csv.*SHA-256"):
         verify_source_pair(tmp_path, spec)
 
 
-def test_frozen_configuration_has_seven_continuous_source_specs():
+def test_frozen_configuration_has_five_continuous_source_specs():
     """A changed campaign pin, session inventory, or source count must be observable."""
     specs = load_source_specs(_CONFIG_PATH)
 
     assert [spec.strategy_id for spec in specs] == [
         "aegis_6j1",
         "orb_mnq_recon_v7",
-        "striker_dj30_mym_v45",
-        "striker_dj30_mym_pyramid_down",
-        "striker_nas100_mnq_v1",
-        "striker_nas100_mnq_native_variant",
+        "striker_dj30_mym_pyramid_250",
+        "striker_nas100_mnq_dow_wed_excluded",
         "vanguard_mgc_v04",
     ]
     assert all(spec.source_timezone == "America/New_York" for spec in specs)
@@ -145,8 +161,8 @@ def test_frozen_configuration_has_seven_continuous_source_specs():
     assert specs[0].declared_session == "10:00-13:45 America/New_York, Mon-Wed; force-flat 16:30 America/New_York"
     assert specs[2].intended_instrument == "MYM"
     assert specs[2].encoded_instrument == "MYM"
-    assert specs[5].intended_instrument == "MNQ"
-    assert specs[5].encoded_instrument == "MNQ"
+    assert specs[3].intended_instrument == "MNQ"
+    assert specs[3].encoded_instrument == "MNQ"
 
 
 def test_frozen_configuration_records_pine_pyramiding_from_each_source():
@@ -156,17 +172,94 @@ def test_frozen_configuration_records_pine_pyramiding_from_each_source():
     assert {spec.strategy_id: spec.pine_pyramiding_pct for spec in specs} == {
         "aegis_6j1": Decimal("0"),
         "orb_mnq_recon_v7": Decimal("100"),
-        "striker_dj30_mym_v45": Decimal("750"),
-        "striker_dj30_mym_pyramid_down": Decimal("250"),
-        "striker_nas100_mnq_v1": Decimal("1000"),
-        "striker_nas100_mnq_native_variant": Decimal("1000"),
+        "striker_dj30_mym_pyramid_250": Decimal("250"),
+        "striker_nas100_mnq_dow_wed_excluded": Decimal("1000"),
         "vanguard_mgc_v04": Decimal("80"),
     }
-    dj30 = {spec.strategy_id: spec for spec in specs if spec.strategy_id.startswith("striker_dj30")}
-    assert (
-        dj30["striker_dj30_mym_pyramid_down"].pine_pyramiding_pct
-        < dj30["striker_dj30_mym_v45"].pine_pyramiding_pct
+    assert [spec.pine_pyramiding_pct for spec in specs].count(Decimal("250")) == 1
+
+
+def test_frozen_configuration_records_manifest_derived_pin_status_and_body_identity():
+    """Mislabeling a supplied Pine as locked, swapped, or pyramid-down must be visible."""
+    specs = load_source_specs(_CONFIG_PATH)
+    by_hash = {spec.pine_sha256: spec for spec in specs}
+
+    assert {
+        pine_hash: spec.pine_pin_status
+        for pine_hash, spec in by_hash.items()
+    } == {
+        "8578ee3d760b5112bb1dd77e65a07466aee8629a9424e4115e422fdaab5aede8": "NOT_IN_PORT_MANIFEST",
+        "f05c7aa429846811149e6ff7c8e63a2fd4457075b6c45dedfc77c7e0fa76e9b4": "NOT_IN_PORT_MANIFEST",
+        "5c4b1026cb6f3a475dba962783b2a053e9fbeb123570dd964d7154ea80b3f9d0": "PINNED_RESEARCH_VARIANT",
+        "d18c2699ea3856df884eced84c9384adea953f3a2470bea4f2d671b6cd294057": "PINNED_RESEARCH_VARIANT",
+        "ae5fd66ce51c478187c605574a03f89a64e6f8f245e77477eeaedd1efe2cf772": "NOT_IN_PORT_MANIFEST",
+    }
+    dj_modified = by_hash[
+        "5c4b1026cb6f3a475dba962783b2a053e9fbeb123570dd964d7154ea80b3f9d0"
+    ]
+    assert dj_modified.strategy_id == "striker_dj30_mym_pyramid_250"
+    assert dj_modified.pine_pyramiding_pct == Decimal("250")
+    assert dj_modified.pin_divergence == "pyramid 250% vs locked 750%"
+    assert dj_modified.pin_ref.endswith("striker_dj30_v4.5_mym_pyramid_250.pine")
+    nas_modified = by_hash["d18c2699ea3856df884eced84c9384adea953f3a2470bea4f2d671b6cd294057"]
+    assert nas_modified.strategy_id == "striker_nas100_mnq_dow_wed_excluded"
+    assert nas_modified.pine_pyramiding_pct == Decimal("1000")
+    assert nas_modified.pine_pin_status == "PINNED_RESEARCH_VARIANT"
+    assert nas_modified.pin_divergence == "day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}"
+    assert nas_modified.pin_ref.endswith("striker_nas100_v1_mnq_dow_wed_excluded.pine")
+    assert all(
+        "_v45" not in spec.strategy_id and "_v1" not in spec.strategy_id
+        for spec in specs
+        if spec.strategy_id.startswith("striker_")
     )
+
+
+def test_load_source_specs_rejects_unknown_pine_pin_status(tmp_path):
+    """Accepting an arbitrary manifest label would make the identity audit non-closed."""
+    payload = {
+        "claim_class": "EXPLORATORY",
+        "platform": "TradingView Strategy Tester over a continuous futures chart",
+        "strategies": [_spec_dict("fixture", "source.csv", "source.pine")],
+        "dropped_sources": [],
+        "continuous_contract_roll_policy": _unresolved_roll_policy(),
+    }
+    payload["strategies"][0]["pine_pin_status"] = "PINNED_LOCKED_EDITION"
+    path = tmp_path / "config.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="pine_pin_status must be one of"):
+        load_source_specs(path)
+
+
+@pytest.mark.parametrize(
+    ("pine_pin_status", "pin_divergence", "match"),
+    [
+        ("UNPINNED_MODIFIED", None, "UNPINNED_MODIFIED requires a non-empty pin_divergence"),
+        ("UNPINNED_MODIFIED", "", "UNPINNED_MODIFIED requires a non-empty pin_divergence"),
+        ("NOT_IN_PORT_MANIFEST", "body changed", "NOT_IN_PORT_MANIFEST requires null"),
+        ("PINNED_SWAP_PROTOTYPE", "body changed", "pin_divergence must be null"),
+    ],
+)
+def test_load_source_specs_couples_pin_status_to_divergence(
+    tmp_path, pine_pin_status, pin_divergence, match
+):
+    """A modified-body label without facts, or facts on another label, corrupts identity."""
+    payload = {
+        "claim_class": "EXPLORATORY",
+        "platform": "TradingView Strategy Tester over a continuous futures chart",
+        "strategies": [
+            _spec_dict("fixture", "source.csv", "source.pine")
+        ],
+        "dropped_sources": [],
+        "continuous_contract_roll_policy": _unresolved_roll_policy(),
+    }
+    payload["strategies"][0]["pine_pin_status"] = pine_pin_status
+    payload["strategies"][0]["pin_divergence"] = pin_divergence
+    path = tmp_path / "config.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match=match):
+        load_source_specs(path)
 
 
 def test_fee_schedule_uses_primary_round_trip_values_and_derives_per_side_values():
@@ -208,6 +301,32 @@ def test_load_fee_schedule_rejects_duplicate_or_non_cent_rows(tmp_path):
     payload["rows"] = [{"symbol": "MNQ", "round_trip_usd": "1.823"}]
     path.write_text(json.dumps(payload), encoding="utf-8")
     with pytest.raises(ValueError, match="two decimal places"):
+        load_fee_schedule(path)
+
+
+def test_load_fee_schedule_requires_the_complete_frozen_symbol_set(tmp_path):
+    """A missing or unrelated fee symbol must fail during configuration loading."""
+    payload = {
+        "source_url": "https://help.tradeify.co/en/articles/10468315-trading-commission-fees",
+        "page_date": "2026-04-28",
+        "observed_date": "2026-09-02",
+        "totals_include": "exchange, NFA, clearing, and commission",
+        "rows": [
+            {"symbol": "6J", "round_trip_usd": "6.20"},
+            {"symbol": "MNQ", "round_trip_usd": "1.82"},
+            {"symbol": "MYM", "round_trip_usd": "1.82"},
+        ],
+    }
+    path = tmp_path / "fees.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="fee schedule symbols mismatch.*MGC"):
+        load_fee_schedule(path)
+
+    payload["rows"].append({"symbol": "MGC", "round_trip_usd": "2.12"})
+    payload["rows"].append({"symbol": "ES", "round_trip_usd": "2.50"})
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="fee schedule symbols mismatch.*ES"):
         load_fee_schedule(path)
 
 
@@ -259,6 +378,7 @@ def _verified_csv(
     source_timezone: str | None = None,
     headers: list[str] | None = None,
     bom: bool = False,
+    omit_final_field: bool = False,
 ):
     tmp_path.mkdir(parents=True, exist_ok=True)
     export = tmp_path / "source.csv"
@@ -271,10 +391,14 @@ def _verified_csv(
             writer.writerow(row)
     if bom:
         export.write_bytes(b"\xef\xbb\xbf" + export.read_bytes())
+    if omit_final_field:
+        export.write_bytes(export.read_bytes().rsplit(b",", 1)[0])
     pine.write_text("pine", encoding="utf-8")
     spec = _source_spec(
         export_sha256=sha256(export.read_bytes()).hexdigest(),
         pine_sha256=sha256(pine.read_bytes()).hexdigest(),
+        export_bytes=len(export.read_bytes()),
+        pine_bytes=len(pine.read_bytes()),
         source_timezone=source_timezone,
     )
     return verify_source_pair(tmp_path, spec)
@@ -297,6 +421,70 @@ def test_normalize_retains_exit_first_source_order_and_flags_timestamp_tie(tmp_p
     assert result.events["timestamp_utc"].isna().all()
     assert result.events["exchange_session_date"].isna().all()
     assert result.events["concurrent_timestamp"].tolist() == [True, True]
+
+
+def test_normalize_uses_the_export_bytes_verified_before_file_replacement(tmp_path):
+    """Reading the pathname after hash verification would permit a TOCTOU export swap."""
+    source = _verified_csv(
+        tmp_path,
+        rows=[_row(1, "Entry long", "2026-01-05 10:00", Signal="verified")],
+    )
+    replacement = _row(2, "Entry long", "2026-01-05 11:00", Signal="replaced")
+    with source.export_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=_TV_HEADERS)
+        writer.writeheader()
+        writer.writerow(replacement)
+
+    events = normalize_export(source).events
+
+    assert events["source_trade_id"].tolist() == [1]
+    assert events["signal"].tolist() == ["verified"]
+
+
+def test_normalize_maps_hash_pinned_malformed_utf8_to_schema_error(tmp_path):
+    """A decode failure at the CSV intake boundary must be typed, not leak a traceback."""
+    export = tmp_path / "source.csv"
+    pine = tmp_path / "source.pine"
+    export.write_bytes(b"\xff")
+    pine.write_bytes(b"pine")
+    source = verify_source_pair(
+        tmp_path,
+        _source_spec(
+            export_sha256=sha256(export.read_bytes()).hexdigest(),
+            pine_sha256=sha256(pine.read_bytes()).hexdigest(),
+            export_bytes=len(export.read_bytes()),
+            pine_bytes=len(pine.read_bytes()),
+        ),
+    )
+
+    with pytest.raises(TradeExportSchemaError, match="UTF-8"):
+        normalize_export(source)
+
+
+def test_normalize_empty_canonical_export_retains_typed_event_columns(tmp_path):
+    """A header-only valid export is an empty typed ledger, not an untyped frame."""
+    source = _verified_csv(tmp_path, rows=[])
+
+    events = normalize_export(source).events
+
+    assert list(events.columns) == [
+        "strategy_id", "encoded_instrument", "source_trade_id", "source_row_number", "source_row_sha256",
+        "timestamp_raw", "timestamp_naive", "timestamp_utc", "exchange_session_date",
+        "type_raw", "event_type", "direction", "signal", "price_usd", "quantity",
+        "size_value_usd", "net_pnl_usd", "return_pct", "commission_usd",
+        "favorable_excursion_usd", "favorable_excursion_pct", "adverse_excursion_usd",
+        "adverse_excursion_pct", "cumulative_pnl_usd", "cumulative_pnl_pct",
+        "duration_bars", "concurrent_timestamp",
+    ]
+    assert events.empty
+    assert str(events["source_trade_id"].dtype) == "int64"
+    assert str(events["source_row_number"].dtype) == "int64"
+    assert str(events["quantity"].dtype) == "int64"
+    assert str(events["timestamp_naive"].dtype) == "datetime64[ns]"
+    assert str(events["timestamp_utc"].dtype) == "datetime64[ns, UTC]"
+    assert str(events["concurrent_timestamp"].dtype) == "bool"
+    assert events["price_usd"].dtype == object
+    assert events["exchange_session_date"].dtype == object
 
 
 def test_normalize_localizes_only_with_explicit_timezone(tmp_path):
@@ -361,6 +549,18 @@ def test_normalize_rejects_missing_or_duplicate_canonical_columns(tmp_path):
     )
     with pytest.raises(TradeExportSchemaError, match="duplicate canonical columns.*Trade number"):
         normalize_export(duplicate)
+
+
+def test_normalize_rejects_short_record_as_schema_error(tmp_path):
+    """A truncated final field must not surface as an internal mapping KeyError."""
+    source = _verified_csv(
+        tmp_path,
+        rows=[_row(1, "Entry long", "2026-01-05 09:30")],
+        omit_final_field=True,
+    )
+
+    with pytest.raises(TradeExportSchemaError, match="source row 1 has 16 fields; expected 17"):
+        normalize_export(source)
 
 
 @pytest.mark.parametrize(
