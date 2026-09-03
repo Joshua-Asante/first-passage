@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-08-31
+**Last curated:** 2026-09-03
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
@@ -21,6 +21,9 @@ entry first).
 - Forward triggers: date/criterion + owner link only; detail stays with the owner.
 - Retention test for every row: *open or still owed, and no other home.* If either
   fails, it leaves.
+- Recurring `next deadline` dates and `Last curated` are mechanically gated
+  (`state-currency`); session-shaped “this session” promises do not belong on
+  the dated-trigger board.
 - **Entry classes + ~40-word soft target (W5 direction, not an enforced cap):** Decision /
   Build / Measurement / Hygiene — see [`W5 ADR`](docs/adr/2026-08-07-w5-governance-diet.md);
   prefer links over prose.
@@ -128,13 +131,14 @@ Canonical dates/criteria live with their owners; this board is a pointer so
 obligations are not lost between sessions. Closed/retired/discharged rows are
 deleted (not struck).
 
-### Weekly — recurring (rolling; next deadline **2026-08-28**, bucket 08-24→08-28)
+### Weekly — recurring (rolling; next deadline **2026-09-04**, bucket 08-31→09-04)
 
-> ✅ **This week's trade placed 2026-08-26** (round-trip, MNQU6, both legs filled; bucket
-> 08-24→08-28 satisfied). Prior week 08-17→08-21 satisfied (operator-confirmed 2026-08-22). Row
-> stays live — roll this date forward each Monday. **Recurrence ruled 2026-08-16** (decision
-> index, above): re-electing coverage every week is the standing design, not an open question —
-> this row's own weekly cadence is that design in practice, not a symptom of anything unresolved.
+> Last confirmed placement: **2026-08-26** (round-trip, MNQU6, both legs filled) — that
+> satisfies bucket 08-24→08-28 only. Prior week 08-17→08-21 satisfied (operator-confirmed
+> 2026-08-22). Current bucket 08-31→09-04 is **not claimed placed**. Row stays live — roll
+> this date forward each Monday. **Recurrence ruled 2026-08-16** (decision index, above):
+> re-electing coverage every week is the standing design, not an open question — this
+> row's own weekly cadence is that design in practice, not a symptom of anything unresolved.
 
 - **Venue idle-clock — ≥1 operator-placed trade per Mon–Fri week on the live account (identifier
   redacted from the public tree).**
@@ -236,17 +240,6 @@ deleted (not struck).
 > [`2026-08-08-quarterly-audit.md`](docs/notes/audits/programme-audit/2026-08-08-quarterly-audit.md).
 > The former ~90-line rider blockquote is deleted per the retention test — it restated obligations
 > the audit note now owns. **Operator rulings still open** are carried as queue rows, not here.
-
-### 2026-08-24 (Monday)
-
-- **Disaster-stop Phase 0a — attended real-account SIM.** Operator will attend and run the
-  `stop_loss=` / `closeposition` observation on the real (non-paper) Tradeify eval account this
-  session (committed 2026-08-23). Only a recorded PASS unlocks Phase 1 (`sl=` wiring into
-  `ops/c1_rail/c1_rail_listener.py`); the prior unattended attempt came back BLOCKED. [`plan`](docs/superpowers/plans/2026-08-23-disaster-stop-phase-0-1-implementation.md) · [`BLOCKED note`](docs/notes/rail_build/2026-08-23-disaster-stop-phase-0.md)
-- **M1 item 5 — attended test-strategy emit.** Operator will attend and discharge item 5 with a
-  test strategy on the ruled host (`Strategy.on_bar` → daemon B1 POST → expected non-zero sizing
-  at `dry_run=true`). Not a canned hand-POST. Not an arm. `operator_signoff` still owed after a
-  recorded event id. [`M1 addendum`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) (in-part superseded by [`S2 signal-host fork`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) and [`S5 bounded promotion lane`](docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md)) · [`S2b addendum`](docs/adr/2026-08-08-s2b-signal-daemon-build.md#addendum-2026-08-24--test-strategy-emit-go-for-m1-item-5)
 
 ### 2026-10-11 (approx.)
 

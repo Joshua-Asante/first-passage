@@ -152,6 +152,7 @@ git log -1 --format='%h %cs' -- STATE.md                    # expected 74ef32c 2
 
 | Date | Change | By |
 |---|---|---|
+| 2026-09-03 | Addendum: `state-currency` gate on Last curated + rolling dates | Joshua + Cursor |
 | 2026-08-23 | Addendum: MEMORY assistive-only; Rule 7 owner demoted | Joshua + Cursor |
 | 2026-06-30 | Initial authoring + execution (STATE.md 4→2 roles; §7 charter amended) | Joshua + Claude Code |
 
@@ -203,3 +204,39 @@ revert the 4→2 reduction, does not restore either deleted section, and does no
 elsewhere (the Survive-bound ADR; Rule 7's changelog). It only repairs the missing cross-reference
 so a reader of this ADR's header or its §10 hook 1 is not misled into thinking `STATE.md` still
 carries exactly two sections.
+
+## Addendum 2026-09-03 — `state-currency` gate (Last curated + rolling dates)
+
+**Does not amend** the 4→2 reduction, the kept register sections, or the 2026-08-23 / 2026-08-29
+addenda. **$0 / K=0.** No `core/` / Pine / allocation / `dd_protection` / rail change.
+
+**Rule 0 (this addendum):** `STATE.md` @ `09a1b36` (2026-09-03) — `Last curated: 2026-08-31`
+while the newest decision-index bullet is `2026-09-03`; weekly heading still read
+`next deadline **2026-08-28**`; `### 2026-08-24 (Monday)` still said “operator will attend
+this session.” [`scripts/check_sessions_queue_bind.py`](../../scripts/check_sessions_queue_bind.py)
+@ `02c5f5e` (2026-08-23) — binds Open/next to live `#N` only; does not check dates.
+
+**Cheap falsifier (before this addendum’s catch-up):**
+`python scripts/check_state_currency.py` against that `STATE.md` failed three ways —
+Last curated behind the index, Weekly deadline in the past, `### 2026-08-24 (Monday)`
+not `DISCHARGED`. After the catch-up in the same commit, the same command exits 0.
+
+**Decision.** Three STATE.md facts are rollable and must not depend on the local
+report-only `daily-repo-truth-sync` digest (skipped; past-due rows also fell out of its
+“next 7 days” window):
+
+1. `Last curated:` ≥ newest `- **YYYY-MM-DD**` bullet under `## Executed operator decisions`.
+2. `### Weekly — recurring` and `### Monthly — recurring` each carry
+   `next deadline **YYYY-MM-DD**` ≥ today in `America/New_York`.
+3. A `### YYYY-MM-DD` heading under `## Scheduled forward triggers` whose date is in the
+   past fails unless the heading contains `DISCHARGED`. Session-shaped “this session”
+   promises do not belong on this board (other home, or a queue row).
+
+Gate id `state-currency` in [`scripts/gates.yml`](../../scripts/gates.yml) is `tier: always`,
+not path-conditional on `STATE.md`: a stale date must fail the next unrelated commit.
+Clock override for tests: `STATE_CURRENCY_TODAY`. The daily sync remains report-only and
+local — this gate is not a second scheduling surface.
+
+**Boundary.** Does not place the weekly venue trade, does not re-home disaster-stop or
+M1 item 5 (queue `#2` and their plan/BLOCKED note remain the owners), and does not
+edit the local scheduled-task skill.

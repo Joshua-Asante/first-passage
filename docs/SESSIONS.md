@@ -33,6 +33,14 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-03c — STATE currency gate (queue-exception: STATE currency gate)
+
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+
+---
+
 ## 2026-09-03b — Queue/pipeline naming realignment: seven-strategy Select campaign is queue #1
 
 **Focus:** Operator flagged that STATE's queue, PIPELINES.md's "one turning pipeline" claim, and the
