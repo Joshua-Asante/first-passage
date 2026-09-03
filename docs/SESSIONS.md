@@ -33,6 +33,62 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-03o — CME 2022-2026 calendar landed; D3/D5/D12 ruled; the three re-exports unblocked
+
+**Focus:** Discharge operator ruling D12 (source the CME holiday calendars directly and store them for future
+sessions), then land the three rulings that arrived with it. No vendor bytes opened as vendor bytes; no worker PR
+merged; no Codex-owned file edited.
+**Shipped:** [`ops/calendars/`](../ops/calendars/README.md) — a durable
+[85-entry 2022-2026 CME calendar](../ops/calendars/cme_holiday_calendar_2022_2026.json) per product group, with
+three derived lists and a 13-item `unresolved` register; the three venue-bound Pine bodies re-pointed to one
+75-date union list and re-sent to the operator;
+[campaign-state artifact](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) new **§12** plus
+rewritten D3/D5/D12; the [withdrawal ADR](adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md) addendum
+ratified; the [re-expression lane ADR](adr/2026-09-03-venue-legality-re-expression-lane.md) export prohibition
+discharged.
+**Decisions/defects:** **The calendar is SECONDARY-sourced and says so.** A 24-agent adversarial pass could not
+reach a single CME primary source (403 at the proxy's CONNECT layer on cmegroup.com and every broker mirror), so
+all 85 entries are reconstructed from five independent third-party encodings cross-checked against in-repo bar
+panels. **The study's `NEEDS_CONTEXT` cap therefore stands** — what lifted is the empty-rows blocker, not the
+provenance one, and conflating those two would have been the easy error. **The research vindicated the Codex
+finding that copying Aegis's FX list into the metals and equity bodies was unsafe, and refuted the obvious fix:**
+on an ordinary US federal holiday equity index closes 13:00 ET, metals 14:30 ET and FX often not at all, but
+Tradeify's 12:59 ET deadline is a blanket account-level rule, so the correct construction is the **union** in
+every body, not three per-group lists — a per-group FX list would have left 6J resting past the deadline on every
+federal holiday. **Three dates no deadline can express** (2023-04-07, 2026-04-03 Good Friday + NFP; 2025-01-09
+mourning) close before 12:59; Aegis 6J trades to 11:15 ET on both Good Fridays and is the live exposure. **Both
+Strikers measured venue-clean** — 0 force-flat violations across all 49 early-close dates — but neither body has
+an early-close branch at all, so that is a property of the sample; recorded as residual risk **R-STRIKER-EC** and
+deliberately not fixed, because a 12:30 guard would perturb two DJ30 trades for zero measured gain and the lane
+ADR's trigger is a venue flag, never a performance result. **Commission totals recovered from the export bytes**
+after the operator found none in the UI: TradingView writes each trade's full round-turn commission on **both**
+rows, so a column sum double-counts — true totals $7,647.64 and $5,585.58 at a confirmed $0.91/side. **Striker
+re-exports verified at 100K** from the Properties panels; NAS100's $0.00 delta is *explained* (its day soft-stop's
+7 newly-caught days all have the crossing trade as the day's last, so the halt is inert) and therefore confirms
+the re-export rather than undermining it, **but DJ30's +$287.00 on an identical 203-trade set is unexplained** —
+soft-stop provably inert, `ddHit` gated off in backtest, commission-rate change ruled out arithmetically — and it
+blocks that G1.4 row. **A Pine continuation-indentation defect was caught before hand-off:** the date-list splice
+left the following label line at column 0, which would have failed to compile on all three bodies.
+**Rulings:** **D3** — re-partition, not raise: the 3 x 8 envelope stands, constituents redrawn to Phase 1 /
+Phases 2-3 / Phases 4-8, and the iteration unit fixed at one dispatch cycle rather than one worker push; recorded
+plainly as a real loosening (constituent (i) reads 3 of 8). **D5** — candidate #1 **re-admitted** at the 5.0%
+ceiling and the §4 discharge **restored**; the withdrawal ADR's addendum is ratified `Accepted` in the **opposite**
+disposition to the one it proposed, the superseding-ADR requirement is waived by operator direction, and §4/§5 are
+left overridden but unedited as the record of what was overridden. ⚠ The discharge is **EOD-clock only** — the
+sole 1.00x honest-clock measurement of candidate #1 reads 32.33% real bust and is not repealed by the ruling.
+**D12** — closed.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — operator re-exports the three
+venue-bound bodies against the landed calendar, and sends the drafted D7 purge ticket; Codex still owes the
+manifest and RESULTS regeneration, the merge of current `main`, a real pin-existence check, the runner-version
+bump, the Rule 2 iteration line, the D13 `ACCEPTED_UNMODELED` disposition, the DJ30 +$287.00 discrimination and
+the halved-commission regression; D3, D5, D12 now ruled, D7 open · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— unchanged.
+**Class:** Decision + Measurement · **Rule 2:** constituent (i) iteration 3 of 8 · $0 / K=0
+
+---
+
 ## 2026-09-03n — Delta gate read of Codex's re-anchor round: verdict holds at `NEEDS_CONTEXT`
 
 **Focus:** Audit `codex/tradeify-stage1-normalization` @ `a35b4e8` (17 files, +2,112) against the twelve §9

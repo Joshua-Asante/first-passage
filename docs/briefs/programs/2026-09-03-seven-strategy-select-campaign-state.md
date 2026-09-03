@@ -1,6 +1,6 @@
 # Seven-strategy Select configuration campaign — campaign state (orchestrator-only writes)
 
-**Status:** `PHASE 1 RE-ANCHOR ROUND READ AT a35b4e8 (2026-09-03) — VERDICT STILL NEEDS_CONTEXT (§11): 18 PASS / 5 PARTIAL / 4 FAIL / 1 NA, ZERO OVERTURNED BY THE ADVERSARIAL PASS. **SOLE BLOCKER: reconciliation_manifest.json AND RESULTS.md WERE NEVER REGENERATED** — 7 ROWS, RETIRED IDS, CONFIG HASH 8881a2af vs ACTUAL 0a6c1643. WORKER ALSO OWES: MERGE OF MAIN 8327f14, A REAL PIN-EXISTENCE CHECK, RUNNER-VERSION BUMP, RULE 2 ITERATION LINE, D13 ACCEPTED_UNMODELED. EARLY-CLOSE ROWS BLOCKED ON THE ORCHESTRATOR'S D12 CALENDAR · PHASE 0 SKIPPED (operator override) · HISTORY: PHASE 1 RETURNED — PR #283 @ 809bbb4, GATE VERDICT NEEDS_CONTEXT; #283 MERGED BY THE OPERATOR (39530d4, 17:12Z) BEFORE THE RE-ANCHOR ROUND — FOLLOW-UP CODEX PR PENDING (TWELVE RE-ANCHOR ITEMS + D13 ROLL DISPOSITION; G1.3/G1.4 BACK TO PARTIAL AFTER CODEX'S RE-REVIEW OF #284) (one re-anchor round: Striker source identities vs repo pins — D10; CME early-close rows — D12; Codex-bot P1 tie-order fix + re-run; joint-flat block builder deferral; __init__.py; Rule 2 iteration line) · VENUE-LEGALITY SCALE FLAGGED (ORB-MNQ 310/681, MGC 226/343, Aegis 9/122 trades span the 16:45 ET deadline — D11) · D8 SUPERSEDED BY D10; D10 RESOLVED (NAS100 = DOW CELL; TWO SWAP-PORT EXPORTS DROPPED — POINT VALUE NOT OVERRIDDEN) → FIVE STRATEGIES, FIVE TEMPLATES, ONE CELL EACH · D9 APPLIED · PLAN + THIS FILE ON MAIN · STATE QUEUE #1 · OLD VENDOR-BYTE REF DELETED, OBJECT PURGE PENDING (§6 D7) · SIDE PRs READ (D14): #286 PINS THE TWO MODIFIED STRIKER BODIES AS RESEARCH VARIANTS, DJ30 DIFF DECLARED PYRAMID-ONLY → D10 CLOSED; MERGE #286 AND #284, FOLD #287's CONFIG HUNK INTO THE CODEX FOLLOW-UP, DROP ITS ARTIFACT HUNK · CODEX ROUND 3 ON #284 FOLDED (4 P1 + 1 P2: FULL TWELVE-ITEM DELTA CHECKLIST + D13; FIVE CONTRACTS IN PHASE 3; NAS100 ID FINAL; CALENDAR SCHEMA EXTENSION FIRST; D11 REPLACEMENTS RE-ENTER PHASE 1) · CODEX ROUND 4 FOLDED (5 P1 + 1 P2: POPULATION AMENDED TO FIVE ACTIVE + TWO DROPPED RECORDS; **D11 RE-EXPRESSION CONFLICTS WITH THE PLAN'S OWN NO-POST-VIEW-CHANGE OBJECTIVE — RECOMMENDATION NARROWED TO DROP-ONLY UNLESS THE OPERATOR AMENDS SCOPE FIRST**; CALENDAR SOURCES NEED A HASHED CAPTURE FILE; PLAN ITEM 14 RATIONALE RE-BASED ON D10; ITERATION 3; CONFIG LOADER MIGRATES WITH THE SCHEMA) · **OPERATOR RULED 2026-09-03: D11 RE-EXPRESS (LANE ADR `Proposed`, RATIFICATION REQUIRED BEFORE ANY REPLACEMENT RESULT IS INSPECTED; EDIT SPEC ISSUED) · D12 ORCHESTRATOR SOURCES THE CME CALENDARS · D13 (b) CONTINUOUS BASIS ACCEPTED WITH SEAM RISK PRE-REGISTERED + PHASE 6 SEAM-SENSITIVITY CHECK · ITEM 11 TV ANCHORS SUPPLIED FOR ALL FIVE (COMMISSIONS + MONTHLY STILL MISSING)** · NEW: D15 STRIKER EXPORTS RAN AT 200K INITIAL CAPITAL vs THE 100K SELECT TIER; D16 HEDGING RULE PUTS MYM + BOTH MNQ LEGS IN ONE PRODUCT GROUP · **LANE ADR RATIFIED BY THE OPERATOR 2026-09-03; PINE SUPPLIED AND EDITED DIRECTLY — ROOT CAUSE IS ONE DEFECT IN THREE SCRIPTS: ALL THREE RECORD THE EOD EXIT AT EXACTLY 16:45 ET, THE DEADLINE INSTANT. AEGIS TIMEZONE HYPOTHESIS REFUTED. D15 RESOLVED: SIZING IS STATIC-100K, THE DAY SOFT-STOP IS THE CAPITAL-DEPENDENT PART**`
+**Status:** `PHASE 1 RE-ANCHOR ROUND READ AT a35b4e8 (2026-09-03) — VERDICT STILL NEEDS_CONTEXT (§11): 18 PASS / 5 PARTIAL / 4 FAIL / 1 NA, ZERO OVERTURNED BY THE ADVERSARIAL PASS. **SOLE BLOCKER: reconciliation_manifest.json AND RESULTS.md WERE NEVER REGENERATED** — 7 ROWS, RETIRED IDS, CONFIG HASH 8881a2af vs ACTUAL 0a6c1643. WORKER ALSO OWES: MERGE OF MAIN 8327f14, A REAL PIN-EXISTENCE CHECK, RUNNER-VERSION BUMP, RULE 2 ITERATION LINE, D13 ACCEPTED_UNMODELED. EARLY-CLOSE ROWS BLOCKED ON THE ORCHESTRATOR'S D12 CALENDAR · PHASE 0 SKIPPED (operator override) · HISTORY: PHASE 1 RETURNED — PR #283 @ 809bbb4, GATE VERDICT NEEDS_CONTEXT; #283 MERGED BY THE OPERATOR (39530d4, 17:12Z) BEFORE THE RE-ANCHOR ROUND — FOLLOW-UP CODEX PR PENDING (TWELVE RE-ANCHOR ITEMS + D13 ROLL DISPOSITION; G1.3/G1.4 BACK TO PARTIAL AFTER CODEX'S RE-REVIEW OF #284) (one re-anchor round: Striker source identities vs repo pins — D10; CME early-close rows — D12; Codex-bot P1 tie-order fix + re-run; joint-flat block builder deferral; __init__.py; Rule 2 iteration line) · VENUE-LEGALITY SCALE FLAGGED (ORB-MNQ 310/681, MGC 226/343, Aegis 9/122 trades span the 16:45 ET deadline — D11) · D8 SUPERSEDED BY D10; D10 RESOLVED (NAS100 = DOW CELL; TWO SWAP-PORT EXPORTS DROPPED — POINT VALUE NOT OVERRIDDEN) → FIVE STRATEGIES, FIVE TEMPLATES, ONE CELL EACH · D9 APPLIED · PLAN + THIS FILE ON MAIN · STATE QUEUE #1 · OLD VENDOR-BYTE REF DELETED, OBJECT PURGE PENDING (§6 D7) · SIDE PRs READ (D14): #286 PINS THE TWO MODIFIED STRIKER BODIES AS RESEARCH VARIANTS, DJ30 DIFF DECLARED PYRAMID-ONLY → D10 CLOSED; MERGE #286 AND #284, FOLD #287's CONFIG HUNK INTO THE CODEX FOLLOW-UP, DROP ITS ARTIFACT HUNK · CODEX ROUND 3 ON #284 FOLDED (4 P1 + 1 P2: FULL TWELVE-ITEM DELTA CHECKLIST + D13; FIVE CONTRACTS IN PHASE 3; NAS100 ID FINAL; CALENDAR SCHEMA EXTENSION FIRST; D11 REPLACEMENTS RE-ENTER PHASE 1) · CODEX ROUND 4 FOLDED (5 P1 + 1 P2: POPULATION AMENDED TO FIVE ACTIVE + TWO DROPPED RECORDS; **D11 RE-EXPRESSION CONFLICTS WITH THE PLAN'S OWN NO-POST-VIEW-CHANGE OBJECTIVE — RECOMMENDATION NARROWED TO DROP-ONLY UNLESS THE OPERATOR AMENDS SCOPE FIRST**; CALENDAR SOURCES NEED A HASHED CAPTURE FILE; PLAN ITEM 14 RATIONALE RE-BASED ON D10; ITERATION 3; CONFIG LOADER MIGRATES WITH THE SCHEMA) · **OPERATOR RULED 2026-09-03: D11 RE-EXPRESS (LANE ADR `Proposed`, RATIFICATION REQUIRED BEFORE ANY REPLACEMENT RESULT IS INSPECTED; EDIT SPEC ISSUED) · D12 ORCHESTRATOR SOURCES THE CME CALENDARS · D13 (b) CONTINUOUS BASIS ACCEPTED WITH SEAM RISK PRE-REGISTERED + PHASE 6 SEAM-SENSITIVITY CHECK · ITEM 11 TV ANCHORS SUPPLIED FOR ALL FIVE (COMMISSIONS + MONTHLY STILL MISSING)** · NEW: D15 STRIKER EXPORTS RAN AT 200K INITIAL CAPITAL vs THE 100K SELECT TIER; D16 HEDGING RULE PUTS MYM + BOTH MNQ LEGS IN ONE PRODUCT GROUP · **LANE ADR RATIFIED BY THE OPERATOR 2026-09-03; PINE SUPPLIED AND EDITED DIRECTLY — ROOT CAUSE IS ONE DEFECT IN THREE SCRIPTS: ALL THREE RECORD THE EOD EXIT AT EXACTLY 16:45 ET, THE DEADLINE INSTANT. AEGIS TIMEZONE HYPOTHESIS REFUTED. D15 RESOLVED: SIZING IS STATIC-100K, THE DAY SOFT-STOP IS THE CAPITAL-DEPENDENT PART** · **2026-09-03 LATER: D12 CLOSED — CME 2022-2026 CALENDAR LANDED AT `ops/calendars/` (85 ENTRIES, 49 EARLY-CLOSE, SECONDARY PROVENANCE SO THE `NEEDS_CONTEXT` CAP STANDS); ALL THREE VENUE-BOUND PINE BODIES RE-POINTED TO ONE 75-DATE UNION LIST — THE THREE EXPORTS ARE UNBLOCKED. D3 RULED (RE-PARTITION, NOT RAISE; ITERATION UNIT = ONE DISPATCH CYCLE, CONSTITUENT (i) AT 3/8). D5 RULED — CANDIDATE #1 RE-ADMITTED, §4 DISCHARGE RESTORED (EOD-CLOCK ONLY), WITHDRAWAL-ADR ADDENDUM RATIFIED IN THE OPPOSITE DISPOSITION AND SUPERSEDING-ADR REQUIREMENT WAIVED. COMMISSION TOTALS RECOVERED FROM THE EXPORT BYTES ($7,647.64 / $5,585.58, TV DOUBLE-COUNTS THEM). STRIKER RE-EXPORTS VERIFIED AT 100K FROM THE PROPERTIES PANELS — NAS100 DELTA $0.00 AND EXPLAINED, **DJ30 +$287.00 UNEXPLAINED AND BLOCKS ITS G1.4 ROW**. BOTH STRIKERS MEASURED VENUE-CLEAN ON ALL 49 EARLY-CLOSE DATES, BUT NEITHER CARRIES AN EARLY-CLOSE BRANCH — RESIDUAL RISK R-STRIKER-EC. SEE §12** · **2026-09-03 LATEST: CODEX PR #292 @ `80abcec` GATE-READ (§14) — VERDICT `NEEDS_CONTEXT` HOLDS. ENGINEERING SOUND (RUNNER v2, REAL PIN CHECK, RECOVERY FIX, 2,455 TESTS, GATE 0) BUT **ALL FIVE FROZEN SOURCES ARE SUPERSEDED** — RELAY LAG, NOT WORKER ERROR. CALENDAR STILL EMPTY AND BLOCKED ON #291 MERGING; ITS PER-YEAR `capture_basename` SCHEMA DOES NOT FIT A SECONDARY-SOURCED CALENDAR. TIE-BATCHING CORRECTION **APPROVED** — A RULE 0 READ SHOWS IT CAN ONLY MOVE `BREACH`→`AMBIGUOUS`, NEVER `AMBIGUOUS`→CLEAN, SO IT CANNOT WEAKEN THE CAP CHECK. ⚠ ONE PEAK IS EXACTLY AT THE CAP (80 vs 80) AND THE BOOK-LEVEL SUM IS 244 vs 80. D17 RULED — MONTHLY TOTALS RECONSTRUCTED (FEASIBILITY PROVEN, ZERO MONTH-SPANNING HOLDS), COMMISSIONS AMENDED OUT. THREE VENUE-BOUND RE-EXPORTS LAND CLEAN: **545 FORCE-FLAT VIOLATIONS → 0** AT 1.86% OF COMBINED NET (§13). D7 HELD BY OPERATOR**`
 **Last curated:** 2026-09-03 (orchestrator session `claude/orchestrator-role-takeover-yza7vp`; queue-placement reconciliation by `claude/state-pipelines-alignment-ng62y9`, PR #275)
 **Parent plan:** [`2026-09-02-seven-strategy-tradeify-select-configuration.md`](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
 (PR [#272](https://github.com/Joshua-Asante/first-passage/pull/272) — **merged 2026-09-03** together
@@ -66,7 +66,7 @@ simulators") binds to these existing owners. A worker PR that re-derives any of 
 | TV trade-list adapter + honesty label | [`lab/research_utils/msl_score.py`](../../../lab/research_utils/msl_score.py) (`LOWER BOUND` vs `excursion-bounded`) | The plan's `LOWER BOUND` rule is this label, not a new one |
 | Loaders | [`core/tv_export_loader.py`](../../../core/tv_export_loader.py) (paired trades, MAE/MFE columns) · [`core/bar_export_loader.py`](../../../core/bar_export_loader.py) / [`scripts/parse_bar_export.py`](../../../scripts/parse_bar_export.py) (BAR EXPORT v0.2 + sidecar) | No ad-hoc CSV interpretation (G0.4). `pair_tv_export_dataframe` **raises on non-long entries** (the locked book is long-only): a short or two-sided export needs the loader extended — `core/` is a locked surface, so that extension is CC-solo under ADR test 1, never a worker patch |
 | Two-level bootstrap precedent | [`lab/analysis/c1/class_s_w1_bootstrap_honest_2026-09-02/`](../../../lab/analysis/c1/class_s_w1_bootstrap_honest_2026-09-02/) (`_boot_paired.py`, `READING.md`) | The plan's Phase 7 qualifying bound is this design |
-| Eval bust ceiling of record | [`prop-survivor-scoring prereg v2`](../pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3 Part A: bust ≤ 5.0% | Plan's 5% aligns; the 2026-07-22 §4-withdrawal ADR §5 collision flagged in `SESSIONS 2026-09-02c` is still **unruled** (§6 D5) — a `Proposed` ruling now exists at [Addendum 2026-09-03](../../adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-09-03--the-50-ceiling-does-not-re-admit-candidate-1-proposed), and the collision is sharper than first logged: **all four** frozen tiers (3.51 / 4.74 / 4.25 / 4.44) clear 5.0%, so the raise re-admits candidate #1 by arithmetic |
+| Eval bust ceiling of record | [`prop-survivor-scoring prereg v2`](../pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3 Part A: bust ≤ 5.0% | Plan's 5% aligns; the 2026-07-22 §4-withdrawal ADR §5 collision flagged in `SESSIONS 2026-09-02c` is **RULED 2026-09-03** (§6 D5) — candidate #1 **re-admitted**, §4 discharge **restored**, EOD-clock only — a `Proposed` ruling now exists at [Addendum 2026-09-03](../../adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-09-03--candidate-1-re-admitted-at-the-50-ceiling-accepted), and the collision is sharper than first logged: **all four** frozen tiers (3.51 / 4.74 / 4.25 / 4.44) clear 5.0%, so the raise re-admits candidate #1 by arithmetic |
 | Candidate / campaign governance | [`candidate-contract`](../../adr/2026-08-30-candidate-contract.md) · [`evaluation-order`](../../adr/2026-08-30-evaluation-order.md) · [`operator-approvals-campaign-envelope`](../../adr/2026-08-30-operator-approvals-campaign-envelope.md) · [`terminal-taxonomy`](../../adr/2026-08-30-terminal-taxonomy.md) · [`tradeable-reachable-gate`](../../adr/2026-08-30-tradeable-reachable-gate.md) | Terminal wording in this campaign uses the taxonomy's vocabulary |
 | Deployment gates (Phase 8 and beyond) | [`M1`](../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md) · [`rail GO`](../../adr/2026-07-17-c1-rail-build-account-registration-go.md) | Untouched by this campaign |
 
@@ -150,19 +150,21 @@ undetermined until §6 D3. **Defects / invalidations:** none; no prior output ex
 |---|---|---|---|
 | D1 | Merge #272 / #273 | — | **Done 2026-09-03** — both merged; plan and this file on `main` |
 | D2 | `STATE.md` queue placement | Queue cap ≤5, 2 rows live; promotion is an operator act (STATE standing rule: "do not auto-open a replacement") | **RESOLVED 2026-09-03** ([PR #275](https://github.com/Joshua-Asante/first-passage/pull/275)) — promoted to queue **#1** (not Row 3): the operator ruled this campaign the live/turning one, replacing the portable-edge cultivation row rather than adding a third. `#2` (B7-REFIRE/M1) unchanged |
-| D3 | Rule 2 budget — confirm the classification | Rule 2 counts complete attempt-and-check iterations under the INNER/OUTER/STRATEGIC 3/8/3 limits ([canon §15](../../methodology/inqhiori-canon.md)); a core-hour figure is not a budget. Plan contract item 13 now proposes **STRATEGIC, ≤3 constituent OUTER investigations × 8 iterations, no self-extension** | Confirm item 13's three constituents; keep $0 external data and any core-hour figure as disclosure lines only. Phase 0 is iteration 1 of constituent (i) |
+| D3 | Rule 2 budget — confirm the classification | Rule 2 counts complete attempt-and-check iterations under the INNER/OUTER/STRATEGIC 3/8/3 limits ([canon §15](../../methodology/inqhiori-canon.md)); a core-hour figure is not a budget. Plan contract item 13 proposed **STRATEGIC, ≤3 constituent OUTER investigations × 8 iterations, no self-extension** | **RULED 2026-09-03 (operator): re-partition, do not raise.** The envelope stays **3 × 8 = 24** — no self-extension, and the alternative of raising the OUTER count is declined. Two changes, both re-partitions rather than increases. **(1) Constituents redrawn** from the plan's (i) Phases 0–2 / (ii) Phases 3–6 / (iii) Phases 7–8 to **(i) Phase 1 evidence normalization** · **(ii) Phases 2–3 venue legality, re-expression and candidate contracts** · **(iii) Phases 4–8 frozen search, robustness, confirmation, shadow parity**. Phase 0 was skipped by operator override, and Phase 1 has carried far more than a third of the work, so the old boundary put an eight-iteration constituent astride two phases that are no longer comparable in size. **(2) The iteration unit is fixed** at **one dispatch → gate-read → fold cycle**, not one worker push. A Codex review round inside a single dispatch is the *check* limb of that iteration, not a new iteration — otherwise a worker's review cadence, which the orchestrator does not control, silently consumes the operator's budget. ⚠ **This is the substance of the re-partition, and it is a real loosening**: under a per-push count constituent (i) was near exhaustion; under the dispatch count it has consumed **3 of 8** (Phase 1 initial → read at `809bbb4`; re-anchor round → read at `a35b4e8`; this calendar + re-expression round). Recorded plainly so no reader mistakes a redefinition for progress. External spend ($0) and core-hours stay disclosure lines beside the count, never the budget |
 | D4 | Relation to queue row 1 (portable-edge cultivation, 2–3 day clock from 2026-09-02, ≤1 candidate contract, ≤3 seats) | Seven *supplied* strategies are complete expressions — the cultivation plan's seats B/C class — but the configuration search is a book-composition objective the cultivation envelope does not name | **RESOLVED 2026-09-03** (with D2) — ruled a **separate program** under its own envelope (this file), and per D2 now the higher-priority one: cultivation is demoted off-queue (stays open on its own ADR/plan, no queue row) |
-| D5 | 5% ceiling vs 2026-07-22 §4-withdrawal ADR §5 | Flagged unruled in `SESSIONS 2026-09-02c`; Phase 7 cannot call a pass while the ceiling's own provenance is contested. **2026-09-03: a one-line ruling is now drafted and awaiting operator ratification** — [`withdrawal ADR` Addendum 2026-09-03](../../adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-09-03--the-50-ceiling-does-not-re-admit-candidate-1-proposed) (`Proposed`): the 5.0% ceiling is prospective-only and does not re-admit candidate #1. Still **unruled** until ratified, so D5 does not clear yet | Operator ratifies (or elects the opposite, which needs a superseding ADR) before Phase 3 ratification |
-| D7 | **Purge the vendor bytes from the public remote** — **OPEN** | `706a03e` on the old `codex/mym-breakout-research` carried the raw TV bar export, the parsed `MYM_M15.csv`, and the local-only trade ledger. The ref is deleted (Cursor, 2026-09-03), but a deleted ref does not purge the objects: anyone holding the commit hash can still fetch them until GitHub removes or garbage-collects them | Request the unreachable-object purge from GitHub support; this row closes only when the purge is confirmed (the `706a03e` objects return 404) |
+| D5 | 5% ceiling vs 2026-07-22 §4-withdrawal ADR §5 — **RULED 2026-09-03; candidate #1 RE-ADMITTED** | D5's collision was never which ceiling is live (5.0% since 2026-08-26) but whether raising it **re-admits candidate #1**, whose 4.74% / 4.25% / 4.44% / 3.51% figures sit strictly between 3.0% and 5.0% — a move §5 of the withdrawal ADR named as forbidden | **RULED (operator, verbatim): _"I am allowing Candidate 1 to be readmitted. No need for the superceding ADR, I just need to edit the existing one"_.** Applied: the withdrawal ADR's [Addendum 2026-09-03](../../adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-09-03--candidate-1-re-admitted-at-the-50-ceiling-accepted) is ratified `Accepted` **in the opposite disposition to the one it proposed**: candidate #1 is re-admitted and the §4 falsifier discharge is **restored** on the §2 corrected-geometry figures. The operator also **waived** the superseding-ADR requirement that addendum had set for this election, so the ruling is recorded by editing the existing ADR. §4's restore-trigger table and §5's forbidden move stay in the file **overridden but unedited**, as the record of what was overridden. No re-MC, no number moved, no `core/`/Pine/allocation/`dd_protection`/rail surface touched. ⚠ **The discharge is EOD-clock only.** The sole 1.00× intraday-honest measurement of candidate #1 reads **32.33%** real bust — a failure at 3.0% and 5.0% alike — and is not gate-grade, so it settles nothing either way but is **not repealed** by the ruling. Every citation carries that qualifier; a discharged falsifier is not a pass, a deployment, or a capital authorization. Two research banners repointed to match (`class_s_c1_haircut_regime_remc_2026-07-16`, `tradeify_eval_lock_correction_2026-07-22`). **D5 clears; Phase 7 is no longer gated on it.** Still owed, and now the only thing standing between this discharge and measured footing: the gate-grade intraday-honest re-score |
+| D7 | **Purge the vendor bytes from the public remote** — **OPEN** | `706a03e` on the old `codex/mym-breakout-research` carried the raw TV bar export, the parsed `MYM_M15.csv`, and the local-only trade ledger. The ref is deleted (Cursor, 2026-09-03), but a deleted ref does not purge the objects: anyone holding the commit hash can still fetch them until GitHub removes or garbage-collects them | Request the unreachable-object purge from GitHub support; this row closes only when the purge is confirmed (the `706a03e` objects return 404). **Non-reachability VERIFIED 2026-09-03 by a full ancestry walk with a positive control** (first asserted on tip equality alone, which Codex on #291 correctly called insufficient — an ancestor of any ref is retained even when no ref points at its exact SHA). Method: a throwaway bare clone fetching **all 305 refs** — every branch, every `refs/pull/*/head`, every tag — with `--filter=blob:none`, so commit and tree objects came down but **no file contents**, keeping the vendor bytes unread. Then `git merge-base --is-ancestor` against every ref. **Control:** `1a79c985…` (PR #259's head) resolves as reachable from **49** refs, so the method detects reachability. **Target:** `706a03e` is reachable from **0 of 305**. Its parent is `1a79c985…`, confirming it was pushed onto the branch after #259 merged and never entered a pull request. It is therefore genuinely **dangling** — the one case GitHub's garbage collection can remove. **Ticket drafted 2026-09-03 and copy-paste ready at §12g** on the operator's authorisation. ⚠ **The operator is HOLDING OFF on sending it (2026-09-03)** — the draft stays parked and this row stays **OPEN**, not blocked and not withdrawn; nothing further is owed by the orchestrator until the operator elects to send. Note the exposure is unchanged while it waits: the objects are still served today to anyone holding the hash. It cannot be filed from this session (GitHub Support is a browser surface the MCP tools do not reach), so **the operator sends it**. The row closes on GitHub's confirmation, not on the send. ⚠ Telling detail: the object nonetheless arrived in that fetch's pack, which is itself a demonstration that GitHub still serves it. ⚠ **It is nonetheless live right now:** the commit API served it this session, listing `BAR_EXPORT_v0.2_CBOT_MINI_MYM1!_2026-09-01_1b59b.csv` (340,835 rows), `MYM_M15.csv` (170,418) and `all_declared_trades.csv` (100,849) — 612,296 added lines, fetchable today by anyone holding the hash |
 | D8 | **Two instrument mismatches** in the supplied set | `striker_dj30_mnq_prototype` (export on a MYM chart) and `striker_nas100_mym_prototype` (export on an MNQ chart) were declared on the other instrument, because Codex read the Q-TXG-1 sibling-swap target out of the Pine filenames | **SUPERSEDED (provisional) by D10, 2026-09-03** — the "native editions with the pyramid down" description and the five-template count no longer hold: two exports are the pinned Q-TXG-1 swap-port bodies and two are un-pinned modified bodies; the template count is unsettled until D10 closes. Historical ruling as recorded: **they are the native editions with the pyramid turned down** — DJ30 on MYM and NAS100 on MNQ, not the Q-TXG-1 swap cells. The exports are on the right chart; the declared intent and the names were wrong. Codex: flip `intended_instrument` to the export's chart (MYM, MNQ), rename the two IDs and lineage notes to say *native edition, pyramid reduced from the locked 750% / 1000% to the Pine's value* (a new expression, not the locked strategy), and add the Pine pyramiding setting to every config entry so the inventory records it. **Structural consequence:** each pyramid-down variant is a parameterization of the same entry/exit template as its locked sibling (`striker_dj30_mym_v45`, `striker_nas100_mnq_v1`), so per the candidate-contract ADR it is a **cell inside that template's contract**, not a separate template — the set holds **five templates**, and the configuration catalogue must treat each pyramid pair as a mutually exclusive cell choice, never two independent legs |
 | D9 | **TradingView chart timezone** of the seven exports | Was `null` for all seven, which capped the Phase 1 verdict at `NEEDS_CONTEXT` (the plan's Phase 1 ledger is canonical UTC with exchange-local session dates) | **Resolved 2026-09-03 (operator ruling): `America/New_York` for all seven exports.** Codex sets `source_timezone` to `America/New_York` in every `phase1_config.json` entry (the config fingerprint changes), updates the test that currently asserts `source_timezone is None`, and the runner localizes with `zoneinfo` → UTC plus the exchange-local session date; DST-ambiguous or nonexistent timestamps stay hard errors (spec §4.2). The verdict cap lifts when the re-frozen config lands |
 | D6 | The seven strategies' identities and the intake path | Plan §Immediate next action; only the operator holds the files | **Done 2026-09-03** — seven TradingView exports attached to Codex's local session; identities and hashes land through G1.2 |
 | D10 | **Striker source identities — reopens D8** | Rule 0 read of `core/strategies/PORT_MANIFEST.sha256` against the four Striker `pine_sha256` pins in `phase1_config.json`: `178a2a8e…` **is** the pinned Q-TXG-1 sibling-swap body `striker_dj30_v4.5_mnq_qtxg1_prototype.pine` (DJ30 logic ported to MNQ, carrying the port's own point-value / session inputs), exported here on a **MYM** chart at pyramid 750 — Codex labeled it `striker_dj30_mym_v45`; `19264da2…` **is** the pinned swap body `striker_nas100_v1_mym_qtxg1_prototype.pine`, exported on an **MNQ** chart at 1000 — labeled `striker_nas100_mnq_native_variant`; `5c4b1026…` (file named `striker_dj30_v4.5_mym.pine`, pyramid 250) ≠ its pin `2b895317…`; `d18c2699…` (file named `striker_nas100_v1_mnq.pine`, pyramid 1000) ≠ its pin `bb921399…`. **None of the four is a pinned locked venue edition**: the two named as locked are modified bodies of unknown diff, and the two "native variants" are swap ports run back on the native chart, whose port-inserted point-value defaults (`mymPointValue` / the MNQ analogue) may not match the chart they ran on | Operator: (i) diff the two modified native files against the pinned bodies locally and state every change (pyramid only → a cell of the same template; anything else → say what); (ii) state whether the two swap-port exports ran with chart-input overrides matching the native instrument, or drop them; (iii) Codex renames the four IDs so no un-pinned body carries a locked name (`_v45` / `_v1`), adds `pine_pin_status` per entry (`PINNED_SWAP_PROTOTYPE` / `UNPINNED_MODIFIED`), and re-freezes. **Partial ruling 2026-09-03 (operator):** the modified `striker_nas100_v1_mnq.pine` body (`d18c2699…`) differs from its pin by the **day-of-week set** — exclude Wednesday only, i.e. {Mon, Tue, Thu, Fri}, versus the locked **Mon + Tue** (`core/strategies/_archive/nas/striker_nas100_CHANGELOG.md`: "Mon+Tue only"). That is a parameter-axis change on a locked strategy, so the export is a **day-of-week cell of the NAS100 template**, never the locked edition; the doubled trade count (378 vs 184 for the swap-port body at the lock-identical Mon + Tue filter) follows. Codex: rename it — **final ID ruled `striker_nas100_mnq_dow_wed_excluded`** (made final 2026-09-03 on Codex's third review of #284; the ID #286's manifest block already cites) — `pine_pin_status: UNPINNED_MODIFIED` with `pin_divergence: "day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}"`. **Still open:** (i-b) the DJ30 modified body's full diff (pyramid 250 confirmed; anything else?), and (ii) whether the two swap-port exports ran with chart inputs matching the native instrument. **Lock hygiene:** the on-disk locked files no longer match their pins (`bb921399…`, `2b895317…`) — restore the pinned bytes and keep each variant under its own filename with its own pin; a locked edition is never edited in place. **Orchestrator naming rulings (2026-09-03, on the local session's request; provenance names only, no locked names):** `5c4b1026…` → `striker_dj30_mym_pyramid_250` (`UNPINNED_MODIFIED`, divergence "pyramid 250% vs locked 750%; full diff unconfirmed"); `d18c2699…` → `striker_nas100_mnq_dow_wed_excluded`; `178a2a8e…` → `striker_dj30_qtxg1_port_on_mym` and `19264da2…` → `striker_nas100_qtxg1_port_on_mnq` (`PINNED_SWAP_PROTOTYPE`, `pin_ref` to the PORT_MANIFEST line). **(ii) RESOLVED 2026-09-03 (operator): the point-value input was NOT overridden.** Each swap-port body therefore sized with the other instrument's point value (the NAS100→MYM port's `$0.50`/pt default on a `$2.00`/pt MNQ chart, and the mirror case for DJ30 on MYM) — a 4× sizing error interacting with the micro cap and the pyramid, not rescalable after the fact and never repaired. **Both swap-port exports (`178a2a8e…` on MYM, `19264da2…` on MNQ) are DROPPED from the campaign set**, recorded in the config as `dropped_sources` with reason `SWAP_PORT_BODY_POINT_VALUE_NOT_OVERRIDDEN` (their hashes and the reason stay in the inventory; nothing is silently deleted). **The set is five strategies — Aegis 6J1, ORB-MNQ recon v7, DJ30-MYM pyramid-250, NAS100-MNQ DOW-Wednesday-excluded, Vanguard MGC v0.4 — five templates, one cell each; no locked venue edition is in the set.** **D10 CLOSED 2026-09-03:** [#286](https://github.com/Joshua-Asante/first-passage/pull/286) (operator's separate Claude session, manifest-only) states the DJ30 modified body's sole diff against its pin is `pyramidSize` 750 → 250 (day-of-week filter unchanged) and pins both modified bodies as research variants under `core/strategies/candidates/` — `5c4b1026…` `striker_dj30_v4.5_mym_pyramid_250.pine`, `d18c2699…` `striker_nas100_v1_mnq_dow_wed_excluded.pine`; the locked pins `bb921399…` / `2b895317…` are unchanged and the on-disk locked files are declared to match them. Taken as the operator's own declaration (the orchestrator opened no Pine bytes; `pine-pin-provenance` green on #286). ⚠ **#286 was closed, then RE-OPENED AND MERGED on 2026-09-03 (`8327f14`); the pins DO exist on `main`.** The intervening text below was written during the closed window. ~~was CLOSED WITHOUT MERGING on 2026-09-03, so those pins do not exist on `main`~~ and the two entries stay `UNPINNED_MODIFIED` with `pin_ref` to the locked pin they diverge from (§9 item 1, corrected). The diff evidence survives the closure — it was byte-level verification on the operator's durable checkout, not a claim the PR itself established — so D10 stays closed on the facts. What is lost is the **pin**: the campaign's provenance for these two bodies now rests on the config's `pine_sha256` plus that declaration, with nothing in `PORT_MANIFEST.sha256` recording either variant. Re-landing the manifest block is a cheap, self-contained follow-up whenever the operator wants it. Sequencing of #286/#287 → D14 |
 | D13 | **Continuous-contract roll blocker** | Every one of the seven reports as read on #283 — **five** since the D10 (ii) drop, the two dropped sources needing no roll disposition (§4 population amendment) — carries `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED` (BLOCKER): all exports come from `1!` continuous charts, so no fill can be attributed to a contract month or checked against a back-adjustment seam (spec §4.4, §4.6). The design keeps it a blocker, so all seven stay `BLOCKED_EXPLORATORY` however the other re-anchor items land; it is not a worker fix | Operator rules one of: (a) supply per-contract exports or a roll ledger (contract months + roll dates + back-adjustment offsets) for the **five retained** charts, letting Codex attribute fills and flag seam-crossing trades; or (b) accept the continuous-symbol basis for Phases 2–4 with the seam risk stated in the pre-registration and a seam-sensitivity check pre-registered for Phase 6. Recommendation: (b) unless per-contract exports are cheap — the continuous series is the chart the strategies were tuned on. **RULED 2026-09-03 (operator): (b).** The continuous-symbol basis is accepted for Phases 2–4. Two obligations follow and are now binding: (i) the Phase 3 pre-registration states the back-adjustment seam risk explicitly — that no fill can be attributed to a contract month and that a seam crossing is indistinguishable from a price move — as a named limitation of every claim the campaign makes; and (ii) a **seam-sensitivity check is pre-registered for Phase 6** with its severity frozen alongside the other Phase 6 cutoffs. The blocker does not vanish: `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED` stays on every report as a recorded limitation, but it no longer holds the strategies at `BLOCKED_EXPLORATORY` — Codex changes the disposition to `ACCEPTED_UNMODELED` with this ruling and its two obligations cited, and the campaign status line loses the roll blocker as a gate |
 | D11 | **Venue-illegality scale of the exported set** | The daily-deadline audit shows ORB-MNQ **310 of 681** trades, Vanguard MGC **226 of 343**, and Aegis 6J1 **9 of 122** spanning the 16:45 ET force-flat instant (ORB-MNQ also 3 Friday→Sunday). As exported these three cannot pass Phase 2 (plan: venue flags block that strategy; never a tuning opportunity). Aegis's Pine declares its own 16:30 ET flatten, so its 9 are a Pine-side defect or a chart-session artefact. Standalone headroom under the 80-micro-equivalent account cap: Aegis **0** (peak 80/80), each Striker **3–4** (76–77/80), ORB-MNQ and MGC 74–76 — recorded as inventory only; whether those peaks coincide is the Phase 4 joint-chronology question (plan §Phase 4), so no aggregate-cap verdict is drawn here | Operator rules per strategy: **re-express** as a session-bounded venue edition (exits filled **strictly before** 16:45 ET, and before 12:59 ET on early-close dates, with a bar buffer — on 15-minute bars the last exit bar closes 16:30 ET, because the audit flags any deadline instant in `(entry, exit]` — a new expression whose export is again development data under the whole-export ruling) or **drop**. ⚠ **Scope conflict, raised by Codex round 4 on #284 and verified against the plan (2026-09-03):** re-expression is a post-view change. The plan's own objective binds the campaign to the supplied strategies **"without changing their signal rules after results are viewed"** (plan §Objective), and its robustness section states that **"no failed candidate is repaired by changing a strategy's signal parameters inside this campaign"** (plan §Phase 6). A session-bounded exit is a venue-legality constraint rather than a tuning knob, but it does change exit behavior, and choosing it *because* the audit showed the failure is exactly the post-view selection those two clauses forbid. Repeating Phase 1 on the replacement does not cure that. **Revised recommendation (supersedes the earlier re-express-first advice):** inside this campaign as pre-registered, **drop** the three; re-expression is available only if the operator first **amends the campaign scope on the record** — an ADR or a pre-registration amendment declaring the venue-legality re-expression lane, its trigger (a venue flag, never a performance result), and that the replacements' exports are development data — **written and ratified before any replacement result is inspected**. Deciding it afterwards voids the claim. Either way the venue-illegal exports never advance as they stand. **RULED 2026-09-03 (operator): re-express.** The scope amendment the ruling requires is drafted as the [venue-legality re-expression lane ADR](../../adr/2026-09-03-venue-legality-re-expression-lane.md) (`Proposed`, full tier) — it admits a re-expression lane whose trigger is a venue flag and never a performance result, permits the session bound and nothing else, treats each replacement as a new expression with its own id, pin and fresh config entry (the superseded one kept under `superseded_sources`), and requires the full G1.1–G1.10 gate on the replaced set. ⚠ **Ratification order is load-bearing: the ADR must be `Accepted` before any replacement export's results are inspected by anyone.** The exact edit is issued to the operator as the [venue-bound session guard spec](../../superpowers/specs/2026-09-03-venue-bound-session-guard.md): on 15-minute bars the flatten signals on the bar opening **16:00 ET** (fills at the 16:15 open, worst-case stamp 16:30) and **12:15 ET** on an early-close date (fills 12:30, worst-case stamp 12:45) — signalling one bar later would fill at a bar whose bar-close stamp is exactly 16:45 and would still violate. Venue-legal editions ruled: `orb_mnq_recon_v7_venue_bound`, `vanguard_mgc_v04_venue_bound`, `aegis_6j1_venue_bound`. Aegis is diagnosed separately: its session ends 13:45 ET and its Pine already declares a 16:30 ET flatten, so its 9 violations are an implementation defect (most likely a fixed-offset or exchange-time flatten rather than New York wall-clock), not a design choice. **Superseded 2026-09-03: the operator supplied all five Pine bodies, the lane ADR is `Accepted`, and the edits were applied directly.** ⚠ **The Aegis timezone hypothesis is REFUTED by its source.** Aegis already resolves every filter through an explicit `America/New_York` input — its own header calls that out as deliberate deviation [1], precisely to avoid the exchange-timezone shift. The real cause is shared by all three and is a single defect: **each script flattens such that the exit is recorded at exactly 16:45 ET**, the deadline instant, and the audit flags `entry < deadline <= exit`. Aegis fires `eod_zone` on the 16:30 bar and, with next-bar fills, lands on 16:45. MGC's `lastSafeBar` backs off one bar from a **16:59** deadline, firing 16:30 and landing on 16:45. ORB's `lastBarOfSession` against a **16:55** session close is the bar opening 16:45, and `process_orders_on_close=true` records it there. Every one was built to a 16:55–16:59 ET deadline — Bulenox's 15:59 CT in Aegis's case, which its header documents as a deliberate 14-minute buffer — and Tradeify's tightened **16:45** catches exactly the bar each chose. Aegis's 9-of-122 is not a smaller version of a different bug: it is the same bug, rare only because its session ends 13:45 ET so few trades survive to the flatten. **Applied edits, one input each:** Aegis `eod_m` 30→0 (and `eod_early_m` 30→15); MGC `flatMinuteET` 59→15; ORB `sessEndM` 55→30 — each moving the recorded fill to a bar opening 16:15 ET. **MGC and ORB additionally had no early-close handling at all** (both say so in their own headers); an interim calendar carried over from Aegis's existing `early_close_dates` input was added to both, to be replaced by the verified D12 calendar. Codex's resting-order finding is already satisfied in ORB, which cancels its resting stop entries at the session-end bar; MGC and Aegis enter at market behind a `canTrade` gate, so nothing rests. ⚠ **Not compile-verified here** — `scripts/pine_check.py` reaches TradingView's guest compile endpoint, which this environment's proxy refuses with 403, so the operator confirms compilation on paste | **Every replacement export re-enters Phase 1 in full** (Codex, third review of #284, accepted): a re-expressed strategy is a new Pine body and a new export with its own hash, byte size, TradingView summary anchors, per-row hashes and deadline audit, so it gets a fresh config entry (the superseded entry kept under `superseded_sources`), the complete G1.1–G1.10 gate on the replaced set and a per-strategy verdict — never the twelve-item delta read — before it may enter Phase 2 |
-| D12 | **CME early-close calendar (holiday-short 12:59 ET)** | Codex's capture `cme_early_close_calendar.json` holds **zero rows**: cmegroup.com's trading-hours page shows only the current year and the Reference Data API needs an OAuth ID. Per §4 the missing dimension caps Phase 1 at `NEEDS_CONTEXT` | Supply the per-year CME holiday calendars 2022–2026 (yearly PDFs on cmegroup.com; roughly ten early-close dates a year) for Codex to freeze as rows, or rule the dimension accepted-unmodeled with its consequence stated (an early-close hold goes undetected). Recommendation: supply the PDFs; an hour of legwork lifts the cap. **RULED 2026-09-03 (operator): the orchestrator sources them directly and stores them durably for future sessions.** Done by a multi-agent research workflow — one researcher per year 2022–2026 against cmegroup.com, three adversarial verification lenses per year (independent source check, product-group-difference check, completeness audit), plus three corroboration lanes (Globex product rules by group, non-CME broker calendars, and the known edge cases: Good Friday, Juneteenth adoption, Independence Day weekend observance, the Christmas–New Year window, one-off closures). Output lands as a tracked, durable calendar under `ops/calendars/` carrying full closures **and** early closes with per-product-group close times, from which the study's `cme_early_close_calendar.json` rows and the Pine guard's date array are both generated. ⚠ The three affected instruments sit in **three different product groups** (equity index MNQ/MYM, COMEX metals MGC, CME FX 6J) whose holiday close times differ, so a single date list applied to all four instruments is itself a modelling assumption that must be stated |
+| D12 | **CME early-close calendar (holiday-short 12:59 ET)** — **CLOSED 2026-09-03** | Codex's capture held **zero rows**: cmegroup.com's trading-hours page shows only the current year and the Reference Data API needs an OAuth ID. Per §4 the missing dimension capped Phase 1 at `NEEDS_CONTEXT` | **DELIVERED — see §12.** A 24-agent adversarial research pass reconstructed 2022–2026 and it is landed durably at [`ops/calendars/`](../../../ops/calendars/README.md): **85 dated entries**, per product group, with **49** early-close dates, **16** full-closure dates, **3** sub-deadline dates and a **13-item** `unresolved` register. ⚠ **Provenance is SECONDARY, not primary** — no CME source was reachable (403 at the proxy's CONNECT layer on cmegroup.com and every broker mirror), so the calendar is reconstructed from five independent third-party encodings cross-checked against in-repo bar panels. That is why **the study's `coverage_status` must stay `NEEDS_CONTEXT`**, and why the Phase 1 cap does **not** lift on this delivery: what lifts is the *empty-rows* blocker, not the provenance one. The date list is now real, so the force-flat audit actually runs |
 | D15 | **The two Striker exports ran at 200K initial capital, the campaign targets a 100K account** | The operator-supplied TradingView panels show initial capital **200K USD** for `Striker DJ30 v4.5 MYM` and `Striker NAS100 MNQ`, against **100K USD** for Aegis 6J1, ORB-MNQ recon v7 and Vanguard Gold MGC v0.4. The campaign's environment is `Tradeify_Select_100K` — a **$100,000** account (`core/firm_rules.py`, `starting_balance` 100_000). If either Striker sizes off account equity, its exported position sizes are **twice** what a 100K account would produce, and every downstream quantity inherits the error: the micro-equivalent exposure figures (each Striker peaked at 76–77 of the 80-micro account cap), the joint-book cap arithmetic in Phase 4, and the percentage returns the panels report (+15.89% and +56.13% are percentages **of 200K**). Trade counts and dollar P&L reconcile to the cent either way, so Phase 1's G1.4 anchors are unaffected; this is a sizing-basis defect, not a reconciliation defect | Operator states, per Striker leg, whether the Pine sizes in **fixed contracts** or off **account equity / percent risk**. ⚠ **Corrected 2026-09-03 (Codex on #289, P1, accepted): a fixed-contract answer does not make the 200K figure cosmetic.** TradingView uses initial capital for available-funds and margin-call behaviour whatever the quantity rule, and either script may reference `strategy.equity` outside its sizing formula; at the recorded 76–77-contract peaks, halving capital can reject or liquidate orders and so change both counts and P&L. **Both Striker exports are therefore re-exported at 100K regardless of the sizing basis**, unless the operator first demonstrates identical fills under both settings. That is a re-run of the same expression, not a re-expression, so it does **not** use the D11 lane and needs no ADR. **RESOLVED 2026-09-03 by reading the supplied Pine.** Sizing is **not** equity-based: both Strikers call `strategy.entry(..., qty=calcSize(...))`, and `calcSize` computes `riskDollars = accountSize * riskPerTrade/100` from a **static `accountSize` input defaulting to 100000**, never `strategy.equity`. Contract counts are therefore already calibrated to the target tier and do not move with `initial_capital`. (NAS100's header comment claiming rolling-equity compounding is stale against its own code.) Codex's margin-rejection concern is also defused in source: both declare `margin_long=0, margin_short=0`, so no order can be rejected for available funds. **But the figure is not cosmetic either**, for a reason neither of us had: the **day soft-stop** latches on `strikerDayPnl <= strategy.initial_capital * strikerDayStopPct / 100`, and unlike the DD rails it is **not** gated by `backtestMode`. At 200K it halted the day at −$2,300 (DJ30, −1.15%) and −$3,000 (NAS100, −1.5%) instead of the −$1,150 / −$1,500 a 100K account implies — twice the intended loss before halting. **Both Strikers re-export with `initial_capital=100000`; edited files supplied.** One line each, no logic touched. This is a mis-parameterised export corrected, not a re-expression, so it does not use the D11 lane |
 | D16 | **Hedging / correlated-products rule puts three of the five legs in one product group** | Rule 0 read of `core/firm_rules.py` (Tradeify re-verification 2026-07-22, article 10495868): **opposing directions within a Product Group are prohibited, in one account and across accounts.** The Equity Index group is ES/MES/NQ/MNQ/YM/MYM/RTY/M2K/EMD/NKD plus EUREX index. The retained set puts **three** legs in that one group — `striker_dj30_mym_pyramid_250` on MYM, `striker_nas100_mnq_dow_wed_excluded` on MNQ, and `orb_mnq_recon_v7` on MNQ — so any moment where two of them hold opposing directions is a venue violation, not merely an exposure question. The historical c1 book was compliant **by construction** because both Striker legs were structurally same-side; nothing guarantees that against ORB-MNQ, which I asserted was a breakout expression trading both ways. ⚠ **That premise was wrong** (Codex on #289, P2, verified and accepted): `phase1_config.json` records `direction_evidence: long-only` for **all three** Equity Index legs — ORB-MNQ included — and the D11 lane forbids a replacement changing entry direction. Under the reviewed configuration the three legs therefore **cannot** hold opposing signs, exactly as the historical c1 book was compliant by construction. D16 is **downgraded from a venue blocker to a standing constraint**: no live risk today, and no Phase 4 gate expecting failures. Aegis is `short-only` but sits in the FX group, not Equity Index, so it is unaffected. **Further confirmed 2026-09-03 in the supplied Pine:** ORB declares `tradeDirection = input.string("Long only", …)` with a tooltip recording that `Both` was tested on 2026-08-25 and made drawdown worse for flat P&L, so the long-only default is a measured choice rather than an accident — the standing constraint is real but has no live exposure | **Record the constraint rather than gate on it.** (i) The configuration catalogue notes that all three Equity Index legs are long-only and that this is what keeps the book hedging-compliant, so any future edition, replacement or direction change in that group re-opens the question. (ii) Phase 4 carries a cheap assertion over the joint ledger that no two Equity Index legs ever hold opposing signs — a regression guard against a later edition silently introducing shorts, not a test anyone expects to fail. Orchestrator note: I raised this as a blocker without reading `direction_evidence` first, which is a Rule 0 miss on my part; the correction is Codex's | Add a **joint directional-opposition audit** to the Phase 4 joint chronology, alongside the aggregate-cap check: over the joint event ledger, count the minutes in which any two Equity Index legs hold opposing signs, per pair and in aggregate. A non-zero count is a **venue block on that combination**, so the configuration catalogue must treat the three Equity Index legs as directionally constrained rather than freely composable. Orchestrator recommendation: pre-register the audit and its severity in Phase 3 so it cannot be tuned after the count is seen |
+| D17 | **G1.4 names two dimensions the source cannot supply — amend the frozen gate, or leave it capped** — **RULED 2026-09-03** | The G1.4 row in §4, frozen before any worker output was read, requires each reconciliation to cover *"trade count, net P&L, win rate, profit factor, drawdown, **commissions, monthly totals**"*. Two are unobtainable from TradingView: **monthly net does not exist in the product** (operator-confirmed), and **total commissions** has no independent figure — the export's commission column is TradingView's own `rate × qty × 2`, precisely what the runner computes (§12e). ⚠ The impossibility was discovered *after* the reports were inspected, which is exactly when a precommitted gate must not be quietly relaxed (Codex on #291, P1, accepted; the orchestrator had written the weakening and it was reverted) | **RULED (operator, 2026-09-03): (c) for monthly totals, (a) for commissions.** **Monthly totals — RECONSTRUCT, gate satisfied as frozen, not amended.** G1.4 asks for a *reconciliation*, not a vendor screenshot, so the row-level ledger discharges it. ✅ **Feasibility PROVEN by the orchestrator 2026-09-03** against all five current-of-record exports: monthly buckets reconstruct and sum to the whole-period net **exactly** (residuals ≤ 3e-10, i.e. float noise) — 49 / 48 / 45 / 48 / 49 buckets for ORB-MNQ, MGC, Aegis, DJ30, NAS100. ⚠ **And the one degree of freedom that could have made the reconstruction contestable is closed:** entry-month vs exit-month attribution differ only for a trade spanning a month boundary, and there are **zero** such holds in any of the five — a direct consequence of every strategy now being flat by its daily venue deadline. The two bases are therefore identical here, so no basis election is needed; Codex still declares the basis it used (exit-month) in the manifest, because a future population could hold across a month. Per-month figures are **not committed** — public-clone posture treats backtest detail as redacted, and the tracked artifact carries the comparison outcome plus a hash, exactly as the other G1.4 dimensions do. **Commissions — AMENDED.** The frozen G1.4 row is amended to strike `commissions` as an independently-anchored dimension, on the stated ground that no independent figure exists at any price. Recorded as an **amendment**, dated and reasoned — never as a finding that the requirement was met. The derived total stays in the manifest as inventory ($7,647.64 DJ30 · $5,585.58 NAS100 · $2,478.84 ORB-MNQ · $1,369.52 MGC · $4,935.20 Aegis, all at their declared per-side rates), flagged non-independent. **Consequence: G1.4's monthly-totals limb closes on Codex's reconstruction; its commissions limb closes on this amendment. Neither is capped any longer, and neither was waived by discovery.** |
+| D18 | **Verification depth — how much adversarial checking the orchestrator runs itself** | The orchestrator had been running multi-agent adversarial passes (a 24-agent calendar reconciliation, an 18-agent delta review, a 6-lane refutation over the re-exports) over its own measurements before recording them. Codex independently reviews every worker PR and has returned real P1s in five consecutive rounds | **RULED (operator, 2026-09-03): stop.** *"We don't have to spend this much attention on adversarially verifying every input, we will get adversarial verification with the codex review when it is pushed."* The in-flight re-export audit (`wf_4a7eb604-6ed`) was stopped mid-run. **What this does NOT relax**, and the distinction matters because collapsing it would cost the campaign its evidence discipline: Rule 0 still applies — read production source before asserting a premise about it (that read is what turned the tie-batching answer from a refusal into an approval, §14d); figures are still computed from bytes, never estimated (that is what surfaced the five stale hashes, the truncated MGC capture and the at-cap 80); and uncertainty is still stated rather than smoothed. What stops is the **second** adversarial layer over the orchestrator's own arithmetic. Codex's review is that layer | 
 | D14 | **Sequencing of the two side PRs (#286, #287) against #284 and the Codex follow-up** | [#286](https://github.com/Joshua-Asante/first-passage/pull/286) @ `dce2004`: manifest-only, +2 candidate pins with a provenance block; every check green, including `pine-pin-provenance` and the required `skills (3.12)`. [#287](https://github.com/Joshua-Asante/first-passage/pull/287) @ `f9cf020`: repoints two `pine_filename` fields in `phase1_config.json` to the #286 basenames, extends two lineage notes, **and inserts its own "D10" row plus a ledger row into this orchestrator-only artifact**. Verified on the diffs (no vendor bytes in either): (a) #287's artifact hunk collides with this file's D10–D13 numbering, and `git merge-tree` against [#284](https://github.com/Joshua-Asante/first-passage/pull/284) conflicts on this file whichever merges second; (b) #287 changes the frozen config bytes (`8881a2af…` → `1ef61ccb…`) without a re-run, so the committed `reconciliation_manifest.json` (`inputs.config_sha256` and its two `pine_filename` echoes), the spec §7.5 table rows and the pinned config hash in `tests/test_tradeify_phase1_runner.py` all describe a config that no longer exists on disk; (c) #287 keeps the pre-ruling IDs (`striker_dj30_mym_pyramid_down`, `striker_nas100_mnq_v1`); (d) #286's provenance comment names a `strategy_id` (`striker_dj30_native_pyramid_down_on_mym`) that exists in no config — comment-only, not gate-read | **Recommendation:** merge **#286 now** (clean; the re-freeze's `pin_ref` needs those lines) and merge **#284** (this file). **Do not merge #287 as-is:** drop its artifact hunk (orchestrator-only surface, conflicts with #284) and fold its config hunk into Codex's follow-up (§9 item 1), where the `pine_filename` repoint, the ruled IDs, the re-run, the regenerated manifest and config hashes and the spec §7.5 rows land together. Closing #287 is the simplest form of that. The alternative — reduce #287 to its config hunk and merge it before Codex's branch — still leaves the manifest, spec and test stale until the re-run, so it buys nothing. The stray ID in #286's comment can be corrected in the same follow-up or left (a comment, not a pin). **OUTCOME 2026-09-03, in two steps: the operator first closed BOTH #286 and #287 without merging, then re-opened and merged #286 (`8327f14`).** Final state: #287 closed (as advised), #286 merged (as advised, one step later).** The advice on #287 is therefore satisfied. #286's closure was not what I recommended and has a consequence worth stating plainly: the two research-variant pins never landed, so `PORT_MANIFEST.sha256` records neither modified Striker body, and `phase1_config.json` still cites the two **locked** filenames against modified hashes — the original G1.2 citation defect is unrepaired on `main`. Nothing is blocked by this: the config's `pine_sha256` pins the bytes, and Codex's re-freeze restates the divergence in `pin_divergence`. But the manifest no longer carries any record that these two bodies exist, which is the durable form of that evidence, so re-landing #286's manifest-only block remains worth doing on its own |
 
 ## §7 Next exact commands (orchestrator, next session)
@@ -225,6 +227,14 @@ python scripts/gate_manifest.py --tier pre-commit                            # b
 | 2026-09-03 | **Operator ratified the lane ADR and supplied all five Pine bodies for direct edit.** Rule 0 read of the sources resolved three open items and refuted one orchestrator hypothesis. **One root cause, three scripts:** each flattens so the exit is recorded at exactly **16:45 ET**, the deadline instant — Aegis via a 16:30 trigger with next-bar fill, MGC via a one-bar backoff from a 16:59 deadline, ORB via a 16:55 session close with `process_orders_on_close=true`. All three were built to 16:55–16:59 ET deadlines. The Aegis timezone hypothesis is **refuted**: it already resolves every filter through an explicit `America/New_York` input by deliberate design. Edits applied, one input each (Aegis `eod_m` 30→0, MGC `flatMinuteET` 59→15, ORB `sessEndM` 55→30), plus an interim early-close calendar for MGC and ORB, which had none. **D15 resolved:** Striker sizing reads a static `accountSize` input of 100000, not equity, and `margin_long/short=0` rules out fund rejection — but the day soft-stop is anchored to `initial_capital` and is live in backtest, so 200K doubled the halt threshold; both re-export at 100K. Compile check unavailable (proxy 403 to TradingView) | ADR `Accepted`; five edited bodies delivered; D15 resolved |
 | 2026-09-03 | **Codex on [#289](https://github.com/Joshua-Asante/first-passage/pull/289) at `d7e133a`** (PR opened): 3 P1 + 3 P2, all verified against source and accepted. Two were defects in the orchestrator's own deliverables: the edit spec told the operator to re-export Aegis at the Pine's `$1.30`/side when the original export charged the venue's **`$3.10`** (manifest `export_implied_commission_per_side_usd: 3.1`), which would have halved its costs and inflated the replacement's P&L; and the guard blocked future entry calls without retracting orders already resting, so a stop or limit entry submitted before the cutoff could still fill after it — with the book flat, the flatten never fires to catch it. Both fixed. Also: the ADR's falsifier wrongly treated any change in net-P&L ranking as falsification when the cutoff bites the three strategies by very different amounts, so it now tests process compliance; D15's fixed-contract branch wrongly called the 200K figure cosmetic; **D16's premise was wrong — all three Equity Index legs are `long-only`, so no opposition is possible and the finding downgrades to a standing constraint**; and the spec no longer requires the trade count to fall | folded in this PR |
 | 2026-09-03 | Codex review of [#279](https://github.com/Joshua-Asante/first-passage/pull/279) (`83b17e9`): three P2 — (i) the 12:59 ET holiday-short deadline cannot stay an unmodeled dimension under G1.6 → capture the CME early-close calendar as a hashed primary-source file, and until then it caps the Phase 1 verdict at `NEEDS_CONTEXT`; (ii) per-strategy contract-cap breaches stay Phase 1 blockers (only the joint cap verdict waits for Phase 4); (iii) G1.3 is partial until the canonical ledger and its committed hash exist. All three folded in the same PR | plan unchanged; §2/§4/§9 corrected |
+| 2026-09-03 | **D12 closed.** 24-agent adversarial research pass reconstructed the CME 2022–2026 calendar; landed durably at [`ops/calendars/`](../../../ops/calendars/README.md) (85 entries, 49 early-close, 16 full-closure, 3 sub-deadline, 13 unresolved). Provenance **SECONDARY** — no CME source reachable — so the study's `NEEDS_CONTEXT` cap stands; what lifted is the empty-rows blocker | D12 |
+| 2026-09-03 | All three venue-bound Pine bodies re-pointed from the interim FX-derived list to **one 75-date union list** (49 early-close ∪ 16 full-closure ∪ 10 unverified 2027 carry-over), identical in every body, owned by `ops/calendars/`. Vindicates the Codex finding that a per-group list is unsafe — and shows the fix is one union list, not three lists. Sent to the operator; **the three re-exports are unblocked** | D11 · D12 |
+| 2026-09-03 | Pine continuation-indentation defect caught and repaired before hand-off: the date-list splice left the following label line at column 0, which breaks Pine's line-continuation rule and would have cost the operator a compile cycle on all three bodies | — |
+| 2026-09-03 | **D3 ruled** — re-partition, not raise. Envelope stays 3 × 8; constituents redrawn to Phase 1 / Phases 2–3 / Phases 4–8, and the iteration unit fixed at one dispatch → gate-read → fold cycle rather than one worker push. Recorded as a real loosening: constituent (i) reads 3 of 8 | D3 |
+| 2026-09-03 | **D5 ruled** — candidate #1 **re-admitted** at the 5.0% ceiling; §4 discharge **restored** (EOD-clock only). Withdrawal-ADR addendum ratified `Accepted` in the opposite disposition to the one it proposed; superseding-ADR requirement waived by operator direction; §4/§5 left overridden but unedited. Two research banners and four anchor links repointed | D5 |
+| 2026-09-03 | Commission totals recovered from the export bytes after the operator found none in the UI — TradingView writes each trade's full round-turn commission on **both** rows, so a column sum double-counts. True totals $7,647.64 (DJ30) / $5,585.58 (NAS100), rate $0.91/side confirmed | G1.4 |
+| 2026-09-03 | Striker re-exports **verified at 100K** from the Properties panels. NAS100 delta **$0.00**, explained: the day soft-stop's 7 newly-caught days all have the crossing trade as the day's last, so the halt is inert. **DJ30 +$287.00 on an identical 203-trade set is UNEXPLAINED** — soft-stop provably inert, `ddHit` gated off in backtest, commission-rate change ruled out arithmetically. Blocks the DJ30 G1.4 row | G1.4 · D15 |
+| 2026-09-03 | Both Strikers measured **venue-clean** — 0 force-flat violations across all 49 early-close dates. ⚠ Neither body has an early-close branch (`hour==15 and minute==45` only), so that is a property of the sample. Not fixed: a 12:30 guard would perturb 2 DJ30 trades for zero measured gain, and the lane ADR's trigger is a venue flag, never a performance result. Residual risk **R-STRIKER-EC** | D11 |
 
 ## §9 Phase 1 dispatch record (Codex, operator-relayed 2026-09-03)
 
@@ -389,9 +399,19 @@ committed `reconciliation_manifest.json` value **exactly**: 122/$28,702.75, 681/
 accounting: until now the counts and P&L reproduced only against the spec anchors, which were frozen from
 the same ingestion. G1.4's count and P&L limbs are now anchored twice.
 
-**Still outstanding, so G1.4 stays partial.** The Key-stats panel carries no **total commissions paid** and
-no **monthly net breakdown**; both live on the Performance Summary tab. Requested with the re-export.
-Win rate, profit factor and max drawdown are now anchored and were not before.
+**Update 2026-09-03 — both outstanding items resolved at source, and G1.4 gains a new blocker (§12e/§12f).**
+**Commission totals: found, in the export rather than the UI.** The operator reports no total in TradingView, only a
+percentage load — correct, but the per-trade `Commission USD` column carries it, with the trap that TradingView
+writes each trade's **full round-turn** commission on **both** its entry and exit rows. True totals are DJ30
+**$7,647.64** and NAS100 **$5,585.58**, both at a verified $0.91/side/contract (§12e). **Monthly net breakdown:
+unavailable at source** — operator-confirmed there is no monthly net row in TradingView, so G1.4 cannot ask for one
+and the runner must anchor on whole-period figures only. Win rate, profit factor and max drawdown are now anchored
+and were not before. ⚠ **New G1.4 blocker on one row:** the DJ30 100K re-export nets **$32,057.36** against this
+table's 200K figure of $31,770.36 on an **identical 203-trade set**, and the +$287.00 is **not** explained by the
+capital change — the day soft-stop is provably inert on all four newly-caught days and `ddHit` is gated off in
+backtest (§12f). The DJ30 row must not be re-anchored until that delta is discriminated. NAS100's re-export nets
+**$112,253.42**, identical to the cent, which the same mechanism predicts and which *confirms* rather than
+undermines that re-export.
 
 ⚠ **Do not read the Max DD column as survival.** These are TradingView equity drawdowns, **leg-level under
 pyramiding, carrying no firm DD geometry** — the exact failure mode `CLAUDE.md` records for the ORB-MYM
@@ -470,3 +490,436 @@ full round, and it is a worker item regardless of #286.
 **Also surfaced, unprompted:** `_RUNNER_VERSION` is still `tradeify-phase1-normalization-v1` despite
 substantial runner changes, so the manifest's `runner_version` cannot distinguish this generation from the
 last — a provenance field that has quietly stopped discriminating.
+
+### §10 addendum 2026-09-03 — commissions, monthly net, and the Striker re-exports
+
+**Monthly net is unavailable at source, permanently.** The operator reports TradingView exposes no monthly-net
+breakdown. That metric moves from *pending* to **`UNAVAILABLE_AT_SOURCE`**, and Codex records it as such in
+`tv_summary_anchors.json` alongside `missing_metrics`, distinguishing "not supplied yet" from "does not exist".
+
+⚠ **CORRECTION 2026-09-03 (Codex on #291, P1, accepted).** An earlier version of this paragraph concluded
+"so G1.4's cap must stop waiting on it." **That was wrong, and it is exactly the failure the frozen-gate
+discipline exists to prevent.** The G1.4 row in §4 — frozen before any worker output was read — requires each
+reconciliation to cover *"trade count, net P&L, win rate, profit factor, drawdown, **commissions, monthly
+totals**"*. `UNAVAILABLE_AT_SOURCE` **explains** why that requirement cannot be met; it does not **satisfy** it,
+and it does not **amend** it. Letting a source-side impossibility discharge a precommitted dimension — discovered
+only after the reports were inspected — silently weakens the gate and could unlock later phases without the
+independent reconciliation G1.4 was written to demand. **So: G1.4 stays capped, and the Phase 1 verdict stays
+`NEEDS_CONTEXT` on the monthly-totals and commissions limbs.** The only clean exits are an operator-ratified
+amendment to the frozen row, or an independent monthly reconstruction from a source that does expose it. Raised
+as **D17**. The same correction applies to the commissions limb in §12e — a recovered total that reproduces the
+runner's own arithmetic is not the independent anchor G1.4 asks for either.
+
+⚠ **The supplied commission figures are RATES, not the anchor item 11 asked for.** The operator gave
+per-contract-per-side rates: Striker MYM, Striker MNQ and ORB-MNQ **$0.91**; Vanguard MGC **$1.06**;
+Aegis **$3.10** — commission only, no slippage. Four of the five **already sit in `phase1_config.json`** as `pine_commission_per_side_usd`. ⚠ **Aegis is the exception and the distinction is load-bearing** (Codex on #291, P1, accepted): that field holds **`$1.30`**, the Pine-declared rate, while **`$3.10`** is the *export-implied and venue* rate the manifest derives. They are the two sides of `PINE_EXPORT_COMMISSION_MISMATCH`, and **`pine_commission_per_side_usd` must NOT be overwritten with `$3.10`** — doing so would erase the very mismatch the next paragraph says to preserve. The charged rate belongs in its own field, never on top of the declared one. With that distinction kept, none of the five adds an independent check: *total* commissions
+are `rate × contracts × sides`, which is exactly the quantity the runner computes. An anchor has to come from
+TradingView's own **"Commission paid"** total on the Performance tab. Until that figure arrives, total
+commissions stays unanchored and **G1.4 stays partial on that one metric**. ⚠ Per the correction above, "partial"
+here means *capped*, not *waived*: the frozen G1.4 row names commissions explicitly, so the limb cannot be closed
+by declaring the figure unobtainable. See **D17**.
+
+**What the rates do settle:** Aegis's `PINE_EXPORT_COMMISSION_MISMATCH`. The Pine declares `$1.30`/side while
+the manifest derived `export_implied_commission_per_side_usd: 3.1`; the operator now confirms **$3.10** is the
+rate actually charged. The derived value is corroborated from outside the pipeline, the warning stands as
+inventory, and the guard spec's re-export instruction to hold Aegis at `$3.10` is confirmed correct.
+
+**Striker re-exports at 100K received 2026-09-03** (hash and byte length computed without reading contents; no
+vendor bytes opened or committed). These are **candidate replacements** for the 200K exports under D15 — they
+supersede nothing and feed no re-pin until the conditions below are met (Codex on #291, P2, accepted: an earlier
+version of this sentence asserted both, contradicting the `UNVERIFIED_SETTING` block that follows it):
+
+| Export | `export_sha256` | `export_bytes` |
+|---|---|---|
+| `Striker_DJ30_v4.5_MYM_CBOT_MINI_MYM1_20260903_9d7ea.csv` | `5a5006588fa5c87628df7b1c15c8af8d8ae2250be0abb0371ea4d93665ef998e` | 47,348 |
+| `Striker_NAS100_MNQ_CME_MINI_MNQ1_20260903_30a74.csv` | `f6a93bb653d710a77f8ebde8e64639ed913171c814cd13de5f00f76d0c3d1513` | 88,221 |
+
+Both differ from the superseded 200K exports (`47,149` and `88,131` bytes). ⚠ **That proves only that these are not byte-identical copies — it does NOT prove they were re-run at `initial_capital=100000`** (Codex on #291, P2, accepted). A length change is equally consistent with a metadata, coverage or unrelated-setting difference, and the files were deliberately not read. **Both re-exports were therefore `UNVERIFIED_SETTING`.**
+
+✅ **`UNVERIFIED_SETTING` DISCHARGED 2026-09-03** — the operator supplied the TradingView **Properties** panels
+for both, each reading **Initial capital 100,000**, with Default (4-tick) detalization, Commission 0.91 per
+contract, Slippage 1 tick and Pyramiding 2. The setting is confirmed; these are genuine 100K re-runs, and §12f
+independently corroborates that from the mechanism (NAS100's exact-zero delta is what the inert day soft-stop
+predicts, and DJ30's net moved). **The two exports may now be pinned as D15-corrected sources.**
+
+⚠ **The ANCHOR re-pin stays barred, on two separate grounds.** (1) **Key-stats panels have still not arrived**,
+so the two Striker rows in `tv_summary_anchors.json` describe the superseded 200K runs and must not be compared
+against the re-run. (2) **DJ30 carries a +$287.00 net delta on an identical 203-trade set that no mechanism in
+either body explains** (§12f) — the day soft-stop is provably inert, `ddHit` is gated off in backtest, and a
+commission-rate change is ruled out arithmetically. Ground (2) binds even once the panels arrive: a Key-stats
+figure that merely restates the unexplained number anchors nothing. **NAS100 is clear on ground (2) and blocked
+only on (1); DJ30 is blocked on both.**
+
+## §12 CME calendar landing, commission totals and the Striker re-export verification (2026-09-03)
+
+### 12a — What was landed, and what it does not fix
+
+[`ops/calendars/cme_holiday_calendar_2022_2026.json`](../../../ops/calendars/cme_holiday_calendar_2022_2026.json)
++ [`README`](../../../ops/calendars/README.md). 85 dated entries, per product group
+(equity index · metals · FX), each with status, ET close time, confidence and a note; plus three
+derived lists and a 13-item `unresolved` register carrying the competing readings and the size of
+each error.
+
+⚠ **Provenance is SECONDARY, and the sources are now commit-pinned** (Codex on #291, P2, accepted: unpinned `master`/`main` URLs stop identifying the data once those branches move, and several cells were decided by choosing between *conflicting* library encodings, so an unpinned reference cannot support an audit of which revision backed which cell). All 15 raw URLs carry commit SHAs and a `source_revisions` block records them. ⚠ Honest limit, recorded in that block: they are branch tips resolved at pin time, ~1h after the research pass read the same branches unpinned — the best available reconstruction, not a proven capture. `www.cmegroup.com`, `investor.cmegroup.com` and every broker mirror
+returned 403 at the egress proxy's CONNECT layer, so **no CME primary source was fetched for any
+date**. The calendar is reconstructed from five independent third-party encodings (QuantConnect
+Lean's market-hours database, `pandas_market_calendars`, `exchange_calendars`, `vacanza/holidays`,
+one C++ reimplementation) cross-checked against in-repo measured bar panels. **The study's
+`coverage_status` therefore stays `NEEDS_CONTEXT` and the Phase 1 verdict cap does not lift.** What
+lifts is the empty-rows blocker: the force-flat audit now runs against 49 real dates instead of
+applying 16:45 ET everywhere.
+
+**Why the open disputes do not block the campaign's use of it.** All thirteen `unresolved` items bar
+one are about close **times**, not about which dates are early-close days. Tradeify's holiday-short
+deadline is a blanket **12:59 ET account-level** rule with no per-product carve-out
+([`ops/prop_envelope_default.md`](../../../ops/prop_envelope_default.md), article `10495876`), so the
+deadline is insensitive to every one of them. Date **membership** is what matters here, and it is
+stable across all the competing readings.
+
+### 12b — The union rule, and why the Codex finding was right
+
+Codex flagged that copying Aegis's FX-derived list into the metals and equity-index bodies was
+unsafe. The research vindicates that, and shows the fix is **not** three per-group lists:
+
+| Product group | Ordinary US federal holiday |
+|---|---|
+| Equity index (MYM, MNQ) | early close **13:00 ET** |
+| Metals (MGC) | early close **14:30 ET** |
+| FX (6J) | often **NORMAL** — CME FX stopped observing US-holiday early closes from 2022 |
+
+A per-group list is unsafe in the FX direction: an FX-specific list would omit an ordinary federal
+holiday and leave a 6J position resting past the venue's 12:59 ET deadline. The correct construction
+is the **union** over all three groups, identical in every body. All three venue-bound Pine bodies
+now carry the same 75-date list (49 early-close ∪ 16 full-closure, 2022–2026 verified, plus 10
+unverified 2027 carry-over rows kept because adding a date is conservative and removing one is not).
+
+**What the interim list actually got wrong.** It was a decent US-holiday list — 50 dates. Its real
+defect is three **missing** dates, and they are exactly the dangerous ones (12c).
+
+⚠ **CORRECTION 2026-09-03 (Codex on #291, P2, accepted) — the union was built on a false premise.**
+This section originally justified adding the 16 `full_closure_dates` to the guard on the grounds
+that fully-closed dates are "inert in a guard (no bars, no effect)". **That is wrong.** A Pine guard
+keys on the bar's **wall-clock** date; `full_closure_dates` rows are keyed to the **CME trade
+date**; and the calendar's own `day_basis` note records that 2022-12-26, 2023-01-02 and their
+siblings carry real Globex bars 18:00–24:00 ET on that wall-clock date — the reopen belonging to the
+*next* trade date. Listing them marks that reopened session short, which can force a flatten or
+block entries in a session that is not short. The correct guard list is **`venue_flat_dates`
+alone**; `ops/calendars/` is corrected and now ships 49 + 10 carry-over.
+
+**Measured consequence for this campaign: none.** Across all five current-of-record exports there is
+**zero activity on any of the 16 full-closure dates** and **zero stamps at or after 18:00 ET
+anywhere** — every one of these bodies is day-session-only, so the evening reopen is never reached.
+⚠ But that is a property of these five session filters, not of the guard, and it is exactly the
+distinction the original "no bars, no effect" claim elided. **The three shipped bodies keep the
+union list deliberately:** re-cutting the Pine would move its pinned hash, invalidate exports
+already taken against it, and risk consuming the lane's single permitted attempt — for a change
+proven to alter nothing. The correction lands at each body's next legitimate edit, and becomes
+load-bearing the moment a strategy trades the evening session.
+
+### 12c — Three dates a 12:59 ET deadline structurally cannot express
+
+| Date | Holiday | Closes |
+|---|---|---|
+| 2023-04-07 | Good Friday + NFP | equity **09:15 ET**, FX **11:15 ET**, metals closed |
+| 2026-04-03 | Good Friday + NFP | equity **09:15 ET**, FX **11:15 ET**, metals closed |
+| 2025-01-09 | National Day of Mourning (Carter) | equity **09:30 ET** |
+
+On these dates the session has already ended before 12:59, so no force-flat bar exists to fire on.
+They need a **no-trade block**, not a deadline. The three bodies' session windows all open at or
+after 09:00–09:15 ET, so in practice they either never trade or trade a single bar; the dates are in
+the list anyway, where they are inert but documented. **Aegis 6J is the live exposure** — 6J trades
+through both Good Fridays until 11:15 ET, an hour before its 12:15 ET cutoff can fire. Codex checks
+the Aegis ledger for holds on those two dates before Phase 2.
+
+### 12d — Measured: both Strikers are venue-clean, and the mechanism is absent anyway
+
+Ran the two re-exported Striker ledgers against the 49-date list under the campaign's own force-flat
+predicate (`entry < deadline <= exit`, deadline 12:59 ET):
+
+| Strategy | Trades | Force-flat violations | Latest stamp on any early-close date |
+|---|---|---|---|
+| Striker DJ30 MYM | 203 | **0** | 12:45 (2024-11-29) |
+| Striker NAS100 MNQ | 378 | **0** | 12:30 (2025-07-03) |
+
+⚠ **That is a property of the sample, not of the strategies.** Both Striker bodies force-flat on an
+exact `hour == 15 and minute == 45` ET bar with **no early-close branch at all**. On a 13:00 ET
+close that bar never prints, `eodHaltedToday` never latches, and a position open at the close carries
+past the venue deadline. It has not happened in four years and 581 trades; the mechanism that would
+prevent it does not exist.
+
+**Not fixed here, deliberately.** Adding a 12:30 ET early-close branch would perturb the DJ30 export
+— two trades, both legs of one pyramided position on 2024-11-29, are open at 12:30 — for **zero**
+measured legality gain, and the [re-expression lane ADR](../../adr/2026-09-03-venue-legality-re-expression-lane.md)
+§4 makes the trigger a venue flag and never a performance result. A clean audit is not a venue flag.
+Recorded as **residual risk R-STRIKER-EC** for the live-deployment gate, where a single breach
+matters and a four-year clean sample is not an argument. On NAS100 the same guard is provably inert
+(0 trades open at 12:30 on any of the 49 dates), so it can be added there at no cost whenever the
+operator wants it.
+
+### 12e — Commission totals: the operator could not find them because TradingView duplicates them
+
+The operator reports no commission total in the UI, only a percentage load. The totals **are** in the
+export, with one trap: TradingView writes each trade's **full round-turn** commission on **both** its
+entry row and its exit row, so a naive column sum double-counts.
+
+| Strategy | Column sum (double-counted) | **True total commission** | Implied rate |
+|---|---|---|---|
+| Striker DJ30 MYM | $15,295.28 | **$7,647.64** | $0.91/side/contract ✓ |
+| Striker NAS100 MNQ | $11,171.16 | **$5,585.58** | $0.91/side/contract ✓ |
+
+Verified against the bytes: trade 1 is qty 13 with $23.66 on *both* rows, and 13 × $0.91 × 2 =
+$23.66 exactly. The implied per-row rate is $1.82 = 2 × $0.91 on both files, so the operator's stated
+$0.91/contract rate is confirmed applied. Codex uses the halved figure and adds a regression asserting
+the entry-row and exit-row commissions are equal, so the trap cannot be walked into silently.
+
+⚠ **This answers the operator's question and does NOT lift G1.4's commission limb.** Codex's finding on
+#291 stands unchanged: TradingView computes that column as `rate × qty × 2`, which is exactly what the
+runner computes, so summing it reproduces the runner's own arithmetic rather than checking it. The
+figures above are the **totals the operator could not find**, not an independent anchor. G1.4's
+total-commissions metric stays **partial** until TradingView's own **"Commission paid"** summary figure
+is supplied. ⚠ **And if that figure does not exist in the UI either, the limb does NOT thereby close.** An
+earlier version of this sentence said it would move to `UNAVAILABLE_AT_SOURCE` "rather than staying open
+indefinitely" — the same defect Codex caught on the monthly-net limb (#291 P1), reproduced here. A frozen gate
+row is not discharged by discovering, after reading the output, that its evidence is unobtainable. The limb
+stays capped pending **D17**.
+
+### 12f — Striker re-export verification, and one unexplained delta
+
+The Properties panels close the "re-exports unverified" finding: **Initial capital 100,000** on both,
+with Default (4 ticks) detalization, Commission 0.91 per contract, Slippage 1 tick, Pyramiding 2,
+leverage Infinity, Limit order execution `Requested price`. Detalization and cost model match the
+other three panels, so the re-exports are comparable.
+
+| Strategy | Trades (200K panel → 100K re-export) | Net (200K panel) | Net (100K re-export) | Delta |
+|---|---|---|---|---|
+| Striker NAS100 MNQ | 378 → 378 | $112,253.42 | **$112,253.42** | **$0.00** |
+| Striker DJ30 MYM | 203 → 203 | $31,770.36 | **$32,057.36** | **+$287.00** |
+
+**NAS100's zero delta is explained and is the expected result.** The only live `initial_capital`
+path in either body is the day soft-stop (`ddHit`'s two drawdown terms are gated off by
+`backtestMode`; `calcSize()` uses the static `accountSize` input, not equity). Halving the basis
+moves NAS100's threshold from −$3,000 to −$1,500, which newly catches **7** days — but on **all 7**
+the threshold-crossing trade is that day's **last** trade, so the halt blocks nothing. Identical net
+to the cent is exactly what the mechanism predicts. The re-export is genuine, not stale.
+
+⚠ **DJ30's +$287.00 is NOT explained, and G1.4 must not anchor that row until it is.** The same test
+on DJ30 gives **4** newly-caught days and **0** where the halt would have changed behaviour, so the
+soft-stop cannot be the cause either. A commission-rate change is ruled out arithmetically: $287.00
+over 8,404 contract-sides is $0.034/side, not a rate. Candidates for Codex to discriminate, in order
+of cheapness: (1) the §10 panel figure was captured before some other input settled — check the
+panel's own cost/detalization against 12f; (2) a Deep-splice depth difference between the two runs;
+(3) a second `initial_capital`-dependent path this Rule 0 read missed. **Trade count is identical at
+203, so whatever moved, it moved P&L without moving the trade set** — which is the narrow and
+informative shape of the question.
+
+
+### 12g — D7 GitHub Support ticket, drafted 2026-09-03 (operator sends)
+
+The operator authorised opening the ticket. **It cannot be opened from this session** — GitHub Support
+runs at `support.github.com` behind an authenticated browser session, and the GitHub MCP tool surface
+does not reach it. So: **yes, you need to push send.** Go to
+<https://support.github.com/contact> → *Account or profile* → *Data removal / cached view*, and paste
+the body below verbatim. Nothing in it is sensitive: the commit SHA is already public in this repo's
+own documents, and the files named are vendor-licensed market data, not account data.
+
+> **Subject:** Purge unreachable objects from a dangling commit on a public repository
+>
+> Repository: `Joshua-Asante/first-passage` (public).
+> Commit: `706a03e`, formerly on the branch `codex/mym-breakout-research`.
+>
+> That commit added three vendor-licensed market-data CSV files (612,296 added lines) that should
+> never have been pushed to a public repository. The branch was deleted on 2026-09-03, but deleting a
+> ref does not purge the objects: anyone holding the commit hash can still fetch them.
+>
+> I have verified the commit is genuinely unreachable, not merely un-tipped. Method: a bare clone
+> fetching **all 305 refs** — every branch, every `refs/pull/*/head`, every tag — with
+> `--filter=blob:none`, then `git merge-base --is-ancestor` against each ref. Result: `706a03e` is
+> reachable from **0 of 305**. As a positive control, its parent `1a79c985` (the head of PR #259)
+> resolves as reachable from **49** refs, so the method does detect reachability. The commit was
+> pushed onto the branch after #259 merged and never entered a pull request, so no
+> `refs/pull/*/head` retains it.
+>
+> It is nonetheless still being served: the commit API returned its full file list to me today, and
+> the object arrived in that filtered fetch's pack.
+>
+> Please run the unreachable-object garbage collection on this repository so that `706a03e` and its
+> associated blobs return 404. Please confirm when it is complete.
+
+**This row closes only on that confirmation** — not on the send, and not on the ancestry proof, which
+establishes only that the objects are *eligible* for collection.
+
+
+## §13 Venue-bound re-export gate read (2026-09-03) — measurements
+
+The figures below are the orchestrator's own measurements, computed from the export bytes with the
+campaign's own force-flat predicate (`entry < deadline <= exit`, 12:59 ET on a `venue_flat_dates`
+date, 16:45 ET otherwise) against
+[`ops/calendars/`](../../../ops/calendars/cme_holiday_calendar_2022_2026.json). No figure here is a
+Phase 1 verdict — the runner's own audit on the re-pinned bytes is the verdict, and this section is
+the independent cross-check it will be compared against.
+
+⚠ **Standing process change, operator 2026-09-03 (see §6 D18):** an orchestrator-side adversarial
+pass was launched over these measurements and was **stopped**. Codex's review on the worker PR is
+the campaign's adversarial layer; a second one on the same inputs is duplicated spend.
+
+### 13a — The re-expression discharged every violation, at 1.86% of combined net
+
+| Strategy | Trades | Net | Force-flat violations |
+|---|---|---|---|
+| ORB-MNQ recon v7 | 681 → **681** (+0) | $47,533.16 → **$48,118.16** (+$585.00) | 310 → **0** |
+| Vanguard MGC v0.4 | 343 → **338** (−5) | $20,388.04 → **$18,709.48** (−$1,678.56) | 226 → **0** |
+| Aegis 6J1 | 122 → **121** (−1) | $28,702.75 → **$27,996.05** (−$706.70) | 9 → **0** |
+| **Combined** | | $96,623.95 → **$94,823.69** (−1.86%) | **545 → 0** |
+
+Zero cross-date holds in any of the three; zero Friday-to-Sunday holds (ORB-MNQ had 3). Declared
+per-side commission rates confirmed **applied** from the bytes on all three — $0.91 (ORB-MNQ),
+$1.06 (MGC), $3.10 (Aegis) — each recovered as `col_sum / (2 × Σqty)` after halving TradingView's
+duplicated round-turn column (§12e).
+
+⚠ **ORB-MNQ's net went UP while its trade count held at exactly 681.** That is the expected
+signature of a session-bound change, not of a different trade set: `sessEndM` 55→30 moves the
+last-bar flatten from 16:45 to 16:15, so the same trades exit at different prices. It is recorded
+here because "net improved" is precisely the shape that would look like tuning if the record did
+not show the mechanism — see the lane ADR's §4 bar on entering the lane for a performance result,
+and §13d.
+
+### 13b — Vanguard MGC: the first capture was defective and is superseded
+
+The first venue-bound MGC export (`…ca304.csv`) carried **87 trades spanning 2025-10-06 to
+2026-08-25** — roughly 10 months against the campaign's four-year window, with ~3 years of history
+missing. Its venue audit was clean, but a truncated capture is not a measurement of the same
+configuration. The operator re-captured the same Pine on a full chart (`…0e3e3.csv`, sha256
+`7b9cc65c…`, 74,473 bytes): **338 trades, 2022-09-08 → 2026-08-25, 0 violations.**
+
+⚠ **This does NOT consume MGC's one permitted replacement.** The lane ADR §4 allows one
+replacement per strategy and voids a second *attempt*, because a second attempt would be a search
+over session bounds. The two MGC captures run **byte-identical Pine**: nothing about the
+expression was searched, tuned, or re-chosen between them. What differed was the chart's loaded
+history — a defect in the capture, not a second configuration. Reading it the other way would
+retire a strategy for a charting accident and would create an incentive to conceal a bad capture,
+which is the opposite of what the one-attempt rule is for. The first capture is recorded as
+`DEFECTIVE_CAPTURE`, not as attempt 1.
+
+### 13c — Two residuals found in the MGC bytes
+
+* **`R-MGC-LATEADD`.** A pyramid `Add` can still open on the flat bar itself. Twice — 2025-08-07
+  and 2025-10-30 — an `Add` entered at exactly **16:15**, the flatten bar, and exited **16:30**.
+  Both are legal with 15 minutes of margin to the 16:45 deadline, and neither is a violation. But
+  the guard flattens the book without blocking a same-bar entry, so the margin is a property of
+  the bar grid rather than of the guard. A live concern before a deployment gate, not a backtest
+  one.
+* **The union rule's cost was measured and is zero here.** 2025-01-09 is a `sub_deadline_close_dates`
+  entry where **equity index closed 09:30 ET while metals ran a NORMAL session** — so the union
+  list flattens MGC on a day its own product group was not short. MGC traded it (entry 11:15) and
+  closed on its own signal at **12:00**, before the 12:15 guard could fire. No forced exit, no cost.
+  One measured instance of the trade-off §12b documents.
+
+### 13d — What is now stale, and what the lane ADR forbids carrying
+
+The three re-expressed legs' bytes have changed, so per the lane ADR §4 the **original
+expression's Phase 1 verdict, reconciliation anchors and TradingView summary anchors must not be
+carried onto the replacement**. Concretely stale for ORB-MNQ, MGC and Aegis: their `§10` anchor
+rows, their `phase1_config.json` source hashes and byte counts, their `reconciliation_manifest.json`
+rows, and any `RESULTS.md` figure derived from them. New Key-stats panels are owed for all three
+before G1.4 can re-anchor; the figures in 13a are export-derived and are **not** a substitute for
+an independent panel.
+
+
+## §14 Gate read — Codex PR #292 @ `80abcec` (draft, 2026-09-03)
+
+**Verdict: `NEEDS_CONTEXT` holds. The engineering is sound and the freeze must be re-run — every
+one of the five frozen sources is superseded.** This is relay lag, not worker error: three sources
+were re-exported and two re-captured after `80abcec` was pushed, and the calendar the runner needs
+is on an unmerged branch.
+
+What landed is substantial and is not in question: runner `v2`, pin references that resolve against
+real `PORT_MANIFEST.sha256` entries and bind digest **and** basename, exact parsed-snapshot fee
+fingerprints, wrong-export-size and wrong-Pine-size regressions, typed zero-trade ledgers, D13
+`ACCEPTED_UNMODELED`, a publisher recovery fix with real-file fault injection, and 2,455 tests
+passing with `--tier check` exit 0. The twelve re-anchor items are addressed.
+
+### 14a — P1: all five frozen sources are stale
+
+| Strategy | Frozen bytes | Current bytes | Current sha256 (16) |
+|---|---|---|---|
+| `aegis_6j1` | 28,612 | **28,364** | `71e732fc92d28a56` |
+| `orb_mnq_recon_v7` | 160,584 | **160,557** | `bff235ea0934dace` |
+| `vanguard_mgc_v04` | 75,654 | **74,473** | `7b9cc65c98945055` |
+| `striker_dj30_mym_pyramid_250` | 47,149 | **47,348** | `5a5006588fa5c876` |
+| `striker_nas100_mnq_dow_wed_excluded` | 88,131 | **88,221** | `f6a93bb653d710a7` |
+
+The first three are the **pre-re-expression** exports carrying 310 / 226 / 9 force-flat violations;
+their replacements carry **zero** (§13). The last two are the **superseded 200K** Striker runs —
+`47,149` and `88,131` are exactly the byte counts Codex itself named as superseded on #291. So the
+v2 generation is a correct normalization of the wrong generation, on every leg.
+
+### 14b — P1: the early-close calendar is still empty, and the fix is blocked on a merge
+
+Codex's committed calendar is unchanged: `coverage_status: NEEDS_CONTEXT`, `sources: []`,
+`rows: []`, hash `742e8350…`. The verified 49-date calendar exists
+([`ops/calendars/`](../../../ops/calendars/cme_holiday_calendar_2022_2026.json)) but sits on
+**PR #291, unmerged**. ⚠ **Hard sequencing dependency: #291 must merge before Codex can populate
+the rows.** Until then the 12:59 ET dimension stays `NEEDS_CONTEXT` and Codex is right not to
+invent dates. Note the schema Codex built requires a per-year `sources[]` entry with a
+`capture_basename` whose sha256 matches a file on disk — the landed calendar is **secondary-sourced
+and has no per-year CME capture**, so populating rows will require either a schema accommodation or
+per-year capture files. That is a real design question, not a formality.
+
+### 14c — P1: D17 supersedes the G1.4 partial
+
+The PR states *"Independent commissions and monthly totals remain absent, so G1.4 is partial."*
+That was correct when written and is now superseded by the **D17 ruling** (§6): monthly totals are
+**reconstructed from the row-level ledger** — feasibility proven, exact reconciliation on all five,
+and zero month-spanning holds so the attribution basis is moot — and commissions is **amended out**
+of the frozen row. Codex implements the reconstruction and records the amendment.
+
+### 14d — The tie-batching question: APPROVED, and it is strictly safe
+
+Codex asked whether it may correct the mandated tie batching to compute a true causal minimum.
+**Approved.** The orchestrator's first instinct was that this loosens a safety-relevant cap check;
+**a Rule 0 read of `_exposure_bounds` and its call site refutes that.** The verdict ladder is:
+
+```
+if   peak_min > cap:   CONTRACT_CAP_BREACH                  # every ordering breaches
+elif peak_max > cap:   CAP_STATUS_AMBIGUOUS_AT_TIMESTAMP_TIE
+else:                  clean
+```
+
+A definite breach is asserted only when the **lower** bound clears the cap, and ambiguity only when
+the **upper** bound does. So the current defect — `peak(upper_bound=False)` ordering
+`(-prior_exits, +entries, -zero_exits)` batches a zero-duration trade's entry alongside a lasting
+entry and reports 130 where an interleaved ordering peaks at 70 — produces **false definite
+breaches**, never false cleans. Correcting it can only move a case `BREACH → AMBIGUOUS`. It can
+never move `AMBIGUOUS → clean`, because clean requires `peak_max <= cap` and the fix does not touch
+`peak_max`; and if `peak_max <= cap` then `peak_min <= peak_max <= cap` already, so it was never a
+breach. **The correction cannot weaken the cap check in any direction.**
+
+Conditions: (i) touch only the `upper_bound=False` limb — `peak(upper_bound=True)` stays
+byte-identical, it is the conservative limb and the ambiguity trigger; (ii) add a regression using
+Codex's own example (prior 50-micro exit, zero-duration 70-micro, lasting 60-micro entry at one
+timestamp) asserting min **70** and max unchanged; (iii) add a property test asserting
+`peak_min <= peak_max` always; (iv) confirm the five peaks are unchanged, as predicted.
+
+⚠ **One peak sits exactly at the cap.** `Tradeify_Select_100K` carries `micro_contract_cap: 80`
+(`core/firm_rules.py`) and the reported peaks are **80** / 4 / 77 / 77 / 6. The 80 is clean only
+because the comparison is a strict `>`. Any re-export that nudges it to 81 flips to a definite
+breach, and three of the five legs were re-exported today — so this must be re-checked on the
+re-pinned bytes, not carried.
+
+⚠ **The deferred book-level cap verdict is load-bearing, not housekeeping.** The venue cap is
+**account-aggregate**, not per-strategy ([`prop_envelope_default.md`](../../../ops/prop_envelope_default.md),
+"100K 8/80"). A naive sum of the per-strategy peaks is **244 against a cap of 80** — 3× over. The
+Phase 4 deferral is correct as sequencing, but no reader should mistake five passing per-strategy
+checks for a book that fits.
+
+### 14e — What Codex owes next
+
+1. Re-pin all five sources to the current-of-record bytes (14a) and re-run the freeze.
+2. Wait on #291 merging, then populate the calendar rows — and resolve the per-year
+   `capture_basename` requirement against a secondary-sourced calendar (14b).
+3. Implement D17: monthly reconstruction, commissions amendment (14c).
+4. Apply the tie-batching correction under the four conditions (14d).
+5. Re-check the at-cap 80 on the re-pinned bytes.
+6. Re-run the venue audit — the three re-expressed legs should now report **zero** force-flat
+   violations, which is the independent confirmation of §13's orchestrator-side measurement.
+
