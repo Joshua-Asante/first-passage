@@ -50,9 +50,10 @@ def test_runner_propagates_independent_summary_evidence(tmp_path, mode):
         detail = json.loads((output / "strategy_reports" / f"{record['strategy_id']}.json").read_bytes())
         assert detail["summary_comparisons"] == record["summary_comparisons"]
         assert detail["summary_source_note"] == record["summary_source_note"]
-        assert len(record["summary_comparisons"]) >= 7
+        assert len(record["summary_comparisons"]) == 6
+        assert all("monthly_net_pnl" not in row["metric"] for row in record["summary_comparisons"])
         assert record["net_pnl_usd"] == "0.18"
-        assert "monthly_net_pnl_usd" in report
+        assert "monthly_net_pnl_usd" not in report
         if mode == "missing": assert all(r["status"] == "MISSING_ANCHOR" for r in record["summary_comparisons"])
         elif mode == "partial": assert any(r["status"] == "MISSING_ANCHOR" for r in record["summary_comparisons"])
         else: assert all(r["status"] != "MISSING_ANCHOR" for r in record["summary_comparisons"])
@@ -119,6 +120,44 @@ def test_summary_snapshot_hash_survives_later_file_change(tmp_path, monkeypatch)
     assert json.loads(result.manifest_bytes)["inputs"]["tv_summary_anchors_sha256"] == digest
 
 
+def test_d17_runner_publishes_only_hashed_local_monthly_ledgers(tmp_path):
+    """Publishing a monthly map in a tracked result would turn derived ledger data into an anchor."""
+    source_dir, config, ids = _five_source_fixture(tmp_path)
+    anchors = {
+        "claim_class": "EXPLORATORY",
+        "coverage_status": "NEEDS_CONTEXT",
+        "coverage_note": "Replacement Key-stats panels are required for all five sources.",
+        "d17_policy": {
+            "ruling_date": "2026-09-03", "ruling_ref": "campaign-state §6 D17",
+            "monthly_totals": "RECONSTRUCTED", "commissions": "AMENDED_OUT",
+            "reason": "Monthly totals are row-ledger reconstructions and commissions have no independent total.",
+        },
+        "strategies": [],
+    }
+    (config.parent / "tv_summary_anchors.json").write_text(json.dumps(anchors), encoding="utf-8")
+
+    output = tmp_path / "out"
+    result = run_phase1.run_campaign(config, source_dir, output)
+    manifest = json.loads(result.manifest_bytes)
+    report = result.report_bytes.decode("utf-8")
+
+    assert manifest["runner_version"] == "tradeify-phase1-normalization-v3"
+    assert manifest["d17_policy"] == anchors["d17_policy"]
+    assert "monthly_net_pnl" not in json.dumps(manifest)
+    assert "monthly_net_pnl" not in report
+    assert "independently reconciled" not in report
+    assert set(manifest["local_monthly_reconciliation_sha256"]) == set(ids)
+    for strategy_id in ids:
+        local_path = output / "monthly_reconciliation" / f"{strategy_id}.json"
+        local = json.loads(local_path.read_bytes())
+        record = next(row for row in manifest["strategies"] if row["strategy_id"] == strategy_id)
+        assert sha256(local_path.read_bytes()).hexdigest() == manifest["local_monthly_reconciliation_sha256"][strategy_id]
+        assert record["monthly_reconciliation"]["bucket_count"] == local["bucket_count"]
+        assert record["monthly_reconciliation"]["comparison_status"] == "RECONSTRUCTED"
+        assert all(comparison["metric"] not in {"total_commissions_usd", "monthly_net_pnl_usd"}
+                   for comparison in record["summary_comparisons"])
+
+
 def test_fee_snapshot_hash_survives_later_file_change(tmp_path, monkeypatch):
     source_dir, config, _ = _five_source_fixture(tmp_path)
     fee_path = config.parent / "tradeify_commission_schedule.json"
@@ -137,7 +176,7 @@ def test_fee_snapshot_hash_survives_later_file_change(tmp_path, monkeypatch):
     assert all(row["venue_commission_per_side_usd"] == "0.91" for row in manifest["strategies"])
 
 
-def test_runner_v2_echoes_explicit_accepted_roll_policy(tmp_path):
+def test_runner_v3_echoes_explicit_accepted_roll_policy(tmp_path):
     from test_tradeify_phase1_identity_policy import accepted_policy, OBLIGATIONS
     source_dir, config, _ = _five_source_fixture(tmp_path)
     payload = json.loads(config.read_bytes())
@@ -145,9 +184,9 @@ def test_runner_v2_echoes_explicit_accepted_roll_policy(tmp_path):
     config.write_text(json.dumps(payload), encoding="utf-8")
     result = run_phase1.run_campaign(config, source_dir, tmp_path / "out")
     manifest = json.loads(result.manifest_bytes)
-    assert manifest["runner_version"] == "tradeify-phase1-normalization-v2"
+    assert manifest["runner_version"] == "tradeify-phase1-normalization-v3"
     assert manifest["continuous_contract_roll_policy"] == accepted_policy()
-    assert "tradeify-phase1-normalization-v2" in result.report_bytes.decode()
+    assert "tradeify-phase1-normalization-v3" in result.report_bytes.decode()
     assert "ACCEPTED_UNMODELED" in result.report_bytes.decode()
     for obligation in OBLIGATIONS:
         assert obligation in result.report_bytes.decode()

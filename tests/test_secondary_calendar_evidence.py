@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from datetime import date
 from hashlib import sha256
+from pathlib import Path
 
 import pytest
 
@@ -101,6 +102,78 @@ def secondary_fixture(tmp_path):
     wrapper_path = tmp_path / "secondary_wrapper.json"
     wrapper_path.write_text(json.dumps(wrapper), encoding="utf-8")
     return wrapper_path, wrapper, source_path, repo_root
+
+
+def d19_acceptance():
+    return {
+        "decision": "D19",
+        "disposition": "ACCEPTED_SECONDARY",
+        "ruling_date": "2026-09-03",
+        "ruling_ref": "Operator ruling 2026-09-03; campaign-state §6 D19: secondary CME calendar provenance accepted.",
+    }
+
+
+def test_complete_secondary_requires_the_exact_d19_acceptance(tmp_path):
+    """Calling incomplete secondary provenance complete without D19 would overstate the evidence."""
+    wrapper_path, wrapper, _, repo_root = secondary_fixture(tmp_path)
+    wrapper["coverage_status"] = "COMPLETE"
+    wrapper_path.write_text(json.dumps(wrapper), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="D19"):
+        load_secondary_early_close_calendar(wrapper_path, repo_root=repo_root)
+
+    wrapper["provenance_acceptance"] = d19_acceptance()
+    wrapper_path.write_text(json.dumps(wrapper), encoding="utf-8")
+    calendar = load_secondary_early_close_calendar(wrapper_path, repo_root=repo_root)
+
+    assert calendar.coverage_status == "COMPLETE"
+    assert calendar.evidence_kind == "SECONDARY"
+    assert calendar.evidence_metadata["provenance_acceptance"] == d19_acceptance()
+
+
+def test_d19_complete_rejects_a_covered_year_without_a_venue_flat_date(tmp_path):
+    """D19 accepts provenance, never a fabricated empty year of calendar evidence."""
+    wrapper_path, wrapper, source_path, repo_root = secondary_fixture(tmp_path)
+    source = _source_calendar()
+    source["coverage_start"] = "2025-01-01"
+    source["coverage_end"] = "2026-12-31"
+    source["entries"] = [entry for entry in source["entries"] if entry["date"] != "2026-01-05"]
+    source["derived"]["venue_flat_dates"] = {
+        "rule": "Union of EARLY_CLOSE dates.", "count": 1, "dates": ["2026-04-03"],
+    }
+    raw = json.dumps(source).encode("utf-8")
+    source_path.write_bytes(raw)
+    wrapper.update(
+        coverage_start="2025-01-01", coverage_end="2026-12-31", coverage_status="COMPLETE",
+        provenance_acceptance=d19_acceptance(),
+        source_calendar={"repo_path": "ops/calendars/cme_holiday_calendar_2022_2026.json", "sha256": sha256(raw).hexdigest()},
+        rows=[{"date": "2026-04-03", "deadline_local": "12:59 America/New_York"}],
+    )
+    wrapper_path.write_text(json.dumps(wrapper), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="each covered year"):
+        load_secondary_early_close_calendar(wrapper_path, repo_root=repo_root)
+
+
+def test_checked_in_d19_wrapper_binds_the_lf_blob_and_all_venue_flat_dates():
+    """The accepted wrapper must bind the tracked LF bytes, never a Windows checkout hash or closure union."""
+    repo_root = Path(__file__).parents[1]
+    campaign = repo_root / "lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09"
+    source_path = repo_root / "ops/calendars/cme_holiday_calendar_2022_2026.json"
+    source = json.loads(source_path.read_bytes())
+
+    calendar = load_secondary_early_close_calendar(
+        campaign / "cme_early_close_calendar.json", repo_root=repo_root,
+    )
+
+    venue_flat = source["derived"]["venue_flat_dates"]["dates"]
+    assert calendar.coverage_status == "COMPLETE"
+    assert calendar.source_calendar_sha256 == "2698f2688cce582b08df58516fd770fa4a71a18de04870d9c14511731ea181e9"
+    assert calendar.source_calendar_sha256 == sha256(source_path.read_bytes()).hexdigest()
+    assert sorted(day.isoformat() for day in calendar.early_close_dates) == venue_flat
+    assert len(venue_flat) == 49
+    assert not set(venue_flat) & set(source["derived"]["full_closure_dates"]["dates"])
+    assert calendar.evidence_metadata["provenance_acceptance"] == d19_acceptance()
 
 
 def test_secondary_union_is_account_level_and_preserves_caveats(tmp_path, fee_schedule):
@@ -214,3 +287,24 @@ def test_runner_echoes_populated_secondary_without_lifting_context_cap(tmp_path,
     assert "full-closure inventory (1): 2026-12-25" in rendered
     assert "Sub-deadline inventory (1):" in rendered
     assert "2026-04-03 Good Friday — equity_index=09:15, fx=11:15" in rendered
+
+
+def test_runner_keeps_secondary_caveats_visible_when_d19_allows_complete(tmp_path, monkeypatch, synthetic_pin_manifest):
+    """A COMPLETE label must not hide that D19 accepts date membership rather than a primary calendar."""
+    source_dir, config, _ = _five_source_fixture(tmp_path)
+    wrapper_path, wrapper, _, repo_root = secondary_fixture(tmp_path)
+    wrapper.update(coverage_status="COMPLETE", provenance_acceptance=d19_acceptance())
+    wrapper_path.write_text(json.dumps(wrapper), encoding="utf-8")
+    (config.parent / "cme_early_close_calendar.json").write_bytes(wrapper_path.read_bytes())
+    monkeypatch.setattr(secondary_calendar_evidence, "_REPO_ROOT", repo_root)
+
+    result = run_phase1.run_campaign(config, source_dir, tmp_path / "out")
+    manifest = json.loads(result.manifest_bytes)
+    rendered = result.report_bytes.decode("utf-8")
+
+    assert manifest["cme_early_close_calendar"]["coverage_status"] == "COMPLETE"
+    assert manifest["cme_early_close_calendar"]["evidence_kind"] == "SECONDARY"
+    assert manifest["cme_early_close_calendar"]["evidence_metadata"]["provenance_acceptance"] == d19_acceptance()
+    assert "D19" in rendered
+    assert "SECONDARY" in rendered
+    assert "primary-CME upgrade" in rendered

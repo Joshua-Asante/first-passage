@@ -38,6 +38,110 @@ def load(api, tmp_path, payload):
     return api.load_summary_anchors(path, [_spec()]), path
 
 
+def d17_payload():
+    """The operator policy deliberately retires stale panel values, not scalar requirements."""
+    return {
+        "claim_class": "EXPLORATORY",
+        "coverage_status": "NEEDS_CONTEXT",
+        "coverage_note": "Replacement-source Key-stats panels are still required.",
+        "d17_policy": {
+            "ruling_date": "2026-09-03",
+            "ruling_ref": "campaign-state §6 D17",
+            "monthly_totals": "RECONSTRUCTED",
+            "commissions": "AMENDED_OUT",
+            "reason": "Monthly values come from the canonical row ledger; no independent commission total exists.",
+        },
+        "strategies": [],
+    }
+
+
+def test_d17_policy_keeps_five_scalar_requirements_without_silent_waiver(api, tmp_path):
+    """Removing D17's policy must not turn absent replacement panels into acceptable evidence."""
+    inventory, _ = load(api, tmp_path, d17_payload())
+
+    rows, issues = api.reconcile_summary(accounting(), _spec(), inventory)
+
+    assert inventory.d17_policy["monthly_totals"] == "RECONSTRUCTED"
+    assert inventory.d17_policy["commissions"] == "AMENDED_OUT"
+    assert [row["metric"] for row in rows] == [
+        "trade_count", "net_pnl_usd", "win_rate_pct", "profit_factor", "max_drawdown_usd",
+    ]
+    assert all(row["status"] == "MISSING_ANCHOR" for row in rows)
+    assert not issues
+
+
+@pytest.mark.parametrize("mutation", ["missing", "extra", "bad_monthly", "bad_commissions", "monthly_metric", "commission_metric"])
+def test_d17_policy_rejects_noncanonical_or_independent_retired_dimensions(api, tmp_path, mutation):
+    """A permissive D17 schema could falsely compare an unanchored commission or monthly total."""
+    payload = d17_payload()
+    if mutation == "missing":
+        payload["d17_policy"].pop("reason")
+    elif mutation == "extra":
+        payload["d17_policy"]["extra"] = True
+    elif mutation == "bad_monthly":
+        payload["d17_policy"]["monthly_totals"] = "MISSING_ANCHOR"
+    elif mutation == "bad_commissions":
+        payload["d17_policy"]["commissions"] = "RECONCILED"
+    else:
+        payload["strategies"] = [{
+            "strategy_id": "fixture", "export_sha256": "0" * 64,
+            "source_note": "A future independent panel", "missing_metrics": [],
+            "metrics": {
+                "trade_count": 2, "net_pnl_usd": "6.00", "win_rate_pct": "50.00",
+                "profit_factor": "2.50", "max_drawdown_usd": "4.00",
+            },
+        }]
+        retired = "monthly_net_pnl_usd" if mutation == "monthly_metric" else "total_commissions_usd"
+        payload["strategies"][0]["metrics"][retired] = {} if retired.startswith("monthly") else "3.64"
+    with pytest.raises(ValueError):
+        load(api, tmp_path, payload)
+
+
+def test_d17_monthly_reconstruction_uses_exit_month_and_retains_cross_month_trade(api):
+    """Bucketing by entry month would misstate a trade held across a calendar boundary."""
+    trades = _trades(
+        _trade(1, "2026-02-01 00:05", "2.005", cumulative="2.005"),
+        _trade(2, "2026-02-02 10:00", "-1.005", cumulative="1.000"),
+    )
+    trades.loc[0, "entry_timestamp_naive"] = trades.loc[0, "entry_timestamp_naive"].replace(month=1)
+
+    payload, issues = api.reconstruct_d17_monthly(accounting=calculate_accounting(trades), trades=trades, spec=_spec())
+
+    assert payload["monthly_net_pnl_usd"] == {"2026-02": "1.00"}
+    assert payload["month_basis"] == "exit_timestamp_naive in America/New_York"
+    assert payload["month_spanning_trade_count"] == 1
+    assert payload["comparison_status"] == "RECONSTRUCTED"
+    assert payload["aggregate_residual_usd"] == "0.00"
+    assert not issues
+
+
+def test_d17_monthly_reconstruction_flags_real_ledger_accounting_disagreement(api):
+    """A changed canonical trade amount must block instead of comparing a value to itself."""
+    trades = _trades(_trade(1, "2026-01-05 10:00", "2.00", cumulative="2.00"))
+    accounting_snapshot = calculate_accounting(trades)
+    trades.loc[0, "net_pnl_usd"] = Decimal("3.00")
+
+    payload, issues = api.reconstruct_d17_monthly(accounting=accounting_snapshot, trades=trades, spec=_spec())
+
+    assert payload["comparison_status"] == "MISMATCH"
+    assert payload["accounting_monthly_residual_usd"] == "1.00"
+    assert [(issue.code, issue.severity) for issue in issues] == [
+        ("D17_MONTHLY_RECONSTRUCTION_MISMATCH", "BLOCKER"),
+    ]
+
+
+def test_d17_monthly_reconstruction_accepts_zero_trades(api):
+    """A zero-trade export is an empty month series, not a missing monthly anchor."""
+    payload, issues = api.reconstruct_d17_monthly(
+        accounting=calculate_accounting(_trades()), trades=_trades(), spec=_spec(),
+    )
+
+    assert payload["monthly_net_pnl_usd"] == {}
+    assert payload["bucket_count"] == 0
+    assert payload["comparison_status"] == "RECONSTRUCTED"
+    assert not issues
+
+
 def test_independent_summary_matches_and_hashes_parsed_bytes(api, tmp_path):
     inventory, path = load(api, tmp_path, anchor_payload())
     rows, issues = api.reconcile_summary(accounting(), _spec(), inventory)
@@ -162,13 +266,15 @@ def test_invalid_status_type_is_configuration_error(api, tmp_path):
     with pytest.raises(ValueError): load(api, tmp_path, p)
 
 
-def test_checked_in_operator_anchors_bind_active_exports_and_remain_partial(api):
+def test_checked_in_operator_anchors_reject_stale_panels_under_d17(api):
     from pathlib import Path
     from research_utils.tv_trade_ledger import load_source_specs
     campaign = Path(__file__).parents[1] / "lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09"
     specs = load_source_specs(campaign / "phase1_config.json")
     inventory = api.load_summary_anchors(campaign / "tv_summary_anchors.json", specs)
     assert inventory.coverage_status == "NEEDS_CONTEXT"
-    assert len(inventory.anchors) == 5
-    assert all(a["missing_metrics"] == ["total_commissions_usd", "monthly_net_pnl_usd"] for a in inventory.anchors.values())
-    assert all(a["metrics"]["total_commissions_usd"] is None for a in inventory.anchors.values())
+    assert inventory.anchors == {}
+    assert inventory.d17_policy["monthly_totals"] == "RECONSTRUCTED"
+    assert inventory.d17_policy["commissions"] == "AMENDED_OUT"
+    assert "all five replacement sources" in inventory.coverage_note
+    assert "+$287" in inventory.coverage_note

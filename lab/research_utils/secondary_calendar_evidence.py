@@ -17,6 +17,15 @@ _WRAPPER_KEYS = {
     "schema", "source_url", "page_date", "observed_date", "coverage_start",
     "coverage_end", "coverage_status", "coverage_note", "source_calendar", "rows",
 }
+_PROVENANCE_ACCEPTANCE_KEYS = {
+    "decision", "disposition", "ruling_date", "ruling_ref",
+}
+_D19_ACCEPTANCE = {
+    "decision": "D19",
+    "disposition": "ACCEPTED_SECONDARY",
+    "ruling_date": "2026-09-03",
+    "ruling_ref": "Operator ruling 2026-09-03; campaign-state §6 D19: secondary CME calendar provenance accepted.",
+}
 _SOURCE_KEYS = {
     "schema", "generated", "coverage_start", "coverage_end", "provenance",
     "provenance_note", "day_basis", "product_groups", "derived", "entries",
@@ -234,6 +243,14 @@ def _validate_source(source: dict[str, object]) -> tuple[date, date, set[date], 
     return coverage_start, coverage_end, early_dates, MappingProxyType(metadata)
 
 
+def _validate_d19_acceptance(value: object) -> dict[str, str]:
+    if not isinstance(value, dict) or set(value) != _PROVENANCE_ACCEPTANCE_KEYS:
+        raise ValueError("secondary COMPLETE coverage requires explicit valid D19 acceptance")
+    if value != _D19_ACCEPTANCE:
+        raise ValueError("secondary COMPLETE coverage requires explicit valid D19 acceptance")
+    return dict(value)
+
+
 def load_secondary_early_close_calendar(
     path: str | Path, *, repo_root: str | Path | None = None, _raw: bytes | None = None,
 ):
@@ -249,12 +266,24 @@ def load_secondary_early_close_calendar(
             raise ValueError("cannot load secondary early-close wrapper") from exc
         if not isinstance(wrapper, dict):
             raise ValueError("secondary early-close wrapper must be a JSON object")
-    if set(wrapper) != _WRAPPER_KEYS or wrapper["schema"] != "tradeify_secondary_early_close/v1":
+    wrapper_keys = set(wrapper) if isinstance(wrapper, dict) else set()
+    allowed_wrapper_keys = {
+        frozenset(_WRAPPER_KEYS),
+        frozenset(_WRAPPER_KEYS | {"provenance_acceptance"}),
+    }
+    if wrapper_keys not in allowed_wrapper_keys or wrapper["schema"] != "tradeify_secondary_early_close/v1":
         raise ValueError("secondary early-close wrapper keys/schema mismatch")
     for field in ("source_url", "coverage_note"):
         _text(wrapper[field], field)
-    if wrapper["coverage_status"] != "NEEDS_CONTEXT":
-        raise ValueError("secondary coverage_status must be NEEDS_CONTEXT")
+    coverage_status = wrapper["coverage_status"]
+    if coverage_status not in {"NEEDS_CONTEXT", "COMPLETE"}:
+        raise ValueError("secondary coverage_status must be NEEDS_CONTEXT or COMPLETE")
+    if coverage_status == "COMPLETE":
+        provenance_acceptance = _validate_d19_acceptance(wrapper.get("provenance_acceptance"))
+    elif "provenance_acceptance" in wrapper:
+        raise ValueError("secondary D19 acceptance may only accompany COMPLETE coverage")
+    else:
+        provenance_acceptance = None
     page_date = _date(wrapper["page_date"], "page_date")
     observed_date = _date(wrapper["observed_date"], "observed_date")
     coverage_start = _date(wrapper["coverage_start"], "coverage_start")
@@ -290,16 +319,27 @@ def load_secondary_early_close_calendar(
     expected = {day for day in early_dates if coverage_start <= day <= coverage_end}
     if supplied != expected:
         raise ValueError("secondary rows must exactly equal the EARLY_CLOSE union within coverage")
+    if coverage_status == "COMPLETE":
+        if not expected or any(
+            not any(day.year == year for day in expected)
+            for year in range(coverage_start.year, coverage_end.year + 1)
+        ):
+            raise ValueError("secondary COMPLETE coverage requires venue-flat rows in each covered year")
 
     # Delayed import keeps this schema adapter independent from reconciliation logic.
     from research_utils.trade_reconciliation import EarlyCloseCalendar
 
     evidence_metadata = dict(metadata) | {
         "source_calendar": {"repo_path": source_ref["repo_path"], "sha256": source_ref["sha256"]},
+        **(
+            {"provenance_acceptance": provenance_acceptance}
+            if provenance_acceptance is not None
+            else {}
+        ),
     }
     return EarlyCloseCalendar(
         source_url=wrapper["source_url"], page_date=page_date, observed_date=observed_date,
-        coverage_start=coverage_start, coverage_end=coverage_end, coverage_status="NEEDS_CONTEXT",
+        coverage_start=coverage_start, coverage_end=coverage_end, coverage_status=coverage_status,
         coverage_note=wrapper["coverage_note"], early_close_dates=frozenset(supplied),
         input_sha256=sha256(raw).hexdigest(), evidence_kind="SECONDARY",
         source_calendar_sha256=sha256(source_raw).hexdigest(), evidence_metadata=_freeze(evidence_metadata),
