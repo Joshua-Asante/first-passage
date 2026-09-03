@@ -182,3 +182,29 @@ a318d432c38dce445a108ad329889c0ccaec001182ed9384ab621badff0f62ab  core/strategie
 #               lab/analysis/c1/transfer_expression_grid_2026-08/build_sibling_swap_ports.py
 #               from the durable primary-checkout locked Pine bytes.
 178a2a8e1c78e45a5142749f92284c09d286907a7e096883e1133297cb8a806d  core/strategies/_archive/striker/striker_dj30_v4.5_mnq_qtxg1_prototype.pine
+
+# striker_nas100_v1_mnq_dow_wed_excluded.pine / striker_dj30_v4.5_mym_pyramid_250.pine
+# provenance (2026-09-03, tradeify_seven_strategy_phase1_2026-09 campaign):
+#   Research variants — NOT venue-edition re-pins. The two locked futures venue
+#   editions (striker_nas100_v1_mnq.pine / striker_dj30_v4.5_mym.pine) were
+#   edited in place on the operator's machine to produce two of the seven
+#   TradingView exports cited by
+#   lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json
+#   (strategy_id "striker_nas100_mnq_dow_wed_excluded" /
+#   "striker_dj30_native_pyramid_down_on_mym", pine_sha256 d18c2699… / 5c4b1026…).
+#   On restore, both locked files' on-disk bytes already equaled their pins
+#   above (bb921399… / 2b895317…) — the locked pins are UNCHANGED by this
+#   block. Each modified body was reconstructed byte-exact from the restored
+#   locked file by applying only the single parameter edit its campaign
+#   lineage_note describes; the reconstruction's SHA-256 was verified equal to
+#   the pine_sha256 already recorded in phase1_config.json before either file
+#   was written here, so this is a confirmed exact match, not an approximation.
+#   Sole diff each vs. the restored locked body (verified via `diff`):
+#     striker_nas100_v1_mnq_dow_wed_excluded.pine — allowThu / allowFri default
+#       false -> true only (day-of-week set becomes {Mon,Tue,Thu,Fri} vs locked
+#       {Mon,Tue}; pyramidSize unchanged at 1000%).
+#     striker_dj30_v4.5_mym_pyramid_250.pine — pyramidSize default 750.0 -> 250.0
+#       only (day-of-week filter unchanged, still Tue+Fri).
+#   pine_check.py clean 2026-09-03 (both files).
+d18c2699ea3856df884eced84c9384adea953f3a2470bea4f2d671b6cd294057  core/strategies/candidates/striker_nas100_v1_mnq_dow_wed_excluded.pine
+5c4b1026cb6f3a475dba962783b2a053e9fbeb123570dd964d7154ea80b3f9d0  core/strategies/candidates/striker_dj30_v4.5_mym_pyramid_250.pine
