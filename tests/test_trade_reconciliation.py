@@ -267,6 +267,26 @@ def test_reconstruct_keeps_scalar_excursions_explicitly_bounded():
     assert trade["excursion_bound"] == "excursion-bounded"
 
 
+def test_reconstruct_preserves_first_source_appearance_for_rows_and_issues():
+    """Sorting non-monotonic trade IDs would reorder canonical rows and diagnostics."""
+    events = _events(
+        _event(30, "ENTRY", row=1, timestamp="2026-01-05 10:00"),
+        _event(30, "EXIT", row=2, timestamp="2026-01-05 10:01"),
+        _event(20, "EXIT", row=3, timestamp="2026-01-05 10:02"),
+        _event(10, "ENTRY", row=4, timestamp="2026-01-05 10:03"),
+        _event(10, "EXIT", row=5, timestamp="2026-01-05 10:04"),
+        _event(5, "ENTRY", row=6, timestamp="2026-01-05 10:05"),
+    )
+
+    result = reconstruct_trades(events, _spec())
+
+    assert result.trades["source_trade_id"].tolist() == [30, 10]
+    assert [(issue.trade_id, issue.code) for issue in result.issues] == [
+        (20, "ORPHAN_EXIT"),
+        (5, "ORPHAN_ENTRY"),
+    ]
+
+
 def _trade(
     trade_id: int,
     exit_timestamp: str,

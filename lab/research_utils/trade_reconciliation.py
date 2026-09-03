@@ -154,7 +154,7 @@ def reconstruct_trades(events: pd.DataFrame, spec: SourceSpec) -> Reconstruction
         return ReconstructionResult(pd.DataFrame(columns=TRADE_COLUMNS), ())
 
     geometry = instrument_geometry(spec.encoded_instrument)
-    for raw_trade_id, group in events.groupby("source_trade_id", sort=True):
+    for raw_trade_id, group in events.groupby("source_trade_id", sort=False):
         trade_id = int(raw_trade_id)
         group = group.sort_values("source_row_number", kind="stable")
         source_rows = tuple(int(value) for value in group["source_row_number"])
