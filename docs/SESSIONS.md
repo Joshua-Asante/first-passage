@@ -33,6 +33,35 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-03b — Queue/pipeline naming realignment: seven-strategy Select campaign is queue #1
+
+**Focus:** Operator flagged that STATE's queue, PIPELINES.md's "one turning pipeline" claim, and the
+newest SESSIONS entry didn't agree on what the live campaign is — the last 48 hours' PRs (portable-edge
+cultivation, research-methods synthesis, DL-3, W1 bootstrap, the seven-strategy Select campaign) ran
+almost entirely outside P1 Gen-2 Databento discovery, the pipeline PIPELINES.md named as "the one
+turning pipeline."
+**Shipped:** Operator ruling recorded: the seven-strategy Tradeify Select configuration campaign is the
+live/turning campaign. `STATE.md` queue row **#1** replaced (portable-edge cultivation → seven-strategy
+Select campaign, [campaign state](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) ·
+[plan](superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)); portable-edge
+cultivation demoted off-queue (stays open on its own [ADR](adr/2026-09-02-portable-edge-cultivation-campaign-objective.md),
+no queue row). Decision-index entry added; twelfth keep-15 roll executed (`Q-TRADECAP-2` pushed to
+[archive](ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md)). `PIPELINES.md` corrected:
+P4's at-a-glance status IDLE → ACTIVE (the same campaign, same links as STATE/this entry); P1's "one
+turning pipeline" line now points to P4 for the currently turning work, since no PR this window is
+P1-shaped (no Databento pull, no STUMPY/catch22 mining, no new `discovery_manifests/` entry).
+**Decisions/defects:** No new evidence, no candidate contract, no capital. The campaign's own state and
+phase are unchanged by this session (Phase 0 skipped, Phase 1 in flight on `codex/tradeify-stage1-normalization`,
+no PR yet) — this is a cross-surface naming/consistency fix only. No `core`/Pine/allocation/
+`dd_protection`/rail change. $0/K=0.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — Phase 1 in flight; gate
+review fires when Codex's `codex/tradeify-stage1-normalization` PR lands · `#2` [B7-REFIRE Stage 1 +
+M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— unchanged.
+
+---
+
 ## 2026-09-03a — Orchestrator takeover: seven-strategy Select configuration campaign; Codex P1 review folded into PR #272
 
 **Focus:** Operator handed Claude Code the orchestrator role for the seven-strategy
