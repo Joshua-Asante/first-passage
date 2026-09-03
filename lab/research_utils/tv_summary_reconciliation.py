@@ -62,7 +62,7 @@ def _validate_metrics(metrics: object, missing: object, *, d17_policy: bool = Fa
         raise ValueError("summary metrics keys mismatch")
     if (
         not isinstance(missing, list)
-        or any(not isinstance(m, str) or m not in METRICS for m in missing)
+        or any(not isinstance(m, str) or m not in metric_names for m in missing)
         or len(set(missing)) != len(missing)
     ):
         raise ValueError("missing_metrics must contain unique known metric names")

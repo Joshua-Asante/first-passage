@@ -131,6 +131,24 @@ def test_complete_secondary_requires_the_exact_d19_acceptance(tmp_path):
     assert calendar.evidence_metadata["provenance_acceptance"] == d19_acceptance()
 
 
+@pytest.mark.parametrize("mutation", ["missing_key", "extra_key", "decision", "disposition", "ruling_date", "ruling_ref"])
+def test_complete_secondary_rejects_malformed_d19_acceptance(tmp_path, mutation):
+    """Only the operator's exact D19 acceptance may lift a secondary wrapper to COMPLETE."""
+    wrapper_path, wrapper, _, repo_root = secondary_fixture(tmp_path)
+    acceptance = d19_acceptance()
+    if mutation == "missing_key":
+        acceptance.pop("ruling_ref")
+    elif mutation == "extra_key":
+        acceptance["extra"] = True
+    else:
+        acceptance[mutation] = "wrong" if mutation != "ruling_date" else "2026-09-04"
+    wrapper.update(coverage_status="COMPLETE", provenance_acceptance=acceptance)
+    wrapper_path.write_text(json.dumps(wrapper), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="D19"):
+        load_secondary_early_close_calendar(wrapper_path, repo_root=repo_root)
+
+
 def test_d19_complete_rejects_a_covered_year_without_a_venue_flat_date(tmp_path):
     """D19 accepts provenance, never a fabricated empty year of calendar evidence."""
     wrapper_path, wrapper, source_path, repo_root = secondary_fixture(tmp_path)

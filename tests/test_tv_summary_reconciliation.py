@@ -70,7 +70,7 @@ def test_d17_policy_keeps_five_scalar_requirements_without_silent_waiver(api, tm
     assert not issues
 
 
-@pytest.mark.parametrize("mutation", ["missing", "extra", "bad_monthly", "bad_commissions", "monthly_metric", "commission_metric"])
+@pytest.mark.parametrize("mutation", ["missing", "extra", "bad_monthly", "bad_commissions", "monthly_metric", "commission_metric", "retired_missing"])
 def test_d17_policy_rejects_noncanonical_or_independent_retired_dimensions(api, tmp_path, mutation):
     """A permissive D17 schema could falsely compare an unanchored commission or monthly total."""
     payload = d17_payload()
@@ -91,9 +91,28 @@ def test_d17_policy_rejects_noncanonical_or_independent_retired_dimensions(api, 
                 "profit_factor": "2.50", "max_drawdown_usd": "4.00",
             },
         }]
-        retired = "monthly_net_pnl_usd" if mutation == "monthly_metric" else "total_commissions_usd"
-        payload["strategies"][0]["metrics"][retired] = {} if retired.startswith("monthly") else "3.64"
+        if mutation == "retired_missing":
+            payload["strategies"][0]["missing_metrics"] = ["total_commissions_usd"]
+        else:
+            retired = "monthly_net_pnl_usd" if mutation == "monthly_metric" else "total_commissions_usd"
+            payload["strategies"][0]["metrics"][retired] = {} if retired.startswith("monthly") else "3.64"
     with pytest.raises(ValueError):
+        load(api, tmp_path, payload)
+
+
+def test_d17_rejects_a_stale_export_pin_before_accepting_scalar_anchors(api, tmp_path):
+    """A stale old-source panel must not become independent evidence for a replacement body."""
+    payload = d17_payload()
+    payload["strategies"] = [{
+        "strategy_id": "fixture", "export_sha256": "f" * 64,
+        "source_note": "Stale panel", "missing_metrics": [],
+        "metrics": {
+            "trade_count": 2, "net_pnl_usd": "6.00", "win_rate_pct": "50.00",
+            "profit_factor": "2.50", "max_drawdown_usd": "4.00",
+        },
+    }]
+
+    with pytest.raises(ValueError, match="export_sha256"):
         load(api, tmp_path, payload)
 
 

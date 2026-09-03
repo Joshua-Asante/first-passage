@@ -59,7 +59,7 @@
       "continuous_symbol": true,
       "synchronized_intraday_path_available": false,
       "lineage_notes": [
-        "Development-tuned reconstruction; three Friday-to-Sunday holds are present."
+        "Venue-bound reconstruction; the historical ORB3 Friday-to-Sunday hold inventory is not current for this source."
       ],
       "pine_commission_per_side_usd": "0.91",
       "pine_slippage_ticks_per_side": "1",

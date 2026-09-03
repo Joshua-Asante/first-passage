@@ -254,7 +254,7 @@ def _validate_d19_acceptance(value: object) -> dict[str, str]:
 def load_secondary_early_close_calendar(
     path: str | Path, *, repo_root: str | Path | None = None, _raw: bytes | None = None,
 ):
-    """Load the limited secondary evidence without ever certifying COMPLETE."""
+    """Load secondary evidence; COMPLETE is limited to the exact D19 acceptance."""
     wrapper_path = Path(path)
     if _raw is None:
         raw, wrapper = _read_json(wrapper_path, "secondary early-close wrapper")
