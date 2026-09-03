@@ -24,15 +24,26 @@ settlement-times PDFs over the ex-ante advisories — CME finalises holiday hour
 out — and never conflate a settlement time with a Globex close time.
 
 > ✅ **Accepted for the seven-strategy Select campaign, 2026-09-03 (operator, decision D19).** That
-> acceptance is **scoped to date membership, not close times**, and the scope is what makes it safe:
-> the campaign consumes this file to decide *which dates* carry Tradeify's blanket 12:59 ET
-> holiday-short deadline, and every one of the 13 `unresolved` items bar one is a dispute about a
-> close **time** — none moves a date in or out of `venue_flat_dates`.
+> acceptance is **scoped to date membership, not close times**: the campaign consumes this file to
+> decide *which dates* carry Tradeify's blanket 12:59 ET holiday-short deadline, and **most** of the
+> 13 `unresolved` items are close-**time** disputes that cannot move a date in or out of
+> `venue_flat_dates`.
+>
+> ⚠ **Two residuals DO bear on membership, and D19 accepts them explicitly rather than by omission.**
+> (i) **2025-11-28** — the scheduled Black Friday half-day was destroyed by a ~10-hour Globex outage;
+> if that row ever resolves to `FULL_CLOSURE`, the date leaves `venue_flat_dates`. Direction is
+> **conservative**: keeping it listed flattens early on a session that was shorter than scheduled.
+> (ii) a **residual ad-hoc-closure risk between 2026-05-28 and 2026-09-02**, outside every source the
+> research pass could reach — a genuinely *missing* date. Direction is **not conservative**: a missing
+> date is audited at 16:45 instead of 12:59 and could hide a real violation. (ii) is the one to
+> re-test if a primary source becomes reachable.
 >
 > ⚠ **The acceptance does not travel.** Read `equity_index_close_et`, `metals_close_et` or
-> `fx_close_et` to model an *exchange session* rather than a *venue deadline*, and those 13 disputes
-> are live again — up to 90 minutes on MGC and up to 4 hours on 6J. D19 does not cover that use.
-> Any consumer outside the campaign is on secondary, unaccepted provenance.
+> `fx_close_et` to model an *exchange session* rather than a *venue deadline*, and the disputes are
+> live again — **up to ~3h15m on MGC** (the Christmas Eve metals item compares an adopted 13:45 ET
+> close against a normal 17:00 ET session; the ~90-minute figure an earlier draft gave was the Labor
+> Day range, not the maximum) and up to ~4 hours on 6J. D19 does not cover that use; any consumer
+> outside the campaign is on secondary, unaccepted provenance.
 
 ## The three derived lists
 

@@ -99,6 +99,34 @@ Venue checks identify violations but never edit trades. `FORCE_FLAT_VIOLATION` i
 
 `cme_early_close_calendar.json` freezes the primary-source CME holiday-calendar capture over the seven exports' combined date span and is hashed with the other campaign inputs. When complete primary-source rows cannot be captured, the file and every report say `NEEDS_CONTEXT`; the runner must not infer holiday dates or silently claim complete 12:59 coverage.
 
+> ### ⚠ Amendment 2026-09-03 — D19: a SECONDARY-sourced calendar is accepted
+>
+> **Operator ruling D19** ([campaign state](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) §6):
+> *"I accept the secondary source."* The paragraph above is amended for this campaign only.
+>
+> **Why the amendment was needed rather than a workaround** (Codex on
+> [#293](https://github.com/Joshua-Asante/first-passage/pull/293), P1, accepted): without it, a worker
+> following this frozen design *cannot implement D19*, and a worker following D19 *silently violates
+> this design*. Two contradictory rules governing one runner is the defect; this records the single
+> executable one.
+>
+> **Amended rule.** `coverage_status: COMPLETE` may be claimed on a calendar whose rows derive from
+> [`ops/calendars/cme_holiday_calendar_2022_2026.json`](../../../ops/calendars/README.md) — a
+> **SECONDARY** reconstruction from independent third-party encodings, cross-checked against in-repo
+> bar panels, with **no CME primary source** (403 at the egress proxy on cmegroup.com and every broker
+> mirror). The row set must equal `derived.venue_flat_dates` intersected with the declared coverage
+> span, exactly — never a subset, and never the union with `full_closure_dates`.
+>
+> **Unchanged by the amendment.** The runner still must not *infer* holiday dates: every row traces to
+> that file. `FORCE_FLAT_VIOLATION` semantics are untouched. The other blocker dimensions, including
+> `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED`, still cap their own verdicts — D19 lifts the calendar-derived
+> cap and nothing else.
+>
+> **Scope.** The acceptance covers **date membership**, which is all this campaign asks of the file
+> (Tradeify's holiday-short deadline is a blanket 12:59 ET account-level rule). It does **not** extend
+> to the per-group close-time fields, where the calendar's `unresolved` register carries live disputes
+> of up to ~3h15m on MGC and ~4h on 6J.
+
 All seven exports identify continuous `1!` chart symbols rather than specific tradable contract months. Each report emits `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED`; without a roll ledger or individual-contract export, Phase 1 cannot prove which contract generated a fill or whether a fill crosses a back-adjustment seam.
 
 ### 4.5 Joint ledger and weekly adapter
@@ -124,7 +152,7 @@ Each strategy status is one of:
 - `BLOCKED_EXPLORATORY`: at least one structural, identity, timezone, cost, or venue blocker remains;
 - `FAILED_INTAKE`: source identity/schema prevented normalization.
 
-The campaign-wide status is the most severe constituent status. Unresolved continuous-contract rolls remain an explicit blocker dimension, and incomplete primary-source CME early-close coverage caps the holiday-short verdict at `NEEDS_CONTEXT`; neither prevents the remaining accounting report from being produced.
+The campaign-wide status is the most severe constituent status. Unresolved continuous-contract rolls remain an explicit blocker dimension, and incomplete primary-source CME early-close coverage caps the holiday-short verdict at `NEEDS_CONTEXT`; neither prevents the remaining accounting report from being produced. ⚠ **Amended 2026-09-03 by D19** (see §4.4): the early-close cap no longer follows from *primary*-source absence alone — a SECONDARY-sourced calendar meeting the exact-set-equality rule may read `COMPLETE`. Every other cap in this paragraph is unchanged.
 
 ## 5. Frozen tolerances and ordering
 
