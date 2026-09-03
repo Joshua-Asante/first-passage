@@ -120,6 +120,32 @@ match PR #259's screenshot row to the cent. Day-level reconstruction (real trade
 the residual is the known TV-intrabar-vs-close-reconstruction gap, not a defect), RF 7.47, worst
 day −$1,424.
 
+> ⚠ **Reader-intercept 2026-09-03 (PR #282, Codex round 4) — read the table's `maxDD 2.83% vs the
+> 3.0% trail` parenthetical as two different quantities, not one comparison.** Body below is
+> unedited; the bust/pass figures and the day-42 verdict are unaffected. **2.83% is the engine's
+> `max_dd`: end-of-day equity as a fraction of the running peak** — `core/mc/simulation.py` fixes
+> both deliberately ("`max_dd` stays END-OF-DAY denominated"). The `trailing_locking` barrier tests a
+> different number: a fixed **$3,000 below the EOD peak**, against the day's **intraday low**
+> (`equity_test`). ⚠ And that excursion series is a **trade-level MAE proxy**, not a true
+> account-level low: `verify_pr259.py` takes `mae=("Adverse excursion USD", "min")` over the day's
+> exit rows, i.e. the worst **single leg**, while this export runs ~2.6 legs per traded day under
+> pyramiding — the account's real excursion is the synchronized sum of all open legs. The repo says
+> so in its own words (`PREREG_risk_budget.md`: "MAE proxy is trade-level"; `bust_engine.py`:
+> "intraday-honest MAE **proxy**"). So the row does not say "2.83% < 3.0% yet busted" — it reports an
+> EOD drawdown statistic beside a barrier outcome driven by a proxy excursion.
+>
+> **What caused the day-42 breach is not determinable from the published artifact, and this
+> intercept does not guess.** ⚠ A first version of this note claimed an EOD-only breach "would have
+> required a peak ≥ $106,007, above the $106,000 target". That inference is unsound: `max_dd` is
+> printed `:.2f`, so 2.83% only bounds it to `[2.825%, 2.835%)` and the implied peak to
+> **($105,820, $106,195]** — a range straddling the target, and Codex's counter-example
+> (`$3,000` off a `$105,900` peak = 2.8329%, printing as 2.83% while staying below target) sits
+> inside it. `max_dd` is also a *running* max that need not have been set on day 42 at all.
+> Restated on the two surfaces that quote
+> this row — [`orb_mym_volume_gate_2026-09-02/RESULTS.md`](../orb_mym_volume_gate_2026-09-02/RESULTS.md)
+> and [`ops/instruments/MYM.md`](../../../../ops/instruments/MYM.md) M9
+> ([`operational_rules.md`](../../../../docs/operational_rules.md) §14).
+
 **Then through the same canonical bootstrap engine, at the size the headline was measured (qty 2):**
 
 | size | Select bust/pass | Growth bust/pass | realized historical path |
@@ -250,7 +276,12 @@ absolute levels).
 **§5c — inactivity barrier: confirmation, not a new finding.** Every bust/pass cell above used
 `firm_kwargs`'s default `inactivity_off=True` (repo-wide convention). A review comment asked
 whether cells that skip whole days (Hot-only, the risk-budget skip variants) risk breaching
-Tradeify's real 5-business-day inactivity rule. **They do, mechanically and dramatically** — turning
+Tradeify's inactivity rule — modelled here by the engine's 5-idle-**business-day** proxy. (⚠ Named
+precisely 2026-09-03: Tradeify has no 5-business-day rule. Art. 10468318 publishes a per-Mon–Fri-week
+**bucket** — ≥1 trade per week. `simulation.py` counts **rolling** consecutive idle bdays, which is
+strictly stricter, so the barrier-ON rates below are conservative **upper bounds** on venue
+inactivity risk, not estimates of it. The conclusion is unaffected and the true rate can only be
+lower.) **They do, mechanically and dramatically** — turning
 the barrier on collapses bust/pass to near-0%/0% with 97–100% pure-inactivity failure for *every*
 cell tested, including §1's base_q1 at 39.7% trade-day density (96.9–98.2% inactivity) and §3's
 qty-2 primary at 97% of its own (already-filtered) days traded (99.7–99.9% inactivity). **This is

@@ -10,6 +10,25 @@
 **Related:** [`2026-07-14-prop-portfolio-existing-strategy-candidates.md`](2026-07-14-prop-portfolio-existing-strategy-candidates.md) (Class-S route) · [`2026-07-17-c1-rail-build-account-registration-go.md`](2026-07-17-c1-rail-build-account-registration-go.md) (**not** overturned — see §6) · measurement [`lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/RESULTS.md`](../../lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/RESULTS.md) · superseded scoring [`class_s_candidate1_scoring_2026-07-15/RESULTS.md`](../../lab/analysis/c1/class_s_candidate1_scoring_2026-07-15/RESULTS.md)
 **Layer:** research-gate status. **No locked parameter, allocation, `dd_protection` constant, or Pine file is touched.**
 
+> ## ⚠ Reader-intercept 2026-09-03 — every "3.0%" below is the **superseded** ceiling, and candidate #1's own figures now sit under the live one
+>
+> **The live Part A eval bust ceiling is 5.0% (since 2026-08-26** —
+> [`prereg v2`](../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3, an
+> operator risk-tolerance override; `DEFAULT_PREREG` points at it**).** **All four** of §2's
+> corrected-geometry figures — Bulenox 3.51%, **Tradeify_Select_100K 4.74%**, **MFFU_Rapid_100K
+> 4.25%**, BluSky 4.44% — sit strictly between 3.0% and 5.0%. Read mechanically, "zero clearers,
+> `discharges_falsifier = False`" becomes **four** clearers including **both** `trailing_locking`
+> tiers, and §4's "≥2 firms, ≥1 `trailing_locking`" is satisfied on numbers already published here.
+>
+> **That is exactly the move §5 forbids**, and §5 is **not** repealed by the ceiling raise. See
+> [Addendum 2026-09-03](#addendum-2026-09-03--the-50-ceiling-does-not-re-admit-candidate-1-proposed)
+> for the collision and the proposed one-line ruling. **Until an operator ratifies it, the §4
+> discharge stays WITHDRAWN and candidate #1 stays out** — the safe reading, and the one §5's own
+> text already directs. Do not cite 4.74%/4.25%-under-5.0% as a discharge anywhere.
+>
+> Frozen body below unedited (Trap #12); banner placed upstream of §2/§4/§5 per
+> [`operational_rules.md`](../operational_rules.md) §14.
+
 ---
 
 ## §0 — Rule 0 reads (production source, this session)
@@ -139,9 +158,136 @@ python lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/remc_native_post
 # Expected: ALL MATCH (canonical path reproduces this ADR's corrected figures with zero override)
 ```
 
+## Addendum 2026-09-03 — the 5.0% ceiling does not re-admit candidate #1 (`Proposed`)
+
+**Status:** `Proposed` — **pending operator ratification.** This addendum rules nothing on its own
+authority; it names a collision, states the reading that follows from the two documents' own text,
+and installs the safe default until the operator elects. It moves no number, touches no `core/`,
+Pine, allocation, `dd_protection`, or rail surface, and opens no re-MC. $0 / K=0.
+
+### The collision
+
+Two ratified documents now point opposite ways on the same arithmetic:
+
+| | Says |
+|---|---|
+| This ADR, §4 + §5 | §4 restores only at **bust ≤3.0%**; *"Moving the 3.0% ceiling … to re-admit candidate #1"* is a **forbidden move** — *"the input was wrong, not the bar"* |
+| [`prereg v2`](../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3 | Part A ceiling is **5.0%**, live since 2026-08-26 |
+
+Candidate #1's corrected-geometry figures, published in §2 above, are **Tradeify_Select_100K
+4.74%** and **MFFU_Rapid_100K 4.25%** — two firms, both `trailing_locking`, **both under 5.0%**.
+Bulenox (3.51%) and BluSky (4.44%) clear it too, so the raise turns a **zero**-clearer table into a
+**four**-clearer one. The ceiling raise does not merely *permit* re-admission; applied mechanically
+it **performs** it, with no new measurement, on the exact candidate §5 names.
+
+**The clock axis is the second, independent bar — and it does not resolve the question either.**
+Every figure in §2 is an **EOD-clock lower bound**, as this ADR's own 2026-08-07/08-22 intercept
+already says. On the intraday-honest clock the two `trailing` controls collapse — Bulenox
+3.51% → **26.77%**, BluSky 4.44% → **32.26%** at 1.00×
+([`R1 7-tier`](../../lab/analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md)) — failing at
+either ceiling. On the `trailing_locking` side W1 published the 0.50× arm at gate grade (0.72%) —
+but it also carries a **1.00×** honest-clock guard run, and that run is **strongly adverse**:
+**real bust 32.33%** / pass 57.17% against EOD 2.50% / 71.00%
+([`RESULTS_INTRADAY_W1`](../../lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/RESULTS_INTRADAY_W1.md)
+§Non-vacuity). At 32.33% candidate #1 fails at **3.0% and 5.0% alike**, so the clock axis, as far as
+it has been measured, points the same way this ruling does.
+
+**It is not gate-grade, and that is the point.** That run is horizon 400 / 200 sims per seed at book
+level, not the frozen 10k × 3 / horizon-1500 contract, and it does not resolve `MFFU_Rapid_100K`
+separately. So the `trailing_locking` limb is **undetermined at gate grade** — no reader can
+*settle* this collision by pointing at the clock, and equally no reader should be told the clock is
+silent. The only honest summary is: the sole 1.00× honest-clock evidence that exists is adverse, and
+the measurement that would settle it has not been run.
+
+**Neither document saw this.** v2's §5 is careful to bar reading the `aegis_orbmnq_combined_book_2026-08-26`
+study as having cleared any gate — but it never mentions candidate #1, this ADR, or the forbidden
+move. ⚠ **Corrected 2026-09-03:** an earlier draft of this line claimed v2 "greps clean" for
+`withdrawal` / `forbidden` / `candidate #1`. It does not — v2's own §5 heading (line 171) is
+"Forbidden moves", so that disjunction always hits, and the prose disagreed with its own hook 3.
+What is actually absent from v2 is any reference to **candidate #1** or to **this ADR**; hook 3
+below is narrowed to those collision-specific terms. v2's §1 states *"no
+DISC-CAMP-0 survivor has been scored under this version"*, which is true and is precisely why the
+gap went unnoticed: candidate #1 was scored under **v1**, so it is invisible to a
+"nothing-scored-yet" check while remaining fully re-admissible by arithmetic.
+
+### Proposed ruling (one line)
+
+> **The 5.0% ceiling is prospective-only: it applies to candidates scored on or after 2026-08-26
+> and does not re-admit Class-S candidate #1, whose §4 discharge stays WITHDRAWN — §5's forbidden
+> move survives the ceiling raise intact.**
+
+Equivalently, and narrower if the operator prefers the tighter form: *a withdrawn EOD-clock figure
+may not be re-read at a later ceiling to restore a discharge, because the withdrawal rested on a
+corrected **input**, not on the bar.* Both forms reach the same disposition; the second binds only
+this collision and leaves the general prospectivity question open.
+
+### Why this reading and not the other
+
+- **It is what both documents already say.** §5 bars the ceiling move *"to re-admit candidate #1"*
+  — a purpose-scoped bar, not a bar on the number. v2 §8 frames its own change as *"a general
+  risk-tolerance dial, not a verdict on any one candidate."* Prospective-only is the unique
+  reading under which both sentences are simultaneously true.
+- **v2's own grounds do not reach candidate #1.** §8 rests the raise on the operator's tolerance
+  for *modeled* risk going forward. Nothing in it re-argues the 2026-07-22 correction, and §8
+  explicitly disclaims being *"a re-derivation."* A raise that silently reverses a withdrawal it
+  never discusses is decided by side effect, not by decision.
+- **The alternative is the named degeneration move.** §5 calls the 4.74%-only-just-misses framing
+  *"the degeneration move this ADR exists to block."* Discharging §4 at 4.74% because the bar
+  moved two months later is that move with a delay.
+- **It costs the program nothing it is entitled to.** Candidate #1 can still be re-admitted — by
+  the routes §4 already lists (a fresh pre-registered candidate, a corrected-geometry re-score, a
+  documented firm-rule change), or by an explicit operator ADR that re-admits it *on stated
+  grounds*. What this ruling bars is re-admission **by arithmetic drift alone**.
+
+### What the operator is actually being asked
+
+Ratify the line above, **or** elect the opposite (the 5.0% ceiling is retroactive and §4 is
+discharged by candidate #1 on the 4.74% / 4.25% figures) — which would be a §4 **discharge** and
+therefore needs a superseding ADR under §4's own restore-trigger table, not an addendum. A third
+option: ratify prospective-only *and* commission the corrected-geometry re-score at 5.0% as a
+fresh, pre-registered candidate — legitimate under §4's first admissible route, and costed
+separately.
+
+**Already owed, now answered:** three surfaces log this as an open ruling and can cite this
+addendum — [`class_s_w1_bootstrap_honest_2026-09-02/RESULTS.md`](../../lab/analysis/c1/class_s_w1_bootstrap_honest_2026-09-02/RESULTS.md)
+§(c), [`SESSIONS.md`](../SESSIONS.md) (owed-items line), and
+[`2026-09-03-seven-strategy-select-campaign-state.md`](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)
+row D5, which gates Phase 7 on it.
+
+**Not decided here:** anything about the 2026-11-08 hard date (unchanged), the 50% pass floor
+(unchanged), the `trailing_locking` requirement (unchanged), Part B's 1.0% funded ceiling
+(unchanged), or the four-firm set (restored 2026-09-01 by the
+[F1 reversal](2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-09-01--f1-reversed-a-tradeify-resting-discharge-now-counts-toward-4)
+— election only, no code change; `AUTOMATION_FRIENDLY_PROP_FIRMS` and both preregs' frozen
+`$100K×4` tier set always contained Tradeify and never moved).
+
+### Audit hooks (runnable)
+
+```bash
+# 1. The live ceiling is 5.0% and the loader agrees.
+grep -n "2026-08-26-prop-survivor-scoring-prereg-v2" lab/discovery/prop_survivor_scoring.py
+
+# 2. §5's forbidden move is still present and unedited.
+grep -n "Moving the 3.0% ceiling" docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md
+
+# 3. v2 still does NOT address candidate #1 or this ADR (the gap this addendum names).
+#    Collision-specific terms ONLY: v2's own §5 heading is "Forbidden moves", so that phrase
+#    is not a discriminator and must never appear in this hook (it made the hook self-hitting).
+grep -ni "candidate #1\|candidate 1\|s4-discharge-withdrawal\|discharge WITHDRAWN" \
+  docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md   # expect: empty
+
+# 4. Nobody reads 4.74%/4.25%-under-5.0% as a discharge. Every hit must be a FAIL
+#    statement or carry a 2026-09-03 intercept; a bare "clears"/"discharges" is the defect.
+grep -rn "4.74\|4.25" --include="*.md" docs/ lab/ STATE.md | grep -i "discharg"
+# Known-good as of 2026-09-03: this ADR; tradeify_eval_lock_correction_2026-07-22/RESULTS.md;
+# class_s_c1_haircut_regime_remc_2026-07-16/RESULTS.md; the 2026-08-05 claim-alignment audit
+# (frozen). Anything NEW in that list needs checking.
+```
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-07-22 | Initial authoring; discharge withdrawn on corrected-geometry re-MC (operator-authorised) | Claude Code |
 | 2026-08-04 | Addendum appended: the constant §10 hook 3 asserted was "NOT hand-edited" is now fixed at the source by [`ADR 2026-08-04`](2026-08-04-firm-rules-eval-lock-fix-applied.md). §1–§10 above (including hook 3, as historical record) left byte-unchanged; no decision in this ADR is altered. | Joshua (directive) + Claude Code (draft + apply) |
+| 2026-09-03 | Head reader-intercept + **Addendum 2026-09-03 (`Proposed`)**: names the collision between §5's forbidden move and prereg v2's 5.0% ceiling — candidate #1's own §2 figures (4.74% / 4.25%, both `trailing_locking`) clear 5.0%, so the raise would re-admit it by arithmetic. Proposes prospective-only. §1–§10 byte-unchanged; no discharge, no re-MC, no number moved. $0/K=0. | Claude Code (Opus 5) |

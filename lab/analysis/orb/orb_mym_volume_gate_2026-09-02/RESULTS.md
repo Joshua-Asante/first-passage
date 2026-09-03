@@ -6,11 +6,47 @@
 **Source:** private Downloads-local `orb_mym_4_edition.pine`
 **Pine SHA-256:** `9292bd4ec0ca9074d6d6523491dcdde3709424bd53edf9c75dea79f3b9f65071`
 
-> **Cultivation routing, 2026-09-02:** assigned seat A in the operator-authorized
-> [`portable-edge cultivation campaign`](../../../../docs/superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md).
-> Exact P50 is source/development evidence only: its Off/P50/P80 selection preceded any contract/K
-> freeze, so this campaign cannot open a candidate contract around it retroactively. Source/config
-> and List-of-Trades capture remain owed for provenance; this routing does not promote the result.
+> **Cultivation routing, 2026-09-03:** exact P50 is **retired as the lead**, not a live Seat A
+> workstream. The spent A0 search stays charged on Seat A (1/8 STOPPED). The Sep 2 campaign was
+> rebound to VOLREGIME translation and closed at T0 as `PRE-CONTRACT DROP`
+> ([`addendum 2026-09-03b`](../../../../docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03b--t0-pre-contract-drop)).
+> This result remains source/development evidence only: Off/P50/P80 was viewed before any
+> contract/K freeze, so no campaign may open a candidate contract around exact P50 retroactively.
+> It is a different observable from Q-VOLREGIME `bias_volume`.
+
+> ## ⚠ Reader-intercept 2026-09-03 — the P50 row below is a TradingView read, and the canonical engine disagrees with it
+>
+> **The numbers in the table below are real and reproduce; they are not a survival verdict.**
+> The operator's List-of-Trades CSV behind the P50 cell was later put through the repo's canonical
+> bust engine at **the size the $31,947.96 headline was measured at (qty 2)**:
+> **Select 51.2% bust / 48.8% pass**, and the realized historical path **busts Select on day 42**.
+> Exit-only net reconciles **to the cent** (986 rows / $31,947.96) — raw P&L is not what fails;
+> survival at size is.
+>
+> ⚠ **Corrected 2026-09-03** (Codex round 4): this banner first read "maxDD 2.83% against the 3.0%
+> trail", which is internally contradictory — those are two different quantities. **2.83% is the
+> engine's `max_dd`: end-of-day equity, as a fraction of the running peak** — `core/mc/simulation.py`
+> fixes both deliberately and says so in its own docstring. The barrier is a fixed **$3,000 below
+> the EOD peak, tested against `equity_test`** — which this run feeds a **trade-level MAE proxy**
+> (the worst *single leg's* adverse excursion that day), not a true account-level low; the export
+> runs ~2.6 legs per traded day under pyramiding, and the campaign's own PREREG calls it "trade-level".
+> So 2.83% is not the number the barrier reads, and its being under 3.0% is no contradiction.
+> **What actually triggered the day-42 breach is not determinable from the published artifact**, and
+> this banner does not guess: `max_dd` prints to two decimals, which bounds the implied peak only to
+> ($105,820, $106,195] — straddling the $106,000 target — and it is a running max that need not be
+> day 42's. (An earlier version of this banner inferred an above-target peak and named the intraday
+> excursion as the likely trigger; that inference was unsound and is withdrawn.)
+> Owner of that measurement:
+> [`orb_mym_v04_riskbudget_2026-09-02/RESULTS.md`](../orb_mym_v04_riskbudget_2026-09-02/RESULTS.md) §2.
+>
+> **Which number is authoritative:** the canonical engine. TradingView net / PF / max-drawdown are
+> **leg-level under pyramiding** and carry no firm DD geometry, so they cannot express a prop-tier
+> bust. This is the **third** time this construct family has shown good raw TV metrics against a bad
+> canonical bust rate (v0.3 62–74% bust, [`ops/instruments/MYM.md`](../../../../ops/instruments/MYM.md)
+> M9; §1 Hot-only; now P50 at its own reported size). Body below is unedited — the `SOURCE-STAGE
+> EXPLORATORY … NOT CONFIRMED` status above was always correct; this banner only puts the
+> disagreement upstream of the table instead of one directory away
+> ([`operational_rules.md`](../../../../docs/operational_rules.md) §14).
 
 ## Question and tested catalogue
 

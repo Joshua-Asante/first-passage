@@ -10,6 +10,17 @@
 > [`../firm_model_repair_r1_7tier_2026-08-23/RESULTS.md`](../firm_model_repair_r1_7tier_2026-08-23/RESULTS.md).
 > Frozen body unedited.
 
+> ⚠ **2026-09-03 reader-intercept (ceiling):** this file's conclusions are stated against the
+> **3.0%** Part A ceiling ("misses by 1.74pp" and similar). That ceiling was raised to **5.0%** on
+> 2026-08-26 ([`prereg v2`](../../../../docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3). At 5.0% the corrected EOD-clock figures here —
+> Tradeify_Select_100K **4.74%**, MFFU_Rapid_100K **4.25%**, Bulenox_100K 3.51%, BluSky_Premium_100K
+> 4.44% — would all *clear*, which would restore the §4 discharge this measurement withdrew.
+> **That reading is barred pending an operator ruling**, on two independent grounds: the withdrawal
+> ADR's §5 names it as a forbidden move, and these are **EOD-clock lower bounds** (see the
+> intercept above), so they cannot restore a discharge at any ceiling. See
+> [`withdrawal ADR` Addendum 2026-09-03](../../../../docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-09-03--the-50-ceiling-does-not-re-admit-candidate-1-proposed).
+> Frozen body unedited.
+
 # Tradeify / MFFU eval-tier drawdown-locking correction — re-MC RESULTS
 
 **Status:** `MEASURED — Part A flips PASS → FAIL on both trailing_locking tiers; G8 discharge WITHDRAWN`

@@ -92,6 +92,37 @@ def _mini_repo(tmp_path: Path) -> Path:
     return tmp_path
 
 
+def test_collect_chunks_skips_in_flight_catalog_rows(tmp_path):
+    repo = _mini_repo(tmp_path)
+    (repo / "lab" / "CATALOG.md").write_text(
+        "# Catalog\n\n"
+        "## In flight\n\n"
+        "| slug | theme | status | one-liner | body |\n"
+        "|---|---|---|---|---|\n"
+        "| live_camp | c1 | ACTIVE | pointer | lab/analysis/c1/live_camp/ |\n"
+        "\n"
+        "## Hot bodies\n\n"
+        "### c1\n\n"
+        "| slug | theme | status | hot | one-liner | body | heavy |\n"
+        "|---|---|---|---|---|---|---|\n"
+        "| live_camp | c1 | ACTIVE | yes | pointer | lab/analysis/c1/live_camp/ | — |\n"
+        "| other_camp | c1 | HOLD | yes | parked | lab/analysis/c1/other_camp/ | — |\n",
+        encoding="utf-8",
+    )
+    chunks = rr.collect_chunks(repo)
+    catalog_chunks = [c for c in chunks if c["path"] == "lab/CATALOG.md"]
+    catalog_row_headings = [
+        c["heading"]
+        for c in catalog_chunks
+        if c["heading"] in {"live_camp", "other_camp"}
+    ]
+    assert catalog_row_headings.count("live_camp") == 1
+    assert "other_camp" in catalog_row_headings
+    joined = "\n".join(c["text"] for c in catalog_chunks)
+    assert "## In flight" not in joined
+    assert "| live_camp | c1 | ACTIVE | pointer | lab/analysis/c1/live_camp/ |" not in joined
+
+
 def test_collect_chunks_hot_surfaces_only(tmp_path):
     repo = _mini_repo(tmp_path)
     chunks = rr.collect_chunks(repo)

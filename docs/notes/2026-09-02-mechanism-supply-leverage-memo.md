@@ -7,9 +7,13 @@ Tradeify strategy, given the estate's repeated zero-candidate result?
 
 > **Operator resolution / campaign launch, 2026-09-02:** portable edge is primary, Tradeify Select
 > is preferred, manual weekly preservation is acceptable, the research clock is 2–3 days, spend is
-> flexible but remains Rule-2 bounded, and an edge survives edition failure. The resulting
-> cultivation campaign is
-> [`2026-09-02-portable-edge-cultivation-campaign.md`](../superpowers/plans/2026-09-02-portable-edge-cultivation-campaign.md).
+> flexible but remains Rule-2 bounded, and an edge survives edition failure.
+>
+> ⚠ **2026-09-03 — this memo must not re-elect “reconstruct P50 instead of translation.”** The
+> operator rebound the Sep 2 campaign to VOLREGIME translation and entered at Packet T
+> ([`ADR addendum`](../adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03--campaign-is-volregime-translation-enter-at-packet-t)
+> · [`translation plan`](../superpowers/plans/2026-09-01-q-volregime-bounded-translation-campaign.md)).
+> Exact P50 stays ineligible. This memo remains advisory and has no gate authority.
 
 ## Executive answer
 
@@ -32,7 +36,11 @@ TradingView panel reports better net P&L, profit factor, and drawdown than both 
 and P80, but it lacks retained trades, configuration proof, day-level shape, and an untouched
 sample. It is a **lead**, not a candidate.
 
-The immediate sequence should be:
+The 2026-09-02 immediate sequence below is **historical advisory**. The live campaign instruction
+is VOLREGIME translation at Packet T, not P50 reconstruction (banner above). Do not re-elect
+step 2–4 as the next action.
+
+The 2026-09-02 sequence was:
 
 1. decide the commercial target (`Select`, any Tradeify tier, or portable edge);
 2. capture the P50 expression and full List-of-Trades export, then compute its day-level payoff
@@ -159,8 +167,18 @@ either.
 
 ### Not established
 
-- P50's day- or position-level win rate, mean win/loss, tail, loss clustering, intraday MAE, or
-  Tradeify bust/pass probability.
+- ~~P50's day-level win rate~~ and ~~Tradeify bust/pass probability~~ — ⚠ **these two were
+  established later the same day** from the supplied List-of-Trades: day-level WR **56.1%**, PF
+  **1.459**, maxDD **$2,137 per contract** (raw-$ **$4,274**), worst day **−$1,424 per contract**
+  (**−$2,848**) — ⚠ **these dollar figures are per-contract reconstructions**, and §2's survival
+  result beside them is at the measured **qty 2**, where both double; reading them as qty-2 dollars
+  understates the realized risk by half (label added 2026-09-03, Codex round 4) — and Tradeify
+  bust/pass at that measured qty 2 — **Select 51.2% / 48.8%**, busting on day 42. See
+  [`orb_mym_v04_riskbudget_2026-09-02/RESULTS.md`](../../lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/RESULTS.md) §2. The "Established" bullet above remains
+  correct about the raw TV metrics; what it could not say is that they do not survive at size.
+- **Still open — the §2 run did not measure these:** P50's *position-level* win rate, mean win/loss,
+  tail statistics, loss clustering, and intraday MAE. A1 still owes them; do not read the struck
+  items above as clearing this list.
 - Configuration identity across the three TradingView reads.
 - P50 performance on any untouched or forward sample.
 - That the opening-range aggregate-volume gate is the same construct as Q-VOLREGIME's M15

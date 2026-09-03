@@ -2,6 +2,36 @@
 
 # A2 panel-draw noise + the size-invariant venue bound
 
+> ## ⚠ Reader-intercept 2026-09-03 — the venue bound below is a **v1 (3.0%) result**
+>
+> The size-invariant bound `T_min(yr) = (target/rope)·(ln(1/b)/2)/annSR²` is published here at
+> **b = 0.03**, v1's Part A ceiling. The **live** ceiling is **5.0%** since 2026-08-26
+> ([`prereg v2`](../../../../docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3).
+> `b` is quantitatively load-bearing — but it does **not** enter every figure below the same way.
+> `ln(1/0.03) = 3.507` falls to `ln(1/0.05) = 2.996`, a **14.6%** reduction, and that reduction
+> propagates at two different rates:
+>
+> * **Linear** in `ln(1/b)` — `T_min`, `n_min`, and §6's `C` column: each shrinks **~14.6%**.
+> * **Square-root** — any *required* `annSR`, since inverting `T_min = C/annSR²` gives
+>   `annSR = √(C/T)`: these shrink only **~7.6%**. §6's six-month requirement moves
+>   `Select_100K` **2.648 → 2.448**, `Select_50K` **2.293 → 2.120**, `Growth_100K` **2.452 → 2.266**.
+>
+> The headline "corpus maximum (annSR +1.28) is **2.1× short** of a six-month pass" is a **Sharpe**
+> ratio (2.648 / 1.28 = 2.07), so it takes the square-root rate: at the live ceiling it reads
+> **~1.91×**, not ~1.8×.
+>
+> ⚠ **Corrected 2026-09-03** (Codex round 4, PR #282): this banner first published ~1.8×, applying
+> the linear `T_min` shrink to a quantity that scales as its square root. The ~15% figure is correct
+> for `T_min`/`n_min`/`C` and wrong for every Sharpe requirement — a banner meant to supply current
+> planning magnitudes must not itself mis-transform them.
+>
+> **The verdict direction does not flip** — the corpus maximum still misses, and the four live TNEC
+> lanes remain an order of magnitude away — but **do not quote these magnitudes for current
+> planning** without re-deriving at 5.0%. That re-derivation is unspent work with no operator GO;
+> nothing here performs it. The paired findings this study also reports (§13.1/§13.3 rope
+> comparisons, panel-noise diagnosis) are **ceiling-independent and unaffected**. Body unedited;
+> banner upstream of the figures per [`operational_rules.md`](../../../../docs/operational_rules.md) §14.
+
 **Status:** ACTIVE — the A2 map's dominant uncertainty is the single 520-week DGP panel each cell sits on, not the MC path count its `se_bust` bars measure (49 of 63 cadence groups exceed their own 2σ bar, median 4.3×); §13.2's Growth headline is the grid's most extreme panel draw (z=+3.12, 1.50× intended drift) and flips `FEASIBLE`→`INFEASIBLE` at a 10× panel, so §7.2 stands as written — while §13.1/§13.3's **paired** rope finding replicates (33/282/0 vs 38/277/0) and should be read as it stands. Separately: the eval's requirement collapses to a **size-invariant** bound `T_min(yr) = (target/rope)·(ln(1/0.03)/2)/annSR²` (validated 230/232 against A2's own cells), under which the corpus maximum ever published (annSR +1.28) is 2.1× short of a six-month pass and the four live TNEC lanes are an order of magnitude further; and `pol_cushion`'s bust-elimination needs **sub-integer micro contracts** — rounded to whole contracts it is identical to flat k=1.
 
 **Date:** 2026-08-24 · **Spend:** **$0.00 · K=0 · no manifest · no Cap seat · nothing armed.**

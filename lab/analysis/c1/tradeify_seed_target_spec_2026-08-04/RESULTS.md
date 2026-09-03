@@ -1,5 +1,27 @@
 # Seed target spec re-derived at the RATIFIED gate — what can seed the live Tradeify eval
 
+> ## ⚠ Reader-intercept 2026-09-03 — two figures below have since moved, one of them in the headline
+>
+> **1. The Part A ceiling is now 5.0%, not 3.0%** ([`prereg v2`](../../../../docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md)
+> §3, 2026-08-26). Every "ratified gate" figure below is scored against v1's superseded 3.0%.
+> The gate's *shape* (pass floor 50%, intraday-honest clock, ≥1 `trailing_locking`) is unchanged.
+>
+> **2. "96.9% account deletion" is an ENGINE figure, not a venue probability.** It is a
+> `bust_inactivity` rate from `core/mc/simulation.py`'s **rolling** consecutive-idle-business-day
+> counter. Tradeify's actual rule (art. 10468318) is a **per-Mon–Fri-week bucket**: ≥1 trade per
+> week. The two are not the same predicate — a calendar trading Mon-wk1 / Fri-wk2 / Mon-wk3 /
+> Fri-wk4 satisfies the venue in every week and still returns `bust_inactivity` on day 6 (measured
+> 2026-09-03). Every real breach does trip the counter, so **96.9% is a conservative UPPER BOUND on
+> venue deletion risk, not an estimate of it**; the true bucket-rule rate is unmeasured. The same
+> caution applies to the §-level venue-rules table below, which lists the engine's 5-idle-bday proxy
+> in a row of article-cited venue facts.
+>
+> **What this does NOT change:** the study's actual finding — that the weekly activity rule is the
+> binding constraint for a low-duty seed construct, and that the ~$24/yr token trade is
+> load-bearing — survives both corrections, and the second one only makes the barrier-ON arm
+> *less* severe. Body unedited (Trap #12); banner upstream per
+> [`operational_rules.md`](../../../../docs/operational_rules.md) §14.
+
 **Status:** ACTIVE — at the ratified Part A gate the eval's binding constraint for a seed construct is the **weekly activity rule and nothing else**. Duty cycle is irrelevant to passing once a token trade is delivered (pass ~99.4% from duty 1.00 down to 0.15); without one, pass collapses to **3.0%** at the incumbent book's 0.22 duty with **96.9% account deletion** — a **+96.3pp** swing bought by an instrument costing ~$24/yr. Target-spec limbs **T1, T2 and T7 are each materially tighter than the gate they feed**.
 
 **Scope:** measurement only. **$0 spent · K=0 consumed · no manifest opened · no `core/`, Pine, allocation, `dd_protection`, lifecycle-state or rail change.** ⚠ **F2 dependency (2026-08-06 / LAB-4):** S7 "unoccupied" reading in §7 is **pending fork F2** — symbols retained-not-released; see amendment under §7 table. No candidate is proposed, admitted, demoted or retired here. This maps a **venue acceptance region**; it scores no strategy.

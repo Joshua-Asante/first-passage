@@ -2,6 +2,26 @@
 
 # Payoff-shape feasibility map (Phase A Task A2 — the target spec)
 
+> ## ⚠ Reader-intercept 2026-09-03 — every `FEASIBLE` / `MARGINAL` / `INFEASIBLE` label in this map is keyed to the **superseded 3.0%** Part A ceiling
+>
+> **The live Part A eval bust ceiling is 5.0%, not 3.0%, since 2026-08-26** —
+> [`prereg v2`](../../../../docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md)
+> §3, which `lab/discovery/prop_survivor_scoring.py::DEFAULT_PREREG` now points at. This map was
+> swept and scored against
+> [`prereg v1`](../../../../docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md)'s
+> frozen `eval_bust_ceiling=0.03` (see §0's anchor table and §2's `DD_GATE=0.03`), and its
+> `main()` still asserts that value at every invocation. **The bust numbers in this map are
+> unaffected — only the verdict labels are.** A cell reading `MARGINAL` at 3.04% or `INFEASIBLE`
+> at 3.83% would score `FEASIBLE` against the live 5.0% ceiling.
+>
+> **Do not read a verdict label here as a live Part A verdict.** Re-scoring the 945-cell region at
+> 5.0% is unspent work with no operator GO; nothing in this banner performs it, and the pass floor
+> (`P(pass) ≥ 50%`) and the `trailing_locking` requirement are unchanged. Everything this map
+> establishes *without* reference to the ceiling — §6.1's Select≡MFFU bit-identity, §13.1/§13.3's
+> paired rope comparisons — is untouched, as is the 2026-08-24 intercept below. Frozen body
+> unedited (Trap #12); banner placed upstream of the labels per
+> [`operational_rules.md`](../../../../docs/operational_rules.md) §14.
+
 **Status:** **ACTIVE** — 945-cell region published (Tradeify Select / MFFU / **Tradeify Growth**, the last added 2026-08-24); Select≡MFFU bit-identical; 8/8 corner-case + 3/5 MARGINAL-band validation tuples resolve clean at full N (2/5 stay MARGINAL, 0 confident-verdict flips). §4 `sims_per_seed` reduction **operator-accepted 2026-08-24** (published region's N; not a frozen-N re-sweep; not a Phase B GO). ⚠ **§7.2's "no cell at win_rate ≤ 50% is FEASIBLE" is scoped to the $3,000 rope and does NOT hold for Growth's $3,500 rope — see §13.** Screens shape, not mechanisms.
 
 > ⚠ **2026-08-24 reader-intercept — §13.2's scoping of §7.2 does not survive a longer panel; frozen body unedited (Trap #12).**
