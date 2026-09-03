@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import csv
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, timezone
 from decimal import Decimal, InvalidOperation
 from hashlib import sha256
 import json
@@ -12,6 +13,8 @@ import re
 from types import MappingProxyType
 from typing import Literal, Mapping
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+import pandas as pd
 
 
 _HASH_RE = re.compile(r"[0-9a-f]{64}\Z")
@@ -43,9 +46,38 @@ _FEE_PAGE_DATE = "2026-04-28"
 _FEE_OBSERVED_DATE = "2026-09-02"
 _FEE_TOTALS_INCLUDE = "exchange, NFA, clearing, and commission"
 
+REQUIRED_COLUMNS = (
+    "Trade number",
+    "Type",
+    "Date and time",
+    "Signal",
+    "Price USD",
+    "Size (qty)",
+    "Size (value)",
+    "Net PnL USD",
+    "Return %",
+    "Commission USD",
+    "Favorable excursion USD",
+    "Favorable excursion %",
+    "Adverse excursion USD",
+    "Adverse excursion %",
+    "Cumulative PnL USD",
+    "Cumulative PnL %",
+    "Duration (bars)",
+)
+COLUMN_ALIASES = {
+    "Trade #": "Trade number",
+    "Net P&L USD": "Net PnL USD",
+}
+_DECIMAL_RE = re.compile(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)\Z")
+
 
 class SourceIdentityError(ValueError):
     """A configured source is absent, escapes its source directory, or changed."""
+
+
+class TradeExportSchemaError(ValueError):
+    """A TradingView trade-list export does not meet the frozen schema contract."""
 
 
 @dataclass(frozen=True)
@@ -96,6 +128,12 @@ class FeeSchedule:
     totals_include: str
     round_trip_usd: Mapping[str, Decimal]
     per_side_usd: Mapping[str, Decimal]
+
+
+@dataclass(frozen=True)
+class NormalizationResult:
+    events: pd.DataFrame
+    issues: tuple[Issue, ...]
 
 
 def _load_json(path: Path) -> object:
@@ -301,3 +339,177 @@ def load_fee_schedule(path: str | Path) -> FeeSchedule:
             {symbol: (amount / Decimal("2")).quantize(Decimal("0.01")) for symbol, amount in round_trip.items()}
         ),
     )
+
+
+def _normalized_headers(headers: list[str] | None) -> list[str]:
+    if headers is None:
+        raise TradeExportSchemaError("CSV export has no header row")
+    normalized: list[str] = []
+    for index, header in enumerate(headers):
+        if header is None:
+            raise TradeExportSchemaError("CSV export contains an unnamed header")
+        if index == 0:
+            header = header.removeprefix("\ufeff")
+        normalized.append(COLUMN_ALIASES.get(header, header))
+    duplicates = sorted({header for header in normalized if normalized.count(header) > 1})
+    if duplicates:
+        raise TradeExportSchemaError(f"duplicate canonical columns: {duplicates}")
+    required = set(REQUIRED_COLUMNS)
+    actual = set(normalized)
+    missing = sorted(required - actual)
+    unexpected = sorted(actual - required)
+    if missing:
+        raise TradeExportSchemaError(f"missing required columns: {missing}")
+    if unexpected:
+        raise TradeExportSchemaError(f"unexpected columns: {unexpected}")
+    return normalized
+
+
+def _parse_decimal(value: object, field: str) -> Decimal:
+    if not isinstance(value, str) or not value.strip():
+        raise TradeExportSchemaError(f"{field} must be a non-blank finite decimal")
+    text = value.strip()
+    if text.startswith("(") and text.endswith(")"):
+        text = text[1:-1].strip()
+        if text.startswith("$"):
+            text = text[1:]
+        text = f"-{text}"
+    if not _DECIMAL_RE.fullmatch(text):
+        raise TradeExportSchemaError(f"{field} must be a finite decimal")
+    try:
+        parsed = Decimal(text)
+    except InvalidOperation as exc:
+        raise TradeExportSchemaError(f"{field} must be a finite decimal") from exc
+    if not parsed.is_finite():
+        raise TradeExportSchemaError(f"{field} must be a finite decimal")
+    return parsed
+
+
+def _parse_positive_integral(value: object, field: str) -> int:
+    parsed = _parse_decimal(value, field)
+    if parsed <= 0 or parsed != parsed.to_integral_value():
+        raise TradeExportSchemaError(f"{field} must be a positive integral Decimal")
+    return int(parsed)
+
+
+def _classify_type(value: str) -> tuple[str, str]:
+    normalized = " ".join(value.strip().lower().split())
+    match normalized.split():
+        case ["entry", "long"]:
+            return "ENTRY", "LONG"
+        case ["entry", "short"]:
+            return "ENTRY", "SHORT"
+        case ["exit", "long"]:
+            return "EXIT", "LONG"
+        case ["exit", "short"]:
+            return "EXIT", "SHORT"
+        case _:
+            raise TradeExportSchemaError(f"unknown Type value: {value!r}")
+
+
+def _parse_timestamp(value: object) -> datetime:
+    if not isinstance(value, str):
+        raise TradeExportSchemaError("Date and time must be a string in %Y-%m-%d %H:%M format")
+    try:
+        return datetime.strptime(value, "%Y-%m-%d %H:%M")
+    except ValueError as exc:
+        raise TradeExportSchemaError(
+            f"Date and time must match %Y-%m-%d %H:%M exactly: {value!r}"
+        ) from exc
+
+
+def _localize_unambiguous(naive: datetime, zone: ZoneInfo) -> datetime:
+    valid_instants: dict[datetime, datetime] = {}
+    for fold in (0, 1):
+        localized = naive.replace(tzinfo=zone, fold=fold)
+        utc = localized.astimezone(timezone.utc)
+        round_trip = utc.astimezone(zone).replace(tzinfo=None)
+        if round_trip == naive:
+            valid_instants[utc] = localized
+    if len(valid_instants) != 1:
+        raise TradeExportSchemaError(
+            f"ambiguous or nonexistent DST wall time: {naive.strftime('%Y-%m-%d %H:%M')}"
+        )
+    return next(iter(valid_instants.values()))
+
+
+def _event_record(
+    row: Mapping[str, object], source_row_number: int, spec: SourceSpec
+) -> dict[str, object]:
+    timestamp_raw = row["Date and time"]
+    naive_datetime = _parse_timestamp(timestamp_raw)
+    type_raw = row["Type"]
+    if not isinstance(type_raw, str):
+        raise TradeExportSchemaError("Type must be a string")
+    event_type, direction = _classify_type(type_raw)
+    if not isinstance(row["Signal"], str):
+        raise TradeExportSchemaError("Signal must be a string")
+    event: dict[str, object] = {
+        "strategy_id": spec.strategy_id,
+        "source_trade_id": _parse_positive_integral(row["Trade number"], "Trade number"),
+        "source_row_number": source_row_number,
+        "timestamp_raw": timestamp_raw,
+        "timestamp_naive": pd.Timestamp(naive_datetime),
+        "timestamp_utc": pd.NaT,
+        "exchange_session_date": None,
+        "type_raw": type_raw,
+        "event_type": event_type,
+        "direction": direction,
+        "signal": row["Signal"],
+        "price_usd": _parse_decimal(row["Price USD"], "Price USD"),
+        "quantity": _parse_positive_integral(row["Size (qty)"], "Size (qty)"),
+        "size_value_usd": _parse_decimal(row["Size (value)"], "Size (value)"),
+        "net_pnl_usd": _parse_decimal(row["Net PnL USD"], "Net PnL USD"),
+        "return_pct": _parse_decimal(row["Return %"], "Return %"),
+        "commission_usd": _parse_decimal(row["Commission USD"], "Commission USD"),
+        "favorable_excursion_usd": _parse_decimal(
+            row["Favorable excursion USD"], "Favorable excursion USD"
+        ),
+        "favorable_excursion_pct": _parse_decimal(
+            row["Favorable excursion %"], "Favorable excursion %"
+        ),
+        "adverse_excursion_usd": _parse_decimal(
+            row["Adverse excursion USD"], "Adverse excursion USD"
+        ),
+        "adverse_excursion_pct": _parse_decimal(
+            row["Adverse excursion %"], "Adverse excursion %"
+        ),
+        "cumulative_pnl_usd": _parse_decimal(row["Cumulative PnL USD"], "Cumulative PnL USD"),
+        "cumulative_pnl_pct": _parse_decimal(row["Cumulative PnL %"], "Cumulative PnL %"),
+        "duration_bars": _parse_decimal(row["Duration (bars)"], "Duration (bars)"),
+    }
+    if spec.source_timezone is not None:
+        localized = _localize_unambiguous(naive_datetime, ZoneInfo(spec.source_timezone))
+        utc = localized.astimezone(timezone.utc)
+        event["timestamp_utc"] = pd.Timestamp(utc)
+        event["exchange_session_date"] = utc.astimezone(ZoneInfo(spec.session_timezone)).date()
+    return event
+
+
+def normalize_export(source: VerifiedSource) -> NormalizationResult:
+    """Parse a verified TradingView export into strictly typed, stable event rows."""
+    try:
+        handle = source.export_path.open(encoding="utf-8-sig", newline="")
+    except OSError as exc:
+        raise TradeExportSchemaError(f"cannot read TradingView export: {source.export_path.name}") from exc
+    with handle:
+        reader = csv.DictReader(handle)
+        _normalized_headers(reader.fieldnames)
+        events: list[dict[str, object]] = []
+        for source_row_number, raw in enumerate(reader, start=1):
+            if None in raw:
+                raise TradeExportSchemaError(
+                    f"source row {source_row_number} has more fields than the header"
+                )
+            canonical_row = {
+                COLUMN_ALIASES.get(header, header): value for header, value in raw.items()
+            }
+            events.append(_event_record(canonical_row, source_row_number, source.spec))
+    events.sort(key=lambda event: (event["timestamp_naive"], event["source_row_number"]))
+    timestamp_counts: dict[pd.Timestamp, int] = {}
+    for event in events:
+        timestamp = event["timestamp_naive"]
+        timestamp_counts[timestamp] = timestamp_counts.get(timestamp, 0) + 1
+    for event in events:
+        event["concurrent_timestamp"] = timestamp_counts[event["timestamp_naive"]] > 1
+    return NormalizationResult(events=pd.DataFrame(events), issues=())

@@ -3,6 +3,7 @@
 from hashlib import sha256
 import json
 from pathlib import Path
+import csv
 
 from decimal import Decimal
 
@@ -10,8 +11,10 @@ import pytest
 
 from research_utils.tv_trade_ledger import (
     SourceIdentityError,
+    TradeExportSchemaError,
     load_fee_schedule,
     load_source_specs,
+    normalize_export,
     verify_source_pair,
 )
 
@@ -183,3 +186,180 @@ def test_load_fee_schedule_rejects_duplicate_or_non_cent_rows(tmp_path):
     path.write_text(json.dumps(payload), encoding="utf-8")
     with pytest.raises(ValueError, match="two decimal places"):
         load_fee_schedule(path)
+
+
+_TV_HEADERS = [
+    "Trade number", "Type", "Date and time", "Signal", "Price USD",
+    "Size (qty)", "Size (value)", "Net PnL USD", "Return %", "Commission USD",
+    "Favorable excursion USD", "Favorable excursion %", "Adverse excursion USD",
+    "Adverse excursion %", "Cumulative PnL USD", "Cumulative PnL %", "Duration (bars)",
+]
+
+
+def _row(
+    trade_number: object,
+    type_: str,
+    timestamp: str,
+    *,
+    net: str = "0.00",
+    commission: str = "0.91",
+    quantity: str = "1",
+    **overrides: object,
+) -> dict[str, object]:
+    row: dict[str, object] = {
+        "Trade number": trade_number,
+        "Type": type_,
+        "Date and time": timestamp,
+        "Signal": "fixture signal",
+        "Price USD": "100.00",
+        "Size (qty)": quantity,
+        "Size (value)": "100.00",
+        "Net PnL USD": net,
+        "Return %": "0.00",
+        "Commission USD": commission,
+        "Favorable excursion USD": "0.00",
+        "Favorable excursion %": "0.00",
+        "Adverse excursion USD": "0.00",
+        "Adverse excursion %": "0.00",
+        "Cumulative PnL USD": net,
+        "Cumulative PnL %": "0.00",
+        "Duration (bars)": "0",
+    }
+    row.update(overrides)
+    return row
+
+
+def _verified_csv(
+    tmp_path: Path,
+    *,
+    rows: list[dict[str, object]],
+    source_timezone: str | None = None,
+    headers: list[str] | None = None,
+    bom: bool = False,
+):
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    export = tmp_path / "source.csv"
+    pine = tmp_path / "source.pine"
+    headers = headers or _TV_HEADERS
+    with export.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=headers, extrasaction="ignore")
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
+    if bom:
+        export.write_bytes(b"\xef\xbb\xbf" + export.read_bytes())
+    pine.write_text("pine", encoding="utf-8")
+    spec = _source_spec(
+        export_sha256=sha256(export.read_bytes()).hexdigest(),
+        pine_sha256=sha256(pine.read_bytes()).hexdigest(),
+        source_timezone=source_timezone,
+    )
+    return verify_source_pair(tmp_path, spec)
+
+
+def test_normalize_retains_exit_first_source_order_and_flags_timestamp_tie(tmp_path):
+    """Removing source-row tie breaking would reorder same-minute exit/entry data."""
+    source = _verified_csv(
+        tmp_path,
+        rows=[
+            _row(1, "Exit long", "2026-01-05 10:00", net="8.18", commission="1.82"),
+            _row(1, "Entry long", "2026-01-05 10:00", net="8.18", commission="1.82"),
+        ],
+    )
+
+    result = normalize_export(source)
+
+    assert result.events["source_row_number"].tolist() == [1, 2]
+    assert result.events["event_type"].tolist() == ["EXIT", "ENTRY"]
+    assert result.events["timestamp_utc"].isna().all()
+    assert result.events["exchange_session_date"].isna().all()
+    assert result.events["concurrent_timestamp"].tolist() == [True, True]
+
+
+def test_normalize_localizes_only_with_explicit_timezone(tmp_path):
+    """Ignoring configured source timezones would produce the wrong UTC instant."""
+    source = _verified_csv(
+        tmp_path,
+        rows=[_row(1, "Entry long", "2026-01-05 09:30")],
+        source_timezone="America/New_York",
+    )
+
+    event = normalize_export(source).events.iloc[0]
+
+    assert event["timestamp_utc"].isoformat() == "2026-01-05T14:30:00+00:00"
+    assert str(event["exchange_session_date"]) == "2026-01-05"
+
+
+def test_normalize_rejects_unknown_type_instead_of_guessing(tmp_path):
+    """Broad type matching would turn an unsupported source label into a trade event."""
+    source = _verified_csv(tmp_path, rows=[_row(1, "Buy maybe", "2026-01-05 09:30")])
+
+    with pytest.raises(TradeExportSchemaError, match="unknown Type.*Buy maybe"):
+        normalize_export(source)
+
+
+def test_normalize_accepts_bom_and_accounting_parentheses(tmp_path):
+    """Dropping BOM or accounting-negative handling would reject valid source CSV syntax."""
+    source = _verified_csv(
+        tmp_path,
+        rows=[_row(1, "Exit short", "2026-01-05 09:30", net="($12.34)")],
+        bom=True,
+    )
+
+    event = normalize_export(source).events.iloc[0]
+
+    assert event["net_pnl_usd"] == Decimal("-12.34")
+    assert event["source_trade_id"] == 1
+
+
+def test_normalize_rejects_missing_or_duplicate_canonical_columns(tmp_path):
+    """Relaxing exact canonical headers would hide incompatible export schemas."""
+    missing = _verified_csv(
+        tmp_path / "missing",
+        rows=[_row(1, "Entry long", "2026-01-05 09:30")],
+        headers=[header for header in _TV_HEADERS if header != "Signal"],
+    )
+    with pytest.raises(TradeExportSchemaError, match="missing required columns.*Signal"):
+        normalize_export(missing)
+
+    duplicate_headers = ["Trade #", *_TV_HEADERS]
+    duplicate = _verified_csv(
+        tmp_path / "duplicate",
+        rows=[_row(1, "Entry long", "2026-01-05 09:30", **{"Trade #": "1"})],
+        headers=duplicate_headers,
+    )
+    with pytest.raises(TradeExportSchemaError, match="duplicate canonical columns.*Trade number"):
+        normalize_export(duplicate)
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("Net PnL USD", "", "Net PnL USD"),
+        ("Size (qty)", "1.5", r"Size \(qty\).*positive integral"),
+        ("Price USD", "NaN", "Price USD.*finite"),
+        ("Price USD", "1,000.00", "Price USD.*decimal"),
+    ],
+)
+def test_normalize_rejects_invalid_required_numeric_values(tmp_path, field, value, message):
+    """Permitting blank, fractional, non-finite, or comma-formatted numerics corrupts accounting."""
+    source = _verified_csv(
+        tmp_path,
+        rows=[_row(1, "Entry long", "2026-01-05 09:30", **{field: value})],
+    )
+
+    with pytest.raises(TradeExportSchemaError, match=message):
+        normalize_export(source)
+
+
+@pytest.mark.parametrize("wall_time", ["2026-03-08 02:30", "2026-11-01 01:30"])
+def test_normalize_rejects_nonexistent_and_ambiguous_dst_wall_times(tmp_path, wall_time):
+    """Accepting DST gaps or folds would silently choose a distinct instant."""
+    source = _verified_csv(
+        tmp_path,
+        rows=[_row(1, "Entry long", wall_time)],
+        source_timezone="America/New_York",
+    )
+
+    with pytest.raises(TradeExportSchemaError, match="ambiguous or nonexistent"):
+        normalize_export(source)
