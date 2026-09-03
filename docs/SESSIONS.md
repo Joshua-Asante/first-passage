@@ -33,14 +33,14 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
-## 2026-09-03f — Phase 1 returned (PR #283): gate verdict `NEEDS_CONTEXT`; Striker identities contested by the pins
+## 2026-09-03i — Phase 1 returned (PR #283): gate verdict `NEEDS_CONTEXT`; Striker identities contested by the pins
 
 **Focus:** Hourly check-in found Codex's Phase 1 return — `codex/tradeify-stage1-normalization` @ `809bbb4`,
 [PR #283](https://github.com/Joshua-Asante/first-passage/pull/283) — and applied the frozen G1.1–G1.10 gate as a diff-plus-CI read with a worktree run,
 never opening vendor bytes and never merging.
 **Shipped:** [campaign-state artifact](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)
 update only — §2/§5 Phase 1 rows (`RETURNED — NEEDS_CONTEXT`), §4 verdict line, §6 D10/D11/D12, §7, §8, §9
-full read + seven-item re-anchor list. Verdict comment posted on #283; Codex prompt delivered in chat.
+full read + nine-item re-anchor list. Verdict comment posted on #283; Codex prompt delivered in chat.
 **Decisions/defects:** Verified on the branch: no vendor bytes, `cost_model.py` byte-unchanged, 125/125 tests,
 gate battery exit 0, required check green, both CATALOG rows, D9 applied, pyramid field on all seven, the
 daily 16:45 ET deadline audit with Friday→Sunday as a sub-count, micro-equivalent quantities, and **all seven
@@ -62,11 +62,14 @@ change. $0/K=0.
 **Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
 campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — Phase 1 `RETURNED —
 NEEDS_CONTEXT` on #283 @ `809bbb4`; operator rules D10 (Striker identities), D11 (re-express or drop the
-deadline-spanning three), D12 (early-close calendar); Codex runs the seven-item re-anchor round; orchestrator
+deadline-spanning three), D12 (early-close calendar); Codex runs the nine-item re-anchor round; orchestrator
 re-verdicts on the delta (check-in armed); D7 open pending purge · `#2`
 [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
 — unchanged.
 **Live-ops state:** unchanged — c1 rail disarmed, `dry_run=true`, M1 not `RESOLVED`, no arm.
+
+---
+
 ## 2026-09-03h — Catalog In-flight H3 strip + sessions append-only restore
 
 **Focus:** Codex P2 on #280: In flight still entered retrieval via the pre-`###` H3 chunk. CI `skills` failed because `2026-09-03d` was mutated after #276 merged.
