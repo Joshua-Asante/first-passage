@@ -1,13 +1,13 @@
 # Tradeify Seven-Strategy Phase 1 Normalization Design
 
-**Status:** Approved by the operator on 2026-09-02  
-**Branch:** `codex/tradeify-stage1-normalization`  
-**Base:** `e8694a9127fe42642253196b1451e8a0916d817d`  
+**Status:** Approved by the operator on 2026-09-02
+**Branch:** `codex/tradeify-stage1-normalization`
+**Base:** `11d22e280db71d798f5c4e37edd85a62bc71f392`
 **Claim class:** `EXPLORATORY`
 
 ## 1. Goal and scope
 
-Build a deterministic, strict reconciliation pipeline for the seven supplied TradingView Pine/CSV pairs. The pipeline converts every source row into a canonical event representation, reconstructs one accounting record per trade, validates instrument and venue constraints, and emits one aggregate reconciliation report per strategy plus a joint-ledger manifest.
+Build a deterministic, strict reconciliation pipeline for the seven supplied TradingView Pine/CSV pairs. The pipeline folds the skipped Phase 0 inventory duties into Phase 1, converts every source row into a canonical event representation, reconstructs one accounting record per trade, validates instrument and venue constraints, and emits one aggregate reconciliation report per strategy plus a joint-ledger manifest.
 
 The operator explicitly skipped Phase 0. Therefore all supplied history is consumed development data. Nothing produced by this phase may be described as untouched, out-of-sample, confirmatory, qualified, admitted, or deployable.
 
@@ -25,7 +25,7 @@ The source directory is supplied at runtime and is not encoded as an absolute pa
 | `striker_dj30_mym_v45` | `MYM` | `striker_dj30_v4.5_mym.pine` (`5c4b1026cb6f3a475dba962783b2a053e9fbeb123570dd964d7154ea80b3f9d0`) | `Striker_DJ30_v4.5_MYM_CBOT_MINI_MYM1!_2026-09-02_4e60e.csv` (`7082a16d5ec8b17dafa4bf0b026c0a5dc23190de9d21d4036700f0ce97448c63`) | prior repo lineage differs from this supplied Pine revision |
 | `striker_nas100_mnq_v1` | `MNQ` | `striker_nas100_v1_mnq.pine` (`d18c2699ea3856df884eced84c9384adea953f3a2470bea4f2d671b6cd294057`) | `Striker_NAS100_MNQ_CME_MINI_MNQ1!_2026-09-02_57a64.csv` (`edfe73c60b441c13855d0129dc82e830b032b7159313519d5a212a97cf30f22a`) | prior repo lineage differs from this supplied Pine revision |
 | `striker_nas100_mym_prototype` | `MYM` | `striker_nas100_v1_mym_qtxg1_prototype.pine` (`19264da29a3d9a30200600689e1950931f1abfb648e9071a232ee83fdec2756c`) | `Striker_NAS100_MYM_QTXG1_CME_MINI_MNQ1!_2026-09-02_304f8.csv` (`f1e35c4ee1c9735c3ebbed99648a42034d9b3f57b53960f9e41f6e6c09b25f9c`) | intended `MYM`, export filename/price scale identifies `MNQ` |
-| `vanguard_mgc_v04` | `MGC` | `Vanguard_Gold_MGC_v0.4.pine` (`ae5fd66ce51c478187c605574a03f89a64e6f8f245e77477eeaedd1efe2cf772`) | `Vanguard_Gold_Futures_v0.4_(MGC)_COMEX_MINI_MGC1!_2026-09-02_65e4e.csv` (`491d41c7168b1a9645efb74fb4ac9b898c8a6e3a5ce4c8fbbc4ddd5c9e6ced83`) | Tradeify MGC commission basis is not present in the production firm table |
+| `vanguard_mgc_v04` | `MGC` | `Vanguard_Gold_MGC_v0.4.pine` (`ae5fd66ce51c478187c605574a03f89a64e6f8f245e77477eeaedd1efe2cf772`) | `Vanguard_Gold_Futures_v0.4_(MGC)_COMEX_MINI_MGC1!_2026-09-02_65e4e.csv` (`491d41c7168b1a9645efb74fb4ac9b898c8a6e3a5ce4c8fbbc4ddd5c9e6ced83`) | venue fee is `$2.12` round trip; continuous-symbol roll provenance remains absent |
 
 Hash mismatch, missing file, extra configured source, or filename mismatch is a hard intake error. A configured instrument disagreement is a reportable blocking issue; it is never repaired by substituting an instrument.
 
@@ -34,6 +34,7 @@ Hash mismatch, missing file, extra configured source, or filename mismatch is a 
 The fourteen supplied files and the generated row-level event/trade ledgers remain local and gitignored. Git receives only:
 
 - source basenames and SHA-256 pins;
+- a compact primary-source Tradeify fee capture and its SHA-256;
 - implementation and deterministic synthetic fixtures/tests;
 - aggregate reconciliation JSON and Markdown;
 - row counts, date bounds, metrics, issue counts, and output hashes;
@@ -45,9 +46,9 @@ The campaign runner writes local material under `local_artifacts/`. The director
 
 ### 4.1 Frozen campaign configuration
 
-`phase1_config.json` defines each strategy ID, source basenames/hashes, intended instrument, instrument encoded by the export filename, Pine-declared commission/slippage, and nullable `source_timezone`.
+`phase1_config.json` defines each strategy ID, source basenames/hashes, intended instrument, instrument encoded by the export filename, Pine-declared commission/slippage, declared bar size/session/direction evidence, platform and lineage notes, quantity convention, continuous-symbol status, and nullable `source_timezone`.
 
-`source_timezone` starts as `null` for all seven strategies because a TradingView trade-list CSV does not encode the chart display timezone. Session labels in Pine are evidence about strategy logic, not evidence about the CSV display timezone.
+`source_timezone` starts as `null` for all seven strategies because a TradingView trade-list CSV does not encode the chart display timezone. Session labels in Pine are evidence about strategy logic, not evidence about the CSV display timezone. Direction, bar-size, session, venue, scalar-MAE, and synchronized-intraday-path availability are inventoried without inferring missing evidence.
 
 ### 4.2 Strict source normalization
 
@@ -88,9 +89,15 @@ For each structurally valid strategy, compute from exit-designated trade rows:
 - overnight, cross-date, and Friday-to-Sunday holds;
 - same-timestamp ordering ambiguity.
 
-The cost layer adds the verified 6J instrument specification (`multiplier=12_500_000`, `tick_size=0.0000005`, `tick_value=6.25`) to `cost_model.py`. MNQ/MYM resolve the production Tradeify index-micro fee. 6J and MGC must use explicit campaign fee evidence; neither may inherit the index-micro scalar. Pine-declared/export-implied/venue fee bases are reported separately.
+The cost layer leaves `lab/discovery/cost_model.py` unchanged: its closed-world separation between instrument geometry and the production index-micro fee scalar is intentional. Campaign-local geometry includes the repo-verified 6J specification (`multiplier=12_500_000`, `tick_size=0.0000005`, `tick_value=6.25`) and reuses existing MNQ/MYM/MGC geometry.
+
+`tradeify_commission_schedule.json` captures and hashes the four relevant rows from Tradeify's primary commission schedule (`https://help.tradeify.co/en/articles/10468315-trading-commission-fees`, page date 2026-04-28, observed 2026-09-02). Total round-trip costs are 6J `$6.20`, MNQ `$1.82`, MYM `$1.82`, and MGC `$2.12`, inclusive of exchange, NFA, clearing, and commissions. The runner derives per-side values of `$3.10`, `$0.91`, `$0.91`, and `$1.06` and reconciles them to `core/firm_rules.py` comments without using its index-micro scalar as a non-index resolver. Pine-declared, export-implied, and venue fee bases remain separate report fields.
+
+Bid/ask spread is recorded as not separately observable in the TradingView trade list. Pine-declared adverse slippage ticks and fill-price-derived P&L are retained separately; the runner never invents a spread or double-charges slippage already embedded in fills.
 
 Venue checks identify violations but never edit trades. In particular, ORB-MNQ's three Friday-to-Sunday holds remain in every total and are emitted as `FORCE_FLAT_VIOLATION` blockers.
+
+All seven exports identify continuous `1!` chart symbols rather than specific tradable contract months. Each report emits `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED`; without a roll ledger or individual-contract export, Phase 1 cannot prove which contract generated a fill or whether a fill crosses a back-adjustment seam.
 
 ### 4.5 Joint ledger and weekly adapter
 
@@ -115,7 +122,7 @@ Each strategy status is one of:
 - `BLOCKED_EXPLORATORY`: at least one structural, identity, timezone, cost, or venue blocker remains;
 - `FAILED_INTAKE`: source identity/schema prevented normalization.
 
-The campaign-wide status is the most severe constituent status. Unknown timezone and absent authoritative venue fees remain explicit blocker dimensions; they do not prevent the remaining accounting report from being produced.
+The campaign-wide status is the most severe constituent status. Unknown timezone and unresolved continuous-contract rolls remain explicit blocker dimensions; they do not prevent the remaining accounting report from being produced.
 
 ## 5. Frozen tolerances and ordering
 
@@ -140,14 +147,16 @@ No result may tune, delete, relabel, roll, or shift a source trade to improve re
 
 The implementation is accepted when:
 
-1. Synthetic tests prove strict schema/hash behavior, Decimal parsing, duplicate/orphan handling, timezone/DST handling, stable ties, tick conversion, cost gaps, overlap/cap measurement, force-flat reporting, weekly zero-fill, and deterministic output.
-2. Existing `test_cost_model.py` continues to pass after adding 6J.
-3. A local smoke run verifies all fourteen frozen hashes and produces seven reports plus joint-ledger hashes without committing source or row-level data.
-4. The run reports the observed row/trade counts: Aegis `244/122`, ORB-MNQ `1362/681`, DJ30-MNQ prototype `406/203`, DJ30-MYM `406/203`, NAS100-MNQ `756/378`, NAS100-MYM prototype `368/184`, Vanguard-MGC `686/343`.
-5. Aggregate net P&L reproduces to the cent: `$28,702.75`, `$47,533.16`, `$10,208.62`, `$31,770.36`, `$112,253.42`, `$170,250.58`, and `$20,388.04`, respectively.
-6. The ORB-MNQ report contains exactly three Friday-to-Sunday force-flat violations.
-7. Aegis reports the `$1.30` Pine versus `$3.10` export-implied commission mismatch; MGC reports the missing authoritative Tradeify commission basis; both remain unaltered.
-8. Committed artifacts contain no `C:\Users\...` source path and no raw row-level ledger.
+1. Synthetic tests prove strict schema/hash behavior, Decimal parsing, duplicate/orphan handling, timezone/DST handling, stable ties, tick conversion, fee-table reconciliation, overlap/cap measurement, force-flat reporting, weekly zero-fill, and deterministic output.
+2. `lab/discovery/cost_model.py` remains byte-unchanged, and the existing cost-model tests still pass.
+3. Existing production firm-barrier tests for Tradeify trailing drawdown, intraday lows, lock behavior, consistency, and horizon-cap outcomes pass and are recorded in the verification evidence.
+4. A local smoke run verifies all fourteen frozen hashes and produces seven reports plus joint-ledger hashes without committing source or row-level data.
+5. The run reports the observed row/trade counts: Aegis `244/122`, ORB-MNQ `1362/681`, DJ30-MNQ prototype `406/203`, DJ30-MYM `406/203`, NAS100-MNQ `756/378`, NAS100-MYM prototype `368/184`, Vanguard-MGC `686/343`.
+6. Aggregate net P&L reproduces to the cent: `$28,702.75`, `$47,533.16`, `$10,208.62`, `$31,770.36`, `$112,253.42`, `$170,250.58`, and `$20,388.04`, respectively.
+7. The ORB-MNQ report contains exactly three Friday-to-Sunday force-flat violations.
+8. Aegis reports the `$1.30` Pine versus `$3.10` export-implied commission mismatch. MGC matches the primary-source `$1.06` per-side row. Both source streams remain unaltered.
+9. Every strategy reports missing contract-month/roll provenance for its continuous `1!` export.
+10. Committed artifacts contain no `C:\Users\...` source path and no raw row-level ledger.
 
 ## 8. Explicit exclusions
 

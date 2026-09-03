@@ -4,7 +4,7 @@
 
 **Goal:** Build and run a strict, deterministic, exploratory normalization and reconciliation pipeline for the seven supplied TradingView Pine/CSV pairs.
 
-**Architecture:** Reusable `research_utils` modules verify source identity, normalize TradingView events, reconstruct trades, calculate accounting/venue checks, and build deterministic joint weekly blocks. A campaign-local runner loads a frozen JSON mapping, writes full row-level outputs only to a gitignored directory, and commits aggregate reports and hashes.
+**Architecture:** Reusable `research_utils` modules verify source identity, normalize TradingView events, reconstruct trades, calculate accounting/venue checks from a campaign-local primary-source fee table, and build deterministic joint weekly blocks. A campaign-local runner loads a frozen JSON mapping, writes full row-level outputs only to a gitignored directory, and commits aggregate reports and hashes.
 
 **Tech Stack:** Python 3.11+, standard-library `dataclasses`, `decimal`, `hashlib`, `json`, `pathlib`, and `zoneinfo`; pandas; pytest; existing `lab.discovery.cost_model` and `core.firm_rules`.
 
@@ -17,7 +17,8 @@
 - Keep the fourteen supplied files and generated row-level ledgers out of Git under campaign-local `local_artifacts/`.
 - Preserve source rows and source ordering; never repair, delete, shift, roll, or relabel a source event.
 - Keep `timestamp_utc` and `exchange_session_date` null until a source timezone is explicitly configured.
-- Resolve MNQ/MYM fees through production Tradeify rules; never apply that scalar to 6J or MGC.
+- Use the hashed primary-source Tradeify schedule for 6J/MNQ/MYM/MGC fees and reconcile it to production comments; never use `cost_model.resolve_commission` as the Phase 1 fee resolver.
+- Keep `lab/discovery/cost_model.py` byte-unchanged; its closed-world guard is intentional.
 - Use `Decimal` for source money and quantity parsing; aggregate currency tolerance is exactly `$0.01`.
 - A source hash/schema failure aborts the complete campaign; a strategy reconciliation blocker still produces that strategy's report.
 - Do not modify Pine, strategy locks, allocation, `dd_protection`, lifecycle, rail, or deployment code.
@@ -30,8 +31,8 @@
 - `lab/research_utils/tv_trade_ledger.py`: frozen configuration types, source hashing, strict TradingView CSV parsing, event normalization, and timestamp localization.
 - `lab/research_utils/trade_reconciliation.py`: strict trade reconstruction, accounting metrics, position exposure bounds, and stable issue records.
 - `lab/research_utils/joint_trade_blocks.py`: deterministic cross-strategy event union and zero-filled ISO-week exit blocks.
-- `lab/discovery/cost_model.py`: add the verified 6J contract specification while preserving explicit commission gaps.
 - `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json`: exact fourteen-file mapping and hashes.
+- `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/tradeify_commission_schedule.json`: primary-source 6J/MNQ/MYM/MGC round-trip fee capture and provenance.
 - `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/run_phase1.py`: command-line orchestration, atomic local outputs, aggregate JSON, and Markdown rendering.
 - `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/.gitignore`: exclude `local_artifacts/`.
 - `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/README.md`: claim boundary, invocation, output ownership, and issue interpretation.
@@ -41,6 +42,7 @@
 - `tests/test_trade_reconciliation.py`: pairing, accounting, exposure, fee, and force-flat tests.
 - `tests/test_joint_trade_blocks.py`: deterministic joint ordering and weekly zero-fill tests.
 - `tests/test_tradeify_phase1_runner.py`: synthetic end-to-end output, exit-code, determinism, and data-leak tests.
+- Existing `tests/core/test_mc_intraday_barrier.py`, `tests/core/test_trailing_dd_boundary.py`, `tests/core/test_trailing_locking_boundary.py`, and `tests/core/test_mc_preflight.py`: unchanged production firm-barrier verification evidence.
 
 ---
 
@@ -49,11 +51,12 @@
 **Files:**
 - Create: `lab/research_utils/tv_trade_ledger.py`
 - Create: `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json`
+- Create: `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/tradeify_commission_schedule.json`
 - Create: `tests/test_tv_trade_ledger.py`
 
 **Interfaces:**
 - Consumes: JSON configuration path and a runtime source directory.
-- Produces: `Issue`, `SourceSpec`, `VerifiedSource`, `load_source_specs(path)`, `sha256_file(path)`, and `verify_source_pair(source_dir, spec)`.
+- Produces: `Issue`, `SourceSpec`, `VerifiedSource`, `FeeSchedule`, `load_source_specs(path)`, `load_fee_schedule(path)`, `sha256_file(path)`, and `verify_source_pair(source_dir, spec)`.
 
 - [ ] **Step 1: Write failing configuration and hash tests**
 
@@ -127,6 +130,13 @@ class SourceSpec:
     pine_sha256: str
     source_timezone: str | None
     session_timezone: str
+    declared_bar_size_minutes: int
+    declared_session: str
+    direction_evidence: str
+    quantity_convention: str
+    continuous_symbol: bool
+    synchronized_intraday_path_available: bool
+    lineage_notes: tuple[str, ...]
     pine_commission_per_side_usd: Decimal
     pine_slippage_ticks_per_side: Decimal
     contract_cap: int
@@ -139,11 +149,13 @@ class VerifiedSource:
     pine_path: Path
 ```
 
-Implement `load_source_specs()` with exact required keys, `claim_class == "EXPLORATORY"`, unique strategy IDs and basenames, 64-character lowercase hexadecimal hashes, valid IANA `session_timezone`, and nullable valid IANA `source_timezone`. Implement `verify_source_pair()` using resolved child paths, basename equality, regular-file checks, and byte-stream SHA-256 comparison.
+Implement `load_source_specs()` with exact required keys, `claim_class == "EXPLORATORY"`, unique strategy IDs and basenames, 64-character lowercase hexadecimal hashes, valid IANA `session_timezone`, and nullable valid IANA `source_timezone`. Validate positive bar size/cap, non-empty inventory strings, and `continuous_symbol is True` for this frozen source set. Implement `verify_source_pair()` using resolved child paths, basename equality, regular-file checks, and byte-stream SHA-256 comparison.
 
 - [ ] **Step 4: Freeze all fourteen source pins in configuration**
 
-Create `phase1_config.json` with the seven rows and exact hashes from the approved design. Set every `source_timezone` to `null`. Set session timezones to `America/New_York` for Aegis, ORB-MNQ, and Vanguard; set them to `UTC` for the four Striker variants. Encode intended/export instruments separately so the two prototype mismatches remain visible. Set contract caps to `8` for 6J and `80` for MNQ, MYM, and MGC.
+Create `phase1_config.json` with the seven rows and exact hashes from the approved design. Set every `source_timezone` to `null`, every bar size to 15 minutes, and every synchronized-intraday-path flag to false. Set session timezones to `America/New_York` for Aegis, ORB-MNQ, and Vanguard; set them to `UTC` for the four Striker variants. Record Aegis `10:00-13:45 America/New_York, Mon-Wed` with its separate 16:30 force-flat, ORB `09:15-16:55 America/New_York`, each Striker `13:00-17:00 UTC` with 15:45 America/New_York force-flat, and Vanguard `09:00-16:59 America/New_York`. Encode intended/export instruments separately so the two prototype mismatches remain visible. Set contract caps to `8` for 6J and `80` for MNQ, MYM, and MGC. Record quantity as integer contracts, continuous-symbol status as true, and the known tuning/lineage concerns from the approved design.
+
+Create `tradeify_commission_schedule.json` as a compact primary-source capture with source URL `https://help.tradeify.co/en/articles/10468315-trading-commission-fees`, page date `2026-04-28`, observation date `2026-09-02`, the statement that totals include exchange, NFA, clearing, and commission, and exact round-trip rows `6J=6.20`, `MNQ=1.82`, `MYM=1.82`, `MGC=2.12`. `load_fee_schedule()` validates the source metadata, unique symbols, positive two-decimal round-trip amounts, and derives per-side values using `Decimal` division by two. Add behavior tests for the four values and duplicate/malformed rows.
 
 - [ ] **Step 5: Run identity tests and the real read-only hash gate**
 
@@ -162,7 +174,7 @@ Expected: `14/14 hashes verified`.
 - [ ] **Step 6: Commit the identity boundary**
 
 ```bash
-git add lab/research_utils/tv_trade_ledger.py lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json tests/test_tv_trade_ledger.py
+git add lab/research_utils/tv_trade_ledger.py lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/tradeify_commission_schedule.json tests/test_tv_trade_ledger.py
 git commit -m "feat: freeze Tradeify phase 1 source identity"
 ```
 
@@ -279,7 +291,7 @@ git commit -m "feat: normalize TradingView events strictly"
 
 **Interfaces:**
 - Consumes: normalized event DataFrames, `Issue`, and `SourceSpec` from Tasks 1–2.
-- Produces: `ReconstructionResult(trades, issues)`, `reconstruct_trades(events, spec)`, `AccountingMetrics`, and `calculate_accounting(trades)`.
+- Produces: `InstrumentGeometry`, `instrument_geometry(symbol)`, `ReconstructionResult(trades, issues)`, `reconstruct_trades(events, spec)`, `AccountingMetrics`, and `calculate_accounting(trades)`.
 
 - [ ] **Step 1: Write failing strict-pairing tests**
 
@@ -313,6 +325,13 @@ def test_reconstruct_validates_price_pnl_identity():
     trade = result.trades.iloc[0]
     assert trade["gross_pnl_usd"] == Decimal("4.00")
     assert not result.issues
+
+
+def test_6j_campaign_geometry_supports_price_identity_without_changing_cost_model():
+    geometry = instrument_geometry("6J")
+    assert geometry.multiplier == Decimal("12500000")
+    assert geometry.tick_size == Decimal("0.0000005")
+    assert geometry.tick_value == Decimal("6.25")
 ```
 
 Add cases for direction disagreement, exit before entry, unequal quantities, duplicated trade-summary fields that differ by more than `$0.01`, and scalar MAE/MFE retaining the `excursion-bounded` label.
@@ -326,6 +345,8 @@ Expected: collection fails because `research_utils.trade_reconciliation` does no
 - [ ] **Step 3: Implement strict trade reconstruction**
 
 For each `source_trade_id`, count entry and exit rows before accessing either. Emit stable blocker codes for zero/duplicate legs and retain all source row numbers in each issue. Require matching direction and quantity and `entry_timestamp <= exit_timestamp`.
+
+Define campaign-local 6J geometry as `multiplier=12500000`, `tick_size=0.0000005`, `tick_value=6.25`. For MNQ/MYM/MGC, convert the existing `cost_model.INSTRUMENT_SPECS` values to `Decimal(str(value))` at the boundary. Do not modify `cost_model.py`.
 
 Build one row per valid trade with:
 
@@ -380,59 +401,55 @@ git commit -m "feat: reconstruct and reconcile export trades"
 
 ---
 
-### Task 4: Add instrument, cost, exposure, and force-flat checks
+### Task 4: Add fee, exposure, roll, and force-flat checks
 
 **Files:**
-- Modify: `lab/discovery/cost_model.py`
-- Modify: `tests/test_cost_model.py`
 - Modify: `lab/research_utils/trade_reconciliation.py`
 - Modify: `tests/test_trade_reconciliation.py`
 
 **Interfaces:**
-- Consumes: reconstructed trades, `SourceSpec`, `cost_model.INSTRUMENT_SPECS`, and `cost_model.resolve_commission`.
-- Produces: `VenueMetrics`, `analyze_venue(trades, spec)`, and stable cost/instrument issue codes.
+- Consumes: reconstructed trades, `SourceSpec`, `FeeSchedule`, and `instrument_geometry(symbol)` from Task 3.
+- Produces: `VenueMetrics`, `analyze_venue(trades, spec, fee_schedule)`, and stable fee/instrument issue codes.
 
-- [ ] **Step 1: Write the failing 6J specification and fee-gap tests**
+- [ ] **Step 1: Write failing primary-fee reconciliation tests**
 
 ```python
-def test_6j_contract_spec_is_verified_standard_contract():
-    spec = cost_model.INSTRUMENT_SPECS["6J"]
-    assert spec.multiplier == pytest.approx(12_500_000.0)
-    assert spec.tick_size == pytest.approx(0.0000005)
-    assert spec.tick_value == pytest.approx(6.25)
-
-
-def test_6j_does_not_inherit_index_micro_commission():
-    with pytest.raises(ValueError, match="6J"):
-        cost_model.resolve_commission("Tradeify_Select_100K", "6J")
+@pytest.mark.parametrize(
+    ("symbol", "commission", "per_side"),
+    [("6J", "6.20", "3.10"), ("MNQ", "1.82", "0.91"),
+     ("MYM", "1.82", "0.91"), ("MGC", "2.12", "1.06")],
+)
+def test_primary_schedule_drives_phase1_fee_reconciliation(
+    fee_schedule, symbol, commission, per_side
+):
+    trades = _trades(_trade(1, commission=commission, qty=1))
+    venue = analyze_venue(trades, _spec(instrument=symbol), fee_schedule)
+    assert venue.venue_commission_per_side_usd == Decimal(per_side)
+    assert "EXPORT_VENUE_COMMISSION_MISMATCH" not in _issue_codes(venue)
 ```
 
-- [ ] **Step 2: Run the cost tests and confirm failure**
+- [ ] **Step 2: Run the focused tests and confirm failure**
 
-Run: `python -m pytest tests/test_cost_model.py -q`
+Run: `python -m pytest tests/test_trade_reconciliation.py -q`
 
-Expected: FAIL because 6J is absent from the instrument table.
+Expected: FAIL because `analyze_venue` and its fee reconciliation are absent.
 
-- [ ] **Step 3: Add 6J without inventing a firm commission row**
-
-Add `"6J": InstrumentSpec("6J", 12_500_000.0, 0.0000005, 6.25)` and add `6J` to `NO_COMMISSION_ROW_INSTRUMENTS`. Preserve the existing whole-table tick-value invariant.
-
-- [ ] **Step 4: Write failing venue tests**
+- [ ] **Step 3: Write failing venue, roll, and spread tests**
 
 ```python
-def test_exposure_reports_tie_order_bounds():
+def test_exposure_reports_tie_order_bounds(fee_schedule):
     trades = _overlapping_trades_same_boundary(qty=50)
-    venue = analyze_venue(trades, _spec(instrument="MNQ", contract_cap=80))
+    venue = analyze_venue(trades, _spec(instrument="MNQ", contract_cap=80), fee_schedule)
     assert venue.peak_open_quantity_min == 50
     assert venue.peak_open_quantity_max == 100
-    assert _issue_codes(venue) == {"CAP_STATUS_AMBIGUOUS_AT_TIMESTAMP_TIE"}
+    assert "CAP_STATUS_AMBIGUOUS_AT_TIMESTAMP_TIE" in _issue_codes(venue)
 
 
-def test_friday_to_sunday_hold_is_a_blocker_and_trade_is_retained():
+def test_friday_to_sunday_hold_is_a_blocker_and_trade_is_retained(fee_schedule):
     trades = _trades(
         _trade_between(41, "2026-01-09 10:00", "2026-01-11 18:00", "25.00")
     )
-    venue = analyze_venue(trades, _spec())
+    venue = analyze_venue(trades, _spec(), fee_schedule)
     assert venue.trade_count == 1
     assert venue.friday_to_sunday_holds == 1
     issue = next(i for i in venue.issues if i.code == "FORCE_FLAT_VIOLATION")
@@ -440,35 +457,56 @@ def test_friday_to_sunday_hold_is_a_blocker_and_trade_is_retained():
     assert issue.severity == "BLOCKER"
 
 
-def test_aegis_pine_and_export_commissions_are_reported_separately():
+def test_aegis_pine_export_and_venue_commissions_stay_separate(fee_schedule):
     trades = _trades(_trade(1, "2026-01-05 10:00", "50.20", "24.80", qty=4))
-    venue = analyze_venue(trades, _spec(instrument="6J", pine_commission="1.30"))
+    venue = analyze_venue(
+        trades, _spec(instrument="6J", pine_commission="1.30"), fee_schedule
+    )
     assert venue.export_implied_commission_per_side_usd == Decimal("3.10")
-    assert any(i.code == "PINE_EXPORT_COMMISSION_MISMATCH" for i in venue.issues)
+    assert venue.venue_commission_per_side_usd == Decimal("3.10")
+    assert "PINE_EXPORT_COMMISSION_MISMATCH" in _issue_codes(venue)
+    assert "EXPORT_VENUE_COMMISSION_MISMATCH" not in _issue_codes(venue)
+
+
+def test_continuous_contract_and_unobservable_spread_are_explicit(fee_schedule):
+    venue = analyze_venue(_trades(_trade(1)), _spec(continuous_symbol=True), fee_schedule)
+    assert "CONTINUOUS_CONTRACT_ROLL_UNRESOLVED" in _issue_codes(venue)
+    assert venue.bid_ask_spread_status == "NOT_SEPARATELY_OBSERVABLE"
+    assert venue.slippage_basis == "PINE_DECLARED_TICKS_AND_FILL_PRICES"
 ```
 
-Add tests for off-tick prices, intended/encoded instrument mismatch, confirmed cap breach, non-overlap, MGC explicit venue-fee blocker, and MNQ/MYM resolving `$0.91` per side from `Tradeify_Select_100K`.
+Add tests for off-tick prices, intended/encoded instrument mismatch, confirmed cap breach, non-overlap, MGC matching `$1.06` per side, MNQ/MYM matching `$0.91`, variable export commissions, and a source marked non-continuous producing no roll issue.
 
-- [ ] **Step 5: Implement tick, fee, exposure-bound, and hold analysis**
+- [ ] **Step 4: Implement geometry, tick, fee, roll, exposure, and hold analysis**
 
-For tick validation, divide source price by tick size in `Decimal` and require distance to the nearest integral tick to be no more than `1e-9` tick.
+Use Task 3's campaign geometry. For tick validation, divide source price by tick size and require distance to the nearest integral tick to be no more than `1e-9` tick.
 
-Infer export commission per side as `commission / (2 * quantity)` only for one-entry/one-exit trades. If values vary, report their sorted unique values and emit `VARIABLE_EXPORT_COMMISSION` rather than averaging.
+Infer export commission per side as `commission / (2 * quantity)` only for one-entry/one-exit trades. If values vary, report sorted unique values and emit `VARIABLE_EXPORT_COMMISSION` rather than averaging. Read all venue fees from `FeeSchedule`; compare venue, Pine, and export-implied bases separately at `$0.01`. Do not call `resolve_commission` and do not add 6J to `cost_model.py`.
 
-Resolve the venue fee only for index micros. Emit `MISSING_AUTHORITATIVE_VENUE_COMMISSION` for 6J/MGC when the campaign has no explicit authoritative value. Compare Pine and export-implied bases separately at `$0.01`.
+Emit `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED` for a `continuous_symbol` source and record that contract-month and roll-seam attribution are unavailable. Record bid/ask spread as `NOT_SEPARATELY_OBSERVABLE`; record Pine-declared slippage ticks and fill-based accounting without adding either cost again.
 
 Compute exposure twice at equal timestamps: exits-before-entries for the minimum and entries-before-exits for the maximum. A minimum over cap is `CONTRACT_CAP_BREACH`; only the maximum over cap is `CAP_STATUS_AMBIGUOUS_AT_TIMESTAMP_TIE`. Emit `CROSS_DATE_HOLD` for every raw-date boundary and `FORCE_FLAT_VIOLATION` for each Friday-to-Sunday hold.
 
-- [ ] **Step 6: Verify cost and venue behavior**
+- [ ] **Step 5: Verify fee, venue, and unchanged closed-world behavior**
 
-Run: `python -m pytest tests/test_cost_model.py tests/test_trade_reconciliation.py -q`
+Run: `python -m pytest tests/test_trade_reconciliation.py tests/test_cost_model.py -q`
 
-Expected: PASS.
+Expected: PASS; `git diff --exit-code 11d22e280db71d798f5c4e37edd85a62bc71f392 -- lab/discovery/cost_model.py` also exits `0`.
+
+- [ ] **Step 6: Verify the existing production firm-barrier contract**
+
+Run:
+
+```bash
+python -m pytest tests/core/test_mc_intraday_barrier.py tests/core/test_trailing_dd_boundary.py tests/core/test_trailing_locking_boundary.py tests/core/test_mc_preflight.py -q
+```
+
+Expected: PASS. Record this unchanged-code run in the Task 4 report and final Phase 1 verification evidence rather than duplicating production barrier tests in a campaign test.
 
 - [ ] **Step 7: Commit venue checks**
 
 ```bash
-git add lab/discovery/cost_model.py lab/research_utils/trade_reconciliation.py tests/test_cost_model.py tests/test_trade_reconciliation.py
+git add lab/research_utils/trade_reconciliation.py tests/test_trade_reconciliation.py
 git commit -m "feat: audit Phase 1 instrument and venue constraints"
 ```
 
@@ -693,6 +731,6 @@ git commit -m "feat: run Tradeify seven-strategy Phase 1 reconciliation"
 
 - [ ] Read the approved specification and map every requirement to Tasks 1–6.
 - [ ] Search the implementation and reports for `OOS`, `confirmatory`, `qualified`, `admitted`, and `deployable`; each occurrence must either deny the claim or be removed.
-- [ ] Review `git diff e8694a9127fe42642253196b1451e8a0916d817d...HEAD` for source rows, absolute paths, silent repairs, fee substitution, and timezone inference.
+- [ ] Review `git diff 11d22e280db71d798f5c4e37edd85a62bc71f392...HEAD` for source rows, absolute paths, silent repairs, fee substitution, and timezone inference.
 - [ ] Run the focused suite and full suite again from a clean worktree.
 - [ ] Request code review, resolve verified findings with the receiving-code-review workflow, and repeat verification before claiming Phase 1 complete.
