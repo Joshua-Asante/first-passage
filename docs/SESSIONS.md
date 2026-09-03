@@ -33,7 +33,7 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
-## 2026-09-03i — Phase 1 returned (PR #283): gate verdict `NEEDS_CONTEXT`; Striker identities contested by the pins
+## 2026-09-03l — Phase 1 returned (PR #283): gate verdict `NEEDS_CONTEXT`; Striker identities contested by the pins
 
 **Focus:** Hourly check-in found Codex's Phase 1 return — `codex/tradeify-stage1-normalization` @ `809bbb4`,
 [PR #283](https://github.com/Joshua-Asante/first-passage/pull/283) — and applied the frozen G1.1–G1.10 gate as a diff-plus-CI read with a worktree run,
@@ -57,7 +57,7 @@ worker-side. The venue audit itself is the headline: ORB-MNQ **310/681**, Vangua
 **9/122** trades span the 16:45 ET deadline (D11) — those three are venue-illegal as exported; standalone cap
 headroom of 0–4 micro-equivalents for Aegis and each Striker is inventory only, the aggregate-cap verdict
 waits for Phase 4's joint chronology (Codex review of #284, one P1, accepted). Rule 2 count,
-provisional pending D3: constituent (i) iteration 2 of ≤8. No `core`/Pine/allocation/`dd_protection`/rail
+provisional pending D3: constituent (i) iteration 2 of ≤8. **D10 partial ruling (operator, later this session):** the modified `striker_nas100_v1_mnq.pine` body differs from its pin by the day-of-week set — exclude Wednesday only ({Mon, Tue, Thu, Fri}) versus the locked Mon + Tue (`striker_nas100_CHANGELOG.md`) — a parameter-axis change, so that export is a day-of-week cell of the NAS100 template, not the locked edition; the doubled trade count (378 vs 184) follows. Still open: the DJ30 modified body's full diff and whether the two swap-port exports ran with native chart inputs. No `core`/Pine/allocation/`dd_protection`/rail
 change. $0/K=0.
 **Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
 campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — Phase 1 `RETURNED —
@@ -66,6 +66,9 @@ deadline-spanning three), D12 (early-close calendar); Codex runs the nine-item r
 re-verdicts on the delta (check-in armed); D7 open pending purge · `#2`
 [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
 — unchanged.
+
+---
+
 ## 2026-09-03k — Codex P2: keep the spent P50 iteration on Seat A
 
 **Focus:** Address Codex’s follow-up on #281 after T0 `PRE-CONTRACT DROP`: live pointers said
