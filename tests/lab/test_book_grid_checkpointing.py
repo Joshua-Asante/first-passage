@@ -247,13 +247,58 @@ def test_fingerprint_covers_seeds(grid, monkeypatch):
 def test_fingerprint_covers_calendar_inputs_and_code(grid):
     fp = grid._run_fingerprint([_job({"mnq": 1, "aegis": 2}, "Tradeify_Select_100K")])
     for k in ("seeds", "horizon_cap", "tiers", "firm_rules", "sessions_sha",
-              "inputs_sha", "code_sha"):
+              "inputs_sha", "code_sha", "runtime"):
         assert k in fp, f"fingerprint is missing {k}"
     # the calendar is committed, so its hash must actually resolve
     assert fp["sessions_sha"] != "ABSENT"
-    assert "book_grid.py" in fp["code_sha"] and fp["code_sha"]["book_grid.py"] != "ABSENT"
+    # every module in the compute path must hash to something real, not ABSENT
+    for mod in ("book_grid.py", "mc/simulation.py", "mc/preflight.py", "firm_rules.py",
+                "dd_protection.py", "historical_challenge.py"):
+        assert mod in fp["code_sha"], f"code_sha is missing {mod}"
+        assert fp["code_sha"][mod] != "ABSENT", f"{mod} did not resolve"
     # only the legs actually in play are fingerprinted
     assert set(fp["inputs_sha"]) <= {"mnq", "mym", "aegis"}
+
+
+def test_fingerprint_covers_the_numerical_runtime(grid, monkeypatch, tmp_path):
+    """`run_seed` draws from `np.random.default_rng`, whose stream is NOT frozen.
+
+    NumPy freezes only the legacy `RandomState`; under NEP 19 a `Generator` stream may
+    change between releases. An environment bump can therefore make a freshly computed
+    cell disagree with a reused one while the artifact header still advertises a single
+    configuration, so the runtime is part of that configuration.
+    Raised by Codex on PR #271 (round 8).
+    """
+    import numpy as np
+    import pandas as pd
+    jobs = [_job({"mnq": 1, "aegis": 2}, "Tradeify_Select_100K")]
+    rt = grid._run_fingerprint(jobs)["runtime"]
+    assert rt["numpy"] == np.__version__
+    assert rt["pandas"] == pd.__version__
+    assert rt["python"].count(".") == 2, rt["python"]
+
+    # a runtime change must actually invalidate the sidecar, not merely be recorded
+    out = str(tmp_path / "grid.json")
+    before = grid.sidecar_path(out, jobs)
+    monkeypatch.setattr(np, "__version__", np.__version__ + "+test")
+    assert grid.sidecar_path(out, jobs) != before, (
+        "a numpy version change did not invalidate the sidecar")
+
+
+def test_a_runtime_change_forces_recomputation(grid, monkeypatch, tmp_path):
+    """End-to-end: cells checkpointed under another runtime must not be reused."""
+    import numpy as np
+    jobs = [_job({"mnq": 1, "aegis": k}, "Tradeify_Select_100K") for k in (0, 2)]
+    out = str(tmp_path / "grid.json")
+
+    calls = _stub(grid, monkeypatch)
+    grid._run_checkpointed(jobs, out, 1)
+    assert len(calls) == 2
+
+    monkeypatch.setattr(np, "__version__", np.__version__ + "+test")
+    calls.clear()
+    grid._run_checkpointed(jobs, out, 1)
+    assert len(calls) == 2, "cells from a different numpy were silently reused"
 
 
 def test_sidecar_from_a_different_configuration_is_refused(grid, monkeypatch, tmp_path):

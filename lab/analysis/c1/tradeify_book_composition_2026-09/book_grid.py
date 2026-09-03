@@ -544,6 +544,29 @@ def _run_fingerprint(jobs) -> dict:
             "mc/preflight.py": _sha256_file(
                 os.path.join(REPO_ROOT, "core", "mc", "preflight.py")),
             "firm_rules.py": _sha256_file(os.path.join(REPO_ROOT, "core", "firm_rules.py")),
+            # Reached transitively and behaviour-bearing: preflight reads DD_SCALE /
+            # DD_TRIGGER, and firm_rules + preflight read the historical-challenge
+            # constants. Added 2026-09-03 from reading the compute path's imports rather
+            # than waiting for a review round to name them.
+            "dd_protection.py": _sha256_file(
+                os.path.join(REPO_ROOT, "core", "dd_protection.py")),
+            "historical_challenge.py": _sha256_file(
+                os.path.join(REPO_ROOT, "core", "historical_challenge.py")),
+        },
+        # The numerical runtime is part of the configuration, not scenery. `run_seed` draws
+        # its bootstrap indices from `np.random.default_rng(seed)`, and NumPy freezes only
+        # the legacy `RandomState` -- under NEP 19 a `Generator` stream may change between
+        # releases. So an environment bump can make a freshly computed cell disagree with a
+        # reused one while the artifact header still advertises one configuration. pandas
+        # is included because this module's date construction and Series handling run
+        # through it. scipy is deliberately NOT included: it is not imported anywhere in
+        # the compute path (`simulate_path`/`run_seed`/`summarize_outcomes`/this module), so
+        # pinning it would only invalidate sidecars for no reason -- if a future dependency
+        # does enter that path, it belongs here. Raised by Codex on PR #271 (round 8).
+        "runtime": {
+            "python": ".".join(str(v) for v in sys.version_info[:3]),
+            "numpy": np.__version__,
+            "pandas": pd.__version__,
         },
     }
 

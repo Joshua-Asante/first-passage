@@ -99,8 +99,14 @@ results are returned in job order regardless of completion order.
 **A resume is only honoured when the configuration is unchanged.** The sidecar's first record is a
 fingerprint of everything that feeds a cell without appearing in its argument tuple: `SEEDS`,
 `HORIZON_CAP`, the eval prices, the micro-equivalent caps, the tier consistency fractions and
-`FIRM_RULES` entries in play, and content hashes of the session calendar, each vendor export used,
-`book_grid.py` itself and `core/mc/simulation.py` / `core/mc/preflight.py` / `core/firm_rules.py`.
+`FIRM_RULES` entries in play; content hashes of the session calendar, each vendor export used,
+`book_grid.py` itself and `core/mc/simulation.py` / `core/mc/preflight.py` / `core/firm_rules.py` /
+`core/dd_protection.py` / `core/historical_challenge.py`; **and the numerical runtime** (Python,
+NumPy, pandas versions). The runtime belongs there because `run_seed` draws its bootstrap indices
+from `np.random.default_rng`, and NumPy freezes only the legacy `RandomState` — under NEP 19 a
+`Generator` stream may change between releases, so an environment bump can make a freshly computed
+cell disagree with a reused one. scipy is deliberately excluded: it is not imported anywhere in the
+compute path, so pinning it would invalidate sidecars for no reason.
 On any mismatch — or if the sidecar predates the fingerprint — it is discarded whole and every cell
 recomputed. Being strict is cheap here: a false mismatch costs one re-run, whereas a false match
 would splice stale cells into a grid whose header advertises the new configuration, which is the
