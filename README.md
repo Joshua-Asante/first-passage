@@ -2,7 +2,7 @@
 
 Research + a built, **disarmed** rail; **no book is deployed**. Four
 automation-friendly firms are the program target, not current activity. The
-incumbent eval is live (S1). The c1 rail (ruled host→listener→CrossTrade→Tradovate;
+incumbent eval account exists (S1). The c1 rail (ruled host→listener→CrossTrade→Tradovate;
 Python-native signal host per S2; daemon Fly app warm with `emit_enabled=false`
 per S2b build GO) is built and disarmed there.
 Live-execution posture is owned by [`CLAUDE.md`](CLAUDE.md) §Live-execution
@@ -45,7 +45,7 @@ directory to infer what is live.
 | Layer / import contract | [`REPO_MAP.md`](REPO_MAP.md) |
 | What is turning | [`PIPELINES.md`](PIPELINES.md) |
 | Open threads + dated obligations | [`STATE.md`](STATE.md) |
-| Lab campaigns (hot vs archived) | [`lab/CATALOG.md`](lab/CATALOG.md) |
+| Lab campaigns (In flight first, then hot bodies) | [`lab/CATALOG.md`](lab/CATALOG.md) |
 | Locked / withdrawn strategies | [`core/strategies/CATALOG.md`](core/strategies/CATALOG.md) |
 | Instrument × mechanism verdicts | [`ops/instruments/PROFILES.md`](ops/instruments/PROFILES.md) · [`ops/instruments/MECHANISMS.md`](ops/instruments/MECHANISMS.md) |
 | Open / dormant questions | [`docs/briefs/INDEX.md`](docs/briefs/INDEX.md) |
@@ -55,20 +55,19 @@ directory to infer what is live.
 | Gates / `make` targets | [`scripts/gates.yml`](scripts/gates.yml) · `python scripts/gate_manifest.py --list` |
 | Closed-loop specs S1–S7 | [`docs/spec/2026-08-07-loop-spec-index.md`](docs/spec/2026-08-07-loop-spec-index.md) |
 
-**Status words** — these tokens do not mean English. Owners below; do not restate their values here.
+**Status words** — these mean what they say. Identifier prefixes stay below so series do not collide.
 
-| Token | Means | Does not mean | Owner |
+| Token | Means | Owner |
+|---|---|---|
+| In flight | CATALOG section: lab bodies whose question is not spent and not `HOLD`. Not the operator work list. | [`lab/CATALOG.md`](lab/CATALOG.md) · [`catalog-hot ADR`](docs/adr/2026-08-22-catalog-hot-vs-disposition.md) |
+| `hot` | Body still lives under `lab/analysis/<theme>/<slug>/` | same |
+| `LOCKED` | Parameter axis is frozen (SL/TP/ATR/risk%/pyramid/Pine). Not a deployed book. | [`strategy_lifecycle.md`](docs/methodology/strategy_lifecycle.md) |
+| eval account exists | Incumbent Tradeify eval; rail disarmed; no book is trading. | [`CLAUDE.md`](CLAUDE.md) §Live-execution posture |
+| four-firm program | §4 target / falsifier, not current activity. | [`four-firms ADR`](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) |
+| Survive queue | Numbered `STATE.md` rows (cap ≤5) — the work list. | [`STATE.md`](STATE.md) · [`Survive-bound ADR`](docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md) |
+
+| Prefix | Means | Does not mean | Owner |
 |---|---|---|---|
-| `LOCKED` | Parameter axis is frozen (SL/TP/ATR/risk%/pyramid/Pine) | Capital is authorized indefinitely | [`strategy_lifecycle.md`](docs/methodology/strategy_lifecycle.md) |
-| `CANDIDATE` → `AUTHORIZED` → `WATCH` → `RETIRED` | Capital-authorization ladder (revocable; down-only plus S5 sandbox-up) | A parameter edit | same |
-| `AUTHORIZED @ 1.00×` | Code default when `lifecycle_state.json` is absent | A live deployed haircut | [`CLAUDE.md`](CLAUDE.md) §Strategy Authorization Lifecycle |
-| eval is live | The incumbent Tradeify eval account exists | A book is trading, or the rail is armed | [`CLAUDE.md`](CLAUDE.md) §Live-execution posture |
-| four-layer | `core/` · `lab/` · `ops/` plus **root-resident** governance | A physical `governance/` directory | [`boundaries ADR`](docs/adr/2026-06-05-monorepo-layer-boundaries.md) · [`REPO_MAP.md`](REPO_MAP.md) |
-| CATALOG `hot` | Body still lives under `lab/analysis/<theme>/<slug>/` | The campaign is in-flight | [`catalog-hot ADR`](docs/adr/2026-08-22-catalog-hot-vs-disposition.md) |
-| CATALOG `status` | Disposition word (`ACTIVE` / `HOLD` / `FALSIFIED` / …) | A work queue | same · [`lab/CATALOG.md`](lab/CATALOG.md) |
-| `ACTIVE` | Often the `status` token on a stay-hot card | In-flight / undecided / “do this next” | same |
-| Survive queue | The numbered `STATE.md` rows (cap ≤5) | Every leftover name in SESSIONS | [`STATE.md`](STATE.md) · [`Survive-bound ADR`](docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md) |
-| `Open / next` | Queue-led pointer on the newest SESSIONS entry | The prior leftover cluster is the work list | [`SESSIONS.md`](docs/SESSIONS.md) header |
 | pipeline `P1–P6` | Object pipelines in [`PIPELINES.md`](PIPELINES.md) | Pain-point packets P0–P10, or viable-strategy Phase A–D | [`PIPELINES.md`](PIPELINES.md) |
 | pain-point `P0–P10` | Repo-hygiene packets | Pipeline-P or phase-letter | [`pain-point charter`](docs/superpowers/plans/2026-08-23-repo-pain-point-packets.md) |
 | Phase A–D | Viable-strategy sequence phases | Pipeline-P or pain-point-P | [`sequence overview`](docs/superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) |
@@ -79,7 +78,7 @@ directory to infer what is live.
 | `G0–G8` | Survivor-scoring gates | GRAND-tier G or generation-G | [`strategy-validation`](.claude/skills/strategy-validation/SKILL.md) |
 | `Q-*` | Brief roster | Queue rows | [`docs/briefs/INDEX.md`](docs/briefs/INDEX.md) |
 
-An empty default-grep of `lab/archive/`, `docs/ltm/`, or `core/strategies/_archive/` is not evidence the work is absent — those trees are excluded from the default index; open the catalog and Read by path ([`.cursor/rules/search-ltm.mdc`](.cursor/rules/search-ltm.mdc)). Pine sources and vendor CSVs are gitignored; CARD/LOCK stubs plus the tracked manifests are the public surface ([`CLAUDE.md`](CLAUDE.md) §Public-clone posture).
+An empty default-grep of `lab/archive/`, `docs/ltm/`, or `core/strategies/_archive/` is not evidence the work is absent — those trees are excluded from the default index; open the catalog **In flight** and Read by path ([`.cursor/rules/search-ltm.mdc`](.cursor/rules/search-ltm.mdc)). Pine sources and vendor CSVs are gitignored; CARD/LOCK stubs plus the tracked manifests are the public surface ([`CLAUDE.md`](CLAUDE.md) §Public-clone posture).
 
 Governance and decision records:
 

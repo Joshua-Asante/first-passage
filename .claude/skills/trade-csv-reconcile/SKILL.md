@@ -7,7 +7,7 @@ description: Use this skill whenever Joshua uploads or references a TradingView 
 
 Canonical pipeline for parsing TradingView (and related) trade CSVs, computing headline metrics, and — when a locked-book baseline applies — reconciling against Pine-header backtest anchors. Exists because sessions were re-deriving Entry/Exit pairing, R-pinning, and metric math, and drift surfaced as anchor disagreements (n=209 vs 201, Net P&L 2× from Entry+Exit double-count).
 
-**Mission framing:** live posture is owned by `CLAUDE.md` §Purpose / §Live-execution posture — read it there, not from this line. Incumbent eval is live (S1); no book is deployed. Pepperstone TV exports were the locked-book historical panel and the feed is retired (2026-08-02); OANDA/Alchemy/DXTrade paths are **historical challenge-era** — keep the traps below so old CSVs do not corrupt analysis, but do **not** route every CSV session through FXIFY/$200K/DXTrade ceremony.
+**Mission framing:** live posture is owned by `CLAUDE.md` §Purpose / §Live-execution posture — read it there, not from this line. Pepperstone TV exports were the locked-book historical panel and the feed is retired (2026-08-02); OANDA/Alchemy/DXTrade paths are **historical challenge-era** — keep the traps below so old CSVs do not corrupt analysis, but do **not** route every CSV session through FXIFY/$200K/DXTrade ceremony.
 
 **Source-of-truth hierarchy:** Pine source on disk (authoritative for locked strategies) → Pine-header backtest panel (lock-of-record) → `references/baselines.md` (cached anchors) → memory (lossy). When this skill's baselines disagree with a fresh Pine read, the Pine read wins and `references/baselines.md` needs updating.
 

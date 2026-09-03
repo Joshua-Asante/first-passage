@@ -1,4 +1,5 @@
 **Theme:** harvest
+**Verdict:** CLOSED — SCREEN-FAIL; C2/C3/C4 closed at 0 admissible
 # TNEC step-2 sourcing pass (2026-08-10)
 
 **Status:** **ACTIVE** — TNEC L2 sourcing pass — R8 gold-fix δ-extracted SCREEN-FAIL (informed-flow + cost-law); C2/C3/C4 closed at 0 admissible
