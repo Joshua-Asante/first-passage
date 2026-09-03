@@ -91,8 +91,9 @@ nothing internal).
 
 **Lab layout:** hot bodies at `lab/analysis/<theme>/<slug>/`. Closed campaigns keep
 `RESULTS*` / `PREREG*` / `CARD.md` only — harnesses were pruned and are retrievable from the tag.
-Open [`docs/briefs/INDEX.md`](docs/briefs/INDEX.md) and [`lab/CATALOG.md`](lab/CATALOG.md) before
-searching; **an empty Grep is not evidence of no prior work** — archived bodies live in git history.
+Open [`docs/briefs/INDEX.md`](docs/briefs/INDEX.md) and [`lab/CATALOG.md`](lab/CATALOG.md)
+**In flight** before searching; **an empty Grep is not evidence of no prior work** — archived
+bodies live in git history.
 Layer roots carry pointer-only READMEs; hop table lives in [`README.md`](README.md) §Where to look.
 
 ## Strategy Reference (LOCKED legacy book — do not modify)

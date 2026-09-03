@@ -76,7 +76,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 # Optional theme segment so nested hot paths lab/analysis/<theme>/<slug>/…
 # capture the study slug, not the theme directory name.
 _THEME_ORDER = (
-    "c1", "striker", "orb", "aegis", "regime", "harvest", "mc", "legacy", "deep_lane", "_inbox",
+    "_inbox", "c1", "striker", "orb", "aegis", "regime", "harvest", "mc", "legacy", "deep_lane",
 )
 _THEMES = frozenset(_THEME_ORDER)
 _THEME_ALT = "|".join(re.escape(t) for t in _THEME_ORDER)
@@ -134,7 +134,7 @@ class Finding:
 
 def parse_catalog(text: str) -> dict[str, CatalogEntry]:
     """Index every CATALOG row -> CatalogEntry. `table` comes from the most recent
-    `## Active` / `## Archived` header; `body_tier` is "archived" if the row carries
+    ``## Hot bodies`` / ``## Active`` / ``## Archived`` header; ``body_tier`` is "archived" if the row carries
     a lab/archive/ link (the body column), else "live" if it carries a lab/analysis/
     link, else None (correctly handling an archived row whose `card` stub is a
     lab/analysis/ path while its `body` is lab/archive/).
@@ -148,7 +148,7 @@ def parse_catalog(text: str) -> dict[str, CatalogEntry]:
     col_map: dict[str, int] | None = None
     for lineno, raw in enumerate(text.splitlines(), start=1):
         line = raw.strip()
-        if re.match(r"^##\s+Active\b", line):
+        if re.match(r"^##\s+(?:Active|Hot bodies)\b", line):
             table = "active"
             col_map = None
             continue
@@ -156,7 +156,7 @@ def parse_catalog(text: str) -> dict[str, CatalogEntry]:
             table = "archived"
             col_map = None
             continue
-        if re.match(r"^##\s+", line):                # any other section ends the table
+        if re.match(r"^##\s+[^#]", line):  # In flight / other H2 ends the table
             table = None
             col_map = None
             continue
