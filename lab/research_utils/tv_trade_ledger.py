@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from decimal import Decimal, InvalidOperation
 from hashlib import sha256
+from io import BytesIO, TextIOWrapper
 import json
 from pathlib import Path
 import re
@@ -70,6 +71,34 @@ REQUIRED_COLUMNS = (
     "Cumulative PnL %",
     "Duration (bars)",
 )
+EVENT_COLUMNS = (
+    "strategy_id",
+    "encoded_instrument",
+    "source_trade_id",
+    "source_row_number",
+    "timestamp_raw",
+    "timestamp_naive",
+    "timestamp_utc",
+    "exchange_session_date",
+    "type_raw",
+    "event_type",
+    "direction",
+    "signal",
+    "price_usd",
+    "quantity",
+    "size_value_usd",
+    "net_pnl_usd",
+    "return_pct",
+    "commission_usd",
+    "favorable_excursion_usd",
+    "favorable_excursion_pct",
+    "adverse_excursion_usd",
+    "adverse_excursion_pct",
+    "cumulative_pnl_usd",
+    "cumulative_pnl_pct",
+    "duration_bars",
+    "concurrent_timestamp",
+)
 COLUMN_ALIASES = {
     "Trade #": "Trade number",
     "Net P&L USD": "Net PnL USD",
@@ -128,6 +157,7 @@ class VerifiedSource:
     spec: SourceSpec
     export_path: Path
     pine_path: Path
+    export_bytes: bytes
 
 
 @dataclass(frozen=True)
@@ -317,13 +347,26 @@ def verify_source_pair(source_dir: str | Path, spec: SourceSpec) -> VerifiedSour
     root = Path(source_dir)
     export_path = _resolved_child(root, spec.export_filename, "export")
     pine_path = _resolved_child(root, spec.pine_filename, "Pine")
-    for path, expected in ((export_path, spec.export_sha256), (pine_path, spec.pine_sha256)):
-        observed = sha256_file(path)
-        if observed != expected:
-            raise SourceIdentityError(
-                f"{path.name} SHA-256 mismatch: expected {expected}, observed {observed}"
-            )
-    return VerifiedSource(spec=spec, export_path=export_path, pine_path=pine_path)
+    try:
+        export_bytes = export_path.read_bytes()
+    except OSError as exc:
+        raise SourceIdentityError(f"cannot read export source: {export_path.name}") from exc
+    observed_export = sha256(export_bytes).hexdigest()
+    if observed_export != spec.export_sha256:
+        raise SourceIdentityError(
+            f"{export_path.name} SHA-256 mismatch: expected {spec.export_sha256}, observed {observed_export}"
+        )
+    observed_pine = sha256_file(pine_path)
+    if observed_pine != spec.pine_sha256:
+        raise SourceIdentityError(
+            f"{pine_path.name} SHA-256 mismatch: expected {spec.pine_sha256}, observed {observed_pine}"
+        )
+    return VerifiedSource(
+        spec=spec,
+        export_path=export_path,
+        pine_path=pine_path,
+        export_bytes=export_bytes,
+    )
 
 
 def load_fee_schedule(path: str | Path) -> FeeSchedule:
@@ -351,6 +394,14 @@ def load_fee_schedule(path: str | Path) -> FeeSchedule:
         if amount.as_tuple().exponent != -2:
             raise ValueError("round_trip_usd must have exactly two decimal places")
         round_trip[symbol] = amount
+    required_symbols = {"6J", "MNQ", "MYM", "MGC"}
+    if set(round_trip) != required_symbols:
+        missing = sorted(required_symbols - set(round_trip))
+        unexpected = sorted(set(round_trip) - required_symbols)
+        raise ValueError(
+            "fee schedule symbols mismatch: "
+            f"missing={missing}, unexpected={unexpected}"
+        )
     return FeeSchedule(
         source_url=payload["source_url"],
         page_date=date.fromisoformat(payload["page_date"]),
@@ -515,22 +566,23 @@ def _event_record(
 def normalize_export(source: VerifiedSource) -> NormalizationResult:
     """Parse a verified TradingView export into strictly typed, stable event rows."""
     try:
-        handle = source.export_path.open(encoding="utf-8-sig", newline="")
-    except OSError as exc:
-        raise TradeExportSchemaError(f"cannot read TradingView export: {source.export_path.name}") from exc
-    with handle:
-        reader = csv.DictReader(handle)
-        _normalized_headers(reader.fieldnames)
-        events: list[dict[str, object]] = []
-        for source_row_number, raw in enumerate(reader, start=1):
-            if None in raw:
-                raise TradeExportSchemaError(
-                    f"source row {source_row_number} has more fields than the header"
-                )
-            canonical_row = {
-                COLUMN_ALIASES.get(header, header): value for header, value in raw.items()
-            }
-            events.append(_event_record(canonical_row, source_row_number, source.spec))
+        with TextIOWrapper(BytesIO(source.export_bytes), encoding="utf-8-sig", newline="") as handle:
+            reader = csv.DictReader(handle)
+            _normalized_headers(reader.fieldnames)
+            events: list[dict[str, object]] = []
+            for source_row_number, raw in enumerate(reader, start=1):
+                if None in raw:
+                    raise TradeExportSchemaError(
+                        f"source row {source_row_number} has more fields than the header"
+                    )
+                canonical_row = {
+                    COLUMN_ALIASES.get(header, header): value for header, value in raw.items()
+                }
+                events.append(_event_record(canonical_row, source_row_number, source.spec))
+    except UnicodeDecodeError as exc:
+        raise TradeExportSchemaError(
+            f"TradingView export is not valid UTF-8: {source.export_path.name}"
+        ) from exc
     events.sort(key=lambda event: (event["timestamp_naive"], event["source_row_number"]))
     timestamp_counts: dict[pd.Timestamp, int] = {}
     for event in events:
@@ -538,4 +590,4 @@ def normalize_export(source: VerifiedSource) -> NormalizationResult:
         timestamp_counts[timestamp] = timestamp_counts.get(timestamp, 0) + 1
     for event in events:
         event["concurrent_timestamp"] = timestamp_counts[event["timestamp_naive"]] > 1
-    return NormalizationResult(events=pd.DataFrame(events), issues=())
+    return NormalizationResult(events=pd.DataFrame(events, columns=EVENT_COLUMNS), issues=())

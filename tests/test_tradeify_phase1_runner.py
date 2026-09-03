@@ -254,6 +254,77 @@ def test_hash_failure_returns_intake_exit_code(tmp_path):
     ) == 3
 
 
+def test_malformed_utf8_hash_pinned_export_returns_intake_exit_code(tmp_path, capsys):
+    """A pinned invalid CSV must be reported as intake failure rather than a decode traceback."""
+    source_dir, config, _ = _seven_source_fixture(tmp_path)
+    export = source_dir / "source_0.csv"
+    export.write_bytes(b"\xff")
+    payload = json.loads(config.read_text(encoding="utf-8"))
+    payload["strategies"][0]["export_sha256"] = sha256(export.read_bytes()).hexdigest()
+    config.write_text(json.dumps(payload), encoding="utf-8")
+
+    assert run_phase1.main(
+        ["--config", str(config), "--source-dir", str(source_dir)]
+    ) == 3
+    assert "intake failure:" in capsys.readouterr().err
+
+
+def test_header_only_exports_complete_without_key_error_and_write_zero_trade_ledger(tmp_path):
+    """The runner must obtain each empty source's instrument from its spec, not row zero."""
+    source_dir, config, strategy_ids = _seven_source_fixture(tmp_path)
+    payload = json.loads(config.read_text(encoding="utf-8"))
+    for index, strategy in enumerate(payload["strategies"]):
+        export = source_dir / f"source_{index}.csv"
+        export.write_bytes((",".join(_HEADERS) + "\n").encode("utf-8"))
+        strategy["export_sha256"] = sha256(export.read_bytes()).hexdigest()
+    config.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = run_phase1.run_campaign(config, source_dir, tmp_path / "local_artifacts")
+    manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
+    trades = (tmp_path / "local_artifacts" / "canonical_trades.csv").read_text(encoding="utf-8")
+
+    assert [row["trade_count"] for row in manifest["strategies"]] == [0] * 7
+    assert all(row["strategy_id"] in strategy_ids for row in manifest["strategies"])
+    assert trades.splitlines()[0].split(",")[10] == "duration_bars"
+
+
+def test_campaign_publication_rolls_back_all_targets_after_late_replace_failure(tmp_path, monkeypatch):
+    """A late publication failure must preserve every old artifact, not a mixed generation."""
+    source_dir, config, strategy_ids = _seven_source_fixture(tmp_path)
+    output_dir = tmp_path / "local_artifacts"
+    targets = [
+        output_dir / "canonical_events.csv",
+        output_dir / "canonical_trades.csv",
+        output_dir / "weekly_exit_blocks.csv",
+        *(output_dir / "strategy_reports" / f"{strategy_id}.json" for strategy_id in strategy_ids),
+        config.parent / "reconciliation_manifest.json",
+        config.parent / "RESULTS.md",
+    ]
+    old_bytes = {target: f"old:{target.name}".encode("utf-8") for target in targets}
+    for target, payload in old_bytes.items():
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(payload)
+
+    real_replace = run_phase1.os.replace
+    published = 0
+
+    def fail_fourth_candidate_replace(source, destination):
+        nonlocal published
+        if str(source).endswith(".stage") and Path(destination) in old_bytes:
+            published += 1
+            if published == 4:
+                raise OSError("late fixture publication failure")
+        return real_replace(source, destination)
+
+    monkeypatch.setattr(run_phase1.os, "replace", fail_fourth_candidate_replace)
+
+    with pytest.raises(OSError, match="late fixture publication failure"):
+        run_phase1.run_campaign(config, source_dir, output_dir)
+
+    assert {target: target.read_bytes() for target in targets} == old_bytes
+    assert not list(tmp_path.rglob(".*.phase1-*"))
+
+
 def test_campaign_rejects_non_frozen_strategy_roster_before_source_reads(tmp_path):
     source_dir, config, _ = _seven_source_fixture(tmp_path)
     payload = json.loads(config.read_text(encoding="utf-8"))

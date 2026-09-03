@@ -43,6 +43,7 @@ TRADE_COLUMNS = [
     "entry_price",
     "exit_price",
     "quantity",
+    "duration_bars",
     "net_pnl_usd",
     "commission_usd",
     "gross_pnl_usd",
@@ -177,6 +178,12 @@ def load_early_close_calendar(path: str | Path) -> EarlyCloseCalendar:
     rows = payload["rows"]
     if not isinstance(rows, list):
         raise ValueError("rows must be an array")
+    if (
+        status == "COMPLETE"
+        and coverage_start.year != coverage_end.year
+        and not rows
+    ):
+        raise ValueError("COMPLETE multi-year calendar requires non-empty rows")
     early_dates: set[date] = set()
     for index, row in enumerate(rows):
         if not isinstance(row, dict) or set(row) != {"date", "deadline_local"}:
@@ -441,6 +448,7 @@ def reconstruct_trades(events: pd.DataFrame, spec: SourceSpec) -> Reconstruction
                 "entry_price": entry_price,
                 "exit_price": exit_price,
                 "quantity": entry_quantity,
+                "duration_bars": Decimal(entry["duration_bars"]),
                 "net_pnl_usd": net_pnl,
                 "commission_usd": commission,
                 "gross_pnl_usd": gross_pnl,
@@ -659,25 +667,36 @@ def _exposure_bounds(trades: pd.DataFrame, *, quantity_multiplier: int) -> tuple
         quantity = int(trade["quantity"]) * quantity_multiplier
         entry_time = pd.Timestamp(trade["entry_timestamp_naive"])
         exit_time = pd.Timestamp(trade["exit_timestamp_naive"])
-        events.setdefault(entry_time, {"entries": 0, "exits": 0})["entries"] += quantity
-        events.setdefault(exit_time, {"entries": 0, "exits": 0})["exits"] += quantity
+        events.setdefault(entry_time, {"entries": 0, "prior_exits": 0, "zero_exits": 0})[
+            "entries"
+        ] += quantity
+        exit_kind = "zero_exits" if entry_time == exit_time else "prior_exits"
+        events.setdefault(exit_time, {"entries": 0, "prior_exits": 0, "zero_exits": 0})[
+            exit_kind
+        ] += quantity
 
-    def peak(*, entries_first: bool) -> int:
+    def peak(*, upper_bound: bool) -> int:
         current = 0
         maximum = 0
         for timestamp in sorted(events):
             event = events[timestamp]
-            deltas = (
-                (event["entries"], -event["exits"])
-                if entries_first
-                else (-event["exits"], event["entries"])
-            )
+            if upper_bound:
+                deltas = (
+                    event["entries"],
+                    -event["prior_exits"] - event["zero_exits"],
+                )
+            else:
+                deltas = (
+                    -event["prior_exits"],
+                    event["entries"],
+                    -event["zero_exits"],
+                )
             for delta in deltas:
                 current += delta
                 maximum = max(maximum, current)
         return maximum
 
-    return peak(entries_first=False), peak(entries_first=True)
+    return peak(upper_bound=False), peak(upper_bound=True)
 
 
 def _spans_friday_to_sunday(entry: pd.Timestamp, exit_: pd.Timestamp) -> bool:

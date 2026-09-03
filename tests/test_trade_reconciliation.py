@@ -1,6 +1,7 @@
 """Strict reconstruction and accounting tests for Tradeify Phase 1."""
 
 from decimal import Decimal
+import json
 from pathlib import Path
 
 import pandas as pd
@@ -47,6 +48,7 @@ def _spec(
         pine_commission_per_side_usd=Decimal(pine_commission),
         pine_slippage_ticks_per_side=Decimal("1"),
         pine_pyramiding_pct=Decimal("100"),
+        pine_pin_status="NOT_IN_PORT_MANIFEST",
         contract_cap=contract_cap,
     )
 
@@ -318,6 +320,17 @@ def test_reconstruct_keeps_scalar_excursions_explicitly_bounded():
     assert trade["excursion_bound"] == "excursion-bounded"
 
 
+def test_reconstruct_retains_valid_decimal_duration_bars_in_canonical_trade():
+    """Dropping a validated duplicated duration loses source timing inventory."""
+    events = _round_trip()
+    events.loc[:, "duration_bars"] = Decimal("12")
+
+    result = reconstruct_trades(events, _spec())
+
+    assert "duration_bars" in TRADE_COLUMNS
+    assert result.trades.iloc[0]["duration_bars"] == Decimal("12")
+
+
 def test_reconstruct_preserves_first_source_appearance_for_rows_and_issues():
     """Sorting non-monotonic trade IDs would reorder canonical rows and diagnostics."""
     events = _events(
@@ -475,6 +488,34 @@ def test_exposure_reports_tie_order_bounds(fee_schedule):
     assert venue.peak_open_micro_equivalent_quantity_min == 50
     assert venue.peak_open_micro_equivalent_quantity_max == 100
     assert "CAP_STATUS_AMBIGUOUS_AT_TIMESTAMP_TIE" in _issue_codes(venue)
+
+
+def test_exposure_preserves_own_exit_causality_for_zero_duration_trade(fee_schedule):
+    """Aggregated same-time deltas would turn a confirmed 81-unit peak into ambiguity."""
+    trades = _trades(
+        _trade_between(1, "2026-01-05 10:00", "2026-01-05 10:00", qty=81),
+    )
+
+    venue = analyze_venue(trades, _spec(contract_cap=80), fee_schedule)
+
+    assert venue.peak_open_micro_equivalent_quantity_min == 81
+    assert venue.peak_open_micro_equivalent_quantity_max == 81
+    assert "CONTRACT_CAP_BREACH" in _issue_codes(venue)
+    assert "CAP_STATUS_AMBIGUOUS_AT_TIMESTAMP_TIE" not in _issue_codes(venue)
+
+
+def test_exposure_mixed_tie_never_goes_negative_and_keeps_distinct_bounds(fee_schedule):
+    """Earlier exits must precede same-time entries while zero-duration exits follow them."""
+    trades = _trades(
+        _trade_between(1, "2026-01-05 09:00", "2026-01-05 10:00", qty=50),
+        _trade_between(2, "2026-01-05 10:00", "2026-01-05 10:00", qty=70),
+        _trade_between(3, "2026-01-05 10:00", "2026-01-05 11:00", qty=60),
+    )
+
+    venue = analyze_venue(trades, _spec(contract_cap=80), fee_schedule)
+
+    assert venue.peak_open_micro_equivalent_quantity_min == 130
+    assert venue.peak_open_micro_equivalent_quantity_max == 180
 
 
 def test_6j_exposure_is_measured_in_micro_equivalents(fee_schedule):
@@ -732,6 +773,29 @@ def test_campaign_calendar_freezes_primary_source_capture_gap(
     assert calendar.coverage_end.isoformat() == "2026-09-01"
     assert calendar.coverage_status == "NEEDS_CONTEXT"
     assert calendar.early_close_dates == frozenset()
+
+
+def test_complete_multiyear_calendar_requires_observed_early_close_rows(tmp_path):
+    """A status label alone cannot certify a multi-year CME early-close capture."""
+    path = tmp_path / "calendar.json"
+    path.write_text(
+        json.dumps(
+            {
+                "source_url": "https://www.cmegroup.com/trading-hours.html",
+                "page_date": None,
+                "observed_date": "2026-09-03",
+                "coverage_start": "2022-09-01",
+                "coverage_end": "2026-09-01",
+                "coverage_status": "COMPLETE",
+                "coverage_note": "unsupported empty complete fixture",
+                "rows": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="COMPLETE multi-year.*rows"):
+        load_early_close_calendar(path)
 
 
 def test_calculate_accounting_uses_exit_chronology_and_decimal_money():

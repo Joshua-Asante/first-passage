@@ -10,9 +10,11 @@ from decimal import Decimal
 from hashlib import sha256
 from io import StringIO
 import json
+import os
 from pathlib import Path
 import sys
 from typing import NamedTuple, Sequence
+from uuid import uuid4
 
 import pandas as pd
 
@@ -74,7 +76,42 @@ def _atomic_write_bytes(path: Path, payload: bytes) -> None:
     with temporary.open("wb") as handle:
         handle.write(payload)
         handle.flush()
-    temporary.replace(path)
+    os.replace(temporary, path)
+
+
+def _publish_payloads(payloads: dict[Path, bytes]) -> None:
+    """Publish a complete campaign generation, restoring old bytes on replace failure."""
+    token = uuid4().hex
+    staged = {
+        target: target.with_name(f".{target.name}.phase1-{token}.stage")
+        for target in payloads
+    }
+    backups = {
+        target: target.with_name(f".{target.name}.phase1-{token}.backup")
+        for target in payloads
+    }
+    backed_up: set[Path] = set()
+    published: set[Path] = set()
+    try:
+        for target, payload in payloads.items():
+            _atomic_write_bytes(staged[target], payload)
+        for target in payloads:
+            if target.exists():
+                os.replace(target, backups[target])
+                backed_up.add(target)
+        for target in payloads:
+            os.replace(staged[target], target)
+            published.add(target)
+    except OSError:
+        for target in published:
+            target.unlink(missing_ok=True)
+        for target in backed_up:
+            if backups[target].exists():
+                os.replace(backups[target], target)
+        raise
+    finally:
+        for temporary in (*staged.values(), *backups.values()):
+            temporary.unlink(missing_ok=True)
 
 
 def _csv_bytes(frame: pd.DataFrame) -> bytes:
@@ -408,7 +445,12 @@ def run_campaign(
             )
         )
 
-    joint_events = build_joint_events(events_by_strategy)
+    joint_events = build_joint_events(
+        events_by_strategy,
+        encoded_instruments_by_strategy={
+            spec.strategy_id: spec.encoded_instrument for spec in specs
+        },
+    )
     canonical_trades = pd.concat(
         [trades_by_strategy[spec.strategy_id] for spec in specs],
         ignore_index=True,
@@ -418,9 +460,7 @@ def run_campaign(
     event_bytes = _csv_bytes(joint_events)
     trade_bytes = _csv_bytes(canonical_trades)
     weekly_bytes = _csv_bytes(weekly_blocks)
-    _atomic_write_bytes(output_dir / "canonical_events.csv", event_bytes)
-    _atomic_write_bytes(output_dir / "canonical_trades.csv", trade_bytes)
-    _atomic_write_bytes(output_dir / "weekly_exit_blocks.csv", weekly_bytes)
+    detail_payloads: dict[Path, bytes] = {}
     local_strategy_report_sha256: dict[str, str] = {}
     for spec in specs:
         strategy_id = spec.strategy_id
@@ -438,10 +478,9 @@ def run_campaign(
                 "issues": _detailed_issue_rows(issues_by_strategy[strategy_id]),
             }
         )
-        _atomic_write_bytes(
-            output_dir / "strategy_reports" / f"{strategy_id}.json",
-            detail_bytes,
-        )
+        detail_payloads[
+            output_dir / "strategy_reports" / f"{strategy_id}.json"
+        ] = detail_bytes
         local_strategy_report_sha256[strategy_id] = _digest(detail_bytes)
 
     campaign_status = (
@@ -483,8 +522,16 @@ def run_campaign(
     report_bytes = _render_report(manifest)
     manifest_path = campaign_dir / "reconciliation_manifest.json"
     report_path = campaign_dir / "RESULTS.md"
-    _atomic_write_bytes(manifest_path, manifest_bytes)
-    _atomic_write_bytes(report_path, report_bytes)
+    _publish_payloads(
+        {
+            output_dir / "canonical_events.csv": event_bytes,
+            output_dir / "canonical_trades.csv": trade_bytes,
+            output_dir / "weekly_exit_blocks.csv": weekly_bytes,
+            **detail_payloads,
+            manifest_path: manifest_bytes,
+            report_path: report_bytes,
+        }
+    )
     return CampaignResult(
         status=campaign_status,
         manifest_path=manifest_path,

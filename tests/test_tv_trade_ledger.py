@@ -261,6 +261,32 @@ def test_load_fee_schedule_rejects_duplicate_or_non_cent_rows(tmp_path):
         load_fee_schedule(path)
 
 
+def test_load_fee_schedule_requires_the_complete_frozen_symbol_set(tmp_path):
+    """A missing or unrelated fee symbol must fail during configuration loading."""
+    payload = {
+        "source_url": "https://help.tradeify.co/en/articles/10468315-trading-commission-fees",
+        "page_date": "2026-04-28",
+        "observed_date": "2026-09-02",
+        "totals_include": "exchange, NFA, clearing, and commission",
+        "rows": [
+            {"symbol": "6J", "round_trip_usd": "6.20"},
+            {"symbol": "MNQ", "round_trip_usd": "1.82"},
+            {"symbol": "MYM", "round_trip_usd": "1.82"},
+        ],
+    }
+    path = tmp_path / "fees.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="fee schedule symbols mismatch.*MGC"):
+        load_fee_schedule(path)
+
+    payload["rows"].append({"symbol": "MGC", "round_trip_usd": "2.12"})
+    payload["rows"].append({"symbol": "ES", "round_trip_usd": "2.50"})
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="fee schedule symbols mismatch.*ES"):
+        load_fee_schedule(path)
+
+
 _TV_HEADERS = [
     "Trade number", "Type", "Date and time", "Signal", "Price USD",
     "Size (qty)", "Size (value)", "Net PnL USD", "Return %", "Commission USD",
@@ -347,6 +373,60 @@ def test_normalize_retains_exit_first_source_order_and_flags_timestamp_tie(tmp_p
     assert result.events["timestamp_utc"].isna().all()
     assert result.events["exchange_session_date"].isna().all()
     assert result.events["concurrent_timestamp"].tolist() == [True, True]
+
+
+def test_normalize_uses_the_export_bytes_verified_before_file_replacement(tmp_path):
+    """Reading the pathname after hash verification would permit a TOCTOU export swap."""
+    source = _verified_csv(
+        tmp_path,
+        rows=[_row(1, "Entry long", "2026-01-05 10:00", Signal="verified")],
+    )
+    replacement = _row(2, "Entry long", "2026-01-05 11:00", Signal="replaced")
+    with source.export_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=_TV_HEADERS)
+        writer.writeheader()
+        writer.writerow(replacement)
+
+    events = normalize_export(source).events
+
+    assert events["source_trade_id"].tolist() == [1]
+    assert events["signal"].tolist() == ["verified"]
+
+
+def test_normalize_maps_hash_pinned_malformed_utf8_to_schema_error(tmp_path):
+    """A decode failure at the CSV intake boundary must be typed, not leak a traceback."""
+    export = tmp_path / "source.csv"
+    pine = tmp_path / "source.pine"
+    export.write_bytes(b"\xff")
+    pine.write_bytes(b"pine")
+    source = verify_source_pair(
+        tmp_path,
+        _source_spec(
+            export_sha256=sha256(export.read_bytes()).hexdigest(),
+            pine_sha256=sha256(pine.read_bytes()).hexdigest(),
+        ),
+    )
+
+    with pytest.raises(TradeExportSchemaError, match="UTF-8"):
+        normalize_export(source)
+
+
+def test_normalize_empty_canonical_export_retains_typed_event_columns(tmp_path):
+    """A header-only valid export is an empty typed ledger, not an untyped frame."""
+    source = _verified_csv(tmp_path, rows=[])
+
+    events = normalize_export(source).events
+
+    assert list(events.columns) == [
+        "strategy_id", "encoded_instrument", "source_trade_id", "source_row_number",
+        "timestamp_raw", "timestamp_naive", "timestamp_utc", "exchange_session_date",
+        "type_raw", "event_type", "direction", "signal", "price_usd", "quantity",
+        "size_value_usd", "net_pnl_usd", "return_pct", "commission_usd",
+        "favorable_excursion_usd", "favorable_excursion_pct", "adverse_excursion_usd",
+        "adverse_excursion_pct", "cumulative_pnl_usd", "cumulative_pnl_pct",
+        "duration_bars", "concurrent_timestamp",
+    ]
+    assert events.empty
 
 
 def test_normalize_localizes_only_with_explicit_timezone(tmp_path):
