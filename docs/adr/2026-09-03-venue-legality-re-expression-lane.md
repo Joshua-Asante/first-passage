@@ -136,7 +136,15 @@ disliked, tuning anything beyond the session bound, or re-running until a replac
 - Entering the lane on any performance result, or on a hunch, rather than a named venue flag.
 - Changing any parameter other than the entry cut-off and the forced flatten.
 - Producing more than **one** replacement per strategy. A second attempt at the same strategy is a search
-  over session bounds and is void; the strategy drops instead.
+  over session bounds and is void; the strategy drops instead. ⚠ **The count starts at the first export taken
+  against the VERIFIED D12 early-close calendar.** An export run against the interim placeholder list is not a
+  replacement at all and must not be produced (§4 forbids it below); the one-attempt rule must never be satisfied
+  by a body whose holiday dates were known-unverified, or the rule would consume the single attempt on a
+  configuration nobody intended to test.
+- **Exporting any of the three before the verified per-product-group early-close calendar replaces the interim
+  list.** The interim list was carried over from `aegis_6J1.pine`, an **FX** body; MGC is COMEX metals and ORB is
+  CME equity index, and D12 records that the three groups keep different holiday sessions. A wrong date either
+  flattens an ordinary session or misses a real short one, and either corrupts the one permitted replacement.
 - Carrying the original expression's Phase 1 verdict, reconciliation anchors, or TradingView summary
   anchors onto the replacement.
 - Inspecting replacement results before this record is `Accepted`.
@@ -155,7 +163,9 @@ Binary, per replacement strategy, evaluated at the Phase 1 re-read:
 ```
 PASS   iff  FORCE_FLAT_VIOLATION count == 0
       and  friday_to_sunday_holds == 0
-      and  the diff against the superseded body touches only the session-bound block
+      and  the diff matches the applied-edit table in the guard spec §8 exactly —
+           the deadline input(s), the strategy title, and (MGC/ORB only) the added
+           early-close calendar block; nothing else
       and  G1.1–G1.10 otherwise clear on the replaced set
 DROP   otherwise
 ```
@@ -178,8 +188,8 @@ pre-declared, uniformly-applied cutoff is *expected* to reorder them. Rejecting 
 predeclared edit had the economic effect it was always going to have would reject valid work for the wrong reason.
 
 **FALSIFIED if:** any replacement's session bound differs from the one the spec prescribes for its bar size,
-**or** its diff against the superseded body touches anything beyond the session-bound block and the entry
-guards, **or** any frozen re-export setting (date range, chart, timeframe, initial capital, commission,
+**or** its diff against the superseded body touches anything beyond what the guard spec §8 table records for that
+script, **or** any frozen re-export setting (date range, chart, timeframe, initial capital, commission,
 slippage, pyramiding, detalization, DEEP) differs from the superseded export's, **or** a second replacement is
 produced for any strategy.
 

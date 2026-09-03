@@ -68,10 +68,11 @@ pyramiding with no firm DD geometry — the fourth occurrence in this construct 
 tier's $3,000 trailing barrier at their exported size, which sizes the Phase 2 haircut and is not a bust verdict.
 No `core`/Pine/allocation/`dd_protection`/rail change. $0/K=0.
 **Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
-campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — operator ratifies the
-re-expression-lane ADR before inspecting any replacement export, answers D15 (Striker sizing basis) and supplies the
-commission + monthly rows; orchestrator lands the CME calendar and the generated date array; Codex runs the
-twelve-item re-anchor round; D7 open pending purge · `#2`
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — **lane ADR `Accepted`, Pine edits
+applied, D15 resolved from source.** Next: orchestrator lands the verified CME calendar and swaps out the interim
+early-close list, which **blocks** the three venue-bound re-exports; operator may re-export the two Strikers at 100K
+now and supplies the commission + monthly rows; every re-export lands with refreshed hashes, filenames and
+`pin_divergence` per guard-spec §9; Codex runs the twelve-item re-anchor round; D7 open pending purge · `#2`
 [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
 — unchanged.
 

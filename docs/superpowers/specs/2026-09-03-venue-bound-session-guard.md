@@ -192,6 +192,13 @@ Hold every one of these identical to the superseded export, or the replacement i
   measurement, not a re-expression.
 - **DEEP** backtest stays on. Regular mode trims at 9,000 trades; Deep holds up to 1M.
 
+⛔ **Do not export the three venue-bound editions yet.** Their early-close list is an interim copy taken from
+`aegis_6J1.pine`, which is an **FX** body. MGC is COMEX metals and ORB is CME equity index, and those groups do not
+keep the same holiday sessions. A wrong date flattens an ordinary session or misses a real short one, and the lane
+allows **one** replacement per strategy — so an export against the interim list would burn the single attempt on a
+configuration nobody meant to test. Wait for the verified per-group calendar; the ADR now forbids exporting before
+it lands. The two Striker re-exports carry no such dependency and may go at any time.
+
 Then send me, per strategy: the export CSV, the new Pine file, and the **Performance Summary** screenshot
 including the commission and monthly rows.
 
@@ -206,8 +213,11 @@ including the commission and monthly rows.
    criterion. A correct guard need not reduce the count — Aegis already stops entering at 13:45, so its
    122 trades may simply exit at different timestamps. A count that *rose* is worth investigating, since
    the guard should never create entries, but the check that decides correctness is step 1.
-4. Diff the new Pine against the superseded body and confirm the only changes are the §2 block, the
-   `and not venueEntryBlocked` clauses, and — for Aegis only — the deleted old flatten.
+4. Diff the new Pine against the superseded body and confirm the changes are **exactly** those in the §8 table for
+   that script: the deadline input(s), the strategy title, and — MGC and ORB only — the added early-close calendar
+   block. Nothing else. (This step previously described the generic §2 insert, which no applied body matches; a
+   correctly edited script would have failed it and been dropped by the ADR's one-shot gate. Corrected 2026-09-03
+   after Codex's review of [#289](https://github.com/Joshua-Asante/first-passage/pull/289).)
 
 ⚠ **A separate finding, not part of this edit.** The two Striker exports were produced at **200K** initial
 capital while the campaign targets a **$100K** Select account. That does not affect the three strategies in
@@ -266,3 +276,30 @@ the intended dollar loss.
 
 ⚠ **Not compile-verified.** `scripts/pine_check.py` calls TradingView's guest compile endpoint, which this environment's
 proxy refuses with 403. Confirm each script compiles on paste before running the export.
+
+---
+
+## §9 — Re-pinning, which the edits make mandatory
+
+Every one of the five edited bodies has a **new SHA-256**, because changing an input default changes the bytes. The
+frozen `phase1_config.json` still pins the **pre-edit** hashes — `5c4b1026…` against `striker_dj30_v4.5_mym.pine` and
+`d18c2699…` against `striker_nas100_v1_mnq.pine` — and its Striker `pin_divergence` records name only the pyramid and
+day-of-week changes. Re-exporting from the edited bodies without refreshing that record either fails strict source
+verification outright or, worse, passes while attributing the new exports to Pine bytes that did not produce them.
+
+So each re-export lands with **all** of the following, in the same commit as its export:
+
+| | Venue-bound three | Striker two |
+|---|---|---|
+| New `strategy_id` | `*_venue_bound` (spec §4) | unchanged |
+| New `pine_filename` | `*_venue_bound.pine` | `*_cap100k.pine` |
+| New `pine_sha256`, `pine_bytes` | yes | yes |
+| New `export_sha256`, `export_bytes` | yes | yes |
+| `pin_ref` | the superseded body's hash | the superseded body's hash |
+| `pin_divergence` | the §8 row for that script, verbatim | append `"initial_capital 200000 → 100000 (D15)"` to the existing divergence text |
+| Superseded entry | moved to `superseded_sources` with the flag that retired it | moved to `superseded_sources` with `MIS_PARAMETERISED_INITIAL_CAPITAL` |
+| `PORT_MANIFEST.sha256` | new pin under `core/strategies/candidates/` | new pin under `core/strategies/candidates/` |
+
+⚠ The Striker pair does **not** enter the D11 lane — its change is a mis-parameterised export corrected, not a
+re-expression — but it needs exactly the same provenance refresh, because the mechanism that breaks is hash pinning,
+which does not care why the bytes changed.
