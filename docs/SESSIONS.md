@@ -33,6 +33,19 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-03h — Catalog In-flight H3 strip + sessions append-only restore
+
+**Focus:** Codex P2 on #280: In flight still entered retrieval via the pre-`###` H3 chunk. CI `skills` failed because `2026-09-03d` was mutated after #276 merged.
+**Shipped:** `cursor/catalog-live-index-e931` — omit `## In flight` before `chunk_by_heading`; restore the frozen `2026-09-03d` body.
+**Decisions/defects:** [addendum](adr/2026-08-22-catalog-hot-vs-disposition.md#addendum--2026-09-03).
+`queue-exception: P1 falsifier fired; catalogs are being read as the work list`.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2` [B7-REFIRE Stage 1
++ M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+**Live-ops state:** rail remains built / disarmed; no book deployed.
+
+---
+
 ## 2026-09-03g — STATE currency gate (queue-exception: STATE currency gate)
 
 **Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
@@ -92,11 +105,9 @@ D7 open pending purge · `#2`
 order-flow camps looked live; recent work in `_inbox` was buried.
 **Shipped:** `cursor/catalog-live-index-e931` — `028eb90` addendum · `b951143` regenerator ·
 `32dd565` Verdict stamps + CATALOG regen · blast-radius pointer refresh (`REPO_MAP`, theme
-READMEs, README lead token, trade-csv skill) · Codex pass-2 (`repo_retrieve` skips In flight;
-escaped-pipe preserve; `--slug` refuses `_inbox`; In-flight stamp from any head card; Owner/Home
-columns only). Derived `## In flight` (STATE Owner artifact + INDEX Home + `In-flight: yes`;
-exclude `HOLD` and archiveable statuses); `## Hot bodies` replaces `## Active`; `_inbox` first
-under Hot bodies. README token table now means English.
+READMEs, README lead token, trade-csv skill). Derived `## In flight` (STATE queue + INDEX Open +
+`In-flight: yes`; exclude `HOLD` and archiveable statuses); `## Hot bodies` replaces `## Active`;
+`_inbox` first under Hot bodies. README token table now means English.
 **Decisions/defects:** Live-only index, not a `LIVE` token. No mass `--slug`. P1 glossary
 falsified — [addendum](adr/2026-08-22-catalog-hot-vs-disposition.md#addendum--2026-09-03).
 `queue-exception: P1 falsifier fired; catalogs are being read as the work list`.
