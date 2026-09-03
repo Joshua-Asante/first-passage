@@ -39,7 +39,8 @@ any entry, full or stub (a-first; bare claims `a`).
 `hot` meant “keep the body,” not “in flight.” Class-S #1, the failed combined book, and HOLD
 order-flow camps looked live; recent work in `_inbox` was buried.
 **Shipped:** `cursor/catalog-live-index-e931` — `028eb90` addendum · `b951143` regenerator ·
-`32dd565` Verdict stamps + CATALOG regen. Derived `## In flight` (STATE queue + INDEX Open +
+`32dd565` Verdict stamps + CATALOG regen · blast-radius pointer refresh (`REPO_MAP`, theme
+READMEs, README lead token, trade-csv skill). Derived `## In flight` (STATE queue + INDEX Open +
 `In-flight: yes`; exclude `HOLD`); `## Hot bodies` replaces `## Active`; `_inbox` first under
 Hot bodies. README token table now means English.
 **Decisions/defects:** Live-only index, not a `LIVE` token. No mass `--slug`. P1 glossary
