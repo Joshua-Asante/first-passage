@@ -112,6 +112,18 @@ overlapping signals or runs quantities that differ from what was scored. Both ve
 forks. Also folded: the §2 board note now covers **row 3** (the board still demanded all 14 contract items while
 D20 replaced them with the short freeze), the Rule 2 line no longer assigns **M1 item 5 to Phase 8**, and a stale
 "freeze waits only on §14e and the panel pins" sentence is struck.
+**D23 / D24 ruled, and the operator's question opened D25.** **D23 (a):** snapshot the live account state into the
+MC — **conditional**, because the trailing-floor anchor (highest EOD equity; the eval is a pure EOD fixed-$ trail
+with the lock unreachable) may not be exposed, and a *reconstructed* peak is the derived-input class that has burned
+this campaign three times. Feasibility test recorded; fall back to a pristine eval rather than reconstruct.
+**D24 (b):** dynamic screen kept, runtime aggregate-headroom + collision tests become an explicit Phase 8 gate.
+**D25 — from the operator asking what a cap breach actually costs:** the repo assumes **account-fatal**, but that
+language is **MFFU's** (article 13286542), carried to Tradeify conservatively; the Tradeify row records the cap and
+**not** its consequence, so the true answer is **unverified**. Engine check: `simulate_path` has **no cap outcome**
+— and does not need one, because bootstrap blocks are integer weeks with joint-flat edges, so resampling preserves
+each week's internal chronology and cannot manufacture an overlap the realized data lacked. **Live is the opposite:**
+novel signal timing can, and the MC structurally cannot see it — which is the real argument for D24(b). Follow-up:
+get Tradeify's over-cap consequence in writing; a rejected-order answer makes the Phase 8 guard materially cheaper.
 **Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — ⚠ **pointer refreshed to this commit's final state** (Codex P2: it still listed §14e and the 6J re-capture as outstanding, both of which this same commit records as done). **#294 MERGED** (main `9a69185`, §16g); **all four bar panels ACCEPTED** (§16h). Freeze prerequisites now: Codex's per-leg **scaling-faithfulness read** (each size-specific export takes a full G1.1–G1.10 read), fresh **TV Key-stats panels** for all five sources, and the **DJ30 +$287** disposition — the grammar cannot be frozen over inputs Phase 1 has not reconciled. #296 is `behind` main; update the branch before merging · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) — on the campaign's critical path via Phase 8; weekly venue-idle token trade placed 2026-09-03.
 **Class:** Decision · **Rule 2:** constituent (i) iteration **4** of 8 — ⚠ advanced per Codex P2: D3 defines an
 iteration as one dispatch → gate read → fold, and this session completed exactly that for the #294 remediation
