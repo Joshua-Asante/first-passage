@@ -80,71 +80,36 @@ nothing internal).
 of no prior work**: pruned bodies live in git history, and `docs/ltm/` is excluded from default
 `rg` (use `--no-ignore`). Hop table: [`README.md`](README.md) §Where to look.
 
-## Load-bearing numbers — read before quoting any figure
+## Load-bearing numbers
 
-⚠ **Eval bust figures are EOD-clock lower bounds unless they cite an intraday-honest RESULTS
-path.** Scope: all 7 `dd_type="trailing"` tiers — Tradeify/MFFU **and** Bulenox/BluSky
-([Q-FIRMEOD-1](docs/briefs/closures/Q-FIRMEOD-1-closure-falsified.md) `FALSIFIED`;
-[W1 ADR](docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md)). Honest-clock RESULTS:
-Class-S 0.50× full+halves —
-[`RESULTS_INTRADAY_W1`](lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/RESULTS_INTRADAY_W1.md);
-Bulenox_100K / BluSky_Premium_100K 1.00×/0.50× —
-[`R1 7-tier RESULTS`](lab/analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md) (its
-§2/§4b: the other Bulenox tiers carry a since-corrected archived figure from a closed, non-live
-book — not "none"; only BluSky_Premium_50K has no published figure).
+Owner: [`docs/load_bearing_numbers.md`](docs/load_bearing_numbers.md) — **read it before quoting any
+prop-tier figure.** The two standing rules, in one line each:
 
-⚠ **Every published prop-tier bust/pass figure assumes the inactivity barrier is OFF**
-(`firm_kwargs(inactivity_off=True)`) unless its own file says otherwise. That is the intended model:
-the operator-placed weekly token trade satisfies the venue rule, so the mitigation is load-bearing,
-not optional. The barrier-**ON** re-MC has been run twice and is degenerate — **92.6–97.6%** path
-death ([`c1_cadence_inactivity_2026-08-02`](lab/analysis/c1/c1_cadence_inactivity_2026-08-02/RESULTS.md))
-and **74.8–100%** pure-inactivity failure
-([`orb_mym_v04_riskbudget_2026-09-02`](lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/RESULTS.md)
-§5c); it measures the mitigation's absence, not the pins. **Do not re-open this as a fresh
-finding.** The full disclosure and the engine's over-/under-fire caveat (rolling counter vs. the
-venue's weekly bucket; unsound on sparse inputs) are stated where the figures are read:
-`core/mc/preflight.py` (`INACTIVITY_OFF`).
+* ⚠ **Eval bust figures are EOD-clock lower bounds** unless they cite an intraday-honest RESULTS
+  path. Scope is all 7 `dd_type="trailing"` tiers, Bulenox/BluSky included.
+* ⚠ **Every published bust/pass figure assumes the inactivity barrier is OFF.** The operator-placed
+  weekly token trade is the mitigation, and the barrier-ON re-MC is degenerate — **do not re-open
+  it as a fresh finding.**
 
-**Two values in the tree — the other one is historical.** Each owner is the only surface authorized
-to move its number; the stale surfaces named below carry head banners
-([`operational_rules.md`](docs/operational_rules.md) §14).
-
-| Number | **LIVE value** | Owner | The other value you will find |
-|---|---|---|---|
-| **Part A eval bust ceiling** | **5.0%** (since 2026-08-26) | [`prereg v2`](docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3 → `prop_survivor_scoring.DEFAULT_PREREG` | **3.0%** = [`prereg v1`](docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md), CLOSED. Still keyed to it: the [A2 map](lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md) verdict labels, the [A2 venue-bound study](lab/analysis/c1/a2_panel_noise_venue_bound_2026-08-24/RESULTS.md) (every derived magnitude is v1; its banner owns the 5.0% re-derivation caveat — do not quote them for planning), the [withdrawal ADR](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md), and the v1-pinned loader tests. **Do not confuse with `max_dd_pct: 3.0`** — the $100K tier's DD barrier width, a different live 3.0% |
-| **Pass floor / funded ceiling / `trailing_locking` rule** | **50% / 1.0% / ≥1 required** | same prereg v2 §3 | unchanged from v1 |
-| **§4 firm set** | **four firms** — Bulenox · Tradeify · MFFU · BluSky | [F1 reversal](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-09-01--f1-reversed-a-tradeify-resting-discharge-now-counts-toward-4) (2026-09-01) | the **three-firm** reading (2026-08-23 → 2026-09-01) in that ADR's dated addendum, SESSIONS, and archives. Election only — `AUTOMATION_FRIENDLY_PROP_FIRMS` and both preregs' frozen `$100K×4` tier set always held Tradeify |
-| **Venue inactivity rule** | **≥1 trade per Mon–Fri week**, per account, eval **and** funded (art. 10468318; deletion is irreversible, art. 12268494) | [`core/firm_rules.py`](core/firm_rules.py) `Tradeify_Select_*` sourcing block (the owner of record, `TRADEIFY_AUTOMATION_PAYOUT_COMPLIANCE.md` §2a, is redacted from this clone) | **"5 consecutive idle days"** is the *engine's* `inactivity_max_idle_days`, a rolling counter — an upper bound on the weekly rule, not the rule. [`ops/sentinel/activity_week.py`](ops/sentinel/activity_week.py) models the bucket faithfully (report-only) |
-| **Q-RANGECOND-1 verdict** | **`FALSIFIED`** (2026-08-31) | [`closure-falsified`](docs/briefs/closures/Q-RANGECOND-1-closure-falsified.md) | `RESOLVED` + `+24.75pp` / `66.47%` / `+0.711R` are **retracted**; the [resolved closure](docs/briefs/closures/Q-RANGECOND-1-closure-resolved.md) is frozen history behind its own banner |
-| **ORB-MYM headline** | the **canonical engine**, not TradingView | [`orb_mym_v04_riskbudget_2026-09-02/RESULTS.md`](lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/RESULTS.md) §2 | TV net/PF/maxDD are leg-level under pyramiding with no firm DD geometry — P50 reconciles to the cent yet **busts Select on day 42** at the size measured |
-
-*Every figure here is restated from its owner; never apply a transformation in this table.*
+Six figures have a second, historical value in the tree (Part A ceiling · pass floor · §4 firm set ·
+venue inactivity rule · Q-RANGECOND-1 verdict · ORB-MYM headline). That doc names the live value and
+its sole owner for each.
 
 ## Strategy Reference (LOCKED legacy book — do not modify)
 
-Historical record of the locked CFD-era book and its withdrawn futures editions — **no live venue,
-not a live book.** Live sizing authority is `dd_protection.BASE_RISK` / `firm_rules._BASE_RISK`;
-this table is the human-readable mirror. The Striker futures editions (MYM/MNQ) *were* the c1 book
-until 2026-08-04; the code path is deliberately untouched
-(`ops/c1_rail/c1_sizing_host_reference.py` still consumes `BASE_RISK["Striker"]` /
-`["Striker NAS100"]` via `LEG_MAP`).
+Record moved 2026-09-04 to
+[`core/strategies/CATALOG.md`](core/strategies/CATALOG.md) §Locked parameter record — risk%,
+pyramid, version, `contractValue`, and the Guardian/Aegis disposition. **No live venue, not a live
+book;** live sizing authority is `dd_protection.BASE_RISK` / `firm_rules._BASE_RISK`, and every
+other strategy parameter lives in **Pine only**.
 
-| Strategy | Instrument / TF | Risk/trade | Version | DXTrade contractValue |
-|---|---|---|---|---|
-| Striker DJ30 | DJ30 15m | **0.70%** (pyramid 750%) | v4.5 LOCKED | **10** (critical — default 1 ⇒ ~7% risk) |
-| Striker NAS100 | NAS100 15m | **0.37%** (pyramid 1000%) | v1 LOCKED | 10 |
-
-Guardian Gold / Aegis USDJPY are **historical CFD book**, not living `BASE_RISK` — frozen risk% in
-`historical_challenge.HISTORICAL_CHALLENGE_BASE_RISK`; Pine + LOCK bodies under
-`core/strategies/_archive/` ([Phase C](docs/adr/2026-08-23-strategy-coldstore-phase-c.md)).
-
-Strategy parameters (SL/TP/ATR/session/BE/trail) live in **Pine only** — never duplicated here.
-Lock lineage: [allocation refresh 2](docs/adr/2026-05-23-allocation-refresh-2.md).
 Historical MC calibration — **99.83% pass / 0.17% bust, p99 DD 4.37%** — is **historical record, not a
-live claim** ([`docs/mc_anchor_history.md`](docs/mc_anchor_history.md)). ⚠ Those three literals are
-regex-read by `ops/recall/guard.py` to build the recall-sidecar denylist — reword them only alongside
-that parser. Engine regression is vendor-free (`tests/core/test_mc_synthetic_engine.py`). Canonical
-feed = CME futures TV exports (`core/data/tv_exports/cme/`); OANDA and Pepperstone are retired.
+live claim** ([`docs/mc_anchor_history.md`](docs/mc_anchor_history.md)). ⚠ Those three literals stay
+**here**: `ops/recall/guard.py` regex-reads them from this file to build the recall-sidecar denylist,
+and the first anchor-shaped match in `mc_anchor_history.md` is a *different* triple (the Q-SWAP
+figures), so moving them would silently denylist the wrong numbers. Reword only alongside that parser.
+Engine regression is vendor-free (`tests/core/test_mc_synthetic_engine.py`). Canonical feed = CME
+futures TV exports (`core/data/tv_exports/cme/`); OANDA and Pepperstone are retired.
 
 ## Strategy Authorization Lifecycle
 
@@ -259,25 +224,15 @@ Tests depending on vendor CSVs skip-if-missing. `core/data/bar_data/` is **RETAI
 
 ### Vendor-data integrity gate
 
-After re-exporting any panel CSV, run the checker and commit the `SHA256SUMS` delta in the **same
-commit** as the data change. It hashes **working-tree bytes**; all three manifest dirs must be
-present locally first:
+Owner: [manifest integrity gate ADR](docs/adr/2026-05-10-manifest-integrity-gate.md) — it holds the
+`check_data_manifests.py` flags and the per-clone hook install. Three rules to know here:
 
-```bash
-python scripts/check_data_manifests.py --regenerate --dry-run
-python scripts/check_data_manifests.py --regenerate
-```
-
-**Load-bearing gate — install the pre-commit hook once per clone** (CI cannot re-hash gitignored
-bytes):
-
-```bash
-bash scripts/install_hooks.sh
-```
-
-(Windows cmd: `scripts\install_hooks.bat`. ⚠ PowerShell `bash` is WSL, not Git Bash — the `.sh`
-files are CRLF; prefer the `.bat`.) `git commit --no-verify` is not the standing path
-([manifest integrity gate](docs/adr/2026-05-10-manifest-integrity-gate.md)).
+* After re-exporting any panel CSV, commit the `SHA256SUMS` delta in the **same commit** as the data
+  change. The checker hashes **working-tree bytes**, so all three manifest dirs must be present.
+* **Install the pre-commit hook once per clone** (`scripts/install_hooks.sh`) — CI cannot re-hash
+  gitignored bytes, so this gate is local-only. ⚠ On Windows use `scripts\install_hooks.bat`:
+  PowerShell `bash` is WSL, not Git Bash, and the `.sh` files are CRLF.
+* `git commit --no-verify` is not the standing path.
 
 ⚠ **`main` is protected — you cannot push to it directly.** A PR is required (0 approvals) and
 exactly one status check must pass: `skills (3.12)`, the
