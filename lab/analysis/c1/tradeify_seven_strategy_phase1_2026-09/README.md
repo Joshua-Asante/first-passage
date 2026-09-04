@@ -31,22 +31,39 @@ without decoding or parsing them. Missing, unreadable or mismatched evidence
 is a fatal intake failure (exit 3), before any output publication. Only the
 verified digest is serialized; no artifact contents are included in diagnostics.
 
-Prospective v4 D27 summary anchors use `max_drawdown_excursion_bounded_usd`,
-including the five-scalar D17 branch and the seven-metric non-D17 branch. The
-retired `max_drawdown_usd` anchor name is rejected, not silently reinterpreted.
+Prospective v4 D27 summary anchors use `tv_panel_max_drawdown_usd`, separate
+from both computed measures on every leg, including the five-scalar D17 branch
+and the seven-metric non-D17 branch. Both retired anchor names,
+`max_drawdown_usd` and `max_drawdown_excursion_bounded_usd`, are rejected.
 Accounting retains that closed-trade measure separately as
 `LOWER BOUND for non-overlapping trades`. Under overlap, a realized loss can
 coincide with an unrealized gain, so closed-trade drawdown can overstate the
 true account drawdown. The new measure is labeled
-`excursion-bounded for non-overlapping trades` and uses Decimal arithmetic in an exit-order
+`LOWER BOUND (excursion-tightened) for non-overlapping trades` and uses Decimal arithmetic in an exit-order
 walk: sort by exit timestamp then source row, visit realized equity minus the
 absolute trade MAE before settlement, and retain both this decline and the
 realized exit decline from the realized-equity peak. Missing/non-finite MAE is
-rejected. This synthetic walk is not guaranteed to bound true synchronized
-aggregate account-equity drawdown when trades overlap; trade extrema do not
-identify their relative timing. Both measures, labels and this limitation are
-included in newly generated reports. D17 monthly/commission policy and the
-inclusive 0.01 comparison tolerance are unchanged. Current private captures
+rejected. The walk never visits an intratrade peak (MFE), so it misses drawdowns
+starting there even without overlap: `closed <= walk <= true`, never equality
+with the full path. Under overlap neither computed field bounds synchronized
+account-equity drawdown; trade extrema do not identify their relative timing.
+Both computed measures, the separate panel anchor, labels and limitations are
+included side by side in newly generated reports.
+
+Overlap is measured per leg from canonical entry/exit timestamps, never Pine
+pyramiding. Closed intervals apply: an entry at another trade's exit time is a
+tie and takes the overlap branch. With no overlap, only `walk > panel + 0.01`
+blocks; the cent tolerance is inclusive. A smaller walk creates no finding;
+equality is coincident INFO, never MATCH. With overlap or a tie the panel is
+RECORDED and the walk-versus-panel difference is INFO, never BLOCKER or MATCH.
+The summary row leaves `observed` unset and records the walk separately;
+its difference is explicitly walk minus panel, not a panel reconciliation.
+
+D17 monthly/commission policy is unchanged. The new exact-key `max_drawdown`
+policy slot must be `null` while D32 is unruled; no accepted value is invented.
+Reports carry `PENDING_D32`; complete evidence coverage is not operator
+acceptance. The historical policy has no new slot and intentionally fails
+the prospective loader. Current private captures
 and independent panel population still gate regeneration; no campaign evidence
 prerequisite is closed by this code change.
 

@@ -15,13 +15,15 @@ from research_utils.trade_reconciliation import AccountingMetrics
 from research_utils.tv_trade_ledger import Issue, SourceSpec
 
 
+TV_PANEL_DD_METRIC = "tv_panel_max_drawdown_usd"
+MAX_DRAWDOWN_POLICY_STATUS = "PENDING_D32"
 METRICS = (
     "trade_count", "net_pnl_usd", "win_rate_pct", "profit_factor",
-    "max_drawdown_excursion_bounded_usd", "total_commissions_usd", "monthly_net_pnl_usd",
+    TV_PANEL_DD_METRIC, "total_commissions_usd", "monthly_net_pnl_usd",
 )
 _D17_SCALAR_METRICS = METRICS[:5]
 _D17_POLICY_KEYS = {
-    "ruling_date", "ruling_ref", "monthly_totals", "commissions", "reason",
+    "ruling_date", "ruling_ref", "monthly_totals", "commissions", "max_drawdown", "reason",
 }
 SUMMARY_TOLERANCES = {
     "currency_usd": "0.01",
@@ -37,7 +39,7 @@ class SummaryInventory:
     coverage_note: str
     anchors: Mapping[str, dict]
     input_sha256: str | None
-    d17_policy: Mapping[str, str] | None = None
+    d17_policy: Mapping[str, str | None] | None = None
 
 
 def _decimal(value: object, metric: str) -> Decimal:
@@ -49,7 +51,7 @@ def _decimal(value: object, metric: str) -> Decimal:
         raise ValueError(f"{metric} must be a finite decimal string") from exc
     if not result.is_finite():
         raise ValueError(f"{metric} must be finite")
-    if metric in {"win_rate_pct", "profit_factor", "max_drawdown_excursion_bounded_usd", "total_commissions_usd"} and result < 0:
+    if metric in {"win_rate_pct", "profit_factor", TV_PANEL_DD_METRIC, "total_commissions_usd"} and result < 0:
         raise ValueError(f"{metric} must be nonnegative")
     if metric == "win_rate_pct" and result > 100:
         raise ValueError("win_rate_pct must be in [0, 100]")
@@ -89,7 +91,7 @@ def _validate_metrics(metrics: object, missing: object, *, d17_policy: bool = Fa
             _decimal(value, metric)
 
 
-def _validate_d17_policy(value: object) -> dict[str, str]:
+def _validate_d17_policy(value: object) -> dict[str, str | None]:
     if not isinstance(value, dict) or set(value) != _D17_POLICY_KEYS:
         raise ValueError("d17_policy keys mismatch")
     for field in ("ruling_date", "ruling_ref", "reason"):
@@ -106,6 +108,8 @@ def _validate_d17_policy(value: object) -> dict[str, str]:
         raise ValueError("d17_policy.monthly_totals must be RECONSTRUCTED")
     if value["commissions"] != "AMENDED_OUT":
         raise ValueError("d17_policy.commissions must be AMENDED_OUT")
+    if value["max_drawdown"] is not None:
+        raise ValueError("d17_policy.max_drawdown must be null pending operator D32 ruling")
     return dict(value)
 
 
@@ -270,6 +274,37 @@ def reconstruct_d17_monthly(
     return payload, issues
 
 
+def _drawdown_comparison(
+    accounting: AccountingMetrics, panel: object, *, missing: bool,
+) -> dict:
+    """Record the panel separately; only a measured non-overlap lower bound is tested."""
+    walk = accounting.max_drawdown_excursion_bounded_usd
+    difference = None if missing else walk - Decimal(panel)
+    if missing:
+        status = "MISSING_ANCHOR"
+    elif accounting.has_overlap_or_tie:
+        status = "RECORDED"
+    elif difference > Decimal("0.01"):
+        status = "MISMATCH"
+    elif difference == 0:
+        status = "COINCIDENT"
+    else:
+        status = "WITHIN_BOUND"
+    return {
+        "metric": TV_PANEL_DD_METRIC,
+        "observed": None,  # The computed walk is not an observation of the panel quantity.
+        "anchor": panel,
+        "walk_usd": walk,
+        "difference": difference,
+        "tolerance": Decimal("0.01"),
+        "status": status,
+        "has_overlap_or_tie": accounting.has_overlap_or_tie,
+        "measurement_basis": accounting.max_drawdown_excursion_bounded_measurement_basis,
+        "difference_basis": "walk minus separate TradingView panel anchor",
+        "max_drawdown_policy_status": MAX_DRAWDOWN_POLICY_STATUS,
+    }
+
+
 def reconcile_summary(
     accounting: AccountingMetrics,
     spec: SourceSpec,
@@ -280,7 +315,6 @@ def reconcile_summary(
         "trade_count": accounting.trade_count, "net_pnl_usd": accounting.net_pnl_usd,
         "win_rate_pct": accounting.win_rate * 100 if accounting.win_rate is not None else None,
         "profit_factor": accounting.profit_factor,
-        "max_drawdown_excursion_bounded_usd": accounting.max_drawdown_excursion_bounded_usd,
         "total_commissions_usd": accounting.commission_usd,
         "monthly_net_pnl_usd": dict(accounting.monthly_net_pnl),
     }
@@ -291,6 +325,9 @@ def reconcile_summary(
     rows = []
     for metric in metric_names:
         value = anchors.get(metric)
+        if metric == TV_PANEL_DD_METRIC:
+            rows.append(_drawdown_comparison(accounting, value, missing=metric in missing))
+            continue
         if metric != "monthly_net_pnl_usd":
             rows.append(_comparison(metric, observed[metric], value, missing=metric in missing))
             continue
@@ -322,4 +359,14 @@ def reconcile_summary(
             },
         ),
     ) if mismatches else ()
+    for row in rows:
+        if row["metric"] == TV_PANEL_DD_METRIC and row["status"] in {"COINCIDENT", "RECORDED"}:
+            issues += (Issue(
+                code="TV_DRAWDOWN_COINCIDENT" if row["status"] == "COINCIDENT" else "TV_DRAWDOWN_RECORDED",
+                severity="INFO", strategy_id=spec.strategy_id,
+                detail={
+                    **row,
+                    "comparison": "coincident" if row["difference"] == 0 else "differs",
+                },
+            ),)
     return rows, issues

@@ -52,7 +52,9 @@ from research_utils.tv_trade_ledger import (  # noqa: E402
     verify_source_pair,
 )
 from research_utils.tv_summary_reconciliation import (  # noqa: E402
+    MAX_DRAWDOWN_POLICY_STATUS,
     SUMMARY_TOLERANCES,
+    TV_PANEL_DD_METRIC,
     load_summary_anchors,
     reconcile_summary,
     reconstruct_d17_monthly,
@@ -576,19 +578,27 @@ def _render_report(manifest: dict[str, object]) -> bytes:
             lines.append(f"| {row['strategy_id']} | {digest} |")
         lines.extend([
             "", "## Drawdown measurement bases", "",
-            f"| Strategy | Closed-trade DD ({CLOSED_DRAWDOWN_LABEL}) | DD ({EXCURSION_DRAWDOWN_LABEL}) |",
-            "|---|---:|---:|",
+            f"| Strategy | Closed-trade DD ({CLOSED_DRAWDOWN_LABEL}) | Walk DD ({EXCURSION_DRAWDOWN_LABEL}) | TV panel DD (separate anchor) |",
+            "|---|---:|---:|---:|",
         ])
         for row in manifest["strategies"]:
             lines.append(
                 f"| {row['strategy_id']} | ${row['max_drawdown_usd']} | "
-                f"${row['max_drawdown_excursion_bounded_usd']} |"
+                f"${row['max_drawdown_excursion_bounded_usd']} | "
+                + ("MISSING_ANCHOR" if row[TV_PANEL_DD_METRIC] is None else f"${row[TV_PANEL_DD_METRIC]}") + " |"
             )
+        lines.extend(["", f"Drawdown acceptance policy: `{MAX_DRAWDOWN_POLICY_STATUS}`. "
+                      "Evidence coverage is not operator acceptance; the placeholder grants no waiver.", "",
+                      "Closed-interval overlap is measured from canonical entry/exit timestamps; ties count. "
+                      "Overlapping or tied legs are RECORDED with INFO only. Otherwise the check is one-sided: "
+                      "walk <= panel + 0.01; equality is coincident INFO, never MATCH."])
+        for row in manifest["strategies"]:
+            lines.append(f"- {row['strategy_id']}: measured overlap or tie = {row['has_overlap_or_tie']}.")
         for basis in dict.fromkeys(
             row["max_drawdown_excursion_bounded_measurement_basis"]
             for row in manifest["strategies"]
         ):
-            lines.extend(["", f"- excursion-bounded: {basis}"])
+            lines.extend(["", f"- Excursion-tightened lower-bound basis: {basis}"])
     lines.extend(
         [
             "",
@@ -661,9 +671,10 @@ def _render_report(manifest: dict[str, object]) -> bytes:
         "## Independent TradingView summary reconciliation", "",
         f"G1.4 coverage: `{manifest['summary_reconciliation_status']}`. {manifest['summary_coverage_note']}", "",
         (
-            "Observed max drawdown uses the excursion-bounded synthetic exit-order walk, "
-            "with a bound claim only for non-overlapping trades, not synchronized account equity. "
-            "Discrepancies remain blockers; no series is repaired."
+            "The panel drawdown is a separate anchor, never an equality target for the exit-order walk. "
+            "Only a non-overlapping walk exceeding the panel by more than 0.01 blocks; "
+            "overlap and timestamp ties are recorded with INFO. No DD row is a MATCH; no series is repaired. "
+            "DD rows leave Observed unset; their Difference is walk minus panel, as shown separately above."
             if manifest["runner_version"] == "tradeify-phase1-normalization-v4"
             else "Observed max drawdown uses closed-trade exit equity; TradingView panel equity drawdown may differ. Discrepancies remain blockers; no series is repaired."
         ), "",
@@ -741,6 +752,9 @@ def run_campaign(
         comparisons, summary_issues = reconcile_summary(accounting, source.spec, summary_inventory)
         anchor = summary_inventory.anchors.get(source.spec.strategy_id)
         summary_record = {
+            TV_PANEL_DD_METRIC: anchor["metrics"][TV_PANEL_DD_METRIC] if anchor else None,
+            "has_overlap_or_tie": accounting.has_overlap_or_tie,
+            "max_drawdown_policy_status": MAX_DRAWDOWN_POLICY_STATUS,
             "continuous_contract_roll_policy": roll_policy_record,
             "summary_source_note": anchor["source_note"] if anchor else None,
             "summary_comparisons": _public_summary_comparisons(comparisons),

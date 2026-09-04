@@ -12,6 +12,7 @@ from test_tradeify_phase1_runner import _five_source_fixture, run_phase1, synthe
 
 
 DD = "max_drawdown_excursion_bounded_usd"
+PANEL = "tv_panel_max_drawdown_usd"
 
 
 def ledger(mae="-9"):
@@ -27,10 +28,10 @@ def test_excursion_precedes_settlement_and_preserves_closed_metrics(mae):
     assert getattr(result, DD, None) == Decimal("9.00")
     assert result.max_drawdown_usd == Decimal("4.00")
     assert result.max_drawdown_label == "LOWER BOUND for non-overlapping trades"
-    assert result.max_drawdown_excursion_bounded_label == "excursion-bounded for non-overlapping trades"
+    assert result.max_drawdown_excursion_bounded_label == "LOWER BOUND (excursion-tightened) for non-overlapping trades"
     assert "for non-overlapping trades" in result.max_drawdown_excursion_bounded_measurement_basis
     assert "exit-order" in result.max_drawdown_excursion_bounded_measurement_basis
-    assert "not guaranteed" in result.max_drawdown_excursion_bounded_measurement_basis
+    assert "neither field is guaranteed" in result.max_drawdown_excursion_bounded_measurement_basis
     assert "synchronized" in result.max_drawdown_excursion_bounded_measurement_basis
     assert "overlap" in result.max_drawdown_excursion_bounded_measurement_basis
     assert (result.net_pnl_usd, result.commission_usd, result.gross_pnl_usd) == (
@@ -50,7 +51,7 @@ def test_empty_ledger_has_both_labeled_zero_drawdowns():
     result = calculate_accounting(_trades())
     assert getattr(result, DD, None) == result.max_drawdown_usd == Decimal("0.00")
     assert result.max_drawdown_label == "LOWER BOUND for non-overlapping trades"
-    assert result.max_drawdown_excursion_bounded_label == "excursion-bounded for non-overlapping trades"
+    assert result.max_drawdown_excursion_bounded_label == "LOWER BOUND (excursion-tightened) for non-overlapping trades"
 
 
 @pytest.mark.parametrize("mae", [None, "", "garbage", "NaN", "sNaN", "Infinity", "-Infinity", float("nan")])
@@ -78,12 +79,12 @@ def test_exit_timestamp_then_source_row_order_is_stable():
 
 
 @pytest.mark.parametrize("d17", [False, True])
-@pytest.mark.parametrize("anchor,status", [("9", "MATCH"), ("4", "MISMATCH"), ("9.01", "MATCH"), ("8.99", "MATCH"), ("9.02", "MISMATCH")])
-def test_summary_uses_excursion_not_closed_dd(tmp_path, d17, anchor, status):
+@pytest.mark.parametrize("anchor", ["9", "4", "9.01", "8.99", "9.02"])
+def test_overlapping_walk_is_recorded_not_reconciled(tmp_path, d17, anchor):
     payload = anchor_payload()
     metrics = payload["strategies"][0]["metrics"]
     metrics.pop("max_drawdown_usd", None)
-    metrics[DD] = anchor
+    metrics[PANEL] = anchor
     if d17:
         payload["d17_policy"] = d17_payload()["d17_policy"]
         metrics.pop("total_commissions_usd")
@@ -92,15 +93,13 @@ def test_summary_uses_excursion_not_closed_dd(tmp_path, d17, anchor, status):
     path.write_text(json.dumps(payload))
     inventory = load_summary_anchors(path, [_spec()])
     rows, issues = reconcile_summary(calculate_accounting(ledger()), _spec(), inventory)
-    row = next(r for r in rows if r["metric"] == DD)
-    assert row["observed"] == Decimal("9")
-    assert row["status"] == status
-    if status == "MISMATCH":
-        assert [(i.code, i.severity) for i in issues] == [("TV_SUMMARY_MISMATCH", "BLOCKER")]
-        assert "exit-order" in issues[0].detail["measurement_basis"]
-        assert "not guaranteed" in issues[0].detail["measurement_basis"]
-    else:
-        assert not issues
+    row = next(r for r in rows if r["metric"] == PANEL)
+    assert row["observed"] is None
+    assert row["walk_usd"] == Decimal("9")
+    assert row["status"] == "RECORDED"
+    assert [(i.code, i.severity) for i in issues] == [("TV_DRAWDOWN_RECORDED", "INFO")]
+    assert "exit-order" in issues[0].detail["measurement_basis"]
+    assert "neither field is guaranteed" in issues[0].detail["measurement_basis"]
 
 
 @pytest.mark.parametrize("d17", [False, True])
@@ -109,17 +108,17 @@ def test_schema_rejects_retired_dd_names_and_negative_new_dd(tmp_path, d17, muta
     payload = anchor_payload()
     metrics = payload["strategies"][0]["metrics"]
     metrics.pop("max_drawdown_usd", None)
-    metrics[DD] = "9"
+    metrics[PANEL] = "9"
     if d17:
         payload["d17_policy"] = d17_payload()["d17_policy"]
         metrics.pop("total_commissions_usd")
         metrics.pop("monthly_net_pnl_usd")
     if mutation == "retired":
-        metrics["max_drawdown_usd"] = metrics.pop(DD)
+        metrics["max_drawdown_usd"] = metrics.pop(PANEL)
     elif mutation == "retired_missing":
         payload["strategies"][0]["missing_metrics"] = ["max_drawdown_usd"]
     else:
-        metrics[DD] = "-1"
+        metrics[PANEL] = "-1"
     path = tmp_path / "anchors.json"
     path.write_text(json.dumps(payload))
     with pytest.raises(ValueError):
@@ -139,7 +138,7 @@ def test_identical_extrema_do_not_identify_synchronized_equity():
                      dict(_trade(2, net="0"), mae_usd=Decimal("-5")))
     result = calculate_accounting(trades)
     assert getattr(result, DD, None) == Decimal("5")
-    assert "not guaranteed" in result.max_drawdown_excursion_bounded_measurement_basis
+    assert "neither field is guaranteed" in result.max_drawdown_excursion_bounded_measurement_basis
 
 
 def test_real_loader_accounting_summary_runner_serializes_both_bases(tmp_path):
@@ -154,12 +153,15 @@ def test_real_loader_accounting_summary_runner_serializes_both_bases(tmp_path):
             assert consumer.get(DD) == "1.00"
             assert consumer["max_drawdown_usd"] == "0.00"
             assert consumer["max_drawdown_label"] == "LOWER BOUND for non-overlapping trades"
-            assert consumer["max_drawdown_excursion_bounded_label"] == "excursion-bounded for non-overlapping trades"
+            assert consumer["max_drawdown_excursion_bounded_label"] == "LOWER BOUND (excursion-tightened) for non-overlapping trades"
             assert "for non-overlapping trades" in consumer["max_drawdown_excursion_bounded_measurement_basis"]
             assert "overlap" in consumer["max_drawdown_excursion_bounded_measurement_basis"]
-            assert next(r for r in consumer["summary_comparisons"] if r["metric"] == DD)["observed"] == "1.00"
+            comparison = next(r for r in consumer["summary_comparisons"] if r["metric"] == PANEL)
+            assert comparison["observed"] is None
+            assert comparison["walk_usd"] == "1.00"
+            assert consumer[PANEL] is None
     assert "LOWER BOUND for non-overlapping trades" in report
-    assert "excursion-bounded for non-overlapping trades" in report
+    assert "LOWER BOUND (excursion-tightened) for non-overlapping trades" in report
     assert "DD (LOWER BOUND)" not in report
     assert "exit-order" in report
-    assert "not guaranteed" in report
+    assert "neither field is guaranteed" in report
