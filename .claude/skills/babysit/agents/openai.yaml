@@ -1,0 +1,4 @@
+interface:
+  display_name: "Babysit PR"
+  short_description: "Monitor a pull request through merge readiness"
+  default_prompt: "Babysit the pull request I just opened until CI is green, conflicts are resolved, and all review feedback is addressed."
