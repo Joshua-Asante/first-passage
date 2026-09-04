@@ -33,9 +33,117 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
-## 2026-09-04c — PR #297 merge conflicts (queue-exception: operator asked to fix PR #297 conflicts)
+## 2026-09-04e — PR #297 merge conflicts (queue-exception: operator asked to fix PR #297 conflicts)
 
 **Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24).
+
+---
+
+## 2026-09-04d — D20: the operator's acceleration; deploy on the live eval as forward falsifier
+
+**Focus:** Answer *"once the Phase 3 commit starts, I want to deploy the book on Tradeify. I just need to know that
+the sizing for the strategies work together and bust less than 5% in the Monte Carlo sim"* with Rule 0 reads, not
+a schedule; record it as **D20**.
+**Shipped:** [campaign-state](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) **§15** (criterion
+made exact; what compresses; what no ruling compresses; three sub-rulings owed) + D20 row + §2/§7 updates.
+**Decisions/defects:** The deliverable is re-scoped to a **deployed, model-fitted book with the live eval as its
+forward falsifier** — Phases 6–7 become post-deployment monitoring on a battery frozen before Phase 4; M1 item 5 is
+discharged in parallel via the licensed test strategy while Phase 8 stays a separate post-selection gate with an ops
+build (daemon runs `NullStrategy`, rail maps two zero-cap legs). **Codex returned six P1s on #295, all accepted and
+folded (§15g)** — the one that mattered most: my first draft equated item 5 with Phase 8. Two invariants D20 cannot reach: M1 `RESOLVED` + a separate operator GO before
+`dry_run=false` (M1 is `CODE_LANDED`, item 5 + signoff owed — so the earliest deployment is the **later of**
+item 5 closing **and** the Phase 5 winner passing its own Phase 8 parity, not the freeze commit; ⚠ corrected
+per Codex P1 — item 5 is dischargeable now via the licensed test strategy, possibly before a winner exists,
+and stating it alone could authorize `dry_run=false` with no adapters, `LEG_MAP` rows or replay evidence for
+the selected book), and the intraday clock (a scalar-MAE leg makes the book `LOWER BOUND`, which is
+not a bust probability). **Self-correction:** the 2026-09-03 projection said *"there is no 6J bar panel"* —
+wrong; `6J_M15.csv` is pinned (frozen through 2026-07-01), 51.4% degenerate and ~9 ticks off Aegis's feed, with
+every panel ending before the exports do; the $0 `CME BAR EXPORT` route MGC used is the fix. **Lineage:** recon
+v7's export is `ORB-MNQ-1_recon_v7_…` — the construct whose Tradeify target the
+[repark ADR](adr/2026-08-03-orb-mnq-repark-payability-falsified.md) recorded FALSIFIED (67.67% bust at k=1,
+honest clock); R2 makes it research-scored, not deployable, without a superseding ADR on the Phase 5 result.
+Prior for "sizing works together": the combined Aegis+ORB study's 3.29% / 5.37% both-halves — fails H2 at 5.0%.
+**§15d ruled (operator, same session):** *"go with fresh 6J bars, yes on all three panels, admit ORB"* (capture
+route + two traps in §15f). ⚠ ~~the freeze now waits only on §14e and four panel pins~~ — **stale, struck** (Codex
+P2): both landed, and the live prerequisites are the three in the Open/next below. The weekly idle trade was
+placed 2026-09-03 (operator statement; authoritative record is the private compliance note).
+**Bar panels gate-read (#296, §15h):** three of four ACCEPTED; **`6J` REJECTED** — the encoding trap fired
+(`max_close_decimals` 5, **51.21%** flat), and it fails *optimistic*: half the bars report zero intrabar range, so
+threading them through `intraday_low` would understate adverse excursion while wearing the honest-clock label.
+Trap A did not fire — density 23,591–23,691 bars/yr matches the old panels, so ~94.5k over 4.01y is complete (the
+§15f "under 50,000" heuristic was mis-calibrated on longer spans; corrected). Second finding: the refresh shortened
+`6J`/`MNQ`/`MYM` by 2–2.8 years and left ~12 prior-study pins unresolvable — **D21**, second firing of the sentence
+`ops/instruments/MYM.md` §W3 already records.
+**#294 (§14e remediation) gate-read (§16):** all six §14f conditions **MET** on the data — five pins exact, calendar rows set-equal to the 40 in-span `venue_flat_dates` both directions, zero holds on all five legs, manifest
+regenerated (`df238cd7…` recomputed), D17 in, tie fix correct (traced by hand: min 70 / max 180). **Green light
+WITHHELD on a P1 the six conditions cannot see:** `MappingProxyType` as a `@dataclass` default is rejected on Python
+3.11, so all five Phase 1 test modules fail at *collection* and `pytest (3.11)` is RED — and it is **not a required
+check**, so the PR is mergeable red behind a green `skills (3.12)`. Codex's "2,495 passed" is true on 3.12, false on
+3.11. Two-line fix verified locally: 5 collection errors → **185 passed**. A **seventh §14f condition** added — read
+every red check, never infer from mergeability.
+**✅ GREEN LIGHT GRANTED on #294 @ `773fa5f` (§16f):** Codex's two-line fix verified — exact patch, one file
++4/−2, all twenty frozen hashes byte-unchanged, `pytest (3.11)` green on CI and **185 passed** reproduced locally
+on 3.11.15. All seven §14f conditions met; **#294 is clear to merge**. Latent `field` parameter shadowing at line
+140 recorded, deliberately not fixed — cannot fire today, and another push would re-open a verified gate read.
+⚠ **Codex round 2 on #295 — five more P1s, all accepted. One is a safety correction I owe plainly:** I had
+described the M1 arming interlock as fail-closed throughout D20. Rule 0 read of `ops/c1_rail/c1_rail_arm.py`
+says otherwise — `plan_arm` accepts **`--acknowledge-m1-unresolved '<reason>'`** and then sets `dry_run=False`
+against today's `CODE_LANDED` artifact, by explicit operator-ratified design ("the operator KEEPS the ability to
+arm against CODE_LANDED"; exercised knowingly 07-28 and 07-31). It fails closed only against an **invalid or
+forged** artifact. **M1 is a procedural invariant with a logged override, not a technical impossibility** — and
+D20's safety story leaned on the stronger reading. The deployment flow is now required never to use that flag.
+Also: **R-STRIKER-EC is not discharged** by the 545 → 0 remediation (both Strikers flatten on an exact 15:45 ET
+bar that never prints on a 13:00 close; four clean years is a sample property) — now an explicit Phase 8 gate or
+the legs are excluded; the manifest-restore branch now actually restores and aborts instead of printing a
+warning; §7 rewritten; and the status header no longer says "one input" while listing three.
+⚠ **Codex round 3 — five more findings, all accepted; two are new design forks, not doc drift.** **D23:** the Monte
+Carlo initializes a **pristine** $100K→$106K account (`simulate_path` does `equity = peak = starting_equity` and
+zeroes `trade_days`/`max_day_profit`), but D20 would arm the **used** incumbent eval — so target headroom, the
+trailing floor's anchor, min-trading-day history and the 40% consistency input all differ, and clearing 5% in the
+sim is not clearing 5% on the account being armed. **D23 blocks the freeze.** **D24:** the Phase 4 screen enforces
+the 80-micro cap **dynamically along the joint path**, but `c1_sizing_host_reference.py` can only apply a **static
+per-leg `cap_alloc`** — its own comment concedes there is no runtime headroom — so the rail either breaches 80 on
+overlapping signals or runs quantities that differ from what was scored. Both verified in source, both operator
+forks. Also folded: the §2 board note now covers **row 3** (the board still demanded all 14 contract items while
+D20 replaced them with the short freeze), the Rule 2 line no longer assigns **M1 item 5 to Phase 8**, and a stale
+"freeze waits only on §14e and the panel pins" sentence is struck.
+**D23 / D24 ruled, and the operator's question opened D25.** **D23 (a):** snapshot the live account state into the
+MC — **conditional**, because the trailing-floor anchor (highest EOD equity; the eval is a pure EOD fixed-$ trail
+with the lock unreachable) may not be exposed, and a *reconstructed* peak is the derived-input class that has burned
+this campaign three times. Feasibility test recorded; fall back to a pristine eval rather than reconstruct.
+**D24 (b):** dynamic screen kept, runtime aggregate-headroom + collision tests become an explicit Phase 8 gate.
+**D25 — from the operator asking what a cap breach actually costs:** the repo assumes **account-fatal**, but that
+language is **MFFU's** (article 13286542), carried to Tradeify conservatively; the Tradeify row records the cap and
+**not** its consequence, so the true answer is **unverified**. Engine check: `simulate_path` has **no cap outcome**
+— and does not need one, because bootstrap blocks are integer weeks with joint-flat edges, so resampling preserves
+each week's internal chronology and cannot manufacture an overlap the realized data lacked. **Live is the opposite:**
+novel signal timing can, and the MC structurally cannot see it — which is the real argument for D24(b). Follow-up:
+get Tradeify's over-cap consequence in writing; a rejected-order answer makes the Phase 8 guard materially cheaper.
+**✅ D23 RESOLVED (§17) — and it is the cheap outcome.** The Tradeify dashboard **displays the trailing threshold
+directly** (`[REDACTED]`), so the hard value came for free: peak = threshold + $3,000 = **[REDACTED] = Balance to
+the cent**, i.e. **the account sits at its high-water mark** — no daily series, no `cashBalanceLog` replay, no
+reconstructed peak. **Provenance PRIMARY** (Tradeify's own dashboard, the authority the rule is enforced on — a
+stronger class than §10's third-party TV panels). **Live vs pristine runs FAVOURABLE:** identical **$3,000** floor
+headroom (the trail carries the peak up with it), **marginally shorter** run to target, and `max_day_profit` [REDACTED]
+effectively inert. So the pristine model was mildly *conservative* — Codex's P1 was right that the sim scores the
+wrong account, and the error happens to point safe; that is measured now rather than assumed in either direction.
+The red `Consistency 100% / 40%` is a small-denominator artifact ([REDACTED] best day vs [REDACTED] total): at the pass
+point the limit is $2,400 and it is a **soft at-pass gate that delays passing and never breaches**, so it cannot
+touch the 5% criterion. Still owed: **`trade_days`**, and a **re-read at the freeze instant** — this capture
+establishes method and feasibility, not the frozen value.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — **six prerequisites open: 1, 2, 6, 7, 8, 9 — every one RULED with work owed, except 1 (needs a read, not a ruling). **D32 RULED 2026-09-04 (§38) — §34b as recommended: the DD limb keyed on measured per-leg overlap, one-sided `walk ≤ panel + $0.01` where no trades overlap (BLOCKER beyond the cent, equality INFO, never MATCH), RECORDED + INFO on overlap or a same-minute tie, the panel DD a separate anchor on every leg; names `d17_policy.max_drawdown: OVERLAP_KEYED`, `dd_limb_status` LOWER_BOUND_HELD/LOWER_BOUND_VIOLATED/RECORDED, `tv_panel_max_drawdown_usd`. **D33 RULED 2026-09-04 (§41) — the `n₃` failure outcome: ONE ATTEMPT, NO PROMOTION; a failed `n₃` ends Phase 5 with no qualifying configuration and a further attempt is a replacement freeze. NO OPEN RULING REMAINS.** (The count rose every review round through seven; prerequisite 3 then closed by ruling, not by evidence.) **RULED 2026-09-04, both as recommended (§28):** **D30 = `UNESTABLISHED`** — the two historical 200K chart states are unrecoverable, so the DJ30 +$287.00 attribution is a **permanent unknown**: "capital-only" is **struck** everywhere, §19b's threshold bracket is **retired**, the 200K figure leaves the anchor set, and **prerequisite 3 is CLOSED NON-BLOCKING**; the mechanism (one trade, the `ddHit` daily branch) survives on the 100K measurements alone. **Do not dispatch a session to capture the 200K states — they are struck from §22.** **D31 = repair (1)** — cross-configuration multiplicity is **reinstated** (no longer waived) as a **fresh independent winner-validation sample `n₃`** on a **third disjoint seed stream**; the deployment bound comes from those paths only. ⚠ One orchestrator-derived clause awaits operator confirmation before the freeze: if the winner's `n₃` bound fails 5.0%, the outcome is **no qualifying configuration** — the runner-up is not promoted — RULED D33 (§41), one attempt. **§22 IS NOW DISPATCHABLE** (current-inputs capture for all five sources; D26 digest-only binding; D27 Route B). **RULED, work owed:** D26 (a) — override values in a **gitignored artifact + tracked digest**, never a tracked file (⚠ no `.gitignore` rule reaches a non-CSV artifact under `lab/analysis/**/` today; the rule must land before the capture does); D27 Route B (excursion-bounded DD); **D28 = repair (ii)** — the 5.0% bound from the **independent stage-2 paths alone** — ⚠ **its n₂ sizing figures were WITHDRAWN §27** (point evaluations at the expected bust count, 56–74% certification power); `n₂` must be sized from a **frozen certification power over the JOINT full+H1+H2 event** (§31: ~950 per limb at a true 3% for 80% joint; the per-limb 630 is withdrawn); **D29** — prerequisite 2 closes by **policy ruling on the residual**, ~~acceptance is a bracket (closed-trade ≤ panel ≤ scalar-coincident bound)~~ ⚠ **the bracket is WITHDRAWN** (lower limb falsified §30b; §34b's one-sided rule is RULED as D32, §38), G1.4 never verifies the drawdown to the cent. **STILL OWED WITH NO RULING:** Codex's per-leg scaling read (must key on DOLLAR columns), and **prerequisite 7** — the live-state MC engine change: `simulation.py` models a pristine account and passing the live balance as `starting_equity` is invalid, because `preflight.py` scales the target and DD width off it. ⚠ **Phase 3 freezes the PROCEDURE, not the snapshot** (§24c) — re-captured and re-run immediately before arming. ⚠ **Live account dollar figures were published to this public repo and are redacted forward-only** (§23a/§24a) — they remain in git history. **A redaction record states counts, field roles and coverage only** (§24e); never a value, a pattern containing values, or which field failed. **D26/D27 code landed as [PR #301](https://github.com/Joshua-Asante/first-passage/pull/301)** (`codex/tradeify-d26-d27`, code-only, population + re-freeze pending) — **gate-read §29: GREEN LIGHT WITHHELD on one test-only P1** — three frozen-fact guards deleted/weakened though every value is a plain JSON key; fix is restoring the assertions. All else verified, incl. the ignore rule in the real layout and CI on 3.11+3.12. ⚠ D29's bracket is NOT implemented (relay lag) and §25b had conflated the doctrine walk with the coincident limb — separate computations, work owed. Branch is `behind` main. **Then Codex's own review of #301 added 2 P1 (§30), both accepted — and one FALSIFIES D29's bracket lower limb** (closed-trade DD overstates true DD when a realized loss coincides with an unrealized gain), so **D32 — now RULED §38 — withdrew the bracket mechanism** (⚠ recommendation AMENDED §32b after Codex's third P1 on #301: equality-as-BLOCKER compares two different quantities on overlapping legs — the amended rule keys the DD limb on MEASURED per-leg overlap: a one-sided `walk ≤ panel` lower-bound check with BLOCKER on violation where no trades overlap — never MATCH, since the walk misses MFE-led drawdowns even alone (§34a) — RECORDED + INFO where they do, the panel DD a separate anchor on every leg); the other P1 — the override digest is shape-validated only, nothing hashes the private artifact — makes D26's binding an assertion until fixed. #301 owes five items (§30c) — **at `3323fc9` (§35): 1, 3, 4 DONE and verified (⚠ corrected §39), 2 (labels) done to first wording (§34 MFE refinement owed), 4 (merge main) DONE, 5 (overlap detector) NOT STARTED by relay lag; green light withheld on 5 alone — ⚠ the pointer first said 4, corrected §37. **At `ac36590` (§40): items 2 and 5 BUILT AS RULED; one residual — `d17_policy.max_drawdown` must require `OVERLAP_KEYED`, the code still requires null / `PENDING_D32`; green light withheld on that alone. Codex on #301 @ `ac36590`: ZERO findings — the #301 loop has converged too.** **Codex loop on #295 CONVERGED: rounds 12 and 13 returned zero P1 (§37, §39); round 13's five P2s were all propagation defects of the folds themselves — stopped; re-trigger only on substantive text (the `n₃` failure-outcome ruling or the next #301 gate read)**** **Round 9 (§33): a live-account dollar figure (token-trade P&L, D22 row) survived four sweeps because the redaction class was scoped to the five snapshot fields — the class is ANY live-account dollar figure; prerequisite row 2 still named the falsified bracket — since RULED as D32 (§38); and n₂/n₃ sizing assumed limb independence — freeze three independent limb seed streams per stage (recommended) or size to the Fréchet floor 130/390/970.**; **operator has triggered Codex on #301 and the zero-P1 loop runs there too** — orchestrator gate-reads each round and relays to the local session. **Codex round 8 on #295 (§31): 4 P1 + 1 P2 accepted** — three rulings that had not reached the live §15b/§7 rows, the no-promotion clause wrongly in force (now UNRESOLVED, operator's), and n₂ power must be joint. #296 **merged** (main `ad5d1e5`) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) — on the campaign's critical path via Phase 8; weekly venue-idle token trade placed 2026-09-03.
+**Class:** Decision · **Rule 2:** constituent (i) iteration **4** of 8 — ⚠ advanced per Codex P2: D3 defines an
+iteration as one dispatch → gate read → fold, and this session completed exactly that for the #294 remediation
+branch (dispatch, §16 gate read, the 3.11 defect correction, §16f verification). D20 itself spends none; the
+#294 cycle does · $0 / K=0
+
+---
+
+## 2026-09-04c — Resolve #295 SESSIONS collision with #298
+
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24).
+
+*(Stub, not a full entry — corrected 2026-09-04 per Codex round-5 P2. This session declared `Decisions/defects: None`, class `Hygiene`, and was a docs-only merge-conflict resolution, so it does not meet the §judgment-gate above; the pointer refresh is the only part that earns a place here. `queue-exception: operator-direct resolve of #295 conflicts`. The full narrative is in `git log`.)*
 
 ---
 
