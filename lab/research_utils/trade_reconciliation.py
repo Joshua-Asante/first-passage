@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
 from hashlib import sha256
@@ -132,7 +132,9 @@ class EarlyCloseCalendar:
     input_sha256: str = ""
     evidence_kind: str = "PRIMARY"
     source_calendar_sha256: str | None = None
-    evidence_metadata: Mapping[str, object] = MappingProxyType({})
+    evidence_metadata: Mapping[str, object] = field(
+        default_factory=lambda: MappingProxyType({})
+    )
 
 
 def _calendar_date(value: object, field: str, *, nullable: bool = False) -> date | None:
