@@ -45,8 +45,11 @@ forward falsifier** — Phases 6–7 become post-deployment monitoring on a batt
 discharged in parallel via the licensed test strategy while Phase 8 stays a separate post-selection gate with an ops
 build (daemon runs `NullStrategy`, rail maps two zero-cap legs). **Codex returned six P1s on #295, all accepted and
 folded (§15g)** — the one that mattered most: my first draft equated item 5 with Phase 8. Two invariants D20 cannot reach: M1 `RESOLVED` + a separate operator GO before
-`dry_run=false` (M1 is `CODE_LANDED`, item 5 + signoff owed — so the earliest deployment is the day item 5
-closes, not the freeze commit), and the intraday clock (a scalar-MAE leg makes the book `LOWER BOUND`, which is
+`dry_run=false` (M1 is `CODE_LANDED`, item 5 + signoff owed — so the earliest deployment is the **later of**
+item 5 closing **and** the Phase 5 winner passing its own Phase 8 parity, not the freeze commit; ⚠ corrected
+per Codex P1 — item 5 is dischargeable now via the licensed test strategy, possibly before a winner exists,
+and stating it alone could authorize `dry_run=false` with no adapters, `LEG_MAP` rows or replay evidence for
+the selected book), and the intraday clock (a scalar-MAE leg makes the book `LOWER BOUND`, which is
 not a bust probability). **Self-correction:** the 2026-09-03 projection said *"there is no 6J bar panel"* —
 wrong; `6J_M15.csv` is pinned (frozen through 2026-07-01), 51.4% degenerate and ~9 ticks off Aegis's feed, with
 every panel ending before the exports do; the $0 `CME BAR EXPORT` route MGC used is the fix. **Lineage:** recon
@@ -75,13 +78,16 @@ every red check, never infer from mergeability.
 +4/−2, all twenty frozen hashes byte-unchanged, `pytest (3.11)` green on CI and **185 passed** reproduced locally
 on 3.11.15. All seven §14f conditions met; **#294 is clear to merge**. Latent `field` parameter shadowing at line
 140 recorded, deliberately not fixed — cannot fire today, and another push would re-open a verified gate read.
-**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — ⚠ **pointer refreshed to this commit's final state** (Codex P2: it still listed §14e and the 6J re-capture as outstanding, both of which this same commit records as done). **#294 MERGED** (main `9a69185`, §16g); **all four bar panels ACCEPTED** (§16h). Freeze prerequisites now: Codex's per-leg **scaling-faithfulness read** (each size-specific export takes a full G1.1–G1.10 read), fresh **TV Key-stats panels** for all five sources, and the **DJ30 +$287** disposition — the grammar cannot be frozen over inputs Phase 1 has not reconciled. #296 is `behind` main; update the branch before merging · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) — on the campaign's critical path via Phase 8; weekly venue-idle token trade placed 2026-09-03.
 campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — Codex owes §14e on a fresh branch
 from `main`; operator owes one more **6J** capture at ≥7-decimal harness precision (§15h-1 route (a)); orchestrator
 drafts the short Phase 3 freeze the moment §14e and all four panel pins land · `#2`
 [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
 — now on the campaign's critical path via Phase 8; this week's venue-idle token trade placed 2026-09-03.
-**Class:** Decision · **Rule 2:** constituent (i) iteration 3 of 8 (unchanged; D20 spends none) · $0 / K=0
+**Class:** Decision · **Rule 2:** constituent (i) iteration **4** of 8 — ⚠ advanced per Codex P2: D3 defines an
+iteration as one dispatch → gate read → fold, and this session completed exactly that for the #294 remediation
+branch (dispatch, §16 gate read, the 3.11 defect correction, §16f verification). D20 itself spends none; the
+#294 cycle does · $0 / K=0
 
 ---
 
