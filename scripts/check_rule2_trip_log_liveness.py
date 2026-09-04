@@ -51,10 +51,10 @@ SCOPE AND ITS LIMITS:
     audit note for that, same epistemic humility as `check_falsifier_reachability.py`'s own
     "green != all falsifiers in force."
 
-  * WARN-TIER BY DESIGN. Always exits 0 unless --strict. Wired into `gates.yml` as `tier: always`,
-    report-only — the exact failure this script exists to catch is a report-only checklist item
-    nobody was prompted to run reliably, so it must not depend on anyone remembering to run this
-    either.
+  * WARN-TIER BY DESIGN. Always exits 0 unless --strict. Wired into `gates.yml` as `tier: audit`,
+    report-only, run via `make audit` (not pre-commit/`make check`/required CI) — the exact failure
+    this script exists to catch is a report-only checklist item nobody was prompted to run reliably,
+    so it must not depend on anyone remembering to run this either.
 """
 from __future__ import annotations
 
