@@ -163,7 +163,10 @@ deleted (not struck).
 
 > Last confirmed placement: **2026-08-26** (round-trip, MNQU6, both legs filled) — that
 > satisfies bucket 08-24→08-28 only. Prior week 08-17→08-21 satisfied (operator-confirmed
-> 2026-08-22). Current bucket 08-31→09-04 is **not claimed placed**. Row stays live — roll
+> 2026-08-22). Current bucket 08-31→09-04: **operator-stated placed 2026-09-03** ("I placed the weekly
+> idle trade yesterday", 2026-09-04 — recorded in the campaign-state artifact §15, carried here 2026-09-04
+> per §39). ⚠ The **authoritative** coverage row in the private compliance note is still the operator's to
+> write; the session hook reads that row, not this board, and stays `NOT RECORDED` until it exists. Row stays live — roll
 > this date forward each Monday. **Recurrence ruled 2026-08-16** (decision index, above):
 > re-electing coverage every week is the standing design, not an open question — this
 > row's own weekly cadence is that design in practice, not a symptom of anything unresolved.
