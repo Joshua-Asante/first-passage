@@ -41,8 +41,10 @@ a schedule; record it as **D20**.
 **Shipped:** [campaign-state](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) **§15** (criterion
 made exact; what compresses; what no ruling compresses; three sub-rulings owed) + D20 row + §2/§7 updates.
 **Decisions/defects:** The deliverable is re-scoped to a **deployed, model-fitted book with the live eval as its
-forward falsifier** — Phases 6–7 become post-deployment monitoring; Phase 8 runs in parallel with 4–5 because it
-**is** M1 item 5's evidence. Two invariants D20 cannot reach: M1 `RESOLVED` + a separate operator GO before
+forward falsifier** — Phases 6–7 become post-deployment monitoring on a battery frozen before Phase 4; M1 item 5 is
+discharged in parallel via the licensed test strategy while Phase 8 stays a separate post-selection gate with an ops
+build (daemon runs `NullStrategy`, rail maps two zero-cap legs). **Codex returned six P1s on #295, all accepted and
+folded (§15g)** — the one that mattered most: my first draft equated item 5 with Phase 8. Two invariants D20 cannot reach: M1 `RESOLVED` + a separate operator GO before
 `dry_run=false` (M1 is `CODE_LANDED`, item 5 + signoff owed — so the earliest deployment is the day item 5
 closes, not the freeze commit), and the intraday clock (a scalar-MAE leg makes the book `LOWER BOUND`, which is
 not a bust probability). **Self-correction:** the 2026-09-03 projection said *"there is no 6J bar panel"* —
