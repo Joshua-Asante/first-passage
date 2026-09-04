@@ -59,13 +59,20 @@ git fetch origin && git log --oneline origin/main --since="24 hours ago"
 grep -rln "def max_certifying_busts" scripts/ lab/ 2>/dev/null && echo "A: EXISTS -> return DONE citing the commit" || echo "A: absent, proceed"
 # C — no-op condition: the gh probe is guarded INSIDE build_report(). A guard in _run is the §5 forbidden move
 #     (the first return 0e7ab25 had exactly that), so probe the LOCATION, never the exception name alone:
-sed -n '/^def _run/,/^def _git/p' scripts/repo_hygiene.py | grep -q 'except FileNotFoundError' \
-  && echo "C: guard in _run — FORBIDDEN (§5), not a no-op: rebuild per §2-C, do not return DONE"
-sed -n '/^def build_report/,/^def _print_human/p' scripts/repo_hygiene.py | grep -q 'except FileNotFoundError' \
-  && echo "C: guard in build_report -> return DONE citing the commit" || echo "C: absent, proceed"
-[ -f tests/test_repo_hygiene.py ] && python -m pytest -q tests/test_repo_hygiene.py   # the behaviour tests, when present
+RUN_GUARD=$(sed -n '/^def _run/,/^def _git/p' scripts/repo_hygiene.py | grep -c 'except FileNotFoundError')
+BR_BLOCK=$(sed -n '/^def build_report/,/^def _print_human/p' scripts/repo_hygiene.py)
+BR_GUARD=$(printf '%s\n' "$BR_BLOCK" | grep -c 'except FileNotFoundError')
+BR_SCOPED=$(printf '%s\n' "$BR_BLOCK" | grep -B3 'except FileNotFoundError' | grep -c '"gh", "--version"')
+if [ "$RUN_GUARD" != "0" ]; then
+  echo "C: guard in _run — FORBIDDEN (§5), not a no-op: rebuild per §2-C, do not return DONE"
+elif [ "$BR_GUARD" = "1" ] && [ "$BR_SCOPED" = "1" ] && [ -f tests/test_repo_hygiene.py ] \
+     && python -m pytest -q tests/test_repo_hygiene.py; then
+  echo "C: guard wraps only the gh probe AND the behaviour tests pass -> return DONE citing the commit"
+else
+  echo "C: absent or partial — proceed per §2-C"      # the three branches are exclusive; DONE needs the tests
+fi
 # ALL — no OPEN PR may touch your footprint. `git log` cannot see open PRs; enumerate them:
-PRS=$(gh pr list --state open --json number -q '.[].number' 2>/dev/null) \
+PRS=$(gh pr list --state open --limit 1000 --json number -q '.[].number' 2>/dev/null)   # default --limit is 30 \
   || PRS="${OPEN_PRS:?no gh — set OPEN_PRS to the COMPLETE operator-supplied list of open PR numbers}"
 git fetch origin '+refs/pull/*/head:refs/remotes/pr/*'
 for n in $PRS; do echo "== PR #$n =="; git diff --name-only origin/main...pr/$n; done   # every PR the query returned, never a hard-coded set
