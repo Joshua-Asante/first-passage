@@ -151,8 +151,60 @@ git log -1 --format='%h' -- CLAUDE.md STATE.md README.md docs/operational_rules.
 
 ---
 
+## Addendum 2026-09-04 — Consolidation pass: what moved, and what was ruled immovable
+
+**Status:** `Accepted` (operator-directed in-session). **Does not amend** §2's charter, §4's
+falsifier, or §5's forbidden moves — it records one execution of the charter and narrows the
+factual scope of the *first* forbidden move, which had gone stale.
+
+**What moved out of `CLAUDE.md`:**
+
+| Block | New owner | Why it is not a root-doc fact |
+|---|---|---|
+| §Load-bearing numbers (2 standing rules + 6-row live-value table, added 2026-09-03) | [`docs/load_bearing_numbers.md`](../load_bearing_numbers.md) | An index that restates six figures from six owners. Root docs carry pointers; the index is one hop away and named in Rule 7's owner table |
+| §Strategy Reference *table* (risk% / pyramid / version / `contractValue`) | [`core/strategies/CATALOG.md`](../../core/strategies/CATALOG.md) §Locked parameter record | A human-readable mirror of Pine + `historical_challenge.HISTORICAL_CHALLENGE_BASE_RISK`, sitting beside the CARD stubs and dispositions it describes |
+| §Vendor-data integrity gate command blocks | this repo's [manifest integrity ADR](2026-05-10-manifest-integrity-gate.md) §Decision (already held them) | Verbatim duplicate of the ADR's own decision items 1–2 |
+
+Every affected heading was **kept as a stub**, because 15 files cite `CLAUDE.md §Strategy Reference`
+and three hookify rules plus `scripts/install_hooks.sh` cite `§Vendor-data integrity gate` by name —
+several of them frozen bodies (`docs/adr/TOMBSTONES.md`, `docs/ltm/`, the 2026-04-17 allocations ADR)
+that Trap #12 bars editing. A stub keeps the hop alive; deleting the heading would have broken it.
+
+**What was ruled immovable, and the §5 correction that ruling rests on.** §5's first forbidden move
+("editing the gated lock surface while trimming CLAUDE.md") justified itself by naming two parsers:
+`validate_params.py` and `verify_lock_anchors.py`. Both claims are now stale, verified in-session
+2026-09-04:
+
+* `scripts/validate_params.py` **no longer exists** — deleted with the
+  [`params.toml` gate retirement](2026-08-03-params-toml-gate-retirement.md).
+* `scripts/verify_lock_anchors.py` **no longer reads `CLAUDE.md`** — its `read_text` calls are
+  `dd_protection.py`, `historical_challenge.py`, `firm_rules.py` only.
+
+The live machine-reader is instead `ops/recall/guard.py`, which regex-reads the MC-anchor triple
+(`99.83% pass / 0.17% bust`, `p99 DD 4.37%`) out of `CLAUDE.md` to build the recall-sidecar denylist.
+**That block stays in `CLAUDE.md`**, and the tempting re-point was measured and rejected: the first
+anchor-shaped match in `docs/mc_anchor_history.md` is `99.84 / 0.16 / 4.55` — the Q-SWAP-1 swap-aware
+figures, not the canonical triple — so re-pointing the parser at that file would have silently
+denylisted the **wrong three numbers** while every gate stayed green. Moving a safety guard's source
+of truth is its own decision with its own verification, never a doc-cleanup ride-along; §5's
+underlying instruction is upheld even though its cited evidence had rotted.
+
+**§10 hook 2 measurement** (`awk '/^## Live-execution posture/,/^## Architecture/' CLAUDE.md | wc -l`,
+expected ≤ 25): **88 → 41 lines**. Still over the hook's ceiling; the operator call recorded on
+`STATE.md`'s size-hook row (accept as a bounded safety-content exception, or trim further) remains
+open and is **not** discharged by this addendum. What remains above the ceiling is the Safety
+invariants block, the account-state paragraph, and the 12-row standing-decisions table this ADR's own
+§2 sanctions.
+
+**Also landed with this pass:** a `## Continuous improvement` section (operator-supplied text) giving
+the escalation order test → hook → skill → `CLAUDE.md` → ADR/lesson, with a line mapping each layer
+to its home in this repo.
+
+---
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-07-16 | Initial authoring + same-session execution | Joshua + Claude Code |
+| 2026-09-04 | Addendum: consolidation pass; §5 forbidden-move evidence corrected; anchor block ruled immovable | Joshua + Claude Code |

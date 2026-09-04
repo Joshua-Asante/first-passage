@@ -46,7 +46,8 @@ directory to infer what is live.
 | What is turning | [`PIPELINES.md`](PIPELINES.md) |
 | Open threads + dated obligations | [`STATE.md`](STATE.md) |
 | Lab campaigns (In flight first, then hot bodies) | [`lab/CATALOG.md`](lab/CATALOG.md) |
-| Locked / withdrawn strategies | [`core/strategies/CATALOG.md`](core/strategies/CATALOG.md) |
+| Locked / withdrawn strategies (+ the locked parameter record) | [`core/strategies/CATALOG.md`](core/strategies/CATALOG.md) |
+| Which of two figures is the live one | [`docs/load_bearing_numbers.md`](docs/load_bearing_numbers.md) |
 | Instrument × mechanism verdicts | [`ops/instruments/PROFILES.md`](ops/instruments/PROFILES.md) · [`ops/instruments/MECHANISMS.md`](ops/instruments/MECHANISMS.md) |
 | Open / dormant questions | [`docs/briefs/INDEX.md`](docs/briefs/INDEX.md) |
 | Decision status | [`docs/adr/INDEX.md`](docs/adr/INDEX.md) (derived; do not hand-edit) |
