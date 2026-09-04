@@ -33,6 +33,36 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-04a — D20: the operator's acceleration; deploy on the live eval as forward falsifier
+
+**Focus:** Answer *"once the Phase 3 commit starts, I want to deploy the book on Tradeify. I just need to know that
+the sizing for the strategies work together and bust less than 5% in the Monte Carlo sim"* with Rule 0 reads, not
+a schedule; record it as **D20**.
+**Shipped:** [campaign-state](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) **§15** (criterion
+made exact; what compresses; what no ruling compresses; three sub-rulings owed) + D20 row + §2/§7 updates.
+**Decisions/defects:** The deliverable is re-scoped to a **deployed, model-fitted book with the live eval as its
+forward falsifier** — Phases 6–7 become post-deployment monitoring; Phase 8 runs in parallel with 4–5 because it
+**is** M1 item 5's evidence. Two invariants D20 cannot reach: M1 `RESOLVED` + a separate operator GO before
+`dry_run=false` (M1 is `CODE_LANDED`, item 5 + signoff owed — so the earliest deployment is the day item 5
+closes, not the freeze commit), and the intraday clock (a scalar-MAE leg makes the book `LOWER BOUND`, which is
+not a bust probability). **Self-correction:** the 2026-09-03 projection said *"there is no 6J bar panel"* —
+wrong; `6J_M15.csv` is pinned (frozen through 2026-07-01), 51.4% degenerate and ~9 ticks off Aegis's feed, with
+every panel ending before the exports do; the $0 `CME BAR EXPORT` route MGC used is the fix. **Lineage:** recon
+v7's export is `ORB-MNQ-1_recon_v7_…` — the construct whose Tradeify target the
+[repark ADR](adr/2026-08-03-orb-mnq-repark-payability-falsified.md) recorded FALSIFIED (67.67% bust at k=1,
+honest clock); R2 makes it research-scored, not deployable, without a superseding ADR on the Phase 5 result.
+Prior for "sizing works together": the combined Aegis+ORB study's 3.29% / 5.37% both-halves — fails H2 at 5.0%.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
+campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — Codex owes §14e on a fresh branch
+from `main`; operator rules D20-a/-b/-c (§15d; D20-a blocks the freeze); orchestrator drafts the short Phase 3
+freeze the moment §14e lands · `#2`
+[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+— now on the campaign's critical path via Phase 8; this week's venue-idle token trade is unrecorded with one
+business day left (operator call).
+**Class:** Decision · **Rule 2:** constituent (i) iteration 3 of 8 (unchanged; D20 spends none) · $0 / K=0
+
+---
+
 ## 2026-09-03p — D17/D18/D19 ruled; the calendar's secondary provenance accepted; four self-corrections
 
 **Focus:** Land three operator rulings that arrived after `2026-09-03o`, gate-read Codex PR #292, and fold two
