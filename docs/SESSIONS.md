@@ -35,12 +35,9 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ## 2026-09-04c — Resolve #295 SESSIONS collision with #298
 
-**Focus:** Address merge conflicts on [PR #295](https://github.com/Joshua-Asante/first-passage/pull/295) after #298 claimed `2026-09-04a`.
-**Shipped:** Merge `origin/main` (`ad5d1e5`) into `claude/orchestrator-role-takeover-yza7vp`; relabel the incoming D20 session to `2026-09-04b`; keep the already-merged ping-disable `2026-09-04a` byte-identical; drop a leftover superseded Open/next fragment from the D20 entry.
-**Decisions/defects:** None — letters are claimed, not reserved; incoming D20 takes the next free letter. `queue-exception: operator-direct resolve of #295 conflicts`.
 **Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24).
-**Live-ops state:** unchanged — docs merge only; c1 rail stays disarmed.
-**Class:** Hygiene · **Rule 2:** $0 / K=0
+
+*(Stub, not a full entry — corrected 2026-09-04 per Codex round-5 P2. This session declared `Decisions/defects: None`, class `Hygiene`, and was a docs-only merge-conflict resolution, so it does not meet the §judgment-gate above; the pointer refresh is the only part that earns a place here. `queue-exception: operator-direct resolve of #295 conflicts`. The full narrative is in `git log`.)*
 
 ---
 
@@ -125,14 +122,14 @@ each week's internal chronology and cannot manufacture an overlap the realized d
 novel signal timing can, and the MC structurally cannot see it — which is the real argument for D24(b). Follow-up:
 get Tradeify's over-cap consequence in writing; a rejected-order answer makes the Phase 8 guard materially cheaper.
 **✅ D23 RESOLVED (§17) — and it is the cheap outcome.** The Tradeify dashboard **displays the trailing threshold
-directly** (`$97,192.90`), so the hard value came for free: peak = threshold + $3,000 = **$100,192.90 = Balance to
+directly** (`[REDACTED]`), so the hard value came for free: peak = threshold + $3,000 = **[REDACTED] = Balance to
 the cent**, i.e. **the account sits at its high-water mark** — no daily series, no `cashBalanceLog` replay, no
 reconstructed peak. **Provenance PRIMARY** (Tradeify's own dashboard, the authority the rule is enforced on — a
 stronger class than §10's third-party TV panels). **Live vs pristine runs FAVOURABLE:** identical **$3,000** floor
-headroom (the trail carries the peak up with it), **3.2% shorter** run to target, and `max_day_profit` $205.60
+headroom (the trail carries the peak up with it), **marginally shorter** run to target, and `max_day_profit` [REDACTED]
 effectively inert. So the pristine model was mildly *conservative* — Codex's P1 was right that the sim scores the
 wrong account, and the error happens to point safe; that is measured now rather than assumed in either direction.
-The red `Consistency 100% / 40%` is a small-denominator artifact ($205.60 best day vs $192.90 total): at the pass
+The red `Consistency 100% / 40%` is a small-denominator artifact ([REDACTED] best day vs [REDACTED] total): at the pass
 point the limit is $2,400 and it is a **soft at-pass gate that delays passing and never breaches**, so it cannot
 touch the 5% criterion. Still owed: **`trade_days`**, and a **re-read at the freeze instant** — this capture
 establishes method and feasibility, not the frozen value.
