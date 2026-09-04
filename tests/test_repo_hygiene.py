@@ -1,7 +1,7 @@
-"""Tests for scripts/repo_hygiene.py — FileNotFoundError guard on _run.
+"""Tests for scripts/repo_hygiene.py — gh probe degrades; git stays required.
 
-Packet C of the 2026-09-04 scripts-side fleet: a missing optional binary
-(typically ``gh``) must degrade to returncode 127, not raise.
+Packet C of the 2026-09-04 scripts-side fleet: a missing optional ``gh`` must
+set ``gh_available`` False. A missing ``git`` must still raise.
 """
 from __future__ import annotations
 
@@ -67,8 +67,19 @@ def test_build_report_without_gh_sets_unavailable(tmp_path, monkeypatch):
     assert any("gh not on PATH" in w for w in report.warnings)
 
 
-def test_run_missing_binary_returns_127():
-    proc = rh._run(["definitely-not-a-binary-xyz"])
-    assert proc.returncode == 127
-    assert proc.stdout == ""
-    assert proc.stderr == "definitely-not-a-binary-xyz: not found"
+@needs_git
+def test_build_report_without_git_raises(tmp_path, monkeypatch):
+    _seed_repo(tmp_path)
+
+    real_run = subprocess.run
+
+    def _run_without_git(args, *a, **kw):
+        if args and args[0] == "git":
+            raise FileNotFoundError(args[0])
+        return real_run(args, *a, **kw)
+
+    monkeypatch.setattr(rh, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(rh.subprocess, "run", _run_without_git)
+
+    with pytest.raises(FileNotFoundError):
+        rh.build_report()

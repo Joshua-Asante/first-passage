@@ -61,20 +61,15 @@ class HygieneReport:
 
 
 def _run(args: list[str], cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    try:
-        return subprocess.run(
-            args,
-            cwd=str(cwd or REPO_ROOT),
-            check=False,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-        )
-    except FileNotFoundError:
-        return subprocess.CompletedProcess(
-            args, 127, stdout="", stderr=f"{args[0]}: not found"
-        )
+    return subprocess.run(
+        args,
+        cwd=str(cwd or REPO_ROOT),
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
 
 
 def _git(*args: str) -> str:
@@ -218,8 +213,11 @@ def build_report() -> HygieneReport:
 
     report.orphan_worktree_dirs = _orphan_dirs(report.worktrees)
 
-    gh_probe = _run(["gh", "--version"])
-    report.gh_available = gh_probe.returncode == 0
+    try:
+        gh_probe = _run(["gh", "--version"])
+        report.gh_available = gh_probe.returncode == 0
+    except FileNotFoundError:
+        report.gh_available = False
 
     by_name: dict[str, BranchRow] = {}
     for row in _merged_via_git():
