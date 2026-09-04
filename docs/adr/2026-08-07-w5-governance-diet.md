@@ -173,3 +173,38 @@ dates with a free letter remaining** as same-day agent concurrency rises — no 
 for *that* case. The exhausted-letters case is a distinct, already-flagged, still-unresolved gap;
 this addendum neither discharges it nor substitutes for the operator call it is waiting on.
 
+## Addendum 2026-09-04 — the boundary is consequence, not subject matter
+
+The first-parent history ended 2026-09-03 with twelve consecutive same-day PR merges, and several
+needed multiple correction/review commits. That is useful evidence of two different things which
+must not be collapsed: adversarial review caught claim and research defects, while governance-only
+diagnostics were repeatedly paid at commit and CI time without being able to reject anything.
+
+**Decision:** a command is a commit/required-CI gate only when all three conditions hold:
+
+1. it protects executable correctness, non-regenerable evidence, a live-money invariant, or the
+   integrity of an artifact changed by the commit;
+2. the violating change can be selected with adequate reachability; and
+3. a finding returns non-zero and therefore changes the merge verdict.
+
+Failing condition 3 makes the command an **audit**, regardless of whether its subject is important.
+Audits remain available under `make audit`, but do not run in pre-commit, `make check`, or required
+CI. Eight existing report-only commands move there: rejection coverage, liveness synchronization,
+docs-runtime inventory, M1 tree-skew reporting, falsifier reachability, notice-grade correction,
+spec provenance, and Rule-2 trip-log liveness. No checker is deleted and no live safety control is
+weakened: M1's enforcement remains at deploy/arm, while its normal main-vs-deployed drift report is
+kept as an audit.
+
+This is the operational boundary: tests, reproducibility pins, architectural constraints, and
+live-rail interlocks stay blocking; corpus censuses, trend reports, and known-dirty heuristics run at
+the decision cadence where someone can interpret them. A future audit promotion requires a clean
+baseline, a non-zero failure mode, and a reachable trigger. A future gate that becomes report-only
+must move back to audit rather than retaining the label ceremonially.
+
+Audit commands:
+
+```bash
+git log --first-parent --since=2026-09-03 --oneline
+python scripts/gate_manifest.py --tier audit --dry-run
+make audit
+```

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """gate_manifest.py — single owner for pre-commit / Make gate composition (W5).
 
-Reads scripts/gates.yml and runs the selected tier. Equivalent behavior to the
-pre-W5 hand-enumerated pre-commit hook — no gate dropped by default.
+Reads scripts/gates.yml and runs the selected tier. Blocking checks run at
+pre-commit/CI; report-only diagnostics run only when explicitly audited.
 
 ADR: docs/adr/2026-08-07-w5-governance-diet.md
 """
@@ -138,6 +138,8 @@ def run_cmd(cmd: list[str], *, dry_run: bool) -> int:
 
 
 def select_gates(gates: list[dict], tier: str) -> list[dict]:
+    if tier == "audit":
+        return [g for g in gates if g.get("tier") == "audit"]
     if tier == "validate":
         # Historical `make validate`: data manifests (always) + pine manifest.
         want = {"data-manifests", "pine-manifest"}
@@ -179,7 +181,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     ap.add_argument(
         "--tier",
-        choices=("pre-commit", "check", "validate"),
+        choices=("pre-commit", "check", "validate", "audit"),
         default="pre-commit",
     )
     ap.add_argument("--list", action="store_true")

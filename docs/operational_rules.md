@@ -721,12 +721,10 @@ At each quarterly programme audit (`programme-audit` skill cadence; next **2026-
   just the point figure. The script's own docstring shows coverage eroding as the ADR corpus grows
   faster than anchored falsifiers (28% → 25% → 23% across three reads) — a single number carries no
   information about direction. This is **not** a hard gate — the script's own docstring explains why
-  (M-22 lesson: a hard gate here would block commits on ADRs nobody is touching). `scripts/gates.yml`
-  id `falsifier-reachability-census` already runs it report-only on every `make check` invocation
-  (and the CI-required `skills (3.12)` job) — **not** `make validate`, which is a narrower historical
-  selector (data manifests + Pine only; verified against `gate_manifest.py`'s `select_gates()`) — so
-  the trend surfaces well before the quarterly cycle; this line is the standing human checkpoint that
-  actually reads the trend and decides whether it warrants action.
+  (M-22 lesson: a hard gate here would block commits on ADRs nobody is touching). Run `make audit`
+  at the checkpoint; its explicit audit tier owns this and the other report-only diagnostics. They
+  do not run at pre-commit or in required CI because output that cannot change a merge verdict is
+  observation, not a gate.
 
 This is the checklist's first entry — future standing per-cycle tooling runs are added here as
 additional bullets, not as new rules.

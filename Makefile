@@ -1,10 +1,11 @@
 # First Passage - convenience targets.
 # Wrappers around scripts that the pre-commit hook also calls.
 
-.PHONY: help check validate validate-data validate-pine skills-no-constants boundaries path-liveness root-doc-liveness md-relative-links lab-path-relocation sync-liveness find-owner status-consistency adr-graph adr-graph-index lab-catalog lab-catalog-check lab-archive-check test test-ops skills-check sync-skills sync-skills-check roll-sessions roll-sessions-dry instrument-profiles instrument-profiles-build gate-manifest gate-manifest-list
+.PHONY: help check audit validate validate-data validate-pine skills-no-constants boundaries path-liveness root-doc-liveness md-relative-links lab-path-relocation sync-liveness find-owner status-consistency adr-graph adr-graph-index lab-catalog lab-catalog-check lab-archive-check test test-ops skills-check sync-skills sync-skills-check roll-sessions roll-sessions-dry instrument-profiles instrument-profiles-build gate-manifest gate-manifest-list
 
 help:
 	@echo "check                 run check-tier gates (scripts/gates.yml)"
+	@echo "audit                 run report-only governance diagnostics"
 	@echo "validate              data manifests + pine"
 	@echo "lab-catalog           regenerate lab/CATALOG.md"
 	@echo "sentinel              INQHIORI sentinel scan (report-only)"
@@ -20,6 +21,9 @@ help:
 
 check:
 	@python scripts/gate_manifest.py --tier check
+
+audit:
+	@python scripts/gate_manifest.py --tier audit
 
 validate:
 	@python scripts/gate_manifest.py --tier validate

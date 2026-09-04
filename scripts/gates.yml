@@ -7,12 +7,9 @@
 #   path-conditional  — pre-commit only when staged paths match
 #                       when.staged_regex; still runs on `make check`
 #   data-conditional  — only when staged paths match when.staged_regex
-#   soft              — optional / warn-tier (not in default pre-commit)
-#                       ⚠ 2026-08-08: `soft` is declared here but is NOT an accepted
-#                       `--tier` value in gate_manifest.py, and every selector drops it.
-#                       A gate landed as tier=soft therefore runs in NO tier — it is
-#                       silently disabled, not merely deferred. Do not use `soft` until
-#                       it has a caller. Currently zero gates use it (verified).
+#   audit             — report-only diagnostics, run explicitly by `make audit`;
+#                       excluded from pre-commit and required CI because a command
+#                       that cannot fail cannot protect a merge
 
 version: 1
 
@@ -202,21 +199,16 @@ gates:
   # Promote by dropping --exit-zero once the real-corpus run is clean or every
   # remaining gap carries a dated, named exception.
   - id: instrument-rejection-coverage
-    tier: path-conditional
-    when:
-      staged_regex: '^(docs/briefs/closures/|ops/instruments/)'
+    tier: audit
     cmd:
       - python
       - scripts/check_instrument_rejection_coverage.py
       - --exit-zero
 
-  # Report-only INDEX/CATALOG liveness census (always exit 0). Phase 5b —
-  # path-conditional so make check still runs it; INDEX moves stay judgment.
-  # Not W5 leftover C-P5-04 / H6 (CI composition).
+  # Report-only INDEX/CATALOG liveness census (always exit 0). INDEX moves
+  # stay judgment; run it at the explicit audit cadence.
   - id: sync-liveness
-    tier: path-conditional
-    when:
-      staged_regex: '^(docs/briefs/INDEX[.]md|lab/CATALOG[.]md)'
+    tier: audit
     cmd:
       - python
       - scripts/sync_liveness_indexes.py
@@ -229,12 +221,9 @@ gates:
       - python
       - scripts/check_lifecycle_consistency.py
 
-  # Report-only docs-as-runtime inbound index (P3). Always exit 0.
-  # staged_regex includes scanned trees so a new pathlib/docs cite selects it.
+  # Report-only docs-as-runtime inbound index (P3). Always exit 0; audit only.
   - id: docs-runtime-inventory
-    tier: path-conditional
-    when:
-      staged_regex: '^((core|ops|lab|scripts|tests)/.*[.]py$|docs/notes/audits/docs-runtime-inventory[.]md$|scripts/check_docs_runtime_inventory[.]py$)'
+    tier: audit
     cmd:
       - python
       - scripts/check_docs_runtime_inventory.py
@@ -283,154 +272,43 @@ gates:
       - python
       - scripts/check_skill_deploy_sync.py
 
-  # docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md Phase 1
-  # Task 3: wires the Q-M1WIRE-1 tree-skew checker
-  # (scripts/validate_c1_monitoring_acceptance.py, A5) into the gate roster —
-  # per Q-M1WIRE-1's closure (docs/briefs/closures/Q-M1WIRE-1-closure-
-  # falsified.md, confirmed FALSIFIED 2026-08-21) the checker was already
-  # correct in isolation, it was simply never called by any gate. Binding
-  # fix only; the checker itself is unmodified here.
-  #
-  # Report-only (`--check-tree-skew`, no `--require-tree-current`) —
-  # deliberately NOT the hard-fail form, for two independent reasons:
-  #  (1) `--require-tree-current`'s own --help text says it is "never a
-  #      commit gate" — pre-deploy/pre-arm use only — because
-  #      `fixture_hashes` pins the DEPLOYED build, and `main` legitimately
-  #      drifts ahead of a deployed pin between deploys; that drift is
-  #      normal, not a defect (see tree_skew()'s own docstring).
-  #  (2) gate_manifest.py's `--tier check` (the sole required CI status
-  #      check, `skills (3.12)`, per main-protection) runs `always`/
-  #      `path-conditional` gates unconditionally, ignoring staged_regex —
-  #      so a hard-fail form here would not merely fail *this* commit, it
-  #      would red every future PR from today onward, since a direct re-run
-  #      of the checker against this worktree already shows real, pre-
-  #      existing drift on all 6 of 6 pinned files (same finding the
-  #      Q-M1WIRE-1 closure recorded 2026-08-21). That is the same "known-
-  #      dirty baseline -> land WARN/report first" call this program's own
-  #      Task 2 (instrument-rejection-coverage, `--exit-zero`) already made
-  #      for an analogous situation, and the SSOT ADR §5 forbids promoting a
-  #      known-dirty-baseline checker straight to a hard/always gate.
-  # `always` (not path-conditional): report-only means it can never fail a
-  # commit, so there is no local-runtime cost to weigh against broader
-  # visibility — and the pinned-file set is data (fixture_hashes), not a
-  # fixed tree, so no staged_regex reliably captures every change that can
-  # cause drift (the same reasoning path-liveness/root-doc-liveness already
-  # record for why they stayed `always`).
+  # Deployed-vs-main skew is useful at audit time, but normal drift cannot
+  # reject a commit. Hard M1 enforcement remains in the deploy/arm path.
   - id: m1-tree-skew
-    tier: always
+    tier: audit
     cmd:
       - python
       - scripts/validate_c1_monitoring_acceptance.py
       - docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json
       - --check-tree-skew
 
-  # docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md Phase 1
-  # Task 4: puts check_falsifier_reachability.py's own coverage census on the
-  # standing quarterly-programme-audit cadence (docs/operational_rules.md
-  # Rule 17, newly added by this same task -- Step 1 of the task's own brief
-  # found no "quarterly programme-audit checklist" section existed under
-  # that description despite the governing ADR's own §2 Scope line assuming
-  # one did; Rule 17 is that checklist's first entry, not an edit to a prior
-  # one).
-  #
-  # `tier: always` here means "runs unconditionally, at every pre-commit /
-  # `make check` invocation" -- it is NOT a stand-in for the `warn` tier this
-  # file's own header comment declares but gate_manifest.py does not accept
-  # as a `--tier` value (same gap Task 2's `instrument-rejection-coverage`
-  # --exit-zero worked around at path-conditional). `tier` controls WHEN a
-  # gate runs, not WHETHER it can block a commit -- those are orthogonal
-  # (2026-08-28 review fix: reworded after this comment's original phrasing
-  # was read as claiming otherwise). This entry runs unconditionally and is
-  # non-blocking because the SCRIPT's own exit code is always 0: `--stats`
-  # alone (no `--strict`) always exits 0 per the script's own docstring
-  # ("WARN-TIER BY DESIGN. Always exits 0 unless --strict") -- confirmed by a
-  # direct run against this worktree (exit 0, 167 ADRs scanned, 30/129
-  # anchored = 23%, 1 live WARN finding printed to stdout).
-  # Report-only; this entry cannot fail a commit, so there is no
-  # local-runtime cost to weigh against always running (same reasoning
-  # m1-tree-skew above and path-liveness/root-doc-liveness already record).
-  #
-  # NOT the §5-forbidden move: the governing ADR's §5 bars "promoting ...
-  # check_falsifier_reachability.py straight to a hard/always gate before a
-  # clean real-corpus baseline exists" -- that clause is about the SCRIPT'S
-  # own --strict flag (which flips its exit code on findings), not this
-  # YAML schema's `tier: always` (== "run unconditionally, no staged-path
-  # gate" per this file's own tiers note above, unrelated naming). This
-  # entry never passes --strict, so it can never become the blocking gate
-  # §5 forbids.
+  # Quarterly coverage trend; deliberately report-only until its corpus baseline
+  # is clean enough to support a meaningful failure verdict.
   - id: falsifier-reachability-census
-    tier: always
+    tier: audit
     cmd:
       - python
       - scripts/check_falsifier_reachability.py
       - --stats
 
-  # Added 2026-08-30 (PR #223, K-correction audit findings): this checker
-  # sat unlooked-at for the entire time since PR #217 first implemented it
-  # (no STATE.md/SESSIONS.md follow-up, confirmed by direct grep) -- and a
-  # dedicated full-repo status sweep still undercounted its own live output
-  # by one row on the first pass (an INCREMENT-labeled notice the checker's
-  # then-GRADUATE-only detection couldn't see, fixed same PR). A report-only
-  # tool nobody is prompted to run reliably goes stale; wiring it here fixes
-  # that structurally rather than relying on someone remembering.
-  # `tier: always`, non-blocking: same reasoning as m1-tree-skew and
-  # falsifier-reachability-census above -- the script's own docstring states
-  # "Writes nothing. Exit code is always 0. Not a gate," confirmed by a
-  # direct run against this worktree (exit 0, 6 flagged / 10 scanned).
+  # Notice-log K-vs-DSR diagnostic; report-only.
   - id: notice-grade-k-correction
-    tier: always
+    tier: audit
     cmd:
       - python
       - scripts/audit_notice_grade_k_correction.py
 
-  # Added 2026-08-31 (PR #229 review): `docs/spec/` carried zero gate coverage
-  # before this entry (confirmed: `grep -c docs/spec scripts/gates.yml` on the
-  # prior revision returns 0) -- the one class of file this repo treats as
-  # "commissions a build, not the decision" (docs/spec/README.md) is also the
-  # one class nothing here mechanically checks, which is how a PROPOSED spec
-  # citing zero ADRs while proposing to amend the INQHIORI canon landed as a
-  # PR uncontested by anything but a line-level Codex review. This gate does
-  # not adjudicate ratification-worthiness -- it only asks whether a
-  # canon-amending docs/spec/ file cites at least one ADR by path. See the
-  # script's own docstring for what it cannot see (citation-by-title,
-  # semantic dedup quality).
-  # `tier: always`, non-blocking: same reasoning as falsifier-reachability-census
-  # and notice-grade-k-correction above -- the script's own docstring states
-  # "WARN-TIER BY DESIGN. Always exits 0 unless --strict," confirmed by a
-  # direct run against this worktree (exit 0, 54 specs scanned, 12
-  # canon-amending, 5 zero-citation findings printed to stdout). No clean
-  # baseline exists yet for this heuristic -- promoting straight to --strict
-  # would repeat the exact mistake the falsifier-reachability-census entry's
-  # own comment above documents avoiding.
+  # Known-dirty spec-provenance heuristic; report-only.
   - id: spec-provenance
-    tier: always
+    tier: audit
     cmd:
       - python
       - scripts/check_spec_provenance.py
       - --stats
 
-  # Added 2026-08-31 (PR #229 review follow-up, task 4): Rule 2's own §7
-  # programme-audit checklist item (read the trip-log, confirm >=1 entry per
-  # active loop class) has zero mechanical enforcement and already failed
-  # silently once -- the 2026-08-08 quarterly audit skipped it, undetected
-  # until an unrelated sweep caught it the next day (trip-log's own
-  # 2026-08-09 correction block). This does not adjudicate audit-cycle
-  # counting or characterize what a repeat skip would mean (that convention
-  # was proposed 2026-08-22 and the operator declined to ratify it, and the
-  # governing ADR says any convention here must be authored fresh, not
-  # revived) -- it only reports, as plain fact from 2026-11-08 (the
-  # trip-log's own named next quarterly gate) onward, whether a
-  # programme-audit note mentions Rule 2/the trip-log. 2026-08-31 PR #233
-  # review round 2 caught this comment and the script's own messaging both
-  # over-characterizing that fact using the withdrawn addendum's own
-  # escalation language -- fixed same commit.
-  # `tier: always`, non-blocking: same reasoning as spec-provenance and
-  # falsifier-reachability-census above -- the script's own docstring states
-  # "WARN-TIER BY DESIGN. Always exits 0 unless --strict," confirmed by a
-  # direct run against this worktree (exit 0, 16 programme-audit notes
-  # scanned, 0 findings -- today is 2026-08-31, before the 2026-11-08 gate).
+  # Quarterly Rule-2 checkpoint diagnostic; report-only.
   - id: rule2-trip-log-liveness
-    tier: always
+    tier: audit
     cmd:
       - python
       - scripts/check_rule2_trip_log_liveness.py
