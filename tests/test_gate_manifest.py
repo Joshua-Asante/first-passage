@@ -26,9 +26,6 @@ EXPECTED_ALWAYS = {
     # no staged_regex correctly scopes "when this violation can occur".
     "path-liveness",
     "root-doc-liveness",
-    # Task 3 (docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md
-    # Phase 1) — Q-M1WIRE-1 tree-skew checker wiring; report-only, cheap.
-    "m1-tree-skew",
     # Task 1 (same ADR) — ADR-cited skill-script deploy-drift check; cheap
     # (grep + existence check), so `always` rather than path-conditional.
     # 2026-08-28 review fix: this entry was missing here even though the
@@ -38,31 +35,16 @@ EXPECTED_ALWAYS = {
     # set-equality assertion added to test_manifest_lists_all_always_gates
     # below to guard against a repeat.
     "skill-deploy-sync",
-    # Task 4 (same ADR) — falsifier-reachability coverage census, report-only
-    # (`--stats` alone always exits 0 per the script's own docstring).
-    "falsifier-reachability-census",
-    # PR #223 (K-correction audit findings) — Notice-log GRADUATE/INCREMENT
-    # K-vs-DSR-floor auditor; report-only (script's own exit code is always
-    # 0 per its docstring), same reasoning as skill-deploy-sync and
-    # falsifier-reachability-census above.
-    "notice-grade-k-correction",
-    # PR #229 review (2026-08-31) — docs/spec/ carried zero gate coverage
-    # before this entry; canon-amending-with-zero-ADR-citation census,
-    # report-only (script's own exit code is always 0 unless --strict, per
-    # its docstring), same reasoning as falsifier-reachability-census and
-    # notice-grade-k-correction above.
-    "spec-provenance",
-    # PR #229 review follow-up, task 4 (2026-08-31) — Rule 2's own §7
-    # audit-checklist item had zero mechanical enforcement and already
-    # failed silently once (2026-08-08); watches the 2026-11-08 checkpoint
-    # the withdrawn 2026-08-22 addendum already named, report-only (script's
-    # own exit code is always 0 unless --strict, per its docstring), same
-    # reasoning as spec-provenance above.
-    "rule2-trip-log-liveness",
     # STATE currency (Last curated + rolling next-deadline + past dated
     # subsections). always, not path-conditional on STATE.md: a stale date
     # must fail the next unrelated commit when the daily digest is skipped.
     "state-currency",
+    # Structural half of M1 artifact validation (unreadable JSON, missing/
+    # invalid fields, bad status, secrets_present != false, secret-shaped
+    # content) — split from m1-tree-skew (audit-tier) so a corrupted or
+    # secret-shaped artifact still fails a commit even though normal
+    # deployed-vs-main drift does not.
+    "m1-artifact-structure",
 }
 
 EXPECTED_PATH_CONDITIONAL = {
@@ -76,19 +58,21 @@ EXPECTED_PATH_CONDITIONAL = {
     "supersession-placement",
     "closure-disposition",
     "governance-prose-control-chars",
-    "sync-liveness",
-    "docs-runtime-inventory",
     "repo-map-layers",
     "lifecycle-consistency",
-    # Task 2 (same ADR) — D4 rejection-ledger-coverage instrument
-    # (commit 4472abb) landed this gate without adding it here, which left
-    # test_path_conditional_gates_are_reachable failing on this worktree
-    # before this Task 3 edit touched the same file; folded in alongside
-    # Task 3's own addition rather than leaving a known-red test in a file
-    # this commit already modifies.
-    "instrument-rejection-coverage",
     # SSOT Phase 3 — cost-model closed-world partition
     "cost-model-closed-world",
+}
+
+EXPECTED_AUDIT = {
+    "instrument-rejection-coverage",
+    "sync-liveness",
+    "docs-runtime-inventory",
+    "m1-tree-skew",
+    "falsifier-reachability-census",
+    "notice-grade-k-correction",
+    "spec-provenance",
+    "rule2-trip-log-liveness",
 }
 
 
@@ -102,6 +86,20 @@ def test_manifest_lists_all_always_gates():
         assert gid in out, f"missing gate {gid}"
     assert "data-manifests" in out
     assert "path-conditional" in out
+
+    # --list is documented (Makefile, CLAUDE.md) as the "hard-gate roster" —
+    # audit-tier (report-only) diagnostics must not appear by default, or an
+    # operator reading that roster sees non-gates mixed into merge enforcement.
+    for gid in EXPECTED_AUDIT:
+        assert gid not in out, f"audit-tier gate {gid} leaked into default --list"
+
+    all_out = subprocess.check_output(
+        [sys.executable, str(SCRIPT), "--list", "--all-tiers"],
+        cwd=REPO,
+        text=True,
+    )
+    for gid in EXPECTED_ALWAYS | EXPECTED_PATH_CONDITIONAL | EXPECTED_AUDIT:
+        assert gid in all_out, f"missing gate {gid} from --list --all-tiers"
 
     # 2026-08-28 review fix: set-equality, not just membership. Membership
     # alone lets a NEW always-tier gate land in gates.yml without this list
@@ -148,7 +146,7 @@ def test_pre_commit_includes_path_conditional_on_matching_paths(monkeypatch):
     data = gm.load_manifest(MANIFEST)
     selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
     assert "closure-disposition" in selected
-    assert "sync-liveness" in selected
+    assert "sync-liveness" not in selected
     assert "sessions-order" not in selected
 
 
@@ -182,6 +180,13 @@ def test_check_tier_selects_ci_composition_ids():
     assert EXPECTED_PATH_CONDITIONAL <= selected
     assert "data-manifests" in selected
     assert "pursuit-records" not in selected
+    assert selected.isdisjoint(EXPECTED_AUDIT)
+
+
+def test_audit_tier_contains_only_report_only_diagnostics():
+    data = gm.load_manifest(MANIFEST)
+    selected = {g["id"] for g in gm.select_gates(data["gates"], "audit")}
+    assert selected == EXPECTED_AUDIT
 
 
 def test_validate_tier_is_data_plus_pine():
@@ -218,11 +223,8 @@ REACHABILITY_PROBES = {
     "supersession-placement": "lab/analysis/harvest/new_slug_2026-08/RESULTS.md",
     "closure-disposition": "docs/briefs/closures/Q-EXAMPLE-closure-falsified.md",
     "governance-prose-control-chars": "docs/rejected_candidates.md",
-    "sync-liveness": "docs/briefs/INDEX.md",
-    "docs-runtime-inventory": "ops/c1_rail/c1_rail_arm.py",
     "repo-map-layers": "scripts/check_boundaries.py",
     "lifecycle-consistency": "core/lifecycle.py",
-    "instrument-rejection-coverage": "docs/briefs/closures/Q-EXAMPLE-closure-falsified.md",
     "cost-model-closed-world": "lab/discovery/cost_model.py",
 }
 
@@ -295,17 +297,69 @@ def test_reindented_gate_fails_closed(tmp_path):
     assert "mismatch" in combined.lower(), combined
 
 
+TIER_PROBE_MANIFEST = """version: 1
+
+gates:
+  - id: alpha
+    tier: {tier}
+    cmd:
+      - python
+      - scripts/noop.py
+"""
+
+
+def test_unknown_tier_fails_closed(tmp_path):
+    """A tier no selector claims must reject the manifest, not silently disable the gate.
+
+    `soft` was declared in gates.yml's header for months while `select_gates` dropped
+    it from every tier — a gate landing as `tier: soft` ran nowhere and nothing said
+    so. The 2026-09-04 W5 addendum retired `soft` and added `audit`; this pins the
+    trap shut rather than re-narrating it in a comment nobody has to read.
+    """
+    good_path = tmp_path / "gates_good.yml"
+    good_path.write_text(TIER_PROBE_MANIFEST.format(tier="audit"), encoding="utf-8")
+    bad_path = tmp_path / "gates_bad.yml"
+    bad_path.write_text(TIER_PROBE_MANIFEST.format(tier="soft"), encoding="utf-8")
+
+    def run(manifest: Path) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            [sys.executable, str(SCRIPT), "--list", "--all-tiers", "--manifest", str(manifest)],
+            capture_output=True, text=True, cwd=REPO,
+        )
+
+    ok = run(good_path)
+    assert ok.returncode == 0, f"audit is a known tier: {ok.stderr}"
+    assert "alpha" in ok.stdout
+
+    bad = run(bad_path)
+    assert bad.returncode != 0, "gate with an unselectable tier loaded (fail-open)"
+    combined = (bad.stdout + bad.stderr).lower()
+    assert "unknown gate tier" in combined, combined
+
+
 def test_m1_tree_skew_stays_report_only():
-    """Pins the deliberate report-only design choice gates.yml's own comment
-    above `m1-tree-skew` documents: `--check-tree-skew`, never
-    `--require-tree-current` (whose own --help text says it is "never a
-    commit gate", because the pinned-fixture-vs-main drift it would flag is
-    normal, not a defect — this worktree shows real drift on 6/6 pinned files
-    today). An accidental future flip to the hard-fail flag would recreate
-    the exact class of Critical bug fixed alongside this test: a `tier:
-    always` gate that hard-fails every commit on a condition the running
-    environment cannot satisfy."""
+    """Normal deployed-vs-main drift stays diagnostic, never a merge gate."""
     data = gm.load_manifest(MANIFEST)
     gate = next(g for g in data["gates"] if g["id"] == "m1-tree-skew")
+    assert gate["tier"] == "audit"
     assert "--check-tree-skew" in gate["cmd"]
     assert "--require-tree-current" not in gate["cmd"]
+
+
+def test_m1_artifact_structure_stays_blocking():
+    """Structural validation (corruption/secrets) must still reject a commit.
+
+    validate_c1_monitoring_acceptance.py's main() runs validate() unconditionally,
+    before any --check-tree-skew branch — so the structural half must stay in a
+    blocking tier even though the tree-skew drift report (above) does not.
+    """
+    data = gm.load_manifest(MANIFEST)
+    gate = next(g for g in data["gates"] if g["id"] == "m1-artifact-structure")
+    assert gate["tier"] == "always"
+    assert "--check-tree-skew" not in gate["cmd"]
+    assert "scripts/validate_c1_monitoring_acceptance.py" in gate["cmd"]
+
+    selected_check = {g["id"] for g in gm.select_gates(data["gates"], "check")}
+    selected_precommit = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
+    assert "m1-artifact-structure" in selected_check
+    assert "m1-artifact-structure" in selected_precommit

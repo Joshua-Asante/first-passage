@@ -33,6 +33,12 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-04e — PR #297 merge conflicts (queue-exception: operator asked to fix PR #297 conflicts)
+
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24).
+
+---
+
 ## 2026-09-04d — D20: the operator's acceleration; deploy on the live eval as forward falsifier
 
 **Focus:** Answer *"once the Phase 3 commit starts, I want to deploy the book on Tradeify. I just need to know that

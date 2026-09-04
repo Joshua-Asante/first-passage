@@ -28,8 +28,10 @@ No `make`? Ask the manifest — **never a copied list.** Composition is owned by
 via `scripts/gate_manifest.py` (W5 ADR 2026-08-07), so the roster is a query, not a transcription:
 
 ```bash
-python scripts/gate_manifest.py --list          # full roster + tier
+python scripts/gate_manifest.py --list          # hard-gate roster (blocking tiers)
+python scripts/gate_manifest.py --list --all-tiers
 python scripts/gate_manifest.py --tier check    # run it
+make audit                                      # report-only diagnostics
 ```
 
 The previous copied `grep` alternation is **deleted (2026-08-08)**: it enumerated 11 of the 15
