@@ -1,1 +1,3 @@
 local_artifacts/
+# D26 private input maps and capture evidence, regardless of file extension.
+inputs/private_overrides/
