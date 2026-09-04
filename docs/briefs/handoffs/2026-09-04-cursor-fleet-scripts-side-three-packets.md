@@ -1,6 +1,6 @@
 # Cursor fleet — `scripts/`-side packets (certification-power calculator · `repo_hygiene` without `gh`; same-day letter-order check WITHDRAWN)
 
-**Status:** **QUEUED (C); A BLOCKED on #297 (same generated `REPO_MAP.md` block) — re-frozen 2026-09-04 after Codex's pre-dispatch review of this brief ([#302](https://github.com/Joshua-Asante/first-passage/pull/302), 3 P1 + 4 P2, all accepted). Packet B is WITHDRAWN before dispatch: its rule conflicts with the repo's documented label allocator (see §2-B). Dispatch-moment gate passed on main `ba713ee`; open PRs #297 and #301 touch none of these footprints. No worker had started when the re-freeze landed.**
+**Status:** **QUEUED (A, C) — A was blocked on #297 until it merged (`81b35d0`, 2026-09-04); both dispatchable from `main` ≥ `81b35d0`. Re-frozen 2026-09-04 after Codex's pre-dispatch review of this brief ([#302](https://github.com/Joshua-Asante/first-passage/pull/302), 3 P1 + 4 P2, all accepted). Packet B is WITHDRAWN before dispatch: its rule conflicts with the repo's documented label allocator (see §2-B). Dispatch-moment gate passed on main `ba713ee`; open PRs #297 and #301 touch none of these footprints. No worker had started when the re-freeze landed.**
 **Type:** Cursor handoff (fleet umbrella; packet appendices A and C live, B withdrawn)
 **Authority:** the seven-strategy Select campaign record, [`campaign state`](../programs/2026-09-03-seven-strategy-select-campaign-state.md) —
 §27a/§31a/§33c (three hand-computed sizing tables, two withdrawn under Codex review) and the post-merge
@@ -65,7 +65,7 @@ gh pr list --state open --json number,headRefName 2>/dev/null \
 git fetch origin '+refs/pull/*/head:refs/remotes/pr/*'
 for n in 297 301 302; do echo "== PR #$n =="; git diff --name-only origin/main...pr/$n; done
 # Expected: none of the listed files is in your packet's §2 footprint. If one is, STOP and return BLOCKED naming it.
-# (2026-09-04 result: #297 touches REPO_MAP.md — Packet A is BLOCKED on #297; Packet C is clear.)
+# (2026-09-04 result: #297 touched REPO_MAP.md and blocked A until it merged as 81b35d0; re-run the probe — it should now be clean for both.)
 ```
 
 If a packet's no-op condition fires, **return `DONE` citing the commit that did it. Do not build a duplicate.**
@@ -201,7 +201,7 @@ acceptance test in §2 passes; otherwise it is **FALSIFIED** for this fleet and 
 
 | Packet | Branch | Files | Status |
 |---|---|---|---|
-| A — certification-power calculator | `cursor/scripts-side-2026-09-04-p1` | `scripts/certification_power.py`, `tests/test_certification_power.py`, `REPO_MAP.md` (generated scripts block only) | **BLOCKED on [#297](https://github.com/Joshua-Asante/first-passage/pull/297)** — the §0.9 probe's first real catch: #297 rewrites 16 rows of the same generated scripts block. Dispatch A only after #297 merges (or closes), then regenerate against that `main` |
+| A — certification-power calculator | `cursor/scripts-side-2026-09-04-p1` | `scripts/certification_power.py`, `tests/test_certification_power.py`, `REPO_MAP.md` (generated scripts block only) | **QUEUED** — was BLOCKED on [#297](https://github.com/Joshua-Asante/first-passage/pull/297) for 20 minutes (the §0.9 probe's first real catch: #297 rewrote 16 rows of the same generated scripts block); **#297 merged as `81b35d0`**, so branch from `main` ≥ `81b35d0` and regenerate the block against it |
 | B — same-day letter order pass | — | — | **WITHDRAWN 2026-09-04** (mis-routed: needs a judgment on the label allocator; §2-B) |
 | C — `repo_hygiene` without `gh` | `cursor/scripts-side-2026-09-04-p3` | `scripts/repo_hygiene.py`, `tests/test_repo_hygiene.py` | QUEUED |
 
