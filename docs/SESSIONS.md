@@ -52,13 +52,15 @@ v7's export is `ORB-MNQ-1_recon_v7_…` — the construct whose Tradeify target 
 [repark ADR](adr/2026-08-03-orb-mnq-repark-payability-falsified.md) recorded FALSIFIED (67.67% bust at k=1,
 honest clock); R2 makes it research-scored, not deployable, without a superseding ADR on the Phase 5 result.
 Prior for "sizing works together": the combined Aegis+ORB study's 3.29% / 5.37% both-halves — fails H2 at 5.0%.
+**§15d ruled (operator, same session):** *"go with fresh 6J bars, yes on all three panels, admit ORB"* — the
+freeze now waits only on §14e and four `BAR EXPORT v0.2` panel pins (capture route + two traps in §15f). The weekly
+idle trade was placed 2026-09-03 (operator statement; authoritative record is the private compliance note).
 **Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
 campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — Codex owes §14e on a fresh branch
-from `main`; operator rules D20-a/-b/-c (§15d; D20-a blocks the freeze); orchestrator drafts the short Phase 3
-freeze the moment §14e lands · `#2`
+from `main`; operator captures the four bar panels (§15f); orchestrator drafts the short Phase 3 freeze the
+moment §14e and the panel pins land · `#2`
 [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
-— now on the campaign's critical path via Phase 8; this week's venue-idle token trade is unrecorded with one
-business day left (operator call).
+— now on the campaign's critical path via Phase 8; this week's venue-idle token trade placed 2026-09-03.
 **Class:** Decision · **Rule 2:** constituent (i) iteration 3 of 8 (unchanged; D20 spends none) · $0 / K=0
 
 ---
