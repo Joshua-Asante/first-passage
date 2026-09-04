@@ -8,11 +8,11 @@
 
 > **EXPLORATORY — Phase 0 was skipped.** All supplied history is development data; this report is not confirmatory, qualified, admitted, or deployable.
 
-Campaign status: `BLOCKED_EXPLORATORY`
+Campaign status: `RECONCILED_EXPLORATORY`
 
 Phase 1 evidence verdict cap: `NEEDS_CONTEXT`
 
-Runner generation: `tradeify-phase1-normalization-v2`
+Runner generation: `tradeify-phase1-normalization-v3`
 
 ## Continuous-contract roll disposition
 
@@ -23,15 +23,25 @@ Operator ruling 2026-09-03; docs/briefs/programs/2026-09-03-seven-strategy-selec
 - Phase 3 pre-registration states back-adjustment seam risk as a limitation of every campaign claim: fills cannot be attributed to a contract month, and a seam crossing is indistinguishable from a price move.
 - A Phase 6 seam-sensitivity check is pre-registered with its severity frozen alongside the other Phase 6 cutoffs.
 
+## D17 frozen evidence policy
+
+D17 ruling 2026-09-03: monthly totals are `RECONSTRUCTED` from the local canonical exit-month ledger; commission evidence is `AMENDED_OUT`.
+
+Operator ruling 2026-09-03; campaign-state §6 D17: monthly totals reconstructed from canonical exit-month ledger and independent commissions amended out.
+
+- Monthly totals are local canonical-ledger reconstructions using exit_timestamp_naive in the configured source timezone. No independent total-commission panel exists; derived commission remains non-independent inventory.
+- The tracked manifest and report hold only local-ledger hashes and aggregate reconciliation facts; per-month figures remain in gitignored local artifacts.
+- Derived commission inventory is not an independent operator anchor; venue/export fee auditing is unchanged.
+
 ## Strategy inventory
 
 | Strategy | Status | Pine pin status | Pin ref | Divergence | Export bytes | Pine bytes | Rows | Trades | Net P&L | Daily-deadline holds | Fri→Sun sub-count |
 |---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
-| aegis_6j1 | BLOCKED_EXPLORATORY | NOT_IN_PORT_MANIFEST | None | None | 28612 | 50184 | 244 | 122 | $28702.75 | 9 | 0 |
-| orb_mnq_recon_v7 | BLOCKED_EXPLORATORY | NOT_IN_PORT_MANIFEST | None | None | 160584 | 19878 | 1362 | 681 | $47533.16 | 310 | 3 |
-| striker_dj30_mym_pyramid_250 | BLOCKED_EXPLORATORY | PINNED_RESEARCH_VARIANT | core/strategies/PORT_MANIFEST.sha256:core/strategies/candidates/striker_dj30_v4.5_mym_pyramid_250.pine | pyramid 250% vs locked 750% | 47149 | 26726 | 406 | 203 | $31770.36 | 0 | 0 |
-| striker_nas100_mnq_dow_wed_excluded | BLOCKED_EXPLORATORY | PINNED_RESEARCH_VARIANT | core/strategies/PORT_MANIFEST.sha256:core/strategies/candidates/striker_nas100_v1_mnq_dow_wed_excluded.pine | day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue} | 88131 | 32242 | 756 | 378 | $112253.42 | 0 | 0 |
-| vanguard_mgc_v04 | BLOCKED_EXPLORATORY | NOT_IN_PORT_MANIFEST | None | None | 75654 | 39993 | 686 | 343 | $20388.04 | 226 | 0 |
+| aegis_6j1 | RECONCILED_EXPLORATORY | NOT_IN_PORT_MANIFEST | None | None | 28364 | 52092 | 242 | 121 | $27996.05 | 0 | 0 |
+| orb_mnq_recon_v7 | RECONCILED_EXPLORATORY | NOT_IN_PORT_MANIFEST | None | None | 160557 | 23765 | 1362 | 681 | $48118.16 | 0 | 0 |
+| striker_dj30_mym_pyramid_250 | RECONCILED_EXPLORATORY | UNPINNED_MODIFIED | core/strategies/PORT_MANIFEST.sha256:core/strategies/candidates/striker_dj30_v4.5_mym_pyramid_250.pine | pyramid 250% vs locked 750%; initial_capital 100000 vs research-variant pin 200000 | 47348 | 27497 | 406 | 203 | $32057.36 | 0 | 0 |
+| striker_nas100_mnq_dow_wed_excluded | RECONCILED_EXPLORATORY | UNPINNED_MODIFIED | core/strategies/PORT_MANIFEST.sha256:core/strategies/candidates/striker_nas100_v1_mnq_dow_wed_excluded.pine | day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}; initial_capital 100000 vs research-variant pin 200000 | 88221 | 33013 | 756 | 378 | $112253.42 | 0 | 0 |
+| vanguard_mgc_v04 | RECONCILED_EXPLORATORY | NOT_IN_PORT_MANIFEST | None | None | 74473 | 44177 | 676 | 338 | $18709.48 | 0 | 0 |
 
 ## Dropped source inventory
 
@@ -48,376 +58,169 @@ These exports are provenance only and are never normalized, counted, or used in 
 - No source row was repaired, dropped for an outcome, re-ranked, composed, simulated, or rerun in Pine.
 - Scalar MAE/MFE values are inventory-only excursion bounds, not timestamped paths.
 - Per-strategy caps are measured against 80 micro-equivalents; the joint book-cap verdict is deferred to Phase 4.
-- CME holiday-short coverage is `NEEDS_CONTEXT`; no historical early-close date was inferred.
-- CME early-close coverage note: If the primary-source 2022–2026 CME early-close dates cannot be captured, report a NEEDS_CONTEXT cap, never a silent omission; an early-close hold may go undetected.
+- CME holiday-short coverage is `COMPLETE` through D19-accepted SECONDARY venue-date membership; it is not a primary-CME upgrade, product close-time model, or exchange-session model.
+- CME early-close coverage note: D19 accepts this SECONDARY venue-date membership evidence only over the declared 2022-09-01 through 2026-09-02 window, not product close-time or exchange-session modeling. The 2025-11-28 scheduled-half-day/outage classification is conservatively included; possible ad-hoc closures from 2026-05-28 through 2026-09-02 may be missing and are not conservative. The preserved secondary metadata retains 13 unresolved items and 3 sub-deadline close notes.
+- Secondary provenance is retained without a primary-CME upgrade: `ops/calendars/cme_holiday_calendar_2022_2026.json` SHA-256 `2698f2688cce582b08df58516fd770fa4a71a18de04870d9c14511731ea181e9` under `cme_holiday_calendar/v1`.
+- Secondary provenance note: NO CME PRIMARY SOURCE WAS FETCHED FOR ANY DATE IN THIS FILE. www.cmegroup.com, investor.cmegroup.com and every broker mirror returned 403 at the egress proxy's CONNECT layer. Every cell is reconstructed from independent third-party encodings of the CME schedule (QuantConnect Lean's market-hours database, pandas_market_calendars, exchange_calendars, vacanza/holidays, one C++ reimplementation) cross-checked against in-repo measured bar panels. Treat as WORKING-GRADE, not audit-grade. Close it out by allowlisting www.cmegroup.com and reading the per-holiday clearing advisories, or by an authenticated CME Reference Data API pull (Globex Trading Hours and Holiday Schedules). For historical dates prefer the post-hoc settlement-times PDFs over the ex-ante advisories (CME finalises holiday hours roughly two weeks out) and never conflate a settlement time with a Globex close time.
+- D19 provenance acceptance: `D19` `ACCEPTED_SECONDARY` on 2026-09-03 — Operator ruling 2026-09-03; campaign-state §6 D19: secondary CME calendar provenance accepted.
+- Day basis: `CME_TRADE_DATE` — Every FULL_CLOSURE row is keyed to the CME trade date, not the wall clock. Dates such as 2022-12-26 and 2023-01-02 carry roughly 360 minutes of real Globex trading on the calendar day (the 18:00-24:00 ET reopen, which belongs to the NEXT trade date) yet read FULL_CLOSURE. TradingView bar exports are stamped by WALL CLOCK. Do not join this file to an export on a date key without deciding which basis you mean.
+- CME trade-date full-closure inventory is not converted into wall-date deadlines: All three product groups FULL_CLOSURE on the CME TRADE DATE. Load-bearing for the venue's >=1-trade-per-Mon-Fri-week inactivity rule. ⚠ DO NOT PUT THESE IN A WALL-CLOCK-KEYED GUARD LIST (Codex on PR #291, P2, accepted). A Pine guard keys on the bar's wall-clock year/month/day, but these rows are trade-date-keyed, and dates such as 2022-12-26 and 2023-01-02 carry real Globex bars from 18:00-24:00 ET on that wall-clock date - the reopen belonging to the NEXT trade date. Including them marks that reopened session short, which can force a flatten or block entries in a session that is not short at all. The earlier justification that they are 'inert - no bars, no effect' was WRONG. Use derived.venue_flat_dates alone for a wall-clock guard, or translate trade dates to explicit session intervals first.
+- Secondary full-closure inventory (16): 2022-04-15, 2022-12-25, 2022-12-26, 2023-01-01, 2023-01-02, 2023-12-24, 2023-12-25, 2023-12-31, 2024-01-01, 2024-03-29, 2024-12-25, 2025-01-01, 2025-04-18, 2025-12-25, 2026-01-01, 2026-12-25
+- Pre-12:59 market closes remain limitations, never modeled closure/no-trade rules: Dates where at least one group's early close falls BEFORE 12:59 ET. A single 12:59 ET deadline model cannot express these: the session has already ended, so no force-flat bar exists to fire on. Any strategy whose session window opens at or after these times simply never trades; any strategy that could hold into them needs a no-trade block, not a deadline.
+- Sub-deadline inventory (3):
+  - 2023-04-07 Good Friday (coincides with the March Employment Situation / NFP release) — equity_index=09:15, fx=11:15
+  - 2025-01-09 National Day of Mourning — former President Jimmy Carter (one-off, non-recurring) — equity_index=09:30
+  - 2026-04-03 Good Friday (coincides with the March Employment Situation / NFP release) — equity_index=09:15, fx=11:15
+- Secondary source URL (inert provenance): https://raw.githubusercontent.com/QuantConnect/Lean/cfc7e8ac451e384b08b697465e33016ab26c1263/Data/market-hours/market-hours-database.json
+- Secondary source URL (inert provenance): https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/pandas_market_calendars/calendars/cme_globex_equities.py
+- Secondary source URL (inert provenance): https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/pandas_market_calendars/calendars/cme_globex_energy_and_metals.py
+- Secondary source URL (inert provenance): https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/pandas_market_calendars/calendars/cme_globex_fx.py
+- Secondary source URL (inert provenance): https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/pandas_market_calendars/calendars/cme.py
+- Secondary source URL (inert provenance): https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/pandas_market_calendars/holidays/cme.py
+- Secondary source URL (inert provenance): https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/pandas_market_calendars/holidays/cme_globex.py
+- Secondary source URL (inert provenance): https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/pandas_market_calendars/holidays/us.py
+- Secondary source URL (inert provenance): https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/pandas_market_calendars/tests/test_exchange_calendar_cme_globex_equities.py
+- Secondary source URL (inert provenance): https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/pandas_market_calendars/tests/test_exchange_calendar_cme_globex_fx.py
+- Secondary source URL (inert provenance): https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/pandas_market_calendars/tests/test_exchange_calendar_cme_globex_energy_and_metals.py
+- Secondary source URL (inert provenance): https://raw.githubusercontent.com/rsheftel/pandas_market_calendars/275890784073a3a3a347e4f05f4dc986456e6a75/docs/change_log.rst
+- Secondary source URL (inert provenance): https://raw.githubusercontent.com/gerrymanoim/exchange_calendars/5de07333a58052eee033246bfe63f24e71da958f/exchange_calendars/exchange_calendar_cmes.py
+- Secondary source URL (inert provenance): https://raw.githubusercontent.com/gerrymanoim/exchange_calendars/5de07333a58052eee033246bfe63f24e71da958f/exchange_calendars/us_holidays.py
+- Secondary source URL (inert provenance): https://raw.githubusercontent.com/LironKruchinin/backtesting/5f4d909180aa84f1536d842939e073577a83d4f7/crates/crucible-data/src/calendar/tables/cme_globex_commodities.toml
+- Secondary source URL (inert provenance): https://raw.githubusercontent.com/LironKruchinin/backtesting/5f4d909180aa84f1536d842939e073577a83d4f7/crates/crucible-data/src/calendar/tables/cme_globex.toml
+- Secondary source URL (inert provenance): https://raw.githubusercontent.com/LironKruchinin/backtesting/5f4d909180aa84f1536d842939e073577a83d4f7/docs/SESSION_ERAS.md
+- Secondary source URL (inert provenance): https://raw.githubusercontent.com/EPOCHDevs/EpochFrame/d2545a3/src/calendar/calendars/cme_globex.cpp
+- Secondary source URL (inert provenance): https://raw.githubusercontent.com/vacanza/holidays/a5aca80f6b5f91485da14d23f79b99c109fa2f2d/holidays/financial/chicago_mercantile_exchange.py
+- Secondary source URL (inert provenance): https://pypi.org/project/pandas-market-calendars/
+- Secondary source URL (inert provenance): https://pypi.org/project/exchange-calendars/
+- Secondary source URL (inert provenance): file:///home/user/first-passage/lab/analysis/c1/tradeify_book_composition_2026-09/data/cme_equity_sessions.json
+- Secondary source URL (inert provenance): file:///home/user/first-passage/lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/cme_early_close_calendar.json
+- Secondary source URL (inert provenance): file:///home/user/first-passage/ops/instruments/6J.md
+- Secondary source URL (inert provenance): file:///home/user/first-passage/docs/briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-1-ambiguous.md
+- Secondary source URL (inert provenance): file:///home/user/first-passage/lab/research_utils/trade_reconciliation.py
+- Secondary unresolved 2022-01-01: PROVENANCE — NO CME PRIMARY SOURCE WAS EVER FETCHED FOR ANY DATE IN THIS CALENDAR. Every contributing lane independently reported that www.cmegroup.com, investor.cmegroup.com and every broker mirror (ampfutures, cannontrading, mrtopstep, discounttrading, crosstrade, tradinghours, edgeclear, optimusfutures) return 403 at the egress proxy's CONNECT layer, and that the session WebSearch budget was exhausted. The initial per-year research files listed 20-40 cmegroup.com advisory-PDF URLs each under a field defined as 'URLs you actually fetched'; those URLs were surfaced or path-constructed, never opened, and several of the /tools-information/holiday-calendar/files/<year>-<holiday>-advisory.pdf patterns do not match any corroborated CME URL shape. source_urls in THIS artifact has been cut to what was demonstrably retrieved (raw.githubusercontent.com, PyPI, in-repo files). Consequence: this calendar is SECONDARY-SOURCED throughout and no entry is audit-grade against CME. Close it out by allowlisting www.cmegroup.com and reading the per-holiday clearing advisories, or by an authenticated CME Reference Data API pull (Globex Trading Hours and Holiday Schedules endpoint). For historical dates prefer the post-hoc settlement-times PDFs over the ex-ante advisories, since CME finalises holiday hours roughly two weeks out — and never conflate a settlement time with a Globex close time.
+- Secondary unresolved 2022-01-17: FX (6J) STATUS ON EVERY RULE A US-HOLIDAY EARLY CLOSE, 2022-2026 — CLASS-WIDE DISPUTE. Emitted as NORMAL on the strength of: pandas_market_calendars, where every FX Monday/weekday-holiday rule is era-capped at 2021-12-31 and the class docstring reads 'Accurate 2020-2022 inclusive / TODO - Add 2023+ once known'; QuantConnect Lean, whose Future-cme-6J rows on these dates equal 6J's own normal 16:00 CT close with a normal 17:00 CT lateOpen, byte-identical across 6E/6B/6A/6C/6S; an archive-measured session calendar reporting 6E trading to 15:58 CT on MLK 2022-01-17 while ES stopped at 12:00, and 'none from 2022' for every recurring holiday 2022-2026; and broker/corroboration sources (Cannon: 'FX & Crypto: Thursday trading halt at 4:00 PM'), plus CME's own 2025 mourning press release naming FX among the normal-hours groups. AGAINST, and unreconciled: (a) ops/instruments/6J.md DEFECT LOG row F3 records a DIRECT bar-panel observation on 6J itself that on CME early-close days — naming MLK 2024-01-15 and Labor Day 2024-09-02 — 'market halts ~14:00 ET, the 16:30 trigger bar never prints', which forced a dated early-close calendar into the Aegis 6J build and was re-verified with 'zero stamps >=17:00'; that is measurement grade and it also puts the halt an hour LATER than any equity-index time; (b) one reviewer argues Lean's degenerate 16:00 CT/17:00 CT rows are unpopulated placeholder data rather than an affirmative statement of a full session, noting the five NORMAL dates are exactly the five where Lean's 6J record is degenerate; (c) undated pre-2022 CME press-release language ('CME Globex trading halts for Interest Rate and Foreign Exchange products at 12:00 noon') is retired-regime but keeps surfacing in search. Affects 2022-01-17/02-21/05-30/06-20/07-04/09-05/11-24 and every Rule A date in 2023, 2024, 2025 and 2026. Resolve against a CME per-holiday advisory before any 6J venue-legality call.
+- Secondary unresolved 2022-09-05: LABOR DAY METALS (MGC) CLOSE TIME — recurs identically on 2023-09-04, 2024-09-02, 2025-09-01 and 2026-09-07. Emitted as 14:30 ET (13:30 CT). Three encodings give three answers: QuantConnect Lean says 14:30 ET, matching every sibling holiday in the same year; pandas_market_calendars says 13:00 ET (12:00 CT); an independent C++ reimplementation (EpochFrame) omits Labor Day from both buckets and would report metals NORMAL. The pmc figure is traceable to a library defect rather than a CME distinction — USLaborDayFrom2022 and USLaborDayPre2022 are both defined in holidays/cme_globex.py exactly parallel to the MLK/Presidents/Memorial/July-4/Thanksgiving pairs, but the metals calendar references neither, leaving the unbounded legacy USLaborDay (start_date 1887) in the 12:00 CT bucket; Labor Day is the ONLY holiday in that file whose From2022/Pre2022 pair is defined but unwired, and USLaborDayFrom2022 is referenced only by the crypto calendar. 14:30 ET is therefore the pattern-consistent and Lean-backed reading, but it is an inference about a library bug, not a sourced CME time. 2022-09-05 is additionally the FIRST date inside the 2022-09-01 audit window.
+- Secondary unresolved 2022-11-25: RULE B (BLACK FRIDAY / CHRISTMAS EVE) METALS AND FX CLOSE TIMES — CLASS-WIDE, affects 2022-11-25, 2023-11-24, 2024-11-29, 2024-12-24, 2025-11-28, 2025-12-24, 2026-11-27 and 2026-12-24. Emitted as metals 13:45 ET (12:45 CT) and FX 13:15 ET (12:15 CT). THE TWO CORROBORATION CHANNELS DIRECTLY CONTRADICT EACH OTHER: one reports Cannon Trading and OneUp Trader publishing identical numbers for 2025-11-28 — 'Equities & Interest Rates 12:15 CT; Energy, Metals, FX 13:45 CT', i.e. metals AND FX both at 14:45 ET — while the other reports AMP publishing '12:15 p.m. CST for Equities, Interest Rates and Currencies; 12:45 p.m. CST for Energies and Metals', i.e. metals 13:45 ET and FX 13:15 ET. pandas_market_calendars supports the second reading with uncapped rules (FridayAfterThanksgiving at 12:45 CT metals; USThanksgivingFriday and ChristmasEveInOrAfter1993 at 12:15 CT FX). QuantConnect Lean is internally inconsistent across years: 2024-11-29 MGC 13:45 ET / 6J 12:15 CT and 2024-12-24 6J 12:15 CT, but 2025-11-28 MGC 14:45 ET / 6J 13:45 CT and 2025-12-24 6J 12:45 CT; it also carries NO 11/29/2024 entry at all for MYM, MGC or 6J despite that certainly being an early-close session, so its Rule B coverage has demonstrable gaps. The pmc-consistent 13:45/13:15 reading was adopted for cross-year coherence; the 14:45/14:45 reading is live and is what the initial 2026 research emitted. A 60-90 minute error either way on an MGC or 6J force-flat deadline.
+- Secondary unresolved 2023-07-03: DAY-BEFORE-INDEPENDENCE-DAY METALS AND FX — recurs on 2024-07-03 and 2025-07-03. Emitted as metals 13:45 ET and FX 13:15 ET on the Rule B half-day pattern plus broker sources. AGAINST: neither pandas_market_calendars' Energy/Metals calendar nor its FX calendar contains a July-3 rule in ANY era (EpochFrame's metals calendar has none either), so both libraries return a full normal 17:00 ET close; QuantConnect Lean carries no 7/3/2025 key in earlyCloses for MGC/GC/SI/HG or for 6J/6E/6B/6A/6C/6S. One reviewer concluded both groups ran NORMAL on 2025-07-03; another concluded both cells are simply UNKNOWN. Two further complications: (a) the emitted 13:15 ET FX figure is constructed as the NYSE 13:00 ET cash half-day close plus 15 minutes, and CME FX has no NYSE-half-day linkage, so a cash-derived time is unmotivated for 6J; (b) there is an unconsidered structural fork — July 3 may follow the Independence Day HOLIDAY shape (12:00 CT = 13:00 ET) rather than the SIFMA half-day shape (12:15 CT = 13:15 ET), differing by 15 minutes on equity and up to 90 on metals. Note the pmc metals calendar also lacks a Christmas Eve rule, so its silence on eve-of-holiday metals sessions is a coverage gap, not a finding of NORMAL. The equity 13:15 ET cell on these dates is separately sound.
+- Secondary unresolved 2024-11-29: BLACK FRIDAY / CHRISTMAS EVE EQUITY-INDEX CLOSE, 13:00 ET vs 13:15 ET — reviewers directly contradict each other, and the same standoff applies to 2024-12-24. Two 2024 reviewers report pandas_market_calendars' CME_Equity and CBOT_Equity classes AND exchange_calendars CMES both returning 13:00 ET via USBlackFridayInOrAfter1993 / ChristmasEveInOrAfter1993 in a 12:00 CT bucket, and observe that the CME_Equity class has no 12:15 CT bucket at all and is therefore structurally incapable of expressing 13:15 ET. A third 2024 reviewer reports pandas_market_calendars' CMEGlobexEquities class placing USThanksgivingFriday and ChristmasEveInOrAfter1993 in a 12:15 CT bucket, yielding 13:15 ET, and QuantConnect Lean gives MYM/MNQ 13:15 ET on both dates. 13:15 ET was adopted (Globex-specific pmc class + Lean + AMP/broker + the multi-year Rule B pattern + the in-repo MYM_M15 census that found a distinct minute-780 class ending 13:15 ET with no NYSE analogue), but the disagreement is between two different pmc calendar classes and has not been adjudicated against a CME advisory. exchange_calendars flattens every special close to 13:00 ET and cannot arbitrate.
+- Secondary unresolved 2024-12-24: CHRISTMAS EVE METALS (MGC) STATUS AND TIME, 2024-12-24 / 2025-12-24 / 2026-12-24. Emitted as EARLY_CLOSE 13:45 ET (12:45 CT) from QuantConnect Lean plus analogy to the Black Friday metals rule. The status itself is UNCONFIRMED in the other direction: pandas_market_calendars' CMEGlobexEnergyAndMetals special_closes contains no Christmas Eve rule of any kind — its only buckets are 12:00 CT, 12:45 CT (FridayAfterThanksgiving alone) and 13:30 CT — so it returns a full normal 17:00 ET close. Reviewers agree that output is an obviously-wrong library omission rather than a finding of NORMAL (metals certainly do not trade to 17:00 ET on Christmas Eve), which means the metals cell on these dates has exactly one supporting source and no independent check. A calendar generated from pmc alone overstates the 2024-12-24 and 2025-12-24 MGC session length by roughly 3h15m.
+- Secondary unresolved 2025-07-04: FRIDAY-HOLIDAY METALS AND FX SHAPE — affects 2025-07-04, 2026-06-19 and 2026-07-03, the three in-scope US holidays that fall on a Friday with no evening reopen. Two mutually exclusive models. MODEL 1 (emitted): the Friday exception — all three groups stop at 12:00 CT = 13:00 ET. Supported by QuantConnect Lean's per-symbol rows (MGC/GC 13:00 ET and 6J 12:00 CT on all three dates, versus 14:30 ET metals and 16:00 CT FX on Monday/Thursday holidays), by the same Friday shape in Lean for 7/3/2015 and 7/3/2020, and by an archive-measured session calendar stating 'on a Friday holiday CL and GC close at 12:00 CT rather than 13:30 (2025-07-04, 2026-06-19, 2026-07-03 — three for three)'. MODEL 2: no Friday exception — metals 13:30 CT = 14:30 ET and FX NORMAL, i.e. ordinary Rule A. Supported by pandas_market_calendars (USJuneteenthFrom2022 and USIndependenceDayFrom2022 both sit in the metals 13:30 CT bucket with no weekday carve-out, and its executed 2026 schedule returns 14:30 ET on both dates) and by both corroboration channels' broker-derived tables. Note Model 1's own strongest source ALSO asserts CME FX stopped observing US-holiday early closes entirely from 2022, which contradicts the FX half of the value it supplies. Up to 90 minutes on MGC and up to 4 hours on 6J. Also note the equity leg on 2025-07-04 is settled: the initial research's FULL_CLOSURE was falsified by three independent lines and corrected to EARLY_CLOSE 13:00 ET.
+- Secondary unresolved 2025-11-28: UNSCHEDULED CME GLOBEX OUTAGE — the emitted EARLY_CLOSE with Rule B times is the SCHEDULED rule, which did not execute. A cooling-system failure at the CyrusOne CH1 data centre in Aurora, Illinois (later attributed to human error) took ALL of Globex down for roughly ten hours starting late on 2025-11-27; EBS reopened around 07:00 ET and CME reopened futures and options around 07:30 CT, with equity index, gold and major FX all explicitly dark. One review argues normal futures trading resumed only at the Sunday 18:00 ET open and that the row should therefore read FULL_CLOSURE or a distinct OUTAGE status; on the other reading the 2025-11-28 equity-index session ran roughly 07:30 to 12:15 CT — under five hours against a ~23-hour normal Globex day. Neither calendar library encodes the outage in any form, so any calendar generated from them reports this as an ordinary post-Thanksgiving half-day. LOAD-BEARING for the ≥1-trade-per-Mon-Fri-week venue-inactivity rule: an audit reading 2025-11-28 as merely shortened would wrongly conclude the week of Mon 2025-11-24 had a live Friday available. The Nov 28 to Sun Nov 30 no-session window is also unrecorded. Resolve the exact reopen time and the intended status convention before this date is used operationally.
+- Secondary unresolved 2025-12-24: CHRISTMAS EVE FX (6J) CLOSE, 13:15 ET vs 13:45 ET, on 2025-12-24 and 2026-12-24. Emitted as 13:15 ET (12:15 CT), grouping FX with equity index, on pandas_market_calendars' uncapped ChristmasEveInOrAfter1993 rule in the FX 12:15 CT bucket (start_date 1993, days_of_week Mon-Thu) and on Lean's own 12:15 CT value for 2024-12-24. AGAINST: Lean gives 6J 12:45 CT (13:45 ET) for 2025-12-24 and 2026-12-24, grouping FX with metals instead — an unexplained year-over-year inconsistency within a single source. One reviewer also notes pmc's FX module is unmaintained past 2022 for holiday rules generally, though the Christmas Eve rule specifically is uncapped and does fire. A 30-minute error on a 6J force-flat deadline.
+- Secondary unresolved 2026-01-19: 2026 FX NORMAL CELLS — the initial 2026 research's own cited counter-evidence is FALSE and has been struck, but a separate reviewer dissent remains. The initial note justified MEDIUM-to-LOW confidence on fx_status=NORMAL by citing 'pandas_market_calendars puts MLK in a 12:00 CT special-close bucket'; the rule in that bucket is USMartinLutherKingJrAfter1998Before2022 with end_date 2021-12-31, so pmc cannot fire in 2026 and in fact AGREES with NORMAL (executed pmc returns 2026 FX early closes on only 04-03, 11-27 and 12-24). That single misreading was propagated verbatim as the 'same FX caveat' to 2026-02-16, 05-25, 09-07 and 11-26 — five cells rested on one non-existent conflict. THE LIVE DISSENT: one reviewer argues Lean's 6J rows on those five dates are degenerate placeholders (earlyClose 16:00 CT AND lateOpen 17:00 CT, both byte-identical to 6J's regular session boundaries) rather than affirmative statements of a full session, notes the five NORMAL dates are exactly the five degenerate rows, and calls the table internally incoherent — no product rule closes FX at 12:00 CT on Juneteenth-Friday and July-3-Friday yet runs it to 16:00 CT on Thanksgiving Day. Same underlying question as the 2022-01-17 class dispute.
+- Secondary unresolved 2026-01-05: CITED-BUT-UNUSED NATIONAL DAY OF MOURNING ADVISORY — investigated and resolved as NO 2026 CLOSURE, recorded here so it is not rediscovered as a phantom gap. The initial 2026 research listed https://www.cmegroup.com/media-room/press-releases/2025/12/30/cme_group_announcestradinghoursforusnationaldayofmourningtohonor.html in source_urls with no corresponding entry, which one reviewer flagged as a possible untabulated early-to-mid-January 2026 closure. Two other reviewers resolved it: vacanza/holidays cites that exact URL (via a 2025-07-15 archive snapshot that PREDATES the 2025-12-30 path date, proving the path is a CMS artefact) as the source for the Jimmy Carter National Day of Mourning, which it maps to 2025-01-09 — already carried in this calendar and outside 2026. Independently, exchange_calendars' USNationalDaysofMourning array ends at 2025-01-09, pandas_market_calendars' equivalent ends at 2025-01-09 (its NYSE calendar carries a dedicated JimmyCarterDeath2025 rule and returns exactly the 10 statutory holidays for 2026 with no eleventh), and an archive-measured calendar's dated-exceptions list contains only 2018-12-05 and 2025-01-09. Coverage of this check runs to 2026-05-27 (newest library build). The URL has been removed from source_urls. Residual risk: an ad-hoc closure between 2026-05-28 and 2026-09-02 is outside every source reachable in these sessions and cannot be ruled out; the only scheduled holidays in that window (06-19, 07-03) are both present.
+- Secondary unresolved 2022-12-26: DAY-CONVENTION AMBIGUITY, CALENDAR-WIDE. Every FULL_CLOSURE row in this calendar is keyed to the CME TRADE DATE, not to the wall clock, but the schema carries no discriminator and the initial per-year research files never declared the convention. Concretely: 2022-12-26, 2023-01-02, 2023-12-25 and 2025-12-25 each carry ~360 minutes of real Globex trading on the calendar day (the 18:00-24:00 ET reopen belonging to the NEXT trade date), while 2022-12-25, 2023-01-01, 2023-12-24 and 2023-12-31 carry a genuine zero — yet all eight read FULL_CLOSURE. Symmetrically, 2025-12-24 (EARLY_CLOSE) and 2025-12-31 (NORMAL) are structurally identical on a wall-clock reading: both shut and neither reopened that evening. Because MYM/MNQ/MGC/6J bar exports are normally stamped by wall-clock timestamp rather than CME trade date, and because the known downstream consumer (lab/research_utils/trade_reconciliation.py, rows of {date, deadline_local}, selecting 12:59 vs 16:45 America/New_York by calendar-date membership) is calendar-date-keyed and product-group-blind, an undeclared convention is exactly the silent-failure mode this calendar exists to prevent. Recommend adding an explicit basis field, or splitting status into trade_date_status plus calendar_day_minutes, before ingestion. Related: a single date-level 12:59 ET early-close flag cannot express the three distinct per-group times this calendar records and will be over-tight for MGC and 6J on Rule A days by 60-240 minutes.
+- Secondary source revisions remain provenance limits, not captured-byte proof: Codex on PR #291 (P2, accepted): unpinned master/main URLs stop identifying the data once those branches move, and several emitted cells were decided by choosing between CONFLICTING library encodings - so an unpinned reference cannot support an audit of which revision backed which cell. Every raw.githubusercontent URL above is now commit-pinned. ⚠ HONEST LIMIT: these are the branch tips resolved by `git ls-remote` at pin time on 2026-09-03, roughly an hour after the research pass read the same branches UNPINNED. They are the best available reconstruction, NOT a proven capture of the exact bytes read. A branch that moved inside that window would not be detected. To make this audit-grade rather than audit-plausible, retain hashed captures of the source files alongside this calendar, or resolve the primary CME source and retire the secondary reconstruction entirely.
 
 ## Frozen hashes
 
-- Config: `bc806ace41f899f17fa9cd54960bcd7c6ee6f3b02b28f8574c5b600997667e87`
+- Config: `df238cd78fc0a381fdb86466ef3dfca5522dd8db7ae0cf245165f370df9f3892`
 - Tradeify fee capture: `61c8957a4adfabf6b8e8c4eb984e6d9388a223145f90b0b9ca66b3dd7ca28750`
-- CME calendar capture: `742e83508a3addf034ce6536e42553522bea28c96f8e3718629cf5495c405277`
-- Independent TradingView anchors: `a3c3ae0c102adf15199a2f68cebe07a97c4cae1b0b5b4f7c07f73c1093c96ff2`
-- Canonical events: `c04e2cc8b07a21abb47b70f6c195ea0336ec76087c0e76fb26f37e64f2c945ee`
-- Canonical trades: `0336cf3836055fbc951c995725c718e15aaff03e064bfade5f8310a5c382e257`
-- Weekly exit blocks: `e33f48c13c3fd4c6438bb755fb6ac070bebbbf308ad0377320468a1a6ef8850e`
-- Detail report aegis_6j1: `9b40524e9c06870161ed77fde5cb1cea4a2501d7696cc6899607a2ab0e25b7c5`
-- Detail report orb_mnq_recon_v7: `3cdf75dfc2821279f90dbafc0ac100ad227deefe9ab96360db157f880df7b8af`
-- Detail report striker_dj30_mym_pyramid_250: `a762cc3b255f879ee3b92c77d6dc27a3de9d443a8c8219b94797e4833eff904e`
-- Detail report striker_nas100_mnq_dow_wed_excluded: `c5c3d8f431b4ecdda6943e562ee9f152a924132d9f2d82e286c0293933187a8a`
-- Detail report vanguard_mgc_v04: `ab61978d7dc7c6f1428c7d945d6258e0bcab5c5fdd276a84a1cea05bfba73af7`
+- CME calendar capture: `6eeb3b9d198eabf0a5a2115c4648f69629720a500616f38e219dff7bc57d0334`
+- Independent TradingView anchors: `481e9bb2227578497dbc506d336377a5d51c366161dae6dd7d534c9c2ef88979`
+- Canonical events: `3a6b754ec145db0e5c09ce18413d7d42d60fa1ce8ac034bd6d6878ae4251d3ac`
+- Canonical trades: `7e650599241b8150d0ee31ea04a7406c200e1f009c9530908a9644e56bed765a`
+- Weekly exit blocks: `d0b3e5ab840ef0a88c9f7b4b2c7254b3774142b85a55a9cfaeaa04fa5fe7934a`
+- Detail report aegis_6j1: `546cf0e0b1b9fe3d26793f0dc87ea53cb7990decd744bb5ec261110b32c964bc`
+- Detail report orb_mnq_recon_v7: `a0ea8a6b27aba3aa6f292322d82c3e38029e1c89cb8bbefbcb329305fcff81ea`
+- Detail report striker_dj30_mym_pyramid_250: `c7bbab4867e381428da31116c61ea4cb224d8b2b848cf328ce105443988871e3`
+- Detail report striker_nas100_mnq_dow_wed_excluded: `4d2807e40f946f708e270ad66be01451ca0a05d6c05099ac811663532615b5d4`
+- Detail report vanguard_mgc_v04: `a0a9564b1f598f04e68a1a6d56cf2e49d4ef25c7e3b67305a4ddfd2ca142e4d1`
+- Local monthly reconciliation aegis_6j1: `5242591bbb40a93480e5356011f31a4d6fd0575d1d0f1f73ee1236926c343ca1`
+- Local monthly reconciliation orb_mnq_recon_v7: `632382c8bffea9644486b961e706d5f94a7f782235ecc4b7d5b9bab29070e2ad`
+- Local monthly reconciliation striker_dj30_mym_pyramid_250: `bd34b13a72d6c771cdbb654d3798bb53307f60ac144e1553141efe5df4303070`
+- Local monthly reconciliation striker_nas100_mnq_dow_wed_excluded: `7163605aeddd8953d73e44b46162ec051d4d45587c508701079acbd4a6e7568a`
+- Local monthly reconciliation vanguard_mgc_v04: `5b1f2a5872aac49ef4988b423bc3d042232c16f5056c1816bddc4eeebde56acb`
 
 ## Issues by strategy
 
 ### aegis_6j1
 
-- `BLOCKER` `FORCE_FLAT_VIOLATION` × 9
-- `BLOCKER` `TV_SUMMARY_MISMATCH` × 1
 - `WARNING` `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED` × 1
-- `WARNING` `EARLY_CLOSE_CALENDAR_INCOMPLETE` × 1
 - `WARNING` `PINE_EXPORT_COMMISSION_MISMATCH` × 1
 - `WARNING` `PINE_VENUE_COMMISSION_MISMATCH` × 1
 
 ### orb_mnq_recon_v7
 
-- `BLOCKER` `FORCE_FLAT_VIOLATION` × 310
-- `BLOCKER` `TV_SUMMARY_MISMATCH` × 1
 - `WARNING` `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED` × 1
-- `WARNING` `CROSS_DATE_HOLD` × 3
-- `WARNING` `EARLY_CLOSE_CALENDAR_INCOMPLETE` × 1
 
 ### striker_dj30_mym_pyramid_250
 
-- `BLOCKER` `TV_SUMMARY_MISMATCH` × 1
 - `WARNING` `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED` × 1
-- `WARNING` `EARLY_CLOSE_CALENDAR_INCOMPLETE` × 1
 
 ### striker_nas100_mnq_dow_wed_excluded
 
-- `BLOCKER` `TV_SUMMARY_MISMATCH` × 1
 - `WARNING` `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED` × 1
-- `WARNING` `EARLY_CLOSE_CALENDAR_INCOMPLETE` × 1
 
 ### vanguard_mgc_v04
 
-- `BLOCKER` `FORCE_FLAT_VIOLATION` × 226
-- `BLOCKER` `TV_SUMMARY_MISMATCH` × 1
 - `WARNING` `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED` × 1
-- `WARNING` `EARLY_CLOSE_CALENDAR_INCOMPLETE` × 1
 
 ## Independent TradingView summary reconciliation
 
-G1.4 coverage: `NEEDS_CONTEXT`. Operator TradingView Key-stats are supplied for five active sources; independent total commissions and monthly net P&L have not been supplied. G1.4 remains partial; missing anchors are never inferred from exports or computed reports.
+G1.4 coverage: `NEEDS_CONTEXT`. Fresh independent TradingView Key-stats panels are required for all five replacement sources. The DJ30 replacement has an unexplained +$287 net delta versus the prior 200K run pending operator discrimination. Old panels remain historical only and are never rebound or inferred from exports.
 
 Observed max drawdown uses closed-trade exit equity; TradingView panel equity drawdown may differ. Discrepancies remain blockers; no series is repaired.
 
 ### aegis_6j1
 
-Operator TradingView Key-stats transcribed by orchestrator in campaign-state section 10 at commit 716357e (origin/claude/orchestrator-role-takeover-yza7vp); panel span 2022-09-01 through 2026-09-02; DEEP backtest; Default detail (4 OHLC ticks); initial capital USD 100000 (inventory only, no rescaling).
+No independent operator summary supplied.
 
 | Metric | Observed | Anchor | Difference | Tolerance | Status |
 |---|---|---|---|---|---|
-| trade_count | 122 | 122 | 0 | 0 | MATCH |
-| net_pnl_usd | 28702.75 | 28702.75 | 0.00 | 0.01 | MATCH |
-| win_rate_pct | 63.9344262300 | 63.93 | 0.0044262300 | 0.01 | MATCH |
-| profit_factor | 3.4827865095 | 3.483 | -0.0002134905 | 0.01 | MATCH |
-| max_drawdown_usd | 1298.40 | 1470.40 | -172.00 | 0.01 | MISMATCH |
-| total_commissions_usd | 4991.00 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd | {'2022-09': '50.45', '2022-10': '38.70', '2022-11': '-530.90', '2022-12': '25.20', '2023-01': '1056.70', '2023-02': '1062.90', '2023-03': '3163.50', '2023-04': '-1048.90', '2023-05': '1063.25', '2023-06': '0.30', '2023-07': '1882.10', '2023-08': '-749.75', '2023-09': '832.30', '2023-11': '1320.20', '2023-12': '-649.60', '2024-01': '-386.80', '2024-02': '1488.25', '2024-03': '0.40', '2024-04': '351.20', '2024-05': '-49.60', '2024-06': '776.10', '2024-07': '2033.10', '2024-08': '1075.65', '2024-09': '-474.55', '2024-11': '-180.30', '2024-12': '1944.80', '2025-02': '1064.15', '2025-03': '1132.40', '2025-04': '157.40', '2025-05': '1251.00', '2025-06': '1189.10', '2025-07': '-299.20', '2025-08': '1401.60', '2025-09': '-254.70', '2025-10': '1101.20', '2025-11': '2001.20', '2025-12': '951.60', '2026-01': '31.50', '2026-02': '-174.00', '2026-03': '4101.60', '2026-04': '1100.80', '2026-05': '-399.20', '2026-06': '-649.60', '2026-07': '-249.20', '2026-08': '1150.40'} | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2022-09 | 50.45 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2022-10 | 38.70 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2022-11 | -530.90 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2022-12 | 25.20 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-01 | 1056.70 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-02 | 1062.90 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-03 | 3163.50 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-04 | -1048.90 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-05 | 1063.25 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-06 | 0.30 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-07 | 1882.10 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-08 | -749.75 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-09 | 832.30 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-11 | 1320.20 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-12 | -649.60 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-01 | -386.80 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-02 | 1488.25 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-03 | 0.40 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-04 | 351.20 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-05 | -49.60 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-06 | 776.10 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-07 | 2033.10 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-08 | 1075.65 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-09 | -474.55 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-11 | -180.30 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-12 | 1944.80 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-02 | 1064.15 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-03 | 1132.40 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-04 | 157.40 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-05 | 1251.00 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-06 | 1189.10 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-07 | -299.20 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-08 | 1401.60 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-09 | -254.70 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-10 | 1101.20 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-11 | 2001.20 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-12 | 951.60 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-01 | 31.50 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-02 | -174.00 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-03 | 4101.60 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-04 | 1100.80 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-05 | -399.20 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-06 | -649.60 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-07 | -249.20 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-08 | 1150.40 | None | None | 0.01 | MISSING_ANCHOR |
+| trade_count | 121 | None | None | 0 | MISSING_ANCHOR |
+| net_pnl_usd | 27996.05 | None | None | 0.01 | MISSING_ANCHOR |
+| win_rate_pct | 63.6363636400 | None | None | 0.01 | MISSING_ANCHOR |
+| profit_factor | 3.4216569931 | None | None | 0.01 | MISSING_ANCHOR |
+| max_drawdown_usd | 1298.40 | None | None | 0.01 | MISSING_ANCHOR |
 
 ### orb_mnq_recon_v7
 
-Operator TradingView Key-stats transcribed by orchestrator in campaign-state section 10 at commit 716357e (origin/claude/orchestrator-role-takeover-yza7vp); panel span 2022-09-01 through 2026-09-02; DEEP backtest; Default detail (4 OHLC ticks); initial capital USD 100000 (inventory only, no rescaling).
+No independent operator summary supplied.
 
 | Metric | Observed | Anchor | Difference | Tolerance | Status |
 |---|---|---|---|---|---|
-| trade_count | 681 | 681 | 0 | 0 | MATCH |
-| net_pnl_usd | 47533.16 | 47533.16 | 0.00 | 0.01 | MATCH |
-| win_rate_pct | 56.8281938300 | 56.83 | -0.0018061700 | 0.01 | MATCH |
-| profit_factor | 1.4347432725 | 1.435 | -0.0002567275 | 0.01 | MATCH |
-| max_drawdown_usd | 6168.20 | 6794.02 | -625.82 | 0.01 | MISMATCH |
-| total_commissions_usd | 2478.84 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd | {'2022-09': '-2404.80', '2022-10': '3254.56', '2022-11': '4568.84', '2022-12': '1486.12', '2023-01': '3902.44', '2023-02': '498.20', '2023-03': '1717.88', '2023-04': '283.20', '2023-05': '1389.36', '2023-06': '1935.04', '2023-07': '326.96', '2023-08': '115.32', '2023-09': '-244.68', '2023-10': '1087.84', '2023-11': '1303.32', '2023-12': '1587.04', '2024-01': '808.96', '2024-02': '636.32', '2024-03': '627.32', '2024-04': '332.68', '2024-05': '1042.96', '2024-06': '1701.32', '2024-07': '-323.68', '2024-08': '3710.40', '2024-09': '-717.68', '2024-10': '216.32', '2024-11': '924.60', '2024-12': '1755.04', '2025-01': '-458.04', '2025-02': '2875.88', '2025-03': '215.32', '2025-04': '6194.24', '2025-05': '2175.40', '2025-06': '-438.60', '2025-07': '149.60', '2025-08': '663.68', '2025-09': '626.04', '2025-10': '1216.32', '2025-11': '546.60', '2025-12': '-802.40', '2026-01': '445.60', '2026-02': '1799.60', '2026-03': '1452.32', '2026-04': '2592.04', '2026-05': '-1645.96', '2026-06': '310.68', '2026-07': '-3174.04', '2026-08': '586.32', '2026-09': '681.36'} | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2022-09 | -2404.80 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2022-10 | 3254.56 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2022-11 | 4568.84 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2022-12 | 1486.12 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-01 | 3902.44 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-02 | 498.20 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-03 | 1717.88 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-04 | 283.20 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-05 | 1389.36 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-06 | 1935.04 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-07 | 326.96 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-08 | 115.32 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-09 | -244.68 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-10 | 1087.84 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-11 | 1303.32 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-12 | 1587.04 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-01 | 808.96 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-02 | 636.32 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-03 | 627.32 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-04 | 332.68 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-05 | 1042.96 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-06 | 1701.32 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-07 | -323.68 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-08 | 3710.40 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-09 | -717.68 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-10 | 216.32 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-11 | 924.60 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-12 | 1755.04 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-01 | -458.04 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-02 | 2875.88 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-03 | 215.32 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-04 | 6194.24 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-05 | 2175.40 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-06 | -438.60 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-07 | 149.60 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-08 | 663.68 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-09 | 626.04 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-10 | 1216.32 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-11 | 546.60 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-12 | -802.40 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-01 | 445.60 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-02 | 1799.60 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-03 | 1452.32 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-04 | 2592.04 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-05 | -1645.96 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-06 | 310.68 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-07 | -3174.04 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-08 | 586.32 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-09 | 681.36 | None | None | 0.01 | MISSING_ANCHOR |
+| trade_count | 681 | None | None | 0 | MISSING_ANCHOR |
+| net_pnl_usd | 48118.16 | None | None | 0.01 | MISSING_ANCHOR |
+| win_rate_pct | 57.2687224700 | None | None | 0.01 | MISSING_ANCHOR |
+| profit_factor | 1.4452530618 | None | None | 0.01 | MISSING_ANCHOR |
+| max_drawdown_usd | 5436.20 | None | None | 0.01 | MISSING_ANCHOR |
 
 ### striker_dj30_mym_pyramid_250
 
-Operator TradingView Key-stats transcribed by orchestrator in campaign-state section 10 at commit 716357e (origin/claude/orchestrator-role-takeover-yza7vp); panel span 2022-09-01 through 2026-09-02; DEEP backtest; Default detail (4 OHLC ticks); initial capital USD 200000 (inventory only, no rescaling).
+No independent operator summary supplied.
 
 | Metric | Observed | Anchor | Difference | Tolerance | Status |
 |---|---|---|---|---|---|
-| trade_count | 203 | 203 | 0 | 0 | MATCH |
-| net_pnl_usd | 31770.36 | 31770.36 | 0.00 | 0.01 | MATCH |
-| win_rate_pct | 42.3645320200 | 42.36 | 0.0045320200 | 0.01 | MATCH |
-| profit_factor | 1.6821573535 | 1.682 | 0.0001573535 | 0.01 | MATCH |
-| max_drawdown_usd | 4262.66 | 4568.68 | -306.02 | 0.01 | MISMATCH |
-| total_commissions_usd | 7647.64 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd | {'2022-09': '-10.66', '2022-10': '2976.90', '2022-11': '-1084.52', '2022-12': '-42.24', '2023-01': '-655.46', '2023-02': '-34.42', '2023-03': '5298.26', '2023-04': '1128.16', '2023-05': '-1447.16', '2023-06': '4062.66', '2023-07': '-47.30', '2023-08': '-1064.00', '2023-09': '3009.82', '2023-10': '-1139.50', '2023-11': '-755.64', '2023-12': '-328.68', '2024-01': '635.80', '2024-03': '3000.94', '2024-04': '-2013.12', '2024-05': '-1278.48', '2024-06': '392.80', '2024-07': '1639.94', '2024-08': '-775.04', '2024-09': '122.46', '2024-10': '-662.48', '2024-11': '-529.66', '2024-12': '3643.52', '2025-01': '134.20', '2025-02': '-2148.08', '2025-03': '107.14', '2025-04': '-409.58', '2025-05': '518.36', '2025-06': '5419.96', '2025-07': '1775.84', '2025-08': '-763.86', '2025-09': '-1359.12', '2025-10': '6229.82', '2025-11': '3743.46', '2025-12': '-1443.18', '2026-01': '2864.58', '2026-02': '4914.62', '2026-03': '-706.04', '2026-04': '1076.46', '2026-05': '85.20', '2026-06': '-513.20', '2026-07': '-610.12', '2026-08': '-463.52', '2026-09': '-725.48'} | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2022-09 | -10.66 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2022-10 | 2976.90 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2022-11 | -1084.52 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2022-12 | -42.24 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-01 | -655.46 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-02 | -34.42 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-03 | 5298.26 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-04 | 1128.16 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-05 | -1447.16 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-06 | 4062.66 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-07 | -47.30 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-08 | -1064.00 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-09 | 3009.82 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-10 | -1139.50 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-11 | -755.64 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-12 | -328.68 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-01 | 635.80 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-03 | 3000.94 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-04 | -2013.12 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-05 | -1278.48 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-06 | 392.80 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-07 | 1639.94 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-08 | -775.04 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-09 | 122.46 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-10 | -662.48 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-11 | -529.66 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-12 | 3643.52 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-01 | 134.20 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-02 | -2148.08 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-03 | 107.14 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-04 | -409.58 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-05 | 518.36 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-06 | 5419.96 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-07 | 1775.84 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-08 | -763.86 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-09 | -1359.12 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-10 | 6229.82 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-11 | 3743.46 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-12 | -1443.18 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-01 | 2864.58 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-02 | 4914.62 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-03 | -706.04 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-04 | 1076.46 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-05 | 85.20 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-06 | -513.20 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-07 | -610.12 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-08 | -463.52 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-09 | -725.48 | None | None | 0.01 | MISSING_ANCHOR |
+| trade_count | 203 | None | None | 0 | MISSING_ANCHOR |
+| net_pnl_usd | 32057.36 | None | None | 0.01 | MISSING_ANCHOR |
+| win_rate_pct | 42.3645320200 | None | None | 0.01 | MISSING_ANCHOR |
+| profit_factor | 1.6925876219 | None | None | 0.01 | MISSING_ANCHOR |
+| max_drawdown_usd | 4262.66 | None | None | 0.01 | MISSING_ANCHOR |
 
 ### striker_nas100_mnq_dow_wed_excluded
 
-Operator TradingView Key-stats transcribed by orchestrator in campaign-state section 10 at commit 716357e (origin/claude/orchestrator-role-takeover-yza7vp); panel span 2022-09-01 through 2026-09-02; DEEP backtest; Default detail (4 OHLC ticks); initial capital USD 200000 (inventory only, no rescaling).
+No independent operator summary supplied.
 
 | Metric | Observed | Anchor | Difference | Tolerance | Status |
 |---|---|---|---|---|---|
-| trade_count | 378 | 378 | 0 | 0 | MATCH |
-| net_pnl_usd | 112253.42 | 112253.42 | 0.00 | 0.01 | MATCH |
-| win_rate_pct | 54.4973545000 | 54.50 | -0.0026455000 | 0.01 | MATCH |
-| profit_factor | 2.6038264920 | 2.604 | -0.0001735080 | 0.01 | MATCH |
-| max_drawdown_usd | 8197.80 | 8269.62 | -71.82 | 0.01 | MISMATCH |
-| total_commissions_usd | 5585.58 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd | {'2022-09': '-620.48', '2022-10': '-361.62', '2022-11': '-3063.38', '2022-12': '-108.76', '2023-01': '4869.64', '2023-02': '-2910.56', '2023-03': '-2241.12', '2023-04': '9353.40', '2023-05': '-1980.90', '2023-06': '17089.56', '2023-07': '8453.54', '2023-08': '-4305.00', '2023-09': '-3425.34', '2023-10': '6912.72', '2023-11': '393.80', '2023-12': '2233.52', '2024-01': '11169.78', '2024-02': '-907.56', '2024-03': '6069.16', '2024-04': '6958.32', '2024-05': '-1053.98', '2024-06': '17058.18', '2024-07': '-413.74', '2024-08': '11509.92', '2024-09': '-417.56', '2024-10': '5477.56', '2024-11': '2661.60', '2024-12': '-645.16', '2025-01': '-2684.02', '2025-02': '-1508.78', '2025-03': '272.52', '2025-04': '184.08', '2025-05': '7246.12', '2025-06': '-600.66', '2025-07': '891.56', '2025-08': '-843.20', '2025-09': '-648.34', '2025-10': '284.42', '2025-11': '-1024.76', '2025-12': '-1232.86', '2026-01': '1598.18', '2026-02': '-113.96', '2026-03': '-107.78', '2026-04': '11260.06', '2026-05': '2936.62', '2026-06': '691.94', '2026-07': '-183.74', '2026-08': '8229.12', '2026-09': '-148.64'} | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2022-09 | -620.48 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2022-10 | -361.62 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2022-11 | -3063.38 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2022-12 | -108.76 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-01 | 4869.64 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-02 | -2910.56 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-03 | -2241.12 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-04 | 9353.40 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-05 | -1980.90 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-06 | 17089.56 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-07 | 8453.54 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-08 | -4305.00 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-09 | -3425.34 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-10 | 6912.72 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-11 | 393.80 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-12 | 2233.52 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-01 | 11169.78 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-02 | -907.56 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-03 | 6069.16 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-04 | 6958.32 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-05 | -1053.98 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-06 | 17058.18 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-07 | -413.74 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-08 | 11509.92 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-09 | -417.56 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-10 | 5477.56 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-11 | 2661.60 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-12 | -645.16 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-01 | -2684.02 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-02 | -1508.78 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-03 | 272.52 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-04 | 184.08 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-05 | 7246.12 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-06 | -600.66 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-07 | 891.56 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-08 | -843.20 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-09 | -648.34 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-10 | 284.42 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-11 | -1024.76 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-12 | -1232.86 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-01 | 1598.18 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-02 | -113.96 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-03 | -107.78 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-04 | 11260.06 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-05 | 2936.62 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-06 | 691.94 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-07 | -183.74 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-08 | 8229.12 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-09 | -148.64 | None | None | 0.01 | MISSING_ANCHOR |
+| trade_count | 378 | None | None | 0 | MISSING_ANCHOR |
+| net_pnl_usd | 112253.42 | None | None | 0.01 | MISSING_ANCHOR |
+| win_rate_pct | 54.4973545000 | None | None | 0.01 | MISSING_ANCHOR |
+| profit_factor | 2.6038264920 | None | None | 0.01 | MISSING_ANCHOR |
+| max_drawdown_usd | 8197.80 | None | None | 0.01 | MISSING_ANCHOR |
 
 ### vanguard_mgc_v04
 
-Operator TradingView Key-stats transcribed by orchestrator in campaign-state section 10 at commit 716357e (origin/claude/orchestrator-role-takeover-yza7vp); panel span 2022-09-01 through 2026-09-02; DEEP backtest; Default detail (4 OHLC ticks); initial capital USD 100000 (inventory only, no rescaling).
+No independent operator summary supplied.
 
 | Metric | Observed | Anchor | Difference | Tolerance | Status |
 |---|---|---|---|---|---|
-| trade_count | 343 | 343 | 0 | 0 | MATCH |
-| net_pnl_usd | 20388.04 | 20388.04 | 0.00 | 0.01 | MATCH |
-| win_rate_pct | 50.1457725900 | 50.15 | -0.0042274100 | 0.01 | MATCH |
-| profit_factor | 1.9653318334 | 1.965 | 0.0003318334 | 0.01 | MATCH |
-| max_drawdown_usd | 1785.48 | 1847.60 | -62.12 | 0.01 | MISMATCH |
-| total_commissions_usd | 1394.96 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd | {'2022-09': '-153.44', '2022-10': '202.08', '2022-11': '-289.44', '2022-12': '957.04', '2023-01': '-4.64', '2023-02': '-182.24', '2023-03': '133.36', '2023-04': '-183.44', '2023-05': '306.08', '2023-06': '-20.24', '2023-07': '-225.20', '2023-08': '330.32', '2023-09': '-120.48', '2023-10': '600.88', '2023-11': '-345.20', '2023-12': '24.32', '2024-01': '-145.20', '2024-02': '-131.20', '2024-03': '-252.72', '2024-04': '1099.12', '2024-05': '663.12', '2024-06': '169.28', '2024-07': '427.36', '2024-08': '291.60', '2024-09': '-221.92', '2024-10': '503.60', '2024-11': '-104.48', '2024-12': '-98.96', '2025-01': '-92.96', '2025-02': '288.32', '2025-03': '2490.16', '2025-04': '190.32', '2025-05': '1082.32', '2025-06': '-312.72', '2025-07': '-174.24', '2025-08': '865.60', '2025-09': '1185.12', '2025-10': '2055.72', '2025-11': '84.32', '2025-12': '-565.92', '2026-01': '6371.00', '2026-02': '2226.32', '2026-03': '-284.24', '2026-04': '1986.84', '2026-05': '207.28', '2026-06': '-206.48', '2026-07': '-1372.44', '2026-08': '1134.36'} | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2022-09 | -153.44 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2022-10 | 202.08 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2022-11 | -289.44 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2022-12 | 957.04 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-01 | -4.64 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-02 | -182.24 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-03 | 133.36 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-04 | -183.44 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-05 | 306.08 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-06 | -20.24 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-07 | -225.20 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-08 | 330.32 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-09 | -120.48 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-10 | 600.88 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-11 | -345.20 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2023-12 | 24.32 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-01 | -145.20 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-02 | -131.20 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-03 | -252.72 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-04 | 1099.12 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-05 | 663.12 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-06 | 169.28 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-07 | 427.36 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-08 | 291.60 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-09 | -221.92 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-10 | 503.60 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-11 | -104.48 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2024-12 | -98.96 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-01 | -92.96 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-02 | 288.32 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-03 | 2490.16 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-04 | 190.32 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-05 | 1082.32 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-06 | -312.72 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-07 | -174.24 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-08 | 865.60 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-09 | 1185.12 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-10 | 2055.72 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-11 | 84.32 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2025-12 | -565.92 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-01 | 6371.00 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-02 | 2226.32 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-03 | -284.24 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-04 | 1986.84 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-05 | 207.28 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-06 | -206.48 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-07 | -1372.44 | None | None | 0.01 | MISSING_ANCHOR |
-| monthly_net_pnl_usd.2026-08 | 1134.36 | None | None | 0.01 | MISSING_ANCHOR |
+| trade_count | 338 | None | None | 0 | MISSING_ANCHOR |
+| net_pnl_usd | 18709.48 | None | None | 0.01 | MISSING_ANCHOR |
+| win_rate_pct | 50.5917159800 | None | None | 0.01 | MISSING_ANCHOR |
+| profit_factor | 1.9275251098 | None | None | 0.01 | MISSING_ANCHOR |
+| max_drawdown_usd | 1742.24 | None | None | 0.01 | MISSING_ANCHOR |
 
 ## Reproduce
 

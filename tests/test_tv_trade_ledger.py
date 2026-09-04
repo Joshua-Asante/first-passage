@@ -188,24 +188,24 @@ def test_frozen_configuration_records_manifest_derived_pin_status_and_body_ident
         pine_hash: spec.pine_pin_status
         for pine_hash, spec in by_hash.items()
     } == {
-        "8578ee3d760b5112bb1dd77e65a07466aee8629a9424e4115e422fdaab5aede8": "NOT_IN_PORT_MANIFEST",
-        "f05c7aa429846811149e6ff7c8e63a2fd4457075b6c45dedfc77c7e0fa76e9b4": "NOT_IN_PORT_MANIFEST",
-        "5c4b1026cb6f3a475dba962783b2a053e9fbeb123570dd964d7154ea80b3f9d0": "PINNED_RESEARCH_VARIANT",
-        "d18c2699ea3856df884eced84c9384adea953f3a2470bea4f2d671b6cd294057": "PINNED_RESEARCH_VARIANT",
-        "ae5fd66ce51c478187c605574a03f89a64e6f8f245e77477eeaedd1efe2cf772": "NOT_IN_PORT_MANIFEST",
+        "db78ecba95ae78aca14501a5eaccfda2a42164d83cac12321cb7f293a9adca7c": "NOT_IN_PORT_MANIFEST",
+        "176c4f70c67d58053c4d3b8170d0a9be3733bc6b76b1e2f928bd7a877be052a3": "NOT_IN_PORT_MANIFEST",
+        "712cf395396568ce22ae43f1f15b085eaba23acf1b85502abb92129f277fffd7": "UNPINNED_MODIFIED",
+        "fa6a70cde002131bbd266bee70defb01e32deae2de79fdc327d661f829115c39": "UNPINNED_MODIFIED",
+        "af26899ca94bb0e9ee26d09e0176b6b94bba2f5da252399ce4d899fe7e3bad15": "NOT_IN_PORT_MANIFEST",
     }
     dj_modified = by_hash[
-        "5c4b1026cb6f3a475dba962783b2a053e9fbeb123570dd964d7154ea80b3f9d0"
+        "712cf395396568ce22ae43f1f15b085eaba23acf1b85502abb92129f277fffd7"
     ]
     assert dj_modified.strategy_id == "striker_dj30_mym_pyramid_250"
     assert dj_modified.pine_pyramiding_pct == Decimal("250")
-    assert dj_modified.pin_divergence == "pyramid 250% vs locked 750%"
+    assert dj_modified.pin_divergence == "pyramid 250% vs locked 750%; initial_capital 100000 vs research-variant pin 200000"
     assert dj_modified.pin_ref.endswith("striker_dj30_v4.5_mym_pyramid_250.pine")
-    nas_modified = by_hash["d18c2699ea3856df884eced84c9384adea953f3a2470bea4f2d671b6cd294057"]
+    nas_modified = by_hash["fa6a70cde002131bbd266bee70defb01e32deae2de79fdc327d661f829115c39"]
     assert nas_modified.strategy_id == "striker_nas100_mnq_dow_wed_excluded"
     assert nas_modified.pine_pyramiding_pct == Decimal("1000")
-    assert nas_modified.pine_pin_status == "PINNED_RESEARCH_VARIANT"
-    assert nas_modified.pin_divergence == "day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}"
+    assert nas_modified.pine_pin_status == "UNPINNED_MODIFIED"
+    assert nas_modified.pin_divergence == "day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}; initial_capital 100000 vs research-variant pin 200000"
     assert nas_modified.pin_ref.endswith("striker_nas100_v1_mnq_dow_wed_excluded.pine")
     assert all(
         "_v45" not in spec.strategy_id and "_v1" not in spec.strategy_id
