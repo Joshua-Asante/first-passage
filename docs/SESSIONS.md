@@ -33,15 +33,7 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
-## 2026-09-04c — Resolve #295 SESSIONS collision with #298
-
-**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24).
-
-*(Stub, not a full entry — corrected 2026-09-04 per Codex round-5 P2. This session declared `Decisions/defects: None`, class `Hygiene`, and was a docs-only merge-conflict resolution, so it does not meet the §judgment-gate above; the pointer refresh is the only part that earns a place here. `queue-exception: operator-direct resolve of #295 conflicts`. The full narrative is in `git log`.)*
-
----
-
-## 2026-09-04b — D20: the operator's acceleration; deploy on the live eval as forward falsifier
+## 2026-09-04d — D20: the operator's acceleration; deploy on the live eval as forward falsifier
 
 **Focus:** Answer *"once the Phase 3 commit starts, I want to deploy the book on Tradeify. I just need to know that
 the sizing for the strategies work together and bust less than 5% in the Monte Carlo sim"* with Rule 0 reads, not
@@ -138,6 +130,9 @@ establishes method and feasibility, not the frozen value.
 iteration as one dispatch → gate read → fold, and this session completed exactly that for the #294 remediation
 branch (dispatch, §16 gate read, the 3.11 defect correction, §16f verification). D20 itself spends none; the
 #294 cycle does · $0 / K=0
+
+---
+
 ## 2026-09-04b — CLAUDE.md consolidated to pointers; the anchor block ruled immovable
 
 **Focus:** Operator-direct: simplify CLAUDE.md, audit it for staleness, and add a `## Continuous
@@ -160,6 +155,14 @@ queue-exception: operator-direct governance-doc consolidation; the CLAUDE.md pos
 operator call (STATE row) is still open at 41 lines vs the hook's ≤25.
 **Live-ops state:** unchanged — documentation only; c1 rail stays disarmed, no constant moved.
 **Class:** Decision · **Rule 2:** $0 / K=0
+
+---
+
+## 2026-09-04c — Resolve #295 SESSIONS collision with #298
+
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24).
+
+*(Stub, not a full entry — corrected 2026-09-04 per Codex round-5 P2. This session declared `Decisions/defects: None`, class `Hygiene`, and was a docs-only merge-conflict resolution, so it does not meet the §judgment-gate above; the pointer refresh is the only part that earns a place here. `queue-exception: operator-direct resolve of #295 conflicts`. The full narrative is in `git log`.)*
 
 ---
 
