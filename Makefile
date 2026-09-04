@@ -9,7 +9,7 @@ help:
 	@echo "validate              data manifests + pine"
 	@echo "lab-catalog           regenerate lab/CATALOG.md"
 	@echo "sentinel              INQHIORI sentinel scan (report-only)"
-	@echo "gate-manifest-list    print the hard-gate roster"
+	@echo "gate-manifest-list    print the hard-gate roster (blocking tiers)"
 	@echo "test / test-ops       pytest (all / ops/)"
 	@echo "root-doc-liveness     five-root-doc markdown link gate"
 	@echo "sync-liveness         INDEX/CATALOG liveness census (report-only)"
