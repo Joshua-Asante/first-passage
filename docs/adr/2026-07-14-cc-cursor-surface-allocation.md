@@ -306,3 +306,21 @@ Still governed by tests 1–3 and the substance of the handoff contract (Phase-0
 **Forbidden:** dispatching a task that fails test 1 (locked/governed surface) or test 2 (spec not actually frozen) because it "feels small"; skipping the issue's own root-cause/spec content to save time — the lightweight format is lighter in *ceremony*, not in *rigor*; an underspecified issue reproduces the exact spec-interpretation-judgment risk test 2 exists to prevent; treating a clean Codex review or a green CI as merge authority; merging or pushing to `main` without the operator.
 
 **Revert trigger:** two proactively-dispatched tasks in a rolling 8-week window turn out to have needed operator judgment CC lacked (wrong root cause, misjudged scope, a spec that was not actually frozen) — same shape as the original ADR's §4 limb 1. Revert action: back to per-task "dispatch this" confirmation before any Cursor dispatch.
+
+---
+
+<a id="addendum-2026-09-04-disable-notify-cursor"></a>
+
+## Addendum (2026-09-04, RATIFIED same day — operator: "the github action for claude is triggering cursor too quickly, i want to turn that trigger off") — notify-cursor auto-ping disabled
+
+**Reads:** `.github/workflows/notify-cursor.yml` @ `4f3ddc6` (2026-08-24) — posted `@cursor the review above is complete` on every `claude[bot]` PR comment/review except the in-progress ack. `.github/workflows/claude.yml` @ `499cde9` (2026-08-29) — `@claude` mention listener only; does not ping Cursor. `tests/test_claude_review_workflows.py` @ `4ba7fb1` (2026-08-29) — pinned the in-progress skip. This ADR's 2026-08-29 addenda (the live instruction that `notify-cursor.yml` relays findings).
+
+**Trigger:** operator — Claude's review Action was kicking a Cursor Cloud Agent too quickly via the auto-`@cursor` comment.
+
+**What changes:** `notify-cursor.yml` no longer fires on `issue_comment` or `pull_request_review`. The job is `if: false` and `workflow_dispatch`-only. Auto-`@cursor` after a Claude review is off. A human or CC can still mention `@cursor` by hand. `claude.yml` is untouched.
+
+**What does not change:** the §2 routing test; Codex's native GitHub review (account-level); `claude.yml`'s `@claude` mention listener; the 2026-08-29 ruling that this repo's CI grants Codex no write/push credential (relay to Cursor is now a manual mention, not an auto-comment). The 2026-08-29 lightweight-dispatch step 3 that named `notify-cursor.yml` as the relay is historical; this addendum is the current-state pointer.
+
+**Forbidden:** re-adding `issue_comment` / `pull_request_review` triggers to `notify-cursor.yml` without a superseding note here.
+
+**Revert trigger:** operator asks to turn the ping back on. Restore the previous `on:` events from git history (`4f3ddc6`) and drop `if: false`.
