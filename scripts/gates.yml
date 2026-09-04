@@ -10,6 +10,12 @@
 #   audit             — report-only diagnostics, run explicitly by `make audit`;
 #                       excluded from pre-commit and required CI because a command
 #                       that cannot fail cannot protect a merge
+#
+# These four are the whole set. gate_manifest.py validates every `tier:` against
+# KNOWN_TIERS and refuses to load the manifest on anything else — no selector claims
+# an unrecognized tier, so such a gate would run in NO tier (silently disabled, not
+# deferred). That is what the retired `soft` tier did for months; it is now enforced
+# rather than warned about (tests/test_gate_manifest.py::test_unknown_tier_fails_closed).
 
 version: 1
 
@@ -190,14 +196,15 @@ gates:
   # that instrument's ops/instruments/<SYM>.md? WARN-tier initially, per the
   # same M-22 lesson check_falsifier_reachability.py's own docstring cites (a
   # hard gate would block commits on a real-corpus baseline that is not clean
-  # today -- see that script's own real-corpus run). This repo's gates.yml has
-  # no functioning "warn" tier (see the tiers note at the top of this file --
-  # `soft` is declared but never actually runs); `--exit-zero` is this gate's
-  # own way of staying WARN while still executing at path-conditional, same
-  # posture check_instrument_ledger_coverage.py's docstring names ("gate
-  # composition is owned by scripts/gates.yml, not decided [in the script]").
-  # Promote by dropping --exit-zero once the real-corpus run is clean or every
-  # remaining gap carries a dated, named exception.
+  # today -- see that script's own real-corpus run). `--exit-zero` is still
+  # load-bearing at `tier: audit`: the runner stops on the first non-zero exit
+  # from ANY wired gate, audit included, so `make audit` would abort mid-battery
+  # on this checker's real findings without it. It also keeps gates.yml owning
+  # this gate's severity, the posture check_instrument_ledger_coverage.py's
+  # docstring names ("gate composition is owned by scripts/gates.yml, not
+  # decided [in the script]"). Promote -- back to a blocking tier, dropping
+  # --exit-zero -- once the real-corpus run is clean or every remaining gap
+  # carries a dated, named exception.
   - id: instrument-rejection-coverage
     tier: audit
     cmd:

@@ -284,14 +284,19 @@ Escape hatch `git commit --no-verify` is not the standing path. See [manifest in
 
 [`scripts/gates.yml`](scripts/gates.yml) via
 [`scripts/gate_manifest.py`](scripts/gate_manifest.py) — pre-commit and `make check` call the
-runner. **Do not hand-maintain a parallel list.** The `params.toml` hub validator was retired
-([ADR](docs/adr/2026-08-03-params-toml-gate-retirement.md)); Pine remains canonical for strategy
-behavior, `dd_protection.py` / `firm_rules.py` for live-sizing constants.
+runner. **Do not hand-maintain a parallel list.** Report-only diagnostics sit at `tier: audit` and
+run **only** under `make audit` — never pre-commit, `make check`, or required CI, because a command
+that cannot return non-zero cannot protect a merge
+([W5 addendum](docs/adr/2026-08-07-w5-governance-diet.md)). The `params.toml` hub validator was
+retired ([ADR](docs/adr/2026-08-03-params-toml-gate-retirement.md)); Pine remains canonical for
+strategy behavior, `dd_protection.py` / `firm_rules.py` for live-sizing constants.
 
 ```bash
 make validate                              # data manifests + pine
-python scripts/gate_manifest.py --list     # full hard-gate roster
+python scripts/gate_manifest.py --list     # full hard-gate roster (blocking tiers)
+python scripts/gate_manifest.py --list --all-tiers   # ... plus audit-tier diagnostics
 python scripts/gate_manifest.py --tier pre-commit
+make audit                                 # report-only governance diagnostics
 ```
 
 ## Key Principle

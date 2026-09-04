@@ -193,11 +193,20 @@ CI. Eight existing report-only commands move there: rejection coverage, liveness
 docs-runtime inventory, M1 tree-skew reporting, falsifier reachability, notice-grade correction,
 spec provenance, and Rule-2 trip-log liveness. No checker is deleted and no live safety control is
 weakened: `validate_c1_monitoring_acceptance.py`'s structural validation (unreadable JSON, missing/
-invalid fields, bad status, `secrets_present != false`, secret-shaped content) fails condition 3 —
-a finding there **does** change the merge verdict — so it stays blocking under its own gate id,
-`m1-artifact-structure` (`tier: always`). Only the tree-skew half (`--check-tree-skew`, `id:
-m1-tree-skew`) moves to audit: normal main-vs-deployed drift cannot fail a commit, and M1's arming
-enforcement remains a separate, later gate at deploy/arm regardless of either commit-time check.
+invalid fields, bad status, `secrets_present != false`, secret-shaped content) **satisfies all three
+conditions** — a finding there returns non-zero and does change the merge verdict — so it stays
+blocking under its own gate id, `m1-artifact-structure` (`tier: always`). Only the tree-skew half
+(`--check-tree-skew`, `id: m1-tree-skew`) moves to audit: normal main-vs-deployed drift cannot fail a
+commit, and M1's arming enforcement remains a separate, later gate at deploy/arm regardless of either
+commit-time check.
+
+Adding a fourth tier retired the third-and-a-half one. `soft` had been declared in `gates.yml`'s
+header while every selector dropped it — a gate landing as `tier: soft` ran in no tier at all,
+silently disabled rather than deferred, and the only thing standing between that and a live gate was
+a prose warning. `soft` is now gone from both the header and `select_gates`, and `load_manifest`
+validates every `tier:` against `KNOWN_TIERS`, refusing the manifest on anything else. The trap is
+enforced instead of narrated — the same fail-closed move the 2026-08-08 re-indent guard already made
+one function earlier.
 
 This is the operational boundary: tests, reproducibility pins, architectural constraints, and
 live-rail interlocks stay blocking; corpus censuses, trend reports, and known-dirty heuristics run at

@@ -17,6 +17,13 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_MANIFEST = Path(__file__).resolve().parent / "gates.yml"
 
+# Every tier gates.yml's own header declares. Validated in load_manifest() because
+# an unrecognized tier is selected by NO selector below -- the gate is silently
+# disabled, not merely deferred. That trap used to be documented as a prose warning
+# against the dead `soft` tier; the 2026-09-04 addendum retired `soft` and added
+# `audit`, so it is enforced here instead of narrated.
+KNOWN_TIERS = frozenset({"always", "path-conditional", "data-conditional", "audit"})
+
 
 def _parse_gates_yml(text: str) -> dict:
     """Stdlib parse of the committed gates.yml shape (no PyYAML required)."""
@@ -105,6 +112,17 @@ def load_manifest(path: Path) -> dict:
             f"silently — check indentation (the parser requires exactly two spaces "
             f"before '- id:'). Refusing to run a partial battery."
         )
+
+    unknown = sorted(
+        {g["id"]: g.get("tier") for g in data["gates"] if g.get("tier") not in KNOWN_TIERS}.items()
+    )
+    if unknown:
+        listed = ", ".join(f"{gid} (tier: {tier})" for gid, tier in unknown)
+        raise SystemExit(
+            f"unknown gate tier(s) in {path}: {listed}. No selector claims an "
+            f"unrecognized tier, so the gate would run in no tier at all — silently "
+            f"disabled, not deferred. Known tiers: {', '.join(sorted(KNOWN_TIERS))}."
+        )
     return data
 
 
@@ -165,8 +183,6 @@ def select_gates(gates: list[dict], tier: str) -> list[dict]:
     out = []
     for g in gates:
         t = g.get("tier", "always")
-        if t == "soft":
-            continue
         if t == "always":
             out.append(g)
         elif t in ("data-conditional", "path-conditional") and data_conditional_active(

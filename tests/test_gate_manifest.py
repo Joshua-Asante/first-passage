@@ -297,6 +297,46 @@ def test_reindented_gate_fails_closed(tmp_path):
     assert "mismatch" in combined.lower(), combined
 
 
+TIER_PROBE_MANIFEST = """version: 1
+
+gates:
+  - id: alpha
+    tier: {tier}
+    cmd:
+      - python
+      - scripts/noop.py
+"""
+
+
+def test_unknown_tier_fails_closed(tmp_path):
+    """A tier no selector claims must reject the manifest, not silently disable the gate.
+
+    `soft` was declared in gates.yml's header for months while `select_gates` dropped
+    it from every tier — a gate landing as `tier: soft` ran nowhere and nothing said
+    so. The 2026-09-04 W5 addendum retired `soft` and added `audit`; this pins the
+    trap shut rather than re-narrating it in a comment nobody has to read.
+    """
+    good_path = tmp_path / "gates_good.yml"
+    good_path.write_text(TIER_PROBE_MANIFEST.format(tier="audit"), encoding="utf-8")
+    bad_path = tmp_path / "gates_bad.yml"
+    bad_path.write_text(TIER_PROBE_MANIFEST.format(tier="soft"), encoding="utf-8")
+
+    def run(manifest: Path) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            [sys.executable, str(SCRIPT), "--list", "--all-tiers", "--manifest", str(manifest)],
+            capture_output=True, text=True, cwd=REPO,
+        )
+
+    ok = run(good_path)
+    assert ok.returncode == 0, f"audit is a known tier: {ok.stderr}"
+    assert "alpha" in ok.stdout
+
+    bad = run(bad_path)
+    assert bad.returncode != 0, "gate with an unselectable tier loaded (fail-open)"
+    combined = (bad.stdout + bad.stderr).lower()
+    assert "unknown gate tier" in combined, combined
+
+
 def test_m1_tree_skew_stays_report_only():
     """Normal deployed-vs-main drift stays diagnostic, never a merge gate."""
     data = gm.load_manifest(MANIFEST)
@@ -317,7 +357,7 @@ def test_m1_artifact_structure_stays_blocking():
     gate = next(g for g in data["gates"] if g["id"] == "m1-artifact-structure")
     assert gate["tier"] == "always"
     assert "--check-tree-skew" not in gate["cmd"]
-    assert "validate_c1_monitoring_acceptance.py" in gate["cmd"]
+    assert "scripts/validate_c1_monitoring_acceptance.py" in gate["cmd"]
 
     selected_check = {g["id"] for g in gm.select_gates(data["gates"], "check")}
     selected_precommit = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
