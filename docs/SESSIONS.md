@@ -78,6 +78,17 @@ every red check, never infer from mergeability.
 +4/−2, all twenty frozen hashes byte-unchanged, `pytest (3.11)` green on CI and **185 passed** reproduced locally
 on 3.11.15. All seven §14f conditions met; **#294 is clear to merge**. Latent `field` parameter shadowing at line
 140 recorded, deliberately not fixed — cannot fire today, and another push would re-open a verified gate read.
+⚠ **Codex round 2 on #295 — five more P1s, all accepted. One is a safety correction I owe plainly:** I had
+described the M1 arming interlock as fail-closed throughout D20. Rule 0 read of `ops/c1_rail/c1_rail_arm.py`
+says otherwise — `plan_arm` accepts **`--acknowledge-m1-unresolved '<reason>'`** and then sets `dry_run=False`
+against today's `CODE_LANDED` artifact, by explicit operator-ratified design ("the operator KEEPS the ability to
+arm against CODE_LANDED"; exercised knowingly 07-28 and 07-31). It fails closed only against an **invalid or
+forged** artifact. **M1 is a procedural invariant with a logged override, not a technical impossibility** — and
+D20's safety story leaned on the stronger reading. The deployment flow is now required never to use that flag.
+Also: **R-STRIKER-EC is not discharged** by the 545 → 0 remediation (both Strikers flatten on an exact 15:45 ET
+bar that never prints on a 13:00 close; four clean years is a sample property) — now an explicit Phase 8 gate or
+the legs are excluded; the manifest-restore branch now actually restores and aborts instead of printing a
+warning; §7 rewritten; and the status header no longer says "one input" while listing three.
 **Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — ⚠ **pointer refreshed to this commit's final state** (Codex P2: it still listed §14e and the 6J re-capture as outstanding, both of which this same commit records as done). **#294 MERGED** (main `9a69185`, §16g); **all four bar panels ACCEPTED** (§16h). Freeze prerequisites now: Codex's per-leg **scaling-faithfulness read** (each size-specific export takes a full G1.1–G1.10 read), fresh **TV Key-stats panels** for all five sources, and the **DJ30 +$287** disposition — the grammar cannot be frozen over inputs Phase 1 has not reconciled. #296 is `behind` main; update the branch before merging · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) — on the campaign's critical path via Phase 8; weekly venue-idle token trade placed 2026-09-03.
 campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — Codex owes §14e on a fresh branch
 from `main`; operator owes one more **6J** capture at ≥7-decimal harness precision (§15h-1 route (a)); orchestrator
