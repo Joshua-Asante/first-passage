@@ -64,6 +64,13 @@ Trap A did not fire — density 23,591–23,691 bars/yr matches the old panels, 
 §15f "under 50,000" heuristic was mis-calibrated on longer spans; corrected). Second finding: the refresh shortened
 `6J`/`MNQ`/`MYM` by 2–2.8 years and left ~12 prior-study pins unresolvable — **D21**, second firing of the sentence
 `ops/instruments/MYM.md` §W3 already records.
+**#294 (§14e remediation) gate-read (§16):** all six §14f conditions **MET** on the data — five pins exact, calendar rows set-equal to the 40 in-span `venue_flat_dates` both directions, zero holds on all five legs, manifest
+regenerated (`df238cd7…` recomputed), D17 in, tie fix correct (traced by hand: min 70 / max 180). **Green light
+WITHHELD on a P1 the six conditions cannot see:** `MappingProxyType` as a `@dataclass` default is rejected on Python
+3.11, so all five Phase 1 test modules fail at *collection* and `pytest (3.11)` is RED — and it is **not a required
+check**, so the PR is mergeable red behind a green `skills (3.12)`. Codex's "2,495 passed" is true on 3.12, false on
+3.11. Two-line fix verified locally: 5 collection errors → **185 passed**. A **seventh §14f condition** added — read
+every red check, never infer from mergeability.
 **Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
 campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — Codex owes §14e on a fresh branch
 from `main`; operator owes one more **6J** capture at ≥7-decimal harness precision (§15h-1 route (a)); orchestrator
