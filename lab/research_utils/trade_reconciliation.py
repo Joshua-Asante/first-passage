@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -20,6 +20,13 @@ from research_utils.tv_trade_ledger import ContinuousContractRollPolicy, FeeSche
 
 
 _CENT_TOLERANCE = Decimal("0.01")
+EXCURSION_DRAWDOWN_BASIS = (
+    "Synthetic exit-order walk (exit_timestamp_naive, then exit_source_row): "
+    "visit realized equity minus abs(mae_usd) before each net settlement, "
+    "using the previous realized-equity peak and including realized exit declines. "
+    "This is not guaranteed to bound true synchronized aggregate account-equity "
+    "drawdown when trades overlap; trade extrema are unsynchronized."
+)
 _CENT_SUMMARY_FIELDS = (
     "net_pnl_usd",
     "commission_usd",
@@ -86,6 +93,10 @@ class AccountingMetrics:
     win_rate: Decimal | None
     profit_factor: Decimal | None
     max_drawdown_usd: Decimal
+    max_drawdown_excursion_bounded_usd: Decimal
+    max_drawdown_label: str
+    max_drawdown_excursion_bounded_label: str
+    max_drawdown_excursion_bounded_measurement_basis: str
     monthly_net_pnl: Mapping[str, Decimal]
     final_source_cumulative_pnl_usd: Decimal | None
     issues: tuple[Issue, ...]
@@ -611,10 +622,21 @@ def calculate_accounting(trades: pd.DataFrame) -> AccountingMetrics:
     equity = Decimal("0")
     peak = Decimal("0")
     max_drawdown = Decimal("0")
-    for value in net_values:
+    max_drawdown_excursion = Decimal("0")
+    if "mae_usd" not in ordered:
+        raise ValueError("mae_usd must be present and finite for every trade")
+    for value, raw_mae in zip(net_values, ordered["mae_usd"]):
+        try:
+            mae = Decimal(raw_mae)
+        except (InvalidOperation, TypeError, ValueError) as exc:
+            raise ValueError("mae_usd must be a finite decimal for every trade") from exc
+        if not mae.is_finite():
+            raise ValueError("mae_usd must be a finite decimal for every trade")
+        max_drawdown_excursion = max(max_drawdown_excursion, peak - (equity - abs(mae)))
         equity += value
         peak = max(peak, equity)
         max_drawdown = max(max_drawdown, peak - equity)
+        max_drawdown_excursion = max(max_drawdown_excursion, peak - equity)
 
     monthly: dict[str, Decimal] = {}
     for _, trade in ordered.iterrows():
@@ -667,6 +689,10 @@ def calculate_accounting(trades: pd.DataFrame) -> AccountingMetrics:
         win_rate=win_rate,
         profit_factor=profit_factor,
         max_drawdown_usd=_money(max_drawdown),
+        max_drawdown_excursion_bounded_usd=_money(max_drawdown_excursion),
+        max_drawdown_label="LOWER BOUND",
+        max_drawdown_excursion_bounded_label="excursion-bounded",
+        max_drawdown_excursion_bounded_measurement_basis=EXCURSION_DRAWDOWN_BASIS,
         monthly_net_pnl=MappingProxyType(monthly),
         final_source_cumulative_pnl_usd=final_source_cumulative,
         issues=tuple(issues),

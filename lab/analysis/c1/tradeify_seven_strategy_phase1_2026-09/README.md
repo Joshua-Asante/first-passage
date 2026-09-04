@@ -21,6 +21,22 @@ a single re-freeze of the campaign artifacts. No synthetic digest may stand in f
 that evidence. Raw input override maps remain private; only their digests propagate
 into new source identities and reports. Historical v3 manifests remain renderable.
 
+Prospective v4 D27 summary anchors use `max_drawdown_excursion_bounded_usd`,
+including the five-scalar D17 branch and the seven-metric non-D17 branch. The
+retired `max_drawdown_usd` anchor name is rejected, not silently reinterpreted.
+Accounting retains that closed-trade measure separately as `LOWER BOUND`.
+The new `excursion-bounded` measure uses Decimal arithmetic in an exit-order
+walk: sort by exit timestamp then source row, visit realized equity minus the
+absolute trade MAE before settlement, and retain both this decline and the
+realized exit decline from the realized-equity peak. Missing/non-finite MAE is
+rejected. This synthetic walk is not guaranteed to bound true synchronized
+aggregate account-equity drawdown when trades overlap; trade extrema do not
+identify their relative timing. Both measures, labels and this limitation are
+included in newly generated reports. D17 monthly/commission policy and the
+inclusive 0.01 comparison tolerance are unchanged. Current private captures
+and independent panel population still gate regeneration; no campaign evidence
+prerequisite is closed by this code change.
+
 The ten active source files are provided only through `--source-dir`; their basenames, SHA-256 pins, and byte lengths are frozen in `phase1_config.json`. The vendor bytes are never copied into this repository. Canonical event, trade, and weekly ledgers are vendor-derived and deliberately written only to the campaign's ignored `local_artifacts/` directory. Committed `reconciliation_manifest.json` and `RESULTS.md` contain aggregate values and hashes, never an absolute source path or full row-level ledger. Every canonical event additionally carries `source_row_sha256`, the SHA-256 of its exact raw CSV record bytes, including its original terminator where present.
 
 `source_timezone` is `America/New_York` for all five active inputs. Normalization uses `zoneinfo`, emits UTC timestamps and exchange-session dates, and rejects ambiguous or nonexistent DST wall times instead of guessing. Test commands and counts are frozen separately in `VERIFICATION.md`, which the campaign runner does not overwrite.

@@ -334,6 +334,10 @@ def _strategy_record(
         "win_rate": accounting.win_rate,
         "profit_factor": accounting.profit_factor,
         "max_drawdown_usd": accounting.max_drawdown_usd,
+        "max_drawdown_excursion_bounded_usd": accounting.max_drawdown_excursion_bounded_usd,
+        "max_drawdown_label": accounting.max_drawdown_label,
+        "max_drawdown_excursion_bounded_label": accounting.max_drawdown_excursion_bounded_label,
+        "max_drawdown_excursion_bounded_measurement_basis": accounting.max_drawdown_excursion_bounded_measurement_basis,
         "final_source_cumulative_pnl_usd": accounting.final_source_cumulative_pnl_usd,
         "pine_pyramiding_pct": spec.pine_pyramiding_pct,
         "pine_pin_status": spec.pine_pin_status,
@@ -567,6 +571,20 @@ def _render_report(manifest: dict[str, object]) -> bytes:
         for row in manifest["strategies"]:
             digest = row["source_identity"]["pine_input_overrides_sha256"]
             lines.append(f"| {row['strategy_id']} | {digest} |")
+        lines.extend([
+            "", "## Drawdown measurement bases", "",
+            "| Strategy | Closed-trade DD (LOWER BOUND) | Excursion-bounded DD |", "|---|---:|---:|",
+        ])
+        for row in manifest["strategies"]:
+            lines.append(
+                f"| {row['strategy_id']} | ${row['max_drawdown_usd']} | "
+                f"${row['max_drawdown_excursion_bounded_usd']} |"
+            )
+        for basis in dict.fromkeys(
+            row["max_drawdown_excursion_bounded_measurement_basis"]
+            for row in manifest["strategies"]
+        ):
+            lines.extend(["", f"- excursion-bounded: {basis}"])
     lines.extend(
         [
             "",
@@ -638,7 +656,12 @@ def _render_report(manifest: dict[str, object]) -> bytes:
     lines.extend([
         "## Independent TradingView summary reconciliation", "",
         f"G1.4 coverage: `{manifest['summary_reconciliation_status']}`. {manifest['summary_coverage_note']}", "",
-        "Observed max drawdown uses closed-trade exit equity; TradingView panel equity drawdown may differ. Discrepancies remain blockers; no series is repaired.", "",
+        (
+            "Observed max drawdown uses the excursion-bounded synthetic exit-order walk, "
+            "not synchronized account equity. Discrepancies remain blockers; no series is repaired."
+            if manifest["runner_version"] == "tradeify-phase1-normalization-v4"
+            else "Observed max drawdown uses closed-trade exit equity; TradingView panel equity drawdown may differ. Discrepancies remain blockers; no series is repaired."
+        ), "",
     ])
     for row in manifest["strategies"]:
         lines.extend([f"### {row['strategy_id']}", "", row["summary_source_note"] or "No independent operator summary supplied.", "",
@@ -776,10 +799,12 @@ def run_campaign(
     local_strategy_report_sha256: dict[str, str] = {}
     for spec in specs:
         strategy_id = spec.strategy_id
+        record = next(row for row in strategy_records if row["strategy_id"] == strategy_id)
         detail_bytes = _json_bytes(
             {
                 "claim_class": "EXPLORATORY",
                 "strategy_id": strategy_id,
+                **{key: value for key, value in record.items() if key.startswith("max_drawdown")},
                 "source_identity": {
                     "export_filename": spec.export_filename,
                     "export_sha256": spec.export_sha256,

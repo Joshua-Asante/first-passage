@@ -21,7 +21,7 @@ def anchor_payload():
                 "strategy_id": "fixture", "export_sha256": "0" * 64,
                 "source_note": "Synthetic operator panel", "missing_metrics": [],
                 "metrics": {"trade_count": 2, "net_pnl_usd": "6.00", "win_rate_pct": "50.00",
-                            "profit_factor": "2.50", "max_drawdown_usd": "4.00",
+                            "profit_factor": "2.50", "max_drawdown_excursion_bounded_usd": "4.00",
                             "total_commissions_usd": "3.64", "monthly_net_pnl_usd": {"2026-01": "6.00"}},
             }]}
 
@@ -64,7 +64,7 @@ def test_d17_policy_keeps_five_scalar_requirements_without_silent_waiver(api, tm
     assert inventory.d17_policy["monthly_totals"] == "RECONSTRUCTED"
     assert inventory.d17_policy["commissions"] == "AMENDED_OUT"
     assert [row["metric"] for row in rows] == [
-        "trade_count", "net_pnl_usd", "win_rate_pct", "profit_factor", "max_drawdown_usd",
+        "trade_count", "net_pnl_usd", "win_rate_pct", "profit_factor", "max_drawdown_excursion_bounded_usd",
     ]
     assert all(row["status"] == "MISSING_ANCHOR" for row in rows)
     assert not issues
@@ -88,7 +88,7 @@ def test_d17_policy_rejects_noncanonical_or_independent_retired_dimensions(api, 
             "source_note": "A future independent panel", "missing_metrics": [],
             "metrics": {
                 "trade_count": 2, "net_pnl_usd": "6.00", "win_rate_pct": "50.00",
-                "profit_factor": "2.50", "max_drawdown_usd": "4.00",
+                "profit_factor": "2.50", "max_drawdown_excursion_bounded_usd": "4.00",
             },
         }]
         if mutation == "retired_missing":
@@ -108,7 +108,7 @@ def test_d17_rejects_a_stale_export_pin_before_accepting_scalar_anchors(api, tmp
         "source_note": "Stale panel", "missing_metrics": [],
         "metrics": {
             "trade_count": 2, "net_pnl_usd": "6.00", "win_rate_pct": "50.00",
-            "profit_factor": "2.50", "max_drawdown_usd": "4.00",
+            "profit_factor": "2.50", "max_drawdown_excursion_bounded_usd": "4.00",
         },
     }]
 
@@ -174,7 +174,7 @@ def test_independent_summary_matches_and_hashes_parsed_bytes(api, tmp_path):
 
 @pytest.mark.parametrize("metric,value", [
     ("trade_count", 3), ("net_pnl_usd", "6.02"), ("win_rate_pct", "50.02"),
-    ("profit_factor", "2.52"), ("max_drawdown_usd", "4.02"),
+    ("profit_factor", "2.52"), ("max_drawdown_excursion_bounded_usd", "4.02"),
     ("total_commissions_usd", "3.66"), ("monthly_net_pnl_usd", {"2026-01": "6.02"}),
 ])
 def test_each_independent_metric_mismatch_blocks(api, tmp_path, metric, value):
@@ -187,7 +187,7 @@ def test_each_independent_metric_mismatch_blocks(api, tmp_path, metric, value):
 
 
 @pytest.mark.parametrize("metric,base", [("net_pnl_usd", "6"), ("win_rate_pct", "50"),
-    ("profit_factor", "2.5"), ("max_drawdown_usd", "4"), ("total_commissions_usd", "3.64"),
+    ("profit_factor", "2.5"), ("max_drawdown_excursion_bounded_usd", "4"), ("total_commissions_usd", "3.64"),
     ("monthly_net_pnl_usd", "6")])
 @pytest.mark.parametrize("delta,status", [("0.01", "MATCH"), ("-0.01", "MATCH"), ("0.010001", "MISMATCH"), ("-0.010001", "MISMATCH")])
 def test_absolute_tolerances_are_inclusive(api, tmp_path, metric, base, delta, status):
@@ -255,7 +255,7 @@ def test_invalid_anchor_inventory_is_rejected(api, tmp_path, mutation):
     elif mutation == "missing_extra": a["missing_metrics"] = ["extra"]
     elif mutation == "missing_nonnull": a["missing_metrics"] = ["net_pnl_usd"]
     elif mutation == "missing_duplicate": a["missing_metrics"] = ["profit_factor", "profit_factor"]; m["profit_factor"] = None
-    elif mutation == "negative_dd": m["max_drawdown_usd"] = "-1"
+    elif mutation == "negative_dd": m["max_drawdown_excursion_bounded_usd"] = "-1"
     elif mutation == "bad_month": m["monthly_net_pnl_usd"] = {"2026-13": "1"}
     elif mutation == "month_float": m["monthly_net_pnl_usd"] = {"2026-01": 1.0}
     elif mutation == "empty_note": a["source_note"] = " "
@@ -270,7 +270,7 @@ def test_invalid_anchor_inventory_is_rejected(api, tmp_path, mutation):
 def test_semantically_undefined_nulls_only_match_each_other(api, tmp_path):
     p = anchor_payload(); m = p["strategies"][0]["metrics"]
     m.update(trade_count=0, net_pnl_usd="0", win_rate_pct=None, profit_factor=None,
-             max_drawdown_usd="0", total_commissions_usd="0", monthly_net_pnl_usd={})
+             max_drawdown_excursion_bounded_usd="0", total_commissions_usd="0", monthly_net_pnl_usd={})
     inventory, _ = load(api, tmp_path, p)
     rows, issues = api.reconcile_summary(calculate_accounting(_trades()), _spec(), inventory)
     assert all(r["status"] == "MATCH" for r in rows)

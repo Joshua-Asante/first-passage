@@ -17,7 +17,7 @@ def summaries(config, *, complete=True):
             "strategy_id": s["strategy_id"], "export_sha256": s["export_sha256"],
             "source_note": "Literal synthetic operator panel, not runner output", "missing_metrics": [],
             "metrics": {"trade_count": 1, "net_pnl_usd": "0.18", "win_rate_pct": "100.00",
-                        "profit_factor": None, "max_drawdown_usd": "0.00", "total_commissions_usd": "1.82",
+                        "profit_factor": None, "max_drawdown_excursion_bounded_usd": "1.00", "total_commissions_usd": "1.82",
                         "monthly_net_pnl_usd": {"2026-01": "0.18"}},
         })
     path = config.parent / "tv_summary_anchors.json"
@@ -35,7 +35,7 @@ def test_runner_propagates_independent_summary_evidence(tmp_path, mode):
             for a in p["strategies"]:
                 a["missing_metrics"] = ["total_commissions_usd", "monthly_net_pnl_usd"]
                 a["metrics"].update(total_commissions_usd=None, monthly_net_pnl_usd=None)
-        if mode == "mismatch": p["strategies"][0]["metrics"]["max_drawdown_usd"] = "5.00"
+        if mode == "mismatch": p["strategies"][0]["metrics"]["max_drawdown_excursion_bounded_usd"] = "5.00"
         path.write_text(json.dumps(p), encoding="utf-8")
         expected_hash = sha256(path.read_bytes()).hexdigest()
     output = tmp_path / "out"
@@ -61,7 +61,7 @@ def test_runner_propagates_independent_summary_evidence(tmp_path, mode):
         assert manifest["strategies"][0]["issue_counts"]["TV_SUMMARY_MISMATCH"] == 1
         assert "TV_SUMMARY_MISMATCH" in report
         assert report.index("TV_SUMMARY_MISMATCH") < report.index("## Independent TradingView summary reconciliation")
-        assert "closed-trade exit equity" in report
+        assert "excursion-bounded synthetic exit-order walk" in report
     if mode != "missing": assert "Literal synthetic operator panel" in report
 
 

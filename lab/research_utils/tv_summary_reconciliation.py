@@ -17,7 +17,7 @@ from research_utils.tv_trade_ledger import Issue, SourceSpec
 
 METRICS = (
     "trade_count", "net_pnl_usd", "win_rate_pct", "profit_factor",
-    "max_drawdown_usd", "total_commissions_usd", "monthly_net_pnl_usd",
+    "max_drawdown_excursion_bounded_usd", "total_commissions_usd", "monthly_net_pnl_usd",
 )
 _D17_SCALAR_METRICS = METRICS[:5]
 _D17_POLICY_KEYS = {
@@ -49,7 +49,7 @@ def _decimal(value: object, metric: str) -> Decimal:
         raise ValueError(f"{metric} must be a finite decimal string") from exc
     if not result.is_finite():
         raise ValueError(f"{metric} must be finite")
-    if metric in {"win_rate_pct", "profit_factor", "max_drawdown_usd", "total_commissions_usd"} and result < 0:
+    if metric in {"win_rate_pct", "profit_factor", "max_drawdown_excursion_bounded_usd", "total_commissions_usd"} and result < 0:
         raise ValueError(f"{metric} must be nonnegative")
     if metric == "win_rate_pct" and result > 100:
         raise ValueError("win_rate_pct must be in [0, 100]")
@@ -279,7 +279,8 @@ def reconcile_summary(
     observed = {
         "trade_count": accounting.trade_count, "net_pnl_usd": accounting.net_pnl_usd,
         "win_rate_pct": accounting.win_rate * 100 if accounting.win_rate is not None else None,
-        "profit_factor": accounting.profit_factor, "max_drawdown_usd": accounting.max_drawdown_usd,
+        "profit_factor": accounting.profit_factor,
+        "max_drawdown_excursion_bounded_usd": accounting.max_drawdown_excursion_bounded_usd,
         "total_commissions_usd": accounting.commission_usd,
         "monthly_net_pnl_usd": dict(accounting.monthly_net_pnl),
     }
@@ -317,10 +318,7 @@ def reconcile_summary(
             strategy_id=spec.strategy_id,
             detail={
                 "metrics": mismatches,
-                "measurement_basis": (
-                    "observed drawdown is closed-trade exit equity; "
-                    "TradingView panel equity drawdown may differ"
-                ),
+                "measurement_basis": accounting.max_drawdown_excursion_bounded_measurement_basis,
             },
         ),
     ) if mismatches else ()
