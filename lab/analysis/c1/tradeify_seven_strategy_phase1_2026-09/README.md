@@ -21,6 +21,11 @@ a single re-freeze of the campaign artifacts. No synthetic digest may stand in f
 that evidence. Raw input override maps remain private; only their digests propagate
 into new source identities and reports. Historical v3 manifests remain renderable.
 
+Store D26 override maps and their capture evidence under this study's
+`inputs/private_overrides/` directory. The entire directory is gitignored,
+including JSON, images, text and nested files. Hash the exact private artifact
+bytes; publish only that digest. Never force-add these private artifacts.
+
 Prospective v4 D27 summary anchors use `max_drawdown_excursion_bounded_usd`,
 including the five-scalar D17 branch and the seven-metric non-D17 branch. The
 retired `max_drawdown_usd` anchor name is rejected, not silently reinterpreted.

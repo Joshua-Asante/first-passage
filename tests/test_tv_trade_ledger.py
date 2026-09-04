@@ -4,6 +4,7 @@ from hashlib import sha256
 import json
 from pathlib import Path
 import csv
+import subprocess
 
 from decimal import Decimal
 from uuid import uuid4
@@ -105,6 +106,34 @@ def test_load_source_specs_rejects_duplicate_strategy_id(tmp_path):
 
     with pytest.raises(ValueError, match="duplicate strategy_id: same"):
         load_source_specs(path)
+
+
+@pytest.mark.parametrize("capture_name", ["capture.json", "capture.png", "capture.txt", "nested/capture.json"])
+def test_private_override_captures_are_ignored_before_normal_staging(tmp_path, capture_name):
+    """Removing private-directory coverage must expose a normal-staging leak."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "--quiet", str(repo)], check=True, capture_output=True)
+    empty_excludes = tmp_path / "empty-excludes"
+    empty_excludes.write_text("", encoding="utf-8")
+    git = ["git", "-c", f"core.excludesFile={empty_excludes}", "-C", str(repo)]
+    (repo / ".gitignore").write_bytes((_CONFIG_PATH.parent / ".gitignore").read_bytes())
+    relative = f"inputs/private_overrides/{capture_name}"
+    artifact = repo / relative
+    artifact.parent.mkdir(parents=True, exist_ok=True)
+    artifact.write_text("synthetic ignore probe; not a capture", encoding="utf-8")
+
+    ignored = subprocess.run(git + ["check-ignore", "-v", relative], capture_output=True, text=True)
+    assert ignored.returncode == 0, "private non-CSV capture is not ignored"
+    assert "inputs/private_overrides/" in ignored.stdout
+    status = subprocess.run(
+        git + ["status", "--porcelain", "--ignored", "--untracked-files=all", "--", relative],
+        check=True, capture_output=True, text=True,
+    )
+    assert status.stdout == f"!! {relative}\n"
+    subprocess.run(git + ["add", "--all"], check=True, capture_output=True)
+    tracked = subprocess.run(git + ["ls-files", "--", relative], check=True, capture_output=True, text=True)
+    assert tracked.stdout == ""
 
 
 @pytest.mark.parametrize(
