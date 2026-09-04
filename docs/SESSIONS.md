@@ -71,6 +71,10 @@ WITHHELD on a P1 the six conditions cannot see:** `MappingProxyType` as a `@data
 check**, so the PR is mergeable red behind a green `skills (3.12)`. Codex's "2,495 passed" is true on 3.12, false on
 3.11. Two-line fix verified locally: 5 collection errors → **185 passed**. A **seventh §14f condition** added — read
 every red check, never infer from mergeability.
+**✅ GREEN LIGHT GRANTED on #294 @ `773fa5f` (§16f):** Codex's two-line fix verified — exact patch, one file
++4/−2, all twenty frozen hashes byte-unchanged, `pytest (3.11)` green on CI and **185 passed** reproduced locally
+on 3.11.15. All seven §14f conditions met; **#294 is clear to merge**. Latent `field` parameter shadowing at line
+140 recorded, deliberately not fixed — cannot fire today, and another push would re-open a verified gate read.
 **Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
 campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — Codex owes §14e on a fresh branch
 from `main`; operator owes one more **6J** capture at ≥7-decimal harness precision (§15h-1 route (a)); orchestrator
