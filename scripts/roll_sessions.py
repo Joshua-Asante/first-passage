@@ -558,6 +558,14 @@ _DATE_SUFFIX_RE = re.compile(r"^## (\d{4}-\d{2}-\d{2})([a-z]?)(?![a-z])")
 _LETTERS = "abcdefghijklmnopqrstuvwxyz"
 
 
+def _same_day_letter(entry: Entry) -> str:
+    """Letter slot for same-day order; an unlettered heading counts as ``a``."""
+    m = _DATE_SUFFIX_RE.match(entry.text.splitlines()[0])
+    if not m:
+        return "a"
+    return m.group(2) or "a"
+
+
 def claimed_letters_for_date(entries: list[Entry], day: dt.date) -> set[str]:
     """Letter slots claimed for ``day`` under the a-first allocator convention.
 
@@ -988,6 +996,9 @@ def check_order(root: Path, *, window: int = ORDER_WINDOW) -> list[str]:
        below the top-``window`` author-time horizon.
     4. **Top-``window`` author-time** (git): same-date ties broken by the commit
        that first added each heading — the merge=union collision case.
+    5. **Full-file same-day letter order** (no git): within each calendar date,
+       letters must descend (``d`` above ``c`` above ``b`` above ``a``; an
+       unlettered heading counts as ``a``).
 
     Duplicate-label detection is grandfathered against the append-only base
     ref (``resolve_append_only_base`` — merge-base with origin/main, else
@@ -1014,6 +1025,18 @@ def check_order(root: Path, *, window: int = ORDER_WINDOW) -> list[str]:
                 f"date inversion: {above.date.isoformat()} {above.title!r} sits above "
                 f"{below.date.isoformat()} {below.title!r}"
             )
+    by_date: dict[dt.date, list[Entry]] = {}
+    for e in entries:
+        by_date.setdefault(e.date, []).append(e)
+    for day, group in by_date.items():
+        for above, below in zip(group, group[1:]):
+            letter_above, letter_below = _same_day_letter(above), _same_day_letter(below)
+            if letter_above < letter_below:
+                label_above = f"{day.isoformat()}{letter_above}"
+                label_below = f"{day.isoformat()}{letter_below}"
+                problems.append(
+                    f"same-day order: {label_above} sits above {label_below} ({day.isoformat()})"
+                )
     top = entries[:window]
     if len(top) < 2:
         return problems

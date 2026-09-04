@@ -1273,3 +1273,56 @@ def test_check_append_only_cli_vs_explicit_base(tmp_path):
         "--append-only-base", "HEAD",
     ])
     assert rc == 1
+
+
+# ── same-day letter order (check_order pass 5) ────────────────────────────────
+
+
+def _same_day_order_problems(root: Path) -> list[str]:
+    return [p for p in rs.check_order(root, window=5) if p.startswith("same-day order:")]
+
+
+def test_check_order_same_day_letters_descending_is_clean(tmp_path):
+    _write(tmp_path, _doc([
+        ("2026-09-04d", "Delta"),
+        ("2026-09-04c", "Charlie"),
+        ("2026-09-04b", "Bravo"),
+        ("2026-09-04a", "Alpha"),
+    ]))
+    assert _same_day_order_problems(tmp_path) == []
+
+
+def test_check_order_same_day_letters_flags_b_above_c(tmp_path):
+    _write(tmp_path, _doc([
+        ("2026-09-04d", "Delta"),
+        ("2026-09-04b", "Bravo"),
+        ("2026-09-04c", "Charlie"),
+        ("2026-09-04a", "Alpha"),
+    ]))
+    problems = _same_day_order_problems(tmp_path)
+    assert problems == [
+        "same-day order: 2026-09-04b sits above 2026-09-04c (2026-09-04)"
+    ]
+
+
+def test_check_order_same_day_unlettered_counts_as_a(tmp_path):
+    _write(tmp_path, _doc([
+        ("2026-09-04", "Plain"),
+        ("2026-09-04b", "Bravo"),
+    ]))
+    problems = _same_day_order_problems(tmp_path)
+    assert problems == [
+        "same-day order: 2026-09-04a sits above 2026-09-04b (2026-09-04)"
+    ]
+
+
+def test_check_order_same_day_letters_two_dates_clean_leaves_date_inversion(tmp_path):
+    _write(tmp_path, _doc([
+        ("2026-09-04d", "D4"),
+        ("2026-09-04c", "C4"),
+        ("2026-09-03b", "B3"),
+        ("2026-09-03a", "A3"),
+    ]))
+    problems = rs.check_order(tmp_path, window=5)
+    assert not any(p.startswith("same-day order:") for p in problems)
+    assert not any(p.startswith("date inversion:") for p in problems)
