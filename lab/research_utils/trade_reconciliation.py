@@ -20,7 +20,10 @@ from research_utils.tv_trade_ledger import ContinuousContractRollPolicy, FeeSche
 
 
 _CENT_TOLERANCE = Decimal("0.01")
+CLOSED_DRAWDOWN_LABEL = "LOWER BOUND for non-overlapping trades"
+EXCURSION_DRAWDOWN_LABEL = "excursion-bounded for non-overlapping trades"
 EXCURSION_DRAWDOWN_BASIS = (
+    "Excursion-bounded for non-overlapping trades. "
     "Synthetic exit-order walk (exit_timestamp_naive, then exit_source_row): "
     "visit realized equity minus abs(mae_usd) before each net settlement, "
     "using the previous realized-equity peak and including realized exit declines. "
@@ -690,8 +693,8 @@ def calculate_accounting(trades: pd.DataFrame) -> AccountingMetrics:
         profit_factor=profit_factor,
         max_drawdown_usd=_money(max_drawdown),
         max_drawdown_excursion_bounded_usd=_money(max_drawdown_excursion),
-        max_drawdown_label="LOWER BOUND",
-        max_drawdown_excursion_bounded_label="excursion-bounded",
+        max_drawdown_label=CLOSED_DRAWDOWN_LABEL,
+        max_drawdown_excursion_bounded_label=EXCURSION_DRAWDOWN_LABEL,
         max_drawdown_excursion_bounded_measurement_basis=EXCURSION_DRAWDOWN_BASIS,
         monthly_net_pnl=MappingProxyType(monthly),
         final_source_cumulative_pnl_usd=final_source_cumulative,

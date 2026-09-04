@@ -119,6 +119,8 @@ def _five_source_fixture(root: Path) -> tuple[Path, Path, list[str]]:
     campaign_dir = root / "campaign"
     source_dir.mkdir()
     campaign_dir.mkdir()
+    overrides_dir = campaign_dir / "inputs" / "private_overrides"
+    overrides_dir.mkdir(parents=True)
     strategy_ids = _FROZEN_STRATEGY_IDS
     strategies = []
     for index, strategy_id in enumerate(strategy_ids):
@@ -131,6 +133,9 @@ def _five_source_fixture(root: Path) -> tuple[Path, Path, list[str]]:
         pine_bytes = f"// fixture {index}\n".encode()
         (source_dir / export_name).write_bytes(export_bytes)
         (source_dir / pine_name).write_bytes(pine_bytes)
+        # Opaque synthetic bytes: verifying the digest must not parse or expose them.
+        override_bytes = f"synthetic private capture {index}\r\n".encode() + b"\xff"
+        (overrides_dir / f"{strategy_id}.json").write_bytes(override_bytes)
         research_variant = {
             "striker_dj30_mym_pyramid_250": (
                 "pyramid 250% vs locked 750%",
@@ -155,7 +160,7 @@ def _five_source_fixture(root: Path) -> tuple[Path, Path, list[str]]:
                 "export_bytes": len(export_bytes),
                 "pine_filename": pine_name,
                 "pine_sha256": sha256(pine_bytes).hexdigest(),
-                "pine_input_overrides_sha256": "abcde"[index] * 64,
+                "pine_input_overrides_sha256": sha256(override_bytes).hexdigest(),
                 "pine_bytes": len(pine_bytes),
                 "source_timezone": "America/New_York",
                 "session_timezone": "America/New_York",
@@ -267,13 +272,17 @@ def test_campaign_writes_local_rows_but_aggregate_contains_no_absolute_path(tmp_
     manifest = json.loads(manifest_text)
 
     assert manifest["runner_version"] == "tradeify-phase1-normalization-v4"
-    for source, character in zip(manifest["strategies"], "abcde", strict=True):
-        assert source["source_identity"]["pine_input_overrides_sha256"] == character * 64
-        assert character * 64 in result.report_path.read_text(encoding="utf-8")
+    for index, source in enumerate(manifest["strategies"]):
+        digest = sha256(f"synthetic private capture {index}\r\n".encode() + b"\xff").hexdigest()
+        assert source["source_identity"]["pine_input_overrides_sha256"] == digest
+        assert digest in result.report_path.read_text(encoding="utf-8")
         local_detail = json.loads(
             (output_dir / "strategy_reports" / f"{source['strategy_id']}.json").read_text(encoding="utf-8")
         )
-        assert local_detail["source_identity"]["pine_input_overrides_sha256"] == character * 64
+        assert local_detail["source_identity"]["pine_input_overrides_sha256"] == digest
+    for output in [result.manifest_path, result.report_path, *output_dir.rglob("*")]:
+        if output.is_file():
+            assert b"synthetic private capture" not in output.read_bytes()
 
     assert result.status == "BLOCKED_EXPLORATORY"
     assert (output_dir / "canonical_events.csv").exists()
@@ -286,7 +295,9 @@ def test_campaign_writes_local_rows_but_aggregate_contains_no_absolute_path(tmp_
     assert detail["claim_class"] == "EXPLORATORY"
     assert detail["source_identity"]["pine_pin_status"] == "NOT_IN_PORT_MANIFEST"
     assert detail["source_identity"]["pin_divergence"] is None
-    assert detail["source_identity"]["pine_input_overrides_sha256"] == "a" * 64
+    assert detail["source_identity"]["pine_input_overrides_sha256"] == sha256(
+        b"synthetic private capture 0\r\n\xff"
+    ).hexdigest()
     assert detail["issues"]
     assert set(detail["issues"][0]) == {
         "code",
@@ -356,6 +367,32 @@ def test_hash_failure_returns_intake_exit_code(tmp_path):
     assert run_phase1.main(
         ["--config", str(config), "--source-dir", str(source_dir)]
     ) == 3
+
+
+@pytest.mark.parametrize("index", range(5))
+@pytest.mark.parametrize("failure", ["absent", "mismatch"])
+def test_private_override_failure_is_fatal_before_publication(tmp_path, capsys, index, failure):
+    """Skipping verification on any active leg must not allow an output replacement."""
+    source_dir, config, strategy_ids = _five_source_fixture(tmp_path)
+    artifact = config.parent / "inputs" / "private_overrides" / f"{strategy_ids[index]}.json"
+    if failure == "absent":
+        artifact.unlink()
+    else:
+        artifact.write_bytes(b"changed synthetic private capture\r\n\xff")
+    existing = config.parent / "RESULTS.md"
+    existing.write_bytes(b"previous aggregate")
+    output = tmp_path / "rows"
+
+    assert run_phase1.main([
+        "--config", str(config), "--source-dir", str(source_dir), "--output-dir", str(output),
+    ]) == 3
+    diagnostic = capsys.readouterr().err
+    assert "intake failure:" in diagnostic
+    assert "private input overrides" in diagnostic
+    assert "synthetic private capture" not in diagnostic
+    assert existing.read_bytes() == b"previous aggregate"
+    assert not (config.parent / "reconciliation_manifest.json").exists()
+    assert not output.exists()
 
 
 def test_malformed_utf8_hash_pinned_export_returns_intake_exit_code(tmp_path, capsys):

@@ -26,8 +26,9 @@ def test_excursion_precedes_settlement_and_preserves_closed_metrics(mae):
     result = calculate_accounting(ledger(mae))
     assert getattr(result, DD, None) == Decimal("9.00")
     assert result.max_drawdown_usd == Decimal("4.00")
-    assert result.max_drawdown_label == "LOWER BOUND"
-    assert result.max_drawdown_excursion_bounded_label == "excursion-bounded"
+    assert result.max_drawdown_label == "LOWER BOUND for non-overlapping trades"
+    assert result.max_drawdown_excursion_bounded_label == "excursion-bounded for non-overlapping trades"
+    assert "for non-overlapping trades" in result.max_drawdown_excursion_bounded_measurement_basis
     assert "exit-order" in result.max_drawdown_excursion_bounded_measurement_basis
     assert "not guaranteed" in result.max_drawdown_excursion_bounded_measurement_basis
     assert "synchronized" in result.max_drawdown_excursion_bounded_measurement_basis
@@ -48,8 +49,8 @@ def test_exit_loss_can_exceed_mae():
 def test_empty_ledger_has_both_labeled_zero_drawdowns():
     result = calculate_accounting(_trades())
     assert getattr(result, DD, None) == result.max_drawdown_usd == Decimal("0.00")
-    assert result.max_drawdown_label == "LOWER BOUND"
-    assert result.max_drawdown_excursion_bounded_label == "excursion-bounded"
+    assert result.max_drawdown_label == "LOWER BOUND for non-overlapping trades"
+    assert result.max_drawdown_excursion_bounded_label == "excursion-bounded for non-overlapping trades"
 
 
 @pytest.mark.parametrize("mae", [None, "", "garbage", "NaN", "sNaN", "Infinity", "-Infinity", float("nan")])
@@ -152,11 +153,13 @@ def test_real_loader_accounting_summary_runner_serializes_both_bases(tmp_path):
         for consumer in (record, detail):
             assert consumer.get(DD) == "1.00"
             assert consumer["max_drawdown_usd"] == "0.00"
-            assert consumer["max_drawdown_label"] == "LOWER BOUND"
-            assert consumer["max_drawdown_excursion_bounded_label"] == "excursion-bounded"
+            assert consumer["max_drawdown_label"] == "LOWER BOUND for non-overlapping trades"
+            assert consumer["max_drawdown_excursion_bounded_label"] == "excursion-bounded for non-overlapping trades"
+            assert "for non-overlapping trades" in consumer["max_drawdown_excursion_bounded_measurement_basis"]
             assert "overlap" in consumer["max_drawdown_excursion_bounded_measurement_basis"]
             assert next(r for r in consumer["summary_comparisons"] if r["metric"] == DD)["observed"] == "1.00"
-    assert "LOWER BOUND" in report
-    assert "excursion-bounded" in report
+    assert "LOWER BOUND for non-overlapping trades" in report
+    assert "excursion-bounded for non-overlapping trades" in report
+    assert "DD (LOWER BOUND)" not in report
     assert "exit-order" in report
     assert "not guaranteed" in report

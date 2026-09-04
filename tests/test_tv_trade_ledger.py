@@ -200,6 +200,27 @@ def test_verify_source_pair_rejects_changed_export(tmp_path):
         verify_source_pair(tmp_path, spec)
 
 
+@pytest.mark.parametrize("state", ["match", "mismatch", "absent"])
+def test_verify_private_override_artifact_hashes_exact_bytes(tmp_path, state):
+    """Missing, changed or decoded/re-encoded evidence must never satisfy the pin."""
+    from research_utils import tv_trade_ledger
+    verify = getattr(tv_trade_ledger, "verify_input_overrides", None)
+    assert callable(verify), "private input overrides need a runtime verification boundary"
+    raw = b"opaque synthetic evidence\r\n\xff"
+    digest = sha256(raw).hexdigest()
+    spec = _source_spec(pine_input_overrides_sha256=digest)
+    directory = tmp_path / "inputs" / "private_overrides"
+    directory.mkdir(parents=True)
+    if state != "absent":
+        (directory / "fixture.json").write_bytes(raw if state == "match" else raw.replace(b"\r\n", b"\n"))
+    if state == "match":
+        assert verify(tmp_path, spec) == digest
+    else:
+        with pytest.raises(SourceIdentityError, match="private input overrides") as error:
+            verify(tmp_path, spec)
+        assert "opaque synthetic evidence" not in str(error.value)
+
+
 def test_frozen_configuration_has_five_continuous_source_specs():
     """A changed campaign pin, session inventory, or source count must be observable."""
     specs = json.loads(_CONFIG_PATH.read_text(encoding="utf-8"))["strategies"]
@@ -212,12 +233,29 @@ def test_frozen_configuration_has_five_continuous_source_specs():
         "vanguard_mgc_v04",
     ]
     assert all(spec["source_timezone"] == "America/New_York" for spec in specs)
+    assert all(spec["declared_bar_size_minutes"] == 15 for spec in specs)
     assert all(spec["continuous_symbol"] for spec in specs)
     assert all(not spec["synchronized_intraday_path_available"] for spec in specs)
+    assert all(spec["contract_cap"] == 80 for spec in specs)
+    assert specs[0]["declared_session"] == "10:00-13:45 America/New_York, Mon-Wed; force-flat 16:30 America/New_York"
     assert specs[2]["intended_instrument"] == "MYM"
     assert specs[2]["encoded_instrument"] == "MYM"
     assert specs[3]["intended_instrument"] == "MNQ"
     assert specs[3]["encoded_instrument"] == "MNQ"
+
+
+def test_frozen_configuration_records_pine_pyramiding_from_each_source():
+    """Losing the source-grounded add-size inventory would hide the one reduced cell."""
+    specs = json.loads(_CONFIG_PATH.read_text(encoding="utf-8"))["strategies"]
+
+    assert {spec["strategy_id"]: spec["pine_pyramiding_pct"] for spec in specs} == {
+        "aegis_6j1": "0",
+        "orb_mnq_recon_v7": "100",
+        "striker_dj30_mym_pyramid_250": "250",
+        "striker_nas100_mnq_dow_wed_excluded": "1000",
+        "vanguard_mgc_v04": "80",
+    }
+    assert [spec["pine_pyramiding_pct"] for spec in specs].count("250") == 1
 
 
 def test_historical_configuration_preserves_exact_source_inventory_bytes():
@@ -246,12 +284,14 @@ def test_frozen_configuration_records_manifest_derived_pin_status_and_body_ident
         "712cf395396568ce22ae43f1f15b085eaba23acf1b85502abb92129f277fffd7"
     ]
     assert dj_modified["strategy_id"] == "striker_dj30_mym_pyramid_250"
-    assert dj_modified["pin_divergence"]
+    assert dj_modified["pine_pyramiding_pct"] == "250"
+    assert dj_modified["pin_divergence"] == "pyramid 250% vs locked 750%; initial_capital 100000 vs research-variant pin 200000"
     assert dj_modified["pin_ref"].endswith("striker_dj30_v4.5_mym_pyramid_250.pine")
     nas_modified = by_hash["fa6a70cde002131bbd266bee70defb01e32deae2de79fdc327d661f829115c39"]
     assert nas_modified["strategy_id"] == "striker_nas100_mnq_dow_wed_excluded"
+    assert nas_modified["pine_pyramiding_pct"] == "1000"
     assert nas_modified["pine_pin_status"] == "UNPINNED_MODIFIED"
-    assert nas_modified["pin_divergence"]
+    assert nas_modified["pin_divergence"] == "day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}; initial_capital 100000 vs research-variant pin 200000"
     assert nas_modified["pin_ref"].endswith("striker_nas100_v1_mnq_dow_wed_excluded.pine")
     assert all(
         "_v45" not in spec["strategy_id"] and "_v1" not in spec["strategy_id"]

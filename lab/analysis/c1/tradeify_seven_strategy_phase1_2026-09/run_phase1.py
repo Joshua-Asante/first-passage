@@ -34,6 +34,8 @@ from research_utils.joint_trade_blocks import (  # noqa: E402
     build_weekly_exit_blocks,
 )
 from research_utils.trade_reconciliation import (  # noqa: E402
+    CLOSED_DRAWDOWN_LABEL,
+    EXCURSION_DRAWDOWN_LABEL,
     analyze_venue,
     calculate_accounting,
     load_early_close_calendar,
@@ -46,6 +48,7 @@ from research_utils.tv_trade_ledger import (  # noqa: E402
     load_source_inventory,
     load_source_specs,
     normalize_export,
+    verify_input_overrides,
     verify_source_pair,
 )
 from research_utils.tv_summary_reconciliation import (  # noqa: E402
@@ -573,7 +576,8 @@ def _render_report(manifest: dict[str, object]) -> bytes:
             lines.append(f"| {row['strategy_id']} | {digest} |")
         lines.extend([
             "", "## Drawdown measurement bases", "",
-            "| Strategy | Closed-trade DD (LOWER BOUND) | Excursion-bounded DD |", "|---|---:|---:|",
+            f"| Strategy | Closed-trade DD ({CLOSED_DRAWDOWN_LABEL}) | DD ({EXCURSION_DRAWDOWN_LABEL}) |",
+            "|---|---:|---:|",
         ])
         for row in manifest["strategies"]:
             lines.append(
@@ -658,7 +662,8 @@ def _render_report(manifest: dict[str, object]) -> bytes:
         f"G1.4 coverage: `{manifest['summary_reconciliation_status']}`. {manifest['summary_coverage_note']}", "",
         (
             "Observed max drawdown uses the excursion-bounded synthetic exit-order walk, "
-            "not synchronized account equity. Discrepancies remain blockers; no series is repaired."
+            "with a bound claim only for non-overlapping trades, not synchronized account equity. "
+            "Discrepancies remain blockers; no series is repaired."
             if manifest["runner_version"] == "tradeify-phase1-normalization-v4"
             else "Observed max drawdown uses closed-trade exit equity; TradingView panel equity drawdown may differ. Discrepancies remain blockers; no series is repaired."
         ), "",
@@ -703,6 +708,8 @@ def run_campaign(
     fee_schedule = load_fee_schedule(fee_path)
     early_close_calendar = load_early_close_calendar(calendar_path)
     summary_inventory = load_summary_anchors(campaign_dir / "tv_summary_anchors.json", specs)
+    for spec in specs:
+        verify_input_overrides(campaign_dir, spec)
     verified = [verify_source_pair(source_dir, spec) for spec in specs]
 
     normalized_by_strategy = {

@@ -613,6 +613,20 @@ def _resolved_child(source_dir: Path, filename: str, kind: str) -> Path:
     return path
 
 
+def verify_input_overrides(campaign_dir: str | Path, spec: SourceSpec) -> str:
+    """Bind the private artifact by exact bytes; return only its verified digest."""
+    private_dir = Path(campaign_dir) / "inputs" / "private_overrides"
+    try:
+        artifact = _resolved_child(private_dir, f"{spec.strategy_id}.json", "private input overrides")
+        observed = sha256_file(artifact)
+    except (OSError, SourceIdentityError):
+        # No raw contents, filesystem diagnostics or private absolute paths escape.
+        raise SourceIdentityError("private input overrides artifact unavailable") from None
+    if observed != spec.pine_input_overrides_sha256:
+        raise SourceIdentityError("private input overrides SHA-256 mismatch")
+    return observed
+
+
 def verify_source_pair(source_dir: str | Path, spec: SourceSpec) -> VerifiedSource:
     """Verify both source files match their frozen filenames, sizes, and hashes."""
     root = Path(source_dir)

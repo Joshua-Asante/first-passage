@@ -25,12 +25,20 @@ Store D26 override maps and their capture evidence under this study's
 `inputs/private_overrides/` directory. The entire directory is gitignored,
 including JSON, images, text and nested files. Hash the exact private artifact
 bytes; publish only that digest. Never force-add these private artifacts.
+The runner requires `inputs/private_overrides/<strategy_id>.json` for each
+active source, relative to the config directory. It hashes the exact bytes
+without decoding or parsing them. Missing, unreadable or mismatched evidence
+is a fatal intake failure (exit 3), before any output publication. Only the
+verified digest is serialized; no artifact contents are included in diagnostics.
 
 Prospective v4 D27 summary anchors use `max_drawdown_excursion_bounded_usd`,
 including the five-scalar D17 branch and the seven-metric non-D17 branch. The
 retired `max_drawdown_usd` anchor name is rejected, not silently reinterpreted.
-Accounting retains that closed-trade measure separately as `LOWER BOUND`.
-The new `excursion-bounded` measure uses Decimal arithmetic in an exit-order
+Accounting retains that closed-trade measure separately as
+`LOWER BOUND for non-overlapping trades`. Under overlap, a realized loss can
+coincide with an unrealized gain, so closed-trade drawdown can overstate the
+true account drawdown. The new measure is labeled
+`excursion-bounded for non-overlapping trades` and uses Decimal arithmetic in an exit-order
 walk: sort by exit timestamp then source row, visit realized equity minus the
 absolute trade MAE before settlement, and retain both this decline and the
 realized exit decline from the realized-equity peak. Missing/non-finite MAE is
