@@ -61,15 +61,20 @@ class HygieneReport:
 
 
 def _run(args: list[str], cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        args,
-        cwd=str(cwd or REPO_ROOT),
-        check=False,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-    )
+    try:
+        return subprocess.run(
+            args,
+            cwd=str(cwd or REPO_ROOT),
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+    except FileNotFoundError:
+        return subprocess.CompletedProcess(
+            args, 127, stdout="", stderr=f"{args[0]}: not found"
+        )
 
 
 def _git(*args: str) -> str:
