@@ -33,7 +33,18 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
-## 2026-09-04a — D20: the operator's acceleration; deploy on the live eval as forward falsifier
+## 2026-09-04c — Resolve #295 SESSIONS collision with #298
+
+**Focus:** Address merge conflicts on [PR #295](https://github.com/Joshua-Asante/first-passage/pull/295) after #298 claimed `2026-09-04a`.
+**Shipped:** Merge `origin/main` (`ad5d1e5`) into `claude/orchestrator-role-takeover-yza7vp`; relabel the incoming D20 session to `2026-09-04b`; keep the already-merged ping-disable `2026-09-04a` byte-identical; drop a leftover superseded Open/next fragment from the D20 entry.
+**Decisions/defects:** None — letters are claimed, not reserved; incoming D20 takes the next free letter. `queue-exception: operator-direct resolve of #295 conflicts`.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24).
+**Live-ops state:** unchanged — docs merge only; c1 rail stays disarmed.
+**Class:** Hygiene · **Rule 2:** $0 / K=0
+
+---
+
+## 2026-09-04b — D20: the operator's acceleration; deploy on the live eval as forward falsifier
 
 **Focus:** Answer *"once the Phase 3 commit starts, I want to deploy the book on Tradeify. I just need to know that
 the sizing for the strategies work together and bust less than 5% in the Monte Carlo sim"* with Rule 0 reads, not
@@ -90,15 +101,22 @@ bar that never prints on a 13:00 close; four clean years is a sample property) �
 the legs are excluded; the manifest-restore branch now actually restores and aborts instead of printing a
 warning; §7 rewritten; and the status header no longer says "one input" while listing three.
 **Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — ⚠ **pointer refreshed to this commit's final state** (Codex P2: it still listed §14e and the 6J re-capture as outstanding, both of which this same commit records as done). **#294 MERGED** (main `9a69185`, §16g); **all four bar panels ACCEPTED** (§16h). Freeze prerequisites now: Codex's per-leg **scaling-faithfulness read** (each size-specific export takes a full G1.1–G1.10 read), fresh **TV Key-stats panels** for all five sources, and the **DJ30 +$287** disposition — the grammar cannot be frozen over inputs Phase 1 has not reconciled. #296 is `behind` main; update the branch before merging · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) — on the campaign's critical path via Phase 8; weekly venue-idle token trade placed 2026-09-03.
-campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — Codex owes §14e on a fresh branch
-from `main`; operator owes one more **6J** capture at ≥7-decimal harness precision (§15h-1 route (a)); orchestrator
-drafts the short Phase 3 freeze the moment §14e and all four panel pins land · `#2`
-[B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
-— now on the campaign's critical path via Phase 8; this week's venue-idle token trade placed 2026-09-03.
 **Class:** Decision · **Rule 2:** constituent (i) iteration **4** of 8 — ⚠ advanced per Codex P2: D3 defines an
 iteration as one dispatch → gate read → fold, and this session completed exactly that for the #294 remediation
 branch (dispatch, §16 gate read, the 3.11 defect correction, §16f verification). D20 itself spends none; the
 #294 cycle does · $0 / K=0
+
+---
+
+## 2026-09-04a — Disable Claude→Cursor auto-ping
+
+**Focus:** Operator-direct: Claude's review Action was kicking Cursor too quickly; turn that trigger off.
+**Shipped:** `.github/workflows/notify-cursor.yml` auto-events removed (`workflow_dispatch` + `if: false`); pin test updated.
+**Decisions/defects:** [surface-allocation addendum 2026-09-04](adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-04-disable-notify-cursor) — auto-`@cursor` after `claude[bot]` review is off; manual mention still works.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24).
+queue-exception: operator-direct disable of the Claude→Cursor notify workflow.
+**Live-ops state:** unchanged — CI trigger only; c1 rail stays disarmed.
+**Class:** Hygiene · **Rule 2:** $0 / K=0
 
 ---
 
