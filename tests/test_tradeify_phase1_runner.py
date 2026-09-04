@@ -635,12 +635,14 @@ def test_complete_calendar_must_cover_observed_source_span(tmp_path):
         run_phase1.run_campaign(config, source_dir, tmp_path / "local_artifacts")
 
 
-def test_campaign_report_renders_accepted_cme_early_close_fallback_note(tmp_path):
-    """A generic NEEDS_CONTEXT label must not hide the accepted early-close risk."""
+def test_campaign_report_renders_d19_secondary_calendar_residual_note(tmp_path):
+    """D19 completion must retain the secondary venue-date residual rather than hide it."""
     expected_coverage_note = (
-        "If the primary-source 2022–2026 CME early-close dates cannot be captured, "
-        "report a NEEDS_CONTEXT cap, never a silent omission; an early-close hold may "
-        "go undetected."
+        "D19 accepts this SECONDARY venue-date membership evidence only, not product close-time "
+        "or exchange-session modeling. The 2025-11-28 scheduled-half-day/outage classification "
+        "is conservatively included; possible ad-hoc closures from 2026-05-28 through 2026-09-02 "
+        "may be missing and are not conservative. The preserved secondary metadata retains 13 "
+        "unresolved items and 3 sub-deadline close notes."
     )
     checked_in_calendar = json.loads(
         (_CAMPAIGN_DIR / "cme_early_close_calendar.json").read_text(encoding="utf-8")
@@ -725,17 +727,14 @@ def test_report_publishes_every_input_ledger_and_detail_digest(tmp_path):
         assert f"- Detail report {strategy_id}: `{digest}`" in rendered
 
 
-def test_report_missing_monthly_anchor_roundtrips_with_plain_decimal_display(tmp_path):
-    """An in-memory Decimal map and its published JSON must render identical evidence."""
+def test_report_omits_nonindependent_monthly_map_from_tracked_output(tmp_path):
+    """A published monthly map would expose non-independent reconciliation data as an anchor."""
     source_dir, config, _ = _five_source_fixture(tmp_path)
     result = run_phase1.run_campaign(config, source_dir, tmp_path / "rows")
     manifest = json.loads(result.manifest_bytes)
 
     assert result.report_bytes == run_phase1._render_report(manifest)
-    assert (
-        b"| monthly_net_pnl_usd | {'2026-01': '0.18'} | None | None | 0.01 | MISSING_ANCHOR |"
-        in result.report_bytes
-    )
+    assert b"monthly_net_pnl" not in result.report_bytes
     assert b"Decimal(" not in result.report_bytes
 
 
@@ -744,11 +743,11 @@ def test_committed_manifest_matches_frozen_five_strategy_acceptance():
         (_CAMPAIGN_DIR / "reconciliation_manifest.json").read_text(encoding="utf-8")
     )
     expected = {
-        "aegis_6j1": (244, 122, "28702.75"),
-        "orb_mnq_recon_v7": (1362, 681, "47533.16"),
-        "striker_dj30_mym_pyramid_250": (406, 203, "31770.36"),
+        "aegis_6j1": (242, 121, "27996.05"),
+        "orb_mnq_recon_v7": (1362, 681, "48118.16"),
+        "striker_dj30_mym_pyramid_250": (406, 203, "32057.36"),
         "striker_nas100_mnq_dow_wed_excluded": (756, 378, "112253.42"),
-        "vanguard_mgc_v04": (686, 343, "20388.04"),
+        "vanguard_mgc_v04": (676, 338, "18709.48"),
     }
     observed = {
         row["strategy_id"]: (
@@ -761,19 +760,19 @@ def test_committed_manifest_matches_frozen_five_strategy_acceptance():
 
     assert observed == expected
     from test_tradeify_phase1_identity_policy import accepted_policy
-    assert manifest["runner_version"] == "tradeify-phase1-normalization-v2"
+    assert manifest["runner_version"] == "tradeify-phase1-normalization-v3"
     assert manifest["continuous_contract_roll_policy"] == accepted_policy()
     for row in manifest["strategies"]:
         assert row["continuous_contract_roll_policy"] == accepted_policy()
         roll = next(issue for issue in row["issues"] if issue["code"] == "CONTINUOUS_CONTRACT_ROLL_UNRESOLVED")
         assert roll["severity"] == "WARNING"
-    assert manifest["campaign_status"] == "BLOCKED_EXPLORATORY"
+    assert manifest["campaign_status"] == "RECONCILED_EXPLORATORY"
     assert manifest["phase1_verdict_cap"] == "NEEDS_CONTEXT"
     assert manifest["inputs"] == {
-        "config_sha256": "bc806ace41f899f17fa9cd54960bcd7c6ee6f3b02b28f8574c5b600997667e87",
+        "config_sha256": "df238cd78fc0a381fdb86466ef3dfca5522dd8db7ae0cf245165f370df9f3892",
         "tradeify_commission_schedule_sha256": "61c8957a4adfabf6b8e8c4eb984e6d9388a223145f90b0b9ca66b3dd7ca28750",
-        "cme_early_close_calendar_sha256": "742e83508a3addf034ce6536e42553522bea28c96f8e3718629cf5495c405277",
-        "tv_summary_anchors_sha256": "a3c3ae0c102adf15199a2f68cebe07a97c4cae1b0b5b4f7c07f73c1093c96ff2",
+        "cme_early_close_calendar_sha256": "3f114ec021c6d2d15ca88d4063a396612fe9c662ae92d4c25a2758657a1feaa9",
+        "tv_summary_anchors_sha256": "481e9bb2227578497dbc506d336377a5d51c366161dae6dd7d534c9c2ef88979",
     }
     for input_name, filename in {
         "config": "phase1_config.json",
@@ -786,10 +785,10 @@ def test_committed_manifest_matches_frozen_five_strategy_acceptance():
         )
     assert manifest["ledgers"] == {
         "canonical_events_sha256": (
-            "c04e2cc8b07a21abb47b70f6c195ea0336ec76087c0e76fb26f37e64f2c945ee"
+            "3a6b754ec145db0e5c09ce18413d7d42d60fa1ce8ac034bd6d6878ae4251d3ac"
         ),
         "canonical_trades_sha256": (
-            "0336cf3836055fbc951c995725c718e15aaff03e064bfade5f8310a5c382e257"
+            "7e650599241b8150d0ee31ea04a7406c200e1f009c9530908a9644e56bed765a"
         ),
         "source_row_sha256": {
             "algorithm": "SHA-256",
@@ -797,21 +796,28 @@ def test_committed_manifest_matches_frozen_five_strategy_acceptance():
         },
         "timestamp_domain": "UTC",
         "weekly_exit_blocks_sha256": (
-            "e33f48c13c3fd4c6438bb755fb6ac070bebbbf308ad0377320468a1a6ef8850e"
+            "d0b3e5ab840ef0a88c9f7b4b2c7254b3774142b85a55a9cfaeaa04fa5fe7934a"
         ),
     }
     assert manifest["local_strategy_report_sha256"] == {
-        "aegis_6j1": "9b40524e9c06870161ed77fde5cb1cea4a2501d7696cc6899607a2ab0e25b7c5",
-        "orb_mnq_recon_v7": "3cdf75dfc2821279f90dbafc0ac100ad227deefe9ab96360db157f880df7b8af",
-        "striker_dj30_mym_pyramid_250": "a762cc3b255f879ee3b92c77d6dc27a3de9d443a8c8219b94797e4833eff904e",
-        "striker_nas100_mnq_dow_wed_excluded": "c5c3d8f431b4ecdda6943e562ee9f152a924132d9f2d82e286c0293933187a8a",
-        "vanguard_mgc_v04": "ab61978d7dc7c6f1428c7d945d6258e0bcab5c5fdd276a84a1cea05bfba73af7",
+        "aegis_6j1": "546cf0e0b1b9fe3d26793f0dc87ea53cb7990decd744bb5ec261110b32c964bc",
+        "orb_mnq_recon_v7": "a0ea8a6b27aba3aa6f292322d82c3e38029e1c89cb8bbefbcb329305fcff81ea",
+        "striker_dj30_mym_pyramid_250": "c7bbab4867e381428da31116c61ea4cb224d8b2b848cf328ce105443988871e3",
+        "striker_nas100_mnq_dow_wed_excluded": "4d2807e40f946f708e270ad66be01451ca0a05d6c05099ac811663532615b5d4",
+        "vanguard_mgc_v04": "a0a9564b1f598f04e68a1a6d56cf2e49d4ef25c7e3b67305a4ddfd2ca142e4d1",
+    }
+    assert manifest["local_monthly_reconciliation_sha256"] == {
+        "aegis_6j1": "5242591bbb40a93480e5356011f31a4d6fd0575d1d0f1f73ee1236926c343ca1",
+        "orb_mnq_recon_v7": "632382c8bffea9644486b961e706d5f94a7f782235ecc4b7d5b9bab29070e2ad",
+        "striker_dj30_mym_pyramid_250": "bd34b13a72d6c771cdbb654d3798bb53307f60ac144e1553141efe5df4303070",
+        "striker_nas100_mnq_dow_wed_excluded": "7163605aeddd8953d73e44b46162ec051d4d45587c508701079acbd4a6e7568a",
+        "vanguard_mgc_v04": "5b1f2a5872aac49ef4988b423bc3d042232c16f5056c1816bddc4eeebde56acb",
     }
     assert sha256((_CAMPAIGN_DIR / "reconciliation_manifest.json").read_bytes()).hexdigest() == (
-        "89a0d42e97b38ddd12fca29a151e17d26e6395a7d85502482c125303b7cd479c"
+        "f40856086b4498960dc1fdc485a097d32323d0b5160f93775ff355c37b71ec01"
     )
     assert sha256((_CAMPAIGN_DIR / "RESULTS.md").read_bytes()).hexdigest() == (
-        "ab69e3a70b461356edfe4218bef6177ae919730c72cab59cb0e8e27310e5b8cc"
+        "40cd23eda0618d68a2237c5d6713123b318f918d01218721aef8b4a753c75290"
     )
     assert [source["strategy_id_as_named_before"] for source in manifest["dropped_sources"]] == [
         "striker_dj30_qtxg1_swap_body_on_mym",
@@ -820,8 +826,31 @@ def test_committed_manifest_matches_frozen_five_strategy_acceptance():
     config = json.loads((_CAMPAIGN_DIR / "phase1_config.json").read_bytes())
     assert manifest["dropped_sources"] == config["dropped_sources"]
     rows = {row["strategy_id"]: row for row in manifest["strategies"]}
-    assert rows["orb_mnq_recon_v7"]["friday_to_sunday_holds"] == 3
-    assert rows["orb_mnq_recon_v7"]["issue_counts"]["FORCE_FLAT_VIOLATION"] == 310
+    assert all(row["friday_to_sunday_holds"] == 0 for row in rows.values())
+    assert all(row["issue_counts"].get("FORCE_FLAT_VIOLATION", 0) == 0 for row in rows.values())
+    assert {
+        strategy_id: (
+            row["peak_open_micro_equivalent_quantity_min"],
+            row["peak_open_micro_equivalent_quantity_max"],
+        )
+        for strategy_id, row in rows.items()
+    } == {
+        "aegis_6j1": (80, 80),
+        "orb_mnq_recon_v7": (4, 6),
+        "striker_dj30_mym_pyramid_250": (77, 77),
+        "striker_nas100_mnq_dow_wed_excluded": (77, 77),
+        "vanguard_mgc_v04": (6, 6),
+    }
+    assert {
+        strategy_id: row["monthly_reconciliation"]["bucket_count"]
+        for strategy_id, row in rows.items()
+    } == {
+        "aegis_6j1": 45,
+        "orb_mnq_recon_v7": 49,
+        "striker_dj30_mym_pyramid_250": 48,
+        "striker_nas100_mnq_dow_wed_excluded": 49,
+        "vanguard_mgc_v04": 48,
+    }
     aegis_pine = {
         issue["code"]: issue["severity"]
         for issue in rows["aegis_6j1"]["issues"]

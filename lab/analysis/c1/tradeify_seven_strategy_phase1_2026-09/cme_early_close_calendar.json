@@ -1,11 +1,19 @@
 {
-  "source_url": "https://www.cmegroup.com/trading-hours.html",
-  "page_date": null,
+  "schema": "tradeify_secondary_early_close/v1",
+  "source_url": "https://github.com/Joshua-Asante/first-passage/blob/0e3f40b/ops/calendars/cme_holiday_calendar_2022_2026.json",
+  "page_date": "2026-09-03",
   "observed_date": "2026-09-03",
-  "coverage_start": "2022-09-01",
-  "coverage_end": "2026-09-02",
-  "coverage_status": "NEEDS_CONTEXT",
-  "coverage_note": "If the primary-source 2022–2026 CME early-close dates cannot be captured, report a NEEDS_CONTEXT cap, never a silent omission; an early-close hold may go undetected.",
-  "sources": [],
-  "rows": []
+  "coverage_start": "2022-01-01",
+  "coverage_end": "2026-12-31",
+  "coverage_status": "COMPLETE",
+  "coverage_note": "D19 accepts this SECONDARY venue-date membership evidence only, not product close-time or exchange-session modeling. The 2025-11-28 scheduled-half-day/outage classification is conservatively included; possible ad-hoc closures from 2026-05-28 through 2026-09-02 may be missing and are not conservative. The preserved secondary metadata retains 13 unresolved items and 3 sub-deadline close notes.",
+  "source_calendar": {"repo_path": "ops/calendars/cme_holiday_calendar_2022_2026.json", "sha256": "2698f2688cce582b08df58516fd770fa4a71a18de04870d9c14511731ea181e9"},
+  "provenance_acceptance": {"decision": "D19", "disposition": "ACCEPTED_SECONDARY", "ruling_date": "2026-09-03", "ruling_ref": "Operator ruling 2026-09-03; campaign-state §6 D19: secondary CME calendar provenance accepted."},
+  "rows": [
+    {"date":"2022-01-17","deadline_local":"12:59 America/New_York"},{"date":"2022-02-21","deadline_local":"12:59 America/New_York"},{"date":"2022-05-30","deadline_local":"12:59 America/New_York"},{"date":"2022-06-20","deadline_local":"12:59 America/New_York"},{"date":"2022-07-04","deadline_local":"12:59 America/New_York"},{"date":"2022-09-05","deadline_local":"12:59 America/New_York"},{"date":"2022-11-24","deadline_local":"12:59 America/New_York"},{"date":"2022-11-25","deadline_local":"12:59 America/New_York"},
+    {"date":"2023-01-16","deadline_local":"12:59 America/New_York"},{"date":"2023-02-20","deadline_local":"12:59 America/New_York"},{"date":"2023-04-07","deadline_local":"12:59 America/New_York"},{"date":"2023-05-29","deadline_local":"12:59 America/New_York"},{"date":"2023-06-19","deadline_local":"12:59 America/New_York"},{"date":"2023-07-03","deadline_local":"12:59 America/New_York"},{"date":"2023-07-04","deadline_local":"12:59 America/New_York"},{"date":"2023-09-04","deadline_local":"12:59 America/New_York"},{"date":"2023-11-23","deadline_local":"12:59 America/New_York"},{"date":"2023-11-24","deadline_local":"12:59 America/New_York"},
+    {"date":"2024-01-15","deadline_local":"12:59 America/New_York"},{"date":"2024-02-19","deadline_local":"12:59 America/New_York"},{"date":"2024-05-27","deadline_local":"12:59 America/New_York"},{"date":"2024-06-19","deadline_local":"12:59 America/New_York"},{"date":"2024-07-03","deadline_local":"12:59 America/New_York"},{"date":"2024-07-04","deadline_local":"12:59 America/New_York"},{"date":"2024-09-02","deadline_local":"12:59 America/New_York"},{"date":"2024-11-28","deadline_local":"12:59 America/New_York"},{"date":"2024-11-29","deadline_local":"12:59 America/New_York"},{"date":"2024-12-24","deadline_local":"12:59 America/New_York"},
+    {"date":"2025-01-09","deadline_local":"12:59 America/New_York"},{"date":"2025-01-20","deadline_local":"12:59 America/New_York"},{"date":"2025-02-17","deadline_local":"12:59 America/New_York"},{"date":"2025-05-26","deadline_local":"12:59 America/New_York"},{"date":"2025-06-19","deadline_local":"12:59 America/New_York"},{"date":"2025-07-03","deadline_local":"12:59 America/New_York"},{"date":"2025-07-04","deadline_local":"12:59 America/New_York"},{"date":"2025-09-01","deadline_local":"12:59 America/New_York"},{"date":"2025-11-27","deadline_local":"12:59 America/New_York"},{"date":"2025-11-28","deadline_local":"12:59 America/New_York"},{"date":"2025-12-24","deadline_local":"12:59 America/New_York"},
+    {"date":"2026-01-19","deadline_local":"12:59 America/New_York"},{"date":"2026-02-16","deadline_local":"12:59 America/New_York"},{"date":"2026-04-03","deadline_local":"12:59 America/New_York"},{"date":"2026-05-25","deadline_local":"12:59 America/New_York"},{"date":"2026-06-19","deadline_local":"12:59 America/New_York"},{"date":"2026-07-03","deadline_local":"12:59 America/New_York"},{"date":"2026-09-07","deadline_local":"12:59 America/New_York"},{"date":"2026-11-26","deadline_local":"12:59 America/New_York"},{"date":"2026-11-27","deadline_local":"12:59 America/New_York"},{"date":"2026-12-24","deadline_local":"12:59 America/New_York"}
+  ]
 }

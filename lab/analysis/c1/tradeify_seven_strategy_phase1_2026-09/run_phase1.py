@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter
+from collections.abc import Mapping
 from dataclasses import asdict
 import csv
 from datetime import date, datetime
@@ -51,10 +52,11 @@ from research_utils.tv_summary_reconciliation import (  # noqa: E402
     SUMMARY_TOLERANCES,
     load_summary_anchors,
     reconcile_summary,
+    reconstruct_d17_monthly,
 )
 
 
-_RUNNER_VERSION = "tradeify-phase1-normalization-v2"
+_RUNNER_VERSION = "tradeify-phase1-normalization-v3"
 _SEVERITY_ORDER = {"INFO": 0, "WARNING": 1, "BLOCKER": 2, "FATAL": 3}
 _BASE_COMMIT = "ed181233afd01d8fc128bc76ac626e43c3761f87"
 _FROZEN_STRATEGY_IDS = (
@@ -186,8 +188,26 @@ def _json_bytes(payload: object) -> bytes:
     ).encode("utf-8")
 
 
+def _plain_evidence(value: object) -> object:
+    """Copy immutable calendar provenance into the published JSON domain."""
+    if isinstance(value, Mapping):
+        return {str(key): _plain_evidence(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return [_plain_evidence(item) for item in value]
+    return value
+
+
 def _digest(payload: bytes) -> str:
     return sha256(payload).hexdigest()
+
+
+def _public_summary_comparisons(comparisons: Sequence[dict[str, object]]) -> list[dict[str, object]]:
+    """Keep derived month maps out of tracked manifests and reports."""
+    return [
+        comparison
+        for comparison in comparisons
+        if not str(comparison["metric"]).startswith("monthly_net_pnl_usd")
+    ]
 
 
 def _validate_strategy_roster(specs: Sequence[object]) -> None:
@@ -314,7 +334,6 @@ def _strategy_record(
         "win_rate": accounting.win_rate,
         "profit_factor": accounting.profit_factor,
         "max_drawdown_usd": accounting.max_drawdown_usd,
-        "monthly_net_pnl": dict(accounting.monthly_net_pnl),
         "final_source_cumulative_pnl_usd": accounting.final_source_cumulative_pnl_usd,
         "pine_pyramiding_pct": spec.pine_pyramiding_pct,
         "pine_pin_status": spec.pine_pin_status,
@@ -417,16 +436,87 @@ def _render_report(manifest: dict[str, object]) -> bytes:
     manifest = json.loads(_json_bytes(manifest))
     coverage_note = manifest.get("cme_early_close_coverage_note")
     calendar_status = manifest.get("cme_early_close_calendar", {}).get("coverage_status", manifest["phase1_verdict_cap"])
-    if calendar_status == "COMPLETE":
+    calendar = manifest.get("cme_early_close_calendar", {})
+    evidence_kind = calendar.get("evidence_kind", "PRIMARY")
+    secondary_metadata = calendar.get("evidence_metadata", {})
+    if evidence_kind == "SECONDARY":
+        full_closures = secondary_metadata["full_closure_dates"]
+        sub_deadlines = secondary_metadata["sub_deadline_close_dates"]
+        full_closure_inventory = ", ".join(full_closures["dates"]) or "none"
+        sub_deadline_inventory = [
+            f"{item['date']} {item['holiday']} — "
+            + ", ".join(
+                f"{group}={close}"
+                for group, close in sorted(item["closes_et"].items())
+            )
+            for item in sub_deadlines["dates"]
+        ]
+        sub_deadline_rows = [f"  - {detail}" for detail in sub_deadline_inventory] or ["  - none"]
+        acceptance = secondary_metadata.get("provenance_acceptance")
+        calendar_boundary = (
+            f"- CME holiday-short coverage is `{calendar_status}` with populated SECONDARY rows; "
+            "the exact account-level EARLY_CLOSE union drives 12:59 ET deadlines."
+            if not acceptance
+            else f"- CME holiday-short coverage is `{calendar_status}` through D19-accepted SECONDARY venue-date membership; "
+            "it is not a primary-CME upgrade, product close-time model, or exchange-session model."
+        )
+        secondary_limitations = [
+            "- Secondary provenance is retained without a primary-CME upgrade: "
+            f"`{secondary_metadata['source_calendar']['repo_path']}` SHA-256 "
+            f"`{secondary_metadata['source_calendar']['sha256']}` under `{secondary_metadata['schema']}`.",
+            f"- Secondary provenance note: {secondary_metadata['provenance_note']}",
+            *(
+                [
+                    "- D19 provenance acceptance: "
+                    f"`{acceptance['decision']}` `{acceptance['disposition']}` on "
+                    f"{acceptance['ruling_date']} — {acceptance['ruling_ref']}",
+                ]
+                if acceptance
+                else []
+            ),
+            f"- Day basis: `{secondary_metadata['day_basis']['basis']}` — {secondary_metadata['day_basis']['note']}",
+            "- CME trade-date full-closure inventory is not converted into wall-date deadlines: "
+            f"{full_closures['rule']}",
+            f"- Secondary full-closure inventory ({full_closures['count']}): {full_closure_inventory}",
+            "- Pre-12:59 market closes remain limitations, never modeled closure/no-trade rules: "
+            f"{sub_deadlines['rule']}",
+            f"- Sub-deadline inventory ({sub_deadlines['count']}):",
+            *sub_deadline_rows,
+            *[f"- Secondary source URL (inert provenance): {url}" for url in secondary_metadata["source_urls"]],
+            *[
+                f"- Secondary unresolved {item['date']}: {item['issue']}"
+                for item in secondary_metadata["unresolved"]
+            ],
+            "- Secondary source revisions remain provenance limits, not captured-byte proof: "
+            f"{secondary_metadata['source_revisions']['note']}",
+        ]
+    elif calendar_status == "COMPLETE":
         calendar_boundary = (
             "- CME holiday-short coverage is `COMPLETE` for the observed source span; "
             "the captured early-close rows drive 12:59 ET deadlines."
         )
+        secondary_limitations = []
     else:
         calendar_boundary = (
             f"- CME holiday-short coverage is `{calendar_status}`; "
             "no historical early-close date was inferred."
         )
+        secondary_limitations = []
+    d17_policy = manifest.get("d17_policy")
+    d17_lines = []
+    if d17_policy:
+        d17_lines = [
+            "## D17 frozen evidence policy",
+            "",
+            f"D17 ruling {d17_policy['ruling_date']}: monthly totals are `{d17_policy['monthly_totals']}` from the local canonical exit-month ledger; commission evidence is `{d17_policy['commissions']}`.",
+            "",
+            d17_policy["ruling_ref"],
+            "",
+            f"- {d17_policy['reason']}",
+            "- The tracked manifest and report hold only local-ledger hashes and aggregate reconciliation facts; per-month figures remain in gitignored local artifacts.",
+            "- Derived commission inventory is not an independent operator anchor; venue/export fee auditing is unchanged.",
+            "",
+        ]
     lines = [
         "# Tradeify five-active-source Phase 1 reconciliation",
         "",
@@ -452,6 +542,7 @@ def _render_report(manifest: dict[str, object]) -> bytes:
         "",
         *[f"- {obligation}" for obligation in manifest["continuous_contract_roll_policy"]["obligations"]],
         "",
+        *d17_lines,
         "## Strategy inventory",
         "",
         "| Strategy | Status | Pine pin status | Pin ref | Divergence | Export bytes | Pine bytes | Rows | Trades | Net P&L | Daily-deadline holds | Fri→Sun sub-count |",
@@ -496,6 +587,7 @@ def _render_report(manifest: dict[str, object]) -> bytes:
                 if coverage_note
                 else []
             ),
+            *secondary_limitations,
             "",
             "## Frozen hashes",
             "",
@@ -509,6 +601,12 @@ def _render_report(manifest: dict[str, object]) -> bytes:
             *[
                 f"- Detail report {strategy_id}: `{digest}`"
                 for strategy_id, digest in sorted(manifest["local_strategy_report_sha256"].items())
+            ],
+            *[
+                f"- Local monthly reconciliation {strategy_id}: `{digest}`"
+                for strategy_id, digest in sorted(
+                    manifest.get("local_monthly_reconciliation_sha256", {}).items()
+                )
             ],
             "",
             "## Issues by strategy",
@@ -586,6 +684,8 @@ def run_campaign(
     issues_by_strategy: dict[str, tuple[object, ...]] = {}
     strategy_records: list[dict[str, object]] = []
     summaries_by_strategy: dict[str, dict[str, object]] = {}
+    monthly_payloads: dict[Path, bytes] = {}
+    local_monthly_reconciliation_sha256: dict[str, str] = {}
     for source in verified:
         normalized = normalized_by_strategy[source.spec.strategy_id]
         reconstruction = reconstruct_trades(normalized.events, source.spec)
@@ -602,10 +702,37 @@ def run_campaign(
         summary_record = {
             "continuous_contract_roll_policy": roll_policy_record,
             "summary_source_note": anchor["source_note"] if anchor else None,
-            "summary_comparisons": comparisons,
+            "summary_comparisons": _public_summary_comparisons(comparisons),
         }
+        monthly_issues: tuple[object, ...] = ()
+        if summary_inventory.d17_policy is not None:
+            monthly_payload, monthly_issues = reconstruct_d17_monthly(
+                accounting=accounting, trades=reconstruction.trades, spec=source.spec,
+            )
+            monthly_bytes = _json_bytes(monthly_payload)
+            local_monthly_reconciliation_sha256[source.spec.strategy_id] = _digest(monthly_bytes)
+            monthly_payloads[
+                output_dir / "monthly_reconciliation" / f"{source.spec.strategy_id}.json"
+            ] = monthly_bytes
+            summary_record |= {
+                "d17_policy": summary_inventory.d17_policy,
+                "monthly_reconciliation": {
+                    "month_basis": monthly_payload["month_basis"],
+                    "bucket_count": monthly_payload["bucket_count"],
+                    "comparison_status": monthly_payload["comparison_status"],
+                    "aggregate_residual_usd": monthly_payload["aggregate_residual_usd"],
+                    "local_payload_sha256": local_monthly_reconciliation_sha256[source.spec.strategy_id],
+                },
+                "commission_evidence": {
+                    "status": "AMENDED_OUT",
+                    "ruling_date": summary_inventory.d17_policy["ruling_date"],
+                    "ruling_ref": summary_inventory.d17_policy["ruling_ref"],
+                    "reason": summary_inventory.d17_policy["reason"],
+                    "derived_commission_usd": accounting.commission_usd,
+                },
+            }
         summaries_by_strategy[source.spec.strategy_id] = summary_record
-        issues = (*normalized.issues, *reconstruction.issues, *accounting.issues, *venue.issues, *summary_issues)
+        issues = (*normalized.issues, *reconstruction.issues, *accounting.issues, *venue.issues, *summary_issues, *monthly_issues)
         trades_by_strategy[source.spec.strategy_id] = reconstruction.trades
         issues_by_strategy[source.spec.strategy_id] = issues
         strategy_records.append(
@@ -677,6 +804,7 @@ def run_campaign(
         ),
         "summary_reconciliation_status": summary_inventory.coverage_status,
         "summary_coverage_note": summary_inventory.coverage_note,
+        **({"d17_policy": summary_inventory.d17_policy} if summary_inventory.d17_policy is not None else {}),
         "cme_early_close_calendar": {
             "source_url": early_close_calendar.source_url,
             "page_date": early_close_calendar.page_date,
@@ -687,6 +815,9 @@ def run_campaign(
             "coverage_note": early_close_calendar.coverage_note,
             "sources": [dict(source) for source in early_close_calendar.sources],
             "observed_row_count": len(early_close_calendar.early_close_dates),
+            "evidence_kind": early_close_calendar.evidence_kind,
+            "source_calendar_sha256": early_close_calendar.source_calendar_sha256,
+            "evidence_metadata": _plain_evidence(early_close_calendar.evidence_metadata),
         },
         "cme_early_close_coverage_note": early_close_calendar.coverage_note,
         "runner_version": _RUNNER_VERSION,
@@ -713,6 +844,11 @@ def run_campaign(
             "weekly_exit_blocks_sha256": _digest(weekly_bytes),
         },
         "local_strategy_report_sha256": local_strategy_report_sha256,
+        **(
+            {"local_monthly_reconciliation_sha256": local_monthly_reconciliation_sha256}
+            if summary_inventory.d17_policy is not None
+            else {}
+        ),
         "tolerances": {
             "aggregate_money_usd": "0.01",
             "tick_grid_ticks": "1e-9",
@@ -743,6 +879,7 @@ def run_campaign(
             output_dir / "canonical_trades.csv": trade_bytes,
             output_dir / "weekly_exit_blocks.csv": weekly_bytes,
             **detail_payloads,
+            **monthly_payloads,
             manifest_path: manifest_bytes,
             report_path: report_bytes,
         }
