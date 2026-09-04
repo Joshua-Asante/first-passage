@@ -60,9 +60,9 @@ The summary row leaves `observed` unset and records the walk separately;
 its difference is explicitly walk minus panel, not a panel reconciliation.
 
 D17 monthly/commission policy is unchanged. The new exact-key `max_drawdown`
-policy slot must be `null` while D32 is unruled; no accepted value is invented.
-Reports carry `PENDING_D32`; complete evidence coverage is not operator
-acceptance. The historical policy has no new slot and intentionally fails
+policy slot requires `OVERLAP_KEYED` under D32. Reports carry
+`OVERLAP_KEYED_D32`; complete evidence coverage is not operator acceptance.
+The historical policy has no new slot and intentionally fails
 the prospective loader. Current private captures
 and independent panel population still gate regeneration; no campaign evidence
 prerequisite is closed by this code change.

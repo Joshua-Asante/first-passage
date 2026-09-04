@@ -67,7 +67,7 @@ def inventory(tmp_path, panel, d17):
     metrics.pop(WALK, None)
     metrics[PANEL] = panel
     if d17:
-        payload["d17_policy"] = d17_payload()["d17_policy"] | {"max_drawdown": None}
+        payload["d17_policy"] = d17_payload()["d17_policy"]
         metrics.pop("total_commissions_usd")
         metrics.pop("monthly_net_pnl_usd")
     path = tmp_path / "anchors.json"
@@ -131,14 +131,21 @@ def test_retired_anchor_names_are_rejected(tmp_path, retired):
         summary.load_summary_anchors(path, [_spec()])
 
 
-@pytest.mark.parametrize("value", ["RECORDED", "ACCEPTED", "", False, {}])
-def test_d32_placeholder_cannot_claim_an_operator_ruling(tmp_path, value):
+@pytest.mark.parametrize("value,accepted", [
+    (None, False), ("RECORDED", False), ("ACCEPTED", False), ("", False),
+    (False, False), ({}, False), ("OVERLAP_KEYED", True),
+])
+def test_d32_placeholder_cannot_claim_an_operator_ruling(tmp_path, value, accepted):
     payload = d17_payload()
     payload["d17_policy"]["max_drawdown"] = value
     path = tmp_path / "anchors.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
-    with pytest.raises(ValueError, match="max_drawdown.*D32"):
-        summary.load_summary_anchors(path, [_spec()])
+    if accepted:
+        inventory = summary.load_summary_anchors(path, [_spec()])
+        assert inventory.d17_policy["max_drawdown"] == "OVERLAP_KEYED"
+    else:
+        with pytest.raises(ValueError, match="max_drawdown.*OVERLAP_KEYED"):
+            summary.load_summary_anchors(path, [_spec()])
 
 
 def test_missing_d32_slot_fails_closed(tmp_path):
@@ -168,8 +175,8 @@ def test_runner_reports_three_distinct_drawdowns_on_every_leg(tmp_path):
             assert consumer[WALK] == "1.00"
             assert consumer[PANEL] == "3.00"
             assert consumer["has_overlap_or_tie"] is False
-            assert consumer["max_drawdown_policy_status"] == "PENDING_D32"
+            assert consumer["max_drawdown_policy_status"] == "OVERLAP_KEYED_D32"
         assert f"| {row['strategy_id']} | $0.00 | $1.00 | $3.00 |" in report
     assert "TV panel DD (separate anchor)" in report
     assert "LOWER BOUND (excursion-tightened) for non-overlapping trades" in report
-    assert "PENDING_D32" in report
+    assert "OVERLAP_KEYED_D32" in report

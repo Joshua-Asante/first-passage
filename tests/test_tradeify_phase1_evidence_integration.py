@@ -130,7 +130,7 @@ def test_d17_runner_publishes_only_hashed_local_monthly_ledgers(tmp_path):
         "d17_policy": {
             "ruling_date": "2026-09-03", "ruling_ref": "campaign-state §6 D17",
             "monthly_totals": "RECONSTRUCTED", "commissions": "AMENDED_OUT",
-            "max_drawdown": None,
+            "max_drawdown": "OVERLAP_KEYED",
             "reason": "Monthly totals are row-ledger reconstructions and commissions have no independent total.",
         },
         "strategies": [],

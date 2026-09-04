@@ -16,7 +16,7 @@ from research_utils.tv_trade_ledger import Issue, SourceSpec
 
 
 TV_PANEL_DD_METRIC = "tv_panel_max_drawdown_usd"
-MAX_DRAWDOWN_POLICY_STATUS = "PENDING_D32"
+MAX_DRAWDOWN_POLICY_STATUS = "OVERLAP_KEYED_D32"
 METRICS = (
     "trade_count", "net_pnl_usd", "win_rate_pct", "profit_factor",
     TV_PANEL_DD_METRIC, "total_commissions_usd", "monthly_net_pnl_usd",
@@ -108,8 +108,8 @@ def _validate_d17_policy(value: object) -> dict[str, str | None]:
         raise ValueError("d17_policy.monthly_totals must be RECONSTRUCTED")
     if value["commissions"] != "AMENDED_OUT":
         raise ValueError("d17_policy.commissions must be AMENDED_OUT")
-    if value["max_drawdown"] is not None:
-        raise ValueError("d17_policy.max_drawdown must be null pending operator D32 ruling")
+    if value["max_drawdown"] != "OVERLAP_KEYED":
+        raise ValueError("d17_policy.max_drawdown must be OVERLAP_KEYED")
     return dict(value)
 
 

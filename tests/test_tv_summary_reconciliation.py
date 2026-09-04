@@ -49,7 +49,7 @@ def d17_payload():
             "ruling_ref": "campaign-state §6 D17",
             "monthly_totals": "RECONSTRUCTED",
             "commissions": "AMENDED_OUT",
-            "max_drawdown": None,
+            "max_drawdown": "OVERLAP_KEYED",
             "reason": "Monthly values come from the canonical row ledger; no independent commission total exists.",
         },
         "strategies": [],
