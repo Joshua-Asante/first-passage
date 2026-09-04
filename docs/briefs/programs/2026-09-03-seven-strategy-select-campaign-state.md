@@ -1754,6 +1754,26 @@ soft-stop never enters it. This is a `diff`, not a judgement call.
 **Only if both pairs diff to the capital constant alone** does the capital-dependence survive as real,
 and only then do the two checks below matter.
 
+✅ **The repo already contains the template for exactly this evidence — for the PREVIOUS step, not this
+one.** [`PORT_MANIFEST.sha256`](../../../core/strategies/PORT_MANIFEST.sha256) §candidates carries a
+provenance block stating that each candidate body was *"reconstructed byte-exact from the restored
+locked file by applying only the single parameter edit its campaign lineage_note describes"*, with the
+**sole diff verified via `diff`** and named: DJ30 `pyramidSize` 750.0 → 250.0 only (day-of-week filter
+unchanged, still Tue+Fri); NAS100 `allowThu`/`allowFri` false → true only. `pine_check.py` clean on
+both.
+
+**That is precisely the artifact the `_cap100k` step is missing.** The chain is
+`locked → candidate` (byte-diff verified, pinned, `pine_check` clean) **→ `_cap100k`
+(declaration only, unpinned, no diff, no `pine_check` record)** → the export that produced the
+$32,057.36 the campaign wants to anchor on. The weakest link is the last edit before the number.
+**The ask is therefore not a new procedure — it is the same block, for the second step**, and the
+operator has already demonstrated they can produce it. Note too that the candidate→`_cap100k` edit
+target is not obvious from the record: `5c4b1026…` differs from the locked body by `pyramidSize`
+alone, so whatever carries the 200K basis is inherited from the locked body — meaning `_cap100k`
+edited something the campaign has never named. Whether that is `strategy(initial_capital=…)` (sizing
+unaffected, consistent with 203 identical trades) or the `accountSize` input `calcSize()` reads
+(sizing affected) **changes the answer**, and the diff says which in one line.
+
 **Two checks close it, and both are cheap.**
 
 **(i) The max-DD-window constraint — a real test, not a formality.** Max DD is *identical in
