@@ -1721,6 +1721,39 @@ both checks below, and an operator agreeing with a mechanism is not the mechanis
 distinction is exactly what this campaign has been burned by (D10's swap-port point value, D15's
 "resolution", the 6J encoding).
 
+⚠ **CORRECTION 2026-09-04, and it reframes the whole question. THE TWO RUNS DID NOT USE THE SAME
+SCRIPT.** §18c said "same script, different capital." That is not established, and I should not have
+written it. `phase1_config.json` pins the 100K DJ30 export to
+**`striker_dj30_v4.5_mym_pyramid_250_cap100k.pine`** (`712cf395…`, 27,497 bytes) — a **different file
+with a different hash** from the 200K research variant `striker_dj30_v4.5_mym_pyramid_250.pine`
+(`5c4b1026…`, pinned at `PORT_MANIFEST.sha256:210`). NAS100 got the identical treatment
+(`d18c2699…` → `fa6a70cd…`). **The 200K→100K move was a Pine EDIT, not a TradingView Properties
+change.** The claim that the edit touched only the capital constant is a *declaration* — the
+`pin_divergence` string in
+[`2026-09-02-tradeify-stage1-normalization-design.md`](../../superpowers/specs/2026-09-02-tradeify-stage1-normalization-design.md)
+§2 reads `initial_capital 100000 vs research-variant pin 200000` — and **no byte diff has ever been
+run**. Note also that neither `_cap100k` body is pinned in `PORT_MANIFEST`; they exist only as a
+`pine_sha256` in the config.
+
+**So the +$287 has a candidate that needs no soft-stop at all: a second, undeclared difference between
+the two Pine bodies.** That candidate is cheaper to test than the pyramid hypothesis and it must be
+ruled out first.
+
+**Three checks, cheapest first. The first two need no code reading at all.**
+
+**(0) Byte length.** `200000` → `100000` is **length-preserving** — same six characters. So if the two
+files differ in size, the edit was **provably more than the capital constant**, in two seconds, with no
+diff at all. DJ30's 100K body is **27,497 bytes**; compare against `5c4b1026…` on the operator's
+checkout. Equal size is necessary, not sufficient.
+
+**(0b) The actual diff, with NAS100 as a built-in control.** `diff` each pair. **NAS100 is the control
+and it is a good one:** identical treatment, identical re-export procedure, and its delta is
+**exactly $0.00**. If NAS100's diff is one line and DJ30's is two, the answer is immediate and the
+soft-stop never enters it. This is a `diff`, not a judgement call.
+
+**Only if both pairs diff to the capital constant alone** does the capital-dependence survive as real,
+and only then do the two checks below matter.
+
 **Two checks close it, and both are cheap.**
 
 **(i) The max-DD-window constraint — a real test, not a formality.** Max DD is *identical in
@@ -1730,7 +1763,13 @@ max-drawdown window.** If one does, the hypothesis is dead and candidates (2) De
 (3) a missed `initial_capital` path are back.
 
 **(ii) Does the soft-stop gate actually wrap the ADD, or only the fresh entry?** This is a one-line Pine
-read and it is decisive. A halt that guards `strategy.entry` for a *new* position while leaving an add to
+read and it is decisive. ⚠ **The likely shortcut:** in Pine, `pyramiding=2` is normally satisfied by
+TradingView re-firing the **same** `strategy.entry()` call on a later bar — there is usually no separate
+"add" call at all. So if the body has **one** long entry call and the halt flag guards its condition,
+the add is gated automatically and (ii) is TRUE with no further work. (ii) is FALSE only if there is a
+**separate** add block that the halt does not guard, or if the entry condition carries
+`strategy.position_size == 0` — in which case the body never adds, `pyramiding=2` is inert, and the
+hypothesis dies for a different reason. A halt that guards `strategy.entry` for a *new* position while leaving an add to
 an *open* position ungated **cannot** produce this delta, and the hypothesis dies without any arithmetic.
 A halt that gates every order-emitting call produces it exactly. The operator holds the Pine; the
 orchestrator does not open it. **Answer (ii) and check (i), and prerequisite 3 is dispositioned** —
