@@ -3361,6 +3361,8 @@ The operator fired C1 at 22:29Z; Cursor returned at 22:30Z with a merge of `main
 
 **Convergence (22:34Z).** Codex's round on `94fa685` returned zero findings; `skills (3.12)` (the required check), `pytest (3.11)` and semgrep are green on that head, with only the non-required `build (3.11)` job still running. **The #303 loop has converged — the operator merges.** (A1 landed at 22:31Z and is read in §45.)
 
+**Head moved 22:59Z — `2cc6e9a`, a pure merge of `main`.** Parents `94fa685` and `5ab079c`; tree byte-identical to `git merge-tree origin/main 94fa685`; the diff against `main` is still exactly the two packet files. The RESOLVED and converged verdicts carry forward; CI re-runs on the new head and is the only thing left before the operator's merge.
+
 ## §45 Fix round A1 gate read — #305 @ `b5b3fb4` (2026-09-04, 22:36Z): RESOLVED
 
 The operator fired A1 at 22:29Z; Cursor returned at 22:31Z with a merge of `main` (`8e4e7f1`) and one fix commit (`b5b3fb4`); the PR body restated as `DONE`, citing the brief at `1e16f4f4` §6b row A1. Verified here on the head, per §10 and §6b:
