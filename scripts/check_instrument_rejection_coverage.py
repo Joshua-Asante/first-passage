@@ -133,23 +133,24 @@ SCOPE AND ITS LIMITS (read before trusting a green run):
   * WARN-TIER BY DESIGN, PER-INVOCATION HARD SIGNAL. Bare invocation (as run
     manually, or by pytest here) exits 1 on any real gap -- Step 6 of the
     authoring plan needs that honest number, not a pre-neutered one. The
-    `--exit-zero` flag exists solely for the gates.yml WARN-tier wiring: this
-    repo's gate runner (scripts/gate_manifest.py) treats any non-zero exit
-    from ANY wired gate as a hard stop -- there is no tier that "runs and
-    reports but never blocks" (the declared `soft` tier is dead code: see
-    scripts/gates.yml's own header note; gate_manifest.py's `select_gates`
-    drops it in `pre-commit` and never includes it in `check`). `--exit-zero`
-    is therefore how gates.yml itself keeps ownership of this gate's
-    severity (matching check_instrument_ledger_coverage.py's own stated
-    posture -- "gate composition is owned by scripts/gates.yml ... not
-    decided here") while still actually executing, unlike `soft`. Promote by
-    dropping the flag from this gate's `cmd:` in scripts/gates.yml once the
-    real-corpus run is clean or every remaining gap carries a dated,
-    named exception (ADR Section 4 falsifier text, verbatim).
+    `--exit-zero` flag exists for the gates.yml wiring: this repo's gate
+    runner (scripts/gate_manifest.py) treats any non-zero exit from ANY wired
+    gate as a hard stop, and that is true of the `audit` tier too -- `audit`
+    controls WHERE a gate runs (`make audit` only, never pre-commit / `make
+    check` / required CI, per the W5 governance-diet 2026-09-04 addendum), not
+    whether a non-zero exit aborts the battery it runs in. This gate is wired
+    `tier: audit` with `--exit-zero`, so real findings print without cutting
+    `make audit` short. That also keeps gates.yml owning this gate's severity
+    (matching check_instrument_ledger_coverage.py's own stated posture --
+    "gate composition is owned by scripts/gates.yml ... not decided here").
+    Promote -- back to a blocking tier, dropping the flag from this gate's
+    `cmd:` in scripts/gates.yml -- once the real-corpus run is clean or every
+    remaining gap carries a dated, named exception (ADR Section 4 falsifier
+    text, verbatim).
 
 Usage:
     python scripts/check_instrument_rejection_coverage.py               # real signal, exit 1 on any gap
-    python scripts/check_instrument_rejection_coverage.py --exit-zero   # gates.yml WARN-tier wiring
+    python scripts/check_instrument_rejection_coverage.py --exit-zero   # gates.yml audit-tier wiring
 """
 from __future__ import annotations
 

@@ -46,7 +46,8 @@ SCOPE AND ITS LIMITS:
     would repeat the exact mistake `check_falsifier_reachability.py`'s own docstring
     warns against (the ADR governing that script bars promotion before a clean baseline
     exists) — this script follows the same discipline. Wired into `gates.yml` as
-    `falsifier-reachability-census`'s sibling: `tier: always`, report-only.
+    `falsifier-reachability-census`'s sibling: `tier: audit`, report-only, run via
+    `make audit` (not pre-commit/`make check`/required CI).
 
   * SCANS THE WHOLE `docs/spec/` CORPUS EVERY RUN, not just staged files — same reasoning
     as `check_falsifier_reachability.py --stats`: a census is only informative if it is

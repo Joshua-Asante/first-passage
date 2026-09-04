@@ -127,7 +127,7 @@ _63 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/_build_lessons_index.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/archive_lab_analysis.py` | governance | `lab-catalog` (path-conditional) | — |
 | `scripts/archive_strategy.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
-| `scripts/audit_notice_grade_k_correction.py` | lab | `notice-grade-k-correction` (always) | — |
+| `scripts/audit_notice_grade_k_correction.py` | lab | `notice-grade-k-correction` (audit) | — |
 | `scripts/beta_cohesion_read.py` | lab | — | manual/local only, not in gates.yml |
 | `scripts/check_adr_graph.py` | governance | `adr-graph` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_advisor_dedup.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
@@ -136,11 +136,11 @@ _63 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/check_closure_disposition.py` | governance | `closure-disposition` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_cost_model_closed_world.py` | lab | `cost-model-closed-world` (path-conditional) | — |
 | `scripts/check_data_manifests.py` | governance | `data-manifests` (data-conditional) | — |
-| `scripts/check_docs_runtime_inventory.py` | governance | `docs-runtime-inventory` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
-| `scripts/check_falsifier_reachability.py` | governance | `falsifier-reachability-census` (always) | --stats (report-only); layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_docs_runtime_inventory.py` | governance | `docs-runtime-inventory` (audit) | layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_falsifier_reachability.py` | governance | `falsifier-reachability-census` (audit) | --stats (report-only); layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_governance_prose_control_chars.py` | governance | `governance-prose-control-chars` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_instrument_ledger_coverage.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
-| `scripts/check_instrument_rejection_coverage.py` | governance | `instrument-rejection-coverage` (path-conditional) | WARN, --exit-zero; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_instrument_rejection_coverage.py` | governance | `instrument-rejection-coverage` (audit) | WARN, --exit-zero; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_lab_path_relocation.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_lifecycle_consistency.py` | governance | `lifecycle-consistency` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_md_relative_links.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
@@ -151,12 +151,12 @@ _63 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/check_repo_map_layers.py` | governance | `repo-map-layers` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_repo_map_scripts_table.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_root_doc_liveness.py` | governance | `root-doc-liveness` (always) | layer fallback (not in SCRIPTS_LAYER) |
-| `scripts/check_rule2_trip_log_liveness.py` | governance | `rule2-trip-log-liveness` (always) | --stats (report-only); layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_rule2_trip_log_liveness.py` | governance | `rule2-trip-log-liveness` (audit) | --stats (report-only); layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_sessions_queue_bind.py` | governance | `sessions-queue-bind` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_skill_deploy_sync.py` | governance | `skill-deploy-sync` (always) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_skill_refs.py` | governance | `skill-refs` (always) | — |
 | `scripts/check_skills_no_constants.py` | governance | `skills-no-constants` (always) | — |
-| `scripts/check_spec_provenance.py` | governance | `spec-provenance` (always) | --stats (report-only); layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_spec_provenance.py` | governance | `spec-provenance` (audit) | --stats (report-only); layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_state_currency.py` | governance | `state-currency` (always) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_status_consistency.py` | governance | `status-consistency` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_supersession_placement.py` | governance | `supersession-placement` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
@@ -181,11 +181,11 @@ _63 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/retire_adr.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/roll_sessions.py` | governance | `sessions-order` (path-conditional); `sessions-append-only` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/session_divergence_hook.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
-| `scripts/sync_liveness_indexes.py` | governance | `sync-liveness` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/sync_liveness_indexes.py` | governance | `sync-liveness` (audit) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/sync_pine_to_worktree.py` | governance | — | manual/local only, not in gates.yml |
 | `scripts/sync_skills.py` | governance | — | manual/local only, not in gates.yml |
 | `scripts/sync_skills_hook.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
-| `scripts/validate_c1_monitoring_acceptance.py` | governance | `m1-tree-skew` (always) | --check-tree-skew (report-only); layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/validate_c1_monitoring_acceptance.py` | governance | `m1-artifact-structure` (always); `m1-tree-skew` (audit) | --check-tree-skew (report-only); layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/verify_lock_anchors.py` | governance | — | manual/local only, not in gates.yml |
 <!-- END generated: scripts-table -->
 

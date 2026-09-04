@@ -34,9 +34,10 @@ facts remain with the linked owners; this page does not restate locked values.
   [`../spec/2026-06-27-session-log-rolloff-design.md`](../spec/2026-06-27-session-log-rolloff-design.md)).
 - Hygiene sentinel: `make sentinel`.
 - Skill mirror check/copy: `make sync-skills-check` / `make sync-skills`.
-- INDEX/CATALOG liveness census (report-only): `make sync-liveness`.
-  Wired [`../../scripts/gates.yml`](../../scripts/gates.yml) `path-conditional`
-  (Phase 5b). Script still exits 0; INDEX moves stay judgment.
+- INDEX/CATALOG liveness census (report-only): `make sync-liveness` (or
+  `make audit`). Wired [`../../scripts/gates.yml`](../../scripts/gates.yml)
+  `tier: audit` — not pre-commit/`make check`/required CI. Script still exits
+  0; INDEX moves stay judgment.
 - Rule 7 owner lookup: `make find-owner Q=<token>`. Not a sixth index.
 - Session narrative: read the newest entry in
   [`../SESSIONS.md`](../SESSIONS.md); older entries are indexed at its end.

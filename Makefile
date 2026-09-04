@@ -1,14 +1,15 @@
 # First Passage - convenience targets.
 # Wrappers around scripts that the pre-commit hook also calls.
 
-.PHONY: help check validate validate-data validate-pine skills-no-constants boundaries path-liveness root-doc-liveness md-relative-links lab-path-relocation sync-liveness find-owner status-consistency adr-graph adr-graph-index lab-catalog lab-catalog-check lab-archive-check test test-ops skills-check sync-skills sync-skills-check roll-sessions roll-sessions-dry instrument-profiles instrument-profiles-build gate-manifest gate-manifest-list
+.PHONY: help check audit validate validate-data validate-pine skills-no-constants boundaries path-liveness root-doc-liveness md-relative-links lab-path-relocation sync-liveness find-owner status-consistency adr-graph adr-graph-index lab-catalog lab-catalog-check lab-archive-check test test-ops skills-check sync-skills sync-skills-check roll-sessions roll-sessions-dry instrument-profiles instrument-profiles-build gate-manifest gate-manifest-list
 
 help:
 	@echo "check                 run check-tier gates (scripts/gates.yml)"
+	@echo "audit                 run report-only governance diagnostics"
 	@echo "validate              data manifests + pine"
 	@echo "lab-catalog           regenerate lab/CATALOG.md"
 	@echo "sentinel              INQHIORI sentinel scan (report-only)"
-	@echo "gate-manifest-list    print the hard-gate roster"
+	@echo "gate-manifest-list    print the hard-gate roster (blocking tiers)"
 	@echo "test / test-ops       pytest (all / ops/)"
 	@echo "root-doc-liveness     five-root-doc markdown link gate"
 	@echo "sync-liveness         INDEX/CATALOG liveness census (report-only)"
@@ -20,6 +21,9 @@ help:
 
 check:
 	@python scripts/gate_manifest.py --tier check
+
+audit:
+	@python scripts/gate_manifest.py --tier audit
 
 validate:
 	@python scripts/gate_manifest.py --tier validate
@@ -59,14 +63,15 @@ md-relative-links:
 
 # Warn-only: docs cite a dead lab/ path whose tail still exists elsewhere under
 # lab/ (theme-nest / archive relocation rot). Pruned-by-design harnesses do not
-# flag. NOT in scripts/gates.yml — belt-churn YELLOW; promote via soft/warn tier
-# later (CLAUDE.md §Gate composition authority).
+# flag. NOT in scripts/gates.yml — belt-churn YELLOW; wire at `tier: audit`
+# later if it earns a cadence (CLAUDE.md §Gate composition authority).
 lab-path-relocation:
 	@python scripts/check_lab_path_relocation.py
 
 # Report-only INDEX/CATALOG liveness census (Open-row stale, Open+hot-closure,
-# CATALOG ACTIVE archive-owed). Wired gates.yml path-conditional (Phase 5b);
-# script still exits 0. `--apply-index` unused on purpose.
+# CATALOG ACTIVE archive-owed). Wired gates.yml tier: audit (run via `make
+# audit`, not pre-commit/check); script still exits 0. `--apply-index` unused
+# on purpose.
 sync-liveness:
 	@python scripts/sync_liveness_indexes.py
 
@@ -107,8 +112,8 @@ lab-archive-check:
 	@python scripts/archive_lab_analysis.py --check
 
 # Rule 11 floor: do standing ADR falsifiers still name inputs that exist?
-# Manual `--stats` wrapper. Same census already runs on `make check` / pre-commit
-# as report-only `--stats` (never `--strict`; see the script docstring).
+# Manual `--stats` wrapper. Same census already runs at the explicit `make audit`
+# cadence as report-only `--stats` (never `--strict`; see the script docstring).
 # A hard / `--strict` gate would block commits on ADRs nobody is touching (M-22).
 falsifier-reachability:
 	@python scripts/check_falsifier_reachability.py --stats
