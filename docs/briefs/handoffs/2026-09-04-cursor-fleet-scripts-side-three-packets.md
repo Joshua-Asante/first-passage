@@ -57,13 +57,18 @@ If a worker hits an ambiguity not listed here, return `NEEDS_CONTEXT` with the q
 git fetch origin && git log --oneline origin/main --since="24 hours ago"
 # A — no-op condition: the calculator already exists (probe the SYMBOL, not a keyword)
 grep -rln "def max_certifying_busts" scripts/ lab/ 2>/dev/null && echo "A: EXISTS -> return DONE citing the commit" || echo "A: absent, proceed"
-# C — no-op condition: the gh probe is already guarded
-grep -n "FileNotFoundError" scripts/repo_hygiene.py && echo "C: EXISTS -> return DONE citing the commit" || echo "C: absent, proceed"
+# C — no-op condition: the gh probe is guarded INSIDE build_report(). A guard in _run is the §5 forbidden move
+#     (the first return 0e7ab25 had exactly that), so probe the LOCATION, never the exception name alone:
+sed -n '/^def _run/,/^def _git/p' scripts/repo_hygiene.py | grep -q 'except FileNotFoundError' \
+  && echo "C: guard in _run — FORBIDDEN (§5), not a no-op: rebuild per §2-C, do not return DONE"
+sed -n '/^def build_report/,/^def _print_human/p' scripts/repo_hygiene.py | grep -q 'except FileNotFoundError' \
+  && echo "C: guard in build_report -> return DONE citing the commit" || echo "C: absent, proceed"
+[ -f tests/test_repo_hygiene.py ] && python -m pytest -q tests/test_repo_hygiene.py   # the behaviour tests, when present
 # ALL — no OPEN PR may touch your footprint. `git log` cannot see open PRs; enumerate them:
-gh pr list --state open --json number,headRefName 2>/dev/null \
-  || echo "no gh: use the open-PR numbers the operator gave you (2026-09-04: #297, #301, #302)"
+PRS=$(gh pr list --state open --json number -q '.[].number' 2>/dev/null) \
+  || PRS="${OPEN_PRS:?no gh — set OPEN_PRS to the COMPLETE operator-supplied list of open PR numbers}"
 git fetch origin '+refs/pull/*/head:refs/remotes/pr/*'
-for n in 297 301 302; do echo "== PR #$n =="; git diff --name-only origin/main...pr/$n; done
+for n in $PRS; do echo "== PR #$n =="; git diff --name-only origin/main...pr/$n; done   # every PR the query returned, never a hard-coded set
 # Expected: none of the listed files is in your packet's §2 footprint. If one is, STOP and return BLOCKED naming it.
 # (2026-09-04 result: #297 touched REPO_MAP.md and blocked A until it merged as 81b35d0; re-run the probe — it should now be clean for both.)
 ```
