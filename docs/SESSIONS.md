@@ -33,6 +33,18 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-04a — Disable Claude→Cursor auto-ping
+
+**Focus:** Operator-direct: Claude's review Action was kicking Cursor too quickly; turn that trigger off.
+**Shipped:** `.github/workflows/notify-cursor.yml` auto-events removed (`workflow_dispatch` + `if: false`); pin test updated.
+**Decisions/defects:** [surface-allocation addendum 2026-09-04](adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-04-disable-notify-cursor) — auto-`@cursor` after `claude[bot]` review is off; manual mention still works.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24).
+queue-exception: operator-direct disable of the Claude→Cursor notify workflow.
+**Live-ops state:** unchanged — CI trigger only; c1 rail stays disarmed.
+**Class:** Hygiene · **Rule 2:** $0 / K=0
+
+---
+
 ## 2026-09-03p — D17/D18/D19 ruled; the calendar's secondary provenance accepted; four self-corrections
 
 **Focus:** Land three operator rulings that arrived after `2026-09-03o`, gate-read Codex PR #292, and fold two
