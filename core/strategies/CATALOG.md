@@ -15,6 +15,35 @@ and ADR 2026-08-04 (Tradeify de-scope).
 | `PARKED_PROTOTYPE` | Research prototype; not locked live |
 | `FALSIFIED_PARKED` | Candidate/falsified research; not live |
 
+## Locked parameter record (CFD-era book)
+
+Human-readable mirror of the locked book, moved here from `CLAUDE.md` §Strategy Reference on
+2026-09-04 (root-doc charter: root docs carry pointers, owners carry records —
+[`docs/operational_rules.md`](../../docs/operational_rules.md) §7).
+
+**No live venue.** These four strategies are a historical record of the locked CFD book and its
+withdrawn futures editions, not a live book. Live sizing authority is
+`dd_protection.BASE_RISK` / `firm_rules._BASE_RISK` (both derived from
+[`historical_challenge.py`](../historical_challenge.py)`.HISTORICAL_CHALLENGE_BASE_RISK`) — never
+this table. The two Striker futures editions (MYM/MNQ) *were* the c1 book until 2026-08-04; that
+code path is deliberately untouched (`ops/c1_rail/c1_sizing_host_reference.py` still consumes
+`BASE_RISK["Striker"]` / `["Striker NAS100"]` via `LEG_MAP`).
+
+| Strategy | Instrument / TF | Risk/trade | Version | DXTrade contractValue |
+|---|---|---|---|---|
+| Striker DJ30 | DJ30 15m | **0.70%** (pyramid 750%) | v4.5 LOCKED | **10** (critical — default 1 ⇒ ~7% risk) |
+| Striker NAS100 | NAS100 15m | **0.37%** (pyramid 1000%) | v1 LOCKED | 10 |
+
+Guardian Gold / Aegis USDJPY are **historical CFD book**, not living `BASE_RISK` — frozen risk% in
+`historical_challenge.HISTORICAL_CHALLENGE_BASE_RISK`; Pine + LOCK bodies under `_archive/`
+([Phase C](../../docs/adr/2026-08-23-strategy-coldstore-phase-c.md)).
+
+Risk% and pyramid are mirrored here from `firm_rules.py` / Pine as the human-readable record; every
+other strategy parameter (SL/TP/ATR/session/BE/trail) lives in **Pine only** and is never duplicated
+in markdown. The `contractValue=10` requirement is owned by
+[`docs/operational_rules.md`](../../docs/operational_rules.md) Rule 3 (dormant — DXTrade is retired).
+Lock lineage: [allocation refresh 2](../../docs/adr/2026-05-23-allocation-refresh-2.md).
+
 ## Registry
 
 | Slug | Family | Disposition | One-liner | Card | Body |

@@ -136,9 +136,10 @@ EXPECTED_SYMBOLS_BY_BROKER: Dict[str, Dict[str, str]] = {
 # loader path (breadth.py::load_baseline_panel) does not positionally parse a
 # version token out of these filenames (CME TV-exports don't follow one
 # consistent 7-field pattern the way OANDA/Pepperstone's did — see that
-# function's docstring). "v1" for striker_nas100 is sourced from CLAUDE.md's
-# Strategy Reference table (Striker NAS100 v1 LOCKED); the filename itself
-# carries no version token to check against.
+# function's docstring). "v1" for striker_nas100 is sourced from the locked
+# parameter record in core/strategies/CATALOG.md (Striker NAS100 v1 LOCKED;
+# moved there from CLAUDE.md 2026-09-04); the filename itself carries no
+# version token to check against.
 EXPECTED_VERSIONS_BY_BROKER: Dict[str, Dict[str, str]] = {
     "cme": {
         "striker": "v4.5",

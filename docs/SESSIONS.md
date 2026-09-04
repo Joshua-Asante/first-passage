@@ -138,6 +138,28 @@ establishes method and feasibility, not the frozen value.
 iteration as one dispatch → gate read → fold, and this session completed exactly that for the #294 remediation
 branch (dispatch, §16 gate read, the 3.11 defect correction, §16f verification). D20 itself spends none; the
 #294 cycle does · $0 / K=0
+## 2026-09-04b — CLAUDE.md consolidated to pointers; the anchor block ruled immovable
+
+**Focus:** Operator-direct: simplify CLAUDE.md, audit it for staleness, and add a `## Continuous
+improvement` section. Then a second pass taking the three further cuts named in the first PR review.
+**Shipped:** [`CLAUDE.md`](../CLAUDE.md) 24,390 → 17,253 bytes; new
+[`docs/load_bearing_numbers.md`](load_bearing_numbers.md); locked parameter record moved to
+[`core/strategies/CATALOG.md`](../core/strategies/CATALOG.md); Rule 7 owner-table row + narrowed
+`CLAUDE.md` role note; [PR #299](https://github.com/Joshua-Asante/first-passage/pull/299).
+**Decisions/defects:** [charter ADR addendum 2026-09-04](adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-04--consolidation-pass-what-moved-and-what-was-ruled-immovable)
+— §5's first forbidden move justified itself by naming two parsers, **both claims now stale**
+(`validate_params.py` deleted with the params.toml retirement; `verify_lock_anchors.py` verified to
+read only `dd_protection` / `historical_challenge` / `firm_rules`). The live reader is
+`ops/recall/guard.py`. **Ruled: the MC-anchor triple stays in CLAUDE.md** — the first anchor-shaped
+regex match in `mc_anchor_history.md` is `99.84 / 0.16 / 4.55` (Q-SWAP-1), so re-pointing the parser
+would have silently denylisted the wrong three numbers with every gate green. §5's instruction
+upheld on corrected evidence. Every stubbed heading kept: 15 files cite `§Strategy Reference`, four
+cite `§Vendor-data integrity gate`, several in frozen bodies Trap #12 bars editing.
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24).
+queue-exception: operator-direct governance-doc consolidation; the CLAUDE.md posture size-hook
+operator call (STATE row) is still open at 41 lines vs the hook's ≤25.
+**Live-ops state:** unchanged — documentation only; c1 rail stays disarmed, no constant moved.
+**Class:** Decision · **Rule 2:** $0 / K=0
 
 ---
 
