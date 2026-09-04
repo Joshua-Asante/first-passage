@@ -120,7 +120,7 @@ Regenerate: `python scripts/check_repo_map_scripts_table.py --write`.
 `--check` exits 1 on drift; it is **not** wired into `gates.yml`.
 
 <!-- BEGIN generated: scripts-table -->
-_63 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_64 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 | Script | Layer | Gate id (tier) | Notes |
 |---|---|---|---|
@@ -129,6 +129,7 @@ _63 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/archive_strategy.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/audit_notice_grade_k_correction.py` | lab | `notice-grade-k-correction` (always) | — |
 | `scripts/beta_cohesion_read.py` | lab | — | manual/local only, not in gates.yml |
+| `scripts/certification_power.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_adr_graph.py` | governance | `adr-graph` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_advisor_dedup.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_boundaries.py` | governance | `boundaries` (always) | — |
