@@ -57,10 +57,17 @@ Prior for "sizing works together": the combined Aegis+ORB study's 3.29% / 5.37% 
 **§15d ruled (operator, same session):** *"go with fresh 6J bars, yes on all three panels, admit ORB"* — the
 freeze now waits only on §14e and four `BAR EXPORT v0.2` panel pins (capture route + two traps in §15f). The weekly
 idle trade was placed 2026-09-03 (operator statement; authoritative record is the private compliance note).
+**Bar panels gate-read (#296, §15h):** three of four ACCEPTED; **`6J` REJECTED** — the encoding trap fired
+(`max_close_decimals` 5, **51.21%** flat), and it fails *optimistic*: half the bars report zero intrabar range, so
+threading them through `intraday_low` would understate adverse excursion while wearing the honest-clock label.
+Trap A did not fire — density 23,591–23,691 bars/yr matches the old panels, so ~94.5k over 4.01y is complete (the
+§15f "under 50,000" heuristic was mis-calibrated on longer spans; corrected). Second finding: the refresh shortened
+`6J`/`MNQ`/`MYM` by 2–2.8 years and left ~12 prior-study pins unresolvable — **D21**, second firing of the sentence
+`ops/instruments/MYM.md` §W3 already records.
 **Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration
 campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — Codex owes §14e on a fresh branch
-from `main`; operator captures the four bar panels (§15f); orchestrator drafts the short Phase 3 freeze the
-moment §14e and the panel pins land · `#2`
+from `main`; operator owes one more **6J** capture at ≥7-decimal harness precision (§15h-1 route (a)); orchestrator
+drafts the short Phase 3 freeze the moment §14e and all four panel pins land · `#2`
 [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
 — now on the campaign's critical path via Phase 8; this week's venue-idle token trade placed 2026-09-03.
 **Class:** Decision · **Rule 2:** constituent (i) iteration 3 of 8 (unchanged; D20 spends none) · $0 / K=0
