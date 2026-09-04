@@ -1,4 +1,4 @@
-"""Pin the Claude review hop so git-read tools and notify-cursor do not regress."""
+"""Pin the Claude review hop so git-read tools stay quoted and notify-cursor stays off."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -34,8 +34,24 @@ def test_claude_yml_allows_quoted_git_read_tools() -> None:
         assert tool in quoted
 
 
-def test_notify_cursor_skips_in_progress_ack() -> None:
-    assert "claude[bot]" in NOTIFY_YML
-    assert "!contains(github.event.comment.body, 'Claude Code review — in progress')" in (
-        NOTIFY_YML
-    )
+def _on_block(text: str) -> str:
+    lines: list[str] = []
+    in_on = False
+    for line in text.splitlines():
+        if line.startswith("on:"):
+            in_on = True
+            continue
+        if in_on:
+            if line and not line[0].isspace():
+                break
+            lines.append(line)
+    return "\n".join(lines)
+
+
+def test_notify_cursor_auto_ping_is_disabled() -> None:
+    on_text = _on_block(NOTIFY_YML)
+    assert "workflow_dispatch" in on_text
+    assert "issue_comment" not in on_text
+    assert "pull_request_review" not in on_text
+    assert "if: false" in NOTIFY_YML
+    assert "@cursor the review above is complete" not in NOTIFY_YML
