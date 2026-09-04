@@ -772,7 +772,7 @@ def test_committed_manifest_matches_frozen_five_strategy_acceptance():
     assert manifest["inputs"] == {
         "config_sha256": "df238cd78fc0a381fdb86466ef3dfca5522dd8db7ae0cf245165f370df9f3892",
         "tradeify_commission_schedule_sha256": "61c8957a4adfabf6b8e8c4eb984e6d9388a223145f90b0b9ca66b3dd7ca28750",
-        "cme_early_close_calendar_sha256": "3f114ec021c6d2d15ca88d4063a396612fe9c662ae92d4c25a2758657a1feaa9",
+        "cme_early_close_calendar_sha256": "6eeb3b9d198eabf0a5a2115c4648f69629720a500616f38e219dff7bc57d0334",
         "tv_summary_anchors_sha256": "481e9bb2227578497dbc506d336377a5d51c366161dae6dd7d534c9c2ef88979",
     }
     for input_name, filename in {
@@ -815,10 +815,10 @@ def test_committed_manifest_matches_frozen_five_strategy_acceptance():
         "vanguard_mgc_v04": "5b1f2a5872aac49ef4988b423bc3d042232c16f5056c1816bddc4eeebde56acb",
     }
     assert sha256((_CAMPAIGN_DIR / "reconciliation_manifest.json").read_bytes()).hexdigest() == (
-        "f40856086b4498960dc1fdc485a097d32323d0b5160f93775ff355c37b71ec01"
+        "90281c7a28ddb28a7be84985b61a0fdd5c399f1bd8d3106d10490266585d209e"
     )
     assert sha256((_CAMPAIGN_DIR / "RESULTS.md").read_bytes()).hexdigest() == (
-        "40cd23eda0618d68a2237c5d6713123b318f918d01218721aef8b4a753c75290"
+        "7918ebeb80fdc6a9182d61ad1b71f2f168aadf85c82e34c3aeb682f3a768b084"
     )
     assert [source["strategy_id_as_named_before"] for source in manifest["dropped_sources"]] == [
         "striker_dj30_qtxg1_swap_body_on_mym",

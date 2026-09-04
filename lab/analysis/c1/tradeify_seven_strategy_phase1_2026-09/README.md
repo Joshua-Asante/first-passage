@@ -39,7 +39,7 @@ The frozen upper-bound implementation is the reviewed `80abcec` behavior; the fi
 
 The per-strategy Tradeify cap remains a Phase 1 blocker check against 80 micro-equivalents (`6J=10`, `MNQ/MYM/MGC=1` per contract). The joint ledger carries that unit on every event, but the joint book-cap verdict is deferred to Phase 4.
 
-Force-flat auditing checks whether a daily Tradeify deadline instant lies in `(entry, exit]`: 16:45 America/New_York on regular days and 12:59 on the D19-accepted 40-date secondary venue-date calendar within 2022-09-01 through 2026-09-02 (the source inventory has 49 dates overall). The final replacement ledgers remain a deliberately stale 49-date generation until N6 creates the single new freeze. D19 does not upgrade this source to primary evidence or model product close times/exchange sessions; its accepted and unresolved residuals remain in `RESULTS.md`. The verdict cap remains `NEEDS_CONTEXT` because fresh independent scalar panels are missing (including DJ30's unexplained +$287 replacement-run delta), not because the D19 calendar is incomplete.
+Force-flat auditing checks whether a daily Tradeify deadline instant lies in `(entry, exit]`: 16:45 America/New_York on regular days and 12:59 on the D19-accepted 40-date secondary venue-date calendar within 2022-09-01 through 2026-09-02 (the source inventory has 49 dates overall). The final 40-date replacement generation is frozen in `reconciliation_manifest.json` and `RESULTS.md`. D19 does not upgrade this source to primary evidence or model product close times/exchange sessions; its accepted and unresolved residuals remain in `RESULTS.md`. The verdict cap remains `NEEDS_CONTEXT` because fresh independent scalar panels are missing (including DJ30's unexplained +$287 replacement-run delta), not because the D19 calendar is incomplete.
 
 ## Evidence inputs and independent summary checks
 
@@ -61,7 +61,7 @@ Phase 1 delivers deterministic joint event union and ISO-week exit aggregation o
 .venv/Scripts/python.exe lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/run_phase1.py `
   --config lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json `
   --source-dir 'C:\path\to\the\ten\active\frozen\files' `
-  --output-dir lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/reanchor_replacements_2026-09-03
+  --output-dir lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/remediation_40_dates_2026-09-03
 ```
 
 The aggregate report remains `EXPLORATORY` even when all byte and accounting checks reproduce exactly. Re-running Pine needs a separate, explicitly authorized bar-data and execution-engine project.

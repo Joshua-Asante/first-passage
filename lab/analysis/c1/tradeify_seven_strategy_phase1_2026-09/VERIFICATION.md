@@ -7,10 +7,10 @@ Audit date: 2026-09-03. This is the final `tradeify-phase1-normalization-v3` rep
 The runner was invoked once after final input and renderer-contract verification:
 
 ```powershell
-.venv/Scripts/python.exe lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/run_phase1.py --config lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json --source-dir $SOURCE_DIR --output-dir lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/reanchor_replacements_2026-09-03
+.venv/Scripts/python.exe lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/run_phase1.py --config lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json --source-dir $SOURCE_DIR --output-dir lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/remediation_40_dates_2026-09-03
 ```
 
-The execution wrapper did not surface a numeric exit field or stdout/stderr after its completion signal. Artifact publication was verified instead: the new ignored output directory, v3 manifest, and RESULTS were atomically published at 2026-09-03 19:30:13 EDT; no Python process remained. A controller's independent read-only audit then exited 0 and verified all source snapshots, hashes, calendar dates, Decimal monthly arithmetic, deadline crossings, and exposure bounds.
+The runner exit was captured as `0`. Artifact publication was then checked: the ignored output directory, v3 manifest, and RESULTS were atomically published at 2026-09-03 20:17:40 EDT; no Python process remained. A controller's independent read-only audit exited `0` in 2.02 seconds and verified all source snapshots, hashes, calendar dates, Decimal monthly arithmetic, deadline crossings, and exposure bounds.
 
 - Invocation-time `run_phase1.py` SHA-256: `c7f331ecbb53ab35fc15f0b1ae7d26ba1fd2674db63c5b617300efb59dc4dc83`.
 - `lab/research_utils/tv_trade_ledger.py`: `cdd925c0b77efc31ded8b90a9a3ead0cd79dac9fa9af9a0e1e77f272d520b075`.
@@ -30,7 +30,7 @@ Source bytes are operator-owned and are not committed. All ten physical files ma
 
 ## Calendar, D17, and measured acceptance
 
-The calendar is `COMPLETE` only through D19's `ACCEPTED_SECONDARY` venue-date-membership acceptance: 49 exact `EARLY_CLOSE` rows, `SECONDARY` provenance, and no full-closure date applied as a short session. The consumed LF source-calendar SHA-256 is `2698f2688cce582b08df58516fd770fa4a71a18de04870d9c14511731ea181e9`; `git hash-object --no-filters` and `HEAD:ops/calendars/cme_holiday_calendar_2022_2026.json` both equal `6b489a87f6728af5c21c52c48b65bf4b3b5516d9` under the scoped LF attribute.
+The calendar is `COMPLETE` only through D19's `ACCEPTED_SECONDARY` venue-date-membership acceptance: exactly 40 `EARLY_CLOSE` rows, set-equal to the source calendar's 49-date `venue_flat_dates` inventory intersected with 2022-09-01 through 2026-09-02, `SECONDARY` provenance, and no full-closure date applied as a short session. The consumed LF source-calendar SHA-256 is `2698f2688cce582b08df58516fd770fa4a71a18de04870d9c14511731ea181e9`; `git hash-object --no-filters` and `HEAD:ops/calendars/cme_holiday_calendar_2022_2026.json` both equal `6b489a87f6728af5c21c52c48b65bf4b3b5516d9` under the scoped LF attribute.
 
 D19 does not claim a primary-CME source, product close-time model, or exchange-session model. The scheduled 2025-11-28 outage/half-day classification remains conservatively included; potentially missing ad-hoc 2026-05-28 through 2026-09-02 closures remain non-conservative and must be retested if primary evidence arrives. The thirteen unresolved and three sub-deadline inventories remain published.
 
@@ -52,18 +52,18 @@ Totals are 3442 events and 1721 trades. The controller independently recomputed 
 |---|---:|---|
 | phase1_config.json | 9023 | `df238cd78fc0a381fdb86466ef3dfca5522dd8db7ae0cf245165f370df9f3892` |
 | tradeify_commission_schedule.json | 428 | `61c8957a4adfabf6b8e8c4eb984e6d9388a223145f90b0b9ca66b3dd7ca28750` |
-| cme_early_close_calendar.json | 4330 | `3f114ec021c6d2d15ca88d4063a396612fe9c662ae92d4c25a2758657a1feaa9` |
+| cme_early_close_calendar.json | 3809 | `6eeb3b9d198eabf0a5a2115c4648f69629720a500616f38e219dff7bc57d0334` |
 | tv_summary_anchors.json | 947 | `481e9bb2227578497dbc506d336377a5d51c366161dae6dd7d534c9c2ef88979` |
 | canonical_events.csv (ignored) | 1019004 | `3a6b754ec145db0e5c09ce18413d7d42d60fa1ce8ac034bd6d6878ae4251d3ac` |
 | canonical_trades.csv (ignored) | 362482 | `7e650599241b8150d0ee31ea04a7406c200e1f009c9530908a9644e56bed765a` |
 | weekly_exit_blocks.csv (ignored) | 14718 | `d0b3e5ab840ef0a88c9f7b4b2c7254b3774142b85a55a9cfaeaa04fa5fe7934a` |
-| reconciliation_manifest.json | 63592 | `f40856086b4498960dc1fdc485a097d32323d0b5160f93775ff355c37b71ec01` |
-| RESULTS.md | 37583 | `40cd23eda0618d68a2237c5d6713123b318f918d01218721aef8b4a753c75290` |
+| reconciliation_manifest.json | 63702 | `90281c7a28ddb28a7be84985b61a0fdd5c399f1bd8d3106d10490266585d209e` |
+| RESULTS.md | 37638 | `7918ebeb80fdc6a9182d61ad1b71f2f168aadf85c82e34c3aeb682f3a768b084` |
 
 Detail hashes in configuration order: `546cf0e0b1b9fe3d26793f0dc87ea53cb7990decd744bb5ec261110b32c964bc`, `a0ea8a6b27aba3aa6f292322d82c3e38029e1c89cb8bbefbcb329305fcff81ea`, `c7bbab4867e381428da31116c61ea4cb224d8b2b848cf328ce105443988871e3`, `4d2807e40f946f708e270ad66be01451ca0a05d6c05099ac811663532615b5d4`, `a0a9564b1f598f04e68a1a6d56cf2e49d4ef25c7e3b67305a4ddfd2ca142e4d1`. Monthly hashes in the same order: `5242591bbb40a93480e5356011f31a4d6fd0575d1d0f1f73ee1236926c343ca1`, `632382c8bffea9644486b961e706d5f94a7f782235ecc4b7d5b9bab29070e2ad`, `bd34b13a72d6c771cdbb654d3798bb53307f60ac144e1553141efe5df4303070`, `7163605aeddd8953d73e44b46162ec051d4d45587c508701079acbd4a6e7568a`, `5b1f2a5872aac49ef4988b423bc3d042232c16f5056c1816bddc4eeebde56acb`.
 
 ## Test and hygiene evidence
 
-Before the real run, the focused Phase 1, D17, D19, safety, cost, and production-barrier command completed with **374 passed, 1 skipped, 2 explicitly stale generated-artifact acceptance tests deselected**. The skip is the Windows file-symlink privilege test. The post-freeze all-selected version of the same focused command completed with **376 passed, 1 skipped in 11.27s**. The new renderer regression first failed because local monthly hashes were absent from RESULTS, then passed after the renderer emitted those five aggregate-only hash lines.
+Before the real run, the focused 15-module Phase 1, D17, D19, safety, cost, and production-barrier command completed with **374 passed, 1 skipped, 2 explicitly stale generated-artifact acceptance tests deselected in 11.29s**. The skip is the Windows file-symlink privilege test. The two deselections were the old manifest and RESULTS frozen-hash acceptances, which this 40-date freeze updates. Controller independently audited the published 40-date artifacts with `verify-40-date-freeze.ps1`: exit `0` in 2.02 seconds, including all local-output hashes, exact calendar membership, monthly Decimal arithmetic, time-zone deadline holds, and causal peak bounds.
 
-The repository-wide full suite completed at tested commit `9bb31ea`: `.venv/Scripts/python.exe -m pytest -q -p no:cacheprovider --basetemp <external temporary directory>` exited 0 with **2495 passed, 35 skipped, 23 warnings, 6 subtests passed in 399.98s**. The focused evidence command remains **376 passed, 1 Windows-symlink skip in 11.27s**. `python scripts/gate_manifest.py --tier check` and the catalog-only gate each exited 0. Report-only warnings remain explicit: inherited dependency deprecations/fallback, historical scoring notices, and gate governance/inventory warnings. Main `b2d070c` merged as `4729080`; the exact before/after Git tree is `c2918da224f4e39bc81ca451c9327f34e0343364`, so tested bytes are unchanged. Final whole-branch review is software-ready with no Critical or Important findings; this documentation-only wave closes the minor documentation finding. Remaining legacy gross-identity/final cumulative-cent-boundary coverage is nonblocking debt, duplicate-mismatch exactness remains tested, and Phase 1 remains `NEEDS_CONTEXT` for fresh panels and the DJ30 +$287 gap.
+Controller's fresh manifest gate and catalog-only gate each exited `0` on the changed 40-date tree (external `remediation-40-gate.log`). Report-only governance, absent-private, and inherited catalog-heavy warnings remain. The repository-wide full suite, hygiene, and final branch review are intentionally pending a fresh controller run. The earlier 49-date full-suite result is historical only and is not claimed as verification of this frozen tree. Phase 1 remains `NEEDS_CONTEXT` for fresh panels and the DJ30 +$287 gap.

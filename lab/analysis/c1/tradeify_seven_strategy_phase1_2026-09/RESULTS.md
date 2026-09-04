@@ -59,7 +59,7 @@ These exports are provenance only and are never normalized, counted, or used in 
 - Scalar MAE/MFE values are inventory-only excursion bounds, not timestamped paths.
 - Per-strategy caps are measured against 80 micro-equivalents; the joint book-cap verdict is deferred to Phase 4.
 - CME holiday-short coverage is `COMPLETE` through D19-accepted SECONDARY venue-date membership; it is not a primary-CME upgrade, product close-time model, or exchange-session model.
-- CME early-close coverage note: D19 accepts this SECONDARY venue-date membership evidence only, not product close-time or exchange-session modeling. The 2025-11-28 scheduled-half-day/outage classification is conservatively included; possible ad-hoc closures from 2026-05-28 through 2026-09-02 may be missing and are not conservative. The preserved secondary metadata retains 13 unresolved items and 3 sub-deadline close notes.
+- CME early-close coverage note: D19 accepts this SECONDARY venue-date membership evidence only over the declared 2022-09-01 through 2026-09-02 window, not product close-time or exchange-session modeling. The 2025-11-28 scheduled-half-day/outage classification is conservatively included; possible ad-hoc closures from 2026-05-28 through 2026-09-02 may be missing and are not conservative. The preserved secondary metadata retains 13 unresolved items and 3 sub-deadline close notes.
 - Secondary provenance is retained without a primary-CME upgrade: `ops/calendars/cme_holiday_calendar_2022_2026.json` SHA-256 `2698f2688cce582b08df58516fd770fa4a71a18de04870d9c14511731ea181e9` under `cme_holiday_calendar/v1`.
 - Secondary provenance note: NO CME PRIMARY SOURCE WAS FETCHED FOR ANY DATE IN THIS FILE. www.cmegroup.com, investor.cmegroup.com and every broker mirror returned 403 at the egress proxy's CONNECT layer. Every cell is reconstructed from independent third-party encodings of the CME schedule (QuantConnect Lean's market-hours database, pandas_market_calendars, exchange_calendars, vacanza/holidays, one C++ reimplementation) cross-checked against in-repo measured bar panels. Treat as WORKING-GRADE, not audit-grade. Close it out by allowlisting www.cmegroup.com and reading the per-holiday clearing advisories, or by an authenticated CME Reference Data API pull (Globex Trading Hours and Holiday Schedules). For historical dates prefer the post-hoc settlement-times PDFs over the ex-ante advisories (CME finalises holiday hours roughly two weeks out) and never conflate a settlement time with a Globex close time.
 - D19 provenance acceptance: `D19` `ACCEPTED_SECONDARY` on 2026-09-03 — Operator ruling 2026-09-03; campaign-state §6 D19: secondary CME calendar provenance accepted.
@@ -116,7 +116,7 @@ These exports are provenance only and are never normalized, counted, or used in 
 
 - Config: `df238cd78fc0a381fdb86466ef3dfca5522dd8db7ae0cf245165f370df9f3892`
 - Tradeify fee capture: `61c8957a4adfabf6b8e8c4eb984e6d9388a223145f90b0b9ca66b3dd7ca28750`
-- CME calendar capture: `3f114ec021c6d2d15ca88d4063a396612fe9c662ae92d4c25a2758657a1feaa9`
+- CME calendar capture: `6eeb3b9d198eabf0a5a2115c4648f69629720a500616f38e219dff7bc57d0334`
 - Independent TradingView anchors: `481e9bb2227578497dbc506d336377a5d51c366161dae6dd7d534c9c2ef88979`
 - Canonical events: `3a6b754ec145db0e5c09ce18413d7d42d60fa1ce8ac034bd6d6878ae4251d3ac`
 - Canonical trades: `7e650599241b8150d0ee31ea04a7406c200e1f009c9530908a9644e56bed765a`
