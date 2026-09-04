@@ -68,9 +68,10 @@ v7's export is `ORB-MNQ-1_recon_v7_…` — the construct whose Tradeify target 
 [repark ADR](adr/2026-08-03-orb-mnq-repark-payability-falsified.md) recorded FALSIFIED (67.67% bust at k=1,
 honest clock); R2 makes it research-scored, not deployable, without a superseding ADR on the Phase 5 result.
 Prior for "sizing works together": the combined Aegis+ORB study's 3.29% / 5.37% both-halves — fails H2 at 5.0%.
-**§15d ruled (operator, same session):** *"go with fresh 6J bars, yes on all three panels, admit ORB"* — the
-freeze now waits only on §14e and four `BAR EXPORT v0.2` panel pins (capture route + two traps in §15f). The weekly
-idle trade was placed 2026-09-03 (operator statement; authoritative record is the private compliance note).
+**§15d ruled (operator, same session):** *"go with fresh 6J bars, yes on all three panels, admit ORB"* (capture
+route + two traps in §15f). ⚠ ~~the freeze now waits only on §14e and four panel pins~~ — **stale, struck** (Codex
+P2): both landed, and the live prerequisites are the three in the Open/next below. The weekly idle trade was
+placed 2026-09-03 (operator statement; authoritative record is the private compliance note).
 **Bar panels gate-read (#296, §15h):** three of four ACCEPTED; **`6J` REJECTED** — the encoding trap fired
 (`max_close_decimals` 5, **51.21%** flat), and it fails *optimistic*: half the bars report zero intrabar range, so
 threading them through `intraday_low` would understate adverse excursion while wearing the honest-clock label.
@@ -100,6 +101,17 @@ Also: **R-STRIKER-EC is not discharged** by the 545 → 0 remediation (both Stri
 bar that never prints on a 13:00 close; four clean years is a sample property) — now an explicit Phase 8 gate or
 the legs are excluded; the manifest-restore branch now actually restores and aborts instead of printing a
 warning; §7 rewritten; and the status header no longer says "one input" while listing three.
+⚠ **Codex round 3 — five more findings, all accepted; two are new design forks, not doc drift.** **D23:** the Monte
+Carlo initializes a **pristine** $100K→$106K account (`simulate_path` does `equity = peak = starting_equity` and
+zeroes `trade_days`/`max_day_profit`), but D20 would arm the **used** incumbent eval — so target headroom, the
+trailing floor's anchor, min-trading-day history and the 40% consistency input all differ, and clearing 5% in the
+sim is not clearing 5% on the account being armed. **D23 blocks the freeze.** **D24:** the Phase 4 screen enforces
+the 80-micro cap **dynamically along the joint path**, but `c1_sizing_host_reference.py` can only apply a **static
+per-leg `cap_alloc`** — its own comment concedes there is no runtime headroom — so the rail either breaches 80 on
+overlapping signals or runs quantities that differ from what was scored. Both verified in source, both operator
+forks. Also folded: the §2 board note now covers **row 3** (the board still demanded all 14 contract items while
+D20 replaced them with the short freeze), the Rule 2 line no longer assigns **M1 item 5 to Phase 8**, and a stale
+"freeze waits only on §14e and the panel pins" sentence is struck.
 **Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — ⚠ **pointer refreshed to this commit's final state** (Codex P2: it still listed §14e and the 6J re-capture as outstanding, both of which this same commit records as done). **#294 MERGED** (main `9a69185`, §16g); **all four bar panels ACCEPTED** (§16h). Freeze prerequisites now: Codex's per-leg **scaling-faithfulness read** (each size-specific export takes a full G1.1–G1.10 read), fresh **TV Key-stats panels** for all five sources, and the **DJ30 +$287** disposition — the grammar cannot be frozen over inputs Phase 1 has not reconciled. #296 is `behind` main; update the branch before merging · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) — on the campaign's critical path via Phase 8; weekly venue-idle token trade placed 2026-09-03.
 **Class:** Decision · **Rule 2:** constituent (i) iteration **4** of 8 — ⚠ advanced per Codex P2: D3 defines an
 iteration as one dispatch → gate read → fold, and this session completed exactly that for the #294 remediation
