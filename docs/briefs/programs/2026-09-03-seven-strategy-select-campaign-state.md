@@ -2361,8 +2361,19 @@ result. That is the same class of defect I have spent this session correcting in
 The re-sweep used every figure in every form and is clean. The one surviving `-$192.90` in the tree is an
 unrelated 2026-08-26 study's one-year drawdown — a coincidental collision, not the account.
 
-**Standing correction:** a redaction sweep is only as good as its pattern, so the pattern belongs in the record
-next to the result. It is now in the commit message, and any future sweep quotes its pattern or does not count.
+**Standing correction, CORRECTED AGAIN 2026-09-04 — the first version of this rule was self-defeating.**
+I wrote *"the pattern belongs in the record next to the result… quote its pattern or it does not count"* and
+then quoted the literal regex. **A pattern over redacted values reconstructs them**: that regex carries four of
+the five figures, and it went into commit `a835ca8`'s message and a public PR comment — **a second disclosure,
+caused by the remediation rule itself.** Neither is retractable: commit messages are immutable and the review
+comment has no edit path from here. Forward-only again.
+
+**The rule as it should have been written:** a sweep records its **coverage**, not its literal pattern —
+*"all five captured fields, in comma-separated and bare forms, plus the derived percentage"* is auditable and
+discloses nothing. The literal pattern belongs in the **private archive** if it is kept at all.
+⚠ **The general form is worth more than the instance: a control that describes redacted data can leak it.**
+That applies to sweep patterns, test fixtures, error messages that echo the matched value, and any assertion
+written against a redacted constant.
 
 ### 24b — Two new freeze blockers, and neither is cosmetic
 
