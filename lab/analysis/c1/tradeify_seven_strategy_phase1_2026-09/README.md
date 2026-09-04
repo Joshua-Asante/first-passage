@@ -12,6 +12,61 @@ Phase 0 was skipped by operator direction. All supplied history is development d
 
 ## Source and output ownership
 
+D26 migration is pending: the checked-in config, manifest and RESULTS remain historical
+v3 artifacts, byte-for-byte unchanged. The v4 runner requires a non-null
+`pine_input_overrides_sha256` (exactly 64 lowercase hexadecimal characters) for every
+active source; the historical config intentionally cannot run under this schema.
+Five full current private input captures are required before digest population and
+a single re-freeze of the campaign artifacts. No synthetic digest may stand in for
+that evidence. Raw input override maps remain private; only their digests propagate
+into new source identities and reports. Historical v3 manifests remain renderable.
+
+Store D26 override maps and their capture evidence under this study's
+`inputs/private_overrides/` directory. The entire directory is gitignored,
+including JSON, images, text and nested files. Hash the exact private artifact
+bytes; publish only that digest. Never force-add these private artifacts.
+The runner requires `inputs/private_overrides/<strategy_id>.json` for each
+active source, relative to the config directory. It hashes the exact bytes
+without decoding or parsing them. Missing, unreadable or mismatched evidence
+is a fatal intake failure (exit 3), before any output publication. Only the
+verified digest is serialized; no artifact contents are included in diagnostics.
+
+Prospective v4 D27 summary anchors use `tv_panel_max_drawdown_usd`, separate
+from both computed measures on every leg, including the five-scalar D17 branch
+and the seven-metric non-D17 branch. Both retired anchor names,
+`max_drawdown_usd` and `max_drawdown_excursion_bounded_usd`, are rejected.
+Accounting retains that closed-trade measure separately as
+`LOWER BOUND for non-overlapping trades`. Under overlap, a realized loss can
+coincide with an unrealized gain, so closed-trade drawdown can overstate the
+true account drawdown. The new measure is labeled
+`LOWER BOUND (excursion-tightened) for non-overlapping trades` and uses Decimal arithmetic in an exit-order
+walk: sort by exit timestamp then source row, visit realized equity minus the
+absolute trade MAE before settlement, and retain both this decline and the
+realized exit decline from the realized-equity peak. Missing/non-finite MAE is
+rejected. The walk never visits an intratrade peak (MFE), so it misses drawdowns
+starting there even without overlap: `closed <= walk <= true`, never equality
+with the full path. Under overlap neither computed field bounds synchronized
+account-equity drawdown; trade extrema do not identify their relative timing.
+Both computed measures, the separate panel anchor, labels and limitations are
+included side by side in newly generated reports.
+
+Overlap is measured per leg from canonical entry/exit timestamps, never Pine
+pyramiding. Closed intervals apply: an entry at another trade's exit time is a
+tie and takes the overlap branch. With no overlap, only `walk > panel + 0.01`
+blocks; the cent tolerance is inclusive. A smaller walk creates no finding;
+equality is coincident INFO, never MATCH. With overlap or a tie the panel is
+RECORDED and the walk-versus-panel difference is INFO, never BLOCKER or MATCH.
+The summary row leaves `observed` unset and records the walk separately;
+its difference is explicitly walk minus panel, not a panel reconciliation.
+
+D17 monthly/commission policy is unchanged. The new exact-key `max_drawdown`
+policy slot requires `OVERLAP_KEYED` under D32. Reports carry
+`OVERLAP_KEYED_D32`; complete evidence coverage is not operator acceptance.
+The historical policy has no new slot and intentionally fails
+the prospective loader. Current private captures
+and independent panel population still gate regeneration; no campaign evidence
+prerequisite is closed by this code change.
+
 The ten active source files are provided only through `--source-dir`; their basenames, SHA-256 pins, and byte lengths are frozen in `phase1_config.json`. The vendor bytes are never copied into this repository. Canonical event, trade, and weekly ledgers are vendor-derived and deliberately written only to the campaign's ignored `local_artifacts/` directory. Committed `reconciliation_manifest.json` and `RESULTS.md` contain aggregate values and hashes, never an absolute source path or full row-level ledger. Every canonical event additionally carries `source_row_sha256`, the SHA-256 of its exact raw CSV record bytes, including its original terminator where present.
 
 `source_timezone` is `America/New_York` for all five active inputs. Normalization uses `zoneinfo`, emits UTC timestamps and exchange-session dates, and rejects ambiguous or nonexistent DST wall times instead of guessing. Test commands and counts are frozen separately in `VERIFICATION.md`, which the campaign runner does not overwrite.
