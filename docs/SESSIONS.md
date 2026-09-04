@@ -124,6 +124,18 @@ language is **MFFU's** (article 13286542), carried to Tradeify conservatively; t
 each week's internal chronology and cannot manufacture an overlap the realized data lacked. **Live is the opposite:**
 novel signal timing can, and the MC structurally cannot see it — which is the real argument for D24(b). Follow-up:
 get Tradeify's over-cap consequence in writing; a rejected-order answer makes the Phase 8 guard materially cheaper.
+**✅ D23 RESOLVED (§17) — and it is the cheap outcome.** The Tradeify dashboard **displays the trailing threshold
+directly** (`$97,192.90`), so the hard value came for free: peak = threshold + $3,000 = **$100,192.90 = Balance to
+the cent**, i.e. **the account sits at its high-water mark** — no daily series, no `cashBalanceLog` replay, no
+reconstructed peak. **Provenance PRIMARY** (Tradeify's own dashboard, the authority the rule is enforced on — a
+stronger class than §10's third-party TV panels). **Live vs pristine runs FAVOURABLE:** identical **$3,000** floor
+headroom (the trail carries the peak up with it), **3.2% shorter** run to target, and `max_day_profit` $205.60
+effectively inert. So the pristine model was mildly *conservative* — Codex's P1 was right that the sim scores the
+wrong account, and the error happens to point safe; that is measured now rather than assumed in either direction.
+The red `Consistency 100% / 40%` is a small-denominator artifact ($205.60 best day vs $192.90 total): at the pass
+point the limit is $2,400 and it is a **soft at-pass gate that delays passing and never breaches**, so it cannot
+touch the 5% criterion. Still owed: **`trade_days`**, and a **re-read at the freeze instant** — this capture
+establishes method and feasibility, not the frozen value.
 **Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — ⚠ **pointer refreshed to this commit's final state** (Codex P2: it still listed §14e and the 6J re-capture as outstanding, both of which this same commit records as done). **#294 MERGED** (main `9a69185`, §16g); **all four bar panels ACCEPTED** (§16h). Freeze prerequisites now: Codex's per-leg **scaling-faithfulness read** (each size-specific export takes a full G1.1–G1.10 read), fresh **TV Key-stats panels** for all five sources, and the **DJ30 +$287** disposition — the grammar cannot be frozen over inputs Phase 1 has not reconciled. #296 is `behind` main; update the branch before merging · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) — on the campaign's critical path via Phase 8; weekly venue-idle token trade placed 2026-09-03.
 **Class:** Decision · **Rule 2:** constituent (i) iteration **4** of 8 — ⚠ advanced per Codex P2: D3 defines an
 iteration as one dispatch → gate read → fold, and this session completed exactly that for the #294 remediation
