@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """gate_manifest.py — single owner for pre-commit / Make gate composition (W5).
 
-Reads scripts/gates.yml and runs the selected tier. Equivalent behavior to the
-pre-W5 hand-enumerated pre-commit hook — no gate dropped by default.
+Reads scripts/gates.yml and runs the selected tier. Blocking checks run at
+pre-commit/CI; report-only diagnostics run only when explicitly audited.
 
 ADR: docs/adr/2026-08-07-w5-governance-diet.md
 """
@@ -16,6 +16,13 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_MANIFEST = Path(__file__).resolve().parent / "gates.yml"
+
+# Every tier gates.yml's own header declares. Validated in load_manifest() because
+# an unrecognized tier is selected by NO selector below -- the gate is silently
+# disabled, not merely deferred. That trap used to be documented as a prose warning
+# against the dead `soft` tier; the 2026-09-04 addendum retired `soft` and added
+# `audit`, so it is enforced here instead of narrated.
+KNOWN_TIERS = frozenset({"always", "path-conditional", "data-conditional", "audit"})
 
 
 def _parse_gates_yml(text: str) -> dict:
@@ -105,6 +112,17 @@ def load_manifest(path: Path) -> dict:
             f"silently — check indentation (the parser requires exactly two spaces "
             f"before '- id:'). Refusing to run a partial battery."
         )
+
+    unknown = sorted(
+        {g["id"]: g.get("tier") for g in data["gates"] if g.get("tier") not in KNOWN_TIERS}.items()
+    )
+    if unknown:
+        listed = ", ".join(f"{gid} (tier: {tier})" for gid, tier in unknown)
+        raise SystemExit(
+            f"unknown gate tier(s) in {path}: {listed}. No selector claims an "
+            f"unrecognized tier, so the gate would run in no tier at all — silently "
+            f"disabled, not deferred. Known tiers: {', '.join(sorted(KNOWN_TIERS))}."
+        )
     return data
 
 
@@ -138,6 +156,8 @@ def run_cmd(cmd: list[str], *, dry_run: bool) -> int:
 
 
 def select_gates(gates: list[dict], tier: str) -> list[dict]:
+    if tier == "audit":
+        return [g for g in gates if g.get("tier") == "audit"]
     if tier == "validate":
         # Historical `make validate`: data manifests (always) + pine manifest.
         want = {"data-manifests", "pine-manifest"}
@@ -163,8 +183,6 @@ def select_gates(gates: list[dict], tier: str) -> list[dict]:
     out = []
     for g in gates:
         t = g.get("tier", "always")
-        if t == "soft":
-            continue
         if t == "always":
             out.append(g)
         elif t in ("data-conditional", "path-conditional") and data_conditional_active(
@@ -179,10 +197,18 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     ap.add_argument(
         "--tier",
-        choices=("pre-commit", "check", "validate"),
+        choices=("pre-commit", "check", "validate", "audit"),
         default="pre-commit",
     )
-    ap.add_argument("--list", action="store_true")
+    ap.add_argument(
+        "--list", action="store_true",
+        help="print the hard-gate roster (blocking tiers only; pass --all-tiers "
+             "to also include audit-tier diagnostics)",
+    )
+    ap.add_argument(
+        "--all-tiers", action="store_true",
+        help="with --list, include audit-tier (report-only) gates",
+    )
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
 
@@ -191,6 +217,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.list:
         for g in gates:
+            if g.get("tier") == "audit" and not args.all_tiers:
+                continue
             when = g.get("when") or {}
             extra = f" when={when.get('staged_regex')}" if when else ""
             print(f"{g['id']:28s} tier={g.get('tier')}{extra}")

@@ -28,9 +28,10 @@ SCOPE AND ITS LIMITS:
 
   * WARN-TIER BY DESIGN. Always exits 0 unless --strict. A hard gate here would
     block commits on ADRs nobody is touching -- the M-22 failure mode (a gate that
-    hard-failed every commit from any worktree). Wired into `make check` and the
-    pre-commit hook as `gates.yml` id `falsifier-reachability-census` (`tier:
-    always`, `--stats` only) -- a report-only census that cannot fail a commit.
+    hard-failed every commit from any worktree). Wired into `gates.yml` id
+    `falsifier-reachability-census` (`tier: audit`, `--stats` only), run via
+    `make audit` -- not pre-commit/`make check`/required CI (W5 governance-diet
+    2026-09-04 addendum: a command that cannot fail a commit is not a merge gate).
     "WARN-tier" here means the script never returns non-zero without `--strict`,
     not that it is unwired.
 

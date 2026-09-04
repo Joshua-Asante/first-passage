@@ -430,7 +430,12 @@ python scripts/check_instrument_rejection_coverage.py
 # D4's own 2026-11-08 falsifier question).
 
 # Task 3 — Q-M1WIRE-1 tree-skew wiring
-python scripts/gate_manifest.py --list | grep -i skew
+# ^ 2026-09-04: retiered. `--list` now prints blocking tiers only, and the tree-skew half moved to
+#   `tier: audit`, so the command below returns nothing on a correctly wired tree. Use
+#   `--list --all-tiers`. The structural half of the same script stayed blocking under a new gate
+#   id, `m1-artifact-structure`. Owner: docs/adr/2026-08-07-w5-governance-diet.md 2026-09-04
+#   addendum. Hook text left as authored (Trap #12); read this note, not the line under it.
+python scripts/gate_manifest.py --list --all-tiers | grep -i skew
 # Expected: an entry present. A real failure when run against the live worktree is a legitimate,
 # separately-named finding (per the plan's own Task 3 Step 4 instruction) — not to be suppressed to
 # make this task look done.
@@ -445,6 +450,11 @@ grep -n "check_falsifier_reachability" docs/operational_rules.md scripts/gates.y
 # (data-manifests + pine-manifest only, per gate_manifest.py's select_gates()) that Task 4's file
 # scope could not extend without editing gate_manifest.py itself. This corrects this hook's original
 # "make validate" wording -- see Change history.
+# ^ 2026-09-04: retiered to `tier: audit`. The "runs on every `make check` invocation and the
+#   CI-required `skills (3.12)` job" half of that Expected line is superseded -- it now runs at
+#   `make audit` only, because a command that always exits 0 cannot change a merge verdict. The
+#   cadence obligation itself (Rule 17, quarterly programme audit) is unchanged and is what this
+#   hook actually tests. Owner: docs/adr/2026-08-07-w5-governance-diet.md 2026-09-04 addendum.
 
 # Phase 2 — A8 running-count intra-ADR consistency (authorized 2026-08-29 addendum)
 python scripts/check_adr_graph.py --enable A8
@@ -491,6 +501,7 @@ python scripts/check_adr_graph.py
 | 2026-08-29 | Addendum: Phase 2 scoped and authorized (A8 intra-ADR running-count consistency). Recon (a)(b)(c) answered. STATE-join and HTML-comment schema declined. Phases 3–4 remain named-not-scoped. §2 Phase 1 text left in place (Trap #12) | Cursor Cloud Agent |
 | 2026-08-29 | Blast-radius: §2 Phase 2–4 lead sentence was still reading as the live GO ("does not authorize"). Pointer only — authorization stays on the addendum; Phase 2 bullet marked discharged. No change to §2 Phase 1 tasks or §4/§5 | Cursor Cloud Agent |
 | 2026-08-29 | Addendum: Phase 3 scoped and authorized (cost-model closed-world partition). Bars checker voided. Ledger join, firm_rules dollars, and harvest gate-2 rewrite declined. No STATE queue row. §2 Phase 1 text left in place (Trap #12) | Cursor Cloud Agent |
+| 2026-09-04 | Pointer, not a re-decision: `instrument-rejection-coverage` (Task 2), `m1-tree-skew` (Task 3) and `falsifier-reachability-census` (Task 4) moved to the new `tier: audit` under [W5 governance-diet](2026-08-07-w5-governance-diet.md) — they run at `make audit`, no longer at pre-commit / `make check` / required CI. Task 3's structural half stayed blocking as a separate gate id, `m1-artifact-structure`. §6 and §10 body text left as authored (Trap #12); the two §10 hooks whose *commands* now return a wrong answer carry an inline dated note. No change to §2/§5 scope or any task's discharge | Claude Code |
 
 ---
 

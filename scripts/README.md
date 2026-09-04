@@ -7,7 +7,9 @@ Do not hand-maintain a parallel list.
 
 ```text
 python scripts/gate_manifest.py --list
+python scripts/gate_manifest.py --list --all-tiers
 make check          # same runner, check tier
+make audit          # report-only diagnostics
 make validate       # data manifests + pine
 ```
 
