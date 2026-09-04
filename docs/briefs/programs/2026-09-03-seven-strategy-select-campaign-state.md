@@ -1746,6 +1746,39 @@ files differ in size, the edit was **provably more than the capital constant**, 
 diff at all. DJ30's 100K body is **27,497 bytes**; compare against `5c4b1026…` on the operator's
 checkout. Equal size is necessary, not sufficient.
 
+⚠⚠ **CHECK (0) IS ALREADY ANSWERED — FROM TRACKED METADATA, AND IT FAILS.** No files were needed.
+`phase1_config.json` records `pine_bytes` on both generations:
+
+| Body | 200K variant | `_cap100k` variant | Δ |
+|---|---:|---:|---:|
+| DJ30 `striker_dj30_v4.5_mym_pyramid_250` | **26,726** (`5c4b1026…`) | **27,497** (`712cf395…`) | **+771** |
+| NAS100 `striker_nas100_v1_mnq_dow_wed_excluded` | **32,242** (`d18c2699…`) | **33,013** (`fa6a70cd…`) | **+771** |
+
+The declared edit is
+[`2026-09-03-venue-bound-session-guard.md`](../../superpowers/specs/2026-09-03-venue-bound-session-guard.md)
+§8, verbatim: *"both Striker bodies re-export with `initial_capital` 200000 → 100000 (campaign decision
+D15), **one line each**."* `200000` → `100000` is **six characters to six characters — length-preserving,
+Δ = 0**. The bodies grew by **771 bytes each**.
+
+**The declaration and the repo's own recorded metadata disagree.** Something beyond the capital constant
+went into both files, and it is the *same* something: a fixed-size insertion, identical in two bodies of
+different length. **Line endings are ruled out** — a CRLF conversion scales with line count, and these
+files differ in size by ~5.5 KB, so it would have produced two *different* deltas, not the same one. 771
+bytes is roughly 10–14 lines.
+
+**This does not yet name the cause of the +$287** — NAS100 took the identical +771 and moved **$0.00**,
+so the insertion is P&L-neutral there, and a provenance/banner comment block (which §9 of that same spec
+effectively demands) would be P&L-neutral everywhere. But "probably a comment" is exactly the class of
+assumption this section exists to stop. **The insertion is unidentified, it is in the body that produced
+the number the campaign wants to anchor, and it was not declared.**
+
+✅ **The same spec also answers (ii) at DECLARATION level, and it favours the mechanism being real:**
+*"Sizing does not move — `calcSize` reads a static `accountSize` input of 100000 — but **the day soft-stop
+is anchored to `strategy.initial_capital` and is live in backtest mode**, so 200K halted the day at twice
+the intended dollar loss."* So a live, capital-anchored day halt is declared to exist. What the spec does
+**not** say is whether that halt gates a **pyramid add** or only a fresh entry — which is still the
+open half of (ii).
+
 **(0b) The actual diff, with NAS100 as a built-in control.** `diff` each pair. **NAS100 is the control
 and it is a good one:** identical treatment, identical re-export procedure, and its delta is
 **exactly $0.00**. If NAS100's diff is one line and DJ30's is two, the answer is immediate and the
