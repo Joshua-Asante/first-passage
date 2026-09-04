@@ -1711,11 +1711,32 @@ were. A trade-level test is structurally blind to that. **This is a hypothesis d
 arithmetic — the orchestrator has not opened the Pine — and it is offered as the cheapest thing to
 falsify first, not as a conclusion.**
 
-**One constraint it must satisfy, and it is a real test, not a formality:** max DD is *identical in
+**Operator confirmation 2026-09-04 — of the PREMISE, and it is recorded as that.** The operator confirms
+DJ30 runs **pyramiding 2 at 250%**. That was already in the record (§12f's Properties panel reads
+`Pyramiding 2`; the 250% is D10's `striker_dj30_mym_pyramid_250`), so what it establishes is that the
+add-suppression **channel physically exists** — not that it fired. The magnitude is at least plausible:
+~$325 of gross loss across at most 4 candidate days is $81–$325 per occurrence, and an add at 250% of
+base is a large enough unit to move that on MYM. **The hypothesis is not promoted.** It still has to pass
+both checks below, and an operator agreeing with a mechanism is not the mechanism being measured — that
+distinction is exactly what this campaign has been burned by (D10's swap-port point value, D15's
+"resolution", the 6J encoding).
+
+**Two checks close it, and both are cheap.**
+
+**(i) The max-DD-window constraint — a real test, not a formality.** Max DD is *identical in
 dollars* across the two runs. A mechanism that shrinks losses would generically shrink the worst
 excursion too. So the hypothesis survives **only if none of the 4 newly-caught days falls inside the
 max-drawdown window.** If one does, the hypothesis is dead and candidates (2) Deep-splice depth and
 (3) a missed `initial_capital` path are back.
+
+**(ii) Does the soft-stop gate actually wrap the ADD, or only the fresh entry?** This is a one-line Pine
+read and it is decisive. A halt that guards `strategy.entry` for a *new* position while leaving an add to
+an *open* position ungated **cannot** produce this delta, and the hypothesis dies without any arithmetic.
+A halt that gates every order-emitting call produces it exactly. The operator holds the Pine; the
+orchestrator does not open it. **Answer (ii) and check (i), and prerequisite 3 is dispositioned** —
+either as a named, understood, capital-scaled mechanism (which then feeds prerequisite 1's scaling read
+as a *characterised* dependence rather than an unknown one), or as a falsified hypothesis with candidates
+(2) and (3) live.
 
 **What it actually blocks.** Two things, and the second is the one that matters:
 
