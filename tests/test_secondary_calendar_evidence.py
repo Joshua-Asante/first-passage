@@ -173,8 +173,8 @@ def test_d19_complete_rejects_a_covered_year_without_a_venue_flat_date(tmp_path)
         load_secondary_early_close_calendar(wrapper_path, repo_root=repo_root)
 
 
-def test_checked_in_d19_wrapper_binds_the_lf_blob_and_all_venue_flat_dates():
-    """The accepted wrapper must bind the tracked LF bytes, never a Windows checkout hash or closure union."""
+def test_checked_in_d19_wrapper_binds_the_lf_blob_and_the_declared_40_date_window():
+    """The wrapper must include every, and only, in-span venue-flat date—not closure dates."""
     repo_root = Path(__file__).parents[1]
     campaign = repo_root / "lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09"
     source_path = repo_root / "ops/calendars/cme_holiday_calendar_2022_2026.json"
@@ -184,13 +184,27 @@ def test_checked_in_d19_wrapper_binds_the_lf_blob_and_all_venue_flat_dates():
         campaign / "cme_early_close_calendar.json", repo_root=repo_root,
     )
 
+    expected_window_dates = [
+        "2022-09-05", "2022-11-24", "2022-11-25", "2023-01-16", "2023-02-20",
+        "2023-04-07", "2023-05-29", "2023-06-19", "2023-07-03", "2023-07-04",
+        "2023-09-04", "2023-11-23", "2023-11-24", "2024-01-15", "2024-02-19",
+        "2024-05-27", "2024-06-19", "2024-07-03", "2024-07-04", "2024-09-02",
+        "2024-11-28", "2024-11-29", "2024-12-24", "2025-01-09", "2025-01-20",
+        "2025-02-17", "2025-05-26", "2025-06-19", "2025-07-03", "2025-07-04",
+        "2025-09-01", "2025-11-27", "2025-11-28", "2025-12-24", "2026-01-19",
+        "2026-02-16", "2026-04-03", "2026-05-25", "2026-06-19", "2026-07-03",
+    ]
     venue_flat = source["derived"]["venue_flat_dates"]["dates"]
+    expected_from_source = [
+        day for day in venue_flat if "2022-09-01" <= day <= "2026-09-02"
+    ]
     assert calendar.coverage_status == "COMPLETE"
     assert calendar.source_calendar_sha256 == "2698f2688cce582b08df58516fd770fa4a71a18de04870d9c14511731ea181e9"
     assert calendar.source_calendar_sha256 == sha256(source_path.read_bytes()).hexdigest()
-    assert sorted(day.isoformat() for day in calendar.early_close_dates) == venue_flat
-    assert len(venue_flat) == 49
-    assert not set(venue_flat) & set(source["derived"]["full_closure_dates"]["dates"])
+    assert expected_from_source == expected_window_dates
+    assert sorted(day.isoformat() for day in calendar.early_close_dates) == expected_window_dates
+    assert len(expected_window_dates) == 40
+    assert not set(expected_window_dates) & set(source["derived"]["full_closure_dates"]["dates"])
     assert calendar.evidence_metadata["provenance_acceptance"] == d19_acceptance()
 
 

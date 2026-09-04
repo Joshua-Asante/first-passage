@@ -817,10 +817,10 @@ def test_campaign_calendar_freezes_d19_accepted_secondary_venue_dates(
         "ops/calendars/cme_holiday_calendar_2022_2026.json"
     )
     assert calendar.observed_date.isoformat() == "2026-09-03"
-    assert calendar.coverage_start.isoformat() == "2022-01-01"
-    assert calendar.coverage_end.isoformat() == "2026-12-31"
+    assert calendar.coverage_start.isoformat() == "2022-09-01"
+    assert calendar.coverage_end.isoformat() == "2026-09-02"
     assert calendar.coverage_status == "COMPLETE"
-    assert len(calendar.early_close_dates) == 49
+    assert len(calendar.early_close_dates) == 40
     assert calendar.evidence_kind == "SECONDARY"
 
 

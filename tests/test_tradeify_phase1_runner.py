@@ -638,8 +638,9 @@ def test_complete_calendar_must_cover_observed_source_span(tmp_path):
 def test_campaign_report_renders_d19_secondary_calendar_residual_note(tmp_path):
     """D19 completion must retain the secondary venue-date residual rather than hide it."""
     expected_coverage_note = (
-        "D19 accepts this SECONDARY venue-date membership evidence only, not product close-time "
-        "or exchange-session modeling. The 2025-11-28 scheduled-half-day/outage classification "
+        "D19 accepts this SECONDARY venue-date membership evidence only over the declared 2022-09-01 "
+        "through 2026-09-02 window, not product close-time or exchange-session modeling. The "
+        "2025-11-28 scheduled-half-day/outage classification "
         "is conservatively included; possible ad-hoc closures from 2026-05-28 through 2026-09-02 "
         "may be missing and are not conservative. The preserved secondary metadata retains 13 "
         "unresolved items and 3 sub-deadline close notes."
