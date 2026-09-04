@@ -14,6 +14,9 @@
 # integrity gate") is unaffected.
 tests/fixtures/*.jsonl text eol=lf
 
+# Secondary-calendar wrapper binds this tracked JSON by its raw SHA-256.
+ops/calendars/cme_holiday_calendar_2022_2026.json text eol=lf
+
 # M1 monitoring acceptance pin (docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json
 # fixture_hashes): all 6 pinned files hash content that is byte-identical to the
 # current git blob once CRLF is normalized to LF (verified 2026-08-20) — the last
