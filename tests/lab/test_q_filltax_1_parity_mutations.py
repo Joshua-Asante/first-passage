@@ -101,7 +101,8 @@ def test_m2_uniform_commission_omission_detected():
 
 def test_m3_proportional_contractvalue_defect_detected():
     """M3 — contractValue mis-port (named historical defect: Striker DJ30
-    default contractValue=1 vs required=10, CLAUDE.md strategy table).
+    default contractValue=1 vs required=10; docs/operational_rules.md Rule 3,
+    mirrored in core/strategies/CATALOG.md's locked parameter record).
     Proportional scaling is PF-invariant (the wins/losses ratio is unchanged
     by a common positive factor) — must be caught on net; PF_REL_BAND must
     NOT be why (a documented gate property, not a bug — see freeze SS2).

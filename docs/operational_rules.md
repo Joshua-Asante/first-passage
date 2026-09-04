@@ -128,8 +128,9 @@ This generalizes Rule 5 (Pine owns strategy parameters) from constants to
 
 | Fact class | Canonical owner |
 |---|---|
-| Strategy parameters (risk %, pyramid, SL/TP) | Pine source (per Rule 5) |
+| Strategy parameters (risk %, pyramid, SL/TP) | Pine source (per Rule 5); human-readable mirror = [`core/strategies/CATALOG.md`](../core/strategies/CATALOG.md) §Locked parameter record (moved there from `CLAUDE.md` 2026-09-04) |
 | Current lock state + source blob hashes | `core/strategies/_archive/<family>/LOCK.md` + hot `*_CARD.md` stubs ([`core/strategies/CATALOG.md`](../core/strategies/CATALOG.md)) |
+| Which of two live-vs-historical values is current | [`docs/load_bearing_numbers.md`](load_bearing_numbers.md) — the live-value index (extracted from `CLAUDE.md` 2026-09-04). It **restates** each figure from that figure's own owner and is never itself the owner |
 | `dd_protection` / allocation constants | `core/dd_protection.py` / `core/firm_rules.py` |
 | MC anchors (historical record + engine pins) | `docs/mc_anchor_history.md` + `tests/core/test_mc_synthetic_engine.py` |
 | Decision rationale (the *why*) | `docs/adr/` |
@@ -159,9 +160,12 @@ Roles that must **not** restate canonical values:
   scale-path picture plus one line + ADR link per standing decision. The
   multi-paragraph decision narrative lives in the owning ADRs; a new posture
   decision adds one pointer line, not a retelling (demoted 2026-07-16 — see
-  edit log). The gated lock surface elsewhere in `CLAUDE.md` (Strategy
-  Reference table, MC-anchor headlines, §Protection) is a **canonical owner**,
-  not a mirror — this role note does not apply to it.
+  edit log). **Narrowed 2026-09-04:** the gated lock surface still resident in
+  `CLAUDE.md` is the **MC-anchor triple** (`ops/recall/guard.py` regex-reads it
+  from that file) and **§Protection**; both are canonical owners, not mirrors,
+  and this role note does not apply to them. The §Strategy Reference *table*
+  moved to `core/strategies/CATALOG.md`, and the live-value index moved to
+  `docs/load_bearing_numbers.md` — `CLAUDE.md` now links to both.
 - **`README.md`** — human entry index; links out everywhere. Its public-clone
   note is a one-liner pointing at `CLAUDE.md` §Public-clone posture (the
   canonical statement).
@@ -765,6 +769,7 @@ allocation, `dd_protection`, Pine, or rail touched.
 - **2026-08-08** — ADR ceremony stakes-tiering ratified (pointer only, no rule text changed): full §0–§7 only when a tier-test limb fires. [`ADR`](adr/2026-08-08-adr-ceremony-tiering.md)
 - **2026-08-07** — Rule 15 added (always-on hosting is not the desktop). [`ADR`](adr/2026-08-07-w6-rail-infra-closures.md)
 - **2026-08-07** — Rule 7 / SESSIONS·STATE entry-class direction (W5 — see the prose-target note above §7). [`ADR`](adr/2026-08-07-w5-governance-diet.md)
+- **2026-09-04** — Rule 7 owner table gains a live-value-index row (`docs/load_bearing_numbers.md`) and names `core/strategies/CATALOG.md` §Locked parameter record as the strategy-parameter mirror; the `CLAUDE.md` role note is narrowed to the two gated surfaces that remain resident there (MC-anchor triple + §Protection). [`charter ADR addendum`](adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-04--consolidation-pass-what-moved-and-what-was-ruled-immovable)
 - **2026-08-07** — Rule 7 owner table drops the retired `params.toml` row.
 - **2026-08-04** — Rule 7 owner table gains a "Per-Q forward disposition" row (each closure's own `## Iterate` block is canonical).
 - **2026-08-03** — Rule 7 STATE anti-accretion reaffirmed after STATE re-grew past charter (~2129 lines); rewritten to open-board only.
