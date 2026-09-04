@@ -287,9 +287,10 @@ def test_invalid_status_type_is_configuration_error(api, tmp_path):
 
 def test_checked_in_operator_anchors_reject_stale_panels_under_d17(api):
     from pathlib import Path
-    from research_utils.tv_trade_ledger import load_source_specs
+    from test_trade_reconciliation import _spec
     campaign = Path(__file__).parents[1] / "lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09"
-    specs = load_source_specs(campaign / "phase1_config.json")
+    # Runtime validation uses a synthetic source, never upgrades historical config.
+    specs = [_spec()]
     inventory = api.load_summary_anchors(campaign / "tv_summary_anchors.json", specs)
     assert inventory.coverage_status == "NEEDS_CONTEXT"
     assert inventory.anchors == {}

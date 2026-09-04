@@ -12,6 +12,15 @@ Phase 0 was skipped by operator direction. All supplied history is development d
 
 ## Source and output ownership
 
+D26 migration is pending: the checked-in config, manifest and RESULTS remain historical
+v3 artifacts, byte-for-byte unchanged. The v4 runner requires a non-null
+`pine_input_overrides_sha256` (exactly 64 lowercase hexadecimal characters) for every
+active source; the historical config intentionally cannot run under this schema.
+Five full current private input captures are required before digest population and
+a single re-freeze of the campaign artifacts. No synthetic digest may stand in for
+that evidence. Raw input override maps remain private; only their digests propagate
+into new source identities and reports. Historical v3 manifests remain renderable.
+
 The ten active source files are provided only through `--source-dir`; their basenames, SHA-256 pins, and byte lengths are frozen in `phase1_config.json`. The vendor bytes are never copied into this repository. Canonical event, trade, and weekly ledgers are vendor-derived and deliberately written only to the campaign's ignored `local_artifacts/` directory. Committed `reconciliation_manifest.json` and `RESULTS.md` contain aggregate values and hashes, never an absolute source path or full row-level ledger. Every canonical event additionally carries `source_row_sha256`, the SHA-256 of its exact raw CSV record bytes, including its original terminator where present.
 
 `source_timezone` is `America/New_York` for all five active inputs. Normalization uses `zoneinfo`, emits UTC timestamps and exchange-session dates, and rejects ambiguous or nonexistent DST wall times instead of guessing. Test commands and counts are frozen separately in `VERIFICATION.md`, which the campaign runner does not overwrite.

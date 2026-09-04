@@ -29,6 +29,7 @@ _SOURCE_KEYS = frozenset(
         "export_bytes",
         "pine_filename",
         "pine_sha256",
+        "pine_input_overrides_sha256",
         "pine_bytes",
         "source_timezone",
         "session_timezone",
@@ -191,6 +192,7 @@ class SourceSpec:
     export_sha256: str
     pine_filename: str
     pine_sha256: str
+    pine_input_overrides_sha256: str
     source_timezone: str | None
     session_timezone: str
     declared_bar_size_minutes: int
@@ -403,6 +405,11 @@ def _source_spec(value: object, pins: Mapping[str, str]) -> SourceSpec:
     strategy_id = _require_nonempty_string(record["strategy_id"], "strategy_id")
     export_hash = _require_nonempty_string(record["export_sha256"], "export_sha256")
     pine_hash = _require_nonempty_string(record["pine_sha256"], "pine_sha256")
+    overrides_hash = _require_nonempty_string(
+        record["pine_input_overrides_sha256"], "pine_input_overrides_sha256"
+    )
+    if not _HASH_RE.fullmatch(overrides_hash):
+        raise ValueError(f"invalid pine_input_overrides_sha256 for {strategy_id}")
     if not _HASH_RE.fullmatch(export_hash):
         raise ValueError(f"invalid export_sha256 for {strategy_id}")
     if not _HASH_RE.fullmatch(pine_hash):
@@ -456,6 +463,7 @@ def _source_spec(value: object, pins: Mapping[str, str]) -> SourceSpec:
         export_bytes=_validate_byte_count(record["export_bytes"], "export_bytes"),
         pine_filename=_validate_filename(record["pine_filename"], "pine_filename"),
         pine_sha256=pine_hash,
+        pine_input_overrides_sha256=overrides_hash,
         pine_bytes=_validate_byte_count(record["pine_bytes"], "pine_bytes"),
         source_timezone=_validate_timezone(record["source_timezone"], "source_timezone", nullable=True),
         session_timezone=_validate_timezone(record["session_timezone"], "session_timezone", nullable=False),

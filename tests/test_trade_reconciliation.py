@@ -38,6 +38,7 @@ def _spec(
         export_sha256="0" * 64,
         pine_filename="source.pine",
         pine_sha256="1" * 64,
+        pine_input_overrides_sha256="a" * 64,
         source_timezone="America/New_York",
         session_timezone="America/New_York",
         declared_bar_size_minutes=15,

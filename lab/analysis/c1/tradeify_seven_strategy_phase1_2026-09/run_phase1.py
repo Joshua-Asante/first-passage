@@ -56,7 +56,7 @@ from research_utils.tv_summary_reconciliation import (  # noqa: E402
 )
 
 
-_RUNNER_VERSION = "tradeify-phase1-normalization-v3"
+_RUNNER_VERSION = "tradeify-phase1-normalization-v4"
 _SEVERITY_ORDER = {"INFO": 0, "WARNING": 1, "BLOCKER": 2, "FATAL": 3}
 _BASE_COMMIT = "ed181233afd01d8fc128bc76ac626e43c3761f87"
 _FROZEN_STRATEGY_IDS = (
@@ -369,6 +369,7 @@ def _strategy_record(
             "export_bytes": spec.export_bytes,
             "pine_filename": spec.pine_filename,
             "pine_sha256": spec.pine_sha256,
+            "pine_input_overrides_sha256": spec.pine_input_overrides_sha256,
             "pine_bytes": spec.pine_bytes,
             "pine_pin_status": spec.pine_pin_status,
             "pin_ref": spec.pin_ref,
@@ -556,6 +557,16 @@ def _render_report(manifest: dict[str, object]) -> bytes:
                 **row
             )
         )
+    if manifest["runner_version"] == "tradeify-phase1-normalization-v4":
+        lines.extend(
+            [
+                "", "## Pine input override digests", "",
+                "| Strategy | pine_input_overrides_sha256 |", "|---|---|",
+            ]
+        )
+        for row in manifest["strategies"]:
+            digest = row["source_identity"]["pine_input_overrides_sha256"]
+            lines.append(f"| {row['strategy_id']} | {digest} |")
     lines.extend(
         [
             "",
@@ -775,6 +786,7 @@ def run_campaign(
                     "export_bytes": spec.export_bytes,
                     "pine_filename": spec.pine_filename,
                     "pine_sha256": spec.pine_sha256,
+                    "pine_input_overrides_sha256": spec.pine_input_overrides_sha256,
                     "pine_bytes": spec.pine_bytes,
                     "pine_pin_status": spec.pine_pin_status,
                     "pin_ref": spec.pin_ref,

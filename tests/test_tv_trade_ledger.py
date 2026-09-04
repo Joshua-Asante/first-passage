@@ -39,6 +39,7 @@ def _spec_dict(strategy_id: str, export_filename: str, pine_filename: str) -> di
         "export_bytes": len(b"export"),
         "pine_filename": pine_filename,
         "pine_sha256": sha256(b"pine").hexdigest(),
+        "pine_input_overrides_sha256": "a" * 64,
         "pine_bytes": len(b"pine"),
         "source_timezone": None,
         "session_timezone": "America/New_York",
@@ -106,6 +107,34 @@ def test_load_source_specs_rejects_duplicate_strategy_id(tmp_path):
         load_source_specs(path)
 
 
+@pytest.mark.parametrize(
+    "digest",
+    [None, "", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "a" * 64 + "\n", 7, {}],
+)
+def test_input_override_digest_rejects_malformed_values(digest):
+    with pytest.raises(ValueError, match="pine_input_overrides_sha256"):
+        _source_spec(pine_input_overrides_sha256=digest)
+
+
+def test_input_override_digest_is_required(tmp_path):
+    from test_tradeify_phase1_identity_policy import configuration
+    path, payload = configuration(tmp_path)
+    payload["strategies"][0].pop("pine_input_overrides_sha256")
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="pine_input_overrides_sha256"):
+        load_source_specs(path)
+
+
+def test_input_override_raw_map_is_rejected():
+    with pytest.raises(ValueError, match="pine_input_overrides"):
+        _source_spec(pine_input_overrides={})
+
+
+def test_historical_configuration_requires_current_private_captures():
+    with pytest.raises(ValueError, match="pine_input_overrides_sha256"):
+        load_source_specs(_CONFIG_PATH)
+
+
 def test_load_source_specs_rejects_platformless_configuration(tmp_path):
     """Removing the frozen platform provenance must make the config invalid."""
     path = tmp_path / "config.json"
@@ -144,48 +173,38 @@ def test_verify_source_pair_rejects_changed_export(tmp_path):
 
 def test_frozen_configuration_has_five_continuous_source_specs():
     """A changed campaign pin, session inventory, or source count must be observable."""
-    specs = load_source_specs(_CONFIG_PATH)
+    specs = json.loads(_CONFIG_PATH.read_text(encoding="utf-8"))["strategies"]
 
-    assert [spec.strategy_id for spec in specs] == [
+    assert [spec["strategy_id"] for spec in specs] == [
         "aegis_6j1",
         "orb_mnq_recon_v7",
         "striker_dj30_mym_pyramid_250",
         "striker_nas100_mnq_dow_wed_excluded",
         "vanguard_mgc_v04",
     ]
-    assert all(spec.source_timezone == "America/New_York" for spec in specs)
-    assert all(spec.declared_bar_size_minutes == 15 for spec in specs)
-    assert all(spec.continuous_symbol for spec in specs)
-    assert all(not spec.synchronized_intraday_path_available for spec in specs)
-    assert all(spec.contract_cap == 80 for spec in specs)
-    assert specs[0].declared_session == "10:00-13:45 America/New_York, Mon-Wed; force-flat 16:30 America/New_York"
-    assert specs[2].intended_instrument == "MYM"
-    assert specs[2].encoded_instrument == "MYM"
-    assert specs[3].intended_instrument == "MNQ"
-    assert specs[3].encoded_instrument == "MNQ"
+    assert all(spec["source_timezone"] == "America/New_York" for spec in specs)
+    assert all(spec["continuous_symbol"] for spec in specs)
+    assert all(not spec["synchronized_intraday_path_available"] for spec in specs)
+    assert specs[2]["intended_instrument"] == "MYM"
+    assert specs[2]["encoded_instrument"] == "MYM"
+    assert specs[3]["intended_instrument"] == "MNQ"
+    assert specs[3]["encoded_instrument"] == "MNQ"
 
 
-def test_frozen_configuration_records_pine_pyramiding_from_each_source():
-    """Losing the source-grounded add-size inventory would hide the one reduced cell."""
-    specs = load_source_specs(_CONFIG_PATH)
-
-    assert {spec.strategy_id: spec.pine_pyramiding_pct for spec in specs} == {
-        "aegis_6j1": Decimal("0"),
-        "orb_mnq_recon_v7": Decimal("100"),
-        "striker_dj30_mym_pyramid_250": Decimal("250"),
-        "striker_nas100_mnq_dow_wed_excluded": Decimal("1000"),
-        "vanguard_mgc_v04": Decimal("80"),
-    }
-    assert [spec.pine_pyramiding_pct for spec in specs].count(Decimal("250")) == 1
+def test_historical_configuration_preserves_exact_source_inventory_bytes():
+    """The historical snapshot pins all metadata without restating private inputs."""
+    assert sha256(_CONFIG_PATH.read_bytes()).hexdigest() == (
+        "df238cd78fc0a381fdb86466ef3dfca5522dd8db7ae0cf245165f370df9f3892"
+    )
 
 
 def test_frozen_configuration_records_manifest_derived_pin_status_and_body_identity():
     """Mislabeling a supplied Pine as locked, swapped, or pyramid-down must be visible."""
-    specs = load_source_specs(_CONFIG_PATH)
-    by_hash = {spec.pine_sha256: spec for spec in specs}
+    specs = json.loads(_CONFIG_PATH.read_text(encoding="utf-8"))["strategies"]
+    by_hash = {spec["pine_sha256"]: spec for spec in specs}
 
     assert {
-        pine_hash: spec.pine_pin_status
+        pine_hash: spec["pine_pin_status"]
         for pine_hash, spec in by_hash.items()
     } == {
         "db78ecba95ae78aca14501a5eaccfda2a42164d83cac12321cb7f293a9adca7c": "NOT_IN_PORT_MANIFEST",
@@ -197,20 +216,18 @@ def test_frozen_configuration_records_manifest_derived_pin_status_and_body_ident
     dj_modified = by_hash[
         "712cf395396568ce22ae43f1f15b085eaba23acf1b85502abb92129f277fffd7"
     ]
-    assert dj_modified.strategy_id == "striker_dj30_mym_pyramid_250"
-    assert dj_modified.pine_pyramiding_pct == Decimal("250")
-    assert dj_modified.pin_divergence == "pyramid 250% vs locked 750%; initial_capital 100000 vs research-variant pin 200000"
-    assert dj_modified.pin_ref.endswith("striker_dj30_v4.5_mym_pyramid_250.pine")
+    assert dj_modified["strategy_id"] == "striker_dj30_mym_pyramid_250"
+    assert dj_modified["pin_divergence"]
+    assert dj_modified["pin_ref"].endswith("striker_dj30_v4.5_mym_pyramid_250.pine")
     nas_modified = by_hash["fa6a70cde002131bbd266bee70defb01e32deae2de79fdc327d661f829115c39"]
-    assert nas_modified.strategy_id == "striker_nas100_mnq_dow_wed_excluded"
-    assert nas_modified.pine_pyramiding_pct == Decimal("1000")
-    assert nas_modified.pine_pin_status == "UNPINNED_MODIFIED"
-    assert nas_modified.pin_divergence == "day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}; initial_capital 100000 vs research-variant pin 200000"
-    assert nas_modified.pin_ref.endswith("striker_nas100_v1_mnq_dow_wed_excluded.pine")
+    assert nas_modified["strategy_id"] == "striker_nas100_mnq_dow_wed_excluded"
+    assert nas_modified["pine_pin_status"] == "UNPINNED_MODIFIED"
+    assert nas_modified["pin_divergence"]
+    assert nas_modified["pin_ref"].endswith("striker_nas100_v1_mnq_dow_wed_excluded.pine")
     assert all(
-        "_v45" not in spec.strategy_id and "_v1" not in spec.strategy_id
+        "_v45" not in spec["strategy_id"] and "_v1" not in spec["strategy_id"]
         for spec in specs
-        if spec.strategy_id.startswith("striker_")
+        if spec["strategy_id"].startswith("striker_")
     )
 
 

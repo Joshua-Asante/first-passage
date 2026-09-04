@@ -141,7 +141,7 @@ def test_d17_runner_publishes_only_hashed_local_monthly_ledgers(tmp_path):
     manifest = json.loads(result.manifest_bytes)
     report = result.report_bytes.decode("utf-8")
 
-    assert manifest["runner_version"] == "tradeify-phase1-normalization-v3"
+    assert manifest["runner_version"] == "tradeify-phase1-normalization-v4"
     assert manifest["d17_policy"] == anchors["d17_policy"]
     assert "monthly_net_pnl" not in json.dumps(manifest)
     assert "monthly_net_pnl" not in report
@@ -180,7 +180,7 @@ def test_fee_snapshot_hash_survives_later_file_change(tmp_path, monkeypatch):
     assert all(row["venue_commission_per_side_usd"] == "0.91" for row in manifest["strategies"])
 
 
-def test_runner_v3_echoes_explicit_accepted_roll_policy(tmp_path):
+def test_runner_v4_echoes_explicit_accepted_roll_policy(tmp_path):
     from test_tradeify_phase1_identity_policy import accepted_policy, OBLIGATIONS
     source_dir, config, _ = _five_source_fixture(tmp_path)
     payload = json.loads(config.read_bytes())
@@ -188,9 +188,9 @@ def test_runner_v3_echoes_explicit_accepted_roll_policy(tmp_path):
     config.write_text(json.dumps(payload), encoding="utf-8")
     result = run_phase1.run_campaign(config, source_dir, tmp_path / "out")
     manifest = json.loads(result.manifest_bytes)
-    assert manifest["runner_version"] == "tradeify-phase1-normalization-v3"
+    assert manifest["runner_version"] == "tradeify-phase1-normalization-v4"
     assert manifest["continuous_contract_roll_policy"] == accepted_policy()
-    assert "tradeify-phase1-normalization-v3" in result.report_bytes.decode()
+    assert "tradeify-phase1-normalization-v4" in result.report_bytes.decode()
     assert "ACCEPTED_UNMODELED" in result.report_bytes.decode()
     for obligation in OBLIGATIONS:
         assert obligation in result.report_bytes.decode()

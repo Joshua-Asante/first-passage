@@ -155,6 +155,7 @@ def _five_source_fixture(root: Path) -> tuple[Path, Path, list[str]]:
                 "export_bytes": len(export_bytes),
                 "pine_filename": pine_name,
                 "pine_sha256": sha256(pine_bytes).hexdigest(),
+                "pine_input_overrides_sha256": "abcde"[index] * 64,
                 "pine_bytes": len(pine_bytes),
                 "source_timezone": "America/New_York",
                 "session_timezone": "America/New_York",
@@ -265,6 +266,15 @@ def test_campaign_writes_local_rows_but_aggregate_contains_no_absolute_path(tmp_
     manifest_text = result.manifest_path.read_text(encoding="utf-8")
     manifest = json.loads(manifest_text)
 
+    assert manifest["runner_version"] == "tradeify-phase1-normalization-v4"
+    for source, character in zip(manifest["strategies"], "abcde", strict=True):
+        assert source["source_identity"]["pine_input_overrides_sha256"] == character * 64
+        assert character * 64 in result.report_path.read_text(encoding="utf-8")
+        local_detail = json.loads(
+            (output_dir / "strategy_reports" / f"{source['strategy_id']}.json").read_text(encoding="utf-8")
+        )
+        assert local_detail["source_identity"]["pine_input_overrides_sha256"] == character * 64
+
     assert result.status == "BLOCKED_EXPLORATORY"
     assert (output_dir / "canonical_events.csv").exists()
     assert (output_dir / "canonical_trades.csv").exists()
@@ -276,6 +286,7 @@ def test_campaign_writes_local_rows_but_aggregate_contains_no_absolute_path(tmp_
     assert detail["claim_class"] == "EXPLORATORY"
     assert detail["source_identity"]["pine_pin_status"] == "NOT_IN_PORT_MANIFEST"
     assert detail["source_identity"]["pin_divergence"] is None
+    assert detail["source_identity"]["pine_input_overrides_sha256"] == "a" * 64
     assert detail["issues"]
     assert set(detail["issues"][0]) == {
         "code",
