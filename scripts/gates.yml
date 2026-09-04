@@ -272,8 +272,20 @@ gates:
       - python
       - scripts/check_skill_deploy_sync.py
 
+  # Structural validation only (unreadable JSON, missing/invalid fields, bad
+  # status, secrets_present != false, secret-shaped content). This is the
+  # blocking half of validate_c1_monitoring_acceptance.py's main(): it runs
+  # validate() unconditionally, before any --check-tree-skew branch, so a
+  # corrupted or secret-shaped M1 artifact must still reject the commit.
+  - id: m1-artifact-structure
+    tier: always
+    cmd:
+      - python
+      - scripts/validate_c1_monitoring_acceptance.py
+      - docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json
+
   # Deployed-vs-main skew is useful at audit time, but normal drift cannot
-  # reject a commit. Hard M1 enforcement remains in the deploy/arm path.
+  # reject a commit (see m1-artifact-structure above for the blocking half).
   - id: m1-tree-skew
     tier: audit
     cmd:

@@ -192,8 +192,12 @@ Audits remain available under `make audit`, but do not run in pre-commit, `make 
 CI. Eight existing report-only commands move there: rejection coverage, liveness synchronization,
 docs-runtime inventory, M1 tree-skew reporting, falsifier reachability, notice-grade correction,
 spec provenance, and Rule-2 trip-log liveness. No checker is deleted and no live safety control is
-weakened: M1's enforcement remains at deploy/arm, while its normal main-vs-deployed drift report is
-kept as an audit.
+weakened: `validate_c1_monitoring_acceptance.py`'s structural validation (unreadable JSON, missing/
+invalid fields, bad status, `secrets_present != false`, secret-shaped content) fails condition 3 —
+a finding there **does** change the merge verdict — so it stays blocking under its own gate id,
+`m1-artifact-structure` (`tier: always`). Only the tree-skew half (`--check-tree-skew`, `id:
+m1-tree-skew`) moves to audit: normal main-vs-deployed drift cannot fail a commit, and M1's arming
+enforcement remains a separate, later gate at deploy/arm regardless of either commit-time check.
 
 This is the operational boundary: tests, reproducibility pins, architectural constraints, and
 live-rail interlocks stay blocking; corpus censuses, trend reports, and known-dirty heuristics run at

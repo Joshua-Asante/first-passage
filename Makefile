@@ -69,8 +69,9 @@ lab-path-relocation:
 	@python scripts/check_lab_path_relocation.py
 
 # Report-only INDEX/CATALOG liveness census (Open-row stale, Open+hot-closure,
-# CATALOG ACTIVE archive-owed). Wired gates.yml path-conditional (Phase 5b);
-# script still exits 0. `--apply-index` unused on purpose.
+# CATALOG ACTIVE archive-owed). Wired gates.yml tier: audit (run via `make
+# audit`, not pre-commit/check); script still exits 0. `--apply-index` unused
+# on purpose.
 sync-liveness:
 	@python scripts/sync_liveness_indexes.py
 
@@ -111,8 +112,8 @@ lab-archive-check:
 	@python scripts/archive_lab_analysis.py --check
 
 # Rule 11 floor: do standing ADR falsifiers still name inputs that exist?
-# Manual `--stats` wrapper. Same census already runs on `make check` / pre-commit
-# as report-only `--stats` (never `--strict`; see the script docstring).
+# Manual `--stats` wrapper. Same census already runs at the explicit `make audit`
+# cadence as report-only `--stats` (never `--strict`; see the script docstring).
 # A hard / `--strict` gate would block commits on ADRs nobody is touching (M-22).
 falsifier-reachability:
 	@python scripts/check_falsifier_reachability.py --stats

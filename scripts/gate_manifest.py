@@ -184,7 +184,15 @@ def main(argv: list[str] | None = None) -> int:
         choices=("pre-commit", "check", "validate", "audit"),
         default="pre-commit",
     )
-    ap.add_argument("--list", action="store_true")
+    ap.add_argument(
+        "--list", action="store_true",
+        help="print the hard-gate roster (blocking tiers only; pass --all-tiers "
+             "to also include audit-tier diagnostics)",
+    )
+    ap.add_argument(
+        "--all-tiers", action="store_true",
+        help="with --list, include audit-tier (report-only) gates",
+    )
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
 
@@ -193,6 +201,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.list:
         for g in gates:
+            if g.get("tier") == "audit" and not args.all_tiers:
+                continue
             when = g.get("when") or {}
             extra = f" when={when.get('staged_regex')}" if when else ""
             print(f"{g['id']:28s} tier={g.get('tier')}{extra}")

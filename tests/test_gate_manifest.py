@@ -39,6 +39,12 @@ EXPECTED_ALWAYS = {
     # subsections). always, not path-conditional on STATE.md: a stale date
     # must fail the next unrelated commit when the daily digest is skipped.
     "state-currency",
+    # Structural half of M1 artifact validation (unreadable JSON, missing/
+    # invalid fields, bad status, secrets_present != false, secret-shaped
+    # content) — split from m1-tree-skew (audit-tier) so a corrupted or
+    # secret-shaped artifact still fails a commit even though normal
+    # deployed-vs-main drift does not.
+    "m1-artifact-structure",
 }
 
 EXPECTED_PATH_CONDITIONAL = {
@@ -76,10 +82,24 @@ def test_manifest_lists_all_always_gates():
         cwd=REPO,
         text=True,
     )
-    for gid in EXPECTED_ALWAYS | EXPECTED_PATH_CONDITIONAL | EXPECTED_AUDIT:
+    for gid in EXPECTED_ALWAYS | EXPECTED_PATH_CONDITIONAL:
         assert gid in out, f"missing gate {gid}"
     assert "data-manifests" in out
     assert "path-conditional" in out
+
+    # --list is documented (Makefile, CLAUDE.md) as the "hard-gate roster" —
+    # audit-tier (report-only) diagnostics must not appear by default, or an
+    # operator reading that roster sees non-gates mixed into merge enforcement.
+    for gid in EXPECTED_AUDIT:
+        assert gid not in out, f"audit-tier gate {gid} leaked into default --list"
+
+    all_out = subprocess.check_output(
+        [sys.executable, str(SCRIPT), "--list", "--all-tiers"],
+        cwd=REPO,
+        text=True,
+    )
+    for gid in EXPECTED_ALWAYS | EXPECTED_PATH_CONDITIONAL | EXPECTED_AUDIT:
+        assert gid in all_out, f"missing gate {gid} from --list --all-tiers"
 
     # 2026-08-28 review fix: set-equality, not just membership. Membership
     # alone lets a NEW always-tier gate land in gates.yml without this list
@@ -284,3 +304,22 @@ def test_m1_tree_skew_stays_report_only():
     assert gate["tier"] == "audit"
     assert "--check-tree-skew" in gate["cmd"]
     assert "--require-tree-current" not in gate["cmd"]
+
+
+def test_m1_artifact_structure_stays_blocking():
+    """Structural validation (corruption/secrets) must still reject a commit.
+
+    validate_c1_monitoring_acceptance.py's main() runs validate() unconditionally,
+    before any --check-tree-skew branch — so the structural half must stay in a
+    blocking tier even though the tree-skew drift report (above) does not.
+    """
+    data = gm.load_manifest(MANIFEST)
+    gate = next(g for g in data["gates"] if g["id"] == "m1-artifact-structure")
+    assert gate["tier"] == "always"
+    assert "--check-tree-skew" not in gate["cmd"]
+    assert "validate_c1_monitoring_acceptance.py" in gate["cmd"]
+
+    selected_check = {g["id"] for g in gm.select_gates(data["gates"], "check")}
+    selected_precommit = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
+    assert "m1-artifact-structure" in selected_check
+    assert "m1-artifact-structure" in selected_precommit
