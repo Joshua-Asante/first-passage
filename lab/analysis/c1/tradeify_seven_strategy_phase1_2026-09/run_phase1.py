@@ -34,6 +34,8 @@ from research_utils.joint_trade_blocks import (  # noqa: E402
     build_weekly_exit_blocks,
 )
 from research_utils.trade_reconciliation import (  # noqa: E402
+    CLOSED_DRAWDOWN_LABEL,
+    EXCURSION_DRAWDOWN_LABEL,
     analyze_venue,
     calculate_accounting,
     load_early_close_calendar,
@@ -46,17 +48,20 @@ from research_utils.tv_trade_ledger import (  # noqa: E402
     load_source_inventory,
     load_source_specs,
     normalize_export,
+    verify_input_overrides,
     verify_source_pair,
 )
 from research_utils.tv_summary_reconciliation import (  # noqa: E402
+    MAX_DRAWDOWN_POLICY_STATUS,
     SUMMARY_TOLERANCES,
+    TV_PANEL_DD_METRIC,
     load_summary_anchors,
     reconcile_summary,
     reconstruct_d17_monthly,
 )
 
 
-_RUNNER_VERSION = "tradeify-phase1-normalization-v3"
+_RUNNER_VERSION = "tradeify-phase1-normalization-v4"
 _SEVERITY_ORDER = {"INFO": 0, "WARNING": 1, "BLOCKER": 2, "FATAL": 3}
 _BASE_COMMIT = "ed181233afd01d8fc128bc76ac626e43c3761f87"
 _FROZEN_STRATEGY_IDS = (
@@ -334,6 +339,10 @@ def _strategy_record(
         "win_rate": accounting.win_rate,
         "profit_factor": accounting.profit_factor,
         "max_drawdown_usd": accounting.max_drawdown_usd,
+        "max_drawdown_excursion_bounded_usd": accounting.max_drawdown_excursion_bounded_usd,
+        "max_drawdown_label": accounting.max_drawdown_label,
+        "max_drawdown_excursion_bounded_label": accounting.max_drawdown_excursion_bounded_label,
+        "max_drawdown_excursion_bounded_measurement_basis": accounting.max_drawdown_excursion_bounded_measurement_basis,
         "final_source_cumulative_pnl_usd": accounting.final_source_cumulative_pnl_usd,
         "pine_pyramiding_pct": spec.pine_pyramiding_pct,
         "pine_pin_status": spec.pine_pin_status,
@@ -369,6 +378,7 @@ def _strategy_record(
             "export_bytes": spec.export_bytes,
             "pine_filename": spec.pine_filename,
             "pine_sha256": spec.pine_sha256,
+            "pine_input_overrides_sha256": spec.pine_input_overrides_sha256,
             "pine_bytes": spec.pine_bytes,
             "pine_pin_status": spec.pine_pin_status,
             "pin_ref": spec.pin_ref,
@@ -556,6 +566,39 @@ def _render_report(manifest: dict[str, object]) -> bytes:
                 **row
             )
         )
+    if manifest["runner_version"] == "tradeify-phase1-normalization-v4":
+        lines.extend(
+            [
+                "", "## Pine input override digests", "",
+                "| Strategy | pine_input_overrides_sha256 |", "|---|---|",
+            ]
+        )
+        for row in manifest["strategies"]:
+            digest = row["source_identity"]["pine_input_overrides_sha256"]
+            lines.append(f"| {row['strategy_id']} | {digest} |")
+        lines.extend([
+            "", "## Drawdown measurement bases", "",
+            f"| Strategy | Closed-trade DD ({CLOSED_DRAWDOWN_LABEL}) | Walk DD ({EXCURSION_DRAWDOWN_LABEL}) | TV panel DD (separate anchor) |",
+            "|---|---:|---:|---:|",
+        ])
+        for row in manifest["strategies"]:
+            lines.append(
+                f"| {row['strategy_id']} | ${row['max_drawdown_usd']} | "
+                f"${row['max_drawdown_excursion_bounded_usd']} | "
+                + ("MISSING_ANCHOR" if row[TV_PANEL_DD_METRIC] is None else f"${row[TV_PANEL_DD_METRIC]}") + " |"
+            )
+        lines.extend(["", f"Drawdown acceptance policy: `{MAX_DRAWDOWN_POLICY_STATUS}`. "
+                      "Evidence coverage is not operator acceptance; the placeholder grants no waiver.", "",
+                      "Closed-interval overlap is measured from canonical entry/exit timestamps; ties count. "
+                      "Overlapping or tied legs are RECORDED with INFO only. Otherwise the check is one-sided: "
+                      "walk <= panel + 0.01; equality is coincident INFO, never MATCH."])
+        for row in manifest["strategies"]:
+            lines.append(f"- {row['strategy_id']}: measured overlap or tie = {row['has_overlap_or_tie']}.")
+        for basis in dict.fromkeys(
+            row["max_drawdown_excursion_bounded_measurement_basis"]
+            for row in manifest["strategies"]
+        ):
+            lines.extend(["", f"- Excursion-tightened lower-bound basis: {basis}"])
     lines.extend(
         [
             "",
@@ -627,7 +670,14 @@ def _render_report(manifest: dict[str, object]) -> bytes:
     lines.extend([
         "## Independent TradingView summary reconciliation", "",
         f"G1.4 coverage: `{manifest['summary_reconciliation_status']}`. {manifest['summary_coverage_note']}", "",
-        "Observed max drawdown uses closed-trade exit equity; TradingView panel equity drawdown may differ. Discrepancies remain blockers; no series is repaired.", "",
+        (
+            "The panel drawdown is a separate anchor, never an equality target for the exit-order walk. "
+            "Only a non-overlapping walk exceeding the panel by more than 0.01 blocks; "
+            "overlap and timestamp ties are recorded with INFO. No DD row is a MATCH; no series is repaired. "
+            "DD rows leave Observed unset; their Difference is walk minus panel, as shown separately above."
+            if manifest["runner_version"] == "tradeify-phase1-normalization-v4"
+            else "Observed max drawdown uses closed-trade exit equity; TradingView panel equity drawdown may differ. Discrepancies remain blockers; no series is repaired."
+        ), "",
     ])
     for row in manifest["strategies"]:
         lines.extend([f"### {row['strategy_id']}", "", row["summary_source_note"] or "No independent operator summary supplied.", "",
@@ -669,6 +719,8 @@ def run_campaign(
     fee_schedule = load_fee_schedule(fee_path)
     early_close_calendar = load_early_close_calendar(calendar_path)
     summary_inventory = load_summary_anchors(campaign_dir / "tv_summary_anchors.json", specs)
+    for spec in specs:
+        verify_input_overrides(campaign_dir, spec)
     verified = [verify_source_pair(source_dir, spec) for spec in specs]
 
     normalized_by_strategy = {
@@ -700,6 +752,9 @@ def run_campaign(
         comparisons, summary_issues = reconcile_summary(accounting, source.spec, summary_inventory)
         anchor = summary_inventory.anchors.get(source.spec.strategy_id)
         summary_record = {
+            TV_PANEL_DD_METRIC: anchor["metrics"][TV_PANEL_DD_METRIC] if anchor else None,
+            "has_overlap_or_tie": accounting.has_overlap_or_tie,
+            "max_drawdown_policy_status": MAX_DRAWDOWN_POLICY_STATUS,
             "continuous_contract_roll_policy": roll_policy_record,
             "summary_source_note": anchor["source_note"] if anchor else None,
             "summary_comparisons": _public_summary_comparisons(comparisons),
@@ -765,16 +820,19 @@ def run_campaign(
     local_strategy_report_sha256: dict[str, str] = {}
     for spec in specs:
         strategy_id = spec.strategy_id
+        record = next(row for row in strategy_records if row["strategy_id"] == strategy_id)
         detail_bytes = _json_bytes(
             {
                 "claim_class": "EXPLORATORY",
                 "strategy_id": strategy_id,
+                **{key: value for key, value in record.items() if key.startswith("max_drawdown")},
                 "source_identity": {
                     "export_filename": spec.export_filename,
                     "export_sha256": spec.export_sha256,
                     "export_bytes": spec.export_bytes,
                     "pine_filename": spec.pine_filename,
                     "pine_sha256": spec.pine_sha256,
+                    "pine_input_overrides_sha256": spec.pine_input_overrides_sha256,
                     "pine_bytes": spec.pine_bytes,
                     "pine_pin_status": spec.pine_pin_status,
                     "pin_ref": spec.pin_ref,
