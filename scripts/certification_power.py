@@ -73,16 +73,32 @@ def _iter_lower_cdf(n: int, p: float) -> Iterator[tuple[int, float]]:
         weights[k + 1] = weights[k] * ((n - k) / (k + 1)) * odds
     for k in range(mode, 0, -1):
         weights[k - 1] = weights[k] * (k / (n - k + 1)) / odds
-    total = math.fsum(weights)
+    # suffix[k] = sum(weights[k:]). Prefer the smaller tail when normalizing so
+    # division by a separately rounded total cannot push an exact CDF boundary
+    # (e.g. BinomCDF(0; 1, 0.05) = 0.95) one ULP above the threshold.
+    suffix = [0.0] * (n + 2)
+    run = correction = 0.0
+    for k in range(n, -1, -1):
+        adjusted = weights[k] - correction
+        updated = run + adjusted
+        correction = (updated - run) - adjusted
+        run = updated
+        suffix[k] = run
+    total = suffix[0]
     cumulative = correction = 0.0
     for k, weight in enumerate(weights):
-        # Compensated accumulation keeps tiny tail masses from being lost as
-        # rounding drift in the bulk. Normalize every prefix, not just k=n.
         adjusted = weight - correction
         updated = cumulative + adjusted
         correction = (updated - cumulative) - adjusted
         cumulative = updated
-        yield k, 1.0 if k == n else min(1.0, cumulative / total)
+        if k == n:
+            yield k, 1.0
+            continue
+        upper = suffix[k + 1]
+        if cumulative <= upper:
+            yield k, min(1.0, cumulative / total)
+        else:
+            yield k, max(0.0, 1.0 - upper / total)
 
 
 def _binom_cdf(k: int, n: int, p: float) -> float:

@@ -33,6 +33,12 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-05g — Resolve #308 conflict with main; restore exact CDF boundary certification
+
+**Open / next:** STATE queue: `#1` [Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#49--codex-takeover-and-bounded-campaign-revision-2026-09-05) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24). Merged `origin/main` (#306 babysit skill). Certification CDF now prefers the smaller tail when normalizing so `max_certifying_busts(1, ceiling=0.05, alpha=0.95)` returns `0` again; 46 calculator tests pass.
+
+---
+
 ## 2026-09-05f — Resolve #306 merge conflict with main (queue-exception: owner `@cursor` on PR #306)
 
 **Focus:** Make PR #306 mergeable again and confirm Codex review findings stay covered after the merge.

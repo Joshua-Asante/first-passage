@@ -85,6 +85,13 @@ def test_no_certifying_count_is_minus_one_and_zero_power() -> None:
     assert cp.per_limb_power(5, 0.01) == 0.0
 
 
+def test_exact_cdf_boundary_still_certifies() -> None:
+    # P(X <= 0) for X~Binom(1, 0.05) equals 0.95 exactly. Mode-relative
+    # normalization must not overshoot that boundary and reject k=0.
+    assert cp._binom_cdf(0, 1, 0.05) == 0.95
+    assert cp.max_certifying_busts(1, ceiling=0.05, alpha=0.95) == 0
+
+
 def test_cli_eval_n630_smoke() -> None:
     proc = subprocess.run(
         [sys.executable, str(SCRIPT), "--n", "630", "--true-rate", "0.03"],
