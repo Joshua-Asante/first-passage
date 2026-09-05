@@ -9,15 +9,21 @@ appear in a FILENAME) and carries a short digest of the true path instead, so
 the location survives for local remediation while the scanner's own output —
 which the worker pastes into the PR body — stays publishable.
 
-What each commit is compared against: EVERY parent. A merge's own contribution
-is the set of PATHS that differ from ALL parents — its conflict resolution — so
-a merge of ``origin/main`` is audited without re-reporting everything ``main``
-brought in (which would otherwise stop the packet on the repository's own
-tracked images). Evidence for those paths is then UNIONed across parents, never
-intersected per signal: a path can be binary in one parent and text in another,
-and intersecting each signal on its own would drop the text evidence against one
-parent and the binary evidence against the other, reporting a resolved path as
-clean. An ordinary one-parent commit is simply its diff against that parent.
+What each commit is compared against: EVERY parent. An ordinary one-parent
+commit is its diff against that parent. A merge is read with git's COMBINED
+diff, and only lines absent from EVERY parent — the ``++`` lines, its conflict
+resolution — are scanned: a line inherited from one side renders as ``+ `` or
+`` +`` and is not the merge's own, so a merge of ``origin/main`` neither
+re-reports what ``main`` brought in nor lets a clean two-sided edit of one file
+promote that whole file. Binary and path evidence is unioned across parents over
+the paths that differ from all of them, so a path binary in one parent and text
+in another cannot fall between the two.
+
+Every diff is taken PER PATH with a ``:(literal)`` pathspec, and the path comes
+from a NUL-delimited listing, never from a patch header — git C-quotes a header
+path containing a tab, newline, quote or backslash regardless of
+``core.quotePath``, and a header-derived name would then never match the raw
+one.
 
 Git runs with ``core.quotePath=false`` and path lists are read NUL-delimited,
 so a non-ASCII filename cannot slip past a prefix or suffix test.
@@ -27,9 +33,14 @@ Needle classes (campaign-state §47b step 6b, 2026-09-04):
   PAIR   every (key, value) of that object in four serializations:
          ``"k": v`` · ``"k":v`` · ``k: v`` · ``k=v``
   VALUE  every value of that object that is distinctive — a string of at
-         least four characters, or a number with a decimal point or at least
-         four digits (trivial scalars are covered by TITLE/PAIR and by the
-         worker's provenance self-read; a bare ``true`` would match every file)
+         least four characters, or a number with a decimal point, an exponent,
+         or at least four digits (trivial scalars are covered by TITLE/PAIR and
+         by the worker's provenance self-read; a bare ``true`` would match
+         every file). A number contributes BOTH its source lexeme exactly as
+         written in the snapshot (``1.2500``) and its canonical JSON spelling
+         (``1.25``): a value copied from the chart keeps its trailing zeros, and
+         a needle built from the round-tripped float alone would miss it on a
+         word boundary.
   CELL   every cell of every data row (header skipped) of each --csv file
          that carries a decimal point or a date
 Tokens listed in --exclude files (one per line) are dropped from every class.
@@ -61,7 +72,7 @@ from pathlib import Path
 _WORD = r"(?<![A-Za-z0-9_]){}(?![A-Za-z0-9_])"
 _DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 _DECIMAL = re.compile(r"\d\.\d")
-_HUNK = re.compile(r"@@ -\d+(?:,\d+)? \+(\d+)")
+_HUNK = re.compile(r"\+(\d+)")   # first "+N" in "@@ -a,b +c,d @@" or "@@@ -a,b -c,d +e,f @@@"
 _EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 
 
@@ -99,7 +110,20 @@ def _parents(commit: str, cwd: Path) -> list[str]:
 # --------------------------------------------------------------------------- needles
 
 
+class _Num(str):
+    """A JSON number kept as the exact lexeme written in the source file."""
+
+
+def _canonical_number(lexeme: str) -> str:
+    text = lexeme.lower()
+    if "." in text or "e" in text:
+        return json.dumps(float(lexeme))
+    return json.dumps(int(lexeme))
+
+
 def _value_forms(value: object) -> set[str]:
+    if isinstance(value, _Num):
+        return {str(value), _canonical_number(value)}
     forms = {json.dumps(value)}
     if isinstance(value, str):
         forms.add(value)
@@ -109,6 +133,9 @@ def _value_forms(value: object) -> set[str]:
 def _distinctive(value: object) -> bool:
     if isinstance(value, bool) or value is None:
         return False
+    if isinstance(value, _Num):
+        text = value.lower()
+        return "." in text or "e" in text or sum(ch.isdigit() for ch in text) >= 4
     if isinstance(value, str):
         return len(value) >= 4
     if isinstance(value, (int, float)):
@@ -119,7 +146,7 @@ def _distinctive(value: object) -> bool:
 
 def build_json_needles(path: Path, json_key: str) -> dict[str, set[str]]:
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload = json.loads(path.read_text(encoding="utf-8"), parse_float=_Num, parse_int=_Num)
     except (OSError, ValueError) as exc:
         raise NeedleError(f"cannot read JSON needle source: {path.name}") from exc
     obj = payload.get(json_key) if isinstance(payload, dict) else None
@@ -168,43 +195,52 @@ def compile_classes(classes: dict[str, set[str]]) -> dict[str, re.Pattern[str]]:
 # ------------------------------------------------------------------- per-parent reads
 
 
-def _content_vs(base: str, commit: str, cwd: Path, patterns: dict[str, re.Pattern[str]]) -> set[tuple[str, str, int]]:
-    """(class, file, new-line) for ADDED lines matching a needle, in commit's diff vs base.
+def _scan_diff_text(text: str, ncols: int, path: str, patterns: dict[str, re.Pattern[str]]) -> set[tuple[str, str, int]]:
+    """(class, path, new-line) for lines the diff ADDS, over a per-path diff of known path.
 
-    The ``+++`` file header is recognised by parser STATE, not by its prefix: an
-    added line whose own text starts with ``++ `` renders as ``+++ `` inside a
-    hunk and must be scanned, not consumed as a header.
+    ``ncols`` is the number of prefix columns: 1 for an ordinary diff, one per
+    parent for a combined diff. A line counts as added only when EVERY column is
+    ``+`` — in a combined diff that is a line absent from every parent, the
+    merge's own contribution. Lines carrying any ``-`` are not in the result and
+    do not advance the new-file line number. The path is the one the diff was
+    asked for, so the C-quoted header is never parsed.
     """
     hits: set[tuple[str, str, int]] = set()
-    current_file = "<unknown>"
     new_line = 0
     in_hunk = False
     # split on "\n" ONLY: git delimits patch records with LF, while str.splitlines()
     # also breaks on \v, \f, \r, \x1c-\x1e, \x85, \u2028 and \u2029 — a needle after such a
     # byte would land in a fragment with no "+" marker and never be scanned.
-    for raw in _git(["diff", "--no-color", base, commit], cwd).split("\n"):
-        if raw.startswith("diff --git "):
-            in_hunk = False
-            current_file = "<unknown>"
-            continue
+    for raw in text.split("\n"):
         if raw.startswith("@@"):
             in_hunk = True
-            match = _HUNK.match(raw)
+            match = _HUNK.search(raw)
             new_line = int(match.group(1)) - 1 if match else 0
             continue
-        if not in_hunk:
-            if raw.startswith("+++ "):
-                target = raw[4:]
-                current_file = target[2:] if target.startswith("b/") else target
+        if not in_hunk or raw.startswith("\\") or len(raw) < ncols:
             continue
-        if raw.startswith("+"):
-            new_line += 1
-            text = raw[1:]
+        cols, body = raw[:ncols], raw[ncols:]
+        if "-" in cols:
+            continue
+        new_line += 1
+        if all(col == "+" for col in cols):
             for name, pattern in patterns.items():
-                if pattern.search(text):
-                    hits.add((name, current_file, new_line))
-        elif raw.startswith(" "):
-            new_line += 1
+                if pattern.search(body):
+                    hits.add((name, path, new_line))
+    return hits
+
+
+def _content_for(commit: str, parents: list[str], paths: set[str], cwd: Path, patterns: dict[str, re.Pattern[str]]) -> set[tuple[str, str, int]]:
+    """Content hits for one commit over the given raw paths, one per-path diff each."""
+    hits: set[tuple[str, str, int]] = set()
+    for path in sorted(paths):
+        spec = f":(literal){path}"
+        if len(parents) == 1:
+            text = _git(["diff", "--no-color", parents[0], commit, "--", spec], cwd)
+            hits |= _scan_diff_text(text, 1, path, patterns)
+        else:
+            text = _git(["diff-tree", "--no-commit-id", "-c", "-p", "--no-color", commit, "--", spec], cwd)
+            hits |= _scan_diff_text(text, len(parents), path, patterns)
     return hits
 
 
@@ -267,7 +303,7 @@ def _redact(text: str, patterns: dict[str, re.Pattern[str]]) -> tuple[str, bool]
 def _changed_vs(base: str, commit: str, cwd: Path) -> set[str]:
     """Every path whose content differs from base (any status; rename/copy destinations)."""
     fields = _z_fields(
-        _git(["diff", "--find-renames", "--find-copies", "--name-status", "-z", base, commit], cwd)
+        _git(["diff", "--find-renames", "--find-copies", "--name-status", "-z", "--diff-filter=ACMRT", base, commit], cwd)
     )
     paths: set[str] = set()
     index = 0
@@ -301,12 +337,8 @@ def scan_commit(commit: str, cwd: Path, patterns: dict[str, re.Pattern[str]]) ->
     """Content and commit-message hits for one commit; hits carry no token."""
     parents = _parents(commit, cwd)
     resolved = _resolved_paths(parents, commit, cwd)
-    content: set[tuple[str, str, int]] = set()
-    for parent in parents:
-        content |= {
-            hit for hit in _content_vs(parent, commit, cwd, patterns)
-            if resolved is None or hit[1] in resolved
-        }
+    paths = _changed_vs(parents[0], commit, cwd) if resolved is None else resolved
+    content = _content_for(commit, parents, paths, cwd, patterns)
     hits = [(name, commit, file, line) for name, file, line in sorted(content)]
     message_hits = 0
     for number, line in enumerate(_git(["log", "-1", "--format=%B", commit], cwd).split("\n"), start=1):

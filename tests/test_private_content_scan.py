@@ -344,5 +344,95 @@ def test_merge_resolution_caught_when_parents_disagree_on_binaryness(repo: tuple
         capture_output=True, text=True,
     )
     assert proc.returncode == 2, proc.stdout
-    assert "HIT class=VALUE" in proc.stdout and "file=f.dat" in proc.stdout
+    # git's combined diff carries no text for a path that is binary in a parent, so
+    # the gate holds through the fail-closed BINARY hit rather than a content hit
+    assert "HIT class=BINARY" in proc.stdout and "file=f.dat" in proc.stdout
+
+
+@needs_git
+def test_tab_named_file_resolved_in_a_merge_is_caught(repo: tuple[Path, Path, Path]) -> None:
+    """git C-quotes a header path with a tab regardless of core.quotePath.
+
+    A header-derived name would never equal the raw NUL-delimited one, so the
+    diff is taken per path with a literal pathspec and the header is never read.
+    """
+    root, snap, export = repo
+    _git(root, "branch", "feature")
+    (root / "odd\tname.txt").write_text("main side\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "main")
+    _git(root, "checkout", "-q", "feature")
+    (root / "odd\tname.txt").write_text("feature side\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "feature")
+    merge = _git_try(root, "merge", "--no-edit", "main")
+    assert merge.returncode != 0
+    (root / "odd\tname.txt").write_text("resolved Aggressive\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "--no-edit")
+    proc = subprocess.run(
+        [sys.executable, str(_SCRIPT), "--repo", str(root), "--range", "main..HEAD",
+         "--json", str(snap), "--csv", str(export)],
+        capture_output=True, text=True,
+    )
+    assert proc.returncode == 2, proc.stdout
+    assert "HIT class=VALUE" in proc.stdout and "line=1" in proc.stdout
+
+
+@needs_git
+def test_clean_two_sided_edit_of_one_file_is_not_merge_authored(repo: tuple[Path, Path, Path]) -> None:
+    """Both sides edit separate hunks of one file; the merge is clean.
+
+    The merged file differs from both parents, but every line came from one of
+    them — a needle that was already on the mainline must not be reported at the
+    merge, or a routine merge of main would stop a safe packet.
+    """
+    root, snap, export = repo
+    body = "".join(f"line{i}\n" for i in range(1, 11))
+    (root / "f.txt").write_text(body, encoding="utf-8")
+    _git(root, "add", "f.txt")
+    _git(root, "commit", "-q", "-m", "seed f")
+    _git(root, "branch", "feature")
+    (root / "f.txt").write_text(body.replace("line1\n", "line1 main Aggressive\n"), encoding="utf-8")
+    _git(root, "commit", "-q", "-am", "main edits the top")
+    _git(root, "checkout", "-q", "feature")
+    (root / "f.txt").write_text(body.replace("line10\n", "line10 feature harmless\n"), encoding="utf-8")
+    _git(root, "commit", "-q", "-am", "feature edits the bottom")
+    _git(root, "merge", "-q", "--no-ff", "--no-edit", "main")
+    proc = subprocess.run(
+        [sys.executable, str(_SCRIPT), "--repo", str(root), "--range", "main..HEAD",
+         "--json", str(snap), "--csv", str(export)],
+        capture_output=True, text=True,
+    )
+    assert proc.returncode == 0, proc.stdout
+    assert "SCAN result=CLEAN" in proc.stdout
+
+
+@needs_git
+def test_numeric_lexeme_and_canonical_spelling_both_match(repo: tuple[Path, Path, Path], tmp_path: Path) -> None:
+    """A number keeps the spelling written in the snapshot as well as its canonical form."""
+    root, _snap, export = repo
+    snap = tmp_path / "lex.json"
+    snap.write_text('{"inputs": {"Threshold": 1.2500, "Alpha Length": 3}}\n', encoding="utf-8")
+    (root / "a.txt").write_text("threshold was 1.2500 on the chart\n", encoding="utf-8")
+    _git(root, "add", "a.txt")
+    _git(root, "commit", "-q", "-m", "lexeme as written")
+    assert _run(root, "--json", str(snap), "--csv", str(export)).returncode == 2
+    (root / "b.txt").write_text("threshold was 1.25 on the chart\n", encoding="utf-8")
+    _git(root, "add", "b.txt")
+    _git(root, "commit", "-q", "-m", "canonical spelling")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2 and "file=b.txt" in proc.stdout
+
+
+@needs_git
+def test_glob_characters_in_a_filename_are_taken_literally(repo: tuple[Path, Path, Path]) -> None:
+    """A per-path diff must not let git read `a*b.txt` as a pattern."""
+    root, snap, export = repo
+    (root / "a*b.txt").write_text("Aggressive\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "glob-looking name")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2, proc.stdout
+    assert "HIT class=VALUE" in proc.stdout and "file=a*b.txt line=1" in proc.stdout
 
