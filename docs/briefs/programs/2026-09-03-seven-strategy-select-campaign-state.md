@@ -3582,11 +3582,15 @@ binding, live-state/replay implementation and the statistical freeze remain owed
 
 **Calculator repair in this follow-up:** six regression failures reproduced the
 three A2 defects; the fix normalizes the entire probability mass, rejects unit
-power at positive failure rate and makes CLI operations exclusive. All 45 tests
-pass on Python 3.12.14, including the existing ordinary pins and an independent
-integer-arithmetic quantile oracle. This is code validation, not n2/n3 sizing or
-a campaign result. The old #305 disposition remains historical; §45's repair
-hold is discharged only when this follow-up lands and its checks are accepted.
+power at positive failure rate and makes CLI operations exclusive. Mode-relative
+CDF emission prefers the smaller tail so exact boundary classifications are not
+lost to a one-ULP overshoot after dividing by a separately rounded total. All 46
+tests pass on Python 3.12.14, including the existing ordinary pins and an
+independent integer-arithmetic quantile oracle. This is code validation, not
+n2/n3 sizing or a campaign result. The old #305 disposition remains historical;
+§45's repair hold is discharged only when this follow-up lands and its checks
+are accepted. §48's prerequisite 8/9 "A2 defects" row is the pre-repair
+checkpoint; live disposition is this paragraph.
 
 **Local intake verification:** all five current Pine files and five pinned exports
 were located and their SHA-256 values match phase1_config.json. The existing
