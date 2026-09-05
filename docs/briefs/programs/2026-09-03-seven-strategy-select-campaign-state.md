@@ -1,6 +1,6 @@
 # Seven-strategy Select configuration campaign — campaign state (orchestrator-only writes)
 
-**Status:** Codex owns orchestration by the 2026-09-05 operator transfer. The operator merged campaign-only #302; scanner draft #307 is deferred. The [current execution plan](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) replaces the old phase sequence. Intake remains blocked on complete export-bound captures (§48); no search, final freeze, qualification or live authorization has occurred. One bounded implementation attempt is authorized (§49); speed-population and final-validation timing decisions remain pending.
+**Status:** Codex owns orchestration by the 2026-09-05 operator transfer. The operator merged campaign-only #302; scanner draft #307 is deferred. The [current execution plan](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) replaces the old phase sequence. Intake remains blocked on complete export-bound captures (§48); no search, final freeze, qualification or live authorization has occurred. One bounded implementation attempt is authorized (§49); S1 unconditional speed and S2 final validation after winner parity are approved (2026-09-05).
 **Last curated:** 2026-09-05 (Codex takeover, `codex/tradeify-campaign-next`)
 **Parent plan:** [`2026-09-02-seven-strategy-tradeify-select-configuration.md`](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
 (PR [#272](https://github.com/Joshua-Asante/first-passage/pull/272) — **merged 2026-09-03** together
@@ -1096,7 +1096,7 @@ same harness and because every prior book in this repo that failed, failed there
 
 ### 15b — What compresses
 
-**Execution reader:** the [2026-09-05 plan revision](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) owns the current sequence. This table records D20 and subsequent amendments. Its pre-/post-Phase-8 n3 timing conflict is held for S2; do not run n3 from this historical table.
+**Execution reader:** the [2026-09-05 plan revision](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) owns the current sequence. This table records D20 and subsequent amendments. The operator approved S2: n3 follows winner-specific Phase 8 parity and a fresh account snapshot. Do not run pre-parity n3 from this historical table.
 
 | Plan phase | Under D20 |
 |---|---|
@@ -3569,8 +3569,16 @@ The [admission record](../../adr/2026-09-05-tradeify-select-striker-expression-r
 
 **Current owner:** the [revised plan](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
 replaces the competing executable sequences. S1 (unconditional speed) and S2
-(n3 after winner parity, using the fresh account snapshot) are recommended and
-pending the operator's answer. No dependent freeze or sampling may proceed yet.
+(n3 after winner parity, using the fresh account snapshot) are **approved
+2026-09-05**: the operator instructed, "fold in both recommendations."
+S1 uses a one-sided 95% lower bound on full-history P(pass by 200 business days)
+of at least 0.50, with failed/unresolved attempts counted as infinite pass time.
+The full/H1/H2 failure conditions remain ≤5% over the frozen overall horizon;
+these requirements do not certify 95% passing by day 200. Report the descriptive
+pass-by-day curve using the same paths. S2 reserves the sole independent n3 sample
+for the executable winner and fresh account state; a failed final test ends the
+attempt even if winner implementation effort has already been spent. Source
+binding, live-state/replay implementation and the statistical freeze remain owed.
 
 **Calculator repair in this follow-up:** six regression failures reproduced the
 three A2 defects; the fix normalizes the entire probability mass, rejects unit

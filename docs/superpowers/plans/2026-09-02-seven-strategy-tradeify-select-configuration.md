@@ -12,8 +12,8 @@ configuration from one bounded attempt.
 **Status (2026-09-05):** orchestrator transferred to Codex. The operator merged
 campaign-only #302; scanner work is deferred to draft #307. Intake is not
 complete. No configuration has qualified, no search has run, and the rail remains
-disarmed. Decisions S1/S2 below are pending before the freeze; independent intake
-and calculator repair may continue.
+disarmed. The operator approved S1/S2 below on 2026-09-05. Source binding,
+live-state/replay implementation and the frozen statistical design remain owed.
 
 **Architecture:** privately bound strategy expressions feed canonical ledgers and
 synchronized intraday replay. A frozen composition policy feeds one deterministic
@@ -35,7 +35,7 @@ forward-confirmation requirements beside an incompatible accelerated path.
 |---|---|
 | Select incumbent; no Growth purchase | Score the incumbent. Growth may remain a comparison only, without a second selection/deployment attempt. |
 | Failure probability at most 5% on full, H1 and H2 | Count every outcome other than pass as failure, including horizon_cap and inactivity failure. Use the fixed n3 sample only for final decision bounds. |
-| Certified median no longer than 200 business days | S1 defines its population. Minimize the frozen speed statistic among qualifying candidates; 200 is a reservation, not an estimated attainable result. |
+| Certified unconditional median no longer than 200 business days | S1 counts failed and horizon-unresolved attempts as infinite pass time. Minimize the frozen speed statistic among qualifying candidates; 200 is a reservation, not an estimated attainable result. |
 | Select from five; at most one MNQ expression | Each expression may be off. Include at least one active expression. At most four can be active under the current roster. No forced MNQ allocation. |
 | Exact source expressions | `aegis_6j1`, `orb_mnq_recon_v7`, `striker_dj30_mym_pyramid_250`, `striker_nas100_mnq_dow_wed_excluded`, `vanguard_mgc_v04`; identity comes from phase1_config.json and private input bindings, not names alone. |
 | Striker election | The [two campaign expressions are admitted](../../adr/2026-09-05-tradeify-select-striker-expression-readmission.md) to selection and conditional evaluation deployment eligibility by operator election. Their ledger rows are CANDIDATE at zero capital. Existing locked editions and funded deployment remain barred; no old trigger is claimed to have fired. |
@@ -53,25 +53,32 @@ the implementation owner. Keep per-instrument commissions and session rules in
 their existing authorities; never substitute the tier's index-micro fee for 6J/MGC.
 The weekly operator token trade remains the accepted inactivity mitigation.
 
-## Two decisions before freezing
+## Approved speed definition and final-validation timing
 
-**S1 — recommended speed population:** let T be business days from deployment to
+**S1 — approved 2026-09-05, unconditional speed:** let T be business days from deployment to
 pass; T is infinity for a failed or horizon-unresolved attempt. Require a one-sided
 95% lower confidence bound on P(T ≤ 200) of at least 0.50 on the full-history n3
 sample. This certifies an unconditional median ≤200. A median among passers can
 hide slow/failing attempts and is not interchangeable with this statistic.
 This is the fourth acceptance condition; H1/H2 retain their failure conditions.
+The joint requirement is at least 95% pass probability within the frozen overall
+horizon and at least 50% pass probability by day 200, each with its specified bound.
+It does not certify 95% passing by day 200. Report the pass-by-day curve from the
+same sample to expose the slower tail; the curve adds no acceptance test or sampling.
 
-**S2 — recommended final-validation timing:** select a provisional winner on n1/n2,
+**S2 — approved 2026-09-05, final validation after parity:** select a provisional winner on n1/n2,
 complete its Phase 8 execution parity, capture the fresh live account state, then
 consume the one n3 sample immediately before the deployment decision. Do not
 validate at Phase 5 and later rerun n3 to refresh the account. If any bound, market
 rule, executable fingerprint or account state becomes invalid after n3, stop for
-the operator; no automatic second attempt. Current contradictory timing instructions
-in historical §15/§17 are not an executable authorization while S2 is pending.
+the operator; no automatic second attempt. This sequence supersedes contradictory
+pre-parity n3 timing instructions in historical campaign §15/§17. Building the
+winner may incur implementation effort before a failing final test; that cost
+does not authorize a runner-up or a second final sample.
 
-Both questions were presented to the operator on 2026-09-05. An unanswered
-question is not approval. Freeze and dependent sampling remain blocked.
+**Decision record:** on 2026-09-05 the operator instructed, "fold in both
+recommendations." S1/S2 are closed. The remaining intake, implementation and
+pre-registration gates still control freeze readiness.
 
 ## Budget and stop conditions
 
@@ -154,7 +161,8 @@ surface; the existing calculator repair is independently testable and can land f
 **Files:** existing campaign pre-registration location, one contract per retained
 template, and the campaign-owned machine-readable configuration catalogue.
 
-- [ ] Confirm Task 1, Task 2 and S1/S2 are closed before computing portfolio rankings.
+- [x] Record operator approval of S1/S2 and propagate the executable requirements.
+- [ ] Confirm Task 1 and Task 2 are closed before computing portfolio rankings.
 - [ ] Freeze exact source/override/bar/calendar/commission/code digests, the legal
   inclusion and integer size sets, one-MNQ constraint, order-event priority,
   cap/reservation behavior, sessions, and any portfolio protection policy. Reuse
@@ -173,8 +181,8 @@ template, and the campaign-owned machine-readable configuration catalogue.
 - [ ] Freeze the live time-to-pass predictive interval: quantiles, conditioning
   population, failed/unresolved-path treatment and clock origin at deployment.
   A live bust or time outside that interval falsifies the model-fitted proposal.
-- [ ] Size power for the actual conjunction of acceptance conditions. If S1 is
-  adopted there are four, and the speed and full-safety conditions use the same
+- [ ] Size power for the conjunction of all four acceptance conditions under S1.
+  The speed and full-safety conditions use the same
   paths: the old equal-q three-limb `q**3` calculation is insufficient. Use explicit
   design alternatives for failure rate and pass-by-200 probability; never present
   these planning alternatives as measured true rates. Freeze a dependence-valid
@@ -218,13 +226,16 @@ is implied by a promising offline frontier. Do not add infrastructure unrelated 
 
 ## Task 5 — One final validation and operator decision
 
-- [ ] If S2 is adopted, after parity and generic M1 readiness, capture the fresh
+- [ ] Under S2, after parity and generic M1 readiness, capture the fresh
   private account state while flat and without pending orders. Record its digest
   and timestamp; token-trade history is included. Seal the implementation fingerprint.
 - [ ] Run n3 once on this winner and snapshot. For each of full/H1/H2, require the
   one-sided 95% exact upper failure bound ≤0.05. Under S1 also require the full
   sample's one-sided 95% exact lower pass-by-200 bound ≥0.50. Include unresolved
   attempts in both denominators and treat them as speed infinity.
+- [ ] Report the unconditional pass-by-day curve from these same n3 paths,
+  retaining every attempt in the denominator. Label it descriptive; do not claim
+  simultaneous confidence coverage across the curve or consume extra paths.
 - [ ] Fail any condition: no qualifying configuration; no runner-up or extra draw.
   Pass all: publish the model-fitted decision evidence and request separate operator
   deployment GO only when M1 and execution gates are satisfied. Recheck snapshot
