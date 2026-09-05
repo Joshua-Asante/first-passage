@@ -10,9 +10,9 @@
 
 Campaign status: `RECONCILED_EXPLORATORY`
 
-Phase 1 evidence verdict cap: `NEEDS_CONTEXT`
+Phase 1 evidence verdict cap: `COMPLETE`
 
-Runner generation: `tradeify-phase1-normalization-v3`
+Runner generation: `tradeify-phase1-normalization-v4`
 
 ## Continuous-contract roll disposition
 
@@ -27,9 +27,9 @@ Operator ruling 2026-09-03; docs/briefs/programs/2026-09-03-seven-strategy-selec
 
 D17 ruling 2026-09-03: monthly totals are `RECONSTRUCTED` from the local canonical exit-month ledger; commission evidence is `AMENDED_OUT`.
 
-Operator ruling 2026-09-03; campaign-state §6 D17: monthly totals reconstructed from canonical exit-month ledger and independent commissions amended out.
+Operator ruling 2026-09-03; campaign-state §6 D17: monthly totals reconstructed from canonical exit-month ledger and independent commissions amended out. D32, campaign section 38 (2026-09-04): overlap-keyed panel drawdown comparison.
 
-- Monthly totals are local canonical-ledger reconstructions using exit_timestamp_naive in the configured source timezone. No independent total-commission panel exists; derived commission remains non-independent inventory.
+- Monthly totals are local canonical-ledger reconstructions using exit_timestamp_naive in the configured source timezone. No independent total-commission panel exists; derived commission remains non-independent inventory. Panel drawdown remains separate: non-overlap uses a one-sided lower-bound check; overlap/ties record the panel under D32.
 - The tracked manifest and report hold only local-ledger hashes and aggregate reconciliation facts; per-month figures remain in gitignored local artifacts.
 - Derived commission inventory is not an independent operator anchor; venue/export fee auditing is unchanged.
 
@@ -42,6 +42,37 @@ Operator ruling 2026-09-03; campaign-state §6 D17: monthly totals reconstructed
 | striker_dj30_mym_pyramid_250 | RECONCILED_EXPLORATORY | UNPINNED_MODIFIED | core/strategies/PORT_MANIFEST.sha256:core/strategies/candidates/striker_dj30_v4.5_mym_pyramid_250.pine | pyramid 250% vs locked 750%; initial_capital 100000 vs research-variant pin 200000 | 47348 | 27497 | 406 | 203 | $32057.36 | 0 | 0 |
 | striker_nas100_mnq_dow_wed_excluded | RECONCILED_EXPLORATORY | UNPINNED_MODIFIED | core/strategies/PORT_MANIFEST.sha256:core/strategies/candidates/striker_nas100_v1_mnq_dow_wed_excluded.pine | day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}; initial_capital 100000 vs research-variant pin 200000 | 88221 | 33013 | 756 | 378 | $112253.42 | 0 | 0 |
 | vanguard_mgc_v04 | RECONCILED_EXPLORATORY | NOT_IN_PORT_MANIFEST | None | None | 74473 | 44177 | 676 | 338 | $18709.48 | 0 | 0 |
+
+## Pine input override digests
+
+| Strategy | pine_input_overrides_sha256 |
+|---|---|
+| aegis_6j1 | 460f40fa079c00a97711d743aa0a5acee62f1c8f2cc33972b8a92b7948e42d08 |
+| orb_mnq_recon_v7 | 102635acd76a7cfb42380451b71a4628610a12aa434915e6b25af76245534203 |
+| striker_dj30_mym_pyramid_250 | b7369ee32889f700cd45aa7e07ae19a87cf38ca10fa9c151340face16a5d6e1a |
+| striker_nas100_mnq_dow_wed_excluded | ba59219aec5d2eec111045f402abe2e2e08101bcf238a0c18d3621d4ef3a2b11 |
+| vanguard_mgc_v04 | 3bacd6f11ebc804b30bc30303bf9cbb253ba256afc55e232f92d7daaf9b58861 |
+
+## Drawdown measurement bases
+
+| Strategy | Closed-trade DD (LOWER BOUND for non-overlapping trades) | Walk DD (LOWER BOUND (excursion-tightened) for non-overlapping trades) | TV panel DD (separate anchor) |
+|---|---:|---:|---:|
+| aegis_6j1 | $1298.40 | $1470.40 | $1470.40 |
+| orb_mnq_recon_v7 | $5436.20 | $6062.02 | $6062.02 |
+| striker_dj30_mym_pyramid_250 | $4262.66 | $4568.68 | $4568.68 |
+| striker_nas100_mnq_dow_wed_excluded | $8197.80 | $8269.62 | $8269.62 |
+| vanguard_mgc_v04 | $1742.24 | $1804.36 | $1804.36 |
+
+Drawdown acceptance policy: `OVERLAP_KEYED_D32`. Evidence coverage is not operator acceptance; the placeholder grants no waiver.
+
+Closed-interval overlap is measured from canonical entry/exit timestamps; ties count. Overlapping or tied legs are RECORDED with INFO only. Otherwise the check is one-sided: walk <= panel + 0.01; equality is coincident INFO, never MATCH.
+- aegis_6j1: measured overlap or tie = False.
+- orb_mnq_recon_v7: measured overlap or tie = True.
+- striker_dj30_mym_pyramid_250: measured overlap or tie = True.
+- striker_nas100_mnq_dow_wed_excluded: measured overlap or tie = True.
+- vanguard_mgc_v04: measured overlap or tie = True.
+
+- Excursion-tightened lower-bound basis: LOWER BOUND (excursion-tightened) for non-overlapping trades: closed <= walk <= true. Synthetic exit-order walk (exit_timestamp_naive, then exit_source_row): visit realized equity minus abs(mae_usd) before each net settlement, using the previous realized-equity peak and including realized exit declines. The walk never visits an intratrade peak (MFE), so drawdowns starting at those peaks are missed even without overlap; this is never the full path. Under overlap or timestamp ties neither field is guaranteed to bound synchronized account-equity drawdown; trade extrema are unsynchronized.
 
 ## Dropped source inventory
 
@@ -114,18 +145,18 @@ These exports are provenance only and are never normalized, counted, or used in 
 
 ## Frozen hashes
 
-- Config: `df238cd78fc0a381fdb86466ef3dfca5522dd8db7ae0cf245165f370df9f3892`
+- Config: `a00bdd32687744b729510efe16704b0eb2c094d8551a7d91e87c5d6b878d9acb`
 - Tradeify fee capture: `61c8957a4adfabf6b8e8c4eb984e6d9388a223145f90b0b9ca66b3dd7ca28750`
 - CME calendar capture: `6eeb3b9d198eabf0a5a2115c4648f69629720a500616f38e219dff7bc57d0334`
-- Independent TradingView anchors: `481e9bb2227578497dbc506d336377a5d51c366161dae6dd7d534c9c2ef88979`
+- Independent TradingView anchors: `22d6ab6e7356b7b3052177b6385783f850a8a43f7a8cc9abd0146e6b0cf69376`
 - Canonical events: `3a6b754ec145db0e5c09ce18413d7d42d60fa1ce8ac034bd6d6878ae4251d3ac`
 - Canonical trades: `7e650599241b8150d0ee31ea04a7406c200e1f009c9530908a9644e56bed765a`
 - Weekly exit blocks: `d0b3e5ab840ef0a88c9f7b4b2c7254b3774142b85a55a9cfaeaa04fa5fe7934a`
-- Detail report aegis_6j1: `546cf0e0b1b9fe3d26793f0dc87ea53cb7990decd744bb5ec261110b32c964bc`
-- Detail report orb_mnq_recon_v7: `a0ea8a6b27aba3aa6f292322d82c3e38029e1c89cb8bbefbcb329305fcff81ea`
-- Detail report striker_dj30_mym_pyramid_250: `c7bbab4867e381428da31116c61ea4cb224d8b2b848cf328ce105443988871e3`
-- Detail report striker_nas100_mnq_dow_wed_excluded: `4d2807e40f946f708e270ad66be01451ca0a05d6c05099ac811663532615b5d4`
-- Detail report vanguard_mgc_v04: `a0a9564b1f598f04e68a1a6d56cf2e49d4ef25c7e3b67305a4ddfd2ca142e4d1`
+- Detail report aegis_6j1: `42a784e3b3ccd79e4af82a80a08ad4f40b8f4e690cc3a0a45cc74635b700db2f`
+- Detail report orb_mnq_recon_v7: `31c09388bf94bfcf3b333d5e11aa5df4504a2a75bbff901342d1a0ce725390f2`
+- Detail report striker_dj30_mym_pyramid_250: `09796afb37da8114bef200ce02d46b47d37131c3534914f3a642dc81334e335f`
+- Detail report striker_nas100_mnq_dow_wed_excluded: `87fba3c502e696432f60d094b43209a1bb4ef0cf7e5c0b8167717a6f8c797d3a`
+- Detail report vanguard_mgc_v04: `57e5ed7e06815e14725b90f05a96d01b5aac4f524df3d2695a2079be247ed537`
 - Local monthly reconciliation aegis_6j1: `5242591bbb40a93480e5356011f31a4d6fd0575d1d0f1f73ee1236926c343ca1`
 - Local monthly reconciliation orb_mnq_recon_v7: `632382c8bffea9644486b961e706d5f94a7f782235ecc4b7d5b9bab29070e2ad`
 - Local monthly reconciliation striker_dj30_mym_pyramid_250: `bd34b13a72d6c771cdbb654d3798bb53307f60ac144e1553141efe5df4303070`
@@ -139,88 +170,93 @@ These exports are provenance only and are never normalized, counted, or used in 
 - `WARNING` `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED` × 1
 - `WARNING` `PINE_EXPORT_COMMISSION_MISMATCH` × 1
 - `WARNING` `PINE_VENUE_COMMISSION_MISMATCH` × 1
+- `INFO` `TV_DRAWDOWN_COINCIDENT` × 1
 
 ### orb_mnq_recon_v7
 
 - `WARNING` `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED` × 1
+- `INFO` `TV_DRAWDOWN_RECORDED` × 1
 
 ### striker_dj30_mym_pyramid_250
 
 - `WARNING` `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED` × 1
+- `INFO` `TV_DRAWDOWN_RECORDED` × 1
 
 ### striker_nas100_mnq_dow_wed_excluded
 
 - `WARNING` `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED` × 1
+- `INFO` `TV_DRAWDOWN_RECORDED` × 1
 
 ### vanguard_mgc_v04
 
 - `WARNING` `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED` × 1
+- `INFO` `TV_DRAWDOWN_RECORDED` × 1
 
 ## Independent TradingView summary reconciliation
 
-G1.4 coverage: `NEEDS_CONTEXT`. Fresh independent TradingView Key-stats panels are required for all five replacement sources. The DJ30 replacement has an unexplained +$287 net delta versus the prior 200K run pending operator discrimination. Old panels remain historical only and are never rebound or inferred from exports.
+G1.4 coverage: `COMPLETE`. All five pinned 2026-09-03 runs have independent TradingView Key-stats panels recorded in campaign section 18a. Historical capital-delta attribution is UNESTABLISHED under D30; older panels are not rebound to these exports.
 
-Observed max drawdown uses closed-trade exit equity; TradingView panel equity drawdown may differ. Discrepancies remain blockers; no series is repaired.
+The panel drawdown is a separate anchor, never an equality target for the exit-order walk. Only a non-overlapping walk exceeding the panel by more than 0.01 blocks; overlap and timestamp ties are recorded with INFO. No DD row is a MATCH; no series is repaired. DD rows leave Observed unset; their Difference is walk minus panel, as shown separately above.
 
 ### aegis_6j1
 
-No independent operator summary supplied.
+TradingView Key stats panel captured 2026-09-04 for the pinned 2026-09-03 run: Sep 1, 2022 - Sep 2, 2026, Deep, 100K USD, Default detalization, Script execution 1; campaign-state section 18a.
 
 | Metric | Observed | Anchor | Difference | Tolerance | Status |
 |---|---|---|---|---|---|
-| trade_count | 121 | None | None | 0 | MISSING_ANCHOR |
-| net_pnl_usd | 27996.05 | None | None | 0.01 | MISSING_ANCHOR |
-| win_rate_pct | 63.6363636400 | None | None | 0.01 | MISSING_ANCHOR |
-| profit_factor | 3.4216569931 | None | None | 0.01 | MISSING_ANCHOR |
-| max_drawdown_usd | 1298.40 | None | None | 0.01 | MISSING_ANCHOR |
+| trade_count | 121 | 121 | 0 | 0 | MATCH |
+| net_pnl_usd | 27996.05 | 27996.05 | 0.00 | 0.01 | MATCH |
+| win_rate_pct | 63.6363636400 | 63.64 | -0.0036363600 | 0.01 | MATCH |
+| profit_factor | 3.4216569931 | 3.422 | -0.0003430069 | 0.01 | MATCH |
+| tv_panel_max_drawdown_usd | None | 1470.40 | 0.00 | 0.01 | COINCIDENT |
 
 ### orb_mnq_recon_v7
 
-No independent operator summary supplied.
+TradingView Key stats panel captured 2026-09-04 for the pinned 2026-09-03 run: Sep 1, 2022 - Sep 2, 2026, Deep, 100K USD, Default detalization, Script execution 1; campaign-state section 18a.
 
 | Metric | Observed | Anchor | Difference | Tolerance | Status |
 |---|---|---|---|---|---|
-| trade_count | 681 | None | None | 0 | MISSING_ANCHOR |
-| net_pnl_usd | 48118.16 | None | None | 0.01 | MISSING_ANCHOR |
-| win_rate_pct | 57.2687224700 | None | None | 0.01 | MISSING_ANCHOR |
-| profit_factor | 1.4452530618 | None | None | 0.01 | MISSING_ANCHOR |
-| max_drawdown_usd | 5436.20 | None | None | 0.01 | MISSING_ANCHOR |
+| trade_count | 681 | 681 | 0 | 0 | MATCH |
+| net_pnl_usd | 48118.16 | 48118.16 | 0.00 | 0.01 | MATCH |
+| win_rate_pct | 57.2687224700 | 57.27 | -0.0012775300 | 0.01 | MATCH |
+| profit_factor | 1.4452530618 | 1.445 | 0.0002530618 | 0.01 | MATCH |
+| tv_panel_max_drawdown_usd | None | 6062.02 | 0.00 | 0.01 | RECORDED |
 
 ### striker_dj30_mym_pyramid_250
 
-No independent operator summary supplied.
+TradingView Key stats panel captured 2026-09-04 for the pinned 2026-09-03 run: Sep 1, 2022 - Sep 2, 2026, Deep, 100K USD, Default detalization, Script execution 2; campaign-state section 18a.
 
 | Metric | Observed | Anchor | Difference | Tolerance | Status |
 |---|---|---|---|---|---|
-| trade_count | 203 | None | None | 0 | MISSING_ANCHOR |
-| net_pnl_usd | 32057.36 | None | None | 0.01 | MISSING_ANCHOR |
-| win_rate_pct | 42.3645320200 | None | None | 0.01 | MISSING_ANCHOR |
-| profit_factor | 1.6925876219 | None | None | 0.01 | MISSING_ANCHOR |
-| max_drawdown_usd | 4262.66 | None | None | 0.01 | MISSING_ANCHOR |
+| trade_count | 203 | 203 | 0 | 0 | MATCH |
+| net_pnl_usd | 32057.36 | 32057.36 | 0.00 | 0.01 | MATCH |
+| win_rate_pct | 42.3645320200 | 42.36 | 0.0045320200 | 0.01 | MATCH |
+| profit_factor | 1.6925876219 | 1.693 | -0.0004123781 | 0.01 | MATCH |
+| tv_panel_max_drawdown_usd | None | 4568.68 | 0.00 | 0.01 | RECORDED |
 
 ### striker_nas100_mnq_dow_wed_excluded
 
-No independent operator summary supplied.
+TradingView Key stats panel captured 2026-09-04 for the pinned 2026-09-03 run: Sep 1, 2022 - Sep 2, 2026, Deep, 100K USD, Default detalization, Script execution 2; campaign-state section 18a.
 
 | Metric | Observed | Anchor | Difference | Tolerance | Status |
 |---|---|---|---|---|---|
-| trade_count | 378 | None | None | 0 | MISSING_ANCHOR |
-| net_pnl_usd | 112253.42 | None | None | 0.01 | MISSING_ANCHOR |
-| win_rate_pct | 54.4973545000 | None | None | 0.01 | MISSING_ANCHOR |
-| profit_factor | 2.6038264920 | None | None | 0.01 | MISSING_ANCHOR |
-| max_drawdown_usd | 8197.80 | None | None | 0.01 | MISSING_ANCHOR |
+| trade_count | 378 | 378 | 0 | 0 | MATCH |
+| net_pnl_usd | 112253.42 | 112253.42 | 0.00 | 0.01 | MATCH |
+| win_rate_pct | 54.4973545000 | 54.50 | -0.0026455000 | 0.01 | MATCH |
+| profit_factor | 2.6038264920 | 2.604 | -0.0001735080 | 0.01 | MATCH |
+| tv_panel_max_drawdown_usd | None | 8269.62 | 0.00 | 0.01 | RECORDED |
 
 ### vanguard_mgc_v04
 
-No independent operator summary supplied.
+TradingView Key stats panel captured 2026-09-04 for the pinned 2026-09-03 run: Sep 1, 2022 - Sep 2, 2026, Deep, 100K USD, Default detalization, Script execution 2; campaign-state section 18a.
 
 | Metric | Observed | Anchor | Difference | Tolerance | Status |
 |---|---|---|---|---|---|
-| trade_count | 338 | None | None | 0 | MISSING_ANCHOR |
-| net_pnl_usd | 18709.48 | None | None | 0.01 | MISSING_ANCHOR |
-| win_rate_pct | 50.5917159800 | None | None | 0.01 | MISSING_ANCHOR |
-| profit_factor | 1.9275251098 | None | None | 0.01 | MISSING_ANCHOR |
-| max_drawdown_usd | 1742.24 | None | None | 0.01 | MISSING_ANCHOR |
+| trade_count | 338 | 338 | 0 | 0 | MATCH |
+| net_pnl_usd | 18709.48 | 18709.48 | 0.00 | 0.01 | MATCH |
+| win_rate_pct | 50.5917159800 | 50.59 | 0.0017159800 | 0.01 | MATCH |
+| profit_factor | 1.9275251098 | 1.928 | -0.0004748902 | 0.01 | MATCH |
+| tv_panel_max_drawdown_usd | None | 1804.36 | 0.00 | 0.01 | RECORDED |
 
 ## Reproduce
 

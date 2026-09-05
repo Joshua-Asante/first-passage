@@ -317,7 +317,7 @@ def test_campaign_writes_local_rows_but_aggregate_contains_no_absolute_path(tmp_
         "algorithm": "SHA-256",
         "input": "exact raw CSV record bytes including original record terminator when present",
     }
-    assert manifest["git_base_commit"] == "ed181233afd01d8fc128bc76ac626e43c3761f87"
+    assert manifest["git_base_commit"] == "00b2bb7a9c50081545acd7f52f4bcd8dd8af964c"
     assert [row["strategy_id"] for row in manifest["strategies"]] == strategy_ids
     modified_id = "striker_nas100_mnq_dow_wed_excluded"
     modified_divergence = "day-of-week set {Mon,Tue,Thu,Fri} vs locked {Mon,Tue}"
@@ -809,19 +809,20 @@ def test_committed_manifest_matches_frozen_five_strategy_acceptance():
 
     assert observed == expected
     from test_tradeify_phase1_identity_policy import accepted_policy
-    assert manifest["runner_version"] == "tradeify-phase1-normalization-v3"
+    assert manifest["runner_version"] == "tradeify-phase1-normalization-v4"
+    assert manifest["git_base_commit"] == "00b2bb7a9c50081545acd7f52f4bcd8dd8af964c"
     assert manifest["continuous_contract_roll_policy"] == accepted_policy()
     for row in manifest["strategies"]:
         assert row["continuous_contract_roll_policy"] == accepted_policy()
         roll = next(issue for issue in row["issues"] if issue["code"] == "CONTINUOUS_CONTRACT_ROLL_UNRESOLVED")
         assert roll["severity"] == "WARNING"
     assert manifest["campaign_status"] == "RECONCILED_EXPLORATORY"
-    assert manifest["phase1_verdict_cap"] == "NEEDS_CONTEXT"
+    assert manifest["phase1_verdict_cap"] == "COMPLETE"
     assert manifest["inputs"] == {
-        "config_sha256": "df238cd78fc0a381fdb86466ef3dfca5522dd8db7ae0cf245165f370df9f3892",
+        "config_sha256": "a00bdd32687744b729510efe16704b0eb2c094d8551a7d91e87c5d6b878d9acb",
         "tradeify_commission_schedule_sha256": "61c8957a4adfabf6b8e8c4eb984e6d9388a223145f90b0b9ca66b3dd7ca28750",
         "cme_early_close_calendar_sha256": "6eeb3b9d198eabf0a5a2115c4648f69629720a500616f38e219dff7bc57d0334",
-        "tv_summary_anchors_sha256": "481e9bb2227578497dbc506d336377a5d51c366161dae6dd7d534c9c2ef88979",
+        "tv_summary_anchors_sha256": "22d6ab6e7356b7b3052177b6385783f850a8a43f7a8cc9abd0146e6b0cf69376",
     }
     for input_name, filename in {
         "config": "phase1_config.json",
@@ -849,11 +850,11 @@ def test_committed_manifest_matches_frozen_five_strategy_acceptance():
         ),
     }
     assert manifest["local_strategy_report_sha256"] == {
-        "aegis_6j1": "546cf0e0b1b9fe3d26793f0dc87ea53cb7990decd744bb5ec261110b32c964bc",
-        "orb_mnq_recon_v7": "a0ea8a6b27aba3aa6f292322d82c3e38029e1c89cb8bbefbcb329305fcff81ea",
-        "striker_dj30_mym_pyramid_250": "c7bbab4867e381428da31116c61ea4cb224d8b2b848cf328ce105443988871e3",
-        "striker_nas100_mnq_dow_wed_excluded": "4d2807e40f946f708e270ad66be01451ca0a05d6c05099ac811663532615b5d4",
-        "vanguard_mgc_v04": "a0a9564b1f598f04e68a1a6d56cf2e49d4ef25c7e3b67305a4ddfd2ca142e4d1",
+        "aegis_6j1": "42a784e3b3ccd79e4af82a80a08ad4f40b8f4e690cc3a0a45cc74635b700db2f",
+        "orb_mnq_recon_v7": "31c09388bf94bfcf3b333d5e11aa5df4504a2a75bbff901342d1a0ce725390f2",
+        "striker_dj30_mym_pyramid_250": "09796afb37da8114bef200ce02d46b47d37131c3534914f3a642dc81334e335f",
+        "striker_nas100_mnq_dow_wed_excluded": "87fba3c502e696432f60d094b43209a1bb4ef0cf7e5c0b8167717a6f8c797d3a",
+        "vanguard_mgc_v04": "57e5ed7e06815e14725b90f05a96d01b5aac4f524df3d2695a2079be247ed537",
     }
     assert manifest["local_monthly_reconciliation_sha256"] == {
         "aegis_6j1": "5242591bbb40a93480e5356011f31a4d6fd0575d1d0f1f73ee1236926c343ca1",
@@ -863,10 +864,10 @@ def test_committed_manifest_matches_frozen_five_strategy_acceptance():
         "vanguard_mgc_v04": "5b1f2a5872aac49ef4988b423bc3d042232c16f5056c1816bddc4eeebde56acb",
     }
     assert sha256((_CAMPAIGN_DIR / "reconciliation_manifest.json").read_bytes()).hexdigest() == (
-        "90281c7a28ddb28a7be84985b61a0fdd5c399f1bd8d3106d10490266585d209e"
+        "ebf8bab7feb4d13f594f0cf98d5d92c194fe6d55d0cf2650c374644bd16848fa"
     )
     assert sha256((_CAMPAIGN_DIR / "RESULTS.md").read_bytes()).hexdigest() == (
-        "7918ebeb80fdc6a9182d61ad1b71f2f168aadf85c82e34c3aeb682f3a768b084"
+        "7270042f4727f5e4388d99836544e7ff2b50d6ace6da30d3d82459abfd05932a"
     )
     assert [source["strategy_id_as_named_before"] for source in manifest["dropped_sources"]] == [
         "striker_dj30_qtxg1_swap_body_on_mym",
@@ -875,6 +876,35 @@ def test_committed_manifest_matches_frozen_five_strategy_acceptance():
     config = json.loads((_CAMPAIGN_DIR / "phase1_config.json").read_bytes())
     assert manifest["dropped_sources"] == config["dropped_sources"]
     rows = {row["strategy_id"]: row for row in manifest["strategies"]}
+    assert {
+        strategy_id: row["source_identity"]["pine_input_overrides_sha256"]
+        for strategy_id, row in rows.items()
+    } == {
+        spec["strategy_id"]: spec["pine_input_overrides_sha256"]
+        for spec in config["strategies"]
+    }
+    dd_comparisons = {}
+    for strategy_id, row in rows.items():
+        assert row["max_drawdown_policy_status"] == "OVERLAP_KEYED_D32"
+        comparisons = {item["metric"]: item for item in row["summary_comparisons"]}
+        assert {
+            metric: item["status"] for metric, item in comparisons.items()
+            if metric != "tv_panel_max_drawdown_usd"
+        } == {
+            "trade_count": "MATCH", "net_pnl_usd": "MATCH",
+            "win_rate_pct": "MATCH", "profit_factor": "MATCH",
+        }
+        dd = comparisons["tv_panel_max_drawdown_usd"]
+        assert dd["max_drawdown_policy_status"] == "OVERLAP_KEYED_D32"
+        assert dd["has_overlap_or_tie"] == row["has_overlap_or_tie"]
+        dd_comparisons[strategy_id] = (dd["has_overlap_or_tie"], dd["status"])
+    assert dd_comparisons == {
+        "aegis_6j1": (False, "COINCIDENT"),
+        "orb_mnq_recon_v7": (True, "RECORDED"),
+        "striker_dj30_mym_pyramid_250": (True, "RECORDED"),
+        "striker_nas100_mnq_dow_wed_excluded": (True, "RECORDED"),
+        "vanguard_mgc_v04": (True, "RECORDED"),
+    }
     assert all(row["friday_to_sunday_holds"] == 0 for row in rows.values())
     assert all(row["issue_counts"].get("FORCE_FLAT_VIOLATION", 0) == 0 for row in rows.values())
     assert {

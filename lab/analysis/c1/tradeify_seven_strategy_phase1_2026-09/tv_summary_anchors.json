@@ -1,13 +1,80 @@
 {
   "claim_class": "EXPLORATORY",
-  "coverage_status": "NEEDS_CONTEXT",
-  "coverage_note": "Fresh independent TradingView Key-stats panels are required for all five replacement sources. The DJ30 replacement has an unexplained +$287 net delta versus the prior 200K run pending operator discrimination. Old panels remain historical only and are never rebound or inferred from exports.",
+  "coverage_status": "COMPLETE",
+  "coverage_note": "All five pinned 2026-09-03 runs have independent TradingView Key-stats panels recorded in campaign section 18a. Historical capital-delta attribution is UNESTABLISHED under D30; older panels are not rebound to these exports.",
   "d17_policy": {
     "ruling_date": "2026-09-03",
-    "ruling_ref": "Operator ruling 2026-09-03; campaign-state §6 D17: monthly totals reconstructed from canonical exit-month ledger and independent commissions amended out.",
+    "ruling_ref": "Operator ruling 2026-09-03; campaign-state §6 D17: monthly totals reconstructed from canonical exit-month ledger and independent commissions amended out. D32, campaign section 38 (2026-09-04): overlap-keyed panel drawdown comparison.",
     "monthly_totals": "RECONSTRUCTED",
     "commissions": "AMENDED_OUT",
-    "reason": "Monthly totals are local canonical-ledger reconstructions using exit_timestamp_naive in the configured source timezone. No independent total-commission panel exists; derived commission remains non-independent inventory."
+    "reason": "Monthly totals are local canonical-ledger reconstructions using exit_timestamp_naive in the configured source timezone. No independent total-commission panel exists; derived commission remains non-independent inventory. Panel drawdown remains separate: non-overlap uses a one-sided lower-bound check; overlap/ties record the panel under D32.",
+    "max_drawdown": "OVERLAP_KEYED"
   },
-  "strategies": []
+  "strategies": [
+    {
+      "strategy_id": "aegis_6j1",
+      "export_sha256": "71e732fc92d28a56fbc1e4aa358e10b68f317a110f3facc95ed34508fad96eaa",
+      "source_note": "TradingView Key stats panel captured 2026-09-04 for the pinned 2026-09-03 run: Sep 1, 2022 - Sep 2, 2026, Deep, 100K USD, Default detalization, Script execution 1; campaign-state section 18a.",
+      "metrics": {
+        "trade_count": 121,
+        "net_pnl_usd": "27996.05",
+        "win_rate_pct": "63.64",
+        "profit_factor": "3.422",
+        "tv_panel_max_drawdown_usd": "1470.40"
+      },
+      "missing_metrics": []
+    },
+    {
+      "strategy_id": "orb_mnq_recon_v7",
+      "export_sha256": "bff235ea0934dace8a000dbad7eeede8673506718bd020f54f2c04cbae304568",
+      "source_note": "TradingView Key stats panel captured 2026-09-04 for the pinned 2026-09-03 run: Sep 1, 2022 - Sep 2, 2026, Deep, 100K USD, Default detalization, Script execution 1; campaign-state section 18a.",
+      "metrics": {
+        "trade_count": 681,
+        "net_pnl_usd": "48118.16",
+        "win_rate_pct": "57.27",
+        "profit_factor": "1.445",
+        "tv_panel_max_drawdown_usd": "6062.02"
+      },
+      "missing_metrics": []
+    },
+    {
+      "strategy_id": "striker_dj30_mym_pyramid_250",
+      "export_sha256": "5a5006588fa5c87628df7b1c15c8af8d8ae2250be0abb0371ea4d93665ef998e",
+      "source_note": "TradingView Key stats panel captured 2026-09-04 for the pinned 2026-09-03 run: Sep 1, 2022 - Sep 2, 2026, Deep, 100K USD, Default detalization, Script execution 2; campaign-state section 18a.",
+      "metrics": {
+        "trade_count": 203,
+        "net_pnl_usd": "32057.36",
+        "win_rate_pct": "42.36",
+        "profit_factor": "1.693",
+        "tv_panel_max_drawdown_usd": "4568.68"
+      },
+      "missing_metrics": []
+    },
+    {
+      "strategy_id": "striker_nas100_mnq_dow_wed_excluded",
+      "export_sha256": "f6a93bb653d710a77f8ebde8e64639ed913171c814cd13de5f00f76d0c3d1513",
+      "source_note": "TradingView Key stats panel captured 2026-09-04 for the pinned 2026-09-03 run: Sep 1, 2022 - Sep 2, 2026, Deep, 100K USD, Default detalization, Script execution 2; campaign-state section 18a.",
+      "metrics": {
+        "trade_count": 378,
+        "net_pnl_usd": "112253.42",
+        "win_rate_pct": "54.50",
+        "profit_factor": "2.604",
+        "tv_panel_max_drawdown_usd": "8269.62"
+      },
+      "missing_metrics": []
+    },
+    {
+      "strategy_id": "vanguard_mgc_v04",
+      "export_sha256": "7b9cc65c98945055f35d55cdd43f049efc4b5924e2caa59f36d50b3eb872f9f2",
+      "source_note": "TradingView Key stats panel captured 2026-09-04 for the pinned 2026-09-03 run: Sep 1, 2022 - Sep 2, 2026, Deep, 100K USD, Default detalization, Script execution 2; campaign-state section 18a.",
+      "metrics": {
+        "trade_count": 338,
+        "net_pnl_usd": "18709.48",
+        "win_rate_pct": "50.59",
+        "profit_factor": "1.928",
+        "tv_panel_max_drawdown_usd": "1804.36"
+      },
+      "missing_metrics": []
+    }
+  ]
 }

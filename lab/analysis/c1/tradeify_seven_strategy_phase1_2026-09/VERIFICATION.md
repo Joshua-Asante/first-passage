@@ -1,20 +1,23 @@
-# Phase 1 verification evidence — final replacement-source freeze
+# Phase 1 verification evidence — single generation-v4 population freeze
 
-Audit date: 2026-09-03. This is the final `tradeify-phase1-normalization-v3` replacement-source generation. All five sources and outputs remain `EXPLORATORY`; no ranking, composition, Monte Carlo, Pine rerun, locked-edition claim, or book-level cap verdict is made.
+Audit date: 2026-09-05. This is the single `tradeify-phase1-normalization-v4` population/re-freeze, constituent (i), iteration 6 of 8. All five sources and outputs remain `EXPLORATORY`; no ranking, composition, Monte Carlo, Pine rerun, locked-edition claim, or book-level cap verdict is made.
 
 ## Generation and reproduction
 
-The runner was invoked once after final input and renderer-contract verification:
+The runner was invoked exactly once for this population generation using the existing local Python 3.11.9 environment:
 
 ```powershell
-.venv/Scripts/python.exe lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/run_phase1.py --config lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json --source-dir $SOURCE_DIR --output-dir lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/remediation_40_dates_2026-09-03
+& $PY311 lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/run_phase1.py --config lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json --source-dir $SOURCE_DIR --output-dir lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/population_2026-09-05
 ```
 
-The runner exit was captured as `0`. Artifact publication was then checked: the ignored output directory, v3 manifest, and RESULTS were atomically published at 2026-09-03 20:17:40 EDT; no Python process remained. A controller's independent read-only audit exited `0` in 2.02 seconds and verified all source snapshots, hashes, calendar dates, Decimal monthly arithmetic, deadline crossings, and exposure bounds.
+`$PY311` denotes that existing interpreter and `$SOURCE_DIR` denotes the operator-owned frozen source directory; their machine paths are intentionally omitted. This records the completed invocation and does not authorize an additional real generation. The captured exit code was `0`. The invocation's `_BASE_COMMIT`, serialized as manifest `git_base_commit`, is `00b2bb7a9c50081545acd7f52f4bcd8dd8af964c`.
 
-- Invocation-time `run_phase1.py` SHA-256: `c7f331ecbb53ab35fc15f0b1ae7d26ba1fd2674db63c5b617300efb59dc4dc83`.
-- `lab/research_utils/tv_trade_ledger.py`: `cdd925c0b77efc31ded8b90a9a3ead0cd79dac9fa9af9a0e1e77f272d520b075`.
-- `lab/research_utils/trade_reconciliation.py`: `b9197e5c08577012c9400d840b4e71221bafa91e81f0a03ce6d61764208d06ec`.
+- Invocation-time `run_phase1.py` SHA-256: `a83cdd68db5815114e1c4c7d5cebdde1a8e99e0cc52a559d947808a21f5c6a3d`.
+- Invocation-time `lab/research_utils/tv_trade_ledger.py` SHA-256: `87b9f1fad750a25968d213e83c69b4ab29bd18bcc963da964678f05d71b25845`.
+- Invocation-time `lab/research_utils/trade_reconciliation.py` SHA-256: `2af1960d8dae659d3e0688e3eea62a4fdb956d3295d3e7377fc2613e132f88c6`.
+- Invocation-time `lab/research_utils/tv_summary_reconciliation.py` SHA-256: `0d2343b2dc26f43f5c2e22eaa5556aa5be53674b2942e53b24a2a92db54672ef`.
+
+All five full private input snapshots are sealed: 211 inputs captured, with six differences from the pinned bodies' defaults. The operator explicitly confirmed that the existing trade-list exports reflect the exact captured chart state. Campaign-state §52 accepts that operator-attested identity together with the unchanged export/Pine byte pins for this intake; no fresh reexport was performed, and no independent reproduction is claimed. The runner verified each snapshot's exact-byte digest against its populated config pin before publication. Input titles, values, screenshots and provenance receipts remain private and ignored.
 
 ## Exact source pins
 
@@ -34,7 +37,21 @@ The calendar is `COMPLETE` only through D19's `ACCEPTED_SECONDARY` venue-date-me
 
 D19 does not claim a primary-CME source, product close-time model, or exchange-session model. The scheduled 2025-11-28 outage/half-day classification remains conservatively included; potentially missing ad-hoc 2026-05-28 through 2026-09-02 closures remain non-conservative and must be retested if primary evidence arrives. The thirteen unresolved and three sub-deadline inventories remain published.
 
-D17 reconstructs monthly totals from exit timestamps in `America/New_York`; all five local artifacts have zero aggregate residual and zero month-spanning trades. Independent commissions are `AMENDED_OUT`. G1.4 remains `NEEDS_CONTEXT`: fresh scalar panels are missing for all five replacement sources, and DJ30's +$287 replacement-versus-prior-200K net delta remains unexplained.
+D13 remains `ACCEPTED_UNMODELED`, with `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED` retained as a WARNING limitation. Contract-month and seam attribution remain `UNAVAILABLE`; the Phase 3 limitation and Phase 6 seam-sensitivity obligations are still owed.
+
+D17 reconstructs monthly totals from exit timestamps in `America/New_York`; all five local artifacts have zero aggregate residual and zero month-spanning trades. Independent commissions are `AMENDED_OUT`. All five independent panels from campaign-state §18a are populated against their own pinned exports. The exact six-key policy includes `max_drawdown: OVERLAP_KEYED`, and the panel anchor is `tv_panel_max_drawdown_usd`. D30 records historical capital-delta attribution as `UNESTABLISHED`; it is not a missing-panel prerequisite.
+
+The runner reports `COMPLETE` evidence coverage. All four non-DD limbs (`trade_count`, `net_pnl_usd`, `win_rate_pct`, `profit_factor`) are `MATCH` on each source. D32 results are:
+
+| Strategy | Four non-DD limbs | Measured overlap/tie | Panel DD status | DD policy |
+|---|---|---|---|---|
+| aegis_6j1 | MATCH / MATCH / MATCH / MATCH | No | COINCIDENT | OVERLAP_KEYED_D32 |
+| orb_mnq_recon_v7 | MATCH / MATCH / MATCH / MATCH | Yes | RECORDED | OVERLAP_KEYED_D32 |
+| striker_dj30_mym_pyramid_250 | MATCH / MATCH / MATCH / MATCH | Yes | RECORDED | OVERLAP_KEYED_D32 |
+| striker_nas100_mnq_dow_wed_excluded | MATCH / MATCH / MATCH / MATCH | Yes | RECORDED | OVERLAP_KEYED_D32 |
+| vanguard_mgc_v04 | MATCH / MATCH / MATCH / MATCH | Yes | RECORDED | OVERLAP_KEYED_D32 |
+
+Drawdown is not a symmetric panel reconciliation. Under non-overlap, the excursion walk is a lower bound that omits intratrade peaks; only a walk exceeding the panel by more than the inclusive cent tolerance blocks. Under overlap/ties, neither computed drawdown measure bounds synchronized account-equity drawdown, and the independent panel is recorded without claiming a match. `COINCIDENT` is INFO, not MATCH.
 
 | Strategy | Rows | Trades | Net P&L | Force-flat | Fri→Sun | Peak micro-equivalent range | Monthly buckets |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -44,28 +61,68 @@ D17 reconstructs monthly totals from exit timestamps in `America/New_York`; all 
 | striker_nas100_mnq_dow_wed_excluded | 756 | 378 | $112253.42 | 0 | 0 | 77–77 | 49 |
 | vanguard_mgc_v04 | 676 | 338 | $18709.48 | 0 | 0 | 6–6 | 48 |
 
-Totals are 3442 events and 1721 trades. The controller independently recomputed every local monthly Decimal sum, source/accounting residual, timezone deadline crossing, and exposure range. The upper-bound implementation was independently confirmed byte-identical to reviewed `80abcec` behavior. Per-strategy values are not a Phase 4 joint-book cap finding.
+Totals remain 3442 events and 1721 trades. The canonical event, trade and weekly ledgers are byte-identical to the previous freeze, as are all five monthly-reconciliation artifacts. The retained upper-bound implementation is the reviewed `80abcec` behavior. Per-strategy values are not a Phase 4 joint-book cap finding. `COMPLETE` describes evidence coverage only: sizing-faithfulness, synchronized replay, and the statistical freeze remain owed; no qualification or search authorization follows.
 
 ## Frozen hashes
 
+Every byte count and SHA-256 below was recomputed from this generation's files. Ignored artifact names are relative to `local_artifacts/population_2026-09-05/`; their contents remain local. Strategy-detail and monthly rows are in configuration order.
+
 | Artifact | Bytes | SHA-256 |
 |---|---:|---|
-| phase1_config.json | 9023 | `df238cd78fc0a381fdb86466ef3dfca5522dd8db7ae0cf245165f370df9f3892` |
+| phase1_config.json | 9548 | `a00bdd32687744b729510efe16704b0eb2c094d8551a7d91e87c5d6b878d9acb` |
 | tradeify_commission_schedule.json | 428 | `61c8957a4adfabf6b8e8c4eb984e6d9388a223145f90b0b9ca66b3dd7ca28750` |
 | cme_early_close_calendar.json | 3809 | `6eeb3b9d198eabf0a5a2115c4648f69629720a500616f38e219dff7bc57d0334` |
-| tv_summary_anchors.json | 947 | `481e9bb2227578497dbc506d336377a5d51c366161dae6dd7d534c9c2ef88979` |
+| tv_summary_anchors.json | 4111 | `22d6ab6e7356b7b3052177b6385783f850a8a43f7a8cc9abd0146e6b0cf69376` |
 | canonical_events.csv (ignored) | 1019004 | `3a6b754ec145db0e5c09ce18413d7d42d60fa1ce8ac034bd6d6878ae4251d3ac` |
 | canonical_trades.csv (ignored) | 362482 | `7e650599241b8150d0ee31ea04a7406c200e1f009c9530908a9644e56bed765a` |
 | weekly_exit_blocks.csv (ignored) | 14718 | `d0b3e5ab840ef0a88c9f7b4b2c7254b3774142b85a55a9cfaeaa04fa5fe7934a` |
-| reconciliation_manifest.json | 63702 | `90281c7a28ddb28a7be84985b61a0fdd5c399f1bd8d3106d10490266585d209e` |
-| RESULTS.md | 37638 | `7918ebeb80fdc6a9182d61ad1b71f2f168aadf85c82e34c3aeb682f3a768b084` |
+| reconciliation_manifest.json | 77650 | `ebf8bab7feb4d13f594f0cf98d5d92c194fe6d55d0cf2650c374644bd16848fa` |
+| RESULTS.md | 41201 | `7270042f4727f5e4388d99836544e7ff2b50d6ace6da30d3d82459abfd05932a` |
+| strategy_reports/aegis_6j1.json (ignored) | 10232 | `42a784e3b3ccd79e4af82a80a08ad4f40b8f4e690cc3a0a45cc74635b700db2f` |
+| strategy_reports/orb_mnq_recon_v7.json (ignored) | 8228 | `31c09388bf94bfcf3b333d5e11aa5df4504a2a75bbff901342d1a0ce725390f2` |
+| strategy_reports/striker_dj30_mym_pyramid_250.json (ignored) | 8422 | `09796afb37da8114bef200ce02d46b47d37131c3534914f3a642dc81334e335f` |
+| strategy_reports/striker_nas100_mnq_dow_wed_excluded.json (ignored) | 8464 | `87fba3c502e696432f60d094b43209a1bb4ef0cf7e5c0b8167717a6f8c797d3a` |
+| strategy_reports/vanguard_mgc_v04.json (ignored) | 8241 | `57e5ed7e06815e14725b90f05a96d01b5aac4f524df3d2695a2079be247ed537` |
+| monthly_reconciliation/aegis_6j1.json (ignored) | 1666 | `5242591bbb40a93480e5356011f31a4d6fd0575d1d0f1f73ee1236926c343ca1` |
+| monthly_reconciliation/orb_mnq_recon_v7.json (ignored) | 1778 | `632382c8bffea9644486b961e706d5f94a7f782235ecc4b7d5b9bab29070e2ad` |
+| monthly_reconciliation/striker_dj30_mym_pyramid_250.json (ignored) | 1779 | `bd34b13a72d6c771cdbb654d3798bb53307f60ac144e1553141efe5df4303070` |
+| monthly_reconciliation/striker_nas100_mnq_dow_wed_excluded.json (ignored) | 1825 | `7163605aeddd8953d73e44b46162ec051d4d45587c508701079acbd4a6e7568a` |
+| monthly_reconciliation/vanguard_mgc_v04.json (ignored) | 1745 | `5b1f2a5872aac49ef4988b423bc3d042232c16f5056c1816bddc4eeebde56acb` |
 
-Detail hashes in configuration order: `546cf0e0b1b9fe3d26793f0dc87ea53cb7990decd744bb5ec261110b32c964bc`, `a0ea8a6b27aba3aa6f292322d82c3e38029e1c89cb8bbefbcb329305fcff81ea`, `c7bbab4867e381428da31116c61ea4cb224d8b2b848cf328ce105443988871e3`, `4d2807e40f946f708e270ad66be01451ca0a05d6c05099ac811663532615b5d4`, `a0a9564b1f598f04e68a1a6d56cf2e49d4ef25c7e3b67305a4ddfd2ca142e4d1`. Monthly hashes in the same order: `5242591bbb40a93480e5356011f31a4d6fd0575d1d0f1f73ee1236926c343ca1`, `632382c8bffea9644486b961e706d5f94a7f782235ecc4b7d5b9bab29070e2ad`, `bd34b13a72d6c771cdbb654d3798bb53307f60ac144e1553141efe5df4303070`, `7163605aeddd8953d73e44b46162ec051d4d45587c508701079acbd4a6e7568a`, `5b1f2a5872aac49ef4988b423bc3d042232c16f5056c1816bddc4eeebde56acb`.
+The config, summary anchors, manifest, RESULTS, and all five strategy-detail hashes changed. The commission schedule, 40-date calendar, three canonical-ledger hashes and all five monthly-reconciliation hashes are unchanged. All twenty source hashes remain unchanged. Each strategy-detail and monthly hash above agrees with the generated manifest's corresponding entry; the invocation-time code hashes above match the computation checkout bytes. Checkout newline conversion can change raw code-file hashes without changing the committed content.
 
 ## Test and hygiene evidence
 
-Before the real run, the focused 15-module Phase 1, D17, D19, safety, cost, and production-barrier command completed with **374 passed, 1 skipped, 2 explicitly stale generated-artifact acceptance tests deselected in 11.29s**. The skip is the Windows file-symlink privilege test. The two deselections were the old manifest and RESULTS frozen-hash acceptances, which this 40-date freeze updates. Controller independently audited the published 40-date artifacts with `verify-40-date-freeze.ps1`: exit `0` in 2.02 seconds, including all local-output hashes, exact calendar membership, monthly Decimal arithmetic, time-zone deadline holds, and causal peak bounds.
+The prescribed seven-module focused suite passed on both runtimes: Python 3.11.9,
+285 passed in 16.82s; Python 3.12.14, 285 passed in 20.84s. It covered
+`test_tv_trade_ledger`, `test_tradeify_phase1_runner`,
+`test_tradeify_phase1_evidence_integration`, `test_tv_summary_reconciliation`,
+`test_tradeify_drawdown_policy`, `test_tradeify_d27_excursion`, and
+`test_trade_reconciliation`.
 
-At stable commit `f37ddd8`, the fresh full-suite command `.venv/Scripts/python.exe -m pytest -q -p no:cacheprovider --basetemp <external temporary directory>` exited `0`: **2495 passed, 35 skipped, 23 warnings, 6 subtests passed in 377.04s**. Controller's fresh manifest gate and catalog-only gate each exited `0` on the changed 40-date tree (external `remediation-40-gate.log`). Inherited dependency/fallback, historical-scoring, and report-only governance, absent-private, and catalog-heavy warnings remain.
+Full-suite commands were `python -m pytest -q -p no:cacheprovider`, with a separate
+temporary base per runtime. Both exited 0:
 
-HEAD hygiene found zero files over 1 MB, zero CSV/Pine additions, and zero protected writes. The six frozen input/aggregate files are byte-identical at HEAD; the 13 local output files remain ignored. The upper-bound limb is exactly reviewed `80abcec`, and all frozen hashes are unchanged. The final v3 extension is software-approved; research remains `NEEDS_CONTEXT` for fresh panels and the DJ30 +$287 gap.
+- Python 3.11.9: 2716 passed, 33 skipped, 21 warnings, 6 subtests passed in 516.70s (0:08:36).
+- Python 3.12.14: 2703 passed, 35 skipped, 23 warnings, 6 subtests passed in 585.47s (0:09:45).
+
+The first Python 3.11 full run reported five failures because the optional
+research temporal-consistency tests required the pruned DISC-CAMP-0 archive
+fixture. The exact historical fixture was restored locally from its last
+pre-prune bytes under a Git ignore rule; all 12 tests in that module then passed,
+followed by the successful full rerun above. No code or test assertion changed.
+Python 3.12 skips that optional module because its research dependency is absent.
+The archive fixture and failed-run log stay local and are not publication inputs.
+
+`python scripts/gate_manifest.py --tier check` exited 0. Its absent private-vendor
+tree warnings are expected in this worktree. `git diff --check` passed.
+
+The final local audit recomputed all 19 frozen-table rows and checked the five
+snapshot bindings. All 41 private evidence files and all 13 generated ledger,
+detail and monthly artifacts are ignored. Only 14 approved study/test and
+orchestrator files enter the publication patch; no CSV, Pine body, input value,
+screenshot, account detail or machine path is added. The config diff contains
+only the five digest lines; no current artifact/test retains the old config hash.
+The publication branch is created directly from the validated main base and
+receives reviewed final patches only, without private computation history.
+Current-head publication CI remains the separate P8 merge gate.

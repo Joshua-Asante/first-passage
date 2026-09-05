@@ -63,7 +63,7 @@ from research_utils.tv_summary_reconciliation import (  # noqa: E402
 
 _RUNNER_VERSION = "tradeify-phase1-normalization-v4"
 _SEVERITY_ORDER = {"INFO": 0, "WARNING": 1, "BLOCKER": 2, "FATAL": 3}
-_BASE_COMMIT = "ed181233afd01d8fc128bc76ac626e43c3761f87"
+_BASE_COMMIT = "00b2bb7a9c50081545acd7f52f4bcd8dd8af964c"
 _FROZEN_STRATEGY_IDS = (
     "aegis_6j1",
     "orb_mnq_recon_v7",

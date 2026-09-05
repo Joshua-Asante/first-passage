@@ -286,20 +286,57 @@ def test_invalid_status_type_is_configuration_error(api, tmp_path):
     with pytest.raises(ValueError): load(api, tmp_path, p)
 
 
-def test_checked_in_operator_anchors_reject_stale_panels_under_d17(api):
+def test_checked_in_operator_anchors_bind_five_populated_panels_under_d17_d32(api):
+    """Missing panels, stale export bindings or changed scalar values must fail the freeze."""
     from pathlib import Path
-    from test_trade_reconciliation import _spec
+    from research_utils.tv_trade_ledger import load_source_specs
+
     campaign = Path(__file__).parents[1] / "lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09"
-    # Runtime validation uses a synthetic source, never upgrades historical config.
-    specs = [_spec()]
-    path = campaign / "tv_summary_anchors.json"
+    specs = load_source_specs(campaign / "phase1_config.json")
+    inventory = api.load_summary_anchors(campaign / "tv_summary_anchors.json", specs)
+
+    assert inventory.coverage_status == "COMPLETE"
+    assert len(inventory.anchors) == 5
+    assert {
+        strategy_id: anchor["export_sha256"]
+        for strategy_id, anchor in inventory.anchors.items()
+    } == {spec.strategy_id: spec.export_sha256 for spec in specs}
+    assert set(inventory.d17_policy) == {
+        "ruling_date", "ruling_ref", "monthly_totals", "commissions", "max_drawdown", "reason",
+    }
+    assert inventory.d17_policy["monthly_totals"] == "RECONSTRUCTED"
+    assert inventory.d17_policy["commissions"] == "AMENDED_OUT"
+    assert inventory.d17_policy["max_drawdown"] == "OVERLAP_KEYED"
+    assert "+$287" not in inventory.coverage_note
+    assert all(not anchor["missing_metrics"] for anchor in inventory.anchors.values())
+    assert {
+        strategy_id: tuple(anchor["metrics"][metric] for metric in (
+            "trade_count", "net_pnl_usd", "win_rate_pct", "profit_factor", "tv_panel_max_drawdown_usd",
+        ))
+        for strategy_id, anchor in inventory.anchors.items()
+    } == {
+        "aegis_6j1": (121, "27996.05", "63.64", "3.422", "1470.40"),
+        "orb_mnq_recon_v7": (681, "48118.16", "57.27", "1.445", "6062.02"),
+        "striker_dj30_mym_pyramid_250": (203, "32057.36", "42.36", "1.693", "4568.68"),
+        "striker_nas100_mnq_dow_wed_excluded": (378, "112253.42", "54.50", "2.604", "8269.62"),
+        "vanguard_mgc_v04": (338, "18709.48", "50.59", "1.928", "1804.36"),
+    }
+
+
+def test_historical_empty_five_key_policy_requires_explicit_d32_migration(api, tmp_path):
+    """The retired inventory must not silently acquire the current drawdown policy."""
+    historical = {
+        "claim_class": "EXPLORATORY",
+        "coverage_status": "NEEDS_CONTEXT",
+        "coverage_note": "Panels for all five replacement sources required; +$287 pending operator discrimination.",
+        "d17_policy": {
+            "ruling_date": "2026-09-03",
+            "ruling_ref": "Synthetic historical D17 fixture",
+            "monthly_totals": "RECONSTRUCTED",
+            "commissions": "AMENDED_OUT",
+            "reason": "Historical monthly and commission ruling predates D32.",
+        },
+        "strategies": [],
+    }
     with pytest.raises(ValueError, match="d17_policy keys mismatch"):
-        api.load_summary_anchors(path, specs)
-    # Historical policy has no D32 slot; preserve its facts without upgrading it.
-    inventory = json.loads(path.read_bytes())
-    assert inventory["coverage_status"] == "NEEDS_CONTEXT"
-    assert inventory["strategies"] == []
-    assert inventory["d17_policy"]["monthly_totals"] == "RECONSTRUCTED"
-    assert inventory["d17_policy"]["commissions"] == "AMENDED_OUT"
-    assert "all five replacement sources" in inventory["coverage_note"]
-    assert "+$287" in inventory["coverage_note"]
+        load(api, tmp_path, historical)

@@ -13,6 +13,7 @@
   "strategies": [
     {
       "strategy_id": "aegis_6j1",
+      "pine_input_overrides_sha256": "460f40fa079c00a97711d743aa0a5acee62f1c8f2cc33972b8a92b7948e42d08",
       "intended_instrument": "6J",
       "encoded_instrument": "6J",
       "export_filename": "Aegis_6J1_VB_CME_6J1!_2026-09-03_cc310.csv",
@@ -42,6 +43,7 @@
     },
     {
       "strategy_id": "orb_mnq_recon_v7",
+      "pine_input_overrides_sha256": "102635acd76a7cfb42380451b71a4628610a12aa434915e6b25af76245534203",
       "intended_instrument": "MNQ",
       "encoded_instrument": "MNQ",
       "export_filename": "ORB-MNQ-1_recon_v7_VB_CME_MINI_MNQ1!_2026-09-03_d03ac.csv",
@@ -71,6 +73,7 @@
     },
     {
       "strategy_id": "striker_dj30_mym_pyramid_250",
+      "pine_input_overrides_sha256": "b7369ee32889f700cd45aa7e07ae19a87cf38ca10fa9c151340face16a5d6e1a",
       "intended_instrument": "MYM",
       "encoded_instrument": "MYM",
       "export_filename": "Striker_DJ30_v4.5_MYM_CBOT_MINI_MYM1!_2026-09-03_9d7ea.csv",
@@ -100,6 +103,7 @@
     },
     {
       "strategy_id": "striker_nas100_mnq_dow_wed_excluded",
+      "pine_input_overrides_sha256": "ba59219aec5d2eec111045f402abe2e2e08101bcf238a0c18d3621d4ef3a2b11",
       "intended_instrument": "MNQ",
       "encoded_instrument": "MNQ",
       "export_filename": "Striker_NAS100_MNQ_CME_MINI_MNQ1!_2026-09-03_30a74.csv",
@@ -129,6 +133,7 @@
     },
     {
       "strategy_id": "vanguard_mgc_v04",
+      "pine_input_overrides_sha256": "3bacd6f11ebc804b30bc30303bf9cbb253ba256afc55e232f92d7daaf9b58861",
       "intended_instrument": "MGC",
       "encoded_instrument": "MGC",
       "export_filename": "Vanguard_Gold_Futures_v0.4_VB_(MGC)_COMEX_MINI_MGC1!_2026-09-03_0e3e3.csv",

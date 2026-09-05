@@ -1,6 +1,6 @@
 # Seven-strategy Select configuration campaign — campaign state (orchestrator-only writes)
 
-**Status:** Codex owns orchestration by the 2026-09-05 operator transfer. The operator merged campaign-only #302; scanner draft #307 is deferred. The [current execution plan](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) replaces the old phase sequence. Intake remains blocked on complete export-bound captures (§48); no search, final freeze, qualification or live authorization has occurred. One bounded implementation attempt is authorized (§49); S1 unconditional speed and S2 final validation after winner parity are approved (2026-09-05).
+**Status:** Codex owns orchestration by the 2026-09-05 operator transfer. The operator merged campaign-only #302; scanner draft #307 is deferred. The [current execution plan](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) replaces the old phase sequence. Capture and summary population are complete under the operator-attested binding in §52; sizing-faithfulness and replay remain open; no search, final freeze, qualification or live authorization has occurred. One bounded implementation attempt is authorized (§49); S1 unconditional speed and S2 final validation after winner parity are approved (2026-09-05).
 **Last curated:** 2026-09-05 (Codex, `codex/tradeify-used-account-kernel`)
 **Parent plan:** [`2026-09-02-seven-strategy-tradeify-select-configuration.md`](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
 (PR [#272](https://github.com/Joshua-Asante/first-passage/pull/272) — **merged 2026-09-03** together
@@ -2044,6 +2044,11 @@ wording stays so the reasoning chain remains legible.
 
 ### 19d — ⚠ NEW, AND MORE SERIOUS THAN THE DELTA: the exports are not reproducible from their pinned Pine
 
+**2026-09-05 scope correction:** the blanket statement below about both retained
+Striker exports is superseded by §52. The current NAS100 export has no DD-Limit
+exits and its captured backtest switch equals the source default. DJ30 has two
+DD-Limit exits and the captured switch differs. Full input binding remains required.
+
 **The shipped `.pine` files default the `backtestMode` switch to the value that makes `ddHit` dead code.**
 A DD-Limit exit therefore **cannot** arise from either file as-written. Both exports ran with that input
 **overridden on the chart**, and that override is recorded **nowhere**.
@@ -3430,6 +3435,13 @@ The operator fired A1 at 22:29Z; Cursor returned at 22:31Z with a merge of `main
 
 ### 47b — The local Codex job (copy/paste; the operator fires it after 47a)
 
+**2026-09-05 intake amendment:** §52 governs this dispatch's binding and
+Backtest Mode checks. Existing export identity plus explicit operator attestation
+replaces the fresh-reexport requirement for this intake; do not report a fresh
+reexport as performed. The requirement that both Striker switches differ is
+replaced by the source/export-specific consistency check in §52. The remaining
+population, single-generation, verification and publication requirements stand.
+
 ```
 Campaign dispatch — Phase 1 POPULATION + the SINGLE RE-FREEZE (campaign-state §47; constituent (i) iteration 6 of ≤8). LOCAL job: the ten frozen source files and the five private override captures are on this machine and never leave it.
 
@@ -3671,3 +3683,49 @@ This is an approved grammar amendment before search. Effective input binding,
 joint replay, the statistical freeze, S1/S2, the one-attempt limit and operator
 deployment GO remain in force. No production sizing, source pins or sample
 budgets changed, and no campaign sampling occurred.
+
+## §52 — Completed capture intake and export provenance (2026-09-05)
+
+The operator supplied eight supplemental screenshots, completed the remaining
+text/display values, and explicitly confirmed: "the trade list exports already
+on hand reflect the exact captured chart state." Accept that statement as the
+provenance for the existing five exports in this intake. Their exact bytes and
+all five Pine bodies were checked against the existing pins. This replaces the
+fresh-reexport requirement in §47a–c and the plan's Task 1 for this intake only.
+It is operator-attested chart-state identity, not independent reproduction;
+private snapshots must record that no fresh reexport was performed.
+
+All five input captures are complete: Aegis 40, ORB 45, DJ30 31, NAS100 36 and
+Vanguard 59 controls. Three previously truncated enum selections were resolved
+by unique visible prefixes in the pinned source's finite option lists. The
+free-text field and two final display controls were supplied by the operator.
+The prior Vanguard checkpoint's alleged two-control middle gap was a counting
+error: the pinned source places those neighboring controls consecutively.
+Screenshots, settings and provenance receipts remain private and ignored.
+
+**Source consistency correction:** §19d and §47b overgeneralized the DD-Limit
+finding to both retained Strikers. Read at `00b2bb7`, with the private sources
+verified against the configuration pins: the NAS100 source disables `ddHit`
+under its captured default backtest setting and its export has zero DD-Limit
+exits; DJ30 has two such exits and its captured switch differs from default.
+Require agreement between each source's actual captured branches and its export;
+do not require a nonexistent NAS100 override or alter captured values to fit the
+old instruction. This corrects an intake premise, not a strategy parameter.
+
+The single Phase 1 population/re-freeze remains constituent (i), iteration 6 of
+8. Populate only the five input digests and the existing §18a/D32 summary anchors,
+then apply §47c P2–P8 and P1 with the attested-binding amendment above. Complete
+capture coverage alone does not close the scaling/replay or statistical-freeze
+gates and does not authorize search or an additional attempt.
+
+
+**Population result:** the single v4 generation exited 0 at base `00b2bb7`.
+All twenty non-DD comparisons are MATCH. Aegis has no overlap and its DD check
+is COINCIDENT; ORB, DJ30, NAS100 and Vanguard have overlap/ties and their panel
+DD is RECORDED. All five use OVERLAP_KEYED_D32. The three canonical ledger hashes
+and five monthly-reconciliation hashes are unchanged; all source pins are
+unchanged. The output reports COMPLETE evidence coverage, not a qualified book.
+P1–P6 are satisfied under this section's binding amendment. The study's
+VERIFICATION.md records the current-generation tests and artifact checks.
+P7 requires the final publication patch and metadata review; P8 requires green
+current-head publication CI on Python 3.11 and 3.12 before the operator merges.
