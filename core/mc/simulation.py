@@ -547,13 +547,19 @@ def run_seed(
 
     for _ in range(n_sims):
         indices = rng.integers(0, n_blocks, blocks_per_sim)
-        path = np.concatenate([blocks[index] for index in indices])[:horizon]
+        if initial_state is not None and horizon == 0:
+            path = np.empty((0, len(strats)), dtype=float)
+        else:
+            path = np.concatenate([blocks[index] for index in indices])[:horizon]
         sim_kwargs = dict(effective_firm_kwargs)
         if intraday_blocks is not None:
-            low_blocks = [intraday_blocks[index] for index in indices]
-            low = np.concatenate(
-                [np.asarray(b, dtype=float).reshape(-1) for b in low_blocks]
-            )[:horizon]
+            if initial_state is not None and horizon == 0:
+                low = np.empty(0, dtype=float)
+            else:
+                low_blocks = [intraday_blocks[index] for index in indices]
+                low = np.concatenate(
+                    [np.asarray(b, dtype=float).reshape(-1) for b in low_blocks]
+                )[:horizon]
             sim_kwargs["intraday_low"] = low
         outcome, day, max_dd, culprit = simulate_path(
             path,

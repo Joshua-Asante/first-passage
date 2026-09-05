@@ -391,3 +391,50 @@ def test_legacy_unordered_equity_target_comparison_does_not_pass(
         **_rules(profit_target=profit_target),
     )
     assert got[:2] == ("horizon_cap", 1)
+
+
+@pytest.mark.parametrize("with_intraday", [False, True])
+@pytest.mark.parametrize("already_passing", [False, True])
+def test_run_seed_horizon_zero_uses_explicit_state_without_a_sampled_path(
+    already_passing: bool, with_intraday: bool
+) -> None:
+    blocks = np.zeros((1, 5, 1))
+    intraday_blocks = np.zeros((1, 5, 1)) if with_intraday else None
+    state = (
+        _state(equity=110_000.0, peak=110_000.0, days=5, best=2_000.0)
+        if already_passing
+        else _state()
+    )
+
+    got = run_seed(
+        19,
+        2,
+        blocks,
+        0.015,
+        0.40,
+        horizon=0,
+        strats=("synthetic",),
+        firm_kwargs=_rules(min_trading_days=5),
+        intraday_blocks=intraday_blocks,
+        initial_state=state,
+    )
+
+    terminal = "pass" if already_passing else "horizon_cap"
+    assert got["outcomes"][terminal] == 2
+    assert sum(got["outcomes"].values()) == 2
+    assert got["days_to_pass"] == ([0, 0] if already_passing else [])
+    assert got["max_dds"] == [0.0, 0.0]
+
+
+def test_run_seed_horizon_zero_without_state_preserves_legacy_error() -> None:
+    with pytest.raises(ValueError):
+        run_seed(
+            19,
+            1,
+            np.zeros((1, 5, 1)),
+            0.015,
+            0.40,
+            horizon=0,
+            strats=("synthetic",),
+            firm_kwargs=_rules(),
+        )
