@@ -33,6 +33,20 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-05f — Resolve #306 merge conflict with main (queue-exception: owner `@cursor` on PR #306)
+
+**Focus:** Make PR #306 mergeable again and confirm Codex review findings stay covered after the merge.
+
+**Shipped:** `codex/add-babysit-skill-for-pr-monitoring` @ `5d5f6c8` — merged `origin/main`; kept main's weekly idle-trade placement record and campaign-queue D26/D27 note in `STATE.md`.
+
+**Decisions/defects:** Conflict resolution chose main's 2026-09-03 placement + 2026-09-05 restatement over the branch's older 2026-08-26-first wording. Prior review fixes retained: cancelled/timed-out CI handling, trusted-author gate, `$babysit` default prompt, real `.agents/skills/babysit/` directory (not symlink).
+
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24).
+
+**Live-ops state:** unchanged — c1 rail stays disarmed; no arm/spend this session.
+
+---
+
 ## 2026-09-05e — Operator transfers orchestration; separate scanner from campaign delivery
 
 **Open / next:** STATE queue: `#1` [Tradeify configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24). Scanner work is deferred to its own draft; #302 is prepared for the operator's merge. Local population retains the binding checks and a separate publication review (§47); the dropped §48 capture checkpoint is restored from `68fcbf4`. The operator authorizes one bounded implementation attempt for the remaining campaign; its executable scope is being consolidated before search. No new sampling, candidate or capital authorization occurred in this split.
