@@ -68,19 +68,33 @@ if [ -f scripts/certification_power.py ] && [ -f tests/test_certification_power.
 else
   echo "A: absent or partial -> proceed per §2-A (conform an existing file to §2 exactly; never return DONE on a stub)"
 fi
-# C — no-op condition: the gh probe is guarded INSIDE build_report(). A guard in _run is the §5 forbidden move
-#     (the first return 0e7ab25 had exactly that), so probe the LOCATION, never the exception name alone:
-RUN_GUARD=$(sed -n '/^def _run/,/^def _git/p' scripts/repo_hygiene.py | grep -c 'except FileNotFoundError')
-BR_BLOCK=$(sed -n '/^def build_report/,/^def _print_human/p' scripts/repo_hygiene.py)
-BR_GUARD=$(printf '%s\n' "$BR_BLOCK" | grep -c 'except FileNotFoundError')
-BR_SCOPED=$(printf '%s\n' "$BR_BLOCK" | grep -B3 'except FileNotFoundError' | grep -c '"gh", "--version"')
-if [ "$RUN_GUARD" != "0" ]; then
+# C — no-op condition: the gh probe is guarded INSIDE build_report() AND the guarded try body calls nothing but that
+#     probe. A guard in _run is the §5 forbidden move (the first return 0e7ab25 had exactly that); a try that also wraps
+#     a git call after the probe would swallow a git disappearance and still pass the git-absent test (pre-probe git
+#     calls raise first). Probe the STRUCTURE with ast — never text proximity, never the exception name alone:
+C_SCOPE=$(python - <<'PY'
+import ast
+tree = ast.parse(open("scripts/repo_hygiene.py", encoding="utf-8").read())
+def fnf(h): return h.type is not None and "FileNotFoundError" in [n.id for n in ast.walk(h.type) if isinstance(n, ast.Name)]
+def calls(ns): return [(c.func.id if isinstance(c.func, ast.Name) else getattr(c.func, "attr", "?")) for s in ns for c in ast.walk(s) if isinstance(c, ast.Call)]
+def consts(ns): return [c.value for s in ns for c in ast.walk(s) if isinstance(c, ast.Constant) and isinstance(c.value, str)]
+verdict = "NONE"
+for fn in [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)]:
+    tries = [t for t in ast.walk(fn) if isinstance(t, ast.Try) and any(fnf(h) for h in t.handlers)]
+    if not tries: continue
+    if fn.name == "_run": verdict = "RUN_GUARD"; break
+    if fn.name != "build_report": verdict = "ELSEWHERE"; break
+    ok = all(calls(t.body) == ["_run"] and "gh" in consts(t.body) and "--version" in consts(t.body) for t in tries)
+    verdict = "SCOPED" if ok else "UNSCOPED"
+print(verdict)
+PY
+)
+if [ "$C_SCOPE" = "RUN_GUARD" ]; then
   echo "C: guard in _run — FORBIDDEN (§5), not a no-op: rebuild per §2-C, do not return DONE"
-elif [ "$BR_GUARD" = "1" ] && [ "$BR_SCOPED" = "1" ] && [ -f tests/test_repo_hygiene.py ] \
-     && python -m pytest -q tests/test_repo_hygiene.py; then
-  echo "C: guard wraps only the gh probe AND the behaviour tests pass -> return DONE citing the commit"
+elif [ "$C_SCOPE" = "SCOPED" ] && [ -f tests/test_repo_hygiene.py ] && python -m pytest -q tests/test_repo_hygiene.py; then
+  echo "C: the guarded try body is exactly the gh probe AND the behaviour tests pass -> return DONE citing the commit"
 else
-  echo "C: absent or partial — proceed per §2-C"      # the three branches are exclusive; DONE needs the tests
+  echo "C: absent, partial or unscoped ($C_SCOPE) — proceed per §2-C"   # the branches are exclusive; DONE needs the tests
 fi
 # ALL — no OPEN PR may touch your footprint. `git log` cannot see open PRs; enumerate them:
 # default --limit is 30, hence the explicit 1000; the if-form keeps the fallback off a continued line
