@@ -177,20 +177,105 @@ def test_binary_addition_fails_closed(repo: tuple[Path, Path, Path]) -> None:
 
 
 @needs_git
-def test_merge_commit_is_scanned_against_its_first_parent(repo: tuple[Path, Path, Path]) -> None:
+def test_merge_introduced_content_is_caught(repo: tuple[Path, Path, Path]) -> None:
+    """A conflict resolution differs from BOTH parents, so the merge commit carries the hit."""
     root, snap, export = repo
     _git(root, "checkout", "-q", "-b", "side")
-    (root / "cfg.json").write_text('{"Mode": "Aggressive"}\n', encoding="utf-8")
-    (root / "data.csv").write_text("h\n1\n", encoding="utf-8")
-    _git(root, "add", "cfg.json", "data.csv")
-    _git(root, "commit", "-q", "-m", "side work")
+    (root / "shared.txt").write_text("side version\n", encoding="utf-8")
+    _git(root, "add", "shared.txt")
+    _git(root, "commit", "-q", "-m", "side")
     _git(root, "checkout", "-q", "main")
-    (root / "notes.md").write_text("context line mentions Aggressive mode already\nsecond line changed\n", encoding="utf-8")
-    _git(root, "commit", "-q", "-am", "main work")
-    _git(root, "merge", "-q", "--no-ff", "--no-edit", "side")
+    (root / "shared.txt").write_text("main version\n", encoding="utf-8")
+    _git(root, "add", "shared.txt")
+    _git(root, "commit", "-q", "-m", "main")
+    subprocess.run(["git", "merge", "--no-edit", "side"], cwd=root, capture_output=True, text=True)
+    (root / "shared.txt").write_text("resolved with Aggressive\n", encoding="utf-8")
+    (root / "resolved.csv").write_text("h\n1\n", encoding="utf-8")
+    _git(root, "add", "shared.txt", "resolved.csv")
+    _git(root, "commit", "-q", "--no-edit")
     merge = _git(root, "rev-parse", "HEAD").strip()[:8]
     proc = _run(root, "--json", str(snap), "--csv", str(export), "--forbid-suffix", ".csv")
     assert proc.returncode == 2, proc.stdout
-    assert f"HIT class=PAIR commit={merge} file=cfg.json" in proc.stdout
-    assert f"HIT class=PATH commit={merge} file=data.csv" in proc.stdout
+    assert f"HIT class=VALUE commit={merge} file=shared.txt" in proc.stdout
+    assert f"HIT class=PATH commit={merge} file=resolved.csv" in proc.stdout
+
+
+@needs_git
+def test_merging_an_out_of_range_parent_is_not_reported(repo: tuple[Path, Path, Path]) -> None:
+    """Merging a mainline that carries a binary and a .csv must not stop the packet.
+
+    The mainline commits are outside the scanned range; the merge introduces
+    nothing that differs from both parents, so a first-parent-only read would
+    false-positive here and an all-parents read does not.
+    """
+    root, snap, export = repo
+    _git(root, "checkout", "-q", "-b", "mainline")
+    (root / "chart.png").write_bytes(b"\x89PNG\r\n\x1a\n" + bytes(64))
+    (root / "vendor.csv").write_text("h\n1\n", encoding="utf-8")
+    _git(root, "add", "chart.png", "vendor.csv")
+    _git(root, "commit", "-q", "-m", "mainline moves on")
+    _git(root, "checkout", "-q", "main")
+    (root / "work.txt").write_text("branch work\n", encoding="utf-8")
+    _git(root, "add", "work.txt")
+    _git(root, "commit", "-q", "-m", "branch work")
+    _git(root, "merge", "-q", "--no-ff", "--no-edit", "mainline")
+    proc = subprocess.run(
+        [sys.executable, str(_SCRIPT), "--repo", str(root), "--range", "mainline..HEAD",
+         "--json", str(snap), "--csv", str(export), "--forbid-suffix", ".csv"],
+        capture_output=True, text=True,
+    )
+    assert proc.returncode == 0, proc.stdout
+    assert "SCAN result=CLEAN" in proc.stdout
+
+
+@needs_git
+def test_non_ascii_path_under_a_forbidden_prefix_is_caught(repo: tuple[Path, Path, Path]) -> None:
+    """core.quotePath would C-quote this path and defeat a startswith test."""
+    root, snap, export = repo
+    (root / "inputs" / "private_overrides").mkdir(parents=True)
+    (root / "inputs" / "private_overrides" / "\u00e9.json").write_text("{}\n", encoding="utf-8")
+    _git(root, "add", "-f", "inputs/private_overrides/\u00e9.json")
+    _git(root, "commit", "-q", "-m", "non-ascii capture")
+    proc = _run(root, "--json", str(snap), "--csv", str(export), "--path-prefix", "inputs/private_overrides/")
+    assert proc.returncode == 2, proc.stdout
+    assert "HIT class=PATH" in proc.stdout and "\u00e9.json" in proc.stdout
+
+
+@needs_git
+def test_needle_in_a_filename_is_caught(repo: tuple[Path, Path, Path]) -> None:
+    """A filename is published and retained exactly like a blob."""
+    root, snap, export = repo
+    (root / "Aggressive.txt").write_text("nothing private inside\n", encoding="utf-8")
+    _git(root, "add", "Aggressive.txt")
+    _git(root, "commit", "-q", "-m", "value as a filename")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2, proc.stdout
+    assert "HIT class=NAME" in proc.stdout and "file=Aggressive.txt" in proc.stdout
+    assert "Aggressive.txt" in proc.stdout and "\nAggressive" not in proc.stdout
+
+
+@needs_git
+def test_added_line_that_renders_as_a_patch_header_is_scanned(repo: tuple[Path, Path, Path]) -> None:
+    """An added line starting with '++ ' renders as '+++ ' inside the hunk."""
+    root, snap, export = repo
+    (root / "plus.txt").write_text("++ Aggressive\n", encoding="utf-8")
+    _git(root, "add", "plus.txt")
+    _git(root, "commit", "-q", "-m", "line that looks like a header")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2, proc.stdout
+    assert "HIT class=VALUE" in proc.stdout and "file=plus.txt line=1" in proc.stdout
+
+
+@needs_git
+def test_rename_to_a_forbidden_suffix_is_caught(repo: tuple[Path, Path, Path]) -> None:
+    """git classifies a rename R, which --diff-filter=A alone would miss."""
+    root, snap, export = repo
+    (root / "a.txt").write_text("x\n", encoding="utf-8")
+    _git(root, "add", "a.txt")
+    _git(root, "commit", "-q", "-m", "add a.txt")
+    _git(root, "mv", "a.txt", "captured.csv")
+    _git(root, "commit", "-q", "-m", "rename to a vendor suffix")
+    proc = _run(root, "--json", str(snap), "--csv", str(export), "--forbid-suffix", ".csv")
+    assert proc.returncode == 2, proc.stdout
+    assert "HIT class=PATH" in proc.stdout and "file=captured.csv" in proc.stdout
 
