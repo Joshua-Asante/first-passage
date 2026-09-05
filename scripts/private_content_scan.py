@@ -10,14 +10,18 @@ the location survives for local remediation while the scanner's own output —
 which the worker pastes into the PR body — stays publishable.
 
 What each commit is compared against: EVERY parent. A merge's own contribution
-is the set of PATHS that differ from ALL parents — its conflict resolution — so
-a merge of ``origin/main`` is audited without re-reporting everything ``main``
-brought in (which would otherwise stop the packet on the repository's own
-tracked images). Evidence for those paths is then UNIONed across parents, never
-intersected per signal: a path can be binary in one parent and text in another,
-and intersecting each signal on its own would drop the text evidence against one
-parent and the binary evidence against the other, reporting a resolved path as
-clean. An ordinary one-parent commit is simply its diff against that parent.
+starts as the set of PATHS that differ from ALL parents — its conflict
+resolution — so a merge of ``origin/main`` is audited without re-reporting
+everything ``main`` brought in (which would otherwise stop the packet on the
+repository's own tracked images). BINARY evidence for those paths is UNIONed
+across parents (a path can be binary in one parent and text in another). TEXT
+evidence is NOT the union of every added line on those paths: when main and the
+packet branch edit different hunks of the same file, the merged file differs
+from both parents, and unioning would report a needle that landed solely from
+``main``. Added lines are kept only when they appear against every parent that
+has a text view of the path; a parent against which the path is binary is
+skipped for that intersection so a binary/text resolution cannot lose its text
+hit. An ordinary one-parent commit is simply its diff against that parent.
 
 Git runs with ``core.quotePath=false`` and path lists are read NUL-delimited,
 so a non-ASCII filename cannot slip past a prefix or suffix test.
@@ -63,6 +67,17 @@ _DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 _DECIMAL = re.compile(r"\d\.\d")
 _HUNK = re.compile(r"@@ -\d+(?:,\d+)? \+(\d+)")
 _EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+# Git C-quotes patch-header paths that contain tab/newline/quote/backslash even
+# when core.quotePath=false; name-status -z does not. Octal escapes cover the rest.
+_SIMPLE_ESC = {"n": "\n", "t": "\t", "r": "\r", "a": "\a", "b": "\b", "f": "\f", "v": "\v", '"': '"', "\\": "\\"}
+_OCTAL_ESC = re.compile(r"\\([0-7]{1,3})")
+# Raw JSON value lexeme after a key — preserves non-canonical number spellings
+# (1.2500, 1e-2) that json.loads/dumps would collapse.
+_KEY_VALUE_LEX = re.compile(
+    r'(?P<key>"(?:[^"\\]|\\.)*")\s*:\s*'
+    r'(?P<val>true|false|null|"(?:[^"\\]|\\.)*"|'
+    r"-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?)"
+)
 
 
 class NeedleError(RuntimeError):
@@ -96,13 +111,52 @@ def _parents(commit: str, cwd: Path) -> list[str]:
     return tokens[1:] or [_EMPTY_TREE]
 
 
+
+def _unquote_path(header_path: str) -> str:
+    """Decode a git-diff ``+++``/``---`` path to the raw tree path.
+
+    Patch headers C-quote paths containing tab, newline, quote, or backslash
+    even when ``core.quotePath=false``; NUL-delimited name-status does not.
+    Without decoding, a merge filter comparing header paths to resolved paths
+    silently drops every hit on such a file.
+    """
+    decoded = header_path
+    if len(decoded) >= 2 and decoded[0] == '"' and decoded[-1] == '"':
+        inner = decoded[1:-1]
+        out: list[str] = []
+        i = 0
+        while i < len(inner):
+            if inner[i] == "\\" and i + 1 < len(inner):
+                nxt = inner[i + 1]
+                if nxt in _SIMPLE_ESC:
+                    out.append(_SIMPLE_ESC[nxt])
+                    i += 2
+                    continue
+                octal = _OCTAL_ESC.match(inner, i)
+                if octal:
+                    out.append(chr(int(octal.group(1), 8)))
+                    i = octal.end()
+                    continue
+                out.append(nxt)
+                i += 2
+            else:
+                out.append(inner[i])
+                i += 1
+        decoded = "".join(out)
+    if decoded.startswith(("a/", "b/")):
+        decoded = decoded[2:]
+    return decoded
+
+
 # --------------------------------------------------------------------------- needles
 
 
-def _value_forms(value: object) -> set[str]:
+def _value_forms(value: object, *, raw_lexemes: set[str] | None = None) -> set[str]:
     forms = {json.dumps(value)}
     if isinstance(value, str):
         forms.add(value)
+    if raw_lexemes:
+        forms.update(raw_lexemes)
     return forms
 
 
@@ -117,14 +171,32 @@ def _distinctive(value: object) -> bool:
     return False
 
 
+def _raw_lexemes_by_key(raw: str) -> dict[str, set[str]]:
+    """Map each JSON key to the value lexemes spelled in the source text.
+
+    ``json.loads`` collapses ``1.2500`` to ``1.25``; a worker who copied the
+    chart's spelling would then miss the VALUE needle. Keep every source
+    lexeme so the scan is independent of canonicalization.
+    """
+    out: dict[str, set[str]] = {}
+    for match in _KEY_VALUE_LEX.finditer(raw):
+        key = json.loads(match.group("key"))
+        if not isinstance(key, str):
+            continue
+        out.setdefault(key, set()).add(match.group("val"))
+    return out
+
+
 def build_json_needles(path: Path, json_key: str) -> dict[str, set[str]]:
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
+        raw = path.read_text(encoding="utf-8")
+        payload = json.loads(raw)
     except (OSError, ValueError) as exc:
         raise NeedleError(f"cannot read JSON needle source: {path.name}") from exc
     obj = payload.get(json_key) if isinstance(payload, dict) else None
     if not isinstance(obj, dict) or not obj:
         raise NeedleError(f"{path.name}: no non-empty object at key {json_key!r}")
+    lexemes = _raw_lexemes_by_key(raw)
     title: set[str] = set()
     pair: set[str] = set()
     value_needles: set[str] = set()
@@ -133,10 +205,16 @@ def build_json_needles(path: Path, json_key: str) -> dict[str, set[str]]:
         if not key:
             continue
         title.add(key)
-        for form in _value_forms(value):
+        # numeric lexemes only — quoted string lexemes duplicate the parsed form
+        raw_nums = {
+            lex for lex in lexemes.get(key, ())
+            if lex not in {"true", "false", "null"} and not lex.startswith('"')
+        }
+        forms = _value_forms(value, raw_lexemes=raw_nums or None)
+        for form in forms:
             pair.update({f'"{key}": {form}', f'"{key}":{form}', f"{key}: {form}", f"{key}={form}"})
         if _distinctive(value):
-            value_needles.update(_value_forms(value))
+            value_needles.update(forms)
     return {"TITLE": title, "PAIR": pair, "VALUE": value_needles}
 
 
@@ -168,14 +246,18 @@ def compile_classes(classes: dict[str, set[str]]) -> dict[str, re.Pattern[str]]:
 # ------------------------------------------------------------------- per-parent reads
 
 
-def _content_vs(base: str, commit: str, cwd: Path, patterns: dict[str, re.Pattern[str]]) -> set[tuple[str, str, int]]:
-    """(class, file, new-line) for ADDED lines matching a needle, in commit's diff vs base.
+def _content_vs(
+    base: str, commit: str, cwd: Path, patterns: dict[str, re.Pattern[str]]
+) -> set[tuple[str, str, int, str]]:
+    """(class, file, new-line, text) for ADDED lines matching a needle vs base.
 
     The ``+++`` file header is recognised by parser STATE, not by its prefix: an
     added line whose own text starts with ``++ `` renders as ``+++ `` inside a
-    hunk and must be scanned, not consumed as a header.
+    hunk and must be scanned, not consumed as a header. Header paths are passed
+    through ``_unquote_path`` so a C-quoted tab/newline name still matches the
+    raw path returned by NUL-delimited name-status.
     """
-    hits: set[tuple[str, str, int]] = set()
+    hits: set[tuple[str, str, int, str]] = set()
     current_file = "<unknown>"
     new_line = 0
     in_hunk = False
@@ -194,19 +276,17 @@ def _content_vs(base: str, commit: str, cwd: Path, patterns: dict[str, re.Patter
             continue
         if not in_hunk:
             if raw.startswith("+++ "):
-                target = raw[4:]
-                current_file = target[2:] if target.startswith("b/") else target
+                current_file = _unquote_path(raw[4:])
             continue
         if raw.startswith("+"):
             new_line += 1
-            text = raw[1:]
+            line_text = raw[1:]
             for name, pattern in patterns.items():
-                if pattern.search(text):
-                    hits.add((name, current_file, new_line))
+                if pattern.search(line_text):
+                    hits.add((name, current_file, new_line, line_text))
         elif raw.startswith(" "):
             new_line += 1
     return hits
-
 
 def _introduced_vs(base: str, commit: str, cwd: Path) -> set[str]:
     """Destination paths the commit introduces vs base: added, copied, or RENAMED-to.
@@ -302,11 +382,38 @@ def scan_commit(commit: str, cwd: Path, patterns: dict[str, re.Pattern[str]]) ->
     parents = _parents(commit, cwd)
     resolved = _resolved_paths(parents, commit, cwd)
     content: set[tuple[str, str, int]] = set()
-    for parent in parents:
-        content |= {
-            hit for hit in _content_vs(parent, commit, cwd, patterns)
-            if resolved is None or hit[1] in resolved
-        }
+    if resolved is None:
+        for name, file, line, _text in _content_vs(parents[0], commit, cwd, patterns):
+            content.add((name, file, line))
+    else:
+        # Per parent: text hits on resolved paths, and which resolved paths are binary.
+        # TEXT hits survive only when the same (class, file, line-text) is an addition
+        # against every parent that has a text view of the path — so a needle that
+        # arrived solely from main on a co-touched file is not attributed to the merge.
+        # A parent against which the path is binary is skipped for that intersection
+        # (round 17): otherwise a binary/text resolution would lose its text evidence.
+        per_text: list[dict[str, dict[tuple[str, str], int]]] = []
+        per_binary: list[set[str]] = []
+        for parent in parents:
+            by_file: dict[str, dict[tuple[str, str], int]] = {}
+            for name, file, line, line_text in _content_vs(parent, commit, cwd, patterns):
+                if file in resolved:
+                    by_file.setdefault(file, {})[(name, line_text)] = line
+            per_text.append(by_file)
+            per_binary.append({p for p in _binary_vs(parent, commit, cwd) if p in resolved})
+        for file in resolved:
+            views = [
+                per_text[i].get(file, {})
+                for i in range(len(parents))
+                if file not in per_binary[i]
+            ]
+            if not views:
+                continue
+            common = set(views[0])
+            for view in views[1:]:
+                common &= set(view)
+            for name, line_text in common:
+                content.add((name, file, views[0][(name, line_text)]))
     hits = [(name, commit, file, line) for name, file, line in sorted(content)]
     message_hits = 0
     for number, line in enumerate(_git(["log", "-1", "--format=%B", commit], cwd).split("\n"), start=1):
@@ -315,6 +422,7 @@ def scan_commit(commit: str, cwd: Path, patterns: dict[str, re.Pattern[str]]) ->
                 hits.append((name, commit, "<commit message>", number))
                 message_hits += 1
     return hits, len(content), message_hits
+
 
 
 def scan_paths(

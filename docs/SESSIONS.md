@@ -33,6 +33,12 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-05c — Codex round 18 on #302 folded; live pointer past A2 dispatch and #304 close (queue-exception: operator asked Cursor to address Codex's review)
+
+**Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) — #301 **MERGED** `5ab079c` (§46); next is the five current-input captures + single re-freeze (**dispatch packet §47**, iteration 6 of ≤8); prerequisites 1 and 7 still owed · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24). Off-queue residue (owner: the fleet brief §6): #303 **MERGED**; #304 **CLOSED** without merge; **A2 DISPATCHED** to Cursor off #305 @ `2c67b34` — awaiting return; §47 Codex loop continues (eighteen rounds folded).
+
+---
+
 ## 2026-09-04f — Fleet returns gate-read: A resolved, B built though withdrawn, C falsified; two Cursor fix rounds; #302 append-only repair (queue-exception: the operator dispatched the scripts-side Cursor fleet and asked for Codex findings on it to be routed to Cursor)
 
 **Focus:** Gate-read the three Cursor fleet returns ([#303](https://github.com/Joshua-Asante/first-passage/pull/303), [#304](https://github.com/Joshua-Asante/first-passage/pull/304), [#305](https://github.com/Joshua-Asante/first-passage/pull/305)) against the frozen umbrella brief, route Codex's findings on them into Cursor fix rounds per the operator's standing instruction, and repair this branch's own red required check.

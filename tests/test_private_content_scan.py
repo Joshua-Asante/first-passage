@@ -346,3 +346,97 @@ def test_merge_resolution_caught_when_parents_disagree_on_binaryness(repo: tuple
     assert proc.returncode == 2, proc.stdout
     assert "HIT class=VALUE" in proc.stdout and "file=f.dat" in proc.stdout
 
+
+@needs_git
+def test_noncanonical_numeric_lexeme_is_a_needle(repo: tuple[Path, Path, Path]) -> None:
+    """Source spelling ``1.2500`` must remain a VALUE needle after json.loads.
+
+    Parsing collapses it to ``1.25``; a worker who copied the chart's lexeme
+    into an added line would otherwise miss the scan.
+    """
+    root, snap, export = repo
+    snap.write_text(
+        '{"strategy_id": "x", "inputs": {"Alpha Length": 3, "Mode": "Aggressive", '
+        '"Threshold": 1.2500, "Enabled": true}}\n',
+        encoding="utf-8",
+    )
+    (root / "cfg.txt").write_text("threshold was 1.2500 on the chart\n", encoding="utf-8")
+    _git(root, "add", "cfg.txt")
+    _git(root, "commit", "-q", "-m", "non-canonical numeric copy")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2, proc.stdout
+    assert "HIT class=VALUE" in proc.stdout and "file=cfg.txt" in proc.stdout
+    assert "1.2500" not in proc.stdout  # never echo the token
+
+
+@needs_git
+def test_cquoted_tab_path_on_merge_is_scanned(repo: tuple[Path, Path, Path]) -> None:
+    """A merge resolution on a tab-named file must not evade the path filter.
+
+    Diff headers C-quote such paths even under core.quotePath=false; name-status
+    -z does not. Comparing the quoted header to the raw resolved path dropped
+    every content hit on the file.
+    """
+    root, snap, export = repo
+    tab = "odd\tname.txt"
+    _git(root, "checkout", "-q", "-b", "side")
+    (root / tab).write_text("side\n", encoding="utf-8")
+    _git(root, "add", "-f", tab)
+    _git(root, "commit", "-q", "-m", "side")
+    _git(root, "checkout", "-q", "main")
+    (root / tab).write_text("main\n", encoding="utf-8")
+    _git(root, "add", "-f", tab)
+    _git(root, "commit", "-q", "-m", "main")
+    merge = _git_try(root, "merge", "--no-edit", "side")
+    assert merge.returncode != 0, "the add/add merge was expected to conflict"
+    (root / tab).write_text("Aggressive\n", encoding="utf-8")
+    _git(root, "add", "-f", tab)
+    _git(root, "commit", "-q", "--no-edit")
+    proc = subprocess.run(
+        [sys.executable, str(_SCRIPT), "--repo", str(root), "--range", "main~1..HEAD",
+         "--json", str(snap), "--csv", str(export)],
+        capture_output=True, text=True,
+    )
+    assert proc.returncode == 2, proc.stdout
+    assert "HIT class=VALUE" in proc.stdout
+
+
+@needs_git
+def test_merge_does_not_inherit_main_only_needle_on_co_touched_file(
+    repo: tuple[Path, Path, Path],
+) -> None:
+    """When main and the packet edit different hunks, main's needle is not the merge's.
+
+    The merged file differs from both parents, so a path-level union would report
+    a needle that arrived solely from main. Packet ranges are ``main..HEAD``, so
+    main's own commit is outside the range — only the merge must stay clean.
+    """
+    root, snap, export = repo
+    (root / "shared.txt").write_text(
+        "L1\nL2\nL3\nL4\nL5\nL6\nL7\nL8\nL9\nL10\n", encoding="utf-8"
+    )
+    _git(root, "add", "shared.txt")
+    _git(root, "commit", "-q", "-m", "shared base")
+    _git(root, "checkout", "-q", "-b", "feature")
+    (root / "shared.txt").write_text(
+        "L1\nL2\nL3\nL4\nL5\nL6\nL7\nL8\nL9\nL10\nfeature-tail\n", encoding="utf-8"
+    )
+    _git(root, "add", "shared.txt")
+    _git(root, "commit", "-q", "-m", "feature hunk")
+    _git(root, "checkout", "-q", "main")
+    (root / "shared.txt").write_text(
+        "Aggressive\nL1\nL2\nL3\nL4\nL5\nL6\nL7\nL8\nL9\nL10\n", encoding="utf-8"
+    )
+    _git(root, "add", "shared.txt")
+    _git(root, "commit", "-q", "-m", "main hunk")
+    _git(root, "checkout", "-q", "feature")
+    merge = _git_try(root, "merge", "--no-edit", "main")
+    assert merge.returncode == 0, merge.stderr
+    proc = subprocess.run(
+        [sys.executable, str(_SCRIPT), "--repo", str(root), "--range", "main..HEAD",
+         "--json", str(snap), "--csv", str(export)],
+        capture_output=True, text=True,
+    )
+    assert proc.returncode == 0, proc.stdout
+    assert "SCAN result=CLEAN" in proc.stdout
+
