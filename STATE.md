@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-09-04
+**Last curated:** 2026-09-05
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
@@ -159,13 +159,20 @@ Canonical dates/criteria live with their owners; this board is a pointer so
 obligations are not lost between sessions. Closed/retired/discharged rows are
 deleted (not struck).
 
-### Weekly — recurring (rolling; next deadline **2026-09-04**, bucket 08-31→09-04)
+### Weekly — recurring (rolling; next deadline **2026-09-11**, bucket 09-07→09-11)
 
 > Last confirmed placement: **2026-08-26** (round-trip, MNQU6, both legs filled) — that
 > satisfies bucket 08-24→08-28 only. Prior week 08-17→08-21 satisfied (operator-confirmed
 > 2026-08-22). Current bucket 08-31→09-04: **operator-stated placed 2026-09-03** ("I placed the weekly
 > idle trade yesterday", 2026-09-04 — recorded in the campaign-state artifact §15, carried here 2026-09-04
-> per §39). ⚠ The **authoritative** coverage row in the private compliance note is still the operator's to
+> per §39), and **restated 2026-09-05** ("I placed the weekly idle trade wednesday two days ago, this
+> should be recorded"). ⚠ Those two descriptors point to different days — Wednesday was 09-02, two days
+> before 09-05 is 09-03 — so this is read as the SAME placement restated, not a second one; **both
+> candidate days fall inside the bucket, so coverage holds either way** and the exact day is left to the
+> authoritative row rather than guessed here. **Bucket 08-31→09-04 is therefore covered, and this
+> deadline is rolled to the next bucket (09-07→09-11); that cleared the repo-wide `state-currency`
+> failure of 2026-09-05.**
+> ⚠ The **authoritative** coverage row in the private compliance note is still the operator's to
 > write; the session hook reads that row, not this board, and stays `NOT RECORDED` until it exists. Row stays live — roll
 > this date forward each Monday. **Recurrence ruled 2026-08-16** (decision index, above):
 > re-electing coverage every week is the standing design, not an open question — this

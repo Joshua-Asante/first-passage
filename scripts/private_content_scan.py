@@ -56,6 +56,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import re
 import subprocess
 import sys
@@ -65,13 +66,45 @@ _DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 _DECIMAL = re.compile(r"\d\.\d")
 _HUNK = re.compile(r"@@ -\d+(?:,\d+)? \+(\d+)")
 _EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+# The scan must read the objects the PUSH will carry, under a patch format it can
+# parse -- neither of which is a property of the machine it runs on.
+#   --no-replace-objects: a refs/replace/<commit> entry redirects every read to a
+#     substitute object that is NOT pushed, so a replaced commit was scanned in
+#     place of the one being published and the scan reported CLEAN.
+#   diff.noprefix / mnemonicPrefix / srcPrefix / dstPrefix: the a/ and b/ patch
+#     prefixes are stripped when a header path is decoded, so a repository
+#     configured to omit or rename them corrupted every path that itself begins
+#     with the prefix text, and the merge filter then dropped its hits.
+#   diff.external / GIT_EXTERNAL_DIFF / an attribute textconv: each replaces
+#     the patch text wholesale, which empties every text class at once. These
+#     cannot be pinned by ``-c`` (an empty ``diff.external`` makes git exit 128),
+#     so the diff call sites pass ``--no-ext-diff``/``--no-textconv`` and
+#     ``_git_env`` drops the environment variable. A regression test asserts the
+#     flags are present, because this comment once claimed them before the code
+#     did.
+_GIT_PINS = (
+    "-c", "core.quotePath=false",
+    "-c", "diff.noprefix=false",
+    "-c", "diff.mnemonicPrefix=false",
+    "-c", "diff.srcPrefix=a/",
+    "-c", "diff.dstPrefix=b/",
+)
 # Text-safe armourings of binary content. A screenshot carried as any of these is
 # NUL-free, so a NUL test alone is not a fail-closed binary check.
+# Each alternative requires a real PAYLOAD, not just the marker: a file that
+# merely mentions a data URI -- this module's own tests do -- is not an armoured
+# binary, and a control that fires on every such mention is one nobody can run.
 _ARMOURED = re.compile(
-    rb"data:[\w.+-]+/[\w.+-]+;base64,"
-    rb"|\"image/(?:png|jpe?g|gif|bmp|webp|svg\+xml)\"\s*:\s*\""
+    rb"data:[\w.+-]+/[\w.+-]+;base64,[A-Za-z0-9+/]{256,}"
+    rb"|\"image/(?:png|jpe?g|gif|bmp|webp|svg\+xml)\"\s*:\s*\"[A-Za-z0-9+/]{256,}"
     rb"|[A-Za-z0-9+/]{512,}={0,2}"
 )
+# A contiguous run is not enough: base64 is conventionally WRAPPED at 64 or 76
+# columns, which breaks every long run while leaving the payload intact. Density
+# over the whole blob catches the wrapped form -- a body that is overwhelmingly
+# base64 alphabet across many long lines is an armoured binary whatever its
+# newlines.
+_B64_LINE = re.compile(rb"^[A-Za-z0-9+/]{40,}={0,2}$")
 _GROUPED = re.compile(r"^[+-]?\d{4,}(?:\.\d+)?$")
 # Git C-quotes patch-header paths that contain tab/newline/quote/backslash even
 # when core.quotePath=false; name-status -z does not. Octal escapes cover the rest.
@@ -98,14 +131,38 @@ def _git(args: list[str], cwd: Path) -> str:
     # no "+" column and is never scanned. ``errors="replace"`` additionally
     # destroys a filename byte that is not valid UTF-8; ``surrogateescape`` makes
     # it round-trip, since subprocess encodes POSIX argv with the same handler.
-    proc = subprocess.run(
-        ["git", "-c", "core.quotePath=false", *args],
-        cwd=cwd,
-        capture_output=True,
-    )
+    proc = _git_raw(args, cwd)
     if proc.returncode != 0:
         raise RuntimeError(f"git {' '.join(args[:2])} failed with status {proc.returncode}")
     return proc.stdout.decode("utf-8", "surrogateescape")
+
+
+def _git_env() -> dict[str, str]:
+    """The caller's environment minus the levers that rewrite diff output.
+
+    ``GIT_EXTERNAL_DIFF`` is inherited from whoever runs the scanner, so a
+    difftastic or delta user's shell could silence every text class without any
+    repository configuration at all.
+    """
+    return {
+        key: value
+        for key, value in os.environ.items()
+        if key not in {"GIT_EXTERNAL_DIFF", "GIT_TEXTCONV_CACHE"}
+    }
+
+
+def _git_raw(args: list[str], cwd: Path) -> subprocess.CompletedProcess[bytes]:
+    """One pinned git invocation, output left as bytes.
+
+    Every git call in this module goes through here, so a new call site cannot
+    quietly miss ``--no-replace-objects`` or the format pins.
+    """
+    return subprocess.run(
+        ["git", "--no-replace-objects", *_GIT_PINS, *args],
+        cwd=cwd,
+        capture_output=True,
+        env=_git_env(),
+    )
 
 
 def _z_fields(out: str) -> list[str]:
@@ -249,6 +306,8 @@ def build_json_needles(path: Path, json_key: str) -> dict[str, set[str]]:
     title: set[str] = set()
     pair: set[str] = set()
     value_needles: set[str] = set()
+    weak: set[str] = set()
+    dropped: set[str] = set()
 
     def visit(node: object, key: str | None) -> None:
         if isinstance(node, dict):
@@ -276,12 +335,24 @@ def build_json_needles(path: Path, json_key: str) -> dict[str, set[str]]:
             value_needles.update(forms)
             for form in list(forms):
                 value_needles.update(_numeric_spellings(form.strip('"')))
+        elif isinstance(node, str) and len(node.strip()) >= 3:
+            # Not a needle -- too short or too plain to match without flooding
+            # ordinary prose -- but still a private token, so it is carried for
+            # REDACTION only and the key is reported so the drop is not silent.
+            weak.add(node.strip())
+            dropped.add(key)
 
     visit(obj, None)
-    return {"TITLE": title, "PAIR": pair, "VALUE": value_needles}
+    return {
+        "TITLE": title,
+        "PAIR": pair,
+        "VALUE": value_needles,
+        "_WEAK": weak,
+        "_DROPPED_KEYS": dropped,
+    }
 
 
-def build_csv_needles(path: Path) -> set[str]:
+def build_csv_needles(path: Path) -> tuple[set[str], set[str]]:
     """Every distinctive cell of a private/vendor CSV, header row included.
 
     The header row is a cell like any other -- an account identifier published as
@@ -293,6 +364,7 @@ def build_csv_needles(path: Path) -> set[str]:
     a thousands separator breaks a fixed-string match on the digits alone.
     """
     cells: set[str] = set()
+    weak: set[str] = set()
     try:
         with path.open(encoding="utf-8", errors="replace", newline="") as handle:
             rows = list(csv.reader(handle))
@@ -302,12 +374,14 @@ def build_csv_needles(path: Path) -> set[str]:
         for cell in row:
             text = cell.strip()
             if not _distinctive(text):
+                if len(text) >= 3:
+                    weak.add(text)
                 continue
             cells.add(text)
             cells.update(_numeric_spellings(text))
     if not cells:
         raise NeedleError(f"{path.name}: no distinctive cells")
-    return cells
+    return cells, weak
 
 
 def compile_classes(classes: dict[str, set[str]]) -> dict[str, re.Pattern[str]]:
@@ -349,7 +423,7 @@ def _content_vs(
     # split on "\n" ONLY: git delimits patch records with LF, while str.splitlines()
     # also breaks on \v, \f, \r, \x1c-\x1e, \x85, \u2028 and \u2029 — a needle after such a
     # byte would land in a fragment with no "+" marker and never be scanned.
-    for raw in _git(["diff", "--no-color", base, commit], cwd).split("\n"):
+    for raw in _git(["diff", "--no-ext-diff", "--no-textconv", "--no-color", base, commit], cwd).split("\n"):
         if raw.startswith("diff --git "):
             in_hunk = False
             current_file = "<unknown>"
@@ -413,11 +487,7 @@ def _blob_is_opaque(commit: str, path: str, cwd: Path) -> bool:
     LFS remote by the very push this is gating.
     """
     try:
-        raw = subprocess.run(
-            ["git", "-c", "core.quotePath=false", "cat-file", "blob", f"{commit}:{path}"],
-            cwd=cwd,
-            capture_output=True,
-        )
+        raw = _git_raw(["cat-file", "blob", f"{commit}:{path}"], cwd)
     except OSError:
         return True
     if raw.returncode != 0:
@@ -434,12 +504,16 @@ def _blob_is_opaque(commit: str, path: str, cwd: Path) -> bool:
     # and the fixed-string needles cannot match base64 of themselves. Scanning
     # the WHOLE blob rather than a fixed prefix also removes the "put the NUL
     # past byte 8192" variant.
-    return bool(_ARMOURED.search(body))
+    if _ARMOURED.search(body):
+        return True
+    lines = body.split(b"\n")
+    b64_lines = sum(1 for line in lines if _B64_LINE.match(line.strip()))
+    return b64_lines >= 8 and b64_lines * 2 >= sum(1 for line in lines if line.strip())
 
 
 def _binary_vs(base: str, commit: str, cwd: Path) -> set[str]:
     """Files the commit adds or modifies as binary vs base (numstat '-\\t-' rows)."""
-    fields = _z_fields(_git(["diff", "--numstat", "-z", "--diff-filter=ACMRT", base, commit], cwd))
+    fields = _z_fields(_git(["diff", "--no-ext-diff", "--no-textconv", "--numstat", "-z", "--diff-filter=ACMRT", base, commit], cwd))
     paths: set[str] = set()
     index = 0
     while index < len(fields):
@@ -469,7 +543,7 @@ def _redact(text: str, patterns: dict[str, re.Pattern[str]]) -> tuple[str, bool]
 def _changed_vs(base: str, commit: str, cwd: Path) -> set[str]:
     """Every path whose content differs from base (any status; rename/copy destinations)."""
     fields = _z_fields(
-        _git(["diff", "--find-renames", "--find-copies", "--name-status", "-z", base, commit], cwd)
+        _git(["diff", "--no-ext-diff", "--find-renames", "--find-copies", "--name-status", "-z", base, commit], cwd)
     )
     paths: set[str] = set()
     index = 0
@@ -688,14 +762,25 @@ def main(argv: list[str] | None = None) -> int:
     cwd = args.repo.resolve()
 
     classes: dict[str, set[str]] = {"TITLE": set(), "PAIR": set(), "VALUE": set(), "CELL": set()}
+    # Values too short or too plain to be needles -- a four-letter tag would
+    # otherwise match ordinary prose. They are NEVER used to detect a hit, so they
+    # create no false positives, but they ARE used to redact the report: a path
+    # flagged for some other reason must not print such a token in clear.
+    weak: set[str] = set()
     try:
         if not args.json and not args.csv:
             raise NeedleError("no needle sources given (--json / --csv)")
+        dropped_keys: list[str] = []
         for path in args.json:
-            for name, needles in build_json_needles(path, args.json_key).items():
+            built = build_json_needles(path, args.json_key)
+            weak.update(built.pop("_WEAK", set()))
+            dropped_keys.extend(sorted(built.pop("_DROPPED_KEYS", set())))
+            for name, needles in built.items():
                 classes[name].update(needles)
         for path in args.csv:
-            classes["CELL"].update(build_csv_needles(path))
+            cells, weak_cells = build_csv_needles(path)
+            classes["CELL"].update(cells)
+            weak.update(weak_cells)
         excluded: set[str] = set()
         for path in args.exclude:
             try:
@@ -704,6 +789,7 @@ def main(argv: list[str] | None = None) -> int:
                 raise NeedleError(f"cannot read exclude file: {path.name}") from exc
         for name in classes:
             classes[name] = {n for n in classes[name] if n and n not in excluded}
+        weak = {n for n in weak if n and n not in excluded}
         if args.json and not (classes["TITLE"] and classes["PAIR"]):
             raise NeedleError("TITLE/PAIR classes are empty after exclusions")
         if args.csv and not classes["CELL"]:
@@ -712,7 +798,16 @@ def main(argv: list[str] | None = None) -> int:
         print(f"SCAN result=ERROR reason={exc}")
         return 3
     patterns = compile_classes({name: needles for name, needles in classes.items() if needles})
+    # Redaction sees MORE than detection: the weak set too.
+    redact_patterns = dict(patterns)
+    if weak:
+        redact_patterns.update(compile_classes({"_WEAK": weak}))
     print("needle classes: " + " ".join(f"{name}={len(needles)}" for name, needles in classes.items()))
+    if dropped_keys:
+        # BY KEY ONLY -- naming the value here would be the disclosure this
+        # whole script exists to prevent. The operator needs to know a supplied
+        # value produced no needle; they do not need it echoed back.
+        print(f"non-distinctive, no VALUE needle (redaction-only): {' '.join(dropped_keys)}")
 
     try:
         commits = _git(["rev-list", "--reverse", args.range], cwd).split()
@@ -733,7 +828,7 @@ def main(argv: list[str] | None = None) -> int:
         # operator-supplied ref name, and a branch named after a private token
         # would otherwise be published on the CLEAN path, in the one output the
         # worker pastes into the PR body.
-        shown_range, _ = _redact(args.range, patterns)
+        shown_range, _ = _redact(args.range, redact_patterns)
         print(f"range {shown_range} -> {endpoints} commits={len(commits)}")
         if not commits:
             # An EMPTY walk is not a pass. Exit 0 would be indistinguishable from
@@ -772,7 +867,7 @@ def main(argv: list[str] | None = None) -> int:
     # mapping locally, for the worker, and is never pasted anywhere.
     redacted_paths: list[str] = []
     for name, commit, file, line in all_hits:
-        shown, redacted = _redact(file, patterns)
+        shown, redacted = _redact(file, redact_patterns)
         marker = ""
         if redacted:
             if file not in redacted_paths:

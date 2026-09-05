@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import base64
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -20,6 +21,12 @@ _REPO = Path(__file__).resolve().parents[1]
 _SCRIPT = _REPO / "scripts" / "private_content_scan.py"
 
 needs_git = pytest.mark.skipif(shutil.which("git") is None, reason="git not on PATH")
+# Filenames containing a tab, a carriage return, a glob character, or bytes that
+# are not valid UTF-8 cannot be CREATED on Windows: the fixture fails before the
+# scanner runs. The step 6b preconditions name Windows/PowerShell as a supported
+# worker host and require this file to pass there, so these cases skip rather
+# than fail. CI is ubuntu-only and would never have surfaced it.
+posix_only = pytest.mark.skipif(os.name != "posix", reason="filename form is POSIX-only")
 
 _JSON = '{"strategy_id": "x", "inputs": {"Alpha Length": 3, "Mode": "Aggressive", "Threshold": 1.25, "Enabled": true}}\n'
 _CSV = "Trade #,Type,Date/Time,Price,P&L\n1,Long,2026-03-12 09:35,41237.5,312.50\n2,Short,2026-03-13 10:05,41190.25,-88.00\n"
@@ -145,6 +152,7 @@ def test_needle_glued_to_an_underscore_is_caught(repo: tuple[Path, Path, Path]) 
 
 
 @needs_git
+@posix_only
 def test_filename_bytes_that_are_not_utf8_are_still_scanned(repo: tuple[Path, Path, Path]) -> None:
     """git output is read as bytes and decoded with surrogateescape.
 
@@ -164,6 +172,7 @@ def test_filename_bytes_that_are_not_utf8_are_still_scanned(repo: tuple[Path, Pa
 
 
 @needs_git
+@posix_only
 def test_carriage_return_in_a_filename_is_still_scanned(repo: tuple[Path, Path, Path]) -> None:
     root, snap, export = repo
     (root / "chart\rexport.txt").write_text("Aggressive\n", encoding="utf-8")
@@ -421,6 +430,7 @@ def test_merge_resolution_caught_when_parents_disagree_on_binaryness(repo: tuple
 
 
 @needs_git
+@posix_only
 def test_tab_named_file_resolved_in_a_merge_is_caught(repo: tuple[Path, Path, Path]) -> None:
     """git C-quotes a header path with a tab regardless of core.quotePath.
 
@@ -497,6 +507,7 @@ def test_numeric_lexeme_and_canonical_spelling_both_match(repo: tuple[Path, Path
 
 
 @needs_git
+@posix_only
 def test_glob_characters_in_a_filename_are_taken_literally(repo: tuple[Path, Path, Path]) -> None:
     """A per-path diff must not let git read `a*b.txt` as a pattern."""
     root, snap, export = repo
@@ -531,6 +542,7 @@ def test_noncanonical_numeric_lexeme_is_a_needle(repo: tuple[Path, Path, Path]) 
 
 
 @needs_git
+@posix_only
 def test_cquoted_tab_path_on_merge_is_scanned(repo: tuple[Path, Path, Path]) -> None:
     """A merge resolution on a tab-named file must not evade the path filter.
 
@@ -788,3 +800,165 @@ def test_the_printed_range_is_redacted(repo: tuple[Path, Path, Path]) -> None:
     proc = _run(root, "--json", str(snap), "--csv", str(export), "--range", "base..fix-Aggressive-eval")
     assert "range fix-Aggressive-eval" not in proc.stdout
     assert "<redacted>" in proc.stdout
+
+@needs_git
+def test_a_replace_ref_cannot_hide_the_pushed_commit(repo: tuple[Path, Path, Path]) -> None:
+    """Git reads follow refs/replace; a push does not carry them.
+
+    A local replacement object redirected every read to a harmless substitute,
+    so the scanner examined an object the push would never publish and reported
+    CLEAN while the real blob went to the remote.
+    """
+    root, snap, export = repo
+    (root / "leak.txt").write_text("Aggressive\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "real commit")
+    real = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=root, capture_output=True, text=True, env=_env()
+    ).stdout.strip()
+    (root / "leak.txt").write_text("harmless\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    tree = subprocess.run(
+        ["git", "write-tree"], cwd=root, capture_output=True, text=True, env=_env()
+    ).stdout.strip()
+    parent = subprocess.run(
+        ["git", "rev-parse", "HEAD^"], cwd=root, capture_output=True, text=True, env=_env()
+    ).stdout.strip()
+    fake = subprocess.run(
+        ["git", "commit-tree", tree, "-p", parent, "-m", "real commit"],
+        cwd=root, capture_output=True, text=True, env=_env(),
+    ).stdout.strip()
+    _git(root, "checkout", "-q", "--", ".")
+    _git(root, "replace", "-f", real, fake)
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=VALUE" in proc.stdout
+
+
+@needs_git
+def test_diff_noprefix_cannot_corrupt_a_path(repo: tuple[Path, Path, Path]) -> None:
+    """The a/ and b/ patch prefixes are pinned before a header path is decoded.
+
+    With ``diff.noprefix=true`` a real path that itself begins with ``b/`` was
+    stripped to its tail, so it no longer equalled the raw name and a merge's
+    hits on it were dropped.
+    """
+    root, snap, export = repo
+    _git(root, "config", "diff.noprefix", "true")
+    (root / "b").mkdir()
+    (root / "b" / "f.txt").write_text("base\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "seed the prefixed path")
+    _git(root, "checkout", "-q", "-b", "side")
+    (root / "b" / "f.txt").write_text("side\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "side")
+    _git(root, "checkout", "-q", "-")
+    (root / "b" / "f.txt").write_text("mainline\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "mainline")
+    _git_try(root, "merge", "--no-commit", "side")
+    (root / "b" / "f.txt").write_text("Aggressive\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "resolution carrying a needle")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2
+    assert "file=b/f.txt" in proc.stdout
+
+@needs_git
+def test_an_external_differ_cannot_silence_the_text_scan(repo: tuple[Path, Path, Path], tmp_path: Path) -> None:
+    """diff.external replaces the patch text, emptying every text class at once.
+
+    A comment once claimed --no-ext-diff was passed; it was not. This test is
+    what keeps the claim and the code together.
+    """
+    root, snap, export = repo
+    (root / "cfg.json").write_text('{"Mode": "Aggressive"}\n', encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "config with a needle")
+    quiet = tmp_path / "quiet.sh"
+    quiet.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    quiet.chmod(0o755)
+    _git(root, "config", "diff.external", str(quiet))
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=VALUE" in proc.stdout
+
+
+@needs_git
+def test_git_external_diff_from_the_environment_is_dropped(repo: tuple[Path, Path, Path], tmp_path: Path) -> None:
+    """The variable is inherited from whoever runs the scanner, not from the repo."""
+    root, snap, export = repo
+    (root / "cfg.json").write_text('{"Mode": "Aggressive"}\n', encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "config with a needle")
+    quiet = tmp_path / "quiet.sh"
+    quiet.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    quiet.chmod(0o755)
+    env = _env()
+    env["GIT_EXTERNAL_DIFF"] = str(quiet)
+    proc = subprocess.run(
+        [sys.executable, str(_SCRIPT), "--repo", str(root), "--range", "base..HEAD",
+         "--json", str(snap), "--csv", str(export)],
+        capture_output=True, text=True, env=env,
+    )
+    assert proc.returncode == 2 and "HIT class=VALUE" in proc.stdout
+
+
+@needs_git
+def test_a_replace_ref_on_a_blob_cannot_hide_a_binary(repo: tuple[Path, Path, Path]) -> None:
+    """The blob-byte read is the one call that used to bypass the pinned wrapper."""
+    root, snap, export = repo
+    (root / "shot.png").write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 64)
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "screenshot")
+    blob = subprocess.run(
+        ["git", "rev-parse", "HEAD:shot.png"], cwd=root, capture_output=True, text=True, env=_env()
+    ).stdout.strip()
+    placeholder = subprocess.run(
+        ["git", "hash-object", "-w", "--stdin"], cwd=root, input="placeholder\n",
+        capture_output=True, text=True, env=_env(),
+    ).stdout.strip()
+    _git(root, "replace", "-f", blob, placeholder)
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=BINARY" in proc.stdout
+
+
+@needs_git
+def test_wrapped_base64_carrier_fails_closed(repo: tuple[Path, Path, Path]) -> None:
+    """Base64 is conventionally wrapped, which breaks any contiguous-run test."""
+    root, snap, export = repo
+    payload = base64.b64encode(b"\x89PNG\r\n\x1a\n" + bytes(range(256)) * 40).decode()
+    wrapped = "\n".join(payload[i : i + 64] for i in range(0, len(payload), 64))
+    (root / "shot.b64").write_text(wrapped + "\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "wrapped carrier")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=BINARY" in proc.stdout
+
+
+@needs_git
+def test_a_non_distinctive_value_is_redacted_and_its_drop_reported(
+    repo: tuple[Path, Path, Path], tmp_path: Path
+) -> None:
+    """Too plain to be a needle, still private enough to keep out of the report."""
+    snapshot = tmp_path / "short.json"
+    snapshot.write_text('{"inputs": {"acct_tag": "ZZTZ", "Mode": "Aggressive"}}\n', encoding="utf-8")
+    root, _, export = repo
+    (root / "ZZTZ_export.png").write_bytes(b"\x00\x01\x02")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "binary named after the short tag")
+    proc = _run(root, "--json", str(snapshot), "--csv", str(export))
+    assert proc.returncode == 2
+    assert "no VALUE needle" in proc.stdout and "acct_tag" in proc.stdout
+    assert "ZZTZ" not in proc.stdout
+
+
+def test_every_diff_call_pins_the_format() -> None:
+    """A new diff call site must not quietly miss the flags.
+
+    The comment block claimed --no-ext-diff/--no-textconv before any call site
+    passed them; this asserts the code, not the comment.
+    """
+    source = _SCRIPT.read_text(encoding="utf-8")
+    for call in re.findall(r'_git\(\[("diff"[^\]]*)\]', source):
+        assert "--no-ext-diff" in call, call
+    assert 'subprocess.run(\n        ["git"' not in source or source.count('["git", "--no-replace-objects"') >= 1
