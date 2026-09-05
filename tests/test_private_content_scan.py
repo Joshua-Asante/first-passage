@@ -24,14 +24,27 @@ _JSON = '{"strategy_id": "x", "inputs": {"Alpha Length": 3, "Mode": "Aggressive"
 _CSV = "Trade #,Type,Date/Time,Price,P&L\n1,Long,2026-03-12 09:35,41237.5,312.50\n2,Short,2026-03-13 10:05,41190.25,-88.00\n"
 
 
-def _git(root: Path, *args: str) -> str:
+def _env() -> dict[str, str]:
+    """Author and committer identity for the temp repos.
+
+    Supplied through the environment, never a global config: CI runners have no
+    global git identity, and a git subcommand that needs one aborts there while
+    passing on a developer box.
+    """
     env = dict(os.environ)
     env["GIT_AUTHOR_DATE"] = env["GIT_COMMITTER_DATE"] = "2026-09-04T12:00:00+00:00"
-    env.setdefault("GIT_AUTHOR_NAME", "t")
-    env.setdefault("GIT_AUTHOR_EMAIL", "t@example.invalid")
-    env.setdefault("GIT_COMMITTER_NAME", "t")
-    env.setdefault("GIT_COMMITTER_EMAIL", "t@example.invalid")
-    return subprocess.run(["git", *args], cwd=root, check=True, env=env, capture_output=True, text=True).stdout
+    env["GIT_AUTHOR_NAME"] = env["GIT_COMMITTER_NAME"] = "t"
+    env["GIT_AUTHOR_EMAIL"] = env["GIT_COMMITTER_EMAIL"] = "t@example.invalid"
+    return env
+
+
+def _git(root: Path, *args: str) -> str:
+    return subprocess.run(["git", *args], cwd=root, check=True, env=_env(), capture_output=True, text=True).stdout
+
+
+def _git_try(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    """Same identity, but a non-zero status is a result rather than an error."""
+    return subprocess.run(["git", *args], cwd=root, env=_env(), capture_output=True, text=True)
 
 
 def _run(root: Path, *extra: str) -> subprocess.CompletedProcess[str]:
@@ -188,7 +201,9 @@ def test_merge_introduced_content_is_caught(repo: tuple[Path, Path, Path]) -> No
     (root / "shared.txt").write_text("main version\n", encoding="utf-8")
     _git(root, "add", "shared.txt")
     _git(root, "commit", "-q", "-m", "main")
-    subprocess.run(["git", "merge", "--no-edit", "side"], cwd=root, capture_output=True, text=True)
+    merge = _git_try(root, "merge", "--no-edit", "side")
+    assert merge.returncode != 0, "the add/add merge was expected to conflict"
+    assert (root / ".git" / "MERGE_HEAD").exists(), merge.stderr
     (root / "shared.txt").write_text("resolved with Aggressive\n", encoding="utf-8")
     (root / "resolved.csv").write_text("h\n1\n", encoding="utf-8")
     _git(root, "add", "shared.txt", "resolved.csv")
