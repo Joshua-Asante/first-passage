@@ -33,6 +33,12 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-05e — Operator transfers orchestration; separate scanner from campaign delivery
+
+**Open / next:** STATE queue: `#1` [Tradeify configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24). Scanner work is deferred to its own draft; #302 is prepared for the operator's merge. Local population retains the binding checks and a separate publication review (§47); the dropped §48 capture checkpoint is restored from `68fcbf4`. The operator authorizes one bounded implementation attempt for the remaining campaign; its executable scope is being consolidated before search. No new sampling, candidate or capital authorization occurred in this split.
+
+---
+
 ## 2026-09-05d — Roll STATE weekly idle-trade deadline past 2026-09-04 (queue-exception: CI `skills (3.12)` failed on state-currency)
 
 **Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24). Off-queue residue carries from `05c`: D26 capture checkpoint still blocks freeze prerequisites 2 and 6; A3 (or CC-solo) still owed for the three live calculator defects #305 merged without A2; §47e scanner panel still open. This stub only rolls the weekly venue-idle row to deadline **2026-09-11** / bucket 09-07→09-11 and bumps `Last curated` to 2026-09-05 so `state-currency` clears.
