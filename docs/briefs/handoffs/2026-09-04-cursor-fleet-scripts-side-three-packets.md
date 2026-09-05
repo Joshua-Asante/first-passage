@@ -134,7 +134,7 @@ the idea is not re-derived.
 
 **Files (exactly):** `scripts/certification_power.py` (new), `tests/test_certification_power.py` (new), and
 `REPO_MAP.md` — **only the generated scripts block**, produced by
-`python scripts/check_repo_map_scripts_table.py --write` (new row + caption `63 → 64`). Nothing else.
+`python scripts/check_repo_map_scripts_table.py --write` (new row; the caption is whatever `--check` demands on YOUR merged tree — one more than `origin/main`'s count at merge time: `63 → 64` before #302's `private_content_scan.py` lands on `main`, `64 → 65` after — never a number copied from this brief). Nothing else.
 
 **Module API (stdlib only — `math.comb`; no numpy/scipy):**
 
