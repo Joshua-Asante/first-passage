@@ -109,7 +109,7 @@ for n in $PRS; do
   if [ -n "$MINE" ] && [ "$H" = "$MINE" ]; then echo "== PR #$n == this branch's own PR — skipped"; continue; fi
   echo "== PR #$n =="; git diff --name-only origin/main...pr/$n || OK=0
 done   # every OTHER PR the query returned, never a hard-coded set
-[ "$OK" = 1 ] && echo "overlap probe complete" || echo "STOP: overlap probe incomplete — treat as BLOCKED, touch nothing"
+if [ "$OK" = 1 ]; then echo "overlap probe complete"; else echo "STOP: overlap probe incomplete — treat as BLOCKED, touch nothing"; false; fi   # the block's status is 1 on STOP — an echo alone returns 0
 # Expected: none of the listed files is in your packet's §2 footprint. If one is, STOP and return BLOCKED naming it.
 # (2026-09-04 result: #297 touched REPO_MAP.md and blocked A until it merged as 81b35d0; re-run the probe — it should now be clean for both.)
 ```
@@ -271,9 +271,9 @@ packet's §10 block on the returned head.
 ## §10 — Audit hooks (orchestrator-side, after each packet returns — run each packet's block on ITS OWN head)
 
 ```bash
-git fetch origin
-WT="${TMPDIR:-/tmp}/fleet-audit"; rm -rf "$WT"; mkdir -p "$WT"; git worktree prune
 RC=0   # every REQUIRED command feeds RC and the last line returns it; no set -e (pasted into an interactive shell it would kill the shell)
+git fetch origin || RC=1   # a failed fetch would audit stale local refs, so it fails the audit too
+WT="${TMPDIR:-/tmp}/fleet-audit"; rm -rf "$WT"; mkdir -p "$WT"; git worktree prune
 # ---- Packet A: a detached worktree AT THE RETURNED HEAD; every line runs inside it, none in this checkout ----
 git worktree add --detach "$WT/p1" origin/cursor/scripts-side-2026-09-04-p1 || RC=1
 A_FILES=$(git -C "$WT/p1" diff --name-only origin/main...HEAD | sort | tr '\n' ' '); echo "A files: $A_FILES"
