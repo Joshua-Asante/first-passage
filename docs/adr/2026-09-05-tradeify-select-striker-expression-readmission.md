@@ -24,6 +24,12 @@ their sizing/DD/soft-stop branches read on 2026-09-05. Their identities are:
 Effective chart-input binding remains an intake requirement. Source hashes alone
 do not establish the behavior of the captured chart.
 
+For the same-day co-exposure amendment, production/source reads were refreshed
+at `c88965a`: the payload builder, sizing host, firm rules, DD protection and
+source inventory. The amendment below records the specific findings.
+For the review clarification, re-read the payload builder, S7's owning ADR and
+the venue-edition ledger at `d842db1`; the live edition set is empty.
+
 ## §1 — Context
 
 The operator elected to include these two expressions in the Select configuration
@@ -40,12 +46,67 @@ This is the admitting ground. It does not assert that the prior ADR's T1 fired,
 that T1 is mathematically unsatisfiable, or that either expression will qualify.
 **Effective:** the operator election of 2026-09-05, recorded here for merge.
 
-Selection is from the five retained campaign expressions, with at most one MNQ.
+Selection is from the five retained campaign expressions. The operator's
+same-day co-exposure amendment below replaces the former at-most-one-MNQ limit.
 Each admitted expression still needs bound effective inputs, valid size evidence,
 the frozen campaign acceptance tests, winner execution parity, M1 RESOLVED and a
 separate operator GO. Existing locked Striker editions remain WITHDRAWN at zero
 allocation. Funded deployment remains barred for those editions and these
 expressions. The four-firm programme's 2026-11-08 obligation is unchanged.
+
+### Same-day amendment — long-only co-exposure
+
+The operator confirmed that ORB MNQ, Striker NAS100 MNQ and Striker DJ30 MYM are
+long-only, then approved removing the blanket MNQ exclusion ("Go with your
+recommendation"). The recorded `direction_evidence` for all three in
+`lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json`
+agrees. Effective input binding remains required; this clarification does not
+replace that gate.
+
+Long-only clears the hedging/Product-Group concern (campaign D16), not the
+direction-agnostic entry-flatten and symbol-wide exit interference. Co-exposure
+admission rests on the operator-approved obligation to implement and prove the
+shared-symbol ownership described below; long-only alone is insufficient.
+
+[S7](2026-07-29-third-leg-symbol-occupancy-limb.md) screens a third-leg candidate
+against an incumbent on the same account and symbol. Its incumbent trigger is
+absent here: the [venue ledger](../../ops/venue_editions/Tradeify_Select_100K.md)
+has no live editions, the old Striker editions are WITHDRAWN with retired leg IDs,
+and ORB-MNQ-1 was never deployed. Its historical §2-D example remains valid for
+that incumbent book; it is not a blanket exclusion between this campaign's
+candidates. This campaign carries the shared-symbol implementation and parity
+obligation below. S7 remains unchanged wherever its incumbent trigger applies.
+
+Both MNQ expressions may be included, with overlapping long positions, alongside
+the MYM expression. All five retained expressions may therefore be eligible in
+one configuration; none is mandatory. The former maximum of four was derived
+from excluding one MNQ expression and is also removed. Eligibility does not
+establish that the five-expression book will qualify or be selected.
+
+Keep one execution controller per actual order symbol, with separate filled
+quantity and order ownership for each strategy. Simultaneous same-direction
+signals are not rejected merely for sharing a symbol. Freeze deterministic
+priority and rejection behavior when account-wide contract or risk headroom is
+insufficient, including outstanding reservations and additions. An exit may
+reduce only its strategy's filled allocation; cancellation and fill races must
+not flatten another allocation or create an unintended short. Account-wide
+emergency/session flattening remains an explicit coordinated operation.
+
+**Grounding for this amendment:** before writing it, read
+`ops/c1_rail/crosstrade_payload.py`, `ops/c1_rail/c1_sizing_host_reference.py`,
+`core/firm_rules.py`, `core/dd_protection.py` and the source inventory at
+`c88965a`. The current payload builder requests `flatten_first=true` on entry
+and can omit quantity on symbol-wide exits. The legacy `LEG_MAP` cap allocations
+remain zero. Shared-symbol execution is therefore an implementation obligation, not
+an existing capability or an authorization to change those allocations.
+
+**Acceptance and failure:** before search, joint replay must implement the same
+quantity ownership, aggregate exposure, reservations, skipped-signal and exit
+policy intended for execution. Before deployment, prove it under partial fills,
+duplicate/delayed messages, simultaneous stop/target events, cancellations and
+restart reconciliation. Unproved ownership or parity blocks deployment; failure
+does not authorize a post-result policy change or a second final validation.
+The existing single-attempt budget, S1/S2 and eval-only authorization remain.
 
 ## §3 — Alternatives considered
 
@@ -54,6 +115,7 @@ expressions. The four-firm programme's 2026-11-08 obligation is unchanged.
 | Exclude both expressions | Declined by the operator's election. |
 | Treat new IDs as escaping the old bar | Rejected; eligibility is explicit rather than inferred from names. |
 | Claim the old re-scope trigger fired | Rejected; no such qualifying measurement has been established. |
+| Keep the blanket one-MNQ exclusion | Replaced by the operator-approved long-only co-exposure amendment; shared-symbol ownership and joint risk must be proved instead. |
 
 ## §4 — Failure and withdrawal handling
 

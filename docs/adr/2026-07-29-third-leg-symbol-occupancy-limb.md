@@ -44,6 +44,13 @@ This is not a sizing bug to be fixed downstream, and it is not contingent on ven
 
 ## §2 — Decision
 
+**2026-09-05 applicability pointer:** §2-D below describes the historical incumbent
+book. The Select configuration campaign has no live incumbent edition and admits
+joint candidates subject to shared-symbol implementation and parity obligations;
+see the [campaign admission ADR](2026-09-05-tradeify-select-striker-expression-readmission.md#same-day-amendment--long-only-co-exposure).
+This scope clarification does not amend S7 or discharge its execution concern by
+long-only directionality.
+
 **2-A. New hard-structural requirement S7 (added to spec §7.1).**
 
 > **S7 — Order-symbol occupancy.** The candidate must not require an **order symbol already traded by

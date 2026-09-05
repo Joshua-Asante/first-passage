@@ -33,6 +33,18 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-05i — Admit both long-only MNQ expressions to the candidate grammar
+
+**Open / next:** STATE queue: `#1` [Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#51--long-only-mnq-co-exposure-approved-2026-09-05) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24). The operator approved the [long-only co-exposure amendment](adr/2026-09-05-tradeify-select-striker-expression-readmission.md#same-day-amendment--long-only-co-exposure). Source binding, shared-symbol replay/ownership and the statistical freeze remain owed; runtime parity precedes deployment. No search or sample consumed.
+
+---
+
+## 2026-09-05h — Add used-account state to the simulation kernel
+
+**Open / next:** STATE queue: `#1` [Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#50--used-account-kernel-2026-09-05) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24). The [kernel specification](superpowers/plans/2026-09-05-tradeify-used-account-kernel.md) supplies the original-basis state interface. Private account binding, export-bound captures, synchronized replay and the statistical freeze remain owed. The operator merged #308/#309; no campaign sample or new attempt was consumed.
+
+---
+
 ## 2026-09-05g — Resolve #308 conflict with main; restore exact CDF boundary certification
 
 **Open / next:** STATE queue: `#1` [Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#49--codex-takeover-and-bounded-campaign-revision-2026-09-05) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24). Merged `origin/main` (#306 babysit skill). Certification CDF now prefers the smaller tail when normalizing so `max_certifying_busts(1, ceiling=0.05, alpha=0.95)` returns `0` again; 46 calculator tests pass.

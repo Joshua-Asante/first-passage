@@ -13,7 +13,9 @@ configuration from one bounded attempt.
 campaign-only #302; scanner work is deferred to draft #307. Intake is not
 complete. No configuration has qualified, no search has run, and the rail remains
 disarmed. The operator approved S1/S2 below on 2026-09-05. Source binding,
-live-state/replay implementation and the frozen statistical design remain owed.
+private account binding, synchronized replay and the frozen statistical design
+remain owed. The used-account kernel is implemented; evidence and remaining scope
+are in [campaign state §50](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#50--used-account-kernel-2026-09-05).
 
 **Architecture:** privately bound strategy expressions feed canonical ledgers and
 synchronized intraday replay. A frozen composition policy feeds one deterministic
@@ -36,10 +38,10 @@ forward-confirmation requirements beside an incompatible accelerated path.
 | Select incumbent; no Growth purchase | Score the incumbent. Growth may remain a comparison only, without a second selection/deployment attempt. |
 | Failure probability at most 5% on full, H1 and H2 | Count every outcome other than pass as failure, including horizon_cap and inactivity failure. Use the fixed n3 sample only for final decision bounds. |
 | Certified unconditional median no longer than 200 business days | S1 counts failed and horizon-unresolved attempts as infinite pass time. Minimize the frozen speed statistic among qualifying candidates; 200 is a reservation, not an estimated attainable result. |
-| Select from five; at most one MNQ expression | Each expression may be off. Include at least one active expression. At most four can be active under the current roster. No forced MNQ allocation. |
+| Select from five; both long-only MNQ expressions eligible | Each expression may be off. Include at least one active expression; up to all five may be included. Overlapping long MNQ allocations are allowed under one symbol controller and account-wide limits, per the [approved co-exposure amendment](../../adr/2026-09-05-tradeify-select-striker-expression-readmission.md#same-day-amendment--long-only-co-exposure). No forced MNQ allocation. |
 | Exact source expressions | `aegis_6j1`, `orb_mnq_recon_v7`, `striker_dj30_mym_pyramid_250`, `striker_nas100_mnq_dow_wed_excluded`, `vanguard_mgc_v04`; identity comes from phase1_config.json and private input bindings, not names alone. |
 | Striker election | The [two campaign expressions are admitted](../../adr/2026-09-05-tradeify-select-striker-expression-readmission.md) to selection and conditional evaluation deployment eligibility by operator election. Their ledger rows are CANDIDATE at zero capital. Existing locked editions and funded deployment remain barred; no old trigger is claimed to have fired. |
-| S7 and account cap | Keep one controller per order symbol. Simulate the actual integer quantity and entry/add rejection policy under the account-wide cap, including outstanding reservations; do not use the sum of standalone peaks as actual concurrency. Runtime position truth must be proved before deployment. |
+| Shared-symbol ownership and account cap | [S7's incumbent trigger](../../adr/2026-07-29-third-leg-symbol-occupancy-limb.md#2--decision) is absent in this campaign's empty live edition set; see the [applicability record](../../adr/2026-09-05-tradeify-select-striker-expression-readmission.md#same-day-amendment--long-only-co-exposure). Keep one controller per actual order symbol, with separate strategy quantity/order ownership. Simulate actual integer quantities and deterministic entry/add admission under account-wide contract and risk headroom, including outstanding reservations. Same-symbol exits must preserve other strategies' allocations. Runtime position truth must be proved before deployment. |
 | Intraday-honest failure clock | EOD peak ratchets the fixed-dollar floor; synchronized intraday equity tests it. Missing timing evidence cannot qualify a book. |
 | No parameter fishing | No post-result signal edits, new template, target relaxation, filter, governor or size added to rescue a loser. |
 | D33 | One selected winner, one final validation. Any failed acceptance condition ends the attempt with no qualifying configuration. No runner-up promotion, extra paths or repeated n3. |
@@ -134,13 +136,16 @@ then `core/mc/simulation.py`, `core/mc/preflight.py` and synthetic MC tests.
   conflicting CLI operations, and mass deficit causing a wrong extreme quantile.
 - [x] Fix those cases without changing the ordinary campaign pins. Verify the
   extreme quantile using exact integer arithmetic, not the calculator's own helper.
-- [ ] Define a validated immutable initial state carrying original account basis,
+- [x] Define a validated immutable initial state carrying original account basis,
   current equity, historical EOD peak, prior qualifying trade-day count and maximum
-  prior profitable day. Fail closed on invalid/missing fields; source it privately.
-- [ ] Keep the original basis in the target, fixed-dollar rope and consistency
+  prior profitable day. Fail closed on invalid/missing fields.
+- [ ] Bind that state privately to a fresh, flat, settled session-boundary account
+  snapshot; the kernel's five numbers cannot establish provenance or exclude
+  current-session trades, pending orders or cash adjustments.
+- [x] Keep the original basis in the target, fixed-dollar rope and consistency
   denominator. Initialize equity/peak/day history from the snapshot. Never pass
   current equity as `starting_equity` to emulate an already-used account.
-- [ ] Verify synthetic cases: pristine-state legacy equivalence; same current
+- [x] Verify synthetic cases: pristine-state legacy equivalence; same current
   equity with different prior peaks yields different floors; prior best day delays
   consistency clearance; prior trade days count; an intraday floor touch fails even
   if the close recovers; terminal pass at the initial state returns zero additional
@@ -150,11 +155,19 @@ then `core/mc/simulation.py`, `core/mc/preflight.py` and synthetic MC tests.
   boundaries. Verify same-bar stop/target ambiguity, a cross-leg excursion overlap,
   an entry/add at the cap and an early-close cancellation. A false precision from
   scalar MAE is not a substitute for this adapter.
+- [ ] Model both MNQ strategies through the shared symbol controller: maintain
+  each strategy's filled allocation and pending orders; replay overlapping longs,
+  capacity conflicts, partial exits and cancellations. Skipped entries cannot
+  generate orphan adds/exits. Test one strategy exiting while the other stays
+  long, simultaneous stops/targets, stale/duplicate exits and session-wide flatten.
 
 **Acceptance:** one deterministic transition is usable from both pristine and used
 accounts, and the composition/replay outputs represent the eventual quantity policy.
 Write the interface-level implementation specification before changing this core
 surface; the existing calculator repair is independently testable and can land first.
+The [used-account kernel specification](2026-09-05-tradeify-used-account-kernel.md)
+owns the five-field interface and its supported snapshot boundary; the bar adapter
+and private binding remain separate obligations.
 
 ## Task 3 — Freeze one finite, composable search
 
@@ -164,9 +177,14 @@ template, and the campaign-owned machine-readable configuration catalogue.
 - [x] Record operator approval of S1/S2 and propagate the executable requirements.
 - [ ] Confirm Task 1 and Task 2 are closed before computing portfolio rankings.
 - [ ] Freeze exact source/override/bar/calendar/commission/code digests, the legal
-  inclusion and integer size sets, one-MNQ constraint, order-event priority,
+  inclusion and integer size sets, shared-symbol ownership, order-event priority,
   cap/reservation behavior, sessions, and any portfolio protection policy. Reuse
   existing authorities; do not silently substitute locked legacy allocations.
+- [ ] Bind the three index expressions' long-only behavior to their effective
+  sources. Freeze shared-symbol admission, reservation and exit/cancel policies
+  before search, including deterministic capacity-conflict priority. Measure
+  combined MNQ/MYM exposure and loss clustering; same direction does not imply
+  independent risk. Do not add a policy after inspecting candidate results.
 - [ ] Enumerate the finite catalogue and record its size K. Remove structurally
   illegal cells deterministically. No unbounded optimizer or result-driven grammar.
 - [ ] Freeze full/H1/H2 dates, horizon, joint-flat sampling family/block lengths,
@@ -215,7 +233,10 @@ in the actual freeze. Freeze readiness is a separate orchestrator decision.
 - [ ] Prove cap reservations and position reconciliation under stale broker state,
   duplicate signals, rejected/partial orders, disconnect/restart and daily reset;
   fail closed when state is unknown. Prove exits/flattening cannot close another
-  controller's position. Quantity and rejection behavior must match the simulation.
+  strategy's allocation, including strategies within the same symbol controller.
+  Prove partial fills, stop/target races and stale cancellations cannot create
+  unintended shorts; distinguish coordinated account/session flattening from a
+  strategy exit. Quantity and rejection behavior must match the simulation.
 - [ ] Use the accepted eval-only admission record and add only the new
   lifecycle/LEG_MAP keys required by this winner. Preserve the
   locked-book and funded bars. If ORB wins, discharge its existing conditional

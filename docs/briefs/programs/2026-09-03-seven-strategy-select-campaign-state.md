@@ -1,7 +1,7 @@
 # Seven-strategy Select configuration campaign — campaign state (orchestrator-only writes)
 
 **Status:** Codex owns orchestration by the 2026-09-05 operator transfer. The operator merged campaign-only #302; scanner draft #307 is deferred. The [current execution plan](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) replaces the old phase sequence. Intake remains blocked on complete export-bound captures (§48); no search, final freeze, qualification or live authorization has occurred. One bounded implementation attempt is authorized (§49); S1 unconditional speed and S2 final validation after winner parity are approved (2026-09-05).
-**Last curated:** 2026-09-05 (Codex takeover, `codex/tradeify-campaign-next`)
+**Last curated:** 2026-09-05 (Codex, `codex/tradeify-used-account-kernel`)
 **Parent plan:** [`2026-09-02-seven-strategy-tradeify-select-configuration.md`](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
 (PR [#272](https://github.com/Joshua-Asante/first-passage/pull/272) — **merged 2026-09-03** together
 with #273; four Codex passes `459421b`, `78c82de`, `e8694a9`, `6aa7ff8`, the operator's ruling and
@@ -3550,6 +3550,12 @@ Also reported: the five artifacts and their screenshots are gitignored and show 
 
 ## §49 — Codex takeover and bounded campaign revision (2026-09-05)
 
+**Transfer scope:** the §1 Orchestrator role records the operator's transfer of
+both governance authorship and previously CC-solo implementation, including
+locked `core/` work for this bounded campaign. It is the campaign-specific
+authority relative to [surface-allocation test 1](../../adr/2026-07-14-cc-cursor-surface-allocation.md#2--decision).
+The worker-lane governance bar remains; the operator retains merges and deployment GO.
+
 **Campaign assessment:** feasibility is **Ambiguous**. No bound source population
 or executable joint replay supports a defensible estimate that a qualifying book
 exists. The scanner's repeated reviews had become a degenerating side loop;
@@ -3561,7 +3567,8 @@ as a test that can return no qualifying configuration, not a promise of success.
 **Operator decisions:** prepare the #302 split; the operator will merge. Authorize
 one bounded implementation attempt beyond the intake effort. Preserve the Select
 incumbent, the full/H1/H2 ≤5% failure test, the certified median reservation of
-200 business days, select-from-five with at most one MNQ, and D33's sole final
+200 business days, select-from-five (the initial one-MNQ restriction was replaced
+by the operator's §51 amendment), and D33's sole final
 validation. Growth is a scoring comparison, not a purchase or rescue route.
 The two Striker campaign expressions were elected into eval scope in the operator's
 consultation; this is an election, not a finding that the old re-scope trigger fired.
@@ -3580,7 +3587,9 @@ for the executable winner and fresh account state; a failed final test ends the
 attempt even if winner implementation effort has already been spent. Source
 binding, live-state/replay implementation and the statistical freeze remain owed.
 
-**Calculator repair in this follow-up:** six regression failures reproduced the
+**Calculator repair — merged:** the operator merged [#308](https://github.com/Joshua-Asante/first-passage/pull/308)
+and the [#309](https://github.com/Joshua-Asante/first-passage/pull/309) record update.
+Six regression failures reproduced the
 three A2 defects; the fix normalizes the entire probability mass, rejects unit
 power at positive failure rate and makes CLI operations exclusive. Mode-relative
 CDF emission prefers the smaller tail so exact boundary classifications are not
@@ -3588,9 +3597,10 @@ lost to a one-ULP overshoot after dividing by a separately rounded total. All 46
 tests pass on Python 3.12.14, including the existing ordinary pins and an
 independent integer-arithmetic quantile oracle. This is code validation, not
 n2/n3 sizing or a campaign result. The old #305 disposition remains historical;
-§45's repair hold is discharged only when this follow-up lands and its checks
-are accepted. §48's prerequisite 8/9 "A2 defects" row is the pre-repair
-checkpoint; live disposition is this paragraph.
+§45's code-repair hold is discharged. Prerequisites 8/9 still require the frozen
+four-condition statistical design; calculator availability alone does not close
+them. §48's prerequisite 8/9 "A2 defects" row is the pre-repair checkpoint;
+live disposition is this paragraph.
 
 **Local intake verification:** all five current Pine files and five pinned exports
 were located and their SHA-256 values match phase1_config.json. The existing
@@ -3604,3 +3614,60 @@ correlation algebra do not supply a certified pass-time bound. Existing Rule 0
 and operational correction discipline own this failure; no new methodology lesson
 or load-bearing-number registry is added. Process degeneration is not a finding
 that every possible book is falsified. A bounded negative result remains admissible.
+
+## §50 — Used-account kernel (2026-09-05)
+
+The [kernel specification](../../superpowers/plans/2026-09-05-tradeify-used-account-kernel.md)
+was committed at `1046588`, before implementation at `fa5039a` and review fixes
+through `adccb7d`. The existing MC
+transition now accepts an immutable five-field account snapshot; targets,
+fixed-dollar drawdown and consistency remain tied to the original basis. Initial
+floor validity precedes day-zero qualification, and every seeded path starts from
+the same snapshot. Calls without state preserve the legacy interface and behavior.
+
+**Evidence:** 61 focused state tests and 128 combined state/interface regressions
+pass; the simulation/calculator baseline passes 56 tests with one normal vendor
+skip. These are synthetic implementation tests, not campaign samples or a
+qualification result. Task and whole-branch reviews are approved after three
+edge-case fixes; broader verification is recorded with the implementation
+specification. Private binding and replay remain open below.
+
+**Scope rulings:** the five-field interface accepts flat, settled session-boundary
+snapshots and inactivity OFF only; missing current-session and idle-day history
+cannot be silently reset. Maximum drawdown includes the supplied snapshot and
+simulated future, not unobserved earlier troughs. Supporting other boundaries or
+lifetime historical drawdown would require separately specified, bound history.
+
+**Remaining critical path:** the kernel does not close the complete used-account
+and replay prerequisite. Private snapshot provenance and synchronized bar replay
+remain unchecked in Task 2; Task 1 still has three partial captures and all five
+fresh export bindings outstanding (§48). The four-condition statistical freeze
+is also owed. S2 still requires a fresh snapshot immediately before the sole n3,
+after provisional winner implementation/parity. No intake iteration, n1/n2/n3
+sample, live authorization or additional implementation attempt was consumed.
+
+## §51 — Long-only MNQ co-exposure approved (2026-09-05)
+
+The operator confirmed that both MNQ expressions and the MYM Striker expression
+are long-only, matching the source inventory, then instructed "Go with your
+recommendation." The [admission ADR amendment](../../adr/2026-09-05-tradeify-select-striker-expression-readmission.md#same-day-amendment--long-only-co-exposure)
+owns the change: both MNQ expressions may be included and overlap under one
+symbol controller. The derived maximum of four expressions is removed; all five
+remain optional candidates, not a mandatory five-expression book.
+
+Long-only clears D16's hedging concern, not entry-flatten or symbol-wide exit
+interference. Admission depends on implementing and proving shared-symbol
+ownership. The ADR also records why S7's incumbent trigger is absent in this
+campaign; its historical incumbent-book example remains valid in that scope.
+
+The current plan now requires shared-symbol filled-quantity/order ownership,
+aggregate contract/risk reservations and deterministic capacity-conflict handling
+in replay, then equivalent live execution tests before deployment. Same-direction
+signals need not compete when capacity is sufficient. Strategy exits must preserve
+other allocations and cannot produce accidental shorts. Existing symbol-wide
+flattening is not evidence that this capability already exists.
+
+This is an approved grammar amendment before search. Effective input binding,
+joint replay, the statistical freeze, S1/S2, the one-attempt limit and operator
+deployment GO remain in force. No production sizing, source pins or sample
+budgets changed, and no campaign sampling occurred.
