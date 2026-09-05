@@ -61,6 +61,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import quote
 
 _DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 _DECIMAL = re.compile(r"\d\.\d")
@@ -227,6 +228,34 @@ def _value_forms(value: object, *, raw_lexemes: set[str] | None = None) -> set[s
     return forms
 
 
+def _alt_encodings(text: str) -> set[str]:
+    """The same characters as a NON-UTF-8 file's bytes would decode to.
+
+    Git output is decoded with ``surrogateescape``, so a file saved in cp1252 or
+    latin-1 yields lone surrogates where the non-ASCII bytes were, and a UTF-8
+    needle can never match it. Each needle carrying non-ASCII therefore also
+    contributes its surrogate-escaped byte view.
+    """
+    if text.isascii():
+        return set()
+    out: set[str] = set()
+    for codec in ("cp1252", "latin-1"):
+        try:
+            raw = text.encode(codec)
+        except (UnicodeEncodeError, LookupError):
+            continue
+        out.add(raw.decode("utf-8", "surrogateescape"))
+    return {form for form in out if form != text}
+
+
+def _percent_encoded(text: str) -> set[str]:
+    """A URL- or JSON-escaped copy of a private string is the same disclosure."""
+    if not text or text.isalnum():
+        return set()
+    forms = {quote(text, safe=""), quote(text, safe="/")}
+    return {form for form in forms if form != text}
+
+
 def _numeric_spellings(text: str) -> set[str]:
     """Comma-grouped spellings of a bare number.
 
@@ -245,6 +274,9 @@ def _numeric_spellings(text: str) -> set[str]:
     out = {f"{sign}{grouped}"}
     if frac:
         out.add(f"{sign}{grouped}.{frac}")
+    # A currency symbol in front of the same figure is the same figure.
+    for form in list(out):
+        out.add(f"${form}")
     return out
 
 
@@ -334,7 +366,10 @@ def build_json_needles(path: Path, json_key: str) -> dict[str, set[str]]:
         if _distinctive(node):
             value_needles.update(forms)
             for form in list(forms):
-                value_needles.update(_numeric_spellings(form.strip('"')))
+                bare = form.strip('"')
+                value_needles.update(_numeric_spellings(bare))
+                value_needles.update(_alt_encodings(bare))
+                value_needles.update(_percent_encoded(bare))
         elif isinstance(node, str) and len(node.strip()) >= 3:
             # Not a needle -- too short or too plain to match without flooding
             # ordinary prose -- but still a private token, so it is carried for
@@ -379,6 +414,8 @@ def build_csv_needles(path: Path) -> tuple[set[str], set[str]]:
                 continue
             cells.add(text)
             cells.update(_numeric_spellings(text))
+            cells.update(_alt_encodings(text))
+            cells.update(_percent_encoded(text))
     if not cells:
         raise NeedleError(f"{path.name}: no distinctive cells")
     return cells, weak
@@ -679,6 +716,33 @@ def scan_paths(
     return hits
 
 
+def check_range_freshness(base: str, cwd: Path) -> str | None:
+    """Is the range's left endpoint stale against the remote?
+
+    The default range is anchored on a LOCAL tracking ref, which a missing fetch
+    leaves behind the remote -- silently excluding commits the push would
+    publish. Printing the endpoints made that auditable; this makes it fail
+    closed when it can be checked at all. A network failure is reported and
+    tolerated (the scan still runs); a confirmed MISMATCH is not.
+    """
+    if "/" not in base:
+        return None
+    remote, _, ref = base.partition("/")
+    try:
+        local = _git(["rev-parse", "--verify", base], cwd).strip()
+    except RuntimeError:
+        return None
+    try:
+        listing = _git(["ls-remote", remote, f"refs/heads/{ref}"], cwd)
+    except RuntimeError:
+        print(f"WARN could not reach {remote} to check {base} freshness; endpoints above are local")
+        return None
+    head = listing.split("\t")[0].strip() if listing.strip() else ""
+    if head and head != local:
+        return f"{base} is STALE: local {local[:8]}, remote {head[:8]} -- fetch and re-run"
+    return None
+
+
 def scan_refs(
     cwd: Path,
     base: str,
@@ -751,6 +815,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--exclude", action="append", default=[], type=Path, help="file of tokens to drop, one per line (repeatable)")
     parser.add_argument("--range", default="origin/main..HEAD", help="git revision range to scan")
     parser.add_argument(
+        "--no-remote-check",
+        action="store_true",
+        help="skip the ls-remote freshness check on the range's left endpoint (offline use)",
+    )
+    parser.add_argument(
         "--show-paths",
         action="store_true",
         help="print the redacted-path index mapping (LOCAL remediation only; never paste its output)",
@@ -760,6 +829,18 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--repo", default=".", type=Path, help="repository root (default: cwd)")
     args = parser.parse_args(argv)
     cwd = args.repo.resolve()
+    # Resolve to the repository ROOT. Tree listings are relative to the git
+    # directory being addressed, so pointing --repo (or the shell's cwd) at a
+    # SUBDIRECTORY made every --path-prefix test look at truncated names and the
+    # class reported nothing -- CLEAN on a force-added capture.
+    try:
+        top = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"], cwd=cwd, capture_output=True, env=_git_env()
+        )
+        if top.returncode == 0 and top.stdout.strip():
+            cwd = Path(top.stdout.decode("utf-8", "surrogateescape").strip())
+    except OSError:
+        pass
 
     classes: dict[str, set[str]] = {"TITLE": set(), "PAIR": set(), "VALUE": set(), "CELL": set()}
     # Values too short or too plain to be needles -- a four-letter tag would
@@ -781,15 +862,27 @@ def main(argv: list[str] | None = None) -> int:
             cells, weak_cells = build_csv_needles(path)
             classes["CELL"].update(cells)
             weak.update(weak_cells)
+        populated = {name: bool(needles) for name, needles in classes.items()}
         excluded: set[str] = set()
         for path in args.exclude:
             try:
-                excluded.update(line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip())
+                # surrogateescape, to match how needles are represented: an
+                # exclusion list can legitimately name a non-UTF-8 token, and
+                # a strict decode crashed with a traceback and exit 1 -- not one
+                # of this script's documented codes, and not a fail-closed one.
+                raw = path.read_bytes().decode("utf-8", "surrogateescape")
+                excluded.update(line.strip() for line in raw.split("\n") if line.strip())
             except OSError as exc:
                 raise NeedleError(f"cannot read exclude file: {path.name}") from exc
         for name in classes:
             classes[name] = {n for n in classes[name] if n and n not in excluded}
         weak = {n for n in weak if n and n not in excluded}
+        # EVERY class that had needles must still have them. Testing only TITLE
+        # and PAIR let an exclusion list zero the whole VALUE class while the scan
+        # proceeded as if it were covered.
+        for name, before in populated.items():
+            if before and not classes[name]:
+                raise NeedleError(f"{name} class is empty after exclusions")
         if args.json and not (classes["TITLE"] and classes["PAIR"]):
             raise NeedleError("TITLE/PAIR classes are empty after exclusions")
         if args.csv and not classes["CELL"]:
@@ -804,10 +897,15 @@ def main(argv: list[str] | None = None) -> int:
         redact_patterns.update(compile_classes({"_WEAK": weak}))
     print("needle classes: " + " ".join(f"{name}={len(needles)}" for name, needles in classes.items()))
     if dropped_keys:
-        # BY KEY ONLY -- naming the value here would be the disclosure this
-        # whole script exists to prevent. The operator needs to know a supplied
-        # value produced no needle; they do not need it echoed back.
-        print(f"non-distinctive, no VALUE needle (redaction-only): {' '.join(dropped_keys)}")
+        # COUNT ONLY. An input TITLE is itself a needle class here -- an input
+        # name never legitimately appears in the published footprint -- so
+        # naming the keys would have this report disclose exactly what the
+        # TITLE class exists to catch. --show-paths prints them locally.
+        print(f"non-distinctive, no VALUE needle (redaction-only): {len(dropped_keys)}")
+        if args.show_paths:
+            print("--- keys with no VALUE needle (LOCAL ONLY -- never paste) ---")
+            for key in dropped_keys:
+                print(f"  {key}")
 
     try:
         commits = _git(["rev-list", "--reverse", args.range], cwd).split()
@@ -830,6 +928,14 @@ def main(argv: list[str] | None = None) -> int:
         # worker pastes into the PR body.
         shown_range, _ = _redact(args.range, redact_patterns)
         print(f"range {shown_range} -> {endpoints} commits={len(commits)}")
+        base_of_range = next(
+            (part for part in args.range.replace("...", "..").split("..") if part), "HEAD"
+        )
+        if not args.no_remote_check:
+            stale = check_range_freshness(base_of_range, cwd)
+            if stale:
+                print(f"SCAN result=ERROR reason={stale}")
+                return 3
         if not commits:
             # An EMPTY walk is not a pass. Exit 0 would be indistinguishable from
             # "the scanner never looked at the commits being pushed" -- a stale
@@ -849,10 +955,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             all_hits.extend(hits)
             all_hits.extend(path_hits)
-        base_endpoint = next(
-            (part for part in args.range.replace("...", "..").split("..") if part), "HEAD"
-        )
-        ref_hits = scan_refs(cwd, base_endpoint, set(commits), patterns)
+        ref_hits = scan_refs(cwd, base_of_range, set(commits), patterns)
         if ref_hits:
             print(f"refs {len(ref_hits)}")
         all_hits.extend(ref_hits)

@@ -3703,6 +3703,25 @@ Run on the round-18 diff, prompt as ruled: *what input makes this control silent
 
 **Process note.** The panel cost 38 agents and ~74 minutes of wall clock. The dominant term is one refuter per finding at high effort; capping each lens at three findings, spawning a refuter only for a finding its author actually staged, and dropping the refuters to medium effort would roughly halve it without weakening the independent-rebuild requirement. That shape applies from the next run.
 
+### 47h — The open set closed to one (2026-09-05)
+
+Worked without a Codex round, from §47f's and §47g's own open lists. **Five of the six remaining findings are closed; one is left open deliberately.**
+
+| Closed | How |
+|---|---|
+| An `--exclude` list could zero the whole VALUE class while the emptiness guard tested only TITLE and PAIR | the guard now covers **every class that had needles before exclusions**; zeroing one exits 3, never CLEAN |
+| Content saved in a non-UTF-8 encoding missed a UTF-8 needle | git output is decoded with `surrogateescape`, so a cp1252 or latin-1 file yields lone surrogates where the non-ASCII bytes were. Each needle carrying non-ASCII now also contributes its **surrogate-escaped byte view**, in both codecs |
+| A percent-encoded copy of a private string passed | needles carry their URL-escaped forms |
+| A currency-symbol spelling of a figure passed | numeric spellings now include the `$`-prefixed form alongside the comma-grouped one |
+| A stale `origin/main` was **visible** in the report but not **prevented** | the range's left endpoint is checked against `ls-remote` before the walk. A confirmed mismatch exits **3** with the two SHAs and "fetch and re-run"; a network failure is reported and tolerated, so an offline run still scans; `--no-remote-check` is the documented opt-out |
+| **(found while testing the above)** a non-UTF-8 `--exclude` file crashed with a traceback and **exit 1** — not one of the four documented codes | the list is read byte-faithfully with `surrogateescape`, matching how needles are represented |
+
+**Still open, and probably not solvable here: a percentage that inverts back to a redacted figure.** Catching it needs the base the percentage is taken of, which the scanner is not given and cannot infer. It belongs to §47c's P7 provenance read — where a human or a reviewing model asks what an added number is *of* — rather than to a fixed-string needle scan. Recorded as such rather than left on a list the scanner cannot discharge.
+
+**Fourth panel run, partial at push time — two of its findings already folded:** (i) **P1** — pointing `--repo` (or the shell's cwd) at a **subdirectory** truncated every tree path, so the `--path-prefix` class matched nothing and a force-added capture scanned CLEAN; the repository **root** is now resolved with `rev-parse --show-toplevel`. (ii) **P2** — the drop report named the keys whose values produced no needle, but an input **TITLE is itself a needle class** here, so that line disclosed exactly what TITLE exists to catch; it now prints a **count**, with the names behind `--show-paths`. The run's remaining lenses had not returned when this was pushed, and are the next round's input.
+
+⚠ **The scanner is still not the step 6b gate on this head.** One open finding is one too many for a control whose failure mode is publication, and the population dispatch remains on hold for other reasons anyway. **55 tests**, green with and without a global git identity; live self-run `SCAN result=CLEAN commits=58`.
+
 ### 47g — Third panel run (2026-09-05): the comment that lied, and four more
 
 16 agents, ~20 minutes. **Five confirmed, one refuted.** The run's own P1 is the sharpest lesson in the sequence so far.

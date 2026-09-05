@@ -737,7 +737,7 @@ def test_csv_identifier_and_whole_dollar_cells_are_needles(repo: tuple[Path, Pat
     too, since an identifier can be a COLUMN NAME.
     """
     export = tmp_path / "acct.csv"
-    export.write_text("account,peak_balance,realized\nZZ-ACCT-777788,102500,12.50\n", encoding="utf-8")
+    export.write_text("account,peak_balance,realized\nZZ-ACCT-777788,777777,12.50\n", encoding="utf-8")
     root, snap, _ = repo
     (root / "ledger.md").write_text("reconciled ZZ-ACCT-777788 today\n", encoding="utf-8")
     _git(root, "add", "-A")
@@ -749,9 +749,9 @@ def test_csv_identifier_and_whole_dollar_cells_are_needles(repo: tuple[Path, Pat
 @needs_git
 def test_comma_grouped_spelling_of_a_numeric_cell_matches(repo: tuple[Path, Path, Path], tmp_path: Path) -> None:
     export = tmp_path / "acct.csv"
-    export.write_text("account,peak_balance\nZZ-ACCT-777788,102500\n", encoding="utf-8")
+    export.write_text("account,peak_balance\nZZ-ACCT-777788,777777\n", encoding="utf-8")
     root, snap, _ = repo
-    (root / "report.md").write_text("peak was 102,500 on the day\n", encoding="utf-8")
+    (root / "report.md").write_text("peak was 777,777 on the day\n", encoding="utf-8")
     _git(root, "add", "-A")
     _git(root, "commit", "-q", "-m", "grouped spelling")
     proc = _run(root, "--json", str(snap), "--csv", str(export))
@@ -948,7 +948,10 @@ def test_a_non_distinctive_value_is_redacted_and_its_drop_reported(
     _git(root, "commit", "-q", "-m", "binary named after the short tag")
     proc = _run(root, "--json", str(snapshot), "--csv", str(export))
     assert proc.returncode == 2
-    assert "no VALUE needle" in proc.stdout and "acct_tag" in proc.stdout
+    # Count only: an input TITLE is a needle class of its own, so naming the key
+    # would make this report disclose what the TITLE class exists to catch.
+    assert "no VALUE needle" in proc.stdout
+    assert "acct_tag" not in proc.stdout
     assert "ZZTZ" not in proc.stdout
 
 
@@ -962,3 +965,142 @@ def test_every_diff_call_pins_the_format() -> None:
     for call in re.findall(r'_git\(\[("diff"[^\]]*)\]', source):
         assert "--no-ext-diff" in call, call
     assert 'subprocess.run(\n        ["git"' not in source or source.count('["git", "--no-replace-objects"') >= 1
+
+@needs_git
+def test_exclusions_cannot_silently_zero_a_class(repo: tuple[Path, Path, Path], tmp_path: Path) -> None:
+    """The emptiness guard covers every class that had needles, not only two."""
+    root, snap, export = repo
+    import json as _json
+
+    values = _json.loads(snap.read_text(encoding="utf-8"))["inputs"].values()
+    listing = tmp_path / "excl.txt"
+    listing.write_text(
+        "\n".join(sorted({_json.dumps(v) for v in values} | {str(v) for v in values})) + "\n",
+        encoding="utf-8",
+    )
+    (root / "a.txt").write_text("nothing private\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "harmless")
+    proc = _run(root, "--json", str(snap), "--csv", str(export), "--exclude", str(listing))
+    assert proc.returncode != 0, proc.stdout
+    assert "CLEAN" not in proc.stdout
+
+
+@needs_git
+def test_a_non_utf8_exclusion_file_does_not_crash(repo: tuple[Path, Path, Path], tmp_path: Path) -> None:
+    """Exit 1 with a traceback is not one of this script's codes."""
+    root, snap, export = repo
+    listing = tmp_path / "excl.bin"
+    listing.write_bytes(b"caf\xe9\n")
+    (root / "a.txt").write_text("nothing private\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "harmless")
+    proc = _run(root, "--json", str(snap), "--csv", str(export), "--exclude", str(listing))
+    assert proc.returncode in (0, 2, 3, 4), proc.stderr
+    assert "Traceback" not in proc.stderr
+
+
+@needs_git
+def test_a_needle_in_a_non_utf8_file_is_caught(repo: tuple[Path, Path, Path], tmp_path: Path) -> None:
+    """git output is decoded with surrogateescape, so a cp1252 file needs its own needle form."""
+    snapshot = tmp_path / "accented.json"
+    snapshot.write_text('{"inputs": {"note": "caf\u00e9 book", "Mode": "Aggressive"}}\n', encoding="utf-8")
+    root, _, export = repo
+    (root / "latin.txt").write_bytes("caf\u00e9 book\n".encode("cp1252"))
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "pasted into a cp1252 file")
+    proc = _run(root, "--json", str(snapshot), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=VALUE" in proc.stdout
+
+
+@needs_git
+def test_a_percent_encoded_needle_is_caught(repo: tuple[Path, Path, Path], tmp_path: Path) -> None:
+    snapshot = tmp_path / "accented.json"
+    snapshot.write_text('{"inputs": {"note": "caf\u00e9 book", "Mode": "Aggressive"}}\n', encoding="utf-8")
+    root, _, export = repo
+    (root / "u.txt").write_text("url=?q=caf%C3%A9%20book\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "url-escaped paste")
+    proc = _run(root, "--json", str(snapshot), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=VALUE" in proc.stdout
+
+
+@needs_git
+def test_a_currency_spelling_of_a_figure_is_caught(repo: tuple[Path, Path, Path], tmp_path: Path) -> None:
+    snapshot = tmp_path / "peak.json"
+    snapshot.write_text('{"inputs": {"peak": 777777, "Mode": "Aggressive"}}\n', encoding="utf-8")
+    root, _, export = repo
+    (root / "c.txt").write_text("peak was $777,777 today\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "currency spelling")
+    proc = _run(root, "--json", str(snapshot), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=VALUE" in proc.stdout
+
+
+@needs_git
+def test_a_stale_tracking_ref_fails_closed(repo: tuple[Path, Path, Path], tmp_path: Path) -> None:
+    """A missing fetch silently excludes commits the push would publish."""
+    root, snap, export = repo
+    upstream = tmp_path / "up.git"
+    subprocess.run(["git", "init", "-q", "--bare", str(upstream)], check=True, env=_env())
+    _git(root, "remote", "add", "origin", str(upstream))
+    _git(root, "checkout", "-q", "-B", "main")
+    _git_try(root, "push", "-q", "origin", "main")
+    old = subprocess.run(
+        ["git", "rev-parse", "origin/main"], cwd=root, capture_output=True, text=True, env=_env()
+    ).stdout.strip()
+    (root / "m.txt").write_text("mainline\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "mainline moves")
+    _git_try(root, "push", "-q", "origin", "main")
+    _git(root, "update-ref", "refs/remotes/origin/main", old)
+    _git(root, "checkout", "-q", "-b", "feat")
+    (root / "ok.txt").write_text("harmless\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "work")
+    proc = subprocess.run(
+        [sys.executable, str(_SCRIPT), "--repo", str(root), "--range", "origin/main..HEAD",
+         "--json", str(snap), "--csv", str(export)],
+        capture_output=True, text=True, env=_env(),
+    )
+    assert proc.returncode == 3 and "STALE" in proc.stdout
+    opted_out = subprocess.run(
+        [sys.executable, str(_SCRIPT), "--repo", str(root), "--range", "origin/main..HEAD",
+         "--json", str(snap), "--csv", str(export), "--no-remote-check"],
+        capture_output=True, text=True, env=_env(),
+    )
+    assert opted_out.returncode == 0
+
+@needs_git
+def test_repo_pointed_at_a_subdirectory_still_sees_full_paths(repo: tuple[Path, Path, Path]) -> None:
+    """Tree listings are relative to the git directory addressed.
+
+    Pointing --repo at a SUBDIRECTORY truncated every path, so the
+    --path-prefix class matched nothing and a force-added capture scanned CLEAN.
+    """
+    root, snap, export = repo
+    (root / "private_overrides").mkdir()
+    (root / "private_overrides" / "a.json").write_text("x\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "capture")
+    proc = subprocess.run(
+        [sys.executable, str(_SCRIPT), "--repo", str(root / "private_overrides"),
+         "--range", "base..HEAD", "--json", str(snap), "--csv", str(export),
+         "--path-prefix", "private_overrides/"],
+        capture_output=True, text=True, env=_env(),
+    )
+    assert proc.returncode == 2 and "HIT class=PATH" in proc.stdout
+
+
+@needs_git
+def test_the_drop_report_never_names_a_key(repo: tuple[Path, Path, Path], tmp_path: Path) -> None:
+    """An input TITLE is itself a needle class, so the report counts, never names."""
+    snapshot = tmp_path / "short.json"
+    snapshot.write_text('{"inputs": {"acct_tag": "ZZTZ", "Mode": "Aggressive"}}\n', encoding="utf-8")
+    root, _, export = repo
+    (root / "a.txt").write_text("nothing\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "harmless")
+    proc = _run(root, "--json", str(snapshot), "--csv", str(export))
+    assert "no VALUE needle" in proc.stdout
+    assert "acct_tag" not in proc.stdout
