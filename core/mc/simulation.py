@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from numbers import Integral, Real
 from typing import Tuple
 
 import numpy as np
@@ -46,7 +48,211 @@ DEFAULT_STRATS = ("guardian", "striker", "aegis", "striker_nas100")
 # `intraday_low` — per-day minimum equity excursion, supplied alongside `path` by a
 # caller that has intraday resolution. Absent => the legacy end-of-day barrier test,
 # which is what the historical anchor was calibrated under.
-_NON_FIRM_KEYWORDS: frozenset[str] = frozenset({"intraday_low"})
+_NON_FIRM_KEYWORDS: frozenset[str] = frozenset({"initial_state", "intraday_low"})
+
+
+def _amount(name: str, value: Real, *, positive: bool = False) -> float:
+    if isinstance(value, bool) or not isinstance(value, Real):
+        raise TypeError(f"{name} must be a finite real number")
+    amount = float(value)
+    if not np.isfinite(amount):
+        raise ValueError(f"{name} must be finite")
+    if positive and amount <= 0.0:
+        raise ValueError(f"{name} must be positive")
+    return amount
+
+
+def _nonnegative_count(name: str, value: Integral) -> int:
+    if isinstance(value, bool) or not isinstance(value, Integral):
+        raise TypeError(f"{name} must be a nonnegative integer")
+    count = int(value)
+    if count < 0:
+        raise ValueError(f"{name} must be nonnegative")
+    return count
+
+
+@dataclass(frozen=True)
+class EvaluationState:
+    """Settled evaluation state at the boundary before a modeled session.
+
+    The caller is responsible for establishing that the snapshot has no pending
+    orders, current-session trading, deposits, withdrawals, or account adjustments.
+    These five values check internal consistency; they cannot certify provenance.
+    """
+
+    original_basis: float
+    current_equity: float
+    historical_eod_peak: float
+    prior_trade_days: int
+    prior_max_day_profit: float
+
+    def __post_init__(self) -> None:
+        basis = _amount("original_basis", self.original_basis, positive=True)
+        equity = _amount("current_equity", self.current_equity, positive=True)
+        peak = _amount("historical_eod_peak", self.historical_eod_peak, positive=True)
+        trade_days = _nonnegative_count("prior_trade_days", self.prior_trade_days)
+        best_day = _amount("prior_max_day_profit", self.prior_max_day_profit)
+        if best_day < 0.0:
+            raise ValueError("prior_max_day_profit must be nonnegative")
+        if peak < basis or peak < equity:
+            raise ValueError(
+                "historical_eod_peak must be at least original_basis and current_equity"
+            )
+        if trade_days == 0 and not (
+            equity == basis and peak == basis and best_day == 0.0
+        ):
+            raise ValueError(
+                "zero prior_trade_days require pristine equity, peak, and best-day profit"
+            )
+        peak_gain = peak - basis
+        if peak_gain > 0.0:
+            if best_day <= 0.0:
+                raise ValueError(
+                    "a positive historical peak gain requires a positive best day"
+                )
+            if round(peak_gain, 2) > round(trade_days * best_day, 2):
+                raise ValueError(
+                    "historical peak gain cannot exceed prior_trade_days times "
+                    "prior_max_day_profit"
+                )
+
+        object.__setattr__(self, "original_basis", basis)
+        object.__setattr__(self, "current_equity", equity)
+        object.__setattr__(self, "historical_eod_peak", peak)
+        object.__setattr__(self, "prior_trade_days", trade_days)
+        object.__setattr__(self, "prior_max_day_profit", best_day)
+
+
+def _validate_fraction(
+    name: str,
+    value: Real,
+    *,
+    allow_zero: bool = False,
+) -> float:
+    fraction = _amount(name, value)
+    lower_ok = fraction >= 0.0 if allow_zero else fraction > 0.0
+    if not lower_ok or fraction > 1.0:
+        bound = (
+            "between zero and one"
+            if allow_zero
+            else "greater than zero and at most one"
+        )
+        raise ValueError(f"{name} must be {bound}")
+    return fraction
+
+
+def _validate_initial_state_configuration(
+    initial_state: EvaluationState,
+    *,
+    dd_trigger: float,
+    dd_scale: float,
+    horizon: int,
+    starting_equity: float,
+    daily_loss_pct: float | None,
+    dd_type: str,
+    static_dd_pct: float | None,
+    trailing_dd_pct: float | None,
+    dd_lock_offset_usd: float | None,
+    profit_target: float,
+    min_trading_days: int,
+    inactivity_limit: int,
+    consistency_frac: float | None,
+) -> None:
+    if type(initial_state) is not EvaluationState:
+        raise TypeError("initial_state must be exactly an EvaluationState")
+
+    basis = _amount("starting_equity", starting_equity, positive=True)
+    if initial_state.original_basis != basis:
+        raise ValueError(
+            "initial_state original_basis must match starting_equity; "
+            "build firm kwargs from the original basis"
+        )
+
+    horizon_count = _nonnegative_count("horizon", horizon)
+    inactivity_count = _nonnegative_count("inactivity_limit", inactivity_limit)
+    if inactivity_count <= horizon_count:
+        raise ValueError(
+            "initial_state supports inactivity-OFF only: inactivity_limit must exceed horizon"
+        )
+    _nonnegative_count("min_trading_days", min_trading_days)
+
+    _validate_fraction("dd_trigger", dd_trigger, allow_zero=True)
+    _validate_fraction("dd_scale", dd_scale, allow_zero=True)
+    target = _amount("profit_target", profit_target, positive=True)
+    if target <= basis:
+        raise ValueError("profit_target must exceed the original starting_equity")
+    if daily_loss_pct is not None:
+        daily_limit = _amount("daily_loss_pct", daily_loss_pct)
+        if not -1.0 < daily_limit < 0.0:
+            raise ValueError("daily_loss_pct must be greater than -1 and less than zero")
+    if consistency_frac is not None:
+        _validate_fraction("consistency_frac", consistency_frac)
+
+    if dd_type == "static":
+        barrier = _amount("static_dd_pct", static_dd_pct)  # type: ignore[arg-type]
+        if not -1.0 < barrier < 0.0:
+            raise ValueError("static_dd_pct must be greater than -1 and less than zero")
+    elif dd_type in ("trailing", "trailing_locking"):
+        barrier = _amount("trailing_dd_pct", trailing_dd_pct)  # type: ignore[arg-type]
+        if not -1.0 < barrier < 0.0:
+            raise ValueError("trailing_dd_pct must be greater than -1 and less than zero")
+        if dd_type == "trailing_locking":
+            lock_offset = _amount(
+                "dd_lock_offset_usd", dd_lock_offset_usd  # type: ignore[arg-type]
+            )
+            if lock_offset < 0.0:
+                raise ValueError("dd_lock_offset_usd must be nonnegative")
+    else:
+        raise ValueError(
+            "dd_type must be 'static', 'trailing', or 'trailing_locking' for initial_state"
+        )
+
+
+def _drawdown_outcome(
+    equity_test: float,
+    peak: float,
+    *,
+    starting_equity: float,
+    dd_type: str,
+    static_dd_pct: float,
+    trailing_dd_pct: float | None,
+    dd_lock_offset_usd: float | None,
+) -> str | None:
+    if dd_type == "trailing":
+        if (
+            trailing_dd_pct is not None
+            and round((equity_test - peak) / peak, 6) <= trailing_dd_pct
+        ):
+            return "bust_trailing"
+    elif dd_type == "trailing_locking":
+        if trailing_dd_pct is not None and dd_lock_offset_usd is not None:
+            max_dd_usd = -trailing_dd_pct * starting_equity
+            floor = min(peak - max_dd_usd, starting_equity + dd_lock_offset_usd)
+            if round((equity_test - floor) / starting_equity, 6) <= 0.0:
+                return "bust_trailing"
+    elif round((equity_test - starting_equity) / starting_equity, 6) <= static_dd_pct:
+        return "bust_static"
+    return None
+
+
+def _has_passed(
+    equity: float,
+    trade_days: int,
+    max_day_profit: float,
+    *,
+    starting_equity: float,
+    profit_target: float,
+    min_trading_days: int,
+    consistency_frac: float | None,
+) -> bool:
+    if round(equity, 2) < profit_target or trade_days < min_trading_days:
+        return False
+    if consistency_frac is None:
+        return True
+    total_profit = equity - starting_equity
+    return total_profit <= 0.0 or round(
+        max_day_profit - consistency_frac * total_profit, 2
+    ) <= 0.0
 
 
 def simulate_path(
@@ -66,6 +272,7 @@ def simulate_path(
     inactivity_limit: int = INACTIVITY_LIMIT,
     consistency_frac: float | None = None,
     intraday_low: np.ndarray | None = None,
+    initial_state: EvaluationState | None = None,
 ) -> Tuple[str, int, float, int | None]:
     """Run one deterministic challenge simulation over a strategy-P&L path.
 
@@ -108,11 +315,59 @@ def simulate_path(
                 "intraday_low entries are excursions BELOW the day's opening equity "
                 "and must be <= 0.0; got a positive value"
             )
-    equity = peak = float(starting_equity)
-    trade_days = 0
+    if initial_state is None:
+        equity = peak = float(starting_equity)
+        trade_days = 0
+        max_dd = 0.0
+        max_day_profit = 0.0
+    else:
+        _validate_initial_state_configuration(
+            initial_state,
+            dd_trigger=dd_trigger,
+            dd_scale=dd_scale,
+            horizon=horizon,
+            starting_equity=starting_equity,
+            daily_loss_pct=daily_loss_pct,
+            dd_type=dd_type,
+            static_dd_pct=static_dd_pct,
+            trailing_dd_pct=trailing_dd_pct,
+            dd_lock_offset_usd=dd_lock_offset_usd,
+            profit_target=profit_target,
+            min_trading_days=min_trading_days,
+            inactivity_limit=inactivity_limit,
+            consistency_frac=consistency_frac,
+        )
+        equity = initial_state.current_equity
+        peak = initial_state.historical_eod_peak
+        trade_days = initial_state.prior_trade_days
+        max_dd = (peak - equity) / peak
+        max_day_profit = initial_state.prior_max_day_profit
+
+        initial_bust = _drawdown_outcome(
+            equity,
+            peak,
+            starting_equity=starting_equity,
+            dd_type=dd_type,
+            static_dd_pct=static_dd_pct,
+            trailing_dd_pct=trailing_dd_pct,
+            dd_lock_offset_usd=dd_lock_offset_usd,
+        )
+        if initial_bust is not None:
+            raise ValueError(
+                f"initial_state is already at or beyond its drawdown floor ({initial_bust})"
+            )
+        if _has_passed(
+            equity,
+            trade_days,
+            max_day_profit,
+            starting_equity=starting_equity,
+            profit_target=profit_target,
+            min_trading_days=min_trading_days,
+            consistency_frac=consistency_frac,
+        ):
+            return "pass", 0, max_dd, None
+
     consecutive_idle = 0
-    max_dd = 0.0
-    max_day_profit = 0.0
 
     for day in range(horizon):
         dd_from_peak = (equity - peak) / peak if peak > 0 else 0.0
@@ -138,35 +393,17 @@ def simulate_path(
             and round(pnl / starting_equity, 6) <= daily_loss_pct
         ):
             return "bust_daily", day + 1, max_dd, int(np.argmin(strategy_pnls))
-        if dd_type == "trailing":
-            if (
-                trailing_dd_pct is not None
-                and round((equity_test - peak) / peak, 6) <= trailing_dd_pct
-            ):
-                return (
-                    "bust_trailing",
-                    day + 1,
-                    max_dd,
-                    int(np.argmin(strategy_pnls)),
-                )
-        elif dd_type == "trailing_locking":
-            if trailing_dd_pct is not None and dd_lock_offset_usd is not None:
-                max_dd_usd = -trailing_dd_pct * starting_equity
-                floor = min(
-                    peak - max_dd_usd, starting_equity + dd_lock_offset_usd
-                )
-                if round((equity_test - floor) / starting_equity, 6) <= 0.0:
-                    return (
-                        "bust_trailing",
-                        day + 1,
-                        max_dd,
-                        int(np.argmin(strategy_pnls)),
-                    )
-        elif (
-            round((equity_test - starting_equity) / starting_equity, 6)
-            <= static_dd_pct
-        ):
-            return "bust_static", day + 1, max_dd, int(np.argmin(strategy_pnls))
+        drawdown_outcome = _drawdown_outcome(
+            equity_test,
+            peak,
+            starting_equity=starting_equity,
+            dd_type=dd_type,
+            static_dd_pct=static_dd_pct,
+            trailing_dd_pct=trailing_dd_pct,
+            dd_lock_offset_usd=dd_lock_offset_usd,
+        )
+        if drawdown_outcome is not None:
+            return drawdown_outcome, day + 1, max_dd, int(np.argmin(strategy_pnls))
 
         had_activity = bool(np.any(strategy_pnls != 0.0))
         is_idle = not had_activity
@@ -185,15 +422,16 @@ def simulate_path(
         if pnl > max_day_profit:
             max_day_profit = pnl
 
-        if round(equity, 2) >= profit_target and trade_days >= min_trading_days:
-            if consistency_frac is None:
-                return "pass", day + 1, max_dd, None
-            total_profit = equity - starting_equity
-            if (
-                total_profit <= 0.0
-                or round(max_day_profit - consistency_frac * total_profit, 2) <= 0.0
-            ):
-                return "pass", day + 1, max_dd, None
+        if _has_passed(
+            equity,
+            trade_days,
+            max_day_profit,
+            starting_equity=starting_equity,
+            profit_target=profit_target,
+            min_trading_days=min_trading_days,
+            consistency_frac=consistency_frac,
+        ):
+            return "pass", day + 1, max_dd, None
 
     return "horizon_cap", horizon, max_dd, None
 
@@ -209,6 +447,7 @@ def run_seed(
     *,
     firm_kwargs: dict | None = None,
     intraday_blocks: np.ndarray | None = None,
+    initial_state: EvaluationState | None = None,
 ) -> dict:
     """Run deterministic block-bootstrap simulations for one RNG seed.
 
@@ -225,6 +464,31 @@ def run_seed(
     if "intraday_low" in effective_firm_kwargs:
         raise ValueError(
             "intraday_low belongs on the path (intraday_blocks=...), not in firm_kwargs"
+        )
+    if "initial_state" in effective_firm_kwargs:
+        raise ValueError(
+            "initial_state is a path starting point, not a firm rule; pass it separately"
+        )
+    if initial_state is not None:
+        _validate_initial_state_configuration(
+            initial_state,
+            dd_trigger=dd_trigger,
+            dd_scale=dd_scale,
+            horizon=horizon,
+            starting_equity=effective_firm_kwargs.get("starting_equity", STARTING_EQUITY),
+            daily_loss_pct=effective_firm_kwargs.get("daily_loss_pct", DAILY_LOSS_PCT),
+            dd_type=effective_firm_kwargs.get("dd_type", "static"),
+            static_dd_pct=effective_firm_kwargs.get("static_dd_pct", STATIC_DD_PCT),
+            trailing_dd_pct=effective_firm_kwargs.get("trailing_dd_pct"),
+            dd_lock_offset_usd=effective_firm_kwargs.get("dd_lock_offset_usd"),
+            profit_target=effective_firm_kwargs.get("profit_target", PROFIT_TARGET),
+            min_trading_days=effective_firm_kwargs.get(
+                "min_trading_days", MIN_TRADING_DAYS
+            ),
+            inactivity_limit=effective_firm_kwargs.get(
+                "inactivity_limit", INACTIVITY_LIMIT
+            ),
+            consistency_frac=effective_firm_kwargs.get("consistency_frac"),
         )
     if intraday_blocks is not None:
         intraday_blocks = np.asarray(intraday_blocks)
@@ -256,7 +520,12 @@ def run_seed(
             )[:horizon]
             sim_kwargs["intraday_low"] = low
         outcome, day, max_dd, culprit = simulate_path(
-            path, dd_trigger, dd_scale, horizon, **sim_kwargs
+            path,
+            dd_trigger,
+            dd_scale,
+            horizon,
+            initial_state=initial_state,
+            **sim_kwargs,
         )
         outcomes[outcome] += 1
         max_dds.append(max_dd)

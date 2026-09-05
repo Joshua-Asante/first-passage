@@ -148,11 +148,15 @@ def firm_kwargs(
       * ``trailing_locking`` -> trailing_dd_pct + dd_lock_offset_usd (engine-
                                 faithful fixed-$ EOD trail with lock; Tradeify/MFFU)
 
-    ``account`` overrides the tier's ``starting_balance``. Every living prop
-    tier must declare ``starting_balance`` — there is no $200K fallback
-    (``BASELINE_BALANCE`` retired Phase 4). Pass ``account=`` explicitly for
-    research bases that differ from the tier. ``consistency`` sets the eval
-    consistency fraction (Run-2 gating); None runs consistency-off (Run-1).
+    ``account`` is the evaluation's original starting basis and overrides the
+    tier's ``starting_balance``. It is never a used account's current balance.
+    Every living prop tier must declare ``starting_balance`` — there is no $200K
+    fallback (``BASELINE_BALANCE`` retired Phase 4). Pass ``account=`` explicitly
+    for research bases that differ from the tier, then pass any used-account
+    ``EvaluationState`` separately to ``simulate_path`` or ``run_seed``. The
+    snapshot's ``original_basis`` must match this value. ``consistency`` remains
+    an explicit existing argument: it sets the eval consistency fraction (Run-2
+    gating); None runs consistency-off (Run-1).
 
     ``allow_unsourced_inactivity`` is the explicit override for an inactivity-ON
     run against a tier whose ``inactivity_rule_sourced`` is False. **Dormant by
