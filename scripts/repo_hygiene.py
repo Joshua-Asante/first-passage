@@ -213,8 +213,11 @@ def build_report() -> HygieneReport:
 
     report.orphan_worktree_dirs = _orphan_dirs(report.worktrees)
 
-    gh_probe = _run(["gh", "--version"])
-    report.gh_available = gh_probe.returncode == 0
+    try:
+        gh_probe = _run(["gh", "--version"])
+        report.gh_available = gh_probe.returncode == 0
+    except FileNotFoundError:
+        report.gh_available = False
 
     by_name: dict[str, BranchRow] = {}
     for row in _merged_via_git():
