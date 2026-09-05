@@ -54,16 +54,29 @@ If a worker hits an ambiguity not listed here, return `NEEDS_CONTEXT` with the q
 ## §0.9 — Phase-0 staleness check (run before touching anything)
 
 ```bash
-git fetch origin && git log --oneline origin/main --since="24 hours ago"
+# fail CLOSED on a stale main: the pull-ref fetch further down carries an explicit refspec, so it does NOT
+# refresh origin/main — without this guard the overlap checks can pass against a stale main.
+if ! git fetch origin; then echo "STOP: cannot refresh origin/main — treat as BLOCKED, touch nothing"; return 1 2>/dev/null || exit 1; fi
+git log --oneline origin/main --since="24 hours ago"
 # A — no-op condition: the ACCEPTANCE SUITE passes on the current checkout — never the symbol alone: a stub or
 #     partial calculator is conformed per §2-A, not declared DONE. On a §6b fix round this is never a no-op (the
 #     symbol is on your own branch by construction): go straight to the round's scope and acceptance column.
-if [ -f scripts/certification_power.py ] && [ -f tests/test_certification_power.py ] \
-   && python -m pytest -q tests/test_certification_power.py \
-   && python scripts/check_repo_map_scripts_table.py --check \
-   && python scripts/certification_power.py --true-rate 0.03 --power 0.80 --limbs 3 --dependence independent | grep -q '^n=950 ' \
-   && python scripts/certification_power.py --true-rate 0.03 --power 0.80 --limbs 3 --dependence frechet | grep -q '^n=970 ' \
-   && python scripts/certification_power.py --n 630 --true-rate 0.03 --limbs 3 | grep -q '^n=630 per_limb=0.803 joint_independent=0.518 joint_frechet=0.409 '; then
+#     Each CLI pin captures the calculator's OWN status before its output is tested: `cmd | grep -q` takes the
+#     pipeline's status from grep, so a partial calculator that prints the pinned prefix and then exits nonzero
+#     would satisfy every probe and produce a false DONE.
+A_OK=1
+[ -f scripts/certification_power.py ] && [ -f tests/test_certification_power.py ] || A_OK=0
+if [ "$A_OK" = 1 ]; then
+  python -m pytest -q tests/test_certification_power.py || A_OK=0
+  python scripts/check_repo_map_scripts_table.py --check || A_OK=0
+  OUT=$(python scripts/certification_power.py --true-rate 0.03 --power 0.80 --limbs 3 --dependence independent) || A_OK=0
+  printf '%s\n' "$OUT" | grep -q '^n=950 ' || A_OK=0
+  OUT=$(python scripts/certification_power.py --true-rate 0.03 --power 0.80 --limbs 3 --dependence frechet) || A_OK=0
+  printf '%s\n' "$OUT" | grep -q '^n=970 ' || A_OK=0
+  OUT=$(python scripts/certification_power.py --n 630 --true-rate 0.03 --limbs 3) || A_OK=0
+  printf '%s\n' "$OUT" | grep -q '^n=630 per_limb=0.803 joint_independent=0.518 joint_frechet=0.409 ' || A_OK=0
+fi
+if [ "$A_OK" = 1 ]; then
   echo "A: the §2 suite already passes here -> return DONE citing the commit that landed it"
 else
   echo "A: absent or partial -> proceed per §2-A (conform an existing file to §2 exactly; never return DONE on a stub)"

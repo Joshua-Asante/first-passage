@@ -315,3 +315,34 @@ def test_added_line_split_by_a_non_lf_control_character_is_scanned(repo: tuple[P
     assert proc.returncode == 2, proc.stdout
     assert "HIT class=VALUE" in proc.stdout and "file=vt.txt line=1" in proc.stdout
 
+
+@needs_git
+def test_merge_resolution_caught_when_parents_disagree_on_binaryness(repo: tuple[Path, Path, Path]) -> None:
+    """A path binary in one parent and text in the other must not fall between them.
+
+    Intersecting each signal independently drops the text evidence (present only
+    against the text parent) and the binary evidence (present only against the
+    binary parent), reporting the resolution as clean.
+    """
+    root, snap, export = repo
+    _git(root, "branch", "feature")
+    (root / "f.dat").write_bytes(b"bin\x00\x00data\n")
+    _git(root, "add", "f.dat")
+    _git(root, "commit", "-q", "-m", "mainline binary")
+    _git(root, "checkout", "-q", "feature")
+    (root / "f.dat").write_text("harmless text\n", encoding="utf-8")
+    _git(root, "add", "f.dat")
+    _git(root, "commit", "-q", "-m", "feature text")
+    merge = _git_try(root, "merge", "--no-edit", "main")
+    assert merge.returncode != 0, "the add/add merge was expected to conflict"
+    (root / "f.dat").write_text("resolved Aggressive\n", encoding="utf-8")
+    _git(root, "add", "f.dat")
+    _git(root, "commit", "-q", "--no-edit")
+    proc = subprocess.run(
+        [sys.executable, str(_SCRIPT), "--repo", str(root), "--range", "main..HEAD",
+         "--json", str(snap), "--csv", str(export)],
+        capture_output=True, text=True,
+    )
+    assert proc.returncode == 2, proc.stdout
+    assert "HIT class=VALUE" in proc.stdout and "file=f.dat" in proc.stdout
+

@@ -9,12 +9,15 @@ appear in a FILENAME) and carries a short digest of the true path instead, so
 the location survives for local remediation while the scanner's own output —
 which the worker pastes into the PR body — stays publishable.
 
-What each commit is compared against: EVERY parent, keeping only what differs
-from ALL of them. For an ordinary commit that is its diff against its parent.
-For a merge it is the content the merge itself introduced — the conflict
-resolution — so a merge of ``origin/main`` is audited without re-reporting
-everything ``main`` brought in (which would otherwise stop the packet on the
-repository's own tracked images).
+What each commit is compared against: EVERY parent. A merge's own contribution
+is the set of PATHS that differ from ALL parents — its conflict resolution — so
+a merge of ``origin/main`` is audited without re-reporting everything ``main``
+brought in (which would otherwise stop the packet on the repository's own
+tracked images). Evidence for those paths is then UNIONed across parents, never
+intersected per signal: a path can be binary in one parent and text in another,
+and intersecting each signal on its own would drop the text evidence against one
+parent and the binary evidence against the other, reporting a resolved path as
+clean. An ordinary one-parent commit is simply its diff against that parent.
 
 Git runs with ``core.quotePath=false`` and path lists are read NUL-delimited,
 so a non-ASCII filename cannot slip past a prefix or suffix test.
@@ -261,10 +264,34 @@ def _redact(text: str, patterns: dict[str, re.Pattern[str]]) -> tuple[str, bool]
     return out, out != text
 
 
-def _across_parents(commit: str, cwd: Path, read):
-    """Intersect a per-parent read over every parent: what differs from ALL of them."""
-    results = [read(parent) for parent in _parents(commit, cwd)]
-    return set.intersection(*results) if results else set()
+def _changed_vs(base: str, commit: str, cwd: Path) -> set[str]:
+    """Every path whose content differs from base (any status; rename/copy destinations)."""
+    fields = _z_fields(
+        _git(["diff", "--find-renames", "--find-copies", "--name-status", "-z", base, commit], cwd)
+    )
+    paths: set[str] = set()
+    index = 0
+    while index < len(fields):
+        if fields[index].startswith(("R", "C")):
+            if index + 2 < len(fields):
+                paths.add(fields[index + 2])
+            index += 3
+        else:
+            if index + 1 < len(fields):
+                paths.add(fields[index + 1])
+            index += 2
+    return paths
+
+
+def _resolved_paths(parents: list[str], commit: str, cwd: Path) -> set[str] | None:
+    """Paths a MERGE itself contributed: those differing from every parent.
+
+    None for a one-parent commit, where no filtering applies and every hit
+    against that single parent stands (filtering there could only drop evidence).
+    """
+    if len(parents) < 2:
+        return None
+    return set.intersection(*[_changed_vs(parent, commit, cwd) for parent in parents])
 
 
 # ------------------------------------------------------------------------- scanning
@@ -272,7 +299,14 @@ def _across_parents(commit: str, cwd: Path, read):
 
 def scan_commit(commit: str, cwd: Path, patterns: dict[str, re.Pattern[str]]) -> tuple[list[tuple[str, str, str, int]], int, int]:
     """Content and commit-message hits for one commit; hits carry no token."""
-    content = _across_parents(commit, cwd, lambda base: _content_vs(base, commit, cwd, patterns))
+    parents = _parents(commit, cwd)
+    resolved = _resolved_paths(parents, commit, cwd)
+    content: set[tuple[str, str, int]] = set()
+    for parent in parents:
+        content |= {
+            hit for hit in _content_vs(parent, commit, cwd, patterns)
+            if resolved is None or hit[1] in resolved
+        }
     hits = [(name, commit, file, line) for name, file, line in sorted(content)]
     message_hits = 0
     for number, line in enumerate(_git(["log", "-1", "--format=%B", commit], cwd).split("\n"), start=1):
@@ -296,14 +330,23 @@ def scan_paths(
         for path in _z_fields(_git(["ls-tree", "-r", "--name-only", "-z", commit], cwd)):
             if any(path.startswith(prefix) for prefix in prefixes):
                 hits.append(("PATH", commit, path, 0))
-    introduced = _across_parents(commit, cwd, lambda base: _introduced_vs(base, commit, cwd))
+    parents = _parents(commit, cwd)
+    resolved = _resolved_paths(parents, commit, cwd)
+    introduced: set[str] = set()
+    binary: set[str] = set()
+    for parent in parents:
+        introduced |= _introduced_vs(parent, commit, cwd)
+        binary |= _binary_vs(parent, commit, cwd)
+    if resolved is not None:
+        introduced &= resolved
+        binary &= resolved
     for path in sorted(introduced):
         if any(path.endswith(suffix) for suffix in suffixes):
             hits.append(("PATH", commit, path, 0))
         for name, pattern in patterns.items():
             if pattern.search(path):
                 hits.append(("NAME", commit, path, 0))
-    for path in sorted(_across_parents(commit, cwd, lambda base: _binary_vs(base, commit, cwd))):
+    for path in sorted(binary):
         hits.append(("BINARY", commit, path, 0))
     return hits
 
