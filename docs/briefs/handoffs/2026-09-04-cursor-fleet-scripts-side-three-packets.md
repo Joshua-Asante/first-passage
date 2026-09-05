@@ -55,8 +55,19 @@ If a worker hits an ambiguity not listed here, return `NEEDS_CONTEXT` with the q
 
 ```bash
 git fetch origin && git log --oneline origin/main --since="24 hours ago"
-# A — no-op condition: the calculator already exists (probe the SYMBOL, not a keyword)
-grep -rln "def max_certifying_busts" scripts/ lab/ 2>/dev/null && echo "A: EXISTS -> return DONE citing the commit" || echo "A: absent, proceed"
+# A — no-op condition: the ACCEPTANCE SUITE passes on the current checkout — never the symbol alone: a stub or
+#     partial calculator is conformed per §2-A, not declared DONE. On a §6b fix round this is never a no-op (the
+#     symbol is on your own branch by construction): go straight to the round's scope and acceptance column.
+if [ -f scripts/certification_power.py ] && [ -f tests/test_certification_power.py ] \
+   && python -m pytest -q tests/test_certification_power.py \
+   && python scripts/check_repo_map_scripts_table.py --check \
+   && python scripts/certification_power.py --true-rate 0.03 --power 0.80 --limbs 3 --dependence independent | grep -q '^n=950 ' \
+   && python scripts/certification_power.py --true-rate 0.03 --power 0.80 --limbs 3 --dependence frechet | grep -q '^n=970 ' \
+   && python scripts/certification_power.py --n 630 --true-rate 0.03 --limbs 3 | grep -q '^n=630 per_limb=0.803 joint_independent=0.518 joint_frechet=0.409 '; then
+  echo "A: the §2 suite already passes here -> return DONE citing the commit that landed it"
+else
+  echo "A: absent or partial -> proceed per §2-A (conform an existing file to §2 exactly; never return DONE on a stub)"
+fi
 # C — no-op condition: the gh probe is guarded INSIDE build_report(). A guard in _run is the §5 forbidden move
 #     (the first return 0e7ab25 had exactly that), so probe the LOCATION, never the exception name alone:
 RUN_GUARD=$(sed -n '/^def _run/,/^def _git/p' scripts/repo_hygiene.py | grep -c 'except FileNotFoundError')
@@ -240,21 +251,26 @@ packet's §10 block on the returned head.
 
 ```bash
 git fetch origin
-# ---- Packet A (worktree at origin/cursor/scripts-side-2026-09-04-p1) ----
-git diff --name-only origin/main...origin/cursor/scripts-side-2026-09-04-p1   # expect exactly the 3 A files
-python -m pytest -q tests/test_certification_power.py
-python scripts/check_repo_map_scripts_table.py --check                         # exit 0
-python scripts/certification_power.py --true-rate 0.03 --power 0.80 --limbs 3 --dependence independent   # n=950
-python scripts/certification_power.py --true-rate 0.03 --power 0.80 --limbs 3 --dependence frechet       # n=970
-python scripts/certification_power.py --n 630 --true-rate 0.03 --limbs 3       # per_limb=0.803 joint_independent=0.518 joint_frechet=0.409
-python scripts/gate_manifest.py --tier check
-# ---- Packet C (worktree at origin/cursor/scripts-side-2026-09-04-p3) ----
-git diff --name-only origin/main...origin/cursor/scripts-side-2026-09-04-p3   # expect exactly the 2 C files
-python -m pytest -q tests/test_repo_hygiene.py
-python scripts/repo_hygiene.py > "${TMPDIR:-/tmp}/rh.txt"; echo "rc=$? (must be 0)"; head -5 "${TMPDIR:-/tmp}/rh.txt"   # runs on a host without gh; no pipe — a pipe hides a crash
-python scripts/gate_manifest.py --tier check
-# ---- Both: not wired into any gate ----
-grep -n "certification_power\|test_repo_hygiene" scripts/gates.yml Makefile; echo "expect no match"
+WT="${TMPDIR:-/tmp}/fleet-audit"; rm -rf "$WT"; mkdir -p "$WT"; git worktree prune
+# ---- Packet A: a detached worktree AT THE RETURNED HEAD; every line runs inside it, none in this checkout ----
+git worktree add --detach "$WT/p1" origin/cursor/scripts-side-2026-09-04-p1
+git -C "$WT/p1" diff --name-only origin/main...HEAD                                    # expect exactly the 3 A files
+(cd "$WT/p1" && python -m pytest -q tests/test_certification_power.py)
+(cd "$WT/p1" && python scripts/check_repo_map_scripts_table.py --check)                 # exit 0
+(cd "$WT/p1" && python scripts/certification_power.py --true-rate 0.03 --power 0.80 --limbs 3 --dependence independent)   # n=950
+(cd "$WT/p1" && python scripts/certification_power.py --true-rate 0.03 --power 0.80 --limbs 3 --dependence frechet)       # n=970
+(cd "$WT/p1" && python scripts/certification_power.py --n 630 --true-rate 0.03 --limbs 3)   # per_limb=0.803 joint_independent=0.518 joint_frechet=0.409
+(cd "$WT/p1" && python scripts/gate_manifest.py --tier check)
+(cd "$WT/p1" && grep -n "certification_power" scripts/gates.yml Makefile; echo "expect no match — not wired into any gate")
+git worktree remove --force "$WT/p1"
+# ---- Packet C: same shape, its own worktree ----
+git worktree add --detach "$WT/p3" origin/cursor/scripts-side-2026-09-04-p3
+git -C "$WT/p3" diff --name-only origin/main...HEAD                                    # expect exactly the 2 C files
+(cd "$WT/p3" && python -m pytest -q tests/test_repo_hygiene.py)
+(cd "$WT/p3" && python scripts/repo_hygiene.py > "$WT/rh.txt"; echo "rc=$? (must be 0)"; head -5 "$WT/rh.txt")   # runs on a host without gh; no pipe — a pipe hides a crash
+(cd "$WT/p3" && python scripts/gate_manifest.py --tier check)
+(cd "$WT/p3" && grep -n "test_repo_hygiene" scripts/gates.yml Makefile; echo "expect no match — not wired into any gate")
+git worktree remove --force "$WT/p3"
 ```
 
 ## Verification (parent-side, before dispatch)
