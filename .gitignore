@@ -55,14 +55,14 @@ Thumbs.db
 # Removed from tracking 2026-07-15; ignore in case a local agent regenerates it.
 telemetry.jsonl
 
-# Codex agent-harness mirror — backed out 2026-07-15 (operator decision: Codex
-# is NOT entering the workflow; the stack stays Claude + Cursor only). AGENTS.md
-# (Codex's CLAUDE.md analogue), .agents/ (skill mirror), and .codex/ rode into
-# e6ec1ff as a side effect of a concurrent session. Gitignored so a future
-# agent sync cannot silently re-commit them; regenerate locally only if Codex
-# is ever adopted. Canonical skill source stays .claude/skills/.
+# Codex agent-harness files are local-only by default. The explicitly allowlisted
+# skill links below expose selected canonical .claude/skills to Codex without
+# allowing an agent sync to silently commit the rest of the harness.
 AGENTS.md
-.agents/
+.agents/*
+!.agents/skills/
+.agents/skills/*
+!.agents/skills/babysit
 .codex/
 
 # Deep-research leftovers — copyrighted source papers / raw text dumps pulled in
