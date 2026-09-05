@@ -3,7 +3,11 @@
 
 Needles are built IN MEMORY from the private files this script is pointed at
 and are never written anywhere; nothing on disk is touched. The scan reports
-matches by LOCATION (class, commit, file, line) — never a matched token.
+matches by LOCATION (class, commit, file, line) — never a matched token. A
+reported PATH is itself redacted where a needle matched it (a private value can
+appear in a FILENAME) and carries a short digest of the true path instead, so
+the location survives for local remediation while the scanner's own output —
+which the worker pastes into the PR body — stays publishable.
 
 What each commit is compared against: EVERY parent, keeping only what differs
 from ALL of them. For an ordinary commit that is its diff against its parent.
@@ -44,6 +48,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import re
 import subprocess
@@ -171,7 +176,10 @@ def _content_vs(base: str, commit: str, cwd: Path, patterns: dict[str, re.Patter
     current_file = "<unknown>"
     new_line = 0
     in_hunk = False
-    for raw in _git(["diff", "--no-color", base, commit], cwd).splitlines():
+    # split on "\n" ONLY: git delimits patch records with LF, while str.splitlines()
+    # also breaks on \v, \f, \r, \x1c-\x1e, \x85, \u2028 and \u2029 — a needle after such a
+    # byte would land in a fragment with no "+" marker and never be scanned.
+    for raw in _git(["diff", "--no-color", base, commit], cwd).split("\n"):
         if raw.startswith("diff --git "):
             in_hunk = False
             current_file = "<unknown>"
@@ -245,6 +253,14 @@ def _binary_vs(base: str, commit: str, cwd: Path) -> set[str]:
     return paths
 
 
+def _redact(text: str, patterns: dict[str, re.Pattern[str]]) -> tuple[str, bool]:
+    """Replace every needle match in a path; report whether anything was replaced."""
+    out = text
+    for pattern in patterns.values():
+        out = pattern.sub("<redacted>", out)
+    return out, out != text
+
+
 def _across_parents(commit: str, cwd: Path, read):
     """Intersect a per-parent read over every parent: what differs from ALL of them."""
     results = [read(parent) for parent in _parents(commit, cwd)]
@@ -259,7 +275,7 @@ def scan_commit(commit: str, cwd: Path, patterns: dict[str, re.Pattern[str]]) ->
     content = _across_parents(commit, cwd, lambda base: _content_vs(base, commit, cwd, patterns))
     hits = [(name, commit, file, line) for name, file, line in sorted(content)]
     message_hits = 0
-    for number, line in enumerate(_git(["log", "-1", "--format=%B", commit], cwd).splitlines(), start=1):
+    for number, line in enumerate(_git(["log", "-1", "--format=%B", commit], cwd).split("\n"), start=1):
         for name, pattern in patterns.items():
             if pattern.search(line):
                 hits.append((name, commit, "<commit message>", number))
@@ -351,7 +367,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"SCAN result=ERROR reason={exc}")
         return 4
     for name, commit, file, line in all_hits:
-        print(f"HIT class={name} commit={commit[:8]} file={file} line={line}")
+        shown, redacted = _redact(file, patterns)
+        digest = f" path_sha256={hashlib.sha256(file.encode('utf-8')).hexdigest()[:12]}" if redacted else ""
+        print(f"HIT class={name} commit={commit[:8]} file={shown} line={line}{digest}")
     if all_hits:
         print(f"SCAN result=HITS count={len(all_hits)} commits={len(commits)}")
         return 2

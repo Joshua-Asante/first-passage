@@ -265,8 +265,13 @@ def test_needle_in_a_filename_is_caught(repo: tuple[Path, Path, Path]) -> None:
     _git(root, "commit", "-q", "-m", "value as a filename")
     proc = _run(root, "--json", str(snap), "--csv", str(export))
     assert proc.returncode == 2, proc.stdout
-    assert "HIT class=NAME" in proc.stdout and "file=Aggressive.txt" in proc.stdout
-    assert "Aggressive.txt" in proc.stdout and "\nAggressive" not in proc.stdout
+    assert "HIT class=NAME" in proc.stdout
+    # the filename carries the private token, so the reported path is redacted and
+    # a digest of the true path stands in for it — the scanner's output is pasted
+    # into the PR body, so printing the name verbatim would publish the value
+    assert "file=<redacted>.txt" in proc.stdout
+    assert "path_sha256=" in proc.stdout
+    assert "Aggressive" not in proc.stdout
 
 
 @needs_git
@@ -293,4 +298,20 @@ def test_rename_to_a_forbidden_suffix_is_caught(repo: tuple[Path, Path, Path]) -
     proc = _run(root, "--json", str(snap), "--csv", str(export), "--forbid-suffix", ".csv")
     assert proc.returncode == 2, proc.stdout
     assert "HIT class=PATH" in proc.stdout and "file=captured.csv" in proc.stdout
+
+
+@needs_git
+def test_added_line_split_by_a_non_lf_control_character_is_scanned(repo: tuple[Path, Path, Path]) -> None:
+    """git delimits patch records with LF; str.splitlines() breaks on much more.
+
+    A needle after a lone vertical tab would land in a fragment carrying no '+'
+    marker and never be scanned.
+    """
+    root, snap, export = repo
+    (root / "vt.txt").write_text("safe\vAggressive\n", encoding="utf-8")
+    _git(root, "add", "vt.txt")
+    _git(root, "commit", "-q", "-m", "control character before the needle")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2, proc.stdout
+    assert "HIT class=VALUE" in proc.stdout and "file=vt.txt line=1" in proc.stdout
 

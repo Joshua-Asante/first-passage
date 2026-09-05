@@ -280,9 +280,14 @@ A_FILES=$(git -C "$WT/p1" diff --name-only origin/main...HEAD | sort | tr '\n' '
 [ "$A_FILES" = "REPO_MAP.md scripts/certification_power.py tests/test_certification_power.py " ] || RC=1   # exactly the 3 A files
 (cd "$WT/p1" && python -m pytest -q tests/test_certification_power.py) || RC=1
 (cd "$WT/p1" && python scripts/check_repo_map_scripts_table.py --check) || RC=1
-(cd "$WT/p1" && python scripts/certification_power.py --true-rate 0.03 --power 0.80 --limbs 3 --dependence independent | tee /dev/stderr | grep -q '^n=950 ') || RC=1
-(cd "$WT/p1" && python scripts/certification_power.py --true-rate 0.03 --power 0.80 --limbs 3 --dependence frechet | tee /dev/stderr | grep -q '^n=970 ') || RC=1
-(cd "$WT/p1" && python scripts/certification_power.py --n 630 --true-rate 0.03 --limbs 3 | tee /dev/stderr | grep -q '^n=630 per_limb=0.803 joint_independent=0.518 joint_frechet=0.409 ') || RC=1
+# a pipeline's status is the LAST command's, so `cmd | grep -q` passes even when cmd crashes after printing:
+# capture the calculator's own status first, then test its output (no `set -o pipefail` — it would persist in a pasted shell)
+OUT=$(cd "$WT/p1" && python scripts/certification_power.py --true-rate 0.03 --power 0.80 --limbs 3 --dependence independent) || RC=1
+printf '%s\n' "$OUT"; printf '%s\n' "$OUT" | grep -q '^n=950 ' || RC=1
+OUT=$(cd "$WT/p1" && python scripts/certification_power.py --true-rate 0.03 --power 0.80 --limbs 3 --dependence frechet) || RC=1
+printf '%s\n' "$OUT"; printf '%s\n' "$OUT" | grep -q '^n=970 ' || RC=1
+OUT=$(cd "$WT/p1" && python scripts/certification_power.py --n 630 --true-rate 0.03 --limbs 3) || RC=1
+printf '%s\n' "$OUT"; printf '%s\n' "$OUT" | grep -q '^n=630 per_limb=0.803 joint_independent=0.518 joint_frechet=0.409 ' || RC=1
 (cd "$WT/p1" && python scripts/gate_manifest.py --tier check) || RC=1
 (cd "$WT/p1" && ! grep -n "certification_power" scripts/gates.yml Makefile) || RC=1   # not wired into any gate
 git worktree remove --force "$WT/p1"
