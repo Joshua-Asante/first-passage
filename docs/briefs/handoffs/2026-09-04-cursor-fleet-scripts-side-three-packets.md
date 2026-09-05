@@ -96,13 +96,17 @@ elif [ "$C_SCOPE" = "SCOPED" ] && [ -f tests/test_repo_hygiene.py ] && python -m
 else
   echo "C: absent, partial or unscoped ($C_SCOPE) — proceed per §2-C"   # the branches are exclusive; DONE needs the tests
 fi
-# ALL — no OPEN PR may touch your footprint. `git log` cannot see open PRs; enumerate them:
+# ALL — no OTHER open PR may touch your footprint. `git log` cannot see open PRs; enumerate them:
 # default --limit is 30, hence the explicit 1000; the if-form keeps the fallback off a continued line
 if ! PRS=$(gh pr list --state open --limit 1000 --json number -q '.[].number' 2>/dev/null); then
   PRS="${OPEN_PRS:?no gh — set OPEN_PRS to the COMPLETE operator-supplied list of open PR numbers}"
 fi
 git fetch origin '+refs/pull/*/head:refs/remotes/pr/*'
-for n in $PRS; do echo "== PR #$n =="; git diff --name-only origin/main...pr/$n; done   # every PR the query returned, never a hard-coded set
+MINE=$(git rev-parse --verify -q "origin/$(git rev-parse --abbrev-ref HEAD)" || true)   # pushed tip of THIS branch: on a §6b fix round that is the packet's own open PR, which touches its own footprint by construction; absent on an initial dispatch
+for n in $PRS; do
+  if [ -n "$MINE" ] && [ "$(git rev-parse "pr/$n")" = "$MINE" ]; then echo "== PR #$n == this branch's own PR — skipped"; continue; fi
+  echo "== PR #$n =="; git diff --name-only origin/main...pr/$n
+done   # every OTHER PR the query returned, never a hard-coded set
 # Expected: none of the listed files is in your packet's §2 footprint. If one is, STOP and return BLOCKED naming it.
 # (2026-09-04 result: #297 touched REPO_MAP.md and blocked A until it merged as 81b35d0; re-run the probe — it should now be clean for both.)
 ```
@@ -266,25 +270,29 @@ packet's §10 block on the returned head.
 ```bash
 git fetch origin
 WT="${TMPDIR:-/tmp}/fleet-audit"; rm -rf "$WT"; mkdir -p "$WT"; git worktree prune
+RC=0   # every REQUIRED command feeds RC and the last line returns it; no set -e (pasted into an interactive shell it would kill the shell)
 # ---- Packet A: a detached worktree AT THE RETURNED HEAD; every line runs inside it, none in this checkout ----
-git worktree add --detach "$WT/p1" origin/cursor/scripts-side-2026-09-04-p1
-git -C "$WT/p1" diff --name-only origin/main...HEAD                                    # expect exactly the 3 A files
-(cd "$WT/p1" && python -m pytest -q tests/test_certification_power.py)
-(cd "$WT/p1" && python scripts/check_repo_map_scripts_table.py --check)                 # exit 0
-(cd "$WT/p1" && python scripts/certification_power.py --true-rate 0.03 --power 0.80 --limbs 3 --dependence independent)   # n=950
-(cd "$WT/p1" && python scripts/certification_power.py --true-rate 0.03 --power 0.80 --limbs 3 --dependence frechet)       # n=970
-(cd "$WT/p1" && python scripts/certification_power.py --n 630 --true-rate 0.03 --limbs 3)   # per_limb=0.803 joint_independent=0.518 joint_frechet=0.409
-(cd "$WT/p1" && python scripts/gate_manifest.py --tier check)
-(cd "$WT/p1" && grep -n "certification_power" scripts/gates.yml Makefile; echo "expect no match — not wired into any gate")
+git worktree add --detach "$WT/p1" origin/cursor/scripts-side-2026-09-04-p1 || RC=1
+A_FILES=$(git -C "$WT/p1" diff --name-only origin/main...HEAD | sort | tr '\n' ' '); echo "A files: $A_FILES"
+[ "$A_FILES" = "REPO_MAP.md scripts/certification_power.py tests/test_certification_power.py " ] || RC=1   # exactly the 3 A files
+(cd "$WT/p1" && python -m pytest -q tests/test_certification_power.py) || RC=1
+(cd "$WT/p1" && python scripts/check_repo_map_scripts_table.py --check) || RC=1
+(cd "$WT/p1" && python scripts/certification_power.py --true-rate 0.03 --power 0.80 --limbs 3 --dependence independent | tee /dev/stderr | grep -q '^n=950 ') || RC=1
+(cd "$WT/p1" && python scripts/certification_power.py --true-rate 0.03 --power 0.80 --limbs 3 --dependence frechet | tee /dev/stderr | grep -q '^n=970 ') || RC=1
+(cd "$WT/p1" && python scripts/certification_power.py --n 630 --true-rate 0.03 --limbs 3 | tee /dev/stderr | grep -q '^n=630 per_limb=0.803 joint_independent=0.518 joint_frechet=0.409 ') || RC=1
+(cd "$WT/p1" && python scripts/gate_manifest.py --tier check) || RC=1
+(cd "$WT/p1" && ! grep -n "certification_power" scripts/gates.yml Makefile) || RC=1   # not wired into any gate
 git worktree remove --force "$WT/p1"
 # ---- Packet C: same shape, its own worktree ----
-git worktree add --detach "$WT/p3" origin/cursor/scripts-side-2026-09-04-p3
-git -C "$WT/p3" diff --name-only origin/main...HEAD                                    # expect exactly the 2 C files
-(cd "$WT/p3" && python -m pytest -q tests/test_repo_hygiene.py)
-(cd "$WT/p3" && python scripts/repo_hygiene.py > "$WT/rh.txt"; rc=$?; head -5 "$WT/rh.txt"; echo "rc=$rc (must be 0)"; [ "$rc" -eq 0 ])   # gh-less host; the subshell returns the SCRIPT's status: no pipe (hides a crash) and head is not last (its status would replace the script's)
-(cd "$WT/p3" && python scripts/gate_manifest.py --tier check)
-(cd "$WT/p3" && grep -n "test_repo_hygiene" scripts/gates.yml Makefile; echo "expect no match — not wired into any gate")
+git worktree add --detach "$WT/p3" origin/cursor/scripts-side-2026-09-04-p3 || RC=1
+C_FILES=$(git -C "$WT/p3" diff --name-only origin/main...HEAD | sort | tr '\n' ' '); echo "C files: $C_FILES"
+[ "$C_FILES" = "scripts/repo_hygiene.py tests/test_repo_hygiene.py " ] || RC=1   # exactly the 2 C files
+(cd "$WT/p3" && python -m pytest -q tests/test_repo_hygiene.py) || RC=1
+(cd "$WT/p3" && python scripts/repo_hygiene.py > "$WT/rh.txt"; rc=$?; head -5 "$WT/rh.txt"; echo "rc=$rc (must be 0)"; [ "$rc" -eq 0 ]) || RC=1   # gh-less host; the subshell returns the SCRIPT's status: no pipe (hides a crash) and head is not last
+(cd "$WT/p3" && python scripts/gate_manifest.py --tier check) || RC=1
+(cd "$WT/p3" && ! grep -n "test_repo_hygiene" scripts/gates.yml Makefile) || RC=1   # not wired into any gate
 git worktree remove --force "$WT/p3"
+echo "AUDIT rc=$RC (0 = every required command passed)"; [ "$RC" -eq 0 ]
 ```
 
 ## Verification (parent-side, before dispatch)
