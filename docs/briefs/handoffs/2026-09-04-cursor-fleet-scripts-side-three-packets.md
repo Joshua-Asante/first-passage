@@ -291,7 +291,11 @@ printf '%s\n' "$OUT"; printf '%s\n' "$OUT" | grep -q '^n=630 per_limb=0.803 join
 (cd "$WT/p1" && python scripts/gate_manifest.py --tier check) || RC=1
 (cd "$WT/p1" && ! grep -n "certification_power" scripts/gates.yml Makefile) || RC=1   # not wired into any gate
 git worktree remove --force "$WT/p1"
-# ---- Packet C: same shape, its own worktree ----
+# ---- Packet C: SPENT — #303 merged as 6b5bc96 (2026-09-05), so this branch's diff against main is empty by
+#      construction and the block can no longer establish anything. Kept for the record; it skips itself. ----
+if [ -z "$(git diff --name-only origin/main...origin/cursor/scripts-side-2026-09-04-p3)" ]; then
+  echo "C: merged into main — block spent, skipped"
+else
 git worktree add --detach "$WT/p3" origin/cursor/scripts-side-2026-09-04-p3 || RC=1
 C_FILES=$(git -C "$WT/p3" diff --name-only origin/main...HEAD | sort | tr '\n' ' '); echo "C files: $C_FILES"
 [ "$C_FILES" = "scripts/repo_hygiene.py tests/test_repo_hygiene.py " ] || RC=1   # exactly the 2 C files
@@ -300,6 +304,7 @@ C_FILES=$(git -C "$WT/p3" diff --name-only origin/main...HEAD | sort | tr '\n' '
 (cd "$WT/p3" && python scripts/gate_manifest.py --tier check) || RC=1
 (cd "$WT/p3" && ! grep -n "test_repo_hygiene" scripts/gates.yml Makefile) || RC=1   # not wired into any gate
 git worktree remove --force "$WT/p3"
+fi
 echo "AUDIT rc=$RC (0 = every required command passed)"; [ "$RC" -eq 0 ]
 ```
 
