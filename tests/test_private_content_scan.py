@@ -1104,3 +1104,42 @@ def test_the_drop_report_never_names_a_key(repo: tuple[Path, Path, Path], tmp_pa
     proc = _run(root, "--json", str(snapshot), "--csv", str(export))
     assert "no VALUE needle" in proc.stdout
     assert "acct_tag" not in proc.stdout
+
+@needs_git
+def test_commit_identity_fields_are_scanned(repo: tuple[Path, Path, Path]) -> None:
+    """Author and committer live in the commit object and are published by the push.
+
+    ``%B`` returns only the message body, so a private value in an identity
+    field scanned CLEAN.
+    """
+    root, snap, export = repo
+    (root / "ok.txt").write_text("harmless\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    env = _env()
+    env["GIT_AUTHOR_NAME"] = "Aggressive"
+    subprocess.run(
+        ["git", "commit", "-q", "-m", "harmless message"], cwd=root, check=True, env=env
+    )
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2
+    assert "<commit identity>" in proc.stdout
+
+
+@needs_git
+def test_a_tag_predating_the_range_is_not_reported(repo: tuple[Path, Path, Path]) -> None:
+    """Enumerating every local tag made a normal clone cry wolf.
+
+    A tag reachable from the range's base predates the push and is not something
+    the push introduces; one on the pushed commit still is.
+    """
+    root, snap, export = repo
+    _git(root, "tag", "-a", "old-release", "-m", "notes mentioning Aggressive")
+    _git(root, "checkout", "-q", "-b", "feat")
+    (root / "ok.txt").write_text("harmless\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "clean work")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 0, proc.stdout
+    _git(root, "tag", "-a", "v-new", "-m", "release notes Aggressive")
+    after = _run(root, "--json", str(snap), "--csv", str(export))
+    assert after.returncode == 2 and "refs/tags/v-new" in after.stdout

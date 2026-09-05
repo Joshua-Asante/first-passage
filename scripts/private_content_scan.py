@@ -654,6 +654,18 @@ def scan_commit(commit: str, cwd: Path, patterns: dict[str, re.Pattern[str]]) ->
             if pattern.search(line):
                 hits.append((name, commit, "<commit message>", number))
                 message_hits += 1
+    # The IDENTITY headers are part of the commit object and are published by the
+    # push exactly like its message, but ``%B`` returns only the body -- so an
+    # author or committer name carrying a private value scanned CLEAN.
+    identity = _git(
+        ["log", "-1", "--format=%an%n%ae%n%cn%n%ce", commit], cwd
+    ).split("\n")
+    for number, line in enumerate(identity, start=1):
+        for name, pattern in patterns.items():
+            if pattern.search(line):
+                hits.append((name, commit, "<commit identity>", number))
+                message_hits += 1
+                break
     return hits, len(content), message_hits
 
 
@@ -772,8 +784,37 @@ def scan_refs(
         tags = [tag for tag in _git(["tag", "--list"], cwd).split("\n") if tag.strip()]
     except RuntimeError:
         return hits
+    # Only tags this push could PUBLISH. Enumerating every local tag made an
+    # unrelated, already-published one turn every otherwise-clean branch into
+    # HITS -- a control that cries wolf on a normal clone is one nobody runs.
+    # "--follow-tags" sends tags that are MISSING on the remote and reachable
+    # from what is being pushed, so those are the two filters applied here.
+    published: set[str] = set()
+    try:
+        listing = _git(["ls-remote", "--tags", "origin"], cwd)
+        for row in listing.split("\n"):
+            if "\t" in row:
+                published.add(row.split("\t", 1)[1].strip().removesuffix("^{}"))
+    except RuntimeError:
+        published = set()
     for tag in tags:
         tag = tag.strip()
+        if f"refs/tags/{tag}" in published:
+            continue
+        try:
+            target = _git(["rev-list", "-n", "1", f"{tag}^{{commit}}"], cwd).strip()
+            _git(["merge-base", "--is-ancestor", target, "HEAD"], cwd)
+        except RuntimeError:
+            continue
+        try:
+            # Already reachable from the range's BASE, so it predates this push
+            # and is not something this push introduces. This is the filter that
+            # works with no remote to compare against -- ls-remote is the better
+            # one and is applied above whenever it is available.
+            _git(["merge-base", "--is-ancestor", target, base], cwd)
+            continue
+        except RuntimeError:
+            pass
         for name, pattern in patterns.items():
             if pattern.search(tag):
                 hits.append(("REF", "-", f"refs/tags/{tag}", 0))
