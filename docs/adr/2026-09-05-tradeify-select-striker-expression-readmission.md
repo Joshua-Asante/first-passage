@@ -27,6 +27,8 @@ do not establish the behavior of the captured chart.
 For the same-day co-exposure amendment, production/source reads were refreshed
 at `c88965a`: the payload builder, sizing host, firm rules, DD protection and
 source inventory. The amendment below records the specific findings.
+For the review clarification, re-read the payload builder, S7's owning ADR and
+the venue-edition ledger at `d842db1`; the live edition set is empty.
 
 ## §1 — Context
 
@@ -60,6 +62,20 @@ recommendation"). The recorded `direction_evidence` for all three in
 `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json`
 agrees. Effective input binding remains required; this clarification does not
 replace that gate.
+
+Long-only clears the hedging/Product-Group concern (campaign D16), not the
+direction-agnostic entry-flatten and symbol-wide exit interference. Co-exposure
+admission rests on the operator-approved obligation to implement and prove the
+shared-symbol ownership described below; long-only alone is insufficient.
+
+[S7](2026-07-29-third-leg-symbol-occupancy-limb.md) screens a third-leg candidate
+against an incumbent on the same account and symbol. Its incumbent trigger is
+absent here: the [venue ledger](../../ops/venue_editions/Tradeify_Select_100K.md)
+has no live editions, the old Striker editions are WITHDRAWN with retired leg IDs,
+and ORB-MNQ-1 was never deployed. Its historical §2-D example remains valid for
+that incumbent book; it is not a blanket exclusion between this campaign's
+candidates. This campaign carries the shared-symbol implementation and parity
+obligation below. S7 remains unchanged wherever its incumbent trigger applies.
 
 Both MNQ expressions may be included, with overlapping long positions, alongside
 the MYM expression. All five retained expressions may therefore be eligible in

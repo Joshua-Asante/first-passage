@@ -3550,6 +3550,12 @@ Also reported: the five artifacts and their screenshots are gitignored and show 
 
 ## §49 — Codex takeover and bounded campaign revision (2026-09-05)
 
+**Transfer scope:** the §1 Orchestrator role records the operator's transfer of
+both governance authorship and previously CC-solo implementation, including
+locked `core/` work for this bounded campaign. It is the campaign-specific
+authority relative to [surface-allocation test 1](../../adr/2026-07-14-cc-cursor-surface-allocation.md#2--decision).
+The worker-lane governance bar remains; the operator retains merges and deployment GO.
+
 **Campaign assessment:** feasibility is **Ambiguous**. No bound source population
 or executable joint replay supports a defensible estimate that a qualifying book
 exists. The scanner's repeated reviews had become a degenerating side loop;
@@ -3648,6 +3654,11 @@ recommendation." The [admission ADR amendment](../../adr/2026-09-05-tradeify-sel
 owns the change: both MNQ expressions may be included and overlap under one
 symbol controller. The derived maximum of four expressions is removed; all five
 remain optional candidates, not a mandatory five-expression book.
+
+Long-only clears D16's hedging concern, not entry-flatten or symbol-wide exit
+interference. Admission depends on implementing and proving shared-symbol
+ownership. The ADR also records why S7's incumbent trigger is absent in this
+campaign; its historical incumbent-book example remains valid in that scope.
 
 The current plan now requires shared-symbol filled-quantity/order ownership,
 aggregate contract/risk reservations and deterministic capacity-conflict handling
