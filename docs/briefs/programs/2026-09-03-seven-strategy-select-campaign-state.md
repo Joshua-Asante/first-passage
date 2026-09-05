@@ -3561,7 +3561,8 @@ as a test that can return no qualifying configuration, not a promise of success.
 **Operator decisions:** prepare the #302 split; the operator will merge. Authorize
 one bounded implementation attempt beyond the intake effort. Preserve the Select
 incumbent, the full/H1/H2 ≤5% failure test, the certified median reservation of
-200 business days, select-from-five with at most one MNQ, and D33's sole final
+200 business days, select-from-five (the initial one-MNQ restriction was replaced
+by the operator's §51 amendment), and D33's sole final
 validation. Growth is a scoring comparison, not a purchase or rescue route.
 The two Striker campaign expressions were elected into eval scope in the operator's
 consultation; this is an election, not a finding that the old re-scope trigger fired.
@@ -3638,3 +3639,24 @@ fresh export bindings outstanding (§48). The four-condition statistical freeze
 is also owed. S2 still requires a fresh snapshot immediately before the sole n3,
 after provisional winner implementation/parity. No intake iteration, n1/n2/n3
 sample, live authorization or additional implementation attempt was consumed.
+
+## §51 — Long-only MNQ co-exposure approved (2026-09-05)
+
+The operator confirmed that both MNQ expressions and the MYM Striker expression
+are long-only, matching the source inventory, then instructed "Go with your
+recommendation." The [admission ADR amendment](../../adr/2026-09-05-tradeify-select-striker-expression-readmission.md#same-day-amendment--long-only-co-exposure)
+owns the change: both MNQ expressions may be included and overlap under one
+symbol controller. The derived maximum of four expressions is removed; all five
+remain optional candidates, not a mandatory five-expression book.
+
+The current plan now requires shared-symbol filled-quantity/order ownership,
+aggregate contract/risk reservations and deterministic capacity-conflict handling
+in replay, then equivalent live execution tests before deployment. Same-direction
+signals need not compete when capacity is sufficient. Strategy exits must preserve
+other allocations and cannot produce accidental shorts. Existing symbol-wide
+flattening is not evidence that this capability already exists.
+
+This is an approved grammar amendment before search. Effective input binding,
+joint replay, the statistical freeze, S1/S2, the one-attempt limit and operator
+deployment GO remain in force. No production sizing, source pins or sample
+budgets changed, and no campaign sampling occurred.
