@@ -1126,11 +1126,14 @@ def test_commit_identity_fields_are_scanned(repo: tuple[Path, Path, Path]) -> No
 
 
 @needs_git
-def test_a_tag_predating_the_range_is_not_reported(repo: tuple[Path, Path, Path]) -> None:
-    """Enumerating every local tag made a normal clone cry wolf.
+def test_a_tag_already_on_the_remote_is_not_reported(repo: tuple[Path, Path, Path], tmp_path: Path) -> None:
+    """Remote PRESENCE decides, not target ancestry.
 
-    A tag reachable from the range's base predates the push and is not something
-    the push introduces; one on the pushed commit still is.
+    An ancestry test was the first attempt and is wrong: a tag object created
+    now on an already-published commit is missing on the remote, and that is
+    exactly what ``--follow-tags`` sends. With no remote listing available the
+    scan fails CLOSED and reports the tag rather than assuming it predates
+    the push.
     """
     root, snap, export = repo
     _git(root, "tag", "-a", "old-release", "-m", "notes mentioning Aggressive")
@@ -1138,8 +1141,77 @@ def test_a_tag_predating_the_range_is_not_reported(repo: tuple[Path, Path, Path]
     (root / "ok.txt").write_text("harmless\n", encoding="utf-8")
     _git(root, "add", "-A")
     _git(root, "commit", "-q", "-m", "clean work")
-    proc = _run(root, "--json", str(snap), "--csv", str(export))
-    assert proc.returncode == 0, proc.stdout
-    _git(root, "tag", "-a", "v-new", "-m", "release notes Aggressive")
+
+    # No remote: fail closed, the tag is reported.
+    closed = _run(root, "--json", str(snap), "--csv", str(export))
+    assert closed.returncode == 2 and "refs/tags/old-release" in closed.stdout
+
+    # Remote already carries it: not something this push can publish.
+    upstream = tmp_path / "up.git"
+    subprocess.run(["git", "init", "-q", "--bare", str(upstream)], check=True, env=_env())
+    _git(root, "remote", "add", "origin", str(upstream))
+    _git_try(root, "push", "-q", "origin", "old-release")
+    quiet = _run(root, "--json", str(snap), "--csv", str(export))
+    assert "refs/tags/old-release" not in quiet.stdout, quiet.stdout
+
+    # A NEW tag, missing on the remote, is still caught -- even on an old commit.
+    _git(root, "tag", "-a", "v-new", "-m", "release notes Aggressive", "main")
     after = _run(root, "--json", str(snap), "--csv", str(export))
     assert after.returncode == 2 and "refs/tags/v-new" in after.stdout
+
+@needs_git
+def test_an_escaped_json_spelling_is_caught(repo: tuple[Path, Path, Path]) -> None:
+    """A JSON string may spell a character with an optional escape.
+
+    ``json.dumps`` never recreates one, so enumerating escaped needle forms is
+    combinatorial; the haystack's unescaped view is searched instead.
+    """
+    root, snap, export = repo
+    (root / "e.txt").write_text("tag is " + chr(92) + "u0041ggressive here\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "escaped spelling")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=VALUE" in proc.stdout
+
+
+@needs_git
+def test_case_folding_handles_expanding_maps(repo: tuple[Path, Path, Path], tmp_path: Path) -> None:
+    """IGNORECASE is simple case mapping and does not equate the sharp s with SS."""
+    snapshot = tmp_path / "fold.json"
+    snapshot.write_text('{"inputs": {"Mode": "Stra\u00dfeBank", "tp": 1.25}}\n', encoding="utf-8")
+    root, _, export = repo
+    (root / "u.txt").write_text("STRASSEBANK\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "expanding fold")
+    proc = _run(root, "--json", str(snapshot), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=VALUE" in proc.stdout
+
+
+@needs_git
+def test_a_multiline_value_is_caught_across_added_lines(repo: tuple[Path, Path, Path], tmp_path: Path) -> None:
+    """A quoted CSV cell may contain a newline, so its needle spans lines."""
+    export = tmp_path / "ml.csv"
+    export.write_text('account,note\n"ZZ-ACCT-777788\nSECOND-LINE-998877",x\n', encoding="utf-8")
+    root, snap, _ = repo
+    (root / "m.txt").write_text("ZZ-ACCT-777788\nSECOND-LINE-998877\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "multiline paste")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=CELL" in proc.stdout
+
+
+@needs_git
+def test_a_non_utf8_csv_source_keeps_its_bytes(repo: tuple[Path, Path, Path], tmp_path: Path) -> None:
+    """Reading the export with errors=replace destroyed the needle at its source.
+
+    The class was populated but held U+FFFD while git's output held surrogate
+    escapes, so an exact byte-for-byte copy matched nothing.
+    """
+    export = tmp_path / "cp.csv"
+    export.write_bytes("name,v\ncaf\u00e9 book,1.25\n".encode("cp1252"))
+    root, snap, _ = repo
+    (root / "c.txt").write_bytes("caf\u00e9 book\n".encode("cp1252"))
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "byte-for-byte copy")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=CELL" in proc.stdout

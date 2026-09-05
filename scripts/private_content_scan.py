@@ -55,6 +55,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import io
 import json
 import os
 import re
@@ -107,6 +108,7 @@ _ARMOURED = re.compile(
 # newlines.
 _B64_LINE = re.compile(rb"^[A-Za-z0-9+/]{40,}={0,2}$")
 _GROUPED = re.compile(r"^[+-]?\d{4,}(?:\.\d+)?$")
+_UESC = re.compile(r"\\u([0-9a-fA-F]{4})", re.IGNORECASE)
 # Git C-quotes patch-header paths that contain tab/newline/quote/backslash even
 # when core.quotePath=false; name-status -z does not. Octal escapes cover the rest.
 _SIMPLE_ESC = {"n": "\n", "t": "\t", "r": "\r", "a": "\a", "b": "\b", "f": "\f", "v": "\v", '"': '"', "\\": "\\"}
@@ -252,7 +254,12 @@ def _percent_encoded(text: str) -> set[str]:
     """A URL- or JSON-escaped copy of a private string is the same disclosure."""
     if not text or text.isalnum():
         return set()
-    forms = {quote(text, safe=""), quote(text, safe="/")}
+    try:
+        forms = {quote(text, safe=""), quote(text, safe="/")}
+    except UnicodeEncodeError:
+        # A surrogate-escaped byte cannot be percent-encoded; the byte view is
+        # already carried as its own needle form by ``_alt_encodings``.
+        return set()
     return {form for form in forms if form != text}
 
 
@@ -355,12 +362,18 @@ def build_json_needles(path: Path, json_key: str) -> dict[str, set[str]]:
             return
         if key is None:
             return
-        # numeric lexemes only — quoted string lexemes duplicate the parsed form
-        raw_nums = {
-            lex for lex in lexemes.get(key, ())
-            if lex not in {"true", "false", "null"} and not lex.startswith('"')
-        }
-        forms = _value_forms(node, raw_lexemes=raw_nums or None)
+        # BOTH numeric and quoted lexemes. Dropping quoted ones as "duplicating
+        # the parsed form" was wrong: a JSON string may spell a character with an
+        # optional escape, and ``json.dumps`` never recreates it, so the source
+        # spelling is the only needle that matches a copy of the source.
+        raw_forms: set[str] = set()
+        for lex in lexemes.get(key, ()):
+            if lex in {"true", "false", "null"}:
+                continue
+            raw_forms.add(lex)
+            if lex.startswith('"') and lex.endswith('"') and len(lex) >= 2:
+                raw_forms.add(lex[1:-1])
+        forms = _value_forms(node, raw_lexemes=raw_forms or None)
         for form in forms:
             pair.update({f'"{key}": {form}', f'"{key}":{form}', f"{key}: {form}", f"{key}={form}"})
         if _distinctive(node):
@@ -401,8 +414,12 @@ def build_csv_needles(path: Path) -> tuple[set[str], set[str]]:
     cells: set[str] = set()
     weak: set[str] = set()
     try:
-        with path.open(encoding="utf-8", errors="replace", newline="") as handle:
-            rows = list(csv.reader(handle))
+        # surrogateescape, not replace: a cp1252 or latin-1 export's non-UTF-8
+        # bytes must SURVIVE into the needle, because git's output is decoded the
+        # same way. Under "replace" the source held U+FFFD while the haystack
+        # held surrogates, and an exact byte-for-byte copy matched nothing.
+        text = path.read_bytes().decode("utf-8", "surrogateescape")
+        rows = list(csv.reader(io.StringIO(text, newline="")))
     except OSError as exc:
         raise NeedleError(f"{path.name}: {exc}") from exc
     for row in rows:
@@ -435,11 +452,55 @@ def compile_classes(classes: dict[str, set[str]]) -> dict[str, re.Pattern[str]]:
         # to match the path tests: a lowercased or differently-cased copy of a
         # private tag is the same disclosure, and the NAME class must not be
         # stricter than the suffix and prefix tests applied to the same path.
-        compiled[name] = re.compile("(?:" + "|".join(re.escape(n) for n in ordered) + ")", re.IGNORECASE)
+        # Each needle also contributes its case-folded form, because matching is
+        # done against the folded haystack too (see ``_matches``).
+        widened = set(ordered) | {n.casefold() for n in ordered}
+        parts = sorted(widened, key=len, reverse=True)
+        compiled[name] = re.compile("(?:" + "|".join(re.escape(n) for n in parts) + ")", re.IGNORECASE)
     return compiled
 
 
 # ------------------------------------------------------------------- per-parent reads
+
+
+def _matches(pattern: re.Pattern[str], text: str) -> bool:
+    """Match on the raw text and on its case-folded view.
+
+    ``re.IGNORECASE`` is simple case mapping: it does not equate the German
+    sharp s with ``SS``, nor any other expanding fold. Needles carry their
+    case-folded form, so folding the haystack too closes the pair.
+    """
+    views = [text]
+    folded = text.casefold()
+    if folded != text:
+        views.append(folded)
+    # A JSON string may spell any character with an optional \uXXXX escape, and
+    # ``json.dumps`` never recreates one, so the escaped copy matches no needle.
+    # Enumerating escaped needle forms is combinatorial; decoding the HAYSTACK is
+    # not, so the unescaped view is searched too.
+    if "\\u" in text or "\\U" in text:
+        unescaped = _UESC.sub(lambda m: chr(int(m.group(1), 16)), text)
+        if unescaped != text:
+            views.append(unescaped)
+            if unescaped.casefold() != unescaped:
+                views.append(unescaped.casefold())
+    return any(pattern.search(view) for view in views)
+
+
+def _flush(
+    hits: set[tuple[str, str, int, str]],
+    block: list[str],
+    start: int,
+    current_file: str,
+    patterns: dict[str, re.Pattern[str]],
+) -> None:
+    """Scan a run of consecutive added lines as one string."""
+    if len(block) < 2:
+        return
+    joined = "\n".join(block)
+    for name, pattern in patterns.items():
+        if _matches(pattern, joined):
+            hits.add((name, current_file, start, joined))
 
 
 def _content_vs(
@@ -457,6 +518,11 @@ def _content_vs(
     current_file = "<unknown>"
     new_line = 0
     in_hunk = False
+    # A private value can legally contain a newline -- a quoted CSV cell does --
+    # so its needle spans lines and no single added record can match it. Runs of
+    # consecutive added lines are therefore scanned as a BLOCK as well.
+    block: list[str] = []
+    block_start = 0
     # split on "\n" ONLY: git delimits patch records with LF, while str.splitlines()
     # also breaks on \v, \f, \r, \x1c-\x1e, \x85, \u2028 and \u2029 — a needle after such a
     # byte would land in a fragment with no "+" marker and never be scanned.
@@ -477,11 +543,20 @@ def _content_vs(
         if raw.startswith("+"):
             new_line += 1
             line_text = raw[1:]
+            if not block:
+                block_start = new_line
+            block.append(line_text)
             for name, pattern in patterns.items():
-                if pattern.search(line_text):
+                if _matches(pattern, line_text):
                     hits.add((name, current_file, new_line, line_text))
         elif raw.startswith(" "):
             new_line += 1
+            _flush(hits, block, block_start, current_file, patterns)
+            block = []
+        else:
+            _flush(hits, block, block_start, current_file, patterns)
+            block = []
+    _flush(hits, block, block_start, current_file, patterns)
     return hits
 
 def _introduced_vs(base: str, commit: str, cwd: Path) -> set[str]:
@@ -651,7 +726,7 @@ def scan_commit(commit: str, cwd: Path, patterns: dict[str, re.Pattern[str]]) ->
     message_hits = 0
     for number, line in enumerate(_git(["log", "-1", "--format=%B", commit], cwd).split("\n"), start=1):
         for name, pattern in patterns.items():
-            if pattern.search(line):
+            if _matches(pattern, line):
                 hits.append((name, commit, "<commit message>", number))
                 message_hits += 1
     # The IDENTITY headers are part of the commit object and are published by the
@@ -662,7 +737,7 @@ def scan_commit(commit: str, cwd: Path, patterns: dict[str, re.Pattern[str]]) ->
     ).split("\n")
     for number, line in enumerate(identity, start=1):
         for name, pattern in patterns.items():
-            if pattern.search(line):
+            if _matches(pattern, line):
                 hits.append((name, commit, "<commit identity>", number))
                 message_hits += 1
                 break
@@ -790,11 +865,13 @@ def scan_refs(
     # "--follow-tags" sends tags that are MISSING on the remote and reachable
     # from what is being pushed, so those are the two filters applied here.
     published: set[str] = set()
+    remote_known = False
     try:
         listing = _git(["ls-remote", "--tags", "origin"], cwd)
         for row in listing.split("\n"):
             if "\t" in row:
                 published.add(row.split("\t", 1)[1].strip().removesuffix("^{}"))
+        remote_known = True
     except RuntimeError:
         published = set()
     for tag in tags:
@@ -802,18 +879,18 @@ def scan_refs(
         if f"refs/tags/{tag}" in published:
             continue
         try:
+            # Reachable from what is being pushed -- ``--follow-tags`` sends only
+            # tags whose target the push carries or the remote already has.
             target = _git(["rev-list", "-n", "1", f"{tag}^{{commit}}"], cwd).strip()
             _git(["merge-base", "--is-ancestor", target, "HEAD"], cwd)
         except RuntimeError:
             continue
-        try:
-            # Already reachable from the range's BASE, so it predates this push
-            # and is not something this push introduces. This is the filter that
-            # works with no remote to compare against -- ls-remote is the better
-            # one and is applied above whenever it is available.
-            _git(["merge-base", "--is-ancestor", target, base], cwd)
-            continue
-        except RuntimeError:
+        if not remote_known:
+            # No remote listing, so "already published" cannot be established.
+            # FAIL CLOSED: scan the tag rather than assume it predates the push.
+            # Target ancestry is NOT a substitute -- a tag object created now on
+            # an old commit is missing on the remote and is exactly what
+            # ``--follow-tags`` sends.
             pass
         for name, pattern in patterns.items():
             if pattern.search(tag):
