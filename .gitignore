@@ -62,7 +62,8 @@ AGENTS.md
 .agents/*
 !.agents/skills/
 .agents/skills/*
-!.agents/skills/babysit
+!.agents/skills/babysit/
+!.agents/skills/babysit/**
 .codex/
 
 # Deep-research leftovers — copyrighted source papers / raw text dumps pulled in
