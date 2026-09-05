@@ -7,6 +7,7 @@ locations never tokens, walks trees for forbidden paths, and exits 3 rather than
 """
 from __future__ import annotations
 
+import base64
 import os
 import shutil
 import subprocess
@@ -335,7 +336,12 @@ def test_needle_in_a_filename_is_caught(repo: tuple[Path, Path, Path]) -> None:
     # a digest of the true path stands in for it — the scanner's output is pasted
     # into the PR body, so printing the name verbatim would publish the value
     assert "file=<redacted>.txt" in proc.stdout
-    assert "path_sha256=" in proc.stdout
+    # The redacted path is identified by a per-run INDEX, not by a digest of
+    # itself: a truncated SHA-256 over a short private token is brute-forceable,
+    # so the handle meant to make the hit actionable handed the token back in
+    # the output that gets pasted into the PR body.
+    assert "path_index=" in proc.stdout
+    assert "path_sha256=" not in proc.stdout
     assert "Aggressive" not in proc.stdout
 
 
@@ -595,3 +601,190 @@ def test_merge_does_not_inherit_main_only_needle_on_co_touched_file(
     assert proc.returncode == 0, proc.stdout
     assert "SCAN result=CLEAN" in proc.stdout
 
+@needs_git
+def test_gitattributes_cannot_reclassify_a_binary_as_text(repo: tuple[Path, Path, Path]) -> None:
+    """BINARY is decided from the blob's own bytes, never from git's rendering.
+
+    ``numstat`` reports binary only for what git *renders* as binary, and a
+    ``.gitattributes`` ``diff`` override -- which never travels with the push --
+    flips that verdict, so a screenshot could be scanned as if it were readable.
+    """
+    root, snap, export = repo
+    (root / ".gitattributes").write_text("*.png -diff\n*.png diff\n", encoding="utf-8")
+    (root / "shot.png").write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 64)
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "screenshot with an attribute override")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=BINARY" in proc.stdout
+
+
+@needs_git
+def test_git_lfs_pointer_fails_closed(repo: tuple[Path, Path, Path]) -> None:
+    """The tree blob is three ASCII lines; the image goes to the LFS remote."""
+    root, snap, export = repo
+    (root / "shot.png").write_text(
+        "version https://git-lfs.github.com/spec/v1\n"
+        "oid sha256:0000000000000000000000000000000000000000000000000000000000000000\n"
+        "size 12345\n",
+        encoding="utf-8",
+    )
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "lfs pointer")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=BINARY" in proc.stdout
+
+
+@needs_git
+def test_forbidden_suffix_is_case_insensitive_and_per_component(repo: tuple[Path, Path, Path]) -> None:
+    root, snap, export = repo
+    (root / "Striker.PINE").write_text("x\n", encoding="utf-8")
+    (root / "exports.pine").mkdir()
+    (root / "exports.pine" / "a.txt").write_text("y\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "cased suffix and a directory bearing one")
+    proc = _run(root, "--json", str(snap), "--csv", str(export), "--forbid-suffix", ".pine")
+    assert proc.returncode == 2
+    assert "Striker.PINE" in proc.stdout and "exports.pine/a.txt" in proc.stdout
+
+
+@needs_git
+def test_empty_range_is_an_error_not_clean(repo: tuple[Path, Path, Path]) -> None:
+    """Exit 0 must never mean "the scanner never looked"."""
+    root, snap, export = repo
+    proc = _run(root, "--json", str(snap), "--csv", str(export), "--range", "HEAD..HEAD")
+    assert proc.returncode == 3
+    assert "empty range" in proc.stdout and "CLEAN" not in proc.stdout
+
+@needs_git
+def test_a_deletion_only_commit_is_clean(repo: tuple[Path, Path, Path]) -> None:
+    """Deletions are explicitly not flagged, and the blob-byte check must respect that.
+
+    ``_blob_is_opaque`` fails closed when ``cat-file`` cannot resolve a path, and
+    the candidate set carries every status, so a plain text deletion briefly read
+    as an opaque blob and every deleting commit raised BINARY.
+    """
+    root, snap, export = repo
+    (root / "gone.txt").write_text("hello\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "add a file to delete")
+    _git(root, "rm", "-q", "gone.txt")
+    _git(root, "commit", "-q", "-m", "delete it")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 0, proc.stdout
+    assert "class=BINARY" not in proc.stdout
+
+
+@needs_git
+def test_forbidden_suffix_containing_a_slash_still_matches(repo: tuple[Path, Path, Path]) -> None:
+    """The per-component test alone silently dropped any suffix with a "/" in it."""
+    root, snap, export = repo
+    (root / "private_overrides").mkdir()
+    (root / "private_overrides" / "a.json").write_text("x\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "nested capture")
+    proc = _run(root, "--json", str(snap), "--csv", str(export), "--forbid-suffix", "private_overrides/a.json")
+    assert proc.returncode == 2 and "class=PATH" in proc.stdout
+
+
+@needs_git
+def test_needle_matching_is_case_insensitive(repo: tuple[Path, Path, Path]) -> None:
+    """A differently-cased copy of a private tag is the same disclosure.
+
+    The NAME class must not be stricter than the suffix and prefix tests applied
+    to the same path.
+    """
+    root, snap, export = repo
+    (root / "aggressive-notes.txt").write_text("x\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "lowercased tag in a filename")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=NAME" in proc.stdout
+
+@needs_git
+def test_value_nested_below_the_json_key_is_a_needle(repo: tuple[Path, Path, Path], tmp_path: Path) -> None:
+    """The snapshot walk is recursive; one level meant a nested value had no needle at all."""
+    snapshot = tmp_path / "nested.json"
+    snapshot.write_text(
+        '{"inputs": {"Mode": "Aggressive", "group": {"deep": {"acct_tag": "ZZTESTZZ"}}}}\n',
+        encoding="utf-8",
+    )
+    root, _, export = repo
+    (root / "n.txt").write_text("carried ZZTESTZZ across\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "nested value pasted")
+    proc = _run(root, "--json", str(snapshot), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=VALUE" in proc.stdout
+
+
+@needs_git
+def test_csv_identifier_and_whole_dollar_cells_are_needles(repo: tuple[Path, Path, Path], tmp_path: Path) -> None:
+    """An identifier has no decimal point and no date; a whole-dollar figure has neither.
+
+    Those are the two classes the threat model names, and the old
+    decimal-or-date gate had no pattern for either. The header row is scanned
+    too, since an identifier can be a COLUMN NAME.
+    """
+    export = tmp_path / "acct.csv"
+    export.write_text("account,peak_balance,realized\nZZ-ACCT-777788,102500,12.50\n", encoding="utf-8")
+    root, snap, _ = repo
+    (root / "ledger.md").write_text("reconciled ZZ-ACCT-777788 today\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "identifier pasted")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=CELL" in proc.stdout
+
+
+@needs_git
+def test_comma_grouped_spelling_of_a_numeric_cell_matches(repo: tuple[Path, Path, Path], tmp_path: Path) -> None:
+    export = tmp_path / "acct.csv"
+    export.write_text("account,peak_balance\nZZ-ACCT-777788,102500\n", encoding="utf-8")
+    root, snap, _ = repo
+    (root / "report.md").write_text("peak was 102,500 on the day\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "grouped spelling")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=CELL" in proc.stdout
+
+
+@needs_git
+def test_base64_armoured_binary_fails_closed(repo: tuple[Path, Path, Path]) -> None:
+    """A NUL test recognises one ENCODING of unscannable content, not the content.
+
+    The same screenshot carried as a base64 data: URI or a notebook output cell
+    is NUL-free, and fixed-string needles cannot match base64 of themselves.
+    """
+    root, snap, export = repo
+    payload = base64.b64encode(b"PNGDATA" * 300).decode()
+    (root / "capture.md").write_text(f"![shot](data:image/png;base64,{payload})\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "armoured screenshot")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=BINARY" in proc.stdout
+
+
+@needs_git
+def test_branch_name_and_annotated_tag_message_are_scanned(repo: tuple[Path, Path, Path]) -> None:
+    """A push carries ref names and tag objects, which no commit range expresses."""
+    root, snap, export = repo
+    _git(root, "checkout", "-q", "-b", "fix-Aggressive-eval")
+    (root / "ok.txt").write_text("harmless\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "clean work")
+    _git(root, "tag", "-a", "v9", "-m", "release notes: Aggressive")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2
+    assert "HIT class=REF" in proc.stdout
+    assert "refs/tags/v9 (message)" in proc.stdout
+
+
+@needs_git
+def test_the_printed_range_is_redacted(repo: tuple[Path, Path, Path]) -> None:
+    """The range line echoes an operator-supplied ref name on the CLEAN path."""
+    root, snap, export = repo
+    _git(root, "checkout", "-q", "-b", "fix-Aggressive-eval")
+    (root / "ok.txt").write_text("harmless\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "clean work")
+    proc = _run(root, "--json", str(snap), "--csv", str(export), "--range", "base..fix-Aggressive-eval")
+    assert "range fix-Aggressive-eval" not in proc.stdout
+    assert "<redacted>" in proc.stdout

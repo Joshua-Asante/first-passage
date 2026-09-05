@@ -3693,3 +3693,31 @@ Run on the round-18 diff, prompt as ruled: *what input makes this control silent
 * **The report.** `path_sha256` is a **brute-forceable oracle** for a short redacted token, and a path carrying two private tokens prints the one that is not matchable.
 
 **Process note.** The panel cost 38 agents and ~74 minutes of wall clock. The dominant term is one refuter per finding at high effort; capping each lens at three findings, spawning a refuter only for a finding its author actually staged, and dropping the refuters to medium effort would roughly halve it without weakening the independent-rebuild requirement. That shape applies from the next run.
+
+### 47f — Second panel run, reduced shape (2026-09-05): the open set worked down from fifteen to five
+
+The reduced shape held: **14 agents and ~20 minutes**, against 38 and ~74 for run 1 — four lenses instead of six, at most three findings each, a refuter only for a finding its author actually staged, refuters at medium effort. Quality did not drop. The refuters **correctly REFUTED three claims** whose defects had been fixed while the run was in flight, each by reading the working tree rather than trusting the claim — which is the discipline the panel is for, pointed at its own inputs.
+
+**Ten of the fifteen open findings are closed in this commit,** plus three defects the run itself found in the closing changes:
+
+| Closed | How |
+|---|---|
+| BINARY decidable by repo-local `.gitattributes` / `.git/info/attributes` · a screenshot in a text-safe carrier · a git-lfs pointer | binaryness is read from the **blob's own bytes** (`_blob_is_opaque`), never from git's attribute-driven `numstat` verdict: a NUL anywhere in the blob, an LFS pointer prefix, or an **armouring** — a `data:` URI, a notebook `"image/png"` output cell, any unbroken base64 run of 512+ characters. Scanning the whole blob also removes the "put the NUL past byte 8192" variant |
+| Path tests case- and segment-sensitive | `--forbid-suffix` and `--path-prefix` fold case, and suffixes are tested against the whole path **and** each component, so a differently-cased suffix and a *directory* bearing one are both caught |
+| An empty walk reported CLEAN | an empty `rev-list` exits **3** with `empty range: nothing was scanned`. Exit 0 can no longer mean "the scanner never looked" |
+| Ref names and annotated-tag messages outside the walk | new **REF** class: the current branch name, every tag name, every annotated tag's message, and any tag whose target is neither in the walk nor an ancestor of the range's base — the objects a `--follow-tags` push publishes and no commit range expresses |
+| `path_sha256` a brute-forceable oracle | a redacted path is identified by a per-run **index**; `--show-paths` prints the mapping locally and is never pasted |
+| Nested JSON below `--json-key` yielded no needle | the snapshot walk is **recursive** over every leaf at any depth |
+| CSV `CELL` skipped the header row and every cell without a decimal point or date | the header row is scanned like any other, and distinctiveness replaces the decimal-or-date gate. ⚠ This was the run's **P1**: an account identifier and a whole-dollar figure — the two classes the threat model names — had **no pattern at all**, and the emptiness guard did not fire because one decimal cell anywhere made the class non-empty |
+| Number spellings: thousands separator | a numeric cell or value also contributes its **comma-grouped** spelling, since the separator breaks a fixed-string match on the digits |
+| String needles case-sensitive | matching is `IGNORECASE`, consistent with the now-case-insensitive path tests — the NAME class must not be stricter than the suffix test applied to the same path |
+
+**Three defects the run found in those very changes, all fixed before the push:**
+
+| # | Defect | Fix |
+|---|---|---|
+| **1** | The blob-byte check was fed paths carrying every status, and `cat-file` cannot resolve a **deleted** path, so it failed closed on it: every commit that deleted a text file raised BINARY and exited 2. A gate that fires on every deletion is one operators route around | the candidate set is intersected with the commit's own tree |
+| **2** | The per-component suffix test, alone, silently stopped matching any suffix containing a `/` — a path-shaped suffix the previous version caught | whole-path **and** per-component, disjunctively |
+| **3** | ⚠ The new `range …` report line echoed the operator-supplied range **unredacted**, on the CLEAN path — a branch named after a private token would be published in the one output the worker pastes into the PR body | the range is passed through `_redact` like any other printed path |
+
+**Five findings remain OPEN, so `private_content_scan.py` is still NOT fit to be §47b step 6b's gate:** content saved in a non-UTF-8 encoding still misses a UTF-8 needle; a percent-encoded or line-reflowed string still passes; a currency-symbol spelling and **a percentage that inverts back to a redacted figure** still have no needle (the latter needs the base to be known, so it may not be solvable here and may belong to the provenance read instead); a stale `origin/main` is now *visible* in the report but not *prevented*; and `--exclude` can still zero the whole VALUE class because the exit-3 emptiness guard tests only TITLE and PAIR. 41 tests, green with and without a global git identity.
