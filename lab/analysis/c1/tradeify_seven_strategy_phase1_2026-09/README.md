@@ -12,14 +12,16 @@ Phase 0 was skipped by operator direction. All supplied history is development d
 
 ## Source and output ownership
 
-D26 migration is pending: the checked-in config, manifest and RESULTS remain historical
-v3 artifacts, byte-for-byte unchanged. The v4 runner requires a non-null
-`pine_input_overrides_sha256` (exactly 64 lowercase hexadecimal characters) for every
-active source; the historical config intentionally cannot run under this schema.
-Five full current private input captures are required before digest population and
-a single re-freeze of the campaign artifacts. No synthetic digest may stand in for
-that evidence. Raw input override maps remain private; only their digests propagate
-into new source identities and reports. Historical v3 manifests remain renderable.
+D26 population is complete: all five full private input captures are sealed,
+covering 211 inputs with six differences from the pinned bodies' defaults. Each
+active source has a verified `pine_input_overrides_sha256` (exactly 64 lowercase
+hexadecimal characters), and the single generation-v4 population run exited `0`
+on 2026-09-05. The operator confirmed that the existing exports reflect the exact
+captured chart state; campaign-state §52 accepts that attestation together with
+the existing export/Pine byte pins for this intake. No fresh reexport was
+performed, and this binding is not independent reproduction. Raw input captures
+remain private; only their digests and approved capture-count/provenance metadata
+are published. All frozen source pins remain unchanged.
 
 Store D26 override maps and their capture evidence under this study's
 `inputs/private_overrides/` directory. The entire directory is gitignored,
@@ -31,7 +33,7 @@ without decoding or parsing them. Missing, unreadable or mismatched evidence
 is a fatal intake failure (exit 3), before any output publication. Only the
 verified digest is serialized; no artifact contents are included in diagnostics.
 
-Prospective v4 D27 summary anchors use `tv_panel_max_drawdown_usd`, separate
+Generation-v4 D27 summary anchors use `tv_panel_max_drawdown_usd`, separate
 from both computed measures on every leg, including the five-scalar D17 branch
 and the seven-metric non-D17 branch. Both retired anchor names,
 `max_drawdown_usd` and `max_drawdown_excursion_bounded_usd`, are rejected.
@@ -48,7 +50,7 @@ starting there even without overlap: `closed <= walk <= true`, never equality
 with the full path. Under overlap neither computed field bounds synchronized
 account-equity drawdown; trade extrema do not identify their relative timing.
 Both computed measures, the separate panel anchor, labels and limitations are
-included side by side in newly generated reports.
+included side by side in the generated reports.
 
 Overlap is measured per leg from canonical entry/exit timestamps, never Pine
 pyramiding. Closed intervals apply: an entry at another trade's exit time is a
@@ -59,13 +61,14 @@ RECORDED and the walk-versus-panel difference is INFO, never BLOCKER or MATCH.
 The summary row leaves `observed` unset and records the walk separately;
 its difference is explicitly walk minus panel, not a panel reconciliation.
 
-D17 monthly/commission policy is unchanged. The new exact-key `max_drawdown`
-policy slot requires `OVERLAP_KEYED` under D32. Reports carry
-`OVERLAP_KEYED_D32`; complete evidence coverage is not operator acceptance.
-The historical policy has no new slot and intentionally fails
-the prospective loader. Current private captures
-and independent panel population still gate regeneration; no campaign evidence
-prerequisite is closed by this code change.
+D17 monthly/commission policy is unchanged. The six-key policy includes the
+exact-key `max_drawdown` slot with `OVERLAP_KEYED` under D32. All five reports
+carry `OVERLAP_KEYED_D32`: the four non-DD comparisons are `MATCH` on every leg;
+Aegis has no overlap and its DD result is `COINCIDENT`; ORB, DJ30, NAS100 and
+Vanguard have overlap/ties and their DD panels are `RECORDED`. The manifest's
+`COMPLETE` verdict cap describes evidence coverage only. Sizing-faithfulness,
+synchronized replay, and the statistical freeze remain owed; this population
+does not establish qualification or authorize search.
 
 The ten active source files are provided only through `--source-dir`; their basenames, SHA-256 pins, and byte lengths are frozen in `phase1_config.json`. The vendor bytes are never copied into this repository. Canonical event, trade, and weekly ledgers are vendor-derived and deliberately written only to the campaign's ignored `local_artifacts/` directory. Committed `reconciliation_manifest.json` and `RESULTS.md` contain aggregate values and hashes, never an absolute source path or full row-level ledger. Every canonical event additionally carries `source_row_sha256`, the SHA-256 of its exact raw CSV record bytes, including its original terminator where present.
 
@@ -81,12 +84,12 @@ The loader parses the actual repository `PORT_MANIFEST.sha256` once per inventor
 
 ## D13 continuous-contract disposition
 
-Operator ruling 2026-09-03; `docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md` §6 D13(b): continuous basis is `ACCEPTED_UNMODELED` for Phases 2–4, not modeled or resolved. The exact config object `continuous_contract_roll_policy` freezes disposition, ruling date/reference and both obligations below. It flows explicitly into venue analysis and every manifest/strategy/detail/report; generic callers without a policy still receive the unresolved roll blocker. This campaign retains `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED` as a WARNING limitation. Contract-month and seam attribution remain `UNAVAILABLE`; other blockers and the calendar/summary `NEEDS_CONTEXT` cap are unaffected.
+Operator ruling 2026-09-03; `docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md` §6 D13(b): continuous basis is `ACCEPTED_UNMODELED` for Phases 2–4, not modeled or resolved. The exact config object `continuous_contract_roll_policy` freezes disposition, ruling date/reference and both obligations below. It flows explicitly into venue analysis and every manifest/strategy/detail/report; generic callers without a policy still receive the unresolved roll blocker. This campaign retains `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED` as a WARNING limitation. Contract-month and seam attribution remain `UNAVAILABLE`; other blockers are unaffected, and `COMPLETE` evidence coverage does not discharge these limitations.
 
 - Phase 3 pre-registration states back-adjustment seam risk as a limitation of every campaign claim: fills cannot be attributed to a contract month, and a seam crossing is indistinguishable from a price move.
 - A Phase 6 seam-sensitivity check is pre-registered with its severity frozen alongside the other Phase 6 cutoffs.
 
-Generation `tradeify-phase1-normalization-v3` identifies the manifest/report contract. Config, calendar, fee schedule and independent summaries carry hashes from their exact parsed byte snapshots; a later filesystem change cannot silently replace a snapshot digest. This does not establish missing evidence or satisfy either future D13 obligation.
+Generation `tradeify-phase1-normalization-v4` identifies the manifest/report contract. Config, calendar, fee schedule and independent summaries carry hashes from their exact parsed byte snapshots; a later filesystem change cannot silently replace a snapshot digest. This does not satisfy either future D13 obligation.
 
 ## Venue boundaries
 
@@ -94,7 +97,7 @@ The frozen upper-bound implementation is the reviewed `80abcec` behavior; the fi
 
 The per-strategy Tradeify cap remains a Phase 1 blocker check against 80 micro-equivalents (`6J=10`, `MNQ/MYM/MGC=1` per contract). The joint ledger carries that unit on every event, but the joint book-cap verdict is deferred to Phase 4.
 
-Force-flat auditing checks whether a daily Tradeify deadline instant lies in `(entry, exit]`: 16:45 America/New_York on regular days and 12:59 on the D19-accepted 40-date secondary venue-date calendar within 2022-09-01 through 2026-09-02 (the source inventory has 49 dates overall). The final 40-date replacement generation is frozen in `reconciliation_manifest.json` and `RESULTS.md`. D19 does not upgrade this source to primary evidence or model product close times/exchange sessions; its accepted and unresolved residuals remain in `RESULTS.md`. The verdict cap remains `NEEDS_CONTEXT` because fresh independent scalar panels are missing (including DJ30's unexplained +$287 replacement-run delta), not because the D19 calendar is incomplete.
+Force-flat auditing checks whether a daily Tradeify deadline instant lies in `(entry, exit]`: 16:45 America/New_York on regular days and 12:59 on the D19-accepted 40-date secondary venue-date calendar within 2022-09-01 through 2026-09-02 (the source inventory has 49 dates overall). The 40-date calendar remains frozen in the generation-v4 `reconciliation_manifest.json` and `RESULTS.md`. D19 does not upgrade this source to primary evidence or model product close times/exchange sessions; its accepted and unresolved residuals remain in `RESULTS.md`. With the five independent panels populated, the verdict cap is `COMPLETE` for evidence coverage only. D30 records historical capital-delta attribution as `UNESTABLISHED`; it is not a missing-panel prerequisite.
 
 ## Evidence inputs and independent summary checks
 
@@ -102,9 +105,9 @@ The primary calendar capture schema remains available for future reviewed yearly
 
 The only secondary compatibility path is the separately tagged `tradeify_secondary_early_close/v1` wrapper. It pins the exact LF bytes of in-repository `ops/calendars/cme_holiday_calendar_2022_2026.json` and uses only the 40 dates from its declared 49-date account-level `EARLY_CLOSE` union that fall in the declared window as 12:59 ET rows; a product group (including 6J) marked `NORMAL` does not remove that blanket Tradeify deadline. D19 accepts this venue-date membership evidence as `COMPLETE`, not as primary evidence or product-close/exchange-session modeling. CME-trade-date full-closure dates are never converted to wall-date deadlines; the three sub-deadline notes, thirteen unresolved items, 2025-11-28 conservative scheduled-half-day/outage classification, and possible non-conservative missing ad-hoc closures from 2026-05-28 through 2026-09-02 remain explicit limitations.
 
-`tv_summary_anchors.json` is the current empty replacement-panel inventory: its `strategies` array is `[]`, so all five replacement sources remain `MISSING_ANCHOR` and G1.4 remains `NEEDS_CONTEXT`. Its optional `d17_policy` has exactly `{ruling_date, ruling_ref, monthly_totals, commissions, reason}`; with that policy present, any future active, hash-bound strategy anchor has exact `{strategy_id, export_sha256, source_note, metrics, missing_metrics}` keys and exactly five scalar metrics: trade count, net P&L USD, win-rate percent, profit factor, and max drawdown USD. Count is an integer; decimals are finite strings; `missing_metrics` lists absent metrics with null values, distinct from semantically undefined null factor/zero-trade win rate. The generic branch without `d17_policy` has the legacy seven-metric schema, including total commissions and a monthly net-P&L map; it does not describe the current replacement inventory.
+`tv_summary_anchors.json` contains all five independent, hash-bound panels from campaign-state §18a, with `coverage_status: COMPLETE` and no missing metrics. Its `d17_policy` has exactly `{ruling_date, ruling_ref, monthly_totals, commissions, reason, max_drawdown}`, with `max_drawdown: OVERLAP_KEYED`. Each strategy anchor has exact `{strategy_id, export_sha256, source_note, metrics, missing_metrics}` keys and exactly five scalar metrics: `trade_count`, `net_pnl_usd`, `win_rate_pct`, `profit_factor`, and `tv_panel_max_drawdown_usd`. Count is an integer; decimals are finite strings; `missing_metrics` is empty on every current anchor. The schema distinguishes absent metrics with null values from semantically undefined null factor/zero-trade win rate. The generic branch without `d17_policy` has the legacy seven-metric schema, including total commissions and a monthly net-P&L map; it does not describe the current populated inventory.
 
-D17 does not rebind old panels to replacement hashes. It retains the five independent scalar Key-stats requirements above while reconstructing monthly totals from canonical row-ledger trades by `exit_timestamp_naive` in the configured source timezone, with exact Decimal cross-checks; per-month figures exist only in gitignored local monthly-reconciliation artifacts. Commission evidence is `AMENDED_OUT` as an independent dimension: derived commission remains inventory, while venue/export fee auditing is unchanged. The runner publishes only hashes, bucket counts, basis, status and residual summaries in tracked results.
+D17 does not rebind old panels to replacement hashes. The five independent scalar Key-stats panels belong to the pinned runs themselves; D32 applies the separate overlap-keyed DD policy described above. Monthly totals are reconstructed from canonical row-ledger trades by `exit_timestamp_naive` in the configured source timezone, with exact Decimal cross-checks; per-month figures exist only in gitignored local monthly-reconciliation artifacts. Commission evidence is `AMENDED_OUT` as an independent dimension: derived commission remains inventory, while venue/export fee auditing is unchanged. The runner publishes only hashes, bucket counts, basis, status and residual summaries in tracked results.
 
 ## Joint-ledger scope
 
@@ -113,10 +116,12 @@ Phase 1 delivers deterministic joint event union and ISO-week exit aggregation o
 ## Reproduce
 
 ```powershell
-.venv/Scripts/python.exe lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/run_phase1.py `
+& $PY311 lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/run_phase1.py `
   --config lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json `
-  --source-dir 'C:\path\to\the\ten\active\frozen\files' `
-  --output-dir lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/remediation_40_dates_2026-09-03
+  --source-dir $SOURCE_DIR `
+  --output-dir lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/population_2026-09-05
 ```
+
+`$PY311` denotes the existing local Python 3.11.9 interpreter used for the single recorded invocation; `$SOURCE_DIR` denotes the operator-owned frozen source directory. The command documents that completed invocation; an additional real generation is not authorized by this record.
 
 The aggregate report remains `EXPLORATORY` even when all byte and accounting checks reproduce exactly. Re-running Pine needs a separate, explicitly authorized bar-data and execution-engine project.

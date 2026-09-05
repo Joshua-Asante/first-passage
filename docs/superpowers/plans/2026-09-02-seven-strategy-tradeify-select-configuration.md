@@ -10,9 +10,9 @@ grammar on the incumbent Tradeify Select 100K evaluation, or return no qualifyin
 configuration from one bounded attempt.
 
 **Status (2026-09-05):** orchestrator transferred to Codex. The operator merged
-campaign-only #302; scanner work is deferred to draft #307. Intake is not
-complete. No configuration has qualified, no search has run, and the rail remains
-disarmed. The operator approved S1/S2 below on 2026-09-05. Source binding,
+campaign-only #302; scanner work is deferred to draft #307. Capture and summary population are complete (§52); legal sizes and replay remain
+open. No configuration has qualified, no search has run, and the rail remains
+disarmed. The operator approved S1/S2 below on 2026-09-05. Sizing-faithfulness,
 private account binding, synchronized replay and the frozen statistical design
 remain owed. The used-account kernel is implemented; evidence and remaining scope
 are in [campaign state §50](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#50--used-account-kernel-2026-09-05).
@@ -88,7 +88,7 @@ The operator authorizes **one bounded implementation attempt** beyond the existi
 intake effort. This is one end-to-end opportunity to build, freeze, select, validate
 and disposition this book, not a reset of the three-constituent budget. Preserve D3:
 constituent (i) Phase 1, (ii) Phases 2–3, (iii) Phases 4–8. Phase 1 is at iteration
-6 of 8 including the pending population dispatch; two further cycles remain under
+6 of 8 including the completed population dispatch; two further cycles remain under
 §47's accounting. Do not count worker pushes as new campaign attempts or let a
 review loop run without a stopping rule. External spend remains zero unless the
 operator authorizes it separately; disclose compute before the freeze.
@@ -105,9 +105,10 @@ requires a new operator decision. No further scanner research is in this attempt
 **Files:** study `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/`, its existing
 normalization tests, and campaign §47/§48. Private evidence stays in its ignored area.
 
-- [ ] Complete the three partial captures recorded in §48 and obtain a fresh
-  same-state export for each of all five sources. Bind each export byte-for-byte to
-  its existing pin before creating the final immutable input snapshot.
+- [x] Complete all five input captures and seal private snapshots against the
+  existing export/Pine pins. [Campaign §52](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#52--completed-capture-intake-and-export-provenance-2026-09-05)
+  records the operator's same-chart-state attestation, which replaces the fresh
+  reexport requirement for this intake. No fresh reproduction is claimed.
 - [ ] Read each pinned Pine together with its effective chart inputs. Classify
   quantity rounding, dollar/equity stops, pyramids, margin and account-state feedback.
   A coded default is not evidence that a branch was inactive in the captured run.
@@ -116,11 +117,12 @@ normalization tests, and campaign §47/§48. Private evidence stays in its ignor
   rule. Reweighting realized trades cannot reconstruct suppressed trades.
   If additional exports are needed, give the operator one finite size menu before
   asking for them; no adaptive second menu after portfolio results.
-- [ ] Complete §47's single regeneration and P1–P8 read. Preserve D32's asymmetric
+- [x] Complete §47's single regeneration and local P1–P6 read. Preserve D32's asymmetric
   DD treatment and D30's UNESTABLISHED historical capital attribution. A runner's
   `phase1_verdict_cap=COMPLETE` means evidence coverage only; separately evaluate all
-  campaign prerequisites before declaring the freeze ready.
-- [ ] Review the final publication patch locally at its validated base; push only
+  campaign prerequisites before declaring the freeze ready. Current-head
+  publication CI must satisfy P8 before merge.
+- [x] Review the final publication patch locally at its validated base; push only
   approved aggregate fields, digests, synthetic fixtures and metadata. #307 is not
   a prerequisite. No private history is transferred into the public branch.
 

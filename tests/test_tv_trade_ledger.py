@@ -159,9 +159,12 @@ def test_input_override_raw_map_is_rejected():
         _source_spec(pine_input_overrides={})
 
 
-def test_historical_configuration_requires_current_private_captures():
-    with pytest.raises(ValueError, match="pine_input_overrides_sha256"):
-        load_source_specs(_CONFIG_PATH)
+def test_populated_configuration_binds_five_distinct_private_capture_digests():
+    """Missing or reused capture pins must not satisfy the populated intake."""
+    specs = load_source_specs(_CONFIG_PATH)
+
+    assert len(specs) == 5
+    assert len({spec.pine_input_overrides_sha256 for spec in specs}) == 5
 
 
 def test_load_source_specs_rejects_platformless_configuration(tmp_path):
@@ -258,10 +261,10 @@ def test_frozen_configuration_records_pine_pyramiding_from_each_source():
     assert [spec["pine_pyramiding_pct"] for spec in specs].count("250") == 1
 
 
-def test_historical_configuration_preserves_exact_source_inventory_bytes():
-    """The historical snapshot pins all metadata without restating private inputs."""
+def test_frozen_configuration_preserves_exact_populated_inventory_bytes():
+    """The populated snapshot pins all metadata without restating private inputs."""
     assert sha256(_CONFIG_PATH.read_bytes()).hexdigest() == (
-        "df238cd78fc0a381fdb86466ef3dfca5522dd8db7ae0cf245165f370df9f3892"
+        "a00bdd32687744b729510efe16704b0eb2c094d8551a7d91e87c5d6b878d9acb"
     )
 
 
