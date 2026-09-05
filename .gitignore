@@ -56,7 +56,7 @@ Thumbs.db
 telemetry.jsonl
 
 # Codex agent-harness files are local-only by default. The explicitly allowlisted
-# skill links below expose selected canonical .claude/skills to Codex without
+# skill loaders below expose selected canonical .claude/skills to Codex without
 # allowing an agent sync to silently commit the rest of the harness.
 AGENTS.md
 .agents/*
