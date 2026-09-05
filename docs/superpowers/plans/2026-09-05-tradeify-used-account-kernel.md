@@ -137,12 +137,23 @@ parent plan's bar-to-equity adapter unchecked: this kernel does not supply it.
 
 ## Implementation and verification
 
-Specification commit `1046588` preceded implementation `fa5039a` and fix `6e423fb`.
+Specification commit `1046588` preceded implementation `fa5039a` and fixes
+`6e423fb` / `adccb7d`.
 The task review identified an empty-batch initial-floor bypass and a NaN behavior
 change in the extracted pass predicate. Five new failing cases reproduced them;
 the fix shares initial validation across both entry points and preserves the
-legacy positive comparisons. On Python 3.12.14, the final focused state tests pass
-56 cases and the six-file state/interface regression set passes 123 cases.
+legacy positive comparisons. Final review also found an empty-path concatenation
+error for a valid explicit-state zero horizon; four failing cases covered passing
+and nonterminal states, with and without intraday blocks. Its fix preserves the
+omitted-state behavior. Both reviews are approved after scoped re-review.
+
+On Python 3.12.14, the final focused state tests pass 61 cases and the six-file
+state/interface regression set passes 128 cases. A broad local run on the first
+implementation returned 2,654 passes, 37 skips and 31 missing optional-package
+import failures. After isolated dependency installation, all four affected files
+pass (56 tests); dependency deprecation warnings remain. This is not a claim of
+an uninterrupted full-suite pass on that earlier head. Final-head CI is required
+before the operator's merge.
 
 The original simulation/calculator baseline passed 56 tests with one vendor skip.
 Private binding and the bar adapter are still outside this kernel; no campaign

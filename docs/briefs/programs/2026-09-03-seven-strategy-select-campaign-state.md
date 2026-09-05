@@ -3612,17 +3612,18 @@ that every possible book is falsified. A bounded negative result remains admissi
 
 The [kernel specification](../../superpowers/plans/2026-09-05-tradeify-used-account-kernel.md)
 was committed at `1046588`, before implementation at `fa5039a` and review fixes
-at `6e423fb`. The existing MC
+through `adccb7d`. The existing MC
 transition now accepts an immutable five-field account snapshot; targets,
 fixed-dollar drawdown and consistency remain tied to the original basis. Initial
 floor validity precedes day-zero qualification, and every seeded path starts from
 the same snapshot. Calls without state preserve the legacy interface and behavior.
 
-**Evidence:** 56 focused state tests and 123 combined state/interface regressions
+**Evidence:** 61 focused state tests and 128 combined state/interface regressions
 pass; the simulation/calculator baseline passes 56 tests with one normal vendor
 skip. These are synthetic implementation tests, not campaign samples or a
-qualification result. Independent review and repository-wide verification are
-recorded with the implementation specification before publication.
+qualification result. Task and whole-branch reviews are approved after three
+edge-case fixes; broader verification is recorded with the implementation
+specification. Private binding and replay remain open below.
 
 **Scope rulings:** the five-field interface accepts flat, settled session-boundary
 snapshots and inactivity OFF only; missing current-session and idle-day history
