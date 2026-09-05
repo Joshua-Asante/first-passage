@@ -334,3 +334,60 @@ def test_run_seed_validates_explicit_state_for_empty_batch() -> None:
             firm_kwargs=_rules(),
             initial_state=mismatched,
         )
+
+
+@pytest.mark.parametrize(
+    ("rules", "state"),
+    [
+        (
+            _rules(dd_type="static", static_dd_pct=-0.03),
+            _state(equity=97_000.0, peak=110_000.0, days=5, best=10_000.0),
+        ),
+        (
+            _rules(dd_type="trailing", trailing_dd_pct=-0.03),
+            _state(equity=110_580.0, peak=114_000.0, days=5, best=10_000.0),
+        ),
+        (
+            _rules(
+                dd_type="trailing_locking",
+                trailing_dd_pct=-0.03,
+                dd_lock_offset_usd=1_000_000.0,
+            ),
+            _state(equity=110_000.0, peak=113_000.0, days=5, best=10_000.0),
+        ),
+    ],
+)
+def test_run_seed_empty_batch_rejects_initial_floor_touch(
+    rules: dict[str, object], state: EvaluationState
+) -> None:
+    with pytest.raises(ValueError, match="drawdown floor"):
+        run_seed(
+            1,
+            0,
+            np.zeros((1, 5, 1)),
+            0.015,
+            0.40,
+            horizon=0,
+            firm_kwargs=rules,
+            initial_state=state,
+        )
+
+
+@pytest.mark.parametrize(
+    ("daily_pnl", "profit_target"),
+    [
+        (float("nan"), 110_000.0),
+        (100.0, float("nan")),
+    ],
+)
+def test_legacy_unordered_equity_target_comparison_does_not_pass(
+    daily_pnl: float, profit_target: float
+) -> None:
+    got = simulate_path(
+        _path(daily_pnl),
+        0.015,
+        0.40,
+        1,
+        **_rules(profit_target=profit_target),
+    )
+    assert got[:2] == ("horizon_cap", 1)

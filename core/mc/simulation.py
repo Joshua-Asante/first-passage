@@ -245,14 +245,65 @@ def _has_passed(
     min_trading_days: int,
     consistency_frac: float | None,
 ) -> bool:
-    if round(equity, 2) < profit_target or trade_days < min_trading_days:
-        return False
-    if consistency_frac is None:
-        return True
-    total_profit = equity - starting_equity
-    return total_profit <= 0.0 or round(
-        max_day_profit - consistency_frac * total_profit, 2
-    ) <= 0.0
+    if round(equity, 2) >= profit_target and trade_days >= min_trading_days:
+        if consistency_frac is None:
+            return True
+        total_profit = equity - starting_equity
+        return total_profit <= 0.0 or round(
+            max_day_profit - consistency_frac * total_profit, 2
+        ) <= 0.0
+    return False
+
+
+def _validate_initial_state_start(
+    initial_state: EvaluationState,
+    *,
+    dd_trigger: float,
+    dd_scale: float,
+    horizon: int,
+    starting_equity: float,
+    daily_loss_pct: float | None,
+    dd_type: str,
+    static_dd_pct: float | None,
+    trailing_dd_pct: float | None,
+    dd_lock_offset_usd: float | None,
+    profit_target: float,
+    min_trading_days: int,
+    inactivity_limit: int,
+    consistency_frac: float | None,
+) -> float:
+    _validate_initial_state_configuration(
+        initial_state,
+        dd_trigger=dd_trigger,
+        dd_scale=dd_scale,
+        horizon=horizon,
+        starting_equity=starting_equity,
+        daily_loss_pct=daily_loss_pct,
+        dd_type=dd_type,
+        static_dd_pct=static_dd_pct,
+        trailing_dd_pct=trailing_dd_pct,
+        dd_lock_offset_usd=dd_lock_offset_usd,
+        profit_target=profit_target,
+        min_trading_days=min_trading_days,
+        inactivity_limit=inactivity_limit,
+        consistency_frac=consistency_frac,
+    )
+    initial_bust = _drawdown_outcome(
+        initial_state.current_equity,
+        initial_state.historical_eod_peak,
+        starting_equity=starting_equity,
+        dd_type=dd_type,
+        static_dd_pct=static_dd_pct,  # type: ignore[arg-type]
+        trailing_dd_pct=trailing_dd_pct,
+        dd_lock_offset_usd=dd_lock_offset_usd,
+    )
+    if initial_bust is not None:
+        raise ValueError(
+            f"initial_state is already at or beyond its drawdown floor ({initial_bust})"
+        )
+    return (
+        initial_state.historical_eod_peak - initial_state.current_equity
+    ) / initial_state.historical_eod_peak
 
 
 def simulate_path(
@@ -321,7 +372,7 @@ def simulate_path(
         max_dd = 0.0
         max_day_profit = 0.0
     else:
-        _validate_initial_state_configuration(
+        max_dd = _validate_initial_state_start(
             initial_state,
             dd_trigger=dd_trigger,
             dd_scale=dd_scale,
@@ -340,22 +391,7 @@ def simulate_path(
         equity = initial_state.current_equity
         peak = initial_state.historical_eod_peak
         trade_days = initial_state.prior_trade_days
-        max_dd = (peak - equity) / peak
         max_day_profit = initial_state.prior_max_day_profit
-
-        initial_bust = _drawdown_outcome(
-            equity,
-            peak,
-            starting_equity=starting_equity,
-            dd_type=dd_type,
-            static_dd_pct=static_dd_pct,
-            trailing_dd_pct=trailing_dd_pct,
-            dd_lock_offset_usd=dd_lock_offset_usd,
-        )
-        if initial_bust is not None:
-            raise ValueError(
-                f"initial_state is already at or beyond its drawdown floor ({initial_bust})"
-            )
         if _has_passed(
             equity,
             trade_days,
@@ -470,7 +506,7 @@ def run_seed(
             "initial_state is a path starting point, not a firm rule; pass it separately"
         )
     if initial_state is not None:
-        _validate_initial_state_configuration(
+        _validate_initial_state_start(
             initial_state,
             dd_trigger=dd_trigger,
             dd_scale=dd_scale,
