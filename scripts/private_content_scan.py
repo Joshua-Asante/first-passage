@@ -69,7 +69,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-_WORD = r"(?<![A-Za-z0-9_]){}(?![A-Za-z0-9_])"
 _DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 _DECIMAL = re.compile(r"\d\.\d")
 _HUNK = re.compile(r"\+(\d+)")   # first "+N" in "@@ -a,b +c,d @@" or "@@@ -a,b -c,d +e,f @@@"
@@ -81,17 +80,21 @@ class NeedleError(RuntimeError):
 
 
 def _git(args: list[str], cwd: Path) -> str:
+    # Captured as BYTES and decoded here, deliberately: ``text=True`` enables
+    # universal-newline translation, which rewrites every CR in git's output --
+    # including one inside a NUL-delimited path, and including one inside an
+    # added line, where it would split the line and hide everything after it.
+    # ``surrogateescape`` makes an undecodable byte round-trip: subprocess
+    # encodes POSIX argv with the same handler, so a path that is not valid
+    # UTF-8 still names the real tree entry through a ``:(literal)`` pathspec.
     proc = subprocess.run(
         ["git", "-c", "core.quotePath=false", *args],
         cwd=cwd,
         capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
     )
     if proc.returncode != 0:
         raise RuntimeError(f"git {' '.join(args[:2])} failed with status {proc.returncode}")
-    return proc.stdout
+    return proc.stdout.decode("utf-8", "surrogateescape")
 
 
 def _z_fields(out: str) -> list[str]:
@@ -188,7 +191,13 @@ def compile_classes(classes: dict[str, set[str]]) -> dict[str, re.Pattern[str]]:
     compiled = {}
     for name, needles in classes.items():
         ordered = sorted(needles, key=len, reverse=True)
-        compiled[name] = re.compile(_WORD.format("(?:" + "|".join(re.escape(n) for n in ordered) + ")"))
+        # SUBSTRING, not word-bounded. A word boundary that counts "_" and digits
+        # as word characters made every needle invisible the moment it was glued
+        # into a longer identifier, filename or commit message -- and made the
+        # report print such a path verbatim, because the redaction used the same
+        # patterns. A disclosure control fails closed: a coincidental hit is
+        # adjudicated, a missed one is published.
+        compiled[name] = re.compile("(?:" + "|".join(re.escape(n) for n in ordered) + ")")
     return compiled
 
 
@@ -443,7 +452,15 @@ def main(argv: list[str] | None = None) -> int:
         return 4
     for name, commit, file, line in all_hits:
         shown, redacted = _redact(file, patterns)
-        digest = f" path_sha256={hashlib.sha256(file.encode('utf-8')).hexdigest()[:12]}" if redacted else ""
+        # The digest is over the path's TRUE bytes, so it stays a usable local
+        # remediation handle for a name that is not valid UTF-8; the displayed
+        # form is made printable separately, since a surrogate would crash stdout.
+        digest = (
+            f" path_sha256={hashlib.sha256(file.encode('utf-8', 'surrogateescape')).hexdigest()[:12]}"
+            if redacted
+            else ""
+        )
+        shown = shown.encode("utf-8", "replace").decode("utf-8", "replace")
         print(f"HIT class={name} commit={commit[:8]} file={shown} line={line}{digest}")
     if all_hits:
         print(f"SCAN result=HITS count={len(all_hits)} commits={len(commits)}")

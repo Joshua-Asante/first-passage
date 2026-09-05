@@ -114,12 +114,77 @@ def test_detached_trivial_scalar_is_not_a_needle_but_title_is(repo: tuple[Path, 
 
 
 @needs_git
-def test_word_boundary_matching(repo: tuple[Path, Path, Path]) -> None:
+def test_matching_is_substring_and_fails_closed(repo: tuple[Path, Path, Path]) -> None:
+    """A needle extended by more text is still a hit.
+
+    This pinned the opposite until the adversarial panel of 2026-09-05 showed
+    the word boundary was a bypass: it counted "_" and digits as word
+    characters, so a private value glued into a longer identifier, filename or
+    commit message matched nothing -- and the report printed such a path
+    verbatim, because ``_redact`` used the same patterns. A coincidental hit is
+    adjudicated under the step 6b rule; a missed one is published.
+    """
     root, snap, export = repo
-    (root / "c.txt").write_text("Aggressively is a different word; 141237.5 is a different number\n", encoding="utf-8")
+    (root / "c.txt").write_text("Aggressively is a longer word; 141237.5 is a longer number\n", encoding="utf-8")
     _git(root, "add", "c.txt")
-    _git(root, "commit", "-q", "-m", "near misses")
-    assert _run(root, "--json", str(snap), "--csv", str(export)).returncode == 0
+    _git(root, "commit", "-q", "-m", "needles extended by more text")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2
+    assert "HIT class=VALUE" in proc.stdout and "file=c.txt" in proc.stdout
+
+
+@needs_git
+def test_needle_glued_to_an_underscore_is_caught(repo: tuple[Path, Path, Path]) -> None:
+    root, snap, export = repo
+    (root / "u.txt").write_text("token = Aggressive_backup\n", encoding="utf-8")
+    _git(root, "add", "u.txt")
+    _git(root, "commit", "-q", "-m", "glued to an underscore")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2 and "file=u.txt" in proc.stdout
+
+
+@needs_git
+def test_filename_bytes_that_are_not_utf8_are_still_scanned(repo: tuple[Path, Path, Path]) -> None:
+    """git output is read as bytes and decoded with surrogateescape.
+
+    Under ``errors="replace"`` the name came back with U+FFFD in it, the
+    ``:(literal)`` pathspec built from it matched no tree entry, git exited 0
+    with an empty diff, and the blob was never scanned -- a regression the
+    per-path read introduced and the panel caught.
+    """
+    root, snap, export = repo
+    raw = os.path.join(os.fsencode(str(root)), b"caf\xe9.txt")
+    with open(raw, "wb") as handle:
+        handle.write(b"Aggressive mode\n")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "name is not valid utf-8")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=VALUE" in proc.stdout
+
+
+@needs_git
+def test_carriage_return_in_a_filename_is_still_scanned(repo: tuple[Path, Path, Path]) -> None:
+    root, snap, export = repo
+    (root / "chart\rexport.txt").write_text("Aggressive\n", encoding="utf-8")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "cr in the name")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=VALUE" in proc.stdout
+
+
+@needs_git
+def test_carriage_return_inside_an_added_line_does_not_hide_the_rest(repo: tuple[Path, Path, Path]) -> None:
+    """``text=True`` turned a lone CR into a newline, splitting the record.
+
+    Everything after the CR then landed in a fragment carrying no "+" column and
+    was never scanned. git output is now captured as bytes and split on LF only.
+    """
+    root, snap, export = repo
+    (root / "n.txt").write_bytes(b"harmless\rAggressive\n")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "cr inside the line")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=VALUE" in proc.stdout
 
 
 @needs_git
