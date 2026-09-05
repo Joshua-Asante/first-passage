@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-09-04
+**Last curated:** 2026-09-05
 
 This file is the **open-threads + forward-obligation register** — cross-session
 items with no other home, plus the forward-trigger board. It is **not** a state
@@ -57,7 +57,7 @@ BEHIND this list.** Items leave when done; it stays ≤5 so it cannot decay into
 
 | # | Item | Owner artifact | Blocks |
 |---|---|---|---|
-| 1 | **Seven-strategy Tradeify Select configuration campaign** — the live/turning campaign; plan ([PR #272](https://github.com/Joshua-Asante/first-passage/pull/272)) and orchestrator takeover ([PR #273](https://github.com/Joshua-Asante/first-passage/pull/273)) both merged 2026-09-03. Phase 0 skipped by operator override; Phase 1 (normalization + reconciliation) dispatched to Codex on a local worktree, gate frozen before any output was read. No candidate contract, no capital, c1 rail stays disarmed. $0/K=0. | [`campaign state`](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · [`plan`](docs/superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) | Phase 2+ (standalone quality → freeze → Phase 4 joint audit) |
+| 1 | **Seven-strategy Tradeify Select configuration campaign** — the live/turning campaign; plan ([PR #272](https://github.com/Joshua-Asante/first-passage/pull/272)) and orchestrator takeover ([PR #273](https://github.com/Joshua-Asante/first-passage/pull/273)) both merged 2026-09-03. Phase 0 skipped by operator override; Phase 1 (normalization + reconciliation) dispatched to Codex on a local worktree, gate frozen before any output was read; **D26/D27 code readiness merged 2026-09-04 ([PR #301](https://github.com/Joshua-Asante/first-passage/pull/301), `5ab079c`) — population (five current-input captures) and the single re-freeze next.** No candidate contract, no capital, c1 rail stays disarmed. $0/K=0. | [`campaign state`](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · [`plan`](docs/superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) | Phase 2+ (standalone quality → freeze → Phase 4 joint audit) |
 | 2 | **B7-REFIRE Stage 1 + M1** — item 5 dated 2026-08-24; test strategy licensed. Does not wait on #1. No arm | [`M1 addendum`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy) · [`S2`](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) | live-signal / arming path |
 
 Off-queue leftovers stay on their owner artifacts. Re-entry is promote to a numbered queue row and drop something else (cap ≤5). When a doable row leaves, do not auto-open a replacement — cite remaining rows until the operator promotes one.
@@ -159,17 +159,22 @@ Canonical dates/criteria live with their owners; this board is a pointer so
 obligations are not lost between sessions. Closed/retired/discharged rows are
 deleted (not struck).
 
-### Weekly — recurring (rolling; next deadline **2026-09-04**, bucket 08-31→09-04)
+### Weekly — recurring (rolling; next deadline **2026-09-11**, bucket 09-07→09-11)
 
-> Last confirmed placement: **2026-08-26** (round-trip, MNQU6, both legs filled) — that
-> satisfies bucket 08-24→08-28 only. Prior week 08-17→08-21 satisfied (operator-confirmed
-> 2026-08-22). Current bucket 08-31→09-04: **operator-stated placed 2026-09-03** ("I placed the weekly
-> idle trade yesterday", 2026-09-04 — recorded in the campaign-state artifact §15, carried here 2026-09-04
-> per §39). ⚠ The **authoritative** coverage row in the private compliance note is still the operator's to
-> write; the session hook reads that row, not this board, and stays `NOT RECORDED` until it exists. Row stays live — roll
-> this date forward each Monday. **Recurrence ruled 2026-08-16** (decision index, above):
-> re-electing coverage every week is the standing design, not an open question — this
-> row's own weekly cadence is that design in practice, not a symptom of anything unresolved.
+> Last confirmed placement: **2026-09-03** (operator-stated 2026-09-04: "I placed the weekly idle
+> trade yesterday" — recorded in the campaign-state artifact §15, carried here 2026-09-04 per §39) —
+> that satisfies bucket 08-31→09-04, and **restated 2026-09-05** ("I placed the weekly idle trade
+> wednesday two days ago, this should be recorded"). ⚠ Those two descriptors point to different days
+> — Wednesday was 09-02, two days before 09-05 is 09-03 — so this is read as the SAME placement
+> restated, not a second one; **both candidate days fall inside the bucket, so coverage holds either
+> way**, and the exact day is left to the authoritative row rather than guessed here. Prior week
+> 08-24→08-28 satisfied by the 2026-08-26 MNQU6 round-trip. Current bucket 09-07→09-11: **open**
+> (rolls Monday). ⚠ The **authoritative** coverage
+> row in the private compliance note is still the operator's to write; the session hook reads that
+> row, not this board, and stays `NOT RECORDED` until it exists. Row stays live — roll this date
+> forward each Monday. **Recurrence ruled 2026-08-16** (decision index, above): re-electing coverage
+> every week is the standing design, not an open question — this row's own weekly cadence is that
+> design in practice, not a symptom of anything unresolved.
 
 - **Venue idle-clock — ≥1 operator-placed trade per Mon–Fri week on the live account (identifier
   redacted from the public tree).**
