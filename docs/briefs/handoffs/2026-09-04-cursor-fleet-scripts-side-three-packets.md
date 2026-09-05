@@ -267,7 +267,7 @@ git worktree remove --force "$WT/p1"
 git worktree add --detach "$WT/p3" origin/cursor/scripts-side-2026-09-04-p3
 git -C "$WT/p3" diff --name-only origin/main...HEAD                                    # expect exactly the 2 C files
 (cd "$WT/p3" && python -m pytest -q tests/test_repo_hygiene.py)
-(cd "$WT/p3" && python scripts/repo_hygiene.py > "$WT/rh.txt"; echo "rc=$? (must be 0)"; head -5 "$WT/rh.txt")   # runs on a host without gh; no pipe — a pipe hides a crash
+(cd "$WT/p3" && python scripts/repo_hygiene.py > "$WT/rh.txt"; rc=$?; head -5 "$WT/rh.txt"; echo "rc=$rc (must be 0)"; [ "$rc" -eq 0 ])   # gh-less host; the subshell returns the SCRIPT's status: no pipe (hides a crash) and head is not last (its status would replace the script's)
 (cd "$WT/p3" && python scripts/gate_manifest.py --tier check)
 (cd "$WT/p3" && grep -n "test_repo_hygiene" scripts/gates.yml Makefile; echo "expect no match — not wired into any gate")
 git worktree remove --force "$WT/p3"
