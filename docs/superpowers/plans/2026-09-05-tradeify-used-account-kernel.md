@@ -1,6 +1,6 @@
 # Used evaluation account — kernel specification and implementation plan
 
-**Status:** implementation specification, 2026-09-05. This is the independent
+**Status:** implemented, 2026-09-05; verification recorded below. This is the independent
 used-account part of Task 2 in the
 [approved campaign plan](2026-09-02-seven-strategy-tradeify-select-configuration.md).
 It does not close source intake, synchronized bar replay, portfolio execution or
@@ -134,3 +134,16 @@ Monte Carlo, n1/n2/n3 sample or private-account scoring is part of these tests.
 
 Deliver the implementation and test evidence for independent review. Keep the
 parent plan's bar-to-equity adapter unchecked: this kernel does not supply it.
+
+## Implementation and verification
+
+Specification commit `1046588` preceded implementation `fa5039a` and fix `6e423fb`.
+The task review identified an empty-batch initial-floor bypass and a NaN behavior
+change in the extracted pass predicate. Five new failing cases reproduced them;
+the fix shares initial validation across both entry points and preserves the
+legacy positive comparisons. On Python 3.12.14, the final focused state tests pass
+56 cases and the six-file state/interface regression set passes 123 cases.
+
+The original simulation/calculator baseline passed 56 tests with one vendor skip.
+Private binding and the bar adapter are still outside this kernel; no campaign
+sampling or account-value validation has occurred.

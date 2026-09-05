@@ -1,7 +1,7 @@
 # Seven-strategy Select configuration campaign — campaign state (orchestrator-only writes)
 
 **Status:** Codex owns orchestration by the 2026-09-05 operator transfer. The operator merged campaign-only #302; scanner draft #307 is deferred. The [current execution plan](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) replaces the old phase sequence. Intake remains blocked on complete export-bound captures (§48); no search, final freeze, qualification or live authorization has occurred. One bounded implementation attempt is authorized (§49); S1 unconditional speed and S2 final validation after winner parity are approved (2026-09-05).
-**Last curated:** 2026-09-05 (Codex takeover, `codex/tradeify-campaign-next`)
+**Last curated:** 2026-09-05 (Codex, `codex/tradeify-used-account-kernel`)
 **Parent plan:** [`2026-09-02-seven-strategy-tradeify-select-configuration.md`](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
 (PR [#272](https://github.com/Joshua-Asante/first-passage/pull/272) — **merged 2026-09-03** together
 with #273; four Codex passes `459421b`, `78c82de`, `e8694a9`, `6aa7ff8`, the operator's ruling and
@@ -3580,7 +3580,9 @@ for the executable winner and fresh account state; a failed final test ends the
 attempt even if winner implementation effort has already been spent. Source
 binding, live-state/replay implementation and the statistical freeze remain owed.
 
-**Calculator repair in this follow-up:** six regression failures reproduced the
+**Calculator repair — merged:** the operator merged [#308](https://github.com/Joshua-Asante/first-passage/pull/308)
+and the [#309](https://github.com/Joshua-Asante/first-passage/pull/309) record update.
+Six regression failures reproduced the
 three A2 defects; the fix normalizes the entire probability mass, rejects unit
 power at positive failure rate and makes CLI operations exclusive. Mode-relative
 CDF emission prefers the smaller tail so exact boundary classifications are not
@@ -3588,9 +3590,10 @@ lost to a one-ULP overshoot after dividing by a separately rounded total. All 46
 tests pass on Python 3.12.14, including the existing ordinary pins and an
 independent integer-arithmetic quantile oracle. This is code validation, not
 n2/n3 sizing or a campaign result. The old #305 disposition remains historical;
-§45's repair hold is discharged only when this follow-up lands and its checks
-are accepted. §48's prerequisite 8/9 "A2 defects" row is the pre-repair
-checkpoint; live disposition is this paragraph.
+§45's code-repair hold is discharged. Prerequisites 8/9 still require the frozen
+four-condition statistical design; calculator availability alone does not close
+them. §48's prerequisite 8/9 "A2 defects" row is the pre-repair checkpoint;
+live disposition is this paragraph.
 
 **Local intake verification:** all five current Pine files and five pinned exports
 were located and their SHA-256 values match phase1_config.json. The existing
@@ -3604,3 +3607,33 @@ correlation algebra do not supply a certified pass-time bound. Existing Rule 0
 and operational correction discipline own this failure; no new methodology lesson
 or load-bearing-number registry is added. Process degeneration is not a finding
 that every possible book is falsified. A bounded negative result remains admissible.
+
+## §50 — Used-account kernel (2026-09-05)
+
+The [kernel specification](../../superpowers/plans/2026-09-05-tradeify-used-account-kernel.md)
+was committed at `1046588`, before implementation at `fa5039a` and review fixes
+at `6e423fb`. The existing MC
+transition now accepts an immutable five-field account snapshot; targets,
+fixed-dollar drawdown and consistency remain tied to the original basis. Initial
+floor validity precedes day-zero qualification, and every seeded path starts from
+the same snapshot. Calls without state preserve the legacy interface and behavior.
+
+**Evidence:** 56 focused state tests and 123 combined state/interface regressions
+pass; the simulation/calculator baseline passes 56 tests with one normal vendor
+skip. These are synthetic implementation tests, not campaign samples or a
+qualification result. Independent review and repository-wide verification are
+recorded with the implementation specification before publication.
+
+**Scope rulings:** the five-field interface accepts flat, settled session-boundary
+snapshots and inactivity OFF only; missing current-session and idle-day history
+cannot be silently reset. Maximum drawdown includes the supplied snapshot and
+simulated future, not unobserved earlier troughs. Supporting other boundaries or
+lifetime historical drawdown would require separately specified, bound history.
+
+**Remaining critical path:** the kernel does not close the complete used-account
+and replay prerequisite. Private snapshot provenance and synchronized bar replay
+remain unchecked in Task 2; Task 1 still has three partial captures and all five
+fresh export bindings outstanding (§48). The four-condition statistical freeze
+is also owed. S2 still requires a fresh snapshot immediately before the sole n3,
+after provisional winner implementation/parity. No intake iteration, n1/n2/n3
+sample, live authorization or additional implementation attempt was consumed.

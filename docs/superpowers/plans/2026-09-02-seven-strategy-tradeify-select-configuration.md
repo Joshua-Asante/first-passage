@@ -13,7 +13,9 @@ configuration from one bounded attempt.
 campaign-only #302; scanner work is deferred to draft #307. Intake is not
 complete. No configuration has qualified, no search has run, and the rail remains
 disarmed. The operator approved S1/S2 below on 2026-09-05. Source binding,
-live-state/replay implementation and the frozen statistical design remain owed.
+private account binding, synchronized replay and the frozen statistical design
+remain owed. The used-account kernel is implemented; evidence and remaining scope
+are in [campaign state §50](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#50--used-account-kernel-2026-09-05).
 
 **Architecture:** privately bound strategy expressions feed canonical ledgers and
 synchronized intraday replay. A frozen composition policy feeds one deterministic
@@ -134,13 +136,16 @@ then `core/mc/simulation.py`, `core/mc/preflight.py` and synthetic MC tests.
   conflicting CLI operations, and mass deficit causing a wrong extreme quantile.
 - [x] Fix those cases without changing the ordinary campaign pins. Verify the
   extreme quantile using exact integer arithmetic, not the calculator's own helper.
-- [ ] Define a validated immutable initial state carrying original account basis,
+- [x] Define a validated immutable initial state carrying original account basis,
   current equity, historical EOD peak, prior qualifying trade-day count and maximum
-  prior profitable day. Fail closed on invalid/missing fields; source it privately.
-- [ ] Keep the original basis in the target, fixed-dollar rope and consistency
+  prior profitable day. Fail closed on invalid/missing fields.
+- [ ] Bind that state privately to a fresh, flat, settled session-boundary account
+  snapshot; the kernel's five numbers cannot establish provenance or exclude
+  current-session trades, pending orders or cash adjustments.
+- [x] Keep the original basis in the target, fixed-dollar rope and consistency
   denominator. Initialize equity/peak/day history from the snapshot. Never pass
   current equity as `starting_equity` to emulate an already-used account.
-- [ ] Verify synthetic cases: pristine-state legacy equivalence; same current
+- [x] Verify synthetic cases: pristine-state legacy equivalence; same current
   equity with different prior peaks yields different floors; prior best day delays
   consistency clearance; prior trade days count; an intraday floor touch fails even
   if the close recovers; terminal pass at the initial state returns zero additional
@@ -155,6 +160,9 @@ then `core/mc/simulation.py`, `core/mc/preflight.py` and synthetic MC tests.
 accounts, and the composition/replay outputs represent the eventual quantity policy.
 Write the interface-level implementation specification before changing this core
 surface; the existing calculator repair is independently testable and can land first.
+The [used-account kernel specification](2026-09-05-tradeify-used-account-kernel.md)
+owns the five-field interface and its supported snapshot boundary; the bar adapter
+and private binding remain separate obligations.
 
 ## Task 3 — Freeze one finite, composable search
 
