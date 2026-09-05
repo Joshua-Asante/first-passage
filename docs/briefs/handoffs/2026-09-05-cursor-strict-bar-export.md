@@ -89,6 +89,7 @@ On success print deterministic JSON, and optionally atomically write identical b
 5. Epoch milliseconds are UTC opens. Require `epoch_ms < time_close_ms <= epoch_ms + timeframe_minutes * 60000`. This is a structural duration bound, not a claim that every session bar has full duration or that a fixture's minus-one-millisecond endpoint defines Pine semantics. Retain/compare the exact reported close timestamp. Day-of-week and session flags are shape-validated by the existing grammar; do not infer them from a guessed chart timezone.
 6. Within-page duplicate timestamps fail. Across pages, overlap is accepted only when every decoded v0.2 field and Entry price agrees exactly (numeric Decimal equality for numeric fields, exact other identities). Metadata/per-bar-field/OHLCV disagreements fail. Count every accepted repeated row across pages; never select a winner. Same timestamp with differing trade ID across distinct pages is allowed because those are transport IDs, not payload identity.
 7. Sort reconciled unique opens, require exact supplied count/first/last, and report hashes in input page order. Use exact integer/datetime conversion, no epoch float round-trip. Do not infer continuity across exchange closures, session completeness, contract roll, feed equivalence or chart timezone. This receipt does not compare a separate canonical history; that integration remains caller-owned.
+8. Reject a repeated underlying input file, including repeated paths and symlink/hardlink aliases. Distinct files may contain legitimate identical overlap. After successful reconciliation, identical_cross_page_overlap_count equals entry_row_count minus unique_bar_count; count repeated rows, not all pairwise matches.
 
 ## 4. Hypothesis and independent tests
 
@@ -102,7 +103,7 @@ Write independent synthetic expected-value tests before implementation:
 - More significant decimal digits than float preserves: exact close/Entry equality passes, one final-digit difference fails; nonfinite/invalid numerics, bad OHLC geometry and volume fail. Different trailing zeros alone agree.
 - Close at open or beyond duration fails; exact full duration, one millisecond shorter and a shorter positive session bar pass this structural bound. Close timestamp/dow/session disagreement in overlap fails. Duplicate within-page fails; exact cross-page duplicate passes; divergent overlap fails.
 - Wrong unique count/first/last and non-UTC/naive expected endpoints fail. Identical repeat calls and changed Decimal context cannot alter comparisons.
-- CLI success JSON and receipt bytes identical; validation failure exit2 leaves existing receipt intact; input-alias output refused; no source or canonical writes.
+- CLI success JSON and receipt bytes identical; validation failure exit2 leaves existing receipt intact; input-alias output refused; no source or canonical writes. Duplicate underlying input paths/aliases fail. A timestamp repeated in three distinct pages contributes two overlaps, not three.
 - One focused regression calls unchanged parse_bar_export_with_meta on synthetic malformed/overlapping data to demonstrate its retained permissive behavior. If a symbol mapping is needed, monkeypatch a synthetic key within the test; use no real captured row.
 
 ## 5. Forbidden moves
