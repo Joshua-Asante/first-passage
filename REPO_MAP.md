@@ -129,6 +129,7 @@ _64 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/archive_strategy.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/audit_notice_grade_k_correction.py` | lab | `notice-grade-k-correction` (audit) | — |
 | `scripts/beta_cohesion_read.py` | lab | — | manual/local only, not in gates.yml |
+| `scripts/certification_power.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_adr_graph.py` | governance | `adr-graph` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_advisor_dedup.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_boundaries.py` | governance | `boundaries` (always) | — |
