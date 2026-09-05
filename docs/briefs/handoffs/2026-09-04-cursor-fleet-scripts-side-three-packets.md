@@ -101,12 +101,15 @@ fi
 if ! PRS=$(gh pr list --state open --limit 1000 --json number -q '.[].number' 2>/dev/null); then
   PRS="${OPEN_PRS:?no gh — set OPEN_PRS to the COMPLETE operator-supplied list of open PR numbers}"
 fi
-git fetch origin '+refs/pull/*/head:refs/remotes/pr/*'
+OK=1   # fail CLOSED: a failed fetch, a missing ref or a failed diff leaves the no-overlap result unestablished
+git fetch origin '+refs/pull/*/head:refs/remotes/pr/*' || OK=0
 MINE=$(git rev-parse --verify -q "origin/$(git rev-parse --abbrev-ref HEAD)" || true)   # pushed tip of THIS branch: on a §6b fix round that is the packet's own open PR, which touches its own footprint by construction; absent on an initial dispatch
 for n in $PRS; do
-  if [ -n "$MINE" ] && [ "$(git rev-parse "pr/$n")" = "$MINE" ]; then echo "== PR #$n == this branch's own PR — skipped"; continue; fi
-  echo "== PR #$n =="; git diff --name-only origin/main...pr/$n
+  H=$(git rev-parse --verify -q "pr/$n") || { echo "== PR #$n == ref missing after fetch"; OK=0; continue; }
+  if [ -n "$MINE" ] && [ "$H" = "$MINE" ]; then echo "== PR #$n == this branch's own PR — skipped"; continue; fi
+  echo "== PR #$n =="; git diff --name-only origin/main...pr/$n || OK=0
 done   # every OTHER PR the query returned, never a hard-coded set
+[ "$OK" = 1 ] && echo "overlap probe complete" || echo "STOP: overlap probe incomplete — treat as BLOCKED, touch nothing"
 # Expected: none of the listed files is in your packet's §2 footprint. If one is, STOP and return BLOCKED naming it.
 # (2026-09-04 result: #297 touched REPO_MAP.md and blocked A until it merged as 81b35d0; re-run the probe — it should now be clean for both.)
 ```
