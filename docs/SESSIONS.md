@@ -33,6 +33,12 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-05a — Consolidate the bounded Select attempt and repair certification sizing
+
+**Open / next:** STATE queue: `#1` [Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#49--codex-takeover-and-bounded-campaign-revision-2026-09-05) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24). The operator merged #302; scanner draft #307 stays separate. The [revised execution plan](superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) preserves the single-attempt limit and leaves S1/S2 pending before freeze. Complete export-bound inputs remain owed. The calculator repair passes 45 tests; the [Striker admission ADR](adr/2026-09-05-tradeify-select-striker-expression-readmission.md) records the prior eval-only election. No search, qualified book or live authorization.
+
+---
+
 ## 2026-09-05e — Operator transfers orchestration; separate scanner from campaign delivery
 
 **Open / next:** STATE queue: `#1` [Tradeify configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24). Scanner work is deferred to its own draft; #302 is prepared for the operator's merge. Local population retains the binding checks and a separate publication review (§47); the dropped §48 capture checkpoint is restored from `68fcbf4`. The operator authorizes one bounded implementation attempt for the remaining campaign; its executable scope is being consolidated before search. No new sampling, candidate or capital authorization occurred in this split.

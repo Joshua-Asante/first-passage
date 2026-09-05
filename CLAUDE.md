@@ -23,6 +23,9 @@ Forward obligations live in [`STATE.md`](STATE.md); session narrative in
 **Environment:** the live incumbent `Tradeify_Select_100K` eval is the environment for **new**
 strategies. The c1 rail is **built, warm, and disarmed** (`dry_run=true`) pointed at it.
 **There is no live c1 book** — both Striker legs were withdrawn 2026-08-04 and stay barred.
+The two separately identified campaign expressions have conditional eval eligibility
+by [operator election](docs/adr/2026-09-05-tradeify-select-striker-expression-readmission.md);
+this does not reauthorize the withdrawn editions or any funded deployment.
 
 **Safety invariants (non-negotiable):**
 

@@ -9,8 +9,8 @@ Certification power at true rate p is BinomCDF(k_max; n, p). Joint power
 over L limbs is q**L under independence, or max(0, 1 - L*(1-q)) with no
 dependence assumption (Fréchet).
 
-``math.comb`` is the coefficient; the lower-tail CDF is accumulated once
-in log space (peak-shifted recurrence) so n up to n_max stays in float.
+The binomial mass is built relative to its mode and normalized over all
+n+1 terms. This avoids an accumulated mass deficit at extreme quantiles.
 """
 from __future__ import annotations
 
@@ -54,7 +54,7 @@ def _require_limbs(limbs: int) -> None:
 
 
 def _iter_lower_cdf(n: int, p: float) -> Iterator[tuple[int, float]]:
-    """Yield (k, BinomCDF(k; n, p)) incrementally in one left-to-right pass."""
+    """Yield (k, BinomCDF(k; n, p)) from a normalized O(n) recurrence."""
     if p <= 0.0:
         for k in range(n + 1):
             yield k, 1.0
@@ -65,22 +65,24 @@ def _iter_lower_cdf(n: int, p: float) -> Iterator[tuple[int, float]]:
         yield n, 1.0
         return
 
-    log_odds = math.log(p) - math.log(1.0 - p)
-    log_term = n * math.log(1.0 - p)
-    peak = log_term
-    scaled = 1.0
-    for k in range(n + 1):
-        cdf = scaled * math.exp(peak)
-        if cdf > 1.0:
-            cdf = 1.0
-        yield k, cdf
-        if k == n:
-            return
-        log_term = log_term + math.log(n - k) - math.log(k + 1) + log_odds
-        if log_term > peak:
-            scaled *= math.exp(peak - log_term)
-            peak = log_term
-        scaled += math.exp(log_term - peak)
+    mode = min(n, int((n + 1) * p))
+    weights = [0.0] * (n + 1)
+    weights[mode] = 1.0
+    odds = p / (1.0 - p)
+    for k in range(mode, n):
+        weights[k + 1] = weights[k] * ((n - k) / (k + 1)) * odds
+    for k in range(mode, 0, -1):
+        weights[k - 1] = weights[k] * (k / (n - k + 1)) / odds
+    total = math.fsum(weights)
+    cumulative = correction = 0.0
+    for k, weight in enumerate(weights):
+        # Compensated accumulation keeps tiny tail masses from being lost as
+        # rounding drift in the bulk. Normalize every prefix, not just k=n.
+        adjusted = weight - correction
+        updated = cumulative + adjusted
+        correction = (updated - cumulative) - adjusted
+        cumulative = updated
+        yield k, 1.0 if k == n else min(1.0, cumulative / total)
 
 
 def _binom_cdf(k: int, n: int, p: float) -> float:
@@ -163,6 +165,8 @@ def size_for_power(
     """
     _require_unit_interval("true_rate", true_rate)
     _require_target(target)
+    if target == 1.0 and true_rate > 0.0:
+        raise ValueError("target 1.0 requires true_rate == 0")
     _require_limbs(limbs)
     _require_open_unit("ceiling", ceiling)
     _require_open_unit("alpha", alpha)
@@ -231,8 +235,9 @@ def format_eval_line(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--true-rate", type=float, required=True)
-    parser.add_argument("--power", type=float, default=None)
-    parser.add_argument("--n", type=int, default=None)
+    operation = parser.add_mutually_exclusive_group(required=True)
+    operation.add_argument("--power", type=float, default=None)
+    operation.add_argument("--n", type=int, default=None)
     parser.add_argument("--limbs", type=int, default=DEFAULT_LIMBS)
     parser.add_argument(
         "--dependence",

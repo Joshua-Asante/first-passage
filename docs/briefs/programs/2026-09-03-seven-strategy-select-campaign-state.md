@@ -1,25 +1,25 @@
 # Seven-strategy Select configuration campaign — campaign state (orchestrator-only writes)
 
-**Status:** Phase 1 population is blocked on complete, export-bound input captures (§48). #301 and #303 are merged; #304 is closed; #305 merged with the three calculator defects in §45 still open. On 2026-09-05 the operator transferred orchestration to Codex and requested the scanner split (§47d). #302 now carries campaign documentation only; local intake no longer waits on the scanner. Public release of population outputs still requires §47b step 6b. Operator merges.
-**Last curated:** 2026-09-04 (orchestrator session `claude/orchestrator-role-takeover-yza7vp`; queue-placement reconciliation by `claude/state-pipelines-alignment-ng62y9`, PR #275)
+**Status:** Codex owns orchestration by the 2026-09-05 operator transfer. The operator merged campaign-only #302; scanner draft #307 is deferred. The [current execution plan](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) replaces the old phase sequence. Intake remains blocked on complete export-bound captures (§48); no search, final freeze, qualification or live authorization has occurred. One bounded implementation attempt is authorized (§49); speed-population and final-validation timing decisions remain pending.
+**Last curated:** 2026-09-05 (Codex takeover, `codex/tradeify-campaign-next`)
 **Parent plan:** [`2026-09-02-seven-strategy-tradeify-select-configuration.md`](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
 (PR [#272](https://github.com/Joshua-Asante/first-passage/pull/272) — **merged 2026-09-03** together
 with #273; four Codex passes `459421b`, `78c82de`, `e8694a9`, `6aa7ff8`, the operator's ruling and
 override `11d22e2`, and the Phase 7 simplification `1fe4600` are all on `main`).
-**Role:** this file is the plan's *compact campaign state artifact* (plan §Session handoff protocol)
-**and the claim manifest**. One writer — the orchestrating Claude Code session — per the MSL
+**Role:** this file is the plan's campaign evidence and decision record
+**and the claim manifest**. One writer — the orchestrating Codex session (operator transfer 2026-09-05) — per the MSL
 precedent ([`2026-08-12-msl-program-plan.md`](2026-08-12-msl-program-plan.md) §6) and the
-`cursor-fleet` single-writer rule. Workers (Codex / Cursor / local compute) never edit it; they
+`cursor-fleet` single-writer rule. Delegated workers (Codex / Cursor / local compute) never edit it; they
 report via PR description and the orchestrator transcribes.
 **Authorizes:** nothing. $0 · K=0 · no candidate contract · no capital · c1 rail stays disarmed.
 
 ---
 
-## §1 Roles (plan §Compute and collaboration model, bound to this repo's ADRs)
+## §1 Roles (operator transfer applied; existing delegation boundaries retained)
 
 | Role | Holder | Owns | May not |
 |---|---|---|---|
-| **Orchestrator** | Claude Code (this lineage) | decompose / freeze gates before outputs are read / review claims against artifacts / integrate / adjudicate; sole writer of this file, `STATE.md`, `docs/SESSIONS.md` for this campaign | merge to `main` (operator; [surface-allocation ADR](../../adr/2026-07-14-cc-cursor-surface-allocation.md) return contract — the [auto-merge gate](../../adr/2026-08-14-cc-cursor-autonomous-loop.md) applies to Cursor packets with a handoff brief, which Phase 0 is not) |
+| **Orchestrator** | Codex (operator transfer 2026-09-05) | decompose / freeze gates before outputs are read / review claims against artifacts / integrate / adjudicate; sole writer of this file, `STATE.md`, `docs/SESSIONS.md` for this campaign; owns the previously CC-solo implementation work | merge to `main` (operator retained this decision on 2026-09-05); arm or place trades |
 | **Worker — ingestion / engine integration / batch runner** | Codex (`codex/*` branches) | Phase 0 intake; Phase 1 ledger + reconciliation; runner + tests | rank, score a payoff cell, or write any governance surface; fork a simulator that duplicates §3 |
 | **Worker — IDE assist** | Cursor | targeted implementation/review on frozen specs (ADR tests 0–3) | locked surfaces (ADR test 1) |
 | **Local compute** | operator machine | checkpointed shards from immutable manifests | change seeds mid-run |
@@ -1096,6 +1096,8 @@ same harness and because every prior book in this repo that failed, failed there
 
 ### 15b — What compresses
 
+**Execution reader:** the [2026-09-05 plan revision](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) owns the current sequence. This table records D20 and subsequent amendments. Its pre-/post-Phase-8 n3 timing conflict is held for S2; do not run n3 from this historical table.
+
 | Plan phase | Under D20 |
 |---|---|
 | 2 — Standalone audit | ⚠ **R-STRIKER-EC is NOT discharged by the 545 → 0 remediation** (Codex P1, accepted). §12d records that both Striker bodies force-flat on an exact `hour == 15 and minute == 45` ET bar with **no early-close branch**, so on a 13:00 ET close that bar never prints and a position can sit open past the venue's 12:59 deadline. Four years of zero violations is a **property of the sample**, not of the strategies, and the re-expression fixed the *daily* 16:45 deadline, not the *holiday-short* one. **Requirement:** an early-close guard, or a synthetic early-close parity test, is an explicit **Phase 8** gate for `striker_dj30_mym_pyramid_250` and `striker_nas100_mnq_dow_wed_excluded` — or those legs are excluded from the deployable set. On NAS100 the guard is provably inert per §12d; DJ30 is the live exposure. **Folded into what is already measured.** Venue legality: 545 → 0 force-flat violations (§13). Standalone geometry: ORB $6,794 / NAS100 $8,269 / DJ30 $4,569 TV drawdowns exceed the whole $3,000 barrier at exported size (§10), so those legs enter the search only at reduced integer sizes — a grammar fact, not an elimination |
@@ -1114,7 +1116,7 @@ five legs (soft-stops, risk budgets, `strategy.equity`, pyramid dollar caps, mar
 **one export per admitted size** — each a new source under the full G1.1–G1.10 read, supplied by the operator before
 the freeze commits, which is why its size set is small; a leg without it scales linearly with the reason recorded.
 
-Rule 2: D3's partition stands — (i) Phase 1 at 3–4 of 8; (ii) Phases 2–3, now one freeze iteration; (iii) Phases
+Rule 2: D3's partition stands — (i) Phase 1 at iteration 6 of 8 including the pending population dispatch (§47; the earlier 3–4 count is historical); (ii) Phases 2–3, now one freeze iteration; (iii) Phases
 4–8. ⚠ **Phase 8 does NOT carry M1 item 5** (Codex P2, accepted — an earlier draft of this line said it did,
 contradicting §15b/§15c): item 5 discharges **independently** through the licensed test strategy on STATE queue #2,
 while Phase 8 is **winner-specific** parity work. Keeping the old assignment would let a generic test signal be
@@ -3545,3 +3547,48 @@ Also reported: the five artifacts and their screenshots are gitignored and show 
 | **8** · **9** (`n₂` / `n₃` sizing) | **BLOCKED** — the calculator merged with all three A2 defects (§45). The saturation defect occurs at alpha near 1, hence LOW confidence; the normal 95% pins are unaffected by that example. Repair and validate before the freeze. |
 
 **No prerequisite is currently dischargeable.** The two that are unblockable by anyone here — 8 and 9 — need packet A3 or a CC-solo fix first.
+
+## §49 — Codex takeover and bounded campaign revision (2026-09-05)
+
+**Campaign assessment:** feasibility is **Ambiguous**. No bound source population
+or executable joint replay supports a defensible estimate that a qualifying book
+exists. The scanner's repeated reviews had become a degenerating side loop;
+isolating it removes that dependency without changing the private-data boundary.
+The remaining critical path is source binding, faithful sizing/intraday replay,
+used-account simulation and winner execution parity. Preserve one bounded attempt
+as a test that can return no qualifying configuration, not a promise of success.
+
+**Operator decisions:** prepare the #302 split; the operator will merge. Authorize
+one bounded implementation attempt beyond the intake effort. Preserve the Select
+incumbent, the full/H1/H2 ≤5% failure test, the certified median reservation of
+200 business days, select-from-five with at most one MNQ, and D33's sole final
+validation. Growth is a scoring comparison, not a purchase or rescue route.
+The two Striker campaign expressions were elected into eval scope in the operator's
+consultation; this is an election, not a finding that the old re-scope trigger fired.
+The [admission record](../../adr/2026-09-05-tradeify-select-striker-expression-readmission.md) and CANDIDATE venue rows record that election. Winner-specific runtime bindings remain owed.
+
+**Current owner:** the [revised plan](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
+replaces the competing executable sequences. S1 (unconditional speed) and S2
+(n3 after winner parity, using the fresh account snapshot) are recommended and
+pending the operator's answer. No dependent freeze or sampling may proceed yet.
+
+**Calculator repair in this follow-up:** six regression failures reproduced the
+three A2 defects; the fix normalizes the entire probability mass, rejects unit
+power at positive failure rate and makes CLI operations exclusive. All 45 tests
+pass on Python 3.12.14, including the existing ordinary pins and an independent
+integer-arithmetic quantile oracle. This is code validation, not n2/n3 sizing or
+a campaign result. The old #305 disposition remains historical; §45's repair
+hold is discharged only when this follow-up lands and its checks are accepted.
+
+**Local intake verification:** all five current Pine files and five pinned exports
+were located and their SHA-256 values match phase1_config.json. The existing
+capture artifacts remain partial/unbound as described in §48; locating source
+bytes does not close that gap. No regeneration or source-value publication occurred.
+
+**A1 record-scope correction:** the consultation's undisclosed drawdown inflation
+and derived speed floors are withdrawn; they are not constraints or evidence in
+the revised plan. Historical max drawdown, inverse-drift heuristics and zero-
+correlation algebra do not supply a certified pass-time bound. Existing Rule 0
+and operational correction discipline own this failure; no new methodology lesson
+or load-bearing-number registry is added. Process degeneration is not a finding
+that every possible book is falsified. A bounded negative result remains admissible.
