@@ -162,3 +162,35 @@ def test_bad_range_exits_four(repo: tuple[Path, Path, Path]) -> None:
         text=True,
     )
     assert proc.returncode == 4 and "SCAN result=ERROR" in proc.stdout
+
+
+@needs_git
+def test_binary_addition_fails_closed(repo: tuple[Path, Path, Path]) -> None:
+    root, snap, export = repo
+    (root / "inputs.png").write_bytes(b"\x89PNG\r\n\x1a\n" + bytes(64))
+    _git(root, "add", "inputs.png")
+    _git(root, "commit", "-q", "-m", "screenshot by mistake")
+    _git(root, "rm", "-q", "inputs.png")
+    _git(root, "commit", "-q", "-m", "removed again")
+    proc = _run(root, "--json", str(snap), "--csv", str(export))
+    assert proc.returncode == 2 and "HIT class=BINARY" in proc.stdout and "file=inputs.png" in proc.stdout
+
+
+@needs_git
+def test_merge_commit_is_scanned_against_its_first_parent(repo: tuple[Path, Path, Path]) -> None:
+    root, snap, export = repo
+    _git(root, "checkout", "-q", "-b", "side")
+    (root / "cfg.json").write_text('{"Mode": "Aggressive"}\n', encoding="utf-8")
+    (root / "data.csv").write_text("h\n1\n", encoding="utf-8")
+    _git(root, "add", "cfg.json", "data.csv")
+    _git(root, "commit", "-q", "-m", "side work")
+    _git(root, "checkout", "-q", "main")
+    (root / "notes.md").write_text("context line mentions Aggressive mode already\nsecond line changed\n", encoding="utf-8")
+    _git(root, "commit", "-q", "-am", "main work")
+    _git(root, "merge", "-q", "--no-ff", "--no-edit", "side")
+    merge = _git(root, "rev-parse", "HEAD").strip()[:8]
+    proc = _run(root, "--json", str(snap), "--csv", str(export), "--forbid-suffix", ".csv")
+    assert proc.returncode == 2, proc.stdout
+    assert f"HIT class=PAIR commit={merge} file=cfg.json" in proc.stdout
+    assert f"HIT class=PATH commit={merge} file=data.csv" in proc.stdout
+

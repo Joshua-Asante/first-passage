@@ -21,6 +21,13 @@ Needle classes (campaign-state §47b step 6b, 2026-09-04):
          that carries a decimal point or a date
 Tokens listed in --exclude files (one per line) are dropped from every class.
 
+Two further hit classes need no needles: PATH (a tree path under a
+--path-prefix in ANY commit of the range, or a file with a --forbid-suffix
+ADDED by any commit) and BINARY (any binary file added or modified by any
+commit — a screenshot or a zipped export cannot be text-scanned, so it fails
+closed). Every commit is read as its diff against its FIRST PARENT, so a merge
+commit is scanned for everything that entered the branch through it.
+
 Exit codes: 0 clean · 2 hits (content or path) · 3 needles could not be built
 (a missing or unreadable private file, or an empty class for one of them —
 the scan never runs "empty") · 4 git failure. Only 0 is a pass.
@@ -119,13 +126,35 @@ def compile_classes(classes: dict[str, set[str]]) -> dict[str, re.Pattern[str]]:
     return compiled
 
 
+_EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+
+
+def _first_parent(commit: str, cwd: Path) -> str:
+    """The commit's first parent, or git's empty tree for a root commit."""
+    tokens = _git(["rev-list", "--parents", "-n", "1", commit], cwd).split()
+    return tokens[1] if len(tokens) > 1 else _EMPTY_TREE
+
+
 def scan_commit(commit: str, cwd: Path, patterns: dict[str, re.Pattern[str]]) -> tuple[list[tuple[str, str, str, int]], int, int]:
-    """Return (hits, added_hit_count, message_hit_count) for one commit; hits carry no token."""
+    """Return (hits, added_hit_count, message_hit_count) for one commit; hits carry no token.
+
+    The commit is read as its diff against its first parent (so a merge commit
+    yields everything that entered the branch through it). Any binary file
+    added or modified is a BINARY hit — its bytes cannot be text-scanned.
+    """
     hits: list[tuple[str, str, str, int]] = []
     added = 0
+    parent = _first_parent(commit, cwd)
+    for line in _git(["diff", "--numstat", "--no-color", parent, commit], cwd).splitlines():
+        parts = line.split("\t", 2)
+        if len(parts) == 3 and parts[0] == "-" and parts[1] == "-":
+            hits.append(("BINARY", commit, parts[2], 0))
     current_file = "<unknown>"
     new_line = 0
-    for raw in _git(["show", "--format=", "--no-color", commit], cwd).splitlines():
+    for raw in _git(["diff", "--no-color", parent, commit], cwd).splitlines():
+        if raw.startswith("diff --git "):
+            current_file = raw.split(" b/", 1)[1] if " b/" in raw else "<unknown>"
+            continue
         if raw.startswith("+++ "):
             current_file = raw[6:] if raw.startswith("+++ b/") else raw[4:]
             continue
@@ -152,13 +181,15 @@ def scan_commit(commit: str, cwd: Path, patterns: dict[str, re.Pattern[str]]) ->
 
 
 def scan_paths(commit: str, cwd: Path, prefixes: list[str], suffixes: list[str]) -> list[tuple[str, str, str, int]]:
+    """PATH hits: forbidden prefixes anywhere in the commit's tree; forbidden suffixes ADDED vs its first parent."""
     hits: list[tuple[str, str, str, int]] = []
     if prefixes:
         for path in _git(["ls-tree", "-r", "--name-only", commit], cwd).splitlines():
             if any(path.startswith(prefix) for prefix in prefixes):
                 hits.append(("PATH", commit, path, 0))
     if suffixes:
-        for path in _git(["diff-tree", "--no-commit-id", "-r", "--diff-filter=A", "--name-only", commit], cwd).splitlines():
+        parent = _first_parent(commit, cwd)
+        for path in _git(["diff", "--diff-filter=A", "--name-only", parent, commit], cwd).splitlines():
             if any(path.endswith(suffix) for suffix in suffixes):
                 hits.append(("PATH", commit, path, 0))
     return hits
@@ -210,7 +241,8 @@ def main(argv: list[str] | None = None) -> int:
         for commit in commits:
             hits, added, message_hits = scan_commit(commit, cwd, patterns)
             path_hits = scan_paths(commit, cwd, args.path_prefix, args.forbid_suffix)
-            print(f"commit {commit[:8]} added={added} message={message_hits} path={len(path_hits)}")
+            binary = sum(1 for h in hits if h[0] == "BINARY")
+            print(f"commit {commit[:8]} added={added} message={message_hits} path={len(path_hits)} binary={binary}")
             all_hits.extend(hits)
             all_hits.extend(path_hits)
     except RuntimeError as exc:
