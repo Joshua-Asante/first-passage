@@ -129,6 +129,7 @@
 | 2026-08-31-persona-hierarchy-full-retirement.md | Accepted | 2026-08-31 | `2026-08-19-loop-persona-hierarchy-review-panel.md` full; `2026-08-21-persona-hierarchy-front-office-only.md` full | ratified by operator (Joshua) 2026-08-31, in-session direct instruction ("I |
 | 2026-09-02-portable-edge-cultivation-campaign-objective.md | Accepted | 2026-09-02 | none | direct operator election, 2026-09-02. **Addendum 2026-09-03 (`Accepted`): this campaign is VOLREGIME translation; envelope GO recorded; L5 waived for this campaign only. Addendum 2026-09-03b (`Accepted`): Packet T0 closed `PRE-CONTRACT DROP` — see the dated addenda.** |
 | 2026-09-03-venue-legality-re-expression-lane.md | Accepted | 2026-09-03 | none | ratified by operator (Joshua) 2026-09-03 ("I ratify the lane ADR"), before any replacement export existed and therefore before any replacement result could be inspected. The ratification-order requirement in §2 is satisfied on the record. |
+| 2026-09-05-tradeify-select-striker-expression-readmission.md | Accepted | 2026-09-05 | `2026-08-04-tradeify-venue-descope-eval-included.md` in part — evaluation eligibility of the two exact campaign expressions below | records the operator's 2026-09-05 election; no deployment GO |
 
 ## Partially superseded
 

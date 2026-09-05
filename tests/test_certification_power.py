@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import math
 import subprocess
 import sys
 from pathlib import Path
@@ -82,6 +83,13 @@ def test_joint_power_rejects_unknown_dependence() -> None:
 def test_no_certifying_count_is_minus_one_and_zero_power() -> None:
     assert cp.max_certifying_busts(5) == -1
     assert cp.per_limb_power(5, 0.01) == 0.0
+
+
+def test_exact_cdf_boundary_still_certifies() -> None:
+    # P(X <= 0) for X~Binom(1, 0.05) equals 0.95 exactly. Mode-relative
+    # normalization must not overshoot that boundary and reject k=0.
+    assert cp._binom_cdf(0, 1, 0.05) == 0.95
+    assert cp.max_certifying_busts(1, ceiling=0.05, alpha=0.95) == 0
 
 
 def test_cli_eval_n630_smoke() -> None:
@@ -165,3 +173,54 @@ def test_cli_out_of_domain_exits_2_empty_stdout(args: tuple[str, ...]) -> None:
     assert proc.stdout == ""
     assert proc.stderr
     assert "Traceback" not in proc.stderr
+
+
+def test_perfect_power_rejects_positive_failure_probability() -> None:
+    # Every finite binomial sample retains a positive chance of too many failures.
+    with pytest.raises(ValueError):
+        cp.size_for_power(0.001, 1.0, limbs=1)
+    assert cp.size_for_power(0.0, 1.0) == 60
+
+
+@pytest.mark.parametrize("args", [
+    ("--true-rate", "0.03", "--power", "0.8", "--n", "630"),
+    ("--true-rate", "0.03"),
+])
+def test_cli_requires_exactly_one_operation(args: tuple[str, ...]) -> None:
+    proc = subprocess.run([sys.executable, str(SCRIPT), *args],
+                          capture_output=True, text=True, check=False)
+    assert proc.returncode == 2
+    assert proc.stdout == ""
+    assert "Traceback" not in proc.stderr
+
+
+@pytest.mark.parametrize(("n", "p"), [(60, 0.05), (8000, 0.9), (8000, 0.049)])
+def test_cdf_includes_all_probability_mass(n: int, p: float) -> None:
+    assert list(cp._iter_lower_cdf(n, p))[-1] == (n, 1.0)
+
+
+def test_near_one_alpha_matches_exact_integer_quantile() -> None:
+    # Independent oracle: p=9/10 and alpha=999999999/10**9.
+    # Avoid reproducing the floating-point recurrence under test.
+    n = 8000
+    denominator = 10 ** n
+    total = 0
+    term = 1  # C(n,0)*9**0
+    expected = -1
+    for k in range(n + 1):
+        total += term
+        if total * 10**9 > 999999999 * denominator:
+            break
+        expected = k
+        term = term * (n - k) * 9 // (k + 1)
+    assert expected == 7355
+    assert cp.max_certifying_busts(n, 0.9, 0.999999999) == expected
+
+
+@pytest.mark.parametrize("numerator", [1, 3, 7, 9])
+def test_cdf_matches_small_exact_binomial_distribution(numerator: int) -> None:
+    n = 25
+    cumulative = 0
+    for k, got in cp._iter_lower_cdf(n, numerator / 10):
+        cumulative += math.comb(n, k) * numerator**k * (10 - numerator)**(n - k)
+        assert got == pytest.approx(cumulative / 10**n, rel=2e-13, abs=1e-15)

@@ -7,6 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** `2026-08-07-loop-s1-environment-ratification.md` — §7 forks **F2** and **F3** only (rail kept warm/disarmed at incumbent eval; no successor migration now). Clauses 1–2 stand. Fork **F1** stood until **ruled 2026-08-23** — see the dated addendum below.
 **Superseded-in-part-by:** `2026-08-07-loop-s5-bounded-promotion-lane.md` — Addendum 2026-08-04 *“separate operator GO before any capital or account action”* **only for in-ceiling sandbox admits** (budget approval replaces per-candidate GO there). Clauses 1–2, Striker redeploy bar, and ceiling-crossing GOs **stand**.
+**Superseded-in-part-by:** `2026-09-05-tradeify-select-striker-expression-readmission.md` — evaluation eligibility of the two named campaign expressions only
 **Retain-until:** superseded by a venue re-scope under §4, or by registration of a successor execution venue
 **Withdraws:** [`2026-08-02-striker-tradeify-funded-phase-descope.md`](2026-08-02-striker-tradeify-funded-phase-descope.md) — that ADR was `Proposed`, never ratified, and decided the **funded phase only**; its §3 row 2 considered this wider scope and declined it as *"larger than the evidence."* The operator has now elected the wider scope. Because that ADR never reached `Accepted`, it is **withdrawn, not superseded** — nothing was in force to replace. Its §1 measurements and its §7 F1 ruling are carried forward here by citation (§1, §6) rather than lost. **Measurement cells are byte-faithful; two Source cells were narrowed in the first draft and are restored — see the correction note under the §1 table.**
 **Authors:** Joshua (ruling, 2026-08-04) + Claude Code (Opus 5, recorder)
@@ -15,6 +16,8 @@
 **Layer:** deployment scope. **No locked parameter, allocation, `dd_protection` constant, `core/lifecycle.py` state, Pine file, or `LEG_MAP` entry is touched.**
 
 ---
+
+**Current scope exception:** [2026-09-05 election](2026-09-05-tradeify-select-striker-expression-readmission.md) admits only the two pinned campaign expressions to evaluation eligibility. The locked-book and funded bars, old evidence and unfired trigger remain in force.
 
 ## §0 — Rule 0 reads (production source, verified 2026-08-04 at `289535d`, worktree clean)
 

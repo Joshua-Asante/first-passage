@@ -33,6 +33,12 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-05g — Resolve #308 conflict with main; restore exact CDF boundary certification
+
+**Open / next:** STATE queue: `#1` [Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#49--codex-takeover-and-bounded-campaign-revision-2026-09-05) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24). Merged `origin/main` (#306 babysit skill). Certification CDF now prefers the smaller tail when normalizing so `max_certifying_busts(1, ceiling=0.05, alpha=0.95)` returns `0` again; 46 calculator tests pass.
+
+---
+
 ## 2026-09-05f — Resolve #306 merge conflict with main (queue-exception: owner `@cursor` on PR #306)
 
 **Focus:** Make PR #306 mergeable again and confirm Codex review findings stay covered after the merge.
@@ -44,6 +50,18 @@ any entry, full or stub (a-first; bare claims `a`).
 **Open / next:** STATE queue: `#1` [Seven-strategy Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24).
 
 **Live-ops state:** unchanged — c1 rail stays disarmed; no arm/spend this session.
+
+---
+
+## 2026-09-05b — Operator approves unconditional speed and final validation after parity
+
+**Open / next:** STATE queue: `#1` [Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#49--codex-takeover-and-bounded-campaign-revision-2026-09-05) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24). S1/S2 are approved and folded into the [execution plan](superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md): certify unconditional median speed and reserve the sole n3 for the executable winner with fresh account state. Source binding, live-state/replay implementation and statistical design remain owed; no freeze or sampling has occurred.
+
+---
+
+## 2026-09-05a — Consolidate the bounded Select attempt and repair certification sizing
+
+**Open / next:** STATE queue: `#1` [Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#49--codex-takeover-and-bounded-campaign-revision-2026-09-05) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24). The operator merged #302; scanner draft #307 stays separate. The [revised execution plan](superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) preserves the single-attempt limit and leaves S1/S2 pending before freeze. Complete export-bound inputs remain owed. The calculator repair passes 45 tests; the [Striker admission ADR](adr/2026-09-05-tradeify-select-striker-expression-readmission.md) records the prior eval-only election. No search, qualified book or live authorization.
 
 ---
 
