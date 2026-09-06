@@ -16,7 +16,12 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = REPO_ROOT / "scripts" / "research_asset_registry.py"
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-from research_asset_registry import render_index, validate_registry  # noqa: E402
+from research_asset_registry import (  # noqa: E402
+    _code_span,
+    _cyclic_ids,
+    render_index,
+    validate_registry,
+)
 
 SYNTHETIC_BYTES = b"synthetic source"
 FINDING_KEYS = ("code", "asset_id", "member_key", "message")
@@ -478,6 +483,64 @@ class ResearchAssetRegistryTests(unittest.TestCase):
         except OSError as exc:
             self.skipTest(f"symlink creation disallowed: {exc}")
         self.assertEqual(validate_registry(assets_path, locations_path), [])
+
+    def test_unhashable_kind_and_privacy_are_schema_errors(self):
+        asset = self.source_asset(kind=["source"], privacy={"k": "private"})
+        assets_path, locations_path, root = self.write_inventory(
+            {"schema_version": 1, "assets": [asset]},
+            self.locations_for(("example-source-v1", "body", "source.txt")),
+            {"source.txt": SYNTHETIC_BYTES},
+        )
+        findings = validate_registry(assets_path, locations_path)
+        self.assertIn("INVALID_SCHEMA", self.codes(findings))
+        self.assert_findings_shape(findings, root)
+
+    def test_empty_assets_still_validate_locations(self):
+        assets_path, locations_path, root = self.write_inventory(
+            {"schema_version": 1, "assets": []},
+            self.locations_for(("missing-source-v1", "body", "../escape.txt")),
+        )
+        findings = validate_registry(assets_path, locations_path)
+        codes = self.codes(findings)
+        self.assertIn("MISSING_REFERENCE", codes)
+        self.assertIn("UNSAFE_PATH", codes)
+        self.assert_findings_shape(findings, root)
+
+    def test_long_relationship_chain_does_not_raise(self):
+        count = 1500
+        nodes = [f"chain-{index:04d}" for index in range(count)]
+        edges = {nodes[index]: [nodes[index + 1]] for index in range(count - 1)}
+        edges[nodes[-1]] = []
+        self.assertEqual(_cyclic_ids(nodes, edges), set())
+        edges[nodes[-1]] = [nodes[0]]
+        self.assertEqual(_cyclic_ids(nodes, edges), set(nodes))
+
+    def test_symlink_loop_is_unsafe_or_skipped(self):
+        assets_path, locations_path, root = self.write_inventory(
+            {"schema_version": 1, "assets": [self.source_asset()]},
+            self.locations_for(("example-source-v1", "body", "loop-a.txt")),
+        )
+        link_a = root / "loop-a.txt"
+        link_b = root / "loop-b.txt"
+        try:
+            link_a.symlink_to(link_b)
+            link_b.symlink_to(link_a)
+        except OSError as exc:
+            self.skipTest(f"symlink creation disallowed: {exc}")
+        findings = validate_registry(assets_path, locations_path)
+        self.assertIn("UNSAFE_PATH", self.codes(findings))
+        self.assert_findings_shape(findings, root)
+
+    def test_code_span_uses_a_longer_fence_for_backticks(self):
+        self.assertEqual(_code_span("plain"), "`plain`")
+        self.assertEqual(_code_span("foo`<bar>`"), "`` foo`<bar>` ``")
+        payload = self.source_asset(id="foo`<script>alert(1)</script>`")
+        assets_path, _, _ = self.write_inventory(
+            {"schema_version": 1, "assets": [payload]}
+        )
+        rendered = render_index(assets_path)
+        self.assertIn("`` foo`<script>alert(1)</script>` ``", rendered)
+        self.assertNotRegex(rendered, r"(?m)^### `foo`")
 
     def test_unreadable_file_is_reported_or_skipped(self):
         assets_path, locations_path, member_path = self.make_registry()

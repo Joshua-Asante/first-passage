@@ -184,22 +184,30 @@ def _cyclic_ids(nodes: Sequence[str], edges: Mapping[str, Sequence[str]]) -> set
     color = {node: white for node in nodes}
     cyclic: set[str] = set()
 
-    def visit(node: str, stack: list[str]) -> None:
-        color[node] = gray
-        stack.append(node)
-        for dest in edges.get(node, ()):
-            if dest not in color:
-                continue
-            if color[dest] == gray:
-                cyclic.update(stack[stack.index(dest) :])
-            elif color[dest] == white:
-                visit(dest, stack)
-        stack.pop()
-        color[node] = black
-
-    for node in nodes:
-        if color[node] == white:
-            visit(node, [])
+    for start in nodes:
+        if color[start] != white:
+            continue
+        stack: list[tuple[str, int]] = [(start, 0)]
+        path: list[str] = []
+        while stack:
+            node, child_i = stack[-1]
+            if child_i == 0:
+                color[node] = gray
+                path.append(node)
+            children = edges.get(node, ())
+            if child_i < len(children):
+                stack[-1] = (node, child_i + 1)
+                dest = children[child_i]
+                if dest not in color:
+                    continue
+                if color[dest] == gray:
+                    cyclic.update(path[path.index(dest) :])
+                elif color[dest] == white:
+                    stack.append((dest, 0))
+            else:
+                stack.pop()
+                path.pop()
+                color[node] = black
     return cyclic
 
 
@@ -334,9 +342,9 @@ def _parse_asset(raw: object) -> tuple[dict[str, Any] | None, list[dict[str, str
             )
         )
         return None, findings
-    kind = raw.get("kind")
+    kind = _nonempty_str(raw.get("kind"))
     label = _nonempty_str(raw.get("label"))
-    privacy = raw.get("privacy")
+    privacy = _nonempty_str(raw.get("privacy"))
     if asset_id == "" or kind not in ALLOWED_KINDS or label is None or privacy not in ALLOWED_PRIVACY:
         findings.append(
             _finding(
@@ -670,7 +678,7 @@ def _location_integrity(
         try:
             resolved_root = root_path.resolve()
             resolved_member = member_path.resolve()
-        except OSError:
+        except (OSError, RuntimeError):
             findings.append(
                 _finding(
                     "UNSAFE_PATH",
@@ -776,8 +784,7 @@ def validate_registry(assets_path: Path, locations_path: Path) -> list[dict[str,
     findings, assets = inspect_assets(assets_raw)
     location_findings, roots, rows = inspect_locations(locations_raw)
     findings.extend(location_findings)
-    if assets:
-        findings.extend(_location_integrity(assets, roots, rows))
+    findings.extend(_location_integrity(assets, roots, rows))
     return _sort_findings(findings)
 
 
@@ -786,7 +793,18 @@ def _escape_md(text: str) -> str:
 
 
 def _code_span(text: str) -> str:
-    return "`" + text.replace("`", "\\`") + "`"
+    longest = 0
+    run = 0
+    for char in text:
+        if char == "`":
+            run += 1
+            longest = max(longest, run)
+        else:
+            run = 0
+    fence = "`" * (longest + 1)
+    if longest:
+        return f"{fence} {text} {fence}"
+    return f"{fence}{text}{fence}"
 
 
 def _join_ids(values: Sequence[str]) -> str:
