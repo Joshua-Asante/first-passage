@@ -15,7 +15,7 @@
 
 ## 1. Decision
 
-Reduce the tracked tree from **3,039 to 1,500 files** (≤ 1,519 ceiling; 50.64% reduction): **1,497 survivors, 1,542 removals, 3 additions** (this ADR, `lab/ARCHIVED.json`, and `tests/test_archive_lab_analysis_archived_index.py`). The survivor and removal path lists partition the baseline exactly — intersection empty, union equal to the 3,039 baseline paths, no duplicates — asserted on the emitted lists, not in memory.
+Reduce the tracked tree from **3,039 to 1,500 files** (≤ 1,519 ceiling; 50.64% reduction): **1,497 survivors, 1,542 removals, 3 additions** (this ADR, `lab/ARCHIVED.json`, and `tests/test_archive_lab_analysis_archived_index.py`). The survivor and removal path lists partition the baseline exactly — intersection empty, union equal to the 3,039 baseline paths, no duplicates — asserted on the emitted lists, not in memory. Every count here is measured **against the pinned baseline**, not against `main` at merge time: unrelated upstream work merged into this branch afterwards moves the absolute tracked total without changing the reduction (as of the 2026-09-06 merge of `main`, PR #315 adds two files, so the branch reads 1,502).
 
 Operator decisions (verbatim, 2026-09-06):
 
