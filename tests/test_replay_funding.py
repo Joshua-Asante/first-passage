@@ -12,6 +12,7 @@ import decimal
 import sys
 from decimal import Decimal
 from fractions import Fraction
+from unittest.mock import patch
 
 import pytest
 
@@ -19,6 +20,7 @@ from replay_funding import (
     _ABSOLUTE_MIN_EXPONENT,
     _ArithmeticLimit,
     _exact_add,
+    _exact_multiply,
     _exact_subtract,
     _finalize,
     FundingAssessment,
@@ -620,6 +622,107 @@ def test_zero_and_exact_cancellation_shortcuts_ignore_budget_entirely():
     assert _exact_add(Decimal("5"), Decimal("-5.00"), _budget=0) == Decimal("0")
     assert _exact_subtract(Decimal("5"), Decimal("5.00"), _budget=0) == Decimal("0")
     assert _exact_subtract(Decimal("5.00"), Decimal("5"), _budget=0) == Decimal("0")
+
+
+def test_add_carry_beyond_budget_is_rejected_despite_passing_span_preflight():
+    """Re-review finding 1 (head 9b3ad33): the pre-add alignment-span
+    preflight alone is not sufficient — `999 + 998` under `_budget=3` has a
+    required span of exactly 3 (each operand's own digit count; no shift
+    needed since both share exponent 0), so the preflight lets it through,
+    but the actual sum `1997` has 4 normalized digits. The fourth digit is
+    only ever permitted as a transient scratch digit, not as an accepted
+    result; this must still be rejected via the post-hoc normalized-result
+    check, not silently returned."""
+    with pytest.raises(_ArithmeticLimit):
+        _exact_add(Decimal("999"), Decimal("998"), _budget=3)
+
+
+def test_add_carry_that_trims_within_budget_still_succeeds():
+    """Contrast case for the fix above: `999 + 1` under the same `_budget=3`
+    also has a required span of 3 and also carries into a 4th raw digit, but
+    that carry trims the normalized result down to a single digit (`1000`
+    normalizes to coefficient `1`, exponent `3`) — well within budget. The
+    fix must not reject every carry, only a carry whose actual normalized
+    result exceeds the budget."""
+    assert _exact_add(Decimal("999"), Decimal("1"), _budget=3) == Decimal("1000")
+
+
+def test_multiply_product_beyond_budget_is_rejected_at_preflight():
+    """Re-review finding 1: `_exact_multiply` had no budget path at all
+    before this fix. `999 * 998` (each a 3-digit non-identity factor) under
+    `_budget=3` has a preflight estimate of `3 + 3 = 6`, which exceeds
+    `_budget + 1 = 4` — rejected before the multiplication is even
+    attempted, matching the review's own `cash=0/cost=0/point=999/price=
+    mark=999` reproduction (`999 * 999 = 998001`, 6 digits, under a
+    `_budget=3` injected into the same algorithm)."""
+    with pytest.raises(_ArithmeticLimit):
+        _exact_multiply(Decimal("999"), Decimal("998"), _budget=3)
+    with pytest.raises(_ArithmeticLimit):
+        _exact_multiply(Decimal("999"), Decimal("999"), _budget=3)
+
+
+def test_multiply_nontrimming_product_beyond_budget_is_rejected_at_final_check():
+    """The multiply analogue of the add carry case above: `99 * 99` (two
+    2-digit factors) under `_budget=3` has a preflight estimate of
+    `2 + 2 = 4`, which is within the `_budget + 1 = 4` tolerance, so the
+    preflight lets it through — but the actual product `9801` has 4
+    normalized digits, no shrink, and must still be rejected by the post-hoc
+    normalized-result check, not silently returned."""
+    with pytest.raises(_ArithmeticLimit):
+        _exact_multiply(Decimal("99"), Decimal("99"), _budget=3)
+
+
+def test_multiply_product_that_shrinks_within_budget_succeeds():
+    """Contrast case: `45 * 22` (two 2-digit factors) has the same preflight
+    estimate (4, at the `_budget=3` tolerance boundary) as `99 * 99` above,
+    but its exact product `990` shrinks to 3 normalized digits — within
+    budget. The fix must decide representability from the actual result,
+    not merely refuse every estimate that sits at the tolerance boundary."""
+    assert _exact_multiply(Decimal("45"), Decimal("22"), _budget=3) == Decimal("990")
+
+
+def test_multiply_identity_factors_are_elided_from_the_budget_estimate():
+    """Re-review finding 1's root cause: a factor whose own normalized
+    coefficient has magnitude 1 (a power of ten, including the identity `1`)
+    contributes zero digits of growth to the product and must not be counted
+    in the budget estimate at all. Two identity `1` factors alongside a
+    single 3-digit factor would overcount to `1 + 1 + 3 = 5` under the old
+    per-factor-sum approach — already over a `_budget=3` (+1 tolerance = 4)
+    — even though the true product is just the one 3-digit factor
+    unchanged."""
+    assert _exact_multiply(Decimal("1"), Decimal("1"), Decimal("999"), _budget=3) == Decimal("999")
+
+
+def test_arithmetic_resource_failure_returns_arithmetic_limit_not_a_crash():
+    """Re-review finding 2 (head 9b3ad33): `_exact_add`'s two
+    operand-normalization calls ran before its `try:` block, and
+    `assess_funding` caught only `_ArithmeticLimit` — so a resource failure
+    (e.g. `MemoryError`) during normalization/conversion would have escaped
+    `assess_funding` as a raw crash instead of the defined non-proof
+    outcome. Injected via a patched normalization helper — never by actually
+    exhausting memory — on the ordinary base fixture, which reaches the
+    arithmetic phase (cash_before=1000, execution_cost=3, neither zero nor
+    cancelling)."""
+    with patch("replay_funding._normalized_coefficient_exponent", side_effect=MemoryError):
+        result = assess_funding(_facts())
+    assert result.status == FundingStatus.OUTSIDE_PROVEN_DOMAIN
+    assert result.reason == FundingReason.ARITHMETIC_LIMIT
+    assert result.cash_after_cost is None
+    assert result.funding_basis is None
+    assert result.required_at_basis is None
+    assert result.surplus is None
+    assert result.post_fill_margin_cushion is None
+
+
+def test_arithmetic_resource_failure_does_not_override_earlier_domain_precedence():
+    """The widened resource-exception boundary must still be reached only
+    after every validation/domain precedence check — an injected failure
+    that would fire during the arithmetic phase must never be consulted, let
+    alone override, an earlier domain-miss reason such as UNKNOWN_STATE."""
+    with patch("replay_funding._normalized_coefficient_exponent", side_effect=MemoryError):
+        result = assess_funding(_facts(known_state=False))
+    assert result.status == FundingStatus.OUTSIDE_PROVEN_DOMAIN
+    assert result.reason == FundingReason.UNKNOWN_STATE
 
 
 def test_module_exports_all_required_symbols():

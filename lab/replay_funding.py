@@ -75,22 +75,33 @@ apply, both mapped to the same defined non-proof outcome:
     representable by *any* legal context (`Emin=decimal.MIN_EMIN` at
     `prec=decimal.MAX_PREC`, i.e. the lowest `Context.Etiny()` decimal
     itself can ever produce) — see `_finalize`;
-  * an add/subtract step's alignment work — the digit span its `10 **
-    shift` scaling would need to construct, sized from the operands'
-    *normalized* digit counts and exponents, never a padded estimate — is
-    preflighted against a deterministic **1,000,000-digit work budget**
-    (`_ARITHMETIC_WORK_BUDGET`, handoff §3.2) before that scaling is
-    attempted, applied only after zero and exact-cancellation shortcuts, so
-    a budget-sized result is never rejected merely because a speculative
-    carry digit could push a loose estimate one digit over — see
-    `_exact_add`.
+  * a step's own coefficient-construction work is preflighted against a
+    deterministic **1,000,000-digit work budget** (`_ARITHMETIC_WORK_BUDGET`,
+    handoff §3.2), sized from the operands' *normalized* digit counts, never
+    a padded per-factor estimate — for add/subtract this is the digit span
+    the `10 ** shift` alignment scaling would need (see `_exact_add`); for
+    multiply it is the sum of digit counts over factors that are not
+    themselves a power of ten (a factor whose normalized coefficient has
+    magnitude 1 — including the identity `1` — shifts the exponent only and
+    provably adds zero digits to the product, so it is excluded from the
+    estimate rather than inflating it, see `_exact_multiply`). Both
+    preflights apply only after zero and exact-cancellation shortcuts, and
+    both tolerate one bounded, transient scratch digit in the estimate (a
+    carry, for add; the one-digit shrink a product can lose per factor, for
+    multiply) — the budget is never enforced against the loose estimate
+    alone. What decides representability is always the ACTUAL exact result:
+    once computed, it is normalized and its own digit count — not the
+    pre-computation estimate — is checked against the same budget, so a
+    result that genuinely carries past the budget (e.g. `999 + 998` or
+    `99 * 99` under a tiny injected budget) is rejected even when the
+    estimate alone was within tolerance.
 
 Neither limit is a cap this module invents to substitute for Decimal's own
 limits, and neither reads or mutates `sys.get_int_max_str_digits()` in any
-way. When either is hit, or the underlying integer arithmetic itself
-exhausts memory, `assess_funding` returns `OUTSIDE_PROVEN_DOMAIN` /
-`ARITHMETIC_LIMIT` with every witness `None` — a defined non-proof outcome,
-never a rounded substitute or a broker action.
+way. When either is hit, or the underlying integer arithmetic or coefficient
+conversion/reconstruction itself exhausts memory, `assess_funding` returns
+`OUTSIDE_PROVEN_DOMAIN` / `ARITHMETIC_LIMIT` with every witness `None` — a
+defined non-proof outcome, never a rounded substitute or a broker action.
 """
 
 import decimal
@@ -106,14 +117,19 @@ from typing import Optional
 # not a value this module chose.
 _ABSOLUTE_MIN_EXPONENT = decimal.MIN_EMIN - decimal.MAX_PREC + 1
 
-# Deterministic coefficient-work budget (handoff §3.2): the maximum digit
-# span an add/subtract's alignment step may construct via `10 ** shift`,
-# checked against the operands' *normalized* digit counts only — after
-# zero/exact-cancellation shortcuts and trailing-zero stripping — so a
-# compact operand at an astronomically large exponent never forces
-# materializing an equally large aligned coefficient. Exposed as an
-# injectable `_budget` keyword on `_exact_add`/`_exact_subtract` so tests can
-# exercise the same algorithm cheaply at a tiny budget instead of
+# Deterministic coefficient-work budget (handoff §3.2), shared by every exact
+# step: for add/subtract, the maximum digit span the alignment step may
+# construct via `10 ** shift`; for multiply, the maximum summed digit count
+# over non-power-of-ten factors. Both are checked against the operands'
+# *normalized* digit counts only — after zero/exact-cancellation shortcuts
+# and trailing-zero stripping — so a compact operand at an astronomically
+# large exponent never forces materializing an equally large coefficient.
+# Every step additionally checks its ACTUAL normalized result against this
+# same budget after computing it (`_require_normalized_result_within_budget`)
+# — the pre-computation check alone only bounds the cost of getting there, it
+# does not by itself decide representability. Exposed as an injectable
+# `_budget` keyword on `_exact_add`/`_exact_subtract`/`_exact_multiply` so
+# tests can exercise the same algorithm cheaply at a tiny budget instead of
 # constructing huge fixtures; `assess_funding` always uses this default.
 _ARITHMETIC_WORK_BUDGET = 1_000_000
 
@@ -122,9 +138,12 @@ _SUPPORTED_DIRECTION = "LONG"
 
 class _ArithmeticLimit(Exception):
     """Raised internally when an exact witness would exceed Decimal's native
-    representable range, or the underlying integer arithmetic cannot be
-    safely completed. Caught only by `assess_funding`, which translates it
-    to `OUTSIDE_PROVEN_DOMAIN` / `ARITHMETIC_LIMIT`."""
+    representable range, exceed the deterministic work budget, or the
+    underlying coefficient conversion/arithmetic/reconstruction cannot be
+    safely completed. `assess_funding`'s single top-level arithmetic
+    resource-exception boundary catches this alongside a raw `MemoryError`
+    escaping any of those same steps and translates both to
+    `OUTSIDE_PROVEN_DOMAIN` / `ARITHMETIC_LIMIT`."""
 
 
 class FundingStatus(str, Enum):
@@ -311,6 +330,20 @@ def _finalize(coefficient: int, exponent: int) -> Decimal:
         raise _ArithmeticLimit() from exc
 
 
+def _require_normalized_result_within_budget(result: Decimal, _budget: int) -> None:
+    """Reject a computed result whose own *normalized* digit count exceeds
+    `_budget`, even though the pre-computation estimate that let the step
+    proceed was within tolerance (a carry, for addition; a non-shrinking
+    product, for multiplication). This is what actually decides
+    representability against the work budget — the estimate only bounds the
+    cost of getting here (handoff §3.2)."""
+    if result == 0:
+        return
+    _, _, result_digits = _normalized_coefficient_exponent(result)
+    if result_digits > _budget:
+        raise _ArithmeticLimit()
+
+
 def _exact_add(a: Decimal, b: Decimal, *, _budget: int = _ARITHMETIC_WORK_BUDGET) -> Decimal:
     """Exact `a + b` via aligned big-integer coefficients. A zero operand,
     or an operand that exactly cancels the other (`a == b.copy_negate()`,
@@ -318,9 +351,15 @@ def _exact_add(a: Decimal, b: Decimal, *, _budget: int = _ARITHMETIC_WORK_BUDGET
     even computed. Otherwise the alignment span each operand's `10 **
     shift` scaling would need is preflighted against `_budget` (handoff
     §3.2) — sized from the operands' own normalized digit counts, not a
-    padded estimate — before that scaling is attempted; a result that
-    carries one digit beyond a budget-sized span is not preflighted away
-    (`_finalize` alone governs native representability)."""
+    padded estimate — before that scaling is attempted; a span that exactly
+    meets the budget is let through even though the actual sum may still
+    carry one digit further. That carried result is not exempt from the
+    budget merely because the preflight passed: the exact sum is normalized
+    and its own digit count is checked against the same `_budget`
+    (`_require_normalized_result_within_budget`), so e.g. `999 + 998` under
+    `_budget=3` is rejected (4 normalized digits) even though the aligned
+    span alone (3) was within budget, while `999 + 1` is accepted (its
+    carry trims to a single normalized digit)."""
     if b == 0:
         return a
     if a == 0:
@@ -328,8 +367,12 @@ def _exact_add(a: Decimal, b: Decimal, *, _budget: int = _ARITHMETIC_WORK_BUDGET
     if a == b.copy_negate():
         return Decimal(0)
 
-    a_coefficient, a_exponent, a_digits = _normalized_coefficient_exponent(a)
-    b_coefficient, b_exponent, b_digits = _normalized_coefficient_exponent(b)
+    try:
+        a_coefficient, a_exponent, a_digits = _normalized_coefficient_exponent(a)
+        b_coefficient, b_exponent, b_digits = _normalized_coefficient_exponent(b)
+    except MemoryError as exc:
+        raise _ArithmeticLimit() from exc
+
     exponent = min(a_exponent, b_exponent)
     a_shift = a_exponent - exponent
     b_shift = b_exponent - exponent
@@ -343,7 +386,9 @@ def _exact_add(a: Decimal, b: Decimal, *, _budget: int = _ARITHMETIC_WORK_BUDGET
     except MemoryError as exc:
         raise _ArithmeticLimit() from exc
 
-    return _finalize(coefficient, exponent)
+    result = _finalize(coefficient, exponent)
+    _require_normalized_result_within_budget(result, _budget)
+    return result
 
 
 def _exact_subtract(a: Decimal, b: Decimal, *, _budget: int = _ARITHMETIC_WORK_BUDGET) -> Decimal:
@@ -358,25 +403,55 @@ def _exact_subtract(a: Decimal, b: Decimal, *, _budget: int = _ARITHMETIC_WORK_B
     return _exact_add(a, b.copy_negate(), _budget=_budget)
 
 
-def _exact_multiply(*factors: Decimal) -> Decimal:
+def _exact_multiply(*factors: Decimal, _budget: int = _ARITHMETIC_WORK_BUDGET) -> Decimal:
     """Exact product of two or more Decimals via big-integer coefficients
     and summed exponents — multiplication needs no alignment, so this is
     cheap regardless of any factor's magnitude. Any zero factor
-    short-circuits to exact zero."""
+    short-circuits to exact zero.
+
+    A factor whose own normalized coefficient has magnitude 1 — any power of
+    ten, including the identity `1` itself — contributes no growth to the
+    product's coefficient (it only shifts the exponent), so it is excluded
+    from the work-budget estimate entirely rather than inflating it; this is
+    what closes the earlier defect where summing every factor's own digit
+    count (including trivial identity factors) overcounted a product that
+    never grew past its widest genuine operand. The remaining, non-trivial
+    factors' digit counts are summed and preflighted against `_budget`
+    (handoff §3.2) with one bounded scratch digit of tolerance — the same
+    policy `_exact_add` applies to a carry — before the multiplication is
+    attempted. As with addition, that preflight only bounds the cost of
+    getting here: the exact product is then normalized and its own digit
+    count is what decides representability against `_budget`
+    (`_require_normalized_result_within_budget`), so e.g. `99 * 99` under
+    `_budget=3` is rejected (4 normalized digits, no shrink) even though the
+    two 2-digit factors' preflight estimate (4) was within tolerance, while
+    `45 * 22` is accepted (its product shrinks to 3 normalized digits)."""
     if any(factor == 0 for factor in factors):
         return Decimal(0)
+
+    try:
+        normalized = [_normalized_coefficient_exponent(factor) for factor in factors]
+    except MemoryError as exc:
+        raise _ArithmeticLimit() from exc
+
+    nontrivial_digit_counts = [
+        digits for coefficient, _, digits in normalized if abs(coefficient) != 1
+    ]
+    if sum(nontrivial_digit_counts) > _budget + 1:
+        raise _ArithmeticLimit()
 
     coefficient = 1
     exponent = 0
     try:
-        for factor in factors:
-            factor_coefficient, factor_exponent, _ = _normalized_coefficient_exponent(factor)
+        for factor_coefficient, factor_exponent, _ in normalized:
             coefficient *= factor_coefficient
             exponent += factor_exponent
     except MemoryError as exc:
         raise _ArithmeticLimit() from exc
 
-    return _finalize(coefficient, exponent)
+    result = _finalize(coefficient, exponent)
+    _require_normalized_result_within_budget(result, _budget)
+    return result
 
 
 def _exact_arithmetic(facts: FundingFacts):
@@ -436,7 +511,13 @@ def assess_funding(facts: FundingFacts) -> FundingAssessment:
             surplus,
             post_fill_margin_cushion,
         ) = _exact_arithmetic(facts)
-    except _ArithmeticLimit:
+    except (_ArithmeticLimit, MemoryError):
+        # The single top-level arithmetic resource-exception boundary: any
+        # step's conversion (Decimal <-> coefficient), integer arithmetic, or
+        # Decimal reconstruction that exhausts memory is a resource failure,
+        # not a deliberate ArithmeticLimit — but both map to the same defined
+        # non-proof outcome. Reached only after every validation/domain
+        # precedence check above has already passed.
         return _outside_domain(FundingReason.ARITHMETIC_LIMIT)
 
     if surplus > 0:
