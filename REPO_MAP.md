@@ -120,7 +120,7 @@ Regenerate: `python scripts/check_repo_map_scripts_table.py --write`.
 `--check` exits 1 on drift; it is **not** wired into `gates.yml`.
 
 <!-- BEGIN generated: scripts-table -->
-_64 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_65 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 | Script | Layer | Gate id (tier) | Notes |
 |---|---|---|---|
@@ -186,6 +186,7 @@ _64 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/sync_pine_to_worktree.py` | governance | — | manual/local only, not in gates.yml |
 | `scripts/sync_skills.py` | governance | — | manual/local only, not in gates.yml |
 | `scripts/sync_skills_hook.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/validate_bar_export_v2.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/validate_c1_monitoring_acceptance.py` | governance | `m1-artifact-structure` (always); `m1-tree-skew` (audit) | --check-tree-skew (report-only); layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/verify_lock_anchors.py` | governance | — | manual/local only, not in gates.yml |
 <!-- END generated: scripts-table -->
