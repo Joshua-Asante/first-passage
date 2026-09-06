@@ -734,6 +734,82 @@ def test_receipt_stdout_bytes_identical_lf_only(tmp_path: Path, monkeypatch: pyt
     assert json.loads(edge_bytes.decode("utf-8"))["first_open_utc"] == "2572-02-01T09:46:40.001Z"
 
 
+def test_csv_error_and_delimiter_only_width(tmp_path: Path):
+    """csv.Error → ValueError/exit 2; delimiter-only rows must fail width before blank skip."""
+    import csv as csv_mod
+
+    good = _row(1, E0, "1", "1", "1", "1", 1)
+    exp1 = _expected(expected_unique_bars=1, expected_last_open_utc=_dt(E0))
+
+    # `,,` under a 5-column header is delimiter-bearing with wrong width — not a blank skip.
+    delim = tmp_path / "delim.csv"
+    _write(delim, _csv([good]).rstrip("\n") + "\n,,\n")
+    with pytest.raises(ValueError, match="(?i)width"):
+        validate_bar_export_v2([delim], expected=exp1)
+
+    # True empty line (`[]`) still skips and leaves a PASS page intact.
+    blank_line = tmp_path / "blankline.csv"
+    _write(blank_line, _csv([good]).rstrip("\n") + "\n\n")
+    validate_bar_export_v2([blank_line], expected=exp1)
+
+    # Full-width all-empty delimiter row passes width, then skips as blank.
+    full_blank = tmp_path / "fullblank.csv"
+    _write(full_blank, _csv([good]).rstrip("\n") + "\n,,,,\n")
+    validate_bar_export_v2([full_blank], expected=exp1)
+
+    # Oversized field triggers csv.Error → concise ValueError (and CLI exit 2).
+    old_limit = csv_mod.field_size_limit()
+    csv_mod.field_size_limit(64)
+    try:
+        huge = tmp_path / "huge.csv"
+        _write(
+            huge,
+            "Trade #,Type,Date and time,Signal,Price USD\n"
+            f"1,Entry long,t,{'x' * 128},1\n",
+        )
+        with pytest.raises(ValueError, match="(?i)csv|parse"):
+            validate_bar_export_v2([huge], expected=exp1)
+
+        receipt = tmp_path / "huge_receipt.json"
+        receipt.write_bytes(b"KEEP\n")
+        code = main(
+            [
+                "--in",
+                str(huge),
+                "--price-column",
+                "Price USD",
+                "--expected-ticker",
+                META["ticker"],
+                "--expected-type",
+                META["type"],
+                "--expected-quote-currency",
+                META["quote_currency"],
+                "--expected-base-currency",
+                META["base_currency"],
+                "--expected-mintick",
+                META["mintick"],
+                "--expected-pointvalue",
+                META["pointvalue"],
+                "--expected-timeframe-minutes",
+                "15",
+                "--expected-timezone",
+                META["timezone"],
+                "--expected-unique-bars",
+                "1",
+                "--expected-first-open-utc",
+                mod._dt_to_iso(_dt(E0)),
+                "--expected-last-open-utc",
+                mod._dt_to_iso(_dt(E0)),
+                "--receipt",
+                str(receipt),
+            ]
+        )
+        assert code == 2
+        assert receipt.read_bytes() == b"KEEP\n"
+    finally:
+        csv_mod.field_size_limit(old_limit)
+
+
 def test_rejects_wrong_expected_type():
     with pytest.raises(ValueError, match="(?i)expected.*ExpectedBarExportV2"):
         validate_bar_export_v2([], expected=None)  # type: ignore[arg-type]

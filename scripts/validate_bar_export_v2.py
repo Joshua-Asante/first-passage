@@ -256,6 +256,8 @@ def _decode_page(
         headers = next(reader)
     except StopIteration:
         _fail(page_index, None, "header", "empty page")
+    except csv.Error as exc:
+        _fail(page_index, None, "csv", f"CSV parse error: {exc}")
 
     headers = [h.strip() for h in headers]
     if len(headers) != len(set(headers)):
@@ -271,11 +273,24 @@ def _decode_page(
     entries: list[_DecodedEntry] = []
     seen_trade_ids: set[int] = set()
 
-    for row_number, cells in enumerate(reader, start=2):
-        if len(cells) == 0 or all(c.strip() == "" for c in cells):
+    row_number = 1
+    while True:
+        row_number += 1
+        try:
+            cells = next(reader)
+        except StopIteration:
+            break
+        except csv.Error as exc:
+            _fail(page_index, row_number, "csv", f"CSV parse error: {exc}")
+
+        # True empty lines only (`[]`) may skip width. Delimiter-bearing records
+        # such as `,,` must hit the width check before any blank skip.
+        if len(cells) == 0:
             continue
         if len(cells) != width:
             _fail(page_index, row_number, "width", f"expected {width} fields, got {len(cells)}")
+        if all(c.strip() == "" for c in cells):
+            continue
         row = {headers[i]: cells[i] for i in range(width)}
         typ = row["Type"].strip()
         if not typ.startswith("Entry"):
