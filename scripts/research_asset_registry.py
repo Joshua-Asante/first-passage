@@ -122,9 +122,11 @@ def _is_int(value: object) -> bool:
 
 
 def _nonempty_str(value: object) -> str | None:
-    if isinstance(value, str) and value != "":
-        return value
-    return None
+    if not isinstance(value, str) or value == "":
+        return None
+    if "\0" in value or "\n" in value or "\r" in value:
+        return None
+    return value
 
 
 def _str_list(value: object) -> list[str] | None:
@@ -180,40 +182,68 @@ def _sha256_file(path: Path) -> str:
 
 
 def _cyclic_ids(nodes: Sequence[str], edges: Mapping[str, Sequence[str]]) -> set[str]:
-    white, gray, black = 0, 1, 2
-    color = {node: white for node in nodes}
+    """Return every node that participates in a cycle (iterative Tarjan SCCs)."""
+    node_set = set(nodes)
+    index_of: dict[str, int] = {}
+    lowlink: dict[str, int] = {}
+    stack: list[str] = []
+    on_stack: set[str] = set()
     cyclic: set[str] = set()
+    next_index = 0
 
     for start in nodes:
-        if color[start] != white:
+        if start in index_of:
             continue
-        stack: list[tuple[str, int]] = [(start, 0)]
-        path: list[str] = []
-        while stack:
-            node, child_i = stack[-1]
-            if child_i == 0:
-                color[node] = gray
-                path.append(node)
-            children = edges.get(node, ())
+        frames: list[tuple[str, int]] = [(start, 0)]
+        while frames:
+            node, child_i = frames[-1]
+            if node not in index_of:
+                index_of[node] = next_index
+                lowlink[node] = next_index
+                next_index += 1
+                stack.append(node)
+                on_stack.add(node)
+            children = [dest for dest in edges.get(node, ()) if dest in node_set]
             if child_i < len(children):
-                stack[-1] = (node, child_i + 1)
                 dest = children[child_i]
-                if dest not in color:
-                    continue
-                if color[dest] == gray:
-                    cyclic.update(path[path.index(dest) :])
-                elif color[dest] == white:
-                    stack.append((dest, 0))
+                frames[-1] = (node, child_i + 1)
+                if dest not in index_of:
+                    frames.append((dest, 0))
+                elif dest in on_stack:
+                    lowlink[node] = min(lowlink[node], index_of[dest])
             else:
-                stack.pop()
-                path.pop()
-                color[node] = black
+                frames.pop()
+                if frames:
+                    parent, _ = frames[-1]
+                    lowlink[parent] = min(lowlink[parent], lowlink[node])
+                if lowlink[node] == index_of[node]:
+                    component: list[str] = []
+                    while True:
+                        item = stack.pop()
+                        on_stack.remove(item)
+                        component.append(item)
+                        if item == node:
+                            break
+                    self_loop = node in edges.get(node, ())
+                    if len(component) > 1 or self_loop:
+                        cyclic.update(component)
     return cyclic
 
 
 def _load_json(path: Path) -> object:
-    with path.open(encoding="utf-8") as handle:
-        return json.load(handle)
+    try:
+        with path.open(encoding="utf-8") as handle:
+            return json.load(handle)
+    except json.JSONDecodeError:
+        raise
+    except RecursionError as exc:
+        raise json.JSONDecodeError(
+            "JSON recursion limit exceeded", path.name, 0
+        ) from exc
+    except ValueError as exc:
+        raise json.JSONDecodeError(
+            "JSON value exceeds decoder limits", path.name, 0
+        ) from exc
 
 
 def _parse_member(raw: object, asset_id: str) -> tuple[dict[str, str] | None, list[dict[str, str]]]:
@@ -678,7 +708,7 @@ def _location_integrity(
         try:
             resolved_root = root_path.resolve()
             resolved_member = member_path.resolve()
-        except (OSError, RuntimeError):
+        except (OSError, RuntimeError, ValueError):
             findings.append(
                 _finding(
                     "UNSAFE_PATH",
@@ -718,7 +748,20 @@ def _location_integrity(
 
     hash_cache: dict[str, str] = {}
     for asset_id, member_key, resolved_member, expected in resolved_jobs:
-        if not resolved_member.exists():
+        try:
+            exists = resolved_member.exists()
+            is_file = resolved_member.is_file() if exists else False
+        except OSError:
+            findings.append(
+                _finding(
+                    "UNREADABLE_FILE",
+                    asset_id,
+                    member_key,
+                    "listed member file could not be read",
+                )
+            )
+            continue
+        if not exists:
             findings.append(
                 _finding(
                     "MISSING_FILE",
@@ -728,7 +771,7 @@ def _location_integrity(
                 )
             )
             continue
-        if not resolved_member.is_file():
+        if not is_file:
             findings.append(
                 _finding(
                     "UNREADABLE_FILE",

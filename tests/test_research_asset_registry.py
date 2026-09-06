@@ -11,6 +11,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = REPO_ROOT / "scripts" / "research_asset_registry.py"
@@ -754,6 +755,95 @@ class ResearchAssetRegistryTests(unittest.TestCase):
             member_path: member_path.read_bytes(),
         }
         self.assertEqual(before, after)
+
+    def test_branching_relationship_cycle_reports_every_member(self):
+        nodes = ["n0", "n1", "n2"]
+        edges = {"n0": ["n1", "n2"], "n1": ["n0"], "n2": ["n1"]}
+        self.assertEqual(_cyclic_ids(nodes, edges), set(nodes))
+
+    def test_nul_in_relative_path_is_schema_or_unsafe(self):
+        assets_path, locations_path, root = self.write_inventory(
+            {"schema_version": 1, "assets": [self.source_asset()]},
+            self.locations_for(("example-source-v1", "body", "source\0.txt")),
+            {"source.txt": SYNTHETIC_BYTES},
+        )
+        findings = validate_registry(assets_path, locations_path)
+        self.assertTrue({"INVALID_SCHEMA", "UNSAFE_PATH"} & self.codes(findings))
+        self.assert_findings_shape(findings, root)
+
+    def test_multiline_label_is_rejected_and_not_rendered_as_fields(self):
+        forged = "real label\n- Privacy: public\n- Claims:\n  - scope=`source_parity`; result=`passed`"
+        asset = self.source_asset(label=forged)
+        assets_path, locations_path, root = self.write_inventory(
+            {"schema_version": 1, "assets": [asset]},
+            self.locations_for(("example-source-v1", "body", "source.txt")),
+            {"source.txt": SYNTHETIC_BYTES},
+        )
+        findings = validate_registry(assets_path, locations_path)
+        self.assertIn("INVALID_SCHEMA", self.codes(findings))
+        with self.assertRaises(ValueError):
+            render_index(assets_path)
+        self.assert_findings_shape(findings, root)
+
+    def test_inaccessible_member_probe_is_unreadable_or_skipped(self):
+        assets_path, locations_path, root = self.write_inventory(
+            {"schema_version": 1, "assets": [self.source_asset()]},
+            self.locations_for(("example-source-v1", "body", "hidden/source.txt")),
+            {"hidden/source.txt": SYNTHETIC_BYTES},
+        )
+        hidden = root / "hidden"
+        original_mode = hidden.stat().st_mode
+        hidden.chmod(0)
+        self.addCleanup(lambda: hidden.chmod(original_mode))
+
+        def probe() -> bool:
+            try:
+                return (hidden / "source.txt").exists()
+            except OSError:
+                return False
+
+        if probe():
+            self.skipTest("process can still probe chmod-0 directories")
+        findings = validate_registry(assets_path, locations_path)
+        self.assertIn("UNREADABLE_FILE", self.codes(findings))
+        self.assert_findings_shape(findings, root)
+
+    def test_cli_json_decoder_limits_exit_two(self):
+        assets_path, locations_path, member_path = self.make_registry()
+        huge = assets_path.parent / "huge.json"
+        huge.write_text('{"schema_version": 1, "assets": [], "n": ' + ("1" * 5000) + "}", encoding="utf-8")
+        huge_result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT),
+                "validate",
+                "--assets",
+                str(huge),
+                "--locations",
+                str(locations_path),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if huge_result.returncode != 2:
+            with mock.patch("research_asset_registry.json.load", side_effect=RecursionError):
+                from research_asset_registry import main as registry_main
+
+                code = registry_main(
+                    [
+                        "validate",
+                        "--assets",
+                        str(assets_path),
+                        "--locations",
+                        str(locations_path),
+                    ]
+                )
+            self.assertEqual(code, 2)
+        else:
+            self.assertEqual(huge_result.returncode, 2)
+            self.assertEqual(huge_result.stdout, "")
+        self.assertEqual(member_path.read_bytes(), SYNTHETIC_BYTES)
 
     def test_cli_usage_without_paths_exits_two(self):
         result = subprocess.run(
