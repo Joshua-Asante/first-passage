@@ -120,7 +120,7 @@ Regenerate: `python scripts/check_repo_map_scripts_table.py --write`.
 `--check` exits 1 on drift; it is **not** wired into `gates.yml`.
 
 <!-- BEGIN generated: scripts-table -->
-_65 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_66 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 | Script | Layer | Gate id (tier) | Notes |
 |---|---|---|---|
@@ -179,6 +179,7 @@ _65 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/pine_lint.py` | lab | — | manual/local only, not in gates.yml |
 | `scripts/repo_hygiene.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/repo_retrieve.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/research_asset_registry.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/retire_adr.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/roll_sessions.py` | governance | `sessions-order` (path-conditional); `sessions-append-only` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/session_divergence_hook.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
