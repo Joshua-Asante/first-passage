@@ -104,3 +104,11 @@ git diff --stat origin/main...HEAD
 
 CI may add its existing required checks. Do not claim private replay parity or an integrated caller from a green helper test suite.
 
+
+## 3.1. Parent clarification: arithmetic representability and resources
+
+Released after the independent review of head 4ae8415. Finite valid input operands do not imply that all five result Decimals are representable or safely materializable. Preserve the existing validation/domain precedence. At the arithmetic stage, if an exact witness exceeds the native Decimal result range or cannot be produced within available arithmetic resources, return OUTSIDE_PROVEN_DOMAIN with a new stable reason ARITHMETIC_LIMIT and all five witness fields None. This is a defined non-proof outcome, never a broker action or a rounded substitute. Shape-valid operands remain valid inputs; do not relabel this as INVALID_INPUT.
+
+Compute from compact, context-independent coefficient/exponent facts. Derive working precision and exponent bounds from the actual operations, and avoid enormous preferred-exponent expansion for subtraction of zero or cancellation of equal compact values. Insignificant trailing zeros may be removed when numeric value is exact; trap Inexact rather than treating every Rounded signal as a value error. MAX_PREC allocation is not an operand-derived precision algorithm. Preflight native result-range failures where possible and translate relevant arithmetic/resource failures to ARITHMETIC_LIMIT before returning any positive proof.
+
+Required independent regressions: (1) cash/price/mark 1E1000000000000, point value1, cost0, other facts supported: compact exact zero surplus, not a memory failure; (2) the review's compact operands whose point-value times price exceeds native Decimal result range: ARITHMETIC_LIMIT with no witnesses; (3) preserve the existing 1E-201 precision and frozen cash503/cost3 boundary cases; (4) a large-exponent regression with compact aligned operands and literal expected Decimals, avoiding million-digit binary-integer-to-Decimal conversions. Keep the public fixtures synthetic and this helper source-neutral. This clarification changes only the numerical error contract, not source sizing, account rules, search gates or any campaign input.
