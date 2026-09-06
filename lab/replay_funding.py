@@ -41,22 +41,23 @@ context — see `_exact_add`/`_exact_subtract`/`_exact_multiply`):
 known cost for this candidate execution — callers must not add a duplicate
 slippage charge on top of it.
 
-Every arithmetic step is computed with exact Python-integer coefficient
-arithmetic, never `decimal.Context`-bounded operations: each Decimal operand
-is decomposed into its exact `(coefficient, exponent)` pair straight from
+Every arithmetic step starts from exact coefficient/exponent facts: each
+Decimal operand is decomposed straight from
 `as_tuple()` (no parsing, no rounding, no dependency on
 `sys.get_int_max_str_digits()`), with insignificant trailing zero digits
 stripped first (value-preserving) so a caller's own zero-padding never
-inflates a later sizing estimate. Coefficients are combined with plain
-integer add/multiply (which never rounds, regardless of magnitude), and the
-result is rebuilt as a `Decimal` — reading its digit tuple back from
+inflates a later sizing estimate. Addition uses plain integer coefficients.
+Multiplication uses an explicit one-scratch-digit Decimal context that traps
+`Rounded`, so it either returns an exact bounded coefficient or raises the
+defined arithmetic limit; it never substitutes a rounded value. Results are
+rebuilt as `Decimal` values — reading an integer digit tuple back from
 `Decimal(coefficient)` (exact and, like `as_tuple()`, independent of
 `sys.get_int_max_str_digits()`, unlike `str(coefficient)`) and reassembling
 via direct tuple construction, a form the constructor documents as unbound by
-any context precision or exponent limit. This sidesteps an entire class of
-bugs from trying to *estimate* a big-enough `decimal.Context(prec=...)` up
-front: an estimate sized from operand digit counts or a `+2` carry-digit
-margin is either too tight (silently rounds a valid result) or systematically
+any context precision or exponent limit. This avoids relying on a loose
+estimate as the result decision: an estimate sized from operand digit counts
+or a `+2` carry-digit margin can be too tight (silently rounding a valid
+result unless trapped) or systematically
 too loose (rejects a representable result, e.g. summing every factor's own
 digit count overcounts a product whose actual width doesn't grow past its
 widest operand, or comparing a raw exponent against `decimal.MIN_EMIN`
@@ -75,26 +76,27 @@ apply, both mapped to the same defined non-proof outcome:
     representable by *any* legal context (`Emin=decimal.MIN_EMIN` at
     `prec=decimal.MAX_PREC`, i.e. the lowest `Context.Etiny()` decimal
     itself can ever produce) — see `_finalize`;
-  * a step's own coefficient-construction work is preflighted against a
+  * normalized sign/digit/exponent metadata is read without constructing a
+    growing integer; a step's coefficient-construction work is then
+    preflighted against a
     deterministic **1,000,000-digit work budget** (`_ARITHMETIC_WORK_BUDGET`,
     handoff §3.2), sized from the operands' *normalized* digit counts, never
     a padded per-factor estimate — for add/subtract this is the digit span
     the `10 ** shift` alignment scaling would need (see `_exact_add`); for
-    multiply it is the sum of digit counts over factors that are not
+    multiply it starts with the digit counts of factors that are not
     themselves a power of ten (a factor whose normalized coefficient has
     magnitude 1 — including the identity `1` — shifts the exponent only and
     provably adds zero digits to the product, so it is excluded from the
     estimate rather than inflating it, see `_exact_multiply`). Both
-    preflights apply only after zero and exact-cancellation shortcuts, and
-    both tolerate one bounded, transient scratch digit in the estimate (a
-    carry, for add; the one-digit shrink a product can lose per factor, for
-    multiply) — the budget is never enforced against the loose estimate
-    alone. What decides representability is always the ACTUAL exact result:
-    once computed, it is normalized and its own digit count — not the
-    pre-computation estimate — is checked against the same budget, so a
-    result that genuinely carries past the budget (e.g. `999 + 998` or
-    `99 * 99` under a tiny injected budget) is rejected even when the
-    estimate alone was within tolerance.
+    preflights apply only after zero and exact-cancellation shortcuts. A
+    borderline two-factor estimate may be two digits loose, so it is allowed
+    to proceed only inside an explicit `_budget + 1` precision context that
+    traps even value-preserving digit loss: the raw product may use at most one
+    scratch digit, and its normalized result must fit the budget.
+    This accepts `16 * 125 == 2000 == 2E3` at budget 3 while rejecting
+    `16 * 625 == 10000`. What decides witness representability remains the
+    actual normalized result, so `999 + 998` and `99 * 99` are rejected at
+    budget 3 even when an earlier estimate allowed construction.
 
 Neither limit is a cap this module invents to substitute for Decimal's own
 limits, and neither reads or mutates `sys.get_int_max_str_digits()` in any
@@ -119,11 +121,11 @@ _ABSOLUTE_MIN_EXPONENT = decimal.MIN_EMIN - decimal.MAX_PREC + 1
 
 # Deterministic coefficient-work budget (handoff §3.2), shared by every exact
 # step: for add/subtract, the maximum digit span the alignment step may
-# construct via `10 ** shift`; for multiply, the maximum summed digit count
-# over non-power-of-ten factors. Both are checked against the operands'
-# *normalized* digit counts only — after zero/exact-cancellation shortcuts
-# and trailing-zero stripping — so a compact operand at an astronomically
-# large exponent never forces materializing an equally large coefficient.
+# construct via `10 ** shift`; for multiply, each non-power-of-ten operand
+# must itself fit before construction, then a close width estimate is allowed
+# only into an explicit raw-product operation capped at one scratch digit.
+# Checks use tuple-only normalized digit metadata after zero/cancellation
+# shortcuts, so a compact operand at an astronomical exponent stays compact.
 # Every step additionally checks its ACTUAL normalized result against this
 # same budget after computing it (`_require_normalized_result_within_budget`)
 # — the pre-computation check alone only bounds the cost of getting there, it
@@ -273,26 +275,35 @@ def _outside_domain(reason: FundingReason) -> FundingAssessment:
     )
 
 
-def _normalized_coefficient_exponent(value: Decimal):
-    """Exact `(signed coefficient, exponent, digit_count)` for a nonzero
-    finite Decimal, read directly from its stored digit tuple — no string
-    parsing, no context, no rounding, no `sys.get_int_max_str_digits()`
-    dependency of any kind — with insignificant trailing zero digits
-    stripped first (value-preserving: the exponent absorbs each trimmed
-    zero) so a caller's own stored zero-padding never inflates a later
-    alignment-span estimate or a native-range check (handoff §3.2)."""
+def _normalized_tuple_metadata(value: Decimal):
+    """Return normalized `(sign, digits, exponent)` without building an int.
+
+    This cheap tuple-only stage lets callers reject excessive construction or
+    alignment work before the digit-by-digit coefficient accumulation begins.
+    """
     sign, digits, exponent = value.as_tuple()
     end = len(digits)
     while end > 1 and digits[end - 1] == 0:
         end -= 1
     exponent += len(digits) - end
     digits = digits[:end]
+    return sign, digits, exponent
 
+
+def _coefficient_from_digits(sign: int, digits: tuple[int, ...]) -> int:
+    """Construct one signed integer coefficient after caller preflight."""
     coefficient = 0
     for digit in digits:
         coefficient = coefficient * 10 + digit
-    if sign:
-        coefficient = -coefficient
+    return -coefficient if sign else coefficient
+
+
+def _normalized_coefficient_exponent(value: Decimal):
+    """Exact `(signed coefficient, exponent, digit_count)` for a nonzero
+    finite Decimal after tuple-only trailing-zero normalization."""
+    sign, digits, exponent = _normalized_tuple_metadata(value)
+
+    coefficient = _coefficient_from_digits(sign, digits)
     return coefficient, exponent, len(digits)
 
 
@@ -339,8 +350,8 @@ def _require_normalized_result_within_budget(result: Decimal, _budget: int) -> N
     cost of getting here (handoff §3.2)."""
     if result == 0:
         return
-    _, _, result_digits = _normalized_coefficient_exponent(result)
-    if result_digits > _budget:
+    _, digits, _ = _normalized_tuple_metadata(result)
+    if len(digits) > _budget:
         raise _ArithmeticLimit()
 
 
@@ -368,8 +379,8 @@ def _exact_add(a: Decimal, b: Decimal, *, _budget: int = _ARITHMETIC_WORK_BUDGET
         return Decimal(0)
 
     try:
-        a_coefficient, a_exponent, a_digits = _normalized_coefficient_exponent(a)
-        b_coefficient, b_exponent, b_digits = _normalized_coefficient_exponent(b)
+        _, a_tuple, a_exponent = _normalized_tuple_metadata(a)
+        _, b_tuple, b_exponent = _normalized_tuple_metadata(b)
     except MemoryError as exc:
         raise _ArithmeticLimit() from exc
 
@@ -377,11 +388,17 @@ def _exact_add(a: Decimal, b: Decimal, *, _budget: int = _ARITHMETIC_WORK_BUDGET
     a_shift = a_exponent - exponent
     b_shift = b_exponent - exponent
 
-    required_span = max(a_digits + a_shift, b_digits + b_shift)
+    required_span = max(len(a_tuple) + a_shift, len(b_tuple) + b_shift)
     if required_span > _budget:
         raise _ArithmeticLimit()
 
     try:
+        # Keep the established normalization/conversion boundary after the
+        # tuple-only work preflight.  Besides avoiding duplicate conversion
+        # policy, this preserves the helper's resource-failure seam without
+        # letting it construct a growing integer before the span is known safe.
+        a_coefficient, _, _ = _normalized_coefficient_exponent(a)
+        b_coefficient, _, _ = _normalized_coefficient_exponent(b)
         coefficient = a_coefficient * 10 ** a_shift + b_coefficient * 10 ** b_shift
     except MemoryError as exc:
         raise _ArithmeticLimit() from exc
@@ -404,8 +421,8 @@ def _exact_subtract(a: Decimal, b: Decimal, *, _budget: int = _ARITHMETIC_WORK_B
 
 
 def _exact_multiply(*factors: Decimal, _budget: int = _ARITHMETIC_WORK_BUDGET) -> Decimal:
-    """Exact product of two or more Decimals via big-integer coefficients
-    and summed exponents — multiplication needs no alignment, so this is
+    """Exact product of two or more Decimals via bounded coefficients and
+    summed exponents — multiplication needs no alignment, so this is
     cheap regardless of any factor's magnitude. Any zero factor
     short-circuits to exact zero.
 
@@ -416,37 +433,52 @@ def _exact_multiply(*factors: Decimal, _budget: int = _ARITHMETIC_WORK_BUDGET) -
     what closes the earlier defect where summing every factor's own digit
     count (including trivial identity factors) overcounted a product that
     never grew past its widest genuine operand. The remaining, non-trivial
-    factors' digit counts are summed and preflighted against `_budget`
-    (handoff §3.2) with one bounded scratch digit of tolerance — the same
-    policy `_exact_add` applies to a carry — before the multiplication is
-    attempted. As with addition, that preflight only bounds the cost of
-    getting here: the exact product is then normalized and its own digit
-    count is what decides representability against `_budget`
-    (`_require_normalized_result_within_budget`), so e.g. `99 * 99` under
-    `_budget=3` is rejected (4 normalized digits, no shrink) even though the
-    two 2-digit factors' preflight estimate (4) was within tolerance, while
-    `45 * 22` is accepted (its product shrinks to 3 normalized digits)."""
+    factors are preflighted from tuple-only metadata before any coefficient
+    integer is built. Each nontrivial factor must fit `_budget`. A summed
+    estimate above `_budget + 2` is rejected immediately; the two-digit
+    estimate tolerance is only enough to distinguish a product whose actual
+    raw coefficient fits the one-scratch-digit limit. An explicit context of
+    precision `_budget + 1` traps `Rounded`, including value-preserving
+    removal of a trailing zero, before an oversized raw coefficient can be
+    returned. The exact product is then normalized and checked against
+    `_budget`. Thus `16 * 125 == 2000` succeeds at `_budget=3` because its raw
+    product uses one scratch digit and normalizes to `2E3`; `16 * 625` is
+    rejected because its actual raw coefficient has five digits. `99 * 99`
+    is rejected by the final normalized-result check, while `45 * 22` is
+    accepted after its trailing zero is normalized."""
     if any(factor == 0 for factor in factors):
         return Decimal(0)
 
     try:
-        normalized = [_normalized_coefficient_exponent(factor) for factor in factors]
+        normalized = [_normalized_tuple_metadata(factor) for factor in factors]
     except MemoryError as exc:
         raise _ArithmeticLimit() from exc
 
-    nontrivial_digit_counts = [
-        digits for coefficient, _, digits in normalized if abs(coefficient) != 1
-    ]
-    if sum(nontrivial_digit_counts) > _budget + 1:
+    nontrivial_digit_counts = [len(digits) for _, digits, _ in normalized
+                               if digits != (1,)]
+    if (any(digits > _budget for digits in nontrivial_digit_counts)
+            or sum(nontrivial_digit_counts) > _budget + 2):
         raise _ArithmeticLimit()
 
-    coefficient = 1
+    coefficient_product = Decimal(1)
     exponent = 0
     try:
-        for factor_coefficient, factor_exponent, _ in normalized:
-            coefficient *= factor_coefficient
+        product_context = decimal.Context(
+            prec=_budget + 1,
+            Emin=decimal.MIN_EMIN,
+            Emax=decimal.MAX_EMAX,
+        )
+        product_context.traps[decimal.Rounded] = True
+        for factor, (_, _, factor_exponent) in zip(factors, normalized):
+            factor_coefficient, _, _ = _normalized_coefficient_exponent(factor)
+            coefficient_product = product_context.multiply(
+                coefficient_product, Decimal(factor_coefficient)
+            )
             exponent += factor_exponent
-    except MemoryError as exc:
+        sign, digits, product_exponent = _normalized_tuple_metadata(coefficient_product)
+        coefficient = _coefficient_from_digits(sign, digits)
+        exponent += product_exponent
+    except (decimal.DecimalException, MemoryError) as exc:
         raise _ArithmeticLimit() from exc
 
     result = _finalize(coefficient, exponent)
@@ -455,11 +487,10 @@ def _exact_multiply(*factors: Decimal, _budget: int = _ARITHMETIC_WORK_BUDGET) -
 
 
 def _exact_arithmetic(facts: FundingFacts):
-    """Compute the five arithmetic witnesses exactly via big-integer
-    coefficient arithmetic (`_exact_add`/`_exact_subtract`/`_exact_multiply`)
-    — never a `decimal.Context`-bounded operation. Raises `_ArithmeticLimit`
-    — caught only by `assess_funding` — if any step's exact result is not
-    representable or not safely materializable.
+    """Compute the five arithmetic witnesses exactly via the bounded
+    coefficient operations (`_exact_add`/`_exact_subtract`/`_exact_multiply`).
+    Raises `_ArithmeticLimit` — caught only by `assess_funding` — if any
+    step's exact result is not representable or safely materializable.
     """
     quantity = Decimal(facts.requested_quantity)
     cash_after_cost = _exact_subtract(facts.cash_before, facts.execution_cost)
